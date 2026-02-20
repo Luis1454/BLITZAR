@@ -13,6 +13,6 @@ exports/
 .DS_Store
 Thumbs.db
 
-# Python cache
+# Tooling cache
 __pycache__/
 *.pyc

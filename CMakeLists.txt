@@ -294,6 +294,13 @@ endif()
 if(GRAVITY_BUILD_TESTS)
     enable_testing()
 
+    add_test(
+        NAME GravityConfigValidation
+        COMMAND ${CMAKE_COMMAND}
+            -DGRAVITY_CONFIG_PATH:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/simulation.ini
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/config/validate_simulation_ini.cmake
+    )
+
     find_package(GTest CONFIG QUIET)
     if(NOT TARGET GTest::gtest_main)
         include(FetchContent)

@@ -33,48 +33,42 @@ jobs:
         run: |
           yamllint -d "{extends: default, rules: {line-length: disable, truthy: disable}}" .github/workflows
 
-  repo-hygiene:
-    name: Repo Hygiene
-    runs-on: ubuntu-latest
+  portable-smoke:
+    name: Portable Smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Verify generated directories are not tracked
-        shell: bash
+        shell: pwsh
         run: |
-          set -euo pipefail
-          failures=0
-          for tracked in build exports; do
-            if git ls-files "$tracked" | grep -q .; then
-              echo "Tracked generated path detected: $tracked"
-              failures=1
-            fi
-          done
-          if [ "$failures" -ne 0 ]; then
-            exit 1
-          fi
+          $failures = 0
+          foreach ($tracked in @("build", "exports")) {
+            $files = git ls-files $tracked
+            if ($LASTEXITCODE -ne 0) {
+              throw "git ls-files failed for $tracked"
+            }
+            if ($files) {
+              Write-Host "Tracked generated path detected: $tracked"
+              $failures = 1
+            }
+          }
+          if ($failures -ne 0) { exit 1 }
 
       - name: Verify required project files
-        shell: bash
+        shell: pwsh
         run: |
-          set -euo pipefail
-          test -f .gitignore
-          test -f CMakeLists.txt
-          test -f simulation.ini
-
-  config-smoke:
-    name: Config Smoke
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
+          foreach ($file in @(".gitignore", "CMakeLists.txt", "simulation.ini")) {
+            if (-not (Test-Path $file)) {
+              throw "Missing required file: $file"
+            }
+          }
 
       - name: Validate simulation.ini
         run: |
-          python scripts/ci/validate_simulation_ini.py --path simulation.ini
+          cmake -DGRAVITY_CONFIG_PATH:FILEPATH=simulation.ini -P tests/config/validate_simulation_ini.cmake
