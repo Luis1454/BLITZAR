@@ -4,12 +4,14 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - README.md
   schedule:
     - cron: "0 2 * * *"
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   statuses: write
 
 concurrency:
@@ -132,6 +134,58 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           echo "::notice title=Coverage percentages::lines=${LINES_PCT}% functions=${FUNCS_PCT}% branches=${BRANCH_PCT}%"
+
+      - name: Update README coverage block
+        id: readme_cov
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          LINES_PCT="${{ steps.coverage.outputs.lines_pct }}"
+          FUNCS_PCT="${{ steps.coverage.outputs.funcs_pct }}"
+          BRANCH_PCT="${{ steps.coverage.outputs.branch_pct }}"
+          python3 - <<'PY'
+          from datetime import datetime, timezone
+          import os
+          import re
+          from pathlib import Path
+
+          readme = Path("README.md")
+          content = readme.read_text(encoding="utf-8")
+          start = "<!-- COVERAGE:START -->"
+          end = "<!-- COVERAGE:END -->"
+
+          block = (
+              f"{start}\n"
+              f"- Lines: **{os.environ['LINES_PCT']}%**\n"
+              f"- Functions: **{os.environ['FUNCS_PCT']}%**\n"
+              f"- Branches: **{os.environ['BRANCH_PCT']}%**\n"
+              f"- Updated: `{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}`\n"
+              f"{end}"
+          )
+
+          pattern = re.compile(re.escape(start) + r".*?" + re.escape(end), re.DOTALL)
+          if not pattern.search(content):
+              raise SystemExit("Coverage markers not found in README.md")
+          updated = pattern.sub(block, content, count=1)
+          readme.write_text(updated, encoding="utf-8")
+          PY
+          if git diff --quiet -- README.md; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          LINES_PCT: ${{ steps.coverage.outputs.lines_pct }}
+          FUNCS_PCT: ${{ steps.coverage.outputs.funcs_pct }}
+          BRANCH_PCT: ${{ steps.coverage.outputs.branch_pct }}
+
+      - name: Commit README coverage update
+        if: ${{ steps.readme_cov.outputs.changed == 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "docs: update coverage metrics [skip ci]"
+          git push
 
       - name: Publish coverage status check
         if: always()
