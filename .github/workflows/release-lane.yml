@@ -14,42 +14,42 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release-validate-and-package:
-    name: Release Validate and Package
-    runs-on: [self-hosted, windows, x64]
+  release-hosted-validate-and-package:
+    name: Release Hosted Validate and Package
+    runs-on: windows-latest
     timeout-minutes: 120
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate CUDA runtime/toolchain presence
+      - name: Install CUDA toolkit
+        uses: Jimver/cuda-toolkit@v0.2.30
+        with:
+          cuda: "12.4.1"
+
+      - name: Validate CUDA toolchain presence
         shell: pwsh
         run: |
-          $hasNvidiaSmi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
           $hasNvcc = Get-Command nvcc -ErrorAction SilentlyContinue
-          if (-not $hasNvidiaSmi) {
-            throw "nvidia-smi not found. Runner does not expose NVIDIA driver/runtime."
-          }
           if (-not $hasNvcc) {
-            throw "nvcc not found in PATH. Install CUDA Toolkit or expose nvcc in runner environment."
+            throw "nvcc not found in PATH after CUDA toolkit installation."
           }
-          nvidia-smi
           nvcc --version
 
       - name: Configure
         shell: pwsh
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_BUILD_SFML_FRONTEND=OFF -DGRAVITY_BUILD_QT_FRONTEND=OFF
 
       - name: Build
         shell: pwsh
         run: |
           cmake --build build --parallel
 
-      - name: Run tests
+      - name: Run hosted-safe tests
         shell: pwsh
         run: |
-          ctest --test-dir build --output-on-failure --timeout 300
+          ctest --test-dir build -R GravityConfigValidation --output-on-failure --timeout 120
 
       - name: Package release artifacts
         shell: pwsh
@@ -107,3 +107,41 @@ jobs:
             build/CMakeFiles/CMakeOutput.log
             build/CMakeFiles/CMakeError.log
           if-no-files-found: ignore
+
+  release-gpu-full-tests:
+    name: Release GPU Full Tests (optional)
+    if: ${{ vars.HAS_GPU_RUNNER == 'true' }}
+    runs-on: [self-hosted, windows, x64, cuda]
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate CUDA runtime/toolchain presence
+        shell: pwsh
+        run: |
+          $hasNvidiaSmi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
+          $hasNvcc = Get-Command nvcc -ErrorAction SilentlyContinue
+          if (-not $hasNvidiaSmi) {
+            throw "nvidia-smi not found. Runner does not expose NVIDIA driver/runtime."
+          }
+          if (-not $hasNvcc) {
+            throw "nvcc not found in PATH. Install CUDA Toolkit or expose nvcc in runner environment."
+          }
+          nvidia-smi
+          nvcc --version
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        shell: pwsh
+        run: |
+          cmake --build build --parallel
+
+      - name: Run full tests
+        shell: pwsh
+        run: |
+          ctest --test-dir build --output-on-failure --timeout 300

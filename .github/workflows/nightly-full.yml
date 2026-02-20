@@ -16,9 +16,67 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  nightly-cuda-build-and-test:
-    name: Nightly CUDA Build and Tests
-    runs-on: [self-hosted, windows, x64]
+  nightly-hosted-build-and-smoke:
+    name: Nightly Hosted Build and Smoke
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install CUDA toolkit
+        uses: Jimver/cuda-toolkit@v0.2.30
+        with:
+          cuda: "12.4.1"
+
+      - name: Validate CUDA toolchain presence
+        shell: pwsh
+        run: |
+          $hasNvcc = Get-Command nvcc -ErrorAction SilentlyContinue
+          if (-not $hasNvcc) {
+            throw "nvcc not found in PATH after CUDA toolkit installation."
+          }
+          nvcc --version
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_BUILD_SFML_FRONTEND=OFF -DGRAVITY_BUILD_QT_FRONTEND=OFF
+
+      - name: Build
+        shell: pwsh
+        run: |
+          cmake --build build --parallel
+
+      - name: Run hosted-safe tests
+        shell: pwsh
+        run: |
+          ctest --test-dir build -R GravityConfigValidation --output-on-failure --timeout 120
+
+      - name: Explain GPU test scope
+        shell: pwsh
+        run: |
+          @"
+          Hosted nightly lane runs build + config smoke.
+          Full physics GPU tests require a self-hosted NVIDIA runner.
+          Set repository variable HAS_GPU_RUNNER=true to enable the optional GPU job.
+          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+
+      - name: Upload test and build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-full-logs-${{ github.run_number }}
+          path: |
+            build/Testing/**/*.log
+            build/CMakeFiles/CMakeOutput.log
+            build/CMakeFiles/CMakeError.log
+          if-no-files-found: ignore
+
+  nightly-gpu-full-tests:
+    name: Nightly GPU Full Tests (optional)
+    if: ${{ vars.HAS_GPU_RUNNER == 'true' }}
+    runs-on: [self-hosted, windows, x64, cuda]
     timeout-minutes: 120
     steps:
       - name: Checkout
@@ -48,18 +106,7 @@ jobs:
         run: |
           cmake --build build --parallel
 
-      - name: Run tests
+      - name: Run full tests
         shell: pwsh
         run: |
           ctest --test-dir build --output-on-failure --timeout 300
-
-      - name: Upload test and build logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: nightly-full-logs-${{ github.run_number }}
-          path: |
-            build/Testing/**/*.log
-            build/CMakeFiles/CMakeOutput.log
-            build/CMakeFiles/CMakeError.log
-          if-no-files-found: ignore
