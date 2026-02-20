@@ -153,12 +153,24 @@ jobs:
           start = "<!-- COVERAGE:START -->"
           end = "<!-- COVERAGE:END -->"
 
+          def spark(pct: float, width: int = 20) -> str:
+              pct = max(0.0, min(100.0, pct))
+              filled = int(round((pct / 100.0) * width))
+              return "#" * filled + "-" * (width - filled)
+
+          lines = float(os.environ["LINES_PCT"])
+          funcs = float(os.environ["FUNCS_PCT"])
+          branches = float(os.environ["BRANCH_PCT"])
+          updated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
           block = (
               f"{start}\n"
-              f"- Lines: **{os.environ['LINES_PCT']}%**\n"
-              f"- Functions: **{os.environ['FUNCS_PCT']}%**\n"
-              f"- Branches: **{os.environ['BRANCH_PCT']}%**\n"
-              f"- Updated: `{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}`\n"
+              f"| Metric | Percent | Graph |\n"
+              f"|---|---:|---|\n"
+              f"| Lines | **{lines:.1f}%** | `{spark(lines)}` |\n"
+              f"| Functions | **{funcs:.1f}%** | `{spark(funcs)}` |\n"
+              f"| Branches | **{branches:.1f}%** | `{spark(branches)}` |\n"
+              f"| Updated | `{updated}` |  |\n"
               f"{end}"
           )
 
