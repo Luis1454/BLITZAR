@@ -11,8 +11,8 @@ cmake --build build
 
 Three GitHub Actions lanes are defined:
 - `pr-fast`: fast checks for pull requests (workflow YAML lint, repo hygiene, portable `simulation.ini` validation via CMake script).
-- `nightly-full`: scheduled full build + physics tests on CUDA self-hosted runner.
-- `release-lane`: tag/manual release validation + packaging on CUDA self-hosted runner.
+- `nightly-full`: scheduled full build + physics tests on Windows self-hosted runner (`self-hosted`, `windows`, `x64`) with explicit CUDA pre-check.
+- `release-lane`: tag/manual release validation + packaging on Windows self-hosted runner (`self-hosted`, `windows`, `x64`) with explicit CUDA pre-check.
 
 ## Project Layout
 

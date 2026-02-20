@@ -16,11 +16,25 @@ concurrency:
 jobs:
   release-validate-and-package:
     name: Release Validate and Package
-    runs-on: [self-hosted, windows, x64, cuda]
+    runs-on: [self-hosted, windows, x64]
     timeout-minutes: 120
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Validate CUDA runtime/toolchain presence
+        shell: pwsh
+        run: |
+          $hasNvidiaSmi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
+          $hasNvcc = Get-Command nvcc -ErrorAction SilentlyContinue
+          if (-not $hasNvidiaSmi) {
+            throw "nvidia-smi not found. Runner does not expose NVIDIA driver/runtime."
+          }
+          if (-not $hasNvcc) {
+            throw "nvcc not found in PATH. Install CUDA Toolkit or expose nvcc in runner environment."
+          }
+          nvidia-smi
+          nvcc --version
 
       - name: Configure
         shell: pwsh
