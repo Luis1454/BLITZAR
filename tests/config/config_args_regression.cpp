@@ -5,6 +5,7 @@
 
 #include <chrono>
 #include <filesystem>
+#include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -103,6 +104,40 @@ TEST(ConfigArgsRegression, RejectsInvalidArgumentsAndKeepsPreviousValues)
     EXPECT_NE(log.find("unknown option"), std::string::npos);
 }
 
+TEST(ConfigArgsRegression, RejectsTrailingGarbageNumericArguments)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+
+    const std::uint32_t initialParticleCount = config.particleCount;
+    const float initialDt = config.dt;
+    const float initialTheta = config.octreeTheta;
+    const int initialLuminosity = config.defaultLuminosity;
+
+    std::vector<std::string> args = {
+        "app",
+        "--particle-count", "2048abc",
+        "--dt", "0.01x",
+        "--octree-theta", "1.4deg",
+        "--luminosity", "120%"
+    };
+    std::vector<char *> argv = toArgv(args);
+
+    applyArgsToConfig(static_cast<int>(argv.size()), argv.data(), config, runtime, warnings);
+
+    EXPECT_EQ(config.particleCount, initialParticleCount);
+    EXPECT_FLOAT_EQ(config.dt, initialDt);
+    EXPECT_FLOAT_EQ(config.octreeTheta, initialTheta);
+    EXPECT_EQ(config.defaultLuminosity, initialLuminosity);
+
+    const std::string log = warnings.str();
+    EXPECT_NE(log.find("invalid --particle-count"), std::string::npos);
+    EXPECT_NE(log.find("invalid --dt"), std::string::npos);
+    EXPECT_NE(log.find("invalid --octree-theta"), std::string::npos);
+    EXPECT_NE(log.find("invalid --luminosity"), std::string::npos);
+}
+
 TEST(ConfigArgsRegression, SimulationConfigSaveLoadRoundTrip)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -133,6 +168,37 @@ TEST(ConfigArgsRegression, SimulationConfigSaveLoadRoundTrip)
     std::filesystem::remove(path, ec);
 }
 
+TEST(ConfigArgsRegression, LoadIgnoresTrailingGarbageInNumericConfigValues)
+{
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path =
+        std::filesystem::temp_directory_path() / ("gravity_config_invalid_numbers_" + std::to_string(stamp) + ".ini");
+
+    {
+        std::ofstream out(path, std::ios::trunc);
+        ASSERT_TRUE(out.is_open());
+        out << "particle_count=123abc\n";
+        out << "dt=0.25oops\n";
+        out << "default_luminosity=220x\n";
+        out << "solver=octree_cpu\n";
+        out << "sph_enabled=true\n";
+        out << "energy_sample_limit=2048\n";
+    }
+
+    const SimulationConfig defaults = SimulationConfig::defaults();
+    const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
+
+    EXPECT_EQ(loaded.particleCount, defaults.particleCount);
+    EXPECT_FLOAT_EQ(loaded.dt, defaults.dt);
+    EXPECT_EQ(loaded.defaultLuminosity, defaults.defaultLuminosity);
+    EXPECT_EQ(loaded.solver, "octree_cpu");
+    EXPECT_TRUE(loaded.sphEnabled);
+    EXPECT_EQ(loaded.energySampleLimit, 2048u);
+
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
 TEST(ConfigArgsRegression, LoadOrCreateCreatesFileWhenMissing)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -146,4 +212,16 @@ TEST(ConfigArgsRegression, LoadOrCreateCreatesFileWhenMissing)
 
     std::error_code ec;
     std::filesystem::remove(path, ec);
+}
+
+TEST(ConfigArgsRegression, UsageIncludesCoreOptions)
+{
+    std::stringstream out;
+    printUsage(out, "app", true);
+    const std::string usage = out.str();
+    EXPECT_NE(usage.find("--particle-count"), std::string::npos);
+    EXPECT_NE(usage.find("--dt"), std::string::npos);
+    EXPECT_NE(usage.find("--solver"), std::string::npos);
+    EXPECT_NE(usage.find("--integrator"), std::string::npos);
+    EXPECT_NE(usage.find("--target-steps"), std::string::npos);
 }

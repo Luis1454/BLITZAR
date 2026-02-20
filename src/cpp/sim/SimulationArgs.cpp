@@ -35,6 +35,12 @@ bool parseUint(const std::string &value, std::uint32_t &out)
     if (end == value.c_str()) {
         return false;
     }
+    while (end && *end != '\0' && std::isspace(static_cast<unsigned char>(*end)) != 0) {
+        ++end;
+    }
+    if (end && *end != '\0') {
+        return false;
+    }
     out = static_cast<std::uint32_t>(parsed);
     return true;
 }
@@ -46,6 +52,12 @@ bool parseInt(const std::string &value, int &out)
     if (end == value.c_str()) {
         return false;
     }
+    while (end && *end != '\0' && std::isspace(static_cast<unsigned char>(*end)) != 0) {
+        ++end;
+    }
+    if (end && *end != '\0') {
+        return false;
+    }
     out = static_cast<int>(parsed);
     return true;
 }
@@ -55,6 +67,12 @@ bool parseFloat(const std::string &value, float &out)
     char *end = nullptr;
     const float parsed = std::strtof(value.c_str(), &end);
     if (end == value.c_str()) {
+        return false;
+    }
+    while (end && *end != '\0' && std::isspace(static_cast<unsigned char>(*end)) != 0) {
+        ++end;
+    }
+    if (end && *end != '\0') {
         return false;
     }
     out = parsed;

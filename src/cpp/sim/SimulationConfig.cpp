@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <limits>
@@ -20,37 +21,59 @@ std::string trim(const std::string &value)
 
 bool parseUnsigned(const std::string &value, std::uint32_t &out)
 {
-    std::istringstream iss(value);
-    std::uint64_t tmp = 0;
-    iss >> tmp;
-    if (!iss || tmp > static_cast<std::uint64_t>(std::numeric_limits<std::uint32_t>::max())) {
+    char *end = nullptr;
+    const unsigned long long parsed = std::strtoull(value.c_str(), &end, 10);
+    if (end == value.c_str()) {
         return false;
     }
-    out = static_cast<std::uint32_t>(tmp);
+    while (end && *end != '\0' && std::isspace(static_cast<unsigned char>(*end)) != 0) {
+        ++end;
+    }
+    if (end && *end != '\0') {
+        return false;
+    }
+    if (parsed > static_cast<unsigned long long>(std::numeric_limits<std::uint32_t>::max())) {
+        return false;
+    }
+    out = static_cast<std::uint32_t>(parsed);
     return true;
 }
 
 bool parseInt(const std::string &value, int &out)
 {
-    std::istringstream iss(value);
-    int tmp = 0;
-    iss >> tmp;
-    if (!iss) {
+    char *end = nullptr;
+    const long parsed = std::strtol(value.c_str(), &end, 10);
+    if (end == value.c_str()) {
         return false;
     }
-    out = tmp;
+    while (end && *end != '\0' && std::isspace(static_cast<unsigned char>(*end)) != 0) {
+        ++end;
+    }
+    if (end && *end != '\0') {
+        return false;
+    }
+    if (parsed < static_cast<long>(std::numeric_limits<int>::min())
+        || parsed > static_cast<long>(std::numeric_limits<int>::max())) {
+        return false;
+    }
+    out = static_cast<int>(parsed);
     return true;
 }
 
 bool parseFloat(const std::string &value, float &out)
 {
-    std::istringstream iss(value);
-    float tmp = 0.0f;
-    iss >> tmp;
-    if (!iss) {
+    char *end = nullptr;
+    const float parsed = std::strtof(value.c_str(), &end);
+    if (end == value.c_str()) {
         return false;
     }
-    out = tmp;
+    while (end && *end != '\0' && std::isspace(static_cast<unsigned char>(*end)) != 0) {
+        ++end;
+    }
+    if (end && *end != '\0') {
+        return false;
+    }
+    out = parsed;
     return true;
 }
 

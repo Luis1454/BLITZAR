@@ -42,7 +42,7 @@ jobs:
       - name: Run hosted-safe tests
         shell: pwsh
         run: |
-          ctest --test-dir build-hosted --output-on-failure --timeout 180
+          ctest --test-dir build-hosted --output-on-failure --timeout 180 --repeat until-fail:3
 
       - name: Explain GPU test scope
         shell: pwsh
