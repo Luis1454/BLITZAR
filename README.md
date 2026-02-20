@@ -1,1 +1,185 @@
 # CUDA-GRAVITY-SIMULATION
+
+## Build
+
+```bash
+cmake -S . -B build -G Ninja
+cmake --build build
+```
+
+## Project Layout
+
+Code is now organized by role:
+- `include/` public headers (`.hpp`)
+- `src/cpp/` C++ implementation files (`.cpp`)
+- `src/cuda/` CUDA implementation files (`.cu`)
+- `fragments/` CUDA implementation fragments (`.inl`)
+
+Main files:
+- `src/cuda/app/main_headless.cu`
+- `src/cpp/app/main_sfml.cpp`
+- `src/cpp/app/main_qt.cpp`
+
+Core simulation:
+- `include/core/ParticleSystem.hpp`
+- `src/cuda/core/ParticleSystem.cu`
+- `fragments/cuda/*`
+
+Qt UI modules:
+- `include/ui/MainWindow.hpp`
+- `include/ui/MultiViewWidget.hpp`
+- `include/ui/ParticleView.hpp`
+- `include/ui/EnergyGraphWidget.hpp`
+- `include/ui/QtViewMath.hpp`
+- `src/cpp/ui/*.cpp`
+
+## Config File
+
+At first launch, `simulation.ini` is created automatically.
+
+Main settings:
+- `particle_count`
+- `dt`
+- `solver` (`pairwise_cuda`, `octree_gpu`, `octree_cpu`)
+- `init_config_style` (`preset`, `detailed`)
+- `preset_structure` (`disk_orbit`, `random_cloud`, `file`)
+- `preset_size`
+- `velocity_temperature` (random initial velocity agitation for generated particles)
+- `particle_temperature` (initial particle temperature state)
+- `thermal_ambient_temperature`
+- `thermal_specific_heat`
+- `thermal_heating_coeff`
+- `thermal_radiation_coeff`
+- `sph_enabled` (`true`/`false`, independent physics option)
+- `sph_smoothing_length`
+- `sph_rest_density`
+- `sph_gas_constant`
+- `sph_viscosity`
+- `integrator` (`euler`, `rk4`)
+- `octree_theta`
+- `octree_softening`
+- `frontend_particle_cap`
+- `export_directory`
+- `export_format` (`vtk`, `vtk_binary`, `xyz`, `bin`)
+- `input_file` (path to initial state file)
+- `input_format` (`auto`, `vtk`, `vtk_binary`, `xyz`, `bin`)
+- `init_mode` (`disk_orbit`, `random_cloud`, `file`)
+- `init_seed`
+- `init_include_central_body`
+- `init_central_mass`, `init_central_x/y/z`, `init_central_vx/vy/vz`
+- `init_disk_mass`, `init_disk_radius_min`, `init_disk_radius_max`, `init_disk_thickness`, `init_velocity_scale`
+- `init_cloud_half_extent`, `init_cloud_speed`, `init_particle_mass`
+- `energy_measure_every_steps`
+- `energy_sample_limit`
+
+## Run
+
+Headless:
+```bash
+build/myApp.exe [particleCount] [targetSteps] [dt] [solver] [exportFormat] [integrator]
+```
+
+You can override every config key via CLI, example:
+```bash
+build/myApp.exe --config simulation.ini --particle-count 50000 --solver pairwise_cuda --sph true --sph-viscosity 0.12 --input-file exports/sim_20260217_122420_s41.vtk
+```
+
+SFML frontend:
+```bash
+build/myAppFrontend.exe
+```
+
+Qt frontend:
+```bash
+build/myAppQt.exe
+```
+
+## Exported Simulation Files
+
+Snapshots can be exported from frontends or at headless exit.
+
+Supported formats:
+- `vtk` (legacy PolyData, compatible with ParaView/VTK tooling)
+- `vtk_binary` (legacy PolyData with `BINARY` payload, compact and ParaView/VTK-compatible)
+- `xyz`
+- `bin` (native binary snapshot, compact and faster I/O)
+
+Exports are generated into `export_directory` from `simulation.ini`.
+
+## Import Initial State
+
+The simulation can start from a standardized file:
+- `vtk` (legacy ASCII PolyData with `POINTS`, optional `SCALARS mass`, optional `SCALARS temperature`, optional `VECTORS velocity`)
+- `vtk_binary` (legacy PolyData with `BINARY` payload; same fields as `vtk`)
+- `xyz` (first line count, then `x y z` or `P x y z`, optional mass as 4th value, optional temperature as 5th value)
+- `bin` (native binary snapshot: position/velocity/mass/temperature per particle)
+
+Set in `simulation.ini`:
+```ini
+init_mode=file
+input_file=exports/sim_20260217_122420_s41.vtk
+input_format=auto
+```
+
+If `init_mode` is not `file`, the initial state is generated from the `init_*` keys in `simulation.ini` (no hardcoded disk required).
+
+Preset workflow (recommended):
+```ini
+init_config_style=preset
+preset_structure=disk_orbit
+preset_size=12.0
+particle_count=100000
+velocity_temperature=0.2
+particle_temperature=0.05
+thermal_ambient_temperature=0.0
+thermal_specific_heat=1.0
+thermal_heating_coeff=0.0002
+thermal_radiation_coeff=0.00000001
+sph_enabled=true
+```
+
+Detailed workflow (advanced):
+```ini
+init_config_style=detailed
+init_mode=disk_orbit
+init_disk_radius_min=1.5
+init_disk_radius_max=11.5
+...
+```
+
+## SFML Controls
+
+- `SPACE`: pause/resume
+- `ENTER`: single-step
+- `R`: reset
+- `1/2/3`: solver select (`pairwise_cuda` / `octree_gpu` / `octree_cpu`)
+- `F`: toggle SPH on/off
+- `UP/DOWN`: increase/decrease `dt`
+- `P/M`: zoom in/out
+- `+/-`: luminosity
+- `T/G`: octree theta up/down
+- `Y/H`: octree softening up/down
+- `W/A/S/D`: rotate 3D camera
+- `Q/Z`: roll 3D camera
+- `O`: toggle 3D panel (`iso` / `perspective`)
+- `E`: export snapshot
+- `L`: load initial state file from file dialog
+- `I/U`: integrator `rk4` / `euler`
+
+## Visualization
+
+Both frontends display multiple views simultaneously:
+- XY
+- XZ
+- YZ
+- 3D (isometric or perspective)
+
+## Energy Monitoring
+
+Energy conservation metrics are exposed in UI/status:
+- kinetic energy
+- potential energy
+- thermal energy
+- radiated energy accumulator
+- total energy
+- drift percent vs baseline (`dE%`)

@@ -8,7 +8,7 @@
 #ifndef GPU_HPP_
 #define GPU_HPP_
 
-#include "ParticleSystem.hpp"
+#include "core/ParticleSystem.hpp"
 
 namespace gpu {
 
@@ -20,3 +20,4 @@ namespace gpu {
 }
 
 #endif /* !GPU_HPP_ */
+

@@ -5,7 +5,7 @@
 ** Vector
 */
 
-#include "Vector.hpp"
+#include "core/Vector.hpp"
 
 Vector3::Vector3()
 {
@@ -13,3 +13,4 @@ Vector3::Vector3()
     y = 0;
     z = 0;
 }
+

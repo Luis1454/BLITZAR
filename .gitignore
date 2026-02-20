@@ -1,0 +1,15 @@
+# Build artifacts
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json
+
+# Runtime outputs
+exports/
+*.log
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+

@@ -1,45 +1,49 @@
-# Nom de l'exécutable à générer
 EXECUTABLE := myApp
+FRONTEND_EXECUTABLE := myAppFrontend
+QT_FRONTEND_EXECUTABLE := myAppQt
+BUILD_DIR := build
+GENERATOR ?= Ninja
+CUDA_ARCH ?= native
+BUILD_TYPE ?= Release
 
-# Compilateurs
-NVCC := nvcc
-CXX := /usr/bin/g++-13.2
-CC := g++
+ifeq ($(OS),Windows_NT)
+RUN_BIN := $(BUILD_DIR)/$(EXECUTABLE).exe
+RUN_FRONTEND_BIN := $(BUILD_DIR)/$(FRONTEND_EXECUTABLE).exe
+RUN_QT_FRONTEND_BIN := $(BUILD_DIR)/$(QT_FRONTEND_EXECUTABLE).exe
+else
+RUN_BIN := $(BUILD_DIR)/$(EXECUTABLE)
+RUN_FRONTEND_BIN := $(BUILD_DIR)/$(FRONTEND_EXECUTABLE)
+RUN_QT_FRONTEND_BIN := $(BUILD_DIR)/$(QT_FRONTEND_EXECUTABLE)
+endif
 
-# Options de compilation
-NVCC_FLAGS := -ccbin $(CXX)
-LDFLAGS := -L/usr/local/cuda/lib64 -lcudart -lsfml-graphics -lsfml-window -lsfml-system
+all:
+	cmake -S . -B $(BUILD_DIR) -G "$(GENERATOR)" -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DCMAKE_CUDA_ARCHITECTURES=$(CUDA_ARCH)
+	cmake --build $(BUILD_DIR)
 
-# Fichiers source
-CUDA_SRC := test.cu
-CXX_SRC := main.cpp Particle.cpp ParticleSystem.cpp
+run: all
+	$(RUN_BIN)
 
-# Fichiers objet
-CUDA_OBJ := $(CUDA_SRC:.cu=.o)
-CXX_OBJ := $(CXX_SRC:.cpp=.o)
+run-frontend: all
+	$(RUN_FRONTEND_BIN)
 
-# Règle par défaut
-all: $(EXECUTABLE)
+run-qt: all
+ifeq ($(OS),Windows_NT)
+	powershell -NoProfile -ExecutionPolicy Bypass -Command "$$env:QT_PLUGIN_PATH='$(abspath $(BUILD_DIR))'; $$env:QT_QPA_PLATFORM_PLUGIN_PATH='$(abspath $(BUILD_DIR))/platforms'; & '$(RUN_QT_FRONTEND_BIN)'"
+else
+	$(RUN_QT_FRONTEND_BIN)
+endif
 
-# Compilation CUDA
-%.o: %.cu
-	$(NVCC) $(NVCC_FLAGS) -c $< -o $@
+deps-graphics:
+	powershell -ExecutionPolicy Bypass -File scripts/install_graphics_deps.ps1
 
-# Compilation C++
-%.o: %.cpp
-	$(CC) -c $< -o $@
+deps-graphics-vcpkg:
+	powershell -ExecutionPolicy Bypass -File scripts/install_graphics_deps.ps1 -BuildQtWithVcpkg
 
-# Édition de liens
-$(EXECUTABLE): $(CUDA_OBJ) $(CXX_OBJ)
-	$(CC) $^ $(LDFLAGS) -o $@
-
-# Nettoyage
 clean:
-	rm -f $(EXECUTABLE) $(CUDA_OBJ) $(CXX_OBJ)
+	cmake -E rm -rf $(BUILD_DIR)
 
 fclean: clean
-	rm -f $(CUDA_OBJ) $(CXX_OBJ)
 
 re: clean all
 
-.PHONY: all clean
+.PHONY: all run run-frontend run-qt deps-graphics deps-graphics-vcpkg clean fclean re

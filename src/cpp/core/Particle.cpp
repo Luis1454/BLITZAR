@@ -5,7 +5,7 @@
 ** Particle
 */
 
-#include "Particle.hpp"
+#include "core/Particle.hpp"
 
 Particle::Particle()
 {
@@ -21,3 +21,4 @@ void Particle::applyForce(Vector3 force)
     _force.y += force.y;
     _force.z += force.z;
 }
+
