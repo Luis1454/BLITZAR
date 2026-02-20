@@ -28,10 +28,10 @@ The workflow also publishes a commit status check `coverage/hosted` with `Lx% Fx
 
 Latest hosted coverage (auto-updated):
 <!-- COVERAGE:START -->
-- Lines: **pending**
-- Functions: **pending**
-- Branches: **pending**
-- Updated: `pending`
+- Lines: **67.6%**
+- Functions: **100.0%**
+- Branches: **41.8%**
+- Updated: `2026-02-20 20:07:19 UTC`
 <!-- COVERAGE:END -->
 
 Open latest runs:
