@@ -6,11 +6,12 @@
 <!-- COVERAGE:START -->
 | Metric | Percent | Graph |
 |---|---:|---|
-| Lines | **67.6%** | `##############------` |
-| Functions | **100.0%** | `####################` |
-| Branches | **41.8%** | `########------------` |
-| Updated | `2026-02-20 20:26:49 UTC` |  |
+| Lines | **pending** | `--------------------` |
+| Functions | **pending** | `--------------------` |
+| Branches | **pending** | `--------------------` |
+| Updated | `not available yet` |  |
 <!-- COVERAGE:END -->
+> Coverage dashboard is auto-updated by `nightly-full`. If values stay `pending`, the coverage job did not update README yet (failed run or blocked bot push).
 
 ## Build
 
