@@ -109,12 +109,24 @@ jobs:
             --exclude "build-hosted-cov/_deps" \
             --exclude "tests/" \
             --print-summary | tee build-hosted-cov/coverage-summary.txt
+          LINES_PCT="$(grep '^lines:' build-hosted-cov/coverage-summary.txt | sed -E 's/^lines: ([0-9.]+)%.*/\1/')"
+          FUNCS_PCT="$(grep '^functions:' build-hosted-cov/coverage-summary.txt | sed -E 's/^functions: ([0-9.]+)%.*/\1/')"
+          BRANCH_PCT="$(grep '^branches:' build-hosted-cov/coverage-summary.txt | sed -E 's/^branches: ([0-9.]+)%.*/\1/')"
           {
             echo "## Hosted coverage percentages"
+            echo ""
+            echo "| Metric | Percent |"
+            echo "|---|---:|"
+            echo "| Lines | ${LINES_PCT}% |"
+            echo "| Functions | ${FUNCS_PCT}% |"
+            echo "| Branches | ${BRANCH_PCT}% |"
+            echo ""
+            echo "Raw summary:"
             echo '```text'
             cat build-hosted-cov/coverage-summary.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=Coverage percentages::lines=${LINES_PCT}% functions=${FUNCS_PCT}% branches=${BRANCH_PCT}%"
 
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4
