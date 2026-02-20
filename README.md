@@ -7,6 +7,13 @@ cmake -S . -B build -G Ninja
 cmake --build build
 ```
 
+## CI Lanes
+
+Three GitHub Actions lanes are defined:
+- `pr-fast`: fast checks for pull requests (workflow YAML lint, repo hygiene, `simulation.ini` validation).
+- `nightly-full`: scheduled full build + physics tests on CUDA self-hosted runner.
+- `release-lane`: tag/manual release validation + packaging on CUDA self-hosted runner.
+
 ## Project Layout
 
 Code is now organized by role:

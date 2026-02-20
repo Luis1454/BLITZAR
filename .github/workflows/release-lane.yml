@@ -1,0 +1,95 @@
+name: release-lane
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-lane-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-validate-and-package:
+    name: Release Validate and Package
+    runs-on: [self-hosted, windows, x64, cuda]
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        shell: pwsh
+        run: |
+          cmake --build build --parallel
+
+      - name: Run tests
+        shell: pwsh
+        run: |
+          ctest --test-dir build --output-on-failure --timeout 300
+
+      - name: Package release artifacts
+        shell: pwsh
+        run: |
+          $distDir = Join-Path $PWD "dist"
+          if (Test-Path $distDir) {
+            Remove-Item -Recurse -Force $distDir
+          }
+          New-Item -ItemType Directory -Path $distDir | Out-Null
+
+          $binaries = @(
+            "myApp.exe",
+            "myAppFrontend.exe",
+            "myAppQt.exe"
+          )
+
+          foreach ($binary in $binaries) {
+            $source = Join-Path $PWD ("build/" + $binary)
+            if (Test-Path $source) {
+              Copy-Item $source $distDir
+            }
+          }
+
+          if (Test-Path "simulation.ini") {
+            Copy-Item "simulation.ini" $distDir
+          }
+          if (Test-Path "README.md") {
+            Copy-Item "README.md" $distDir
+          }
+
+          $tag = "${{ github.ref_name }}"
+          if ([string]::IsNullOrWhiteSpace($tag)) {
+            $tag = "manual-${{ github.run_number }}"
+          }
+          $archive = Join-Path $PWD ("dist/CUDA-GRAVITY-SIMULATION-" + $tag + "-windows.zip")
+          if (Test-Path $archive) {
+            Remove-Item -Force $archive
+          }
+          Compress-Archive -Path (Join-Path $distDir "*") -DestinationPath $archive
+
+      - name: Upload release bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-bundle-${{ github.ref_name || github.run_number }}
+          path: dist/*.zip
+          if-no-files-found: error
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-lane-logs-${{ github.run_number }}
+          path: |
+            build/Testing/**/*.log
+            build/CMakeFiles/CMakeOutput.log
+            build/CMakeFiles/CMakeError.log
+          if-no-files-found: ignore
