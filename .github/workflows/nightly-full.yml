@@ -56,14 +56,14 @@ jobs:
       - name: Run hosted-safe tests
         shell: pwsh
         run: |
-          ctest --test-dir build -R GravityConfigValidation --output-on-failure --timeout 120
+          ctest --test-dir build --output-on-failure --timeout 180 -LE gpu
 
       - name: Explain GPU test scope
         shell: pwsh
         run: |
           @"
-          Hosted nightly lane runs build + config smoke.
-          Full physics GPU tests require a self-hosted NVIDIA runner.
+          Hosted nightly lane runs all non-GPU tests (-LE gpu), including config and args/config regression tests.
+          Full physics GPU tests remain in the optional self-hosted NVIDIA runner job.
           Set repository variable HAS_GPU_RUNNER=true to enable the optional GPU job.
           "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 

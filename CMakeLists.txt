@@ -300,6 +300,7 @@ if(GRAVITY_BUILD_TESTS)
             -DGRAVITY_CONFIG_PATH:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/simulation.ini
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/config/validate_simulation_ini.cmake
     )
+    set_tests_properties(GravityConfigValidation PROPERTIES LABELS "hosted")
 
     find_package(GTest CONFIG QUIET)
     if(NOT TARGET GTest::gtest_main)
@@ -352,5 +353,38 @@ if(GRAVITY_BUILD_TESTS)
     )
 
     include(GoogleTest)
-    gtest_discover_tests(gravityPhysicsGTests)
+    gtest_discover_tests(gravityPhysicsGTests PROPERTIES LABELS "gpu")
+
+    add_executable(gravityConfigArgsGTests
+        tests/config/config_args_regression.cpp
+        src/cpp/sim/SimulationArgs.cpp
+        src/cpp/sim/SimulationConfig.cpp
+    )
+    target_include_directories(gravityConfigArgsGTests
+        PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+    target_link_libraries(gravityConfigArgsGTests
+        PRIVATE
+            GTest::gtest_main
+    )
+    if(WIN32)
+        target_include_directories(gravityConfigArgsGTests
+            SYSTEM PRIVATE
+                "${GRAVITY_MSVC_INCLUDE_DIR}"
+                "${GRAVITY_WINSDK_INCLUDE_UCRT}"
+                "${GRAVITY_WINSDK_INCLUDE_UM}"
+                "${GRAVITY_WINSDK_INCLUDE_SHARED}"
+                "${GRAVITY_WINSDK_INCLUDE_WINRT}"
+                "${GRAVITY_WINSDK_INCLUDE_CPPWINRT}"
+        )
+        target_link_directories(gravityConfigArgsGTests
+            PRIVATE
+                "${GRAVITY_MSVC_LIB_DIR}"
+                "${GRAVITY_WINSDK_UCRT_LIB_DIR}"
+                "${GRAVITY_WINSDK_UM_LIB_DIR}"
+        )
+    endif()
+    gtest_discover_tests(gravityConfigArgsGTests PROPERTIES LABELS "hosted")
 endif()

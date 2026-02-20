@@ -54,7 +54,7 @@ jobs:
       - name: Run hosted-safe tests
         shell: pwsh
         run: |
-          ctest --test-dir build -R GravityConfigValidation --output-on-failure --timeout 120
+          ctest --test-dir build --output-on-failure --timeout 180 -LE gpu
 
       - name: Package release artifacts
         shell: pwsh

@@ -11,8 +11,8 @@ cmake --build build
 
 Three GitHub Actions lanes are defined:
 - `pr-fast`: fast checks for pull requests (workflow YAML lint, repo hygiene, portable `simulation.ini` validation via CMake script).
-- `nightly-full`: hosted nightly build + smoke checks on `windows-latest`; optional full GPU tests activate only if repo variable `HAS_GPU_RUNNER=true`.
-- `release-lane`: hosted release build/package on `windows-latest`; optional full GPU tests activate only if repo variable `HAS_GPU_RUNNER=true`.
+- `nightly-full`: hosted nightly build + non-GPU tests (`ctest -LE gpu`) on `windows-latest`; optional full GPU tests activate only if repo variable `HAS_GPU_RUNNER=true`.
+- `release-lane`: hosted release build/package + non-GPU tests (`ctest -LE gpu`) on `windows-latest`; optional full GPU tests activate only if repo variable `HAS_GPU_RUNNER=true`.
 
 ## Project Layout
 
