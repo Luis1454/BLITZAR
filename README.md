@@ -14,6 +14,8 @@ Three GitHub Actions lanes are defined:
 - `nightly-full`: hosted nightly standalone tests (config + args, no CUDA install) on `windows-latest`; optional full GPU tests activate only if repo variable `HAS_GPU_RUNNER=true`.
 - `release-lane`: hosted release build/package + non-GPU tests (`ctest -LE gpu`) on `windows-latest`; optional full GPU tests activate only if repo variable `HAS_GPU_RUNNER=true`.
 
+Nightly also includes a hosted Linux coverage job for `src/cpp/sim/*` (artifact exports `coverage.xml` and `coverage.html`).
+
 ## Project Layout
 
 Code is now organized by role:

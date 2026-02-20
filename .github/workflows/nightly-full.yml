@@ -64,6 +64,55 @@ jobs:
             build-hosted/CMakeFiles/CMakeError.log
           if-no-files-found: ignore
 
+  nightly-hosted-coverage:
+    name: Nightly Hosted Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install coverage tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+          python3 -m pip install --upgrade pip
+          python3 -m pip install gcovr
+
+      - name: Configure coverage build
+        run: |
+          cmake -S tests/hosted -B build-hosted-cov -G Ninja -DCMAKE_BUILD_TYPE=Debug -DGRAVITY_HOSTED_ENABLE_COVERAGE=ON
+
+      - name: Build coverage target
+        run: |
+          cmake --build build-hosted-cov --parallel
+
+      - name: Run hosted tests for coverage
+        run: |
+          ctest --test-dir build-hosted-cov --output-on-failure --timeout 180
+
+      - name: Generate coverage report
+        run: |
+          gcovr \
+            --root "${GITHUB_WORKSPACE}" \
+            --object-directory build-hosted-cov \
+            --filter "src/cpp/sim" \
+            --exclude "build-hosted-cov/_deps" \
+            --exclude "tests/" \
+            --xml-pretty \
+            --output build-hosted-cov/coverage.xml \
+            --html-details build-hosted-cov/coverage.html \
+            --print-summary
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-hosted-coverage-${{ github.run_number }}
+          path: |
+            build-hosted-cov/coverage.xml
+            build-hosted-cov/coverage.html
+          if-no-files-found: error
+
   nightly-gpu-full-tests:
     name: Nightly GPU Full Tests (optional)
     if: ${{ vars.HAS_GPU_RUNNER == 'true' }}

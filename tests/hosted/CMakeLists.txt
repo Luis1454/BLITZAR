@@ -4,6 +4,14 @@ project(GravityHostedTests LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(GRAVITY_HOSTED_ENABLE_COVERAGE "Enable coverage instrumentation for hosted tests" OFF)
+if(GRAVITY_HOSTED_ENABLE_COVERAGE)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        add_compile_options(-O0 -g --coverage)
+        add_link_options(--coverage)
+    endif()
+endif()
+
 get_filename_component(GRAVITY_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
 
 enable_testing()
