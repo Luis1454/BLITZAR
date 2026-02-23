@@ -7,32 +7,37 @@
 #include <QPointF>
 #include <QWidget>
 
+#include <functional>
+#include <optional>
 #include <vector>
 
 class QMouseEvent;
 class QPaintEvent;
 
+using UiMouseEvent = QMouseEvent;
+using UiPaintEvent = QPaintEvent;
+
 namespace qtui {
 
 class ParticleView : public QWidget {
     public:
-        explicit ParticleView(ViewMode mode, QWidget *parent = nullptr);
+        explicit ParticleView(ViewMode mode);
 
-        void setSnapshot(const std::vector<RenderParticle> *snapshot);
+        void setSnapshot(const std::vector<RenderParticle> &snapshot);
         void setMode(ViewMode mode);
         void setZoom(float zoom);
         void setLuminosity(int luminosity);
         void setCameraAngles(float yaw, float pitch, float roll);
 
-    protected:
-        void mousePressEvent(QMouseEvent *event) override;
-        void mouseMoveEvent(QMouseEvent *event) override;
-        void mouseReleaseEvent(QMouseEvent *event) override;
-        void paintEvent(QPaintEvent *event) override;
-
     private:
+        using MouseEventHandle = UiMouseEvent *;
+        using PaintEventHandle = UiPaintEvent *;
+        void mousePressEvent(MouseEventHandle event) override;
+        void mouseMoveEvent(MouseEventHandle event) override;
+        void mouseReleaseEvent(MouseEventHandle event) override;
+        void paintEvent(PaintEventHandle event) override;
         ViewMode _mode;
-        const std::vector<RenderParticle> *_snapshot;
+        std::optional<std::reference_wrapper<const std::vector<RenderParticle>>> _snapshot;
         QImage _framebuffer;
         float _zoom;
         int _luminosity;

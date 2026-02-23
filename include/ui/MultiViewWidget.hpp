@@ -12,7 +12,7 @@ namespace qtui {
 
 class MultiViewWidget : public QWidget {
     public:
-        explicit MultiViewWidget(QWidget *parent = nullptr);
+        explicit MultiViewWidget();
 
         void setSnapshot(std::vector<RenderParticle> snapshot);
         void setMaxDrawParticles(std::size_t maxDrawParticles);
@@ -23,10 +23,10 @@ class MultiViewWidget : public QWidget {
         void set3DCameraAngles(float yaw, float pitch, float roll);
 
     private:
-        ParticleView *_xy;
-        ParticleView *_xz;
-        ParticleView *_yz;
-        ParticleView *_view3d;
+        ParticleView _xy;
+        ParticleView _xz;
+        ParticleView _yz;
+        ParticleView _view3d;
         std::size_t _maxDrawParticles;
         std::vector<RenderParticle> _snapshot;
 };

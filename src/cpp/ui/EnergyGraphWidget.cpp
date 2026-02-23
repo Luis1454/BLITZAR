@@ -6,6 +6,7 @@
 #include <QPen>
 #include <QRectF>
 #include <QSizePolicy>
+#include <QStringView>
 
 #include <algorithm>
 #include <cmath>
@@ -13,8 +14,8 @@
 
 namespace qtui {
 
-EnergyGraphWidget::EnergyGraphWidget(QWidget *parent)
-    : QWidget(parent)
+EnergyGraphWidget::EnergyGraphWidget()
+    : QWidget(nullptr)
 {
     setMinimumHeight(130);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -37,7 +38,7 @@ void EnergyGraphWidget::pushSample(const SimulationStats &stats)
     update();
 }
 
-void EnergyGraphWidget::paintEvent(QPaintEvent *event)
+void EnergyGraphWidget::paintEvent(PaintEventHandle event)
 {
     (void)event;
     QPainter p(this);
@@ -115,18 +116,18 @@ void EnergyGraphWidget::paintEvent(QPaintEvent *event)
     const qreal legendY = energyRect.top() + 18.0;
     const qreal legendX = energyRect.left() + 6.0;
     const qreal stepX = 82.0;
-    const auto drawLegend = [&](qreal x, const QColor &color, const char *label) {
+    const auto drawLegend = [&](qreal x, const QColor &color, QStringView label) {
         p.setPen(QPen(color, 2.0));
         p.drawLine(QPointF(x, legendY), QPointF(x + 16.0, legendY));
         p.setPen(QColor(190, 190, 204));
-        p.drawText(QPointF(x + 20.0, legendY + 4.0), label);
+        p.drawText(QPointF(x + 20.0, legendY + 4.0), label.toString());
     };
-    drawLegend(legendX + stepX * 0, QColor(92, 255, 140), "Ekin");
-    drawLegend(legendX + stepX * 1, QColor(255, 120, 108), "Epot");
-    drawLegend(legendX + stepX * 2, QColor(255, 170, 90), "Eth");
-    drawLegend(legendX + stepX * 3, QColor(180, 120, 255), "Erad");
-    drawLegend(legendX + stepX * 4, QColor(120, 200, 255), "Etot");
-    drawLegend(legendX + stepX * 5, QColor(255, 230, 120), "dE%");
+    drawLegend(legendX + stepX * 0, QColor(92, 255, 140), QStringLiteral("Ekin"));
+    drawLegend(legendX + stepX * 1, QColor(255, 120, 108), QStringLiteral("Epot"));
+    drawLegend(legendX + stepX * 2, QColor(255, 170, 90), QStringLiteral("Eth"));
+    drawLegend(legendX + stepX * 3, QColor(180, 120, 255), QStringLiteral("Erad"));
+    drawLegend(legendX + stepX * 4, QColor(120, 200, 255), QStringLiteral("Etot"));
+    drawLegend(legendX + stepX * 5, QColor(255, 230, 120), QStringLiteral("dE%"));
     p.setRenderHint(QPainter::Antialiasing, false);
 }
 

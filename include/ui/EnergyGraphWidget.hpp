@@ -9,18 +9,19 @@
 
 class QPaintEvent;
 
+using UiPaintEvent = QPaintEvent;
+
 namespace qtui {
 
 class EnergyGraphWidget : public QWidget {
     public:
-        explicit EnergyGraphWidget(QWidget *parent = nullptr);
+        explicit EnergyGraphWidget();
 
         void pushSample(const SimulationStats &stats);
 
-    protected:
-        void paintEvent(QPaintEvent *event) override;
-
     private:
+        using PaintEventHandle = UiPaintEvent *;
+        void paintEvent(PaintEventHandle event) override;
         std::vector<EnergyPoint> _history;
 };
 

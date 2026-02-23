@@ -107,10 +107,10 @@ QRgb particleRampColorFast(
 }
 } // namespace
 
-ParticleView::ParticleView(ViewMode mode, QWidget *parent)
-    : QWidget(parent),
+ParticleView::ParticleView(ViewMode mode)
+    : QWidget(nullptr),
       _mode(mode),
-      _snapshot(nullptr),
+      _snapshot(std::nullopt),
       _zoom(8.0f),
       _luminosity(100),
       _camera{0.0f, 0.0f, 0.0f},
@@ -122,9 +122,9 @@ ParticleView::ParticleView(ViewMode mode, QWidget *parent)
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
-void ParticleView::setSnapshot(const std::vector<RenderParticle> *snapshot)
+void ParticleView::setSnapshot(const std::vector<RenderParticle> &snapshot)
 {
-    _snapshot = snapshot;
+    _snapshot = std::cref(snapshot);
     update();
 }
 
@@ -154,7 +154,7 @@ void ParticleView::setCameraAngles(float yaw, float pitch, float roll)
     update();
 }
 
-void ParticleView::mousePressEvent(QMouseEvent *event)
+void ParticleView::mousePressEvent(MouseEventHandle event)
 {
     if (event->button() != Qt::LeftButton) {
         QWidget::mousePressEvent(event);
@@ -178,7 +178,7 @@ void ParticleView::mousePressEvent(QMouseEvent *event)
     event->accept();
 }
 
-void ParticleView::mouseMoveEvent(QMouseEvent *event)
+void ParticleView::mouseMoveEvent(MouseEventHandle event)
 {
     if (_dragAxis == GimbalAxis::None) {
         QWidget::mouseMoveEvent(event);
@@ -202,13 +202,13 @@ void ParticleView::mouseMoveEvent(QMouseEvent *event)
     event->accept();
 }
 
-void ParticleView::mouseReleaseEvent(QMouseEvent *event)
+void ParticleView::mouseReleaseEvent(MouseEventHandle event)
 {
     _dragAxis = GimbalAxis::None;
     QWidget::mouseReleaseEvent(event);
 }
 
-void ParticleView::paintEvent(QPaintEvent *event)
+void ParticleView::paintEvent(PaintEventHandle event)
 {
     (void)event;
     if (_framebuffer.size() != size()) {
@@ -224,17 +224,18 @@ void ParticleView::paintEvent(QPaintEvent *event)
     const std::array<std::uint8_t, kPressureBins> alphaLut = buildAlphaLut(_luminosity);
     const QRgb heavyBodyColor = qRgba(255, 90, 90, static_cast<std::uint8_t>(_luminosity));
 
-    if (_snapshot) {
+    if (_snapshot.has_value()) {
+        const std::vector<RenderParticle> &snapshot = _snapshot->get();
         float observedTempMax = kTemperatureScaleFloor;
         float observedPressureMax = kPressureScaleFloor;
-        for (const RenderParticle &particle : *_snapshot) {
+        for (const RenderParticle &particle : snapshot) {
             observedTempMax = std::max(observedTempMax, std::max(0.0f, particle.temperature));
             observedPressureMax = std::max(observedPressureMax, std::max(0.0f, particle.pressureNorm));
         }
         _adaptiveTemperatureScale = updateAdaptiveScale(_adaptiveTemperatureScale, observedTempMax, kTemperatureScaleFloor, 0.32f, 0.04f);
         _adaptivePressureScale = updateAdaptiveScale(_adaptivePressureScale, observedPressureMax, kPressureScaleFloor, 0.32f, 0.04f);
 
-        for (const RenderParticle &particle : *_snapshot) {
+        for (const RenderParticle &particle : snapshot) {
             const ProjectedPoint pp = projectParticle(particle, _mode, _camera);
             if (!pp.valid) {
                 continue;
