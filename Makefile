@@ -1,19 +1,23 @@
 EXECUTABLE := myApp
-FRONTEND_EXECUTABLE := myAppFrontend
-QT_FRONTEND_EXECUTABLE := myAppQt
+HEADLESS_EXECUTABLE := myAppHeadless
+BACKEND_EXECUTABLE := myAppBackend
+MODULE_HOST_EXECUTABLE := myAppModuleHost
 BUILD_DIR := build
 GENERATOR ?= Ninja
 CUDA_ARCH ?= native
 BUILD_TYPE ?= Release
+ARGS ?=
 
 ifeq ($(OS),Windows_NT)
 RUN_BIN := $(BUILD_DIR)/$(EXECUTABLE).exe
-RUN_FRONTEND_BIN := $(BUILD_DIR)/$(FRONTEND_EXECUTABLE).exe
-RUN_QT_FRONTEND_BIN := $(BUILD_DIR)/$(QT_FRONTEND_EXECUTABLE).exe
+RUN_HEADLESS_BIN := $(BUILD_DIR)/$(HEADLESS_EXECUTABLE).exe
+RUN_BACKEND_BIN := $(BUILD_DIR)/$(BACKEND_EXECUTABLE).exe
+RUN_MODULE_HOST_BIN := $(BUILD_DIR)/$(MODULE_HOST_EXECUTABLE).exe
 else
 RUN_BIN := $(BUILD_DIR)/$(EXECUTABLE)
-RUN_FRONTEND_BIN := $(BUILD_DIR)/$(FRONTEND_EXECUTABLE)
-RUN_QT_FRONTEND_BIN := $(BUILD_DIR)/$(QT_FRONTEND_EXECUTABLE)
+RUN_HEADLESS_BIN := $(BUILD_DIR)/$(HEADLESS_EXECUTABLE)
+RUN_BACKEND_BIN := $(BUILD_DIR)/$(BACKEND_EXECUTABLE)
+RUN_MODULE_HOST_BIN := $(BUILD_DIR)/$(MODULE_HOST_EXECUTABLE)
 endif
 
 all:
@@ -21,17 +25,25 @@ all:
 	cmake --build $(BUILD_DIR)
 
 run: all
-	$(RUN_BIN)
+	$(RUN_BIN) --mode ui $(ARGS)
 
-run-frontend: all
-	$(RUN_FRONTEND_BIN)
+run-ui: all
+	$(RUN_BIN) --mode ui $(ARGS)
 
-run-qt: all
-ifeq ($(OS),Windows_NT)
-	powershell -NoProfile -ExecutionPolicy Bypass -Command "$$env:QT_PLUGIN_PATH='$(abspath $(BUILD_DIR))'; $$env:QT_QPA_PLATFORM_PLUGIN_PATH='$(abspath $(BUILD_DIR))/platforms'; & '$(RUN_QT_FRONTEND_BIN)'"
-else
-	$(RUN_QT_FRONTEND_BIN)
-endif
+run-backend: all
+	$(RUN_BIN) --mode backend $(ARGS)
+
+run-headless: all
+	$(RUN_BIN) --mode headless $(ARGS)
+
+run-backend-direct: all
+	$(RUN_BACKEND_BIN) $(ARGS)
+
+run-headless-direct: all
+	$(RUN_HEADLESS_BIN) $(ARGS)
+
+run-module-host: all
+	$(RUN_MODULE_HOST_BIN) $(ARGS)
 
 deps-graphics:
 	powershell -ExecutionPolicy Bypass -File scripts/install_graphics_deps.ps1
@@ -46,4 +58,4 @@ fclean: clean
 
 re: clean all
 
-.PHONY: all run run-frontend run-qt deps-graphics deps-graphics-vcpkg clean fclean re
+.PHONY: all run run-ui run-backend run-headless run-backend-direct run-headless-direct run-module-host deps-graphics deps-graphics-vcpkg clean fclean re
