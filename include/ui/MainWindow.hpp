@@ -1,21 +1,25 @@
 #ifndef GRAVITY_UI_MAINWINDOW_H
 #define GRAVITY_UI_MAINWINDOW_H
 
-#include "sim/SimulationBackend.hpp"
+#include "sim/IFrontendRuntime.hpp"
 #include "sim/SimulationConfig.hpp"
 
 #include <QMainWindow>
+#include <QPointer>
 
 #include <chrono>
 #include <cstdint>
+#include <memory>
 #include <string>
 
 class QCheckBox;
 class QComboBox;
 class QDoubleSpinBox;
 class QLabel;
+class QLineEdit;
 class QPushButton;
 class QSlider;
+class QSpinBox;
 class QTimer;
 
 namespace qtui {
@@ -25,7 +29,7 @@ class MultiViewWidget;
 
 class MainWindow : public QMainWindow {
     public:
-        MainWindow(SimulationConfig config, std::string configPath, QWidget *parent = nullptr);
+        MainWindow(SimulationConfig config, std::string configPath, std::unique_ptr<sim::IFrontendRuntime> runtime);
         ~MainWindow() override;
 
     private:
@@ -36,35 +40,42 @@ class MainWindow : public QMainWindow {
 
         SimulationConfig _config;
         std::string _configPath;
-        SimulationBackend _backend;
-        MultiViewWidget *_multiView;
-        EnergyGraphWidget *_energyGraph;
-        QLabel *_statusLabel;
-        QPushButton *_pauseButton;
-        QPushButton *_stepButton;
-        QPushButton *_resetButton;
-        QPushButton *_exportButton;
-        QPushButton *_loadInputButton;
-        QCheckBox *_sphCheck;
-        QDoubleSpinBox *_sphSmoothingSpin;
-        QDoubleSpinBox *_sphRestDensitySpin;
-        QDoubleSpinBox *_sphGasConstantSpin;
-        QDoubleSpinBox *_sphViscositySpin;
-        QDoubleSpinBox *_dtSpin;
-        QSlider *_zoomSlider;
-        QSlider *_luminositySlider;
-        QComboBox *_solverCombo;
-        QComboBox *_integratorCombo;
-        QComboBox *_presetCombo;
-        QComboBox *_view3dCombo;
-        QDoubleSpinBox *_thetaSpin;
-        QDoubleSpinBox *_softeningSpin;
-        QPushButton *_applyPresetButton;
-        QPushButton *_loadPresetButton;
-        QSlider *_yawSlider;
-        QSlider *_pitchSlider;
-        QSlider *_rollSlider;
-        QTimer *_timer;
+        std::unique_ptr<sim::IFrontendRuntime> _runtime;
+        QPointer<MultiViewWidget> _multiView;
+        QPointer<EnergyGraphWidget> _energyGraph;
+        QPointer<QLabel> _statusLabel;
+        QPointer<QPushButton> _pauseButton;
+        QPointer<QPushButton> _stepButton;
+        QPointer<QPushButton> _resetButton;
+        QPointer<QPushButton> _recoverButton;
+        QPointer<QPushButton> _reconnectButton;
+        QPointer<QPushButton> _applyConnectorButton;
+        QPointer<QPushButton> _exportButton;
+        QPointer<QPushButton> _loadInputButton;
+        QPointer<QCheckBox> _backendAutostartCheck;
+        QPointer<QLineEdit> _backendHostEdit;
+        QPointer<QLineEdit> _backendBinEdit;
+        QPointer<QSpinBox> _backendPortSpin;
+        QPointer<QCheckBox> _sphCheck;
+        QPointer<QDoubleSpinBox> _sphSmoothingSpin;
+        QPointer<QDoubleSpinBox> _sphRestDensitySpin;
+        QPointer<QDoubleSpinBox> _sphGasConstantSpin;
+        QPointer<QDoubleSpinBox> _sphViscositySpin;
+        QPointer<QDoubleSpinBox> _dtSpin;
+        QPointer<QSlider> _zoomSlider;
+        QPointer<QSlider> _luminositySlider;
+        QPointer<QComboBox> _solverCombo;
+        QPointer<QComboBox> _integratorCombo;
+        QPointer<QComboBox> _presetCombo;
+        QPointer<QComboBox> _view3dCombo;
+        QPointer<QDoubleSpinBox> _thetaSpin;
+        QPointer<QDoubleSpinBox> _softeningSpin;
+        QPointer<QPushButton> _applyPresetButton;
+        QPointer<QPushButton> _loadPresetButton;
+        QPointer<QSlider> _yawSlider;
+        QPointer<QSlider> _pitchSlider;
+        QPointer<QSlider> _rollSlider;
+        QPointer<QTimer> _timer;
         std::uint64_t _lastEnergyStep;
         std::uint32_t _frontendDrawCap;
         float _uiTickFps;

@@ -67,6 +67,7 @@ TEST(FrontendRuntimeContractRegression, ConnectsToRealBackendAndPublishesStatsAn
     EXPECT_GT(stats.particleCount, 0u);
     EXPECT_GT(stats.dt, 0.0f);
     EXPECT_FALSE(stats.solverName.empty());
+    EXPECT_FALSE(stats.faulted);
 
     std::vector<RenderParticle> snapshot;
     ASSERT_TRUE(waitUntil([&]() {

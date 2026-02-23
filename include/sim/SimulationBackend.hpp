@@ -2,100 +2,54 @@
 #define SIMULATIONBACKEND_HPP_
 
 #include "core/ParticleSystem.hpp"
+#include "sim/ILocalBackend.hpp"
+#include "sim/SimulationConfig.hpp"
 
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
 
-struct RenderParticle {
-    float x;
-    float y;
-    float z;
-    float mass;
-    float pressureNorm;
-    float temperature;
-};
-
-struct InitialStateConfig {
-    std::string mode = "disk_orbit";
-    std::uint32_t seed = 42u;
-    float velocityTemperature = 0.0f;
-    float particleTemperature = 0.0f;
-    float thermalAmbientTemperature = 0.0f;
-    float thermalSpecificHeat = 1.0f;
-    float thermalHeatingCoeff = 0.0f;
-    float thermalRadiationCoeff = 0.0f;
-    bool includeCentralBody = true;
-    float centralMass = 1.0f;
-    float centralX = 0.0f;
-    float centralY = 0.0f;
-    float centralZ = 0.0f;
-    float centralVx = 0.0f;
-    float centralVy = 0.0f;
-    float centralVz = 0.0f;
-    float diskMass = 0.75f;
-    float diskRadiusMin = 1.5f;
-    float diskRadiusMax = 11.5f;
-    float diskThickness = 0.0f;
-    float velocityScale = 1.0f;
-    float cloudHalfExtent = 12.0f;
-    float cloudSpeed = 0.0f;
-    float particleMass = 0.01f;
-};
-
-struct SimulationStats {
-    std::uint64_t steps;
-    float dt;
-    bool paused;
-    bool sphEnabled;
-    float backendFps;
-    std::uint32_t particleCount;
-    float kineticEnergy;
-    float potentialEnergy;
-    float thermalEnergy;
-    float radiatedEnergy;
-    float totalEnergy;
-    float energyDriftPct;
-    bool energyEstimated;
-    const char *solverName;
-};
-
-class SimulationBackend {
+class SimulationBackend : public sim::ILocalBackend {
     public:
         explicit SimulationBackend(std::uint32_t particleCount, float initialDt);
+        explicit SimulationBackend(const std::string &configPath);
         ~SimulationBackend();
 
-        void start();
-        void stop();
+        void start() override;
+        void stop() override;
 
-        void setPaused(bool paused);
+        void setPaused(bool paused) override;
         bool isPaused() const;
-        void togglePaused();
-        void stepOnce();
+        void togglePaused() override;
+        void stepOnce() override;
 
-        void setParticleCount(std::uint32_t particleCount);
-        void setDt(float dt);
-        void scaleDt(float factor);
+        void setParticleCount(std::uint32_t particleCount) override;
+        void setDt(float dt) override;
+        void scaleDt(float factor) override;
         float getDt() const;
 
-        void requestReset();
-        void setSolverMode(const std::string &mode);
-        void setIntegratorMode(const std::string &mode);
-        void setOctreeParameters(float theta, float softening);
-        void setSphEnabled(bool enabled);
-        void setSphParameters(float smoothingLength, float restDensity, float gasConstant, float viscosity);
-        void setInitialStateConfig(const InitialStateConfig &config);
-        void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit);
-        void setExportDefaults(const std::string &directory, const std::string &format);
-        void setInitialStateFile(const std::string &path, const std::string &format);
-        void requestExportSnapshot(const std::string &outputPath, const std::string &format);
+        void requestReset() override;
+        void requestRecover();
+        void setSolverMode(const std::string &mode) override;
+        void setIntegratorMode(const std::string &mode) override;
+        void setOctreeParameters(float theta, float softening) override;
+        void setSphEnabled(bool enabled) override;
+        void setSphParameters(float smoothingLength, float restDensity, float gasConstant, float viscosity) override;
+        void setInitialStateConfig(const InitialStateConfig &config) override;
+        void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit) override;
+        void setExportDefaults(const std::string &directory, const std::string &format) override;
+        void setInitialStateFile(const std::string &path, const std::string &format) override;
+        void requestExportSnapshot(const std::string &outputPath, const std::string &format) override;
 
-        bool tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot);
-        SimulationStats getStats() const;
+        bool tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot) override;
+        bool copyLatestSnapshot(std::vector<RenderParticle> &outSnapshot, std::size_t maxPoints = 0) const;
+        SimulationStats getStats() const override;
+        SimulationConfig getRuntimeConfig() const;
 
     private:
         struct EnergyValues {
@@ -120,6 +74,7 @@ class SimulationBackend {
         std::atomic<bool> _paused;
         std::atomic<bool> _resetRequested;
         std::atomic<bool> _exportRequested;
+        std::atomic<bool> _cudaContextDirty;
         std::atomic<std::uint32_t> _stepRequests;
 
         std::atomic<float> _dt;
@@ -135,6 +90,8 @@ class SimulationBackend {
         std::atomic<bool> _energyEstimated;
         std::atomic<std::uint32_t> _energyMeasureEverySteps;
         std::atomic<std::uint32_t> _energySampleLimit;
+        std::atomic<bool> _faulted;
+        std::atomic<std::uint64_t> _faultStep;
 
         std::uint32_t _particleCount;
         std::string _solverMode;
@@ -157,14 +114,18 @@ class SimulationBackend {
         std::string _exportFormatDefault;
         std::string _initialStatePath;
         std::string _initialStateFormat;
+        std::string _configPath;
+        SimulationConfig _runtimeConfigMirror;
         InitialStateConfig _initialStateConfig;
 
         std::thread _thread;
-        std::mutex _snapshotMutex;
+        mutable std::mutex _snapshotMutex;
         mutable std::mutex _commandMutex;
+        mutable std::mutex _faultMutex;
         std::vector<RenderParticle> _publishedSnapshot;
         std::vector<RenderParticle> _scratchSnapshot;
-        ParticleSystem *_system;
+        std::string _faultReason;
+        std::unique_ptr<ParticleSystem> _system;
 };
 
 #endif /* !SIMULATIONBACKEND_HPP_ */

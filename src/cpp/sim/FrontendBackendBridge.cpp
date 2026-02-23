@@ -384,6 +384,16 @@ void FrontendBackendBridge::requestReset()
         [this]() { sendOrQueueRemote(std::string(sim::protocol::cmd::Reset)); });
 }
 
+void FrontendBackendBridge::requestRecover()
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    dispatchBackendCall(
+        _remoteMode,
+        _localBackend.get(),
+        [](ILocalBackend &backend) { backend.requestReset(); },
+        [this]() { sendOrQueueRemote(std::string(sim::protocol::cmd::Recover)); });
+}
+
 void FrontendBackendBridge::setSolverMode(const std::string &mode)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
@@ -743,6 +753,9 @@ SimulationStats FrontendBackendBridge::fromRemoteStatus(const BackendClientStatu
     stats.steps = status.steps;
     stats.dt = status.dt;
     stats.paused = status.paused;
+    stats.faulted = status.faulted;
+    stats.faultStep = status.faultStep;
+    stats.faultReason = status.faultReason;
     stats.sphEnabled = status.sphEnabled;
     stats.backendFps = status.backendFps;
     stats.particleCount = status.particleCount;
