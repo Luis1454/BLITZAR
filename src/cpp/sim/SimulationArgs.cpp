@@ -1,8 +1,9 @@
 #include "sim/SimulationArgs.hpp"
+#include "sim/TextParse.hpp"
 
 #include <algorithm>
 #include <cctype>
-#include <cstdlib>
+#include <limits>
 #include <sstream>
 
 namespace {
@@ -30,15 +31,11 @@ bool parseBool(const std::string &value, bool &out)
 
 bool parseUint(const std::string &value, std::uint32_t &out)
 {
-    char *end = nullptr;
-    const unsigned long parsed = std::strtoul(value.c_str(), &end, 10);
-    if (end == value.c_str()) {
+    std::uint64_t parsed = 0;
+    if (!sim::text::parseNumber(value, parsed)) {
         return false;
     }
-    while (end && *end != '\0' && std::isspace(static_cast<unsigned char>(*end)) != 0) {
-        ++end;
-    }
-    if (end && *end != '\0') {
+    if (parsed > static_cast<std::uint64_t>(std::numeric_limits<std::uint32_t>::max())) {
         return false;
     }
     out = static_cast<std::uint32_t>(parsed);
@@ -47,15 +44,12 @@ bool parseUint(const std::string &value, std::uint32_t &out)
 
 bool parseInt(const std::string &value, int &out)
 {
-    char *end = nullptr;
-    const long parsed = std::strtol(value.c_str(), &end, 10);
-    if (end == value.c_str()) {
+    long long parsed = 0;
+    if (!sim::text::parseNumber(value, parsed)) {
         return false;
     }
-    while (end && *end != '\0' && std::isspace(static_cast<unsigned char>(*end)) != 0) {
-        ++end;
-    }
-    if (end && *end != '\0') {
+    if (parsed < static_cast<long long>(std::numeric_limits<int>::min())
+        || parsed > static_cast<long long>(std::numeric_limits<int>::max())) {
         return false;
     }
     out = static_cast<int>(parsed);
@@ -64,19 +58,7 @@ bool parseInt(const std::string &value, int &out)
 
 bool parseFloat(const std::string &value, float &out)
 {
-    char *end = nullptr;
-    const float parsed = std::strtof(value.c_str(), &end);
-    if (end == value.c_str()) {
-        return false;
-    }
-    while (end && *end != '\0' && std::isspace(static_cast<unsigned char>(*end)) != 0) {
-        ++end;
-    }
-    if (end && *end != '\0') {
-        return false;
-    }
-    out = parsed;
-    return true;
+    return sim::text::parseNumber(value, out);
 }
 
 bool splitOption(const std::string &raw, std::string &key, std::string &value)
@@ -96,9 +78,8 @@ bool splitOption(const std::string &raw, std::string &key, std::string &value)
 }
 
 bool readValue(
-    int argc,
-    char **argv,
-    int &index,
+    const std::vector<std::string_view> &args,
+    std::size_t &index,
     const std::string &inlined,
     std::string &outValue
 )
@@ -107,23 +88,23 @@ bool readValue(
         outValue = inlined;
         return true;
     }
-    if (index + 1 >= argc || !argv[index + 1]) {
+    if (index + 1 >= args.size() || args[index + 1].empty()) {
         return false;
     }
-    outValue = argv[++index];
+    outValue = std::string(args[++index]);
     return true;
 }
 }
 
-std::string findConfigPathArg(int argc, char **argv, const std::string &fallback)
+std::string findConfigPathArg(const std::vector<std::string_view> &args, const std::string &fallback)
 {
-    for (int i = 1; i < argc; ++i) {
-        if (!argv[i]) {
+    for (std::size_t i = 1; i < args.size(); ++i) {
+        if (args[i].empty()) {
             continue;
         }
         std::string key;
         std::string value;
-        if (!splitOption(argv[i], key, value)) {
+        if (!splitOption(std::string(args[i]), key, value)) {
             continue;
         }
         if (key != "--config") {
@@ -132,23 +113,28 @@ std::string findConfigPathArg(int argc, char **argv, const std::string &fallback
         if (!value.empty()) {
             return value;
         }
-        if (i + 1 < argc && argv[i + 1]) {
-            return std::string(argv[i + 1]);
+        if (i + 1 < args.size() && !args[i + 1].empty()) {
+            return std::string(args[i + 1]);
         }
         return fallback;
     }
     return fallback;
 }
 
-void applyArgsToConfig(int argc, char **argv, SimulationConfig &config, RuntimeArgs &runtime, std::ostream &warnings)
+void applyArgsToConfig(
+    const std::vector<std::string_view> &args,
+    SimulationConfig &config,
+    RuntimeArgs &runtime,
+    std::ostream &warnings
+)
 {
-    runtime.configPath = findConfigPathArg(argc, argv, runtime.configPath);
+    runtime.configPath = findConfigPathArg(args, runtime.configPath);
 
-    for (int i = 1; i < argc; ++i) {
-        if (!argv[i]) {
+    for (std::size_t i = 1; i < args.size(); ++i) {
+        if (args[i].empty()) {
             continue;
         }
-        const std::string raw = argv[i];
+        const std::string raw(args[i]);
         if (raw == "-h") {
             runtime.showHelp = true;
             continue;
@@ -156,7 +142,8 @@ void applyArgsToConfig(int argc, char **argv, SimulationConfig &config, RuntimeA
         std::string key;
         std::string inlineValue;
         if (!splitOption(raw, key, inlineValue)) {
-            runtime.positional.push_back(raw);
+            runtime.hasArgumentError = true;
+            warnings << "[args] unexpected positional argument: " << raw << "\n";
             continue;
         }
 
@@ -177,8 +164,8 @@ void applyArgsToConfig(int argc, char **argv, SimulationConfig &config, RuntimeA
             bool value = true;
             if (!inlineValue.empty()) {
                 parsed = parseBool(inlineValue, value);
-            } else if (i + 1 < argc && argv[i + 1] && std::string(argv[i + 1]).rfind("--", 0) != 0) {
-                std::string explicitValue = argv[++i];
+            } else if (i + 1 < args.size() && !args[i + 1].empty() && std::string(args[i + 1]).rfind("--", 0) != 0) {
+                std::string explicitValue(args[++i]);
                 parsed = parseBool(explicitValue, value);
             }
             if (!parsed) {
@@ -190,7 +177,8 @@ void applyArgsToConfig(int argc, char **argv, SimulationConfig &config, RuntimeA
         }
 
         std::string value;
-        if (!readValue(argc, argv, i, inlineValue, value)) {
+        if (!readValue(args, i, inlineValue, value)) {
+            runtime.hasArgumentError = true;
             warnings << "[args] missing value for " << key << "\n";
             continue;
         }
@@ -275,6 +263,44 @@ void applyArgsToConfig(int argc, char **argv, SimulationConfig &config, RuntimeA
                 warnings << "[args] invalid --ui-fps: " << value << "\n";
             continue;
         }
+        if (key == "--backend-timeout-ms") {
+            std::uint32_t v = config.frontendRemoteCommandTimeoutMs;
+            if (parseUint(value, v) && v >= 10u && v <= 60000u) {
+                config.frontendRemoteCommandTimeoutMs = v;
+                config.frontendRemoteStatusTimeoutMs = v;
+                config.frontendRemoteSnapshotTimeoutMs = v;
+            } else {
+                warnings << "[args] invalid --backend-timeout-ms: " << value << "\n";
+            }
+            continue;
+        }
+        if (key == "--backend-command-timeout-ms") {
+            std::uint32_t v = config.frontendRemoteCommandTimeoutMs;
+            if (parseUint(value, v) && v >= 10u && v <= 60000u) {
+                config.frontendRemoteCommandTimeoutMs = v;
+            } else {
+                warnings << "[args] invalid --backend-command-timeout-ms: " << value << "\n";
+            }
+            continue;
+        }
+        if (key == "--backend-status-timeout-ms") {
+            std::uint32_t v = config.frontendRemoteStatusTimeoutMs;
+            if (parseUint(value, v) && v >= 10u && v <= 60000u) {
+                config.frontendRemoteStatusTimeoutMs = v;
+            } else {
+                warnings << "[args] invalid --backend-status-timeout-ms: " << value << "\n";
+            }
+            continue;
+        }
+        if (key == "--backend-snapshot-timeout-ms") {
+            std::uint32_t v = config.frontendRemoteSnapshotTimeoutMs;
+            if (parseUint(value, v) && v >= 10u && v <= 60000u) {
+                config.frontendRemoteSnapshotTimeoutMs = v;
+            } else {
+                warnings << "[args] invalid --backend-snapshot-timeout-ms: " << value << "\n";
+            }
+            continue;
+        }
         if (key == "--export-directory") {
             config.exportDirectory = value;
             continue;
@@ -321,7 +347,7 @@ void applyArgsToConfig(int argc, char **argv, SimulationConfig &config, RuntimeA
             }
             continue;
         }
-        if (key == "--velocity-temperature" || key == "--temperature") {
+        if (key == "--velocity-temperature") {
             float v = config.velocityTemperature;
             if (parseFloat(value, v) && v >= 0.0f) {
                 config.velocityTemperature = v;
@@ -605,16 +631,14 @@ void applyArgsToConfig(int argc, char **argv, SimulationConfig &config, RuntimeA
             continue;
         }
 
+        runtime.hasArgumentError = true;
         warnings << "[args] unknown option: " << key << "\n";
     }
 }
 
-void printUsage(std::ostream &out, const char *programName, bool headlessMode)
+void printUsage(std::ostream &out, std::string_view programName, bool headlessMode)
 {
-    out << "Usage: " << programName << " [legacy positional args] [options]\n";
-    if (headlessMode) {
-        out << "Legacy positional: [particleCount] [targetSteps] [dt] [solver] [exportFormat] [integrator]\n";
-    }
+    out << "Usage: " << programName << " [options]\n";
     out << "Common options:\n";
     out << "  --config <path>\n";
     out << "  --particle-count <n>\n";
@@ -627,6 +651,10 @@ void printUsage(std::ostream &out, const char *programName, bool headlessMode)
     out << "  --zoom <float>\n";
     out << "  --luminosity <0..255>\n";
     out << "  --ui-fps <n>\n";
+    out << "  --backend-timeout-ms <10..60000>\n";
+    out << "  --backend-command-timeout-ms <10..60000>\n";
+    out << "  --backend-status-timeout-ms <10..60000>\n";
+    out << "  --backend-snapshot-timeout-ms <10..60000>\n";
     out << "  --export-directory <path>\n";
     out << "  --export-format <vtk|vtk_binary|xyz|bin>\n";
     out << "  --input-file <path>\n";
@@ -637,7 +665,6 @@ void printUsage(std::ostream &out, const char *programName, bool headlessMode)
     out << "  --preset-size <float>\n";
     out << "  --size <float> (alias)\n";
     out << "  --velocity-temperature <float>\n";
-    out << "  --temperature <float> (legacy alias)\n";
     out << "  --particle-temperature <float>\n";
     out << "  --thermal-ambient <float>\n";
     out << "  --thermal-specific-heat <float>\n";
@@ -672,6 +699,7 @@ void printUsage(std::ostream &out, const char *programName, bool headlessMode)
         out << "  --target-steps <n>\n";
         out << "  --export-on-exit <true|false>\n";
         out << "  --no-export-on-exit\n";
+        out << "  env: GRAVITY_AUTO_SOLVER_FALLBACK=1 to auto-switch pairwise->octree_gpu for huge N\n";
     }
     out << "  --save-config\n";
     out << "  --help\n";

@@ -22,10 +22,10 @@ class ParticleSystem {
             Rk4
         };
 
-        ParticleSystem(int numParticles);
+        ParticleSystem(int numParticles, bool bootstrapInitialState = true);
         ~ParticleSystem();
 
-        void update(float deltaTime);
+        bool update(float deltaTime);
         void setUseOctree(bool enabled);
         bool usesOctree() const;
         void setOctreeTheta(float theta);
@@ -42,8 +42,13 @@ class ParticleSystem {
         IntegratorMode getIntegratorMode() const;
         void syncDeviceState();
 
-        GRAVITY_HD static Vector3 getForce(Particle *last, Particle *particle, int numParticles, int idx, float dt);
-        std::vector<Particle> &getParticles();
+        const std::vector<Particle> &getParticles() const;
+        bool setParticles(std::vector<Particle> particles);
+
+        ParticleSystem(const ParticleSystem &) = delete;
+        ParticleSystem &operator=(const ParticleSystem &) = delete;
+        ParticleSystem(ParticleSystem &&) = delete;
+        ParticleSystem &operator=(ParticleSystem &&) = delete;
 
     private:
         float applyThermalModel(float deltaTime);
@@ -67,10 +72,7 @@ class ParticleSystem {
         std::vector<Vector3> _octreeForces;
         std::vector<GpuOctreeNode> _octreeGpuNodes;
         std::vector<int> _octreeGpuLeafIndices;
-        GpuOctreeNode *_dOctreeNodes;
-        int *_dOctreeLeafIndices;
-        std::size_t _dOctreeNodeCapacity;
-        std::size_t _dOctreeLeafCapacity;
+        std::size_t _deviceParticleCapacity;
 };
 
 #endif /* !PARTICLESYSTEM_HPP_ */

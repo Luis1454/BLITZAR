@@ -12,7 +12,7 @@ Octree::Node::Node()
 
 Octree::Octree()
     : _nodes(),
-      _particlesRef(nullptr),
+      _particlesRef(std::nullopt),
       _root(-1)
 {
 }
@@ -22,7 +22,7 @@ Octree::~Octree() = default;
 void Octree::clear()
 {
     _nodes.clear();
-    _particlesRef = nullptr;
+    _particlesRef.reset();
     _root = -1;
 }
 
@@ -41,6 +41,11 @@ void Octree::exportGpu(std::vector<GpuOctreeNode> &outNodes, std::vector<int> &o
     outNodes.clear();
     outLeafIndices.clear();
     outNodes.resize(_nodes.size());
+    std::size_t totalLeafIndices = 0;
+    for (const Node &node : _nodes) {
+        totalLeafIndices += node.particleIndices.size();
+    }
+    outLeafIndices.reserve(totalLeafIndices);
 
     for (size_t i = 0; i < _nodes.size(); ++i) {
         const Node &src = _nodes[i];
@@ -59,7 +64,9 @@ void Octree::exportGpu(std::vector<GpuOctreeNode> &outNodes, std::vector<int> &o
         dst.childMask = src.childMask;
         dst.leafStart = static_cast<int>(outLeafIndices.size());
         dst.leafCount = static_cast<int>(src.particleIndices.size());
-        outLeafIndices.insert(outLeafIndices.end(), src.particleIndices.begin(), src.particleIndices.end());
+        for (int leafIndex : src.particleIndices) {
+            outLeafIndices.push_back(leafIndex);
+        }
         outNodes[i] = dst;
     }
 }
@@ -108,7 +115,11 @@ int Octree::buildNodeRecursive(
     _nodes.push_back(node);
 
     if (indices.size() <= kOctreeLeafCapacity || halfSize < 0.01f || depth > kOctreeMaxDepth) {
-        _nodes[nodeIndex].particleIndices = indices;
+        auto &leafIndices = _nodes[nodeIndex].particleIndices;
+        leafIndices.resize(indices.size());
+        for (size_t i = 0; i < indices.size(); ++i) {
+            leafIndices[i] = indices[i];
+        }
         return nodeIndex;
     }
 
@@ -127,7 +138,11 @@ int Octree::buildNodeRecursive(
     }
 
     if (nonEmptyBuckets <= 1) {
-        _nodes[nodeIndex].particleIndices = indices;
+        auto &leafIndices = _nodes[nodeIndex].particleIndices;
+        leafIndices.resize(indices.size());
+        for (size_t i = 0; i < indices.size(); ++i) {
+            leafIndices[i] = indices[i];
+        }
         return nodeIndex;
     }
 
@@ -150,7 +165,7 @@ int Octree::buildNodeRecursive(
 void Octree::build(const std::vector<Particle> &particles)
 {
     clear();
-    _particlesRef = &particles;
+    _particlesRef = std::cref(particles);
     if (particles.empty()) {
         return;
     }
@@ -202,8 +217,6 @@ Vector3 Octree::computeForceRecursive(
 
     if (!hasChildren(node)) {
         Vector3 force(0.0f, 0.0f, 0.0f);
-        constexpr float kMinPairwiseDistance = 1.05f;
-        constexpr float kMinPairwiseDistance2 = kMinPairwiseDistance * kMinPairwiseDistance;
         for (size_t i = 0; i < node.particleIndices.size(); ++i) {
             const int otherIndex = node.particleIndices[i];
             if (otherIndex == static_cast<int>(selfIndex)) {
@@ -211,11 +224,7 @@ Vector3 Octree::computeForceRecursive(
             }
             const Particle &other = particles[otherIndex];
             const Vector3 direction = other.getPosition() - particle.getPosition();
-            const float rawDist2 = dot(direction, direction);
-            if (rawDist2 <= kMinPairwiseDistance2) {
-                continue;
-            }
-            const float dist2 = rawDist2 + softening * softening;
+            const float dist2 = dot(direction, direction) + softening * softening;
             if (dist2 <= 1e-12f) {
                 continue;
             }
@@ -232,18 +241,11 @@ Vector3 Octree::computeForceRecursive(
         && std::fabs(particlePos.y - node.center.y) <= node.halfSize
         && std::fabs(particlePos.z - node.center.z) <= node.halfSize;
     const Vector3 direction = node.centerOfMass - particlePos;
-    constexpr float kMinPairwiseDistance = 1.05f;
-    constexpr float kMinPairwiseDistance2 = kMinPairwiseDistance * kMinPairwiseDistance;
     const float rawDistance2 = dot(direction, direction);
-    const float rawDistance = sqrtf(rawDistance2);
-    constexpr float kSqrt3 = 1.73205080757f;
-    const float nodeRadius = node.halfSize * kSqrt3;
-    const float minPossibleDistance = std::max(0.0f, rawDistance - nodeRadius);
     const float distance2 = rawDistance2 + softening * softening;
     const float distance = sqrtf(distance2);
     if (!containsSelf
-        && rawDistance2 > kMinPairwiseDistance2
-        && minPossibleDistance > kMinPairwiseDistance
+        && distance > 1e-6f
         && (size / distance) < theta) {
         const float invDist = 1.0f / std::max(distance, 1e-6f);
         const float invDist3 = invDist * invDist * invDist;
@@ -262,11 +264,11 @@ Vector3 Octree::computeForceRecursive(
 
 Vector3 Octree::computeForceOn(const Particle &particle, std::size_t selfIndex, float theta, float softening) const
 {
-    if (_root < 0 || !_particlesRef) {
+    if (_root < 0 || !_particlesRef.has_value()) {
         return Vector3(0.0f, 0.0f, 0.0f);
     }
     const float clampedTheta = std::max(theta, 0.05f);
     const float clampedSoftening = std::max(softening, 1e-4f);
-    return computeForceRecursive(*_particlesRef, _root, particle, selfIndex, clampedTheta, clampedSoftening);
+    return computeForceRecursive(_particlesRef->get(), _root, particle, selfIndex, clampedTheta, clampedSoftening);
 }
 

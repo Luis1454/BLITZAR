@@ -1,4 +1,5 @@
-ParticleSystem::ParticleSystem(int numParticles) {
+ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
+    const int clampedParticles = std::max(2, numParticles);
     _solverMode = solverModeFromEnv();
     _integratorMode = integratorModeFromEnv();
     _octreeTheta = parseFloatEnv("GRAVITY_OCTREE_THETA", 1.2f);
@@ -13,53 +14,53 @@ ParticleSystem::ParticleSystem(int numParticles) {
     _thermalHeatingCoeff = parseFloatEnv("GRAVITY_THERMAL_HEATING", 0.0002f);
     _thermalRadiationCoeff = parseFloatEnv("GRAVITY_THERMAL_RADIATION", 0.00000001f);
     _cumulativeRadiatedEnergy = 0.0f;
-    _dOctreeNodes = nullptr;
-    _dOctreeLeafIndices = nullptr;
-    _dOctreeNodeCapacity = 0;
-    _dOctreeLeafCapacity = 0;
+    g_dOctreeNodes = nullptr;
+    g_dOctreeLeafIndices = nullptr;
+    g_dOctreeNodeCapacity = 0;
+    g_dOctreeLeafCapacity = 0;
+    _deviceParticleCapacity = static_cast<std::size_t>(clampedParticles);
     d_particles = nullptr;
     last = nullptr;
 
-    Particle p;
-    p.setVelocity(Vector3{0, 0, 0});
-    float massTerre = 1.0f;
-    float diskMass = 0.75f * massTerre;
-    const int diskParticleCount = std::max(1, numParticles - 1);
-    const float diskMassPerParticle = diskMass / static_cast<float>(diskParticleCount);
-    const float radiusMin = 1.5f;
-    const float radiusMax = 11.5f;
-    const float radiusRange2 = std::max(1e-6f, radiusMax * radiusMax - radiusMin * radiusMin);
-    p.setMass(massTerre);
-    p.setPosition(Vector3{0, 0, 0});
-    _particles.push_back(p);
-    // p.setPosition((Vector3){d, d, 0});
-    // _particles.push_back(p);
-    // p.setPosition((Vector3){-d, -d, 0});
-    // _particles.push_back(p);
-    for (int i = 1; i < numParticles; ++i) {
-        p.setPosition(Vector3{
-            rand() / (float)RAND_MAX * 10.0f + 1.5f,
-            rand() / (float)RAND_MAX * 10.0f + 1.5f,
-            0.0f
-        });
-        // rotate the position to have a circular orbit
-        float angle = rand() / (float)RAND_MAX * 2.0f * PI;
-        p.setPosition(Vector3{
-            p.getPosition().x * cosf(angle) - p.getPosition().y * sinf(angle),
-            p.getPosition().x * sinf(angle) + p.getPosition().y * cosf(angle),
-            0.0f
-        });
-        p.setMass(diskMassPerParticle);
-        const float radius = std::max(p.getPosition().norm(), 1e-4f);
-        const float enclosedFraction = std::clamp((radius * radius - radiusMin * radiusMin) / radiusRange2, 0.0f, 1.0f);
-        const float enclosedMass = massTerre + diskMass * enclosedFraction;
-        const float orbitalSpeed = sqrtf(enclosedMass / radius);
-        p.setVelocity(Vector3{
-            -p.getPosition().y * orbitalSpeed / radius,
-            p.getPosition().x * orbitalSpeed / radius,
-            0.0f
-        });
+    if (bootstrapInitialState) {
+        Particle p;
+        p.setVelocity(Vector3{0, 0, 0});
+        float massTerre = 1.0f;
+        float diskMass = 0.75f * massTerre;
+        const int diskParticleCount = std::max(1, clampedParticles - 1);
+        const float diskMassPerParticle = diskMass / static_cast<float>(diskParticleCount);
+        const float radiusMin = 1.5f;
+        const float radiusMax = 11.5f;
+        const float radiusRange2 = std::max(1e-6f, radiusMax * radiusMax - radiusMin * radiusMin);
+        p.setMass(massTerre);
+        p.setPosition(Vector3{0, 0, 0});
         _particles.push_back(p);
+        for (int i = 1; i < clampedParticles; ++i) {
+            p.setPosition(Vector3{
+                rand() / (float)RAND_MAX * 10.0f + 1.5f,
+                rand() / (float)RAND_MAX * 10.0f + 1.5f,
+                0.0f
+            });
+            const float angle = rand() / (float)RAND_MAX * 2.0f * PI;
+            p.setPosition(Vector3{
+                p.getPosition().x * cosf(angle) - p.getPosition().y * sinf(angle),
+                p.getPosition().x * sinf(angle) + p.getPosition().y * cosf(angle),
+                0.0f
+            });
+            p.setMass(diskMassPerParticle);
+            const float radius = std::max(p.getPosition().norm(), 1e-4f);
+            const float enclosedFraction = std::clamp((radius * radius - radiusMin * radiusMin) / radiusRange2, 0.0f, 1.0f);
+            const float enclosedMass = massTerre + diskMass * enclosedFraction;
+            const float orbitalSpeed = sqrtf(enclosedMass / radius);
+            p.setVelocity(Vector3{
+                -p.getPosition().y * orbitalSpeed / radius,
+                p.getPosition().x * orbitalSpeed / radius,
+                0.0f
+            });
+            _particles.push_back(p);
+        }
+    } else {
+        _particles.assign(static_cast<std::size_t>(clampedParticles), Particle{});
     }
     // for (int i = -sqrt(numParticles) / 2; i < sqrt(numParticles) / 2; i++)
     //     for (int j = -sqrt(numParticles) / 2; j < sqrt(numParticles) / 2; j++) {
@@ -72,45 +73,40 @@ ParticleSystem::ParticleSystem(int numParticles) {
     //         p.setMass(MASS);
     //         _particles.push_back(p);
     //     }
-    if (_solverMode == SolverMode::OctreeCpu) {
-        fprintf(stdout, "[solver] using octree_cpu (theta=%f, softening=%f)\n", _octreeTheta, _octreeSoftening);
-    } else if (_solverMode == SolverMode::OctreeGpu) {
-        fprintf(stdout, "[solver] using octree_gpu (theta=%f, softening=%f)\n", _octreeTheta, _octreeSoftening);
-    } else {
-        fprintf(stdout, "[solver] using pairwise_cuda\n");
-    }
     if (_sphEnabled) {
         fprintf(stdout, "[sph] enabled h=%f restDensity=%f gas=%f viscosity=%f\n",
             _sphSmoothingLength, _sphRestDensity, _sphGasConstant, _sphViscosity);
     }
 
-    if (!checkCudaStatus(cudaMalloc(&d_particles, numParticles * sizeof(Particle)), "cudaMalloc(d_particles)")) {
+    if (!checkCudaStatus(cudaMalloc(&d_particles, clampedParticles * sizeof(Particle)), "cudaMalloc(d_particles)")) {
         d_particles = nullptr;
         return;
     }
-    if (!checkCudaStatus(cudaMalloc(&last, numParticles * sizeof(Particle)), "cudaMalloc(last)")) {
+    if (!checkCudaStatus(cudaMalloc(&last, clampedParticles * sizeof(Particle)), "cudaMalloc(last)")) {
         cudaFree(d_particles);
         d_particles = nullptr;
         last = nullptr;
         return;
     }
-    if (!checkCudaStatus(
-            cudaMemcpy(d_particles, _particles.data(), numParticles * sizeof(Particle), cudaMemcpyHostToDevice),
-            "cudaMemcpy(HtoD initial particles)")) {
-        cudaFree(d_particles);
-        cudaFree(last);
-        d_particles = nullptr;
-        last = nullptr;
-        return;
+    if (bootstrapInitialState) {
+        if (!checkCudaStatus(
+                cudaMemcpy(d_particles, _particles.data(), clampedParticles * sizeof(Particle), cudaMemcpyHostToDevice),
+                "cudaMemcpy(HtoD initial particles)")) {
+            cudaFree(d_particles);
+            cudaFree(last);
+            d_particles = nullptr;
+            last = nullptr;
+            return;
+        }
     }
 
-    if (!allocateSphBuffers(numParticles)) {
+    if (!allocateSphBuffers(clampedParticles)) {
         fprintf(stderr, "[sph] buffers allocation failed, SPH disabled\n");
         _sphEnabled = false;
     }
 
     if (_integratorMode == IntegratorMode::Rk4) {
-        if (!allocateRk4Buffers(numParticles)) {
+        if (!allocateRk4Buffers(clampedParticles)) {
             fprintf(stderr, "[integrator] rk4 buffers allocation failed, falling back to euler\n");
             _integratorMode = IntegratorMode::Euler;
         }
@@ -125,12 +121,12 @@ __device__ bool octreeNodeContains(const GpuOctreeNode &node, const Vector3 &pos
 }
 
 __global__ void updateParticlesOctree(
-    const Particle *lastState,
-    Particle *particlesOut,
+    ParticleConstHandle lastState,
+    ParticleHandle particlesOut,
     int numParticles,
-    const GpuOctreeNode *nodes,
+    OctreeNodeConstHandle nodes,
     int rootIndex,
-    const int *leafIndices,
+    IndexConstHandle leafIndices,
     float theta,
     float softening,
     float deltaTime
@@ -204,11 +200,7 @@ __global__ void updateParticlesOctree(
         }
     }
 
-    constexpr float kOctreeMaxAcceleration = 64.0f;
-    const float accelNorm = force.norm();
-    if (accelNorm > kOctreeMaxAcceleration && accelNorm > 1e-12f) {
-        force = force * (kOctreeMaxAcceleration / accelNorm);
-    }
+    force = clampAcceleration(force, kGravityMaxAcceleration);
 
     Particle updated = selfParticle;
     updated.setPressure(force * 100.0f);
@@ -218,15 +210,15 @@ __global__ void updateParticlesOctree(
 }
 
 ParticleSystem::~ParticleSystem() {
-    if (_dOctreeNodes) {
-        cudaFree(_dOctreeNodes);
-        _dOctreeNodes = nullptr;
-        _dOctreeNodeCapacity = 0;
+    if (g_dOctreeNodes) {
+        cudaFree(g_dOctreeNodes);
+        g_dOctreeNodes = nullptr;
+        g_dOctreeNodeCapacity = 0;
     }
-    if (_dOctreeLeafIndices) {
-        cudaFree(_dOctreeLeafIndices);
-        _dOctreeLeafIndices = nullptr;
-        _dOctreeLeafCapacity = 0;
+    if (g_dOctreeLeafIndices) {
+        cudaFree(g_dOctreeLeafIndices);
+        g_dOctreeLeafIndices = nullptr;
+        g_dOctreeLeafCapacity = 0;
     }
     if (d_particles) {
         cudaFree(d_particles);
@@ -240,13 +232,36 @@ ParticleSystem::~ParticleSystem() {
     releaseSphBuffers();
 }
 
-std::vector<Particle> &ParticleSystem::getParticles() {
+const std::vector<Particle> &ParticleSystem::getParticles() const {
     return _particles;
+}
+
+bool ParticleSystem::setParticles(std::vector<Particle> particles)
+{
+    if (particles.empty()) {
+        return false;
+    }
+    if (particles.size() != _deviceParticleCapacity) {
+        fprintf(stderr,
+            "[particles] rejected setParticles size=%zu expected=%zu\n",
+            particles.size(),
+            _deviceParticleCapacity);
+        return false;
+    }
+    _particles = std::move(particles);
+    return true;
 }
 
 void ParticleSystem::syncDeviceState()
 {
     if (!d_particles || !last || _particles.empty()) {
+        return;
+    }
+    if (_particles.size() > _deviceParticleCapacity) {
+        fprintf(stderr,
+            "[particles] sync aborted size=%zu exceeds capacity=%zu\n",
+            _particles.size(),
+            _deviceParticleCapacity);
         return;
     }
     const std::size_t bytes = _particles.size() * sizeof(Particle);
@@ -393,6 +408,15 @@ float ParticleSystem::applyThermalModel(float deltaTime)
 
 void ParticleSystem::setSolverMode(SolverMode mode)
 {
+    if (_solverMode != mode) {
+        if (mode == SolverMode::OctreeCpu) {
+            fprintf(stdout, "[solver] using octree_cpu (theta=%f, softening=%f)\n", _octreeTheta, _octreeSoftening);
+        } else if (mode == SolverMode::OctreeGpu) {
+            fprintf(stdout, "[solver] using octree_gpu (theta=%f, softening=%f)\n", _octreeTheta, _octreeSoftening);
+        } else {
+            fprintf(stdout, "[solver] using pairwise_cuda\n");
+        }
+    }
     _solverMode = mode;
 }
 

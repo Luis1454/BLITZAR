@@ -1,8 +1,8 @@
 #include "sim/SimulationConfig.hpp"
+#include "sim/TextParse.hpp"
 
 #include <algorithm>
 #include <cctype>
-#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <limits>
@@ -21,18 +21,11 @@ std::string trim(const std::string &value)
 
 bool parseUnsigned(const std::string &value, std::uint32_t &out)
 {
-    char *end = nullptr;
-    const unsigned long long parsed = std::strtoull(value.c_str(), &end, 10);
-    if (end == value.c_str()) {
+    std::uint64_t parsed = 0;
+    if (!sim::text::parseNumber(value, parsed)) {
         return false;
     }
-    while (end && *end != '\0' && std::isspace(static_cast<unsigned char>(*end)) != 0) {
-        ++end;
-    }
-    if (end && *end != '\0') {
-        return false;
-    }
-    if (parsed > static_cast<unsigned long long>(std::numeric_limits<std::uint32_t>::max())) {
+    if (parsed > static_cast<std::uint64_t>(std::numeric_limits<std::uint32_t>::max())) {
         return false;
     }
     out = static_cast<std::uint32_t>(parsed);
@@ -41,19 +34,12 @@ bool parseUnsigned(const std::string &value, std::uint32_t &out)
 
 bool parseInt(const std::string &value, int &out)
 {
-    char *end = nullptr;
-    const long parsed = std::strtol(value.c_str(), &end, 10);
-    if (end == value.c_str()) {
+    long long parsed = 0;
+    if (!sim::text::parseNumber(value, parsed)) {
         return false;
     }
-    while (end && *end != '\0' && std::isspace(static_cast<unsigned char>(*end)) != 0) {
-        ++end;
-    }
-    if (end && *end != '\0') {
-        return false;
-    }
-    if (parsed < static_cast<long>(std::numeric_limits<int>::min())
-        || parsed > static_cast<long>(std::numeric_limits<int>::max())) {
+    if (parsed < static_cast<long long>(std::numeric_limits<int>::min())
+        || parsed > static_cast<long long>(std::numeric_limits<int>::max())) {
         return false;
     }
     out = static_cast<int>(parsed);
@@ -62,19 +48,7 @@ bool parseInt(const std::string &value, int &out)
 
 bool parseFloat(const std::string &value, float &out)
 {
-    char *end = nullptr;
-    const float parsed = std::strtof(value.c_str(), &end);
-    if (end == value.c_str()) {
-        return false;
-    }
-    while (end && *end != '\0' && std::isspace(static_cast<unsigned char>(*end)) != 0) {
-        ++end;
-    }
-    if (end && *end != '\0') {
-        return false;
-    }
-    out = parsed;
-    return true;
+    return sim::text::parseNumber(value, out);
 }
 
 bool parseBool(const std::string &value, bool &out)
@@ -92,6 +66,19 @@ bool parseBool(const std::string &value, bool &out)
         return true;
     }
     return false;
+}
+
+bool parseTimeoutMs(const std::string &value, std::uint32_t &out)
+{
+    std::uint32_t parsed = out;
+    if (!parseUnsigned(value, parsed)) {
+        return false;
+    }
+    if (parsed < 10u || parsed > 60000u) {
+        return false;
+    }
+    out = parsed;
+    return true;
 }
 }
 
@@ -141,6 +128,19 @@ SimulationConfig SimulationConfig::loadOrCreate(const std::string &path)
             parseInt(value, config.defaultLuminosity);
         } else if (key == "ui_fps_limit") {
             parseUnsigned(value, config.uiFpsLimit);
+        } else if (key == "frontend_remote_command_timeout_ms") {
+            parseTimeoutMs(value, config.frontendRemoteCommandTimeoutMs);
+        } else if (key == "frontend_remote_status_timeout_ms") {
+            parseTimeoutMs(value, config.frontendRemoteStatusTimeoutMs);
+        } else if (key == "frontend_remote_snapshot_timeout_ms") {
+            parseTimeoutMs(value, config.frontendRemoteSnapshotTimeoutMs);
+        } else if (key == "frontend_remote_timeout_ms") {
+            std::uint32_t timeoutMs = config.frontendRemoteCommandTimeoutMs;
+            if (parseTimeoutMs(value, timeoutMs)) {
+                config.frontendRemoteCommandTimeoutMs = timeoutMs;
+                config.frontendRemoteStatusTimeoutMs = timeoutMs;
+                config.frontendRemoteSnapshotTimeoutMs = timeoutMs;
+            }
         } else if (key == "export_directory") {
             config.exportDirectory = value;
         } else if (key == "export_format") {
@@ -271,6 +271,10 @@ bool SimulationConfig::save(const std::string &path) const
     out << "default_luminosity=" << defaultLuminosity << "\n";
     out << "# UI refresh target FPS.\n";
     out << "ui_fps_limit=" << uiFpsLimit << "\n";
+    out << "# Remote backend socket timeouts (ms) for frontend client calls.\n";
+    out << "frontend_remote_command_timeout_ms=" << frontendRemoteCommandTimeoutMs << "\n";
+    out << "frontend_remote_status_timeout_ms=" << frontendRemoteStatusTimeoutMs << "\n";
+    out << "frontend_remote_snapshot_timeout_ms=" << frontendRemoteSnapshotTimeoutMs << "\n";
     out << "\n";
 
     out << "# [Export]\n";
@@ -312,7 +316,7 @@ bool SimulationConfig::save(const std::string &path) const
     out << "# [Initial state generation]\n";
     out << "# init_mode: disk_orbit | random_cloud | file\n";
     out << "# - file: tries input_file first\n";
-    out << "# - disk_orbit/random_cloud: generated from init_* keys below\n";
+    out << "# - disk_orbit/random_cloud: generated from init_ keys below\n";
     out << "# NOTE: used when init_config_style=detailed\n";
     out << "init_mode=" << initMode << "\n";
     out << "# RNG seed for generated states.\n";

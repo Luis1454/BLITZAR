@@ -10,11 +10,14 @@ struct SimulationConfig {
     std::string solver = "pairwise_cuda";
     std::string integrator = "euler";
     float octreeTheta = 1.2f;
-    float octreeSoftening = 0.05f;
+    float octreeSoftening = 2.5f;
     std::uint32_t frontendParticleCap = 50000u;
     float defaultZoom = 8.0f;
     int defaultLuminosity = 100;
     std::uint32_t uiFpsLimit = 60u;
+    std::uint32_t frontendRemoteCommandTimeoutMs = 80u;
+    std::uint32_t frontendRemoteStatusTimeoutMs = 40u;
+    std::uint32_t frontendRemoteSnapshotTimeoutMs = 140u;
     std::string exportDirectory = "exports";
     std::string exportFormat = "vtk";
     std::string inputFile;

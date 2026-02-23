@@ -20,6 +20,8 @@ struct ScenarioConfig {
     std::string solver = "pairwise_cuda";
     std::string integrator = "rk4";
     float dt = 0.002f;
+    float octreeTheta = 1.2f;
+    float octreeSoftening = 2.5f;
     std::uint32_t steps = 100;
     std::uint32_t particleCount = 2u;
     std::uint32_t energyMeasureEverySteps = 1u;
@@ -42,6 +44,44 @@ float distance(const RenderParticle &a, const RenderParticle &b)
     const float dy = a.y - b.y;
     const float dz = a.z - b.z;
     return std::sqrt(dx * dx + dy * dy + dz * dz);
+}
+
+std::array<float, 3> centerOfMassAll(const std::vector<RenderParticle> &snapshot)
+{
+    double totalMass = 0.0;
+    double cx = 0.0;
+    double cy = 0.0;
+    double cz = 0.0;
+    for (const RenderParticle &p : snapshot) {
+        const double mass = static_cast<double>(std::max(1e-9f, p.mass));
+        totalMass += mass;
+        cx += static_cast<double>(p.x) * mass;
+        cy += static_cast<double>(p.y) * mass;
+        cz += static_cast<double>(p.z) * mass;
+    }
+    if (totalMass <= 1e-12) {
+        return {0.0f, 0.0f, 0.0f};
+    }
+    return {
+        static_cast<float>(cx / totalMass),
+        static_cast<float>(cy / totalMass),
+        static_cast<float>(cz / totalMass)
+    };
+}
+
+float averageRadius(const std::vector<RenderParticle> &snapshot)
+{
+    if (snapshot.empty()) {
+        return 0.0f;
+    }
+    double radiusSum = 0.0;
+    for (const RenderParticle &p : snapshot) {
+        const double x = static_cast<double>(p.x);
+        const double y = static_cast<double>(p.y);
+        const double z = static_cast<double>(p.z);
+        radiusSum += std::sqrt(x * x + y * y + z * z);
+    }
+    return static_cast<float>(radiusSum / static_cast<double>(snapshot.size()));
 }
 
 bool waitForStep(SimulationBackend &backend, std::uint64_t targetStep, int timeoutMs)
@@ -73,6 +113,7 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
     SimulationBackend backend(std::max<std::uint32_t>(2u, cfg.particleCount), cfg.dt);
     backend.setSolverMode(cfg.solver);
     backend.setIntegratorMode(cfg.integrator);
+    backend.setOctreeParameters(cfg.octreeTheta, cfg.octreeSoftening);
     backend.setDt(cfg.dt);
     backend.setParticleCount(std::max<std::uint32_t>(2u, cfg.particleCount));
     backend.setSphEnabled(false);
@@ -465,6 +506,84 @@ TEST_F(PhysicsRegressionTest, RadiationExchangeConservation)
         << "Radiative exchange should conserve total (thermal + radiated) energy";
     EXPECT_GT(result.stats.radiatedEnergy, 0.0f);
     EXPECT_LT(result.stats.thermalEnergy, initialThermal);
+}
+
+TEST_F(PhysicsRegressionTest, SolverParityWithinTolerance)
+{
+    ScenarioConfig base;
+    base.particleCount = 384u;
+    base.dt = 0.004f;
+    base.steps = 180;
+    base.integrator = "euler";
+    base.energyMeasureEverySteps = 1u;
+    base.energySampleLimit = 384u;
+    base.snapshotTimeoutMs = 10000;
+    base.stepTimeoutMs = 10000;
+    base.octreeTheta = 0.35f;
+    base.octreeSoftening = 0.08f;
+    base.initState.mode = "disk_orbit";
+    base.initState.seed = 12345u;
+    base.initState.includeCentralBody = true;
+    base.initState.centralMass = 1.0f;
+    base.initState.diskMass = 0.75f;
+    base.initState.diskRadiusMin = 1.5f;
+    base.initState.diskRadiusMax = 11.5f;
+    base.initState.diskThickness = 0.0f;
+    base.initState.velocityScale = 1.0f;
+    base.initState.velocityTemperature = 0.1f;
+    base.initState.particleTemperature = 0.0f;
+    base.initState.thermalAmbientTemperature = 0.0f;
+    base.initState.thermalSpecificHeat = 1.0f;
+    base.initState.thermalHeatingCoeff = 0.0f;
+    base.initState.thermalRadiationCoeff = 0.0f;
+
+    ScenarioConfig pairwiseCfg = base;
+    pairwiseCfg.solver = "pairwise_cuda";
+    ScenarioResult pairwise;
+    std::string pairwiseError;
+    ASSERT_TRUE(runScenario(pairwiseCfg, pairwise, pairwiseError)) << pairwiseError;
+
+    ScenarioConfig octreeCpuCfg = base;
+    octreeCpuCfg.solver = "octree_cpu";
+    ScenarioResult octreeCpu;
+    std::string octreeCpuError;
+    ASSERT_TRUE(runScenario(octreeCpuCfg, octreeCpu, octreeCpuError)) << octreeCpuError;
+
+    ScenarioConfig octreeGpuCfg = base;
+    octreeGpuCfg.solver = "octree_gpu";
+    ScenarioResult octreeGpu;
+    std::string octreeGpuError;
+    ASSERT_TRUE(runScenario(octreeGpuCfg, octreeGpu, octreeGpuError)) << octreeGpuError;
+
+    const auto pairwiseCom = centerOfMassAll(pairwise.final);
+    const auto octreeCpuCom = centerOfMassAll(octreeCpu.final);
+    const auto octreeGpuCom = centerOfMassAll(octreeGpu.final);
+
+    const float comCpuDelta = std::sqrt(
+        (pairwiseCom[0] - octreeCpuCom[0]) * (pairwiseCom[0] - octreeCpuCom[0])
+        + (pairwiseCom[1] - octreeCpuCom[1]) * (pairwiseCom[1] - octreeCpuCom[1])
+        + (pairwiseCom[2] - octreeCpuCom[2]) * (pairwiseCom[2] - octreeCpuCom[2]));
+    const float comGpuDelta = std::sqrt(
+        (pairwiseCom[0] - octreeGpuCom[0]) * (pairwiseCom[0] - octreeGpuCom[0])
+        + (pairwiseCom[1] - octreeGpuCom[1]) * (pairwiseCom[1] - octreeGpuCom[1])
+        + (pairwiseCom[2] - octreeGpuCom[2]) * (pairwiseCom[2] - octreeGpuCom[2]));
+
+    const float pairwiseAvgRadius = averageRadius(pairwise.final);
+    const float octreeCpuAvgRadius = averageRadius(octreeCpu.final);
+    const float octreeGpuAvgRadius = averageRadius(octreeGpu.final);
+
+    const float pairwiseEnergy = pairwise.stats.totalEnergy;
+    const float cpuEnergyDiffPct = std::fabs(octreeCpu.stats.totalEnergy - pairwiseEnergy)
+        / std::max(std::fabs(pairwiseEnergy), 1e-6f) * 100.0f;
+    const float gpuEnergyDiffPct = std::fabs(octreeGpu.stats.totalEnergy - pairwiseEnergy)
+        / std::max(std::fabs(pairwiseEnergy), 1e-6f) * 100.0f;
+
+    EXPECT_LE(comCpuDelta, 0.45f);
+    EXPECT_LE(comGpuDelta, 0.45f);
+    EXPECT_LE(std::fabs(octreeCpuAvgRadius - pairwiseAvgRadius), 0.9f);
+    EXPECT_LE(std::fabs(octreeGpuAvgRadius - pairwiseAvgRadius), 0.9f);
+    EXPECT_LE(cpuEnergyDiffPct, 8.0f);
+    EXPECT_LE(gpuEnergyDiffPct, 8.0f);
 }
 
 } // namespace

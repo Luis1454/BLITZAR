@@ -12,14 +12,14 @@
 
 namespace {
 
-std::vector<char *> toArgv(std::vector<std::string> &storage)
+std::vector<std::string_view> toArgViews(const std::vector<std::string> &storage)
 {
-    std::vector<char *> argv;
-    argv.reserve(storage.size());
-    for (std::string &item : storage) {
-        argv.push_back(item.data());
+    std::vector<std::string_view> args;
+    args.reserve(storage.size());
+    for (const std::string &item : storage) {
+        args.emplace_back(item);
     }
-    return argv;
+    return args;
 }
 
 } // namespace
@@ -27,17 +27,17 @@ std::vector<char *> toArgv(std::vector<std::string> &storage)
 TEST(ConfigArgsRegression, FindsConfigPathInline)
 {
     std::vector<std::string> args = {"app", "--config=custom.ini"};
-    std::vector<char *> argv = toArgv(args);
-    EXPECT_EQ(findConfigPathArg(static_cast<int>(argv.size()), argv.data()), "custom.ini");
+    const std::vector<std::string_view> argViews = toArgViews(args);
+    EXPECT_EQ(findConfigPathArg(argViews), "custom.ini");
 }
 
 TEST(ConfigArgsRegression, FindsConfigPathSeparated)
 {
     std::vector<std::string> args = {"app", "--config", "custom.ini"};
-    std::vector<char *> argv = toArgv(args);
-    EXPECT_EQ(findConfigPathArg(static_cast<int>(argv.size()), argv.data()), "custom.ini");
+    const std::vector<std::string_view> argViews = toArgViews(args);
+    EXPECT_EQ(findConfigPathArg(argViews), "custom.ini");
 }
-
+                                
 TEST(ConfigArgsRegression, AppliesValidArguments)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -54,11 +54,13 @@ TEST(ConfigArgsRegression, AppliesValidArguments)
         "--target-steps", "333",
         "--export-on-exit=false",
         "--ui-fps", "75",
-        "--energy-every", "2"
+        "--energy-every", "2",
+        "--backend-command-timeout-ms", "90",
+        "--backend-status-timeout-ms", "35",
+        "--backend-snapshot-timeout-ms", "180"
     };
-    std::vector<char *> argv = toArgv(args);
-
-    applyArgsToConfig(static_cast<int>(argv.size()), argv.data(), config, runtime, warnings);
+    const std::vector<std::string_view> argViews = toArgViews(args);
+    applyArgsToConfig(argViews, config, runtime, warnings);
 
     EXPECT_EQ(config.particleCount, 2048u);
     EXPECT_FLOAT_EQ(config.dt, 0.02f);
@@ -67,6 +69,9 @@ TEST(ConfigArgsRegression, AppliesValidArguments)
     EXPECT_TRUE(config.sphEnabled);
     EXPECT_EQ(config.uiFpsLimit, 75u);
     EXPECT_EQ(config.energyMeasureEverySteps, 2u);
+    EXPECT_EQ(config.frontendRemoteCommandTimeoutMs, 90u);
+    EXPECT_EQ(config.frontendRemoteStatusTimeoutMs, 35u);
+    EXPECT_EQ(config.frontendRemoteSnapshotTimeoutMs, 180u);
     EXPECT_EQ(runtime.targetSteps, 333);
     EXPECT_FALSE(runtime.exportOnExit);
     EXPECT_TRUE(warnings.str().empty());
@@ -89,9 +94,8 @@ TEST(ConfigArgsRegression, RejectsInvalidArgumentsAndKeepsPreviousValues)
         "--sph", "maybe",
         "--unknown", "value"
     };
-    std::vector<char *> argv = toArgv(args);
-
-    applyArgsToConfig(static_cast<int>(argv.size()), argv.data(), config, runtime, warnings);
+    const std::vector<std::string_view> argViews = toArgViews(args);
+    applyArgsToConfig(argViews, config, runtime, warnings);
 
     EXPECT_EQ(config.particleCount, initialParticleCount);
     EXPECT_FLOAT_EQ(config.dt, initialDt);
@@ -122,9 +126,8 @@ TEST(ConfigArgsRegression, RejectsTrailingGarbageNumericArguments)
         "--octree-theta", "1.4deg",
         "--luminosity", "120%"
     };
-    std::vector<char *> argv = toArgv(args);
-
-    applyArgsToConfig(static_cast<int>(argv.size()), argv.data(), config, runtime, warnings);
+    const std::vector<std::string_view> argViews = toArgViews(args);
+    applyArgsToConfig(argViews, config, runtime, warnings);
 
     EXPECT_EQ(config.particleCount, initialParticleCount);
     EXPECT_FLOAT_EQ(config.dt, initialDt);
@@ -148,6 +151,9 @@ TEST(ConfigArgsRegression, SimulationConfigSaveLoadRoundTrip)
     config.sphEnabled = true;
     config.exportFormat = "bin";
     config.energySampleLimit = 777u;
+    config.frontendRemoteCommandTimeoutMs = 95u;
+    config.frontendRemoteStatusTimeoutMs = 50u;
+    config.frontendRemoteSnapshotTimeoutMs = 200u;
 
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
@@ -163,6 +169,9 @@ TEST(ConfigArgsRegression, SimulationConfigSaveLoadRoundTrip)
     EXPECT_EQ(loaded.sphEnabled, config.sphEnabled);
     EXPECT_EQ(loaded.exportFormat, config.exportFormat);
     EXPECT_EQ(loaded.energySampleLimit, config.energySampleLimit);
+    EXPECT_EQ(loaded.frontendRemoteCommandTimeoutMs, config.frontendRemoteCommandTimeoutMs);
+    EXPECT_EQ(loaded.frontendRemoteStatusTimeoutMs, config.frontendRemoteStatusTimeoutMs);
+    EXPECT_EQ(loaded.frontendRemoteSnapshotTimeoutMs, config.frontendRemoteSnapshotTimeoutMs);
 
     std::error_code ec;
     std::filesystem::remove(path, ec);
@@ -223,5 +232,53 @@ TEST(ConfigArgsRegression, UsageIncludesCoreOptions)
     EXPECT_NE(usage.find("--dt"), std::string::npos);
     EXPECT_NE(usage.find("--solver"), std::string::npos);
     EXPECT_NE(usage.find("--integrator"), std::string::npos);
+    EXPECT_NE(usage.find("--backend-command-timeout-ms"), std::string::npos);
     EXPECT_NE(usage.find("--target-steps"), std::string::npos);
+    EXPECT_EQ(usage.find("Legacy positional"), std::string::npos);
+    EXPECT_EQ(usage.find("--temperature"), std::string::npos);
+}
+
+TEST(ConfigArgsRegression, RejectsPositionalArguments)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+
+    const std::uint32_t initialParticleCount = config.particleCount;
+    const float initialDt = config.dt;
+
+    std::vector<std::string> args = {
+        "app",
+        "10000",
+        "0.5"
+    };
+    const std::vector<std::string_view> argViews = toArgViews(args);
+    applyArgsToConfig(argViews, config, runtime, warnings);
+
+    EXPECT_EQ(config.particleCount, initialParticleCount);
+    EXPECT_FLOAT_EQ(config.dt, initialDt);
+
+    const std::string log = warnings.str();
+    EXPECT_TRUE(runtime.hasArgumentError);
+    EXPECT_NE(log.find("unexpected positional argument"), std::string::npos);
+}
+
+TEST(ConfigArgsRegression, RejectsLegacyTemperatureAlias)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+
+    const float initialVelocityTemperature = config.velocityTemperature;
+
+    std::vector<std::string> args = {
+        "app",
+        "--temperature", "0.8"
+    };
+    const std::vector<std::string_view> argViews = toArgViews(args);
+    applyArgsToConfig(argViews, config, runtime, warnings);
+
+    EXPECT_FLOAT_EQ(config.velocityTemperature, initialVelocityTemperature);
+    EXPECT_TRUE(runtime.hasArgumentError);
+    EXPECT_NE(warnings.str().find("unknown option: --temperature"), std::string::npos);
 }

@@ -12,6 +12,8 @@
 #include "core/Particle.hpp"
 #include <array>
 #include <cstddef>
+#include <functional>
+#include <optional>
 #include <vector>
 
 struct GpuOctreeNode {
@@ -67,7 +69,7 @@ class Octree {
         static bool hasChildren(const Node &node);
 
         std::vector<Node> _nodes;
-        const std::vector<Particle> *_particlesRef;
+        std::optional<std::reference_wrapper<const std::vector<Particle>>> _particlesRef;
         int _root;
 };
 

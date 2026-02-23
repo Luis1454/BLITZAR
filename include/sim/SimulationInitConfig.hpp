@@ -67,7 +67,7 @@ inline InitialStateConfig buildInitialStateConfig(const SimulationConfig &config
         return init;
     }
 
-    // Detailed mode: keep explicit init_* values.
+    // Detailed mode: keep explicit init_ values.
     init.mode = config.initMode;
     init.includeCentralBody = config.initIncludeCentralBody;
     init.centralMass = config.initCentralMass;

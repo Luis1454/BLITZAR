@@ -1,12 +1,14 @@
 #include <cuda_runtime.h>
 #include "core/Octree.hpp"
 #include "core/ParticleSystem.hpp"
+#include "sim/EnvUtils.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <cstdlib>
 #include <cstring>
 #include <numeric>
+#include <string_view>
+#include <utility>
 #include <stdio.h>
 
 #define BLOCK_SIZE 256
@@ -16,40 +18,41 @@ namespace {
 constexpr int kOctreeLeafCapacity = 32;
 constexpr int kOctreeMaxDepth = 16;
 constexpr float kPi = 3.1415926535f;
+constexpr float kGravityMaxAcceleration = 64.0f;
+using ParticleHandle = Particle *;
+using ParticleConstHandle = const Particle *;
+using Vector3Handle = Vector3 *;
+using Vector3ConstHandle = const Vector3 *;
+using FloatHandle = float *;
+using ConstFloatHandle = const float *;
+using OctreeNodeHandle = GpuOctreeNode *;
+using OctreeNodeConstHandle = const GpuOctreeNode *;
+using IndexHandle = int *;
+using IndexConstHandle = const int *;
 
-bool checkCudaStatus(cudaError_t status, const char *stage)
+bool checkCudaStatus(cudaError_t status, std::string_view stage)
 {
     if (status != cudaSuccess) {
-        fprintf(stderr, "[cuda] %s failed: %s\n", stage, cudaGetErrorString(status));
+        fprintf(
+            stderr,
+            "[cuda] %.*s failed: %s\n",
+            static_cast<int>(stage.size()),
+            stage.data(),
+            cudaGetErrorString(status));
         return false;
     }
     return true;
 }
 
-bool parseBoolEnv(const char *name, bool fallback)
+bool parseBoolEnv(std::string_view name, bool fallback)
 {
-    const char *value = std::getenv(name);
-    if (!value) {
-        return fallback;
-    }
-    if (std::strcmp(value, "1") == 0 || std::strcmp(value, "true") == 0 || std::strcmp(value, "on") == 0) {
-        return true;
-    }
-    if (std::strcmp(value, "0") == 0 || std::strcmp(value, "false") == 0 || std::strcmp(value, "off") == 0) {
-        return false;
-    }
-    return fallback;
+    return sim::env::getBool(name, fallback);
 }
 
-float parseFloatEnv(const char *name, float fallback)
+float parseFloatEnv(std::string_view name, float fallback)
 {
-    const char *value = std::getenv(name);
-    if (!value) {
-        return fallback;
-    }
-    char *end = nullptr;
-    const float parsed = std::strtof(value, &end);
-    if (end == value) {
+    float parsed = 0.0f;
+    if (!sim::env::getNumber(name, parsed)) {
         return fallback;
     }
     return parsed;
@@ -60,14 +63,14 @@ ParticleSystem::SolverMode solverModeFromEnv()
     if (parseBoolEnv("GRAVITY_USE_OCTREE", false)) {
         return ParticleSystem::SolverMode::OctreeGpu;
     }
-    const char *solver = std::getenv("GRAVITY_SOLVER");
-    if (!solver) {
+    const auto solver = sim::env::get("GRAVITY_SOLVER");
+    if (!solver.has_value()) {
         return ParticleSystem::SolverMode::PairwiseCuda;
     }
-    if (std::strcmp(solver, "octree") == 0 || std::strcmp(solver, "octree_cpu") == 0) {
+    if (*solver == "octree" || *solver == "octree_cpu") {
         return ParticleSystem::SolverMode::OctreeCpu;
     }
-    if (std::strcmp(solver, "octree_gpu") == 0) {
+    if (*solver == "octree_gpu") {
         return ParticleSystem::SolverMode::OctreeGpu;
     }
     return ParticleSystem::SolverMode::PairwiseCuda;
@@ -75,11 +78,11 @@ ParticleSystem::SolverMode solverModeFromEnv()
 
 ParticleSystem::IntegratorMode integratorModeFromEnv()
 {
-    const char *integrator = std::getenv("GRAVITY_INTEGRATOR");
-    if (!integrator) {
+    const auto integrator = sim::env::get("GRAVITY_INTEGRATOR");
+    if (!integrator.has_value()) {
         return ParticleSystem::IntegratorMode::Euler;
     }
-    if (std::strcmp(integrator, "rk4") == 0 || std::strcmp(integrator, "RK4") == 0) {
+    if (*integrator == "rk4" || *integrator == "RK4") {
         return ParticleSystem::IntegratorMode::Rk4;
     }
     return ParticleSystem::IntegratorMode::Euler;
@@ -216,13 +219,27 @@ __host__ __device__ Vector3 normalize(Vector3 v) {
     return v / sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
-__host__ __device__ Vector3 computePairwiseAcceleration(const Particle *state, int numParticles, int idx)
+__host__ __device__ Vector3 clampAcceleration(Vector3 accel, float maxAcceleration)
+{
+    const float accelNorm = accel.norm();
+    if (accelNorm > maxAcceleration && accelNorm > 1e-12f) {
+        return accel * (maxAcceleration / accelNorm);
+    }
+    return accel;
+}
+
+__host__ __device__ Vector3 computePairwiseAcceleration(
+    ParticleConstHandle state,
+    int numParticles,
+    int idx,
+    float softening,
+    float maxAcceleration
+)
 {
     Vector3 force = {0.0f, 0.0f, 0.0f};
     const Vector3 selfPos = state[idx].getPosition();
-    constexpr float kPairwiseSoftening = 2.5f;
-    constexpr float kPairwiseSoftening2 = kPairwiseSoftening * kPairwiseSoftening;
-    constexpr float kPairwiseMaxAcceleration = 64.0f;
+    const float clampedSoftening = fmaxf(softening, 1e-4f);
+    const float softening2 = clampedSoftening * clampedSoftening;
 
     for (int i = 0; i < numParticles; ++i) {
         if (i == idx) {
@@ -230,7 +247,7 @@ __host__ __device__ Vector3 computePairwiseAcceleration(const Particle *state, i
         }
         const Particle &q = state[i];
         const Vector3 r = selfPos - q.getPosition();
-        const float dist2 = dot(r, r) + kPairwiseSoftening2;
+        const float dist2 = dot(r, r) + softening2;
         if (dist2 <= 1e-12f) {
             continue;
         }
@@ -238,11 +255,7 @@ __host__ __device__ Vector3 computePairwiseAcceleration(const Particle *state, i
         const float invDist3 = invDist * invDist * invDist;
         force -= r * (q.getMass() * invDist3);
     }
-    const float accelNorm = force.norm();
-    if (accelNorm > kPairwiseMaxAcceleration && accelNorm > 1e-12f) {
-        force = force * (kPairwiseMaxAcceleration / accelNorm);
-    }
-    return force;
+    return clampAcceleration(force, maxAcceleration);
 }
 
 __device__ float sphPoly6(float r2, float h)
@@ -275,19 +288,18 @@ __device__ float sphViscosityLaplacian(float r, float h)
     return coeff * (h - r);
 }
 
-__host__ __device__ Vector3 ParticleSystem::getForce(Particle *last, Particle *particles, int numParticles, int idx, float dt) {
-    (void)dt;
-    Vector3 force = computePairwiseAcceleration(last, numParticles, idx);
-    Particle &p = particles[idx];
-    p.setPressure(force * 100.0f);
-    return force;
-}
-
-__global__ void updateParticles(Particle *last, Particle *particles, int numParticles, float deltaTime) {
+__global__ void updateParticles(
+    ParticleHandle last,
+    ParticleHandle particles,
+    int numParticles,
+    float deltaTime,
+    float softening,
+    float maxAcceleration
+) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < numParticles) {
         const Particle base = last[i];
-        const Vector3 force = computePairwiseAcceleration(last, numParticles, i);
+        const Vector3 force = computePairwiseAcceleration(last, numParticles, i, softening, maxAcceleration);
 
         Particle updated = base;
         updated.setPressure(force * 100.0f);
@@ -298,9 +310,9 @@ __global__ void updateParticles(Particle *last, Particle *particles, int numPart
 }
 
 __global__ void computeSphDensityPressureKernel(
-    const Particle *particles,
-    float *outDensity,
-    float *outPressure,
+    ParticleConstHandle particles,
+    FloatHandle outDensity,
+    FloatHandle outPressure,
     int numParticles,
     float smoothingLength,
     float restDensity,
@@ -335,9 +347,9 @@ __global__ void computeSphDensityPressureKernel(
 }
 
 __global__ void integrateSphKernel(
-    Particle *particles,
-    const float *density,
-    const float *pressure,
+    ParticleHandle particles,
+    ConstFloatHandle density,
+    ConstFloatHandle pressure,
     int numParticles,
     float smoothingLength,
     float viscosity,
@@ -412,7 +424,7 @@ __global__ void integrateSphKernel(
     particles[i] = updated;
 }
 
-__global__ void copyParticlesKernel(const Particle *src, Particle *dst, int numParticles)
+__global__ void copyParticlesKernel(ParticleConstHandle src, ParticleHandle dst, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
@@ -421,7 +433,7 @@ __global__ void copyParticlesKernel(const Particle *src, Particle *dst, int numP
     dst[i] = src[i];
 }
 
-__global__ void extractVelocityKernel(const Particle *particles, Vector3 *outVelocity, int numParticles)
+__global__ void extractVelocityKernel(ParticleConstHandle particles, Vector3Handle outVelocity, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
@@ -430,21 +442,27 @@ __global__ void extractVelocityKernel(const Particle *particles, Vector3 *outVel
     outVelocity[i] = particles[i].getVelocity();
 }
 
-__global__ void computePairwiseAccelerationKernel(const Particle *state, Vector3 *outAcceleration, int numParticles)
+__global__ void computePairwiseAccelerationKernel(
+    ParticleConstHandle state,
+    Vector3Handle outAcceleration,
+    int numParticles,
+    float softening,
+    float maxAcceleration
+)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
         return;
     }
-    outAcceleration[i] = computePairwiseAcceleration(state, numParticles, i);
+    outAcceleration[i] = computePairwiseAcceleration(state, numParticles, i, softening, maxAcceleration);
 }
 
 __global__ void buildRk4StageKernel(
-    const Particle *base,
-    const Vector3 *kPos,
-    const Vector3 *kVel,
+    ParticleConstHandle base,
+    Vector3ConstHandle kPos,
+    Vector3ConstHandle kVel,
     float dtScale,
-    Particle *stage,
+    ParticleHandle stage,
     int numParticles
 ) {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -459,17 +477,17 @@ __global__ void buildRk4StageKernel(
 }
 
 __global__ void finalizeRk4Kernel(
-    const Particle *base,
-    const Vector3 *k1x,
-    const Vector3 *k2x,
-    const Vector3 *k3x,
-    const Vector3 *k4x,
-    const Vector3 *k1v,
-    const Vector3 *k2v,
-    const Vector3 *k3v,
-    const Vector3 *k4v,
+    ParticleConstHandle base,
+    Vector3ConstHandle k1x,
+    Vector3ConstHandle k2x,
+    Vector3ConstHandle k3x,
+    Vector3ConstHandle k4x,
+    Vector3ConstHandle k1v,
+    Vector3ConstHandle k2v,
+    Vector3ConstHandle k3v,
+    Vector3ConstHandle k4v,
     float deltaTime,
-    Particle *out,
+    ParticleHandle out,
     int numParticles
 ) {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -488,19 +506,25 @@ __global__ void finalizeRk4Kernel(
     out[i] = updated;
 }
 
-Particle *d_particles = nullptr;
-Particle *last = nullptr;
-Particle *d_stage = nullptr;
-Vector3 *d_k1x = nullptr;
-Vector3 *d_k2x = nullptr;
-Vector3 *d_k3x = nullptr;
-Vector3 *d_k4x = nullptr;
-Vector3 *d_k1v = nullptr;
-Vector3 *d_k2v = nullptr;
-Vector3 *d_k3v = nullptr;
-Vector3 *d_k4v = nullptr;
-float *d_sphDensity = nullptr;
-float *d_sphPressure = nullptr;
+namespace {
+ParticleHandle d_particles = nullptr;
+ParticleHandle last = nullptr;
+ParticleHandle d_stage = nullptr;
+Vector3Handle d_k1x = nullptr;
+Vector3Handle d_k2x = nullptr;
+Vector3Handle d_k3x = nullptr;
+Vector3Handle d_k4x = nullptr;
+Vector3Handle d_k1v = nullptr;
+Vector3Handle d_k2v = nullptr;
+Vector3Handle d_k3v = nullptr;
+Vector3Handle d_k4v = nullptr;
+FloatHandle d_sphDensity = nullptr;
+FloatHandle d_sphPressure = nullptr;
+OctreeNodeHandle g_dOctreeNodes = nullptr;
+IndexHandle g_dOctreeLeafIndices = nullptr;
+std::size_t g_dOctreeNodeCapacity = 0;
+std::size_t g_dOctreeLeafCapacity = 0;
+}
 
 void releaseRk4Buffers()
 {
@@ -609,5 +633,3 @@ bool allocateSphBuffers(int numParticles)
     }
     return true;
 }
-
-

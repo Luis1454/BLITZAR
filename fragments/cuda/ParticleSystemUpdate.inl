@@ -1,22 +1,29 @@
-void ParticleSystem::update(float deltaTime) {
-    constexpr float kOctreeMaxAcceleration = 64.0f;
-    auto applySphCorrection = [&]() {
+bool ParticleSystem::update(float deltaTime) {
+    const float softening = std::max(1e-4f, _octreeSoftening);
+    auto syncParticlesFromDevice = [&]() -> bool {
+        return checkCudaStatus(
+            cudaMemcpy(_particles.data(), d_particles, _particles.size() * sizeof(Particle), cudaMemcpyDeviceToHost),
+            "cudaMemcpy(DtoH particles)");
+    };
+    auto applySphCorrection = [&](bool uploadHostState) -> bool {
         if (!_sphEnabled) {
-            return;
+            return true;
         }
         if (!d_particles || !d_sphDensity || !d_sphPressure) {
-            return;
+            return false;
         }
         const int numParticles = static_cast<int>(_particles.size());
         if (numParticles < 2) {
-            return;
+            return true;
         }
         const int numBlocks = (numParticles + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
-        if (!checkCudaStatus(
-                cudaMemcpy(d_particles, _particles.data(), _particles.size() * sizeof(Particle), cudaMemcpyHostToDevice),
-                "cudaMemcpy(HtoD particles sph-corr)")) {
-            return;
+        if (uploadHostState) {
+            if (!checkCudaStatus(
+                    cudaMemcpy(d_particles, _particles.data(), _particles.size() * sizeof(Particle), cudaMemcpyHostToDevice),
+                    "cudaMemcpy(HtoD particles sph-corr)")) {
+                return false;
+            }
         }
 
         computeSphDensityPressureKernel<<<numBlocks, BLOCK_SIZE>>>(
@@ -29,7 +36,7 @@ void ParticleSystem::update(float deltaTime) {
             _sphGasConstant
         );
         if (!checkCudaStatus(cudaGetLastError(), "computeSphDensityPressure kernel launch")) {
-            return;
+            return false;
         }
 
         constexpr float kSphCorrectionScale = 0.22f;
@@ -44,17 +51,12 @@ void ParticleSystem::update(float deltaTime) {
             kSphCorrectionScale
         );
         if (!checkCudaStatus(cudaGetLastError(), "integrateSph kernel launch")) {
-            return;
-        }
+            return false;
+        } 
         if (!checkCudaStatus(cudaDeviceSynchronize(), "sph kernels sync")) {
-            return;
+            return false;
         }
-
-        if (!checkCudaStatus(
-                cudaMemcpy(_particles.data(), d_particles, _particles.size() * sizeof(Particle), cudaMemcpyDeviceToHost),
-                "cudaMemcpy(DtoH particles sph-corr)")) {
-            return;
-        }
+        return true;
     };
 
     if (_solverMode == SolverMode::OctreeCpu) {
@@ -66,34 +68,38 @@ void ParticleSystem::update(float deltaTime) {
 
             for (size_t i = 0; i < _particles.size(); ++i) {
                 _octreeForces[i] = _octree.computeForceOn(_particles[i], i, _octreeTheta, _octreeSoftening);
-                const float accelNorm = _octreeForces[i].norm();
-                if (accelNorm > kOctreeMaxAcceleration && accelNorm > 1e-12f) {
-                    _octreeForces[i] = _octreeForces[i] * (kOctreeMaxAcceleration / accelNorm);
-                }
+                _octreeForces[i] = clampAcceleration(_octreeForces[i], kGravityMaxAcceleration);
                 _particles[i].setPressure(_octreeForces[i] * 100.0f);
             }
             for (size_t i = 0; i < _particles.size(); ++i) {
                 _particles[i].setVelocity(_particles[i].getVelocity() + _octreeForces[i] * deltaTime);
                 _particles[i].setPosition(_particles[i].getPosition() + _particles[i].getVelocity() * deltaTime);
             }
-            applySphCorrection();
+            if (!applySphCorrection(true)) {
+                return false;
+            }
+            if (_sphEnabled && !syncParticlesFromDevice()) {
+                return false;
+            }
             applyThermalModel(deltaTime);
-            return;
+            return true;
         }
 
         const size_t n = _particles.size();
         std::vector<Vector3> k1x(n), k2x(n), k3x(n), k4x(n);
         std::vector<Vector3> k1v(n), k2v(n), k3v(n), k4v(n);
-        std::vector<Particle> stage = _particles;
+        std::vector<Particle> stage(n);
+        auto resetStage = [&]() {
+            for (size_t i = 0; i < n; ++i) {
+                stage[i] = _particles[i];
+            }
+        };
 
         auto computeOctreeAcceleration = [&](const std::vector<Particle> &state, std::vector<Vector3> &outAcc) {
             _octree.build(state);
             for (size_t i = 0; i < state.size(); ++i) {
                 outAcc[i] = _octree.computeForceOn(state[i], i, _octreeTheta, _octreeSoftening);
-                const float accelNorm = outAcc[i].norm();
-                if (accelNorm > kOctreeMaxAcceleration && accelNorm > 1e-12f) {
-                    outAcc[i] = outAcc[i] * (kOctreeMaxAcceleration / accelNorm);
-                }
+                outAcc[i] = clampAcceleration(outAcc[i], kGravityMaxAcceleration);
             }
         };
 
@@ -102,7 +108,7 @@ void ParticleSystem::update(float deltaTime) {
         }
         computeOctreeAcceleration(_particles, k1v);
 
-        stage = _particles;
+        resetStage();
         for (size_t i = 0; i < n; ++i) {
             stage[i].setPosition(_particles[i].getPosition() + k1x[i] * (0.5f * deltaTime));
             stage[i].setVelocity(_particles[i].getVelocity() + k1v[i] * (0.5f * deltaTime));
@@ -110,7 +116,7 @@ void ParticleSystem::update(float deltaTime) {
         }
         computeOctreeAcceleration(stage, k2v);
 
-        stage = _particles;
+        resetStage();
         for (size_t i = 0; i < n; ++i) {
             stage[i].setPosition(_particles[i].getPosition() + k2x[i] * (0.5f * deltaTime));
             stage[i].setVelocity(_particles[i].getVelocity() + k2v[i] * (0.5f * deltaTime));
@@ -118,7 +124,7 @@ void ParticleSystem::update(float deltaTime) {
         }
         computeOctreeAcceleration(stage, k3v);
 
-        stage = _particles;
+        resetStage();
         for (size_t i = 0; i < n; ++i) {
             stage[i].setPosition(_particles[i].getPosition() + k3x[i] * deltaTime);
             stage[i].setVelocity(_particles[i].getVelocity() + k3v[i] * deltaTime);
@@ -133,9 +139,14 @@ void ParticleSystem::update(float deltaTime) {
             _particles[i].setPosition(_particles[i].getPosition() + weightedPos * deltaTime);
             _particles[i].setPressure(weightedVel * 100.0f);
         }
-        applySphCorrection();
+        if (!applySphCorrection(true)) {
+            return false;
+        }
+        if (_sphEnabled && !syncParticlesFromDevice()) {
+            return false;
+        }
         applyThermalModel(deltaTime);
-        return;
+        return true;
     }
 
     if (_solverMode == SolverMode::OctreeGpu) {
@@ -147,54 +158,54 @@ void ParticleSystem::update(float deltaTime) {
             }
         }
         if (!d_particles) {
-            return;
+            return false;
         }
         _octree.build(_particles);
         _octree.exportGpu(_octreeGpuNodes, _octreeGpuLeafIndices);
         const int rootIndex = _octree.getRootIndex();
         if (rootIndex < 0 || _octreeGpuNodes.empty()) {
-            return;
+            return false;
         }
 
         if (!checkCudaStatus(
                 cudaMemcpy(last, _particles.data(), _particles.size() * sizeof(Particle), cudaMemcpyHostToDevice),
                 "cudaMemcpy(HtoD base octree_gpu)")) {
-            return;
+            return false;
         }
 
-        if (_dOctreeNodeCapacity < _octreeGpuNodes.size()) {
-            if (_dOctreeNodes) {
-                cudaFree(_dOctreeNodes);
-                _dOctreeNodes = nullptr;
+        if (g_dOctreeNodeCapacity < _octreeGpuNodes.size()) {
+            if (g_dOctreeNodes) {
+                cudaFree(g_dOctreeNodes);
+                g_dOctreeNodes = nullptr;
             }
-            if (!checkCudaStatus(cudaMalloc(&_dOctreeNodes, _octreeGpuNodes.size() * sizeof(GpuOctreeNode)), "cudaMalloc(d_octree_nodes)")) {
-                _dOctreeNodeCapacity = 0;
-                return;
+            if (!checkCudaStatus(cudaMalloc(&g_dOctreeNodes, _octreeGpuNodes.size() * sizeof(GpuOctreeNode)), "cudaMalloc(d_octree_nodes)")) {
+                g_dOctreeNodeCapacity = 0;
+                return false;
             }
-            _dOctreeNodeCapacity = _octreeGpuNodes.size();
+            g_dOctreeNodeCapacity = _octreeGpuNodes.size();
         }
-        if (_dOctreeLeafCapacity < _octreeGpuLeafIndices.size()) {
-            if (_dOctreeLeafIndices) {
-                cudaFree(_dOctreeLeafIndices);
-                _dOctreeLeafIndices = nullptr;
+        if (g_dOctreeLeafCapacity < _octreeGpuLeafIndices.size()) {
+            if (g_dOctreeLeafIndices) {
+                cudaFree(g_dOctreeLeafIndices);
+                g_dOctreeLeafIndices = nullptr;
             }
-            if (!checkCudaStatus(cudaMalloc(&_dOctreeLeafIndices, _octreeGpuLeafIndices.size() * sizeof(int)), "cudaMalloc(d_octree_leaf_indices)")) {
-                _dOctreeLeafCapacity = 0;
-                return;
+            if (!checkCudaStatus(cudaMalloc(&g_dOctreeLeafIndices, _octreeGpuLeafIndices.size() * sizeof(int)), "cudaMalloc(d_octree_leaf_indices)")) {
+                g_dOctreeLeafCapacity = 0;
+                return false;
             }
-            _dOctreeLeafCapacity = _octreeGpuLeafIndices.size();
+            g_dOctreeLeafCapacity = _octreeGpuLeafIndices.size();
         }
 
         if (!checkCudaStatus(
-                cudaMemcpy(_dOctreeNodes, _octreeGpuNodes.data(), _octreeGpuNodes.size() * sizeof(GpuOctreeNode), cudaMemcpyHostToDevice),
+                cudaMemcpy(g_dOctreeNodes, _octreeGpuNodes.data(), _octreeGpuNodes.size() * sizeof(GpuOctreeNode), cudaMemcpyHostToDevice),
                 "cudaMemcpy(HtoD octree nodes)")) {
-            return;
+            return false;
         }
         if (!_octreeGpuLeafIndices.empty()) {
             if (!checkCudaStatus(
-                    cudaMemcpy(_dOctreeLeafIndices, _octreeGpuLeafIndices.data(), _octreeGpuLeafIndices.size() * sizeof(int), cudaMemcpyHostToDevice),
+                    cudaMemcpy(g_dOctreeLeafIndices, _octreeGpuLeafIndices.data(), _octreeGpuLeafIndices.size() * sizeof(int), cudaMemcpyHostToDevice),
                     "cudaMemcpy(HtoD octree leaf indices)")) {
-                return;
+                return false;
             }
         }
 
@@ -202,28 +213,28 @@ void ParticleSystem::update(float deltaTime) {
             last,
             d_particles,
             static_cast<int>(_particles.size()),
-            _dOctreeNodes,
+            g_dOctreeNodes,
             rootIndex,
-            _dOctreeLeafIndices,
+            g_dOctreeLeafIndices,
             _octreeTheta,
-            _octreeSoftening,
+            softening,
             deltaTime
         );
         if (!checkCudaStatus(cudaGetLastError(), "updateParticlesOctree kernel launch")) {
-            return;
+            return false;
         }
         if (!checkCudaStatus(cudaDeviceSynchronize(), "updateParticlesOctree kernel sync")) {
-            return;
+            return false;
         }
 
-        if (!checkCudaStatus(
-                cudaMemcpy(_particles.data(), d_particles, _particles.size() * sizeof(Particle), cudaMemcpyDeviceToHost),
-                "cudaMemcpy(DtoH particles octree_gpu)")) {
-            return;
+        if (!applySphCorrection(false)) {
+            return false;
         }
-        applySphCorrection();
+        if (!syncParticlesFromDevice()) {
+            return false;
+        }
         applyThermalModel(deltaTime);
-        return;
+        return true;
     }
 
 #ifdef GRAVITY_PROFILE_LOGS
@@ -234,7 +245,7 @@ void ParticleSystem::update(float deltaTime) {
 #endif
 
     if (!d_particles || !last) {
-        return;
+        return false;
     }
 
     const int numParticles = static_cast<int>(_particles.size());
@@ -243,7 +254,7 @@ void ParticleSystem::update(float deltaTime) {
     if (!checkCudaStatus(
             cudaMemcpy(last, _particles.data(), _particles.size() * sizeof(Particle), cudaMemcpyHostToDevice),
             "cudaMemcpy(HtoD base)")) {
-        return;
+        return false;
     }
 
     if (_integratorMode == IntegratorMode::Rk4) {
@@ -258,50 +269,50 @@ void ParticleSystem::update(float deltaTime) {
     if (_integratorMode == IntegratorMode::Rk4) {
         extractVelocityKernel<<<numBlocks, BLOCK_SIZE>>>(last, d_k1x, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k1 launch")) {
-            return;
+            return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, BLOCK_SIZE>>>(last, d_k1v, numParticles);
+        computePairwiseAccelerationKernel<<<numBlocks, BLOCK_SIZE>>>(last, d_k1v, numParticles, softening, kGravityMaxAcceleration);
         if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k1 launch")) {
-            return;
+            return false;
         }
 
         buildRk4StageKernel<<<numBlocks, BLOCK_SIZE>>>(last, d_k1x, d_k1v, 0.5f * deltaTime, d_stage, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "buildStage k2 launch")) {
-            return;
+            return false;
         }
         extractVelocityKernel<<<numBlocks, BLOCK_SIZE>>>(d_stage, d_k2x, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k2 launch")) {
-            return;
+            return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, BLOCK_SIZE>>>(d_stage, d_k2v, numParticles);
+        computePairwiseAccelerationKernel<<<numBlocks, BLOCK_SIZE>>>(d_stage, d_k2v, numParticles, softening, kGravityMaxAcceleration);
         if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k2 launch")) {
-            return;
+            return false;
         }
 
         buildRk4StageKernel<<<numBlocks, BLOCK_SIZE>>>(last, d_k2x, d_k2v, 0.5f * deltaTime, d_stage, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "buildStage k3 launch")) {
-            return;
+            return false;
         }
         extractVelocityKernel<<<numBlocks, BLOCK_SIZE>>>(d_stage, d_k3x, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k3 launch")) {
-            return;
+            return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, BLOCK_SIZE>>>(d_stage, d_k3v, numParticles);
+        computePairwiseAccelerationKernel<<<numBlocks, BLOCK_SIZE>>>(d_stage, d_k3v, numParticles, softening, kGravityMaxAcceleration);
         if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k3 launch")) {
-            return;
+            return false;
         }
 
         buildRk4StageKernel<<<numBlocks, BLOCK_SIZE>>>(last, d_k3x, d_k3v, deltaTime, d_stage, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "buildStage k4 launch")) {
-            return;
+            return false;
         }
         extractVelocityKernel<<<numBlocks, BLOCK_SIZE>>>(d_stage, d_k4x, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k4 launch")) {
-            return;
+            return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, BLOCK_SIZE>>>(d_stage, d_k4v, numParticles);
+        computePairwiseAccelerationKernel<<<numBlocks, BLOCK_SIZE>>>(d_stage, d_k4v, numParticles, softening, kGravityMaxAcceleration);
         if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k4 launch")) {
-            return;
+            return false;
         }
 
         finalizeRk4Kernel<<<numBlocks, BLOCK_SIZE>>>(
@@ -313,28 +324,27 @@ void ParticleSystem::update(float deltaTime) {
             numParticles
         );
         if (!checkCudaStatus(cudaGetLastError(), "finalizeRk4 launch")) {
-            return;
+            return false;
         }
         if (!checkCudaStatus(cudaDeviceSynchronize(), "rk4 kernel sync")) {
-            return;
+            return false;
         }
     } else {
-        updateParticles<<<numBlocks, BLOCK_SIZE>>>(last, d_particles, numParticles, deltaTime);
+        updateParticles<<<numBlocks, BLOCK_SIZE>>>(last, d_particles, numParticles, deltaTime, softening, kGravityMaxAcceleration);
         if (!checkCudaStatus(cudaGetLastError(), "updateParticles kernel launch")) {
-            return;
+            return false;
         }
         if (!checkCudaStatus(cudaDeviceSynchronize(), "updateParticles kernel sync")) {
-            return;
+            return false;
         }
     }
 
-    if (!checkCudaStatus(
-            cudaMemcpy(_particles.data(), d_particles, _particles.size() * sizeof(Particle), cudaMemcpyDeviceToHost),
-            "cudaMemcpy(DtoH particles)")) {
-        return;
+    if (!applySphCorrection(false)) {
+        return false;
     }
-
-    applySphCorrection();
+    if (!syncParticlesFromDevice()) {
+        return false;
+    }
     applyThermalModel(deltaTime);
 
 #ifdef GRAVITY_PROFILE_LOGS
@@ -344,10 +354,11 @@ void ParticleSystem::update(float deltaTime) {
     cudaEventElapsedTime(&milliseconds, start, stop);
     printf("Time elapsed: %f ms (%f fps) for computing %zu particles\n", milliseconds, 1000.0f / milliseconds, _particles.size());
 #endif
+    return true;
 }
 
 
-void destroyParticles(Particle *particles) {
+void destroyParticles(ParticleHandle particles) {
     if (d_particles) {
         cudaFree(d_particles);
         d_particles = nullptr;
@@ -359,6 +370,6 @@ void destroyParticles(Particle *particles) {
     releaseRk4Buffers();
     releaseSphBuffers();
 
-    free(particles);
+    (void)particles;
 }
 
