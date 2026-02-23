@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release-hosted-validate-and-package:
-    name: Release Hosted Validate and Package
+  release-integration-validate-and-package:
+    name: Release Integration Validate and Package
     runs-on: windows-latest
     timeout-minutes: 120
     steps:
@@ -44,14 +44,14 @@ jobs:
       - name: Configure
         shell: pwsh
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_BUILD_SFML_FRONTEND=OFF -DGRAVITY_BUILD_QT_FRONTEND=OFF
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         shell: pwsh
         run: |
           cmake --build build --parallel
 
-      - name: Run hosted-safe tests
+      - name: Run integration-safe tests
         shell: pwsh
         run: |
           ctest --test-dir build --output-on-failure --timeout 180 -LE gpu
@@ -67,8 +67,9 @@ jobs:
 
           $binaries = @(
             "myApp.exe",
-            "myAppFrontend.exe",
-            "myAppQt.exe"
+            "myAppBackend.exe",
+            "myAppHeadless.exe",
+            "myAppModuleHost.exe"
           )
 
           foreach ($binary in $binaries) {
