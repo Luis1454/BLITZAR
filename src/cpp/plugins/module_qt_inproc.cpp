@@ -7,6 +7,8 @@
 
 #include <QApplication>
 #include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
 #include <QMetaObject>
 
 #include <algorithm>
@@ -24,6 +26,14 @@
 #include <string_view>
 #include <thread>
 #include <vector>
+
+#if defined(_WIN32)
+#include <windows.h>
+#elif defined(__APPLE__)
+#include <mach-o/dyld.h>
+#else
+#include <unistd.h>
+#endif
 
 namespace {
 
@@ -107,14 +117,66 @@ struct QtInProcState {
     std::mutex startupMutex;
 };
 
+std::string currentExecutablePath()
+{
+#if defined(_WIN32)
+    std::vector<char> buffer(4096u, '\0');
+    const DWORD count = GetModuleFileNameA(nullptr, buffer.data(), static_cast<DWORD>(buffer.size()));
+    if (count == 0 || count >= buffer.size()) {
+        return {};
+    }
+    return std::string(buffer.data(), buffer.data() + count);
+#elif defined(__APPLE__)
+    std::vector<char> buffer(4096u, '\0');
+    std::uint32_t size = static_cast<std::uint32_t>(buffer.size());
+    if (_NSGetExecutablePath(buffer.data(), &size) != 0) {
+        return {};
+    }
+    return std::string(buffer.data());
+#else
+    std::vector<char> buffer(4096u, '\0');
+    const ssize_t count = readlink("/proc/self/exe", buffer.data(), buffer.size() - 1u);
+    if (count <= 0) {
+        return {};
+    }
+    buffer[static_cast<std::size_t>(count)] = '\0';
+    return std::string(buffer.data());
+#endif
+}
+
+void configureQtPluginPathFallback()
+{
+    const std::string exePath = currentExecutablePath();
+    if (exePath.empty()) {
+        return;
+    }
+    const QFileInfo exeInfo(QString::fromStdString(exePath));
+    const QString appDir = exeInfo.absolutePath();
+    const QString platformsDir = QDir(appDir).filePath("platforms");
+    if (QFileInfo::exists(platformsDir)) {
+        const QByteArray platformsUtf8 = platformsDir.toUtf8();
+        if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM_PLUGIN_PATH")) {
+            qputenv("QT_QPA_PLATFORM_PLUGIN_PATH", platformsUtf8);
+        }
+        if (qEnvironmentVariableIsEmpty("QT_PLUGIN_PATH")) {
+            qputenv("QT_PLUGIN_PATH", appDir.toUtf8());
+        }
+    }
+}
+
 void qtThreadMain(QtInProcState *state)
 {
     try {
         int argc = 1;
-        std::array<char, 32> appName{};
-        constexpr std::string_view kAppName = "gravityQtInProc";
-        std::copy(kAppName.begin(), kAppName.end(), appName.begin());
-        char *argv[] = {appName.data(), nullptr};
+        std::string appName = currentExecutablePath();
+        if (appName.empty()) {
+            appName = "gravityQtInProc";
+        }
+        std::vector<char> appNameBuffer(appName.begin(), appName.end());
+        appNameBuffer.push_back('\0');
+        char *argv[] = {appNameBuffer.data(), nullptr};
+
+        configureQtPluginPathFallback();
 
         QApplication app(argc, argv);
         SimulationConfig config = SimulationConfig::loadOrCreate(state->configPath);
