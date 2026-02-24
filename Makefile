@@ -75,6 +75,13 @@ run-headless-direct: all
 run-module-host: all
 	$(RUN_MODULE_HOST_BIN) $(ARGS)
 
+doctor:
+ifeq ($(OS),Windows_NT)
+	powershell -ExecutionPolicy Bypass -File scripts/dev/doctor.ps1 -QtDir "$(QT_DIR)" -BuildDir "$(BUILD_DIR)"
+else
+	@echo "doctor target currently implemented for Windows."
+endif
+
 deploy-qt:
 ifeq ($(OS),Windows_NT)
 	powershell -NoProfile -ExecutionPolicy Bypass -Command "if (!(Test-Path '$(WINDEPLOYQT)')) { throw 'windeployqt introuvable: $(WINDEPLOYQT)' }; if (!(Test-Path '$(QT_MODULE_LIB)')) { throw 'module Qt introuvable: $(QT_MODULE_LIB)' }; & '$(WINDEPLOYQT)' --dir '$(BUILD_DIR)' --release --compiler-runtime '$(QT_MODULE_LIB)'"
@@ -119,7 +126,7 @@ re: clean all
 
 ifeq ($(OS),Windows_NT)
 help:
-	@powershell -NoProfile -Command "Write-Host 'Targets:'; Write-Host '  make run            Build + deploy Qt + launch GUI (default Qt module)'; Write-Host '  make gui            Same as run'; Write-Host '  make qt             Same as run'; Write-Host '  make all            Configure + build'; Write-Host '  make deploy-qt      Deploy Qt runtime/plugins for module host'; Write-Host '  make run-backend    Run backend mode via main binary'; Write-Host '  make run-headless   Run headless mode via main binary'; Write-Host '  make clean          Remove build directory'; Write-Host '  make re             Clean + full rebuild'; Write-Host ''; Write-Host 'Useful vars:'; Write-Host '  CONFIG=<file>       Config file passed to module host (default: simulation.ini)'; Write-Host '  GUI_MODULE=<name>   Frontend module name (default: qt)'; Write-Host '  BUILD_DIR=<dir>     Build directory (default: build)'; Write-Host '  QT_DIR=<path>       Qt root path used by deploy tools'; Write-Host '  ARGS=''...''          Extra args forwarded to runtime'"
+	@powershell -NoProfile -Command "Write-Host 'Targets:'; Write-Host '  make run            Build + deploy Qt + launch GUI (default Qt module)'; Write-Host '  make gui            Same as run'; Write-Host '  make qt             Same as run'; Write-Host '  make all            Configure + build'; Write-Host '  make doctor         Validate local toolchain (CMake/CUDA/MSVC/Qt)'; Write-Host '  make deploy-qt      Deploy Qt runtime/plugins for module host'; Write-Host '  make run-backend    Run backend mode via main binary'; Write-Host '  make run-headless   Run headless mode via main binary'; Write-Host '  make clean          Remove build directory'; Write-Host '  make re             Clean + full rebuild'; Write-Host ''; Write-Host 'Useful vars:'; Write-Host '  CONFIG=<file>       Config file passed to module host (default: simulation.ini)'; Write-Host '  GUI_MODULE=<name>   Frontend module name (default: qt)'; Write-Host '  BUILD_DIR=<dir>     Build directory (default: build)'; Write-Host '  QT_DIR=<path>       Qt root path used by deploy tools'; Write-Host '  ARGS=''...''          Extra args forwarded to runtime'"
 else
 help:
 	@printf "Targets:\n"
@@ -127,6 +134,7 @@ help:
 	@printf "  make gui            Same as run\n"
 	@printf "  make qt             Same as run\n"
 	@printf "  make all            Configure + build\n"
+	@printf "  make doctor         Validate local toolchain (CMake/CUDA/MSVC/Qt)\n"
 	@printf "  make deploy-qt      Deploy Qt runtime/plugins for module host\n"
 	@printf "  make run-backend    Run backend mode via main binary\n"
 	@printf "  make run-headless   Run headless mode via main binary\n"
@@ -142,4 +150,4 @@ endif
 
 helper: help
 
-.PHONY: all build-dev build-run build-ci run run-ui gui qt run-backend run-headless run-backend-direct run-headless-direct run-module-host deploy-qt run-qt deps-graphics deps-graphics-vcpkg clean fclean re help helper
+.PHONY: all build-dev build-run build-ci run run-ui gui qt run-backend run-headless run-backend-direct run-headless-direct run-module-host doctor deploy-qt run-qt deps-graphics deps-graphics-vcpkg clean fclean re help helper
