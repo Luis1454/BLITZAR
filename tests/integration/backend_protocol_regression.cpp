@@ -6,11 +6,56 @@
 
 #include <chrono>
 #include <cmath>
+#include <cstdlib>
 #include <string>
 #include <thread>
 #include <vector>
 
 namespace {
+
+class ScopedEnvVar {
+    public:
+        ScopedEnvVar(const char *name, const char *value)
+            : _name(name), _hadValue(false)
+        {
+            const char *current = std::getenv(name);
+            if (current != nullptr) {
+                _hadValue = true;
+                _previousValue = current;
+            }
+            set(value);
+        }
+
+        ~ScopedEnvVar()
+        {
+            if (_hadValue) {
+                set(_previousValue.c_str());
+            } else {
+#if defined(_WIN32)
+                _putenv_s(_name.c_str(), "");
+#else
+                unsetenv(_name.c_str());
+#endif
+            }
+        }
+
+        ScopedEnvVar(const ScopedEnvVar &) = delete;
+        ScopedEnvVar &operator=(const ScopedEnvVar &) = delete;
+
+    private:
+        void set(const char *value)
+        {
+#if defined(_WIN32)
+            _putenv_s(_name.c_str(), value);
+#else
+            setenv(_name.c_str(), value, 1);
+#endif
+        }
+
+        std::string _name;
+        std::string _previousValue;
+        bool _hadValue;
+};
 
 TEST(BackendProtocolRegression, BackendClientParsesStatusAndSnapshotFromRealBackend)
 {
@@ -171,6 +216,46 @@ TEST(BackendProtocolRegression, BackendCoercesUnsupportedIntegratorForOctreeGpu)
     ASSERT_TRUE(client.getStatus(status).ok);
     EXPECT_EQ(status.solver, "octree_gpu");
     EXPECT_EQ(status.integrator, "euler");
+
+    client.disconnect();
+    backend.stop();
+}
+
+TEST(BackendProtocolRegression, BackendFallsBackToCpuAfterForcedCudaFailure)
+{
+    ScopedEnvVar forceCudaFail("GRAVITY_TEST_FORCE_CUDA_FAIL_ONCE", "1");
+
+    RealBackendHarness backend;
+    std::string startError;
+    ASSERT_TRUE(backend.start(startError)) << startError;
+
+    BackendClient client;
+    client.setSocketTimeoutMs(200);
+    ASSERT_TRUE(client.connect("127.0.0.1", backend.port()));
+
+    BackendClientResponse response = client.sendCommand(std::string(sim::protocol::cmd::SetSolver), "\"value\":\"octree_gpu\"");
+    ASSERT_TRUE(response.ok) << response.error;
+    response = client.sendCommand(std::string(sim::protocol::cmd::SetIntegrator), "\"value\":\"euler\"");
+    ASSERT_TRUE(response.ok) << response.error;
+
+    response = client.sendCommand(std::string(sim::protocol::cmd::Step), "\"count\":1");
+    ASSERT_TRUE(response.ok) << response.error;
+
+    BackendClientStatus status{};
+    bool switchedToCpu = false;
+    for (int attempt = 0; attempt < 60; ++attempt) {
+        const BackendClientResponse statusResponse = client.getStatus(status);
+        ASSERT_TRUE(statusResponse.ok) << statusResponse.error;
+        if (status.solver == "octree_cpu") {
+            switchedToCpu = true;
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+
+    ASSERT_TRUE(switchedToCpu) << "solver never switched to octree_cpu after forced CUDA failure";
+    EXPECT_FALSE(status.faulted);
+    EXPECT_TRUE(status.faultReason.empty());
 
     client.disconnect();
     backend.stop();

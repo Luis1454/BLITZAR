@@ -129,6 +129,24 @@ bool isAutoSolverFallbackEnabled()
     return v == "1" || v == "true" || v == "on" || v == "yes";
 }
 
+bool shouldForceCudaFailureOnceForTesting(std::string_view solver)
+{
+    if (solver != sim::modes::kSolverPairwiseCuda && solver != sim::modes::kSolverOctreeGpu) {
+        return false;
+    }
+    const std::string raw = readEnvironment("GRAVITY_TEST_FORCE_CUDA_FAIL_ONCE");
+    if (raw.empty()) {
+        return false;
+    }
+    const std::string v = toLower(trim(raw));
+    if (!(v == "1" || v == "true" || v == "on" || v == "yes")) {
+        return false;
+    }
+    static std::atomic<bool> injected{false};
+    bool expected = false;
+    return injected.compare_exchange_strong(expected, true, std::memory_order_relaxed);
+}
+
 bool enforceSolverIntegratorCompatibility(std::string &solver, std::string &integrator, std::string_view source)
 {
     if (solver == sim::modes::kSolverOctreeGpu && integrator == sim::modes::kIntegratorRk4) {
@@ -1886,6 +1904,11 @@ void SimulationBackend::loop()
         const bool steppedWhilePaused = _paused.load(std::memory_order_relaxed) && stepBatch > 0;
         for (std::uint32_t i = 0; i < stepBatch; ++i) {
             if (!_running.load(std::memory_order_relaxed) || _resetRequested.load(std::memory_order_relaxed)) {
+                break;
+            }
+            if (shouldForceCudaFailureOnceForTesting(solverMode)) {
+                std::cerr << "[backend] forcing CUDA failure once for integration test\n";
+                updateFailed = true;
                 break;
             }
             const float dt = std::max(1e-6f, _dt.load(std::memory_order_relaxed));
