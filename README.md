@@ -14,9 +14,37 @@ If a badge shows `invalid`, enable Pages with source `GitHub Actions` in reposit
 
 ## Build
 
+Quick start (GUI Qt, zero flags):
+
+```bash
+make run
+```
+
+Command helper:
+
+```bash
+make help
+```
+
 ```bash
 cmake -S . -B build -G Ninja
 cmake --build build
+```
+
+Windows shortcut without CMake presets (`dev/run/ci` profiles):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1 -Profile dev -Clean
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1 -Profile run
+powershell -ExecutionPolicy Bypass -File scripts/build.ps1 -Profile ci -Clean
+```
+
+Equivalent `make` targets:
+
+```bash
+make build-dev
+make build-run
+make build-ci
 ```
 
 By default, this builds:
