@@ -76,30 +76,31 @@ Push-Location $repoRoot
 try {
     $resolvedVsDevCmd = Get-VsDevCmdPath -OverridePath $VsDevCmdPath
 
-    $buildType = "Release"
-    $buildTests = "OFF"
-    switch ($Profile) {
-        "dev" {
-            $buildType = "Debug"
-            $buildTests = "ON"
-            if ([string]::IsNullOrWhiteSpace($BuildDir)) {
-                $BuildDir = "build-dev"
-            }
+    $profileSettings = @{
+        "dev" = @{
+            BuildType = "Debug"
+            BuildTests = "ON"
+            DefaultBuildDir = "build-dev"
         }
-        "run" {
-            $buildType = "Release"
-            $buildTests = "OFF"
-            if ([string]::IsNullOrWhiteSpace($BuildDir)) {
-                $BuildDir = "build-run"
-            }
+        "run" = @{
+            BuildType = "Release"
+            BuildTests = "OFF"
+            DefaultBuildDir = "build-run"
         }
-        "ci" {
-            $buildType = "Release"
-            $buildTests = "ON"
-            if ([string]::IsNullOrWhiteSpace($BuildDir)) {
-                $BuildDir = "build-ci"
-            }
+        "ci" = @{
+            BuildType = "Release"
+            BuildTests = "ON"
+            DefaultBuildDir = "build-ci"
         }
+    }
+    $settings = $profileSettings[$Profile]
+    if ($null -eq $settings) {
+        throw "Unsupported profile: $Profile"
+    }
+    $buildType = [string]$settings.BuildType
+    $buildTests = [string]$settings.BuildTests
+    if ([string]::IsNullOrWhiteSpace($BuildDir)) {
+        $BuildDir = [string]$settings.DefaultBuildDir
     }
 
     if ($Clean -and (Test-Path -LiteralPath $BuildDir)) {
