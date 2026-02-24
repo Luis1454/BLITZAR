@@ -58,6 +58,7 @@ struct SimulationStats {
     float energyDriftPct;
     bool energyEstimated;
     std::string solverName;
+    std::string integratorName;
 };
 
 #endif // GRAVITY_SIM_SIMULATIONTYPES_HPP

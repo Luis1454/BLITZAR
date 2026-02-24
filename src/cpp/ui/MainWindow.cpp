@@ -650,6 +650,26 @@ void MainWindow::tick()
 
     std::vector<RenderParticle> snapshot;
     const SimulationStats stats = _runtime->getCachedStats();
+    if (_solverCombo && !stats.solverName.empty()) {
+        const QString solverText = QString::fromStdString(stats.solverName);
+        const int solverIndex = _solverCombo->findText(solverText);
+        if (solverIndex >= 0 && _solverCombo->currentIndex() != solverIndex) {
+            _solverCombo->blockSignals(true);
+            _solverCombo->setCurrentIndex(solverIndex);
+            _solverCombo->blockSignals(false);
+            _config.solver = stats.solverName;
+        }
+    }
+    if (_integratorCombo && !stats.integratorName.empty()) {
+        const QString integratorText = QString::fromStdString(stats.integratorName);
+        const int integratorIndex = _integratorCombo->findText(integratorText);
+        if (integratorIndex >= 0 && _integratorCombo->currentIndex() != integratorIndex) {
+            _integratorCombo->blockSignals(true);
+            _integratorCombo->setCurrentIndex(integratorIndex);
+            _integratorCombo->blockSignals(false);
+            _config.integrator = stats.integratorName;
+        }
+    }
     size_t snapshotSize = 0u;
     const bool gotSnapshot = _runtime->consumeLatestSnapshot(snapshot, &snapshotSize);
     const std::string linkLabel = _runtime->linkStateLabel();
@@ -671,11 +691,12 @@ void MainWindow::tick()
     }
 
     _statusLabel->setText(
-        QString("state=%1 | link=%2 owner=%3 | solver=%4 | sph=%5 | dt=%6 | backend=%7 step/s | ui=%8 fps | steps=%9 | particles=%10 draw=%11 cap=%12 | data=stats:%13 snap:%14 %15 | Ekin=%16 Epot=%17 Eth=%18 Erad=%19 Etot=%20 | dE=%21%% %22")
+        QString("state=%1 | link=%2 owner=%3 | solver=%4 integrator=%5 | sph=%6 | dt=%7 | backend=%8 step/s | ui=%9 fps | steps=%10 | particles=%11 draw=%12 cap=%13 | data=stats:%14 snap:%15 %16 | Ekin=%17 Epot=%18 Eth=%19 Erad=%20 Etot=%21 | dE=%22%% %23")
             .arg(stats.faulted ? "FAULT" : (stats.paused ? "PAUSED" : "RUNNING"))
             .arg(QString::fromStdString(linkLabel))
             .arg(QString::fromStdString(ownerLabel))
             .arg(QString::fromStdString(stats.solverName))
+            .arg(QString::fromStdString(stats.integratorName))
             .arg(stats.sphEnabled ? "on" : "off")
             .arg(stats.dt, 0, 'f', 5)
             .arg(stats.backendFps, 0, 'f', 1)
@@ -711,6 +732,7 @@ void MainWindow::tick()
                   << " link=" << linkLabel
                   << " owner=" << ownerLabel
                   << " solver=" << stats.solverName
+                  << " integrator=" << stats.integratorName
                   << " sph=" << (stats.sphEnabled ? "on" : "off")
                   << " step_s=" << stats.backendFps
                   << " ui_fps=" << _uiTickFps

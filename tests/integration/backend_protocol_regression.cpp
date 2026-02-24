@@ -28,6 +28,7 @@ TEST(BackendProtocolRegression, BackendClientParsesStatusAndSnapshotFromRealBack
     EXPECT_GT(status.particleCount, 0u);
     EXPECT_GT(status.dt, 0.0f);
     EXPECT_FALSE(status.solver.empty());
+    EXPECT_FALSE(status.integrator.empty());
     EXPECT_FALSE(status.faulted);
     EXPECT_TRUE(status.faultReason.empty());
     EXPECT_TRUE(std::isfinite(status.totalEnergy));
@@ -142,6 +143,34 @@ TEST(BackendProtocolRegression, BackendRejectsInvalidSolverAndIntegratorCommands
     response = client.sendCommand(std::string(sim::protocol::cmd::SetIntegrator), "\"value\":\"not_an_integrator\"");
     ASSERT_FALSE(response.ok);
     EXPECT_NE(response.error.find("invalid integrator"), std::string::npos);
+
+    client.disconnect();
+    backend.stop();
+}
+
+TEST(BackendProtocolRegression, BackendCoercesUnsupportedIntegratorForOctreeGpu)
+{
+    RealBackendHarness backend;
+    std::string startError;
+    ASSERT_TRUE(backend.start(startError)) << startError;
+
+    BackendClient client;
+    client.setSocketTimeoutMs(200);
+    ASSERT_TRUE(client.connect("127.0.0.1", backend.port()));
+
+    BackendClientResponse response = client.sendCommand(std::string(sim::protocol::cmd::Pause));
+    ASSERT_TRUE(response.ok) << response.error;
+
+    response = client.sendCommand(std::string(sim::protocol::cmd::SetSolver), "\"value\":\"octree_gpu\"");
+    ASSERT_TRUE(response.ok) << response.error;
+
+    response = client.sendCommand(std::string(sim::protocol::cmd::SetIntegrator), "\"value\":\"rk4\"");
+    ASSERT_TRUE(response.ok) << response.error;
+
+    BackendClientStatus status{};
+    ASSERT_TRUE(client.getStatus(status).ok);
+    EXPECT_EQ(status.solver, "octree_gpu");
+    EXPECT_EQ(status.integrator, "euler");
 
     client.disconnect();
     backend.stop();

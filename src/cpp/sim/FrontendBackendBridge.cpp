@@ -786,6 +786,7 @@ SimulationStats FrontendBackendBridge::fromRemoteStatus(const BackendClientStatu
     stats.energyDriftPct = status.energyDriftPct;
     stats.energyEstimated = status.energyEstimated;
     stats.solverName = status.solver;
+    stats.integratorName = status.integrator;
     return stats;
 }
 

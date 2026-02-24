@@ -129,6 +129,17 @@ bool isAutoSolverFallbackEnabled()
     return v == "1" || v == "true" || v == "on" || v == "yes";
 }
 
+bool enforceSolverIntegratorCompatibility(std::string &solver, std::string &integrator, std::string_view source)
+{
+    if (solver == sim::modes::kSolverOctreeGpu && integrator == sim::modes::kIntegratorRk4) {
+        std::cerr << "[backend] " << source
+                  << ": integrator rk4 is not supported with solver octree_gpu, forcing euler\n";
+        integrator.assign(sim::modes::kIntegratorEuler);
+        return true;
+    }
+    return false;
+}
+
 std::string defaultExportPath(const std::string &directory, const std::string &format, std::uint64_t step)
 {
     const auto now = std::chrono::system_clock::now();
@@ -902,6 +913,7 @@ SimulationBackend::SimulationBackend(const std::string &configPath)
         _integratorMode = sim::modes::normalizeIntegrator(loaded.integrator, integratorCanonical)
             ? integratorCanonical
             : std::string(sim::modes::kIntegratorEuler);
+        enforceSolverIntegratorCompatibility(_solverMode, _integratorMode, "config");
         _octreeTheta = loaded.octreeTheta;
         _octreeSoftening = loaded.octreeSoftening;
         _sphEnabled = loaded.sphEnabled;
@@ -1023,9 +1035,15 @@ void SimulationBackend::setSolverMode(const std::string &mode)
     bool changed = false;
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
-        if (_solverMode != canonical) {
-            _solverMode = canonical;
+        std::string nextSolver = canonical;
+        std::string nextIntegrator = _integratorMode;
+        const bool coerced = enforceSolverIntegratorCompatibility(nextSolver, nextIntegrator, "set_solver");
+        if (_solverMode != nextSolver || _integratorMode != nextIntegrator) {
+            _solverMode = nextSolver;
+            _integratorMode = nextIntegrator;
             changed = true;
+            _runtimeConfigMirror.solver = _solverMode;
+            _runtimeConfigMirror.integrator = _integratorMode;
         }
     }
     if (changed && _running.load(std::memory_order_relaxed)) {
@@ -1043,9 +1061,15 @@ void SimulationBackend::setIntegratorMode(const std::string &mode)
     bool changed = false;
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
-        if (_integratorMode != canonical) {
-            _integratorMode = canonical;
+        std::string nextSolver = _solverMode;
+        std::string nextIntegrator = canonical;
+        enforceSolverIntegratorCompatibility(nextSolver, nextIntegrator, "set_integrator");
+        if (_solverMode != nextSolver || _integratorMode != nextIntegrator) {
+            _solverMode = nextSolver;
+            _integratorMode = nextIntegrator;
             changed = true;
+            _runtimeConfigMirror.solver = _solverMode;
+            _runtimeConfigMirror.integrator = _integratorMode;
         }
     }
     if (changed && _running.load(std::memory_order_relaxed)) {
@@ -1177,11 +1201,13 @@ bool SimulationBackend::copyLatestSnapshot(std::vector<RenderParticle> &outSnaps
 SimulationStats SimulationBackend::getStats() const
 {
     ParticleSystem::SolverMode mode = ParticleSystem::SolverMode::PairwiseCuda;
+    std::string integratorMode;
     std::uint32_t particleCount = 0u;
     bool sphEnabled = false;
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
         mode = solverModeFromCanonicalName(_solverMode);
+        integratorMode = _integratorMode;
         particleCount = _particleCount;
         sphEnabled = _sphEnabled;
     }
@@ -1207,7 +1233,8 @@ SimulationStats SimulationBackend::getStats() const
         _totalEnergy.load(std::memory_order_relaxed),
         _energyDriftPct.load(std::memory_order_relaxed),
         _energyEstimated.load(std::memory_order_relaxed),
-        std::string(solverLabel(mode))
+        std::string(solverLabel(mode)),
+        integratorMode
     };
 }
 
@@ -1336,6 +1363,7 @@ void SimulationBackend::rebuildSystem()
             integrator.assign(sim::modes::kIntegratorEuler);
             std::cerr << "[backend] invalid internal integrator mode detected, resetting to euler\n";
         }
+        enforceSolverIntegratorCompatibility(solver, integrator, "rebuild");
     }
 
     std::vector<Particle> importedParticles;
@@ -1367,6 +1395,7 @@ void SimulationBackend::rebuildSystem()
                       << " or GRAVITY_AUTO_SOLVER_FALLBACK=1\n";
         }
     }
+    enforceSolverIntegratorCompatibility(effectiveSolver, integrator, "rebuild");
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
         _solverMode = effectiveSolver;

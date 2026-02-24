@@ -111,6 +111,7 @@ bool commandStatus(ModuleState &state, char *errorBuffer, std::size_t errorBuffe
               << " step=" << status.steps
               << " dt=" << status.dt
               << " solver=" << status.solver
+              << " integrator=" << status.integrator
               << " sph=" << (status.sphEnabled ? "on" : "off")
               << " sps=" << status.backendFps
               << " particles=" << status.particleCount

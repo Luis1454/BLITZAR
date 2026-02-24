@@ -24,6 +24,7 @@ struct BackendClientStatus {
     float backendFps = 0.0f;
     std::uint32_t particleCount = 0;
     std::string solver;
+    std::string integrator;
     float kineticEnergy = 0.0f;
     float potentialEnergy = 0.0f;
     float thermalEnergy = 0.0f;

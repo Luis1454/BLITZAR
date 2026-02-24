@@ -497,6 +497,7 @@ BackendClientResponse BackendClient::getStatus(BackendClientStatus &outStatus)
         extractJsonNumber(response.raw, "backend_fps", parsed.backendFps);
         extractJsonNumber(response.raw, "particles", parsed.particleCount);
         extractJsonString(response.raw, "solver", parsed.solver);
+        extractJsonString(response.raw, "integrator", parsed.integrator);
         extractJsonNumber(response.raw, "ekin", parsed.kineticEnergy);
         extractJsonNumber(response.raw, "epot", parsed.potentialEnergy);
         extractJsonNumber(response.raw, "eth", parsed.thermalEnergy);

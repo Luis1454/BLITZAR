@@ -468,6 +468,7 @@ std::string BackendServer::processRequest(const std::string &request)
                 << ",\"backend_fps\":" << stats.backendFps
                 << ",\"particles\":" << stats.particleCount
                 << ",\"solver\":\"" << jsonEscape(stats.solverName) << "\""
+                << ",\"integrator\":\"" << jsonEscape(stats.integratorName) << "\""
                 << ",\"ekin\":" << stats.kineticEnergy
                 << ",\"epot\":" << stats.potentialEnergy
                 << ",\"eth\":" << stats.thermalEnergy
