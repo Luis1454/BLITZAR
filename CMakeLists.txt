@@ -90,6 +90,11 @@ option(GRAVITY_BUILD_FRONTEND_MODULE_HOST "Build dynamic module host frontend" O
 option(GRAVITY_BUILD_FRONTEND_MODULES "Build sample dynamic frontend modules" ON)
 option(GRAVITY_BUILD_TESTS "Build deterministic physics regression tests" ON)
 option(GRAVITY_PROFILE_LOGS "Print backend timings each update" OFF)
+option(
+    GRAVITY_SUPPRESS_KNOWN_CUDA_TOOLCHAIN_WARNINGS
+    "Suppress known noisy NVCC/EDG warnings from system/third-party headers on Windows toolchains"
+    ON
+)
 
 set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
@@ -240,6 +245,15 @@ function(configure_gravity_target target_name)
             PRIVATE
                 $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/Zc:__cplusplus>
         )
+        if(GRAVITY_SUPPRESS_KNOWN_CUDA_TOOLCHAIN_WARNINGS)
+            target_compile_options(${target_name}
+                PRIVATE
+                    $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=128>
+                    $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=186>
+                    $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=1388>
+                    $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=1394>
+            )
+        endif()
     endif()
 
     if(WIN32)
