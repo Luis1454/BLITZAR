@@ -64,10 +64,10 @@ class SimulationBackend : public sim::ILocalBackend {
         void loop();
         void publishSnapshot();
         void rebuildSystem();
-        EnergyValues computeEnergyValues() const;
+        EnergyValues computeEnergyValues();
         void maybeUpdateEnergy(std::uint64_t currentStep);
         void processPendingExport();
-        bool exportCurrentState(const std::string &outputPath, const std::string &format) const;
+        bool exportCurrentState(const std::string &outputPath, const std::string &format);
         bool loadInitialState(std::vector<Particle> &outParticles, const std::string &inputPath, const std::string &format) const;
 
         std::atomic<bool> _running;

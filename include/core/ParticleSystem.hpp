@@ -41,6 +41,7 @@ class ParticleSystem {
         void setIntegratorMode(IntegratorMode mode);
         IntegratorMode getIntegratorMode() const;
         void syncDeviceState();
+        bool syncHostState();
 
         const std::vector<Particle> &getParticles() const;
         bool setParticles(std::vector<Particle> particles);
@@ -73,6 +74,7 @@ class ParticleSystem {
         std::vector<GpuOctreeNode> _octreeGpuNodes;
         std::vector<int> _octreeGpuLeafIndices;
         std::size_t _deviceParticleCapacity;
+        bool _hostStateDirty;
 };
 
 #endif /* !PARTICLESYSTEM_HPP_ */

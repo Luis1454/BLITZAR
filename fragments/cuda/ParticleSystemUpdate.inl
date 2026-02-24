@@ -1,9 +1,8 @@
 bool ParticleSystem::update(float deltaTime) {
     const float softening = std::max(1e-4f, _octreeSoftening);
+    const bool thermalActive = (_thermalHeatingCoeff > 0.0f || _thermalRadiationCoeff > 0.0f);
     auto syncParticlesFromDevice = [&]() -> bool {
-        return checkCudaStatus(
-            cudaMemcpy(_particles.data(), d_particles, _particles.size() * sizeof(Particle), cudaMemcpyDeviceToHost),
-            "cudaMemcpy(DtoH particles)");
+        return syncHostState();
     };
     auto applySphCorrection = [&](bool uploadHostState) -> bool {
         if (!_sphEnabled) {
@@ -56,10 +55,14 @@ bool ParticleSystem::update(float deltaTime) {
         if (!checkCudaStatus(cudaDeviceSynchronize(), "sph kernels sync")) {
             return false;
         }
+        _hostStateDirty = true;
         return true;
     };
 
     if (_solverMode == SolverMode::OctreeCpu) {
+        if (!syncParticlesFromDevice()) {
+            return false;
+        }
         if (_integratorMode != IntegratorMode::Rk4) {
             _octree.build(_particles);
             if (_octreeForces.size() != _particles.size()) {
@@ -81,7 +84,10 @@ bool ParticleSystem::update(float deltaTime) {
             if (_sphEnabled && !syncParticlesFromDevice()) {
                 return false;
             }
-            applyThermalModel(deltaTime);
+            if (thermalActive) {
+                applyThermalModel(deltaTime);
+            }
+            syncDeviceState();
             return true;
         }
 
@@ -145,7 +151,10 @@ bool ParticleSystem::update(float deltaTime) {
         if (_sphEnabled && !syncParticlesFromDevice()) {
             return false;
         }
-        applyThermalModel(deltaTime);
+        if (thermalActive) {
+            applyThermalModel(deltaTime);
+        }
+        syncDeviceState();
         return true;
     }
 
@@ -160,6 +169,9 @@ bool ParticleSystem::update(float deltaTime) {
         if (!d_particles) {
             return false;
         }
+        if (!syncParticlesFromDevice()) {
+            return false;
+        }
         _octree.build(_particles);
         _octree.exportGpu(_octreeGpuNodes, _octreeGpuLeafIndices);
         const int rootIndex = _octree.getRootIndex();
@@ -168,8 +180,8 @@ bool ParticleSystem::update(float deltaTime) {
         }
 
         if (!checkCudaStatus(
-                cudaMemcpy(last, _particles.data(), _particles.size() * sizeof(Particle), cudaMemcpyHostToDevice),
-                "cudaMemcpy(HtoD base octree_gpu)")) {
+                cudaMemcpy(last, d_particles, _particles.size() * sizeof(Particle), cudaMemcpyDeviceToDevice),
+                "cudaMemcpy(DtoD base octree_gpu)")) {
             return false;
         }
 
@@ -230,10 +242,14 @@ bool ParticleSystem::update(float deltaTime) {
         if (!applySphCorrection(false)) {
             return false;
         }
-        if (!syncParticlesFromDevice()) {
-            return false;
+        _hostStateDirty = true;
+        if (thermalActive) {
+            if (!syncParticlesFromDevice()) {
+                return false;
+            }
+            applyThermalModel(deltaTime);
+            syncDeviceState();
         }
-        applyThermalModel(deltaTime);
         return true;
     }
 
@@ -252,8 +268,8 @@ bool ParticleSystem::update(float deltaTime) {
     const int numBlocks = (numParticles + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
     if (!checkCudaStatus(
-            cudaMemcpy(last, _particles.data(), _particles.size() * sizeof(Particle), cudaMemcpyHostToDevice),
-            "cudaMemcpy(HtoD base)")) {
+            cudaMemcpy(last, d_particles, _particles.size() * sizeof(Particle), cudaMemcpyDeviceToDevice),
+            "cudaMemcpy(DtoD base)")) {
         return false;
     }
 
@@ -342,10 +358,14 @@ bool ParticleSystem::update(float deltaTime) {
     if (!applySphCorrection(false)) {
         return false;
     }
-    if (!syncParticlesFromDevice()) {
-        return false;
+    _hostStateDirty = true;
+    if (thermalActive) {
+        if (!syncParticlesFromDevice()) {
+            return false;
+        }
+        applyThermalModel(deltaTime);
+        syncDeviceState();
     }
-    applyThermalModel(deltaTime);
 
 #ifdef GRAVITY_PROFILE_LOGS
     cudaEventRecord(stop);
@@ -356,7 +376,6 @@ bool ParticleSystem::update(float deltaTime) {
 #endif
     return true;
 }
-
 
 void destroyParticles(ParticleHandle particles) {
     if (d_particles) {
@@ -372,4 +391,3 @@ void destroyParticles(ParticleHandle particles) {
 
     (void)particles;
 }
-

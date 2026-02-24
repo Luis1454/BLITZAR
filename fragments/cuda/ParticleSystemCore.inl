@@ -19,6 +19,7 @@ ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
     g_dOctreeNodeCapacity = 0;
     g_dOctreeLeafCapacity = 0;
     _deviceParticleCapacity = static_cast<std::size_t>(clampedParticles);
+    _hostStateDirty = false;
     d_particles = nullptr;
     last = nullptr;
 
@@ -250,6 +251,7 @@ bool ParticleSystem::setParticles(std::vector<Particle> particles)
         return false;
     }
     _particles = std::move(particles);
+    _hostStateDirty = false;
     return true;
 }
 
@@ -274,6 +276,25 @@ void ParticleSystem::syncDeviceState()
     checkCudaStatus(
         cudaMemcpy(last, _particles.data(), bytes, cudaMemcpyHostToDevice),
         "cudaMemcpy(HtoD sync last)");
+    _hostStateDirty = false;
+}
+
+bool ParticleSystem::syncHostState()
+{
+    if (!_hostStateDirty) {
+        return true;
+    }
+    if (!d_particles || _particles.empty()) {
+        return false;
+    }
+    const std::size_t bytes = _particles.size() * sizeof(Particle);
+    if (!checkCudaStatus(
+            cudaMemcpy(_particles.data(), d_particles, bytes, cudaMemcpyDeviceToHost),
+            "cudaMemcpy(DtoH sync particles)")) {
+        return false;
+    }
+    _hostStateDirty = false;
+    return true;
 }
 
 void ParticleSystem::setUseOctree(bool enabled)

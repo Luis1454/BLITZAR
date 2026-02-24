@@ -1456,6 +1456,9 @@ void SimulationBackend::publishSnapshot()
     if (!_system) {
         return;
     }
+    if (!_system->syncHostState()) {
+        return;
+    }
     const std::vector<Particle> &particles = _system->getParticles();
     const size_t count = particles.size();
     if (_scratchSnapshot.size() != count) {
@@ -1476,10 +1479,14 @@ void SimulationBackend::publishSnapshot()
     _publishedSnapshot.swap(_scratchSnapshot);
 }
 
-SimulationBackend::EnergyValues SimulationBackend::computeEnergyValues() const
+SimulationBackend::EnergyValues SimulationBackend::computeEnergyValues()
 {
     EnergyValues values{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, false};
     if (!_system) {
+        return values;
+    }
+    if (!_system->syncHostState()) {
+        values.estimated = true;
         return values;
     }
     const std::vector<Particle> &particles = _system->getParticles();
@@ -1610,9 +1617,12 @@ void SimulationBackend::processPendingExport()
     }
 }
 
-bool SimulationBackend::exportCurrentState(const std::string &outputPath, const std::string &format) const
+bool SimulationBackend::exportCurrentState(const std::string &outputPath, const std::string &format)
 {
     if (!_system) {
+        return false;
+    }
+    if (!_system->syncHostState()) {
         return false;
     }
     const std::vector<Particle> &particles = _system->getParticles();
@@ -1782,6 +1792,8 @@ bool SimulationBackend::exportCurrentState(const std::string &outputPath, const 
 void SimulationBackend::loop()
 {
     rebuildSystem();
+    auto nextSnapshotPublish = std::chrono::steady_clock::now();
+    constexpr auto kSnapshotPublishPeriod = std::chrono::milliseconds(16);
 
     while (_running.load(std::memory_order_relaxed)) {
         if (_resetRequested.exchange(false, std::memory_order_relaxed)) {
@@ -1842,6 +1854,7 @@ void SimulationBackend::loop()
         const auto batchStart = std::chrono::steady_clock::now();
         std::uint32_t executedSteps = 0;
         bool updateFailed = false;
+        const bool steppedWhilePaused = _paused.load(std::memory_order_relaxed) && stepBatch > 0;
         for (std::uint32_t i = 0; i < stepBatch; ++i) {
             if (!_running.load(std::memory_order_relaxed) || _resetRequested.load(std::memory_order_relaxed)) {
                 break;
@@ -1898,7 +1911,13 @@ void SimulationBackend::loop()
             std::cerr << "[backend] update failed (CUDA error), simulation paused\n";
         }
 
-        publishSnapshot();
+        const auto now = std::chrono::steady_clock::now();
+        const bool publishByCadence = (executedSteps > 0) && (now >= nextSnapshotPublish);
+        const bool publishAfterStepRequest = steppedWhilePaused && executedSteps > 0;
+        if (publishByCadence || publishAfterStepRequest || updateFailed) {
+            publishSnapshot();
+            nextSnapshotPublish = now + kSnapshotPublishPeriod;
+        }
         maybeUpdateEnergy(_steps.load(std::memory_order_relaxed));
         processPendingExport();
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
