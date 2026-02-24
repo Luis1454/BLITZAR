@@ -1,0 +1,19 @@
+Targets:
+  make run            Doctor check + build + deploy Qt + launch GUI
+  make gui            Build + deploy Qt + launch GUI (no pre-check)
+  make qt             Same as gui
+  make all            Configure + build
+  make doctor         Validate local toolchain (CMake/CUDA/MSVC/Qt)
+  make deploy-qt      Deploy Qt runtime/plugins for module host
+  make run-backend    Doctor check + run backend mode via main binary
+  make run-headless   Doctor check + run headless mode via main binary
+  make clean          Remove build directory
+  make re             Clean + full rebuild
+
+Useful vars:
+  CONFIG=<file>       Config file passed to module host (default: simulation.ini)
+  GUI_MODULE=<name>   Frontend module name (default: qt)
+  RUN_DOCTOR=0|1      Enable/disable doctor before run targets (default: 1)
+  BUILD_DIR=<dir>     Build directory (default: build)
+  QT_DIR=<path>       Qt root path used by deploy tools
+  ARGS='...'          Extra args forwarded to runtime
