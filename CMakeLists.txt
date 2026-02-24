@@ -689,6 +689,7 @@ if(GRAVITY_BUILD_TESTS)
             endif()
         endif()
         gtest_discover_tests(gravityQtMainWindowIntegrationGTests
+            DISCOVERY_MODE PRE_TEST
             PROPERTIES
                 LABELS "ui_integration\\;integration_real"
                 RESOURCE_LOCK gravity_backend_daemon
