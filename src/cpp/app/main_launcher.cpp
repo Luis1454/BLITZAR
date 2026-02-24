@@ -1,12 +1,14 @@
 #include "sim/PlatformPaths.hpp"
+#include "sim/PlatformProcess.hpp"
 
 #include <algorithm>
 #include <cctype>
-#include <cstdlib>
+#include <chrono>
 #include <filesystem>
 #include <iostream>
 #include <string>
 #include <string_view>
+#include <thread>
 #include <vector>
 
 namespace {
@@ -141,39 +143,6 @@ bool containsModuleOverride(const std::vector<std::string> &args)
     });
 }
 
-std::string quoteArg(const std::string &arg)
-{
-    if (arg.empty()) {
-        return "\"\"";
-    }
-
-    const bool needsQuotes = arg.find_first_of(" \t\"") != std::string::npos;
-    if (!needsQuotes) {
-        return arg;
-    }
-
-    std::string escaped;
-    escaped.reserve(arg.size() + 8u);
-    for (char c : arg) {
-        if (c == '"') {
-            escaped += "\\\"";
-        } else {
-            escaped.push_back(c);
-        }
-    }
-    return "\"" + escaped + "\"";
-}
-
-std::string makeCommand(const std::string &executablePath, const std::vector<std::string> &args)
-{
-    std::string command = quoteArg(executablePath);
-    for (const std::string &arg : args) {
-        command.push_back(' ');
-        command += quoteArg(arg);
-    }
-    return command;
-}
-
 std::string resolveExecutablePath(const std::string_view launcherPath, const std::string &executableName)
 {
     std::error_code ec;
@@ -189,6 +158,23 @@ std::string resolveExecutablePath(const std::string_view launcherPath, const std
     }
 
     return executableName;
+}
+
+int runChildBlocking(const std::string &resolvedExecutable, const std::vector<std::string> &childArgs)
+{
+    sim::platform::ProcessHandle child;
+    std::string launchError;
+    if (!child.launch(resolvedExecutable, childArgs, false, launchError)) {
+        std::cerr << "[launcher] failed to launch child process: "
+                  << (launchError.empty() ? "unknown error" : launchError)
+                  << '\n';
+        return 1;
+    }
+
+    while (child.isRunning()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+    return 0;
 }
 
 } // namespace
@@ -218,7 +204,5 @@ int main(int argc, char **argv)
     const std::string childExecutable = sim::platform::executableName(childBasename);
     const std::string resolvedExecutable =
         resolveExecutablePath(argc > 0 && argv != nullptr && argv[0] != nullptr ? argv[0] : "", childExecutable);
-    const std::string command = makeCommand(resolvedExecutable, childArgs);
-
-    return std::system(command.c_str());
+    return runChildBlocking(resolvedExecutable, childArgs);
 }
