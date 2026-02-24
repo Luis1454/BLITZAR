@@ -1899,16 +1899,40 @@ void SimulationBackend::loop()
             _backendFps.store(smoothed, std::memory_order_relaxed);
         }
         if (updateFailed) {
-            _backendFps.store(0.0f, std::memory_order_relaxed);
-            _paused.store(true, std::memory_order_relaxed);
-            _cudaContextDirty.store(true, std::memory_order_relaxed);
-            _faulted.store(true, std::memory_order_relaxed);
-            _faultStep.store(_steps.load(std::memory_order_relaxed), std::memory_order_relaxed);
+            bool autoFallbackToCpu = false;
+            std::string previousSolver;
             {
-                std::lock_guard<std::mutex> lock(_faultMutex);
-                _faultReason = "cuda update failed (request recover/reset)";
+                std::lock_guard<std::mutex> lock(_commandMutex);
+                previousSolver = _solverMode;
+                if (_solverMode == "pairwise_cuda" || _solverMode == "octree_gpu") {
+                    _solverMode = "octree_cpu";
+                    autoFallbackToCpu = true;
+                }
             }
-            std::cerr << "[backend] update failed (CUDA error), simulation paused\n";
+            if (autoFallbackToCpu) {
+                _backendFps.store(0.0f, std::memory_order_relaxed);
+                _cudaContextDirty.store(true, std::memory_order_relaxed);
+                requestReset();
+                _faulted.store(false, std::memory_order_relaxed);
+                _faultStep.store(0, std::memory_order_relaxed);
+                {
+                    std::lock_guard<std::mutex> lock(_faultMutex);
+                    _faultReason.clear();
+                }
+                std::cerr << "[backend] CUDA update failed with solver=" << previousSolver
+                          << ", auto-fallback to solver=octree_cpu\n";
+            } else {
+                _backendFps.store(0.0f, std::memory_order_relaxed);
+                _paused.store(true, std::memory_order_relaxed);
+                _cudaContextDirty.store(true, std::memory_order_relaxed);
+                _faulted.store(true, std::memory_order_relaxed);
+                _faultStep.store(_steps.load(std::memory_order_relaxed), std::memory_order_relaxed);
+                {
+                    std::lock_guard<std::mutex> lock(_faultMutex);
+                    _faultReason = "cuda update failed (request recover/reset)";
+                }
+                std::cerr << "[backend] update failed (CUDA error), simulation paused\n";
+            }
         }
 
         const auto now = std::chrono::steady_clock::now();
