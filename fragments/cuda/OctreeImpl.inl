@@ -215,6 +215,8 @@ Vector3 Octree::computeForceRecursive(
         return Vector3(0.0f, 0.0f, 0.0f);
     }
 
+    const Vector3 particlePos = particle.getPosition();
+
     if (!hasChildren(node)) {
         Vector3 force(0.0f, 0.0f, 0.0f);
         for (size_t i = 0; i < node.particleIndices.size(); ++i) {
@@ -223,33 +225,29 @@ Vector3 Octree::computeForceRecursive(
                 continue;
             }
             const Particle &other = particles[otherIndex];
-            const Vector3 direction = other.getPosition() - particle.getPosition();
-            const float dist2 = dot(direction, direction) + softening * softening;
-            if (dist2 <= 1e-12f) {
-                continue;
-            }
-            const float invDist = 1.0f / sqrtf(dist2);
-            const float invDist3 = invDist * invDist * invDist;
-            force += direction * (other.getMass() * invDist3);
+            force += gravityAccelerationFromSource(
+                particlePos,
+                other.getPosition(),
+                other.getMass(),
+                softening);
         }
         return force;
     }
 
     const float size = node.halfSize * 2.0f;
-    const Vector3 particlePos = particle.getPosition();
     const bool containsSelf = std::fabs(particlePos.x - node.center.x) <= node.halfSize
         && std::fabs(particlePos.y - node.center.y) <= node.halfSize
         && std::fabs(particlePos.z - node.center.z) <= node.halfSize;
     const Vector3 direction = node.centerOfMass - particlePos;
-    const float rawDistance2 = dot(direction, direction);
-    const float distance2 = rawDistance2 + softening * softening;
+    const float distance2 = softenedDistanceSquared(direction, softening);
     const float distance = sqrtf(distance2);
     if (!containsSelf
-        && distance > 1e-6f
         && (size / distance) < theta) {
-        const float invDist = 1.0f / std::max(distance, 1e-6f);
-        const float invDist3 = invDist * invDist * invDist;
-        return direction * (node.mass * invDist3);
+        return gravityAccelerationFromSource(
+            particlePos,
+            node.centerOfMass,
+            node.mass,
+            softening);
     }
 
     Vector3 force(0.0f, 0.0f, 0.0f);
@@ -267,8 +265,8 @@ Vector3 Octree::computeForceOn(const Particle &particle, std::size_t selfIndex, 
     if (_root < 0 || !_particlesRef.has_value()) {
         return Vector3(0.0f, 0.0f, 0.0f);
     }
-    const float clampedTheta = std::max(theta, 0.05f);
-    const float clampedSoftening = std::max(softening, 1e-4f);
+    const float clampedTheta = clampThetaValue(theta);
+    const float clampedSoftening = clampSofteningValue(softening);
     return computeForceRecursive(_particlesRef->get(), _root, particle, selfIndex, clampedTheta, clampedSoftening);
 }
 

@@ -19,6 +19,9 @@ constexpr int kOctreeLeafCapacity = 32;
 constexpr int kOctreeMaxDepth = 16;
 constexpr float kPi = 3.1415926535f;
 constexpr float kGravityMaxAcceleration = 64.0f;
+constexpr float kGravityMinSoftening = 1e-4f;
+constexpr float kGravityMinDistance2 = 1e-12f;
+constexpr float kGravityMinTheta = 0.05f;
 using ParticleHandle = Particle *;
 using ParticleConstHandle = const Particle *;
 using Vector3Handle = Vector3 *;
@@ -228,6 +231,39 @@ __host__ __device__ Vector3 clampAcceleration(Vector3 accel, float maxAccelerati
     return accel;
 }
 
+GRAVITY_HD float clampSofteningValue(float softening)
+{
+    return fmaxf(softening, kGravityMinSoftening);
+}
+
+GRAVITY_HD float clampThetaValue(float theta)
+{
+    return fmaxf(theta, kGravityMinTheta);
+}
+
+GRAVITY_HD float softenedDistanceSquared(Vector3 delta, float softening)
+{
+    const float safeSoftening = clampSofteningValue(softening);
+    return dot(delta, delta) + safeSoftening * safeSoftening;
+}
+
+GRAVITY_HD Vector3 gravityAccelerationFromSource(
+    Vector3 selfPosition,
+    Vector3 sourcePosition,
+    float sourceMass,
+    float softening
+)
+{
+    const Vector3 delta = sourcePosition - selfPosition;
+    const float dist2 = softenedDistanceSquared(delta, softening);
+    if (dist2 <= kGravityMinDistance2) {
+        return Vector3(0.0f, 0.0f, 0.0f);
+    }
+    const float invDist = 1.0f / sqrtf(dist2);
+    const float invDist3 = invDist * invDist * invDist;
+    return delta * (sourceMass * invDist3);
+}
+
 __host__ __device__ Vector3 computePairwiseAcceleration(
     ParticleConstHandle state,
     int numParticles,
@@ -238,22 +274,17 @@ __host__ __device__ Vector3 computePairwiseAcceleration(
 {
     Vector3 force = {0.0f, 0.0f, 0.0f};
     const Vector3 selfPos = state[idx].getPosition();
-    const float clampedSoftening = fmaxf(softening, 1e-4f);
-    const float softening2 = clampedSoftening * clampedSoftening;
 
     for (int i = 0; i < numParticles; ++i) {
         if (i == idx) {
             continue;
         }
         const Particle &q = state[i];
-        const Vector3 r = selfPos - q.getPosition();
-        const float dist2 = dot(r, r) + softening2;
-        if (dist2 <= 1e-12f) {
-            continue;
-        }
-        const float invDist = rsqrtf(dist2);
-        const float invDist3 = invDist * invDist * invDist;
-        force -= r * (q.getMass() * invDist3);
+        force += gravityAccelerationFromSource(
+            selfPos,
+            q.getPosition(),
+            q.getMass(),
+            softening);
     }
     return clampAcceleration(force, maxAcceleration);
 }

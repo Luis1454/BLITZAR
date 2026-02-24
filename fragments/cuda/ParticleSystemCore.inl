@@ -138,6 +138,8 @@ __global__ void updateParticlesOctree(
 
     const Particle selfParticle = lastState[i];
     const Vector3 selfPos = selfParticle.getPosition();
+    const float clampedTheta = clampThetaValue(theta);
+    const float clampedSoftening = clampSofteningValue(softening);
     Vector3 force(0.0f, 0.0f, 0.0f);
 
     constexpr int kStackCapacity = 64;
@@ -158,14 +160,11 @@ __global__ void updateParticlesOctree(
                     continue;
                 }
                 const Particle other = lastState[otherIndex];
-                const Vector3 direction = other.getPosition() - selfPos;
-                const float dist2 = dot(direction, direction) + softening * softening;
-                if (dist2 <= 1e-12f) {
-                    continue;
-                }
-                const float invDist = rsqrtf(dist2);
-                const float invDist3 = invDist * invDist * invDist;
-                force += direction * (other.getMass() * invDist3);
+                force += gravityAccelerationFromSource(
+                    selfPos,
+                    other.getPosition(),
+                    other.getMass(),
+                    clampedSoftening);
             }
             continue;
         }
@@ -176,16 +175,18 @@ __global__ void updateParticlesOctree(
             node.comZ - selfPos.z
         );
         const float rawDist2 = dot(direction, direction);
-        const float dist2 = rawDist2 + softening * softening;
+        const float dist2 = rawDist2 + clampedSoftening * clampedSoftening;
         const float dist = sqrtf(dist2);
         const bool containsSelf = octreeNodeContains(node, selfPos);
         const float size = node.halfSize * 2.0f;
 
         if (!containsSelf
-            && (size / dist) < theta) {
-            const float invDist = rsqrtf(dist2);
-            const float invDist3 = invDist * invDist * invDist;
-            force += direction * (node.mass * invDist3);
+            && (size / dist) < clampedTheta) {
+            force += gravityAccelerationFromSource(
+                selfPos,
+                Vector3(node.comX, node.comY, node.comZ),
+                node.mass,
+                clampedSoftening);
             continue;
         }
 
