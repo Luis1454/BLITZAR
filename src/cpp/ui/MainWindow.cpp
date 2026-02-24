@@ -74,6 +74,7 @@ MainWindow::MainWindow(
       _reconnectButton(new QPushButton("Reconnect", this)),
       _applyConnectorButton(new QPushButton("Apply connector", this)),
       _exportButton(new QPushButton("Export", this)),
+      _saveConfigButton(new QPushButton("Save config", this)),
       _loadInputButton(new QPushButton("Load input", this)),
       _backendAutostartCheck(new QCheckBox("autostart backend", this)),
       _backendHostEdit(new QLineEdit(this)),
@@ -102,6 +103,7 @@ MainWindow::MainWindow(
       _lastEnergyStep(std::numeric_limits<std::uint64_t>::max()),
       _frontendDrawCap(sim::frontend::resolveFrontendDrawCap(_config)),
       _uiTickFps(0.0f),
+      _configDirty(false),
       _lastUiTickAt()
 {
     if (!_runtime) {
@@ -218,6 +220,7 @@ MainWindow::MainWindow(
 
     QGroupBox &ioBox = *new QGroupBox("I/O", &sectionsWidget);
     QVBoxLayout &ioLayout = *new QVBoxLayout(&ioBox);
+    ioLayout.addWidget(_saveConfigButton);
     ioLayout.addWidget(_loadPresetButton);
     ioLayout.addWidget(_loadInputButton);
     ioLayout.addWidget(_exportButton);
@@ -273,6 +276,7 @@ MainWindow::MainWindow(
     resize(1500, 980);
 
     applyConfigToBackend(false);
+    markConfigDirty(false);
     _multiView->setMaxDrawParticles(_frontendDrawCap);
     _runtime->setRemoteSnapshotCap(_frontendDrawCap);
 
@@ -288,12 +292,17 @@ MainWindow::MainWindow(
     _backendBinEdit->setEnabled(remoteMode);
 
     const auto applySphParams = [this]() {
+        _config.sphSmoothingLength = static_cast<float>(_sphSmoothingSpin->value());
+        _config.sphRestDensity = static_cast<float>(_sphRestDensitySpin->value());
+        _config.sphGasConstant = static_cast<float>(_sphGasConstantSpin->value());
+        _config.sphViscosity = static_cast<float>(_sphViscositySpin->value());
         _runtime->setSphParameters(
-            static_cast<float>(_sphSmoothingSpin->value()),
-            static_cast<float>(_sphRestDensitySpin->value()),
-            static_cast<float>(_sphGasConstantSpin->value()),
-            static_cast<float>(_sphViscositySpin->value())
+            _config.sphSmoothingLength,
+            _config.sphRestDensity,
+            _config.sphGasConstant,
+            _config.sphViscosity
         );
+        markConfigDirty();
     };
     const auto applyConnector = [this]() {
         std::string host = _backendHostEdit->text().trimmed().toStdString();
@@ -316,6 +325,7 @@ MainWindow::MainWindow(
         _config = SimulationConfig::loadOrCreate(_configPath);
         applyConfigToUi();
         applyConfigToBackend(true);
+        markConfigDirty(false);
         _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
     });
     connect(_recoverButton, &QPushButton::clicked, this, [this]() {
@@ -375,7 +385,10 @@ MainWindow::MainWindow(
         if (outPath.has_parent_path()) {
             _config.exportDirectory = outPath.parent_path().string();
         }
-        _config.save(_configPath);
+        markConfigDirty();
+    });
+    connect(_saveConfigButton, &QPushButton::clicked, this, [this]() {
+        (void)saveConfigToDisk();
     });
     connect(_loadInputButton, &QPushButton::clicked, this, [this]() {
         const QString startPath = _config.inputFile.empty()
@@ -396,13 +409,13 @@ MainWindow::MainWindow(
         _runtime->setInitialStateFile(_config.inputFile, _config.inputFormat);
         _runtime->setInitialStateConfig(buildInitialStateConfig(_config));
         _runtime->requestReset();
-        _config.save(_configPath);
+        markConfigDirty();
     });
     connect(_applyPresetButton, &QPushButton::clicked, this, [this]() {
         _config.initConfigStyle = "preset";
         _config.presetStructure = _presetCombo->currentText().toStdString();
         applyConfigToBackend(true);
-        _config.save(_configPath);
+        markConfigDirty();
     });
     connect(_loadPresetButton, &QPushButton::clicked, this, [this]() {
         const QString path = QFileDialog::getOpenFileName(
@@ -420,11 +433,12 @@ MainWindow::MainWindow(
         applyConfigToUi();
         applyConfigToBackend(true);
         _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
-        _config.save(_configPath);
+        markConfigDirty(false);
     });
     connect(_sphCheck, &QCheckBox::toggled, this, [this](bool enabled) {
         _config.sphEnabled = enabled;
         _runtime->setSphEnabled(enabled);
+        markConfigDirty();
     });
     connect(_sphSmoothingSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [applySphParams](double) {
         applySphParams();
@@ -439,25 +453,39 @@ MainWindow::MainWindow(
         applySphParams();
     });
     connect(_dtSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double value) {
+        _config.dt = static_cast<float>(value);
         _runtime->setDt(static_cast<float>(value));
+        markConfigDirty();
     });
     connect(_zoomSlider, &QSlider::valueChanged, this, [this](int value) {
+        _config.defaultZoom = static_cast<float>(value) / 10.0f;
         _multiView->setZoom(static_cast<float>(value) / 10.0f);
+        markConfigDirty();
     });
     connect(_luminositySlider, &QSlider::valueChanged, this, [this](int value) {
+        _config.defaultLuminosity = value;
         _multiView->setLuminosity(value);
+        markConfigDirty();
     });
     connect(_solverCombo, &QComboBox::currentTextChanged, this, [this](const QString &solver) {
+        _config.solver = solver.toStdString();
         _runtime->setSolverMode(solver.toStdString());
+        markConfigDirty();
     });
     connect(_integratorCombo, &QComboBox::currentTextChanged, this, [this](const QString &integrator) {
+        _config.integrator = integrator.toStdString();
         _runtime->setIntegratorMode(integrator.toStdString());
+        markConfigDirty();
     });
     connect(_thetaSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double value) {
+        _config.octreeTheta = static_cast<float>(value);
         _runtime->setOctreeParameters(static_cast<float>(value), static_cast<float>(_softeningSpin->value()));
+        markConfigDirty();
     });
     connect(_softeningSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double value) {
+        _config.octreeSoftening = static_cast<float>(value);
         _runtime->setOctreeParameters(static_cast<float>(_thetaSpin->value()), static_cast<float>(value));
+        markConfigDirty();
     });
     connect(_view3dCombo, &QComboBox::currentTextChanged, this, [this](const QString &value) {
         _multiView->set3DMode(value == "iso" ? ViewMode::Iso : ViewMode::Perspective);
@@ -556,6 +584,47 @@ void MainWindow::applyConfigToUi()
     _frontendDrawCap = sim::frontend::resolveFrontendDrawCap(_config);
     _multiView->setMaxDrawParticles(_frontendDrawCap);
     _runtime->setRemoteSnapshotCap(_frontendDrawCap);
+}
+
+void MainWindow::captureUiIntoConfig()
+{
+    _config.solver = _solverCombo->currentText().toStdString();
+    _config.integrator = _integratorCombo->currentText().toStdString();
+    _config.presetStructure = _presetCombo->currentText().toStdString();
+    _config.sphEnabled = _sphCheck->isChecked();
+    _config.dt = static_cast<float>(_dtSpin->value());
+    _config.octreeTheta = static_cast<float>(_thetaSpin->value());
+    _config.octreeSoftening = static_cast<float>(_softeningSpin->value());
+    _config.sphSmoothingLength = static_cast<float>(_sphSmoothingSpin->value());
+    _config.sphRestDensity = static_cast<float>(_sphRestDensitySpin->value());
+    _config.sphGasConstant = static_cast<float>(_sphGasConstantSpin->value());
+    _config.sphViscosity = static_cast<float>(_sphViscositySpin->value());
+    _config.defaultZoom = static_cast<float>(_zoomSlider->value()) / 10.0f;
+    _config.defaultLuminosity = _luminositySlider->value();
+}
+
+void MainWindow::markConfigDirty(bool dirty)
+{
+    _configDirty = dirty;
+    if (_saveConfigButton != nullptr) {
+        _saveConfigButton->setEnabled(_configDirty);
+    }
+    setWindowTitle(_configDirty ? "N-Body Qt Frontend *" : "N-Body Qt Frontend");
+}
+
+bool MainWindow::saveConfigToDisk()
+{
+    captureUiIntoConfig();
+    if (_configPath.empty()) {
+        _configPath = "simulation.ini";
+    }
+    if (!_config.save(_configPath)) {
+        std::cerr << "[qt] failed to save config: " << _configPath << "\n";
+        return false;
+    }
+    markConfigDirty(false);
+    std::cout << "[qt] config saved: " << _configPath << "\n";
+    return true;
 }
 
 void MainWindow::update3DCameraFromSliders()

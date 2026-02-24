@@ -35,6 +35,9 @@ class MainWindow : public QMainWindow {
     private:
         void applyConfigToBackend(bool requestReset);
         void applyConfigToUi();
+        void captureUiIntoConfig();
+        void markConfigDirty(bool dirty = true);
+        bool saveConfigToDisk();
         void update3DCameraFromSliders();
         void tick();
 
@@ -51,6 +54,7 @@ class MainWindow : public QMainWindow {
         QPointer<QPushButton> _reconnectButton;
         QPointer<QPushButton> _applyConnectorButton;
         QPointer<QPushButton> _exportButton;
+        QPointer<QPushButton> _saveConfigButton;
         QPointer<QPushButton> _loadInputButton;
         QPointer<QCheckBox> _backendAutostartCheck;
         QPointer<QLineEdit> _backendHostEdit;
@@ -79,6 +83,7 @@ class MainWindow : public QMainWindow {
         std::uint64_t _lastEnergyStep;
         std::uint32_t _frontendDrawCap;
         float _uiTickFps;
+        bool _configDirty;
         std::chrono::steady_clock::time_point _lastUiTickAt;
 };
 

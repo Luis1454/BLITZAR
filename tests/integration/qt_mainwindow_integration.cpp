@@ -9,10 +9,15 @@
 #include <QCoreApplication>
 #include <QEventLoop>
 #include <QLabel>
+#include <QPushButton>
+#include <QComboBox>
 
 #include <chrono>
 #include <cstdint>
+#include <filesystem>
+#include <fstream>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <thread>
 
@@ -62,6 +67,42 @@ bool waitUntil(const std::function<bool()> &predicate, std::chrono::milliseconds
     }
     QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
     return predicate();
+}
+
+std::string readAllFile(const std::filesystem::path &path)
+{
+    std::ifstream in(path, std::ios::binary);
+    if (!in.is_open()) {
+        return {};
+    }
+    std::ostringstream out;
+    out << in.rdbuf();
+    return out.str();
+}
+
+QComboBox *findSolverCombo(qtui::MainWindow &window)
+{
+    const QList<QComboBox *> combos = window.findChildren<QComboBox *>();
+    for (QComboBox *combo : combos) {
+        if (combo != nullptr
+            && combo->findText("pairwise_cuda") >= 0
+            && combo->findText("octree_gpu") >= 0
+            && combo->findText("octree_cpu") >= 0) {
+            return combo;
+        }
+    }
+    return nullptr;
+}
+
+QPushButton *findButtonByText(qtui::MainWindow &window, const QString &text)
+{
+    const QList<QPushButton *> buttons = window.findChildren<QPushButton *>();
+    for (QPushButton *button : buttons) {
+        if (button != nullptr && button->text() == text) {
+            return button;
+        }
+    }
+    return nullptr;
 }
 
 sim::FrontendTransportArgs makeTransport(std::uint16_t port, const std::string &backendExecutable)
@@ -141,6 +182,50 @@ TEST(QtMainWindowIntegration, ShowsReconnectingWhenBackendStopsAndRecovers)
     }, std::chrono::milliseconds(7000)));
 
     backend.stop();
+}
+
+TEST(QtMainWindowIntegration, SavesConfigOnlyOnExplicitSaveAction)
+{
+    (void)ensureApp();
+
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path configPath =
+        std::filesystem::temp_directory_path() / ("gravity_qt_explicit_save_" + std::to_string(stamp) + ".ini");
+    SimulationConfig initialConfig = makeUiConfig();
+    ASSERT_TRUE(initialConfig.save(configPath.string()));
+
+    RealBackendHarness backend;
+    std::string startError;
+    ASSERT_TRUE(backend.start(startError)) << startError;
+
+    auto runtime = std::make_unique<sim::FrontendRuntime>(
+        configPath.string(),
+        makeTransport(backend.port(), backend.executablePath()));
+    qtui::MainWindow window(initialConfig, configPath.string(), std::move(runtime));
+
+    ASSERT_TRUE(waitUntil([&]() {
+        return findStatusLabelText(window).contains("link=connected");
+    }, std::chrono::milliseconds(5000)));
+
+    QComboBox *solverCombo = findSolverCombo(window);
+    ASSERT_NE(solverCombo, nullptr);
+    solverCombo->setCurrentText("octree_gpu");
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
+
+    const std::string fileBeforeSave = readAllFile(configPath);
+    EXPECT_NE(fileBeforeSave.find("solver=pairwise_cuda"), std::string::npos);
+
+    QPushButton *saveButton = findButtonByText(window, "Save config");
+    ASSERT_NE(saveButton, nullptr);
+    saveButton->click();
+
+    ASSERT_TRUE(waitUntil([&]() {
+        return readAllFile(configPath).find("solver=octree_gpu") != std::string::npos;
+    }, std::chrono::milliseconds(2000)));
+
+    backend.stop();
+    std::error_code ec;
+    std::filesystem::remove(configPath, ec);
 }
 
 } // namespace
