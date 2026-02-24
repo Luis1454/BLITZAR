@@ -61,11 +61,12 @@ gui: run-qt
 
 qt: run-qt
 
-run-backend: all
-	$(RUN_BIN) --mode backend $(ARGS)
+run-mode-%: pre-run all
+	$(RUN_BIN) --mode $* $(ARGS)
 
-run-headless: all
-	$(RUN_BIN) --mode headless $(ARGS)
+run-backend: run-mode-backend
+
+run-headless: run-mode-headless
 
 run-backend-direct: all
 	$(RUN_BACKEND_BIN) $(ARGS)
@@ -134,7 +135,7 @@ re: clean all
 
 ifeq ($(OS),Windows_NT)
 help:
-	@powershell -NoProfile -Command "Write-Host 'Targets:'; Write-Host '  make run            Doctor check + build + deploy Qt + launch GUI'; Write-Host '  make gui            Build + deploy Qt + launch GUI (no pre-check)'; Write-Host '  make qt             Same as gui'; Write-Host '  make all            Configure + build'; Write-Host '  make doctor         Validate local toolchain (CMake/CUDA/MSVC/Qt)'; Write-Host '  make deploy-qt      Deploy Qt runtime/plugins for module host'; Write-Host '  make run-backend    Run backend mode via main binary'; Write-Host '  make run-headless   Run headless mode via main binary'; Write-Host '  make clean          Remove build directory'; Write-Host '  make re             Clean + full rebuild'; Write-Host ''; Write-Host 'Useful vars:'; Write-Host '  CONFIG=<file>       Config file passed to module host (default: simulation.ini)'; Write-Host '  GUI_MODULE=<name>   Frontend module name (default: qt)'; Write-Host '  RUN_DOCTOR=0|1      Enable/disable doctor before make run (default: 1)'; Write-Host '  BUILD_DIR=<dir>     Build directory (default: build)'; Write-Host '  QT_DIR=<path>       Qt root path used by deploy tools'; Write-Host '  ARGS=''...''          Extra args forwarded to runtime'"
+	@powershell -NoProfile -Command "Write-Host 'Targets:'; Write-Host '  make run            Doctor check + build + deploy Qt + launch GUI'; Write-Host '  make gui            Build + deploy Qt + launch GUI (no pre-check)'; Write-Host '  make qt             Same as gui'; Write-Host '  make all            Configure + build'; Write-Host '  make doctor         Validate local toolchain (CMake/CUDA/MSVC/Qt)'; Write-Host '  make deploy-qt      Deploy Qt runtime/plugins for module host'; Write-Host '  make run-backend    Doctor check + run backend mode via main binary'; Write-Host '  make run-headless   Doctor check + run headless mode via main binary'; Write-Host '  make clean          Remove build directory'; Write-Host '  make re             Clean + full rebuild'; Write-Host ''; Write-Host 'Useful vars:'; Write-Host '  CONFIG=<file>       Config file passed to module host (default: simulation.ini)'; Write-Host '  GUI_MODULE=<name>   Frontend module name (default: qt)'; Write-Host '  RUN_DOCTOR=0|1      Enable/disable doctor before run targets (default: 1)'; Write-Host '  BUILD_DIR=<dir>     Build directory (default: build)'; Write-Host '  QT_DIR=<path>       Qt root path used by deploy tools'; Write-Host '  ARGS=''...''          Extra args forwarded to runtime'"
 else
 help:
 	@printf "Targets:\n"
@@ -144,14 +145,14 @@ help:
 	@printf "  make all            Configure + build\n"
 	@printf "  make doctor         Validate local toolchain (CMake/CUDA/MSVC/Qt)\n"
 	@printf "  make deploy-qt      Deploy Qt runtime/plugins for module host\n"
-	@printf "  make run-backend    Run backend mode via main binary\n"
-	@printf "  make run-headless   Run headless mode via main binary\n"
+	@printf "  make run-backend    Doctor check + run backend mode via main binary\n"
+	@printf "  make run-headless   Doctor check + run headless mode via main binary\n"
 	@printf "  make clean          Remove build directory\n"
 	@printf "  make re             Clean + full rebuild\n"
 	@printf "\nUseful vars:\n"
 	@printf "  CONFIG=<file>       Config file passed to module host (default: simulation.ini)\n"
 	@printf "  GUI_MODULE=<name>   Frontend module name (default: qt)\n"
-	@printf "  RUN_DOCTOR=0|1      Enable/disable doctor before make run (default: 1)\n"
+	@printf "  RUN_DOCTOR=0|1      Enable/disable doctor before run targets (default: 1)\n"
 	@printf "  BUILD_DIR=<dir>     Build directory (default: build)\n"
 	@printf "  QT_DIR=<path>       Qt root path used by deploy tools\n"
 	@printf "  ARGS='...'          Extra args forwarded to runtime\n"
