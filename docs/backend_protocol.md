@@ -5,6 +5,10 @@ Transport:
 - Request shape: `{"cmd":"<name>", ...fields }`
 - Response shape success: `{"ok":true,"cmd":"<name>", ...payload }`
 - Response shape error: `{"ok":false,"cmd":"<name>","error":"<message>" }`
+- Optional auth:
+  - When backend is started with `--backend-token <secret>`, every request must include
+    `token:"<secret>"` (for example `{"cmd":"status","token":"secret"}`).
+  - Missing/invalid token is rejected with `{"ok":false,"cmd":"auth","error":"unauthorized"}`.
 
 Core commands:
 - `status`

@@ -121,4 +121,36 @@ bool launchDetachedProcess(
     return true;
 }
 
+int runProcessBlocking(
+    const std::string &executable,
+    const std::vector<std::string> &args,
+    bool createNewConsole,
+    std::string &outError)
+{
+    (void)createNewConsole;
+    outError.clear();
+
+    SpawnArguments argv(executable, args);
+
+    pid_t pid = -1;
+    const int spawnResult = posix_spawnp(&pid, argv.argv()[0], nullptr, nullptr, argv.argv(), environ);
+    if (spawnResult != 0) {
+        outError = sim::platform::errors::kProcessLaunchFailed;
+        return 1;
+    }
+
+    int status = 0;
+    if (waitpid(pid, &status, 0) < 0) {
+        outError = sim::platform::errors::kProcessTerminateFailed;
+        return 1;
+    }
+    if (WIFEXITED(status)) {
+        return WEXITSTATUS(status);
+    }
+    if (WIFSIGNALED(status)) {
+        return 128 + WTERMSIG(status);
+    }
+    return 1;
+}
+
 } // namespace sim::platform::detail

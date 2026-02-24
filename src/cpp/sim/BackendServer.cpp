@@ -14,6 +14,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace {
 
@@ -212,13 +213,14 @@ bool sendAll(sim::socket::Handle socketHandle, sim::socket::ConstBytes bytes)
 
 } // namespace
 
-BackendServer::BackendServer(SimulationBackend &backend)
+BackendServer::BackendServer(SimulationBackend &backend, std::string authToken)
     : _backend(backend),
       _running(false),
       _shutdownRequested(false),
       _acceptThread(),
       _listenSocket(sim::socket::invalidHandle()),
       _bindAddress("127.0.0.1"),
+      _authToken(std::move(authToken)),
       _port(0),
       _networkInitialized(false),
       _socketMutex(),
@@ -438,6 +440,13 @@ void BackendServer::handleClient(SocketHandle client)
 std::string BackendServer::processRequest(const std::string &request)
 {
     try {
+        if (!_authToken.empty()) {
+            std::string token;
+            if (!extractJsonString(request, "token", token) || token != _authToken) {
+                return makeErrorResponse("auth", "unauthorized");
+            }
+        }
+
         std::string cmd;
         if (!extractJsonString(request, "cmd", cmd)) {
             return makeErrorResponse("unknown", "missing cmd");

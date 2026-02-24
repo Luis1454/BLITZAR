@@ -41,6 +41,7 @@ class BackendClient {
         bool connect(const std::string &host, std::uint16_t port);
         void setSocketTimeoutMs(int timeoutMs);
         int socketTimeoutMs() const;
+        void setAuthToken(std::string token);
         void disconnect();
         bool isConnected() const;
 
@@ -69,6 +70,7 @@ class BackendClient {
         int _socketTimeoutMs;
         bool _networkInitialized;
         std::string _recvBuffer;
+        std::string _authToken;
 };
 
 #endif // GRAVITY_SIM_BACKENDCLIENT_HPP

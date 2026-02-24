@@ -89,4 +89,11 @@ _run_and_expect(
     MUST_CONTAIN_STDERR "unknown option: --foo"
 )
 
+_run_and_expect(
+    "launcher-backend-non-loopback-rejected"
+    2
+    COMMAND_ARGS --mode backend -- --backend-host 0.0.0.0
+    MUST_CONTAIN_STDERR "refusing non-loopback bind host"
+)
+
 message(STATUS "Launcher contract check passed.")

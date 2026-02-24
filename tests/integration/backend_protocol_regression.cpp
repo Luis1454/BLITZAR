@@ -147,4 +147,30 @@ TEST(BackendProtocolRegression, BackendRejectsInvalidSolverAndIntegratorCommands
     backend.stop();
 }
 
+TEST(BackendProtocolRegression, BackendRejectsRequestsWithoutConfiguredToken)
+{
+    RealBackendHarness backend;
+    std::string startError;
+    ASSERT_TRUE(backend.start(startError, 0u, "secret-token")) << startError;
+
+    BackendClient client;
+    client.setSocketTimeoutMs(200);
+    ASSERT_TRUE(client.connect("127.0.0.1", backend.port()));
+
+    BackendClientStatus status{};
+    BackendClientResponse response = client.getStatus(status);
+    ASSERT_FALSE(response.ok);
+    EXPECT_NE(response.error.find("unauthorized"), std::string::npos);
+    client.disconnect();
+
+    client.setAuthToken("secret-token");
+    ASSERT_TRUE(client.connect("127.0.0.1", backend.port()));
+    response = client.getStatus(status);
+    ASSERT_TRUE(response.ok) << response.error;
+    EXPECT_GT(status.particleCount, 0u);
+
+    client.disconnect();
+    backend.stop();
+}
+
 } // namespace

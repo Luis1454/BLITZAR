@@ -128,4 +128,40 @@ bool launchDetachedProcess(
     return true;
 }
 
+int runProcessBlocking(
+    const std::string &executable,
+    const std::vector<std::string> &args,
+    bool createNewConsole,
+    std::string &outError)
+{
+    outError.clear();
+    const std::string commandLine = buildProcessCommandLine(executable, args);
+    STARTUPINFOA startupInfo{};
+    startupInfo.cb = sizeof(startupInfo);
+    PROCESS_INFORMATION processInfo{};
+    std::string mutableCmd = commandLine;
+    const DWORD flags = createNewConsole ? CREATE_NEW_CONSOLE : 0u;
+    if (!CreateProcessA(
+            nullptr,
+            mutableCmd.data(),
+            nullptr,
+            nullptr,
+            FALSE,
+            flags,
+            nullptr,
+            nullptr,
+            &startupInfo,
+            &processInfo)) {
+        outError = sim::platform::errors::kProcessLaunchFailed;
+        return 1;
+    }
+
+    CloseHandle(processInfo.hThread);
+    WaitForSingleObject(processInfo.hProcess, INFINITE);
+    DWORD exitCode = 1u;
+    (void)GetExitCodeProcess(processInfo.hProcess, &exitCode);
+    CloseHandle(processInfo.hProcess);
+    return static_cast<int>(exitCode);
+}
+
 } // namespace sim::platform::detail

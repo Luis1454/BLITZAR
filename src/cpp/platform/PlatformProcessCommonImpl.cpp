@@ -146,4 +146,21 @@ bool launchDetachedProcess(const std::string &executable, const std::vector<std:
     }
 }
 
+int runProcessBlocking(
+    const std::string &executable,
+    const std::vector<std::string> &args,
+    bool createNewConsole,
+    std::string &outError)
+{
+    try {
+        return detail::runProcessBlocking(executable, args, createNewConsole, outError);
+    } catch (const std::exception &ex) {
+        outError = ex.what();
+        return 1;
+    } catch (...) {
+        outError = errors::kUnknownException;
+        return 1;
+    }
+}
+
 } // namespace sim::platform

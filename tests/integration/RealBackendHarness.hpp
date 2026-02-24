@@ -17,7 +17,11 @@ class RealBackendHarness {
         RealBackendHarness(RealBackendHarness &&) = delete;
         RealBackendHarness &operator=(RealBackendHarness &&) = delete;
 
-        bool start(std::string &outError, std::uint16_t preferredPort = 0u);
+        bool start(
+            std::string &outError,
+            std::uint16_t preferredPort = 0u,
+            const std::string &authToken = {}
+        );
         void stop();
 
         bool isRunning() const;
@@ -32,6 +36,7 @@ class RealBackendHarness {
         sim::platform::ProcessHandle _process;
         std::uint16_t _port = 0u;
         std::string _executable;
+        std::string _authToken;
 };
 
 #endif // GRAVITY_TESTS_INTEGRATION_REALBACKENDHARNESS_HPP

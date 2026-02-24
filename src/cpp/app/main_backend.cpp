@@ -35,11 +35,38 @@ bool parsePort(std::string_view token, std::uint16_t &out)
     return true;
 }
 
+bool parseBool(std::string_view value, bool &out)
+{
+    std::string normalized(value);
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
+    if (normalized == "1" || normalized == "true" || normalized == "on" || normalized == "yes") {
+        out = true;
+        return true;
+    }
+    if (normalized == "0" || normalized == "false" || normalized == "off" || normalized == "no") {
+        out = false;
+        return true;
+    }
+    return false;
+}
+
+bool isLoopbackBindHost(std::string_view host)
+{
+    if (host.empty() || host == "localhost") {
+        return true;
+    }
+    return host.rfind("127.", 0) == 0;
+}
+
 bool parseBackendArgs(
     const std::vector<std::string_view> &rawArgs,
     std::vector<std::string_view> &simArgs,
     std::string &host,
     std::uint16_t &port,
+    std::string &authToken,
+    bool &allowRemoteBind,
     bool &startPaused,
     bool &showBackendHelp)
 {
@@ -57,6 +84,32 @@ bool parseBackendArgs(
         }
         if (token == "--backend-paused") {
             startPaused = true;
+            continue;
+        }
+        if (token == "--backend-allow-remote") {
+            allowRemoteBind = true;
+            continue;
+        }
+        if (token.rfind("--backend-allow-remote=", 0) == 0) {
+            bool parsed = allowRemoteBind;
+            const std::string rawValue = token.substr(std::string("--backend-allow-remote=").size());
+            if (!parseBool(rawValue, parsed)) {
+                std::cerr << "[backend] invalid --backend-allow-remote value\n";
+                return false;
+            }
+            allowRemoteBind = parsed;
+            continue;
+        }
+        if (token == "--backend-token") {
+            if (i + 1 >= rawArgs.size()) {
+                std::cerr << "[backend] missing value after --backend-token\n";
+                return false;
+            }
+            authToken = std::string(rawArgs[++i]);
+            continue;
+        }
+        if (token.rfind("--backend-token=", 0) == 0) {
+            authToken = token.substr(std::string("--backend-token=").size());
             continue;
         }
         if (token.rfind("--backend-host=", 0) == 0) {
@@ -105,6 +158,8 @@ void printBackendHelp(std::string_view programName)
         << "Backend daemon options:\n"
         << "  --backend-host <ipv4>     Bind address (default: 127.0.0.1)\n"
         << "  --backend-port <1..65535> TCP port (default: 4545)\n"
+        << "  --backend-token <secret>  Optional auth token required on every request\n"
+        << "  --backend-allow-remote    Allow non-loopback bind host (explicit opt-in)\n"
         << "  --backend-paused          Start simulation paused\n"
         << "  --backend-help            Show this backend-specific help\n"
         << "\n";
@@ -143,10 +198,12 @@ int main(int argc, char **argv)
 
     std::string host = "127.0.0.1";
     std::uint16_t port = 4545;
+    std::string authToken;
+    bool allowRemoteBind = false;
     bool startPaused = false;
     bool showBackendHelp = false;
     std::vector<std::string_view> simArgs;
-    if (!parseBackendArgs(args, simArgs, host, port, startPaused, showBackendHelp)) {
+    if (!parseBackendArgs(args, simArgs, host, port, authToken, allowRemoteBind, startPaused, showBackendHelp)) {
         return 2;
     }
 
@@ -167,13 +224,19 @@ int main(int argc, char **argv)
         config.save(runtime.configPath);
     }
 
+    if (!isLoopbackBindHost(host) && !allowRemoteBind) {
+        std::cerr << "[backend] refusing non-loopback bind host '" << host
+                  << "' without --backend-allow-remote\n";
+        return 2;
+    }
+
     applyConfigToBackend(backend, config);
     backend.start();
     if (startPaused) {
         backend.setPaused(true);
     }
 
-    BackendServer server(backend);
+    BackendServer server(backend, authToken);
     if (!server.start(port, host)) {
         std::cerr << "[backend] failed to start IPC server on " << host << ":" << port << "\n";
         backend.stop();

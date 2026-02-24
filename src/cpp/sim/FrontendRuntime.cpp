@@ -22,6 +22,7 @@ FrontendRuntime::FrontendRuntime(const std::string &configPath, const FrontendTr
           transport.remotePort,
           transport.remoteAutoStart,
           transport.backendExecutable,
+          transport.remoteAuthToken,
           transport.remoteCommandTimeoutMs,
           transport.remoteStatusTimeoutMs,
           transport.remoteSnapshotTimeoutMs,

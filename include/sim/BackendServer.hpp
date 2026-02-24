@@ -12,7 +12,7 @@
 
 class BackendServer {
     public:
-        explicit BackendServer(SimulationBackend &backend);
+        explicit BackendServer(SimulationBackend &backend, std::string authToken = {});
         ~BackendServer();
 
         bool start(std::uint16_t port, const std::string &bindAddress = "127.0.0.1");
@@ -34,6 +34,7 @@ class BackendServer {
         std::thread _acceptThread;
         SocketHandle _listenSocket;
         std::string _bindAddress;
+        std::string _authToken;
         std::uint16_t _port;
         bool _networkInitialized;
         std::mutex _socketMutex;

@@ -71,10 +71,11 @@ RealBackendHarness::~RealBackendHarness()
     stop();
 }
 
-bool RealBackendHarness::start(std::string &outError, std::uint16_t preferredPort)
+bool RealBackendHarness::start(std::string &outError, std::uint16_t preferredPort, const std::string &authToken)
 {
     stop();
     outError.clear();
+    _authToken = authToken;
     _executable = resolveBackendExecutable();
     if (_executable.empty()) {
         outError = "backend executable could not be resolved";
@@ -112,9 +113,14 @@ bool RealBackendHarness::start(std::string &outError, std::uint16_t preferredPor
             "--export-on-exit",
             "false"
         };
+        std::vector<std::string> effectiveArgs = args;
+        if (!_authToken.empty()) {
+            effectiveArgs.push_back("--backend-token");
+            effectiveArgs.push_back(_authToken);
+        }
 
         std::string launchError;
-        if (!_process.launch(_executable, args, false, launchError)) {
+        if (!_process.launch(_executable, effectiveArgs, false, launchError)) {
             continue;
         }
         if (waitUntilReady(outError)) {
@@ -134,6 +140,7 @@ void RealBackendHarness::stop()
     if (_port != 0u) {
         BackendClient client;
         client.setSocketTimeoutMs(120);
+        client.setAuthToken(_authToken);
         if (client.connect("127.0.0.1", _port)) {
             (void)client.sendCommand(std::string(sim::protocol::cmd::Shutdown));
             client.disconnect();
@@ -144,6 +151,7 @@ void RealBackendHarness::stop()
     (void)_process.terminate(1000u, terminateError);
     _process.clear();
     _port = 0u;
+    _authToken.clear();
 }
 
 bool RealBackendHarness::isRunning() const
@@ -216,6 +224,7 @@ bool RealBackendHarness::waitUntilReady(std::string &outError) const
 {
     BackendClient client;
     client.setSocketTimeoutMs(120);
+    client.setAuthToken(_authToken);
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
     while (std::chrono::steady_clock::now() < deadline) {
         if (!_process.isRunning()) {

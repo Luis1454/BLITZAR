@@ -10,6 +10,7 @@
 #include <exception>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace {
 
@@ -68,7 +69,8 @@ BackendClient::BackendClient()
     : _socket(sim::socket::invalidHandle()),
       _socketTimeoutMs(3000),
       _networkInitialized(false),
-      _recvBuffer()
+      _recvBuffer(),
+      _authToken()
 {
 }
 
@@ -121,6 +123,11 @@ void BackendClient::setSocketTimeoutMs(int timeoutMs)
 int BackendClient::socketTimeoutMs() const
 {
     return _socketTimeoutMs;
+}
+
+void BackendClient::setAuthToken(std::string token)
+{
+    _authToken = std::move(token);
 }
 
 void BackendClient::disconnect()
@@ -458,6 +465,11 @@ BackendClientResponse BackendClient::sendJson(const std::string &jsonLine)
 BackendClientResponse BackendClient::sendCommand(const std::string &cmd, const std::string &fieldsJson)
 {
     std::string payload = std::string("{\"cmd\":\"") + jsonEscape(cmd) + "\"";
+    if (!_authToken.empty()) {
+        payload += ",\"token\":\"";
+        payload += jsonEscape(_authToken);
+        payload += "\"";
+    }
     if (!fieldsJson.empty()) {
         payload += ",";
         payload += fieldsJson;

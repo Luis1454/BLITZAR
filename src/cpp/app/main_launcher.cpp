@@ -3,12 +3,10 @@
 
 #include <algorithm>
 #include <cctype>
-#include <chrono>
 #include <filesystem>
 #include <iostream>
 #include <string>
 #include <string_view>
-#include <thread>
 #include <vector>
 
 namespace {
@@ -162,19 +160,20 @@ std::string resolveExecutablePath(const std::string_view launcherPath, const std
 
 int runChildBlocking(const std::string &resolvedExecutable, const std::vector<std::string> &childArgs)
 {
-    sim::platform::ProcessHandle child;
     std::string launchError;
-    if (!child.launch(resolvedExecutable, childArgs, false, launchError)) {
+    const int exitCode = sim::platform::runProcessBlocking(
+        resolvedExecutable,
+        childArgs,
+        false,
+        launchError
+    );
+    if (!launchError.empty()) {
         std::cerr << "[launcher] failed to launch child process: "
                   << (launchError.empty() ? "unknown error" : launchError)
                   << '\n';
         return 1;
     }
-
-    while (child.isRunning()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    }
-    return 0;
+    return exitCode;
 }
 
 } // namespace

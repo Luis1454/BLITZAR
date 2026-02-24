@@ -33,6 +33,12 @@ bool launchDetachedProcess(
     const std::vector<std::string> &args,
     std::string &outError);
 
+int runProcessBlocking(
+    const std::string &executable,
+    const std::vector<std::string> &args,
+    bool createNewConsole,
+    std::string &outError);
+
 } // namespace sim::platform::detail
 
 #endif // GRAVITY_PLATFORM_INTERNAL_PROCESSOPS_HPP

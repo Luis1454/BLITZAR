@@ -208,6 +208,20 @@ bool splitFrontendTransportArgs(
             transport.backendExecutable = raw.substr(std::string("--backend-bin=").size());
             continue;
         }
+        if (raw == "--backend-token") {
+            if (i + 1 >= rawArgs.size()) {
+                warnings << "[args] missing value for --backend-token\n";
+                return false;
+            }
+            transport.remoteAuthToken = std::string(rawArgs[++i]);
+            transport.remoteMode = true;
+            continue;
+        }
+        if (raw.rfind("--backend-token=", 0) == 0) {
+            transport.remoteAuthToken = raw.substr(std::string("--backend-token=").size());
+            transport.remoteMode = true;
+            continue;
+        }
 
         filteredArgs.push_back(rawArgs[i]);
     }
@@ -222,6 +236,7 @@ FrontendBackendBridge::FrontendBackendBridge(
     std::uint16_t remotePort,
     bool remoteAutoStart,
     std::string backendExecutable,
+    std::string remoteAuthToken,
     std::uint32_t remoteCommandTimeoutMs,
     std::uint32_t remoteStatusTimeoutMs,
     std::uint32_t remoteSnapshotTimeoutMs,
@@ -233,6 +248,7 @@ FrontendBackendBridge::FrontendBackendBridge(
       _remotePort(remotePort),
       _remoteAutoStart(remoteAutoStart),
       _backendExecutable(backendExecutable.empty() ? std::string(kBackendDefaultName) : std::move(backendExecutable)),
+      _remoteAuthToken(std::move(remoteAuthToken)),
       _localBackend(nullptr),
       _remoteClient(),
       _remoteConnected(false),
@@ -257,6 +273,7 @@ FrontendBackendBridge::FrontendBackendBridge(
     }
     if (_remoteMode) {
         _remoteClient.setSocketTimeoutMs(static_cast<int>(_remoteCommandTimeoutMs));
+        _remoteClient.setAuthToken(_remoteAuthToken);
     }
 }
 
@@ -575,6 +592,7 @@ void FrontendBackendBridge::configureRemoteConnector(
         }
         _remoteMode = true;
         _remoteClient.setSocketTimeoutMs(static_cast<int>(_remoteCommandTimeoutMs));
+        _remoteClient.setAuthToken(_remoteAuthToken);
     }
 
     if (!host.empty()) {
@@ -585,6 +603,7 @@ void FrontendBackendBridge::configureRemoteConnector(
     if (!backendExecutable.empty()) {
         _backendExecutable = backendExecutable;
     }
+    _remoteClient.setAuthToken(_remoteAuthToken);
 
     _remoteClient.disconnect();
     _remoteConnected = false;
@@ -915,8 +934,13 @@ void FrontendBackendBridge::tryAutoStartRemoteBackend()
         "--backend-port",
         std::to_string(_remotePort)
     };
+    std::vector<std::string> effectiveArgs = args;
+    if (!_remoteAuthToken.empty()) {
+        effectiveArgs.push_back("--backend-token");
+        effectiveArgs.push_back(_remoteAuthToken);
+    }
     std::string launchError;
-    if (sim::platform::launchDetachedProcess(exe, args, launchError)) {
+    if (sim::platform::launchDetachedProcess(exe, effectiveArgs, launchError)) {
         _remoteBackendLaunched = true;
         std::cout << "[frontend] auto-start backend: " << exe << " (" << _remoteHost << ":" << _remotePort << ")\n";
     } else {

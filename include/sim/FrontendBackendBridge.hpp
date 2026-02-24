@@ -31,6 +31,7 @@ struct FrontendTransportArgs {
     std::uint16_t remotePort = 4545u;
     bool remoteAutoStart = false;
     std::string backendExecutable;
+    std::string remoteAuthToken;
     std::uint32_t remoteCommandTimeoutMs = kFrontendRemoteCommandTimeoutMsDefault;
     std::uint32_t remoteStatusTimeoutMs = kFrontendRemoteStatusTimeoutMsDefault;
     std::uint32_t remoteSnapshotTimeoutMs = kFrontendRemoteSnapshotTimeoutMsDefault;
@@ -60,6 +61,7 @@ class FrontendBackendBridge {
             std::uint16_t remotePort,
             bool remoteAutoStart,
             std::string backendExecutable,
+            std::string remoteAuthToken,
             std::uint32_t remoteCommandTimeoutMs,
             std::uint32_t remoteStatusTimeoutMs,
             std::uint32_t remoteSnapshotTimeoutMs,
@@ -128,6 +130,7 @@ class FrontendBackendBridge {
         std::uint16_t _remotePort;
         bool _remoteAutoStart;
         std::string _backendExecutable;
+        std::string _remoteAuthToken;
         std::unique_ptr<ILocalBackend> _localBackend;
         BackendClient _remoteClient;
         bool _remoteConnected;
