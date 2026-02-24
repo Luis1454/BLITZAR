@@ -1,5 +1,6 @@
 #include "sim/SimulationBackend.hpp"
 #include "sim/SimulationInitConfig.hpp"
+#include "sim/SimulationModes.hpp"
 #include "sim/PlatformPaths.hpp"
 
 #include <algorithm>
@@ -60,22 +61,20 @@ std::string normalizeSnapshotFormat(std::string format)
     return format;
 }
 
-ParticleSystem::SolverMode solverModeFromName(const std::string &name)
+ParticleSystem::SolverMode solverModeFromCanonicalName(std::string_view name)
 {
-    const std::string normalized = toLower(name);
-    if (normalized == "octree" || normalized == "octree_cpu") {
+    if (name == sim::modes::kSolverOctreeCpu) {
         return ParticleSystem::SolverMode::OctreeCpu;
     }
-    if (normalized == "octree_gpu") {
+    if (name == sim::modes::kSolverOctreeGpu) {
         return ParticleSystem::SolverMode::OctreeGpu;
     }
     return ParticleSystem::SolverMode::PairwiseCuda;
 }
 
-ParticleSystem::IntegratorMode integratorModeFromName(const std::string &name)
+ParticleSystem::IntegratorMode integratorModeFromCanonicalName(std::string_view name)
 {
-    const std::string normalized = toLower(name);
-    if (normalized == "rk4") {
+    if (name == sim::modes::kIntegratorRk4) {
         return ParticleSystem::IntegratorMode::Rk4;
     }
     return ParticleSystem::IntegratorMode::Euler;
@@ -895,8 +894,14 @@ SimulationBackend::SimulationBackend(const std::string &configPath)
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
         _particleCount = std::max<std::uint32_t>(2u, loaded.particleCount);
-        _solverMode = loaded.solver;
-        _integratorMode = loaded.integrator;
+        std::string solverCanonical;
+        std::string integratorCanonical;
+        _solverMode = sim::modes::normalizeSolver(loaded.solver, solverCanonical)
+            ? solverCanonical
+            : std::string(sim::modes::kSolverPairwiseCuda);
+        _integratorMode = sim::modes::normalizeIntegrator(loaded.integrator, integratorCanonical)
+            ? integratorCanonical
+            : std::string(sim::modes::kIntegratorEuler);
         _octreeTheta = loaded.octreeTheta;
         _octreeSoftening = loaded.octreeSoftening;
         _sphEnabled = loaded.sphEnabled;
@@ -1010,22 +1015,40 @@ void SimulationBackend::setParticleCount(std::uint32_t particleCount)
 
 void SimulationBackend::setSolverMode(const std::string &mode)
 {
+    std::string canonical;
+    if (!sim::modes::normalizeSolver(mode, canonical)) {
+        std::cerr << "[backend] ignored invalid solver mode: " << mode << "\n";
+        return;
+    }
+    bool changed = false;
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
-        _solverMode = mode;
+        if (_solverMode != canonical) {
+            _solverMode = canonical;
+            changed = true;
+        }
     }
-    if (_running.load(std::memory_order_relaxed)) {
+    if (changed && _running.load(std::memory_order_relaxed)) {
         requestReset();
     }
 }
 
 void SimulationBackend::setIntegratorMode(const std::string &mode)
 {
+    std::string canonical;
+    if (!sim::modes::normalizeIntegrator(mode, canonical)) {
+        std::cerr << "[backend] ignored invalid integrator mode: " << mode << "\n";
+        return;
+    }
+    bool changed = false;
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
-        _integratorMode = mode;
+        if (_integratorMode != canonical) {
+            _integratorMode = canonical;
+            changed = true;
+        }
     }
-    if (_running.load(std::memory_order_relaxed)) {
+    if (changed && _running.load(std::memory_order_relaxed)) {
         requestReset();
     }
 }
@@ -1158,7 +1181,7 @@ SimulationStats SimulationBackend::getStats() const
     bool sphEnabled = false;
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
-        mode = solverModeFromName(_solverMode);
+        mode = solverModeFromCanonicalName(_solverMode);
         particleCount = _particleCount;
         sphEnabled = _sphEnabled;
     }
@@ -1299,6 +1322,22 @@ void SimulationBackend::rebuildSystem()
         configuredParticleCount = std::max<std::uint32_t>(2u, _particleCount);
     }
 
+    {
+        std::string canonical;
+        if (sim::modes::normalizeSolver(solver, canonical)) {
+            solver = canonical;
+        } else {
+            solver.assign(sim::modes::kSolverPairwiseCuda);
+            std::cerr << "[backend] invalid internal solver mode detected, resetting to pairwise_cuda\n";
+        }
+        if (sim::modes::normalizeIntegrator(integrator, canonical)) {
+            integrator = canonical;
+        } else {
+            integrator.assign(sim::modes::kIntegratorEuler);
+            std::cerr << "[backend] invalid internal integrator mode detected, resetting to euler\n";
+        }
+    }
+
     std::vector<Particle> importedParticles;
     const std::string initMode = toLower(initConfig.mode);
     const bool shouldTryFile = !inputPath.empty() || initMode == "file";
@@ -1316,7 +1355,7 @@ void SimulationBackend::rebuildSystem()
         : configuredParticleCount;
 
     std::string effectiveSolver = solver;
-    if (solverModeFromName(solver) == ParticleSystem::SolverMode::PairwiseCuda
+    if (solverModeFromCanonicalName(solver) == ParticleSystem::SolverMode::PairwiseCuda
         && targetParticleCount > kPairwiseRealtimeParticleLimit) {
         if (isAutoSolverFallbackEnabled()) {
             effectiveSolver = "octree_gpu";
@@ -1331,6 +1370,7 @@ void SimulationBackend::rebuildSystem()
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
         _solverMode = effectiveSolver;
+        _integratorMode = integrator;
     }
 
     _system = std::make_unique<ParticleSystem>(static_cast<int>(targetParticleCount), false);
@@ -1370,8 +1410,8 @@ void SimulationBackend::rebuildSystem()
 
     _system->setOctreeTheta(theta);
     _system->setOctreeSoftening(softening);
-    _system->setSolverMode(solverModeFromName(effectiveSolver));
-    _system->setIntegratorMode(integratorModeFromName(integrator));
+    _system->setSolverMode(solverModeFromCanonicalName(effectiveSolver));
+    _system->setIntegratorMode(integratorModeFromCanonicalName(integrator));
     _system->setSphEnabled(sphEnabled);
     _system->setSphParameters(sphSmoothingLength, sphRestDensity, sphGasConstant, sphViscosity);
     _system->setThermalParameters(
@@ -1792,8 +1832,8 @@ void SimulationBackend::loop()
             sphGasConstant = _sphGasConstant;
             sphViscosity = _sphViscosity;
         }
-        _system->setSolverMode(solverModeFromName(solverMode));
-        _system->setIntegratorMode(integratorModeFromName(integratorMode));
+        _system->setSolverMode(solverModeFromCanonicalName(solverMode));
+        _system->setIntegratorMode(integratorModeFromCanonicalName(integratorMode));
         _system->setOctreeTheta(theta);
         _system->setOctreeSoftening(softening);
         _system->setSphEnabled(sphEnabled);

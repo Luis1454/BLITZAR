@@ -1,10 +1,12 @@
 #include "sim/SimulationConfig.hpp"
+#include "sim/SimulationModes.hpp"
 #include "sim/TextParse.hpp"
 
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <limits>
 #include <sstream>
 
@@ -113,9 +115,19 @@ SimulationConfig SimulationConfig::loadOrCreate(const std::string &path)
         } else if (key == "dt") {
             parseFloat(value, config.dt);
         } else if (key == "solver") {
-            config.solver = value;
+            std::string canonical;
+            if (sim::modes::normalizeSolver(value, canonical)) {
+                config.solver = canonical;
+            } else {
+                std::cerr << "[config] invalid solver value ignored: " << value << "\n";
+            }
         } else if (key == "integrator") {
-            config.integrator = value;
+            std::string canonical;
+            if (sim::modes::normalizeIntegrator(value, canonical)) {
+                config.integrator = canonical;
+            } else {
+                std::cerr << "[config] invalid integrator value ignored: " << value << "\n";
+            }
         } else if (key == "octree_theta") {
             parseFloat(value, config.octreeTheta);
         } else if (key == "octree_softening") {

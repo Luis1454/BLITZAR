@@ -32,6 +32,7 @@ add_executable(gravityIntegrationConfigArgsGTests
     "${GRAVITY_ROOT_DIR}/tests/config/config_args_regression.cpp"
     "${GRAVITY_ROOT_DIR}/src/cpp/sim/SimulationArgs.cpp"
     "${GRAVITY_ROOT_DIR}/src/cpp/sim/SimulationConfig.cpp"
+    "${GRAVITY_ROOT_DIR}/src/cpp/sim/SimulationModes.cpp"
     "${GRAVITY_ROOT_DIR}/src/cpp/sim/TextParse.cpp"
 )
 target_include_directories(gravityIntegrationConfigArgsGTests
@@ -147,6 +148,7 @@ add_executable(gravityIntegrationFrontendRuntimeContractGTests
     "${GRAVITY_ROOT_DIR}/src/cpp/sim/BackendClient.cpp"
     "${GRAVITY_ROOT_DIR}/src/cpp/sim/FrontendCommon.cpp"
     "${GRAVITY_ROOT_DIR}/src/cpp/sim/SimulationConfig.cpp"
+    "${GRAVITY_ROOT_DIR}/src/cpp/sim/SimulationModes.cpp"
     "${GRAVITY_ROOT_DIR}/src/cpp/sim/TextParse.cpp"
 )
 target_include_directories(gravityIntegrationFrontendRuntimeContractGTests
@@ -175,6 +177,7 @@ if(TARGET Qt6::Widgets)
         "${GRAVITY_ROOT_DIR}/src/cpp/sim/BackendClient.cpp"
         "${GRAVITY_ROOT_DIR}/src/cpp/sim/FrontendCommon.cpp"
         "${GRAVITY_ROOT_DIR}/src/cpp/sim/SimulationConfig.cpp"
+        "${GRAVITY_ROOT_DIR}/src/cpp/sim/SimulationModes.cpp"
         "${GRAVITY_ROOT_DIR}/src/cpp/sim/TextParse.cpp"
         "${GRAVITY_ROOT_DIR}/src/cpp/ui/EnergyGraphWidget.cpp"
         "${GRAVITY_ROOT_DIR}/src/cpp/ui/MainWindow.cpp"

@@ -1,4 +1,5 @@
 #include "sim/SimulationArgs.hpp"
+#include "sim/SimulationModes.hpp"
 #include "sim/TextParse.hpp"
 
 #include <algorithm>
@@ -206,11 +207,25 @@ void applyArgsToConfig(
             continue;
         }
         if (key == "--solver") {
-            config.solver = value;
+            std::string canonical;
+            if (sim::modes::normalizeSolver(value, canonical)) {
+                config.solver = canonical;
+            } else {
+                runtime.hasArgumentError = true;
+                warnings << "[args] invalid --solver: " << value
+                         << " (allowed: pairwise_cuda|octree_gpu|octree_cpu)\n";
+            }
             continue;
         }
         if (key == "--integrator") {
-            config.integrator = value;
+            std::string canonical;
+            if (sim::modes::normalizeIntegrator(value, canonical)) {
+                config.integrator = canonical;
+            } else {
+                runtime.hasArgumentError = true;
+                warnings << "[args] invalid --integrator: " << value
+                         << " (allowed: euler|rk4)\n";
+            }
             continue;
         }
         if (key == "--octree-theta") {

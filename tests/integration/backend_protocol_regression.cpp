@@ -125,4 +125,26 @@ TEST(BackendProtocolRegression, BackendAcceptsControlCommandsFromClient)
     backend.stop();
 }
 
+TEST(BackendProtocolRegression, BackendRejectsInvalidSolverAndIntegratorCommands)
+{
+    RealBackendHarness backend;
+    std::string startError;
+    ASSERT_TRUE(backend.start(startError)) << startError;
+
+    BackendClient client;
+    client.setSocketTimeoutMs(200);
+    ASSERT_TRUE(client.connect("127.0.0.1", backend.port()));
+
+    BackendClientResponse response = client.sendCommand(std::string(sim::protocol::cmd::SetSolver), "\"value\":\"not_a_solver\"");
+    ASSERT_FALSE(response.ok);
+    EXPECT_NE(response.error.find("invalid solver"), std::string::npos);
+
+    response = client.sendCommand(std::string(sim::protocol::cmd::SetIntegrator), "\"value\":\"not_an_integrator\"");
+    ASSERT_FALSE(response.ok);
+    EXPECT_NE(response.error.find("invalid integrator"), std::string::npos);
+
+    client.disconnect();
+    backend.stop();
+}
+
 } // namespace

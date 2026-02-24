@@ -171,6 +171,7 @@ set(GRAVITY_BACKEND_SOURCES
     src/cpp/sim/SimulationArgs.cpp
     src/cpp/sim/SimulationBackend.cpp
     src/cpp/sim/SimulationConfig.cpp
+    src/cpp/sim/SimulationModes.cpp
     src/cpp/sim/TextParse.cpp
     src/cuda/core/ParticleSystem.cu
 )
@@ -541,6 +542,7 @@ if(GRAVITY_BUILD_TESTS)
         tests/config/config_args_regression.cpp
         src/cpp/sim/SimulationArgs.cpp
         src/cpp/sim/SimulationConfig.cpp
+        src/cpp/sim/SimulationModes.cpp
         src/cpp/sim/TextParse.cpp
     )
     target_include_directories(gravityConfigArgsGTests
@@ -645,16 +647,17 @@ if(GRAVITY_BUILD_TESTS)
     )
 
     if(TARGET Qt6::Widgets AND GRAVITY_BUILD_FRONTEND_MODULES)
-        add_executable(gravityQtMainWindowIntegrationGTests
-            tests/integration/qt_mainwindow_integration.cpp
-            tests/integration/RealBackendHarness.cpp
-            src/cpp/sim/FrontendRuntime.cpp
-            src/cpp/sim/FrontendBackendBridge.cpp
-            src/cpp/sim/BackendClient.cpp
-            src/cpp/sim/FrontendCommon.cpp
-            src/cpp/sim/SimulationConfig.cpp
-            src/cpp/sim/TextParse.cpp
-            src/cpp/ui/EnergyGraphWidget.cpp
+    add_executable(gravityQtMainWindowIntegrationGTests
+        tests/integration/qt_mainwindow_integration.cpp
+        tests/integration/RealBackendHarness.cpp
+        src/cpp/sim/FrontendRuntime.cpp
+        src/cpp/sim/FrontendBackendBridge.cpp
+        src/cpp/sim/BackendClient.cpp
+        src/cpp/sim/FrontendCommon.cpp
+        src/cpp/sim/SimulationConfig.cpp
+        src/cpp/sim/SimulationModes.cpp
+        src/cpp/sim/TextParse.cpp
+        src/cpp/ui/EnergyGraphWidget.cpp
             src/cpp/ui/MainWindow.cpp
             src/cpp/ui/MultiViewWidget.cpp
             src/cpp/ui/ParticleView.cpp

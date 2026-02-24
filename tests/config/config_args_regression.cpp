@@ -108,6 +108,31 @@ TEST(ConfigArgsRegression, RejectsInvalidArgumentsAndKeepsPreviousValues)
     EXPECT_NE(log.find("unknown option"), std::string::npos);
 }
 
+TEST(ConfigArgsRegression, RejectsInvalidSolverAndIntegratorValues)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+
+    const std::string initialSolver = config.solver;
+    const std::string initialIntegrator = config.integrator;
+
+    std::vector<std::string> args = {
+        "app",
+        "--solver", "bad_solver",
+        "--integrator", "bad_integrator"
+    };
+    const std::vector<std::string_view> argViews = toArgViews(args);
+    applyArgsToConfig(argViews, config, runtime, warnings);
+
+    EXPECT_EQ(config.solver, initialSolver);
+    EXPECT_EQ(config.integrator, initialIntegrator);
+    EXPECT_TRUE(runtime.hasArgumentError);
+    const std::string log = warnings.str();
+    EXPECT_NE(log.find("invalid --solver"), std::string::npos);
+    EXPECT_NE(log.find("invalid --integrator"), std::string::npos);
+}
+
 TEST(ConfigArgsRegression, RejectsTrailingGarbageNumericArguments)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -203,6 +228,29 @@ TEST(ConfigArgsRegression, LoadIgnoresTrailingGarbageInNumericConfigValues)
     EXPECT_EQ(loaded.solver, "octree_cpu");
     EXPECT_TRUE(loaded.sphEnabled);
     EXPECT_EQ(loaded.energySampleLimit, 2048u);
+
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
+TEST(ConfigArgsRegression, LoadOrCreateRejectsInvalidSolverAndIntegrator)
+{
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path =
+        std::filesystem::temp_directory_path() / ("gravity_config_invalid_modes_" + std::to_string(stamp) + ".ini");
+
+    {
+        std::ofstream out(path, std::ios::trunc);
+        ASSERT_TRUE(out.is_open());
+        out << "solver=bad_solver\n";
+        out << "integrator=bad_integrator\n";
+    }
+
+    const SimulationConfig defaults = SimulationConfig::defaults();
+    const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
+
+    EXPECT_EQ(loaded.solver, defaults.solver);
+    EXPECT_EQ(loaded.integrator, defaults.integrator);
 
     std::error_code ec;
     std::filesystem::remove(path, ec);

@@ -1,5 +1,6 @@
 #include "sim/BackendServer.hpp"
 #include "sim/BackendProtocol.hpp"
+#include "sim/SimulationModes.hpp"
 #include "sim/SocketPlatform.hpp"
 #include "sim/TextParse.hpp"
 
@@ -38,6 +39,7 @@ std::string toLower(std::string value)
     return value;
 }
 
+// ! design pattern to implement
 std::string jsonEscape(const std::string &value)
 {
     std::string escaped;
@@ -538,7 +540,11 @@ std::string BackendServer::processRequest(const std::string &request)
         if (!extractJsonString(request, "value", value)) {
             return makeErrorResponse(cmd, "missing solver value");
         }
-        _backend.setSolverMode(value);
+        std::string canonical;
+        if (!sim::modes::normalizeSolver(value, canonical)) {
+            return makeErrorResponse(cmd, "invalid solver value");
+        }
+        _backend.setSolverMode(canonical);
         return makeOkResponse(cmd);
     }
     if (cmd == sim::protocol::cmd::SetIntegrator) {
@@ -546,7 +552,11 @@ std::string BackendServer::processRequest(const std::string &request)
         if (!extractJsonString(request, "value", value)) {
             return makeErrorResponse(cmd, "missing integrator value");
         }
-        _backend.setIntegratorMode(value);
+        std::string canonical;
+        if (!sim::modes::normalizeIntegrator(value, canonical)) {
+            return makeErrorResponse(cmd, "invalid integrator value");
+        }
+        _backend.setIntegratorMode(canonical);
         return makeOkResponse(cmd);
     }
     if (cmd == sim::protocol::cmd::SetParticleCount) {
