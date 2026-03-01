@@ -1,0 +1,13 @@
+control_id,source_standard,repo_artifact,verification
+SWE-001,NPR-7150.2D,docs/quality/requirements.json,controlled requirement IDs and verification regex mappings
+SWE-002,NPR-7150.2D,docs/quality/traceability.csv,requirement to evidence mapping for each requirement ID
+SWE-002A,NPR-7150.2D,docs/quality/test_catalog.csv,normalized test case inventory with stable identifiers
+SWE-003,NPR-7150.2D,.github/workflows/pr-fast.yml,strict deterministic PR gate definition
+SWE-004,NPR-7150.2D,AGENTS.md,mandatory quality workflow and local pre-flight checklist
+SWE-005,NPR-7150.2D,tests/checks/pr_policy_check.py,automated pull-request governance (issue/branch/title/body coherence)
+SMA-001,NASA-STD-8739.8B,docs/quality/ivv_plan.md,independent verification and validation baseline
+SMA-002,NASA-STD-8739.8B,docs/quality/fmea.md,failure mode analysis with detection and mitigation links
+SMA-003,NASA-STD-8739.8B,docs/quality/tool_qualification.md,tool confidence and acceptance controls
+SIM-001,ECSS-E-ST-40-07C,docs/quality/numerical_validation.md,simulation acceptance criteria and tolerance policy
+ENG-001,ECSS-E-ST-40C,docs/quality/README.md,quality baseline scope and governance
+PA-001,ECSS-Q-ST-80C,tests/checks/quality_check.py,automated baseline integrity check

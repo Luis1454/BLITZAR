@@ -1,0 +1,9 @@
+{
+  "pull_request": {
+    "title": "Issue #106: Enforce branch-per-issue policy",
+    "body": "Implements #106\n\nCloses #106",
+    "head": {
+      "ref": "issue/106-enforce-branch-per-issue-policy"
+    }
+  }
+}

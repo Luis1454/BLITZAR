@@ -2,10 +2,8 @@ name: nightly-full
 
 on:
   push:
-    branches:
-      - main
-    paths-ignore:
-      - README.md
+    branches: [main]
+    paths-ignore: [README.md]
   schedule:
     - cron: "0 2 * * *"
   workflow_dispatch:
@@ -24,38 +22,33 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - {name: Checkout, uses: actions/checkout@v4}
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: {python-version: "3.x"}
+      - name: Install Python test tooling
+        shell: pwsh
+        run: python -m pip install --upgrade pip pytest ruff mypy
       - name: Setup MSVC toolchain
         uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-
+        with: {arch: x64}
+      - name: Run repository quality gate
+        shell: pwsh
+        run: python tests/checks/check.py all --root . --config simulation.ini
+      - name: Run Python style/type checks
+        shell: pwsh
+        run: |
+          python -m ruff check .
+          python -m mypy tests/checks scripts/ci python_tools
       - name: Configure standalone integration tests
         shell: pwsh
-        run: |
-          cmake -S tests/integration -B build-integration -G Ninja -DCMAKE_BUILD_TYPE=Release
-
+        run: cmake -S tests -B build-integration -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_PROFILE=prod -DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON
       - name: Build standalone integration tests
         shell: pwsh
-        run: |
-          cmake --build build-integration --parallel
-
+        run: cmake --build build-integration --parallel
       - name: Run integration-safe tests
         shell: pwsh
-        run: |
-          ctest --test-dir build-integration --output-on-failure --timeout 180 --repeat until-fail:3
-
-      - name: Explain GPU test scope
-        shell: pwsh
-        run: |
-          @"
-          Integration nightly lane runs standalone C++ tests (config/args + backend protocol + frontend bridge reconnect) without CUDA installation.
-          Full physics CUDA tests remain in the optional self-hosted NVIDIA runner job.
-          Set repository variable HAS_GPU_RUNNER=true to enable the optional GPU job.
-          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-
+        run: ctest --test-dir build-integration --output-on-failure --timeout 180 --no-tests=error --repeat until-fail:3 -R "ConfigArgsTest\\.TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7|8|9)_"
       - name: Upload test and build logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -72,155 +65,33 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - {name: Checkout, uses: actions/checkout@v4}
+      - name: Run repository quality gate
+        run: python3 tests/checks/check.py all --root . --config simulation.ini
       - name: Install coverage tooling
         run: |
           sudo apt-get update
           sudo apt-get install -y ninja-build
           python3 -m pip install --upgrade pip
-          python3 -m pip install gcovr
-
+          python3 -m pip install gcovr pytest ruff mypy
       - name: Configure coverage build
-        run: |
-          cmake -S tests/integration -B build-integration-cov -G Ninja -DCMAKE_BUILD_TYPE=Debug -DGRAVITY_INTEGRATION_ENABLE_COVERAGE=ON
-
+        run: cmake -S tests -B build-integration-cov -G Ninja -DCMAKE_BUILD_TYPE=Debug -DGRAVITY_PROFILE=prod -DGRAVITY_INTEGRATION_ENABLE_COVERAGE=ON -DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON
       - name: Build coverage target
-        run: |
-          cmake --build build-integration-cov --parallel
-
+        run: cmake --build build-integration-cov --parallel
       - name: Run integration tests for coverage
-        run: |
-          ctest --test-dir build-integration-cov --output-on-failure --timeout 180
-
-      - name: Generate coverage report
-        id: coverage
-        run: |
-          gcovr \
-            --root "${GITHUB_WORKSPACE}" \
-            --object-directory build-integration-cov \
-            --filter "src/cpp/sim" \
-            --exclude "build-integration-cov/_deps" \
-            --exclude "tests/" \
-            --xml-pretty \
-            --output build-integration-cov/coverage.xml \
-            --html-details build-integration-cov/coverage.html
-          gcovr \
-            --root "${GITHUB_WORKSPACE}" \
-            --object-directory build-integration-cov \
-            --filter "src/cpp/sim" \
-            --exclude "build-integration-cov/_deps" \
-            --exclude "tests/" \
-            --print-summary | tee build-integration-cov/coverage-summary.txt
-          LINES_PCT="$(awk '/^lines:/{gsub("%","",$2); print $2}' build-integration-cov/coverage-summary.txt)"
-          FUNCS_PCT="$(awk '/^functions:/{gsub("%","",$2); print $2}' build-integration-cov/coverage-summary.txt)"
-          BRANCH_PCT="$(awk '/^branches:/{gsub("%","",$2); print $2}' build-integration-cov/coverage-summary.txt)"
-          echo "lines_pct=${LINES_PCT}" >> "$GITHUB_OUTPUT"
-          echo "funcs_pct=${FUNCS_PCT}" >> "$GITHUB_OUTPUT"
-          echo "branch_pct=${BRANCH_PCT}" >> "$GITHUB_OUTPUT"
-          {
-            echo "## Integration coverage percentages"
-            echo ""
-            echo "| Metric | Percent |"
-            echo "|---|---:|"
-            echo "| Lines | ${LINES_PCT}% |"
-            echo "| Functions | ${FUNCS_PCT}% |"
-            echo "| Branches | ${BRANCH_PCT}% |"
-            echo ""
-            echo "Raw summary:"
-            echo '```text'
-            cat build-integration-cov/coverage-summary.txt
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-          echo "::notice title=Coverage percentages::lines=${LINES_PCT}% functions=${FUNCS_PCT}% branches=${BRANCH_PCT}%"
-
+        run: ctest --test-dir build-integration-cov --output-on-failure --timeout 180 --no-tests=error -R "ConfigArgsTest\\.TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7|8|9)_"
+      - {name: Generate coverage report, id: coverage, run: bash scripts/ci/nightly/generate_coverage.sh}
       - name: Build coverage dashboard payload
         if: ${{ github.ref == 'refs/heads/main' }}
-        run: |
-          LINES_PCT="${{ steps.coverage.outputs.lines_pct }}"
-          FUNCS_PCT="${{ steps.coverage.outputs.funcs_pct }}"
-          BRANCH_PCT="${{ steps.coverage.outputs.branch_pct }}"
-          python3 - <<'PY'
-          import json
-          import os
-          from datetime import datetime, timezone
-          from pathlib import Path
-
-          root = Path("coverage-dashboard")
-          out = root / "coverage"
-          out.mkdir(parents=True, exist_ok=True)
-
-          def color_for(pct: float) -> str:
-              if pct >= 90.0:
-                  return "brightgreen"
-              if pct >= 75.0:
-                  return "green"
-              if pct >= 60.0:
-                  return "yellow"
-              if pct >= 40.0:
-                  return "orange"
-              return "red"
-
-          def write_badge(name: str, pct: float) -> None:
-              payload = {
-                  "schemaVersion": 1,
-                  "label": name,
-                  "message": f"{pct:.1f}%",
-                  "color": color_for(pct),
-              }
-              (out / f"{name}.json").write_text(json.dumps(payload), encoding="utf-8")
-
-          lines = float(os.environ["LINES_PCT"])
-          funcs = float(os.environ["FUNCS_PCT"])
-          branches = float(os.environ["BRANCH_PCT"])
-          updated = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-          write_badge("lines", lines)
-          write_badge("functions", funcs)
-          write_badge("branches", branches)
-
-          summary = {
-              "updated_utc": updated,
-              "lines_pct": round(lines, 1),
-              "functions_pct": round(funcs, 1),
-              "branches_pct": round(branches, 1),
-          }
-          (out / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
-
-          (root / "index.html").write_text(
-              (
-                  "<!doctype html><html><head><meta charset='utf-8'>"
-                  "<meta name='viewport' content='width=device-width, initial-scale=1'>"
-                  "<title>Coverage Dashboard</title></head><body>"
-                  "<h1>Integration Coverage</h1>"
-                  f"<p>Updated: {updated}</p>"
-                  "<ul>"
-                  f"<li>Lines: {lines:.1f}%</li>"
-                  f"<li>Functions: {funcs:.1f}%</li>"
-                  f"<li>Branches: {branches:.1f}%</li>"
-                  "</ul>"
-                  "<p>JSON endpoints: "
-                  "<a href='coverage/lines.json'>lines</a>, "
-                  "<a href='coverage/functions.json'>functions</a>, "
-                  "<a href='coverage/branches.json'>branches</a>, "
-                  "<a href='coverage/summary.json'>summary</a>"
-                  "</p></body></html>"
-              ),
-              encoding="utf-8",
-          )
-          PY
+        run: python3 scripts/ci/nightly/build_dashboard.py
         env:
           LINES_PCT: ${{ steps.coverage.outputs.lines_pct }}
           FUNCS_PCT: ${{ steps.coverage.outputs.funcs_pct }}
           BRANCH_PCT: ${{ steps.coverage.outputs.branch_pct }}
-
       - name: Upload coverage dashboard pages artifact
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-pages-artifact@v3
-        with:
-          path: coverage-dashboard
-
+        with: {path: coverage-dashboard}
       - name: Publish coverage status check
         if: always()
         uses: actions/github-script@v7
@@ -230,19 +101,12 @@ jobs:
             const lines = '${{ steps.coverage.outputs.lines_pct }}';
             const funcs = '${{ steps.coverage.outputs.funcs_pct }}';
             const branches = '${{ steps.coverage.outputs.branch_pct }}';
-            const description = lines
-              ? `L${lines}% F${funcs}% B${branches}%`
-              : 'Coverage summary unavailable';
+            const description = lines ? `L${lines}% F${funcs}% B${branches}%` : 'Coverage summary unavailable';
             await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: context.sha,
-              state: ok ? 'success' : 'failure',
-              context: 'coverage/integration',
-              description,
-              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+              owner: context.repo.owner, repo: context.repo.repo, sha: context.sha,
+              state: ok ? 'success' : 'failure', context: 'coverage/integration',
+              description, target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
-
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -258,9 +122,7 @@ jobs:
     needs: nightly-integration-coverage
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
+    permissions: {pages: write, id-token: write}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -270,51 +132,52 @@ jobs:
         continue-on-error: true
         uses: actions/deploy-pages@v4
 
-      - name: Explain Pages fallback
-        if: ${{ steps.deployment.outcome == 'failure' }}
-        run: |
-          echo "::warning title=Coverage Pages disabled::Enable GitHub Pages (source: GitHub Actions) to publish live coverage badges."
-
   nightly-gpu-full-tests:
     name: Nightly GPU Full Tests (optional)
     if: ${{ vars.HAS_GPU_RUNNER == 'true' }}
     runs-on: [self-hosted, windows, x64, cuda]
     timeout-minutes: 120
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - {name: Checkout, uses: actions/checkout@v4}
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: {python-version: "3.x"}
+      - name: Install Python test tooling
+        shell: pwsh
+        run: python -m pip install --upgrade pip pytest ruff mypy
       - name: Setup MSVC toolchain
         uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-
+        with: {arch: x64}
       - name: Validate CUDA runtime/toolchain presence
         shell: pwsh
         run: |
           $hasNvidiaSmi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
           $hasNvcc = Get-Command nvcc -ErrorAction SilentlyContinue
-          if (-not $hasNvidiaSmi) {
-            throw "nvidia-smi not found. Runner does not expose NVIDIA driver/runtime."
-          }
-          if (-not $hasNvcc) {
-            throw "nvcc not found in PATH. Install CUDA Toolkit or expose nvcc in runner environment."
-          }
+          if (-not $hasNvidiaSmi) { throw "nvidia-smi not found. Runner does not expose NVIDIA driver/runtime." }
+          if (-not $hasNvcc) { throw "nvcc not found in PATH. Install CUDA Toolkit or expose nvcc in runner environment." }
           nvidia-smi
           nvcc --version
-
+      - name: Run repository quality gate
+        shell: pwsh
+        run: python tests/checks/check.py all --root . --config simulation.ini
+      - name: Run Python style/type checks
+        shell: pwsh
+        run: |
+          python -m ruff check .
+          python -m mypy tests/checks scripts/ci python_tools
       - name: Configure
         shell: pwsh
-        run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_PROFILE=prod -DGRAVITY_STRICT_WARNINGS=ON
       - name: Build
         shell: pwsh
+        run: cmake --build build --parallel
+      - name: Run real backend integration suites
+        shell: pwsh
         run: |
-          cmake --build build --parallel
-
+          $backend = Resolve-Path "build/myAppBackend.exe"
+          cmake -E env "GRAVITY_BACKEND_EXE=$backend" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error -R "BackendProtocolTest\\.TST_INT_PROT_|FrontendBridgeTest\\.TST_INT_RUNT_|FrontendRuntimeTest\\.TST_CNT_RUNT_"
       - name: Run full tests
         shell: pwsh
         run: |
-          ctest --test-dir build --output-on-failure --timeout 300
-
+          $backend = Resolve-Path "build/myAppBackend.exe"
+          cmake -E env "GRAVITY_BACKEND_EXE=$backend" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error

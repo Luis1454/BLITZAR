@@ -57,6 +57,10 @@ git pull --ff-only origin main
 - Do not use environment variables for runtime behavior unless an issue explicitly requires it.
 - Keep commits focused and traceable to the issue number.
 - Prefer automatic issue closure through PR body: `Closes #<N>`.
+- PR policy is enforced in CI for pull requests:
+  - branch: `issue/<N>-<slug>`
+  - title contains `Issue #<N>`
+  - body contains `Closes #<N>`
 
 ## Space-Grade Quality Gate (Mandatory)
 
@@ -65,7 +69,8 @@ Treat this repository as high-assurance software (astrophysics/space simulation)
 - No merge without a green quality gate in CI (`pr-fast`).
 - No compiler warnings allowed in strict lanes (`-Werror`/`/WX` policy).
 - No static analyzer critical findings in strict lanes (`clang-tidy` analyzer checks).
-- All deterministic tests must pass (`ctest`), including integration-safe contracts.
+- PR lanes must pass the deterministic fast subset (`ctest`).
+- Nightly/release evidence lanes must pass broader deterministic scopes, including integration-safe contracts.
 - Repository policy checks must pass (naming, extension policy, file-size policy, no legacy tokens).
 - Keep runtime behavior deterministic where possible (fixed seeds/timeouts in tests).
 - Any temporary exception (file-size or policy) must be explicit and traceable in repo policy allowlists.
@@ -94,11 +99,12 @@ python tests/checks/check.py all --root . --config simulation.ini
 cmake -S tests -B build-quality -G Ninja \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DGRAVITY_PROFILE=prod \
   -DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON \
   -DGRAVITY_INTEGRATION_ENABLE_SANITIZERS=ON
 cmake --build build-quality --parallel
 python tests/checks/clang_tidy_check.py --root . --build-dir build-quality
-ctest --test-dir build-quality --output-on-failure --timeout 180 -R "ConfigArgsTest\\.TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6)_"
+ctest --test-dir build-quality --output-on-failure --timeout 180 --no-tests=error -R "ConfigArgsTest\\.TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7)_"
 ```
 
 `integration_real` tests require a real backend executable and run in dedicated lanes where backend artifacts are present.
@@ -119,7 +125,9 @@ ctest --test-dir build-quality --output-on-failure --timeout 180 -R "ConfigArgsT
 - Prefer a 1:1 mapping: one `.cpp` file per `.hpp` file.
 - Prefer one class per file.
 - Headers must be self-contained and compile on their own.
-- Do not use `using namespace` in headers.
+- Do not use `using` in C++ code (`apps/`, `engine/`, `runtime/`, `modules/`, `tests/`), including `using namespace`, symbol imports, and alias declarations.
+- Use single-level namespaces only (`namespace grav_x { ... }`), never nested forms (`namespace a::b {}` or nested namespace blocks).
+- Do not introduce `gravity_internal_*` namespaces.
 - Keep includes minimal and use forward declarations when possible.
 - Keep include order stable: standard library, third-party, then project headers.
 - Mark single-argument constructors as `explicit`.
