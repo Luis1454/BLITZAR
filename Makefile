@@ -2,25 +2,43 @@ EXECUTABLE := myApp
 HEADLESS_EXECUTABLE := myAppHeadless
 BACKEND_EXECUTABLE := myAppBackend
 MODULE_HOST_EXECUTABLE := myAppModuleHost
-BUILD_DIR := build
+
+BUILD_DIR ?= build
+BUILD_TYPE ?= Release
+BUILD_TESTS ?= ON
+PROFILE ?= dev
 GENERATOR ?= Ninja
 CUDA_ARCH ?= native
-BUILD_TYPE ?= Release
+JOBS ?=
+PROFILE_LOGS ?= OFF
+
+INT_BUILD_DIR ?= build-integration
+INT_BUILD_TYPE ?= Release
+INT_TEST_REGEX ?=
+INT_TEST_REGEX_NO_BACKEND ?= ^(ConfigArgsTest\.TST_UNT_CONF_|BackendProtocolTest\.TST_INT_PROT_003_BackendClientConnectTimeoutIsBounded$$|TST_QLT_REPO_.*)
+INT_TIMEOUT ?= 180
+BACKEND_EXE ?=
+
 QT_DIR ?= C:/Qt/6.8.2/msvc2022_64
 WINDEPLOYQT ?= $(QT_DIR)/bin/windeployqt.exe
 MACDEPLOYQT ?= $(QT_DIR)/bin/macdeployqt
 LINUXDEPLOYQT ?= linuxdeployqt
 QT_PLUGIN_PATH ?= $(QT_DIR)/plugins
 QT_LIB_DIR ?= $(QT_DIR)/lib
-CONFIG ?= simulation.ini
-GUI_MODULE ?= qt
+
+VCPKG_TRIPLET ?= x64-windows
 RUN_DOCTOR ?= 1
+CONFIG ?= simulation.ini
+CHECK ?= ini
+CHECK_BUILD_TARGETS ?= 0
+GUI_MODULE ?= qt
+ARGS ?=
+
 ifeq ($(OS),Windows_NT)
 UNAME_S := Windows
 else
 UNAME_S := $(shell uname -s 2>/dev/null || echo Unknown)
 endif
-ARGS ?=
 
 ifeq ($(OS),Windows_NT)
 RUN_BIN := $(BUILD_DIR)/$(EXECUTABLE).exe
@@ -40,102 +58,89 @@ QT_MODULE_LIB := $(BUILD_DIR)/gravityFrontendModuleQtInProc.so
 endif
 endif
 
-all:
-	cmake -S . -B $(BUILD_DIR) -G "$(GENERATOR)" -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DCMAKE_CUDA_ARCHITECTURES=$(CUDA_ARCH)
-	cmake --build $(BUILD_DIR)
+ifeq ($(strip $(BACKEND_EXE)),)
+ifneq ($(wildcard $(RUN_BACKEND_BIN)),)
+BACKEND_EXE := $(abspath $(RUN_BACKEND_BIN))
+endif
+endif
+
+CMAKE_FLAGS = \
+	-G "$(GENERATOR)" \
+	-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
+	-DCMAKE_CUDA_ARCHITECTURES=$(CUDA_ARCH) \
+	-DGRAVITY_PROFILE=$(PROFILE) \
+	-DGRAVITY_BUILD_BACKEND_DAEMON=ON \
+	-DGRAVITY_BUILD_HEADLESS_BINARY=ON \
+	-DGRAVITY_BUILD_FRONTEND_MODULE_HOST=ON \
+	-DGRAVITY_BUILD_FRONTEND_MODULES=ON \
+	-DGRAVITY_BUILD_TESTS=$(BUILD_TESTS) \
+	-DGRAVITY_PROFILE_LOGS=$(PROFILE_LOGS)
+
+BUILD_CMD = cmake --build $(BUILD_DIR)
+ifneq ($(strip $(JOBS)),)
+BUILD_CMD += --parallel $(JOBS)
+else
+BUILD_CMD += --parallel
+endif
+
+INT_BUILD_CMD = cmake --build $(INT_BUILD_DIR)
+ifneq ($(strip $(JOBS)),)
+INT_BUILD_CMD += --parallel $(JOBS)
+else
+INT_BUILD_CMD += --parallel
+endif
+
+INT_CTEST_CMD = ctest --test-dir $(INT_BUILD_DIR) --output-on-failure --timeout $(INT_TIMEOUT)
+ifneq ($(strip $(BACKEND_EXE)),)
+INT_CTEST_ENV = cmake -E env "GRAVITY_BACKEND_EXE=$(BACKEND_EXE)"
+endif
+
+include make/check.mk
+include make/runtime.mk
+
+all: configure build
+
+configure:
+	cmake -S . -B $(BUILD_DIR) $(CMAKE_FLAGS)
+
+build:
+	$(BUILD_CMD)
+
+test: all
+	ctest --test-dir $(BUILD_DIR) --output-on-failure
 
 build-dev:
-	powershell -ExecutionPolicy Bypass -File scripts/build.ps1 -Profile dev -BuildDir build-dev -Generator "$(GENERATOR)" -CudaArch "$(CUDA_ARCH)"
+	$(MAKE) all BUILD_DIR=build-dev BUILD_TYPE=Debug BUILD_TESTS=ON PROFILE=dev
+
+build-prod:
+	$(MAKE) all BUILD_DIR=build-prod BUILD_TYPE=Release BUILD_TESTS=ON PROFILE=prod
 
 build-run:
-	powershell -ExecutionPolicy Bypass -File scripts/build.ps1 -Profile run -BuildDir build-run -Generator "$(GENERATOR)" -CudaArch "$(CUDA_ARCH)"
+	$(MAKE) all BUILD_DIR=build-run BUILD_TYPE=Release BUILD_TESTS=OFF
 
 build-ci:
-	powershell -ExecutionPolicy Bypass -File scripts/build.ps1 -Profile ci -BuildDir build-ci -Generator "$(GENERATOR)" -CudaArch "$(CUDA_ARCH)"
+	$(MAKE) all BUILD_DIR=build-ci BUILD_TYPE=Release BUILD_TESTS=ON PROFILE=prod
 
-run: pre-run gui
+test-int: int-configure int-build int-run
 
-run-ui: pre-run gui
+int-configure:
+	cmake -S tests -B $(INT_BUILD_DIR) -G "$(GENERATOR)" -DCMAKE_BUILD_TYPE=$(INT_BUILD_TYPE)
 
-gui: run-qt
+int-build:
+	$(INT_BUILD_CMD)
 
-qt: run-qt
-
-run-mode-%: pre-run all
-	$(RUN_BIN) --mode $* $(ARGS)
-
-run-backend: run-mode-backend
-
-run-headless: run-mode-headless
-
-run-backend-direct: all
-	$(RUN_BACKEND_BIN) $(ARGS)
-
-run-headless-direct: all
-	$(RUN_HEADLESS_BIN) $(ARGS)
-
-run-module-host: all
-	$(RUN_MODULE_HOST_BIN) $(ARGS)
-
-doctor:
-ifeq ($(OS),Windows_NT)
-	powershell -ExecutionPolicy Bypass -File scripts/dev/doctor.ps1 -QtDir "$(QT_DIR)" -BuildDir "$(BUILD_DIR)"
-else
-	@echo "doctor target currently implemented for Windows."
+int-run:
+ifeq ($(strip $(BACKEND_EXE)),)
+	@echo "BACKEND_EXE is empty and $(RUN_BACKEND_BIN) is unavailable"
 endif
-
-ifeq ($(RUN_DOCTOR),1)
-pre-run: doctor
+ifeq ($(strip $(INT_TEST_REGEX)),)
+ifeq ($(strip $(BACKEND_EXE)),)
+	@echo "Running safe integration subset only (set BACKEND_EXE to run all integration_real tests)"
+	$(INT_CTEST_CMD) -R "$(INT_TEST_REGEX_NO_BACKEND)"
 else
-pre-run:
-	@echo "pre-run doctor check skipped (RUN_DOCTOR=0)"
+	$(INT_CTEST_ENV) $(INT_CTEST_CMD)
 endif
-
-deploy-qt:
-ifeq ($(OS),Windows_NT)
-	powershell -NoProfile -ExecutionPolicy Bypass -Command "if (!(Test-Path '$(WINDEPLOYQT)')) { throw 'windeployqt introuvable: $(WINDEPLOYQT)' }; if (!(Test-Path '$(QT_MODULE_LIB)')) { throw 'module Qt introuvable: $(QT_MODULE_LIB)' }; & '$(WINDEPLOYQT)' --dir '$(BUILD_DIR)' --release --compiler-runtime '$(QT_MODULE_LIB)'"
 else
-ifeq ($(UNAME_S),Darwin)
-	@if [ ! -x "$(MACDEPLOYQT)" ]; then echo "macdeployqt introuvable: $(MACDEPLOYQT)"; exit 1; fi
-	@if [ ! -f "$(QT_MODULE_LIB)" ]; then echo "module Qt introuvable: $(QT_MODULE_LIB)"; exit 1; fi
-	"$(MACDEPLOYQT)" "$(QT_MODULE_LIB)" -verbose=0
-else
-	@if [ ! -f "$(QT_MODULE_LIB)" ]; then echo "module Qt introuvable: $(QT_MODULE_LIB)"; exit 1; fi
-	@if command -v "$(LINUXDEPLOYQT)" >/dev/null 2>&1; then \
-		"$(LINUXDEPLOYQT)" "$(QT_MODULE_LIB)" -bundle-non-qt-libs; \
-	else \
-		echo "linuxdeployqt introuvable: deploy skip (utilise QT_PLUGIN_PATH/LD_LIBRARY_PATH pour run)"; \
-	fi
+	$(INT_CTEST_ENV) $(INT_CTEST_CMD) -R "$(INT_TEST_REGEX)"
 endif
-endif
-
-run-qt: all deploy-qt
-ifeq ($(OS),Windows_NT)
-	$(RUN_MODULE_HOST_BIN) --config $(CONFIG) --module $(GUI_MODULE) $(ARGS)
-else
-ifeq ($(UNAME_S),Darwin)
-	QT_PLUGIN_PATH="$(QT_PLUGIN_PATH)" DYLD_LIBRARY_PATH="$(QT_LIB_DIR):$$DYLD_LIBRARY_PATH" $(RUN_MODULE_HOST_BIN) --config $(CONFIG) --module $(GUI_MODULE) $(ARGS)
-else
-	QT_PLUGIN_PATH="$(QT_PLUGIN_PATH)" LD_LIBRARY_PATH="$(QT_LIB_DIR):$$LD_LIBRARY_PATH" $(RUN_MODULE_HOST_BIN) --config $(CONFIG) --module $(GUI_MODULE) $(ARGS)
-endif
-endif
-
-deps-graphics:
-	powershell -ExecutionPolicy Bypass -File scripts/install_graphics_deps.ps1
-
-deps-graphics-vcpkg:
-	powershell -ExecutionPolicy Bypass -File scripts/install_graphics_deps.ps1 -BuildQtWithVcpkg
-
-clean:
-	cmake -E rm -rf $(BUILD_DIR)
-
-fclean: clean
-
-re: clean all
-
-help:
-	@cmake -E cat scripts/dev/make-help.txt
-
-helper: help
-
-.PHONY: all build-dev build-run build-ci run run-ui pre-run gui qt run-backend run-headless run-backend-direct run-headless-direct run-module-host doctor deploy-qt run-qt deps-graphics deps-graphics-vcpkg clean fclean re help helper
+.PHONY: all configure build test build-dev build-prod build-run build-ci test-int int-configure int-build int-run
