@@ -224,3 +224,26 @@ Ordre d'execution recommande:
 
 
 
+### 2026-03-01 - Split `SimulationArgs` (hard-limit remediation lot)
+
+- Exigences touchees: `REQ-QUAL-001`, `REQ-TEST-001`.
+- Profil cible: `prod`.
+- Refactors:
+  - split `engine/src/config/SimulationArgs.cpp` en modules cohésifs:
+    - `SimulationArgsParse.cpp`
+    - `SimulationArgsCoreOptions.cpp`
+    - `SimulationArgsFrontendOptions.cpp`
+    - `SimulationArgsInitStateOptions.cpp`
+    - `SimulationArgsFluidOptions.cpp`
+    - `SimulationArgsInitOptions.cpp` (agrégateur)
+  - ajout des headers miroir correspondants sous `engine/include/config/`.
+  - update build wiring:
+    - `cmake/core/toolchain.cmake`
+    - `tests/cmake/targets.cmake`
+  - nettoyage allowlist obsolète:
+    - `tests/checks/policy_allowlist.txt` (suppression `engine/src/config/SimulationArgs.cpp`).
+- Tests executes:
+  - `python tests/checks/check.py all --root . --config simulation.ini` (OK)
+  - `cmake -S tests -B build-quality -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DGRAVITY_PROFILE=prod -DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON -DGRAVITY_INTEGRATION_ENABLE_SANITIZERS=ON` (OK)
+  - `cmake --build build-quality --parallel` (OK)
+  - `ctest --test-dir build-quality --output-on-failure --timeout 180 --no-tests=error -R "ConfigArgsTest\\.TST_UNT_CONF_"` (OK)
