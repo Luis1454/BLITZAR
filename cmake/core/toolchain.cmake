@@ -21,6 +21,12 @@ set(GRAVITY_PROJECT_INCLUDE_DIRS
 set(GRAVITY_BACKEND_SOURCES
     engine/src/config/EnvUtils.cpp
     engine/src/config/SimulationArgs.cpp
+    engine/src/config/SimulationArgsParse.cpp
+    engine/src/config/SimulationArgsCoreOptions.cpp
+    engine/src/config/SimulationArgsFrontendOptions.cpp
+    engine/src/config/SimulationArgsInitOptions.cpp
+    engine/src/config/SimulationArgsInitStateOptions.cpp
+    engine/src/config/SimulationArgsFluidOptions.cpp
     engine/src/config/SimulationConfig.cpp
     engine/src/config/SimulationModes.cpp
     engine/src/config/TextParse.cpp

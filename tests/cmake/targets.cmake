@@ -10,6 +10,12 @@ if(GRAVITY_TEST_UNIT_CONFIG_SOURCES)
         SOURCES
             ${GRAVITY_TEST_UNIT_CONFIG_SOURCES}
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgs.cpp"
+            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
+            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsCoreOptions.cpp"
+            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsFrontendOptions.cpp"
+            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsInitOptions.cpp"
+            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsInitStateOptions.cpp"
+            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsFluidOptions.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
