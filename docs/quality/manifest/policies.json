@@ -1,0 +1,48 @@
+{
+  "policies": {
+    "mirror": {
+      "pairs": {
+        "engine/include/backend": "engine/src/backend",
+        "engine/include/config": "engine/src/config",
+        "engine/include/platform": "engine/src/platform",
+        "runtime/include/backend": "runtime/src/backend",
+        "runtime/include/frontend": "runtime/src/frontend",
+        "runtime/include/protocol": "runtime/src/protocol",
+        "engine/include/physics": "engine/src/physics",
+        "engine/include/platform/common": "engine/src/platform/common",
+        "engine/include/platform/internal": "engine/src/platform/internal",
+        "engine/include/platform/posix": "engine/src/platform/posix",
+        "engine/include/platform/win": "engine/src/platform/win",
+        "modules/qt/include/ui": "modules/qt/ui"
+      },
+      "header_only": [
+        "engine/include/backend/SimulationInitConfig.hpp",
+        "engine/include/config/EnvUtils.hpp",
+        "engine/include/platform/DynamicLibrary.hpp",
+        "engine/include/platform/PlatformErrors.hpp",
+        "engine/include/platform/PlatformPaths.hpp",
+        "engine/include/platform/PlatformProcess.hpp",
+        "engine/include/platform/SocketPlatform.hpp",
+        "engine/include/types/SimulationTypes.hpp",
+        "runtime/include/frontend/ErrorBuffer.hpp",
+        "runtime/include/frontend/FrontendModuleApi.hpp",
+        "runtime/include/frontend/IFrontendRuntime.hpp",
+        "runtime/include/frontend/ILocalBackend.hpp",
+        "runtime/include/protocol/BackendProtocol.hpp",
+        "engine/include/platform/internal/DynamicLibraryOps.hpp",
+        "engine/include/platform/internal/ProcessOps.hpp",
+        "engine/include/platform/internal/SocketOps.hpp",
+        "engine/include/physics/Gpu.hpp",
+        "engine/include/physics/Octree.hpp"
+      ]
+    },
+    "test_ids": {
+      "repo_quality": {
+        "regex": "\\bTST_QLT_REPO_[0-9]{3}_[A-Za-z0-9_]+\\b",
+        "files": [
+          "tests/cmake/targets.cmake"
+        ]
+      }
+    }
+  }
+}

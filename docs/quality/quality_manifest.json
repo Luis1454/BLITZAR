@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "system": "CUDA-GRAVITY-SIMULATION",
+    "revision": "2026-03-02"
+  },
+  "includes": [
+    "manifest/evidence.json",
+    "manifest/policies.json",
+    "manifest/requirements.json",
+    "manifest/test_groups_core.json",
+    "manifest/crosswalk.json"
+  ]
+}
