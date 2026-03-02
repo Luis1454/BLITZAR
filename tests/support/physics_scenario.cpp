@@ -7,7 +7,7 @@
 #include <thread>
 
 namespace testsupport {
-namespace {
+namespace grav_test_physics_scenario {
 
 bool waitForStep(SimulationBackend &backend, std::uint64_t targetStep, int timeoutMs)
 {
@@ -33,7 +33,7 @@ bool waitForSnapshot(SimulationBackend &backend, std::vector<RenderParticle> &ou
     return backend.tryConsumeSnapshot(out);
 }
 
-} // namespace
+} // namespace grav_test_physics_scenario
 
 float distance(const RenderParticle &a, const RenderParticle &b)
 {

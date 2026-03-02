@@ -20,18 +20,48 @@ def _seed_required_quality_files(root: Path) -> None:
     _write(root / "docs/quality/tool_qualification.md", "tools\n")
     _write(root / "docs/quality/ivv_plan.md", "ivv\n")
     _write(root / "docs/quality/numerical_validation.md", "numerical\n")
-    _write(root / "docs/quality/test_catalog.csv", "test_code,test_id,req_ids,source\n")
+    _write(root / "docs/quality/quality_manifest.json", "{}\n")
+    _write(root / "tests/cmake/targets.cmake", "add_test(NAME TST_QLT_REPO_006_GravityQualityBaselineCheck COMMAND fake)\n")
 
 
 def _seed_baseline_payloads(root: Path, test_regex: str) -> None:
-    requirements = {
-        "system": "test",
-        "revision": "2026-03-01",
-        "requirements": [{"id": "REQ-COMP-001", "title": "Crosswalk evidence exists", "verification": {"tests": [test_regex], "artifacts": ["docs/quality/nasa_crosswalk.csv"]}}],
+    manifest = {
+        "metadata": {"system": "test", "revision": "2026-03-01"},
+        "evidence": {
+            "EVD_QLT_MANIFEST": "docs/quality/quality_manifest.json",
+            "EVD_QLT_README": "docs/quality/README.md",
+        },
+        "policies": {
+            "test_ids": {
+                "repo_quality": {
+                    "regex": r"\bTST_QLT_REPO_[0-9]{3}_[A-Za-z0-9_]+\b",
+                    "files": ["tests/cmake/targets.cmake"],
+                }
+            }
+        },
+        "requirements": {
+            "REQ-COMP-001": {
+                "tests": [test_regex],
+                "artifacts": ["EVD_QLT_MANIFEST"],
+            }
+        },
+        "test_groups": {
+            "EVD_CHECK_QUALITY": {
+                "TST-QLT-REPO-006": {
+                    "id": "TST_QLT_REPO_006_GravityQualityBaselineCheck",
+                    "req_ids": ["REQ-COMP-001"],
+                }
+            }
+        },
+        "crosswalk": {
+            "CTRL-001": {
+                "source_standard": "NPR-7150.2D",
+                "artifact": "EVD_QLT_README",
+                "check": "review",
+            }
+        },
     }
-    _write(root / "docs/quality/requirements.json", json.dumps(requirements, indent=2) + "\n")
-    _write(root / "docs/quality/traceability.csv", "req_id,item_type,item_ref,evidence\n" f"REQ-COMP-001,test_regex,{test_regex},unit-test\n")
-    _write(root / "docs/quality/nasa_crosswalk.csv", "control_id,source_standard,repo_artifact,verification\n" "CTRL-001,NPR-7150.2D,docs/quality/README.md,review\n")
+    _write(root / "docs/quality/quality_manifest.json", json.dumps(manifest, indent=2) + "\n")
 
 
 def test_quality_baseline_passes_with_valid_minimal_repo(tmp_path: Path) -> None:
@@ -48,4 +78,3 @@ def test_quality_baseline_fails_when_test_regex_has_no_match(tmp_path: Path) -> 
     result = QualityBaselineCheck().run(CheckContext(root=tmp_path))
     assert not result.ok
     assert any("did not match any test id" in error for error in result.errors)
-

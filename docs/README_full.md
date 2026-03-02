@@ -148,10 +148,7 @@ If `init_mode` is not `file`, initial state is generated from `init_*` parameter
 ## Quality Baseline
 
 NASA-first evidence lives in `docs/quality/`:
-- `requirements.json`
-- `traceability.csv`
-- `test_catalog.csv`
-- `nasa_crosswalk.csv`
+- `quality_manifest.json`
 - `standards_profile.md`
 - `ivv_plan.md`
 - `fmea.md`

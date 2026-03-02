@@ -111,3 +111,18 @@ def collect_test_ids(root: Path, extra_test_ids: set[str], test_macro_re: Patter
             tests.add(f"{suite}.{case}")
     return tests
 
+
+def collect_filtered_test_ids(
+    root: Path,
+    id_re: Pattern[str],
+    relative_files: tuple[str, ...],
+) -> set[str]:
+    filtered_ids: set[str] = set()
+    for rel_path in relative_files:
+        path = root / rel_path
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for match in id_re.finditer(text):
+            filtered_ids.add(match.group(0))
+    return filtered_ids

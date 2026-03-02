@@ -98,6 +98,102 @@ jobs:
         run: |
           python tests/checks/check.py all --root . --config simulation.ini
 
+  dev-module-build-windows:
+    name: Dev Module Build (Windows)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect CUDA toolkit
+        id: cuda
+        shell: bash
+        run: |
+          if command -v nvcc >/dev/null 2>&1; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "CUDA toolkit unavailable; skipping dev module build."
+          fi
+
+      - name: Configure dev module build
+        if: ${{ steps.cuda.outputs.available == 'true' }}
+        shell: bash
+        run: |
+          cmake -S . -B build-dev-mod -G Ninja \
+            -DGRAVITY_PROFILE=dev \
+            -DGRAVITY_BUILD_FRONTEND_MODULE_HOST=ON \
+            -DGRAVITY_BUILD_FRONTEND_MODULES=ON \
+            -DGRAVITY_BUILD_TESTS=OFF
+
+      - name: Build required module targets
+        if: ${{ steps.cuda.outputs.available == 'true' }}
+        shell: bash
+        run: |
+          cmake --build build-dev-mod --parallel --target \
+            myAppModuleHost \
+            gravityFrontendModuleCli \
+            gravityFrontendModuleEcho \
+            gravityFrontendModuleGuiProxy
+
+      - name: Build Qt module target when available
+        if: ${{ steps.cuda.outputs.available == 'true' }}
+        shell: bash
+        run: |
+          cmake --build build-dev-mod --parallel --target gravityFrontendModuleQtInProc \
+            || echo "Qt module target unavailable in this environment, skipping."
+
+      - name: Skip dev module build when CUDA is unavailable
+        if: ${{ steps.cuda.outputs.available != 'true' }}
+        shell: bash
+        run: |
+          echo "Skipped dev module build because nvcc is not available on this runner."
+
+  dev-module-build-linux:
+    name: Dev Module Build (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+
+      - name: Detect CUDA toolkit
+        id: cuda
+        run: |
+          if command -v nvcc >/dev/null 2>&1; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "CUDA toolkit unavailable; skipping dev module build."
+          fi
+
+      - name: Configure dev module build
+        if: ${{ steps.cuda.outputs.available == 'true' }}
+        run: |
+          cmake -S . -B build-dev-mod -G Ninja \
+            -DGRAVITY_PROFILE=dev \
+            -DGRAVITY_BUILD_FRONTEND_MODULE_HOST=ON \
+            -DGRAVITY_BUILD_FRONTEND_MODULES=ON \
+            -DGRAVITY_BUILD_TESTS=OFF
+
+      - name: Build required module targets
+        if: ${{ steps.cuda.outputs.available == 'true' }}
+        run: |
+          cmake --build build-dev-mod --parallel --target \
+            myAppModuleHost \
+            gravityFrontendModuleCli \
+            gravityFrontendModuleEcho \
+            gravityFrontendModuleGuiProxy
+
+      - name: Skip dev module build when CUDA is unavailable
+        if: ${{ steps.cuda.outputs.available != 'true' }}
+        run: |
+          echo "Skipped dev module build because nvcc is not available on this runner."
+
   space-quality-gate:
     name: NASA-First Quality Gate
     runs-on: ubuntu-latest

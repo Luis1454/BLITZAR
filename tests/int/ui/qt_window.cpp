@@ -17,7 +17,7 @@
 #include <memory>
 #include <string>
 
-namespace {
+namespace grav_test_qt_window {
 
 SimulationConfig makeUiConfig()
 {
@@ -128,4 +128,4 @@ TEST(QtMainWindowTest, TST_UIX_UI_003_SavesConfigOnlyOnExplicitSaveAction)
     std::filesystem::remove(configPath, ec);
 }
 
-} // namespace
+} // namespace grav_test_qt_window

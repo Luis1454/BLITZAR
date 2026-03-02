@@ -22,25 +22,25 @@ bool hasRequiredExports(const FrontendModuleExportsV1 *exports)
         && exports->handleCommand != nullptr;
 }
 
-bool destroyStateNoexcept(FrontendModuleHandle::Impl &impl)
-{
-    if (impl.exports == nullptr || impl.stateOpaque == 0u) {
-        return true;
-    }
-    try {
-        impl.exports->destroy(toRawState(impl.stateOpaque));
-    } catch (...) {
-        return false;
-    }
-    impl.stateOpaque = 0u;
-    return true;
-}
 bool FrontendModuleHandle::load(const std::string &modulePath, const std::string &configPath, std::string &outError)
 {
     if (!m_impl) {
         m_impl = std::make_unique<Impl>();
     }
     unload();
+
+    const auto destroyStateNoexcept = [this]() -> bool {
+        if (m_impl->exports == nullptr || m_impl->stateOpaque == 0u) {
+            return true;
+        }
+        try {
+            m_impl->exports->destroy(toRawState(m_impl->stateOpaque));
+        } catch (...) {
+            return false;
+        }
+        m_impl->stateOpaque = 0u;
+        return true;
+    };
 
     std::error_code ec;
     const std::filesystem::path requested(modulePath);
@@ -113,20 +113,20 @@ bool FrontendModuleHandle::load(const std::string &modulePath, const std::string
     try {
         if (!m_impl->exports->start(toRawState(m_impl->stateOpaque), errorBuffer.data(), errorBuffer.size())) {
             outError = errorFromBuffer(errorBuffer, "module start failed");
-            (void)destroyStateNoexcept(*m_impl);
+            (void)destroyStateNoexcept();
             m_impl->exports = nullptr;
             m_impl->library.close();
             return false;
         }
     } catch (const std::exception &ex) {
         outError = std::string("module start threw: ") + ex.what();
-        (void)destroyStateNoexcept(*m_impl);
+        (void)destroyStateNoexcept();
         m_impl->exports = nullptr;
         m_impl->library.close();
         return false;
     } catch (...) {
         outError = "module start threw unknown exception";
-        (void)destroyStateNoexcept(*m_impl);
+        (void)destroyStateNoexcept();
         m_impl->exports = nullptr;
         m_impl->library.close();
         return false;

@@ -16,4 +16,4 @@ Scope: software-level failure analysis for deterministic simulation runtime and 
 
 - Add one FMEA line for each new safety- or mission-impacting failure mode.
 - Every FMEA line must point to at least one verification artifact.
-- Keep mitigation and detection synchronized with `docs/quality/traceability.csv`.
+- Keep mitigation and detection synchronized with `docs/quality/quality_manifest.json` traceability section.

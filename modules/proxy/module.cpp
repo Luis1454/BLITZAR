@@ -10,6 +10,7 @@
 #include <exception>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -198,11 +199,11 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                     grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "outModuleState is null");
                     return false;
                 }
-                auto *state = new GuiProxyState();
+                std::unique_ptr<GuiProxyState> state = std::make_unique<GuiProxyState>();
                 if (context != nullptr && context->configPath != nullptr) {
                     state->configPath = context->configPath;
                 }
-                *outModuleState = state;
+                *outModuleState = state.release();
                 return true;
             } catch (const std::exception &ex) {
                 grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, ex.what());
@@ -214,11 +215,10 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
         },
         [](void *moduleState) {
             try {
-                auto *state = static_cast<GuiProxyState *>(moduleState);
+                std::unique_ptr<GuiProxyState> state(static_cast<GuiProxyState *>(moduleState));
                 if (state != nullptr) {
                     std::array<char, 32> ignored{};
                     (void)stopProcess(*state, ignored.data(), ignored.size());
-                    delete state;
                 }
             } catch (const std::exception &ex) {
                 std::cerr << "[module-gui-proxy] destroy error: " << ex.what() << "\n";

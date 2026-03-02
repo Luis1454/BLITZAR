@@ -5,23 +5,16 @@ import re
 from pathlib import Path
 
 from python_tools.core.base_check import BaseCheck
-from python_tools.core.io import REQ_ID_RE, TEST_MACRO_RE, CsvLoader, JsonLoader, collect_test_ids
+from python_tools.core.io import REQ_ID_RE, TEST_MACRO_RE, collect_test_ids
 from python_tools.core.models import CheckContext, CheckResult
+from python_tools.core.typing_ext import JsonValue
+from python_tools.policies.evidence_registry import resolve_evidence_ref
+from python_tools.policies.quality_manifest import QUALITY_MANIFEST_PATH, REQUIREMENTS_KEY, QualityManifestLoader
+from python_tools.policies.test_catalog_rows import build_catalog_rows, manifest_rows
+from python_tools.policies.test_id_filter import collect_repo_quality_test_ids
 
-CATALOG_PATH = "docs/quality/test_catalog.csv"
-CATALOG_COLUMNS = ("test_code", "test_id", "req_ids", "source")
 TEST_CODE_RE = re.compile(r"^TST-[A-Z]{3}-[A-Z0-9]{2,8}-[0-9]{3}$")
-EXTRA_TEST_IDS = {
-    "TST_QLT_REPO_001_GravityIniCheck",
-    "TST_QLT_REPO_002_GravityMirrorCheck",
-    "TST_QLT_REPO_003_GravityNoLegacyCheck",
-    "TST_QLT_REPO_004_GravityRepoPolicyCheck",
-    "TST_QLT_REPO_005_GravityLauncherCheck",
-    "TST_QLT_REPO_006_GravityQualityBaselineCheck",
-    "TST_QLT_REPO_007_PrPolicyCheck",
-    "TST_QLT_REPO_008_PyChecksUnit",
-    "TST_QLT_REPO_009_PythonQualityGate",
-}
+TEST_GROUPS_KEY = "test_groups"
 
 
 class TestCatalogCheck(BaseCheck):
@@ -31,50 +24,38 @@ class TestCatalogCheck(BaseCheck):
     failure_title = "test catalog check failed:"
 
     def __init__(self) -> None:
-        self._csv = CsvLoader()
-        self._json = JsonLoader()
+        self._manifest = QualityManifestLoader()
 
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
+        manifest = self._manifest.load(context.root, result)
         override = context.options.get("extra_test_ids")
-        extra_ids = override if isinstance(override, set) else EXTRA_TEST_IDS
-        known_tests = collect_test_ids(context.root, extra_ids, TEST_MACRO_RE)
-        known_req_ids = self._load_requirement_ids(context.root, result)
-        rows, errors = self._csv.load_rows(
-            context.root / CATALOG_PATH,
-            CATALOG_COLUMNS,
-            CATALOG_PATH,
-            f"{CATALOG_PATH} columns must be exactly: ",
+        extra_ids = (
+            override
+            if isinstance(override, set)
+            else collect_repo_quality_test_ids(context.root, manifest, result)
         )
-        for error in errors:
-            result.add_error(error)
+        known_tests = collect_test_ids(context.root, extra_ids, TEST_MACRO_RE)
+        known_req_ids = self._load_requirement_ids(manifest, result)
+        rows = self._load_catalog_rows(manifest, result)
         if not rows:
-            result.add_error(f"{CATALOG_PATH} must contain at least one row")
+            result.add_error(f"{QUALITY_MANIFEST_PATH}: '{TEST_GROUPS_KEY}' must contain at least one row")
         self._check_rows(rows, context.root, known_tests, known_req_ids, result)
 
-    def _load_requirement_ids(self, root: Path, result: CheckResult) -> set[str]:
-        payload, error = self._json.load(root / "docs/quality/requirements.json")
-        if error is not None:
-            result.add_error(f"failed to parse docs/quality/requirements.json: {error}")
-            return set()
-        if not isinstance(payload, dict):
-            result.add_error("requirements.json root must be an object")
-            return set()
-        requirements = payload.get("requirements")
-        if not isinstance(requirements, list):
-            result.add_error("requirements.json: 'requirements' must be a list")
-            return set()
+    def _load_catalog_rows(self, manifest: dict[str, JsonValue], result: CheckResult) -> list[dict[str, JsonValue]]:
+        return build_catalog_rows(self._manifest, manifest, result, TEST_GROUPS_KEY)
+
+    def _load_requirement_ids(self, manifest: dict[str, JsonValue], result: CheckResult) -> set[str]:
+        rows = manifest_rows(self._manifest, manifest, REQUIREMENTS_KEY, result, keyed_field="id")
         req_ids: set[str] = set()
-        for req in requirements:
-            if not isinstance(req, dict):
-                continue
-            req_id = str(req.get("id", "")).strip()
+        for row in rows:
+            req_id = self._as_string(row.get("id"))
             if REQ_ID_RE.match(req_id):
                 req_ids.add(req_id)
         return req_ids
 
     def _check_rows(
         self,
-        rows: list[dict[str, str]],
+        rows: list[dict[str, JsonValue]],
         root: Path,
         known_tests: set[str],
         known_req_ids: set[str],
@@ -83,20 +64,20 @@ class TestCatalogCheck(BaseCheck):
         used_codes: set[str] = set()
         used_tests: set[str] = set()
         for row in rows:
-            test_code = (row.get("test_code") or "").strip()
-            test_id = (row.get("test_id") or "").strip()
-            req_ids_raw = (row.get("req_ids") or "").strip()
-            source = (row.get("source") or "").strip()
+            test_code = self._as_string(row.get("test_code"))
+            test_id = self._as_string(row.get("test_id"))
+            req_ids = self._to_req_ids(row.get("req_ids"))
+            source = self._as_string(row.get("source"))
             self._check_test_code(test_code, used_codes, result)
             self._check_test_id(test_code, test_id, used_tests, known_tests, result)
-            self._check_req_ids(test_code, req_ids_raw, known_req_ids, result)
+            self._check_req_ids(test_code, req_ids, known_req_ids, result)
             self._check_source(test_code, source, root, result)
         for test_id in sorted(known_tests - used_tests):
-            result.add_error(f"missing test_id in {CATALOG_PATH}: {test_id}")
+            result.add_error(f"missing test_id in {QUALITY_MANIFEST_PATH}: {test_id}")
 
     def _check_test_code(self, test_code: str, used_codes: set[str], result: CheckResult) -> None:
         if not test_code:
-            result.add_error("test_catalog row has empty test_code")
+            result.add_error("test catalog row has empty test_code")
             return
         if not TEST_CODE_RE.match(test_code):
             result.add_error(f"invalid test_code format: {test_code}")
@@ -124,20 +105,39 @@ class TestCatalogCheck(BaseCheck):
         if test_id not in known_tests:
             result.add_error(f"{test_code or '<missing code>'}: unknown test_id '{test_id}'")
 
-    def _check_req_ids(self, test_code: str, req_ids_raw: str, known_req_ids: set[str], result: CheckResult) -> None:
-        if not req_ids_raw:
+    def _check_req_ids(self, test_code: str, req_ids: list[str], known_req_ids: set[str], result: CheckResult) -> None:
+        if not req_ids:
             result.add_error(f"{test_code or '<missing code>'}: req_ids must not be empty")
             return
-        for req_id in [token.strip() for token in req_ids_raw.split(";") if token.strip()]:
+        for req_id in req_ids:
             if not REQ_ID_RE.match(req_id):
                 result.add_error(f"{test_code or '<missing code>'}: invalid req_id format '{req_id}'")
                 continue
             if req_id not in known_req_ids:
                 result.add_error(f"{test_code or '<missing code>'}: unknown req_id '{req_id}'")
 
-    def _check_source(self, test_code: str, source: str, root: Path, result: CheckResult) -> None:
-        if not source:
-            result.add_error(f"{test_code or '<missing code>'}: source path is empty")
+    def _check_source(self, test_code: str, source_ref: str, root: Path, result: CheckResult) -> None:
+        if not source_ref:
+            result.add_error(f"{test_code or '<missing code>'}: source ref is empty")
             return
-        if not (root / source).exists():
-            result.add_error(f"{test_code or '<missing code>'}: source path does not exist: {source}")
+        source_path, source_error = resolve_evidence_ref(root, source_ref)
+        if source_error is not None:
+            result.add_error(f"{test_code or '<missing code>'}: {source_error}")
+            return
+        if source_path is None:
+            result.add_error(f"{test_code or '<missing code>'}: unresolved source ref: {source_ref}")
+            return
+        if not (root / source_path).exists():
+            result.add_error(f"{test_code or '<missing code>'}: source ref does not exist: {source_ref} -> {source_path}")
+
+    @staticmethod
+    def _as_string(value: JsonValue | None) -> str:
+        return value.strip() if isinstance(value, str) else ""
+
+    @staticmethod
+    def _to_req_ids(value: JsonValue | None) -> list[str]:
+        if isinstance(value, list):
+            return [item.strip() for item in value if isinstance(item, str) and item.strip()]
+        if isinstance(value, str):
+            return [token.strip() for token in value.split(";") if token.strip()]
+        return []

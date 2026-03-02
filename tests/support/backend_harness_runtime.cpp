@@ -12,7 +12,7 @@
 #include <string>
 #include <thread>
 
-namespace {
+namespace grav_test_backend_harness_runtime {
 
 std::optional<std::string> readEnvVar(const char *name)
 {
@@ -37,11 +37,11 @@ std::optional<std::string> readEnvVar(const char *name)
 #endif
 }
 
-} // namespace
+} // namespace grav_test_backend_harness_runtime
 
 std::string RealBackendHarness::resolveBackendExecutable()
 {
-    if (const std::optional<std::string> fromEnv = readEnvVar("GRAVITY_BACKEND_EXE"); fromEnv.has_value()) {
+    if (const std::optional<std::string> fromEnv = grav_test_backend_harness_runtime::readEnvVar("GRAVITY_BACKEND_EXE"); fromEnv.has_value()) {
         return *fromEnv;
     }
 

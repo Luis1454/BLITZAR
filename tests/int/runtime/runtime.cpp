@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace {
+namespace grav_test_frontend_runtime {
 
 TEST(FrontendRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealBackendAndPublishesStatsAndSnapshot)
 {
@@ -121,7 +121,7 @@ TEST(FrontendRuntimeTest, TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeTo
     backend.stop();
 }
 
-} // namespace
+} // namespace grav_test_frontend_runtime
 
 
 

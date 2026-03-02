@@ -1,0 +1,64 @@
+{
+  "crosswalk": {
+    "SWE-001": {
+      "source_standard": "NPR-7150.2D",
+      "artifact": "EVD_QLT_MANIFEST",
+      "check": "controlled requirement IDs and verification regex mappings"
+    },
+    "SWE-002": {
+      "source_standard": "NPR-7150.2D",
+      "artifact": "EVD_QLT_MANIFEST",
+      "check": "requirement to evidence mapping for each requirement ID"
+    },
+    "SWE-002A": {
+      "source_standard": "NPR-7150.2D",
+      "artifact": "EVD_QLT_MANIFEST",
+      "check": "normalized test case inventory with stable identifiers"
+    },
+    "SWE-003": {
+      "source_standard": "NPR-7150.2D",
+      "artifact": "EVD_CI_PR_FAST",
+      "check": "strict deterministic PR gate definition"
+    },
+    "SWE-004": {
+      "source_standard": "NPR-7150.2D",
+      "artifact": "EVD_AGENTS",
+      "check": "mandatory quality workflow and local pre-flight checklist"
+    },
+    "SWE-005": {
+      "source_standard": "NPR-7150.2D",
+      "artifact": "EVD_CHECK_PR_POLICY",
+      "check": "automated pull-request governance (issue/branch/title/body coherence)"
+    },
+    "SMA-001": {
+      "source_standard": "NASA-STD-8739.8B",
+      "artifact": "EVD_QLT_IVV_PLAN",
+      "check": "independent verification and validation baseline"
+    },
+    "SMA-002": {
+      "source_standard": "NASA-STD-8739.8B",
+      "artifact": "EVD_QLT_FMEA",
+      "check": "failure mode analysis with detection and mitigation links"
+    },
+    "SMA-003": {
+      "source_standard": "NASA-STD-8739.8B",
+      "artifact": "EVD_QLT_TOOL_QUALIFICATION",
+      "check": "tool confidence and acceptance controls"
+    },
+    "SIM-001": {
+      "source_standard": "ECSS-E-ST-40-07C",
+      "artifact": "EVD_QLT_NUMERICAL_VALIDATION",
+      "check": "simulation acceptance criteria and tolerance policy"
+    },
+    "ENG-001": {
+      "source_standard": "ECSS-E-ST-40C",
+      "artifact": "EVD_QLT_README",
+      "check": "quality baseline scope and governance"
+    },
+    "PA-001": {
+      "source_standard": "ECSS-Q-ST-80C",
+      "artifact": "EVD_CHECK_QUALITY",
+      "check": "automated baseline integrity check"
+    }
+  }
+}
