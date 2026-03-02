@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-namespace {
+namespace grav_test_config_args_cli_usage {
 
 std::vector<std::string_view> toArgViews(const std::vector<std::string> &storage)
 {
@@ -20,7 +20,7 @@ std::vector<std::string_view> toArgViews(const std::vector<std::string> &storage
     return args;
 }
 
-} // namespace
+} // namespace grav_test_config_args_cli_usage
 
 TEST(ConfigArgsTest, TST_UNT_CONF_007_UsageIncludesCoreOptions)
 {
@@ -47,7 +47,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_008_RejectsPositionalArguments)
     const float initialDt = config.dt;
 
     std::vector<std::string> args = {"app", "10000", "0.5"};
-    const std::vector<std::string_view> argViews = toArgViews(args);
+    const std::vector<std::string_view> argViews = grav_test_config_args_cli_usage::toArgViews(args);
     applyArgsToConfig(argViews, config, runtime, warnings);
 
     EXPECT_EQ(config.particleCount, initialParticleCount);
@@ -67,7 +67,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_009_RejectsLegacyTemperatureAlias)
     const float initialVelocityTemperature = config.velocityTemperature;
 
     std::vector<std::string> args = {"app", "--temperature", "0.8"};
-    const std::vector<std::string_view> argViews = toArgViews(args);
+    const std::vector<std::string_view> argViews = grav_test_config_args_cli_usage::toArgViews(args);
     applyArgsToConfig(argViews, config, runtime, warnings);
 
     EXPECT_FLOAT_EQ(config.velocityTemperature, initialVelocityTemperature);

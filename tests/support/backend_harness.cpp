@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace {
+namespace grav_test_backend_harness {
 
 constexpr std::array<std::uint16_t, 12u> kFallbackPorts{
     4545u, 4546u, 14545u, 14546u, 24545u, 24546u, 34545u, 34546u, 44545u, 44546u, 54545u, 54546u
@@ -60,7 +60,7 @@ std::vector<std::uint16_t> buildPortCandidates(std::uint16_t preferredPort)
     return ports;
 }
 
-} // namespace
+} // namespace grav_test_backend_harness
 
 RealBackendHarness::~RealBackendHarness()
 {
@@ -78,14 +78,14 @@ bool RealBackendHarness::start(std::string &outError, std::uint16_t preferredPor
         return false;
     }
 
-    const std::vector<std::uint16_t> portCandidates = buildPortCandidates(preferredPort);
+    const std::vector<std::uint16_t> portCandidates = grav_test_backend_harness::buildPortCandidates(preferredPort);
     for (const std::uint16_t candidatePort : portCandidates) {
         if (candidatePort == 0u || !isPortBindable(candidatePort)) {
             continue;
         }
 
         _port = candidatePort;
-        const std::string inputFilePath = resolveInputFilePath();
+        const std::string inputFilePath = grav_test_backend_harness::resolveInputFilePath();
         const std::vector<std::string> args{
             "--backend-host",
             "127.0.0.1",

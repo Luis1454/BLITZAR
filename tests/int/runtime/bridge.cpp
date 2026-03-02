@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace {
+namespace grav_test_frontend_bridge {
 
 TEST(FrontendBridgeTest, TST_INT_RUNT_001_ReconnectsAfterRealBackendRestart)
 {
@@ -106,7 +106,7 @@ TEST(FrontendBridgeTest, TST_INT_RUNT_002_BackendAbsenceDoesNotCauseLongBlocking
     bridge.stop();
 }
 
-} // namespace
+} // namespace grav_test_frontend_bridge
 
 
 
