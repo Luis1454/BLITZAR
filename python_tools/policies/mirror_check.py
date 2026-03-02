@@ -24,13 +24,23 @@ class MirrorCheck(BaseCheck):
             src_dir = context.root / src_rel
             if not hdr_dir.exists():
                 continue
+            headers = sorted(hdr_dir.glob("*.hpp"))
             if not src_dir.exists():
+                if self._all_headers_header_only(hdr_rel, headers, header_only):
+                    continue
                 result.add_error(f"Missing source mirror directory: {src_rel}")
                 continue
-            self._check_pair(hdr_rel, src_rel, hdr_dir, src_dir, header_only, result)
+            self._check_pair(hdr_rel, src_rel, headers, src_dir, header_only, result)
 
-    def _check_pair(self, hdr_rel: str, src_rel: str, hdr_dir, src_dir, header_only: set[str], result: CheckResult) -> None:
-        headers = sorted(hdr_dir.glob("*.hpp"))
+    def _check_pair(
+        self,
+        hdr_rel: str,
+        src_rel: str,
+        headers,
+        src_dir,
+        header_only: set[str],
+        result: CheckResult,
+    ) -> None:
         sources = sorted(src_dir.glob("*.cpp"))
         header_bases = {h.stem for h in headers}
         for header in headers:
@@ -42,6 +52,15 @@ class MirrorCheck(BaseCheck):
             base = source.stem
             if base not in header_bases:
                 result.add_error(f"Missing hpp for {src_rel}/{base}.cpp -> expected {hdr_rel}/{base}.hpp")
+
+    def _all_headers_header_only(self, hdr_rel: str, headers, header_only: set[str]) -> bool:
+        if not headers:
+            return True
+        for header in headers:
+            header_rel = f"{hdr_rel}/{header.stem}.hpp"
+            if header_rel not in header_only:
+                return False
+        return True
 
     def _load_config(self, context: CheckContext, result: CheckResult) -> tuple[list[tuple[str, str]], set[str]]:
         manifest = self._manifest.load(context.root, result)
