@@ -31,10 +31,7 @@ Build switch:
 
 ## Mandatory Evidence Set
 
-- Requirement catalog: `docs/quality/requirements.json`.
-- Requirement traceability: `docs/quality/traceability.csv`.
-- Test catalog: `docs/quality/test_catalog.csv`.
-- Standards crosswalk: `docs/quality/nasa_crosswalk.csv`.
+- Canonical quality manifest: `docs/quality/quality_manifest.json`.
 - IV&V plan: `docs/quality/ivv_plan.md`.
 - Failure analysis: `docs/quality/fmea.md`.
 - Numerical acceptance policy: `docs/quality/numerical_validation.md`.

@@ -16,7 +16,7 @@ Independent Verification and Validation (IV&V) in this repository is process-foc
 ## Verification Stages
 
 1. Requirement update:
-   - update `requirements.json` and `traceability.csv`.
+   - update `quality_manifest.json` requirement and traceability sections.
 2. Implementation review:
    - verify requirement IDs and impacted artifacts are explicit.
 3. Automated verification:
