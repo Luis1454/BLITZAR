@@ -98,6 +98,65 @@ jobs:
         run: |
           python tests/checks/check.py all --root . --config simulation.ini
 
+  dev-module-build-windows:
+    name: Dev Module Build (Windows)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure dev module build
+        shell: bash
+        run: |
+          cmake -S . -B build-dev-mod -G Ninja \
+            -DGRAVITY_PROFILE=dev \
+            -DGRAVITY_BUILD_FRONTEND_MODULE_HOST=ON \
+            -DGRAVITY_BUILD_FRONTEND_MODULES=ON \
+            -DGRAVITY_BUILD_TESTS=OFF
+
+      - name: Build required module targets
+        shell: bash
+        run: |
+          cmake --build build-dev-mod --parallel --target \
+            myAppModuleHost \
+            gravityFrontendModuleCli \
+            gravityFrontendModuleEcho \
+            gravityFrontendModuleGuiProxy
+
+      - name: Build Qt module target when available
+        shell: bash
+        run: |
+          cmake --build build-dev-mod --parallel --target gravityFrontendModuleQtInProc \
+            || echo "Qt module target unavailable in this environment, skipping."
+
+  dev-module-build-linux:
+    name: Dev Module Build (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+
+      - name: Configure dev module build
+        run: |
+          cmake -S . -B build-dev-mod -G Ninja \
+            -DGRAVITY_PROFILE=dev \
+            -DGRAVITY_BUILD_FRONTEND_MODULE_HOST=ON \
+            -DGRAVITY_BUILD_FRONTEND_MODULES=ON \
+            -DGRAVITY_BUILD_TESTS=OFF
+
+      - name: Build required module targets
+        run: |
+          cmake --build build-dev-mod --parallel --target \
+            myAppModuleHost \
+            gravityFrontendModuleCli \
+            gravityFrontendModuleEcho \
+            gravityFrontendModuleGuiProxy
+
   space-quality-gate:
     name: NASA-First Quality Gate
     runs-on: ubuntu-latest
