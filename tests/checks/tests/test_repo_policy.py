@@ -3,6 +3,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from checks.tests.path_specs import (
+    ENGINE_BACKEND_DIR,
+    ENGINE_CONFIG_DIR,
+    RUNTIME_BACKEND_DIR,
+    TESTS_UNIT_DIR,
+    cpp_file,
+)
 from python_tools.core.models import CheckContext
 from python_tools.policies.repo_policy import RepoPolicyCheck
 
@@ -19,31 +26,46 @@ def _run(root: Path, allowlist: Path) -> tuple[bool, list[str], list[str]]:
 
 
 def test_repo_policy_rejects_using_in_cpp(tmp_path: Path) -> None:
-    _write(tmp_path / "engine/src/backend/bad.cpp", "using Alias = int;\n")
+    _write(tmp_path / cpp_file(ENGINE_BACKEND_DIR, "bad"), "using Alias = int;\n")
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert not ok
     assert any("'using' is forbidden in C++ sources" in error for error in errors)
 
 
 def test_repo_policy_rejects_nested_namespace_syntax(tmp_path: Path) -> None:
-    _write(tmp_path / "engine/src/config/bad.cpp", "namespace a::b {\n}\n")
+    _write(tmp_path / cpp_file(ENGINE_CONFIG_DIR, "bad"), "namespace a::b {\n}\n")
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert not ok
     assert any("nested namespace declaration (A::B) is forbidden" in error for error in errors)
 
 
 def test_repo_policy_rejects_gravity_internal_namespace(tmp_path: Path) -> None:
-    _write(tmp_path / "runtime/src/backend/bad.cpp", "namespace gravity_internal_bad {\n}\n")
+    _write(tmp_path / cpp_file(RUNTIME_BACKEND_DIR, "bad"), "namespace gravity_internal_bad {\n}\n")
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert not ok
     assert any("gravity_internal_* namespace is forbidden" in error for error in errors)
 
 
 def test_repo_policy_warns_on_stale_allowlist_entry(tmp_path: Path) -> None:
-    _write(tmp_path / "tests/unit/sample.cpp", "int main() { return 0; }\n")
+    sample_path = cpp_file(TESTS_UNIT_DIR, "sample")
+    _write(tmp_path / sample_path, "int main() { return 0; }\n")
     allowlist = tmp_path / "allowlist.txt"
-    allowlist.write_text("tests/unit/sample.cpp\n", encoding="utf-8")
+    allowlist.write_text(f"{sample_path.as_posix()}\n", encoding="utf-8")
     ok, _, warnings = _run(tmp_path, allowlist)
     assert ok
     assert any("allowlist entry not needed anymore" in warning for warning in warnings)
 
+
+def test_repo_policy_rejects_unnamed_namespace_in_tests_cpp(tmp_path: Path) -> None:
+    _write(tmp_path / cpp_file(TESTS_UNIT_DIR, "bad_namespace"), "namespace {\nint g = 1;\n}\n")
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("unnamed namespace is forbidden" in error for error in errors)
+
+
+def test_repo_policy_rejects_json_above_hard_limit(tmp_path: Path) -> None:
+    oversize = "{\n" + "\"k\":0,\n" * 305 + "\"end\":1\n}\n"
+    _write(tmp_path / "docs" / "quality" / "oversize.json", oversize)
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("oversize.json" in error and "exceeds hard limit" in error for error in errors)

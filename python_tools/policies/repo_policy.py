@@ -8,7 +8,29 @@ from python_tools.core.base_check import BaseCheck
 from python_tools.core.models import CheckContext, CheckResult
 
 FORBIDDEN_CPP_EXTS = {".h", ".hh", ".hxx", ".c", ".cc", ".cxx"}
-LINE_COUNT_EXTS = {".cmake", ".cpp", ".cu", ".cuh", ".h", ".hh", ".hpp", ".hxx", ".inl", ".ini", ".md", ".mk", ".ps1", ".py", ".sh", ".txt", ".yaml", ".yml"}
+LINE_COUNT_EXTS = {
+    ".cmake",
+    ".cpp",
+    ".cu",
+    ".cuh",
+    ".h",
+    ".hh",
+    ".hpp",
+    ".hxx",
+    ".inl",
+    ".ini",
+    ".json",
+    ".md",
+    ".mk",
+    ".ps1",
+    ".py",
+    ".sh",
+    ".toml",
+    ".txt",
+    ".xml",
+    ".yaml",
+    ".yml",
+}
 LINE_COUNT_NAMES = {"CMakeLists.txt", "Makefile"}
 IGNORED_DIRS = {".git", ".idea", ".vs", "__pycache__", "build", "exports"}
 FORBIDDEN_MARKER_RE = re.compile(r"(?m)(#|//|/\*)\s*(TODO|FIXME|HACK)\b")
@@ -79,7 +101,7 @@ class RepoPolicyCheck(BaseCheck):
                 marker_match = FORBIDDEN_MARKER_RE.search(content)
                 if marker_match:
                     result.add_error(f"{rel}: forbidden marker '{marker_match.group(2)}' found")
-                if suffix in CPP_SCAN_EXTS and not rel.startswith("tests/"):
+                if suffix in CPP_SCAN_EXTS:
                     self._check_cpp_content(rel, content, result)
 
             if not should_count_lines(path):
@@ -92,10 +114,11 @@ class RepoPolicyCheck(BaseCheck):
             result.add_warning(f"allowlist entry not needed anymore: {stale}")
 
     def _check_cpp_content(self, rel: str, content: str, result: CheckResult) -> None:
-        if GTEST_INCLUDE_RE.search(content):
-            result.add_error(f"{rel}: gtest include found outside tests/")
-        if GTEST_MACRO_RE.search(content):
-            result.add_error(f"{rel}: gtest TEST macro found outside tests/")
+        if not rel.startswith("tests/"):
+            if GTEST_INCLUDE_RE.search(content):
+                result.add_error(f"{rel}: gtest include found outside tests/")
+            if GTEST_MACRO_RE.search(content):
+                result.add_error(f"{rel}: gtest TEST macro found outside tests/")
         if UNNAMED_NAMESPACE_RE.search(content):
             result.add_error(f"{rel}: unnamed namespace is forbidden")
         if USING_ANY_RE.search(content):
@@ -128,4 +151,3 @@ class RepoPolicyCheck(BaseCheck):
             return
         if line_count > context.target_lines:
             result.add_warning(f"{rel}: {line_count} lines exceeds target {context.target_lines}")
-
