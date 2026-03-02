@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <exception>
 #include <iostream>
+#include <memory>
 #include <string>
 
 std::string trim(const std::string &input)
@@ -36,9 +37,9 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                     grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "outModuleState is null");
                     return false;
                 }
-                auto *state = new EchoState();
+                std::unique_ptr<EchoState> state = std::make_unique<EchoState>();
                 state->configPath = (context != nullptr && context->configPath != nullptr) ? context->configPath : "simulation.ini";
-                *outModuleState = state;
+                *outModuleState = state.release();
                 return true;
             } catch (const std::exception &ex) {
                 grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, ex.what());
@@ -50,8 +51,7 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
         },
         [](void *moduleState) {
             try {
-                auto *state = static_cast<EchoState *>(moduleState);
-                delete state;
+                std::unique_ptr<EchoState> state(static_cast<EchoState *>(moduleState));
             } catch (const std::exception &ex) {
                 std::cerr << "[module-echo] destroy error: " << ex.what() << "\n";
             } catch (...) {
