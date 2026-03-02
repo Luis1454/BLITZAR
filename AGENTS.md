@@ -74,8 +74,8 @@ Treat this repository as high-assurance software (astrophysics/space simulation)
 - Repository policy checks must pass (naming, extension policy, file-size policy, no legacy tokens).
 - Keep runtime behavior deterministic where possible (fixed seeds/timeouts in tests).
 - Any temporary exception (file-size or policy) must be explicit and traceable in repo policy allowlists.
-- Quality baseline artifacts in `docs/quality/` must stay synchronized (`requirements.json`, `traceability.csv`, `test_catalog.csv`, `standards_profile.md`, `nasa_crosswalk.csv`, FMEA, IV&V, tool qualification, numerical validation).
-- Every automated test case must be listed in `docs/quality/test_catalog.csv` with a unique normalized code (`TST-...` format).
+- Quality baseline artifacts in `docs/quality/` must stay synchronized (`quality_manifest.json`, `standards_profile.md`, FMEA, IV&V, tool qualification, numerical validation).
+- Every automated test case must be listed in `docs/quality/quality_manifest.json` (`test_groups` section) with a unique normalized code (`TST-...` format).
 
 ## NASA-First Standards Profile (Mandatory)
 
@@ -87,10 +87,7 @@ Treat this repository as high-assurance software (astrophysics/space simulation)
 - Do not introduce dynamic reload behavior in mission-critical runtime paths in `prod`.
 - Any standards-impacting change must update:
   - `docs/quality/standards_profile.md`
-  - `docs/quality/test_catalog.csv`
-  - `docs/quality/nasa_crosswalk.csv`
-  - `docs/quality/requirements.json`
-  - `docs/quality/traceability.csv`
+  - `docs/quality/quality_manifest.json`
 
 Required local pre-flight before opening PR:
 
@@ -149,9 +146,7 @@ ctest --test-dir build-quality --output-on-failure --timeout 180 --no-tests=erro
   - Prefer one test file per functional behavior/module.
   - Keep multiple related test cases in the same file when they validate the same requirement family.
 - Use normalized test IDs in names (`TST_...`) and keep them synchronized with:
-  - `docs/quality/test_catalog.csv`
-  - `docs/quality/requirements.json`
-  - `docs/quality/traceability.csv`
+  - `docs/quality/quality_manifest.json`
 - For high-assurance evidence quality (NASA-first profile), maintain strict separation:
   - production code artifacts
   - verification artifacts (tests, test helpers, quality checks)

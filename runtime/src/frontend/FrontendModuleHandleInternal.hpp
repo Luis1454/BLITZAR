@@ -21,18 +21,8 @@ struct FrontendModuleHandle::Impl {
     std::string path;
 };
 
-inline std::string errorFromBuffer(const std::array<char, kErrorBufferSize> &buffer, std::string_view fallback)
-{
-    std::string error = buffer.data();
-    if (error.empty()) {
-        error.assign(fallback.begin(), fallback.end());
-    }
-    return error;
-}
+std::string errorFromBuffer(const std::array<char, kErrorBufferSize> &buffer, std::string_view fallback);
 
-inline void *toRawState(std::uintptr_t opaque)
-{
-    return reinterpret_cast<void *>(opaque);
-}
+void *toRawState(std::uintptr_t opaque);
 
 } // namespace grav_module

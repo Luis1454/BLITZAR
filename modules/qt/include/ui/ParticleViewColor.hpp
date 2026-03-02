@@ -4,6 +4,7 @@
 #include "ui/QtViewMath.hpp"
 
 #include <QtGlobal>
+#include <QColor>
 
 #include <vector>
 

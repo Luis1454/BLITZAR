@@ -10,6 +10,20 @@
 
 namespace grav_module {
 
+std::string errorFromBuffer(const std::array<char, kErrorBufferSize> &buffer, std::string_view fallback)
+{
+    std::string error = buffer.data();
+    if (error.empty()) {
+        error.assign(fallback.begin(), fallback.end());
+    }
+    return error;
+}
+
+void *toRawState(std::uintptr_t opaque)
+{
+    return reinterpret_cast<void *>(opaque);
+}
+
 FrontendModuleHandle::FrontendModuleHandle() : m_impl(std::make_unique<Impl>())
 {
 }

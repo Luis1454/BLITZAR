@@ -19,20 +19,20 @@ struct FrontendModuleHostContextV1 {
     const char *configPath;
 };
 
-typedef bool (*)(
+typedef bool (*FrontendModuleCreateFn)(
     const FrontendModuleHostContextV1 *context,
     void **outModuleState,
     char *errorBuffer,
-    std::size_t errorBufferSize) FrontendModuleCreateFn;
-typedef void (*)(void *moduleState) FrontendModuleDestroyFn;
-typedef bool (*)(void *moduleState, char *errorBuffer, std::size_t errorBufferSize) FrontendModuleStartFn;
-typedef void (*)(void *moduleState) FrontendModuleStopFn;
-typedef bool (*)(
+    std::size_t errorBufferSize);
+typedef void (*FrontendModuleDestroyFn)(void *moduleState);
+typedef bool (*FrontendModuleStartFn)(void *moduleState, char *errorBuffer, std::size_t errorBufferSize);
+typedef void (*FrontendModuleStopFn)(void *moduleState);
+typedef bool (*FrontendModuleHandleCommandFn)(
     void *moduleState,
     const char *commandLine,
     bool *outKeepRunning,
     char *errorBuffer,
-    std::size_t errorBufferSize) FrontendModuleHandleCommandFn;
+    std::size_t errorBufferSize);
 struct FrontendModuleExportsV1 {
     std::uint32_t apiVersion;
     const char *moduleName;
@@ -43,7 +43,7 @@ struct FrontendModuleExportsV1 {
     FrontendModuleHandleCommandFn handleCommand;
 };
 
-typedef const FrontendModuleExportsV1 *(*)() FrontendModuleEntryPointFn;
+typedef const FrontendModuleExportsV1 *(*FrontendModuleEntryPointFn)();
 } // namespace grav_module
 
 #endif // GRAVITY_SIM_FRONTENDMODULEAPI_HPP

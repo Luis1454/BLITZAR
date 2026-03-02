@@ -9,7 +9,7 @@
 #include <string>
 #include <thread>
 
-namespace {
+namespace grav_test_backend_protocol_control {
 
 TEST(BackendProtocolTest, TST_INT_PROT_004_BackendAcceptsControlCommandsFromClient)
 {
@@ -159,4 +159,4 @@ TEST(BackendProtocolTest, TST_INT_PROT_008_BackendRejectsRequestsWithoutConfigur
     backend.stop();
 }
 
-} // namespace
+} // namespace grav_test_backend_protocol_control

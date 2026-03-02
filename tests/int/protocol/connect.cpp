@@ -9,7 +9,7 @@
 #include <thread>
 #include <vector>
 
-namespace {
+namespace grav_test_backend_protocol_connect {
 
 TEST(BackendProtocolTest, TST_INT_PROT_001_BackendClientParsesStatusAndSnapshotFromRealBackend)
 {
@@ -101,6 +101,6 @@ TEST(BackendProtocolTest, TST_INT_PROT_003_BackendClientConnectTimeoutIsBounded)
     EXPECT_LE(elapsedMs.count(), 3000) << "connect timeout took too long: " << elapsedMs.count() << " ms";
 }
 
-} // namespace
+} // namespace grav_test_backend_protocol_connect
 
 

@@ -280,11 +280,11 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                     grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "outModuleState is null");
                     return false;
                 }
-                auto *state = new QtInProcState();
+                std::unique_ptr<QtInProcState> state = std::make_unique<QtInProcState>();
                 if (context != nullptr && context->configPath != nullptr) {
                     state->configPath = context->configPath;
                 }
-                *outModuleState = state;
+                *outModuleState = state.release();
                 return true;
             } catch (const std::exception &ex) {
                 grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, ex.what());
@@ -296,10 +296,9 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
         },
         [](void *moduleState) {
             try {
-                auto *state = static_cast<QtInProcState *>(moduleState);
+                std::unique_ptr<QtInProcState> state(static_cast<QtInProcState *>(moduleState));
                 if (state != nullptr) {
                     stopQtUi(*state);
-                    delete state;
                 }
             } catch (const std::exception &ex) {
                 std::cerr << "[module-qt] destroy error: " << ex.what() << "\n";

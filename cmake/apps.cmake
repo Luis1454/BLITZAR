@@ -69,6 +69,9 @@ if(GRAVITY_BUILD_FRONTEND_MODULE_HOST)
     add_executable(${MODULE_HOST_NAME}
         apps/module-host/main.cpp
         apps/module-host/module_host_cli.cpp
+        apps/module-host/module_host_cli_args.cpp
+        apps/module-host/module_host_cli_text.cpp
+        apps/module-host/module_host_module_ops.cpp
         runtime/src/frontend/FrontendModuleHandle.cpp
         runtime/src/frontend/FrontendModuleHandleLoad.cpp
         runtime/src/frontend/FrontendModuleApi.cpp
@@ -79,6 +82,11 @@ endif()
 if(GRAVITY_BUILD_FRONTEND_MODULES)
     add_library(${FRONTEND_MODULE_CLI_NAME} MODULE
         modules/cli/module.cpp
+        modules/cli/module_cli_state.cpp
+        modules/cli/module_cli_text.cpp
+        modules/cli/module_cli_backend_ops.cpp
+        modules/cli/module_cli_commands.cpp
+        modules/cli/module_cli_lifecycle.cpp
         runtime/src/frontend/ErrorBuffer.cpp
         runtime/src/frontend/FrontendModuleApi.cpp
         ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}

@@ -1,4 +1,6 @@
 file(GLOB GRAVITY_TEST_UNIT_CONFIG_SOURCES CONFIGURE_DEPENDS "${GRAVITY_ROOT_DIR}/tests/unit/config/*.cpp")
+file(GLOB GRAVITY_TEST_UNIT_MODULE_CLI_SOURCES CONFIGURE_DEPENDS "${GRAVITY_ROOT_DIR}/tests/unit/module_cli/*.cpp")
+file(GLOB GRAVITY_TEST_UNIT_MODULE_HOST_SOURCES CONFIGURE_DEPENDS "${GRAVITY_ROOT_DIR}/tests/unit/module_host/*.cpp")
 file(GLOB GRAVITY_TEST_INT_PROTOCOL_SOURCES CONFIGURE_DEPENDS "${GRAVITY_ROOT_DIR}/tests/int/protocol/*.cpp")
 file(GLOB GRAVITY_TEST_INT_BRIDGE_SOURCES CONFIGURE_DEPENDS "${GRAVITY_ROOT_DIR}/tests/int/runtime/bridge*.cpp")
 file(GLOB GRAVITY_TEST_INT_RUNTIME_SOURCES CONFIGURE_DEPENDS "${GRAVITY_ROOT_DIR}/tests/int/runtime/runtime*.cpp")
@@ -19,6 +21,29 @@ if(GRAVITY_TEST_UNIT_CONFIG_SOURCES)
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
+    )
+endif()
+
+set(GRAVITY_TEST_UNIT_MODULE_SOURCES
+    ${GRAVITY_TEST_UNIT_MODULE_CLI_SOURCES}
+    ${GRAVITY_TEST_UNIT_MODULE_HOST_SOURCES}
+)
+if(GRAVITY_TEST_UNIT_MODULE_SOURCES)
+    gravity_add_gtest(gravityModuleCliHostGTests
+        LABELS unit
+        SOURCES
+            ${GRAVITY_TEST_UNIT_MODULE_SOURCES}
+            "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_state.cpp"
+            "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_text.cpp"
+            "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_backend_ops.cpp"
+            "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_commands.cpp"
+            "${GRAVITY_ROOT_DIR}/apps/module-host/module_host_cli_args.cpp"
+            "${GRAVITY_ROOT_DIR}/apps/module-host/module_host_cli_text.cpp"
+            "${GRAVITY_ROOT_DIR}/runtime/src/frontend/ErrorBuffer.cpp"
+            ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
+            "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
+        LIBS
+            ${GRAVITY_TEST_PLATFORM_TARGET}
     )
 endif()
 

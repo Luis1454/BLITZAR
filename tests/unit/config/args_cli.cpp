@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-namespace {
+namespace grav_test_config_args_cli {
 
 std::vector<std::string_view> toArgViews(const std::vector<std::string> &storage)
 {
@@ -20,19 +20,19 @@ std::vector<std::string_view> toArgViews(const std::vector<std::string> &storage
     return args;
 }
 
-} // namespace
+} // namespace grav_test_config_args_cli
 
 TEST(ConfigArgsTest, TST_UNT_CONF_001_FindsConfigPathInline)
 {
     std::vector<std::string> args = {"app", "--config=custom.ini"};
-    const std::vector<std::string_view> argViews = toArgViews(args);
+    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
     EXPECT_EQ(findConfigPathArg(argViews), "custom.ini");
 }
 
 TEST(ConfigArgsTest, TST_UNT_CONF_002_FindsConfigPathSeparated)
 {
     std::vector<std::string> args = {"app", "--config", "custom.ini"};
-    const std::vector<std::string_view> argViews = toArgViews(args);
+    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
     EXPECT_EQ(findConfigPathArg(argViews), "custom.ini");
 }
 
@@ -57,7 +57,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
         "--backend-status-timeout-ms", "35",
         "--backend-snapshot-timeout-ms", "180"
     };
-    const std::vector<std::string_view> argViews = toArgViews(args);
+    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
     applyArgsToConfig(argViews, config, runtime, warnings);
 
     EXPECT_EQ(config.particleCount, 2048u);
@@ -92,7 +92,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_004_RejectsInvalidArgumentsAndKeepsPreviousVal
         "--sph", "maybe",
         "--unknown", "value"
     };
-    const std::vector<std::string_view> argViews = toArgViews(args);
+    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
     applyArgsToConfig(argViews, config, runtime, warnings);
 
     EXPECT_EQ(config.particleCount, initialParticleCount);
@@ -120,7 +120,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_005_RejectsInvalidSolverAndIntegratorValues)
         "--solver", "bad_solver",
         "--integrator", "bad_integrator"
     };
-    const std::vector<std::string_view> argViews = toArgViews(args);
+    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
     applyArgsToConfig(argViews, config, runtime, warnings);
 
     EXPECT_EQ(config.solver, initialSolver);
@@ -149,7 +149,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_006_RejectsTrailingGarbageNumericArguments)
         "--octree-theta", "1.4deg",
         "--luminosity", "120%"
     };
-    const std::vector<std::string_view> argViews = toArgViews(args);
+    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
     applyArgsToConfig(argViews, config, runtime, warnings);
 
     EXPECT_EQ(config.particleCount, initialParticleCount);
