@@ -14,6 +14,7 @@
     "EVD_QLT_DEVIATION_REGISTER": "docs/quality/manifest/deviations.json",
     "EVD_QLT_PROD_BASELINE": "docs/quality/prod_baseline.md",
     "EVD_QLT_EVIDENCE_PACK_FORMAT": "docs/quality/evidence_pack.md",
+    "EVD_QLT_RELEASE_INDEX_FORMAT": "docs/quality/release_index.md",
     "EVD_QLT_STANDARDS_PROFILE": "docs/quality/standards_profile.md",
     "EVD_QLT_TOOL_QUALIFICATION": "docs/quality/tool_qualification.md",
     "EVD_MOD_QT_MAINWINDOW": "modules/qt/ui/MainWindow.cpp",
@@ -43,6 +44,7 @@
     "EVD_TEST_UNIT_MODULE_CLI_BACKEND": "tests/unit/module_cli/backend_ops_validation.cpp",
     "EVD_TEST_UNIT_MODULE_HOST": "tests/unit/module_host/cli_args_text.cpp",
     "EVD_SCRIPT_RELEASE_PACKAGE_BUNDLE": "scripts/ci/release/package_bundle.py",
-    "EVD_SCRIPT_RELEASE_PACKAGE_EVIDENCE": "scripts/ci/release/package_evidence.py"
+    "EVD_SCRIPT_RELEASE_PACKAGE_EVIDENCE": "scripts/ci/release/package_evidence.py",
+    "EVD_SCRIPT_RELEASE_PACKAGE_INDEX": "scripts/ci/release/package_quality_index.py"
   }
 }

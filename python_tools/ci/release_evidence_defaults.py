@@ -26,6 +26,11 @@ def build_release_lane_activities(profile: str) -> list[dict[str, str]]:
             "status": "pass",
             "command": f"python scripts/ci/release/package_evidence.py --root . --dist-dir dist/evidence-pack --profile {profile}",
         },
+        {
+            "name": "release-quality-index",
+            "status": "pass",
+            "command": f"python scripts/ci/release/package_quality_index.py --root . --dist-dir dist/release-quality-index --profile {profile}",
+        },
     ]
 
 

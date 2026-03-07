@@ -6,6 +6,7 @@
 - `ci/nightly/`: coverage generation/publish helpers for nightly workflow
 - `ci/release/package_bundle.py`: release artifact packager (shared by release workflow)
 - `ci/release/package_evidence.py`: qualification-oriented release evidence packager
+- `ci/release/package_quality_index.py`: audit entry-point summary for release review
 - `help.txt`: text shown by `make help`
 
 ## Naming

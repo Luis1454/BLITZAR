@@ -39,6 +39,7 @@ Build switch:
 - Tool confidence strategy: `docs/quality/tool_qualification.md`.
 - Qualified `prod` baseline: `docs/quality/prod_baseline.md`.
 - Deviation register: `docs/quality/manifest/deviations.json`.
+- Release quality index format: `docs/quality/release_index.md`.
 - Strict CI lane definition: `.github/workflows/pr-fast.yml`.
 - Release evidence pack format: `docs/quality/evidence_pack.md`.
 
@@ -48,6 +49,7 @@ Build switch:
 - PR lane executes a deterministic fast subset for merge safety.
 - Nightly and release lanes execute broader deterministic scopes.
 - Temporary waivers and deviations must carry explicit owner, approver, and review date metadata in the canonical register.
+- Release review should begin from the release-quality index before opening the full evidence pack.
 - Release candidates must publish an evidence pack generated from the `release-lane` commands under the selected profile.
 - Runtime behavior in critical paths must be reproducible under pinned toolchain settings.
 - Any requirement, tolerance, or toolchain update must update the quality artifacts in this directory in the same change.
