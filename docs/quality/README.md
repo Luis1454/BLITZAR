@@ -11,6 +11,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `fmea.md`: failure mode and effects analysis baseline.
 - `tool_qualification.md`: tool confidence and qualification strategy.
 - `prod_baseline.md`: explicit evidence-grade `prod` environment baseline.
+- `interface_contracts.md`: versioned critical interface contracts and compatibility rules.
 - `ivv_plan.md`: independent verification and validation plan.
 - `numerical_validation.md`: physics-oriented numerical acceptance criteria.
 - `evidence_pack.md`: format and generation rules for release evidence bundles.

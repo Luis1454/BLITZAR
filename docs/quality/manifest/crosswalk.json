@@ -65,6 +65,11 @@
       "artifact": "EVD_QLT_RELEASE_INDEX_FORMAT",
       "check": "release-quality index as audit entry point for tagged reviews"
     },
+    "ENG-004": {
+      "source_standard": "ECSS-E-ST-40C",
+      "artifact": "EVD_QLT_INTERFACE_CONTRACTS",
+      "check": "versioned critical interface contracts and breaking-change workflow"
+    },
     "PA-001": {
       "source_standard": "ECSS-Q-ST-80C",
       "artifact": "EVD_CHECK_QUALITY",

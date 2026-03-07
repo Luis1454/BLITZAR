@@ -1,5 +1,7 @@
 # Backend JSON Protocol (TCP)
 
+Canonical compatibility governance for this surface is defined in `docs/quality/interface_contracts.md` (`CTR-PROT-001`).
+
 Transport:
 - TCP, one JSON object per line (`\n` delimited)
 - Request shape: `{"cmd":"<name>", ...fields }`
