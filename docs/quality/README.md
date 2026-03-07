@@ -31,4 +31,5 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - Temporary exceptions must be recorded in `manifest/deviations.json` with owner, approver, rationale, and review date.
 - Release candidates should emit a release-quality index before deep evidence review.
 - Release candidates should emit an evidence pack generated from the canonical manifest and strict lane commands.
+- Mission-impacting PRs must follow the IV&V checklist and non-author approval workflow.
 - Changes to this folder must be reviewed with the same rigor as code changes.

@@ -2,6 +2,8 @@
   "evidence": {
     "EVD_CI_PR_FAST": ".github/workflows/pr-fast.yml",
     "EVD_CI_RELEASE_LANE": ".github/workflows/release-lane.yml",
+    "EVD_GITHUB_CODEOWNERS": ".github/CODEOWNERS",
+    "EVD_GITHUB_PR_TEMPLATE": ".github/PULL_REQUEST_TEMPLATE.md",
     "EVD_AGENTS": "AGENTS.md",
     "EVD_ROOT_CMAKELISTS": "CMakeLists.txt",
     "EVD_APP_LAUNCHER_MAIN": "apps/launcher/main.cpp",
@@ -29,6 +31,7 @@
     "EVD_CHECK_POLICY_ALLOWLIST": "tests/checks/policy_allowlist.txt",
     "EVD_CHECK_PR_POLICY": "tests/checks/pr_policy_check.py",
     "EVD_CHECK_PR_POLICY_TEST": "tests/checks/pr_policy_check_test.py",
+    "EVD_CHECK_IVV_GATE": "tests/checks/ivv_gate_check.py",
     "EVD_CHECK_QUALITY": "tests/checks/quality_check.py",
     "EVD_CHECK_TEST_CATALOG": "tests/checks/test_catalog_check.py",
     "EVD_CHECK_TEST_RUNNER": "tests/checks/tests/test_runner.py",

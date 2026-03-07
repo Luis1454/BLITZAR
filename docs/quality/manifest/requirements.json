@@ -141,7 +141,10 @@
         "EVD_CI_PR_FAST",
         "EVD_AGENTS",
         "EVD_QLT_IVV_PLAN",
-        "EVD_CHECK_PR_POLICY"
+        "EVD_CHECK_PR_POLICY",
+        "EVD_CHECK_IVV_GATE",
+        "EVD_GITHUB_CODEOWNERS",
+        "EVD_GITHUB_PR_TEMPLATE"
       ]
     },
     "REQ-UI-001": {

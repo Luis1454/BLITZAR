@@ -25,6 +25,8 @@ def _seed_required_quality_files(root: Path) -> None:
     _write(root / "docs/quality/ivv_plan.md", "ivv\n")
     _write(root / "docs/quality/numerical_validation.md", "numerical\n")
     _write(root / "docs/quality/quality_manifest.json", "{}\n")
+    _write(root / ".github/CODEOWNERS", "* @owner\n")
+    _write(root / ".github/PULL_REQUEST_TEMPLATE.md", "template\n")
     _write(root / "tests/cmake/targets.cmake", "add_test(NAME TST_QLT_REPO_006_GravityQualityBaselineCheck COMMAND fake)\n")
 
 

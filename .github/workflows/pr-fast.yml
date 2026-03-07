@@ -32,6 +32,28 @@ jobs:
         run: |
           python tests/checks/pr_policy_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}"
 
+  ivv-gate:
+    name: IV&V Gate
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Validate IV&V independence gate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python tests/checks/ivv_gate_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}"
+
   workflow-yaml-lint:
     name: Workflow YAML Lint
     runs-on: ubuntu-latest

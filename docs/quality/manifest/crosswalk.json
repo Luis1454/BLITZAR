@@ -35,6 +35,11 @@
       "artifact": "EVD_QLT_IVV_PLAN",
       "check": "independent verification and validation baseline"
     },
+    "SMA-001A": {
+      "source_standard": "NASA-STD-8739.8B",
+      "artifact": "EVD_CHECK_IVV_GATE",
+      "check": "automated non-author review gate and PR checklist enforcement for critical paths"
+    },
     "SMA-002": {
       "source_standard": "NASA-STD-8739.8B",
       "artifact": "EVD_QLT_FMEA",
