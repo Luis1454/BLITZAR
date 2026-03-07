@@ -25,7 +25,9 @@
       ],
       "artifacts": [
         "EVD_TEST_INT_PROTOCOL_CONNECT",
-        "EVD_DOC_BACKEND_PROTOCOL"
+        "EVD_DOC_BACKEND_PROTOCOL",
+        "EVD_QLT_INTERFACE_CONTRACTS",
+        "EVD_IFACE_BACKEND_PROTOCOL"
       ]
     },
     "REQ-PROT-002": {
@@ -33,7 +35,9 @@
         "^BackendProtocolTest\\.TST_INT_PROT_00[4-7]_"
       ],
       "artifacts": [
-        "EVD_TEST_INT_PROTOCOL_CONTROL"
+        "EVD_TEST_INT_PROTOCOL_CONTROL",
+        "EVD_QLT_INTERFACE_CONTRACTS",
+        "EVD_IFACE_BACKEND_PROTOCOL"
       ]
     },
     "REQ-SEC-001": {
@@ -41,7 +45,9 @@
         "^BackendProtocolTest\\.TST_INT_PROT_008_"
       ],
       "artifacts": [
-        "EVD_TEST_INT_PROTOCOL_CONTROL"
+        "EVD_TEST_INT_PROTOCOL_CONTROL",
+        "EVD_QLT_INTERFACE_CONTRACTS",
+        "EVD_IFACE_BACKEND_PROTOCOL"
       ]
     },
     "REQ-RUN-001": {
@@ -51,7 +57,10 @@
       ],
       "artifacts": [
         "EVD_TEST_INT_RUNTIME_BRIDGE",
-        "EVD_TEST_INT_RUNTIME_RUNTIME"
+        "EVD_TEST_INT_RUNTIME_RUNTIME",
+        "EVD_QLT_INTERFACE_CONTRACTS",
+        "EVD_IFACE_FRONTEND_RUNTIME",
+        "EVD_IFACE_LOCAL_BACKEND"
       ]
     },
     "REQ-PHYS-001": {
@@ -162,7 +171,9 @@
       ],
       "artifacts": [
         "EVD_TEST_UNIT_MODULE_CLI",
-        "EVD_TEST_UNIT_MODULE_CLI_BACKEND"
+        "EVD_TEST_UNIT_MODULE_CLI_BACKEND",
+        "EVD_QLT_INTERFACE_CONTRACTS",
+        "EVD_IFACE_FRONTEND_MODULE_API"
       ]
     },
     "REQ-MOD-002": {
@@ -171,7 +182,9 @@
         "^ModuleHostCliTextTest\\.TST_UNT_MODHOST_003_.*$"
       ],
       "artifacts": [
-        "EVD_TEST_UNIT_MODULE_HOST"
+        "EVD_TEST_UNIT_MODULE_HOST",
+        "EVD_QLT_INTERFACE_CONTRACTS",
+        "EVD_IFACE_FRONTEND_MODULE_API"
       ]
     }
   }
