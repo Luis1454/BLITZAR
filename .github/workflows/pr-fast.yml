@@ -218,6 +218,10 @@ jobs:
         run: |
           clang-tidy --version
 
+      - name: Generate tool qualification manifest
+        run: |
+          python scripts/ci/release/package_tool_manifest.py --lane pr-fast --profile prod --output dist/tool-qualification/tool_manifest.json
+
       - name: Run repository quality checks
         run: |
           python tests/checks/check.py all --root . --config simulation.ini
@@ -250,3 +254,10 @@ jobs:
             ASAN_OPTIONS=detect_leaks=0:halt_on_error=1 \
             UBSAN_OPTIONS=halt_on_error=1 \
             ctest --test-dir build-quality --output-on-failure --timeout 180 --no-tests=error -R "ConfigArgsTest\\.TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7|8|9)_"
+
+      - name: Upload tool qualification manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: tool-qualification-pr-fast-${{ github.run_number }}
+          path: dist/tool-qualification/tool_manifest.json
+          if-no-files-found: error

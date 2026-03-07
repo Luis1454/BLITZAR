@@ -18,6 +18,7 @@ def _seed_required_quality_files(root: Path) -> None:
     _write(root / "docs/quality/standards_profile.md", "profile\n")
     _write(root / "docs/quality/fmea.md", "fmea\n")
     _write(root / "docs/quality/tool_qualification.md", "tools\n")
+    _write(root / "docs/quality/tool_manifest.md", "tool manifest\n")
     _write(root / "docs/quality/prod_baseline.md", "prod baseline\n")
     _write(root / "docs/quality/release_index.md", "release index\n")
     _write(root / "docs/quality/interface_contracts.md", "contracts\n")
