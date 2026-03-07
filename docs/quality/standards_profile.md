@@ -38,6 +38,7 @@ Build switch:
 - Numerical acceptance policy: `docs/quality/numerical_validation.md`.
 - Tool confidence strategy: `docs/quality/tool_qualification.md`.
 - Qualified `prod` baseline: `docs/quality/prod_baseline.md`.
+- Critical interface contracts: `docs/quality/interface_contracts.md`.
 - Deviation register: `docs/quality/manifest/deviations.json`.
 - Release quality index format: `docs/quality/release_index.md`.
 - Strict CI lane definition: `.github/workflows/pr-fast.yml`.
@@ -50,6 +51,7 @@ Build switch:
 - Nightly and release lanes execute broader deterministic scopes.
 - Temporary waivers and deviations must carry explicit owner, approver, and review date metadata in the canonical register.
 - Release review should begin from the release-quality index before opening the full evidence pack.
+- Breaking interface changes must update the canonical contract artifact and linked tests in the same review.
 - Release candidates must publish an evidence pack generated from the `release-lane` commands under the selected profile.
 - Runtime behavior in critical paths must be reproducible under pinned toolchain settings.
 - Any requirement, tolerance, or toolchain update must update the quality artifacts in this directory in the same change.
