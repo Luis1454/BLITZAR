@@ -20,17 +20,30 @@ jobs:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - {name: Checkout, uses: actions/checkout@v4}
       - name: Setup Python
         uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
+        with: {python-version: "3.x"}
       - name: Validate AGENTS PR policy
         run: |
           python tests/checks/pr_policy_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}"
+
+  traceability-gate:
+    name: Traceability Gate
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      contents: read
+    steps:
+      - {name: Checkout, uses: actions/checkout@v4}
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: {python-version: "3.x"}
+      - name: Validate requirement traceability gate
+        env: {GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}}
+        run: |
+          python tests/checks/traceability_gate_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}"
 
   ivv-gate:
     name: IV&V Gate
@@ -40,17 +53,12 @@ jobs:
       pull-requests: read
       contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - {name: Checkout, uses: actions/checkout@v4}
       - name: Setup Python
         uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
+        with: {python-version: "3.x"}
       - name: Validate IV&V independence gate
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        env: {GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}}
         run: |
           python tests/checks/ivv_gate_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}"
 
@@ -58,19 +66,14 @@ jobs:
     name: Workflow YAML Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - {name: Checkout, uses: actions/checkout@v4}
       - name: Setup Python
         uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
+        with: {python-version: "3.x"}
       - name: Install yamllint
         run: |
           python -m pip install --upgrade pip
           python -m pip install yamllint
-
       - name: Lint workflow files
         run: |
           yamllint -d "{extends: default, rules: {line-length: disable, truthy: disable}}" .github/workflows

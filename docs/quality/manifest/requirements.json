@@ -15,9 +15,7 @@
         "^ConfigArgsTest\\.TST_UNT_CONF_00(4|5|6|8|9)_",
         "^ConfigArgsTest\\.TST_UNT_CONF_01(1|2)_"
       ],
-      "artifacts": [
-        "EVD_TEST_UNIT_CONFIG_ARGS_CLI"
-      ]
+      "artifacts": ["EVD_TEST_UNIT_CONFIG_ARGS_CLI"]
     },
     "REQ-PROT-001": {
       "tests": [
@@ -92,19 +90,13 @@
       "tests": [
         "^TST_QLT_REPO_003_GravityNoLegacyCheck$"
       ],
-      "artifacts": [
-        "EVD_CHECK_NO_LEGACY",
-        "EVD_ROOT_CMAKELISTS"
-      ]
+      "artifacts": ["EVD_CHECK_NO_LEGACY", "EVD_ROOT_CMAKELISTS"]
     },
     "REQ-OPS-002": {
       "tests": [
         "^TST_QLT_REPO_005_GravityLauncherCheck$"
       ],
-      "artifacts": [
-        "EVD_CHECK_LAUNCHER",
-        "EVD_APP_LAUNCHER_MAIN"
-      ]
+      "artifacts": ["EVD_CHECK_LAUNCHER", "EVD_APP_LAUNCHER_MAIN"]
     },
     "REQ-QUAL-001": {
       "tests": [
@@ -147,7 +139,10 @@
         "EVD_CI_PR_FAST",
         "EVD_AGENTS",
         "EVD_QLT_IVV_PLAN",
+        "EVD_QLT_TRACEABILITY_GUIDE",
+        "EVD_QLT_TRACEABILITY_CSV",
         "EVD_CHECK_PR_POLICY",
+        "EVD_CHECK_TRACEABILITY_GATE",
         "EVD_CHECK_IVV_GATE",
         "EVD_GITHUB_CODEOWNERS",
         "EVD_GITHUB_PR_TEMPLATE"
