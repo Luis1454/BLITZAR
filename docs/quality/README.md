@@ -12,6 +12,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `tool_qualification.md`: tool confidence and qualification strategy.
 - `ivv_plan.md`: independent verification and validation plan.
 - `numerical_validation.md`: physics-oriented numerical acceptance criteria.
+- `evidence_pack.md`: format and generation rules for release evidence bundles.
 
 ## Policy
 
@@ -22,4 +23,5 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - Quality payload is loaded through deterministic include merge with cycle/duplicate-key protections.
 - All quality artifacts remain constrained by repository file-size policy (target `<=200`, hard `<=300` lines).
 - Evidence references remain `EVD_*` only (no hardcoded file paths in policy rows).
+- Release candidates should emit an evidence pack generated from the canonical manifest and strict lane commands.
 - Changes to this folder must be reviewed with the same rigor as code changes.

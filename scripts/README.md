@@ -5,6 +5,7 @@
 - `run_qt.sh`: run module host with Qt runtime vars on Unix
 - `ci/nightly/`: coverage generation/publish helpers for nightly workflow
 - `ci/release/package_bundle.py`: release artifact packager (shared by release workflow)
+- `ci/release/package_evidence.py`: qualification-oriented release evidence packager
 - `help.txt`: text shown by `make help`
 
 ## Naming
