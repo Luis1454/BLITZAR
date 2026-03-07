@@ -18,6 +18,7 @@
     "EVD_QLT_RELEASE_INDEX_FORMAT": "docs/quality/release_index.md",
     "EVD_QLT_STANDARDS_PROFILE": "docs/quality/standards_profile.md",
     "EVD_QLT_TOOL_QUALIFICATION": "docs/quality/tool_qualification.md",
+    "EVD_QLT_TOOL_MANIFEST_FORMAT": "docs/quality/tool_manifest.md",
     "EVD_MOD_QT_MAINWINDOW": "modules/qt/ui/MainWindow.cpp",
     "EVD_CHECK_MAIN": "tests/checks/check.py",
     "EVD_CHECK_CLANG_TIDY": "tests/checks/clang_tidy_check.py",
@@ -50,6 +51,7 @@
     "EVD_TEST_UNIT_MODULE_HOST": "tests/unit/module_host/cli_args_text.cpp",
     "EVD_SCRIPT_RELEASE_PACKAGE_BUNDLE": "scripts/ci/release/package_bundle.py",
     "EVD_SCRIPT_RELEASE_PACKAGE_EVIDENCE": "scripts/ci/release/package_evidence.py",
-    "EVD_SCRIPT_RELEASE_PACKAGE_INDEX": "scripts/ci/release/package_quality_index.py"
+    "EVD_SCRIPT_RELEASE_PACKAGE_INDEX": "scripts/ci/release/package_quality_index.py",
+    "EVD_SCRIPT_RELEASE_PACKAGE_TOOL_MANIFEST": "scripts/ci/release/package_tool_manifest.py"
   }
 }

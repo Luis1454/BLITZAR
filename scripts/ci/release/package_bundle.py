@@ -17,6 +17,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--build-dir", default="build", help="Directory containing built binaries")
     parser.add_argument("--dist-dir", default="dist", help="Output distribution directory")
     parser.add_argument("--tag", default="", help="Archive tag (defaults to GitHub ref/run)")
+    parser.add_argument("--tool-manifest", default="", help="Optional generated tool manifest to embed in the bundle")
     return parser.parse_args()
 
 
@@ -24,11 +25,11 @@ def main() -> int:
     args = parse_args()
     packager = ReleaseBundlePackager()
     tag = packager.resolve_tag(args.tag)
-    archive = packager.package(Path(args.build_dir), Path(args.dist_dir), tag)
+    tool_manifest = Path(args.tool_manifest) if args.tool_manifest.strip() else None
+    archive = packager.package(Path(args.build_dir), Path(args.dist_dir), tag, tool_manifest)
     print(archive.as_posix())
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

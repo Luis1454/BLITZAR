@@ -79,6 +79,11 @@
       "source_standard": "ECSS-Q-ST-80C",
       "artifact": "EVD_QLT_DEVIATION_REGISTER",
       "check": "controlled waiver and deviation register with review dates and approvers"
+    },
+    "PA-003": {
+      "source_standard": "ECSS-Q-ST-80C",
+      "artifact": "EVD_QLT_TOOL_MANIFEST_FORMAT",
+      "check": "generated toolchain version manifest with CI run references and retrieval workflow"
     }
   }
 }
