@@ -20,6 +20,7 @@ This document defines minimum confidence controls for development and CI tools.
 ## Qualification Evidence
 
 - Workflow definitions in `.github/workflows/`.
+- Qualified environment baseline in `docs/quality/prod_baseline.md`.
 - Reproducible check entrypoints:
   - `python tests/checks/check.py all --root . --config simulation.ini`
   - `python tests/checks/clang_tidy_check.py --root . --build-dir <build>`
@@ -34,3 +35,4 @@ This document defines minimum confidence controls for development and CI tools.
 - CI pipeline updates must keep at least one deterministic strict lane green.
 - Optional hardware lanes cannot be the sole evidence for core requirements.
 - Qualification evidence for mission-impacting changes must come from `prod` profile constraints.
+- Changes to the qualified `prod` environment must be synchronized with `prod_baseline.md`.
