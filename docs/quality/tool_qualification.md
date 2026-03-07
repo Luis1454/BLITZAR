@@ -21,13 +21,28 @@ This document defines minimum confidence controls for development and CI tools.
 
 - Workflow definitions in `.github/workflows/`.
 - Qualified environment baseline in `docs/quality/prod_baseline.md`.
+- Generated tool manifest format in `docs/quality/tool_manifest.md`.
 - Reproducible check entrypoints:
   - `python tests/checks/check.py all --root . --config simulation.ini`
   - `python tests/checks/clang_tidy_check.py --root . --build-dir <build>`
+  - `python scripts/ci/release/package_tool_manifest.py --lane <lane> --profile prod`
 - Build flags proving strict mode:
   - `GRAVITY_STRICT_WARNINGS=ON`
   - `GRAVITY_INTEGRATION_STRICT_WARNINGS=ON`
   - `GRAVITY_PROFILE=prod`
+
+## Toolchain Review Checklist
+
+- Review compiler, CMake, Python, `clang-tidy`, and runner OS version changes from the generated manifest.
+- Confirm the affected CI lane still matches `docs/quality/prod_baseline.md`.
+- Confirm release bundle and release review artifacts still carry `tool_manifest.json` with CI run references.
+- Treat any tool change that can alter diagnostics, ABI, generated files, or analyzer behavior as standards-impacting.
+
+## Retrieval
+
+- PR lane: download the `tool-qualification-pr-fast-*` artifact from `pr-fast`.
+- Release lane: download the `tool-qualification-release-*` artifact or inspect `tool_manifest.json` inside the release bundle.
+- CI run references are stored in the manifest under `ci_context`.
 
 ## Acceptance Rules
 

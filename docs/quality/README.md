@@ -10,6 +10,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `standards_profile.md`: NASA-first standards profile and scope.
 - `fmea.md`: failure mode and effects analysis baseline.
 - `tool_qualification.md`: tool confidence and qualification strategy.
+- `tool_manifest.md`: generated toolchain version manifest for CI evidence lanes.
 - `prod_baseline.md`: explicit evidence-grade `prod` environment baseline.
 - `interface_contracts.md`: versioned critical interface contracts and compatibility rules.
 - `ivv_plan.md`: independent verification and validation plan.
