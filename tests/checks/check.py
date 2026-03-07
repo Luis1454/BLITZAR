@@ -32,7 +32,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--with-launcher", action="store_true", help="Include launcher contract in all checks")
     parser.add_argument("--target-lines", type=int, default=200, help="Target file size limit")
     parser.add_argument("--hard-lines", type=int, default=300, help="Hard file size limit")
-    parser.add_argument("--allowlist", default="tests/checks/policy_allowlist.txt", help="Path to policy allowlist file")
+    parser.add_argument(
+        "--allowlist",
+        default="tests/checks/policy_allowlist.txt",
+        help="Path to policy allowlist file (entries must be mirrored in docs/quality/manifest/deviations.json)",
+    )
     return parser.parse_args()
 
 
@@ -82,4 +86,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

@@ -11,7 +11,7 @@
 - `tests/data/`: deterministic fixtures.
 - `tests/checks/*.py`: repository contract checks (`ini`, `mirror`, `no_legacy`, `launcher`).
 - `tests/checks/check.py`: unified entrypoint (`ini|mirror|no_legacy|launcher|quality|repo|all`).
-- `tests/checks/policy_allowlist.txt`: explicit temporary exceptions for files above hard size limit.
+- `tests/checks/policy_allowlist.txt`: explicit temporary file-size exceptions; each active group must be mirrored in `docs/quality/manifest/deviations.json`.
 
 ## Naming Conventions
 
