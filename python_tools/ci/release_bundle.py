@@ -1,22 +1,15 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import os
 import shutil
 from pathlib import Path
+
+from python_tools.ci.release_name import resolve_release_tag
 
 
 class ReleaseBundlePackager:
     def resolve_tag(self, explicit: str | None) -> str:
-        if explicit and explicit.strip():
-            return explicit.strip()
-        ref_name = os.environ.get("GITHUB_REF_NAME", "").strip()
-        if ref_name:
-            return ref_name
-        run_number = os.environ.get("GITHUB_RUN_NUMBER", "").strip()
-        if run_number:
-            return f"manual-{run_number}"
-        return "manual"
+        return resolve_release_tag(explicit)
 
     def package(self, build_dir: Path, dist_dir: Path, tag: str) -> Path:
         if dist_dir.exists():
@@ -38,4 +31,3 @@ class ReleaseBundlePackager:
             src = Path(extra)
             if src.exists():
                 shutil.copy2(src, dist_dir / src.name)
-

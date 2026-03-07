@@ -77,13 +77,24 @@ jobs:
 
       - name: Package release artifacts
         run: |
-          python scripts/ci/release/package_bundle.py --build-dir build --dist-dir dist
+          python scripts/ci/release/package_bundle.py --build-dir build --dist-dir dist/release-bundle
+
+      - name: Package release evidence
+        run: |
+          python scripts/ci/release/package_evidence.py --root . --dist-dir dist/evidence-pack --profile prod
 
       - name: Upload release bundle
         uses: actions/upload-artifact@v4
         with:
           name: release-bundle-${{ github.ref_name || github.run_number }}
-          path: dist/*.zip
+          path: dist/release-bundle/*.zip
+          if-no-files-found: error
+
+      - name: Upload release evidence pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-evidence-${{ github.ref_name || github.run_number }}
+          path: dist/evidence-pack/*.zip
           if-no-files-found: error
 
       - name: Upload logs
