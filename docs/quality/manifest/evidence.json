@@ -11,6 +11,7 @@
     "EVD_DOC_BACKEND_PROTOCOL": "docs/backend_protocol.md",
     "EVD_QLT_README": "docs/quality/README.md",
     "EVD_QLT_FMEA": "docs/quality/fmea.md",
+    "EVD_QLT_FMEA_ACTIONS": "docs/quality/manifest/fmea_actions.json",
     "EVD_QLT_INTERFACE_CONTRACTS": "docs/quality/interface_contracts.md",
     "EVD_QLT_IVV_PLAN": "docs/quality/ivv_plan.md",
     "EVD_QLT_NUMERICAL_VALIDATION": "docs/quality/numerical_validation.md",
@@ -61,6 +62,7 @@
     "EVD_SCRIPT_RELEASE_PACKAGE_EVIDENCE": "scripts/ci/release/package_evidence.py",
     "EVD_SCRIPT_RELEASE_PACKAGE_INDEX": "scripts/ci/release/package_quality_index.py",
     "EVD_SCRIPT_RELEASE_PACKAGE_TOOL_MANIFEST": "scripts/ci/release/package_tool_manifest.py",
+    "EVD_SCRIPT_NIGHTLY_FMEA_STATUS": "scripts/ci/nightly/package_fmea_status.py",
     "EVD_SCRIPT_NIGHTLY_NUMERICAL_VALIDATION": "scripts/ci/nightly/package_numerical_validation.py"
   }
 }

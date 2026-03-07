@@ -50,6 +50,11 @@
       "artifact": "EVD_QLT_FMEA",
       "check": "failure mode analysis with detection and mitigation links"
     },
+    "SMA-002A": {
+      "source_standard": "NASA-STD-8739.8B",
+      "artifact": "EVD_QLT_FMEA_ACTIONS",
+      "check": "owner, status, linked tasks, and closure evidence tracked for each FMEA row"
+    },
     "SMA-003": {
       "source_standard": "NASA-STD-8739.8B",
       "artifact": "EVD_QLT_TOOL_QUALIFICATION",
