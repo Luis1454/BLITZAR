@@ -6,7 +6,9 @@
 #include <string>
 #include <vector>
 
+#if defined(GRAVITY_ENABLE_GTEST_FIXTURE)
 #include <gtest/gtest.h>
+#endif
 
 #include "backend/SimulationBackend.hpp"
 
@@ -42,11 +44,13 @@ float averageRadius(const std::vector<RenderParticle> &snapshot);
 bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &error);
 std::string getTwoBodyInputPath();
 
+#if defined(GRAVITY_ENABLE_GTEST_FIXTURE)
 class PhysicsTest : public ::testing::Test {
 protected:
     void SetUp() override;
     std::string inputPath_;
 };
+#endif
 
 } // namespace testsupport
 

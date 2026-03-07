@@ -23,6 +23,7 @@ if(GRAVITY_BUILD_TESTS)
         configure_gravity_cuda_target(gravityPhysicsGTests)
         target_compile_definitions(gravityPhysicsGTests
             PRIVATE
+                GRAVITY_ENABLE_GTEST_FIXTURE=1
                 GRAVITY_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
         )
         target_link_libraries(gravityPhysicsGTests
@@ -31,6 +32,18 @@ if(GRAVITY_BUILD_TESTS)
         )
         gtest_discover_tests(gravityPhysicsGTests PROPERTIES LABELS "gpu")
     endif()
+
+    add_executable(gravityNumericalValidationTool
+        tests/tools/numerical_validation_main.cpp
+        tests/support/numerical_validation_tool.cpp
+        tests/support/physics_scenario.cpp
+        ${GRAVITY_BACKEND_SOURCES}
+    )
+    configure_gravity_cuda_target(gravityNumericalValidationTool)
+    target_compile_definitions(gravityNumericalValidationTool
+        PRIVATE
+            GRAVITY_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+    )
 
     add_subdirectory(tests)
 endif()

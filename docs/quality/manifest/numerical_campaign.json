@@ -1,0 +1,104 @@
+{
+  "format_version": "1.0",
+  "profiles": {
+    "gpu-prod": {
+      "runs": [
+        {
+          "id": "two-body-energy",
+          "preset": "two_body_orbit_drift",
+          "solver": "pairwise_cuda",
+          "dataset": "tests/data/two_body_rest.xyz",
+          "seed": 0,
+          "checks": {
+            "max_abs_energy_drift_pct": 5.0,
+            "center_of_mass_drift": 0.01
+          }
+        },
+        {
+          "id": "two-body-convergence-coarse",
+          "preset": "two_body_orbit_convergence_coarse",
+          "solver": "pairwise_cuda",
+          "dataset": "tests/data/two_body_rest.xyz",
+          "seed": 0
+        },
+        {
+          "id": "two-body-convergence-fine",
+          "preset": "two_body_orbit_convergence_fine",
+          "solver": "pairwise_cuda",
+          "dataset": "tests/data/two_body_rest.xyz",
+          "seed": 0
+        },
+        {
+          "id": "solver-parity-pairwise",
+          "preset": "disk_solver_parity",
+          "solver": "pairwise_cuda",
+          "dataset": "generated:disk_orbit",
+          "seed": 12345,
+          "checks": {
+            "max_abs_energy_drift_pct": 8.0
+          }
+        },
+        {
+          "id": "solver-parity-octree-cpu",
+          "preset": "disk_solver_parity",
+          "solver": "octree_cpu",
+          "dataset": "generated:disk_orbit",
+          "seed": 12345,
+          "checks": {
+            "max_abs_energy_drift_pct": 8.0
+          }
+        },
+        {
+          "id": "solver-parity-octree-gpu",
+          "preset": "disk_solver_parity",
+          "solver": "octree_gpu",
+          "dataset": "generated:disk_orbit",
+          "seed": 12345,
+          "checks": {
+            "max_abs_energy_drift_pct": 8.0
+          }
+        },
+        {
+          "id": "radiation-energy",
+          "preset": "radiation_exchange",
+          "solver": "pairwise_cuda",
+          "dataset": "generated:random_cloud",
+          "seed": 7,
+          "checks": {
+            "max_abs_energy_drift_pct": 1.5
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "id": "two-body-convergence",
+          "baseline": "two-body-convergence-fine",
+          "candidate": "two-body-convergence-coarse",
+          "checks": {
+            "max_particle_delta": 0.05
+          }
+        },
+        {
+          "id": "solver-parity-octree-cpu-vs-pairwise",
+          "baseline": "solver-parity-pairwise",
+          "candidate": "solver-parity-octree-cpu",
+          "checks": {
+            "center_of_mass_delta": 0.45,
+            "average_radius_delta": 0.9,
+            "total_energy_diff_pct": 8.0
+          }
+        },
+        {
+          "id": "solver-parity-octree-gpu-vs-pairwise",
+          "baseline": "solver-parity-pairwise",
+          "candidate": "solver-parity-octree-gpu",
+          "checks": {
+            "center_of_mass_delta": 0.45,
+            "average_radius_delta": 0.9,
+            "total_energy_diff_pct": 8.0
+          }
+        }
+      ]
+    }
+  }
+}

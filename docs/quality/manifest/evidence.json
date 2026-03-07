@@ -1,6 +1,7 @@
 {
   "evidence": {
     "EVD_CI_PR_FAST": ".github/workflows/pr-fast.yml",
+    "EVD_CI_NIGHTLY_FULL": ".github/workflows/nightly-full.yml",
     "EVD_CI_RELEASE_LANE": ".github/workflows/release-lane.yml",
     "EVD_GITHUB_CODEOWNERS": ".github/CODEOWNERS",
     "EVD_GITHUB_PR_TEMPLATE": ".github/PULL_REQUEST_TEMPLATE.md",
@@ -13,6 +14,7 @@
     "EVD_QLT_INTERFACE_CONTRACTS": "docs/quality/interface_contracts.md",
     "EVD_QLT_IVV_PLAN": "docs/quality/ivv_plan.md",
     "EVD_QLT_NUMERICAL_VALIDATION": "docs/quality/numerical_validation.md",
+    "EVD_QLT_NUMERICAL_CAMPAIGN": "docs/quality/manifest/numerical_campaign.json",
     "EVD_QLT_MANIFEST": "docs/quality/quality_manifest.json",
     "EVD_QLT_DEVIATION_REGISTER": "docs/quality/manifest/deviations.json",
     "EVD_QLT_PROD_BASELINE": "docs/quality/prod_baseline.md",
@@ -55,6 +57,7 @@
     "EVD_SCRIPT_RELEASE_PACKAGE_BUNDLE": "scripts/ci/release/package_bundle.py",
     "EVD_SCRIPT_RELEASE_PACKAGE_EVIDENCE": "scripts/ci/release/package_evidence.py",
     "EVD_SCRIPT_RELEASE_PACKAGE_INDEX": "scripts/ci/release/package_quality_index.py",
-    "EVD_SCRIPT_RELEASE_PACKAGE_TOOL_MANIFEST": "scripts/ci/release/package_tool_manifest.py"
+    "EVD_SCRIPT_RELEASE_PACKAGE_TOOL_MANIFEST": "scripts/ci/release/package_tool_manifest.py",
+    "EVD_SCRIPT_NIGHTLY_NUMERICAL_VALIDATION": "scripts/ci/nightly/package_numerical_validation.py"
   }
 }

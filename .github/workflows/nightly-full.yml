@@ -176,8 +176,20 @@ jobs:
         run: |
           $backend = Resolve-Path "build/myAppBackend.exe"
           cmake -E env "GRAVITY_BACKEND_EXE=$backend" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error -R "BackendProtocolTest\\.TST_INT_PROT_|FrontendBridgeTest\\.TST_INT_RUNT_|FrontendRuntimeTest\\.TST_CNT_RUNT_"
+      - name: Run numerical validation campaign
+        shell: pwsh
+        run: |
+          $tool = Resolve-Path "build/gravityNumericalValidationTool.exe"
+          python scripts/ci/nightly/package_numerical_validation.py --root . --tool $tool --profile gpu-prod --dist-dir dist/numerical-validation
       - name: Run full tests
         shell: pwsh
         run: |
           $backend = Resolve-Path "build/myAppBackend.exe"
           cmake -E env "GRAVITY_BACKEND_EXE=$backend" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error
+      - name: Upload numerical validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-numerical-validation-${{ github.run_number }}
+          path: dist/numerical-validation
+          if-no-files-found: error
