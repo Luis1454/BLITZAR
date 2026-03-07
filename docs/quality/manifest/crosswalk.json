@@ -15,6 +15,11 @@
       "artifact": "EVD_QLT_MANIFEST",
       "check": "normalized test case inventory with stable identifiers"
     },
+    "SWE-002B": {
+      "source_standard": "NPR-7150.2D",
+      "artifact": "EVD_CHECK_TRACEABILITY_GATE",
+      "check": "critical-path pull requests must declare impacted requirement IDs and update the traceability register"
+    },
     "SWE-003": {
       "source_standard": "NPR-7150.2D",
       "artifact": "EVD_CI_PR_FAST",

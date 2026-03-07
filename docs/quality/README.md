@@ -15,6 +15,8 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `interface_contracts.md`: versioned critical interface contracts and compatibility rules.
 - `ivv_plan.md`: independent verification and validation plan.
 - `numerical_validation.md`: physics-oriented numerical acceptance criteria.
+- `traceability.md`: how to declare impacted requirement IDs and update the PR traceability register.
+- `traceability.csv`: canonical requirement-to-surface register updated by critical functional PRs.
 - `manifest/numerical_campaign.json`: fixed nightly numerical campaign definitions and thresholds.
 - `evidence_pack.md`: format and generation rules for release evidence bundles.
 - `release_index.md`: audit entry-point format for release-quality summaries.
