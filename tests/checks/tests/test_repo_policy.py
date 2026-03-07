@@ -69,3 +69,35 @@ def test_repo_policy_rejects_json_above_hard_limit(tmp_path: Path) -> None:
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert not ok
     assert any("oversize.json" in error and "exceeds hard limit" in error for error in errors)
+
+
+def test_repo_policy_rejects_evidence_workflow_without_prod_profile(tmp_path: Path) -> None:
+    _write(
+        tmp_path / ".github" / "workflows" / "release-lane.yml",
+        "jobs:\n"
+        "  release:\n"
+        "    steps:\n"
+        "      - name: Configure\n"
+        "        run: |\n"
+        "          cmake -S . -B build -G Ninja \\\n"
+        "            -DCMAKE_BUILD_TYPE=Release\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("evidence configure command must include -DGRAVITY_PROFILE=prod" in error for error in errors)
+
+
+def test_repo_policy_ignores_non_evidence_dev_workflow(tmp_path: Path) -> None:
+    _write(
+        tmp_path / ".github" / "workflows" / "pr-fast.yml",
+        "jobs:\n"
+        "  dev:\n"
+        "    steps:\n"
+        "      - name: Configure\n"
+        "        run: |\n"
+        "          cmake -S . -B build-dev-mod -G Ninja \\\n"
+        "            -DGRAVITY_PROFILE=dev\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok
+    assert not errors
