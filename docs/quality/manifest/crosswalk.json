@@ -55,6 +55,16 @@
       "artifact": "EVD_QLT_NUMERICAL_VALIDATION",
       "check": "simulation acceptance criteria and tolerance policy"
     },
+    "SIM-001A": {
+      "source_standard": "ECSS-E-ST-40-07C",
+      "artifact": "EVD_QLT_NUMERICAL_CAMPAIGN",
+      "check": "versioned nightly numerical campaign definitions with fixed datasets, seeds, and thresholds"
+    },
+    "SIM-001B": {
+      "source_standard": "ECSS-E-ST-40-07C",
+      "artifact": "EVD_SCRIPT_NIGHTLY_NUMERICAL_VALIDATION",
+      "check": "machine-checked drift/parity evaluation and report packaging for nightly evidence"
+    },
     "ENG-001": {
       "source_standard": "ECSS-E-ST-40C",
       "artifact": "EVD_QLT_README",
