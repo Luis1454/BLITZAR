@@ -124,7 +124,10 @@
       "artifacts": [
         "EVD_QLT_STANDARDS_PROFILE",
         "EVD_QLT_MANIFEST",
-        "EVD_CHECK_QUALITY"
+        "EVD_CHECK_QUALITY",
+        "EVD_QLT_FMEA",
+        "EVD_QLT_FMEA_ACTIONS",
+        "EVD_SCRIPT_NIGHTLY_FMEA_STATUS"
       ]
     },
     "REQ-COMP-002": {

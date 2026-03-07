@@ -9,6 +9,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `python_tools/policies/evidence_registry.py`: resolver that reads `EVD_*` mappings from `quality_manifest.json`.
 - `standards_profile.md`: NASA-first standards profile and scope.
 - `fmea.md`: failure mode and effects analysis baseline.
+- `manifest/fmea_actions.json`: canonical owner/status/task register for FMEA mitigations.
 - `tool_qualification.md`: tool confidence and qualification strategy.
 - `tool_manifest.md`: generated toolchain version manifest for CI evidence lanes.
 - `prod_baseline.md`: explicit evidence-grade `prod` environment baseline.
