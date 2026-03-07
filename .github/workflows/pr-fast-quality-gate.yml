@@ -1,0 +1,51 @@
+name: pr-fast-quality-gate
+
+on:
+  workflow_call:
+
+jobs:
+  space-quality-gate:
+    name: NASA-First Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - {name: Checkout, uses: actions/checkout@v4}
+      - {name: Setup Python, uses: actions/setup-python@v5, with: {python-version: "3.x"}}
+      - name: Install build and analysis tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build clang-tidy
+          python -m pip install --upgrade pip
+          python -m pip install pytest ruff mypy
+      - {name: Verify clang-tidy availability, run: clang-tidy --version}
+      - name: Generate tool qualification manifest
+        run: python scripts/ci/release/package_tool_manifest.py --lane pr-fast --profile prod --output dist/tool-qualification/tool_manifest.json
+      - name: Run repository quality checks
+        run: python tests/checks/check.py all --root . --config simulation.ini
+      - name: Run Python style/type checks
+        run: |
+          python -m ruff check .
+          python -m mypy tests/checks scripts/ci python_tools
+      - name: Configure strict integration build
+        run: |
+          cmake -S tests -B build-quality -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DGRAVITY_PROFILE=prod \
+            -DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON \
+            -DGRAVITY_INTEGRATION_ENABLE_SANITIZERS=ON
+      - {name: Build strict integration targets, run: cmake --build build-quality --parallel}
+      - name: Run clang-tidy analyzer checks
+        run: python tests/checks/clang_tidy_check.py --root . --build-dir build-quality
+      - name: Run integration tests under sanitizers
+        run: |
+          cmake -E env \
+            ASAN_OPTIONS=detect_leaks=0:halt_on_error=1 \
+            UBSAN_OPTIONS=halt_on_error=1 \
+            ctest --test-dir build-quality --output-on-failure --timeout 180 --no-tests=error -R "ConfigArgsTest\\.TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7|8|9)_"
+      - name: Upload tool qualification manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: tool-qualification-pr-fast-${{ github.run_number }}
+          path: dist/tool-qualification/tool_manifest.json
+          if-no-files-found: error

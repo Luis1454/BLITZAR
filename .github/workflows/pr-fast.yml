@@ -3,8 +3,7 @@ name: pr-fast
 on:
   pull_request:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -21,62 +20,50 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - {name: Checkout, uses: actions/checkout@v4}
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with: {python-version: "3.x"}
+      - {name: Setup Python, uses: actions/setup-python@v5, with: {python-version: "3.x"}}
       - name: Validate AGENTS PR policy
-        run: |
-          python tests/checks/pr_policy_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}"
+        run: python tests/checks/pr_policy_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}"
 
   traceability-gate:
     name: Traceability Gate
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: read
-      contents: read
+    permissions: {pull-requests: read, contents: read}
     steps:
       - {name: Checkout, uses: actions/checkout@v4}
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with: {python-version: "3.x"}
+      - {name: Setup Python, uses: actions/setup-python@v5, with: {python-version: "3.x"}}
       - name: Validate requirement traceability gate
-        env: {GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}}
-        run: |
-          python tests/checks/traceability_gate_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python tests/checks/traceability_gate_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}"
 
   ivv-gate:
     name: IV&V Gate
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: read
-      contents: read
+    permissions: {pull-requests: read, contents: read}
     steps:
       - {name: Checkout, uses: actions/checkout@v4}
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with: {python-version: "3.x"}
+      - {name: Setup Python, uses: actions/setup-python@v5, with: {python-version: "3.x"}}
       - name: Validate IV&V independence gate
-        env: {GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}}
-        run: |
-          python tests/checks/ivv_gate_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python tests/checks/ivv_gate_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}"
 
   workflow-yaml-lint:
     name: Workflow YAML Lint
     runs-on: ubuntu-latest
     steps:
       - {name: Checkout, uses: actions/checkout@v4}
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with: {python-version: "3.x"}
+      - {name: Setup Python, uses: actions/setup-python@v5, with: {python-version: "3.x"}}
       - name: Install yamllint
         run: |
           python -m pip install --upgrade pip
           python -m pip install yamllint
       - name: Lint workflow files
-        run: |
-          yamllint -d "{extends: default, rules: {line-length: disable, truthy: disable}}" .github/workflows
+        run: >-
+          yamllint -d "{extends: default, rules: {line-length: disable,
+          truthy: disable, document-start: disable}}" .github/workflows
 
   portable-smoke:
     name: Portable Smoke (${{ matrix.os }})
@@ -86,108 +73,50 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
+      - {name: Checkout, uses: actions/checkout@v4}
+      - {name: Setup Python, uses: actions/setup-python@v5, with: {python-version: "3.x"}}
       - name: Verify generated directories are not tracked
         shell: pwsh
         run: |
           $failures = 0
           foreach ($tracked in @("build", "exports")) {
             $files = git ls-files $tracked
-            if ($LASTEXITCODE -ne 0) {
-              throw "git ls-files failed for $tracked"
-            }
-            if ($files) {
-              Write-Host "Tracked generated path detected: $tracked"
-              $failures = 1
-            }
+            if ($LASTEXITCODE -ne 0) { throw "git ls-files failed for $tracked" }
+            if ($files) { Write-Host "Tracked generated path detected: $tracked"; $failures = 1 }
           }
           if ($failures -ne 0) { exit 1 }
-
       - name: Verify required project files
         shell: pwsh
         run: |
           foreach ($file in @(".gitignore", "CMakeLists.txt", "simulation.ini")) {
-            if (-not (Test-Path $file)) {
-              throw "Missing required file: $file"
-            }
+            if (-not (Test-Path $file)) { throw "Missing required file: $file" }
           }
-
       - name: Validate repository checks
-        run: |
-          python tests/checks/check.py all --root . --config simulation.ini
+        run: python tests/checks/check.py all --root . --config simulation.ini
 
-  dev-module-build-windows:
-    name: Dev Module Build (Windows)
-    runs-on: windows-latest
+  dev-module-build:
+    name: Dev Module Build (${{ matrix.os_label }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            os_label: Windows
+            install_tools: ""
+            qt_target: gravityFrontendModuleQtInProc
+          - os: ubuntu-latest
+            os_label: Linux
+            install_tools: "sudo apt-get update && sudo apt-get install -y ninja-build"
+            qt_target: ""
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Detect CUDA toolkit
-        id: cuda
-        shell: bash
-        run: |
-          if command -v nvcc >/dev/null 2>&1; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "CUDA toolkit unavailable; skipping dev module build."
-          fi
-
-      - name: Configure dev module build
-        if: ${{ steps.cuda.outputs.available == 'true' }}
-        shell: bash
-        run: |
-          cmake -S . -B build-dev-mod -G Ninja \
-            -DGRAVITY_PROFILE=dev \
-            -DGRAVITY_BUILD_FRONTEND_MODULE_HOST=ON \
-            -DGRAVITY_BUILD_FRONTEND_MODULES=ON \
-            -DGRAVITY_BUILD_TESTS=OFF
-
-      - name: Build required module targets
-        if: ${{ steps.cuda.outputs.available == 'true' }}
-        shell: bash
-        run: |
-          cmake --build build-dev-mod --parallel --target \
-            myAppModuleHost \
-            gravityFrontendModuleCli \
-            gravityFrontendModuleEcho \
-            gravityFrontendModuleGuiProxy
-
-      - name: Build Qt module target when available
-        if: ${{ steps.cuda.outputs.available == 'true' }}
-        shell: bash
-        run: |
-          cmake --build build-dev-mod --parallel --target gravityFrontendModuleQtInProc \
-            || echo "Qt module target unavailable in this environment, skipping."
-
-      - name: Skip dev module build when CUDA is unavailable
-        if: ${{ steps.cuda.outputs.available != 'true' }}
-        shell: bash
-        run: |
-          echo "Skipped dev module build because nvcc is not available on this runner."
-
-  dev-module-build-linux:
-    name: Dev Module Build (Linux)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - {name: Checkout, uses: actions/checkout@v4}
       - name: Install build tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build
-
+        if: ${{ matrix.install_tools != '' }}
+        run: ${{ matrix.install_tools }}
       - name: Detect CUDA toolkit
         id: cuda
+        shell: bash
         run: |
           if command -v nvcc >/dev/null 2>&1; then
             echo "available=true" >> "$GITHUB_OUTPUT"
@@ -195,94 +124,32 @@ jobs:
             echo "available=false" >> "$GITHUB_OUTPUT"
             echo "CUDA toolkit unavailable; skipping dev module build."
           fi
-
       - name: Configure dev module build
         if: ${{ steps.cuda.outputs.available == 'true' }}
+        shell: bash
         run: |
           cmake -S . -B build-dev-mod -G Ninja \
             -DGRAVITY_PROFILE=dev \
             -DGRAVITY_BUILD_FRONTEND_MODULE_HOST=ON \
             -DGRAVITY_BUILD_FRONTEND_MODULES=ON \
             -DGRAVITY_BUILD_TESTS=OFF
-
       - name: Build required module targets
         if: ${{ steps.cuda.outputs.available == 'true' }}
+        shell: bash
         run: |
           cmake --build build-dev-mod --parallel --target \
             myAppModuleHost \
             gravityFrontendModuleCli \
             gravityFrontendModuleEcho \
             gravityFrontendModuleGuiProxy
-
+      - name: Build optional Qt module target
+        if: ${{ steps.cuda.outputs.available == 'true' && matrix.qt_target != '' }}
+        shell: bash
+        run: cmake --build build-dev-mod --parallel --target ${{ matrix.qt_target }} || echo "Qt module target unavailable in this environment, skipping."
       - name: Skip dev module build when CUDA is unavailable
         if: ${{ steps.cuda.outputs.available != 'true' }}
-        run: |
-          echo "Skipped dev module build because nvcc is not available on this runner."
+        shell: bash
+        run: echo "Skipped dev module build because nvcc is not available on this runner."
 
   space-quality-gate:
-    name: NASA-First Quality Gate
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      - name: Install build and analysis tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build clang-tidy
-          python -m pip install --upgrade pip
-          python -m pip install pytest ruff mypy
-
-      - name: Verify clang-tidy availability
-        run: |
-          clang-tidy --version
-
-      - name: Generate tool qualification manifest
-        run: |
-          python scripts/ci/release/package_tool_manifest.py --lane pr-fast --profile prod --output dist/tool-qualification/tool_manifest.json
-
-      - name: Run repository quality checks
-        run: |
-          python tests/checks/check.py all --root . --config simulation.ini
-
-      - name: Run Python style/type checks
-        run: |
-          python -m ruff check .
-          python -m mypy tests/checks scripts/ci python_tools
-
-      - name: Configure strict integration build
-        run: |
-          cmake -S tests -B build-quality -G Ninja \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-            -DGRAVITY_PROFILE=prod \
-            -DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON \
-            -DGRAVITY_INTEGRATION_ENABLE_SANITIZERS=ON
-
-      - name: Build strict integration targets
-        run: |
-          cmake --build build-quality --parallel
-
-      - name: Run clang-tidy analyzer checks
-        run: |
-          python tests/checks/clang_tidy_check.py --root . --build-dir build-quality
-
-      - name: Run integration tests under sanitizers
-        run: |
-          cmake -E env \
-            ASAN_OPTIONS=detect_leaks=0:halt_on_error=1 \
-            UBSAN_OPTIONS=halt_on_error=1 \
-            ctest --test-dir build-quality --output-on-failure --timeout 180 --no-tests=error -R "ConfigArgsTest\\.TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7|8|9)_"
-
-      - name: Upload tool qualification manifest
-        uses: actions/upload-artifact@v4
-        with:
-          name: tool-qualification-pr-fast-${{ github.run_number }}
-          path: dist/tool-qualification/tool_manifest.json
-          if-no-files-found: error
+    uses: ./.github/workflows/pr-fast-quality-gate.yml

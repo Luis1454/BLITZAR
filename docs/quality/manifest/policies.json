@@ -40,7 +40,9 @@
       "repo_quality": {
         "regex": "\\bTST_QLT_REPO_[0-9]{3}_[A-Za-z0-9_]+\\b",
         "files": [
-          "tests/cmake/targets.cmake"
+          "tests/cmake/targets.cmake",
+          "tests/cmake/targets_gtests.cmake",
+          "tests/cmake/targets_repo_checks.cmake"
         ]
       }
     }
