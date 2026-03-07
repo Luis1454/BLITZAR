@@ -55,6 +55,11 @@
       "artifact": "EVD_QLT_README",
       "check": "quality baseline scope and governance"
     },
+    "ENG-002": {
+      "source_standard": "ECSS-E-ST-40C",
+      "artifact": "EVD_QLT_PROD_BASELINE",
+      "check": "qualified prod environment baseline and CI lane mapping"
+    },
     "PA-001": {
       "source_standard": "ECSS-Q-ST-80C",
       "artifact": "EVD_CHECK_QUALITY",
