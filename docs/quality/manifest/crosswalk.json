@@ -60,6 +60,11 @@
       "artifact": "EVD_QLT_PROD_BASELINE",
       "check": "qualified prod environment baseline and CI lane mapping"
     },
+    "ENG-003": {
+      "source_standard": "ECSS-E-ST-40C",
+      "artifact": "EVD_QLT_RELEASE_INDEX_FORMAT",
+      "check": "release-quality index as audit entry point for tagged reviews"
+    },
     "PA-001": {
       "source_standard": "ECSS-Q-ST-80C",
       "artifact": "EVD_CHECK_QUALITY",

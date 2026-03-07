@@ -32,3 +32,4 @@ Release candidates and major review milestones must publish a qualification-orie
 
 - The pack is generated from the canonical quality manifest and must not use raw file paths in requirement rows.
 - `prod` packs are qualification-oriented evidence; `dev` packs are review aids only until reproduced under `prod` constraints.
+- Reviewers should open the release-quality index first, then drill down into the evidence pack.
