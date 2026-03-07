@@ -12,7 +12,7 @@ REQ-OPS-002,operations,apps/launcher,EVD_CHECK_LAUNCHER
 REQ-QUAL-001,quality,tests/checks,EVD_CHECK_MAIN
 REQ-QUAL-002,quality,tests/checks,EVD_CHECK_INI|EVD_CHECK_MIRROR
 REQ-COMP-001,compliance,docs/quality,EVD_CHECK_QUALITY
-REQ-COMP-002,compliance,.github/workflows/pr-fast.yml,EVD_CHECK_PR_POLICY|EVD_CHECK_IVV_GATE
+REQ-COMP-002,compliance,.github/workflows/pr-fast.yml,EVD_CHECK_MAIN|EVD_CHECK_PR_POLICY|EVD_CHECK_IVV_GATE
 REQ-UI-001,ui,modules/qt/ui,EVD_TEST_INT_UI_QT_WINDOW
 REQ-TEST-001,test-governance,docs/quality/quality_manifest.json,EVD_CHECK_TEST_CATALOG|EVD_CHECK_TEST_RUNNER
 REQ-MOD-001,modules,modules/cli,EVD_TEST_UNIT_MODULE_CLI|EVD_TEST_UNIT_MODULE_CLI_BACKEND

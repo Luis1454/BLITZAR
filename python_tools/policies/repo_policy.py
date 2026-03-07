@@ -45,10 +45,20 @@ INLINE_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+[A-Za-z0-9_]+::[A-Za-z0-9
 NAMESPACE_BLOCK_RE = re.compile(r"(?m)^\s*namespace\s+[A-Za-z0-9_]+\s*\{")
 GRAVITY_INTERNAL_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+gravity_internal_")
 PROD_ROOTS = ("apps/", "engine/", "runtime/", "modules/")
+EVIDENCE_WORKFLOW_PATHS = (
+    ".github/workflows/pr-fast-quality-gate.yml",
+    ".github/workflows/nightly-full.yml",
+    ".github/workflows/release-lane.yml",
+)
 
 
 def should_skip_dir(dirname: str) -> bool:
-    return dirname in IGNORED_DIRS or dirname.startswith("build-") or dirname.startswith("cmake-build-")
+    return (
+        dirname in IGNORED_DIRS
+        or dirname.startswith("build-")
+        or dirname.startswith("cmake-build-")
+        or dirname.startswith(".pytest-basetemp")
+    )
 
 
 def should_count_lines(path: Path) -> bool:
@@ -113,6 +123,8 @@ class RepoPolicyCheck(BaseCheck):
         for stale in sorted(allowlist - used_allowlist):
             result.add_warning(f"allowlist entry not needed anymore: {stale}")
 
+        self._check_evidence_workflow_profiles(context.root, result)
+
     def _check_cpp_content(self, rel: str, content: str, result: CheckResult) -> None:
         if not rel.startswith("tests/"):
             if GTEST_INCLUDE_RE.search(content):
@@ -151,3 +163,32 @@ class RepoPolicyCheck(BaseCheck):
             return
         if line_count > context.target_lines:
             result.add_warning(f"{rel}: {line_count} lines exceeds target {context.target_lines}")
+
+    def _check_evidence_workflow_profiles(self, root: Path, result: CheckResult) -> None:
+        for rel in EVIDENCE_WORKFLOW_PATHS:
+            path = root / rel
+            if not path.exists():
+                continue
+            content = path.read_text(encoding="utf-8", errors="ignore")
+            for command in self._collect_configure_commands(content):
+                if "-DGRAVITY_PROFILE=prod" in command:
+                    continue
+                result.add_error(f"{rel}: evidence configure command must include -DGRAVITY_PROFILE=prod: {command}")
+
+    def _collect_configure_commands(self, content: str) -> list[str]:
+        commands: list[str] = []
+        lines = content.splitlines()
+        index = 0
+        while index < len(lines):
+            stripped = lines[index].strip()
+            marker = stripped.find("cmake -S")
+            if marker == -1:
+                index += 1
+                continue
+            command = stripped[marker:]
+            while command.endswith("\\") and index + 1 < len(lines):
+                index += 1
+                command = f"{command} {lines[index].strip()}"
+            commands.append(command)
+            index += 1
+        return commands
