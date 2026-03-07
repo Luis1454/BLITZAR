@@ -26,7 +26,7 @@ def _seed_repo(root: Path) -> None:
         root / "docs/quality/quality_manifest.json",
         {
             "metadata": {"system": "test", "revision": "2026-03-07"},
-            "includes": ["manifest/evidence.json", "manifest/requirements.json"],
+            "includes": ["manifest/evidence.json", "manifest/requirements.json", "manifest/deviations.json"],
         },
     )
     _write_json(
@@ -34,6 +34,7 @@ def _seed_repo(root: Path) -> None:
         {
             "evidence": {
                 "EVD_CI_RELEASE_LANE": ".github/workflows/release-lane.yml",
+                "EVD_QLT_DEVIATION_REGISTER": "docs/quality/manifest/deviations.json",
                 "EVD_QLT_EVIDENCE_PACK_FORMAT": "docs/quality/evidence_pack.md",
                 "EVD_QLT_MANIFEST": "docs/quality/quality_manifest.json",
                 "EVD_QLT_README": "docs/quality/README.md",
@@ -53,6 +54,28 @@ def _seed_repo(root: Path) -> None:
             }
         },
     )
+    _write_json(
+        root / "docs/quality/manifest/deviations.json",
+        {
+            "deviations": {
+                "DEV-QUAL-001": {
+                    "kind": "deviation",
+                    "status": "open",
+                    "scope": "repository-policy:file-size",
+                    "owner": "maintainer",
+                    "approver": "quality-review",
+                    "introduced_on": "2026-03-07",
+                    "review_by": "2026-06-30",
+                    "rationale": "Temporary split pending.",
+                    "mitigation": "Review on every change.",
+                    "closure_criteria": "Split file and remove allowlist path.",
+                    "paths": ["engine/src/backend/SimulationBackend.cpp"],
+                    "requirements": ["REQ-TEST-001"],
+                    "artifacts": ["EVD_SAMPLE"],
+                }
+            }
+        },
+    )
     _write_text(root / ".github/workflows/release-lane.yml")
     _write_text(root / "docs/quality/README.md")
     _write_text(root / "docs/quality/standards_profile.md")
@@ -60,10 +83,6 @@ def _seed_repo(root: Path) -> None:
     _write_text(root / "docs/quality/sample_requirement.md")
     _write_text(root / "scripts/ci/release/package_bundle.py")
     _write_text(root / "scripts/ci/release/package_evidence.py")
-    _write_text(
-        root / "tests/checks/policy_allowlist.txt",
-        "# Example exception group.\nengine/src/backend/SimulationBackend.cpp\n",
-    )
 
 
 def _read_pack(archive: Path) -> tuple[dict[str, object], list[str]]:
@@ -91,7 +110,8 @@ def test_release_evidence_packager_packages_selected_requirements(tmp_path: Path
     assert payload["requirement_ids"] == ["REQ-TEST-001"]
     assert payload["ci_context"] == {"source": "unit-test"}
     assert isinstance(payload["open_exceptions"], list)
-    assert payload["open_exceptions"][0]["path"] == "engine/src/backend/SimulationBackend.cpp"
+    assert payload["open_exceptions"][0]["id"] == "DEV-QUAL-001"
+    assert payload["open_exceptions"][0]["paths"] == ["engine/src/backend/SimulationBackend.cpp"]
     assert "evidence/docs/quality/sample_requirement.md" in names
     assert "README.md" in names
 

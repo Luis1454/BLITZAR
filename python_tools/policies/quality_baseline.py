@@ -8,8 +8,10 @@ from python_tools.core.base_check import BaseCheck
 from python_tools.core.io import REQ_ID_RE, TEST_MACRO_RE, GitTrackedService, collect_test_ids
 from python_tools.core.models import CheckContext, CheckResult
 from python_tools.core.typing_ext import JsonValue
+from python_tools.policies.deviation_register import DeviationRegister
 from python_tools.policies.evidence_registry import resolve_evidence_ref
 from python_tools.policies.quality_manifest import CROSSWALK_KEY, QUALITY_MANIFEST_PATH, REQUIREMENTS_KEY, QualityManifestLoader
+from python_tools.policies.repo_policy import load_allowlist
 from python_tools.policies.test_id_filter import collect_repo_quality_test_ids
 
 REQUIRED_FILES = (
@@ -31,6 +33,7 @@ class QualityBaselineCheck(BaseCheck):
 
     def __init__(self) -> None:
         self._manifest = QualityManifestLoader()
+        self._deviations = DeviationRegister()
         self._git = GitTrackedService()
 
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
@@ -46,6 +49,7 @@ class QualityBaselineCheck(BaseCheck):
         tests = collect_test_ids(context.root, extra_ids, TEST_MACRO_RE)
         self._check_requirement_tests(requirements, tests, result)
         self._check_requirement_artifacts(context.root, requirements, result)
+        self._check_deviations(context.root, manifest, requirements, result)
         self._check_crosswalk(context.root, manifest, result)
 
     def _ensure_required_files(self, root: Path, result: CheckResult) -> None:
@@ -100,6 +104,25 @@ class QualityBaselineCheck(BaseCheck):
                     continue
                 if not (root / artifact_path).exists():
                     result.add_error(f"{req_id}: referenced artifact does not exist: {artifact_ref} -> {artifact_path}")
+
+    def _check_deviations(
+        self,
+        root: Path,
+        manifest: dict[str, JsonValue],
+        requirements: dict[str, dict[str, list[str]]],
+        result: CheckResult,
+    ) -> None:
+        rows = self._deviations.load(root, manifest, set(requirements), result)
+        allowlist = load_allowlist(root / "tests/checks/policy_allowlist.txt")
+        registered_paths: set[str] = set()
+        for row in rows:
+            if row.get("status") != "open":
+                continue
+            paths = row.get("paths")
+            if isinstance(paths, list):
+                registered_paths.update(path for path in paths if isinstance(path, str))
+        for path in sorted(allowlist - registered_paths):
+            result.add_error(f"policy allowlist path is missing from deviation register: {path}")
 
     def _check_crosswalk(self, root: Path, manifest: dict[str, JsonValue], result: CheckResult) -> None:
         rows = self._manifest.get_list(manifest, CROSSWALK_KEY, result, keyed_field="control_id")

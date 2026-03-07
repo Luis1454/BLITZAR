@@ -4,10 +4,11 @@ from __future__ import annotations
 from collections.abc import Mapping
 from pathlib import Path
 
-from python_tools.policies.repo_policy import load_allowlist
+from python_tools.policies.deviation_register import DeviationRegister
 
 DEFAULT_EVIDENCE_REFS = (
     "EVD_CI_RELEASE_LANE",
+    "EVD_QLT_DEVIATION_REGISTER",
     "EVD_QLT_EVIDENCE_PACK_FORMAT",
     "EVD_QLT_MANIFEST",
     "EVD_QLT_README",
@@ -17,34 +18,11 @@ DEFAULT_EVIDENCE_REFS = (
 )
 
 
-def load_open_exceptions(root: Path) -> list[dict[str, str]]:
-    allowlist = root / "tests/checks/policy_allowlist.txt"
-    allowed_paths = load_allowlist(allowlist)
-    comments: list[str] = []
-    rows: list[dict[str, str]] = []
-    for raw in allowlist.read_text(encoding="utf-8").splitlines():
-        line = raw.strip()
-        if not line:
-            comments = []
-            continue
-        if line.startswith("#"):
-            comment = line.removeprefix("#").strip()
-            if comment:
-                comments.append(comment)
-            continue
-        if line not in allowed_paths:
-            continue
-        rows.append(
-            {
-                "id": f"ALLOWLIST-{len(rows) + 1:03d}",
-                "kind": "repository_policy_allowlist",
-                "path": line,
-                "source": allowlist.relative_to(root).as_posix(),
-                "status": "open",
-                "reason": " ".join(comments) or "Explicit repository policy exception.",
-            }
-        )
-    return rows
+def load_open_exceptions(root: Path) -> list[dict[str, object]]:
+    rows, errors = DeviationRegister().load_open_with_errors(root)
+    if errors:
+        raise RuntimeError(errors[0])
+    return [row for row in rows if isinstance(row, dict)]
 
 
 def render_pack_readme(pack: Mapping[str, object]) -> str:

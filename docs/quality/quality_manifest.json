@@ -7,6 +7,7 @@
     "manifest/evidence.json",
     "manifest/policies.json",
     "manifest/requirements.json",
+    "manifest/deviations.json",
     "manifest/test_groups_core.json",
     "manifest/crosswalk.json"
   ]

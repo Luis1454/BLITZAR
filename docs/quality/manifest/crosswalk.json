@@ -59,6 +59,11 @@
       "source_standard": "ECSS-Q-ST-80C",
       "artifact": "EVD_CHECK_QUALITY",
       "check": "automated baseline integrity check"
+    },
+    "PA-002": {
+      "source_standard": "ECSS-Q-ST-80C",
+      "artifact": "EVD_QLT_DEVIATION_REGISTER",
+      "check": "controlled waiver and deviation register with review dates and approvers"
     }
   }
 }

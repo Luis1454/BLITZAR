@@ -60,8 +60,26 @@ def _seed_baseline_payloads(root: Path, test_regex: str) -> None:
                 "check": "review",
             }
         },
+        "deviations": {
+            "DEV-QUAL-001": {
+                "kind": "deviation",
+                "status": "open",
+                "scope": "repository-policy:file-size",
+                "owner": "maintainer",
+                "approver": "quality-review",
+                "introduced_on": "2026-03-01",
+                "review_by": "2026-06-30",
+                "rationale": "Temporary split pending.",
+                "mitigation": "Review on each change.",
+                "closure_criteria": "Split file and remove allowlist path.",
+                "paths": ["tests/cmake/targets.cmake"],
+                "requirements": ["REQ-COMP-001"],
+                "artifacts": ["EVD_QLT_MANIFEST"],
+            }
+        },
     }
     _write(root / "docs/quality/quality_manifest.json", json.dumps(manifest, indent=2) + "\n")
+    _write(root / "tests/checks/policy_allowlist.txt", "tests/cmake/targets.cmake\n")
 
 
 def test_quality_baseline_passes_with_valid_minimal_repo(tmp_path: Path) -> None:

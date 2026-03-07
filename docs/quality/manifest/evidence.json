@@ -11,6 +11,7 @@
     "EVD_QLT_IVV_PLAN": "docs/quality/ivv_plan.md",
     "EVD_QLT_NUMERICAL_VALIDATION": "docs/quality/numerical_validation.md",
     "EVD_QLT_MANIFEST": "docs/quality/quality_manifest.json",
+    "EVD_QLT_DEVIATION_REGISTER": "docs/quality/manifest/deviations.json",
     "EVD_QLT_EVIDENCE_PACK_FORMAT": "docs/quality/evidence_pack.md",
     "EVD_QLT_STANDARDS_PROFILE": "docs/quality/standards_profile.md",
     "EVD_QLT_TOOL_QUALIFICATION": "docs/quality/tool_qualification.md",
