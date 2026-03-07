@@ -20,6 +20,7 @@ This repository is independent from any company stack but aligned for US space r
   - no dynamic reload in mission-critical runtime path;
   - strict quality gate must be green in PR CI.
   - CI lanes must force `-DGRAVITY_PROFILE=prod` for qualification evidence.
+  - repository policy checks reject evidence workflow configure commands that omit `-DGRAVITY_PROFILE=prod`.
   - evidence-grade environment assumptions are fixed by `docs/quality/prod_baseline.md`.
 - `dev` profile (iteration path):
   - broader experimentation allowed;
