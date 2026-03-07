@@ -21,10 +21,15 @@ Independent Verification and Validation (IV&V) in this repository is process-foc
 2. Implementation review:
    - verify requirement IDs and impacted artifacts are explicit.
 3. Automated verification:
-   - run strict PR gate (`check.py`, strict build, analyzer, deterministic fast-subset tests, quality baseline checks).
+   - run `pr-fast` strict merge gate (`check.py`, strict build, analyzer, deterministic fast-subset tests, quality baseline checks).
+   - treat this stage as merge evidence only, not as the full qualification campaign.
 4. Extended nightly verification:
-   - execute broader deterministic scopes and publish coverage and logs.
-5. Closure:
+   - run `nightly-full` broader deterministic scopes, standalone repeat runs, and coverage publication.
+   - collect supplemental nightly artifacts such as FMEA status snapshots and optional GPU or numerical outputs.
+5. Release qualification review:
+   - run `release-lane` strict `prod` validation and package the release bundle, release-quality index, and evidence pack.
+   - treat optional release GPU full-suite runs as supplemental only; they cannot replace the deterministic baseline.
+6. Closure:
    - confirm evidence links remain valid for each affected requirement.
 
 ## Mandatory Evidence per Change

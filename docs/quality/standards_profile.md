@@ -18,8 +18,9 @@ This repository is independent from any company stack but aligned for US space r
 - `prod` profile (qualification evidence path):
   - deterministic execution requirements apply;
   - no dynamic reload in mission-critical runtime path;
-  - strict quality gate must be green in PR CI.
+  - strict PR quality gate must be green before merge.
   - CI lanes must force `-DGRAVITY_PROFILE=prod` for qualification evidence.
+  - repository policy checks reject evidence workflow configure commands that omit `-DGRAVITY_PROFILE=prod`.
   - evidence-grade environment assumptions are fixed by `docs/quality/prod_baseline.md`.
 - `dev` profile (iteration path):
   - broader experimentation allowed;
@@ -41,14 +42,16 @@ Build switch:
 - Critical interface contracts: `docs/quality/interface_contracts.md`.
 - Deviation register: `docs/quality/manifest/deviations.json`.
 - Release quality index format: `docs/quality/release_index.md`.
-- Strict CI lane definition: `.github/workflows/pr-fast.yml`.
+- Strict merge gate definition: `.github/workflows/pr-fast.yml` and `.github/workflows/pr-fast-quality-gate.yml`.
+- Extended deterministic evidence lanes: `.github/workflows/nightly-full.yml` and `.github/workflows/release-lane.yml`.
 - Release evidence pack format: `docs/quality/evidence_pack.md`.
 
 ## Determinism Baseline
 
 - Fixed-input regression tests are the authoritative evidence.
-- PR lane executes a deterministic fast subset for merge safety.
-- Nightly and release lanes execute broader deterministic scopes.
+- `pr-fast` executes repository policy gates, analyzer checks, and a deterministic fast subset for merge safety.
+- `nightly-full` extends deterministic evidence with repeated standalone integration runs, coverage publication, FMEA status snapshots, and optional GPU full-suite or numerical artifacts.
+- `release-lane` reruns strict `prod` validation, then publishes the release bundle, release-quality index, and evidence pack for review.
 - Temporary waivers and deviations must carry explicit owner, approver, and review date metadata in the canonical register.
 - Release review should begin from the release-quality index before opening the full evidence pack.
 - Breaking interface changes must update the canonical contract artifact and linked tests in the same review.

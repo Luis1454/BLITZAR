@@ -1,7 +1,8 @@
 {
   "metadata": {
     "system": "CUDA-GRAVITY-SIMULATION",
-    "revision": "2026-03-07"
+    "revision": "2026-03-07",
+    "revision_note": "Quality docs distinguish merge, nightly, and release CI evidence scopes."
   },
   "includes": [
     "manifest/evidence.json",
