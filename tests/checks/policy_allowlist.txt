@@ -1,6 +1,6 @@
 # Temporary exceptions for files above the 300-line hard limit.
 # Keep this list short and remove entries as files are split by responsibility.
-# Each entry is explicitly justified for qualification traceability.
+# Each active group must also exist in docs/quality/manifest/deviations.json.
 
 # Core backend orchestration pending split by protocol/state/controls.
 engine/src/backend/SimulationBackend.cpp

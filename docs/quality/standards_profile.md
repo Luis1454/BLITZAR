@@ -36,6 +36,7 @@ Build switch:
 - Failure analysis: `docs/quality/fmea.md`.
 - Numerical acceptance policy: `docs/quality/numerical_validation.md`.
 - Tool confidence strategy: `docs/quality/tool_qualification.md`.
+- Deviation register: `docs/quality/manifest/deviations.json`.
 - Strict CI lane definition: `.github/workflows/pr-fast.yml`.
 - Release evidence pack format: `docs/quality/evidence_pack.md`.
 
@@ -44,6 +45,7 @@ Build switch:
 - Fixed-input regression tests are the authoritative evidence.
 - PR lane executes a deterministic fast subset for merge safety.
 - Nightly and release lanes execute broader deterministic scopes.
+- Temporary waivers and deviations must carry explicit owner, approver, and review date metadata in the canonical register.
 - Release candidates must publish an evidence pack generated from the `release-lane` commands under the selected profile.
 - Runtime behavior in critical paths must be reproducible under pinned toolchain settings.
 - Any requirement, tolerance, or toolchain update must update the quality artifacts in this directory in the same change.
