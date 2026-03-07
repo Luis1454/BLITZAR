@@ -37,6 +37,7 @@ def _seed_repo(root: Path) -> None:
                 "EVD_QLT_DEVIATION_REGISTER": "docs/quality/manifest/deviations.json",
                 "EVD_QLT_EVIDENCE_PACK_FORMAT": "docs/quality/evidence_pack.md",
                 "EVD_QLT_MANIFEST": "docs/quality/quality_manifest.json",
+                "EVD_QLT_PROD_BASELINE": "docs/quality/prod_baseline.md",
                 "EVD_QLT_README": "docs/quality/README.md",
                 "EVD_QLT_STANDARDS_PROFILE": "docs/quality/standards_profile.md",
                 "EVD_SCRIPT_RELEASE_PACKAGE_BUNDLE": "scripts/ci/release/package_bundle.py",
@@ -80,6 +81,7 @@ def _seed_repo(root: Path) -> None:
     _write_text(root / "docs/quality/README.md")
     _write_text(root / "docs/quality/standards_profile.md")
     _write_text(root / "docs/quality/evidence_pack.md")
+    _write_text(root / "docs/quality/prod_baseline.md")
     _write_text(root / "docs/quality/sample_requirement.md")
     _write_text(root / "scripts/ci/release/package_bundle.py")
     _write_text(root / "scripts/ci/release/package_evidence.py")

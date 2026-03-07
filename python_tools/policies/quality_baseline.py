@@ -20,6 +20,7 @@ REQUIRED_FILES = (
     "docs/quality/standards_profile.md",
     "docs/quality/fmea.md",
     "docs/quality/tool_qualification.md",
+    "docs/quality/prod_baseline.md",
     "docs/quality/ivv_plan.md",
     "docs/quality/numerical_validation.md",
 )

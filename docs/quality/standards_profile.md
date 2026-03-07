@@ -20,6 +20,7 @@ This repository is independent from any company stack but aligned for US space r
   - no dynamic reload in mission-critical runtime path;
   - strict quality gate must be green in PR CI.
   - CI lanes must force `-DGRAVITY_PROFILE=prod` for qualification evidence.
+  - evidence-grade environment assumptions are fixed by `docs/quality/prod_baseline.md`.
 - `dev` profile (iteration path):
   - broader experimentation allowed;
   - results are not qualification evidence unless reproduced in `prod` profile constraints.
@@ -36,6 +37,7 @@ Build switch:
 - Failure analysis: `docs/quality/fmea.md`.
 - Numerical acceptance policy: `docs/quality/numerical_validation.md`.
 - Tool confidence strategy: `docs/quality/tool_qualification.md`.
+- Qualified `prod` baseline: `docs/quality/prod_baseline.md`.
 - Deviation register: `docs/quality/manifest/deviations.json`.
 - Strict CI lane definition: `.github/workflows/pr-fast.yml`.
 - Release evidence pack format: `docs/quality/evidence_pack.md`.
