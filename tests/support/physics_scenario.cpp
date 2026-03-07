@@ -110,7 +110,7 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
     backend.setPaused(true);
     backend.start();
 
-    if (!waitForSnapshot(backend, out.initial, cfg.snapshotTimeoutMs)) {
+    if (!grav_test_physics_scenario::waitForSnapshot(backend, out.initial, cfg.snapshotTimeoutMs)) {
         backend.stop();
         error = "initial snapshot timeout";
         return false;
@@ -123,7 +123,7 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
 
     for (std::uint32_t s = 0; s < cfg.steps; ++s) {
         backend.stepOnce();
-        if (!waitForStep(backend, static_cast<std::uint64_t>(s) + 1ull, cfg.stepTimeoutMs)) {
+        if (!grav_test_physics_scenario::waitForStep(backend, static_cast<std::uint64_t>(s) + 1ull, cfg.stepTimeoutMs)) {
             backend.stop();
             error = "step timeout at " + std::to_string(s + 1);
             return false;
@@ -135,7 +135,7 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
     }
 
     std::vector<RenderParticle> latest;
-    if (!waitForSnapshot(backend, latest, cfg.snapshotTimeoutMs)) {
+    if (!grav_test_physics_scenario::waitForSnapshot(backend, latest, cfg.snapshotTimeoutMs)) {
         backend.stop();
         error = "final snapshot timeout";
         return false;
@@ -164,12 +164,14 @@ std::string getTwoBodyInputPath()
 #endif
 }
 
+#if defined(GRAVITY_ENABLE_GTEST_FIXTURE)
 void PhysicsTest::SetUp()
 {
     inputPath_ = getTwoBodyInputPath();
     ASSERT_FALSE(inputPath_.empty()) << "GRAVITY_TEST_SOURCE_DIR is not defined";
     ASSERT_TRUE(std::filesystem::exists(inputPath_)) << "Missing test data file: " << inputPath_;
 }
+#endif
 
 } // namespace testsupport
 
