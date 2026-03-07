@@ -37,11 +37,13 @@ Build switch:
 - Numerical acceptance policy: `docs/quality/numerical_validation.md`.
 - Tool confidence strategy: `docs/quality/tool_qualification.md`.
 - Strict CI lane definition: `.github/workflows/pr-fast.yml`.
+- Release evidence pack format: `docs/quality/evidence_pack.md`.
 
 ## Determinism Baseline
 
 - Fixed-input regression tests are the authoritative evidence.
 - PR lane executes a deterministic fast subset for merge safety.
 - Nightly and release lanes execute broader deterministic scopes.
+- Release candidates must publish an evidence pack generated from the `release-lane` commands under the selected profile.
 - Runtime behavior in critical paths must be reproducible under pinned toolchain settings.
 - Any requirement, tolerance, or toolchain update must update the quality artifacts in this directory in the same change.

@@ -1,6 +1,7 @@
 {
   "evidence": {
     "EVD_CI_PR_FAST": ".github/workflows/pr-fast.yml",
+    "EVD_CI_RELEASE_LANE": ".github/workflows/release-lane.yml",
     "EVD_AGENTS": "AGENTS.md",
     "EVD_ROOT_CMAKELISTS": "CMakeLists.txt",
     "EVD_APP_LAUNCHER_MAIN": "apps/launcher/main.cpp",
@@ -10,6 +11,7 @@
     "EVD_QLT_IVV_PLAN": "docs/quality/ivv_plan.md",
     "EVD_QLT_NUMERICAL_VALIDATION": "docs/quality/numerical_validation.md",
     "EVD_QLT_MANIFEST": "docs/quality/quality_manifest.json",
+    "EVD_QLT_EVIDENCE_PACK_FORMAT": "docs/quality/evidence_pack.md",
     "EVD_QLT_STANDARDS_PROFILE": "docs/quality/standards_profile.md",
     "EVD_QLT_TOOL_QUALIFICATION": "docs/quality/tool_qualification.md",
     "EVD_MOD_QT_MAINWINDOW": "modules/qt/ui/MainWindow.cpp",
@@ -37,6 +39,8 @@
     "EVD_TEST_UNIT_PHYSICS_SOLVER": "tests/unit/physics/solver.cpp",
     "EVD_TEST_UNIT_MODULE_CLI": "tests/unit/module_cli/text_and_commands.cpp",
     "EVD_TEST_UNIT_MODULE_CLI_BACKEND": "tests/unit/module_cli/backend_ops_validation.cpp",
-    "EVD_TEST_UNIT_MODULE_HOST": "tests/unit/module_host/cli_args_text.cpp"
+    "EVD_TEST_UNIT_MODULE_HOST": "tests/unit/module_host/cli_args_text.cpp",
+    "EVD_SCRIPT_RELEASE_PACKAGE_BUNDLE": "scripts/ci/release/package_bundle.py",
+    "EVD_SCRIPT_RELEASE_PACKAGE_EVIDENCE": "scripts/ci/release/package_evidence.py"
   }
 }
