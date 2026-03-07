@@ -12,6 +12,7 @@ Independent Verification and Validation (IV&V) in this repository is process-foc
 - Development and review cannot be performed by the same person for mission-impacting changes.
 - Protocol, runtime recovery, and numerical threshold updates require independent reviewer approval.
 - CI evidence is necessary but not sufficient; reviewer sign-off is mandatory.
+- This repository enforces the non-author review requirement through `pr-fast` IV&V gate checks plus mission-impacting path ownership in `.github/CODEOWNERS`.
 
 ## Verification Stages
 
@@ -33,6 +34,12 @@ Independent Verification and Validation (IV&V) in this repository is process-foc
 - analyzer result status
 - reviewer identity independent from author
 - profile used (`prod` qualification evidence or `dev` exploratory evidence)
+
+## Urgent Fix Workflow
+
+- Urgent fixes still require a non-author reviewer on protocol/runtime/physics paths.
+- If a fast mitigation needs a temporary exception, the PR must reference the active deviation entry in `docs/quality/manifest/deviations.json`.
+- The PR checklist must record analyzer evidence, deterministic test evidence, reviewer handle, and deviation status.
 
 ## Escalation Triggers
 
