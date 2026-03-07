@@ -1,0 +1,60 @@
+{
+  "fmea_actions": [
+    {
+      "id": "FMEA-001",
+      "owner": "config-maintainer",
+      "status": "closed",
+      "residual_risk": "Low",
+      "linked_tasks": [],
+      "verification_evidence": ["EVD_TEST_UNIT_CONFIG_ARGS_CLI"]
+    },
+    {
+      "id": "FMEA-002",
+      "owner": "protocol-maintainer",
+      "status": "in-progress",
+      "residual_risk": "Medium",
+      "linked_tasks": ["#120 interface contracts", "#101 ivv gate enforcement", "#98 pr traceability"],
+      "verification_evidence": ["EVD_TEST_INT_PROTOCOL_CONNECT", "EVD_QLT_INTERFACE_CONTRACTS"]
+    },
+    {
+      "id": "FMEA-003",
+      "owner": "security-maintainer",
+      "status": "closed",
+      "residual_risk": "Medium",
+      "linked_tasks": ["#101 ivv gate enforcement"],
+      "verification_evidence": ["EVD_TEST_INT_PROTOCOL_CONTROL"]
+    },
+    {
+      "id": "FMEA-004",
+      "owner": "runtime-maintainer",
+      "status": "in-progress",
+      "residual_risk": "Medium",
+      "linked_tasks": ["#120 interface contracts"],
+      "verification_evidence": ["EVD_TEST_INT_RUNTIME_BRIDGE", "EVD_TEST_INT_RUNTIME_RUNTIME"]
+    },
+    {
+      "id": "FMEA-005",
+      "owner": "physics-maintainer",
+      "status": "in-progress",
+      "residual_risk": "High",
+      "linked_tasks": ["#102 numerical validation campaign"],
+      "verification_evidence": ["EVD_TEST_UNIT_PHYSICS_ORBIT", "EVD_TEST_UNIT_PHYSICS_MULTIBODY", "EVD_QLT_NUMERICAL_CAMPAIGN"]
+    },
+    {
+      "id": "FMEA-006",
+      "owner": "build-maintainer",
+      "status": "closed",
+      "residual_risk": "Low",
+      "linked_tasks": [],
+      "verification_evidence": ["EVD_CHECK_NO_LEGACY"]
+    },
+    {
+      "id": "FMEA-007",
+      "owner": "architecture-maintainer",
+      "status": "in-progress",
+      "residual_risk": "Medium",
+      "linked_tasks": ["#118 prod baseline", "#101 ivv gate enforcement"],
+      "verification_evidence": ["EVD_CHECK_MAIN", "EVD_QLT_STANDARDS_PROFILE", "EVD_QLT_PROD_BASELINE"]
+    }
+  ]
+}

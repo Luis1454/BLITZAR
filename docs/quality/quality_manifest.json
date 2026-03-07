@@ -8,6 +8,7 @@
     "manifest/policies.json",
     "manifest/requirements.json",
     "manifest/deviations.json",
+    "manifest/fmea_actions.json",
     "manifest/numerical_campaign.json",
     "manifest/test_groups_core.json",
     "manifest/crosswalk.json"
