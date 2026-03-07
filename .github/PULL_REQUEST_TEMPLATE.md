@@ -12,8 +12,10 @@ Deviation: none
 
 ## Traceability
 
-Requirements touched:
+Requirements impacted:
+- REQ-...
 
 ## Notes
 
 Urgent fixes using a deviation must reference the active entry in `docs/quality/manifest/deviations.json`.
+Critical runtime/physics/protocol PRs must also update `docs/quality/traceability.csv`.
