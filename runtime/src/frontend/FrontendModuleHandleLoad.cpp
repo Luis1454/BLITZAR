@@ -11,7 +11,7 @@
 
 namespace grav_module {
 
-bool hasRequiredExports(const FrontendModuleExportsV1 *exports)
+static bool hasRequiredExports(const FrontendModuleExportsV1 *exports)
 {
     return exports != nullptr
         && exports->apiVersion == kFrontendModuleApiVersionV1

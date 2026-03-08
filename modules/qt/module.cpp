@@ -36,7 +36,7 @@
 #include <unistd.h>
 #endif
 
-bool parseBool(std::string_view raw, bool &out)
+static bool parseBool(std::string_view raw, bool &out)
 {
     std::string value(raw);
     std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
@@ -53,7 +53,7 @@ bool parseBool(std::string_view raw, bool &out)
     return false;
 }
 
-std::string trim(const std::string &input)
+static std::string trim(const std::string &input)
 {
     const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
         return std::isspace(c) != 0;
@@ -67,7 +67,7 @@ std::string trim(const std::string &input)
     return std::string(begin, end);
 }
 
-std::vector<std::string> splitTokens(const std::string &line)
+static std::vector<std::string> splitTokens(const std::string &line)
 {
     std::vector<std::string> tokens;
     std::string current;
@@ -116,7 +116,7 @@ struct QtInProcState {
     std::mutex startupMutex;
 };
 
-std::string currentExecutablePath()
+static std::string currentExecutablePath()
 {
 #if defined(_WIN32)
     std::vector<char> buffer(4096u, '\0');
@@ -143,7 +143,7 @@ std::string currentExecutablePath()
 #endif
 }
 
-void configureQtPluginPathFallback()
+static void configureQtPluginPathFallback()
 {
     QString pluginRoot;
     const std::string exePath = currentExecutablePath();
@@ -170,7 +170,7 @@ void configureQtPluginPathFallback()
     qputenv("QT_PLUGIN_PATH", pluginRoot.toUtf8());
 }
 
-void qtThreadMain(QtInProcState *state)
+static void qtThreadMain(QtInProcState *state)
 {
     try {
         int argc = 1;
@@ -214,7 +214,7 @@ void qtThreadMain(QtInProcState *state)
     state->running.store(false);
 }
 
-bool startQtUi(QtInProcState &state, const grav_frontend::ErrorBufferView &errorBuffer)
+static bool startQtUi(QtInProcState &state, const grav_frontend::ErrorBufferView &errorBuffer)
 {
     if (state.uiThread.joinable() || state.running.load()) {
         return true;
@@ -246,7 +246,7 @@ bool startQtUi(QtInProcState &state, const grav_frontend::ErrorBufferView &error
     return true;
 }
 
-void stopQtUi(QtInProcState &state)
+static void stopQtUi(QtInProcState &state)
 {
     if (state.uiThread.joinable()) {
         QCoreApplication *app = QCoreApplication::instance();
@@ -258,7 +258,7 @@ void stopQtUi(QtInProcState &state)
     state.running.store(false);
 }
 
-void printHelp()
+static void printHelp()
 {
     std::cout
         << "[module-qt] commands:\n"
