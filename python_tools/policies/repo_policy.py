@@ -6,6 +6,7 @@ from pathlib import Path
 
 from python_tools.core.base_check import BaseCheck
 from python_tools.core.models import CheckContext, CheckResult
+from python_tools.policies.repo_policy_power_of_10 import check_power_of_10_content
 
 FORBIDDEN_CPP_EXTS = {".h", ".hh", ".hxx", ".c", ".cc", ".cxx"}
 LINE_COUNT_EXTS = {
@@ -25,9 +26,6 @@ USING_ANY_RE = re.compile(r"(?m)^\s*using\b[^;]*;")
 INLINE_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+[A-Za-z0-9_]+::[A-Za-z0-9_:]+\s*\{")
 NAMESPACE_BLOCK_RE = re.compile(r"(?m)^\s*namespace\s+[A-Za-z0-9_]+\s*\{")
 GRAVITY_INTERNAL_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+gravity_internal_")
-GOTO_RE = re.compile(r"\bgoto\b")
-SETJMP_LONGJMP_RE = re.compile(r"\b(?:setjmp|longjmp)\b")
-DO_WHILE_RE = re.compile(r"\bdo\b\s*\{", re.DOTALL)
 PROD_ROOTS = ("apps/", "engine/", "runtime/", "modules/")
 EVIDENCE_WORKFLOW_PATHS = (".github/workflows/pr-fast-quality-gate.yml", ".github/workflows/nightly-full.yml", ".github/workflows/release-lane.yml")
 LEGACY_CTEST_SELECTORS = ("ConfigArgsTest", "BackendProtocolTest", "FrontendBridgeTest", "FrontendRuntimeTest", "QtMainWindowTest")
@@ -121,12 +119,8 @@ class RepoPolicyCheck(BaseCheck):
         if is_prod_path(rel) and len(NAMESPACE_BLOCK_RE.findall(content)) > 1:
             result.add_error(f"{rel}: nested namespace blocks are forbidden in production paths")
         if is_prod_path(rel):
-            if GOTO_RE.search(content):
-                result.add_error(f"{rel}: Power of 10 rule 1 forbids goto in production paths")
-            if SETJMP_LONGJMP_RE.search(content):
-                result.add_error(f"{rel}: Power of 10 rule 1 forbids setjmp/longjmp in production paths")
-            if DO_WHILE_RE.search(content):
-                result.add_error(f"{rel}: Power of 10 rule 1 forbids do-while in production paths")
+            for error in check_power_of_10_content(rel, content):
+                result.add_error(error)
 
     def _check_line_count(
         self,

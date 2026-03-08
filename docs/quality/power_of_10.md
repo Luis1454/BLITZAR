@@ -19,7 +19,9 @@ The profile is used in two modes:
    - loop exits and state-machine transitions still require review for clarity
 
 2. `All loops must have a fixed upper bound`
-   Automation status: `policy-only`
+   Automation status: `partial`
+   Automated checks:
+   - production C++ paths must not use open-ended `while (true)` loops
    Policy note:
    - bounded loops must be justified in review
    - long-running service loops are allowed only at explicit process/runtime boundaries
@@ -57,14 +59,15 @@ The profile is used in two modes:
 8. `Use the preprocessor sparingly`
    Automation status: `partial`
    Automated checks:
-   - repository policy already constrains header structure and naming
+   - production C++ paths must not introduce non-structural object-like macros, except explicit platform/ABI allowlisted seams
    Policy note:
    - preprocessor conditionals must stay limited to platform/compiler seams
 
 9. `Restrict pointer use to a single dereference, and do not use function pointers`
    Automation status: `partial`
    Automated checks:
-   - repository policy restricts unnamed namespaces, `using`, and selected unsafe pointer patterns
+    - repository policy restricts unnamed namespaces, `using`, and selected unsafe pointer patterns
+   - production C++ paths must not introduce function pointer typedefs outside explicit ABI boundary headers
    - frontend/module ABI boundaries must encapsulate raw pointers immediately
    Policy note:
    - C ABI, Qt, OS, and plugin boundaries may require explicit pointer exceptions
@@ -84,5 +87,8 @@ Current automated `Power of 10` repository checks cover:
 - `goto` forbidden in production C++ paths
 - `setjmp` and `longjmp` forbidden in production C++ paths
 - `do { ... } while (...)` forbidden in production C++ paths
+- `while (true)` forbidden in production C++ paths
+- non-structural object-like macros forbidden in production C++ paths, except explicit ABI/platform allowlists
+- function pointer typedefs forbidden outside explicit ABI boundary headers
 
 The remaining rules are tracked as review expectations and higher-assurance process constraints, not as naive regex-only repository failures.
