@@ -18,7 +18,7 @@ def build_release_lane_activities(profile: str) -> list[dict[str, str]]:
         {
             "name": "ctest-integration-safe",
             "status": "pass",
-            "command": 'ctest --test-dir build --output-on-failure --timeout 180 --no-tests=error -R "ConfigArgsTest\\\\.TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|5|6|7|8|9)_"',
+            "command": 'ctest --test-dir build --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|5|6|7|8|9)_"',
         },
         {"name": "release-bundle", "status": "pass", "command": "python scripts/ci/release/package_bundle.py --build-dir build --dist-dir dist/release-bundle"},
         {

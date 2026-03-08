@@ -15,7 +15,7 @@ PROFILE_LOGS ?= OFF
 INT_BUILD_DIR ?= build-integration
 INT_BUILD_TYPE ?= Release
 INT_TEST_REGEX ?=
-INT_TEST_REGEX_NO_BACKEND ?= ^(ConfigArgsTest\.TST_UNT_CONF_|BackendProtocolTest\.TST_INT_PROT_003_BackendClientConnectTimeoutIsBounded$$|TST_QLT_REPO_.*)
+INT_TEST_REGEX_NO_BACKEND ?= ^(TST_UNT_CONF_|TST_INT_PROT_003_BackendClientConnectTimeoutIsBounded$$|TST_QLT_REPO_.*)
 INT_TIMEOUT ?= 180
 BACKEND_EXE ?=
 

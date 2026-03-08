@@ -42,7 +42,7 @@ jobs:
           cmake -E env \
             ASAN_OPTIONS=detect_leaks=0:halt_on_error=1 \
             UBSAN_OPTIONS=halt_on_error=1 \
-            ctest --test-dir build-quality --output-on-failure --timeout 180 --no-tests=error -R "ConfigArgsTest\\.TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7|8|9)_"
+            ctest --test-dir build-quality --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7|8|9)_"
       - name: Upload tool qualification manifest
         uses: actions/upload-artifact@v4
         with:
