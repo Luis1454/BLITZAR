@@ -4,6 +4,9 @@
     "body": "Implements #106\n\nCloses #106",
     "head": {
       "ref": "issue/106-enforce-branch-per-issue-policy"
+    },
+    "base": {
+      "ref": "main"
     }
   }
 }

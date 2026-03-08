@@ -4,6 +4,9 @@
     "body": "Implements #106\n\nCloses #107",
     "head": {
       "ref": "feature/missing-issue-prefix"
+    },
+    "base": {
+      "ref": "main"
     }
   }
 }

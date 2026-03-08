@@ -24,6 +24,18 @@ jobs:
       - name: Validate AGENTS PR policy
         run: python tests/checks/pr_policy_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}"
 
+  main-delivery:
+    name: Main Delivery Gate
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - {name: Checkout, uses: actions/checkout@v4}
+      - {name: Setup Python, uses: actions/setup-python@v5, with: {python-version: "3.x"}}
+      - name: Validate push-to-main provenance
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python tests/checks/main_delivery_gate_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}" --sha "${{ github.sha }}"
+
   traceability-gate:
     name: Traceability Gate
     if: ${{ github.event_name == 'pull_request' }}
