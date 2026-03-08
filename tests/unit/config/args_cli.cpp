@@ -1,5 +1,6 @@
 ﻿#include "config/SimulationArgs.hpp"
 #include "config/SimulationConfig.hpp"
+#include "protocol/BackendProtocol.hpp"
 
 #include <gtest/gtest.h>
 
@@ -162,5 +163,20 @@ TEST(ConfigArgsTest, TST_UNT_CONF_006_RejectsTrailingGarbageNumericArguments)
     EXPECT_NE(log.find("invalid --dt"), std::string::npos);
     EXPECT_NE(log.find("invalid --octree-theta"), std::string::npos);
     EXPECT_NE(log.find("invalid --luminosity"), std::string::npos);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_014_ClampsFrontendParticleCapArgumentToProtocolMax)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+
+    std::vector<std::string> args = {"app", "--frontend-particle-cap", "50000"};
+    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
+    applyArgsToConfig(argViews, config, runtime, warnings);
+
+    EXPECT_EQ(config.frontendParticleCap, grav_protocol::kSnapshotMaxPoints);
+    EXPECT_NE(warnings.str().find("--frontend-particle-cap clamped"), std::string::npos);
+    EXPECT_FALSE(runtime.hasArgumentError);
 }
 

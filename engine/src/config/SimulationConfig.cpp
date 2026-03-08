@@ -9,6 +9,15 @@
 #include <iostream>
 #include <limits>
 #include <sstream>
+
+static std::uint32_t clampFrontendParticleCap(std::uint32_t requested)
+{
+    if (requested > grav_protocol::kSnapshotMaxPoints) {
+        return grav_protocol::kSnapshotMaxPoints;
+    }
+    return requested < 2u ? 2u : requested;
+}
+
 static std::string trim(const std::string &value)
 {
     const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char c) { return std::isspace(c) != 0; });
@@ -129,7 +138,17 @@ SimulationConfig SimulationConfig::loadOrCreate(const std::string &path)
         } else if (key == "octree_softening") {
             parseFloat(value, config.octreeSoftening);
         } else if (key == "frontend_particle_cap") {
-            parseUnsigned(value, config.frontendParticleCap);
+            std::uint32_t parsedFrontendParticleCap = config.frontendParticleCap;
+            if (parseUnsigned(value, parsedFrontendParticleCap)) {
+                const std::uint32_t clampedValue = clampFrontendParticleCap(parsedFrontendParticleCap);
+                config.frontendParticleCap = clampedValue;
+                if (clampedValue != parsedFrontendParticleCap) {
+                    std::cerr << "[config] frontend_particle_cap clamped to supported range ["
+                              << 2u << ", "
+                              << grav_protocol::kSnapshotMaxPoints << "]: "
+                              << parsedFrontendParticleCap << " -> " << clampedValue << "\n";
+                }
+            }
         } else if (key == "default_zoom") {
             parseFloat(value, config.defaultZoom);
         } else if (key == "default_luminosity") {
@@ -272,7 +291,9 @@ bool SimulationConfig::save(const std::string &path) const
 
     out << "# [Frontend defaults]\n";
     out << "# Rendering cap for displayed particles.\n";
-    out << "frontend_particle_cap=" << frontendParticleCap << "\n";
+    out << "# Supported range [" << 2u
+        << ", " << grav_protocol::kSnapshotMaxPoints << "].\n";
+    out << "frontend_particle_cap=" << clampFrontendParticleCap(frontendParticleCap) << "\n";
     out << "# Initial camera zoom.\n";
     out << "default_zoom=" << defaultZoom << "\n";
     out << "# Initial particle alpha [0..255].\n";
