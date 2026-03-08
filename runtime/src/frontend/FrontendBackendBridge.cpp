@@ -1,5 +1,6 @@
 #include "frontend/FrontendBackendBridge.hpp"
 
+#include "protocol/BackendJsonCodec.hpp"
 #include "protocol/BackendProtocol.hpp"
 #include "platform/PlatformPaths.hpp"
 #include "platform/PlatformProcess.hpp"
@@ -741,31 +742,7 @@ std::string_view FrontendBackendBridge::backendOwnerLabel() const
 
 std::string FrontendBackendBridge::jsonEscape(const std::string &value)
 {
-    std::string escaped;
-    escaped.reserve(value.size() + 8u);
-    for (unsigned char c : value) {
-        switch (c) {
-            case '\\':
-                escaped += "\\\\";
-                break;
-            case '"':
-                escaped += "\\\"";
-                break;
-            case '\n':
-                escaped += "\\n";
-                break;
-            case '\r':
-                escaped += "\\r";
-                break;
-            case '\t':
-                escaped += "\\t";
-                break;
-            default:
-                escaped.push_back(static_cast<char>(c));
-                break;
-        }
-    }
-    return escaped;
+    return grav_protocol::BackendJsonCodec::escapeString(value);
 }
 
 SimulationStats FrontendBackendBridge::fromRemoteStatus(const BackendClientStatus &status)

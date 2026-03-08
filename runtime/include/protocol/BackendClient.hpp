@@ -1,7 +1,7 @@
 #ifndef GRAVITY_SIM_BACKENDCLIENT_HPP
 #define GRAVITY_SIM_BACKENDCLIENT_HPP
 
-#include "backend/SimulationBackend.hpp"
+#include "protocol/BackendJsonCodec.hpp"
 
 #include <cstdint>
 #include <string>
@@ -54,16 +54,6 @@ class BackendClient {
     private:
         typedef std::intptr_t SocketHandle;
         static std::string trim(const std::string &value);
-        static std::string toLower(std::string value);
-        static std::string jsonEscape(const std::string &value);
-
-        static bool extractJsonString(const std::string &request, const std::string &key, std::string &out);
-        static bool extractJsonToken(const std::string &request, const std::string &key, std::string &out);
-        static bool extractJsonBool(const std::string &request, const std::string &key, bool &out);
-
-        template <typename NumberType>
-        static bool extractJsonNumber(const std::string &request, const std::string &key, NumberType &out);
-
         bool readLine(std::string &outLine);
 
         SocketHandle _socket;
