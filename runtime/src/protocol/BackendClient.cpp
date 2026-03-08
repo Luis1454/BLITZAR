@@ -163,17 +163,8 @@ bool BackendClient::readLine(std::string &outLine)
             return false;
         }
 
-        while (true) {
-            const std::size_t pos = _recvBuffer.find('\n');
-            if (pos != std::string::npos) {
-                outLine = _recvBuffer.substr(0, pos);
-                _recvBuffer.erase(0, pos + 1);
-                if (!outLine.empty() && outLine.back() == '\r') {
-                    outLine.pop_back();
-                }
-                return true;
-            }
-
+        std::size_t pos = _recvBuffer.find('\n');
+        while (pos == std::string::npos) {
             std::array<char, 2048> chunk{};
             const int received = grav_socket::recvBytes(
                 _socket,
@@ -187,7 +178,15 @@ bool BackendClient::readLine(std::string &outLine)
             if (_recvBuffer.size() > (512u * 1024u)) {
                 return false;
             }
+            pos = _recvBuffer.find('\n');
         }
+
+        outLine = _recvBuffer.substr(0, pos);
+        _recvBuffer.erase(0, pos + 1);
+        if (!outLine.empty() && outLine.back() == '\r') {
+            outLine.pop_back();
+        }
+        return true;
     } catch (const std::exception &ex) {
         std::cerr << backendClientError("readLine", ex.what()) << "\n";
         return false;

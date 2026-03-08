@@ -11,8 +11,6 @@
 #include <utility>
 #include <stdio.h>
 
-#define BLOCK_SIZE 256
-#define PI 3.1415926535f
 constexpr int kOctreeLeafCapacity = 32;
 constexpr int kOctreeMaxDepth = 16;
 constexpr float kPi = 3.1415926535f;
@@ -135,7 +133,7 @@ Particle::Particle() {
     _pressure = Vector3{0.0f, 0.0f, 0.0f};
     _force = Vector3{0.0f, 0.0f, 0.0f};
     _density = 0.0f;
-    _mass = MASS;
+    _mass = Particle::kDefaultMass;
     _temperature = 0.0f;
 }
 

@@ -42,7 +42,7 @@ ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
                 rand() / (float)RAND_MAX * 10.0f + 1.5f,
                 0.0f
             });
-            const float angle = rand() / (float)RAND_MAX * 2.0f * PI;
+            const float angle = rand() / (float)RAND_MAX * 2.0f * kPi;
             p.setPosition(Vector3{
                 p.getPosition().x * cosf(angle) - p.getPosition().y * sinf(angle),
                 p.getPosition().x * sinf(angle) + p.getPosition().y * cosf(angle),
@@ -71,7 +71,7 @@ ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
     //             0
     //         });
     //         p.setVelocity((Vector3){0, 0, 0});
-    //         p.setMass(MASS);
+    //         p.setMass(Particle::kDefaultMass);
     //         _particles.push_back(p);
     //     }
     if (_sphEnabled) {

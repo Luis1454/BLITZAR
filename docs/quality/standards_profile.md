@@ -63,5 +63,5 @@ Build switch:
 - Release candidates must publish an evidence pack generated from the `release-lane` commands under the selected profile.
 - Runtime behavior in critical paths must be reproducible under pinned toolchain settings.
 - Production C++ paths (`apps/`, `engine/`, `runtime/`, `modules/`) must not use unnamed namespaces.
-- Production C++ paths must also satisfy the automated subset of the `Power of 10` profile (`goto` forbidden, `setjmp`/`longjmp` forbidden, `do-while` forbidden).
+- Production C++ paths must also satisfy the automated subset of the `Power of 10` profile (`goto`, `setjmp`/`longjmp`, `do-while`, open-ended `while(true)`, non-structural object-like macros, and non-ABI function-pointer typedefs are forbidden).
 - Any requirement, tolerance, or toolchain update must update the quality artifacts in this directory in the same change.
