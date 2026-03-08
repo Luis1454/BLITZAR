@@ -50,6 +50,7 @@ Build switch:
 
 - Fixed-input regression tests are the authoritative evidence.
 - `pr-fast` executes repository policy gates, analyzer checks, and a deterministic fast subset for merge safety.
+- `main` must only receive commits that are traceable to merged `issue/<N>-<slug>` pull requests.
 - `nightly-full` extends deterministic evidence with repeated standalone integration runs, coverage publication, FMEA status snapshots, and optional GPU full-suite or numerical artifacts.
 - `release-lane` reruns strict `prod` validation, then publishes the release bundle, release-quality index, and evidence pack for review.
 - Filtered CI `ctest` invocations in evidence lanes must use `--no-tests=error` to prevent false green jobs when selectors drift.

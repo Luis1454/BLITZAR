@@ -8,9 +8,11 @@ from typing import Any
 
 from python_tools.core.base_check import BaseCheck
 from python_tools.core.models import CheckContext, CheckResult
+from python_tools.policies.main_delivery_policy import MainDeliverySelfTestCheck
 
 BRANCH_RE = re.compile(r"^issue/(?P<issue>\d+)-[a-z0-9]+(?:-[a-z0-9]+)*$")
-TITLE_RE = re.compile(r"\bIssue\s+#(?P<issue>\d+)\b")
+TITLE_RE = re.compile(r"^Issue\s+#(?P<issue>\d+):\s+\S")
+IMPLEMENTS_RE = re.compile(r"\bImplements\s+#(?P<issue>\d+)\b", re.IGNORECASE)
 BODY_RE = re.compile(r"\bCloses\s+#(?P<issue>\d+)\b", re.IGNORECASE)
 
 
@@ -28,6 +30,7 @@ class PrPolicyCheck(BaseCheck):
         branch = context.branch.strip()
         title = context.title.strip()
         body = context.body
+        base = ""
         if not (branch and title and body):
             if not context.event_path:
                 result.add_error("missing --event-path for pull_request event")
@@ -35,13 +38,17 @@ class PrPolicyCheck(BaseCheck):
             payload = self._read_event_payload(Path(context.event_path), result)
             pull_request = payload.get("pull_request", {}) if isinstance(payload, dict) else {}
             branch = branch or str(pull_request.get("head", {}).get("ref", "")).strip()
+            base = str(pull_request.get("base", {}).get("ref", "")).strip()
             title = title or str(pull_request.get("title", "")).strip()
             body = body or str(pull_request.get("body", ""))
 
+        if base and base != "main":
+            result.add_error(f"pull request base must be main, got '{base}'")
         branch_issue = self._extract_branch_issue(branch, result)
         title_issue = self._extract_issue("PR title", title, TITLE_RE, result)
+        implements_issue = self._extract_issue("PR body", body, IMPLEMENTS_RE, result)
         body_issue = self._extract_issue("PR body", body, BODY_RE, result)
-        self._check_issue_mismatch(branch_issue, title_issue, body_issue, result)
+        self._check_issue_mismatch(branch_issue, title_issue, implements_issue, body_issue, result)
 
     def _read_event_payload(self, path: Path, result: CheckResult) -> dict[str, Any]:
         if not path.exists():
@@ -75,15 +82,22 @@ class PrPolicyCheck(BaseCheck):
         self,
         branch_issue: int | None,
         title_issue: int | None,
+        implements_issue: int | None,
         body_issue: int | None,
         result: CheckResult,
     ) -> None:
         if branch_issue is not None and title_issue is not None and branch_issue != title_issue:
             result.add_error(f"issue mismatch: branch #{branch_issue} vs title #{title_issue}")
+        if branch_issue is not None and implements_issue is not None and branch_issue != implements_issue:
+            result.add_error(f"issue mismatch: branch #{branch_issue} vs implements #{implements_issue}")
         if branch_issue is not None and body_issue is not None and branch_issue != body_issue:
             result.add_error(f"issue mismatch: branch #{branch_issue} vs body #{body_issue}")
+        if title_issue is not None and implements_issue is not None and title_issue != implements_issue:
+            result.add_error(f"issue mismatch: title #{title_issue} vs implements #{implements_issue}")
         if title_issue is not None and body_issue is not None and title_issue != body_issue:
             result.add_error(f"issue mismatch: title #{title_issue} vs body #{body_issue}")
+        if implements_issue is not None and body_issue is not None and implements_issue != body_issue:
+            result.add_error(f"issue mismatch: implements #{implements_issue} vs body #{body_issue}")
 
 
 class PrPolicySelfTestCheck(BaseCheck):
@@ -110,3 +124,10 @@ class PrPolicySelfTestCheck(BaseCheck):
             result.add_error(f"[valid-payload] expected success, got failure: {details}")
         if invalid_result.ok:
             result.add_error("[invalid-payload] expected failure, got success")
+        delivery_valid = MainDeliverySelfTestCheck(valid=True).run(CheckContext(root=context.root))
+        delivery_invalid = MainDeliverySelfTestCheck(valid=False).run(CheckContext(root=context.root))
+        if not delivery_valid.ok:
+            details = "; ".join(delivery_valid.errors) if delivery_valid.errors else "unknown error"
+            result.add_error(f"[main-delivery-valid] expected success, got failure: {details}")
+        if delivery_invalid.ok:
+            result.add_error("[main-delivery-invalid] expected failure, got success")
