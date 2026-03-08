@@ -1,8 +1,8 @@
 #include "frontend/FrontendCommon.hpp"
 
 #include "config/EnvUtils.hpp"
+#include "config/SimulationOptionRegistry.hpp"
 #include "platform/PlatformPaths.hpp"
-#include "protocol/BackendProtocol.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -10,9 +10,19 @@
 #include <ctime>
 #include <filesystem>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 
 namespace grav_frontend {
+
+static void applyEnvOverride(std::string_view name, SimulationConfig &config)
+{
+    const std::optional<std::string> value = grav_env::get(name);
+    if (!value.has_value()) {
+        return;
+    }
+    (void)grav_config::applyEnvOption(std::string(name), *value, config, std::cerr);
+}
 
 static std::uint32_t clampFrontendDrawCap(std::uint32_t requested)
 {
@@ -31,24 +41,16 @@ std::string toLower(std::string value)
 }
 std::uint32_t resolveBackendParticleCount(const SimulationConfig &config)
 {
-    const std::uint32_t baseCount = std::max<std::uint32_t>(2u, config.particleCount);
-    std::uint32_t requested = baseCount;
-
-    std::uint32_t parsed = 0;
-    if (grav_env::getNumber("GRAVITY_BACKEND_PARTICLES", parsed) && parsed > 1u) {
-        requested = parsed;
-    }
-    return requested;
+    SimulationConfig effective = config;
+    applyEnvOverride("GRAVITY_BACKEND_PARTICLES", effective);
+    return std::max<std::uint32_t>(2u, effective.particleCount);
 }
 
 std::uint32_t resolveFrontendDrawCap(const SimulationConfig &config)
 {
-    const std::uint32_t cap = clampFrontendDrawCap(config.frontendParticleCap);
-    std::uint32_t parsed = 0;
-    if (grav_env::getNumber("GRAVITY_FRONTEND_DRAW_CAP", parsed)) {
-        return clampFrontendDrawCap(parsed);
-    }
-    return cap;
+    SimulationConfig effective = config;
+    applyEnvOverride("GRAVITY_FRONTEND_DRAW_CAP", effective);
+    return clampFrontendDrawCap(effective.frontendParticleCap);
 }
 
 std::string normalizeExportFormat(std::string_view raw)
