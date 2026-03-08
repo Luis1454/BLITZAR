@@ -59,4 +59,5 @@ Build switch:
 - Breaking interface changes must update the canonical contract artifact and linked tests in the same review.
 - Release candidates must publish an evidence pack generated from the `release-lane` commands under the selected profile.
 - Runtime behavior in critical paths must be reproducible under pinned toolchain settings.
+- Production C++ paths (`apps/`, `engine/`, `runtime/`, `modules/`) must not use unnamed namespaces.
 - Any requirement, tolerance, or toolchain update must update the quality artifacts in this directory in the same change.
