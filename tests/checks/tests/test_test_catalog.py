@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from checks.tests.path_specs import TESTS_UNIT_DIR, cpp_file
+from tests.checks.tests.path_specs import TESTS_UNIT_DIR, cpp_file
 from python_tools.core.models import CheckContext
 from python_tools.policies.test_catalog import TestCatalogCheck
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from argparse import Namespace
 
-from checks.clang_tidy_check import ClangTidyCommand
+from tests.checks.clang_tidy_check import ClangTidyCommand
 
 
 def test_clang_tidy_parser_defaults_include_ignored_return_value_check() -> None:
