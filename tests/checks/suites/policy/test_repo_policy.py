@@ -5,7 +5,7 @@ from pathlib import Path
 
 from python_tools.core.models import CheckContext
 from python_tools.policies.repo_policy import RepoPolicyCheck
-from tests.checks.tests.path_specs import (
+from tests.checks.suites.support.path_specs import (
     ENGINE_BACKEND_DIR,
     ENGINE_CONFIG_DIR,
     RUNTIME_BACKEND_DIR,

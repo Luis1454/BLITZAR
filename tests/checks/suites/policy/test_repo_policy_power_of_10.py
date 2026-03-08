@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from tests.checks.tests.path_specs import ENGINE_BACKEND_DIR, RUNTIME_BACKEND_DIR, cpp_file
-from tests.checks.tests.test_repo_policy import _run, _write
+from tests.checks.suites.policy.test_repo_policy import _run, _write
+from tests.checks.suites.support.path_specs import ENGINE_BACKEND_DIR, RUNTIME_BACKEND_DIR, cpp_file
 
 
 def test_repo_policy_rejects_while_true_in_prod_cpp(tmp_path: Path) -> None:
