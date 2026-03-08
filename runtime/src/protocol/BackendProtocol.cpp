@@ -21,10 +21,6 @@ const std::string_view Load = "load";
 const std::string_view Export = "export";
 const std::string_view Shutdown = "shutdown";
 
-const std::uint32_t kSnapshotMinPoints = 1u;
-const std::uint32_t kSnapshotDefaultPoints = 4096u;
-const std::uint32_t kSnapshotMaxPoints = 20000u;
-
 std::uint32_t clampSnapshotPoints(std::uint32_t requested)
 {
     if (requested < kSnapshotMinPoints) {

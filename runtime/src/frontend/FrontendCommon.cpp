@@ -2,6 +2,7 @@
 
 #include "config/EnvUtils.hpp"
 #include "platform/PlatformPaths.hpp"
+#include "protocol/BackendProtocol.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -12,6 +13,14 @@
 #include <sstream>
 
 namespace grav_frontend {
+
+static std::uint32_t clampFrontendDrawCap(std::uint32_t requested)
+{
+    if (requested > grav_protocol::kSnapshotMaxPoints) {
+        return grav_protocol::kSnapshotMaxPoints;
+    }
+    return requested < 2u ? 2u : requested;
+}
 
 std::string toLower(std::string value)
 {
@@ -34,10 +43,10 @@ std::uint32_t resolveBackendParticleCount(const SimulationConfig &config)
 
 std::uint32_t resolveFrontendDrawCap(const SimulationConfig &config)
 {
-    const std::uint32_t cap = std::max<std::uint32_t>(2u, config.frontendParticleCap);
+    const std::uint32_t cap = clampFrontendDrawCap(config.frontendParticleCap);
     std::uint32_t parsed = 0;
-    if (grav_env::getNumber("GRAVITY_FRONTEND_DRAW_CAP", parsed) && parsed > 1u) {
-        return parsed;
+    if (grav_env::getNumber("GRAVITY_FRONTEND_DRAW_CAP", parsed)) {
+        return clampFrontendDrawCap(parsed);
     }
     return cap;
 }

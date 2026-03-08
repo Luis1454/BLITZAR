@@ -1,6 +1,8 @@
 #ifndef SIMULATIONCONFIG_HPP_
 #define SIMULATIONCONFIG_HPP_
 
+#include "protocol/BackendProtocol.hpp"
+
 #include <cstdint>
 #include <string>
 
@@ -11,7 +13,7 @@ struct SimulationConfig {
     std::string integrator = "euler";
     float octreeTheta = 1.2f;
     float octreeSoftening = 2.5f;
-    std::uint32_t frontendParticleCap = 50000u;
+    std::uint32_t frontendParticleCap = grav_protocol::kSnapshotMaxPoints;
     float defaultZoom = 8.0f;
     int defaultLuminosity = 100;
     std::uint32_t uiFpsLimit = 60u;

@@ -1,10 +1,14 @@
 ﻿#include "config/SimulationConfig.hpp"
 
+#include "protocol/BackendProtocol.hpp"
+
 #include <gtest/gtest.h>
 
 #include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
+#include <sstream>
 #include <string>
 
 TEST(ConfigArgsTest, TST_UNT_CONF_010_SimulationConfigSaveLoadRoundTrip)
@@ -107,6 +111,36 @@ TEST(ConfigArgsTest, TST_UNT_CONF_013_LoadOrCreateCreatesFileWhenMissing)
     const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
     EXPECT_TRUE(std::filesystem::exists(path));
     EXPECT_EQ(loaded.solver, "pairwise_cuda");
+
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_015_DefaultFrontendParticleCapMatchesProtocolMax)
+{
+    const SimulationConfig defaults = SimulationConfig::defaults();
+    EXPECT_EQ(defaults.frontendParticleCap, grav_protocol::kSnapshotMaxPoints);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_016_LoadClampsFrontendParticleCapToProtocolMax)
+{
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path =
+        std::filesystem::temp_directory_path() / ("gravity_config_frontend_cap_" + std::to_string(stamp) + ".ini");
+
+    {
+        std::ofstream out(path, std::ios::trunc);
+        ASSERT_TRUE(out.is_open());
+        out << "frontend_particle_cap=50000\n";
+    }
+
+    std::stringstream err;
+    std::streambuf *previous = std::cerr.rdbuf(err.rdbuf());
+    const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
+    std::cerr.rdbuf(previous);
+
+    EXPECT_EQ(loaded.frontendParticleCap, grav_protocol::kSnapshotMaxPoints);
+    EXPECT_NE(err.str().find("frontend_particle_cap clamped"), std::string::npos);
 
     std::error_code ec;
     std::filesystem::remove(path, ec);

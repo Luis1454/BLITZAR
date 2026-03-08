@@ -1,6 +1,15 @@
-#include "config/SimulationModes.hpp"
 #include "config/SimulationArgsCoreOptions.hpp"
 #include "config/SimulationArgsParse.hpp"
+#include "config/SimulationModes.hpp"
+#include "protocol/BackendProtocol.hpp"
+
+static std::uint32_t clampFrontendParticleCap(std::uint32_t requested)
+{
+    if (requested > grav_protocol::kSnapshotMaxPoints) {
+        return grav_protocol::kSnapshotMaxPoints;
+    }
+    return requested < 2u ? 2u : requested;
+}
 
 bool SimulationArgsCoreOptions::apply(
     const std::string &key,
@@ -75,7 +84,14 @@ bool SimulationArgsCoreOptions::apply(
     if (key == "--frontend-particle-cap") {
         std::uint32_t parsedValue = config.frontendParticleCap;
         if (SimulationArgsParse::parseUint(value, parsedValue) && parsedValue >= 2u) {
-            config.frontendParticleCap = parsedValue;
+            const std::uint32_t clampedValue = clampFrontendParticleCap(parsedValue);
+            config.frontendParticleCap = clampedValue;
+            if (clampedValue != parsedValue) {
+                warnings << "[args] --frontend-particle-cap clamped to supported range ["
+                         << 2u << ", "
+                         << grav_protocol::kSnapshotMaxPoints << "]: "
+                         << parsedValue << " -> " << clampedValue << "\n";
+            }
         } else {
             warnings << "[args] invalid --frontend-particle-cap: " << value << "\n";
         }

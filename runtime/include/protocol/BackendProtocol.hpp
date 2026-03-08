@@ -25,9 +25,9 @@ extern const std::string_view Load;
 extern const std::string_view Export;
 extern const std::string_view Shutdown;
 
-extern const std::uint32_t kSnapshotMinPoints;
-extern const std::uint32_t kSnapshotDefaultPoints;
-extern const std::uint32_t kSnapshotMaxPoints;
+inline constexpr std::uint32_t kSnapshotMinPoints = 1u;
+inline constexpr std::uint32_t kSnapshotDefaultPoints = 4096u;
+inline constexpr std::uint32_t kSnapshotMaxPoints = 20000u;
 
 std::uint32_t clampSnapshotPoints(std::uint32_t requested);
 
