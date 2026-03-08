@@ -9,27 +9,8 @@ from python_tools.core.models import CheckContext, CheckResult
 
 FORBIDDEN_CPP_EXTS = {".h", ".hh", ".hxx", ".c", ".cc", ".cxx"}
 LINE_COUNT_EXTS = {
-    ".cmake",
-    ".cpp",
-    ".cu",
-    ".cuh",
-    ".h",
-    ".hh",
-    ".hpp",
-    ".hxx",
-    ".inl",
-    ".ini",
-    ".json",
-    ".md",
-    ".mk",
-    ".ps1",
-    ".py",
-    ".sh",
-    ".toml",
-    ".txt",
-    ".xml",
-    ".yaml",
-    ".yml",
+    ".cmake", ".cpp", ".cu", ".cuh", ".h", ".hh", ".hpp", ".hxx", ".inl", ".ini", ".json",
+    ".md", ".mk", ".ps1", ".py", ".sh", ".toml", ".txt", ".xml", ".yaml", ".yml",
 }
 LINE_COUNT_NAMES = {"CMakeLists.txt", "Makefile"}
 IGNORED_DIRS = {".git", ".idea", ".vs", "__pycache__", "build", "exports"}
@@ -45,15 +26,12 @@ INLINE_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+[A-Za-z0-9_]+::[A-Za-z0-9
 NAMESPACE_BLOCK_RE = re.compile(r"(?m)^\s*namespace\s+[A-Za-z0-9_]+\s*\{")
 GRAVITY_INTERNAL_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+gravity_internal_")
 PROD_ROOTS = ("apps/", "engine/", "runtime/", "modules/")
-EVIDENCE_WORKFLOW_PATHS = (
-    ".github/workflows/pr-fast-quality-gate.yml",
-    ".github/workflows/nightly-full.yml",
-    ".github/workflows/release-lane.yml",
-)
+EVIDENCE_WORKFLOW_PATHS = (".github/workflows/pr-fast-quality-gate.yml", ".github/workflows/nightly-full.yml", ".github/workflows/release-lane.yml")
+LEGACY_CTEST_SELECTORS = ("ConfigArgsTest", "BackendProtocolTest", "FrontendBridgeTest", "FrontendRuntimeTest", "QtMainWindowTest")
 
 
 def should_skip_dir(dirname: str) -> bool:
-    return dirname in IGNORED_DIRS or dirname.startswith("build-") or dirname.startswith("cmake-build-") or dirname.startswith(".pytest-basetemp")
+    return dirname in IGNORED_DIRS or dirname.startswith(("build-", "cmake-build-", ".pytest-basetemp"))
 
 
 def should_count_lines(path: Path) -> bool:
@@ -120,6 +98,7 @@ class RepoPolicyCheck(BaseCheck):
 
         self._check_evidence_workflow_commands(context.root, result, "cmake -S", "-DGRAVITY_PROFILE=prod", "evidence configure command must include -DGRAVITY_PROFILE=prod")
         self._check_evidence_workflow_commands(context.root, result, "ctest ", "--no-tests=error", "CI ctest command must include --no-tests=error")
+        self._check_legacy_ctest_selectors(context.root, result)
 
     def _check_cpp_content(self, rel: str, content: str, result: CheckResult) -> None:
         if not rel.startswith("tests/"):
@@ -195,3 +174,13 @@ class RepoPolicyCheck(BaseCheck):
             commands.append(command)
             index += 1
         return commands
+
+    def _check_legacy_ctest_selectors(self, root: Path, result: CheckResult) -> None:
+        for rel in EVIDENCE_WORKFLOW_PATHS:
+            path = root / rel
+            if not path.exists():
+                continue
+            content = path.read_text(encoding="utf-8", errors="ignore")
+            for command in self._collect_marker_commands(content, "ctest "):
+                if any(selector in command for selector in LEGACY_CTEST_SELECTORS):
+                    result.add_error(f"{rel}: CI ctest selector must use normalized TST_* ids: {command}")

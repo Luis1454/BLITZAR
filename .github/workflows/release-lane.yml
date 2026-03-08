@@ -78,7 +78,7 @@ jobs:
       - name: Run integration-safe tests
         shell: pwsh
         run: |
-          ctest --test-dir build --output-on-failure --timeout 180 --no-tests=error -R "ConfigArgsTest\\.TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|5|6|7|8|9)_"
+          ctest --test-dir build --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|5|6|7|8|9)_"
 
       - name: Package release artifacts
         run: |

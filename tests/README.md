@@ -30,4 +30,4 @@
 - Strict build: `cmake -S tests -B build-quality -G Ninja -DGRAVITY_PROFILE=prod -DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON -DGRAVITY_INTEGRATION_ENABLE_SANITIZERS=ON`
 - Static analyzer: `python tests/checks/clang_tidy_check.py --root . --build-dir build-quality`
 - Quality baseline docs: `python tests/checks/check.py quality --root .`
-- Strict deterministic run: `ctest --test-dir build-quality --output-on-failure --timeout 180 --no-tests=error -R "ConfigArgsTest\\.TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7)_"`
+- Strict deterministic run: `ctest --test-dir build-quality --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7)_"`

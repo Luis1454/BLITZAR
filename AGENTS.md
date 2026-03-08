@@ -101,7 +101,7 @@ cmake -S tests -B build-quality -G Ninja \
   -DGRAVITY_INTEGRATION_ENABLE_SANITIZERS=ON
 cmake --build build-quality --parallel
 python tests/checks/clang_tidy_check.py --root . --build-dir build-quality
-ctest --test-dir build-quality --output-on-failure --timeout 180 --no-tests=error -R "ConfigArgsTest\\.TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7)_"
+ctest --test-dir build-quality --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7)_"
 ```
 
 `integration_real` tests require a real backend executable and run in dedicated lanes where backend artifacts are present.
