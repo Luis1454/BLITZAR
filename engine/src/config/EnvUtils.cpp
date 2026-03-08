@@ -1,4 +1,5 @@
 #include "config/EnvUtils.hpp"
+#include "config/SimulationArgsParse.hpp"
 
 namespace grav_env {
 
@@ -28,15 +29,9 @@ std::optional<std::string> get(std::string_view name)
 
 bool parseBool(std::string_view value, bool fallback)
 {
-    std::string normalized(value);
-    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
-    if (normalized == "1" || normalized == "true" || normalized == "on" || normalized == "yes") {
-        return true;
-    }
-    if (normalized == "0" || normalized == "false" || normalized == "off" || normalized == "no") {
-        return false;
+    bool parsed = fallback;
+    if (SimulationArgsParse::parseBool(std::string(value), parsed)) {
+        return parsed;
     }
     return fallback;
 }

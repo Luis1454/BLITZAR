@@ -146,3 +146,51 @@ TEST(ConfigArgsTest, TST_UNT_CONF_016_LoadClampsFrontendParticleCapToProtocolMax
     std::filesystem::remove(path, ec);
 }
 
+TEST(ConfigArgsTest, TST_UNT_CONF_017_LoadWarnsOnUnknownIniKey)
+{
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path =
+        std::filesystem::temp_directory_path() / ("gravity_config_unknown_key_" + std::to_string(stamp) + ".ini");
+
+    {
+        std::ofstream out(path, std::ios::trunc);
+        ASSERT_TRUE(out.is_open());
+        out << "mystery_option=42\n";
+    }
+
+    std::stringstream err;
+    std::streambuf *previous = std::cerr.rdbuf(err.rdbuf());
+    const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
+    std::cerr.rdbuf(previous);
+
+    EXPECT_EQ(loaded.particleCount, SimulationConfig::defaults().particleCount);
+    EXPECT_NE(err.str().find("unknown key ignored: mystery_option"), std::string::npos);
+
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_018_LoadSupportsRegistryAliases)
+{
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path =
+        std::filesystem::temp_directory_path() / ("gravity_config_aliases_" + std::to_string(stamp) + ".ini");
+
+    {
+        std::ofstream out(path, std::ios::trunc);
+        ASSERT_TRUE(out.is_open());
+        out << "temperature=0.8\n";
+        out << "frontend_remote_timeout_ms=120\n";
+    }
+
+    const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
+
+    EXPECT_FLOAT_EQ(loaded.velocityTemperature, 0.8f);
+    EXPECT_EQ(loaded.frontendRemoteCommandTimeoutMs, 120u);
+    EXPECT_EQ(loaded.frontendRemoteStatusTimeoutMs, 120u);
+    EXPECT_EQ(loaded.frontendRemoteSnapshotTimeoutMs, 120u);
+
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
