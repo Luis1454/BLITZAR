@@ -4,9 +4,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tests.checks.tests.path_specs import TESTS_UNIT_DIR, cpp_file
 from python_tools.core.models import CheckContext
 from python_tools.policies.test_catalog import TestCatalogCheck
+from tests.checks.tests.path_specs import TESTS_UNIT_DIR, cpp_file
 
 
 def _write(path: Path, content: str) -> None:

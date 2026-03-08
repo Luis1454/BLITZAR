@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from python_tools.core.models import CheckContext
+from python_tools.policies.repo_policy import RepoPolicyCheck
 from tests.checks.tests.path_specs import (
     ENGINE_BACKEND_DIR,
     ENGINE_CONFIG_DIR,
@@ -10,8 +12,6 @@ from tests.checks.tests.path_specs import (
     TESTS_UNIT_DIR,
     cpp_file,
 )
-from python_tools.core.models import CheckContext
-from python_tools.policies.repo_policy import RepoPolicyCheck
 
 
 def _write(path: Path, content: str) -> None:
