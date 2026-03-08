@@ -33,6 +33,7 @@ Build switch:
 
 ## Mandatory Evidence Set
 
+- Contribution workflow artifact: `AGENTS.md`.
 - Canonical quality manifest: `docs/quality/quality_manifest.json`.
 - IV&V plan: `docs/quality/ivv_plan.md`.
 - Failure analysis: `docs/quality/fmea.md`.

@@ -15,6 +15,7 @@ from python_tools.policies.repo_policy import load_allowlist
 from python_tools.policies.test_id_filter import collect_repo_quality_test_ids
 
 REQUIRED_FILES = (
+    "AGENTS.md",
     "docs/quality/README.md",
     QUALITY_MANIFEST_PATH,
     "docs/quality/standards_profile.md",
@@ -27,6 +28,8 @@ REQUIRED_FILES = (
     "docs/quality/ivv_plan.md",
     "docs/quality/numerical_validation.md",
 )
+REQUIRED_EVIDENCE = {"EVD_AGENTS": "AGENTS.md"}
+REQUIRED_CROSSWALK_ARTIFACTS = {"SWE-004": "EVD_AGENTS"}
 SUPPORTED_STANDARDS = {"NPR-7150.2D", "NASA-STD-8739.8B", "ECSS-E-ST-40C", "ECSS-Q-ST-80C", "ECSS-E-ST-40-07C"}
 
 
@@ -54,6 +57,7 @@ class QualityBaselineCheck(BaseCheck):
         self._check_requirement_tests(requirements, tests, result)
         self._check_requirement_artifacts(context.root, requirements, result)
         self._check_deviations(context.root, manifest, requirements, result)
+        self._check_required_evidence(context.root, manifest, result)
         self._check_crosswalk(context.root, manifest, result)
 
     def _ensure_required_files(self, root: Path, result: CheckResult) -> None:
@@ -128,16 +132,35 @@ class QualityBaselineCheck(BaseCheck):
         for path in sorted(allowlist - registered_paths):
             result.add_error(f"policy allowlist path is missing from deviation register: {path}")
 
+    def _check_required_evidence(self, root: Path, manifest: dict[str, JsonValue], result: CheckResult) -> None:
+        evidence = manifest.get("evidence")
+        if not isinstance(evidence, dict):
+            result.add_error(f"{QUALITY_MANIFEST_PATH}: 'evidence' must be an object")
+            return
+        for artifact_id, expected_path in REQUIRED_EVIDENCE.items():
+            actual_path = evidence.get(artifact_id)
+            if not actual_path:
+                result.add_error(f"{QUALITY_MANIFEST_PATH}: missing required evidence id: {artifact_id}")
+                continue
+            if not isinstance(actual_path, str) or actual_path.strip() != expected_path:
+                result.add_error(f"{QUALITY_MANIFEST_PATH}: {artifact_id} must map to {expected_path}, got {actual_path}")
+                continue
+            if not self._git.is_tracked(root, expected_path):
+                result.add_error(f"{QUALITY_MANIFEST_PATH}: required evidence must be git-tracked: {artifact_id} -> {expected_path}")
+
     def _check_crosswalk(self, root: Path, manifest: dict[str, JsonValue], result: CheckResult) -> None:
         rows = self._manifest.get_list(manifest, CROSSWALK_KEY, result, keyed_field="control_id")
         if not rows:
             result.add_error(f"{QUALITY_MANIFEST_PATH}: '{CROSSWALK_KEY}' must contain at least one row")
             return
+        seen_controls: dict[str, str] = {}
         for row in rows:
             control_id = self._as_string(row.get("control_id"))
             source_standard = self._as_string(row.get("source_standard"))
             repo_artifact_ref = self._as_string(row.get("artifact"))
             check = self._as_string(row.get("check"))
+            if control_id:
+                seen_controls[control_id] = repo_artifact_ref
             if not control_id:
                 result.add_error(f"{QUALITY_MANIFEST_PATH}: crosswalk row has empty id")
             if source_standard not in SUPPORTED_STANDARDS:
@@ -161,6 +184,9 @@ class QualityBaselineCheck(BaseCheck):
                 continue
             if repo_artifact_path == "AGENTS.md" and not self._git.is_tracked(root, repo_artifact_path):
                 result.add_error(f"{control_id or '<missing control>'}: artifact must be git-tracked: {repo_artifact_ref}")
+        for control_id, artifact_ref in REQUIRED_CROSSWALK_ARTIFACTS.items():
+            if seen_controls.get(control_id) != artifact_ref:
+                result.add_error(f"{QUALITY_MANIFEST_PATH}: crosswalk control {control_id} must reference {artifact_ref}")
 
     @staticmethod
     def _as_string(value: JsonValue | None) -> str:

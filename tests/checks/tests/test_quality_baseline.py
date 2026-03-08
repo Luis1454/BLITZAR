@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 from python_tools.core.models import CheckContext
@@ -14,6 +15,7 @@ def _write(path: Path, content: str) -> None:
 
 
 def _seed_required_quality_files(root: Path) -> None:
+    _write(root / "AGENTS.md", "# AGENTS\n")
     _write(root / "docs/quality/README.md", "# Quality\n")
     _write(root / "docs/quality/standards_profile.md", "profile\n")
     _write(root / "docs/quality/fmea.md", "fmea\n")
@@ -30,10 +32,17 @@ def _seed_required_quality_files(root: Path) -> None:
     _write(root / "tests/cmake/targets.cmake", "add_test(NAME TST_QLT_REPO_006_GravityQualityBaselineCheck COMMAND fake)\n")
 
 
+def _init_git_repo(root: Path) -> None:
+    subprocess.run(["git", "init"], cwd=root, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.email", "tests@example.com"], cwd=root, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.name", "Tests"], cwd=root, check=True, capture_output=True, text=True)
+
+
 def _seed_baseline_payloads(root: Path, test_regex: str) -> None:
     manifest = {
         "metadata": {"system": "test", "revision": "2026-03-01"},
         "evidence": {
+            "EVD_AGENTS": "AGENTS.md",
             "EVD_QLT_MANIFEST": "docs/quality/quality_manifest.json",
             "EVD_QLT_README": "docs/quality/README.md",
         },
@@ -60,9 +69,9 @@ def _seed_baseline_payloads(root: Path, test_regex: str) -> None:
             }
         },
         "crosswalk": {
-            "CTRL-001": {
+            "SWE-004": {
                 "source_standard": "NPR-7150.2D",
-                "artifact": "EVD_QLT_README",
+                "artifact": "EVD_AGENTS",
                 "check": "review",
             }
         },
@@ -89,16 +98,35 @@ def _seed_baseline_payloads(root: Path, test_regex: str) -> None:
 
 
 def test_quality_baseline_passes_with_valid_minimal_repo(tmp_path: Path) -> None:
+    _init_git_repo(tmp_path)
     _seed_required_quality_files(tmp_path)
     _seed_baseline_payloads(tmp_path, r"^TST_QLT_REPO_006_GravityQualityBaselineCheck$")
+    subprocess.run(["git", "add", "AGENTS.md"], cwd=tmp_path, check=True, capture_output=True, text=True)
     result = QualityBaselineCheck().run(CheckContext(root=tmp_path))
     assert result.ok
     assert result.errors == []
 
 
 def test_quality_baseline_fails_when_test_regex_has_no_match(tmp_path: Path) -> None:
+    _init_git_repo(tmp_path)
     _seed_required_quality_files(tmp_path)
     _seed_baseline_payloads(tmp_path, r"^NO_MATCH$")
+    subprocess.run(["git", "add", "AGENTS.md"], cwd=tmp_path, check=True, capture_output=True, text=True)
     result = QualityBaselineCheck().run(CheckContext(root=tmp_path))
     assert not result.ok
     assert any("did not match any test id" in error for error in result.errors)
+
+
+def test_quality_baseline_fails_when_agents_evidence_is_missing(tmp_path: Path) -> None:
+    _init_git_repo(tmp_path)
+    _seed_required_quality_files(tmp_path)
+    _seed_baseline_payloads(tmp_path, r"^TST_QLT_REPO_006_GravityQualityBaselineCheck$")
+    subprocess.run(["git", "add", "AGENTS.md"], cwd=tmp_path, check=True, capture_output=True, text=True)
+    manifest_path = tmp_path / "docs/quality/quality_manifest.json"
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    evidence = payload["evidence"]
+    del evidence["EVD_AGENTS"]
+    manifest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    result = QualityBaselineCheck().run(CheckContext(root=tmp_path))
+    assert not result.ok
+    assert any("missing required evidence id: EVD_AGENTS" in error for error in result.errors)
