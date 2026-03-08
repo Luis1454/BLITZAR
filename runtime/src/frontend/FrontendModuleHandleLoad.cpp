@@ -30,15 +30,15 @@ bool FrontendModuleHandle::load(const std::string &modulePath, const std::string
     unload();
 
     const auto destroyStateNoexcept = [this]() -> bool {
-        if (m_impl->exports == nullptr || m_impl->stateOpaque == 0u) {
+        if (m_impl->exports == nullptr || !m_impl->state.hasValue()) {
             return true;
         }
         try {
-            m_impl->exports->destroy(toRawState(m_impl->stateOpaque));
+            m_impl->exports->destroy(m_impl->state.rawPointer());
         } catch (...) {
             return false;
         }
-        m_impl->stateOpaque = 0u;
+        m_impl->state.clear();
         return true;
     };
 
@@ -89,9 +89,9 @@ bool FrontendModuleHandle::load(const std::string &modulePath, const std::string
 
     std::array<char, kErrorBufferSize> errorBuffer{};
     const FrontendModuleHostContextV1 context{configPath.c_str()};
-    void *rawState = nullptr;
+    FrontendModuleCreateResult createResult{};
     try {
-        if (!m_impl->exports->create(&context, &rawState, errorBuffer.data(), errorBuffer.size())) {
+        if (!m_impl->exports->create(&context, createResult.rawSlot(), errorBuffer.data(), errorBuffer.size())) {
             outError = errorFromBuffer(errorBuffer, "module create failed");
             m_impl->exports = nullptr;
             m_impl->library.close();
@@ -108,10 +108,16 @@ bool FrontendModuleHandle::load(const std::string &modulePath, const std::string
         m_impl->library.close();
         return false;
     }
-    m_impl->stateOpaque = reinterpret_cast<std::uintptr_t>(rawState);
+    if (!createResult.hasValue()) {
+        outError = "module create returned null state";
+        m_impl->exports = nullptr;
+        m_impl->library.close();
+        return false;
+    }
+    m_impl->state = createResult.state();
 
     try {
-        if (!m_impl->exports->start(toRawState(m_impl->stateOpaque), errorBuffer.data(), errorBuffer.size())) {
+        if (!m_impl->exports->start(m_impl->state.rawPointer(), errorBuffer.data(), errorBuffer.size())) {
             outError = errorFromBuffer(errorBuffer, "module start failed");
             (void)destroyStateNoexcept();
             m_impl->exports = nullptr;

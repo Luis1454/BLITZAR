@@ -1,3 +1,4 @@
+#include "frontend/FrontendModuleBoundary.hpp"
 #include "modules/cli/module_cli_commands.hpp"
 #include "modules/cli/module_cli_state.hpp"
 #include "modules/cli/module_cli_text.hpp"
@@ -24,38 +25,35 @@ TEST(ModuleCliTextTest, TST_UNT_MODCLI_001_TrimAndSplitTokens)
 TEST(ModuleCliCommandsTest, TST_UNT_MODCLI_002_HelpAndQuitCommandBehavior)
 {
     grav_module_cli::ModuleState state;
-    bool keepRunning = true;
     char errorBuffer[128] = {};
+    grav_module::FrontendModuleCommandResult commandResult;
 
     EXPECT_TRUE(grav_module_cli::ModuleCliCommands::handleCommand(
         state,
         "help",
-        &keepRunning,
-        errorBuffer,
-        sizeof(errorBuffer)));
-    EXPECT_TRUE(keepRunning);
+        grav_module::FrontendModuleCommandControl(commandResult.rawKeepRunningFlag()),
+        grav_frontend::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
+    EXPECT_TRUE(commandResult.keepRunning());
 
     EXPECT_TRUE(grav_module_cli::ModuleCliCommands::handleCommand(
         state,
         "quit",
-        &keepRunning,
-        errorBuffer,
-        sizeof(errorBuffer)));
-    EXPECT_FALSE(keepRunning);
+        grav_module::FrontendModuleCommandControl(commandResult.rawKeepRunningFlag()),
+        grav_frontend::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
+    EXPECT_FALSE(commandResult.keepRunning());
 }
 
 TEST(ModuleCliCommandsTest, TST_UNT_MODCLI_003_UnknownCommandReturnsError)
 {
     grav_module_cli::ModuleState state;
-    bool keepRunning = true;
     char errorBuffer[128] = {};
+    grav_module::FrontendModuleCommandResult commandResult;
 
     EXPECT_FALSE(grav_module_cli::ModuleCliCommands::handleCommand(
         state,
         "unknown_command",
-        &keepRunning,
-        errorBuffer,
-        sizeof(errorBuffer)));
+        grav_module::FrontendModuleCommandControl(commandResult.rawKeepRunningFlag()),
+        grav_frontend::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
     EXPECT_EQ(std::string(errorBuffer), "unknown module command");
 }
 

@@ -19,11 +19,6 @@ std::string errorFromBuffer(const std::array<char, kErrorBufferSize> &buffer, st
     return error;
 }
 
-void *toRawState(std::uintptr_t opaque)
-{
-    return reinterpret_cast<void *>(opaque);
-}
-
 FrontendModuleHandle::FrontendModuleHandle() : m_impl(std::make_unique<Impl>())
 {
 }
@@ -42,16 +37,16 @@ void FrontendModuleHandle::unload() noexcept
         return;
     }
 
-    if (m_impl->exports != nullptr && m_impl->stateOpaque != 0u) {
+    if (m_impl->exports != nullptr && m_impl->state.hasValue()) {
         try {
-            m_impl->exports->stop(toRawState(m_impl->stateOpaque));
+            m_impl->exports->stop(m_impl->state.rawPointer());
         } catch (const std::exception &ex) {
             std::cerr << "[module-host] module stop threw: " << ex.what() << "\n";
         } catch (...) {
             std::cerr << "[module-host] module stop threw unknown exception\n";
         }
         try {
-            m_impl->exports->destroy(toRawState(m_impl->stateOpaque));
+            m_impl->exports->destroy(m_impl->state.rawPointer());
         } catch (const std::exception &ex) {
             std::cerr << "[module-host] module destroy threw: " << ex.what() << "\n";
         } catch (...) {
@@ -60,14 +55,14 @@ void FrontendModuleHandle::unload() noexcept
     }
 
     m_impl->exports = nullptr;
-    m_impl->stateOpaque = 0u;
+    m_impl->state.clear();
     m_impl->path.clear();
     m_impl->library.close();
 }
 
 bool FrontendModuleHandle::isLoaded() const noexcept
 {
-    return m_impl && m_impl->exports != nullptr && m_impl->stateOpaque != 0u;
+    return m_impl && m_impl->exports != nullptr && m_impl->state.hasValue();
 }
 
 std::string_view FrontendModuleHandle::moduleName() const noexcept
@@ -95,14 +90,15 @@ bool FrontendModuleHandle::handleCommand(std::string_view commandLine, bool &out
 
     std::array<char, kErrorBufferSize> errorBuffer{};
     std::string command(commandLine);
-    outKeepRunning = true;
+    FrontendModuleCommandResult commandResult{};
+    outKeepRunning = commandResult.keepRunning();
 
     bool commandOk = false;
     try {
         commandOk = m_impl->exports->handleCommand(
-            toRawState(m_impl->stateOpaque),
+            m_impl->state.rawPointer(),
             command.c_str(),
-            &outKeepRunning,
+            commandResult.rawKeepRunningFlag(),
             errorBuffer.data(),
             errorBuffer.size());
     } catch (const std::exception &ex) {
@@ -113,6 +109,7 @@ bool FrontendModuleHandle::handleCommand(std::string_view commandLine, bool &out
         return false;
     }
 
+    outKeepRunning = commandResult.keepRunning();
     if (!commandOk) {
         outError = errorFromBuffer(errorBuffer, "module command failed");
         return false;

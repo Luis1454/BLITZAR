@@ -1,5 +1,5 @@
-#include "frontend/ErrorBuffer.hpp"
 #include "frontend/FrontendModuleApi.hpp"
+#include "frontend/FrontendModuleBoundary.hpp"
 #include "frontend/FrontendRuntime.hpp"
 #include "config/SimulationConfig.hpp"
 #include "config/TextParse.hpp"
@@ -214,7 +214,7 @@ void qtThreadMain(QtInProcState *state)
     state->running.store(false);
 }
 
-bool startQtUi(QtInProcState &state, char *errorBuffer, std::size_t errorBufferSize)
+bool startQtUi(QtInProcState &state, const grav_frontend::ErrorBufferView &errorBuffer)
 {
     if (state.uiThread.joinable() || state.running.load()) {
         return true;
@@ -237,7 +237,7 @@ bool startQtUi(QtInProcState &state, char *errorBuffer, std::size_t errorBufferS
     }
     if (!state.startupOk.load()) {
         const std::string err = state.startupError.empty() ? "failed to initialize Qt module" : state.startupError;
-        grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, err);
+        errorBuffer.write(err);
         if (state.uiThread.joinable()) {
             state.uiThread.join();
         }
@@ -269,81 +269,125 @@ void printHelp()
         << "  set-backend-bin <path>\n"
         << "  restart\n";
 }
+
+class QtModuleBoundary final {
+public:
+    static bool create(
+        const grav_module::FrontendModuleHostContextV1 *context,
+        const grav_module::FrontendModuleStateSlot &outModuleState,
+        const grav_frontend::ErrorBufferView &errorBuffer)
+    {
+        try {
+            if (!outModuleState.isAvailable()) {
+                errorBuffer.write("outModuleState is null");
+                return false;
+            }
+            std::unique_ptr<QtInProcState> state = std::make_unique<QtInProcState>();
+            if (context != nullptr && context->configPath != nullptr) {
+                state->configPath = context->configPath;
+            }
+            return outModuleState.assign(grav_module::FrontendModuleOpaqueState::fromRawPointer(state.release()));
+        } catch (const std::exception &ex) {
+            errorBuffer.write(ex.what());
+            return false;
+        } catch (...) {
+            errorBuffer.write("unknown module create error");
+            return false;
+        }
+    }
+
+    static QtInProcState *requireState(
+        grav_module::FrontendModuleOpaqueState moduleState,
+        const grav_frontend::ErrorBufferView &errorBuffer)
+    {
+        QtInProcState *state = static_cast<QtInProcState *>(moduleState.rawPointer());
+        if (state == nullptr) {
+            errorBuffer.write("module state is null");
+        }
+        return state;
+    }
+
+    static void destroy(grav_module::FrontendModuleOpaqueState moduleState)
+    {
+        try {
+            std::unique_ptr<QtInProcState> state(static_cast<QtInProcState *>(moduleState.rawPointer()));
+            if (state != nullptr) {
+                stopQtUi(*state);
+            }
+        } catch (const std::exception &ex) {
+            std::cerr << "[module-qt] destroy error: " << ex.what() << "\n";
+        } catch (...) {
+            std::cerr << "[module-qt] destroy error: unknown\n";
+        }
+    }
+
+    static bool start(
+        grav_module::FrontendModuleOpaqueState moduleState,
+        const grav_frontend::ErrorBufferView &errorBuffer)
+    {
+        try {
+            QtInProcState *state = requireState(moduleState, errorBuffer);
+            if (state == nullptr) {
+                return false;
+            }
+            return startQtUi(*state, errorBuffer);
+        } catch (const std::exception &ex) {
+            errorBuffer.write(ex.what());
+            return false;
+        } catch (...) {
+            errorBuffer.write("unknown module start error");
+            return false;
+        }
+    }
+
+    static void stop(grav_module::FrontendModuleOpaqueState moduleState)
+    {
+        try {
+            QtInProcState *state = static_cast<QtInProcState *>(moduleState.rawPointer());
+            if (state != nullptr) {
+                stopQtUi(*state);
+            }
+        } catch (const std::exception &ex) {
+            std::cerr << "[module-qt] stop error: " << ex.what() << "\n";
+        } catch (...) {
+            std::cerr << "[module-qt] stop error: unknown\n";
+        }
+    }
+};
+
 GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravity_frontend_module_v1()
 {
     static const grav_module::FrontendModuleExportsV1 exports{
         grav_module::kFrontendModuleApiVersionV1,
         "qt-inproc-module",
         [](const grav_module::FrontendModuleHostContextV1 *context, void **outModuleState, char *errorBuffer, std::size_t errorBufferSize) -> bool {
-            try {
-                if (outModuleState == nullptr) {
-                    grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "outModuleState is null");
-                    return false;
-                }
-                std::unique_ptr<QtInProcState> state = std::make_unique<QtInProcState>();
-                if (context != nullptr && context->configPath != nullptr) {
-                    state->configPath = context->configPath;
-                }
-                *outModuleState = state.release();
-                return true;
-            } catch (const std::exception &ex) {
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, ex.what());
-                return false;
-            } catch (...) {
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "unknown module create error");
-                return false;
-            }
+            return QtModuleBoundary::create(
+                context,
+                grav_module::FrontendModuleStateSlot(outModuleState),
+                grav_frontend::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void *moduleState) {
-            try {
-                std::unique_ptr<QtInProcState> state(static_cast<QtInProcState *>(moduleState));
-                if (state != nullptr) {
-                    stopQtUi(*state);
-                }
-            } catch (const std::exception &ex) {
-                std::cerr << "[module-qt] destroy error: " << ex.what() << "\n";
-            } catch (...) {
-                std::cerr << "[module-qt] destroy error: unknown\n";
-            }
+            QtModuleBoundary::destroy(grav_module::FrontendModuleOpaqueState::fromRawPointer(moduleState));
         },
         [](void *moduleState, char *errorBuffer, std::size_t errorBufferSize) -> bool {
-            try {
-                auto *state = static_cast<QtInProcState *>(moduleState);
-                if (state == nullptr) {
-                    grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "module state is null");
-                    return false;
-                }
-                return startQtUi(*state, errorBuffer, errorBufferSize);
-            } catch (const std::exception &ex) {
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, ex.what());
-                return false;
-            } catch (...) {
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "unknown module start error");
-                return false;
-            }
+            return QtModuleBoundary::start(
+                grav_module::FrontendModuleOpaqueState::fromRawPointer(moduleState),
+                grav_frontend::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void *moduleState) {
-            try {
-                auto *state = static_cast<QtInProcState *>(moduleState);
-                if (state != nullptr) {
-                    stopQtUi(*state);
-                }
-            } catch (const std::exception &ex) {
-                std::cerr << "[module-qt] stop error: " << ex.what() << "\n";
-            } catch (...) {
-                std::cerr << "[module-qt] stop error: unknown\n";
-            }
+            QtModuleBoundary::stop(grav_module::FrontendModuleOpaqueState::fromRawPointer(moduleState));
         },
         [](void *moduleState, const char *commandLine, bool *outKeepRunning, char *errorBuffer, std::size_t errorBufferSize) -> bool {
+            const grav_frontend::ErrorBufferView errorView(errorBuffer, errorBufferSize);
+            const grav_module::FrontendModuleCommandControl commandControl(outKeepRunning);
             try {
-                auto *state = static_cast<QtInProcState *>(moduleState);
+                QtInProcState *state = QtModuleBoundary::requireState(
+                    grav_module::FrontendModuleOpaqueState::fromRawPointer(moduleState),
+                    errorView);
                 if (state == nullptr) {
-                    grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "module state is null");
                     return false;
                 }
-                if (outKeepRunning != nullptr) {
-                    *outKeepRunning = true;
-                }
+                commandControl.setContinue();
                 const std::string line = trim(commandLine != nullptr ? std::string(commandLine) : std::string());
                 if (line.empty()) {
                     return true;
@@ -358,9 +402,7 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                     return true;
                 }
                 if (cmd == "quit" || cmd == "exit") {
-                    if (outKeepRunning != nullptr) {
-                        *outKeepRunning = false;
-                    }
+                    commandControl.requestStop();
                     return true;
                 }
                 if (cmd == "status") {
@@ -375,12 +417,12 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                 }
                 if (cmd == "set-endpoint") {
                     if (tokens.size() < 3u) {
-                        grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "usage: set-endpoint <host> <port>");
+                        errorView.write("usage: set-endpoint <host> <port>");
                         return false;
                     }
                     unsigned int parsedPort = 0u;
                     if (!grav_text::parseNumber(tokens[2], parsedPort) || parsedPort == 0u || parsedPort > 65535u) {
-                        grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "invalid port");
+                        errorView.write("invalid port");
                         return false;
                     }
                     state->transport.remoteHost = tokens[1];
@@ -390,12 +432,12 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                 }
                 if (cmd == "set-autostart") {
                     if (tokens.size() < 2u) {
-                        grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "usage: set-autostart <true|false>");
+                        errorView.write("usage: set-autostart <true|false>");
                         return false;
                     }
                     bool value = false;
                     if (!parseBool(tokens[1], value)) {
-                        grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "invalid bool value");
+                        errorView.write("invalid bool value");
                         return false;
                     }
                     state->transport.remoteAutoStart = value;
@@ -404,7 +446,7 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                 }
                 if (cmd == "set-backend-bin") {
                     if (tokens.size() < 2u) {
-                        grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "usage: set-backend-bin <path>");
+                        errorView.write("usage: set-backend-bin <path>");
                         return false;
                     }
                     state->transport.backendExecutable = tokens[1];
@@ -413,16 +455,16 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                 }
                 if (cmd == "restart") {
                     stopQtUi(*state);
-                    return startQtUi(*state, errorBuffer, errorBufferSize);
+                    return startQtUi(*state, errorView);
                 }
 
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "unknown module command");
+                errorView.write("unknown module command");
                 return false;
             } catch (const std::exception &ex) {
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, ex.what());
+                errorView.write(ex.what());
                 return false;
             } catch (...) {
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "unknown module command error");
+                errorView.write("unknown module command error");
                 return false;
             }
         }
