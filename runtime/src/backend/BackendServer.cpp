@@ -1,17 +1,14 @@
 #include "backend/BackendServer.hpp"
+#include "protocol/BackendJsonCodec.hpp"
 #include "protocol/BackendProtocol.hpp"
 #include "config/SimulationModes.hpp"
 #include "platform/SocketPlatform.hpp"
-#include "config/TextParse.hpp"
 
 #include <algorithm>
 #include <array>
 #include <cctype>
-#include <chrono>
 #include <cstddef>
-#include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -28,163 +25,6 @@ static std::string trim(const std::string &input)
         return {};
     }
     return std::string(begin, end);
-}
-
-static std::string toLower(std::string value)
-{
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
-    return value;
-}
-
-// ! design pattern to implement
-static std::string jsonEscape(const std::string &value)
-{
-    std::string escaped;
-    escaped.reserve(value.size() + 8);
-    for (unsigned char c : value) {
-        switch (c) {
-            case '\\':
-                escaped += "\\\\";
-                break;
-            case '\"':
-                escaped += "\\\"";
-                break;
-            case '\n':
-                escaped += "\\n";
-                break;
-            case '\r':
-                escaped += "\\r";
-                break;
-            case '\t':
-                escaped += "\\t";
-                break;
-            default:
-                escaped.push_back(static_cast<char>(c));
-                break;
-        }
-    }
-    return escaped;
-}
-
-static bool findJsonValueStart(const std::string &request, const std::string &key, std::size_t &start)
-{
-    const std::string pattern = "\"" + key + "\"";
-    const std::size_t keyPos = request.find(pattern);
-    if (keyPos == std::string::npos) {
-        return false;
-    }
-    const std::size_t colonPos = request.find(':', keyPos + pattern.size());
-    if (colonPos == std::string::npos) {
-        return false;
-    }
-    std::size_t cursor = colonPos + 1;
-    while (cursor < request.size() && std::isspace(static_cast<unsigned char>(request[cursor])) != 0) {
-        ++cursor;
-    }
-    if (cursor >= request.size()) {
-        return false;
-    }
-    start = cursor;
-    return true;
-}
-
-static bool extractJsonString(const std::string &request, const std::string &key, std::string &out)
-{
-    std::size_t cursor = 0;
-    if (!findJsonValueStart(request, key, cursor) || request[cursor] != '"') {
-        return false;
-    }
-    ++cursor;
-    std::string value;
-    value.reserve(32);
-    while (cursor < request.size()) {
-        const char c = request[cursor++];
-        if (c == '"') {
-            out = value;
-            return true;
-        }
-        if (c == '\\') {
-            if (cursor >= request.size()) {
-                return false;
-            }
-            const char escaped = request[cursor++];
-            switch (escaped) {
-                case 'n':
-                    value.push_back('\n');
-                    break;
-                case 'r':
-                    value.push_back('\r');
-                    break;
-                case 't':
-                    value.push_back('\t');
-                    break;
-                default:
-                    value.push_back(escaped);
-                    break;
-            }
-        } else {
-            value.push_back(c);
-        }
-    }
-    return false;
-}
-
-static bool extractJsonToken(const std::string &request, const std::string &key, std::string &out)
-{
-    std::size_t cursor = 0;
-    if (!findJsonValueStart(request, key, cursor)) {
-        return false;
-    }
-    const std::size_t end = request.find_first_of(",}", cursor);
-    const std::size_t tokenEnd = (end == std::string::npos) ? request.size() : end;
-    out = trim(request.substr(cursor, tokenEnd - cursor));
-    return !out.empty();
-}
-
-template <typename NumberType>
-static bool extractJsonNumber(const std::string &request, const std::string &key, NumberType &out)
-{
-    std::string token;
-    if (!extractJsonToken(request, key, token)) {
-        return false;
-    }
-    return grav_text::parseNumber(token, out);
-}
-
-static bool extractJsonBool(const std::string &request, const std::string &key, bool &out)
-{
-    std::string token;
-    if (!extractJsonToken(request, key, token)) {
-        return false;
-    }
-    token = toLower(token);
-    if (token == "true") {
-        out = true;
-        return true;
-    }
-    if (token == "false") {
-        out = false;
-        return true;
-    }
-    return false;
-}
-
-static std::string boolToJson(bool value)
-{
-    return value ? "true" : "false";
-}
-
-static std::string makeOkResponse(const std::string &cmd)
-{
-    return std::string("{\"ok\":true,\"cmd\":\"") + jsonEscape(cmd) + "\"}";
-}
-
-static std::string makeErrorResponse(const std::string &cmd, const std::string &message)
-{
-    return std::string("{\"ok\":false,\"cmd\":\"") + jsonEscape(cmd)
-        + "\",\"error\":\"" + jsonEscape(message) + "\"}";
 }
 
 static grav_socket::ConstBytes asBytes(std::string_view text)
@@ -435,223 +275,183 @@ void BackendServer::handleClient(SocketHandle client)
 std::string BackendServer::processRequest(const std::string &request)
 {
     try {
-        if (!_authToken.empty()) {
-            std::string token;
-            if (!extractJsonString(request, "token", token) || token != _authToken) {
-                return makeErrorResponse("auth", "unauthorized");
-            }
+        grav_protocol::BackendCommandRequest envelope{};
+        std::string parseError;
+        if (!grav_protocol::BackendJsonCodec::parseCommandRequest(request, envelope, parseError)) {
+            return grav_protocol::BackendJsonCodec::makeErrorResponse("unknown", parseError);
+        }
+        if (!_authToken.empty() && envelope.token != _authToken) {
+            return grav_protocol::BackendJsonCodec::makeErrorResponse("auth", "unauthorized");
         }
 
-        std::string cmd;
-        if (!extractJsonString(request, "cmd", cmd)) {
-            return makeErrorResponse("unknown", "missing cmd");
-        }
-        cmd = toLower(trim(cmd));
+        const std::string &cmd = envelope.cmd;
 
         if (cmd == grav_protocol::Status) {
-            const SimulationStats stats = _backend.getStats();
-            std::ostringstream out;
-            out << std::fixed << std::setprecision(6)
-                << "{\"ok\":true,\"cmd\":\"" << grav_protocol::Status << "\""
-                << ",\"steps\":" << stats.steps
-                << ",\"dt\":" << stats.dt
-                << ",\"paused\":" << boolToJson(stats.paused)
-                << ",\"faulted\":" << boolToJson(stats.faulted)
-                << ",\"fault_step\":" << stats.faultStep
-                << ",\"fault_reason\":\"" << jsonEscape(stats.faultReason) << "\""
-                << ",\"sph\":" << boolToJson(stats.sphEnabled)
-                << ",\"backend_fps\":" << stats.backendFps
-                << ",\"particles\":" << stats.particleCount
-                << ",\"solver\":\"" << jsonEscape(stats.solverName) << "\""
-                << ",\"integrator\":\"" << jsonEscape(stats.integratorName) << "\""
-                << ",\"ekin\":" << stats.kineticEnergy
-                << ",\"epot\":" << stats.potentialEnergy
-                << ",\"eth\":" << stats.thermalEnergy
-                << ",\"erad\":" << stats.radiatedEnergy
-                << ",\"etot\":" << stats.totalEnergy
-                << ",\"drift_pct\":" << stats.energyDriftPct
-                << ",\"estimated\":" << boolToJson(stats.energyEstimated)
-                << "}";
-            return out.str();
+            return grav_protocol::BackendJsonCodec::makeStatusResponse(_backend.getStats());
         }
         if (cmd == grav_protocol::GetSnapshot) {
             unsigned int maxPoints = grav_protocol::kSnapshotDefaultPoints;
-            extractJsonNumber(request, "max_points", maxPoints);
+            grav_protocol::BackendJsonCodec::readNumber(request, "max_points", maxPoints);
             maxPoints = grav_protocol::clampSnapshotPoints(maxPoints);
 
             std::vector<RenderParticle> snapshot;
             const bool hasSnapshot = _backend.copyLatestSnapshot(snapshot, static_cast<std::size_t>(maxPoints));
-            std::ostringstream out;
-            out << std::fixed << std::setprecision(6)
-                << "{\"ok\":true,\"cmd\":\"" << grav_protocol::GetSnapshot << "\""
-                << ",\"has_snapshot\":" << boolToJson(hasSnapshot)
-                << ",\"count\":" << snapshot.size()
-                << ",\"particles\":[";
-            for (std::size_t i = 0; i < snapshot.size(); ++i) {
-                const RenderParticle &p = snapshot[i];
-                if (i > 0) {
-                    out << ",";
-                }
-                out << "[" << p.x << "," << p.y << "," << p.z << ","
-                    << p.mass << "," << p.pressureNorm << "," << p.temperature << "]";
-            }
-            out << "]}";
-            return out.str();
+            return grav_protocol::BackendJsonCodec::makeSnapshotResponse(hasSnapshot, snapshot);
         }
 
         if (cmd == grav_protocol::Pause) {
             _backend.setPaused(true);
-            return makeOkResponse(cmd);
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-    if (cmd == grav_protocol::Resume) {
-        _backend.setPaused(false);
-        return makeOkResponse(cmd);
-    }
-    if (cmd == grav_protocol::Toggle) {
-        _backend.togglePaused();
-        return makeOkResponse(cmd);
-    }
-    if (cmd == grav_protocol::Reset) {
-        _backend.requestReset();
-        return makeOkResponse(cmd);
-    }
-    if (cmd == grav_protocol::Recover) {
-        _backend.requestRecover();
-        return makeOkResponse(cmd);
-    }
-    if (cmd == grav_protocol::Step) {
-        int count = 1;
-        extractJsonNumber(request, "count", count);
-        if (count < 1) {
-            count = 1;
-        } else if (count > 100000) {
-            count = 100000;
+        if (cmd == grav_protocol::Resume) {
+            _backend.setPaused(false);
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-        for (int i = 0; i < count; ++i) {
-            _backend.stepOnce();
+        if (cmd == grav_protocol::Toggle) {
+            _backend.togglePaused();
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-        return makeOkResponse(cmd);
-    }
-    if (cmd == grav_protocol::SetDt) {
-        double dt = 0.0;
-        if (!extractJsonNumber(request, "value", dt) || dt <= 0.0) {
-            return makeErrorResponse(cmd, "invalid dt value");
+        if (cmd == grav_protocol::Reset) {
+            _backend.requestReset();
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-        _backend.setDt(static_cast<float>(dt));
-        return makeOkResponse(cmd);
-    }
-    if (cmd == grav_protocol::SetSolver) {
-        std::string value;
-        if (!extractJsonString(request, "value", value)) {
-            return makeErrorResponse(cmd, "missing solver value");
+        if (cmd == grav_protocol::Recover) {
+            _backend.requestRecover();
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-        std::string canonical;
-        if (!grav_modes::normalizeSolver(value, canonical)) {
-            return makeErrorResponse(cmd, "invalid solver value");
+        if (cmd == grav_protocol::Step) {
+            int count = 1;
+            grav_protocol::BackendJsonCodec::readNumber(request, "count", count);
+            if (count < 1) {
+                count = 1;
+            } else if (count > 100000) {
+                count = 100000;
+            }
+            for (int i = 0; i < count; ++i) {
+                _backend.stepOnce();
+            }
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-        _backend.setSolverMode(canonical);
-        return makeOkResponse(cmd);
-    }
-    if (cmd == grav_protocol::SetIntegrator) {
-        std::string value;
-        if (!extractJsonString(request, "value", value)) {
-            return makeErrorResponse(cmd, "missing integrator value");
+        if (cmd == grav_protocol::SetDt) {
+            double dt = 0.0;
+            if (!grav_protocol::BackendJsonCodec::readNumber(request, "value", dt) || dt <= 0.0) {
+                return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "invalid dt value");
+            }
+            _backend.setDt(static_cast<float>(dt));
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-        std::string canonical;
-        if (!grav_modes::normalizeIntegrator(value, canonical)) {
-            return makeErrorResponse(cmd, "invalid integrator value");
+        if (cmd == grav_protocol::SetSolver) {
+            std::string value;
+            if (!grav_protocol::BackendJsonCodec::readString(request, "value", value)) {
+                return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "missing solver value");
+            }
+            std::string canonical;
+            if (!grav_modes::normalizeSolver(value, canonical)) {
+                return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "invalid solver value");
+            }
+            _backend.setSolverMode(canonical);
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-        _backend.setIntegratorMode(canonical);
-        return makeOkResponse(cmd);
-    }
-    if (cmd == grav_protocol::SetParticleCount) {
-        unsigned long long value = 0;
-        if (!extractJsonNumber(request, "value", value) || value < 2ull) {
-            return makeErrorResponse(cmd, "invalid particle count");
+        if (cmd == grav_protocol::SetIntegrator) {
+            std::string value;
+            if (!grav_protocol::BackendJsonCodec::readString(request, "value", value)) {
+                return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "missing integrator value");
+            }
+            std::string canonical;
+            if (!grav_modes::normalizeIntegrator(value, canonical)) {
+                return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "invalid integrator value");
+            }
+            _backend.setIntegratorMode(canonical);
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-        const unsigned long long clamped = (value > 100000000ull) ? 100000000ull : value;
-        _backend.setParticleCount(static_cast<std::uint32_t>(clamped));
-        return makeOkResponse(cmd);
-    }
-    if (cmd == grav_protocol::SetSph) {
-        bool value = false;
-        if (!extractJsonBool(request, "value", value)) {
-            return makeErrorResponse(cmd, "missing bool sph value");
+        if (cmd == grav_protocol::SetParticleCount) {
+            unsigned long long value = 0;
+            if (!grav_protocol::BackendJsonCodec::readNumber(request, "value", value) || value < 2ull) {
+                return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "invalid particle count");
+            }
+            const unsigned long long clamped = (value > 100000000ull) ? 100000000ull : value;
+            _backend.setParticleCount(static_cast<std::uint32_t>(clamped));
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-        _backend.setSphEnabled(value);
-        return makeOkResponse(cmd);
-    }
-    if (cmd == grav_protocol::SetOctree) {
-        double theta = 0.0;
-        double softening = 0.0;
-        if (!extractJsonNumber(request, "theta", theta) || theta <= 0.0) {
-            return makeErrorResponse(cmd, "invalid theta");
+        if (cmd == grav_protocol::SetSph) {
+            bool value = false;
+            if (!grav_protocol::BackendJsonCodec::readBool(request, "value", value)) {
+                return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "missing bool sph value");
+            }
+            _backend.setSphEnabled(value);
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-        if (!extractJsonNumber(request, "softening", softening) || softening <= 0.0) {
-            return makeErrorResponse(cmd, "invalid softening");
+        if (cmd == grav_protocol::SetOctree) {
+            double theta = 0.0;
+            double softening = 0.0;
+            if (!grav_protocol::BackendJsonCodec::readNumber(request, "theta", theta) || theta <= 0.0) {
+                return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "invalid theta");
+            }
+            if (!grav_protocol::BackendJsonCodec::readNumber(request, "softening", softening) || softening <= 0.0) {
+                return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "invalid softening");
+            }
+            _backend.setOctreeParameters(static_cast<float>(theta), static_cast<float>(softening));
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-        _backend.setOctreeParameters(static_cast<float>(theta), static_cast<float>(softening));
-        return makeOkResponse(cmd);
-    }
-    if (cmd == grav_protocol::SetSphParams) {
-        double h = 0.0;
-        double restDensity = 0.0;
-        double gasConstant = 0.0;
-        double viscosity = 0.0;
-        if (!extractJsonNumber(request, "h", h) || h <= 0.0
-            || !extractJsonNumber(request, "rest_density", restDensity) || restDensity <= 0.0
-            || !extractJsonNumber(request, "gas_constant", gasConstant) || gasConstant <= 0.0
-            || !extractJsonNumber(request, "viscosity", viscosity) || viscosity < 0.0) {
-            return makeErrorResponse(cmd, "invalid sph params");
+        if (cmd == grav_protocol::SetSphParams) {
+            double h = 0.0;
+            double restDensity = 0.0;
+            double gasConstant = 0.0;
+            double viscosity = 0.0;
+            if (!grav_protocol::BackendJsonCodec::readNumber(request, "h", h) || h <= 0.0
+                || !grav_protocol::BackendJsonCodec::readNumber(request, "rest_density", restDensity) || restDensity <= 0.0
+                || !grav_protocol::BackendJsonCodec::readNumber(request, "gas_constant", gasConstant) || gasConstant <= 0.0
+                || !grav_protocol::BackendJsonCodec::readNumber(request, "viscosity", viscosity) || viscosity < 0.0) {
+                return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "invalid sph params");
+            }
+            _backend.setSphParameters(
+                static_cast<float>(h),
+                static_cast<float>(restDensity),
+                static_cast<float>(gasConstant),
+                static_cast<float>(viscosity)
+            );
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-        _backend.setSphParameters(
-            static_cast<float>(h),
-            static_cast<float>(restDensity),
-            static_cast<float>(gasConstant),
-            static_cast<float>(viscosity)
-        );
-        return makeOkResponse(cmd);
-    }
-    if (cmd == grav_protocol::SetEnergyMeasure) {
-        unsigned int everySteps = 0;
-        unsigned int sampleLimit = 0;
-        if (!extractJsonNumber(request, "every_steps", everySteps) || everySteps < 1u
-            || !extractJsonNumber(request, "sample_limit", sampleLimit) || sampleLimit < 2u) {
-            return makeErrorResponse(cmd, "invalid energy measure config");
+        if (cmd == grav_protocol::SetEnergyMeasure) {
+            unsigned int everySteps = 0;
+            unsigned int sampleLimit = 0;
+            if (!grav_protocol::BackendJsonCodec::readNumber(request, "every_steps", everySteps) || everySteps < 1u
+                || !grav_protocol::BackendJsonCodec::readNumber(request, "sample_limit", sampleLimit) || sampleLimit < 2u) {
+                return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "invalid energy measure config");
+            }
+            _backend.setEnergyMeasurementConfig(everySteps, sampleLimit);
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-        _backend.setEnergyMeasurementConfig(everySteps, sampleLimit);
-        return makeOkResponse(cmd);
-    }
-    if (cmd == grav_protocol::Load) {
-        std::string path;
-        if (!extractJsonString(request, "path", path) || path.empty()) {
-            return makeErrorResponse(cmd, "missing path");
+        if (cmd == grav_protocol::Load) {
+            std::string path;
+            if (!grav_protocol::BackendJsonCodec::readString(request, "path", path) || path.empty()) {
+                return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "missing path");
+            }
+            std::string format = "auto";
+            grav_protocol::BackendJsonCodec::readString(request, "format", format);
+            _backend.setInitialStateFile(path, format);
+            _backend.requestReset();
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-        std::string format = "auto";
-        extractJsonString(request, "format", format);
-        _backend.setInitialStateFile(path, format);
-        _backend.requestReset();
-        return makeOkResponse(cmd);
-    }
-    if (cmd == grav_protocol::Export) {
-        std::string path;
-        std::string format;
-        extractJsonString(request, "path", path);
-        if (!extractJsonString(request, "format", format)) {
-            format = "vtk";
+        if (cmd == grav_protocol::Export) {
+            std::string path;
+            std::string format;
+            grav_protocol::BackendJsonCodec::readString(request, "path", path);
+            if (!grav_protocol::BackendJsonCodec::readString(request, "format", format)) {
+                format = "vtk";
+            }
+            _backend.requestExportSnapshot(path, format);
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
-        _backend.requestExportSnapshot(path, format);
-        return makeOkResponse(cmd);
-    }
-    if (cmd == grav_protocol::Shutdown) {
-        _shutdownRequested.store(true);
-        return makeOkResponse(cmd);
-    }
+        if (cmd == grav_protocol::Shutdown) {
+            _shutdownRequested.store(true);
+            return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
+        }
 
-        return makeErrorResponse(cmd, "unknown command");
+        return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "unknown command");
     } catch (const std::exception &ex) {
-        return makeErrorResponse("request", ex.what());
+        return grav_protocol::BackendJsonCodec::makeErrorResponse("request", ex.what());
     } catch (...) {
-        return makeErrorResponse("request", "unknown request exception");
+        return grav_protocol::BackendJsonCodec::makeErrorResponse("request", "unknown request exception");
     }
 }
