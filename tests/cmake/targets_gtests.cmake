@@ -24,6 +24,7 @@ if(GRAVITY_TEST_UNIT_PROTOCOL_SOURCES)
             ${GRAVITY_TEST_UNIT_PROTOCOL_SOURCES}
             "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendJsonCodec.cpp"
             "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendJsonCodecParse.cpp"
+            "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendJsonCodecReadNumber.cpp"
             "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendProtocol.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
     )
