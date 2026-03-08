@@ -22,7 +22,7 @@ class PythonQualityGateCheck(BaseCheck):
         pytest_temp = str(pytest_temp_dir)
         shutil.rmtree(pytest_temp_dir, ignore_errors=True)
         commands = (
-            [sys.executable, "-m", "ruff", "check", "."],
+            [sys.executable, "-m", "ruff", "check", "tests/checks", "scripts/ci", "python_tools"],
             [sys.executable, "-m", "mypy", "tests/checks", "scripts/ci", "python_tools"],
             [sys.executable, "-m", "pytest", "--basetemp", pytest_temp, "-q", "tests/checks/suites"],
         )

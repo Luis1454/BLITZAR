@@ -36,7 +36,7 @@ jobs:
             -DGRAVITY_INTEGRATION_ENABLE_SANITIZERS=ON
       - {name: Build strict integration targets, run: cmake --build build-quality --parallel}
       - name: Run clang-tidy analyzer checks
-        run: python tests/checks/clang_tidy_check.py --root . --build-dir build-quality
+        run: python tests/checks/run.py clang_tidy --root . --build-dir build-quality
       - name: Run integration tests under sanitizers
         run: |
           cmake -E env \

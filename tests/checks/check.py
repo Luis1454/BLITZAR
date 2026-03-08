@@ -9,22 +9,18 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from python_tools.ci.python_quality_gate import PythonQualityGateCheck
 from python_tools.core.models import CheckContext
 from python_tools.core.runner import CheckRunner
-from python_tools.policies.ini_check import IniCheck
-from python_tools.policies.launcher_check import LauncherContractCheck
-from python_tools.policies.mirror_check import MirrorCheck
-from python_tools.policies.no_legacy_check import NoLegacyCheck
-from python_tools.policies.pr_policy import PrPolicySelfTestCheck
-from python_tools.policies.quality_baseline import QualityBaselineCheck
-from python_tools.policies.repo_policy import RepoPolicyCheck
-from python_tools.policies.test_catalog import TestCatalogCheck
+from tests.checks.catalog import load_check_registry, load_check_sequences
+
+
+def _check_choices() -> list[str]:
+    return sorted(set(load_check_registry()) | set(load_check_sequences()))
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Unified repository quality checks.")
-    parser.add_argument("check", choices=["ini", "mirror", "no_legacy", "launcher", "quality", "test_catalog", "pr_policy", "repo", "python_quality", "all"])
+    parser.add_argument("check", choices=_check_choices())
     parser.add_argument("--root", default=".", help="Repository root directory")
     parser.add_argument("--config", default="simulation.ini", help="Path to simulation.ini")
     parser.add_argument("--build-dir", default="", help="Build directory")
@@ -62,19 +58,7 @@ def build_context(args: argparse.Namespace) -> CheckContext:
 
 
 def build_runner() -> CheckRunner:
-    return CheckRunner(
-        registry={
-            "ini": IniCheck,
-            "mirror": MirrorCheck,
-            "no_legacy": NoLegacyCheck,
-            "launcher": LauncherContractCheck,
-            "quality": QualityBaselineCheck,
-            "test_catalog": TestCatalogCheck,
-            "pr_policy": PrPolicySelfTestCheck,
-            "repo": RepoPolicyCheck,
-            "python_quality": PythonQualityGateCheck,
-        }
-    )
+    return CheckRunner(registry=load_check_registry(), sequences=load_check_sequences())
 
 
 def main() -> int:
