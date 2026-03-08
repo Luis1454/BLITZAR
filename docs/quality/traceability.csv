@@ -1,6 +1,6 @@
 requirement_id,domain,primary_surface,verification_refs
 REQ-CONF-001,config,engine/src/config,EVD_TEST_UNIT_CONFIG_ARGS_CLI|EVD_TEST_UNIT_CONFIG_ARGS_IO
-REQ-CONF-002,config,engine/src/config,EVD_TEST_UNIT_CONFIG_ARGS_CLI
+REQ-CONF-002,config,engine/src/config,EVD_TEST_UNIT_CONFIG_ARGS_CLI|EVD_TEST_UNIT_CONFIG_ARGS_IO
 REQ-PROT-001,protocol,runtime/src/protocol,EVD_TEST_INT_PROTOCOL_CONNECT|EVD_DOC_BACKEND_PROTOCOL
 REQ-PROT-002,protocol,runtime/src/protocol,EVD_TEST_INT_PROTOCOL_CONTROL|EVD_DOC_BACKEND_PROTOCOL
 REQ-SEC-001,security,runtime/src/protocol,EVD_TEST_INT_PROTOCOL_CONTROL

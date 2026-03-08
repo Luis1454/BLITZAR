@@ -1,4 +1,5 @@
 #include "frontend/FrontendRuntime.hpp"
+#include "protocol/BackendProtocol.hpp"
 #include "tests/support/backend_harness.hpp"
 #include "tests/support/frontend_utils.hpp"
 #include "tests/support/qt_test_utils.hpp"
@@ -126,6 +127,31 @@ TEST(QtMainWindowTest, TST_UIX_UI_003_SavesConfigOnlyOnExplicitSaveAction)
     backend.stop();
     std::error_code ec;
     std::filesystem::remove(configPath, ec);
+}
+
+TEST(QtMainWindowTest, TST_UIX_UI_004_ShowsEffectiveFrontendCapWhenConfiguredCapExceedsProtocolMax)
+{
+    (void)testsupport::ensureQtApp();
+
+    SimulationConfig config = makeUiConfig();
+    config.frontendParticleCap = grav_protocol::kSnapshotMaxPoints + 5000u;
+
+    RealBackendHarness backend;
+    std::string startError;
+    ASSERT_TRUE(backend.start(startError)) << startError;
+
+    auto runtime = std::make_unique<grav_frontend::FrontendRuntime>(
+        "simulation.ini",
+        testsupport::makeTransport(backend.port(), backend.executablePath()));
+    grav_qt::MainWindow window(config, "simulation.ini", std::move(runtime));
+
+    ASSERT_TRUE(testsupport::waitUntilUi([&]() {
+        const QString status = testsupport::findStatusLabelText(window);
+        return status.contains("link=connected")
+            && status.contains(QString("cap=%1").arg(grav_protocol::kSnapshotMaxPoints));
+    }, std::chrono::milliseconds(5000)));
+
+    backend.stop();
 }
 
 } // namespace grav_test_qt_window
