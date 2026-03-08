@@ -61,6 +61,7 @@ git pull --ff-only origin main
   - branch: `issue/<N>-<slug>`
   - title contains `Issue #<N>`
   - body contains `Closes #<N>`
+- Pushes to `main` must originate from a merged `issue/<N>-<slug>` pull request.
 
 ## Space-Grade Quality Gate (Mandatory)
 

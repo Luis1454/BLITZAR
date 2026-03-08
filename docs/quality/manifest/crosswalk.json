@@ -33,7 +33,7 @@
     "SWE-005": {
       "source_standard": "NPR-7150.2D",
       "artifact": "EVD_CHECK_PR_POLICY",
-      "check": "automated pull-request governance (issue/branch/title/body coherence)"
+      "check": "automated pull-request governance plus push-to-main provenance from merged issue branches"
     },
     "SMA-001": {
       "source_standard": "NASA-STD-8739.8B",
