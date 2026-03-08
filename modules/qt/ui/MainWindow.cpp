@@ -108,10 +108,10 @@ MainWindow::MainWindow(
 
     setWindowTitle("N-Body Qt Frontend");
 
-    QWidget &central = *new QWidget(this);
-    QVBoxLayout &root = *new QVBoxLayout(&central);
-    root.setContentsMargins(8, 8, 8, 8);
-    root.setSpacing(8);
+    auto *central = new QWidget(this);
+    auto *root = new QVBoxLayout(central);
+    root->setContentsMargins(8, 8, 8, 8);
+    root->setSpacing(8);
 
     _pauseButton->setCheckable(true);
     _solverCombo->addItem("pairwise_cuda");
@@ -177,98 +177,98 @@ MainWindow::MainWindow(
     _backendAutostartCheck->setChecked(false);
     _backendBinEdit->setPlaceholderText("myAppBackend(.exe)");
 
-    QWidget &sectionsWidget = *new QWidget(this);
-    QHBoxLayout &sectionsLayout = *new QHBoxLayout(&sectionsWidget);
-    sectionsLayout.setContentsMargins(4, 4, 4, 4);
-    sectionsLayout.setSpacing(10);
+    auto *sectionsWidget = new QWidget(this);
+    auto *sectionsLayout = new QHBoxLayout(sectionsWidget);
+    sectionsLayout->setContentsMargins(4, 4, 4, 4);
+    sectionsLayout->setSpacing(10);
 
-    QGroupBox &simulationBox = *new QGroupBox("Simulation", &sectionsWidget);
-    QVBoxLayout &simulationLayout = *new QVBoxLayout(&simulationBox);
-    QFormLayout &simulationForm = *new QFormLayout();
-    simulationForm.addRow("solver", _solverCombo);
-    simulationForm.addRow("integrator", _integratorCombo);
-    simulationForm.addRow("preset", _presetCombo);
-    simulationLayout.addLayout(&simulationForm);
-    simulationLayout.addWidget(_applyPresetButton);
-    simulationLayout.addWidget(_pauseButton);
-    simulationLayout.addWidget(_stepButton);
-    simulationLayout.addWidget(_resetButton);
-    simulationLayout.addWidget(_recoverButton);
-    simulationLayout.addWidget(_reconnectButton);
+    auto *simulationBox = new QGroupBox("Simulation", sectionsWidget);
+    auto *simulationLayout = new QVBoxLayout(simulationBox);
+    auto *simulationForm = new QFormLayout();
+    simulationForm->addRow("solver", _solverCombo);
+    simulationForm->addRow("integrator", _integratorCombo);
+    simulationForm->addRow("preset", _presetCombo);
+    simulationLayout->addLayout(simulationForm);
+    simulationLayout->addWidget(_applyPresetButton);
+    simulationLayout->addWidget(_pauseButton);
+    simulationLayout->addWidget(_stepButton);
+    simulationLayout->addWidget(_resetButton);
+    simulationLayout->addWidget(_recoverButton);
+    simulationLayout->addWidget(_reconnectButton);
 
-    QGroupBox &timeBox = *new QGroupBox("Time", &sectionsWidget);
-    QVBoxLayout &timeLayout = *new QVBoxLayout(&timeBox);
-    QFormLayout &timeForm = *new QFormLayout();
-    timeForm.addRow("dt", _dtSpin);
-    timeForm.addRow("theta", _thetaSpin);
-    timeForm.addRow("softening", _softeningSpin);
-    timeLayout.addLayout(&timeForm);
+    auto *timeBox = new QGroupBox("Time", sectionsWidget);
+    auto *timeLayout = new QVBoxLayout(timeBox);
+    auto *timeForm = new QFormLayout();
+    timeForm->addRow("dt", _dtSpin);
+    timeForm->addRow("theta", _thetaSpin);
+    timeForm->addRow("softening", _softeningSpin);
+    timeLayout->addLayout(timeForm);
 
-    QGroupBox &sphBox = *new QGroupBox("SPH", &sectionsWidget);
-    QVBoxLayout &sphLayout = *new QVBoxLayout(&sphBox);
-    sphLayout.addWidget(_sphCheck);
-    QFormLayout &sphForm = *new QFormLayout();
-    sphForm.addRow("h", _sphSmoothingSpin);
-    sphForm.addRow("rest density", _sphRestDensitySpin);
-    sphForm.addRow("gas K", _sphGasConstantSpin);
-    sphForm.addRow("viscosity", _sphViscositySpin);
-    sphLayout.addLayout(&sphForm);
+    auto *sphBox = new QGroupBox("SPH", sectionsWidget);
+    auto *sphLayout = new QVBoxLayout(sphBox);
+    sphLayout->addWidget(_sphCheck);
+    auto *sphForm = new QFormLayout();
+    sphForm->addRow("h", _sphSmoothingSpin);
+    sphForm->addRow("rest density", _sphRestDensitySpin);
+    sphForm->addRow("gas K", _sphGasConstantSpin);
+    sphForm->addRow("viscosity", _sphViscositySpin);
+    sphLayout->addLayout(sphForm);
 
-    QGroupBox &ioBox = *new QGroupBox("I/O", &sectionsWidget);
-    QVBoxLayout &ioLayout = *new QVBoxLayout(&ioBox);
-    ioLayout.addWidget(_saveConfigButton);
-    ioLayout.addWidget(_loadPresetButton);
-    ioLayout.addWidget(_loadInputButton);
-    ioLayout.addWidget(_exportButton);
-    ioLayout.addStretch(1);
+    auto *ioBox = new QGroupBox("I/O", sectionsWidget);
+    auto *ioLayout = new QVBoxLayout(ioBox);
+    ioLayout->addWidget(_saveConfigButton);
+    ioLayout->addWidget(_loadPresetButton);
+    ioLayout->addWidget(_loadInputButton);
+    ioLayout->addWidget(_exportButton);
+    ioLayout->addStretch(1);
 
-    QGroupBox &connectorBox = *new QGroupBox("Connector", &sectionsWidget);
-    QVBoxLayout &connectorLayout = *new QVBoxLayout(&connectorBox);
-    QFormLayout &connectorForm = *new QFormLayout();
-    connectorForm.addRow("host", _backendHostEdit);
-    connectorForm.addRow("port", _backendPortSpin);
-    connectorForm.addRow("backend bin", _backendBinEdit);
-    connectorLayout.addLayout(&connectorForm);
-    connectorLayout.addWidget(_backendAutostartCheck);
-    connectorLayout.addWidget(_applyConnectorButton);
-    connectorLayout.addStretch(1);
+    auto *connectorBox = new QGroupBox("Connector", sectionsWidget);
+    auto *connectorLayout = new QVBoxLayout(connectorBox);
+    auto *connectorForm = new QFormLayout();
+    connectorForm->addRow("host", _backendHostEdit);
+    connectorForm->addRow("port", _backendPortSpin);
+    connectorForm->addRow("backend bin", _backendBinEdit);
+    connectorLayout->addLayout(connectorForm);
+    connectorLayout->addWidget(_backendAutostartCheck);
+    connectorLayout->addWidget(_applyConnectorButton);
+    connectorLayout->addStretch(1);
 
-    sectionsLayout.addWidget(&simulationBox);
-    sectionsLayout.addWidget(&timeBox);
-    sectionsLayout.addWidget(&sphBox);
-    sectionsLayout.addWidget(&ioBox);
-    sectionsLayout.addWidget(&connectorBox);
-    sectionsLayout.addStretch(1);
+    sectionsLayout->addWidget(simulationBox);
+    sectionsLayout->addWidget(timeBox);
+    sectionsLayout->addWidget(sphBox);
+    sectionsLayout->addWidget(ioBox);
+    sectionsLayout->addWidget(connectorBox);
+    sectionsLayout->addStretch(1);
 
-    QScrollArea &controlsScroll = *new QScrollArea(this);
-    controlsScroll.setWidgetResizable(true);
-    controlsScroll.setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    controlsScroll.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    controlsScroll.setWidget(&sectionsWidget);
-    controlsScroll.setMaximumHeight(240);
+    auto *controlsScroll = new QScrollArea(this);
+    controlsScroll->setWidgetResizable(true);
+    controlsScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    controlsScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    controlsScroll->setWidget(sectionsWidget);
+    controlsScroll->setMaximumHeight(240);
 
-    QGroupBox &cameraBox = *new QGroupBox("View & Camera", this);
-    QGridLayout &cameraLayout = *new QGridLayout(&cameraBox);
-    cameraLayout.addWidget(new QLabel("zoom", this), 0, 0);
-    cameraLayout.addWidget(_zoomSlider, 0, 1);
-    cameraLayout.addWidget(new QLabel("luminosity", this), 0, 2);
-    cameraLayout.addWidget(_luminositySlider, 0, 3);
-    cameraLayout.addWidget(new QLabel("3D view", this), 1, 0);
-    cameraLayout.addWidget(_view3dCombo, 1, 1);
-    cameraLayout.addWidget(new QLabel("yaw", this), 1, 2);
-    cameraLayout.addWidget(_yawSlider, 1, 3);
-    cameraLayout.addWidget(new QLabel("pitch", this), 2, 0);
-    cameraLayout.addWidget(_pitchSlider, 2, 1);
-    cameraLayout.addWidget(new QLabel("roll", this), 2, 2);
-    cameraLayout.addWidget(_rollSlider, 2, 3);
+    auto *cameraBox = new QGroupBox("View & Camera", this);
+    auto *cameraLayout = new QGridLayout(cameraBox);
+    cameraLayout->addWidget(new QLabel("zoom", this), 0, 0);
+    cameraLayout->addWidget(_zoomSlider, 0, 1);
+    cameraLayout->addWidget(new QLabel("luminosity", this), 0, 2);
+    cameraLayout->addWidget(_luminositySlider, 0, 3);
+    cameraLayout->addWidget(new QLabel("3D view", this), 1, 0);
+    cameraLayout->addWidget(_view3dCombo, 1, 1);
+    cameraLayout->addWidget(new QLabel("yaw", this), 1, 2);
+    cameraLayout->addWidget(_yawSlider, 1, 3);
+    cameraLayout->addWidget(new QLabel("pitch", this), 2, 0);
+    cameraLayout->addWidget(_pitchSlider, 2, 1);
+    cameraLayout->addWidget(new QLabel("roll", this), 2, 2);
+    cameraLayout->addWidget(_rollSlider, 2, 3);
 
-    root.addWidget(&controlsScroll, 0);
-    root.addWidget(_multiView, 4);
-    root.addWidget(&cameraBox, 0);
-    root.addWidget(_energyGraph, 2);
-    root.addWidget(_statusLabel, 0);
+    root->addWidget(controlsScroll, 0);
+    root->addWidget(_multiView, 4);
+    root->addWidget(cameraBox, 0);
+    root->addWidget(_energyGraph, 2);
+    root->addWidget(_statusLabel, 0);
 
-    setCentralWidget(&central);
+    setCentralWidget(central);
     resize(1500, 980);
 
     applyConfigToBackend(false);
@@ -666,8 +666,13 @@ void MainWindow::tick()
             _config.integrator = stats.integratorName;
         }
     }
-    size_t snapshotSize = 0u;
-    const bool gotSnapshot = _runtime->consumeLatestSnapshot(snapshot, &snapshotSize);
+    std::size_t snapshotSize = 0u;
+    std::optional<grav_frontend::ConsumedSnapshot> consumedSnapshot = _runtime->consumeLatestSnapshot();
+    const bool gotSnapshot = consumedSnapshot.has_value();
+    if (gotSnapshot) {
+        snapshotSize = consumedSnapshot->sourceSize;
+        snapshot = std::move(consumedSnapshot->particles);
+    }
     const std::string linkLabel = _runtime->linkStateLabel();
     const std::string ownerLabel = _runtime->backendOwnerLabel();
     const std::uint32_t statsAgeMs = _runtime->statsAgeMs();

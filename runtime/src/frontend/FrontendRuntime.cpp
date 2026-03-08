@@ -195,23 +195,27 @@ SimulationStats FrontendRuntime::getStats() const
     return getCachedStats();
 }
 
-bool FrontendRuntime::consumeLatestSnapshot(std::vector<RenderParticle> &outSnapshot, std::size_t *snapshotSize)
+std::optional<ConsumedSnapshot> FrontendRuntime::consumeLatestSnapshot()
 {
     std::lock_guard<std::mutex> lock(_dataMutex);
     if (!_hasNewSnapshot) {
-        return false;
+        return std::nullopt;
     }
-    outSnapshot = std::move(_latestSnapshot);
+    ConsumedSnapshot snapshot{};
+    snapshot.sourceSize = _latestSnapshotSize;
+    snapshot.particles = std::move(_latestSnapshot);
     _hasNewSnapshot = false;
-    if (snapshotSize != nullptr) {
-        *snapshotSize = _latestSnapshotSize;
-    }
-    return true;
+    return snapshot;
 }
 
 bool FrontendRuntime::tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot)
 {
-    return consumeLatestSnapshot(outSnapshot, nullptr);
+    std::optional<ConsumedSnapshot> snapshot = consumeLatestSnapshot();
+    if (!snapshot.has_value()) {
+        return false;
+    }
+    outSnapshot = std::move(snapshot->particles);
+    return true;
 }
 
 std::string FrontendRuntime::linkStateLabel() const

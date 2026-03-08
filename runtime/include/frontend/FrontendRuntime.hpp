@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <thread>
 #include <vector>
@@ -54,7 +55,7 @@ class FrontendRuntime final : public IFrontendRuntime {
 
         SimulationStats getCachedStats() const override;
         SimulationStats getStats() const override;
-        bool consumeLatestSnapshot(std::vector<RenderParticle> &outSnapshot, std::size_t *snapshotSize = nullptr) override;
+        std::optional<ConsumedSnapshot> consumeLatestSnapshot() override;
         bool tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot) override;
         std::string linkStateLabel() const override;
         std::string backendOwnerLabel() const override;

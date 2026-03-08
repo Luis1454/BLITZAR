@@ -102,12 +102,12 @@ class SocketTimeoutScope {
 template <typename LocalCall, typename RemoteCall>
 void dispatchBackendCall(
     bool remoteMode,
-    ILocalBackend *localBackend,
+    const std::unique_ptr<ILocalBackend> &localBackend,
     LocalCall &&localCall,
     RemoteCall &&remoteCall)
 {
     if (!remoteMode) {
-        if (localBackend != nullptr) {
+        if (localBackend) {
             localCall(*localBackend);
         }
         return;
@@ -327,7 +327,7 @@ void FrontendBackendBridge::setPaused(bool paused)
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [paused](ILocalBackend &backend) { backend.setPaused(paused); },
         [this, paused]() {
             sendOrQueueRemote(std::string(paused ? grav_protocol::Pause : grav_protocol::Resume));
@@ -339,7 +339,7 @@ void FrontendBackendBridge::togglePaused()
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [](ILocalBackend &backend) { backend.togglePaused(); },
         [this]() { sendOrQueueRemote(std::string(grav_protocol::Toggle)); });
 }
@@ -349,7 +349,7 @@ void FrontendBackendBridge::stepOnce()
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [](ILocalBackend &backend) { backend.stepOnce(); },
         [this]() { sendOrQueueRemote(std::string(grav_protocol::Step), "\"count\":1"); });
 }
@@ -359,7 +359,7 @@ void FrontendBackendBridge::setParticleCount(std::uint32_t particleCount)
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [particleCount](ILocalBackend &backend) { backend.setParticleCount(particleCount); },
         [this, particleCount]() {
             const std::uint32_t clamped = std::max<std::uint32_t>(2u, particleCount);
@@ -372,7 +372,7 @@ void FrontendBackendBridge::setDt(float dt)
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [dt](ILocalBackend &backend) { backend.setDt(dt); },
         [this, dt]() {
             const float clamped = std::max(1e-6f, dt);
@@ -385,7 +385,7 @@ void FrontendBackendBridge::scaleDt(float factor)
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [factor](ILocalBackend &backend) { backend.scaleDt(factor); },
         [this, factor]() {
             const float currentDt = std::max(1e-6f, getStats().dt);
@@ -399,7 +399,7 @@ void FrontendBackendBridge::requestReset()
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [](ILocalBackend &backend) { backend.requestReset(); },
         [this]() { sendOrQueueRemote(std::string(grav_protocol::Reset)); });
 }
@@ -409,7 +409,7 @@ void FrontendBackendBridge::requestRecover()
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [](ILocalBackend &backend) { backend.requestReset(); },
         [this]() { sendOrQueueRemote(std::string(grav_protocol::Recover)); });
 }
@@ -419,7 +419,7 @@ void FrontendBackendBridge::setSolverMode(const std::string &mode)
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [&mode](ILocalBackend &backend) { backend.setSolverMode(mode); },
         [this, &mode]() {
             sendOrQueueRemote(std::string(grav_protocol::SetSolver), "\"value\":\"" + jsonEscape(mode) + "\"");
@@ -431,7 +431,7 @@ void FrontendBackendBridge::setIntegratorMode(const std::string &mode)
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [&mode](ILocalBackend &backend) { backend.setIntegratorMode(mode); },
         [this, &mode]() {
             sendOrQueueRemote(std::string(grav_protocol::SetIntegrator), "\"value\":\"" + jsonEscape(mode) + "\"");
@@ -443,7 +443,7 @@ void FrontendBackendBridge::setOctreeParameters(float theta, float softening)
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [theta, softening](ILocalBackend &backend) { backend.setOctreeParameters(theta, softening); },
         [this, theta, softening]() {
             const float safeTheta = std::max(0.0001f, theta);
@@ -459,7 +459,7 @@ void FrontendBackendBridge::setSphEnabled(bool enabled)
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [enabled](ILocalBackend &backend) { backend.setSphEnabled(enabled); },
         [this, enabled]() {
             sendOrQueueRemote(std::string(grav_protocol::SetSph), std::string("\"value\":") + (enabled ? "true" : "false"));
@@ -471,7 +471,7 @@ void FrontendBackendBridge::setSphParameters(float smoothingLength, float restDe
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [smoothingLength, restDensity, gasConstant, viscosity](ILocalBackend &backend) {
             backend.setSphParameters(smoothingLength, restDensity, gasConstant, viscosity);
         },
@@ -494,7 +494,7 @@ void FrontendBackendBridge::setInitialStateConfig(const InitialStateConfig &conf
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [&config](ILocalBackend &backend) { backend.setInitialStateConfig(config); },
         [this]() {
             if (!_warnedRemoteInitialConfig) {
@@ -510,7 +510,7 @@ void FrontendBackendBridge::setEnergyMeasurementConfig(std::uint32_t everySteps,
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [everySteps, sampleLimit](ILocalBackend &backend) { backend.setEnergyMeasurementConfig(everySteps, sampleLimit); },
         [this, everySteps, sampleLimit]() {
             const std::uint32_t safeEvery = std::max<std::uint32_t>(1u, everySteps);
@@ -526,7 +526,7 @@ void FrontendBackendBridge::setExportDefaults(const std::string &directory, cons
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [&directory, &format](ILocalBackend &backend) { backend.setExportDefaults(directory, format); },
         [this, &format]() { _defaultExportFormat = format; });
 }
@@ -536,7 +536,7 @@ void FrontendBackendBridge::setInitialStateFile(const std::string &path, const s
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [&path, &format](ILocalBackend &backend) { backend.setInitialStateFile(path, format); },
         [this, &path, &format]() {
             if (!path.empty()) {
@@ -552,7 +552,7 @@ void FrontendBackendBridge::requestExportSnapshot(const std::string &outputPath,
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [&outputPath, &format](ILocalBackend &backend) { backend.requestExportSnapshot(outputPath, format); },
         [this, &outputPath, &format]() {
             const std::string effectiveFormat = format.empty() ? _defaultExportFormat : format;
@@ -575,7 +575,7 @@ void FrontendBackendBridge::requestShutdown()
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     dispatchBackendCall(
         _remoteMode,
-        _localBackend.get(),
+        _localBackend,
         [](ILocalBackend &backend) { backend.stop(); },
         [this]() { sendOrQueueRemote(std::string(grav_protocol::Shutdown)); });
 }
