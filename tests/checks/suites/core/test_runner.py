@@ -47,3 +47,20 @@ def test_runner_dispatches_and_aggregates(monkeypatch, tmp_path: Path) -> None:
     assert runner.run("quality", _context(tmp_path)) is False
     assert calls == ["quality", "test_catalog", "pr_policy"]
 
+
+def test_runner_uses_custom_catalog_sequences(monkeypatch, tmp_path: Path) -> None:
+    calls: list[str] = []
+
+    def _factory(name: str):
+        def _build() -> BaseCheck:
+            calls.append(name)
+            return _StaticCheck(True)
+
+        return _build
+
+    monkeypatch.setattr(runner_module, "ResultReporter", lambda: type("R", (), {"emit": staticmethod(lambda r: r.ok)})())
+    runner = CheckRunner({"alpha": _factory("alpha"), "beta": _factory("beta")}, sequences={"bundle": ["beta", "alpha"]})
+
+    assert runner.run("bundle", _context(tmp_path)) is True
+    assert calls == ["beta", "alpha"]
+
