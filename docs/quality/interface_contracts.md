@@ -6,7 +6,7 @@ This artifact defines the versioned contracts that gate backend, protocol, and r
 
 | Contract ID | Surface | Version | Canonical artifacts | Compatibility rule | Verification anchors |
 |---|---|---|---|---|---|
-| `CTR-PROT-001` | TCP JSON backend protocol | `backend-json-v1` | `docs/backend_protocol.md`, `runtime/include/protocol/BackendProtocol.hpp` | additive optional fields are compatible; changed command names, mandatory fields, auth behavior, or snapshot/status semantics are breaking | `TST_INT_PROT_001..008` |
+| `CTR-PROT-001` | TCP JSON backend protocol | `backend-json-v1` | `docs/backend_protocol.md`, `runtime/include/protocol/BackendProtocol.hpp` | additive optional fields are compatible; changed command names, mandatory fields, auth behavior, or snapshot/status semantics are breaking | `TST_INT_PROT_001..009` |
 | `CTR-RUN-001` | frontend runtime control/query surface | `frontend-runtime-v1` | `runtime/include/frontend/IFrontendRuntime.hpp`, `runtime/include/frontend/ILocalBackend.hpp` | method signature, lifecycle, and state semantics are stable within `v1`; any rename/removal/required call-order change is breaking | `TST_INT_RUNT_001..004` |
 | `CTR-MOD-001` | frontend module ABI | `frontend-module-api-v1` | `runtime/include/frontend/FrontendModuleApi.hpp` | loader compatibility requires unchanged entrypoint shape and `apiVersion`; ABI shape changes require a version bump | `TST_UNT_MODCLI_001..005`, `TST_UNT_MODHOST_001..003` |
 

@@ -75,6 +75,7 @@ TEST(BackendProtocolTest, TST_INT_PROT_002_BackendClientRecoversAfterRealBackend
     backend.stop();
     const BackendClientResponse afterStop = client.getStatus(status);
     EXPECT_FALSE(afterStop.ok);
+    EXPECT_NE(afterStop.error.find("[backend-client] sendJson:"), std::string::npos) << afterStop.error;
     EXPECT_FALSE(client.isConnected());
 
     ASSERT_TRUE(backend.start(startError, fixedPort)) << startError;
@@ -85,6 +86,16 @@ TEST(BackendProtocolTest, TST_INT_PROT_002_BackendClientRecoversAfterRealBackend
 
     client.disconnect();
     backend.stop();
+}
+
+TEST(BackendProtocolTest, TST_INT_PROT_009_BackendClientRejectsRequestsWithoutConnectionWithOperationContext)
+{
+    BackendClient client;
+
+    const BackendClientResponse response = client.sendJson("   ");
+
+    EXPECT_FALSE(response.ok);
+    EXPECT_EQ(response.error, "[backend-client] sendJson: not connected");
 }
 
 TEST(BackendProtocolTest, TST_INT_PROT_003_BackendClientConnectTimeoutIsBounded)
