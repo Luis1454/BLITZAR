@@ -1,5 +1,5 @@
-#include "frontend/ErrorBuffer.hpp"
 #include "frontend/FrontendModuleApi.hpp"
+#include "frontend/FrontendModuleBoundary.hpp"
 #include "platform/PlatformProcess.hpp"
 
 #include <algorithm>
@@ -67,12 +67,11 @@ std::string proxyError(std::string_view operation, std::string_view detail)
 }
 
 void writeProxyError(
-    char *errorBuffer,
-    std::size_t errorBufferSize,
+    const grav_frontend::ErrorBufferView &errorBuffer,
     std::string_view operation,
     std::string_view detail)
 {
-    grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, proxyError(operation, detail));
+    errorBuffer.write(proxyError(operation, detail));
 }
 
 struct GuiProxyState {
@@ -88,13 +87,11 @@ bool isRunning(const GuiProxyState &state)
     return state.frontendProcess.isRunning();
 }
 
-bool stopProcess(GuiProxyState &state, char *errorBuffer, std::size_t errorBufferSize)
+bool stopProcess(GuiProxyState &state, const grav_frontend::ErrorBufferView &errorBuffer)
 {
     std::string processError;
     if (!state.frontendProcess.terminate(2000u, processError)) {
-        grav_frontend::writeErrorBuffer(
-            errorBuffer,
-            errorBufferSize,
+        errorBuffer.write(
             processError.empty() ? "failed to terminate frontend process" : processError);
         return false;
     }
@@ -118,10 +115,9 @@ std::vector<std::string> frontendLaunchArgs(const GuiProxyState &state)
 bool launchProcess(
     GuiProxyState &state,
     const std::string &frontendExecutable,
-    char *errorBuffer,
-    std::size_t errorBufferSize)
+    const grav_frontend::ErrorBufferView &errorBuffer)
 {
-    if (!stopProcess(state, errorBuffer, errorBufferSize)) {
+    if (!stopProcess(state, errorBuffer)) {
         return false;
     }
     std::string processError;
@@ -130,9 +126,7 @@ bool launchProcess(
             frontendLaunchArgs(state),
             true,
             processError)) {
-        grav_frontend::writeErrorBuffer(
-            errorBuffer,
-            errorBufferSize,
+        errorBuffer.write(
             processError.empty() ? "failed to launch frontend process" : processError);
         state.frontendProcess.clear();
         return false;
@@ -203,87 +197,137 @@ bool parseBool(std::string_view raw, bool &out)
     }
     return false;
 }
+
+class GuiProxyModuleBoundary final {
+public:
+    static bool create(
+        const grav_module::FrontendModuleHostContextV1 *context,
+        const grav_module::FrontendModuleStateSlot &outModuleState,
+        const grav_frontend::ErrorBufferView &errorBuffer)
+    {
+        try {
+            if (!outModuleState.isAvailable()) {
+                errorBuffer.write("outModuleState is null");
+                return false;
+            }
+            std::unique_ptr<GuiProxyState> state = std::make_unique<GuiProxyState>();
+            if (context != nullptr && context->configPath != nullptr) {
+                state->configPath = context->configPath;
+            }
+            return outModuleState.assign(grav_module::FrontendModuleOpaqueState::fromRawPointer(state.release()));
+        } catch (const std::exception &ex) {
+            writeProxyError(errorBuffer, "create", ex.what());
+            return false;
+        } catch (...) {
+            writeProxyError(errorBuffer, "create", "non-standard exception");
+            return false;
+        }
+    }
+
+    static GuiProxyState *requireState(
+        grav_module::FrontendModuleOpaqueState moduleState,
+        const grav_frontend::ErrorBufferView &errorBuffer)
+    {
+        GuiProxyState *state = static_cast<GuiProxyState *>(moduleState.rawPointer());
+        if (state == nullptr) {
+            errorBuffer.write("module state is null");
+        }
+        return state;
+    }
+
+    static void destroy(grav_module::FrontendModuleOpaqueState moduleState)
+    {
+        try {
+            std::unique_ptr<GuiProxyState> state(static_cast<GuiProxyState *>(moduleState.rawPointer()));
+            if (state != nullptr) {
+                std::array<char, 32> ignored{};
+                (void)stopProcess(*state, grav_frontend::ErrorBufferView(ignored.data(), ignored.size()));
+            }
+        } catch (const std::exception &ex) {
+            std::cerr << proxyError("destroy", ex.what()) << "\n";
+        } catch (...) {
+            std::cerr << proxyError("destroy", "non-standard exception") << "\n";
+        }
+    }
+
+    static bool start(
+        grav_module::FrontendModuleOpaqueState moduleState,
+        const grav_frontend::ErrorBufferView &errorBuffer)
+    {
+        try {
+            GuiProxyState *state = requireState(moduleState, errorBuffer);
+            if (state == nullptr) {
+                return false;
+            }
+            std::cout << "[module-gui-proxy] ready (config=" << state->configPath
+                      << ", endpoint=" << state->host << ":" << state->port
+                      << ", autostart=" << (state->autoStartBackend ? "on" : "off")
+                      << ")\n";
+            return true;
+        } catch (const std::exception &ex) {
+            writeProxyError(errorBuffer, "start", ex.what());
+            return false;
+        } catch (...) {
+            writeProxyError(errorBuffer, "start", "non-standard exception");
+            return false;
+        }
+    }
+
+    static void stop(grav_module::FrontendModuleOpaqueState moduleState)
+    {
+        try {
+            GuiProxyState *state = static_cast<GuiProxyState *>(moduleState.rawPointer());
+            if (state != nullptr) {
+                std::array<char, 32> ignored{};
+                (void)stopProcess(*state, grav_frontend::ErrorBufferView(ignored.data(), ignored.size()));
+            }
+        } catch (const std::exception &ex) {
+            std::cerr << proxyError("stop", ex.what()) << "\n";
+        } catch (...) {
+            std::cerr << proxyError("stop", "non-standard exception") << "\n";
+        }
+    }
+};
+
 GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravity_frontend_module_v1()
 {
     static const grav_module::FrontendModuleExportsV1 exports{
         grav_module::kFrontendModuleApiVersionV1,
         "gui-proxy-module",
         [](const grav_module::FrontendModuleHostContextV1 *context, void **outModuleState, char *errorBuffer, std::size_t errorBufferSize) -> bool {
-            try {
-                if (outModuleState == nullptr) {
-                    grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "outModuleState is null");
-                    return false;
-                }
-                std::unique_ptr<GuiProxyState> state = std::make_unique<GuiProxyState>();
-                if (context != nullptr && context->configPath != nullptr) {
-                    state->configPath = context->configPath;
-                }
-                *outModuleState = state.release();
-                return true;
-            } catch (const std::exception &ex) {
-                writeProxyError(errorBuffer, errorBufferSize, "create", ex.what());
-                return false;
-            } catch (...) {
-                writeProxyError(errorBuffer, errorBufferSize, "create", "non-standard exception");
-                return false;
-            }
+            return GuiProxyModuleBoundary::create(
+                context,
+                grav_module::FrontendModuleStateSlot(outModuleState),
+                grav_frontend::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void *moduleState) {
-            try {
-                std::unique_ptr<GuiProxyState> state(static_cast<GuiProxyState *>(moduleState));
-                if (state != nullptr) {
-                    std::array<char, 32> ignored{};
-                    (void)stopProcess(*state, ignored.data(), ignored.size());
-                }
-            } catch (const std::exception &ex) {
-                std::cerr << proxyError("destroy", ex.what()) << "\n";
-            } catch (...) {
-                std::cerr << proxyError("destroy", "non-standard exception") << "\n";
-            }
+            GuiProxyModuleBoundary::destroy(grav_module::FrontendModuleOpaqueState::fromRawPointer(moduleState));
         },
         [](void *moduleState, char *errorBuffer, std::size_t errorBufferSize) -> bool {
+            const grav_frontend::ErrorBufferView errorView(errorBuffer, errorBufferSize);
             try {
-                auto *state = static_cast<GuiProxyState *>(moduleState);
-                if (state == nullptr) {
-                    grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "module state is null");
-                    return false;
-                }
-                std::cout << "[module-gui-proxy] ready (config=" << state->configPath
-                          << ", endpoint=" << state->host << ":" << state->port
-                          << ", autostart=" << (state->autoStartBackend ? "on" : "off")
-                          << ")\n";
-                return true;
-            } catch (const std::exception &ex) {
-                writeProxyError(errorBuffer, errorBufferSize, "start", ex.what());
-                return false;
+                return GuiProxyModuleBoundary::start(
+                    grav_module::FrontendModuleOpaqueState::fromRawPointer(moduleState),
+                    errorView);
             } catch (...) {
-                writeProxyError(errorBuffer, errorBufferSize, "start", "non-standard exception");
+                writeProxyError(errorView, "start", "non-standard exception");
                 return false;
             }
         },
         [](void *moduleState) {
-            try {
-                auto *state = static_cast<GuiProxyState *>(moduleState);
-                if (state != nullptr) {
-                    std::array<char, 32> ignored{};
-                    (void)stopProcess(*state, ignored.data(), ignored.size());
-                }
-            } catch (const std::exception &ex) {
-                std::cerr << proxyError("stop", ex.what()) << "\n";
-            } catch (...) {
-                std::cerr << proxyError("stop", "non-standard exception") << "\n";
-            }
+            GuiProxyModuleBoundary::stop(grav_module::FrontendModuleOpaqueState::fromRawPointer(moduleState));
         },
         [](void *moduleState, const char *commandLine, bool *outKeepRunning, char *errorBuffer, std::size_t errorBufferSize) -> bool {
+            const grav_frontend::ErrorBufferView errorView(errorBuffer, errorBufferSize);
+            const grav_module::FrontendModuleCommandControl commandControl(outKeepRunning);
             try {
-                auto *state = static_cast<GuiProxyState *>(moduleState);
+                GuiProxyState *state = GuiProxyModuleBoundary::requireState(
+                    grav_module::FrontendModuleOpaqueState::fromRawPointer(moduleState),
+                    errorView);
                 if (state == nullptr) {
-                    grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "module state is null");
                     return false;
                 }
-                if (outKeepRunning != nullptr) {
-                    *outKeepRunning = true;
-                }
+                commandControl.setContinue();
                 const std::string line = trim(commandLine != nullptr ? std::string(commandLine) : std::string());
                 if (line.empty()) {
                     return true;
@@ -298,9 +342,7 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                     return true;
                 }
                 if (cmd == "quit" || cmd == "exit") {
-                    if (outKeepRunning != nullptr) {
-                        *outKeepRunning = false;
-                    }
+                    commandControl.requestStop();
                     return true;
                 }
                 if (cmd == "status") {
@@ -321,12 +363,12 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                 }
                 if (cmd == "set-endpoint") {
                     if (tokens.size() < 3u) {
-                        grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "usage: set-endpoint <host> <port>");
+                        errorView.write("usage: set-endpoint <host> <port>");
                         return false;
                     }
                     std::uint16_t parsedPort = 0u;
                     if (!parseUnsignedPort(tokens[2], parsedPort)) {
-                        grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "invalid port");
+                        errorView.write("invalid port");
                         return false;
                     }
                     state->host = tokens[1];
@@ -336,12 +378,12 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                 }
                 if (cmd == "set-autostart") {
                     if (tokens.size() < 2u) {
-                        grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "usage: set-autostart <true|false>");
+                        errorView.write("usage: set-autostart <true|false>");
                         return false;
                     }
                     bool value = false;
                     if (!parseBool(tokens[1], value)) {
-                        grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "invalid bool value");
+                        errorView.write("invalid bool value");
                         return false;
                     }
                     state->autoStartBackend = value;
@@ -350,10 +392,10 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                 }
                 if (cmd == "launch") {
                     if (tokens.size() < 2u) {
-                        grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "usage: launch <frontend_executable_path>");
+                        errorView.write("usage: launch <frontend_executable_path>");
                         return false;
                     }
-                    if (!launchProcess(*state, tokens[1], errorBuffer, errorBufferSize)) {
+                    if (!launchProcess(*state, tokens[1], errorView)) {
                         return false;
                     }
                     std::cout << "[module-gui-proxy] launched: "
@@ -361,20 +403,20 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                     return true;
                 }
                 if (cmd == "stop") {
-                    if (!stopProcess(*state, errorBuffer, errorBufferSize)) {
+                    if (!stopProcess(*state, errorView)) {
                         return false;
                     }
                     std::cout << "[module-gui-proxy] frontend stopped\n";
                     return true;
                 }
 
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "unknown module command");
+                errorView.write("unknown module command");
                 return false;
             } catch (const std::exception &ex) {
-                writeProxyError(errorBuffer, errorBufferSize, "command", ex.what());
+                writeProxyError(errorView, "command", ex.what());
                 return false;
             } catch (...) {
-                writeProxyError(errorBuffer, errorBufferSize, "command", "non-standard exception");
+                writeProxyError(errorView, "command", "non-standard exception");
                 return false;
             }
         }

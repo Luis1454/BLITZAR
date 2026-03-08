@@ -23,16 +23,13 @@ public:
 
     static bool handleCommand(
         ModuleState &state,
-        const char *commandLine,
-        bool *outKeepRunning,
-        char *errorBuffer,
-        std::size_t errorBufferSize)
+        std::string_view commandLine,
+        const grav_module::FrontendModuleCommandControl &commandControl,
+        const grav_frontend::ErrorBufferView &errorBuffer)
     {
         try {
-            if (outKeepRunning != nullptr) {
-                *outKeepRunning = true;
-            }
-            const std::string line = ModuleCliText::trim(commandLine != nullptr ? std::string(commandLine) : std::string());
+            commandControl.setContinue();
+            const std::string line = ModuleCliText::trim(std::string(commandLine));
             if (line.empty()) {
                 return true;
             }
@@ -40,12 +37,12 @@ public:
             if (tokens.empty()) {
                 return true;
             }
-            return dispatch(state, tokens, outKeepRunning, errorBuffer, errorBufferSize);
+            return dispatch(state, tokens, commandControl, errorBuffer);
         } catch (const std::exception &ex) {
-            grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, ex.what());
+            errorBuffer.write(ex.what());
             return false;
         } catch (...) {
-            grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "unknown module command error");
+            errorBuffer.write("unknown module command error");
             return false;
         }
     }
@@ -54,9 +51,8 @@ private:
     static bool dispatch(
         ModuleState &state,
         const std::vector<std::string> &tokens,
-        bool *outKeepRunning,
-        char *errorBuffer,
-        std::size_t errorBufferSize)
+        const grav_module::FrontendModuleCommandControl &commandControl,
+        const grav_frontend::ErrorBufferView &errorBuffer)
     {
         const std::string &cmd = tokens[0];
         if (cmd == "help") {
@@ -64,42 +60,40 @@ private:
             return true;
         }
         if (cmd == "quit" || cmd == "exit") {
-            if (outKeepRunning != nullptr) {
-                *outKeepRunning = false;
-            }
+            commandControl.requestStop();
             return true;
         }
         if (cmd == "connect") {
-            return ModuleCliBackendOps::connect(state, tokens, errorBuffer, errorBufferSize);
+            return ModuleCliBackendOps::connect(state, tokens, errorBuffer);
         }
         if (cmd == "reconnect") {
-            return ModuleCliBackendOps::reconnect(state, errorBuffer, errorBufferSize);
+            return ModuleCliBackendOps::reconnect(state, errorBuffer);
         }
         if (cmd == "status") {
-            return ModuleCliBackendOps::commandStatus(state, errorBuffer, errorBufferSize);
+            return ModuleCliBackendOps::commandStatus(state, errorBuffer);
         }
         if (cmd == "step") {
-            return ModuleCliBackendOps::commandStep(state, tokens, errorBuffer, errorBufferSize);
+            return ModuleCliBackendOps::commandStep(state, tokens, errorBuffer);
         }
         if (cmd == "pause") {
-            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Pause), errorBuffer, errorBufferSize);
+            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Pause), errorBuffer);
         }
         if (cmd == "resume") {
-            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Resume), errorBuffer, errorBufferSize);
+            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Resume), errorBuffer);
         }
         if (cmd == "toggle") {
-            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Toggle), errorBuffer, errorBufferSize);
+            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Toggle), errorBuffer);
         }
         if (cmd == "reset") {
-            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Reset), errorBuffer, errorBufferSize);
+            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Reset), errorBuffer);
         }
         if (cmd == "recover") {
-            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Recover), errorBuffer, errorBufferSize);
+            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Recover), errorBuffer);
         }
         if (cmd == "shutdown") {
-            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Shutdown), errorBuffer, errorBufferSize);
+            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Shutdown), errorBuffer);
         }
-        grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "unknown module command");
+        errorBuffer.write("unknown module command");
         return false;
     }
 };
@@ -111,12 +105,11 @@ void ModuleCliCommands::printHelp()
 
 bool ModuleCliCommands::handleCommand(
     ModuleState &state,
-    const char *commandLine,
-    bool *outKeepRunning,
-    char *errorBuffer,
-    std::size_t errorBufferSize)
+    std::string_view commandLine,
+    const grav_module::FrontendModuleCommandControl &commandControl,
+    const grav_frontend::ErrorBufferView &errorBuffer)
 {
-    return ModuleCliCommandsLocal::handleCommand(state, commandLine, outKeepRunning, errorBuffer, errorBufferSize);
+    return ModuleCliCommandsLocal::handleCommand(state, commandLine, commandControl, errorBuffer);
 }
 
 } // namespace grav_module_cli

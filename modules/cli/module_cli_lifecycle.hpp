@@ -1,8 +1,7 @@
 #pragma once
 
-#include <cstddef>
-
 #include "frontend/FrontendModuleApi.hpp"
+#include "frontend/FrontendModuleBoundary.hpp"
 
 namespace grav_module_cli {
 
@@ -10,12 +9,13 @@ class ModuleCliLifecycle final {
 public:
     static bool create(
         const grav_module::FrontendModuleHostContextV1 *hostContext,
-        void **outModuleState,
-        char *errorBuffer,
-        std::size_t errorBufferSize);
-    static void destroy(void *moduleState);
-    static bool start(void *moduleState, char *errorBuffer, std::size_t errorBufferSize);
-    static void stop(void *moduleState);
+        const grav_module::FrontendModuleStateSlot &outModuleState,
+        const grav_frontend::ErrorBufferView &errorBuffer);
+    static void destroy(grav_module::FrontendModuleOpaqueState moduleState);
+    static bool start(
+        grav_module::FrontendModuleOpaqueState moduleState,
+        const grav_frontend::ErrorBufferView &errorBuffer);
+    static void stop(grav_module::FrontendModuleOpaqueState moduleState);
 };
 
 } // namespace grav_module_cli

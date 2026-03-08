@@ -45,6 +45,7 @@ if(GRAVITY_TEST_UNIT_MODULE_SOURCES)
             "${GRAVITY_ROOT_DIR}/apps/module-host/module_host_cli_args.cpp"
             "${GRAVITY_ROOT_DIR}/apps/module-host/module_host_cli_text.cpp"
             "${GRAVITY_ROOT_DIR}/runtime/src/frontend/ErrorBuffer.cpp"
+            "${GRAVITY_ROOT_DIR}/runtime/src/frontend/FrontendModuleBoundary.cpp"
             ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
             "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
         LIBS

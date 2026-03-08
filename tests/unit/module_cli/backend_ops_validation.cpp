@@ -1,3 +1,4 @@
+#include "frontend/ErrorBuffer.hpp"
 #include "modules/cli/module_cli_backend_ops.hpp"
 #include "modules/cli/module_cli_state.hpp"
 
@@ -17,8 +18,7 @@ TEST(ModuleCliBackendOpsTest, TST_UNT_MODCLI_004_CommandStepRejectsInvalidCount)
     EXPECT_FALSE(grav_module_cli::ModuleCliBackendOps::commandStep(
         state,
         tokens,
-        errorBuffer,
-        sizeof(errorBuffer)));
+        grav_frontend::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
     EXPECT_EQ(std::string(errorBuffer), "invalid step count");
 }
 
@@ -31,8 +31,7 @@ TEST(ModuleCliBackendOpsTest, TST_UNT_MODCLI_005_ConnectRejectsInvalidPort)
     EXPECT_FALSE(grav_module_cli::ModuleCliBackendOps::connect(
         state,
         tokens,
-        errorBuffer,
-        sizeof(errorBuffer)));
+        grav_frontend::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
     EXPECT_EQ(std::string(errorBuffer), "invalid backend port");
 }
 

@@ -13,32 +13,30 @@ class ModuleCliLifecycleLocal final {
 public:
     static bool create(
         const grav_module::FrontendModuleHostContextV1 *,
-        void **outModuleState,
-        char *errorBuffer,
-        std::size_t errorBufferSize)
+        const grav_module::FrontendModuleStateSlot &outModuleState,
+        const grav_frontend::ErrorBufferView &errorBuffer)
     {
         try {
-            if (outModuleState == nullptr) {
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "outModuleState is null");
+            if (!outModuleState.isAvailable()) {
+                errorBuffer.write("outModuleState is null");
                 return false;
             }
             std::unique_ptr<ModuleState> state = std::make_unique<ModuleState>();
             state->client.setSocketTimeoutMs(150);
-            *outModuleState = state.release();
-            return true;
+            return outModuleState.assign(grav_module::FrontendModuleOpaqueState::fromRawPointer(state.release()));
         } catch (const std::exception &ex) {
-            grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, ex.what());
+            errorBuffer.write(ex.what());
             return false;
         } catch (...) {
-            grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "unknown module create error");
+            errorBuffer.write("unknown module create error");
             return false;
         }
     }
 
-    static void destroy(void *moduleState)
+    static void destroy(grav_module::FrontendModuleOpaqueState moduleState)
     {
         try {
-            ModuleState *state = static_cast<ModuleState *>(moduleState);
+            ModuleState *state = static_cast<ModuleState *>(moduleState.rawPointer());
             if (state != nullptr) {
                 std::unique_ptr<ModuleState> ownedState(state);
                 ownedState->client.disconnect();
@@ -50,12 +48,14 @@ public:
         }
     }
 
-    static bool start(void *moduleState, char *errorBuffer, std::size_t errorBufferSize)
+    static bool start(
+        grav_module::FrontendModuleOpaqueState moduleState,
+        const grav_frontend::ErrorBufferView &errorBuffer)
     {
         try {
-            ModuleState *state = static_cast<ModuleState *>(moduleState);
+            ModuleState *state = static_cast<ModuleState *>(moduleState.rawPointer());
             if (state == nullptr) {
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "module state is null");
+                errorBuffer.write("module state is null");
                 return false;
             }
             if (!state->client.connect(state->host, state->port)) {
@@ -66,18 +66,18 @@ public:
             }
             return true;
         } catch (const std::exception &ex) {
-            grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, ex.what());
+            errorBuffer.write(ex.what());
             return false;
         } catch (...) {
-            grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "unknown module start error");
+            errorBuffer.write("unknown module start error");
             return false;
         }
     }
 
-    static void stop(void *moduleState)
+    static void stop(grav_module::FrontendModuleOpaqueState moduleState)
     {
         try {
-            ModuleState *state = static_cast<ModuleState *>(moduleState);
+            ModuleState *state = static_cast<ModuleState *>(moduleState.rawPointer());
             if (state != nullptr) {
                 state->client.disconnect();
             }
@@ -91,24 +91,25 @@ public:
 
 bool ModuleCliLifecycle::create(
     const grav_module::FrontendModuleHostContextV1 *hostContext,
-    void **outModuleState,
-    char *errorBuffer,
-    std::size_t errorBufferSize)
+    const grav_module::FrontendModuleStateSlot &outModuleState,
+    const grav_frontend::ErrorBufferView &errorBuffer)
 {
-    return ModuleCliLifecycleLocal::create(hostContext, outModuleState, errorBuffer, errorBufferSize);
+    return ModuleCliLifecycleLocal::create(hostContext, outModuleState, errorBuffer);
 }
 
-void ModuleCliLifecycle::destroy(void *moduleState)
+void ModuleCliLifecycle::destroy(grav_module::FrontendModuleOpaqueState moduleState)
 {
     ModuleCliLifecycleLocal::destroy(moduleState);
 }
 
-bool ModuleCliLifecycle::start(void *moduleState, char *errorBuffer, std::size_t errorBufferSize)
+bool ModuleCliLifecycle::start(
+    grav_module::FrontendModuleOpaqueState moduleState,
+    const grav_frontend::ErrorBufferView &errorBuffer)
 {
-    return ModuleCliLifecycleLocal::start(moduleState, errorBuffer, errorBufferSize);
+    return ModuleCliLifecycleLocal::start(moduleState, errorBuffer);
 }
 
-void ModuleCliLifecycle::stop(void *moduleState)
+void ModuleCliLifecycle::stop(grav_module::FrontendModuleOpaqueState moduleState)
 {
     ModuleCliLifecycleLocal::stop(moduleState);
 }
