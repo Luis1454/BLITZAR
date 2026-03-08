@@ -13,6 +13,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `manifest/fmea_actions.json`: canonical owner/status/task register for FMEA mitigations.
 - `tool_qualification.md`: tool confidence and qualification strategy.
 - `tool_manifest.md`: generated toolchain version manifest for CI evidence lanes.
+- `power_of_10.md`: repository-specific `Power of 10` coding-discipline profile with automated vs manual enforcement mapping.
 - `prod_baseline.md`: explicit evidence-grade `prod` environment baseline.
 - `interface_contracts.md`: versioned critical interface contracts and compatibility rules.
 - `ivv_plan.md`: independent verification and validation plan.
@@ -34,6 +35,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - Every requirement ID must be traceable to at least one verification artifact.
 - Traceability and quality documents are enforced by `tests/checks/quality_check.py` against `quality_manifest.json`.
 - `AGENTS.md` must remain git-tracked and mapped through `EVD_AGENTS` in the canonical evidence registry.
+- The enforceable subset of the `Power of 10` profile is checked in repository policy; non-automatable rules remain review-gated.
 - Quality payload is loaded through deterministic include merge with cycle/duplicate-key protections.
 - All quality artifacts remain constrained by repository file-size policy (target `<=200`, hard `<=300` lines).
 - Evidence references remain `EVD_*` only (no hardcoded file paths in policy rows).

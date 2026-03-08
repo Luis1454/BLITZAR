@@ -39,6 +39,7 @@ Build switch:
 - Failure analysis: `docs/quality/fmea.md`.
 - Numerical acceptance policy: `docs/quality/numerical_validation.md`.
 - Tool confidence strategy: `docs/quality/tool_qualification.md`.
+- Power of 10 coding profile: `docs/quality/power_of_10.md`.
 - Qualified `prod` baseline: `docs/quality/prod_baseline.md`.
 - Critical interface contracts: `docs/quality/interface_contracts.md`.
 - Deviation register: `docs/quality/manifest/deviations.json`.
@@ -62,4 +63,5 @@ Build switch:
 - Release candidates must publish an evidence pack generated from the `release-lane` commands under the selected profile.
 - Runtime behavior in critical paths must be reproducible under pinned toolchain settings.
 - Production C++ paths (`apps/`, `engine/`, `runtime/`, `modules/`) must not use unnamed namespaces.
+- Production C++ paths must also satisfy the automated subset of the `Power of 10` profile (`goto` forbidden, `setjmp`/`longjmp` forbidden, `do-while` forbidden).
 - Any requirement, tolerance, or toolchain update must update the quality artifacts in this directory in the same change.
