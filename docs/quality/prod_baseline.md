@@ -23,7 +23,7 @@ This artifact defines the evidence-grade baseline for qualification-oriented `pr
 
 - Repository quality gate: `python tests/checks/check.py all --root . --config simulation.ini`
 - Python analysis: `python -m ruff check .` and `python -m mypy tests/checks scripts/ci python_tools`
-- Strict integration lane: `tests/checks/clang_tidy_check.py` plus deterministic `ctest` subset under sanitizer-enabled `prod` flags
+- Strict integration lane: `tests/checks/run.py clang_tidy` plus deterministic `ctest` subset under sanitizer-enabled `prod` flags
 - Release lane packaging: `scripts/ci/release/package_bundle.py` and `scripts/ci/release/package_evidence.py`
 
 ## Change Control

@@ -1,0 +1,124 @@
+{
+  "check_registry": {
+    "checks": {
+      "ini": "python_tools.policies.ini_check.IniCheck",
+      "mirror": "python_tools.policies.mirror_check.MirrorCheck",
+      "no_legacy": "python_tools.policies.no_legacy_check.NoLegacyCheck",
+      "launcher": "python_tools.policies.launcher_check.LauncherContractCheck",
+      "quality": "python_tools.policies.quality_baseline.QualityBaselineCheck",
+      "test_catalog": "python_tools.policies.test_catalog.TestCatalogCheck",
+      "pr_policy": "python_tools.policies.pr_policy.PrPolicySelfTestCheck",
+      "repo": "python_tools.policies.repo_policy.RepoPolicyCheck",
+      "python_quality": "python_tools.ci.python_quality_gate.PythonQualityGateCheck"
+    },
+    "sequences": {
+      "all": ["ini", "mirror", "no_legacy", "quality", "test_catalog", "pr_policy", "repo"],
+      "quality": ["quality", "test_catalog", "pr_policy"]
+    }
+  },
+  "commands": {
+    "clang_tidy": {
+      "description": "Run clang-tidy over selected compile database entries.",
+      "check": "python_tools.ci.clang_tidy.ClangTidyCheck",
+      "arguments": [
+        {"flags": ["--build-dir"], "dest": "build_dir", "required": true, "help": "Build directory containing compile_commands.json"},
+        {"flags": ["--root"], "default": ".", "help": "Repository root"},
+        {"flags": ["--clang-tidy"], "dest": "clang_tidy", "default": "clang-tidy", "help": "clang-tidy executable"},
+        {"flags": ["--checks"], "default": "-*,clang-analyzer-*,bugprone-unused-return-value", "help": "clang-tidy checks expression"},
+        {"flags": ["--path"], "dest": "paths", "action": "append", "default": [], "help": "Restrict analysis to this repo-relative path (repeatable)"}
+      ],
+      "context": {
+        "root": {"source": "arg", "name": "root", "path": "resolve"},
+        "build_dir": {"source": "arg", "name": "build_dir", "path": "resolve"},
+        "clang_tidy_binary": {"source": "arg", "name": "clang_tidy"},
+        "clang_tidy_checks": {"source": "arg", "name": "checks"},
+        "paths": {"source": "arg", "name": "paths", "tuple": true}
+      }
+    },
+    "pr_policy": {
+      "description": "Validate AGENTS PR policy (branch/title/body coherence).",
+      "check": "python_tools.policies.pr_policy.PrPolicyCheck",
+      "arguments": [
+        {"flags": ["--event-name"], "dest": "event_name", "default": "", "default_env": "GITHUB_EVENT_NAME", "help": "GitHub event name"},
+        {"flags": ["--event-path"], "dest": "event_path", "default": "", "default_env": "GITHUB_EVENT_PATH", "help": "Path to GitHub event payload JSON"},
+        {"flags": ["--branch"], "default": "", "help": "Override PR branch name (issue/<N>-<slug>)"},
+        {"flags": ["--title"], "default": "", "help": "Override PR title"},
+        {"flags": ["--body"], "default": "", "help": "Override PR body"}
+      ],
+      "context": {
+        "root": {"source": "repo_root"},
+        "event_name": {"source": "arg", "name": "event_name"},
+        "event_path": {"source": "arg", "name": "event_path"},
+        "branch": {"source": "arg", "name": "branch"},
+        "title": {"source": "arg", "name": "title"},
+        "body": {"source": "arg", "name": "body"}
+      }
+    },
+    "main_delivery_gate": {
+      "description": "Validate that pushes to main originate from merged issue pull requests.",
+      "check": "python_tools.policies.main_delivery_policy.MainDeliveryGateCheck",
+      "arguments": [
+        {"flags": ["--event-name"], "dest": "event_name", "default": "", "default_env": "GITHUB_EVENT_NAME", "help": "GitHub event name"},
+        {"flags": ["--event-path"], "dest": "event_path", "default": "", "default_env": "GITHUB_EVENT_PATH", "help": "Path to GitHub event payload JSON"},
+        {"flags": ["--repo"], "default": "", "default_env": "GITHUB_REPOSITORY", "help": "owner/repo"},
+        {"flags": ["--sha"], "default": "", "default_env": "GITHUB_SHA", "help": "Commit SHA to validate"}
+      ],
+      "context": {
+        "root": {"source": "repo_root"},
+        "event_name": {"source": "arg", "name": "event_name"},
+        "event_path": {"source": "arg", "name": "event_path"},
+        "options": {
+          "source": "mapping",
+          "items": {
+            "repo": {"source": "arg", "name": "repo"},
+            "token": {"source": "env", "name": "GITHUB_TOKEN", "default": ""},
+            "sha": {"source": "arg", "name": "sha"}
+          }
+        }
+      }
+    },
+    "traceability_gate": {
+      "description": "Validate requirement traceability for critical pull requests.",
+      "check": "python_tools.policies.traceability_gate.TraceabilityGateCheck",
+      "arguments": [
+        {"flags": ["--event-name"], "dest": "event_name", "default": "", "default_env": "GITHUB_EVENT_NAME", "help": "GitHub event name"},
+        {"flags": ["--event-path"], "dest": "event_path", "default": "", "default_env": "GITHUB_EVENT_PATH", "help": "Path to GitHub event payload JSON"},
+        {"flags": ["--repo"], "default": "", "default_env": "GITHUB_REPOSITORY", "help": "GitHub owner/repo slug"}
+      ],
+      "context": {
+        "root": {"source": "repo_root"},
+        "event_name": {"source": "arg", "name": "event_name"},
+        "event_path": {"source": "arg", "name": "event_path"},
+        "options": {
+          "source": "mapping",
+          "items": {
+            "repo": {"source": "arg", "name": "repo"},
+            "token": {"source": "env", "name": "GITHUB_TOKEN", "default": ""}
+          }
+        }
+      }
+    },
+    "ivv_gate": {
+      "description": "Validate IV&V independence gate for PRs.",
+      "check": "python_tools.policies.ivv_gate.IvvGateCheck",
+      "arguments": [
+        {"flags": ["--event-name"], "dest": "event_name", "default": "", "default_env": "GITHUB_EVENT_NAME", "help": "GitHub event name"},
+        {"flags": ["--event-path"], "dest": "event_path", "default": "", "default_env": "GITHUB_EVENT_PATH", "help": "Path to GitHub event payload JSON"},
+        {"flags": ["--repo"], "default": "", "default_env": "GITHUB_REPOSITORY", "help": "GitHub repository owner/name"},
+        {"flags": ["--token"], "default": "", "default_env": "GITHUB_TOKEN", "help": "GitHub token used to query PR metadata"}
+      ],
+      "context": {
+        "root": {"source": "repo_root"},
+        "event_name": {"source": "arg", "name": "event_name"},
+        "event_path": {"source": "arg", "name": "event_path"},
+        "options": {
+          "source": "mapping",
+          "items": {
+            "repo": {"source": "arg", "name": "repo"},
+            "token": {"source": "arg", "name": "token"}
+          }
+        }
+      }
+    }
+  }
+}

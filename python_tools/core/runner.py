@@ -10,7 +10,12 @@ from .reporting import ResultReporter
 CheckFactory = Callable[[], BaseCheck]
 
 
-def resolve_sequence(check_name: str, with_launcher: bool) -> list[str]:
+def resolve_sequence(check_name: str, with_launcher: bool, sequences: dict[str, list[str]] | None = None) -> list[str]:
+    if sequences is not None and check_name in sequences:
+        ordered = list(sequences[check_name])
+        if check_name == "all" and with_launcher and "launcher" not in ordered:
+            ordered.insert(3, "launcher")
+        return ordered
     if check_name == "all":
         ordered = ["ini", "mirror", "no_legacy", "quality", "test_catalog", "pr_policy", "repo"]
         if with_launcher:
@@ -22,13 +27,14 @@ def resolve_sequence(check_name: str, with_launcher: bool) -> list[str]:
 
 
 class CheckRunner:
-    def __init__(self, registry: dict[str, CheckFactory]) -> None:
+    def __init__(self, registry: dict[str, CheckFactory], sequences: dict[str, list[str]] | None = None) -> None:
         self._registry = registry
+        self._sequences = sequences
 
     def run(self, check_name: str, context: CheckContext, reporter: ResultReporter | None = None) -> bool:
         current_reporter = reporter if reporter is not None else ResultReporter()
         all_ok = True
-        for name in resolve_sequence(check_name, context.with_launcher):
+        for name in resolve_sequence(check_name, context.with_launcher, self._sequences):
             factory = self._registry.get(name)
             if factory is None:
                 all_ok = False
