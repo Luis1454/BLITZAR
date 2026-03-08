@@ -5,10 +5,16 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace grav_frontend {
+
+struct ConsumedSnapshot final {
+    std::vector<RenderParticle> particles;
+    std::size_t sourceSize = 0u;
+};
 
 class IFrontendRuntime {
     public:
@@ -48,7 +54,7 @@ class IFrontendRuntime {
 
         virtual SimulationStats getCachedStats() const = 0;
         virtual SimulationStats getStats() const = 0;
-        virtual bool consumeLatestSnapshot(std::vector<RenderParticle> &outSnapshot, std::size_t *snapshotSize = nullptr) = 0;
+        virtual std::optional<ConsumedSnapshot> consumeLatestSnapshot() = 0;
         virtual bool tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot) = 0;
         virtual std::string linkStateLabel() const = 0;
         virtual std::string backendOwnerLabel() const = 0;

@@ -17,13 +17,13 @@ MultiViewWidget::MultiViewWidget()
       _view3d(new ParticleView(ViewMode::Perspective)),
       _maxDrawParticles(50000u)
 {
-    QGridLayout &grid = *new QGridLayout(this);
-    grid.setSpacing(6);
-    grid.setContentsMargins(0, 0, 0, 0);
-    grid.addWidget(_xy, 0, 0);
-    grid.addWidget(_xz, 0, 1);
-    grid.addWidget(_yz, 1, 0);
-    grid.addWidget(_view3d, 1, 1);
+    auto *grid = new QGridLayout(this);
+    grid->setSpacing(6);
+    grid->setContentsMargins(0, 0, 0, 0);
+    grid->addWidget(_xy, 0, 0);
+    grid->addWidget(_xz, 0, 1);
+    grid->addWidget(_yz, 1, 0);
+    grid->addWidget(_view3d, 1, 1);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
