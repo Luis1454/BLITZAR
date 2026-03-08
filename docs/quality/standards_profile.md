@@ -52,6 +52,7 @@ Build switch:
 - `pr-fast` executes repository policy gates, analyzer checks, and a deterministic fast subset for merge safety.
 - `nightly-full` extends deterministic evidence with repeated standalone integration runs, coverage publication, FMEA status snapshots, and optional GPU full-suite or numerical artifacts.
 - `release-lane` reruns strict `prod` validation, then publishes the release bundle, release-quality index, and evidence pack for review.
+- Filtered CI `ctest` invocations in evidence lanes must use `--no-tests=error` to prevent false green jobs when selectors drift.
 - Temporary waivers and deviations must carry explicit owner, approver, and review date metadata in the canonical register.
 - Release review should begin from the release-quality index before opening the full evidence pack.
 - Breaking interface changes must update the canonical contract artifact and linked tests in the same review.

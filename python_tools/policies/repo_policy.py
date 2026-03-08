@@ -53,12 +53,7 @@ EVIDENCE_WORKFLOW_PATHS = (
 
 
 def should_skip_dir(dirname: str) -> bool:
-    return (
-        dirname in IGNORED_DIRS
-        or dirname.startswith("build-")
-        or dirname.startswith("cmake-build-")
-        or dirname.startswith(".pytest-basetemp")
-    )
+    return dirname in IGNORED_DIRS or dirname.startswith("build-") or dirname.startswith("cmake-build-") or dirname.startswith(".pytest-basetemp")
 
 
 def should_count_lines(path: Path) -> bool:
@@ -123,7 +118,8 @@ class RepoPolicyCheck(BaseCheck):
         for stale in sorted(allowlist - used_allowlist):
             result.add_warning(f"allowlist entry not needed anymore: {stale}")
 
-        self._check_evidence_workflow_profiles(context.root, result)
+        self._check_evidence_workflow_commands(context.root, result, "cmake -S", "-DGRAVITY_PROFILE=prod", "evidence configure command must include -DGRAVITY_PROFILE=prod")
+        self._check_evidence_workflow_commands(context.root, result, "ctest ", "--no-tests=error", "CI ctest command must include --no-tests=error")
 
     def _check_cpp_content(self, rel: str, content: str, result: CheckResult) -> None:
         if not rel.startswith("tests/"):
@@ -164,24 +160,31 @@ class RepoPolicyCheck(BaseCheck):
         if line_count > context.target_lines:
             result.add_warning(f"{rel}: {line_count} lines exceeds target {context.target_lines}")
 
-    def _check_evidence_workflow_profiles(self, root: Path, result: CheckResult) -> None:
+    def _check_evidence_workflow_commands(
+        self,
+        root: Path,
+        result: CheckResult,
+        marker_text: str,
+        required_text: str,
+        error_text: str,
+    ) -> None:
         for rel in EVIDENCE_WORKFLOW_PATHS:
             path = root / rel
             if not path.exists():
                 continue
             content = path.read_text(encoding="utf-8", errors="ignore")
-            for command in self._collect_configure_commands(content):
-                if "-DGRAVITY_PROFILE=prod" in command:
+            for command in self._collect_marker_commands(content, marker_text):
+                if required_text in command:
                     continue
-                result.add_error(f"{rel}: evidence configure command must include -DGRAVITY_PROFILE=prod: {command}")
+                result.add_error(f"{rel}: {error_text}: {command}")
 
-    def _collect_configure_commands(self, content: str) -> list[str]:
+    def _collect_marker_commands(self, content: str, marker_text: str) -> list[str]:
         commands: list[str] = []
         lines = content.splitlines()
         index = 0
         while index < len(lines):
             stripped = lines[index].strip()
-            marker = stripped.find("cmake -S")
+            marker = stripped.find(marker_text)
             if marker == -1:
                 index += 1
                 continue
