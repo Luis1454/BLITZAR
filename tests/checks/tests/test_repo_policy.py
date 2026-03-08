@@ -101,3 +101,31 @@ def test_repo_policy_ignores_non_evidence_dev_workflow(tmp_path: Path) -> None:
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert ok
     assert not errors
+
+
+def test_repo_policy_rejects_evidence_ctest_without_no_tests_guard(tmp_path: Path) -> None:
+    _write(
+        tmp_path / ".github" / "workflows" / "nightly-full.yml",
+        "jobs:\n"
+        "  nightly:\n"
+        "    steps:\n"
+        "      - name: Run tests\n"
+        "        run: ctest --test-dir build -R \"TST_QLT_REPO_001_\"\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("CI ctest command must include --no-tests=error" in error for error in errors)
+
+
+def test_repo_policy_accepts_evidence_ctest_with_no_tests_guard(tmp_path: Path) -> None:
+    _write(
+        tmp_path / ".github" / "workflows" / "release-lane.yml",
+        "jobs:\n"
+        "  release:\n"
+        "    steps:\n"
+        "      - name: Run tests\n"
+        "        run: ctest --test-dir build --output-on-failure --timeout 180 --no-tests=error -R \"TST_QLT_REPO_001_\"\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok
+    assert not errors
