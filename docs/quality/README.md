@@ -27,6 +27,9 @@ This folder contains the repository-level quality baseline for high-assurance wo
 
 - Primary compliance posture is NASA-first (`NPR-7150.2D`, `NASA-STD-8739.8B`) with ECSS crosswalk support.
 - `prod` evidence is deterministic and strict-gated; `dev` evidence is non-qualification unless reproduced under `prod` constraints.
+- `pr-fast` is the deterministic merge gate only: strict policy checks, analyzer lane, and integration-safe fast subset.
+- `nightly-full` broadens deterministic evidence with standalone integration repeats, coverage publication, and optional GPU/numerical campaigns.
+- `release-lane` packages qualification-oriented release evidence after a strict `prod` validation pass; optional GPU release lanes remain supplemental only.
 - Every requirement ID must be traceable to at least one verification artifact.
 - Traceability and quality documents are enforced by `tests/checks/quality_check.py` against `quality_manifest.json`.
 - Quality payload is loaded through deterministic include merge with cycle/duplicate-key protections.
