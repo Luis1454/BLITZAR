@@ -5,6 +5,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 ## Contents
 
 - `quality_manifest.json`: canonical quality manifest index (`metadata` + `includes`).
+- `AGENTS.md`: versioned contribution workflow artifact referenced by the NASA-first governance crosswalk.
 - `manifest/*.json`: sharded quality payloads (`evidence`, `policies`, `requirements`, `test_groups`, `crosswalk`).
 - `python_tools/policies/evidence_registry.py`: resolver that reads `EVD_*` mappings from `quality_manifest.json`.
 - `standards_profile.md`: NASA-first standards profile and scope.
@@ -32,6 +33,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `release-lane` packages qualification-oriented release evidence after a strict `prod` validation pass; optional GPU release lanes remain supplemental only.
 - Every requirement ID must be traceable to at least one verification artifact.
 - Traceability and quality documents are enforced by `tests/checks/quality_check.py` against `quality_manifest.json`.
+- `AGENTS.md` must remain git-tracked and mapped through `EVD_AGENTS` in the canonical evidence registry.
 - Quality payload is loaded through deterministic include merge with cycle/duplicate-key protections.
 - All quality artifacts remain constrained by repository file-size policy (target `<=200`, hard `<=300` lines).
 - Evidence references remain `EVD_*` only (no hardcoded file paths in policy rows).
