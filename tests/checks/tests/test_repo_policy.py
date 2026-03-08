@@ -129,3 +129,31 @@ def test_repo_policy_accepts_evidence_ctest_with_no_tests_guard(tmp_path: Path) 
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert ok
     assert not errors
+
+
+def test_repo_policy_rejects_legacy_ctest_selector_prefix(tmp_path: Path) -> None:
+    _write(
+        tmp_path / ".github" / "workflows" / "nightly-full.yml",
+        "jobs:\n"
+        "  nightly:\n"
+        "    steps:\n"
+        "      - name: Run tests\n"
+        "        run: ctest --test-dir build --output-on-failure --timeout 180 --no-tests=error -R \"ConfigArgsTest\\\\.TST_UNT_CONF_\"\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("CI ctest selector must use normalized TST_* ids" in error for error in errors)
+
+
+def test_repo_policy_accepts_normalized_ctest_selector_prefix(tmp_path: Path) -> None:
+    _write(
+        tmp_path / ".github" / "workflows" / "nightly-full.yml",
+        "jobs:\n"
+        "  nightly:\n"
+        "    steps:\n"
+        "      - name: Run tests\n"
+        "        run: ctest --test-dir build --output-on-failure --timeout 180 --no-tests=error -R \"TST_UNT_CONF_|TST_QLT_REPO_001_\"\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok
+    assert not errors
