@@ -72,6 +72,7 @@ if(GRAVITY_BUILD_FRONTEND_MODULE_HOST)
         apps/module-host/module_host_cli_args.cpp
         apps/module-host/module_host_cli_text.cpp
         apps/module-host/module_host_module_ops.cpp
+        runtime/src/frontend/FrontendModuleBoundary.cpp
         runtime/src/frontend/FrontendModuleHandle.cpp
         runtime/src/frontend/FrontendModuleHandleLoad.cpp
         runtime/src/frontend/FrontendModuleApi.cpp
@@ -88,6 +89,7 @@ if(GRAVITY_BUILD_FRONTEND_MODULES)
         modules/cli/module_cli_commands.cpp
         modules/cli/module_cli_lifecycle.cpp
         runtime/src/frontend/ErrorBuffer.cpp
+        runtime/src/frontend/FrontendModuleBoundary.cpp
         runtime/src/frontend/FrontendModuleApi.cpp
         ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
         engine/src/config/TextParse.cpp
@@ -97,6 +99,7 @@ if(GRAVITY_BUILD_FRONTEND_MODULES)
     add_library(${FRONTEND_MODULE_ECHO_NAME} MODULE
         modules/echo/module.cpp
         runtime/src/frontend/ErrorBuffer.cpp
+        runtime/src/frontend/FrontendModuleBoundary.cpp
         runtime/src/frontend/FrontendModuleApi.cpp
     )
     configure_gravity_cpp_target(${FRONTEND_MODULE_ECHO_NAME})
@@ -104,6 +107,7 @@ if(GRAVITY_BUILD_FRONTEND_MODULES)
     add_library(${FRONTEND_MODULE_GUI_PROXY_NAME} MODULE
         modules/proxy/module.cpp
         runtime/src/frontend/ErrorBuffer.cpp
+        runtime/src/frontend/FrontendModuleBoundary.cpp
         runtime/src/frontend/FrontendModuleApi.cpp
     )
     configure_gravity_cpp_target(${FRONTEND_MODULE_GUI_PROXY_NAME})
@@ -127,6 +131,7 @@ if(GRAVITY_BUILD_FRONTEND_MODULES)
         add_library(${FRONTEND_MODULE_QT_INPROC_NAME} MODULE
             modules/qt/module.cpp
             runtime/src/frontend/ErrorBuffer.cpp
+            runtime/src/frontend/FrontendModuleBoundary.cpp
             runtime/src/frontend/FrontendModuleApi.cpp
             runtime/src/frontend/FrontendBackendBridge.cpp
             runtime/src/frontend/FrontendCommon.cpp

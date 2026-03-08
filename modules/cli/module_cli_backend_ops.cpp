@@ -13,15 +13,13 @@ namespace grav_module_cli {
 
 class ModuleCliBackendOpsLocal final {
 public:
-    static bool ensureConnected(ModuleState &state, char *errorBuffer, std::size_t errorBufferSize)
+    static bool ensureConnected(ModuleState &state, const grav_frontend::ErrorBufferView &errorBuffer)
     {
         if (state.client.isConnected()) {
             return true;
         }
         if (!state.client.connect(state.host, state.port)) {
-            grav_frontend::writeErrorBuffer(
-                errorBuffer,
-                errorBufferSize,
+            errorBuffer.write(
                 "unable to connect to backend " + state.host + ":" + std::to_string(state.port));
             return false;
         }
@@ -31,16 +29,15 @@ public:
     static bool sendSimpleCommand(
         ModuleState &state,
         const std::string &cmd,
-        char *errorBuffer,
-        std::size_t errorBufferSize)
+        const grav_frontend::ErrorBufferView &errorBuffer)
     {
-        if (!ensureConnected(state, errorBuffer, errorBufferSize)) {
+        if (!ensureConnected(state, errorBuffer)) {
             return false;
         }
         const BackendClientResponse response = state.client.sendCommand(cmd);
         if (!response.ok) {
             const std::string message = response.error.empty() ? "backend command failed" : response.error;
-            grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, message);
+            errorBuffer.write(message);
             if (response.error == "not connected") {
                 state.client.disconnect();
             }
@@ -49,16 +46,16 @@ public:
         return true;
     }
 
-    static bool commandStatus(ModuleState &state, char *errorBuffer, std::size_t errorBufferSize)
+    static bool commandStatus(ModuleState &state, const grav_frontend::ErrorBufferView &errorBuffer)
     {
-        if (!ensureConnected(state, errorBuffer, errorBufferSize)) {
+        if (!ensureConnected(state, errorBuffer)) {
             return false;
         }
         BackendClientStatus status{};
         const BackendClientResponse response = state.client.getStatus(status);
         if (!response.ok) {
             const std::string message = response.error.empty() ? "status failed" : response.error;
-            grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, message);
+            errorBuffer.write(message);
             if (response.error == "not connected") {
                 state.client.disconnect();
             }
@@ -79,17 +76,16 @@ public:
     static bool commandStep(
         ModuleState &state,
         const std::vector<std::string> &tokens,
-        char *errorBuffer,
-        std::size_t errorBufferSize)
+        const grav_frontend::ErrorBufferView &errorBuffer)
     {
         int count = 1;
         if (tokens.size() >= 2u) {
             if (!grav_text::parseNumber(tokens[1], count) || count < 1) {
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "invalid step count");
+                errorBuffer.write("invalid step count");
                 return false;
             }
         }
-        if (!ensureConnected(state, errorBuffer, errorBufferSize)) {
+        if (!ensureConnected(state, errorBuffer)) {
             return false;
         }
         const BackendClientResponse response = state.client.sendCommand(
@@ -97,7 +93,7 @@ public:
             "\"count\":" + std::to_string(count));
         if (!response.ok) {
             const std::string message = response.error.empty() ? "step failed" : response.error;
-            grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, message);
+            errorBuffer.write(message);
             if (response.error == "not connected") {
                 state.client.disconnect();
             }
@@ -109,16 +105,15 @@ public:
     static bool connect(
         ModuleState &state,
         const std::vector<std::string> &tokens,
-        char *errorBuffer,
-        std::size_t errorBufferSize)
+        const grav_frontend::ErrorBufferView &errorBuffer)
     {
         if (tokens.size() < 3u) {
-            grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "usage: connect <host> <port>");
+            errorBuffer.write("usage: connect <host> <port>");
             return false;
         }
         unsigned int parsedPort = 0u;
         if (!grav_text::parseNumber(tokens[2], parsedPort) || parsedPort == 0u || parsedPort > 65535u) {
-            grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "invalid backend port");
+            errorBuffer.write("invalid backend port");
             return false;
         }
 
@@ -126,18 +121,18 @@ public:
         state.port = static_cast<std::uint16_t>(parsedPort);
         state.client.disconnect();
         if (!state.client.connect(state.host, state.port)) {
-            grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "connect failed");
+            errorBuffer.write("connect failed");
             return false;
         }
         std::cout << "[module-cli] connected to " << state.host << ":" << state.port << "\n";
         return true;
     }
 
-    static bool reconnect(ModuleState &state, char *errorBuffer, std::size_t errorBufferSize)
+    static bool reconnect(ModuleState &state, const grav_frontend::ErrorBufferView &errorBuffer)
     {
         state.client.disconnect();
         if (!state.client.connect(state.host, state.port)) {
-            grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "reconnect failed");
+            errorBuffer.write("reconnect failed");
             return false;
         }
         std::cout << "[module-cli] reconnected to " << state.host << ":" << state.port << "\n";
@@ -145,41 +140,38 @@ public:
     }
 };
 
-bool ModuleCliBackendOps::commandStatus(ModuleState &state, char *errorBuffer, std::size_t errorBufferSize)
+bool ModuleCliBackendOps::commandStatus(ModuleState &state, const grav_frontend::ErrorBufferView &errorBuffer)
 {
-    return ModuleCliBackendOpsLocal::commandStatus(state, errorBuffer, errorBufferSize);
+    return ModuleCliBackendOpsLocal::commandStatus(state, errorBuffer);
 }
 
 bool ModuleCliBackendOps::commandStep(
     ModuleState &state,
     const std::vector<std::string> &tokens,
-    char *errorBuffer,
-    std::size_t errorBufferSize)
+    const grav_frontend::ErrorBufferView &errorBuffer)
 {
-    return ModuleCliBackendOpsLocal::commandStep(state, tokens, errorBuffer, errorBufferSize);
+    return ModuleCliBackendOpsLocal::commandStep(state, tokens, errorBuffer);
 }
 
 bool ModuleCliBackendOps::connect(
     ModuleState &state,
     const std::vector<std::string> &tokens,
-    char *errorBuffer,
-    std::size_t errorBufferSize)
+    const grav_frontend::ErrorBufferView &errorBuffer)
 {
-    return ModuleCliBackendOpsLocal::connect(state, tokens, errorBuffer, errorBufferSize);
+    return ModuleCliBackendOpsLocal::connect(state, tokens, errorBuffer);
 }
 
-bool ModuleCliBackendOps::reconnect(ModuleState &state, char *errorBuffer, std::size_t errorBufferSize)
+bool ModuleCliBackendOps::reconnect(ModuleState &state, const grav_frontend::ErrorBufferView &errorBuffer)
 {
-    return ModuleCliBackendOpsLocal::reconnect(state, errorBuffer, errorBufferSize);
+    return ModuleCliBackendOpsLocal::reconnect(state, errorBuffer);
 }
 
 bool ModuleCliBackendOps::sendSimpleCommand(
     ModuleState &state,
     const std::string &cmd,
-    char *errorBuffer,
-    std::size_t errorBufferSize)
+    const grav_frontend::ErrorBufferView &errorBuffer)
 {
-    return ModuleCliBackendOpsLocal::sendSimpleCommand(state, cmd, errorBuffer, errorBufferSize);
+    return ModuleCliBackendOpsLocal::sendSimpleCommand(state, cmd, errorBuffer);
 }
 
 } // namespace grav_module_cli
