@@ -21,7 +21,11 @@ class ClangTidyCommand(BaseCliCommand):
         parser.add_argument("--build-dir", required=True, help="Build directory containing compile_commands.json")
         parser.add_argument("--root", default=".", help="Repository root")
         parser.add_argument("--clang-tidy", default="clang-tidy", help="clang-tidy executable")
-        parser.add_argument("--checks", default="-*,clang-analyzer-*", help="clang-tidy checks expression")
+        parser.add_argument(
+            "--checks",
+            default="-*,clang-analyzer-*,bugprone-unused-return-value",
+            help="clang-tidy checks expression",
+        )
         parser.add_argument("--path", dest="paths", action="append", default=[], help="Restrict analysis to this repo-relative path (repeatable)")
         return parser
 
@@ -45,4 +49,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

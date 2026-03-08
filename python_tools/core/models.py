@@ -23,7 +23,7 @@ class CheckContext:
     title: str = ""
     body: str = ""
     clang_tidy_binary: str = "clang-tidy"
-    clang_tidy_checks: str = "-*,clang-analyzer-*"
+    clang_tidy_checks: str = "-*,clang-analyzer-*,bugprone-unused-return-value"
     paths: tuple[str, ...] = ()
     options: OptionsMap = field(default_factory=dict)
 
@@ -46,4 +46,3 @@ class CheckResult:
 
     def add_warning(self, message: str) -> None:
         self.warnings.append(message)
-

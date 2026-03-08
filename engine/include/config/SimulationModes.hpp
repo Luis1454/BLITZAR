@@ -13,8 +13,8 @@ extern const std::string_view kSolverOctreeCpu;
 extern const std::string_view kIntegratorEuler;
 extern const std::string_view kIntegratorRk4;
 
-bool normalizeSolver(std::string_view value, std::string &outCanonical);
-bool normalizeIntegrator(std::string_view value, std::string &outCanonical);
+[[nodiscard]] bool normalizeSolver(std::string_view value, std::string &outCanonical);
+[[nodiscard]] bool normalizeIntegrator(std::string_view value, std::string &outCanonical);
 
 } // namespace grav_modes
 
