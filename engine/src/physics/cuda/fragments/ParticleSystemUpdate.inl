@@ -15,7 +15,7 @@ bool ParticleSystem::update(float deltaTime) {
         if (numParticles < 2) {
             return true;
         }
-        const int numBlocks = (numParticles + BLOCK_SIZE - 1) / BLOCK_SIZE;
+        const int numBlocks = (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
 
         if (uploadHostState) {
             if (!checkCudaStatus(
@@ -25,7 +25,7 @@ bool ParticleSystem::update(float deltaTime) {
             }
         }
 
-        computeSphDensityPressureKernel<<<numBlocks, BLOCK_SIZE>>>(
+        computeSphDensityPressureKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
             d_particles,
             d_sphDensity,
             d_sphPressure,
@@ -39,7 +39,7 @@ bool ParticleSystem::update(float deltaTime) {
         }
 
         constexpr float kSphCorrectionScale = 0.22f;
-        integrateSphKernel<<<numBlocks, BLOCK_SIZE>>>(
+        integrateSphKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
             d_particles,
             d_sphDensity,
             d_sphPressure,
@@ -221,7 +221,7 @@ bool ParticleSystem::update(float deltaTime) {
             }
         }
 
-        updateParticlesOctree<<<(_particles.size() + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(
+        updateParticlesOctree<<<(_particles.size() + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize, Particle::kDefaultCudaBlockSize>>>(
             last,
             d_particles,
             static_cast<int>(_particles.size()),
@@ -265,7 +265,7 @@ bool ParticleSystem::update(float deltaTime) {
     }
 
     const int numParticles = static_cast<int>(_particles.size());
-    const int numBlocks = (numParticles + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    const int numBlocks = (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
 
     if (!checkCudaStatus(
             cudaMemcpy(last, d_particles, _particles.size() * sizeof(Particle), cudaMemcpyDeviceToDevice),
@@ -283,55 +283,55 @@ bool ParticleSystem::update(float deltaTime) {
     }
 
     if (_integratorMode == IntegratorMode::Rk4) {
-        extractVelocityKernel<<<numBlocks, BLOCK_SIZE>>>(last, d_k1x, numParticles);
+        extractVelocityKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(last, d_k1x, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k1 launch")) {
             return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, BLOCK_SIZE>>>(last, d_k1v, numParticles, softening, kGravityMaxAcceleration);
+        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(last, d_k1v, numParticles, softening, kGravityMaxAcceleration);
         if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k1 launch")) {
             return false;
         }
 
-        buildRk4StageKernel<<<numBlocks, BLOCK_SIZE>>>(last, d_k1x, d_k1v, 0.5f * deltaTime, d_stage, numParticles);
+        buildRk4StageKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(last, d_k1x, d_k1v, 0.5f * deltaTime, d_stage, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "buildStage k2 launch")) {
             return false;
         }
-        extractVelocityKernel<<<numBlocks, BLOCK_SIZE>>>(d_stage, d_k2x, numParticles);
+        extractVelocityKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(d_stage, d_k2x, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k2 launch")) {
             return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, BLOCK_SIZE>>>(d_stage, d_k2v, numParticles, softening, kGravityMaxAcceleration);
+        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(d_stage, d_k2v, numParticles, softening, kGravityMaxAcceleration);
         if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k2 launch")) {
             return false;
         }
 
-        buildRk4StageKernel<<<numBlocks, BLOCK_SIZE>>>(last, d_k2x, d_k2v, 0.5f * deltaTime, d_stage, numParticles);
+        buildRk4StageKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(last, d_k2x, d_k2v, 0.5f * deltaTime, d_stage, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "buildStage k3 launch")) {
             return false;
         }
-        extractVelocityKernel<<<numBlocks, BLOCK_SIZE>>>(d_stage, d_k3x, numParticles);
+        extractVelocityKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(d_stage, d_k3x, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k3 launch")) {
             return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, BLOCK_SIZE>>>(d_stage, d_k3v, numParticles, softening, kGravityMaxAcceleration);
+        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(d_stage, d_k3v, numParticles, softening, kGravityMaxAcceleration);
         if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k3 launch")) {
             return false;
         }
 
-        buildRk4StageKernel<<<numBlocks, BLOCK_SIZE>>>(last, d_k3x, d_k3v, deltaTime, d_stage, numParticles);
+        buildRk4StageKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(last, d_k3x, d_k3v, deltaTime, d_stage, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "buildStage k4 launch")) {
             return false;
         }
-        extractVelocityKernel<<<numBlocks, BLOCK_SIZE>>>(d_stage, d_k4x, numParticles);
+        extractVelocityKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(d_stage, d_k4x, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k4 launch")) {
             return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, BLOCK_SIZE>>>(d_stage, d_k4v, numParticles, softening, kGravityMaxAcceleration);
+        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(d_stage, d_k4v, numParticles, softening, kGravityMaxAcceleration);
         if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k4 launch")) {
             return false;
         }
 
-        finalizeRk4Kernel<<<numBlocks, BLOCK_SIZE>>>(
+        finalizeRk4Kernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
             last,
             d_k1x, d_k2x, d_k3x, d_k4x,
             d_k1v, d_k2v, d_k3v, d_k4v,
@@ -346,7 +346,7 @@ bool ParticleSystem::update(float deltaTime) {
             return false;
         }
     } else {
-        updateParticles<<<numBlocks, BLOCK_SIZE>>>(last, d_particles, numParticles, deltaTime, softening, kGravityMaxAcceleration);
+        updateParticles<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(last, d_particles, numParticles, deltaTime, softening, kGravityMaxAcceleration);
         if (!checkCudaStatus(cudaGetLastError(), "updateParticles kernel launch")) {
             return false;
         }

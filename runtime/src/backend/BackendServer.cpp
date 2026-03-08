@@ -245,11 +245,8 @@ void BackendServer::handleClient(SocketHandle client)
             }
             buffer.append(chunk.data(), static_cast<std::size_t>(received));
 
-            while (true) {
-                std::size_t newline = buffer.find('\n');
-                if (newline == std::string::npos) {
-                    break;
-                }
+            std::size_t newline = buffer.find('\n');
+            while (newline != std::string::npos) {
                 std::string request = trim(buffer.substr(0, newline));
                 buffer.erase(0, newline + 1);
                 if (!request.empty() && request.back() == '\r') {
@@ -268,6 +265,7 @@ void BackendServer::handleClient(SocketHandle client)
                     grav_socket::closeSocket(clientSocket);
                     return;
                 }
+                newline = buffer.find('\n');
             }
         }
 

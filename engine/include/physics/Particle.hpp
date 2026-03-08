@@ -5,16 +5,14 @@
 ** test
 */
 
-#define MASS 0.01f
-#define NUM_PARTICLES 100000
-#define BLOCK_SIZE 256
-#define DELTA_TIME 0.1f
-
 #include <vector>
 #include "physics/Vector.hpp"
 
 class Particle {
     public:
+        static constexpr float kDefaultMass = 0.01f;
+        static constexpr int kDefaultCudaBlockSize = 256;
+
         GRAVITY_HD Particle();
         GRAVITY_HD ~Particle();
 

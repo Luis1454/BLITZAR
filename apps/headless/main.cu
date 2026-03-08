@@ -81,12 +81,8 @@ int main(int argc, char **argv)
     const auto start = std::chrono::steady_clock::now();
     std::uint64_t lastLoggedStep = 0;
 
-    while (true) {
-        const SimulationStats stats = backend.getStats();
-        if (stats.steps >= static_cast<std::uint64_t>(targetSteps)) {
-            break;
-        }
-
+    SimulationStats stats = backend.getStats();
+    while (stats.steps < static_cast<std::uint64_t>(targetSteps)) {
         if (backend.tryConsumeSnapshot(snapshot) && !snapshot.empty()) {
             if ((stats.steps / 50) > (lastLoggedStep / 50)) {
                 lastLoggedStep = stats.steps;
@@ -107,6 +103,7 @@ int main(int argc, char **argv)
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        stats = backend.getStats();
     }
 
     if (exportOnExit) {
