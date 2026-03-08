@@ -1,6 +1,6 @@
 [tool.pytest.ini_options]
-addopts = "-q"
-testpaths = ["tests/checks/tests"]
+addopts = "-q --basetemp=.pytest-basetemp-checks"
+testpaths = ["tests/checks/suites"]
 
 [tool.ruff]
 target-version = "py312"

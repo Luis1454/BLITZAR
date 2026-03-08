@@ -24,7 +24,7 @@ class PythonQualityGateCheck(BaseCheck):
         commands = (
             [sys.executable, "-m", "ruff", "check", "."],
             [sys.executable, "-m", "mypy", "tests/checks", "scripts/ci", "python_tools"],
-            [sys.executable, "-m", "pytest", "--basetemp", pytest_temp, "-q", "tests/checks/tests"],
+            [sys.executable, "-m", "pytest", "--basetemp", pytest_temp, "-q", "tests/checks/suites"],
         )
         for command in commands:
             completed = self._runner.run(command, cwd=context.root)
