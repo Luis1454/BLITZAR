@@ -3,6 +3,7 @@
 #include "config/SimulationArgsFrontendOptions.hpp"
 #include "config/SimulationArgsInitOptions.hpp"
 #include "config/SimulationArgsParse.hpp"
+#include "config/SimulationOptionRegistry.hpp"
 
 #include <string>
 
@@ -114,60 +115,10 @@ void printUsage(std::ostream &out, std::string_view programName, bool headlessMo
     out << "Usage: " << programName << " [options]\n";
     out << "Common options:\n";
     out << "  --config <path>\n";
-    out << "  --particle-count <n>\n";
-    out << "  --dt <float>\n";
-    out << "  --solver <pairwise_cuda|octree_gpu|octree_cpu>\n";
-    out << "  --integrator <euler|rk4>\n";
-    out << "  --octree-theta <float>\n";
-    out << "  --octree-softening <float>\n";
-    out << "  --frontend-particle-cap <n>\n";
-    out << "  --zoom <float>\n";
-    out << "  --luminosity <0..255>\n";
-    out << "  --ui-fps <n>\n";
-    out << "  --backend-timeout-ms <10..60000>\n";
-    out << "  --backend-command-timeout-ms <10..60000>\n";
-    out << "  --backend-status-timeout-ms <10..60000>\n";
-    out << "  --backend-snapshot-timeout-ms <10..60000>\n";
-    out << "  --export-directory <path>\n";
-    out << "  --export-format <vtk|vtk_binary|xyz|bin>\n";
-    out << "  --input-file <path>\n";
-    out << "  --input-format <auto|vtk|vtk_binary|xyz|bin>\n";
-    out << "  --init-config-style <preset|detailed>\n";
-    out << "  --preset-structure <disk_orbit|random_cloud|file>\n";
-    out << "  --structure <disk_orbit|random_cloud|file> (alias)\n";
-    out << "  --preset-size <float>\n";
-    out << "  --size <float> (alias)\n";
-    out << "  --velocity-temperature <float>\n";
-    out << "  --particle-temperature <float>\n";
-    out << "  --thermal-ambient <float>\n";
-    out << "  --thermal-specific-heat <float>\n";
-    out << "  --thermal-heating <float>\n";
-    out << "  --thermal-radiation <float>\n";
-    out << "  --init-mode <disk_orbit|random_cloud|file>\n";
-    out << "  --init-seed <n>\n";
-    out << "  --init-include-central-body <true|false>\n";
-    out << "  --init-central-mass <float>\n";
-    out << "  --init-central-x <float>\n";
-    out << "  --init-central-y <float>\n";
-    out << "  --init-central-z <float>\n";
-    out << "  --init-central-vx <float>\n";
-    out << "  --init-central-vy <float>\n";
-    out << "  --init-central-vz <float>\n";
-    out << "  --init-disk-mass <float>\n";
-    out << "  --init-disk-radius-min <float>\n";
-    out << "  --init-disk-radius-max <float>\n";
-    out << "  --init-disk-thickness <float>\n";
-    out << "  --init-velocity-scale <float>\n";
-    out << "  --init-cloud-half-extent <float>\n";
-    out << "  --init-cloud-speed <float>\n";
-    out << "  --init-particle-mass <float>\n";
-    out << "  --sph <true|false>\n";
-    out << "  --sph-h <float>\n";
-    out << "  --sph-rest-density <float>\n";
-    out << "  --sph-gas-constant <float>\n";
-    out << "  --sph-viscosity <float>\n";
-    out << "  --energy-every <n>\n";
-    out << "  --energy-sample-limit <n>\n";
+    grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::Core);
+    grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::Frontend);
+    grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::InitState);
+    grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::Fluid);
     if (headlessMode) {
         out << "  --target-steps <n>\n";
         out << "  --export-on-exit <true|false>\n";

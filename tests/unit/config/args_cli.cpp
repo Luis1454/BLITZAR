@@ -180,3 +180,19 @@ TEST(ConfigArgsTest, TST_UNT_CONF_014_ClampsFrontendParticleCapArgumentToProtoco
     EXPECT_FALSE(runtime.hasArgumentError);
 }
 
+TEST(ConfigArgsTest, TST_UNT_CONF_019_CliAliasesApplyThroughSharedRegistry)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+
+    std::vector<std::string> args = {"app", "--structure", "random_cloud", "--size", "24"};
+    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
+    applyArgsToConfig(argViews, config, runtime, warnings);
+
+    EXPECT_EQ(config.presetStructure, "random_cloud");
+    EXPECT_FLOAT_EQ(config.presetSize, 24.0f);
+    EXPECT_TRUE(warnings.str().empty());
+    EXPECT_FALSE(runtime.hasArgumentError);
+}
+

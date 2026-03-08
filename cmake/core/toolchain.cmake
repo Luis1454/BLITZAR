@@ -27,6 +27,7 @@ set(GRAVITY_BACKEND_SOURCES
     engine/src/config/SimulationArgsInitOptions.cpp
     engine/src/config/SimulationArgsInitStateOptions.cpp
     engine/src/config/SimulationArgsFluidOptions.cpp
+    engine/src/config/SimulationOptionRegistry.cpp
     engine/src/config/SimulationConfig.cpp
     engine/src/config/SimulationModes.cpp
     engine/src/config/TextParse.cpp

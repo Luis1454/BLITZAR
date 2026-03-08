@@ -1,13 +1,11 @@
 #include "config/SimulationConfig.hpp"
-#include "config/SimulationModes.hpp"
-#include "config/TextParse.hpp"
+#include "config/SimulationOptionRegistry.hpp"
 
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <limits>
 #include <sstream>
 
 static std::uint32_t clampFrontendParticleCap(std::uint32_t requested)
@@ -28,67 +26,6 @@ static std::string trim(const std::string &value)
     return std::string(begin, end);
 }
 
-static bool parseUnsigned(const std::string &value, std::uint32_t &out)
-{
-    std::uint64_t parsed = 0;
-    if (!grav_text::parseNumber(value, parsed)) {
-        return false;
-    }
-    if (parsed > static_cast<std::uint64_t>(std::numeric_limits<std::uint32_t>::max())) {
-        return false;
-    }
-    out = static_cast<std::uint32_t>(parsed);
-    return true;
-}
-
-static bool parseInt(const std::string &value, int &out)
-{
-    long long parsed = 0;
-    if (!grav_text::parseNumber(value, parsed)) {
-        return false;
-    }
-    if (parsed < static_cast<long long>(std::numeric_limits<int>::min())
-        || parsed > static_cast<long long>(std::numeric_limits<int>::max())) {
-        return false;
-    }
-    out = static_cast<int>(parsed);
-    return true;
-}
-
-static bool parseFloat(const std::string &value, float &out)
-{
-    return grav_text::parseNumber(value, out);
-}
-
-static bool parseBool(const std::string &value, bool &out)
-{
-    std::string normalized = value;
-    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
-    if (normalized == "1" || normalized == "true" || normalized == "on" || normalized == "yes") {
-        out = true;
-        return true;
-    }
-    if (normalized == "0" || normalized == "false" || normalized == "off" || normalized == "no") {
-        out = false;
-        return true;
-    }
-    return false;
-}
-
-static bool parseTimeoutMs(const std::string &value, std::uint32_t &out)
-{
-    std::uint32_t parsed = out;
-    if (!parseUnsigned(value, parsed)) {
-        return false;
-    }
-    if (parsed < 10u || parsed > 60000u) {
-        return false;
-    }
-    out = parsed;
-    return true;
-}
 SimulationConfig SimulationConfig::defaults()
 {
     return SimulationConfig{};
@@ -115,138 +52,8 @@ SimulationConfig SimulationConfig::loadOrCreate(const std::string &path)
         }
         const std::string key = trim(stripped.substr(0, eq));
         const std::string value = trim(stripped.substr(eq + 1));
-        if (key == "particle_count") {
-            parseUnsigned(value, config.particleCount);
-        } else if (key == "dt") {
-            parseFloat(value, config.dt);
-        } else if (key == "solver") {
-            std::string canonical;
-            if (grav_modes::normalizeSolver(value, canonical)) {
-                config.solver = canonical;
-            } else {
-                std::cerr << "[config] invalid solver value ignored: " << value << "\n";
-            }
-        } else if (key == "integrator") {
-            std::string canonical;
-            if (grav_modes::normalizeIntegrator(value, canonical)) {
-                config.integrator = canonical;
-            } else {
-                std::cerr << "[config] invalid integrator value ignored: " << value << "\n";
-            }
-        } else if (key == "octree_theta") {
-            parseFloat(value, config.octreeTheta);
-        } else if (key == "octree_softening") {
-            parseFloat(value, config.octreeSoftening);
-        } else if (key == "frontend_particle_cap") {
-            std::uint32_t parsedFrontendParticleCap = config.frontendParticleCap;
-            if (parseUnsigned(value, parsedFrontendParticleCap)) {
-                const std::uint32_t clampedValue = clampFrontendParticleCap(parsedFrontendParticleCap);
-                config.frontendParticleCap = clampedValue;
-                if (clampedValue != parsedFrontendParticleCap) {
-                    std::cerr << "[config] frontend_particle_cap clamped to supported range ["
-                              << 2u << ", "
-                              << grav_protocol::kSnapshotMaxPoints << "]: "
-                              << parsedFrontendParticleCap << " -> " << clampedValue << "\n";
-                }
-            }
-        } else if (key == "default_zoom") {
-            parseFloat(value, config.defaultZoom);
-        } else if (key == "default_luminosity") {
-            parseInt(value, config.defaultLuminosity);
-        } else if (key == "ui_fps_limit") {
-            parseUnsigned(value, config.uiFpsLimit);
-        } else if (key == "frontend_remote_command_timeout_ms") {
-            parseTimeoutMs(value, config.frontendRemoteCommandTimeoutMs);
-        } else if (key == "frontend_remote_status_timeout_ms") {
-            parseTimeoutMs(value, config.frontendRemoteStatusTimeoutMs);
-        } else if (key == "frontend_remote_snapshot_timeout_ms") {
-            parseTimeoutMs(value, config.frontendRemoteSnapshotTimeoutMs);
-        } else if (key == "frontend_remote_timeout_ms") {
-            std::uint32_t timeoutMs = config.frontendRemoteCommandTimeoutMs;
-            if (parseTimeoutMs(value, timeoutMs)) {
-                config.frontendRemoteCommandTimeoutMs = timeoutMs;
-                config.frontendRemoteStatusTimeoutMs = timeoutMs;
-                config.frontendRemoteSnapshotTimeoutMs = timeoutMs;
-            }
-        } else if (key == "export_directory") {
-            config.exportDirectory = value;
-        } else if (key == "export_format") {
-            config.exportFormat = value;
-        } else if (key == "input_file") {
-            config.inputFile = value;
-        } else if (key == "input_format") {
-            config.inputFormat = value;
-        } else if (key == "init_config_style") {
-            config.initConfigStyle = value;
-        } else if (key == "preset_structure") {
-            config.presetStructure = value;
-        } else if (key == "preset_size") {
-            parseFloat(value, config.presetSize);
-        } else if (key == "velocity_temperature") {
-            parseFloat(value, config.velocityTemperature);
-        } else if (key == "temperature") {
-            // Backward compatibility: old key used for velocity agitation.
-            parseFloat(value, config.velocityTemperature);
-        } else if (key == "particle_temperature") {
-            parseFloat(value, config.particleTemperature);
-        } else if (key == "thermal_ambient_temperature") {
-            parseFloat(value, config.thermalAmbientTemperature);
-        } else if (key == "thermal_specific_heat") {
-            parseFloat(value, config.thermalSpecificHeat);
-        } else if (key == "thermal_heating_coeff") {
-            parseFloat(value, config.thermalHeatingCoeff);
-        } else if (key == "thermal_radiation_coeff") {
-            parseFloat(value, config.thermalRadiationCoeff);
-        } else if (key == "init_mode") {
-            config.initMode = value;
-        } else if (key == "init_seed") {
-            parseUnsigned(value, config.initSeed);
-        } else if (key == "init_include_central_body") {
-            parseBool(value, config.initIncludeCentralBody);
-        } else if (key == "init_central_mass") {
-            parseFloat(value, config.initCentralMass);
-        } else if (key == "init_central_x") {
-            parseFloat(value, config.initCentralX);
-        } else if (key == "init_central_y") {
-            parseFloat(value, config.initCentralY);
-        } else if (key == "init_central_z") {
-            parseFloat(value, config.initCentralZ);
-        } else if (key == "init_central_vx") {
-            parseFloat(value, config.initCentralVx);
-        } else if (key == "init_central_vy") {
-            parseFloat(value, config.initCentralVy);
-        } else if (key == "init_central_vz") {
-            parseFloat(value, config.initCentralVz);
-        } else if (key == "init_disk_mass") {
-            parseFloat(value, config.initDiskMass);
-        } else if (key == "init_disk_radius_min") {
-            parseFloat(value, config.initDiskRadiusMin);
-        } else if (key == "init_disk_radius_max") {
-            parseFloat(value, config.initDiskRadiusMax);
-        } else if (key == "init_disk_thickness") {
-            parseFloat(value, config.initDiskThickness);
-        } else if (key == "init_velocity_scale") {
-            parseFloat(value, config.initVelocityScale);
-        } else if (key == "init_cloud_half_extent") {
-            parseFloat(value, config.initCloudHalfExtent);
-        } else if (key == "init_cloud_speed") {
-            parseFloat(value, config.initCloudSpeed);
-        } else if (key == "init_particle_mass") {
-            parseFloat(value, config.initParticleMass);
-        } else if (key == "sph_enabled") {
-            parseBool(value, config.sphEnabled);
-        } else if (key == "sph_smoothing_length") {
-            parseFloat(value, config.sphSmoothingLength);
-        } else if (key == "sph_rest_density") {
-            parseFloat(value, config.sphRestDensity);
-        } else if (key == "sph_gas_constant") {
-            parseFloat(value, config.sphGasConstant);
-        } else if (key == "sph_viscosity") {
-            parseFloat(value, config.sphViscosity);
-        } else if (key == "energy_measure_every_steps") {
-            parseUnsigned(value, config.energyMeasureEverySteps);
-        } else if (key == "energy_sample_limit") {
-            parseUnsigned(value, config.energySampleLimit);
+        if (!grav_config::applyIniOption(key, value, config, std::cerr)) {
+            std::cerr << "[config] unknown key ignored: " << key << "\n";
         }
     }
     return config;

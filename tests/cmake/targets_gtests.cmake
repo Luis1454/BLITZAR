@@ -10,6 +10,7 @@ if(GRAVITY_TEST_UNIT_CONFIG_SOURCES)
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsInitOptions.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsInitStateOptions.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsFluidOptions.cpp"
+            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
@@ -56,6 +57,8 @@ set(GRAVITY_TEST_BASE_RUNTIME_SOURCES
     "${GRAVITY_ROOT_DIR}/runtime/src/frontend/FrontendRuntime.cpp"
     "${GRAVITY_ROOT_DIR}/runtime/src/frontend/FrontendCommon.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
     ${GRAVITY_TEST_BASE_BRIDGE_SOURCES}
