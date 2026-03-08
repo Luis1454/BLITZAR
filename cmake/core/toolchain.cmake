@@ -40,6 +40,8 @@ set(GRAVITY_BACKEND_SOURCES
     engine/src/config/SimulationArgsInitStateOptions.cpp
     engine/src/config/SimulationArgsFluidOptions.cpp
     engine/src/config/SimulationOptionRegistry.cpp
+    engine/src/config/SimulationOptionRegistryApply.cpp
+    engine/src/config/SimulationOptionRegistryEntries.cpp
     engine/src/config/SimulationConfig.cpp
     engine/src/config/SimulationModes.cpp
     engine/src/config/TextParse.cpp
@@ -52,6 +54,8 @@ set(GRAVITY_RUNTIME_PROTOCOL_SOURCES
     runtime/src/protocol/BackendJsonCodec.cpp
     runtime/src/protocol/BackendJsonCodecParse.cpp
     runtime/src/protocol/BackendJsonCodecReadNumber.cpp
+    runtime/src/protocol/BackendJsonCodecParseStatus.cpp
+    runtime/src/protocol/BackendJsonCodecParseSnapshot.cpp
     runtime/src/protocol/BackendClient.cpp
     runtime/src/protocol/BackendProtocol.cpp
 )
