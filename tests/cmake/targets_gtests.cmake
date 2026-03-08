@@ -17,6 +17,18 @@ if(GRAVITY_TEST_UNIT_CONFIG_SOURCES)
     )
 endif()
 
+if(GRAVITY_TEST_UNIT_PROTOCOL_SOURCES)
+    gravity_add_gtest(gravityProtocolCodecGTests
+        LABELS unit
+        SOURCES
+            ${GRAVITY_TEST_UNIT_PROTOCOL_SOURCES}
+            "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendJsonCodec.cpp"
+            "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendJsonCodecParse.cpp"
+            "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendProtocol.cpp"
+            "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
+    )
+endif()
+
 set(GRAVITY_TEST_UNIT_MODULE_SOURCES
     ${GRAVITY_TEST_UNIT_MODULE_CLI_SOURCES}
     ${GRAVITY_TEST_UNIT_MODULE_HOST_SOURCES}

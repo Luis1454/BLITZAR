@@ -1,5 +1,7 @@
 if(NOT DEFINED GRAVITY_RUNTIME_PROTOCOL_SOURCES)
     set(GRAVITY_RUNTIME_PROTOCOL_SOURCES
+        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendJsonCodec.cpp"
+        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendJsonCodecParse.cpp"
         "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendClient.cpp"
         "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendProtocol.cpp"
     )

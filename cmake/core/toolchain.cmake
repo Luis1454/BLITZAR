@@ -37,6 +37,8 @@ set(GRAVITY_BACKEND_SOURCES
 )
 
 set(GRAVITY_RUNTIME_PROTOCOL_SOURCES
+    runtime/src/protocol/BackendJsonCodec.cpp
+    runtime/src/protocol/BackendJsonCodecParse.cpp
     runtime/src/protocol/BackendClient.cpp
     runtime/src/protocol/BackendProtocol.cpp
 )
