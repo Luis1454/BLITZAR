@@ -8,6 +8,7 @@
 #include <chrono>
 #include <cstdint>
 #include <limits>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -32,11 +33,15 @@ TEST(FrontendRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealBackendAndPublishesStat
     EXPECT_FALSE(stats.solverName.empty());
     EXPECT_FALSE(stats.faulted);
 
-    std::vector<RenderParticle> snapshot;
+    std::optional<grav_frontend::ConsumedSnapshot> consumedSnapshot;
     ASSERT_TRUE(testsupport::waitUntil([&]() {
-        return runtime.tryConsumeSnapshot(snapshot);
+        consumedSnapshot = runtime.consumeLatestSnapshot();
+        return consumedSnapshot.has_value();
     }, std::chrono::milliseconds(2500)));
+    ASSERT_TRUE(consumedSnapshot.has_value());
+    std::vector<RenderParticle> snapshot = std::move(consumedSnapshot->particles);
     EXPECT_FALSE(snapshot.empty());
+    EXPECT_EQ(consumedSnapshot->sourceSize, snapshot.size());
 
     EXPECT_NE(runtime.statsAgeMs(), std::numeric_limits<std::uint32_t>::max());
     EXPECT_NE(runtime.snapshotAgeMs(), std::numeric_limits<std::uint32_t>::max());
