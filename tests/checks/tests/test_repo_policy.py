@@ -46,6 +46,13 @@ def test_repo_policy_rejects_gravity_internal_namespace(tmp_path: Path) -> None:
     assert any("gravity_internal_* namespace is forbidden" in error for error in errors)
 
 
+def test_repo_policy_rejects_unnamed_namespace_in_prod_cpp(tmp_path: Path) -> None:
+    _write(tmp_path / cpp_file(ENGINE_BACKEND_DIR, "bad_namespace"), "namespace {\nint g = 1;\n}\n")
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("unnamed namespace is forbidden in production paths" in error for error in errors)
+
+
 def test_repo_policy_warns_on_stale_allowlist_entry(tmp_path: Path) -> None:
     sample_path = cpp_file(TESTS_UNIT_DIR, "sample")
     _write(tmp_path / sample_path, "int main() { return 0; }\n")

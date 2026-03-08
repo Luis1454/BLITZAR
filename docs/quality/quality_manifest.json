@@ -2,7 +2,7 @@
   "metadata": {
     "system": "CUDA-GRAVITY-SIMULATION",
     "revision": "2026-03-07",
-    "revision_note": "Evidence workflows enforce GRAVITY_PROFILE=prod, require --no-tests=error, and use normalized TST_* selectors across merge, nightly, and release CI scopes."
+    "revision_note": "Evidence workflows enforce GRAVITY_PROFILE=prod, require --no-tests=error, use normalized TST_* selectors, and forbid unnamed namespaces in production C++ paths."
   },
   "includes": [
     "manifest/evidence.json",

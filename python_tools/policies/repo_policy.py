@@ -107,7 +107,8 @@ class RepoPolicyCheck(BaseCheck):
             if GTEST_MACRO_RE.search(content):
                 result.add_error(f"{rel}: gtest TEST macro found outside tests/")
         if UNNAMED_NAMESPACE_RE.search(content):
-            result.add_error(f"{rel}: unnamed namespace is forbidden")
+            detail = "unnamed namespace is forbidden in production paths" if is_prod_path(rel) else "unnamed namespace is forbidden"
+            result.add_error(f"{rel}: {detail}")
         if USING_ANY_RE.search(content):
             result.add_error(f"{rel}: 'using' is forbidden in C++ sources")
         if INLINE_NAMESPACE_RE.search(content):
