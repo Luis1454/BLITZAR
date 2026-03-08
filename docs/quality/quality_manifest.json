@@ -1,8 +1,8 @@
 {
   "metadata": {
     "system": "CUDA-GRAVITY-SIMULATION",
-    "revision": "2026-03-07",
-    "revision_note": "Governance now enforces a versioned AGENTS crosswalk artifact, branch-per-issue delivery, PR-associated pushes to main, normalized evidence selectors, and unnamed-namespace bans in production C++ paths."
+    "revision": "2026-03-08",
+    "revision_note": "Governance now includes a documented Power of 10 coding profile and repository-enforced checks for goto, setjmp/longjmp, and do-while in production C++ paths."
   },
   "includes": [
     "manifest/evidence.json",

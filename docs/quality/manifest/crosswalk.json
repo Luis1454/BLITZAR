@@ -35,6 +35,11 @@
       "artifact": "EVD_CHECK_PR_POLICY",
       "check": "automated pull-request governance plus push-to-main provenance from merged issue branches"
     },
+    "SWE-006": {
+      "source_standard": "NPR-7150.2D",
+      "artifact": "EVD_QLT_POWER_OF_TEN",
+      "check": "documented Power of 10 coding profile with machine-checked subset wired into repository policy"
+    },
     "SMA-001": {
       "source_standard": "NASA-STD-8739.8B",
       "artifact": "EVD_QLT_IVV_PLAN",
