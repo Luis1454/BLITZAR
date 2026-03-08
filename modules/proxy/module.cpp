@@ -15,7 +15,7 @@
 #include <string_view>
 #include <vector>
 
-std::string trim(const std::string &input)
+static std::string trim(const std::string &input)
 {
     const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
         return std::isspace(c) != 0;
@@ -29,7 +29,7 @@ std::string trim(const std::string &input)
     return std::string(begin, end);
 }
 
-std::vector<std::string> splitTokens(const std::string &line)
+static std::vector<std::string> splitTokens(const std::string &line)
 {
     std::vector<std::string> tokens;
     std::string current;
@@ -61,12 +61,12 @@ std::vector<std::string> splitTokens(const std::string &line)
     return tokens;
 }
 
-std::string proxyError(std::string_view operation, std::string_view detail)
+static std::string proxyError(std::string_view operation, std::string_view detail)
 {
     return std::string("module-gui-proxy ") + std::string(operation) + ": " + std::string(detail);
 }
 
-void writeProxyError(
+static void writeProxyError(
     const grav_frontend::ErrorBufferView &errorBuffer,
     std::string_view operation,
     std::string_view detail)
@@ -82,12 +82,12 @@ struct GuiProxyState {
     grav_platform::ProcessHandle frontendProcess;
 };
 
-bool isRunning(const GuiProxyState &state)
+static bool isRunning(const GuiProxyState &state)
 {
     return state.frontendProcess.isRunning();
 }
 
-bool stopProcess(GuiProxyState &state, const grav_frontend::ErrorBufferView &errorBuffer)
+static bool stopProcess(GuiProxyState &state, const grav_frontend::ErrorBufferView &errorBuffer)
 {
     std::string processError;
     if (!state.frontendProcess.terminate(2000u, processError)) {
@@ -98,7 +98,7 @@ bool stopProcess(GuiProxyState &state, const grav_frontend::ErrorBufferView &err
     return true;
 }
 
-std::vector<std::string> frontendLaunchArgs(const GuiProxyState &state)
+static std::vector<std::string> frontendLaunchArgs(const GuiProxyState &state)
 {
     return {
         "--config",
@@ -112,7 +112,7 @@ std::vector<std::string> frontendLaunchArgs(const GuiProxyState &state)
     };
 }
 
-bool launchProcess(
+static bool launchProcess(
     GuiProxyState &state,
     const std::string &frontendExecutable,
     const grav_frontend::ErrorBufferView &errorBuffer)
@@ -134,12 +134,12 @@ bool launchProcess(
     return true;
 }
 
-std::string runningCommandLine(const GuiProxyState &state)
+static std::string runningCommandLine(const GuiProxyState &state)
 {
     return state.frontendProcess.commandLine();
 }
 
-std::string runningPidLabel(const GuiProxyState &state)
+static std::string runningPidLabel(const GuiProxyState &state)
 {
     if (!state.frontendProcess.isRunning()) {
         return {};
@@ -147,7 +147,7 @@ std::string runningPidLabel(const GuiProxyState &state)
     return state.frontendProcess.pidString();
 }
 
-bool parseUnsignedPort(std::string_view raw, std::uint16_t &outPort)
+static bool parseUnsignedPort(std::string_view raw, std::uint16_t &outPort)
 {
     const std::string trimmed = trim(std::string(raw));
     if (trimmed.empty()) {
@@ -169,7 +169,7 @@ bool parseUnsignedPort(std::string_view raw, std::uint16_t &outPort)
     return true;
 }
 
-void printHelp()
+static void printHelp()
 {
     std::cout
         << "[module-gui-proxy] commands:\n"
@@ -181,7 +181,7 @@ void printHelp()
         << "  stop\n";
 }
 
-bool parseBool(std::string_view raw, bool &out)
+static bool parseBool(std::string_view raw, bool &out)
 {
     std::string value(raw);
     std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {

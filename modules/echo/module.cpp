@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-std::string trim(const std::string &input)
+static std::string trim(const std::string &input)
 {
     const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
         return std::isspace(c) != 0;
