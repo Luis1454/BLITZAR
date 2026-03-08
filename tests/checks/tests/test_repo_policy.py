@@ -53,6 +53,27 @@ def test_repo_policy_rejects_unnamed_namespace_in_prod_cpp(tmp_path: Path) -> No
     assert any("unnamed namespace is forbidden in production paths" in error for error in errors)
 
 
+def test_repo_policy_rejects_goto_in_prod_cpp(tmp_path: Path) -> None:
+    _write(tmp_path / cpp_file(ENGINE_BACKEND_DIR, "bad_goto"), "int f() { goto fail; fail: return 0; }\n")
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("Power of 10 rule 1 forbids goto" in error for error in errors)
+
+
+def test_repo_policy_rejects_setjmp_longjmp_in_prod_cpp(tmp_path: Path) -> None:
+    _write(tmp_path / cpp_file(RUNTIME_BACKEND_DIR, "bad_longjmp"), "int f() { return longjmp(buf, 1); }\n")
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("Power of 10 rule 1 forbids setjmp/longjmp" in error for error in errors)
+
+
+def test_repo_policy_rejects_do_while_in_prod_cpp(tmp_path: Path) -> None:
+    _write(tmp_path / cpp_file(ENGINE_CONFIG_DIR, "bad_do_while"), "int f() { do { return 1; } while (false); }\n")
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("Power of 10 rule 1 forbids do-while" in error for error in errors)
+
+
 def test_repo_policy_warns_on_stale_allowlist_entry(tmp_path: Path) -> None:
     sample_path = cpp_file(TESTS_UNIT_DIR, "sample")
     _write(tmp_path / sample_path, "int main() { return 0; }\n")

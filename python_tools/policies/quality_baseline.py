@@ -22,6 +22,7 @@ REQUIRED_FILES = (
     "docs/quality/fmea.md",
     "docs/quality/tool_qualification.md",
     "docs/quality/tool_manifest.md",
+    "docs/quality/power_of_10.md",
     "docs/quality/prod_baseline.md",
     "docs/quality/release_index.md",
     "docs/quality/interface_contracts.md",
