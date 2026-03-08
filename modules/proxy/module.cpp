@@ -12,6 +12,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 std::string trim(const std::string &input)
@@ -58,6 +59,20 @@ std::vector<std::string> splitTokens(const std::string &line)
         tokens.push_back(current);
     }
     return tokens;
+}
+
+std::string proxyError(std::string_view operation, std::string_view detail)
+{
+    return std::string("module-gui-proxy ") + std::string(operation) + ": " + std::string(detail);
+}
+
+void writeProxyError(
+    char *errorBuffer,
+    std::size_t errorBufferSize,
+    std::string_view operation,
+    std::string_view detail)
+{
+    grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, proxyError(operation, detail));
 }
 
 struct GuiProxyState {
@@ -148,7 +163,7 @@ bool parseUnsignedPort(std::string_view raw, std::uint16_t &outPort)
     unsigned long parsedPort = 0ul;
     try {
         parsedPort = std::stoul(trimmed, &parsedCount, 10);
-    } catch (...) {
+    } catch (const std::exception &) {
         return false;
     }
     if (parsedCount != trimmed.size()
@@ -206,10 +221,10 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                 *outModuleState = state.release();
                 return true;
             } catch (const std::exception &ex) {
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, ex.what());
+                writeProxyError(errorBuffer, errorBufferSize, "create", ex.what());
                 return false;
             } catch (...) {
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "unknown module create error");
+                writeProxyError(errorBuffer, errorBufferSize, "create", "non-standard exception");
                 return false;
             }
         },
@@ -221,9 +236,9 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                     (void)stopProcess(*state, ignored.data(), ignored.size());
                 }
             } catch (const std::exception &ex) {
-                std::cerr << "[module-gui-proxy] destroy error: " << ex.what() << "\n";
+                std::cerr << proxyError("destroy", ex.what()) << "\n";
             } catch (...) {
-                std::cerr << "[module-gui-proxy] destroy error: unknown\n";
+                std::cerr << proxyError("destroy", "non-standard exception") << "\n";
             }
         },
         [](void *moduleState, char *errorBuffer, std::size_t errorBufferSize) -> bool {
@@ -239,10 +254,10 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                           << ")\n";
                 return true;
             } catch (const std::exception &ex) {
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, ex.what());
+                writeProxyError(errorBuffer, errorBufferSize, "start", ex.what());
                 return false;
             } catch (...) {
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "unknown module start error");
+                writeProxyError(errorBuffer, errorBufferSize, "start", "non-standard exception");
                 return false;
             }
         },
@@ -254,9 +269,9 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                     (void)stopProcess(*state, ignored.data(), ignored.size());
                 }
             } catch (const std::exception &ex) {
-                std::cerr << "[module-gui-proxy] stop error: " << ex.what() << "\n";
+                std::cerr << proxyError("stop", ex.what()) << "\n";
             } catch (...) {
-                std::cerr << "[module-gui-proxy] stop error: unknown\n";
+                std::cerr << proxyError("stop", "non-standard exception") << "\n";
             }
         },
         [](void *moduleState, const char *commandLine, bool *outKeepRunning, char *errorBuffer, std::size_t errorBufferSize) -> bool {
@@ -356,10 +371,10 @@ GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravi
                 grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "unknown module command");
                 return false;
             } catch (const std::exception &ex) {
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, ex.what());
+                writeProxyError(errorBuffer, errorBufferSize, "command", ex.what());
                 return false;
             } catch (...) {
-                grav_frontend::writeErrorBuffer(errorBuffer, errorBufferSize, "unknown module command error");
+                writeProxyError(errorBuffer, errorBufferSize, "command", "non-standard exception");
                 return false;
             }
         }

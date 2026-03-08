@@ -7,6 +7,7 @@
 #include <cctype>
 #include <cstddef>
 #include <exception>
+#include <iostream>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -37,6 +38,12 @@ static int clampTimeoutMs(int timeoutMs)
 {
     return grav_socket::clampTimeoutMs(timeoutMs);
 }
+
+static std::string backendClientError(std::string_view operation, std::string_view detail)
+{
+    return std::string("[backend-client] ") + std::string(operation) + ": " + std::string(detail);
+}
+
 BackendClient::BackendClient()
     : _socket(grav_socket::invalidHandle()),
       _socketTimeoutMs(3000),
@@ -78,7 +85,12 @@ bool BackendClient::connect(const std::string &host, std::uint16_t port)
         _socket = socketHandle;
         _recvBuffer.clear();
         return true;
+    } catch (const std::exception &ex) {
+        std::cerr << backendClientError("connect", ex.what()) << "\n";
+        disconnect();
+        return false;
     } catch (...) {
+        std::cerr << backendClientError("connect", "non-standard exception") << "\n";
         disconnect();
         return false;
     }
@@ -112,7 +124,13 @@ void BackendClient::disconnect()
             grav_socket::shutdownSocketLayer();
             _networkInitialized = false;
         }
+    } catch (const std::exception &ex) {
+        std::cerr << backendClientError("disconnect", ex.what()) << "\n";
+        _socket = grav_socket::invalidHandle();
+        _recvBuffer.clear();
+        _networkInitialized = false;
     } catch (...) {
+        std::cerr << backendClientError("disconnect", "non-standard exception") << "\n";
         _socket = grav_socket::invalidHandle();
         _recvBuffer.clear();
         _networkInitialized = false;
@@ -170,7 +188,11 @@ bool BackendClient::readLine(std::string &outLine)
                 return false;
             }
         }
+    } catch (const std::exception &ex) {
+        std::cerr << backendClientError("readLine", ex.what()) << "\n";
+        return false;
     } catch (...) {
+        std::cerr << backendClientError("readLine", "non-standard exception") << "\n";
         return false;
     }
 }
@@ -180,32 +202,32 @@ BackendClientResponse BackendClient::sendJson(const std::string &jsonLine)
     BackendClientResponse response;
     try {
         if (!isConnected()) {
-            response.error = "not connected";
+            response.error = backendClientError("sendJson", "not connected");
             return response;
         }
 
         std::string line = trim(jsonLine);
         if (line.empty()) {
-            response.error = "empty request";
+            response.error = backendClientError("sendJson", "empty request");
             return response;
         }
         line.push_back('\n');
 
         if (!sendAll(_socket, asBytes(line))) {
-            response.error = "send failed";
+            response.error = backendClientError("sendJson", "send failed");
             disconnect();
             return response;
         }
 
         if (!readLine(response.raw)) {
-            response.error = "recv failed";
+            response.error = backendClientError("sendJson", "recv failed");
             disconnect();
             return response;
         }
 
         grav_protocol::BackendResponseEnvelope envelope{};
         if (!grav_protocol::BackendJsonCodec::parseResponseEnvelope(response.raw, envelope, response.error)) {
-            response.error = "invalid response";
+            response.error = backendClientError("sendJson", "invalid response");
             return response;
         }
         response.ok = envelope.ok;
@@ -213,12 +235,12 @@ BackendClientResponse BackendClient::sendJson(const std::string &jsonLine)
         return response;
     } catch (const std::exception &ex) {
         response.ok = false;
-        response.error = ex.what();
+        response.error = backendClientError("sendJson", ex.what());
         disconnect();
         return response;
     } catch (...) {
         response.ok = false;
-        response.error = "unknown sendJson error";
+        response.error = backendClientError("sendJson", "non-standard exception");
         disconnect();
         return response;
     }
@@ -244,7 +266,7 @@ BackendClientResponse BackendClient::getStatus(BackendClientStatus &outStatus)
         std::string parseError;
         if (!grav_protocol::BackendJsonCodec::parseStatusResponse(response.raw, parsed, parseError)) {
             response.ok = false;
-            response.error = parseError;
+            response.error = backendClientError("getStatus", parseError);
             return response;
         }
 
@@ -269,11 +291,11 @@ BackendClientResponse BackendClient::getStatus(BackendClientStatus &outStatus)
         return response;
     } catch (const std::exception &ex) {
         BackendClientResponse response;
-        response.error = ex.what();
+        response.error = backendClientError("getStatus", ex.what());
         return response;
     } catch (...) {
         BackendClientResponse response;
-        response.error = "unknown getStatus error";
+        response.error = backendClientError("getStatus", "non-standard exception");
         return response;
     }
 }
@@ -293,18 +315,18 @@ BackendClientResponse BackendClient::getSnapshot(std::vector<RenderParticle> &ou
         std::string parseError;
         if (!grav_protocol::BackendJsonCodec::parseSnapshotResponse(response.raw, parsed, parseError)) {
             response.ok = false;
-            response.error = parseError;
+            response.error = backendClientError("getSnapshot", parseError);
             return response;
         }
         outSnapshot = std::move(parsed.particles);
         return response;
     } catch (const std::exception &ex) {
         BackendClientResponse response;
-        response.error = ex.what();
+        response.error = backendClientError("getSnapshot", ex.what());
         return response;
     } catch (...) {
         BackendClientResponse response;
-        response.error = "unknown getSnapshot error";
+        response.error = backendClientError("getSnapshot", "non-standard exception");
         return response;
     }
 }

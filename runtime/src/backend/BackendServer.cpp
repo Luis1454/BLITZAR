@@ -48,6 +48,12 @@ static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes by
     }
     return true;
 }
+
+static std::string backendServerError(std::string_view operation, std::string_view detail)
+{
+    return std::string("[ipc] ") + std::string(operation) + ": " + std::string(detail);
+}
+
 BackendServer::BackendServer(SimulationBackend &backend, std::string authToken)
     : _backend(backend),
       _running(false),
@@ -115,11 +121,11 @@ bool BackendServer::start(std::uint16_t port, const std::string &bindAddress)
         _acceptThread = std::thread(&BackendServer::acceptLoop, this);
         return true;
     } catch (const std::exception &ex) {
-        std::cerr << "[ipc] start exception: " << ex.what() << "\n";
+        std::cerr << backendServerError("start", ex.what()) << "\n";
         stop();
         return false;
     } catch (...) {
-        std::cerr << "[ipc] start exception: unknown\n";
+        std::cerr << backendServerError("start", "non-standard exception") << "\n";
         stop();
         return false;
     }
@@ -153,9 +159,9 @@ void BackendServer::stop()
             _networkInitialized = false;
         }
     } catch (const std::exception &ex) {
-        std::cerr << "[ipc] stop exception: " << ex.what() << "\n";
+        std::cerr << backendServerError("stop", ex.what()) << "\n";
     } catch (...) {
-        std::cerr << "[ipc] stop exception: unknown\n";
+        std::cerr << backendServerError("stop", "non-standard exception") << "\n";
     }
     _running.store(false);
     _listenSocket = grav_socket::invalidHandle();
@@ -163,7 +169,10 @@ void BackendServer::stop()
     if (_networkInitialized) {
         try {
             grav_socket::shutdownSocketLayer();
+        } catch (const std::exception &ex) {
+            std::cerr << backendServerError("stop shutdownSocketLayer", ex.what()) << "\n";
         } catch (...) {
+            std::cerr << backendServerError("stop shutdownSocketLayer", "non-standard exception") << "\n";
         }
         _networkInitialized = false;
     }
@@ -206,10 +215,10 @@ void BackendServer::acceptLoop()
             _clientThreads.emplace_back(&BackendServer::handleClient, this, clientSocket);
         }
     } catch (const std::exception &ex) {
-        std::cerr << "[ipc] accept loop exception: " << ex.what() << "\n";
+        std::cerr << backendServerError("acceptLoop", ex.what()) << "\n";
         _running.store(false);
     } catch (...) {
-        std::cerr << "[ipc] accept loop exception: unknown\n";
+        std::cerr << backendServerError("acceptLoop", "non-standard exception") << "\n";
         _running.store(false);
     }
 }
@@ -264,10 +273,10 @@ void BackendServer::handleClient(SocketHandle client)
 
         grav_socket::closeSocket(clientSocket);
     } catch (const std::exception &ex) {
-        std::cerr << "[ipc] client exception: " << ex.what() << "\n";
+        std::cerr << backendServerError("handleClient", ex.what()) << "\n";
         grav_socket::closeSocket(static_cast<grav_socket::Handle>(client));
     } catch (...) {
-        std::cerr << "[ipc] client exception: unknown\n";
+        std::cerr << backendServerError("handleClient", "non-standard exception") << "\n";
         grav_socket::closeSocket(static_cast<grav_socket::Handle>(client));
     }
 }
@@ -450,8 +459,12 @@ std::string BackendServer::processRequest(const std::string &request)
 
         return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "unknown command");
     } catch (const std::exception &ex) {
-        return grav_protocol::BackendJsonCodec::makeErrorResponse("request", ex.what());
+        return grav_protocol::BackendJsonCodec::makeErrorResponse(
+            "request",
+            backendServerError("processRequest", ex.what()));
     } catch (...) {
-        return grav_protocol::BackendJsonCodec::makeErrorResponse("request", "unknown request exception");
+        return grav_protocol::BackendJsonCodec::makeErrorResponse(
+            "request",
+            backendServerError("processRequest", "non-standard exception"));
     }
 }
