@@ -52,7 +52,8 @@ The profile is used in two modes:
 7. `Check the return value of non-void functions, or explicitly cast to void`
    Automation status: `partial`
    Automated checks:
-   - compiler warnings and analyzer lanes are mandatory in strict CI
+   - strict analyzer lanes include `clang-tidy` ignored-return-value coverage
+   - internal normalization/configuration status APIs are marked `[[nodiscard]]`
    Policy note:
    - silent error swallowing remains forbidden by review
 
