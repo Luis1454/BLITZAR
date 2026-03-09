@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from python_tools.core.models import CheckContext
 from python_tools.policies.repo_policy import RepoPolicyCheck
 from tests.checks.suites.support.path_specs import (
@@ -72,6 +74,33 @@ def test_repo_policy_rejects_do_while_in_prod_cpp(tmp_path: Path) -> None:
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert not ok
     assert any("Power of 10 rule 1 forbids do-while" in error for error in errors)
+
+
+def test_repo_policy_rejects_if_defined_in_prod_cpp(tmp_path: Path) -> None:
+    _write(
+        tmp_path / cpp_file(ENGINE_CONFIG_DIR, "bad_if_defined"),
+        "#if defined(_WIN32)\nint f() { return 1; }\n#endif\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("prefer #ifdef/#ifndef over #if defined(...)" in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    ("stem", "content", "should_pass"),
+    [
+        ("bad_layout", "void build() {\n    QVBoxLayout &layout = *new QVBoxLayout(this);\n}\n", False),
+        ("good_layout", "void build() {\n    auto *layout = new QVBoxLayout(this);\n    layout->setSpacing(6);\n}\n", True),
+    ],
+)
+def test_repo_policy_enforces_qt_layout_ownership(tmp_path: Path, stem: str, content: str, should_pass: bool) -> None:
+    _write(tmp_path / cpp_file(Path("modules/qt/ui"), stem), content)
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok is should_pass
+    if should_pass:
+        assert not errors
+        return
+    assert any("Qt '*new + reference' ownership pattern is forbidden" in error for error in errors)
 
 
 def test_repo_policy_warns_on_stale_allowlist_entry(tmp_path: Path) -> None:

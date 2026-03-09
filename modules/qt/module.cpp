@@ -28,9 +28,9 @@
 #include <thread>
 #include <vector>
 
-#if defined(_WIN32)
+#ifdef _WIN32
 #include <windows.h>
-#elif defined(__APPLE__)
+#elif __APPLE__
 #include <mach-o/dyld.h>
 #else
 #include <unistd.h>
@@ -118,14 +118,14 @@ struct QtInProcState {
 
 static std::string currentExecutablePath()
 {
-#if defined(_WIN32)
+#ifdef _WIN32
     std::vector<char> buffer(4096u, '\0');
     const DWORD count = GetModuleFileNameA(nullptr, buffer.data(), static_cast<DWORD>(buffer.size()));
     if (count == 0 || count >= buffer.size()) {
         return {};
     }
     return std::string(buffer.data(), buffer.data() + count);
-#elif defined(__APPLE__)
+#elif __APPLE__
     std::vector<char> buffer(4096u, '\0');
     std::uint32_t size = static_cast<std::uint32_t>(buffer.size());
     if (_NSGetExecutablePath(buffer.data(), &size) != 0) {

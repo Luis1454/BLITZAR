@@ -107,7 +107,7 @@ bool writeRawBytes(std::ostream &out, const std::byte *data, std::size_t size)
 
 std::string readEnvironment(std::string_view key)
 {
-#if defined(_WIN32)
+#ifdef _WIN32
     const std::string keyCopy(key);
     char *raw = nullptr;
     std::size_t rawSize = 0;

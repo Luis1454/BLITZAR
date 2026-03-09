@@ -30,6 +30,10 @@ GRAVITY_INTERNAL_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+gravity_interna
 PROD_ROOTS = ("apps/", "engine/", "runtime/", "modules/")
 EVIDENCE_WORKFLOW_PATHS = (".github/workflows/pr-fast-quality-gate.yml", ".github/workflows/nightly-full.yml", ".github/workflows/release-lane.yml")
 LEGACY_CTEST_SELECTORS = ("ConfigArgsTest", "BackendProtocolTest", "FrontendBridgeTest", "FrontendRuntimeTest", "QtMainWindowTest")
+QT_REFERENCE_NEW_RE = re.compile(
+    r"(?m)^\s*(?:auto|Q[A-Za-z0-9_<>:]+)\s*&\s*[A-Za-z0-9_]+\s*=\s*\*new\s+Q[A-Za-z0-9_<>:]+\s*\("
+)
+IF_DEFINED_RE = re.compile(r"(?m)^\s*#(?:el)?if\s+defined\s*\(")
 
 
 def should_skip_dir(dirname: str) -> bool:
@@ -125,6 +129,10 @@ class RepoPolicyCheck(BaseCheck):
         if is_prod_path(rel):
             for error in check_power_of_10_content(rel, content):
                 result.add_error(error)
+            if IF_DEFINED_RE.search(content):
+                result.add_error(f"{rel}: prefer #ifdef/#ifndef over #if defined(...) in production paths")
+        if rel.startswith("modules/qt/") and QT_REFERENCE_NEW_RE.search(content):
+            result.add_error(f"{rel}: Qt '*new + reference' ownership pattern is forbidden")
 
     def _check_line_count(
         self,
