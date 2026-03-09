@@ -2,42 +2,54 @@
 
 [![nightly-full](https://github.com/Luis1454/CUDA-GRAVITY-SIMULATION/actions/workflows/nightly-full.yml/badge.svg?branch=main)](https://github.com/Luis1454/CUDA-GRAVITY-SIMULATION/actions/workflows/nightly-full.yml)
 
-## Quick Start
+CUDA/C++ gravity simulation with a split runtime, backend, frontend modules, and repository-level quality gates aimed at deterministic, auditable workflows.
+
+## Quickstart
+
+Build a local Release configuration:
 
 ```bash
-make run
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+ctest --test-dir build --no-tests=error
+pytest -q tests/checks/suites/policy
 ```
 
-Build and test:
+Qualification-oriented `prod` profile:
 
 ```bash
-cmake -S . -B build -G Ninja
-cmake --build build
-ctest --test-dir build --output-on-failure
+cmake -S . -B build-prod -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_PROFILE=prod
+cmake --build build-prod -j
+ctest --test-dir build-prod --no-tests=error
 ```
 
-Prod profile (deterministic critical path, dynamic frontend modules disabled):
+## Build Entry Points
 
-```bash
-make build-prod
-```
+`CMake` is the source of truth for configure/build/test.
 
-Integration tests:
+The root `Makefile` is a thin wrapper around the same commands:
 
-```bash
-make test-int
-```
+- `make configure` -> `cmake -S . -B build ...`
+- `make build` -> `cmake --build build --parallel`
+- `make test` -> `ctest --test-dir build --no-tests=error`
+- `make quality` -> `pytest -q tests/checks/suites/policy`
+- `make build-prod` -> Release build with `-DGRAVITY_PROFILE=prod`
+- `make check-all` -> broader Python umbrella gate via `tests/checks/check.py all`
 
-Repository quality gate:
+Use `make` if you want a convenience wrapper. Use direct `cmake`/`ctest`/`pytest` commands when collecting reproducible reviewer evidence.
 
-```bash
-make check-all
-```
+## Architecture
 
-Direct `pytest` entry point for repository policy:
+```text
+apps/      -> launchers and top-level executables
+engine/    -> simulation core, physics, backend-facing logic
+runtime/   -> runtime services, protocols, orchestration
+modules/   -> optional frontend/plugin implementations
+tests/     -> C++ integration/unit tests and Python policy checks
 
-```bash
-pytest -q tests/checks/suites/policy -k repo_policy
+apps -> runtime -> engine
+             \
+              -> modules
 ```
 
 ## Binaries
@@ -47,31 +59,19 @@ pytest -q tests/checks/suites/policy -k repo_policy
 - `myAppHeadless`
 - `myAppModuleHost`
 
-In `PROFILE=prod`, `myAppModuleHost` and dynamic frontend modules are disabled by design.
+In `GRAVITY_PROFILE=prod`, dynamic frontend modules and `myAppModuleHost` are intentionally disabled on the deterministic path.
 
-## Coverage
+## Quality & Verification
 
-- Dashboard: https://luis1454.github.io/CUDA-GRAVITY-SIMULATION/
-- Workflow: `nightly-full`
-- Artifact: `nightly-integration-coverage-<run_number>`
+- Power of 10 profile: [docs/quality/power_of_10.md](docs/quality/power_of_10.md)
+- IV&V baseline: [docs/quality/ivv_plan.md](docs/quality/ivv_plan.md)
+- Traceability: [docs/quality/traceability.md](docs/quality/traceability.md)
+- Quality baseline overview: [docs/quality/README.md](docs/quality/README.md)
 
-## Documentation
+Repository policy checks live in `python_tools/policies/` and are exercised by `pytest` suites under `tests/checks/suites/policy/`.
 
-- Full README: [docs/README_full.md](docs/README_full.md)
+## More Documentation
+
+- Full project walkthrough: [docs/README_full.md](docs/README_full.md)
 - Backend protocol: [docs/backend_protocol.md](docs/backend_protocol.md)
 - Frontend module host: [docs/frontend_module_host.md](docs/frontend_module_host.md)
-- Quality baseline: [docs/quality/README.md](docs/quality/README.md)
-
-## Project Layout
-
-- `apps/`
-- `engine/include/`, `engine/src/`
-- `runtime/include/`, `runtime/src/`
-- `modules/`
-- `tests/`
-
-## Config
-
-`simulation.ini` is auto-created at first launch.
-
-Main options are documented in [docs/README_full.md](docs/README_full.md).

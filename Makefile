@@ -83,6 +83,8 @@ else
 BUILD_CMD += --parallel
 endif
 
+TEST_CMD = ctest --test-dir $(BUILD_DIR) --no-tests=error
+
 INT_BUILD_CMD = cmake --build $(INT_BUILD_DIR)
 ifneq ($(strip $(JOBS)),)
 INT_BUILD_CMD += --parallel $(JOBS)
@@ -90,7 +92,7 @@ else
 INT_BUILD_CMD += --parallel
 endif
 
-INT_CTEST_CMD = ctest --test-dir $(INT_BUILD_DIR) --output-on-failure --timeout $(INT_TIMEOUT)
+INT_CTEST_CMD = ctest --test-dir $(INT_BUILD_DIR) --output-on-failure --timeout $(INT_TIMEOUT) --no-tests=error
 ifneq ($(strip $(BACKEND_EXE)),)
 INT_CTEST_ENV = cmake -E env "GRAVITY_BACKEND_EXE=$(BACKEND_EXE)"
 endif
@@ -107,7 +109,10 @@ build:
 	$(BUILD_CMD)
 
 test: all
-	ctest --test-dir $(BUILD_DIR) --output-on-failure
+	$(TEST_CMD)
+
+quality:
+	pytest -q tests/checks/suites/policy
 
 build-dev:
 	$(MAKE) all BUILD_DIR=build-dev BUILD_TYPE=Debug BUILD_TESTS=ON PROFILE=dev
@@ -143,4 +148,4 @@ endif
 else
 	$(INT_CTEST_ENV) $(INT_CTEST_CMD) -R "$(INT_TEST_REGEX)"
 endif
-.PHONY: all configure build test build-dev build-prod build-run build-ci test-int int-configure int-build int-run
+.PHONY: all configure build test quality build-dev build-prod build-run build-ci test-int int-configure int-build int-run
