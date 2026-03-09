@@ -56,30 +56,23 @@ class BackendJsonCodec {
         static std::string makeCommandRequest(
             const BackendCommandRequest &request,
             std::string_view fieldsJson = {});
-        static bool parseCommandRequest(
-            std::string_view raw,
-            BackendCommandRequest &out,
-            std::string &error);
+        static bool parseCommandRequest(std::string_view raw, BackendCommandRequest &out,
+                                        std::string &error);
 
         static std::string makeOkResponse(std::string_view cmd);
         static std::string makeErrorResponse(std::string_view cmd, std::string_view message);
         static std::string makeStatusResponse(const SimulationStats &stats);
-        static std::string makeSnapshotResponse(
-            bool hasSnapshot,
-            const std::vector<RenderParticle> &snapshot);
+        static std::string makeSnapshotResponse(bool hasSnapshot,
+                                                const std::vector<RenderParticle> &snapshot);
 
-        static bool parseResponseEnvelope(
-            std::string_view raw,
-            BackendResponseEnvelope &out,
-            std::string &error);
-        static bool parseStatusResponse(
-            std::string_view raw,
-            BackendStatusPayload &out,
-            std::string &error);
-        static bool parseSnapshotResponse(
-            std::string_view raw,
-            BackendSnapshotPayload &out,
-            std::string &error);
+        static bool parseResponseEnvelope(std::string_view raw, BackendResponseEnvelope &out,
+                                          std::string &error);
+
+        static bool parseStatusResponse(std::string_view raw, BackendStatusPayload &out,
+                                        std::string &error);
+
+        static bool parseSnapshotResponse(std::string_view raw, BackendSnapshotPayload &out,
+                                          std::string &error);
 
         static bool readString(std::string_view raw, std::string_view key, std::string &out);
         static bool readBool(std::string_view raw, std::string_view key, bool &out);

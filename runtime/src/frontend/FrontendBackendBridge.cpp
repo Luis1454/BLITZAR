@@ -31,9 +31,10 @@ const std::string_view kBackendDefaultName = grav_platform::backendDefaultExecut
 bool parsePortValue(std::string_view raw, std::uint16_t &outPort)
 {
     unsigned int parsed = 0u;
-    if (!grav_text::parseNumber(raw, parsed) || parsed == 0u || parsed > 65535u) {
+
+    if (!grav_text::parseNumber(raw, parsed) || parsed == 0u || parsed > 65535u)
         return false;
-    }
+
     outPort = static_cast<std::uint16_t>(parsed);
     return true;
 }
@@ -57,25 +58,22 @@ bool parseBoolArg(std::string_view raw, bool &out)
 
 bool isTransportClientFailure(std::string_view reason)
 {
-    return reason == "not connected"
-        || reason == "send failed"
-        || reason == "recv failed"
-        || reason == "invalid response";
+    return reason == "not connected" || reason == "send failed"
+        || reason == "recv failed" || reason == "invalid response";
 }
 
 std::string deriveDefaultBackendExecutable(const std::vector<std::string_view> &rawArgs)
 {
-    if (rawArgs.empty() || rawArgs[0].empty()) {
+    if (rawArgs.empty() || rawArgs[0].empty())
         return std::string(kBackendDefaultName);
-    }
+
     std::error_code ec;
     const std::filesystem::path executablePath(rawArgs[0]);
     const std::filesystem::path dir = executablePath.parent_path();
     if (!dir.empty()) {
         const std::filesystem::path candidate = dir / std::string(kBackendDefaultName);
-        if (std::filesystem::exists(candidate, ec) && !ec) {
+        if (std::filesystem::exists(candidate, ec) && !ec)
             return candidate.string();
-        }
     }
     return std::string(kBackendDefaultName);
 }
@@ -83,14 +81,11 @@ std::string deriveDefaultBackendExecutable(const std::vector<std::string_view> &
 class SocketTimeoutScope {
     public:
         SocketTimeoutScope(BackendClient &client, int timeoutMs)
-            : _client(client),
-              _previousTimeoutMs(client.socketTimeoutMs())
-        {
+        : _client(client), _previousTimeoutMs(client.socketTimeoutMs()) {
             _client.setSocketTimeoutMs(timeoutMs);
         }
 
-        ~SocketTimeoutScope()
-        {
+        ~SocketTimeoutScope() {
             _client.setSocketTimeoutMs(_previousTimeoutMs);
         }
 
@@ -100,22 +95,17 @@ class SocketTimeoutScope {
 };
 
 template <typename LocalCall, typename RemoteCall>
-void dispatchBackendCall(
-    bool remoteMode,
-    const std::unique_ptr<ILocalBackend> &localBackend,
-    LocalCall &&localCall,
-    RemoteCall &&remoteCall)
-{
+void dispatchBackendCall(bool remoteMode, const std::unique_ptr<ILocalBackend> &localBackend,
+                        LocalCall &&localCall, RemoteCall &&remoteCall) {
     if (!remoteMode) {
-        if (localBackend) {
+        if (localBackend)
             localCall(*localBackend);
-        }
         return;
     }
     remoteCall();
 }
-std::uint32_t clampFrontendRemoteTimeoutMs(std::uint32_t timeoutMs)
-{
+
+std::uint32_t clampFrontendRemoteTimeoutMs(std::uint32_t timeoutMs) {
     return std::clamp(timeoutMs, kFrontendRemoteTimeoutMinMs, kFrontendRemoteTimeoutMaxMs);
 }
 
