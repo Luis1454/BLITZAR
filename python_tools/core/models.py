@@ -3,8 +3,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any, Protocol
 
-from .typing_ext import OptionsMap
+JsonValue = None | bool | int | float | str | list["JsonValue"] | dict[str, "JsonValue"]
+OptionsMap = dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -46,3 +48,16 @@ class CheckResult:
 
     def add_warning(self, message: str) -> None:
         self.warnings.append(message)
+
+
+class CheckContract(Protocol):
+    def run(self, context: CheckContext) -> CheckResult:
+        ...
+
+
+class CheckExecutionError(RuntimeError):
+    pass
+
+
+class ConfigurationError(CheckExecutionError):
+    pass

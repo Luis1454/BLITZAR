@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from python_tools.ci.release_evidence_defaults import build_release_lane_activities, build_release_lane_analyzers
 from python_tools.ci.release_quality_index import ReleaseQualityIndexBuilder, ReleaseQualityIndexError
+from python_tools.ci.release_support import build_release_lane_activities, build_release_lane_analyzers
 
 
 def _write_json(path: Path, payload: object) -> None:
