@@ -4,10 +4,7 @@
 
 # Core backend orchestration pending split by protocol/state/controls.
 engine/src/backend/SimulationBackend.cpp
-runtime/src/backend/BackendServer.cpp
-runtime/src/protocol/BackendClient.cpp
 runtime/src/frontend/FrontendBackendBridge.cpp
-runtime/src/frontend/FrontendRuntime.cpp
 
 # CUDA fragment blocks retained while kernel-level decomposition is prepared.
 engine/src/physics/cuda/fragments/ParticleSystemCore.inl

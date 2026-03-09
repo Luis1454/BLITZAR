@@ -59,6 +59,8 @@ if(GRAVITY_BUILD_BACKEND_DAEMON)
         apps/backend-service/main.cpp
         apps/backend-service/backend_args.cpp
         runtime/src/backend/BackendServer.cpp
+        runtime/src/backend/BackendServerLoop.cpp
+        runtime/src/backend/BackendServerRequest.cpp
         ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
         ${GRAVITY_BACKEND_SOURCES}
     )
@@ -145,6 +147,7 @@ if(GRAVITY_BUILD_FRONTEND_MODULES)
             runtime/src/frontend/FrontendBackendBridge.cpp
             runtime/src/frontend/FrontendCommon.cpp
             runtime/src/frontend/FrontendRuntime.cpp
+            runtime/src/frontend/FrontendRuntimePolling.cpp
             runtime/src/frontend/LocalBackendFactory.cpp
             ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
             ${GRAVITY_BACKEND_SOURCES}

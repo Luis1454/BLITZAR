@@ -62,6 +62,8 @@ set(GRAVITY_RUNTIME_PROTOCOL_SOURCES
     "${GRAVITY_SOURCE_ROOT}/runtime/src/protocol/BackendJsonCodecParseStatus.cpp"
     "${GRAVITY_SOURCE_ROOT}/runtime/src/protocol/BackendJsonCodecParseSnapshot.cpp"
     "${GRAVITY_SOURCE_ROOT}/runtime/src/protocol/BackendClient.cpp"
+    "${GRAVITY_SOURCE_ROOT}/runtime/src/protocol/BackendClientIo.cpp"
+    "${GRAVITY_SOURCE_ROOT}/runtime/src/protocol/BackendClientRequests.cpp"
     "${GRAVITY_SOURCE_ROOT}/runtime/src/protocol/BackendProtocol.cpp"
 )
 

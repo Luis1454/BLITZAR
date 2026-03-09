@@ -13,10 +13,7 @@
       "closure_criteria": "Split each file below the hard limit and remove the corresponding allowlist paths.",
       "paths": [
         "engine/src/backend/SimulationBackend.cpp",
-        "runtime/src/backend/BackendServer.cpp",
-        "runtime/src/protocol/BackendClient.cpp",
-        "runtime/src/frontend/FrontendBackendBridge.cpp",
-        "runtime/src/frontend/FrontendRuntime.cpp"
+        "runtime/src/frontend/FrontendBackendBridge.cpp"
       ],
       "requirements": [
         "REQ-QUAL-001",

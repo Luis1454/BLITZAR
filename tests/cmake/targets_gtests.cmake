@@ -100,6 +100,7 @@ set(GRAVITY_TEST_BASE_BRIDGE_SOURCES
 set(GRAVITY_TEST_BASE_RUNTIME_SOURCES
     "${GRAVITY_ROOT_DIR}/tests/support/frontend_utils.cpp"
     "${GRAVITY_ROOT_DIR}/runtime/src/frontend/FrontendRuntime.cpp"
+    "${GRAVITY_ROOT_DIR}/runtime/src/frontend/FrontendRuntimePolling.cpp"
     "${GRAVITY_ROOT_DIR}/runtime/src/frontend/FrontendCommon.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"

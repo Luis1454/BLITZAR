@@ -6,6 +6,8 @@ if(NOT DEFINED GRAVITY_RUNTIME_PROTOCOL_SOURCES)
         "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendJsonCodecParseStatus.cpp"
         "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendJsonCodecParseSnapshot.cpp"
         "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendClient.cpp"
+        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendClientIo.cpp"
+        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendClientRequests.cpp"
         "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendProtocol.cpp"
     )
 else()
