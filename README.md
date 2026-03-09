@@ -34,6 +34,12 @@ Repository quality gate:
 make check-all
 ```
 
+Direct `pytest` entry point for repository policy:
+
+```bash
+pytest -q tests/checks/suites/policy -k repo_policy
+```
+
 ## Binaries
 
 - `myApp`

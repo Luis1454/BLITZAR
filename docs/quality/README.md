@@ -34,6 +34,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `release-lane` packages qualification-oriented release evidence after a strict `prod` validation pass; optional GPU release lanes remain supplemental only.
 - Every requirement ID must be traceable to at least one verification artifact.
 - Traceability and quality documents are enforced by `tests/checks/quality_check.py` against `quality_manifest.json`.
+- Repository policy is implemented as reusable Python helpers in `python_tools/policies/repo_policy*.py` and executed through `pytest` suites under `tests/checks/suites/policy/`.
 - `AGENTS.md` must remain git-tracked and mapped through `EVD_AGENTS` in the canonical evidence registry.
 - The enforceable subset of the `Power of 10` profile is checked in repository policy, including open-ended loop, macro, and function-pointer constraints on production C++ paths; non-automatable rules remain review-gated.
 - Strict analyzer lanes also cover ignored return values via `clang-tidy` and `[[nodiscard]]` on internal status APIs.
