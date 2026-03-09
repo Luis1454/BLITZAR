@@ -6,13 +6,17 @@ from pathlib import Path
 
 from python_tools.core.base_check import BaseCheck
 from python_tools.core.io import REQ_ID_RE, TEST_MACRO_RE, GitTrackedService, collect_test_ids
-from python_tools.core.models import CheckContext, CheckResult
-from python_tools.core.typing_ext import JsonValue
+from python_tools.core.models import CheckContext, CheckResult, JsonValue
 from python_tools.policies.deviation_register import DeviationRegister
-from python_tools.policies.evidence_registry import resolve_evidence_ref
-from python_tools.policies.quality_manifest import CROSSWALK_KEY, QUALITY_MANIFEST_PATH, REQUIREMENTS_KEY, QualityManifestLoader
+from python_tools.policies.quality_manifest import (
+    CROSSWALK_KEY,
+    QUALITY_MANIFEST_PATH,
+    REQUIREMENTS_KEY,
+    QualityManifestLoader,
+    resolve_evidence_ref,
+)
 from python_tools.policies.repo_policy import load_allowlist
-from python_tools.policies.test_id_filter import collect_repo_quality_test_ids
+from python_tools.policies.test_catalog import collect_repo_quality_test_ids
 
 REQUIRED_FILES = (
     "AGENTS.md",

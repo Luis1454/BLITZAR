@@ -5,10 +5,13 @@ import re
 from datetime import date
 from pathlib import Path
 
-from python_tools.core.models import CheckResult
-from python_tools.core.typing_ext import JsonValue
-from python_tools.policies.evidence_registry import resolve_evidence_ref
-from python_tools.policies.quality_manifest import QUALITY_MANIFEST_PATH, REQUIREMENTS_KEY, QualityManifestLoader
+from python_tools.core.models import CheckResult, JsonValue
+from python_tools.policies.quality_manifest import (
+    QUALITY_MANIFEST_PATH,
+    REQUIREMENTS_KEY,
+    QualityManifestLoader,
+    resolve_evidence_ref,
+)
 
 DEVIATIONS_KEY = "deviations"
 DEVIATION_ID_RE = re.compile(r"^(DEV|WVR)-[A-Z0-9]+-\d{3}$")

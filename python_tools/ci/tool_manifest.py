@@ -8,7 +8,7 @@ import sys
 from collections.abc import Callable, Mapping
 from pathlib import Path
 
-from python_tools.ci.release_evidence_defaults import default_ci_context
+from python_tools.ci.release_support import default_ci_context
 
 CommandRunner = Callable[[list[str]], str]
 

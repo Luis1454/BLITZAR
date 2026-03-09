@@ -7,14 +7,13 @@ from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
-from python_tools.ci.release_evidence_assets import (
+from python_tools.ci.release_support import (
     DEFAULT_EVIDENCE_REFS,
     load_open_exceptions,
     render_pack_readme,
+    resolve_release_tag,
 )
-from python_tools.ci.release_name import resolve_release_tag
-from python_tools.policies.evidence_registry import EvidenceRegistry
-from python_tools.policies.quality_manifest import QualityManifestLoader
+from python_tools.policies.quality_manifest import EvidenceRegistry, QualityManifestLoader
 
 
 class ReleaseEvidencePackError(RuntimeError):

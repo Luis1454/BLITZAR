@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
+from types import MappingProxyType
 
 from python_tools.core.io import JsonLoader
-from python_tools.core.models import CheckResult
-from python_tools.core.typing_ext import JsonValue
+from python_tools.core.models import CheckResult, JsonValue
 
 QUALITY_MANIFEST_PATH = "docs/quality/quality_manifest.json"
 REQUIREMENTS_KEY = "requirements"
@@ -27,9 +28,7 @@ class QualityManifestLoader:
         errors: list[str] = []
         manifest_path = (root / QUALITY_MANIFEST_PATH).resolve()
         payload = self._load_manifest_object(root.resolve(), manifest_path, (), errors)
-        if payload is None:
-            return {}, errors
-        return payload, errors
+        return ({}, errors) if payload is None else (payload, errors)
 
     def _load_manifest_object(
         self,
@@ -109,10 +108,7 @@ class QualityManifestLoader:
     @staticmethod
     def _resolve_include_path(root: Path, source_path: Path, include_ref: str) -> Path | None:
         include_path = Path(include_ref)
-        if not include_path.is_absolute():
-            include_path = (source_path.parent / include_path).resolve()
-        else:
-            include_path = include_path.resolve()
+        include_path = include_path.resolve() if include_path.is_absolute() else (source_path.parent / include_path).resolve()
         try:
             include_path.relative_to(root)
         except ValueError:
@@ -152,12 +148,10 @@ class QualityManifestLoader:
         if not isinstance(raw, list):
             result.add_error(f"{QUALITY_MANIFEST_PATH}: '{key}' must be a list or object")
             return []
-        rows: list[dict[str, JsonValue]] = []
-        for item in raw:
-            if not isinstance(item, dict):
-                result.add_error(f"{QUALITY_MANIFEST_PATH}: '{key}' entries must be objects")
-                continue
-            rows.append(item)
+        rows = [item for item in raw if isinstance(item, dict)]
+        invalid_count = len(raw) - len(rows)
+        for _ in range(invalid_count):
+            result.add_error(f"{QUALITY_MANIFEST_PATH}: '{key}' entries must be objects")
         return rows
 
     @staticmethod
@@ -172,8 +166,61 @@ class QualityManifestLoader:
             if not isinstance(entry_value, dict):
                 result.add_error(f"{QUALITY_MANIFEST_PATH}: '{key}' object entries must be objects")
                 continue
-            row = dict(entry_value)
-            if keyed_field and keyed_field not in row:
-                row[keyed_field] = entry_key
+            row = {keyed_field: entry_key, **entry_value} if keyed_field and keyed_field not in entry_value else dict(entry_value)
             rows.append(row)
         return rows
+
+
+class EvidenceRegistry:
+    def __init__(self) -> None:
+        self._manifest = QualityManifestLoader()
+        self._cache_by_root: dict[Path, tuple[Mapping[str, str], Mapping[str, str]]] = {}
+
+    def resolve(self, root: Path, ref: str) -> tuple[str | None, str | None]:
+        by_id, _by_path, load_error = self._load(root)
+        if load_error is not None:
+            return None, load_error
+        if by_id is None:
+            return None, "quality evidence registry is unavailable"
+        if ref in by_id:
+            return by_id[ref], None
+        if "/" in ref or "\\" in ref:
+            return None, f"path refs are not allowed in quality manifest: {ref} (use EVD_* id)"
+        return None, f"unknown evidence reference id: {ref}"
+
+    def normalize(self, root: Path, value: str) -> str:
+        _by_id, by_path, load_error = self._load(root)
+        if load_error is not None or by_path is None:
+            return value
+        if value in by_path:
+            return by_path[value]
+        return value
+
+    def _load(self, root: Path) -> tuple[Mapping[str, str] | None, Mapping[str, str] | None, str | None]:
+        if root in self._cache_by_root:
+            by_id, by_path = self._cache_by_root[root]
+            return by_id, by_path, None
+        payload, errors = self._manifest.load_with_errors(root)
+        if errors:
+            return None, None, errors[0]
+        evidence_raw = payload.get("evidence")
+        if not isinstance(evidence_raw, dict):
+            return None, None, f"{QUALITY_MANIFEST_PATH}: 'evidence' must be an object"
+        evidence_map: dict[str, str] = {}
+        for ref, path in evidence_raw.items():
+            if not isinstance(ref, str) or not ref.strip():
+                return None, None, f"{QUALITY_MANIFEST_PATH}: evidence keys must be non-empty strings"
+            if not isinstance(path, str) or not path.strip():
+                return None, None, f"{QUALITY_MANIFEST_PATH}: evidence path for '{ref}' must be non-empty string"
+            evidence_map[ref.strip()] = path.strip()
+        by_id = MappingProxyType(evidence_map)
+        by_path = MappingProxyType({path: ref for ref, path in evidence_map.items()})
+        self._cache_by_root[root] = (by_id, by_path)
+        return by_id, by_path, None
+
+
+_REGISTRY = EvidenceRegistry()
+
+
+def resolve_evidence_ref(root: Path, ref: str) -> tuple[str | None, str | None]:
+    return _REGISTRY.resolve(root, ref)
