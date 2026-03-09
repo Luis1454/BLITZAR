@@ -110,7 +110,7 @@ public:
     }
 };
 
-extern "C" GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravity_frontend_module_v1()
+extern "C" GRAVITY_FRONTEND_MODULE_EXPORT_ATTR const grav_module::FrontendModuleExportsV1 *gravity_frontend_module_v1()
 {
     static const grav_module::FrontendModuleExportsV1 exports{
         grav_module::kFrontendModuleApiVersionV1,

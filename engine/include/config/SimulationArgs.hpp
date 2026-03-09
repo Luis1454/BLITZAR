@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_
+#define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_
 
 #include "config/SimulationConfig.hpp"
 
@@ -27,3 +28,5 @@ void printUsage(std::ostream &out, std::string_view programName, bool headlessMo
 
 
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_TESTS_SUPPORT_BACKEND_HARNESS_HPP_
+#define GRAVITY_TESTS_SUPPORT_BACKEND_HARNESS_HPP_
 
 #include "platform/PlatformProcess.hpp"
 
@@ -38,3 +39,5 @@ class RealBackendHarness {
         std::string _authToken;
 };
 
+
+#endif // GRAVITY_TESTS_SUPPORT_BACKEND_HARNESS_HPP_

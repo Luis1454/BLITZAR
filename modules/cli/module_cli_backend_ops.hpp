@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_MODULES_CLI_MODULE_CLI_BACKEND_OPS_HPP_
+#define GRAVITY_MODULES_CLI_MODULE_CLI_BACKEND_OPS_HPP_
 
 #include <string>
 #include <vector>
@@ -27,3 +28,5 @@ public:
 };
 
 } // namespace grav_module_cli
+
+#endif // GRAVITY_MODULES_CLI_MODULE_CLI_BACKEND_OPS_HPP_

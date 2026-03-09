@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_RUNTIME_INCLUDE_FRONTEND_ILOCALBACKEND_HPP_
+#define GRAVITY_RUNTIME_INCLUDE_FRONTEND_ILOCALBACKEND_HPP_
 
 #include "types/SimulationTypes.hpp"
 
@@ -38,3 +39,5 @@ class ILocalBackend {
 } // namespace grav_frontend
 
 
+
+#endif // GRAVITY_RUNTIME_INCLUDE_FRONTEND_ILOCALBACKEND_HPP_

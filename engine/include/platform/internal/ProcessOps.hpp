@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_ENGINE_INCLUDE_PLATFORM_INTERNAL_PROCESSOPS_HPP_
+#define GRAVITY_ENGINE_INCLUDE_PLATFORM_INTERNAL_PROCESSOPS_HPP_
 
 #include <cstdint>
 #include <cstddef>
@@ -39,3 +40,5 @@ int runProcessBlocking(
 
 } // namespace grav_platform_detail
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_PLATFORM_INTERNAL_PROCESSOPS_HPP_

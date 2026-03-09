@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_TESTS_SUPPORT_NUMERICAL_VALIDATION_TOOL_HPP_
+#define GRAVITY_TESTS_SUPPORT_NUMERICAL_VALIDATION_TOOL_HPP_
 
 #include <iosfwd>
 
@@ -11,3 +12,5 @@ public:
 
 } // namespace grav_test_numerics
 
+
+#endif // GRAVITY_TESTS_SUPPORT_NUMERICAL_VALIDATION_TOOL_HPP_

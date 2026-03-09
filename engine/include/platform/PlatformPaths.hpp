@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMPATHS_HPP_
+#define GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMPATHS_HPP_
 
 #include <ctime>
 #include <string>
@@ -14,3 +15,5 @@ std::tm localTime(std::time_t nowTime);
 
 } // namespace grav_platform
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMPATHS_HPP_

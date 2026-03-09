@@ -1,6 +1,5 @@
 #include "platform/win/DynamicLibraryWin.hpp"
 
-#define NOMINMAX
 #include <windows.h>
 
 namespace grav_platform_detail {

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_GPU_HPP_
+#define GRAVITY_ENGINE_INCLUDE_PHYSICS_GPU_HPP_
 
 #include "physics/ParticleSystem.hpp"
 #include <vector>
@@ -13,3 +14,5 @@ namespace gpu {
 }
 
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_GPU_HPP_

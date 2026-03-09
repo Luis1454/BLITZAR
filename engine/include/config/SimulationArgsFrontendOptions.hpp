@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSFRONTENDOPTIONS_HPP_
+#define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSFRONTENDOPTIONS_HPP_
 
 #include "config/SimulationConfig.hpp"
 
@@ -10,3 +11,5 @@ class SimulationArgsFrontendOptions final {
     static bool apply(const std::string &key, const std::string &value, SimulationConfig &config, std::ostream &warnings);
 };
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSFRONTENDOPTIONS_HPP_

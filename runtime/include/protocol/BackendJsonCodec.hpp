@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_RUNTIME_INCLUDE_PROTOCOL_BACKENDJSONCODEC_HPP_
+#define GRAVITY_RUNTIME_INCLUDE_PROTOCOL_BACKENDJSONCODEC_HPP_
 
 #include "backend/SimulationBackend.hpp"
 #include "config/TextParse.hpp"
@@ -103,3 +104,5 @@ class BackendJsonCodec {
 
 } // namespace grav_protocol
 
+
+#endif // GRAVITY_RUNTIME_INCLUDE_PROTOCOL_BACKENDJSONCODEC_HPP_

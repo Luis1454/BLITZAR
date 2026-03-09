@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_ENERGYGRAPHWIDGET_HPP_
+#define GRAVITY_MODULES_QT_INCLUDE_UI_ENERGYGRAPHWIDGET_HPP_
 
 #include "ui/QtViewMath.hpp"
 
@@ -25,3 +26,5 @@ class EnergyGraphWidget : public QWidget {
 
 } // namespace grav_qt
 
+
+#endif // GRAVITY_MODULES_QT_INCLUDE_UI_ENERGYGRAPHWIDGET_HPP_

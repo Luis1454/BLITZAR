@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_RUNTIME_INCLUDE_FRONTEND_FRONTENDBACKENDBRIDGE_HPP_
+#define GRAVITY_RUNTIME_INCLUDE_FRONTEND_FRONTENDBACKENDBRIDGE_HPP_
 
 #include "protocol/BackendClient.hpp"
 #include "frontend/ILocalBackend.hpp"
@@ -153,3 +154,5 @@ class FrontendBackendBridge {
 } // namespace grav_frontend
 
 
+
+#endif // GRAVITY_RUNTIME_INCLUDE_FRONTEND_FRONTENDBACKENDBRIDGE_HPP_

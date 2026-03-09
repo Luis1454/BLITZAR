@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_TESTS_SUPPORT_SCOPED_ENV_VAR_HPP_
+#define GRAVITY_TESTS_SUPPORT_SCOPED_ENV_VAR_HPP_
 
 #include <string>
 
@@ -24,3 +25,5 @@ class ScopedEnvVar {
 
 } // namespace testsupport
 
+
+#endif // GRAVITY_TESTS_SUPPORT_SCOPED_ENV_VAR_HPP_

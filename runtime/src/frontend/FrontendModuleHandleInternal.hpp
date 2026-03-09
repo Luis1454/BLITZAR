@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_RUNTIME_SRC_FRONTEND_FRONTENDMODULEHANDLEINTERNAL_HPP_
+#define GRAVITY_RUNTIME_SRC_FRONTEND_FRONTENDMODULEHANDLEINTERNAL_HPP_
 
 #include "frontend/FrontendModuleApi.hpp"
 #include "frontend/FrontendModuleBoundary.hpp"
@@ -25,3 +26,5 @@ struct FrontendModuleHandle::Impl {
 std::string errorFromBuffer(const std::array<char, kErrorBufferSize> &buffer, std::string_view fallback);
 
 } // namespace grav_module
+
+#endif // GRAVITY_RUNTIME_SRC_FRONTEND_FRONTENDMODULEHANDLEINTERNAL_HPP_

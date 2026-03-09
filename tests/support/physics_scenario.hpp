@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_
+#define GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_
 
 #include <array>
 #include <cstdint>
@@ -42,3 +43,5 @@ bool prepareTwoBodyScenario(ScenarioConfig &cfg, std::string &error);
 
 } // namespace testsupport
 
+
+#endif // GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_

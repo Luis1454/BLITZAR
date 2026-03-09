@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_ENGINE_INCLUDE_PLATFORM_SOCKETPLATFORM_HPP_
+#define GRAVITY_ENGINE_INCLUDE_PLATFORM_SOCKETPLATFORM_HPP_
 
 #include <cstddef>
 #include <cstdint>
@@ -46,3 +47,5 @@ bool wouldBlockOrTimeoutLastError();
 
 } // namespace grav_socket
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_PLATFORM_SOCKETPLATFORM_HPP_
