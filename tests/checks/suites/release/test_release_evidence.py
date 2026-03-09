@@ -8,10 +8,11 @@ from pathlib import Path
 import pytest
 
 from python_tools.ci.release_evidence_pack import ReleaseEvidencePackager, ReleaseEvidencePackError
+from python_tools.ci.release_quality_index import ReleaseQualityIndexBuilder, ReleaseQualityIndexError
 from python_tools.ci.release_support import build_release_lane_activities, build_release_lane_analyzers
 
 
-def _write_json(path: Path, payload: dict[str, object]) -> None:
+def _write_json(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload), encoding="utf-8")
 
@@ -22,13 +23,7 @@ def _write_text(path: Path, content: str = "sample\n") -> None:
 
 
 def _seed_repo(root: Path) -> None:
-    _write_json(
-        root / "docs/quality/quality_manifest.json",
-        {
-            "metadata": {"system": "test", "revision": "2026-03-07"},
-            "includes": ["manifest/evidence.json", "manifest/requirements.json", "manifest/deviations.json"],
-        },
-    )
+    _write_json(root / "docs/quality/quality_manifest.json", {"metadata": {"system": "test", "revision": "2026-03-07"}, "includes": ["manifest/evidence.json", "manifest/requirements.json", "manifest/deviations.json"]})
     _write_json(
         root / "docs/quality/manifest/evidence.json",
         {
@@ -39,9 +34,11 @@ def _seed_repo(root: Path) -> None:
                 "EVD_QLT_MANIFEST": "docs/quality/quality_manifest.json",
                 "EVD_QLT_PROD_BASELINE": "docs/quality/prod_baseline.md",
                 "EVD_QLT_README": "docs/quality/README.md",
+                "EVD_QLT_RELEASE_INDEX_FORMAT": "docs/quality/release_index.md",
                 "EVD_QLT_STANDARDS_PROFILE": "docs/quality/standards_profile.md",
                 "EVD_SCRIPT_RELEASE_PACKAGE_BUNDLE": "scripts/ci/release/package_bundle.py",
                 "EVD_SCRIPT_RELEASE_PACKAGE_EVIDENCE": "scripts/ci/release/package_evidence.py",
+                "EVD_SCRIPT_RELEASE_PACKAGE_INDEX": "scripts/ci/release/package_quality_index.py",
                 "EVD_SAMPLE": "docs/quality/sample_requirement.md",
             }
         },
@@ -77,20 +74,24 @@ def _seed_repo(root: Path) -> None:
             }
         },
     )
-    _write_text(root / ".github/workflows/release-lane.yml")
-    _write_text(root / "docs/quality/README.md")
-    _write_text(root / "docs/quality/standards_profile.md")
-    _write_text(root / "docs/quality/evidence_pack.md")
-    _write_text(root / "docs/quality/prod_baseline.md")
-    _write_text(root / "docs/quality/sample_requirement.md")
-    _write_text(root / "scripts/ci/release/package_bundle.py")
-    _write_text(root / "scripts/ci/release/package_evidence.py")
+    for rel in [
+        ".github/workflows/release-lane.yml",
+        "docs/quality/README.md",
+        "docs/quality/standards_profile.md",
+        "docs/quality/evidence_pack.md",
+        "docs/quality/prod_baseline.md",
+        "docs/quality/release_index.md",
+        "docs/quality/sample_requirement.md",
+        "scripts/ci/release/package_bundle.py",
+        "scripts/ci/release/package_evidence.py",
+        "scripts/ci/release/package_quality_index.py",
+    ]:
+        _write_text(root / rel)
 
 
-def _read_pack(archive: Path) -> tuple[dict[str, object], list[str]]:
+def _read_json_from_archive(archive: Path, member: str) -> tuple[dict[str, object], list[str]]:
     with zipfile.ZipFile(archive) as bundle:
-        payload = json.loads(bundle.read("release_evidence_pack.json"))
-        return payload, bundle.namelist()
+        return json.loads(bundle.read(member)), bundle.namelist()
 
 
 def test_release_evidence_packager_packages_selected_requirements(tmp_path: Path) -> None:
@@ -105,8 +106,7 @@ def test_release_evidence_packager_packages_selected_requirements(tmp_path: Path
         analyzer_status=build_release_lane_analyzers(),
         ci_context={"source": "unit-test"},
     )
-
-    payload, names = _read_pack(archive)
+    payload, names = _read_json_from_archive(archive, "release_evidence_pack.json")
     assert payload["tag"] == "rc-1"
     assert payload["profile"] == "prod"
     assert payload["requirement_ids"] == ["REQ-TEST-001"]
@@ -118,26 +118,57 @@ def test_release_evidence_packager_packages_selected_requirements(tmp_path: Path
     assert "README.md" in names
 
 
-def test_release_evidence_packager_defaults_to_all_requirements(tmp_path: Path) -> None:
+def test_release_evidence_packager_defaults_and_rejects_unknown_requirements(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
-    archive = ReleaseEvidencePackager().package(
-        root=tmp_path,
-        dist_dir=tmp_path / "dist/evidence-pack",
-        tag="rc-2",
-        profile="prod",
-    )
-
-    payload, _ = _read_pack(archive)
+    archive = ReleaseEvidencePackager().package(root=tmp_path, dist_dir=tmp_path / "dist/evidence-pack", tag="rc-2", profile="prod")
+    payload, _ = _read_json_from_archive(archive, "release_evidence_pack.json")
     assert payload["requirement_ids"] == ["REQ-TEST-001", "REQ-TEST-002"]
-
-
-def test_release_evidence_packager_rejects_unknown_requirement(tmp_path: Path) -> None:
-    _seed_repo(tmp_path)
 
     with pytest.raises(ReleaseEvidencePackError, match="unknown requirement id"):
         ReleaseEvidencePackager().package(
             root=tmp_path,
             dist_dir=tmp_path / "dist/evidence-pack",
+            tag="rc-3",
+            profile="prod",
+            requirements=["REQ-UNKNOWN-999"],
+        )
+
+
+def test_release_quality_index_packages_selected_requirements(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    archive = ReleaseQualityIndexBuilder().package(
+        root=tmp_path,
+        dist_dir=tmp_path / "dist/release-quality-index",
+        tag="rc-1",
+        profile="prod",
+        requirements=["REQ-TEST-001"],
+        verification_activities=build_release_lane_activities("prod"),
+        analyzer_status=build_release_lane_analyzers(),
+        ci_context={"source": "unit-test"},
+    )
+    payload, names = _read_json_from_archive(archive, "release_quality_index.json")
+    assert isinstance(payload["summary"], dict)
+    assert isinstance(payload["open_deviations"], list)
+    assert payload["tag"] == "rc-1"
+    assert payload["summary"]["requirements"] == 1
+    assert payload["summary"]["open_deviations"] == 1
+    assert payload["requirement_ids"] == ["REQ-TEST-001"]
+    assert payload["open_deviations"][0]["id"] == "DEV-QUAL-001"
+    assert payload["ci_context"] == {"source": "unit-test"}
+    assert "README.md" in names
+
+
+def test_release_quality_index_defaults_and_rejects_unknown_requirements(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    archive = ReleaseQualityIndexBuilder().package(root=tmp_path, dist_dir=tmp_path / "dist/release-quality-index", tag="rc-2", profile="prod")
+    payload, _ = _read_json_from_archive(archive, "release_quality_index.json")
+    assert isinstance(payload["summary"], dict)
+    assert payload["summary"]["requirements"] == 2
+
+    with pytest.raises(ReleaseQualityIndexError, match="unknown requirement id"):
+        ReleaseQualityIndexBuilder().package(
+            root=tmp_path,
+            dist_dir=tmp_path / "dist/release-quality-index",
             tag="rc-3",
             profile="prod",
             requirements=["REQ-UNKNOWN-999"],
