@@ -40,6 +40,7 @@ FUNCTION_POINTER_ABI_PATHS = {"runtime/include/frontend/FrontendModuleApi.hpp"}
 QT_REFERENCE_NEW_RE = re.compile(
     r"(?m)^\s*(?:auto|Q[A-Za-z0-9_<>:]+)\s*&\s*[A-Za-z0-9_]+\s*=\s*\*new\s+Q[A-Za-z0-9_<>:]+\s*\("
 )
+IF_DEFINED_RE = re.compile(r"(?m)^\s*#(?:el)?if\s+defined\s*\(")
 
 
 def should_skip_dir(dirname: str) -> bool:
@@ -132,6 +133,8 @@ class RepoPolicyCheck(BaseCheck):
         if is_prod_path(rel):
             for error in _check_power_of_10_content(rel, content):
                 result.add_error(error)
+            if IF_DEFINED_RE.search(content):
+                result.add_error(f"{rel}: prefer #ifdef/#ifndef over #if defined(...) in production paths")
         if rel.startswith("modules/qt/") and QT_REFERENCE_NEW_RE.search(content):
             result.add_error(f"{rel}: Qt '*new + reference' ownership pattern is forbidden")
 

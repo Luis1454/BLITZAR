@@ -6,7 +6,7 @@ namespace grav_env {
 std::optional<std::string> get(std::string_view name)
 {
     const std::string key(name);
-#if defined(_WIN32)
+#ifdef _WIN32
     char *rawValue = nullptr;
     std::size_t rawSize = 0;
     if (_dupenv_s(&rawValue, &rawSize, key.c_str()) != 0 || rawValue == nullptr) {

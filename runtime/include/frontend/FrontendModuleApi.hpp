@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#if defined(_WIN32)
+#ifdef _WIN32
 #define GRAVITY_FRONTEND_MODULE_EXPORT extern "C" __declspec(dllexport)
 #else
 #define GRAVITY_FRONTEND_MODULE_EXPORT extern "C"

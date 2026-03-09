@@ -63,7 +63,8 @@ bool parseFloat64(std::string_view rawValue, double &out)
         return false;
     }
 
-#if defined(__cpp_lib_to_chars) && (__cpp_lib_to_chars >= 201611L)
+#ifdef __cpp_lib_to_chars
+#if __cpp_lib_to_chars >= 201611L
     double parsed = 0.0;
     const auto [ptr, ec] = std::from_chars(
         trimmed.data(),
@@ -74,6 +75,7 @@ bool parseFloat64(std::string_view rawValue, double &out)
         out = parsed;
         return true;
     }
+#endif
 #endif
 
     std::istringstream input{std::string(trimmed)};

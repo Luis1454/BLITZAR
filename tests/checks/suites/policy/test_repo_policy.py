@@ -31,16 +31,8 @@ def _run(root: Path, allowlist: Path) -> tuple[bool, list[str], list[str]]:
     ("path", "content", "expected"),
     [
         (cpp_file(ENGINE_BACKEND_DIR, "bad"), "using Alias = int;\n", "'using' is forbidden in C++ sources"),
-        (
-            cpp_file(ENGINE_CONFIG_DIR, "bad"),
-            "namespace a::b {\n}\n",
-            "nested namespace declaration (A::B) is forbidden",
-        ),
-        (
-            cpp_file(RUNTIME_BACKEND_DIR, "bad"),
-            "namespace gravity_internal_bad {\n}\n",
-            "gravity_internal_* namespace is forbidden",
-        ),
+        (cpp_file(ENGINE_CONFIG_DIR, "bad"), "namespace a::b {\n}\n", "nested namespace declaration (A::B) is forbidden"),
+        (cpp_file(RUNTIME_BACKEND_DIR, "bad"), "namespace gravity_internal_bad {\n}\n", "gravity_internal_* namespace is forbidden"),
         (
             cpp_file(ENGINE_BACKEND_DIR, "bad_namespace"),
             "namespace {\nint g = 1;\n}\n",
@@ -60,6 +52,11 @@ def _run(root: Path, allowlist: Path) -> tuple[bool, list[str], list[str]]:
             cpp_file(ENGINE_CONFIG_DIR, "bad_do_while"),
             "int f() { do { return 1; } while (false); }\n",
             "Power of 10 rule 1 forbids do-while",
+        ),
+        (
+            cpp_file(ENGINE_CONFIG_DIR, "bad_if_defined"),
+            "#if defined(_WIN32)\nint f() { return 1; }\n#endif\n",
+            "prefer #ifdef/#ifndef over #if defined(...) in production paths",
         ),
     ],
 )
