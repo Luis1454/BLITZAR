@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_FRONTENDRUNTIME_HPP
-#define GRAVITY_SIM_FRONTENDRUNTIME_HPP
+#pragma once
 
 #include "frontend/FrontendBackendBridge.hpp"
 #include "frontend/IFrontendRuntime.hpp"
@@ -86,5 +85,4 @@ class FrontendRuntime final : public IFrontendRuntime {
 
 } // namespace grav_frontend
 
-#endif // GRAVITY_SIM_FRONTENDRUNTIME_HPP
 

@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_SIMULATIONTYPES_HPP
-#define GRAVITY_SIM_SIMULATIONTYPES_HPP
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -61,4 +60,3 @@ struct SimulationStats {
     std::string integratorName;
 };
 
-#endif // GRAVITY_SIM_SIMULATIONTYPES_HPP

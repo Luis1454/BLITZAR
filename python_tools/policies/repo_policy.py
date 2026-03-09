@@ -28,12 +28,24 @@ INLINE_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+[A-Za-z0-9_]+::[A-Za-z0-9
 NAMESPACE_BLOCK_RE = re.compile(r"(?m)^\s*namespace\s+[A-Za-z0-9_]+\s*\{")
 GRAVITY_INTERNAL_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+gravity_internal_")
 PROD_ROOTS = ("apps/", "engine/", "runtime/", "modules/")
-EVIDENCE_WORKFLOW_PATHS = (".github/workflows/pr-fast-quality-gate.yml", ".github/workflows/nightly-full.yml", ".github/workflows/release-lane.yml")
-LEGACY_CTEST_SELECTORS = ("ConfigArgsTest", "BackendProtocolTest", "FrontendBridgeTest", "FrontendRuntimeTest", "QtMainWindowTest")
+EVIDENCE_WORKFLOW_PATHS = (
+    ".github/workflows/pr-fast-quality-gate.yml",
+    ".github/workflows/nightly-full.yml",
+    ".github/workflows/release-lane.yml",
+)
+LEGACY_CTEST_SELECTORS = (
+    "ConfigArgsTest",
+    "BackendProtocolTest",
+    "FrontendBridgeTest",
+    "FrontendRuntimeTest",
+    "QtMainWindowTest",
+)
 QT_REFERENCE_NEW_RE = re.compile(
     r"(?m)^\s*(?:auto|Q[A-Za-z0-9_<>:]+)\s*&\s*[A-Za-z0-9_]+\s*=\s*\*new\s+Q[A-Za-z0-9_<>:]+\s*\("
 )
-IF_DEFINED_RE = re.compile(r"(?m)^\s*#(?:el)?if\s+defined\s*\(")
+PREPROCESSOR_CONDITIONAL_RE = re.compile(r"(?m)^\s*#(?:if|ifdef|ifndef|elif|else|endif)\b")
+PRAGMA_ONCE_RE = re.compile(r"(?m)^\s*#pragma\s+once\b")
+DEFINE_RE = re.compile(r"(?m)^\s*#define\s+([A-Z][A-Z0-9_]+)\b(?!\s*\()")
 
 
 def should_skip_dir(dirname: str) -> bool:
@@ -105,11 +117,24 @@ class RepoPolicyCheck(BaseCheck):
         for stale in sorted(allowlist - used_allowlist):
             result.add_warning(f"allowlist entry not needed anymore: {stale}")
 
-        self._check_evidence_workflow_commands(context.root, result, "cmake -S", "-DGRAVITY_PROFILE=prod", "evidence configure command must include -DGRAVITY_PROFILE=prod")
-        self._check_evidence_workflow_commands(context.root, result, "ctest ", "--no-tests=error", "CI ctest command must include --no-tests=error")
+        self._check_evidence_workflow_commands(
+            context.root,
+            result,
+            "cmake -S",
+            "-DGRAVITY_PROFILE=prod",
+            "evidence configure command must include -DGRAVITY_PROFILE=prod",
+        )
+        self._check_evidence_workflow_commands(
+            context.root,
+            result,
+            "ctest ",
+            "--no-tests=error",
+            "CI ctest command must include --no-tests=error",
+        )
         self._check_legacy_ctest_selectors(context.root, result)
 
     def _check_cpp_content(self, rel: str, content: str, result: CheckResult) -> None:
+        suffix = Path(rel).suffix.lower()
         if not rel.startswith("tests/"):
             if GTEST_INCLUDE_RE.search(content):
                 result.add_error(f"{rel}: gtest include found outside tests/")
@@ -126,13 +151,46 @@ class RepoPolicyCheck(BaseCheck):
             result.add_error(f"{rel}: gravity_internal_* namespace is forbidden")
         if is_prod_path(rel) and len(NAMESPACE_BLOCK_RE.findall(content)) > 1:
             result.add_error(f"{rel}: nested namespace blocks are forbidden in production paths")
+        if PRAGMA_ONCE_RE.search(content):
+            result.add_error(f"{rel}: #pragma once is forbidden; use include guards")
+        if suffix in HEADER_EXTS:
+            self._check_include_guard(rel, content, result)
+        else:
+            if PREPROCESSOR_CONDITIONAL_RE.search(content):
+                result.add_error(f"{rel}: preprocessor conditionals are forbidden in C/C++ sources")
+            if DEFINE_RE.search(content):
+                result.add_error(f"{rel}: preprocessor macros are forbidden in C/C++ sources")
         if is_prod_path(rel):
             for error in check_power_of_10_content(rel, content):
                 result.add_error(error)
-            if IF_DEFINED_RE.search(content):
-                result.add_error(f"{rel}: prefer #ifdef/#ifndef over #if defined(...) in production paths")
         if rel.startswith("modules/qt/") and QT_REFERENCE_NEW_RE.search(content):
             result.add_error(f"{rel}: Qt '*new + reference' ownership pattern is forbidden")
+
+    def _check_include_guard(self, rel: str, content: str, result: CheckResult) -> None:
+        lines = content.splitlines()
+        non_empty = [(index, line.strip()) for index, line in enumerate(lines) if line.strip()]
+        if len(non_empty) < 3:
+            result.add_error(f"{rel}: header must use a strict include guard")
+            return
+
+        (_, first), (_, second), (_, last) = non_empty[0], non_empty[1], non_empty[-1]
+        if not first.startswith("#ifndef "):
+            result.add_error(f"{rel}: header must start with #ifndef include guard")
+            return
+
+        guard_name = first.split(maxsplit=1)[1]
+        if second != f"#define {guard_name}":
+            result.add_error(f"{rel}: header include guard must define the same symbol on the second line")
+        if not last.startswith("#endif"):
+            result.add_error(f"{rel}: header must end with #endif include guard")
+
+        conditional_positions = [index for index, line in non_empty if PREPROCESSOR_CONDITIONAL_RE.match(line)]
+        if conditional_positions != [non_empty[0][0], non_empty[-1][0]]:
+            result.add_error(f"{rel}: header must not use preprocessor conditionals beyond the include guard")
+
+        define_positions = [(index, name) for index, line in non_empty for name in DEFINE_RE.findall(line)]
+        if define_positions != [(non_empty[1][0], guard_name)]:
+            result.add_error(f"{rel}: header must not define macros beyond the include guard")
 
     def _check_line_count(
         self,

@@ -1,6 +1,4 @@
-#ifndef GRAVITY_SIM_BACKENDJSONCODECPARSE_HPP
-#define GRAVITY_SIM_BACKENDJSONCODECPARSE_HPP
+#pragma once
 
 #include "protocol/BackendJsonCodec.hpp"
 
-#endif // GRAVITY_SIM_BACKENDJSONCODECPARSE_HPP

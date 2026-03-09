@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_PLATFORMPATHS_HPP
-#define GRAVITY_SIM_PLATFORMPATHS_HPP
+#pragma once
 
 #include <ctime>
 #include <string>
@@ -15,4 +14,3 @@ std::tm localTime(std::time_t nowTime);
 
 } // namespace grav_platform
 
-#endif // GRAVITY_SIM_PLATFORMPATHS_HPP

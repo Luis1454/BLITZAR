@@ -1,5 +1,4 @@
-#ifndef SIMULATION_MODES_HPP_
-#define SIMULATION_MODES_HPP_
+#pragma once
 
 #include <string>
 #include <string_view>
@@ -18,4 +17,3 @@ extern const std::string_view kIntegratorRk4;
 
 } // namespace grav_modes
 
-#endif // SIMULATION_MODES_HPP_

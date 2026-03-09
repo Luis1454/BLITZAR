@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_IFRONTENDRUNTIME_HPP
-#define GRAVITY_SIM_IFRONTENDRUNTIME_HPP
+#pragma once
 
 #include "types/SimulationTypes.hpp"
 
@@ -64,5 +63,4 @@ class IFrontendRuntime {
 
 } // namespace grav_frontend
 
-#endif // GRAVITY_SIM_IFRONTENDRUNTIME_HPP
 

@@ -1,12 +1,4 @@
-/*
-** EPITECH PROJECT, 2024
-** rtxcpp
-** File description:
-** ParticleSystem
-*/
-
-#ifndef PARTICLESYSTEM_HPP_
-#define PARTICLESYSTEM_HPP_
+#pragma once
 
 #include "physics/Octree.hpp"
 
@@ -77,6 +69,5 @@ class ParticleSystem {
         bool _hostStateDirty;
 };
 
-#endif /* !PARTICLESYSTEM_HPP_ */
 
 

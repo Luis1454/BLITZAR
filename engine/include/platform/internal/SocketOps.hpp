@@ -1,5 +1,4 @@
-#ifndef GRAVITY_PLATFORM_INTERNAL_SOCKETOPS_HPP
-#define GRAVITY_PLATFORM_INTERNAL_SOCKETOPS_HPP
+#pragma once
 
 #include <array>
 #include <cstddef>
@@ -35,5 +34,4 @@ bool wouldBlockOrTimeoutLastErrorNative();
 
 } // namespace grav_socket_detail
 
-#endif // GRAVITY_PLATFORM_INTERNAL_SOCKETOPS_HPP
 

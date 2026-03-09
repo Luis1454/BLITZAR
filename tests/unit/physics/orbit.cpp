@@ -1,5 +1,7 @@
 #include "tests/support/physics_scenario.hpp"
 
+#include <gtest/gtest.h>
+
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -7,21 +9,15 @@
 #include <vector>
 
 namespace testsupport {
-TEST_F(PhysicsTest, TST_UNT_PHYS_001_AttractionDistance)
+TEST(PhysicsTest, TST_UNT_PHYS_001_AttractionDistance)
 {
     ScenarioConfig cfg;
-    cfg.inputPath = inputPath_;
-    cfg.particleCount = 2u;
-    cfg.initState.mode = "file";
-    cfg.initState.thermalAmbientTemperature = 0.0f;
-    cfg.initState.thermalSpecificHeat = 1.0f;
-    cfg.initState.thermalHeatingCoeff = 0.0f;
-    cfg.initState.thermalRadiationCoeff = 0.0f;
+    std::string error;
+    ASSERT_TRUE(prepareTwoBodyScenario(cfg, error)) << error;
     cfg.dt = 0.002f;
     cfg.steps = 400;
 
     ScenarioResult result;
-    std::string error;
     ASSERT_TRUE(runScenario(cfg, result, error)) << error;
 
     const float initialDistance = distance(result.initial[0], result.initial[1]);
@@ -34,21 +30,15 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_001_AttractionDistance)
     EXPECT_LE(ratio, kMaxRatio) << "No attraction detected";
 }
 
-TEST_F(PhysicsTest, TST_UNT_PHYS_003_CenterOfMassDrift)
+TEST(PhysicsTest, TST_UNT_PHYS_003_CenterOfMassDrift)
 {
     ScenarioConfig cfg;
-    cfg.inputPath = inputPath_;
-    cfg.particleCount = 2u;
-    cfg.initState.mode = "file";
-    cfg.initState.thermalAmbientTemperature = 0.0f;
-    cfg.initState.thermalSpecificHeat = 1.0f;
-    cfg.initState.thermalHeatingCoeff = 0.0f;
-    cfg.initState.thermalRadiationCoeff = 0.0f;
+    std::string error;
+    ASSERT_TRUE(prepareTwoBodyScenario(cfg, error)) << error;
     cfg.dt = 0.002f;
     cfg.steps = 400;
 
     ScenarioResult result;
-    std::string error;
     ASSERT_TRUE(runScenario(cfg, result, error)) << error;
 
     const auto centerOfMass = [](const std::vector<RenderParticle> &snapshot) {
@@ -70,36 +60,24 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_003_CenterOfMassDrift)
     EXPECT_LE(drift, kMaxCenterOfMassDrift);
 }
 
-TEST_F(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
+TEST(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
 {
     ScenarioConfig coarse;
-    coarse.inputPath = inputPath_;
-    coarse.particleCount = 2u;
-    coarse.initState.mode = "file";
-    coarse.initState.thermalAmbientTemperature = 0.0f;
-    coarse.initState.thermalSpecificHeat = 1.0f;
-    coarse.initState.thermalHeatingCoeff = 0.0f;
-    coarse.initState.thermalRadiationCoeff = 0.0f;
+    std::string coarseError;
+    ASSERT_TRUE(prepareTwoBodyScenario(coarse, coarseError)) << coarseError;
     coarse.dt = 0.002f;
     coarse.steps = 100;
 
     ScenarioConfig fine;
-    fine.inputPath = inputPath_;
-    fine.particleCount = 2u;
-    fine.initState.mode = "file";
-    fine.initState.thermalAmbientTemperature = 0.0f;
-    fine.initState.thermalSpecificHeat = 1.0f;
-    fine.initState.thermalHeatingCoeff = 0.0f;
-    fine.initState.thermalRadiationCoeff = 0.0f;
+    std::string fineError;
+    ASSERT_TRUE(prepareTwoBodyScenario(fine, fineError)) << fineError;
     fine.dt = 0.001f;
     fine.steps = 200;
 
     ScenarioResult coarseResult;
-    std::string coarseError;
     ASSERT_TRUE(runScenario(coarse, coarseResult, coarseError)) << coarseError;
 
     ScenarioResult fineResult;
-    std::string fineError;
     ASSERT_TRUE(runScenario(fine, fineResult, fineError)) << fineError;
 
     float maxParticleDelta = 0.0f;
@@ -111,21 +89,15 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
     EXPECT_LE(maxParticleDelta, kMaxConvergenceDelta);
 }
 
-TEST_F(PhysicsTest, TST_UNT_PHYS_002_EnergyConservation)
+TEST(PhysicsTest, TST_UNT_PHYS_002_EnergyConservation)
 {
     ScenarioConfig cfg;
-    cfg.inputPath = inputPath_;
-    cfg.particleCount = 2u;
-    cfg.initState.mode = "file";
-    cfg.initState.thermalAmbientTemperature = 0.0f;
-    cfg.initState.thermalSpecificHeat = 1.0f;
-    cfg.initState.thermalHeatingCoeff = 0.0f;
-    cfg.initState.thermalRadiationCoeff = 0.0f;
+    std::string error;
+    ASSERT_TRUE(prepareTwoBodyScenario(cfg, error)) << error;
     cfg.dt = 0.002f;
     cfg.steps = 800;
 
     ScenarioResult result;
-    std::string error;
     ASSERT_TRUE(runScenario(cfg, result, error)) << error;
 
     constexpr float kMaxEnergyDriftPct = 5.0f;
@@ -134,21 +106,15 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_002_EnergyConservation)
     EXPECT_FALSE(result.stats.energyEstimated);
 }
 
-TEST_F(PhysicsTest, TST_UNT_PHYS_005_LongRunStability)
+TEST(PhysicsTest, TST_UNT_PHYS_005_LongRunStability)
 {
     ScenarioConfig cfg;
-    cfg.inputPath = inputPath_;
-    cfg.particleCount = 2u;
-    cfg.initState.mode = "file";
-    cfg.initState.thermalAmbientTemperature = 0.0f;
-    cfg.initState.thermalSpecificHeat = 1.0f;
-    cfg.initState.thermalHeatingCoeff = 0.0f;
-    cfg.initState.thermalRadiationCoeff = 0.0f;
+    std::string error;
+    ASSERT_TRUE(prepareTwoBodyScenario(cfg, error)) << error;
     cfg.dt = 0.001f;
     cfg.steps = 2000;
 
     ScenarioResult result;
-    std::string error;
     ASSERT_TRUE(runScenario(cfg, result, error)) << error;
 
     ASSERT_FALSE(result.final.empty());

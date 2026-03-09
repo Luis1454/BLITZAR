@@ -1,5 +1,4 @@
-#ifndef GRAVITY_TESTS_SUPPORT_FRONTEND_UTILS_HPP
-#define GRAVITY_TESTS_SUPPORT_FRONTEND_UTILS_HPP
+#pragma once
 
 #include "frontend/FrontendBackendBridge.hpp"
 
@@ -12,4 +11,3 @@ grav_frontend::FrontendTransportArgs makeTransport(std::uint16_t port, const std
 
 } // namespace testsupport
 
-#endif // GRAVITY_TESTS_SUPPORT_FRONTEND_UTILS_HPP

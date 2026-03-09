@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_FRONTENDCOMMON_HPP
-#define GRAVITY_SIM_FRONTENDCOMMON_HPP
+#pragma once
 
 #include "config/SimulationConfig.hpp"
 
@@ -24,5 +23,4 @@ std::string buildSuggestedExportPath(
 
 } // namespace grav_frontend
 
-#endif // GRAVITY_SIM_FRONTENDCOMMON_HPP
 

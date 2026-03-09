@@ -1,5 +1,4 @@
-#ifndef GRAVITY_UI_QTVIEWMATH_H
-#define GRAVITY_UI_QTVIEWMATH_H
+#pragma once
 
 #include "backend/SimulationBackend.hpp"
 
@@ -61,5 +60,4 @@ GimbalAxis pickGimbalAxis(const GimbalOverlay &overlay, const QPointF &mouse);
 
 } // namespace grav_qt
 
-#endif // GRAVITY_UI_QTVIEWMATH_H
 

@@ -1,5 +1,4 @@
-#ifndef SIMULATIONARGSPARSE_HPP_
-#define SIMULATIONARGSPARSE_HPP_
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -23,4 +22,3 @@ class SimulationArgsParse final {
     );
 };
 
-#endif /* !SIMULATIONARGSPARSE_HPP_ */

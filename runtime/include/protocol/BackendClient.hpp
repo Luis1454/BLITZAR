@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_BACKENDCLIENT_HPP
-#define GRAVITY_SIM_BACKENDCLIENT_HPP
+#pragma once
 
 #include "protocol/BackendJsonCodec.hpp"
 
@@ -63,5 +62,4 @@ class BackendClient {
         std::string _authToken;
 };
 
-#endif // GRAVITY_SIM_BACKENDCLIENT_HPP
 

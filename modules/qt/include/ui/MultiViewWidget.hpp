@@ -1,5 +1,4 @@
-#ifndef GRAVITY_UI_MULTIVIEWWIDGET_H
-#define GRAVITY_UI_MULTIVIEWWIDGET_H
+#pragma once
 
 #include "ui/ParticleView.hpp"
 
@@ -34,4 +33,3 @@ class MultiViewWidget : public QWidget {
 
 } // namespace grav_qt
 
-#endif // GRAVITY_UI_MULTIVIEWWIDGET_H

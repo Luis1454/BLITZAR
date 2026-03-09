@@ -1,5 +1,4 @@
-#ifndef SIMULATIONARGSCOREOPTIONS_HPP_
-#define SIMULATIONARGSCOREOPTIONS_HPP_
+#pragma once
 
 #include "config/SimulationArgs.hpp"
 
@@ -17,4 +16,3 @@ class SimulationArgsCoreOptions final {
     );
 };
 
-#endif /* !SIMULATIONARGSCOREOPTIONS_HPP_ */

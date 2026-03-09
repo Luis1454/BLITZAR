@@ -1,5 +1,4 @@
-#ifndef GRAVITY_TESTS_SUPPORT_POLL_UTILS_HPP
-#define GRAVITY_TESTS_SUPPORT_POLL_UTILS_HPP
+#pragma once
 
 #include <chrono>
 #include <functional>
@@ -14,4 +13,3 @@ bool waitUntil(
 
 } // namespace testsupport
 
-#endif // GRAVITY_TESTS_SUPPORT_POLL_UTILS_HPP
