@@ -37,6 +37,9 @@ HEADER_GUARD_RE = re.compile(r"(?m)^\s*#ifndef\s+([A-Z][A-Z0-9_]+)\s*$")
 FUNCTION_POINTER_TYPEDEF_RE = re.compile(r"(?m)^\s*(?:typedef|using)\b[^\n;]*\(\s*\*\s*[A-Za-z0-9_]*\s*\)")
 ALLOWED_POWER_OF_10_MACROS = {"GRAVITY_HD", "GRAVITY_FRONTEND_MODULE_EXPORT", "NOMINMAX"}
 FUNCTION_POINTER_ABI_PATHS = {"runtime/include/frontend/FrontendModuleApi.hpp"}
+QT_REFERENCE_NEW_RE = re.compile(
+    r"(?m)^\s*(?:auto|Q[A-Za-z0-9_<>:]+)\s*&\s*[A-Za-z0-9_]+\s*=\s*\*new\s+Q[A-Za-z0-9_<>:]+\s*\("
+)
 
 
 def should_skip_dir(dirname: str) -> bool:
@@ -129,6 +132,8 @@ class RepoPolicyCheck(BaseCheck):
         if is_prod_path(rel):
             for error in _check_power_of_10_content(rel, content):
                 result.add_error(error)
+        if rel.startswith("modules/qt/") and QT_REFERENCE_NEW_RE.search(content):
+            result.add_error(f"{rel}: Qt '*new + reference' ownership pattern is forbidden")
 
     def _check_line_count(
         self,
