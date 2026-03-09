@@ -1,6 +1,7 @@
 # Build artifacts
 build/
 build-*/
+build-quality/
 cmake-build-*/
 CMakeFiles/
 CMakeCache.txt
@@ -9,6 +10,7 @@ compile_commands.json
 # Runtime outputs
 exports/
 *.log
+tmp_repo_check.log
 
 # Editor and OS files
 .DS_Store
@@ -17,3 +19,6 @@ Thumbs.db
 # Tooling cache
 __pycache__/
 *.pyc
+.pytest_cache/
+.pytest-basetemp*/
+.tmp_*

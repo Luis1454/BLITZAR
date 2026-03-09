@@ -158,5 +158,6 @@ NASA-first evidence lives in `docs/quality/`:
 Repository contract checks:
 
 ```bash
-python tests/checks/check.py all --root . --config simulation.ini
+make quality-local
+make quality-strict
 ```

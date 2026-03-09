@@ -93,16 +93,8 @@ Treat this repository as high-assurance software (astrophysics/space simulation)
 Required local pre-flight before opening PR:
 
 ```bash
-python tests/checks/check.py all --root . --config simulation.ini
-cmake -S tests -B build-quality -G Ninja \
-  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -DGRAVITY_PROFILE=prod \
-  -DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON \
-  -DGRAVITY_INTEGRATION_ENABLE_SANITIZERS=ON
-cmake --build build-quality --parallel
-python tests/checks/clang_tidy_check.py --root . --build-dir build-quality
-ctest --test-dir build-quality --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7)_"
+make quality-local CONFIG=simulation.ini
+make quality-strict CONFIG=simulation.ini QUALITY_BUILD_DIR=build-quality
 ```
 
 `integration_real` tests require a real backend executable and run in dedicated lanes where backend artifacts are present.

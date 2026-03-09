@@ -21,9 +21,9 @@ This artifact defines the evidence-grade baseline for qualification-oriented `pr
 
 ## Required Build and Review Controls
 
-- Repository quality gate: `python tests/checks/check.py all --root . --config simulation.ini`
-- Python analysis: `python -m ruff check .` and `python -m mypy tests/checks scripts/ci python_tools`
-- Strict integration lane: `tests/checks/run.py clang_tidy` plus deterministic `ctest` subset under sanitizer-enabled `prod` flags
+- Repository quality gate: `make quality-local CONFIG=simulation.ini`
+- Python analysis: `make quality-python`
+- Strict integration lane: `make quality-strict CONFIG=simulation.ini QUALITY_BUILD_DIR=build-quality`
 - Release lane packaging: `scripts/ci/release/package_bundle.py` and `scripts/ci/release/package_evidence.py`
 
 ## Change Control

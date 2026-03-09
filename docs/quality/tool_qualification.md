@@ -23,8 +23,9 @@ This document defines minimum confidence controls for development and CI tools.
 - Qualified environment baseline in `docs/quality/prod_baseline.md`.
 - Generated tool manifest format in `docs/quality/tool_manifest.md`.
 - Reproducible check entrypoints:
-  - `python tests/checks/check.py all --root . --config simulation.ini`
-  - `python tests/checks/run.py clang_tidy --root . --build-dir <build>`
+  - `make quality-local CONFIG=simulation.ini`
+  - `make quality-python`
+  - `make quality-analyze QUALITY_BUILD_DIR=<build>`
   - `python scripts/ci/release/package_tool_manifest.py --lane <lane> --profile prod`
 - Build flags proving strict mode:
   - `GRAVITY_STRICT_WARNINGS=ON`

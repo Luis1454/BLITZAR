@@ -31,8 +31,16 @@ make test-int
 Repository quality gate:
 
 ```bash
-make check-all
+make quality-local
 ```
+
+Strict local preflight aligned with CI:
+
+```bash
+make quality-strict
+```
+
+`make quality-*` stays a thin wrapper around the canonical CMake/Python entrypoints used by the strict Linux gate.
 
 ## Binaries
 
@@ -62,7 +70,8 @@ In `PROFILE=prod`, `myAppModuleHost` and dynamic frontend modules are disabled b
 - `engine/include/`, `engine/src/`
 - `runtime/include/`, `runtime/src/`
 - `modules/`
-- `tests/`
+- `tests/unit`, `tests/int`: product verification
+- `tests/checks`, `python_tools`: repository quality tooling and CI gates
 
 ## Config
 
