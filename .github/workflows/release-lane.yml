@@ -44,7 +44,10 @@ jobs:
         shell: pwsh
         run: |
           python -m ruff check .
-          python -m mypy tests/checks scripts/ci python_tools
+          python -m mypy tests/checks python_tools
+      - name: Run Python check suites
+        shell: pwsh
+        run: python -m pytest -q tests/checks/suites
 
       - name: Install CUDA toolkit
         uses: Jimver/cuda-toolkit@v0.2.30
@@ -63,7 +66,7 @@ jobs:
       - name: Generate tool qualification manifest
         shell: pwsh
         run: |
-          python scripts/ci/release/package_tool_manifest.py --lane release-lane --profile prod --output dist/tool-qualification/tool_manifest.json
+          python -m python_tools.release.cli tool_manifest --lane release-lane --profile prod --output dist/tool-qualification/tool_manifest.json
 
       - name: Configure
         shell: pwsh
@@ -78,19 +81,19 @@ jobs:
       - name: Run integration-safe tests
         shell: pwsh
         run: |
-          ctest --test-dir build --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|5|6|7|8|9)_"
+          ctest --test-dir build --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|5|6|7)_"
 
       - name: Package release artifacts
         run: |
-          python scripts/ci/release/package_bundle.py --build-dir build --dist-dir dist/release-bundle --tool-manifest dist/tool-qualification/tool_manifest.json
+          python -m python_tools.release.cli package_bundle --build-dir build --dist-dir dist/release-bundle --tool-manifest dist/tool-qualification/tool_manifest.json
 
       - name: Package release evidence
         run: |
-          python scripts/ci/release/package_evidence.py --root . --dist-dir dist/evidence-pack --profile prod
+          python -m python_tools.release.cli package_evidence --root . --dist-dir dist/evidence-pack --profile prod
 
       - name: Package release quality index
         run: |
-          python scripts/ci/release/package_quality_index.py --root . --dist-dir dist/release-quality-index --profile prod
+          python -m python_tools.release.cli package_quality_index --root . --dist-dir dist/release-quality-index --profile prod
 
       - name: Upload release bundle
         uses: actions/upload-artifact@v4
@@ -155,7 +158,13 @@ jobs:
         shell: pwsh
         run: |
           python -m ruff check .
-          python -m mypy tests/checks scripts/ci python_tools
+          python -m mypy tests/checks python_tools
+      - name: Run repository quality gate
+        shell: pwsh
+        run: python tests/checks/check.py all --root . --config simulation.ini
+      - name: Run Python check suites
+        shell: pwsh
+        run: python -m pytest -q tests/checks/suites
 
       - name: Validate CUDA runtime/toolchain presence
         shell: pwsh

@@ -19,5 +19,5 @@ CI evidence lanes must emit a tool manifest describing runner OS and toolchain v
 
 ## Generation
 
-- Local: `python scripts/ci/release/package_tool_manifest.py --lane manual --profile prod`
+- Local: `python -m python_tools.release.cli tool_manifest --lane manual --profile prod`
 - CI: `pr-fast.yml` and `release-lane.yml`

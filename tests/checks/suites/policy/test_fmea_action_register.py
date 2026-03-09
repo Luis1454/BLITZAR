@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from python_tools.policies.fmea_action_register import FmeaActionRegister, FmeaActionRegisterError
+from python_tools.checks.fmea_action_register import FmeaActionRegister, FmeaActionRegisterError
 
 
 def _write_register(root: Path, rows: list[dict[str, object]]) -> None:

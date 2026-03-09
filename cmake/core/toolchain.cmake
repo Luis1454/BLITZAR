@@ -1,3 +1,8 @@
+if(NOT DEFINED GRAVITY_SOURCE_ROOT)
+    set(GRAVITY_SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
+get_filename_component(GRAVITY_SOURCE_ROOT "${GRAVITY_SOURCE_ROOT}" ABSOLUTE)
+
 set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
@@ -10,54 +15,54 @@ gravity_populate_windows_toolchain_hints()
 find_package(CUDAToolkit REQUIRED)
 
 set(GRAVITY_PROJECT_INCLUDE_DIRS
-    "${CMAKE_CURRENT_SOURCE_DIR}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/engine/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/runtime/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/modules/qt/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/engine/include/physics"
-    "${CMAKE_CURRENT_SOURCE_DIR}/engine/src/physics/cuda/fragments"
+    "${GRAVITY_SOURCE_ROOT}"
+    "${GRAVITY_SOURCE_ROOT}/engine/include"
+    "${GRAVITY_SOURCE_ROOT}/runtime/include"
+    "${GRAVITY_SOURCE_ROOT}/modules/qt/include"
+    "${GRAVITY_SOURCE_ROOT}/engine/include/physics"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/physics/cuda/fragments"
 )
 
 if(WIN32)
     set(GRAVITY_ENV_UTILS_SOURCES
-        engine/src/config/EnvUtils.cpp
-        engine/src/config/EnvUtilsWin.cpp
+        "${GRAVITY_SOURCE_ROOT}/engine/src/config/EnvUtils.cpp"
+        "${GRAVITY_SOURCE_ROOT}/engine/src/config/EnvUtilsWin.cpp"
     )
 else()
     set(GRAVITY_ENV_UTILS_SOURCES
-        engine/src/config/EnvUtils.cpp
-        engine/src/config/EnvUtilsPosix.cpp
+        "${GRAVITY_SOURCE_ROOT}/engine/src/config/EnvUtils.cpp"
+        "${GRAVITY_SOURCE_ROOT}/engine/src/config/EnvUtilsPosix.cpp"
     )
 endif()
 
 set(GRAVITY_BACKEND_SOURCES
     ${GRAVITY_ENV_UTILS_SOURCES}
-    engine/src/config/SimulationArgs.cpp
-    engine/src/config/SimulationArgsParse.cpp
-    engine/src/config/SimulationArgsCoreOptions.cpp
-    engine/src/config/SimulationArgsFrontendOptions.cpp
-    engine/src/config/SimulationArgsInitOptions.cpp
-    engine/src/config/SimulationArgsInitStateOptions.cpp
-    engine/src/config/SimulationArgsFluidOptions.cpp
-    engine/src/config/SimulationOptionRegistry.cpp
-    engine/src/config/SimulationOptionRegistryApply.cpp
-    engine/src/config/SimulationOptionRegistryEntries.cpp
-    engine/src/config/SimulationConfig.cpp
-    engine/src/config/SimulationModes.cpp
-    engine/src/config/TextParse.cpp
-    engine/src/backend/SimulationBackend.cpp
-    engine/src/backend/SimulationInitConfig.cpp
-    engine/src/physics/cuda/ParticleSystem.cu
+    "${GRAVITY_SOURCE_ROOT}/engine/src/config/SimulationArgs.cpp"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/config/SimulationArgsParse.cpp"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/config/SimulationArgsCoreOptions.cpp"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/config/SimulationArgsFrontendOptions.cpp"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/config/SimulationArgsInitOptions.cpp"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/config/SimulationArgsInitStateOptions.cpp"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/config/SimulationArgsFluidOptions.cpp"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/config/SimulationOptionRegistry.cpp"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/config/SimulationOptionRegistryApply.cpp"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/config/SimulationOptionRegistryEntries.cpp"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/config/SimulationConfig.cpp"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/config/SimulationModes.cpp"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/config/TextParse.cpp"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/backend/SimulationBackend.cpp"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/backend/SimulationInitConfig.cpp"
+    "${GRAVITY_SOURCE_ROOT}/engine/src/physics/cuda/ParticleSystem.cu"
 )
 
 set(GRAVITY_RUNTIME_PROTOCOL_SOURCES
-    runtime/src/protocol/BackendJsonCodec.cpp
-    runtime/src/protocol/BackendJsonCodecParse.cpp
-    runtime/src/protocol/BackendJsonCodecReadNumber.cpp
-    runtime/src/protocol/BackendJsonCodecParseStatus.cpp
-    runtime/src/protocol/BackendJsonCodecParseSnapshot.cpp
-    runtime/src/protocol/BackendClient.cpp
-    runtime/src/protocol/BackendProtocol.cpp
+    "${GRAVITY_SOURCE_ROOT}/runtime/src/protocol/BackendJsonCodec.cpp"
+    "${GRAVITY_SOURCE_ROOT}/runtime/src/protocol/BackendJsonCodecParse.cpp"
+    "${GRAVITY_SOURCE_ROOT}/runtime/src/protocol/BackendJsonCodecReadNumber.cpp"
+    "${GRAVITY_SOURCE_ROOT}/runtime/src/protocol/BackendJsonCodecParseStatus.cpp"
+    "${GRAVITY_SOURCE_ROOT}/runtime/src/protocol/BackendJsonCodecParseSnapshot.cpp"
+    "${GRAVITY_SOURCE_ROOT}/runtime/src/protocol/BackendClient.cpp"
+    "${GRAVITY_SOURCE_ROOT}/runtime/src/protocol/BackendProtocol.cpp"
 )
 
 function(gravity_collect_existing_paths out_var)

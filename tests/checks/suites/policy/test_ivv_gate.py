@@ -4,8 +4,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from python_tools.checks.ivv_gate import IvvGateCheck
 from python_tools.core.models import CheckContext
-from python_tools.policies.ivv_gate import IvvGateCheck
 
 
 def _write_payload(path: Path, body: str) -> None:

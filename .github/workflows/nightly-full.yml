@@ -24,20 +24,15 @@ jobs:
     steps:
       - {name: Checkout, uses: actions/checkout@v4}
       - {name: Setup Python, uses: actions/setup-python@v5, with: {python-version: "3.x"}}
-      - name: Install Python test tooling
-        shell: pwsh
-        run: python -m pip install --upgrade pip pytest ruff mypy
-      - name: Setup MSVC toolchain
-        uses: ilammy/msvc-dev-cmd@v1
-        with: {arch: x64}
-      - name: Run repository quality gate
-        shell: pwsh
-        run: python tests/checks/check.py all --root . --config simulation.ini
+      - {name: Install Python test tooling, shell: pwsh, run: python -m pip install --upgrade pip pytest ruff mypy}
+      - {name: Setup MSVC toolchain, uses: ilammy/msvc-dev-cmd@v1, with: {arch: x64}}
+      - {name: Run repository quality gate, shell: pwsh, run: python tests/checks/check.py all --root . --config simulation.ini}
       - name: Run Python style/type checks
         shell: pwsh
         run: |
           python -m ruff check .
-          python -m mypy tests/checks scripts/ci python_tools
+          python -m mypy tests/checks python_tools
+      - {name: Run Python check suites, shell: pwsh, run: python -m pytest -q tests/checks/suites}
       - name: Configure standalone integration tests
         shell: pwsh
         run: cmake -S tests -B build-integration -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_PROFILE=prod -DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON
@@ -46,10 +41,8 @@ jobs:
         run: cmake --build build-integration --parallel
       - name: Run integration-safe tests
         shell: pwsh
-        run: ctest --test-dir build-integration --output-on-failure --timeout 180 --no-tests=error --repeat until-fail:3 -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7|8|9)_"
-      - name: Package FMEA status snapshot
-        shell: pwsh
-        run: python scripts/ci/nightly/package_fmea_status.py --root . --dist-dir dist/fmea-status
+        run: ctest --test-dir build-integration --output-on-failure --timeout 180 --no-tests=error --repeat until-fail:3 -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7)_"
+      - {name: Package FMEA status snapshot, shell: pwsh, run: python -m python_tools.release.cli fmea_status --root . --dist-dir dist/fmea-status}
       - name: Upload FMEA status snapshot
         if: always()
         uses: actions/upload-artifact@v4
@@ -73,28 +66,26 @@ jobs:
     timeout-minutes: 30
     steps:
       - {name: Checkout, uses: actions/checkout@v4}
-      - name: Run repository quality gate
-        run: python3 tests/checks/check.py all --root . --config simulation.ini
+      - {name: Run repository quality gate, run: python3 tests/checks/check.py all --root . --config simulation.ini}
       - name: Install coverage tooling
         run: |
           sudo apt-get update
           sudo apt-get install -y ninja-build
           python3 -m pip install --upgrade pip
           python3 -m pip install gcovr pytest ruff mypy
+      - name: Run Python style/type checks
+        run: |
+          python3 -m ruff check .
+          python3 -m mypy tests/checks python_tools
+      - {name: Run Python check suites, run: python3 -m pytest -q tests/checks/suites}
       - name: Configure coverage build
         run: cmake -S tests -B build-integration-cov -G Ninja -DCMAKE_BUILD_TYPE=Debug -DGRAVITY_PROFILE=prod -DGRAVITY_INTEGRATION_ENABLE_COVERAGE=ON -DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON
       - name: Build coverage target
         run: cmake --build build-integration-cov --parallel
       - name: Run integration tests for coverage
-        run: ctest --test-dir build-integration-cov --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7|8|9)_"
+        run: ctest --test-dir build-integration-cov --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7)_"
       - {name: Generate coverage report, id: coverage, run: bash scripts/ci/nightly/generate_coverage.sh}
-      - name: Build coverage dashboard payload
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: python3 scripts/ci/nightly/build_dashboard.py
-        env:
-          LINES_PCT: ${{ steps.coverage.outputs.lines_pct }}
-          FUNCS_PCT: ${{ steps.coverage.outputs.funcs_pct }}
-          BRANCH_PCT: ${{ steps.coverage.outputs.branch_pct }}
+      - {name: Build coverage dashboard payload, if: ${{ github.ref == 'refs/heads/main' }}, run: python3 -m python_tools.release.cli coverage_dashboard --root coverage-dashboard, env: {LINES_PCT: ${{ steps.coverage.outputs.lines_pct }}, FUNCS_PCT: ${{ steps.coverage.outputs.funcs_pct }}, BRANCH_PCT: ${{ steps.coverage.outputs.branch_pct }}}}
       - name: Upload coverage dashboard pages artifact
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-pages-artifact@v3
@@ -147,12 +138,8 @@ jobs:
     steps:
       - {name: Checkout, uses: actions/checkout@v4}
       - {name: Setup Python, uses: actions/setup-python@v5, with: {python-version: "3.x"}}
-      - name: Install Python test tooling
-        shell: pwsh
-        run: python -m pip install --upgrade pip pytest ruff mypy
-      - name: Setup MSVC toolchain
-        uses: ilammy/msvc-dev-cmd@v1
-        with: {arch: x64}
+      - {name: Install Python test tooling, shell: pwsh, run: python -m pip install --upgrade pip pytest ruff mypy}
+      - {name: Setup MSVC toolchain, uses: ilammy/msvc-dev-cmd@v1, with: {arch: x64}}
       - name: Validate CUDA runtime/toolchain presence
         shell: pwsh
         run: |
@@ -162,14 +149,13 @@ jobs:
           if (-not $hasNvcc) { throw "nvcc not found in PATH. Install CUDA Toolkit or expose nvcc in runner environment." }
           nvidia-smi
           nvcc --version
-      - name: Run repository quality gate
-        shell: pwsh
-        run: python tests/checks/check.py all --root . --config simulation.ini
+      - {name: Run repository quality gate, shell: pwsh, run: python tests/checks/check.py all --root . --config simulation.ini}
       - name: Run Python style/type checks
         shell: pwsh
         run: |
           python -m ruff check .
-          python -m mypy tests/checks scripts/ci python_tools
+          python -m mypy tests/checks python_tools
+      - {name: Run Python check suites, shell: pwsh, run: python -m pytest -q tests/checks/suites}
       - name: Configure
         shell: pwsh
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_PROFILE=prod -DGRAVITY_STRICT_WARNINGS=ON
@@ -185,7 +171,7 @@ jobs:
         shell: pwsh
         run: |
           $tool = Resolve-Path "build/gravityNumericalValidationTool.exe"
-          python scripts/ci/nightly/package_numerical_validation.py --root . --tool $tool --profile gpu-prod --dist-dir dist/numerical-validation
+          python -m python_tools.release.cli numerical_validation --root . --tool $tool --profile gpu-prod --dist-dir dist/numerical-validation
       - name: Run full tests
         shell: pwsh
         run: |

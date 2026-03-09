@@ -25,14 +25,14 @@ include("${CMAKE_CURRENT_LIST_DIR}/windows_paths.cmake")
 function(gravity_apply_test_quality_flags target_name)
     if(GRAVITY_INTEGRATION_STRICT_WARNINGS)
         if(MSVC)
-            target_compile_options(${target_name} PRIVATE /W4 /WX /permissive-)
+            target_compile_options(${target_name} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/W4 /WX /permissive->)
         else()
-            target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+            target_compile_options(${target_name} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-Wall -Wextra -Wpedantic -Werror>)
         endif()
     endif()
 
     if(GRAVITY_INTEGRATION_ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        target_compile_options(${target_name} PRIVATE -fno-omit-frame-pointer -fsanitize=address,undefined)
+        target_compile_options(${target_name} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fno-omit-frame-pointer -fsanitize=address,undefined>)
         target_link_options(${target_name} PRIVATE -fsanitize=address,undefined)
     endif()
 endfunction()
@@ -110,22 +110,29 @@ if(NOT TARGET ${GRAVITY_TEST_PLATFORM_TARGET})
 endif()
 
 function(gravity_add_gtest target_name)
-    set(options BACKEND_LOCK)
+    set(options BACKEND_LOCK CUDA)
     set(oneValueArgs TIMEOUT)
     set(multiValueArgs LABELS SOURCES LIBS)
     cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     add_executable(${target_name} ${ARG_SOURCES})
-    target_include_directories(${target_name} PRIVATE ${GRAVITY_TEST_INCLUDE_DIRS})
-    target_compile_definitions(${target_name}
-        PRIVATE
-            $<$<BOOL:${WIN32}>:NOMINMAX>
-            GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=
-            GRAVITY_HD_DEVICE=
-            GRAVITY_HD_HOST=
-    )
+    if(ARG_CUDA AND COMMAND configure_gravity_cuda_target)
+        configure_gravity_cuda_target(${target_name})
+        if(TARGET ${GRAVITY_TEST_PLATFORM_TARGET})
+            target_link_libraries(${target_name} PRIVATE ${GRAVITY_TEST_PLATFORM_TARGET})
+        endif()
+    else()
+        target_include_directories(${target_name} PRIVATE ${GRAVITY_TEST_INCLUDE_DIRS})
+        target_compile_definitions(${target_name}
+            PRIVATE
+                $<$<BOOL:${WIN32}>:NOMINMAX>
+                GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=
+                GRAVITY_HD_DEVICE=
+                GRAVITY_HD_HOST=
+        )
+        gravity_apply_test_paths(${target_name})
+    endif()
     target_link_libraries(${target_name} PRIVATE GTest::gtest_main ${ARG_LIBS})
-    gravity_apply_test_paths(${target_name})
     gravity_apply_test_quality_flags(${target_name})
 
     set(_props "")

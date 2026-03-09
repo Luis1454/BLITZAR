@@ -5,8 +5,8 @@ import json
 import subprocess
 from pathlib import Path
 
+from python_tools.checks.quality_baseline import QualityBaselineCheck
 from python_tools.core.models import CheckContext
-from python_tools.policies.quality_baseline import QualityBaselineCheck
 
 
 def _write(path: Path, content: str) -> None:
@@ -108,14 +108,14 @@ def test_quality_baseline_passes_with_valid_minimal_repo(tmp_path: Path) -> None
     assert result.errors == []
 
 
-def test_quality_baseline_fails_when_test_regex_has_no_match(tmp_path: Path) -> None:
+def test_quality_baseline_ignores_requirement_test_regex_matching(tmp_path: Path) -> None:
     _init_git_repo(tmp_path)
     _seed_required_quality_files(tmp_path)
     _seed_baseline_payloads(tmp_path, r"^NO_MATCH$")
     subprocess.run(["git", "add", "AGENTS.md"], cwd=tmp_path, check=True, capture_output=True, text=True)
     result = QualityBaselineCheck().run(CheckContext(root=tmp_path))
-    assert not result.ok
-    assert any("did not match any test id" in error for error in result.errors)
+    assert result.ok
+    assert result.errors == []
 
 
 def test_quality_baseline_fails_when_agents_evidence_is_missing(tmp_path: Path) -> None:

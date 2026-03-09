@@ -4,8 +4,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from python_tools.checks.test_catalog import TestCatalogCheck
 from python_tools.core.models import CheckContext
-from python_tools.policies.test_catalog import TestCatalogCheck
 from tests.checks.suites.support.path_specs import TESTS_UNIT_DIR, cpp_file
 
 
@@ -76,3 +76,22 @@ def test_test_catalog_fails_on_unknown_test_id(tmp_path: Path) -> None:
     result = TestCatalogCheck().run(CheckContext(root=tmp_path, options={"extra_test_ids": set()}))
     assert not result.ok
     assert any("unknown test_id" in error for error in result.errors)
+
+
+def test_test_catalog_fails_when_known_test_is_missing_from_catalog(tmp_path: Path) -> None:
+    _seed_requirements(tmp_path)
+    _write(tmp_path / cpp_file(TESTS_UNIT_DIR, "sample_a"), "TEST(SampleSuite, SampleCaseA) {}\n")
+    _write(tmp_path / cpp_file(TESTS_UNIT_DIR, "sample_b"), "TEST(SampleSuite, SampleCaseB) {}\n")
+    payload = json.loads((tmp_path / "docs/quality/quality_manifest.json").read_text(encoding="utf-8"))
+    payload["test_groups"] = {
+        "EVD_CHECK_MAIN": {
+            "TST-UNT-SAMP-001": {
+                "id": "SampleSuite.SampleCaseA",
+                "req_ids": ["REQ-TEST-001"],
+            }
+        }
+    }
+    _write(tmp_path / "docs/quality/quality_manifest.json", json.dumps(payload) + "\n")
+    result = TestCatalogCheck().run(CheckContext(root=tmp_path, options={"extra_test_ids": set()}))
+    assert not result.ok
+    assert any("missing test_id" in error and "SampleSuite.SampleCaseB" in error for error in result.errors)

@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from python_tools.ci.release_evidence_defaults import build_release_lane_activities, build_release_lane_analyzers
-from python_tools.ci.release_quality_index import ReleaseQualityIndexBuilder, ReleaseQualityIndexError
+from python_tools.release.release_evidence_defaults import build_release_lane_activities, build_release_lane_analyzers
+from python_tools.release.release_quality_index import ReleaseQualityIndexBuilder, ReleaseQualityIndexError
 
 
 def _write_json(path: Path, payload: object) -> None:
@@ -39,7 +39,7 @@ def _seed_repo(root: Path) -> None:
                 "EVD_QLT_README": "docs/quality/README.md",
                 "EVD_QLT_RELEASE_INDEX_FORMAT": "docs/quality/release_index.md",
                 "EVD_QLT_STANDARDS_PROFILE": "docs/quality/standards_profile.md",
-                "EVD_SCRIPT_RELEASE_PACKAGE_INDEX": "scripts/ci/release/package_quality_index.py",
+                "EVD_SCRIPT_RELEASE_PACKAGE_INDEX": "python_tools/release/cli.py",
                 "EVD_SAMPLE": "docs/quality/sample_requirement.md",
             }
         },
@@ -80,7 +80,7 @@ def _seed_repo(root: Path) -> None:
     _write_text(root / "docs/quality/release_index.md")
     _write_text(root / "docs/quality/standards_profile.md")
     _write_text(root / "docs/quality/sample_requirement.md")
-    _write_text(root / "scripts/ci/release/package_quality_index.py")
+    _write_text(root / "python_tools/release/cli.py")
 
 
 def _read_index(archive: Path) -> tuple[dict[str, object], list[str]]:

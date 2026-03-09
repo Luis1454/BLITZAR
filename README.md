@@ -68,7 +68,13 @@ In `GRAVITY_PROFILE=prod`, dynamic frontend modules and `myAppModuleHost` are in
 - Traceability: [docs/quality/traceability.md](docs/quality/traceability.md)
 - Quality baseline overview: [docs/quality/README.md](docs/quality/README.md)
 
-Repository policy checks live in `python_tools/policies/` and are exercised by `pytest` suites under `tests/checks/suites/policy/`.
+Repository policy checks live in `python_tools/checks/` and are exercised by `pytest` suites under `tests/checks/suites/policy/`.
+
+CI authority split:
+
+- GitHub workflows are the source of truth for repository Python gates: `check.py all`, `ruff`, `mypy`, and `pytest -q tests/checks/suites`.
+- `ctest` is the source of truth for C++ and integration-safe deterministic subsets.
+- `TST_QLT_REPO_008_PyChecksUnit` and `TST_QLT_REPO_009_PythonQualityGate` remain available for compatibility/manual regression, but are not part of the fast `ctest` subset.
 
 ## More Documentation
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from python_tools.ci.fmea_status import FmeaStatusSnapshot
+from python_tools.release.fmea_status import FmeaStatusSnapshot
 
 
 def _write_register(root: Path) -> None:

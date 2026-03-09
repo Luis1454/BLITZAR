@@ -58,6 +58,17 @@ if(GRAVITY_TEST_UNIT_MODULE_SOURCES)
     )
 endif()
 
+if(GRAVITY_TEST_UNIT_PHYSICS_SOURCES)
+    gravity_add_gtest(gravityPhysicsGTests
+        CUDA
+        LABELS gpu unit
+        SOURCES
+            "${GRAVITY_ROOT_DIR}/tests/support/physics_scenario.cpp"
+            ${GRAVITY_TEST_UNIT_PHYSICS_SOURCES}
+            ${GRAVITY_BACKEND_SOURCES}
+    )
+endif()
+
 if(WIN32)
     set(GRAVITY_TEST_SCOPED_ENV_VAR_SOURCE "${GRAVITY_ROOT_DIR}/tests/support/scoped_env_var_win.cpp")
     set(GRAVITY_TEST_ENV_UTILS_SOURCES
@@ -156,5 +167,22 @@ if(TARGET Qt6::Widgets AND GRAVITY_TEST_INT_UI_SOURCES)
         LIBS
             Qt6::Widgets
             ${GRAVITY_TEST_PLATFORM_TARGET}
+    )
+endif()
+
+if(COMMAND configure_gravity_cuda_target)
+    add_executable(gravityNumericalValidationTool
+        "${GRAVITY_ROOT_DIR}/tests/tools/numerical_validation_main.cpp"
+        "${GRAVITY_ROOT_DIR}/tests/support/numerical_validation_tool.cpp"
+        "${GRAVITY_ROOT_DIR}/tests/support/physics_scenario.cpp"
+        ${GRAVITY_BACKEND_SOURCES}
+    )
+    configure_gravity_cuda_target(gravityNumericalValidationTool)
+    if(TARGET ${GRAVITY_TEST_PLATFORM_TARGET})
+        target_link_libraries(gravityNumericalValidationTool PRIVATE ${GRAVITY_TEST_PLATFORM_TARGET})
+    endif()
+    target_compile_definitions(gravityNumericalValidationTool
+        PRIVATE
+            GRAVITY_TEST_SOURCE_DIR="${GRAVITY_ROOT_DIR}"
     )
 endif()

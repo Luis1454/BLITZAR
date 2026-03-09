@@ -4,9 +4,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from python_tools.checks.main_delivery_policy import MainDeliveryGateCheck
+from python_tools.checks.pr_policy import PrPolicyCheck, PrPolicySelfTestCheck
 from python_tools.core.models import CheckContext, CheckResult
-from python_tools.policies.main_delivery_policy import MainDeliveryGateCheck
-from python_tools.policies.pr_policy import PrPolicyCheck, PrPolicySelfTestCheck
 
 
 def _write_json(path: Path, payload: dict) -> None:

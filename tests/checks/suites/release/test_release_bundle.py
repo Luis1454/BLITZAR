@@ -4,7 +4,7 @@ from __future__ import annotations
 import zipfile
 from pathlib import Path
 
-from python_tools.ci.release_bundle import ReleaseBundlePackager
+from python_tools.release.release_bundle import ReleaseBundlePackager
 
 
 def test_release_bundle_embeds_tool_manifest(tmp_path: Path, monkeypatch) -> None:

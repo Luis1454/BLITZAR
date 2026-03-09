@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from python_tools.ci.numerical_validation import NumericalValidationCampaign
+from python_tools.release.numerical_validation import NumericalValidationCampaign
 
 
 class FakeNumericalValidationCampaign(NumericalValidationCampaign):

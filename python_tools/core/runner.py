@@ -17,7 +17,7 @@ def resolve_sequence(check_name: str, with_launcher: bool) -> list[str]:
             ordered.insert(3, "launcher")
         return ordered
     if check_name == "quality":
-        return ["quality", "test_catalog", "pr_policy"]
+        return ["quality"]
     return [check_name]
 
 

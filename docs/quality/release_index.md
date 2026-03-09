@@ -19,7 +19,7 @@ The release-quality index is the audit entry point for a release candidate or re
 
 ## Generation
 
-- Local: `python scripts/ci/release/package_quality_index.py --root . --dist-dir dist/release-quality-index --profile prod`
+- Local: `python -m python_tools.release.cli package_quality_index --root . --dist-dir dist/release-quality-index --profile prod`
 - CI: `.github/workflows/release-lane.yml`
 
 ## Maintainer Workflow

@@ -4,8 +4,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from python_tools.checks.quality_manifest import QualityManifestLoader
 from python_tools.core.models import CheckResult
-from python_tools.policies.quality_manifest import QualityManifestLoader
 
 
 def _write(path: Path, payload: dict) -> None:

@@ -84,7 +84,7 @@ The profile is used in two modes:
 
 ## Repository Enforcement
 
-The enforceable subset is wired through `python_tools/policies/repo_policy.py` and runs in the repository quality gate.
+The enforceable subset is wired through `python_tools/checks/repo_policy.py` and runs in the repository quality gate.
 
 Current automated `Power of 10` repository checks cover:
 

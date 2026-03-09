@@ -5,7 +5,7 @@ import json
 import sys
 from pathlib import Path
 
-from python_tools.ci.tool_manifest import ToolManifestCollector
+from python_tools.release.tool_manifest import ToolManifestCollector
 
 
 def _fake_runner(outputs: dict[tuple[str, ...], str]):

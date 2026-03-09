@@ -51,12 +51,13 @@ Build switch:
 ## Determinism Baseline
 
 - Fixed-input regression tests are the authoritative evidence.
-- `pr-fast` executes repository policy gates, analyzer checks, and a deterministic fast subset for merge safety.
+- `pr-fast` executes workflow-driven repository Python gates first (`check.py all`, `ruff`, `mypy`, `pytest`), then a deterministic `ctest` fast subset for merge safety.
 - `main` must only receive commits that are traceable to merged `issue/<N>-<slug>` pull requests.
 - `nightly-full` extends deterministic evidence with repeated standalone integration runs, coverage publication, FMEA status snapshots, and optional GPU full-suite or numerical artifacts.
 - `release-lane` reruns strict `prod` validation, then publishes the release bundle, release-quality index, and evidence pack for review.
 - Filtered CI `ctest` invocations in evidence lanes must use `--no-tests=error` to prevent false green jobs when selectors drift.
 - Filtered CI `ctest` invocations in evidence lanes must select tests by normalized `TST_*` identifiers, not legacy suite-name prefixes.
+- Filtered fast-subset `ctest` selectors exclude `TST_QLT_REPO_008` and `TST_QLT_REPO_009`; those Python meta-checks are workflow-executed, not `ctest`-authoritative.
 - Temporary waivers and deviations must carry explicit owner, approver, and review date metadata in the canonical register.
 - Release review should begin from the release-quality index before opening the full evidence pack.
 - Breaking interface changes must update the canonical contract artifact and linked tests in the same review.

@@ -4,8 +4,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from python_tools.checks.traceability_gate import TraceabilityGateCheck
 from python_tools.core.models import CheckContext
-from python_tools.policies.traceability_gate import TraceabilityGateCheck
 
 
 class FakeTraceabilityGateCheck(TraceabilityGateCheck):
@@ -34,6 +34,16 @@ def _write_requirements(root: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps({"requirements": {"REQ-PROT-001": {}, "REQ-RUN-001": {}, "REQ-PHYS-001": {}}}, indent=2),
+        encoding="utf-8",
+    )
+    (root / "docs/quality/quality_manifest.json").write_text(
+        json.dumps(
+            {
+                "metadata": {"system": "test", "revision": "2026-03-09"},
+                "includes": ["manifest/requirements.json"],
+            },
+            indent=2,
+        ),
         encoding="utf-8",
     )
 

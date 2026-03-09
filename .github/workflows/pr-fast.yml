@@ -22,7 +22,7 @@ jobs:
       - {name: Checkout, uses: actions/checkout@v4}
       - {name: Setup Python, uses: actions/setup-python@v5, with: {python-version: "3.x"}}
       - name: Validate AGENTS PR policy
-        run: python tests/checks/pr_policy_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}"
+        run: python tests/checks/check.py pr_policy_gate --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}"
 
   main-delivery:
     name: Main Delivery Gate
@@ -34,7 +34,7 @@ jobs:
       - name: Validate push-to-main provenance
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python tests/checks/main_delivery_gate_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}" --sha "${{ github.sha }}"
+        run: python tests/checks/check.py main_delivery_gate --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}" --sha "${{ github.sha }}"
 
   traceability-gate:
     name: Traceability Gate
@@ -47,7 +47,7 @@ jobs:
       - name: Validate requirement traceability gate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python tests/checks/traceability_gate_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}"
+        run: python tests/checks/check.py traceability_gate --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}"
 
   ivv-gate:
     name: IV&V Gate
@@ -60,7 +60,7 @@ jobs:
       - name: Validate IV&V independence gate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python tests/checks/ivv_gate_check.py --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}"
+        run: python tests/checks/check.py ivv_gate --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}"
 
   workflow-yaml-lint:
     name: Workflow YAML Lint

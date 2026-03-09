@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from python_tools.checks.repo_policy import RepoPolicyCheck
 from python_tools.core.models import CheckContext
-from python_tools.policies.repo_policy import RepoPolicyCheck
 
 
 def write_file(path: Path, content: str) -> None:

@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from python_tools.ci.release_evidence_defaults import build_release_lane_activities, build_release_lane_analyzers
-from python_tools.ci.release_evidence_pack import ReleaseEvidencePackager, ReleaseEvidencePackError
+from python_tools.release.release_evidence_defaults import build_release_lane_activities, build_release_lane_analyzers
+from python_tools.release.release_evidence_pack import ReleaseEvidencePackager, ReleaseEvidencePackError
 
 
 def _write_json(path: Path, payload: dict[str, object]) -> None:
@@ -40,8 +40,8 @@ def _seed_repo(root: Path) -> None:
                 "EVD_QLT_PROD_BASELINE": "docs/quality/prod_baseline.md",
                 "EVD_QLT_README": "docs/quality/README.md",
                 "EVD_QLT_STANDARDS_PROFILE": "docs/quality/standards_profile.md",
-                "EVD_SCRIPT_RELEASE_PACKAGE_BUNDLE": "scripts/ci/release/package_bundle.py",
-                "EVD_SCRIPT_RELEASE_PACKAGE_EVIDENCE": "scripts/ci/release/package_evidence.py",
+                "EVD_SCRIPT_RELEASE_PACKAGE_BUNDLE": "python_tools/release/cli.py",
+                "EVD_SCRIPT_RELEASE_PACKAGE_EVIDENCE": "python_tools/release/cli.py",
                 "EVD_SAMPLE": "docs/quality/sample_requirement.md",
             }
         },
@@ -83,8 +83,7 @@ def _seed_repo(root: Path) -> None:
     _write_text(root / "docs/quality/evidence_pack.md")
     _write_text(root / "docs/quality/prod_baseline.md")
     _write_text(root / "docs/quality/sample_requirement.md")
-    _write_text(root / "scripts/ci/release/package_bundle.py")
-    _write_text(root / "scripts/ci/release/package_evidence.py")
+    _write_text(root / "python_tools/release/cli.py")
 
 
 def _read_pack(archive: Path) -> tuple[dict[str, object], list[str]]:

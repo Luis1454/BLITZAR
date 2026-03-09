@@ -25,7 +25,7 @@ Release candidates and major review milestones must publish a qualification-orie
 
 ## Generation
 
-- Local: `python scripts/ci/release/package_evidence.py --root . --dist-dir dist/evidence-pack --profile prod`
+- Local: `python -m python_tools.release.cli package_evidence --root . --dist-dir dist/evidence-pack --profile prod`
 - CI: `.github/workflows/release-lane.yml`
 
 ## Notes

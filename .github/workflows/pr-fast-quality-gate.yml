@@ -19,13 +19,15 @@ jobs:
           python -m pip install pytest ruff mypy
       - {name: Verify clang-tidy availability, run: clang-tidy --version}
       - name: Generate tool qualification manifest
-        run: python scripts/ci/release/package_tool_manifest.py --lane pr-fast --profile prod --output dist/tool-qualification/tool_manifest.json
+        run: python -m python_tools.release.cli tool_manifest --lane pr-fast --profile prod --output dist/tool-qualification/tool_manifest.json
       - name: Run repository quality checks
         run: python tests/checks/check.py all --root . --config simulation.ini
       - name: Run Python style/type checks
         run: |
           python -m ruff check .
-          python -m mypy tests/checks scripts/ci python_tools
+          python -m mypy tests/checks python_tools
+      - name: Run Python check suites
+        run: python -m pytest -q tests/checks/suites
       - name: Configure strict integration build
         run: |
           cmake -S tests -B build-quality -G Ninja \
@@ -36,13 +38,13 @@ jobs:
             -DGRAVITY_INTEGRATION_ENABLE_SANITIZERS=ON
       - {name: Build strict integration targets, run: cmake --build build-quality --parallel}
       - name: Run clang-tidy analyzer checks
-        run: python tests/checks/clang_tidy_check.py --root . --build-dir build-quality
+        run: python tests/checks/check.py clang_tidy --root . --build-dir build-quality
       - name: Run integration tests under sanitizers
         run: |
           cmake -E env \
             ASAN_OPTIONS=detect_leaks=0:halt_on_error=1 \
             UBSAN_OPTIONS=halt_on_error=1 \
-            ctest --test-dir build-quality --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7|8|9)_"
+            ctest --test-dir build-quality --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7)_"
       - name: Upload tool qualification manifest
         uses: actions/upload-artifact@v4
         with:

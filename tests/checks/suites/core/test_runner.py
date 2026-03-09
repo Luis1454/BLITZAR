@@ -44,6 +44,6 @@ def test_runner_dispatches_and_aggregates(monkeypatch, tmp_path: Path) -> None:
 
     monkeypatch.setattr(runner_module, "ResultReporter", lambda: type("R", (), {"emit": staticmethod(lambda r: r.ok)})())
     runner = CheckRunner({"quality": _factory("quality", True), "test_catalog": _factory("test_catalog", False), "pr_policy": _factory("pr_policy", True)})
-    assert runner.run("quality", _context(tmp_path)) is False
-    assert calls == ["quality", "test_catalog", "pr_policy"]
+    assert runner.run("quality", _context(tmp_path)) is True
+    assert calls == ["quality"]
 

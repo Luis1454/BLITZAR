@@ -11,9 +11,9 @@ This document defines minimum confidence controls for development and CI tools.
 | Tool | Role | Confidence Strategy |
 |---|---|---|
 | `cmake` + compiler toolchain | Build generation and compilation | pinned versions in CI lanes, strict warning policy, `GRAVITY_PROFILE=prod` in evidence lanes |
-| `ctest` + `gtest` | test execution | deterministic fast subset in `pr-fast`, broader deterministic scope in `nightly-full`, release packaging validation in `release-lane` |
+| `ctest` + `gtest` | test execution | deterministic C++/integration fast subset in `pr-fast`, broader deterministic scope in `nightly-full`, release packaging validation in `release-lane` |
 | `clang-tidy` | static analyzer | analyzer checks with warnings-as-errors in strict PR lane |
-| Python checks (`tests/checks/*.py`) | policy and contract guards | syntax check + mandatory execution in PR and nightly |
+| Python checks (`tests/checks/*.py`) | policy and contract guards | workflow-authoritative execution of `check.py`, `ruff`, `mypy`, and `pytest` in PR/nightly/release lanes |
 | GitHub Actions runners | orchestration | split merge gate, extended nightly evidence lanes, release packaging lane, and optional hardware lanes |
 | release packaging scripts | artifact assembly | reproducible scripts + review of output manifest |
 
@@ -24,8 +24,9 @@ This document defines minimum confidence controls for development and CI tools.
 - Generated tool manifest format in `docs/quality/tool_manifest.md`.
 - Reproducible check entrypoints:
   - `python tests/checks/check.py all --root . --config simulation.ini`
-  - `python tests/checks/clang_tidy_check.py --root . --build-dir <build>`
-  - `python scripts/ci/release/package_tool_manifest.py --lane <lane> --profile prod`
+  - `python -m pytest -q tests/checks/suites`
+  - `python tests/checks/check.py clang_tidy --root . --build-dir <build>`
+  - `python -m python_tools.release.cli tool_manifest --lane <lane> --profile prod`
 - Build flags proving strict mode:
   - `GRAVITY_STRICT_WARNINGS=ON`
   - `GRAVITY_INTEGRATION_STRICT_WARNINGS=ON`
@@ -49,6 +50,7 @@ This document defines minimum confidence controls for development and CI tools.
 
 - Any tool change that alters diagnostics or generated artifacts must be reviewed.
 - CI pipeline updates must keep the strict merge gate green and preserve the documented separation between merge, nightly, and release evidence scopes.
+- Fast `ctest` selectors are reserved for C++ and lightweight integration checks; Python meta-checks `TST_QLT_REPO_008/009` remain non-authoritative compatibility tests.
 - Optional hardware lanes cannot be the sole evidence for core requirements.
 - Qualification evidence for mission-impacting changes must come from `prod` profile constraints.
 - Changes to the qualified `prod` environment must be synchronized with `prod_baseline.md`.
