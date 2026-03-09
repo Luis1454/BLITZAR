@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_ILOCALBACKEND_HPP
-#define GRAVITY_SIM_ILOCALBACKEND_HPP
+#pragma once
 
 #include "types/SimulationTypes.hpp"
 
@@ -38,5 +37,4 @@ class ILocalBackend {
 
 } // namespace grav_frontend
 
-#endif // GRAVITY_SIM_ILOCALBACKEND_HPP
 

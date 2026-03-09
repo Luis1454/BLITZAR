@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_PLATFORMPROCESS_HPP
-#define GRAVITY_SIM_PLATFORMPROCESS_HPP
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -47,4 +46,3 @@ int runProcessBlocking(
 
 } // namespace grav_platform
 
-#endif // GRAVITY_SIM_PLATFORMPROCESS_HPP

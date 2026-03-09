@@ -1,14 +1,9 @@
-#ifndef GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP
-#define GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP
+#pragma once
 
 #include <array>
 #include <cstdint>
 #include <string>
 #include <vector>
-
-#if defined(GRAVITY_ENABLE_GTEST_FIXTURE)
-#include <gtest/gtest.h>
-#endif
 
 #include "backend/SimulationBackend.hpp"
 
@@ -43,15 +38,7 @@ std::array<float, 3> centerOfMassAll(const std::vector<RenderParticle> &snapshot
 float averageRadius(const std::vector<RenderParticle> &snapshot);
 bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &error);
 std::string getTwoBodyInputPath();
-
-#if defined(GRAVITY_ENABLE_GTEST_FIXTURE)
-class PhysicsTest : public ::testing::Test {
-protected:
-    void SetUp() override;
-    std::string inputPath_;
-};
-#endif
+bool prepareTwoBodyScenario(ScenarioConfig &cfg, std::string &error);
 
 } // namespace testsupport
 
-#endif // GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP

@@ -37,14 +37,7 @@ QApplication *ensureQtApp()
     static char *argv[] = {arg0.data(), nullptr};
     static bool initialized = false;
     if (!initialized) {
-        const char *name = "qt-mainwindow-integration-real";
-#if defined(_WIN32)
-        char *programPath = nullptr;
-        if (_get_pgmptr(&programPath) == 0 && programPath != nullptr && programPath[0] != '\0') {
-            name = programPath;
-        }
-#endif
-        std::strncpy(arg0.data(), name, arg0.size() - 1u);
+        std::strncpy(arg0.data(), "qt-mainwindow-integration-real", arg0.size() - 1u);
         arg0[arg0.size() - 1u] = '\0';
         initialized = true;
     }

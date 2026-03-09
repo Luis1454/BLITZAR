@@ -54,9 +54,9 @@ def _run(root: Path, allowlist: Path) -> tuple[bool, list[str], list[str]]:
             "Power of 10 rule 1 forbids do-while",
         ),
         (
-            cpp_file(ENGINE_CONFIG_DIR, "bad_if_defined"),
-            "#if defined(_WIN32)\nint f() { return 1; }\n#endif\n",
-            "prefer #ifdef/#ifndef over #if defined(...) in production paths",
+            cpp_file(ENGINE_CONFIG_DIR, "bad_preprocessor_conditional"),
+            "#ifdef _WIN32\nint f() { return 1; }\n#endif\n",
+            "preprocessor conditionals are forbidden in C/C++ sources",
         ),
     ],
 )

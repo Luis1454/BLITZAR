@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_BACKENDSERVER_HPP
-#define GRAVITY_SIM_BACKENDSERVER_HPP
+#pragma once
 
 #include "backend/SimulationBackend.hpp"
 
@@ -40,5 +39,4 @@ class BackendServer {
         std::vector<std::thread> _clientThreads;
 };
 
-#endif // GRAVITY_SIM_BACKENDSERVER_HPP
 

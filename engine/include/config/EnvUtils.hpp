@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_ENVUTILS_HPP
-#define GRAVITY_SIM_ENVUTILS_HPP
+#pragma once
 
 #include "config/TextParse.hpp"
 
@@ -32,5 +31,4 @@ extern template bool getNumber<double>(std::string_view name, double &out);
 
 } // namespace grav_env
 
-#endif // GRAVITY_SIM_ENVUTILS_HPP
 

@@ -1,14 +1,9 @@
-#ifndef GRAVITY_SIM_FRONTENDMODULEAPI_HPP
-#define GRAVITY_SIM_FRONTENDMODULEAPI_HPP
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
 
-#ifdef _WIN32
-#define GRAVITY_FRONTEND_MODULE_EXPORT extern "C" __declspec(dllexport)
-#else
-#define GRAVITY_FRONTEND_MODULE_EXPORT extern "C"
-#endif
+#define GRAVITY_FRONTEND_MODULE_EXPORT GRAVITY_FRONTEND_MODULE_EXPORT_ATTR
 
 namespace grav_module {
 
@@ -46,4 +41,3 @@ struct FrontendModuleExportsV1 {
 typedef const FrontendModuleExportsV1 *(*FrontendModuleEntryPointFn)();
 } // namespace grav_module
 
-#endif // GRAVITY_SIM_FRONTENDMODULEAPI_HPP

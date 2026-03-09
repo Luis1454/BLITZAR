@@ -1,5 +1,4 @@
-#ifndef SIMULATIONARGS_HPP_
-#define SIMULATIONARGS_HPP_
+#pragma once
 
 #include "config/SimulationConfig.hpp"
 
@@ -26,6 +25,5 @@ void applyArgsToConfig(
 );
 void printUsage(std::ostream &out, std::string_view programName, bool headlessMode);
 
-#endif /* !SIMULATIONARGS_HPP_ */
 
 

@@ -1,10 +1,12 @@
 #include "tests/support/physics_scenario.hpp"
 
+#include <gtest/gtest.h>
+
 #include <cmath>
 #include <string>
 
 namespace testsupport {
-TEST_F(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
+TEST(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
 {
     ScenarioConfig base;
     base.particleCount = 384u;

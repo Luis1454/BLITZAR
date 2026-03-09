@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_FRONTENDMODULEBOUNDARY_HPP
-#define GRAVITY_SIM_FRONTENDMODULEBOUNDARY_HPP
+#pragma once
 
 #include "frontend/ErrorBuffer.hpp"
 
@@ -70,4 +69,3 @@ private:
 
 } // namespace grav_module
 
-#endif // GRAVITY_SIM_FRONTENDMODULEBOUNDARY_HPP

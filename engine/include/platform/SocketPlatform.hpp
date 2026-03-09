@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_SOCKETPLATFORM_HPP
-#define GRAVITY_SIM_SOCKETPLATFORM_HPP
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -47,4 +46,3 @@ bool wouldBlockOrTimeoutLastError();
 
 } // namespace grav_socket
 
-#endif // GRAVITY_SIM_SOCKETPLATFORM_HPP

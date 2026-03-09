@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_DYNAMICLIBRARY_HPP
-#define GRAVITY_SIM_DYNAMICLIBRARY_HPP
+#pragma once
 
 #include "platform/PlatformErrors.hpp"
 
@@ -36,5 +35,4 @@ class DynamicLibrary {
 
 } // namespace grav_platform
 
-#endif // GRAVITY_SIM_DYNAMICLIBRARY_HPP
 

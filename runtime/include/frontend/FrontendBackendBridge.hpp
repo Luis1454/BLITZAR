@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_FRONTENDBACKENDBRIDGE_HPP
-#define GRAVITY_SIM_FRONTENDBACKENDBRIDGE_HPP
+#pragma once
 
 #include "protocol/BackendClient.hpp"
 #include "frontend/ILocalBackend.hpp"
@@ -153,5 +152,4 @@ class FrontendBackendBridge {
 
 } // namespace grav_frontend
 
-#endif // GRAVITY_SIM_FRONTENDBACKENDBRIDGE_HPP
 

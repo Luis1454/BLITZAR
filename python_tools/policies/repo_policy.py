@@ -33,14 +33,13 @@ SETJMP_LONGJMP_RE = re.compile(r"\b(?:setjmp|longjmp)\b")
 DO_WHILE_RE = re.compile(r"\bdo\b\s*\{", re.DOTALL)
 WHILE_TRUE_RE = re.compile(r"\bwhile\s*\(\s*true\s*\)")
 OBJECT_LIKE_DEFINE_RE = re.compile(r"(?m)^\s*#define\s+([A-Z][A-Z0-9_]+)\b(?!\s*\()")
-HEADER_GUARD_RE = re.compile(r"(?m)^\s*#ifndef\s+([A-Z][A-Z0-9_]+)\s*$")
 FUNCTION_POINTER_TYPEDEF_RE = re.compile(r"(?m)^\s*(?:typedef|using)\b[^\n;]*\(\s*\*\s*[A-Za-z0-9_]*\s*\)")
 ALLOWED_POWER_OF_10_MACROS = {"GRAVITY_HD", "GRAVITY_FRONTEND_MODULE_EXPORT", "NOMINMAX"}
 FUNCTION_POINTER_ABI_PATHS = {"runtime/include/frontend/FrontendModuleApi.hpp"}
 QT_REFERENCE_NEW_RE = re.compile(
     r"(?m)^\s*(?:auto|Q[A-Za-z0-9_<>:]+)\s*&\s*[A-Za-z0-9_]+\s*=\s*\*new\s+Q[A-Za-z0-9_<>:]+\s*\("
 )
-IF_DEFINED_RE = re.compile(r"(?m)^\s*#(?:el)?if\s+defined\s*\(")
+PREPROCESSOR_CONDITIONAL_RE = re.compile(r"(?m)^\s*#(?:if|ifdef|ifndef|elif|else|endif)\b")
 
 
 def should_skip_dir(dirname: str) -> bool:
@@ -130,11 +129,11 @@ class RepoPolicyCheck(BaseCheck):
             result.add_error(f"{rel}: gravity_internal_* namespace is forbidden")
         if is_prod_path(rel) and len(NAMESPACE_BLOCK_RE.findall(content)) > 1:
             result.add_error(f"{rel}: nested namespace blocks are forbidden in production paths")
+        if PREPROCESSOR_CONDITIONAL_RE.search(content):
+            result.add_error(f"{rel}: preprocessor conditionals are forbidden in C/C++ sources")
         if is_prod_path(rel):
             for error in _check_power_of_10_content(rel, content):
                 result.add_error(error)
-            if IF_DEFINED_RE.search(content):
-                result.add_error(f"{rel}: prefer #ifdef/#ifndef over #if defined(...) in production paths")
         if rel.startswith("modules/qt/") and QT_REFERENCE_NEW_RE.search(content):
             result.add_error(f"{rel}: Qt '*new + reference' ownership pattern is forbidden")
 
@@ -217,9 +216,8 @@ def _check_power_of_10_content(rel: str, content: str) -> list[str]:
         errors.append(f"{rel}: Power of 10 rule 1 forbids do-while in production paths")
     if WHILE_TRUE_RE.search(content):
         errors.append(f"{rel}: Power of 10 rule 2 forbids open-ended while(true) loops in production paths")
-    header_guards = set(HEADER_GUARD_RE.findall(content))
     for macro_name in OBJECT_LIKE_DEFINE_RE.findall(content):
-        if macro_name in header_guards or macro_name in ALLOWED_POWER_OF_10_MACROS:
+        if macro_name in ALLOWED_POWER_OF_10_MACROS:
             continue
         errors.append(f"{rel}: Power of 10 rule 8 forbids non-structural object-like macros in production paths ({macro_name})")
     if rel not in FUNCTION_POINTER_ABI_PATHS and FUNCTION_POINTER_TYPEDEF_RE.search(content):

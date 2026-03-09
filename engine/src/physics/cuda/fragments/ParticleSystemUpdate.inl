@@ -253,12 +253,14 @@ bool ParticleSystem::update(float deltaTime) {
         return true;
     }
 
-#ifdef GRAVITY_PROFILE_LOGS
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord(start);
-#endif
+    constexpr bool kProfileLogsEnabled = GRAVITY_PROFILE_LOGS != 0;
+    cudaEvent_t start = nullptr;
+    cudaEvent_t stop = nullptr;
+    if constexpr (kProfileLogsEnabled) {
+        cudaEventCreate(&start);
+        cudaEventCreate(&stop);
+        cudaEventRecord(start);
+    }
 
     if (!d_particles || !last) {
         return false;
@@ -367,13 +369,13 @@ bool ParticleSystem::update(float deltaTime) {
         syncDeviceState();
     }
 
-#ifdef GRAVITY_PROFILE_LOGS
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop);
-    float milliseconds = 0;
-    cudaEventElapsedTime(&milliseconds, start, stop);
-    printf("Time elapsed: %f ms (%f fps) for computing %zu particles\n", milliseconds, 1000.0f / milliseconds, _particles.size());
-#endif
+    if constexpr (kProfileLogsEnabled) {
+        cudaEventRecord(stop);
+        cudaEventSynchronize(stop);
+        float milliseconds = 0;
+        cudaEventElapsedTime(&milliseconds, start, stop);
+        printf("Time elapsed: %f ms (%f fps) for computing %zu particles\n", milliseconds, 1000.0f / milliseconds, _particles.size());
+    }
     return true;
 }
 

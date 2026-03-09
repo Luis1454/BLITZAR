@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_BACKENDJSONCODEC_HPP
-#define GRAVITY_SIM_BACKENDJSONCODEC_HPP
+#pragma once
 
 #include "backend/SimulationBackend.hpp"
 #include "config/TextParse.hpp"
@@ -104,4 +103,3 @@ class BackendJsonCodec {
 
 } // namespace grav_protocol
 
-#endif // GRAVITY_SIM_BACKENDJSONCODEC_HPP

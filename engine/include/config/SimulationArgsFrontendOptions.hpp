@@ -1,5 +1,4 @@
-#ifndef SIMULATIONARGSFRONTENDOPTIONS_HPP_
-#define SIMULATIONARGSFRONTENDOPTIONS_HPP_
+#pragma once
 
 #include "config/SimulationConfig.hpp"
 
@@ -11,4 +10,3 @@ class SimulationArgsFrontendOptions final {
     static bool apply(const std::string &key, const std::string &value, SimulationConfig &config, std::ostream &warnings);
 };
 
-#endif /* !SIMULATIONARGSFRONTENDOPTIONS_HPP_ */

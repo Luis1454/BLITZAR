@@ -64,5 +64,6 @@ Build switch:
 - Runtime behavior in critical paths must be reproducible under pinned toolchain settings.
 - Production C++ paths (`apps/`, `engine/`, `runtime/`, `modules/`) must not use unnamed namespaces.
 - Production C++ paths must also satisfy the automated subset of the `Power of 10` profile (`goto`, `setjmp`/`longjmp`, `do-while`, open-ended `while(true)`, non-structural object-like macros, and non-ABI function-pointer typedefs are forbidden).
+- Repository C++ sources must not use preprocessor conditionals; platform seams must be selected by the build graph, not `#if/#else` branches.
 - Strict analyzer lanes also enforce ignored-return-value coverage for internal status APIs through `clang-tidy` and targeted `[[nodiscard]]` annotations.
 - Any requirement, tolerance, or toolchain update must update the quality artifacts in this directory in the same change.

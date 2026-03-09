@@ -53,10 +53,26 @@ if(GRAVITY_TEST_UNIT_MODULE_SOURCES)
     )
 endif()
 
+if(WIN32)
+    set(GRAVITY_TEST_SCOPED_ENV_VAR_SOURCE "${GRAVITY_ROOT_DIR}/tests/support/scoped_env_var_win.cpp")
+    set(GRAVITY_TEST_ENV_UTILS_SOURCES
+        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
+        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtilsWin.cpp"
+    )
+else()
+    set(GRAVITY_TEST_SCOPED_ENV_VAR_SOURCE "${GRAVITY_ROOT_DIR}/tests/support/scoped_env_var_posix.cpp")
+    set(GRAVITY_TEST_ENV_UTILS_SOURCES
+        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
+        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtilsPosix.cpp"
+    )
+endif()
+
 set(GRAVITY_TEST_BASE_REAL_SOURCES
     "${GRAVITY_ROOT_DIR}/tests/support/backend_harness.cpp"
     "${GRAVITY_ROOT_DIR}/tests/support/backend_harness_runtime.cpp"
-    "${GRAVITY_ROOT_DIR}/tests/support/scoped_env_var.cpp"
+    "${GRAVITY_TEST_SCOPED_ENV_VAR_SOURCE}"
+    ${GRAVITY_TEST_ENV_UTILS_SOURCES}
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
     ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
     "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
 )
@@ -69,8 +85,6 @@ set(GRAVITY_TEST_BASE_RUNTIME_SOURCES
     "${GRAVITY_ROOT_DIR}/tests/support/frontend_utils.cpp"
     "${GRAVITY_ROOT_DIR}/runtime/src/frontend/FrontendRuntime.cpp"
     "${GRAVITY_ROOT_DIR}/runtime/src/frontend/FrontendCommon.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
@@ -125,7 +139,6 @@ if(TARGET Qt6::Widgets AND GRAVITY_TEST_INT_UI_SOURCES)
             ${GRAVITY_TEST_INT_UI_SOURCES}
             ${GRAVITY_TEST_BASE_RUNTIME_SOURCES}
             "${GRAVITY_ROOT_DIR}/tests/support/qt_test_utils.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/backend/SimulationInitConfig.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/EnergyGraphWidget.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindow.cpp"

@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_LOCALBACKENDFACTORY_HPP
-#define GRAVITY_SIM_LOCALBACKENDFACTORY_HPP
+#pragma once
 
 #include "frontend/ILocalBackend.hpp"
 
@@ -12,5 +11,4 @@ std::unique_ptr<grav_frontend::ILocalBackend> createLocalBackend(const std::stri
 
 } // namespace grav_frontend
 
-#endif // GRAVITY_SIM_LOCALBACKENDFACTORY_HPP
 

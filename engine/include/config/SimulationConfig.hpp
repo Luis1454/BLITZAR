@@ -1,5 +1,4 @@
-#ifndef SIMULATIONCONFIG_HPP_
-#define SIMULATIONCONFIG_HPP_
+#pragma once
 
 #include "protocol/BackendProtocol.hpp"
 
@@ -64,4 +63,3 @@ struct SimulationConfig {
     bool save(const std::string &path) const;
 };
 
-#endif /* !SIMULATIONCONFIG_HPP_ */

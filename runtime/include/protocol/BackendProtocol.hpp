@@ -1,5 +1,4 @@
-#ifndef GRAVITY_SIM_BACKENDPROTOCOL_HPP
-#define GRAVITY_SIM_BACKENDPROTOCOL_HPP
+#pragma once
 
 #include <cstdint>
 #include <string_view>
@@ -33,4 +32,3 @@ std::uint32_t clampSnapshotPoints(std::uint32_t requested);
 
 } // namespace grav_protocol
 
-#endif // GRAVITY_SIM_BACKENDPROTOCOL_HPP

@@ -1,5 +1,4 @@
-#ifndef SIMULATIONARGSFLUIDOPTIONS_HPP_
-#define SIMULATIONARGSFLUIDOPTIONS_HPP_
+#pragma once
 
 #include "config/SimulationArgs.hpp"
 
@@ -11,4 +10,3 @@ class SimulationArgsFluidOptions final {
     static bool apply(const std::string &key, const std::string &value, SimulationConfig &config, RuntimeArgs &runtime, std::ostream &warnings);
 };
 
-#endif /* !SIMULATIONARGSFLUIDOPTIONS_HPP_ */

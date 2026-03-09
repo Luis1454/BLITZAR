@@ -1,5 +1,4 @@
-#ifndef GRAVITY_PLATFORM_INTERNAL_DYNAMICLIBRARYOPS_HPP
-#define GRAVITY_PLATFORM_INTERNAL_DYNAMICLIBRARYOPS_HPP
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -20,4 +19,3 @@ bool loadDynamicSymbol(
 
 } // namespace grav_platform_detail
 
-#endif // GRAVITY_PLATFORM_INTERNAL_DYNAMICLIBRARYOPS_HPP
