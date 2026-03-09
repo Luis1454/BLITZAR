@@ -5,11 +5,15 @@
 
 namespace grav_config {
 
+template <typename ValueType>
+static ValueType &memberAt(SimulationConfig &config, std::ptrdiff_t offset)
+{
+    return *reinterpret_cast<ValueType *>(reinterpret_cast<char *>(&config) + offset);
+}
 static void emitInvalid(std::ostream &warnings, std::string_view source, std::string_view optionName, const std::string &value)
 {
     warnings << source << " invalid " << optionName << ": " << value << "\n";
 }
-
 static void emitClamped(
     std::ostream &warnings,
     std::string_view source,
@@ -21,7 +25,6 @@ static void emitClamped(
              << grav_protocol::kSnapshotMaxPoints << "]: "
              << requested << " -> " << clamped << "\n";
 }
-
 static std::uint32_t clampFrontendParticleCap(std::uint32_t requested)
 {
     if (requested > grav_protocol::kSnapshotMaxPoints) {
@@ -29,7 +32,6 @@ static std::uint32_t clampFrontendParticleCap(std::uint32_t requested)
     }
     return requested < 2u ? 2u : requested;
 }
-
 bool matchesCli(const SimulationOptionEntry &entry, const std::string &key, SimulationOptionGroup group)
 {
     if (entry.group != group) {
@@ -47,7 +49,6 @@ bool matchesEnv(const SimulationOptionEntry &entry, const std::string &key)
 {
     return !entry.envName.empty() && key == entry.envName;
 }
-
 bool applyEntry(
     const SimulationOptionEntry &entry,
     const std::string &value,
@@ -179,12 +180,7 @@ bool applyCliOption(
     return applyMatchingEntry(
         [group](const SimulationOptionEntry &entry, const std::string &candidate) {
             return matchesCli(entry, candidate, group);
-        },
-        key,
-        value,
-        config,
-        warnings,
-        "[args]");
+        }, key, value, config, warnings, "[args]");
 }
 
 bool applyIniOption(const std::string &key, const std::string &value, SimulationConfig &config, std::ostream &warnings)

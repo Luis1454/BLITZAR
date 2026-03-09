@@ -39,12 +39,6 @@ struct SimulationOptionEntry {
     bool hasMax;
 };
 
-template <typename ValueType>
-ValueType &memberAt(SimulationConfig &config, std::ptrdiff_t offset)
-{
-    return *reinterpret_cast<ValueType *>(reinterpret_cast<char *>(&config) + offset);
-}
-
 extern const SimulationOptionEntry kSimulationOptions[];
 extern const std::size_t kSimulationOptionCount;
 
