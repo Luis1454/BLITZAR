@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_RUNTIME_INCLUDE_BACKEND_BACKENDSERVER_HPP_
+#define GRAVITY_RUNTIME_INCLUDE_BACKEND_BACKENDSERVER_HPP_
 
 #include "backend/SimulationBackend.hpp"
 
@@ -40,3 +41,5 @@ class BackendServer {
 };
 
 
+
+#endif // GRAVITY_RUNTIME_INCLUDE_BACKEND_BACKENDSERVER_HPP_

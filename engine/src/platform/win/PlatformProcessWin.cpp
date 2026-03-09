@@ -2,7 +2,6 @@
 #include "platform/PlatformErrors.hpp"
 #include "platform/PlatformProcess.hpp"
 
-#define NOMINMAX
 #include <windows.h>
 
 namespace grav_platform_detail {

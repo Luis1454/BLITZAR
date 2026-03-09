@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_ENGINE_INCLUDE_PLATFORM_INTERNAL_SOCKETOPS_HPP_
+#define GRAVITY_ENGINE_INCLUDE_PLATFORM_INTERNAL_SOCKETOPS_HPP_
 
 #include <array>
 #include <cstddef>
@@ -35,3 +36,5 @@ bool wouldBlockOrTimeoutLastErrorNative();
 } // namespace grav_socket_detail
 
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_PLATFORM_INTERNAL_SOCKETOPS_HPP_

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMPROCESS_HPP_
+#define GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMPROCESS_HPP_
 
 #include <cstdint>
 #include <memory>
@@ -41,3 +42,5 @@ namespace grav_platform {
 
 } // namespace grav_platform
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMPROCESS_HPP_

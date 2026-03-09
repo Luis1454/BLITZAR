@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_ENGINE_INCLUDE_PLATFORM_DYNAMICLIBRARY_HPP_
+#define GRAVITY_ENGINE_INCLUDE_PLATFORM_DYNAMICLIBRARY_HPP_
 
 #include "platform/PlatformErrors.hpp"
 
@@ -36,3 +37,5 @@ class DynamicLibrary {
 } // namespace grav_platform
 
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_PLATFORM_DYNAMICLIBRARY_HPP_

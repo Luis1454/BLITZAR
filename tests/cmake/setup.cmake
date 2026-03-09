@@ -93,6 +93,7 @@ if(NOT TARGET ${GRAVITY_TEST_PLATFORM_TARGET})
     target_include_directories(${GRAVITY_TEST_PLATFORM_TARGET} PUBLIC ${GRAVITY_TEST_INCLUDE_DIRS})
     target_compile_definitions(${GRAVITY_TEST_PLATFORM_TARGET}
         PUBLIC
+            $<$<BOOL:${WIN32}>:NOMINMAX>
             GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=
             GRAVITY_HD_DEVICE=
             GRAVITY_HD_HOST=
@@ -116,6 +117,7 @@ function(gravity_add_gtest target_name)
     target_include_directories(${target_name} PRIVATE ${GRAVITY_TEST_INCLUDE_DIRS})
     target_compile_definitions(${target_name}
         PRIVATE
+            $<$<BOOL:${WIN32}>:NOMINMAX>
             GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=
             GRAVITY_HD_DEVICE=
             GRAVITY_HD_HOST=

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_ENGINE_INCLUDE_BACKEND_SIMULATIONBACKEND_HPP_
+#define GRAVITY_ENGINE_INCLUDE_BACKEND_SIMULATIONBACKEND_HPP_
 
 #include "physics/ParticleSystem.hpp"
 #include "frontend/ILocalBackend.hpp"
@@ -130,3 +131,5 @@ class SimulationBackend : public grav_frontend::ILocalBackend {
 
 
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_BACKEND_SIMULATIONBACKEND_HPP_

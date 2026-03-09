@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOW_HPP_
+#define GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOW_HPP_
 
 #include "frontend/IFrontendRuntime.hpp"
 #include "config/SimulationConfig.hpp"
@@ -89,3 +90,5 @@ class MainWindow : public QMainWindow {
 } // namespace grav_qt
 
 
+
+#endif // GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOW_HPP_

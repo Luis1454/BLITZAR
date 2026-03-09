@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONOPTIONREGISTRY_HPP_
+#define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONOPTIONREGISTRY_HPP_
 
 #include "config/SimulationConfig.hpp"
 
@@ -38,3 +39,5 @@ void printCliUsage(std::ostream &out, SimulationOptionGroup group);
 
 } // namespace grav_config
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONOPTIONREGISTRY_HPP_

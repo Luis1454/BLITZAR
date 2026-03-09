@@ -1,9 +1,8 @@
-#pragma once
+#ifndef GRAVITY_RUNTIME_INCLUDE_FRONTEND_FRONTENDMODULEAPI_HPP_
+#define GRAVITY_RUNTIME_INCLUDE_FRONTEND_FRONTENDMODULEAPI_HPP_
 
 #include <cstddef>
 #include <cstdint>
-
-#define GRAVITY_FRONTEND_MODULE_EXPORT GRAVITY_FRONTEND_MODULE_EXPORT_ATTR
 
 namespace grav_module {
 
@@ -41,3 +40,5 @@ struct FrontendModuleExportsV1 {
 typedef const FrontendModuleExportsV1 *(*FrontendModuleEntryPointFn)();
 } // namespace grav_module
 
+
+#endif // GRAVITY_RUNTIME_INCLUDE_FRONTEND_FRONTENDMODULEAPI_HPP_

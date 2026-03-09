@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_RUNTIME_INCLUDE_PROTOCOL_BACKENDCLIENT_HPP_
+#define GRAVITY_RUNTIME_INCLUDE_PROTOCOL_BACKENDCLIENT_HPP_
 
 #include "protocol/BackendJsonCodec.hpp"
 
@@ -63,3 +64,5 @@ class BackendClient {
 };
 
 
+
+#endif // GRAVITY_RUNTIME_INCLUDE_PROTOCOL_BACKENDCLIENT_HPP_

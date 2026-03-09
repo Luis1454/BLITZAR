@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_OCTREE_HPP_
+#define GRAVITY_ENGINE_INCLUDE_PHYSICS_OCTREE_HPP_
 
 #include "physics/Vector.hpp"
 #include "physics/Particle.hpp"
@@ -67,3 +68,5 @@ class Octree {
 
 
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_OCTREE_HPP_

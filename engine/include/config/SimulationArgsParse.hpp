@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSPARSE_HPP_
+#define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSPARSE_HPP_
 
 #include <cstddef>
 #include <cstdint>
@@ -22,3 +23,5 @@ class SimulationArgsParse final {
     );
 };
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSPARSE_HPP_

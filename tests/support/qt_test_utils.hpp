@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_TESTS_SUPPORT_QT_TEST_UTILS_HPP_
+#define GRAVITY_TESTS_SUPPORT_QT_TEST_UTILS_HPP_
 
 #include <chrono>
 #include <filesystem>
@@ -33,3 +34,5 @@ bool waitUntilUi(
 
 } // namespace testsupport
 
+
+#endif // GRAVITY_TESTS_SUPPORT_QT_TEST_UTILS_HPP_

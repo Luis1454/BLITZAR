@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEWCOLOR_HPP_
+#define GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEWCOLOR_HPP_
 
 #include "ui/QtViewMath.hpp"
 
@@ -20,3 +21,5 @@ bool isHeavyBody(const RenderParticle &particle);
 
 } // namespace grav_qt
 
+
+#endif // GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEWCOLOR_HPP_
