@@ -69,10 +69,11 @@ The profile is used in two modes:
 9. `Restrict pointer use to a single dereference, and do not use function pointers`
    Automation status: `partial`
    Automated checks:
-    - repository policy restricts unnamed namespaces, `using`, and selected unsafe pointer patterns
+   - repository policy restricts unnamed namespaces, `using`, and selected unsafe pointer patterns
    - production C++ paths must not introduce function pointer typedefs outside explicit ABI boundary headers
    - frontend/module ABI boundaries must encapsulate raw pointers immediately
    Policy note:
+   - `using namespace`, symbol imports, and type aliases stay forbidden in repository C++ code to keep symbol provenance explicit during review
    - C ABI, Qt, OS, and plugin boundaries may require explicit pointer exceptions
 
 10. `Compile with all warnings enabled; use one or more analyzers; keep the code warning-free`
@@ -94,6 +95,7 @@ Current automated `Power of 10` repository checks cover:
 - `#pragma once` forbidden; headers must use strict include guards
 - preprocessor conditionals forbidden in repository C++ sources outside header include guards
 - preprocessor macro definitions forbidden in repository C++ sources outside header include guards
+- `using namespace`, symbol imports, and type aliases forbidden in repository C++ sources
 - function pointer typedefs forbidden outside explicit ABI boundary headers
 
 The remaining rules are tracked as review expectations and higher-assurance process constraints, not as naive regex-only repository failures.

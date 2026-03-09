@@ -6,7 +6,14 @@ from pathlib import Path
 import pytest
 
 from tests.checks.suites.policy.repo_policy_test_support import run_repo_policy, write_file
-from tests.checks.suites.support.path_specs import ENGINE_BACKEND_DIR, ENGINE_CONFIG_DIR, MODULES_QT_UI_DIR, RUNTIME_BACKEND_DIR, TESTS_UNIT_DIR, cpp_file
+from tests.checks.suites.support.path_specs import (
+    ENGINE_BACKEND_DIR,
+    ENGINE_CONFIG_DIR,
+    MODULES_QT_UI_DIR,
+    RUNTIME_BACKEND_DIR,
+    TESTS_UNIT_DIR,
+    cpp_file,
+)
 
 
 @pytest.mark.parametrize(("path", "content", "expected"), [

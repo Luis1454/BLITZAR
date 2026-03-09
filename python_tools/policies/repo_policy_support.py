@@ -30,6 +30,7 @@ QT_REFERENCE_NEW_RE = re.compile(r"(?m)^\s*(?:auto|Q[A-Za-z0-9_<>:]+)\s*&\s*[A-Z
 PREPROCESSOR_CONDITIONAL_RE = re.compile(r"(?m)^\s*#(?:if|ifdef|ifndef|elif|else|endif)\b")
 PRAGMA_ONCE_RE = re.compile(r"(?m)^\s*#pragma\s+once\b")
 DEFINE_RE = re.compile(r"(?m)^\s*#define\s+([A-Z][A-Z0-9_]+)\b(?!\s*\()")
+COMMENT_ONLY_LINE_RE = re.compile(r"^\s*(?://|/\*|\*|\*/)")
 
 
 def should_skip_dir(dirname: str) -> bool:
@@ -91,10 +92,11 @@ def check_cpp_content(rel: str, content: str, result: CheckResult) -> None:
 
 def check_include_guard(rel: str, content: str, result: CheckResult) -> None:
     non_empty = [(index, line.strip()) for index, line in enumerate(content.splitlines()) if line.strip()]
-    if len(non_empty) < 3:
+    effective = _strip_leading_header_comments(non_empty)
+    if len(effective) < 3:
         result.add_error(f"{rel}: header must use a strict include guard")
         return
-    (_, first), (_, second), (_, last) = non_empty[0], non_empty[1], non_empty[-1]
+    (_, first), (_, second), (_, last) = effective[0], effective[1], effective[-1]
     if not first.startswith("#ifndef "):
         result.add_error(f"{rel}: header must start with #ifndef include guard")
         return
@@ -103,12 +105,19 @@ def check_include_guard(rel: str, content: str, result: CheckResult) -> None:
         result.add_error(f"{rel}: header include guard must define the same symbol on the second line")
     if not last.startswith("#endif"):
         result.add_error(f"{rel}: header must end with #endif include guard")
-    conditional_positions = [index for index, line in non_empty if PREPROCESSOR_CONDITIONAL_RE.match(line)]
-    if conditional_positions != [non_empty[0][0], non_empty[-1][0]]:
+    conditional_positions = [index for index, line in effective if PREPROCESSOR_CONDITIONAL_RE.match(line)]
+    if conditional_positions != [effective[0][0], effective[-1][0]]:
         result.add_error(f"{rel}: header must not use preprocessor conditionals beyond the include guard")
-    define_positions = [(index, name) for index, line in non_empty for name in DEFINE_RE.findall(line)]
-    if define_positions != [(non_empty[1][0], guard_name)]:
+    define_positions = [(index, name) for index, line in effective for name in DEFINE_RE.findall(line)]
+    if define_positions != [(effective[1][0], guard_name)]:
         result.add_error(f"{rel}: header must not define macros beyond the include guard")
+
+
+def _strip_leading_header_comments(non_empty: list[tuple[int, str]]) -> list[tuple[int, str]]:
+    start = 0
+    while start < len(non_empty) and COMMENT_ONLY_LINE_RE.match(non_empty[start][1]):
+        start += 1
+    return non_empty[start:]
 
 
 def collect_marker_commands(content: str, marker_text: str) -> list[str]:
