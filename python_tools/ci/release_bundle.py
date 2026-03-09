@@ -4,7 +4,7 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from python_tools.ci.release_name import resolve_release_tag
+from python_tools.ci.release_support import resolve_release_tag
 
 
 class ReleaseBundlePackager:

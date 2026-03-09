@@ -9,12 +9,12 @@ ROOT = Path(__file__).resolve().parents[3]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from python_tools.ci.release_evidence_defaults import (
+from python_tools.ci.release_evidence_pack import ReleaseEvidencePackager
+from python_tools.ci.release_support import (
     build_release_lane_activities,
     build_release_lane_analyzers,
     default_ci_context,
 )
-from python_tools.ci.release_evidence_pack import ReleaseEvidencePackager
 
 
 def parse_args() -> argparse.Namespace:
