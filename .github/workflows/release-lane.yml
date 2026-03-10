@@ -45,6 +45,7 @@ jobs:
         run: |
           python -m ruff check .
           python -m mypy tests/checks scripts/ci python_tools
+          python -m pytest -q tests/checks/suites
 
       - name: Install CUDA toolkit
         uses: Jimver/cuda-toolkit@v0.2.30
@@ -78,7 +79,7 @@ jobs:
       - name: Run integration-safe tests
         shell: pwsh
         run: |
-          ctest --test-dir build --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|5|6|7|8|9)_"
+          ctest --test-dir build --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|5|6|7)_"
 
       - name: Package release artifacts
         run: |
@@ -156,6 +157,7 @@ jobs:
         run: |
           python -m ruff check .
           python -m mypy tests/checks scripts/ci python_tools
+          python -m pytest -q tests/checks/suites
 
       - name: Validate CUDA runtime/toolchain presence
         shell: pwsh
