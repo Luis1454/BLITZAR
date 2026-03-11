@@ -31,7 +31,8 @@ class TestCatalogCheck(BaseCheck):
             else collect_repo_quality_test_ids(context.root, manifest, result)
         )
         known_tests = collect_test_ids(context.root, extra_ids, TEST_MACRO_RE)
-        known_req_ids = self._load_requirement_ids(manifest, result)
+        requirements = self._load_requirements(manifest, known_tests, result)
+        known_req_ids = set(requirements)
         rows = self._load_catalog_rows(manifest, result)
         if not rows:
             result.add_error(f"{QUALITY_MANIFEST_PATH}: '{TEST_GROUPS_KEY}' must contain at least one row")
@@ -64,14 +65,37 @@ class TestCatalogCheck(BaseCheck):
                 )
         return rows
 
-    def _load_requirement_ids(self, manifest: dict[str, JsonValue], result: CheckResult) -> set[str]:
+    def _load_requirements(
+        self,
+        manifest: dict[str, JsonValue],
+        known_tests: set[str],
+        result: CheckResult,
+    ) -> dict[str, list[str]]:
         rows = self._manifest.get_list(manifest, REQUIREMENTS_KEY, result, keyed_field="id")
-        req_ids: set[str] = set()
+        parsed: dict[str, list[str]] = {}
         for row in rows:
             req_id = self._as_string(row.get("id"))
-            if REQ_ID_RE.match(req_id):
-                req_ids.add(req_id)
-        return req_ids
+            if not REQ_ID_RE.match(req_id):
+                result.add_error(f"invalid requirement id format: {req_id}")
+                continue
+            if req_id in parsed:
+                result.add_error(f"duplicate requirement id: {req_id}")
+                continue
+            tests = self._as_string_list(row.get("tests"))
+            if not tests:
+                result.add_error(f"{req_id}: missing tests list")
+                parsed[req_id] = []
+                continue
+            parsed[req_id] = tests
+            for pattern in tests:
+                try:
+                    regex = re.compile(pattern)
+                except re.error as exc:
+                    result.add_error(f"{req_id}: invalid test regex '{pattern}': {exc}")
+                    continue
+                if not any(regex.search(test_id) for test_id in known_tests):
+                    result.add_error(f"{req_id}: test regex did not match any test id: {pattern}")
+        return parsed
 
     def _check_rows(
         self,
@@ -153,6 +177,12 @@ class TestCatalogCheck(BaseCheck):
     @staticmethod
     def _as_string(value: JsonValue | None) -> str:
         return value.strip() if isinstance(value, str) else ""
+
+    @staticmethod
+    def _as_string_list(value: JsonValue | None) -> list[str]:
+        if not isinstance(value, list):
+            return []
+        return [item.strip() for item in value if isinstance(item, str) and item.strip()]
 
     @staticmethod
     def _to_req_ids(value: JsonValue | None) -> list[str]:

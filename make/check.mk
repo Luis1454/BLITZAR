@@ -8,8 +8,9 @@ quality-local:
 	$(MAKE) check CHECK=all CONFIG=$(CONFIG) BUILD_DIR=
 
 quality-python:
-	python -m ruff check tests/checks scripts/ci python_tools
+	python -m ruff check .
 	python -m mypy tests/checks scripts/ci python_tools
+	python -m pytest -q tests/checks/suites
 
 quality-configure:
 	cmake -S tests -B $(QUALITY_BUILD_DIR) -G "$(GENERATOR)" \
