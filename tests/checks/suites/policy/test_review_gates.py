@@ -64,6 +64,19 @@ def test_pr_policy_accepts_valid_branch_title_body() -> None:
     assert result.errors == []
 
 
+def test_pr_policy_accepts_valid_body_with_escaped_newlines() -> None:
+    context = CheckContext(
+        root=Path(".").resolve(),
+        event_name="pull_request",
+        branch="issue/106-enforce-pr-policy",
+        title="Issue #106: Enforce PR policy",
+        body="Implements #106\\n\\nCloses #106",
+    )
+    result = PrPolicyCheck().run(context)
+    assert result.ok
+    assert result.errors == []
+
+
 def test_pr_policy_rejects_issue_mismatch() -> None:
     context = CheckContext(root=Path(".").resolve(), event_name="pull_request", branch="issue/106-enforce-pr-policy", title="Issue #106: Enforce PR policy", body="Implements #106\n\nCloses #107")
     result = PrPolicyCheck().run(context)

@@ -31,6 +31,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - Product verification lives under `tests/unit` and `tests/int`; repository quality gates live under `tests/checks` and `python_tools`.
 - `prod` evidence is deterministic and strict-gated; `dev` evidence is non-qualification unless reproduced under `prod` constraints.
 - `pr-fast` is the deterministic merge gate only: strict policy checks, analyzer lane, and integration-safe fast subset.
+- CI runs Python quality checks directly (check runner + `ruff`/`mypy`/`pytest`); CTest fast subsets exclude `TST_QLT_REPO_008_PyChecksUnit` and `TST_QLT_REPO_009_PythonQualityGate` (kept for manual regression and manifest compatibility).
 - `nightly-full` broadens deterministic evidence with standalone integration repeats, coverage publication, and optional GPU/numerical campaigns.
 - `release-lane` packages qualification-oriented release evidence after a strict `prod` validation pass; optional GPU release lanes remain supplemental only.
 - Every requirement ID must be traceable to at least one verification artifact.
