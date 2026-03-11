@@ -22,13 +22,7 @@ jobs:
       - {name: Checkout, uses: actions/checkout@v4}
       - {name: Setup Python, uses: actions/setup-python@v5, with: {python-version: "3.x"}}
       - name: Validate AGENTS PR policy
-        run: >-
-          python tests/checks/run.py pr_policy
-          --event-name "${{ github.event_name }}"
-          --event-path "${{ github.event_path }}"
-          --branch "${{ github.head_ref }}"
-          --title "${{ github.event.pull_request.title }}"
-          --body "${{ github.event.pull_request.body }}"
+        run: python tests/checks/run.py pr_policy --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}"
 
   main-delivery:
     name: Main Delivery Gate
