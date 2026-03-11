@@ -37,6 +37,12 @@ class ClangTidyCheck(BaseCheck):
         if not files:
             result.add_error("clang-tidy check failed: no matching files found in compile database")
             return
+        files = self._filter_diff_files(files, context, result)
+        if result.errors:
+            return
+        if not files:
+            result.success_message = "clang-tidy skipped (no matching changed files)"
+            return
         self._run_tidy(files, context, result)
         if result.ok:
             result.success_message = f"clang-tidy check passed ({len(files)} files)"
@@ -94,6 +100,8 @@ class ClangTidyCheck(BaseCheck):
 
         for message in errors:
             result.add_error(message)
+        if result.ok:
+            result.success_message = f"clang-tidy check passed ({len(files)} files) logs: {log_dir}"
 
     def _resolve_jobs(self, jobs: int, file_count: int) -> int:
         if file_count <= 0:
@@ -119,6 +127,8 @@ class ClangTidyCheck(BaseCheck):
             "--quiet",
             str(file_path),
         ]
+        if context.clang_tidy_header_filter:
+            cmd.append(f"-header-filter={context.clang_tidy_header_filter}")
         completed = self._runner.run(cmd)
         log_path = self._log_path_for(file_path, context, log_dir)
         output = f"{completed.stdout}{completed.stderr}"
@@ -142,4 +152,26 @@ class ClangTidyCheck(BaseCheck):
             rel_str = str(file_path)
         safe_name = rel_str.replace("\\", "__").replace("/", "__").replace(":", "_")
         return log_dir / f"{safe_name}.log"
+
+    def _filter_diff_files(self, files: list[Path], context: CheckContext, result: CheckResult) -> list[Path]:
+        if not context.clang_tidy_diff_base:
+            return files
+        target = context.clang_tidy_diff_target or "HEAD"
+        cmd = [
+            "git",
+            "diff",
+            "--name-only",
+            context.clang_tidy_diff_base,
+            target,
+        ]
+        completed = self._runner.run(cmd, cwd=context.root)
+        if completed.returncode != 0:
+            output = f"{completed.stdout}{completed.stderr}".strip()
+            result.add_error(f"git diff failed: {output}")
+            return []
+        rel_paths = [line.strip() for line in completed.stdout.splitlines() if line.strip()]
+        if not rel_paths:
+            return []
+        diff_paths = {Path(context.root / rel).resolve() for rel in rel_paths}
+        return [path for path in files if path in diff_paths]
 
