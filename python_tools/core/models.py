@@ -26,6 +26,8 @@ class CheckContext:
     body: str = ""
     clang_tidy_binary: str = "clang-tidy"
     clang_tidy_checks: str = "-*,clang-analyzer-*,bugprone-unused-return-value"
+    clang_tidy_jobs: int = 0
+    clang_tidy_log_dir: Path | None = None
     paths: tuple[str, ...] = ()
     options: OptionsMap = field(default_factory=dict)
 

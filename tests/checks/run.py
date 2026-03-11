@@ -27,6 +27,11 @@ def _build_root_parser() -> argparse.ArgumentParser:
             kwargs = {
                 "help": argument["help"],
             }
+            if "type" in argument:
+                if argument["type"] == "int":
+                    kwargs["type"] = int
+                else:
+                    raise ValueError(f"unsupported argument type: {argument['type']}")
             if "dest" in argument:
                 kwargs["dest"] = argument["dest"]
             if "required" in argument:
