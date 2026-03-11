@@ -36,3 +36,10 @@
 - Static analyzer only: `make quality-analyze`
 - Quality baseline docs: `python tests/checks/check.py quality --root .`
 - Strict deterministic run only: `make quality-test`
+
+Clang-tidy CLI (advanced):
+- Full scope: `python tests/checks/run.py clang_tidy --build-dir build-quality`
+- Diff-only (PR): `python tests/checks/run.py clang_tidy --build-dir build-quality --diff-base origin/main`
+- Parallel jobs: `--jobs 8`
+- Logs directory: `--log-dir build-quality/clang-tidy-logs`
+- Header filter override: `--header-filter "([/\\\\]|^)(apps|engine|runtime|modules|tests)([/\\\\])"`

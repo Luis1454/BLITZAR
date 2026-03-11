@@ -28,6 +28,9 @@ class CheckContext:
     clang_tidy_checks: str = "-*,clang-analyzer-*,bugprone-unused-return-value"
     clang_tidy_jobs: int = 0
     clang_tidy_log_dir: Path | None = None
+    clang_tidy_diff_base: str = ""
+    clang_tidy_diff_target: str = ""
+    clang_tidy_header_filter: str = ""
     paths: tuple[str, ...] = ()
     options: OptionsMap = field(default_factory=dict)
 
