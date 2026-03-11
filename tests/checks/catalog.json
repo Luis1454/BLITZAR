@@ -25,6 +25,8 @@
         {"flags": ["--root"], "default": ".", "help": "Repository root"},
         {"flags": ["--clang-tidy"], "dest": "clang_tidy", "default": "clang-tidy", "help": "clang-tidy executable"},
         {"flags": ["--checks"], "default": "-*,clang-analyzer-*,bugprone-unused-return-value", "help": "clang-tidy checks expression"},
+        {"flags": ["--jobs"], "default": 0, "type": "int", "help": "Parallel clang-tidy jobs (0 = auto)"},
+        {"flags": ["--log-dir"], "default": null, "help": "Directory to store clang-tidy logs"},
         {"flags": ["--path"], "dest": "paths", "action": "append", "default": [], "help": "Restrict analysis to this repo-relative path (repeatable)"}
       ],
       "context": {
@@ -32,6 +34,8 @@
         "build_dir": {"source": "arg", "name": "build_dir", "path": "resolve"},
         "clang_tidy_binary": {"source": "arg", "name": "clang_tidy"},
         "clang_tidy_checks": {"source": "arg", "name": "checks"},
+        "clang_tidy_jobs": {"source": "arg", "name": "jobs"},
+        "clang_tidy_log_dir": {"source": "arg", "name": "log_dir", "path": "resolve"},
         "paths": {"source": "arg", "name": "paths", "tuple": true}
       }
     },
