@@ -3,30 +3,6 @@
 
 namespace grav_env {
 
-std::optional<std::string> get(std::string_view name)
-{
-    const std::string key(name);
-#if defined(_WIN32)
-    char *rawValue = nullptr;
-    std::size_t rawSize = 0;
-    if (_dupenv_s(&rawValue, &rawSize, key.c_str()) != 0 || rawValue == nullptr) {
-        return std::nullopt;
-    }
-    std::string value(rawValue);
-    std::free(rawValue);
-    if (value.empty()) {
-        return std::nullopt;
-    }
-    return value;
-#else
-    const auto rawValue = std::getenv(key.c_str());
-    if (rawValue == nullptr) {
-        return std::nullopt;
-    }
-    return std::string(rawValue);
-#endif
-}
-
 bool parseBool(std::string_view value, bool fallback)
 {
     bool parsed = fallback;

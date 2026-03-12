@@ -24,6 +24,13 @@ endfunction()
 function(configure_gravity_cpp_target target_name)
     target_include_directories(${target_name} PRIVATE ${GRAVITY_PROJECT_INCLUDE_DIRS})
     target_compile_features(${target_name} PRIVATE cxx_std_17)
+    target_compile_definitions(${target_name}
+        PRIVATE
+            $<$<BOOL:${WIN32}>:NOMINMAX>
+            GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=
+            GRAVITY_HD_DEVICE=
+            GRAVITY_HD_HOST=
+    )
     gravity_apply_strict_warnings(${target_name})
     gravity_apply_windows_paths(${target_name})
 
@@ -33,6 +40,8 @@ function(configure_gravity_cpp_target target_name)
 
     if(GRAVITY_PROFILE_LOGS)
         target_compile_definitions(${target_name} PRIVATE GRAVITY_PROFILE_LOGS=1)
+    else()
+        target_compile_definitions(${target_name} PRIVATE GRAVITY_PROFILE_LOGS=0)
     endif()
     if(GRAVITY_PROFILE STREQUAL "prod")
         target_compile_definitions(${target_name} PRIVATE GRAVITY_PROFILE_PROD=1)
@@ -44,6 +53,11 @@ endfunction()
 function(configure_gravity_cuda_target target_name)
     configure_gravity_cpp_target(${target_name})
     set_target_properties(${target_name} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    target_compile_definitions(${target_name}
+        PRIVATE
+            $<$<COMPILE_LANGUAGE:CUDA>:GRAVITY_HD_HOST=__host__>
+            $<$<COMPILE_LANGUAGE:CUDA>:GRAVITY_HD_DEVICE=__device__>
+    )
     target_link_libraries(${target_name} PRIVATE CUDA::cudart)
     if(MSVC)
         target_compile_options(${target_name} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/Zc:__cplusplus>)

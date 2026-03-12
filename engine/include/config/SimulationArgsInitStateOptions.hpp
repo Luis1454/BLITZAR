@@ -1,5 +1,5 @@
-#ifndef SIMULATIONARGSINITSTATEOPTIONS_HPP_
-#define SIMULATIONARGSINITSTATEOPTIONS_HPP_
+#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSINITSTATEOPTIONS_HPP_
+#define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSINITSTATEOPTIONS_HPP_
 
 #include "config/SimulationArgs.hpp"
 
@@ -11,4 +11,5 @@ class SimulationArgsInitStateOptions final {
     static bool apply(const std::string &key, const std::string &value, SimulationConfig &config, RuntimeArgs &runtime, std::ostream &warnings);
 };
 
-#endif /* !SIMULATIONARGSINITSTATEOPTIONS_HPP_ */
+
+#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSINITSTATEOPTIONS_HPP_

@@ -1,5 +1,6 @@
 #include "tests/support/physics_scenario.hpp"
 
+#include <gtest/gtest.h>
 #include <chrono>
 #include <cmath>
 #include <string>

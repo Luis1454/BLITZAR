@@ -1,5 +1,5 @@
-#ifndef GRAVITY_SIM_BACKENDSERVER_HPP
-#define GRAVITY_SIM_BACKENDSERVER_HPP
+#ifndef GRAVITY_RUNTIME_INCLUDE_BACKEND_BACKENDSERVER_HPP_
+#define GRAVITY_RUNTIME_INCLUDE_BACKEND_BACKENDSERVER_HPP_
 
 #include "backend/SimulationBackend.hpp"
 
@@ -40,5 +40,6 @@ class BackendServer {
         std::vector<std::thread> _clientThreads;
 };
 
-#endif // GRAVITY_SIM_BACKENDSERVER_HPP
 
+
+#endif // GRAVITY_RUNTIME_INCLUDE_BACKEND_BACKENDSERVER_HPP_

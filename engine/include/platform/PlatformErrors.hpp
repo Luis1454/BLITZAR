@@ -1,5 +1,5 @@
-#ifndef GRAVITY_SIM_PLATFORMERRORS_HPP
-#define GRAVITY_SIM_PLATFORMERRORS_HPP
+#ifndef GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMERRORS_HPP_
+#define GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMERRORS_HPP_
 
 #include <string_view>
 
@@ -15,4 +15,5 @@ extern const std::string_view kUnknownException;
 
 } // namespace grav_platform_errors
 
-#endif // GRAVITY_SIM_PLATFORMERRORS_HPP
+
+#endif // GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMERRORS_HPP_

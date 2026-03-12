@@ -1,5 +1,6 @@
 #include "backend/SimulationBackend.hpp"
 #include "backend/SimulationInitConfig.hpp"
+#include "config/EnvUtils.hpp"
 #include "config/SimulationModes.hpp"
 #include "platform/PlatformPaths.hpp"
 
@@ -107,21 +108,8 @@ bool writeRawBytes(std::ostream &out, const std::byte *data, std::size_t size)
 
 std::string readEnvironment(std::string_view key)
 {
-#if defined(_WIN32)
-    const std::string keyCopy(key);
-    char *raw = nullptr;
-    std::size_t rawSize = 0;
-    if (_dupenv_s(&raw, &rawSize, keyCopy.c_str()) != 0 || raw == nullptr) {
-        return {};
-    }
-    std::string value(raw);
-    std::free(raw);
-    return value;
-#else
-    const std::string keyCopy(key);
-    const char *raw = std::getenv(keyCopy.c_str());
-    return raw == nullptr ? std::string{} : std::string(raw);
-#endif
+    const std::optional<std::string> value = grav_env::get(key);
+    return value.value_or(std::string{});
 }
 
 bool isValidImportedParticleCount(std::size_t count)

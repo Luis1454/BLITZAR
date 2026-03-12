@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_APPS_BACKEND_SERVICE_BACKEND_ARGS_HPP_
+#define GRAVITY_APPS_BACKEND_SERVICE_BACKEND_ARGS_HPP_
 
 #include <cstdint>
 #include <ostream>
@@ -30,3 +31,5 @@ bool stopRequested();
 void resetStopRequested();
 
 } // namespace grav_backend_service
+
+#endif // GRAVITY_APPS_BACKEND_SERVICE_BACKEND_ARGS_HPP_

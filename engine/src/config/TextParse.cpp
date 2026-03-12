@@ -63,19 +63,6 @@ bool parseFloat64(std::string_view rawValue, double &out)
         return false;
     }
 
-#if defined(__cpp_lib_to_chars) && (__cpp_lib_to_chars >= 201611L)
-    double parsed = 0.0;
-    const auto [ptr, ec] = std::from_chars(
-        trimmed.data(),
-        trimmed.data() + trimmed.size(),
-        parsed,
-        std::chars_format::general);
-    if (ec == std::errc{} && ptr == (trimmed.data() + trimmed.size())) {
-        out = parsed;
-        return true;
-    }
-#endif
-
     std::istringstream input{std::string(trimmed)};
     input.imbue(std::locale::classic());
     long double parsedFallback = 0.0L;

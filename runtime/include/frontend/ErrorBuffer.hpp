@@ -1,5 +1,5 @@
-#ifndef GRAVITY_SIM_ERRORBUFFER_HPP
-#define GRAVITY_SIM_ERRORBUFFER_HPP
+#ifndef GRAVITY_RUNTIME_INCLUDE_FRONTEND_ERRORBUFFER_HPP_
+#define GRAVITY_RUNTIME_INCLUDE_FRONTEND_ERRORBUFFER_HPP_
 
 #include <cstddef>
 #include <string_view>
@@ -24,4 +24,5 @@ void writeErrorBuffer(char *buffer, std::size_t bufferSize, std::string_view mes
 
 } // namespace grav_frontend
 
-#endif // GRAVITY_SIM_ERRORBUFFER_HPP
+
+#endif // GRAVITY_RUNTIME_INCLUDE_FRONTEND_ERRORBUFFER_HPP_
