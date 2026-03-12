@@ -35,7 +35,7 @@ static std::size_t countOccurrences(const std::string &text, const std::string &
     return count;
 }
 
-TEST_F(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
+TEST(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
 {
     ScenarioConfig base;
     base.particleCount = 96u;
@@ -121,7 +121,7 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
     EXPECT_LE(gpuEnergyDiffPct, 8.0f);
 }
 
-TEST_F(PhysicsTest, TST_UNT_RUNT_001_BackendLogsEffectiveModesAfterReset)
+TEST(PhysicsTest, TST_UNT_RUNT_001_BackendLogsEffectiveModesAfterReset)
 {
     SimulationBackend backend(48u, 0.01f);
     backend.setSolverMode("octree_cpu");
@@ -145,6 +145,35 @@ TEST_F(PhysicsTest, TST_UNT_RUNT_001_BackendLogsEffectiveModesAfterReset)
     EXPECT_EQ(countOccurrences(output, expected), 2u);
     EXPECT_EQ(output.find("[solver] using"), std::string::npos);
     EXPECT_EQ(output.find("[integrator] mode="), std::string::npos);
+}
+
+TEST(PhysicsTest, TST_UNT_RUNT_002_ParticleSystemCtorKeepsExplicitInitialState)
+{
+    std::vector<Particle> initialParticles(2);
+    initialParticles[0].setPosition(Vector3(-2.0f, 0.5f, 0.0f));
+    initialParticles[0].setVelocity(Vector3(0.0f, 0.25f, 0.0f));
+    initialParticles[0].setMass(3.0f);
+    initialParticles[0].setTemperature(7.0f);
+
+    initialParticles[1].setPosition(Vector3(4.0f, -1.0f, 0.0f));
+    initialParticles[1].setVelocity(Vector3(-0.1f, 0.0f, 0.0f));
+    initialParticles[1].setMass(0.5f);
+    initialParticles[1].setTemperature(2.0f);
+
+    ParticleSystem system(std::move(initialParticles));
+    const std::vector<Particle> &configuredParticles = system.getParticles();
+
+    ASSERT_EQ(configuredParticles.size(), 2u);
+    EXPECT_FLOAT_EQ(configuredParticles[0].getPosition().x, -2.0f);
+    EXPECT_FLOAT_EQ(configuredParticles[0].getPosition().y, 0.5f);
+    EXPECT_FLOAT_EQ(configuredParticles[0].getVelocity().y, 0.25f);
+    EXPECT_FLOAT_EQ(configuredParticles[0].getMass(), 3.0f);
+    EXPECT_FLOAT_EQ(configuredParticles[0].getTemperature(), 7.0f);
+    EXPECT_FLOAT_EQ(configuredParticles[1].getPosition().x, 4.0f);
+    EXPECT_FLOAT_EQ(configuredParticles[1].getPosition().y, -1.0f);
+    EXPECT_FLOAT_EQ(configuredParticles[1].getVelocity().x, -0.1f);
+    EXPECT_FLOAT_EQ(configuredParticles[1].getMass(), 0.5f);
+    EXPECT_FLOAT_EQ(configuredParticles[1].getTemperature(), 2.0f);
 }
 
 } // namespace testsupport

@@ -12,7 +12,7 @@ namespace testsupport {
 TEST(PhysicsTest, TST_UNT_PHYS_001_AttractionDistance)
 {
     ScenarioConfig cfg;
-    cfg.inputPath = inputPath_;
+    cfg.inputPath = getTwoBodyInputPath();
     cfg.particleCount = 2u;
     cfg.solver = "octree_cpu";
     cfg.initState.mode = "file";
@@ -24,6 +24,7 @@ TEST(PhysicsTest, TST_UNT_PHYS_001_AttractionDistance)
     cfg.steps = 400;
 
     ScenarioResult result;
+    std::string error;
     ASSERT_TRUE(runScenario(cfg, result, error)) << error;
 
     const float initialDistance = distance(result.initial[0], result.initial[1]);
@@ -39,7 +40,7 @@ TEST(PhysicsTest, TST_UNT_PHYS_001_AttractionDistance)
 TEST(PhysicsTest, TST_UNT_PHYS_003_CenterOfMassDrift)
 {
     ScenarioConfig cfg;
-    cfg.inputPath = inputPath_;
+    cfg.inputPath = getTwoBodyInputPath();
     cfg.particleCount = 2u;
     cfg.solver = "octree_cpu";
     cfg.initState.mode = "file";
@@ -51,6 +52,7 @@ TEST(PhysicsTest, TST_UNT_PHYS_003_CenterOfMassDrift)
     cfg.steps = 400;
 
     ScenarioResult result;
+    std::string error;
     ASSERT_TRUE(runScenario(cfg, result, error)) << error;
 
     const auto centerOfMass = [](const std::vector<RenderParticle> &snapshot) {
@@ -75,7 +77,7 @@ TEST(PhysicsTest, TST_UNT_PHYS_003_CenterOfMassDrift)
 TEST(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
 {
     ScenarioConfig coarse;
-    coarse.inputPath = inputPath_;
+    coarse.inputPath = getTwoBodyInputPath();
     coarse.particleCount = 2u;
     coarse.solver = "octree_cpu";
     coarse.initState.mode = "file";
@@ -87,7 +89,7 @@ TEST(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
     coarse.steps = 100;
 
     ScenarioConfig fine;
-    fine.inputPath = inputPath_;
+    fine.inputPath = getTwoBodyInputPath();
     fine.particleCount = 2u;
     fine.solver = "octree_cpu";
     fine.initState.mode = "file";
@@ -99,9 +101,11 @@ TEST(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
     fine.steps = 200;
 
     ScenarioResult coarseResult;
+    std::string coarseError;
     ASSERT_TRUE(runScenario(coarse, coarseResult, coarseError)) << coarseError;
 
     ScenarioResult fineResult;
+    std::string fineError;
     ASSERT_TRUE(runScenario(fine, fineResult, fineError)) << fineError;
 
     float maxParticleDelta = 0.0f;
@@ -116,7 +120,7 @@ TEST(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
 TEST(PhysicsTest, TST_UNT_PHYS_002_EnergyConservation)
 {
     ScenarioConfig cfg;
-    cfg.inputPath = inputPath_;
+    cfg.inputPath = getTwoBodyInputPath();
     cfg.particleCount = 2u;
     cfg.solver = "octree_cpu";
     cfg.initState.mode = "file";
@@ -128,6 +132,7 @@ TEST(PhysicsTest, TST_UNT_PHYS_002_EnergyConservation)
     cfg.steps = 800;
 
     ScenarioResult result;
+    std::string error;
     ASSERT_TRUE(runScenario(cfg, result, error)) << error;
 
     constexpr float kMaxEnergyDriftPct = 5.0f;
@@ -139,7 +144,7 @@ TEST(PhysicsTest, TST_UNT_PHYS_002_EnergyConservation)
 TEST(PhysicsTest, TST_UNT_PHYS_005_LongRunStability)
 {
     ScenarioConfig cfg;
-    cfg.inputPath = inputPath_;
+    cfg.inputPath = getTwoBodyInputPath();
     cfg.particleCount = 2u;
     cfg.solver = "octree_cpu";
     cfg.initState.mode = "file";
@@ -151,6 +156,7 @@ TEST(PhysicsTest, TST_UNT_PHYS_005_LongRunStability)
     cfg.steps = 2000;
 
     ScenarioResult result;
+    std::string error;
     ASSERT_TRUE(runScenario(cfg, result, error)) << error;
 
     ASSERT_FALSE(result.final.empty());

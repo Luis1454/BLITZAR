@@ -3,6 +3,8 @@
 
 #include "physics/Octree.hpp"
 
+#include <vector>
+
 class ParticleSystem {
     public:
         enum class SolverMode {
@@ -16,6 +18,7 @@ class ParticleSystem {
         };
 
         ParticleSystem(int numParticles, bool bootstrapInitialState = true);
+        explicit ParticleSystem(std::vector<Particle> initialParticles);
         ~ParticleSystem();
 
         bool update(float deltaTime);
@@ -45,6 +48,11 @@ class ParticleSystem {
         ParticleSystem &operator=(ParticleSystem &&) = delete;
 
     private:
+        void initializeRuntimeState(std::size_t particleCapacity);
+        void buildBootstrapState(int particleCount);
+        bool allocateParticleBuffers(std::size_t particleCapacity);
+        bool seedDeviceState();
+        void releaseParticleBuffers();
         float applyThermalModel(float deltaTime);
 
         std::vector<Particle> _particles;

@@ -1,5 +1,5 @@
-ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
-    const int clampedParticles = std::max(2, numParticles);
+void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
+{
     _solverMode = solverModeFromEnv();
     _integratorMode = integratorModeFromEnv();
     _octreeTheta = parseFloatEnv("GRAVITY_OCTREE_THETA", 1.2f);
@@ -18,48 +18,104 @@ ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
     g_dOctreeLeafIndices = nullptr;
     g_dOctreeNodeCapacity = 0;
     g_dOctreeLeafCapacity = 0;
-    _deviceParticleCapacity = static_cast<std::size_t>(clampedParticles);
+    _deviceParticleCapacity = particleCapacity;
     _hostStateDirty = false;
     d_particles = nullptr;
     last = nullptr;
+}
 
-    if (bootstrapInitialState) {
-        Particle p;
-        p.setVelocity(Vector3{0, 0, 0});
-        float massTerre = 1.0f;
-        float diskMass = 0.75f * massTerre;
-        const int diskParticleCount = std::max(1, clampedParticles - 1);
-        const float diskMassPerParticle = diskMass / static_cast<float>(diskParticleCount);
-        const float radiusMin = 1.5f;
-        const float radiusMax = 11.5f;
-        const float radiusRange2 = std::max(1e-6f, radiusMax * radiusMax - radiusMin * radiusMin);
-        p.setMass(massTerre);
-        p.setPosition(Vector3{0, 0, 0});
+void ParticleSystem::buildBootstrapState(int particleCount)
+{
+    Particle p;
+    p.setVelocity(Vector3{0, 0, 0});
+    float massTerre = 1.0f;
+    float diskMass = 0.75f * massTerre;
+    const int diskParticleCount = std::max(1, particleCount - 1);
+    const float diskMassPerParticle = diskMass / static_cast<float>(diskParticleCount);
+    const float radiusMin = 1.5f;
+    const float radiusMax = 11.5f;
+    const float radiusRange2 = std::max(1e-6f, radiusMax * radiusMax - radiusMin * radiusMin);
+    p.setMass(massTerre);
+    p.setPosition(Vector3{0, 0, 0});
+    _particles.push_back(p);
+    for (int i = 1; i < particleCount; ++i) {
+        p.setPosition(Vector3{
+            rand() / (float)RAND_MAX * 10.0f + 1.5f,
+            rand() / (float)RAND_MAX * 10.0f + 1.5f,
+            0.0f
+        });
+        const float angle = rand() / (float)RAND_MAX * 2.0f * kPi;
+        p.setPosition(Vector3{
+            p.getPosition().x * cosf(angle) - p.getPosition().y * sinf(angle),
+            p.getPosition().x * sinf(angle) + p.getPosition().y * cosf(angle),
+            0.0f
+        });
+        p.setMass(diskMassPerParticle);
+        const float radius = std::max(p.getPosition().norm(), 1e-4f);
+        const float enclosedFraction = std::clamp((radius * radius - radiusMin * radiusMin) / radiusRange2, 0.0f, 1.0f);
+        const float enclosedMass = massTerre + diskMass * enclosedFraction;
+        const float orbitalSpeed = sqrtf(enclosedMass / radius);
+        p.setVelocity(Vector3{
+            -p.getPosition().y * orbitalSpeed / radius,
+            p.getPosition().x * orbitalSpeed / radius,
+            0.0f
+        });
         _particles.push_back(p);
-        for (int i = 1; i < clampedParticles; ++i) {
-            p.setPosition(Vector3{
-                rand() / (float)RAND_MAX * 10.0f + 1.5f,
-                rand() / (float)RAND_MAX * 10.0f + 1.5f,
-                0.0f
-            });
-            const float angle = rand() / (float)RAND_MAX * 2.0f * kPi;
-            p.setPosition(Vector3{
-                p.getPosition().x * cosf(angle) - p.getPosition().y * sinf(angle),
-                p.getPosition().x * sinf(angle) + p.getPosition().y * cosf(angle),
-                0.0f
-            });
-            p.setMass(diskMassPerParticle);
-            const float radius = std::max(p.getPosition().norm(), 1e-4f);
-            const float enclosedFraction = std::clamp((radius * radius - radiusMin * radiusMin) / radiusRange2, 0.0f, 1.0f);
-            const float enclosedMass = massTerre + diskMass * enclosedFraction;
-            const float orbitalSpeed = sqrtf(enclosedMass / radius);
-            p.setVelocity(Vector3{
-                -p.getPosition().y * orbitalSpeed / radius,
-                p.getPosition().x * orbitalSpeed / radius,
-                0.0f
-            });
-            _particles.push_back(p);
-        }
+    }
+}
+
+bool ParticleSystem::allocateParticleBuffers(std::size_t particleCapacity)
+{
+    const std::size_t bytes = particleCapacity * sizeof(Particle);
+    if (!checkCudaStatus(cudaMalloc(&d_particles, bytes), "cudaMalloc(d_particles)")) {
+        d_particles = nullptr;
+        return false;
+    }
+    if (!checkCudaStatus(cudaMalloc(&last, bytes), "cudaMalloc(last)")) {
+        releaseParticleBuffers();
+        return false;
+    }
+    return true;
+}
+
+bool ParticleSystem::seedDeviceState()
+{
+    if (_particles.empty()) {
+        return true;
+    }
+    const std::size_t bytes = _particles.size() * sizeof(Particle);
+    if (!checkCudaStatus(
+            cudaMemcpy(d_particles, _particles.data(), bytes, cudaMemcpyHostToDevice),
+            "cudaMemcpy(HtoD initial particles)")) {
+        releaseParticleBuffers();
+        return false;
+    }
+    if (!checkCudaStatus(
+            cudaMemcpy(last, _particles.data(), bytes, cudaMemcpyHostToDevice),
+            "cudaMemcpy(HtoD initial last)")) {
+        releaseParticleBuffers();
+        return false;
+    }
+    return true;
+}
+
+void ParticleSystem::releaseParticleBuffers()
+{
+    if (d_particles) {
+        cudaFree(d_particles);
+        d_particles = nullptr;
+    }
+    if (last) {
+        cudaFree(last);
+        last = nullptr;
+    }
+}
+
+ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
+    const int clampedParticles = std::max(2, numParticles);
+    initializeRuntimeState(static_cast<std::size_t>(clampedParticles));
+    if (bootstrapInitialState) {
+        buildBootstrapState(clampedParticles);
     } else {
         _particles.assign(static_cast<std::size_t>(clampedParticles), Particle{});
     }
@@ -79,28 +135,48 @@ ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
             _sphSmoothingLength, _sphRestDensity, _sphGasConstant, _sphViscosity);
     }
 
-    if (!checkCudaStatus(cudaMalloc(&d_particles, clampedParticles * sizeof(Particle)), "cudaMalloc(d_particles)")) {
-        d_particles = nullptr;
+    if (!allocateParticleBuffers(static_cast<std::size_t>(clampedParticles))) {
         return;
     }
-    if (!checkCudaStatus(cudaMalloc(&last, clampedParticles * sizeof(Particle)), "cudaMalloc(last)")) {
-        cudaFree(d_particles);
-        d_particles = nullptr;
-        last = nullptr;
+    if (bootstrapInitialState && !seedDeviceState()) {
         return;
-    }
-    if (bootstrapInitialState) {
-        if (!checkCudaStatus(
-                cudaMemcpy(d_particles, _particles.data(), clampedParticles * sizeof(Particle), cudaMemcpyHostToDevice),
-                "cudaMemcpy(HtoD initial particles)")) {
-            cudaFree(d_particles);
-            cudaFree(last);
-            d_particles = nullptr;
-            last = nullptr;
-            return;
-        }
     }
 
+    if (!allocateSphBuffers(clampedParticles)) {
+        fprintf(stderr, "[sph] buffers allocation failed, SPH disabled\n");
+        _sphEnabled = false;
+    }
+
+    if (_integratorMode == IntegratorMode::Rk4) {
+        if (!allocateRk4Buffers(clampedParticles)) {
+            fprintf(stderr, "[integrator] rk4 buffers allocation failed, falling back to euler\n");
+            _integratorMode = IntegratorMode::Euler;
+        }
+    }
+}
+
+ParticleSystem::ParticleSystem(std::vector<Particle> initialParticles)
+{
+    const std::size_t particleCapacity = std::max<std::size_t>(2u, initialParticles.size());
+    initializeRuntimeState(particleCapacity);
+    _particles = std::move(initialParticles);
+    if (_particles.size() < particleCapacity) {
+        _particles.resize(particleCapacity);
+    }
+
+    if (_sphEnabled) {
+        fprintf(stdout, "[sph] enabled h=%f restDensity=%f gas=%f viscosity=%f\n",
+            _sphSmoothingLength, _sphRestDensity, _sphGasConstant, _sphViscosity);
+    }
+
+    if (!allocateParticleBuffers(particleCapacity)) {
+        return;
+    }
+    if (!seedDeviceState()) {
+        return;
+    }
+
+    const int clampedParticles = static_cast<int>(particleCapacity);
     if (!allocateSphBuffers(clampedParticles)) {
         fprintf(stderr, "[sph] buffers allocation failed, SPH disabled\n");
         _sphEnabled = false;
