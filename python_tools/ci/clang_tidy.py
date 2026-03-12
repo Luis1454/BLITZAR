@@ -20,6 +20,7 @@ DEFAULT_PATHS = (
     "runtime/src/protocol",
     "runtime/src/backend",
 )
+HEADER_LIKE_SUFFIXES = (".h", ".hh", ".hpp", ".hxx", ".inl")
 
 
 class ClangTidyCheck(BaseCheck):
@@ -172,6 +173,15 @@ class ClangTidyCheck(BaseCheck):
         rel_paths = [line.strip() for line in completed.stdout.splitlines() if line.strip()]
         if not rel_paths:
             return []
+        if self._contains_header_like_diff(rel_paths):
+            return files
         diff_paths = {Path(context.root / rel).resolve() for rel in rel_paths}
         return [path for path in files if path in diff_paths]
+
+    def _contains_header_like_diff(self, rel_paths: list[str]) -> bool:
+        for rel_path in rel_paths:
+            suffix = Path(rel_path).suffix.lower()
+            if suffix in HEADER_LIKE_SUFFIXES:
+                return True
+        return False
 
