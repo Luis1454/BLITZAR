@@ -1,3 +1,4 @@
+#include "backend/SimulationInitConfig.hpp"
 #include "config/SimulationConfig.hpp"
 #include "protocol/BackendProtocol.hpp"
 
@@ -181,4 +182,32 @@ TEST(ConfigArgsTest, TST_UNT_CONF_018_LoadSupportsRegistryAliases)
     EXPECT_EQ(loaded.frontendRemoteSnapshotTimeoutMs, 120u);
     std::error_code ec;
     std::filesystem::remove(path, ec);
+}
+TEST(ConfigArgsTest, TST_UNT_CONF_020_ResolveInitPlanRejectsFileModeWithoutInput)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    config.initConfigStyle = "preset";
+    config.initMode = "file";
+    std::stringstream log;
+    const ResolvedInitialStatePlan plan = resolveInitialStatePlan(config, log);
+    EXPECT_EQ(plan.config.mode, "disk_orbit");
+    EXPECT_TRUE(plan.inputFile.empty());
+    EXPECT_NE(log.str().find("init_mode=file ignored"), std::string::npos);
+    EXPECT_NE(plan.summary.find("mode=disk_orbit"), std::string::npos);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_021_ResolveInitPlanIgnoresStaleInputFileOutsideFileMode)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    config.initConfigStyle = "detailed";
+    config.initMode = "random_cloud";
+    config.presetStructure = "file";
+    config.inputFile = "tests/data/two_body_rest.xyz";
+    std::stringstream log;
+    const ResolvedInitialStatePlan plan = resolveInitialStatePlan(config, log);
+    EXPECT_EQ(plan.config.mode, "random_cloud");
+    EXPECT_TRUE(plan.inputFile.empty());
+    EXPECT_NE(log.str().find("preset_structure=file ignored"), std::string::npos);
+    EXPECT_NE(log.str().find("input_file ignored"), std::string::npos);
+    EXPECT_NE(plan.summary.find("source=generated"), std::string::npos);
 }
