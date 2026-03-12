@@ -87,6 +87,23 @@ TEST(ConfigArgsTest, TST_UNT_CONF_012_LoadOrCreateRejectsInvalidSolverAndIntegra
     EXPECT_EQ(loaded.integrator, defaults.integrator);
     std::error_code ec;
     std::filesystem::remove(path, ec);
+
+    const std::filesystem::path incompatiblePath =
+        std::filesystem::temp_directory_path() / ("gravity_config_unsupported_modes_" + std::to_string(stamp) + ".ini");
+    {
+        std::ofstream out(incompatiblePath, std::ios::trunc);
+        ASSERT_TRUE(out.is_open());
+        out << "solver=octree_gpu\n";
+        out << "integrator=rk4\n";
+    }
+    std::stringstream err;
+    std::streambuf *previous = std::cerr.rdbuf(err.rdbuf());
+    const SimulationConfig incompatibleLoaded = SimulationConfig::loadOrCreate(incompatiblePath.string());
+    std::cerr.rdbuf(previous);
+    EXPECT_EQ(incompatibleLoaded.solver, "octree_gpu");
+    EXPECT_EQ(incompatibleLoaded.integrator, "euler");
+    EXPECT_NE(err.str().find("unsupported solver/integrator combination"), std::string::npos);
+    std::filesystem::remove(incompatiblePath, ec);
 }
 
 TEST(ConfigArgsTest, TST_UNT_CONF_013_LoadOrCreateCreatesFileWhenMissing)
@@ -104,8 +121,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_013_LoadOrCreateCreatesFileWhenMissing)
 
 TEST(ConfigArgsTest, TST_UNT_CONF_015_DefaultFrontendParticleCapMatchesProtocolMax)
 {
-    const SimulationConfig defaults = SimulationConfig::defaults();
-    EXPECT_EQ(defaults.frontendParticleCap, grav_protocol::kSnapshotMaxPoints);
+    EXPECT_EQ(SimulationConfig::defaults().frontendParticleCap, grav_protocol::kSnapshotMaxPoints);
 }
 
 TEST(ConfigArgsTest, TST_UNT_CONF_016_LoadClampsFrontendParticleCapToProtocolMax)
@@ -167,7 +183,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_018_LoadSupportsRegistryAliases)
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
-
 TEST(ConfigArgsTest, TST_UNT_CONF_020_ResolveInitPlanRejectsFileModeWithoutInput)
 {
     SimulationConfig config = SimulationConfig::defaults();

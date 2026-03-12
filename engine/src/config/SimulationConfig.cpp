@@ -1,4 +1,5 @@
 #include "config/SimulationConfig.hpp"
+#include "config/SimulationModes.hpp"
 #include "config/SimulationOptionRegistry.hpp"
 
 #include <algorithm>
@@ -30,7 +31,6 @@ SimulationConfig SimulationConfig::defaults()
 {
     return SimulationConfig{};
 }
-
 SimulationConfig SimulationConfig::loadOrCreate(const std::string &path)
 {
     SimulationConfig config = defaults();
@@ -39,7 +39,6 @@ SimulationConfig SimulationConfig::loadOrCreate(const std::string &path)
         config.save(path);
         return config;
     }
-
     std::string line;
     while (std::getline(in, line)) {
         const std::string stripped = trim(line);
@@ -56,6 +55,10 @@ SimulationConfig SimulationConfig::loadOrCreate(const std::string &path)
             std::cerr << "[config] unknown key ignored: " << key << "\n";
         }
     }
+    if (!grav_modes::isSupportedSolverIntegratorPair(config.solver, config.integrator)) {
+        config.integrator = std::string(grav_modes::kIntegratorEuler);
+        std::cerr << "[config] unsupported solver/integrator combination: solver=octree_gpu requires integrator=euler\n";
+    }
     return config;
 }
 
@@ -66,7 +69,6 @@ bool SimulationConfig::save(const std::string &path) const
         std::error_code ec;
         std::filesystem::create_directories(fsPath.parent_path(), ec);
     }
-
     std::ofstream out(path, std::ios::trunc);
     if (!out.is_open()) {
         return false;
@@ -85,7 +87,7 @@ bool SimulationConfig::save(const std::string &path) const
     out << "dt=" << dt << "\n";
     out << "# Gravity solver: pairwise_cuda | octree_gpu | octree_cpu\n";
     out << "solver=" << solver << "\n";
-    out << "# Time integrator: euler | rk4\n";
+    out << "# Time integrator: euler | rk4 (octree_gpu supports euler only)\n";
     out << "integrator=" << integrator << "\n";
     out << "\n";
 

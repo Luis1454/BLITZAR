@@ -65,7 +65,7 @@ TEST(BackendProtocolTest, TST_INT_PROT_005_BackendRejectsInvalidSolverAndIntegra
     backend.stop();
 }
 
-TEST(BackendProtocolTest, TST_INT_PROT_006_BackendCoercesUnsupportedIntegratorForOctreeGpu)
+TEST(BackendProtocolTest, TST_INT_PROT_006_BackendRejectsUnsupportedIntegratorForOctreeGpu)
 {
     RealBackendHarness backend;
     std::string startError;
@@ -82,7 +82,8 @@ TEST(BackendProtocolTest, TST_INT_PROT_006_BackendCoercesUnsupportedIntegratorFo
     ASSERT_TRUE(response.ok) << response.error;
 
     response = client.sendCommand(std::string(grav_protocol::SetIntegrator), "\"value\":\"rk4\"");
-    ASSERT_TRUE(response.ok) << response.error;
+    ASSERT_FALSE(response.ok);
+    EXPECT_NE(response.error.find("unsupported solver/integrator combination"), std::string::npos);
 
     BackendClientStatus status{};
     ASSERT_TRUE(client.getStatus(status).ok);

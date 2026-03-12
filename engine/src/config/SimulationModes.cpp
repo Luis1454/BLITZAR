@@ -60,5 +60,10 @@ bool normalizeIntegrator(std::string_view value, std::string &outCanonical)
     return false;
 }
 
+bool isSupportedSolverIntegratorPair(std::string_view solver, std::string_view integrator)
+{
+    return !(solver == kSolverOctreeGpu && integrator == kIntegratorRk4);
+}
+
 } // namespace grav_modes
 

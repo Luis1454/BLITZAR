@@ -15,6 +15,7 @@ extern const std::string_view kIntegratorRk4;
 
 [[nodiscard]] bool normalizeSolver(std::string_view value, std::string &outCanonical);
 [[nodiscard]] bool normalizeIntegrator(std::string_view value, std::string &outCanonical);
+[[nodiscard]] bool isSupportedSolverIntegratorPair(std::string_view solver, std::string_view integrator);
 
 } // namespace grav_modes
 

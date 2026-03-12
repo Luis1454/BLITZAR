@@ -4,6 +4,7 @@
 #include "config/SimulationArgsInitOptions.hpp"
 #include "config/SimulationArgsParse.hpp"
 #include "config/SimulationOptionRegistry.hpp"
+#include "config/SimulationModes.hpp"
 
 #include <string>
 
@@ -40,6 +41,8 @@ void applyArgsToConfig(
 )
 {
     runtime.configPath = findConfigPathArg(args, runtime.configPath);
+    const std::string initialSolver = config.solver;
+    const std::string initialIntegrator = config.integrator;
 
     for (std::size_t i = 1; i < args.size(); ++i) {
         if (args[i].empty()) {
@@ -107,6 +110,13 @@ void applyArgsToConfig(
 
         runtime.hasArgumentError = true;
         warnings << "[args] unknown option: " << key << "\n";
+    }
+
+    if (!grav_modes::isSupportedSolverIntegratorPair(config.solver, config.integrator)) {
+        runtime.hasArgumentError = true;
+        warnings << "[args] unsupported solver/integrator combination: solver=octree_gpu requires integrator=euler\n";
+        config.solver = initialSolver;
+        config.integrator = initialIntegrator;
     }
 }
 

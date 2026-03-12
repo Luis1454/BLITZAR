@@ -160,11 +160,8 @@ bool ParticleSystem::update(float deltaTime) {
 
     if (_solverMode == SolverMode::OctreeGpu) {
         if (_integratorMode == IntegratorMode::Rk4) {
-            static bool warnedRk4OctreeGpu = false;
-            if (!warnedRk4OctreeGpu) {
-                fprintf(stderr, "[integrator] rk4 is not implemented for octree_gpu, using euler\n");
-                warnedRk4OctreeGpu = true;
-            }
+            fprintf(stderr, "[integrator] rk4 is not supported with octree_gpu\n");
+            return false;
         }
         if (!d_particles) {
             return false;
