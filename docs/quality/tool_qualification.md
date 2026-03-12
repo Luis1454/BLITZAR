@@ -15,12 +15,14 @@ This document defines minimum confidence controls for development and CI tools.
 | `clang-tidy` | static analyzer | analyzer checks with warnings-as-errors in strict PR lane |
 | Python checks (`tests/checks/check.py`, `tests/checks/run.py`, `tests/checks/catalog.json`) | policy and contract guards | syntax check + mandatory execution in PR and nightly |
 | GitHub Actions runners | orchestration | split merge gate, extended nightly evidence lanes, release packaging lane, optional hardware lanes, and explicit axis labels in hosted job names |
+| self-hosted GPU runner automation | optional CUDA execution | scripted bootstrap plan, daily readiness report, and hosted fallback job summaries |
 | release packaging scripts | artifact assembly | reproducible scripts + review of output manifest |
 
 ## Qualification Evidence
 
 - Workflow definitions in `.github/workflows/`.
 - Qualified environment baseline in `docs/quality/prod_baseline.md`.
+- Self-hosted GPU runner operations note in `docs/quality/gpu_runner_operations.md`.
 - Generated tool manifest format in `docs/quality/tool_manifest.md`.
 - Reproducible check entrypoints:
   - `make quality-local CONFIG=simulation.ini`

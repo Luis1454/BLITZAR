@@ -13,6 +13,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `manifest/fmea_actions.json`: canonical owner/status/task register for FMEA mitigations.
 - `tool_qualification.md`: tool confidence and qualification strategy.
 - `tool_manifest.md`: generated toolchain version manifest for CI evidence lanes.
+- `gpu_runner_operations.md`: bootstrap, health monitoring, and fallback policy for optional self-hosted CUDA runners.
 - `power_of_10.md`: repository-specific `Power of 10` coding-discipline profile with automated vs manual enforcement mapping.
 - `prod_baseline.md`: explicit evidence-grade `prod` environment baseline.
 - `interface_contracts.md`: versioned critical interface contracts and compatibility rules.
