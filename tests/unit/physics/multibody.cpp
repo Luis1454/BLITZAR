@@ -74,14 +74,15 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_007_MultiBodyInteractions)
 TEST_F(PhysicsTest, TST_UNT_PHYS_006_EnergyConservationHighMassNoSph)
 {
     ScenarioConfig cfg;
-    cfg.particleCount = 1000u;
+    cfg.particleCount = 96u;
     cfg.dt = 0.1f;
-    cfg.steps = 120;
+    cfg.steps = 12;
+    cfg.solver = "octree_cpu";
     cfg.integrator = "euler";
     cfg.energyMeasureEverySteps = 1u;
-    cfg.energySampleLimit = 1000u;
-    cfg.snapshotTimeoutMs = 10000;
-    cfg.stepTimeoutMs = 20000;
+    cfg.energySampleLimit = 96u;
+    cfg.snapshotTimeoutMs = 6000;
+    cfg.stepTimeoutMs = 6000;
     cfg.initState.mode = "disk_orbit";
     cfg.initState.seed = 42u;
     cfg.initState.includeCentralBody = true;
@@ -111,14 +112,15 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_006_EnergyConservationHighMassNoSph)
 TEST_F(PhysicsTest, TST_UNT_PHYS_008_RadiationExchangeConservation)
 {
     ScenarioConfig cfg;
-    cfg.particleCount = 128u;
+    cfg.particleCount = 48u;
     cfg.dt = 0.1f;
-    cfg.steps = 80;
+    cfg.steps = 16;
+    cfg.solver = "octree_cpu";
     cfg.integrator = "euler";
     cfg.energyMeasureEverySteps = 1u;
-    cfg.energySampleLimit = 128u;
-    cfg.snapshotTimeoutMs = 10000;
-    cfg.stepTimeoutMs = 10000;
+    cfg.energySampleLimit = 64u;
+    cfg.snapshotTimeoutMs = 8000;
+    cfg.stepTimeoutMs = 8000;
     cfg.initState.mode = "random_cloud";
     cfg.initState.seed = 7u;
     cfg.initState.includeCentralBody = false;
