@@ -1,5 +1,5 @@
-#ifndef SIMULATIONCONFIG_HPP_
-#define SIMULATIONCONFIG_HPP_
+#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
+#define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
 
 #include "protocol/BackendProtocol.hpp"
 
@@ -64,4 +64,5 @@ struct SimulationConfig {
     bool save(const std::string &path) const;
 };
 
-#endif /* !SIMULATIONCONFIG_HPP_ */
+
+#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_

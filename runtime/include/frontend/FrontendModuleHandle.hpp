@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_RUNTIME_INCLUDE_FRONTEND_FRONTENDMODULEHANDLE_HPP_
+#define GRAVITY_RUNTIME_INCLUDE_FRONTEND_FRONTENDMODULEHANDLE_HPP_
 
 #include <memory>
 #include <string>
@@ -32,3 +33,5 @@ private:
 };
 
 } // namespace grav_module
+
+#endif // GRAVITY_RUNTIME_INCLUDE_FRONTEND_FRONTENDMODULEHANDLE_HPP_

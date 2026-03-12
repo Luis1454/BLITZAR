@@ -78,13 +78,9 @@ bool applyPreset(
     cfg.solver = options.solver;
     if (options.preset == "two_body_orbit_drift" || options.preset == "two_body_orbit_convergence_coarse"
         || options.preset == "two_body_orbit_convergence_fine") {
-        cfg.inputPath = testsupport::getTwoBodyInputPath();
-        cfg.initState.mode = "file";
-        cfg.particleCount = 2u;
-        cfg.initState.thermalAmbientTemperature = 0.0f;
-        cfg.initState.thermalSpecificHeat = 1.0f;
-        cfg.initState.thermalHeatingCoeff = 0.0f;
-        cfg.initState.thermalRadiationCoeff = 0.0f;
+        if (!testsupport::prepareTwoBodyScenario(cfg, error)) {
+            return false;
+        }
         cfg.dt = options.preset == "two_body_orbit_convergence_fine" ? 0.001f : 0.002f;
         cfg.steps = options.preset == "two_body_orbit_drift" ? 800u : (options.preset == "two_body_orbit_convergence_fine" ? 200u : 100u);
         out.dataset = "tests/data/two_body_rest.xyz";
@@ -141,10 +137,6 @@ bool applyPreset(
         out.seed = 7u;
     } else {
         error = "unknown preset: " + options.preset;
-        return false;
-    }
-    if (cfg.inputPath.empty() && options.preset.find("two_body") != std::string::npos) {
-        error = "failed to resolve two-body input dataset";
         return false;
     }
     out.scenario = cfg;

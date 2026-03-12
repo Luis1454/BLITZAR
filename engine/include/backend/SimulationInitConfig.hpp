@@ -1,5 +1,5 @@
-#ifndef SIMULATIONINITCONFIG_HPP_
-#define SIMULATIONINITCONFIG_HPP_
+#ifndef GRAVITY_ENGINE_INCLUDE_BACKEND_SIMULATIONINITCONFIG_HPP_
+#define GRAVITY_ENGINE_INCLUDE_BACKEND_SIMULATIONINITCONFIG_HPP_
 
 #include "backend/SimulationBackend.hpp"
 #include "config/SimulationConfig.hpp"
@@ -17,6 +17,7 @@ struct ResolvedInitialStatePlan {
 ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig &config, std::ostream &log);
 InitialStateConfig buildInitialStateConfig(const SimulationConfig &config);
 
-#endif /* !SIMULATIONINITCONFIG_HPP_ */
 
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_BACKEND_SIMULATIONINITCONFIG_HPP_

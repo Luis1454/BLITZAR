@@ -1,12 +1,5 @@
-/*
-** EPITECH PROJECT, 2024
-** rtxcpp
-** File description:
-** Octree
-*/
-
-#ifndef OCTREE_HPP_
-#define OCTREE_HPP_
+#ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_OCTREE_HPP_
+#define GRAVITY_ENGINE_INCLUDE_PHYSICS_OCTREE_HPP_
 
 #include "physics/Vector.hpp"
 #include "physics/Particle.hpp"
@@ -73,6 +66,7 @@ class Octree {
         int _root;
 };
 
-#endif /* !OCTREE_HPP_ */
 
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_OCTREE_HPP_

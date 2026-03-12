@@ -18,8 +18,20 @@ set(GRAVITY_PROJECT_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/engine/src/physics/cuda/fragments"
 )
 
+if(WIN32)
+    set(GRAVITY_ENV_UTILS_SOURCES
+        engine/src/config/EnvUtils.cpp
+        engine/src/config/EnvUtilsWin.cpp
+    )
+else()
+    set(GRAVITY_ENV_UTILS_SOURCES
+        engine/src/config/EnvUtils.cpp
+        engine/src/config/EnvUtilsPosix.cpp
+    )
+endif()
+
 set(GRAVITY_BACKEND_SOURCES
-    engine/src/config/EnvUtils.cpp
+    ${GRAVITY_ENV_UTILS_SOURCES}
     engine/src/config/SimulationArgs.cpp
     engine/src/config/SimulationArgsParse.cpp
     engine/src/config/SimulationArgsCoreOptions.cpp

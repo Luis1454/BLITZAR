@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_MODULES_CLI_MODULE_CLI_COMMANDS_HPP_
+#define GRAVITY_MODULES_CLI_MODULE_CLI_COMMANDS_HPP_
 
 #include <string_view>
 
@@ -18,3 +19,5 @@ public:
 };
 
 } // namespace grav_module_cli
+
+#endif // GRAVITY_MODULES_CLI_MODULE_CLI_COMMANDS_HPP_

@@ -1,5 +1,5 @@
-#ifndef SIMULATIONBACKEND_HPP_
-#define SIMULATIONBACKEND_HPP_
+#ifndef GRAVITY_ENGINE_INCLUDE_BACKEND_SIMULATIONBACKEND_HPP_
+#define GRAVITY_ENGINE_INCLUDE_BACKEND_SIMULATIONBACKEND_HPP_
 
 #include "physics/ParticleSystem.hpp"
 #include "frontend/ILocalBackend.hpp"
@@ -128,7 +128,8 @@ class SimulationBackend : public grav_frontend::ILocalBackend {
         std::unique_ptr<ParticleSystem> _system;
 };
 
-#endif /* !SIMULATIONBACKEND_HPP_ */
 
 
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_BACKEND_SIMULATIONBACKEND_HPP_

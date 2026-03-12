@@ -24,10 +24,15 @@ def test_repo_policy_rejects_function_definition_in_header(tmp_path: Path) -> No
 def test_repo_policy_accepts_declaration_only_header(tmp_path: Path) -> None:
     _write(
         tmp_path / "runtime" / "include" / "protocol" / "good.hpp",
+        "#ifndef RUNTIME_INCLUDE_PROTOCOL_GOOD_HPP_\n"
+        "#define RUNTIME_INCLUDE_PROTOCOL_GOOD_HPP_\n"
+        "\n"
         "class Good {\n"
         "    public:\n"
         "        int value() const;\n"
-        "};\n",
+        "};\n"
+        "\n"
+        "#endif // RUNTIME_INCLUDE_PROTOCOL_GOOD_HPP_\n",
     )
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert ok
@@ -37,11 +42,17 @@ def test_repo_policy_accepts_declaration_only_header(tmp_path: Path) -> None:
 def test_repo_policy_accepts_header_declaration_with_default_braced_arg(tmp_path: Path) -> None:
     _write(
         tmp_path / "runtime" / "include" / "protocol" / "good_default.hpp",
+        "#ifndef RUNTIME_INCLUDE_PROTOCOL_GOOD_DEFAULT_HPP_\n"
+        "#define RUNTIME_INCLUDE_PROTOCOL_GOOD_DEFAULT_HPP_\n"
+        "\n"
         "#include <functional>\n"
+        "\n"
         "class GoodDefault {\n"
         "    public:\n"
         "        bool run(const std::function<void()> &callback = {});\n"
-        "};\n",
+        "};\n"
+        "\n"
+        "#endif // RUNTIME_INCLUDE_PROTOCOL_GOOD_DEFAULT_HPP_\n",
     )
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert ok

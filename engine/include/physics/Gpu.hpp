@@ -1,12 +1,5 @@
-/*
-** EPITECH PROJECT, 2024
-** rtxcpp
-** File description:
-** gpu
-*/
-
-#ifndef GPU_HPP_
-#define GPU_HPP_
+#ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_GPU_HPP_
+#define GRAVITY_ENGINE_INCLUDE_PHYSICS_GPU_HPP_
 
 #include "physics/ParticleSystem.hpp"
 #include <vector>
@@ -20,6 +13,6 @@ namespace gpu {
     void callUpdateParticles(std::vector<Particle> &particles, float deltaTime);
 }
 
-#endif /* !GPU_HPP_ */
 
 
+#endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_GPU_HPP_

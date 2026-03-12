@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_MODULES_CLI_MODULE_CLI_STATE_HPP_
+#define GRAVITY_MODULES_CLI_MODULE_CLI_STATE_HPP_
 
 #include <cstdint>
 #include <string>
@@ -16,3 +17,5 @@ struct ModuleState {
 };
 
 } // namespace grav_module_cli
+
+#endif // GRAVITY_MODULES_CLI_MODULE_CLI_STATE_HPP_

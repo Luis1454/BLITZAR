@@ -1,13 +1,8 @@
-#ifndef VECTOR_INL_
-#define VECTOR_INL_
-
-GRAVITY_HD inline Vector3::Vector3() : x(0.0f), y(0.0f), z(0.0f)
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3::Vector3() : x(0.0f), y(0.0f), z(0.0f)
 {
 }
 
-GRAVITY_HD inline Vector3::Vector3(float xValue, float yValue, float zValue)
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3::Vector3(float xValue, float yValue, float zValue)
     : x(xValue), y(yValue), z(zValue)
 {
 }
-
-#endif /* !VECTOR_INL_ */

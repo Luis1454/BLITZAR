@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_MODULES_CLI_MODULE_CLI_LIFECYCLE_HPP_
+#define GRAVITY_MODULES_CLI_MODULE_CLI_LIFECYCLE_HPP_
 
 #include "frontend/FrontendModuleApi.hpp"
 #include "frontend/FrontendModuleBoundary.hpp"
@@ -19,3 +20,5 @@ public:
 };
 
 } // namespace grav_module_cli
+
+#endif // GRAVITY_MODULES_CLI_MODULE_CLI_LIFECYCLE_HPP_

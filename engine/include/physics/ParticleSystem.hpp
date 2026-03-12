@@ -1,12 +1,5 @@
-/*
-** EPITECH PROJECT, 2024
-** rtxcpp
-** File description:
-** ParticleSystem
-*/
-
-#ifndef PARTICLESYSTEM_HPP_
-#define PARTICLESYSTEM_HPP_
+#ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
+#define GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
 
 #include "physics/Octree.hpp"
 
@@ -77,6 +70,7 @@ class ParticleSystem {
         bool _hostStateDirty;
 };
 
-#endif /* !PARTICLESYSTEM_HPP_ */
 
 
+
+#endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_

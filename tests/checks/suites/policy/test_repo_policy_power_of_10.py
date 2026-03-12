@@ -18,18 +18,18 @@ def test_repo_policy_rejects_non_structural_macro_in_prod_cpp(tmp_path: Path) ->
     _write(tmp_path / cpp_file(ENGINE_BACKEND_DIR, "bad_macro"), "#define BAD_LIMIT 8\n")
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert not ok
-    assert any("Power of 10 rule 8 forbids non-structural object-like macros" in error for error in errors)
+    assert any("preprocessor macros are forbidden" in error for error in errors)
 
 
-def test_repo_policy_accepts_header_guard_and_allowed_power_of_10_macro(tmp_path: Path) -> None:
+def test_repo_policy_accepts_include_guard_in_header(tmp_path: Path) -> None:
     _write(
         tmp_path / "engine" / "include" / "ok.hpp",
-        "#ifndef OK_HPP\n"
-        "#define OK_HPP\n"
-        "#ifdef __CUDACC__\n"
-        "#define GRAVITY_HD __host__ __device__\n"
-        "#endif\n"
-        "#endif\n",
+        "#ifndef GRAVITY_ENGINE_INCLUDE_OK_HPP_\n"
+        "#define GRAVITY_ENGINE_INCLUDE_OK_HPP_\n"
+        "\n"
+        "struct Ok {};\n"
+        "\n"
+        "#endif // GRAVITY_ENGINE_INCLUDE_OK_HPP_\n",
     )
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert ok
@@ -46,10 +46,10 @@ def test_repo_policy_rejects_function_pointer_typedef_outside_abi_boundary(tmp_p
 def test_repo_policy_accepts_function_pointer_typedef_in_explicit_abi_boundary(tmp_path: Path) -> None:
     _write(
         tmp_path / "runtime" / "include" / "frontend" / "FrontendModuleApi.hpp",
-        "#ifndef GRAVITY_SIM_FRONTENDMODULEAPI_HPP\n"
-        "#define GRAVITY_SIM_FRONTENDMODULEAPI_HPP\n"
+        "#ifndef GRAVITY_RUNTIME_INCLUDE_FRONTEND_FRONTENDMODULEAPI_HPP_\n"
+        "#define GRAVITY_RUNTIME_INCLUDE_FRONTEND_FRONTENDMODULEAPI_HPP_\n"
         "typedef int (*AllowedFn)();\n"
-        "#endif\n",
+        "#endif // GRAVITY_RUNTIME_INCLUDE_FRONTEND_FRONTENDMODULEAPI_HPP_\n"
     )
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert ok

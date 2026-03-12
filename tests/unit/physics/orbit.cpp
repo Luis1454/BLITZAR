@@ -1,5 +1,7 @@
 #include "tests/support/physics_scenario.hpp"
 
+#include <gtest/gtest.h>
+
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -7,7 +9,7 @@
 #include <vector>
 
 namespace testsupport {
-TEST_F(PhysicsTest, TST_UNT_PHYS_001_AttractionDistance)
+TEST(PhysicsTest, TST_UNT_PHYS_001_AttractionDistance)
 {
     ScenarioConfig cfg;
     cfg.inputPath = inputPath_;
@@ -22,7 +24,6 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_001_AttractionDistance)
     cfg.steps = 400;
 
     ScenarioResult result;
-    std::string error;
     ASSERT_TRUE(runScenario(cfg, result, error)) << error;
 
     const float initialDistance = distance(result.initial[0], result.initial[1]);
@@ -35,7 +36,7 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_001_AttractionDistance)
     EXPECT_LE(ratio, kMaxRatio) << "No attraction detected";
 }
 
-TEST_F(PhysicsTest, TST_UNT_PHYS_003_CenterOfMassDrift)
+TEST(PhysicsTest, TST_UNT_PHYS_003_CenterOfMassDrift)
 {
     ScenarioConfig cfg;
     cfg.inputPath = inputPath_;
@@ -50,7 +51,6 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_003_CenterOfMassDrift)
     cfg.steps = 400;
 
     ScenarioResult result;
-    std::string error;
     ASSERT_TRUE(runScenario(cfg, result, error)) << error;
 
     const auto centerOfMass = [](const std::vector<RenderParticle> &snapshot) {
@@ -72,7 +72,7 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_003_CenterOfMassDrift)
     EXPECT_LE(drift, kMaxCenterOfMassDrift);
 }
 
-TEST_F(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
+TEST(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
 {
     ScenarioConfig coarse;
     coarse.inputPath = inputPath_;
@@ -99,11 +99,9 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
     fine.steps = 200;
 
     ScenarioResult coarseResult;
-    std::string coarseError;
     ASSERT_TRUE(runScenario(coarse, coarseResult, coarseError)) << coarseError;
 
     ScenarioResult fineResult;
-    std::string fineError;
     ASSERT_TRUE(runScenario(fine, fineResult, fineError)) << fineError;
 
     float maxParticleDelta = 0.0f;
@@ -115,7 +113,7 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
     EXPECT_LE(maxParticleDelta, kMaxConvergenceDelta);
 }
 
-TEST_F(PhysicsTest, TST_UNT_PHYS_002_EnergyConservation)
+TEST(PhysicsTest, TST_UNT_PHYS_002_EnergyConservation)
 {
     ScenarioConfig cfg;
     cfg.inputPath = inputPath_;
@@ -130,7 +128,6 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_002_EnergyConservation)
     cfg.steps = 800;
 
     ScenarioResult result;
-    std::string error;
     ASSERT_TRUE(runScenario(cfg, result, error)) << error;
 
     constexpr float kMaxEnergyDriftPct = 5.0f;
@@ -139,7 +136,7 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_002_EnergyConservation)
     EXPECT_FALSE(result.stats.energyEstimated);
 }
 
-TEST_F(PhysicsTest, TST_UNT_PHYS_005_LongRunStability)
+TEST(PhysicsTest, TST_UNT_PHYS_005_LongRunStability)
 {
     ScenarioConfig cfg;
     cfg.inputPath = inputPath_;
@@ -154,7 +151,6 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_005_LongRunStability)
     cfg.steps = 2000;
 
     ScenarioResult result;
-    std::string error;
     ASSERT_TRUE(runScenario(cfg, result, error)) << error;
 
     ASSERT_FALSE(result.final.empty());

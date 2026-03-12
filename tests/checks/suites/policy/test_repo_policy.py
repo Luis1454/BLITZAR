@@ -31,16 +31,8 @@ def _run(root: Path, allowlist: Path) -> tuple[bool, list[str], list[str]]:
     ("path", "content", "expected"),
     [
         (cpp_file(ENGINE_BACKEND_DIR, "bad"), "using Alias = int;\n", "'using' is forbidden in C++ sources"),
-        (
-            cpp_file(ENGINE_CONFIG_DIR, "bad"),
-            "namespace a::b {\n}\n",
-            "nested namespace declaration (A::B) is forbidden",
-        ),
-        (
-            cpp_file(RUNTIME_BACKEND_DIR, "bad"),
-            "namespace gravity_internal_bad {\n}\n",
-            "gravity_internal_* namespace is forbidden",
-        ),
+        (cpp_file(ENGINE_CONFIG_DIR, "bad"), "namespace a::b {\n}\n", "nested namespace declaration (A::B) is forbidden"),
+        (cpp_file(RUNTIME_BACKEND_DIR, "bad"), "namespace gravity_internal_bad {\n}\n", "gravity_internal_* namespace is forbidden"),
         (
             cpp_file(ENGINE_BACKEND_DIR, "bad_namespace"),
             "namespace {\nint g = 1;\n}\n",
@@ -60,6 +52,11 @@ def _run(root: Path, allowlist: Path) -> tuple[bool, list[str], list[str]]:
             cpp_file(ENGINE_CONFIG_DIR, "bad_do_while"),
             "int f() { do { return 1; } while (false); }\n",
             "Power of 10 rule 1 forbids do-while",
+        ),
+        (
+            cpp_file(ENGINE_CONFIG_DIR, "bad_preprocessor_conditional"),
+            "#ifdef _WIN32\nint f() { return 1; }\n#endif\n",
+            "preprocessor conditionals are forbidden in C/C++ sources",
         ),
     ],
 )
@@ -102,6 +99,28 @@ def test_repo_policy_rejects_unnamed_namespace_in_tests_cpp(tmp_path: Path) -> N
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert not ok
     assert any("unnamed namespace is forbidden" in error for error in errors)
+
+
+def test_repo_policy_accepts_header_include_guard(tmp_path: Path) -> None:
+    _write(
+        tmp_path / "engine" / "include" / "ok.hpp",
+        "#ifndef GRAVITY_ENGINE_INCLUDE_OK_HPP_\n"
+        "#define GRAVITY_ENGINE_INCLUDE_OK_HPP_\n"
+        "\n"
+        "struct Ok {};\n"
+        "\n"
+        "#endif // GRAVITY_ENGINE_INCLUDE_OK_HPP_\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok
+    assert not errors
+
+
+def test_repo_policy_rejects_pragma_once_in_header(tmp_path: Path) -> None:
+    _write(tmp_path / "engine" / "include" / "bad.hpp", "#pragma once\nstruct Bad {};\n")
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("#pragma once is forbidden" in error for error in errors)
 
 
 def test_repo_policy_rejects_json_above_hard_limit(tmp_path: Path) -> None:

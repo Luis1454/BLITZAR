@@ -224,23 +224,23 @@ __host__ __device__ Vector3 clampAcceleration(Vector3 accel, float maxAccelerati
     return accel;
 }
 
-GRAVITY_HD float clampSofteningValue(float softening)
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampSofteningValue(float softening)
 {
     return fmaxf(softening, kGravityMinSoftening);
 }
 
-GRAVITY_HD float clampThetaValue(float theta)
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampThetaValue(float theta)
 {
     return fmaxf(theta, kGravityMinTheta);
 }
 
-GRAVITY_HD float softenedDistanceSquared(Vector3 delta, float softening)
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE float softenedDistanceSquared(Vector3 delta, float softening)
 {
     const float safeSoftening = clampSofteningValue(softening);
     return dot(delta, delta) + safeSoftening * safeSoftening;
 }
 
-GRAVITY_HD Vector3 gravityAccelerationFromSource(
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 gravityAccelerationFromSource(
     Vector3 selfPosition,
     Vector3 sourcePosition,
     float sourceMass,

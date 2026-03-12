@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAVITY_APPS_MODULE_HOST_MODULE_HOST_CLI_HPP_
+#define GRAVITY_APPS_MODULE_HOST_MODULE_HOST_CLI_HPP_
 
 #include <string>
 #include <string_view>
@@ -19,3 +20,5 @@ public:
 };
 
 } // namespace grav_module_host
+
+#endif // GRAVITY_APPS_MODULE_HOST_MODULE_HOST_CLI_HPP_

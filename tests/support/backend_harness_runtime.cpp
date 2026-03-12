@@ -1,47 +1,21 @@
 #include "tests/support/backend_harness.hpp"
 
+#include "config/EnvUtils.hpp"
 #include "platform/PlatformPaths.hpp"
 #include "platform/SocketPlatform.hpp"
 #include "protocol/BackendClient.hpp"
 
 #include <array>
 #include <chrono>
-#include <cstdlib>
 #include <filesystem>
 #include <optional>
 #include <string>
 #include <thread>
 
-namespace grav_test_backend_harness_runtime {
-
-std::optional<std::string> readEnvVar(const char *name)
-{
-#if defined(_WIN32)
-    char *rawValue = nullptr;
-    std::size_t rawSize = 0;
-    if (_dupenv_s(&rawValue, &rawSize, name) != 0 || rawValue == nullptr) {
-        return std::nullopt;
-    }
-    std::string value(rawValue);
-    std::free(rawValue);
-    if (value.empty()) {
-        return std::nullopt;
-    }
-    return value;
-#else
-    const char *rawValue = std::getenv(name);
-    if (rawValue == nullptr || *rawValue == '\0') {
-        return std::nullopt;
-    }
-    return std::string(rawValue);
-#endif
-}
-
-} // namespace grav_test_backend_harness_runtime
-
 std::string RealBackendHarness::resolveBackendExecutable()
 {
-    if (const std::optional<std::string> fromEnv = grav_test_backend_harness_runtime::readEnvVar("GRAVITY_BACKEND_EXE"); fromEnv.has_value()) {
+    if (const std::optional<std::string> fromEnv = grav_env::get("GRAVITY_BACKEND_EXE");
+        fromEnv.has_value() && !fromEnv->empty()) {
         return *fromEnv;
     }
 

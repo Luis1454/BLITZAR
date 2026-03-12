@@ -95,6 +95,9 @@ if(GRAVITY_BUILD_FRONTEND_MODULES)
         engine/src/config/TextParse.cpp
     )
     configure_gravity_cpp_target(${FRONTEND_MODULE_CLI_NAME})
+    if(WIN32)
+        target_compile_definitions(${FRONTEND_MODULE_CLI_NAME} PRIVATE GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
+    endif()
 
     add_library(${FRONTEND_MODULE_ECHO_NAME} MODULE
         modules/echo/module.cpp
@@ -103,6 +106,9 @@ if(GRAVITY_BUILD_FRONTEND_MODULES)
         runtime/src/frontend/FrontendModuleApi.cpp
     )
     configure_gravity_cpp_target(${FRONTEND_MODULE_ECHO_NAME})
+    if(WIN32)
+        target_compile_definitions(${FRONTEND_MODULE_ECHO_NAME} PRIVATE GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
+    endif()
 
     add_library(${FRONTEND_MODULE_GUI_PROXY_NAME} MODULE
         modules/proxy/module.cpp
@@ -111,6 +117,9 @@ if(GRAVITY_BUILD_FRONTEND_MODULES)
         runtime/src/frontend/FrontendModuleApi.cpp
     )
     configure_gravity_cpp_target(${FRONTEND_MODULE_GUI_PROXY_NAME})
+    if(WIN32)
+        target_compile_definitions(${FRONTEND_MODULE_GUI_PROXY_NAME} PRIVATE GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
+    endif()
 endif()
 
 if(GRAVITY_BUILD_FRONTEND_MODULES)
@@ -147,6 +156,9 @@ if(GRAVITY_BUILD_FRONTEND_MODULES)
             modules/qt/ui/QtViewMath.cpp
         )
         configure_gravity_cuda_target(${FRONTEND_MODULE_QT_INPROC_NAME})
+        if(WIN32)
+            target_compile_definitions(${FRONTEND_MODULE_QT_INPROC_NAME} PRIVATE GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
+        endif()
         target_link_libraries(${FRONTEND_MODULE_QT_INPROC_NAME}
             PRIVATE
                 Qt6::Widgets

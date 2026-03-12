@@ -1,5 +1,5 @@
-#ifndef SIMULATION_MODES_HPP_
-#define SIMULATION_MODES_HPP_
+#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONMODES_HPP_
+#define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONMODES_HPP_
 
 #include <string>
 #include <string_view>
@@ -19,4 +19,5 @@ extern const std::string_view kIntegratorRk4;
 
 } // namespace grav_modes
 
-#endif // SIMULATION_MODES_HPP_
+
+#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONMODES_HPP_

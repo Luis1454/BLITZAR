@@ -1,11 +1,13 @@
 #include "tests/support/physics_scenario.hpp"
 
+#include <gtest/gtest.h>
+
 #include <algorithm>
 #include <cmath>
 #include <string>
 
 namespace testsupport {
-TEST_F(PhysicsTest, TST_UNT_PHYS_007_MultiBodyInteractions)
+TEST(PhysicsTest, TST_UNT_PHYS_007_MultiBodyInteractions)
 {
     ScenarioConfig cfg;
     cfg.particleCount = 256u;
@@ -71,7 +73,7 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_007_MultiBodyInteractions)
     EXPECT_LE(maxRadius, kMaxStableRadius);
 }
 
-TEST_F(PhysicsTest, TST_UNT_PHYS_006_EnergyConservationHighMassNoSph)
+TEST(PhysicsTest, TST_UNT_PHYS_006_EnergyConservationHighMassNoSph)
 {
     ScenarioConfig cfg;
     cfg.particleCount = 96u;
@@ -109,7 +111,7 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_006_EnergyConservationHighMassNoSph)
         << "High-mass no-SPH drift too high: " << result.maxAbsEnergyDriftPct << "%";
 }
 
-TEST_F(PhysicsTest, TST_UNT_PHYS_008_RadiationExchangeConservation)
+TEST(PhysicsTest, TST_UNT_PHYS_008_RadiationExchangeConservation)
 {
     ScenarioConfig cfg;
     cfg.particleCount = 48u;

@@ -93,6 +93,13 @@ if(NOT TARGET ${GRAVITY_TEST_PLATFORM_TARGET})
 
     add_library(${GRAVITY_TEST_PLATFORM_TARGET} STATIC ${_platform_sources})
     target_include_directories(${GRAVITY_TEST_PLATFORM_TARGET} PUBLIC ${GRAVITY_TEST_INCLUDE_DIRS})
+    target_compile_definitions(${GRAVITY_TEST_PLATFORM_TARGET}
+        PUBLIC
+            $<$<BOOL:${WIN32}>:NOMINMAX>
+            GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=
+            GRAVITY_HD_DEVICE=
+            GRAVITY_HD_HOST=
+    )
     gravity_apply_test_paths(${GRAVITY_TEST_PLATFORM_TARGET})
     gravity_apply_test_quality_flags(${GRAVITY_TEST_PLATFORM_TARGET})
     if(WIN32)
@@ -110,6 +117,13 @@ function(gravity_add_gtest target_name)
 
     add_executable(${target_name} ${ARG_SOURCES})
     target_include_directories(${target_name} PRIVATE ${GRAVITY_TEST_INCLUDE_DIRS})
+    target_compile_definitions(${target_name}
+        PRIVATE
+            $<$<BOOL:${WIN32}>:NOMINMAX>
+            GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=
+            GRAVITY_HD_DEVICE=
+            GRAVITY_HD_HOST=
+    )
     target_link_libraries(${target_name} PRIVATE GTest::gtest_main ${ARG_LIBS})
     gravity_apply_test_paths(${target_name})
     gravity_apply_test_quality_flags(${target_name})

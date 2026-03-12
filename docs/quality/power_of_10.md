@@ -60,9 +60,11 @@ The profile is used in two modes:
 8. `Use the preprocessor sparingly`
    Automation status: `partial`
    Automated checks:
-   - production C++ paths must not introduce non-structural object-like macros, except explicit platform/ABI allowlisted seams
+   - headers must use strict include guards instead of `#pragma once`
+   - C++ sources in the repository must not use preprocessor conditionals outside header include guards
+   - C++ sources in the repository must not define macros outside header include guards
    Policy note:
-   - preprocessor conditionals must stay limited to platform/compiler seams
+   - platform/compiler variability must be isolated with build-system source selection or explicit runtime adapters, not conditional compilation
 
 9. `Restrict pointer use to a single dereference, and do not use function pointers`
    Automation status: `partial`
@@ -89,7 +91,9 @@ Current automated `Power of 10` repository checks cover:
 - `setjmp` and `longjmp` forbidden in production C++ paths
 - `do { ... } while (...)` forbidden in production C++ paths
 - `while (true)` forbidden in production C++ paths
-- non-structural object-like macros forbidden in production C++ paths, except explicit ABI/platform allowlists
+- `#pragma once` forbidden; headers must use strict include guards
+- preprocessor conditionals forbidden in repository C++ sources outside header include guards
+- preprocessor macro definitions forbidden in repository C++ sources outside header include guards
 - function pointer typedefs forbidden outside explicit ABI boundary headers
 
 The remaining rules are tracked as review expectations and higher-assurance process constraints, not as naive regex-only repository failures.

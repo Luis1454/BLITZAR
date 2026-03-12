@@ -1,5 +1,5 @@
-#ifndef GRAVITY_UI_PARTICLEVIEW_H
-#define GRAVITY_UI_PARTICLEVIEW_H
+#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEW_HPP_
+#define GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEW_HPP_
 
 #include "ui/QtViewMath.hpp"
 
@@ -49,4 +49,5 @@ class ParticleView : public QWidget {
 
 } // namespace grav_qt
 
-#endif // GRAVITY_UI_PARTICLEVIEW_H
+
+#endif // GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEW_HPP_

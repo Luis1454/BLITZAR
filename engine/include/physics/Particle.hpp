@@ -1,3 +1,6 @@
+#ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLE_HPP_
+#define GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLE_HPP_
+
 /*
 ** EPITECH PROJECT, 2024
 ** rtxcpp
@@ -13,25 +16,25 @@ class Particle {
         static constexpr float kDefaultMass = 0.01f;
         static constexpr int kDefaultCudaBlockSize = 256;
 
-        GRAVITY_HD Particle();
-        GRAVITY_HD ~Particle();
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE Particle();
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE ~Particle();
 
-        GRAVITY_HD void update(float deltaTime);
-        GRAVITY_HD void setMass(float mass);
-        GRAVITY_HD void move(Vector3 force);
-        GRAVITY_HD void bounce(Vector3 normal, float dt);
-        GRAVITY_HD void applyForce(Vector3 force);
-        GRAVITY_HD void setDensity(float density);
-        GRAVITY_HD void setPosition(Vector3 position);
-        GRAVITY_HD void setVelocity(Vector3 velocity);
-        GRAVITY_HD void setPressure(Vector3 pressure);
-        GRAVITY_HD void setTemperature(float temperature);
-        GRAVITY_HD Vector3 getPressure() const;
-        GRAVITY_HD Vector3 getPosition() const;
-        GRAVITY_HD Vector3 getVelocity() const;
-        GRAVITY_HD float getDensity() const;
-        GRAVITY_HD float getMass() const;
-        GRAVITY_HD float getTemperature() const;
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE void update(float deltaTime);
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setMass(float mass);
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE void move(Vector3 force);
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE void bounce(Vector3 normal, float dt);
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE void applyForce(Vector3 force);
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setDensity(float density);
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setPosition(Vector3 position);
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setVelocity(Vector3 velocity);
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setPressure(Vector3 pressure);
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setTemperature(float temperature);
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 getPressure() const;
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 getPosition() const;
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 getVelocity() const;
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE float getDensity() const;
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE float getMass() const;
+        GRAVITY_HD_HOST GRAVITY_HD_DEVICE float getTemperature() const;
 
     private:
         Vector3 _position;
@@ -43,4 +46,5 @@ class Particle {
         float _temperature;
 };
 
+#endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLE_HPP_
 

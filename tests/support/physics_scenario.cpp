@@ -33,6 +33,12 @@ bool waitForSnapshot(SimulationBackend &backend, std::vector<RenderParticle> &ou
     return backend.tryConsumeSnapshot(out);
 }
 
+std::filesystem::path twoBodyInputPath()
+{
+    const std::filesystem::path sourceFile(__FILE__);
+    return sourceFile.parent_path().parent_path() / "data" / "two_body_rest.xyz";
+}
+
 } // namespace grav_test_physics_scenario
 
 float distance(const RenderParticle &a, const RenderParticle &b)
@@ -157,21 +163,24 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
 
 std::string getTwoBodyInputPath()
 {
-#ifndef GRAVITY_TEST_SOURCE_DIR
-    return {};
-#else
-    return (std::filesystem::path(GRAVITY_TEST_SOURCE_DIR) / "tests" / "data" / "two_body_rest.xyz").string();
-#endif
+    return grav_test_physics_scenario::twoBodyInputPath().string();
 }
 
-#if defined(GRAVITY_ENABLE_GTEST_FIXTURE)
-void PhysicsTest::SetUp()
+bool prepareTwoBodyScenario(ScenarioConfig &cfg, std::string &error)
 {
-    inputPath_ = getTwoBodyInputPath();
-    ASSERT_FALSE(inputPath_.empty()) << "GRAVITY_TEST_SOURCE_DIR is not defined";
-    ASSERT_TRUE(std::filesystem::exists(inputPath_)) << "Missing test data file: " << inputPath_;
+    const std::filesystem::path inputPath = grav_test_physics_scenario::twoBodyInputPath();
+    if (!std::filesystem::exists(inputPath)) {
+        error = "Missing test data file: " + inputPath.string();
+        return false;
+    }
+    cfg.inputPath = inputPath.string();
+    cfg.initState.mode = "file";
+    cfg.initState.thermalAmbientTemperature = 0.0f;
+    cfg.initState.thermalSpecificHeat = 1.0f;
+    cfg.initState.thermalHeatingCoeff = 0.0f;
+    cfg.initState.thermalRadiationCoeff = 0.0f;
+    return true;
 }
-#endif
 
 } // namespace testsupport
 

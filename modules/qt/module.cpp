@@ -17,7 +17,6 @@
 #include <atomic>
 #include <cctype>
 #include <chrono>
-#include <cstddef>
 #include <cstdint>
 #include <exception>
 #include <iostream>
@@ -27,14 +26,6 @@
 #include <string_view>
 #include <thread>
 #include <vector>
-
-#if defined(_WIN32)
-#include <windows.h>
-#elif defined(__APPLE__)
-#include <mach-o/dyld.h>
-#else
-#include <unistd.h>
-#endif
 
 static bool parseBool(std::string_view raw, bool &out)
 {
@@ -116,40 +107,11 @@ struct QtInProcState {
     std::mutex startupMutex;
 };
 
-static std::string currentExecutablePath()
-{
-#if defined(_WIN32)
-    std::vector<char> buffer(4096u, '\0');
-    const DWORD count = GetModuleFileNameA(nullptr, buffer.data(), static_cast<DWORD>(buffer.size()));
-    if (count == 0 || count >= buffer.size()) {
-        return {};
-    }
-    return std::string(buffer.data(), buffer.data() + count);
-#elif defined(__APPLE__)
-    std::vector<char> buffer(4096u, '\0');
-    std::uint32_t size = static_cast<std::uint32_t>(buffer.size());
-    if (_NSGetExecutablePath(buffer.data(), &size) != 0) {
-        return {};
-    }
-    return std::string(buffer.data());
-#else
-    std::vector<char> buffer(4096u, '\0');
-    const ssize_t count = readlink("/proc/self/exe", buffer.data(), buffer.size() - 1u);
-    if (count <= 0) {
-        return {};
-    }
-    buffer[static_cast<std::size_t>(count)] = '\0';
-    return std::string(buffer.data());
-#endif
-}
-
 static void configureQtPluginPathFallback()
 {
     QString pluginRoot;
-    const std::string exePath = currentExecutablePath();
-    if (!exePath.empty()) {
-        const QFileInfo exeInfo(QString::fromStdString(exePath));
-        const QString appDir = exeInfo.absolutePath();
+    const QString appDir = QCoreApplication::applicationDirPath();
+    if (!appDir.isEmpty()) {
         const QString localPlatformsDir = QDir(appDir).filePath("platforms");
         if (QFileInfo::exists(localPlatformsDir)) {
             pluginRoot = appDir;
@@ -174,17 +136,13 @@ static void qtThreadMain(QtInProcState *state)
 {
     try {
         int argc = 1;
-        std::string appName = currentExecutablePath();
-        if (appName.empty()) {
-            appName = "gravityQtInProc";
-        }
+        std::string appName = "gravityQtInProc";
         std::vector<char> appNameBuffer(appName.begin(), appName.end());
         appNameBuffer.push_back('\0');
         char *argv[] = {appNameBuffer.data(), nullptr};
 
-        configureQtPluginPathFallback();
-
         QApplication app(argc, argv);
+        configureQtPluginPathFallback();
         SimulationConfig config = SimulationConfig::loadOrCreate(state->configPath);
         state->transport.remoteCommandTimeoutMs = grav_frontend::clampFrontendRemoteTimeoutMs(config.frontendRemoteCommandTimeoutMs);
         state->transport.remoteStatusTimeoutMs = grav_frontend::clampFrontendRemoteTimeoutMs(config.frontendRemoteStatusTimeoutMs);
@@ -355,7 +313,7 @@ public:
     }
 };
 
-GRAVITY_FRONTEND_MODULE_EXPORT const grav_module::FrontendModuleExportsV1 *gravity_frontend_module_v1()
+extern "C" GRAVITY_FRONTEND_MODULE_EXPORT_ATTR const grav_module::FrontendModuleExportsV1 *gravity_frontend_module_v1()
 {
     static const grav_module::FrontendModuleExportsV1 exports{
         grav_module::kFrontendModuleApiVersionV1,
