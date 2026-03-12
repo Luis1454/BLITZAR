@@ -11,6 +11,7 @@ permissions:
 
 env:
   CI_CACHE_VERSION: v1
+  CI_PYTHON_VERSION: "3.12"
 
 concurrency:
   group: release-lane-${{ github.workflow }}-${{ github.ref }}
@@ -18,8 +19,8 @@ concurrency:
 
 jobs:
   release-integration-validate-and-package:
-    name: Release Integration Validate and Package
-    runs-on: windows-latest
+    name: Release Integration Validate and Package (windows-2022 / msvc2022-x64 / cuda12.4.1 / python3.12)
+    runs-on: windows-2022
     timeout-minutes: 120
     steps:
       - name: Checkout
@@ -29,7 +30,7 @@ jobs:
         id: setup-python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "${{ env.CI_PYTHON_VERSION }}"
       - name: Restore pip cache
         id: restore-pip-cache
         uses: actions/cache/restore@v4
@@ -184,7 +185,7 @@ jobs:
           key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
 
   release-gpu-full-tests:
-    name: Release GPU Full Tests (optional)
+    name: Release GPU Full Tests (self-hosted windows/x64/cuda / python3.12, optional)
     if: ${{ vars.HAS_GPU_RUNNER == 'true' }}
     runs-on: [self-hosted, windows, x64, cuda]
     timeout-minutes: 120
@@ -195,7 +196,7 @@ jobs:
         id: setup-python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "${{ env.CI_PYTHON_VERSION }}"
       - name: Restore pip cache
         id: restore-pip-cache
         uses: actions/cache/restore@v4
