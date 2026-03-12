@@ -1441,24 +1441,24 @@ void SimulationBackend::rebuildSystem()
         _integratorMode = integrator;
     }
 
-    _system = std::make_unique<ParticleSystem>(static_cast<int>(targetParticleCount), false);
-    std::vector<Particle> particles = hasInitialParticles ? initialParticles : _system->getParticles();
-    for (Particle &p : particles) {
-        p.setPressure(Vector3(0.0f, 0.0f, 0.0f));
-        p.setDensity(0.0f);
-        float temp = p.getTemperature();
-        if (temp < 0.0f) {
-            temp = 0.0f;
+    if (hasInitialParticles) {
+        std::vector<Particle> particles = initialParticles;
+        for (Particle &p : particles) {
+            p.setPressure(Vector3(0.0f, 0.0f, 0.0f));
+            p.setDensity(0.0f);
+            float temp = p.getTemperature();
+            if (temp < 0.0f) {
+                temp = 0.0f;
+            }
+            if (temp == 0.0f && initConfig.particleTemperature > 0.0f) {
+                temp = initConfig.particleTemperature;
+            }
+            p.setTemperature(temp);
         }
-        if (temp == 0.0f && initConfig.particleTemperature > 0.0f) {
-            temp = initConfig.particleTemperature;
-        }
-        p.setTemperature(temp);
+        _system = std::make_unique<ParticleSystem>(std::move(particles));
+    } else {
+        _system = std::make_unique<ParticleSystem>(static_cast<int>(targetParticleCount), false);
     }
-    if (!_system->setParticles(std::move(particles))) {
-        std::cerr << "[backend] failed to set initial particles (size mismatch)\n";
-    }
-    _system->syncDeviceState();
 
     const std::vector<Particle> &configuredParticles = _system->getParticles();
     if (hasImportedState) {
