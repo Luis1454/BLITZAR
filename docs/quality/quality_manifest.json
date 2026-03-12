@@ -2,7 +2,7 @@
   "metadata": {
     "system": "CUDA-GRAVITY-SIMULATION",
     "revision": "2026-03-12",
-    "revision_note": "Governance now includes explicit solo-maintainer IV&V waiver handling for critical-path PRs, alongside Power of 10 repository-policy checks, strict include-guard-only header policy, no preprocessor conditionals or macro definitions outside header guards, strict analyzer coverage for ignored return values, security CI coverage through CodeQL, dependency review, and release SBOM packaging, and a pinned multi-platform CI baseline with explicit platform/toolchain axis labels."
+    "revision_note": "Governance now includes explicit solo-maintainer IV&V waiver handling for critical-path PRs, alongside Power of 10 repository-policy checks, strict include-guard-only header policy, no preprocessor conditionals or macro definitions outside header guards, strict analyzer coverage for ignored return values, security CI coverage through CodeQL, dependency review, release SBOM packaging, a pinned multi-platform CI baseline with explicit platform/toolchain axis labels, and automated self-hosted GPU runner readiness plus fallback controls."
   },
   "includes": [
     "manifest/evidence.json",

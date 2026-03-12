@@ -215,18 +215,23 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-24.04
     permissions: {pages: write, id-token: write}
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    environment: {name: github-pages, url: ${{ steps.deployment.outputs.page_url }}}
     steps:
       - name: Deploy coverage dashboard
         id: deployment
         continue-on-error: true
         uses: actions/deploy-pages@v4
 
+  gpu-runner-readiness:
+    name: GPU Runner Readiness
+    uses: ./.github/workflows/gpu-runner-health.yml
+    with: {enable_gpu_lane: ${{ vars.HAS_GPU_RUNNER == 'true' }}}
+    secrets: inherit
+
   nightly-gpu-full-tests:
     name: Nightly GPU Full Tests (self-hosted windows/x64/cuda / python3.12, optional)
-    if: ${{ vars.HAS_GPU_RUNNER == 'true' }}
+    needs: gpu-runner-readiness
+    if: ${{ needs.gpu-runner-readiness.outputs.ready == 'true' }}
     runs-on: [self-hosted, windows, x64, cuda]
     timeout-minutes: 120
     steps:
@@ -284,3 +289,11 @@ jobs:
           name: nightly-numerical-validation-${{ github.run_number }}
           path: dist/numerical-validation
           if-no-files-found: error
+
+  nightly-gpu-fallback:
+    name: Nightly GPU Fallback (linux-ubuntu24.04)
+    needs: gpu-runner-readiness
+    if: ${{ needs.gpu-runner-readiness.outputs.ready != 'true' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - {name: Record GPU fallback reason, run: 'echo "GPU lanes skipped: ${{ needs.gpu-runner-readiness.outputs.reason }}" >> "$GITHUB_STEP_SUMMARY"'}

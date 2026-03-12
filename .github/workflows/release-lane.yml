@@ -184,9 +184,16 @@ jobs:
             C:\vcpkg\packages
           key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
 
+  gpu-runner-readiness:
+    name: GPU Runner Readiness
+    uses: ./.github/workflows/gpu-runner-health.yml
+    with: {enable_gpu_lane: ${{ vars.HAS_GPU_RUNNER == 'true' }}}
+    secrets: inherit
+
   release-gpu-full-tests:
     name: Release GPU Full Tests (self-hosted windows/x64/cuda / python3.12, optional)
-    if: ${{ vars.HAS_GPU_RUNNER == 'true' }}
+    needs: gpu-runner-readiness
+    if: ${{ needs.gpu-runner-readiness.outputs.ready == 'true' }}
     runs-on: [self-hosted, windows, x64, cuda]
     timeout-minutes: 120
     steps:
@@ -276,3 +283,11 @@ jobs:
             C:\vcpkg\installed
             C:\vcpkg\packages
           key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
+
+  release-gpu-fallback:
+    name: Release GPU Fallback (linux-ubuntu24.04)
+    needs: gpu-runner-readiness
+    if: ${{ needs.gpu-runner-readiness.outputs.ready != 'true' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - {name: Record GPU fallback reason, run: 'echo "GPU release lane skipped: ${{ needs.gpu-runner-readiness.outputs.reason }}" >> "$GITHUB_STEP_SUMMARY"'}

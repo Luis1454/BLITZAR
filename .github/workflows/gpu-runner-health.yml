@@ -1,0 +1,108 @@
+name: gpu-runner-health
+
+on:
+  workflow_call:
+    inputs:
+      enable_gpu_lane:
+        required: false
+        type: boolean
+        default: false
+      min_online:
+        required: false
+        type: number
+        default: 1
+      min_idle:
+        required: false
+        type: number
+        default: 1
+    outputs:
+      ready:
+        value: ${{ jobs.gpu-runner-health.outputs.ready }}
+      reason:
+        value: ${{ jobs.gpu-runner-health.outputs.reason }}
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *"
+
+permissions:
+  contents: read
+
+env:
+  CI_PYTHON_VERSION: "3.12"
+
+jobs:
+  gpu-runner-health:
+    name: GPU Runner Health (linux-ubuntu24.04 / python3.12)
+    runs-on: ubuntu-24.04
+    outputs:
+      ready: ${{ steps.report.outputs.ready }}
+      reason: ${{ steps.report.outputs.reason }}
+    steps:
+      - {name: Checkout, uses: actions/checkout@v4}
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: {python-version: "${{ env.CI_PYTHON_VERSION }}"}
+      - name: Collect GPU runner health report
+        env:
+          GPU_RUNNER_ENABLED: ${{ github.event_name == 'workflow_call' && inputs.enable_gpu_lane || vars.HAS_GPU_RUNNER == 'true' }}
+          GPU_RUNNER_TOKEN: ${{ secrets.GPU_RUNNER_ADMIN_TOKEN }}
+        run: |
+          enabled_flag=""
+          if [ "${GPU_RUNNER_ENABLED}" = "true" ]; then enabled_flag="--enabled"; fi
+          python scripts/ci/gpu/runner_health.py \
+            --repo "${{ github.repository }}" \
+            --label self-hosted \
+            --label windows \
+            --label x64 \
+            --label cuda \
+            --min-online "${{ github.event_name == 'workflow_call' && inputs.min_online || 1 }}" \
+            --min-idle "${{ github.event_name == 'workflow_call' && inputs.min_idle || 1 }}" \
+            --token "${GPU_RUNNER_TOKEN}" \
+            --output dist/gpu-runner-health/report.json \
+            ${enabled_flag}
+      - name: Publish readiness outputs
+        id: report
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          report = json.loads(Path("dist/gpu-runner-health/report.json").read_text(encoding="utf-8"))
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+              handle.write(f"ready={'true' if report['ready'] else 'false'}\n")
+              handle.write(f"reason={report['reason']}\n")
+          PY
+      - name: Write workflow summary
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          report = json.loads(Path("dist/gpu-runner-health/report.json").read_text(encoding="utf-8"))
+          summary = [
+              f"ready: {report['ready']}",
+              f"monitoring: {report['monitoring']}",
+              f"reason: {report['reason']}",
+              f"matched: {report['capacity']['matched']}",
+              f"online: {report['capacity']['online']}",
+              f"idle: {report['capacity']['idle']}",
+          ]
+          Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text("\n".join(summary) + "\n", encoding="utf-8")
+          PY
+      - name: Upload GPU runner health artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gpu-runner-health-${{ github.run_number }}
+          path: dist/gpu-runner-health/report.json
+          if-no-files-found: error
+      - name: Fail scheduled monitoring on unhealthy active inventory
+        if: ${{ github.event_name != 'workflow_call' }}
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("dist/gpu-runner-health/report.json").read_text(encoding="utf-8"))
+          if report["monitoring"] == "active" and not report["ready"]:
+              raise SystemExit(report["reason"])
+          PY
