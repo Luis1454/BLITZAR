@@ -12,6 +12,7 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_001_AttractionDistance)
     ScenarioConfig cfg;
     cfg.inputPath = inputPath_;
     cfg.particleCount = 2u;
+    cfg.solver = "octree_cpu";
     cfg.initState.mode = "file";
     cfg.initState.thermalAmbientTemperature = 0.0f;
     cfg.initState.thermalSpecificHeat = 1.0f;
@@ -39,6 +40,7 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_003_CenterOfMassDrift)
     ScenarioConfig cfg;
     cfg.inputPath = inputPath_;
     cfg.particleCount = 2u;
+    cfg.solver = "octree_cpu";
     cfg.initState.mode = "file";
     cfg.initState.thermalAmbientTemperature = 0.0f;
     cfg.initState.thermalSpecificHeat = 1.0f;
@@ -75,6 +77,7 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
     ScenarioConfig coarse;
     coarse.inputPath = inputPath_;
     coarse.particleCount = 2u;
+    coarse.solver = "octree_cpu";
     coarse.initState.mode = "file";
     coarse.initState.thermalAmbientTemperature = 0.0f;
     coarse.initState.thermalSpecificHeat = 1.0f;
@@ -86,6 +89,7 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
     ScenarioConfig fine;
     fine.inputPath = inputPath_;
     fine.particleCount = 2u;
+    fine.solver = "octree_cpu";
     fine.initState.mode = "file";
     fine.initState.thermalAmbientTemperature = 0.0f;
     fine.initState.thermalSpecificHeat = 1.0f;
@@ -116,6 +120,7 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_002_EnergyConservation)
     ScenarioConfig cfg;
     cfg.inputPath = inputPath_;
     cfg.particleCount = 2u;
+    cfg.solver = "octree_cpu";
     cfg.initState.mode = "file";
     cfg.initState.thermalAmbientTemperature = 0.0f;
     cfg.initState.thermalSpecificHeat = 1.0f;
@@ -139,6 +144,7 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_005_LongRunStability)
     ScenarioConfig cfg;
     cfg.inputPath = inputPath_;
     cfg.particleCount = 2u;
+    cfg.solver = "octree_cpu";
     cfg.initState.mode = "file";
     cfg.initState.thermalAmbientTemperature = 0.0f;
     cfg.initState.thermalSpecificHeat = 1.0f;
