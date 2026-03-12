@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+from pathlib import Path
+
+from tests.checks.suites.policy.test_repo_policy import _run, _write
+
+
+def test_repo_policy_rejects_function_definition_in_header(tmp_path: Path) -> None:
+    _write(
+        tmp_path / "runtime" / "include" / "protocol" / "bad.hpp",
+        "class Bad {\n"
+        "    public:\n"
+        "        int value() {\n"
+        "            return 1;\n"
+        "        }\n"
+        "};\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("function definitions in headers are forbidden" in error for error in errors)
+
+
+def test_repo_policy_accepts_declaration_only_header(tmp_path: Path) -> None:
+    _write(
+        tmp_path / "runtime" / "include" / "protocol" / "good.hpp",
+        "class Good {\n"
+        "    public:\n"
+        "        int value() const;\n"
+        "};\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok
+    assert not errors
+
+
+def test_repo_policy_accepts_header_declaration_with_default_braced_arg(tmp_path: Path) -> None:
+    _write(
+        tmp_path / "runtime" / "include" / "protocol" / "good_default.hpp",
+        "#include <functional>\n"
+        "class GoodDefault {\n"
+        "    public:\n"
+        "        bool run(const std::function<void()> &callback = {});\n"
+        "};\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok
+    assert not errors
