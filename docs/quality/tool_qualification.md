@@ -10,11 +10,11 @@ This document defines minimum confidence controls for development and CI tools.
 
 | Tool | Role | Confidence Strategy |
 |---|---|---|
-| `cmake` + compiler toolchain | Build generation and compilation | pinned versions in CI lanes, strict warning policy, `GRAVITY_PROFILE=prod` in evidence lanes |
+| `cmake` + compiler toolchain | Build generation and compilation | pinned runner images in CI lanes (`ubuntu-24.04`, `windows-2022`), strict warning policy, `GRAVITY_PROFILE=prod` in evidence lanes |
 | `ctest` + `gtest` | test execution | deterministic fast subset in `pr-fast`, broader deterministic scope in `nightly-full`, release packaging validation in `release-lane` |
 | `clang-tidy` | static analyzer | analyzer checks with warnings-as-errors in strict PR lane |
 | Python checks (`tests/checks/check.py`, `tests/checks/run.py`, `tests/checks/catalog.json`) | policy and contract guards | syntax check + mandatory execution in PR and nightly |
-| GitHub Actions runners | orchestration | split merge gate, extended nightly evidence lanes, release packaging lane, and optional hardware lanes |
+| GitHub Actions runners | orchestration | split merge gate, extended nightly evidence lanes, release packaging lane, optional hardware lanes, and explicit axis labels in hosted job names |
 | release packaging scripts | artifact assembly | reproducible scripts + review of output manifest |
 
 ## Qualification Evidence
@@ -35,6 +35,7 @@ This document defines minimum confidence controls for development and CI tools.
 ## Toolchain Review Checklist
 
 - Review compiler, CMake, Python, `clang-tidy`, and runner OS version changes from the generated manifest.
+- Confirm hosted evidence lanes still pin `ubuntu-24.04` or `windows-2022`, Python `3.12`, and CUDA `12.4.1` where the release lane requires it.
 - Confirm the affected CI lane still matches `docs/quality/prod_baseline.md`.
 - Confirm release bundle and release review artifacts still carry `tool_manifest.json` with CI run references.
 - Treat any tool change that can alter diagnostics, ABI, generated files, or analyzer behavior as standards-impacting.

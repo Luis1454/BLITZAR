@@ -6,15 +6,16 @@ This artifact defines the evidence-grade baseline for qualification-oriented `pr
 
 | Lane | Runner / OS | Toolchain assumptions | Required flags | Evidence status |
 |---|---|---|---|---|
-| `pr-fast` quality gate | `ubuntu-latest` | hosted compiler toolchain, `cmake`, `ninja`, `clang-tidy`, Python tooling (`pytest`, `ruff`, `mypy`) | `-DGRAVITY_PROFILE=prod`, `-DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON`, `-DGRAVITY_INTEGRATION_ENABLE_SANITIZERS=ON`, `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON` | primary deterministic merge evidence |
-| `nightly-full` standalone and coverage lanes | `windows-latest` plus `ubuntu-latest` | hosted MSVC and Linux compiler toolchains, `cmake`, `ninja`, Python tooling, coverage tooling on Linux | `-DGRAVITY_PROFILE=prod`, `-DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON`, plus coverage or repeat-run flags as lane-specific extensions | extended deterministic evidence; not the merge gate |
-| `release-lane` package flow | `windows-latest` | MSVC x64 via `ilammy/msvc-dev-cmd`, `cmake`, `ninja`, Python tooling, CUDA Toolkit `12.4.1` | `-DGRAVITY_PROFILE=prod`, `-DGRAVITY_STRICT_WARNINGS=ON` | release candidate evidence and packaging baseline |
+| `pr-fast` quality gate | `ubuntu-24.04` | hosted GNU toolchain plus `clang-tidy`, `cmake`, `ninja`, Python `3.12` tooling (`pytest`, `ruff`, `mypy`) | `-DGRAVITY_PROFILE=prod`, `-DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON`, `-DGRAVITY_INTEGRATION_ENABLE_SANITIZERS=ON`, `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON` | primary deterministic merge evidence |
+| `nightly-full` standalone and coverage lanes | `windows-2022` plus `ubuntu-24.04` | hosted MSVC 2022 x64 and Ubuntu 24.04 GNU toolchains, `cmake`, `ninja`, Python `3.12`, coverage tooling on Linux | `-DGRAVITY_PROFILE=prod`, `-DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON`, plus coverage or repeat-run flags as lane-specific extensions | extended deterministic evidence; not the merge gate |
+| `release-lane` package flow | `windows-2022` | MSVC 2022 x64 via `ilammy/msvc-dev-cmd`, `cmake`, `ninja`, Python `3.12`, CUDA Toolkit `12.4.1` | `-DGRAVITY_PROFILE=prod`, `-DGRAVITY_STRICT_WARNINGS=ON` | release candidate evidence and packaging baseline |
 | `release-gpu-full-tests` | self-hosted `windows/x64/cuda` | MSVC x64, `cmake`, `ninja`, Python tooling, NVIDIA runtime plus `nvcc` | `-DGRAVITY_PROFILE=prod`, `-DGRAVITY_STRICT_WARNINGS=ON` | supplemental evidence only; never sole baseline |
 
 ## Environment Rules
 
 - `prod` evidence requires the exact CI lane constraints above or a local reproduction that matches them explicitly.
 - Hosted lane assumptions are defined by workflow files and must remain reviewable under source control.
+- Hosted merge and nightly lanes must keep explicit axis labels in job names so failures map directly to runner OS and toolchain family.
 - `pr-fast` dev module builds are intentionally `dev` profile exploratory checks and are excluded from qualification evidence.
 - Optional hardware lanes can extend evidence breadth, but merge/release qualification cannot depend on them alone.
 - `dev` profile runs, ad hoc local builds, and exploratory module builds are non-evidence until reproduced under the `prod` baseline.
