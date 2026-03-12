@@ -168,6 +168,22 @@ bool coerceConfigSolverIntegratorCompatibility(std::string &solver, std::string 
     return false;
 }
 
+void logEffectiveExecutionModes(
+    std::string_view solver,
+    std::string_view integrator,
+    float theta,
+    float softening,
+    bool sphEnabled)
+{
+    std::cout << "[backend] active solver=" << solver
+              << " integrator=" << integrator;
+    if (solver == grav_modes::kSolverOctreeCpu || solver == grav_modes::kSolverOctreeGpu) {
+        std::cout << " theta=" << theta
+                  << " softening=" << softening;
+    }
+    std::cout << " sph=" << (sphEnabled ? "on" : "off") << "\n";
+}
+
 std::string defaultExportPath(const std::string &directory, const std::string &format, std::uint64_t step)
 {
     const auto now = std::chrono::system_clock::now();
@@ -1484,6 +1500,7 @@ void SimulationBackend::rebuildSystem()
         initConfig.thermalHeatingCoeff,
         initConfig.thermalRadiationCoeff
     );
+    logEffectiveExecutionModes(effectiveSolver, integrator, theta, softening, sphEnabled);
     if (initConfig.thermalHeatingCoeff > 0.0f || initConfig.thermalRadiationCoeff > 0.0f) {
         std::cout << "[backend] warning: thermal model active (heating="
                   << initConfig.thermalHeatingCoeff

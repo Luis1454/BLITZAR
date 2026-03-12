@@ -430,15 +430,6 @@ float ParticleSystem::applyThermalModel(float deltaTime)
 
 void ParticleSystem::setSolverMode(SolverMode mode)
 {
-    if (_solverMode != mode) {
-        if (mode == SolverMode::OctreeCpu) {
-            fprintf(stdout, "[solver] using octree_cpu (theta=%f, softening=%f)\n", _octreeTheta, _octreeSoftening);
-        } else if (mode == SolverMode::OctreeGpu) {
-            fprintf(stdout, "[solver] using octree_gpu (theta=%f, softening=%f)\n", _octreeTheta, _octreeSoftening);
-        } else {
-            fprintf(stdout, "[solver] using pairwise_cuda\n");
-        }
-    }
     _solverMode = mode;
 }
 
@@ -449,9 +440,6 @@ ParticleSystem::SolverMode ParticleSystem::getSolverMode() const
 
 void ParticleSystem::setIntegratorMode(IntegratorMode mode)
 {
-    if (_integratorMode != mode) {
-        fprintf(stdout, "[integrator] mode=%s\n", mode == IntegratorMode::Rk4 ? "rk4" : "euler");
-    }
     _integratorMode = mode;
 }
 
