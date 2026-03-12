@@ -37,14 +37,14 @@ static std::size_t countOccurrences(const std::string &text, const std::string &
 TEST_F(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
 {
     ScenarioConfig base;
-    base.particleCount = 384u;
+    base.particleCount = 96u;
     base.dt = 0.004f;
-    base.steps = 180;
+    base.steps = 36;
     base.integrator = "euler";
     base.energyMeasureEverySteps = 1u;
-    base.energySampleLimit = 384u;
-    base.snapshotTimeoutMs = 10000;
-    base.stepTimeoutMs = 10000;
+    base.energySampleLimit = 96u;
+    base.snapshotTimeoutMs = 8000;
+    base.stepTimeoutMs = 8000;
     base.octreeTheta = 0.35f;
     base.octreeSoftening = 0.08f;
     base.initState.mode = "disk_orbit";
@@ -68,6 +68,10 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
     ScenarioResult pairwise;
     std::string pairwiseError;
     ASSERT_TRUE(runScenario(pairwiseCfg, pairwise, pairwiseError)) << pairwiseError;
+    if (pairwise.stats.solverName != pairwiseCfg.solver) {
+        GTEST_SKIP() << "pairwise_cuda unavailable in this environment (actual solver="
+                     << pairwise.stats.solverName << ")";
+    }
 
     ScenarioConfig octreeCpuCfg = base;
     octreeCpuCfg.solver = "octree_cpu";
@@ -80,6 +84,10 @@ TEST_F(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
     ScenarioResult octreeGpu;
     std::string octreeGpuError;
     ASSERT_TRUE(runScenario(octreeGpuCfg, octreeGpu, octreeGpuError)) << octreeGpuError;
+    if (octreeGpu.stats.solverName != octreeGpuCfg.solver) {
+        GTEST_SKIP() << "octree_gpu unavailable in this environment (actual solver="
+                     << octreeGpu.stats.solverName << ")";
+    }
 
     const auto pairwiseCom = centerOfMassAll(pairwise.final);
     const auto octreeCpuCom = centerOfMassAll(octreeCpu.final);

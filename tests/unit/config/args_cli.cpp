@@ -1,4 +1,4 @@
-﻿#include "config/SimulationArgs.hpp"
+#include "config/SimulationArgs.hpp"
 #include "config/SimulationConfig.hpp"
 #include "protocol/BackendProtocol.hpp"
 
@@ -26,15 +26,13 @@ std::vector<std::string_view> toArgViews(const std::vector<std::string> &storage
 TEST(ConfigArgsTest, TST_UNT_CONF_001_FindsConfigPathInline)
 {
     std::vector<std::string> args = {"app", "--config=custom.ini"};
-    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
-    EXPECT_EQ(findConfigPathArg(argViews), "custom.ini");
+    EXPECT_EQ(findConfigPathArg(grav_test_config_args_cli::toArgViews(args)), "custom.ini");
 }
 
 TEST(ConfigArgsTest, TST_UNT_CONF_002_FindsConfigPathSeparated)
 {
     std::vector<std::string> args = {"app", "--config", "custom.ini"};
-    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
-    EXPECT_EQ(findConfigPathArg(argViews), "custom.ini");
+    EXPECT_EQ(findConfigPathArg(grav_test_config_args_cli::toArgViews(args)), "custom.ini");
 }
 
 TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
@@ -42,29 +40,14 @@ TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
     SimulationConfig config = SimulationConfig::defaults();
     RuntimeArgs runtime;
     std::stringstream warnings;
-
-    std::vector<std::string> args = {
-        "app",
-        "--particle-count", "2048",
-        "--dt=0.02",
-        "--solver", "octree_gpu",
-        "--integrator", "rk4",
-        "--sph", "true",
-        "--target-steps", "333",
-        "--export-on-exit=false",
-        "--ui-fps", "75",
-        "--energy-every", "2",
-        "--backend-command-timeout-ms", "90",
-        "--backend-status-timeout-ms", "35",
-        "--backend-snapshot-timeout-ms", "180"
-    };
-    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
-    applyArgsToConfig(argViews, config, runtime, warnings);
-
+    std::vector<std::string> args = {"app", "--particle-count", "2048", "--dt=0.02", "--solver", "octree_gpu", "--integrator", "euler",
+        "--sph", "true", "--target-steps", "333", "--export-on-exit=false", "--ui-fps", "75", "--energy-every", "2",
+        "--backend-command-timeout-ms", "90", "--backend-status-timeout-ms", "35", "--backend-snapshot-timeout-ms", "180"};
+    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.particleCount, 2048u);
     EXPECT_FLOAT_EQ(config.dt, 0.02f);
     EXPECT_EQ(config.solver, "octree_gpu");
-    EXPECT_EQ(config.integrator, "rk4");
+    EXPECT_EQ(config.integrator, "euler");
     EXPECT_TRUE(config.sphEnabled);
     EXPECT_EQ(config.uiFpsLimit, 75u);
     EXPECT_EQ(config.energyMeasureEverySteps, 2u);
@@ -81,25 +64,14 @@ TEST(ConfigArgsTest, TST_UNT_CONF_004_RejectsInvalidArgumentsAndKeepsPreviousVal
     SimulationConfig config = SimulationConfig::defaults();
     RuntimeArgs runtime;
     std::stringstream warnings;
-
     const std::uint32_t initialParticleCount = config.particleCount;
     const float initialDt = config.dt;
     const bool initialSphEnabled = config.sphEnabled;
-
-    std::vector<std::string> args = {
-        "app",
-        "--particle-count", "nope",
-        "--dt", "-1",
-        "--sph", "maybe",
-        "--unknown", "value"
-    };
-    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
-    applyArgsToConfig(argViews, config, runtime, warnings);
-
+    std::vector<std::string> args = {"app", "--particle-count", "nope", "--dt", "-1", "--sph", "maybe", "--unknown", "value"};
+    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.particleCount, initialParticleCount);
     EXPECT_FLOAT_EQ(config.dt, initialDt);
     EXPECT_EQ(config.sphEnabled, initialSphEnabled);
-
     const std::string log = warnings.str();
     EXPECT_NE(log.find("invalid --particle-count"), std::string::npos);
     EXPECT_NE(log.find("invalid --dt"), std::string::npos);
@@ -112,24 +84,26 @@ TEST(ConfigArgsTest, TST_UNT_CONF_005_RejectsInvalidSolverAndIntegratorValues)
     SimulationConfig config = SimulationConfig::defaults();
     RuntimeArgs runtime;
     std::stringstream warnings;
-
     const std::string initialSolver = config.solver;
     const std::string initialIntegrator = config.integrator;
-
-    std::vector<std::string> args = {
-        "app",
-        "--solver", "bad_solver",
-        "--integrator", "bad_integrator"
-    };
-    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
-    applyArgsToConfig(argViews, config, runtime, warnings);
-
+    std::vector<std::string> args = {"app", "--solver", "bad_solver", "--integrator", "bad_integrator"};
+    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.solver, initialSolver);
     EXPECT_EQ(config.integrator, initialIntegrator);
     EXPECT_TRUE(runtime.hasArgumentError);
     const std::string log = warnings.str();
     EXPECT_NE(log.find("invalid --solver"), std::string::npos);
     EXPECT_NE(log.find("invalid --integrator"), std::string::npos);
+
+    runtime = RuntimeArgs{};
+    warnings.str("");
+    warnings.clear();
+    args = {"app", "--solver", "octree_gpu", "--integrator", "rk4"};
+    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(config.solver, initialSolver);
+    EXPECT_EQ(config.integrator, initialIntegrator);
+    EXPECT_TRUE(runtime.hasArgumentError);
+    EXPECT_NE(warnings.str().find("unsupported solver/integrator combination"), std::string::npos);
 }
 
 TEST(ConfigArgsTest, TST_UNT_CONF_006_RejectsTrailingGarbageNumericArguments)
@@ -137,27 +111,16 @@ TEST(ConfigArgsTest, TST_UNT_CONF_006_RejectsTrailingGarbageNumericArguments)
     SimulationConfig config = SimulationConfig::defaults();
     RuntimeArgs runtime;
     std::stringstream warnings;
-
     const std::uint32_t initialParticleCount = config.particleCount;
     const float initialDt = config.dt;
     const float initialTheta = config.octreeTheta;
     const int initialLuminosity = config.defaultLuminosity;
-
-    std::vector<std::string> args = {
-        "app",
-        "--particle-count", "2048abc",
-        "--dt", "0.01x",
-        "--octree-theta", "1.4deg",
-        "--luminosity", "120%"
-    };
-    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
-    applyArgsToConfig(argViews, config, runtime, warnings);
-
+    std::vector<std::string> args = {"app", "--particle-count", "2048abc", "--dt", "0.01x", "--octree-theta", "1.4deg", "--luminosity", "120%"};
+    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.particleCount, initialParticleCount);
     EXPECT_FLOAT_EQ(config.dt, initialDt);
     EXPECT_FLOAT_EQ(config.octreeTheta, initialTheta);
     EXPECT_EQ(config.defaultLuminosity, initialLuminosity);
-
     const std::string log = warnings.str();
     EXPECT_NE(log.find("invalid --particle-count"), std::string::npos);
     EXPECT_NE(log.find("invalid --dt"), std::string::npos);
@@ -170,11 +133,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_014_ClampsFrontendParticleCapArgumentToProtoco
     SimulationConfig config = SimulationConfig::defaults();
     RuntimeArgs runtime;
     std::stringstream warnings;
-
     std::vector<std::string> args = {"app", "--frontend-particle-cap", "50000"};
-    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
-    applyArgsToConfig(argViews, config, runtime, warnings);
-
+    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.frontendParticleCap, grav_protocol::kSnapshotMaxPoints);
     EXPECT_NE(warnings.str().find("--frontend-particle-cap clamped"), std::string::npos);
     EXPECT_FALSE(runtime.hasArgumentError);
@@ -185,14 +145,10 @@ TEST(ConfigArgsTest, TST_UNT_CONF_019_CliAliasesApplyThroughSharedRegistry)
     SimulationConfig config = SimulationConfig::defaults();
     RuntimeArgs runtime;
     std::stringstream warnings;
-
     std::vector<std::string> args = {"app", "--structure", "random_cloud", "--size", "24"};
-    const std::vector<std::string_view> argViews = grav_test_config_args_cli::toArgViews(args);
-    applyArgsToConfig(argViews, config, runtime, warnings);
-
+    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.presetStructure, "random_cloud");
     EXPECT_FLOAT_EQ(config.presetSize, 24.0f);
     EXPECT_TRUE(warnings.str().empty());
     EXPECT_FALSE(runtime.hasArgumentError);
 }
-
