@@ -6,6 +6,7 @@ from pathlib import Path
 
 from python_tools.core.base_check import BaseCheck
 from python_tools.core.models import CheckContext, CheckResult
+from python_tools.policies.header_definition_policy import find_header_function_definition_lines
 
 FORBIDDEN_CPP_EXTS = {".h", ".hh", ".hxx", ".c", ".cc", ".cxx"}
 LINE_COUNT_EXTS = {
