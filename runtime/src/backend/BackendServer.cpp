@@ -357,6 +357,11 @@ std::string BackendServer::processRequest(const std::string &request)
             if (!grav_modes::normalizeSolver(value, canonical)) {
                 return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "invalid solver value");
             }
+            if (!grav_modes::isSupportedSolverIntegratorPair(canonical, _backend.getStats().integratorName)) {
+                return grav_protocol::BackendJsonCodec::makeErrorResponse(
+                    cmd,
+                    "unsupported solver/integrator combination: octree_gpu requires euler");
+            }
             _backend.setSolverMode(canonical);
             return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
@@ -368,6 +373,11 @@ std::string BackendServer::processRequest(const std::string &request)
             std::string canonical;
             if (!grav_modes::normalizeIntegrator(value, canonical)) {
                 return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "invalid integrator value");
+            }
+            if (!grav_modes::isSupportedSolverIntegratorPair(_backend.getStats().solverName, canonical)) {
+                return grav_protocol::BackendJsonCodec::makeErrorResponse(
+                    cmd,
+                    "unsupported solver/integrator combination: octree_gpu requires euler");
             }
             _backend.setIntegratorMode(canonical);
             return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
