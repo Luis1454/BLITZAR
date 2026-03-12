@@ -6,8 +6,6 @@ from pathlib import Path
 
 from python_tools.core.base_check import BaseCheck
 from python_tools.core.models import CheckContext, CheckResult
-from python_tools.policies.header_definition_policy import find_header_function_definition_lines
-from python_tools.policies.repo_policy_power_of_10 import check_power_of_10_content
 
 FORBIDDEN_CPP_EXTS = {".h", ".hh", ".hxx", ".c", ".cc", ".cxx"}
 LINE_COUNT_EXTS = {
@@ -30,6 +28,18 @@ GRAVITY_INTERNAL_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+gravity_interna
 PROD_ROOTS = ("apps/", "engine/", "runtime/", "modules/")
 EVIDENCE_WORKFLOW_PATHS = (".github/workflows/pr-fast-quality-gate.yml", ".github/workflows/nightly-full.yml", ".github/workflows/release-lane.yml")
 LEGACY_CTEST_SELECTORS = ("ConfigArgsTest", "BackendProtocolTest", "FrontendBridgeTest", "FrontendRuntimeTest", "QtMainWindowTest")
+GOTO_RE = re.compile(r"\bgoto\b")
+SETJMP_LONGJMP_RE = re.compile(r"\b(?:setjmp|longjmp)\b")
+DO_WHILE_RE = re.compile(r"\bdo\b\s*\{", re.DOTALL)
+WHILE_TRUE_RE = re.compile(r"\bwhile\s*\(\s*true\s*\)")
+OBJECT_LIKE_DEFINE_RE = re.compile(r"(?m)^\s*#define\s+([A-Z][A-Z0-9_]+)\b(?!\s*\()")
+HEADER_GUARD_RE = re.compile(r"(?m)^\s*#ifndef\s+([A-Z][A-Z0-9_]+)\s*$")
+FUNCTION_POINTER_TYPEDEF_RE = re.compile(r"(?m)^\s*(?:typedef|using)\b[^\n;]*\(\s*\*\s*[A-Za-z0-9_]*\s*\)")
+ALLOWED_POWER_OF_10_MACROS = {"GRAVITY_HD", "GRAVITY_FRONTEND_MODULE_EXPORT", "NOMINMAX"}
+FUNCTION_POINTER_ABI_PATHS = {"runtime/include/frontend/FrontendModuleApi.hpp"}
+QT_REFERENCE_NEW_RE = re.compile(
+    r"(?m)^\s*(?:auto|Q[A-Za-z0-9_<>:]+)\s*&\s*[A-Za-z0-9_]+\s*=\s*\*new\s+Q[A-Za-z0-9_<>:]+\s*\("
+)
 
 
 def should_skip_dir(dirname: str) -> bool:
@@ -123,8 +133,10 @@ class RepoPolicyCheck(BaseCheck):
         if is_prod_path(rel) and len(NAMESPACE_BLOCK_RE.findall(content)) > 1:
             result.add_error(f"{rel}: nested namespace blocks are forbidden in production paths")
         if is_prod_path(rel):
-            for error in check_power_of_10_content(rel, content):
+            for error in _check_power_of_10_content(rel, content):
                 result.add_error(error)
+        if rel.startswith("modules/qt/") and QT_REFERENCE_NEW_RE.search(content):
+            result.add_error(f"{rel}: Qt '*new + reference' ownership pattern is forbidden")
 
     def _check_line_count(
         self,
@@ -193,3 +205,23 @@ class RepoPolicyCheck(BaseCheck):
             for command in self._collect_marker_commands(content, "ctest "):
                 if any(selector in command for selector in LEGACY_CTEST_SELECTORS):
                     result.add_error(f"{rel}: CI ctest selector must use normalized TST_* ids: {command}")
+
+
+def _check_power_of_10_content(rel: str, content: str) -> list[str]:
+    errors: list[str] = []
+    if GOTO_RE.search(content):
+        errors.append(f"{rel}: Power of 10 rule 1 forbids goto in production paths")
+    if SETJMP_LONGJMP_RE.search(content):
+        errors.append(f"{rel}: Power of 10 rule 1 forbids setjmp/longjmp in production paths")
+    if DO_WHILE_RE.search(content):
+        errors.append(f"{rel}: Power of 10 rule 1 forbids do-while in production paths")
+    if WHILE_TRUE_RE.search(content):
+        errors.append(f"{rel}: Power of 10 rule 2 forbids open-ended while(true) loops in production paths")
+    header_guards = set(HEADER_GUARD_RE.findall(content))
+    for macro_name in OBJECT_LIKE_DEFINE_RE.findall(content):
+        if macro_name in header_guards or macro_name in ALLOWED_POWER_OF_10_MACROS:
+            continue
+        errors.append(f"{rel}: Power of 10 rule 8 forbids non-structural object-like macros in production paths ({macro_name})")
+    if rel not in FUNCTION_POINTER_ABI_PATHS and FUNCTION_POINTER_TYPEDEF_RE.search(content):
+        errors.append(f"{rel}: Power of 10 rule 9 forbids function pointer typedefs outside explicit ABI boundaries")
+    return errors

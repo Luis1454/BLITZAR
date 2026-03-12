@@ -5,13 +5,9 @@ import re
 from pathlib import Path
 
 from python_tools.core.base_check import BaseCheck
-from python_tools.core.io import REQ_ID_RE, TEST_MACRO_RE, collect_test_ids
-from python_tools.core.models import CheckContext, CheckResult
-from python_tools.core.typing_ext import JsonValue
-from python_tools.policies.evidence_registry import resolve_evidence_ref
-from python_tools.policies.quality_manifest import QUALITY_MANIFEST_PATH, REQUIREMENTS_KEY, QualityManifestLoader
-from python_tools.policies.test_catalog_rows import build_catalog_rows, manifest_rows
-from python_tools.policies.test_id_filter import collect_repo_quality_test_ids
+from python_tools.core.io import REQ_ID_RE, TEST_MACRO_RE, collect_filtered_test_ids, collect_test_ids
+from python_tools.core.models import CheckContext, CheckResult, JsonValue
+from python_tools.policies.quality_manifest import QUALITY_MANIFEST_PATH, REQUIREMENTS_KEY, QualityManifestLoader, resolve_evidence_ref
 
 TEST_CODE_RE = re.compile(r"^TST-[A-Z]{3}-[A-Z0-9]{2,8}-[0-9]{3}$")
 TEST_GROUPS_KEY = "test_groups"
@@ -35,23 +31,71 @@ class TestCatalogCheck(BaseCheck):
             else collect_repo_quality_test_ids(context.root, manifest, result)
         )
         known_tests = collect_test_ids(context.root, extra_ids, TEST_MACRO_RE)
-        known_req_ids = self._load_requirement_ids(manifest, result)
+        requirements = self._load_requirements(manifest, known_tests, result)
+        known_req_ids = set(requirements)
         rows = self._load_catalog_rows(manifest, result)
         if not rows:
             result.add_error(f"{QUALITY_MANIFEST_PATH}: '{TEST_GROUPS_KEY}' must contain at least one row")
         self._check_rows(rows, context.root, known_tests, known_req_ids, result)
 
     def _load_catalog_rows(self, manifest: dict[str, JsonValue], result: CheckResult) -> list[dict[str, JsonValue]]:
-        return build_catalog_rows(self._manifest, manifest, result, TEST_GROUPS_KEY)
+        groups = manifest.get(TEST_GROUPS_KEY)
+        if not isinstance(groups, dict):
+            result.add_error(f"{QUALITY_MANIFEST_PATH}: '{TEST_GROUPS_KEY}' must be an object")
+            return []
+        rows: list[dict[str, JsonValue]] = []
+        for source, group_value in groups.items():
+            source_ref = source.strip() if isinstance(source, str) else ""
+            if not isinstance(group_value, dict):
+                result.add_error(f"{QUALITY_MANIFEST_PATH}: grouped test source '{source_ref or '<missing>'}' must map to object")
+                continue
+            for test_code, item in group_value.items():
+                if not isinstance(item, dict):
+                    result.add_error(
+                        f"{QUALITY_MANIFEST_PATH}: grouped test item '{test_code}' for source '{source_ref or '<missing>'}' must be an object"
+                    )
+                    continue
+                rows.append(
+                    {
+                        "test_code": item.get("test_code", test_code.strip()),
+                        "test_id": item.get("id", ""),
+                        "req_ids": item.get("req_ids", []),
+                        "source": source_ref,
+                    }
+                )
+        return rows
 
-    def _load_requirement_ids(self, manifest: dict[str, JsonValue], result: CheckResult) -> set[str]:
-        rows = manifest_rows(self._manifest, manifest, REQUIREMENTS_KEY, result, keyed_field="id")
-        req_ids: set[str] = set()
+    def _load_requirements(
+        self,
+        manifest: dict[str, JsonValue],
+        known_tests: set[str],
+        result: CheckResult,
+    ) -> dict[str, list[str]]:
+        rows = self._manifest.get_list(manifest, REQUIREMENTS_KEY, result, keyed_field="id")
+        parsed: dict[str, list[str]] = {}
         for row in rows:
             req_id = self._as_string(row.get("id"))
-            if REQ_ID_RE.match(req_id):
-                req_ids.add(req_id)
-        return req_ids
+            if not REQ_ID_RE.match(req_id):
+                result.add_error(f"invalid requirement id format: {req_id}")
+                continue
+            if req_id in parsed:
+                result.add_error(f"duplicate requirement id: {req_id}")
+                continue
+            tests = self._as_string_list(row.get("tests"))
+            if not tests:
+                result.add_error(f"{req_id}: missing tests list")
+                parsed[req_id] = []
+                continue
+            parsed[req_id] = tests
+            for pattern in tests:
+                try:
+                    regex = re.compile(pattern)
+                except re.error as exc:
+                    result.add_error(f"{req_id}: invalid test regex '{pattern}': {exc}")
+                    continue
+                if not any(regex.search(test_id) for test_id in known_tests):
+                    result.add_error(f"{req_id}: test regex did not match any test id: {pattern}")
+        return parsed
 
     def _check_rows(
         self,
@@ -135,9 +179,47 @@ class TestCatalogCheck(BaseCheck):
         return value.strip() if isinstance(value, str) else ""
 
     @staticmethod
+    def _as_string_list(value: JsonValue | None) -> list[str]:
+        if not isinstance(value, list):
+            return []
+        return [item.strip() for item in value if isinstance(item, str) and item.strip()]
+
+    @staticmethod
     def _to_req_ids(value: JsonValue | None) -> list[str]:
         if isinstance(value, list):
             return [item.strip() for item in value if isinstance(item, str) and item.strip()]
         if isinstance(value, str):
             return [token.strip() for token in value.split(";") if token.strip()]
         return []
+
+
+def collect_repo_quality_test_ids(root: Path, manifest: dict[str, JsonValue], result: CheckResult) -> set[str]:
+    policies = manifest.get("policies")
+    if not isinstance(policies, dict):
+        return set()
+    test_ids = policies.get("test_ids")
+    if not isinstance(test_ids, dict):
+        return set()
+    repo_quality = test_ids.get("repo_quality")
+    if not isinstance(repo_quality, dict):
+        return set()
+    regex_pattern = repo_quality.get("regex")
+    files = repo_quality.get("files")
+    if not isinstance(regex_pattern, str) or not regex_pattern.strip():
+        result.add_error(f"{QUALITY_MANIFEST_PATH}: policies.test_ids.repo_quality.regex must be a non-empty string")
+        return set()
+    if not isinstance(files, list):
+        result.add_error(f"{QUALITY_MANIFEST_PATH}: policies.test_ids.repo_quality.files must be a list")
+        return set()
+    normalized_files: list[str] = []
+    for item in files:
+        if not isinstance(item, str) or not item.strip():
+            result.add_error(f"{QUALITY_MANIFEST_PATH}: policies.test_ids.repo_quality.files entries must be non-empty strings")
+            continue
+        normalized_files.append(item.strip())
+    try:
+        compiled = re.compile(regex_pattern.strip())
+    except re.error as exc:
+        result.add_error(f"{QUALITY_MANIFEST_PATH}: invalid policies.test_ids.repo_quality.regex '{regex_pattern}': {exc}")
+        return set()
+    return collect_filtered_test_ids(root, compiled, tuple(normalized_files))

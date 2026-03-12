@@ -3,8 +3,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any, Protocol
 
-from .typing_ext import OptionsMap
+JsonValue = None | bool | int | float | str | list["JsonValue"] | dict[str, "JsonValue"]
+OptionsMap = dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -24,6 +26,11 @@ class CheckContext:
     body: str = ""
     clang_tidy_binary: str = "clang-tidy"
     clang_tidy_checks: str = "-*,clang-analyzer-*,bugprone-unused-return-value"
+    clang_tidy_jobs: int = 0
+    clang_tidy_log_dir: Path | None = None
+    clang_tidy_diff_base: str = ""
+    clang_tidy_diff_target: str = ""
+    clang_tidy_header_filter: str = ""
     paths: tuple[str, ...] = ()
     options: OptionsMap = field(default_factory=dict)
 
@@ -46,3 +53,16 @@ class CheckResult:
 
     def add_warning(self, message: str) -> None:
         self.warnings.append(message)
+
+
+class CheckContract(Protocol):
+    def run(self, context: CheckContext) -> CheckResult:
+        ...
+
+
+class CheckExecutionError(RuntimeError):
+    pass
+
+
+class ConfigurationError(CheckExecutionError):
+    pass

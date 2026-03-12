@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from re import Pattern
 
-from .typing_ext import JsonValue
+from .models import JsonValue
 
 REQ_ID_RE = re.compile(r"^REQ-[A-Z]+-[0-9]{3}$")
 TEST_MACRO_RE = re.compile(r"TEST(?:_F)?\(\s*([A-Za-z0-9_]+)\s*,\s*([A-Za-z0-9_]+)\s*\)")
