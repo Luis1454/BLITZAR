@@ -29,6 +29,9 @@ def _seed_repo(root: Path) -> None:
         {
             "evidence": {
                 "EVD_CI_RELEASE_LANE": ".github/workflows/release-lane.yml",
+                "EVD_CI_SECURITY_CODEQL": ".github/workflows/security-codeql.yml",
+                "EVD_CI_DEPENDENCY_REVIEW": ".github/workflows/dependency-review.yml",
+                "EVD_GITHUB_DEPENDABOT": ".github/dependabot.yml",
                 "EVD_QLT_DEVIATION_REGISTER": "docs/quality/manifest/deviations.json",
                 "EVD_QLT_EVIDENCE_PACK_FORMAT": "docs/quality/evidence_pack.md",
                 "EVD_QLT_MANIFEST": "docs/quality/quality_manifest.json",
@@ -39,6 +42,7 @@ def _seed_repo(root: Path) -> None:
                 "EVD_SCRIPT_RELEASE_PACKAGE_BUNDLE": "scripts/ci/release/package_bundle.py",
                 "EVD_SCRIPT_RELEASE_PACKAGE_EVIDENCE": "scripts/ci/release/package_evidence.py",
                 "EVD_SCRIPT_RELEASE_PACKAGE_INDEX": "scripts/ci/release/package_quality_index.py",
+                "EVD_SCRIPT_RELEASE_PACKAGE_SBOM": "scripts/ci/release/package_sbom.py",
                 "EVD_SAMPLE": "docs/quality/sample_requirement.md",
             }
         },
@@ -76,6 +80,9 @@ def _seed_repo(root: Path) -> None:
     )
     for rel in [
         ".github/workflows/release-lane.yml",
+        ".github/workflows/security-codeql.yml",
+        ".github/workflows/dependency-review.yml",
+        ".github/dependabot.yml",
         "docs/quality/README.md",
         "docs/quality/standards_profile.md",
         "docs/quality/evidence_pack.md",
@@ -85,6 +92,7 @@ def _seed_repo(root: Path) -> None:
         "scripts/ci/release/package_bundle.py",
         "scripts/ci/release/package_evidence.py",
         "scripts/ci/release/package_quality_index.py",
+        "scripts/ci/release/package_sbom.py",
     ]:
         _write_text(root / rel)
 
