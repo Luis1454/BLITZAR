@@ -44,7 +44,7 @@ class ClangTidyCheck(BaseCheck):
             result.success_message = "clang-tidy skipped (no matching changed files)"
             return
         self._run_tidy(files, context, result)
-        if result.ok:
+        if result.ok and not result.success_message:
             result.success_message = f"clang-tidy check passed ({len(files)} files)"
 
     def _load_files(self, context: CheckContext, result: CheckResult) -> list[Path]:

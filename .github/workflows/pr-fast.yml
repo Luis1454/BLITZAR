@@ -165,3 +165,6 @@ jobs:
 
   space-quality-gate:
     uses: ./.github/workflows/pr-fast-quality-gate.yml
+    with:
+      diff-base: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
+      diff-target: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || '' }}

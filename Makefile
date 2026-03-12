@@ -37,6 +37,9 @@ QUALITY_BUILD_DIR ?= build-quality
 QUALITY_BUILD_TYPE ?= RelWithDebInfo
 QUALITY_PROFILE ?= prod
 QUALITY_TIMEOUT ?= 180
+QUALITY_TIDY_JOBS ?= 0
+QUALITY_TIDY_DIFF_BASE ?=
+QUALITY_TIDY_DIFF_TARGET ?=
 # Fast, integration-safe subset: keep Python checks authoritative in the workflow (ruff/mypy/pytest),
 # and keep CTest focused on deterministic C++/integration tests.
 QUALITY_TEST_REGEX ?= TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7)_

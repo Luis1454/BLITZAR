@@ -2,6 +2,15 @@ name: pr-fast-quality-gate
 
 on:
   workflow_call:
+    inputs:
+      diff-base:
+        required: false
+        type: string
+        default: ""
+      diff-target:
+        required: false
+        type: string
+        default: ""
 
 jobs:
   space-quality-gate:
@@ -9,7 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - {name: Checkout, uses: actions/checkout@v4}
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - {name: Setup Python, uses: actions/setup-python@v5, with: {python-version: "3.x"}}
       - name: Install build and analysis tools
         run: |
@@ -28,7 +40,12 @@ jobs:
         run: make quality-configure QUALITY_BUILD_DIR=build-quality
       - {name: Build strict integration targets, run: make quality-build QUALITY_BUILD_DIR=build-quality}
       - name: Run clang-tidy analyzer checks
-        run: make quality-analyze QUALITY_BUILD_DIR=build-quality
+        run: >-
+          make quality-analyze
+          QUALITY_BUILD_DIR=build-quality
+          QUALITY_TIDY_JOBS=0
+          QUALITY_TIDY_DIFF_BASE=${{ inputs.diff-base }}
+          QUALITY_TIDY_DIFF_TARGET=${{ inputs.diff-target }}
       - name: Run integration tests under sanitizers
         run: make quality-test QUALITY_BUILD_DIR=build-quality
       - name: Upload tool qualification manifest
