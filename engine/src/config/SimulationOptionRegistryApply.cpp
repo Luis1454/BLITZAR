@@ -5,6 +5,12 @@
 
 namespace grav_config {
 
+template <typename ValueType>
+static ValueType &memberAt(SimulationConfig &config, std::ptrdiff_t offset)
+{
+    return *reinterpret_cast<ValueType *>(reinterpret_cast<char *>(&config) + offset);
+}
+
 static void emitInvalid(std::ostream &warnings, std::string_view source, std::string_view optionName, const std::string &value)
 {
     warnings << source << " invalid " << optionName << ": " << value << "\n";

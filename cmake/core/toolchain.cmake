@@ -43,6 +43,7 @@ set(GRAVITY_RUNTIME_PROTOCOL_SOURCES
     runtime/src/protocol/BackendJsonCodecParse.cpp
     runtime/src/protocol/BackendJsonCodecParseStatus.cpp
     runtime/src/protocol/BackendJsonCodecParseSnapshot.cpp
+    runtime/src/protocol/BackendJsonCodecReadNumber.cpp
     runtime/src/protocol/BackendClient.cpp
     runtime/src/protocol/BackendProtocol.cpp
 )

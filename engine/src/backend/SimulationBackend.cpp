@@ -157,15 +157,31 @@ bool shouldForceCudaFailureOnceForTesting(std::string_view solver)
     return injected.compare_exchange_strong(expected, true, std::memory_order_relaxed);
 }
 
-bool enforceSolverIntegratorCompatibility(std::string &solver, std::string &integrator, std::string_view source)
+bool coerceConfigSolverIntegratorCompatibility(std::string &solver, std::string &integrator, std::string_view source)
 {
-    if (solver == grav_modes::kSolverOctreeGpu && integrator == grav_modes::kIntegratorRk4) {
+    if (!grav_modes::isSupportedSolverIntegratorPair(solver, integrator)) {
         std::cerr << "[backend] " << source
-                  << ": integrator rk4 is not supported with solver octree_gpu, forcing euler\n";
+                  << ": solver octree_gpu requires integrator euler, using euler\n";
         integrator.assign(grav_modes::kIntegratorEuler);
         return true;
     }
     return false;
+}
+
+void logEffectiveExecutionModes(
+    std::string_view solver,
+    std::string_view integrator,
+    float theta,
+    float softening,
+    bool sphEnabled)
+{
+    std::cout << "[backend] active solver=" << solver
+              << " integrator=" << integrator;
+    if (solver == grav_modes::kSolverOctreeCpu || solver == grav_modes::kSolverOctreeGpu) {
+        std::cout << " theta=" << theta
+                  << " softening=" << softening;
+    }
+    std::cout << " sph=" << (sphEnabled ? "on" : "off") << "\n";
 }
 
 std::string defaultExportPath(const std::string &directory, const std::string &format, std::uint64_t step)
@@ -926,6 +942,7 @@ SimulationBackend::SimulationBackend(const std::string &configPath)
 {
     _configPath = configPath.empty() ? "simulation.ini" : configPath;
     const SimulationConfig loaded = SimulationConfig::loadOrCreate(_configPath);
+    const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(loaded, std::cerr);
     _runtimeConfigMirror = loaded;
 
     {
@@ -939,7 +956,7 @@ SimulationBackend::SimulationBackend(const std::string &configPath)
         _integratorMode = grav_modes::normalizeIntegrator(loaded.integrator, integratorCanonical)
             ? integratorCanonical
             : std::string(grav_modes::kIntegratorEuler);
-        enforceSolverIntegratorCompatibility(_solverMode, _integratorMode, "config");
+        coerceConfigSolverIntegratorCompatibility(_solverMode, _integratorMode, "config");
         _octreeTheta = loaded.octreeTheta;
         _octreeSoftening = loaded.octreeSoftening;
         _sphEnabled = loaded.sphEnabled;
@@ -949,10 +966,11 @@ SimulationBackend::SimulationBackend(const std::string &configPath)
         _sphViscosity = loaded.sphViscosity;
         _exportDirectory = loaded.exportDirectory;
         _exportFormatDefault = loaded.exportFormat;
-        _initialStatePath = loaded.inputFile;
-        _initialStateFormat = loaded.inputFormat;
-        _initialStateConfig = buildInitialStateConfig(loaded);
+        _initialStatePath = initPlan.inputFile;
+        _initialStateFormat = initPlan.inputFormat;
+        _initialStateConfig = initPlan.config;
     }
+    std::cout << "[backend] " << initPlan.summary << "\n";
     _dt.store(std::max(1e-6f, loaded.dt), std::memory_order_relaxed);
     _energyMeasureEverySteps.store(std::max<std::uint32_t>(1u, loaded.energyMeasureEverySteps), std::memory_order_relaxed);
     _energySampleLimit.store(std::max<std::uint32_t>(64u, loaded.energySampleLimit), std::memory_order_relaxed);
@@ -1062,14 +1080,14 @@ void SimulationBackend::setSolverMode(const std::string &mode)
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
         std::string nextSolver = canonical;
-        std::string nextIntegrator = _integratorMode;
-        enforceSolverIntegratorCompatibility(nextSolver, nextIntegrator, "set_solver");
-        if (_solverMode != nextSolver || _integratorMode != nextIntegrator) {
+        if (!grav_modes::isSupportedSolverIntegratorPair(nextSolver, _integratorMode)) {
+            std::cerr << "[backend] rejected solver octree_gpu because integrator rk4 is not supported with it\n";
+            return;
+        }
+        if (_solverMode != nextSolver) {
             _solverMode = nextSolver;
-            _integratorMode = nextIntegrator;
             changed = true;
             _runtimeConfigMirror.solver = _solverMode;
-            _runtimeConfigMirror.integrator = _integratorMode;
         }
     }
     if (changed && _running.load(std::memory_order_relaxed)) {
@@ -1087,14 +1105,14 @@ void SimulationBackend::setIntegratorMode(const std::string &mode)
     bool changed = false;
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
-        std::string nextSolver = _solverMode;
         std::string nextIntegrator = canonical;
-        enforceSolverIntegratorCompatibility(nextSolver, nextIntegrator, "set_integrator");
-        if (_solverMode != nextSolver || _integratorMode != nextIntegrator) {
-            _solverMode = nextSolver;
+        if (!grav_modes::isSupportedSolverIntegratorPair(_solverMode, nextIntegrator)) {
+            std::cerr << "[backend] rejected integrator rk4 because solver octree_gpu supports euler only\n";
+            return;
+        }
+        if (_integratorMode != nextIntegrator) {
             _integratorMode = nextIntegrator;
             changed = true;
-            _runtimeConfigMirror.solver = _solverMode;
             _runtimeConfigMirror.integrator = _integratorMode;
         }
     }
@@ -1389,12 +1407,12 @@ void SimulationBackend::rebuildSystem()
             integrator.assign(grav_modes::kIntegratorEuler);
             std::cerr << "[backend] invalid internal integrator mode detected, resetting to euler\n";
         }
-        enforceSolverIntegratorCompatibility(solver, integrator, "rebuild");
+        coerceConfigSolverIntegratorCompatibility(solver, integrator, "rebuild");
     }
 
     std::vector<Particle> importedParticles;
     const std::string initMode = toLower(initConfig.mode);
-    const bool shouldTryFile = !inputPath.empty() || initMode == "file";
+    const bool shouldTryFile = initMode == "file" && !inputPath.empty();
     const bool hasImportedState = shouldTryFile && loadInitialState(importedParticles, inputPath, inputFormat);
 
     std::vector<Particle> generatedParticles;
@@ -1407,6 +1425,13 @@ void SimulationBackend::rebuildSystem()
     const std::uint32_t targetParticleCount = hasInitialParticles
         ? static_cast<std::uint32_t>(std::max<std::size_t>(2u, initialParticles.size()))
         : configuredParticleCount;
+    std::cout << "[backend] init rebuild mode=" << initMode
+              << " active_source=" << (hasImportedState ? "file" : "generated");
+    if (shouldTryFile) {
+        std::cout << " input_file=" << inputPath
+                  << " input_format=" << (inputFormat.empty() ? "auto" : inputFormat);
+    }
+    std::cout << " particles=" << targetParticleCount << "\n";
 
     std::string effectiveSolver = solver;
     if (solverModeFromCanonicalName(solver) == ParticleSystem::SolverMode::PairwiseCuda
@@ -1421,7 +1446,7 @@ void SimulationBackend::rebuildSystem()
                       << " or GRAVITY_AUTO_SOLVER_FALLBACK=1\n";
         }
     }
-    enforceSolverIntegratorCompatibility(effectiveSolver, integrator, "rebuild");
+    coerceConfigSolverIntegratorCompatibility(effectiveSolver, integrator, "rebuild");
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
         _solverMode = effectiveSolver;
@@ -1475,6 +1500,7 @@ void SimulationBackend::rebuildSystem()
         initConfig.thermalHeatingCoeff,
         initConfig.thermalRadiationCoeff
     );
+    logEffectiveExecutionModes(effectiveSolver, integrator, theta, softening, sphEnabled);
     if (initConfig.thermalHeatingCoeff > 0.0f || initConfig.thermalRadiationCoeff > 0.0f) {
         std::cout << "[backend] warning: thermal model active (heating="
                   << initConfig.thermalHeatingCoeff

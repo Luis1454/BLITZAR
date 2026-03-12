@@ -13,7 +13,7 @@ This document defines minimum confidence controls for development and CI tools.
 | `cmake` + compiler toolchain | Build generation and compilation | pinned versions in CI lanes, strict warning policy, `GRAVITY_PROFILE=prod` in evidence lanes |
 | `ctest` + `gtest` | test execution | deterministic fast subset in `pr-fast`, broader deterministic scope in `nightly-full`, release packaging validation in `release-lane` |
 | `clang-tidy` | static analyzer | analyzer checks with warnings-as-errors in strict PR lane |
-| Python checks (`tests/checks/*.py`) | policy and contract guards | syntax check + mandatory execution in PR and nightly |
+| Python checks (`tests/checks/check.py`, `tests/checks/run.py`, `tests/checks/catalog.json`) | policy and contract guards | syntax check + mandatory execution in PR and nightly |
 | GitHub Actions runners | orchestration | split merge gate, extended nightly evidence lanes, release packaging lane, and optional hardware lanes |
 | release packaging scripts | artifact assembly | reproducible scripts + review of output manifest |
 
@@ -23,8 +23,9 @@ This document defines minimum confidence controls for development and CI tools.
 - Qualified environment baseline in `docs/quality/prod_baseline.md`.
 - Generated tool manifest format in `docs/quality/tool_manifest.md`.
 - Reproducible check entrypoints:
-  - `python tests/checks/check.py all --root . --config simulation.ini`
-  - `python tests/checks/clang_tidy_check.py --root . --build-dir <build>`
+  - `make quality-local CONFIG=simulation.ini`
+  - `make quality-python`
+  - `make quality-analyze QUALITY_BUILD_DIR=<build>`
   - `python scripts/ci/release/package_tool_manifest.py --lane <lane> --profile prod`
 - Build flags proving strict mode:
   - `GRAVITY_STRICT_WARNINGS=ON`

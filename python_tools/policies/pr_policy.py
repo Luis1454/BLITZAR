@@ -42,6 +42,10 @@ class PrPolicyCheck(BaseCheck):
             title = title or str(pull_request.get("title", "")).strip()
             body = body or str(pull_request.get("body", ""))
 
+        # GitHub event payloads store PR bodies with real newlines, but CLI tooling and templates
+        # can also inject literal "\n" sequences. Normalize so the policy regexes remain stable.
+        body = body.replace("\\r\\n", "\n").replace("\\n", "\n")
+
         if base and base != "main":
             result.add_error(f"pull request base must be main, got '{base}'")
         branch_issue = self._extract_branch_issue(branch, result)

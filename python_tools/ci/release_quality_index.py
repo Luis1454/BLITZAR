@@ -7,10 +7,9 @@ from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
-from python_tools.ci.release_name import resolve_release_tag
+from python_tools.ci.release_support import resolve_release_tag
 from python_tools.policies.deviation_register import DeviationRegister
-from python_tools.policies.evidence_registry import EvidenceRegistry
-from python_tools.policies.quality_manifest import QualityManifestLoader
+from python_tools.policies.quality_manifest import EvidenceRegistry, QualityManifestLoader
 
 DEFAULT_INDEX_EVIDENCE_REFS = (
     "EVD_CI_RELEASE_LANE",

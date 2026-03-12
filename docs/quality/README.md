@@ -7,7 +7,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `quality_manifest.json`: canonical quality manifest index (`metadata` + `includes`).
 - `AGENTS.md`: versioned contribution workflow artifact referenced by the NASA-first governance crosswalk.
 - `manifest/*.json`: sharded quality payloads (`evidence`, `policies`, `requirements`, `test_groups`, `crosswalk`).
-- `python_tools/policies/evidence_registry.py`: resolver that reads `EVD_*` mappings from `quality_manifest.json`.
+- `python_tools/policies/quality_manifest.py`: manifest loader and evidence resolver for `EVD_*` mappings.
 - `standards_profile.md`: NASA-first standards profile and scope.
 - `fmea.md`: failure mode and effects analysis baseline.
 - `manifest/fmea_actions.json`: canonical owner/status/task register for FMEA mitigations.
@@ -28,12 +28,15 @@ This folder contains the repository-level quality baseline for high-assurance wo
 ## Policy
 
 - Primary compliance posture is NASA-first (`NPR-7150.2D`, `NASA-STD-8739.8B`) with ECSS crosswalk support.
+- Product verification lives under `tests/unit` and `tests/int`; repository quality gates live under `tests/checks` and `python_tools`.
 - `prod` evidence is deterministic and strict-gated; `dev` evidence is non-qualification unless reproduced under `prod` constraints.
 - `pr-fast` is the deterministic merge gate only: strict policy checks, analyzer lane, and integration-safe fast subset.
+- CI runs Python quality checks directly (check runner + `ruff`/`mypy`/`pytest`); CTest fast subsets exclude `TST_QLT_REPO_008_PyChecksUnit` and `TST_QLT_REPO_009_PythonQualityGate` (kept for manual regression and manifest compatibility).
 - `nightly-full` broadens deterministic evidence with standalone integration repeats, coverage publication, and optional GPU/numerical campaigns.
 - `release-lane` packages qualification-oriented release evidence after a strict `prod` validation pass; optional GPU release lanes remain supplemental only.
 - Every requirement ID must be traceable to at least one verification artifact.
-- Traceability and quality documents are enforced by `tests/checks/quality_check.py` against `quality_manifest.json`.
+- Traceability and quality documents are enforced by `python tests/checks/check.py quality --root .` against `quality_manifest.json`.
+- Local entrypoints should prefer `make quality-local` and `make quality-strict` so CMake remains the only build source of truth.
 - `AGENTS.md` must remain git-tracked and mapped through `EVD_AGENTS` in the canonical evidence registry.
 - The enforceable subset of the `Power of 10` profile is checked in repository policy, including open-ended loop, macro, and function-pointer constraints on production C++ paths; non-automatable rules remain review-gated.
 - Strict analyzer lanes also cover ignored return values via `clang-tidy` and `[[nodiscard]]` on internal status APIs.
