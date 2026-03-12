@@ -20,12 +20,14 @@ CRITICAL_PATHS = (
     "tests/unit/physics/",
 )
 DEVIATION_RE = re.compile(r"^(none|DEV-[A-Z0-9-]+|WVR-[A-Z0-9-]+)$", re.IGNORECASE)
-CHECKLIST_MARKERS = (
+COMMON_CHECKLIST_MARKERS = (
     "- [x] Analyzer evidence attached",
     "- [x] Deterministic test evidence attached",
-    "- [x] Independent reviewer identified",
     "- [x] Deviation recorded or not needed",
 )
+SOLO_WAIVER_MARKER = "- [x] Solo maintainer waiver recorded"
+REVIEWER_MARKER = "- [x] Independent reviewer identified"
+SOLO_WAIVER_IDS = {"DEV-SOLO-IVV", "WVR-SOLO-IVV"}
 
 
 class IvvGateCheck(BaseCheck):
@@ -52,13 +54,16 @@ class IvvGateCheck(BaseCheck):
         if not isinstance(repo, str) or not repo.strip() or not isinstance(token, str) or not token.strip() or number <= 0:
             result.add_error("missing repo, token, or pull request number for IV&V gate")
             return
+        repo_name = repo.strip()
+        owner = self._repo_owner(repo_name)
         files = self._fetch_items(repo.strip(), number, "files", token, result)
         if not self._touches_critical_paths(files):
             result.success_message = "IV&V gate skipped: no protocol/runtime/physics paths changed"
             return
-        self._check_template(author, body, result)
+        solo_waiver = self._check_template(author, owner, body, result)
         reviews = self._fetch_items(repo.strip(), number, "reviews", token, result)
-        self._check_non_author_approval(author, reviews, result)
+        if not solo_waiver:
+            self._check_non_author_approval(author, reviews, result)
 
     @staticmethod
     def _read_payload(path_text: str, result: CheckResult) -> dict[str, object]:
@@ -103,15 +108,19 @@ class IvvGateCheck(BaseCheck):
                 return True
         return False
 
-    def _check_template(self, author: str, body: str, result: CheckResult) -> None:
-        for marker in CHECKLIST_MARKERS:
+    def _check_template(self, author: str, owner: str, body: str, result: CheckResult) -> bool:
+        for marker in COMMON_CHECKLIST_MARKERS:
             if marker not in body:
                 result.add_error(f"missing PR checklist confirmation: {marker}")
         reviewer = self._extract_line(body, "Independent reviewer")
         analyzer = self._extract_line(body, "Analyzer evidence")
         deterministic = self._extract_line(body, "Deterministic test evidence")
         deviation = self._extract_line(body, "Deviation")
-        if not reviewer.startswith("@") or reviewer.lower() == f"@{author.lower()}":
+        solo_waiver = self._is_solo_waiver(author, owner, body, deviation)
+        expected_marker = SOLO_WAIVER_MARKER if solo_waiver else REVIEWER_MARKER
+        if expected_marker not in body:
+            result.add_error(f"missing PR checklist confirmation: {expected_marker}")
+        if not solo_waiver and (not reviewer.startswith("@") or reviewer.lower() == f"@{author.lower()}"):
             result.add_error("independent reviewer must be a non-author GitHub handle")
         if not analyzer:
             result.add_error("analyzer evidence field must be filled")
@@ -119,6 +128,13 @@ class IvvGateCheck(BaseCheck):
             result.add_error("deterministic test evidence field must be filled")
         if not DEVIATION_RE.match(deviation):
             result.add_error("deviation field must be 'none' or a DEV-/WVR- identifier")
+        solo_waiver_value = self._extract_line(body, "Solo maintainer waiver")
+        if solo_waiver_value and not solo_waiver:
+            result.add_error(
+                "solo maintainer waiver requires repo-owner author, 'Solo maintainer waiver: true', "
+                "and Deviation DEV-SOLO-IVV or WVR-SOLO-IVV"
+            )
+        return solo_waiver
 
     @staticmethod
     def _extract_line(body: str, label: str) -> str:
@@ -127,6 +143,18 @@ class IvvGateCheck(BaseCheck):
             if raw.startswith(prefix):
                 return raw[len(prefix) :].strip()
         return ""
+
+    @staticmethod
+    def _repo_owner(repo: str) -> str:
+        return repo.split("/", 1)[0].strip()
+
+    def _is_solo_waiver(self, author: str, owner: str, body: str, deviation: str) -> bool:
+        waiver = self._extract_line(body, "Solo maintainer waiver")
+        return (
+            waiver.lower() == "true"
+            and deviation.upper() in SOLO_WAIVER_IDS
+            and author.lower() == owner.lower()
+        )
 
     @staticmethod
     def _check_non_author_approval(author: str, reviews: Sequence[dict[str, object]], result: CheckResult) -> None:

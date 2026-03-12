@@ -1,8 +1,8 @@
 {
   "metadata": {
     "system": "CUDA-GRAVITY-SIMULATION",
-    "revision": "2026-03-08",
-    "revision_note": "Governance now includes Power of 10 enforcement for repository policy unsafe-flow checks plus strict analyzer coverage for ignored return values through clang-tidy and nodiscard-marked status APIs."
+    "revision": "2026-03-12",
+    "revision_note": "Governance now includes explicit solo-maintainer IV&V waiver handling for critical-path PRs, alongside Power of 10 repository-policy checks and strict analyzer coverage for ignored return values."
   },
   "includes": [
     "manifest/evidence.json",
