@@ -28,12 +28,12 @@ class _FakeRunner:
         return subprocess.CompletedProcess(args, 0, stdout="tidy ok\n", stderr="")
 
 
-def _write_compile_db(build_dir: Path, files: list[Path]) -> None:
+def _write_compile_db(build_dir: Path, files: list[Path], compiler: str = "clang++") -> None:
     build_dir.mkdir(parents=True, exist_ok=True)
     entries = [
         {
             "directory": str(file_path.parent),
-            "command": f"clang++ -c {file_path.name}",
+            "command": f"{compiler} -c {file_path.name}",
             "file": str(file_path),
         }
         for file_path in files
@@ -75,7 +75,7 @@ def test_clang_tidy_runs_only_changed_compile_entries(monkeypatch, tmp_path: Pat
     result = check.run(_context(tmp_path, build_dir, diff_base="origin/main", diff_target="HEAD", header_filter="project"))
 
     assert result.ok
-    tidy_calls = [args for args, _ in runner.calls if args[0] == "clang-tidy"]
+    tidy_calls = [args for args, _ in runner.calls if args[0].endswith("clang-tidy")]
     assert len(tidy_calls) == 1
     assert str(changed) in tidy_calls[0]
     assert "-header-filter=project" in tidy_calls[0]
@@ -116,7 +116,7 @@ def test_clang_tidy_expands_scope_for_header_only_diffs(monkeypatch, tmp_path: P
     result = check.run(_context(tmp_path, build_dir, diff_base="origin/main"))
 
     assert result.ok
-    tidy_calls = [args for args, _ in runner.calls if args[0] == "clang-tidy"]
+    tidy_calls = [args for args, _ in runner.calls if args[0].endswith("clang-tidy")]
     assert len(tidy_calls) == 2
     assert "clang-tidy skipped" not in result.success_message
 
@@ -135,3 +135,48 @@ def test_clang_tidy_reports_git_diff_failures(monkeypatch, tmp_path: Path) -> No
 
     assert not result.ok
     assert any("git diff failed: bad rev" in error for error in result.errors)
+
+
+def test_clang_tidy_uses_windows_llvm_fallback(monkeypatch, tmp_path: Path) -> None:
+    source = tmp_path / "runtime" / "src" / "backend" / "file.cpp"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_text("int sample();\n", encoding="utf-8")
+    build_dir = tmp_path / "build-quality"
+    _write_compile_db(build_dir, [source])
+    runner = _FakeRunner()
+    check = ClangTidyCheck()
+    cast(Any, check)._runner = runner
+    fallback = tmp_path / "llvm" / "bin" / "clang-tidy.exe"
+    fallback.parent.mkdir(parents=True, exist_ok=True)
+    fallback.write_text("", encoding="utf-8")
+    monkeypatch.setattr("shutil.which", lambda binary: None)
+    monkeypatch.setattr("platform.system", lambda: "Windows")
+    monkeypatch.setattr(
+        "python_tools.ci.clang_tidy.WINDOWS_LLVM_CLANG_TIDY_CANDIDATES",
+        (fallback,),
+    )
+
+    result = check.run(_context(tmp_path, build_dir))
+
+    assert result.ok
+    tidy_calls = [args for args, _ in runner.calls if args[0] == str(fallback)]
+    assert len(tidy_calls) == 1
+
+
+def test_clang_tidy_adds_cl_driver_mode_for_msvc_compile_db(monkeypatch, tmp_path: Path) -> None:
+    source = tmp_path / "runtime" / "src" / "backend" / "file.cpp"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_text("int sample();\n", encoding="utf-8")
+    build_dir = tmp_path / "build-quality"
+    _write_compile_db(build_dir, [source], compiler="cl.exe")
+    runner = _FakeRunner()
+    check = ClangTidyCheck()
+    cast(Any, check)._runner = runner
+    monkeypatch.setattr("shutil.which", lambda binary: f"/usr/bin/{binary}")
+
+    result = check.run(_context(tmp_path, build_dir))
+
+    assert result.ok
+    tidy_calls = [args for args, _ in runner.calls if args[0].endswith("clang-tidy")]
+    assert len(tidy_calls) == 1
+    assert "--extra-arg-before=--driver-mode=cl" in tidy_calls[0]

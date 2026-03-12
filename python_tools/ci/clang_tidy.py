@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import platform
 import shutil
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -21,6 +22,10 @@ DEFAULT_PATHS = (
     "runtime/src/backend",
 )
 HEADER_LIKE_SUFFIXES = (".h", ".hh", ".hpp", ".hxx", ".inl")
+WINDOWS_LLVM_CLANG_TIDY_CANDIDATES = (
+    Path(r"C:\Program Files\LLVM\bin\clang-tidy.exe"),
+    Path(r"C:\Program Files (x86)\LLVM\bin\clang-tidy.exe"),
+)
 
 
 class ClangTidyCheck(BaseCheck):
@@ -31,7 +36,8 @@ class ClangTidyCheck(BaseCheck):
         self._runner = ProcessRunner()
 
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
-        if shutil.which(context.clang_tidy_binary) is None:
+        binary = self._resolve_binary(context.clang_tidy_binary)
+        if binary is None:
             result.add_error(f"clang-tidy executable not found: {context.clang_tidy_binary}")
             return
         files = self._load_files(context, result)
@@ -44,7 +50,7 @@ class ClangTidyCheck(BaseCheck):
         if not files:
             result.success_message = "clang-tidy skipped (no matching changed files)"
             return
-        self._run_tidy(files, context, result)
+        self._run_tidy(files, context, binary, result)
         if result.ok and not result.success_message:
             result.success_message = f"clang-tidy check passed ({len(files)} files)"
 
@@ -78,22 +84,26 @@ class ClangTidyCheck(BaseCheck):
             files.append(file_path)
         return files
 
-    def _run_tidy(self, files: list[Path], context: CheckContext, result: CheckResult) -> None:
+    def _run_tidy(self, files: list[Path], context: CheckContext, binary: str, result: CheckResult) -> None:
         assert context.build_dir is not None
         build_dir = context.build_dir
         files = sorted(files, key=lambda path: str(path))
         log_dir = self._resolve_log_dir(context, build_dir)
         jobs = self._resolve_jobs(context.clang_tidy_jobs, len(files))
+        extra_args = self._resolve_extra_args(build_dir)
         errors: list[str] = []
 
         if jobs <= 1 or len(files) <= 1:
             for file_path in files:
-                ok, message = self._run_single(file_path, context, log_dir)
+                ok, message = self._run_single(file_path, context, binary, extra_args, log_dir)
                 if not ok:
                     errors.append(message)
         else:
             with ThreadPoolExecutor(max_workers=jobs) as executor:
-                futures = {executor.submit(self._run_single, file_path, context, log_dir): file_path for file_path in files}
+                futures = {
+                    executor.submit(self._run_single, file_path, context, binary, extra_args, log_dir): file_path
+                    for file_path in files
+                }
                 for future in as_completed(futures):
                     ok, message = future.result()
                     if not ok:
@@ -119,13 +129,21 @@ class ClangTidyCheck(BaseCheck):
         log_dir.mkdir(parents=True, exist_ok=True)
         return log_dir
 
-    def _run_single(self, file_path: Path, context: CheckContext, log_dir: Path) -> tuple[bool, str]:
+    def _run_single(
+        self,
+        file_path: Path,
+        context: CheckContext,
+        binary: str,
+        extra_args: list[str],
+        log_dir: Path,
+    ) -> tuple[bool, str]:
         cmd = [
-            context.clang_tidy_binary,
+            binary,
             f"-p={context.build_dir}",
             f"-checks={context.clang_tidy_checks}",
             "--warnings-as-errors=*",
             "--quiet",
+            *extra_args,
             str(file_path),
         ]
         if context.clang_tidy_header_filter:
@@ -140,6 +158,45 @@ class ClangTidyCheck(BaseCheck):
         if completed.returncode != 0:
             return False, f"[{file_path}] clang-tidy failed (see {log_path})"
         return True, ""
+
+    def _resolve_binary(self, configured_binary: str) -> str | None:
+        resolved = shutil.which(configured_binary)
+        if resolved is not None:
+            return resolved
+        if platform.system() != "Windows":
+            return None
+        normalized = configured_binary.lower()
+        if normalized not in {"clang-tidy", "clang-tidy.exe"}:
+            return None
+        for candidate in WINDOWS_LLVM_CLANG_TIDY_CANDIDATES:
+            if candidate.exists():
+                return str(candidate)
+        return None
+
+    def _resolve_extra_args(self, build_dir: Path) -> list[str]:
+        db = build_dir / "compile_commands.json"
+        if not db.exists():
+            return []
+        try:
+            entries = json.loads(db.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            return []
+        if self._uses_msvc_driver(entries):
+            return ["--extra-arg-before=--driver-mode=cl"]
+        return []
+
+    def _uses_msvc_driver(self, entries: list[dict[str, object]]) -> bool:
+        for entry in entries:
+            command = str(entry.get("command", "")).lower()
+            if "cl.exe" in command:
+                return True
+            arguments = entry.get("arguments")
+            if not isinstance(arguments, list) or not arguments:
+                continue
+            compiler = str(arguments[0]).lower()
+            if compiler.endswith("cl.exe"):
+                return True
+        return False
 
     def _log_path_for(self, file_path: Path, context: CheckContext, log_dir: Path) -> Path:
         rel_path: Path | None = None
