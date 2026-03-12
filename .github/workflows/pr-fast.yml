@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  CI_CACHE_VERSION: v1
+
 concurrency:
   group: pr-fast-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -136,6 +139,15 @@ jobs:
             echo "available=false" >> "$GITHUB_OUTPUT"
             echo "CUDA toolkit unavailable; skipping dev module build."
           fi
+      - name: Restore dev-module build cache
+        id: restore-dev-module-cache
+        if: ${{ steps.cuda.outputs.available == 'true' }}
+        uses: actions/cache/restore@v4
+        with:
+          path: build-dev-mod
+          key: ${{ runner.os }}-dev-module-${{ env.CI_CACHE_VERSION }}-${{ matrix.os_label }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/pr-fast.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-dev-module-${{ env.CI_CACHE_VERSION }}-${{ matrix.os_label }}-
       - name: Configure dev module build
         if: ${{ steps.cuda.outputs.available == 'true' }}
         shell: bash
@@ -158,6 +170,12 @@ jobs:
         if: ${{ steps.cuda.outputs.available == 'true' && matrix.qt_target != '' }}
         shell: bash
         run: cmake --build build-dev-mod --parallel --target ${{ matrix.qt_target }} || echo "Qt module target unavailable in this environment, skipping."
+      - name: Save dev-module build cache
+        if: ${{ success() && steps.cuda.outputs.available == 'true' && steps.restore-dev-module-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: build-dev-mod
+          key: ${{ steps.restore-dev-module-cache.outputs.cache-primary-key }}
       - name: Skip dev module build when CUDA is unavailable
         if: ${{ steps.cuda.outputs.available != 'true' }}
         shell: bash
