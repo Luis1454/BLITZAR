@@ -57,6 +57,7 @@ Build switch:
 - `release-lane` reruns strict `prod` validation, then publishes the release bundle, release-quality index, and evidence pack for review.
 - Security CI coverage must include CodeQL code scanning, pull-request dependency vulnerability review, and an automated SBOM for packaged release artifacts.
 - Hosted evidence lanes must pin runner images and Python versions explicitly, and job names must expose the platform/toolchain axis for failure triage.
+- Optional self-hosted GPU lanes must emit a readiness report plus an explicit hosted fallback record when runner capacity is unavailable.
 - Filtered CI `ctest` invocations in evidence lanes must use `--no-tests=error` to prevent false green jobs when selectors drift.
 - Filtered CI `ctest` invocations in evidence lanes must select tests by normalized `TST_*` identifiers, not legacy suite-name prefixes.
 - Temporary waivers and deviations must carry explicit owner, approver, and review date metadata in the canonical register.
