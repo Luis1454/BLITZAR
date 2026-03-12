@@ -8,6 +8,7 @@
 #include <array>
 #include <cctype>
 #include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -297,7 +298,7 @@ std::string BackendServer::processRequest(const std::string &request)
             return grav_protocol::BackendJsonCodec::makeStatusResponse(_backend.getStats());
         }
         if (cmd == grav_protocol::GetSnapshot) {
-            unsigned int maxPoints = grav_protocol::kSnapshotDefaultPoints;
+            std::uint32_t maxPoints = grav_protocol::kSnapshotDefaultPoints;
             grav_protocol::BackendJsonCodec::readNumber(request, "max_points", maxPoints);
             maxPoints = grav_protocol::clampSnapshotPoints(maxPoints);
 
@@ -372,11 +373,11 @@ std::string BackendServer::processRequest(const std::string &request)
             return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
         if (cmd == grav_protocol::SetParticleCount) {
-            unsigned long long value = 0;
+            std::uint64_t value = 0;
             if (!grav_protocol::BackendJsonCodec::readNumber(request, "value", value) || value < 2ull) {
                 return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "invalid particle count");
             }
-            const unsigned long long clamped = (value > 100000000ull) ? 100000000ull : value;
+            const std::uint64_t clamped = (value > 100000000ull) ? 100000000ull : value;
             _backend.setParticleCount(static_cast<std::uint32_t>(clamped));
             return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
@@ -420,8 +421,8 @@ std::string BackendServer::processRequest(const std::string &request)
             return grav_protocol::BackendJsonCodec::makeOkResponse(cmd);
         }
         if (cmd == grav_protocol::SetEnergyMeasure) {
-            unsigned int everySteps = 0;
-            unsigned int sampleLimit = 0;
+            std::uint32_t everySteps = 0;
+            std::uint32_t sampleLimit = 0;
             if (!grav_protocol::BackendJsonCodec::readNumber(request, "every_steps", everySteps) || everySteps < 1u
                 || !grav_protocol::BackendJsonCodec::readNumber(request, "sample_limit", sampleLimit) || sampleLimit < 2u) {
                 return grav_protocol::BackendJsonCodec::makeErrorResponse(cmd, "invalid energy measure config");
