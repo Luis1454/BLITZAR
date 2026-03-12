@@ -8,8 +8,9 @@ quality-local:
 	$(MAKE) check CHECK=all CONFIG=$(CONFIG) BUILD_DIR=
 
 quality-python:
-	python -m ruff check tests/checks scripts/ci python_tools
+	python -m ruff check .
 	python -m mypy tests/checks scripts/ci python_tools
+	python -m pytest -q tests/checks/suites
 
 quality-configure:
 	cmake -S tests -B $(QUALITY_BUILD_DIR) -G "$(GENERATOR)" \
@@ -23,7 +24,10 @@ quality-build:
 	cmake --build $(QUALITY_BUILD_DIR) --parallel
 
 quality-analyze:
-	python tests/checks/run.py clang_tidy --root . --build-dir $(QUALITY_BUILD_DIR)
+	python tests/checks/run.py clang_tidy --root . --build-dir $(QUALITY_BUILD_DIR) \
+		--jobs $(QUALITY_TIDY_JOBS) \
+		$(if $(strip $(QUALITY_TIDY_DIFF_BASE)),--diff-base $(QUALITY_TIDY_DIFF_BASE),) \
+		$(if $(strip $(QUALITY_TIDY_DIFF_TARGET)),--diff-target $(QUALITY_TIDY_DIFF_TARGET),)
 
 quality-test:
 	cmake -E env ASAN_OPTIONS=detect_leaks=0:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 \

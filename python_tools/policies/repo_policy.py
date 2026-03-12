@@ -6,6 +6,7 @@ from pathlib import Path
 
 from python_tools.core.base_check import BaseCheck
 from python_tools.core.models import CheckContext, CheckResult
+from python_tools.policies.header_definition_policy import find_header_function_definition_lines
 
 FORBIDDEN_CPP_EXTS = {".h", ".hh", ".hxx", ".c", ".cc", ".cxx"}
 LINE_COUNT_EXTS = {
@@ -93,6 +94,9 @@ class RepoPolicyCheck(BaseCheck):
                 content = path.read_text(encoding="utf-8", errors="ignore")
                 if suffix in HEADER_EXTS and USING_ANY_RE.search(content):
                     result.add_error(f"{rel}: forbidden 'using' in header")
+                if suffix in HEADER_EXTS:
+                    for line_number in find_header_function_definition_lines(content):
+                        result.add_error(f"{rel}:{line_number}: function definitions in headers are forbidden")
                 marker_match = FORBIDDEN_MARKER_RE.search(content)
                 if marker_match:
                     result.add_error(f"{rel}: forbidden marker '{marker_match.group(2)}' found")

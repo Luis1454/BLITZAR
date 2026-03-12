@@ -42,6 +42,7 @@ int main(int argc, char **argv)
     std::string solver = config.solver;
     std::string exportFormat = config.exportFormat;
     std::string integrator = config.integrator;
+    const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(config, std::cerr);
 
     const bool exportOnExit = grav_env::getBool("GRAVITY_EXPORT_ON_EXIT", runtime.exportOnExit);
 
@@ -54,10 +55,7 @@ int main(int argc, char **argv)
               << " export=" << exportFormat
               << " export_on_exit=" << (exportOnExit ? "on" : "off")
               << "\n";
-    if (!config.inputFile.empty()) {
-        std::cout << "[headless] input_file=" << config.inputFile
-                  << " input_format=" << config.inputFormat << "\n";
-    }
+    std::cout << "[headless] " << initPlan.summary << "\n";
 
     backend.setParticleCount(static_cast<std::uint32_t>(particleCount));
     backend.setDt(dt);
@@ -73,8 +71,8 @@ int main(int argc, char **argv)
     );
     backend.setEnergyMeasurementConfig(config.energyMeasureEverySteps, config.energySampleLimit);
     backend.setExportDefaults(config.exportDirectory, exportFormat);
-    backend.setInitialStateFile(config.inputFile, config.inputFormat);
-    backend.setInitialStateConfig(buildInitialStateConfig(config));
+    backend.setInitialStateFile(initPlan.inputFile, initPlan.inputFormat);
+    backend.setInitialStateConfig(initPlan.config);
     backend.start();
 
     std::vector<RenderParticle> snapshot;

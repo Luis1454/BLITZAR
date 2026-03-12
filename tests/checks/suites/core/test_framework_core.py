@@ -76,6 +76,11 @@ def test_run_parser_builds_clang_tidy_context_with_defaults() -> None:
     assert context.build_dir is not None
     assert context.build_dir.name == "build-quality"
     assert context.clang_tidy_checks == "-*,clang-analyzer-*,bugprone-unused-return-value"
+    assert context.clang_tidy_jobs == 0
+    assert context.clang_tidy_log_dir is None
+    assert context.clang_tidy_diff_base == ""
+    assert context.clang_tidy_diff_target == ""
+    assert context.clang_tidy_header_filter == "([/\\\\]|^)(apps|engine|runtime|modules|tests)([/\\\\])"
 
 
 def test_run_parser_uses_environment_defaults_for_gate_commands(monkeypatch) -> None:

@@ -3,7 +3,6 @@
 
 #include "backend/SimulationBackend.hpp"
 #include "config/TextParse.hpp"
-
 #include <cstdint>
 #include <string>
 #include <string_view>
@@ -86,14 +85,7 @@ class BackendJsonCodec {
         static bool readBool(std::string_view raw, std::string_view key, bool &out);
 
         template <typename NumberType>
-        static bool readNumber(std::string_view raw, std::string_view key, NumberType &out)
-        {
-            std::string token;
-            if (!readToken(raw, key, token)) {
-                return false;
-            }
-            return grav_text::parseNumber(token, out);
-        }
+        static bool readNumber(std::string_view raw, std::string_view key, NumberType &out);
 
     private:
         static std::string trim(std::string_view value);

@@ -58,6 +58,7 @@ Build switch:
 - Filtered CI `ctest` invocations in evidence lanes must use `--no-tests=error` to prevent false green jobs when selectors drift.
 - Filtered CI `ctest` invocations in evidence lanes must select tests by normalized `TST_*` identifiers, not legacy suite-name prefixes.
 - Temporary waivers and deviations must carry explicit owner, approver, and review date metadata in the canonical register.
+- Single-maintainer critical-path PRs may use an explicit solo IV&V waiver token plus `DEV-SOLO-IVV` or `WVR-SOLO-IVV`; otherwise a non-author approval remains mandatory.
 - Release review should begin from the release-quality index before opening the full evidence pack.
 - Breaking interface changes must update the canonical contract artifact and linked tests in the same review.
 - Release candidates must publish an evidence pack generated from the `release-lane` commands under the selected profile.
