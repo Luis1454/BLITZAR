@@ -98,6 +98,29 @@ def test_clang_tidy_skips_clean_diffs(monkeypatch, tmp_path: Path) -> None:
     assert result.success_message == "clang-tidy skipped (no matching changed files)"
 
 
+def test_clang_tidy_expands_scope_for_header_only_diffs(monkeypatch, tmp_path: Path) -> None:
+    first = tmp_path / "runtime" / "src" / "backend" / "first.cpp"
+    second = tmp_path / "runtime" / "src" / "backend" / "second.cpp"
+    header = tmp_path / "runtime" / "src" / "backend" / "shared.hpp"
+    first.parent.mkdir(parents=True, exist_ok=True)
+    first.write_text("int first();\n", encoding="utf-8")
+    second.write_text("int second();\n", encoding="utf-8")
+    header.write_text("int shared();\n", encoding="utf-8")
+    build_dir = tmp_path / "build-quality"
+    _write_compile_db(build_dir, [first, second])
+    runner = _FakeRunner(diff_output="runtime/src/backend/shared.hpp\n")
+    check = ClangTidyCheck()
+    cast(Any, check)._runner = runner
+    monkeypatch.setattr("shutil.which", lambda binary: f"/usr/bin/{binary}")
+
+    result = check.run(_context(tmp_path, build_dir, diff_base="origin/main"))
+
+    assert result.ok
+    tidy_calls = [args for args, _ in runner.calls if args[0] == "clang-tidy"]
+    assert len(tidy_calls) == 2
+    assert "clang-tidy skipped" not in result.success_message
+
+
 def test_clang_tidy_reports_git_diff_failures(monkeypatch, tmp_path: Path) -> None:
     source = tmp_path / "runtime" / "src" / "backend" / "file.cpp"
     source.parent.mkdir(parents=True, exist_ok=True)
