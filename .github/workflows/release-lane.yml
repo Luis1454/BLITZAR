@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  CI_CACHE_VERSION: v1
+
 concurrency:
   group: release-lane-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
@@ -23,12 +26,27 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Python
+        id: setup-python
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
+      - name: Restore pip cache
+        id: restore-pip-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: windows-release-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/workflows/release-lane.yml') }}
+          restore-keys: |
+            windows-release-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-
       - name: Install Python test tooling
         shell: pwsh
         run: python -m pip install --upgrade pip pytest ruff mypy
+      - name: Save pip cache
+        if: ${{ success() && steps.restore-pip-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: ${{ steps.restore-pip-cache.outputs.cache-primary-key }}
 
       - name: Setup MSVC toolchain
         uses: ilammy/msvc-dev-cmd@v1
@@ -65,6 +83,18 @@ jobs:
         shell: pwsh
         run: |
           python scripts/ci/release/package_tool_manifest.py --lane release-lane --profile prod --output dist/tool-qualification/tool_manifest.json
+      - name: Restore release build cache
+        id: restore-build-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            build
+            ~\AppData\Local\vcpkg\archives
+            C:\vcpkg\installed
+            C:\vcpkg\packages
+          key: windows-release-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/release-lane.yml') }}
+          restore-keys: |
+            windows-release-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-
 
       - name: Configure
         shell: pwsh
@@ -142,6 +172,16 @@ jobs:
             build/CMakeFiles/CMakeOutput.log
             build/CMakeFiles/CMakeError.log
           if-no-files-found: ignore
+      - name: Save release build cache
+        if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            build
+            ~\AppData\Local\vcpkg\archives
+            C:\vcpkg\installed
+            C:\vcpkg\packages
+          key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
 
   release-gpu-full-tests:
     name: Release GPU Full Tests (optional)
@@ -152,12 +192,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Python
+        id: setup-python
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
+      - name: Restore pip cache
+        id: restore-pip-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: windows-release-gpu-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/workflows/release-lane.yml') }}
+          restore-keys: |
+            windows-release-gpu-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-
       - name: Install Python test tooling
         shell: pwsh
         run: python -m pip install --upgrade pip pytest ruff mypy
+      - name: Save pip cache
+        if: ${{ success() && steps.restore-pip-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: ${{ steps.restore-pip-cache.outputs.cache-primary-key }}
 
       - name: Setup MSVC toolchain
         uses: ilammy/msvc-dev-cmd@v1
@@ -183,6 +238,18 @@ jobs:
           }
           nvidia-smi
           nvcc --version
+      - name: Restore GPU release build cache
+        id: restore-build-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            build
+            ~\AppData\Local\vcpkg\archives
+            C:\vcpkg\installed
+            C:\vcpkg\packages
+          key: windows-release-gpu-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/release-lane.yml') }}
+          restore-keys: |
+            windows-release-gpu-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-
 
       - name: Configure
         shell: pwsh
@@ -198,3 +265,13 @@ jobs:
         shell: pwsh
         run: |
           ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error
+      - name: Save GPU release build cache
+        if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            build
+            ~\AppData\Local\vcpkg\archives
+            C:\vcpkg\installed
+            C:\vcpkg\packages
+          key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}

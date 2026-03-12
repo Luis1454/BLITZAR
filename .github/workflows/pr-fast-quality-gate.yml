@@ -12,6 +12,9 @@ on:
         type: string
         default: ""
 
+env:
+  CI_CACHE_VERSION: v1
+
 jobs:
   space-quality-gate:
     name: NASA-First Quality Gate
@@ -22,13 +25,47 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - {name: Setup Python, uses: actions/setup-python@v5, with: {python-version: "3.x"}}
+      - name: Setup Python
+        id: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Cache metadata
+        id: cache-meta
+        shell: bash
+        run: |
+          echo "pip-prefix=pip-${{ env.CI_CACHE_VERSION }}-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}" >> "$GITHUB_OUTPUT"
+          echo "build-prefix=cmake-${{ env.CI_CACHE_VERSION }}-${{ runner.os }}-linux-clang-ninja-prod-tests" >> "$GITHUB_OUTPUT"
+      - name: Restore pip cache
+        id: restore-pip-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ steps.cache-meta.outputs.pip-prefix }}-${{ hashFiles('.github/workflows/pr-fast.yml', '.github/workflows/pr-fast-quality-gate.yml') }}
+          restore-keys: |
+            ${{ steps.cache-meta.outputs.pip-prefix }}-
       - name: Install build and analysis tools
         run: |
           sudo apt-get update
           sudo apt-get install -y make ninja-build clang-tidy
           python -m pip install --upgrade pip
           python -m pip install pytest ruff mypy
+      - name: Save pip cache
+        if: ${{ success() && steps.restore-pip-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ steps.restore-pip-cache.outputs.cache-primary-key }}
+      - name: Restore CMake and dependency cache
+        id: restore-build-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            build-quality
+            ~/.cache/vcpkg/archives
+          key: ${{ steps.cache-meta.outputs.build-prefix }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/pr-fast-quality-gate.yml') }}
+          restore-keys: |
+            ${{ steps.cache-meta.outputs.build-prefix }}-
       - {name: Verify clang-tidy availability, run: clang-tidy --version}
       - name: Generate tool qualification manifest
         run: python scripts/ci/release/package_tool_manifest.py --lane pr-fast --profile prod --output dist/tool-qualification/tool_manifest.json
@@ -48,6 +85,14 @@ jobs:
           QUALITY_TIDY_DIFF_TARGET=${{ inputs.diff-target }}
       - name: Run integration tests under sanitizers
         run: make quality-test QUALITY_BUILD_DIR=build-quality
+      - name: Save CMake and dependency cache
+        if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            build-quality
+            ~/.cache/vcpkg/archives
+          key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
       - name: Upload tool qualification manifest
         uses: actions/upload-artifact@v4
         with:
