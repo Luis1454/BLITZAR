@@ -1,0 +1,64 @@
+#include "SimulationOptionRegistryInternal.hpp"
+
+#include <cstddef>
+
+namespace grav_config {
+
+const SimulationOptionEntry kSimulationOptions[] = {
+    {SimulationOptionGroup::Core, OptionKind::Uint, "--particle-count", "", "particle_count", "", "GRAVITY_BACKEND_PARTICLES", "  --particle-count <n>\n", "", offsetof(SimulationConfig, particleCount), 2.0, 0.0, true, false},
+    {SimulationOptionGroup::Core, OptionKind::Float, "--dt", "", "dt", "", "", "  --dt <float>\n", "", offsetof(SimulationConfig, dt), 0.000001, 0.0, true, false},
+    {SimulationOptionGroup::Core, OptionKind::Solver, "--solver", "", "solver", "", "", "  --solver <pairwise_cuda|octree_gpu|octree_cpu>\n", "", offsetof(SimulationConfig, solver), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::Core, OptionKind::Integrator, "--integrator", "", "integrator", "", "", "  --integrator <euler|rk4>\n", "", offsetof(SimulationConfig, integrator), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::Core, OptionKind::Float, "--octree-theta", "", "octree_theta", "", "", "  --octree-theta <float>\n", "", offsetof(SimulationConfig, octreeTheta), 0.01, 0.0, true, false},
+    {SimulationOptionGroup::Core, OptionKind::Float, "--octree-softening", "", "octree_softening", "", "", "  --octree-softening <float>\n", "", offsetof(SimulationConfig, octreeSoftening), 0.000001, 0.0, true, false},
+    {SimulationOptionGroup::Core, OptionKind::FrontendParticleCap, "--frontend-particle-cap", "", "frontend_particle_cap", "", "GRAVITY_FRONTEND_DRAW_CAP", "  --frontend-particle-cap <n>\n", "", offsetof(SimulationConfig, frontendParticleCap), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::Frontend, OptionKind::Float, "--zoom", "", "default_zoom", "", "", "  --zoom <float>\n", "", offsetof(SimulationConfig, defaultZoom), 0.01, 0.0, true, false},
+    {SimulationOptionGroup::Frontend, OptionKind::Int, "--luminosity", "", "default_luminosity", "", "", "  --luminosity <0..255>\n", "", offsetof(SimulationConfig, defaultLuminosity), 0.0, 255.0, true, true},
+    {SimulationOptionGroup::Frontend, OptionKind::Uint, "--ui-fps", "", "ui_fps_limit", "", "", "  --ui-fps <n>\n", "", offsetof(SimulationConfig, uiFpsLimit), 1.0, 0.0, true, false},
+    {SimulationOptionGroup::Frontend, OptionKind::TimeoutTriple, "--backend-timeout-ms", "", "frontend_remote_timeout_ms", "", "", "  --backend-timeout-ms <10..60000>\n", "", 0, 10.0, 60000.0, true, true},
+    {SimulationOptionGroup::Frontend, OptionKind::Uint, "--backend-command-timeout-ms", "", "frontend_remote_command_timeout_ms", "", "", "  --backend-command-timeout-ms <10..60000>\n", "", offsetof(SimulationConfig, frontendRemoteCommandTimeoutMs), 10.0, 60000.0, true, true},
+    {SimulationOptionGroup::Frontend, OptionKind::Uint, "--backend-status-timeout-ms", "", "frontend_remote_status_timeout_ms", "", "", "  --backend-status-timeout-ms <10..60000>\n", "", offsetof(SimulationConfig, frontendRemoteStatusTimeoutMs), 10.0, 60000.0, true, true},
+    {SimulationOptionGroup::Frontend, OptionKind::Uint, "--backend-snapshot-timeout-ms", "", "frontend_remote_snapshot_timeout_ms", "", "", "  --backend-snapshot-timeout-ms <10..60000>\n", "", offsetof(SimulationConfig, frontendRemoteSnapshotTimeoutMs), 10.0, 60000.0, true, true},
+    {SimulationOptionGroup::Frontend, OptionKind::String, "--export-directory", "", "export_directory", "", "", "  --export-directory <path>\n", "", offsetof(SimulationConfig, exportDirectory), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::Frontend, OptionKind::String, "--export-format", "", "export_format", "", "", "  --export-format <vtk|vtk_binary|xyz|bin>\n", "", offsetof(SimulationConfig, exportFormat), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::Frontend, OptionKind::String, "--input-file", "", "input_file", "", "", "  --input-file <path>\n", "", offsetof(SimulationConfig, inputFile), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::Frontend, OptionKind::String, "--input-format", "", "input_format", "", "", "  --input-format <auto|vtk|vtk_binary|xyz|bin>\n", "", offsetof(SimulationConfig, inputFormat), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::Frontend, OptionKind::String, "--init-config-style", "", "init_config_style", "", "", "  --init-config-style <preset|detailed>\n", "", offsetof(SimulationConfig, initConfigStyle), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::Frontend, OptionKind::String, "--preset-structure", "--structure", "preset_structure", "", "", "  --preset-structure <disk_orbit|random_cloud|file>\n", "  --structure <disk_orbit|random_cloud|file> (alias)\n", offsetof(SimulationConfig, presetStructure), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::Frontend, OptionKind::Float, "--preset-size", "--size", "preset_size", "", "", "  --preset-size <float>\n", "  --size <float> (alias)\n", offsetof(SimulationConfig, presetSize), 0.01, 0.0, true, false},
+    {SimulationOptionGroup::Frontend, OptionKind::Float, "--velocity-temperature", "", "velocity_temperature", "temperature", "", "  --velocity-temperature <float>\n", "", offsetof(SimulationConfig, velocityTemperature), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::Frontend, OptionKind::Float, "--particle-temperature", "", "particle_temperature", "", "", "  --particle-temperature <float>\n", "", offsetof(SimulationConfig, particleTemperature), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::Frontend, OptionKind::Float, "--thermal-ambient", "", "thermal_ambient_temperature", "", "", "  --thermal-ambient <float>\n", "", offsetof(SimulationConfig, thermalAmbientTemperature), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::Frontend, OptionKind::Float, "--thermal-specific-heat", "", "thermal_specific_heat", "", "", "  --thermal-specific-heat <float>\n", "", offsetof(SimulationConfig, thermalSpecificHeat), 0.000001, 0.0, true, false},
+    {SimulationOptionGroup::Frontend, OptionKind::Float, "--thermal-heating", "", "thermal_heating_coeff", "", "", "  --thermal-heating <float>\n", "", offsetof(SimulationConfig, thermalHeatingCoeff), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::Frontend, OptionKind::Float, "--thermal-radiation", "", "thermal_radiation_coeff", "", "", "  --thermal-radiation <float>\n", "", offsetof(SimulationConfig, thermalRadiationCoeff), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::InitState, OptionKind::String, "--init-mode", "", "init_mode", "", "", "  --init-mode <disk_orbit|random_cloud|file>\n", "", offsetof(SimulationConfig, initMode), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::InitState, OptionKind::Uint, "--init-seed", "", "init_seed", "", "", "  --init-seed <n>\n", "", offsetof(SimulationConfig, initSeed), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::InitState, OptionKind::Bool, "--init-include-central-body", "", "init_include_central_body", "", "", "  --init-include-central-body <true|false>\n", "", offsetof(SimulationConfig, initIncludeCentralBody), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-central-mass", "", "init_central_mass", "", "", "  --init-central-mass <float>\n", "", offsetof(SimulationConfig, initCentralMass), 0.000001, 0.0, true, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-central-x", "", "init_central_x", "", "", "  --init-central-x <float>\n", "", offsetof(SimulationConfig, initCentralX), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-central-y", "", "init_central_y", "", "", "  --init-central-y <float>\n", "", offsetof(SimulationConfig, initCentralY), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-central-z", "", "init_central_z", "", "", "  --init-central-z <float>\n", "", offsetof(SimulationConfig, initCentralZ), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-central-vx", "", "init_central_vx", "", "", "  --init-central-vx <float>\n", "", offsetof(SimulationConfig, initCentralVx), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-central-vy", "", "init_central_vy", "", "", "  --init-central-vy <float>\n", "", offsetof(SimulationConfig, initCentralVy), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-central-vz", "", "init_central_vz", "", "", "  --init-central-vz <float>\n", "", offsetof(SimulationConfig, initCentralVz), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-disk-mass", "", "init_disk_mass", "", "", "  --init-disk-mass <float>\n", "", offsetof(SimulationConfig, initDiskMass), 0.000001, 0.0, true, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-disk-radius-min", "", "init_disk_radius_min", "", "", "  --init-disk-radius-min <float>\n", "", offsetof(SimulationConfig, initDiskRadiusMin), 0.000001, 0.0, true, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-disk-radius-max", "", "init_disk_radius_max", "", "", "  --init-disk-radius-max <float>\n", "", offsetof(SimulationConfig, initDiskRadiusMax), 0.000001, 0.0, true, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-disk-thickness", "", "init_disk_thickness", "", "", "  --init-disk-thickness <float>\n", "", offsetof(SimulationConfig, initDiskThickness), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-velocity-scale", "", "init_velocity_scale", "", "", "  --init-velocity-scale <float>\n", "", offsetof(SimulationConfig, initVelocityScale), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-cloud-half-extent", "", "init_cloud_half_extent", "", "", "  --init-cloud-half-extent <float>\n", "", offsetof(SimulationConfig, initCloudHalfExtent), 0.000001, 0.0, true, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-cloud-speed", "", "init_cloud_speed", "", "", "  --init-cloud-speed <float>\n", "", offsetof(SimulationConfig, initCloudSpeed), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-particle-mass", "", "init_particle_mass", "", "", "  --init-particle-mass <float>\n", "", offsetof(SimulationConfig, initParticleMass), 0.000001, 0.0, true, false},
+    {SimulationOptionGroup::Fluid, OptionKind::Bool, "--sph", "", "sph_enabled", "", "", "  --sph <true|false>\n", "", offsetof(SimulationConfig, sphEnabled), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::Fluid, OptionKind::Float, "--sph-h", "", "sph_smoothing_length", "", "", "  --sph-h <float>\n", "", offsetof(SimulationConfig, sphSmoothingLength), 0.05, 0.0, true, false},
+    {SimulationOptionGroup::Fluid, OptionKind::Float, "--sph-rest-density", "", "sph_rest_density", "", "", "  --sph-rest-density <float>\n", "", offsetof(SimulationConfig, sphRestDensity), 0.01, 0.0, true, false},
+    {SimulationOptionGroup::Fluid, OptionKind::Float, "--sph-gas-constant", "", "sph_gas_constant", "", "", "  --sph-gas-constant <float>\n", "", offsetof(SimulationConfig, sphGasConstant), 0.01, 0.0, true, false},
+    {SimulationOptionGroup::Fluid, OptionKind::Float, "--sph-viscosity", "", "sph_viscosity", "", "", "  --sph-viscosity <float>\n", "", offsetof(SimulationConfig, sphViscosity), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::Fluid, OptionKind::Uint, "--energy-every", "", "energy_measure_every_steps", "", "", "  --energy-every <n>\n", "", offsetof(SimulationConfig, energyMeasureEverySteps), 1.0, 0.0, true, false},
+    {SimulationOptionGroup::Fluid, OptionKind::Uint, "--energy-sample-limit", "", "energy_sample_limit", "", "", "  --energy-sample-limit <n>\n", "", offsetof(SimulationConfig, energySampleLimit), 64.0, 0.0, true, false},
+};
+
+const std::size_t kSimulationOptionCount = sizeof(kSimulationOptions) / sizeof(kSimulationOptions[0]);
+
+} // namespace grav_config

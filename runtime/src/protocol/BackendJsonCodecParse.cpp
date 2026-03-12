@@ -5,107 +5,6 @@
 
 namespace grav_protocol {
 
-class SnapshotArrayParser {
-    public:
-        explicit SnapshotArrayParser(std::string_view raw) : _raw(raw), _cursor(0) {}
-
-        bool parse(std::vector<RenderParticle> &out)
-        {
-            out.clear();
-            const std::string marker = "\"particles\":[";
-            const std::size_t markerPos = _raw.find(marker);
-            if (markerPos == std::string_view::npos) {
-                return false;
-            }
-            _cursor = markerPos + marker.size();
-            skipSpaces();
-            if (at(']')) {
-                return true;
-            }
-            while (_cursor < _raw.size()) {
-                skipSpaces();
-                if (at(']')) {
-                    return true;
-                }
-                if (at(',')) {
-                    continue;
-                }
-                if (!consume('[')) {
-                    return false;
-                }
-                RenderParticle particle{};
-                if (!parseFloat(particle.x)
-                    || !consume(',')
-                    || !parseFloat(particle.y)
-                    || !consume(',')
-                    || !parseFloat(particle.z)
-                    || !consume(',')
-                    || !parseFloat(particle.mass)
-                    || !consume(',')
-                    || !parseFloat(particle.pressureNorm)
-                    || !consume(',')
-                    || !parseFloat(particle.temperature)
-                    || !consume(']')) {
-                    return false;
-                }
-                out.push_back(particle);
-            }
-            return false;
-        }
-
-    private:
-        bool parseFloat(float &out)
-        {
-            skipSpaces();
-            if (_cursor >= _raw.size()) {
-                return false;
-            }
-            const std::size_t start = _cursor;
-            while (_cursor < _raw.size()) {
-                const char c = _raw[_cursor];
-                if (c == ',' || c == ']') {
-                    break;
-                }
-                if (std::isspace(static_cast<unsigned char>(c)) != 0) {
-                    break;
-                }
-                ++_cursor;
-            }
-            if (_cursor <= start) {
-                return false;
-            }
-            return grav_text::parseNumber(_raw.substr(start, _cursor - start), out);
-        }
-
-        void skipSpaces()
-        {
-            while (_cursor < _raw.size() && std::isspace(static_cast<unsigned char>(_raw[_cursor])) != 0) {
-                ++_cursor;
-            }
-        }
-
-        bool consume(char expected)
-        {
-            skipSpaces();
-            if (_cursor >= _raw.size() || _raw[_cursor] != expected) {
-                return false;
-            }
-            ++_cursor; return true;
-        }
-
-        bool at(char expected)
-        {
-            skipSpaces();
-            if (_cursor >= _raw.size() || _raw[_cursor] != expected) {
-                return false;
-            }
-            ++_cursor; return true;
-        }
-
-        std::string_view _raw;
-        std::size_t _cursor;
-};
-
 bool BackendJsonCodec::parseCommandRequest(std::string_view raw, BackendCommandRequest &out, std::string &error)
 {
     BackendCommandRequest parsed{};
@@ -119,7 +18,9 @@ bool BackendJsonCodec::parseCommandRequest(std::string_view raw, BackendCommandR
         error = "missing cmd";
         return false;
     }
-    out = parsed; error.clear(); return true;
+    out = parsed;
+    error.clear();
+    return true;
 }
 
 bool BackendJsonCodec::parseResponseEnvelope(std::string_view raw, BackendResponseEnvelope &out, std::string &error)
@@ -133,56 +34,9 @@ bool BackendJsonCodec::parseResponseEnvelope(std::string_view raw, BackendRespon
     if (!parsed.ok && !readString(raw, "error", parsed.error)) {
         parsed.error = "backend error";
     }
-    out = parsed; error.clear(); return true;
-}
-
-bool BackendJsonCodec::parseStatusResponse(std::string_view raw, BackendStatusPayload &out, std::string &error)
-{
-    BackendStatusPayload parsed{};
-    if (!parseResponseEnvelope(raw, parsed.envelope, error)) {
-        return false;
-    }
-    if (!parsed.envelope.ok) {
-        out = parsed;
-        return true;
-    }
-    readNumber(raw, "steps", parsed.steps);
-    readNumber(raw, "dt", parsed.dt);
-    readBool(raw, "paused", parsed.paused);
-    readBool(raw, "faulted", parsed.faulted);
-    readNumber(raw, "fault_step", parsed.faultStep);
-    readString(raw, "fault_reason", parsed.faultReason);
-    readBool(raw, "sph", parsed.sphEnabled);
-    readNumber(raw, "backend_fps", parsed.backendFps);
-    readNumber(raw, "particles", parsed.particleCount);
-    readString(raw, "solver", parsed.solver);
-    readString(raw, "integrator", parsed.integrator);
-    readNumber(raw, "ekin", parsed.kineticEnergy);
-    readNumber(raw, "epot", parsed.potentialEnergy);
-    readNumber(raw, "eth", parsed.thermalEnergy);
-    readNumber(raw, "erad", parsed.radiatedEnergy);
-    readNumber(raw, "etot", parsed.totalEnergy);
-    readNumber(raw, "drift_pct", parsed.energyDriftPct);
-    readBool(raw, "estimated", parsed.energyEstimated);
-    out = parsed; error.clear(); return true;
-}
-
-bool BackendJsonCodec::parseSnapshotResponse(std::string_view raw, BackendSnapshotPayload &out, std::string &error)
-{
-    BackendSnapshotPayload parsed{};
-    if (!parseResponseEnvelope(raw, parsed.envelope, error)) {
-        return false;
-    }
-    if (!parsed.envelope.ok) {
-        out = parsed;
-        return true;
-    }
-    readBool(raw, "has_snapshot", parsed.hasSnapshot);
-    if (!SnapshotArrayParser(raw).parse(parsed.particles)) {
-        error = "invalid snapshot payload";
-        return false;
-    }
-    out = parsed; error.clear(); return true;
+    out = parsed;
+    error.clear();
+    return true;
 }
 
 bool BackendJsonCodec::readString(std::string_view raw, std::string_view key, std::string &out)
@@ -195,12 +49,12 @@ bool BackendJsonCodec::readString(std::string_view raw, std::string_view key, st
     std::string value;
     value.reserve(32u);
     while (cursor < raw.size()) {
-        const char c = raw[cursor++];
-        if (c == '"') {
+        const char current = raw[cursor++];
+        if (current == '"') {
             out = value;
             return true;
         }
-        if (c == '\\') {
+        if (current == '\\') {
             if (cursor >= raw.size()) {
                 return false;
             }
@@ -221,7 +75,7 @@ bool BackendJsonCodec::readString(std::string_view raw, std::string_view key, st
             }
             continue;
         }
-        value.push_back(c);
+        value.push_back(current);
     }
     return false;
 }
@@ -237,17 +91,20 @@ bool BackendJsonCodec::readBool(std::string_view raw, std::string_view key, bool
         out = true;
         return true;
     }
-    if (token == "false") { out = false; return true; }
+    if (token == "false") {
+        out = false;
+        return true;
+    }
     return false;
 }
 
 std::string BackendJsonCodec::trim(std::string_view value)
 {
-    const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char c) {
-        return std::isspace(c) != 0;
+    const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char current) {
+        return std::isspace(current) != 0;
     });
-    const auto end = std::find_if_not(value.rbegin(), value.rend(), [](unsigned char c) {
-        return std::isspace(c) != 0;
+    const auto end = std::find_if_not(value.rbegin(), value.rend(), [](unsigned char current) {
+        return std::isspace(current) != 0;
     }).base();
     if (begin >= end) {
         return {};
@@ -257,8 +114,8 @@ std::string BackendJsonCodec::trim(std::string_view value)
 
 std::string BackendJsonCodec::toLower(std::string value)
 {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char current) {
+        return static_cast<char>(std::tolower(current));
     });
     return value;
 }
@@ -281,7 +138,8 @@ bool BackendJsonCodec::findValueStart(std::string_view raw, std::string_view key
     if (cursor >= raw.size()) {
         return false;
     }
-    start = cursor; return true;
+    start = cursor;
+    return true;
 }
 
 bool BackendJsonCodec::readToken(std::string_view raw, std::string_view key, std::string &out)
