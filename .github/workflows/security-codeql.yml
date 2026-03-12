@@ -1,0 +1,63 @@
+name: security-codeql
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+concurrency:
+  group: security-codeql-${{ github.workflow }}-${{ github.ref }}-${{ matrix.language }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: cpp
+            build-mode: manual
+          - language: python
+            build-mode: none
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+      - name: Install build tools
+        if: ${{ matrix.build-mode == 'manual' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+      - name: Configure CodeQL build
+        if: ${{ matrix.build-mode == 'manual' }}
+        run: |
+          cmake -S tests -B build-codeql -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DGRAVITY_PROFILE=prod \
+            -DGRAVITY_INTEGRATION_STRICT_WARNINGS=OFF \
+            -DGRAVITY_INTEGRATION_ENABLE_SANITIZERS=OFF
+      - name: Build CodeQL targets
+        if: ${{ matrix.build-mode == 'manual' }}
+        run: cmake --build build-codeql --parallel
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:${{ matrix.language }}

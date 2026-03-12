@@ -55,6 +55,7 @@ Build switch:
 - `main` must only receive commits that are traceable to merged `issue/<N>-<slug>` pull requests.
 - `nightly-full` extends deterministic evidence with repeated standalone integration runs, coverage publication, FMEA status snapshots, and optional GPU full-suite or numerical artifacts.
 - `release-lane` reruns strict `prod` validation, then publishes the release bundle, release-quality index, and evidence pack for review.
+- Security CI coverage must include CodeQL code scanning, pull-request dependency vulnerability review, and an automated SBOM for packaged release artifacts.
 - Filtered CI `ctest` invocations in evidence lanes must use `--no-tests=error` to prevent false green jobs when selectors drift.
 - Filtered CI `ctest` invocations in evidence lanes must select tests by normalized `TST_*` identifiers, not legacy suite-name prefixes.
 - Temporary waivers and deviations must carry explicit owner, approver, and review date metadata in the canonical register.

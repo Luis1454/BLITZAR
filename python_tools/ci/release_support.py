@@ -9,6 +9,9 @@ from python_tools.policies.deviation_register import DeviationRegister
 
 DEFAULT_EVIDENCE_REFS = (
     "EVD_CI_RELEASE_LANE",
+    "EVD_CI_SECURITY_CODEQL",
+    "EVD_CI_DEPENDENCY_REVIEW",
+    "EVD_GITHUB_DEPENDABOT",
     "EVD_QLT_DEVIATION_REGISTER",
     "EVD_QLT_EVIDENCE_PACK_FORMAT",
     "EVD_QLT_MANIFEST",
@@ -17,6 +20,7 @@ DEFAULT_EVIDENCE_REFS = (
     "EVD_QLT_STANDARDS_PROFILE",
     "EVD_SCRIPT_RELEASE_PACKAGE_BUNDLE",
     "EVD_SCRIPT_RELEASE_PACKAGE_EVIDENCE",
+    "EVD_SCRIPT_RELEASE_PACKAGE_SBOM",
 )
 
 
@@ -51,6 +55,11 @@ def build_release_lane_activities(profile: str) -> list[dict[str, str]]:
             "command": 'ctest --test-dir build --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|5|6|7|8|9)_"',
         },
         {"name": "release-bundle", "status": "pass", "command": "python scripts/ci/release/package_bundle.py --build-dir build --dist-dir dist/release-bundle"},
+        {
+            "name": "release-sbom",
+            "status": "pass",
+            "command": "python scripts/ci/release/package_sbom.py --artifacts-dir dist/release-bundle --dist-dir dist/release-sbom",
+        },
         {
             "name": "release-evidence-pack",
             "status": "pass",
