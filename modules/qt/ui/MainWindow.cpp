@@ -401,9 +401,11 @@ MainWindow::MainWindow(
         }
         _config.inputFile = path.toStdString();
         _config.inputFormat = "auto";
+        _config.presetStructure = "file";
         _config.initMode = "file";
-        _runtime->setInitialStateFile(_config.inputFile, _config.inputFormat);
-        _runtime->setInitialStateConfig(buildInitialStateConfig(_config));
+        const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(_config, std::cerr);
+        _runtime->setInitialStateFile(initPlan.inputFile, initPlan.inputFormat);
+        _runtime->setInitialStateConfig(initPlan.config);
         _runtime->requestReset();
         markConfigDirty();
     });
@@ -509,6 +511,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::applyConfigToBackend(bool requestReset)
 {
+    const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(_config, std::cerr);
     _runtime->setParticleCount(grav_frontend::resolveBackendParticleCount(_config));
     _runtime->setDt(_config.dt);
     _runtime->setSolverMode(_config.solver);
@@ -523,8 +526,8 @@ void MainWindow::applyConfigToBackend(bool requestReset)
     );
     _runtime->setEnergyMeasurementConfig(_config.energyMeasureEverySteps, _config.energySampleLimit);
     _runtime->setExportDefaults(_config.exportDirectory, _config.exportFormat);
-    _runtime->setInitialStateFile(_config.inputFile, _config.inputFormat);
-    _runtime->setInitialStateConfig(buildInitialStateConfig(_config));
+    _runtime->setInitialStateFile(initPlan.inputFile, initPlan.inputFormat);
+    _runtime->setInitialStateConfig(initPlan.config);
     if (requestReset) {
         _runtime->requestReset();
     }

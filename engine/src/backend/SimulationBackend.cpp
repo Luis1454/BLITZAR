@@ -926,6 +926,7 @@ SimulationBackend::SimulationBackend(const std::string &configPath)
 {
     _configPath = configPath.empty() ? "simulation.ini" : configPath;
     const SimulationConfig loaded = SimulationConfig::loadOrCreate(_configPath);
+    const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(loaded, std::cerr);
     _runtimeConfigMirror = loaded;
 
     {
@@ -949,10 +950,11 @@ SimulationBackend::SimulationBackend(const std::string &configPath)
         _sphViscosity = loaded.sphViscosity;
         _exportDirectory = loaded.exportDirectory;
         _exportFormatDefault = loaded.exportFormat;
-        _initialStatePath = loaded.inputFile;
-        _initialStateFormat = loaded.inputFormat;
-        _initialStateConfig = buildInitialStateConfig(loaded);
+        _initialStatePath = initPlan.inputFile;
+        _initialStateFormat = initPlan.inputFormat;
+        _initialStateConfig = initPlan.config;
     }
+    std::cout << "[backend] " << initPlan.summary << "\n";
     _dt.store(std::max(1e-6f, loaded.dt), std::memory_order_relaxed);
     _energyMeasureEverySteps.store(std::max<std::uint32_t>(1u, loaded.energyMeasureEverySteps), std::memory_order_relaxed);
     _energySampleLimit.store(std::max<std::uint32_t>(64u, loaded.energySampleLimit), std::memory_order_relaxed);
@@ -1394,7 +1396,7 @@ void SimulationBackend::rebuildSystem()
 
     std::vector<Particle> importedParticles;
     const std::string initMode = toLower(initConfig.mode);
-    const bool shouldTryFile = !inputPath.empty() || initMode == "file";
+    const bool shouldTryFile = initMode == "file" && !inputPath.empty();
     const bool hasImportedState = shouldTryFile && loadInitialState(importedParticles, inputPath, inputFormat);
 
     std::vector<Particle> generatedParticles;
@@ -1407,6 +1409,13 @@ void SimulationBackend::rebuildSystem()
     const std::uint32_t targetParticleCount = hasInitialParticles
         ? static_cast<std::uint32_t>(std::max<std::size_t>(2u, initialParticles.size()))
         : configuredParticleCount;
+    std::cout << "[backend] init rebuild mode=" << initMode
+              << " active_source=" << (hasImportedState ? "file" : "generated");
+    if (shouldTryFile) {
+        std::cout << " input_file=" << inputPath
+                  << " input_format=" << (inputFormat.empty() ? "auto" : inputFormat);
+    }
+    std::cout << " particles=" << targetParticleCount << "\n";
 
     std::string effectiveSolver = solver;
     if (solverModeFromCanonicalName(solver) == ParticleSystem::SolverMode::PairwiseCuda

@@ -13,6 +13,7 @@ if(GRAVITY_TEST_UNIT_CONFIG_SOURCES)
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
+            "${GRAVITY_ROOT_DIR}/engine/src/backend/SimulationInitConfig.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
     )
 endif()
