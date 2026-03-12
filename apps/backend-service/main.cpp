@@ -18,6 +18,7 @@ namespace grav_backend_service {
 
 void applyConfigToBackend(SimulationBackend &backend, const SimulationConfig &config)
 {
+    const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(config, std::cerr);
     backend.setParticleCount(std::max<std::uint32_t>(2u, config.particleCount));
     backend.setDt(config.dt);
     backend.setSolverMode(config.solver);
@@ -32,8 +33,9 @@ void applyConfigToBackend(SimulationBackend &backend, const SimulationConfig &co
     );
     backend.setEnergyMeasurementConfig(config.energyMeasureEverySteps, config.energySampleLimit);
     backend.setExportDefaults(config.exportDirectory, config.exportFormat);
-    backend.setInitialStateFile(config.inputFile, config.inputFormat);
-    backend.setInitialStateConfig(buildInitialStateConfig(config));
+    backend.setInitialStateFile(initPlan.inputFile, initPlan.inputFormat);
+    backend.setInitialStateConfig(initPlan.config);
+    std::cout << "[backend] " << initPlan.summary << "\n";
 }
 } // namespace grav_backend_service
 int main(int argc, char **argv)
