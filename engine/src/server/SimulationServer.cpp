@@ -156,12 +156,37 @@ bool coerceConfigSolverIntegratorCompatibility(std::string &solver, std::string 
     return false;
 }
 
+float autoTargetSubstepDt(std::string_view solver, bool eulerIntegrator, bool sphEnabled, std::size_t liveParticleCount)
+{
+    if (sphEnabled) {
+        return 0.001f;
+    }
+    if (!eulerIntegrator) {
+        return 0.0025f;
+    }
+    if (liveParticleCount >= 100'000u) {
+        return 0.01f;
+    }
+    if (liveParticleCount >= 20'000u) {
+        return 0.005f;
+    }
+    if (solver == grav_modes::kSolverOctreeGpu) {
+        return 0.0025f;
+    }
+    if (solver == grav_modes::kSolverOctreeCpu) {
+        return 0.001f;
+    }
+    return 0.0005f;
+}
+
 void logEffectiveExecutionModes(
     std::string_view solver,
     std::string_view integrator,
     float theta,
     float softening,
-    bool sphEnabled)
+    bool sphEnabled,
+    float configuredSubstepTargetDt,
+    std::uint32_t configuredMaxSubsteps)
 {
     std::cout << "[server] active solver=" << solver
               << " integrator=" << integrator;
@@ -169,7 +194,9 @@ void logEffectiveExecutionModes(
         std::cout << " theta=" << theta
                   << " softening=" << softening;
     }
-    std::cout << " sph=" << (sphEnabled ? "on" : "off") << "\n";
+    std::cout << " sph=" << (sphEnabled ? "on" : "off")
+              << " substep_target_dt=" << configuredSubstepTargetDt
+              << " max_substeps=" << configuredMaxSubsteps << "\n";
 }
 
 std::string defaultExportPath(const std::string &directory, const std::string &format, std::uint64_t step)
@@ -970,6 +997,11 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
       _energyEstimated(false),
       _energyMeasureEverySteps(30),
       _energySampleLimit(5000),
+      _configuredSubstepTargetDt(0.0f),
+      _configuredMaxSubsteps(32u),
+      _lastAppliedSubstepTargetDt(0.0f),
+      _lastAppliedSubstepDt(0.0f),
+      _lastAppliedSubsteps(0u),
       _faulted(false),
       _faultStep(0),
       _particleCount(std::max<std::uint32_t>(2u, particleCount)),
@@ -1006,6 +1038,8 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
     _runtimeConfigMirror.dt = std::max(1e-6f, initialDt);
     _runtimeConfigMirror.solver = _solverMode;
     _runtimeConfigMirror.integrator = _integratorMode;
+    _runtimeConfigMirror.substepTargetDt = _configuredSubstepTargetDt.load(std::memory_order_relaxed);
+    _runtimeConfigMirror.maxSubsteps = _configuredMaxSubsteps.load(std::memory_order_relaxed);
     _runtimeConfigMirror.octreeTheta = _octreeTheta;
     _runtimeConfigMirror.octreeSoftening = _octreeSoftening;
     _runtimeConfigMirror.sphEnabled = _sphEnabled;
@@ -1058,6 +1092,8 @@ SimulationServer::SimulationServer(const std::string &configPath)
     _dt.store(std::max(1e-6f, loaded.dt), std::memory_order_relaxed);
     _energyMeasureEverySteps.store(std::max<std::uint32_t>(1u, loaded.energyMeasureEverySteps), std::memory_order_relaxed);
     _energySampleLimit.store(std::max<std::uint32_t>(64u, loaded.energySampleLimit), std::memory_order_relaxed);
+    _configuredSubstepTargetDt.store(std::max(0.0f, loaded.substepTargetDt), std::memory_order_relaxed);
+    _configuredMaxSubsteps.store(std::max<std::uint32_t>(1u, loaded.maxSubsteps), std::memory_order_relaxed);
 }
 
 SimulationServer::~SimulationServer()
@@ -1361,6 +1397,10 @@ SimulationStats SimulationServer::getStats() const
         std::move(faultReason),
         sphEnabled,
         _serverFps.load(std::memory_order_relaxed),
+        _lastAppliedSubstepTargetDt.load(std::memory_order_relaxed),
+        _lastAppliedSubstepDt.load(std::memory_order_relaxed),
+        _lastAppliedSubsteps.load(std::memory_order_relaxed),
+        _configuredMaxSubsteps.load(std::memory_order_relaxed),
         particleCount,
         _kineticEnergy.load(std::memory_order_relaxed),
         _potentialEnergy.load(std::memory_order_relaxed),
@@ -1395,8 +1435,10 @@ SimulationConfig SimulationServer::getRuntimeConfig() const
         config.inputFile = _initialStatePath;
         config.inputFormat = _initialStateFormat;
     }
-    config.dt = _dt.load(std::memory_order_relaxed);
-    config.energyMeasureEverySteps = _energyMeasureEverySteps.load(std::memory_order_relaxed);
+        config.dt = _dt.load(std::memory_order_relaxed);
+        config.substepTargetDt = _configuredSubstepTargetDt.load(std::memory_order_relaxed);
+        config.maxSubsteps = _configuredMaxSubsteps.load(std::memory_order_relaxed);
+        config.energyMeasureEverySteps = _energyMeasureEverySteps.load(std::memory_order_relaxed);
     config.energySampleLimit = _energySampleLimit.load(std::memory_order_relaxed);
     return config;
 }
@@ -1592,7 +1634,14 @@ void SimulationServer::rebuildSystem()
         initConfig.thermalHeatingCoeff,
         initConfig.thermalRadiationCoeff
     );
-    logEffectiveExecutionModes(effectiveSolver, integrator, theta, softening, sphEnabled);
+    logEffectiveExecutionModes(
+        effectiveSolver,
+        integrator,
+        theta,
+        softening,
+        sphEnabled,
+        _configuredSubstepTargetDt.load(std::memory_order_relaxed),
+        _configuredMaxSubsteps.load(std::memory_order_relaxed));
     if (initConfig.thermalHeatingCoeff > 0.0f || initConfig.thermalRadiationCoeff > 0.0f) {
         std::cout << "[server] warning: thermal model active (heating="
                   << initConfig.thermalHeatingCoeff
@@ -1610,6 +1659,9 @@ void SimulationServer::rebuildSystem()
     _totalEnergy.store(0.0f, std::memory_order_relaxed);
     _energyDriftPct.store(0.0f, std::memory_order_relaxed);
     _energyEstimated.store(false, std::memory_order_relaxed);
+    _lastAppliedSubstepTargetDt.store(0.0f, std::memory_order_relaxed);
+    _lastAppliedSubstepDt.store(0.0f, std::memory_order_relaxed);
+    _lastAppliedSubsteps.store(0u, std::memory_order_relaxed);
     _hasEnergyBaseline = false;
     _energyBaseline = 0.0f;
     _faulted.store(false, std::memory_order_relaxed);
@@ -2047,18 +2099,28 @@ void SimulationServer::loop()
             const float dt = std::max(1e-6f, _dt.load(std::memory_order_relaxed));
             const std::size_t liveParticleCount = _system ? _system->getParticles().size() : 0u;
             const bool eulerIntegrator = _system->getIntegratorMode() == ParticleSystem::IntegratorMode::Euler;
-            const float targetSubstep = sphEnabled ? 0.001f : (eulerIntegrator ? 0.0002f : 0.0025f);
-            float adjustedTargetSubstep = targetSubstep;
-            if (!sphEnabled) {
-                if (liveParticleCount >= 100'000u) {
-                    adjustedTargetSubstep = std::max(adjustedTargetSubstep, 0.01f);
-                } else if (liveParticleCount >= 20'000u) {
-                    adjustedTargetSubstep = std::max(adjustedTargetSubstep, 0.005f);
-                }
-            }
-            std::uint32_t substeps = static_cast<std::uint32_t>(std::ceil(dt / adjustedTargetSubstep));
-            substeps = std::max<std::uint32_t>(1u, std::min<std::uint32_t>(substeps, 256u));
+            const float configuredTargetSubstepDt = _configuredSubstepTargetDt.load(std::memory_order_relaxed);
+            const float appliedTargetSubstepDt = configuredTargetSubstepDt > 0.0f
+                ? configuredTargetSubstepDt
+                : autoTargetSubstepDt(solverMode, eulerIntegrator, sphEnabled, liveParticleCount);
+            const std::uint32_t configuredMaxSubsteps = std::max<std::uint32_t>(
+                1u,
+                _configuredMaxSubsteps.load(std::memory_order_relaxed));
+            const std::uint32_t requiredSubsteps = std::max<std::uint32_t>(
+                1u,
+                static_cast<std::uint32_t>(std::ceil(dt / appliedTargetSubstepDt)));
+            const std::uint32_t substeps = std::min<std::uint32_t>(requiredSubsteps, configuredMaxSubsteps);
             const float dtSub = dt / static_cast<float>(substeps);
+            _lastAppliedSubstepTargetDt.store(appliedTargetSubstepDt, std::memory_order_relaxed);
+            _lastAppliedSubstepDt.store(dtSub, std::memory_order_relaxed);
+            _lastAppliedSubsteps.store(substeps, std::memory_order_relaxed);
+            if (requiredSubsteps > configuredMaxSubsteps && (_steps.load(std::memory_order_relaxed) % 256u) == 0u) {
+                std::cerr << "[server] substep clamp active dt=" << dt
+                          << " target_dt=" << appliedTargetSubstepDt
+                          << " required=" << requiredSubsteps
+                          << " max=" << configuredMaxSubsteps
+                          << " applied_dt=" << dtSub << "\n";
+            }
             for (std::uint32_t s = 0; s < substeps; ++s) {
                 if (!_system->update(dtSub)) {
                     updateFailed = true;

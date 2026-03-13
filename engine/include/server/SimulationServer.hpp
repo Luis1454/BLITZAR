@@ -91,6 +91,11 @@ class SimulationServer : public grav_client::ILocalServer {
         std::atomic<bool> _energyEstimated;
         std::atomic<std::uint32_t> _energyMeasureEverySteps;
         std::atomic<std::uint32_t> _energySampleLimit;
+        std::atomic<float> _configuredSubstepTargetDt;
+        std::atomic<std::uint32_t> _configuredMaxSubsteps;
+        std::atomic<float> _lastAppliedSubstepTargetDt;
+        std::atomic<float> _lastAppliedSubstepDt;
+        std::atomic<std::uint32_t> _lastAppliedSubsteps;
         std::atomic<bool> _faulted;
         std::atomic<std::uint64_t> _faultStep;
 

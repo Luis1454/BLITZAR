@@ -756,6 +756,10 @@ SimulationStats ClientServerBridge::fromRemoteStatus(const ServerClientStatus &s
     stats.faultReason = status.faultReason;
     stats.sphEnabled = status.sphEnabled;
     stats.serverFps = status.serverFps;
+    stats.substepTargetDt = status.substepTargetDt;
+    stats.substepDt = status.substepDt;
+    stats.substeps = status.substeps;
+    stats.maxSubsteps = status.maxSubsteps;
     stats.particleCount = status.particleCount;
     stats.kineticEnergy = status.kineticEnergy;
     stats.potentialEnergy = status.potentialEnergy;
