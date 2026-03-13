@@ -13,6 +13,8 @@ if(GRAVITY_TEST_UNIT_CONFIG_SOURCES)
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
+            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
+            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
@@ -101,6 +103,8 @@ set(GRAVITY_TEST_BASE_RUNTIME_SOURCES
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
     ${GRAVITY_TEST_BASE_BRIDGE_SOURCES}

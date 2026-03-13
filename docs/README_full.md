@@ -85,18 +85,34 @@ Key files:
 
 `simulation.ini` is created automatically on first launch.
 
-Core keys:
-- `particle_count`
-- `dt`
-- `solver` (`pairwise_cuda`, `octree_gpu`, `octree_cpu`)
-- `integrator` (`euler`, `rk4`)
-- `sph_enabled` and SPH coefficients
-- `octree_theta`, `octree_softening`
-- `client_remote_*_timeout_ms`
-- `export_directory`, `export_format`
-- `input_file`, `input_format`
-- `init_*` initial-state parameters
-- `energy_measure_every_steps`, `energy_sample_limit`
+Primary directives:
+- `simulation(...)`
+- `substeps(...)`
+- `octree(...)`
+- `client(...)`
+- `export(...)`
+- `scene(...)`
+- `preset(...)`
+- `thermal(...)`
+- `generation(...)`
+- `central_body(...)`
+- `disk(...)`
+- `cloud(...)`
+- `sph(...)`
+- `energy(...)`
+
+Example:
+
+```ini
+simulation(particle_count=10000, dt=0.01, solver=octree_gpu, integrator=euler)
+substeps(target_dt=0.005, max=4)
+scene(style=preset, preset=two_body, mode=two_body, file="", format=auto)
+preset(size=6, velocity_temperature=0, temperature=0)
+thermal(ambient=0, specific_heat=1, heating=0, radiation=0)
+client(draw_cap=10000, zoom=8, luminosity=100, ui_fps=60, command_timeout_ms=80, status_timeout_ms=40, snapshot_timeout_ms=140)
+```
+
+Legacy flat `key=value` files remain readable for migration, but new saves are emitted in directive form.
 
 For the complete schema and behavior contract, see:
 - `engine/src/config/SimulationConfig.cpp`
@@ -142,12 +158,10 @@ Supported snapshot formats:
 Import is controlled by:
 
 ```ini
-init_mode=file
-input_file=exports/sim_20260217_122420_s41.vtk
-input_format=auto
+scene(style=preset, preset=file, mode=file, file=exports/sim_20260217_122420_s41.vtk, format=auto)
 ```
 
-If `init_mode` is not `file`, initial state is generated from `init_*` parameters.
+If the resolved scene kind is not `file`, initial state is generated from the grouped scene directives.
 
 ## Quality Baseline
 

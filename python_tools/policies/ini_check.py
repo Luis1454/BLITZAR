@@ -30,13 +30,89 @@ class IniCheck(BaseCheck):
         values: dict[str, str] = {}
         for raw_line in content.splitlines():
             line = raw_line.strip()
-            if not line or line.startswith("#") or line.startswith(";") or "=" not in line:
+            if not line or line.startswith("#") or line.startswith(";"):
+                continue
+            if self._parse_directive(line, values):
+                continue
+            if "=" not in line:
                 continue
             key, value = line.split("=", 1)
             key = key.strip()
             if key and key not in values:
                 values[key] = value.strip()
         return values
+
+    def _parse_directive(self, line: str, values: dict[str, str]) -> bool:
+        if "(" not in line or not line.endswith(")"):
+            return False
+        directive, raw_args = line.split("(", 1)
+        directive = directive.strip()
+        body = raw_args[:-1]
+        if not directive:
+            return False
+        args: dict[str, str] = {}
+        token = ""
+        quote = ""
+        for char in body:
+            if quote:
+                if char == quote:
+                    quote = ""
+                token += char
+                continue
+            if char in {"'", '"'}:
+                quote = char
+                token += char
+                continue
+            if char == ",":
+                self._consume_directive_arg(token, args)
+                token = ""
+                continue
+            token += char
+        self._consume_directive_arg(token, args)
+        mapping = {
+            "simulation": {
+                "particle_count": "particle_count",
+                "particles": "particle_count",
+                "dt": "dt",
+                "solver": "solver",
+                "integrator": "integrator",
+            },
+            "substeps": {"target_dt": "substep_target_dt", "max": "max_substeps"},
+            "octree": {"theta": "octree_theta", "softening": "octree_softening"},
+            "client": {
+                "draw_cap": "client_particle_cap",
+                "ui_fps": "ui_fps_limit",
+                "command_timeout_ms": "client_remote_command_timeout_ms",
+                "status_timeout_ms": "client_remote_status_timeout_ms",
+                "snapshot_timeout_ms": "client_remote_snapshot_timeout_ms",
+            },
+            "export": {"format": "export_format", "directory": "export_directory"},
+            "scene": {
+                "style": "init_config_style",
+                "preset": "preset_structure",
+                "mode": "init_mode",
+                "format": "input_format",
+            },
+            "sph": {"enabled": "sph_enabled"},
+            "energy": {"every_steps": "energy_measure_every_steps", "sample_limit": "energy_sample_limit"},
+        }
+        directive_map = mapping.get(directive)
+        if directive_map is None:
+            return True
+        for key, target in directive_map.items():
+            if key in args and target not in values:
+                values[target] = args[key]
+        return True
+
+    def _consume_directive_arg(self, token: str, values: dict[str, str]) -> None:
+        entry = token.strip()
+        if not entry or "=" not in entry:
+            return
+        key, value = entry.split("=", 1)
+        cleaned = value.strip()
+        if len(cleaned) >= 2 and cleaned[0] == cleaned[-1] and cleaned[0] in {"'", '"'}:
+            cleaned = cleaned[1:-1]
+        values[key.strip()] = cleaned
 
     def _check_required_keys(self, values: dict[str, str], result: CheckResult) -> None:
         required_keys = (

@@ -77,6 +77,6 @@ In `PROFILE=prod`, `aster-client` and dynamic client modules are disabled by des
 
 ## Config
 
-`simulation.ini` is auto-created at first launch.
+`simulation.ini` is auto-created at first launch and now uses directive blocks such as `simulation(...)`, `scene(...)`, `thermal(...)`, and `client(...)`.
 
 Main options are documented in [docs/README_full.md](docs/README_full.md).
