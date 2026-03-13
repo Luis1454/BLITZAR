@@ -506,6 +506,20 @@
           "REQ-MOD-002"
         ]
       },
+      "TST-UNT-MODHOST-007": {
+        "id": "ClientHostCliArgsTest.TST_UNT_MODHOST_007_AliasResolutionReturnsExpectedModuleId",
+        "req_ids": [
+          "REQ-MOD-002"
+        ]
+      },
+      "TST-UNT-MODHOST-008": {
+        "id": "ClientHostCliArgsTest.TST_UNT_MODHOST_008_HelpReflectsProfileReloadPolicy",
+        "req_ids": [
+          "REQ-MOD-002"
+        ]
+      }
+    },
+    "EVD_TEST_UNIT_MODULE_HOST_BOUNDARY": {
       "TST-UNT-MODHOST-004": {
         "id": "ClientModuleBoundaryTest.TST_UNT_MODHOST_004_CreateResultTracksOpaqueModuleState",
         "req_ids": [
@@ -520,6 +534,18 @@
       },
       "TST-UNT-MODHOST-006": {
         "id": "ClientModuleBoundaryTest.TST_UNT_MODHOST_006_CommandControlUpdatesKeepRunningFlag",
+        "req_ids": [
+          "REQ-MOD-002"
+        ]
+      },
+      "TST-UNT-MODHOST-009": {
+        "id": "ClientModuleBoundaryTest.TST_UNT_MODHOST_009_ModuleManifestAndHashValidateExpectedModule",
+        "req_ids": [
+          "REQ-MOD-002"
+        ]
+      },
+      "TST-UNT-MODHOST-010": {
+        "id": "ClientModuleBoundaryTest.TST_UNT_MODHOST_010_ModuleManifestRejectsUnsupportedModuleAndDigestMismatch",
         "req_ids": [
           "REQ-MOD-002"
         ]

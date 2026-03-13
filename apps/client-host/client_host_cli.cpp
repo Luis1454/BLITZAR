@@ -13,6 +13,8 @@ namespace grav_client_host {
 
 class ClientHostCliLocal final {
 public:
+    static constexpr bool kLiveReloadEnabled = GRAVITY_PROFILE_IS_PROD == 0;
+
     static int run(const HostOptions &options, std::string_view programName)
     {
         const std::vector<std::filesystem::path> searchRoots = ClientHostModuleOps::buildSearchRoots(programName);
@@ -20,8 +22,10 @@ public:
         std::string currentModuleSpecifier = options.moduleSpecifier;
         const std::string resolvedInitialModulePath =
             ClientHostModuleOps::resolveModuleSpecifier(options.moduleSpecifier, searchRoots);
+        const std::string expectedInitialModuleId =
+            ClientHostModuleOps::expectedModuleIdForSpecifier(options.moduleSpecifier);
         std::string loadError;
-        if (!module.load(resolvedInitialModulePath, options.configPath, loadError)) {
+        if (!module.load(resolvedInitialModulePath, options.configPath, expectedInitialModuleId, loadError)) {
             std::cerr << "[client-host] failed to load module '" << options.moduleSpecifier
                       << "': " << loadError << "\n";
             return 1;
@@ -82,6 +86,10 @@ private:
             return false;
         }
         if (tokens[0] == "reload") {
+            if (!kLiveReloadEnabled) {
+                std::cout << "[client-host] reload is disabled in prod profile\n";
+                return false;
+            }
             if (currentModuleSpecifier.empty()) {
                 std::cout << "[client-host] no module specifier to reload\n";
                 return false;
@@ -90,6 +98,10 @@ private:
             return false;
         }
         if (tokens[0] == "switch") {
+            if (!kLiveReloadEnabled) {
+                std::cout << "[client-host] switch is disabled in prod profile\n";
+                return false;
+            }
             if (tokens.size() < 2u) {
                 std::cout << "[client-host] usage: switch <module_alias_or_path>\n";
                 return false;
@@ -137,6 +149,11 @@ private:
 bool ClientHostCli::parseArgs(int argc, char **argv, HostOptions &outOptions, std::string &outError)
 {
     return ClientHostCliArgs::parseArgs(argc, argv, outOptions, outError);
+}
+
+bool ClientHostCli::liveReloadEnabled() noexcept
+{
+    return ClientHostCliLocal::kLiveReloadEnabled;
 }
 
 void ClientHostCli::printHelp(std::string_view programName)

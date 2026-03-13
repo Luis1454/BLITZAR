@@ -45,11 +45,17 @@ public:
             << "  help\n"
             << "  modules\n"
             << "  module\n"
-            << "  reload\n"
-            << "  switch <module_alias_or_path>\n"
             << "  quit | exit\n"
             << "  <any other line> -> forwarded to loaded module\n"
             << "[client-host] aliases: cli, gui, echo, qt\n";
+        if (ClientHostCli::liveReloadEnabled()) {
+            std::cout
+                << "  reload\n"
+                << "  switch <module_alias_or_path>\n"
+                << "[client-host] dev profile: live module reload is enabled.\n";
+        } else {
+            std::cout << "[client-host] prod profile: manifest-verified startup only; live reload is disabled.\n";
+        }
     }
 };
 

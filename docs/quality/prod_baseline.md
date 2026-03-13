@@ -18,6 +18,8 @@ This artifact defines the evidence-grade baseline for qualification-oriented `pr
 - Hosted merge and nightly lanes must keep explicit axis labels in job names so failures map directly to runner OS and toolchain family.
 - Self-hosted GPU lanes must publish a readiness report and fallback reason through `.github/workflows/gpu-runner-health.yml`.
 - `pr-fast` dev module builds are intentionally `dev` profile exploratory checks and are excluded from qualification evidence.
+- Dynamic client modules are never evidence by default; if `aster-client` is explicitly built under `prod`, only startup loading of allowlisted modules is permitted and the host must verify the sidecar manifest, product metadata, and `sha256` before loading.
+- Live module `reload` / `switch` are forbidden in `prod`, even when the client host is explicitly built for local reproduction.
 - Optional hardware lanes can extend evidence breadth, but merge/release qualification cannot depend on them alone.
 - `dev` profile runs, ad hoc local builds, and exploratory module builds are non-evidence until reproduced under the `prod` baseline.
 

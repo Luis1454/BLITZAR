@@ -114,7 +114,7 @@ extern "C" GRAVITY_CLIENT_MODULE_EXPORT_ATTR const grav_module::ClientModuleExpo
 {
     static const grav_module::ClientModuleExportsV1 exports{
         grav_module::kClientModuleApiVersionV1,
-        "echo-module",
+        "echo",
         [](const grav_module::ClientHostContextV1 *context, void **outModuleState, char *errorBuffer, std::size_t errorBufferSize) -> bool {
             return EchoModuleLocal::create(
                 context,

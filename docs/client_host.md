@@ -1,20 +1,36 @@
 # Client Module Host (`dlopen`/`LoadLibrary`)
 
-This project now includes a client host that can load and switch client modules at runtime.
+`aster-client` is the dynamic client host used for client-side module development and controlled runtime composition.
 
 Targets:
 - Host: `aster-client`
-- Sample module 1: `gravityClientModuleCli` (server control/status)
-- Sample module 2: `gravityClientModuleEcho` (echo demo)
-- Sample module 3: `gravityClientModuleGuiProxy` (launch/stop external GUI clients)
-- Sample module 4: `gravityClientModuleQtInProc` (native in-process Qt client)
+- Module: `gravityClientModuleCli` (server control/status)
+- Module: `gravityClientModuleEcho` (diagnostic echo module)
+- Module: `gravityClientModuleGuiProxy` (launch/stop external GUI clients)
+- Module: `gravityClientModuleQtInProc` (native in-process Qt client)
 
-Note: these targets are enabled by default and are the preferred architecture.
+Profile posture:
+- `dev`: preferred profile for the module host; startup load plus live `reload` and `switch` are available.
+- `prod`: client host is non-default and non-evidence unless explicitly reproduced under `prod` constraints; if built, only manifest-verified startup load is allowed and live `reload` / `switch` are disabled.
+
+Module loading is not best-effort anymore. Before `LoadLibrary` / `dlopen`, the host now verifies:
+- a sidecar `<module>.manifest`,
+- an allowlisted `module_id`,
+- matching `api_version`,
+- matching product metadata,
+- and the module `sha256` digest.
 
 ## Build
 
 ```bash
 cmake --build build --target aster-client gravityClientModuleCli gravityClientModuleEcho gravityClientModuleGuiProxy gravityClientModuleQtInProc
+```
+
+Each built module emits a sidecar manifest next to the dynamic library:
+
+```text
+gravityClientModuleCli.dll
+gravityClientModuleCli.dll.manifest
 ```
 
 ## Run
@@ -33,15 +49,24 @@ build/aster-client --config simulation.ini --module cli
 
 On Linux/macOS use `.so` / `.dylib` names.
 
+If `--module` is an alias (`cli`, `echo`, `gui`, `qt`), the host enforces that the manifest `module_id` matches the alias. If `--module` is an explicit path, the host still enforces the built-in allowlist and manifest/hash checks.
+
 ## Host commands
 
 - `modules`: list built-in aliases and resolved paths
 - `module`: prints current loaded module
-- `reload`: hot-reload current module from its last specifier
-- `switch <module_alias_or_path>`: unloads current module and loads a new one live
 - `help`
 - `quit`
 - any other line is forwarded to current module
+
+`dev`-only commands:
+- `reload`: re-load current module from its last specifier after manifest/hash verification
+- `switch <module_alias_or_path>`: unload current module and load another allowlisted module live
+
+`prod` behavior:
+- startup load remains manifest-verified
+- `reload` is disabled
+- `switch` is disabled
 
 Built-in aliases:
 - `cli`
@@ -49,7 +74,7 @@ Built-in aliases:
 - `echo`
 - `qt`
 
-## Example live switch
+## Example `dev` live switch
 
 ```
 client-host> modules
@@ -60,7 +85,7 @@ client-host> switch cli
 client-host> status
 ```
 
-## GUI live switch through dynamic module
+## GUI live switch through dynamic module (`dev`)
 
 Load GUI proxy module:
 
@@ -99,11 +124,18 @@ set-server-bin build/aster-server.exe
 restart
 ```
 
-You can still hot-switch to another module:
+In `dev`, you can still hot-switch to another module:
 
 ```text
 switch cli
 switch echo
 switch gui
 switch qt
+```
+
+In `prod`, the same host prints a policy error instead of reloading:
+
+```text
+[client-host] reload is disabled in prod profile
+[client-host] switch is disabled in prod profile
 ```

@@ -1,9 +1,11 @@
 #include "apps/client-host/client_host_cli.hpp"
 #include "apps/client-host/client_host_cli_args.hpp"
 #include "apps/client-host/client_host_cli_text.hpp"
+#include "apps/client-host/client_host_module_ops.hpp"
 
 #include <gtest/gtest.h>
 
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -73,6 +75,30 @@ TEST(ClientHostCliTextTest, TST_UNT_MODHOST_003_SplitTokensPreservesQuotedSegmen
     EXPECT_EQ(tokens[0], "switch");
     EXPECT_EQ(tokens[1], "qt inproc");
     EXPECT_EQ(tokens[2], "cli mode");
+}
+
+TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_007_AliasResolutionReturnsExpectedModuleId)
+{
+    EXPECT_EQ(grav_client_host::ClientHostModuleOps::expectedModuleIdForSpecifier("qt"), "qt");
+    EXPECT_EQ(grav_client_host::ClientHostModuleOps::expectedModuleIdForSpecifier("CLI"), "cli");
+    EXPECT_TRUE(grav_client_host::ClientHostModuleOps::expectedModuleIdForSpecifier("plugins/custom.dll").empty());
+}
+
+TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_008_HelpReflectsProfileReloadPolicy)
+{
+    std::ostringstream buffer;
+    std::streambuf *previous = std::cout.rdbuf(buffer.rdbuf());
+    grav_client_host::ClientHostCliArgs::printHelp("aster-client");
+    std::cout.rdbuf(previous);
+    const std::string rendered = buffer.str();
+    if (grav_client_host::ClientHostCli::liveReloadEnabled()) {
+        EXPECT_NE(rendered.find("reload\n"), std::string::npos);
+        EXPECT_NE(rendered.find("switch <module_alias_or_path>\n"), std::string::npos);
+    } else {
+        EXPECT_EQ(rendered.find("reload\n"), std::string::npos);
+        EXPECT_EQ(rendered.find("switch <module_alias_or_path>\n"), std::string::npos);
+        EXPECT_NE(rendered.find("reload is disabled"), std::string::npos);
+    }
 }
 
 } // namespace grav_test_client_host_args_text

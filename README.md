@@ -51,7 +51,7 @@ make quality-strict
 - `aster-headless`
 - `aster-client`
 
-In `PROFILE=prod`, `aster-client` and dynamic client modules are disabled by design.
+In `PROFILE=prod`, `aster-client` and dynamic client modules are disabled by design. In `PROFILE=dev`, client modules load through a manifest-verified, checksum-checked host path.
 
 ## Coverage
 

@@ -16,6 +16,7 @@ public:
     static std::string resolveModuleSpecifier(
         const std::string &rawSpecifier,
         const std::vector<std::filesystem::path> &searchRoots);
+    static std::string expectedModuleIdForSpecifier(const std::string &rawSpecifier);
     static bool switchModule(
         const std::string &moduleSpecifier,
         const std::string &configPath,

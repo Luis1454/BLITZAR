@@ -17,6 +17,7 @@ public:
     static bool parseArgs(int argc, char **argv, HostOptions &outOptions, std::string &outError);
     static void printHelp(std::string_view programName);
     static int run(const HostOptions &options, std::string_view programName);
+    [[nodiscard]] static bool liveReloadEnabled() noexcept;
 };
 
 } // namespace grav_client_host

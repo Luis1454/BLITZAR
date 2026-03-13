@@ -53,7 +53,7 @@
       "owner": "architecture-maintainer",
       "status": "in-progress",
       "residual_risk": "Medium",
-      "linked_tasks": ["#118 prod baseline", "#101 ivv gate enforcement"],
+      "linked_tasks": ["#118 prod baseline", "#101 ivv gate enforcement", "#206 qualify client module bridge"],
       "verification_evidence": ["EVD_CHECK_MAIN", "EVD_QLT_STANDARDS_PROFILE", "EVD_QLT_PROD_BASELINE"]
     }
   ]

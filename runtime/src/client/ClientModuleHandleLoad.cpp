@@ -1,5 +1,7 @@
 #include "client/ClientModuleHandle.hpp"
+#include "client/ClientModuleHash.hpp"
 #include "client/ClientModuleHandleLoad.hpp"
+#include "client/ClientModuleManifest.hpp"
 
 #include "runtime/src/client/ClientModuleHandleInternal.hpp"
 
@@ -22,7 +24,11 @@ static bool hasRequiredExports(const ClientModuleExportsV1 *exports)
         && exports->handleCommand != nullptr;
 }
 
-bool ClientModuleHandle::load(const std::string &modulePath, const std::string &configPath, std::string &outError)
+bool ClientModuleHandle::load(
+    const std::string &modulePath,
+    const std::string &configPath,
+    std::string_view expectedModuleId,
+    std::string &outError)
 {
     if (!m_impl) {
         m_impl = std::make_unique<Impl>();
@@ -47,6 +53,21 @@ bool ClientModuleHandle::load(const std::string &modulePath, const std::string &
     const std::filesystem::path normalized =
         requested.is_absolute() ? requested : std::filesystem::absolute(requested, ec);
     const std::string effectivePath = (!ec ? normalized.string() : modulePath);
+    ClientModuleManifest manifest{};
+    if (!ClientModuleManifest::load(effectivePath, manifest, outError)) {
+        return false;
+    }
+    if (!manifest.validateForLoad(effectivePath, expectedModuleId, outError)) {
+        return false;
+    }
+    std::string moduleDigest;
+    if (!ClientModuleHash::computeFileSha256Hex(effectivePath, moduleDigest, outError)) {
+        return false;
+    }
+    if (moduleDigest != manifest.sha256()) {
+        outError = "module sha256 mismatch";
+        return false;
+    }
 
     if (!m_impl->library.open(effectivePath, outError)) {
         return false;
@@ -82,6 +103,12 @@ bool ClientModuleHandle::load(const std::string &modulePath, const std::string &
         if (m_impl->exports != nullptr && m_impl->exports->apiVersion != kClientModuleApiVersionV1) {
             outError = "unsupported module api version";
         }
+        m_impl->exports = nullptr;
+        m_impl->library.close();
+        return false;
+    }
+    if (m_impl->exports->moduleName == nullptr || manifest.moduleId() != m_impl->exports->moduleName) {
+        outError = "module exports do not match manifest";
         m_impl->exports = nullptr;
         m_impl->library.close();
         return false;

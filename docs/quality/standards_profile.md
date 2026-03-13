@@ -18,6 +18,7 @@ This repository is independent from any company stack but aligned for US space r
 - `prod` profile (qualification evidence path):
   - deterministic execution requirements apply;
   - no dynamic reload in mission-critical runtime path;
+  - client modules, if explicitly built under `prod`, must be startup-only, allowlisted, manifest-verified, and checksum-verified before loading;
   - strict PR quality gate must be green before merge.
   - CI lanes must force `-DGRAVITY_PROFILE=prod` for qualification evidence.
   - repository policy checks reject evidence workflow configure commands that omit `-DGRAVITY_PROFILE=prod`.
@@ -66,6 +67,7 @@ Build switch:
 - Breaking interface changes must update the canonical contract artifact and linked tests in the same review.
 - Release candidates must publish an evidence pack generated from the `release-lane` commands under the selected profile.
 - Runtime behavior in critical paths must be reproducible under pinned toolchain settings.
+- Dynamic client-module verification in `prod` must remain deterministic: allowlist, `apiVersion`, product metadata, and binary `sha256` are all part of the loader contract.
 - Production C++ paths (`apps/`, `engine/`, `runtime/`, `modules/`) must not use unnamed namespaces.
 - Production C++ paths must also satisfy the automated subset of the `Power of 10` profile (`goto`, `setjmp`/`longjmp`, `do-while`, open-ended `while(true)`, non-structural object-like macros, and non-ABI function-pointer typedefs are forbidden).
 - Repository C++ headers must use strict include guards, not `#pragma once`.
