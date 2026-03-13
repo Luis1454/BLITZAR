@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "backend/SimulationBackend.hpp"
+#include "server/SimulationServer.hpp"
 
 namespace testsupport {
 

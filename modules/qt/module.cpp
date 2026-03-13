@@ -1,6 +1,6 @@
-#include "frontend/FrontendModuleApi.hpp"
-#include "frontend/FrontendModuleBoundary.hpp"
-#include "frontend/FrontendRuntime.hpp"
+#include "client/ClientModuleApi.hpp"
+#include "client/ClientModuleBoundary.hpp"
+#include "client/ClientRuntime.hpp"
 #include "config/SimulationConfig.hpp"
 #include "config/TextParse.hpp"
 #include "ui/MainWindow.hpp"
@@ -92,7 +92,7 @@ static std::vector<std::string> splitTokens(const std::string &line)
 
 struct QtInProcState {
     std::string configPath = "simulation.ini";
-    grav_frontend::FrontendTransportArgs transport{
+    grav_client::ClientTransportArgs transport{
         true,           // remote mode
         "127.0.0.1",
         4545u,
@@ -144,10 +144,10 @@ static void qtThreadMain(QtInProcState *state)
         QApplication app(argc, argv);
         configureQtPluginPathFallback();
         SimulationConfig config = SimulationConfig::loadOrCreate(state->configPath);
-        state->transport.remoteCommandTimeoutMs = grav_frontend::clampFrontendRemoteTimeoutMs(config.frontendRemoteCommandTimeoutMs);
-        state->transport.remoteStatusTimeoutMs = grav_frontend::clampFrontendRemoteTimeoutMs(config.frontendRemoteStatusTimeoutMs);
-        state->transport.remoteSnapshotTimeoutMs = grav_frontend::clampFrontendRemoteTimeoutMs(config.frontendRemoteSnapshotTimeoutMs);
-        auto runtime = std::make_unique<grav_frontend::FrontendRuntime>(state->configPath, state->transport);
+        state->transport.remoteCommandTimeoutMs = grav_client::clampClientRemoteTimeoutMs(config.clientRemoteCommandTimeoutMs);
+        state->transport.remoteStatusTimeoutMs = grav_client::clampClientRemoteTimeoutMs(config.clientRemoteStatusTimeoutMs);
+        state->transport.remoteSnapshotTimeoutMs = grav_client::clampClientRemoteTimeoutMs(config.clientRemoteSnapshotTimeoutMs);
+        auto runtime = std::make_unique<grav_client::ClientRuntime>(state->configPath, state->transport);
         grav_qt::MainWindow window(config, state->configPath, std::move(runtime));
         window.show();
 
@@ -172,7 +172,7 @@ static void qtThreadMain(QtInProcState *state)
     state->running.store(false);
 }
 
-static bool startQtUi(QtInProcState &state, const grav_frontend::ErrorBufferView &errorBuffer)
+static bool startQtUi(QtInProcState &state, const grav_client::ErrorBufferView &errorBuffer)
 {
     if (state.uiThread.joinable() || state.running.load()) {
         return true;
@@ -224,16 +224,16 @@ static void printHelp()
         << "  status\n"
         << "  set-endpoint <host> <port>\n"
         << "  set-autostart <true|false>\n"
-        << "  set-backend-bin <path>\n"
+        << "  set-server-bin <path>\n"
         << "  restart\n";
 }
 
 class QtModuleBoundary final {
 public:
     static bool create(
-        const grav_module::FrontendModuleHostContextV1 *context,
-        const grav_module::FrontendModuleStateSlot &outModuleState,
-        const grav_frontend::ErrorBufferView &errorBuffer)
+        const grav_module::ClientHostContextV1 *context,
+        const grav_module::ClientModuleStateSlot &outModuleState,
+        const grav_client::ErrorBufferView &errorBuffer)
     {
         try {
             if (!outModuleState.isAvailable()) {
@@ -244,7 +244,7 @@ public:
             if (context != nullptr && context->configPath != nullptr) {
                 state->configPath = context->configPath;
             }
-            return outModuleState.assign(grav_module::FrontendModuleOpaqueState::fromRawPointer(state.release()));
+            return outModuleState.assign(grav_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
         } catch (const std::exception &ex) {
             errorBuffer.write(ex.what());
             return false;
@@ -255,8 +255,8 @@ public:
     }
 
     static QtInProcState *requireState(
-        grav_module::FrontendModuleOpaqueState moduleState,
-        const grav_frontend::ErrorBufferView &errorBuffer)
+        grav_module::ClientModuleOpaqueState moduleState,
+        const grav_client::ErrorBufferView &errorBuffer)
     {
         QtInProcState *state = static_cast<QtInProcState *>(moduleState.rawPointer());
         if (state == nullptr) {
@@ -265,7 +265,7 @@ public:
         return state;
     }
 
-    static void destroy(grav_module::FrontendModuleOpaqueState moduleState)
+    static void destroy(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
             std::unique_ptr<QtInProcState> state(static_cast<QtInProcState *>(moduleState.rawPointer()));
@@ -280,8 +280,8 @@ public:
     }
 
     static bool start(
-        grav_module::FrontendModuleOpaqueState moduleState,
-        const grav_frontend::ErrorBufferView &errorBuffer)
+        grav_module::ClientModuleOpaqueState moduleState,
+        const grav_client::ErrorBufferView &errorBuffer)
     {
         try {
             QtInProcState *state = requireState(moduleState, errorBuffer);
@@ -298,7 +298,7 @@ public:
         }
     }
 
-    static void stop(grav_module::FrontendModuleOpaqueState moduleState)
+    static void stop(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
             QtInProcState *state = static_cast<QtInProcState *>(moduleState.rawPointer());
@@ -313,34 +313,34 @@ public:
     }
 };
 
-extern "C" GRAVITY_FRONTEND_MODULE_EXPORT_ATTR const grav_module::FrontendModuleExportsV1 *gravity_frontend_module_v1()
+extern "C" GRAVITY_CLIENT_MODULE_EXPORT_ATTR const grav_module::ClientModuleExportsV1 *gravity_client_module_v1()
 {
-    static const grav_module::FrontendModuleExportsV1 exports{
-        grav_module::kFrontendModuleApiVersionV1,
+    static const grav_module::ClientModuleExportsV1 exports{
+        grav_module::kClientModuleApiVersionV1,
         "qt-inproc-module",
-        [](const grav_module::FrontendModuleHostContextV1 *context, void **outModuleState, char *errorBuffer, std::size_t errorBufferSize) -> bool {
+        [](const grav_module::ClientHostContextV1 *context, void **outModuleState, char *errorBuffer, std::size_t errorBufferSize) -> bool {
             return QtModuleBoundary::create(
                 context,
-                grav_module::FrontendModuleStateSlot(outModuleState),
-                grav_frontend::ErrorBufferView(errorBuffer, errorBufferSize));
+                grav_module::ClientModuleStateSlot(outModuleState),
+                grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void *moduleState) {
-            QtModuleBoundary::destroy(grav_module::FrontendModuleOpaqueState::fromRawPointer(moduleState));
+            QtModuleBoundary::destroy(grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
         },
         [](void *moduleState, char *errorBuffer, std::size_t errorBufferSize) -> bool {
             return QtModuleBoundary::start(
-                grav_module::FrontendModuleOpaqueState::fromRawPointer(moduleState),
-                grav_frontend::ErrorBufferView(errorBuffer, errorBufferSize));
+                grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState),
+                grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void *moduleState) {
-            QtModuleBoundary::stop(grav_module::FrontendModuleOpaqueState::fromRawPointer(moduleState));
+            QtModuleBoundary::stop(grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
         },
         [](void *moduleState, const char *commandLine, bool *outKeepRunning, char *errorBuffer, std::size_t errorBufferSize) -> bool {
-            const grav_frontend::ErrorBufferView errorView(errorBuffer, errorBufferSize);
-            const grav_module::FrontendModuleCommandControl commandControl(outKeepRunning);
+            const grav_client::ErrorBufferView errorView(errorBuffer, errorBufferSize);
+            const grav_module::ClientModuleCommandControl commandControl(outKeepRunning);
             try {
                 QtInProcState *state = QtModuleBoundary::requireState(
-                    grav_module::FrontendModuleOpaqueState::fromRawPointer(moduleState),
+                    grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState),
                     errorView);
                 if (state == nullptr) {
                     return false;
@@ -367,8 +367,8 @@ extern "C" GRAVITY_FRONTEND_MODULE_EXPORT_ATTR const grav_module::FrontendModule
                     std::cout << "[module-qt] running=" << (state->running.load() ? "yes" : "no")
                               << " endpoint=" << state->transport.remoteHost << ":" << state->transport.remotePort
                               << " autostart=" << (state->transport.remoteAutoStart ? "on" : "off");
-                    if (!state->transport.backendExecutable.empty()) {
-                        std::cout << " backend_bin=" << state->transport.backendExecutable;
+                    if (!state->transport.serverExecutable.empty()) {
+                        std::cout << " server_bin=" << state->transport.serverExecutable;
                     }
                     std::cout << "\n";
                     return true;
@@ -402,13 +402,13 @@ extern "C" GRAVITY_FRONTEND_MODULE_EXPORT_ATTR const grav_module::FrontendModule
                     std::cout << "[module-qt] autostart set (restart required)\n";
                     return true;
                 }
-                if (cmd == "set-backend-bin") {
+                if (cmd == "set-server-bin") {
                     if (tokens.size() < 2u) {
-                        errorView.write("usage: set-backend-bin <path>");
+                        errorView.write("usage: set-server-bin <path>");
                         return false;
                     }
-                    state->transport.backendExecutable = tokens[1];
-                    std::cout << "[module-qt] backend bin set (restart required)\n";
+                    state->transport.serverExecutable = tokens[1];
+                    std::cout << "[module-qt] server bin set (restart required)\n";
                     return true;
                 }
                 if (cmd == "restart") {

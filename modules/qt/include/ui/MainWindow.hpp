@@ -1,7 +1,7 @@
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOW_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOW_HPP_
 
-#include "frontend/IFrontendRuntime.hpp"
+#include "client/IClientRuntime.hpp"
 #include "config/SimulationConfig.hpp"
 
 #include <QMainWindow>
@@ -29,11 +29,11 @@ class MultiViewWidget;
 
 class MainWindow : public QMainWindow {
     public:
-        MainWindow(SimulationConfig config, std::string configPath, std::unique_ptr<grav_frontend::IFrontendRuntime> runtime);
+        MainWindow(SimulationConfig config, std::string configPath, std::unique_ptr<grav_client::IClientRuntime> runtime);
         ~MainWindow() override;
 
     private:
-        void applyConfigToBackend(bool requestReset);
+        void applyConfigToServer(bool requestReset);
         void applyConfigToUi();
         void captureUiIntoConfig();
         void markConfigDirty(bool dirty = true);
@@ -43,7 +43,7 @@ class MainWindow : public QMainWindow {
 
         SimulationConfig _config;
         std::string _configPath;
-        std::unique_ptr<grav_frontend::IFrontendRuntime> _runtime;
+        std::unique_ptr<grav_client::IClientRuntime> _runtime;
         QPointer<MultiViewWidget> _multiView;
         QPointer<EnergyGraphWidget> _energyGraph;
         QPointer<QLabel> _statusLabel;
@@ -56,10 +56,10 @@ class MainWindow : public QMainWindow {
         QPointer<QPushButton> _exportButton;
         QPointer<QPushButton> _saveConfigButton;
         QPointer<QPushButton> _loadInputButton;
-        QPointer<QCheckBox> _backendAutostartCheck;
-        QPointer<QLineEdit> _backendHostEdit;
-        QPointer<QLineEdit> _backendBinEdit;
-        QPointer<QSpinBox> _backendPortSpin;
+        QPointer<QCheckBox> _serverAutostartCheck;
+        QPointer<QLineEdit> _serverHostEdit;
+        QPointer<QLineEdit> _serverBinEdit;
+        QPointer<QSpinBox> _serverPortSpin;
         QPointer<QCheckBox> _sphCheck;
         QPointer<QDoubleSpinBox> _sphSmoothingSpin;
         QPointer<QDoubleSpinBox> _sphRestDensitySpin;
@@ -81,7 +81,7 @@ class MainWindow : public QMainWindow {
         QPointer<QSlider> _rollSlider;
         QPointer<QTimer> _timer;
         std::uint64_t _lastEnergyStep;
-        std::uint32_t _frontendDrawCap;
+        std::uint32_t _clientDrawCap;
         float _uiTickFps;
         bool _configDirty;
         std::chrono::steady_clock::time_point _lastUiTickAt;

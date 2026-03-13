@@ -55,19 +55,19 @@ def _context(
         clang_tidy_diff_base=diff_base,
         clang_tidy_diff_target=diff_target,
         clang_tidy_header_filter=header_filter,
-        paths=("runtime/src/backend",),
+        paths=("runtime/src/server",),
     )
 
 
 def test_clang_tidy_runs_only_changed_compile_entries(monkeypatch, tmp_path: Path) -> None:
-    changed = tmp_path / "runtime" / "src" / "backend" / "changed.cpp"
-    unchanged = tmp_path / "runtime" / "src" / "backend" / "unchanged.cpp"
+    changed = tmp_path / "runtime" / "src" / "server" / "changed.cpp"
+    unchanged = tmp_path / "runtime" / "src" / "server" / "unchanged.cpp"
     changed.parent.mkdir(parents=True, exist_ok=True)
     changed.write_text("int changed();\n", encoding="utf-8")
     unchanged.write_text("int unchanged();\n", encoding="utf-8")
     build_dir = tmp_path / "build-quality"
     _write_compile_db(build_dir, [changed, unchanged])
-    runner = _FakeRunner(diff_output="runtime/src/backend/changed.cpp\n")
+    runner = _FakeRunner(diff_output="runtime/src/server/changed.cpp\n")
     check = ClangTidyCheck()
     cast(Any, check)._runner = runner
     monkeypatch.setattr("shutil.which", lambda binary: f"/usr/bin/{binary}")
@@ -83,7 +83,7 @@ def test_clang_tidy_runs_only_changed_compile_entries(monkeypatch, tmp_path: Pat
 
 
 def test_clang_tidy_skips_clean_diffs(monkeypatch, tmp_path: Path) -> None:
-    source = tmp_path / "runtime" / "src" / "backend" / "file.cpp"
+    source = tmp_path / "runtime" / "src" / "server" / "file.cpp"
     source.parent.mkdir(parents=True, exist_ok=True)
     source.write_text("int sample();\n", encoding="utf-8")
     build_dir = tmp_path / "build-quality"
@@ -99,16 +99,16 @@ def test_clang_tidy_skips_clean_diffs(monkeypatch, tmp_path: Path) -> None:
 
 
 def test_clang_tidy_expands_scope_for_header_only_diffs(monkeypatch, tmp_path: Path) -> None:
-    first = tmp_path / "runtime" / "src" / "backend" / "first.cpp"
-    second = tmp_path / "runtime" / "src" / "backend" / "second.cpp"
-    header = tmp_path / "runtime" / "src" / "backend" / "shared.hpp"
+    first = tmp_path / "runtime" / "src" / "server" / "first.cpp"
+    second = tmp_path / "runtime" / "src" / "server" / "second.cpp"
+    header = tmp_path / "runtime" / "src" / "server" / "shared.hpp"
     first.parent.mkdir(parents=True, exist_ok=True)
     first.write_text("int first();\n", encoding="utf-8")
     second.write_text("int second();\n", encoding="utf-8")
     header.write_text("int shared();\n", encoding="utf-8")
     build_dir = tmp_path / "build-quality"
     _write_compile_db(build_dir, [first, second])
-    runner = _FakeRunner(diff_output="runtime/src/backend/shared.hpp\n")
+    runner = _FakeRunner(diff_output="runtime/src/server/shared.hpp\n")
     check = ClangTidyCheck()
     cast(Any, check)._runner = runner
     monkeypatch.setattr("shutil.which", lambda binary: f"/usr/bin/{binary}")
@@ -122,7 +122,7 @@ def test_clang_tidy_expands_scope_for_header_only_diffs(monkeypatch, tmp_path: P
 
 
 def test_clang_tidy_reports_git_diff_failures(monkeypatch, tmp_path: Path) -> None:
-    source = tmp_path / "runtime" / "src" / "backend" / "file.cpp"
+    source = tmp_path / "runtime" / "src" / "server" / "file.cpp"
     source.parent.mkdir(parents=True, exist_ok=True)
     source.write_text("int sample();\n", encoding="utf-8")
     build_dir = tmp_path / "build-quality"
@@ -138,7 +138,7 @@ def test_clang_tidy_reports_git_diff_failures(monkeypatch, tmp_path: Path) -> No
 
 
 def test_clang_tidy_uses_windows_llvm_fallback(monkeypatch, tmp_path: Path) -> None:
-    source = tmp_path / "runtime" / "src" / "backend" / "file.cpp"
+    source = tmp_path / "runtime" / "src" / "server" / "file.cpp"
     source.parent.mkdir(parents=True, exist_ok=True)
     source.write_text("int sample();\n", encoding="utf-8")
     build_dir = tmp_path / "build-quality"
@@ -164,7 +164,7 @@ def test_clang_tidy_uses_windows_llvm_fallback(monkeypatch, tmp_path: Path) -> N
 
 
 def test_clang_tidy_adds_cl_driver_mode_for_msvc_compile_db(monkeypatch, tmp_path: Path) -> None:
-    source = tmp_path / "runtime" / "src" / "backend" / "file.cpp"
+    source = tmp_path / "runtime" / "src" / "server" / "file.cpp"
     source.parent.mkdir(parents=True, exist_ok=True)
     source.write_text("int sample();\n", encoding="utf-8")
     build_dir = tmp_path / "build-quality"

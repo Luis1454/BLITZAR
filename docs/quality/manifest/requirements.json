@@ -26,35 +26,35 @@
       "artifacts": [
         "EVD_TEST_INT_PROTOCOL_CONNECT",
         "EVD_TEST_UNIT_PROTOCOL_CODEC",
-        "EVD_DOC_BACKEND_PROTOCOL",
+        "EVD_DOC_SERVER_PROTOCOL",
         "EVD_QLT_INTERFACE_CONTRACTS",
-        "EVD_IFACE_BACKEND_PROTOCOL"
+        "EVD_IFACE_SERVER_PROTOCOL"
       ],
       "tests": [
-        "^BackendProtocolTest\\.TST_INT_PROT_00(1|2|3|9)_",
-        "^BackendProtocolCodecTest\\.TST_UNT_PROT_00(2|3)_"
+        "^ServerProtocolTest\\.TST_INT_PROT_00(1|2|3|9)_",
+        "^ServerProtocolCodecTest\\.TST_UNT_PROT_00(2|3)_"
       ]
     },
     "REQ-PROT-002": {
       "tests": [
-        "^BackendProtocolTest\\.TST_INT_PROT_00[4-7]_",
-        "^BackendProtocolCodecTest\\.TST_UNT_PROT_00(1|4)_"
+        "^ServerProtocolTest\\.TST_INT_PROT_00[4-7]_",
+        "^ServerProtocolCodecTest\\.TST_UNT_PROT_00(1|4)_"
       ],
       "artifacts": [
         "EVD_TEST_INT_PROTOCOL_CONTROL",
         "EVD_TEST_UNIT_PROTOCOL_CODEC",
         "EVD_QLT_INTERFACE_CONTRACTS",
-        "EVD_IFACE_BACKEND_PROTOCOL"
+        "EVD_IFACE_SERVER_PROTOCOL"
       ]
     },
     "REQ-SEC-001": {
       "tests": [
-        "^BackendProtocolTest\\.TST_INT_PROT_008_"
+        "^ServerProtocolTest\\.TST_INT_PROT_008_"
       ],
       "artifacts": [
         "EVD_TEST_INT_PROTOCOL_CONTROL",
         "EVD_QLT_INTERFACE_CONTRACTS",
-        "EVD_IFACE_BACKEND_PROTOCOL"
+        "EVD_IFACE_SERVER_PROTOCOL"
       ]
     },
     "REQ-SEC-002": {
@@ -76,12 +76,12 @@
         "EVD_TEST_INT_RUNTIME_RUNTIME",
         "EVD_TEST_UNIT_PHYSICS_SOLVER",
         "EVD_QLT_INTERFACE_CONTRACTS",
-        "EVD_IFACE_FRONTEND_RUNTIME",
-        "EVD_IFACE_LOCAL_BACKEND"
+        "EVD_IFACE_CLIENT_RUNTIME",
+        "EVD_IFACE_LOCAL_SERVER"
       ],
       "tests": [
-        "^FrontendBridgeTest\\.TST_INT_RUNT_00[1-2]_",
-        "^FrontendRuntimeTest\\.TST_CNT_RUNT_00[1-7]_",
+        "^ClientBridgeTest\\.TST_INT_RUNT_00[1-2]_",
+        "^ClientRuntimeTest\\.TST_CNT_RUNT_00[1-7]_",
         "^PhysicsTest\\.TST_UNT_RUNT_00[1-2]_"
       ]
     },
@@ -212,24 +212,24 @@
     "REQ-MOD-001": {
       "tests": [
         "^ModuleCli(Text|Commands)Test\\.TST_UNT_MODCLI_00[1-3]_.*$",
-        "^ModuleCliBackendOpsTest\\.TST_UNT_MODCLI_00[4-5]_.*$"
+        "^ModuleCliServerOpsTest\\.TST_UNT_MODCLI_00[4-5]_.*$"
       ],
       "artifacts": [
         "EVD_TEST_UNIT_MODULE_CLI",
-        "EVD_TEST_UNIT_MODULE_CLI_BACKEND",
+        "EVD_TEST_UNIT_MODULE_CLI_SERVER",
         "EVD_QLT_INTERFACE_CONTRACTS",
-        "EVD_IFACE_FRONTEND_MODULE_API"
+        "EVD_IFACE_CLIENT_MODULE_API"
       ]
     },
     "REQ-MOD-002": {
       "tests": [
-        "^ModuleHostCliArgsTest\\.TST_UNT_MODHOST_00[1-2]_.*$",
-        "^ModuleHostCliTextTest\\.TST_UNT_MODHOST_003_.*$"
+        "^ClientHostCliArgsTest\\.TST_UNT_MODHOST_00[1-2]_.*$",
+        "^ClientHostCliTextTest\\.TST_UNT_MODHOST_003_.*$"
       ],
       "artifacts": [
         "EVD_TEST_UNIT_MODULE_HOST",
         "EVD_QLT_INTERFACE_CONTRACTS",
-        "EVD_IFACE_FRONTEND_MODULE_API"
+        "EVD_IFACE_CLIENT_MODULE_API"
       ]
     }
   }

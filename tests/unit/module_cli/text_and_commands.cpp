@@ -1,4 +1,4 @@
-#include "frontend/FrontendModuleBoundary.hpp"
+#include "client/ClientModuleBoundary.hpp"
 #include "modules/cli/module_cli_commands.hpp"
 #include "modules/cli/module_cli_state.hpp"
 #include "modules/cli/module_cli_text.hpp"
@@ -26,20 +26,20 @@ TEST(ModuleCliCommandsTest, TST_UNT_MODCLI_002_HelpAndQuitCommandBehavior)
 {
     grav_module_cli::ModuleState state;
     char errorBuffer[128] = {};
-    grav_module::FrontendModuleCommandResult commandResult;
+    grav_module::ClientModuleCommandResult commandResult;
 
     EXPECT_TRUE(grav_module_cli::ModuleCliCommands::handleCommand(
         state,
         "help",
-        grav_module::FrontendModuleCommandControl(commandResult.rawKeepRunningFlag()),
-        grav_frontend::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
+        grav_module::ClientModuleCommandControl(commandResult.rawKeepRunningFlag()),
+        grav_client::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
     EXPECT_TRUE(commandResult.keepRunning());
 
     EXPECT_TRUE(grav_module_cli::ModuleCliCommands::handleCommand(
         state,
         "quit",
-        grav_module::FrontendModuleCommandControl(commandResult.rawKeepRunningFlag()),
-        grav_frontend::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
+        grav_module::ClientModuleCommandControl(commandResult.rawKeepRunningFlag()),
+        grav_client::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
     EXPECT_FALSE(commandResult.keepRunning());
 }
 
@@ -47,13 +47,13 @@ TEST(ModuleCliCommandsTest, TST_UNT_MODCLI_003_UnknownCommandReturnsError)
 {
     grav_module_cli::ModuleState state;
     char errorBuffer[128] = {};
-    grav_module::FrontendModuleCommandResult commandResult;
+    grav_module::ClientModuleCommandResult commandResult;
 
     EXPECT_FALSE(grav_module_cli::ModuleCliCommands::handleCommand(
         state,
         "unknown_command",
-        grav_module::FrontendModuleCommandControl(commandResult.rawKeepRunningFlag()),
-        grav_frontend::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
+        grav_module::ClientModuleCommandControl(commandResult.rawKeepRunningFlag()),
+        grav_client::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
     EXPECT_EQ(std::string(errorBuffer), "unknown module command");
 }
 

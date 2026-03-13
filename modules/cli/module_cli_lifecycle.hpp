@@ -1,22 +1,22 @@
 #ifndef GRAVITY_MODULES_CLI_MODULE_CLI_LIFECYCLE_HPP_
 #define GRAVITY_MODULES_CLI_MODULE_CLI_LIFECYCLE_HPP_
 
-#include "frontend/FrontendModuleApi.hpp"
-#include "frontend/FrontendModuleBoundary.hpp"
+#include "client/ClientModuleApi.hpp"
+#include "client/ClientModuleBoundary.hpp"
 
 namespace grav_module_cli {
 
 class ModuleCliLifecycle final {
 public:
     static bool create(
-        const grav_module::FrontendModuleHostContextV1 *hostContext,
-        const grav_module::FrontendModuleStateSlot &outModuleState,
-        const grav_frontend::ErrorBufferView &errorBuffer);
-    static void destroy(grav_module::FrontendModuleOpaqueState moduleState);
+        const grav_module::ClientHostContextV1 *hostContext,
+        const grav_module::ClientModuleStateSlot &outModuleState,
+        const grav_client::ErrorBufferView &errorBuffer);
+    static void destroy(grav_module::ClientModuleOpaqueState moduleState);
     static bool start(
-        grav_module::FrontendModuleOpaqueState moduleState,
-        const grav_frontend::ErrorBufferView &errorBuffer);
-    static void stop(grav_module::FrontendModuleOpaqueState moduleState);
+        grav_module::ClientModuleOpaqueState moduleState,
+        const grav_client::ErrorBufferView &errorBuffer);
+    static void stop(grav_module::ClientModuleOpaqueState moduleState);
 };
 
 } // namespace grav_module_cli

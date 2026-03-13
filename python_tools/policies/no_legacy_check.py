@@ -8,27 +8,27 @@ from python_tools.core.base_check import BaseCheck
 from python_tools.core.models import CheckContext, CheckResult
 
 FORBIDDEN_TOKENS = (
-    "GRAVITY_BUILD_LEGACY_FRONTENDS",
-    "GRAVITY_BUILD_SFML_FRONTEND",
-    "GRAVITY_BUILD_QT_FRONTEND",
-    "GRAVITY_BUILD_CLI_FRONTEND",
-    "SFML_FRONTEND_NAME",
-    "QT_FRONTEND_NAME",
-    "CLI_FRONTEND_NAME",
+    "GRAVITY_BUILD_LEGACY_CLIENTS",
+    "GRAVITY_BUILD_SFML_CLIENT",
+    "GRAVITY_BUILD_QT_CLIENT",
+    "GRAVITY_BUILD_CLI_CLIENT",
+    "SFML_CLIENT_NAME",
+    "QT_CLIENT_NAME",
+    "CLI_CLIENT_NAME",
 )
-FORBIDDEN_TARGETS = ("myAppQt", "myAppFrontend", "myAppCli")
+FORBIDDEN_TARGETS = ("myAppQt", "myAppCli")
 EXPECTED_VARIANTS = (
     ("myApp.exe", "myApp"),
-    ("myAppBackend.exe", "myAppBackend"),
+    ("myAppServer.exe", "myAppServer"),
     ("myAppHeadless.exe", "myAppHeadless"),
-    ("myAppModuleHost.exe", "myAppModuleHost"),
+    ("myAppClient.exe", "myAppClient"),
 )
 
 
 class NoLegacyCheck(BaseCheck):
     name = "no_legacy"
-    success_message = "Legacy standalone frontend guard check passed."
-    failure_title = "Legacy standalone frontend guard check failed:"
+    success_message = "Legacy standalone client guard check passed."
+    failure_title = "Legacy standalone client guard check failed:"
 
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         root_cmake = context.root / "CMakeLists.txt"

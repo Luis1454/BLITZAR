@@ -1,12 +1,12 @@
 if(NOT DEFINED GRAVITY_RUNTIME_PROTOCOL_SOURCES)
     set(GRAVITY_RUNTIME_PROTOCOL_SOURCES
-        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendJsonCodec.cpp"
-        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendJsonCodecParse.cpp"
-        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendJsonCodecParseStatus.cpp"
-        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendJsonCodecParseSnapshot.cpp"
-        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendJsonCodecReadNumber.cpp"
-        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendClient.cpp"
-        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/BackendProtocol.cpp"
+        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodec.cpp"
+        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParse.cpp"
+        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseStatus.cpp"
+        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseSnapshot.cpp"
+        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecReadNumber.cpp"
+        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerClient.cpp"
+        "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerProtocol.cpp"
     )
 else()
     set(_gravity_runtime_protocol_sources "")
@@ -96,7 +96,7 @@ if(NOT TARGET ${GRAVITY_TEST_PLATFORM_TARGET})
     target_compile_definitions(${GRAVITY_TEST_PLATFORM_TARGET}
         PUBLIC
             $<$<BOOL:${WIN32}>:NOMINMAX>
-            GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=
+            GRAVITY_CLIENT_MODULE_EXPORT_ATTR=
             GRAVITY_HD_DEVICE=
             GRAVITY_HD_HOST=
     )
@@ -110,7 +110,7 @@ if(NOT TARGET ${GRAVITY_TEST_PLATFORM_TARGET})
 endif()
 
 function(gravity_add_gtest target_name)
-    set(options BACKEND_LOCK)
+    set(options SERVER_LOCK)
     set(oneValueArgs TIMEOUT)
     set(multiValueArgs LABELS SOURCES LIBS)
     cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -120,7 +120,7 @@ function(gravity_add_gtest target_name)
     target_compile_definitions(${target_name}
         PRIVATE
             $<$<BOOL:${WIN32}>:NOMINMAX>
-            GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=
+            GRAVITY_CLIENT_MODULE_EXPORT_ATTR=
             GRAVITY_HD_DEVICE=
             GRAVITY_HD_HOST=
     )
@@ -132,8 +132,8 @@ function(gravity_add_gtest target_name)
     if(ARG_LABELS)
         list(APPEND _props LABELS ${ARG_LABELS})
     endif()
-    if(ARG_BACKEND_LOCK)
-        list(APPEND _props RESOURCE_LOCK gravity_backend_daemon)
+    if(ARG_SERVER_LOCK)
+        list(APPEND _props RESOURCE_LOCK gravity_server_daemon)
     endif()
     if(ARG_TIMEOUT)
         list(APPEND _props TIMEOUT "${ARG_TIMEOUT}")

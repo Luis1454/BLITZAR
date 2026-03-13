@@ -30,12 +30,12 @@ else()
     )
 endif()
 
-set(GRAVITY_BACKEND_SOURCES
+set(GRAVITY_SERVER_SOURCES
     ${GRAVITY_ENV_UTILS_SOURCES}
     engine/src/config/SimulationArgs.cpp
     engine/src/config/SimulationArgsParse.cpp
     engine/src/config/SimulationArgsCoreOptions.cpp
-    engine/src/config/SimulationArgsFrontendOptions.cpp
+    engine/src/config/SimulationArgsClientOptions.cpp
     engine/src/config/SimulationArgsInitOptions.cpp
     engine/src/config/SimulationArgsInitStateOptions.cpp
     engine/src/config/SimulationArgsFluidOptions.cpp
@@ -45,19 +45,19 @@ set(GRAVITY_BACKEND_SOURCES
     engine/src/config/SimulationConfig.cpp
     engine/src/config/SimulationModes.cpp
     engine/src/config/TextParse.cpp
-    engine/src/backend/SimulationBackend.cpp
-    engine/src/backend/SimulationInitConfig.cpp
+    engine/src/server/SimulationServer.cpp
+    engine/src/server/SimulationInitConfig.cpp
     engine/src/physics/cuda/ParticleSystem.cu
 )
 
 set(GRAVITY_RUNTIME_PROTOCOL_SOURCES
-    runtime/src/protocol/BackendJsonCodec.cpp
-    runtime/src/protocol/BackendJsonCodecParse.cpp
-    runtime/src/protocol/BackendJsonCodecParseStatus.cpp
-    runtime/src/protocol/BackendJsonCodecParseSnapshot.cpp
-    runtime/src/protocol/BackendJsonCodecReadNumber.cpp
-    runtime/src/protocol/BackendClient.cpp
-    runtime/src/protocol/BackendProtocol.cpp
+    runtime/src/protocol/ServerJsonCodec.cpp
+    runtime/src/protocol/ServerJsonCodecParse.cpp
+    runtime/src/protocol/ServerJsonCodecParseStatus.cpp
+    runtime/src/protocol/ServerJsonCodecParseSnapshot.cpp
+    runtime/src/protocol/ServerJsonCodecReadNumber.cpp
+    runtime/src/protocol/ServerClient.cpp
+    runtime/src/protocol/ServerProtocol.cpp
 )
 
 function(gravity_collect_existing_paths out_var)

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <memory>
 
-#include "frontend/ErrorBuffer.hpp"
+#include "client/ErrorBuffer.hpp"
 #include "modules/cli/module_cli_lifecycle.hpp"
 #include "modules/cli/module_cli_state.hpp"
 
@@ -12,9 +12,9 @@ namespace grav_module_cli {
 class ModuleCliLifecycleLocal final {
 public:
     static bool create(
-        const grav_module::FrontendModuleHostContextV1 *,
-        const grav_module::FrontendModuleStateSlot &outModuleState,
-        const grav_frontend::ErrorBufferView &errorBuffer)
+        const grav_module::ClientHostContextV1 *,
+        const grav_module::ClientModuleStateSlot &outModuleState,
+        const grav_client::ErrorBufferView &errorBuffer)
     {
         try {
             if (!outModuleState.isAvailable()) {
@@ -23,7 +23,7 @@ public:
             }
             std::unique_ptr<ModuleState> state = std::make_unique<ModuleState>();
             state->client.setSocketTimeoutMs(150);
-            return outModuleState.assign(grav_module::FrontendModuleOpaqueState::fromRawPointer(state.release()));
+            return outModuleState.assign(grav_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
         } catch (const std::exception &ex) {
             errorBuffer.write(ex.what());
             return false;
@@ -33,7 +33,7 @@ public:
         }
     }
 
-    static void destroy(grav_module::FrontendModuleOpaqueState moduleState)
+    static void destroy(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
             ModuleState *state = static_cast<ModuleState *>(moduleState.rawPointer());
@@ -49,8 +49,8 @@ public:
     }
 
     static bool start(
-        grav_module::FrontendModuleOpaqueState moduleState,
-        const grav_frontend::ErrorBufferView &errorBuffer)
+        grav_module::ClientModuleOpaqueState moduleState,
+        const grav_client::ErrorBufferView &errorBuffer)
     {
         try {
             ModuleState *state = static_cast<ModuleState *>(moduleState.rawPointer());
@@ -59,7 +59,7 @@ public:
                 return false;
             }
             if (!state->client.connect(state->host, state->port)) {
-                std::cout << "[module-cli] startup: backend " << state->host << ":" << state->port
+                std::cout << "[module-cli] startup: server " << state->host << ":" << state->port
                           << " not reachable yet (retry on command)\n";
             } else {
                 std::cout << "[module-cli] connected to " << state->host << ":" << state->port << "\n";
@@ -74,7 +74,7 @@ public:
         }
     }
 
-    static void stop(grav_module::FrontendModuleOpaqueState moduleState)
+    static void stop(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
             ModuleState *state = static_cast<ModuleState *>(moduleState.rawPointer());
@@ -90,26 +90,26 @@ public:
 };
 
 bool ModuleCliLifecycle::create(
-    const grav_module::FrontendModuleHostContextV1 *hostContext,
-    const grav_module::FrontendModuleStateSlot &outModuleState,
-    const grav_frontend::ErrorBufferView &errorBuffer)
+    const grav_module::ClientHostContextV1 *hostContext,
+    const grav_module::ClientModuleStateSlot &outModuleState,
+    const grav_client::ErrorBufferView &errorBuffer)
 {
     return ModuleCliLifecycleLocal::create(hostContext, outModuleState, errorBuffer);
 }
 
-void ModuleCliLifecycle::destroy(grav_module::FrontendModuleOpaqueState moduleState)
+void ModuleCliLifecycle::destroy(grav_module::ClientModuleOpaqueState moduleState)
 {
     ModuleCliLifecycleLocal::destroy(moduleState);
 }
 
 bool ModuleCliLifecycle::start(
-    grav_module::FrontendModuleOpaqueState moduleState,
-    const grav_frontend::ErrorBufferView &errorBuffer)
+    grav_module::ClientModuleOpaqueState moduleState,
+    const grav_client::ErrorBufferView &errorBuffer)
 {
     return ModuleCliLifecycleLocal::start(moduleState, errorBuffer);
 }
 
-void ModuleCliLifecycle::stop(grav_module::FrontendModuleOpaqueState moduleState)
+void ModuleCliLifecycle::stop(grav_module::ClientModuleOpaqueState moduleState)
 {
     ModuleCliLifecycleLocal::stop(moduleState);
 }

@@ -1,0 +1,6 @@
+#ifndef GRAVITY_SIM_SERVERJSONCODECPARSESTATUS_HPP
+#define GRAVITY_SIM_SERVERJSONCODECPARSESTATUS_HPP
+
+#include "protocol/ServerJsonCodec.hpp"
+
+#endif

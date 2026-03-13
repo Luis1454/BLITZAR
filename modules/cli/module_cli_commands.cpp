@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 
-#include "frontend/ErrorBuffer.hpp"
-#include "protocol/BackendProtocol.hpp"
-#include "modules/cli/module_cli_backend_ops.hpp"
+#include "client/ErrorBuffer.hpp"
+#include "protocol/ServerProtocol.hpp"
+#include "modules/cli/module_cli_server_ops.hpp"
 #include "modules/cli/module_cli_commands.hpp"
 #include "modules/cli/module_cli_text.hpp"
 
@@ -24,8 +24,8 @@ public:
     static bool handleCommand(
         ModuleState &state,
         std::string_view commandLine,
-        const grav_module::FrontendModuleCommandControl &commandControl,
-        const grav_frontend::ErrorBufferView &errorBuffer)
+        const grav_module::ClientModuleCommandControl &commandControl,
+        const grav_client::ErrorBufferView &errorBuffer)
     {
         try {
             commandControl.setContinue();
@@ -51,8 +51,8 @@ private:
     static bool dispatch(
         ModuleState &state,
         const std::vector<std::string> &tokens,
-        const grav_module::FrontendModuleCommandControl &commandControl,
-        const grav_frontend::ErrorBufferView &errorBuffer)
+        const grav_module::ClientModuleCommandControl &commandControl,
+        const grav_client::ErrorBufferView &errorBuffer)
     {
         const std::string &cmd = tokens[0];
         if (cmd == "help") {
@@ -64,34 +64,34 @@ private:
             return true;
         }
         if (cmd == "connect") {
-            return ModuleCliBackendOps::connect(state, tokens, errorBuffer);
+            return ModuleCliServerOps::connect(state, tokens, errorBuffer);
         }
         if (cmd == "reconnect") {
-            return ModuleCliBackendOps::reconnect(state, errorBuffer);
+            return ModuleCliServerOps::reconnect(state, errorBuffer);
         }
         if (cmd == "status") {
-            return ModuleCliBackendOps::commandStatus(state, errorBuffer);
+            return ModuleCliServerOps::commandStatus(state, errorBuffer);
         }
         if (cmd == "step") {
-            return ModuleCliBackendOps::commandStep(state, tokens, errorBuffer);
+            return ModuleCliServerOps::commandStep(state, tokens, errorBuffer);
         }
         if (cmd == "pause") {
-            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Pause), errorBuffer);
+            return ModuleCliServerOps::sendSimpleCommand(state, std::string(grav_protocol::Pause), errorBuffer);
         }
         if (cmd == "resume") {
-            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Resume), errorBuffer);
+            return ModuleCliServerOps::sendSimpleCommand(state, std::string(grav_protocol::Resume), errorBuffer);
         }
         if (cmd == "toggle") {
-            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Toggle), errorBuffer);
+            return ModuleCliServerOps::sendSimpleCommand(state, std::string(grav_protocol::Toggle), errorBuffer);
         }
         if (cmd == "reset") {
-            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Reset), errorBuffer);
+            return ModuleCliServerOps::sendSimpleCommand(state, std::string(grav_protocol::Reset), errorBuffer);
         }
         if (cmd == "recover") {
-            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Recover), errorBuffer);
+            return ModuleCliServerOps::sendSimpleCommand(state, std::string(grav_protocol::Recover), errorBuffer);
         }
         if (cmd == "shutdown") {
-            return ModuleCliBackendOps::sendSimpleCommand(state, std::string(grav_protocol::Shutdown), errorBuffer);
+            return ModuleCliServerOps::sendSimpleCommand(state, std::string(grav_protocol::Shutdown), errorBuffer);
         }
         errorBuffer.write("unknown module command");
         return false;
@@ -106,8 +106,8 @@ void ModuleCliCommands::printHelp()
 bool ModuleCliCommands::handleCommand(
     ModuleState &state,
     std::string_view commandLine,
-    const grav_module::FrontendModuleCommandControl &commandControl,
-    const grav_frontend::ErrorBufferView &errorBuffer)
+    const grav_module::ClientModuleCommandControl &commandControl,
+    const grav_client::ErrorBufferView &errorBuffer)
 {
     return ModuleCliCommandsLocal::handleCommand(state, commandLine, commandControl, errorBuffer);
 }

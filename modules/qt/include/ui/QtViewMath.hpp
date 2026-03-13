@@ -1,7 +1,7 @@
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_QTVIEWMATH_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_QTVIEWMATH_HPP_
 
-#include "backend/SimulationBackend.hpp"
+#include "server/SimulationServer.hpp"
 
 #include <QPointF>
 #include <QRect>

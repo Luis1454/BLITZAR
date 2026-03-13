@@ -28,13 +28,13 @@ NAMESPACE_BLOCK_RE = re.compile(r"(?m)^\s*namespace\s+[A-Za-z0-9_]+\s*\{")
 GRAVITY_INTERNAL_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+gravity_internal_")
 PROD_ROOTS = ("apps/", "engine/", "runtime/", "modules/")
 EVIDENCE_WORKFLOW_PATHS = (".github/workflows/pr-fast-quality-gate.yml", ".github/workflows/nightly-full.yml", ".github/workflows/release-lane.yml")
-LEGACY_CTEST_SELECTORS = ("ConfigArgsTest", "BackendProtocolTest", "FrontendBridgeTest", "FrontendRuntimeTest", "QtMainWindowTest")
+LEGACY_CTEST_SELECTORS = ("ConfigArgsTest", "ServerProtocolTest", "ClientBridgeTest", "ClientRuntimeTest", "QtMainWindowTest")
 GOTO_RE = re.compile(r"\bgoto\b")
 SETJMP_LONGJMP_RE = re.compile(r"\b(?:setjmp|longjmp)\b")
 DO_WHILE_RE = re.compile(r"\bdo\b\s*\{", re.DOTALL)
 WHILE_TRUE_RE = re.compile(r"\bwhile\s*\(\s*true\s*\)")
 FUNCTION_POINTER_TYPEDEF_RE = re.compile(r"(?m)^\s*(?:typedef|using)\b[^\n;]*\(\s*\*\s*[A-Za-z0-9_]*\s*\)")
-FUNCTION_POINTER_ABI_PATHS = {"runtime/include/frontend/FrontendModuleApi.hpp"}
+FUNCTION_POINTER_ABI_PATHS = {"runtime/include/client/ClientModuleApi.hpp"}
 QT_REFERENCE_NEW_RE = re.compile(
     r"(?m)^\s*(?:auto|Q[A-Za-z0-9_<>:]+)\s*&\s*[A-Za-z0-9_]+\s*=\s*\*new\s+Q[A-Za-z0-9_<>:]+\s*\("
 )
