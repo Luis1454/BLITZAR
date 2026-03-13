@@ -1,5 +1,6 @@
 #include "SimulationOptionRegistryInternal.hpp"
 
+#include "config/SimulationPerformanceProfile.hpp"
 #include "config/SimulationModes.hpp"
 #include "protocol/ServerProtocol.hpp"
 
@@ -34,6 +35,13 @@ static std::uint32_t clampClientParticleCap(std::uint32_t requested)
         return grav_protocol::kSnapshotMaxPoints;
     }
     return requested < 2u ? 2u : requested;
+}
+
+static void markCustomPerformanceProfile(const SimulationOptionEntry &entry, SimulationConfig &config)
+{
+    if (grav_config::isPerformanceManagedField(entry.iniName)) {
+        config.performanceProfile = std::string(grav_config::kPerformanceProfileCustom);
+    }
 }
 
 bool matchesCli(const SimulationOptionEntry &entry, const std::string &key, SimulationOptionGroup group)
@@ -72,6 +80,7 @@ bool applyEntry(
                 return true;
             }
             memberAt<std::uint32_t>(config, entry.offset) = parsed;
+            markCustomPerformanceProfile(entry, config);
             return true;
         }
         case OptionKind::Int: {
@@ -108,6 +117,17 @@ bool applyEntry(
         case OptionKind::String:
             memberAt<std::string>(config, entry.offset) = value;
             return true;
+        case OptionKind::PerformanceProfile: {
+            std::string canonical;
+            if (!grav_config::normalizePerformanceProfile(value, canonical)) {
+                warnings << source << " invalid " << optionName
+                         << ": " << value << " (allowed: interactive|balanced|quality|custom)\n";
+                return true;
+            }
+            memberAt<std::string>(config, entry.offset) = canonical;
+            grav_config::applyPerformanceProfile(config);
+            return true;
+        }
         case OptionKind::Solver: {
             std::string canonical;
             if (!grav_modes::normalizeSolver(value, canonical)) {
@@ -139,6 +159,7 @@ bool applyEntry(
             if (clamped != parsed) {
                 emitClamped(warnings, source, optionName, parsed, clamped);
             }
+            markCustomPerformanceProfile(entry, config);
             return true;
         }
         case OptionKind::TimeoutTriple: {

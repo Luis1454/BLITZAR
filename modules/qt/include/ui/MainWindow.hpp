@@ -36,6 +36,7 @@ class MainWindow : public QMainWindow {
         void applyConfigToServer(bool requestReset);
         void applyConfigToUi();
         void captureUiIntoConfig();
+        void applyPerformanceProfileToRuntime();
         void markConfigDirty(bool dirty = true);
         bool saveConfigToDisk();
         void update3DCameraFromSliders();
@@ -70,6 +71,7 @@ class MainWindow : public QMainWindow {
         QPointer<QSlider> _luminositySlider;
         QPointer<QComboBox> _solverCombo;
         QPointer<QComboBox> _integratorCombo;
+        QPointer<QComboBox> _performanceCombo;
         QPointer<QComboBox> _presetCombo;
         QPointer<QComboBox> _view3dCombo;
         QPointer<QDoubleSpinBox> _thetaSpin;

@@ -277,10 +277,12 @@ ServerClientResponse ServerClient::getStatus(ServerClientStatus &outStatus)
         outStatus.faultReason = parsed.faultReason;
         outStatus.sphEnabled = parsed.sphEnabled;
         outStatus.serverFps = parsed.serverFps;
+        outStatus.performanceProfile = parsed.performanceProfile;
         outStatus.substepTargetDt = parsed.substepTargetDt;
         outStatus.substepDt = parsed.substepDt;
         outStatus.substeps = parsed.substeps;
         outStatus.maxSubsteps = parsed.maxSubsteps;
+        outStatus.snapshotPublishPeriodMs = parsed.snapshotPublishPeriodMs;
         outStatus.particleCount = parsed.particleCount;
         outStatus.solver = parsed.solver;
         outStatus.integrator = parsed.integrator;

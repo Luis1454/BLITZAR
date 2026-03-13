@@ -438,6 +438,20 @@ void ClientServerBridge::setIntegratorMode(const std::string &mode)
         });
 }
 
+void ClientServerBridge::setPerformanceProfile(const std::string &profile)
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    dispatchServerCall(
+        _remoteMode,
+        _localServer,
+        [&profile](ILocalServer &server) { server.setPerformanceProfile(profile); },
+        [this, &profile]() {
+            sendOrQueueRemote(
+                std::string(grav_protocol::SetPerformanceProfile),
+                "\"value\":\"" + jsonEscape(profile) + "\"");
+        });
+}
+
 void ClientServerBridge::setOctreeParameters(float theta, float softening)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
@@ -486,6 +500,38 @@ void ClientServerBridge::setSphParameters(float smoothingLength, float restDensi
                     + ",\"rest_density\":" + std::to_string(safeRestDensity)
                     + ",\"gas_constant\":" + std::to_string(safeGasConstant)
                     + ",\"viscosity\":" + std::to_string(safeViscosity));
+        });
+}
+
+void ClientServerBridge::setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps)
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    dispatchServerCall(
+        _remoteMode,
+        _localServer,
+        [targetDt, maxSubsteps](ILocalServer &server) { server.setSubstepPolicy(targetDt, maxSubsteps); },
+        [this, targetDt, maxSubsteps]() {
+            const float safeTargetDt = std::max(0.0f, targetDt);
+            const std::uint32_t safeMaxSubsteps = std::max<std::uint32_t>(1u, maxSubsteps);
+            sendOrQueueRemote(
+                std::string(grav_protocol::SetSubsteps),
+                "\"target_dt\":" + std::to_string(safeTargetDt)
+                    + ",\"max_substeps\":" + std::to_string(safeMaxSubsteps));
+        });
+}
+
+void ClientServerBridge::setSnapshotPublishPeriodMs(std::uint32_t periodMs)
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    dispatchServerCall(
+        _remoteMode,
+        _localServer,
+        [periodMs](ILocalServer &server) { server.setSnapshotPublishPeriodMs(periodMs); },
+        [this, periodMs]() {
+            const std::uint32_t safePeriodMs = std::max<std::uint32_t>(1u, periodMs);
+            sendOrQueueRemote(
+                std::string(grav_protocol::SetSnapshotPublishCadence),
+                "\"period_ms\":" + std::to_string(safePeriodMs));
         });
 }
 
@@ -756,10 +802,12 @@ SimulationStats ClientServerBridge::fromRemoteStatus(const ServerClientStatus &s
     stats.faultReason = status.faultReason;
     stats.sphEnabled = status.sphEnabled;
     stats.serverFps = status.serverFps;
+    stats.performanceProfile = status.performanceProfile;
     stats.substepTargetDt = status.substepTargetDt;
     stats.substepDt = status.substepDt;
     stats.substeps = status.substeps;
     stats.maxSubsteps = status.maxSubsteps;
+    stats.snapshotPublishPeriodMs = status.snapshotPublishPeriodMs;
     stats.particleCount = status.particleCount;
     stats.kineticEnergy = status.kineticEnergy;
     stats.potentialEnergy = status.potentialEnergy;

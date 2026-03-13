@@ -2,7 +2,7 @@
   "metadata": {
     "system": "A.S.T.E.R.",
     "revision": "2026-03-13",
-    "revision_note": "Governance now includes qualified client-module bridge controls: allowlisted module ids, sidecar manifest verification, binary sha256 verification before dynamic load, and a startup-only prod posture with live reload and switch disabled, alongside prior IV&V waiver handling, Power of 10 repository-policy checks, strict include-guard-only header policy, analyzer coverage, security CI coverage, pinned multi-platform CI, and automated GPU runner readiness."
+    "revision_note": "Governance now includes manifest-qualified client modules plus explicit interactive/balanced/quality performance presets that bundle snapshot cadence, draw-cap, energy sampling, and bounded substep policy for deterministic client/server tuning without changing solver or integrator selection."
   },
   "includes": [
     "manifest/evidence.json",

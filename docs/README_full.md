@@ -87,7 +87,7 @@ Key files:
 
 Primary directives:
 - `simulation(...)`
-- `substeps(...)`
+- `performance(...)`
 - `octree(...)`
 - `client(...)`
 - `export(...)`
@@ -99,18 +99,25 @@ Primary directives:
 - `disk(...)`
 - `cloud(...)`
 - `sph(...)`
-- `energy(...)`
 
 Example:
 
 ```ini
 simulation(particle_count=10000, dt=0.01, solver=octree_gpu, integrator=euler)
-substeps(target_dt=0.005, max=4)
+performance(profile=interactive)
 scene(style=preset, preset=two_body, mode=two_body, file="", format=auto)
 preset(size=6, velocity_temperature=0, temperature=0)
 thermal(ambient=0, specific_heat=1, heating=0, radiation=0)
-client(draw_cap=10000, zoom=8, luminosity=100, ui_fps=60, command_timeout_ms=80, status_timeout_ms=40, snapshot_timeout_ms=140)
+client(zoom=8, luminosity=100, ui_fps=60, command_timeout_ms=80, status_timeout_ms=40, snapshot_timeout_ms=140)
 ```
+
+`performance(profile=interactive|balanced|quality)` controls the main interactive budget:
+- published snapshot cadence
+- visible draw cap
+- energy sampling cadence
+- bounded substep policy
+
+If you need explicit overrides, save/load emits `performance(profile=custom, ...)`.
 
 Legacy flat `key=value` files remain readable for migration, but new saves are emitted in directive form.
 

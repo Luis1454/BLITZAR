@@ -22,10 +22,12 @@ struct ServerClientStatus {
     std::string faultReason;
     bool sphEnabled = false;
     float serverFps = 0.0f;
+    std::string performanceProfile;
     float substepTargetDt = 0.0f;
     float substepDt = 0.0f;
     std::uint32_t substeps = 0;
     std::uint32_t maxSubsteps = 0;
+    std::uint32_t snapshotPublishPeriodMs = 0;
     std::uint32_t particleCount = 0;
     std::string solver;
     std::string integrator;

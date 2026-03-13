@@ -117,6 +117,11 @@ void ClientRuntime::setIntegratorMode(const std::string &mode)
     _bridge.setIntegratorMode(mode);
 }
 
+void ClientRuntime::setPerformanceProfile(const std::string &profile)
+{
+    _bridge.setPerformanceProfile(profile);
+}
+
 void ClientRuntime::setOctreeParameters(float theta, float softening)
 {
     _bridge.setOctreeParameters(theta, softening);
@@ -130,6 +135,16 @@ void ClientRuntime::setSphEnabled(bool enabled)
 void ClientRuntime::setSphParameters(float smoothingLength, float restDensity, float gasConstant, float viscosity)
 {
     _bridge.setSphParameters(smoothingLength, restDensity, gasConstant, viscosity);
+}
+
+void ClientRuntime::setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps)
+{
+    _bridge.setSubstepPolicy(targetDt, maxSubsteps);
+}
+
+void ClientRuntime::setSnapshotPublishPeriodMs(std::uint32_t periodMs)
+{
+    _bridge.setSnapshotPublishPeriodMs(periodMs);
 }
 
 void ClientRuntime::setInitialStateConfig(const InitialStateConfig &config)

@@ -167,3 +167,21 @@ TEST(ConfigArgsTest, TST_UNT_CONF_022_CliAcceptsCalibrationSceneModes)
     EXPECT_TRUE(warnings.str().empty());
     EXPECT_FALSE(runtime.hasArgumentError);
 }
+
+TEST(ConfigArgsTest, TST_UNT_CONF_026_CliPerformanceProfileAppliesInteractivePreset)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--performance-profile", "interactive"};
+    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(config.performanceProfile, "interactive");
+    EXPECT_EQ(config.clientParticleCap, grav_protocol::kSnapshotDefaultPoints);
+    EXPECT_EQ(config.snapshotPublishPeriodMs, 50u);
+    EXPECT_EQ(config.energyMeasureEverySteps, 120u);
+    EXPECT_EQ(config.energySampleLimit, 256u);
+    EXPECT_FLOAT_EQ(config.substepTargetDt, 0.01f);
+    EXPECT_EQ(config.maxSubsteps, 4u);
+    EXPECT_TRUE(warnings.str().empty());
+    EXPECT_FALSE(runtime.hasArgumentError);
+}

@@ -9,6 +9,33 @@ from python_tools.core.models import CheckContext, CheckResult
 INT_RE = re.compile(r"^-?[0-9]+$")
 FLOAT_RE = re.compile(r"^-?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][-+]?[0-9]+)?$")
 
+PERFORMANCE_PRESETS: dict[str, dict[str, str]] = {
+    "interactive": {
+        "client_particle_cap": "4096",
+        "snapshot_publish_period_ms": "50",
+        "energy_measure_every_steps": "120",
+        "energy_sample_limit": "256",
+        "substep_target_dt": "0.01",
+        "max_substeps": "4",
+    },
+    "balanced": {
+        "client_particle_cap": "8192",
+        "snapshot_publish_period_ms": "33",
+        "energy_measure_every_steps": "60",
+        "energy_sample_limit": "1024",
+        "substep_target_dt": "0.005",
+        "max_substeps": "8",
+    },
+    "quality": {
+        "client_particle_cap": "10000",
+        "snapshot_publish_period_ms": "16",
+        "energy_measure_every_steps": "30",
+        "energy_sample_limit": "5000",
+        "substep_target_dt": "0",
+        "max_substeps": "32",
+    },
+}
+
 
 class IniCheck(BaseCheck):
     name = "ini"
@@ -40,6 +67,7 @@ class IniCheck(BaseCheck):
             key = key.strip()
             if key and key not in values:
                 values[key] = value.strip()
+        self._apply_performance_defaults(values)
         return values
 
     def _parse_directive(self, line: str, values: dict[str, str]) -> bool:
@@ -77,10 +105,18 @@ class IniCheck(BaseCheck):
                 "solver": "solver",
                 "integrator": "integrator",
             },
+            "performance": {
+                "profile": "performance_profile",
+                "draw_cap": "client_particle_cap",
+                "snapshot_ms": "snapshot_publish_period_ms",
+                "energy_every": "energy_measure_every_steps",
+                "sample_limit": "energy_sample_limit",
+                "substep_target_dt": "substep_target_dt",
+                "max_substeps": "max_substeps",
+            },
             "substeps": {"target_dt": "substep_target_dt", "max": "max_substeps"},
             "octree": {"theta": "octree_theta", "softening": "octree_softening"},
             "client": {
-                "draw_cap": "client_particle_cap",
                 "ui_fps": "ui_fps_limit",
                 "command_timeout_ms": "client_remote_command_timeout_ms",
                 "status_timeout_ms": "client_remote_status_timeout_ms",
@@ -114,11 +150,21 @@ class IniCheck(BaseCheck):
             cleaned = cleaned[1:-1]
         values[key.strip()] = cleaned
 
+    def _apply_performance_defaults(self, values: dict[str, str]) -> None:
+        profile = values.get("performance_profile")
+        if profile is None:
+            return
+        preset = PERFORMANCE_PRESETS.get(profile)
+        if preset is None:
+            return
+        for key, value in preset.items():
+            values.setdefault(key, value)
+
     def _check_required_keys(self, values: dict[str, str], result: CheckResult) -> None:
         required_keys = (
-            "particle_count", "dt", "solver", "integrator", "octree_theta", "octree_softening",
+            "particle_count", "dt", "solver", "integrator", "performance_profile", "octree_theta", "octree_softening",
             "client_particle_cap", "ui_fps_limit", "export_format", "input_format", "init_config_style",
-            "preset_structure", "init_mode", "sph_enabled",
+            "preset_structure", "init_mode", "sph_enabled", "snapshot_publish_period_ms",
         )
         for key in required_keys:
             if key not in values:
@@ -128,6 +174,7 @@ class IniCheck(BaseCheck):
         for key, minimum in (
             ("particle_count", 1), ("client_particle_cap", 1), ("ui_fps_limit", 1),
             ("energy_measure_every_steps", 1), ("energy_sample_limit", 1),
+            ("snapshot_publish_period_ms", 1),
             ("client_remote_command_timeout_ms", 10), ("client_remote_status_timeout_ms", 10),
             ("client_remote_snapshot_timeout_ms", 10),
         ):
@@ -157,11 +204,12 @@ class IniCheck(BaseCheck):
         enums = (
             ("solver", ("pairwise_cuda", "octree_gpu", "octree_cpu")),
             ("integrator", ("euler", "rk4")),
+            ("performance_profile", ("interactive", "balanced", "quality", "custom")),
             ("export_format", ("vtk", "vtk_binary", "xyz", "bin")),
             ("input_format", ("auto", "vtk", "vtk_binary", "xyz", "bin")),
             ("init_config_style", ("preset", "detailed")),
-            ("preset_structure", ("disk_orbit", "random_cloud", "file")),
-            ("init_mode", ("disk_orbit", "random_cloud", "file")),
+            ("preset_structure", ("disk_orbit", "random_cloud", "two_body", "three_body", "plummer_sphere", "file")),
+            ("init_mode", ("disk_orbit", "random_cloud", "two_body", "three_body", "plummer_sphere", "file")),
             ("sph_enabled", ("true", "false")),
         )
         for key, options in enums:

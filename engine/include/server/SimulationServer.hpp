@@ -37,9 +37,12 @@ class SimulationServer : public grav_client::ILocalServer {
         void requestRecover();
         void setSolverMode(const std::string &mode) override;
         void setIntegratorMode(const std::string &mode) override;
+        void setPerformanceProfile(const std::string &profile) override;
         void setOctreeParameters(float theta, float softening) override;
         void setSphEnabled(bool enabled) override;
         void setSphParameters(float smoothingLength, float restDensity, float gasConstant, float viscosity) override;
+        void setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps) override;
+        void setSnapshotPublishPeriodMs(std::uint32_t periodMs) override;
         void setInitialStateConfig(const InitialStateConfig &config) override;
         void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit) override;
         void setExportDefaults(const std::string &directory, const std::string &format) override;
@@ -93,6 +96,7 @@ class SimulationServer : public grav_client::ILocalServer {
         std::atomic<std::uint32_t> _energySampleLimit;
         std::atomic<float> _configuredSubstepTargetDt;
         std::atomic<std::uint32_t> _configuredMaxSubsteps;
+        std::atomic<std::uint32_t> _snapshotPublishPeriodMs;
         std::atomic<float> _lastAppliedSubstepTargetDt;
         std::atomic<float> _lastAppliedSubstepDt;
         std::atomic<std::uint32_t> _lastAppliedSubsteps;
@@ -102,6 +106,7 @@ class SimulationServer : public grav_client::ILocalServer {
         std::uint32_t _particleCount;
         std::string _solverMode;
         std::string _integratorMode;
+        std::string _performanceProfile;
 
         float _octreeTheta;
         float _octreeSoftening;

@@ -16,6 +16,7 @@ enum class OptionKind {
     Float,
     Bool,
     String,
+    PerformanceProfile,
     Solver,
     Integrator,
     ClientParticleCap,

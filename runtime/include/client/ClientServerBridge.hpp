@@ -82,9 +82,12 @@ class ClientServerBridge {
         void requestRecover();
         void setSolverMode(const std::string &mode);
         void setIntegratorMode(const std::string &mode);
+        void setPerformanceProfile(const std::string &profile);
         void setOctreeParameters(float theta, float softening);
         void setSphEnabled(bool enabled);
         void setSphParameters(float smoothingLength, float restDensity, float gasConstant, float viscosity);
+        void setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps);
+        void setSnapshotPublishPeriodMs(std::uint32_t periodMs);
         void setInitialStateConfig(const InitialStateConfig &config);
         void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit);
         void setExportDefaults(const std::string &directory, const std::string &format);

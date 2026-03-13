@@ -382,6 +382,14 @@ std::string ServerDaemon::processRequest(const std::string &request)
             _server.setIntegratorMode(canonical);
             return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
+        if (cmd == grav_protocol::SetPerformanceProfile) {
+            std::string value;
+            if (!grav_protocol::ServerJsonCodec::readString(request, "value", value)) {
+                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "missing performance profile");
+            }
+            _server.setPerformanceProfile(value);
+            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+        }
         if (cmd == grav_protocol::SetParticleCount) {
             std::uint64_t value = 0;
             if (!grav_protocol::ServerJsonCodec::readNumber(request, "value", value) || value < 2ull) {
@@ -430,6 +438,16 @@ std::string ServerDaemon::processRequest(const std::string &request)
             );
             return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
+        if (cmd == grav_protocol::SetSubsteps) {
+            double targetDt = 0.0;
+            std::uint32_t maxSubsteps = 0;
+            if (!grav_protocol::ServerJsonCodec::readNumber(request, "target_dt", targetDt) || targetDt < 0.0
+                || !grav_protocol::ServerJsonCodec::readNumber(request, "max_substeps", maxSubsteps) || maxSubsteps < 1u) {
+                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "invalid substep policy");
+            }
+            _server.setSubstepPolicy(static_cast<float>(targetDt), maxSubsteps);
+            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+        }
         if (cmd == grav_protocol::SetEnergyMeasure) {
             std::uint32_t everySteps = 0;
             std::uint32_t sampleLimit = 0;
@@ -438,6 +456,14 @@ std::string ServerDaemon::processRequest(const std::string &request)
                 return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "invalid energy measure config");
             }
             _server.setEnergyMeasurementConfig(everySteps, sampleLimit);
+            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+        }
+        if (cmd == grav_protocol::SetSnapshotPublishCadence) {
+            std::uint32_t periodMs = 0;
+            if (!grav_protocol::ServerJsonCodec::readNumber(request, "period_ms", periodMs) || periodMs < 1u) {
+                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "invalid snapshot cadence");
+            }
+            _server.setSnapshotPublishPeriodMs(periodMs);
             return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
         if (cmd == grav_protocol::Load) {
