@@ -18,6 +18,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_010_SimulationConfigSaveLoadRoundTrip)
     config.dt = 0.015f;
     config.solver = "octree_cpu";
     config.integrator = "rk4";
+    config.substepTargetDt = 0.004f;
+    config.maxSubsteps = 11u;
     config.sphEnabled = true;
     config.exportFormat = "bin";
     config.energySampleLimit = 777u;
@@ -33,6 +35,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_010_SimulationConfigSaveLoadRoundTrip)
     EXPECT_FLOAT_EQ(loaded.dt, config.dt);
     EXPECT_EQ(loaded.solver, config.solver);
     EXPECT_EQ(loaded.integrator, config.integrator);
+    EXPECT_FLOAT_EQ(loaded.substepTargetDt, config.substepTargetDt);
+    EXPECT_EQ(loaded.maxSubsteps, config.maxSubsteps);
     EXPECT_EQ(loaded.sphEnabled, config.sphEnabled);
     EXPECT_EQ(loaded.exportFormat, config.exportFormat);
     EXPECT_EQ(loaded.energySampleLimit, config.energySampleLimit);

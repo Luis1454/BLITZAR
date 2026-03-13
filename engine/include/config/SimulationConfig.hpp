@@ -11,6 +11,8 @@ struct SimulationConfig {
     float dt = 0.01f;
     std::string solver = "pairwise_cuda";
     std::string integrator = "euler";
+    float substepTargetDt = 0.0f;
+    std::uint32_t maxSubsteps = 32u;
     float octreeTheta = 1.2f;
     float octreeSoftening = 2.5f;
     std::uint32_t clientParticleCap = grav_protocol::kSnapshotMaxPoints;

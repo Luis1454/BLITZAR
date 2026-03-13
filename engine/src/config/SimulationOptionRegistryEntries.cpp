@@ -9,6 +9,8 @@ const SimulationOptionEntry kSimulationOptions[] = {
     {SimulationOptionGroup::Core, OptionKind::Float, "--dt", "", "dt", "", "", "  --dt <float>\n", "", offsetof(SimulationConfig, dt), 0.000001, 0.0, true, false},
     {SimulationOptionGroup::Core, OptionKind::Solver, "--solver", "", "solver", "", "", "  --solver <pairwise_cuda|octree_gpu|octree_cpu>\n", "", offsetof(SimulationConfig, solver), 0.0, 0.0, false, false},
     {SimulationOptionGroup::Core, OptionKind::Integrator, "--integrator", "", "integrator", "", "", "  --integrator <euler|rk4>\n", "", offsetof(SimulationConfig, integrator), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::Core, OptionKind::Float, "--substep-target-dt", "", "substep_target_dt", "", "", "  --substep-target-dt <float|0=auto>\n", "", offsetof(SimulationConfig, substepTargetDt), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::Core, OptionKind::Uint, "--max-substeps", "", "max_substeps", "", "", "  --max-substeps <n>\n", "", offsetof(SimulationConfig, maxSubsteps), 1.0, 1024.0, true, true},
     {SimulationOptionGroup::Core, OptionKind::Float, "--octree-theta", "", "octree_theta", "", "", "  --octree-theta <float>\n", "", offsetof(SimulationConfig, octreeTheta), 0.01, 0.0, true, false},
     {SimulationOptionGroup::Core, OptionKind::Float, "--octree-softening", "", "octree_softening", "", "", "  --octree-softening <float>\n", "", offsetof(SimulationConfig, octreeSoftening), 0.000001, 0.0, true, false},
     {SimulationOptionGroup::Core, OptionKind::ClientParticleCap, "--client-particle-cap", "", "client_particle_cap", "", "GRAVITY_CLIENT_DRAW_CAP", "  --client-particle-cap <n>\n", "", offsetof(SimulationConfig, clientParticleCap), 0.0, 0.0, false, false},

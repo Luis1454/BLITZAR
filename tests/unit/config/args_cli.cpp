@@ -41,13 +41,15 @@ TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
     RuntimeArgs runtime;
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--particle-count", "2048", "--dt=0.02", "--solver", "octree_gpu", "--integrator", "euler",
-        "--sph", "true", "--target-steps", "333", "--export-on-exit=false", "--ui-fps", "75", "--energy-every", "2",
+        "--substep-target-dt", "0.005", "--max-substeps", "12", "--sph", "true", "--target-steps", "333", "--export-on-exit=false", "--ui-fps", "75", "--energy-every", "2",
         "--server-command-timeout-ms", "90", "--server-status-timeout-ms", "35", "--server-snapshot-timeout-ms", "180"};
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.particleCount, 2048u);
     EXPECT_FLOAT_EQ(config.dt, 0.02f);
     EXPECT_EQ(config.solver, "octree_gpu");
     EXPECT_EQ(config.integrator, "euler");
+    EXPECT_FLOAT_EQ(config.substepTargetDt, 0.005f);
+    EXPECT_EQ(config.maxSubsteps, 12u);
     EXPECT_TRUE(config.sphEnabled);
     EXPECT_EQ(config.uiFpsLimit, 75u);
     EXPECT_EQ(config.energyMeasureEverySteps, 2u);

@@ -89,6 +89,10 @@ bool SimulationConfig::save(const std::string &path) const
     out << "solver=" << solver << "\n";
     out << "# Time integrator: euler | rk4 (octree_gpu supports euler only)\n";
     out << "integrator=" << integrator << "\n";
+    out << "# Internal substep target dt. 0 uses auto policy based on solver/integrator/SPH.\n";
+    out << "substep_target_dt=" << substepTargetDt << "\n";
+    out << "# Hard cap applied to per-step substep splitting.\n";
+    out << "max_substeps=" << std::max<std::uint32_t>(1u, maxSubsteps) << "\n";
     out << "\n";
 
     out << "# [Octree]\n";

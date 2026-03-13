@@ -698,7 +698,7 @@ void MainWindow::tick()
     }
 
     _statusLabel->setText(
-        QString("state=%1 | link=%2 owner=%3 | solver=%4 integrator=%5 | sph=%6 | dt=%7 | server=%8 step/s | ui=%9 fps | steps=%10 | particles=%11 draw=%12 cap=%13 | data=stats:%14 snap:%15 %16 | Ekin=%17 Epot=%18 Eth=%19 Erad=%20 Etot=%21 | dE=%22%% %23")
+        QString("state=%1 | link=%2 owner=%3 | solver=%4 integrator=%5 | sph=%6 | dt=%7 | server=%8 step/s | sub=%9x@%10 (target=%11 max=%12) | ui=%13 fps | steps=%14 | particles=%15 draw=%16 cap=%17 | data=stats:%18 snap:%19 %20 | Ekin=%21 Epot=%22 Eth=%23 Erad=%24 Etot=%25 | dE=%26%% %27")
             .arg(stats.faulted ? "FAULT" : (stats.paused ? "PAUSED" : "RUNNING"))
             .arg(QString::fromStdString(linkLabel))
             .arg(QString::fromStdString(ownerLabel))
@@ -707,6 +707,10 @@ void MainWindow::tick()
             .arg(stats.sphEnabled ? "on" : "off")
             .arg(stats.dt, 0, 'f', 5)
             .arg(stats.serverFps, 0, 'f', 1)
+            .arg(stats.substeps)
+            .arg(stats.substepDt, 0, 'f', 5)
+            .arg(stats.substepTargetDt, 0, 'f', 5)
+            .arg(stats.maxSubsteps)
             .arg(_uiTickFps, 0, 'f', 1)
             .arg(static_cast<qulonglong>(stats.steps))
             .arg(stats.particleCount)
@@ -742,6 +746,10 @@ void MainWindow::tick()
                   << " integrator=" << stats.integratorName
                   << " sph=" << (stats.sphEnabled ? "on" : "off")
                   << " step_s=" << stats.serverFps
+                  << " substeps=" << stats.substeps
+                  << " substep_dt=" << stats.substepDt
+                  << " substep_target_dt=" << stats.substepTargetDt
+                  << " max_substeps=" << stats.maxSubsteps
                   << " ui_fps=" << _uiTickFps
                   << " snapshot=" << snapshotSize
                   << " draw=" << displayedParticles
