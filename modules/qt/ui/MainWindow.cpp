@@ -1,6 +1,7 @@
 #include "ui/MainWindow.hpp"
 
 #include "client/ClientCommon.hpp"
+#include "config/SimulationPerformanceProfile.hpp"
 #include "server/SimulationInitConfig.hpp"
 #include "ui/EnergyGraphWidget.hpp"
 #include "ui/MultiViewWidget.hpp"
@@ -86,6 +87,7 @@ MainWindow::MainWindow(
       _luminositySlider(new QSlider(Qt::Horizontal, this)),
       _solverCombo(new QComboBox(this)),
       _integratorCombo(new QComboBox(this)),
+      _performanceCombo(new QComboBox(this)),
       _presetCombo(new QComboBox(this)),
       _view3dCombo(new QComboBox(this)),
       _thetaSpin(new QDoubleSpinBox(this)),
@@ -123,6 +125,11 @@ MainWindow::MainWindow(
     _integratorCombo->addItem("rk4");
     const int integratorIndex = std::max(0, _integratorCombo->findText(QString::fromStdString(_config.integrator)));
     _integratorCombo->setCurrentIndex(integratorIndex);
+    _performanceCombo->addItem("interactive");
+    _performanceCombo->addItem("balanced");
+    _performanceCombo->addItem("quality");
+    _performanceCombo->addItem("custom");
+    _performanceCombo->setCurrentIndex(std::max(0, _performanceCombo->findText(QString::fromStdString(_config.performanceProfile))));
     _presetCombo->addItem("disk_orbit");
     _presetCombo->addItem("random_cloud");
     _presetCombo->addItem("two_body");
@@ -190,6 +197,7 @@ MainWindow::MainWindow(
     auto *simulationForm = new QFormLayout();
     simulationForm->addRow("solver", _solverCombo);
     simulationForm->addRow("integrator", _integratorCombo);
+    simulationForm->addRow("performance", _performanceCombo);
     simulationForm->addRow("preset", _presetCombo);
     simulationLayout->addLayout(simulationForm);
     simulationLayout->addWidget(_applyPresetButton);
@@ -478,6 +486,12 @@ MainWindow::MainWindow(
         _runtime->setIntegratorMode(integrator.toStdString());
         markConfigDirty();
     });
+    connect(_performanceCombo, &QComboBox::currentTextChanged, this, [this](const QString &profile) {
+        _config.performanceProfile = profile.toStdString();
+        grav_config::applyPerformanceProfile(_config);
+        applyPerformanceProfileToRuntime();
+        markConfigDirty();
+    });
     connect(_thetaSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double value) {
         _config.octreeTheta = static_cast<float>(value);
         _runtime->setOctreeParameters(static_cast<float>(value), static_cast<float>(_softeningSpin->value()));
@@ -519,6 +533,7 @@ void MainWindow::applyConfigToServer(bool requestReset)
     _runtime->setDt(_config.dt);
     _runtime->setSolverMode(_config.solver);
     _runtime->setIntegratorMode(_config.integrator);
+    _runtime->setPerformanceProfile(_config.performanceProfile);
     _runtime->setOctreeParameters(_config.octreeTheta, _config.octreeSoftening);
     _runtime->setSphEnabled(_config.sphEnabled);
     _runtime->setSphParameters(
@@ -527,10 +542,15 @@ void MainWindow::applyConfigToServer(bool requestReset)
         _config.sphGasConstant,
         _config.sphViscosity
     );
+    _runtime->setSubstepPolicy(_config.substepTargetDt, _config.maxSubsteps);
+    _runtime->setSnapshotPublishPeriodMs(_config.snapshotPublishPeriodMs);
     _runtime->setEnergyMeasurementConfig(_config.energyMeasureEverySteps, _config.energySampleLimit);
     _runtime->setExportDefaults(_config.exportDirectory, _config.exportFormat);
     _runtime->setInitialStateFile(initPlan.inputFile, initPlan.inputFormat);
     _runtime->setInitialStateConfig(initPlan.config);
+    _clientDrawCap = grav_client::resolveClientDrawCap(_config);
+    _multiView->setMaxDrawParticles(_clientDrawCap);
+    _runtime->setRemoteSnapshotCap(_clientDrawCap);
     if (requestReset) {
         _runtime->requestReset();
     }
@@ -540,6 +560,7 @@ void MainWindow::applyConfigToUi()
 {
     _solverCombo->blockSignals(true);
     _integratorCombo->blockSignals(true);
+    _performanceCombo->blockSignals(true);
     _presetCombo->blockSignals(true);
     _sphCheck->blockSignals(true);
     _dtSpin->blockSignals(true);
@@ -554,6 +575,7 @@ void MainWindow::applyConfigToUi()
 
     _solverCombo->setCurrentIndex(std::max(0, _solverCombo->findText(QString::fromStdString(_config.solver))));
     _integratorCombo->setCurrentIndex(std::max(0, _integratorCombo->findText(QString::fromStdString(_config.integrator))));
+    _performanceCombo->setCurrentIndex(std::max(0, _performanceCombo->findText(QString::fromStdString(_config.performanceProfile))));
     const int presetIndex = std::max(0, _presetCombo->findText(QString::fromStdString(_config.presetStructure)));
     _presetCombo->setCurrentIndex(presetIndex);
     _sphCheck->setChecked(_config.sphEnabled);
@@ -569,6 +591,7 @@ void MainWindow::applyConfigToUi()
 
     _solverCombo->blockSignals(false);
     _integratorCombo->blockSignals(false);
+    _performanceCombo->blockSignals(false);
     _presetCombo->blockSignals(false);
     _sphCheck->blockSignals(false);
     _dtSpin->blockSignals(false);
@@ -592,6 +615,7 @@ void MainWindow::captureUiIntoConfig()
 {
     _config.solver = _solverCombo->currentText().toStdString();
     _config.integrator = _integratorCombo->currentText().toStdString();
+    _config.performanceProfile = _performanceCombo->currentText().toStdString();
     _config.presetStructure = _presetCombo->currentText().toStdString();
     _config.sphEnabled = _sphCheck->isChecked();
     _config.dt = static_cast<float>(_dtSpin->value());
@@ -603,6 +627,17 @@ void MainWindow::captureUiIntoConfig()
     _config.sphViscosity = static_cast<float>(_sphViscositySpin->value());
     _config.defaultZoom = static_cast<float>(_zoomSlider->value()) / 10.0f;
     _config.defaultLuminosity = _luminositySlider->value();
+}
+
+void MainWindow::applyPerformanceProfileToRuntime()
+{
+    _runtime->setPerformanceProfile(_config.performanceProfile);
+    _runtime->setSubstepPolicy(_config.substepTargetDt, _config.maxSubsteps);
+    _runtime->setSnapshotPublishPeriodMs(_config.snapshotPublishPeriodMs);
+    _runtime->setEnergyMeasurementConfig(_config.energyMeasureEverySteps, _config.energySampleLimit);
+    _clientDrawCap = grav_client::resolveClientDrawCap(_config);
+    _multiView->setMaxDrawParticles(_clientDrawCap);
+    _runtime->setRemoteSnapshotCap(_clientDrawCap);
 }
 
 void MainWindow::markConfigDirty(bool dirty)
@@ -698,12 +733,13 @@ void MainWindow::tick()
     }
 
     _statusLabel->setText(
-        QString("state=%1 | link=%2 owner=%3 | solver=%4 integrator=%5 | sph=%6 | dt=%7 | server=%8 step/s | sub=%9x@%10 (target=%11 max=%12) | ui=%13 fps | steps=%14 | particles=%15 draw=%16 cap=%17 | data=stats:%18 snap:%19 %20 | Ekin=%21 Epot=%22 Eth=%23 Erad=%24 Etot=%25 | dE=%26%% %27")
+        QString("state=%1 | link=%2 owner=%3 | solver=%4 integrator=%5 perf=%6 | sph=%7 | dt=%8 | server=%9 step/s | sub=%10x@%11 (target=%12 max=%13) snap=%14ms | ui=%15 fps | steps=%16 | particles=%17 draw=%18 cap=%19 | data=stats:%20 snap:%21 %22 | Ekin=%23 Epot=%24 Eth=%25 Erad=%26 Etot=%27 | dE=%28%% %29")
             .arg(stats.faulted ? "FAULT" : (stats.paused ? "PAUSED" : "RUNNING"))
             .arg(QString::fromStdString(linkLabel))
             .arg(QString::fromStdString(ownerLabel))
             .arg(QString::fromStdString(stats.solverName))
             .arg(QString::fromStdString(stats.integratorName))
+            .arg(QString::fromStdString(stats.performanceProfile.empty() ? _config.performanceProfile : stats.performanceProfile))
             .arg(stats.sphEnabled ? "on" : "off")
             .arg(stats.dt, 0, 'f', 5)
             .arg(stats.serverFps, 0, 'f', 1)
@@ -711,6 +747,7 @@ void MainWindow::tick()
             .arg(stats.substepDt, 0, 'f', 5)
             .arg(stats.substepTargetDt, 0, 'f', 5)
             .arg(stats.maxSubsteps)
+            .arg(stats.snapshotPublishPeriodMs)
             .arg(_uiTickFps, 0, 'f', 1)
             .arg(static_cast<qulonglong>(stats.steps))
             .arg(stats.particleCount)
@@ -744,12 +781,14 @@ void MainWindow::tick()
                   << " owner=" << ownerLabel
                   << " solver=" << stats.solverName
                   << " integrator=" << stats.integratorName
+                  << " perf=" << (stats.performanceProfile.empty() ? _config.performanceProfile : stats.performanceProfile)
                   << " sph=" << (stats.sphEnabled ? "on" : "off")
                   << " step_s=" << stats.serverFps
                   << " substeps=" << stats.substeps
                   << " substep_dt=" << stats.substepDt
                   << " substep_target_dt=" << stats.substepTargetDt
                   << " max_substeps=" << stats.maxSubsteps
+                  << " snapshot_publish_ms=" << stats.snapshotPublishPeriodMs
                   << " ui_fps=" << _uiTickFps
                   << " snapshot=" << snapshotSize
                   << " draw=" << displayedParticles

@@ -73,6 +73,12 @@
         "req_ids": [
           "REQ-CONF-001"
         ]
+      },
+      "TST-UNT-CONF-026": {
+        "id": "ConfigArgsTest.TST_UNT_CONF_026_CliPerformanceProfileAppliesInteractivePreset",
+        "req_ids": [
+          "REQ-CONF-001"
+        ]
       }
     },
     "EVD_TEST_UNIT_CONFIG_ARGS_IO": {
@@ -153,6 +159,12 @@
         "id": "ConfigArgsTest.TST_UNT_CONF_025_SaveWritesDirectiveSyntax",
         "req_ids": [
           "REQ-CONF-001"
+        ]
+      },
+      "TST-UNT-CONF-027": {
+        "id": "ConfigArgsTest.TST_UNT_CONF_027_DirectivePerformanceOverrideForcesCustomProfile",
+        "req_ids": [
+          "REQ-CONF-002"
         ]
       }
     },
@@ -380,6 +392,13 @@
         "id": "PhysicsTest.TST_UNT_RUNT_004_ServerAppliesConfiguredSubstepPolicy",
         "req_ids": [
           "REQ-RUN-001"
+        ]
+      },
+      "TST-UNT-RUNT-005": {
+        "id": "PhysicsTest.TST_UNT_RUNT_005_ServerAppliesInteractivePerformancePreset",
+        "req_ids": [
+          "REQ-RUN-001",
+          "REQ-UI-001"
         ]
       }
     },

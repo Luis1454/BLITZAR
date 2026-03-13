@@ -1,6 +1,7 @@
 #include "server/SimulationServer.hpp"
 #include "server/SimulationInitConfig.hpp"
 #include "config/EnvUtils.hpp"
+#include "config/SimulationPerformanceProfile.hpp"
 #include "config/SimulationModes.hpp"
 #include "platform/PlatformPaths.hpp"
 
@@ -182,21 +183,25 @@ float autoTargetSubstepDt(std::string_view solver, bool eulerIntegrator, bool sp
 void logEffectiveExecutionModes(
     std::string_view solver,
     std::string_view integrator,
+    std::string_view performanceProfile,
     float theta,
     float softening,
     bool sphEnabled,
     float configuredSubstepTargetDt,
-    std::uint32_t configuredMaxSubsteps)
+    std::uint32_t configuredMaxSubsteps,
+    std::uint32_t snapshotPublishPeriodMs)
 {
     std::cout << "[server] active solver=" << solver
-              << " integrator=" << integrator;
+              << " integrator=" << integrator
+              << " perf=" << performanceProfile;
     if (solver == grav_modes::kSolverOctreeCpu || solver == grav_modes::kSolverOctreeGpu) {
         std::cout << " theta=" << theta
                   << " softening=" << softening;
     }
     std::cout << " sph=" << (sphEnabled ? "on" : "off")
               << " substep_target_dt=" << configuredSubstepTargetDt
-              << " max_substeps=" << configuredMaxSubsteps << "\n";
+              << " max_substeps=" << configuredMaxSubsteps
+              << " snapshot_publish_ms=" << snapshotPublishPeriodMs << "\n";
 }
 
 std::string defaultExportPath(const std::string &directory, const std::string &format, std::uint64_t step)
@@ -995,10 +1000,11 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
       _totalEnergy(0.0f),
       _energyDriftPct(0.0f),
       _energyEstimated(false),
-      _energyMeasureEverySteps(30),
-      _energySampleLimit(5000),
-      _configuredSubstepTargetDt(0.0f),
-      _configuredMaxSubsteps(32u),
+        _energyMeasureEverySteps(120),
+        _energySampleLimit(256),
+        _configuredSubstepTargetDt(0.01f),
+        _configuredMaxSubsteps(4u),
+        _snapshotPublishPeriodMs(50u),
       _lastAppliedSubstepTargetDt(0.0f),
       _lastAppliedSubstepDt(0.0f),
       _lastAppliedSubsteps(0u),
@@ -1007,6 +1013,7 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
       _particleCount(std::max<std::uint32_t>(2u, particleCount)),
       _solverMode("pairwise_cuda"),
       _integratorMode("euler"),
+        _performanceProfile("interactive"),
       _octreeTheta(1.2f),
       _octreeSoftening(2.5f),
       _sphEnabled(false),
@@ -1038,8 +1045,10 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
     _runtimeConfigMirror.dt = std::max(1e-6f, initialDt);
     _runtimeConfigMirror.solver = _solverMode;
     _runtimeConfigMirror.integrator = _integratorMode;
+    _runtimeConfigMirror.performanceProfile = _performanceProfile;
     _runtimeConfigMirror.substepTargetDt = _configuredSubstepTargetDt.load(std::memory_order_relaxed);
     _runtimeConfigMirror.maxSubsteps = _configuredMaxSubsteps.load(std::memory_order_relaxed);
+    _runtimeConfigMirror.snapshotPublishPeriodMs = _snapshotPublishPeriodMs.load(std::memory_order_relaxed);
     _runtimeConfigMirror.octreeTheta = _octreeTheta;
     _runtimeConfigMirror.octreeSoftening = _octreeSoftening;
     _runtimeConfigMirror.sphEnabled = _sphEnabled;
@@ -1074,6 +1083,7 @@ SimulationServer::SimulationServer(const std::string &configPath)
         _integratorMode = grav_modes::normalizeIntegrator(loaded.integrator, integratorCanonical)
             ? integratorCanonical
             : std::string(grav_modes::kIntegratorEuler);
+        _performanceProfile = loaded.performanceProfile;
         coerceConfigSolverIntegratorCompatibility(_solverMode, _integratorMode, "config");
         _octreeTheta = loaded.octreeTheta;
         _octreeSoftening = loaded.octreeSoftening;
@@ -1094,6 +1104,7 @@ SimulationServer::SimulationServer(const std::string &configPath)
     _energySampleLimit.store(std::max<std::uint32_t>(64u, loaded.energySampleLimit), std::memory_order_relaxed);
     _configuredSubstepTargetDt.store(std::max(0.0f, loaded.substepTargetDt), std::memory_order_relaxed);
     _configuredMaxSubsteps.store(std::max<std::uint32_t>(1u, loaded.maxSubsteps), std::memory_order_relaxed);
+    _snapshotPublishPeriodMs.store(std::max<std::uint32_t>(1u, loaded.snapshotPublishPeriodMs), std::memory_order_relaxed);
 }
 
 SimulationServer::~SimulationServer()
@@ -1242,6 +1253,18 @@ void SimulationServer::setIntegratorMode(const std::string &mode)
     }
 }
 
+void SimulationServer::setPerformanceProfile(const std::string &profile)
+{
+    std::string canonical;
+    if (!grav_config::normalizePerformanceProfile(profile, canonical)) {
+        std::cerr << "[server] ignored invalid performance profile: " << profile << "\n";
+        return;
+    }
+    std::lock_guard<std::mutex> lock(_commandMutex);
+    _performanceProfile = canonical;
+    _runtimeConfigMirror.performanceProfile = canonical;
+}
+
 void SimulationServer::setOctreeParameters(float theta, float softening)
 {
     std::lock_guard<std::mutex> lock(_commandMutex);
@@ -1281,6 +1304,25 @@ void SimulationServer::setSphParameters(float smoothingLength, float restDensity
     }
 }
 
+void SimulationServer::setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps)
+{
+    const float safeTargetDt = std::max(0.0f, targetDt);
+    const std::uint32_t safeMaxSubsteps = std::max<std::uint32_t>(1u, maxSubsteps);
+    _configuredSubstepTargetDt.store(safeTargetDt, std::memory_order_relaxed);
+    _configuredMaxSubsteps.store(safeMaxSubsteps, std::memory_order_relaxed);
+    std::lock_guard<std::mutex> lock(_commandMutex);
+    _runtimeConfigMirror.substepTargetDt = safeTargetDt;
+    _runtimeConfigMirror.maxSubsteps = safeMaxSubsteps;
+}
+
+void SimulationServer::setSnapshotPublishPeriodMs(std::uint32_t periodMs)
+{
+    const std::uint32_t safePeriodMs = std::max<std::uint32_t>(1u, periodMs);
+    _snapshotPublishPeriodMs.store(safePeriodMs, std::memory_order_relaxed);
+    std::lock_guard<std::mutex> lock(_commandMutex);
+    _runtimeConfigMirror.snapshotPublishPeriodMs = safePeriodMs;
+}
+
 void SimulationServer::setInitialStateConfig(const InitialStateConfig &config)
 {
     {
@@ -1294,8 +1336,13 @@ void SimulationServer::setInitialStateConfig(const InitialStateConfig &config)
 
 void SimulationServer::setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit)
 {
-    _energyMeasureEverySteps.store(std::max<std::uint32_t>(1u, everySteps), std::memory_order_relaxed);
-    _energySampleLimit.store(std::max<std::uint32_t>(64u, sampleLimit), std::memory_order_relaxed);
+    const std::uint32_t safeEverySteps = std::max<std::uint32_t>(1u, everySteps);
+    const std::uint32_t safeSampleLimit = std::max<std::uint32_t>(64u, sampleLimit);
+    _energyMeasureEverySteps.store(safeEverySteps, std::memory_order_relaxed);
+    _energySampleLimit.store(safeSampleLimit, std::memory_order_relaxed);
+    std::lock_guard<std::mutex> lock(_commandMutex);
+    _runtimeConfigMirror.energyMeasureEverySteps = safeEverySteps;
+    _runtimeConfigMirror.energySampleLimit = safeSampleLimit;
 }
 
 void SimulationServer::setExportDefaults(const std::string &directory, const std::string &format)
@@ -1374,12 +1421,14 @@ SimulationStats SimulationServer::getStats() const
 {
     ParticleSystem::SolverMode mode = ParticleSystem::SolverMode::PairwiseCuda;
     std::string integratorMode;
+    std::string performanceProfile;
     std::uint32_t particleCount = 0u;
     bool sphEnabled = false;
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
         mode = solverModeFromCanonicalName(_solverMode);
         integratorMode = _integratorMode;
+        performanceProfile = _performanceProfile;
         particleCount = _particleCount;
         sphEnabled = _sphEnabled;
     }
@@ -1397,10 +1446,12 @@ SimulationStats SimulationServer::getStats() const
         std::move(faultReason),
         sphEnabled,
         _serverFps.load(std::memory_order_relaxed),
+        std::move(performanceProfile),
         _lastAppliedSubstepTargetDt.load(std::memory_order_relaxed),
         _lastAppliedSubstepDt.load(std::memory_order_relaxed),
         _lastAppliedSubsteps.load(std::memory_order_relaxed),
         _configuredMaxSubsteps.load(std::memory_order_relaxed),
+        _snapshotPublishPeriodMs.load(std::memory_order_relaxed),
         particleCount,
         _kineticEnergy.load(std::memory_order_relaxed),
         _potentialEnergy.load(std::memory_order_relaxed),
@@ -1423,6 +1474,7 @@ SimulationConfig SimulationServer::getRuntimeConfig() const
         config.particleCount = _particleCount;
         config.solver = _solverMode;
         config.integrator = _integratorMode;
+        config.performanceProfile = _performanceProfile;
         config.octreeTheta = _octreeTheta;
         config.octreeSoftening = _octreeSoftening;
         config.sphEnabled = _sphEnabled;
@@ -1438,6 +1490,7 @@ SimulationConfig SimulationServer::getRuntimeConfig() const
         config.dt = _dt.load(std::memory_order_relaxed);
         config.substepTargetDt = _configuredSubstepTargetDt.load(std::memory_order_relaxed);
         config.maxSubsteps = _configuredMaxSubsteps.load(std::memory_order_relaxed);
+        config.snapshotPublishPeriodMs = _snapshotPublishPeriodMs.load(std::memory_order_relaxed);
         config.energyMeasureEverySteps = _energyMeasureEverySteps.load(std::memory_order_relaxed);
     config.energySampleLimit = _energySampleLimit.load(std::memory_order_relaxed);
     return config;
@@ -1637,11 +1690,13 @@ void SimulationServer::rebuildSystem()
     logEffectiveExecutionModes(
         effectiveSolver,
         integrator,
+        _performanceProfile,
         theta,
         softening,
         sphEnabled,
         _configuredSubstepTargetDt.load(std::memory_order_relaxed),
-        _configuredMaxSubsteps.load(std::memory_order_relaxed));
+        _configuredMaxSubsteps.load(std::memory_order_relaxed),
+        _snapshotPublishPeriodMs.load(std::memory_order_relaxed));
     if (initConfig.thermalHeatingCoeff > 0.0f || initConfig.thermalRadiationCoeff > 0.0f) {
         std::cout << "[server] warning: thermal model active (heating="
                   << initConfig.thermalHeatingCoeff
@@ -2025,7 +2080,6 @@ void SimulationServer::loop()
 {
     rebuildSystem();
     auto nextSnapshotPublish = std::chrono::steady_clock::now();
-    constexpr auto kSnapshotPublishPeriod = std::chrono::milliseconds(16);
 
     while (_running.load(std::memory_order_relaxed)) {
         if (_resetRequested.exchange(false, std::memory_order_relaxed)) {
@@ -2187,7 +2241,9 @@ void SimulationServer::loop()
         const bool publishAfterStepRequest = steppedWhilePaused && executedSteps > 0;
         if (publishByCadence || publishAfterStepRequest || updateFailed) {
             publishSnapshot();
-            nextSnapshotPublish = now + kSnapshotPublishPeriod;
+            const auto snapshotPublishPeriod = std::chrono::milliseconds(
+                _snapshotPublishPeriodMs.load(std::memory_order_relaxed));
+            nextSnapshotPublish = now + snapshotPublishPeriod;
         }
         maybeUpdateEnergy(_steps.load(std::memory_order_relaxed));
         processPendingExport();

@@ -34,9 +34,12 @@ class ClientRuntime final : public IClientRuntime {
         void requestRecover() override;
         void setSolverMode(const std::string &mode) override;
         void setIntegratorMode(const std::string &mode) override;
+        void setPerformanceProfile(const std::string &profile) override;
         void setOctreeParameters(float theta, float softening) override;
         void setSphEnabled(bool enabled) override;
         void setSphParameters(float smoothingLength, float restDensity, float gasConstant, float viscosity) override;
+        void setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps) override;
+        void setSnapshotPublishPeriodMs(std::uint32_t periodMs) override;
         void setInitialStateConfig(const InitialStateConfig &config) override;
         void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit) override;
         void setExportDefaults(const std::string &directory, const std::string &format) override;

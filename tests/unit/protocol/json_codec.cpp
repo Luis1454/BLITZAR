@@ -36,10 +36,12 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
     stats.faultReason = "bad\\nstate";
     stats.sphEnabled = true;
     stats.serverFps = 144.5f;
+    stats.performanceProfile = "interactive";
     stats.substepTargetDt = 0.0025f;
     stats.substepDt = 0.00125f;
     stats.substeps = 8u;
     stats.maxSubsteps = 32u;
+    stats.snapshotPublishPeriodMs = 50u;
     stats.particleCount = 128u;
     stats.solverName = "octree_gpu";
     stats.integratorName = "euler";
@@ -65,10 +67,12 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
     EXPECT_EQ(parsed.faultReason, "bad\\nstate");
     EXPECT_TRUE(parsed.sphEnabled);
     EXPECT_FLOAT_EQ(parsed.serverFps, 144.5f);
+    EXPECT_EQ(parsed.performanceProfile, "interactive");
     EXPECT_FLOAT_EQ(parsed.substepTargetDt, 0.0025f);
     EXPECT_FLOAT_EQ(parsed.substepDt, 0.00125f);
     EXPECT_EQ(parsed.substeps, 8u);
     EXPECT_EQ(parsed.maxSubsteps, 32u);
+    EXPECT_EQ(parsed.snapshotPublishPeriodMs, 50u);
     EXPECT_EQ(parsed.particleCount, 128u);
     EXPECT_EQ(parsed.solver, "octree_gpu");
     EXPECT_EQ(parsed.integrator, "euler");

@@ -57,4 +57,36 @@ TEST(PhysicsTest, TST_UNT_RUNT_004_ServerAppliesConfiguredSubstepPolicy)
     std::filesystem::remove(configPath, ec);
 }
 
+TEST(PhysicsTest, TST_UNT_RUNT_005_ServerAppliesInteractivePerformancePreset)
+{
+    const std::filesystem::path path = std::filesystem::temp_directory_path() / "grav_interactive_perf.ini";
+    {
+        std::ofstream out(path, std::ios::trunc);
+        ASSERT_TRUE(out.is_open());
+        out << "simulation(particle_count=32, dt=0.01, solver=octree_cpu, integrator=euler)\n";
+        out << "performance(profile=interactive)\n";
+        out << "scene(style=preset, preset=random_cloud, mode=random_cloud, file=\"\", format=auto)\n";
+        out << "sph(enabled=false, smoothing_length=1.25, rest_density=1, gas_constant=4, viscosity=0.08)\n";
+    }
+    SimulationServer server(path.string());
+    server.start();
+
+    ASSERT_TRUE(waitForSteps(server, 1u, 4000));
+
+    const SimulationStats stats = server.getStats();
+    const SimulationConfig config = server.getRuntimeConfig();
+    EXPECT_EQ(stats.performanceProfile, "interactive");
+    EXPECT_EQ(stats.snapshotPublishPeriodMs, 50u);
+    EXPECT_FLOAT_EQ(stats.substepTargetDt, 0.01f);
+    EXPECT_EQ(stats.maxSubsteps, 4u);
+    EXPECT_EQ(config.performanceProfile, "interactive");
+    EXPECT_EQ(config.snapshotPublishPeriodMs, 50u);
+    EXPECT_EQ(config.energyMeasureEverySteps, 120u);
+    EXPECT_EQ(config.energySampleLimit, 256u);
+
+    server.stop();
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
 } // namespace grav_test_substep_policy

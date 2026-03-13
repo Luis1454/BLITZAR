@@ -1,5 +1,6 @@
 #include "config/SimulationConfigDirectiveWrite.hpp"
 
+#include "config/SimulationPerformanceProfile.hpp"
 #include "protocol/ServerProtocol.hpp"
 
 #include <algorithm>
@@ -31,8 +32,25 @@ static std::string quoteDirectiveValue(const std::string &value)
     return quoted;
 }
 
+static bool matchesManagedPerformanceFields(const SimulationConfig &lhs, const SimulationConfig &rhs)
+{
+    return lhs.clientParticleCap == rhs.clientParticleCap
+        && lhs.snapshotPublishPeriodMs == rhs.snapshotPublishPeriodMs
+        && lhs.energyMeasureEverySteps == rhs.energyMeasureEverySteps
+        && lhs.energySampleLimit == rhs.energySampleLimit
+        && lhs.substepTargetDt == rhs.substepTargetDt
+        && lhs.maxSubsteps == rhs.maxSubsteps;
+}
+
 void SimulationConfigDirective::write(std::ostream &out, const SimulationConfig &config)
 {
+    SimulationConfig profileReference = SimulationConfig::defaults();
+    profileReference.performanceProfile = config.performanceProfile;
+    applyPerformanceProfile(profileReference);
+    const bool emitCustomProfile =
+        config.performanceProfile == "custom" || !matchesManagedPerformanceFields(config, profileReference);
+    const std::string effectiveProfile = emitCustomProfile ? "custom" : config.performanceProfile;
+
     out << "# ==================================================\n";
     out << "# A.S.T.E.R. directive config\n";
     out << "# Generated automatically. Edit values then restart.\n";
@@ -42,12 +60,19 @@ void SimulationConfigDirective::write(std::ostream &out, const SimulationConfig 
         << ", dt=" << config.dt
         << ", solver=" << config.solver
         << ", integrator=" << config.integrator << ")\n";
-    out << "substeps(target_dt=" << config.substepTargetDt
-        << ", max=" << std::max<std::uint32_t>(1u, config.maxSubsteps) << ")\n";
+    out << "performance(profile=" << effectiveProfile;
+    if (emitCustomProfile) {
+        out << ", draw_cap=" << std::min<std::uint32_t>(grav_protocol::kSnapshotMaxPoints, std::max<std::uint32_t>(2u, config.clientParticleCap))
+            << ", snapshot_ms=" << std::max<std::uint32_t>(1u, config.snapshotPublishPeriodMs)
+            << ", energy_every=" << std::max<std::uint32_t>(1u, config.energyMeasureEverySteps)
+            << ", sample_limit=" << std::max<std::uint32_t>(64u, config.energySampleLimit)
+            << ", substep_target_dt=" << config.substepTargetDt
+            << ", max_substeps=" << std::max<std::uint32_t>(1u, config.maxSubsteps);
+    }
+    out << ")\n";
     out << "octree(theta=" << config.octreeTheta
         << ", softening=" << config.octreeSoftening << ")\n";
-    out << "client(draw_cap=" << std::min<std::uint32_t>(grav_protocol::kSnapshotMaxPoints, std::max<std::uint32_t>(2u, config.clientParticleCap))
-        << ", zoom=" << config.defaultZoom
+    out << "client(zoom=" << config.defaultZoom
         << ", luminosity=" << config.defaultLuminosity
         << ", ui_fps=" << config.uiFpsLimit
         << ", command_timeout_ms=" << config.clientRemoteCommandTimeoutMs
@@ -89,8 +114,6 @@ void SimulationConfigDirective::write(std::ostream &out, const SimulationConfig 
         << ", rest_density=" << config.sphRestDensity
         << ", gas_constant=" << config.sphGasConstant
         << ", viscosity=" << config.sphViscosity << ")\n";
-    out << "energy(every_steps=" << config.energyMeasureEverySteps
-        << ", sample_limit=" << config.energySampleLimit << ")\n";
 }
 
 } // namespace grav_config

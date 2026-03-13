@@ -78,10 +78,12 @@ std::string ServerJsonCodec::makeStatusResponse(const SimulationStats &stats)
         << ",\"fault_reason\":\"" << escapeString(stats.faultReason) << "\""
         << ",\"sph\":" << (stats.sphEnabled ? "true" : "false")
         << ",\"server_fps\":" << stats.serverFps
+        << ",\"performance_profile\":\"" << escapeString(stats.performanceProfile) << "\""
         << ",\"substep_target_dt\":" << stats.substepTargetDt
         << ",\"substep_dt\":" << stats.substepDt
         << ",\"substeps\":" << stats.substeps
         << ",\"max_substeps\":" << stats.maxSubsteps
+        << ",\"snapshot_publish_period_ms\":" << stats.snapshotPublishPeriodMs
         << ",\"particles\":" << stats.particleCount
         << ",\"solver\":\"" << escapeString(stats.solverName) << "\""
         << ",\"integrator\":\"" << escapeString(stats.integratorName) << "\""

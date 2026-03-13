@@ -24,9 +24,12 @@ class ILocalServer {
         virtual void requestReset() = 0;
         virtual void setSolverMode(const std::string &mode) = 0;
         virtual void setIntegratorMode(const std::string &mode) = 0;
+        virtual void setPerformanceProfile(const std::string &profile) = 0;
         virtual void setOctreeParameters(float theta, float softening) = 0;
         virtual void setSphEnabled(bool enabled) = 0;
         virtual void setSphParameters(float smoothingLength, float restDensity, float gasConstant, float viscosity) = 0;
+        virtual void setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps) = 0;
+        virtual void setSnapshotPublishPeriodMs(std::uint32_t periodMs) = 0;
         virtual void setInitialStateConfig(const InitialStateConfig &config) = 0;
         virtual void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit) = 0;
         virtual void setExportDefaults(const std::string &directory, const std::string &format) = 0;

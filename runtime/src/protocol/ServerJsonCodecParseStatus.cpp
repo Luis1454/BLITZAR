@@ -20,10 +20,12 @@ bool ServerJsonCodec::parseStatusResponse(std::string_view raw, ServerStatusPayl
     readString(raw, "fault_reason", parsed.faultReason);
     readBool(raw, "sph", parsed.sphEnabled);
     readNumber(raw, "server_fps", parsed.serverFps);
+    readString(raw, "performance_profile", parsed.performanceProfile);
     readNumber(raw, "substep_target_dt", parsed.substepTargetDt);
     readNumber(raw, "substep_dt", parsed.substepDt);
     readNumber(raw, "substeps", parsed.substeps);
     readNumber(raw, "max_substeps", parsed.maxSubsteps);
+    readNumber(raw, "snapshot_publish_period_ms", parsed.snapshotPublishPeriodMs);
     readNumber(raw, "particles", parsed.particleCount);
     readString(raw, "solver", parsed.solver);
     readString(raw, "integrator", parsed.integrator);
