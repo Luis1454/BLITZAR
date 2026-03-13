@@ -4,7 +4,7 @@
       "tests": [
         "^ConfigArgsTest\\.TST_UNT_CONF_00(1|2|3|7)_",
         "^ConfigArgsTest\\.TST_UNT_CONF_01(0|3)_",
-        "^ConfigArgsTest\\.TST_UNT_CONF_02(2|3)_"
+        "^ConfigArgsTest\\.TST_UNT_CONF_02(2|3|4|5)_"
       ],
       "artifacts": [
         "EVD_TEST_UNIT_CONFIG_ARGS_CLI",

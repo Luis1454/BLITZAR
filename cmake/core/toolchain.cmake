@@ -42,6 +42,8 @@ set(GRAVITY_SERVER_SOURCES
     engine/src/config/SimulationOptionRegistry.cpp
     engine/src/config/SimulationOptionRegistryApply.cpp
     engine/src/config/SimulationOptionRegistryEntries.cpp
+    engine/src/config/SimulationConfigDirective.cpp
+    engine/src/config/SimulationConfigDirectiveWrite.cpp
     engine/src/config/SimulationConfig.cpp
     engine/src/config/SimulationModes.cpp
     engine/src/config/TextParse.cpp
