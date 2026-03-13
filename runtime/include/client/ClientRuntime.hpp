@@ -64,6 +64,7 @@ class ClientRuntime final : public IClientRuntime {
 
     private:
         typedef std::chrono::steady_clock Clock;
+        void invalidateCachedSnapshot();
         void pollLoop();
         void pollOnce(bool pollSnapshot, bool pollStats);
         static std::uint32_t ageMsSince(Clock::time_point at, bool valid);
