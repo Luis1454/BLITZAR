@@ -76,6 +76,30 @@
         "EVD_CHECK_POLICY_ALLOWLIST",
         "EVD_MOD_QT_MAINWINDOW"
       ]
+    },
+    "DEV-QUAL-004": {
+      "kind": "deviation",
+      "status": "open",
+      "scope": "repository-policy:file-size",
+      "owner": "project-maintainer",
+      "approver": "quality-review",
+      "introduced_on": "2026-03-12",
+      "review_by": "2026-06-30",
+      "rationale": "The canonical unit-test catalog remains consolidated in one manifest while the quality tooling still consumes a single cross-domain test-group index.",
+      "mitigation": "Restrict edits to catalog maintenance, keep the allowlist isolated to this single manifest, and plan a later split by verification domain once manifest loader support is expanded.",
+      "closure_criteria": "Split the test-group catalog into smaller domain manifests and remove the corresponding allowlist path.",
+      "paths": [
+        "docs/quality/manifest/test_groups_core.json"
+      ],
+      "requirements": [
+        "REQ-QUAL-001",
+        "REQ-TEST-001"
+      ],
+      "artifacts": [
+        "EVD_CHECK_MAIN",
+        "EVD_CHECK_POLICY_ALLOWLIST",
+        "EVD_QLT_MANIFEST"
+      ]
     }
   }
 }

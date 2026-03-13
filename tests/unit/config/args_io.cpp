@@ -211,3 +211,24 @@ TEST(ConfigArgsTest, TST_UNT_CONF_021_ResolveInitPlanIgnoresStaleInputFileOutsid
     EXPECT_NE(log.str().find("input_file ignored"), std::string::npos);
     EXPECT_NE(plan.summary.find("source=generated"), std::string::npos);
 }
+
+TEST(ConfigArgsTest, TST_UNT_CONF_023_ResolveInitPlanSupportsCalibrationPresets)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    config.initConfigStyle = "preset";
+    config.presetStructure = "three_body";
+    config.presetSize = 3.5f;
+    const ResolvedInitialStatePlan presetPlan = resolveInitialStatePlan(config, std::cerr);
+    EXPECT_EQ(presetPlan.config.mode, "three_body");
+    EXPECT_FALSE(presetPlan.config.includeCentralBody);
+    EXPECT_FLOAT_EQ(presetPlan.config.cloudHalfExtent, 3.5f);
+
+    config.initConfigStyle = "detailed";
+    config.initMode = "plummer_sphere";
+    config.initCloudHalfExtent = 9.0f;
+    config.initParticleMass = 0.02f;
+    const ResolvedInitialStatePlan detailedPlan = resolveInitialStatePlan(config, std::cerr);
+    EXPECT_EQ(detailedPlan.config.mode, "plummer_sphere");
+    EXPECT_FLOAT_EQ(detailedPlan.config.cloudHalfExtent, 9.0f);
+    EXPECT_FLOAT_EQ(detailedPlan.config.particleMass, 0.02f);
+}
