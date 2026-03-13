@@ -1,7 +1,7 @@
 EXECUTABLE := myApp
 HEADLESS_EXECUTABLE := myAppHeadless
-BACKEND_EXECUTABLE := myAppBackend
-MODULE_HOST_EXECUTABLE := myAppModuleHost
+SERVER_EXECUTABLE := myAppServer
+CLIENT_HOST_EXECUTABLE := myAppClient
 
 BUILD_DIR ?= build
 BUILD_TYPE ?= Release
@@ -15,9 +15,9 @@ PROFILE_LOGS ?= OFF
 INT_BUILD_DIR ?= build-integration
 INT_BUILD_TYPE ?= Release
 INT_TEST_REGEX ?=
-INT_TEST_REGEX_NO_BACKEND ?= ^(TST_UNT_CONF_|TST_INT_PROT_003_BackendClientConnectTimeoutIsBounded$$|TST_QLT_REPO_.*)
+INT_TEST_REGEX_NO_SERVER ?= ^(TST_UNT_CONF_|TST_INT_PROT_003_ServerClientConnectTimeoutIsBounded$$|TST_QLT_REPO_.*)
 INT_TIMEOUT ?= 180
-BACKEND_EXE ?=
+SERVER_EXE ?=
 
 QT_DIR ?= C:/Qt/6.8.2/msvc2022_64
 WINDEPLOYQT ?= $(QT_DIR)/bin/windeployqt.exe
@@ -53,24 +53,24 @@ endif
 ifeq ($(OS),Windows_NT)
 RUN_BIN := $(BUILD_DIR)/$(EXECUTABLE).exe
 RUN_HEADLESS_BIN := $(BUILD_DIR)/$(HEADLESS_EXECUTABLE).exe
-RUN_BACKEND_BIN := $(BUILD_DIR)/$(BACKEND_EXECUTABLE).exe
-RUN_MODULE_HOST_BIN := $(BUILD_DIR)/$(MODULE_HOST_EXECUTABLE).exe
-QT_MODULE_LIB := $(BUILD_DIR)/gravityFrontendModuleQtInProc.dll
+RUN_SERVER_BIN := $(BUILD_DIR)/$(SERVER_EXECUTABLE).exe
+RUN_CLIENT_HOST_BIN := $(BUILD_DIR)/$(CLIENT_HOST_EXECUTABLE).exe
+QT_MODULE_LIB := $(BUILD_DIR)/gravityClientModuleQtInProc.dll
 else
 RUN_BIN := $(BUILD_DIR)/$(EXECUTABLE)
 RUN_HEADLESS_BIN := $(BUILD_DIR)/$(HEADLESS_EXECUTABLE)
-RUN_BACKEND_BIN := $(BUILD_DIR)/$(BACKEND_EXECUTABLE)
-RUN_MODULE_HOST_BIN := $(BUILD_DIR)/$(MODULE_HOST_EXECUTABLE)
+RUN_SERVER_BIN := $(BUILD_DIR)/$(SERVER_EXECUTABLE)
+RUN_CLIENT_HOST_BIN := $(BUILD_DIR)/$(CLIENT_HOST_EXECUTABLE)
 ifeq ($(UNAME_S),Darwin)
-QT_MODULE_LIB := $(BUILD_DIR)/gravityFrontendModuleQtInProc.dylib
+QT_MODULE_LIB := $(BUILD_DIR)/gravityClientModuleQtInProc.dylib
 else
-QT_MODULE_LIB := $(BUILD_DIR)/gravityFrontendModuleQtInProc.so
+QT_MODULE_LIB := $(BUILD_DIR)/gravityClientModuleQtInProc.so
 endif
 endif
 
-ifeq ($(strip $(BACKEND_EXE)),)
-ifneq ($(wildcard $(RUN_BACKEND_BIN)),)
-BACKEND_EXE := $(abspath $(RUN_BACKEND_BIN))
+ifeq ($(strip $(SERVER_EXE)),)
+ifneq ($(wildcard $(RUN_SERVER_BIN)),)
+SERVER_EXE := $(abspath $(RUN_SERVER_BIN))
 endif
 endif
 
@@ -79,10 +79,10 @@ CMAKE_FLAGS = \
 	-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
 	-DCMAKE_CUDA_ARCHITECTURES=$(CUDA_ARCH) \
 	-DGRAVITY_PROFILE=$(PROFILE) \
-	-DGRAVITY_BUILD_BACKEND_DAEMON=ON \
+	-DGRAVITY_BUILD_SERVER_DAEMON=ON \
 	-DGRAVITY_BUILD_HEADLESS_BINARY=ON \
-	-DGRAVITY_BUILD_FRONTEND_MODULE_HOST=ON \
-	-DGRAVITY_BUILD_FRONTEND_MODULES=ON \
+	-DGRAVITY_BUILD_CLIENT_HOST=ON \
+	-DGRAVITY_BUILD_CLIENT_MODULES=ON \
 	-DGRAVITY_BUILD_TESTS=$(BUILD_TESTS) \
 	-DGRAVITY_PROFILE_LOGS=$(PROFILE_LOGS)
 
@@ -101,8 +101,8 @@ INT_BUILD_CMD += --parallel
 endif
 
 INT_CTEST_CMD = ctest --test-dir $(INT_BUILD_DIR) --output-on-failure --timeout $(INT_TIMEOUT)
-ifneq ($(strip $(BACKEND_EXE)),)
-INT_CTEST_ENV = cmake -E env "GRAVITY_BACKEND_EXE=$(BACKEND_EXE)"
+ifneq ($(strip $(SERVER_EXE)),)
+INT_CTEST_ENV = cmake -E env "GRAVITY_SERVER_EXE=$(SERVER_EXE)"
 endif
 
 include make/check.mk
@@ -140,13 +140,13 @@ int-build:
 	$(INT_BUILD_CMD)
 
 int-run:
-ifeq ($(strip $(BACKEND_EXE)),)
-	@echo "BACKEND_EXE is empty and $(RUN_BACKEND_BIN) is unavailable"
+ifeq ($(strip $(SERVER_EXE)),)
+	@echo "SERVER_EXE is empty and $(RUN_SERVER_BIN) is unavailable"
 endif
 ifeq ($(strip $(INT_TEST_REGEX)),)
-ifeq ($(strip $(BACKEND_EXE)),)
-	@echo "Running safe integration subset only (set BACKEND_EXE to run all integration_real tests)"
-	$(INT_CTEST_CMD) -R "$(INT_TEST_REGEX_NO_BACKEND)"
+ifeq ($(strip $(SERVER_EXE)),)
+	@echo "Running safe integration subset only (set SERVER_EXE to run all integration_real tests)"
+	$(INT_CTEST_CMD) -R "$(INT_TEST_REGEX_NO_SERVER)"
 else
 	$(INT_CTEST_ENV) $(INT_CTEST_CMD)
 endif

@@ -29,18 +29,18 @@ This document defines acceptance-oriented numerical checks for astrophysics simu
 - Qualification evidence must be produced under `prod` profile constraints.
 - The nightly GPU lane must publish a machine-readable regression report and fail when any configured threshold is exceeded.
 
-## Cross-Backend Rule
+## Cross-Server Rule
 
-- CPU/CUDA/OpenCL parity targets must be defined before enabling a backend in release lanes.
-- New backend enablement requires:
+- CPU/CUDA/OpenCL parity targets must be defined before enabling a server in release lanes.
+- New server enablement requires:
   - tolerance envelope definition,
   - benchmark dataset reference,
-  - nightly comparison evidence against existing qualified backend.
+  - nightly comparison evidence against existing qualified server.
 
 ## Reproducibility Rule
 
 - Reference scenarios must support repeated runs with stable outcomes under pinned toolchain and build flags.
-- Any backend-specific deviation requires documented tolerance and explicit approval in quality artifacts.
+- Any server-specific deviation requires documented tolerance and explicit approval in quality artifacts.
 
 ## Campaign Baseline
 

@@ -71,7 +71,7 @@ def _seed_repo(root: Path) -> None:
                     "rationale": "Temporary split pending.",
                     "mitigation": "Review on every change.",
                     "closure_criteria": "Split file and remove allowlist path.",
-                    "paths": ["engine/src/backend/SimulationBackend.cpp"],
+                    "paths": ["engine/src/server/SimulationServer.cpp"],
                     "requirements": ["REQ-TEST-001"],
                     "artifacts": ["EVD_SAMPLE"],
                 }
@@ -121,7 +121,7 @@ def test_release_evidence_packager_packages_selected_requirements(tmp_path: Path
     assert payload["ci_context"] == {"source": "unit-test"}
     assert isinstance(payload["open_exceptions"], list)
     assert payload["open_exceptions"][0]["id"] == "DEV-QUAL-001"
-    assert payload["open_exceptions"][0]["paths"] == ["engine/src/backend/SimulationBackend.cpp"]
+    assert payload["open_exceptions"][0]["paths"] == ["engine/src/server/SimulationServer.cpp"]
     assert "evidence/docs/quality/sample_requirement.md" in names
     assert "README.md" in names
 

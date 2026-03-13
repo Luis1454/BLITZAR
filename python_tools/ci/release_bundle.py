@@ -21,7 +21,7 @@ class ReleaseBundlePackager:
         return Path(shutil.make_archive(str(archive_base), "zip", root_dir=dist_dir))
 
     def _copy_binaries(self, build_dir: Path, dist_dir: Path) -> None:
-        for name in ("myApp.exe", "myAppBackend.exe", "myAppHeadless.exe", "myAppModuleHost.exe"):
+        for name in ("myApp.exe", "myAppServer.exe", "myAppHeadless.exe", "myAppClient.exe"):
             src = build_dir / name
             if src.exists():
                 shutil.copy2(src, dist_dir / name)

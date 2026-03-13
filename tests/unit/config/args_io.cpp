@@ -1,6 +1,6 @@
-#include "backend/SimulationInitConfig.hpp"
+#include "server/SimulationInitConfig.hpp"
 #include "config/SimulationConfig.hpp"
-#include "protocol/BackendProtocol.hpp"
+#include "protocol/ServerProtocol.hpp"
 
 #include <gtest/gtest.h>
 
@@ -21,9 +21,9 @@ TEST(ConfigArgsTest, TST_UNT_CONF_010_SimulationConfigSaveLoadRoundTrip)
     config.sphEnabled = true;
     config.exportFormat = "bin";
     config.energySampleLimit = 777u;
-    config.frontendRemoteCommandTimeoutMs = 95u;
-    config.frontendRemoteStatusTimeoutMs = 50u;
-    config.frontendRemoteSnapshotTimeoutMs = 200u;
+    config.clientRemoteCommandTimeoutMs = 95u;
+    config.clientRemoteStatusTimeoutMs = 50u;
+    config.clientRemoteSnapshotTimeoutMs = 200u;
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() / ("gravity_config_roundtrip_" + std::to_string(stamp) + ".ini");
@@ -36,9 +36,9 @@ TEST(ConfigArgsTest, TST_UNT_CONF_010_SimulationConfigSaveLoadRoundTrip)
     EXPECT_EQ(loaded.sphEnabled, config.sphEnabled);
     EXPECT_EQ(loaded.exportFormat, config.exportFormat);
     EXPECT_EQ(loaded.energySampleLimit, config.energySampleLimit);
-    EXPECT_EQ(loaded.frontendRemoteCommandTimeoutMs, config.frontendRemoteCommandTimeoutMs);
-    EXPECT_EQ(loaded.frontendRemoteStatusTimeoutMs, config.frontendRemoteStatusTimeoutMs);
-    EXPECT_EQ(loaded.frontendRemoteSnapshotTimeoutMs, config.frontendRemoteSnapshotTimeoutMs);
+    EXPECT_EQ(loaded.clientRemoteCommandTimeoutMs, config.clientRemoteCommandTimeoutMs);
+    EXPECT_EQ(loaded.clientRemoteStatusTimeoutMs, config.clientRemoteStatusTimeoutMs);
+    EXPECT_EQ(loaded.clientRemoteSnapshotTimeoutMs, config.clientRemoteSnapshotTimeoutMs);
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
@@ -119,27 +119,27 @@ TEST(ConfigArgsTest, TST_UNT_CONF_013_LoadOrCreateCreatesFileWhenMissing)
     std::filesystem::remove(path, ec);
 }
 
-TEST(ConfigArgsTest, TST_UNT_CONF_015_DefaultFrontendParticleCapMatchesProtocolMax)
+TEST(ConfigArgsTest, TST_UNT_CONF_015_DefaultClientParticleCapMatchesProtocolMax)
 {
-    EXPECT_EQ(SimulationConfig::defaults().frontendParticleCap, grav_protocol::kSnapshotMaxPoints);
+    EXPECT_EQ(SimulationConfig::defaults().clientParticleCap, grav_protocol::kSnapshotMaxPoints);
 }
 
-TEST(ConfigArgsTest, TST_UNT_CONF_016_LoadClampsFrontendParticleCapToProtocolMax)
+TEST(ConfigArgsTest, TST_UNT_CONF_016_LoadClampsClientParticleCapToProtocolMax)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
-        std::filesystem::temp_directory_path() / ("gravity_config_frontend_cap_" + std::to_string(stamp) + ".ini");
+        std::filesystem::temp_directory_path() / ("gravity_config_client_cap_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
-        out << "frontend_particle_cap=50000\n";
+        out << "client_particle_cap=50000\n";
     }
     std::stringstream err;
     std::streambuf *previous = std::cerr.rdbuf(err.rdbuf());
     const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
     std::cerr.rdbuf(previous);
-    EXPECT_EQ(loaded.frontendParticleCap, grav_protocol::kSnapshotMaxPoints);
-    EXPECT_NE(err.str().find("frontend_particle_cap clamped"), std::string::npos);
+    EXPECT_EQ(loaded.clientParticleCap, grav_protocol::kSnapshotMaxPoints);
+    EXPECT_NE(err.str().find("client_particle_cap clamped"), std::string::npos);
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
@@ -173,13 +173,13 @@ TEST(ConfigArgsTest, TST_UNT_CONF_018_LoadSupportsRegistryAliases)
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
         out << "temperature=0.8\n";
-        out << "frontend_remote_timeout_ms=120\n";
+        out << "client_remote_timeout_ms=120\n";
     }
     const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
     EXPECT_FLOAT_EQ(loaded.velocityTemperature, 0.8f);
-    EXPECT_EQ(loaded.frontendRemoteCommandTimeoutMs, 120u);
-    EXPECT_EQ(loaded.frontendRemoteStatusTimeoutMs, 120u);
-    EXPECT_EQ(loaded.frontendRemoteSnapshotTimeoutMs, 120u);
+    EXPECT_EQ(loaded.clientRemoteCommandTimeoutMs, 120u);
+    EXPECT_EQ(loaded.clientRemoteStatusTimeoutMs, 120u);
+    EXPECT_EQ(loaded.clientRemoteSnapshotTimeoutMs, 120u);
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }

@@ -124,7 +124,7 @@ jobs:
           - os: windows-2022
             axis: windows-2022 / msvc2022-x64 / cuda-from-runner / python3.12
             install_tools: ""
-            qt_target: gravityFrontendModuleQtInProc
+            qt_target: gravityClientModuleQtInProc
           - os: ubuntu-24.04
             axis: linux-ubuntu24.04 / hosted-gnu / cuda-from-runner / python3.12
             install_tools: "sudo apt-get update && sudo apt-get install -y ninja-build"
@@ -159,18 +159,18 @@ jobs:
         run: |
           cmake -S . -B build-dev-mod -G Ninja \
             -DGRAVITY_PROFILE=dev \
-            -DGRAVITY_BUILD_FRONTEND_MODULE_HOST=ON \
-            -DGRAVITY_BUILD_FRONTEND_MODULES=ON \
+            -DGRAVITY_BUILD_CLIENT_MODULE_HOST=ON \
+            -DGRAVITY_BUILD_CLIENT_MODULES=ON \
             -DGRAVITY_BUILD_TESTS=OFF
       - name: Build required module targets
         if: ${{ steps.cuda.outputs.available == 'true' }}
         shell: bash
         run: |
           cmake --build build-dev-mod --parallel --target \
-            myAppModuleHost \
-            gravityFrontendModuleCli \
-            gravityFrontendModuleEcho \
-            gravityFrontendModuleGuiProxy
+            myAppClient \
+            gravityClientModuleCli \
+            gravityClientModuleEcho \
+            gravityClientModuleGuiProxy
       - name: Build optional Qt module target
         if: ${{ steps.cuda.outputs.available == 'true' && matrix.qt_target != '' }}
         shell: bash

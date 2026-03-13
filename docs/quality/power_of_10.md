@@ -71,7 +71,7 @@ The profile is used in two modes:
    Automated checks:
     - repository policy restricts unnamed namespaces, `using`, and selected unsafe pointer patterns
    - production C++ paths must not introduce function pointer typedefs outside explicit ABI boundary headers
-   - frontend/module ABI boundaries must encapsulate raw pointers immediately
+   - client/module ABI boundaries must encapsulate raw pointers immediately
    Policy note:
    - C ABI, Qt, OS, and plugin boundaries may require explicit pointer exceptions
 

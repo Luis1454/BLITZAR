@@ -56,7 +56,7 @@
         ]
       },
       "TST-UNT-CONF-014": {
-        "id": "ConfigArgsTest.TST_UNT_CONF_014_ClampsFrontendParticleCapArgumentToProtocolMax",
+        "id": "ConfigArgsTest.TST_UNT_CONF_014_ClampsClientParticleCapArgumentToProtocolMax",
         "req_ids": [
           "REQ-CONF-001",
           "REQ-CONF-002"
@@ -101,13 +101,13 @@
         ]
       },
       "TST-UNT-CONF-015": {
-        "id": "ConfigArgsTest.TST_UNT_CONF_015_DefaultFrontendParticleCapMatchesProtocolMax",
+        "id": "ConfigArgsTest.TST_UNT_CONF_015_DefaultClientParticleCapMatchesProtocolMax",
         "req_ids": [
           "REQ-CONF-001"
         ]
       },
       "TST-UNT-CONF-016": {
-        "id": "ConfigArgsTest.TST_UNT_CONF_016_LoadClampsFrontendParticleCapToProtocolMax",
+        "id": "ConfigArgsTest.TST_UNT_CONF_016_LoadClampsClientParticleCapToProtocolMax",
         "req_ids": [
           "REQ-CONF-001",
           "REQ-CONF-002"
@@ -146,25 +146,25 @@
     },
     "EVD_TEST_INT_PROTOCOL_CONNECT": {
       "TST-INT-PROT-001": {
-        "id": "BackendProtocolTest.TST_INT_PROT_001_BackendClientParsesStatusAndSnapshotFromRealBackend",
+        "id": "ServerProtocolTest.TST_INT_PROT_001_ServerClientParsesStatusAndSnapshotFromRealServer",
         "req_ids": [
           "REQ-PROT-001"
         ]
       },
       "TST-INT-PROT-002": {
-        "id": "BackendProtocolTest.TST_INT_PROT_002_BackendClientRecoversAfterRealBackendRestartOnSamePort",
+        "id": "ServerProtocolTest.TST_INT_PROT_002_ServerClientRecoversAfterRealServerRestartOnSamePort",
         "req_ids": [
           "REQ-PROT-001"
         ]
       },
       "TST-INT-PROT-003": {
-        "id": "BackendProtocolTest.TST_INT_PROT_003_BackendClientConnectTimeoutIsBounded",
+        "id": "ServerProtocolTest.TST_INT_PROT_003_ServerClientConnectTimeoutIsBounded",
         "req_ids": [
           "REQ-PROT-001"
         ]
       },
       "TST-INT-PROT-009": {
-        "id": "BackendProtocolTest.TST_INT_PROT_009_BackendClientRejectsRequestsWithoutConnectionWithOperationContext",
+        "id": "ServerProtocolTest.TST_INT_PROT_009_ServerClientRejectsRequestsWithoutConnectionWithOperationContext",
         "req_ids": [
           "REQ-PROT-001"
         ]
@@ -172,31 +172,31 @@
     },
     "EVD_TEST_INT_PROTOCOL_CONTROL": {
       "TST-INT-PROT-004": {
-        "id": "BackendProtocolTest.TST_INT_PROT_004_BackendAcceptsControlCommandsFromClient",
+        "id": "ServerProtocolTest.TST_INT_PROT_004_ServerAcceptsControlCommandsFromClient",
         "req_ids": [
           "REQ-PROT-002"
         ]
       },
       "TST-INT-PROT-005": {
-        "id": "BackendProtocolTest.TST_INT_PROT_005_BackendRejectsInvalidSolverAndIntegratorCommands",
+        "id": "ServerProtocolTest.TST_INT_PROT_005_ServerRejectsInvalidSolverAndIntegratorCommands",
         "req_ids": [
           "REQ-PROT-002"
         ]
       },
       "TST-INT-PROT-006": {
-        "id": "BackendProtocolTest.TST_INT_PROT_006_BackendRejectsUnsupportedIntegratorForOctreeGpu",
+        "id": "ServerProtocolTest.TST_INT_PROT_006_ServerRejectsUnsupportedIntegratorForOctreeGpu",
         "req_ids": [
           "REQ-PROT-002"
         ]
       },
       "TST-INT-PROT-007": {
-        "id": "BackendProtocolTest.TST_INT_PROT_007_BackendFallsBackToCpuAfterForcedCudaFailure",
+        "id": "ServerProtocolTest.TST_INT_PROT_007_ServerFallsBackToCpuAfterForcedCudaFailure",
         "req_ids": [
           "REQ-PROT-002"
         ]
       },
       "TST-INT-PROT-008": {
-        "id": "BackendProtocolTest.TST_INT_PROT_008_BackendRejectsRequestsWithoutConfiguredToken",
+        "id": "ServerProtocolTest.TST_INT_PROT_008_ServerRejectsRequestsWithoutConfiguredToken",
         "req_ids": [
           "REQ-SEC-001"
         ]
@@ -204,13 +204,13 @@
     },
     "EVD_TEST_INT_RUNTIME_BRIDGE": {
       "TST-INT-RUNT-001": {
-        "id": "FrontendBridgeTest.TST_INT_RUNT_001_ReconnectsAfterRealBackendRestart",
+        "id": "ClientBridgeTest.TST_INT_RUNT_001_ReconnectsAfterRealServerRestart",
         "req_ids": [
           "REQ-RUN-001"
         ]
       },
       "TST-INT-RUNT-002": {
-        "id": "FrontendBridgeTest.TST_INT_RUNT_002_BackendAbsenceDoesNotCauseLongBlockingLoops",
+        "id": "ClientBridgeTest.TST_INT_RUNT_002_ServerAbsenceDoesNotCauseLongBlockingLoops",
         "req_ids": [
           "REQ-RUN-001"
         ]
@@ -218,45 +218,45 @@
     },
     "EVD_TEST_INT_RUNTIME_RUNTIME": {
       "TST-CNT-RUNT-001": {
-        "id": "FrontendRuntimeTest.TST_CNT_RUNT_001_ConnectsToRealBackendAndPublishesStatsAndSnapshot",
+        "id": "ClientRuntimeTest.TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAndSnapshot",
         "req_ids": [
           "REQ-RUN-001"
         ]
       },
       "TST-CNT-RUNT-002": {
-        "id": "FrontendRuntimeTest.TST_CNT_RUNT_002_StartFailsWhenRemoteBackendIsUnavailable",
+        "id": "ClientRuntimeTest.TST_CNT_RUNT_002_StartFailsWhenRemoteServerIsUnavailable",
         "req_ids": [
           "REQ-RUN-001"
         ]
       },
       "TST-CNT-RUNT-003": {
-        "id": "FrontendRuntimeTest.TST_CNT_RUNT_003_ReconnectsWhenRealBackendRestarts",
+        "id": "ClientRuntimeTest.TST_CNT_RUNT_003_ReconnectsWhenRealServerRestarts",
         "req_ids": [
           "REQ-RUN-001"
         ]
       },
       "TST-CNT-RUNT-004": {
-        "id": "FrontendRuntimeTest.TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeToReachRealBackend",
+        "id": "ClientRuntimeTest.TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeToReachRealServer",
         "req_ids": [
           "REQ-RUN-001"
         ]
       },
       "TST-CNT-RUNT-005": {
-        "id": "FrontendRuntimeTest.TST_CNT_RUNT_005_ClampsConfiguredFrontendCapToProtocolMax",
+        "id": "ClientRuntimeTest.TST_CNT_RUNT_005_ClampsConfiguredClientCapToProtocolMax",
         "req_ids": [
           "REQ-RUN-001",
           "REQ-UI-001"
         ]
       },
       "TST-CNT-RUNT-006": {
-        "id": "FrontendRuntimeTest.TST_CNT_RUNT_006_ClampsEnvironmentOverrideToProtocolMax",
+        "id": "ClientRuntimeTest.TST_CNT_RUNT_006_ClampsEnvironmentOverrideToProtocolMax",
         "req_ids": [
           "REQ-RUN-001",
           "REQ-UI-001"
         ]
       },
       "TST-CNT-RUNT-007": {
-        "id": "FrontendRuntimeTest.TST_CNT_RUNT_007_InvalidEnvironmentOverrideFallsBackToConfigAndWarns",
+        "id": "ClientRuntimeTest.TST_CNT_RUNT_007_InvalidEnvironmentOverrideFallsBackToConfigAndWarns",
         "req_ids": [
           "REQ-RUN-001",
           "REQ-CONF-002"
@@ -341,7 +341,7 @@
         ]
       },
       "TST-UNT-RUNT-001": {
-        "id": "PhysicsTest.TST_UNT_RUNT_001_BackendLogsEffectiveModesAfterReset",
+        "id": "PhysicsTest.TST_UNT_RUNT_001_ServerLogsEffectiveModesAfterReset",
         "req_ids": [
           "REQ-RUN-001"
         ]
@@ -361,7 +361,7 @@
         ]
       },
       "TST-UIX-UI-002": {
-        "id": "QtMainWindowTest.TST_UIX_UI_002_ShowsReconnectingWhenBackendStopsAndRecovers",
+        "id": "QtMainWindowTest.TST_UIX_UI_002_ShowsReconnectingWhenServerStopsAndRecovers",
         "req_ids": [
           "REQ-UI-001"
         ]
@@ -373,7 +373,7 @@
         ]
       },
       "TST-UIX-UI-004": {
-        "id": "QtMainWindowTest.TST_UIX_UI_004_ShowsEffectiveFrontendCapWhenConfiguredCapExceedsProtocolMax",
+        "id": "QtMainWindowTest.TST_UIX_UI_004_ShowsEffectiveClientCapWhenConfiguredCapExceedsProtocolMax",
         "req_ids": [
           "REQ-UI-001",
           "REQ-RUN-001"
@@ -473,15 +473,15 @@
         ]
       }
     },
-    "EVD_TEST_UNIT_MODULE_CLI_BACKEND": {
+    "EVD_TEST_UNIT_MODULE_CLI_SERVER": {
       "TST-UNT-MODCLI-004": {
-        "id": "ModuleCliBackendOpsTest.TST_UNT_MODCLI_004_CommandStepRejectsInvalidCount",
+        "id": "ModuleCliServerOpsTest.TST_UNT_MODCLI_004_CommandStepRejectsInvalidCount",
         "req_ids": [
           "REQ-MOD-001"
         ]
       },
       "TST-UNT-MODCLI-005": {
-        "id": "ModuleCliBackendOpsTest.TST_UNT_MODCLI_005_ConnectRejectsInvalidPort",
+        "id": "ModuleCliServerOpsTest.TST_UNT_MODCLI_005_ConnectRejectsInvalidPort",
         "req_ids": [
           "REQ-MOD-001"
         ]
@@ -489,37 +489,37 @@
     },
     "EVD_TEST_UNIT_MODULE_HOST": {
       "TST-UNT-MODHOST-001": {
-        "id": "ModuleHostCliArgsTest.TST_UNT_MODHOST_001_ParseArgsDefaultsAndVariants",
+        "id": "ClientHostCliArgsTest.TST_UNT_MODHOST_001_ParseArgsDefaultsAndVariants",
         "req_ids": [
           "REQ-MOD-002"
         ]
       },
       "TST-UNT-MODHOST-002": {
-        "id": "ModuleHostCliArgsTest.TST_UNT_MODHOST_002_ParseArgsRejectsUnknownArgument",
+        "id": "ClientHostCliArgsTest.TST_UNT_MODHOST_002_ParseArgsRejectsUnknownArgument",
         "req_ids": [
           "REQ-MOD-002"
         ]
       },
       "TST-UNT-MODHOST-003": {
-        "id": "ModuleHostCliTextTest.TST_UNT_MODHOST_003_SplitTokensPreservesQuotedSegments",
+        "id": "ClientHostCliTextTest.TST_UNT_MODHOST_003_SplitTokensPreservesQuotedSegments",
         "req_ids": [
           "REQ-MOD-002"
         ]
       },
       "TST-UNT-MODHOST-004": {
-        "id": "FrontendModuleBoundaryTest.TST_UNT_MODHOST_004_CreateResultTracksOpaqueModuleState",
+        "id": "ClientModuleBoundaryTest.TST_UNT_MODHOST_004_CreateResultTracksOpaqueModuleState",
         "req_ids": [
           "REQ-MOD-002"
         ]
       },
       "TST-UNT-MODHOST-005": {
-        "id": "FrontendModuleBoundaryTest.TST_UNT_MODHOST_005_ErrorBufferViewWritesTruncatedMessage",
+        "id": "ClientModuleBoundaryTest.TST_UNT_MODHOST_005_ErrorBufferViewWritesTruncatedMessage",
         "req_ids": [
           "REQ-MOD-002"
         ]
       },
       "TST-UNT-MODHOST-006": {
-        "id": "FrontendModuleBoundaryTest.TST_UNT_MODHOST_006_CommandControlUpdatesKeepRunningFlag",
+        "id": "ClientModuleBoundaryTest.TST_UNT_MODHOST_006_CommandControlUpdatesKeepRunningFlag",
         "req_ids": [
           "REQ-MOD-002"
         ]
@@ -527,25 +527,25 @@
     },
     "EVD_TEST_UNIT_PROTOCOL_CODEC": {
       "TST-UNT-PROT-001": {
-        "id": "BackendProtocolCodecTest.TST_UNT_PROT_001_ParsesCommandEnvelopeWithEscapedToken",
+        "id": "ServerProtocolCodecTest.TST_UNT_PROT_001_ParsesCommandEnvelopeWithEscapedToken",
         "req_ids": [
           "REQ-PROT-002"
         ]
       },
       "TST-UNT-PROT-002": {
-        "id": "BackendProtocolCodecTest.TST_UNT_PROT_002_ParsesTypedStatusPayload",
+        "id": "ServerProtocolCodecTest.TST_UNT_PROT_002_ParsesTypedStatusPayload",
         "req_ids": [
           "REQ-PROT-001"
         ]
       },
       "TST-UNT-PROT-003": {
-        "id": "BackendProtocolCodecTest.TST_UNT_PROT_003_RejectsMalformedSnapshotPayload",
+        "id": "ServerProtocolCodecTest.TST_UNT_PROT_003_RejectsMalformedSnapshotPayload",
         "req_ids": [
           "REQ-PROT-001"
         ]
       },
       "TST-UNT-PROT-004": {
-        "id": "BackendProtocolCodecTest.TST_UNT_PROT_004_ParsesErrorEnvelopeForControlCommand",
+        "id": "ServerProtocolCodecTest.TST_UNT_PROT_004_ParsesErrorEnvelopeForControlCommand",
         "req_ids": [
           "REQ-PROT-002"
         ]

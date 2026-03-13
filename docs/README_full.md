@@ -50,9 +50,9 @@ make test-int
 
 Built binaries:
 - `myApp` (launcher)
-- `myAppBackend` (backend daemon)
+- `myAppServer` (server daemon)
 - `myAppHeadless` (headless simulation)
-- `myAppModuleHost` (+ dynamic frontend modules in `dev` profile)
+- `myAppClient` (+ dynamic client modules in `dev` profile)
 
 ## CI Lanes
 
@@ -64,18 +64,18 @@ Evidence lanes force `GRAVITY_PROFILE=prod` and use `ctest --no-tests=error`.
 
 ## Project Layout
 
-- `apps/`: entrypoints (`launcher`, `backend-service`, `headless`, `module-host`)
-- `engine/include/`, `engine/src/`: core backend/config/physics/platform
-- `runtime/include/`, `runtime/src/`: runtime protocol/frontend/backend wiring
-- `modules/`: pluggable frontends (`cli`, `echo`, `proxy`, `qt`)
+- `apps/`: entrypoints (`launcher`, `server-service`, `headless`, `client-host`)
+- `engine/include/`, `engine/src/`: core server/config/physics/platform
+- `runtime/include/`, `runtime/src/`: runtime protocol/client/server wiring
+- `modules/`: pluggable clients (`cli`, `echo`, `proxy`, `qt`)
 - `tests/`: unit, integration, support harnesses, repository quality checks
 - `docs/quality/`: NASA-first quality baseline artifacts
 
 Key files:
 - `apps/launcher/main.cpp`
-- `apps/backend-service/main.cpp`
+- `apps/server-service/main.cpp`
 - `apps/headless/main.cu`
-- `apps/module-host/main.cpp`
+- `apps/client-host/main.cpp`
 - `engine/src/physics/cuda/ParticleSystem.cu`
 - `modules/qt/ui/MainWindow.cpp`
 
@@ -90,7 +90,7 @@ Core keys:
 - `integrator` (`euler`, `rk4`)
 - `sph_enabled` and SPH coefficients
 - `octree_theta`, `octree_softening`
-- `frontend_remote_*_timeout_ms`
+- `client_remote_*_timeout_ms`
 - `export_directory`, `export_format`
 - `input_file`, `input_format`
 - `init_*` initial-state parameters
@@ -105,16 +105,16 @@ For the complete schema and behavior contract, see:
 Launcher modes:
 
 ```bash
-build/myApp.exe --mode ui -- --config simulation.ini --module qt
-build/myApp.exe --mode backend -- --config simulation.ini --backend-host 127.0.0.1 --backend-port 4545
+build/myApp.exe --mode client -- --config simulation.ini --module qt
+build/myApp.exe --mode server -- --config simulation.ini --server-host 127.0.0.1 --server-port 4545
 build/myApp.exe --mode headless -- --config simulation.ini --particle-count 50000 --target-steps 1000
 ```
 
 Direct binaries:
 
 ```bash
-build/myAppBackend.exe --config simulation.ini --backend-host 127.0.0.1 --backend-port 4545
-build/myAppModuleHost.exe --config simulation.ini --module cli
+build/myAppServer.exe --config simulation.ini --server-host 127.0.0.1 --server-port 4545
+build/myAppClient.exe --config simulation.ini --module cli
 build/myAppHeadless.exe --config simulation.ini --particle-count 50000 --target-steps 1000
 ```
 

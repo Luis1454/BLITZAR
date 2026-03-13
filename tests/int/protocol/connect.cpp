@@ -1,6 +1,6 @@
-#include "protocol/BackendClient.hpp"
-#include "protocol/BackendProtocol.hpp"
-#include "tests/support/backend_harness.hpp"
+#include "protocol/ServerClient.hpp"
+#include "protocol/ServerProtocol.hpp"
+#include "tests/support/server_harness.hpp"
 
 #include <gtest/gtest.h>
 
@@ -9,20 +9,20 @@
 #include <thread>
 #include <vector>
 
-namespace grav_test_backend_protocol_connect {
+namespace grav_test_server_protocol_connect {
 
-TEST(BackendProtocolTest, TST_INT_PROT_001_BackendClientParsesStatusAndSnapshotFromRealBackend)
+TEST(ServerProtocolTest, TST_INT_PROT_001_ServerClientParsesStatusAndSnapshotFromRealServer)
 {
-    RealBackendHarness backend;
+    RealServerHarness server;
     std::string startError;
-    ASSERT_TRUE(backend.start(startError)) << startError;
+    ASSERT_TRUE(server.start(startError)) << startError;
 
-    BackendClient client;
+    ServerClient client;
     client.setSocketTimeoutMs(200);
-    ASSERT_TRUE(client.connect("127.0.0.1", backend.port()));
+    ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
 
-    BackendClientStatus status{};
-    const BackendClientResponse statusResponse = client.getStatus(status);
+    ServerClientStatus status{};
+    const ServerClientResponse statusResponse = client.getStatus(status);
     ASSERT_TRUE(statusResponse.ok) << statusResponse.error;
     EXPECT_GT(status.particleCount, 0u);
     EXPECT_GT(status.dt, 0.0f);
@@ -33,14 +33,14 @@ TEST(BackendProtocolTest, TST_INT_PROT_001_BackendClientParsesStatusAndSnapshotF
     EXPECT_TRUE(std::isfinite(status.totalEnergy));
 
     std::vector<RenderParticle> snapshot;
-    BackendClientResponse snapshotResponse{};
+    ServerClientResponse snapshotResponse{};
     bool gotSnapshot = false;
     bool requestedStep = false;
     for (int atmp = 0; atmp < 200 && !gotSnapshot; ++atmp) {
         snapshotResponse = client.getSnapshot(snapshot, 128u);
         gotSnapshot = snapshotResponse.ok && !snapshot.empty();
         if (!gotSnapshot && !requestedStep && atmp >= 10) {
-            const BackendClientResponse stepResponse = client.sendCommand(
+            const ServerClientResponse stepResponse = client.sendCommand(
                 std::string(grav_protocol::Step),
                 "\"count\":1");
             ASSERT_TRUE(stepResponse.ok) << stepResponse.error;
@@ -56,51 +56,51 @@ TEST(BackendProtocolTest, TST_INT_PROT_001_BackendClientParsesStatusAndSnapshotF
     EXPECT_TRUE(std::isfinite(snapshot.front().mass));
 
     client.disconnect();
-    backend.stop();
+    server.stop();
 }
 
-TEST(BackendProtocolTest, TST_INT_PROT_002_BackendClientRecoversAfterRealBackendRestartOnSamePort)
+TEST(ServerProtocolTest, TST_INT_PROT_002_ServerClientRecoversAfterRealServerRestartOnSamePort)
 {
-    RealBackendHarness backend;
+    RealServerHarness server;
     std::string startError;
-    ASSERT_TRUE(backend.start(startError)) << startError;
-    const std::uint16_t fixedPort = backend.port();
+    ASSERT_TRUE(server.start(startError)) << startError;
+    const std::uint16_t fixedPort = server.port();
 
-    BackendClient client;
+    ServerClient client;
     client.setSocketTimeoutMs(200);
     ASSERT_TRUE(client.connect("127.0.0.1", fixedPort));
-    BackendClientStatus status{};
+    ServerClientStatus status{};
     ASSERT_TRUE(client.getStatus(status).ok);
 
-    backend.stop();
-    const BackendClientResponse afterStop = client.getStatus(status);
+    server.stop();
+    const ServerClientResponse afterStop = client.getStatus(status);
     EXPECT_FALSE(afterStop.ok);
-    EXPECT_NE(afterStop.error.find("[backend-client] sendJson:"), std::string::npos) << afterStop.error;
+    EXPECT_NE(afterStop.error.find("[server-client] sendJson:"), std::string::npos) << afterStop.error;
     EXPECT_FALSE(client.isConnected());
 
-    ASSERT_TRUE(backend.start(startError, fixedPort)) << startError;
+    ASSERT_TRUE(server.start(startError, fixedPort)) << startError;
     ASSERT_TRUE(client.connect("127.0.0.1", fixedPort));
-    const BackendClientResponse afterRestart = client.getStatus(status);
+    const ServerClientResponse afterRestart = client.getStatus(status);
     EXPECT_TRUE(afterRestart.ok) << afterRestart.error;
     EXPECT_TRUE(client.isConnected());
 
     client.disconnect();
-    backend.stop();
+    server.stop();
 }
 
-TEST(BackendProtocolTest, TST_INT_PROT_009_BackendClientRejectsRequestsWithoutConnectionWithOperationContext)
+TEST(ServerProtocolTest, TST_INT_PROT_009_ServerClientRejectsRequestsWithoutConnectionWithOperationContext)
 {
-    BackendClient client;
+    ServerClient client;
 
-    const BackendClientResponse response = client.sendJson("   ");
+    const ServerClientResponse response = client.sendJson("   ");
 
     EXPECT_FALSE(response.ok);
-    EXPECT_EQ(response.error, "[backend-client] sendJson: not connected");
+    EXPECT_EQ(response.error, "[server-client] sendJson: not connected");
 }
 
-TEST(BackendProtocolTest, TST_INT_PROT_003_BackendClientConnectTimeoutIsBounded)
+TEST(ServerProtocolTest, TST_INT_PROT_003_ServerClientConnectTimeoutIsBounded)
 {
-    BackendClient client;
+    ServerClient client;
     client.setSocketTimeoutMs(120);
 
     const auto startedAt = std::chrono::steady_clock::now();
@@ -112,6 +112,6 @@ TEST(BackendProtocolTest, TST_INT_PROT_003_BackendClientConnectTimeoutIsBounded)
     EXPECT_LE(elapsedMs.count(), 3000) << "connect timeout took too long: " << elapsedMs.count() << " ms";
 }
 
-} // namespace grav_test_backend_protocol_connect
+} // namespace grav_test_server_protocol_connect
 
 

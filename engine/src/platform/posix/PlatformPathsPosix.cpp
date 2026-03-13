@@ -9,9 +9,9 @@ std::string executableName(std::string_view basename)
     return std::string(basename);
 }
 
-std::string_view backendDefaultExecutableName()
+std::string_view serverDefaultExecutableName()
 {
-    return "myAppBackend";
+    return "myAppServer";
 }
 
 std::vector<std::string> sharedLibraryCandidates(std::string_view stem)

@@ -1,7 +1,7 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
 
-#include "protocol/BackendProtocol.hpp"
+#include "protocol/ServerProtocol.hpp"
 
 #include <cstdint>
 #include <string>
@@ -13,13 +13,13 @@ struct SimulationConfig {
     std::string integrator = "euler";
     float octreeTheta = 1.2f;
     float octreeSoftening = 2.5f;
-    std::uint32_t frontendParticleCap = grav_protocol::kSnapshotMaxPoints;
+    std::uint32_t clientParticleCap = grav_protocol::kSnapshotMaxPoints;
     float defaultZoom = 8.0f;
     int defaultLuminosity = 100;
     std::uint32_t uiFpsLimit = 60u;
-    std::uint32_t frontendRemoteCommandTimeoutMs = 80u;
-    std::uint32_t frontendRemoteStatusTimeoutMs = 40u;
-    std::uint32_t frontendRemoteSnapshotTimeoutMs = 140u;
+    std::uint32_t clientRemoteCommandTimeoutMs = 80u;
+    std::uint32_t clientRemoteStatusTimeoutMs = 40u;
+    std::uint32_t clientRemoteSnapshotTimeoutMs = 140u;
     std::string exportDirectory = "exports";
     std::string exportFormat = "vtk";
     std::string inputFile;

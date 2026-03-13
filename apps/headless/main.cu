@@ -1,8 +1,8 @@
-#include "backend/SimulationBackend.hpp"
+#include "server/SimulationServer.hpp"
 #include "config/SimulationArgs.hpp"
 #include "config/SimulationConfig.hpp"
 #include "config/EnvUtils.hpp"
-#include "backend/SimulationInitConfig.hpp"
+#include "server/SimulationInitConfig.hpp"
 
 #include <chrono>
 #include <iostream>
@@ -21,8 +21,8 @@ int main(int argc, char **argv)
 
     RuntimeArgs runtime;
     runtime.configPath = findConfigPathArg(args, "simulation.ini");
-    SimulationBackend backend(runtime.configPath);
-    SimulationConfig config = backend.getRuntimeConfig();
+    SimulationServer server(runtime.configPath);
+    SimulationConfig config = server.getRuntimeConfig();
     applyArgsToConfig(args, config, runtime, std::cerr);
     if (runtime.hasArgumentError) {
         printUsage(std::cerr, args.empty() ? std::string_view("myAppHeadless") : args[0], true);
@@ -57,31 +57,31 @@ int main(int argc, char **argv)
               << "\n";
     std::cout << "[headless] " << initPlan.summary << "\n";
 
-    backend.setParticleCount(static_cast<std::uint32_t>(particleCount));
-    backend.setDt(dt);
-    backend.setSolverMode(solver);
-    backend.setIntegratorMode(integrator);
-    backend.setOctreeParameters(config.octreeTheta, config.octreeSoftening);
-    backend.setSphEnabled(config.sphEnabled);
-    backend.setSphParameters(
+    server.setParticleCount(static_cast<std::uint32_t>(particleCount));
+    server.setDt(dt);
+    server.setSolverMode(solver);
+    server.setIntegratorMode(integrator);
+    server.setOctreeParameters(config.octreeTheta, config.octreeSoftening);
+    server.setSphEnabled(config.sphEnabled);
+    server.setSphParameters(
         config.sphSmoothingLength,
         config.sphRestDensity,
         config.sphGasConstant,
         config.sphViscosity
     );
-    backend.setEnergyMeasurementConfig(config.energyMeasureEverySteps, config.energySampleLimit);
-    backend.setExportDefaults(config.exportDirectory, exportFormat);
-    backend.setInitialStateFile(initPlan.inputFile, initPlan.inputFormat);
-    backend.setInitialStateConfig(initPlan.config);
-    backend.start();
+    server.setEnergyMeasurementConfig(config.energyMeasureEverySteps, config.energySampleLimit);
+    server.setExportDefaults(config.exportDirectory, exportFormat);
+    server.setInitialStateFile(initPlan.inputFile, initPlan.inputFormat);
+    server.setInitialStateConfig(initPlan.config);
+    server.start();
 
     std::vector<RenderParticle> snapshot;
     const auto start = std::chrono::steady_clock::now();
     std::uint64_t lastLoggedStep = 0;
 
-    SimulationStats stats = backend.getStats();
+    SimulationStats stats = server.getStats();
     while (stats.steps < static_cast<std::uint64_t>(targetSteps)) {
-        if (backend.tryConsumeSnapshot(snapshot) && !snapshot.empty()) {
+        if (server.tryConsumeSnapshot(snapshot) && !snapshot.empty()) {
             if ((stats.steps / 50) > (lastLoggedStep / 50)) {
                 lastLoggedStep = stats.steps;
                 const RenderParticle &center = snapshot[0];
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
                           << " faulted=" << (stats.faulted ? "1" : "0")
                           << " center=(" << center.x << ", " << center.y << ", " << center.z << ")"
                           << " snapshot=" << snapshot.size()
-                          << " backend_step_s=" << stats.backendFps
+                          << " server_step_s=" << stats.serverFps
                           << " energy=" << stats.totalEnergy
                           << " Eth=" << stats.thermalEnergy
                           << " Erad=" << stats.radiatedEnergy
@@ -101,20 +101,20 @@ int main(int argc, char **argv)
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        stats = backend.getStats();
+        stats = server.getStats();
     }
 
     if (exportOnExit) {
-        backend.setPaused(true);
-        backend.requestExportSnapshot("", exportFormat);
+        server.setPaused(true);
+        server.requestExportSnapshot("", exportFormat);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 
-    backend.stop();
+    server.stop();
 
     const auto end = std::chrono::steady_clock::now();
     const auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    const SimulationStats finalStats = backend.getStats();
+    const SimulationStats finalStats = server.getStats();
 
     std::cout << "[headless] done particles=" << finalStats.particleCount
               << " steps=" << finalStats.steps

@@ -41,7 +41,7 @@ class IniCheck(BaseCheck):
     def _check_required_keys(self, values: dict[str, str], result: CheckResult) -> None:
         required_keys = (
             "particle_count", "dt", "solver", "integrator", "octree_theta", "octree_softening",
-            "frontend_particle_cap", "ui_fps_limit", "export_format", "input_format", "init_config_style",
+            "client_particle_cap", "ui_fps_limit", "export_format", "input_format", "init_config_style",
             "preset_structure", "init_mode", "sph_enabled",
         )
         for key in required_keys:
@@ -50,10 +50,10 @@ class IniCheck(BaseCheck):
 
     def _check_int_constraints(self, values: dict[str, str], result: CheckResult) -> None:
         for key, minimum in (
-            ("particle_count", 1), ("frontend_particle_cap", 1), ("ui_fps_limit", 1),
+            ("particle_count", 1), ("client_particle_cap", 1), ("ui_fps_limit", 1),
             ("energy_measure_every_steps", 1), ("energy_sample_limit", 1),
-            ("frontend_remote_command_timeout_ms", 10), ("frontend_remote_status_timeout_ms", 10),
-            ("frontend_remote_snapshot_timeout_ms", 10),
+            ("client_remote_command_timeout_ms", 10), ("client_remote_status_timeout_ms", 10),
+            ("client_remote_snapshot_timeout_ms", 10),
         ):
             raw = values.get(key)
             if raw is None:

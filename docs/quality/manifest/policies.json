@@ -2,11 +2,11 @@
   "policies": {
     "mirror": {
       "pairs": {
-        "engine/include/backend": "engine/src/backend",
+        "engine/include/server": "engine/src/server",
         "engine/include/config": "engine/src/config",
         "engine/include/platform": "engine/src/platform",
-        "runtime/include/backend": "runtime/src/backend",
-        "runtime/include/frontend": "runtime/src/frontend",
+        "runtime/include/server": "runtime/src/server",
+        "runtime/include/client": "runtime/src/client",
         "runtime/include/protocol": "runtime/src/protocol",
         "engine/include/physics": "engine/src/physics",
         "engine/include/platform/common": "engine/src/platform/common",
@@ -16,7 +16,7 @@
         "modules/qt/include/ui": "modules/qt/ui"
       },
       "header_only": [
-        "engine/include/backend/SimulationInitConfig.hpp",
+        "engine/include/server/SimulationInitConfig.hpp",
         "engine/include/config/EnvUtils.hpp",
         "engine/include/platform/DynamicLibrary.hpp",
         "engine/include/platform/PlatformErrors.hpp",
@@ -24,11 +24,11 @@
         "engine/include/platform/PlatformProcess.hpp",
         "engine/include/platform/SocketPlatform.hpp",
         "engine/include/types/SimulationTypes.hpp",
-        "runtime/include/frontend/ErrorBuffer.hpp",
-        "runtime/include/frontend/FrontendModuleApi.hpp",
-        "runtime/include/frontend/IFrontendRuntime.hpp",
-        "runtime/include/frontend/ILocalBackend.hpp",
-        "runtime/include/protocol/BackendProtocol.hpp",
+        "runtime/include/client/ErrorBuffer.hpp",
+        "runtime/include/client/ClientModuleApi.hpp",
+        "runtime/include/client/IClientRuntime.hpp",
+        "runtime/include/client/ILocalServer.hpp",
+        "runtime/include/protocol/ServerProtocol.hpp",
         "engine/include/platform/internal/DynamicLibraryOps.hpp",
         "engine/include/platform/internal/ProcessOps.hpp",
         "engine/include/platform/internal/SocketOps.hpp",

@@ -42,12 +42,12 @@ class LauncherContractCheck(BaseCheck):
 
     def _cases(self) -> tuple[LauncherCase, ...]:
         return (
-            LauncherCase("launcher-help", 0, ["--help"], must_stdout="--mode ui|backend|headless"),
+            LauncherCase("launcher-help", 0, ["--help"], must_stdout="--mode client|server|headless"),
             LauncherCase("launcher-invalid-mode", 2, ["--mode", "nope"], must_stderr="invalid --mode value"),
             LauncherCase("launcher-headless-help", 0, ["--mode", "headless", "--", "--help"], must_stdout="--target-steps"),
             LauncherCase("launcher-headless-positional-rejected", 2, ["--mode", "headless", "--", "1000"], must_stderr="unexpected positional argument"),
-            LauncherCase("launcher-backend-unknown-option-rejected", 2, ["--mode", "backend", "--", "--foo", "1"], must_stderr="unknown option: --foo"),
-            LauncherCase("launcher-backend-non-loopback-rejected", 2, ["--mode", "backend", "--", "--backend-host", "0.0.0.0"], must_stderr="refusing non-loopback bind host"),
+            LauncherCase("launcher-server-unknown-option-rejected", 2, ["--mode", "server", "--", "--foo", "1"], must_stderr="unknown option: --foo"),
+            LauncherCase("launcher-server-non-loopback-rejected", 2, ["--mode", "server", "--", "--server-host", "0.0.0.0"], must_stderr="refusing non-loopback bind host"),
         )
 
     def _run_case(self, launcher: Path, case: LauncherCase, result: CheckResult) -> None:

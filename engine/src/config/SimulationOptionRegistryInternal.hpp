@@ -18,7 +18,7 @@ enum class OptionKind {
     String,
     Solver,
     Integrator,
-    FrontendParticleCap,
+    ClientParticleCap,
     TimeoutTriple,
 };
 

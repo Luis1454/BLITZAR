@@ -7,10 +7,10 @@ import pytest
 from python_tools.core.models import CheckContext
 from python_tools.policies.repo_policy import RepoPolicyCheck
 from tests.checks.suites.support.path_specs import (
-    ENGINE_BACKEND_DIR,
     ENGINE_CONFIG_DIR,
+    ENGINE_SERVER_DIR,
     MODULES_QT_UI_DIR,
-    RUNTIME_BACKEND_DIR,
+    RUNTIME_SERVER_DIR,
     TESTS_UNIT_DIR,
     cpp_file,
 )
@@ -30,21 +30,21 @@ def _run(root: Path, allowlist: Path) -> tuple[bool, list[str], list[str]]:
 @pytest.mark.parametrize(
     ("path", "content", "expected"),
     [
-        (cpp_file(ENGINE_BACKEND_DIR, "bad"), "using Alias = int;\n", "'using' is forbidden in C++ sources"),
+        (cpp_file(ENGINE_SERVER_DIR, "bad"), "using Alias = int;\n", "'using' is forbidden in C++ sources"),
         (cpp_file(ENGINE_CONFIG_DIR, "bad"), "namespace a::b {\n}\n", "nested namespace declaration (A::B) is forbidden"),
-        (cpp_file(RUNTIME_BACKEND_DIR, "bad"), "namespace gravity_internal_bad {\n}\n", "gravity_internal_* namespace is forbidden"),
+        (cpp_file(RUNTIME_SERVER_DIR, "bad"), "namespace gravity_internal_bad {\n}\n", "gravity_internal_* namespace is forbidden"),
         (
-            cpp_file(ENGINE_BACKEND_DIR, "bad_namespace"),
+            cpp_file(ENGINE_SERVER_DIR, "bad_namespace"),
             "namespace {\nint g = 1;\n}\n",
             "unnamed namespace is forbidden in production paths",
         ),
         (
-            cpp_file(ENGINE_BACKEND_DIR, "bad_goto"),
+            cpp_file(ENGINE_SERVER_DIR, "bad_goto"),
             "int f() { goto fail; fail: return 0; }\n",
             "Power of 10 rule 1 forbids goto",
         ),
         (
-            cpp_file(RUNTIME_BACKEND_DIR, "bad_longjmp"),
+            cpp_file(RUNTIME_SERVER_DIR, "bad_longjmp"),
             "int f() { return longjmp(buf, 1); }\n",
             "Power of 10 rule 1 forbids setjmp/longjmp",
         ),

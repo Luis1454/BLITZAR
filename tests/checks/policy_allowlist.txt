@@ -2,19 +2,19 @@
 # Keep this list short and remove entries as files are split by responsibility.
 # Each active group must also exist in docs/quality/manifest/deviations.json.
 
-# Core backend orchestration pending split by protocol/state/controls.
-engine/src/backend/SimulationBackend.cpp
-runtime/src/backend/BackendServer.cpp
-runtime/src/protocol/BackendClient.cpp
-runtime/src/frontend/FrontendBackendBridge.cpp
-runtime/src/frontend/FrontendRuntime.cpp
+# Core server orchestration pending split by protocol/state/controls.
+engine/src/server/SimulationServer.cpp
+runtime/src/server/ServerDaemon.cpp
+runtime/src/protocol/ServerClient.cpp
+runtime/src/client/ClientServerBridge.cpp
+runtime/src/client/ClientRuntime.cpp
 
 # CUDA fragment blocks retained while kernel-level decomposition is prepared.
 engine/src/physics/cuda/fragments/ParticleSystemCore.inl
 engine/src/physics/cuda/fragments/ParticleSystemPrelude.inl
 engine/src/physics/cuda/fragments/ParticleSystemUpdate.inl
 
-# Frontend module composition files pending per-feature extraction.
+# Client module composition files pending per-feature extraction.
 modules/proxy/module.cpp
 modules/qt/module.cpp
 modules/qt/ui/MainWindow.cpp

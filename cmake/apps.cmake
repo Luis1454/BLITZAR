@@ -49,80 +49,80 @@ configure_gravity_cpp_target(${APP_NAME})
 if(GRAVITY_BUILD_HEADLESS_BINARY)
     add_executable(${HEADLESS_NAME}
         apps/headless/main.cu
-        ${GRAVITY_BACKEND_SOURCES}
+        ${GRAVITY_SERVER_SOURCES}
     )
     configure_gravity_cuda_target(${HEADLESS_NAME})
 endif()
 
-if(GRAVITY_BUILD_BACKEND_DAEMON)
-    add_executable(${BACKEND_DAEMON_NAME}
-        apps/backend-service/main.cpp
-        apps/backend-service/backend_args.cpp
-        runtime/src/backend/BackendServer.cpp
+if(GRAVITY_BUILD_SERVER_DAEMON)
+    add_executable(${SERVER_DAEMON_NAME}
+        apps/server-service/main.cpp
+        apps/server-service/server_args.cpp
+        runtime/src/server/ServerDaemon.cpp
         ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
-        ${GRAVITY_BACKEND_SOURCES}
+        ${GRAVITY_SERVER_SOURCES}
     )
-    configure_gravity_cuda_target(${BACKEND_DAEMON_NAME})
+    configure_gravity_cuda_target(${SERVER_DAEMON_NAME})
 endif()
 
-if(GRAVITY_BUILD_FRONTEND_MODULE_HOST)
-    add_executable(${MODULE_HOST_NAME}
-        apps/module-host/main.cpp
-        apps/module-host/module_host_cli.cpp
-        apps/module-host/module_host_cli_args.cpp
-        apps/module-host/module_host_cli_text.cpp
-        apps/module-host/module_host_module_ops.cpp
-        runtime/src/frontend/FrontendModuleBoundary.cpp
-        runtime/src/frontend/FrontendModuleHandle.cpp
-        runtime/src/frontend/FrontendModuleHandleLoad.cpp
-        runtime/src/frontend/FrontendModuleApi.cpp
+if(GRAVITY_BUILD_CLIENT_HOST)
+    add_executable(${CLIENT_HOST_NAME}
+        apps/client-host/main.cpp
+        apps/client-host/client_host_cli.cpp
+        apps/client-host/client_host_cli_args.cpp
+        apps/client-host/client_host_cli_text.cpp
+        apps/client-host/client_host_module_ops.cpp
+        runtime/src/client/ClientModuleBoundary.cpp
+        runtime/src/client/ClientModuleHandle.cpp
+        runtime/src/client/ClientModuleHandleLoad.cpp
+        runtime/src/client/ClientModuleApi.cpp
     )
-    configure_gravity_cpp_target(${MODULE_HOST_NAME})
+    configure_gravity_cpp_target(${CLIENT_HOST_NAME})
 endif()
 
-if(GRAVITY_BUILD_FRONTEND_MODULES)
-    add_library(${FRONTEND_MODULE_CLI_NAME} MODULE
+if(GRAVITY_BUILD_CLIENT_MODULES)
+    add_library(${CLIENT_MODULE_CLI_NAME} MODULE
         modules/cli/module.cpp
         modules/cli/module_cli_state.cpp
         modules/cli/module_cli_text.cpp
-        modules/cli/module_cli_backend_ops.cpp
+        modules/cli/module_cli_server_ops.cpp
         modules/cli/module_cli_commands.cpp
         modules/cli/module_cli_lifecycle.cpp
-        runtime/src/frontend/ErrorBuffer.cpp
-        runtime/src/frontend/FrontendModuleBoundary.cpp
-        runtime/src/frontend/FrontendModuleApi.cpp
+        runtime/src/client/ErrorBuffer.cpp
+        runtime/src/client/ClientModuleBoundary.cpp
+        runtime/src/client/ClientModuleApi.cpp
         ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
         engine/src/config/TextParse.cpp
     )
-    configure_gravity_cpp_target(${FRONTEND_MODULE_CLI_NAME})
+    configure_gravity_cpp_target(${CLIENT_MODULE_CLI_NAME})
     if(WIN32)
-        target_compile_definitions(${FRONTEND_MODULE_CLI_NAME} PRIVATE GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
+        target_compile_definitions(${CLIENT_MODULE_CLI_NAME} PRIVATE GRAVITY_CLIENT_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
     endif()
 
-    add_library(${FRONTEND_MODULE_ECHO_NAME} MODULE
+    add_library(${CLIENT_MODULE_ECHO_NAME} MODULE
         modules/echo/module.cpp
-        runtime/src/frontend/ErrorBuffer.cpp
-        runtime/src/frontend/FrontendModuleBoundary.cpp
-        runtime/src/frontend/FrontendModuleApi.cpp
+        runtime/src/client/ErrorBuffer.cpp
+        runtime/src/client/ClientModuleBoundary.cpp
+        runtime/src/client/ClientModuleApi.cpp
     )
-    configure_gravity_cpp_target(${FRONTEND_MODULE_ECHO_NAME})
+    configure_gravity_cpp_target(${CLIENT_MODULE_ECHO_NAME})
     if(WIN32)
-        target_compile_definitions(${FRONTEND_MODULE_ECHO_NAME} PRIVATE GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
+        target_compile_definitions(${CLIENT_MODULE_ECHO_NAME} PRIVATE GRAVITY_CLIENT_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
     endif()
 
-    add_library(${FRONTEND_MODULE_GUI_PROXY_NAME} MODULE
+    add_library(${CLIENT_MODULE_GUI_PROXY_NAME} MODULE
         modules/proxy/module.cpp
-        runtime/src/frontend/ErrorBuffer.cpp
-        runtime/src/frontend/FrontendModuleBoundary.cpp
-        runtime/src/frontend/FrontendModuleApi.cpp
+        runtime/src/client/ErrorBuffer.cpp
+        runtime/src/client/ClientModuleBoundary.cpp
+        runtime/src/client/ClientModuleApi.cpp
     )
-    configure_gravity_cpp_target(${FRONTEND_MODULE_GUI_PROXY_NAME})
+    configure_gravity_cpp_target(${CLIENT_MODULE_GUI_PROXY_NAME})
     if(WIN32)
-        target_compile_definitions(${FRONTEND_MODULE_GUI_PROXY_NAME} PRIVATE GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
+        target_compile_definitions(${CLIENT_MODULE_GUI_PROXY_NAME} PRIVATE GRAVITY_CLIENT_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
     endif()
 endif()
 
-if(GRAVITY_BUILD_FRONTEND_MODULES)
+if(GRAVITY_BUILD_CLIENT_MODULES)
     find_package(Qt6 QUIET COMPONENTS Widgets)
     if(NOT Qt6_FOUND AND WIN32)
         file(GLOB _qt_local_roots "C:/Qt/*/msvc*_64")
@@ -137,17 +137,17 @@ if(GRAVITY_BUILD_FRONTEND_MODULES)
     endif()
 
     if(TARGET Qt6::Widgets)
-        add_library(${FRONTEND_MODULE_QT_INPROC_NAME} MODULE
+        add_library(${CLIENT_MODULE_QT_INPROC_NAME} MODULE
             modules/qt/module.cpp
-            runtime/src/frontend/ErrorBuffer.cpp
-            runtime/src/frontend/FrontendModuleBoundary.cpp
-            runtime/src/frontend/FrontendModuleApi.cpp
-            runtime/src/frontend/FrontendBackendBridge.cpp
-            runtime/src/frontend/FrontendCommon.cpp
-            runtime/src/frontend/FrontendRuntime.cpp
-            runtime/src/frontend/LocalBackendFactory.cpp
+            runtime/src/client/ErrorBuffer.cpp
+            runtime/src/client/ClientModuleBoundary.cpp
+            runtime/src/client/ClientModuleApi.cpp
+            runtime/src/client/ClientServerBridge.cpp
+            runtime/src/client/ClientCommon.cpp
+            runtime/src/client/ClientRuntime.cpp
+            runtime/src/client/LocalServerFactory.cpp
             ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
-            ${GRAVITY_BACKEND_SOURCES}
+            ${GRAVITY_SERVER_SOURCES}
             modules/qt/ui/EnergyGraphWidget.cpp
             modules/qt/ui/MainWindow.cpp
             modules/qt/ui/MultiViewWidget.cpp
@@ -155,15 +155,15 @@ if(GRAVITY_BUILD_FRONTEND_MODULES)
             modules/qt/ui/ParticleViewColor.cpp
             modules/qt/ui/QtViewMath.cpp
         )
-        configure_gravity_cuda_target(${FRONTEND_MODULE_QT_INPROC_NAME})
+        configure_gravity_cuda_target(${CLIENT_MODULE_QT_INPROC_NAME})
         if(WIN32)
-            target_compile_definitions(${FRONTEND_MODULE_QT_INPROC_NAME} PRIVATE GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
+            target_compile_definitions(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE GRAVITY_CLIENT_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
         endif()
-        target_link_libraries(${FRONTEND_MODULE_QT_INPROC_NAME}
+        target_link_libraries(${CLIENT_MODULE_QT_INPROC_NAME}
             PRIVATE
                 Qt6::Widgets
         )
     else()
-        message(STATUS "Qt6 not found. Qt in-process frontend module is disabled.")
+        message(STATUS "Qt6 not found. Qt in-process client module is disabled.")
     endif()
 endif()
