@@ -9,10 +9,8 @@ from python_tools.core.models import CheckContext, CheckResult
 
 FORBIDDEN_TOKENS = (
     "GRAVITY_BUILD_LEGACY_CLIENTS",
-    "GRAVITY_BUILD_SFML_CLIENT",
     "GRAVITY_BUILD_QT_CLIENT",
     "GRAVITY_BUILD_CLI_CLIENT",
-    "SFML_CLIENT_NAME",
     "QT_CLIENT_NAME",
     "CLI_CLIENT_NAME",
 )

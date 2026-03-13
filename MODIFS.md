@@ -9,7 +9,7 @@ Objectif: centraliser les modifs restantes et suivre l'avancement.
 ## Architecture
 - [ ] `P0` Stabiliser la separation server/client (API claire et versionnee).
 - [ ] `P1` Ajouter une interface de controle distante (socket/HTTP) pour piloter la simu.
-- [ ] `P1` Uniformiser les points d'entree (`headless`, `sfml`, `qt`) sur la meme couche server.
+- [ ] `P1` Uniformiser les points d'entree (`headless`, `qt`) sur la meme couche server.
 - [ ] `P2` Ajouter un mode plugin UI (charger un client externe).
 
 ## Simulation
@@ -25,7 +25,7 @@ Objectif: centraliser les modifs restantes et suivre l'avancement.
 - [ ] `P2` Ajouter metadata et version de format dans les exports.
 
 ## UI / UX
-- [ ] `P0` Garantir le refresh visuel SFML/Qt a cadence stable.
+- [ ] `P0` Garantir le refresh visuel Qt a cadence stable.
 - [ ] `P1` Finaliser les vues multi-cameras (sync/unsync).
 - [ ] `P1` Gimbal 3 axes: precision, sensibilite reglable, reset orientation.
 - [ ] `P1` Graphes energie: zoom, pause, historique long.

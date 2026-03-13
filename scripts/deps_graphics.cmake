@@ -22,14 +22,6 @@ if(NOT EXISTS "${VCPKG_EXE}")
 endif()
 
 message(STATUS "[deps] using vcpkg: ${VCPKG_EXE}")
-message(STATUS "[deps] installing sfml:${TRIPLET}")
-execute_process(
-    COMMAND "${VCPKG_EXE}" install "sfml:${TRIPLET}" --recurse
-    RESULT_VARIABLE _sfml_result
-)
-if(NOT _sfml_result EQUAL 0)
-    message(FATAL_ERROR "vcpkg install sfml failed with exit code ${_sfml_result}")
-endif()
 
 if(BUILD_QT_WITH_VCPKG)
     message(STATUS "[deps] installing qtbase:${TRIPLET}")
@@ -40,6 +32,8 @@ if(BUILD_QT_WITH_VCPKG)
     if(NOT _qt_result EQUAL 0)
         message(FATAL_ERROR "vcpkg install qtbase failed with exit code ${_qt_result}")
     endif()
+else()
+    message(STATUS "[deps] no graphics packages requested (Qt install disabled)")
 endif()
 
 message(STATUS "[deps] done")
