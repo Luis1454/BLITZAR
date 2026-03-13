@@ -1133,6 +1133,7 @@ void SimulationServer::requestReset()
     _stepRequests.store(0, std::memory_order_relaxed);
     _serverFps.store(0.0f, std::memory_order_relaxed);
     _paused.store(false, std::memory_order_relaxed);
+    clearPublishedSnapshotCache();
     _resetRequested.store(true, std::memory_order_relaxed);
 }
 
@@ -1251,7 +1252,7 @@ void SimulationServer::setInitialStateConfig(const InitialStateConfig &config)
         _initialStateConfig = config;
     }
     if (_running.load(std::memory_order_relaxed)) {
-        _resetRequested.store(true, std::memory_order_relaxed);
+        requestReset();
     }
 }
 
@@ -1278,9 +1279,16 @@ void SimulationServer::setInitialStateFile(const std::string &path, const std::s
         std::lock_guard<std::mutex> lock(_commandMutex);
         _initialStatePath = path;
         _initialStateFormat = format.empty() ? "auto" : format;
+        _runtimeConfigMirror.inputFile = _initialStatePath;
+        _runtimeConfigMirror.inputFormat = _initialStateFormat;
+        if (!_initialStatePath.empty()) {
+            _initialStateConfig.mode = "file";
+            _runtimeConfigMirror.initMode = "file";
+            _runtimeConfigMirror.presetStructure = "file";
+        }
     }
     if (_running.load(std::memory_order_relaxed)) {
-        _resetRequested.store(true, std::memory_order_relaxed);
+        requestReset();
     }
 }
 
@@ -1642,6 +1650,13 @@ void SimulationServer::publishSnapshot()
 
     std::lock_guard<std::mutex> lock(_snapshotMutex);
     _publishedSnapshot.swap(_scratchSnapshot);
+}
+
+void SimulationServer::clearPublishedSnapshotCache()
+{
+    std::lock_guard<std::mutex> lock(_snapshotMutex);
+    _publishedSnapshot.clear();
+    _scratchSnapshot.clear();
 }
 
 SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
