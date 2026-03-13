@@ -16,7 +16,12 @@ std::string toLowerInitConfig(std::string value)
 
 static bool isSupportedInitMode(const std::string &value)
 {
-    return value == "disk_orbit" || value == "random_cloud" || value == "file";
+    return value == "disk_orbit"
+        || value == "random_cloud"
+        || value == "two_body"
+        || value == "three_body"
+        || value == "plummer_sphere"
+        || value == "file";
 }
 
 static std::string normalizeInitField(
@@ -120,6 +125,27 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig &config,
             init.cloudHalfExtent = size;
             init.cloudSpeed = 0.0f;
             init.particleMass = std::max(1e-6f, 1.0f / static_cast<float>(std::max<std::uint32_t>(2u, config.particleCount)));
+        } else if (resolvedMode == "two_body") {
+            init.includeCentralBody = false;
+            init.centralMass = 0.0f;
+            init.cloudHalfExtent = size;
+            init.velocityScale = 1.0f;
+            init.particleMass = 1.0f;
+        } else if (resolvedMode == "three_body") {
+            init.includeCentralBody = false;
+            init.centralMass = 0.0f;
+            init.cloudHalfExtent = size;
+            init.velocityScale = 1.0f;
+            init.particleMass = 1.0f;
+        } else if (resolvedMode == "plummer_sphere") {
+            init.includeCentralBody = false;
+            init.centralMass = 0.0f;
+            init.cloudHalfExtent = size;
+            init.velocityScale = 1.0f;
+            init.particleMass = std::max(
+                1e-6f,
+                1.0f / static_cast<float>(std::max<std::uint32_t>(2u, config.particleCount))
+            );
         } else if (resolvedMode == "file") {
             init.mode = "file";
         } else {

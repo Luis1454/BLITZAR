@@ -125,6 +125,9 @@ MainWindow::MainWindow(
     _integratorCombo->setCurrentIndex(integratorIndex);
     _presetCombo->addItem("disk_orbit");
     _presetCombo->addItem("random_cloud");
+    _presetCombo->addItem("two_body");
+    _presetCombo->addItem("three_body");
+    _presetCombo->addItem("plummer_sphere");
     _presetCombo->addItem("file");
     _presetCombo->setCurrentIndex(std::max(0, _presetCombo->findText(QString::fromStdString(_config.presetStructure))));
     _sphCheck->setChecked(_config.sphEnabled);

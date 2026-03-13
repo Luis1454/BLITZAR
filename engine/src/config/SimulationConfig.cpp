@@ -133,7 +133,7 @@ bool SimulationConfig::save(const std::string &path) const
     out << "# init_config_style: preset | detailed\n";
     out << "# preset mode uses only basic info (structure, size, velocity_temperature, particle_count).\n";
     out << "init_config_style=" << initConfigStyle << "\n";
-    out << "# preset_structure: disk_orbit | random_cloud | file\n";
+    out << "# preset_structure: disk_orbit | random_cloud | two_body | three_body | plummer_sphere | file\n";
     out << "preset_structure=" << presetStructure << "\n";
     out << "# characteristic size of generated structure.\n";
     out << "preset_size=" << presetSize << "\n";
@@ -152,9 +152,10 @@ bool SimulationConfig::save(const std::string &path) const
     out << "\n";
 
     out << "# [Initial state generation]\n";
-    out << "# init_mode: disk_orbit | random_cloud | file\n";
+    out << "# init_mode: disk_orbit | random_cloud | two_body | three_body | plummer_sphere | file\n";
     out << "# - file: tries input_file first\n";
-    out << "# - disk_orbit/random_cloud: generated from init_ keys below\n";
+    out << "# - generated modes: disk_orbit/random_cloud/two_body/three_body/plummer_sphere\n";
+    out << "#   are built from init_ keys below\n";
     out << "# NOTE: used when init_config_style=detailed\n";
     out << "init_mode=" << initMode << "\n";
     out << "# RNG seed for generated states.\n";
@@ -175,7 +176,7 @@ bool SimulationConfig::save(const std::string &path) const
     out << "init_disk_radius_max=" << initDiskRadiusMax << "\n";
     out << "init_disk_thickness=" << initDiskThickness << "\n";
     out << "init_velocity_scale=" << initVelocityScale << "\n";
-    out << "# random_cloud parameters.\n";
+    out << "# random_cloud / two_body / three_body / plummer_sphere scale parameters.\n";
     out << "init_cloud_half_extent=" << initCloudHalfExtent << "\n";
     out << "init_cloud_speed=" << initCloudSpeed << "\n";
     out << "init_particle_mass=" << initParticleMass << "\n";

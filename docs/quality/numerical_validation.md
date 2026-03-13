@@ -8,6 +8,7 @@ This document defines acceptance-oriented numerical checks for astrophysics simu
 - Center-of-mass drift bounded over long runs.
 - Time-step convergence trends consistent with integrator expectations.
 - Radiation exchange remains finite and physically coherent.
+- Canonical calibration scenes remain qualitatively stable and bounded.
 
 ## Reference Tests
 
@@ -16,6 +17,9 @@ This document defines acceptance-oriented numerical checks for astrophysics simu
 - `PhysicsTest.TST_UNT_PHYS_003_CenterOfMassDrift`
 - `PhysicsTest.TST_UNT_PHYS_004_TimeStepConvergence`
 - `PhysicsTest.TST_UNT_PHYS_008_RadiationExchangeConservation`
+- `PhysicsTest.TST_UNT_PHYS_010_CalibrationTwoBodyPresetMaintainsBoundOrbit`
+- `PhysicsTest.TST_UNT_PHYS_011_CalibrationThreeBodyPresetStaysFiniteAndCentered`
+- `PhysicsTest.TST_UNT_PHYS_012_CalibrationPlummerPresetProducesBoundCluster`
 
 ## Acceptance Policy
 
@@ -47,3 +51,12 @@ This document defines acceptance-oriented numerical checks for astrophysics simu
   - `two_body_orbit_convergence_{coarse,fine}` on `tests/data/two_body_rest.xyz`
   - `disk_solver_parity` with seed `12345`
   - `radiation_exchange` with seed `7`
+  - `calibration_two_body` on `generated:two_body`
+  - `calibration_three_body` on `generated:three_body`
+  - `calibration_plummer` on `generated:plummer_sphere`
+
+## Calibration Scenes
+
+- `two_body`: equal-mass circular orbit reference. Expected behavior: bounded separation, negligible center-of-mass drift, and near-zero energy drift under `rk4`.
+- `three_body`: equal-mass figure-eight reference. Expected behavior: finite trajectories, center of mass remaining near the origin, and no unbounded escape over the deterministic validation window.
+- `plummer_sphere`: isotropic self-gravitating cluster. Expected behavior: finite particle coordinates, compact cluster radius envelope, and bounded center-of-mass drift without thermal or radiative side effects.

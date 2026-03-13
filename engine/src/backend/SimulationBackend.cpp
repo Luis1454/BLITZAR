@@ -775,6 +775,108 @@ bool buildGeneratedState(std::vector<Particle> &outParticles, std::uint32_t part
         outParticles.push_back(central);
     };
 
+    auto finalizeParticle = [&](Particle &particle) {
+        applyThermalVelocity(particle);
+        particle.setPressure(Vector3(0.0f, 0.0f, 0.0f));
+        particle.setDensity(0.0f);
+        particle.setTemperature(particleTemperature);
+    };
+
+    if (mode == "two_body") {
+        const float separation = std::max(0.2f, config.cloudHalfExtent);
+        const float mass = std::max(1e-6f, config.particleMass);
+        const float radius = 0.5f * separation;
+        const float orbitalSpeed = std::sqrt(mass / std::max(2.0f * separation, 1e-6f))
+            * std::max(0.0f, config.velocityScale);
+
+        Particle left;
+        left.setMass(mass);
+        left.setPosition(centralPos + Vector3(-radius, 0.0f, 0.0f));
+        left.setVelocity(centralVel + Vector3(0.0f, -orbitalSpeed, 0.0f));
+        finalizeParticle(left);
+        outParticles.push_back(left);
+
+        Particle right;
+        right.setMass(mass);
+        right.setPosition(centralPos + Vector3(radius, 0.0f, 0.0f));
+        right.setVelocity(centralVel + Vector3(0.0f, orbitalSpeed, 0.0f));
+        finalizeParticle(right);
+        outParticles.push_back(right);
+        return true;
+    }
+
+    if (mode == "three_body") {
+        const float scale = std::max(0.1f, config.cloudHalfExtent);
+        const float mass = std::max(1e-6f, config.particleMass);
+        const float speedScale = std::max(0.0f, config.velocityScale) / std::sqrt(scale);
+        constexpr float kX = 0.97000436f;
+        constexpr float kY = 0.24308753f;
+        constexpr float kVx = 0.46620368f;
+        constexpr float kVy = 0.43236572f;
+        const Vector3 positions[] = {
+            Vector3(-kX * scale, kY * scale, 0.0f),
+            Vector3(kX * scale, -kY * scale, 0.0f),
+            Vector3(0.0f, 0.0f, 0.0f)
+        };
+        const Vector3 velocities[] = {
+            Vector3(kVx * speedScale, kVy * speedScale, 0.0f),
+            Vector3(kVx * speedScale, kVy * speedScale, 0.0f),
+            Vector3(-2.0f * kVx * speedScale, -2.0f * kVy * speedScale, 0.0f)
+        };
+        for (int index = 0; index < 3; index += 1) {
+            Particle particle;
+            particle.setMass(mass);
+            particle.setPosition(centralPos + positions[index]);
+            particle.setVelocity(centralVel + velocities[index]);
+            finalizeParticle(particle);
+            outParticles.push_back(particle);
+        }
+        return true;
+    }
+
+    if (mode == "plummer_sphere") {
+        const float scale = std::max(0.1f, config.cloudHalfExtent);
+        const float totalMass = std::max(1e-6f, config.particleMass * static_cast<float>(count));
+        const float mass = std::max(1e-6f, totalMass / static_cast<float>(count));
+        const float sigma = std::sqrt(totalMass / std::max(6.0f * scale, 1e-6f)) * std::max(0.0f, config.velocityScale);
+        std::uniform_real_distribution<float> unitDist(1e-4f, 0.9999f);
+        std::uniform_real_distribution<float> azimuthDist(0.0f, 2.0f * 3.1415926535f);
+        std::uniform_real_distribution<float> cosThetaDist(-1.0f, 1.0f);
+        std::normal_distribution<float> velDist(0.0f, sigma);
+        Vector3 meanPosition(0.0f, 0.0f, 0.0f);
+        Vector3 meanVelocity(0.0f, 0.0f, 0.0f);
+
+        while (outParticles.size() < count) {
+            const float u = unitDist(rng);
+            const float radius = scale / std::sqrt(std::pow(u, -2.0f / 3.0f) - 1.0f);
+            const float azimuth = azimuthDist(rng);
+            const float cosTheta = cosThetaDist(rng);
+            const float sinTheta = std::sqrt(std::max(0.0f, 1.0f - cosTheta * cosTheta));
+            const Vector3 offset(
+                radius * sinTheta * std::cos(azimuth),
+                radius * sinTheta * std::sin(azimuth),
+                radius * cosTheta
+            );
+            Particle particle;
+            particle.setMass(mass);
+            particle.setPosition(centralPos + offset);
+            particle.setVelocity(centralVel + Vector3(velDist(rng), velDist(rng), velDist(rng)));
+            finalizeParticle(particle);
+            meanPosition = meanPosition + particle.getPosition();
+            meanVelocity = meanVelocity + particle.getVelocity();
+            outParticles.push_back(particle);
+        }
+
+        const float invCount = 1.0f / static_cast<float>(outParticles.size());
+        meanPosition = meanPosition * invCount;
+        meanVelocity = meanVelocity * invCount;
+        for (Particle &particle : outParticles) {
+            particle.setPosition(particle.getPosition() - meanPosition + centralPos);
+            particle.setVelocity(particle.getVelocity() - meanVelocity + centralVel);
+        }
+        return outParticles.size() >= 2;
+    }
+
     if (mode == "random_cloud") {
         const float halfExtent = std::max(0.01f, config.cloudHalfExtent);
         const float cloudSpeed = std::max(0.0f, config.cloudSpeed);
@@ -796,10 +898,7 @@ bool buildGeneratedState(std::vector<Particle> &outParticles, std::uint32_t part
                 centralVel.y + velDist(rng),
                 centralVel.z + velDist(rng)
             ));
-            applyThermalVelocity(p);
-            p.setPressure(Vector3(0.0f, 0.0f, 0.0f));
-            p.setDensity(0.0f);
-            p.setTemperature(particleTemperature);
+            finalizeParticle(p);
             outParticles.push_back(p);
         }
         return outParticles.size() >= 2;
@@ -846,10 +945,7 @@ bool buildGeneratedState(std::vector<Particle> &outParticles, std::uint32_t part
         p.setMass(diskMassPerParticle);
         p.setPosition(position);
         p.setVelocity(centralVel + tangent);
-        applyThermalVelocity(p);
-        p.setPressure(Vector3(0.0f, 0.0f, 0.0f));
-        p.setDensity(0.0f);
-        p.setTemperature(particleTemperature);
+        finalizeParticle(p);
         outParticles.push_back(p);
     }
 
