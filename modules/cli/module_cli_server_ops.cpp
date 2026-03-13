@@ -66,6 +66,10 @@ public:
                   << " solver=" << status.solver << " integrator=" << status.integrator
                   << " sph=" << (status.sphEnabled ? "on" : "off")
                   << " sps=" << status.serverFps << " particles=" << status.particleCount
+                  << " substeps=" << status.substeps
+                  << " subdt=" << status.substepDt
+                  << " target=" << status.substepTargetDt
+                  << " max_substeps=" << status.maxSubsteps
                   << " Etot=" << status.totalEnergy << " dE=" << status.energyDriftPct
                   << " fault_step=" << status.faultStep
                   << (status.faultReason.empty() ? "" : " fault=\"" + status.faultReason + "\"")

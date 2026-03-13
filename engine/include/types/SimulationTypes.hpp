@@ -49,6 +49,10 @@ struct SimulationStats {
     std::string faultReason;
     bool sphEnabled;
     float serverFps;
+    float substepTargetDt;
+    float substepDt;
+    std::uint32_t substeps;
+    std::uint32_t maxSubsteps;
     std::uint32_t particleCount;
     float kineticEnergy;
     float potentialEnergy;
