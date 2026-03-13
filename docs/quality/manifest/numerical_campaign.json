@@ -67,6 +67,42 @@
           "checks": {
             "max_abs_energy_drift_pct": 1.5
           }
+        },
+        {
+          "id": "calibration-two-body-octree-cpu",
+          "preset": "calibration_two_body",
+          "solver": "octree_cpu",
+          "dataset": "generated:two_body",
+          "seed": 42,
+          "checks": {
+            "max_abs_energy_drift_pct": 0.01,
+            "center_of_mass_drift": 0.001,
+            "average_radius": 3.2
+          }
+        },
+        {
+          "id": "calibration-three-body-octree-cpu",
+          "preset": "calibration_three_body",
+          "solver": "octree_cpu",
+          "dataset": "generated:three_body",
+          "seed": 42,
+          "checks": {
+            "max_abs_energy_drift_pct": 0.01,
+            "center_of_mass_drift": 0.001,
+            "average_radius": 2.0
+          }
+        },
+        {
+          "id": "calibration-plummer-octree-cpu",
+          "preset": "calibration_plummer",
+          "solver": "octree_cpu",
+          "dataset": "generated:plummer_sphere",
+          "seed": 42,
+          "checks": {
+            "max_abs_energy_drift_pct": 0.01,
+            "center_of_mass_drift": 0.02,
+            "average_radius": 12.0
+          }
         }
       ],
       "comparisons": [

@@ -153,5 +153,68 @@ TEST(PhysicsTest, TST_UNT_PHYS_008_RadiationExchangeConservation)
     EXPECT_LT(result.stats.thermalEnergy, initialThermal);
 }
 
+TEST(PhysicsTest, TST_UNT_PHYS_011_CalibrationThreeBodyPresetStaysFiniteAndCentered)
+{
+    ScenarioConfig cfg;
+    std::string error;
+    ASSERT_TRUE(prepareGeneratedCalibrationScenario("three_body", cfg, error)) << error;
+    cfg.solver = "octree_cpu";
+
+    ScenarioResult result;
+    ASSERT_TRUE(runScenario(cfg, result, error)) << error;
+    ASSERT_EQ(result.final.size(), 3u);
+
+    float maxRadius = 0.0f;
+    for (const RenderParticle &particle : result.final) {
+        EXPECT_TRUE(std::isfinite(particle.x));
+        EXPECT_TRUE(std::isfinite(particle.y));
+        EXPECT_TRUE(std::isfinite(particle.z));
+        const float radius = std::sqrt(
+            particle.x * particle.x + particle.y * particle.y + particle.z * particle.z);
+        maxRadius = std::max(maxRadius, radius);
+    }
+
+    const auto finalCenter = centerOfMassAll(result.final);
+    const float centerMagnitude = std::sqrt(
+        finalCenter[0] * finalCenter[0] + finalCenter[1] * finalCenter[1] + finalCenter[2] * finalCenter[2]);
+    EXPECT_LE(result.maxAbsEnergyDriftPct, 0.01f);
+    EXPECT_LE(averageRadius(result.final), 2.0f);
+    EXPECT_LE(maxRadius, 2.5f);
+    EXPECT_LE(centerMagnitude, 1e-3f);
+}
+
+TEST(PhysicsTest, TST_UNT_PHYS_012_CalibrationPlummerPresetProducesBoundCluster)
+{
+    ScenarioConfig cfg;
+    std::string error;
+    ASSERT_TRUE(prepareGeneratedCalibrationScenario("plummer_sphere", cfg, error)) << error;
+    cfg.solver = "octree_cpu";
+
+    ScenarioResult result;
+    ASSERT_TRUE(runScenario(cfg, result, error)) << error;
+    ASSERT_EQ(result.initial.size(), 96u);
+    ASSERT_EQ(result.final.size(), 96u);
+
+    float maxRadius = 0.0f;
+    for (const RenderParticle &particle : result.final) {
+        EXPECT_TRUE(std::isfinite(particle.x));
+        EXPECT_TRUE(std::isfinite(particle.y));
+        EXPECT_TRUE(std::isfinite(particle.z));
+        const float radius = std::sqrt(
+            particle.x * particle.x + particle.y * particle.y + particle.z * particle.z);
+        maxRadius = std::max(maxRadius, radius);
+    }
+
+    const auto finalCenter = centerOfMassAll(result.final);
+    const float centerMagnitude = std::sqrt(
+        finalCenter[0] * finalCenter[0] + finalCenter[1] * finalCenter[1] + finalCenter[2] * finalCenter[2]);
+    const float finalAverageRadius = averageRadius(result.final);
+    EXPECT_LE(result.maxAbsEnergyDriftPct, 0.01f);
+    EXPECT_GE(finalAverageRadius, 4.0f);
+    EXPECT_LE(finalAverageRadius, 12.0f);
+    EXPECT_LE(maxRadius, 45.0f);
+    EXPECT_LE(centerMagnitude, 0.02f);
+}
+
 } // namespace testsupport
 

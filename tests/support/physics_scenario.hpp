@@ -40,6 +40,7 @@ float averageRadius(const std::vector<RenderParticle> &snapshot);
 bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &error);
 std::string getTwoBodyInputPath();
 bool prepareTwoBodyScenario(ScenarioConfig &cfg, std::string &error);
+bool prepareGeneratedCalibrationScenario(const std::string &mode, ScenarioConfig &cfg, std::string &error);
 
 } // namespace testsupport
 

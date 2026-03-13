@@ -175,5 +175,30 @@ TEST(PhysicsTest, TST_UNT_PHYS_005_LongRunStability)
     EXPECT_LE(maxRadius, kMaxStableRadius) << "Trajectory escaped expected stable bounds";
 }
 
+TEST(PhysicsTest, TST_UNT_PHYS_010_CalibrationTwoBodyPresetMaintainsBoundOrbit)
+{
+    ScenarioConfig cfg;
+    std::string error;
+    ASSERT_TRUE(prepareGeneratedCalibrationScenario("two_body", cfg, error)) << error;
+    cfg.solver = "octree_cpu";
+
+    ScenarioResult result;
+    ASSERT_TRUE(runScenario(cfg, result, error)) << error;
+    ASSERT_EQ(result.initial.size(), 2u);
+    ASSERT_EQ(result.final.size(), 2u);
+
+    const float initialDistance = distance(result.initial[0], result.initial[1]);
+    const float finalDistance = distance(result.final[0], result.final[1]);
+    const float orbitRatio = finalDistance / std::max(initialDistance, 1e-6f);
+    const auto finalCenter = centerOfMassAll(result.final);
+    const float centerMagnitude = std::sqrt(
+        finalCenter[0] * finalCenter[0] + finalCenter[1] * finalCenter[1] + finalCenter[2] * finalCenter[2]);
+
+    EXPECT_LE(result.maxAbsEnergyDriftPct, 0.01f);
+    EXPECT_GE(orbitRatio, 0.98f);
+    EXPECT_LE(orbitRatio, 1.02f);
+    EXPECT_LE(centerMagnitude, 1e-3f);
+}
+
 } // namespace testsupport
 

@@ -182,5 +182,55 @@ bool prepareTwoBodyScenario(ScenarioConfig &cfg, std::string &error)
     return true;
 }
 
+bool prepareGeneratedCalibrationScenario(const std::string &mode, ScenarioConfig &cfg, std::string &error)
+{
+    cfg.inputPath.clear();
+    cfg.inputFormat = "auto";
+    cfg.initState = InitialStateConfig{};
+    cfg.initState.mode = mode;
+    cfg.initState.includeCentralBody = false;
+    cfg.initState.thermalAmbientTemperature = 0.0f;
+    cfg.initState.thermalSpecificHeat = 1.0f;
+    cfg.initState.thermalHeatingCoeff = 0.0f;
+    cfg.initState.thermalRadiationCoeff = 0.0f;
+    cfg.energyMeasureEverySteps = 1u;
+
+    if (mode == "two_body") {
+        cfg.particleCount = 2u;
+        cfg.integrator = "rk4";
+        cfg.dt = 0.002f;
+        cfg.steps = 600u;
+        cfg.initState.cloudHalfExtent = 6.0f;
+        cfg.initState.particleMass = 1.0f;
+        cfg.initState.velocityScale = 1.0f;
+        return true;
+    }
+    if (mode == "three_body") {
+        cfg.particleCount = 3u;
+        cfg.integrator = "rk4";
+        cfg.dt = 0.0015f;
+        cfg.steps = 400u;
+        cfg.initState.cloudHalfExtent = 1.8f;
+        cfg.initState.particleMass = 1.0f;
+        cfg.initState.velocityScale = 1.0f;
+        return true;
+    }
+    if (mode == "plummer_sphere") {
+        cfg.particleCount = 96u;
+        cfg.integrator = "euler";
+        cfg.dt = 0.001f;
+        cfg.steps = 80u;
+        cfg.snapshotTimeoutMs = 6000;
+        cfg.stepTimeoutMs = 6000;
+        cfg.initState.cloudHalfExtent = 4.0f;
+        cfg.initState.particleMass = 0.01f;
+        cfg.initState.velocityScale = 0.75f;
+        return true;
+    }
+
+    error = "unknown generated calibration mode: " + mode;
+    return false;
+}
+
 } // namespace testsupport
 

@@ -152,3 +152,16 @@ TEST(ConfigArgsTest, TST_UNT_CONF_019_CliAliasesApplyThroughSharedRegistry)
     EXPECT_TRUE(warnings.str().empty());
     EXPECT_FALSE(runtime.hasArgumentError);
 }
+
+TEST(ConfigArgsTest, TST_UNT_CONF_022_CliAcceptsCalibrationSceneModes)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--preset-structure", "three_body", "--init-mode", "plummer_sphere"};
+    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(config.presetStructure, "three_body");
+    EXPECT_EQ(config.initMode, "plummer_sphere");
+    EXPECT_TRUE(warnings.str().empty());
+    EXPECT_FALSE(runtime.hasArgumentError);
+}

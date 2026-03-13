@@ -135,6 +135,24 @@ bool applyPreset(
         cfg.initState.thermalRadiationCoeff = 1.0f;
         out.dataset = "generated:random_cloud";
         out.seed = 7u;
+    } else if (options.preset == "calibration_two_body") {
+        if (!testsupport::prepareGeneratedCalibrationScenario("two_body", cfg, error)) {
+            return false;
+        }
+        out.dataset = "generated:two_body";
+        out.seed = cfg.initState.seed;
+    } else if (options.preset == "calibration_three_body") {
+        if (!testsupport::prepareGeneratedCalibrationScenario("three_body", cfg, error)) {
+            return false;
+        }
+        out.dataset = "generated:three_body";
+        out.seed = cfg.initState.seed;
+    } else if (options.preset == "calibration_plummer") {
+        if (!testsupport::prepareGeneratedCalibrationScenario("plummer_sphere", cfg, error)) {
+            return false;
+        }
+        out.dataset = "generated:plummer_sphere";
+        out.seed = cfg.initState.seed;
     } else {
         error = "unknown preset: " + options.preset;
         return false;
