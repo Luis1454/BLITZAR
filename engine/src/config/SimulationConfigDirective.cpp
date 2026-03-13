@@ -102,13 +102,23 @@ static bool applyDirectiveArgs(
         bool handled = false;
         if (directive == "simulation") {
             handled = applyIniAlias(arg, arg.first == "particles" ? "particle_count" : arg.first, config, warnings);
+        } else if (directive == "performance") {
+            const std::string iniKey =
+                arg.first == "profile" ? "performance_profile" :
+                arg.first == "draw_cap" ? "client_particle_cap" :
+                arg.first == "snapshot_ms" ? "snapshot_publish_period_ms" :
+                arg.first == "energy_every" ? "energy_measure_every_steps" :
+                arg.first == "sample_limit" ? "energy_sample_limit" :
+                arg.first == "substep_target_dt" ? "substep_target_dt" :
+                arg.first == "max_substeps" ? "max_substeps" :
+                arg.first;
+            handled = applyIniAlias(arg, iniKey, config, warnings);
         } else if (directive == "substeps") {
             handled = applyIniAlias(arg, arg.first == "target_dt" ? "substep_target_dt" : (arg.first == "max" ? "max_substeps" : arg.first), config, warnings);
         } else if (directive == "octree") {
             handled = applyIniAlias(arg, arg.first == "theta" ? "octree_theta" : (arg.first == "softening" ? "octree_softening" : arg.first), config, warnings);
         } else if (directive == "client") {
             const std::string iniKey =
-                arg.first == "draw_cap" ? "client_particle_cap" :
                 arg.first == "zoom" ? "default_zoom" :
                 arg.first == "luminosity" ? "default_luminosity" :
                 arg.first == "ui_fps" ? "ui_fps_limit" :

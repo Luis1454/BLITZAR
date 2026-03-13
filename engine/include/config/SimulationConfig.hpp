@@ -11,11 +11,13 @@ struct SimulationConfig {
     float dt = 0.01f;
     std::string solver = "pairwise_cuda";
     std::string integrator = "euler";
-    float substepTargetDt = 0.0f;
-    std::uint32_t maxSubsteps = 32u;
+    std::string performanceProfile = "interactive";
+    float substepTargetDt = 0.01f;
+    std::uint32_t maxSubsteps = 4u;
+    std::uint32_t snapshotPublishPeriodMs = 50u;
     float octreeTheta = 1.2f;
     float octreeSoftening = 2.5f;
-    std::uint32_t clientParticleCap = grav_protocol::kSnapshotMaxPoints;
+    std::uint32_t clientParticleCap = grav_protocol::kSnapshotDefaultPoints;
     float defaultZoom = 8.0f;
     int defaultLuminosity = 100;
     std::uint32_t uiFpsLimit = 60u;
@@ -58,8 +60,8 @@ struct SimulationConfig {
     float sphRestDensity = 1.0f;
     float sphGasConstant = 4.0f;
     float sphViscosity = 0.08f;
-    std::uint32_t energyMeasureEverySteps = 30u;
-    std::uint32_t energySampleLimit = 5000u;
+    std::uint32_t energyMeasureEverySteps = 120u;
+    std::uint32_t energySampleLimit = 256u;
 
     static SimulationConfig defaults();
     static SimulationConfig loadOrCreate(const std::string &path);

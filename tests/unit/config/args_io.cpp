@@ -35,10 +35,13 @@ TEST(ConfigArgsTest, TST_UNT_CONF_010_SimulationConfigSaveLoadRoundTrip)
     EXPECT_FLOAT_EQ(loaded.dt, config.dt);
     EXPECT_EQ(loaded.solver, config.solver);
     EXPECT_EQ(loaded.integrator, config.integrator);
+    EXPECT_EQ(loaded.performanceProfile, "custom");
     EXPECT_FLOAT_EQ(loaded.substepTargetDt, config.substepTargetDt);
     EXPECT_EQ(loaded.maxSubsteps, config.maxSubsteps);
+    EXPECT_EQ(loaded.snapshotPublishPeriodMs, config.snapshotPublishPeriodMs);
     EXPECT_EQ(loaded.sphEnabled, config.sphEnabled);
     EXPECT_EQ(loaded.exportFormat, config.exportFormat);
+    EXPECT_EQ(loaded.energyMeasureEverySteps, config.energyMeasureEverySteps);
     EXPECT_EQ(loaded.energySampleLimit, config.energySampleLimit);
     EXPECT_EQ(loaded.clientRemoteCommandTimeoutMs, config.clientRemoteCommandTimeoutMs);
     EXPECT_EQ(loaded.clientRemoteStatusTimeoutMs, config.clientRemoteStatusTimeoutMs);
@@ -125,7 +128,12 @@ TEST(ConfigArgsTest, TST_UNT_CONF_013_LoadOrCreateCreatesFileWhenMissing)
 
 TEST(ConfigArgsTest, TST_UNT_CONF_015_DefaultClientParticleCapMatchesProtocolMax)
 {
-    EXPECT_EQ(SimulationConfig::defaults().clientParticleCap, grav_protocol::kSnapshotMaxPoints);
+    const SimulationConfig defaults = SimulationConfig::defaults();
+    EXPECT_EQ(defaults.performanceProfile, "interactive");
+    EXPECT_EQ(defaults.clientParticleCap, grav_protocol::kSnapshotDefaultPoints);
+    EXPECT_EQ(defaults.snapshotPublishPeriodMs, 50u);
+    EXPECT_FLOAT_EQ(defaults.substepTargetDt, 0.01f);
+    EXPECT_EQ(defaults.maxSubsteps, 4u);
 }
 
 TEST(ConfigArgsTest, TST_UNT_CONF_016_LoadClampsClientParticleCapToProtocolMax)

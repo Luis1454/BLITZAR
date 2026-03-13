@@ -1,5 +1,6 @@
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationConfigDirective.hpp"
+#include "config/SimulationPerformanceProfile.hpp"
 #include "config/SimulationModes.hpp"
 #include "config/SimulationOptionRegistry.hpp"
 
@@ -22,7 +23,9 @@ static std::string trim(const std::string &value)
 
 SimulationConfig SimulationConfig::defaults()
 {
-    return SimulationConfig{};
+    SimulationConfig config{};
+    grav_config::applyPerformanceProfile(config);
+    return config;
 }
 SimulationConfig SimulationConfig::loadOrCreate(const std::string &path)
 {
