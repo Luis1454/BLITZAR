@@ -7,10 +7,10 @@ Objectif: centraliser les modifs restantes et suivre l'avancement.
 - Statut: `[ ]` a faire, `[~]` en cours, `[x]` termine
 
 ## Architecture
-- [ ] `P0` Stabiliser la separation backend/frontend (API claire et versionnee).
+- [ ] `P0` Stabiliser la separation server/client (API claire et versionnee).
 - [ ] `P1` Ajouter une interface de controle distante (socket/HTTP) pour piloter la simu.
-- [ ] `P1` Uniformiser les points d'entree (`headless`, `sfml`, `qt`) sur la meme couche backend.
-- [ ] `P2` Ajouter un mode plugin UI (charger un frontend externe).
+- [ ] `P1` Uniformiser les points d'entree (`headless`, `sfml`, `qt`) sur la meme couche server.
+- [ ] `P2` Ajouter un mode plugin UI (charger un client externe).
 
 ## Simulation
 - [ ] `P0` Finaliser l'octree GPU (perf + exactitude).
@@ -38,10 +38,10 @@ Objectif: centraliser les modifs restantes et suivre l'avancement.
 - [ ] `P2` Nettoyer warnings compilateur non bloquants.
 
 ## Tests
-- [ ] `P0` Tests de non regression backend (steps deterministes sur seed fixe).
+- [ ] `P0` Tests de non regression server (steps deterministes sur seed fixe).
 - [ ] `P1` Tests import/export (`vtk`, `xyz`) round-trip.
 - [ ] `P1` Test perf minimal (budget FPS selon nombre de particules).
-- [ ] `P2` CI locale: build + smoke test frontends.
+- [ ] `P2` CI locale: build + smoke test clients.
 
 ## Notes libres
 - Ajouter ici les idees, bugs reproduits, commandes de repro, captures.

@@ -9,28 +9,28 @@
 namespace testsupport {
 namespace grav_test_physics_scenario {
 
-bool waitForStep(SimulationBackend &backend, std::uint64_t targetStep, int timeoutMs)
+bool waitForStep(SimulationServer &server, std::uint64_t targetStep, int timeoutMs)
 {
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
     while (std::chrono::steady_clock::now() < deadline) {
-        if (backend.getStats().steps >= targetStep) {
+        if (server.getStats().steps >= targetStep) {
             return true;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
-    return backend.getStats().steps >= targetStep;
+    return server.getStats().steps >= targetStep;
 }
 
-bool waitForSnapshot(SimulationBackend &backend, std::vector<RenderParticle> &out, int timeoutMs)
+bool waitForSnapshot(SimulationServer &server, std::vector<RenderParticle> &out, int timeoutMs)
 {
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
     while (std::chrono::steady_clock::now() < deadline) {
-        if (backend.tryConsumeSnapshot(out)) {
+        if (server.tryConsumeSnapshot(out)) {
             return true;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
-    return backend.tryConsumeSnapshot(out);
+    return server.tryConsumeSnapshot(out);
 }
 
 std::filesystem::path twoBodyInputPath()
@@ -89,66 +89,66 @@ float averageRadius(const std::vector<RenderParticle> &snapshot)
 
 bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &error)
 {
-    SimulationBackend backend(std::max<std::uint32_t>(2u, cfg.particleCount), cfg.dt);
-    backend.setSolverMode(cfg.solver);
-    backend.setIntegratorMode(cfg.integrator);
-    backend.setOctreeParameters(cfg.octreeTheta, cfg.octreeSoftening);
-    backend.setDt(cfg.dt);
-    backend.setParticleCount(std::max<std::uint32_t>(2u, cfg.particleCount));
-    backend.setSphEnabled(false);
-    backend.setSphParameters(1.25f, 1.0f, 4.0f, 0.08f);
+    SimulationServer server(std::max<std::uint32_t>(2u, cfg.particleCount), cfg.dt);
+    server.setSolverMode(cfg.solver);
+    server.setIntegratorMode(cfg.integrator);
+    server.setOctreeParameters(cfg.octreeTheta, cfg.octreeSoftening);
+    server.setDt(cfg.dt);
+    server.setParticleCount(std::max<std::uint32_t>(2u, cfg.particleCount));
+    server.setSphEnabled(false);
+    server.setSphParameters(1.25f, 1.0f, 4.0f, 0.08f);
 
     const std::uint32_t energyEvery = std::max<std::uint32_t>(1u, cfg.energyMeasureEverySteps);
     const std::uint32_t energySampleLimit = std::max<std::uint32_t>(
         64u,
         cfg.energySampleLimit == 0u ? std::max<std::uint32_t>(cfg.particleCount, 64u) : cfg.energySampleLimit);
-    backend.setEnergyMeasurementConfig(energyEvery, energySampleLimit);
+    server.setEnergyMeasurementConfig(energyEvery, energySampleLimit);
 
     if (!cfg.inputPath.empty()) {
-        backend.setInitialStateFile(cfg.inputPath, cfg.inputFormat.empty() ? "auto" : cfg.inputFormat);
+        server.setInitialStateFile(cfg.inputPath, cfg.inputFormat.empty() ? "auto" : cfg.inputFormat);
     }
 
     InitialStateConfig init = cfg.initState;
     if (init.mode.empty()) {
         init.mode = cfg.inputPath.empty() ? "disk_orbit" : "file";
     }
-    backend.setInitialStateConfig(init);
-    backend.setPaused(true);
-    backend.start();
+    server.setInitialStateConfig(init);
+    server.setPaused(true);
+    server.start();
 
-    if (!grav_test_physics_scenario::waitForSnapshot(backend, out.initial, cfg.snapshotTimeoutMs)) {
-        backend.stop();
+    if (!grav_test_physics_scenario::waitForSnapshot(server, out.initial, cfg.snapshotTimeoutMs)) {
+        server.stop();
         error = "initial snapshot timeout";
         return false;
     }
     if (out.initial.size() < 2) {
-        backend.stop();
+        server.stop();
         error = "initial snapshot has less than 2 particles";
         return false;
     }
 
     for (std::uint32_t s = 0; s < cfg.steps; ++s) {
-        backend.stepOnce();
-        if (!grav_test_physics_scenario::waitForStep(backend, static_cast<std::uint64_t>(s) + 1ull, cfg.stepTimeoutMs)) {
-            backend.stop();
+        server.stepOnce();
+        if (!grav_test_physics_scenario::waitForStep(server, static_cast<std::uint64_t>(s) + 1ull, cfg.stepTimeoutMs)) {
+            server.stop();
             error = "step timeout at " + std::to_string(s + 1);
             return false;
         }
-        const SimulationStats stats = backend.getStats();
+        const SimulationStats stats = server.getStats();
         if (std::isfinite(stats.energyDriftPct)) {
             out.maxAbsEnergyDriftPct = std::max(out.maxAbsEnergyDriftPct, std::abs(stats.energyDriftPct));
         }
     }
 
     std::vector<RenderParticle> latest;
-    if (!grav_test_physics_scenario::waitForSnapshot(backend, latest, cfg.snapshotTimeoutMs)) {
-        backend.stop();
+    if (!grav_test_physics_scenario::waitForSnapshot(server, latest, cfg.snapshotTimeoutMs)) {
+        server.stop();
         error = "final snapshot timeout";
         return false;
     }
     out.final = latest;
-    out.stats = backend.getStats();
-    backend.stop();
+    out.stats = server.getStats();
+    server.stop();
 
     if (out.final.size() < 2) {
         error = "final snapshot has less than 2 particles";

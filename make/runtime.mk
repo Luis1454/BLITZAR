@@ -9,17 +9,17 @@ qt: run-qt
 run-mode-%: pre-run all
 	$(RUN_BIN) --mode $* $(ARGS)
 
-run-backend: run-mode-backend
+run-server: run-mode-server
 
 run-headless: run-mode-headless
 
-run-backend-direct: all
-	$(RUN_BACKEND_BIN) $(ARGS)
+run-server-direct: all
+	$(RUN_SERVER_BIN) $(ARGS)
 
 run-headless-direct: all
 	$(RUN_HEADLESS_BIN) $(ARGS)
 
-run-module-host: all
+run-client-host: all
 	$(RUN_MODULE_HOST_BIN) $(ARGS)
 
 doctor:
@@ -78,4 +78,4 @@ help:
 
 helper: help
 
-.PHONY: run run-ui pre-run gui qt run-backend run-headless run-backend-direct run-headless-direct run-module-host doctor deploy-qt run-qt deps-graphics deps-graphics-vcpkg clean clean-all fclean re help helper
+.PHONY: run run-ui pre-run gui qt run-server run-headless run-server-direct run-headless-direct run-client-host doctor deploy-qt run-qt deps-graphics deps-graphics-vcpkg clean clean-all fclean re help helper

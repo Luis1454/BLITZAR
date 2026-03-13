@@ -1,0 +1,45 @@
+#ifndef GRAVITY_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_
+#define GRAVITY_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_
+
+#include "server/SimulationServer.hpp"
+
+#include <atomic>
+#include <cstdint>
+#include <mutex>
+#include <string>
+#include <thread>
+#include <vector>
+
+class ServerDaemon {
+    public:
+        explicit ServerDaemon(SimulationServer &server, std::string authToken = {});
+        ~ServerDaemon();
+
+        bool start(std::uint16_t port, const std::string &bindAddress = "127.0.0.1");
+        void stop();
+
+        bool isRunning() const;
+        bool shutdownRequested() const;
+
+    private:
+        typedef std::intptr_t SocketHandle;
+        void acceptLoop();
+        void handleClient(SocketHandle client);
+        std::string processRequest(const std::string &request);
+
+        SimulationServer &_server;
+        std::atomic<bool> _running;
+        std::atomic<bool> _shutdownRequested;
+        std::thread _acceptThread;
+        SocketHandle _listenSocket;
+        std::string _bindAddress;
+        std::string _authToken;
+        std::uint16_t _port;
+        bool _networkInitialized;
+        std::mutex _socketMutex;
+        std::vector<std::thread> _clientThreads;
+};
+
+
+
+#endif // GRAVITY_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_

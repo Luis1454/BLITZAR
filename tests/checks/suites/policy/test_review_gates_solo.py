@@ -26,7 +26,7 @@ Deviation: WVR-SOLO-IVV
 """
 
     def fetch_items(repo: str, number: int, suffix: str, token: str, result):  # noqa: ARG001
-        return [{"filename": "runtime/src/frontend/FrontendRuntime.cpp"}] if suffix == "files" else []
+        return [{"filename": "runtime/src/client/ClientRuntime.cpp"}] if suffix == "files" else []
 
     event_path = _write_pr_event(tmp_path, body, user="owner")
     context = CheckContext(root=tmp_path, event_name="pull_request", event_path=str(event_path), options={"repo": "owner/repo", "token": "token"})

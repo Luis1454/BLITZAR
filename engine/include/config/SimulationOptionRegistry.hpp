@@ -10,7 +10,7 @@ namespace grav_config {
 
 enum class SimulationOptionGroup {
     Core,
-    Frontend,
+    Client,
     InitState,
     Fluid,
 };

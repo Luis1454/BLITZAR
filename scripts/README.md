@@ -2,7 +2,7 @@
 
 - `doctor.cmake`: local toolchain/build artifact checks
 - `deps_graphics.cmake`: install graphics dependencies through `vcpkg`
-- `run_qt.sh`: run module host with Qt runtime vars on Unix
+- `run_qt.sh`: run client host with Qt runtime vars on Unix
 - `ci/nightly/`: coverage generation/publish helpers for nightly workflow
 - `ci/release/package_bundle.py`: release artifact packager (shared by release workflow)
 - `ci/release/package_evidence.py`: qualification-oriented release evidence packager

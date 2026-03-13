@@ -97,7 +97,7 @@ make quality-local CONFIG=simulation.ini
 make quality-strict CONFIG=simulation.ini QUALITY_BUILD_DIR=build-quality
 ```
 
-`integration_real` tests require a real backend executable and run in dedicated lanes where backend artifacts are present.
+`integration_real` tests require a real server executable and run in dedicated lanes where server artifacts are present.
 
 ## File Size Policy (All Files)
 
@@ -147,7 +147,7 @@ make quality-strict CONFIG=simulation.ini QUALITY_BUILD_DIR=build-quality
 ## Design Patterns
 
 - Strategy: use interchangeable implementations behind interfaces (`IIqSource`, `IByteSource`, `IDemodulator`, `IFrameSink`).
-- Factory: select concrete backends from config using factories/registries instead of `if/else` chains.
+- Factory: select concrete servers from config using factories/registries instead of `if/else` chains.
 - Adapter: wrap hardware/vendor APIs behind project interfaces.
 - Builder: assemble pipeline graphs by mode (`iq` or `bytes`) in one composition layer.
 - Dependency Injection: pass dependencies via constructors; avoid hidden service locators.

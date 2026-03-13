@@ -3,12 +3,12 @@
 - Product verification:
 - `tests/unit/`: deterministic unit scopes.
   - `config/`: config parsing/IO tests (no CUDA).
-  - `physics/`: physics solver tests (CUDA backend path).
+  - `physics/`: physics solver tests (CUDA server path).
 - `tests/int/`: runtime integration scopes.
-  - `protocol/`: backend protocol and control tests.
+  - `protocol/`: server protocol and control tests.
   - `runtime/`: bridge/runtime reconnect behavior.
   - `ui/`: Qt runtime integration.
-- `tests/support/`: shared harness/helpers (`backend_harness`, `frontend_utils`, `poll_utils`, `physics_scenario`).
+- `tests/support/`: shared harness/helpers (`server_harness`, `client_utils`, `poll_utils`, `physics_scenario`).
 - `tests/data/`: deterministic fixtures.
 - Quality tooling:
 - `tests/checks/check.py`: unified entrypoint for repository checks (`ini|mirror|no_legacy|launcher|quality|test_catalog|pr_policy|repo|python_quality|all`).

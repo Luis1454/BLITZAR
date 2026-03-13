@@ -10,7 +10,7 @@ from python_tools.core.base_check import BaseCheck
 from python_tools.core.models import CheckContext, CheckResult
 
 CRITICAL_PATHS = (
-    "docs/backend_protocol.md",
+    "docs/server_protocol.md",
     "docs/quality/numerical_validation.md",
     "engine/include/physics/",
     "engine/src/physics/",

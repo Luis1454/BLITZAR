@@ -9,16 +9,16 @@
 
 namespace testsupport {
 
-static bool waitForSnapshot(SimulationBackend &backend, std::vector<RenderParticle> &outSnapshot, int timeoutMs)
+static bool waitForSnapshot(SimulationServer &server, std::vector<RenderParticle> &outSnapshot, int timeoutMs)
 {
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
     while (std::chrono::steady_clock::now() < deadline) {
-        if (backend.tryConsumeSnapshot(outSnapshot)) {
+        if (server.tryConsumeSnapshot(outSnapshot)) {
             return true;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
-    return backend.tryConsumeSnapshot(outSnapshot);
+    return server.tryConsumeSnapshot(outSnapshot);
 }
 
 static std::size_t countOccurrences(const std::string &text, const std::string &pattern)
@@ -121,24 +121,24 @@ TEST(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
     EXPECT_LE(gpuEnergyDiffPct, 8.0f);
 }
 
-TEST(PhysicsTest, TST_UNT_RUNT_001_BackendLogsEffectiveModesAfterReset)
+TEST(PhysicsTest, TST_UNT_RUNT_001_ServerLogsEffectiveModesAfterReset)
 {
-    SimulationBackend backend(48u, 0.01f);
-    backend.setSolverMode("octree_cpu");
-    backend.setIntegratorMode("rk4");
-    backend.setPaused(true);
+    SimulationServer server(48u, 0.01f);
+    server.setSolverMode("octree_cpu");
+    server.setIntegratorMode("rk4");
+    server.setPaused(true);
 
     testing::internal::CaptureStdout();
-    backend.start();
+    server.start();
 
     std::vector<RenderParticle> snapshot;
-    const bool startupReady = waitForSnapshot(backend, snapshot, 4000);
-    backend.requestReset();
-    const bool resetReady = waitForSnapshot(backend, snapshot, 4000);
-    backend.stop();
+    const bool startupReady = waitForSnapshot(server, snapshot, 4000);
+    server.requestReset();
+    const bool resetReady = waitForSnapshot(server, snapshot, 4000);
+    server.stop();
 
     const std::string output = testing::internal::GetCapturedStdout();
-    const std::string expected = "[backend] active solver=octree_cpu integrator=rk4";
+    const std::string expected = "[server] active solver=octree_cpu integrator=rk4";
 
     ASSERT_TRUE(startupReady);
     ASSERT_TRUE(resetReady);

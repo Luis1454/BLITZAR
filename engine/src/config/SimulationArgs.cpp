@@ -1,6 +1,6 @@
 #include "config/SimulationArgs.hpp"
 #include "config/SimulationArgsCoreOptions.hpp"
-#include "config/SimulationArgsFrontendOptions.hpp"
+#include "config/SimulationArgsClientOptions.hpp"
 #include "config/SimulationArgsInitOptions.hpp"
 #include "config/SimulationArgsParse.hpp"
 #include "config/SimulationOptionRegistry.hpp"
@@ -101,7 +101,7 @@ void applyArgsToConfig(
         if (SimulationArgsCoreOptions::apply(key, value, config, runtime, warnings)) {
             continue;
         }
-        if (SimulationArgsFrontendOptions::apply(key, value, config, warnings)) {
+        if (SimulationArgsClientOptions::apply(key, value, config, warnings)) {
             continue;
         }
         if (SimulationArgsInitOptions::apply(key, value, config, runtime, warnings)) {
@@ -126,7 +126,7 @@ void printUsage(std::ostream &out, std::string_view programName, bool headlessMo
     out << "Common options:\n";
     out << "  --config <path>\n";
     grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::Core);
-    grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::Frontend);
+    grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::Client);
     grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::InitState);
     grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::Fluid);
     if (headlessMode) {

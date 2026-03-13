@@ -267,11 +267,11 @@ jobs:
       - name: Build
         shell: pwsh
         run: cmake --build build --parallel
-      - name: Run real backend integration suites
+      - name: Run real server integration suites
         shell: pwsh
         run: |
-          $backend = Resolve-Path "build/myAppBackend.exe"
-          cmake -E env "GRAVITY_BACKEND_EXE=$backend" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error -R "TST_INT_PROT_|TST_INT_RUNT_|TST_CNT_RUNT_"
+          $server = Resolve-Path "build/myAppServer.exe"
+          cmake -E env "GRAVITY_SERVER_EXE=$server" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error -R "TST_INT_PROT_|TST_INT_RUNT_|TST_CNT_RUNT_"
       - name: Run numerical validation campaign
         shell: pwsh
         run: |
@@ -280,8 +280,8 @@ jobs:
       - name: Run full tests
         shell: pwsh
         run: |
-          $backend = Resolve-Path "build/myAppBackend.exe"
-          cmake -E env "GRAVITY_BACKEND_EXE=$backend" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error
+          $server = Resolve-Path "build/myAppServer.exe"
+          cmake -E env "GRAVITY_SERVER_EXE=$server" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error
       - name: Upload numerical validation artifacts
         if: always()
         uses: actions/upload-artifact@v4

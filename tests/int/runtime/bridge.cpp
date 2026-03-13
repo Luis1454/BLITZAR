@@ -1,6 +1,6 @@
-#include "frontend/FrontendBackendBridge.hpp"
+#include "client/ClientServerBridge.hpp"
 #include "tests/support/poll_utils.hpp"
-#include "tests/support/backend_harness.hpp"
+#include "tests/support/server_harness.hpp"
 
 #include <gtest/gtest.h>
 
@@ -9,23 +9,23 @@
 #include <string>
 #include <vector>
 
-namespace grav_test_frontend_bridge {
+namespace grav_test_client_bridge {
 
-TEST(FrontendBridgeTest, TST_INT_RUNT_001_ReconnectsAfterRealBackendRestart)
+TEST(ClientBridgeTest, TST_INT_RUNT_001_ReconnectsAfterRealServerRestart)
 {
-    RealBackendHarness backend;
+    RealServerHarness server;
     std::string startError;
-    ASSERT_TRUE(backend.start(startError)) << startError;
-    const std::uint16_t fixedPort = backend.port();
+    ASSERT_TRUE(server.start(startError)) << startError;
+    const std::uint16_t fixedPort = server.port();
     ASSERT_NE(fixedPort, 0u);
 
-    grav_frontend::FrontendBackendBridge bridge(
+    grav_client::ClientServerBridge bridge(
         "simulation.ini",
         true,
         "127.0.0.1",
         fixedPort,
         false,
-        backend.executablePath(),
+        server.executablePath(),
         "",
         80u,
         40u,
@@ -37,11 +37,11 @@ TEST(FrontendBridgeTest, TST_INT_RUNT_001_ReconnectsAfterRealBackendRestart)
     SimulationStats stats{};
     ASSERT_TRUE(testsupport::waitUntil([&]() {
         stats = bridge.getStats();
-        return bridge.linkState() == grav_frontend::FrontendLinkState::Connected;
+        return bridge.linkState() == grav_client::ClientLinkState::Connected;
     }, std::chrono::milliseconds(4000)));
 
     bridge.stepOnce();
-    EXPECT_EQ(bridge.linkState(), grav_frontend::FrontendLinkState::Connected);
+    EXPECT_EQ(bridge.linkState(), grav_client::ClientLinkState::Connected);
 
     std::vector<RenderParticle> snapshot;
     EXPECT_TRUE(testsupport::waitUntil([&]() {
@@ -49,34 +49,34 @@ TEST(FrontendBridgeTest, TST_INT_RUNT_001_ReconnectsAfterRealBackendRestart)
     }, std::chrono::milliseconds(2000)));
     EXPECT_FALSE(snapshot.empty());
 
-    backend.stop();
+    server.stop();
     EXPECT_TRUE(testsupport::waitUntil([&]() {
         (void)bridge.getStats();
-        return bridge.linkState() == grav_frontend::FrontendLinkState::Reconnecting;
+        return bridge.linkState() == grav_client::ClientLinkState::Reconnecting;
     }, std::chrono::milliseconds(4000)));
 
-    ASSERT_TRUE(backend.start(startError, fixedPort)) << startError;
+    ASSERT_TRUE(server.start(startError, fixedPort)) << startError;
     ASSERT_TRUE(testsupport::waitUntil([&]() {
         stats = bridge.getStats();
-        return bridge.linkState() == grav_frontend::FrontendLinkState::Connected;
+        return bridge.linkState() == grav_client::ClientLinkState::Connected;
     }, std::chrono::milliseconds(5000)));
 
     bridge.stepOnce();
-    EXPECT_EQ(bridge.linkState(), grav_frontend::FrontendLinkState::Connected);
+    EXPECT_EQ(bridge.linkState(), grav_client::ClientLinkState::Connected);
 
     bridge.stop();
-    backend.stop();
+    server.stop();
 }
 
-TEST(FrontendBridgeTest, TST_INT_RUNT_002_BackendAbsenceDoesNotCauseLongBlockingLoops)
+TEST(ClientBridgeTest, TST_INT_RUNT_002_ServerAbsenceDoesNotCauseLongBlockingLoops)
 {
-    RealBackendHarness backend;
+    RealServerHarness server;
     std::string startError;
-    ASSERT_TRUE(backend.start(startError)) << startError;
-    const std::uint16_t unusedPort = backend.port();
-    backend.stop();
+    ASSERT_TRUE(server.start(startError)) << startError;
+    const std::uint16_t unusedPort = server.port();
+    server.stop();
 
-    grav_frontend::FrontendBackendBridge bridge(
+    grav_client::ClientServerBridge bridge(
         "simulation.ini",
         true,
         "127.0.0.1",
@@ -100,13 +100,13 @@ TEST(FrontendBridgeTest, TST_INT_RUNT_002_BackendAbsenceDoesNotCauseLongBlocking
     const auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::steady_clock::now() - startedAt);
 
-    EXPECT_EQ(bridge.linkState(), grav_frontend::FrontendLinkState::Reconnecting);
-    EXPECT_LE(elapsedMs.count(), 1500) << "poll loop took too long without backend: " << elapsedMs.count() << " ms";
+    EXPECT_EQ(bridge.linkState(), grav_client::ClientLinkState::Reconnecting);
+    EXPECT_LE(elapsedMs.count(), 1500) << "poll loop took too long without server: " << elapsedMs.count() << " ms";
 
     bridge.stop();
 }
 
-} // namespace grav_test_frontend_bridge
+} // namespace grav_test_client_bridge
 
 
 

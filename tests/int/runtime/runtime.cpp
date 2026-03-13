@@ -1,7 +1,7 @@
-#include "frontend/FrontendRuntime.hpp"
-#include "tests/support/frontend_utils.hpp"
+#include "client/ClientRuntime.hpp"
+#include "tests/support/client_utils.hpp"
 #include "tests/support/poll_utils.hpp"
-#include "tests/support/backend_harness.hpp"
+#include "tests/support/server_harness.hpp"
 
 #include <gtest/gtest.h>
 
@@ -12,15 +12,15 @@
 #include <string>
 #include <vector>
 
-namespace grav_test_frontend_runtime {
+namespace grav_test_client_runtime {
 
-TEST(FrontendRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealBackendAndPublishesStatsAndSnapshot)
+TEST(ClientRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAndSnapshot)
 {
-    RealBackendHarness backend;
+    RealServerHarness server;
     std::string startError;
-    ASSERT_TRUE(backend.start(startError)) << startError;
+    ASSERT_TRUE(server.start(startError)) << startError;
 
-    grav_frontend::FrontendRuntime runtime("simulation.ini", testsupport::makeTransport(backend.port(), backend.executablePath()));
+    grav_client::ClientRuntime runtime("simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
 
     ASSERT_TRUE(testsupport::waitUntil([&]() {
@@ -33,7 +33,7 @@ TEST(FrontendRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealBackendAndPublishesStat
     EXPECT_FALSE(stats.solverName.empty());
     EXPECT_FALSE(stats.faulted);
 
-    std::optional<grav_frontend::ConsumedSnapshot> consumedSnapshot;
+    std::optional<grav_client::ConsumedSnapshot> consumedSnapshot;
     ASSERT_TRUE(testsupport::waitUntil([&]() {
         consumedSnapshot = runtime.consumeLatestSnapshot();
         return consumedSnapshot.has_value();
@@ -47,58 +47,58 @@ TEST(FrontendRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealBackendAndPublishesStat
     EXPECT_NE(runtime.snapshotAgeMs(), std::numeric_limits<std::uint32_t>::max());
 
     runtime.stop();
-    backend.stop();
+    server.stop();
 }
 
-TEST(FrontendRuntimeTest, TST_CNT_RUNT_002_StartFailsWhenRemoteBackendIsUnavailable)
+TEST(ClientRuntimeTest, TST_CNT_RUNT_002_StartFailsWhenRemoteServerIsUnavailable)
 {
-    RealBackendHarness backend;
+    RealServerHarness server;
     std::string startError;
-    ASSERT_TRUE(backend.start(startError)) << startError;
-    const std::uint16_t unavailablePort = backend.port();
-    backend.stop();
+    ASSERT_TRUE(server.start(startError)) << startError;
+    const std::uint16_t unavailablePort = server.port();
+    server.stop();
 
-    grav_frontend::FrontendRuntime runtime("simulation.ini", testsupport::makeTransport(unavailablePort, ""));
+    grav_client::ClientRuntime runtime("simulation.ini", testsupport::makeTransport(unavailablePort, ""));
     EXPECT_FALSE(runtime.start());
     EXPECT_EQ(runtime.linkStateLabel(), "reconnecting");
 }
 
-TEST(FrontendRuntimeTest, TST_CNT_RUNT_003_ReconnectsWhenRealBackendRestarts)
+TEST(ClientRuntimeTest, TST_CNT_RUNT_003_ReconnectsWhenRealServerRestarts)
 {
-    RealBackendHarness backend;
+    RealServerHarness server;
     std::string startError;
-    ASSERT_TRUE(backend.start(startError)) << startError;
-    const std::uint16_t fixedPort = backend.port();
+    ASSERT_TRUE(server.start(startError)) << startError;
+    const std::uint16_t fixedPort = server.port();
 
-    grav_frontend::FrontendRuntime runtime("simulation.ini", testsupport::makeTransport(fixedPort, backend.executablePath()));
+    grav_client::ClientRuntime runtime("simulation.ini", testsupport::makeTransport(fixedPort, server.executablePath()));
     ASSERT_TRUE(runtime.start());
 
     ASSERT_TRUE(testsupport::waitUntil([&]() {
         return runtime.linkStateLabel() == "connected";
     }, std::chrono::milliseconds(4000)));
 
-    backend.stop();
+    server.stop();
     ASSERT_TRUE(testsupport::waitUntil([&]() {
         return runtime.linkStateLabel() == "reconnecting";
     }, std::chrono::milliseconds(4000)));
 
-    ASSERT_TRUE(backend.start(startError, fixedPort)) << startError;
+    ASSERT_TRUE(server.start(startError, fixedPort)) << startError;
     runtime.requestReconnect();
     ASSERT_TRUE(testsupport::waitUntil([&]() {
         return runtime.linkStateLabel() == "connected";
     }, std::chrono::milliseconds(5000)));
 
     runtime.stop();
-    backend.stop();
+    server.stop();
 }
 
-TEST(FrontendRuntimeTest, TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeToReachRealBackend)
+TEST(ClientRuntimeTest, TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeToReachRealServer)
 {
-    RealBackendHarness backend;
+    RealServerHarness server;
     std::string startError;
-    ASSERT_TRUE(backend.start(startError)) << startError;
+    ASSERT_TRUE(server.start(startError)) << startError;
 
-    grav_frontend::FrontendRuntime runtime("simulation.ini", testsupport::makeTransport(backend.port(), backend.executablePath()));
+    grav_client::ClientRuntime runtime("simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
 
     ASSERT_TRUE(testsupport::waitUntil([&]() {
@@ -106,27 +106,27 @@ TEST(FrontendRuntimeTest, TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeTo
     }, std::chrono::milliseconds(4000)));
 
     const std::uint16_t wrongPort = static_cast<std::uint16_t>(
-        backend.port() == 65535u ? backend.port() - 1u : backend.port() + 1u);
-    runtime.configureRemoteConnector("127.0.0.1", wrongPort, false, backend.executablePath());
+        server.port() == 65535u ? server.port() - 1u : server.port() + 1u);
+    runtime.configureRemoteConnector("127.0.0.1", wrongPort, false, server.executablePath());
     runtime.requestReconnect();
     ASSERT_TRUE(testsupport::waitUntil([&]() {
         return runtime.linkStateLabel() == "reconnecting";
     }, std::chrono::milliseconds(3000)));
 
-    runtime.configureRemoteConnector("127.0.0.1", backend.port(), false, backend.executablePath());
+    runtime.configureRemoteConnector("127.0.0.1", server.port(), false, server.executablePath());
     runtime.requestReconnect();
     ASSERT_TRUE(testsupport::waitUntil([&]() {
         return runtime.linkStateLabel() == "connected";
     }, std::chrono::milliseconds(5000)));
 
     EXPECT_TRUE(runtime.isRemoteMode());
-    EXPECT_EQ(runtime.backendOwnerLabel(), "external");
+    EXPECT_EQ(runtime.serverOwnerLabel(), "external");
 
     runtime.stop();
-    backend.stop();
+    server.stop();
 }
 
-} // namespace grav_test_frontend_runtime
+} // namespace grav_test_client_runtime
 
 
 

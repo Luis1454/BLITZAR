@@ -31,7 +31,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_007_UsageIncludesCoreOptions)
     EXPECT_NE(usage.find("--dt"), std::string::npos);
     EXPECT_NE(usage.find("--solver"), std::string::npos);
     EXPECT_NE(usage.find("--integrator"), std::string::npos);
-    EXPECT_NE(usage.find("--backend-command-timeout-ms"), std::string::npos);
+    EXPECT_NE(usage.find("--server-command-timeout-ms"), std::string::npos);
     EXPECT_NE(usage.find("--target-steps"), std::string::npos);
     EXPECT_EQ(usage.find("Legacy positional"), std::string::npos);
     EXPECT_EQ(usage.find("--temperature"), std::string::npos);

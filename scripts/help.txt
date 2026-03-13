@@ -10,8 +10,8 @@ Targets:
   make build-ci       Release profile (BUILD_TESTS=ON)
   make test-int       Configure/build/run standalone integration suite from tests/
   make doctor         Validate local toolchain/build artifacts via CMake script
-  make deploy-qt      Deploy Qt runtime/plugins for module host
-  make run-backend    Doctor check + run backend mode via main binary
+  make deploy-qt      Deploy Qt runtime/plugins for client host
+  make run-server    Doctor check + run server mode via main binary
   make run-headless   Doctor check + run headless mode via main binary
   make clean          Remove build directory
   make clean-all      Remove all local build/output artifacts
@@ -28,12 +28,12 @@ Useful vars:
   INT_BUILD_DIR=<dir>    Build directory for standalone tests (default: build-integration)
   INT_BUILD_TYPE=<type>  Build type for standalone tests (default: Release)
   INT_TEST_REGEX=<regex> Optional ctest regex for test-int
-  INT_TEST_REGEX_NO_BACKEND=<regex> Default safe subset regex when BACKEND_EXE is unavailable
+  INT_TEST_REGEX_NO_SERVER=<regex> Default safe subset regex when SERVER_EXE is unavailable
   INT_TIMEOUT=<sec>      ctest timeout for test-int (default: 180)
-  BACKEND_EXE=<path>     Optional backend executable path for real integration tests
-                         If omitted and build/myAppBackend(.exe) is missing, integration_real tests are skipped
-  CONFIG=<file>          Config file passed to module host (default: simulation.ini)
-  GUI_MODULE=<name>      Frontend module name (default: qt)
+  SERVER_EXE=<path>     Optional server executable path for real integration tests
+                         If omitted and build/myAppServer(.exe) is missing, integration_real tests are skipped
+  CONFIG=<file>          Config file passed to client host (default: simulation.ini)
+  GUI_MODULE=<name>      Client module name (default: qt)
   RUN_DOCTOR=0|1         Enable/disable doctor before run targets (default: 1)
   QT_DIR=<path>          Qt root path used by deploy tools
   VCPKG_TRIPLET=<triplet> vcpkg triplet for deps-graphics targets

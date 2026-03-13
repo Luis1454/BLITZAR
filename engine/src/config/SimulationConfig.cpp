@@ -9,7 +9,7 @@
 #include <iostream>
 #include <sstream>
 
-static std::uint32_t clampFrontendParticleCap(std::uint32_t requested)
+static std::uint32_t clampClientParticleCap(std::uint32_t requested)
 {
     if (requested > grav_protocol::kSnapshotMaxPoints) {
         return grav_protocol::kSnapshotMaxPoints;
@@ -81,7 +81,7 @@ bool SimulationConfig::save(const std::string &path) const
     out << "\n";
 
     out << "# [Simulation]\n";
-    out << "# Total number of particles simulated by backend.\n";
+    out << "# Total number of particles simulated by server.\n";
     out << "particle_count=" << particleCount << "\n";
     out << "# Fixed simulation timestep.\n";
     out << "dt=" << dt << "\n";
@@ -98,21 +98,21 @@ bool SimulationConfig::save(const std::string &path) const
     out << "octree_softening=" << octreeSoftening << "\n";
     out << "\n";
 
-    out << "# [Frontend defaults]\n";
+    out << "# [Client defaults]\n";
     out << "# Rendering cap for displayed particles.\n";
     out << "# Supported range [" << 2u
         << ", " << grav_protocol::kSnapshotMaxPoints << "].\n";
-    out << "frontend_particle_cap=" << clampFrontendParticleCap(frontendParticleCap) << "\n";
+    out << "client_particle_cap=" << clampClientParticleCap(clientParticleCap) << "\n";
     out << "# Initial camera zoom.\n";
     out << "default_zoom=" << defaultZoom << "\n";
     out << "# Initial particle alpha [0..255].\n";
     out << "default_luminosity=" << defaultLuminosity << "\n";
     out << "# UI refresh target FPS.\n";
     out << "ui_fps_limit=" << uiFpsLimit << "\n";
-    out << "# Remote backend socket timeouts (ms) for frontend client calls.\n";
-    out << "frontend_remote_command_timeout_ms=" << frontendRemoteCommandTimeoutMs << "\n";
-    out << "frontend_remote_status_timeout_ms=" << frontendRemoteStatusTimeoutMs << "\n";
-    out << "frontend_remote_snapshot_timeout_ms=" << frontendRemoteSnapshotTimeoutMs << "\n";
+    out << "# Remote server socket timeouts (ms) for client client calls.\n";
+    out << "client_remote_command_timeout_ms=" << clientRemoteCommandTimeoutMs << "\n";
+    out << "client_remote_status_timeout_ms=" << clientRemoteStatusTimeoutMs << "\n";
+    out << "client_remote_snapshot_timeout_ms=" << clientRemoteSnapshotTimeoutMs << "\n";
     out << "\n";
 
     out << "# [Export]\n";

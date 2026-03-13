@@ -16,7 +16,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-Prod profile (deterministic critical path, dynamic frontend modules disabled):
+Prod profile (deterministic critical path, dynamic client modules disabled):
 
 ```bash
 make build-prod
@@ -45,11 +45,11 @@ make quality-strict
 ## Binaries
 
 - `myApp`
-- `myAppBackend`
+- `myAppServer`
 - `myAppHeadless`
-- `myAppModuleHost`
+- `myAppClient`
 
-In `PROFILE=prod`, `myAppModuleHost` and dynamic frontend modules are disabled by design.
+In `PROFILE=prod`, `myAppClient` and dynamic client modules are disabled by design.
 
 ## Coverage
 
@@ -60,8 +60,8 @@ In `PROFILE=prod`, `myAppModuleHost` and dynamic frontend modules are disabled b
 ## Documentation
 
 - Full README: [docs/README_full.md](docs/README_full.md)
-- Backend protocol: [docs/backend_protocol.md](docs/backend_protocol.md)
-- Frontend module host: [docs/frontend_module_host.md](docs/frontend_module_host.md)
+- Server protocol: [docs/server_protocol.md](docs/server_protocol.md)
+- Client host: [docs/client_host.md](docs/client_host.md)
 - Quality baseline: [docs/quality/README.md](docs/quality/README.md)
 
 ## Project Layout

@@ -1,5 +1,5 @@
-#include "frontend/FrontendModuleApi.hpp"
-#include "frontend/FrontendModuleBoundary.hpp"
+#include "client/ClientModuleApi.hpp"
+#include "client/ClientModuleBoundary.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -30,9 +30,9 @@ struct EchoState {
 class EchoModuleLocal final {
 public:
     static bool create(
-        const grav_module::FrontendModuleHostContextV1 *context,
-        const grav_module::FrontendModuleStateSlot &outModuleState,
-        const grav_frontend::ErrorBufferView &errorBuffer)
+        const grav_module::ClientHostContextV1 *context,
+        const grav_module::ClientModuleStateSlot &outModuleState,
+        const grav_client::ErrorBufferView &errorBuffer)
     {
         try {
             if (!outModuleState.isAvailable()) {
@@ -41,7 +41,7 @@ public:
             }
             std::unique_ptr<EchoState> state = std::make_unique<EchoState>();
             state->configPath = (context != nullptr && context->configPath != nullptr) ? context->configPath : "simulation.ini";
-            return outModuleState.assign(grav_module::FrontendModuleOpaqueState::fromRawPointer(state.release()));
+            return outModuleState.assign(grav_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
         } catch (const std::exception &ex) {
             errorBuffer.write(ex.what());
             return false;
@@ -51,7 +51,7 @@ public:
         }
     }
 
-    static void destroy(grav_module::FrontendModuleOpaqueState moduleState)
+    static void destroy(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
             std::unique_ptr<EchoState> state(static_cast<EchoState *>(moduleState.rawPointer()));
@@ -63,8 +63,8 @@ public:
     }
 
     static bool start(
-        grav_module::FrontendModuleOpaqueState moduleState,
-        const grav_frontend::ErrorBufferView &errorBuffer)
+        grav_module::ClientModuleOpaqueState moduleState,
+        const grav_client::ErrorBufferView &errorBuffer)
     {
         try {
             EchoState *state = static_cast<EchoState *>(moduleState.rawPointer());
@@ -85,8 +85,8 @@ public:
 
     static bool handleCommand(
         std::string_view commandLine,
-        const grav_module::FrontendModuleCommandControl &commandControl,
-        const grav_frontend::ErrorBufferView &errorBuffer)
+        const grav_module::ClientModuleCommandControl &commandControl,
+        const grav_client::ErrorBufferView &errorBuffer)
     {
         try {
             commandControl.setContinue();
@@ -110,24 +110,24 @@ public:
     }
 };
 
-extern "C" GRAVITY_FRONTEND_MODULE_EXPORT_ATTR const grav_module::FrontendModuleExportsV1 *gravity_frontend_module_v1()
+extern "C" GRAVITY_CLIENT_MODULE_EXPORT_ATTR const grav_module::ClientModuleExportsV1 *gravity_client_module_v1()
 {
-    static const grav_module::FrontendModuleExportsV1 exports{
-        grav_module::kFrontendModuleApiVersionV1,
+    static const grav_module::ClientModuleExportsV1 exports{
+        grav_module::kClientModuleApiVersionV1,
         "echo-module",
-        [](const grav_module::FrontendModuleHostContextV1 *context, void **outModuleState, char *errorBuffer, std::size_t errorBufferSize) -> bool {
+        [](const grav_module::ClientHostContextV1 *context, void **outModuleState, char *errorBuffer, std::size_t errorBufferSize) -> bool {
             return EchoModuleLocal::create(
                 context,
-                grav_module::FrontendModuleStateSlot(outModuleState),
-                grav_frontend::ErrorBufferView(errorBuffer, errorBufferSize));
+                grav_module::ClientModuleStateSlot(outModuleState),
+                grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void *moduleState) {
-            EchoModuleLocal::destroy(grav_module::FrontendModuleOpaqueState::fromRawPointer(moduleState));
+            EchoModuleLocal::destroy(grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
         },
         [](void *moduleState, char *errorBuffer, std::size_t errorBufferSize) -> bool {
             return EchoModuleLocal::start(
-                grav_module::FrontendModuleOpaqueState::fromRawPointer(moduleState),
-                grav_frontend::ErrorBufferView(errorBuffer, errorBufferSize));
+                grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState),
+                grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void *) {
             try {
@@ -138,8 +138,8 @@ extern "C" GRAVITY_FRONTEND_MODULE_EXPORT_ATTR const grav_module::FrontendModule
         [](void *, const char *commandLine, bool *outKeepRunning, char *errorBuffer, std::size_t errorBufferSize) -> bool {
             return EchoModuleLocal::handleCommand(
                 commandLine != nullptr ? std::string_view(commandLine) : std::string_view(),
-                grav_module::FrontendModuleCommandControl(outKeepRunning),
-                grav_frontend::ErrorBufferView(errorBuffer, errorBufferSize));
+                grav_module::ClientModuleCommandControl(outKeepRunning),
+                grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
         }
     };
     return &exports;

@@ -1,0 +1,87 @@
+#include "tests/support/server_harness.hpp"
+
+#include "config/EnvUtils.hpp"
+#include "platform/PlatformPaths.hpp"
+#include "platform/SocketPlatform.hpp"
+#include "protocol/ServerClient.hpp"
+
+#include <array>
+#include <chrono>
+#include <filesystem>
+#include <optional>
+#include <string>
+#include <thread>
+
+std::string RealServerHarness::resolveServerExecutable()
+{
+    if (const std::optional<std::string> fromEnv = grav_env::get("GRAVITY_SERVER_EXE");
+        fromEnv.has_value() && !fromEnv->empty()) {
+        return *fromEnv;
+    }
+
+    std::error_code ec;
+    const std::string defaultName(grav_platform::serverDefaultExecutableName());
+    const std::filesystem::path cwd = std::filesystem::current_path(ec);
+    if (!ec) {
+        const std::array<std::filesystem::path, 5u> candidates{
+            cwd / defaultName,
+            cwd / "Release" / defaultName,
+            cwd / "Debug" / defaultName,
+            cwd.parent_path() / defaultName,
+            cwd.parent_path() / "Release" / defaultName
+        };
+        for (const auto &candidate : candidates) {
+            if (std::filesystem::exists(candidate, ec) && !ec) {
+                return candidate.string();
+            }
+        }
+    }
+
+    return defaultName;
+}
+
+bool RealServerHarness::isPortBindable(std::uint16_t port)
+{
+    if (port == 0u) {
+        return false;
+    }
+    if (!grav_socket::initializeSocketLayer()) {
+        return false;
+    }
+    const grav_socket::Handle handle = grav_socket::createTcpSocket();
+    if (!grav_socket::isValid(handle)) {
+        grav_socket::shutdownSocketLayer();
+        return false;
+    }
+
+    (void)grav_socket::setReuseAddress(handle, true);
+    const bool ok = grav_socket::bindIpv4(handle, "127.0.0.1", port);
+    grav_socket::closeSocket(handle);
+    grav_socket::shutdownSocketLayer();
+    return ok;
+}
+
+bool RealServerHarness::waitUntilReady(std::string &outError) const
+{
+    ServerClient client;
+    client.setSocketTimeoutMs(120);
+    client.setAuthToken(_authToken);
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (std::chrono::steady_clock::now() < deadline) {
+        if (!_process.isRunning()) {
+            outError = "server process exited before accepting connections";
+            return false;
+        }
+        if (client.connect("127.0.0.1", _port)) {
+            ServerClientStatus status{};
+            const ServerClientResponse response = client.getStatus(status);
+            client.disconnect();
+            if (response.ok) {
+                return true;
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+    outError = "server did not become ready before timeout";
+    return false;
+}

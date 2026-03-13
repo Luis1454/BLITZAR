@@ -1,6 +1,6 @@
 #include "config/SimulationArgs.hpp"
 #include "config/SimulationConfig.hpp"
-#include "protocol/BackendProtocol.hpp"
+#include "protocol/ServerProtocol.hpp"
 
 #include <gtest/gtest.h>
 
@@ -42,7 +42,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--particle-count", "2048", "--dt=0.02", "--solver", "octree_gpu", "--integrator", "euler",
         "--sph", "true", "--target-steps", "333", "--export-on-exit=false", "--ui-fps", "75", "--energy-every", "2",
-        "--backend-command-timeout-ms", "90", "--backend-status-timeout-ms", "35", "--backend-snapshot-timeout-ms", "180"};
+        "--server-command-timeout-ms", "90", "--server-status-timeout-ms", "35", "--server-snapshot-timeout-ms", "180"};
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.particleCount, 2048u);
     EXPECT_FLOAT_EQ(config.dt, 0.02f);
@@ -51,9 +51,9 @@ TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
     EXPECT_TRUE(config.sphEnabled);
     EXPECT_EQ(config.uiFpsLimit, 75u);
     EXPECT_EQ(config.energyMeasureEverySteps, 2u);
-    EXPECT_EQ(config.frontendRemoteCommandTimeoutMs, 90u);
-    EXPECT_EQ(config.frontendRemoteStatusTimeoutMs, 35u);
-    EXPECT_EQ(config.frontendRemoteSnapshotTimeoutMs, 180u);
+    EXPECT_EQ(config.clientRemoteCommandTimeoutMs, 90u);
+    EXPECT_EQ(config.clientRemoteStatusTimeoutMs, 35u);
+    EXPECT_EQ(config.clientRemoteSnapshotTimeoutMs, 180u);
     EXPECT_EQ(runtime.targetSteps, 333);
     EXPECT_FALSE(runtime.exportOnExit);
     EXPECT_TRUE(warnings.str().empty());
@@ -128,15 +128,15 @@ TEST(ConfigArgsTest, TST_UNT_CONF_006_RejectsTrailingGarbageNumericArguments)
     EXPECT_NE(log.find("invalid --luminosity"), std::string::npos);
 }
 
-TEST(ConfigArgsTest, TST_UNT_CONF_014_ClampsFrontendParticleCapArgumentToProtocolMax)
+TEST(ConfigArgsTest, TST_UNT_CONF_014_ClampsClientParticleCapArgumentToProtocolMax)
 {
     SimulationConfig config = SimulationConfig::defaults();
     RuntimeArgs runtime;
     std::stringstream warnings;
-    std::vector<std::string> args = {"app", "--frontend-particle-cap", "50000"};
+    std::vector<std::string> args = {"app", "--client-particle-cap", "50000"};
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
-    EXPECT_EQ(config.frontendParticleCap, grav_protocol::kSnapshotMaxPoints);
-    EXPECT_NE(warnings.str().find("--frontend-particle-cap clamped"), std::string::npos);
+    EXPECT_EQ(config.clientParticleCap, grav_protocol::kSnapshotMaxPoints);
+    EXPECT_NE(warnings.str().find("--client-particle-cap clamped"), std::string::npos);
     EXPECT_FALSE(runtime.hasArgumentError);
 }
 

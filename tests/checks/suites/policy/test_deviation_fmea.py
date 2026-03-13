@@ -42,7 +42,7 @@ def _seed_deviation_repo(root: Path, review_by: str = "2026-06-30") -> None:
                     "rationale": "Temporary split pending.",
                     "mitigation": "Review on every change.",
                     "closure_criteria": "Split file and remove allowlist path.",
-                    "paths": ["engine/src/backend/SimulationBackend.cpp"],
+                    "paths": ["engine/src/server/SimulationServer.cpp"],
                     "requirements": ["REQ-TEST-001"],
                     "artifacts": ["EVD_SAMPLE"],
                 }
@@ -64,7 +64,7 @@ def test_deviation_register_loads_valid_rows_and_rejects_invalid_review_date(tmp
     rows = DeviationRegister().load(tmp_path, manifest, {"REQ-TEST-001"}, result)
     assert result.errors == []
     assert rows[0]["id"] == "DEV-QUAL-001"
-    assert rows[0]["paths"] == ["engine/src/backend/SimulationBackend.cpp"]
+    assert rows[0]["paths"] == ["engine/src/server/SimulationServer.cpp"]
 
     _seed_deviation_repo(tmp_path, review_by="2026-99-99")
     manifest, errors = QualityManifestLoader().load_with_errors(tmp_path)

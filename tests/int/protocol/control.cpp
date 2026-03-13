@@ -1,6 +1,6 @@
-#include "protocol/BackendClient.hpp"
-#include "protocol/BackendProtocol.hpp"
-#include "tests/support/backend_harness.hpp"
+#include "protocol/ServerClient.hpp"
+#include "protocol/ServerProtocol.hpp"
+#include "tests/support/server_harness.hpp"
 #include "tests/support/scoped_env_var.hpp"
 
 #include <gtest/gtest.h>
@@ -9,19 +9,19 @@
 #include <string>
 #include <thread>
 
-namespace grav_test_backend_protocol_control {
+namespace grav_test_server_protocol_control {
 
-TEST(BackendProtocolTest, TST_INT_PROT_004_BackendAcceptsControlCommandsFromClient)
+TEST(ServerProtocolTest, TST_INT_PROT_004_ServerAcceptsControlCommandsFromClient)
 {
-    RealBackendHarness backend;
+    RealServerHarness server;
     std::string startError;
-    ASSERT_TRUE(backend.start(startError)) << startError;
+    ASSERT_TRUE(server.start(startError)) << startError;
 
-    BackendClient client;
+    ServerClient client;
     client.setSocketTimeoutMs(200);
-    ASSERT_TRUE(client.connect("127.0.0.1", backend.port()));
+    ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
 
-    BackendClientResponse response = client.sendCommand(std::string(grav_protocol::SetDt), "\"value\":0.02");
+    ServerClientResponse response = client.sendCommand(std::string(grav_protocol::SetDt), "\"value\":0.02");
     ASSERT_TRUE(response.ok) << response.error;
 
     response = client.sendCommand(std::string(grav_protocol::SetSolver), "\"value\":\"pairwise_cuda\"");
@@ -33,27 +33,27 @@ TEST(BackendProtocolTest, TST_INT_PROT_004_BackendAcceptsControlCommandsFromClie
     response = client.sendCommand(std::string(grav_protocol::Recover));
     ASSERT_TRUE(response.ok) << response.error;
 
-    BackendClientStatus status{};
+    ServerClientStatus status{};
     ASSERT_TRUE(client.getStatus(status).ok);
     EXPECT_NEAR(status.dt, 0.02f, 1e-6f);
     EXPECT_EQ(status.solver, "pairwise_cuda");
     EXPECT_FALSE(status.faulted);
 
     client.disconnect();
-    backend.stop();
+    server.stop();
 }
 
-TEST(BackendProtocolTest, TST_INT_PROT_005_BackendRejectsInvalidSolverAndIntegratorCommands)
+TEST(ServerProtocolTest, TST_INT_PROT_005_ServerRejectsInvalidSolverAndIntegratorCommands)
 {
-    RealBackendHarness backend;
+    RealServerHarness server;
     std::string startError;
-    ASSERT_TRUE(backend.start(startError)) << startError;
+    ASSERT_TRUE(server.start(startError)) << startError;
 
-    BackendClient client;
+    ServerClient client;
     client.setSocketTimeoutMs(200);
-    ASSERT_TRUE(client.connect("127.0.0.1", backend.port()));
+    ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
 
-    BackendClientResponse response = client.sendCommand(std::string(grav_protocol::SetSolver), "\"value\":\"not_a_solver\"");
+    ServerClientResponse response = client.sendCommand(std::string(grav_protocol::SetSolver), "\"value\":\"not_a_solver\"");
     ASSERT_FALSE(response.ok);
     EXPECT_NE(response.error.find("invalid solver"), std::string::npos);
 
@@ -62,20 +62,20 @@ TEST(BackendProtocolTest, TST_INT_PROT_005_BackendRejectsInvalidSolverAndIntegra
     EXPECT_NE(response.error.find("invalid integrator"), std::string::npos);
 
     client.disconnect();
-    backend.stop();
+    server.stop();
 }
 
-TEST(BackendProtocolTest, TST_INT_PROT_006_BackendRejectsUnsupportedIntegratorForOctreeGpu)
+TEST(ServerProtocolTest, TST_INT_PROT_006_ServerRejectsUnsupportedIntegratorForOctreeGpu)
 {
-    RealBackendHarness backend;
+    RealServerHarness server;
     std::string startError;
-    ASSERT_TRUE(backend.start(startError)) << startError;
+    ASSERT_TRUE(server.start(startError)) << startError;
 
-    BackendClient client;
+    ServerClient client;
     client.setSocketTimeoutMs(200);
-    ASSERT_TRUE(client.connect("127.0.0.1", backend.port()));
+    ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
 
-    BackendClientResponse response = client.sendCommand(std::string(grav_protocol::Pause));
+    ServerClientResponse response = client.sendCommand(std::string(grav_protocol::Pause));
     ASSERT_TRUE(response.ok) << response.error;
 
     response = client.sendCommand(std::string(grav_protocol::SetSolver), "\"value\":\"octree_gpu\"");
@@ -85,28 +85,28 @@ TEST(BackendProtocolTest, TST_INT_PROT_006_BackendRejectsUnsupportedIntegratorFo
     ASSERT_FALSE(response.ok);
     EXPECT_NE(response.error.find("unsupported solver/integrator combination"), std::string::npos);
 
-    BackendClientStatus status{};
+    ServerClientStatus status{};
     ASSERT_TRUE(client.getStatus(status).ok);
     EXPECT_EQ(status.solver, "octree_gpu");
     EXPECT_EQ(status.integrator, "euler");
 
     client.disconnect();
-    backend.stop();
+    server.stop();
 }
 
-TEST(BackendProtocolTest, TST_INT_PROT_007_BackendFallsBackToCpuAfterForcedCudaFailure)
+TEST(ServerProtocolTest, TST_INT_PROT_007_ServerFallsBackToCpuAfterForcedCudaFailure)
 {
     testsupport::ScopedEnvVar forceCudaFail("GRAVITY_TEST_FORCE_CUDA_FAIL_ONCE", "1");
 
-    RealBackendHarness backend;
+    RealServerHarness server;
     std::string startError;
-    ASSERT_TRUE(backend.start(startError)) << startError;
+    ASSERT_TRUE(server.start(startError)) << startError;
 
-    BackendClient client;
+    ServerClient client;
     client.setSocketTimeoutMs(200);
-    ASSERT_TRUE(client.connect("127.0.0.1", backend.port()));
+    ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
 
-    BackendClientResponse response = client.sendCommand(std::string(grav_protocol::SetSolver), "\"value\":\"octree_gpu\"");
+    ServerClientResponse response = client.sendCommand(std::string(grav_protocol::SetSolver), "\"value\":\"octree_gpu\"");
     ASSERT_TRUE(response.ok) << response.error;
     response = client.sendCommand(std::string(grav_protocol::SetIntegrator), "\"value\":\"euler\"");
     ASSERT_TRUE(response.ok) << response.error;
@@ -114,10 +114,10 @@ TEST(BackendProtocolTest, TST_INT_PROT_007_BackendFallsBackToCpuAfterForcedCudaF
     response = client.sendCommand(std::string(grav_protocol::Step), "\"count\":1");
     ASSERT_TRUE(response.ok) << response.error;
 
-    BackendClientStatus status{};
+    ServerClientStatus status{};
     bool switchedToCpu = false;
     for (int attempt = 0; attempt < 60; ++attempt) {
-        const BackendClientResponse statusResponse = client.getStatus(status);
+        const ServerClientResponse statusResponse = client.getStatus(status);
         ASSERT_TRUE(statusResponse.ok) << statusResponse.error;
         if (status.solver == "octree_cpu") {
             switchedToCpu = true;
@@ -131,33 +131,33 @@ TEST(BackendProtocolTest, TST_INT_PROT_007_BackendFallsBackToCpuAfterForcedCudaF
     EXPECT_TRUE(status.faultReason.empty());
 
     client.disconnect();
-    backend.stop();
+    server.stop();
 }
 
-TEST(BackendProtocolTest, TST_INT_PROT_008_BackendRejectsRequestsWithoutConfiguredToken)
+TEST(ServerProtocolTest, TST_INT_PROT_008_ServerRejectsRequestsWithoutConfiguredToken)
 {
-    RealBackendHarness backend;
+    RealServerHarness server;
     std::string startError;
-    ASSERT_TRUE(backend.start(startError, 0u, "secret-token")) << startError;
+    ASSERT_TRUE(server.start(startError, 0u, "secret-token")) << startError;
 
-    BackendClient client;
+    ServerClient client;
     client.setSocketTimeoutMs(200);
-    ASSERT_TRUE(client.connect("127.0.0.1", backend.port()));
+    ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
 
-    BackendClientStatus status{};
-    BackendClientResponse response = client.getStatus(status);
+    ServerClientStatus status{};
+    ServerClientResponse response = client.getStatus(status);
     ASSERT_FALSE(response.ok);
     EXPECT_NE(response.error.find("unauthorized"), std::string::npos);
     client.disconnect();
 
     client.setAuthToken("secret-token");
-    ASSERT_TRUE(client.connect("127.0.0.1", backend.port()));
+    ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
     response = client.getStatus(status);
     ASSERT_TRUE(response.ok) << response.error;
     EXPECT_GT(status.particleCount, 0u);
 
     client.disconnect();
-    backend.stop();
+    server.stop();
 }
 
-} // namespace grav_test_backend_protocol_control
+} // namespace grav_test_server_protocol_control

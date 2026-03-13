@@ -1,7 +1,7 @@
 #include "ui/MainWindow.hpp"
 
-#include "frontend/FrontendCommon.hpp"
-#include "backend/SimulationInitConfig.hpp"
+#include "client/ClientCommon.hpp"
+#include "server/SimulationInitConfig.hpp"
 #include "ui/EnergyGraphWidget.hpp"
 #include "ui/MultiViewWidget.hpp"
 #include "ui/QtViewMath.hpp"
@@ -55,7 +55,7 @@ std::string formatFromSelectedFilter(const QString &filter)
 MainWindow::MainWindow(
     SimulationConfig config,
     std::string configPath,
-    std::unique_ptr<grav_frontend::IFrontendRuntime> runtime)
+    std::unique_ptr<grav_client::IClientRuntime> runtime)
     : QMainWindow(nullptr),
       _config(std::move(config)),
       _configPath(std::move(configPath)),
@@ -72,10 +72,10 @@ MainWindow::MainWindow(
       _exportButton(new QPushButton("Export", this)),
       _saveConfigButton(new QPushButton("Save config", this)),
       _loadInputButton(new QPushButton("Load input", this)),
-      _backendAutostartCheck(new QCheckBox("autostart backend", this)),
-      _backendHostEdit(new QLineEdit(this)),
-      _backendBinEdit(new QLineEdit(this)),
-      _backendPortSpin(new QSpinBox(this)),
+      _serverAutostartCheck(new QCheckBox("autostart server", this)),
+      _serverHostEdit(new QLineEdit(this)),
+      _serverBinEdit(new QLineEdit(this)),
+      _serverPortSpin(new QSpinBox(this)),
       _sphCheck(new QCheckBox("SPH", this)),
       _sphSmoothingSpin(new QDoubleSpinBox(this)),
       _sphRestDensitySpin(new QDoubleSpinBox(this)),
@@ -97,16 +97,16 @@ MainWindow::MainWindow(
       _rollSlider(new QSlider(Qt::Horizontal, this)),
       _timer(new QTimer(this)),
       _lastEnergyStep(std::numeric_limits<std::uint64_t>::max()),
-      _frontendDrawCap(grav_frontend::resolveFrontendDrawCap(_config)),
+      _clientDrawCap(grav_client::resolveClientDrawCap(_config)),
       _uiTickFps(0.0f),
       _configDirty(false),
       _lastUiTickAt()
 {
     if (!_runtime) {
-        throw std::invalid_argument("grav_qt::MainWindow requires a valid frontend runtime");
+        throw std::invalid_argument("grav_qt::MainWindow requires a valid client runtime");
     }
 
-    setWindowTitle("N-Body Qt Frontend");
+    setWindowTitle("N-Body Qt Client");
 
     auto *central = new QWidget(this);
     auto *root = new QVBoxLayout(central);
@@ -174,11 +174,11 @@ MainWindow::MainWindow(
     _pitchSlider->setValue(0);
     _rollSlider->setRange(-180, 180);
     _rollSlider->setValue(0);
-    _backendHostEdit->setText("127.0.0.1");
-    _backendPortSpin->setRange(1, 65535);
-    _backendPortSpin->setValue(4545);
-    _backendAutostartCheck->setChecked(false);
-    _backendBinEdit->setPlaceholderText("myAppBackend(.exe)");
+    _serverHostEdit->setText("127.0.0.1");
+    _serverPortSpin->setRange(1, 65535);
+    _serverPortSpin->setValue(4545);
+    _serverAutostartCheck->setChecked(false);
+    _serverBinEdit->setPlaceholderText("myAppServer(.exe)");
 
     auto *sectionsWidget = new QWidget(this);
     auto *sectionsLayout = new QHBoxLayout(sectionsWidget);
@@ -228,11 +228,11 @@ MainWindow::MainWindow(
     auto *connectorBox = new QGroupBox("Connector", sectionsWidget);
     auto *connectorLayout = new QVBoxLayout(connectorBox);
     auto *connectorForm = new QFormLayout();
-    connectorForm->addRow("host", _backendHostEdit);
-    connectorForm->addRow("port", _backendPortSpin);
-    connectorForm->addRow("backend bin", _backendBinEdit);
+    connectorForm->addRow("host", _serverHostEdit);
+    connectorForm->addRow("port", _serverPortSpin);
+    connectorForm->addRow("server bin", _serverBinEdit);
     connectorLayout->addLayout(connectorForm);
-    connectorLayout->addWidget(_backendAutostartCheck);
+    connectorLayout->addWidget(_serverAutostartCheck);
     connectorLayout->addWidget(_applyConnectorButton);
     connectorLayout->addStretch(1);
 
@@ -274,10 +274,10 @@ MainWindow::MainWindow(
     setCentralWidget(central);
     resize(1500, 980);
 
-    applyConfigToBackend(false);
+    applyConfigToServer(false);
     markConfigDirty(false);
-    _multiView->setMaxDrawParticles(_frontendDrawCap);
-    _runtime->setRemoteSnapshotCap(_frontendDrawCap);
+    _multiView->setMaxDrawParticles(_clientDrawCap);
+    _runtime->setRemoteSnapshotCap(_clientDrawCap);
 
     _multiView->setZoom(static_cast<float>(_zoomSlider->value()) / 10.0f);
     _multiView->setLuminosity(_luminositySlider->value());
@@ -285,10 +285,10 @@ MainWindow::MainWindow(
     const bool remoteMode = _runtime->isRemoteMode();
     _reconnectButton->setEnabled(remoteMode);
     _applyConnectorButton->setEnabled(remoteMode);
-    _backendAutostartCheck->setEnabled(remoteMode);
-    _backendHostEdit->setEnabled(remoteMode);
-    _backendPortSpin->setEnabled(remoteMode);
-    _backendBinEdit->setEnabled(remoteMode);
+    _serverAutostartCheck->setEnabled(remoteMode);
+    _serverHostEdit->setEnabled(remoteMode);
+    _serverPortSpin->setEnabled(remoteMode);
+    _serverBinEdit->setEnabled(remoteMode);
 
     const auto applySphParams = [this]() {
         _config.sphSmoothingLength = static_cast<float>(_sphSmoothingSpin->value());
@@ -304,15 +304,15 @@ MainWindow::MainWindow(
         markConfigDirty();
     };
     const auto applyConnector = [this]() {
-        std::string host = _backendHostEdit->text().trimmed().toStdString();
+        std::string host = _serverHostEdit->text().trimmed().toStdString();
         if (host.empty()) {
             host = "127.0.0.1";
-            _backendHostEdit->setText(QString::fromStdString(host));
+            _serverHostEdit->setText(QString::fromStdString(host));
         }
-        const auto port = static_cast<std::uint16_t>(_backendPortSpin->value());
-        const bool autostart = _backendAutostartCheck->isChecked();
-        const std::string backendBin = _backendBinEdit->text().trimmed().toStdString();
-        _runtime->configureRemoteConnector(host, port, autostart, backendBin);
+        const auto port = static_cast<std::uint16_t>(_serverPortSpin->value());
+        const bool autostart = _serverAutostartCheck->isChecked();
+        const std::string serverBin = _serverBinEdit->text().trimmed().toStdString();
+        _runtime->configureRemoteConnector(host, port, autostart, serverBin);
     };
 
     connect(_pauseButton, &QPushButton::clicked, this, [this](bool checked) {
@@ -323,7 +323,7 @@ MainWindow::MainWindow(
     connect(_resetButton, &QPushButton::clicked, this, [this]() {
         _config = SimulationConfig::loadOrCreate(_configPath);
         applyConfigToUi();
-        applyConfigToBackend(true);
+        applyConfigToServer(true);
         markConfigDirty(false);
         _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
     });
@@ -334,10 +334,10 @@ MainWindow::MainWindow(
     connect(_applyConnectorButton, &QPushButton::clicked, this, [applyConnector]() { applyConnector(); });
     connect(_exportButton, &QPushButton::clicked, this, [this]() {
         const SimulationStats stats = _runtime->getCachedStats();
-        const std::string preferredFormat = grav_frontend::normalizeExportFormat(
+        const std::string preferredFormat = grav_client::normalizeExportFormat(
             _config.exportFormat.empty() ? std::string("vtk") : _config.exportFormat);
         const QString startPath = QString::fromStdString(
-            grav_frontend::buildSuggestedExportPath(_config.exportDirectory, preferredFormat, stats.steps)
+            grav_client::buildSuggestedExportPath(_config.exportDirectory, preferredFormat, stats.steps)
         );
         QString selectedFilter = "VTK ASCII (*.vtk)";
         if (preferredFormat == "vtk_binary") {
@@ -358,13 +358,13 @@ MainWindow::MainWindow(
             return;
         }
 
-        std::string format = grav_frontend::normalizeExportFormat(formatFromSelectedFilter(selectedFilter));
+        std::string format = grav_client::normalizeExportFormat(formatFromSelectedFilter(selectedFilter));
         std::string path = pathChosen.toStdString();
         if (format.empty()) {
-            format = grav_frontend::normalizeExportFormat(grav_frontend::inferExportFormatFromPath(path));
+            format = grav_client::normalizeExportFormat(grav_client::inferExportFormatFromPath(path));
         }
         if (format.empty()) {
-            format = grav_frontend::normalizeExportFormat(_config.exportFormat);
+            format = grav_client::normalizeExportFormat(_config.exportFormat);
             if (format.empty()) {
                 format = "vtk";
             }
@@ -372,7 +372,7 @@ MainWindow::MainWindow(
 
         std::filesystem::path outPath(path);
         if (outPath.extension().empty()) {
-            const std::string ext = grav_frontend::extensionForExportFormat(format);
+            const std::string ext = grav_client::extensionForExportFormat(format);
             if (!ext.empty()) {
                 outPath += ext;
                 path = outPath.string();
@@ -415,7 +415,7 @@ MainWindow::MainWindow(
     connect(_applyPresetButton, &QPushButton::clicked, this, [this]() {
         _config.initConfigStyle = "preset";
         _config.presetStructure = _presetCombo->currentText().toStdString();
-        applyConfigToBackend(true);
+        applyConfigToServer(true);
         markConfigDirty();
     });
     connect(_loadPresetButton, &QPushButton::clicked, this, [this]() {
@@ -432,7 +432,7 @@ MainWindow::MainWindow(
         _config = loaded;
         _configPath = path.toStdString();
         applyConfigToUi();
-        applyConfigToBackend(true);
+        applyConfigToServer(true);
         _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
         markConfigDirty(false);
     });
@@ -501,7 +501,7 @@ MainWindow::MainWindow(
         _timer->start(std::max(1, static_cast<int>(1000 / fps)));
     } else {
         _statusLabel->setText(
-            QString("backend connection failed (%1)")
+            QString("server connection failed (%1)")
                 .arg(_runtime->isRemoteMode() ? "remote" : "local")
         );
     }
@@ -512,10 +512,10 @@ MainWindow::~MainWindow()
     _runtime->stop();
 }
 
-void MainWindow::applyConfigToBackend(bool requestReset)
+void MainWindow::applyConfigToServer(bool requestReset)
 {
     const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(_config, std::cerr);
-    _runtime->setParticleCount(grav_frontend::resolveBackendParticleCount(_config));
+    _runtime->setParticleCount(grav_client::resolveServerParticleCount(_config));
     _runtime->setDt(_config.dt);
     _runtime->setSolverMode(_config.solver);
     _runtime->setIntegratorMode(_config.integrator);
@@ -583,9 +583,9 @@ void MainWindow::applyConfigToUi()
 
     _multiView->setZoom(static_cast<float>(_zoomSlider->value()) / 10.0f);
     _multiView->setLuminosity(_luminositySlider->value());
-    _frontendDrawCap = grav_frontend::resolveFrontendDrawCap(_config);
-    _multiView->setMaxDrawParticles(_frontendDrawCap);
-    _runtime->setRemoteSnapshotCap(_frontendDrawCap);
+    _clientDrawCap = grav_client::resolveClientDrawCap(_config);
+    _multiView->setMaxDrawParticles(_clientDrawCap);
+    _runtime->setRemoteSnapshotCap(_clientDrawCap);
 }
 
 void MainWindow::captureUiIntoConfig()
@@ -611,7 +611,7 @@ void MainWindow::markConfigDirty(bool dirty)
     if (_saveConfigButton != nullptr) {
         _saveConfigButton->setEnabled(_configDirty);
     }
-    setWindowTitle(_configDirty ? "N-Body Qt Frontend *" : "N-Body Qt Frontend");
+    setWindowTitle(_configDirty ? "N-Body Qt Client *" : "N-Body Qt Client");
 }
 
 bool MainWindow::saveConfigToDisk()
@@ -673,14 +673,14 @@ void MainWindow::tick()
         }
     }
     std::size_t snapshotSize = 0u;
-    std::optional<grav_frontend::ConsumedSnapshot> consumedSnapshot = _runtime->consumeLatestSnapshot();
+    std::optional<grav_client::ConsumedSnapshot> consumedSnapshot = _runtime->consumeLatestSnapshot();
     const bool gotSnapshot = consumedSnapshot.has_value();
     if (gotSnapshot) {
         snapshotSize = consumedSnapshot->sourceSize;
         snapshot = std::move(consumedSnapshot->particles);
     }
     const std::string linkLabel = _runtime->linkStateLabel();
-    const std::string ownerLabel = _runtime->backendOwnerLabel();
+    const std::string ownerLabel = _runtime->serverOwnerLabel();
     const std::uint32_t statsAgeMs = _runtime->statsAgeMs();
     const std::uint32_t snapshotAgeMs = _runtime->snapshotAgeMs();
     const bool hasStatsAge = statsAgeMs != std::numeric_limits<std::uint32_t>::max();
@@ -698,7 +698,7 @@ void MainWindow::tick()
     }
 
     _statusLabel->setText(
-        QString("state=%1 | link=%2 owner=%3 | solver=%4 integrator=%5 | sph=%6 | dt=%7 | backend=%8 step/s | ui=%9 fps | steps=%10 | particles=%11 draw=%12 cap=%13 | data=stats:%14 snap:%15 %16 | Ekin=%17 Epot=%18 Eth=%19 Erad=%20 Etot=%21 | dE=%22%% %23")
+        QString("state=%1 | link=%2 owner=%3 | solver=%4 integrator=%5 | sph=%6 | dt=%7 | server=%8 step/s | ui=%9 fps | steps=%10 | particles=%11 draw=%12 cap=%13 | data=stats:%14 snap:%15 %16 | Ekin=%17 Epot=%18 Eth=%19 Erad=%20 Etot=%21 | dE=%22%% %23")
             .arg(stats.faulted ? "FAULT" : (stats.paused ? "PAUSED" : "RUNNING"))
             .arg(QString::fromStdString(linkLabel))
             .arg(QString::fromStdString(ownerLabel))
@@ -706,12 +706,12 @@ void MainWindow::tick()
             .arg(QString::fromStdString(stats.integratorName))
             .arg(stats.sphEnabled ? "on" : "off")
             .arg(stats.dt, 0, 'f', 5)
-            .arg(stats.backendFps, 0, 'f', 1)
+            .arg(stats.serverFps, 0, 'f', 1)
             .arg(_uiTickFps, 0, 'f', 1)
             .arg(static_cast<qulonglong>(stats.steps))
             .arg(stats.particleCount)
             .arg(static_cast<qulonglong>(displayedParticles))
-            .arg(static_cast<qulonglong>(_frontendDrawCap))
+            .arg(static_cast<qulonglong>(_clientDrawCap))
             .arg(hasStatsAge ? QString::number(statsAgeMs) + "ms" : QString("n/a"))
             .arg(hasSnapshotAge ? QString::number(snapshotAgeMs) + "ms" : QString("n/a"))
             .arg(stale ? "[stale]" : "")
@@ -741,11 +741,11 @@ void MainWindow::tick()
                   << " solver=" << stats.solverName
                   << " integrator=" << stats.integratorName
                   << " sph=" << (stats.sphEnabled ? "on" : "off")
-                  << " step_s=" << stats.backendFps
+                  << " step_s=" << stats.serverFps
                   << " ui_fps=" << _uiTickFps
                   << " snapshot=" << snapshotSize
                   << " draw=" << displayedParticles
-                  << " draw_cap=" << _frontendDrawCap
+                  << " draw_cap=" << _clientDrawCap
                   << " stats_age_ms=" << (hasStatsAge ? std::to_string(statsAgeMs) : std::string("na"))
                   << " snap_age_ms=" << (hasSnapshotAge ? std::to_string(snapshotAgeMs) : std::string("na"))
                   << " stale=" << (stale ? "1" : "0")

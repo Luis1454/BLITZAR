@@ -5,9 +5,9 @@ from pathlib import Path
 
 CPP_EXT = ".cpp"
 
-ENGINE_BACKEND_DIR = Path("engine") / "src" / "backend"
+ENGINE_SERVER_DIR = Path("engine") / "src" / "server"
 ENGINE_CONFIG_DIR = Path("engine") / "src" / "config"
-RUNTIME_BACKEND_DIR = Path("runtime") / "src" / "backend"
+RUNTIME_SERVER_DIR = Path("runtime") / "src" / "server"
 MODULES_QT_UI_DIR = Path("modules") / "qt" / "ui"
 TESTS_UNIT_DIR = Path("tests") / "unit"
 

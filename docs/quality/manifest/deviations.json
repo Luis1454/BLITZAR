@@ -8,15 +8,15 @@
       "approver": "quality-review",
       "introduced_on": "2026-03-07",
       "review_by": "2026-06-30",
-      "rationale": "Core backend orchestration is still split across protocol, config, and runtime seams under active extraction.",
+      "rationale": "Core server orchestration is still split across protocol, config, and runtime seams under active extraction.",
       "mitigation": "Keep entries isolated in the allowlist, review on every PR touching these files, and forbid new unrelated growth.",
       "closure_criteria": "Split each file below the hard limit and remove the corresponding allowlist paths.",
       "paths": [
-        "engine/src/backend/SimulationBackend.cpp",
-        "runtime/src/backend/BackendServer.cpp",
-        "runtime/src/protocol/BackendClient.cpp",
-        "runtime/src/frontend/FrontendBackendBridge.cpp",
-        "runtime/src/frontend/FrontendRuntime.cpp"
+        "engine/src/server/SimulationServer.cpp",
+        "runtime/src/server/ServerDaemon.cpp",
+        "runtime/src/protocol/ServerClient.cpp",
+        "runtime/src/client/ClientServerBridge.cpp",
+        "runtime/src/client/ClientRuntime.cpp"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -59,7 +59,7 @@
       "approver": "quality-review",
       "introduced_on": "2026-03-07",
       "review_by": "2026-06-30",
-      "rationale": "Frontend composition files still aggregate module wiring and UI state that are scheduled for per-feature extraction.",
+      "rationale": "Client composition files still aggregate module wiring and UI state that are scheduled for per-feature extraction.",
       "mitigation": "Review changes for feature isolation and keep UI/module edits tied to decomposition work.",
       "closure_criteria": "Extract module composition responsibilities into smaller units and delete the allowlist paths.",
       "paths": [

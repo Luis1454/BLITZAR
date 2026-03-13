@@ -27,7 +27,7 @@ function(configure_gravity_cpp_target target_name)
     target_compile_definitions(${target_name}
         PRIVATE
             $<$<BOOL:${WIN32}>:NOMINMAX>
-            GRAVITY_FRONTEND_MODULE_EXPORT_ATTR=
+            GRAVITY_CLIENT_MODULE_EXPORT_ATTR=
             GRAVITY_HD_DEVICE=
             GRAVITY_HD_HOST=
     )

@@ -21,7 +21,7 @@ gravity_add_python_check(TST_QLT_REPO_002_GravityMirrorCheck check.py
 )
 
 set(_gravity_check_build_targets OFF)
-if(TARGET myApp AND TARGET myAppBackend AND TARGET myAppHeadless AND TARGET myAppModuleHost)
+if(TARGET myApp AND TARGET myAppServer AND TARGET myAppHeadless AND TARGET myAppClient)
     set(_gravity_check_build_targets ON)
 endif()
 set(_gravity_no_legacy_args "--root" "${GRAVITY_ROOT_DIR}")

@@ -1,7 +1,7 @@
 #include "SimulationOptionRegistryInternal.hpp"
 
 #include "config/SimulationModes.hpp"
-#include "protocol/BackendProtocol.hpp"
+#include "protocol/ServerProtocol.hpp"
 
 namespace grav_config {
 
@@ -28,7 +28,7 @@ static void emitClamped(
              << requested << " -> " << clamped << "\n";
 }
 
-static std::uint32_t clampFrontendParticleCap(std::uint32_t requested)
+static std::uint32_t clampClientParticleCap(std::uint32_t requested)
 {
     if (requested > grav_protocol::kSnapshotMaxPoints) {
         return grav_protocol::kSnapshotMaxPoints;
@@ -128,13 +128,13 @@ bool applyEntry(
             memberAt<std::string>(config, entry.offset) = canonical;
             return true;
         }
-        case OptionKind::FrontendParticleCap: {
+        case OptionKind::ClientParticleCap: {
             std::uint32_t parsed = memberAt<std::uint32_t>(config, entry.offset);
             if (!SimulationArgsParse::parseUint(value, parsed) || parsed < 2u) {
                 emitInvalid(warnings, source, optionName, value);
                 return true;
             }
-            const std::uint32_t clamped = clampFrontendParticleCap(parsed);
+            const std::uint32_t clamped = clampClientParticleCap(parsed);
             memberAt<std::uint32_t>(config, entry.offset) = clamped;
             if (clamped != parsed) {
                 emitClamped(warnings, source, optionName, parsed, clamped);
@@ -142,14 +142,14 @@ bool applyEntry(
             return true;
         }
         case OptionKind::TimeoutTriple: {
-            std::uint32_t parsed = config.frontendRemoteCommandTimeoutMs;
+            std::uint32_t parsed = config.clientRemoteCommandTimeoutMs;
             if (!SimulationArgsParse::parseUint(value, parsed) || parsed < 10u || parsed > 60000u) {
                 emitInvalid(warnings, source, optionName, value);
                 return true;
             }
-            config.frontendRemoteCommandTimeoutMs = parsed;
-            config.frontendRemoteStatusTimeoutMs = parsed;
-            config.frontendRemoteSnapshotTimeoutMs = parsed;
+            config.clientRemoteCommandTimeoutMs = parsed;
+            config.clientRemoteStatusTimeoutMs = parsed;
+            config.clientRemoteSnapshotTimeoutMs = parsed;
             return true;
         }
     }

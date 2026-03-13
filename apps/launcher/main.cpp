@@ -9,13 +9,13 @@
 #include <string_view>
 #include <vector>
 enum class LaunchMode {
-    Ui,
-    Backend,
+    Client,
+    Server,
     Headless
 };
 
 struct LauncherOptions {
-    LaunchMode mode = LaunchMode::Ui;
+    LaunchMode mode = LaunchMode::Client;
     std::string module = "cli";
     std::vector<std::string> passthroughArgs;
     bool showHelp = false;
@@ -24,13 +24,13 @@ struct LauncherOptions {
 void printUsage(const std::string_view programName)
 {
     std::cout
-        << "Usage: " << programName << " [--mode ui|backend|headless] [--module <name>] [args...]\n"
-        << "  --mode      Select child process to run (default: ui).\n"
-        << "  --module    Frontend module alias/path for ui mode (default: cli).\n"
+        << "Usage: " << programName << " [--mode client|server|headless] [--module <name>] [args...]\n"
+        << "  --mode      Select child process to run (default: client).\n"
+        << "  --module    Client module alias/path for client mode (default: cli).\n"
         << "  --help      Show this help.\n"
         << "\nExamples:\n"
-        << "  " << programName << " --mode ui --module qt -- --backend-host 127.0.0.1 --backend-port 4545\n"
-        << "  " << programName << " --mode backend -- --config simulation.ini\n"
+        << "  " << programName << " --mode client --module qt -- --server-host 127.0.0.1 --server-port 4545\n"
+        << "  " << programName << " --mode server -- --config simulation.ini\n"
         << "  " << programName << " --mode headless -- --particle-count 10000 --target-steps 1000\n";
 }
 
@@ -40,12 +40,12 @@ bool parseMode(const std::string &rawValue, LaunchMode &outMode)
     std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
         return static_cast<char>(std::tolower(c));
     });
-    if (value == "ui") {
-        outMode = LaunchMode::Ui;
+    if (value == "client") {
+        outMode = LaunchMode::Client;
         return true;
     }
-    if (value == "backend") {
-        outMode = LaunchMode::Backend;
+    if (value == "server") {
+        outMode = LaunchMode::Server;
         return true;
     }
     if (value == "headless") {
@@ -116,14 +116,14 @@ bool parseLauncherOptions(
 std::string targetBasename(const LaunchMode mode)
 {
     switch (mode) {
-    case LaunchMode::Ui:
-        return "myAppModuleHost";
-    case LaunchMode::Backend:
-        return "myAppBackend";
+    case LaunchMode::Client:
+        return "myAppClient";
+    case LaunchMode::Server:
+        return "myAppServer";
     case LaunchMode::Headless:
         return "myAppHeadless";
     }
-    return "myAppModuleHost";
+    return "myAppClient";
 }
 
 bool containsModuleOverride(const std::vector<std::string> &args)
@@ -182,7 +182,7 @@ int main(int argc, char **argv)
         return 0;
     }
     std::vector<std::string> childArgs = options.passthroughArgs;
-    if (options.mode == LaunchMode::Ui
+    if (options.mode == LaunchMode::Client
         && !containsModuleOverride(childArgs)) {
         childArgs.push_back("--module");
         childArgs.push_back(options.module);

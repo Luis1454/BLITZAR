@@ -18,7 +18,7 @@ if(GRAVITY_BUILD_TESTS)
         add_executable(gravityPhysicsGTests
             tests/support/physics_scenario.cpp
             ${GRAVITY_PHYSICS_TEST_SOURCES}
-            ${GRAVITY_BACKEND_SOURCES}
+            ${GRAVITY_SERVER_SOURCES}
         )
         configure_gravity_cuda_target(gravityPhysicsGTests)
         target_compile_definitions(gravityPhysicsGTests
@@ -37,7 +37,7 @@ if(GRAVITY_BUILD_TESTS)
         tests/tools/numerical_validation_main.cpp
         tests/support/numerical_validation_tool.cpp
         tests/support/physics_scenario.cpp
-        ${GRAVITY_BACKEND_SOURCES}
+        ${GRAVITY_SERVER_SOURCES}
     )
     configure_gravity_cuda_target(gravityNumericalValidationTool)
     target_compile_definitions(gravityNumericalValidationTool
