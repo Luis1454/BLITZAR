@@ -25,11 +25,11 @@ int main(int argc, char **argv)
     SimulationConfig config = server.getRuntimeConfig();
     applyArgsToConfig(args, config, runtime, std::cerr);
     if (runtime.hasArgumentError) {
-        printUsage(std::cerr, args.empty() ? std::string_view("myAppHeadless") : args[0], true);
+        printUsage(std::cerr, args.empty() ? std::string_view("aster-headless") : args[0], true);
         return 2;
     }
     if (runtime.showHelp) {
-        printUsage(std::cout, args.empty() ? std::string_view("myApp.exe") : args[0], true);
+        printUsage(std::cout, args.empty() ? std::string_view("aster.exe") : args[0], true);
         return 0;
     }
     if (runtime.saveConfig) {

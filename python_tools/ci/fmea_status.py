@@ -41,7 +41,7 @@ class FmeaStatusSnapshot:
         dist_dir.mkdir(parents=True, exist_ok=True)
         (dist_dir / "fmea_status_snapshot.json").write_text(json.dumps(snapshot, indent=2), encoding="utf-8")
         (dist_dir / "README.md").write_text(render_fmea_status_readme(snapshot), encoding="utf-8")
-        archive_base = dist_dir / "CUDA-GRAVITY-SIMULATION-fmea-status"
+        archive_base = dist_dir / "ASTER-fmea-status"
         return Path(shutil.make_archive(str(archive_base), "zip", root_dir=dist_dir))
 
 

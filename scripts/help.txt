@@ -31,7 +31,7 @@ Useful vars:
   INT_TEST_REGEX_NO_SERVER=<regex> Default safe subset regex when SERVER_EXE is unavailable
   INT_TIMEOUT=<sec>      ctest timeout for test-int (default: 180)
   SERVER_EXE=<path>     Optional server executable path for real integration tests
-                         If omitted and build/myAppServer(.exe) is missing, integration_real tests are skipped
+                         If omitted and build/aster-server(.exe) is missing, integration_real tests are skipped
   CONFIG=<file>          Config file passed to client host (default: simulation.ini)
   GUI_MODULE=<name>      Client module name (default: qt)
   RUN_DOCTOR=0|1         Enable/disable doctor before run targets (default: 1)

@@ -1,7 +1,7 @@
-EXECUTABLE := myApp
-HEADLESS_EXECUTABLE := myAppHeadless
-SERVER_EXECUTABLE := myAppServer
-CLIENT_HOST_EXECUTABLE := myAppClient
+EXECUTABLE := aster
+HEADLESS_EXECUTABLE := aster-headless
+SERVER_EXECUTABLE := aster-server
+CLIENT_HOST_EXECUTABLE := aster-client
 
 BUILD_DIR ?= build
 BUILD_TYPE ?= Release

@@ -31,7 +31,7 @@ else()
     message(WARNING "[doctor] qt deploy missing: ${_qt_deploy}")
 endif()
 
-set(_client_host "${BUILD_DIR}/myAppClient.exe")
+set(_client_host "${BUILD_DIR}/aster-client.exe")
 if(EXISTS "${_client_host}")
     message(STATUS "[doctor] client host: ${_client_host}")
 else()

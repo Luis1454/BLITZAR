@@ -9,7 +9,7 @@ std::string executableName(std::string_view basename)
 
 std::string_view serverDefaultExecutableName()
 {
-    return "myAppServer.exe";
+    return "aster-server.exe";
 }
 
 std::vector<std::string> sharedLibraryCandidates(std::string_view stem)

@@ -33,7 +33,7 @@ class LauncherContractCheck(BaseCheck):
             result.add_error("missing build directory")
             return
         suffix = ".exe" if os.name == "nt" else ""
-        launcher = build_dir.resolve() / f"myApp{suffix}"
+        launcher = build_dir.resolve() / f"aster{suffix}"
         if not launcher.exists():
             result.add_error(f"Launcher not found: {launcher}")
             return

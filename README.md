@@ -1,4 +1,6 @@
-# CUDA-GRAVITY-SIMULATION
+# A.S.T.E.R.
+
+Accelerated Simulation for Trajectory and Energy Resolution.
 
 [![nightly-full](https://github.com/Luis1454/CUDA-GRAVITY-SIMULATION/actions/workflows/nightly-full.yml/badge.svg?branch=main)](https://github.com/Luis1454/CUDA-GRAVITY-SIMULATION/actions/workflows/nightly-full.yml)
 
@@ -44,12 +46,12 @@ make quality-strict
 
 ## Binaries
 
-- `myApp`
-- `myAppServer`
-- `myAppHeadless`
-- `myAppClient`
+- `aster`
+- `aster-server`
+- `aster-headless`
+- `aster-client`
 
-In `PROFILE=prod`, `myAppClient` and dynamic client modules are disabled by design.
+In `PROFILE=prod`, `aster-client` and dynamic client modules are disabled by design.
 
 ## Coverage
 

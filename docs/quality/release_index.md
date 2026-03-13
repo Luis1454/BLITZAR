@@ -4,7 +4,7 @@ The release-quality index is the audit entry point for a release candidate or re
 
 ## Format
 
-- Archive name: `CUDA-GRAVITY-SIMULATION-<tag>-quality-index.zip`
+- Archive name: `ASTER-<tag>-quality-index.zip`
 - Machine-readable record: `release_quality_index.json`
 - Human-readable summary: `README.md`
 

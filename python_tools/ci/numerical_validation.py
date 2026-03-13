@@ -95,7 +95,7 @@ class NumericalValidationCampaign:
         dist_dir.mkdir(parents=True, exist_ok=True)
         (dist_dir / "numerical_validation_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
         (dist_dir / "README.md").write_text(render_numerical_validation_readme(report), encoding="utf-8")
-        archive_base = dist_dir / "CUDA-GRAVITY-SIMULATION-numerical-validation"
+        archive_base = dist_dir / "ASTER-numerical-validation"
         return Path(shutil.make_archive(str(archive_base), "zip", root_dir=dist_dir))
 
 

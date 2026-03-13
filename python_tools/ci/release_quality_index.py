@@ -133,7 +133,7 @@ class ReleaseQualityIndexBuilder:
         dist_dir.mkdir(parents=True, exist_ok=True)
         (dist_dir / "release_quality_index.json").write_text(json.dumps(index, indent=2), encoding="utf-8")
         (dist_dir / "README.md").write_text(self._render_readme(index), encoding="utf-8")
-        archive_base = dist_dir / f"CUDA-GRAVITY-SIMULATION-{tag}-quality-index"
+        archive_base = dist_dir / f"ASTER-{tag}-quality-index"
         return Path(shutil.make_archive(str(archive_base), "zip", root_dir=dist_dir))
 
     def _collect_evidence_refs(self, root: Path, requirements: Sequence[Mapping[str, object]]) -> list[dict[str, str]]:
