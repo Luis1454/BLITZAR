@@ -4,7 +4,7 @@ Release candidates and major review milestones must publish a qualification-orie
 
 ## Format
 
-- Archive name: `CUDA-GRAVITY-SIMULATION-<tag>-evidence.zip`
+- Archive name: `ASTER-<tag>-evidence.zip`
 - Machine-readable record: `release_evidence_pack.json`
 - Human-readable summary: `README.md`
 - Bundled referenced files: `evidence/<repo-relative-path>`
