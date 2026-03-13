@@ -9,7 +9,7 @@ int main(int argc, char **argv)
     try {
         const std::string programName = (argc > 0 && argv != nullptr && argv[0] != nullptr)
             ? std::string(argv[0])
-            : std::string("myAppClient");
+            : std::string("aster-client");
 
         grav_client_host::HostOptions options{};
         std::string parseError;

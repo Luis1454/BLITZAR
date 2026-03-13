@@ -3,7 +3,7 @@
 This project now includes a client host that can load and switch client modules at runtime.
 
 Targets:
-- Host: `myAppClient`
+- Host: `aster-client`
 - Sample module 1: `gravityClientModuleCli` (server control/status)
 - Sample module 2: `gravityClientModuleEcho` (echo demo)
 - Sample module 3: `gravityClientModuleGuiProxy` (launch/stop external GUI clients)
@@ -14,7 +14,7 @@ Note: these targets are enabled by default and are the preferred architecture.
 ## Build
 
 ```bash
-cmake --build build --target myAppClient gravityClientModuleCli gravityClientModuleEcho gravityClientModuleGuiProxy gravityClientModuleQtInProc
+cmake --build build --target aster-client gravityClientModuleCli gravityClientModuleEcho gravityClientModuleGuiProxy gravityClientModuleQtInProc
 ```
 
 ## Run
@@ -22,13 +22,13 @@ cmake --build build --target myAppClient gravityClientModuleCli gravityClientMod
 Start server daemon first:
 
 ```bash
-build/myAppServer --config simulation.ini --server-host 127.0.0.1 --server-port 4545
+build/aster-server --config simulation.ini --server-host 127.0.0.1 --server-port 4545
 ```
 
 Start client host with a module:
 
 ```bash
-build/myAppClient --config simulation.ini --module cli
+build/aster-client --config simulation.ini --module cli
 ```
 
 On Linux/macOS use `.so` / `.dylib` names.
@@ -65,7 +65,7 @@ client-host> status
 Load GUI proxy module:
 
 ```bash
-build/myAppClient --config simulation.ini --module gui
+build/aster-client --config simulation.ini --module gui
 ```
 
 Then:
@@ -86,7 +86,7 @@ This lets you switch GUI clients live while the server process keeps running.
 Start host directly with `qt`:
 
 ```bash
-build/myAppClient --config simulation.ini --module qt
+build/aster-client --config simulation.ini --module qt
 ```
 
 Runtime commands for `qt` module:
@@ -95,7 +95,7 @@ Runtime commands for `qt` module:
 status
 set-endpoint 127.0.0.1 4545
 set-autostart false
-set-server-bin build/myAppServer.exe
+set-server-bin build/aster-server.exe
 restart
 ```
 

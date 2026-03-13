@@ -1,4 +1,6 @@
-# CUDA-GRAVITY-SIMULATION
+# A.S.T.E.R.
+
+Accelerated Simulation for Trajectory and Energy Resolution.
 
 [![nightly-full](https://github.com/Luis1454/CUDA-GRAVITY-SIMULATION/actions/workflows/nightly-full.yml/badge.svg?branch=main)](https://github.com/Luis1454/CUDA-GRAVITY-SIMULATION/actions/workflows/nightly-full.yml)
 
@@ -49,10 +51,10 @@ make test-int
 ```
 
 Built binaries:
-- `myApp` (launcher)
-- `myAppServer` (server daemon)
-- `myAppHeadless` (headless simulation)
-- `myAppClient` (+ dynamic client modules in `dev` profile)
+- `aster` (launcher)
+- `aster-server` (server daemon)
+- `aster-headless` (headless simulation)
+- `aster-client` (+ dynamic client modules in `dev` profile)
 
 ## CI Lanes
 
@@ -105,17 +107,17 @@ For the complete schema and behavior contract, see:
 Launcher modes:
 
 ```bash
-build/myApp.exe --mode client -- --config simulation.ini --module qt
-build/myApp.exe --mode server -- --config simulation.ini --server-host 127.0.0.1 --server-port 4545
-build/myApp.exe --mode headless -- --config simulation.ini --particle-count 50000 --target-steps 1000
+build/aster.exe --mode client -- --config simulation.ini --module qt
+build/aster.exe --mode server -- --config simulation.ini --server-host 127.0.0.1 --server-port 4545
+build/aster.exe --mode headless -- --config simulation.ini --particle-count 50000 --target-steps 1000
 ```
 
 Direct binaries:
 
 ```bash
-build/myAppServer.exe --config simulation.ini --server-host 127.0.0.1 --server-port 4545
-build/myAppClient.exe --config simulation.ini --module cli
-build/myAppHeadless.exe --config simulation.ini --particle-count 50000 --target-steps 1000
+build/aster-server.exe --config simulation.ini --server-host 127.0.0.1 --server-port 4545
+build/aster-client.exe --config simulation.ini --module cli
+build/aster-headless.exe --config simulation.ini --particle-count 50000 --target-steps 1000
 ```
 
 Module host runtime switch:

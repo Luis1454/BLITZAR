@@ -14,12 +14,12 @@ FORBIDDEN_TOKENS = (
     "QT_CLIENT_NAME",
     "CLI_CLIENT_NAME",
 )
-FORBIDDEN_TARGETS = ("myAppQt", "myAppCli")
+FORBIDDEN_TARGETS = ("aster-qt", "aster-cli")
 EXPECTED_VARIANTS = (
-    ("myApp.exe", "myApp"),
-    ("myAppServer.exe", "myAppServer"),
-    ("myAppHeadless.exe", "myAppHeadless"),
-    ("myAppClient.exe", "myAppClient"),
+    ("aster.exe", "aster"),
+    ("aster-server.exe", "aster-server"),
+    ("aster-headless.exe", "aster-headless"),
+    ("aster-client.exe", "aster-client"),
 )
 
 

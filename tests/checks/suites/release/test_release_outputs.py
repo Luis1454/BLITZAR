@@ -59,7 +59,7 @@ def test_release_bundle_embeds_tool_manifest(tmp_path: Path, monkeypatch) -> Non
     monkeypatch.chdir(tmp_path)
     build_dir = tmp_path / "build"
     build_dir.mkdir()
-    (build_dir / "myApp.exe").write_text("binary\n", encoding="utf-8")
+    (build_dir / "aster.exe").write_text("binary\n", encoding="utf-8")
     (tmp_path / "simulation.ini").write_text("config\n", encoding="utf-8")
     (tmp_path / "README.md").write_text("readme\n", encoding="utf-8")
     tool_manifest = tmp_path / "dist/tool-qualification/tool_manifest.json"
@@ -69,7 +69,7 @@ def test_release_bundle_embeds_tool_manifest(tmp_path: Path, monkeypatch) -> Non
     with zipfile.ZipFile(archive) as bundle:
         names = bundle.namelist()
         assert "tool_manifest.json" in names
-        assert "myApp.exe" in names
+        assert "aster.exe" in names
 
 
 def test_tool_manifest_collector_records_versions_and_missing_tools(tmp_path: Path) -> None:

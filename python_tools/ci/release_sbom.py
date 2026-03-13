@@ -15,7 +15,7 @@ class ReleaseSbomPackager:
 
     def package(self, artifacts_dir: Path, dist_dir: Path, tag: str) -> Path:
         dist_dir.mkdir(parents=True, exist_ok=True)
-        sbom_path = dist_dir / f"CUDA-GRAVITY-SIMULATION-{tag}-sbom.cdx.json"
+        sbom_path = dist_dir / f"ASTER-{tag}-sbom.cdx.json"
         payload = self._build_payload(artifacts_dir, tag)
         sbom_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
         return sbom_path
@@ -26,12 +26,12 @@ class ReleaseSbomPackager:
             "bomFormat": "CycloneDX",
             "specVersion": "1.5",
             "version": 1,
-            "serialNumber": f"urn:uuid:cuda-gravity-simulation-{tag}",
+            "serialNumber": f"urn:uuid:aster-{tag}",
             "metadata": {
                 "timestamp": datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
                 "component": {
                     "type": "application",
-                    "name": "CUDA-GRAVITY-SIMULATION",
+                    "name": "A.S.T.E.R.",
                     "version": tag,
                 },
             },
