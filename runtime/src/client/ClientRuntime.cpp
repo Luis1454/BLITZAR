@@ -98,11 +98,13 @@ void ClientRuntime::scaleDt(float factor)
 void ClientRuntime::requestReset()
 {
     _bridge.requestReset();
+    invalidateCachedSnapshot();
 }
 
 void ClientRuntime::requestRecover()
 {
     _bridge.requestRecover();
+    invalidateCachedSnapshot();
 }
 
 void ClientRuntime::setSolverMode(const std::string &mode)
@@ -133,6 +135,7 @@ void ClientRuntime::setSphParameters(float smoothingLength, float restDensity, f
 void ClientRuntime::setInitialStateConfig(const InitialStateConfig &config)
 {
     _bridge.setInitialStateConfig(config);
+    invalidateCachedSnapshot();
 }
 
 void ClientRuntime::setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit)
@@ -148,6 +151,7 @@ void ClientRuntime::setExportDefaults(const std::string &directory, const std::s
 void ClientRuntime::setInitialStateFile(const std::string &path, const std::string &format)
 {
     _bridge.setInitialStateFile(path, format);
+    invalidateCachedSnapshot();
 }
 
 void ClientRuntime::requestExportSnapshot(const std::string &outputPath, const std::string &format)
@@ -168,6 +172,7 @@ void ClientRuntime::setRemoteSnapshotCap(std::uint32_t maxPoints)
 void ClientRuntime::requestReconnect()
 {
     _bridge.requestReconnect();
+    invalidateCachedSnapshot();
 }
 
 void ClientRuntime::configureRemoteConnector(
@@ -240,6 +245,15 @@ std::uint32_t ClientRuntime::snapshotAgeMs() const
 {
     std::lock_guard<std::mutex> lock(_dataMutex);
     return ageMsSince(_lastSnapshotAt, _hasSnapshotEver);
+}
+
+void ClientRuntime::invalidateCachedSnapshot()
+{
+    std::lock_guard<std::mutex> lock(_dataMutex);
+    _latestSnapshot.clear();
+    _latestSnapshotSize = 0u;
+    _hasNewSnapshot = false;
+    _hasSnapshotEver = false;
 }
 
 void ClientRuntime::pollLoop()

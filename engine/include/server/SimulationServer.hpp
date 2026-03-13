@@ -69,6 +69,7 @@ class SimulationServer : public grav_client::ILocalServer {
         void processPendingExport();
         bool exportCurrentState(const std::string &outputPath, const std::string &format);
         bool loadInitialState(std::vector<Particle> &outParticles, const std::string &inputPath, const std::string &format) const;
+        void clearPublishedSnapshotCache();
 
         std::atomic<bool> _running;
         std::atomic<bool> _paused;
