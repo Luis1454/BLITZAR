@@ -54,7 +54,7 @@ Built binaries:
 - `aster` (launcher)
 - `aster-server` (server daemon)
 - `aster-headless` (headless simulation)
-- `aster-client` (+ dynamic client modules in `dev` profile)
+- `aster-client` (+ manifest-verified dynamic client modules in `dev` profile)
 
 ## CI Lanes
 
@@ -120,7 +120,9 @@ build/aster-client.exe --config simulation.ini --module cli
 build/aster-headless.exe --config simulation.ini --particle-count 50000 --target-steps 1000
 ```
 
-Module host runtime switch:
+`aster-client` is a `dev`-profile path. Each client module now ships with a sidecar manifest and the host verifies the module allowlist, `api_version`, product metadata, and `sha256` digest before loading it. If the client host is explicitly enabled under `prod`, startup load stays manifest-verified but live `reload` / `switch` are disabled.
+
+Module host runtime switch (`dev` only):
 
 ```text
 switch cli

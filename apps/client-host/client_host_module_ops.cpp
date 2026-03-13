@@ -28,6 +28,15 @@ public:
         return {};
     }
 
+    static bool isExplicitPath(const std::string &specifier)
+    {
+        const std::filesystem::path asPath(specifier);
+        return asPath.is_absolute()
+            || (specifier.find('/') != std::string::npos)
+            || (specifier.find('\\') != std::string::npos)
+            || asPath.has_extension();
+    }
+
     static std::vector<std::filesystem::path> buildSearchRoots(std::string_view programName)
     {
         std::vector<std::filesystem::path> roots;
@@ -50,13 +59,7 @@ public:
             return {};
         }
 
-        const std::filesystem::path asPath(specifier);
-        const bool explicitPath =
-            asPath.is_absolute()
-            || (specifier.find('/') != std::string::npos)
-            || (specifier.find('\\') != std::string::npos)
-            || asPath.has_extension();
-        if (explicitPath) {
+        if (isExplicitPath(specifier)) {
             return specifier;
         }
 
@@ -78,6 +81,16 @@ public:
         return filenames.front();
     }
 
+    static std::string expectedModuleIdForSpecifier(const std::string &rawSpecifier)
+    {
+        const std::string specifier = ClientHostCliText::trim(rawSpecifier);
+        if (specifier.empty() || isExplicitPath(specifier)) {
+            return {};
+        }
+        const std::string alias = ClientHostCliText::toLower(specifier);
+        return moduleFilenameCandidatesForAlias(alias).empty() ? std::string() : alias;
+    }
+
     static bool switchModule(
         const std::string &moduleSpecifier,
         const std::string &configPath,
@@ -85,9 +98,10 @@ public:
         grav_module::ClientModuleHandle &module)
     {
         const std::string resolvedPath = resolveModuleSpecifier(moduleSpecifier, searchRoots);
+        const std::string expectedModuleId = expectedModuleIdForSpecifier(moduleSpecifier);
         grav_module::ClientModuleHandle replacement{};
         std::string switchError;
-        if (!replacement.load(resolvedPath, configPath, switchError)) {
+        if (!replacement.load(resolvedPath, configPath, expectedModuleId, switchError)) {
             std::cout << "[client-host] switch failed: " << switchError << "\n";
             return false;
         }
@@ -104,9 +118,10 @@ public:
         grav_module::ClientModuleHandle &module)
     {
         const std::string resolvedPath = resolveModuleSpecifier(currentModuleSpecifier, searchRoots);
+        const std::string expectedModuleId = expectedModuleIdForSpecifier(currentModuleSpecifier);
         grav_module::ClientModuleHandle replacement{};
         std::string switchError;
-        if (!replacement.load(resolvedPath, configPath, switchError)) {
+        if (!replacement.load(resolvedPath, configPath, expectedModuleId, switchError)) {
             std::cout << "[client-host] reload failed: " << switchError << "\n";
             return false;
         }
@@ -127,6 +142,11 @@ std::string ClientHostModuleOps::resolveModuleSpecifier(
     const std::vector<std::filesystem::path> &searchRoots)
 {
     return ClientHostModuleOpsLocal::resolveModuleSpecifier(rawSpecifier, searchRoots);
+}
+
+std::string ClientHostModuleOps::expectedModuleIdForSpecifier(const std::string &rawSpecifier)
+{
+    return ClientHostModuleOpsLocal::expectedModuleIdForSpecifier(rawSpecifier);
 }
 
 bool ClientHostModuleOps::switchModule(

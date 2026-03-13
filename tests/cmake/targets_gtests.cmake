@@ -48,10 +48,17 @@ if(GRAVITY_TEST_UNIT_MODULE_SOURCES)
             "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_text.cpp"
             "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_server_ops.cpp"
             "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_commands.cpp"
+            "${GRAVITY_ROOT_DIR}/apps/client-host/client_host_cli.cpp"
             "${GRAVITY_ROOT_DIR}/apps/client-host/client_host_cli_args.cpp"
+            "${GRAVITY_ROOT_DIR}/apps/client-host/client_host_module_ops.cpp"
             "${GRAVITY_ROOT_DIR}/apps/client-host/client_host_cli_text.cpp"
             "${GRAVITY_ROOT_DIR}/runtime/src/client/ErrorBuffer.cpp"
+            "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleApi.cpp"
             "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleBoundary.cpp"
+            "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleHash.cpp"
+            "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleHandle.cpp"
+            "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleHandleLoad.cpp"
+            "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleManifest.cpp"
             ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
             "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
         LIBS

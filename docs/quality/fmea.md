@@ -10,7 +10,7 @@ Scope: software-level failure analysis for deterministic simulation runtime and 
 | FMEA-004 | Runtime fails to reconnect after server restart | Medium | `runtime-maintainer` | `in-progress` | `#120` | `EVD_TEST_INT_RUNTIME_BRIDGE`, `EVD_TEST_INT_RUNTIME_RUNTIME` |
 | FMEA-005 | Energy drift exceeds accepted bound | High | `physics-maintainer` | `in-progress` | `#102` | `EVD_TEST_UNIT_PHYSICS_ORBIT`, `EVD_TEST_UNIT_PHYSICS_MULTIBODY`, `EVD_QLT_NUMERICAL_CAMPAIGN` |
 | FMEA-006 | Legacy build target reintroduced | Low | `build-maintainer` | `closed` | n/a | `EVD_CHECK_NO_LEGACY` |
-| FMEA-007 | Dynamic module behavior leaks into critical `prod` path | Medium | `architecture-maintainer` | `in-progress` | `#118`, `#101` | `EVD_CHECK_MAIN`, `EVD_QLT_PROD_BASELINE` |
+| FMEA-007 | Dynamic module behavior leaks into critical `prod` path | Medium | `architecture-maintainer` | `in-progress` | `#118`, `#101`, `#206` | `EVD_CHECK_MAIN`, `EVD_QLT_STANDARDS_PROFILE`, `EVD_QLT_PROD_BASELINE`, `EVD_QLT_INTERFACE_CONTRACTS` |
 
 ## Maintenance Rules
 
