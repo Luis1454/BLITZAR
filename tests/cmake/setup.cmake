@@ -99,6 +99,12 @@ if(NOT TARGET ${GRAVITY_TEST_PLATFORM_TARGET})
             GRAVITY_CLIENT_MODULE_EXPORT_ATTR=
             GRAVITY_HD_DEVICE=
             GRAVITY_HD_HOST=
+            $<$<STREQUAL:${GRAVITY_PROFILE},prod>:GRAVITY_PROFILE_PROD=1>
+            $<$<NOT:$<STREQUAL:${GRAVITY_PROFILE},prod>>:GRAVITY_PROFILE_DEV=1>
+            $<$<STREQUAL:${GRAVITY_PROFILE},prod>:GRAVITY_PROFILE_IS_PROD=1>
+            $<$<NOT:$<STREQUAL:${GRAVITY_PROFILE},prod>>:GRAVITY_PROFILE_IS_PROD=0>
+            $<$<STREQUAL:${GRAVITY_PROFILE},prod>:GRAVITY_PROFILE_IS_DEV=0>
+            $<$<NOT:$<STREQUAL:${GRAVITY_PROFILE},prod>>:GRAVITY_PROFILE_IS_DEV=1>
     )
     gravity_apply_test_paths(${GRAVITY_TEST_PLATFORM_TARGET})
     gravity_apply_test_quality_flags(${GRAVITY_TEST_PLATFORM_TARGET})
@@ -123,6 +129,12 @@ function(gravity_add_gtest target_name)
             GRAVITY_CLIENT_MODULE_EXPORT_ATTR=
             GRAVITY_HD_DEVICE=
             GRAVITY_HD_HOST=
+            $<$<STREQUAL:${GRAVITY_PROFILE},prod>:GRAVITY_PROFILE_PROD=1>
+            $<$<NOT:$<STREQUAL:${GRAVITY_PROFILE},prod>>:GRAVITY_PROFILE_DEV=1>
+            $<$<STREQUAL:${GRAVITY_PROFILE},prod>:GRAVITY_PROFILE_IS_PROD=1>
+            $<$<NOT:$<STREQUAL:${GRAVITY_PROFILE},prod>>:GRAVITY_PROFILE_IS_PROD=0>
+            $<$<STREQUAL:${GRAVITY_PROFILE},prod>:GRAVITY_PROFILE_IS_DEV=0>
+            $<$<NOT:$<STREQUAL:${GRAVITY_PROFILE},prod>>:GRAVITY_PROFILE_IS_DEV=1>
     )
     target_link_libraries(${target_name} PRIVATE GTest::gtest_main ${ARG_LIBS})
     gravity_apply_test_paths(${target_name})

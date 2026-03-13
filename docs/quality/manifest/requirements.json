@@ -223,13 +223,17 @@
     },
     "REQ-MOD-002": {
       "tests": [
-        "^ClientHostCliArgsTest\\.TST_UNT_MODHOST_00[1-2]_.*$",
-        "^ClientHostCliTextTest\\.TST_UNT_MODHOST_003_.*$"
+        "^ClientHostCliArgsTest\\.TST_UNT_MODHOST_00(1|2|7|8)_.*$",
+        "^ClientHostCliTextTest\\.TST_UNT_MODHOST_003_.*$",
+        "^ClientModuleBoundaryTest\\.TST_UNT_MODHOST_00(4|5|6|9|10)_.*$"
       ],
       "artifacts": [
         "EVD_TEST_UNIT_MODULE_HOST",
+        "EVD_TEST_UNIT_MODULE_HOST_BOUNDARY",
         "EVD_QLT_INTERFACE_CONTRACTS",
-        "EVD_IFACE_CLIENT_MODULE_API"
+        "EVD_IFACE_CLIENT_MODULE_API",
+        "EVD_IFACE_CLIENT_MODULE_MANIFEST",
+        "EVD_IFACE_CLIENT_MODULE_HASH"
       ]
     }
   }

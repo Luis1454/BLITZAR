@@ -8,6 +8,8 @@ namespace grav_module {
 
 extern const std::uint32_t kClientModuleApiVersionV1;
 extern const char *kClientModuleEntryPoint;
+extern const char *kClientModuleProductName;
+extern const char *kClientModuleProductVersion;
 
 struct ClientHostContextV1 {
     const char *configPath;

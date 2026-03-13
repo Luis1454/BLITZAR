@@ -18,7 +18,11 @@ public:
     ClientModuleHandle(const ClientModuleHandle &) = delete;
     ClientModuleHandle &operator=(const ClientModuleHandle &) = delete;
 
-    bool load(const std::string &modulePath, const std::string &configPath, std::string &outError);
+    bool load(
+        const std::string &modulePath,
+        const std::string &configPath,
+        std::string_view expectedModuleId,
+        std::string &outError);
     void unload() noexcept;
 
     [[nodiscard]] bool isLoaded() const noexcept;

@@ -29,6 +29,20 @@ if(APPLE)
             GRAVITY_PLATFORM_DYLIB_EXT=".dylib"
     )
 endif()
+
+function(gravity_add_client_module_manifest target_name module_id)
+    add_custom_command(TARGET ${target_name} POST_BUILD
+        COMMAND ${CMAKE_COMMAND}
+            -DMODULE_FILE=$<TARGET_FILE:${target_name}>
+            -DMODULE_ID=${module_id}
+            -DMODULE_NAME=${target_name}
+            -DAPI_VERSION=1
+            -DPRODUCT_NAME=A.S.T.E.R.
+            -DPRODUCT_VERSION=0.0.0-dev
+            -P ${CMAKE_SOURCE_DIR}/scripts/generate_client_module_manifest.cmake
+        VERBATIM
+    )
+endfunction()
 if(WIN32)
     target_link_libraries(gravityPlatform
         PUBLIC
@@ -73,9 +87,12 @@ if(GRAVITY_BUILD_CLIENT_HOST)
         apps/client-host/client_host_cli_text.cpp
         apps/client-host/client_host_module_ops.cpp
         runtime/src/client/ClientModuleBoundary.cpp
+        runtime/src/client/ClientModuleHash.cpp
         runtime/src/client/ClientModuleHandle.cpp
         runtime/src/client/ClientModuleHandleLoad.cpp
         runtime/src/client/ClientModuleApi.cpp
+        runtime/src/client/ClientModuleManifest.cpp
+        engine/src/config/TextParse.cpp
     )
     configure_gravity_cpp_target(${CLIENT_HOST_NAME})
 endif()
@@ -98,6 +115,7 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
     if(WIN32)
         target_compile_definitions(${CLIENT_MODULE_CLI_NAME} PRIVATE GRAVITY_CLIENT_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
     endif()
+    gravity_add_client_module_manifest(${CLIENT_MODULE_CLI_NAME} cli)
 
     add_library(${CLIENT_MODULE_ECHO_NAME} MODULE
         modules/echo/module.cpp
@@ -109,6 +127,7 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
     if(WIN32)
         target_compile_definitions(${CLIENT_MODULE_ECHO_NAME} PRIVATE GRAVITY_CLIENT_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
     endif()
+    gravity_add_client_module_manifest(${CLIENT_MODULE_ECHO_NAME} echo)
 
     add_library(${CLIENT_MODULE_GUI_PROXY_NAME} MODULE
         modules/proxy/module.cpp
@@ -120,6 +139,7 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
     if(WIN32)
         target_compile_definitions(${CLIENT_MODULE_GUI_PROXY_NAME} PRIVATE GRAVITY_CLIENT_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
     endif()
+    gravity_add_client_module_manifest(${CLIENT_MODULE_GUI_PROXY_NAME} gui)
 endif()
 
 if(GRAVITY_BUILD_CLIENT_MODULES)
@@ -163,6 +183,7 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
             PRIVATE
                 Qt6::Widgets
         )
+        gravity_add_client_module_manifest(${CLIENT_MODULE_QT_INPROC_NAME} qt)
     else()
         message(STATUS "Qt6 not found. Qt in-process client module is disabled.")
     endif()
