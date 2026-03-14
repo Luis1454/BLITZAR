@@ -185,7 +185,7 @@ MainWindow::MainWindow(
     _serverPortSpin->setRange(1, 65535);
     _serverPortSpin->setValue(4545);
     _serverAutostartCheck->setChecked(false);
-    _serverBinEdit->setPlaceholderText("aster-server(.exe)");
+    _serverBinEdit->setPlaceholderText("blitzar-server(.exe)");
 
     auto *sectionsWidget = new QWidget(this);
     auto *sectionsLayout = new QHBoxLayout(sectionsWidget);

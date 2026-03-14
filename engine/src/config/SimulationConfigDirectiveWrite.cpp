@@ -52,7 +52,7 @@ void SimulationConfigDirective::write(std::ostream &out, const SimulationConfig 
     const std::string effectiveProfile = emitCustomProfile ? "custom" : config.performanceProfile;
 
     out << "# ==================================================\n";
-    out << "# A.S.T.E.R. directive config\n";
+    out << "# BLITZAR directive config\n";
     out << "# Generated automatically. Edit values then restart.\n";
     out << "# ==================================================\n\n";
 

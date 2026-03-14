@@ -1,7 +1,7 @@
-EXECUTABLE := aster
-HEADLESS_EXECUTABLE := aster-headless
-SERVER_EXECUTABLE := aster-server
-CLIENT_HOST_EXECUTABLE := aster-client
+EXECUTABLE := blitzar
+HEADLESS_EXECUTABLE := blitzar-headless
+SERVER_EXECUTABLE := blitzar-server
+CLIENT_HOST_EXECUTABLE := blitzar-client
 
 BUILD_DIR ?= build
 BUILD_TYPE ?= Release

@@ -23,7 +23,7 @@ Use the extracted `actions-runner` directory on the Windows host, then run:
 
 ```powershell
 python scripts/ci/gpu/bootstrap_windows_runner.py `
-  --repo Luis1454/CUDA-GRAVITY-SIMULATION `
+  --repo Luis1454/BLITZAR `
   --runner-root C:\actions-runner `
   --runner-name gravity-gpu-01 `
   --output dist/gpu-runner/bootstrap-plan.json `
