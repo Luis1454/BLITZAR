@@ -93,11 +93,14 @@ static std::vector<std::string> splitTokens(const std::string &line)
 struct QtInProcState {
     std::string configPath = "simulation.ini";
     grav_client::ClientTransportArgs transport{
-        true,           // remote mode
         "127.0.0.1",
         4545u,
         false,          // autostart off by default
-        {}
+        {},
+        {},
+        grav_client::kClientRemoteCommandTimeoutMsDefault,
+        grav_client::kClientRemoteStatusTimeoutMsDefault,
+        grav_client::kClientRemoteSnapshotTimeoutMsDefault
     };
     std::thread uiThread;
     std::atomic<bool> running{false};

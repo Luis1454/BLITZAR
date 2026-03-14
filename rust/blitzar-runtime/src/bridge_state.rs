@@ -9,7 +9,6 @@ pub struct PendingCommand {
 }
 
 pub struct BridgeState {
-    remote_mode: bool,
     connected: bool,
     server_launched: bool,
     remote_snapshot_cap: u32,
@@ -18,23 +17,14 @@ pub struct BridgeState {
 }
 
 impl BridgeState {
-    pub fn new(remote_mode: bool) -> Self {
+    pub fn new() -> Self {
         Self {
-            remote_mode,
             connected: false,
             server_launched: false,
             remote_snapshot_cap: SNAPSHOT_DEFAULT_POINTS,
             pending_queue_drop_warned: false,
             pending_commands: Vec::new(),
         }
-    }
-
-    pub fn set_remote_mode(&mut self, remote_mode: bool) {
-        self.remote_mode = remote_mode;
-    }
-
-    pub fn remote_mode(&self) -> bool {
-        self.remote_mode
     }
 
     pub fn set_connected(&mut self, connected: bool) {
@@ -102,9 +92,7 @@ impl BridgeState {
     }
 
     pub fn link_state_label(&self) -> &'static str {
-        if !self.remote_mode {
-            "local"
-        } else if self.connected {
+        if self.connected {
             "connected"
         } else {
             "reconnecting"
@@ -112,9 +100,7 @@ impl BridgeState {
     }
 
     pub fn server_owner_label(&self) -> &'static str {
-        if !self.remote_mode {
-            "embedded"
-        } else if self.server_launched {
+        if self.server_launched {
             "managed"
         } else {
             "external"

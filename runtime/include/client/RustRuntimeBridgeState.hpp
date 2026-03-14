@@ -12,14 +12,11 @@ namespace grav_client {
 
 class RustRuntimeBridgeState {
     public:
-        explicit RustRuntimeBridgeState(bool remoteMode);
+        RustRuntimeBridgeState();
         ~RustRuntimeBridgeState();
 
         RustRuntimeBridgeState(const RustRuntimeBridgeState &) = delete;
         RustRuntimeBridgeState &operator=(const RustRuntimeBridgeState &) = delete;
-
-        void setRemoteMode(bool remoteMode);
-        bool isRemoteMode() const;
 
         void setConnected(bool connected);
         bool isConnected() const;

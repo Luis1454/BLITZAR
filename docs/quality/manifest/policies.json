@@ -27,7 +27,6 @@
         "runtime/include/client/ErrorBuffer.hpp",
         "runtime/include/client/ClientModuleApi.hpp",
         "runtime/include/client/IClientRuntime.hpp",
-        "runtime/include/client/ILocalServer.hpp",
         "runtime/include/protocol/ServerProtocol.hpp",
         "engine/include/platform/internal/DynamicLibraryOps.hpp",
         "engine/include/platform/internal/ProcessOps.hpp",

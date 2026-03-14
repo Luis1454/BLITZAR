@@ -7,7 +7,7 @@ Targets:
 - Module: `gravityClientModuleCli` (server control/status)
 - Module: `gravityClientModuleEcho` (diagnostic echo module)
 - Module: `gravityClientModuleGuiProxy` (launch/stop external GUI clients)
-- Module: `gravityClientModuleQtInProc` (native in-process Qt client)
+- Module: `gravityClientModuleQtInProc` (Qt client module using the server service)
 
 Profile posture:
 - `dev`: preferred profile for the module host; startup load plus live `reload` and `switch` are available.
@@ -106,7 +106,7 @@ client-host> launch path/to/another/client.exe
 
 This lets you switch GUI clients live while the server process keeps running.
 
-## Native Qt in-process module
+## Qt client module
 
 Start host directly with `qt`:
 
@@ -123,6 +123,8 @@ set-autostart false
 set-server-bin build/blitzar-server.exe
 restart
 ```
+
+The Qt module runs inside `blitzar-client`, but it no longer embeds a backend path. All runtime control and snapshots flow through the server service connector.
 
 In `dev`, you can still hot-switch to another module:
 

@@ -290,13 +290,12 @@ MainWindow::MainWindow(
     _multiView->setZoom(static_cast<float>(_zoomSlider->value()) / 10.0f);
     _multiView->setLuminosity(_luminositySlider->value());
     update3DCameraFromSliders();
-    const bool remoteMode = _runtime->isRemoteMode();
-    _reconnectButton->setEnabled(remoteMode);
-    _applyConnectorButton->setEnabled(remoteMode);
-    _serverAutostartCheck->setEnabled(remoteMode);
-    _serverHostEdit->setEnabled(remoteMode);
-    _serverPortSpin->setEnabled(remoteMode);
-    _serverBinEdit->setEnabled(remoteMode);
+    _reconnectButton->setEnabled(true);
+    _applyConnectorButton->setEnabled(true);
+    _serverAutostartCheck->setEnabled(true);
+    _serverHostEdit->setEnabled(true);
+    _serverPortSpin->setEnabled(true);
+    _serverBinEdit->setEnabled(true);
 
     const auto applySphParams = [this]() {
         _config.sphSmoothingLength = static_cast<float>(_sphSmoothingSpin->value());
@@ -515,8 +514,7 @@ MainWindow::MainWindow(
         _timer->start(std::max(1, static_cast<int>(1000 / fps)));
     } else {
         _statusLabel->setText(
-            QString("server connection failed (%1)")
-                .arg(_runtime->isRemoteMode() ? "remote" : "local")
+            QString("server connection failed (service)")
         );
     }
 }
@@ -722,7 +720,7 @@ void MainWindow::tick()
     const bool hasSnapshotAge = snapshotAgeMs != std::numeric_limits<std::uint32_t>::max();
     const bool staleStats = hasStatsAge && statsAgeMs > 1000u;
     const bool staleSnapshot = hasSnapshotAge && snapshotAgeMs > 1000u;
-    const bool stale = _runtime->isRemoteMode() && (linkLabel != "connected" || staleStats || staleSnapshot);
+    const bool stale = (linkLabel != "connected" || staleStats || staleSnapshot);
     if (gotSnapshot) {
         _multiView->setSnapshot(std::move(snapshot));
     }

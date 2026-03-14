@@ -4,8 +4,8 @@
 
 namespace grav_client {
 
-RustRuntimeBridgeState::RustRuntimeBridgeState(bool remoteMode)
-    : _state(blitzar_runtime_bridge_create(remoteMode))
+RustRuntimeBridgeState::RustRuntimeBridgeState()
+    : _state(blitzar_runtime_bridge_create())
 {
     if (_state == nullptr) {
         throw std::runtime_error("failed to create Rust runtime bridge state");
@@ -15,16 +15,6 @@ RustRuntimeBridgeState::RustRuntimeBridgeState(bool remoteMode)
 RustRuntimeBridgeState::~RustRuntimeBridgeState()
 {
     blitzar_runtime_bridge_destroy(_state);
-}
-
-void RustRuntimeBridgeState::setRemoteMode(bool remoteMode)
-{
-    blitzar_runtime_bridge_set_remote_mode(_state, remoteMode);
-}
-
-bool RustRuntimeBridgeState::isRemoteMode() const
-{
-    return blitzar_runtime_bridge_is_remote_mode(_state);
 }
 
 void RustRuntimeBridgeState::setConnected(bool connected)

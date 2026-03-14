@@ -1,15 +1,12 @@
 #ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_
 
-#include "client/ILocalServer.hpp"
 #include "client/RustRuntimeBridgeState.hpp"
 #include "protocol/ServerClient.hpp"
 
 #include <chrono>
 #include <cstdint>
-#include <functional>
 #include <iosfwd>
-#include <memory>
 #include <mutex>
 #include <string>
 #include <string_view>
@@ -27,7 +24,6 @@ extern const std::uint32_t kClientRemoteSnapshotTimeoutMsDefault;
 std::uint32_t clampClientRemoteTimeoutMs(std::uint32_t timeoutMs);
 
 struct ClientTransportArgs {
-    bool remoteMode = false;
     std::string remoteHost = "127.0.0.1";
     std::uint16_t remotePort = 4545u;
     bool remoteAutoStart = false;
@@ -39,7 +35,6 @@ struct ClientTransportArgs {
 };
 
 enum class ClientLinkState {
-    LocalEmbedded,
     Connected,
     Reconnecting
 };
@@ -53,10 +48,8 @@ bool splitClientTransportArgs(
 
 class ClientServerBridge {
     public:
-        typedef std::function<std::unique_ptr<ILocalServer>(const std::string &)> LocalServerFactory;
         ClientServerBridge(
             const std::string &configPath,
-            bool remoteMode,
             std::string remoteHost,
             std::uint16_t remotePort,
             bool remoteAutoStart,
@@ -64,8 +57,7 @@ class ClientServerBridge {
             std::string remoteAuthToken,
             std::uint32_t remoteCommandTimeoutMs,
             std::uint32_t remoteStatusTimeoutMs,
-            std::uint32_t remoteSnapshotTimeoutMs,
-            LocalServerFactory localServerFactory
+            std::uint32_t remoteSnapshotTimeoutMs
         );
 
         bool start();
@@ -127,14 +119,11 @@ class ClientServerBridge {
         void refreshRemoteStats();
 
         std::string _configPath;
-        bool _remoteMode;
-        LocalServerFactory _localServerFactory;
         std::string _remoteHost;
         std::uint16_t _remotePort;
         bool _remoteAutoStart;
         std::string _serverExecutable;
         std::string _remoteAuthToken;
-        std::unique_ptr<ILocalServer> _localServer;
         ServerClient _remoteClient;
         bool _remoteLaunchAttempted;
         RustRuntimeBridgeState _runtimeState;

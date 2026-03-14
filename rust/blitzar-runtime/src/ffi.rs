@@ -45,8 +45,8 @@ fn decode_string(data: *const u8, len: usize) -> Option<String> {
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn blitzar_runtime_bridge_create(remote_mode: bool) -> *mut BridgeState {
-    Box::into_raw(Box::new(BridgeState::new(remote_mode)))
+pub extern "C" fn blitzar_runtime_bridge_create() -> *mut BridgeState {
+    Box::into_raw(Box::new(BridgeState::new()))
 }
 
 #[unsafe(no_mangle)]
@@ -57,23 +57,6 @@ pub extern "C" fn blitzar_runtime_bridge_destroy(state: *mut BridgeState) {
     unsafe {
         drop(Box::from_raw(state));
     }
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn blitzar_runtime_bridge_set_remote_mode(
-    state: *mut BridgeState,
-    remote_mode: bool,
-) {
-    if let Some(state) = state_mut(state) {
-        state.set_remote_mode(remote_mode);
-    }
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn blitzar_runtime_bridge_is_remote_mode(state: *const BridgeState) -> bool {
-    state_ref(state)
-        .map(BridgeState::remote_mode)
-        .unwrap_or(false)
 }
 
 #[unsafe(no_mangle)]

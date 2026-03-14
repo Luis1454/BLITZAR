@@ -18,11 +18,8 @@ struct blitzar_runtime_pending_command_view {
     blitzar_runtime_string_view fields;
 };
 
-blitzar_runtime_bridge_t *blitzar_runtime_bridge_create(bool remoteMode);
+blitzar_runtime_bridge_t *blitzar_runtime_bridge_create();
 void blitzar_runtime_bridge_destroy(blitzar_runtime_bridge_t *state);
-
-void blitzar_runtime_bridge_set_remote_mode(blitzar_runtime_bridge_t *state, bool remoteMode);
-bool blitzar_runtime_bridge_is_remote_mode(const blitzar_runtime_bridge_t *state);
 
 void blitzar_runtime_bridge_set_connected(blitzar_runtime_bridge_t *state, bool connected);
 bool blitzar_runtime_bridge_is_connected(const blitzar_runtime_bridge_t *state);
