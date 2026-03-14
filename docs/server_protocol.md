@@ -1,6 +1,6 @@
 # Server JSON Protocol (TCP)
 
-Canonical compatibility governance for this surface is defined in `docs/quality/interface_contracts.md` (`CTR-PROT-001`).
+Canonical compatibility governance for this surface is defined in `docs/quality/interface_contracts.md` (`CTR-PROT-001`). The Rust mirror for this contract lives in `rust/blitzar-protocol`.
 
 Transport:
 - TCP, one JSON object per line (`\n` delimited)
@@ -23,6 +23,12 @@ Core commands:
     - `fault_reason` (`string`)
     - `sph` (`bool`)
     - `server_fps` (`float`, simulation steps per second)
+    - `performance_profile` (`string`)
+    - `substep_target_dt` (`float`)
+    - `substep_dt` (`float`)
+    - `substeps` (`uint32`)
+    - `max_substeps` (`uint32`)
+    - `snapshot_publish_period_ms` (`uint32`)
     - `particles` (`uint32`)
     - `solver` (`string`)
     - `ekin`, `epot`, `eth`, `erad`, `etot` (`float`)
@@ -59,6 +65,7 @@ I/O commands:
 
 Reference:
 - Constants and clamp rules are defined in `runtime/include/protocol/ServerProtocol.hpp`.
+- Rust encode/decode parity for the `server-json-v1` schema is exercised in `rust/blitzar-protocol/tests/protocol.rs`.
 
 
 

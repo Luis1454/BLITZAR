@@ -2,7 +2,7 @@
   "metadata": {
     "system": "BLITZAR",
     "revision": "2026-03-14",
-    "revision_note": "Governance now includes an opaque compute-core C ABI contract for the planned Rust host migration, alongside manifest-qualified client modules and explicit interactive/balanced/quality performance presets that bundle snapshot cadence, draw-cap, energy sampling, and bounded substep policy without changing solver or integrator selection."
+    "revision_note": "Governance now includes an opaque compute-core C ABI plus a pinned Rust workspace that mirrors the server-json-v1 protocol in dev, with Rust test catalog coverage and explicit qualification boundaries until Cargo is integrated into the prod evidence lanes."
   },
   "includes": [
     "manifest/evidence.json",
