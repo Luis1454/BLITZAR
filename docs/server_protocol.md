@@ -76,7 +76,7 @@ Compatibility rules:
 Deprecation strategy:
 - A deprecated command or field must be marked in this document and kept wire-compatible for at least one release.
 - Removal of a deprecated command or field requires a new schema version and synchronized contract/test updates.
-- The committed schema artifact in `docs/server_protocol_schema.json` is the source of truth for transport adapters outside the in-process client.
+- The committed schema artifact in `docs/server_protocol_schema.json` is the source of truth for service transport adapters and client/runtime integrations.
 
 
 

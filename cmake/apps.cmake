@@ -174,7 +174,6 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
             runtime/src/client/ClientServerBridge.cpp
             runtime/src/client/ClientCommon.cpp
             runtime/src/client/ClientRuntime.cpp
-            runtime/src/client/LocalServerFactory.cpp
             runtime/src/client/RustRuntimeBridgeState.cpp
             ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
             ${GRAVITY_SERVER_SOURCES}
@@ -196,6 +195,6 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
         )
         gravity_add_client_module_manifest(${CLIENT_MODULE_QT_INPROC_NAME} qt)
     else()
-        message(STATUS "Qt6 not found. Qt in-process client module is disabled.")
+        message(STATUS "Qt6 not found. Qt client module is disabled.")
     endif()
 endif()

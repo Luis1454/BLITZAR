@@ -1,9 +1,9 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONSERVER_HPP_
 #define GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONSERVER_HPP_
 
-#include "physics/ParticleSystem.hpp"
-#include "client/ILocalServer.hpp"
 #include "config/SimulationConfig.hpp"
+#include "physics/ParticleSystem.hpp"
+#include "types/SimulationTypes.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -14,44 +14,44 @@
 #include <thread>
 #include <vector>
 
-class SimulationServer : public grav_client::ILocalServer {
+class SimulationServer {
     public:
         explicit SimulationServer(std::uint32_t particleCount, float initialDt);
         explicit SimulationServer(const std::string &configPath);
         ~SimulationServer();
 
-        void start() override;
-        void stop() override;
+        void start();
+        void stop();
 
-        void setPaused(bool paused) override;
+        void setPaused(bool paused);
         bool isPaused() const;
-        void togglePaused() override;
-        void stepOnce() override;
+        void togglePaused();
+        void stepOnce();
 
-        void setParticleCount(std::uint32_t particleCount) override;
-        void setDt(float dt) override;
-        void scaleDt(float factor) override;
+        void setParticleCount(std::uint32_t particleCount);
+        void setDt(float dt);
+        void scaleDt(float factor);
         float getDt() const;
 
-        void requestReset() override;
+        void requestReset();
         void requestRecover();
-        void setSolverMode(const std::string &mode) override;
-        void setIntegratorMode(const std::string &mode) override;
-        void setPerformanceProfile(const std::string &profile) override;
-        void setOctreeParameters(float theta, float softening) override;
-        void setSphEnabled(bool enabled) override;
-        void setSphParameters(float smoothingLength, float restDensity, float gasConstant, float viscosity) override;
-        void setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps) override;
-        void setSnapshotPublishPeriodMs(std::uint32_t periodMs) override;
-        void setInitialStateConfig(const InitialStateConfig &config) override;
-        void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit) override;
-        void setExportDefaults(const std::string &directory, const std::string &format) override;
-        void setInitialStateFile(const std::string &path, const std::string &format) override;
-        void requestExportSnapshot(const std::string &outputPath, const std::string &format) override;
+        void setSolverMode(const std::string &mode);
+        void setIntegratorMode(const std::string &mode);
+        void setPerformanceProfile(const std::string &profile);
+        void setOctreeParameters(float theta, float softening);
+        void setSphEnabled(bool enabled);
+        void setSphParameters(float smoothingLength, float restDensity, float gasConstant, float viscosity);
+        void setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps);
+        void setSnapshotPublishPeriodMs(std::uint32_t periodMs);
+        void setInitialStateConfig(const InitialStateConfig &config);
+        void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit);
+        void setExportDefaults(const std::string &directory, const std::string &format);
+        void setInitialStateFile(const std::string &path, const std::string &format);
+        void requestExportSnapshot(const std::string &outputPath, const std::string &format);
 
-        bool tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot) override;
+        bool tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot);
         bool copyLatestSnapshot(std::vector<RenderParticle> &outSnapshot, std::size_t maxPoints = 0) const;
-        SimulationStats getStats() const override;
+        SimulationStats getStats() const;
         SimulationConfig getRuntimeConfig() const;
 
     private:

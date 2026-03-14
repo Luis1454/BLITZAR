@@ -1,5 +1,4 @@
 #include "client/ClientRuntime.hpp"
-#include "client/LocalServerFactory.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -13,7 +12,6 @@ constexpr auto kStatusPollInterval = std::chrono::milliseconds(120);
 ClientRuntime::ClientRuntime(const std::string &configPath, const ClientTransportArgs &transport)
     : _bridge(
           configPath,
-          transport.remoteMode,
           transport.remoteHost,
           transport.remotePort,
           transport.remoteAutoStart,
@@ -21,8 +19,7 @@ ClientRuntime::ClientRuntime(const std::string &configPath, const ClientTranspor
           transport.remoteAuthToken,
           transport.remoteCommandTimeoutMs,
           transport.remoteStatusTimeoutMs,
-          transport.remoteSnapshotTimeoutMs,
-          createLocalServer),
+          transport.remoteSnapshotTimeoutMs),
       _pollThread(),
       _pollRunning(false),
       _dataMutex(),
@@ -30,8 +27,8 @@ ClientRuntime::ClientRuntime(const std::string &configPath, const ClientTranspor
       _latestSnapshot(),
       _hasNewSnapshot(false),
       _latestSnapshotSize(0u),
-      _latestLinkLabel(transport.remoteMode ? "reconnecting" : "local"),
-      _latestOwnerLabel(transport.remoteMode ? "external" : "embedded"),
+      _latestLinkLabel("reconnecting"),
+      _latestOwnerLabel("external"),
       _lastStatsAt(),
       _lastSnapshotAt(),
       _hasStats(false),
@@ -201,7 +198,7 @@ void ClientRuntime::configureRemoteConnector(
 
 bool ClientRuntime::isRemoteMode() const
 {
-    return _bridge.isRemoteMode();
+    return true;
 }
 
 SimulationStats ClientRuntime::getCachedStats() const

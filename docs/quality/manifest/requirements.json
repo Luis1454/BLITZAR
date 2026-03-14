@@ -87,7 +87,6 @@
                                                                "EVD_TEST_UNIT_PHYSICS_SOLVER",
                                                                "EVD_QLT_INTERFACE_CONTRACTS",
                                                                "EVD_IFACE_CLIENT_RUNTIME",
-                                                               "EVD_IFACE_LOCAL_SERVER",
                                                                "EVD_IFACE_CLIENT_RUNTIME_RUST",
                                                                "EVD_IFACE_RUNTIME_BRIDGE_API",
                                                                "EVD_IFACE_RUNTIME_BRIDGE_STATE",
