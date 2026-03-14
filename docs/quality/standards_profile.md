@@ -25,6 +25,7 @@ This repository is independent from any company stack but aligned for US space r
   - evidence-grade environment assumptions are fixed by `docs/quality/prod_baseline.md`.
 - `dev` profile (iteration path):
   - broader experimentation allowed;
+  - Rust workspace crates may mirror protocol or runtime contracts here before they are wired into the qualified CI lanes;
   - results are not qualification evidence unless reproduced in `prod` profile constraints.
 
 Build switch:
@@ -69,6 +70,7 @@ Build switch:
 - Runtime behavior in critical paths must be reproducible under pinned toolchain settings.
 - Dynamic client-module verification in `prod` must remain deterministic: allowlist, `apiVersion`, product metadata, and binary `sha256` are all part of the loader contract.
 - Mixed-language seams must remain narrow and deterministic: the compute-core FFI may expose only opaque handles plus POD request/status/snapshot structs, never C++/CUDA implementation types.
+- Rust workspace additions must pin `rustc` through `rust-toolchain.toml`, commit `Cargo.lock`, and treat Cargo-built artifacts as `dev` evidence until a later issue wires them into the qualified `prod` lanes and tool manifest.
 - Interactive performance presets may tune snapshot cadence, client draw cap, energy sampling, and bounded substep policy, but must not silently change solver or integrator mode.
 - Production C++ paths (`apps/`, `engine/`, `runtime/`, `modules/`) must not use unnamed namespaces.
 - Production C++ paths must also satisfy the automated subset of the `Power of 10` profile (`goto`, `setjmp`/`longjmp`, `do-while`, open-ended `while(true)`, non-structural object-like macros, and non-ABI function-pointer typedefs are forbidden).
