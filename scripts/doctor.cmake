@@ -44,3 +44,25 @@ if(EXISTS "${_qt_module}")
 else()
     message(WARNING "[doctor] qt module missing: ${_qt_module}")
 endif()
+
+file(GLOB _qt_platform_plugins
+    "${BUILD_DIR}/platforms/qwindows.dll"
+    "${BUILD_DIR}/platforms/qwindowsd.dll"
+)
+if(_qt_platform_plugins)
+    list(GET _qt_platform_plugins 0 _qt_platform_plugin)
+    message(STATUS "[doctor] qt platform plugin: ${_qt_platform_plugin}")
+else()
+    message(WARNING "[doctor] qt platform plugin missing under: ${BUILD_DIR}/platforms")
+endif()
+
+file(GLOB _qt_core_dlls
+    "${BUILD_DIR}/Qt6Core.dll"
+    "${BUILD_DIR}/Qt6Cored.dll"
+)
+if(_qt_core_dlls)
+    list(GET _qt_core_dlls 0 _qt_core_dll)
+    message(STATUS "[doctor] qt core dll: ${_qt_core_dll}")
+else()
+    message(WARNING "[doctor] qt core dll missing under: ${BUILD_DIR}")
+endif()
