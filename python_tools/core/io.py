@@ -13,6 +13,7 @@ from .models import JsonValue
 
 REQ_ID_RE = re.compile(r"^REQ-[A-Z]+-[0-9]{3}$")
 TEST_MACRO_RE = re.compile(r"TEST(?:_F)?\(\s*([A-Za-z0-9_]+)\s*,\s*([A-Za-z0-9_]+)\s*\)")
+RUST_TEST_RE = re.compile(r"#\s*\[\s*test\s*\][\s\r\n]*fn\s+([A-Za-z0-9_]+)\s*\(")
 
 
 @dataclass(frozen=True)
@@ -109,7 +110,21 @@ def collect_test_ids(root: Path, extra_test_ids: set[str], test_macro_re: Patter
         text = path.read_text(encoding="utf-8", errors="ignore")
         for suite, case in test_macro_re.findall(text):
             tests.add(f"{suite}.{case}")
+    rust_root = root / "rust"
+    if rust_root.exists():
+        for path in rust_root.rglob("*.rs"):
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            for test_name in RUST_TEST_RE.findall(text):
+                tests.add(_normalize_rust_test_id(root, path, test_name))
     return tests
+
+
+def _normalize_rust_test_id(root: Path, path: Path, test_name: str) -> str:
+    rel_parts = list(path.relative_to(root).with_suffix("").parts)
+    if rel_parts and rel_parts[0] == "rust":
+        rel_parts = rel_parts[1:]
+    normalized_parts = [part.replace("-", "_") for part in rel_parts]
+    return "::".join((*normalized_parts, test_name))
 
 
 def collect_filtered_test_ids(

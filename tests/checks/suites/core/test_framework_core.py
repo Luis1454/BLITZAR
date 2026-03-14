@@ -5,6 +5,7 @@ from pathlib import Path
 
 import python_tools.core.runner as runner_module
 from python_tools.core.base_check import BaseCheck
+from python_tools.core.io import collect_test_ids
 from python_tools.core.models import CheckContext, CheckResult
 from python_tools.core.reporting import ResultReporter
 from python_tools.core.runner import CheckRunner, resolve_sequence
@@ -51,6 +52,13 @@ def test_base_check_template_method_order() -> None:
     result = check.run(CheckContext(root=Path(".").resolve()))
     assert result.ok
     assert check.calls == ["pre", "run", "post"]
+
+
+def test_collect_test_ids_includes_rust_tests(tmp_path: Path) -> None:
+    rust_test = tmp_path / "rust" / "blitzar-protocol" / "tests" / "protocol.rs"
+    rust_test.parent.mkdir(parents=True)
+    rust_test.write_text("#[test]\nfn tst_rust_prot_001_round_trip() {}\n", encoding="utf-8")
+    assert "blitzar_protocol::tests::protocol::tst_rust_prot_001_round_trip" in collect_test_ids(tmp_path, set())
 
 
 def test_result_reporter_handles_success(capsys) -> None:
