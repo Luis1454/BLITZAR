@@ -58,7 +58,6 @@
                      "EVD_IFACE_SERVER_PROTOCOL":  "runtime/include/protocol/ServerProtocol.hpp",
                      "EVD_IFACE_SERVER_PROTOCOL_SCHEMA_RUST":  "rust/blitzar-protocol/src/schema.rs",
                      "EVD_IFACE_CLIENT_RUNTIME":  "runtime/include/client/IClientRuntime.hpp",
-                     "EVD_IFACE_LOCAL_SERVER":  "runtime/include/client/ILocalServer.hpp",
                      "EVD_IFACE_BLITZAR_CORE_API":  "runtime/include/ffi/BlitzarCoreApi.hpp",
                      "EVD_IFACE_CLIENT_MODULE_API":  "runtime/include/client/ClientModuleApi.hpp",
                      "EVD_IFACE_CLIENT_MODULE_MANIFEST":  "runtime/include/client/ClientModuleManifest.hpp",

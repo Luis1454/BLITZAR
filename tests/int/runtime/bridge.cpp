@@ -21,7 +21,6 @@ TEST(ClientBridgeTest, TST_INT_RUNT_001_ReconnectsAfterRealServerRestart)
 
     grav_client::ClientServerBridge bridge(
         "simulation.ini",
-        true,
         "127.0.0.1",
         fixedPort,
         false,
@@ -29,8 +28,7 @@ TEST(ClientBridgeTest, TST_INT_RUNT_001_ReconnectsAfterRealServerRestart)
         "",
         80u,
         40u,
-        120u,
-        {});
+        120u);
 
     ASSERT_TRUE(bridge.start());
 
@@ -78,7 +76,6 @@ TEST(ClientBridgeTest, TST_INT_RUNT_002_ServerAbsenceDoesNotCauseLongBlockingLoo
 
     grav_client::ClientServerBridge bridge(
         "simulation.ini",
-        true,
         "127.0.0.1",
         unusedPort,
         false,
@@ -86,8 +83,7 @@ TEST(ClientBridgeTest, TST_INT_RUNT_002_ServerAbsenceDoesNotCauseLongBlockingLoo
         "",
         60u,
         30u,
-        80u,
-        {});
+        80u);
     EXPECT_FALSE(bridge.start());
 
     const auto startedAt = std::chrono::steady_clock::now();

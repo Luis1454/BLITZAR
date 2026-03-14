@@ -98,21 +98,6 @@ class SocketTimeoutScope {
         int _previousTimeoutMs;
 };
 
-template <typename LocalCall, typename RemoteCall>
-void dispatchServerCall(
-    bool remoteMode,
-    const std::unique_ptr<ILocalServer> &localServer,
-    LocalCall &&localCall,
-    RemoteCall &&remoteCall)
-{
-    if (!remoteMode) {
-        if (localServer) {
-            localCall(*localServer);
-        }
-        return;
-    }
-    remoteCall();
-}
 std::uint32_t clampClientRemoteTimeoutMs(std::uint32_t timeoutMs)
 {
     return std::clamp(timeoutMs, kClientRemoteTimeoutMinMs, kClientRemoteTimeoutMaxMs);
@@ -136,7 +121,7 @@ bool splitClientTransportArgs(
     for (std::size_t i = 1; i < rawArgs.size(); ++i) {
         const std::string raw(rawArgs[i]);
         if (raw == "--remote") {
-            transport.remoteMode = true;
+            warnings << "[args] --remote is deprecated; client mode always uses the server service\n";
             continue;
         }
         if (raw == "--server-host") {
@@ -145,12 +130,10 @@ bool splitClientTransportArgs(
                 return false;
             }
             transport.remoteHost = std::string(rawArgs[++i]);
-            transport.remoteMode = true;
             continue;
         }
         if (raw.rfind("--server-host=", 0) == 0) {
             transport.remoteHost = raw.substr(std::string("--server-host=").size());
-            transport.remoteMode = true;
             continue;
         }
         if (raw == "--server-port") {
@@ -164,7 +147,6 @@ bool splitClientTransportArgs(
                 return false;
             }
             transport.remotePort = parsedPort;
-            transport.remoteMode = true;
             continue;
         }
         if (raw.rfind("--server-port=", 0) == 0) {
@@ -175,7 +157,6 @@ bool splitClientTransportArgs(
                 return false;
             }
             transport.remotePort = parsedPort;
-            transport.remoteMode = true;
             continue;
         }
         if (raw == "--server-autostart") {
@@ -216,12 +197,10 @@ bool splitClientTransportArgs(
                 return false;
             }
             transport.remoteAuthToken = std::string(rawArgs[++i]);
-            transport.remoteMode = true;
             continue;
         }
         if (raw.rfind("--server-token=", 0) == 0) {
             transport.remoteAuthToken = raw.substr(std::string("--server-token=").size());
-            transport.remoteMode = true;
             continue;
         }
 
@@ -233,7 +212,6 @@ bool splitClientTransportArgs(
 
 ClientServerBridge::ClientServerBridge(
     const std::string &configPath,
-    bool remoteMode,
     std::string remoteHost,
     std::uint16_t remotePort,
     bool remoteAutoStart,
@@ -241,20 +219,16 @@ ClientServerBridge::ClientServerBridge(
     std::string remoteAuthToken,
     std::uint32_t remoteCommandTimeoutMs,
     std::uint32_t remoteStatusTimeoutMs,
-    std::uint32_t remoteSnapshotTimeoutMs,
-    LocalServerFactory localServerFactory)
+    std::uint32_t remoteSnapshotTimeoutMs)
     : _configPath(configPath),
-      _remoteMode(remoteMode),
-      _localServerFactory(std::move(localServerFactory)),
       _remoteHost(std::move(remoteHost)),
       _remotePort(remotePort),
       _remoteAutoStart(remoteAutoStart),
       _serverExecutable(serverExecutable.empty() ? std::string(kServerDefaultName) : std::move(serverExecutable)),
       _remoteAuthToken(std::move(remoteAuthToken)),
-      _localServer(nullptr),
       _remoteClient(),
       _remoteLaunchAttempted(false),
-      _runtimeState(remoteMode),
+      _runtimeState(),
       _cachedStats{},
       _warnedRemoteInitialConfig(false),
       _defaultExportFormat(),
@@ -266,28 +240,13 @@ ClientServerBridge::ClientServerBridge(
       _remoteStatusTimeoutMs(clampClientRemoteTimeoutMs(remoteStatusTimeoutMs)),
       _remoteSnapshotTimeoutMs(clampClientRemoteTimeoutMs(remoteSnapshotTimeoutMs))
 {
-    if (!_remoteMode && _localServerFactory) {
-        _localServer = _localServerFactory(configPath);
-    }
-    if (_remoteMode) {
-        _remoteClient.setSocketTimeoutMs(static_cast<int>(_remoteCommandTimeoutMs));
-        _remoteClient.setAuthToken(_remoteAuthToken);
-    }
+    _remoteClient.setSocketTimeoutMs(static_cast<int>(_remoteCommandTimeoutMs));
+    _remoteClient.setAuthToken(_remoteAuthToken);
 }
 
 bool ClientServerBridge::start()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    if (!_remoteMode) {
-        if (_localServer == nullptr && _localServerFactory) {
-            _localServer = _localServerFactory(_configPath);
-        }
-        if (_localServer != nullptr) {
-            _localServer->start();
-            return true;
-        }
-        return false;
-    }
     if (_runtimeState.isConnected() && _remoteClient.isConnected()) {
         return true;
     }
@@ -301,324 +260,197 @@ bool ClientServerBridge::start()
 void ClientServerBridge::stop()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    if (_remoteMode) {
-        if (_runtimeState.serverLaunched() && _remoteClient.isConnected()) {
-            (void)_remoteClient.sendCommand(std::string(grav_protocol::Shutdown));
-        }
-        if (_runtimeState.isConnected()) {
-            _remoteClient.disconnect();
-        }
-        _runtimeState.setConnected(false);
-        _runtimeState.setServerLaunched(false);
-        return;
+    if (_runtimeState.serverLaunched() && _remoteClient.isConnected()) {
+        (void)_remoteClient.sendCommand(std::string(grav_protocol::Shutdown));
     }
-    if (_localServer != nullptr) {
-        _localServer->stop();
+    if (_runtimeState.isConnected()) {
+        _remoteClient.disconnect();
     }
+    _runtimeState.setConnected(false);
+    _runtimeState.setServerLaunched(false);
 }
 
 void ClientServerBridge::setPaused(bool paused)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [paused](ILocalServer &server) { server.setPaused(paused); },
-        [this, paused]() {
-            sendOrQueueRemote(std::string(paused ? grav_protocol::Pause : grav_protocol::Resume));
-        });
+    sendOrQueueRemote(std::string(paused ? grav_protocol::Pause : grav_protocol::Resume));
 }
 
 void ClientServerBridge::togglePaused()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [](ILocalServer &server) { server.togglePaused(); },
-        [this]() { sendOrQueueRemote(std::string(grav_protocol::Toggle)); });
+    sendOrQueueRemote(std::string(grav_protocol::Toggle));
 }
 
 void ClientServerBridge::stepOnce()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [](ILocalServer &server) { server.stepOnce(); },
-        [this]() { sendOrQueueRemote(std::string(grav_protocol::Step), "\"count\":1"); });
+    sendOrQueueRemote(std::string(grav_protocol::Step), "\"count\":1");
 }
 
 void ClientServerBridge::setParticleCount(std::uint32_t particleCount)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [particleCount](ILocalServer &server) { server.setParticleCount(particleCount); },
-        [this, particleCount]() {
-            const std::uint32_t clamped = std::max<std::uint32_t>(2u, particleCount);
-            sendOrQueueRemote(std::string(grav_protocol::SetParticleCount), "\"value\":" + std::to_string(clamped));
-        });
+    const std::uint32_t clamped = std::max<std::uint32_t>(2u, particleCount);
+    sendOrQueueRemote(std::string(grav_protocol::SetParticleCount), "\"value\":" + std::to_string(clamped));
 }
 
 void ClientServerBridge::setDt(float dt)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [dt](ILocalServer &server) { server.setDt(dt); },
-        [this, dt]() {
-            const float clamped = std::max(1e-6f, dt);
-            sendOrQueueRemote(std::string(grav_protocol::SetDt), "\"value\":" + std::to_string(clamped));
-        });
+    const float clamped = std::max(1e-6f, dt);
+    sendOrQueueRemote(std::string(grav_protocol::SetDt), "\"value\":" + std::to_string(clamped));
 }
 
 void ClientServerBridge::scaleDt(float factor)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [factor](ILocalServer &server) { server.scaleDt(factor); },
-        [this, factor]() {
-            const float currentDt = std::max(1e-6f, getStats().dt);
-            const float scaled = std::max(1e-6f, currentDt * factor);
-            setDt(scaled);
-        });
+    const float currentDt = std::max(1e-6f, getStats().dt);
+    const float scaled = std::max(1e-6f, currentDt * factor);
+    setDt(scaled);
 }
 
 void ClientServerBridge::requestReset()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [](ILocalServer &server) { server.requestReset(); },
-        [this]() { sendOrQueueRemote(std::string(grav_protocol::Reset)); });
+    sendOrQueueRemote(std::string(grav_protocol::Reset));
 }
 
 void ClientServerBridge::requestRecover()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [](ILocalServer &server) { server.requestReset(); },
-        [this]() { sendOrQueueRemote(std::string(grav_protocol::Recover)); });
+    sendOrQueueRemote(std::string(grav_protocol::Recover));
 }
 
 void ClientServerBridge::setSolverMode(const std::string &mode)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [&mode](ILocalServer &server) { server.setSolverMode(mode); },
-        [this, &mode]() {
-            sendOrQueueRemote(std::string(grav_protocol::SetSolver), "\"value\":\"" + jsonEscape(mode) + "\"");
-        });
+    sendOrQueueRemote(std::string(grav_protocol::SetSolver), "\"value\":\"" + jsonEscape(mode) + "\"");
 }
 
 void ClientServerBridge::setIntegratorMode(const std::string &mode)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [&mode](ILocalServer &server) { server.setIntegratorMode(mode); },
-        [this, &mode]() {
-            sendOrQueueRemote(std::string(grav_protocol::SetIntegrator), "\"value\":\"" + jsonEscape(mode) + "\"");
-        });
+    sendOrQueueRemote(std::string(grav_protocol::SetIntegrator), "\"value\":\"" + jsonEscape(mode) + "\"");
 }
 
 void ClientServerBridge::setPerformanceProfile(const std::string &profile)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [&profile](ILocalServer &server) { server.setPerformanceProfile(profile); },
-        [this, &profile]() {
-            sendOrQueueRemote(
-                std::string(grav_protocol::SetPerformanceProfile),
-                "\"value\":\"" + jsonEscape(profile) + "\"");
-        });
+    sendOrQueueRemote(
+        std::string(grav_protocol::SetPerformanceProfile),
+        "\"value\":\"" + jsonEscape(profile) + "\"");
 }
 
 void ClientServerBridge::setOctreeParameters(float theta, float softening)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [theta, softening](ILocalServer &server) { server.setOctreeParameters(theta, softening); },
-        [this, theta, softening]() {
-            const float safeTheta = std::max(0.0001f, theta);
-            const float safeSoftening = std::max(0.000001f, softening);
-            sendOrQueueRemote(
-                std::string(grav_protocol::SetOctree),
-                "\"theta\":" + std::to_string(safeTheta) + ",\"softening\":" + std::to_string(safeSoftening));
-        });
+    const float safeTheta = std::max(0.0001f, theta);
+    const float safeSoftening = std::max(0.000001f, softening);
+    sendOrQueueRemote(
+        std::string(grav_protocol::SetOctree),
+        "\"theta\":" + std::to_string(safeTheta) + ",\"softening\":" + std::to_string(safeSoftening));
 }
 
 void ClientServerBridge::setSphEnabled(bool enabled)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [enabled](ILocalServer &server) { server.setSphEnabled(enabled); },
-        [this, enabled]() {
-            sendOrQueueRemote(std::string(grav_protocol::SetSph), std::string("\"value\":") + (enabled ? "true" : "false"));
-        });
+    sendOrQueueRemote(std::string(grav_protocol::SetSph), std::string("\"value\":") + (enabled ? "true" : "false"));
 }
 
 void ClientServerBridge::setSphParameters(float smoothingLength, float restDensity, float gasConstant, float viscosity)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [smoothingLength, restDensity, gasConstant, viscosity](ILocalServer &server) {
-            server.setSphParameters(smoothingLength, restDensity, gasConstant, viscosity);
-        },
-        [this, smoothingLength, restDensity, gasConstant, viscosity]() {
-            const float safeH = std::max(0.000001f, smoothingLength);
-            const float safeRestDensity = std::max(0.000001f, restDensity);
-            const float safeGasConstant = std::max(0.000001f, gasConstant);
-            const float safeViscosity = std::max(0.0f, viscosity);
-            sendOrQueueRemote(
-                std::string(grav_protocol::SetSphParams),
-                "\"h\":" + std::to_string(safeH)
-                    + ",\"rest_density\":" + std::to_string(safeRestDensity)
-                    + ",\"gas_constant\":" + std::to_string(safeGasConstant)
-                    + ",\"viscosity\":" + std::to_string(safeViscosity));
-        });
+    const float safeH = std::max(0.000001f, smoothingLength);
+    const float safeRestDensity = std::max(0.000001f, restDensity);
+    const float safeGasConstant = std::max(0.000001f, gasConstant);
+    const float safeViscosity = std::max(0.0f, viscosity);
+    sendOrQueueRemote(
+        std::string(grav_protocol::SetSphParams),
+        "\"h\":" + std::to_string(safeH)
+            + ",\"rest_density\":" + std::to_string(safeRestDensity)
+            + ",\"gas_constant\":" + std::to_string(safeGasConstant)
+            + ",\"viscosity\":" + std::to_string(safeViscosity));
 }
 
 void ClientServerBridge::setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [targetDt, maxSubsteps](ILocalServer &server) { server.setSubstepPolicy(targetDt, maxSubsteps); },
-        [this, targetDt, maxSubsteps]() {
-            const float safeTargetDt = std::max(0.0f, targetDt);
-            const std::uint32_t safeMaxSubsteps = std::max<std::uint32_t>(1u, maxSubsteps);
-            sendOrQueueRemote(
-                std::string(grav_protocol::SetSubsteps),
-                "\"target_dt\":" + std::to_string(safeTargetDt)
-                    + ",\"max_substeps\":" + std::to_string(safeMaxSubsteps));
-        });
+    const float safeTargetDt = std::max(0.0f, targetDt);
+    const std::uint32_t safeMaxSubsteps = std::max<std::uint32_t>(1u, maxSubsteps);
+    sendOrQueueRemote(
+        std::string(grav_protocol::SetSubsteps),
+        "\"target_dt\":" + std::to_string(safeTargetDt)
+            + ",\"max_substeps\":" + std::to_string(safeMaxSubsteps));
 }
 
 void ClientServerBridge::setSnapshotPublishPeriodMs(std::uint32_t periodMs)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [periodMs](ILocalServer &server) { server.setSnapshotPublishPeriodMs(periodMs); },
-        [this, periodMs]() {
-            const std::uint32_t safePeriodMs = std::max<std::uint32_t>(1u, periodMs);
-            sendOrQueueRemote(
-                std::string(grav_protocol::SetSnapshotPublishCadence),
-                "\"period_ms\":" + std::to_string(safePeriodMs));
-        });
+    const std::uint32_t safePeriodMs = std::max<std::uint32_t>(1u, periodMs);
+    sendOrQueueRemote(
+        std::string(grav_protocol::SetSnapshotPublishCadence),
+        "\"period_ms\":" + std::to_string(safePeriodMs));
 }
 
 void ClientServerBridge::setInitialStateConfig(const InitialStateConfig &config)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [&config](ILocalServer &server) { server.setInitialStateConfig(config); },
-        [this]() {
-            if (!_warnedRemoteInitialConfig) {
-                std::cout << "[client] remote server: initial state config templates are server-owned "
-                             "(set/load through server API)\n";
-                _warnedRemoteInitialConfig = true;
-            }
-        });
+    static_cast<void>(config);
+    if (!_warnedRemoteInitialConfig) {
+        std::cout << "[client] server-owned initial state config templates remain controlled by the server API\n";
+        _warnedRemoteInitialConfig = true;
+    }
 }
 
 void ClientServerBridge::setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [everySteps, sampleLimit](ILocalServer &server) { server.setEnergyMeasurementConfig(everySteps, sampleLimit); },
-        [this, everySteps, sampleLimit]() {
-            const std::uint32_t safeEvery = std::max<std::uint32_t>(1u, everySteps);
-            const std::uint32_t safeSampleLimit = std::max<std::uint32_t>(2u, sampleLimit);
-            sendOrQueueRemote(
-                std::string(grav_protocol::SetEnergyMeasure),
-                "\"every_steps\":" + std::to_string(safeEvery) + ",\"sample_limit\":" + std::to_string(safeSampleLimit));
-        });
+    const std::uint32_t safeEvery = std::max<std::uint32_t>(1u, everySteps);
+    const std::uint32_t safeSampleLimit = std::max<std::uint32_t>(2u, sampleLimit);
+    sendOrQueueRemote(
+        std::string(grav_protocol::SetEnergyMeasure),
+        "\"every_steps\":" + std::to_string(safeEvery) + ",\"sample_limit\":" + std::to_string(safeSampleLimit));
 }
 
 void ClientServerBridge::setExportDefaults(const std::string &directory, const std::string &format)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [&directory, &format](ILocalServer &server) { server.setExportDefaults(directory, format); },
-        [this, &format]() { _defaultExportFormat = format; });
+    static_cast<void>(directory);
+    _defaultExportFormat = format;
 }
 
 void ClientServerBridge::setInitialStateFile(const std::string &path, const std::string &format)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [&path, &format](ILocalServer &server) { server.setInitialStateFile(path, format); },
-        [this, &path, &format]() {
-            if (!path.empty()) {
-                sendOrQueueRemote(
-                    std::string(grav_protocol::Load),
-                    "\"path\":\"" + jsonEscape(path) + "\",\"format\":\"" + jsonEscape(format.empty() ? "auto" : format) + "\"");
-            }
-        });
+    if (!path.empty()) {
+        sendOrQueueRemote(
+            std::string(grav_protocol::Load),
+            "\"path\":\"" + jsonEscape(path) + "\",\"format\":\"" + jsonEscape(format.empty() ? "auto" : format) + "\"");
+    }
 }
 
 void ClientServerBridge::requestExportSnapshot(const std::string &outputPath, const std::string &format)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [&outputPath, &format](ILocalServer &server) { server.requestExportSnapshot(outputPath, format); },
-        [this, &outputPath, &format]() {
-            const std::string effectiveFormat = format.empty() ? _defaultExportFormat : format;
-            std::string fields;
-            if (!outputPath.empty()) {
-                fields = "\"path\":\"" + jsonEscape(outputPath) + "\"";
-            }
-            if (!effectiveFormat.empty()) {
-                if (!fields.empty()) {
-                    fields += ",";
-                }
-                fields += "\"format\":\"" + jsonEscape(effectiveFormat) + "\"";
-            }
-            sendOrQueueRemote(std::string(grav_protocol::Export), fields);
-        });
+    const std::string effectiveFormat = format.empty() ? _defaultExportFormat : format;
+    std::string fields;
+    if (!outputPath.empty()) {
+        fields = "\"path\":\"" + jsonEscape(outputPath) + "\"";
+    }
+    if (!effectiveFormat.empty()) {
+        if (!fields.empty()) {
+            fields += ",";
+        }
+        fields += "\"format\":\"" + jsonEscape(effectiveFormat) + "\"";
+    }
+    sendOrQueueRemote(std::string(grav_protocol::Export), fields);
 }
 
 void ClientServerBridge::requestShutdown()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    dispatchServerCall(
-        _remoteMode,
-        _localServer,
-        [](ILocalServer &server) { server.stop(); },
-        [this]() { sendOrQueueRemote(std::string(grav_protocol::Shutdown)); });
+    sendOrQueueRemote(std::string(grav_protocol::Shutdown));
 }
 
 void ClientServerBridge::configureRemoteConnector(
@@ -628,16 +460,6 @@ void ClientServerBridge::configureRemoteConnector(
     const std::string &serverExecutable)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-
-    if (!_remoteMode) {
-        if (_localServer) {
-            _localServer->stop();
-            _localServer.reset();
-        }
-        _remoteMode = true;
-        _remoteClient.setSocketTimeoutMs(static_cast<int>(_remoteCommandTimeoutMs));
-        _remoteClient.setAuthToken(_remoteAuthToken);
-    }
 
     if (!host.empty()) {
         _remoteHost = host;
@@ -650,7 +472,6 @@ void ClientServerBridge::configureRemoteConnector(
     _remoteClient.setAuthToken(_remoteAuthToken);
 
     _remoteClient.disconnect();
-    _runtimeState.setRemoteMode(true);
     _runtimeState.setConnected(false);
     _remoteLaunchAttempted = false;
     _runtimeState.setServerLaunched(false);
@@ -666,9 +487,6 @@ void ClientServerBridge::configureRemoteConnector(
 bool ClientServerBridge::tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    if (!_remoteMode) {
-        return _localServer != nullptr && _localServer->tryConsumeSnapshot(outSnapshot);
-    }
     if (!ensureRemoteConnected(false)) {
         return false;
     }
@@ -699,9 +517,6 @@ bool ClientServerBridge::tryConsumeSnapshot(std::vector<RenderParticle> &outSnap
 SimulationStats ClientServerBridge::getStats()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    if (!_remoteMode) {
-        return _localServer != nullptr ? _localServer->getStats() : SimulationStats{};
-    }
     refreshRemoteStats();
     return _cachedStats;
 }
@@ -715,9 +530,6 @@ void ClientServerBridge::setRemoteSnapshotCap(std::uint32_t maxPoints)
 void ClientServerBridge::requestReconnect()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    if (!_remoteMode) {
-        return;
-    }
     _remoteClient.disconnect();
     _runtimeState.setConnected(false);
     if (_remoteAutoStart) {
@@ -732,22 +544,18 @@ void ClientServerBridge::requestReconnect()
 
 bool ClientServerBridge::isRemoteMode() const
 {
-    std::lock_guard<std::recursive_mutex> lock(_mutex);
-    return _remoteMode;
+    return true;
 }
 
 bool ClientServerBridge::launchedByClient() const
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    return _remoteMode && _runtimeState.serverLaunched();
+    return _runtimeState.serverLaunched();
 }
 
 ClientLinkState ClientServerBridge::linkState() const
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    if (!_remoteMode) {
-        return ClientLinkState::LocalEmbedded;
-    }
     if (_runtimeState.isConnected() && _remoteClient.isConnected()) {
         return ClientLinkState::Connected;
     }
@@ -758,8 +566,6 @@ std::string_view ClientServerBridge::linkStateLabel() const
 {
     const ClientLinkState state = linkState();
     switch (state) {
-        case ClientLinkState::LocalEmbedded:
-            return "local";
         case ClientLinkState::Connected:
             return "connected";
         case ClientLinkState::Reconnecting:
@@ -835,9 +641,6 @@ bool ClientServerBridge::sendRemoteNow(const std::string &cmd, const std::string
 
 bool ClientServerBridge::sendOrQueueRemote(const std::string &cmd, const std::string &fields)
 {
-    if (!_remoteMode) {
-        return false;
-    }
     if (!_runtimeState.isConnected() || !_remoteClient.isConnected()) {
         queuePendingRemoteCommand(cmd, fields);
         return true;
@@ -858,10 +661,6 @@ void ClientServerBridge::queuePendingRemoteCommand(const std::string &cmd, const
 
 bool ClientServerBridge::ensureRemoteConnected(bool forceLog)
 {
-    if (!_remoteMode) {
-        return true;
-    }
-
     if (_runtimeState.isConnected() && !_remoteClient.isConnected()) {
         _runtimeState.setConnected(false);
     }
@@ -923,8 +722,7 @@ bool ClientServerBridge::isLoopbackHost(std::string_view host)
 
 bool ClientServerBridge::shouldAutoStartRemoteServer() const
 {
-    return _remoteMode
-        && _remoteAutoStart
+    return _remoteAutoStart
         && !_remoteLaunchAttempted
         && isLoopbackHost(_remoteHost);
 }
