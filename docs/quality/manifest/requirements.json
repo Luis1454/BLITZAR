@@ -83,12 +83,18 @@
                                                                "EVD_TEST_UNIT_PHYSICS_SOLVER",
                                                                "EVD_QLT_INTERFACE_CONTRACTS",
                                                                "EVD_IFACE_CLIENT_RUNTIME",
-                                                               "EVD_IFACE_LOCAL_SERVER"
+                                                               "EVD_IFACE_LOCAL_SERVER",
+                                                               "EVD_IFACE_CLIENT_RUNTIME_RUST",
+                                                               "EVD_IFACE_RUNTIME_BRIDGE_API",
+                                                               "EVD_IFACE_RUNTIME_BRIDGE_STATE",
+                                                               "EVD_RUST_RUNTIME_CRATE",
+                                                               "EVD_TEST_UNIT_RUNTIME_RUST"
                                                            ],
                                              "tests":  [
                                                            "^ClientBridgeTest\\.TST_INT_RUNT_00[1-2]_",
                                                            "^ClientRuntimeTest\\.TST_CNT_RUNT_00[1-8]_",
-                                                           "^PhysicsTest\\.TST_UNT_RUNT_00[1-5]_"
+                                                           "^PhysicsTest\\.TST_UNT_RUNT_00[1-5]_",
+                                                           "^blitzar_runtime::tests::bridge_state::tst_rust_runt_00[1-4]_"
                                                        ]
                                          },
                          "REQ-CORE-001":  {

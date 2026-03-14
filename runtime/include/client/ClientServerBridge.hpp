@@ -1,8 +1,9 @@
 #ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_
 
-#include "protocol/ServerClient.hpp"
 #include "client/ILocalServer.hpp"
+#include "client/RustRuntimeBridgeState.hpp"
+#include "protocol/ServerClient.hpp"
 
 #include <chrono>
 #include <cstdint>
@@ -135,12 +136,8 @@ class ClientServerBridge {
         std::string _remoteAuthToken;
         std::unique_ptr<ILocalServer> _localServer;
         ServerClient _remoteClient;
-        bool _remoteConnected;
         bool _remoteLaunchAttempted;
-        bool _remoteServerLaunched;
-        bool _pendingQueueDropWarned;
-        std::vector<std::pair<std::string, std::string>> _pendingRemoteCommands;
-        std::uint32_t _remoteSnapshotCap;
+        RustRuntimeBridgeState _runtimeState;
         SimulationStats _cachedStats;
         bool _warnedRemoteInitialConfig;
         std::string _defaultExportFormat;

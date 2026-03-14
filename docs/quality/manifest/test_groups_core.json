@@ -671,6 +671,32 @@
                                                                                                       "REQ-PROT-002"
                                                                                                   ]
                                                                                   }
+                                                        },
+                        "EVD_TEST_UNIT_RUNTIME_RUST":  {
+                                                           "TST-UNT-RRUNT-001":  {
+                                                                                      "id":  "blitzar_runtime::tests::bridge_state::tst_rust_runt_001_labels_follow_remote_link_state",
+                                                                                      "req_ids":  [
+                                                                                                      "REQ-RUN-001"
+                                                                                                  ]
+                                                                                  },
+                                                           "TST-UNT-RRUNT-002":  {
+                                                                                      "id":  "blitzar_runtime::tests::bridge_state::tst_rust_runt_002_snapshot_cap_is_clamped_to_protocol_bounds",
+                                                                                      "req_ids":  [
+                                                                                                      "REQ-RUN-001"
+                                                                                                  ]
+                                                                                  },
+                                                           "TST-UNT-RRUNT-003":  {
+                                                                                      "id":  "blitzar_runtime::tests::bridge_state::tst_rust_runt_003_queue_replaces_trailing_duplicate_command",
+                                                                                      "req_ids":  [
+                                                                                                      "REQ-RUN-001"
+                                                                                                  ]
+                                                                                  },
+                                                           "TST-UNT-RRUNT-004":  {
+                                                                                      "id":  "blitzar_runtime::tests::bridge_state::tst_rust_runt_004_queue_drops_oldest_once_when_capacity_is_exceeded",
+                                                                                      "req_ids":  [
+                                                                                                      "REQ-RUN-001"
+                                                                                                  ]
+                                                                                  }
                                                         }
                     }
 }

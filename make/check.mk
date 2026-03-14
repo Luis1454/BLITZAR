@@ -12,6 +12,10 @@ quality-python:
 	python -m mypy tests/checks scripts/ci python_tools
 	python -m pytest -q tests/checks/suites
 
+quality-rust:
+	cargo fmt --all --check --manifest-path rust/Cargo.toml
+	cargo test --manifest-path rust/Cargo.toml
+
 quality-configure:
 	cmake -S tests -B $(QUALITY_BUILD_DIR) -G "$(GENERATOR)" \
 		-DCMAKE_BUILD_TYPE=$(QUALITY_BUILD_TYPE) \
@@ -33,6 +37,6 @@ quality-test:
 	cmake -E env ASAN_OPTIONS=detect_leaks=0:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 \
 		ctest --test-dir $(QUALITY_BUILD_DIR) --output-on-failure --timeout $(QUALITY_TIMEOUT) --no-tests=error -R "$(QUALITY_TEST_REGEX)"
 
-quality-strict: quality-local quality-python quality-configure quality-build quality-analyze quality-test
+quality-strict: quality-local quality-python quality-rust quality-configure quality-build quality-analyze quality-test
 
-.PHONY: check check-all quality-local quality-python quality-configure quality-build quality-analyze quality-test quality-strict
+.PHONY: check check-all quality-local quality-python quality-rust quality-configure quality-build quality-analyze quality-test quality-strict
