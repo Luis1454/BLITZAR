@@ -644,6 +644,12 @@
                                                                                       "req_ids":  [
                                                                                                       "REQ-PROT-002"
                                                                                                   ]
+                                                                                  },
+                                                             "TST-UNT-PROT-005":  {
+                                                                                      "id":  "ServerProtocolCodecTest.TST_UNT_PROT_005_ExportsCurrentSchemaVersionLabel",
+                                                                                      "req_ids":  [
+                                                                                                      "REQ-PROT-001"
+                                                                                                  ]
                                                                                   }
                                                          },
                         "EVD_TEST_UNIT_PROTOCOL_RUST":  {
@@ -669,6 +675,18 @@
                                                                                       "id":  "blitzar_protocol::tests::protocol::tst_rust_prot_004_round_trip_snapshot_and_error_envelope",
                                                                                       "req_ids":  [
                                                                                                       "REQ-PROT-002"
+                                                                                                  ]
+                                                                                  },
+                                                            "TST-UNT-RPROT-005":  {
+                                                                                      "id":  "blitzar_protocol::tests::protocol::tst_rust_prot_005_latest_schema_matches_committed_contract_artifact",
+                                                                                      "req_ids":  [
+                                                                                                      "REQ-PROT-001"
+                                                                                                  ]
+                                                                                  },
+                                                            "TST-UNT-RPROT-006":  {
+                                                                                      "id":  "blitzar_protocol::tests::protocol::tst_rust_prot_006_latest_schema_exposes_compatibility_and_deprecation_rules",
+                                                                                      "req_ids":  [
+                                                                                                      "REQ-PROT-001"
                                                                                                   ]
                                                                                   }
                                                         },

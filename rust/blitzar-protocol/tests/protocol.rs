@@ -1,11 +1,14 @@
 use blitzar_protocol::codec;
 use blitzar_protocol::framing;
+use blitzar_protocol::schema;
 use blitzar_protocol::v1::{
     CommandRequest, RenderParticle, ResponseEnvelope, SnapshotPayload, StatusPayload,
 };
 use blitzar_protocol::{LATEST_PROTOCOL_VERSION, ProtocolVersion};
+use serde_json::Value;
 use serde_json::json;
 use std::collections::BTreeMap;
+use std::path::PathBuf;
 
 #[test]
 fn tst_rust_prot_001_round_trip_command_request_with_escaped_token() {
@@ -105,4 +108,41 @@ fn tst_rust_prot_004_round_trip_snapshot_and_error_envelope() {
     let encoded_envelope = codec::encode_response_envelope(&envelope).unwrap();
     let decoded_envelope = codec::decode_response_envelope(&encoded_envelope).unwrap();
     assert_eq!(decoded_envelope, envelope);
+}
+
+#[test]
+fn tst_rust_prot_005_latest_schema_matches_committed_contract_artifact() {
+    let schema_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..")
+        .join("docs")
+        .join("server_protocol_schema.json");
+    let committed: Value =
+        serde_json::from_str(&std::fs::read_to_string(schema_path).unwrap()).unwrap();
+    assert_eq!(committed, schema::latest_schema_value());
+}
+
+#[test]
+fn tst_rust_prot_006_latest_schema_exposes_compatibility_and_deprecation_rules() {
+    let schema = schema::latest_schema_value();
+    assert_eq!(schema["schema"], LATEST_PROTOCOL_VERSION.label());
+    assert_eq!(
+        schema["deprecation"]["minimum_support_window"],
+        "one release"
+    );
+    assert_eq!(schema["deprecation"]["removal_requires_new_schema"], true);
+    assert!(schema["commands"].get("status").is_some());
+    assert!(schema["commands"].get("get_snapshot").is_some());
+    assert!(
+        schema["commands"]
+            .get("set_snapshot_publish_cadence")
+            .is_some()
+    );
+    assert!(
+        schema["compatibility"]["breaking_changes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|value| value == "change auth behavior")
+    );
 }
