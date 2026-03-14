@@ -21,7 +21,7 @@ gravity_add_python_check(TST_QLT_REPO_002_GravityMirrorCheck check.py
 )
 
 set(_gravity_check_build_targets OFF)
-if(TARGET aster AND TARGET aster-server AND TARGET aster-headless AND TARGET aster-client)
+if(TARGET blitzar AND TARGET blitzar-server AND TARGET blitzar-headless AND TARGET blitzar-client)
     set(_gravity_check_build_targets ON)
 endif()
 set(_gravity_no_legacy_args "--root" "${GRAVITY_ROOT_DIR}")
@@ -55,7 +55,7 @@ set_tests_properties(TST_QLT_REPO_008_PyChecksUnit PROPERTIES LABELS "integratio
 gravity_add_python_check(TST_QLT_REPO_009_PythonQualityGate check.py
     ARGS "python_quality" "--root" "${GRAVITY_ROOT_DIR}"
 )
-if(TARGET aster)
+if(TARGET blitzar)
     gravity_add_python_check(TST_QLT_REPO_005_GravityLauncherCheck check.py
         ARGS "launcher" "--build-dir" "${CMAKE_BINARY_DIR}"
     )

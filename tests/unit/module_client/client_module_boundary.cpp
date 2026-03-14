@@ -60,7 +60,7 @@ TEST(ClientModuleBoundaryTest, TST_UNT_MODHOST_009_ModuleManifestAndHashValidate
         << "module_id=cli\n"
         << "module_name=gravityClientModuleCli\n"
         << "api_version=1\n"
-        << "product_name=A.S.T.E.R.\n"
+        << "product_name=BLITZAR\n"
         << "product_version=0.0.0-dev\n"
         << "library_file=gravityClientModuleCli.dll\n"
         << "sha256=ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad\n";
@@ -91,7 +91,7 @@ TEST(ClientModuleBoundaryTest, TST_UNT_MODHOST_010_ModuleManifestRejectsUnsuppor
         << "module_id=foreign\n"
         << "module_name=foreign-module\n"
         << "api_version=1\n"
-        << "product_name=A.S.T.E.R.\n"
+        << "product_name=BLITZAR\n"
         << "product_version=0.0.0-dev\n"
         << "library_file=foreign.dll\n"
         << "sha256=ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad\n";

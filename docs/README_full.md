@@ -1,15 +1,15 @@
-# A.S.T.E.R.
+# BLITZAR
 
-Accelerated Simulation for Trajectory and Energy Resolution.
+Baryonic Lagrangian Integration for Trajectories & Zero-drift Astrophysical Resolution
 
-[![nightly-full](https://github.com/Luis1454/CUDA-GRAVITY-SIMULATION/actions/workflows/nightly-full.yml/badge.svg?branch=main)](https://github.com/Luis1454/CUDA-GRAVITY-SIMULATION/actions/workflows/nightly-full.yml)
+[![nightly-full](https://github.com/Luis1454/BLITZAR/actions/workflows/nightly-full.yml/badge.svg?branch=main)](https://github.com/Luis1454/BLITZAR/actions/workflows/nightly-full.yml)
 
 ## Coverage Dashboard
 | Metric | Live Percent |
 |---|---|
-| Lines | ![Coverage lines](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FCUDA-GRAVITY-SIMULATION%2Fcoverage%2Flines.json) |
-| Functions | ![Coverage functions](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FCUDA-GRAVITY-SIMULATION%2Fcoverage%2Ffunctions.json) |
-| Branches | ![Coverage branches](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FCUDA-GRAVITY-SIMULATION%2Fcoverage%2Fbranches.json) |
+| Lines | ![Coverage lines](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FBLITZAR%2Fcoverage%2Flines.json) |
+| Functions | ![Coverage functions](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FBLITZAR%2Fcoverage%2Ffunctions.json) |
+| Branches | ![Coverage branches](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FBLITZAR%2Fcoverage%2Fbranches.json) |
 
 Coverage payload is published by `nightly-full` to GitHub Pages (`coverage/*.json`).
 
@@ -51,10 +51,10 @@ make test-int
 ```
 
 Built binaries:
-- `aster` (launcher)
-- `aster-server` (server daemon)
-- `aster-headless` (headless simulation)
-- `aster-client` (+ manifest-verified dynamic client modules in `dev` profile)
+- `blitzar` (launcher)
+- `blitzar-server` (server daemon)
+- `blitzar-headless` (headless simulation)
+- `blitzar-client` (+ manifest-verified dynamic client modules in `dev` profile)
 
 ## CI Lanes
 
@@ -130,20 +130,20 @@ For the complete schema and behavior contract, see:
 Launcher modes:
 
 ```bash
-build/aster.exe --mode client -- --config simulation.ini --module qt
-build/aster.exe --mode server -- --config simulation.ini --server-host 127.0.0.1 --server-port 4545
-build/aster.exe --mode headless -- --config simulation.ini --particle-count 50000 --target-steps 1000
+build/blitzar.exe --mode client -- --config simulation.ini --module qt
+build/blitzar.exe --mode server -- --config simulation.ini --server-host 127.0.0.1 --server-port 4545
+build/blitzar.exe --mode headless -- --config simulation.ini --particle-count 50000 --target-steps 1000
 ```
 
 Direct binaries:
 
 ```bash
-build/aster-server.exe --config simulation.ini --server-host 127.0.0.1 --server-port 4545
-build/aster-client.exe --config simulation.ini --module cli
-build/aster-headless.exe --config simulation.ini --particle-count 50000 --target-steps 1000
+build/blitzar-server.exe --config simulation.ini --server-host 127.0.0.1 --server-port 4545
+build/blitzar-client.exe --config simulation.ini --module cli
+build/blitzar-headless.exe --config simulation.ini --particle-count 50000 --target-steps 1000
 ```
 
-`aster-client` is a `dev`-profile path. Each client module now ships with a sidecar manifest and the host verifies the module allowlist, `api_version`, product metadata, and `sha256` digest before loading it. If the client host is explicitly enabled under `prod`, startup load stays manifest-verified but live `reload` / `switch` are disabled.
+`blitzar-client` is a `dev`-profile path. Each client module now ships with a sidecar manifest and the host verifies the module allowlist, `api_version`, product metadata, and `sha256` digest before loading it. If the client host is explicitly enabled under `prod`, startup load stays manifest-verified but live `reload` / `switch` are disabled.
 
 Module host runtime switch (`dev` only):
 

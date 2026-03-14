@@ -14,12 +14,12 @@ FORBIDDEN_TOKENS = (
     "QT_CLIENT_NAME",
     "CLI_CLIENT_NAME",
 )
-FORBIDDEN_TARGETS = ("aster-qt", "aster-cli")
+FORBIDDEN_TARGETS = ("blitzar-qt", "blitzar-cli")
 EXPECTED_VARIANTS = (
-    ("aster.exe", "aster"),
-    ("aster-server.exe", "aster-server"),
-    ("aster-headless.exe", "aster-headless"),
-    ("aster-client.exe", "aster-client"),
+    ("blitzar.exe", "blitzar"),
+    ("blitzar-server.exe", "blitzar-server"),
+    ("blitzar-headless.exe", "blitzar-headless"),
+    ("blitzar-client.exe", "blitzar-client"),
 )
 
 

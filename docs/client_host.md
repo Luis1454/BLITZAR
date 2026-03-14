@@ -1,9 +1,9 @@
 # Client Module Host (`dlopen`/`LoadLibrary`)
 
-`aster-client` is the dynamic client host used for client-side module development and controlled runtime composition.
+`blitzar-client` is the dynamic client host used for client-side module development and controlled runtime composition.
 
 Targets:
-- Host: `aster-client`
+- Host: `blitzar-client`
 - Module: `gravityClientModuleCli` (server control/status)
 - Module: `gravityClientModuleEcho` (diagnostic echo module)
 - Module: `gravityClientModuleGuiProxy` (launch/stop external GUI clients)
@@ -23,7 +23,7 @@ Module loading is not best-effort anymore. Before `LoadLibrary` / `dlopen`, the 
 ## Build
 
 ```bash
-cmake --build build --target aster-client gravityClientModuleCli gravityClientModuleEcho gravityClientModuleGuiProxy gravityClientModuleQtInProc
+cmake --build build --target blitzar-client gravityClientModuleCli gravityClientModuleEcho gravityClientModuleGuiProxy gravityClientModuleQtInProc
 ```
 
 Each built module emits a sidecar manifest next to the dynamic library:
@@ -38,13 +38,13 @@ gravityClientModuleCli.dll.manifest
 Start server daemon first:
 
 ```bash
-build/aster-server --config simulation.ini --server-host 127.0.0.1 --server-port 4545
+build/blitzar-server --config simulation.ini --server-host 127.0.0.1 --server-port 4545
 ```
 
 Start client host with a module:
 
 ```bash
-build/aster-client --config simulation.ini --module cli
+build/blitzar-client --config simulation.ini --module cli
 ```
 
 On Linux/macOS use `.so` / `.dylib` names.
@@ -90,7 +90,7 @@ client-host> status
 Load GUI proxy module:
 
 ```bash
-build/aster-client --config simulation.ini --module gui
+build/blitzar-client --config simulation.ini --module gui
 ```
 
 Then:
@@ -111,7 +111,7 @@ This lets you switch GUI clients live while the server process keeps running.
 Start host directly with `qt`:
 
 ```bash
-build/aster-client --config simulation.ini --module qt
+build/blitzar-client --config simulation.ini --module qt
 ```
 
 Runtime commands for `qt` module:
@@ -120,7 +120,7 @@ Runtime commands for `qt` module:
 status
 set-endpoint 127.0.0.1 4545
 set-autostart false
-set-server-bin build/aster-server.exe
+set-server-bin build/blitzar-server.exe
 restart
 ```
 

@@ -37,7 +37,7 @@ function(gravity_add_client_module_manifest target_name module_id)
             -DMODULE_ID=${module_id}
             -DMODULE_NAME=${target_name}
             -DAPI_VERSION=1
-            -DPRODUCT_NAME=A.S.T.E.R.
+            -DPRODUCT_NAME=BLITZAR
             -DPRODUCT_VERSION=0.0.0-dev
             -P ${CMAKE_SOURCE_DIR}/scripts/generate_client_module_manifest.cmake
         VERBATIM

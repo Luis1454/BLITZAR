@@ -58,11 +58,11 @@ int main(int argc, char **argv)
     SimulationConfig config = simulationServer.getRuntimeConfig();
     applyArgsToConfig(options.simArgs, config, runtime, std::cerr);
     if (runtime.hasArgumentError) {
-        grav_server_service::printServerHelp(options.simArgs.empty() ? std::string_view("aster-server") : options.simArgs[0]);
+        grav_server_service::printServerHelp(options.simArgs.empty() ? std::string_view("blitzar-server") : options.simArgs[0]);
         return 2;
     }
     if (options.showServerHelp || runtime.showHelp) {
-        grav_server_service::printServerHelp(options.simArgs.empty() ? std::string_view("aster-server") : options.simArgs[0]);
+        grav_server_service::printServerHelp(options.simArgs.empty() ? std::string_view("blitzar-server") : options.simArgs[0]);
         return 0;
     }
     if (runtime.saveConfig) {

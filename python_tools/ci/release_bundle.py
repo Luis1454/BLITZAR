@@ -17,11 +17,11 @@ class ReleaseBundlePackager:
         dist_dir.mkdir(parents=True, exist_ok=True)
         self._copy_binaries(build_dir, dist_dir)
         self._copy_metadata(dist_dir, tool_manifest)
-        archive_base = dist_dir / f"ASTER-{tag}-windows"
+        archive_base = dist_dir / f"blitzar-{tag}-windows"
         return Path(shutil.make_archive(str(archive_base), "zip", root_dir=dist_dir))
 
     def _copy_binaries(self, build_dir: Path, dist_dir: Path) -> None:
-        for name in ("aster.exe", "aster-server.exe", "aster-headless.exe", "aster-client.exe"):
+        for name in ("blitzar.exe", "blitzar-server.exe", "blitzar-headless.exe", "blitzar-client.exe"):
             src = build_dir / name
             if src.exists():
                 shutil.copy2(src, dist_dir / name)
