@@ -1,8 +1,8 @@
 {
   "metadata": {
     "system": "BLITZAR",
-    "revision": "2026-03-13",
-    "revision_note": "Governance now includes manifest-qualified client modules plus explicit interactive/balanced/quality performance presets that bundle snapshot cadence, draw-cap, energy sampling, and bounded substep policy for deterministic client/server tuning without changing solver or integrator selection."
+    "revision": "2026-03-14",
+    "revision_note": "Governance now includes an opaque compute-core C ABI contract for the planned Rust host migration, alongside manifest-qualified client modules and explicit interactive/balanced/quality performance presets that bundle snapshot cadence, draw-cap, energy sampling, and bounded substep policy without changing solver or integrator selection."
   },
   "includes": [
     "manifest/evidence.json",

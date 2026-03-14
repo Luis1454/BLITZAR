@@ -63,6 +63,12 @@ set(GRAVITY_RUNTIME_PROTOCOL_SOURCES
     runtime/src/protocol/ServerProtocol.cpp
 )
 
+set(GRAVITY_CORE_FFI_SOURCES
+    runtime/src/ffi/BlitzarCore.cpp
+    runtime/src/ffi/BlitzarCoreOps.cpp
+    runtime/src/ffi/BlitzarCoreApi.cpp
+)
+
 function(gravity_collect_existing_paths out_var)
     set(_result "")
     foreach(_path IN LISTS ARGN)

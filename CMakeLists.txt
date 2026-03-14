@@ -14,6 +14,9 @@ if(GRAVITY_BUILD_TESTS)
     file(GLOB GRAVITY_PHYSICS_TEST_SOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/*.cpp"
     )
+    file(GLOB GRAVITY_CORE_API_TEST_SOURCES CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/ffi/*.cpp"
+    )
     if(GRAVITY_PHYSICS_TEST_SOURCES)
         add_executable(gravityPhysicsGTests
             tests/support/physics_scenario.cpp
@@ -31,6 +34,19 @@ if(GRAVITY_BUILD_TESTS)
                 GTest::gtest_main
         )
         gtest_discover_tests(gravityPhysicsGTests PROPERTIES LABELS "gpu")
+    endif()
+
+    if(GRAVITY_CORE_API_TEST_SOURCES)
+        add_executable(gravityCoreApiGTests
+            ${GRAVITY_CORE_API_TEST_SOURCES}
+        )
+        configure_gravity_cuda_target(gravityCoreApiGTests)
+        target_link_libraries(gravityCoreApiGTests
+            PRIVATE
+                GTest::gtest_main
+                gravityCoreFfi
+        )
+        gtest_discover_tests(gravityCoreApiGTests PROPERTIES LABELS "unit")
     endif()
 
     add_executable(gravityNumericalValidationTool

@@ -85,6 +85,16 @@
         "^PhysicsTest\\.TST_UNT_RUNT_00[1-5]_"
       ]
     },
+    "REQ-CORE-001": {
+      "tests": [
+        "^BlitzarCoreApiTest\\.TST_UNT_CORE_00[1-3]_"
+      ],
+      "artifacts": [
+        "EVD_TEST_UNIT_CORE_API",
+        "EVD_QLT_INTERFACE_CONTRACTS",
+        "EVD_IFACE_BLITZAR_CORE_API"
+      ]
+    },
     "REQ-PHYS-001": {
       "tests": [
         "^PhysicsTest\\.TST_UNT_PHYS_00(1|2|5|6|7|8|9)_",
