@@ -1,6 +1,6 @@
 # B.L.I.T.Z.A.R
 
-Baryonic and Lagrangian Integrator for Trajectories & Zero-drift Astrophysical Resolution
+Baryonic Lagrangian Integrator for Trajectories & Zero-drift Astrophysical Resolution
 
 [![nightly-full](https://github.com/Luis1454/CUDA-GRAVITY-SIMULATION/actions/workflows/nightly-full.yml/badge.svg?branch=main)](https://github.com/Luis1454/CUDA-GRAVITY-SIMULATION/actions/workflows/nightly-full.yml)
 
