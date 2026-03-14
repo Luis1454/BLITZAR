@@ -88,7 +88,7 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_008_HelpReflectsProfileReloadPolicy)
 {
     std::ostringstream buffer;
     std::streambuf *previous = std::cout.rdbuf(buffer.rdbuf());
-    grav_client_host::ClientHostCliArgs::printHelp("aster-client");
+    grav_client_host::ClientHostCliArgs::printHelp("blitzar-client");
     std::cout.rdbuf(previous);
     const std::string rendered = buffer.str();
     if (grav_client_host::ClientHostCli::liveReloadEnabled()) {

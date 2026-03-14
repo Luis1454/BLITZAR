@@ -117,13 +117,13 @@ std::string targetBasename(const LaunchMode mode)
 {
     switch (mode) {
     case LaunchMode::Client:
-        return "aster-client";
+        return "blitzar-client";
     case LaunchMode::Server:
-        return "aster-server";
+        return "blitzar-server";
     case LaunchMode::Headless:
-        return "aster-headless";
+        return "blitzar-headless";
     }
-    return "aster-client";
+    return "blitzar-client";
 }
 
 bool containsModuleOverride(const std::vector<std::string> &args)
@@ -173,12 +173,12 @@ int main(int argc, char **argv)
     if (!parseLauncherOptions(argc, argv, options, parseError)) {
         std::cerr << "[launcher] " << parseError << '\n';
         printUsage(
-            argc > 0 && argv != nullptr && argv[0] != nullptr ? argv[0] : "aster");
+            argc > 0 && argv != nullptr && argv[0] != nullptr ? argv[0] : "blitzar");
         return 2;
     }
     if (options.showHelp) {
         printUsage(
-            argc > 0 && argv != nullptr && argv[0] != nullptr ? argv[0] : "aster");
+            argc > 0 && argv != nullptr && argv[0] != nullptr ? argv[0] : "blitzar");
         return 0;
     }
     std::vector<std::string> childArgs = options.passthroughArgs;

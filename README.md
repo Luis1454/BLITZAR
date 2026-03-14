@@ -1,8 +1,8 @@
-# B.L.I.T.Z.A.R
+# BLITZAR
 
 Baryonic Lagrangian Integration for Trajectories & Zero-drift Astrophysical Resolution
 
-[![nightly-full](https://github.com/Luis1454/CUDA-GRAVITY-SIMULATION/actions/workflows/nightly-full.yml/badge.svg?branch=main)](https://github.com/Luis1454/CUDA-GRAVITY-SIMULATION/actions/workflows/nightly-full.yml)
+[![nightly-full](https://github.com/Luis1454/BLITZAR/actions/workflows/nightly-full.yml/badge.svg?branch=main)](https://github.com/Luis1454/BLITZAR/actions/workflows/nightly-full.yml)
 
 ## Quick Start
 
@@ -55,7 +55,7 @@ In `PROFILE=prod`, `blitzar-client` and dynamic client modules are disabled by d
 
 ## Coverage
 
-- Dashboard: https://luis1454.github.io/CUDA-GRAVITY-SIMULATION/
+- Dashboard: https://luis1454.github.io/BLITZAR/
 - Workflow: `nightly-full`
 - Artifact: `nightly-integration-coverage-<run_number>`
 
