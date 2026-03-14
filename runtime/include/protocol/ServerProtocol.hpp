@@ -5,6 +5,7 @@
 #include <string_view>
 
 namespace grav_protocol {
+extern const std::string_view SchemaVersion;
 extern const std::string_view Status;
 extern const std::string_view GetSnapshot;
 extern const std::string_view Pause;

@@ -1,6 +1,7 @@
 # Server JSON Protocol (TCP)
 
 Canonical compatibility governance for this surface is defined in `docs/quality/interface_contracts.md` (`CTR-PROT-001`). The Rust mirror for this contract lives in `rust/blitzar-protocol`.
+The machine-readable schema artifact for the current wire contract is `docs/server_protocol_schema.json`.
 
 Transport:
 - TCP, one JSON object per line (`\n` delimited)
@@ -66,6 +67,16 @@ I/O commands:
 Reference:
 - Constants and clamp rules are defined in `runtime/include/protocol/ServerProtocol.hpp`.
 - Rust encode/decode parity for the `server-json-v1` schema is exercised in `rust/blitzar-protocol/tests/protocol.rs`.
+
+Compatibility rules:
+- Additive commands are compatible within `server-json-v1` when existing command names and mandatory fields stay unchanged.
+- Additive optional request or response fields are compatible within `server-json-v1`.
+- Renaming or removing command identifiers, renaming or removing mandatory fields, changing auth behavior, or changing the particle tuple layout is breaking and requires a new schema version.
+
+Deprecation strategy:
+- A deprecated command or field must be marked in this document and kept wire-compatible for at least one release.
+- Removal of a deprecated command or field requires a new schema version and synchronized contract/test updates.
+- The committed schema artifact in `docs/server_protocol_schema.json` is the source of truth for transport adapters outside the in-process client.
 
 
 
