@@ -24,18 +24,20 @@
                                           },
                          "REQ-PROT-001":  {
                                               "artifacts":  [
-                                                                "EVD_TEST_INT_PROTOCOL_CONNECT",
-                                                                "EVD_TEST_UNIT_PROTOCOL_CODEC",
-                                                                "EVD_DOC_SERVER_PROTOCOL",
-                                                                "EVD_QLT_INTERFACE_CONTRACTS",
-                                                                "EVD_IFACE_SERVER_PROTOCOL",
-                                                                "EVD_TEST_UNIT_PROTOCOL_RUST",
-                                                                "EVD_IFACE_SERVER_PROTOCOL_RUST"
+                                                                 "EVD_TEST_INT_PROTOCOL_CONNECT",
+                                                                 "EVD_TEST_UNIT_PROTOCOL_CODEC",
+                                                                 "EVD_DOC_SERVER_PROTOCOL",
+                                                                 "EVD_DOC_SERVER_PROTOCOL_SCHEMA",
+                                                                 "EVD_QLT_INTERFACE_CONTRACTS",
+                                                                 "EVD_IFACE_SERVER_PROTOCOL",
+                                                                 "EVD_TEST_UNIT_PROTOCOL_RUST",
+                                                                 "EVD_IFACE_SERVER_PROTOCOL_RUST",
+                                                                 "EVD_IFACE_SERVER_PROTOCOL_SCHEMA_RUST"
                                                             ],
                                               "tests":  [
                                                             "^ServerProtocolTest\\.TST_INT_PROT_00(1|2|3|9)_",
-                                                            "^ServerProtocolCodecTest\\.TST_UNT_PROT_00(2|3)_",
-                                                            "^blitzar_protocol::tests::protocol::tst_rust_prot_00(2|3)_"
+                                                            "^ServerProtocolCodecTest\\.TST_UNT_PROT_00(2|3|5)_",
+                                                            "^blitzar_protocol::tests::protocol::tst_rust_prot_00(2|3|5|6)_"
                                                         ]
                                           },
                          "REQ-PROT-002":  {
@@ -47,10 +49,12 @@
                                               "artifacts":  [
                                                                 "EVD_TEST_INT_PROTOCOL_CONTROL",
                                                                 "EVD_TEST_UNIT_PROTOCOL_CODEC",
+                                                                "EVD_DOC_SERVER_PROTOCOL_SCHEMA",
                                                                 "EVD_QLT_INTERFACE_CONTRACTS",
                                                                 "EVD_IFACE_SERVER_PROTOCOL",
                                                                 "EVD_TEST_UNIT_PROTOCOL_RUST",
-                                                                "EVD_IFACE_SERVER_PROTOCOL_RUST"
+                                                                "EVD_IFACE_SERVER_PROTOCOL_RUST",
+                                                                "EVD_IFACE_SERVER_PROTOCOL_SCHEMA_RUST"
                                                             ]
                                           },
                          "REQ-SEC-001":  {

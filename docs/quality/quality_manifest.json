@@ -2,7 +2,7 @@
   "metadata": {
     "system": "BLITZAR",
     "revision": "2026-03-14",
-    "revision_note": "Governance now includes an opaque compute-core C ABI plus pinned Rust protocol and runtime crates, with the client bridge state moved behind a narrow runtime FFI, Rust test catalog coverage for both contracts, and explicit qualification boundaries until Cargo is fully integrated into the prod evidence lanes."
+    "revision_note": "Governance now includes an explicit machine-readable `server-json-v1` schema artifact, synchronized C++ and Rust protocol version labels, and contract tests that keep the committed IPC schema aligned with the documented compatibility and deprecation rules."
   },
   "includes": [
     "manifest/evidence.json",

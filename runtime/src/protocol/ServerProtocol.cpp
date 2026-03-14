@@ -1,6 +1,7 @@
 #include "protocol/ServerProtocol.hpp"
 
 namespace grav_protocol {
+const std::string_view SchemaVersion = "server-json-v1";
 const std::string_view Status = "status";
 const std::string_view GetSnapshot = "get_snapshot";
 const std::string_view Pause = "pause";

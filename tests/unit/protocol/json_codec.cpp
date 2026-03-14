@@ -106,4 +106,12 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_004_ParsesErrorEnvelopeForControlComm
     EXPECT_EQ(parsed.error, "invalid integrator value");
 }
 
+TEST(ServerProtocolCodecTest, TST_UNT_PROT_005_ExportsCurrentSchemaVersionLabel)
+{
+    EXPECT_EQ(grav_protocol::SchemaVersion, "server-json-v1");
+    EXPECT_EQ(grav_protocol::Status, "status");
+    EXPECT_EQ(grav_protocol::GetSnapshot, "get_snapshot");
+    EXPECT_EQ(grav_protocol::SetSnapshotPublishCadence, "set_snapshot_publish_cadence");
+}
+
 } // namespace grav_test_protocol_codec

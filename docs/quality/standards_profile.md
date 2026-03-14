@@ -67,6 +67,7 @@ Build switch:
 - Single-maintainer critical-path PRs may use an explicit solo IV&V waiver token plus `DEV-SOLO-IVV` or `WVR-SOLO-IVV`; otherwise a non-author approval remains mandatory.
 - Release review should begin from the release-quality index before opening the full evidence pack.
 - Breaking interface changes must update the canonical contract artifact and linked tests in the same review.
+- Breaking IPC changes must update both `docs/server_protocol.md` and `docs/server_protocol_schema.json` in the same review.
 - Release candidates must publish an evidence pack generated from the `release-lane` commands under the selected profile.
 - Runtime behavior in critical paths must be reproducible under pinned toolchain settings.
 - Dynamic client-module verification in `prod` must remain deterministic: allowlist, `apiVersion`, product metadata, and binary `sha256` are all part of the loader contract.
