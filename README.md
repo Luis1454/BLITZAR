@@ -1,6 +1,6 @@
-# A.S.T.E.R.
+# B.L.I.T.Z.A.R
 
-Accelerated Simulation for Trajectory and Energy Resolution.
+Baryonic and Lagrangian Integrator for Trajectories & Zero-drift Astrophysical Resolution
 
 [![nightly-full](https://github.com/Luis1454/CUDA-GRAVITY-SIMULATION/actions/workflows/nightly-full.yml/badge.svg?branch=main)](https://github.com/Luis1454/CUDA-GRAVITY-SIMULATION/actions/workflows/nightly-full.yml)
 
@@ -46,12 +46,12 @@ make quality-strict
 
 ## Binaries
 
-- `aster`
-- `aster-server`
-- `aster-headless`
-- `aster-client`
+- `blitzar`
+- `blitzar-server`
+- `blitzar-headless`
+- `blitzar-client`
 
-In `PROFILE=prod`, `aster-client` and dynamic client modules are disabled by design. In `PROFILE=dev`, client modules load through a manifest-verified, checksum-checked host path.
+In `PROFILE=prod`, `blitzar-client` and dynamic client modules are disabled by design. In `PROFILE=dev`, client modules load through a manifest-verified, checksum-checked host path.
 
 ## Coverage
 
