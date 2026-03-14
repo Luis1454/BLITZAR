@@ -21,6 +21,8 @@ else()
 endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/windows_paths.cmake")
+include("${GRAVITY_ROOT_DIR}/cmake/rust.cmake")
+gravity_ensure_rust_runtime_target()
 
 function(gravity_apply_test_quality_flags target_name)
     if(GRAVITY_INTEGRATION_STRICT_WARNINGS)

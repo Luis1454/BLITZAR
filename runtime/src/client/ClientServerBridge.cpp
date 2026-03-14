@@ -24,7 +24,6 @@ typedef std::chrono::steady_clock Clock;
 constexpr auto kReconnectRetryIntervalMin = std::chrono::milliseconds(50);
 constexpr auto kReconnectRetryIntervalMax = std::chrono::milliseconds(1000);
 constexpr auto kErrorLogInterval = std::chrono::milliseconds(1500);
-constexpr std::size_t kPendingRemoteCommandsMax = 256u;
 
 const std::string_view kServerDefaultName = grav_platform::serverDefaultExecutableName();
 
@@ -254,12 +253,8 @@ ClientServerBridge::ClientServerBridge(
       _remoteAuthToken(std::move(remoteAuthToken)),
       _localServer(nullptr),
       _remoteClient(),
-      _remoteConnected(false),
       _remoteLaunchAttempted(false),
-      _remoteServerLaunched(false),
-      _pendingQueueDropWarned(false),
-      _pendingRemoteCommands(),
-      _remoteSnapshotCap(4096u),
+      _runtimeState(remoteMode),
       _cachedStats{},
       _warnedRemoteInitialConfig(false),
       _defaultExportFormat(),
@@ -293,28 +288,28 @@ bool ClientServerBridge::start()
         }
         return false;
     }
-    if (_remoteConnected && _remoteClient.isConnected()) {
+    if (_runtimeState.isConnected() && _remoteClient.isConnected()) {
         return true;
     }
     if (!ensureRemoteConnected(true)) {
         return false;
     }
     refreshRemoteStats();
-    return _remoteConnected && _remoteClient.isConnected();
+    return _runtimeState.isConnected() && _remoteClient.isConnected();
 }
 
 void ClientServerBridge::stop()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     if (_remoteMode) {
-        if (_remoteServerLaunched && _remoteClient.isConnected()) {
+        if (_runtimeState.serverLaunched() && _remoteClient.isConnected()) {
             (void)_remoteClient.sendCommand(std::string(grav_protocol::Shutdown));
         }
-        if (_remoteConnected) {
+        if (_runtimeState.isConnected()) {
             _remoteClient.disconnect();
         }
-        _remoteConnected = false;
-        _remoteServerLaunched = false;
+        _runtimeState.setConnected(false);
+        _runtimeState.setServerLaunched(false);
         return;
     }
     if (_localServer != nullptr) {
@@ -655,11 +650,11 @@ void ClientServerBridge::configureRemoteConnector(
     _remoteClient.setAuthToken(_remoteAuthToken);
 
     _remoteClient.disconnect();
-    _remoteConnected = false;
+    _runtimeState.setRemoteMode(true);
+    _runtimeState.setConnected(false);
     _remoteLaunchAttempted = false;
-    _remoteServerLaunched = false;
-    _pendingRemoteCommands.clear();
-    _pendingQueueDropWarned = false;
+    _runtimeState.setServerLaunched(false);
+    _runtimeState.clearPendingCommands();
     _reconnectRetryDelay = kReconnectRetryIntervalMin;
     _lastReconnectAttempt = Clock::time_point::min();
     _lastReconnectErrorLog = Clock::time_point::min();
@@ -681,7 +676,7 @@ bool ClientServerBridge::tryConsumeSnapshot(std::vector<RenderParticle> &outSnap
     SocketTimeoutScope timeoutScope(_remoteClient, static_cast<int>(_remoteSnapshotTimeoutMs));
     const ServerClientResponse response = _remoteClient.getSnapshot(
         remoteSnapshot,
-        grav_protocol::clampSnapshotPoints(_remoteSnapshotCap));
+        _runtimeState.remoteSnapshotCap());
     if (!response.ok) {
         if (isTransportClientFailure(response.error)) {
             markRemoteDisconnected("get_snapshot", response.error);
@@ -714,7 +709,7 @@ SimulationStats ClientServerBridge::getStats()
 void ClientServerBridge::setRemoteSnapshotCap(std::uint32_t maxPoints)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    _remoteSnapshotCap = grav_protocol::clampSnapshotPoints(maxPoints);
+    _runtimeState.setRemoteSnapshotCap(maxPoints);
 }
 
 void ClientServerBridge::requestReconnect()
@@ -724,13 +719,12 @@ void ClientServerBridge::requestReconnect()
         return;
     }
     _remoteClient.disconnect();
-    _remoteConnected = false;
+    _runtimeState.setConnected(false);
     if (_remoteAutoStart) {
         _remoteLaunchAttempted = false;
     }
-    _remoteServerLaunched = false;
-    _pendingRemoteCommands.clear();
-    _pendingQueueDropWarned = false;
+    _runtimeState.setServerLaunched(false);
+    _runtimeState.clearPendingCommands();
     _reconnectRetryDelay = kReconnectRetryIntervalMin;
     _lastReconnectAttempt = Clock::time_point::min();
     ensureRemoteConnected(true);
@@ -745,7 +739,7 @@ bool ClientServerBridge::isRemoteMode() const
 bool ClientServerBridge::launchedByClient() const
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    return _remoteMode && _remoteServerLaunched;
+    return _remoteMode && _runtimeState.serverLaunched();
 }
 
 ClientLinkState ClientServerBridge::linkState() const
@@ -754,7 +748,7 @@ ClientLinkState ClientServerBridge::linkState() const
     if (!_remoteMode) {
         return ClientLinkState::LocalEmbedded;
     }
-    if (_remoteConnected && _remoteClient.isConnected()) {
+    if (_runtimeState.isConnected() && _remoteClient.isConnected()) {
         return ClientLinkState::Connected;
     }
     return ClientLinkState::Reconnecting;
@@ -777,13 +771,9 @@ std::string_view ClientServerBridge::linkStateLabel() const
 std::string_view ClientServerBridge::serverOwnerLabel() const
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    if (!_remoteMode) {
-        return "embedded";
-    }
-    if (_remoteServerLaunched) {
-        return "managed";
-    }
-    return "external";
+    static thread_local std::string label;
+    label = _runtimeState.serverOwnerLabel();
+    return label;
 }
 
 std::string ClientServerBridge::jsonEscape(const std::string &value)
@@ -848,7 +838,7 @@ bool ClientServerBridge::sendOrQueueRemote(const std::string &cmd, const std::st
     if (!_remoteMode) {
         return false;
     }
-    if (!_remoteConnected || !_remoteClient.isConnected()) {
+    if (!_runtimeState.isConnected() || !_remoteClient.isConnected()) {
         queuePendingRemoteCommand(cmd, fields);
         return true;
     }
@@ -861,21 +851,9 @@ bool ClientServerBridge::sendOrQueueRemote(const std::string &cmd, const std::st
 
 void ClientServerBridge::queuePendingRemoteCommand(const std::string &cmd, const std::string &fields)
 {
-    if (!_pendingRemoteCommands.empty()) {
-        auto &last = _pendingRemoteCommands.back();
-        if (last.first == cmd) {
-            last.second = fields;
-            return;
-        }
+    if (_runtimeState.queuePendingCommand(cmd, fields)) {
+        std::cerr << "[client] remote queue full; dropping oldest queued command\n";
     }
-    if (_pendingRemoteCommands.size() >= kPendingRemoteCommandsMax) {
-        _pendingRemoteCommands.erase(_pendingRemoteCommands.begin());
-        if (!_pendingQueueDropWarned) {
-            std::cerr << "[client] remote queue full; dropping oldest queued command\n";
-            _pendingQueueDropWarned = true;
-        }
-    }
-    _pendingRemoteCommands.emplace_back(cmd, fields);
 }
 
 bool ClientServerBridge::ensureRemoteConnected(bool forceLog)
@@ -884,10 +862,10 @@ bool ClientServerBridge::ensureRemoteConnected(bool forceLog)
         return true;
     }
 
-    if (_remoteConnected && !_remoteClient.isConnected()) {
-        _remoteConnected = false;
+    if (_runtimeState.isConnected() && !_remoteClient.isConnected()) {
+        _runtimeState.setConnected(false);
     }
-    if (_remoteConnected) {
+    if (_runtimeState.isConnected()) {
         return true;
     }
 
@@ -898,7 +876,7 @@ bool ClientServerBridge::ensureRemoteConnected(bool forceLog)
     _lastReconnectAttempt = now;
 
     if (_remoteClient.connect(_remoteHost, _remotePort)) {
-        _remoteConnected = true;
+        _runtimeState.setConnected(true);
         _remoteLaunchAttempted = true;
         _reconnectRetryDelay = kReconnectRetryIntervalMin;
         flushPendingRemoteCommands();
@@ -930,7 +908,7 @@ void ClientServerBridge::markRemoteDisconnected(const std::string &context, cons
         _lastRemoteErrorLog = now;
     }
     _remoteClient.disconnect();
-    _remoteConnected = false;
+    _runtimeState.setConnected(false);
     _reconnectRetryDelay = kReconnectRetryIntervalMin;
     _lastReconnectAttempt = now;
 }
@@ -973,7 +951,7 @@ void ClientServerBridge::tryAutoStartRemoteServer()
     }
     std::string launchError;
     if (grav_platform::launchDetachedProcess(exe, effectiveArgs, launchError)) {
-        _remoteServerLaunched = true;
+        _runtimeState.setServerLaunched(true);
         std::cout << "[client] auto-start server: " << exe << " (" << _remoteHost << ":" << _remotePort << ")\n";
     } else {
         std::cerr << "[client] server auto-start failed ("
@@ -986,20 +964,14 @@ void ClientServerBridge::tryAutoStartRemoteServer()
 void ClientServerBridge::flushPendingRemoteCommands()
 {
     std::size_t sentCount = 0u;
-    for (; sentCount < _pendingRemoteCommands.size(); ++sentCount) {
-        const auto &command = _pendingRemoteCommands[sentCount];
+    const std::size_t pendingCount = _runtimeState.pendingCommandCount();
+    for (; sentCount < pendingCount; ++sentCount) {
+        const std::pair<std::string, std::string> command = _runtimeState.pendingCommandAt(sentCount);
         if (!sendRemoteNow(command.first, command.second)) {
             break;
         }
     }
-    if (sentCount > 0u) {
-        _pendingRemoteCommands.erase(
-            _pendingRemoteCommands.begin(),
-            _pendingRemoteCommands.begin() + static_cast<std::ptrdiff_t>(sentCount));
-    }
-    if (_pendingRemoteCommands.empty()) {
-        _pendingQueueDropWarned = false;
-    }
+    _runtimeState.erasePendingPrefix(sentCount);
 }
 
 void ClientServerBridge::refreshRemoteStats()

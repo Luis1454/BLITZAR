@@ -62,9 +62,11 @@ if(GRAVITY_TEST_UNIT_MODULE_SOURCES)
             "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleHandle.cpp"
             "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleHandleLoad.cpp"
             "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleManifest.cpp"
+            "${GRAVITY_ROOT_DIR}/runtime/src/client/RustRuntimeBridgeState.cpp"
             ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
             "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
         LIBS
+            gravityRustRuntime
             ${GRAVITY_TEST_PLATFORM_TARGET}
     )
 endif()
@@ -94,6 +96,7 @@ set(GRAVITY_TEST_BASE_REAL_SOURCES
 )
 set(GRAVITY_TEST_BASE_BRIDGE_SOURCES
     "${GRAVITY_ROOT_DIR}/tests/support/poll_utils.cpp"
+    "${GRAVITY_ROOT_DIR}/runtime/src/client/RustRuntimeBridgeState.cpp"
     "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientServerBridge.cpp"
     ${GRAVITY_TEST_BASE_REAL_SOURCES}
 )
@@ -134,6 +137,7 @@ if(GRAVITY_TEST_INT_BRIDGE_SOURCES)
             ${GRAVITY_TEST_INT_BRIDGE_SOURCES}
             ${GRAVITY_TEST_BASE_BRIDGE_SOURCES}
         LIBS
+            gravityRustRuntime
             ${GRAVITY_TEST_PLATFORM_TARGET}
     )
 endif()
@@ -147,6 +151,7 @@ if(GRAVITY_TEST_INT_RUNTIME_SOURCES)
             ${GRAVITY_TEST_INT_RUNTIME_SOURCES}
             ${GRAVITY_TEST_BASE_RUNTIME_SOURCES}
         LIBS
+            gravityRustRuntime
             ${GRAVITY_TEST_PLATFORM_TARGET}
     )
 endif()
@@ -168,6 +173,7 @@ if(TARGET Qt6::Widgets AND GRAVITY_TEST_INT_UI_SOURCES)
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/ParticleViewColor.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/QtViewMath.cpp"
         LIBS
+            gravityRustRuntime
             Qt6::Widgets
             ${GRAVITY_TEST_PLATFORM_TARGET}
     )

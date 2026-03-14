@@ -85,7 +85,12 @@
                      "EVD_RUST_TOOLCHAIN":  "rust-toolchain.toml",
                      "EVD_RUST_WORKSPACE":  "rust/Cargo.toml",
                      "EVD_RUST_PROTOCOL_CRATE":  "rust/blitzar-protocol/Cargo.toml",
+                     "EVD_RUST_RUNTIME_CRATE":  "rust/blitzar-runtime/Cargo.toml",
                      "EVD_IFACE_SERVER_PROTOCOL_RUST":  "rust/blitzar-protocol/src/lib.rs",
-                     "EVD_TEST_UNIT_PROTOCOL_RUST":  "rust/blitzar-protocol/tests/protocol.rs"
+                     "EVD_IFACE_CLIENT_RUNTIME_RUST":  "rust/blitzar-runtime/src/lib.rs",
+                     "EVD_IFACE_RUNTIME_BRIDGE_API":  "runtime/include/ffi/BlitzarRuntimeBridgeApi.hpp",
+                     "EVD_IFACE_RUNTIME_BRIDGE_STATE":  "runtime/include/client/RustRuntimeBridgeState.hpp",
+                     "EVD_TEST_UNIT_PROTOCOL_RUST":  "rust/blitzar-protocol/tests/protocol.rs",
+                     "EVD_TEST_UNIT_RUNTIME_RUST":  "rust/blitzar-runtime/tests/bridge_state.rs"
                  }
 }
