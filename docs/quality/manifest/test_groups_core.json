@@ -715,6 +715,42 @@
                                                                                                       "REQ-RUN-001"
                                                                                                   ]
                                                                                   }
-                                                        }
+                                                       },
+                        "EVD_TEST_UNIT_WEB_GATEWAY_ARGS_RUST":  {
+                                                                    "TST-UNT-RWEB-001":  {
+                                                                                              "id":  "blitzar_web_gateway::tests::args::tst_rust_web_001_parse_args_supports_gateway_and_backend_flags",
+                                                                                              "req_ids":  [
+                                                                                                              "REQ-WEB-001"
+                                                                                                          ]
+                                                                                          },
+                                                                    "TST-UNT-RWEB-002":  {
+                                                                                              "id":  "blitzar_web_gateway::tests::args::tst_rust_web_002_parse_args_rejects_unknown_flag",
+                                                                                              "req_ids":  [
+                                                                                                              "REQ-WEB-001"
+                                                                                                          ]
+                                                                                          }
+                                                                },
+                        "EVD_TEST_UNIT_WEB_GATEWAY_HTTP_RUST":  {
+                                                                    "TST-UNT-RWEB-003":  {
+                                                                                              "id":  "blitzar_web_gateway::tests::http::tst_rust_web_003_http_status_route_proxies_backend_status_payload",
+                                                                                              "req_ids":  [
+                                                                                                              "REQ-WEB-001"
+                                                                                                          ]
+                                                                                          },
+                                                                    "TST-UNT-RWEB-004":  {
+                                                                                              "id":  "blitzar_web_gateway::tests::http::tst_rust_web_004_http_command_route_preserves_backend_error_envelope",
+                                                                                              "req_ids":  [
+                                                                                                              "REQ-WEB-001"
+                                                                                                          ]
+                                                                                          }
+                                                                },
+                        "EVD_TEST_UNIT_WEB_GATEWAY_EVENTS_RUST":  {
+                                                                      "TST-UNT-RWEB-005":  {
+                                                                                                "id":  "blitzar_web_gateway::tests::events::tst_rust_web_005_event_helpers_emit_typed_status_and_snapshot_tags",
+                                                                                                "req_ids":  [
+                                                                                                                "REQ-WEB-001"
+                                                                                                            ]
+                                                                                            }
+                                                                  }
                     }
 }

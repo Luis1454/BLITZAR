@@ -14,6 +14,7 @@
                      "EVD_APP_LAUNCHER_MAIN":  "apps/launcher/main.cpp",
                      "EVD_DOC_SERVER_PROTOCOL":  "docs/server_protocol.md",
                      "EVD_DOC_SERVER_PROTOCOL_SCHEMA":  "docs/server_protocol_schema.json",
+                     "EVD_DOC_WEB_GATEWAY":  "docs/web_gateway.md",
                      "EVD_QLT_README":  "docs/quality/README.md",
                      "EVD_QLT_FMEA":  "docs/quality/fmea.md",
                      "EVD_QLT_FMEA_ACTIONS":  "docs/quality/manifest/fmea_actions.json",
@@ -87,11 +88,16 @@
                      "EVD_RUST_WORKSPACE":  "rust/Cargo.toml",
                      "EVD_RUST_PROTOCOL_CRATE":  "rust/blitzar-protocol/Cargo.toml",
                      "EVD_RUST_RUNTIME_CRATE":  "rust/blitzar-runtime/Cargo.toml",
+                     "EVD_RUST_WEB_GATEWAY_CRATE":  "rust/blitzar-web-gateway/Cargo.toml",
                      "EVD_IFACE_SERVER_PROTOCOL_RUST":  "rust/blitzar-protocol/src/lib.rs",
                      "EVD_IFACE_CLIENT_RUNTIME_RUST":  "rust/blitzar-runtime/src/lib.rs",
+                     "EVD_IFACE_WEB_GATEWAY_RUST":  "rust/blitzar-web-gateway/src/lib.rs",
                      "EVD_IFACE_RUNTIME_BRIDGE_API":  "runtime/include/ffi/BlitzarRuntimeBridgeApi.hpp",
                      "EVD_IFACE_RUNTIME_BRIDGE_STATE":  "runtime/include/client/RustRuntimeBridgeState.hpp",
                      "EVD_TEST_UNIT_PROTOCOL_RUST":  "rust/blitzar-protocol/tests/protocol.rs",
-                     "EVD_TEST_UNIT_RUNTIME_RUST":  "rust/blitzar-runtime/tests/bridge_state.rs"
+                     "EVD_TEST_UNIT_RUNTIME_RUST":  "rust/blitzar-runtime/tests/bridge_state.rs",
+                     "EVD_TEST_UNIT_WEB_GATEWAY_ARGS_RUST":  "rust/blitzar-web-gateway/tests/args.rs",
+                     "EVD_TEST_UNIT_WEB_GATEWAY_HTTP_RUST":  "rust/blitzar-web-gateway/tests/http.rs",
+                     "EVD_TEST_UNIT_WEB_GATEWAY_EVENTS_RUST":  "rust/blitzar-web-gateway/tests/events.rs"
                  }
 }
