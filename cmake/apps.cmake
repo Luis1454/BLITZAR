@@ -43,6 +43,14 @@ function(gravity_add_client_module_manifest target_name module_id)
         VERBATIM
     )
 endfunction()
+
+add_library(gravityCoreFfi STATIC
+    ${GRAVITY_CORE_FFI_SOURCES}
+    ${GRAVITY_SERVER_SOURCES}
+)
+configure_gravity_cuda_target(gravityCoreFfi)
+set_target_properties(gravityCoreFfi PROPERTIES OUTPUT_NAME "blitzar-core-ffi")
+
 if(WIN32)
     target_link_libraries(gravityPlatform
         PUBLIC

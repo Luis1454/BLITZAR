@@ -293,6 +293,26 @@
         ]
       }
     },
+    "EVD_TEST_UNIT_CORE_API": {
+      "TST-UNT-CORE-001": {
+        "id": "BlitzarCoreApiTest.TST_UNT_CORE_001_CreateRunAndReportStatus",
+        "req_ids": [
+          "REQ-CORE-001"
+        ]
+      },
+      "TST-UNT-CORE-002": {
+        "id": "BlitzarCoreApiTest.TST_UNT_CORE_002_CopiesAndFreesSnapshotBuffer",
+        "req_ids": [
+          "REQ-CORE-001"
+        ]
+      },
+      "TST-UNT-CORE-003": {
+        "id": "BlitzarCoreApiTest.TST_UNT_CORE_003_ExportsAndReloadsState",
+        "req_ids": [
+          "REQ-CORE-001"
+        ]
+      }
+    },
     "EVD_TEST_UNIT_PHYSICS_ORBIT": {
       "TST-UNT-PHYS-001": {
         "id": "PhysicsTest.TST_UNT_PHYS_001_AttractionDistance",
