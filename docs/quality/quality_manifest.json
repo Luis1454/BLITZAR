@@ -2,7 +2,7 @@
   "metadata": {
     "system": "BLITZAR",
     "revision": "2026-03-14",
-    "revision_note": "Governance now includes an opaque compute-core C ABI plus a pinned Rust workspace that mirrors the server-json-v1 protocol in dev, with Rust test catalog coverage and explicit qualification boundaries until Cargo is integrated into the prod evidence lanes."
+    "revision_note": "Governance now includes an opaque compute-core C ABI plus pinned Rust protocol and runtime crates, with the client bridge state moved behind a narrow runtime FFI, Rust test catalog coverage for both contracts, and explicit qualification boundaries until Cargo is fully integrated into the prod evidence lanes."
   },
   "includes": [
     "manifest/evidence.json",

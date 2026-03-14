@@ -165,6 +165,7 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
     endif()
 
     if(TARGET Qt6::Widgets)
+        gravity_ensure_rust_runtime_target()
         add_library(${CLIENT_MODULE_QT_INPROC_NAME} MODULE
             modules/qt/module.cpp
             runtime/src/client/ErrorBuffer.cpp
@@ -174,6 +175,7 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
             runtime/src/client/ClientCommon.cpp
             runtime/src/client/ClientRuntime.cpp
             runtime/src/client/LocalServerFactory.cpp
+            runtime/src/client/RustRuntimeBridgeState.cpp
             ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
             ${GRAVITY_SERVER_SOURCES}
             modules/qt/ui/EnergyGraphWidget.cpp
@@ -189,6 +191,7 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
         endif()
         target_link_libraries(${CLIENT_MODULE_QT_INPROC_NAME}
             PRIVATE
+                gravityRustRuntime
                 Qt6::Widgets
         )
         gravity_add_client_module_manifest(${CLIENT_MODULE_QT_INPROC_NAME} qt)
