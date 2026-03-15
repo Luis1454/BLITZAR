@@ -72,6 +72,10 @@ void SimulationConfigDirective::write(std::ostream &out, const SimulationConfig 
     out << ")\n";
     out << "octree(theta=" << config.octreeTheta
         << ", softening=" << config.octreeSoftening << ")\n";
+    out << "physics(max_acceleration=" << config.physicsMaxAcceleration
+        << ", min_softening=" << config.physicsMinSoftening
+        << ", min_distance2=" << config.physicsMinDistance2
+        << ", min_theta=" << config.physicsMinTheta << ")\n";
     out << "client(zoom=" << config.defaultZoom
         << ", luminosity=" << config.defaultLuminosity
         << ", ui_fps=" << config.uiFpsLimit
@@ -114,7 +118,9 @@ void SimulationConfigDirective::write(std::ostream &out, const SimulationConfig 
         << ", smoothing_length=" << config.sphSmoothingLength
         << ", rest_density=" << config.sphRestDensity
         << ", gas_constant=" << config.sphGasConstant
-        << ", viscosity=" << config.sphViscosity << ")\n";
+        << ", viscosity=" << config.sphViscosity
+        << ", max_acceleration=" << config.sphMaxAcceleration
+        << ", max_speed=" << config.sphMaxSpeed << ")\n";
 }
 
 } // namespace grav_config
