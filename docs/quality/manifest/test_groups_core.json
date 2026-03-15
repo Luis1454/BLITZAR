@@ -422,6 +422,14 @@
                                                                                                   ]
                                                                                   }
                                                          },
+                        "EVD_TEST_UNIT_PHYSICS_DETERMINISM":  {
+                                                                   "TST-UNT-PHYS-013":  {
+                                                                                            "id":  "PhysicsTest.TST_UNT_PHYS_010_DeterministicReplayIdentical",
+                                                                                            "req_ids":  [
+                                                                                                            "REQ-PHYS-001"
+                                                                                                        ]
+                                                                                        }
+                                                               },
                         "EVD_TEST_INT_UI_QT_WINDOW":  {
                                                           "TST-UIX-UI-001":  {
                                                                                  "id":  "QtMainWindowTest.TST_UIX_UI_001_ConstructsAndTicksWithRealRuntime",

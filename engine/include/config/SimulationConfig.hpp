@@ -62,6 +62,7 @@ struct SimulationConfig {
     float sphViscosity = 0.08f;
     std::uint32_t energyMeasureEverySteps = 120u;
     std::uint32_t energySampleLimit = 256u;
+    bool deterministicMode = false;
 
     static SimulationConfig defaults();
     static SimulationConfig loadOrCreate(const std::string &path);
