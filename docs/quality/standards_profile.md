@@ -73,6 +73,7 @@ Build switch:
 - Dynamic client-module verification in `prod` must remain deterministic: allowlist, `apiVersion`, product metadata, and binary `sha256` are all part of the loader contract.
 - Mixed-language seams must remain narrow and deterministic: the compute-core FFI may expose only opaque handles plus POD request/status/snapshot structs, never C++/CUDA implementation types.
 - Rust workspace additions must pin `rustc` through `rust-toolchain.toml`, commit `Cargo.lock`, and keep the mixed-language seam deterministic; local strict preflight must execute Cargo checks, while Cargo-built artifacts remain `dev` evidence until a later issue wires them into the qualified `prod` lanes and tool manifest.
+- Optional web transport adapters must preserve `server-json-v1` command semantics exactly and remain outside the compute-core qualification boundary unless a future issue explicitly qualifies them under `prod`.
 - Interactive performance presets may tune snapshot cadence, client draw cap, energy sampling, and bounded substep policy, but must not silently change solver or integrator mode.
 - Production C++ paths (`apps/`, `engine/`, `runtime/`, `modules/`) must not use unnamed namespaces.
 - Production C++ paths must also satisfy the automated subset of the `Power of 10` profile (`goto`, `setjmp`/`longjmp`, `do-while`, open-ended `while(true)`, non-structural object-like macros, and non-ABI function-pointer typedefs are forbidden).

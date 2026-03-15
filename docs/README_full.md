@@ -143,6 +143,14 @@ build/blitzar-client.exe --config simulation.ini --module cli
 build/blitzar-headless.exe --config simulation.ini --particle-count 50000 --target-steps 1000
 ```
 
+On Windows, building `gravityClientModuleQtInProc` now runs `windeployqt` automatically when the tool is available, so `platforms/qwindows.dll` and the required Qt DLLs land in the build directory next to `blitzar-client.exe`.
+
+Manual fallback if needed:
+
+```bash
+make deploy-qt BUILD_DIR=build-dev
+```
+
 `blitzar-client` is a `dev`-profile path. Each client module now ships with a sidecar manifest and the host verifies the module allowlist, `api_version`, product metadata, and `sha256` digest before loading it. If the client host is explicitly enabled under `prod`, startup load stays manifest-verified but live `reload` / `switch` are disabled.
 
 Module host runtime switch (`dev` only):
