@@ -15,6 +15,7 @@ set(GRAVITY_PROJECT_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/runtime/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/modules/qt/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/engine/include/physics"
+    "${CMAKE_CURRENT_SOURCE_DIR}/engine/include/graphics"
     "${CMAKE_CURRENT_SOURCE_DIR}/engine/src/physics/cuda/fragments"
 )
 
@@ -29,6 +30,11 @@ else()
         engine/src/config/EnvUtilsPosix.cpp
     )
 endif()
+
+set(GRAVITY_GRAPHICS_SOURCES
+    "${CMAKE_SOURCE_DIR}/engine/src/graphics/ViewMath.cpp"
+    "${CMAKE_SOURCE_DIR}/engine/src/graphics/ColorPipeline.cpp"
+)
 
 set(GRAVITY_SERVER_SOURCES
     ${GRAVITY_ENV_UTILS_SOURCES}

@@ -172,6 +172,7 @@ if(TARGET Qt6::Widgets AND GRAVITY_TEST_INT_UI_SOURCES)
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/ParticleView.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/ParticleViewColor.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/QtViewMath.cpp"
+            ${GRAVITY_GRAPHICS_SOURCES}
         LIBS
             gravityRustRuntime
             Qt6::Widgets
@@ -179,3 +180,10 @@ if(TARGET Qt6::Widgets AND GRAVITY_TEST_INT_UI_SOURCES)
     )
     gravity_configure_qt_runtime_deploy(gravityQtMainWindowGTests)
 endif()
+
+gravity_add_gtest(gravityGraphicsGTests
+    LABELS unit
+    SOURCES
+        "${GRAVITY_ROOT_DIR}/tests/unit/graphics/TST_UNT_GRA_GraphicsTests.cpp"
+        ${GRAVITY_GRAPHICS_SOURCES}
+)
