@@ -62,6 +62,19 @@
                     "REQ-CONF-002"
                 ]
             },
+            "TST-UNT-CONF-015": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_015_DefaultClientParticleCapMatchesProtocolMax",
+                "req_ids": [
+                    "REQ-CONF-001"
+                ]
+            },
+            "TST-UNT-CONF-016": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_016_LoadClampsClientParticleCapToProtocolMax",
+                "req_ids": [
+                    "REQ-CONF-001",
+                    "REQ-CONF-002"
+                ]
+            },
             "TST-UNT-CONF-019": {
                 "id": "ConfigArgsTest.TST_UNT_CONF_019_CliAliasesApplyThroughSharedRegistry",
                 "req_ids": [
@@ -104,19 +117,6 @@
                 "id": "ConfigArgsTest.TST_UNT_CONF_013_LoadOrCreateCreatesFileWhenMissing",
                 "req_ids": [
                     "REQ-CONF-001"
-                ]
-            },
-            "TST-UNT-CONF-015": {
-                "id": "ConfigArgsTest.TST_UNT_CONF_015_DefaultClientParticleCapMatchesProtocolMax",
-                "req_ids": [
-                    "REQ-CONF-001"
-                ]
-            },
-            "TST-UNT-CONF-016": {
-                "id": "ConfigArgsTest.TST_UNT_CONF_016_LoadClampsClientParticleCapToProtocolMax",
-                "req_ids": [
-                    "REQ-CONF-001",
-                    "REQ-CONF-002"
                 ]
             },
             "TST-UNT-CONF-017": {
@@ -787,6 +787,26 @@
                 "id": "blitzar_web_gateway::tests::events::tst_rust_web_005_event_helpers_emit_typed_status_and_snapshot_tags",
                 "req_ids": [
                     "REQ-WEB-001"
+                ]
+            }
+        },
+        "EVD_TEST_UNIT_GRAPHICS_PIPELINE": {
+            "TST-UNT-GRA-001": {
+                "id": "ViewMathTest.TST_UNT_GRA_001_ProjectXYIsIdentity",
+                "req_ids": [
+                    "REQ-GRA-001"
+                ]
+            },
+            "TST-UNT-GRA-002": {
+                "id": "ViewMathTest.TST_UNT_GRA_002_ProjectXZSwapsYZ",
+                "req_ids": [
+                    "REQ-GRA-001"
+                ]
+            },
+            "TST-UNT-GRA-003": {
+                "id": "ColorPipelineTest.TST_UNT_GRA_003_HeavyBodyDetect",
+                "req_ids": [
+                    "REQ-GRA-002"
                 ]
             }
         }
