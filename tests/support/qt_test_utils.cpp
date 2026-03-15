@@ -37,8 +37,9 @@ QApplication *ensureQtApp()
     static char *argv[] = {arg0.data(), nullptr};
     static bool initialized = false;
     if (!initialized) {
-        std::strncpy(arg0.data(), "qt-mainwindow-integration-real", arg0.size() - 1u);
-        arg0[arg0.size() - 1u] = '\0';
+        const char *appName = "qt-mainwindow-integration-real";
+        std::copy_n(appName, std::strlen(appName), arg0.data());
+        arg0[std::strlen(appName)] = '\0';
         initialized = true;
     }
     static QApplication app(argc, argv);

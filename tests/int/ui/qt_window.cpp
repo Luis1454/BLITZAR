@@ -3,6 +3,7 @@
 #include "tests/support/server_harness.hpp"
 #include "tests/support/client_utils.hpp"
 #include "tests/support/qt_test_utils.hpp"
+#include "ui/EnergyGraphWidget.hpp"
 #include "ui/MainWindow.hpp"
 
 #include <gtest/gtest.h>
@@ -152,6 +153,23 @@ TEST(QtMainWindowTest, TST_UIX_UI_004_ShowsEffectiveClientCapWhenConfiguredCapEx
     }, std::chrono::milliseconds(5000)));
 
     server.stop();
+}
+
+TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabels)
+{
+    const QStringList labels = grav_qt::EnergyGraphWidget::legendLabels();
+
+    EXPECT_EQ(grav_qt::EnergyGraphWidget::energyXAxisLabel().toStdString(), "History [samples]");
+    EXPECT_EQ(grav_qt::EnergyGraphWidget::energyYAxisLabel().toStdString(), "Energy [a.u.]");
+    EXPECT_EQ(grav_qt::EnergyGraphWidget::driftXAxisLabel().toStdString(), "History [samples]");
+    EXPECT_EQ(grav_qt::EnergyGraphWidget::driftYAxisLabel().toStdString(), "Drift [%]");
+    ASSERT_EQ(labels.size(), 6);
+    EXPECT_EQ(labels.at(0).toStdString(), "Kinetic [a.u.]");
+    EXPECT_EQ(labels.at(1).toStdString(), "Potential [a.u.]");
+    EXPECT_EQ(labels.at(2).toStdString(), "Thermal [a.u.]");
+    EXPECT_EQ(labels.at(3).toStdString(), "Radiated [a.u.]");
+    EXPECT_EQ(labels.at(4).toStdString(), "Total [a.u.]");
+    EXPECT_EQ(labels.at(5).toStdString(), "Drift [%]");
 }
 
 } // namespace grav_test_qt_window

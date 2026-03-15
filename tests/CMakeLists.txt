@@ -44,4 +44,5 @@ set(GRAVITY_TEST_INCLUDE_DIRS
 )
 
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/setup.cmake")
+include("${GRAVITY_ROOT_DIR}/cmake/qt_runtime_deploy.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/targets.cmake")

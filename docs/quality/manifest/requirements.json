@@ -235,9 +235,9 @@
                                                               "EVD_MOD_QT_MAINWINDOW"
                                                           ],
                                             "tests":  [
-                                                          "^QtMainWindowTest\\.TST_UIX_UI_00[1-4]_"
-                                                      ]
-                                        },
+                                                          "^QtMainWindowTest\\.TST_UIX_UI_00[1-5]_"
+                                                        ]
+                                          },
                          "REQ-TEST-001":  {
                                               "tests":  [
                                                             "^TST_QLT_REPO_006_GravityQualityBaselineCheck$",

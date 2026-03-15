@@ -24,3 +24,5 @@ __pycache__/
 .pytest-basetemp*/
 .tmp_*
 rust/target/
+
+.agent_artifacts

@@ -22,10 +22,10 @@ DEFAULT_PATHS = (
     "runtime/src/server",
 )
 HEADER_LIKE_SUFFIXES = (".h", ".hh", ".hpp", ".hxx", ".inl")
-WINDOWS_LLVM_CLANG_TIDY_CANDIDATES = (
-    Path(r"C:\Program Files\LLVM\bin\clang-tidy.exe"),
-    Path(r"C:\Program Files (x86)\LLVM\bin\clang-tidy.exe"),
-)
+WINDOWS_LLVM_CLANG_TIDY_CANDIDATES = [
+    Path(os.environ.get("PROGRAMFILES", r"C:\Program Files")) / "LLVM/bin/clang-tidy.exe",
+    Path(os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)")) / "LLVM/bin/clang-tidy.exe",
+]
 
 
 class ClangTidyCheck(BaseCheck):

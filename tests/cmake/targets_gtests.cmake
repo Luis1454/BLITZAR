@@ -177,4 +177,5 @@ if(TARGET Qt6::Widgets AND GRAVITY_TEST_INT_UI_SOURCES)
             Qt6::Widgets
             ${GRAVITY_TEST_PLATFORM_TARGET}
     )
+    gravity_configure_qt_runtime_deploy(gravityQtMainWindowGTests)
 endif()
