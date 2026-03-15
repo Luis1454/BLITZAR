@@ -421,18 +421,4 @@ bool ParticleSystem::update(float deltaTime) {
     return true;
 }
 
-void destroyParticles(ParticleHandle particles) {
-    if (d_particles) {
-        cudaFree(d_particles);
-        d_particles = nullptr;
-    }
-    if (last) {
-        cudaFree(last);
-        last = nullptr;
-    }
-    releaseRk4Buffers();
-    releaseSphBuffers();
-    releaseSphGridBuffers();
-
-    (void)particles;
-}
+// Note: destroyParticles logic moved to ParticleSystem destructor and releaseParticleBuffers.

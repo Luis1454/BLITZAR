@@ -57,6 +57,12 @@ class ParticleSystem {
         void releaseParticleBuffers();
         float applyThermalModel(float deltaTime);
         bool buildSphGrid(int numParticles);
+        void releaseRk4Buffers();
+        void releaseSphBuffers();
+        void releaseSphGridBuffers();
+        bool allocateRk4Buffers(int numParticles);
+        bool allocateSphBuffers(int numParticles);
+        bool allocateSphGridBuffers(int numParticles);
 
         std::vector<Particle> _particles;
         SolverMode _solverMode;
@@ -87,6 +93,35 @@ class ParticleSystem {
         bool _hostStateDirty;
         int _sphGridSize;
         int _sphGridTotalCells;
+
+        // Device buffers (moved from globals)
+        Particle *d_particles;
+        Particle *last;
+        Particle *d_stage;
+        Vector3 *d_k1x;
+        Vector3 *d_k2x;
+        Vector3 *d_k3x;
+        Vector3 *d_k4x;
+        Vector3 *d_k1v;
+        Vector3 *d_k2v;
+        Vector3 *d_k3v;
+        Vector3 *d_k4v;
+        float *d_sphDensity;
+        float *d_sphPressure;
+        int *d_sphCellHash;
+        int *d_sphSortedIndex;
+        int *d_sphCellStart;
+        int *d_sphCellEnd;
+        GpuOctreeNode *g_dOctreeNodes;
+        int *g_dOctreeLeafIndices;
+
+        // Host shadows for SPH
+        std::vector<int> _hostCellHash;
+        std::vector<int> _hostSortedIndex;
+
+        // Octree capacity tracking
+        std::size_t g_dOctreeNodeCapacity;
+        std::size_t g_dOctreeLeafCapacity;
 };
 
 
