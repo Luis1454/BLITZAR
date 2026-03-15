@@ -24,6 +24,7 @@ struct ScenarioConfig {
     std::uint32_t energySampleLimit = 0u;
     int snapshotTimeoutMs = 3000;
     int stepTimeoutMs = 3000;
+    bool sphEnabled = false;
     InitialStateConfig initState{};
 };
 
