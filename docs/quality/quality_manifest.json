@@ -2,7 +2,7 @@
   "metadata": {
     "system": "BLITZAR",
     "revision": "2026-03-14",
-    "revision_note": "Governance now includes an explicit machine-readable `server-json-v1` schema artifact, synchronized C++ and Rust protocol version labels, and contract tests that keep the committed IPC schema aligned with the documented compatibility and deprecation rules."
+    "revision_note": "Governance now includes an optional Rust web gateway adapter that preserves `server-json-v1` semantics over HTTP and WebSocket, with a documented contract, dedicated Rust tests, and synchronized evidence mappings."
   },
   "includes": [
     "manifest/evidence.json",

@@ -97,8 +97,24 @@
                                                            "^ClientBridgeTest\\.TST_INT_RUNT_00[1-2]_",
                                                            "^ClientRuntimeTest\\.TST_CNT_RUNT_00[1-8]_",
                                                            "^PhysicsTest\\.TST_UNT_RUNT_00[1-5]_",
-                                                           "^blitzar_runtime::tests::bridge_state::tst_rust_runt_00[1-4]_"
+                                                       "^blitzar_runtime::tests::bridge_state::tst_rust_runt_00[1-4]_"
                                                        ]
+                                         },
+                         "REQ-WEB-001":  {
+                                             "tests":  [
+                                                           "^blitzar_web_gateway::tests::(args::tst_rust_web_00[1-2]_.*|http::tst_rust_web_00[3-4]_.*|events::tst_rust_web_005_.*)$"
+                                                       ],
+                                             "artifacts":  [
+                                                               "EVD_DOC_WEB_GATEWAY",
+                                                               "EVD_DOC_SERVER_PROTOCOL",
+                                                               "EVD_QLT_INTERFACE_CONTRACTS",
+                                                               "EVD_RUST_WORKSPACE",
+                                                               "EVD_RUST_WEB_GATEWAY_CRATE",
+                                                               "EVD_IFACE_WEB_GATEWAY_RUST",
+                                                               "EVD_TEST_UNIT_WEB_GATEWAY_ARGS_RUST",
+                                                               "EVD_TEST_UNIT_WEB_GATEWAY_HTTP_RUST",
+                                                               "EVD_TEST_UNIT_WEB_GATEWAY_EVENTS_RUST"
+                                                           ]
                                          },
                          "REQ-CORE-001":  {
                                               "tests":  [

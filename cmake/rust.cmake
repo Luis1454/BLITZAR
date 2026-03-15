@@ -13,6 +13,14 @@ set(
     GRAVITY_RUST_RUNTIME_LIBRARY
     "${GRAVITY_RUST_TARGET_DIR}/${GRAVITY_RUST_RUNTIME_PROFILE}/${CMAKE_STATIC_LIBRARY_PREFIX}blitzar_runtime${CMAKE_STATIC_LIBRARY_SUFFIX}"
 )
+set(
+    GRAVITY_RUST_WEB_GATEWAY_BINARY
+    "${GRAVITY_RUST_TARGET_DIR}/${GRAVITY_RUST_RUNTIME_PROFILE}/blitzar-web-gateway${CMAKE_EXECUTABLE_SUFFIX}"
+)
+set(
+    GRAVITY_RUST_WEB_GATEWAY_OUTPUT
+    "${CMAKE_BINARY_DIR}/blitzar-web-gateway${CMAKE_EXECUTABLE_SUFFIX}"
+)
 file(GLOB_RECURSE GRAVITY_RUST_RUNTIME_INPUTS CONFIGURE_DEPENDS
     "${GRAVITY_RUST_WORKSPACE_DIR}/Cargo.toml"
     "${GRAVITY_RUST_ROOT_DIR}/rust-toolchain.toml"
@@ -21,6 +29,8 @@ file(GLOB_RECURSE GRAVITY_RUST_RUNTIME_INPUTS CONFIGURE_DEPENDS
     "${GRAVITY_RUST_WORKSPACE_DIR}/blitzar-protocol/tests/*.rs"
     "${GRAVITY_RUST_WORKSPACE_DIR}/blitzar-runtime/src/*.rs"
     "${GRAVITY_RUST_WORKSPACE_DIR}/blitzar-runtime/tests/*.rs"
+    "${GRAVITY_RUST_WORKSPACE_DIR}/blitzar-web-gateway/src/*.rs"
+    "${GRAVITY_RUST_WORKSPACE_DIR}/blitzar-web-gateway/tests/*.rs"
 )
 
 function(gravity_ensure_rust_runtime_target)
@@ -49,4 +59,28 @@ function(gravity_ensure_rust_runtime_target)
             INTERFACE_LINK_LIBRARIES "$<$<PLATFORM_ID:Windows>:ntdll;userenv>"
     )
     add_dependencies(gravityRustRuntime gravityRustRuntimeBuild)
+endfunction()
+
+function(gravity_ensure_rust_web_gateway_target)
+    if(TARGET blitzar-web-gateway)
+        return()
+    endif()
+
+    add_custom_command(
+        OUTPUT "${GRAVITY_RUST_WEB_GATEWAY_OUTPUT}"
+        COMMAND ${GRAVITY_CARGO_EXECUTABLE}
+            build
+            --manifest-path "${GRAVITY_RUST_WORKSPACE_DIR}/Cargo.toml"
+            -p blitzar-web-gateway
+            --release
+            --target-dir "${GRAVITY_RUST_TARGET_DIR}"
+        COMMAND ${CMAKE_COMMAND}
+            -E copy_if_different
+            "${GRAVITY_RUST_WEB_GATEWAY_BINARY}"
+            "${GRAVITY_RUST_WEB_GATEWAY_OUTPUT}"
+        DEPENDS ${GRAVITY_RUST_RUNTIME_INPUTS}
+        WORKING_DIRECTORY "${GRAVITY_RUST_ROOT_DIR}"
+        VERBATIM
+    )
+    add_custom_target(blitzar-web-gateway ALL DEPENDS "${GRAVITY_RUST_WEB_GATEWAY_OUTPUT}")
 endfunction()
