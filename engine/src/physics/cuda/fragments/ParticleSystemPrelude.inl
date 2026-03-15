@@ -542,6 +542,12 @@ Vector3Handle d_k3v = nullptr;
 Vector3Handle d_k4v = nullptr;
 FloatHandle d_sphDensity = nullptr;
 FloatHandle d_sphPressure = nullptr;
+IndexHandle d_sphCellHash = nullptr;
+IndexHandle d_sphSortedIndex = nullptr;
+IndexHandle d_sphCellStart = nullptr;
+IndexHandle d_sphCellEnd = nullptr;
+std::vector<int> _hostCellHash;
+std::vector<int> _hostSortedIndex;
 OctreeNodeHandle g_dOctreeNodes = nullptr;
 IndexHandle g_dOctreeLeafIndices = nullptr;
 std::size_t g_dOctreeNodeCapacity = 0;
@@ -597,6 +603,49 @@ void releaseSphBuffers()
         d_sphPressure = nullptr;
     }
 }
+
+void releaseSphGridBuffers()
+{
+    if (d_sphCellHash) {
+        cudaFree(d_sphCellHash);
+        d_sphCellHash = nullptr;
+    }
+    if (d_sphSortedIndex) {
+        cudaFree(d_sphSortedIndex);
+        d_sphSortedIndex = nullptr;
+    }
+    if (d_sphCellStart) {
+        cudaFree(d_sphCellStart);
+        d_sphCellStart = nullptr;
+    }
+    if (d_sphCellEnd) {
+        cudaFree(d_sphCellEnd);
+        d_sphCellEnd = nullptr;
+    }
+    _hostCellHash.clear();
+    _hostSortedIndex.clear();
+}
+
+bool allocateSphGridBuffers(int numParticles)
+{
+    releaseSphGridBuffers();
+    const std::size_t particleBytes =
+        static_cast<std::size_t>(numParticles) * sizeof(int);
+    if (!checkCudaStatus(cudaMalloc(&d_sphCellHash, particleBytes),
+            "cudaMalloc(d_sphCellHash)")) {
+        releaseSphGridBuffers();
+        return false;
+    }
+    if (!checkCudaStatus(cudaMalloc(&d_sphSortedIndex, particleBytes),
+            "cudaMalloc(d_sphSortedIndex)")) {
+        releaseSphGridBuffers();
+        return false;
+    }
+    _hostCellHash.resize(static_cast<std::size_t>(numParticles));
+    _hostSortedIndex.resize(static_cast<std::size_t>(numParticles));
+    return true;
+}
+
 
 bool allocateRk4Buffers(int numParticles)
 {
