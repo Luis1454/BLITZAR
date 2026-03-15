@@ -10,7 +10,7 @@ Targets:
   make build-ci       Release profile (BUILD_TESTS=ON)
   make test-int       Configure/build/run standalone integration suite from tests/
   make doctor         Validate local toolchain/build artifacts via CMake script
-  make deploy-qt      Deploy Qt runtime/plugins for client host
+  make deploy-qt      Manual Qt runtime/plugin deploy fallback for client host
   make run-server    Doctor check + run server mode via main binary
   make run-headless   Doctor check + run headless mode via main binary
   make clean          Remove build directory
