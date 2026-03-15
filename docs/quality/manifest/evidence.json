@@ -69,6 +69,7 @@
                      "EVD_TEST_UNIT_PHYSICS_MULTIBODY":  "tests/unit/physics/multibody.cpp",
                      "EVD_TEST_UNIT_PHYSICS_ORBIT":  "tests/unit/physics/orbit.cpp",
                      "EVD_TEST_UNIT_PHYSICS_SOLVER":  "tests/unit/physics/solver.cpp",
+                     "EVD_TEST_UNIT_PHYSICS_DETERMINISM":  "tests/unit/physics/solver.cpp",
                      "EVD_TEST_UNIT_MODULE_CLI":  "tests/unit/module_cli/text_and_commands.cpp",
                      "EVD_TEST_UNIT_MODULE_CLI_SERVER":  "tests/unit/module_cli/server_ops_validation.cpp",
                      "EVD_TEST_UNIT_MODULE_HOST":  "tests/unit/module_client/cli_args_text.cpp",
