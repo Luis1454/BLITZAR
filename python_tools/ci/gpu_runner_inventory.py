@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import urllib.error
 import urllib.request
+from pathlib import Path
 from collections.abc import Callable, Iterable
 from typing import Protocol
 
@@ -96,6 +97,7 @@ class GitHubGpuRunnerInventory:
         )
 
     def write(self, report: dict[str, object], output_path: str) -> None:
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as handle:
             json.dump(report, handle, indent=2)
 
