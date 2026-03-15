@@ -13,6 +13,12 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
     _thermalSpecificHeat = parseFloatEnv("GRAVITY_THERMAL_SPECIFIC_HEAT", 1.0f);
     _thermalHeatingCoeff = parseFloatEnv("GRAVITY_THERMAL_HEATING", 0.0002f);
     _thermalRadiationCoeff = parseFloatEnv("GRAVITY_THERMAL_RADIATION", 0.00000001f);
+    _physicsMaxAcceleration = 64.0f;
+    _physicsMinSoftening = 1e-4f;
+    _physicsMinDistance2 = 1e-12f;
+    _physicsMinTheta = 0.05f;
+    _sphMaxAcceleration = 40.0f;
+    _sphMaxSpeed = 120.0f;
     _cumulativeRadiatedEnergy = 0.0f;
     _sphGridSize = 0;
     _sphGridTotalCells = 0;
@@ -210,7 +216,11 @@ __global__ void updateParticlesOctree(
     IndexConstHandle leafIndices,
     float theta,
     float softening,
-    float deltaTime
+    float deltaTime,
+    float maxAcceleration,
+    float minSoftening,
+    float minDistance2,
+    float minTheta
 ) {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles || rootIndex < 0) {
@@ -219,8 +229,8 @@ __global__ void updateParticlesOctree(
 
     const Particle selfParticle = lastState[i];
     const Vector3 selfPos = selfParticle.getPosition();
-    const float clampedTheta = clampThetaValue(theta);
-    const float clampedSoftening = clampSofteningValue(softening);
+    const float clampedTheta = clampThetaValue(theta, minTheta);
+    const float clampedSoftening = clampSofteningValue(softening, minSoftening);
     Vector3 force(0.0f, 0.0f, 0.0f);
 
     constexpr int kStackCapacity = 64;
@@ -245,7 +255,9 @@ __global__ void updateParticlesOctree(
                     selfPos,
                     other.getPosition(),
                     other.getMass(),
-                    clampedSoftening);
+                    clampedSoftening,
+                    minSoftening,
+                    minDistance2);
             }
             continue;
         }
@@ -267,7 +279,9 @@ __global__ void updateParticlesOctree(
                 selfPos,
                 Vector3(node.comX, node.comY, node.comZ),
                 node.mass,
-                clampedSoftening);
+                clampedSoftening,
+                minSoftening,
+                minDistance2);
             continue;
         }
 
@@ -282,7 +296,7 @@ __global__ void updateParticlesOctree(
         }
     }
 
-    force = clampAcceleration(force, kGravityMaxAcceleration);
+    force = clampAcceleration(force, maxAcceleration);
 
     Particle updated = selfParticle;
     updated.setPressure(force * 100.0f);
@@ -428,6 +442,30 @@ void ParticleSystem::setSphParameters(float smoothingLength, float restDensity, 
     }
     if (viscosity >= 0.0f) {
         _sphViscosity = viscosity;
+    }
+}
+void ParticleSystem::setPhysicsStabilityConstants(float maxAcceleration, float minSoftening, float minDistance2, float minTheta)
+{
+    if (maxAcceleration > 0.0f) {
+        _physicsMaxAcceleration = maxAcceleration;
+    }
+    if (minSoftening >= 0.0f) {
+        _physicsMinSoftening = minSoftening;
+    }
+    if (minDistance2 >= 0.0f) {
+        _physicsMinDistance2 = minDistance2;
+    }
+    if (minTheta >= 0.0f) {
+        _physicsMinTheta = minTheta;
+    }
+}
+void ParticleSystem::setSphCaps(float maxAcceleration, float maxSpeed)
+{
+    if (maxAcceleration > 0.0f) {
+        _sphMaxAcceleration = maxAcceleration;
+    }
+    if (maxSpeed > 0.0f) {
+        _sphMaxSpeed = maxSpeed;
     }
 }
 

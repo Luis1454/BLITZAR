@@ -115,6 +115,12 @@ class SimulationServer {
         float _sphRestDensity;
         float _sphGasConstant;
         float _sphViscosity;
+        float _physicsMaxAcceleration;
+        float _physicsMinSoftening;
+        float _physicsMinDistance2;
+        float _physicsMinTheta;
+        float _sphMaxAcceleration;
+        float _sphMaxSpeed;
         float _energyBaseline;
 
         bool _hasEnergyBaseline;

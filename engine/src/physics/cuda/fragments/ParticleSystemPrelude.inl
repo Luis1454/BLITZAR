@@ -11,13 +11,18 @@
 #include <utility>
 #include <stdio.h>
 
+struct SphGridParams {
+    int gridSize;
+    int totalCells;
+    float cellSize;
+    float originX;
+    float originY;
+    float originZ;
+};
+
 constexpr int kOctreeLeafCapacity = 32;
 constexpr int kOctreeMaxDepth = 16;
 constexpr float kPi = 3.1415926535f;
-constexpr float kGravityMaxAcceleration = 64.0f;
-constexpr float kGravityMinSoftening = 1e-4f;
-constexpr float kGravityMinDistance2 = 1e-12f;
-constexpr float kGravityMinTheta = 0.05f;
 typedef Particle * ParticleHandle;
 typedef const Particle * ParticleConstHandle;
 typedef Vector3 * Vector3Handle;
@@ -224,19 +229,19 @@ __host__ __device__ Vector3 clampAcceleration(Vector3 accel, float maxAccelerati
     return accel;
 }
 
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampSofteningValue(float softening)
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampSofteningValue(float softening, float minSoftening)
 {
-    return fmaxf(softening, kGravityMinSoftening);
+    return fmaxf(softening, minSoftening);
 }
 
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampThetaValue(float theta)
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampThetaValue(float theta, float minTheta)
 {
-    return fmaxf(theta, kGravityMinTheta);
+    return fmaxf(theta, minTheta);
 }
 
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE float softenedDistanceSquared(Vector3 delta, float softening)
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE float softenedDistanceSquared(Vector3 delta, float softening, float minSoftening)
 {
-    const float safeSoftening = clampSofteningValue(softening);
+    const float safeSoftening = clampSofteningValue(softening, minSoftening);
     return dot(delta, delta) + safeSoftening * safeSoftening;
 }
 
@@ -244,12 +249,14 @@ GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 gravityAccelerationFromSource(
     Vector3 selfPosition,
     Vector3 sourcePosition,
     float sourceMass,
-    float softening
+    float softening,
+    float minSoftening,
+    float minDistance2
 )
 {
     const Vector3 delta = sourcePosition - selfPosition;
-    const float dist2 = softenedDistanceSquared(delta, softening);
-    if (dist2 <= kGravityMinDistance2) {
+    const float dist2 = softenedDistanceSquared(delta, softening, minSoftening);
+    if (dist2 <= minDistance2) {
         return Vector3(0.0f, 0.0f, 0.0f);
     }
     const float invDist = 1.0f / sqrtf(dist2);
@@ -262,7 +269,9 @@ __host__ __device__ Vector3 computePairwiseAcceleration(
     int numParticles,
     int idx,
     float softening,
-    float maxAcceleration
+    float maxAcceleration,
+    float minSoftening,
+    float minDistance2
 )
 {
     Vector3 force = {0.0f, 0.0f, 0.0f};
@@ -277,7 +286,9 @@ __host__ __device__ Vector3 computePairwiseAcceleration(
             selfPos,
             q.getPosition(),
             q.getMass(),
-            softening);
+            softening,
+            minSoftening,
+            minDistance2);
     }
     return clampAcceleration(force, maxAcceleration);
 }
@@ -318,12 +329,14 @@ __global__ void updateParticles(
     int numParticles,
     float deltaTime,
     float softening,
-    float maxAcceleration
+    float maxAcceleration,
+    float minSoftening,
+    float minDistance2
 ) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < numParticles) {
         const Particle base = last[i];
-        const Vector3 force = computePairwiseAcceleration(last, numParticles, i, softening, maxAcceleration);
+        const Vector3 force = computePairwiseAcceleration(last, numParticles, i, softening, maxAcceleration, minSoftening, minDistance2);
 
         Particle updated = base;
         updated.setPressure(force * 100.0f);
@@ -378,7 +391,14 @@ __global__ void integrateSphKernel(
     float smoothingLength,
     float viscosity,
     float deltaTime,
-    float correctionScale
+    float correctionScale,
+    IndexConstHandle cellHash,
+    IndexConstHandle sortedIndex,
+    IndexConstHandle cellStart,
+    IndexConstHandle cellEnd,
+    SphGridParams grid,
+    float maxAcceleration,
+    float maxSpeed
 ) {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
@@ -427,15 +447,13 @@ __global__ void integrateSphKernel(
     Vector3 acceleration = totalForce / rhoI;
 
     const float accelNorm = acceleration.norm();
-    const float maxAccel = 40.0f;
-    if (accelNorm > maxAccel) {
-        acceleration = acceleration * (maxAccel / accelNorm);
+    if (accelNorm > maxAcceleration) {
+        acceleration = acceleration * (maxAcceleration / accelNorm);
     }
 
     Particle updated = self;
     Vector3 velocity = vi + acceleration * (deltaTime * correctionScale);
     const float speed = velocity.norm();
-    const float maxSpeed = 120.0f;
     if (speed > maxSpeed) {
         velocity = velocity * (maxSpeed / speed);
     }
@@ -471,14 +489,16 @@ __global__ void computePairwiseAccelerationKernel(
     Vector3Handle outAcceleration,
     int numParticles,
     float softening,
-    float maxAcceleration
+    float maxAcceleration,
+    float minSoftening,
+    float minDistance2
 )
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
         return;
     }
-    outAcceleration[i] = computePairwiseAcceleration(state, numParticles, i, softening, maxAcceleration);
+    outAcceleration[i] = computePairwiseAcceleration(state, numParticles, i, softening, maxAcceleration, minSoftening, minDistance2);
 }
 
 __global__ void buildRk4StageKernel(

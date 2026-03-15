@@ -2,14 +2,7 @@
 // Grid cell size = smoothingLength; particles hashed into 3D uniform grid.
 // Neighbor queries iterate 27 adjacent cells instead of all particles.
 
-struct SphGridParams {
-    int gridSize;
-    int totalCells;
-    float cellSize;
-    float originX;
-    float originY;
-    float originZ;
-};
+// Definition moved to ParticleSystemPrelude.inl
 
 __device__ int sphGridCellIndex(
     float px, float py, float pz,

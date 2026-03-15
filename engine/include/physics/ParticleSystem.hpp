@@ -29,6 +29,8 @@ class ParticleSystem {
         void setSphEnabled(bool enabled);
         bool isSphEnabled() const;
         void setSphParameters(float smoothingLength, float restDensity, float gasConstant, float viscosity);
+        void setPhysicsStabilityConstants(float maxAcceleration, float minSoftening, float minDistance2, float minTheta);
+        void setSphCaps(float maxAcceleration, float maxSpeed);
         void setThermalParameters(float ambientTemperature, float specificHeat, float heatingCoeff, float radiationCoeff);
         float getCumulativeRadiatedEnergy() const;
         float getThermalSpecificHeat() const;
@@ -66,6 +68,12 @@ class ParticleSystem {
         float _sphRestDensity;
         float _sphGasConstant;
         float _sphViscosity;
+        float _physicsMaxAcceleration;
+        float _physicsMinSoftening;
+        float _physicsMinDistance2;
+        float _physicsMinTheta;
+        float _sphMaxAcceleration;
+        float _sphMaxSpeed;
         float _thermalAmbientTemperature;
         float _thermalSpecificHeat;
         float _thermalHeatingCoeff;

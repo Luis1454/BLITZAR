@@ -1021,6 +1021,12 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
       _sphRestDensity(1.0f),
       _sphGasConstant(4.0f),
       _sphViscosity(0.08f),
+      _physicsMaxAcceleration(64.0f),
+      _physicsMinSoftening(1e-4f),
+      _physicsMinDistance2(1e-12f),
+      _physicsMinTheta(0.05f),
+      _sphMaxAcceleration(40.0f),
+      _sphMaxSpeed(120.0f),
       _energyBaseline(0.0f),
       _hasEnergyBaseline(false),
       _pendingExportPath(),
@@ -1056,6 +1062,12 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
     _runtimeConfigMirror.sphRestDensity = _sphRestDensity;
     _runtimeConfigMirror.sphGasConstant = _sphGasConstant;
     _runtimeConfigMirror.sphViscosity = _sphViscosity;
+    _runtimeConfigMirror.physicsMaxAcceleration = _physicsMaxAcceleration;
+    _runtimeConfigMirror.physicsMinSoftening = _physicsMinSoftening;
+    _runtimeConfigMirror.physicsMinDistance2 = _physicsMinDistance2;
+    _runtimeConfigMirror.physicsMinTheta = _physicsMinTheta;
+    _runtimeConfigMirror.sphMaxAcceleration = _sphMaxAcceleration;
+    _runtimeConfigMirror.sphMaxSpeed = _sphMaxSpeed;
     _runtimeConfigMirror.exportDirectory = _exportDirectory;
     _runtimeConfigMirror.exportFormat = _exportFormatDefault;
     _runtimeConfigMirror.inputFile = _initialStatePath;
@@ -1092,6 +1104,12 @@ SimulationServer::SimulationServer(const std::string &configPath)
         _sphRestDensity = loaded.sphRestDensity;
         _sphGasConstant = loaded.sphGasConstant;
         _sphViscosity = loaded.sphViscosity;
+        _physicsMaxAcceleration = loaded.physicsMaxAcceleration;
+        _physicsMinSoftening = loaded.physicsMinSoftening;
+        _physicsMinDistance2 = loaded.physicsMinDistance2;
+        _physicsMinTheta = loaded.physicsMinTheta;
+        _sphMaxAcceleration = loaded.sphMaxAcceleration;
+        _sphMaxSpeed = loaded.sphMaxSpeed;
         _exportDirectory = loaded.exportDirectory;
         _exportFormatDefault = loaded.exportFormat;
         _initialStatePath = initPlan.inputFile;
@@ -1492,7 +1510,13 @@ SimulationConfig SimulationServer::getRuntimeConfig() const
         config.maxSubsteps = _configuredMaxSubsteps.load(std::memory_order_relaxed);
         config.snapshotPublishPeriodMs = _snapshotPublishPeriodMs.load(std::memory_order_relaxed);
         config.energyMeasureEverySteps = _energyMeasureEverySteps.load(std::memory_order_relaxed);
-    config.energySampleLimit = _energySampleLimit.load(std::memory_order_relaxed);
+        config.energySampleLimit = _energySampleLimit.load(std::memory_order_relaxed);
+    config.physicsMaxAcceleration = _physicsMaxAcceleration;
+    config.physicsMinSoftening = _physicsMinSoftening;
+    config.physicsMinDistance2 = _physicsMinDistance2;
+    config.physicsMinTheta = _physicsMinTheta;
+    config.sphMaxAcceleration = _sphMaxAcceleration;
+    config.sphMaxSpeed = _sphMaxSpeed;
     return config;
 }
 
@@ -1559,6 +1583,12 @@ void SimulationServer::rebuildSystem()
     float sphRestDensity = 1.0f;
     float sphGasConstant = 4.0f;
     float sphViscosity = 0.08f;
+    float physicsMaxAcceleration = 64.0f;
+    float physicsMinSoftening = 1e-4f;
+    float physicsMinDistance2 = 1e-12f;
+    float physicsMinTheta = 0.05f;
+    float sphMaxAcceleration = 40.0f;
+    float sphMaxSpeed = 120.0f;
     std::string inputPath;
     std::string inputFormat;
     InitialStateConfig initConfig;
@@ -1574,6 +1604,12 @@ void SimulationServer::rebuildSystem()
         sphRestDensity = _sphRestDensity;
         sphGasConstant = _sphGasConstant;
         sphViscosity = _sphViscosity;
+        physicsMaxAcceleration = _physicsMaxAcceleration;
+        physicsMinSoftening = _physicsMinSoftening;
+        physicsMinDistance2 = _physicsMinDistance2;
+        physicsMinTheta = _physicsMinTheta;
+        sphMaxAcceleration = _sphMaxAcceleration;
+        sphMaxSpeed = _sphMaxSpeed;
         inputPath = _initialStatePath;
         inputFormat = _initialStateFormat;
         initConfig = _initialStateConfig;
@@ -1681,6 +1717,8 @@ void SimulationServer::rebuildSystem()
     _system->setIntegratorMode(integratorModeFromCanonicalName(integrator));
     _system->setSphEnabled(sphEnabled);
     _system->setSphParameters(sphSmoothingLength, sphRestDensity, sphGasConstant, sphViscosity);
+    _system->setPhysicsStabilityConstants(physicsMaxAcceleration, physicsMinSoftening, physicsMinDistance2, physicsMinTheta);
+    _system->setSphCaps(sphMaxAcceleration, sphMaxSpeed);
     _system->setThermalParameters(
         initConfig.thermalAmbientTemperature,
         initConfig.thermalSpecificHeat,
