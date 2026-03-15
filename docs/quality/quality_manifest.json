@@ -2,7 +2,7 @@
   "metadata": {
     "system": "BLITZAR",
     "revision": "2026-03-15",
-    "revision_note": "CI governance now accepts traceable aggregation merges to `main`, keeps lint-safe workflow YAML, and records the exposure of physics stability constants (max acceleration, softening floor) for deterministic tuning."
+    "revision_note": "CI governance now accepts traceable aggregation merges to `main`, keeps lint-safe workflow YAML, and records the exposure of physics stability constants (max acceleration, softening floor) for deterministic tuning. Refactored ParticleSystem to remove global CUDA buffers and support multi-instance reentrancy (#70)."
   },
   "includes": [
     "manifest/evidence.json",

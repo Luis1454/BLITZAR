@@ -446,6 +446,12 @@
                 "req_ids": [
                     "REQ-PHYS-001"
                 ]
+            },
+            "TST-UNT-PHYS-017": {
+                "id": "PhysicsReentrancyTest.TST_UNT_PHYS_017_MultipleInstancesCoexistence",
+                "req_ids": [
+                    "REQ-PHYS-002"
+                ]
             }
         },
         "EVD_TEST_INT_UI_QT_WINDOW": {
