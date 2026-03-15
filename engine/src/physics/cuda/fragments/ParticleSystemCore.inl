@@ -22,14 +22,29 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
     _cumulativeRadiatedEnergy = 0.0f;
     _sphGridSize = 0;
     _sphGridTotalCells = 0;
-    g_dOctreeNodes = nullptr;
-    g_dOctreeLeafIndices = nullptr;
-    g_dOctreeNodeCapacity = 0;
-    g_dOctreeLeafCapacity = 0;
     _deviceParticleCapacity = particleCapacity;
     _hostStateDirty = false;
     d_particles = nullptr;
     last = nullptr;
+    d_stage = nullptr;
+    d_k1x = nullptr;
+    d_k2x = nullptr;
+    d_k3x = nullptr;
+    d_k4x = nullptr;
+    d_k1v = nullptr;
+    d_k2v = nullptr;
+    d_k3v = nullptr;
+    d_k4v = nullptr;
+    d_sphDensity = nullptr;
+    d_sphPressure = nullptr;
+    d_sphCellHash = nullptr;
+    d_sphSortedIndex = nullptr;
+    d_sphCellStart = nullptr;
+    d_sphCellEnd = nullptr;
+    g_dOctreeNodes = nullptr;
+    g_dOctreeLeafIndices = nullptr;
+    g_dOctreeNodeCapacity = 0;
+    g_dOctreeLeafCapacity = 0;
 }
 
 void ParticleSystem::buildBootstrapState(int particleCount)
@@ -109,6 +124,9 @@ bool ParticleSystem::seedDeviceState()
 
 void ParticleSystem::releaseParticleBuffers()
 {
+    releaseRk4Buffers();
+    releaseSphBuffers();
+    releaseSphGridBuffers();
     if (d_particles) {
         cudaFree(d_particles);
         d_particles = nullptr;
@@ -117,6 +135,17 @@ void ParticleSystem::releaseParticleBuffers()
         cudaFree(last);
         last = nullptr;
     }
+    if (g_dOctreeNodes) {
+        cudaFree(g_dOctreeNodes);
+        g_dOctreeNodes = nullptr;
+    }
+    if (g_dOctreeLeafIndices) {
+        cudaFree(g_dOctreeLeafIndices);
+        g_dOctreeLeafIndices = nullptr;
+    }
+    _deviceParticleCapacity = 0;
+    g_dOctreeNodeCapacity = 0;
+    g_dOctreeLeafCapacity = 0;
 }
 
 ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
@@ -467,6 +496,156 @@ void ParticleSystem::setSphCaps(float maxAcceleration, float maxSpeed)
     if (maxSpeed > 0.0f) {
         _sphMaxSpeed = maxSpeed;
     }
+}
+
+void ParticleSystem::releaseRk4Buffers()
+{
+    if (d_stage) {
+        cudaFree(d_stage);
+        d_stage = nullptr;
+    }
+    if (d_k1x) {
+        cudaFree(d_k1x);
+        d_k1x = nullptr;
+    }
+    if (d_k2x) {
+        cudaFree(d_k2x);
+        d_k2x = nullptr;
+    }
+    if (d_k3x) {
+        cudaFree(d_k3x);
+        d_k3x = nullptr;
+    }
+    if (d_k4x) {
+        cudaFree(d_k4x);
+        d_k4x = nullptr;
+    }
+    if (d_k1v) {
+        cudaFree(d_k1v);
+        d_k1v = nullptr;
+    }
+    if (d_k2v) {
+        cudaFree(d_k2v);
+        d_k2v = nullptr;
+    }
+    if (d_k3v) {
+        cudaFree(d_k3v);
+        d_k3v = nullptr;
+    }
+    if (d_k4v) {
+        cudaFree(d_k4v);
+        d_k4v = nullptr;
+    }
+}
+
+void ParticleSystem::releaseSphBuffers()
+{
+    if (d_sphDensity) {
+        cudaFree(d_sphDensity);
+        d_sphDensity = nullptr;
+    }
+    if (d_sphPressure) {
+        cudaFree(d_sphPressure);
+        d_sphPressure = nullptr;
+    }
+}
+
+void ParticleSystem::releaseSphGridBuffers()
+{
+    if (d_sphCellHash) {
+        cudaFree(d_sphCellHash);
+        d_sphCellHash = nullptr;
+    }
+    if (d_sphSortedIndex) {
+        cudaFree(d_sphSortedIndex);
+        d_sphSortedIndex = nullptr;
+    }
+    if (d_sphCellStart) {
+        cudaFree(d_sphCellStart);
+        d_sphCellStart = nullptr;
+    }
+    if (d_sphCellEnd) {
+        cudaFree(d_sphCellEnd);
+        d_sphCellEnd = nullptr;
+    }
+    _hostCellHash.clear();
+    _hostSortedIndex.clear();
+}
+
+bool ParticleSystem::allocateRk4Buffers(int numParticles)
+{
+    releaseRk4Buffers();
+    if (!checkCudaStatus(cudaMalloc(&d_stage, numParticles * sizeof(Particle)), "cudaMalloc(d_stage)")) {
+        releaseRk4Buffers();
+        return false;
+    }
+    if (!checkCudaStatus(cudaMalloc(&d_k1x, numParticles * sizeof(Vector3)), "cudaMalloc(d_k1x)")) {
+        releaseRk4Buffers();
+        return false;
+    }
+    if (!checkCudaStatus(cudaMalloc(&d_k2x, numParticles * sizeof(Vector3)), "cudaMalloc(d_k2x)")) {
+        releaseRk4Buffers();
+        return false;
+    }
+    if (!checkCudaStatus(cudaMalloc(&d_k3x, numParticles * sizeof(Vector3)), "cudaMalloc(d_k3x)")) {
+        releaseRk4Buffers();
+        return false;
+    }
+    if (!checkCudaStatus(cudaMalloc(&d_k4x, numParticles * sizeof(Vector3)), "cudaMalloc(d_k4x)")) {
+        releaseRk4Buffers();
+        return false;
+    }
+    if (!checkCudaStatus(cudaMalloc(&d_k1v, numParticles * sizeof(Vector3)), "cudaMalloc(d_k1v)")) {
+        releaseRk4Buffers();
+        return false;
+    }
+    if (!checkCudaStatus(cudaMalloc(&d_k2v, numParticles * sizeof(Vector3)), "cudaMalloc(d_k2v)")) {
+        releaseRk4Buffers();
+        return false;
+    }
+    if (!checkCudaStatus(cudaMalloc(&d_k3v, numParticles * sizeof(Vector3)), "cudaMalloc(d_k3v)")) {
+        releaseRk4Buffers();
+        return false;
+    }
+    if (!checkCudaStatus(cudaMalloc(&d_k4v, numParticles * sizeof(Vector3)), "cudaMalloc(d_k4v)")) {
+        releaseRk4Buffers();
+        return false;
+    }
+    return true;
+}
+
+bool ParticleSystem::allocateSphBuffers(int numParticles)
+{
+    releaseSphBuffers();
+    if (!checkCudaStatus(cudaMalloc(&d_sphDensity, numParticles * sizeof(float)), "cudaMalloc(d_sphDensity)")) {
+        releaseSphBuffers();
+        return false;
+    }
+    if (!checkCudaStatus(cudaMalloc(&d_sphPressure, numParticles * sizeof(float)), "cudaMalloc(d_sphPressure)")) {
+        releaseSphBuffers();
+        return false;
+    }
+    return true;
+}
+
+bool ParticleSystem::allocateSphGridBuffers(int numParticles)
+{
+    releaseSphGridBuffers();
+    const std::size_t particleBytes =
+        static_cast<std::size_t>(numParticles) * sizeof(int);
+    if (!checkCudaStatus(cudaMalloc(&d_sphCellHash, particleBytes),
+            "cudaMalloc(d_sphCellHash)")) {
+        releaseSphGridBuffers();
+        return false;
+    }
+    if (!checkCudaStatus(cudaMalloc(&d_sphSortedIndex, particleBytes),
+            "cudaMalloc(d_sphSortedIndex)")) {
+        releaseSphGridBuffers();
+        return false;
+    }
+    _hostCellHash.resize(static_cast<std::size_t>(numParticles));
+    _hostSortedIndex.resize(static_cast<std::size_t>(numParticles));
+    return true;
 }
 
 void ParticleSystem::setThermalParameters(float ambientTemperature, float specificHeat, float heatingCoeff, float radiationCoeff)
