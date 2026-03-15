@@ -54,6 +54,7 @@ class ParticleSystem {
         bool seedDeviceState();
         void releaseParticleBuffers();
         float applyThermalModel(float deltaTime);
+        bool buildSphGrid(int numParticles);
 
         std::vector<Particle> _particles;
         SolverMode _solverMode;
@@ -76,6 +77,8 @@ class ParticleSystem {
         std::vector<int> _octreeGpuLeafIndices;
         std::size_t _deviceParticleCapacity;
         bool _hostStateDirty;
+        int _sphGridSize;
+        int _sphGridTotalCells;
 };
 
 
