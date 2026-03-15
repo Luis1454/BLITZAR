@@ -3,6 +3,7 @@
 
 #include "ui/QtViewMath.hpp"
 
+#include <QStringList>
 #include <QWidget>
 
 #include <vector>
@@ -17,6 +18,11 @@ class EnergyGraphWidget : public QWidget {
         explicit EnergyGraphWidget();
 
         void pushSample(const SimulationStats &stats);
+        static QString energyXAxisLabel();
+        static QString energyYAxisLabel();
+        static QString driftXAxisLabel();
+        static QString driftYAxisLabel();
+        static QStringList legendLabels();
 
     private:
         typedef UiPaintEvent * PaintEventHandle;

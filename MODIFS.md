@@ -1,70 +1,70 @@
-# Backlog Modifs Simulation
+# Simulation Backlog
 
-Objectif: centraliser les modifs restantes et suivre l'avancement.
+Objective: Centralize remaining modifications and track progress.
 
-## Legende
-- Priorite: `P0` critique, `P1` important, `P2` confort
-- Statut: `[ ]` a faire, `[~]` en cours, `[x]` termine
+## Legend
+- Priority: `P0` critical, `P1` important, `P2` nice-to-have
+- Status: `[ ]` to do, `[~]` in progress, `[x]` done
 
 ## Architecture
-- [ ] `P0` Stabiliser la separation server/client (API claire et versionnee).
-- [ ] `P1` Ajouter une interface de controle distante (socket/HTTP) pour piloter la simu.
-- [ ] `P1` Uniformiser les points d'entree (`headless`, `qt`) sur la meme couche server.
-- [ ] `P2` Ajouter un mode plugin UI (charger un client externe).
+- [ ] `P0` Stabilize the server/client separation (clear and versioned API).
+- [ ] `P1` Add a remote control interface (socket/HTTP) to pilot the sim.
+- [ ] `P1` Unify entry points (`headless`, `qt`) on the same server layer.
+- [ ] `P2` Add a UI plugin mode (load an external client).
 
 ## Simulation
-- [ ] `P0` Finaliser l'octree GPU (perf + exactitude).
-- [ ] `P0` Corriger la stabilite numerique en mode SPH (eviter l'explosion).
-- [ ] `P1` Ajouter des scenarios de validation physique (orbite stable, choc, nuage).
-- [ ] `P1` Ajouter des metriques auto (drift energie, temps/step, occupancy GPU).
+- [ ] `P0` Finalize the GPU octree (perf + exactness).
+- [ ] `P0` Fix numerical stability in SPH mode (prevent explosion).
+- [ ] `P1` Add physical validation scenarios (stable orbit, shock, cloud).
+- [ ] `P1` Add automated metrics (energy drift, time/step, GPU occupancy).
 
-## I/O et formats
-- [ ] `P0` Documenter formellement le format de snapshot principal (`VTK`).
-- [ ] `P1` Charger un snapshot directement depuis l'UI (drag/drop + bouton).
-- [ ] `P1` Export incremental (autosave toutes N steps).
-- [ ] `P2` Ajouter metadata et version de format dans les exports.
+## I/O and Formats
+- [ ] `P0` Formally document the main snapshot format (`VTK`).
+- [ ] `P1` Load a snapshot directly from the UI (drag/drop + button).
+- [ ] `P1` Incremental export (autosave every N steps).
+- [ ] `P2` Add metadata and format version in exports.
 
 ## UI / UX
-- [ ] `P0` Garantir le refresh visuel Qt a cadence stable.
-- [ ] `P1` Finaliser les vues multi-cameras (sync/unsync).
-- [ ] `P1` Gimbal 3 axes: precision, sensibilite reglable, reset orientation.
-- [ ] `P1` Graphes energie: zoom, pause, historique long.
-- [ ] `P2` UI responsive (layouts petits ecrans).
+- [ ] `P0` Ensure Qt visual refresh at a stable rate.
+- [ ] `P1` Finalize multi-camera views (sync/unsync).
+- [ ] `P1` 3-axis gimbal: precision, adjustable sensitivity, orientation reset.
+- [ ] `P1` Energy graphs: zoom, pause, long history.
+- [ ] `P2` Responsive UI (small screen layouts).
 
 ## Build / DevEx
-- [ ] `P0` Fiabiliser le build Qt sur machine propre (deps + runtime plugins).
-- [ ] `P1` Ajouter presets CMake (`dev`, `release`, `profiling`).
-- [ ] `P1` Script unique d'install des deps graphiques.
-- [ ] `P2` Nettoyer warnings compilateur non bloquants.
+- [ ] `P0` Make Qt build reliable on clean machine (deps + runtime plugins).
+- [ ] `P1` Add CMake presets (`dev`, `release`, `profiling`).
+- [ ] `P1` Single script for graphic deps installation.
+- [ ] `P2` Clean up non-blocking compiler warnings.
 
 ## Tests
-- [ ] `P0` Tests de non regression server (steps deterministes sur seed fixe).
-- [ ] `P1` Tests import/export (`vtk`, `xyz`) round-trip.
-- [ ] `P1` Test perf minimal (budget FPS selon nombre de particules).
-- [ ] `P2` CI locale: build + smoke test clients.
+- [ ] `P0` Server regression tests (deterministic steps on fixed seed).
+- [ ] `P1` Import/export round-trip tests (`vtk`, `xyz`).
+- [ ] `P1` Minimal perf test (FPS budget depending on particle count).
+- [ ] `P2` Local CI: build + client smoke test.
 
-## Notes libres
-- Ajouter ici les idees, bugs reproduits, commandes de repro, captures.
+## Free Notes
+- Add ideas, reproduced bugs, repro commands, screenshots here.
 
-## Plan refacto complet
-- [x] `P0` Reorganiser l'arborescence en domaines (`apps/`, `engine/`, `modules/`) avec chemins coherents.
-- [x] `P0` Rebrancher le build sur la nouvelle arbo (`CMakeLists.txt` racine + `tests/CMakeLists.txt`).
-- [x] `P0` Revalider compilation complete (`make build-run` et `make build-ci`).
-- [~] `P0` Stabiliser les tests d'integration Qt (`QtMainWindowIntegration.*` crash `0xc0000409` a corriger).
-- [ ] `P0` Decouper le CMake monolithique en modules (`cmake/targets/*.cmake`).
-- [ ] `P0` Creer des librairies de domaine pour supprimer la redondance de sources.
-- [ ] `P1` Introduire une couche CUDA dediee (object lib ou lib specialisee) pour eviter recompilations inutiles.
-- [ ] `P1` Restreindre les includes par cible (supprimer les include dirs trop globaux).
-- [ ] `P1` Unifier la declaration des tests (eviter logique double root/tests-integration).
-- [ ] `P1` Nettoyer les repertoires legacy devenus vides (`src/`, `include/`, `fragments/`) apres validation finale.
-- [ ] `P1` Mettre a jour la doc build/run avec la nouvelle architecture (README + scripts + exemples de commandes).
+## Full Refactoring Plan
+- [x] `P0` Reorganize the tree structure into domains (`apps/`, `engine/`, `modules/`) with consistent paths.
+- [x] `P0` Reconnect the build to the new tree (`CMakeLists.txt` root + `tests/CMakeLists.txt`).
+- [x] `P0` Revalidate full compilation (`make build-run` and `make build-ci`).
+- [~] `P0` Stabilize Qt integration tests (`QtMainWindowIntegration.*` crash `0xc0000409` to fix).
+- [ ] `P0` Split the monolithic CMake into modules (`cmake/targets/*.cmake`).
+- [ ] `P0` Create domain libraries to remove source redundancy.
+- [ ] `P1` Introduce a dedicated CUDA layer (object lib or specialized lib) to avoid unnecessary recompilations.
+- [ ] `P1` Restrict includes per target (remove overly global include dirs).
+- [ ] `P1` Unify test declaration (avoid double logic root/tests-integration).
+- [ ] `P1` Clean up legacy directories that are now empty (`src/`, `include/`, `fragments/`) after final validation.
+- [ ] `P1` Update the build/run docs with the new architecture (README + scripts + command examples).
 
-Ordre d'execution recommande:
-1. Corriger `QtMainWindowIntegration.*`.
-2. Extraire le CMake en modules.
-3. Introduire les libs de domaine.
-4. Nettoyer includes/cibles et supprimer la redondance.
-5. Purger les dossiers legacy vides et finaliser la doc.
+Recommended Execution Order:
+1. Fix `QtMainWindowIntegration.*`.
+2. Extract CMake into modules.
+3. Introduce domain libraries.
+4. Clean includes/targets and remove redundancy.
+5. Purge empty legacy folders and finalize docs.
 
-## Historique
-- Le journal complet de conformite et des lots de refactorisation est archive dans `docs/history/modifs_journal_2026-02_03.md`.
+## History
+- The complete conformity journal and refactoring batches are archived in `docs/history/modifs_journal_2026-02_03.md`.
