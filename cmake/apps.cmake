@@ -20,7 +20,6 @@ else()
         engine/src/platform/posix/SocketPlatformPosix.cpp
     )
 endif()
-
 add_library(gravityPlatform STATIC ${GRAVITY_PLATFORM_SOURCES})
 configure_gravity_cpp_target(gravityPlatform)
 if(APPLE)
@@ -43,14 +42,12 @@ function(gravity_add_client_module_manifest target_name module_id)
         VERBATIM
     )
 endfunction()
-
 add_library(gravityCoreFfi STATIC
     ${GRAVITY_CORE_FFI_SOURCES}
     ${GRAVITY_SERVER_SOURCES}
 )
 configure_gravity_cuda_target(gravityCoreFfi)
 set_target_properties(gravityCoreFfi PROPERTIES OUTPUT_NAME "blitzar-core-ffi")
-
 if(WIN32)
     target_link_libraries(gravityPlatform
         PUBLIC
@@ -67,7 +64,6 @@ add_executable(${APP_NAME}
     apps/launcher/main.cpp
 )
 configure_gravity_cpp_target(${APP_NAME})
-
 if(GRAVITY_BUILD_HEADLESS_BINARY)
     add_executable(${HEADLESS_NAME}
         apps/headless/main.cu
@@ -86,7 +82,9 @@ if(GRAVITY_BUILD_SERVER_DAEMON)
     )
     configure_gravity_cuda_target(${SERVER_DAEMON_NAME})
 endif()
-
+if(GRAVITY_BUILD_WEB_GATEWAY)
+    gravity_ensure_rust_web_gateway_target()
+endif()
 if(GRAVITY_BUILD_CLIENT_HOST)
     add_executable(${CLIENT_HOST_NAME}
         apps/client-host/main.cpp
@@ -193,6 +191,7 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
                 gravityRustRuntime
                 Qt6::Widgets
         )
+        gravity_configure_qt_runtime_deploy(${CLIENT_MODULE_QT_INPROC_NAME})
         gravity_add_client_module_manifest(${CLIENT_MODULE_QT_INPROC_NAME} qt)
     else()
         message(STATUS "Qt6 not found. Qt client module is disabled.")
