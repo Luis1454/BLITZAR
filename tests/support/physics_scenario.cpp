@@ -95,7 +95,7 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
     server.setOctreeParameters(cfg.octreeTheta, cfg.octreeSoftening);
     server.setDt(cfg.dt);
     server.setParticleCount(std::max<std::uint32_t>(2u, cfg.particleCount));
-    server.setSphEnabled(false);
+    server.setSphEnabled(cfg.sphEnabled);
     server.setSphParameters(1.25f, 1.0f, 4.0f, 0.08f);
 
     const std::uint32_t energyEvery = std::max<std::uint32_t>(1u, cfg.energyMeasureEverySteps);
