@@ -17,7 +17,7 @@ env:
   CI_CACHE_VERSION: v1
 
 concurrency:
-  group: security-codeql-${{ github.workflow }}-${{ github.ref }}-${{ matrix.language }}
+  group: security-codeql-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
