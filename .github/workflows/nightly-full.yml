@@ -81,14 +81,14 @@ jobs:
         run: python scripts/ci/nightly/package_fmea_status.py --root . --dist-dir dist/fmea-status
       - name: Upload FMEA status snapshot
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nightly-fmea-status-${{ github.run_number }}
           path: dist/fmea-status
           if-no-files-found: error
       - name: Upload test and build logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nightly-full-logs-${{ github.run_number }}
           path: |
@@ -187,7 +187,7 @@ jobs:
               description, target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
       - name: Upload coverage artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nightly-integration-coverage-${{ github.run_number }}
           path: |
@@ -281,7 +281,7 @@ jobs:
           cmake -E env "GRAVITY_SERVER_EXE=$server" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error
       - name: Upload numerical validation artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nightly-numerical-validation-${{ github.run_number }}
           path: dist/numerical-validation
