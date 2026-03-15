@@ -167,6 +167,7 @@ static bool applyDirectiveArgs(
             const std::string iniKey =
                 arg.first == "seed" ? "init_seed" :
                 arg.first == "include_central_body" ? "init_include_central_body" :
+                arg.first == "deterministic" ? "deterministic_mode" :
                 arg.first;
             handled = applyIniAlias(arg, iniKey, config, warnings);
         } else if (directive == "central_body") {

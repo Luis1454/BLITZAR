@@ -61,6 +61,7 @@ const SimulationOptionEntry kSimulationOptions[] = {
     {SimulationOptionGroup::Fluid, OptionKind::Float, "--sph-viscosity", "", "sph_viscosity", "", "", "  --sph-viscosity <float>\n", "", offsetof(SimulationConfig, sphViscosity), 0.0, 0.0, true, false},
     {SimulationOptionGroup::Fluid, OptionKind::Uint, "--energy-every", "", "energy_measure_every_steps", "", "", "  --energy-every <n>\n", "", offsetof(SimulationConfig, energyMeasureEverySteps), 1.0, 0.0, true, false},
     {SimulationOptionGroup::Fluid, OptionKind::Uint, "--energy-sample-limit", "", "energy_sample_limit", "", "", "  --energy-sample-limit <n>\n", "", offsetof(SimulationConfig, energySampleLimit), 64.0, 0.0, true, false},
+    {SimulationOptionGroup::Core, OptionKind::Bool, "--deterministic", "", "deterministic_mode", "", "", "  --deterministic <true|false>\n", "", offsetof(SimulationConfig, deterministicMode), 0.0, 0.0, false, false},
 };
 
 const std::size_t kSimulationOptionCount = sizeof(kSimulationOptions) / sizeof(kSimulationOptions[0]);
