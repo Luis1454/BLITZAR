@@ -95,7 +95,7 @@ jobs:
             ~/.cache/vcpkg/archives
           key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
       - name: Upload tool qualification manifest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: tool-qualification-pr-fast-${{ github.run_number }}
           path: dist/tool-qualification/tool_manifest.json
