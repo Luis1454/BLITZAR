@@ -14,6 +14,8 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
     _thermalHeatingCoeff = parseFloatEnv("GRAVITY_THERMAL_HEATING", 0.0002f);
     _thermalRadiationCoeff = parseFloatEnv("GRAVITY_THERMAL_RADIATION", 0.00000001f);
     _cumulativeRadiatedEnergy = 0.0f;
+    _sphGridSize = 0;
+    _sphGridTotalCells = 0;
     g_dOctreeNodes = nullptr;
     g_dOctreeLeafIndices = nullptr;
     g_dOctreeNodeCapacity = 0;
@@ -142,7 +144,8 @@ ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
         return;
     }
 
-    if (!allocateSphBuffers(clampedParticles)) {
+    if (!allocateSphBuffers(clampedParticles)
+        || !allocateSphGridBuffers(clampedParticles)) {
         fprintf(stderr, "[sph] buffers allocation failed, SPH disabled\n");
         _sphEnabled = false;
     }
@@ -177,7 +180,8 @@ ParticleSystem::ParticleSystem(std::vector<Particle> initialParticles)
     }
 
     const int clampedParticles = static_cast<int>(particleCapacity);
-    if (!allocateSphBuffers(clampedParticles)) {
+    if (!allocateSphBuffers(clampedParticles)
+        || !allocateSphGridBuffers(clampedParticles)) {
         fprintf(stderr, "[sph] buffers allocation failed, SPH disabled\n");
         _sphEnabled = false;
     }
@@ -308,6 +312,7 @@ ParticleSystem::~ParticleSystem() {
     }
     releaseRk4Buffers();
     releaseSphBuffers();
+    releaseSphGridBuffers();
 }
 
 const std::vector<Particle> &ParticleSystem::getParticles() const {

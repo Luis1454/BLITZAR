@@ -25,21 +25,55 @@ bool ParticleSystem::update(float deltaTime) {
             }
         }
 
-        computeSphDensityPressureKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
+        // Sync host state for bounding box computation (needed by buildSphGrid).
+        if (!uploadHostState) {
+            if (!syncHostState()) {
+                return false;
+            }
+        }
+        // Build spatial hash grid for neighbor lookup.
+        if (!buildSphGrid(numParticles)) {
+            return false;
+        }
+
+        SphGridParams grid;
+        grid.gridSize = _sphGridSize;
+        grid.totalCells = _sphGridTotalCells;
+        grid.cellSize = std::max(0.01f, _sphSmoothingLength);
+        // Recompute origin from particles (same as buildSphGrid).
+        float mnX = _particles[0].getPosition().x;
+        float mnY = _particles[0].getPosition().y;
+        float mnZ = _particles[0].getPosition().z;
+        for (int pi = 1; pi < numParticles; ++pi) {
+            const Vector3 pp = _particles[static_cast<std::size_t>(pi)].getPosition();
+            if (pp.x < mnX) { mnX = pp.x; }
+            if (pp.y < mnY) { mnY = pp.y; }
+            if (pp.z < mnZ) { mnZ = pp.z; }
+        }
+        grid.originX = mnX - grid.cellSize;
+        grid.originY = mnY - grid.cellSize;
+        grid.originZ = mnZ - grid.cellSize;
+
+        computeSphDensityPressureGridKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
             d_particles,
             d_sphDensity,
             d_sphPressure,
             numParticles,
             _sphSmoothingLength,
             _sphRestDensity,
-            _sphGasConstant
+            _sphGasConstant,
+            d_sphCellHash,
+            d_sphSortedIndex,
+            d_sphCellStart,
+            d_sphCellEnd,
+            grid
         );
-        if (!checkCudaStatus(cudaGetLastError(), "computeSphDensityPressure kernel launch")) {
+        if (!checkCudaStatus(cudaGetLastError(), "computeSphDensityPressureGrid kernel launch")) {
             return false;
         }
 
         constexpr float kSphCorrectionScale = 0.22f;
-        integrateSphKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
+        integrateSphGridKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
             d_particles,
             d_sphDensity,
             d_sphPressure,
@@ -47,12 +81,17 @@ bool ParticleSystem::update(float deltaTime) {
             _sphSmoothingLength,
             _sphViscosity,
             deltaTime,
-            kSphCorrectionScale
+            kSphCorrectionScale,
+            d_sphCellHash,
+            d_sphSortedIndex,
+            d_sphCellStart,
+            d_sphCellEnd,
+            grid
         );
-        if (!checkCudaStatus(cudaGetLastError(), "integrateSph kernel launch")) {
+        if (!checkCudaStatus(cudaGetLastError(), "integrateSphGrid kernel launch")) {
             return false;
         } 
-        if (!checkCudaStatus(cudaDeviceSynchronize(), "sph kernels sync")) {
+        if (!checkCudaStatus(cudaDeviceSynchronize(), "sph grid kernels sync")) {
             return false;
         }
         _hostStateDirty = true;
@@ -387,6 +426,7 @@ void destroyParticles(ParticleHandle particles) {
     }
     releaseRk4Buffers();
     releaseSphBuffers();
+    releaseSphGridBuffers();
 
     (void)particles;
 }
