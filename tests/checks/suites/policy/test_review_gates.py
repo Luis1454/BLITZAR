@@ -41,12 +41,19 @@ class FakeTraceabilityGateCheck(TraceabilityGateCheck):
 
 
 class FakeMainDeliveryGateCheck(MainDeliveryGateCheck):
-    def __init__(self, pulls: list[dict[str, object]]) -> None:
-        self._pulls = pulls
+    def __init__(
+        self, pulls_by_sha: dict[str, list[dict[str, object]]] | None = None, compare_commits: list[dict[str, object]] | None = None
+    ) -> None:
+        self._pulls_by_sha = pulls_by_sha or {}
+        self._compare_commits = compare_commits or []
 
     def _fetch_associated_pulls(self, repo: str, sha: str, token: str, result: CheckResult) -> list[dict[str, object]]:
-        del repo, sha, token, result
-        return list(self._pulls)
+        del repo, token, result
+        return list(self._pulls_by_sha.get(sha, []))
+
+    def _fetch_compare_commits(self, repo: str, before: str, after: str, token: str, result: CheckResult) -> list[dict[str, object]]:
+        del repo, before, after, token, result
+        return list(self._compare_commits)
 
 
 def _event_context(root: Path, event_path: Path) -> CheckContext:
@@ -168,13 +175,43 @@ def test_traceability_gate_fails_without_ids_or_csv_and_skips_non_critical_pr(tm
 def test_main_delivery_gate_accepts_main_push_with_merged_issue_pr(tmp_path: Path) -> None:
     payload = tmp_path / "event.json"
     _write_json(payload, {"ref": "refs/heads/main", "after": "abc123"})
-    check = FakeMainDeliveryGateCheck([{"base": {"ref": "main"}, "head": {"ref": "issue/106-enforce-branch-per-issue"}, "merged_at": "2026-03-07T00:00:00Z"}])
+    check = FakeMainDeliveryGateCheck(
+        pulls_by_sha={"abc123": [{"base": {"ref": "main"}, "head": {"ref": "issue/106-enforce-branch-per-issue"}, "merged_at": "2026-03-07T00:00:00Z"}]}
+    )
     assert check.run(CheckContext(root=tmp_path, event_name="push", event_path=str(payload), options={"repo": "owner/repo", "token": "token"})).ok
 
 
 def test_main_delivery_gate_rejects_main_push_without_issue_pr_branch(tmp_path: Path) -> None:
     payload = tmp_path / "event.json"
     _write_json(payload, {"ref": "refs/heads/main", "after": "abc123"})
-    check = FakeMainDeliveryGateCheck([{"base": {"ref": "main"}, "head": {"ref": "feature/direct-main-push"}, "merged_at": "2026-03-07T00:00:00Z"}])
+    check = FakeMainDeliveryGateCheck(
+        pulls_by_sha={"abc123": [{"base": {"ref": "main"}, "head": {"ref": "feature/direct-main-push"}, "merged_at": "2026-03-07T00:00:00Z"}]}
+    )
     result = check.run(CheckContext(root=tmp_path, event_name="push", event_path=str(payload), options={"repo": "owner/repo", "token": "token"}))
     assert any("push to main must come from a merged issue/" in error for error in result.errors)
+
+
+def test_main_delivery_gate_accepts_traceable_aggregation_merge(tmp_path: Path) -> None:
+    payload = tmp_path / "event.json"
+    _write_json(payload, {"ref": "refs/heads/main", "before": "oldmain", "after": "merge123"})
+    check = FakeMainDeliveryGateCheck(
+        pulls_by_sha={"issue123": [{"base": {"ref": "main"}, "head": {"ref": "issue/83-web-adapter"}, "merged_at": "2026-03-15T00:00:00Z"}]},
+        compare_commits=[
+            {"sha": "merge123", "parents": [{"sha": "oldmain"}, {"sha": "demohead"}]},
+            {"sha": "issue123", "parents": [{"sha": "parent"}]},
+        ],
+    )
+    assert check.run(CheckContext(root=tmp_path, event_name="push", event_path=str(payload), options={"repo": "owner/repo", "token": "token"})).ok
+
+
+def test_main_delivery_gate_rejects_untraceable_commit_in_aggregation_range(tmp_path: Path) -> None:
+    payload = tmp_path / "event.json"
+    _write_json(payload, {"ref": "refs/heads/main", "before": "oldmain", "after": "merge123"})
+    check = FakeMainDeliveryGateCheck(
+        compare_commits=[
+            {"sha": "merge123", "parents": [{"sha": "oldmain"}, {"sha": "demohead"}]},
+            {"sha": "badc0de", "parents": [{"sha": "parent"}]},
+        ]
+    )
+    result = check.run(CheckContext(root=tmp_path, event_name="push", event_path=str(payload), options={"repo": "owner/repo", "token": "token"}))
+    assert any("badc0de" in error for error in result.errors)
