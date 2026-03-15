@@ -62,6 +62,12 @@ const SimulationOptionEntry kSimulationOptions[] = {
     {SimulationOptionGroup::Fluid, OptionKind::Uint, "--energy-every", "", "energy_measure_every_steps", "", "", "  --energy-every <n>\n", "", offsetof(SimulationConfig, energyMeasureEverySteps), 1.0, 0.0, true, false},
     {SimulationOptionGroup::Fluid, OptionKind::Uint, "--energy-sample-limit", "", "energy_sample_limit", "", "", "  --energy-sample-limit <n>\n", "", offsetof(SimulationConfig, energySampleLimit), 64.0, 0.0, true, false},
     {SimulationOptionGroup::Core, OptionKind::Bool, "--deterministic", "", "deterministic_mode", "", "", "  --deterministic <true|false>\n", "", offsetof(SimulationConfig, deterministicMode), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::Core, OptionKind::Float, "--physics-max-accel", "", "physics_max_acceleration", "", "", "  --physics-max-accel <float>\n", "", offsetof(SimulationConfig, physicsMaxAcceleration), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::Core, OptionKind::Float, "--physics-min-softening", "", "physics_min_softening", "", "", "  --physics-min-softening <float>\n", "", offsetof(SimulationConfig, physicsMinSoftening), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::Core, OptionKind::Float, "--physics-min-dist2", "", "physics_min_distance2", "", "", "  --physics-min-dist2 <float>\n", "", offsetof(SimulationConfig, physicsMinDistance2), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::Core, OptionKind::Float, "--physics-min-theta", "", "physics_min_theta", "", "", "  --physics-min-theta <float>\n", "", offsetof(SimulationConfig, physicsMinTheta), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::Fluid, OptionKind::Float, "--sph-max-accel", "", "sph_max_acceleration", "", "", "  --sph-max-accel <float>\n", "", offsetof(SimulationConfig, sphMaxAcceleration), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::Fluid, OptionKind::Float, "--sph-max-speed", "", "sph_max_speed", "", "", "  --sph-max-speed <float>\n", "", offsetof(SimulationConfig, sphMaxSpeed), 0.0, 0.0, true, false},
 };
 
 const std::size_t kSimulationOptionCount = sizeof(kSimulationOptions) / sizeof(kSimulationOptions[0]);

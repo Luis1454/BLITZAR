@@ -94,7 +94,9 @@ __global__ void integrateSphGridKernel(
     IndexConstHandle sortedIndex,
     IndexConstHandle cellStart,
     IndexConstHandle cellEnd,
-    SphGridParams grid)
+    SphGridParams grid,
+    float maxAcceleration,
+    float maxSpeed)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
@@ -184,16 +186,14 @@ __global__ void integrateSphGridKernel(
     Vector3 acceleration = totalForce / rhoI;
 
     const float accelNorm = acceleration.norm();
-    const float maxAccel = 40.0f;
-    if (accelNorm > maxAccel) {
-        acceleration = acceleration * (maxAccel / accelNorm);
+    if (accelNorm > maxAcceleration) {
+        acceleration = acceleration * (maxAcceleration / accelNorm);
     }
 
     Particle updated = self;
     Vector3 velocity = vi
         + acceleration * (deltaTime * correctionScale);
     const float speed = velocity.norm();
-    const float maxSpeed = 120.0f;
     if (speed > maxSpeed) {
         velocity = velocity * (maxSpeed / speed);
     }

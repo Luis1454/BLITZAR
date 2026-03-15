@@ -31,7 +31,7 @@ class Octree {
 
         void clear();
         void build(const std::vector<Particle> &particles);
-        Vector3 computeForceOn(const Particle &particle, std::size_t selfIndex, float theta, float softening) const;
+        Vector3 computeForceOn(const Particle &particle, std::size_t selfIndex, float theta, float softening, float minSoftening, float minDistance2, float minTheta) const;
         std::size_t getNodeCount() const;
         int getRootIndex() const;
         void exportGpu(std::vector<GpuOctreeNode> &outNodes, std::vector<int> &outLeafIndices) const;
@@ -56,7 +56,10 @@ class Octree {
             const Particle &particle,
             std::size_t selfIndex,
             float theta,
-            float softening
+            float softening,
+            float minSoftening,
+            float minDistance2,
+            float minTheta
         ) const;
         static int childIndexForPosition(const Vector3 &position, const Vector3 &center);
         static bool hasChildren(const Node &node);

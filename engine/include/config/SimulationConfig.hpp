@@ -63,6 +63,12 @@ struct SimulationConfig {
     std::uint32_t energyMeasureEverySteps = 120u;
     std::uint32_t energySampleLimit = 256u;
     bool deterministicMode = false;
+    float physicsMaxAcceleration = 64.0f;
+    float physicsMinSoftening = 1e-4f;
+    float physicsMinDistance2 = 1e-12f;
+    float physicsMinTheta = 0.05f;
+    float sphMaxAcceleration = 40.0f;
+    float sphMaxSpeed = 120.0f;
 
     static SimulationConfig defaults();
     static SimulationConfig loadOrCreate(const std::string &path);
