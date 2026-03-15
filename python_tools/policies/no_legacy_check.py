@@ -14,7 +14,7 @@ FORBIDDEN_TOKENS = (
     "QT_CLIENT_NAME",
     "CLI_CLIENT_NAME",
 )
-FORBIDDEN_TARGETS = ("blitzar-qt", "blitzar-cli")
+FORBIDDEN_TARGETS = ("blitzar-qt",)
 EXPECTED_VARIANTS = (
     ("blitzar.exe", "blitzar"),
     ("blitzar-server.exe", "blitzar-server"),

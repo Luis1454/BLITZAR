@@ -442,13 +442,19 @@
                                                                                              ]
                                                                              },
                                                           "TST-UIX-UI-004":  {
-                                                                                 "id":  "QtMainWindowTest.TST_UIX_UI_004_ShowsEffectiveClientCapWhenConfiguredCapExceedsProtocolMax",
-                                                                                 "req_ids":  [
-                                                                                                 "REQ-UI-001",
-                                                                                                 "REQ-RUN-001"
-                                                                                             ]
-                                                                             }
-                                                      },
+                                                                                  "id":  "QtMainWindowTest.TST_UIX_UI_004_ShowsEffectiveClientCapWhenConfiguredCapExceedsProtocolMax",
+                                                                                  "req_ids":  [
+                                                                                                  "REQ-UI-001",
+                                                                                                  "REQ-RUN-001"
+                                                                                              ]
+                                                                              },
+                                                          "TST-UIX-UI-005":  {
+                                                                                  "id":  "QtMainWindowTest.TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabels",
+                                                                                  "req_ids":  [
+                                                                                                  "REQ-UI-001"
+                                                                                              ]
+                                                                              }
+                                                        },
                         "EVD_CHECK_INI":  {
                                               "TST-QLT-REPO-001":  {
                                                                        "id":  "TST_QLT_REPO_001_GravityIniCheck",

@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.24)
 
 if(NOT DEFINED QT_DIR OR QT_DIR STREQUAL "")
-    set(QT_DIR "C:/Qt/6.8.2/msvc2022_64")
+    if(DEFINED ENV{QT_DIR})
+        set(QT_DIR "$ENV{QT_DIR}")
+    else()
+        set(QT_DIR "$ENV{SystemDrive}/Qt/6.8.2/msvc2022_64")
+    endif()
 endif()
 if(NOT DEFINED BUILD_DIR OR BUILD_DIR STREQUAL "")
     set(BUILD_DIR "build")
