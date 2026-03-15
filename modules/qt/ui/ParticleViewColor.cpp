@@ -1,122 +1,29 @@
 #include "ui/ParticleViewColor.hpp"
 
-#include <QColor>
-
-#include <algorithm>
-#include <array>
-#include <cstdint>
-
 namespace grav_qt {
 
-constexpr int kTempBins = 256;
-constexpr int kPressureBins = 256;
-constexpr float kTemperatureScaleFloor = 0.25f;
-constexpr float kPressureScaleFloor = 0.25f;
-
-struct RgbColor {
-    std::uint8_t r;
-    std::uint8_t g;
-    std::uint8_t b;
-};
-
-float saturate(float value)
-{
-    return std::clamp(value, 0.0f, 1.0f);
-}
-
-QColor blendColor(const QColor &a, const QColor &b, float t, int alpha)
-{
-    const float tt = saturate(t);
-    return QColor(
-        static_cast<int>(a.red() + (b.red() - a.red()) * tt),
-        static_cast<int>(a.green() + (b.green() - a.green()) * tt),
-        static_cast<int>(a.blue() + (b.blue() - a.blue()) * tt),
-        alpha
-    );
-}
-
-std::array<RgbColor, kTempBins> buildTemperatureLut()
-{
-    std::array<RgbColor, kTempBins> lut{};
-    const QColor cold(56, 105, 255, 255);
-    const QColor warm(255, 170, 90, 255);
-    const QColor hot(255, 76, 66, 255);
-    for (int i = 0; i < kTempBins; ++i) {
-        const float tNorm = static_cast<float>(i) / static_cast<float>(kTempBins - 1);
-        const QColor c = tNorm < 0.55f
-            ? blendColor(cold, warm, tNorm / 0.55f, 255)
-            : blendColor(warm, hot, (tNorm - 0.55f) / 0.45f, 255);
-        lut[static_cast<std::size_t>(i)] = RgbColor{
-            static_cast<std::uint8_t>(c.red()),
-            static_cast<std::uint8_t>(c.green()),
-            static_cast<std::uint8_t>(c.blue())
-        };
-    }
-    return lut;
-}
-
-int quantizeToBin(float value, float rangeMax, int bins)
-{
-    if (value <= 0.0f) {
-        return 0;
-    }
-    const float normalized = std::min(value / rangeMax, 1.0f);
-    return static_cast<int>(normalized * static_cast<float>(bins - 1));
-}
-
-float updateAdaptiveScale(float current, float observed, float floorValue, float riseRate, float fallRate)
-{
-    const float target = std::max(floorValue, observed);
-    const float rate = (target > current) ? riseRate : fallRate;
-    return current + (target - current) * std::clamp(rate, 0.0f, 1.0f);
-}
-
-std::array<std::uint8_t, kPressureBins> buildAlphaLut(int luminosity)
-{
-    std::array<std::uint8_t, kPressureBins> lut{};
-    const int clampedLum = std::clamp(luminosity, 0, 255);
-    for (int i = 0; i < kPressureBins; ++i) {
-        const float pNorm = static_cast<float>(i) / static_cast<float>(kPressureBins - 1);
-        const int alpha = static_cast<int>(clampedLum * (0.2f + 0.8f * pNorm));
-        lut[static_cast<std::size_t>(i)] = static_cast<std::uint8_t>(std::clamp(alpha, 6, 255));
-    }
-    return lut;
-}
 void updateAdaptiveScales(
     const std::vector<RenderParticle> &snapshot,
     float &adaptiveTemperatureScale,
     float &adaptivePressureScale
 )
 {
-    float observedTempMax = kTemperatureScaleFloor;
-    float observedPressureMax = kPressureScaleFloor;
-    for (const RenderParticle &particle : snapshot) {
-        observedTempMax = std::max(observedTempMax, std::max(0.0f, particle.temperature));
-        observedPressureMax = std::max(observedPressureMax, std::max(0.0f, particle.pressureNorm));
-    }
-    adaptiveTemperatureScale = updateAdaptiveScale(adaptiveTemperatureScale, observedTempMax, kTemperatureScaleFloor, 0.32f, 0.04f);
-    adaptivePressureScale = updateAdaptiveScale(adaptivePressureScale, observedPressureMax, kPressureScaleFloor, 0.32f, 0.04f);
+    grav::updateAdaptiveScales(snapshot, adaptiveTemperatureScale, adaptivePressureScale);
 }
 
 QRgb particleRampColorFast(const RenderParticle &particle, float temperatureScale, float pressureScale, int luminosity)
 {
-    static const std::array<RgbColor, kTempBins> temperatureLut = buildTemperatureLut();
-    const std::array<std::uint8_t, kPressureBins> alphaLut = buildAlphaLut(luminosity);
-    const int tIdx = quantizeToBin(particle.temperature, std::max(kTemperatureScaleFloor, temperatureScale), kTempBins);
-    const int pIdx = quantizeToBin(particle.pressureNorm, std::max(kPressureScaleFloor, pressureScale), kPressureBins);
-    const RgbColor c = temperatureLut[static_cast<std::size_t>(tIdx)];
-    const std::uint8_t alpha = alphaLut[static_cast<std::size_t>(pIdx)];
-    return qRgba(c.r, c.g, c.b, alpha);
+    return toQRgb(grav::particleRampColorFast(particle, temperatureScale, pressureScale, luminosity));
 }
 
 QRgb heavyBodyColor(int luminosity)
 {
-    return qRgba(255, 90, 90, static_cast<std::uint8_t>(std::clamp(luminosity, 0, 255)));
+    return toQRgb(grav::heavyBodyColor(luminosity));
 }
 
 bool isHeavyBody(const RenderParticle &particle)
 {
-    return particle.mass > 100.0f;
+    return grav::isHeavyBody(particle);
 }
 
 } // namespace grav_qt
