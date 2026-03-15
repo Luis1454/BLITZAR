@@ -55,7 +55,7 @@ Build switch:
 
 - Fixed-input regression tests are the authoritative evidence.
 - `pr-fast` executes repository policy gates, analyzer checks, and a deterministic fast subset for merge safety.
-- `main` must only receive commits that are traceable to merged `issue/<N>-<slug>` pull requests.
+- `main` must only receive commits that are traceable to merged `issue/<N>-<slug>` pull requests, either directly or through a merge commit whose introduced compare-range commits remain fully traceable to merged issue branches.
 - `nightly-full` extends deterministic evidence with repeated standalone integration runs, coverage publication, FMEA status snapshots, and optional GPU full-suite or numerical artifacts.
 - `release-lane` reruns strict `prod` validation, then publishes the release bundle, release-quality index, and evidence pack for review.
 - Security CI coverage must include CodeQL code scanning, pull-request dependency vulnerability review, and an automated SBOM for packaged release artifacts.

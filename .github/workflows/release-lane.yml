@@ -187,7 +187,8 @@ jobs:
   gpu-runner-readiness:
     name: GPU Runner Readiness
     uses: ./.github/workflows/gpu-runner-health.yml
-    with: {enable_gpu_lane: ${{ vars.HAS_GPU_RUNNER == 'true' }}}
+    with:
+      enable_gpu_lane: ${{ vars.HAS_GPU_RUNNER == 'true' }}
     secrets: inherit
 
   release-gpu-full-tests:

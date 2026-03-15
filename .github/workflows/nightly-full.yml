@@ -1,5 +1,4 @@
 name: nightly-full
-
 on:
   push:
     branches: [main]
@@ -7,19 +6,15 @@ on:
   schedule:
     - cron: "0 2 * * *"
   workflow_dispatch:
-
 permissions:
   contents: read
   statuses: write
-
 env:
   CI_CACHE_VERSION: v1
   CI_PYTHON_VERSION: "3.12"
-
 concurrency:
   group: nightly-full-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   nightly-integration-standalone-tests:
     name: Nightly Integration Standalone Tests (windows-2022 / msvc2022-x64 / python3.12)
@@ -208,26 +203,28 @@ jobs:
             build-integration-cov
             ~/.cache/vcpkg/archives
           key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
-
   deploy-coverage-pages:
     name: Deploy Coverage Pages
     needs: nightly-integration-coverage
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-24.04
-    permissions: {pages: write, id-token: write}
-    environment: {name: github-pages, url: ${{ steps.deployment.outputs.page_url }}}
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy coverage dashboard
         id: deployment
         continue-on-error: true
         uses: actions/deploy-pages@v4
-
   gpu-runner-readiness:
     name: GPU Runner Readiness
     uses: ./.github/workflows/gpu-runner-health.yml
-    with: {enable_gpu_lane: ${{ vars.HAS_GPU_RUNNER == 'true' }}}
+    with:
+      enable_gpu_lane: ${{ vars.HAS_GPU_RUNNER == 'true' }}
     secrets: inherit
-
   nightly-gpu-full-tests:
     name: Nightly GPU Full Tests (self-hosted windows/x64/cuda / python3.12, optional)
     needs: gpu-runner-readiness
@@ -289,7 +286,6 @@ jobs:
           name: nightly-numerical-validation-${{ github.run_number }}
           path: dist/numerical-validation
           if-no-files-found: error
-
   nightly-gpu-fallback:
     name: Nightly GPU Fallback (linux-ubuntu24.04)
     needs: gpu-runner-readiness

@@ -30,6 +30,7 @@ class MainDeliveryGateCheck(BaseCheck):
             return
         repo = str(context.options.get("repo", "")).strip()
         token = str(context.options.get("token", "")).strip()
+        before = str(payload.get("before", "")).strip()
         sha = str(context.options.get("sha", "")).strip() or str(payload.get("after", "")).strip()
         if not repo or not token or not sha:
             result.add_error("missing repo, token, or commit sha for main delivery gate")
@@ -37,6 +38,10 @@ class MainDeliveryGateCheck(BaseCheck):
         pulls = self._fetch_associated_pulls(repo, sha, token, result)
         if any(self._is_valid_delivery_pr(item) for item in pulls):
             return
+        if before:
+            commits = self._fetch_compare_commits(repo, before, sha, token, result)
+            if commits and self._compare_range_is_valid(repo, commits, token, result):
+                return
         result.add_error("push to main must come from a merged issue/<N>-<slug> pull request")
 
     def _fetch_associated_pulls(self, repo: str, sha: str, token: str, result: CheckResult) -> list[dict[str, object]]:
@@ -58,6 +63,54 @@ class MainDeliveryGateCheck(BaseCheck):
             result.add_error("unexpected associated pull requests payload shape")
             return []
         return [item for item in payload if isinstance(item, dict)]
+
+    def _fetch_compare_commits(
+        self, repo: str, before: str, after: str, token: str, result: CheckResult
+    ) -> list[dict[str, object]]:
+        request = urllib.request.Request(
+            f"https://api.github.com/repos/{repo}/compare/{before}...{after}",
+            headers={
+                "Accept": "application/vnd.github+json",
+                "Authorization": f"Bearer {token}",
+                "X-GitHub-Api-Version": "2022-11-28",
+            },
+        )
+        try:
+            with urllib.request.urlopen(request) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except Exception as exc:
+            result.add_error(f"failed to compare pushed main range: {exc}")
+            return []
+        commits = payload.get("commits", []) if isinstance(payload, dict) else []
+        if not isinstance(commits, list):
+            result.add_error("unexpected compare payload shape")
+            return []
+        return [item for item in commits if isinstance(item, dict)]
+
+    def _compare_range_is_valid(
+        self, repo: str, commits: list[dict[str, object]], token: str, result: CheckResult
+    ) -> bool:
+        found_issue_delivery = False
+        for commit in commits:
+            sha = str(commit.get("sha", "")).strip()
+            if not sha:
+                result.add_error("compare payload contains commit without sha")
+                return False
+            pulls = self._fetch_associated_pulls(repo, sha, token, result)
+            if any(self._is_valid_delivery_pr(item) for item in pulls):
+                found_issue_delivery = True
+                continue
+            parents = commit.get("parents", [])
+            if isinstance(parents, list) and len(parents) > 1:
+                continue
+            result.add_error(
+                f"commit {sha[:12]} introduced on main is not traceable to a merged issue/<N>-<slug> pull request"
+            )
+            return False
+        if found_issue_delivery:
+            return True
+        result.add_error("compare range did not contain any commits traceable to merged issue/<N>-<slug> pull requests")
+        return False
 
     @staticmethod
     def _read_event_payload(path: Path, result: CheckResult) -> dict[str, object]:
