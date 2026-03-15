@@ -14,6 +14,7 @@ This document defines minimum confidence controls for development and CI tools.
 | `ctest` + `gtest` | test execution | deterministic fast subset in `pr-fast`, broader deterministic scope in `nightly-full`, release packaging validation in `release-lane` |
 | `clang-tidy` | static analyzer | analyzer checks with warnings-as-errors in strict PR lane |
 | `rustc` + `cargo` | host-side protocol/runtime crates, bridge-state FFI support, and optional web gateway adapter | pinned by `rust-toolchain.toml`, `Cargo.lock` committed, `cargo fmt --check` plus `cargo test` required in strict local preflight, not yet part of qualified `prod` evidence lanes |
+| `windeployqt` | Windows Qt runtime deployment for the Qt client module | discovered from the pinned Qt installation, exercised on Qt module builds, and checked by `scripts/doctor.cmake` when Windows GUI artifacts are present |
 | Python checks (`tests/checks/check.py`, `tests/checks/run.py`, `tests/checks/catalog.json`) | policy and contract guards | syntax check + mandatory execution in PR and nightly |
 | GitHub Actions runners | orchestration | split merge gate, extended nightly evidence lanes, release packaging lane, optional hardware lanes, and explicit axis labels in hosted job names |
 | self-hosted GPU runner automation | optional CUDA execution | scripted bootstrap plan, daily readiness report, and hosted fallback job summaries |

@@ -114,6 +114,14 @@ Start host directly with `qt`:
 build/blitzar-client --config simulation.ini --module qt
 ```
 
+On Windows, the Qt module build now runs `windeployqt` automatically when that tool is available. That copies the Qt DLLs and `platforms/qwindows.dll` next to `blitzar-client.exe`, which removes the common clean-machine launch failure.
+
+Manual fallback if needed:
+
+```bash
+make deploy-qt BUILD_DIR=build-dev
+```
+
 Runtime commands for `qt` module:
 
 ```text
