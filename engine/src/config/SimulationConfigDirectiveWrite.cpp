@@ -93,7 +93,8 @@ void SimulationConfigDirective::write(std::ostream &out, const SimulationConfig 
         << ", heating=" << config.thermalHeatingCoeff
         << ", radiation=" << config.thermalRadiationCoeff << ")\n";
     out << "generation(seed=" << config.initSeed
-        << ", include_central_body=" << (config.initIncludeCentralBody ? "true" : "false") << ")\n";
+        << ", include_central_body=" << (config.initIncludeCentralBody ? "true" : "false")
+        << ", deterministic=" << (config.deterministicMode ? "true" : "false") << ")\n";
     out << "central_body(mass=" << config.initCentralMass
         << ", x=" << config.initCentralX
         << ", y=" << config.initCentralY

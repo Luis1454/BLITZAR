@@ -176,5 +176,55 @@ TEST(PhysicsTest, TST_UNT_RUNT_002_ParticleSystemCtorKeepsExplicitInitialState)
     EXPECT_FLOAT_EQ(configuredParticles[1].getTemperature(), 2.0f);
 }
 
+TEST(PhysicsTest, TST_UNT_PHYS_010_DeterministicReplayIdentical)
+{
+    ScenarioConfig cfg;
+    cfg.particleCount = 64u;
+    cfg.dt = 0.005f;
+    cfg.steps = 20;
+    cfg.solver = "pairwise_cuda";
+    cfg.integrator = "euler";
+    cfg.energyMeasureEverySteps = 1u;
+    cfg.energySampleLimit = 64u;
+    cfg.snapshotTimeoutMs = 6000;
+    cfg.stepTimeoutMs = 6000;
+    cfg.initState.mode = "disk_orbit";
+    cfg.initState.seed = 77777u;
+    cfg.initState.includeCentralBody = true;
+    cfg.initState.centralMass = 1.0f;
+    cfg.initState.diskMass = 0.5f;
+    cfg.initState.diskRadiusMin = 1.5f;
+    cfg.initState.diskRadiusMax = 8.0f;
+    cfg.initState.diskThickness = 0.0f;
+    cfg.initState.velocityScale = 1.0f;
+    cfg.initState.velocityTemperature = 0.0f;
+    cfg.initState.particleTemperature = 0.0f;
+
+    ScenarioResult runA;
+    std::string errorA;
+    ASSERT_TRUE(runScenario(cfg, runA, errorA)) << errorA;
+    if (runA.stats.solverName != cfg.solver) {
+        GTEST_SKIP() << "solver unavailable (actual="
+                     << runA.stats.solverName << ")";
+    }
+
+    ScenarioResult runB;
+    std::string errorB;
+    ASSERT_TRUE(runScenario(cfg, runB, errorB)) << errorB;
+
+    ASSERT_EQ(runA.final.size(), runB.final.size());
+    for (std::size_t i = 0; i < runA.final.size(); ++i) {
+        EXPECT_FLOAT_EQ(runA.final[i].x, runB.final[i].x)
+            << "mismatch at particle " << i << " .x";
+        EXPECT_FLOAT_EQ(runA.final[i].y, runB.final[i].y)
+            << "mismatch at particle " << i << " .y";
+        EXPECT_FLOAT_EQ(runA.final[i].z, runB.final[i].z)
+            << "mismatch at particle " << i << " .z";
+    }
+
+    EXPECT_FLOAT_EQ(runA.stats.totalEnergy, runB.stats.totalEnergy);
+    EXPECT_EQ(runA.stats.steps, runB.stats.steps);
+}
+
 } // namespace testsupport
 

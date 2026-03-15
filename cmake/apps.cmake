@@ -147,7 +147,6 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
     endif()
     gravity_add_client_module_manifest(${CLIENT_MODULE_GUI_PROXY_NAME} gui)
 
-if(GRAVITY_BUILD_CLIENT_MODULES)
     find_package(Qt6 QUIET COMPONENTS Widgets)
     if(NOT Qt6_FOUND AND WIN32)
         if(DEFINED ENV{QT_DIR})
