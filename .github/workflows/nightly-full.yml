@@ -24,7 +24,7 @@ jobs:
       - {name: Checkout, uses: actions/checkout@v4}
       - name: Setup Python
         id: setup-python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: {python-version: "${{ env.CI_PYTHON_VERSION }}"}
       - name: Restore pip cache
         id: restore-pip-cache
@@ -114,7 +114,7 @@ jobs:
       - {name: Checkout, uses: actions/checkout@v4}
       - name: Setup Python
         id: setup-python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: {python-version: "${{ env.CI_PYTHON_VERSION }}"}
       - name: Restore pip cache
         id: restore-pip-cache
