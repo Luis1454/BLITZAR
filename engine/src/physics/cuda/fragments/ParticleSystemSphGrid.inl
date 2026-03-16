@@ -135,19 +135,17 @@ bool ParticleSystem::buildSphGrid(int numParticles)
     const std::size_t cellBytes =
         static_cast<std::size_t>(totalCells) * sizeof(int);
     if (d_sphCellStart) {
-        cudaFree(d_sphCellStart);
+        grav_x::CudaMemoryPool::deallocate(d_sphCellStart);
         d_sphCellStart = nullptr;
     }
     if (d_sphCellEnd) {
-        cudaFree(d_sphCellEnd);
+        grav_x::CudaMemoryPool::deallocate(d_sphCellEnd);
         d_sphCellEnd = nullptr;
     }
-    if (!checkCudaStatus(cudaMalloc(&d_sphCellStart, cellBytes),
-            "cudaMalloc(d_sphCellStart)")) {
-        return false;
-    }
-    if (!checkCudaStatus(cudaMalloc(&d_sphCellEnd, cellBytes),
-            "cudaMalloc(d_sphCellEnd)")) {
+    d_sphCellStart = static_cast<int*>(grav_x::CudaMemoryPool::allocate(cellBytes));
+    d_sphCellEnd = static_cast<int*>(grav_x::CudaMemoryPool::allocate(cellBytes));
+
+    if (!d_sphCellStart || !d_sphCellEnd) {
         return false;
     }
 
