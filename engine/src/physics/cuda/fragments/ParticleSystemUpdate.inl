@@ -202,10 +202,11 @@ bool ParticleSystem::update(float deltaTime) {
 
         if (g_dOctreeNodeCapacity < _octreeGpuNodes.size()) {
             if (g_dOctreeNodes) {
-                cudaFree(g_dOctreeNodes);
+                grav_x::CudaMemoryPool::deallocate(g_dOctreeNodes);
                 g_dOctreeNodes = nullptr;
             }
-            if (!checkCudaStatus(cudaMalloc(&g_dOctreeNodes, _octreeGpuNodes.size() * sizeof(GpuOctreeNode)), "cudaMalloc(d_octree_nodes)")) {
+            g_dOctreeNodes = static_cast<GpuOctreeNode*>(grav_x::CudaMemoryPool::allocate(_octreeGpuNodes.size() * sizeof(GpuOctreeNode)));
+            if (!g_dOctreeNodes) {
                 g_dOctreeNodeCapacity = 0;
                 return false;
             }
@@ -213,10 +214,11 @@ bool ParticleSystem::update(float deltaTime) {
         }
         if (g_dOctreeLeafCapacity < _octreeGpuLeafIndices.size()) {
             if (g_dOctreeLeafIndices) {
-                cudaFree(g_dOctreeLeafIndices);
+                grav_x::CudaMemoryPool::deallocate(g_dOctreeLeafIndices);
                 g_dOctreeLeafIndices = nullptr;
             }
-            if (!checkCudaStatus(cudaMalloc(&g_dOctreeLeafIndices, _octreeGpuLeafIndices.size() * sizeof(int)), "cudaMalloc(d_octree_leaf_indices)")) {
+            g_dOctreeLeafIndices = static_cast<int*>(grav_x::CudaMemoryPool::allocate(_octreeGpuLeafIndices.size() * sizeof(int)));
+            if (!g_dOctreeLeafIndices) {
                 g_dOctreeLeafCapacity = 0;
                 return false;
             }

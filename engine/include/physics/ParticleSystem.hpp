@@ -2,6 +2,7 @@
 #define GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
 
 #include "physics/Octree.hpp"
+#include "physics/CudaMemoryPool.hpp"
 
 #include <vector>
 

@@ -10,7 +10,6 @@ runtime/src/client/ClientServerBridge.cpp
 runtime/src/client/ClientRuntime.cpp
 
 # CUDA fragment blocks retained while kernel-level decomposition is prepared.
-engine/src/physics/cuda/fragments/ParticleSystemCore.inl
 engine/src/physics/cuda/fragments/ParticleSystemPrelude.inl
 engine/src/physics/cuda/fragments/ParticleSystemUpdate.inl
 

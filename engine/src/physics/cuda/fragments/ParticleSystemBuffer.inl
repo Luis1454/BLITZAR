@@ -1,5 +1,6 @@
 void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
 {
+    grav_x::CudaMemoryPool::initialize();
     _solverMode = solverModeFromEnv();
     _integratorMode = integratorModeFromEnv();
     _octreeTheta = parseFloatEnv("GRAVITY_OCTREE_THETA", 1.2f);
@@ -58,24 +59,24 @@ bool ParticleSystem::allocateParticleBuffers(std::size_t particleCapacity)
 {
     const std::size_t bytesTotal = particleCapacity * sizeof(float);
     bool ok = true;
-    ok &= checkCudaStatus(cudaMalloc(&d_soaPosX, bytesTotal), "malloc(posX)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaPosY, bytesTotal), "malloc(posY)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaPosZ, bytesTotal), "malloc(posZ)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaVelX, bytesTotal), "malloc(velX)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaVelY, bytesTotal), "malloc(velY)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaVelZ, bytesTotal), "malloc(velZ)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaPressX, bytesTotal), "malloc(pressX)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaPressY, bytesTotal), "malloc(pressY)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaPressZ, bytesTotal), "malloc(pressZ)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaMass, bytesTotal), "malloc(mass)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaTemp, bytesTotal), "malloc(temp)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaDens, bytesTotal), "malloc(dens)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaNextPosX, bytesTotal), "malloc(nextPosX)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaNextPosY, bytesTotal), "malloc(nextPosY)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaNextPosZ, bytesTotal), "malloc(nextPosZ)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaNextVelX, bytesTotal), "malloc(nextVelX)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaNextVelY, bytesTotal), "malloc(nextVelY)");
-    ok &= checkCudaStatus(cudaMalloc(&d_soaNextVelZ, bytesTotal), "malloc(nextVelZ)");
+    ok &= ((d_soaPosX = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaPosY = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaPosZ = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaVelX = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaVelY = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaVelZ = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaPressX = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaPressY = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaPressZ = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaMass = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaTemp = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaDens = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaNextPosX = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaNextPosY = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaNextPosZ = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaNextVelX = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaNextVelY = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((d_soaNextVelZ = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
     
     if (!ok) {
         releaseParticleBuffers();
@@ -90,31 +91,31 @@ void ParticleSystem::releaseParticleBuffers()
     releaseSphBuffers();
     releaseSphGridBuffers();
     
-    cudaFree(d_soaPosX); d_soaPosX = nullptr;
-    cudaFree(d_soaPosY); d_soaPosY = nullptr;
-    cudaFree(d_soaPosZ); d_soaPosZ = nullptr;
-    cudaFree(d_soaVelX); d_soaVelX = nullptr;
-    cudaFree(d_soaVelY); d_soaVelY = nullptr;
-    cudaFree(d_soaVelZ); d_soaVelZ = nullptr;
-    cudaFree(d_soaPressX); d_soaPressX = nullptr;
-    cudaFree(d_soaPressY); d_soaPressY = nullptr;
-    cudaFree(d_soaPressZ); d_soaPressZ = nullptr;
-    cudaFree(d_soaMass); d_soaMass = nullptr;
-    cudaFree(d_soaTemp); d_soaTemp = nullptr;
-    cudaFree(d_soaDens); d_soaDens = nullptr;
-    cudaFree(d_soaNextPosX); d_soaNextPosX = nullptr;
-    cudaFree(d_soaNextPosY); d_soaNextPosY = nullptr;
-    cudaFree(d_soaNextPosZ); d_soaNextPosZ = nullptr;
-    cudaFree(d_soaNextVelX); d_soaNextVelX = nullptr;
-    cudaFree(d_soaNextVelY); d_soaNextVelY = nullptr;
-    cudaFree(d_soaNextVelZ); d_soaNextVelZ = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaPosX); d_soaPosX = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaPosY); d_soaPosY = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaPosZ); d_soaPosZ = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaVelX); d_soaVelX = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaVelY); d_soaVelY = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaVelZ); d_soaVelZ = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaPressX); d_soaPressX = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaPressY); d_soaPressY = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaPressZ); d_soaPressZ = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaMass); d_soaMass = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaTemp); d_soaTemp = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaDens); d_soaDens = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaNextPosX); d_soaNextPosX = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaNextPosY); d_soaNextPosY = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaNextPosZ); d_soaNextPosZ = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaNextVelX); d_soaNextVelX = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaNextVelY); d_soaNextVelY = nullptr;
+    grav_x::CudaMemoryPool::deallocate(d_soaNextVelZ); d_soaNextVelZ = nullptr;
 
     if (g_dOctreeNodes) {
-        cudaFree(g_dOctreeNodes);
+        grav_x::CudaMemoryPool::deallocate(g_dOctreeNodes);
         g_dOctreeNodes = nullptr;
     }
     if (g_dOctreeLeafIndices) {
-        cudaFree(g_dOctreeLeafIndices);
+        grav_x::CudaMemoryPool::deallocate(g_dOctreeLeafIndices);
         g_dOctreeLeafIndices = nullptr;
     }
     _deviceParticleCapacity = 0;
@@ -125,39 +126,17 @@ void ParticleSystem::releaseParticleBuffers()
 bool ParticleSystem::allocateRk4Buffers(int numParticles)
 {
     releaseRk4Buffers();
-    if (!checkCudaStatus(cudaMalloc(&d_stage, numParticles * sizeof(Particle)), "cudaMalloc(d_stage)")) {
-        releaseRk4Buffers();
-        return false;
-    }
-    if (!checkCudaStatus(cudaMalloc(&d_k1x, numParticles * sizeof(Vector3)), "cudaMalloc(d_k1x)")) {
-        releaseRk4Buffers();
-        return false;
-    }
-    if (!checkCudaStatus(cudaMalloc(&d_k2x, numParticles * sizeof(Vector3)), "cudaMalloc(d_k2x)")) {
-        releaseRk4Buffers();
-        return false;
-    }
-    if (!checkCudaStatus(cudaMalloc(&d_k3x, numParticles * sizeof(Vector3)), "cudaMalloc(d_k3x)")) {
-        releaseRk4Buffers();
-        return false;
-    }
-    if (!checkCudaStatus(cudaMalloc(&d_k4x, numParticles * sizeof(Vector3)), "cudaMalloc(d_k4x)")) {
-        releaseRk4Buffers();
-        return false;
-    }
-    if (!checkCudaStatus(cudaMalloc(&d_k1v, numParticles * sizeof(Vector3)), "cudaMalloc(d_k1v)")) {
-        releaseRk4Buffers();
-        return false;
-    }
-    if (!checkCudaStatus(cudaMalloc(&d_k2v, numParticles * sizeof(Vector3)), "cudaMalloc(d_k2v)")) {
-        releaseRk4Buffers();
-        return false;
-    }
-    if (!checkCudaStatus(cudaMalloc(&d_k3v, numParticles * sizeof(Vector3)), "cudaMalloc(d_k3v)")) {
-        releaseRk4Buffers();
-        return false;
-    }
-    if (!checkCudaStatus(cudaMalloc(&d_k4v, numParticles * sizeof(Vector3)), "cudaMalloc(d_k4v)")) {
+    d_stage = static_cast<Particle*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(Particle)));
+    d_k1x = static_cast<Vector3*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(Vector3)));
+    d_k2x = static_cast<Vector3*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(Vector3)));
+    d_k3x = static_cast<Vector3*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(Vector3)));
+    d_k4x = static_cast<Vector3*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(Vector3)));
+    d_k1v = static_cast<Vector3*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(Vector3)));
+    d_k2v = static_cast<Vector3*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(Vector3)));
+    d_k3v = static_cast<Vector3*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(Vector3)));
+    d_k4v = static_cast<Vector3*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(Vector3)));
+
+    if (!d_stage || !d_k1x || !d_k2x || !d_k3x || !d_k4x || !d_k1v || !d_k2v || !d_k3v || !d_k4v) {
         releaseRk4Buffers();
         return false;
     }
@@ -166,25 +145,24 @@ bool ParticleSystem::allocateRk4Buffers(int numParticles)
 
 void ParticleSystem::releaseRk4Buffers()
 {
-    if (d_stage) { cudaFree(d_stage); d_stage = nullptr; }
-    if (d_k1x) { cudaFree(d_k1x); d_k1x = nullptr; }
-    if (d_k2x) { cudaFree(d_k2x); d_k2x = nullptr; }
-    if (d_k3x) { cudaFree(d_k3x); d_k3x = nullptr; }
-    if (d_k4x) { cudaFree(d_k4x); d_k4x = nullptr; }
-    if (d_k1v) { cudaFree(d_k1v); d_k1v = nullptr; }
-    if (d_k2v) { cudaFree(d_k2v); d_k2v = nullptr; }
-    if (d_k3v) { cudaFree(d_k3v); d_k3v = nullptr; }
-    if (d_k4v) { cudaFree(d_k4v); d_k4v = nullptr; }
+    if (d_stage) { grav_x::CudaMemoryPool::deallocate(d_stage); d_stage = nullptr; }
+    if (d_k1x) { grav_x::CudaMemoryPool::deallocate(d_k1x); d_k1x = nullptr; }
+    if (d_k2x) { grav_x::CudaMemoryPool::deallocate(d_k2x); d_k2x = nullptr; }
+    if (d_k3x) { grav_x::CudaMemoryPool::deallocate(d_k3x); d_k3x = nullptr; }
+    if (d_k4x) { grav_x::CudaMemoryPool::deallocate(d_k4x); d_k4x = nullptr; }
+    if (d_k1v) { grav_x::CudaMemoryPool::deallocate(d_k1v); d_k1v = nullptr; }
+    if (d_k2v) { grav_x::CudaMemoryPool::deallocate(d_k2v); d_k2v = nullptr; }
+    if (d_k3v) { grav_x::CudaMemoryPool::deallocate(d_k3v); d_k3v = nullptr; }
+    if (d_k4v) { grav_x::CudaMemoryPool::deallocate(d_k4v); d_k4v = nullptr; }
 }
 
 bool ParticleSystem::allocateSphBuffers(int numParticles)
 {
     releaseSphBuffers();
-    if (!checkCudaStatus(cudaMalloc(&d_sphDensity, numParticles * sizeof(float)), "cudaMalloc(d_sphDensity)")) {
-        releaseSphBuffers();
-        return false;
-    }
-    if (!checkCudaStatus(cudaMalloc(&d_sphPressure, numParticles * sizeof(float)), "cudaMalloc(d_sphPressure)")) {
+    d_sphDensity = static_cast<float*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(float)));
+    d_sphPressure = static_cast<float*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(float)));
+
+    if (!d_sphDensity || !d_sphPressure) {
         releaseSphBuffers();
         return false;
     }
@@ -193,19 +171,18 @@ bool ParticleSystem::allocateSphBuffers(int numParticles)
 
 void ParticleSystem::releaseSphBuffers()
 {
-    if (d_sphDensity) { cudaFree(d_sphDensity); d_sphDensity = nullptr; }
-    if (d_sphPressure) { cudaFree(d_sphPressure); d_sphPressure = nullptr; }
+    if (d_sphDensity) { grav_x::CudaMemoryPool::deallocate(d_sphDensity); d_sphDensity = nullptr; }
+    if (d_sphPressure) { grav_x::CudaMemoryPool::deallocate(d_sphPressure); d_sphPressure = nullptr; }
 }
 
 bool ParticleSystem::allocateSphGridBuffers(int numParticles)
 {
     releaseSphGridBuffers();
     const std::size_t particleBytes = static_cast<std::size_t>(numParticles) * sizeof(int);
-    if (!checkCudaStatus(cudaMalloc(&d_sphCellHash, particleBytes), "cudaMalloc(d_sphCellHash)")) {
-        releaseSphGridBuffers();
-        return false;
-    }
-    if (!checkCudaStatus(cudaMalloc(&d_sphSortedIndex, particleBytes), "cudaMalloc(d_sphSortedIndex)")) {
+    d_sphCellHash = static_cast<int*>(grav_x::CudaMemoryPool::allocate(particleBytes));
+    d_sphSortedIndex = static_cast<int*>(grav_x::CudaMemoryPool::allocate(particleBytes));
+
+    if (!d_sphCellHash || !d_sphSortedIndex) {
         releaseSphGridBuffers();
         return false;
     }
@@ -216,10 +193,10 @@ bool ParticleSystem::allocateSphGridBuffers(int numParticles)
 
 void ParticleSystem::releaseSphGridBuffers()
 {
-    if (d_sphCellHash) { cudaFree(d_sphCellHash); d_sphCellHash = nullptr; }
-    if (d_sphSortedIndex) { cudaFree(d_sphSortedIndex); d_sphSortedIndex = nullptr; }
-    if (d_sphCellStart) { cudaFree(d_sphCellStart); d_sphCellStart = nullptr; }
-    if (d_sphCellEnd) { cudaFree(d_sphCellEnd); d_sphCellEnd = nullptr; }
+    if (d_sphCellHash) { grav_x::CudaMemoryPool::deallocate(d_sphCellHash); d_sphCellHash = nullptr; }
+    if (d_sphSortedIndex) { grav_x::CudaMemoryPool::deallocate(d_sphSortedIndex); d_sphSortedIndex = nullptr; }
+    if (d_sphCellStart) { grav_x::CudaMemoryPool::deallocate(d_sphCellStart); d_sphCellStart = nullptr; }
+    if (d_sphCellEnd) { grav_x::CudaMemoryPool::deallocate(d_sphCellEnd); d_sphCellEnd = nullptr; }
     _hostCellHash.clear();
     _hostSortedIndex.clear();
 }
