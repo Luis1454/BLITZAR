@@ -82,6 +82,7 @@ class SimulationServer {
         std::atomic<std::uint32_t> _stepRequests;
 
         std::atomic<float> _dt;
+        std::atomic<float> _totalTime;
         std::atomic<std::uint64_t> _steps;
         std::atomic<float> _serverFps;
 

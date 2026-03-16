@@ -1000,6 +1000,7 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
       _totalEnergy(0.0f),
       _energyDriftPct(0.0f),
       _energyEstimated(false),
+      _totalTime(0.0f),
         _energyMeasureEverySteps(120),
         _energySampleLimit(256),
         _configuredSubstepTargetDt(0.01f),
@@ -1458,6 +1459,7 @@ SimulationStats SimulationServer::getStats() const
     return SimulationStats{
         _steps.load(std::memory_order_relaxed),
         _dt.load(std::memory_order_relaxed),
+        _totalTime.load(std::memory_order_relaxed),
         _paused.load(std::memory_order_relaxed),
         _faulted.load(std::memory_order_relaxed),
         _faultStep.load(std::memory_order_relaxed),
@@ -1752,6 +1754,7 @@ void SimulationServer::rebuildSystem()
     _totalEnergy.store(0.0f, std::memory_order_relaxed);
     _energyDriftPct.store(0.0f, std::memory_order_relaxed);
     _energyEstimated.store(false, std::memory_order_relaxed);
+    _totalTime.store(0.0f, std::memory_order_relaxed);
     _lastAppliedSubstepTargetDt.store(0.0f, std::memory_order_relaxed);
     _lastAppliedSubstepDt.store(0.0f, std::memory_order_relaxed);
     _lastAppliedSubsteps.store(0u, std::memory_order_relaxed);
@@ -2218,6 +2221,7 @@ void SimulationServer::loop()
                     updateFailed = true;
                     break;
                 }
+                _totalTime.fetch_add(dtSub, std::memory_order_relaxed);
             }
             if (updateFailed) {
                 break;

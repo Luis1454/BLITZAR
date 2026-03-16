@@ -43,6 +43,7 @@ struct InitialStateConfig {
 struct SimulationStats {
     std::uint64_t steps;
     float dt;
+    float totalTime;
     bool paused;
     bool faulted;
     std::uint64_t faultStep;

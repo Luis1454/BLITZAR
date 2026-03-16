@@ -19,6 +19,7 @@ struct EnergyPoint {
     float radiated;
     float total;
     float drift;
+    float time;
 };
 
 struct GimbalOverlay {

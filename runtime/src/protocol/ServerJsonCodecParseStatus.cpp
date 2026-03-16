@@ -14,6 +14,7 @@ bool ServerJsonCodec::parseStatusResponse(std::string_view raw, ServerStatusPayl
     }
     readNumber(raw, "steps", parsed.steps);
     readNumber(raw, "dt", parsed.dt);
+    readNumber(raw, "total_time", parsed.totalTime);
     readBool(raw, "paused", parsed.paused);
     readBool(raw, "faulted", parsed.faulted);
     readNumber(raw, "fault_step", parsed.faultStep);
