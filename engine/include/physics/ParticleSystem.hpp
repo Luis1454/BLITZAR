@@ -49,6 +49,8 @@ class ParticleSystem {
         ParticleSystem(ParticleSystem &&) = delete;
         ParticleSystem &operator=(ParticleSystem &&) = delete;
 
+        ParticleSoAView getSoAView(bool next = false) const;
+
     private:
         void initializeRuntimeState(std::size_t particleCapacity);
         void buildBootstrapState(int particleCount);
@@ -94,10 +96,31 @@ class ParticleSystem {
         int _sphGridSize;
         int _sphGridTotalCells;
 
-        // Device buffers (moved from globals)
-        Particle *d_particles;
-        Particle *last;
+        // Device buffers (SoA layout)
+        float *d_soaPosX;
+        float *d_soaPosY;
+        float *d_soaPosZ;
+        float *d_soaVelX;
+        float *d_soaVelY;
+        float *d_soaVelZ;
+        float *d_soaPressX;
+        float *d_soaPressY;
+        float *d_soaPressZ;
+        float *d_soaMass;
+        float *d_soaTemp;
+        float *d_soaDens;
+
+        // Double buffering for update
+        float *d_soaNextPosX;
+        float *d_soaNextPosY;
+        float *d_soaNextPosZ;
+        float *d_soaNextVelX;
+        float *d_soaNextVelY;
+        float *d_soaNextVelZ;
+
+        // Stage buffer for RK4 or thermal sync
         Particle *d_stage;
+
         Vector3 *d_k1x;
         Vector3 *d_k2x;
         Vector3 *d_k3x;

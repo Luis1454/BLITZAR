@@ -23,6 +23,48 @@ struct SphGridParams {
 constexpr int kOctreeLeafCapacity = 32;
 constexpr int kOctreeMaxDepth = 16;
 constexpr float kPi = 3.1415926535f;
+
+struct ParticleSoAView {
+    float *posX;
+    float *posY;
+    float *posZ;
+    float *velX;
+    float *velY;
+    float *velZ;
+    float *pressX;
+    float *pressY;
+    float *pressZ;
+    float *mass;
+    float *temp;
+    float *dens;
+    int count;
+
+    __host__ __device__ void setPosition(int i, Vector3 p) {
+        posX[i] = p.x;
+        posY[i] = p.y;
+        posZ[i] = p.z;
+    }
+    __host__ __device__ Vector3 getPosition(int i) const {
+        return Vector3{posX[i], posY[i], posZ[i]};
+    }
+    __host__ __device__ void setVelocity(int i, Vector3 v) {
+        velX[i] = v.x;
+        velY[i] = v.y;
+        velZ[i] = v.z;
+    }
+    __host__ __device__ Vector3 getVelocity(int i) const {
+        return Vector3{velX[i], velY[i], velZ[i]};
+    }
+    __host__ __device__ void setPressure(int i, Vector3 p) {
+        pressX[i] = p.x;
+        pressY[i] = p.y;
+        pressZ[i] = p.z;
+    }
+    __host__ __device__ Vector3 getPressure(int i) const {
+        return Vector3{pressX[i], pressY[i], pressZ[i]};
+    }
+};
+
 typedef Particle * ParticleHandle;
 typedef const Particle * ParticleConstHandle;
 typedef Vector3 * Vector3Handle;
@@ -265,7 +307,7 @@ GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 gravityAccelerationFromSource(
 }
 
 __host__ __device__ Vector3 computePairwiseAcceleration(
-    ParticleConstHandle state,
+    ParticleSoAView state,
     int numParticles,
     int idx,
     float softening,
@@ -275,17 +317,18 @@ __host__ __device__ Vector3 computePairwiseAcceleration(
 )
 {
     Vector3 force = {0.0f, 0.0f, 0.0f};
-    const Vector3 selfPos = state[idx].getPosition();
+    const Vector3 selfPos = state.getPosition(idx);
 
     for (int i = 0; i < numParticles; ++i) {
         if (i == idx) {
             continue;
         }
-        const Particle &q = state[i];
+        const Vector3 otherPos = state.getPosition(i);
+        const float otherMass = state.mass[i];
         force += gravityAccelerationFromSource(
             selfPos,
-            q.getPosition(),
-            q.getMass(),
+            otherPos,
+            otherMass,
             softening,
             minSoftening,
             minDistance2);
@@ -324,8 +367,8 @@ __device__ float sphViscosityLaplacian(float r, float h)
 }
 
 __global__ void updateParticles(
-    ParticleHandle last,
-    ParticleHandle particles,
+    ParticleSoAView last,
+    ParticleSoAView current,
     int numParticles,
     float deltaTime,
     float softening,
@@ -335,19 +378,24 @@ __global__ void updateParticles(
 ) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < numParticles) {
-        const Particle base = last[i];
+        const Vector3 pos = last.getPosition(i);
+        const Vector3 vel = last.getVelocity(i);
         const Vector3 force = computePairwiseAcceleration(last, numParticles, i, softening, maxAcceleration, minSoftening, minDistance2);
 
-        Particle updated = base;
-        updated.setPressure(force * 100.0f);
-        updated.setVelocity(base.getVelocity() + force * deltaTime);
-        updated.setPosition(base.getPosition() + updated.getVelocity() * deltaTime);
-        particles[i] = updated;
+        const Vector3 nextVel = vel + force * deltaTime;
+        const Vector3 nextPos = pos + nextVel * deltaTime;
+
+        current.setPressure(i, force * 100.0f);
+        current.setVelocity(i, nextVel);
+        current.setPosition(i, nextPos);
+        current.mass[i] = last.mass[i];
+        current.temp[i] = last.temp[i];
+        current.dens[i] = last.dens[i];
     }
 }
 
 __global__ void computeSphDensityPressureKernel(
-    ParticleConstHandle particles,
+    ParticleSoAView particles,
     FloatHandle outDensity,
     FloatHandle outPressure,
     int numParticles,
@@ -360,22 +408,22 @@ __global__ void computeSphDensityPressureKernel(
         return;
     }
 
-    if (particles[i].getMass() > 0.1f) {
+    if (particles.mass[i] > 0.1f) {
         outDensity[i] = restDensity;
         outPressure[i] = 0.0f;
         return;
     }
 
-    const Vector3 pi = particles[i].getPosition();
+    const Vector3 pi = particles.getPosition(i);
     float density = 0.0f;
     for (int j = 0; j < numParticles; ++j) {
-        const Particle pj = particles[j];
-        if (pj.getMass() > 0.1f) {
+        if (particles.mass[j] > 0.1f) {
             continue;
         }
-        const Vector3 d = pi - pj.getPosition();
+        const Vector3 pj = particles.getPosition(j);
+        const Vector3 d = pi - pj;
         const float r2 = dot(d, d);
-        density += pj.getMass() * sphPoly6(r2, smoothingLength);
+        density += particles.mass[j] * sphPoly6(r2, smoothingLength);
     }
     density = fmaxf(density, restDensity * 0.05f);
     outDensity[i] = density;
@@ -384,7 +432,7 @@ __global__ void computeSphDensityPressureKernel(
 }
 
 __global__ void integrateSphKernel(
-    ParticleHandle particles,
+    ParticleSoAView particles,
     ConstFloatHandle density,
     ConstFloatHandle pressure,
     int numParticles,
@@ -405,14 +453,13 @@ __global__ void integrateSphKernel(
         return;
     }
 
-    const Particle self = particles[i];
-    const Vector3 pi = self.getPosition();
-    const Vector3 vi = self.getVelocity();
-    const float selfMass = self.getMass();
+    const float selfMass = particles.mass[i];
     if (selfMass > 0.1f) {
         return;
     }
 
+    const Vector3 pi = particles.getPosition(i);
+    const Vector3 vi = particles.getVelocity(i);
     const float rhoI = fmaxf(density[i], 1e-6f);
     const float pI = pressure[i];
 
@@ -423,11 +470,11 @@ __global__ void integrateSphKernel(
         if (j == i) {
             continue;
         }
-        const Particle other = particles[j];
-        if (other.getMass() > 0.1f) {
+        if (particles.mass[j] > 0.1f) {
             continue;
         }
-        const Vector3 rij = pi - other.getPosition();
+        const Vector3 pj = particles.getPosition(j);
+        const Vector3 rij = pi - pj;
         const float r = sqrtf(dot(rij, rij));
         if (r >= smoothingLength || r <= 1e-6f) {
             continue;
@@ -437,10 +484,10 @@ __global__ void integrateSphKernel(
         const float pJ = pressure[j];
         const Vector3 gradDir = rij / r;
         const float grad = sphSpikyGrad(r, smoothingLength);
-        pressureForce += gradDir * (-other.getMass() * (pI + pJ) * 0.5f / rhoJ * grad);
+        pressureForce += gradDir * (-particles.mass[j] * (pI + pJ) * 0.5f / rhoJ * grad);
 
         const float lap = sphViscosityLaplacian(r, smoothingLength);
-        viscosityForce += (other.getVelocity() - vi) * (viscosity * other.getMass() / rhoJ * lap);
+        viscosityForce += (particles.getVelocity(j) - vi) * (viscosity * particles.mass[j] / rhoJ * lap);
     }
 
     const Vector3 totalForce = pressureForce + viscosityForce;
@@ -451,7 +498,6 @@ __global__ void integrateSphKernel(
         acceleration = acceleration * (maxAcceleration / accelNorm);
     }
 
-    Particle updated = self;
     Vector3 velocity = vi + acceleration * (deltaTime * correctionScale);
     const float speed = velocity.norm();
     if (speed > maxSpeed) {
@@ -459,11 +505,10 @@ __global__ void integrateSphKernel(
     }
     Vector3 position = pi + velocity * (deltaTime * correctionScale);
 
-    updated.setVelocity(velocity);
-    updated.setPosition(position);
-    updated.setDensity(rhoI);
-    updated.setPressure((pressureForce + viscosityForce) * 2.0f);
-    particles[i] = updated;
+    particles.setVelocity(i, velocity);
+    particles.setPosition(i, position);
+    particles.dens[i] = rhoI;
+    particles.setPressure(i, (pressureForce + viscosityForce) * 2.0f);
 }
 
 __global__ void copyParticlesKernel(ParticleConstHandle src, ParticleHandle dst, int numParticles)
@@ -475,17 +520,17 @@ __global__ void copyParticlesKernel(ParticleConstHandle src, ParticleHandle dst,
     dst[i] = src[i];
 }
 
-__global__ void extractVelocityKernel(ParticleConstHandle particles, Vector3Handle outVelocity, int numParticles)
+__global__ void extractVelocityKernel(ParticleSoAView particles, Vector3Handle outVelocity, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
         return;
     }
-    outVelocity[i] = particles[i].getVelocity();
+    outVelocity[i] = particles.getVelocity(i);
 }
 
 __global__ void computePairwiseAccelerationKernel(
-    ParticleConstHandle state,
+    ParticleSoAView state,
     Vector3Handle outAcceleration,
     int numParticles,
     float softening,
@@ -502,11 +547,11 @@ __global__ void computePairwiseAccelerationKernel(
 }
 
 __global__ void buildRk4StageKernel(
-    ParticleConstHandle base,
+    ParticleSoAView base,
     Vector3ConstHandle kPos,
     Vector3ConstHandle kVel,
     float dtScale,
-    ParticleHandle stage,
+    ParticleSoAView stage,
     int numParticles
 ) {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -514,14 +559,57 @@ __global__ void buildRk4StageKernel(
         return;
     }
 
-    Particle p = base[i];
-    p.setPosition(base[i].getPosition() + kPos[i] * dtScale);
-    p.setVelocity(base[i].getVelocity() + kVel[i] * dtScale);
-    stage[i] = p;
+    const Vector3 nextPos = base.getPosition(i) + kPos[i] * dtScale;
+    const Vector3 nextVel = base.getVelocity(i) + kVel[i] * dtScale;
+
+    stage.setPosition(i, nextPos);
+    stage.setVelocity(i, nextVel);
+    stage.mass[i] = base.mass[i];
+    stage.temp[i] = base.temp[i];
+    stage.dens[i] = base.dens[i];
+}
+
+__global__ void packSoAKernel(ParticleConstHandle src, ParticleSoAView dst, int numParticles)
+{
+    const int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= numParticles) return;
+
+    const Particle p = src[i];
+    const Vector3 pos = p.getPosition();
+    const Vector3 vel = p.getVelocity();
+    const Vector3 press = p.getPressure();
+    
+    dst.posX[i] = pos.x;
+    dst.posY[i] = pos.y;
+    dst.posZ[i] = pos.z;
+    dst.velX[i] = vel.x;
+    dst.velY[i] = vel.y;
+    dst.velZ[i] = vel.z;
+    dst.pressX[i] = press.x;
+    dst.pressY[i] = press.y;
+    dst.pressZ[i] = press.z;
+    dst.mass[i] = p.getMass();
+    dst.temp[i] = p.getTemperature();
+    dst.dens[i] = p.getDensity();
+}
+
+__global__ void unpackSoAKernel(ParticleSoAView src, ParticleHandle dst, int numParticles)
+{
+    const int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= numParticles) return;
+
+    Particle p;
+    p.setPosition(Vector3{src.posX[i], src.posY[i], src.posZ[i]});
+    p.setVelocity(Vector3{src.velX[i], src.velY[i], src.velZ[i]});
+    p.setPressure(Vector3{src.pressX[i], src.pressY[i], src.pressZ[i]});
+    p.setMass(src.mass[i]);
+    p.setTemperature(src.temp[i]);
+    p.setDensity(src.dens[i]);
+    dst[i] = p;
 }
 
 __global__ void finalizeRk4Kernel(
-    ParticleConstHandle base,
+    ParticleSoAView base,
     Vector3ConstHandle k1x,
     Vector3ConstHandle k2x,
     Vector3ConstHandle k3x,
@@ -531,7 +619,7 @@ __global__ void finalizeRk4Kernel(
     Vector3ConstHandle k3v,
     Vector3ConstHandle k4v,
     float deltaTime,
-    ParticleHandle out,
+    ParticleSoAView out,
     int numParticles
 ) {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -539,14 +627,17 @@ __global__ void finalizeRk4Kernel(
         return;
     }
 
-    const Particle baseParticle = base[i];
     const Vector3 weightedVel = (k1v[i] + k2v[i] * 2.0f + k3v[i] * 2.0f + k4v[i]) / 6.0f;
     const Vector3 weightedPos = (k1x[i] + k2x[i] * 2.0f + k3x[i] * 2.0f + k4x[i]) / 6.0f;
 
-    Particle updated = baseParticle;
-    updated.setVelocity(baseParticle.getVelocity() + weightedVel * deltaTime);
-    updated.setPosition(baseParticle.getPosition() + weightedPos * deltaTime);
-    updated.setPressure(weightedVel * 100.0f);
-    out[i] = updated;
+    const Vector3 nextVel = base.getVelocity(i) + weightedVel * deltaTime;
+    const Vector3 nextPos = base.getPosition(i) + weightedPos * deltaTime;
+
+    out.setVelocity(i, nextVel);
+    out.setPosition(i, nextPos);
+    out.setPressure(i, weightedVel * 100.0f);
+    out.mass[i] = base.mass[i];
+    out.temp[i] = base.temp[i];
+    out.dens[i] = base.dens[i];
 }
 // Note: Device buffers and management functions moved to ParticleSystem class members/methods.
