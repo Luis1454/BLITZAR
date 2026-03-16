@@ -70,6 +70,16 @@ def build_release_lane_activities(profile: str) -> list[dict[str, str]]:
             "status": "pass",
             "command": f"python scripts/ci/release/package_quality_index.py --root . --dist-dir dist/release-quality-index --profile {profile}",
         },
+        {
+            "name": "generate-changelog",
+            "status": "pass",
+            "command": "python scripts/ci/release/generate_changelog.py --tag <tag> --repo-root . --output dist/CHANGELOG.md",
+        },
+        {
+            "name": "publish-release",
+            "status": "pass",
+            "command": "python scripts/ci/release/publish_release.py --tag <tag> --notes-file dist/CHANGELOG.md --assets dist/release-bundle/*.zip",
+        },
     ]
 
 
