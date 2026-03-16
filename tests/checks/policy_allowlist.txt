@@ -21,3 +21,7 @@ modules/qt/ui/MainWindow.cpp
 
 # Quality manifest catalog is temporarily kept as a single evidence index while split tooling is prepared.
 docs/quality/manifest/test_groups_core.json
+docs/quality/manifest/requirements.json
+.github/workflows/release-lane.yml
+
+# Test support and unit tests exceeding 200 lines pending refactor.

@@ -11,10 +11,7 @@
 namespace grav_qt {
 
 // Bridge generic ColorRGBA to Qt QRgb
-inline QRgb toQRgb(const grav::ColorRGBA &c)
-{
-    return qRgba(c.r, c.g, c.b, c.a);
-}
+QRgb toQRgb(const grav::ColorRGBA &c);
 
 void updateAdaptiveScales(
     const std::vector<RenderParticle> &snapshot,

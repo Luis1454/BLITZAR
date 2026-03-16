@@ -100,6 +100,30 @@
         "EVD_CHECK_POLICY_ALLOWLIST",
         "EVD_QLT_MANIFEST"
       ]
+    },
+    "DEV-QUAL-005": {
+      "kind": "deviation",
+      "status": "open",
+      "scope": "repository-policy:file-size",
+      "owner": "project-maintainer",
+      "approver": "quality-review",
+      "introduced_on": "2026-03-16",
+      "review_by": "2026-06-30",
+      "rationale": "Large manifest and workflow files exceeding 300 lines (requirements.json, release-lane.yml) containing necessary complex CI and traceability logic.",
+      "mitigation": "Keep entries isolated in allowlist and review on every PR touching these files.",
+      "closure_criteria": "Split files below the hard limit when architectural support for manifest merging is available.",
+      "paths": [
+        "docs/quality/manifest/requirements.json",
+        ".github/workflows/release-lane.yml"
+      ],
+      "requirements": [
+        "REQ-QUAL-001",
+        "REQ-REL-001"
+      ],
+      "artifacts": [
+        "EVD_CHECK_MAIN",
+        "EVD_CHECK_POLICY_ALLOWLIST"
+      ]
     }
   }
 }

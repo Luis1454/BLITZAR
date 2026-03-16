@@ -1,6 +1,11 @@
 #include "ui/ParticleViewColor.hpp"
 
 namespace grav_qt {
+ 
+QRgb toQRgb(const grav::ColorRGBA &c)
+{
+    return qRgba(c.r, c.g, c.b, c.a);
+}
 
 void updateAdaptiveScales(
     const std::vector<RenderParticle> &snapshot,

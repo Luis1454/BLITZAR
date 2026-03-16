@@ -12,13 +12,6 @@
 
 namespace grav_qt {
 
-// Re-export enums and types from grav namespace for backward compatibility in Qt module
-using ViewMode = grav::ViewMode;
-using GimbalAxis = grav::GimbalAxis;
-using ProjectedPoint = grav::ProjectedPoint;
-using CameraState = grav::CameraState;
-using grav::projectParticle;
-
 struct EnergyPoint {
     float kinetic;
     float potential;
@@ -36,28 +29,13 @@ struct GimbalOverlay {
 };
 
 // Conversion helpers
-inline QPointF toQPointF(const grav::Point2D &p)
-{
-    return QPointF(static_cast<double>(p.x), static_cast<double>(p.y));
-}
+QPointF toQPointF(const grav::Point2D &p);
+grav::Point2D fromQPointF(const QPointF &p);
+QRectF toQRectF(const grav::Rect2D &r);
+grav::Rect2D fromQRectF(const QRectF &r);
 
-inline grav::Point2D fromQPointF(const QPointF &p)
-{
-    return grav::Point2D{static_cast<float>(p.x()), static_cast<float>(p.y())};
-}
-
-inline QRectF toQRectF(const grav::Rect2D &r)
-{
-    return QRectF(static_cast<double>(r.x), static_cast<double>(r.y), static_cast<double>(r.width), static_cast<double>(r.height));
-}
-
-inline grav::Rect2D fromQRectF(const QRectF &r)
-{
-    return grav::Rect2D{static_cast<float>(r.x()), static_cast<float>(r.y()), static_cast<float>(r.width()), static_cast<float>(r.height())};
-}
-
-GimbalOverlay computeGimbal(const QRect &bounds, ViewMode mode, const CameraState &camera);
-GimbalAxis pickGimbalAxis(const GimbalOverlay &overlay, const QPointF &mouse);
+GimbalOverlay computeGimbal(const QRect &bounds, grav::ViewMode mode, const grav::CameraState &camera);
+grav::GimbalAxis pickGimbalAxis(const GimbalOverlay &overlay, const QPointF &mouse);
 
 } // namespace grav_qt
 
