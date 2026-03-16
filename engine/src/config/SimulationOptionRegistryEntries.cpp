@@ -68,6 +68,10 @@ const SimulationOptionEntry kSimulationOptions[] = {
     {SimulationOptionGroup::Core, OptionKind::Float, "--physics-min-theta", "", "physics_min_theta", "", "", "  --physics-min-theta <float>\n", "", offsetof(SimulationConfig, physicsMinTheta), 0.0, 0.0, true, false},
     {SimulationOptionGroup::Fluid, OptionKind::Float, "--sph-max-accel", "", "sph_max_acceleration", "", "", "  --sph-max-accel <float>\n", "", offsetof(SimulationConfig, sphMaxAcceleration), 0.0, 0.0, true, false},
     {SimulationOptionGroup::Fluid, OptionKind::Float, "--sph-max-speed", "", "sph_max_speed", "", "", "  --sph-max-speed <float>\n", "", offsetof(SimulationConfig, sphMaxSpeed), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::Client, OptionKind::Bool, "--render-culling", "", "render_culling_enabled", "", "", "  --render-culling <true|false>\n", "", offsetof(SimulationConfig, renderCullingEnabled), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::Client, OptionKind::Bool, "--render-lod", "", "render_lod_enabled", "", "", "  --render-lod <true|false>\n", "", offsetof(SimulationConfig, renderLODEnabled), 0.0, 0.0, false, false},
+    {SimulationOptionGroup::Client, OptionKind::Float, "--render-lod-near", "", "render_lod_near_distance", "", "", "  --render-lod-near <float>\n", "", offsetof(SimulationConfig, renderLODNearDistance), 0.0, 0.0, true, false},
+    {SimulationOptionGroup::Client, OptionKind::Float, "--render-lod-far", "", "render_lod_far_distance", "", "", "  --render-lod-far <float>\n", "", offsetof(SimulationConfig, renderLODFarDistance), 0.0, 0.0, true, false},
 };
 
 const std::size_t kSimulationOptionCount = sizeof(kSimulationOptions) / sizeof(kSimulationOptions[0]);

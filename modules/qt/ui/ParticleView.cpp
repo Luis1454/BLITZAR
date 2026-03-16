@@ -59,6 +59,15 @@ void ParticleView::setCameraAngles(float yaw, float pitch, float roll)
     update();
 }
 
+void ParticleView::setRenderSettings(bool culling, bool lod, float nearDist, float farDist)
+{
+    _cullingEnabled = culling;
+    _lodEnabled = lod;
+    _lodNearDistance = nearDist;
+    _lodFarDistance = farDist;
+    update();
+}
+
 void ParticleView::mousePressEvent(MouseEventHandle event)
 {
     if (event->button() != Qt::LeftButton) {
@@ -130,8 +139,22 @@ void ParticleView::paintEvent(PaintEventHandle event)
     if (_snapshot.has_value()) {
         const std::vector<RenderParticle> &snapshot = _snapshot->get();
         updateAdaptiveScales(snapshot, _adaptiveTemperatureScale, _adaptivePressureScale);
+        const float lodNear2 = _lodNearDistance * _lodNearDistance;
+        const float lodFar2 = _lodFarDistance * _lodFarDistance;
 
         for (const RenderParticle &particle : snapshot) {
+            if (_lodEnabled && _mode == ViewMode::Perspective) {
+                const float dist2 = particle.x * particle.x + particle.y * particle.y + particle.z * particle.z;
+                if (dist2 > lodNear2) {
+                    const float factor = std::clamp((std::sqrt(dist2) - _lodNearDistance) / (_lodFarDistance - _lodNearDistance), 0.0f, 1.0f);
+                    const std::size_t skipThreshold = static_cast<std::size_t>(factor * 100.0f);
+                    // Use a stable skip based on particle index/address for deterministic appearance
+                    if ((reinterpret_cast<std::uintptr_t>(&particle) / sizeof(RenderParticle)) % 100 < skipThreshold) {
+                        continue;
+                    }
+                }
+            }
+
             const ProjectedPoint pp = projectParticle(particle, _mode, _camera);
             if (!pp.valid) {
                 continue;
@@ -139,8 +162,14 @@ void ParticleView::paintEvent(PaintEventHandle event)
 
             const int x = static_cast<int>(centerX + pp.x * _zoom);
             const int y = static_cast<int>(centerY - pp.y * _zoom);
-            if (x < 0 || x >= widthPx || y < 0 || y >= heightPx) {
-                continue;
+            if (_cullingEnabled) {
+                if (x < 0 || x >= widthPx || y < 0 || y >= heightPx) {
+                    continue;
+                }
+            } else {
+                if (x < -100 || x >= widthPx + 100 || y < -100 || y >= heightPx + 100) {
+                    continue;
+                }
             }
 
             QRgb color = 0;

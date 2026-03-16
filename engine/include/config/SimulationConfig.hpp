@@ -69,6 +69,10 @@ struct SimulationConfig {
     float physicsMinTheta = 0.05f;
     float sphMaxAcceleration = 40.0f;
     float sphMaxSpeed = 120.0f;
+    bool renderCullingEnabled = true;
+    bool renderLODEnabled = true;
+    float renderLODNearDistance = 10.0f;
+    float renderLODFarDistance = 60.0f;
 
     static SimulationConfig defaults();
     static SimulationConfig loadOrCreate(const std::string &path);
