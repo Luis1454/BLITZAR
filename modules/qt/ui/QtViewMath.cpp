@@ -2,7 +2,27 @@
 
 namespace grav_qt {
 
-GimbalOverlay computeGimbal(const QRect &bounds, ViewMode mode, const CameraState &camera)
+QPointF toQPointF(const grav::Point2D &p)
+{
+    return QPointF(static_cast<double>(p.x), static_cast<double>(p.y));
+}
+
+grav::Point2D fromQPointF(const QPointF &p)
+{
+    return grav::Point2D{static_cast<float>(p.x()), static_cast<float>(p.y())};
+}
+
+QRectF toQRectF(const grav::Rect2D &r)
+{
+    return QRectF(static_cast<double>(r.x), static_cast<double>(r.y), static_cast<double>(r.width), static_cast<double>(r.height));
+}
+
+grav::Rect2D fromQRectF(const QRectF &r)
+{
+    return grav::Rect2D{static_cast<float>(r.x()), static_cast<float>(r.y()), static_cast<float>(r.width()), static_cast<float>(r.height())};
+}
+
+GimbalOverlay computeGimbal(const QRect &bounds, grav::ViewMode mode, const grav::CameraState &camera)
 {
     const grav::Rect2D viewport{
         static_cast<float>(bounds.x()),
@@ -24,7 +44,7 @@ GimbalOverlay computeGimbal(const QRect &bounds, ViewMode mode, const CameraStat
     return result;
 }
 
-GimbalAxis pickGimbalAxis(const GimbalOverlay &overlay, const QPointF &mouse)
+grav::GimbalAxis pickGimbalAxis(const GimbalOverlay &overlay, const QPointF &mouse)
 {
     grav::GimbalOverlay go;
     go.handles = {

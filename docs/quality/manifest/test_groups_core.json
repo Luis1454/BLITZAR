@@ -812,49 +812,49 @@
         },
         "EVD_TEST_UNIT_RELEASE_CHANGELOG": {
             "TST-UNT-REL-001": {
-                "id": "TestParseCommits.test_tst_unt_rel_001_feat_parsed_correctly",
+                "id": "test_tst_unt_rel_001_feat_parsed_correctly",
                 "req_ids": [
                     "REQ-REL-001"
                 ]
             },
             "TST-UNT-REL-002": {
-                "id": "TestParseCommits.test_tst_unt_rel_002_fix_parsed_correctly",
+                "id": "test_tst_unt_rel_002_fix_parsed_correctly",
                 "req_ids": [
                     "REQ-REL-001"
                 ]
             },
             "TST-UNT-REL-003": {
-                "id": "TestParseCommits.test_tst_unt_rel_003_non_conventional_skipped",
+                "id": "test_tst_unt_rel_003_non_conventional_skipped",
                 "req_ids": [
                     "REQ-REL-001"
                 ]
             },
             "TST-UNT-REL-004": {
-                "id": "TestParseCommits.test_tst_unt_rel_004_empty_input_returns_empty",
+                "id": "test_tst_unt_rel_004_empty_input_returns_empty",
                 "req_ids": [
                     "REQ-REL-001"
                 ]
             },
             "TST-UNT-REL-005": {
-                "id": "TestParseCommits.test_tst_unt_rel_005_breaking_flag_detected",
+                "id": "test_tst_unt_rel_005_breaking_flag_detected",
                 "req_ids": [
                     "REQ-REL-001"
                 ]
             },
             "TST-UNT-REL-006": {
-                "id": "TestRenderMarkdown.test_tst_unt_rel_006_features_section_present",
+                "id": "test_tst_unt_rel_006_features_section_present",
                 "req_ids": [
                     "REQ-REL-001"
                 ]
             },
             "TST-UNT-REL-007": {
-                "id": "TestRenderMarkdown.test_tst_unt_rel_007_breaking_section_present",
+                "id": "test_tst_unt_rel_007_breaking_section_present",
                 "req_ids": [
                     "REQ-REL-001"
                 ]
             },
             "TST-UNT-REL-008": {
-                "id": "TestRenderMarkdown.test_tst_unt_rel_008_empty_data_produces_header_only",
+                "id": "test_tst_unt_rel_008_empty_data_produces_header_only",
                 "req_ids": [
                     "REQ-REL-001"
                 ]
