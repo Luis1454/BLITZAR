@@ -27,6 +27,7 @@ class ParticleView : public QWidget {
         void setZoom(float zoom);
         void setLuminosity(int luminosity);
         void setCameraAngles(float yaw, float pitch, float roll);
+        void setRenderSettings(bool culling, bool lod, float nearDist, float farDist);
 
     private:
         typedef UiMouseEvent * MouseEventHandle;
@@ -45,6 +46,10 @@ class ParticleView : public QWidget {
         float _adaptivePressureScale;
         GimbalAxis _dragAxis;
         QPointF _lastMousePos;
+        bool _cullingEnabled = true;
+        bool _lodEnabled = true;
+        float _lodNearDistance = 10.0f;
+        float _lodFarDistance = 60.0f;
 };
 
 } // namespace grav_qt

@@ -81,6 +81,8 @@ class MainWindow : public QMainWindow {
         QPointer<QSlider> _yawSlider;
         QPointer<QSlider> _pitchSlider;
         QPointer<QSlider> _rollSlider;
+        QPointer<QCheckBox> _cullingCheck;
+        QPointer<QCheckBox> _lodCheck;
         QPointer<QTimer> _timer;
         std::uint64_t _lastEnergyStep;
         std::uint32_t _clientDrawCap;

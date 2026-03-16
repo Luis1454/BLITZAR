@@ -121,6 +121,10 @@ void SimulationConfigDirective::write(std::ostream &out, const SimulationConfig 
         << ", viscosity=" << config.sphViscosity
         << ", max_acceleration=" << config.sphMaxAcceleration
         << ", max_speed=" << config.sphMaxSpeed << ")\n";
+    out << "render(culling=" << (config.renderCullingEnabled ? "true" : "false")
+        << ", lod=" << (config.renderLODEnabled ? "true" : "false")
+        << ", lod_near=" << config.renderLODNearDistance
+        << ", lod_far=" << config.renderLODFarDistance << ")\n";
 }
 
 } // namespace grav_config

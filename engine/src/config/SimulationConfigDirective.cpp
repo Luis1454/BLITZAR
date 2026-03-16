@@ -212,6 +212,14 @@ static bool applyDirectiveArgs(
                 arg.first == "sample_limit" ? "energy_sample_limit" :
                 arg.first;
             handled = applyIniAlias(arg, iniKey, config, warnings);
+        } else if (directive == "render") {
+            const std::string iniKey =
+                arg.first == "culling" ? "render_culling_enabled" :
+                arg.first == "lod" ? "render_lod_enabled" :
+                arg.first == "lod_near" ? "render_lod_near_distance" :
+                arg.first == "lod_far" ? "render_lod_far_distance" :
+                arg.first;
+            handled = applyIniAlias(arg, iniKey, config, warnings);
         }
         if (!handled) {
             warnings << "[config] unknown directive argument ignored: " << directive << '.' << arg.first << "\n";
