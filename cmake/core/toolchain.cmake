@@ -21,58 +21,62 @@ set(GRAVITY_PROJECT_INCLUDE_DIRS
 
 if(WIN32)
     set(GRAVITY_ENV_UTILS_SOURCES
-        engine/src/config/EnvUtils.cpp
-        engine/src/config/EnvUtilsWin.cpp
+        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
+        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtilsWin.cpp"
     )
 else()
     set(GRAVITY_ENV_UTILS_SOURCES
-        engine/src/config/EnvUtils.cpp
-        engine/src/config/EnvUtilsPosix.cpp
+        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
+        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtilsPosix.cpp"
     )
 endif()
 
+if(NOT DEFINED GRAVITY_ROOT_DIR)
+    set(GRAVITY_ROOT_DIR "${CMAKE_SOURCE_DIR}")
+endif()
+
 set(GRAVITY_GRAPHICS_SOURCES
-    "${CMAKE_SOURCE_DIR}/engine/src/graphics/ViewMath.cpp"
-    "${CMAKE_SOURCE_DIR}/engine/src/graphics/ColorPipeline.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/graphics/ViewMath.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/graphics/ColorPipeline.cpp"
 )
 
 set(GRAVITY_SERVER_SOURCES
     ${GRAVITY_ENV_UTILS_SOURCES}
-    engine/src/config/SimulationArgs.cpp
-    engine/src/config/SimulationArgsParse.cpp
-    engine/src/config/SimulationArgsCoreOptions.cpp
-    engine/src/config/SimulationArgsClientOptions.cpp
-    engine/src/config/SimulationArgsInitOptions.cpp
-    engine/src/config/SimulationArgsInitStateOptions.cpp
-    engine/src/config/SimulationArgsFluidOptions.cpp
-    engine/src/config/SimulationOptionRegistry.cpp
-    engine/src/config/SimulationOptionRegistryApply.cpp
-    engine/src/config/SimulationOptionRegistryEntries.cpp
-    engine/src/config/SimulationPerformanceProfile.cpp
-    engine/src/config/SimulationConfigDirective.cpp
-    engine/src/config/SimulationConfigDirectiveWrite.cpp
-    engine/src/config/SimulationConfig.cpp
-    engine/src/config/SimulationModes.cpp
-    engine/src/config/TextParse.cpp
-    engine/src/server/SimulationServer.cpp
-    engine/src/server/SimulationInitConfig.cpp
-    engine/src/physics/cuda/ParticleSystem.cu
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgs.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsCoreOptions.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsClientOptions.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsInitOptions.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsInitStateOptions.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsFluidOptions.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationServer.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/physics/cuda/ParticleSystem.cu"
 )
 
 set(GRAVITY_RUNTIME_PROTOCOL_SOURCES
-    runtime/src/protocol/ServerJsonCodec.cpp
-    runtime/src/protocol/ServerJsonCodecParse.cpp
-    runtime/src/protocol/ServerJsonCodecParseStatus.cpp
-    runtime/src/protocol/ServerJsonCodecParseSnapshot.cpp
-    runtime/src/protocol/ServerJsonCodecReadNumber.cpp
-    runtime/src/protocol/ServerClient.cpp
-    runtime/src/protocol/ServerProtocol.cpp
+    "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodec.cpp"
+    "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParse.cpp"
+    "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseStatus.cpp"
+    "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseSnapshot.cpp"
+    "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecReadNumber.cpp"
+    "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerClient.cpp"
+    "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerProtocol.cpp"
 )
 
 set(GRAVITY_CORE_FFI_SOURCES
-    runtime/src/ffi/BlitzarCore.cpp
-    runtime/src/ffi/BlitzarCoreOps.cpp
-    runtime/src/ffi/BlitzarCoreApi.cpp
+    "${GRAVITY_ROOT_DIR}/runtime/src/ffi/BlitzarCore.cpp"
+    "${GRAVITY_ROOT_DIR}/runtime/src/ffi/BlitzarCoreOps.cpp"
+    "${GRAVITY_ROOT_DIR}/runtime/src/ffi/BlitzarCoreApi.cpp"
 )
 
 function(gravity_collect_existing_paths out_var)
