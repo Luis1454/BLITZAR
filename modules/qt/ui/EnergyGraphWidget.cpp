@@ -34,17 +34,17 @@ EnergyGraphWidget::EnergyGraphWidget()
 
 QString EnergyGraphWidget::energyXAxisLabel()
 {
-    return QStringLiteral("History [samples]");
+    return QStringLiteral("Simulation time [s]");
 }
 
 QString EnergyGraphWidget::energyYAxisLabel()
 {
-    return QStringLiteral("Energy [a.u.]");
+    return QStringLiteral("Energy [J]");
 }
 
 QString EnergyGraphWidget::driftXAxisLabel()
 {
-    return QStringLiteral("History [samples]");
+    return QStringLiteral("Simulation time [s]");
 }
 
 QString EnergyGraphWidget::driftYAxisLabel()
@@ -55,11 +55,11 @@ QString EnergyGraphWidget::driftYAxisLabel()
 QStringList EnergyGraphWidget::legendLabels()
 {
     return {
-        QStringLiteral("Kinetic [a.u.]"),
-        QStringLiteral("Potential [a.u.]"),
-        QStringLiteral("Thermal [a.u.]"),
-        QStringLiteral("Radiated [a.u.]"),
-        QStringLiteral("Total [a.u.]"),
+        QStringLiteral("Kinetic [J]"),
+        QStringLiteral("Potential [J]"),
+        QStringLiteral("Thermal [J]"),
+        QStringLiteral("Radiated [J]"),
+        QStringLiteral("Total [J]"),
         QStringLiteral("Drift [%]")
     };
 }
@@ -72,7 +72,8 @@ void EnergyGraphWidget::pushSample(const SimulationStats &stats)
         stats.thermalEnergy,
         stats.radiatedEnergy,
         stats.totalEnergy,
-        stats.energyDriftPct
+        stats.energyDriftPct,
+        stats.totalTime
     });
     constexpr std::size_t maxHistory = 720;
     if (_history.size() > maxHistory) {
