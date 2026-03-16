@@ -99,6 +99,8 @@
                      "EVD_TEST_UNIT_RUNTIME_RUST":  "rust/blitzar-runtime/tests/bridge_state.rs",
                      "EVD_TEST_UNIT_WEB_GATEWAY_ARGS_RUST":  "rust/blitzar-web-gateway/tests/args.rs",
                      "EVD_TEST_UNIT_WEB_GATEWAY_HTTP_RUST":  "rust/blitzar-web-gateway/tests/http.rs",
-                     "EVD_TEST_UNIT_WEB_GATEWAY_EVENTS_RUST":  "rust/blitzar-web-gateway/tests/events.rs"
+                     "EVD_TEST_UNIT_WEB_GATEWAY_EVENTS_RUST":  "rust/blitzar-web-gateway/tests/events.rs",
+                     "EVD_TEST_UNIT_RELEASE_CHANGELOG": "tests/checks/suites/test_changelog.py",
+                     "EVD_TEST_UNIT_GRAPHICS_PIPELINE": "tests/unit/graphics/TST_UNT_GRA_GraphicsTests.cpp"
                  }
 }
