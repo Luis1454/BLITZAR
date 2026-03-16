@@ -72,6 +72,7 @@ std::string ServerJsonCodec::makeStatusResponse(const SimulationStats &stats)
         << "{\"ok\":true,\"cmd\":\"" << Status << "\""
         << ",\"steps\":" << stats.steps
         << ",\"dt\":" << stats.dt
+        << ",\"total_time\":" << stats.totalTime
         << ",\"paused\":" << (stats.paused ? "true" : "false")
         << ",\"faulted\":" << (stats.faulted ? "true" : "false")
         << ",\"fault_step\":" << stats.faultStep

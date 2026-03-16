@@ -25,6 +25,7 @@ struct ServerStatusPayload {
     ServerResponseEnvelope envelope;
     std::uint64_t steps = 0;
     float dt = 0.0f;
+    float totalTime = 0.0f;
     bool paused = false;
     bool faulted = false;
     std::uint64_t faultStep = 0;
