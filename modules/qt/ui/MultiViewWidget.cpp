@@ -111,4 +111,20 @@ void MultiViewWidget::set3DCameraAngles(float yaw, float pitch, float roll)
     }
 }
 
+void MultiViewWidget::setRenderSettings(bool culling, bool lod, float nearDist, float farDist)
+{
+    if (_xy) {
+        _xy->setRenderSettings(culling, lod, nearDist, farDist);
+    }
+    if (_xz) {
+        _xz->setRenderSettings(culling, lod, nearDist, farDist);
+    }
+    if (_yz) {
+        _yz->setRenderSettings(culling, lod, nearDist, farDist);
+    }
+    if (_view3d) {
+        _view3d->setRenderSettings(culling, lod, nearDist, farDist);
+    }
+}
+
 } // namespace grav_qt

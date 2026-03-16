@@ -97,6 +97,8 @@ MainWindow::MainWindow(
       _yawSlider(new QSlider(Qt::Horizontal, this)),
       _pitchSlider(new QSlider(Qt::Horizontal, this)),
       _rollSlider(new QSlider(Qt::Horizontal, this)),
+      _cullingCheck(new QCheckBox("Culling", this)),
+      _lodCheck(new QCheckBox("LOD", this)),
       _timer(new QTimer(this)),
       _lastEnergyStep(std::numeric_limits<std::uint64_t>::max()),
       _clientDrawCap(grav_client::resolveClientDrawCap(_config)),
@@ -181,6 +183,8 @@ MainWindow::MainWindow(
     _pitchSlider->setValue(0);
     _rollSlider->setRange(-180, 180);
     _rollSlider->setValue(0);
+    _cullingCheck->setChecked(_config.renderCullingEnabled);
+    _lodCheck->setChecked(_config.renderLODEnabled);
     _serverHostEdit->setText("127.0.0.1");
     _serverPortSpin->setRange(1, 65535);
     _serverPortSpin->setValue(4545);
@@ -272,6 +276,8 @@ MainWindow::MainWindow(
     cameraLayout->addWidget(_pitchSlider, 2, 1);
     cameraLayout->addWidget(new QLabel("roll", this), 2, 2);
     cameraLayout->addWidget(_rollSlider, 2, 3);
+    cameraLayout->addWidget(_cullingCheck, 3, 0);
+    cameraLayout->addWidget(_lodCheck, 3, 1);
 
     root->addWidget(controlsScroll, 0);
     root->addWidget(_multiView, 4);
@@ -289,6 +295,12 @@ MainWindow::MainWindow(
 
     _multiView->setZoom(static_cast<float>(_zoomSlider->value()) / 10.0f);
     _multiView->setLuminosity(_luminositySlider->value());
+    _multiView->setRenderSettings(
+        _config.renderCullingEnabled,
+        _config.renderLODEnabled,
+        _config.renderLODNearDistance,
+        _config.renderLODFarDistance
+    );
     update3DCameraFromSliders();
     _reconnectButton->setEnabled(true);
     _applyConnectorButton->setEnabled(true);
@@ -504,6 +516,26 @@ MainWindow::MainWindow(
     connect(_view3dCombo, &QComboBox::currentTextChanged, this, [this](const QString &value) {
         _multiView->set3DMode(value == "iso" ? ViewMode::Iso : ViewMode::Perspective);
     });
+    connect(_cullingCheck, &QCheckBox::toggled, this, [this](bool enabled) {
+        _config.renderCullingEnabled = enabled;
+        _multiView->setRenderSettings(
+            _config.renderCullingEnabled,
+            _config.renderLODEnabled,
+            _config.renderLODNearDistance,
+            _config.renderLODFarDistance
+        );
+        markConfigDirty();
+    });
+    connect(_lodCheck, &QCheckBox::toggled, this, [this](bool enabled) {
+        _config.renderLODEnabled = enabled;
+        _multiView->setRenderSettings(
+            _config.renderCullingEnabled,
+            _config.renderLODEnabled,
+            _config.renderLODNearDistance,
+            _config.renderLODFarDistance
+        );
+        markConfigDirty();
+    });
     connect(_yawSlider, &QSlider::valueChanged, this, [this]() { update3DCameraFromSliders(); });
     connect(_pitchSlider, &QSlider::valueChanged, this, [this]() { update3DCameraFromSliders(); });
     connect(_rollSlider, &QSlider::valueChanged, this, [this]() { update3DCameraFromSliders(); });
@@ -570,6 +602,8 @@ void MainWindow::applyConfigToUi()
     _sphViscositySpin->blockSignals(true);
     _zoomSlider->blockSignals(true);
     _luminositySlider->blockSignals(true);
+    _cullingCheck->blockSignals(true);
+    _lodCheck->blockSignals(true);
 
     _solverCombo->setCurrentIndex(std::max(0, _solverCombo->findText(QString::fromStdString(_config.solver))));
     _integratorCombo->setCurrentIndex(std::max(0, _integratorCombo->findText(QString::fromStdString(_config.integrator))));
@@ -586,6 +620,8 @@ void MainWindow::applyConfigToUi()
     _sphViscositySpin->setValue(std::max(0.0f, _config.sphViscosity));
     _zoomSlider->setValue(static_cast<int>(std::clamp(_config.defaultZoom * 10.0f, 1.0f, 400.0f)));
     _luminositySlider->setValue(std::clamp(_config.defaultLuminosity, 0, 255));
+    _cullingCheck->setChecked(_config.renderCullingEnabled);
+    _lodCheck->setChecked(_config.renderLODEnabled);
 
     _solverCombo->blockSignals(false);
     _integratorCombo->blockSignals(false);
@@ -601,9 +637,17 @@ void MainWindow::applyConfigToUi()
     _sphViscositySpin->blockSignals(false);
     _zoomSlider->blockSignals(false);
     _luminositySlider->blockSignals(false);
+    _cullingCheck->blockSignals(false);
+    _lodCheck->blockSignals(false);
 
     _multiView->setZoom(static_cast<float>(_zoomSlider->value()) / 10.0f);
     _multiView->setLuminosity(_luminositySlider->value());
+    _multiView->setRenderSettings(
+        _config.renderCullingEnabled,
+        _config.renderLODEnabled,
+        _config.renderLODNearDistance,
+        _config.renderLODFarDistance
+    );
     _clientDrawCap = grav_client::resolveClientDrawCap(_config);
     _multiView->setMaxDrawParticles(_clientDrawCap);
     _runtime->setRemoteSnapshotCap(_clientDrawCap);
@@ -625,6 +669,8 @@ void MainWindow::captureUiIntoConfig()
     _config.sphViscosity = static_cast<float>(_sphViscositySpin->value());
     _config.defaultZoom = static_cast<float>(_zoomSlider->value()) / 10.0f;
     _config.defaultLuminosity = _luminositySlider->value();
+    _config.renderCullingEnabled = _cullingCheck->isChecked();
+    _config.renderLODEnabled = _lodCheck->isChecked();
 }
 
 void MainWindow::applyPerformanceProfileToRuntime()

@@ -22,6 +22,7 @@ class MultiViewWidget : public QWidget {
         void setLuminosity(int luminosity);
         void set3DMode(ViewMode mode);
         void set3DCameraAngles(float yaw, float pitch, float roll);
+        void setRenderSettings(bool culling, bool lod, float nearDist, float farDist);
 
     private:
         QPointer<ParticleView> _xy;
