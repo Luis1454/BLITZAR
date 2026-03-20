@@ -1,37 +1,12 @@
 #include "tests/support/physics_scenario.hpp"
+#include "tests/support/physics_test_utils.hpp"
 
 #include <algorithm>
-#include <chrono>
 #include <cmath>
 #include <filesystem>
-#include <thread>
 
 namespace testsupport {
 namespace grav_test_physics_scenario {
-
-bool waitForStep(SimulationServer &server, std::uint64_t targetStep, int timeoutMs)
-{
-    const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
-    while (std::chrono::steady_clock::now() < deadline) {
-        if (server.getStats().steps >= targetStep) {
-            return true;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-    return server.getStats().steps >= targetStep;
-}
-
-bool waitForSnapshot(SimulationServer &server, std::vector<RenderParticle> &out, int timeoutMs)
-{
-    const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
-    while (std::chrono::steady_clock::now() < deadline) {
-        if (server.tryConsumeSnapshot(out)) {
-            return true;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-    return server.tryConsumeSnapshot(out);
-}
 
 std::filesystem::path twoBodyInputPath()
 {
@@ -116,7 +91,7 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
     server.setPaused(true);
     server.start();
 
-    if (!grav_test_physics_scenario::waitForSnapshot(server, out.initial, cfg.snapshotTimeoutMs)) {
+    if (!waitForConsumedSnapshot(server, out.initial, cfg.snapshotTimeoutMs)) {
         server.stop();
         error = "initial snapshot timeout";
         return false;
@@ -129,7 +104,7 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
 
     for (std::uint32_t s = 0; s < cfg.steps; ++s) {
         server.stepOnce();
-        if (!grav_test_physics_scenario::waitForStep(server, static_cast<std::uint64_t>(s) + 1ull, cfg.stepTimeoutMs)) {
+        if (!waitForStepCount(server, static_cast<std::uint64_t>(s) + 1ull, cfg.stepTimeoutMs)) {
             server.stop();
             error = "step timeout at " + std::to_string(s + 1);
             return false;
@@ -141,7 +116,7 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
     }
 
     std::vector<RenderParticle> latest;
-    if (!grav_test_physics_scenario::waitForSnapshot(server, latest, cfg.snapshotTimeoutMs)) {
+    if (!waitForConsumedSnapshot(server, latest, cfg.snapshotTimeoutMs)) {
         server.stop();
         error = "final snapshot timeout";
         return false;

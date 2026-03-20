@@ -1,27 +1,14 @@
 #include "server/SimulationServer.hpp"
+#include "tests/support/physics_test_utils.hpp"
 
 #include <gtest/gtest.h>
 
-#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <string>
-#include <thread>
 #include <vector>
 
 namespace grav_test_server_reload {
-
-static bool waitForSnapshot(SimulationServer &server, std::vector<RenderParticle> &outSnapshot, int timeoutMs)
-{
-    const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
-    while (std::chrono::steady_clock::now() < deadline) {
-        if (server.copyLatestSnapshot(outSnapshot)) {
-            return true;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(2));
-    }
-    return server.copyLatestSnapshot(outSnapshot);
-}
 
 static std::filesystem::path writeTempXyz(const char *basename, const std::vector<float> &xs)
 {
@@ -43,7 +30,7 @@ TEST(PhysicsTest, TST_UNT_RUNT_003_ServerReloadClearsPublishedSnapshotCache)
     server.start();
 
     std::vector<RenderParticle> snapshot;
-    ASSERT_TRUE(waitForSnapshot(server, snapshot, 4000));
+    ASSERT_TRUE(testsupport::waitForPublishedSnapshot(server, snapshot, 4000));
     ASSERT_EQ(snapshot.size(), 24u);
 
     const std::filesystem::path xyz3 = writeTempXyz("grav_test_reload_3.xyz", {-2.0f, 0.0f, 2.0f});
@@ -51,13 +38,13 @@ TEST(PhysicsTest, TST_UNT_RUNT_003_ServerReloadClearsPublishedSnapshotCache)
 
     server.setInitialStateFile(xyz3.string(), "xyz");
     EXPECT_FALSE(server.copyLatestSnapshot(snapshot));
-    ASSERT_TRUE(waitForSnapshot(server, snapshot, 4000));
+    ASSERT_TRUE(testsupport::waitForPublishedSnapshot(server, snapshot, 4000));
     EXPECT_EQ(snapshot.size(), 3u);
     EXPECT_EQ(server.getStats().particleCount, 3u);
 
     server.setInitialStateFile(xyz4.string(), "xyz");
     EXPECT_FALSE(server.copyLatestSnapshot(snapshot));
-    ASSERT_TRUE(waitForSnapshot(server, snapshot, 4000));
+    ASSERT_TRUE(testsupport::waitForPublishedSnapshot(server, snapshot, 4000));
     EXPECT_EQ(snapshot.size(), 4u);
     EXPECT_EQ(server.getStats().particleCount, 4u);
 

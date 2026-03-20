@@ -1,25 +1,12 @@
 #include "tests/support/physics_scenario.hpp"
+#include "tests/support/physics_test_utils.hpp"
 
 #include <gtest/gtest.h>
-#include <chrono>
 #include <cmath>
 #include <string>
-#include <thread>
 #include <vector>
 
 namespace testsupport {
-
-static bool waitForSnapshot(SimulationServer &server, std::vector<RenderParticle> &outSnapshot, int timeoutMs)
-{
-    const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
-    while (std::chrono::steady_clock::now() < deadline) {
-        if (server.tryConsumeSnapshot(outSnapshot)) {
-            return true;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-    return server.tryConsumeSnapshot(outSnapshot);
-}
 
 static std::size_t countOccurrences(const std::string &text, const std::string &pattern)
 {
@@ -37,35 +24,15 @@ static std::size_t countOccurrences(const std::string &text, const std::string &
 
 TEST(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
 {
-    ScenarioConfig base;
-    base.particleCount = 96u;
-    base.dt = 0.004f;
-    base.steps = 36;
-    base.integrator = "euler";
-    base.energyMeasureEverySteps = 1u;
-    base.energySampleLimit = 96u;
-    base.snapshotTimeoutMs = 8000;
-    base.stepTimeoutMs = 8000;
+    ScenarioConfig base = buildDiskOrbitScenario(96u, 0.004f, 36u, 12345u, "pairwise_cuda", "euler");
+    setScenarioEnergySampling(base, 1u, 96u);
+    setScenarioTiming(base, 8000, 8000);
     base.octreeTheta = 0.35f;
     base.octreeSoftening = 0.08f;
-    base.initState.mode = "disk_orbit";
-    base.initState.seed = 12345u;
-    base.initState.includeCentralBody = true;
-    base.initState.centralMass = 1.0f;
     base.initState.diskMass = 0.75f;
-    base.initState.diskRadiusMin = 1.5f;
-    base.initState.diskRadiusMax = 11.5f;
-    base.initState.diskThickness = 0.0f;
-    base.initState.velocityScale = 1.0f;
     base.initState.velocityTemperature = 0.1f;
-    base.initState.particleTemperature = 0.0f;
-    base.initState.thermalAmbientTemperature = 0.0f;
-    base.initState.thermalSpecificHeat = 1.0f;
-    base.initState.thermalHeatingCoeff = 0.0f;
-    base.initState.thermalRadiationCoeff = 0.0f;
 
     ScenarioConfig pairwiseCfg = base;
-    pairwiseCfg.solver = "pairwise_cuda";
     ScenarioResult pairwise;
     std::string pairwiseError;
     ASSERT_TRUE(runScenario(pairwiseCfg, pairwise, pairwiseError)) << pairwiseError;
@@ -132,9 +99,9 @@ TEST(PhysicsTest, TST_UNT_RUNT_001_ServerLogsEffectiveModesAfterReset)
     server.start();
 
     std::vector<RenderParticle> snapshot;
-    const bool startupReady = waitForSnapshot(server, snapshot, 4000);
+    const bool startupReady = waitForConsumedSnapshot(server, snapshot, 4000);
     server.requestReset();
-    const bool resetReady = waitForSnapshot(server, snapshot, 4000);
+    const bool resetReady = waitForConsumedSnapshot(server, snapshot, 4000);
     server.stop();
 
     const std::string output = testing::internal::GetCapturedStdout();
@@ -178,27 +145,11 @@ TEST(PhysicsTest, TST_UNT_RUNT_002_ParticleSystemCtorKeepsExplicitInitialState)
 
 TEST(PhysicsTest, TST_UNT_PHYS_010_DeterministicReplayIdentical)
 {
-    ScenarioConfig cfg;
-    cfg.particleCount = 64u;
-    cfg.dt = 0.005f;
-    cfg.steps = 20;
-    cfg.solver = "pairwise_cuda";
-    cfg.integrator = "euler";
-    cfg.energyMeasureEverySteps = 1u;
-    cfg.energySampleLimit = 64u;
-    cfg.snapshotTimeoutMs = 6000;
-    cfg.stepTimeoutMs = 6000;
-    cfg.initState.mode = "disk_orbit";
-    cfg.initState.seed = 77777u;
-    cfg.initState.includeCentralBody = true;
-    cfg.initState.centralMass = 1.0f;
+    ScenarioConfig cfg = buildDiskOrbitScenario(64u, 0.005f, 20u, 77777u, "pairwise_cuda", "euler");
+    setScenarioEnergySampling(cfg, 1u, 64u);
+    setScenarioTiming(cfg, 6000, 6000);
     cfg.initState.diskMass = 0.5f;
-    cfg.initState.diskRadiusMin = 1.5f;
     cfg.initState.diskRadiusMax = 8.0f;
-    cfg.initState.diskThickness = 0.0f;
-    cfg.initState.velocityScale = 1.0f;
-    cfg.initState.velocityTemperature = 0.0f;
-    cfg.initState.particleTemperature = 0.0f;
 
     ScenarioResult runA;
     std::string errorA;
@@ -211,19 +162,8 @@ TEST(PhysicsTest, TST_UNT_PHYS_010_DeterministicReplayIdentical)
     ScenarioResult runB;
     std::string errorB;
     ASSERT_TRUE(runScenario(cfg, runB, errorB)) << errorB;
-
-    ASSERT_EQ(runA.final.size(), runB.final.size());
-    for (std::size_t i = 0; i < runA.final.size(); ++i) {
-        EXPECT_FLOAT_EQ(runA.final[i].x, runB.final[i].x)
-            << "mismatch at particle " << i << " .x";
-        EXPECT_FLOAT_EQ(runA.final[i].y, runB.final[i].y)
-            << "mismatch at particle " << i << " .y";
-        EXPECT_FLOAT_EQ(runA.final[i].z, runB.final[i].z)
-            << "mismatch at particle " << i << " .z";
-    }
-
-    EXPECT_FLOAT_EQ(runA.stats.totalEnergy, runB.stats.totalEnergy);
-    EXPECT_EQ(runA.stats.steps, runB.stats.steps);
+    std::string replayError;
+    EXPECT_TRUE(haveExactReplayMatch(runA, runB, replayError)) << replayError;
 }
 
 } // namespace testsupport
