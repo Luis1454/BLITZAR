@@ -1,4 +1,5 @@
 #include "tests/support/physics_scenario.hpp"
+#include "tests/support/physics_test_utils.hpp"
 
 #include <gtest/gtest.h>
 
@@ -9,29 +10,11 @@
 namespace testsupport {
 TEST(PhysicsTest, TST_UNT_PHYS_007_MultiBodyInteractions)
 {
-    ScenarioConfig cfg;
-    cfg.particleCount = 256u;
-    cfg.dt = 0.05f;
-    cfg.steps = 8;
-    cfg.solver = "octree_cpu";
-    cfg.integrator = "euler";
-    cfg.energyMeasureEverySteps = 100u;
-    cfg.energySampleLimit = 512u;
-    cfg.snapshotTimeoutMs = 10000;
-    cfg.stepTimeoutMs = 12000;
-    cfg.initState.mode = "disk_orbit";
-    cfg.initState.seed = 42u;
-    cfg.initState.includeCentralBody = true;
-    cfg.initState.centralMass = 1.0f;
+    ScenarioConfig cfg = buildDiskOrbitScenario(256u, 0.05f, 8u, 42u, "octree_cpu", "euler");
+    setScenarioEnergySampling(cfg, 100u, 512u);
+    setScenarioTiming(cfg, 10000, 12000);
     cfg.initState.diskMass = 1000000.0f;
-    cfg.initState.diskRadiusMin = 1.5f;
-    cfg.initState.diskRadiusMax = 11.5f;
-    cfg.initState.diskThickness = 0.0f;
-    cfg.initState.velocityScale = 1.0f;
     cfg.initState.velocityTemperature = 2.0f;
-    cfg.initState.particleTemperature = 0.0f;
-    cfg.initState.thermalAmbientTemperature = 0.0f;
-    cfg.initState.thermalSpecificHeat = 1.0f;
     cfg.initState.thermalHeatingCoeff = 0.0002f;
     cfg.initState.thermalRadiationCoeff = 0.00000001f;
 
@@ -75,31 +58,11 @@ TEST(PhysicsTest, TST_UNT_PHYS_007_MultiBodyInteractions)
 
 TEST(PhysicsTest, TST_UNT_PHYS_006_EnergyConservationHighMassNoSph)
 {
-    ScenarioConfig cfg;
-    cfg.particleCount = 96u;
-    cfg.dt = 0.1f;
-    cfg.steps = 12;
-    cfg.solver = "octree_cpu";
-    cfg.integrator = "euler";
-    cfg.energyMeasureEverySteps = 1u;
-    cfg.energySampleLimit = 96u;
-    cfg.snapshotTimeoutMs = 6000;
-    cfg.stepTimeoutMs = 6000;
-    cfg.initState.mode = "disk_orbit";
-    cfg.initState.seed = 42u;
-    cfg.initState.includeCentralBody = true;
-    cfg.initState.centralMass = 1.0f;
+    ScenarioConfig cfg = buildDiskOrbitScenario(96u, 0.1f, 12u, 42u, "octree_cpu", "euler");
+    setScenarioEnergySampling(cfg, 1u, 96u);
+    setScenarioTiming(cfg, 6000, 6000);
     cfg.initState.diskMass = 1000000.0f;
-    cfg.initState.diskRadiusMin = 1.5f;
-    cfg.initState.diskRadiusMax = 11.5f;
-    cfg.initState.diskThickness = 0.0f;
-    cfg.initState.velocityScale = 1.0f;
     cfg.initState.velocityTemperature = 2.0f;
-    cfg.initState.particleTemperature = 0.0f;
-    cfg.initState.thermalAmbientTemperature = 0.0f;
-    cfg.initState.thermalSpecificHeat = 1.0f;
-    cfg.initState.thermalHeatingCoeff = 0.0f;
-    cfg.initState.thermalRadiationCoeff = 0.0f;
 
     ScenarioResult result;
     std::string error;
@@ -113,27 +76,14 @@ TEST(PhysicsTest, TST_UNT_PHYS_006_EnergyConservationHighMassNoSph)
 
 TEST(PhysicsTest, TST_UNT_PHYS_008_RadiationExchangeConservation)
 {
-    ScenarioConfig cfg;
-    cfg.particleCount = 48u;
-    cfg.dt = 0.1f;
-    cfg.steps = 16;
-    cfg.solver = "octree_cpu";
-    cfg.integrator = "euler";
-    cfg.energyMeasureEverySteps = 1u;
-    cfg.energySampleLimit = 64u;
-    cfg.snapshotTimeoutMs = 8000;
-    cfg.stepTimeoutMs = 8000;
-    cfg.initState.mode = "random_cloud";
-    cfg.initState.seed = 7u;
-    cfg.initState.includeCentralBody = false;
+    ScenarioConfig cfg = buildRandomCloudScenario(48u, 0.1f, 16u, 7u, "octree_cpu", "euler");
+    setScenarioEnergySampling(cfg, 1u, 64u);
+    setScenarioTiming(cfg, 8000, 8000);
     cfg.initState.cloudHalfExtent = 50.0f;
     cfg.initState.cloudSpeed = 0.0f;
     cfg.initState.particleMass = 1e-6f;
     cfg.initState.velocityTemperature = 0.0f;
     cfg.initState.particleTemperature = 1000.0f;
-    cfg.initState.thermalAmbientTemperature = 0.0f;
-    cfg.initState.thermalSpecificHeat = 1.0f;
-    cfg.initState.thermalHeatingCoeff = 0.0f;
     cfg.initState.thermalRadiationCoeff = 1.0f;
 
     ScenarioResult result;

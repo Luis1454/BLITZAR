@@ -4,6 +4,7 @@ from __future__ import annotations
 import re
 
 CONTROL_STATEMENT_RE = re.compile(r"\b(if|for|while|switch|catch)\s*\(")
+TYPE_DECLARATION_RE = re.compile(r"^(?:class|struct|enum|union)\b")
 
 
 def find_header_function_definition_lines(content: str) -> list[int]:
@@ -13,6 +14,9 @@ def find_header_function_definition_lines(content: str) -> list[int]:
     while index < len(lines):
         stripped = lines[index].strip()
         if not stripped or stripped.startswith(("#", "//", "/*", "*")) or "(" not in stripped:
+            index += 1
+            continue
+        if TYPE_DECLARATION_RE.match(stripped):
             index += 1
             continue
         combined = stripped

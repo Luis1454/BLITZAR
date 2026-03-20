@@ -8,7 +8,7 @@
   - `protocol/`: server protocol and control tests.
   - `runtime/`: bridge/runtime reconnect behavior.
   - `ui/`: Qt runtime integration.
-- `tests/support/`: shared harness/helpers (`server_harness`, `client_utils`, `poll_utils`, `physics_scenario`).
+- `tests/support/`: shared harness/helpers (`server_harness`, `client_utils`, `poll_utils`, `physics_scenario`, `physics_test_utils`).
 - `tests/data/`: deterministic fixtures.
 - Quality tooling:
 - `tests/checks/check.py`: unified entrypoint for repository checks (`ini|mirror|no_legacy|launcher|quality|test_catalog|pr_policy|repo|python_quality|all`).
@@ -26,6 +26,12 @@
 - Add UI tests in `tests/int/ui/*.cpp`.
 
 `tests/CMakeLists.txt` auto-discovers by directory (`file(GLOB ... CONFIGURE_DEPENDS)`), so adding a new test file in the right folder does not require editing CMake.
+
+## Shared Physics Fixtures
+
+- Use `tests/support/physics_scenario.*` for backend scenario execution and calibration presets.
+- Use `tests/support/physics_test_utils.*` for reusable scenario builders (`buildTwoBodyFileScenario`, `buildDiskOrbitScenario`, `buildRandomCloudScenario`), timing/energy setup, and shared snapshot/replay helpers.
+- Prefer the shared helpers over ad hoc local polling loops or repeated `ScenarioConfig` boilerplate when adding new physics regression tests.
 
 ## Quality Gate
 
