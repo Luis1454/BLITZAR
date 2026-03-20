@@ -3,6 +3,7 @@
 
 #include "physics/Octree.hpp"
 #include "physics/CudaMemoryPool.hpp"
+#include "physics/ParticleSoAView.hpp"
 
 #include <vector>
 

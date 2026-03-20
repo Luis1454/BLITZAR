@@ -1,0 +1,9 @@
+[ 27%] Built target gravityPlatform
+[ 27%] Built target gtest
+[ 36%] Built target gtest_main
+[ 45%] Building CXX object CMakeFiles/gravityPhysicsGTests.dir/engine/src/server/SimulationServer.cpp.obj
+SimulationServer.cpp
+[ 45%] Building CXX object CMakeFiles/gravityPhysicsGTests.dir/engine/src/server/SimulationInitConfig.cpp.obj
+SimulationInitConfig.cpp
+[ 45%] Linking CXX executable gravityPhysicsGTests.exe
+[100%] Built target gravityPhysicsGTests

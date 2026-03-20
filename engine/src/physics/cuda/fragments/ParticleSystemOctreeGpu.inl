@@ -25,7 +25,7 @@ __global__ void updateParticlesOctree(
         return;
     }
 
-    const Vector3 selfPos = lastState.getPosition(i);
+    const Vector3 selfPos = getSoAPosition(lastState, i);
     const float clampedTheta = clampThetaValue(theta, minTheta);
     const float clampedSoftening = clampSofteningValue(softening, minSoftening);
     Vector3 force(0.0f, 0.0f, 0.0f);
@@ -45,7 +45,7 @@ __global__ void updateParticlesOctree(
                 if (otherIndex == i) continue;
                 force += gravityAccelerationFromSource(
                     selfPos,
-                    lastState.getPosition(otherIndex),
+                    getSoAPosition(lastState, otherIndex),
                     lastState.mass[otherIndex],
                     clampedSoftening,
                     minSoftening,
@@ -75,13 +75,14 @@ __global__ void updateParticlesOctree(
     }
 
     force = clampAcceleration(force, maxAcceleration);
-    const Vector3 vel = lastState.getVelocity(i);
+    const Vector3 vel = getSoAVelocity(lastState, i);
     const Vector3 nextVel = vel + force * deltaTime;
     const Vector3 nextPos = selfPos + nextVel * deltaTime;
 
-    particlesOut.setPressure(i, force * 100.0f);
-    particlesOut.setVelocity(i, nextVel);
-    particlesOut.setPosition(i, nextPos);
+    setSoAPressure(particlesOut, i, force * 100.0f);
+    setSoAVelocity(particlesOut, i, nextVel);
+    setSoAPosition(particlesOut, i, nextPos);
+
     particlesOut.mass[i] = lastState.mass[i];
     particlesOut.temp[i] = lastState.temp[i];
     particlesOut.dens[i] = lastState.dens[i];

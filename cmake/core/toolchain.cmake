@@ -2,9 +2,20 @@ set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-    set(CMAKE_CUDA_ARCHITECTURES native)
+if(NOT DEFINED GRAVITY_ROOT_DIR)
+    get_filename_component(GRAVITY_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
 endif()
+# Broad architecture support (Maxwell to Lovelace) using -real to avoid PTX JIT version issues
+set(CMAKE_CUDA_ARCHITECTURES 75-real 80-real 86-real 89-real)
+set(CMAKE_CUDA_SEPARABLE_COMPILATION OFF)
+
+# Ensure no device debug which causes PTX JIT version issues
+if(NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build." FORCE)
+endif()
+# Extra safety: remove -G and -g from CUDA flags if they ever appear
+string(REPLACE "-G" "" CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG}")
+string(REPLACE "-g" "" CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG}")
 
 gravity_populate_windows_toolchain_hints()
 find_package(CUDAToolkit REQUIRED)
@@ -31,10 +42,6 @@ else()
     )
 endif()
 
-if(NOT DEFINED GRAVITY_ROOT_DIR)
-    set(GRAVITY_ROOT_DIR "${CMAKE_SOURCE_DIR}")
-endif()
-
 set(GRAVITY_GRAPHICS_SOURCES
     "${GRAVITY_ROOT_DIR}/engine/src/graphics/ViewMath.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/graphics/ColorPipeline.cpp"
@@ -53,6 +60,7 @@ set(GRAVITY_SERVER_SOURCES
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
@@ -60,7 +68,7 @@ set(GRAVITY_SERVER_SOURCES
     "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationServer.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/physics/CudaMemoryPool.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/physics/CudaMemoryPool.cu"
     "${GRAVITY_ROOT_DIR}/engine/src/physics/cuda/ParticleSystem.cu"
 )
 
