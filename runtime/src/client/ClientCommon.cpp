@@ -1,8 +1,10 @@
 #include "client/ClientCommon.hpp"
 
 #include "config/EnvUtils.hpp"
+#include "config/SimulationConfig.hpp"
 #include "config/SimulationOptionRegistry.hpp"
 #include "platform/PlatformPaths.hpp"
+#include "protocol/ServerProtocol.hpp"
 
 #include <algorithm>
 #include <cctype>

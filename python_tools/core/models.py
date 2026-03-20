@@ -31,6 +31,8 @@ class CheckContext:
     clang_tidy_diff_base: str = ""
     clang_tidy_diff_target: str = ""
     clang_tidy_header_filter: str = ""
+    clang_tidy_file_timeout_sec: int = 0
+    clang_tidy_timeout_fallback_checks: str = ""
     paths: tuple[str, ...] = ()
     options: OptionsMap = field(default_factory=dict)
 

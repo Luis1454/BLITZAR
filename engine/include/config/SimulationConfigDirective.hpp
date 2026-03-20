@@ -1,10 +1,10 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIGDIRECTIVE_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIGDIRECTIVE_HPP_
 
-#include "config/SimulationConfig.hpp"
-
 #include <ostream>
 #include <string>
+
+struct SimulationConfig;
 
 namespace grav_config {
 

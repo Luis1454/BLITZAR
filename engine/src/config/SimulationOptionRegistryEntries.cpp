@@ -1,5 +1,7 @@
 #include "SimulationOptionRegistryInternal.hpp"
 
+#include "config/SimulationConfig.hpp"
+
 #include <cstddef>
 
 namespace grav_config {

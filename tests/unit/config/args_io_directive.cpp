@@ -71,8 +71,9 @@ TEST(ConfigArgsTest, TST_UNT_CONF_025_SaveWritesDirectiveSyntax)
     config.particleCount = 64u;
     config.solver = "octree_gpu";
     config.integrator = "euler";
+    config.exportDirectory = "exports final";
     config.presetStructure = "three_body";
-    config.inputFile = "exports/state.vtk";
+    config.inputFile = "exports/state final.vtk";
     config.thermalRadiationCoeff = 0.4f;
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
@@ -85,6 +86,11 @@ TEST(ConfigArgsTest, TST_UNT_CONF_025_SaveWritesDirectiveSyntax)
     EXPECT_NE(content.find("performance("), std::string::npos);
     EXPECT_NE(content.find("scene("), std::string::npos);
     EXPECT_NE(content.find("thermal("), std::string::npos);
+    EXPECT_NE(content.find("export(directory=\"exports final\", format=vtk)\n"), std::string::npos);
+    EXPECT_NE(
+        content.find("scene(style=preset, preset=three_body, mode=disk_orbit, file=\"exports/state final.vtk\", format=auto)\n"),
+        std::string::npos
+    );
     EXPECT_EQ(content.find("\nparticle_count="), std::string::npos);
     EXPECT_EQ(content.find("\nthermal_ambient_temperature="), std::string::npos);
     std::error_code ec;

@@ -100,6 +100,8 @@ if(GRAVITY_BUILD_CLIENT_HOST)
         engine/src/config/SimulationScenarioValidation.cpp
         engine/src/config/SimulationConfigDirective.cpp
         engine/src/config/SimulationConfigDirectiveWrite.cpp
+        engine/src/config/DirectiveStreamWriter.cpp
+        engine/src/config/DirectiveValueFormatter.cpp
         engine/src/config/SimulationConfig.cpp
         engine/src/config/SimulationModes.cpp
         engine/src/server/SimulationInitConfig.cpp

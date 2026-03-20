@@ -3,6 +3,7 @@
 #include "config/SimulationPerformanceProfile.hpp"
 #include "config/SimulationModes.hpp"
 #include "config/SimulationOptionRegistry.hpp"
+#include "protocol/ServerProtocol.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -10,6 +11,8 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+
+static_assert(grav_protocol::kSnapshotDefaultPoints == 4096u);
 
 static std::string trim(const std::string &value)
 {

@@ -89,6 +89,8 @@ def test_run_parser_builds_clang_tidy_context_with_defaults() -> None:
     assert context.clang_tidy_diff_base == ""
     assert context.clang_tidy_diff_target == ""
     assert context.clang_tidy_header_filter == "([/\\\\]|^)(apps|engine|runtime|modules|tests)([/\\\\])"
+    assert context.clang_tidy_file_timeout_sec == 0
+    assert context.clang_tidy_timeout_fallback_checks == ""
 
 
 def test_run_parser_uses_environment_defaults_for_gate_commands(monkeypatch) -> None:

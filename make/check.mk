@@ -30,8 +30,15 @@ quality-build:
 quality-analyze:
 	python tests/checks/run.py clang_tidy --root . --build-dir $(QUALITY_BUILD_DIR) \
 		--jobs $(QUALITY_TIDY_JOBS) \
+		$(if $(filter-out 0,$(QUALITY_TIDY_FILE_TIMEOUT_SEC)),--file-timeout-sec $(QUALITY_TIDY_FILE_TIMEOUT_SEC),) \
+		$(if $(strip $(QUALITY_TIDY_TIMEOUT_FALLBACK_CHECKS)),--timeout-fallback-checks "$(QUALITY_TIDY_TIMEOUT_FALLBACK_CHECKS)",) \
 		$(if $(strip $(QUALITY_TIDY_DIFF_BASE)),--diff-base $(QUALITY_TIDY_DIFF_BASE),) \
 		$(if $(strip $(QUALITY_TIDY_DIFF_TARGET)),--diff-target $(QUALITY_TIDY_DIFF_TARGET),)
+
+quality-analyze-fast:
+	$(MAKE) quality-analyze \
+		QUALITY_TIDY_FILE_TIMEOUT_SEC=120 \
+		QUALITY_TIDY_TIMEOUT_FALLBACK_CHECKS=-*,bugprone-unused-return-value
 
 quality-test:
 	cmake -E env ASAN_OPTIONS=detect_leaks=0:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 \
@@ -39,4 +46,4 @@ quality-test:
 
 quality-strict: quality-local quality-python quality-rust quality-configure quality-build quality-analyze quality-test
 
-.PHONY: check check-all quality-local quality-python quality-rust quality-configure quality-build quality-analyze quality-test quality-strict
+.PHONY: check check-all quality-local quality-python quality-rust quality-configure quality-build quality-analyze quality-analyze-fast quality-test quality-strict

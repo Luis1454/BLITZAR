@@ -5,6 +5,7 @@ import csv
 import json
 import re
 import subprocess
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from re import Pattern
@@ -102,6 +103,44 @@ class ProcessRunner:
             cwd=cwd,
             check=False,
         )
+
+    def run_with_heartbeat(
+        self,
+        args: list[str],
+        timeout: int | None = None,
+        cwd: Path | None = None,
+        heartbeat_seconds: int = 30,
+        on_heartbeat: Callable[[], None] | None = None,
+    ) -> subprocess.CompletedProcess[str]:
+        process = subprocess.Popen(
+            args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            cwd=cwd,
+        )
+        try:
+            while True:
+                try:
+                    stdout, stderr = process.communicate(timeout=heartbeat_seconds)
+                    return subprocess.CompletedProcess(args, process.returncode, stdout, stderr)
+                except subprocess.TimeoutExpired as exc:
+                    if on_heartbeat is not None:
+                        on_heartbeat()
+                    if timeout is not None:
+                        timeout -= heartbeat_seconds
+                        if timeout <= 0:
+                            process.kill()
+                            stdout, stderr = process.communicate()
+                            raise subprocess.TimeoutExpired(
+                                args,
+                                heartbeat_seconds,
+                                output=stdout,
+                                stderr=stderr,
+                            ) from exc
+        finally:
+            if process.poll() is None:
+                process.kill()
 
 
 def collect_test_ids(root: Path, extra_test_ids: set[str], test_macro_re: Pattern[str] = TEST_MACRO_RE) -> set[str]:

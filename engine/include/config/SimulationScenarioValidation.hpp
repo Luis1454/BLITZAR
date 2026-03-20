@@ -1,11 +1,11 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATION_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATION_HPP_
 
-#include "config/SimulationConfig.hpp"
-
 #include <cstdint>
 #include <string>
 #include <vector>
+
+struct SimulationConfig;
 
 namespace grav_config {
 

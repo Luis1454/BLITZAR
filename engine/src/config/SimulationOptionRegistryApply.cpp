@@ -1,8 +1,11 @@
 #include "SimulationOptionRegistryInternal.hpp"
 
+#include "config/SimulationConfig.hpp"
 #include "config/SimulationPerformanceProfile.hpp"
 #include "config/SimulationModes.hpp"
 #include "protocol/ServerProtocol.hpp"
+
+#include <ostream>
 
 namespace grav_config {
 

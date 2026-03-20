@@ -64,6 +64,8 @@ set(GRAVITY_SERVER_SOURCES
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/DirectiveValueFormatter.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
