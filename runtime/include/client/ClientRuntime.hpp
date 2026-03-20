@@ -60,6 +60,7 @@ class ClientRuntime final : public IClientRuntime {
         SimulationStats getStats() const override;
         std::optional<ConsumedSnapshot> consumeLatestSnapshot() override;
         bool tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot) override;
+        SnapshotPipelineState snapshotPipelineState() const override;
         std::string linkStateLabel() const override;
         std::string serverOwnerLabel() const override;
         std::uint32_t statsAgeMs() const override;
@@ -67,25 +68,41 @@ class ClientRuntime final : public IClientRuntime {
 
     private:
         typedef std::chrono::steady_clock Clock;
+        enum class SnapshotDropPolicyMode {
+            LatestOnly,
+            Paced
+        };
+        struct SnapshotBufferEntry final {
+            std::vector<RenderParticle> particles;
+            std::size_t sourceSize = 0u;
+            Clock::time_point receivedAt{};
+        };
         void invalidateCachedSnapshot();
         void pollLoop();
         void pollOnce(bool pollSnapshot, bool pollStats);
         static std::uint32_t ageMsSince(Clock::time_point at, bool valid);
+        std::size_t advanceSnapshotIndex(std::size_t index) const;
+        void queueSnapshot(std::vector<RenderParticle> snapshot, Clock::time_point now);
 
         ClientServerBridge _bridge;
         std::thread _pollThread;
         std::atomic<bool> _pollRunning;
         mutable std::mutex _dataMutex;
         SimulationStats _latestStats;
-        std::vector<RenderParticle> _latestSnapshot;
-        bool _hasNewSnapshot;
-        std::size_t _latestSnapshotSize;
+        std::vector<SnapshotBufferEntry> _snapshotRing;
+        std::size_t _snapshotReadIndex;
+        std::size_t _snapshotWriteIndex;
+        std::size_t _snapshotCount;
+        std::uint64_t _droppedSnapshots;
+        std::uint32_t _lastSnapshotLatencyMs;
+        SnapshotDropPolicyMode _snapshotDropPolicy;
         std::string _latestLinkLabel;
         std::string _latestOwnerLabel;
         Clock::time_point _lastStatsAt;
         Clock::time_point _lastSnapshotAt;
         bool _hasStats;
         bool _hasSnapshotEver;
+        bool _hasDeliveredSnapshot;
 };
 
 } // namespace grav_client

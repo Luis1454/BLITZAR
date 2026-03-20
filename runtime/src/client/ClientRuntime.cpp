@@ -1,14 +1,34 @@
 #include "client/ClientRuntime.hpp"
 
+#include "config/SimulationConfig.hpp"
+
 #include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <limits>
+#include <string>
 #include <utility>
 
 namespace grav_client {
 constexpr auto kIdleSleepInterval = std::chrono::milliseconds(2);
 constexpr auto kSnapshotPollInterval = std::chrono::milliseconds(16);
 constexpr auto kStatusPollInterval = std::chrono::milliseconds(120);
+constexpr std::uint32_t kSnapshotQueueCapacityMin = 1u;
+constexpr std::uint32_t kSnapshotQueueCapacityMax = 64u;
+constexpr std::uint32_t kSnapshotQueueCapacityDefault = 4u;
+
+static std::string normalizeSnapshotDropPolicyValue(std::string value)
+{
+    for (char &c : value) {
+        if (c == '_') {
+            c = '-';
+        } else {
+            c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        }
+    }
+    return value;
+}
+
 ClientRuntime::ClientRuntime(const std::string &configPath, const ClientTransportArgs &transport)
     : _bridge(
           configPath,
@@ -24,16 +44,30 @@ ClientRuntime::ClientRuntime(const std::string &configPath, const ClientTranspor
       _pollRunning(false),
       _dataMutex(),
       _latestStats(),
-      _latestSnapshot(),
-      _hasNewSnapshot(false),
-      _latestSnapshotSize(0u),
+      _snapshotRing(kSnapshotQueueCapacityDefault),
+      _snapshotReadIndex(0u),
+      _snapshotWriteIndex(0u),
+      _snapshotCount(0u),
+      _droppedSnapshots(0u),
+      _lastSnapshotLatencyMs(std::numeric_limits<std::uint32_t>::max()),
+      _snapshotDropPolicy(SnapshotDropPolicyMode::LatestOnly),
       _latestLinkLabel("reconnecting"),
       _latestOwnerLabel("external"),
       _lastStatsAt(),
       _lastSnapshotAt(),
       _hasStats(false),
-      _hasSnapshotEver(false)
+      _hasSnapshotEver(false),
+      _hasDeliveredSnapshot(false)
 {
+    const SimulationConfig config = SimulationConfig::loadOrCreate(configPath);
+    const std::uint32_t queueCapacity = std::clamp(
+        config.clientSnapshotQueueCapacity,
+        kSnapshotQueueCapacityMin,
+        kSnapshotQueueCapacityMax);
+    _snapshotRing.assign(queueCapacity, SnapshotBufferEntry{});
+    _snapshotDropPolicy = normalizeSnapshotDropPolicyValue(config.clientSnapshotDropPolicy) == "paced"
+        ? SnapshotDropPolicyMode::Paced
+        : SnapshotDropPolicyMode::LatestOnly;
 }
 
 ClientRuntime::~ClientRuntime()
@@ -215,13 +249,20 @@ SimulationStats ClientRuntime::getStats() const
 std::optional<ConsumedSnapshot> ClientRuntime::consumeLatestSnapshot()
 {
     std::lock_guard<std::mutex> lock(_dataMutex);
-    if (!_hasNewSnapshot) {
+    if (_snapshotCount == 0u) {
         return std::nullopt;
     }
+    SnapshotBufferEntry &entry = _snapshotRing[_snapshotReadIndex];
     ConsumedSnapshot snapshot{};
-    snapshot.sourceSize = _latestSnapshotSize;
-    snapshot.particles = std::move(_latestSnapshot);
-    _hasNewSnapshot = false;
+    snapshot.sourceSize = entry.sourceSize;
+    snapshot.particles = std::move(entry.particles);
+    snapshot.latencyMs = ageMsSince(entry.receivedAt, true);
+    entry.sourceSize = 0u;
+    entry.receivedAt = Clock::time_point();
+    _snapshotReadIndex = advanceSnapshotIndex(_snapshotReadIndex);
+    _snapshotCount -= 1u;
+    _lastSnapshotLatencyMs = snapshot.latencyMs;
+    _hasDeliveredSnapshot = true;
     return snapshot;
 }
 
@@ -233,6 +274,22 @@ bool ClientRuntime::tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot)
     }
     outSnapshot = std::move(snapshot->particles);
     return true;
+}
+
+SnapshotPipelineState ClientRuntime::snapshotPipelineState() const
+{
+    std::lock_guard<std::mutex> lock(_dataMutex);
+    SnapshotPipelineState state{};
+    state.queueDepth = _snapshotCount;
+    state.queueCapacity = _snapshotRing.size();
+    state.droppedFrames = _droppedSnapshots;
+    state.dropPolicy = _snapshotDropPolicy == SnapshotDropPolicyMode::Paced ? "paced" : "latest-only";
+    if (_snapshotCount > 0u) {
+        state.latencyMs = ageMsSince(_snapshotRing[_snapshotReadIndex].receivedAt, true);
+    } else {
+        state.latencyMs = _hasDeliveredSnapshot ? _lastSnapshotLatencyMs : std::numeric_limits<std::uint32_t>::max();
+    }
+    return state;
 }
 
 std::string ClientRuntime::linkStateLabel() const
@@ -262,10 +319,18 @@ std::uint32_t ClientRuntime::snapshotAgeMs() const
 void ClientRuntime::invalidateCachedSnapshot()
 {
     std::lock_guard<std::mutex> lock(_dataMutex);
-    _latestSnapshot.clear();
-    _latestSnapshotSize = 0u;
-    _hasNewSnapshot = false;
+    for (SnapshotBufferEntry &entry : _snapshotRing) {
+        entry.particles.clear();
+        entry.sourceSize = 0u;
+        entry.receivedAt = Clock::time_point();
+    }
+    _snapshotReadIndex = 0u;
+    _snapshotWriteIndex = 0u;
+    _snapshotCount = 0u;
+    _droppedSnapshots = 0u;
+    _lastSnapshotLatencyMs = std::numeric_limits<std::uint32_t>::max();
     _hasSnapshotEver = false;
+    _hasDeliveredSnapshot = false;
 }
 
 void ClientRuntime::pollLoop()
@@ -316,12 +381,41 @@ void ClientRuntime::pollOnce(bool pollSnapshot, bool pollStats)
     _latestLinkLabel = linkLabel;
     _latestOwnerLabel = ownerLabel;
     if (gotSnapshot) {
-        _latestSnapshotSize = snapshot.size();
-        _latestSnapshot = std::move(snapshot);
-        _hasNewSnapshot = true;
-        _lastSnapshotAt = now;
-        _hasSnapshotEver = true;
+        queueSnapshot(std::move(snapshot), now);
     }
+}
+
+std::size_t ClientRuntime::advanceSnapshotIndex(std::size_t index) const
+{
+    return _snapshotRing.empty() ? 0u : (index + 1u) % _snapshotRing.size();
+}
+
+void ClientRuntime::queueSnapshot(std::vector<RenderParticle> snapshot, Clock::time_point now)
+{
+    if (_snapshotRing.empty()) {
+        return;
+    }
+    if (_snapshotCount == _snapshotRing.size()) {
+        _droppedSnapshots += 1u;
+        if (_snapshotDropPolicy == SnapshotDropPolicyMode::Paced) {
+            return;
+        }
+        SnapshotBufferEntry &oldest = _snapshotRing[_snapshotReadIndex];
+        oldest.particles.clear();
+        oldest.sourceSize = 0u;
+        oldest.receivedAt = Clock::time_point();
+        _snapshotReadIndex = advanceSnapshotIndex(_snapshotReadIndex);
+        _snapshotCount -= 1u;
+    }
+
+    SnapshotBufferEntry &entry = _snapshotRing[_snapshotWriteIndex];
+    entry.sourceSize = snapshot.size();
+    entry.receivedAt = now;
+    entry.particles = std::move(snapshot);
+    _snapshotWriteIndex = advanceSnapshotIndex(_snapshotWriteIndex);
+    _snapshotCount += 1u;
+    _lastSnapshotAt = now;
+    _hasSnapshotEver = true;
 }
 
 std::uint32_t ClientRuntime::ageMsSince(Clock::time_point at, bool valid)

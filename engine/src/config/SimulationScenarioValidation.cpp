@@ -54,6 +54,7 @@ public:
         const std::string initStyle = normalized(config.initConfigStyle);
         const std::string presetMode = normalized(config.presetStructure);
         const std::string detailedMode = normalized(config.initMode);
+        const std::string snapshotDropPolicy = normalized(config.clientSnapshotDropPolicy);
         const bool requestedFileMode =
             (initStyle == "preset" && presetMode == "file")
             || (initStyle != "preset" && detailedMode == "file");
@@ -106,6 +107,28 @@ public:
                 "max_substeps",
                 "Maximum substeps cannot be 0.",
                 "Set max_substeps to at least 1.");
+        }
+
+        if (config.clientSnapshotQueueCapacity == 0u) {
+            addDiagnostic(
+                ScenarioDiagnosticLevel::Error,
+                "client_snapshot_queue_capacity",
+                "Snapshot queue capacity must be at least 1 frame.",
+                "Set client_snapshot_queue_capacity to 1 or more.");
+        } else if (config.clientSnapshotQueueCapacity > 16u) {
+            addDiagnostic(
+                ScenarioDiagnosticLevel::Warning,
+                "client_snapshot_queue_capacity",
+                "Large snapshot queue capacities increase frontend latency before frames are displayed.",
+                "Use a smaller client_snapshot_queue_capacity unless paced playback is explicitly required.");
+        }
+
+        if (snapshotDropPolicy != "latest-only" && snapshotDropPolicy != "paced") {
+            addDiagnostic(
+                ScenarioDiagnosticLevel::Error,
+                "client_snapshot_drop_policy",
+                "Snapshot drop policy must be latest-only or paced.",
+                "Set client_snapshot_drop_policy to latest-only or paced.");
         }
 
         if (config.octreeSoftening <= 0.0f) {
