@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+from pathlib import Path
+
 from python_tools.core.base_check import BaseCheck
 from python_tools.core.io import JsonValue
 from python_tools.core.models import CheckContext, CheckResult
@@ -41,17 +43,21 @@ class MirrorCheck(BaseCheck):
         header_only: set[str],
         result: CheckResult,
     ) -> None:
-        sources = sorted(src_dir.glob("*.cpp"))
+        source_paths = sorted(list(src_dir.glob("*.cpp")) + list(src_dir.glob("*.cu")))
         header_bases = {h.stem for h in headers}
         for header in headers:
             base = header.stem
             header_rel = f"{hdr_rel}/{base}.hpp"
-            if header_rel not in header_only and not (src_dir / f"{base}.cpp").exists():
-                result.add_error(f"Missing cpp for {header_rel} -> expected {src_rel}/{base}.cpp")
-        for source in sources:
+            if header_rel not in header_only and not self._has_source_mirror(src_dir, base):
+                result.add_error(f"Missing source for {header_rel} -> expected {src_rel}/{base}.cpp or {src_rel}/{base}.cu")
+        for source in source_paths:
             base = source.stem
             if base not in header_bases:
-                result.add_error(f"Missing hpp for {src_rel}/{base}.cpp -> expected {hdr_rel}/{base}.hpp")
+                result.add_error(f"Missing hpp for {src_rel}/{source.name} -> expected {hdr_rel}/{base}.hpp")
+
+    def _has_source_mirror(self, src_dir: Path, base: str) -> bool:
+        return (src_dir / f"{base}.cpp").exists() or (src_dir / f"{base}.cu").exists()
+        return (src_dir / f"{base}.cpp").exists() or (src_dir / f"{base}.cu").exists()
 
     def _all_headers_header_only(self, hdr_rel: str, headers, header_only: set[str]) -> bool:
         if not headers:

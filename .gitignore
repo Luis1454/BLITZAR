@@ -11,6 +11,7 @@ compile_commands.json
 exports/
 *.log
 tmp_repo_check.log
+test_output.txt
 
 # Editor and OS files
 .vscode/

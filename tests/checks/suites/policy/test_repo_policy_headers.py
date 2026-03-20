@@ -57,3 +57,20 @@ def test_repo_policy_accepts_header_declaration_with_default_braced_arg(tmp_path
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert ok
     assert not errors
+
+
+def test_repo_policy_accepts_alignas_struct_declaration(tmp_path: Path) -> None:
+    _write(
+        tmp_path / "engine" / "include" / "physics" / "good_struct.hpp",
+        "#ifndef ENGINE_INCLUDE_PHYSICS_GOOD_STRUCT_HPP_\n"
+        "#define ENGINE_INCLUDE_PHYSICS_GOOD_STRUCT_HPP_\n"
+        "\n"
+        "struct alignas(16) GoodStruct {\n"
+        "    float x;\n"
+        "};\n"
+        "\n"
+        "#endif // ENGINE_INCLUDE_PHYSICS_GOOD_STRUCT_HPP_\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok
+    assert not errors

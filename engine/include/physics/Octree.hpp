@@ -9,7 +9,7 @@
 #include <optional>
 #include <vector>
 
-struct alignas(16) GpuOctreeNode {
+struct GpuOctreeNode {
     float centerX;
     float centerY;
     float centerZ;
