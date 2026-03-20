@@ -5,6 +5,8 @@ import json
 import os
 import platform
 import shutil
+import subprocess
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -26,6 +28,8 @@ WINDOWS_LLVM_CLANG_TIDY_CANDIDATES = [
     Path(os.environ.get("PROGRAMFILES", r"C:\Program Files")) / "LLVM/bin/clang-tidy.exe",
     Path(os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)")) / "LLVM/bin/clang-tidy.exe",
 ]
+DEFAULT_AUTO_JOB_CAP = 6
+HEARTBEAT_SECONDS = 30
 
 
 class ClangTidyCheck(BaseCheck):
@@ -40,7 +44,10 @@ class ClangTidyCheck(BaseCheck):
         if binary is None:
             result.add_error(f"clang-tidy executable not found: {context.clang_tidy_binary}")
             return
-        files = self._load_files(context, result)
+        entries = self._load_compile_database(context, result)
+        if result.errors:
+            return
+        files = self._load_files(context, entries)
         if not files:
             result.add_error("clang-tidy check failed: no matching files found in compile database")
             return
@@ -50,11 +57,11 @@ class ClangTidyCheck(BaseCheck):
         if not files:
             result.success_message = "clang-tidy skipped (no matching changed files)"
             return
-        self._run_tidy(files, context, binary, result)
+        self._run_tidy(files, context, binary, entries, result)
         if result.ok and not result.success_message:
             result.success_message = f"clang-tidy check passed ({len(files)} files)"
 
-    def _load_files(self, context: CheckContext, result: CheckResult) -> list[Path]:
+    def _load_compile_database(self, context: CheckContext, result: CheckResult) -> list[dict[str, object]]:
         build_dir = context.build_dir
         if build_dir is None:
             result.add_error("build directory is required")
@@ -64,10 +71,16 @@ class ClangTidyCheck(BaseCheck):
             result.add_error(f"compile database not found: {db}")
             return []
         try:
-            entries = json.loads(db.read_text(encoding="utf-8"))
+            loaded = json.loads(db.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
             result.add_error(str(exc))
             return []
+        if not isinstance(loaded, list):
+            result.add_error(f"invalid compile database payload: {db}")
+            return []
+        return loaded
+
+    def _load_files(self, context: CheckContext, entries: list[dict[str, object]]) -> list[Path]:
         path_spec = PathSpec(context.root)
         allowed_abs = [path_spec.resolve(rel) for rel in (context.paths if context.paths else DEFAULT_PATHS)]
         files: list[Path] = []
@@ -84,33 +97,59 @@ class ClangTidyCheck(BaseCheck):
             files.append(file_path)
         return files
 
-    def _run_tidy(self, files: list[Path], context: CheckContext, binary: str, result: CheckResult) -> None:
+    def _run_tidy(
+        self,
+        files: list[Path],
+        context: CheckContext,
+        binary: str,
+        entries: list[dict[str, object]],
+        result: CheckResult,
+    ) -> None:
         assert context.build_dir is not None
         build_dir = context.build_dir
         files = sorted(files, key=lambda path: str(path))
         log_dir = self._resolve_log_dir(context, build_dir)
         jobs = self._resolve_jobs(context.clang_tidy_jobs, len(files))
-        extra_args = self._resolve_extra_args(build_dir)
+        extra_args = self._resolve_extra_args(entries)
         errors: list[str] = []
+        warnings: list[str] = []
+        self._print_progress(
+            f"[clang-tidy] analyzing {len(files)} file(s) with jobs={jobs} logs={log_dir}"
+        )
 
         if jobs <= 1 or len(files) <= 1:
-            for file_path in files:
-                ok, message = self._run_single(file_path, context, binary, extra_args, log_dir)
+            for index, file_path in enumerate(files, start=1):
+                ok, message, warning = self._run_single(index, len(files), file_path, context, binary, extra_args, log_dir)
                 if not ok:
                     errors.append(message)
+                if warning:
+                    warnings.append(warning)
         else:
             with ThreadPoolExecutor(max_workers=jobs) as executor:
                 futures = {
-                    executor.submit(self._run_single, file_path, context, binary, extra_args, log_dir): file_path
-                    for file_path in files
+                    executor.submit(
+                        self._run_single,
+                        index,
+                        len(files),
+                        file_path,
+                        context,
+                        binary,
+                        extra_args,
+                        log_dir,
+                    ): file_path
+                    for index, file_path in enumerate(files, start=1)
                 }
                 for future in as_completed(futures):
-                    ok, message = future.result()
+                    ok, message, warning = future.result()
                     if not ok:
                         errors.append(message)
+                    if warning:
+                        warnings.append(warning)
 
         for message in errors:
             result.add_error(message)
+        for message in warnings:
+            result.add_warning(message)
         if result.ok:
             result.success_message = f"clang-tidy check passed ({len(files)} files) logs: {log_dir}"
 
@@ -118,7 +157,8 @@ class ClangTidyCheck(BaseCheck):
         if file_count <= 0:
             return 1
         if jobs <= 0:
-            jobs = os.cpu_count() or 4
+            cpu_count = os.cpu_count() or 4
+            jobs = max(1, min(DEFAULT_AUTO_JOB_CAP, cpu_count // 2 if cpu_count > 1 else 1))
         return max(1, min(jobs, file_count))
 
     def _resolve_log_dir(self, context: CheckContext, build_dir: Path) -> Path:
@@ -131,16 +171,113 @@ class ClangTidyCheck(BaseCheck):
 
     def _run_single(
         self,
+        index: int,
+        total: int,
         file_path: Path,
         context: CheckContext,
         binary: str,
         extra_args: list[str],
         log_dir: Path,
-    ) -> tuple[bool, str]:
+    ) -> tuple[bool, str, str]:
+        display_path = self._display_path(file_path, context)
+        timeout_seconds: int | None = context.clang_tidy_file_timeout_sec if context.clang_tidy_file_timeout_sec > 0 else None
+        cmd = self._make_command(binary, context, extra_args, file_path, context.clang_tidy_checks)
+        start = time.monotonic()
+        self._print_progress(f"[clang-tidy] [{index}/{total}] start {display_path}")
+        try:
+            completed = self._runner.run_with_heartbeat(
+                cmd,
+                timeout=timeout_seconds,
+                cwd=context.root,
+                heartbeat_seconds=HEARTBEAT_SECONDS,
+                on_heartbeat=lambda: self._print_progress(
+                    f"[clang-tidy] [{index}/{total}] still running {display_path} ({int(time.monotonic() - start)}s)"
+                ),
+            )
+        except subprocess.TimeoutExpired as exc:
+            elapsed = time.monotonic() - start
+            log_path = self._log_path_for(file_path, context, log_dir)
+            timeout_output = f"{exc.output or ''}{exc.stderr or ''}"
+            timeout_message = (
+                f"[clang-tidy] [{index}/{total}] timeout {display_path} ({elapsed:.1f}s) "
+                f"limit={timeout_seconds}s"
+            )
+            self._print_progress(timeout_message)
+            fallback_checks = self._resolve_timeout_fallback_checks(
+                context.clang_tidy_checks,
+                context.clang_tidy_timeout_fallback_checks,
+            )
+            if not fallback_checks:
+                log_error = self._write_log(
+                    log_path,
+                    f"{timeout_message}\n\n{timeout_output}",
+                )
+                if log_error:
+                    return False, f"[{file_path}] clang-tidy timed out and log write failed: {log_error}", ""
+                return False, f"[{file_path}] clang-tidy timed out after {timeout_seconds}s (see {log_path})", ""
+            fallback_cmd = self._make_command(binary, context, extra_args, file_path, fallback_checks)
+            fallback_start = time.monotonic()
+            self._print_progress(
+                f"[clang-tidy] [{index}/{total}] retry {display_path} with fallback checks={fallback_checks}"
+            )
+            fallback_completed = self._runner.run_with_heartbeat(
+                fallback_cmd,
+                timeout=timeout_seconds,
+                cwd=context.root,
+                heartbeat_seconds=HEARTBEAT_SECONDS,
+                on_heartbeat=lambda: self._print_progress(
+                    f"[clang-tidy] [{index}/{total}] still running fallback {display_path} ({int(time.monotonic() - fallback_start)}s)"
+                ),
+            )
+            fallback_output = f"{fallback_completed.stdout}{fallback_completed.stderr}"
+            log_error = self._write_log(
+                log_path,
+                (
+                    f"{timeout_message}\n"
+                    f"fallback_checks={fallback_checks}\n\n"
+                    f"{fallback_output}"
+                ),
+            )
+            if log_error:
+                return False, f"[{file_path}] clang-tidy fallback log write failed: {log_error}", ""
+            fallback_elapsed = time.monotonic() - fallback_start
+            if fallback_completed.returncode != 0:
+                self._print_progress(
+                    f"[clang-tidy] [{index}/{total}] fail fallback {display_path} ({fallback_elapsed:.1f}s) log={log_path}"
+                )
+                return False, f"[{file_path}] clang-tidy fallback failed after timeout (see {log_path})", ""
+            self._print_progress(
+                f"[clang-tidy] [{index}/{total}] done fallback {display_path} ({fallback_elapsed:.1f}s)"
+            )
+            warning = (
+                f"{display_path}: analyzer timed out after {timeout_seconds}s; "
+                f"fallback checks applied ({fallback_checks})"
+            )
+            return True, "", warning
+        log_path = self._log_path_for(file_path, context, log_dir)
+        output = f"{completed.stdout}{completed.stderr}"
+        log_error = self._write_log(log_path, output)
+        if log_error:
+            return False, f"[{file_path}] clang-tidy failed; {log_error}", ""
+        elapsed = time.monotonic() - start
+        if completed.returncode != 0:
+            self._print_progress(f"[clang-tidy] [{index}/{total}] fail {display_path} ({elapsed:.1f}s) log={log_path}")
+            return False, f"[{file_path}] clang-tidy failed (see {log_path})", ""
+        self._print_progress(f"[clang-tidy] [{index}/{total}] done {display_path} ({elapsed:.1f}s)")
+        return True, "", ""
+
+    def _make_command(
+        self,
+        binary: str,
+        context: CheckContext,
+        extra_args: list[str],
+        file_path: Path,
+        checks: str,
+    ) -> list[str]:
         cmd = [
             binary,
             f"-p={context.build_dir}",
-            f"-checks={context.clang_tidy_checks}",
+            f"-checks={checks}",
             "--warnings-as-errors=*",
             "--quiet",
             *extra_args,
@@ -148,16 +285,24 @@ class ClangTidyCheck(BaseCheck):
         ]
         if context.clang_tidy_header_filter:
             cmd.append(f"-header-filter={context.clang_tidy_header_filter}")
-        completed = self._runner.run(cmd)
-        log_path = self._log_path_for(file_path, context, log_dir)
-        output = f"{completed.stdout}{completed.stderr}"
+        return cmd
+
+    def _resolve_timeout_fallback_checks(self, checks: str, fallback_checks: str) -> str:
+        if "clang-analyzer-" not in checks:
+            return ""
+        trimmed = fallback_checks.strip()
+        if not trimmed:
+            return ""
+        if trimmed == checks:
+            return ""
+        return trimmed
+
+    def _write_log(self, log_path: Path, content: str) -> str:
         try:
-            log_path.write_text(output, encoding="utf-8", errors="ignore")
+            log_path.write_text(content, encoding="utf-8", errors="ignore")
+            return ""
         except OSError as exc:
-            return False, f"[{file_path}] clang-tidy failed; log write error: {exc}"
-        if completed.returncode != 0:
-            return False, f"[{file_path}] clang-tidy failed (see {log_path})"
-        return True, ""
+            return f"log write error: {exc}"
 
     def _resolve_binary(self, configured_binary: str) -> str | None:
         resolved = shutil.which(configured_binary)
@@ -173,14 +318,7 @@ class ClangTidyCheck(BaseCheck):
                 return str(candidate)
         return None
 
-    def _resolve_extra_args(self, build_dir: Path) -> list[str]:
-        db = build_dir / "compile_commands.json"
-        if not db.exists():
-            return []
-        try:
-            entries = json.loads(db.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            return []
+    def _resolve_extra_args(self, entries: list[dict[str, object]]) -> list[str]:
         if self._uses_msvc_driver(entries):
             return ["--extra-arg-before=--driver-mode=cl"]
         return []
@@ -210,6 +348,18 @@ class ClangTidyCheck(BaseCheck):
             rel_str = str(file_path)
         safe_name = rel_str.replace("\\", "__").replace("/", "__").replace(":", "_")
         return log_dir / f"{safe_name}.log"
+
+    def _display_path(self, file_path: Path, context: CheckContext) -> str:
+        try:
+            return str(file_path.relative_to(context.root))
+        except ValueError:
+            return str(file_path)
+
+    def _print_progress(self, message: str) -> None:
+        try:
+            print(message, flush=True)
+        except OSError:
+            return
 
     def _filter_diff_files(self, files: list[Path], context: CheckContext, result: CheckResult) -> list[Path]:
         if not context.clang_tidy_diff_base:
