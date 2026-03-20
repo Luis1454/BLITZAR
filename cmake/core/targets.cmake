@@ -52,7 +52,7 @@ endfunction()
 
 function(configure_gravity_cuda_target target_name)
     configure_gravity_cpp_target(${target_name})
-    set_target_properties(${target_name} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    set_target_properties(${target_name} PROPERTIES CUDA_SEPARABLE_COMPILATION OFF)
     target_compile_definitions(${target_name}
         PRIVATE
             $<$<COMPILE_LANGUAGE:CUDA>:GRAVITY_HD_HOST=__host__>

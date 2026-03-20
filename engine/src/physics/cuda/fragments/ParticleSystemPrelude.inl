@@ -24,46 +24,7 @@ constexpr int kOctreeLeafCapacity = 32;
 constexpr int kOctreeMaxDepth = 16;
 constexpr float kPi = 3.1415926535f;
 
-struct ParticleSoAView {
-    float *posX;
-    float *posY;
-    float *posZ;
-    float *velX;
-    float *velY;
-    float *velZ;
-    float *pressX;
-    float *pressY;
-    float *pressZ;
-    float *mass;
-    float *temp;
-    float *dens;
-    int count;
-
-    __host__ __device__ void setPosition(int i, Vector3 p) {
-        posX[i] = p.x;
-        posY[i] = p.y;
-        posZ[i] = p.z;
-    }
-    __host__ __device__ Vector3 getPosition(int i) const {
-        return Vector3{posX[i], posY[i], posZ[i]};
-    }
-    __host__ __device__ void setVelocity(int i, Vector3 v) {
-        velX[i] = v.x;
-        velY[i] = v.y;
-        velZ[i] = v.z;
-    }
-    __host__ __device__ Vector3 getVelocity(int i) const {
-        return Vector3{velX[i], velY[i], velZ[i]};
-    }
-    __host__ __device__ void setPressure(int i, Vector3 p) {
-        pressX[i] = p.x;
-        pressY[i] = p.y;
-        pressZ[i] = p.z;
-    }
-    __host__ __device__ Vector3 getPressure(int i) const {
-        return Vector3{pressX[i], pressY[i], pressZ[i]};
-    }
-};
+#include "physics/ParticleSoAView.hpp"
 
 typedef Particle * ParticleHandle;
 typedef const Particle * ParticleConstHandle;
@@ -174,7 +135,7 @@ __host__ __device__ float dot(Vector3 a, Vector3 b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-Particle::Particle() {
+__host__ __device__ Particle::Particle() {
     _position = Vector3{0.0f, 0.0f, 0.0f};
     _velocity = Vector3{0.0f, 0.0f, 0.0f};
     _pressure = Vector3{0.0f, 0.0f, 0.0f};
@@ -184,7 +145,7 @@ Particle::Particle() {
     _temperature = 0.0f;
 }
 
-Particle::~Particle() {
+__host__ __device__ Particle::~Particle() {
 }
 
 __host__ __device__ void Particle::applyForce(Vector3 force) {
@@ -317,13 +278,13 @@ __host__ __device__ Vector3 computePairwiseAcceleration(
 )
 {
     Vector3 force = {0.0f, 0.0f, 0.0f};
-    const Vector3 selfPos = state.getPosition(idx);
+    const Vector3 selfPos = getSoAPosition(state, idx);
 
     for (int i = 0; i < numParticles; ++i) {
         if (i == idx) {
             continue;
         }
-        const Vector3 otherPos = state.getPosition(i);
+        const Vector3 otherPos = getSoAPosition(state, i);
         const float otherMass = state.mass[i];
         force += gravityAccelerationFromSource(
             selfPos,
@@ -378,16 +339,16 @@ __global__ void updateParticles(
 ) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < numParticles) {
-        const Vector3 pos = last.getPosition(i);
-        const Vector3 vel = last.getVelocity(i);
+        const Vector3 pos = getSoAPosition(last, i);
+        const Vector3 vel = getSoAVelocity(last, i);
         const Vector3 force = computePairwiseAcceleration(last, numParticles, i, softening, maxAcceleration, minSoftening, minDistance2);
 
         const Vector3 nextVel = vel + force * deltaTime;
         const Vector3 nextPos = pos + nextVel * deltaTime;
 
-        current.setPressure(i, force * 100.0f);
-        current.setVelocity(i, nextVel);
-        current.setPosition(i, nextPos);
+        setSoAPressure(current, i, force * 100.0f);
+        setSoAVelocity(current, i, nextVel);
+        setSoAPosition(current, i, nextPos);
         current.mass[i] = last.mass[i];
         current.temp[i] = last.temp[i];
         current.dens[i] = last.dens[i];
@@ -414,13 +375,13 @@ __global__ void computeSphDensityPressureKernel(
         return;
     }
 
-    const Vector3 pi = particles.getPosition(i);
+    const Vector3 pi = getSoAPosition(particles, i);
     float density = 0.0f;
     for (int j = 0; j < numParticles; ++j) {
         if (particles.mass[j] > 0.1f) {
             continue;
         }
-        const Vector3 pj = particles.getPosition(j);
+        const Vector3 pj = getSoAPosition(particles, j);
         const Vector3 d = pi - pj;
         const float r2 = dot(d, d);
         density += particles.mass[j] * sphPoly6(r2, smoothingLength);
@@ -458,8 +419,8 @@ __global__ void integrateSphKernel(
         return;
     }
 
-    const Vector3 pi = particles.getPosition(i);
-    const Vector3 vi = particles.getVelocity(i);
+    const Vector3 pi = getSoAPosition(particles, i);
+    const Vector3 vi = getSoAVelocity(particles, i);
     const float rhoI = fmaxf(density[i], 1e-6f);
     const float pI = pressure[i];
 
@@ -473,7 +434,7 @@ __global__ void integrateSphKernel(
         if (particles.mass[j] > 0.1f) {
             continue;
         }
-        const Vector3 pj = particles.getPosition(j);
+        const Vector3 pj = getSoAPosition(particles, j);
         const Vector3 rij = pi - pj;
         const float r = sqrtf(dot(rij, rij));
         if (r >= smoothingLength || r <= 1e-6f) {
@@ -487,7 +448,7 @@ __global__ void integrateSphKernel(
         pressureForce += gradDir * (-particles.mass[j] * (pI + pJ) * 0.5f / rhoJ * grad);
 
         const float lap = sphViscosityLaplacian(r, smoothingLength);
-        viscosityForce += (particles.getVelocity(j) - vi) * (viscosity * particles.mass[j] / rhoJ * lap);
+        viscosityForce += (getSoAVelocity(particles, j) - vi) * (viscosity * particles.mass[j] / rhoJ * lap);
     }
 
     const Vector3 totalForce = pressureForce + viscosityForce;
@@ -505,10 +466,10 @@ __global__ void integrateSphKernel(
     }
     Vector3 position = pi + velocity * (deltaTime * correctionScale);
 
-    particles.setVelocity(i, velocity);
-    particles.setPosition(i, position);
+    particles.velX[i] = velocity.x; particles.velY[i] = velocity.y; particles.velZ[i] = velocity.z;
+    particles.posX[i] = position.x; particles.posY[i] = position.y; particles.posZ[i] = position.z;
     particles.dens[i] = rhoI;
-    particles.setPressure(i, (pressureForce + viscosityForce) * 2.0f);
+    setSoAPressure(particles, i, (pressureForce + viscosityForce) * 2.0f);
 }
 
 __global__ void copyParticlesKernel(ParticleConstHandle src, ParticleHandle dst, int numParticles)
@@ -526,7 +487,7 @@ __global__ void extractVelocityKernel(ParticleSoAView particles, Vector3Handle o
     if (i >= numParticles) {
         return;
     }
-    outVelocity[i] = particles.getVelocity(i);
+    outVelocity[i] = getSoAVelocity(particles, i);
 }
 
 __global__ void computePairwiseAccelerationKernel(
@@ -559,11 +520,11 @@ __global__ void buildRk4StageKernel(
         return;
     }
 
-    const Vector3 nextPos = base.getPosition(i) + kPos[i] * dtScale;
-    const Vector3 nextVel = base.getVelocity(i) + kVel[i] * dtScale;
+    const Vector3 nextPos = getSoAPosition(base, i) + kPos[i] * dtScale;
+    const Vector3 nextVel = getSoAVelocity(base, i) + kVel[i] * dtScale;
 
-    stage.setPosition(i, nextPos);
-    stage.setVelocity(i, nextVel);
+    setSoAPosition(stage, i, nextPos);
+    setSoAVelocity(stage, i, nextVel);
     stage.mass[i] = base.mass[i];
     stage.temp[i] = base.temp[i];
     stage.dens[i] = base.dens[i];
@@ -599,9 +560,9 @@ __global__ void unpackSoAKernel(ParticleSoAView src, ParticleHandle dst, int num
     if (i >= numParticles) return;
 
     Particle p;
-    p.setPosition(Vector3{src.posX[i], src.posY[i], src.posZ[i]});
-    p.setVelocity(Vector3{src.velX[i], src.velY[i], src.velZ[i]});
-    p.setPressure(Vector3{src.pressX[i], src.pressY[i], src.pressZ[i]});
+    p.setPosition(getSoAPosition(src, i));
+    p.setVelocity(getSoAVelocity(src, i));
+    p.setPressure(getSoAPressure(src, i));
     p.setMass(src.mass[i]);
     p.setTemperature(src.temp[i]);
     p.setDensity(src.dens[i]);
@@ -630,12 +591,12 @@ __global__ void finalizeRk4Kernel(
     const Vector3 weightedVel = (k1v[i] + k2v[i] * 2.0f + k3v[i] * 2.0f + k4v[i]) / 6.0f;
     const Vector3 weightedPos = (k1x[i] + k2x[i] * 2.0f + k3x[i] * 2.0f + k4x[i]) / 6.0f;
 
-    const Vector3 nextVel = base.getVelocity(i) + weightedVel * deltaTime;
-    const Vector3 nextPos = base.getPosition(i) + weightedPos * deltaTime;
+    const Vector3 nextVel = getSoAVelocity(base, i) + weightedVel * deltaTime;
+    const Vector3 nextPos = getSoAPosition(base, i) + weightedPos * deltaTime;
 
-    out.setVelocity(i, nextVel);
-    out.setPosition(i, nextPos);
-    out.setPressure(i, weightedVel * 100.0f);
+    setSoAVelocity(out, i, nextVel);
+    setSoAPosition(out, i, nextPos);
+    setSoAPressure(out, i, weightedVel * 100.0f);
     out.mass[i] = base.mass[i];
     out.temp[i] = base.temp[i];
     out.dens[i] = base.dens[i];

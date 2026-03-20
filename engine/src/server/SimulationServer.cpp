@@ -2,6 +2,7 @@
 #include "server/SimulationInitConfig.hpp"
 #include "config/EnvUtils.hpp"
 #include "config/SimulationPerformanceProfile.hpp"
+#include "config/SimulationProfile.hpp"
 #include "config/SimulationModes.hpp"
 #include "platform/PlatformPaths.hpp"
 
@@ -936,6 +937,103 @@ bool buildGeneratedState(std::vector<Particle> &outParticles, std::uint32_t part
         return outParticles.size() >= 2;
     }
 
+    if (mode == "galaxy_collision") {
+        const float size = std::max(0.1f, config.cloudHalfExtent);
+        const float galaxySeparation = size * 1.5f;
+        const float orbitalSpeed = std::sqrt(config.diskMass / std::max(galaxySeparation, 0.1f)) * 0.5f;
+        
+        const std::uint32_t halfCount = count / 2;
+        const std::uint32_t remainder = count % 2;
+        
+        auto generateDisk = [&](std::uint32_t n, Vector3 offset, Vector3 velocity, std::uint32_t seedOffset) {
+            std::mt19937 diskRng(config.seed + seedOffset);
+            const float rMin = std::max(0.01f, size * 0.1f);
+            const float rMax = size;
+            const float rMin2 = rMin * rMin;
+            const float rMax2 = rMax * rMax;
+            const float rRange2 = std::max(1e-6f, rMax2 - rMin2);
+            const float massPerPart = std::max(1e-6f, (config.diskMass * 0.5f) / static_cast<float>(n));
+            
+            std::uniform_real_distribution<float> rDist(rMin, rMax);
+            std::uniform_real_distribution<float> aDist(0.0f, 2.0f * 3.1415926535f);
+            
+            for (std::uint32_t i = 0; i < n; ++i) {
+                const float r = rDist(diskRng);
+                const float a = aDist(diskRng);
+                const Vector3 pos = offset + Vector3(r * std::cos(a), r * std::sin(a), 0.0f);
+                
+                const float frac = std::clamp((r * r - rMin2) / rRange2, 0.0f, 1.0f);
+                const float speed = std::sqrt((config.diskMass * 0.5f * frac + 0.1f) / std::max(r, 0.01f));
+                const Vector3 tangent(-std::sin(a) * speed, std::cos(a) * speed, 0.0f);
+                
+                Particle p;
+                p.setMass(massPerPart);
+                p.setPosition(centralPos + pos);
+                p.setVelocity(centralVel + velocity + tangent);
+                finalizeParticle(p);
+                outParticles.push_back(p);
+            }
+        };
+        
+        generateDisk(halfCount, Vector3(-galaxySeparation, 0.0f, 0.0f), Vector3(0.0f, orbitalSpeed, 0.0f), 0);
+        generateDisk(halfCount + remainder, Vector3(galaxySeparation, 0.0f, 0.0f), Vector3(0.0f, -orbitalSpeed, 0.0f), 1000);
+        return outParticles.size() >= 2;
+    }
+
+    if (mode == "solar_system") {
+        const float mercuryR = 0.39f, mercuryM = 1.6e-7f;
+        const float venusR = 0.72f, venusM = 2.4e-6f;
+        const float earthR = 1.00f, earthM = 3.0e-6f;
+        const float marsR = 1.52f, marsM = 3.2e-7f;
+        const float jupiterR = 5.20f, jupiterM = 9.5e-4f;
+        const float saturnR = 9.54f, saturnM = 2.8e-4f;
+        const float uranusR = 19.2f, uranusM = 4.3e-5f;
+        const float neptuneR = 30.1f, neptuneM = 5.1e-5f;
+
+        struct Planet { float r, m; };
+        Planet planets[] = {
+            {mercuryR, mercuryM}, {venusR, venusM}, {earthR, earthM}, {marsR, marsM},
+            {jupiterR, jupiterM}, {saturnR, saturnM}, {uranusR, uranusM}, {neptuneR, neptuneM}
+        };
+
+        addCentralBody();
+        for (const auto& pInfo : planets) {
+            std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * 3.1415926535f);
+            const float a = angleDist(rng);
+            const float speed = std::sqrt(centralMass / pInfo.r) * std::max(0.0f, config.velocityScale);
+            
+            Particle p;
+            p.setMass(pInfo.m);
+            p.setPosition(centralPos + Vector3(pInfo.r * std::cos(a), pInfo.r * std::sin(a), 0.0f));
+            p.setVelocity(centralVel + Vector3(-std::sin(a) * speed, std::cos(a) * speed, 0.0f));
+            finalizeParticle(p);
+            outParticles.push_back(p);
+        }
+        return outParticles.size() >= 2;
+    }
+
+    if (mode == "sph_collapse" || mode == "sph_sphere") {
+        const float radius = std::max(0.1f, config.cloudHalfExtent);
+        const float mass = std::max(1e-6f, config.particleMass);
+        const float radius2 = radius * radius;
+
+        while (outParticles.size() < count) {
+            std::uniform_real_distribution<float> dist(-radius, radius);
+            const float x = dist(rng);
+            const float y = dist(rng);
+            const float z = dist(rng);
+            if (x*x + y*y + z*z > radius2) continue;
+
+            Particle p;
+            p.setMass(mass);
+            p.setPosition(centralPos + Vector3(x, y, z));
+            p.setVelocity(centralVel);
+            finalizeParticle(p);
+            outParticles.push_back(p);
+        }
+        return outParticles.size() >= 2;
+    }
+
     // Default generated mode: disk_orbit.
     // Keep orbital initialization consistent with the force model:
     // solvers clamp acceleration magnitude to 64, so cap target orbital
@@ -983,6 +1081,14 @@ bool buildGeneratedState(std::vector<Particle> &outParticles, std::uint32_t part
 
     return outParticles.size() >= 2;
 }
+static void atomicAddFloat(std::atomic<float>& atom, float val)
+{
+    float current = atom.load(std::memory_order_relaxed);
+    while (!atom.compare_exchange_weak(current, current + val, std::memory_order_relaxed)) {
+        // current is updated with the latest value on failure
+    }
+}
+
 SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
     : _running(false),
       _paused(false),
@@ -1081,7 +1187,12 @@ SimulationServer::SimulationServer(const std::string &configPath)
     : SimulationServer(2u, 0.01f)
 {
     _configPath = configPath.empty() ? "simulation.ini" : configPath;
-    const SimulationConfig loaded = SimulationConfig::loadOrCreate(_configPath);
+    SimulationConfig loaded = SimulationConfig::loadOrCreate(_configPath);
+    
+    // Apply simulation profile first, then performance profile
+    grav_config::applySimulationProfile(loaded);
+    grav_config::applyPerformanceProfile(loaded);
+
     const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(loaded, std::cerr);
     _runtimeConfigMirror = loaded;
 
@@ -2221,7 +2332,7 @@ void SimulationServer::loop()
                     updateFailed = true;
                     break;
                 }
-                _totalTime.fetch_add(dtSub, std::memory_order_relaxed);
+                atomicAddFloat(_totalTime, dtSub);
             }
             if (updateFailed) {
                 break;

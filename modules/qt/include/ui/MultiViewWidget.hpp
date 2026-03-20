@@ -20,7 +20,7 @@ class MultiViewWidget : public QWidget {
         std::size_t displayedParticleCount() const;
         void setZoom(float zoom);
         void setLuminosity(int luminosity);
-        void set3DMode(ViewMode mode);
+        void set3DMode(grav::ViewMode mode);
         void set3DCameraAngles(float yaw, float pitch, float roll);
         void setRenderSettings(bool culling, bool lod, float nearDist, float farDist);
 

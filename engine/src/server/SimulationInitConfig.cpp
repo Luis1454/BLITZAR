@@ -21,6 +21,9 @@ static bool isSupportedInitMode(const std::string &value)
         || value == "two_body"
         || value == "three_body"
         || value == "plummer_sphere"
+        || value == "galaxy_collision"
+        || value == "solar_system"
+        || value == "sph_collapse"
         || value == "file";
 }
 

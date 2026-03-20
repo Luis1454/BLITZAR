@@ -20,10 +20,10 @@ namespace grav_qt {
 
 class ParticleView : public QWidget {
     public:
-        explicit ParticleView(ViewMode mode);
+        explicit ParticleView(grav::ViewMode mode);
 
         void setSnapshot(const std::vector<RenderParticle> &snapshot);
-        void setMode(ViewMode mode);
+        void setMode(grav::ViewMode mode);
         void setZoom(float zoom);
         void setLuminosity(int luminosity);
         void setCameraAngles(float yaw, float pitch, float roll);
@@ -34,17 +34,17 @@ class ParticleView : public QWidget {
         typedef UiPaintEvent * PaintEventHandle;
         void mousePressEvent(MouseEventHandle event) override;
         void mouseMoveEvent(MouseEventHandle event) override;
-        void mouseReleaseEvent(MouseEventHandle event) override;
         void paintEvent(PaintEventHandle event) override;
-        ViewMode _mode;
+        void mouseReleaseEvent(MouseEventHandle event) override;
+        grav::ViewMode _mode;
         std::optional<std::reference_wrapper<const std::vector<RenderParticle>>> _snapshot;
         QImage _framebuffer;
         float _zoom;
         int _luminosity;
-        CameraState _camera;
+        grav::CameraState _camera;
         float _adaptiveTemperatureScale;
         float _adaptivePressureScale;
-        GimbalAxis _dragAxis;
+        grav::GimbalAxis _dragAxis;
         QPointF _lastMousePos;
         bool _cullingEnabled = true;
         bool _lodEnabled = true;

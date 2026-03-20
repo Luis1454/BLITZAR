@@ -27,7 +27,7 @@ __global__ void computeSphDensityPressureGridKernel(
         return;
     }
 
-    const Vector3 pi = particles.getPosition(i);
+    const Vector3 pi = getSoAPosition(particles, i);
     int cx = static_cast<int>(floorf((pi.x - grid.originX) / grid.cellSize));
     int cy = static_cast<int>(floorf((pi.y - grid.originY) / grid.cellSize));
     int cz = static_cast<int>(floorf((pi.z - grid.originZ) / grid.cellSize));
@@ -52,7 +52,7 @@ __global__ void computeSphDensityPressureGridKernel(
                 for (int s = start; s < end; ++s) {
                     int j = sortedIndex[s];
                     if (particles.mass[j] > 0.1f) continue;
-                    const Vector3 pj = particles.getPosition(j);
+                    const Vector3 pj = getSoAPosition(particles, j);
                     const Vector3 d = pi - pj;
                     const float r2 = dot(d, d);
                     density += particles.mass[j] * sphPoly6(r2, smoothingLength);
@@ -94,8 +94,8 @@ __global__ void integrateSphGridKernel(
         return;
     }
 
-    const Vector3 pi = particles.getPosition(i);
-    const Vector3 vi = particles.getVelocity(i);
+    const Vector3 pi = getSoAPosition(particles, i);
+    const Vector3 vi = getSoAVelocity(particles, i);
     const float rhoI = fmaxf(density[i], 1e-6f);
     const float pI = pressure[i];
 
@@ -126,7 +126,7 @@ __global__ void integrateSphGridKernel(
                     int j = sortedIndex[s];
                     if (j == i) continue;
                     if (particles.mass[j] > 0.1f) continue;
-                    const Vector3 pj = particles.getPosition(j);
+                    const Vector3 pj = getSoAPosition(particles, j);
                     const Vector3 rij = pi - pj;
                     const float r = sqrtf(dot(rij, rij));
                     if (r >= smoothingLength || r <= 1e-6f) continue;
@@ -136,7 +136,7 @@ __global__ void integrateSphGridKernel(
                     const float grad = sphSpikyGrad(r, smoothingLength);
                     pressureForce += gradDir * (-particles.mass[j] * (pI + pJ) * 0.5f / rhoJ * grad);
                     const float lap = sphViscosityLaplacian(r, smoothingLength);
-                    viscosityForce += (particles.getVelocity(j) - vi) * (viscosity * particles.mass[j] / rhoJ * lap);
+                    viscosityForce += (getSoAVelocity(particles, j) - vi) * (viscosity * particles.mass[j] / rhoJ * lap);
                 }
             }
         }
@@ -156,8 +156,8 @@ __global__ void integrateSphGridKernel(
     }
     Vector3 nextPos = pi + nextVel * (deltaTime * correctionScale);
 
-    particles.setVelocity(i, nextVel);
-    particles.setPosition(i, nextPos);
+    setSoAVelocity(particles, i, nextVel);
+    setSoAPosition(particles, i, nextPos);
     particles.dens[i] = rhoI;
-    particles.setPressure(i, (pressureForce + viscosityForce) * 2.0f);
+    setSoAPressure(particles, i, (pressureForce + viscosityForce) * 2.0f);
 }

@@ -20,7 +20,7 @@ run-headless-direct: all
 	$(RUN_HEADLESS_BIN) $(ARGS)
 
 run-client-host: all
-	$(RUN_MODULE_HOST_BIN) $(ARGS)
+	$(RUN_CLIENT_HOST_BIN) $(ARGS)
 
 doctor:
 	cmake -DQT_DIR="$(QT_DIR)" -DBUILD_DIR="$(BUILD_DIR)" -P scripts/doctor.cmake
@@ -52,9 +52,9 @@ endif
 
 run-qt: all deploy-qt
 ifeq ($(OS),Windows_NT)
-	$(RUN_MODULE_HOST_BIN) --config $(CONFIG) --module $(GUI_MODULE) $(ARGS)
+	$(RUN_CLIENT_HOST_BIN) --config $(CONFIG) --module $(GUI_MODULE) $(ARGS)
 else
-	bash scripts/run_qt.sh --bin "$(RUN_MODULE_HOST_BIN)" --config "$(CONFIG)" --module "$(GUI_MODULE)" --qt-dir "$(QT_DIR)" -- $(ARGS)
+	bash scripts/run_qt.sh --bin "$(RUN_CLIENT_HOST_BIN)" --config "$(CONFIG)" --module "$(GUI_MODULE)" --qt-dir "$(QT_DIR)" -- $(ARGS)
 endif
 
 deps-graphics:

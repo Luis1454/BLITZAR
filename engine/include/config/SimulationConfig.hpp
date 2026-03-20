@@ -12,6 +12,7 @@ struct SimulationConfig {
     std::string solver = "pairwise_cuda";
     std::string integrator = "euler";
     std::string performanceProfile = "interactive";
+    std::string simulationProfile = "disk_orbit";
     float substepTargetDt = 0.01f;
     std::uint32_t maxSubsteps = 4u;
     std::uint32_t snapshotPublishPeriodMs = 50u;

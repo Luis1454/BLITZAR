@@ -8,6 +8,13 @@ void ParticleSystem::syncDeviceState()
         if (!allocateRk4Buffers(numParticles)) return;
     }
 
+    // printf("[debug] syncDeviceState: d_stage=%p, host_ptr=%p, bytes=%zu\n", (void*)d_stage, (void*)_particles.data(), bytes);
+    cudaPointerAttributes attr;
+    if (cudaPointerGetAttributes(&attr, d_stage) != cudaSuccess) {
+        printf("[error] d_stage %p is NOT a valid managed or device pointer!\n", (void*)d_stage);
+    } else {
+        printf("[debug] d_stage %p type=%d device=%d\n", (void*)d_stage, (int)attr.type, attr.device);
+    }
     if (!checkCudaStatus(cudaMemcpy(d_stage, _particles.data(), bytes, cudaMemcpyHostToDevice), "memcpy(HtoD stage)")) return;
 
     ParticleSoAView view = getSoAView(false);
