@@ -257,7 +257,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_023_ResolveInitPlanSupportsCalibrationPresets)
     EXPECT_FLOAT_EQ(detailedPlan.config.particleMass, 0.02f);
 }
 
-TEST(ConfigArgsTest, TST_UNT_CONF_031_LoadOrCreateReportsSiValidationDiagnostics)
+TEST(ConfigArgsTest, TST_UNT_CONF_034_LoadOrCreateReportsSiValidationDiagnostics)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =

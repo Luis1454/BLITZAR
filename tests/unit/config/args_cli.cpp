@@ -186,7 +186,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_026_CliPerformanceProfileAppliesInteractivePre
     EXPECT_FALSE(runtime.hasArgumentError);
 }
 
-TEST(ConfigArgsTest, TST_UNT_CONF_030_CliRejectsInvalidSiPhysicsParameters)
+TEST(ConfigArgsTest, TST_UNT_CONF_033_CliRejectsInvalidSiPhysicsParameters)
 {
     SimulationConfig config = SimulationConfig::defaults();
     RuntimeArgs runtime;

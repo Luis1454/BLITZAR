@@ -42,7 +42,7 @@
                                                              "^ConfigArgsTest\\.TST_UNT_CONF_00(4|5|6|8|9)_",
                                                              "^ConfigArgsTest\\.TST_UNT_CONF_01(1|2)_",
                                                              "^ConfigArgsTest\\.TST_UNT_CONF_02(0|1|7)_",
-                                                             "^ConfigArgsTest\\.TST_UNT_CONF_03(0|1)_"
+                                                             "^ConfigArgsTest\\.TST_UNT_CONF_03(3|4)_"
                                                          ],
                                                "artifacts":  [
                                                                  "EVD_TEST_UNIT_CONFIG_ARGS_CLI",

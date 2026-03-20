@@ -93,8 +93,8 @@
                     "REQ-CONF-001"
                 ]
             },
-            "TST-UNT-CONF-030": {
-                "id": "ConfigArgsTest.TST_UNT_CONF_030_CliRejectsInvalidSiPhysicsParameters",
+            "TST-UNT-CONF-033": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_033_CliRejectsInvalidSiPhysicsParameters",
                 "req_ids": [
                     "REQ-CONF-002"
                 ]
@@ -173,8 +173,8 @@
                     "REQ-CONF-002"
                 ]
             },
-            "TST-UNT-CONF-031": {
-                "id": "ConfigArgsTest.TST_UNT_CONF_031_LoadOrCreateReportsSiValidationDiagnostics",
+            "TST-UNT-CONF-034": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_034_LoadOrCreateReportsSiValidationDiagnostics",
                 "req_ids": [
                     "REQ-CONF-002"
                 ]
