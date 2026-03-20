@@ -5,6 +5,9 @@
 
 #include <gtest/gtest.h>
 
+#include <chrono>
+#include <filesystem>
+#include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -40,7 +43,7 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_001_ParseArgsDefaultsAndVariants)
     }
 
     {
-        std::vector<std::string> raw = {"host", "--config=my.ini", "--module", "qt"};
+        std::vector<std::string> raw = {"host", "--config=my.ini", "--module", "qt", "--validate-only"};
         std::vector<char *> argv = makeArgv(raw);
         ASSERT_TRUE(grav_client_host::ClientHostCliArgs::parseArgs(
             static_cast<int>(argv.size()),
@@ -49,7 +52,30 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_001_ParseArgsDefaultsAndVariants)
             error));
         EXPECT_EQ(options.configPath, "my.ini");
         EXPECT_EQ(options.moduleSpecifier, "qt");
+        EXPECT_TRUE(options.validateOnly);
     }
+
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path =
+        std::filesystem::temp_directory_path() / ("gravity_validate_only_" + std::to_string(stamp) + ".ini");
+    {
+        std::ofstream out(path, std::ios::trunc);
+        ASSERT_TRUE(out.is_open());
+        out << "particle_count=1\n";
+        out << "init_config_style=detailed\n";
+        out << "init_mode=file\n";
+    }
+    grav_client_host::HostOptions validateOnly{};
+    validateOnly.configPath = path.string();
+    validateOnly.validateOnly = true;
+    std::ostringstream output;
+    std::streambuf *previous = std::cout.rdbuf(output.rdbuf());
+    const int exitCode = grav_client_host::ClientHostCli::run(validateOnly, "blitzar-client");
+    std::cout.rdbuf(previous);
+    EXPECT_EQ(exitCode, 3);
+    EXPECT_NE(output.str().find("[preflight] blocked"), std::string::npos);
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
 }
 
 TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_002_ParseArgsRejectsUnknownArgument)
@@ -99,6 +125,7 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_008_HelpReflectsProfileReloadPolicy)
         EXPECT_EQ(rendered.find("switch <module_alias_or_path>\n"), std::string::npos);
         EXPECT_NE(rendered.find("reload is disabled"), std::string::npos);
     }
+    EXPECT_NE(rendered.find("--validate-only"), std::string::npos);
 }
 
 } // namespace grav_test_client_host_args_text

@@ -8,6 +8,8 @@
 #include "apps/client-host/client_host_cli_text.hpp"
 #include "apps/client-host/client_host_module_ops.hpp"
 #include "client/ClientModuleHandle.hpp"
+#include "config/SimulationConfig.hpp"
+#include "config/SimulationScenarioValidation.hpp"
 
 namespace grav_client_host {
 
@@ -17,6 +19,13 @@ public:
 
     static int run(const HostOptions &options, std::string_view programName)
     {
+        if (options.validateOnly) {
+            const SimulationConfig config = SimulationConfig::loadOrCreate(options.configPath);
+            const grav_config::ScenarioValidationReport report = grav_config::SimulationScenarioValidation::evaluate(config);
+            std::cout << grav_config::SimulationScenarioValidation::renderText(report) << "\n";
+            return report.validForRun ? 0 : 3;
+        }
+
         const std::vector<std::filesystem::path> searchRoots = ClientHostModuleOps::buildSearchRoots(programName);
         grav_module::ClientModuleHandle module{};
         std::string currentModuleSpecifier = options.moduleSpecifier;

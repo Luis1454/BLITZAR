@@ -92,6 +92,17 @@ if(GRAVITY_BUILD_CLIENT_HOST)
         apps/client-host/client_host_cli_args.cpp
         apps/client-host/client_host_cli_text.cpp
         apps/client-host/client_host_module_ops.cpp
+        engine/src/config/SimulationArgsParse.cpp
+        engine/src/config/SimulationOptionRegistry.cpp
+        engine/src/config/SimulationOptionRegistryApply.cpp
+        engine/src/config/SimulationOptionRegistryEntries.cpp
+        engine/src/config/SimulationPerformanceProfile.cpp
+        engine/src/config/SimulationScenarioValidation.cpp
+        engine/src/config/SimulationConfigDirective.cpp
+        engine/src/config/SimulationConfigDirectiveWrite.cpp
+        engine/src/config/SimulationConfig.cpp
+        engine/src/config/SimulationModes.cpp
+        engine/src/server/SimulationInitConfig.cpp
         runtime/src/client/ClientModuleBoundary.cpp
         runtime/src/client/ClientModuleHash.cpp
         runtime/src/client/ClientModuleHandle.cpp

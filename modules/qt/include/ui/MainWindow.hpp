@@ -33,11 +33,12 @@ class MainWindow : public QMainWindow {
         ~MainWindow() override;
 
     private:
-        void applyConfigToServer(bool requestReset);
+        bool applyConfigToServer(bool requestReset);
         void applyConfigToUi();
         void captureUiIntoConfig();
         void applyPerformanceProfileToRuntime();
         void markConfigDirty(bool dirty = true);
+        bool refreshValidationReport(bool blockOnErrors);
         bool saveConfigToDisk();
         void update3DCameraFromSliders();
         void tick();
@@ -47,6 +48,7 @@ class MainWindow : public QMainWindow {
         std::unique_ptr<grav_client::IClientRuntime> _runtime;
         QPointer<MultiViewWidget> _multiView;
         QPointer<EnergyGraphWidget> _energyGraph;
+        QPointer<QLabel> _validationLabel;
         QPointer<QLabel> _statusLabel;
         QPointer<QPushButton> _pauseButton;
         QPointer<QPushButton> _stepButton;
@@ -57,6 +59,7 @@ class MainWindow : public QMainWindow {
         QPointer<QPushButton> _exportButton;
         QPointer<QPushButton> _saveConfigButton;
         QPointer<QPushButton> _loadInputButton;
+        QPointer<QPushButton> _validateButton;
         QPointer<QCheckBox> _serverAutostartCheck;
         QPointer<QLineEdit> _serverHostEdit;
         QPointer<QLineEdit> _serverBinEdit;
