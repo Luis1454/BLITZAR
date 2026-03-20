@@ -5,6 +5,7 @@
 #include <string>
 
 struct SimulationConfig {
+    // Physical quantities use SI units unless a field name explicitly carries another unit such as ms or fps.
     std::uint32_t particleCount = 10000u;
     float dt = 0.01f;
     std::string solver = "pairwise_cuda";

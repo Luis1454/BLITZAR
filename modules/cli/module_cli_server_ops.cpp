@@ -62,17 +62,17 @@ public:
             return false;
         }
         std::cout << "[module-cli] " << (status.faulted ? "FAULT" : (status.paused ? "PAUSED" : "RUNNING"))
-                  << " step=" << status.steps << " dt=" << status.dt
+                  << " step=" << status.steps << " dt=" << status.dt << "s"
                   << " solver=" << status.solver << " integrator=" << status.integrator
                   << " perf=" << status.performanceProfile
                   << " sph=" << (status.sphEnabled ? "on" : "off")
                   << " sps=" << status.serverFps << " particles=" << status.particleCount
                   << " substeps=" << status.substeps
-                  << " subdt=" << status.substepDt
-                  << " target=" << status.substepTargetDt
+                  << " subdt=" << status.substepDt << "s"
+                  << " target=" << status.substepTargetDt << "s"
                   << " max_substeps=" << status.maxSubsteps
-                  << " snapshot_ms=" << status.snapshotPublishPeriodMs
-                  << " Etot=" << status.totalEnergy << " dE=" << status.energyDriftPct
+                  << " snapshot=" << status.snapshotPublishPeriodMs << "ms"
+                  << " Etot=" << status.totalEnergy << "J dE=" << status.energyDriftPct
                   << " fault_step=" << status.faultStep
                   << (status.faultReason.empty() ? "" : " fault=\"" + status.faultReason + "\"")
                   << (status.energyEstimated ? " est" : "") << "\n";

@@ -92,6 +92,12 @@
                 "req_ids": [
                     "REQ-CONF-001"
                 ]
+            },
+            "TST-UNT-CONF-030": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_030_CliRejectsInvalidSiPhysicsParameters",
+                "req_ids": [
+                    "REQ-CONF-002"
+                ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_ARGS_IO": {
@@ -163,6 +169,12 @@
             },
             "TST-UNT-CONF-027": {
                 "id": "ConfigArgsTest.TST_UNT_CONF_027_DirectivePerformanceOverrideForcesCustomProfile",
+                "req_ids": [
+                    "REQ-CONF-002"
+                ]
+            },
+            "TST-UNT-CONF-031": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_031_LoadOrCreateReportsSiValidationDiagnostics",
                 "req_ids": [
                     "REQ-CONF-002"
                 ]

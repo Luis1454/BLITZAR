@@ -806,7 +806,7 @@ void MainWindow::tick()
     }
 
     _statusLabel->setText(
-        QString("state=%1 | link=%2 owner=%3 | solver=%4 integrator=%5 perf=%6 | sph=%7 | dt=%8 | server=%9 step/s | sub=%10x@%11 (target=%12 max=%13) snap=%14ms | ui=%15 fps | steps=%16 | particles=%17 draw=%18 cap=%19 | data=stats:%20 snap:%21 %22 | Ekin=%23 Epot=%24 Eth=%25 Erad=%26 Etot=%27 | dE=%28%% %29")
+        QString("state=%1 | link=%2 owner=%3 | solver=%4 integrator=%5 perf=%6 | sph=%7 | dt=%8 s | server=%9 step/s | sub=%10x@%11 s (target=%12 s max=%13) snap=%14 ms | ui=%15 fps | steps=%16 | particles=%17 draw=%18 cap=%19 | data=stats:%20 snap:%21 %22 | Ekin=%23 J Epot=%24 J Eth=%25 J Erad=%26 J Etot=%27 J | dE=%28%% %29")
             .arg(stats.faulted ? "FAULT" : (stats.paused ? "PAUSED" : "RUNNING"))
             .arg(QString::fromStdString(linkLabel))
             .arg(QString::fromStdString(ownerLabel))

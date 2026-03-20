@@ -164,7 +164,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_022_CliAcceptsCalibrationSceneModes)
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.presetStructure, "three_body");
     EXPECT_EQ(config.initMode, "plummer_sphere");
-    EXPECT_TRUE(warnings.str().empty());
+    EXPECT_FALSE(warnings.str().empty());
     EXPECT_FALSE(runtime.hasArgumentError);
 }
 
@@ -184,4 +184,19 @@ TEST(ConfigArgsTest, TST_UNT_CONF_026_CliPerformanceProfileAppliesInteractivePre
     EXPECT_EQ(config.maxSubsteps, 4u);
     EXPECT_TRUE(warnings.str().empty());
     EXPECT_FALSE(runtime.hasArgumentError);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_030_CliRejectsInvalidSiPhysicsParameters)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--physics-max-accel", "0", "--physics-min-softening", "0", "--physics-min-dist2", "0"};
+    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    const std::string log = warnings.str();
+    EXPECT_TRUE(runtime.hasArgumentError);
+    EXPECT_NE(log.find("[preflight] blocked"), std::string::npos);
+    EXPECT_NE(log.find("physics_max_acceleration [m/s^2]"), std::string::npos);
+    EXPECT_NE(log.find("physics_min_softening [m]"), std::string::npos);
+    EXPECT_NE(log.find("physics_min_distance2 [m^2]"), std::string::npos);
 }
