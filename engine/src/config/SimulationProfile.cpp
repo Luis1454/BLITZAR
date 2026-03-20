@@ -1,5 +1,7 @@
 #include "config/SimulationProfile.hpp"
 
+#include "config/SimulationConfig.hpp"
+
 #include <algorithm>
 #include <cctype>
 

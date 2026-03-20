@@ -1,4 +1,5 @@
 #include "client/ClientCommon.hpp"
+#include "config/SimulationConfig.hpp"
 #include "protocol/ServerProtocol.hpp"
 #include "tests/support/scoped_env_var.hpp"
 

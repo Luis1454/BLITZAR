@@ -1,36 +1,13 @@
-#include "config/SimulationConfigDirectiveWrite.hpp"
+#include "config/SimulationConfigDirective.hpp"
 
+#include "config/SimulationConfig.hpp"
+#include "config/DirectiveStreamWriter.hpp"
 #include "config/SimulationPerformanceProfile.hpp"
 #include "protocol/ServerProtocol.hpp"
 
 #include <algorithm>
-#include <cctype>
 
 namespace grav_config {
-
-static std::string quoteDirectiveValue(const std::string &value)
-{
-    if (value.empty()) {
-        return "\"\"";
-    }
-    const bool needsQuotes = std::any_of(value.begin(), value.end(), [](unsigned char c) {
-        return std::isspace(c) != 0 || c == ',' || c == '(' || c == ')' || c == '"' || c == '\'';
-    });
-    if (!needsQuotes) {
-        return value;
-    }
-    std::string quoted;
-    quoted.reserve(value.size() + 2u);
-    quoted.push_back('"');
-    for (char c : value) {
-        if (c == '"' || c == '\\') {
-            quoted.push_back('\\');
-        }
-        quoted.push_back(c);
-    }
-    quoted.push_back('"');
-    return quoted;
-}
 
 static bool matchesManagedPerformanceFields(const SimulationConfig &lhs, const SimulationConfig &rhs)
 {
@@ -42,7 +19,17 @@ static bool matchesManagedPerformanceFields(const SimulationConfig &lhs, const S
         && lhs.maxSubsteps == rhs.maxSubsteps;
 }
 
-void SimulationConfigDirective::write(std::ostream &out, const SimulationConfig &config)
+static void writeSimulation(std::ostream &out, const SimulationConfig &config)
+{
+    DirectiveStreamWriter writer(out, "simulation");
+    writer.writeUint32("particle_count", config.particleCount);
+    writer.writeFloat("dt", config.dt);
+    writer.writeString("solver", config.solver);
+    writer.writeString("integrator", config.integrator);
+    writer.finish();
+}
+
+static void writePerformance(std::ostream &out, const SimulationConfig &config)
 {
     SimulationConfig profileReference = SimulationConfig::defaults();
     profileReference.performanceProfile = config.performanceProfile;
@@ -51,15 +38,6 @@ void SimulationConfigDirective::write(std::ostream &out, const SimulationConfig 
         config.performanceProfile == "custom" || !matchesManagedPerformanceFields(config, profileReference);
     const std::string effectiveProfile = emitCustomProfile ? "custom" : config.performanceProfile;
 
-    out << "# ==================================================\n";
-    out << "# BLITZAR directive config\n";
-    out << "# Generated automatically. Edit values then restart.\n";
-    out << "# ==================================================\n\n";
-
-    out << "simulation(particle_count=" << config.particleCount
-        << ", dt=" << config.dt
-        << ", solver=" << config.solver
-        << ", integrator=" << config.integrator << ")\n";
     out << "performance(profile=" << effectiveProfile;
     if (emitCustomProfile) {
         out << ", draw_cap=" << std::min<std::uint32_t>(grav_protocol::kSnapshotMaxPoints, std::max<std::uint32_t>(2u, config.clientParticleCap))
@@ -70,61 +48,162 @@ void SimulationConfigDirective::write(std::ostream &out, const SimulationConfig 
             << ", max_substeps=" << std::max<std::uint32_t>(1u, config.maxSubsteps);
     }
     out << ")\n";
-    out << "octree(theta=" << config.octreeTheta
-        << ", softening=" << config.octreeSoftening << ")\n";
-    out << "physics(max_acceleration=" << config.physicsMaxAcceleration
-        << ", min_softening=" << config.physicsMinSoftening
-        << ", min_distance2=" << config.physicsMinDistance2
-        << ", min_theta=" << config.physicsMinTheta << ")\n";
-    out << "client(zoom=" << config.defaultZoom
-        << ", luminosity=" << config.defaultLuminosity
-        << ", ui_fps=" << config.uiFpsLimit
-        << ", command_timeout_ms=" << config.clientRemoteCommandTimeoutMs
-        << ", status_timeout_ms=" << config.clientRemoteStatusTimeoutMs
-        << ", snapshot_timeout_ms=" << config.clientRemoteSnapshotTimeoutMs << ")\n";
-    out << "export(directory=" << quoteDirectiveValue(config.exportDirectory)
-        << ", format=" << config.exportFormat << ")\n";
-    out << "scene(style=" << config.initConfigStyle
-        << ", preset=" << config.presetStructure
-        << ", mode=" << config.initMode
-        << ", file=" << quoteDirectiveValue(config.inputFile)
-        << ", format=" << config.inputFormat << ")\n";
-    out << "preset(size=" << config.presetSize
-        << ", velocity_temperature=" << config.velocityTemperature
-        << ", temperature=" << config.particleTemperature << ")\n";
-    out << "thermal(ambient=" << config.thermalAmbientTemperature
-        << ", specific_heat=" << config.thermalSpecificHeat
-        << ", heating=" << config.thermalHeatingCoeff
-        << ", radiation=" << config.thermalRadiationCoeff << ")\n";
-    out << "generation(seed=" << config.initSeed
-        << ", include_central_body=" << (config.initIncludeCentralBody ? "true" : "false")
-        << ", deterministic=" << (config.deterministicMode ? "true" : "false") << ")\n";
-    out << "central_body(mass=" << config.initCentralMass
-        << ", x=" << config.initCentralX
-        << ", y=" << config.initCentralY
-        << ", z=" << config.initCentralZ
-        << ", vx=" << config.initCentralVx
-        << ", vy=" << config.initCentralVy
-        << ", vz=" << config.initCentralVz << ")\n";
-    out << "disk(mass=" << config.initDiskMass
-        << ", radius_min=" << config.initDiskRadiusMin
-        << ", radius_max=" << config.initDiskRadiusMax
-        << ", thickness=" << config.initDiskThickness
-        << ", velocity_scale=" << config.initVelocityScale << ")\n";
-    out << "cloud(half_extent=" << config.initCloudHalfExtent
-        << ", speed=" << config.initCloudSpeed
-        << ", particle_mass=" << config.initParticleMass << ")\n";
-    out << "sph(enabled=" << (config.sphEnabled ? "true" : "false")
-        << ", smoothing_length=" << config.sphSmoothingLength
-        << ", rest_density=" << config.sphRestDensity
-        << ", gas_constant=" << config.sphGasConstant
-        << ", viscosity=" << config.sphViscosity
-        << ", max_acceleration=" << config.sphMaxAcceleration
-        << ", max_speed=" << config.sphMaxSpeed << ")\n";
-    out << "render(culling=" << (config.renderCullingEnabled ? "true" : "false")
-        << ", lod=" << (config.renderLODEnabled ? "true" : "false")
-        << ", lod_near=" << config.renderLODNearDistance
-        << ", lod_far=" << config.renderLODFarDistance << ")\n";
+}
+
+static void writeOctree(std::ostream &out, const SimulationConfig &config)
+{
+    DirectiveStreamWriter writer(out, "octree");
+    writer.writeFloat("theta", config.octreeTheta);
+    writer.writeFloat("softening", config.octreeSoftening);
+    writer.finish();
+}
+
+static void writePhysics(std::ostream &out, const SimulationConfig &config)
+{
+    DirectiveStreamWriter writer(out, "physics");
+    writer.writeFloat("max_acceleration", config.physicsMaxAcceleration);
+    writer.writeFloat("min_softening", config.physicsMinSoftening);
+    writer.writeFloat("min_distance2", config.physicsMinDistance2);
+    writer.writeFloat("min_theta", config.physicsMinTheta);
+    writer.finish();
+}
+
+static void writeClient(std::ostream &out, const SimulationConfig &config)
+{
+    DirectiveStreamWriter writer(out, "client");
+    writer.writeFloat("zoom", config.defaultZoom);
+    writer.writeInt("luminosity", config.defaultLuminosity);
+    writer.writeUint32("ui_fps", config.uiFpsLimit);
+    writer.writeUint32("command_timeout_ms", config.clientRemoteCommandTimeoutMs);
+    writer.writeUint32("status_timeout_ms", config.clientRemoteStatusTimeoutMs);
+    writer.writeUint32("snapshot_timeout_ms", config.clientRemoteSnapshotTimeoutMs);
+    writer.finish();
+}
+
+static void writeExport(std::ostream &out, const SimulationConfig &config)
+{
+    DirectiveStreamWriter writer(out, "export");
+    writer.writeQuotedString("directory", config.exportDirectory);
+    writer.writeString("format", config.exportFormat);
+    writer.finish();
+}
+
+static void writeScene(std::ostream &out, const SimulationConfig &config)
+{
+    DirectiveStreamWriter writer(out, "scene");
+    writer.writeString("style", config.initConfigStyle);
+    writer.writeString("preset", config.presetStructure);
+    writer.writeString("mode", config.initMode);
+    writer.writeQuotedString("file", config.inputFile);
+    writer.writeString("format", config.inputFormat);
+    writer.finish();
+}
+
+static void writePreset(std::ostream &out, const SimulationConfig &config)
+{
+    DirectiveStreamWriter writer(out, "preset");
+    writer.writeFloat("size", config.presetSize);
+    writer.writeFloat("velocity_temperature", config.velocityTemperature);
+    writer.writeFloat("temperature", config.particleTemperature);
+    writer.finish();
+}
+
+static void writeThermal(std::ostream &out, const SimulationConfig &config)
+{
+    DirectiveStreamWriter writer(out, "thermal");
+    writer.writeFloat("ambient", config.thermalAmbientTemperature);
+    writer.writeFloat("specific_heat", config.thermalSpecificHeat);
+    writer.writeFloat("heating", config.thermalHeatingCoeff);
+    writer.writeFloat("radiation", config.thermalRadiationCoeff);
+    writer.finish();
+}
+
+static void writeGeneration(std::ostream &out, const SimulationConfig &config)
+{
+    DirectiveStreamWriter writer(out, "generation");
+    writer.writeUint32("seed", config.initSeed);
+    writer.writeBool("include_central_body", config.initIncludeCentralBody);
+    writer.writeBool("deterministic", config.deterministicMode);
+    writer.finish();
+}
+
+static void writeCentralBody(std::ostream &out, const SimulationConfig &config)
+{
+    DirectiveStreamWriter writer(out, "central_body");
+    writer.writeFloat("mass", config.initCentralMass);
+    writer.writeFloat("x", config.initCentralX);
+    writer.writeFloat("y", config.initCentralY);
+    writer.writeFloat("z", config.initCentralZ);
+    writer.writeFloat("vx", config.initCentralVx);
+    writer.writeFloat("vy", config.initCentralVy);
+    writer.writeFloat("vz", config.initCentralVz);
+    writer.finish();
+}
+
+static void writeDisk(std::ostream &out, const SimulationConfig &config)
+{
+    DirectiveStreamWriter writer(out, "disk");
+    writer.writeFloat("mass", config.initDiskMass);
+    writer.writeFloat("radius_min", config.initDiskRadiusMin);
+    writer.writeFloat("radius_max", config.initDiskRadiusMax);
+    writer.writeFloat("thickness", config.initDiskThickness);
+    writer.writeFloat("velocity_scale", config.initVelocityScale);
+    writer.finish();
+}
+
+static void writeCloud(std::ostream &out, const SimulationConfig &config)
+{
+    DirectiveStreamWriter writer(out, "cloud");
+    writer.writeFloat("half_extent", config.initCloudHalfExtent);
+    writer.writeFloat("speed", config.initCloudSpeed);
+    writer.writeFloat("particle_mass", config.initParticleMass);
+    writer.finish();
+}
+
+static void writeSph(std::ostream &out, const SimulationConfig &config)
+{
+    DirectiveStreamWriter writer(out, "sph");
+    writer.writeBool("enabled", config.sphEnabled);
+    writer.writeFloat("smoothing_length", config.sphSmoothingLength);
+    writer.writeFloat("rest_density", config.sphRestDensity);
+    writer.writeFloat("gas_constant", config.sphGasConstant);
+    writer.writeFloat("viscosity", config.sphViscosity);
+    writer.writeFloat("max_acceleration", config.sphMaxAcceleration);
+    writer.writeFloat("max_speed", config.sphMaxSpeed);
+    writer.finish();
+}
+
+static void writeRender(std::ostream &out, const SimulationConfig &config)
+{
+    DirectiveStreamWriter writer(out, "render");
+    writer.writeBool("culling", config.renderCullingEnabled);
+    writer.writeBool("lod", config.renderLODEnabled);
+    writer.writeFloat("lod_near", config.renderLODNearDistance);
+    writer.writeFloat("lod_far", config.renderLODFarDistance);
+    writer.finish();
+}
+
+void SimulationConfigDirective::write(std::ostream &out, const SimulationConfig &config)
+{
+    out << "# ==================================================\n";
+    out << "# BLITZAR directive config\n";
+    out << "# Generated automatically. Edit values then restart.\n";
+    out << "# ==================================================\n\n";
+    writeSimulation(out, config);
+    writePerformance(out, config);
+    writeOctree(out, config);
+    writePhysics(out, config);
+    writeClient(out, config);
+    writeExport(out, config);
+    writeScene(out, config);
+    writePreset(out, config);
+    writeThermal(out, config);
+    writeGeneration(out, config);
+    writeCentralBody(out, config);
+    writeDisk(out, config);
+    writeCloud(out, config);
+    writeSph(out, config);
+    writeRender(out, config);
 }
 
 } // namespace grav_config

@@ -1,5 +1,7 @@
 #include "SimulationOptionRegistryInternal.hpp"
 
+#include <ostream>
+
 namespace grav_config {
 
 void printCliUsage(std::ostream &out, SimulationOptionGroup group)

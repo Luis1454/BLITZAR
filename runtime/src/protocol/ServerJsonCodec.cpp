@@ -7,6 +7,73 @@
 
 namespace grav_protocol {
 
+class ServerJsonObjectWriter final {
+public:
+    explicit ServerJsonObjectWriter(std::ostringstream &out)
+        : _out(out), _hasField(false)
+    {
+        _out << "{";
+    }
+
+    void writeBool(std::string_view key, bool value)
+    {
+        writeKey(key);
+        _out << (value ? "true" : "false");
+    }
+
+    template <typename NumberType>
+    void writeNumber(std::string_view key, NumberType value)
+    {
+        writeKey(key);
+        _out << value;
+    }
+
+    void writeString(std::string_view key, std::string_view value)
+    {
+        writeKey(key);
+        _out << "\"" << ServerJsonCodec::escapeString(value) << "\"";
+    }
+
+    void beginArray(std::string_view key)
+    {
+        writeKey(key);
+        _out << "[";
+    }
+
+    void writeArraySeparator()
+    {
+        _out << ",";
+    }
+
+    void writeRaw(std::string_view raw)
+    {
+        _out << raw;
+    }
+
+    void endArray()
+    {
+        _out << "]";
+    }
+
+    void finish()
+    {
+        _out << "}";
+    }
+
+private:
+    void writeKey(std::string_view key)
+    {
+        if (_hasField) {
+            _out << ",";
+        }
+        _out << "\"" << key << "\":";
+        _hasField = true;
+    }
+
+    std::ostringstream &_out;
+    bool _hasField;
+};
+
 std::string ServerJsonCodec::escapeString(std::string_view value)
 {
     std::string escaped;
@@ -56,46 +123,58 @@ std::string ServerJsonCodec::makeCommandRequest(
 
 std::string ServerJsonCodec::makeOkResponse(std::string_view cmd)
 {
-    return std::string("{\"ok\":true,\"cmd\":\"") + escapeString(cmd) + "\"}";
+    std::ostringstream out;
+    ServerJsonObjectWriter writer(out);
+    writer.writeBool("ok", true);
+    writer.writeString("cmd", cmd);
+    writer.finish();
+    return out.str();
 }
 
 std::string ServerJsonCodec::makeErrorResponse(std::string_view cmd, std::string_view message)
 {
-    return std::string("{\"ok\":false,\"cmd\":\"") + escapeString(cmd)
-        + "\",\"error\":\"" + escapeString(message) + "\"}";
+    std::ostringstream out;
+    ServerJsonObjectWriter writer(out);
+    writer.writeBool("ok", false);
+    writer.writeString("cmd", cmd);
+    writer.writeString("error", message);
+    writer.finish();
+    return out.str();
 }
 
 std::string ServerJsonCodec::makeStatusResponse(const SimulationStats &stats)
 {
     std::ostringstream out;
-    out << std::fixed << std::setprecision(6)
-        << "{\"ok\":true,\"cmd\":\"" << Status << "\""
-        << ",\"steps\":" << stats.steps
-        << ",\"dt\":" << stats.dt
-        << ",\"total_time\":" << stats.totalTime
-        << ",\"paused\":" << (stats.paused ? "true" : "false")
-        << ",\"faulted\":" << (stats.faulted ? "true" : "false")
-        << ",\"fault_step\":" << stats.faultStep
-        << ",\"fault_reason\":\"" << escapeString(stats.faultReason) << "\""
-        << ",\"sph\":" << (stats.sphEnabled ? "true" : "false")
-        << ",\"server_fps\":" << stats.serverFps
-        << ",\"performance_profile\":\"" << escapeString(stats.performanceProfile) << "\""
-        << ",\"substep_target_dt\":" << stats.substepTargetDt
-        << ",\"substep_dt\":" << stats.substepDt
-        << ",\"substeps\":" << stats.substeps
-        << ",\"max_substeps\":" << stats.maxSubsteps
-        << ",\"snapshot_publish_period_ms\":" << stats.snapshotPublishPeriodMs
-        << ",\"particles\":" << stats.particleCount
-        << ",\"solver\":\"" << escapeString(stats.solverName) << "\""
-        << ",\"integrator\":\"" << escapeString(stats.integratorName) << "\""
-        << ",\"ekin\":" << stats.kineticEnergy
-        << ",\"epot\":" << stats.potentialEnergy
-        << ",\"eth\":" << stats.thermalEnergy
-        << ",\"erad\":" << stats.radiatedEnergy
-        << ",\"etot\":" << stats.totalEnergy
-        << ",\"drift_pct\":" << stats.energyDriftPct
-        << ",\"estimated\":" << (stats.energyEstimated ? "true" : "false")
-        << "}";
+    out << std::fixed << std::setprecision(6);
+    ServerJsonObjectWriter writer(out);
+    writer.writeBool("ok", true);
+    writer.writeString("cmd", Status);
+    writer.writeNumber("steps", stats.steps);
+    writer.writeNumber("dt", stats.dt);
+    writer.writeNumber("total_time", stats.totalTime);
+    writer.writeBool("paused", stats.paused);
+    writer.writeBool("faulted", stats.faulted);
+    writer.writeNumber("fault_step", stats.faultStep);
+    writer.writeString("fault_reason", stats.faultReason);
+    writer.writeBool("sph", stats.sphEnabled);
+    writer.writeNumber("server_fps", stats.serverFps);
+    writer.writeString("performance_profile", stats.performanceProfile);
+    writer.writeNumber("substep_target_dt", stats.substepTargetDt);
+    writer.writeNumber("substep_dt", stats.substepDt);
+    writer.writeNumber("substeps", stats.substeps);
+    writer.writeNumber("max_substeps", stats.maxSubsteps);
+    writer.writeNumber("snapshot_publish_period_ms", stats.snapshotPublishPeriodMs);
+    writer.writeNumber("particles", stats.particleCount);
+    writer.writeString("solver", stats.solverName);
+    writer.writeString("integrator", stats.integratorName);
+    writer.writeNumber("ekin", stats.kineticEnergy);
+    writer.writeNumber("epot", stats.potentialEnergy);
+    writer.writeNumber("eth", stats.thermalEnergy);
+    writer.writeNumber("erad", stats.radiatedEnergy);
+    writer.writeNumber("etot", stats.totalEnergy);
+    writer.writeNumber("drift_pct", stats.energyDriftPct);
+    writer.writeBool("estimated", stats.energyEstimated);
+    writer.finish();
     return out.str();
 }
 
@@ -104,25 +183,34 @@ std::string ServerJsonCodec::makeSnapshotResponse(
     const std::vector<RenderParticle> &snapshot)
 {
     std::ostringstream out;
-    out << std::fixed << std::setprecision(6)
-        << "{\"ok\":true,\"cmd\":\"" << GetSnapshot << "\""
-        << ",\"has_snapshot\":" << (hasSnapshot ? "true" : "false")
-        << ",\"count\":" << snapshot.size()
-        << ",\"particles\":[";
+    out << std::fixed << std::setprecision(6);
+    ServerJsonObjectWriter writer(out);
+    writer.writeBool("ok", true);
+    writer.writeString("cmd", GetSnapshot);
+    writer.writeBool("has_snapshot", hasSnapshot);
+    writer.writeNumber("count", snapshot.size());
+    writer.beginArray("particles");
     for (std::size_t i = 0; i < snapshot.size(); ++i) {
         const RenderParticle &particle = snapshot[i];
         if (i > 0) {
-            out << ",";
+            writer.writeArraySeparator();
         }
-        out << "["
-            << particle.x << ","
-            << particle.y << ","
-            << particle.z << ","
-            << particle.mass << ","
-            << particle.pressureNorm << ","
-            << particle.temperature << "]";
+        writer.writeRaw("[");
+        writer.writeRaw(std::to_string(particle.x));
+        writer.writeArraySeparator();
+        writer.writeRaw(std::to_string(particle.y));
+        writer.writeArraySeparator();
+        writer.writeRaw(std::to_string(particle.z));
+        writer.writeArraySeparator();
+        writer.writeRaw(std::to_string(particle.mass));
+        writer.writeArraySeparator();
+        writer.writeRaw(std::to_string(particle.pressureNorm));
+        writer.writeArraySeparator();
+        writer.writeRaw(std::to_string(particle.temperature));
+        writer.writeRaw("]");
     }
-    out << "]}";
+    writer.endArray();
+    writer.finish();
     return out.str();
 }
 

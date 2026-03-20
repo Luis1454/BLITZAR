@@ -1,14 +1,14 @@
 #ifndef GRAVITY_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_
 
-#include "server/SimulationServer.hpp"
-
 #include <atomic>
 #include <cstdint>
 #include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
+
+class SimulationServer;
 
 class ServerDaemon {
     public:
@@ -39,7 +39,5 @@ class ServerDaemon {
         std::mutex _socketMutex;
         std::vector<std::thread> _clientThreads;
 };
-
-
 
 #endif // GRAVITY_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_

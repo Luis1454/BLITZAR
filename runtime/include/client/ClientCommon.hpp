@@ -1,11 +1,11 @@
 #ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTCOMMON_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTCOMMON_HPP_
 
-#include "config/SimulationConfig.hpp"
-
 #include <cstdint>
 #include <string>
 #include <string_view>
+
+struct SimulationConfig;
 
 namespace grav_client {
 
@@ -23,7 +23,5 @@ std::string buildSuggestedExportPath(
 );
 
 } // namespace grav_client
-
-
 
 #endif // GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTCOMMON_HPP_
