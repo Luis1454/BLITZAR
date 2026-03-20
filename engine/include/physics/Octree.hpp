@@ -9,7 +9,7 @@
 #include <optional>
 #include <vector>
 
-struct GpuOctreeNode {
+struct alignas(16) GpuOctreeNode {
     float centerX;
     float centerY;
     float centerZ;
@@ -21,7 +21,7 @@ struct GpuOctreeNode {
     int children[8];
     int leafStart;
     int leafCount;
-    unsigned char childMask;
+    unsigned int childMask;
 };
 
 class Octree {

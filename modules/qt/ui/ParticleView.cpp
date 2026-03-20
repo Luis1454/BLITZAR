@@ -12,7 +12,7 @@
 #include <cmath>
 
 namespace grav_qt {
-ParticleView::ParticleView(ViewMode mode)
+ParticleView::ParticleView(grav::ViewMode mode)
     : QWidget(nullptr),
       _mode(mode),
       _snapshot(std::nullopt),
@@ -21,7 +21,7 @@ ParticleView::ParticleView(ViewMode mode)
       _camera{0.0f, 0.0f, 0.0f},
       _adaptiveTemperatureScale(2.0f),
       _adaptivePressureScale(2.0f),
-      _dragAxis(GimbalAxis::None)
+      _dragAxis(grav::GimbalAxis::None)
 {
     setMinimumSize(220, 180);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -33,7 +33,7 @@ void ParticleView::setSnapshot(const std::vector<RenderParticle> &snapshot)
     update();
 }
 
-void ParticleView::setMode(ViewMode mode)
+void ParticleView::setMode(grav::ViewMode mode)
 {
     _mode = mode;
     update();
@@ -81,8 +81,8 @@ void ParticleView::mousePressEvent(MouseEventHandle event)
         return;
     }
 
-    const GimbalAxis axis = pickGimbalAxis(gimbal, event->position());
-    if (axis == GimbalAxis::None) {
+    const grav::GimbalAxis axis = pickGimbalAxis(gimbal, event->position());
+    if (axis == grav::GimbalAxis::None) {
         QWidget::mousePressEvent(event);
         return;
     }
@@ -94,22 +94,21 @@ void ParticleView::mousePressEvent(MouseEventHandle event)
 
 void ParticleView::mouseMoveEvent(MouseEventHandle event)
 {
-    if (_dragAxis == GimbalAxis::None) {
+    if (_dragAxis == grav::GimbalAxis::None) {
         QWidget::mouseMoveEvent(event);
         return;
     }
 
     const QPointF pos = event->position();
-    const float dx = static_cast<float>(pos.x() - _lastMousePos.x());
-    const float dy = static_cast<float>(pos.y() - _lastMousePos.y());
-    const float delta = (dx - dy) * 0.01f;
+    const float dx = event->position().x() - _lastMousePos.x();
+    const float dy = event->position().y() - _lastMousePos.y();
 
-    if (_dragAxis == GimbalAxis::X) {
-        _camera.pitch += delta;
-    } else if (_dragAxis == GimbalAxis::Y) {
-        _camera.yaw += delta;
-    } else if (_dragAxis == GimbalAxis::Z) {
-        _camera.roll += delta;
+    if (_dragAxis == grav::GimbalAxis::X) {
+        _camera.yaw += dx * 0.5f;
+    } else if (_dragAxis == grav::GimbalAxis::Y) {
+        _camera.pitch -= dy * 0.5f;
+    } else if (_dragAxis == grav::GimbalAxis::Z) {
+        _camera.roll += dx * 0.5f;
     }
     _lastMousePos = pos;
     update();
@@ -118,13 +117,21 @@ void ParticleView::mouseMoveEvent(MouseEventHandle event)
 
 void ParticleView::mouseReleaseEvent(MouseEventHandle event)
 {
-    _dragAxis = GimbalAxis::None;
-    QWidget::mouseReleaseEvent(event);
+    if (_dragAxis != grav::GimbalAxis::None) {
+        _dragAxis = grav::GimbalAxis::None;
+        event->accept();
+    } else {
+        QWidget::mouseReleaseEvent(event);
+    }
 }
 
 void ParticleView::paintEvent(PaintEventHandle event)
 {
     (void)event;
+    if (!_snapshot) {
+        return;
+    }
+
     if (_framebuffer.size() != size()) {
         _framebuffer = QImage(size(), QImage::Format_ARGB32);
     }
@@ -143,7 +150,7 @@ void ParticleView::paintEvent(PaintEventHandle event)
         const float lodFar2 = _lodFarDistance * _lodFarDistance;
 
         for (const RenderParticle &particle : snapshot) {
-            if (_lodEnabled && _mode == ViewMode::Perspective) {
+            if (_lodEnabled && _mode == grav::ViewMode::Perspective) {
                 const float dist2 = particle.x * particle.x + particle.y * particle.y + particle.z * particle.z;
                 if (dist2 > lodNear2) {
                     const float factor = std::clamp((std::sqrt(dist2) - _lodNearDistance) / (_lodFarDistance - _lodNearDistance), 0.0f, 1.0f);
@@ -155,7 +162,7 @@ void ParticleView::paintEvent(PaintEventHandle event)
                 }
             }
 
-            const ProjectedPoint pp = projectParticle(particle, _mode, _camera);
+            const grav::ProjectedPoint pp = grav::projectParticle(particle, _mode, _camera);
             if (!pp.valid) {
                 continue;
             }

@@ -11,10 +11,10 @@ namespace grav_qt {
 
 MultiViewWidget::MultiViewWidget()
     : QWidget(nullptr),
-      _xy(new ParticleView(ViewMode::XY)),
-      _xz(new ParticleView(ViewMode::XZ)),
-      _yz(new ParticleView(ViewMode::YZ)),
-      _view3d(new ParticleView(ViewMode::Perspective)),
+      _xy(new ParticleView(grav::ViewMode::XY)),
+      _xz(new ParticleView(grav::ViewMode::XZ)),
+      _yz(new ParticleView(grav::ViewMode::YZ)),
+      _view3d(new ParticleView(grav::ViewMode::Perspective)),
       _maxDrawParticles(50000u)
 {
     auto *grid = new QGridLayout(this);
@@ -97,7 +97,7 @@ void MultiViewWidget::setLuminosity(int luminosity)
     }
 }
 
-void MultiViewWidget::set3DMode(ViewMode mode)
+void MultiViewWidget::set3DMode(grav::ViewMode mode)
 {
     if (_view3d) {
         _view3d->setMode(mode);

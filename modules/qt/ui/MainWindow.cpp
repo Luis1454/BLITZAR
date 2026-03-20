@@ -514,7 +514,7 @@ MainWindow::MainWindow(
         markConfigDirty();
     });
     connect(_view3dCombo, &QComboBox::currentTextChanged, this, [this](const QString &value) {
-        _multiView->set3DMode(value == "iso" ? ViewMode::Iso : ViewMode::Perspective);
+        _multiView->set3DMode(value == "iso" ? grav::ViewMode::Iso : grav::ViewMode::Perspective);
     });
     connect(_cullingCheck, &QCheckBox::toggled, this, [this](bool enabled) {
         _config.renderCullingEnabled = enabled;

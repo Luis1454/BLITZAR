@@ -18,7 +18,7 @@ __device__ int sphGridCellIndex(
 }
 
 __global__ void computeSphCellHashKernel(
-    ParticleConstHandle particles,
+    ParticleSoAView particles,
     IndexHandle outCellHash,
     IndexHandle outParticleIndex,
     int numParticles,
@@ -28,7 +28,7 @@ __global__ void computeSphCellHashKernel(
     if (i >= numParticles) {
         return;
     }
-    const Vector3 pos = particles[i].getPosition();
+    const Vector3 pos = getSoAPosition(particles, i);
     outCellHash[i] = sphGridCellIndex(pos.x, pos.y, pos.z, grid);
     outParticleIndex[i] = i;
 }
@@ -94,7 +94,7 @@ static void sortParticlesByHash(
 
 bool ParticleSystem::buildSphGrid(int numParticles)
 {
-    if (numParticles <= 0 || !d_particles || !d_sphCellHash || !d_sphSortedIndex) {
+    if (numParticles <= 0 || !d_soaPosX || !d_sphCellHash || !d_sphSortedIndex) {
         return false;
     }
 
@@ -154,7 +154,7 @@ bool ParticleSystem::buildSphGrid(int numParticles)
         (numParticles + Particle::kDefaultCudaBlockSize - 1)
         / Particle::kDefaultCudaBlockSize;
     computeSphCellHashKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-        d_particles, d_sphCellHash, d_sphSortedIndex,
+        getSoAView(false), d_sphCellHash, d_sphSortedIndex,
         numParticles, grid);
     if (!checkCudaStatus(cudaDeviceSynchronize(),
             "sph hash kernel sync")) {

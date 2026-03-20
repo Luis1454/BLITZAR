@@ -1,0 +1,53 @@
+#ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLE_SOA_VIEW_HPP_
+#define GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLE_SOA_VIEW_HPP_
+
+#include "physics/Vector.hpp"
+
+struct ParticleSoAView {
+    float *posX;
+    float *posY;
+    float *posZ;
+    float *velX;
+    float *velY;
+    float *velZ;
+    float *pressX;
+    float *pressY;
+    float *pressZ;
+    float *mass;
+    float *temp;
+    float *dens;
+    int count;
+    int _pad[3];
+};
+
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3 getSoAPosition(ParticleSoAView view, int i) {
+    return Vector3{view.posX[i], view.posY[i], view.posZ[i]};
+}
+
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline void setSoAPosition(ParticleSoAView view, int i, Vector3 p) {
+    view.posX[i] = p.x;
+    view.posY[i] = p.y;
+    view.posZ[i] = p.z;
+}
+
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3 getSoAVelocity(ParticleSoAView view, int i) {
+    return Vector3{view.velX[i], view.velY[i], view.velZ[i]};
+}
+
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline void setSoAVelocity(ParticleSoAView view, int i, Vector3 v) {
+    view.velX[i] = v.x;
+    view.velY[i] = v.y;
+    view.velZ[i] = v.z;
+}
+
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline void setSoAPressure(ParticleSoAView view, int i, Vector3 p) {
+    view.pressX[i] = p.x;
+    view.pressY[i] = p.y;
+    view.pressZ[i] = p.z;
+}
+
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3 getSoAPressure(ParticleSoAView view, int i) {
+    return Vector3{view.pressX[i], view.pressY[i], view.pressZ[i]};
+}
+
+#endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLE_SOA_VIEW_HPP_

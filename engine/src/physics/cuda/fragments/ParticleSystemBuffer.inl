@@ -43,6 +43,9 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
     d_soaNextVelX = nullptr;
     d_soaNextVelY = nullptr;
     d_soaNextVelZ = nullptr;
+    d_stage = nullptr;
+    d_k1x = nullptr; d_k2x = nullptr; d_k3x = nullptr; d_k4x = nullptr;
+    d_k1v = nullptr; d_k2v = nullptr; d_k3v = nullptr; d_k4v = nullptr;
     d_sphDensity = nullptr;
     d_sphPressure = nullptr;
     d_sphCellHash = nullptr;
