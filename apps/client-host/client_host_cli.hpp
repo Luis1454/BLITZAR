@@ -10,6 +10,7 @@ struct HostOptions {
     std::string configPath = "simulation.ini";
     std::string moduleSpecifier = "cli";
     bool showHelp = false;
+    bool validateOnly = false;
 };
 
 class ClientHostCli final {

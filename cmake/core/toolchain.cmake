@@ -60,6 +60,7 @@ set(GRAVITY_SERVER_SOURCES
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"

@@ -12,6 +12,7 @@
 #include <QCoreApplication>
 #include <QEventLoop>
 #include <QImage>
+#include <QLabel>
 #include <QPainter>
 #include <QPalette>
 #include <QPushButton>
@@ -246,6 +247,35 @@ TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabel
         minTotalColorYInBand(darkImage, QColor(120, 200, 255), sampleMappedX));
     EXPECT_LT(minTotalColorYInBand(lightImage, QColor(0, 102, 170), timeMappedX),
         minTotalColorYInBand(lightImage, QColor(0, 102, 170), sampleMappedX));
+
+    SimulationConfig invalidConfig = makeUiConfig();
+    invalidConfig.particleCount = 1u;
+    invalidConfig.initConfigStyle = "detailed";
+    invalidConfig.initMode = "file";
+    invalidConfig.inputFile.clear();
+    auto invalidRuntime = std::make_unique<grav_client::ClientRuntime>(
+        "simulation.ini",
+        testsupport::makeTransport(1u, std::string()));
+    grav_qt::MainWindow invalidWindow(invalidConfig, "simulation.ini", std::move(invalidRuntime));
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
+
+    QString preflightText;
+    QString statusText;
+    const QList<QLabel *> labelsInWindow = invalidWindow.findChildren<QLabel *>();
+    for (QLabel *label : labelsInWindow) {
+        if (label == nullptr) {
+            continue;
+        }
+        if (label->text().contains("[preflight]")) {
+            preflightText = label->text();
+        }
+        if (label->text().contains("preflight validation failed")) {
+            statusText = label->text();
+        }
+    }
+    EXPECT_TRUE(preflightText.contains("blocked"));
+    EXPECT_TRUE(preflightText.contains("input_file"));
+    EXPECT_TRUE(statusText.contains("preflight validation failed"));
 }
 
 } // namespace grav_test_qt_window

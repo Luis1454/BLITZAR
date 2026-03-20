@@ -15,6 +15,10 @@ public:
                 outOptions.showHelp = true;
                 continue;
             }
+            if (arg == "--validate-only") {
+                outOptions.validateOnly = true;
+                continue;
+            }
             if (arg == "--config" && i + 1 < argc) {
                 outOptions.configPath = argv[++i];
                 continue;
@@ -40,14 +44,15 @@ public:
     static void printHelp(std::string_view programName)
     {
         std::cout
-            << "Usage: " << programName << " [--config PATH] [--module <alias|path>]\n"
+            << "Usage: " << programName << " [--config PATH] [--module <alias|path>] [--validate-only]\n"
             << "[client-host] commands:\n"
             << "  help\n"
             << "  modules\n"
             << "  module\n"
             << "  quit | exit\n"
             << "  <any other line> -> forwarded to loaded module\n"
-            << "[client-host] aliases: cli, gui, echo, qt\n";
+            << "[client-host] aliases: cli, gui, echo, qt\n"
+            << "[client-host] --validate-only runs scenario pre-flight checks and exits without starting a module.\n";
         if (ClientHostCli::liveReloadEnabled()) {
             std::cout
                 << "  reload\n"

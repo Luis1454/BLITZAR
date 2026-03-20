@@ -1,5 +1,6 @@
 #include "server/SimulationInitConfig.hpp"
 #include "config/SimulationConfig.hpp"
+#include "config/SimulationScenarioValidation.hpp"
 #include "protocol/ServerProtocol.hpp"
 
 #include <gtest/gtest.h>
@@ -206,6 +207,13 @@ TEST(ConfigArgsTest, TST_UNT_CONF_020_ResolveInitPlanRejectsFileModeWithoutInput
     EXPECT_TRUE(plan.inputFile.empty());
     EXPECT_NE(log.str().find("init_mode=file ignored"), std::string::npos);
     EXPECT_NE(plan.summary.find("mode=disk_orbit"), std::string::npos);
+
+    SimulationConfig invalidParticleConfig = SimulationConfig::defaults();
+    invalidParticleConfig.particleCount = 1u;
+    const grav_config::ScenarioValidationReport report = grav_config::SimulationScenarioValidation::evaluate(invalidParticleConfig);
+    EXPECT_FALSE(report.validForRun);
+    EXPECT_EQ(report.errorCount, 1u);
+    EXPECT_NE(grav_config::SimulationScenarioValidation::renderText(report).find("particle_count"), std::string::npos);
 }
 
 TEST(ConfigArgsTest, TST_UNT_CONF_021_ResolveInitPlanIgnoresStaleInputFileOutsideFileMode)
@@ -217,11 +225,15 @@ TEST(ConfigArgsTest, TST_UNT_CONF_021_ResolveInitPlanIgnoresStaleInputFileOutsid
     config.inputFile = "tests/data/two_body_rest.xyz";
     std::stringstream log;
     const ResolvedInitialStatePlan plan = resolveInitialStatePlan(config, log);
+    const grav_config::ScenarioValidationReport report = grav_config::SimulationScenarioValidation::evaluate(config);
     EXPECT_EQ(plan.config.mode, "random_cloud");
     EXPECT_TRUE(plan.inputFile.empty());
     EXPECT_NE(log.str().find("preset_structure=file ignored"), std::string::npos);
     EXPECT_NE(log.str().find("input_file ignored"), std::string::npos);
     EXPECT_NE(plan.summary.find("source=generated"), std::string::npos);
+    EXPECT_TRUE(report.validForRun);
+    EXPECT_GE(report.warningCount, 1u);
+    EXPECT_NE(grav_config::SimulationScenarioValidation::renderText(report).find("initial_state"), std::string::npos);
 }
 
 TEST(ConfigArgsTest, TST_UNT_CONF_023_ResolveInitPlanSupportsCalibrationPresets)

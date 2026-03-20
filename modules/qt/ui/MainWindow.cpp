@@ -2,6 +2,7 @@
 
 #include "client/ClientCommon.hpp"
 #include "config/SimulationPerformanceProfile.hpp"
+#include "config/SimulationScenarioValidation.hpp"
 #include "server/SimulationInitConfig.hpp"
 #include "ui/EnergyGraphWidget.hpp"
 #include "ui/MultiViewWidget.hpp"
@@ -63,6 +64,7 @@ MainWindow::MainWindow(
       _runtime(std::move(runtime)),
       _multiView(new MultiViewWidget()),
       _energyGraph(new EnergyGraphWidget()),
+      _validationLabel(new QLabel(this)),
       _statusLabel(new QLabel(this)),
       _pauseButton(new QPushButton("Pause", this)),
       _stepButton(new QPushButton("Step", this)),
@@ -73,6 +75,7 @@ MainWindow::MainWindow(
       _exportButton(new QPushButton("Export", this)),
       _saveConfigButton(new QPushButton("Save config", this)),
       _loadInputButton(new QPushButton("Load input", this)),
+      _validateButton(new QPushButton("Validate config", this)),
       _serverAutostartCheck(new QCheckBox("autostart server", this)),
       _serverHostEdit(new QLineEdit(this)),
       _serverBinEdit(new QLineEdit(this)),
@@ -190,6 +193,8 @@ MainWindow::MainWindow(
     _serverPortSpin->setValue(4545);
     _serverAutostartCheck->setChecked(false);
     _serverBinEdit->setPlaceholderText("blitzar-server(.exe)");
+    _validationLabel->setWordWrap(true);
+    _validationLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
     auto *sectionsWidget = new QWidget(this);
     auto *sectionsLayout = new QHBoxLayout(sectionsWidget);
@@ -234,6 +239,7 @@ MainWindow::MainWindow(
     ioLayout->addWidget(_saveConfigButton);
     ioLayout->addWidget(_loadPresetButton);
     ioLayout->addWidget(_loadInputButton);
+    ioLayout->addWidget(_validateButton);
     ioLayout->addWidget(_exportButton);
     ioLayout->addStretch(1);
 
@@ -283,12 +289,13 @@ MainWindow::MainWindow(
     root->addWidget(_multiView, 4);
     root->addWidget(cameraBox, 0);
     root->addWidget(_energyGraph, 2);
+    root->addWidget(_validationLabel, 0);
     root->addWidget(_statusLabel, 0);
 
     setCentralWidget(central);
     resize(1500, 980);
 
-    applyConfigToServer(false);
+    const bool startupConfigValid = applyConfigToServer(false);
     markConfigDirty(false);
     _multiView->setMaxDrawParticles(_clientDrawCap);
     _runtime->setRemoteSnapshotCap(_clientDrawCap);
@@ -408,6 +415,9 @@ MainWindow::MainWindow(
     connect(_saveConfigButton, &QPushButton::clicked, this, [this]() {
         (void)saveConfigToDisk();
     });
+    connect(_validateButton, &QPushButton::clicked, this, [this]() {
+        (void)refreshValidationReport(false);
+    });
     connect(_loadInputButton, &QPushButton::clicked, this, [this]() {
         const QString startPath = _config.inputFile.empty()
             ? QString::fromStdString(_config.exportDirectory)
@@ -425,10 +435,7 @@ MainWindow::MainWindow(
         _config.inputFormat = "auto";
         _config.presetStructure = "file";
         _config.initMode = "file";
-        const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(_config, std::cerr);
-        _runtime->setInitialStateFile(initPlan.inputFile, initPlan.inputFormat);
-        _runtime->setInitialStateConfig(initPlan.config);
-        _runtime->requestReset();
+        (void)applyConfigToServer(true);
         markConfigDirty();
     });
     connect(_applyPresetButton, &QPushButton::clicked, this, [this]() {
@@ -542,8 +549,12 @@ MainWindow::MainWindow(
 
     connect(_timer, &QTimer::timeout, this, [this]() { tick(); });
     const std::uint32_t fps = std::max<std::uint32_t>(1u, _config.uiFpsLimit);
-    if (_runtime->start()) {
+    if (startupConfigValid && _runtime->start()) {
         _timer->start(std::max(1, static_cast<int>(1000 / fps)));
+    } else if (!startupConfigValid) {
+        _statusLabel->setText(
+            QString("preflight validation failed; fix config before starting")
+        );
     } else {
         _statusLabel->setText(
             QString("server connection failed (service)")
@@ -556,8 +567,12 @@ MainWindow::~MainWindow()
     _runtime->stop();
 }
 
-void MainWindow::applyConfigToServer(bool requestReset)
+bool MainWindow::applyConfigToServer(bool requestReset)
 {
+    captureUiIntoConfig();
+    if (!refreshValidationReport(true)) {
+        return false;
+    }
     const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(_config, std::cerr);
     _runtime->setParticleCount(grav_client::resolveServerParticleCount(_config));
     _runtime->setDt(_config.dt);
@@ -584,6 +599,7 @@ void MainWindow::applyConfigToServer(bool requestReset)
     if (requestReset) {
         _runtime->requestReset();
     }
+    return true;
 }
 
 void MainWindow::applyConfigToUi()
@@ -696,6 +712,7 @@ void MainWindow::markConfigDirty(bool dirty)
 bool MainWindow::saveConfigToDisk()
 {
     captureUiIntoConfig();
+    (void)refreshValidationReport(false);
     if (_configPath.empty()) {
         _configPath = "simulation.ini";
     }
@@ -706,6 +723,18 @@ bool MainWindow::saveConfigToDisk()
     markConfigDirty(false);
     std::cout << "[qt] config saved: " << _configPath << "\n";
     return true;
+}
+
+bool MainWindow::refreshValidationReport(bool blockOnErrors)
+{
+    const grav_config::ScenarioValidationReport report = grav_config::SimulationScenarioValidation::evaluate(_config);
+    if (_validationLabel != nullptr) {
+        _validationLabel->setText(QString::fromStdString(grav_config::SimulationScenarioValidation::renderText(report)));
+    }
+    if (blockOnErrors && !report.validForRun && _statusLabel != nullptr) {
+        _statusLabel->setText(QString("preflight validation failed; fix config errors"));
+    }
+    return !blockOnErrors || report.validForRun;
 }
 
 void MainWindow::update3DCameraFromSliders()
