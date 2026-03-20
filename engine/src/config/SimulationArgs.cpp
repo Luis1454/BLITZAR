@@ -5,6 +5,7 @@
 #include "config/SimulationArgsParse.hpp"
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationOptionRegistry.hpp"
+#include "config/SimulationScenarioValidation.hpp"
 #include "config/SimulationModes.hpp"
 
 #include <ostream>
@@ -119,6 +120,14 @@ void applyArgsToConfig(
         warnings << "[args] unsupported solver/integrator combination: solver=octree_gpu requires integrator=euler\n";
         config.solver = initialSolver;
         config.integrator = initialIntegrator;
+    }
+
+    const grav_config::ScenarioValidationReport report = grav_config::SimulationScenarioValidation::evaluate(config);
+    if (report.errorCount != 0u || report.warningCount != 0u) {
+        warnings << grav_config::SimulationScenarioValidation::renderText(report) << "\n";
+        if (!report.validForRun) {
+            runtime.hasArgumentError = true;
+        }
     }
 }
 

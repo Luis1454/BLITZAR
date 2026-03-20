@@ -1,6 +1,7 @@
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationConfigDirective.hpp"
 #include "config/SimulationPerformanceProfile.hpp"
+#include "config/SimulationScenarioValidation.hpp"
 #include "config/SimulationModes.hpp"
 #include "config/SimulationOptionRegistry.hpp"
 #include "protocol/ServerProtocol.hpp"
@@ -61,6 +62,10 @@ SimulationConfig SimulationConfig::loadOrCreate(const std::string &path)
     if (!grav_modes::isSupportedSolverIntegratorPair(config.solver, config.integrator)) {
         config.integrator = std::string(grav_modes::kIntegratorEuler);
         std::cerr << "[config] unsupported solver/integrator combination: solver=octree_gpu requires integrator=euler\n";
+    }
+    const grav_config::ScenarioValidationReport report = grav_config::SimulationScenarioValidation::evaluate(config);
+    if (report.errorCount != 0u || report.warningCount != 0u) {
+        std::cerr << grav_config::SimulationScenarioValidation::renderText(report) << "\n";
     }
     return config;
 }
