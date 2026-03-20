@@ -11,6 +11,9 @@
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QEventLoop>
+#include <QImage>
+#include <QPainter>
+#include <QPalette>
 #include <QPushButton>
 
 #include <chrono>
@@ -157,19 +160,92 @@ TEST(QtMainWindowTest, TST_UIX_UI_004_ShowsEffectiveClientCapWhenConfiguredCapEx
 
 TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabels)
 {
+    (void)testsupport::ensureQtApp();
+
     const QStringList labels = grav_qt::EnergyGraphWidget::legendLabels();
 
-    EXPECT_EQ(grav_qt::EnergyGraphWidget::energyXAxisLabel().toStdString(), "History [samples]");
-    EXPECT_EQ(grav_qt::EnergyGraphWidget::energyYAxisLabel().toStdString(), "Energy [a.u.]");
-    EXPECT_EQ(grav_qt::EnergyGraphWidget::driftXAxisLabel().toStdString(), "History [samples]");
+    EXPECT_EQ(grav_qt::EnergyGraphWidget::energyXAxisLabel().toStdString(), "Simulation time [s]");
+    EXPECT_EQ(grav_qt::EnergyGraphWidget::energyYAxisLabel().toStdString(), "Energy [J]");
+    EXPECT_EQ(grav_qt::EnergyGraphWidget::driftXAxisLabel().toStdString(), "Simulation time [s]");
     EXPECT_EQ(grav_qt::EnergyGraphWidget::driftYAxisLabel().toStdString(), "Drift [%]");
     ASSERT_EQ(labels.size(), 6);
-    EXPECT_EQ(labels.at(0).toStdString(), "Kinetic [a.u.]");
-    EXPECT_EQ(labels.at(1).toStdString(), "Potential [a.u.]");
-    EXPECT_EQ(labels.at(2).toStdString(), "Thermal [a.u.]");
-    EXPECT_EQ(labels.at(3).toStdString(), "Radiated [a.u.]");
-    EXPECT_EQ(labels.at(4).toStdString(), "Total [a.u.]");
+    EXPECT_EQ(labels.at(0).toStdString(), "Kinetic [J]");
+    EXPECT_EQ(labels.at(1).toStdString(), "Potential [J]");
+    EXPECT_EQ(labels.at(2).toStdString(), "Thermal [J]");
+    EXPECT_EQ(labels.at(3).toStdString(), "Radiated [J]");
+    EXPECT_EQ(labels.at(4).toStdString(), "Total [J]");
     EXPECT_EQ(labels.at(5).toStdString(), "Drift [%]");
+
+    grav_qt::EnergyGraphWidget widget;
+    widget.resize(900, 240);
+
+    SimulationStats first{};
+    first.kineticEnergy = 5.0f;
+    first.potentialEnergy = -15.0f;
+    first.thermalEnergy = 1.0f;
+    first.radiatedEnergy = 0.5f;
+    first.totalEnergy = 20.0f;
+    first.energyDriftPct = -0.2f;
+    first.totalTime = 0.0f;
+    widget.pushSample(first);
+
+    SimulationStats second = first;
+    second.totalEnergy = 70.0f;
+    second.totalTime = 1.0f;
+    second.energyDriftPct = 0.35f;
+    widget.pushSample(second);
+
+    SimulationStats third = first;
+    third.totalEnergy = 22.0f;
+    third.totalTime = 9.0f;
+    third.energyDriftPct = -0.1f;
+    widget.pushSample(third);
+
+    const auto minTotalColorYInBand = [](const QImage &image, const QColor &target, int centerX) {
+        int minY = image.height();
+        for (int x = std::max(0, centerX - 6); x <= std::min(image.width() - 1, centerX + 6); ++x) {
+            for (int y = 40; y < image.height() - 30; ++y) {
+                const QColor pixel = image.pixelColor(x, y);
+                const int distance =
+                    std::abs(pixel.red() - target.red())
+                    + std::abs(pixel.green() - target.green())
+                    + std::abs(pixel.blue() - target.blue());
+                if (distance <= 60) {
+                    minY = std::min(minY, y);
+                }
+            }
+        }
+        return minY;
+    };
+
+    const auto renderWithPalette = [&](const QColor &windowColor, const QColor &textColor, const QColor &midColor) {
+        QPalette palette = widget.palette();
+        palette.setColor(QPalette::Window, windowColor);
+        palette.setColor(QPalette::WindowText, textColor);
+        palette.setColor(QPalette::Mid, midColor);
+        widget.setPalette(palette);
+        widget.setAutoFillBackground(true);
+
+        QImage image(widget.size(), QImage::Format_ARGB32_Premultiplied);
+        image.fill(windowColor);
+        QPainter painter(&image);
+        widget.render(&painter);
+        painter.end();
+        return image;
+    };
+
+    const QImage darkImage = renderWithPalette(QColor(18, 22, 28), QColor(232, 236, 242), QColor(112, 120, 132));
+    const QImage lightImage = renderWithPalette(QColor(245, 247, 250), QColor(25, 28, 33), QColor(155, 160, 170));
+
+    const int fullLeft = 48;
+    const int fullWidth = widget.width() - 64;
+    const int timeMappedX = fullLeft + static_cast<int>(fullWidth * (1.0 / 9.0));
+    const int sampleMappedX = fullLeft + fullWidth / 2;
+
+    EXPECT_LT(minTotalColorYInBand(darkImage, QColor(120, 200, 255), timeMappedX),
+        minTotalColorYInBand(darkImage, QColor(120, 200, 255), sampleMappedX));
+    EXPECT_LT(minTotalColorYInBand(lightImage, QColor(0, 102, 170), timeMappedX),
+        minTotalColorYInBand(lightImage, QColor(0, 102, 170), sampleMappedX));
 }
 
 } // namespace grav_test_qt_window
