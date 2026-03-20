@@ -1,8 +1,9 @@
 #ifndef GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERJSONCODEC_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERJSONCODEC_HPP_
 
-#include "server/SimulationServer.hpp"
 #include "config/TextParse.hpp"
+#include "types/SimulationTypes.hpp"
+
 #include <cstdint>
 #include <string>
 #include <string_view>
@@ -102,6 +103,5 @@ class ServerJsonCodec {
 };
 
 } // namespace grav_protocol
-
 
 #endif // GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERJSONCODEC_HPP_

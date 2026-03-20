@@ -1,5 +1,6 @@
 #include "config/SimulationScenarioValidation.hpp"
 
+#include "config/SimulationConfig.hpp"
 #include "server/SimulationInitConfig.hpp"
 
 #include <algorithm>

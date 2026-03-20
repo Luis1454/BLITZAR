@@ -1,10 +1,10 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONOPTIONREGISTRY_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONOPTIONREGISTRY_HPP_
 
-#include "config/SimulationConfig.hpp"
-
-#include <ostream>
+#include <iosfwd>
 #include <string>
+
+struct SimulationConfig;
 
 namespace grav_config {
 
@@ -38,6 +38,5 @@ enum class SimulationOptionGroup {
 void printCliUsage(std::ostream &out, SimulationOptionGroup group);
 
 } // namespace grav_config
-
 
 #endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONOPTIONREGISTRY_HPP_

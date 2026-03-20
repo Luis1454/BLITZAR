@@ -3,9 +3,11 @@
 #include "config/SimulationArgsClientOptions.hpp"
 #include "config/SimulationArgsInitOptions.hpp"
 #include "config/SimulationArgsParse.hpp"
+#include "config/SimulationConfig.hpp"
 #include "config/SimulationOptionRegistry.hpp"
 #include "config/SimulationModes.hpp"
 
+#include <ostream>
 #include <string>
 
 std::string findConfigPathArg(const std::vector<std::string_view> &args, const std::string &fallback)

@@ -1,8 +1,6 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
 
-#include "protocol/ServerProtocol.hpp"
-
 #include <cstdint>
 #include <string>
 
@@ -18,7 +16,7 @@ struct SimulationConfig {
     std::uint32_t snapshotPublishPeriodMs = 50u;
     float octreeTheta = 1.2f;
     float octreeSoftening = 2.5f;
-    std::uint32_t clientParticleCap = grav_protocol::kSnapshotDefaultPoints;
+    std::uint32_t clientParticleCap = 4096u;
     float defaultZoom = 8.0f;
     int defaultLuminosity = 100;
     std::uint32_t uiFpsLimit = 60u;

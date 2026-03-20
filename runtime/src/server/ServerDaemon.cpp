@@ -1,8 +1,9 @@
 #include "server/ServerDaemon.hpp"
-#include "protocol/ServerJsonCodec.hpp"
-#include "protocol/ServerProtocol.hpp"
 #include "config/SimulationModes.hpp"
 #include "platform/SocketPlatform.hpp"
+#include "protocol/ServerJsonCodec.hpp"
+#include "protocol/ServerProtocol.hpp"
+#include "server/SimulationServer.hpp"
 
 #include <algorithm>
 #include <array>

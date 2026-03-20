@@ -1,6 +1,8 @@
 #include "config/SimulationConfigDirective.hpp"
 
+#include "config/SimulationConfig.hpp"
 #include "config/SimulationOptionRegistry.hpp"
+
 #include <algorithm>
 #include <cctype>
 #include <string_view>

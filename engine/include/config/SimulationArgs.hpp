@@ -1,12 +1,12 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_
 
-#include "config/SimulationConfig.hpp"
-
-#include <ostream>
+#include <iosfwd>
 #include <string>
 #include <string_view>
 #include <vector>
+
+struct SimulationConfig;
 
 struct RuntimeArgs {
     std::string configPath = "simulation.ini";
@@ -25,8 +25,5 @@ void applyArgsToConfig(
     std::ostream &warnings
 );
 void printUsage(std::ostream &out, std::string_view programName, bool headlessMode);
-
-
-
 
 #endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_

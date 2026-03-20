@@ -30,6 +30,8 @@
         {"flags": ["--diff-base"], "default": "", "help": "Git base ref for diff-only clang-tidy"},
         {"flags": ["--diff-target"], "default": "", "help": "Git target ref for diff-only clang-tidy"},
         {"flags": ["--header-filter"], "dest": "header_filter", "default": "([/\\\\]|^)(apps|engine|runtime|modules|tests)([/\\\\])", "help": "clang-tidy header filter regex"},
+        {"flags": ["--file-timeout-sec"], "dest": "file_timeout_sec", "default": 0, "type": "int", "help": "Per-file timeout for clang-tidy (0 disables timeout; strict evidence mode)"},
+        {"flags": ["--timeout-fallback-checks"], "dest": "timeout_fallback_checks", "default": "", "help": "Checks used when analyzer times out for a file (empty disables fallback; strict evidence mode)"},
         {"flags": ["--path"], "dest": "paths", "action": "append", "default": [], "help": "Restrict analysis to this repo-relative path (repeatable)"}
       ],
       "context": {
@@ -42,6 +44,8 @@
         "clang_tidy_diff_base": {"source": "arg", "name": "diff_base"},
         "clang_tidy_diff_target": {"source": "arg", "name": "diff_target"},
         "clang_tidy_header_filter": {"source": "arg", "name": "header_filter"},
+        "clang_tidy_file_timeout_sec": {"source": "arg", "name": "file_timeout_sec"},
+        "clang_tidy_timeout_fallback_checks": {"source": "arg", "name": "timeout_fallback_checks"},
         "paths": {"source": "arg", "name": "paths", "tuple": true}
       }
     },

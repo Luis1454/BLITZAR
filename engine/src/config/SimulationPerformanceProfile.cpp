@@ -1,5 +1,6 @@
 #include "config/SimulationPerformanceProfile.hpp"
 
+#include "config/SimulationConfig.hpp"
 #include "protocol/ServerProtocol.hpp"
 
 #include <algorithm>

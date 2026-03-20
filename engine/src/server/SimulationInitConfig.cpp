@@ -1,5 +1,7 @@
 #include "server/SimulationInitConfig.hpp"
 
+#include "config/SimulationConfig.hpp"
+
 #include <algorithm>
 #include <cctype>
 #include <iostream>
