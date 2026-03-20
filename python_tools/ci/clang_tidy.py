@@ -85,7 +85,7 @@ class ClangTidyCheck(BaseCheck):
         files: list[Path] = []
         seen: set[Path] = set()
         for entry in entries:
-            file_path = Path(entry["file"]).resolve()
+            file_path = Path(str(entry["file"])).resolve()
             if not path_spec.is_under(file_path, context.root):
                 continue
             if not any(path_spec.is_under(file_path, allowed) for allowed in allowed_abs):

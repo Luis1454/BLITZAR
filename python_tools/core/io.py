@@ -5,10 +5,10 @@ import csv
 import json
 import re
 import subprocess
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from re import Pattern
-from typing import Callable
 
 from .models import JsonValue
 
@@ -124,7 +124,7 @@ class ProcessRunner:
                 try:
                     stdout, stderr = process.communicate(timeout=heartbeat_seconds)
                     return subprocess.CompletedProcess(args, process.returncode, stdout, stderr)
-                except subprocess.TimeoutExpired:
+                except subprocess.TimeoutExpired as exc:
                     if on_heartbeat is not None:
                         on_heartbeat()
                     if timeout is not None:
@@ -132,7 +132,12 @@ class ProcessRunner:
                         if timeout <= 0:
                             process.kill()
                             stdout, stderr = process.communicate()
-                            raise subprocess.TimeoutExpired(args, heartbeat_seconds, output=stdout, stderr=stderr)
+                            raise subprocess.TimeoutExpired(
+                                args,
+                                heartbeat_seconds,
+                                output=stdout,
+                                stderr=stderr,
+                            ) from exc
         finally:
             if process.poll() is None:
                 process.kill()

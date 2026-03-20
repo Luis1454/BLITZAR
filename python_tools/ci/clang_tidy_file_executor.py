@@ -72,7 +72,7 @@ class ClangTidyFileExecutor:
     ) -> tuple[bool, str, str]:
         elapsed = time.monotonic() - start
         log_path = self._log_path_for(file_path, context, log_dir)
-        timeout_output = f"{exc.output or ''}{exc.stderr or ''}"
+        timeout_output = self._stringify_output(exc.output) + self._stringify_output(exc.stderr)
         timeout_message = f"[clang-tidy] [{index}/{total}] timeout {display_path} ({elapsed:.1f}s) limit={timeout_seconds}s"
         self._print_progress(timeout_message)
         fallback_checks = self._resolve_timeout_fallback_checks(
@@ -166,6 +166,12 @@ class ClangTidyFileExecutor:
         if not trimmed or trimmed == checks:
             return ""
         return trimmed
+
+    @staticmethod
+    def _stringify_output(value: str | bytes | None) -> str:
+        if isinstance(value, bytes):
+            return value.decode("utf-8", errors="ignore")
+        return value or ""
 
     @staticmethod
     def _write_log(log_path: Path, content: str) -> str:
