@@ -9,6 +9,7 @@ Transport:
 - Request shape: `{"cmd":"<name>", ...fields }`
 - Response shape success: `{"ok":true,"cmd":"<name>", ...payload }`
 - Response shape error: `{"ok":false,"cmd":"<name>","error":"<message>" }`
+- Physical quantities use SI units unless a field name explicitly carries another unit such as `_ms`.
 - Optional auth:
   - When server is started with `--server-token <secret>`, every request must include
     `token:"<secret>"` (for example `{"cmd":"status","token":"secret"}`).
@@ -18,7 +19,7 @@ Core commands:
 - `status`
   - Response payload:
     - `steps` (`uint64`)
-    - `dt` (`float`)
+    - `dt` (`float`, seconds `[s]`)
     - `paused` (`bool`)
     - `faulted` (`bool`)
     - `fault_step` (`uint64`)
@@ -26,15 +27,15 @@ Core commands:
     - `sph` (`bool`)
     - `server_fps` (`float`, simulation steps per second)
     - `performance_profile` (`string`)
-    - `substep_target_dt` (`float`)
-    - `substep_dt` (`float`)
+    - `substep_target_dt` (`float`, seconds `[s]`)
+    - `substep_dt` (`float`, seconds `[s]`)
     - `substeps` (`uint32`)
     - `max_substeps` (`uint32`)
-    - `snapshot_publish_period_ms` (`uint32`)
+    - `snapshot_publish_period_ms` (`uint32`, milliseconds `[ms]`)
     - `particles` (`uint32`)
     - `solver` (`string`)
-    - `ekin`, `epot`, `eth`, `erad`, `etot` (`float`)
-    - `drift_pct` (`float`)
+    - `ekin`, `epot`, `eth`, `erad`, `etot` (`float`, joules `[J]`)
+    - `drift_pct` (`float`, percent `[%]`)
     - `estimated` (`bool`)
 - `get_snapshot`
   - Fields:
@@ -42,7 +43,7 @@ Core commands:
   - Response payload:
     - `has_snapshot` (`bool`)
     - `count` (`uint32`)
-    - `particles`: array of `[x,y,z,mass,pressureNorm,temperature]`
+    - `particles`: array of `[x,y,z,mass,pressureNorm,temperature]` with `x/y/z` in `[m]`, `mass` in `[kg]`, and `temperature` in `[K]`
 
 Control commands:
 - `pause`, `resume`, `toggle`
@@ -53,12 +54,13 @@ Control commands:
 
 Runtime config commands:
 - `set_dt` (`value:float`)
+- `set_dt` (`value:float`, seconds `[s]`)
 - `set_solver` (`value:string`)
 - `set_integrator` (`value:string`)
 - `set_particle_count` (`value:uint64`)
 - `set_sph` (`value:bool`)
-- `set_octree` (`theta:float`, `softening:float`)
-- `set_sph_params` (`h`, `rest_density`, `gas_constant`, `viscosity`)
+- `set_octree` (`theta:float` dimensionless, `softening:float` in `[m]`)
+- `set_sph_params` (`h` in `[m]`, `rest_density` in `[kg/m^3]`, `gas_constant` in solver units, `viscosity` in solver units)
 - `set_energy_measure` (`every_steps:uint32`, `sample_limit:uint32`)
 
 I/O commands:

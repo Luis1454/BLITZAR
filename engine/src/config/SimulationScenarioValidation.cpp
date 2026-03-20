@@ -76,14 +76,14 @@ public:
             addDiagnostic(
                 ScenarioDiagnosticLevel::Error,
                 "dt",
-                "Time step must be strictly positive.",
-                "Set dt to a value above 0.");
+                "Time step dt [s] must be strictly positive.",
+                "Set dt to a value above 0 s.");
         } else if (config.dt > 0.05f) {
             addDiagnostic(
                 ScenarioDiagnosticLevel::Warning,
                 "dt",
-                "Large time steps increase the risk of unstable orbits and missed interactions.",
-                "Reduce dt or enable a tighter substep_target_dt.");
+                "Large time steps dt [s] increase the risk of unstable orbits and missed interactions.",
+                "Reduce dt [s] or enable a tighter substep_target_dt [s].");
         }
 
         if (config.substepTargetDt < 0.0f) {
@@ -112,14 +112,44 @@ public:
             addDiagnostic(
                 ScenarioDiagnosticLevel::Error,
                 "octree_softening",
-                "Softening must be strictly positive.",
-                "Set octree_softening above 0.");
+                "Softening octree_softening [m] must be strictly positive.",
+                "Set octree_softening above 0 m.");
         } else if (config.octreeSoftening < config.physicsMinSoftening) {
             addDiagnostic(
                 ScenarioDiagnosticLevel::Warning,
                 "octree_softening",
-                "Softening is below physics_min_softening and will be clamped during force evaluation.",
-                "Raise octree_softening or lower physics_min_softening intentionally.");
+                "Softening octree_softening [m] is below physics_min_softening [m] and will be clamped during force evaluation.",
+                "Raise octree_softening [m] or lower physics_min_softening [m] intentionally.");
+        }
+
+        if (plan.config.velocityTemperature < 0.0f) {
+            addDiagnostic(ScenarioDiagnosticLevel::Error, "velocity_temperature", "velocity_temperature [m/s] cannot be negative.", "Set velocity_temperature to 0 m/s or a positive velocity scale.");
+        }
+        if (plan.config.particleTemperature < 0.0f) {
+            addDiagnostic(ScenarioDiagnosticLevel::Error, "particle_temperature", "particle_temperature [K] cannot be negative.", "Set particle_temperature to 0 K or a positive temperature.");
+        }
+        if (plan.config.thermalAmbientTemperature < 0.0f) {
+            addDiagnostic(ScenarioDiagnosticLevel::Error, "thermal_ambient_temperature", "thermal_ambient_temperature [K] cannot be negative.", "Set thermal_ambient_temperature to 0 K or above.");
+        }
+        if (!(plan.config.thermalSpecificHeat > 0.0f)) {
+            addDiagnostic(ScenarioDiagnosticLevel::Error, "thermal_specific_heat", "thermal_specific_heat [J/(kg*K)] must be strictly positive.", "Set thermal_specific_heat to a value above 0 J/(kg*K).");
+        }
+        if (plan.config.thermalHeatingCoeff < 0.0f) {
+            addDiagnostic(ScenarioDiagnosticLevel::Error, "thermal_heating_coeff", "thermal_heating_coeff must be non-negative.", "Set thermal_heating_coeff to 0 or a positive value.");
+        }
+        if (plan.config.thermalRadiationCoeff < 0.0f) {
+            addDiagnostic(ScenarioDiagnosticLevel::Error, "thermal_radiation_coeff", "thermal_radiation_coeff must be non-negative.", "Set thermal_radiation_coeff to 0 or a positive value.");
+        }
+        if (!(config.physicsMaxAcceleration > 0.0f)) {
+            addDiagnostic(ScenarioDiagnosticLevel::Error, "physics_max_acceleration", "physics_max_acceleration [m/s^2] must be strictly positive.", "Set physics_max_acceleration above 0 m/s^2.");
+        }
+        if (!(config.physicsMinSoftening > 0.0f)) {
+            addDiagnostic(ScenarioDiagnosticLevel::Error, "physics_min_softening", "physics_min_softening [m] must be strictly positive.", "Set physics_min_softening above 0 m.");
+        }
+        if (!(config.physicsMinDistance2 > 0.0f)) {
+            addDiagnostic(ScenarioDiagnosticLevel::Error, "physics_min_distance2", "physics_min_distance2 [m^2] must be strictly positive.", "Set physics_min_distance2 above 0 m^2.");
+        } else if (config.octreeSoftening > 0.0f && config.physicsMinDistance2 > config.octreeSoftening * config.octreeSoftening) {
+            addDiagnostic(ScenarioDiagnosticLevel::Warning, "physics_min_distance2", "physics_min_distance2 [m^2] exceeds octree_softening^2 [m^2], so near-field clamping will dominate before softening.", "Lower physics_min_distance2 [m^2] or raise octree_softening [m] intentionally.");
         }
 
         if (config.solver == "octree_gpu" || config.solver == "octree_cpu") {
@@ -209,6 +239,23 @@ public:
                 "init_cloud_half_extent",
                 "Cloud-based presets require a strictly positive spatial extent.",
                 "Set init_cloud_half_extent above 0.");
+        }
+
+        const float maxConfiguredSpeed = std::max({
+            std::fabs(plan.config.velocityScale),
+            std::fabs(plan.config.cloudSpeed),
+            std::fabs(plan.config.velocityTemperature),
+            std::fabs(plan.config.centralVx),
+            std::fabs(plan.config.centralVy),
+            std::fabs(plan.config.centralVz)
+        });
+        const float characteristicLength = std::max({config.octreeSoftening, config.presetSize, plan.config.diskRadiusMax, plan.config.cloudHalfExtent});
+        const float stepTravel = config.dt * maxConfiguredSpeed;
+        if (stepTravel > 0.0f && config.octreeSoftening > 0.0f && stepTravel > config.octreeSoftening) {
+            addDiagnostic(ScenarioDiagnosticLevel::Warning, "dt", "Single-step travel dt [s] * velocity [m/s] exceeds octree_softening [m].", "Lower dt [s], lower configured velocity [m/s], or raise octree_softening [m].");
+        }
+        if (stepTravel > 0.0f && characteristicLength > 0.0f && stepTravel > characteristicLength) {
+            addDiagnostic(ScenarioDiagnosticLevel::Warning, "dt", "Single-step travel dt [s] * velocity [m/s] exceeds the configured scenario length scale [m].", "Lower dt [s] or reduce the configured velocity scale [m/s] before running.");
         }
 
         return report;

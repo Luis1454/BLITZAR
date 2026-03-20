@@ -121,6 +121,17 @@ If you need explicit overrides, save/load emits `performance(profile=custom, ...
 
 Legacy flat `key=value` files remain readable for migration, but new saves are emitted in directive form.
 
+Unit convention:
+- all physical quantities use SI by default
+- time: `[s]`
+- distance / softening / extents: `[m]`
+- mass: `[kg]`
+- velocity: `[m/s]`
+- acceleration: `[m/s^2]`
+- energy: `[J]`
+- temperature: `[K]`
+- fields explicitly suffixed with `_ms` remain in milliseconds
+
 For the complete schema and behavior contract, see:
 - `engine/src/config/SimulationConfig.cpp`
 - `engine/src/config/SimulationArgs.cpp`
