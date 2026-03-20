@@ -1,4 +1,4 @@
-#include "config/SimulationConfigDirective.hpp"
+#include "config/SimulationConfigDirectiveWrite.hpp"
 
 #include "config/SimulationConfig.hpp"
 #include "config/DirectiveStreamWriter.hpp"

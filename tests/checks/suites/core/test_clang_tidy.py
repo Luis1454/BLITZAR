@@ -61,7 +61,7 @@ def _context(
     diff_target: str = "",
     header_filter: str = "",
     file_timeout_sec: int = 0,
-    timeout_fallback_checks: str = "",
+    timeout_fallback_checks: str = "-*,bugprone-unused-return-value",
 ) -> CheckContext:
     return CheckContext(
         root=root,
