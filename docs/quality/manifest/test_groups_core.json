@@ -168,6 +168,38 @@
                 ]
             }
         },
+        "EVD_TEST_UNIT_CONFIG_PROFILE": {
+            "TST-UNT-CONF-028": {
+                "id": "SimulationProfileTests.TST_PHY_PRO_001_DiskOrbitProfile",
+                "req_ids": [
+                    "REQ-CONF-001"
+                ]
+            },
+            "TST-UNT-CONF-029": {
+                "id": "SimulationProfileTests.TST_PHY_PRO_002_GalaxyCollisionProfile",
+                "req_ids": [
+                    "REQ-CONF-001"
+                ]
+            },
+            "TST-UNT-CONF-030": {
+                "id": "SimulationProfileTests.TST_PHY_PRO_003_SolarSystemProfile",
+                "req_ids": [
+                    "REQ-CONF-001"
+                ]
+            },
+            "TST-UNT-CONF-031": {
+                "id": "SimulationProfileTests.TST_PHY_PRO_004_InvalidProfile",
+                "req_ids": [
+                    "REQ-CONF-002"
+                ]
+            },
+            "TST-UNT-CONF-032": {
+                "id": "SimulationProfileTests.TST_PHY_PRO_005_BinaryStarProfile",
+                "req_ids": [
+                    "REQ-CONF-001"
+                ]
+            }
+        },
         "EVD_TEST_INT_PROTOCOL_CONNECT": {
             "TST-INT-PROT-001": {
                 "id": "ServerProtocolTest.TST_INT_PROT_001_ServerClientParsesStatusAndSnapshotFromRealServer",

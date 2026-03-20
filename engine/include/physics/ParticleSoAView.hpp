@@ -20,34 +20,13 @@ struct ParticleSoAView {
     int _pad[3];
 };
 
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3 getSoAPosition(ParticleSoAView view, int i) {
-    return Vector3{view.posX[i], view.posY[i], view.posZ[i]};
-}
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 getSoAPosition(ParticleSoAView view, int i);
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setSoAPosition(ParticleSoAView view, int i, Vector3 p);
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 getSoAVelocity(ParticleSoAView view, int i);
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setSoAVelocity(ParticleSoAView view, int i, Vector3 v);
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setSoAPressure(ParticleSoAView view, int i, Vector3 p);
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 getSoAPressure(ParticleSoAView view, int i);
 
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline void setSoAPosition(ParticleSoAView view, int i, Vector3 p) {
-    view.posX[i] = p.x;
-    view.posY[i] = p.y;
-    view.posZ[i] = p.z;
-}
-
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3 getSoAVelocity(ParticleSoAView view, int i) {
-    return Vector3{view.velX[i], view.velY[i], view.velZ[i]};
-}
-
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline void setSoAVelocity(ParticleSoAView view, int i, Vector3 v) {
-    view.velX[i] = v.x;
-    view.velY[i] = v.y;
-    view.velZ[i] = v.z;
-}
-
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline void setSoAPressure(ParticleSoAView view, int i, Vector3 p) {
-    view.pressX[i] = p.x;
-    view.pressY[i] = p.y;
-    view.pressZ[i] = p.z;
-}
-
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3 getSoAPressure(ParticleSoAView view, int i) {
-    return Vector3{view.pressX[i], view.pressY[i], view.pressZ[i]};
-}
+#include "physics/ParticleSoAView.inl"
 
 #endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLE_SOA_VIEW_HPP_

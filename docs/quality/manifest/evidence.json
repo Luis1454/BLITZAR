@@ -65,6 +65,7 @@
                      "EVD_IFACE_CLIENT_MODULE_HASH":  "runtime/include/client/ClientModuleHash.hpp",
                      "EVD_TEST_UNIT_CONFIG_ARGS_CLI":  "tests/unit/config/args_cli.cpp",
                      "EVD_TEST_UNIT_CONFIG_ARGS_IO":  "tests/unit/config/args_io.cpp",
+                     "EVD_TEST_UNIT_CONFIG_PROFILE":  "tests/unit/physics/TST_PHY_ProfileTests.cpp",
                      "EVD_TEST_UNIT_CORE_API":  "tests/unit/ffi/core_api.cpp",
                      "EVD_TEST_UNIT_PHYSICS_MULTIBODY":  "tests/unit/physics/multibody.cpp",
                      "EVD_TEST_UNIT_PHYSICS_ORBIT":  "tests/unit/physics/orbit.cpp",
