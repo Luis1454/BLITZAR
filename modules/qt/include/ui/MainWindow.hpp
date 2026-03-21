@@ -5,7 +5,9 @@
 #include "config/SimulationConfig.hpp"
 #include "ui/MainWindowController.hpp"
 #include "ui/MainWindowPresenter.hpp"
+#include "ui/WorkspaceLayoutStore.hpp"
 
+#include <QByteArray>
 #include <QMainWindow>
 #include <QPointer>
 
@@ -48,6 +50,10 @@ class MainWindow : public QMainWindow {
         void handleLoadPresetRequest();
         void markConfigDirty(bool dirty = true);
         bool refreshValidationReport(bool blockOnErrors);
+        void restoreDefaultWorkspace();
+        void saveWorkspacePreset();
+        void loadWorkspacePreset();
+        void deleteWorkspacePreset();
         bool saveConfigToDisk();
         void update3DCameraFromSliders();
         void tick();
@@ -101,6 +107,9 @@ class MainWindow : public QMainWindow {
         QPointer<QTimer> _timer;
         MainWindowController _controller;
         MainWindowPresenter _presenter;
+        WorkspaceLayoutStore _workspaceLayouts;
+        QByteArray _defaultWorkspaceGeometry;
+        QByteArray _defaultWorkspaceState;
         std::uint64_t _lastEnergyStep;
         std::uint32_t _clientDrawCap;
         float _uiTickFps;

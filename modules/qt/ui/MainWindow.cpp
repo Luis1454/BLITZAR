@@ -18,6 +18,7 @@
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
+#include <QInputDialog>
 #include <QKeySequence>
 #include <QLabel>
 #include <QLineEdit>
@@ -127,6 +128,7 @@ MainWindow::MainWindow(
       _cullingCheck(new QCheckBox("Culling", this)),
       _lodCheck(new QCheckBox("LOD", this)),
       _timer(new QTimer(this)),
+      _workspaceLayouts(_configPath),
       _lastEnergyStep(std::numeric_limits<std::uint64_t>::max()),
       _clientDrawCap(grav_client::resolveClientDrawCap(_config)),
       _uiTickFps(0.0f),
@@ -455,6 +457,12 @@ MainWindow::MainWindow(
     windowMenu->addAction("Raise Controls", this, [controlsDock]() { controlsDock->raise(); });
     windowMenu->addAction("Raise Telemetry", this, [telemetryDock]() { telemetryDock->raise(); });
     windowMenu->addAction("Raise Validation", this, [validationDock]() { validationDock->raise(); });
+    auto *workspaceMenu = windowMenu->addMenu("Workspace");
+    workspaceMenu->addAction("Save Workspace...", this, [this]() { saveWorkspacePreset(); });
+    workspaceMenu->addAction("Load Workspace...", this, [this]() { loadWorkspacePreset(); });
+    workspaceMenu->addAction("Delete Workspace...", this, [this]() { deleteWorkspacePreset(); });
+    workspaceMenu->addSeparator();
+    workspaceMenu->addAction("Restore Default Workspace", this, [this]() { restoreDefaultWorkspace(); });
 
     auto *helpMenu = menuBar()->addMenu("&Help");
     helpMenu->addAction("About Workspace", this, [this]() {
@@ -462,6 +470,8 @@ MainWindow::MainWindow(
     });
 
     resize(1280, 820);
+    _defaultWorkspaceGeometry = saveGeometry();
+    _defaultWorkspaceState = saveState();
 
     const bool startupConfigValid = applyConfigToServer(false);
     markConfigDirty(false);
@@ -858,6 +868,102 @@ bool MainWindow::saveConfigToDisk()
     markConfigDirty(false);
     std::cout << "[qt] config saved: " << _configPath << "\n";
     return true;
+}
+
+void MainWindow::saveWorkspacePreset()
+{
+    bool accepted = false;
+    const QString rawName = QInputDialog::getText(
+        this,
+        "Save Workspace",
+        "Preset name",
+        QLineEdit::Normal,
+        "default",
+        &accepted);
+    if (!accepted || rawName.trimmed().isEmpty()) {
+        return;
+    }
+    const bool saved = _workspaceLayouts.savePreset(
+        rawName.trimmed().toStdString(),
+        saveState().toBase64().toStdString(),
+        saveGeometry().toBase64().toStdString());
+    _statusLabel->setText(saved
+        ? QString("workspace saved: %1").arg(rawName.trimmed())
+        : QString("failed to save workspace"));
+}
+
+void MainWindow::loadWorkspacePreset()
+{
+    const std::vector<std::string> presets = _workspaceLayouts.listPresets();
+    if (presets.empty()) {
+        _statusLabel->setText("no saved workspace preset");
+        return;
+    }
+    QStringList items;
+    for (const std::string &preset : presets) {
+        items.push_back(QString::fromStdString(preset));
+    }
+    bool accepted = false;
+    const QString selected = QInputDialog::getItem(
+        this,
+        "Load Workspace",
+        "Preset",
+        items,
+        0,
+        false,
+        &accepted);
+    if (!accepted || selected.isEmpty()) {
+        return;
+    }
+    std::string state;
+    std::string geometry;
+    if (!_workspaceLayouts.loadPreset(selected.toStdString(), state, geometry)) {
+        _statusLabel->setText("failed to load workspace");
+        return;
+    }
+    const bool geometryRestored = restoreGeometry(QByteArray::fromBase64(QByteArray::fromStdString(geometry)));
+    const bool stateRestored = restoreState(QByteArray::fromBase64(QByteArray::fromStdString(state)));
+    _statusLabel->setText((geometryRestored && stateRestored)
+        ? QString("workspace loaded: %1").arg(selected)
+        : QString("workspace preset invalid"));
+}
+
+void MainWindow::deleteWorkspacePreset()
+{
+    const std::vector<std::string> presets = _workspaceLayouts.listPresets();
+    if (presets.empty()) {
+        _statusLabel->setText("no workspace preset to delete");
+        return;
+    }
+    QStringList items;
+    for (const std::string &preset : presets) {
+        items.push_back(QString::fromStdString(preset));
+    }
+    bool accepted = false;
+    const QString selected = QInputDialog::getItem(
+        this,
+        "Delete Workspace",
+        "Preset",
+        items,
+        0,
+        false,
+        &accepted);
+    if (!accepted || selected.isEmpty()) {
+        return;
+    }
+    const bool deleted = _workspaceLayouts.deletePreset(selected.toStdString());
+    _statusLabel->setText(deleted
+        ? QString("workspace deleted: %1").arg(selected)
+        : QString("failed to delete workspace"));
+}
+
+void MainWindow::restoreDefaultWorkspace()
+{
+    const bool geometryRestored = restoreGeometry(_defaultWorkspaceGeometry);
+    const bool stateRestored = restoreState(_defaultWorkspaceState);
+    _statusLabel->setText((geometryRestored && stateRestored)
+        ? QString("default workspace restored")
+        : QString("failed to restore default workspace"));
 }
 
 bool MainWindow::refreshValidationReport(bool blockOnErrors)

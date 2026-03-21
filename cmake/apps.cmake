@@ -198,6 +198,7 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
             modules/qt/ui/ParticleView.cpp
             modules/qt/ui/ParticleViewColor.cpp
             modules/qt/ui/QtViewMath.cpp
+            modules/qt/ui/WorkspaceLayoutStore.cpp
             ${GRAVITY_GRAPHICS_SOURCES}
         )
         configure_gravity_cuda_target(${CLIENT_MODULE_QT_INPROC_NAME})

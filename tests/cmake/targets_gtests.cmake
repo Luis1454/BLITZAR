@@ -138,6 +138,7 @@ set(GRAVITY_TEST_BASE_QT_LOGIC_SOURCES
     ${GRAVITY_TEST_BASE_RUNTIME_SOURCES}
     "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowController.cpp"
     "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowPresenter.cpp"
+    "${GRAVITY_ROOT_DIR}/modules/qt/ui/WorkspaceLayoutStore.cpp"
 )
 
 if(GRAVITY_TEST_INT_PROTOCOL_SOURCES)
@@ -211,6 +212,7 @@ if(TARGET Qt6::Widgets AND GRAVITY_TEST_INT_UI_SOURCES)
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/ParticleView.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/ParticleViewColor.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/QtViewMath.cpp"
+            "${GRAVITY_ROOT_DIR}/modules/qt/ui/WorkspaceLayoutStore.cpp"
             ${GRAVITY_GRAPHICS_SOURCES}
         LIBS
             gravityRustRuntime
