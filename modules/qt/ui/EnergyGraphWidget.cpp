@@ -230,12 +230,32 @@ void EnergyGraphWidget::paintEvent(PaintEventHandle event)
         return;
     }
 
+    constexpr std::size_t visibleSampleLimit = 160u;
+    constexpr float visibleTimeSpanSec = 12.0f;
+    std::size_t visibleStart = 0u;
+    const EnergyPoint &latest = _history.back();
+    if (_history.size() > visibleSampleLimit) {
+        visibleStart = _history.size() - visibleSampleLimit;
+    }
+    for (std::size_t i = _history.size(); i > 0u; --i) {
+        const std::size_t index = i - 1u;
+        if (latest.time - _history[index].time > visibleTimeSpanSec && index >= visibleStart) {
+            visibleStart = index + 1u;
+            break;
+        }
+    }
+    const std::size_t visibleCount = _history.size() - visibleStart;
+    if (visibleCount < 2u) {
+        visibleStart = _history.size() >= 2u ? (_history.size() - 2u) : 0u;
+    }
+
     float minEnergy = std::numeric_limits<float>::infinity();
     float maxEnergy = -std::numeric_limits<float>::infinity();
     float maxAbsDrift = 0.01f;
     float minTime = std::numeric_limits<float>::infinity();
     float maxTime = -std::numeric_limits<float>::infinity();
-    for (const EnergyPoint &e : _history) {
+    for (std::size_t i = visibleStart; i < _history.size(); ++i) {
+        const EnergyPoint &e = _history[i];
         minEnergy = std::min(minEnergy, std::min(std::min(e.kinetic, e.potential), std::min(e.thermal, std::min(e.radiated, e.total))));
         maxEnergy = std::max(maxEnergy, std::max(std::max(e.kinetic, e.potential), std::max(e.thermal, std::max(e.radiated, e.total))));
         maxAbsDrift = std::max(maxAbsDrift, std::fabs(e.drift));
@@ -251,7 +271,7 @@ void EnergyGraphWidget::paintEvent(PaintEventHandle event)
 
     auto buildPath = [&](auto valueAccessor, const QRectF &targetRect, float vMin, float vMax, bool centered) {
         QPainterPath path;
-        for (std::size_t i = 0; i < _history.size(); ++i) {
+        for (std::size_t i = visibleStart; i < _history.size(); ++i) {
             const qreal timeNorm = static_cast<qreal>((_history[i].time - minTime) / (maxTime - minTime));
             const qreal x = targetRect.left() + targetRect.width() * std::clamp(timeNorm, 0.0, 1.0);
             const float value = valueAccessor(_history[i]);
@@ -263,7 +283,7 @@ void EnergyGraphWidget::paintEvent(PaintEventHandle event)
                 const float norm = (value - vMin) / (vMax - vMin);
                 y = targetRect.top() + targetRect.height() * (1.0 - norm);
             }
-            if (i == 0) {
+            if (i == visibleStart) {
                 path.moveTo(x, y);
             } else {
                 path.lineTo(x, y);
@@ -298,7 +318,6 @@ void EnergyGraphWidget::paintEvent(PaintEventHandle event)
 
     p.setPen(QPen(driftColor, 1.8));
     p.drawPath(buildPath([&](const EnergyPoint &e) { return e.drift; }, driftRect, -maxAbsDrift, maxAbsDrift, true));
-    const EnergyPoint &latest = _history.back();
     const qreal latestTimeNorm = static_cast<qreal>((latest.time - minTime) / (maxTime - minTime));
     const qreal latestEnergyY = energyRect.top() + energyRect.height() * (1.0 - ((latest.total - minEnergy) / (maxEnergy - minEnergy)));
     const qreal latestDriftY = driftRect.top() + driftRect.height() * (1.0 - ((latest.drift / maxAbsDrift) * 0.5 + 0.5));
@@ -324,6 +343,10 @@ void EnergyGraphWidget::paintEvent(PaintEventHandle event)
         QRectF(driftRect.right() - 180.0, driftRect.top() + 2.0, 176.0, 14.0),
         Qt::AlignRight | Qt::AlignVCenter,
         QStringLiteral("Current %1").arg(formatMetric(latest.drift, QStringLiteral("%"))));
+    p.drawText(
+        QRectF(driftRect.left(), driftRect.top() + 2.0, 180.0, 14.0),
+        Qt::AlignLeft | Qt::AlignVCenter,
+        QStringLiteral("Window %1 s").arg(QString::number(maxTime - minTime, 'f', 2)));
     p.setRenderHint(QPainter::Antialiasing, false);
 }
 
