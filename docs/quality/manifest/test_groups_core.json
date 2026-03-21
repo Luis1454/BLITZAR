@@ -554,6 +554,12 @@
                 "req_ids": [
                     "REQ-UI-001"
                 ]
+            },
+            "TST-UIX-UI-006": {
+                "id": "QtMainWindowTest.TST_UIX_UI_006_ResponsiveControlsAllowSubHdWindow",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_UI_QT_LOGIC": {
@@ -571,6 +577,12 @@
             },
             "TST-UNT-UI-003": {
                 "id": "QtUiLogicTest.TST_UNT_UI_003_ControllerRejectsInvalidConfigBeforeRuntimeMutation",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UNT-UI-004": {
+                "id": "QtUiLogicTest.TST_UNT_UI_004_WorkspaceLayoutStoreRoundTripsNamedPreset",
                 "req_ids": [
                     "REQ-UI-001"
                 ]
