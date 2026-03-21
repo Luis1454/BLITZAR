@@ -134,6 +134,11 @@ set(GRAVITY_TEST_BASE_RUNTIME_SOURCES
     "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
     ${GRAVITY_TEST_BASE_BRIDGE_SOURCES}
 )
+set(GRAVITY_TEST_BASE_QT_LOGIC_SOURCES
+    ${GRAVITY_TEST_BASE_RUNTIME_SOURCES}
+    "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowController.cpp"
+    "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowPresenter.cpp"
+)
 
 if(GRAVITY_TEST_INT_PROTOCOL_SOURCES)
     gravity_add_gtest(gravityServerProtocolGTests
@@ -176,6 +181,18 @@ if(GRAVITY_TEST_INT_RUNTIME_SOURCES)
     )
 endif()
 
+if(GRAVITY_TEST_UNIT_UI_SOURCES)
+    gravity_add_gtest(gravityQtUiLogicGTests
+        LABELS unit
+        SOURCES
+            ${GRAVITY_TEST_UNIT_UI_SOURCES}
+            ${GRAVITY_TEST_BASE_QT_LOGIC_SOURCES}
+        LIBS
+            gravityRustRuntime
+            ${GRAVITY_TEST_PLATFORM_TARGET}
+    )
+endif()
+
 if(TARGET Qt6::Widgets AND GRAVITY_TEST_INT_UI_SOURCES)
     gravity_add_gtest(gravityQtMainWindowGTests
         LABELS ui_integration integration_real
@@ -187,7 +204,9 @@ if(TARGET Qt6::Widgets AND GRAVITY_TEST_INT_UI_SOURCES)
             "${GRAVITY_ROOT_DIR}/tests/support/qt_test_utils.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/EnergyGraphWidget.cpp"
+            "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowController.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindow.cpp"
+            "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowPresenter.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/MultiViewWidget.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/ParticleView.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/ParticleViewColor.cpp"
