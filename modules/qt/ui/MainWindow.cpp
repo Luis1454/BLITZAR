@@ -27,8 +27,10 @@
 #include <QSlider>
 #include <QSplitter>
 #include <QSpinBox>
+#include <QStatusBar>
 #include <QTabWidget>
 #include <QTimer>
+#include <QToolBar>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -140,6 +142,31 @@ MainWindow::MainWindow(
     }
 
     setWindowTitle("N-Body Qt Client");
+    menuBar()->setNativeMenuBar(false);
+    setDockNestingEnabled(true);
+    setDockOptions(QMainWindow::AnimatedDocks | QMainWindow::AllowNestedDocks | QMainWindow::AllowTabbedDocks);
+    setStyleSheet(
+        "QMainWindow { background: #edf2f7; }"
+        "QMenuBar { background: #f8fafc; border-bottom: 1px solid #d9e2ec; }"
+        "QMenuBar::item { padding: 6px 10px; }"
+        "QMenuBar::item:selected { background: #e6eef7; border-radius: 4px; }"
+        "QToolBar { background: #f8fafc; border-bottom: 1px solid #d9e2ec; spacing: 6px; padding: 4px; }"
+        "QToolButton { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; padding: 6px 10px; }"
+        "QToolButton:hover { background: #f1f5f9; }"
+        "QDockWidget::title { background: #dfe7ef; padding: 6px 10px; font-weight: 700; }"
+        "QGroupBox { border: 1px solid #d9e2ec; border-radius: 8px; margin-top: 10px; padding-top: 10px; background: #f8fafc; }"
+        "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 4px; color: #243b53; }"
+        "QPushButton { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; padding: 6px 10px; }"
+        "QPushButton:hover { background: #f1f5f9; }"
+        "QPushButton:pressed { background: #d9e2ec; }"
+        "QLineEdit, QComboBox, QDoubleSpinBox, QSpinBox {"
+        "  background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; padding: 4px 6px;"
+        "}"
+        "QTabWidget::pane { border: 0; }"
+        "QTabBar::tab { background: #e6edf5; border-radius: 6px; padding: 10px 8px; margin: 2px; }"
+        "QTabBar::tab:selected { background: #ffffff; color: #102a43; font-weight: 700; }"
+        "QStatusBar { background: #f8fafc; border-top: 1px solid #d9e2ec; color: #486581; }"
+    );
 
     _pauseButton->setCheckable(true);
     _solverCombo->addItem("pairwise_cuda");
@@ -407,9 +434,6 @@ MainWindow::MainWindow(
     centerSplitter->setChildrenCollapsible(false);
     setCentralWidget(centerSplitter);
 
-    setDockNestingEnabled(true);
-    setDockOptions(QMainWindow::AnimatedDocks | QMainWindow::AllowNestedDocks | QMainWindow::AllowTabbedDocks);
-
     auto *controlsDock = new QDockWidget("Controls", this);
     controlsDock->setObjectName("controlsDock");
     controlsDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
@@ -467,7 +491,19 @@ MainWindow::MainWindow(
     auto *helpMenu = menuBar()->addMenu("&Help");
     helpMenu->addAction("About Workspace", this, [this]() {
         _statusLabel->setText("Workspace shell active");
+        statusBar()->showMessage("Workspace shell active", 3000);
     });
+
+    auto *toolbar = addToolBar("Quick Actions");
+    toolbar->setMovable(false);
+    toolbar->setFloatable(false);
+    toolbar->addAction("Pause", this, [this]() { _pauseButton->click(); });
+    toolbar->addAction("Step", this, [this]() { _stepButton->click(); });
+    toolbar->addAction("Reset", this, [this]() { _resetButton->click(); });
+    toolbar->addSeparator();
+    toolbar->addAction("Validate", this, [this]() { (void)refreshValidationReport(false); });
+    toolbar->addAction("Export", this, [this]() { handleExportRequest(); });
+    statusBar()->showMessage("Qt workspace ready", 3000);
 
     resize(1280, 820);
     _defaultWorkspaceGeometry = saveGeometry();
@@ -890,6 +926,9 @@ void MainWindow::saveWorkspacePreset()
     _statusLabel->setText(saved
         ? QString("workspace saved: %1").arg(rawName.trimmed())
         : QString("failed to save workspace"));
+    statusBar()->showMessage(saved
+        ? QString("Workspace saved: %1").arg(rawName.trimmed())
+        : QString("Failed to save workspace"), 3000);
 }
 
 void MainWindow::loadWorkspacePreset()
@@ -897,6 +936,7 @@ void MainWindow::loadWorkspacePreset()
     const std::vector<std::string> presets = _workspaceLayouts.listPresets();
     if (presets.empty()) {
         _statusLabel->setText("no saved workspace preset");
+        statusBar()->showMessage("No saved workspace preset", 3000);
         return;
     }
     QStringList items;
@@ -919,6 +959,7 @@ void MainWindow::loadWorkspacePreset()
     std::string geometry;
     if (!_workspaceLayouts.loadPreset(selected.toStdString(), state, geometry)) {
         _statusLabel->setText("failed to load workspace");
+        statusBar()->showMessage("Failed to load workspace", 3000);
         return;
     }
     const bool geometryRestored = restoreGeometry(QByteArray::fromBase64(QByteArray::fromStdString(geometry)));
@@ -926,6 +967,9 @@ void MainWindow::loadWorkspacePreset()
     _statusLabel->setText((geometryRestored && stateRestored)
         ? QString("workspace loaded: %1").arg(selected)
         : QString("workspace preset invalid"));
+    statusBar()->showMessage((geometryRestored && stateRestored)
+        ? QString("Workspace loaded: %1").arg(selected)
+        : QString("Workspace preset invalid"), 3000);
 }
 
 void MainWindow::deleteWorkspacePreset()
@@ -933,6 +977,7 @@ void MainWindow::deleteWorkspacePreset()
     const std::vector<std::string> presets = _workspaceLayouts.listPresets();
     if (presets.empty()) {
         _statusLabel->setText("no workspace preset to delete");
+        statusBar()->showMessage("No workspace preset to delete", 3000);
         return;
     }
     QStringList items;
@@ -955,6 +1000,9 @@ void MainWindow::deleteWorkspacePreset()
     _statusLabel->setText(deleted
         ? QString("workspace deleted: %1").arg(selected)
         : QString("failed to delete workspace"));
+    statusBar()->showMessage(deleted
+        ? QString("Workspace deleted: %1").arg(selected)
+        : QString("Failed to delete workspace"), 3000);
 }
 
 void MainWindow::restoreDefaultWorkspace()
@@ -964,6 +1012,9 @@ void MainWindow::restoreDefaultWorkspace()
     _statusLabel->setText((geometryRestored && stateRestored)
         ? QString("default workspace restored")
         : QString("failed to restore default workspace"));
+    statusBar()->showMessage((geometryRestored && stateRestored)
+        ? QString("Default workspace restored")
+        : QString("Failed to restore default workspace"), 3000);
 }
 
 bool MainWindow::refreshValidationReport(bool blockOnErrors)
