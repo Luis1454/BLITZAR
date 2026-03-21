@@ -33,6 +33,12 @@ EnergyGraphWidget::EnergyGraphWidget()
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
+void EnergyGraphWidget::clearHistory()
+{
+    _history.clear();
+    update();
+}
+
 QString EnergyGraphWidget::energyXAxisLabel()
 {
     return QStringLiteral("Simulation time [s]");
@@ -63,6 +69,11 @@ QStringList EnergyGraphWidget::legendLabels()
         QStringLiteral("Total [J]"),
         QStringLiteral("Drift [%]")
     };
+}
+
+std::size_t EnergyGraphWidget::sampleCount() const
+{
+    return _history.size();
 }
 
 void EnergyGraphWidget::pushSample(const SimulationStats &stats)

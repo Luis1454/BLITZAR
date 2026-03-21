@@ -314,6 +314,7 @@ MainWindow::MainWindow(
     _energyMetricsLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     _energyMetricsLabel->setObjectName("runtimeSummaryValue");
     _validationLabel->setStyleSheet("color: #8b1e1e;");
+    _energyGraph->setObjectName("energyGraphWidget");
 
     auto *sidebarTabs = new QTabWidget(this);
     sidebarTabs->setTabPosition(QTabWidget::West);
@@ -634,6 +635,7 @@ void MainWindow::applyConnectorSettings(bool reconnectNow)
     configureRemoteConnectorFromUi();
     if (reconnectNow) {
         _runtime->requestReconnect();
+        _energyGraph->clearHistory();
         _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
         statusBar()->showMessage("Connector updated and reconnect requested", 3000);
         return;
@@ -644,6 +646,7 @@ void MainWindow::applyConnectorSettings(bool reconnectNow)
 void MainWindow::requestReconnectFromUi()
 {
     _runtime->requestReconnect();
+    _energyGraph->clearHistory();
     _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
     statusBar()->showMessage("Reconnect requested", 3000);
 }
@@ -738,6 +741,7 @@ void MainWindow::handleLoadPresetRequest()
     _configPath = path.toStdString();
     applyConfigToUi();
     applyConfigToServer(true);
+    _energyGraph->clearHistory();
     _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
     markConfigDirty(false);
 }
@@ -745,6 +749,7 @@ void MainWindow::handleLoadPresetRequest()
 void MainWindow::resetSimulationFromUi()
 {
     _runtime->requestReset();
+    _energyGraph->clearHistory();
     _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
     statusBar()->showMessage("Simulation reset requested", 3000);
 }
@@ -1184,6 +1189,10 @@ void MainWindow::tick()
         _multiView->setSnapshot(std::move(snapshot));
     }
     const std::size_t displayedParticles = _multiView->displayedParticleCount();
+    if (_lastEnergyStep != std::numeric_limits<std::uint64_t>::max() && stats.steps < _lastEnergyStep) {
+        _energyGraph->clearHistory();
+        _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
+    }
     if (stats.steps != _lastEnergyStep) {
         _energyGraph->pushSample(stats);
         _lastEnergyStep = stats.steps;

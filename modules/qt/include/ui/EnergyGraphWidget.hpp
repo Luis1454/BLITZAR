@@ -17,7 +17,9 @@ class EnergyGraphWidget : public QWidget {
     public:
         explicit EnergyGraphWidget();
 
+        void clearHistory();
         void pushSample(const SimulationStats &stats);
+        std::size_t sampleCount() const;
         static QString energyXAxisLabel();
         static QString energyYAxisLabel();
         static QString driftXAxisLabel();

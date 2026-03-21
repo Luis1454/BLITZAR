@@ -1,4 +1,5 @@
 #include "tests/support/qt_test_utils.hpp"
+#include "ui/EnergyGraphWidget.hpp"
 #include "ui/MainWindow.hpp"
 
 #include <gtest/gtest.h>
@@ -215,6 +216,38 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_012_PhysicsAndRenderControlsPers
     EXPECT_FLOAT_EQ(spy->sphViscosity, 0.33f);
     std::error_code ec;
     std::filesystem::remove(configPath, ec);
+}
+
+TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_013_ResetClearsEnergyTimelineHistory)
+{
+    (void)testsupport::ensureQtApp();
+    auto runtime = std::make_unique<RecordingRuntime>();
+    grav_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
+    window.show();
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+    QWidget *graphWidget = window.findChild<QWidget *>("energyGraphWidget");
+    auto *graph = dynamic_cast<grav_qt::EnergyGraphWidget *>(graphWidget);
+    ASSERT_NE(graph, nullptr);
+
+    SimulationStats first{};
+    first.steps = 10u;
+    first.dt = 0.01f;
+    first.totalTime = 0.10f;
+    first.totalEnergy = -5.0f;
+    first.energyDriftPct = 0.1f;
+    graph->pushSample(first);
+
+    SimulationStats second = first;
+    second.steps = 20u;
+    second.totalTime = 0.20f;
+    second.totalEnergy = -4.0f;
+    graph->pushSample(second);
+    ASSERT_GE(graph->sampleCount(), 2u);
+
+    window.findChild<QPushButton *>("resetButton")->click();
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
+    EXPECT_EQ(graph->sampleCount(), 0u);
 }
 
 } // namespace grav_test_qt_workspace_runtime_controls
