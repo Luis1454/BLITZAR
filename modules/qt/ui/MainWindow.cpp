@@ -38,7 +38,7 @@
 
 namespace grav_qt {
 
-std::string formatFromSelectedFilter(const QString &filter)
+std::string MainWindow::formatFromSelectedFilter(const QString &filter)
 {
     if (filter.startsWith("VTK ASCII")) {
         return "vtk";
@@ -297,17 +297,7 @@ MainWindow::MainWindow(
 
     const bool startupConfigValid = applyConfigToServer(false);
     markConfigDirty(false);
-    _multiView->setMaxDrawParticles(_clientDrawCap);
-    _runtime->setRemoteSnapshotCap(_clientDrawCap);
-
-    _multiView->setZoom(static_cast<float>(_zoomSlider->value()) / 10.0f);
-    _multiView->setLuminosity(_luminositySlider->value());
-    _multiView->setRenderSettings(
-        _config.renderCullingEnabled,
-        _config.renderLODEnabled,
-        _config.renderLODNearDistance,
-        _config.renderLODFarDistance
-    );
+    applyViewSettings();
     update3DCameraFromSliders();
     _reconnectButton->setEnabled(true);
     _applyConnectorButton->setEnabled(true);
@@ -315,239 +305,7 @@ MainWindow::MainWindow(
     _serverHostEdit->setEnabled(true);
     _serverPortSpin->setEnabled(true);
     _serverBinEdit->setEnabled(true);
-
-    const auto applySphParams = [this]() {
-        _config.sphSmoothingLength = static_cast<float>(_sphSmoothingSpin->value());
-        _config.sphRestDensity = static_cast<float>(_sphRestDensitySpin->value());
-        _config.sphGasConstant = static_cast<float>(_sphGasConstantSpin->value());
-        _config.sphViscosity = static_cast<float>(_sphViscositySpin->value());
-        _runtime->setSphParameters(
-            _config.sphSmoothingLength,
-            _config.sphRestDensity,
-            _config.sphGasConstant,
-            _config.sphViscosity
-        );
-        markConfigDirty();
-    };
-    const auto applyConnector = [this]() {
-        std::string host = _serverHostEdit->text().trimmed().toStdString();
-        if (host.empty()) {
-            host = "127.0.0.1";
-            _serverHostEdit->setText(QString::fromStdString(host));
-        }
-        const auto port = static_cast<std::uint16_t>(_serverPortSpin->value());
-        const bool autostart = _serverAutostartCheck->isChecked();
-        const std::string serverBin = _serverBinEdit->text().trimmed().toStdString();
-        _runtime->configureRemoteConnector(host, port, autostart, serverBin);
-    };
-
-    connect(_pauseButton, &QPushButton::clicked, this, [this](bool checked) {
-        _runtime->setPaused(checked);
-        _pauseButton->setText(checked ? "Resume" : "Pause");
-    });
-    connect(_stepButton, &QPushButton::clicked, this, [this]() { _runtime->stepOnce(); });
-    connect(_resetButton, &QPushButton::clicked, this, [this]() {
-        _config = SimulationConfig::loadOrCreate(_configPath);
-        applyConfigToUi();
-        applyConfigToServer(true);
-        markConfigDirty(false);
-        _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
-    });
-    connect(_recoverButton, &QPushButton::clicked, this, [this]() {
-        _runtime->requestRecover();
-    });
-    connect(_reconnectButton, &QPushButton::clicked, this, [applyConnector]() { applyConnector(); });
-    connect(_applyConnectorButton, &QPushButton::clicked, this, [applyConnector]() { applyConnector(); });
-    connect(_exportButton, &QPushButton::clicked, this, [this]() {
-        const SimulationStats stats = _runtime->getCachedStats();
-        const std::string preferredFormat = grav_client::normalizeExportFormat(
-            _config.exportFormat.empty() ? std::string("vtk") : _config.exportFormat);
-        const QString startPath = QString::fromStdString(
-            grav_client::buildSuggestedExportPath(_config.exportDirectory, preferredFormat, stats.steps)
-        );
-        QString selectedFilter = "VTK ASCII (*.vtk)";
-        if (preferredFormat == "vtk_binary") {
-            selectedFilter = "VTK BINARY (*.vtk)";
-        } else if (preferredFormat == "xyz") {
-            selectedFilter = "XYZ (*.xyz)";
-        } else if (preferredFormat == "bin") {
-            selectedFilter = "Native binary (*.bin)";
-        }
-        const QString pathChosen = QFileDialog::getSaveFileName(
-            this,
-            "Export Snapshot",
-            startPath,
-            "VTK ASCII (*.vtk);;VTK BINARY (*.vtk);;XYZ (*.xyz);;Native binary (*.bin);;All files (*.*)",
-            &selectedFilter
-        );
-        if (pathChosen.isEmpty()) {
-            return;
-        }
-
-        std::string format = grav_client::normalizeExportFormat(formatFromSelectedFilter(selectedFilter));
-        std::string path = pathChosen.toStdString();
-        if (format.empty()) {
-            format = grav_client::normalizeExportFormat(grav_client::inferExportFormatFromPath(path));
-        }
-        if (format.empty()) {
-            format = grav_client::normalizeExportFormat(_config.exportFormat);
-            if (format.empty()) {
-                format = "vtk";
-            }
-        }
-
-        std::filesystem::path outPath(path);
-        if (outPath.extension().empty()) {
-            const std::string ext = grav_client::extensionForExportFormat(format);
-            if (!ext.empty()) {
-                outPath += ext;
-                path = outPath.string();
-            }
-        }
-
-        _runtime->requestExportSnapshot(path, format);
-        _config.exportFormat = format;
-        if (outPath.has_parent_path()) {
-            _config.exportDirectory = outPath.parent_path().string();
-        }
-        markConfigDirty();
-    });
-    connect(_saveConfigButton, &QPushButton::clicked, this, [this]() {
-        (void)saveConfigToDisk();
-    });
-    connect(_validateButton, &QPushButton::clicked, this, [this]() {
-        (void)refreshValidationReport(false);
-    });
-    connect(_loadInputButton, &QPushButton::clicked, this, [this]() {
-        const QString startPath = _config.inputFile.empty()
-            ? QString::fromStdString(_config.exportDirectory)
-            : QString::fromStdString(_config.inputFile);
-        const QString path = QFileDialog::getOpenFileName(
-            this,
-            "Load Initial State",
-            startPath,
-            "Simulation files (*.vtk *.xyz *.bin);;All files (*.*)"
-        );
-        if (path.isEmpty()) {
-            return;
-        }
-        _config.inputFile = path.toStdString();
-        _config.inputFormat = "auto";
-        _config.presetStructure = "file";
-        _config.initMode = "file";
-        (void)applyConfigToServer(true);
-        markConfigDirty();
-    });
-    connect(_applyPresetButton, &QPushButton::clicked, this, [this]() {
-        _config.initConfigStyle = "preset";
-        _config.presetStructure = _presetCombo->currentText().toStdString();
-        applyConfigToServer(true);
-        markConfigDirty();
-    });
-    connect(_loadPresetButton, &QPushButton::clicked, this, [this]() {
-        const QString path = QFileDialog::getOpenFileName(
-            this,
-            "Load Preset Config",
-            QString::fromStdString(_configPath),
-            "Ini files (*.ini);;All files (*.*)"
-        );
-        if (path.isEmpty()) {
-            return;
-        }
-        SimulationConfig loaded = SimulationConfig::loadOrCreate(path.toStdString());
-        _config = loaded;
-        _configPath = path.toStdString();
-        applyConfigToUi();
-        applyConfigToServer(true);
-        _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
-        markConfigDirty(false);
-    });
-    connect(_sphCheck, &QCheckBox::toggled, this, [this](bool enabled) {
-        _config.sphEnabled = enabled;
-        _runtime->setSphEnabled(enabled);
-        markConfigDirty();
-    });
-    connect(_sphSmoothingSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [applySphParams](double) {
-        applySphParams();
-    });
-    connect(_sphRestDensitySpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [applySphParams](double) {
-        applySphParams();
-    });
-    connect(_sphGasConstantSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [applySphParams](double) {
-        applySphParams();
-    });
-    connect(_sphViscositySpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [applySphParams](double) {
-        applySphParams();
-    });
-    connect(_dtSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double value) {
-        _config.dt = static_cast<float>(value);
-        _runtime->setDt(static_cast<float>(value));
-        markConfigDirty();
-    });
-    connect(_zoomSlider, &QSlider::valueChanged, this, [this](int value) {
-        _config.defaultZoom = static_cast<float>(value) / 10.0f;
-        _multiView->setZoom(static_cast<float>(value) / 10.0f);
-        markConfigDirty();
-    });
-    connect(_luminositySlider, &QSlider::valueChanged, this, [this](int value) {
-        _config.defaultLuminosity = value;
-        _multiView->setLuminosity(value);
-        markConfigDirty();
-    });
-    connect(_solverCombo, &QComboBox::currentTextChanged, this, [this](const QString &solver) {
-        _config.solver = solver.toStdString();
-        _runtime->setSolverMode(solver.toStdString());
-        markConfigDirty();
-    });
-    connect(_integratorCombo, &QComboBox::currentTextChanged, this, [this](const QString &integrator) {
-        _config.integrator = integrator.toStdString();
-        _runtime->setIntegratorMode(integrator.toStdString());
-        markConfigDirty();
-    });
-    connect(_performanceCombo, &QComboBox::currentTextChanged, this, [this](const QString &profile) {
-        _config.performanceProfile = profile.toStdString();
-        grav_config::applyPerformanceProfile(_config);
-        applyPerformanceProfileToRuntime();
-        markConfigDirty();
-    });
-    connect(_thetaSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double value) {
-        _config.octreeTheta = static_cast<float>(value);
-        _runtime->setOctreeParameters(static_cast<float>(value), static_cast<float>(_softeningSpin->value()));
-        markConfigDirty();
-    });
-    connect(_softeningSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double value) {
-        _config.octreeSoftening = static_cast<float>(value);
-        _runtime->setOctreeParameters(static_cast<float>(_thetaSpin->value()), static_cast<float>(value));
-        markConfigDirty();
-    });
-    connect(_view3dCombo, &QComboBox::currentTextChanged, this, [this](const QString &value) {
-        _multiView->set3DMode(value == "iso" ? grav::ViewMode::Iso : grav::ViewMode::Perspective);
-    });
-    connect(_cullingCheck, &QCheckBox::toggled, this, [this](bool enabled) {
-        _config.renderCullingEnabled = enabled;
-        _multiView->setRenderSettings(
-            _config.renderCullingEnabled,
-            _config.renderLODEnabled,
-            _config.renderLODNearDistance,
-            _config.renderLODFarDistance
-        );
-        markConfigDirty();
-    });
-    connect(_lodCheck, &QCheckBox::toggled, this, [this](bool enabled) {
-        _config.renderLODEnabled = enabled;
-        _multiView->setRenderSettings(
-            _config.renderCullingEnabled,
-            _config.renderLODEnabled,
-            _config.renderLODNearDistance,
-            _config.renderLODFarDistance
-        );
-        markConfigDirty();
-    });
-    connect(_yawSlider, &QSlider::valueChanged, this, [this]() { update3DCameraFromSliders(); });
-    connect(_pitchSlider, &QSlider::valueChanged, this, [this]() { update3DCameraFromSliders(); });
-    connect(_rollSlider, &QSlider::valueChanged, this, [this]() { update3DCameraFromSliders(); });
-
-    connect(_timer, &QTimer::timeout, this, [this]() { tick(); });
+    connectControls();
     const std::uint32_t fps = std::max<std::uint32_t>(1u, _config.uiFpsLimit);
     if (startupConfigValid && _runtime->start()) {
         _timer->start(std::max(1, static_cast<int>(1000 / fps)));
@@ -567,38 +325,262 @@ MainWindow::~MainWindow()
     _runtime->stop();
 }
 
-bool MainWindow::applyConfigToServer(bool requestReset)
+void MainWindow::applyViewSettings()
 {
-    captureUiIntoConfig();
-    if (!refreshValidationReport(true)) {
-        return false;
-    }
-    const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(_config, std::cerr);
-    _runtime->setParticleCount(grav_client::resolveServerParticleCount(_config));
-    _runtime->setDt(_config.dt);
-    _runtime->setSolverMode(_config.solver);
-    _runtime->setIntegratorMode(_config.integrator);
-    _runtime->setPerformanceProfile(_config.performanceProfile);
-    _runtime->setOctreeParameters(_config.octreeTheta, _config.octreeSoftening);
-    _runtime->setSphEnabled(_config.sphEnabled);
-    _runtime->setSphParameters(
-        _config.sphSmoothingLength,
-        _config.sphRestDensity,
-        _config.sphGasConstant,
-        _config.sphViscosity
+    _multiView->setZoom(static_cast<float>(_zoomSlider->value()) / 10.0f);
+    _multiView->setLuminosity(_luminositySlider->value());
+    _multiView->setRenderSettings(
+        _config.renderCullingEnabled,
+        _config.renderLODEnabled,
+        _config.renderLODNearDistance,
+        _config.renderLODFarDistance
     );
-    _runtime->setSubstepPolicy(_config.substepTargetDt, _config.maxSubsteps);
-    _runtime->setSnapshotPublishPeriodMs(_config.snapshotPublishPeriodMs);
-    _runtime->setEnergyMeasurementConfig(_config.energyMeasureEverySteps, _config.energySampleLimit);
-    _runtime->setExportDefaults(_config.exportDirectory, _config.exportFormat);
-    _runtime->setInitialStateFile(initPlan.inputFile, initPlan.inputFormat);
-    _runtime->setInitialStateConfig(initPlan.config);
     _clientDrawCap = grav_client::resolveClientDrawCap(_config);
     _multiView->setMaxDrawParticles(_clientDrawCap);
     _runtime->setRemoteSnapshotCap(_clientDrawCap);
-    if (requestReset) {
-        _runtime->requestReset();
+}
+
+void MainWindow::configureRemoteConnectorFromUi()
+{
+    std::string host = _serverHostEdit->text().trimmed().toStdString();
+    if (host.empty()) {
+        host = "127.0.0.1";
+        _serverHostEdit->setText(QString::fromStdString(host));
     }
+    _runtime->configureRemoteConnector(
+        host,
+        static_cast<std::uint16_t>(_serverPortSpin->value()),
+        _serverAutostartCheck->isChecked(),
+        _serverBinEdit->text().trimmed().toStdString());
+}
+
+void MainWindow::handleExportRequest()
+{
+    const SimulationStats stats = _runtime->getCachedStats();
+    const std::string preferredFormat = grav_client::normalizeExportFormat(
+        _config.exportFormat.empty() ? std::string("vtk") : _config.exportFormat);
+    const QString startPath = QString::fromStdString(
+        grav_client::buildSuggestedExportPath(_config.exportDirectory, preferredFormat, stats.steps));
+    QString selectedFilter = "VTK ASCII (*.vtk)";
+    if (preferredFormat == "vtk_binary") {
+        selectedFilter = "VTK BINARY (*.vtk)";
+    } else if (preferredFormat == "xyz") {
+        selectedFilter = "XYZ (*.xyz)";
+    } else if (preferredFormat == "bin") {
+        selectedFilter = "Native binary (*.bin)";
+    }
+
+    const QString pathChosen = QFileDialog::getSaveFileName(
+        this,
+        "Export Snapshot",
+        startPath,
+        "VTK ASCII (*.vtk);;VTK BINARY (*.vtk);;XYZ (*.xyz);;Native binary (*.bin);;All files (*.*)",
+        &selectedFilter);
+    if (pathChosen.isEmpty()) {
+        return;
+    }
+
+    std::string format = grav_client::normalizeExportFormat(formatFromSelectedFilter(selectedFilter));
+    std::string path = pathChosen.toStdString();
+    if (format.empty()) {
+        format = grav_client::normalizeExportFormat(grav_client::inferExportFormatFromPath(path));
+    }
+    if (format.empty()) {
+        format = grav_client::normalizeExportFormat(_config.exportFormat);
+        if (format.empty()) {
+            format = "vtk";
+        }
+    }
+
+    std::filesystem::path outPath(path);
+    if (outPath.extension().empty()) {
+        const std::string ext = grav_client::extensionForExportFormat(format);
+        if (!ext.empty()) {
+            outPath += ext;
+            path = outPath.string();
+        }
+    }
+
+    _runtime->requestExportSnapshot(path, format);
+    _config.exportFormat = format;
+    if (outPath.has_parent_path()) {
+        _config.exportDirectory = outPath.parent_path().string();
+    }
+    markConfigDirty();
+}
+
+void MainWindow::handleLoadInputRequest()
+{
+    const QString startPath = _config.inputFile.empty()
+        ? QString::fromStdString(_config.exportDirectory)
+        : QString::fromStdString(_config.inputFile);
+    const QString path = QFileDialog::getOpenFileName(
+        this,
+        "Load Initial State",
+        startPath,
+        "Simulation files (*.vtk *.xyz *.bin);;All files (*.*)");
+    if (path.isEmpty()) {
+        return;
+    }
+    _config.inputFile = path.toStdString();
+    _config.inputFormat = "auto";
+    _config.presetStructure = "file";
+    _config.initMode = "file";
+    (void)applyConfigToServer(true);
+    markConfigDirty();
+}
+
+void MainWindow::handleLoadPresetRequest()
+{
+    const QString path = QFileDialog::getOpenFileName(
+        this,
+        "Load Preset Config",
+        QString::fromStdString(_configPath),
+        "Ini files (*.ini);;All files (*.*)");
+    if (path.isEmpty()) {
+        return;
+    }
+    _config = SimulationConfig::loadOrCreate(path.toStdString());
+    _configPath = path.toStdString();
+    applyConfigToUi();
+    applyConfigToServer(true);
+    _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
+    markConfigDirty(false);
+}
+
+void MainWindow::connectControls()
+{
+    const auto applySphParams = [this]() {
+        _config.sphSmoothingLength = static_cast<float>(_sphSmoothingSpin->value());
+        _config.sphRestDensity = static_cast<float>(_sphRestDensitySpin->value());
+        _config.sphGasConstant = static_cast<float>(_sphGasConstantSpin->value());
+        _config.sphViscosity = static_cast<float>(_sphViscositySpin->value());
+        _runtime->setSphParameters(
+            _config.sphSmoothingLength,
+            _config.sphRestDensity,
+            _config.sphGasConstant,
+            _config.sphViscosity);
+        markConfigDirty();
+    };
+
+    connect(_pauseButton, &QPushButton::clicked, this, [this](bool checked) {
+        _runtime->setPaused(checked);
+        _pauseButton->setText(checked ? "Resume" : "Pause");
+    });
+    connect(_stepButton, &QPushButton::clicked, this, [this]() { _runtime->stepOnce(); });
+    connect(_resetButton, &QPushButton::clicked, this, [this]() {
+        _config = SimulationConfig::loadOrCreate(_configPath);
+        applyConfigToUi();
+        applyConfigToServer(true);
+        markConfigDirty(false);
+        _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
+    });
+    connect(_recoverButton, &QPushButton::clicked, this, [this]() { _runtime->requestRecover(); });
+    connect(_reconnectButton, &QPushButton::clicked, this, [this]() { configureRemoteConnectorFromUi(); });
+    connect(_applyConnectorButton, &QPushButton::clicked, this, [this]() { configureRemoteConnectorFromUi(); });
+    connect(_exportButton, &QPushButton::clicked, this, [this]() { handleExportRequest(); });
+    connect(_saveConfigButton, &QPushButton::clicked, this, [this]() { (void)saveConfigToDisk(); });
+    connect(_validateButton, &QPushButton::clicked, this, [this]() { (void)refreshValidationReport(false); });
+    connect(_loadInputButton, &QPushButton::clicked, this, [this]() { handleLoadInputRequest(); });
+    connect(_applyPresetButton, &QPushButton::clicked, this, [this]() {
+        _config.initConfigStyle = "preset";
+        _config.presetStructure = _presetCombo->currentText().toStdString();
+        applyConfigToServer(true);
+        markConfigDirty();
+    });
+    connect(_loadPresetButton, &QPushButton::clicked, this, [this]() { handleLoadPresetRequest(); });
+    connect(_sphCheck, &QCheckBox::toggled, this, [this](bool enabled) {
+        _config.sphEnabled = enabled;
+        _runtime->setSphEnabled(enabled);
+        markConfigDirty();
+    });
+    connect(_sphSmoothingSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [applySphParams](double) { applySphParams(); });
+    connect(_sphRestDensitySpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [applySphParams](double) { applySphParams(); });
+    connect(_sphGasConstantSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [applySphParams](double) { applySphParams(); });
+    connect(_sphViscositySpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [applySphParams](double) { applySphParams(); });
+    connect(_dtSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double value) {
+        _config.dt = static_cast<float>(value);
+        _runtime->setDt(static_cast<float>(value));
+        markConfigDirty();
+    });
+    connect(_zoomSlider, &QSlider::valueChanged, this, [this](int value) {
+        _config.defaultZoom = static_cast<float>(value) / 10.0f;
+        _multiView->setZoom(static_cast<float>(value) / 10.0f);
+        markConfigDirty();
+    });
+    connect(_luminositySlider, &QSlider::valueChanged, this, [this](int value) {
+        _config.defaultLuminosity = value;
+        _multiView->setLuminosity(value);
+        markConfigDirty();
+    });
+    connect(_solverCombo, &QComboBox::currentTextChanged, this, [this](const QString &solver) {
+        _config.solver = solver.toStdString();
+        _runtime->setSolverMode(_config.solver);
+        markConfigDirty();
+    });
+    connect(_integratorCombo, &QComboBox::currentTextChanged, this, [this](const QString &integrator) {
+        _config.integrator = integrator.toStdString();
+        _runtime->setIntegratorMode(_config.integrator);
+        markConfigDirty();
+    });
+    connect(_performanceCombo, &QComboBox::currentTextChanged, this, [this](const QString &profile) {
+        _config.performanceProfile = profile.toStdString();
+        grav_config::applyPerformanceProfile(_config);
+        applyPerformanceProfileToRuntime();
+        markConfigDirty();
+    });
+    connect(_thetaSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double value) {
+        _config.octreeTheta = static_cast<float>(value);
+        _runtime->setOctreeParameters(_config.octreeTheta, static_cast<float>(_softeningSpin->value()));
+        markConfigDirty();
+    });
+    connect(_softeningSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double value) {
+        _config.octreeSoftening = static_cast<float>(value);
+        _runtime->setOctreeParameters(static_cast<float>(_thetaSpin->value()), _config.octreeSoftening);
+        markConfigDirty();
+    });
+    connect(_view3dCombo, &QComboBox::currentTextChanged, this, [this](const QString &value) {
+        _multiView->set3DMode(value == "iso" ? grav::ViewMode::Iso : grav::ViewMode::Perspective);
+    });
+    connect(_cullingCheck, &QCheckBox::toggled, this, [this](bool enabled) {
+        _config.renderCullingEnabled = enabled;
+        _multiView->setRenderSettings(
+            _config.renderCullingEnabled,
+            _config.renderLODEnabled,
+            _config.renderLODNearDistance,
+            _config.renderLODFarDistance);
+        markConfigDirty();
+    });
+    connect(_lodCheck, &QCheckBox::toggled, this, [this](bool enabled) {
+        _config.renderLODEnabled = enabled;
+        _multiView->setRenderSettings(
+            _config.renderCullingEnabled,
+            _config.renderLODEnabled,
+            _config.renderLODNearDistance,
+            _config.renderLODFarDistance);
+        markConfigDirty();
+    });
+    connect(_yawSlider, &QSlider::valueChanged, this, [this]() { update3DCameraFromSliders(); });
+    connect(_pitchSlider, &QSlider::valueChanged, this, [this]() { update3DCameraFromSliders(); });
+    connect(_rollSlider, &QSlider::valueChanged, this, [this]() { update3DCameraFromSliders(); });
+    connect(_timer, &QTimer::timeout, this, [this]() { tick(); });
+}
+
+bool MainWindow::applyConfigToServer(bool requestReset)
+{
+    captureUiIntoConfig();
+    const MainWindowApplyConfigResult result = _controller.applyConfig(_config, *_runtime, requestReset);
+    if (_validationLabel != nullptr) {
+        _validationLabel->setText(QString::fromStdString(grav_config::SimulationScenarioValidation::renderText(result.report)));
+    }
+    if (!result.report.validForRun) {
+        if (_statusLabel != nullptr) {
+            _statusLabel->setText(QString("preflight validation failed; fix config errors"));
+        }
+        return false;
+    }
+    _clientDrawCap = result.clientDrawCap;
+    applyViewSettings();
     return true;
 }
 
@@ -656,17 +638,7 @@ void MainWindow::applyConfigToUi()
     _cullingCheck->blockSignals(false);
     _lodCheck->blockSignals(false);
 
-    _multiView->setZoom(static_cast<float>(_zoomSlider->value()) / 10.0f);
-    _multiView->setLuminosity(_luminositySlider->value());
-    _multiView->setRenderSettings(
-        _config.renderCullingEnabled,
-        _config.renderLODEnabled,
-        _config.renderLODNearDistance,
-        _config.renderLODFarDistance
-    );
-    _clientDrawCap = grav_client::resolveClientDrawCap(_config);
-    _multiView->setMaxDrawParticles(_clientDrawCap);
-    _runtime->setRemoteSnapshotCap(_clientDrawCap);
+    applyViewSettings();
 }
 
 void MainWindow::captureUiIntoConfig()
@@ -691,13 +663,8 @@ void MainWindow::captureUiIntoConfig()
 
 void MainWindow::applyPerformanceProfileToRuntime()
 {
-    _runtime->setPerformanceProfile(_config.performanceProfile);
-    _runtime->setSubstepPolicy(_config.substepTargetDt, _config.maxSubsteps);
-    _runtime->setSnapshotPublishPeriodMs(_config.snapshotPublishPeriodMs);
-    _runtime->setEnergyMeasurementConfig(_config.energyMeasureEverySteps, _config.energySampleLimit);
-    _clientDrawCap = grav_client::resolveClientDrawCap(_config);
-    _multiView->setMaxDrawParticles(_clientDrawCap);
-    _runtime->setRemoteSnapshotCap(_clientDrawCap);
+    _clientDrawCap = _controller.applyPerformanceProfile(_config, *_runtime);
+    applyViewSettings();
 }
 
 void MainWindow::markConfigDirty(bool dirty)
@@ -727,7 +694,7 @@ bool MainWindow::saveConfigToDisk()
 
 bool MainWindow::refreshValidationReport(bool blockOnErrors)
 {
-    const grav_config::ScenarioValidationReport report = grav_config::SimulationScenarioValidation::evaluate(_config);
+    const grav_config::ScenarioValidationReport report = _controller.validate(_config);
     if (_validationLabel != nullptr) {
         _validationLabel->setText(QString::fromStdString(grav_config::SimulationScenarioValidation::renderText(report)));
     }
@@ -794,64 +761,29 @@ void MainWindow::tick()
     const std::string ownerLabel = _runtime->serverOwnerLabel();
     const std::uint32_t statsAgeMs = _runtime->statsAgeMs();
     const std::uint32_t snapshotAgeMs = _runtime->snapshotAgeMs();
-    const bool hasStatsAge = statsAgeMs != std::numeric_limits<std::uint32_t>::max();
-    const bool hasSnapshotAge = snapshotAgeMs != std::numeric_limits<std::uint32_t>::max();
-    const bool staleStats = hasStatsAge && statsAgeMs > 1000u;
-    const bool staleSnapshot = hasSnapshotAge && snapshotAgeMs > 1000u;
-    const bool stale = (linkLabel != "connected" || staleStats || staleSnapshot);
     if (gotSnapshot) {
         _multiView->setSnapshot(std::move(snapshot));
     }
-    const size_t displayedParticles = _multiView->displayedParticleCount();
+    const std::size_t displayedParticles = _multiView->displayedParticleCount();
     if (stats.steps != _lastEnergyStep) {
         _energyGraph->pushSample(stats);
         _lastEnergyStep = stats.steps;
     }
+    MainWindowPresentationInput presentationInput;
+    presentationInput.stats = stats;
+    presentationInput.snapshotPipeline = snapshotPipeline;
+    presentationInput.linkLabel = linkLabel;
+    presentationInput.ownerLabel = ownerLabel;
+    presentationInput.performanceProfile = stats.performanceProfile.empty() ? _config.performanceProfile : stats.performanceProfile;
+    presentationInput.displayedParticles = displayedParticles;
+    presentationInput.clientDrawCap = _clientDrawCap;
+    presentationInput.statsAgeMs = statsAgeMs;
+    presentationInput.snapshotAgeMs = snapshotAgeMs;
+    presentationInput.snapshotLatencyMs = consumedSnapshotLatencyMs;
+    presentationInput.uiTickFps = _uiTickFps;
+    const MainWindowPresentation presentation = _presenter.present(presentationInput);
 
-    _statusLabel->setText(
-        QString("state=%1 | link=%2 owner=%3 | solver=%4 integrator=%5 perf=%6 | sph=%7 | dt=%8 s | server=%9 step/s | sub=%10x@%11 s (target=%12 s max=%13) snap=%14 ms | ui=%15 fps | steps=%16 | particles=%17 draw=%18 cap=%19 | data=stats:%20 snap:%21 q=%22/%23 drop=%24 lat=%25 policy=%26 %27 | Ekin=%28 J Epot=%29 J Eth=%30 J Erad=%31 J Etot=%32 J | dE=%33%% %34")
-            .arg(stats.faulted ? "FAULT" : (stats.paused ? "PAUSED" : "RUNNING"))
-            .arg(QString::fromStdString(linkLabel))
-            .arg(QString::fromStdString(ownerLabel))
-            .arg(QString::fromStdString(stats.solverName))
-            .arg(QString::fromStdString(stats.integratorName))
-            .arg(QString::fromStdString(stats.performanceProfile.empty() ? _config.performanceProfile : stats.performanceProfile))
-            .arg(stats.sphEnabled ? "on" : "off")
-            .arg(stats.dt, 0, 'f', 5)
-            .arg(stats.serverFps, 0, 'f', 1)
-            .arg(stats.substeps)
-            .arg(stats.substepDt, 0, 'f', 5)
-            .arg(stats.substepTargetDt, 0, 'f', 5)
-            .arg(stats.maxSubsteps)
-            .arg(stats.snapshotPublishPeriodMs)
-            .arg(_uiTickFps, 0, 'f', 1)
-            .arg(static_cast<qulonglong>(stats.steps))
-            .arg(stats.particleCount)
-            .arg(static_cast<qulonglong>(displayedParticles))
-            .arg(static_cast<qulonglong>(_clientDrawCap))
-            .arg(hasStatsAge ? QString::number(statsAgeMs) + "ms" : QString("n/a"))
-            .arg(hasSnapshotAge ? QString::number(snapshotAgeMs) + "ms" : QString("n/a"))
-            .arg(static_cast<qulonglong>(snapshotPipeline.queueDepth))
-            .arg(static_cast<qulonglong>(snapshotPipeline.queueCapacity))
-            .arg(static_cast<qulonglong>(snapshotPipeline.droppedFrames))
-            .arg(
-                consumedSnapshotLatencyMs != std::numeric_limits<std::uint32_t>::max()
-                    ? QString::number(consumedSnapshotLatencyMs) + "ms"
-                    : (snapshotPipeline.latencyMs != std::numeric_limits<std::uint32_t>::max()
-                        ? QString::number(snapshotPipeline.latencyMs) + "ms"
-                        : QString("n/a")))
-            .arg(QString::fromStdString(snapshotPipeline.dropPolicy))
-            .arg(stale ? "[stale]" : "")
-            .arg(stats.kineticEnergy, 0, 'g', 6)
-            .arg(stats.potentialEnergy, 0, 'g', 6)
-            .arg(stats.thermalEnergy, 0, 'g', 6)
-            .arg(stats.radiatedEnergy, 0, 'g', 6)
-            .arg(stats.totalEnergy, 0, 'g', 6)
-            .arg(stats.energyDriftPct, 0, 'f', 4)
-            .arg(stats.faulted
-                ? QString("[fault@%1 %2]").arg(static_cast<qulonglong>(stats.faultStep)).arg(QString::fromStdString(stats.faultReason))
-                : (stats.energyEstimated ? QString("(estimated)") : QString()))
-    );
+    _statusLabel->setText(QString::fromStdString(presentation.statusText));
 
     _pauseButton->blockSignals(true);
     _pauseButton->setChecked(stats.paused);
@@ -862,45 +794,7 @@ void MainWindow::tick()
     static auto lastConsoleTrace = std::chrono::steady_clock::now();
     const auto now = std::chrono::steady_clock::now();
     if (now - lastConsoleTrace >= std::chrono::seconds(1)) {
-        std::cout << "[qt] step=" << stats.steps
-                  << " link=" << linkLabel
-                  << " owner=" << ownerLabel
-                  << " solver=" << stats.solverName
-                  << " integrator=" << stats.integratorName
-                  << " perf=" << (stats.performanceProfile.empty() ? _config.performanceProfile : stats.performanceProfile)
-                  << " sph=" << (stats.sphEnabled ? "on" : "off")
-                  << " step_s=" << stats.serverFps
-                  << " substeps=" << stats.substeps
-                  << " substep_dt=" << stats.substepDt
-                  << " substep_target_dt=" << stats.substepTargetDt
-                  << " max_substeps=" << stats.maxSubsteps
-                  << " snapshot_publish_ms=" << stats.snapshotPublishPeriodMs
-                  << " ui_fps=" << _uiTickFps
-                  << " snapshot=" << snapshotSize
-                  << " draw=" << displayedParticles
-                  << " draw_cap=" << _clientDrawCap
-                  << " stats_age_ms=" << (hasStatsAge ? std::to_string(statsAgeMs) : std::string("na"))
-                  << " snap_age_ms=" << (hasSnapshotAge ? std::to_string(snapshotAgeMs) : std::string("na"))
-                  << " queue_depth=" << snapshotPipeline.queueDepth
-                  << " queue_capacity=" << snapshotPipeline.queueCapacity
-                  << " dropped_frames=" << snapshotPipeline.droppedFrames
-                  << " snapshot_latency_ms="
-                  << (consumedSnapshotLatencyMs != std::numeric_limits<std::uint32_t>::max()
-                        ? std::to_string(consumedSnapshotLatencyMs)
-                        : (snapshotPipeline.latencyMs != std::numeric_limits<std::uint32_t>::max()
-                            ? std::to_string(snapshotPipeline.latencyMs)
-                            : std::string("na")))
-                  << " drop_policy=" << snapshotPipeline.dropPolicy
-                  << " stale=" << (stale ? "1" : "0")
-                  << " faulted=" << (stats.faulted ? "1" : "0")
-                  << " fault_step=" << stats.faultStep
-                  << " fault_reason=\"" << stats.faultReason << "\""
-                  << " energy=" << stats.totalEnergy
-                  << " thermal=" << stats.thermalEnergy
-                  << " radiated=" << stats.radiatedEnergy
-                  << " drift_pct=" << stats.energyDriftPct
-                  << (stats.energyEstimated ? " est" : "")
-                  << "\n";
+        std::cout << presentation.consoleTrace << " snapshot=" << snapshotSize << "\n";
         lastConsoleTrace = now;
     }
 }

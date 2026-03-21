@@ -550,6 +550,26 @@
                 ]
             }
         },
+        "EVD_TEST_UNIT_UI_QT_LOGIC": {
+            "TST-UNT-UI-001": {
+                "id": "QtUiLogicTest.TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeState",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UNT-UI-002": {
+                "id": "QtUiLogicTest.TST_UNT_UI_002_ControllerAppliesRuntimeMappingsWithoutWidgetDependency",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UNT-UI-003": {
+                "id": "QtUiLogicTest.TST_UNT_UI_003_ControllerRejectsInvalidConfigBeforeRuntimeMutation",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            }
+        },
         "EVD_CHECK_INI": {
             "TST-QLT-REPO-001": {
                 "id": "TST_QLT_REPO_001_GravityIniCheck",

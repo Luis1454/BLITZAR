@@ -56,6 +56,7 @@
                      "EVD_TEST_INT_RUNTIME_BRIDGE":  "tests/int/runtime/bridge.cpp",
                      "EVD_TEST_INT_RUNTIME_RUNTIME":  "tests/int/runtime/runtime.cpp",
                      "EVD_TEST_INT_UI_QT_WINDOW":  "tests/int/ui/qt_window.cpp",
+                     "EVD_TEST_UNIT_UI_QT_LOGIC":  "tests/unit/ui",
                      "EVD_IFACE_SERVER_PROTOCOL":  "runtime/include/protocol/ServerProtocol.hpp",
                      "EVD_IFACE_SERVER_PROTOCOL_SCHEMA_RUST":  "rust/blitzar-protocol/src/schema.rs",
                      "EVD_IFACE_CLIENT_RUNTIME":  "runtime/include/client/IClientRuntime.hpp",
