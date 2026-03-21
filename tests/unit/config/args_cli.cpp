@@ -178,12 +178,42 @@ TEST(ConfigArgsTest, TST_UNT_CONF_026_CliPerformanceProfileAppliesInteractivePre
     EXPECT_EQ(config.performanceProfile, "interactive");
     EXPECT_EQ(config.clientParticleCap, grav_protocol::kSnapshotDefaultPoints);
     EXPECT_EQ(config.snapshotPublishPeriodMs, 50u);
-    EXPECT_EQ(config.energyMeasureEverySteps, 120u);
+    EXPECT_EQ(config.energyMeasureEverySteps, 30u);
     EXPECT_EQ(config.energySampleLimit, 256u);
     EXPECT_FLOAT_EQ(config.substepTargetDt, 0.01f);
     EXPECT_EQ(config.maxSubsteps, 4u);
     EXPECT_TRUE(warnings.str().empty());
     EXPECT_FALSE(runtime.hasArgumentError);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_034_CliPerformanceProfileAppliesBalancedAndQualityPresets)
+{
+    SimulationConfig balanced = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> balancedArgs = {"app", "--performance-profile", "balanced"};
+    applyArgsToConfig(grav_test_config_args_cli::toArgViews(balancedArgs), balanced, runtime, warnings);
+    EXPECT_EQ(balanced.performanceProfile, "balanced");
+    EXPECT_EQ(balanced.clientParticleCap, 8192u);
+    EXPECT_EQ(balanced.snapshotPublishPeriodMs, 33u);
+    EXPECT_EQ(balanced.energyMeasureEverySteps, 20u);
+    EXPECT_EQ(balanced.energySampleLimit, 1024u);
+    EXPECT_FLOAT_EQ(balanced.substepTargetDt, 0.005f);
+    EXPECT_EQ(balanced.maxSubsteps, 8u);
+
+    SimulationConfig quality = SimulationConfig::defaults();
+    runtime = RuntimeArgs{};
+    warnings.str("");
+    warnings.clear();
+    std::vector<std::string> qualityArgs = {"app", "--performance-profile", "quality"};
+    applyArgsToConfig(grav_test_config_args_cli::toArgViews(qualityArgs), quality, runtime, warnings);
+    EXPECT_EQ(quality.performanceProfile, "quality");
+    EXPECT_EQ(quality.clientParticleCap, grav_protocol::kSnapshotMaxPoints);
+    EXPECT_EQ(quality.snapshotPublishPeriodMs, 16u);
+    EXPECT_EQ(quality.energyMeasureEverySteps, 10u);
+    EXPECT_EQ(quality.energySampleLimit, 5000u);
+    EXPECT_FLOAT_EQ(quality.substepTargetDt, 0.0f);
+    EXPECT_EQ(quality.maxSubsteps, 32u);
 }
 
 TEST(ConfigArgsTest, TST_UNT_CONF_033_CliRejectsInvalidSiPhysicsParameters)

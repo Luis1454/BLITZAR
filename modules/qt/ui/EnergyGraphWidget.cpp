@@ -29,7 +29,7 @@ static QColor panelCurveColor(const QColor &darkColor, const QColor &lightColor,
 EnergyGraphWidget::EnergyGraphWidget()
     : QWidget(nullptr)
 {
-    setMinimumHeight(130);
+    setMinimumHeight(180);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 

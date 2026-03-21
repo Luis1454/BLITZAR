@@ -94,6 +94,7 @@ class MainWindow : public QMainWindow {
         QPointer<QComboBox> _solverCombo;
         QPointer<QComboBox> _integratorCombo;
         QPointer<QComboBox> _performanceCombo;
+        QPointer<QComboBox> _simulationProfileCombo;
         QPointer<QComboBox> _presetCombo;
         QPointer<QComboBox> _view3dCombo;
         QPointer<QDoubleSpinBox> _thetaSpin;

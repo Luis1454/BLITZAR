@@ -7,6 +7,7 @@
 #include <string>
 
 class QApplication;
+class QCheckBox;
 class QComboBox;
 class QPushButton;
 class QString;
@@ -24,6 +25,10 @@ QString findStatusLabelText(const grav_qt::MainWindow &window);
 std::string readAllFile(const std::filesystem::path &path);
 
 QComboBox *findSolverCombo(grav_qt::MainWindow &window);
+
+QComboBox *findComboByObjectName(grav_qt::MainWindow &window, const QString &objectName);
+
+QCheckBox *findCheckBoxByText(grav_qt::MainWindow &window, const QString &text);
 
 QPushButton *findButtonByText(grav_qt::MainWindow &window, const QString &text);
 

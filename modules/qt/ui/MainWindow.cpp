@@ -2,6 +2,7 @@
 
 #include "client/ClientCommon.hpp"
 #include "config/SimulationPerformanceProfile.hpp"
+#include "config/SimulationProfile.hpp"
 #include "config/SimulationScenarioValidation.hpp"
 #include "server/SimulationInitConfig.hpp"
 #include "ui/EnergyGraphWidget.hpp"
@@ -116,6 +117,7 @@ MainWindow::MainWindow(
       _solverCombo(new QComboBox(this)),
       _integratorCombo(new QComboBox(this)),
       _performanceCombo(new QComboBox(this)),
+      _simulationProfileCombo(new QComboBox(this)),
       _presetCombo(new QComboBox(this)),
       _view3dCombo(new QComboBox(this)),
       _thetaSpin(new QDoubleSpinBox(this)),
@@ -169,6 +171,9 @@ MainWindow::MainWindow(
         "QComboBox QAbstractItemView { color: #102a43; background: #ffffff; selection-background-color: #d7e3f1; }"
         "QLabel { color: #243b53; }"
         "QCheckBox { color: #243b53; spacing: 6px; }"
+        "QCheckBox::indicator { width: 16px; height: 16px; border-radius: 4px; border: 1px solid #97a6ba; background: #ffffff; }"
+        "QCheckBox::indicator:checked { background: #0f4c81; border-color: #0b3a60; image: none; }"
+        "QCheckBox::indicator:unchecked:hover, QCheckBox::indicator:checked:hover { border-color: #1363a3; }"
         "QTabWidget::pane { border: 0; }"
         "QTabBar::tab { background: #d7e1ed; color: #486581; border-radius: 8px; padding: 10px 10px; margin: 2px; font-weight: 600; }"
         "QTabBar::tab:selected { background: #ffffff; color: #102a43; font-weight: 700; }"
@@ -189,14 +194,27 @@ MainWindow::MainWindow(
     _performanceCombo->addItem("balanced");
     _performanceCombo->addItem("quality");
     _performanceCombo->addItem("custom");
+    _performanceCombo->setObjectName("performanceProfileCombo");
     _performanceCombo->setCurrentIndex(std::max(0, _performanceCombo->findText(QString::fromStdString(_config.performanceProfile))));
+    _simulationProfileCombo->addItem("disk_orbit");
+    _simulationProfileCombo->addItem("galaxy_collision");
+    _simulationProfileCombo->addItem("plummer_sphere");
+    _simulationProfileCombo->addItem("binary_star");
+    _simulationProfileCombo->addItem("solar_system");
+    _simulationProfileCombo->addItem("sph_collapse");
+    _simulationProfileCombo->setObjectName("simulationProfileCombo");
+    _simulationProfileCombo->setCurrentIndex(std::max(0, _simulationProfileCombo->findText(QString::fromStdString(_config.simulationProfile))));
     _presetCombo->addItem("disk_orbit");
+    _presetCombo->addItem("galaxy_collision");
     _presetCombo->addItem("random_cloud");
     _presetCombo->addItem("two_body");
     _presetCombo->addItem("three_body");
     _presetCombo->addItem("plummer_sphere");
     _presetCombo->addItem("file");
+    _presetCombo->setObjectName("scenePresetCombo");
     _presetCombo->setCurrentIndex(std::max(0, _presetCombo->findText(QString::fromStdString(_config.presetStructure))));
+    _serverAutostartCheck->setObjectName("serverAutostartCheck");
+    _sphCheck->setObjectName("sphEnabledCheck");
     _sphCheck->setChecked(_config.sphEnabled);
 
     _dtSpin->setDecimals(5);
@@ -270,15 +288,15 @@ MainWindow::MainWindow(
     auto *sidebarTabs = new QTabWidget(this);
     sidebarTabs->setTabPosition(QTabWidget::West);
     sidebarTabs->setDocumentMode(true);
-    sidebarTabs->setMinimumWidth(248);
-    sidebarTabs->setMaximumWidth(292);
+    sidebarTabs->setMinimumWidth(220);
+    sidebarTabs->setMaximumWidth(248);
     sidebarTabs->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     sidebarTabs->setStyleSheet(
         "QTabWidget::pane { border: 0; }"
         "QTabBar::tab {"
-        "  min-width: 74px;"
+        "  min-width: 58px;"
         "  min-height: 58px;"
-        "  padding: 8px 8px;"
+        "  padding: 8px 6px;"
         "  margin: 2px;"
         "}"
     );
@@ -333,6 +351,7 @@ MainWindow::MainWindow(
     auto *sceneBox = new QGroupBox("Scene Setup", scenePage);
     auto *sceneBoxLayout = new QVBoxLayout(sceneBox);
     auto *sceneForm = new QFormLayout();
+    sceneForm->addRow("profile", _simulationProfileCombo);
     sceneForm->addRow("preset", _presetCombo);
     sceneBoxLayout->addLayout(sceneForm);
     sceneBoxLayout->addWidget(_applyPresetButton);
@@ -440,27 +459,28 @@ MainWindow::MainWindow(
     validationLayout->addWidget(_validationLabel);
     validationLayout->addStretch(1);
 
-    auto *centerSplitter = new QSplitter(Qt::Vertical, this);
-    centerSplitter->addWidget(_multiView);
-    centerSplitter->addWidget(_energyGraph);
-    centerSplitter->setStretchFactor(0, 5);
-    centerSplitter->setStretchFactor(1, 2);
-    centerSplitter->setChildrenCollapsible(false);
-    centerSplitter->setHandleWidth(5);
-    setCentralWidget(centerSplitter);
+    setCentralWidget(_multiView);
 
     auto *controlsDock = new QDockWidget("Controls", this);
     controlsDock->setObjectName("controlsDock");
     controlsDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     controlsDock->setWidget(sidebarTabs);
-    controlsDock->setMinimumWidth(272);
+    controlsDock->setMinimumWidth(236);
     addDockWidget(Qt::LeftDockWidgetArea, controlsDock);
 
     auto *telemetryDock = new QDockWidget("Telemetry", this);
     telemetryDock->setObjectName("telemetryDock");
     telemetryDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     telemetryDock->setWidget(summaryPane);
+    telemetryDock->setMinimumHeight(164);
     addDockWidget(Qt::BottomDockWidgetArea, telemetryDock);
+
+    auto *energyDock = new QDockWidget("Energy", this);
+    energyDock->setObjectName("energyDock");
+    energyDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    energyDock->setWidget(_energyGraph);
+    energyDock->setMinimumHeight(220);
+    addDockWidget(Qt::BottomDockWidgetArea, energyDock);
 
     auto *validationDock = new QDockWidget("Validation", this);
     validationDock->setObjectName("validationDock");
@@ -468,6 +488,7 @@ MainWindow::MainWindow(
     validationDock->setWidget(validationPane);
     addDockWidget(Qt::BottomDockWidgetArea, validationDock);
     tabifyDockWidget(telemetryDock, validationDock);
+    energyDock->raise();
     telemetryDock->hide();
     validationDock->hide();
 
@@ -485,6 +506,7 @@ MainWindow::MainWindow(
 
     auto *viewMenu = menuBar()->addMenu("&View");
     viewMenu->addAction(controlsDock->toggleViewAction());
+    viewMenu->addAction(energyDock->toggleViewAction());
     viewMenu->addAction(telemetryDock->toggleViewAction());
     viewMenu->addAction(validationDock->toggleViewAction());
 
@@ -496,6 +518,7 @@ MainWindow::MainWindow(
 
     auto *windowMenu = menuBar()->addMenu("&Window");
     windowMenu->addAction("Raise Controls", this, [controlsDock]() { controlsDock->raise(); });
+    windowMenu->addAction("Raise Energy", this, [energyDock]() { energyDock->raise(); });
     windowMenu->addAction("Raise Telemetry", this, [telemetryDock]() { telemetryDock->raise(); });
     windowMenu->addAction("Raise Validation", this, [validationDock]() { validationDock->raise(); });
     auto *workspaceMenu = windowMenu->addMenu("Workspace");
@@ -513,7 +536,6 @@ MainWindow::MainWindow(
     statusBar()->showMessage("Qt workspace ready", 3000);
 
     resize(1280, 820);
-    centerSplitter->setSizes(QList<int>({560, 180}));
     _defaultWorkspaceGeometry = saveGeometry();
     _defaultWorkspaceState = saveState();
 
@@ -724,10 +746,22 @@ void MainWindow::connectControls()
     connect(_applyPresetButton, &QPushButton::clicked, this, [this]() {
         _config.initConfigStyle = "preset";
         _config.presetStructure = _presetCombo->currentText().toStdString();
+        if (_config.presetStructure != "file") {
+            _config.initMode = _config.presetStructure;
+        }
         applyConfigToServer(true);
         markConfigDirty();
+        statusBar()->showMessage(QString("Scene preset applied: %1").arg(_presetCombo->currentText()), 3000);
     });
     connect(_loadPresetButton, &QPushButton::clicked, this, [this]() { handleLoadPresetRequest(); });
+    connect(_simulationProfileCombo, &QComboBox::currentTextChanged, this, [this](const QString &profile) {
+        _config.simulationProfile = profile.toStdString();
+        grav_config::applySimulationProfile(_config);
+        applyConfigToUi();
+        (void)applyConfigToServer(true);
+        markConfigDirty();
+        statusBar()->showMessage(QString("Simulation profile applied: %1").arg(profile), 3000);
+    });
     connect(_sphCheck, &QCheckBox::toggled, this, [this](bool enabled) {
         _config.sphEnabled = enabled;
         _runtime->setSphEnabled(enabled);
@@ -765,8 +799,10 @@ void MainWindow::connectControls()
     connect(_performanceCombo, &QComboBox::currentTextChanged, this, [this](const QString &profile) {
         _config.performanceProfile = profile.toStdString();
         grav_config::applyPerformanceProfile(_config);
+        applyConfigToUi();
         applyPerformanceProfileToRuntime();
         markConfigDirty();
+        statusBar()->showMessage(QString("Run profile applied: %1").arg(profile), 3000);
     });
     connect(_thetaSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double value) {
         _config.octreeTheta = static_cast<float>(value);
@@ -828,6 +864,7 @@ void MainWindow::applyConfigToUi()
     _solverCombo->blockSignals(true);
     _integratorCombo->blockSignals(true);
     _performanceCombo->blockSignals(true);
+    _simulationProfileCombo->blockSignals(true);
     _presetCombo->blockSignals(true);
     _sphCheck->blockSignals(true);
     _dtSpin->blockSignals(true);
@@ -845,6 +882,7 @@ void MainWindow::applyConfigToUi()
     _solverCombo->setCurrentIndex(std::max(0, _solverCombo->findText(QString::fromStdString(_config.solver))));
     _integratorCombo->setCurrentIndex(std::max(0, _integratorCombo->findText(QString::fromStdString(_config.integrator))));
     _performanceCombo->setCurrentIndex(std::max(0, _performanceCombo->findText(QString::fromStdString(_config.performanceProfile))));
+    _simulationProfileCombo->setCurrentIndex(std::max(0, _simulationProfileCombo->findText(QString::fromStdString(_config.simulationProfile))));
     const int presetIndex = std::max(0, _presetCombo->findText(QString::fromStdString(_config.presetStructure)));
     _presetCombo->setCurrentIndex(presetIndex);
     _sphCheck->setChecked(_config.sphEnabled);
@@ -863,6 +901,7 @@ void MainWindow::applyConfigToUi()
     _solverCombo->blockSignals(false);
     _integratorCombo->blockSignals(false);
     _performanceCombo->blockSignals(false);
+    _simulationProfileCombo->blockSignals(false);
     _presetCombo->blockSignals(false);
     _sphCheck->blockSignals(false);
     _dtSpin->blockSignals(false);
@@ -885,6 +924,7 @@ void MainWindow::captureUiIntoConfig()
     _config.solver = _solverCombo->currentText().toStdString();
     _config.integrator = _integratorCombo->currentText().toStdString();
     _config.performanceProfile = _performanceCombo->currentText().toStdString();
+    _config.simulationProfile = _simulationProfileCombo->currentText().toStdString();
     _config.presetStructure = _presetCombo->currentText().toStdString();
     _config.sphEnabled = _sphCheck->isChecked();
     _config.dt = static_cast<float>(_dtSpin->value());
