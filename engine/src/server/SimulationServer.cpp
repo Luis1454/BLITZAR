@@ -187,6 +187,10 @@ void logEffectiveExecutionModes(
     std::string_view performanceProfile,
     float theta,
     float softening,
+    float physicsMaxAcceleration,
+    float physicsMinSoftening,
+    float physicsMinDistance2,
+    float physicsMinTheta,
     bool sphEnabled,
     float configuredSubstepTargetDt,
     std::uint32_t configuredMaxSubsteps,
@@ -199,6 +203,10 @@ void logEffectiveExecutionModes(
         std::cout << " theta=" << theta
                   << " softening=" << softening;
     }
+    std::cout << " physics_max_acceleration=" << physicsMaxAcceleration
+              << " physics_min_softening=" << physicsMinSoftening
+              << " physics_min_distance2=" << physicsMinDistance2
+              << " physics_min_theta=" << physicsMinTheta;
     std::cout << " sph=" << (sphEnabled ? "on" : "off")
               << " substep_target_dt=" << configuredSubstepTargetDt
               << " max_substeps=" << configuredMaxSubsteps
@@ -1400,9 +1408,11 @@ void SimulationServer::setOctreeParameters(float theta, float softening)
     std::lock_guard<std::mutex> lock(_commandMutex);
     if (theta > 0.01f) {
         _octreeTheta = theta;
+        _runtimeConfigMirror.octreeTheta = _octreeTheta;
     }
     if (softening > 1e-6f) {
         _octreeSoftening = softening;
+        _runtimeConfigMirror.octreeSoftening = _octreeSoftening;
     }
 }
 
@@ -1844,6 +1854,10 @@ void SimulationServer::rebuildSystem()
         _performanceProfile,
         theta,
         softening,
+        physicsMaxAcceleration,
+        physicsMinSoftening,
+        physicsMinDistance2,
+        physicsMinTheta,
         sphEnabled,
         _configuredSubstepTargetDt.load(std::memory_order_relaxed),
         _configuredMaxSubsteps.load(std::memory_order_relaxed),
@@ -1937,10 +1951,14 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
     const std::size_t sampleLimit = static_cast<std::size_t>(_energySampleLimit.load(std::memory_order_relaxed));
     const bool sampled = n > sampleLimit;
     const float specificHeat = _system ? std::max(1e-6f, _system->getThermalSpecificHeat()) : 1.0f;
-    float energySoftening = 0.05f;
+    float energySoftening = 0.0f;
+    float energyMinSoftening = 0.0f;
+    float energyMinDistance2 = 0.0f;
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
-        energySoftening = std::max(1e-4f, _octreeSoftening);
+        energySoftening = _octreeSoftening;
+        energyMinSoftening = _physicsMinSoftening;
+        energyMinDistance2 = _physicsMinDistance2;
     }
     std::vector<std::size_t> indices;
     if (!sampled) {
@@ -1963,7 +1981,7 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
     const double pairCountFull = static_cast<double>(n) * static_cast<double>(n - 1) * 0.5;
     const double pairCountSample = static_cast<double>(indices.size()) * static_cast<double>(indices.size() - 1) * 0.5;
     const double potentialScale = (sampled && pairCountSample > 0.0) ? (pairCountFull / pairCountSample) : 1.0;
-    const float softening = energySoftening;
+    const float softening = std::max(energySoftening, energyMinSoftening);
 
     double kinetic = 0.0;
     double thermal = 0.0;
@@ -1987,7 +2005,11 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
             const float dx = pp.x - qq.x;
             const float dy = pp.y - qq.y;
             const float dz = pp.z - qq.z;
-            const float dist = std::sqrt(dx * dx + dy * dy + dz * dz + softening * softening);
+            const float dist2 = dx * dx + dy * dy + dz * dz + softening * softening;
+            if (dist2 <= energyMinDistance2) {
+                continue;
+            }
+            const float dist = std::sqrt(dist2);
             if (dist <= 1e-6f) {
                 continue;
             }
@@ -2261,12 +2283,12 @@ void SimulationServer::loop()
             _stepRequests.store(0, std::memory_order_relaxed);
         }
 
-        float theta = 1.2f;
-        float softening = 2.5f;
-        float sphSmoothingLength = 1.25f;
-        float sphRestDensity = 1.0f;
-        float sphGasConstant = 4.0f;
-        float sphViscosity = 0.08f;
+        float theta = 0.0f;
+        float softening = 0.0f;
+        float sphSmoothingLength = 0.0f;
+        float sphRestDensity = 0.0f;
+        float sphGasConstant = 0.0f;
+        float sphViscosity = 0.0f;
         std::string solverMode;
         std::string integratorMode;
         bool sphEnabled = false;

@@ -157,7 +157,7 @@
                           "REQ-PHYS-001":  {
                                                "tests":  [
                                                              "^PhysicsTest\\.TST_UNT_PHYS_00(1|2|5|6|7|8|9)_",
-                                                             "^PhysicsTest\\.TST_UNT_PHYS_01(0|1|2)_"
+                                                             "^PhysicsTest\\.TST_UNT_PHYS_01(0|1|2|8)_"
                                                          ],
                                                "artifacts":  [
                                                                  "EVD_TEST_UNIT_PHYSICS_ORBIT",
