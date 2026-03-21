@@ -67,6 +67,7 @@ QStringList EnergyGraphWidget::legendLabels()
 
 void EnergyGraphWidget::pushSample(const SimulationStats &stats)
 {
+    const float sampleTime = std::max(stats.totalTime, static_cast<float>(stats.steps) * std::max(0.0f, stats.dt));
     _history.push_back(EnergyPoint{
         stats.kineticEnergy,
         stats.potentialEnergy,
@@ -74,7 +75,7 @@ void EnergyGraphWidget::pushSample(const SimulationStats &stats)
         stats.radiatedEnergy,
         stats.totalEnergy,
         stats.energyDriftPct,
-        stats.totalTime
+        sampleTime
     });
     constexpr std::size_t maxHistory = 720;
     if (_history.size() > maxHistory) {
