@@ -2,7 +2,6 @@
 
 #include "config/SimulationConfig.hpp"
 #include "server/SimulationInitConfig.hpp"
-
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -10,7 +9,6 @@
 #include <utility>
 
 namespace grav_config {
-
 class SimulationScenarioValidationLocal final {
 public:
     static ScenarioValidationReport evaluate(const SimulationConfig &config)
@@ -54,10 +52,10 @@ public:
         const std::string initStyle = normalized(config.initConfigStyle);
         const std::string presetMode = normalized(config.presetStructure);
         const std::string detailedMode = normalized(config.initMode);
+        const std::string snapshotDropPolicy = normalized(config.clientSnapshotDropPolicy);
         const bool requestedFileMode =
             (initStyle == "preset" && presetMode == "file")
             || (initStyle != "preset" && detailedMode == "file");
-
         if (config.particleCount < 2u) {
             addDiagnostic(
                 ScenarioDiagnosticLevel::Error,
@@ -71,7 +69,6 @@ public:
                 "Very low particle counts can make scenario behavior unrepresentative.",
                 "Use a larger particle_count for stable tuning and visualization.");
         }
-
         if (!(config.dt > 0.0f)) {
             addDiagnostic(
                 ScenarioDiagnosticLevel::Error,
@@ -85,7 +82,6 @@ public:
                 "Large time steps dt [s] increase the risk of unstable orbits and missed interactions.",
                 "Reduce dt [s] or enable a tighter substep_target_dt [s].");
         }
-
         if (config.substepTargetDt < 0.0f) {
             addDiagnostic(
                 ScenarioDiagnosticLevel::Error,
@@ -99,7 +95,6 @@ public:
                 "Configured substep target dt is larger than dt, so no finer subdivision will happen.",
                 "Lower substep_target_dt or leave it at 0 for auto mode.");
         }
-
         if (config.maxSubsteps == 0u) {
             addDiagnostic(
                 ScenarioDiagnosticLevel::Error,
@@ -107,7 +102,26 @@ public:
                 "Maximum substeps cannot be 0.",
                 "Set max_substeps to at least 1.");
         }
-
+        if (config.clientSnapshotQueueCapacity == 0u) {
+            addDiagnostic(
+                ScenarioDiagnosticLevel::Error,
+                "client_snapshot_queue_capacity",
+                "Snapshot queue capacity must be at least 1 frame.",
+                "Set client_snapshot_queue_capacity to 1 or more.");
+        } else if (config.clientSnapshotQueueCapacity > 16u) {
+            addDiagnostic(
+                ScenarioDiagnosticLevel::Warning,
+                "client_snapshot_queue_capacity",
+                "Large snapshot queue capacities increase frontend latency before frames are displayed.",
+                "Use a smaller client_snapshot_queue_capacity unless paced playback is explicitly required.");
+        }
+        if (snapshotDropPolicy != "latest-only" && snapshotDropPolicy != "paced") {
+            addDiagnostic(
+                ScenarioDiagnosticLevel::Error,
+                "client_snapshot_drop_policy",
+                "Snapshot drop policy must be latest-only or paced.",
+                "Set client_snapshot_drop_policy to latest-only or paced.");
+        }
         if (config.octreeSoftening <= 0.0f) {
             addDiagnostic(
                 ScenarioDiagnosticLevel::Error,
@@ -121,7 +135,6 @@ public:
                 "Softening octree_softening [m] is below physics_min_softening [m] and will be clamped during force evaluation.",
                 "Raise octree_softening [m] or lower physics_min_softening [m] intentionally.");
         }
-
         if (plan.config.velocityTemperature < 0.0f) {
             addDiagnostic(ScenarioDiagnosticLevel::Error, "velocity_temperature", "velocity_temperature [m/s] cannot be negative.", "Set velocity_temperature to 0 m/s or a positive velocity scale.");
         }
@@ -151,7 +164,6 @@ public:
         } else if (config.octreeSoftening > 0.0f && config.physicsMinDistance2 > config.octreeSoftening * config.octreeSoftening) {
             addDiagnostic(ScenarioDiagnosticLevel::Warning, "physics_min_distance2", "physics_min_distance2 [m^2] exceeds octree_softening^2 [m^2], so near-field clamping will dominate before softening.", "Lower physics_min_distance2 [m^2] or raise octree_softening [m] intentionally.");
         }
-
         if (config.solver == "octree_gpu" || config.solver == "octree_cpu") {
             if (config.octreeTheta <= 0.0f) {
                 addDiagnostic(
@@ -167,7 +179,6 @@ public:
                     "Lower octree_theta if you need more accurate trajectories.");
             }
         }
-
         if (config.sphEnabled) {
             if (config.sphSmoothingLength <= 0.0f || config.sphRestDensity <= 0.0f || config.sphGasConstant <= 0.0f) {
                 addDiagnostic(
@@ -191,7 +202,6 @@ public:
                     "Increase particle_count before using SPH diagnostics.");
             }
         }
-
         if (requestedFileMode && plan.config.mode != "file") {
             addDiagnostic(
                 ScenarioDiagnosticLevel::Error,
@@ -199,7 +209,6 @@ public:
                 "File-based initialization was requested but no usable input_file was provided.",
                 "Set input_file to an existing snapshot or switch init mode away from file.");
         }
-
         if (plan.config.mode != "file" && plan.config.particleMass <= 0.0f) {
             addDiagnostic(
                 ScenarioDiagnosticLevel::Error,
@@ -207,7 +216,6 @@ public:
                 "Generated scenarios require a strictly positive particle mass.",
                 "Raise init_particle_mass or choose a preset that computes masses automatically.");
         }
-
         if (plan.config.includeCentralBody && plan.config.centralMass <= 0.0f) {
             addDiagnostic(
                 ScenarioDiagnosticLevel::Error,
@@ -215,7 +223,6 @@ public:
                 "Central body mass must be strictly positive when the central body is enabled.",
                 "Raise init_central_mass or disable the central body.");
         }
-
         if (plan.config.mode == "disk_orbit") {
             if (plan.config.diskMass <= 0.0f) {
                 addDiagnostic(
@@ -232,7 +239,6 @@ public:
                     "Increase init_disk_radius_max or lower init_disk_radius_min.");
             }
         }
-
         if ((plan.config.mode == "random_cloud" || plan.config.mode == "plummer_sphere") && plan.config.cloudHalfExtent <= 0.0f) {
             addDiagnostic(
                 ScenarioDiagnosticLevel::Error,
@@ -240,7 +246,6 @@ public:
                 "Cloud-based presets require a strictly positive spatial extent.",
                 "Set init_cloud_half_extent above 0.");
         }
-
         const float maxConfiguredSpeed = std::max({
             std::fabs(plan.config.velocityScale),
             std::fabs(plan.config.cloudSpeed),
@@ -257,10 +262,8 @@ public:
         if (stepTravel > 0.0f && characteristicLength > 0.0f && stepTravel > characteristicLength) {
             addDiagnostic(ScenarioDiagnosticLevel::Warning, "dt", "Single-step travel dt [s] * velocity [m/s] exceeds the configured scenario length scale [m].", "Lower dt [s] or reduce the configured velocity scale [m/s] before running.");
         }
-
         return report;
     }
-
     static std::string renderText(const ScenarioValidationReport &report)
     {
         std::ostringstream out;
@@ -294,5 +297,4 @@ std::string SimulationScenarioValidation::renderText(const ScenarioValidationRep
 {
     return SimulationScenarioValidationLocal::renderText(report);
 }
-
 } // namespace grav_config

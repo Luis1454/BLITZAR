@@ -18,7 +18,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_024_LoadSupportsDirectiveSyntax)
         ASSERT_TRUE(out.is_open());
         out << "simulation(particles=123, dt=0.05, solver=octree_cpu, integrator=rk4)\n";
         out << "performance(profile=interactive)\n";
-        out << "client(zoom=6, luminosity=120, ui_fps=55, command_timeout_ms=110, status_timeout_ms=45, snapshot_timeout_ms=190)\n";
+        out << "client(zoom=6, luminosity=120, ui_fps=55, command_timeout_ms=110, status_timeout_ms=45, snapshot_timeout_ms=190, snapshot_queue=5, drop_policy=paced)\n";
         out << "scene(style=preset, preset=file, mode=file, file=\"tests/data/two_body_rest.xyz\", format=auto)\n";
         out << "preset(size=8, velocity_temperature=0.2, temperature=1.5)\n";
         out << "thermal(ambient=2, specific_heat=3, heating=4, radiation=5)\n";
@@ -34,6 +34,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_024_LoadSupportsDirectiveSyntax)
     EXPECT_EQ(loaded.snapshotPublishPeriodMs, 50u);
     EXPECT_EQ(loaded.clientParticleCap, grav_protocol::kSnapshotDefaultPoints);
     EXPECT_EQ(loaded.uiFpsLimit, 55u);
+    EXPECT_EQ(loaded.clientSnapshotQueueCapacity, 5u);
+    EXPECT_EQ(loaded.clientSnapshotDropPolicy, "paced");
     EXPECT_EQ(loaded.inputFile, "tests/data/two_body_rest.xyz");
     EXPECT_EQ(loaded.presetStructure, "file");
     EXPECT_FLOAT_EQ(loaded.presetSize, 8.0f);
@@ -75,6 +77,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_025_SaveWritesDirectiveSyntax)
     config.presetStructure = "three_body";
     config.inputFile = "exports/state final.vtk";
     config.thermalRadiationCoeff = 0.4f;
+    config.clientSnapshotQueueCapacity = 6u;
+    config.clientSnapshotDropPolicy = "paced";
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() / ("gravity_config_directive_save_" + std::to_string(stamp) + ".ini");
@@ -86,6 +90,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_025_SaveWritesDirectiveSyntax)
     EXPECT_NE(content.find("performance("), std::string::npos);
     EXPECT_NE(content.find("scene("), std::string::npos);
     EXPECT_NE(content.find("thermal("), std::string::npos);
+    EXPECT_NE(content.find("client(zoom=8, luminosity=100, ui_fps=60, command_timeout_ms=80, status_timeout_ms=40, snapshot_timeout_ms=140, snapshot_queue=6, drop_policy=paced)\n"), std::string::npos);
     EXPECT_NE(content.find("export(directory=\"exports final\", format=vtk)\n"), std::string::npos);
     EXPECT_NE(
         content.find("scene(style=preset, preset=three_body, mode=disk_orbit, file=\"exports/state final.vtk\", format=auto)\n"),

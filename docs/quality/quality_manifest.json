@@ -2,7 +2,7 @@
   "metadata": {
     "system": "BLITZAR",
     "revision": "2026-03-20",
-    "revision_note": "Added parse-time SI unit diagnostics for configuration validation, documented protocol/config unit conventions, and kept runtime status surfaces explicit about seconds, meters, joules, and derived physical units."
+    "revision_note": "Added configurable client snapshot queue controls, runtime drop/latency evidence for the frontend snapshot pipeline, and kept SI-oriented validation and status evidence synchronized."
   },
   "includes": [
     "manifest/evidence.json",

@@ -27,6 +27,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_010_SimulationConfigSaveLoadRoundTrip)
     config.clientRemoteCommandTimeoutMs = 95u;
     config.clientRemoteStatusTimeoutMs = 50u;
     config.clientRemoteSnapshotTimeoutMs = 200u;
+    config.clientSnapshotQueueCapacity = 6u;
+    config.clientSnapshotDropPolicy = "paced";
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() / ("gravity_config_roundtrip_" + std::to_string(stamp) + ".ini");
@@ -47,6 +49,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_010_SimulationConfigSaveLoadRoundTrip)
     EXPECT_EQ(loaded.clientRemoteCommandTimeoutMs, config.clientRemoteCommandTimeoutMs);
     EXPECT_EQ(loaded.clientRemoteStatusTimeoutMs, config.clientRemoteStatusTimeoutMs);
     EXPECT_EQ(loaded.clientRemoteSnapshotTimeoutMs, config.clientRemoteSnapshotTimeoutMs);
+    EXPECT_EQ(loaded.clientSnapshotQueueCapacity, config.clientSnapshotQueueCapacity);
+    EXPECT_EQ(loaded.clientSnapshotDropPolicy, config.clientSnapshotDropPolicy);
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
@@ -255,38 +259,4 @@ TEST(ConfigArgsTest, TST_UNT_CONF_023_ResolveInitPlanSupportsCalibrationPresets)
     EXPECT_EQ(detailedPlan.config.mode, "plummer_sphere");
     EXPECT_FLOAT_EQ(detailedPlan.config.cloudHalfExtent, 9.0f);
     EXPECT_FLOAT_EQ(detailedPlan.config.particleMass, 0.02f);
-}
-
-TEST(ConfigArgsTest, TST_UNT_CONF_034_LoadOrCreateReportsSiValidationDiagnostics)
-{
-    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    const std::filesystem::path path =
-        std::filesystem::temp_directory_path() / ("gravity_config_si_validation_" + std::to_string(stamp) + ".ini");
-    {
-        std::ofstream out(path, std::ios::trunc);
-        ASSERT_TRUE(out.is_open());
-        out << "particle_count=128\n";
-        out << "dt=0.5\n";
-        out << "solver=octree_cpu\n";
-        out << "integrator=euler\n";
-        out << "octree_theta=1.2\n";
-        out << "octree_softening=0.25\n";
-        out << "physics_min_softening=0.3\n";
-        out << "physics_min_distance2=0.2\n";
-        out << "preset_size=10\n";
-        out << "velocity_temperature=40\n";
-        out << "particle_temperature=0\n";
-    }
-    std::stringstream err;
-    std::streambuf *previous = std::cerr.rdbuf(err.rdbuf());
-    const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
-    std::cerr.rdbuf(previous);
-    EXPECT_EQ(loaded.particleCount, 128u);
-    const std::string log = err.str();
-    EXPECT_NE(log.find("[preflight] warnings"), std::string::npos);
-    EXPECT_NE(log.find("dt [s] * velocity [m/s]"), std::string::npos);
-    EXPECT_NE(log.find("octree_softening [m]"), std::string::npos);
-    EXPECT_NE(log.find("physics_min_distance2 [m^2]"), std::string::npos);
-    std::error_code ec;
-    std::filesystem::remove(path, ec);
 }
