@@ -271,6 +271,7 @@ ServerClientResponse ServerClient::getStatus(ServerClientStatus &outStatus)
 
         outStatus.steps = parsed.steps;
         outStatus.dt = parsed.dt;
+        outStatus.totalTime = parsed.totalTime;
         outStatus.paused = parsed.paused;
         outStatus.faulted = parsed.faulted;
         outStatus.faultStep = parsed.faultStep;

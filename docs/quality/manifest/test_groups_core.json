@@ -667,6 +667,45 @@
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
+            },
+            "TST-UNT-MODCLI-006": {
+                "id": "CommandParserTest.TST_UNT_MODCLI_006_ParsesQuotedPathsAndComments",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-007": {
+                "id": "CommandParserTest.TST_UNT_MODCLI_007_RejectsUnknownCommandWithLineNumber",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-008": {
+                "id": "CommandParserTest.TST_UNT_MODCLI_008_RejectsWrongArityAndInvalidNumericValues",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-009": {
+                "id": "CommandExecutorTest.TST_UNT_MODCLI_009_SetDtMapsToProtocolCommand",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-010": {
+                "id": "CommandExecutorTest.TST_UNT_MODCLI_010_RunStepsAndRunUntilUseDeterministicStepFlow",
+                "req_ids": [
+                    "REQ-MOD-001",
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-MODCLI-011": {
+                "id": "CommandExecutorTest.TST_UNT_MODCLI_011_LoadConfigUpdatesSessionPathAndRejectsInvalidProfile",
+                "req_ids": [
+                    "REQ-MOD-001",
+                    "REQ-CONF-001",
+                    "REQ-CONF-002"
+                ]
             }
         },
         "EVD_TEST_UNIT_MODULE_CLI_SERVER": {
@@ -712,6 +751,13 @@
                 "id": "ClientHostCliArgsTest.TST_UNT_MODHOST_008_HelpReflectsProfileReloadPolicy",
                 "req_ids": [
                     "REQ-MOD-002"
+                ]
+            },
+            "TST-UNT-MODHOST-011": {
+                "id": "ClientHostCliArgsTest.TST_UNT_MODHOST_011_BatchScriptRunsDeterministicHelpAndExits",
+                "req_ids": [
+                    "REQ-MOD-002",
+                    "REQ-RUN-001"
                 ]
             }
         },

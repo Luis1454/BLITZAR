@@ -42,6 +42,40 @@ function(gravity_add_client_module_manifest target_name module_id)
         VERBATIM
     )
 endfunction()
+set(GRAVITY_RUNTIME_COMMAND_SOURCES
+    "${GRAVITY_ROOT_DIR}/runtime/src/command/CommandBatchRunner.cpp"
+    "${GRAVITY_ROOT_DIR}/runtime/src/command/CommandCatalog.cpp"
+    "${GRAVITY_ROOT_DIR}/runtime/src/command/CommandExecutor.cpp"
+    "${GRAVITY_ROOT_DIR}/runtime/src/command/CommandParser.cpp"
+    "${GRAVITY_ROOT_DIR}/runtime/src/command/CommandTransport.cpp"
+)
+if(WIN32)
+    set(GRAVITY_CLIENT_COMMON_SUPPORT_SOURCES
+        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
+        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtilsWin.cpp"
+    )
+else()
+    set(GRAVITY_CLIENT_COMMON_SUPPORT_SOURCES
+        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
+        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtilsPosix.cpp"
+    )
+endif()
+set(GRAVITY_COMMAND_CONFIG_SOURCES
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/DirectiveValueFormatter.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
+)
 add_library(gravityCoreFfi STATIC
     ${GRAVITY_CORE_FFI_SOURCES}
     ${GRAVITY_SERVER_SOURCES}
@@ -92,25 +126,17 @@ if(GRAVITY_BUILD_CLIENT_HOST)
         apps/client-host/client_host_cli_args.cpp
         apps/client-host/client_host_cli_text.cpp
         apps/client-host/client_host_module_ops.cpp
-        engine/src/config/SimulationArgsParse.cpp
-        engine/src/config/SimulationOptionRegistry.cpp
-        engine/src/config/SimulationOptionRegistryApply.cpp
-        engine/src/config/SimulationOptionRegistryEntries.cpp
-        engine/src/config/SimulationPerformanceProfile.cpp
-        engine/src/config/SimulationScenarioValidation.cpp
-        engine/src/config/SimulationConfigDirective.cpp
-        engine/src/config/SimulationConfigDirectiveWrite.cpp
-        engine/src/config/DirectiveStreamWriter.cpp
-        engine/src/config/DirectiveValueFormatter.cpp
-        engine/src/config/SimulationConfig.cpp
-        engine/src/config/SimulationModes.cpp
-        engine/src/server/SimulationInitConfig.cpp
+        ${GRAVITY_RUNTIME_COMMAND_SOURCES}
+        ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
+        ${GRAVITY_COMMAND_CONFIG_SOURCES}
         runtime/src/client/ClientModuleBoundary.cpp
         runtime/src/client/ClientModuleHash.cpp
         runtime/src/client/ClientModuleHandle.cpp
         runtime/src/client/ClientModuleHandleLoad.cpp
         runtime/src/client/ClientModuleApi.cpp
+        runtime/src/client/ClientCommon.cpp
         runtime/src/client/ClientModuleManifest.cpp
+        ${GRAVITY_CLIENT_COMMON_SUPPORT_SOURCES}
         engine/src/config/TextParse.cpp
     )
     configure_gravity_cpp_target(${CLIENT_HOST_NAME})
@@ -124,11 +150,14 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
         modules/cli/module_cli_server_ops.cpp
         modules/cli/module_cli_commands.cpp
         modules/cli/module_cli_lifecycle.cpp
+        ${GRAVITY_RUNTIME_COMMAND_SOURCES}
+        ${GRAVITY_COMMAND_CONFIG_SOURCES}
         runtime/src/client/ErrorBuffer.cpp
         runtime/src/client/ClientModuleBoundary.cpp
         runtime/src/client/ClientModuleApi.cpp
+        runtime/src/client/ClientCommon.cpp
+        ${GRAVITY_CLIENT_COMMON_SUPPORT_SOURCES}
         ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
-        engine/src/config/TextParse.cpp
     )
     configure_gravity_cpp_target(${CLIENT_MODULE_CLI_NAME})
     if(WIN32)

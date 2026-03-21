@@ -15,12 +15,12 @@ class ModuleCliServerOpsLocal final {
 public:
     static bool ensureConnected(ModuleState &state, const grav_client::ErrorBufferView &errorBuffer)
     {
-        if (state.client.isConnected()) {
+        if (state.transport.isConnected()) {
             return true;
         }
-        if (!state.client.connect(state.host, state.port)) {
+        if (!state.transport.connect(state.session.host, state.session.port)) {
             errorBuffer.write(
-                "unable to connect to server " + state.host + ":" + std::to_string(state.port));
+                "unable to connect to server " + state.session.host + ":" + std::to_string(state.session.port));
             return false;
         }
         return true;
@@ -34,12 +34,12 @@ public:
         if (!ensureConnected(state, errorBuffer)) {
             return false;
         }
-        const ServerClientResponse response = state.client.sendCommand(cmd);
+        const ServerClientResponse response = state.transport.sendCommand(cmd);
         if (!response.ok) {
             const std::string message = response.error.empty() ? "server command failed" : response.error;
             errorBuffer.write(message);
             if (response.error == "not connected") {
-                state.client.disconnect();
+                state.transport.disconnect();
             }
             return false;
         }
@@ -52,12 +52,12 @@ public:
             return false;
         }
         ServerClientStatus status{};
-        const ServerClientResponse response = state.client.getStatus(status);
+        const ServerClientResponse response = state.transport.getStatus(status);
         if (!response.ok) {
             const std::string message = response.error.empty() ? "status failed" : response.error;
             errorBuffer.write(message);
             if (response.error == "not connected") {
-                state.client.disconnect();
+                state.transport.disconnect();
             }
             return false;
         }
@@ -94,14 +94,14 @@ public:
         if (!ensureConnected(state, errorBuffer)) {
             return false;
         }
-        const ServerClientResponse response = state.client.sendCommand(
+        const ServerClientResponse response = state.transport.sendCommand(
             std::string(grav_protocol::Step),
             "\"count\":" + std::to_string(count));
         if (!response.ok) {
             const std::string message = response.error.empty() ? "step failed" : response.error;
             errorBuffer.write(message);
             if (response.error == "not connected") {
-                state.client.disconnect();
+                state.transport.disconnect();
             }
             return false;
         }
@@ -123,25 +123,25 @@ public:
             return false;
         }
 
-        state.host = tokens[1];
-        state.port = static_cast<std::uint16_t>(parsedPort);
-        state.client.disconnect();
-        if (!state.client.connect(state.host, state.port)) {
+        state.session.host = tokens[1];
+        state.session.port = static_cast<std::uint16_t>(parsedPort);
+        state.transport.disconnect();
+        if (!state.transport.connect(state.session.host, state.session.port)) {
             errorBuffer.write("connect failed");
             return false;
         }
-        std::cout << "[module-cli] connected to " << state.host << ":" << state.port << "\n";
+        std::cout << "[module-cli] connected to " << state.session.host << ":" << state.session.port << "\n";
         return true;
     }
 
     static bool reconnect(ModuleState &state, const grav_client::ErrorBufferView &errorBuffer)
     {
-        state.client.disconnect();
-        if (!state.client.connect(state.host, state.port)) {
+        state.transport.disconnect();
+        if (!state.transport.connect(state.session.host, state.session.port)) {
             errorBuffer.write("reconnect failed");
             return false;
         }
-        std::cout << "[module-cli] reconnected to " << state.host << ":" << state.port << "\n";
+        std::cout << "[module-cli] reconnected to " << state.session.host << ":" << state.session.port << "\n";
         return true;
     }
 };

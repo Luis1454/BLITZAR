@@ -2,13 +2,13 @@
 #include <exception>
 #include <iostream>
 #include <string>
-#include <vector>
 
 #include "client/ErrorBuffer.hpp"
-#include "protocol/ServerProtocol.hpp"
-#include "modules/cli/module_cli_server_ops.hpp"
+#include "command/CommandCatalog.hpp"
+#include "command/CommandContext.hpp"
+#include "command/CommandExecutor.hpp"
+#include "command/CommandParser.hpp"
 #include "modules/cli/module_cli_commands.hpp"
-#include "modules/cli/module_cli_text.hpp"
 
 namespace grav_module_cli {
 
@@ -17,8 +17,9 @@ public:
     static void printHelp()
     {
         std::cout << "[module-cli] commands:\n"
-                  << "  help\n  connect <host> <port>\n  reconnect\n  status\n"
-                  << "  pause | resume | toggle\n  step [count]\n  reset | recover\n  shutdown\n";
+                  << grav_cmd::CommandCatalog::renderHelp()
+                  << "  quit\n"
+                  << "  exit\n";
     }
 
     static bool handleCommand(
@@ -29,15 +30,34 @@ public:
     {
         try {
             commandControl.setContinue();
-            const std::string line = ModuleCliText::trim(std::string(commandLine));
+            const std::string line(commandLine);
             if (line.empty()) {
                 return true;
             }
-            const std::vector<std::string> tokens = ModuleCliText::splitTokens(line);
-            if (tokens.empty()) {
+            if (line == "quit" || line == "exit") {
+                commandControl.requestStop();
                 return true;
             }
-            return dispatch(state, tokens, commandControl, errorBuffer);
+            const grav_cmd::CommandParseResult parsed = grav_cmd::CommandParser::parseLine(line, 1u);
+            if (!parsed.ok) {
+                errorBuffer.write(parsed.error);
+                return false;
+            }
+            if (parsed.requests.empty()) {
+                return true;
+            }
+            grav_cmd::CommandExecutionContext context{
+                state.transport,
+                state.session,
+                grav_cmd::CommandExecutionMode::Interactive,
+                std::cout
+            };
+            const grav_cmd::CommandResult result = grav_cmd::CommandExecutor::execute(parsed.requests.front(), context);
+            if (!result.ok) {
+                errorBuffer.write(result.message);
+                return false;
+            }
+            return true;
         } catch (const std::exception &ex) {
             errorBuffer.write(ex.what());
             return false;
@@ -45,56 +65,6 @@ public:
             errorBuffer.write("unknown module command error");
             return false;
         }
-    }
-
-private:
-    static bool dispatch(
-        ModuleState &state,
-        const std::vector<std::string> &tokens,
-        const grav_module::ClientModuleCommandControl &commandControl,
-        const grav_client::ErrorBufferView &errorBuffer)
-    {
-        const std::string &cmd = tokens[0];
-        if (cmd == "help") {
-            printHelp();
-            return true;
-        }
-        if (cmd == "quit" || cmd == "exit") {
-            commandControl.requestStop();
-            return true;
-        }
-        if (cmd == "connect") {
-            return ModuleCliServerOps::connect(state, tokens, errorBuffer);
-        }
-        if (cmd == "reconnect") {
-            return ModuleCliServerOps::reconnect(state, errorBuffer);
-        }
-        if (cmd == "status") {
-            return ModuleCliServerOps::commandStatus(state, errorBuffer);
-        }
-        if (cmd == "step") {
-            return ModuleCliServerOps::commandStep(state, tokens, errorBuffer);
-        }
-        if (cmd == "pause") {
-            return ModuleCliServerOps::sendSimpleCommand(state, std::string(grav_protocol::Pause), errorBuffer);
-        }
-        if (cmd == "resume") {
-            return ModuleCliServerOps::sendSimpleCommand(state, std::string(grav_protocol::Resume), errorBuffer);
-        }
-        if (cmd == "toggle") {
-            return ModuleCliServerOps::sendSimpleCommand(state, std::string(grav_protocol::Toggle), errorBuffer);
-        }
-        if (cmd == "reset") {
-            return ModuleCliServerOps::sendSimpleCommand(state, std::string(grav_protocol::Reset), errorBuffer);
-        }
-        if (cmd == "recover") {
-            return ModuleCliServerOps::sendSimpleCommand(state, std::string(grav_protocol::Recover), errorBuffer);
-        }
-        if (cmd == "shutdown") {
-            return ModuleCliServerOps::sendSimpleCommand(state, std::string(grav_protocol::Shutdown), errorBuffer);
-        }
-        errorBuffer.write("unknown module command");
-        return false;
     }
 };
 

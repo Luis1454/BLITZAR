@@ -54,7 +54,7 @@ TEST(ModuleCliCommandsTest, TST_UNT_MODCLI_003_UnknownCommandReturnsError)
         "unknown_command",
         grav_module::ClientModuleCommandControl(commandResult.rawKeepRunningFlag()),
         grav_client::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
-    EXPECT_EQ(std::string(errorBuffer), "unknown module command");
+    EXPECT_EQ(std::string(errorBuffer), "line 1: unknown command 'unknown_command'");
 }
 
 } // namespace grav_test_module_cli_text_and_commands
