@@ -18,8 +18,10 @@
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
+#include <QKeySequence>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMenuBar>
 #include <QPushButton>
 #include <QSlider>
 #include <QSplitter>
@@ -247,56 +249,30 @@ MainWindow::MainWindow(
     runLayout->setContentsMargins(4, 4, 4, 4);
     runLayout->setSpacing(8);
 
-    auto *fluidPage = new QWidget(sidebarTabs);
-    auto *fluidLayout = new QVBoxLayout(fluidPage);
-    fluidLayout->setContentsMargins(4, 4, 4, 4);
-    fluidLayout->setSpacing(8);
+    auto *scenePage = new QWidget(sidebarTabs);
+    auto *sceneLayout = new QVBoxLayout(scenePage);
+    sceneLayout->setContentsMargins(4, 4, 4, 4);
+    sceneLayout->setSpacing(8);
 
-    auto *viewPage = new QWidget(sidebarTabs);
-    auto *viewLayout = new QVBoxLayout(viewPage);
-    viewLayout->setContentsMargins(4, 4, 4, 4);
-    viewLayout->setSpacing(8);
+    auto *physicsPage = new QWidget(sidebarTabs);
+    auto *physicsLayout = new QVBoxLayout(physicsPage);
+    physicsLayout->setContentsMargins(4, 4, 4, 4);
+    physicsLayout->setSpacing(8);
 
-    auto *simulationBox = new QGroupBox("Simulation", runPage);
-    auto *simulationLayout = new QVBoxLayout(simulationBox);
-    auto *simulationForm = new QFormLayout();
-    simulationForm->addRow("solver", _solverCombo);
-    simulationForm->addRow("integrator", _integratorCombo);
-    simulationForm->addRow("performance", _performanceCombo);
-    simulationForm->addRow("preset", _presetCombo);
-    simulationLayout->addLayout(simulationForm);
-    simulationLayout->addWidget(_applyPresetButton);
-    simulationLayout->addWidget(_pauseButton);
-    simulationLayout->addWidget(_stepButton);
-    simulationLayout->addWidget(_resetButton);
-    simulationLayout->addWidget(_recoverButton);
+    auto *renderPage = new QWidget(sidebarTabs);
+    auto *renderLayout = new QVBoxLayout(renderPage);
+    renderLayout->setContentsMargins(4, 4, 4, 4);
+    renderLayout->setSpacing(8);
 
-    auto *timeBox = new QGroupBox("Time", runPage);
-    auto *timeLayout = new QVBoxLayout(timeBox);
-    auto *timeForm = new QFormLayout();
-    timeForm->addRow("dt", _dtSpin);
-    timeForm->addRow("theta", _thetaSpin);
-    timeForm->addRow("softening", _softeningSpin);
-    timeLayout->addLayout(timeForm);
-
-    auto *sphBox = new QGroupBox("SPH", fluidPage);
-    auto *sphLayout = new QVBoxLayout(sphBox);
-    sphLayout->addWidget(_sphCheck);
-    auto *sphForm = new QFormLayout();
-    sphForm->addRow("h", _sphSmoothingSpin);
-    sphForm->addRow("rest density", _sphRestDensitySpin);
-    sphForm->addRow("gas K", _sphGasConstantSpin);
-    sphForm->addRow("viscosity", _sphViscositySpin);
-    sphLayout->addLayout(sphForm);
-
-    auto *ioBox = new QGroupBox("I/O", fluidPage);
-    auto *ioLayout = new QVBoxLayout(ioBox);
-    ioLayout->addWidget(_saveConfigButton);
-    ioLayout->addWidget(_loadPresetButton);
-    ioLayout->addWidget(_loadInputButton);
-    ioLayout->addWidget(_validateButton);
-    ioLayout->addWidget(_exportButton);
-    ioLayout->addStretch(1);
+    auto *runBox = new QGroupBox("Run Control", runPage);
+    auto *runBoxLayout = new QVBoxLayout(runBox);
+    auto *runForm = new QFormLayout();
+    runForm->addRow("performance", _performanceCombo);
+    runBoxLayout->addLayout(runForm);
+    runBoxLayout->addWidget(_pauseButton);
+    runBoxLayout->addWidget(_stepButton);
+    runBoxLayout->addWidget(_resetButton);
+    runBoxLayout->addWidget(_recoverButton);
 
     auto *connectorBox = new QGroupBox("Connector", runPage);
     auto *connectorLayout = new QVBoxLayout(connectorBox);
@@ -310,7 +286,47 @@ MainWindow::MainWindow(
     connectorLayout->addWidget(_applyConnectorButton);
     connectorLayout->addStretch(1);
 
-    auto *cameraBox = new QGroupBox("View & Camera", viewPage);
+    auto *sceneBox = new QGroupBox("Scene Setup", scenePage);
+    auto *sceneBoxLayout = new QVBoxLayout(sceneBox);
+    auto *sceneForm = new QFormLayout();
+    sceneForm->addRow("preset", _presetCombo);
+    sceneBoxLayout->addLayout(sceneForm);
+    sceneBoxLayout->addWidget(_applyPresetButton);
+    sceneBoxLayout->addWidget(_loadPresetButton);
+    sceneBoxLayout->addWidget(_loadInputButton);
+
+    auto *configBox = new QGroupBox("Config", scenePage);
+    auto *configBoxLayout = new QVBoxLayout(configBox);
+    configBoxLayout->addWidget(_saveConfigButton);
+    configBoxLayout->addWidget(_validateButton);
+    configBoxLayout->addStretch(1);
+
+    auto *physicsCoreBox = new QGroupBox("Physics Core", physicsPage);
+    auto *physicsCoreLayout = new QVBoxLayout(physicsCoreBox);
+    auto *physicsForm = new QFormLayout();
+    physicsForm->addRow("solver", _solverCombo);
+    physicsForm->addRow("integrator", _integratorCombo);
+    physicsForm->addRow("dt", _dtSpin);
+    physicsForm->addRow("theta", _thetaSpin);
+    physicsForm->addRow("softening", _softeningSpin);
+    physicsCoreLayout->addLayout(physicsForm);
+
+    auto *sphBox = new QGroupBox("SPH", physicsPage);
+    auto *sphLayout = new QVBoxLayout(sphBox);
+    sphLayout->addWidget(_sphCheck);
+    auto *sphForm = new QFormLayout();
+    sphForm->addRow("h", _sphSmoothingSpin);
+    sphForm->addRow("rest density", _sphRestDensitySpin);
+    sphForm->addRow("gas K", _sphGasConstantSpin);
+    sphForm->addRow("viscosity", _sphViscositySpin);
+    sphLayout->addLayout(sphForm);
+
+    auto *exportBox = new QGroupBox("Export", renderPage);
+    auto *exportLayout = new QVBoxLayout(exportBox);
+    exportLayout->addWidget(_exportButton);
+    exportLayout->addStretch(1);
+
+    auto *cameraBox = new QGroupBox("View & Camera", renderPage);
     auto *cameraLayout = new QGridLayout(cameraBox);
     cameraLayout->addWidget(new QLabel("zoom", this), 0, 0);
     cameraLayout->addWidget(_zoomSlider, 0, 1);
@@ -327,21 +343,26 @@ MainWindow::MainWindow(
     cameraLayout->addWidget(_cullingCheck, 3, 0);
     cameraLayout->addWidget(_lodCheck, 3, 1);
 
-    runLayout->addWidget(simulationBox);
-    runLayout->addWidget(timeBox);
+    runLayout->addWidget(runBox);
     runLayout->addWidget(connectorBox);
     runLayout->addStretch(1);
 
-    fluidLayout->addWidget(sphBox);
-    fluidLayout->addWidget(ioBox);
-    fluidLayout->addStretch(1);
+    sceneLayout->addWidget(sceneBox);
+    sceneLayout->addWidget(configBox);
+    sceneLayout->addStretch(1);
 
-    viewLayout->addWidget(cameraBox);
-    viewLayout->addStretch(1);
+    physicsLayout->addWidget(physicsCoreBox);
+    physicsLayout->addWidget(sphBox);
+    physicsLayout->addStretch(1);
+
+    renderLayout->addWidget(cameraBox);
+    renderLayout->addWidget(exportBox);
+    renderLayout->addStretch(1);
 
     sidebarTabs->addTab(runPage, "Run");
-    sidebarTabs->addTab(fluidPage, "Fluid & I/O");
-    sidebarTabs->addTab(viewPage, "View");
+    sidebarTabs->addTab(scenePage, "Scene");
+    sidebarTabs->addTab(physicsPage, "Physics");
+    sidebarTabs->addTab(renderPage, "Render");
 
     auto *summaryPane = new QWidget(this);
     auto *summaryLayout = new QGridLayout(summaryPane);
@@ -406,6 +427,39 @@ MainWindow::MainWindow(
     addDockWidget(Qt::BottomDockWidgetArea, validationDock);
     tabifyDockWidget(telemetryDock, validationDock);
     telemetryDock->raise();
+
+    auto *fileMenu = menuBar()->addMenu("&File");
+    fileMenu->addAction("Save Config", this, [this]() { (void)saveConfigToDisk(); }, QKeySequence::Save);
+    fileMenu->addAction("Load Preset...", this, [this]() { handleLoadPresetRequest(); });
+    fileMenu->addAction("Load Input...", this, [this]() { handleLoadInputRequest(); });
+    fileMenu->addAction("Export Snapshot...", this, [this]() { handleExportRequest(); });
+    fileMenu->addSeparator();
+    fileMenu->addAction("Quit", this, [this]() { close(); }, QKeySequence::Quit);
+
+    auto *editMenu = menuBar()->addMenu("&Edit");
+    editMenu->addAction("Validate Config", this, [this]() { (void)refreshValidationReport(false); });
+    editMenu->addAction("Reconnect", this, [this]() { configureRemoteConnectorFromUi(); });
+
+    auto *viewMenu = menuBar()->addMenu("&View");
+    viewMenu->addAction(controlsDock->toggleViewAction());
+    viewMenu->addAction(telemetryDock->toggleViewAction());
+    viewMenu->addAction(validationDock->toggleViewAction());
+
+    auto *simulationMenu = menuBar()->addMenu("&Simulation");
+    simulationMenu->addAction("Pause / Resume", this, [this]() { _pauseButton->click(); }, Qt::Key_Space);
+    simulationMenu->addAction("Step", this, [this]() { _stepButton->click(); });
+    simulationMenu->addAction("Reset", this, [this]() { _resetButton->click(); });
+    simulationMenu->addAction("Recover", this, [this]() { _recoverButton->click(); });
+
+    auto *windowMenu = menuBar()->addMenu("&Window");
+    windowMenu->addAction("Raise Controls", this, [controlsDock]() { controlsDock->raise(); });
+    windowMenu->addAction("Raise Telemetry", this, [telemetryDock]() { telemetryDock->raise(); });
+    windowMenu->addAction("Raise Validation", this, [validationDock]() { validationDock->raise(); });
+
+    auto *helpMenu = menuBar()->addMenu("&Help");
+    helpMenu->addAction("About Workspace", this, [this]() {
+        _statusLabel->setText("Workspace shell active");
+    });
 
     resize(1280, 820);
 
