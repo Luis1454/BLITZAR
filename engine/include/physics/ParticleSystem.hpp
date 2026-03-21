@@ -1,12 +1,18 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
 #define GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
 
-#include "physics/Octree.hpp"
 #include "physics/CudaMemoryPool.hpp"
+#include "physics/Octree.hpp"
 #include "physics/ParticleSoAView.hpp"
+
+/*
+ * Module: physics
+ * Responsibility: Own the particle-state buffers and advance the gravitational/SPH simulation.
+ */
 
 #include <vector>
 
+/// Owns particle state on host and device and advances it with the selected solver.
 class ParticleSystem {
     public:
         enum class SolverMode {
@@ -19,31 +25,55 @@ class ParticleSystem {
             Rk4
         };
 
+        /// Builds a particle system with `numParticles`, optionally using the built-in bootstrap state.
         ParticleSystem(int numParticles, bool bootstrapInitialState = true);
+        /// Builds a particle system from an explicit particle set.
         explicit ParticleSystem(std::vector<Particle> initialParticles);
+        /// Releases all host and device allocations owned by the system.
         ~ParticleSystem();
 
+        /// Advances the system by `deltaTime` seconds.
         bool update(float deltaTime);
+        /// Switches between pairwise CUDA and octree-driven gravity.
         void setUseOctree(bool enabled);
+        /// Reports whether an octree-backed gravity solver is active.
         bool usesOctree() const;
+        /// Sets the Barnes-Hut opening angle threshold.
         void setOctreeTheta(float theta);
+        /// Sets the minimum softening radius used by gravity interactions.
         void setOctreeSoftening(float softening);
+        /// Enables or disables SPH processing.
         void setSphEnabled(bool enabled);
+        /// Reports whether SPH processing is active.
         bool isSphEnabled() const;
+        /// Updates the SPH parameter set in SI units.
         void setSphParameters(float smoothingLength, float restDensity, float gasConstant, float viscosity);
+        /// Updates the gravity stability clamps applied during integration.
         void setPhysicsStabilityConstants(float maxAcceleration, float minSoftening, float minDistance2, float minTheta);
+        /// Updates the SPH acceleration and speed caps.
         void setSphCaps(float maxAcceleration, float maxSpeed);
+        /// Updates the thermal model parameters in SI units.
         void setThermalParameters(float ambientTemperature, float specificHeat, float heatingCoeff, float radiationCoeff);
+        /// Returns the cumulative radiated energy emitted since initialization.
         float getCumulativeRadiatedEnergy() const;
+        /// Returns the thermal specific heat used by the thermal model.
         float getThermalSpecificHeat() const;
+        /// Selects the gravity solver implementation.
         void setSolverMode(SolverMode mode);
+        /// Returns the active gravity solver implementation.
         SolverMode getSolverMode() const;
+        /// Selects the numerical integrator implementation.
         void setIntegratorMode(IntegratorMode mode);
+        /// Returns the active numerical integrator implementation.
         IntegratorMode getIntegratorMode() const;
+        /// Uploads the current host-side state to the device buffers.
         void syncDeviceState();
+        /// Synchronizes device-side state back to host memory.
         bool syncHostState();
 
+        /// Returns the authoritative host-side particle vector.
         const std::vector<Particle> &getParticles() const;
+        /// Replaces the host-side particle vector when the size matches the device capacity.
         bool setParticles(std::vector<Particle> particles);
 
         ParticleSystem(const ParticleSystem &) = delete;
@@ -51,6 +81,7 @@ class ParticleSystem {
         ParticleSystem(ParticleSystem &&) = delete;
         ParticleSystem &operator=(ParticleSystem &&) = delete;
 
+        /// Exposes the current structure-of-arrays views for diagnostics and tests.
         ParticleSoAView getSoAView(bool next = false) const;
 
     private:

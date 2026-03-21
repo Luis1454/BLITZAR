@@ -1,3 +1,8 @@
+/*
+ * Module: physics/cuda
+ * Responsibility: Manage particle-system buffer allocation and release paths.
+ */
+
 void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
 {
     grav_x::CudaMemoryPool::initialize();
