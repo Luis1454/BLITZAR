@@ -3,6 +3,8 @@
 
 #include "client/IClientRuntime.hpp"
 #include "config/SimulationConfig.hpp"
+#include "ui/MainWindowController.hpp"
+#include "ui/MainWindowPresenter.hpp"
 
 #include <QMainWindow>
 #include <QPointer>
@@ -33,10 +35,17 @@ class MainWindow : public QMainWindow {
         ~MainWindow() override;
 
     private:
+        static std::string formatFromSelectedFilter(const QString &filter);
         bool applyConfigToServer(bool requestReset);
         void applyConfigToUi();
+        void applyViewSettings();
         void captureUiIntoConfig();
         void applyPerformanceProfileToRuntime();
+        void configureRemoteConnectorFromUi();
+        void connectControls();
+        void handleExportRequest();
+        void handleLoadInputRequest();
+        void handleLoadPresetRequest();
         void markConfigDirty(bool dirty = true);
         bool refreshValidationReport(bool blockOnErrors);
         bool saveConfigToDisk();
@@ -87,6 +96,8 @@ class MainWindow : public QMainWindow {
         QPointer<QCheckBox> _cullingCheck;
         QPointer<QCheckBox> _lodCheck;
         QPointer<QTimer> _timer;
+        MainWindowController _controller;
+        MainWindowPresenter _presenter;
         std::uint64_t _lastEnergyStep;
         std::uint32_t _clientDrawCap;
         float _uiTickFps;
