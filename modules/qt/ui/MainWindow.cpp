@@ -509,7 +509,7 @@ MainWindow::MainWindow(
     energyDock->setObjectName("energyDock");
     energyDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     energyDock->setWidget(_energyGraph);
-    energyDock->setMinimumHeight(220);
+    energyDock->setMinimumHeight(136);
     addDockWidget(Qt::BottomDockWidgetArea, energyDock);
 
     auto *validationDock = new QDockWidget("Validation", this);
@@ -518,6 +518,8 @@ MainWindow::MainWindow(
     validationDock->setWidget(validationPane);
     addDockWidget(Qt::BottomDockWidgetArea, validationDock);
     tabifyDockWidget(telemetryDock, validationDock);
+    resizeDocks({controlsDock}, {236}, Qt::Horizontal);
+    resizeDocks({energyDock}, {148}, Qt::Vertical);
     energyDock->raise();
     telemetryDock->hide();
     validationDock->hide();

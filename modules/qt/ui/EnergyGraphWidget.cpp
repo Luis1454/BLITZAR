@@ -29,7 +29,7 @@ static QColor panelCurveColor(const QColor &darkColor, const QColor &lightColor,
 EnergyGraphWidget::EnergyGraphWidget()
     : QWidget(nullptr)
 {
-    setMinimumHeight(180);
+    setMinimumHeight(128);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
@@ -105,19 +105,28 @@ void EnergyGraphWidget::paintEvent(PaintEventHandle event)
     p.fillRect(rect(), background);
     p.setPen(border);
     p.drawRect(rect().adjusted(0, 0, -1, -1));
-    const QRectF fullRect = rect().adjusted(48, 12, -16, -28);
+    const QRectF outerRect = rect().adjusted(12, 10, -12, -10);
     const QFontMetricsF metrics = p.fontMetrics();
-    const QStringList labels = legendLabels();
-    const qreal legendInset = 6.0;
-    const qreal legendGapX = 12.0;
-    const qreal legendLineWidth = 16.0;
+    const QStringList shortLabels = {
+        QStringLiteral("Kin"),
+        QStringLiteral("Pot"),
+        QStringLiteral("Therm"),
+        QStringLiteral("Rad"),
+        QStringLiteral("Total"),
+        QStringLiteral("Drift")
+    };
+    const qreal headerLineHeight = metrics.height() + 2.0;
+    const qreal headerHeight = headerLineHeight * 2.0 + 8.0;
+    const qreal legendInset = 2.0;
+    const qreal legendGapX = 10.0;
+    const qreal legendLineWidth = 12.0;
     const qreal legendTextGap = 4.0;
-    const qreal legendRowHeight = metrics.height() + 6.0;
-    const qreal legendAvailableWidth = std::max<qreal>(120.0, fullRect.width() - legendInset * 2.0);
+    const qreal legendRowHeight = metrics.height() + 4.0;
+    const qreal legendAvailableWidth = std::max<qreal>(120.0, outerRect.width() - legendInset * 2.0);
 
     int legendRows = 1;
     qreal legendRowWidth = 0.0;
-    for (const QString &label : labels) {
+    for (const QString &label : shortLabels) {
         const qreal entryWidth = legendLineWidth + legendTextGap + metrics.horizontalAdvance(label) + legendGapX;
         if (legendRowWidth > 0.0 && legendRowWidth + entryWidth > legendAvailableWidth) {
             legendRows += 1;
@@ -126,35 +135,37 @@ void EnergyGraphWidget::paintEvent(PaintEventHandle event)
         legendRowWidth += entryWidth;
     }
 
-    const qreal legendHeight = legendRows * legendRowHeight + 4.0;
-    const QRectF plotRect(fullRect.left(), fullRect.top() + legendHeight, fullRect.width(), fullRect.height() - legendHeight);
-    const qreal splitY = plotRect.top() + plotRect.height() * 0.74;
+    const qreal legendHeight = legendRows * legendRowHeight + 2.0;
+    const QRectF plotRect(
+        outerRect.left() + 40.0,
+        outerRect.top() + headerHeight + legendHeight,
+        std::max<qreal>(120.0, outerRect.width() - 48.0),
+        std::max<qreal>(64.0, outerRect.height() - headerHeight - legendHeight - 18.0));
+    const qreal splitY = plotRect.top() + plotRect.height() * 0.68;
     const QRectF energyRect(plotRect.left(), plotRect.top(), plotRect.width(), splitY - plotRect.top() - 6.0);
     const QRectF driftRect(plotRect.left(), splitY + 6.0, plotRect.width(), plotRect.bottom() - (splitY + 6.0));
+    const QRectF headerRect(outerRect.left(), outerRect.top(), outerRect.width(), headerHeight);
+    const QRectF legendRect(outerRect.left(), outerRect.top() + headerHeight, outerRect.width(), legendHeight);
 
     p.setPen(gridColor);
-    p.drawLine(QPointF(fullRect.left(), splitY), QPointF(fullRect.right(), splitY));
+    p.drawLine(QPointF(plotRect.left(), splitY), QPointF(plotRect.right(), splitY));
     p.drawRect(energyRect);
     p.drawRect(driftRect);
+
+    const auto formatMetric = [](float value, const QString &suffix) {
+        return QString::number(value, std::fabs(value) >= 1000.0f ? 'g' : 'f', std::fabs(value) >= 100.0f ? 1 : 2) + suffix;
+    };
 
     const auto drawAxisLabels = [&]() {
         p.setPen(labelColor);
         p.drawText(
-            QRectF(energyRect.left(), energyRect.top() - 14.0, energyRect.width(), 14.0),
+            QRectF(energyRect.left() + 6.0, energyRect.top() + 2.0, 120.0, 14.0),
             Qt::AlignLeft | Qt::AlignVCenter,
             energyYAxisLabel());
         p.drawText(
-            QRectF(driftRect.left(), driftRect.top() - 14.0, driftRect.width(), 14.0),
+            QRectF(driftRect.left() + 6.0, driftRect.top() + 2.0, 100.0, 14.0),
             Qt::AlignLeft | Qt::AlignVCenter,
             driftYAxisLabel());
-        p.drawText(
-            QRectF(energyRect.right() - 170.0, energyRect.bottom() + 4.0, 170.0, 14.0),
-            Qt::AlignRight | Qt::AlignVCenter,
-            energyXAxisLabel());
-        p.drawText(
-            QRectF(driftRect.right() - 170.0, driftRect.bottom() + 4.0, 170.0, 14.0),
-            Qt::AlignRight | Qt::AlignVCenter,
-            driftXAxisLabel());
     };
 
     const auto drawLegend = [&]() {
@@ -166,14 +177,13 @@ void EnergyGraphWidget::paintEvent(PaintEventHandle event)
             totalColor,
             driftColor
         };
-
-        qreal x = fullRect.left() + legendInset;
-        qreal y = fullRect.top() + metrics.ascent();
-        for (int i = 0; i < labels.size() && i < static_cast<int>(colors.size()); ++i) {
-            const QString &label = labels.at(i);
+        qreal x = legendRect.left() + legendInset;
+        qreal y = legendRect.top() + metrics.ascent();
+        for (int i = 0; i < shortLabels.size() && i < static_cast<int>(colors.size()); ++i) {
+            const QString &label = shortLabels.at(i);
             const qreal entryWidth = legendLineWidth + legendTextGap + metrics.horizontalAdvance(label) + legendGapX;
-            if (x > fullRect.left() + legendInset && x + entryWidth > fullRect.right() - legendInset) {
-                x = fullRect.left() + legendInset;
+            if (x > legendRect.left() + legendInset && x + entryWidth > legendRect.right() - legendInset) {
+                x = legendRect.left() + legendInset;
                 y += legendRowHeight;
             }
             p.setPen(QPen(colors.at(i), 2.0));
@@ -184,6 +194,32 @@ void EnergyGraphWidget::paintEvent(PaintEventHandle event)
         }
     };
 
+    const auto drawHeader = [&]() {
+        p.setPen(labelColor);
+        p.drawText(
+            QRectF(headerRect.left(), headerRect.top(), headerRect.width(), headerLineHeight),
+            Qt::AlignLeft | Qt::AlignVCenter,
+            QStringLiteral("Energy timeline"));
+        if (_history.empty()) {
+            p.drawText(
+                QRectF(headerRect.left(), headerRect.top() + headerLineHeight, headerRect.width(), headerLineHeight),
+                Qt::AlignLeft | Qt::AlignVCenter,
+                QStringLiteral("Waiting for telemetry"));
+            return;
+        }
+        const EnergyPoint &latest = _history.back();
+        const QString summary = QStringLiteral("Total %1    Drift %2    Time %3    Samples %4")
+            .arg(formatMetric(latest.total, QStringLiteral(" J")))
+            .arg(formatMetric(latest.drift, QStringLiteral("%")))
+            .arg(formatMetric(latest.time, QStringLiteral(" s")))
+            .arg(_history.size());
+        p.drawText(
+            QRectF(headerRect.left(), headerRect.top() + headerLineHeight, headerRect.width(), headerLineHeight),
+            Qt::AlignLeft | Qt::AlignVCenter,
+            summary);
+    };
+
+    drawHeader();
     drawAxisLabels();
     drawLegend();
 
@@ -199,8 +235,8 @@ void EnergyGraphWidget::paintEvent(PaintEventHandle event)
     float minTime = std::numeric_limits<float>::infinity();
     float maxTime = -std::numeric_limits<float>::infinity();
     for (const EnergyPoint &e : _history) {
-        minEnergy = std::min(minEnergy, std::min(std::min(e.kinetic, e.potential), std::min(e.thermal, e.total)));
-        maxEnergy = std::max(maxEnergy, std::max(std::max(e.kinetic, e.potential), std::max(e.thermal, e.total)));
+        minEnergy = std::min(minEnergy, std::min(std::min(e.kinetic, e.potential), std::min(e.thermal, std::min(e.radiated, e.total))));
+        maxEnergy = std::max(maxEnergy, std::max(std::max(e.kinetic, e.potential), std::max(e.thermal, std::max(e.radiated, e.total))));
         maxAbsDrift = std::max(maxAbsDrift, std::fabs(e.drift));
         minTime = std::min(minTime, e.time);
         maxTime = std::max(maxTime, e.time);
@@ -236,29 +272,57 @@ void EnergyGraphWidget::paintEvent(PaintEventHandle event)
     };
 
     p.setRenderHint(QPainter::Antialiasing, true);
-    p.setPen(QPen(kineticColor, 1.5));
+    const auto faded = [](QColor color) {
+        color.setAlpha(185);
+        return color;
+    };
+    p.setPen(QPen(faded(kineticColor), 1.2));
     p.drawPath(buildPath([](const EnergyPoint &e) { return e.kinetic; }, energyRect, minEnergy, maxEnergy, false));
-    p.setPen(QPen(potentialColor, 1.5));
+    p.setPen(QPen(faded(potentialColor), 1.2));
     p.drawPath(buildPath([](const EnergyPoint &e) { return e.potential; }, energyRect, minEnergy, maxEnergy, false));
-    p.setPen(QPen(totalColor, 1.5));
+    p.setPen(QPen(totalColor, 2.1));
     p.drawPath(buildPath([](const EnergyPoint &e) { return e.total; }, energyRect, minEnergy, maxEnergy, false));
-    p.setPen(QPen(thermalColor, 1.4));
+    p.setPen(QPen(faded(thermalColor), 1.0));
     p.drawPath(buildPath([](const EnergyPoint &e) { return e.thermal; }, energyRect, minEnergy, maxEnergy, false));
-    p.setPen(QPen(radiatedColor, 1.4));
+    p.setPen(QPen(faded(radiatedColor), 1.0));
     p.drawPath(buildPath([](const EnergyPoint &e) { return e.radiated; }, energyRect, minEnergy, maxEnergy, false));
 
     p.setPen(gridColor);
+    if (minEnergy < 0.0f && maxEnergy > 0.0f) {
+        const qreal zeroNorm = static_cast<qreal>((0.0f - minEnergy) / (maxEnergy - minEnergy));
+        const qreal zeroY = energyRect.top() + energyRect.height() * (1.0 - zeroNorm);
+        p.drawLine(QPointF(energyRect.left(), zeroY), QPointF(energyRect.right(), zeroY));
+    }
     p.drawLine(QPointF(driftRect.left(), driftRect.center().y()), QPointF(driftRect.right(), driftRect.center().y()));
 
-    p.setPen(QPen(driftColor, 1.5));
+    p.setPen(QPen(driftColor, 1.8));
     p.drawPath(buildPath([&](const EnergyPoint &e) { return e.drift; }, driftRect, -maxAbsDrift, maxAbsDrift, true));
+    const EnergyPoint &latest = _history.back();
+    const qreal latestTimeNorm = static_cast<qreal>((latest.time - minTime) / (maxTime - minTime));
+    const qreal latestEnergyY = energyRect.top() + energyRect.height() * (1.0 - ((latest.total - minEnergy) / (maxEnergy - minEnergy)));
+    const qreal latestDriftY = driftRect.top() + driftRect.height() * (1.0 - ((latest.drift / maxAbsDrift) * 0.5 + 0.5));
+    const qreal latestX = energyRect.left() + energyRect.width() * std::clamp(latestTimeNorm, 0.0, 1.0);
+    p.setPen(Qt::NoPen);
+    p.setBrush(totalColor);
+    p.drawEllipse(QPointF(latestX, latestEnergyY), 3.0, 3.0);
+    p.setBrush(driftColor);
+    p.drawEllipse(QPointF(latestX, latestDriftY), 3.0, 3.0);
+
     p.setPen(labelColor);
-    p.drawText(QRectF(energyRect.left() - 42.0, energyRect.top() - 2.0, 40.0, 14.0), Qt::AlignRight | Qt::AlignTop, QString::number(maxEnergy, 'g', 4));
-    p.drawText(QRectF(energyRect.left() - 42.0, energyRect.bottom() - 12.0, 40.0, 14.0), Qt::AlignRight | Qt::AlignBottom, QString::number(minEnergy, 'g', 4));
-    p.drawText(QRectF(driftRect.left() - 42.0, driftRect.top() - 2.0, 40.0, 14.0), Qt::AlignRight | Qt::AlignTop, QString::number(maxAbsDrift, 'f', 2));
-    p.drawText(QRectF(driftRect.left() - 42.0, driftRect.bottom() - 12.0, 40.0, 14.0), Qt::AlignRight | Qt::AlignBottom, QString::number(-maxAbsDrift, 'f', 2));
+    p.drawText(QRectF(outerRect.left(), energyRect.top() - 2.0, 36.0, 14.0), Qt::AlignRight | Qt::AlignTop, QString::number(maxEnergy, 'g', 4));
+    p.drawText(QRectF(outerRect.left(), energyRect.bottom() - 12.0, 36.0, 14.0), Qt::AlignRight | Qt::AlignBottom, QString::number(minEnergy, 'g', 4));
+    p.drawText(QRectF(outerRect.left(), driftRect.top() - 2.0, 36.0, 14.0), Qt::AlignRight | Qt::AlignTop, QString::number(maxAbsDrift, 'f', 2));
+    p.drawText(QRectF(outerRect.left(), driftRect.bottom() - 12.0, 36.0, 14.0), Qt::AlignRight | Qt::AlignBottom, QString::number(-maxAbsDrift, 'f', 2));
     p.drawText(QRectF(driftRect.left(), driftRect.bottom() + 4.0, 100.0, 14.0), Qt::AlignLeft | Qt::AlignVCenter, QString("%1 s").arg(minTime, 0, 'f', 2));
     p.drawText(QRectF(driftRect.right() - 100.0, driftRect.bottom() + 4.0, 100.0, 14.0), Qt::AlignRight | Qt::AlignVCenter, QString("%1 s").arg(maxTime, 0, 'f', 2));
+    p.drawText(
+        QRectF(energyRect.right() - 180.0, energyRect.top() + 2.0, 176.0, 14.0),
+        Qt::AlignRight | Qt::AlignVCenter,
+        QStringLiteral("Current %1").arg(formatMetric(latest.total, QStringLiteral(" J"))));
+    p.drawText(
+        QRectF(driftRect.right() - 180.0, driftRect.top() + 2.0, 176.0, 14.0),
+        Qt::AlignRight | Qt::AlignVCenter,
+        QStringLiteral("Current %1").arg(formatMetric(latest.drift, QStringLiteral("%"))));
     p.setRenderHint(QPainter::Antialiasing, false);
 }
 
