@@ -28,9 +28,9 @@
 #include <QSplitter>
 #include <QSpinBox>
 #include <QStatusBar>
+#include <QStyleFactory>
 #include <QTabWidget>
 #include <QTimer>
-#include <QToolBar>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -98,7 +98,7 @@ MainWindow::MainWindow(
       _resetButton(new QPushButton("Reset", this)),
       _recoverButton(new QPushButton("Recover", this)),
       _reconnectButton(new QPushButton("Reconnect", this)),
-      _applyConnectorButton(new QPushButton("Apply connector", this)),
+      _applyConnectorButton(new QPushButton("Apply", this)),
       _exportButton(new QPushButton("Export", this)),
       _saveConfigButton(new QPushButton("Save config", this)),
       _loadInputButton(new QPushButton("Load input", this)),
@@ -143,27 +143,36 @@ MainWindow::MainWindow(
 
     setWindowTitle("N-Body Qt Client");
     menuBar()->setNativeMenuBar(false);
+    setStyle(QStyleFactory::create("Fusion"));
     setDockNestingEnabled(true);
     setDockOptions(QMainWindow::AnimatedDocks | QMainWindow::AllowNestedDocks | QMainWindow::AllowTabbedDocks);
     setStyleSheet(
         "QMainWindow { background: #edf2f7; }"
-        "QMenuBar { background: #f8fafc; border-bottom: 1px solid #d9e2ec; }"
+        "QMenuBar { background: #eef3f8; color: #102a43; border-bottom: 1px solid #cbd5e0; }"
         "QMenuBar::item { padding: 6px 10px; }"
-        "QMenuBar::item:selected { background: #e6eef7; border-radius: 4px; }"
-        "QToolBar { background: #f8fafc; border-bottom: 1px solid #d9e2ec; spacing: 6px; padding: 4px; }"
-        "QToolButton { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; padding: 6px 10px; }"
-        "QToolButton:hover { background: #f1f5f9; }"
-        "QDockWidget::title { background: #dfe7ef; padding: 6px 10px; font-weight: 700; }"
-        "QGroupBox { border: 1px solid #d9e2ec; border-radius: 8px; margin-top: 10px; padding-top: 10px; background: #f8fafc; }"
-        "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 4px; color: #243b53; }"
-        "QPushButton { background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; padding: 6px 10px; }"
-        "QPushButton:hover { background: #f1f5f9; }"
-        "QPushButton:pressed { background: #d9e2ec; }"
+        "QMenuBar::item:selected { background: #d7e3f1; color: #102a43; border-radius: 4px; }"
+        "QMenu { background: #ffffff; color: #102a43; border: 1px solid #cbd5e0; }"
+        "QMenu::item:selected { background: #d7e3f1; color: #102a43; }"
+        "QDockWidget { color: #102a43; }"
+        "QDockWidget::title { background: #dce6f2; color: #102a43; padding: 7px 10px; font-weight: 700; }"
+        "QGroupBox { border: 1px solid #d3ddea; border-radius: 10px; margin-top: 10px; padding-top: 10px; background: #f8fbff; }"
+        "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 4px; color: #243b53; font-weight: 700; }"
+        "QPushButton { background: #0f4c81; color: #f8fbff; border: 1px solid #0b3a60; border-radius: 8px; padding: 7px 10px; min-height: 18px; font-weight: 700; }"
+        "QPushButton:hover { background: #1363a3; }"
+        "QPushButton:pressed { background: #0b3a60; }"
+        "QPushButton:checked { background: #114b5f; border-color: #0d3947; }"
+        "QPushButton:disabled { background: #e7edf5; color: #7b8794; border: 1px solid #c7d2df; }"
         "QLineEdit, QComboBox, QDoubleSpinBox, QSpinBox {"
-        "  background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; padding: 4px 6px;"
+        "  background: #ffffff; color: #102a43; border: 1px solid #b9c7d8; border-radius: 7px; padding: 4px 6px;"
         "}"
+        "QLineEdit:disabled, QComboBox:disabled, QDoubleSpinBox:disabled, QSpinBox:disabled {"
+        "  background: #f1f5f9; color: #7b8794; border-color: #d9e2ec;"
+        "}"
+        "QComboBox QAbstractItemView { color: #102a43; background: #ffffff; selection-background-color: #d7e3f1; }"
+        "QLabel { color: #243b53; }"
+        "QCheckBox { color: #243b53; spacing: 6px; }"
         "QTabWidget::pane { border: 0; }"
-        "QTabBar::tab { background: #e6edf5; border-radius: 6px; padding: 10px 8px; margin: 2px; }"
+        "QTabBar::tab { background: #d7e1ed; color: #486581; border-radius: 8px; padding: 10px 10px; margin: 2px; font-weight: 600; }"
         "QTabBar::tab:selected { background: #ffffff; color: #102a43; font-weight: 700; }"
         "QStatusBar { background: #f8fafc; border-top: 1px solid #d9e2ec; color: #486581; }"
     );
@@ -241,6 +250,8 @@ MainWindow::MainWindow(
     _serverPortSpin->setValue(4545);
     _serverAutostartCheck->setChecked(false);
     _serverBinEdit->setPlaceholderText("blitzar-server(.exe)");
+    _serverBinEdit->setToolTip("Path to the server executable used when autostart is enabled");
+    _applyConnectorButton->setToolTip("Apply host, port and server binary settings to the connector");
     _validationLabel->setWordWrap(true);
     _validationLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     _validationLabel->setContentsMargins(6, 4, 6, 4);
@@ -261,14 +272,15 @@ MainWindow::MainWindow(
     auto *sidebarTabs = new QTabWidget(this);
     sidebarTabs->setTabPosition(QTabWidget::West);
     sidebarTabs->setDocumentMode(true);
-    sidebarTabs->setMinimumWidth(300);
-    sidebarTabs->setMaximumWidth(360);
+    sidebarTabs->setMinimumWidth(248);
+    sidebarTabs->setMaximumWidth(292);
     sidebarTabs->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     sidebarTabs->setStyleSheet(
         "QTabWidget::pane { border: 0; }"
         "QTabBar::tab {"
-        "  min-width: 88px;"
-        "  padding: 10px 8px;"
+        "  min-width: 74px;"
+        "  min-height: 58px;"
+        "  padding: 8px 8px;"
         "  margin: 2px;"
         "}"
     );
@@ -295,24 +307,33 @@ MainWindow::MainWindow(
 
     auto *runBox = new QGroupBox("Run Control", runPage);
     auto *runBoxLayout = new QVBoxLayout(runBox);
+    runBoxLayout->setSpacing(10);
     auto *runForm = new QFormLayout();
     runForm->addRow("performance", _performanceCombo);
     runBoxLayout->addLayout(runForm);
-    runBoxLayout->addWidget(_pauseButton);
-    runBoxLayout->addWidget(_stepButton);
-    runBoxLayout->addWidget(_resetButton);
-    runBoxLayout->addWidget(_recoverButton);
+    auto *runActions = new QGridLayout();
+    runActions->setHorizontalSpacing(8);
+    runActions->setVerticalSpacing(8);
+    runActions->addWidget(_pauseButton, 0, 0);
+    runActions->addWidget(_stepButton, 0, 1);
+    runActions->addWidget(_resetButton, 1, 0);
+    runActions->addWidget(_recoverButton, 1, 1);
+    runBoxLayout->addLayout(runActions);
 
     auto *connectorBox = new QGroupBox("Connector", runPage);
     auto *connectorLayout = new QVBoxLayout(connectorBox);
+    connectorLayout->setSpacing(10);
     auto *connectorForm = new QFormLayout();
     connectorForm->addRow("host", _serverHostEdit);
     connectorForm->addRow("port", _serverPortSpin);
     connectorForm->addRow("server bin", _serverBinEdit);
     connectorLayout->addLayout(connectorForm);
     connectorLayout->addWidget(_serverAutostartCheck);
-    connectorLayout->addWidget(_reconnectButton);
-    connectorLayout->addWidget(_applyConnectorButton);
+    auto *connectorActions = new QGridLayout();
+    connectorActions->setHorizontalSpacing(8);
+    connectorActions->addWidget(_reconnectButton, 0, 0);
+    connectorActions->addWidget(_applyConnectorButton, 0, 1);
+    connectorLayout->addLayout(connectorActions);
     connectorLayout->addStretch(1);
 
     auto *sceneBox = new QGroupBox("Scene Setup", scenePage);
@@ -432,12 +453,14 @@ MainWindow::MainWindow(
     centerSplitter->setStretchFactor(0, 5);
     centerSplitter->setStretchFactor(1, 2);
     centerSplitter->setChildrenCollapsible(false);
+    centerSplitter->setHandleWidth(5);
     setCentralWidget(centerSplitter);
 
     auto *controlsDock = new QDockWidget("Controls", this);
     controlsDock->setObjectName("controlsDock");
     controlsDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     controlsDock->setWidget(sidebarTabs);
+    controlsDock->setMinimumWidth(272);
     addDockWidget(Qt::LeftDockWidgetArea, controlsDock);
 
     auto *telemetryDock = new QDockWidget("Telemetry", this);
@@ -452,7 +475,8 @@ MainWindow::MainWindow(
     validationDock->setWidget(validationPane);
     addDockWidget(Qt::BottomDockWidgetArea, validationDock);
     tabifyDockWidget(telemetryDock, validationDock);
-    telemetryDock->raise();
+    telemetryDock->hide();
+    validationDock->hide();
 
     auto *fileMenu = menuBar()->addMenu("&File");
     fileMenu->addAction("Save Config", this, [this]() { (void)saveConfigToDisk(); }, QKeySequence::Save);
@@ -493,19 +517,10 @@ MainWindow::MainWindow(
         _statusLabel->setText("Workspace shell active");
         statusBar()->showMessage("Workspace shell active", 3000);
     });
-
-    auto *toolbar = addToolBar("Quick Actions");
-    toolbar->setMovable(false);
-    toolbar->setFloatable(false);
-    toolbar->addAction("Pause", this, [this]() { _pauseButton->click(); });
-    toolbar->addAction("Step", this, [this]() { _stepButton->click(); });
-    toolbar->addAction("Reset", this, [this]() { _resetButton->click(); });
-    toolbar->addSeparator();
-    toolbar->addAction("Validate", this, [this]() { (void)refreshValidationReport(false); });
-    toolbar->addAction("Export", this, [this]() { handleExportRequest(); });
     statusBar()->showMessage("Qt workspace ready", 3000);
 
     resize(1280, 820);
+    centerSplitter->setSizes(QList<int>({560, 180}));
     _defaultWorkspaceGeometry = saveGeometry();
     _defaultWorkspaceState = saveState();
 
