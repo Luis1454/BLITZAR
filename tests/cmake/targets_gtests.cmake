@@ -54,6 +54,7 @@ if(GRAVITY_TEST_UNIT_MODULE_SOURCES)
             "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_text.cpp"
             "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_server_ops.cpp"
             "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_commands.cpp"
+            ${GRAVITY_RUNTIME_COMMAND_SOURCES}
             "${GRAVITY_ROOT_DIR}/apps/client-host/client_host_cli.cpp"
             "${GRAVITY_ROOT_DIR}/apps/client-host/client_host_cli_args.cpp"
             "${GRAVITY_ROOT_DIR}/apps/client-host/client_host_module_ops.cpp"
@@ -78,7 +79,9 @@ if(GRAVITY_TEST_UNIT_MODULE_SOURCES)
             "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleHandle.cpp"
             "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleHandleLoad.cpp"
             "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleManifest.cpp"
+            "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientCommon.cpp"
             "${GRAVITY_ROOT_DIR}/runtime/src/client/RustRuntimeBridgeState.cpp"
+            ${GRAVITY_ENV_UTILS_SOURCES}
             ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
             "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
         LIBS

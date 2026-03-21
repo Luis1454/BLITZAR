@@ -9,6 +9,7 @@ namespace grav_client_host {
 struct HostOptions {
     std::string configPath = "simulation.ini";
     std::string moduleSpecifier = "cli";
+    std::string scriptPath;
     bool showHelp = false;
     bool validateOnly = false;
 };

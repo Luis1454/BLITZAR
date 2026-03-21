@@ -43,7 +43,7 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_001_ParseArgsDefaultsAndVariants)
     }
 
     {
-        std::vector<std::string> raw = {"host", "--config=my.ini", "--module", "qt", "--validate-only"};
+        std::vector<std::string> raw = {"host", "--config=my.ini", "--module", "qt", "--validate-only", "--script=batch.dsl"};
         std::vector<char *> argv = makeArgv(raw);
         ASSERT_TRUE(grav_client_host::ClientHostCliArgs::parseArgs(
             static_cast<int>(argv.size()),
@@ -53,6 +53,7 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_001_ParseArgsDefaultsAndVariants)
         EXPECT_EQ(options.configPath, "my.ini");
         EXPECT_EQ(options.moduleSpecifier, "qt");
         EXPECT_TRUE(options.validateOnly);
+        EXPECT_EQ(options.scriptPath, "batch.dsl");
     }
 
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -126,6 +127,31 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_008_HelpReflectsProfileReloadPolicy)
         EXPECT_NE(rendered.find("reload is disabled"), std::string::npos);
     }
     EXPECT_NE(rendered.find("--validate-only"), std::string::npos);
+    EXPECT_NE(rendered.find("--script"), std::string::npos);
+}
+
+TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_011_BatchScriptRunsDeterministicHelpAndExits)
+{
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path =
+        std::filesystem::temp_directory_path() / ("gravity_batch_" + std::to_string(stamp) + ".dsl");
+    {
+        std::ofstream out(path, std::ios::trunc);
+        ASSERT_TRUE(out.is_open());
+        out << "help\n";
+    }
+    grav_client_host::HostOptions options{};
+    options.scriptPath = path.string();
+
+    std::ostringstream output;
+    std::streambuf *previousOut = std::cout.rdbuf(output.rdbuf());
+    const int exitCode = grav_client_host::ClientHostCli::run(options, "blitzar-client");
+    std::cout.rdbuf(previousOut);
+
+    EXPECT_EQ(exitCode, 0);
+    EXPECT_NE(output.str().find("load_config"), std::string::npos);
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
 }
 
 } // namespace grav_test_client_host_args_text

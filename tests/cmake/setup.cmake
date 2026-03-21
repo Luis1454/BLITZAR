@@ -17,6 +17,16 @@ if(NOT DEFINED GRAVITY_RUNTIME_PROTOCOL_SOURCES)
     )
 endif()
 
+if(NOT DEFINED GRAVITY_RUNTIME_COMMAND_SOURCES)
+    set(GRAVITY_RUNTIME_COMMAND_SOURCES
+        "${GRAVITY_ROOT_DIR}/runtime/src/command/CommandBatchRunner.cpp"
+        "${GRAVITY_ROOT_DIR}/runtime/src/command/CommandCatalog.cpp"
+        "${GRAVITY_ROOT_DIR}/runtime/src/command/CommandExecutor.cpp"
+        "${GRAVITY_ROOT_DIR}/runtime/src/command/CommandParser.cpp"
+        "${GRAVITY_ROOT_DIR}/runtime/src/command/CommandTransport.cpp"
+    )
+endif()
+
 if(NOT DEFINED GRAVITY_SERVER_SOURCES)
     if(WIN32)
         set(GRAVITY_ENV_UTILS_SOURCES
