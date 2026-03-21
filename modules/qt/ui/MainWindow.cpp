@@ -97,12 +97,10 @@ MainWindow::MainWindow(
       _stepButton(new QPushButton("Step", this)),
       _resetButton(new QPushButton("Reset", this)),
       _recoverButton(new QPushButton("Recover", this)),
-      _reconnectButton(new QPushButton("Reconnect", this)),
-      _applyConnectorButton(new QPushButton("Apply", this)),
+      _applyConnectorButton(new QPushButton("Connect", this)),
       _exportButton(new QPushButton("Export", this)),
       _saveConfigButton(new QPushButton("Save config", this)),
       _loadInputButton(new QPushButton("Load input", this)),
-      _validateButton(new QPushButton("Validate config", this)),
       _serverAutostartCheck(new QCheckBox("autostart server", this)),
       _serverHostEdit(new QLineEdit(this)),
       _serverBinEdit(new QLineEdit(this)),
@@ -251,7 +249,7 @@ MainWindow::MainWindow(
     _serverAutostartCheck->setChecked(false);
     _serverBinEdit->setPlaceholderText("blitzar-server(.exe)");
     _serverBinEdit->setToolTip("Path to the server executable used when autostart is enabled");
-    _applyConnectorButton->setToolTip("Apply host, port and server binary settings to the connector");
+    _applyConnectorButton->setToolTip("Apply host, port and server binary settings, then reconnect now");
     _validationLabel->setWordWrap(true);
     _validationLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     _validationLabel->setContentsMargins(6, 4, 6, 4);
@@ -329,11 +327,7 @@ MainWindow::MainWindow(
     connectorForm->addRow("server bin", _serverBinEdit);
     connectorLayout->addLayout(connectorForm);
     connectorLayout->addWidget(_serverAutostartCheck);
-    auto *connectorActions = new QGridLayout();
-    connectorActions->setHorizontalSpacing(8);
-    connectorActions->addWidget(_reconnectButton, 0, 0);
-    connectorActions->addWidget(_applyConnectorButton, 0, 1);
-    connectorLayout->addLayout(connectorActions);
+    connectorLayout->addWidget(_applyConnectorButton);
     connectorLayout->addStretch(1);
 
     auto *sceneBox = new QGroupBox("Scene Setup", scenePage);
@@ -345,11 +339,10 @@ MainWindow::MainWindow(
     sceneBoxLayout->addWidget(_loadPresetButton);
     sceneBoxLayout->addWidget(_loadInputButton);
 
-    auto *configBox = new QGroupBox("Config", scenePage);
-    auto *configBoxLayout = new QVBoxLayout(configBox);
-    configBoxLayout->addWidget(_saveConfigButton);
-    configBoxLayout->addWidget(_validateButton);
-    configBoxLayout->addStretch(1);
+    auto *projectBox = new QGroupBox("Project", scenePage);
+    auto *projectLayout = new QVBoxLayout(projectBox);
+    projectLayout->addWidget(_saveConfigButton);
+    projectLayout->addStretch(1);
 
     auto *physicsCoreBox = new QGroupBox("Physics Core", physicsPage);
     auto *physicsCoreLayout = new QVBoxLayout(physicsCoreBox);
@@ -398,7 +391,7 @@ MainWindow::MainWindow(
     runLayout->addStretch(1);
 
     sceneLayout->addWidget(sceneBox);
-    sceneLayout->addWidget(configBox);
+    sceneLayout->addWidget(projectBox);
     sceneLayout->addStretch(1);
 
     physicsLayout->addWidget(physicsCoreBox);
@@ -488,7 +481,7 @@ MainWindow::MainWindow(
 
     auto *editMenu = menuBar()->addMenu("&Edit");
     editMenu->addAction("Validate Config", this, [this]() { (void)refreshValidationReport(false); });
-    editMenu->addAction("Reconnect", this, [this]() { configureRemoteConnectorFromUi(); });
+    editMenu->addAction("Reconnect", this, [this]() { requestReconnectFromUi(); });
 
     auto *viewMenu = menuBar()->addMenu("&View");
     viewMenu->addAction(controlsDock->toggleViewAction());
@@ -528,7 +521,6 @@ MainWindow::MainWindow(
     markConfigDirty(false);
     applyViewSettings();
     update3DCameraFromSliders();
-    _reconnectButton->setEnabled(true);
     _applyConnectorButton->setEnabled(true);
     _serverAutostartCheck->setEnabled(true);
     _serverHostEdit->setEnabled(true);
@@ -581,6 +573,25 @@ void MainWindow::configureRemoteConnectorFromUi()
         static_cast<std::uint16_t>(_serverPortSpin->value()),
         _serverAutostartCheck->isChecked(),
         _serverBinEdit->text().trimmed().toStdString());
+}
+
+void MainWindow::applyConnectorSettings(bool reconnectNow)
+{
+    configureRemoteConnectorFromUi();
+    if (reconnectNow) {
+        _runtime->requestReconnect();
+        _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
+        statusBar()->showMessage("Connector updated and reconnect requested", 3000);
+        return;
+    }
+    statusBar()->showMessage("Connector settings updated", 3000);
+}
+
+void MainWindow::requestReconnectFromUi()
+{
+    _runtime->requestReconnect();
+    _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
+    statusBar()->showMessage("Reconnect requested", 3000);
 }
 
 void MainWindow::handleExportRequest()
@@ -677,6 +688,13 @@ void MainWindow::handleLoadPresetRequest()
     markConfigDirty(false);
 }
 
+void MainWindow::resetSimulationFromUi()
+{
+    _runtime->requestReset();
+    _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
+    statusBar()->showMessage("Simulation reset requested", 3000);
+}
+
 void MainWindow::connectControls()
 {
     const auto applySphParams = [this]() {
@@ -697,19 +715,11 @@ void MainWindow::connectControls()
         _pauseButton->setText(checked ? "Resume" : "Pause");
     });
     connect(_stepButton, &QPushButton::clicked, this, [this]() { _runtime->stepOnce(); });
-    connect(_resetButton, &QPushButton::clicked, this, [this]() {
-        _config = SimulationConfig::loadOrCreate(_configPath);
-        applyConfigToUi();
-        applyConfigToServer(true);
-        markConfigDirty(false);
-        _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
-    });
+    connect(_resetButton, &QPushButton::clicked, this, [this]() { resetSimulationFromUi(); });
     connect(_recoverButton, &QPushButton::clicked, this, [this]() { _runtime->requestRecover(); });
-    connect(_reconnectButton, &QPushButton::clicked, this, [this]() { configureRemoteConnectorFromUi(); });
-    connect(_applyConnectorButton, &QPushButton::clicked, this, [this]() { configureRemoteConnectorFromUi(); });
+    connect(_applyConnectorButton, &QPushButton::clicked, this, [this]() { applyConnectorSettings(true); });
     connect(_exportButton, &QPushButton::clicked, this, [this]() { handleExportRequest(); });
     connect(_saveConfigButton, &QPushButton::clicked, this, [this]() { (void)saveConfigToDisk(); });
-    connect(_validateButton, &QPushButton::clicked, this, [this]() { (void)refreshValidationReport(false); });
     connect(_loadInputButton, &QPushButton::clicked, this, [this]() { handleLoadInputRequest(); });
     connect(_applyPresetButton, &QPushButton::clicked, this, [this]() {
         _config.initConfigStyle = "preset";
@@ -899,9 +909,6 @@ void MainWindow::applyPerformanceProfileToRuntime()
 void MainWindow::markConfigDirty(bool dirty)
 {
     _configDirty = dirty;
-    if (_saveConfigButton != nullptr) {
-        _saveConfigButton->setEnabled(_configDirty);
-    }
     setWindowTitle(_configDirty ? "N-Body Qt Client *" : "N-Body Qt Client");
 }
 

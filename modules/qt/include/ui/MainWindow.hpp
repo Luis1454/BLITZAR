@@ -39,6 +39,7 @@ class MainWindow : public QMainWindow {
     private:
         static std::string formatFromSelectedFilter(const QString &filter);
         bool applyConfigToServer(bool requestReset);
+        void applyConnectorSettings(bool reconnectNow);
         void applyConfigToUi();
         void applyViewSettings();
         void captureUiIntoConfig();
@@ -50,6 +51,8 @@ class MainWindow : public QMainWindow {
         void handleLoadPresetRequest();
         void markConfigDirty(bool dirty = true);
         bool refreshValidationReport(bool blockOnErrors);
+        void requestReconnectFromUi();
+        void resetSimulationFromUi();
         void restoreDefaultWorkspace();
         void saveWorkspacePreset();
         void loadWorkspacePreset();
@@ -72,12 +75,10 @@ class MainWindow : public QMainWindow {
         QPointer<QPushButton> _stepButton;
         QPointer<QPushButton> _resetButton;
         QPointer<QPushButton> _recoverButton;
-        QPointer<QPushButton> _reconnectButton;
         QPointer<QPushButton> _applyConnectorButton;
         QPointer<QPushButton> _exportButton;
         QPointer<QPushButton> _saveConfigButton;
         QPointer<QPushButton> _loadInputButton;
-        QPointer<QPushButton> _validateButton;
         QPointer<QCheckBox> _serverAutostartCheck;
         QPointer<QLineEdit> _serverHostEdit;
         QPointer<QLineEdit> _serverBinEdit;
