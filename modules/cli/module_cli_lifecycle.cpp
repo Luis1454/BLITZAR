@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "client/ErrorBuffer.hpp"
+#include "config/SimulationConfig.hpp"
 #include "modules/cli/module_cli_lifecycle.hpp"
 #include "modules/cli/module_cli_state.hpp"
 
@@ -12,7 +13,7 @@ namespace grav_module_cli {
 class ModuleCliLifecycleLocal final {
 public:
     static bool create(
-        const grav_module::ClientHostContextV1 *,
+        const grav_module::ClientHostContextV1 *hostContext,
         const grav_module::ClientModuleStateSlot &outModuleState,
         const grav_client::ErrorBufferView &errorBuffer)
     {
@@ -22,7 +23,10 @@ public:
                 return false;
             }
             std::unique_ptr<ModuleState> state = std::make_unique<ModuleState>();
-            state->client.setSocketTimeoutMs(150);
+            if (hostContext != nullptr && hostContext->configPath != nullptr) {
+                state->session.configPath = hostContext->configPath;
+            }
+            state->session.config = SimulationConfig::loadOrCreate(state->session.configPath);
             return outModuleState.assign(grav_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
         } catch (const std::exception &ex) {
             errorBuffer.write(ex.what());
@@ -39,7 +43,7 @@ public:
             ModuleState *state = static_cast<ModuleState *>(moduleState.rawPointer());
             if (state != nullptr) {
                 std::unique_ptr<ModuleState> ownedState(state);
-                ownedState->client.disconnect();
+                ownedState->transport.disconnect();
             }
         } catch (const std::exception &ex) {
             std::cerr << "[module-cli] destroy error: " << ex.what() << "\n";
@@ -58,11 +62,11 @@ public:
                 errorBuffer.write("module state is null");
                 return false;
             }
-            if (!state->client.connect(state->host, state->port)) {
-                std::cout << "[module-cli] startup: server " << state->host << ":" << state->port
+            if (!state->transport.connect(state->session.host, state->session.port)) {
+                std::cout << "[module-cli] startup: server " << state->session.host << ":" << state->session.port
                           << " not reachable yet (retry on command)\n";
             } else {
-                std::cout << "[module-cli] connected to " << state->host << ":" << state->port << "\n";
+                std::cout << "[module-cli] connected to " << state->session.host << ":" << state->session.port << "\n";
             }
             return true;
         } catch (const std::exception &ex) {
@@ -79,7 +83,7 @@ public:
         try {
             ModuleState *state = static_cast<ModuleState *>(moduleState.rawPointer());
             if (state != nullptr) {
-                state->client.disconnect();
+                state->transport.disconnect();
             }
         } catch (const std::exception &ex) {
             std::cerr << "[module-cli] stop error: " << ex.what() << "\n";

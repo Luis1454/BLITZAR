@@ -1,19 +1,16 @@
 #ifndef GRAVITY_MODULES_CLI_MODULE_CLI_STATE_HPP_
 #define GRAVITY_MODULES_CLI_MODULE_CLI_STATE_HPP_
 
-#include <cstdint>
-#include <string>
-
-#include "protocol/ServerClient.hpp"
+#include "command/CommandContext.hpp"
+#include "command/CommandTransport.hpp"
 
 namespace grav_module_cli {
 
 struct ModuleState {
     ModuleState();
 
-    ServerClient client;
-    std::string host;
-    std::uint16_t port;
+    grav_cmd::ServerClientCommandTransport transport;
+    grav_cmd::CommandSessionState session;
 };
 
 } // namespace grav_module_cli
