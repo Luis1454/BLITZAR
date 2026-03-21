@@ -53,7 +53,7 @@ TEST(QtMainWindowTest, TST_UIX_UI_001_ConstructsAndTicksWithRealRuntime)
 
     ASSERT_TRUE(testsupport::waitUntilUi([&]() {
         const QString status = testsupport::findStatusLabelText(window);
-        return status.contains("link=connected") && status.contains("owner=external");
+        return status.contains("Link: connected") && status.contains("Owner: external");
     }, std::chrono::milliseconds(5000)));
 
     server.stop();
@@ -74,17 +74,17 @@ TEST(QtMainWindowTest, TST_UIX_UI_002_ShowsReconnectingWhenServerStopsAndRecover
     grav_qt::MainWindow window(makeUiConfig(), "simulation.ini", std::move(runtime));
 
     ASSERT_TRUE(testsupport::waitUntilUi([&]() {
-        return testsupport::findStatusLabelText(window).contains("link=connected");
+        return testsupport::findStatusLabelText(window).contains("Link: connected");
     }, std::chrono::milliseconds(5000)));
 
     server.stop();
     ASSERT_TRUE(testsupport::waitUntilUi([&]() {
-        return testsupport::findStatusLabelText(window).contains("link=reconnecting");
+        return testsupport::findStatusLabelText(window).contains("Link: reconnecting");
     }, std::chrono::milliseconds(5000)));
 
     ASSERT_TRUE(server.start(startError, fixedPort)) << startError;
     ASSERT_TRUE(testsupport::waitUntilUi([&]() {
-        return testsupport::findStatusLabelText(window).contains("link=connected");
+        return testsupport::findStatusLabelText(window).contains("Link: connected");
     }, std::chrono::milliseconds(7000)));
 
     server.stop();
@@ -110,7 +110,7 @@ TEST(QtMainWindowTest, TST_UIX_UI_003_SavesConfigOnlyOnExplicitSaveAction)
     grav_qt::MainWindow window(initialConfig, configPath.string(), std::move(runtime));
 
     ASSERT_TRUE(testsupport::waitUntilUi([&]() {
-        return testsupport::findStatusLabelText(window).contains("link=connected");
+        return testsupport::findStatusLabelText(window).contains("Link: connected");
     }, std::chrono::milliseconds(5000)));
 
     QComboBox *solverCombo = testsupport::findSolverCombo(window);
@@ -152,10 +152,10 @@ TEST(QtMainWindowTest, TST_UIX_UI_004_ShowsEffectiveClientCapWhenConfiguredCapEx
 
     ASSERT_TRUE(testsupport::waitUntilUi([&]() {
         const QString status = testsupport::findStatusLabelText(window);
-        return status.contains("link=connected")
-            && status.contains(QString("cap=%1").arg(grav_protocol::kSnapshotMaxPoints))
-            && status.contains("q=")
-            && status.contains("policy=latest-only");
+        return status.contains("Link: connected")
+            && status.contains(QString("/ %1").arg(grav_protocol::kSnapshotMaxPoints))
+            && status.contains("Queue: ")
+            && status.contains("Policy: latest-only");
     }, std::chrono::milliseconds(5000)));
 
     server.stop();
@@ -278,6 +278,23 @@ TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabel
     EXPECT_TRUE(preflightText.contains("blocked"));
     EXPECT_TRUE(preflightText.contains("input_file"));
     EXPECT_TRUE(statusText.contains("preflight validation failed"));
+}
+
+TEST(QtMainWindowTest, TST_UIX_UI_006_ResponsiveControlsAllowSubHdWindow)
+{
+    (void)testsupport::ensureQtApp();
+
+    auto runtime = std::make_unique<grav_client::ClientRuntime>(
+        "simulation.ini",
+        testsupport::makeTransport(1u, std::string()));
+    grav_qt::MainWindow window(makeUiConfig(), "simulation.ini", std::move(runtime));
+    window.resize(1024, 768);
+    window.show();
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+    EXPECT_LE(window.width(), 1100);
+    EXPECT_LE(window.height(), 850);
+    EXPECT_LE(window.minimumSizeHint().width(), 1100);
 }
 
 } // namespace grav_test_qt_window

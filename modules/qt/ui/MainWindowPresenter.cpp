@@ -44,36 +44,51 @@ MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentation
     const std::string latency = MainWindowPresenterLocal::latencyLabel(input);
 
     MainWindowPresentation output;
-    std::ostringstream status;
-    status << "state=" << (input.stats.faulted ? "FAULT" : (input.stats.paused ? "PAUSED" : "RUNNING"))
-           << " | link=" << input.linkLabel
-           << " owner=" << input.ownerLabel
-           << " | solver=" << input.stats.solverName
-           << " integrator=" << input.stats.integratorName
-           << " perf=" << input.performanceProfile
-           << " | sph=" << (input.stats.sphEnabled ? "on" : "off")
-           << " | dt=" << input.stats.dt << " s"
-           << " | server=" << input.stats.serverFps << " step/s"
-           << " | sub=" << input.stats.substeps << "x@" << input.stats.substepDt
-           << " s (target=" << input.stats.substepTargetDt << " s max=" << input.stats.maxSubsteps << ") snap="
-           << input.stats.snapshotPublishPeriodMs
-           << " ms | ui=" << input.uiTickFps << " fps"
-           << " | steps=" << input.stats.steps
-           << " | particles=" << input.stats.particleCount
-           << " draw=" << input.displayedParticles
-           << " cap=" << input.clientDrawCap
-           << " | data=stats:" << MainWindowPresenterLocal::ageLabel(input.statsAgeMs)
-           << " snap:" << MainWindowPresenterLocal::ageLabel(input.snapshotAgeMs)
-           << " q=" << input.snapshotPipeline.queueDepth << "/" << input.snapshotPipeline.queueCapacity
-           << " drop=" << input.snapshotPipeline.droppedFrames
-           << " lat=" << latency
-           << " policy=" << input.snapshotPipeline.dropPolicy
-           << (stale ? " [stale]" : "")
-           << " | Ekin=" << input.stats.kineticEnergy << " J Epot=" << input.stats.potentialEnergy
-           << " J Eth=" << input.stats.thermalEnergy << " J Erad=" << input.stats.radiatedEnergy
-           << " J Etot=" << input.stats.totalEnergy << " J | dE=" << input.stats.energyDriftPct
-           << "%" << faultSuffix;
-    output.statusText = status.str();
+    std::ostringstream headline;
+    headline << "State: " << (input.stats.faulted ? "FAULT" : (input.stats.paused ? "PAUSED" : "RUNNING"))
+             << "\nLink: " << input.linkLabel
+             << "\nOwner: " << input.ownerLabel
+             << "\nEngine: " << input.stats.solverName << " / " << input.stats.integratorName
+             << "\nProfile: " << input.performanceProfile
+             << "\nSPH: " << (input.stats.sphEnabled ? "on" : "off");
+    if (stale) {
+        headline << "\nData freshness: stale";
+    }
+    if (!faultSuffix.empty()) {
+        headline << "\nCondition: " << faultSuffix.substr(1);
+    }
+    output.headlineText = headline.str();
+
+    std::ostringstream runtime;
+    runtime << "dt: " << input.stats.dt << " s"
+            << "\nSubsteps: " << input.stats.substeps << " x " << input.stats.substepDt << " s"
+            << "\nTarget step: " << input.stats.substepTargetDt << " s"
+            << "\nSubstep limit: " << input.stats.maxSubsteps
+            << "\nServer rate: " << input.stats.serverFps << " step/s"
+            << "\nUI rate: " << input.uiTickFps << " fps";
+    output.runtimeText = runtime.str();
+
+    std::ostringstream queue;
+    queue << "Steps: " << input.stats.steps
+          << "\nParticles: " << input.stats.particleCount
+          << "\nDraw budget: " << input.displayedParticles << " / " << input.clientDrawCap
+          << "\nStats age: " << MainWindowPresenterLocal::ageLabel(input.statsAgeMs)
+          << "\nSnapshot age: " << MainWindowPresenterLocal::ageLabel(input.snapshotAgeMs)
+          << "\nQueue: " << input.snapshotPipeline.queueDepth << " / " << input.snapshotPipeline.queueCapacity
+          << "\nDropped: " << input.snapshotPipeline.droppedFrames
+          << "\nLatency: " << latency
+          << "\nPolicy: " << input.snapshotPipeline.dropPolicy;
+    output.queueText = queue.str();
+
+    std::ostringstream energy;
+    energy << "Total: " << input.stats.totalEnergy << " J"
+           << "\nDrift: " << input.stats.energyDriftPct << "%"
+           << "\nKinetic: " << input.stats.kineticEnergy << " J"
+           << "\nPotential: " << input.stats.potentialEnergy << " J"
+           << "\nThermal: " << input.stats.thermalEnergy << " J"
+           << "\nRadiated: " << input.stats.radiatedEnergy << " J";
+    output.energyText = energy.str();
+    output.statusText = output.headlineText + "\n" + output.runtimeText + "\n" + output.queueText + "\n" + output.energyText;
 
     std::ostringstream trace;
     trace << "[qt] step=" << input.stats.steps

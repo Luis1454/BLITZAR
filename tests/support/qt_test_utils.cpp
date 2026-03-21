@@ -49,12 +49,13 @@ QApplication *ensureQtApp()
 QString findStatusLabelText(const grav_qt::MainWindow &window)
 {
     const QList<QLabel *> labels = window.findChildren<QLabel *>();
+    QStringList summaryLines;
     for (QLabel *label : labels) {
-        if (label != nullptr && label->text().contains("state=")) {
-            return label->text();
+        if (label != nullptr && label->objectName() == "runtimeSummaryValue") {
+            summaryLines.push_back(label->text());
         }
     }
-    return {};
+    return summaryLines.join("\n");
 }
 
 std::string readAllFile(const std::filesystem::path &path)

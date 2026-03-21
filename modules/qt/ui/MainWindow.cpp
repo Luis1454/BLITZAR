@@ -10,18 +10,21 @@
 
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDockWidget>
 #include <QDoubleSpinBox>
 #include <QFileDialog>
 #include <QFormLayout>
+#include <QFrame>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QScrollArea>
 #include <QSlider>
+#include <QSplitter>
 #include <QSpinBox>
+#include <QTabWidget>
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -37,6 +40,22 @@
 #include <vector>
 
 namespace grav_qt {
+
+static QFrame *makeSummaryCard(QWidget *parent, const QString &title, QLabel *content)
+{
+    auto *card = new QFrame(parent);
+    card->setObjectName("runtimeCard");
+    auto *layout = new QVBoxLayout(card);
+    layout->setContentsMargins(10, 8, 10, 8);
+    layout->setSpacing(4);
+
+    auto *titleLabel = new QLabel(title, card);
+    titleLabel->setObjectName("runtimeCardTitle");
+    layout->addWidget(titleLabel);
+    layout->addWidget(content);
+    layout->addStretch(1);
+    return card;
+}
 
 std::string MainWindow::formatFromSelectedFilter(const QString &filter)
 {
@@ -66,6 +85,9 @@ MainWindow::MainWindow(
       _energyGraph(new EnergyGraphWidget()),
       _validationLabel(new QLabel(this)),
       _statusLabel(new QLabel(this)),
+      _runtimeMetricsLabel(new QLabel(this)),
+      _queueMetricsLabel(new QLabel(this)),
+      _energyMetricsLabel(new QLabel(this)),
       _pauseButton(new QPushButton("Pause", this)),
       _stepButton(new QPushButton("Step", this)),
       _resetButton(new QPushButton("Reset", this)),
@@ -114,11 +136,6 @@ MainWindow::MainWindow(
     }
 
     setWindowTitle("N-Body Qt Client");
-
-    auto *central = new QWidget(this);
-    auto *root = new QVBoxLayout(central);
-    root->setContentsMargins(8, 8, 8, 8);
-    root->setSpacing(8);
 
     _pauseButton->setCheckable(true);
     _solverCombo->addItem("pairwise_cuda");
@@ -195,13 +212,52 @@ MainWindow::MainWindow(
     _serverBinEdit->setPlaceholderText("blitzar-server(.exe)");
     _validationLabel->setWordWrap(true);
     _validationLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    _validationLabel->setContentsMargins(6, 4, 6, 4);
+    _statusLabel->setWordWrap(true);
+    _statusLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    _statusLabel->setObjectName("runtimeSummaryValue");
+    _runtimeMetricsLabel->setWordWrap(true);
+    _runtimeMetricsLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    _runtimeMetricsLabel->setObjectName("runtimeSummaryValue");
+    _queueMetricsLabel->setWordWrap(true);
+    _queueMetricsLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    _queueMetricsLabel->setObjectName("runtimeSummaryValue");
+    _energyMetricsLabel->setWordWrap(true);
+    _energyMetricsLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    _energyMetricsLabel->setObjectName("runtimeSummaryValue");
+    _validationLabel->setStyleSheet("color: #8b1e1e;");
 
-    auto *sectionsWidget = new QWidget(this);
-    auto *sectionsLayout = new QHBoxLayout(sectionsWidget);
-    sectionsLayout->setContentsMargins(4, 4, 4, 4);
-    sectionsLayout->setSpacing(10);
+    auto *sidebarTabs = new QTabWidget(this);
+    sidebarTabs->setTabPosition(QTabWidget::West);
+    sidebarTabs->setDocumentMode(true);
+    sidebarTabs->setMinimumWidth(300);
+    sidebarTabs->setMaximumWidth(360);
+    sidebarTabs->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    sidebarTabs->setStyleSheet(
+        "QTabWidget::pane { border: 0; }"
+        "QTabBar::tab {"
+        "  min-width: 88px;"
+        "  padding: 10px 8px;"
+        "  margin: 2px;"
+        "}"
+    );
 
-    auto *simulationBox = new QGroupBox("Simulation", sectionsWidget);
+    auto *runPage = new QWidget(sidebarTabs);
+    auto *runLayout = new QVBoxLayout(runPage);
+    runLayout->setContentsMargins(4, 4, 4, 4);
+    runLayout->setSpacing(8);
+
+    auto *fluidPage = new QWidget(sidebarTabs);
+    auto *fluidLayout = new QVBoxLayout(fluidPage);
+    fluidLayout->setContentsMargins(4, 4, 4, 4);
+    fluidLayout->setSpacing(8);
+
+    auto *viewPage = new QWidget(sidebarTabs);
+    auto *viewLayout = new QVBoxLayout(viewPage);
+    viewLayout->setContentsMargins(4, 4, 4, 4);
+    viewLayout->setSpacing(8);
+
+    auto *simulationBox = new QGroupBox("Simulation", runPage);
     auto *simulationLayout = new QVBoxLayout(simulationBox);
     auto *simulationForm = new QFormLayout();
     simulationForm->addRow("solver", _solverCombo);
@@ -214,9 +270,8 @@ MainWindow::MainWindow(
     simulationLayout->addWidget(_stepButton);
     simulationLayout->addWidget(_resetButton);
     simulationLayout->addWidget(_recoverButton);
-    simulationLayout->addWidget(_reconnectButton);
 
-    auto *timeBox = new QGroupBox("Time", sectionsWidget);
+    auto *timeBox = new QGroupBox("Time", runPage);
     auto *timeLayout = new QVBoxLayout(timeBox);
     auto *timeForm = new QFormLayout();
     timeForm->addRow("dt", _dtSpin);
@@ -224,7 +279,7 @@ MainWindow::MainWindow(
     timeForm->addRow("softening", _softeningSpin);
     timeLayout->addLayout(timeForm);
 
-    auto *sphBox = new QGroupBox("SPH", sectionsWidget);
+    auto *sphBox = new QGroupBox("SPH", fluidPage);
     auto *sphLayout = new QVBoxLayout(sphBox);
     sphLayout->addWidget(_sphCheck);
     auto *sphForm = new QFormLayout();
@@ -234,7 +289,7 @@ MainWindow::MainWindow(
     sphForm->addRow("viscosity", _sphViscositySpin);
     sphLayout->addLayout(sphForm);
 
-    auto *ioBox = new QGroupBox("I/O", sectionsWidget);
+    auto *ioBox = new QGroupBox("I/O", fluidPage);
     auto *ioLayout = new QVBoxLayout(ioBox);
     ioLayout->addWidget(_saveConfigButton);
     ioLayout->addWidget(_loadPresetButton);
@@ -243,7 +298,7 @@ MainWindow::MainWindow(
     ioLayout->addWidget(_exportButton);
     ioLayout->addStretch(1);
 
-    auto *connectorBox = new QGroupBox("Connector", sectionsWidget);
+    auto *connectorBox = new QGroupBox("Connector", runPage);
     auto *connectorLayout = new QVBoxLayout(connectorBox);
     auto *connectorForm = new QFormLayout();
     connectorForm->addRow("host", _serverHostEdit);
@@ -251,24 +306,11 @@ MainWindow::MainWindow(
     connectorForm->addRow("server bin", _serverBinEdit);
     connectorLayout->addLayout(connectorForm);
     connectorLayout->addWidget(_serverAutostartCheck);
+    connectorLayout->addWidget(_reconnectButton);
     connectorLayout->addWidget(_applyConnectorButton);
     connectorLayout->addStretch(1);
 
-    sectionsLayout->addWidget(simulationBox);
-    sectionsLayout->addWidget(timeBox);
-    sectionsLayout->addWidget(sphBox);
-    sectionsLayout->addWidget(ioBox);
-    sectionsLayout->addWidget(connectorBox);
-    sectionsLayout->addStretch(1);
-
-    auto *controlsScroll = new QScrollArea(this);
-    controlsScroll->setWidgetResizable(true);
-    controlsScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    controlsScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    controlsScroll->setWidget(sectionsWidget);
-    controlsScroll->setMaximumHeight(240);
-
-    auto *cameraBox = new QGroupBox("View & Camera", this);
+    auto *cameraBox = new QGroupBox("View & Camera", viewPage);
     auto *cameraLayout = new QGridLayout(cameraBox);
     cameraLayout->addWidget(new QLabel("zoom", this), 0, 0);
     cameraLayout->addWidget(_zoomSlider, 0, 1);
@@ -285,15 +327,87 @@ MainWindow::MainWindow(
     cameraLayout->addWidget(_cullingCheck, 3, 0);
     cameraLayout->addWidget(_lodCheck, 3, 1);
 
-    root->addWidget(controlsScroll, 0);
-    root->addWidget(_multiView, 4);
-    root->addWidget(cameraBox, 0);
-    root->addWidget(_energyGraph, 2);
-    root->addWidget(_validationLabel, 0);
-    root->addWidget(_statusLabel, 0);
+    runLayout->addWidget(simulationBox);
+    runLayout->addWidget(timeBox);
+    runLayout->addWidget(connectorBox);
+    runLayout->addStretch(1);
 
-    setCentralWidget(central);
-    resize(1500, 980);
+    fluidLayout->addWidget(sphBox);
+    fluidLayout->addWidget(ioBox);
+    fluidLayout->addStretch(1);
+
+    viewLayout->addWidget(cameraBox);
+    viewLayout->addStretch(1);
+
+    sidebarTabs->addTab(runPage, "Run");
+    sidebarTabs->addTab(fluidPage, "Fluid & I/O");
+    sidebarTabs->addTab(viewPage, "View");
+
+    auto *summaryPane = new QWidget(this);
+    auto *summaryLayout = new QGridLayout(summaryPane);
+    summaryLayout->setContentsMargins(8, 8, 8, 8);
+    summaryLayout->setHorizontalSpacing(8);
+    summaryLayout->setVerticalSpacing(8);
+    summaryPane->setStyleSheet(
+        "QFrame#runtimeCard {"
+        "  border: 1px solid #d7dee6;"
+        "  border-radius: 8px;"
+        "  background: #f7f9fb;"
+        "}"
+        "QLabel#runtimeCardTitle {"
+        "  color: #486581;"
+        "  font-size: 11px;"
+        "  font-weight: 700;"
+        "  text-transform: uppercase;"
+        "}"
+        "QLabel#runtimeSummaryValue {"
+        "  color: #102a43;"
+        "}"
+    );
+    summaryLayout->addWidget(makeSummaryCard(summaryPane, "Session", _statusLabel), 0, 0);
+    summaryLayout->addWidget(makeSummaryCard(summaryPane, "Timing", _runtimeMetricsLabel), 0, 1);
+    summaryLayout->addWidget(makeSummaryCard(summaryPane, "Pipeline", _queueMetricsLabel), 1, 0);
+    summaryLayout->addWidget(makeSummaryCard(summaryPane, "Energy", _energyMetricsLabel), 1, 1);
+
+    auto *validationPane = new QWidget(this);
+    auto *validationLayout = new QVBoxLayout(validationPane);
+    validationLayout->setContentsMargins(8, 8, 8, 8);
+    validationLayout->setSpacing(4);
+    validationLayout->addWidget(_validationLabel);
+    validationLayout->addStretch(1);
+
+    auto *centerSplitter = new QSplitter(Qt::Vertical, this);
+    centerSplitter->addWidget(_multiView);
+    centerSplitter->addWidget(_energyGraph);
+    centerSplitter->setStretchFactor(0, 5);
+    centerSplitter->setStretchFactor(1, 2);
+    centerSplitter->setChildrenCollapsible(false);
+    setCentralWidget(centerSplitter);
+
+    setDockNestingEnabled(true);
+    setDockOptions(QMainWindow::AnimatedDocks | QMainWindow::AllowNestedDocks | QMainWindow::AllowTabbedDocks);
+
+    auto *controlsDock = new QDockWidget("Controls", this);
+    controlsDock->setObjectName("controlsDock");
+    controlsDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    controlsDock->setWidget(sidebarTabs);
+    addDockWidget(Qt::LeftDockWidgetArea, controlsDock);
+
+    auto *telemetryDock = new QDockWidget("Telemetry", this);
+    telemetryDock->setObjectName("telemetryDock");
+    telemetryDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    telemetryDock->setWidget(summaryPane);
+    addDockWidget(Qt::BottomDockWidgetArea, telemetryDock);
+
+    auto *validationDock = new QDockWidget("Validation", this);
+    validationDock->setObjectName("validationDock");
+    validationDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    validationDock->setWidget(validationPane);
+    addDockWidget(Qt::BottomDockWidgetArea, validationDock);
+    tabifyDockWidget(telemetryDock, validationDock);
+    telemetryDock->raise();
+
+    resize(1280, 820);
 
     const bool startupConfigValid = applyConfigToServer(false);
     markConfigDirty(false);
@@ -783,7 +897,10 @@ void MainWindow::tick()
     presentationInput.uiTickFps = _uiTickFps;
     const MainWindowPresentation presentation = _presenter.present(presentationInput);
 
-    _statusLabel->setText(QString::fromStdString(presentation.statusText));
+    _statusLabel->setText(QString::fromStdString(presentation.headlineText));
+    _runtimeMetricsLabel->setText(QString::fromStdString(presentation.runtimeText));
+    _queueMetricsLabel->setText(QString::fromStdString(presentation.queueText));
+    _energyMetricsLabel->setText(QString::fromStdString(presentation.energyText));
 
     _pauseButton->blockSignals(true);
     _pauseButton->setChecked(stats.paused);

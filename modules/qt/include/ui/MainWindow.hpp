@@ -59,6 +59,9 @@ class MainWindow : public QMainWindow {
         QPointer<EnergyGraphWidget> _energyGraph;
         QPointer<QLabel> _validationLabel;
         QPointer<QLabel> _statusLabel;
+        QPointer<QLabel> _runtimeMetricsLabel;
+        QPointer<QLabel> _queueMetricsLabel;
+        QPointer<QLabel> _energyMetricsLabel;
         QPointer<QPushButton> _pauseButton;
         QPointer<QPushButton> _stepButton;
         QPointer<QPushButton> _resetButton;

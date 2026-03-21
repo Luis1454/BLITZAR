@@ -26,6 +26,10 @@ struct MainWindowPresentationInput final {
 };
 
 struct MainWindowPresentation final {
+    std::string headlineText;
+    std::string runtimeText;
+    std::string queueText;
+    std::string energyText;
     std::string statusText;
     std::string consoleTrace;
 };
