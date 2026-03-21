@@ -483,6 +483,12 @@
                     "REQ-RUN-001",
                     "REQ-UI-001"
                 ]
+            },
+            "TST-UNT-PHYS-018": {
+                "id": "PhysicsTest.TST_UNT_PHYS_018_EnergyEstimateUsesConfiguredStabilityConstants",
+                "req_ids": [
+                    "REQ-PHYS-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_PHYSICS_DETERMINISM": {

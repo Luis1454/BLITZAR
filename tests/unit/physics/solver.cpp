@@ -2,7 +2,10 @@
 #include "tests/support/physics_test_utils.hpp"
 
 #include <gtest/gtest.h>
+#include <chrono>
 #include <cmath>
+#include <filesystem>
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -20,6 +23,51 @@ static std::size_t countOccurrences(const std::string &text, const std::string &
         offset += pattern.size();
     }
     return count;
+}
+
+static std::filesystem::path writeStabilityConfig(float minSoftening, float minDistance2)
+{
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path =
+        std::filesystem::temp_directory_path() / ("gravity_physics_stability_" + std::to_string(stamp) + ".ini");
+    std::ofstream out(path, std::ios::trunc);
+    out << "particle_count=2\n";
+    out << "dt=0.001\n";
+    out << "simulation_profile=manual_override\n";
+    out << "performance_profile=custom\n";
+    out << "solver=octree_cpu\n";
+    out << "integrator=euler\n";
+    out << "init_config_style=detailed\n";
+    out << "input_file=" << getTwoBodyInputPath() << "\n";
+    out << "input_format=xyz\n";
+    out << "init_mode=file\n";
+    out << "octree_theta=0.35\n";
+    out << "octree_softening=0.01\n";
+    out << "physics_max_acceleration=64\n";
+    out << "physics_min_softening=" << minSoftening << "\n";
+    out << "physics_min_distance2=" << minDistance2 << "\n";
+    out << "physics_min_theta=0.05\n";
+    out << "energy_measure_every_steps=1\n";
+    out << "energy_sample_limit=64\n";
+    return path;
+}
+
+static float runTotalEnergyFromConfig(const std::filesystem::path &path)
+{
+    SimulationServer server(path.string());
+    server.setPaused(true);
+    server.start();
+
+    std::vector<RenderParticle> snapshot;
+    EXPECT_TRUE(waitForConsumedSnapshot(server, snapshot, 4000));
+    EXPECT_EQ(snapshot.size(), 2u);
+    server.stepOnce();
+    EXPECT_TRUE(waitForStepCount(server, 1u, 4000));
+    EXPECT_TRUE(waitForConsumedSnapshot(server, snapshot, 4000));
+
+    const float totalEnergy = server.getStats().totalEnergy;
+    server.stop();
+    return totalEnergy;
 }
 
 TEST(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
@@ -110,6 +158,10 @@ TEST(PhysicsTest, TST_UNT_RUNT_001_ServerLogsEffectiveModesAfterReset)
     ASSERT_TRUE(startupReady);
     ASSERT_TRUE(resetReady);
     EXPECT_EQ(countOccurrences(output, expected), 2u);
+    EXPECT_NE(output.find("physics_max_acceleration=64"), std::string::npos);
+    EXPECT_NE(output.find("physics_min_softening=0.0001"), std::string::npos);
+    EXPECT_NE(output.find("physics_min_distance2=1e-12"), std::string::npos);
+    EXPECT_NE(output.find("physics_min_theta=0.05"), std::string::npos);
     EXPECT_EQ(output.find("[solver] using"), std::string::npos);
     EXPECT_EQ(output.find("[integrator] mode="), std::string::npos);
 }
@@ -164,6 +216,22 @@ TEST(PhysicsTest, TST_UNT_PHYS_010_DeterministicReplayIdentical)
     ASSERT_TRUE(runScenario(cfg, runB, errorB)) << errorB;
     std::string replayError;
     EXPECT_TRUE(haveExactReplayMatch(runA, runB, replayError)) << replayError;
+}
+
+TEST(PhysicsTest, TST_UNT_PHYS_018_EnergyEstimateUsesConfiguredStabilityConstants)
+{
+    const std::filesystem::path permissivePath = writeStabilityConfig(0.01f, 0.01f);
+    const std::filesystem::path clampedPath = writeStabilityConfig(0.5f, 5.0f);
+
+    const float permissiveEnergy = runTotalEnergyFromConfig(permissivePath);
+    const float clampedEnergy = runTotalEnergyFromConfig(clampedPath);
+
+    std::error_code ec;
+    std::filesystem::remove(permissivePath, ec);
+    std::filesystem::remove(clampedPath, ec);
+
+    EXPECT_LT(permissiveEnergy, -0.1f);
+    EXPECT_GT(clampedEnergy, permissiveEnergy + 0.1f);
 }
 
 } // namespace testsupport
