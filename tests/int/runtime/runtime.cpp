@@ -7,12 +7,25 @@
 
 #include <chrono>
 #include <cstdint>
+#include <filesystem>
+#include <fstream>
 #include <limits>
 #include <optional>
 #include <string>
 #include <vector>
 
 namespace grav_test_client_runtime {
+
+static std::filesystem::path writeSnapshotPipelineConfig(const char *basename, std::uint32_t queueCapacity, const char *dropPolicy)
+{
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path = std::filesystem::temp_directory_path()
+        / (std::string(basename) + "_" + std::to_string(stamp) + ".ini");
+    std::ofstream out(path, std::ios::trunc);
+    out << "client_snapshot_queue_capacity=" << queueCapacity << "\n";
+    out << "client_snapshot_drop_policy=" << dropPolicy << "\n";
+    return path;
+}
 
 TEST(ClientRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAndSnapshot)
 {
@@ -42,6 +55,7 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAn
     std::vector<RenderParticle> snapshot = std::move(consumedSnapshot->particles);
     EXPECT_FALSE(snapshot.empty());
     EXPECT_EQ(consumedSnapshot->sourceSize, snapshot.size());
+    EXPECT_NE(consumedSnapshot->latencyMs, std::numeric_limits<std::uint32_t>::max());
 
     EXPECT_NE(runtime.statsAgeMs(), std::numeric_limits<std::uint32_t>::max());
     EXPECT_NE(runtime.snapshotAgeMs(), std::numeric_limits<std::uint32_t>::max());
@@ -124,6 +138,75 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeToRe
 
     runtime.stop();
     server.stop();
+}
+
+TEST(ClientRuntimeTest, TST_CNT_RUNT_009_LatestOnlySnapshotQueueKeepsLatencyLowWhileDroppingBacklog)
+{
+    RealServerHarness server;
+    std::string startError;
+    ASSERT_TRUE(server.start(startError)) << startError;
+
+    const std::filesystem::path configPath =
+        writeSnapshotPipelineConfig("gravity_runtime_latest_only", 2u, "latest-only");
+    grav_client::ClientRuntime runtime(configPath.string(), testsupport::makeTransport(server.port(), server.executablePath()));
+    ASSERT_TRUE(runtime.start());
+
+    ASSERT_TRUE(testsupport::waitUntil([&]() {
+        const grav_client::SnapshotPipelineState state = runtime.snapshotPipelineState();
+        return runtime.linkStateLabel() == "connected" && state.queueDepth == 2u && state.droppedFrames > 0u;
+    }, std::chrono::milliseconds(5000)));
+
+    const grav_client::SnapshotPipelineState state = runtime.snapshotPipelineState();
+    EXPECT_EQ(state.dropPolicy, "latest-only");
+    EXPECT_EQ(state.queueCapacity, 2u);
+    EXPECT_EQ(state.queueDepth, 2u);
+    EXPECT_GT(state.droppedFrames, 0u);
+
+    std::optional<grav_client::ConsumedSnapshot> consumedSnapshot = runtime.consumeLatestSnapshot();
+    ASSERT_TRUE(consumedSnapshot.has_value());
+    EXPECT_LT(consumedSnapshot->latencyMs, 250u);
+
+    runtime.stop();
+    server.stop();
+    std::error_code ec;
+    std::filesystem::remove(configPath, ec);
+}
+
+TEST(ClientRuntimeTest, TST_CNT_RUNT_010_PacedSnapshotQueuePreservesBacklogAndReportsLatencyGrowth)
+{
+    RealServerHarness server;
+    std::string startError;
+    ASSERT_TRUE(server.start(startError)) << startError;
+
+    const std::filesystem::path configPath =
+        writeSnapshotPipelineConfig("gravity_runtime_paced", 2u, "paced");
+    grav_client::ClientRuntime runtime(configPath.string(), testsupport::makeTransport(server.port(), server.executablePath()));
+    ASSERT_TRUE(runtime.start());
+
+    ASSERT_TRUE(testsupport::waitUntil([&]() {
+        const grav_client::SnapshotPipelineState state = runtime.snapshotPipelineState();
+        return runtime.linkStateLabel() == "connected"
+            && state.queueDepth == 2u
+            && state.droppedFrames > 0u
+            && state.latencyMs != std::numeric_limits<std::uint32_t>::max()
+            && state.latencyMs >= 250u;
+    }, std::chrono::milliseconds(5000)));
+
+    const grav_client::SnapshotPipelineState state = runtime.snapshotPipelineState();
+    EXPECT_EQ(state.dropPolicy, "paced");
+    EXPECT_EQ(state.queueCapacity, 2u);
+    EXPECT_EQ(state.queueDepth, 2u);
+    EXPECT_GT(state.droppedFrames, 0u);
+    EXPECT_GE(state.latencyMs, 250u);
+
+    std::optional<grav_client::ConsumedSnapshot> consumedSnapshot = runtime.consumeLatestSnapshot();
+    ASSERT_TRUE(consumedSnapshot.has_value());
+    EXPECT_GE(consumedSnapshot->latencyMs, 250u);
+
+    runtime.stop();
+    server.stop();
+    std::error_code ec;
+    std::filesystem::remove(configPath, ec);
 }
 
 } // namespace grav_test_client_runtime

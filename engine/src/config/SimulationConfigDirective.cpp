@@ -127,6 +127,8 @@ static bool applyDirectiveArgs(
                 arg.first == "command_timeout_ms" ? "client_remote_command_timeout_ms" :
                 arg.first == "status_timeout_ms" ? "client_remote_status_timeout_ms" :
                 arg.first == "snapshot_timeout_ms" ? "client_remote_snapshot_timeout_ms" :
+                arg.first == "snapshot_queue" ? "client_snapshot_queue_capacity" :
+                arg.first == "drop_policy" ? "client_snapshot_drop_policy" :
                 arg.first;
             handled = applyIniAlias(arg, iniKey, config, warnings);
         } else if (directive == "export") {

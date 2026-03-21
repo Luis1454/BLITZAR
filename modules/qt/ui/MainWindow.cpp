@@ -781,12 +781,15 @@ void MainWindow::tick()
         }
     }
     std::size_t snapshotSize = 0u;
+    std::uint32_t consumedSnapshotLatencyMs = std::numeric_limits<std::uint32_t>::max();
     std::optional<grav_client::ConsumedSnapshot> consumedSnapshot = _runtime->consumeLatestSnapshot();
     const bool gotSnapshot = consumedSnapshot.has_value();
     if (gotSnapshot) {
         snapshotSize = consumedSnapshot->sourceSize;
+        consumedSnapshotLatencyMs = consumedSnapshot->latencyMs;
         snapshot = std::move(consumedSnapshot->particles);
     }
+    const grav_client::SnapshotPipelineState snapshotPipeline = _runtime->snapshotPipelineState();
     const std::string linkLabel = _runtime->linkStateLabel();
     const std::string ownerLabel = _runtime->serverOwnerLabel();
     const std::uint32_t statsAgeMs = _runtime->statsAgeMs();
@@ -806,7 +809,7 @@ void MainWindow::tick()
     }
 
     _statusLabel->setText(
-        QString("state=%1 | link=%2 owner=%3 | solver=%4 integrator=%5 perf=%6 | sph=%7 | dt=%8 s | server=%9 step/s | sub=%10x@%11 s (target=%12 s max=%13) snap=%14 ms | ui=%15 fps | steps=%16 | particles=%17 draw=%18 cap=%19 | data=stats:%20 snap:%21 %22 | Ekin=%23 J Epot=%24 J Eth=%25 J Erad=%26 J Etot=%27 J | dE=%28%% %29")
+        QString("state=%1 | link=%2 owner=%3 | solver=%4 integrator=%5 perf=%6 | sph=%7 | dt=%8 s | server=%9 step/s | sub=%10x@%11 s (target=%12 s max=%13) snap=%14 ms | ui=%15 fps | steps=%16 | particles=%17 draw=%18 cap=%19 | data=stats:%20 snap:%21 q=%22/%23 drop=%24 lat=%25 policy=%26 %27 | Ekin=%28 J Epot=%29 J Eth=%30 J Erad=%31 J Etot=%32 J | dE=%33%% %34")
             .arg(stats.faulted ? "FAULT" : (stats.paused ? "PAUSED" : "RUNNING"))
             .arg(QString::fromStdString(linkLabel))
             .arg(QString::fromStdString(ownerLabel))
@@ -828,6 +831,16 @@ void MainWindow::tick()
             .arg(static_cast<qulonglong>(_clientDrawCap))
             .arg(hasStatsAge ? QString::number(statsAgeMs) + "ms" : QString("n/a"))
             .arg(hasSnapshotAge ? QString::number(snapshotAgeMs) + "ms" : QString("n/a"))
+            .arg(static_cast<qulonglong>(snapshotPipeline.queueDepth))
+            .arg(static_cast<qulonglong>(snapshotPipeline.queueCapacity))
+            .arg(static_cast<qulonglong>(snapshotPipeline.droppedFrames))
+            .arg(
+                consumedSnapshotLatencyMs != std::numeric_limits<std::uint32_t>::max()
+                    ? QString::number(consumedSnapshotLatencyMs) + "ms"
+                    : (snapshotPipeline.latencyMs != std::numeric_limits<std::uint32_t>::max()
+                        ? QString::number(snapshotPipeline.latencyMs) + "ms"
+                        : QString("n/a")))
+            .arg(QString::fromStdString(snapshotPipeline.dropPolicy))
             .arg(stale ? "[stale]" : "")
             .arg(stats.kineticEnergy, 0, 'g', 6)
             .arg(stats.potentialEnergy, 0, 'g', 6)
@@ -868,6 +881,16 @@ void MainWindow::tick()
                   << " draw_cap=" << _clientDrawCap
                   << " stats_age_ms=" << (hasStatsAge ? std::to_string(statsAgeMs) : std::string("na"))
                   << " snap_age_ms=" << (hasSnapshotAge ? std::to_string(snapshotAgeMs) : std::string("na"))
+                  << " queue_depth=" << snapshotPipeline.queueDepth
+                  << " queue_capacity=" << snapshotPipeline.queueCapacity
+                  << " dropped_frames=" << snapshotPipeline.droppedFrames
+                  << " snapshot_latency_ms="
+                  << (consumedSnapshotLatencyMs != std::numeric_limits<std::uint32_t>::max()
+                        ? std::to_string(consumedSnapshotLatencyMs)
+                        : (snapshotPipeline.latencyMs != std::numeric_limits<std::uint32_t>::max()
+                            ? std::to_string(snapshotPipeline.latencyMs)
+                            : std::string("na")))
+                  << " drop_policy=" << snapshotPipeline.dropPolicy
                   << " stale=" << (stale ? "1" : "0")
                   << " faulted=" << (stats.faulted ? "1" : "0")
                   << " fault_step=" << stats.faultStep

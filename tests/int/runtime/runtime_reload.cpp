@@ -51,6 +51,7 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_008_LoadResetInvalidatesClientSnapshotCache
     runtime.setInitialStateFile(xyz3.string(), "xyz");
     EXPECT_FALSE(runtime.consumeLatestSnapshot().has_value());
     EXPECT_EQ(runtime.snapshotAgeMs(), std::numeric_limits<std::uint32_t>::max());
+    EXPECT_EQ(runtime.snapshotPipelineState().queueDepth, 0u);
 
     ASSERT_TRUE(testsupport::waitUntil([&]() {
         consumedSnapshot = runtime.consumeLatestSnapshot();
@@ -60,6 +61,7 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_008_LoadResetInvalidatesClientSnapshotCache
     runtime.setInitialStateFile(xyz4.string(), "xyz");
     EXPECT_FALSE(runtime.consumeLatestSnapshot().has_value());
     EXPECT_EQ(runtime.snapshotAgeMs(), std::numeric_limits<std::uint32_t>::max());
+    EXPECT_EQ(runtime.snapshotPipelineState().queueDepth, 0u);
 
     ASSERT_TRUE(testsupport::waitUntil([&]() {
         consumedSnapshot = runtime.consumeLatestSnapshot();

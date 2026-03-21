@@ -42,7 +42,7 @@
                                                              "^ConfigArgsTest\\.TST_UNT_CONF_00(4|5|6|8|9)_",
                                                              "^ConfigArgsTest\\.TST_UNT_CONF_01(1|2)_",
                                                              "^ConfigArgsTest\\.TST_UNT_CONF_02(0|1|7)_",
-                                                             "^ConfigArgsTest\\.TST_UNT_CONF_03(3|4)_"
+                                                             "^ConfigArgsTest\\.TST_UNT_CONF_03(3|4|5)_"
                                                          ],
                                                "artifacts":  [
                                                                  "EVD_TEST_UNIT_CONFIG_ARGS_CLI",
@@ -122,7 +122,8 @@
                                                             ],
                                               "tests":  [
                                                             "^ClientBridgeTest\\.TST_INT_RUNT_00[1-2]_",
-                                                            "^ClientRuntimeTest\\.TST_CNT_RUNT_00[1-8]_",
+                                                            "^ClientRuntimeTest\\.TST_CNT_RUNT_00[1-9]_",
+                                                            "^ClientRuntimeTest\\.TST_CNT_RUNT_010_",
                                                             "^PhysicsTest\\.TST_UNT_RUNT_00[1-5]_",
                                                         "^blitzar_runtime::tests::bridge_state::tst_rust_runt_00[1-4]_"
                                                         ]

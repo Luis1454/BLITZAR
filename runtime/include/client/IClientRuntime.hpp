@@ -14,6 +14,15 @@ namespace grav_client {
 struct ConsumedSnapshot final {
     std::vector<RenderParticle> particles;
     std::size_t sourceSize = 0u;
+    std::uint32_t latencyMs = 0u;
+};
+
+struct SnapshotPipelineState final {
+    std::size_t queueDepth = 0u;
+    std::size_t queueCapacity = 0u;
+    std::uint64_t droppedFrames = 0u;
+    std::uint32_t latencyMs = 0u;
+    std::string dropPolicy = "latest-only";
 };
 
 class IClientRuntime {
@@ -59,6 +68,7 @@ class IClientRuntime {
         virtual SimulationStats getStats() const = 0;
         virtual std::optional<ConsumedSnapshot> consumeLatestSnapshot() = 0;
         virtual bool tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot) = 0;
+        virtual SnapshotPipelineState snapshotPipelineState() const = 0;
         virtual std::string linkStateLabel() const = 0;
         virtual std::string serverOwnerLabel() const = 0;
         virtual std::uint32_t statsAgeMs() const = 0;

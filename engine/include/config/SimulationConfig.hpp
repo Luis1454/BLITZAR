@@ -24,6 +24,8 @@ struct SimulationConfig {
     std::uint32_t clientRemoteCommandTimeoutMs = 80u;
     std::uint32_t clientRemoteStatusTimeoutMs = 40u;
     std::uint32_t clientRemoteSnapshotTimeoutMs = 140u;
+    std::uint32_t clientSnapshotQueueCapacity = 4u;
+    std::string clientSnapshotDropPolicy = "latest-only";
     std::string exportDirectory = "exports";
     std::string exportFormat = "vtk";
     std::string inputFile;

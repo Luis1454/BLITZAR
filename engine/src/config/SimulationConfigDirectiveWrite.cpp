@@ -77,6 +77,8 @@ static void writeClient(std::ostream &out, const SimulationConfig &config)
     writer.writeUint32("command_timeout_ms", config.clientRemoteCommandTimeoutMs);
     writer.writeUint32("status_timeout_ms", config.clientRemoteStatusTimeoutMs);
     writer.writeUint32("snapshot_timeout_ms", config.clientRemoteSnapshotTimeoutMs);
+    writer.writeUint32("snapshot_queue", config.clientSnapshotQueueCapacity);
+    writer.writeString("drop_policy", config.clientSnapshotDropPolicy);
     writer.finish();
 }
 

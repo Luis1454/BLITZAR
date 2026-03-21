@@ -153,7 +153,9 @@ TEST(QtMainWindowTest, TST_UIX_UI_004_ShowsEffectiveClientCapWhenConfiguredCapEx
     ASSERT_TRUE(testsupport::waitUntilUi([&]() {
         const QString status = testsupport::findStatusLabelText(window);
         return status.contains("link=connected")
-            && status.contains(QString("cap=%1").arg(grav_protocol::kSnapshotMaxPoints));
+            && status.contains(QString("cap=%1").arg(grav_protocol::kSnapshotMaxPoints))
+            && status.contains("q=")
+            && status.contains("policy=latest-only");
     }, std::chrono::milliseconds(5000)));
 
     server.stop();

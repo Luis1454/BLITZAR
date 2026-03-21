@@ -178,6 +178,13 @@
                 "req_ids": [
                     "REQ-CONF-002"
                 ]
+            },
+            "TST-UNT-CONF-035": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_035_LoadValidatesSnapshotPipelineClientSettings",
+                "req_ids": [
+                    "REQ-CONF-002",
+                    "REQ-RUN-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_PROFILE": {
@@ -332,6 +339,18 @@
             },
             "TST-CNT-RUNT-008": {
                 "id": "ClientRuntimeTest.TST_CNT_RUNT_008_LoadResetInvalidatesClientSnapshotCacheUntilReloaded",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-CNT-RUNT-009": {
+                "id": "ClientRuntimeTest.TST_CNT_RUNT_009_LatestOnlySnapshotQueueKeepsLatencyLowWhileDroppingBacklog",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-CNT-RUNT-010": {
+                "id": "ClientRuntimeTest.TST_CNT_RUNT_010_PacedSnapshotQueuePreservesBacklogAndReportsLatencyGrowth",
                 "req_ids": [
                     "REQ-RUN-001"
                 ]
