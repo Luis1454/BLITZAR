@@ -189,6 +189,11 @@ void ClientRuntime::setEnergyMeasurementConfig(std::uint32_t everySteps, std::ui
     _bridge.setEnergyMeasurementConfig(everySteps, sampleLimit);
 }
 
+void ClientRuntime::setGpuTelemetryEnabled(bool enabled)
+{
+    _bridge.setGpuTelemetryEnabled(enabled);
+}
+
 void ClientRuntime::setExportDefaults(const std::string &directory, const std::string &format)
 {
     _bridge.setExportDefaults(directory, format);

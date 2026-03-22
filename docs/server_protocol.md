@@ -37,6 +37,13 @@ Core commands:
     - `ekin`, `epot`, `eth`, `erad`, `etot` (`float`, joules `[J]`)
     - `drift_pct` (`float`, percent `[%]`)
     - `estimated` (`bool`)
+    - Optional GPU telemetry fields when enabled:
+      - `gpu_telemetry_enabled` (`bool`)
+      - `gpu_telemetry_available` (`bool`)
+      - `gpu_kernel_ms` (`float`, milliseconds `[ms]`)
+      - `gpu_copy_ms` (`float`, milliseconds `[ms]`)
+      - `gpu_vram_used_bytes` (`uint64`, bytes)
+      - `gpu_vram_total_bytes` (`uint64`, bytes)
 - `get_snapshot`
   - Fields:
     - `max_points` (`uint32`, clamped to `[1,20000]`)
@@ -62,6 +69,7 @@ Runtime config commands:
 - `set_octree` (`theta:float` dimensionless, `softening:float` in `[m]`)
 - `set_sph_params` (`h` in `[m]`, `rest_density` in `[kg/m^3]`, `gas_constant` in solver units, `viscosity` in solver units)
 - `set_energy_measure` (`every_steps:uint32`, `sample_limit:uint32`)
+- `set_gpu_telemetry` (`value:bool`)
 
 I/O commands:
 - `load` (`path:string`, `format:string=auto`) triggers reset on server

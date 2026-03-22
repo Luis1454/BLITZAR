@@ -83,6 +83,7 @@ class ClientServerBridge {
         void setSnapshotPublishPeriodMs(std::uint32_t periodMs);
         void setInitialStateConfig(const InitialStateConfig &config);
         void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit);
+        void setGpuTelemetryEnabled(bool enabled);
         void setExportDefaults(const std::string &directory, const std::string &format);
         void setInitialStateFile(const std::string &path, const std::string &format);
         void requestExportSnapshot(const std::string &outputPath, const std::string &format);

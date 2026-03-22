@@ -69,7 +69,7 @@
                                            },
                           "REQ-PROT-002":  {
                                                "tests":  [
-                                                             "^ServerProtocolTest\\.TST_INT_PROT_00[4-7]_",
+                                                             "^ServerProtocolTest\\.TST_INT_PROT_00(4|5|6|7|10)_",
                                                              "^ServerProtocolCodecTest\\.TST_UNT_PROT_00(1|4)_",
                                                              "^blitzar_protocol::tests::protocol::tst_rust_prot_00(1|4)_"
                                                          ],
@@ -264,8 +264,8 @@
                                                                "EVD_MOD_QT_MAINWINDOW"
                                                            ],
                                              "tests":  [
-                                                           "^QtMainWindowTest\\.TST_UIX_UI_00[1-6]_",
-                                                           "^QtUiLogicTest\\.TST_UNT_UI_00[1-5]_"
+                                                           "^Qt(MainWindowTest\\.TST_UIX_UI_00[1-6]_.*|WorkspaceControlsTest\\.TST_UIX_UI_0(07|08|09|15|18)_.*|WorkspaceRuntimeControlsTest\\.TST_UIX_UI_0(10|11|12|13|19)_.*)$",
+                                                           "^QtUiLogicTest\\.TST_UNT_UI_00[1-8]_"
                                                          ]
                                            },
                           "REQ-TEST-001":  {

@@ -281,6 +281,12 @@
                 "req_ids": [
                     "REQ-SEC-001"
                 ]
+            },
+            "TST-INT-PROT-010": {
+                "id": "ServerProtocolTest.TST_INT_PROT_010_ServerAcceptsGpuTelemetryToggle",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
             }
         },
         "EVD_TEST_INT_RUNTIME_BRIDGE": {
@@ -659,6 +665,13 @@
                     "REQ-UI-001",
                     "REQ-RUN-001"
                 ]
+            },
+            "TST-UIX-UI-019": {
+                "id": "QtWorkspaceRuntimeControlsTest.TST_UIX_UI_019_GpuTelemetryToggleForwardsToRuntime",
+                "req_ids": [
+                    "REQ-UI-001",
+                    "REQ-RUN-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_UI_QT_LOGIC": {
@@ -704,6 +717,12 @@
                 "req_ids": [
                     "REQ-UI-001",
                     "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-UI-008": {
+                "id": "QtUiLogicTest.TST_UNT_UI_008_PresenterReportsGpuTelemetryWaitingState",
+                "req_ids": [
+                    "REQ-UI-001"
                 ]
             }
         },

@@ -97,6 +97,7 @@ MainWindow::MainWindow(
       _runtimeMetricsLabel(new QLabel(this)),
       _queueMetricsLabel(new QLabel(this)),
       _energyMetricsLabel(new QLabel(this)),
+      _gpuMetricsLabel(new QLabel(this)),
       _pauseButton(new QPushButton("Pause", this)),
       _stepButton(new QPushButton("Step", this)),
       _resetButton(new QPushButton("Reset", this)),
@@ -132,6 +133,8 @@ MainWindow::MainWindow(
       _rollSlider(new QSlider(Qt::Horizontal, this)),
       _cullingCheck(new QCheckBox("Culling", this)),
       _lodCheck(new QCheckBox("LOD", this)),
+      _gpuTelemetryCheck(new QCheckBox("GPU telemetry", this)),
+      _gpuTelemetryAction(nullptr),
       _timer(new QTimer(this)),
       _workspaceLayouts(_configPath),
       _lastEnergyStep(std::numeric_limits<std::uint64_t>::max()),
@@ -283,8 +286,12 @@ MainWindow::MainWindow(
     _energyMetricsLabel->setWordWrap(true);
     _energyMetricsLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     _energyMetricsLabel->setObjectName("runtimeSummaryValue");
+    _gpuMetricsLabel->setWordWrap(true);
+    _gpuMetricsLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    _gpuMetricsLabel->setObjectName("runtimeSummaryValue");
     _validationLabel->setObjectName("validationLabel");
     _energyGraph->setObjectName("energyGraphWidget");
+    _gpuTelemetryCheck->setObjectName("gpuTelemetryCheck");
 
     auto *sidebarTabs = new QTabWidget(this);
     sidebarTabs->setObjectName("workspaceSidebarTabs");
@@ -379,6 +386,7 @@ MainWindow::MainWindow(
     auto *exportBox = new QGroupBox("Export", renderPage);
     auto *exportLayout = new QVBoxLayout(exportBox);
     exportLayout->addWidget(_exportButton);
+    exportLayout->addWidget(_gpuTelemetryCheck);
     exportLayout->addStretch(1);
 
     auto *cameraBox = new QGroupBox("View & Camera", renderPage);
@@ -429,6 +437,7 @@ MainWindow::MainWindow(
     summaryLayout->addWidget(makeSummaryCard(summaryPane, "Timing", _runtimeMetricsLabel), 0, 1);
     summaryLayout->addWidget(makeSummaryCard(summaryPane, "Pipeline", _queueMetricsLabel), 1, 0);
     summaryLayout->addWidget(makeSummaryCard(summaryPane, "Energy", _energyMetricsLabel), 1, 1);
+    summaryLayout->addWidget(makeSummaryCard(summaryPane, "GPU", _gpuMetricsLabel), 2, 0, 1, 2);
 
     auto *validationPane = new QWidget(this);
     auto *validationLayout = new QVBoxLayout(validationPane);
@@ -489,6 +498,10 @@ MainWindow::MainWindow(
     viewMenu->addAction(energyDock->toggleViewAction());
     viewMenu->addAction(telemetryDock->toggleViewAction());
     viewMenu->addAction(validationDock->toggleViewAction());
+    _gpuTelemetryAction = viewMenu->addAction("GPU Telemetry");
+    _gpuTelemetryAction->setObjectName("gpuTelemetryAction");
+    _gpuTelemetryAction->setCheckable(true);
+    _gpuTelemetryAction->setChecked(false);
     auto *themeMenu = viewMenu->addMenu("Theme");
     auto *themeGroup = new QActionGroup(themeMenu);
     themeGroup->setExclusive(true);
@@ -540,6 +553,28 @@ MainWindow::MainWindow(
         applyTheme();
         markConfigDirty();
         statusBar()->showMessage("Theme applied: dark", 3000);
+    });
+    connect(_gpuTelemetryCheck, &QCheckBox::toggled, this, [this, telemetryDock](bool enabled) {
+        if (_gpuTelemetryAction != nullptr && _gpuTelemetryAction->isChecked() != enabled) {
+            _gpuTelemetryAction->blockSignals(true);
+            _gpuTelemetryAction->setChecked(enabled);
+            _gpuTelemetryAction->blockSignals(false);
+        }
+        _runtime->setGpuTelemetryEnabled(enabled);
+        if (enabled) {
+            telemetryDock->show();
+            telemetryDock->raise();
+        }
+        statusBar()->showMessage(enabled ? "GPU telemetry enabled" : "GPU telemetry disabled", 3000);
+    });
+    connect(_gpuTelemetryAction, &QAction::toggled, this, [this](bool enabled) {
+        if (_gpuTelemetryCheck != nullptr && _gpuTelemetryCheck->isChecked() != enabled) {
+            _gpuTelemetryCheck->blockSignals(true);
+            _gpuTelemetryCheck->setChecked(enabled);
+            _gpuTelemetryCheck->blockSignals(false);
+            _runtime->setGpuTelemetryEnabled(enabled);
+            statusBar()->showMessage(enabled ? "GPU telemetry enabled" : "GPU telemetry disabled", 3000);
+        }
     });
     applyTheme();
     statusBar()->showMessage("Qt workspace ready", 3000);
@@ -1226,6 +1261,7 @@ void MainWindow::tick()
     _runtimeMetricsLabel->setText(QString::fromStdString(presentation.runtimeText));
     _queueMetricsLabel->setText(QString::fromStdString(presentation.queueText));
     _energyMetricsLabel->setText(QString::fromStdString(presentation.energyText));
+    _gpuMetricsLabel->setText(QString::fromStdString(presentation.gpuText));
 
     _pauseButton->blockSignals(true);
     _pauseButton->setChecked(stats.paused);

@@ -49,6 +49,12 @@ struct ServerStatusPayload {
     float totalEnergy = 0.0f;
     float energyDriftPct = 0.0f;
     bool energyEstimated = false;
+    bool gpuTelemetryEnabled = false;
+    bool gpuTelemetryAvailable = false;
+    float gpuKernelMs = 0.0f;
+    float gpuCopyMs = 0.0f;
+    std::uint64_t gpuVramUsedBytes = 0u;
+    std::uint64_t gpuVramTotalBytes = 0u;
 };
 
 struct ServerSnapshotPayload {

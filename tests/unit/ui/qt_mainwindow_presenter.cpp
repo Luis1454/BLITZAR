@@ -47,6 +47,12 @@ TEST(QtUiLogicTest, TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeStat
     input.stats.totalEnergy = -0.5f;
     input.stats.energyDriftPct = 0.25f;
     input.stats.energyEstimated = false;
+    input.stats.gpuTelemetryEnabled = true;
+    input.stats.gpuTelemetryAvailable = true;
+    input.stats.gpuKernelMs = 1.234f;
+    input.stats.gpuCopyMs = 0.456f;
+    input.stats.gpuVramUsedBytes = 128u * 1024u * 1024u;
+    input.stats.gpuVramTotalBytes = 512u * 1024u * 1024u;
 
     const grav_qt::MainWindowPresentation presentation = grav_qt::MainWindowPresenter().present(input);
 
@@ -62,8 +68,12 @@ TEST(QtUiLogicTest, TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeStat
     EXPECT_NE(presentation.queueText.find("Policy: latest-only"), std::string::npos);
     EXPECT_NE(presentation.queueText.find("Latency: 7ms"), std::string::npos);
     EXPECT_NE(presentation.energyText.find("Total: -0.5"), std::string::npos);
+    EXPECT_NE(presentation.gpuText.find("Kernel: 1.234 ms"), std::string::npos);
+    EXPECT_NE(presentation.gpuText.find("Copy: 0.456 ms"), std::string::npos);
+    EXPECT_NE(presentation.gpuText.find("VRAM: 128.0 MiB / 512.0 MiB"), std::string::npos);
     EXPECT_NE(presentation.statusText.find('\n'), std::string::npos);
     EXPECT_NE(presentation.consoleTrace.find("backend_state=busy"), std::string::npos) << presentation.consoleTrace;
+    EXPECT_NE(presentation.consoleTrace.find("gpu_telemetry=on"), std::string::npos);
     EXPECT_NE(presentation.consoleTrace.find("progress=\"open-ended\""), std::string::npos);
     EXPECT_NE(presentation.consoleTrace.find("queue_depth=2"), std::string::npos);
     EXPECT_NE(presentation.consoleTrace.find("drop_policy=latest-only"), std::string::npos);
@@ -116,6 +126,23 @@ TEST(QtUiLogicTest, TST_UNT_UI_005_PresenterHighlightsStaleBackendAndKnownHorizo
     EXPECT_NE(presentation.consoleTrace.find("backend_state=stalled"), std::string::npos) << presentation.consoleTrace;
     EXPECT_NE(presentation.consoleTrace.find("eta=\""), std::string::npos) << presentation.consoleTrace;
     EXPECT_EQ(presentation.consoleTrace.find("eta=\"n/a\""), std::string::npos) << presentation.consoleTrace;
+}
+
+TEST(QtUiLogicTest, TST_UNT_UI_008_PresenterReportsGpuTelemetryWaitingState)
+{
+    grav_qt::MainWindowPresentationInput input;
+    input.stats = {};
+    input.linkLabel = "connected";
+    input.ownerLabel = "embedded";
+    input.performanceProfile = "interactive";
+    input.stats.gpuTelemetryEnabled = true;
+    input.stats.gpuTelemetryAvailable = false;
+
+    const grav_qt::MainWindowPresentation presentation = grav_qt::MainWindowPresenter().present(input);
+
+    EXPECT_NE(presentation.gpuText.find("State: waiting"), std::string::npos) << presentation.gpuText;
+    EXPECT_NE(presentation.gpuText.find("Sampling: every 8 steps"), std::string::npos);
+    EXPECT_NE(presentation.statusText.find("State: waiting"), std::string::npos);
 }
 
 } // namespace grav_test_qt_ui

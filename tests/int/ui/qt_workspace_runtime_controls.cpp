@@ -44,6 +44,7 @@ class RecordingRuntime final : public grav_client::IClientRuntime {
         void setSnapshotPublishPeriodMs(std::uint32_t periodMs) override { snapshotPublishPeriodMs = periodMs; }
         void setInitialStateConfig(const InitialStateConfig &config) override { initialStateConfig = config; }
         void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit) override { energyEverySteps = everySteps; energySampleLimit = sampleLimit; }
+        void setGpuTelemetryEnabled(bool enabled) override { gpuTelemetryEnabled = enabled; }
         void setExportDefaults(const std::string &directory, const std::string &format) override { exportDirectory = directory; exportFormat = format; }
         void setInitialStateFile(const std::string &path, const std::string &format) override { initialStateFile = path; initialStateFormat = format; }
         void requestExportSnapshot(const std::string &, const std::string &) override {}
@@ -76,6 +77,7 @@ class RecordingRuntime final : public grav_client::IClientRuntime {
         std::uint32_t recoverCount = 0u;
         std::uint32_t reconnectCount = 0u;
         std::uint16_t connectorPort = 0u;
+        bool gpuTelemetryEnabled = false;
         float configuredDt = 0.0f;
         float octreeTheta = 0.0f;
         float octreeSoftening = 0.0f;
@@ -248,6 +250,28 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_013_ResetClearsEnergyTimelineHis
     window.findChild<QPushButton *>("resetButton")->click();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
     EXPECT_EQ(graph->sampleCount(), 0u);
+}
+
+TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_019_GpuTelemetryToggleForwardsToRuntime)
+{
+    (void)testsupport::ensureQtApp();
+    auto runtime = std::make_unique<RecordingRuntime>();
+    RecordingRuntime *spy = runtime.get();
+    grav_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
+    window.show();
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+    QCheckBox *gpuTelemetryCheck = window.findChild<QCheckBox *>("gpuTelemetryCheck");
+    ASSERT_NE(gpuTelemetryCheck, nullptr);
+    EXPECT_FALSE(spy->gpuTelemetryEnabled);
+
+    gpuTelemetryCheck->setChecked(true);
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
+    EXPECT_TRUE(spy->gpuTelemetryEnabled);
+
+    gpuTelemetryCheck->setChecked(false);
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
+    EXPECT_FALSE(spy->gpuTelemetryEnabled);
 }
 
 } // namespace grav_test_qt_workspace_runtime_controls

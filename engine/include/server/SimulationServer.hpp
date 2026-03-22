@@ -76,6 +76,8 @@ class SimulationServer {
         void setInitialStateConfig(const InitialStateConfig &config);
         /// Configures energy measurement cadence and retention.
         void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit);
+        /// Enables or disables bounded GPU telemetry sampling.
+        void setGpuTelemetryEnabled(bool enabled);
         /// Sets default output parameters for snapshot export.
         void setExportDefaults(const std::string &directory, const std::string &format);
         /// Updates the frontend-advertised snapshot draw budget used for transfer trimming.
@@ -112,6 +114,8 @@ class SimulationServer {
         void rebuildSystem();
         EnergyValues computeEnergyValues();
         void maybeUpdateEnergy(std::uint64_t currentStep);
+        void clearGpuTelemetry();
+        void maybeSampleGpuTelemetry(std::string_view solverMode, std::uint64_t currentStep);
         void processPendingExport();
         bool exportCurrentState(const std::string &outputPath, const std::string &format);
         bool loadInitialState(std::vector<Particle> &outParticles, const std::string &inputPath, const std::string &format) const;
@@ -138,6 +142,12 @@ class SimulationServer {
         std::atomic<bool> _energyEstimated;
         std::atomic<std::uint32_t> _energyMeasureEverySteps;
         std::atomic<std::uint32_t> _energySampleLimit;
+        std::atomic<bool> _gpuTelemetryEnabled;
+        std::atomic<bool> _gpuTelemetryAvailable;
+        std::atomic<float> _gpuKernelMs;
+        std::atomic<float> _gpuCopyMs;
+        std::atomic<std::uint64_t> _gpuVramUsedBytes;
+        std::atomic<std::uint64_t> _gpuVramTotalBytes;
         std::atomic<float> _configuredSubstepTargetDt;
         std::atomic<std::uint32_t> _configuredMaxSubsteps;
         std::atomic<std::uint32_t> _snapshotPublishPeriodMs;
@@ -188,6 +198,8 @@ class SimulationServer {
         std::vector<RenderParticle> _scratchSnapshot;
         std::string _faultReason;
         std::unique_ptr<ParticleSystem> _system;
+
+        static constexpr std::uint64_t kGpuTelemetrySampleStride = 8u;
 };
 
 

@@ -39,6 +39,7 @@ class RecordingClientRuntime final : public grav_client::IClientRuntime {
         void setSnapshotPublishPeriodMs(std::uint32_t periodMs) override { snapshotPublishPeriodMs = periodMs; }
         void setInitialStateConfig(const InitialStateConfig &config) override { initialStateConfig = config; }
         void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit) override { energyEverySteps = everySteps; energySampleLimit = sampleLimit; }
+        void setGpuTelemetryEnabled(bool enabled) override { gpuTelemetryEnabled = enabled; }
         void setExportDefaults(const std::string &directory, const std::string &format) override { exportDirectory = directory; exportFormat = format; }
         void setInitialStateFile(const std::string &path, const std::string &format) override { initialStateFile = path; initialStateFormat = format; }
         void requestExportSnapshot(const std::string &, const std::string &) override {}
@@ -66,6 +67,7 @@ class RecordingClientRuntime final : public grav_client::IClientRuntime {
         std::uint32_t energyEverySteps = 0u;
         std::uint32_t energySampleLimit = 0u;
         std::uint32_t remoteSnapshotCap = 0u;
+        bool gpuTelemetryEnabled = false;
         float configuredDt = 0.0f;
         float octreeTheta = 0.0f;
         float octreeSoftening = 0.0f;

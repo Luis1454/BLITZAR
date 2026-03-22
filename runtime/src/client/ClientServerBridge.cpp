@@ -413,6 +413,14 @@ void ClientServerBridge::setEnergyMeasurementConfig(std::uint32_t everySteps, st
         "\"every_steps\":" + std::to_string(safeEvery) + ",\"sample_limit\":" + std::to_string(safeSampleLimit));
 }
 
+void ClientServerBridge::setGpuTelemetryEnabled(bool enabled)
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    sendOrQueueRemote(
+        std::string(grav_protocol::SetGpuTelemetry),
+        std::string("\"value\":") + (enabled ? "true" : "false"));
+}
+
 void ClientServerBridge::setExportDefaults(const std::string &directory, const std::string &format)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
@@ -624,6 +632,12 @@ SimulationStats ClientServerBridge::fromRemoteStatus(const ServerClientStatus &s
     stats.energyEstimated = status.energyEstimated;
     stats.solverName = status.solver;
     stats.integratorName = status.integrator;
+    stats.gpuTelemetryEnabled = status.gpuTelemetryEnabled;
+    stats.gpuTelemetryAvailable = status.gpuTelemetryAvailable;
+    stats.gpuKernelMs = status.gpuKernelMs;
+    stats.gpuCopyMs = status.gpuCopyMs;
+    stats.gpuVramUsedBytes = status.gpuVramUsedBytes;
+    stats.gpuVramTotalBytes = status.gpuVramTotalBytes;
     return stats;
 }
 

@@ -46,6 +46,14 @@ class MainWindowPresenterLocal final {
             return stream.str();
         }
 
+        static std::string bytesLabel(std::uint64_t bytes)
+        {
+            constexpr double kMiB = 1024.0 * 1024.0;
+            std::ostringstream stream;
+            stream << std::fixed << std::setprecision(1) << (static_cast<double>(bytes) / kMiB) << " MiB";
+            return stream.str();
+        }
+
         static float simulatedSecondsPerSecond(const MainWindowPresentationInput &input)
         {
             float simulatedStep = std::max(0.0f, input.stats.dt);
@@ -170,7 +178,25 @@ MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentation
            << "\nThermal: " << input.stats.thermalEnergy << " J"
            << "\nRadiated: " << input.stats.radiatedEnergy << " J";
     output.energyText = energy.str();
-    output.statusText = output.headlineText + "\n" + output.runtimeText + "\n" + output.queueText + "\n" + output.energyText;
+
+    std::ostringstream gpu;
+    if (!input.stats.gpuTelemetryEnabled) {
+        gpu << "State: off"
+            << "\nSampling: disabled";
+    } else if (!input.stats.gpuTelemetryAvailable) {
+        gpu << "State: waiting"
+            << "\nSampling: every 8 steps";
+    } else {
+        gpu << "State: active"
+            << "\nSampling: every 8 steps"
+            << "\nKernel: " << MainWindowPresenterLocal::fixedLabel(input.stats.gpuKernelMs, 3) << " ms"
+            << "\nCopy: " << MainWindowPresenterLocal::fixedLabel(input.stats.gpuCopyMs, 3) << " ms"
+            << "\nVRAM: " << MainWindowPresenterLocal::bytesLabel(input.stats.gpuVramUsedBytes)
+            << " / " << MainWindowPresenterLocal::bytesLabel(input.stats.gpuVramTotalBytes);
+    }
+    output.gpuText = gpu.str();
+    output.statusText = output.headlineText + "\n" + output.runtimeText + "\n" + output.queueText + "\n"
+        + output.energyText + "\n" + output.gpuText;
 
     std::ostringstream trace;
     trace << "[qt] step=" << input.stats.steps
@@ -209,6 +235,12 @@ MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentation
           << " thermal=" << input.stats.thermalEnergy
           << " radiated=" << input.stats.radiatedEnergy
           << " drift_pct=" << input.stats.energyDriftPct
+          << " gpu_telemetry=" << (input.stats.gpuTelemetryEnabled ? "on" : "off")
+          << " gpu_available=" << (input.stats.gpuTelemetryAvailable ? "1" : "0")
+          << " gpu_kernel_ms=" << MainWindowPresenterLocal::fixedLabel(input.stats.gpuKernelMs, 3)
+          << " gpu_copy_ms=" << MainWindowPresenterLocal::fixedLabel(input.stats.gpuCopyMs, 3)
+          << " gpu_vram_used=\"" << MainWindowPresenterLocal::bytesLabel(input.stats.gpuVramUsedBytes) << "\""
+          << " gpu_vram_total=\"" << MainWindowPresenterLocal::bytesLabel(input.stats.gpuVramTotalBytes) << "\""
           << (input.stats.energyEstimated ? " est" : "");
     output.consoleTrace = trace.str();
     return output;

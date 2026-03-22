@@ -1125,11 +1125,17 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
       _energyDriftPct(0.0f),
       _energyEstimated(false),
       _totalTime(0.0f),
-        _energyMeasureEverySteps(120),
-        _energySampleLimit(256),
-        _configuredSubstepTargetDt(0.01f),
-        _configuredMaxSubsteps(4u),
-        _snapshotPublishPeriodMs(50u),
+      _energyMeasureEverySteps(120),
+      _energySampleLimit(256),
+      _gpuTelemetryEnabled(false),
+      _gpuTelemetryAvailable(false),
+      _gpuKernelMs(0.0f),
+      _gpuCopyMs(0.0f),
+      _gpuVramUsedBytes(0u),
+      _gpuVramTotalBytes(0u),
+      _configuredSubstepTargetDt(0.01f),
+      _configuredMaxSubsteps(4u),
+      _snapshotPublishPeriodMs(50u),
       _snapshotTransferCap(resolvePublishedSnapshotCap(grav_protocol::kSnapshotDefaultPoints)),
       _lastAppliedSubstepTargetDt(0.0f),
       _lastAppliedSubstepDt(0.0f),
@@ -1139,7 +1145,7 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
       _particleCount(std::max<std::uint32_t>(2u, particleCount)),
       _solverMode("pairwise_cuda"),
       _integratorMode("euler"),
-        _performanceProfile("interactive"),
+      _performanceProfile("interactive"),
       _octreeTheta(1.2f),
       _octreeSoftening(2.5f),
       _sphEnabled(false),
@@ -1505,6 +1511,14 @@ void SimulationServer::setEnergyMeasurementConfig(std::uint32_t everySteps, std:
     _runtimeConfigMirror.energySampleLimit = safeSampleLimit;
 }
 
+void SimulationServer::setGpuTelemetryEnabled(bool enabled)
+{
+    _gpuTelemetryEnabled.store(enabled, std::memory_order_relaxed);
+    if (!enabled) {
+        clearGpuTelemetry();
+    }
+}
+
 void SimulationServer::setExportDefaults(const std::string &directory, const std::string &format)
 {
     std::lock_guard<std::mutex> lock(_commandMutex);
@@ -1631,7 +1645,13 @@ SimulationStats SimulationServer::getStats() const
         _energyDriftPct.load(std::memory_order_relaxed),
         _energyEstimated.load(std::memory_order_relaxed),
         std::string(solverLabel(mode)),
-        integratorMode
+        integratorMode,
+        _gpuTelemetryEnabled.load(std::memory_order_relaxed),
+        _gpuTelemetryAvailable.load(std::memory_order_relaxed),
+        _gpuKernelMs.load(std::memory_order_relaxed),
+        _gpuCopyMs.load(std::memory_order_relaxed),
+        _gpuVramUsedBytes.load(std::memory_order_relaxed),
+        _gpuVramTotalBytes.load(std::memory_order_relaxed)
     };
 }
 
@@ -1931,8 +1951,19 @@ void SimulationServer::publishSnapshot()
     if (!_system) {
         return;
     }
+    const bool telemetryEnabled = _gpuTelemetryEnabled.load(std::memory_order_relaxed);
+    const auto copyStart = std::chrono::steady_clock::now();
     if (!_system->syncHostState()) {
+        if (telemetryEnabled) {
+            _gpuTelemetryAvailable.store(false, std::memory_order_relaxed);
+            _gpuCopyMs.store(0.0f, std::memory_order_relaxed);
+        }
         return;
+    }
+    if (telemetryEnabled) {
+        const std::chrono::duration<float, std::milli> copyElapsed =
+            std::chrono::steady_clock::now() - copyStart;
+        _gpuCopyMs.store(copyElapsed.count(), std::memory_order_relaxed);
     }
     const std::vector<Particle> &particles = _system->getParticles();
     const size_t count = particles.size();
@@ -2086,6 +2117,49 @@ void SimulationServer::maybeUpdateEnergy(std::uint64_t currentStep)
     const float denom = std::max(std::fabs(_energyBaseline), 1e-6f);
     const float drift = ((values.total - _energyBaseline) / denom) * 100.0f;
     _energyDriftPct.store(drift, std::memory_order_relaxed);
+}
+
+void SimulationServer::clearGpuTelemetry()
+{
+    _gpuTelemetryAvailable.store(false, std::memory_order_relaxed);
+    _gpuKernelMs.store(0.0f, std::memory_order_relaxed);
+    _gpuCopyMs.store(0.0f, std::memory_order_relaxed);
+    _gpuVramUsedBytes.store(0u, std::memory_order_relaxed);
+    _gpuVramTotalBytes.store(0u, std::memory_order_relaxed);
+}
+
+void SimulationServer::maybeSampleGpuTelemetry(std::string_view solverMode, std::uint64_t currentStep)
+{
+    if (!_gpuTelemetryEnabled.load(std::memory_order_relaxed)) {
+        return;
+    }
+    if (solverMode != grav_modes::kSolverPairwiseCuda && solverMode != grav_modes::kSolverOctreeGpu) {
+        _gpuTelemetryAvailable.store(false, std::memory_order_relaxed);
+        _gpuKernelMs.store(0.0f, std::memory_order_relaxed);
+        _gpuCopyMs.store(0.0f, std::memory_order_relaxed);
+        _gpuVramUsedBytes.store(0u, std::memory_order_relaxed);
+        _gpuVramTotalBytes.store(0u, std::memory_order_relaxed);
+        return;
+    }
+    if ((currentStep % kGpuTelemetrySampleStride) != 0u) {
+        return;
+    }
+
+    std::size_t freeBytes = 0u;
+    std::size_t totalBytes = 0u;
+    const cudaError_t status = cudaMemGetInfo(&freeBytes, &totalBytes);
+    if (status != cudaSuccess) {
+        _gpuTelemetryAvailable.store(false, std::memory_order_relaxed);
+        _gpuVramUsedBytes.store(0u, std::memory_order_relaxed);
+        _gpuVramTotalBytes.store(0u, std::memory_order_relaxed);
+        return;
+    }
+
+    _gpuTelemetryAvailable.store(true, std::memory_order_relaxed);
+    _gpuVramUsedBytes.store(
+        static_cast<std::uint64_t>(totalBytes >= freeBytes ? (totalBytes - freeBytes) : 0u),
+        std::memory_order_relaxed);
+    _gpuVramTotalBytes.store(static_cast<std::uint64_t>(totalBytes), std::memory_order_relaxed);
 }
 
 void SimulationServer::processPendingExport()
@@ -2383,12 +2457,32 @@ void SimulationServer::loop()
                           << " max=" << configuredMaxSubsteps
                           << " applied_dt=" << dtSub << "\n";
             }
+            const bool sampleGpuStep =
+                _gpuTelemetryEnabled.load(std::memory_order_relaxed)
+                && ((solverMode == grav_modes::kSolverPairwiseCuda || solverMode == grav_modes::kSolverOctreeGpu))
+                && (((_steps.load(std::memory_order_relaxed) + 1u) % kGpuTelemetrySampleStride) == 0u);
+            if (sampleGpuStep) {
+                _gpuKernelMs.store(0.0f, std::memory_order_relaxed);
+            }
             for (std::uint32_t s = 0; s < substeps; ++s) {
+                const auto gpuStepStart = sampleGpuStep ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point{};
                 if (!_system->update(dtSub)) {
                     updateFailed = true;
                     break;
                 }
+                if (sampleGpuStep) {
+                    const std::chrono::duration<float, std::milli> gpuStepElapsed =
+                        std::chrono::steady_clock::now() - gpuStepStart;
+                    _gpuKernelMs.store(
+                        gpuStepElapsed.count() + _gpuKernelMs.load(std::memory_order_relaxed),
+                        std::memory_order_relaxed);
+                }
                 atomicAddFloat(_totalTime, dtSub);
+            }
+            if (sampleGpuStep) {
+                _gpuTelemetryAvailable.store(true, std::memory_order_relaxed);
+            } else if (!_gpuTelemetryEnabled.load(std::memory_order_relaxed)) {
+                clearGpuTelemetry();
             }
             if (updateFailed) {
                 break;
@@ -2454,7 +2548,9 @@ void SimulationServer::loop()
                 _snapshotPublishPeriodMs.load(std::memory_order_relaxed));
             nextSnapshotPublish = now + snapshotPublishPeriod;
         }
-        maybeUpdateEnergy(_steps.load(std::memory_order_relaxed));
+        const std::uint64_t currentStep = _steps.load(std::memory_order_relaxed);
+        maybeUpdateEnergy(currentStep);
+        maybeSampleGpuTelemetry(solverMode, currentStep);
         processPendingExport();
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }

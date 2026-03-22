@@ -60,6 +60,12 @@ fn tst_rust_prot_002_round_trip_status_payload() {
         total_energy: 5.0,
         energy_drift_pct: 0.125,
         energy_estimated: true,
+        gpu_telemetry_enabled: true,
+        gpu_telemetry_available: true,
+        gpu_kernel_ms: 1.5,
+        gpu_copy_ms: 0.75,
+        gpu_vram_used_bytes: 64 * 1024 * 1024,
+        gpu_vram_total_bytes: 256 * 1024 * 1024,
     };
 
     let encoded = codec::encode_status_payload(&payload).unwrap();
@@ -138,6 +144,7 @@ fn tst_rust_prot_006_latest_schema_exposes_compatibility_and_deprecation_rules()
             .get("set_snapshot_publish_cadence")
             .is_some()
     );
+    assert!(schema["commands"].get("set_gpu_telemetry").is_some());
     assert!(
         schema["compatibility"]["breaking_changes"]
             .as_array()

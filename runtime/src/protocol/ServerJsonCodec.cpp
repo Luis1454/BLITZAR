@@ -174,6 +174,12 @@ std::string ServerJsonCodec::makeStatusResponse(const SimulationStats &stats)
     writer.writeNumber("etot", stats.totalEnergy);
     writer.writeNumber("drift_pct", stats.energyDriftPct);
     writer.writeBool("estimated", stats.energyEstimated);
+    writer.writeBool("gpu_telemetry_enabled", stats.gpuTelemetryEnabled);
+    writer.writeBool("gpu_telemetry_available", stats.gpuTelemetryAvailable);
+    writer.writeNumber("gpu_kernel_ms", stats.gpuKernelMs);
+    writer.writeNumber("gpu_copy_ms", stats.gpuCopyMs);
+    writer.writeNumber("gpu_vram_used_bytes", stats.gpuVramUsedBytes);
+    writer.writeNumber("gpu_vram_total_bytes", stats.gpuVramTotalBytes);
     writer.finish();
     return out.str();
 }

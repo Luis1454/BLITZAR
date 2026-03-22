@@ -66,6 +66,12 @@ struct SimulationStats {
     bool energyEstimated;
     std::string solverName;
     std::string integratorName;
+    bool gpuTelemetryEnabled;
+    bool gpuTelemetryAvailable;
+    float gpuKernelMs;
+    float gpuCopyMs;
+    std::uint64_t gpuVramUsedBytes;
+    std::uint64_t gpuVramTotalBytes;
 };
 
 
