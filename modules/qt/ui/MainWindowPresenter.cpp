@@ -2,8 +2,10 @@
 
 #include "types/SimulationTypes.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <iomanip>
 #include <limits>
 #include <sstream>
 
@@ -31,29 +33,105 @@ class MainWindowPresenterLocal final {
             }
             return "n/a";
         }
+
+        static bool isStale(std::uint32_t ageMs)
+        {
+            return hasAge(ageMs) && ageMs > 1000u;
+        }
+
+        static std::string fixedLabel(float value, int precision)
+        {
+            std::ostringstream stream;
+            stream << std::fixed << std::setprecision(precision) << value;
+            return stream.str();
+        }
+
+        static float simulatedSecondsPerSecond(const MainWindowPresentationInput &input)
+        {
+            float simulatedStep = std::max(0.0f, input.stats.dt);
+            if (input.stats.substeps > 0u && input.stats.substepDt > 0.0f) {
+                simulatedStep = input.stats.substepDt * static_cast<float>(input.stats.substeps);
+            }
+            return std::max(0.0f, simulatedStep * std::max(0.0f, input.stats.serverFps));
+        }
+
+        static std::string backendStateLabel(const MainWindowPresentationInput &input, bool staleStats, bool staleSnapshot)
+        {
+            if (input.stats.faulted) {
+                return "faulted";
+            }
+            if (input.linkLabel != "connected") {
+                return input.linkLabel;
+            }
+            if (input.stats.paused) {
+                return "idle";
+            }
+            if (staleStats && staleSnapshot) {
+                return "stalled";
+            }
+            if (input.stats.serverFps > 0.01f) {
+                return "busy";
+            }
+            return "idle";
+        }
+
+        static std::string viewportStateLabel(std::uint32_t snapshotAgeMs)
+        {
+            if (!hasAge(snapshotAgeMs)) {
+                return "awaiting snapshot";
+            }
+            const std::string age = ageLabel(snapshotAgeMs);
+            return isStale(snapshotAgeMs) ? "stale (" + age + " old)" : "fresh (" + age + " old)";
+        }
+
+        static std::string progressLabel(const MainWindowPresentationInput &input)
+        {
+            if (input.simulationHorizonSeconds <= 0.0f) {
+                return "open-ended";
+            }
+            const float clampedTime = std::clamp(input.stats.totalTime, 0.0f, input.simulationHorizonSeconds);
+            const float pct = (clampedTime / input.simulationHorizonSeconds) * 100.0f;
+            return fixedLabel(pct, 1) + "% (" + fixedLabel(clampedTime, 2) + " / "
+                + fixedLabel(input.simulationHorizonSeconds, 2) + " s)";
+        }
+
+        static std::string etaLabel(const MainWindowPresentationInput &input)
+        {
+            if (input.simulationHorizonSeconds <= 0.0f || input.stats.totalTime >= input.simulationHorizonSeconds) {
+                return input.simulationHorizonSeconds > 0.0f ? "0.0s" : "n/a";
+            }
+            const float simRate = simulatedSecondsPerSecond(input);
+            if (simRate <= 1e-6f || input.stats.paused || input.stats.faulted || input.linkLabel != "connected") {
+                return "n/a";
+            }
+            return fixedLabel((input.simulationHorizonSeconds - input.stats.totalTime) / simRate, 1) + "s";
+        }
 };
 
 MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentationInput &input) const
 {
-    const bool staleStats = MainWindowPresenterLocal::hasAge(input.statsAgeMs) && input.statsAgeMs > 1000u;
-    const bool staleSnapshot = MainWindowPresenterLocal::hasAge(input.snapshotAgeMs) && input.snapshotAgeMs > 1000u;
-    const bool stale = input.linkLabel != "connected" || staleStats || staleSnapshot;
+    const bool staleStats = MainWindowPresenterLocal::isStale(input.statsAgeMs);
+    const bool staleSnapshot = MainWindowPresenterLocal::isStale(input.snapshotAgeMs);
     const std::string faultSuffix = input.stats.faulted
         ? (" [fault@" + std::to_string(input.stats.faultStep) + " " + input.stats.faultReason + "]")
         : (input.stats.energyEstimated ? " (estimated)" : std::string());
     const std::string latency = MainWindowPresenterLocal::latencyLabel(input);
+    const std::string backendState = MainWindowPresenterLocal::backendStateLabel(input, staleStats, staleSnapshot);
+    const std::string viewportState = MainWindowPresenterLocal::viewportStateLabel(input.snapshotAgeMs);
+    const float simRate = MainWindowPresenterLocal::simulatedSecondsPerSecond(input);
+    const std::string progress = MainWindowPresenterLocal::progressLabel(input);
+    const std::string eta = MainWindowPresenterLocal::etaLabel(input);
 
     MainWindowPresentation output;
     std::ostringstream headline;
     headline << "State: " << (input.stats.faulted ? "FAULT" : (input.stats.paused ? "PAUSED" : "RUNNING"))
+             << "\nBackend: " << backendState
+             << "\nViewport: " << viewportState
              << "\nLink: " << input.linkLabel
              << "\nOwner: " << input.ownerLabel
              << "\nEngine: " << input.stats.solverName << " / " << input.stats.integratorName
              << "\nProfile: " << input.performanceProfile
              << "\nSPH: " << (input.stats.sphEnabled ? "on" : "off");
-    if (stale) {
-        headline << "\nData freshness: stale";
-    }
     if (!faultSuffix.empty()) {
         headline << "\nCondition: " << faultSuffix.substr(1);
     }
@@ -65,11 +143,15 @@ MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentation
             << "\nTarget step: " << input.stats.substepTargetDt << " s"
             << "\nSubstep limit: " << input.stats.maxSubsteps
             << "\nServer rate: " << input.stats.serverFps << " step/s"
+            << "\nSim rate: " << MainWindowPresenterLocal::fixedLabel(simRate, 2) << " sim s/s"
+            << "\nPublish cadence: " << input.stats.snapshotPublishPeriodMs << " ms"
             << "\nUI rate: " << input.uiTickFps << " fps";
     output.runtimeText = runtime.str();
 
     std::ostringstream queue;
-    queue << "Steps: " << input.stats.steps
+    queue << "Progress: " << progress
+          << "\nETA: " << eta
+          << "\nSteps: " << input.stats.steps
           << "\nParticles: " << input.stats.particleCount
           << "\nDraw budget: " << input.displayedParticles << " / " << input.clientDrawCap
           << "\nStats age: " << MainWindowPresenterLocal::ageLabel(input.statsAgeMs)
@@ -104,6 +186,11 @@ MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentation
           << " substep_target_dt=" << input.stats.substepTargetDt
           << " max_substeps=" << input.stats.maxSubsteps
           << " snapshot_publish_ms=" << input.stats.snapshotPublishPeriodMs
+          << " backend_state=" << backendState
+          << " viewport_state=\"" << viewportState << "\""
+          << " sim_rate=" << MainWindowPresenterLocal::fixedLabel(simRate, 2)
+          << " progress=\"" << progress << "\""
+          << " eta=\"" << eta << "\""
           << " ui_fps=" << input.uiTickFps
           << " draw=" << input.displayedParticles
           << " draw_cap=" << input.clientDrawCap
@@ -114,7 +201,7 @@ MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentation
           << " dropped_frames=" << input.snapshotPipeline.droppedFrames
           << " snapshot_latency_ms=" << latency
           << " drop_policy=" << input.snapshotPipeline.dropPolicy
-          << " stale=" << (stale ? "1" : "0")
+          << " stale=" << ((input.linkLabel != "connected" || staleStats || staleSnapshot) ? "1" : "0")
           << " faulted=" << (input.stats.faulted ? "1" : "0")
           << " fault_step=" << input.stats.faultStep
           << " fault_reason=\"" << input.stats.faultReason << "\""

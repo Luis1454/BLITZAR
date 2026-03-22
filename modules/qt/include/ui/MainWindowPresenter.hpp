@@ -29,6 +29,7 @@ struct MainWindowPresentationInput final {
     std::uint32_t snapshotAgeMs = 0u;
     std::uint32_t snapshotLatencyMs = 0u;
     float uiTickFps = 0.0f;
+    float simulationHorizonSeconds = 0.0f;
 };
 
 /// Holds the formatted strings consumed by status and trace widgets.

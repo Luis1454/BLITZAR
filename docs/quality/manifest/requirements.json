@@ -265,7 +265,7 @@
                                                            ],
                                              "tests":  [
                                                            "^QtMainWindowTest\\.TST_UIX_UI_00[1-6]_",
-                                                           "^QtUiLogicTest\\.TST_UNT_UI_00[1-4]_"
+                                                           "^QtUiLogicTest\\.TST_UNT_UI_00[1-5]_"
                                                          ]
                                            },
                           "REQ-TEST-001":  {
