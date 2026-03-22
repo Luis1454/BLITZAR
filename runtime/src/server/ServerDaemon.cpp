@@ -138,7 +138,7 @@ void ServerDaemon::stop()
     try {
         _running.store(false);
 
-        grav_socket::Handle listenSocket = grav_socket::invalidHandle();
+        grav_socket::Handle listenSocket;
         {
             std::lock_guard<std::mutex> lock(_socketMutex);
             listenSocket = _listenSocket;
@@ -194,7 +194,7 @@ void ServerDaemon::acceptLoop()
 {
     try {
         while (_running.load()) {
-            grav_socket::Handle listenSocket = grav_socket::invalidHandle();
+            grav_socket::Handle listenSocket;
             {
                 std::lock_guard<std::mutex> lock(_socketMutex);
                 listenSocket = _listenSocket;
@@ -304,8 +304,12 @@ std::string ServerDaemon::processRequest(const std::string &request)
             maxPoints = grav_protocol::clampSnapshotPoints(maxPoints);
 
             std::vector<RenderParticle> snapshot;
-            const bool hasSnapshot = _server.copyLatestSnapshot(snapshot, static_cast<std::size_t>(maxPoints));
-            return grav_protocol::ServerJsonCodec::makeSnapshotResponse(hasSnapshot, snapshot);
+            std::size_t sourceSize = 0u;
+            const bool hasSnapshot = _server.copyLatestSnapshot(
+                snapshot,
+                static_cast<std::size_t>(maxPoints),
+                &sourceSize);
+            return grav_protocol::ServerJsonCodec::makeSnapshotResponse(hasSnapshot, snapshot, sourceSize);
         }
 
         if (cmd == grav_protocol::Pause) {
@@ -465,6 +469,14 @@ std::string ServerDaemon::processRequest(const std::string &request)
                 return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "invalid snapshot cadence");
             }
             _server.setSnapshotPublishPeriodMs(periodMs);
+            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+        }
+        if (cmd == grav_protocol::SetSnapshotTransferCap) {
+            std::uint32_t maxPoints = 0;
+            if (!grav_protocol::ServerJsonCodec::readNumber(request, "max_points", maxPoints) || maxPoints < 1u) {
+                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "invalid snapshot transfer cap");
+            }
+            _server.setSnapshotTransferCap(maxPoints);
             return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
         if (cmd == grav_protocol::Load) {

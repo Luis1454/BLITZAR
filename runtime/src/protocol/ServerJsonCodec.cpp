@@ -180,7 +180,8 @@ std::string ServerJsonCodec::makeStatusResponse(const SimulationStats &stats)
 
 std::string ServerJsonCodec::makeSnapshotResponse(
     bool hasSnapshot,
-    const std::vector<RenderParticle> &snapshot)
+    const std::vector<RenderParticle> &snapshot,
+    std::size_t sourceSize)
 {
     std::ostringstream out;
     out << std::fixed << std::setprecision(6);
@@ -189,6 +190,7 @@ std::string ServerJsonCodec::makeSnapshotResponse(
     writer.writeString("cmd", GetSnapshot);
     writer.writeBool("has_snapshot", hasSnapshot);
     writer.writeNumber("count", snapshot.size());
+    writer.writeNumber("source_count", sourceSize == 0u ? snapshot.size() : sourceSize);
     writer.beginArray("particles");
     for (std::size_t i = 0; i < snapshot.size(); ++i) {
         const RenderParticle &particle = snapshot[i];

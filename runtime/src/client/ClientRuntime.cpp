@@ -359,9 +359,10 @@ void ClientRuntime::pollLoop()
 void ClientRuntime::pollOnce(bool pollSnapshot, bool pollStats)
 {
     std::vector<RenderParticle> snapshot;
+    std::size_t snapshotSourceSize = 0u;
     bool gotSnapshot = false;
     if (pollSnapshot) {
-        gotSnapshot = _bridge.tryConsumeSnapshot(snapshot);
+        gotSnapshot = _bridge.tryConsumeSnapshot(snapshot, &snapshotSourceSize);
     }
 
     SimulationStats stats{};
@@ -381,7 +382,7 @@ void ClientRuntime::pollOnce(bool pollSnapshot, bool pollStats)
     _latestLinkLabel = linkLabel;
     _latestOwnerLabel = ownerLabel;
     if (gotSnapshot) {
-        queueSnapshot(std::move(snapshot), now);
+        queueSnapshot(std::move(snapshot), snapshotSourceSize, now);
     }
 }
 
@@ -390,7 +391,7 @@ std::size_t ClientRuntime::advanceSnapshotIndex(std::size_t index) const
     return _snapshotRing.empty() ? 0u : (index + 1u) % _snapshotRing.size();
 }
 
-void ClientRuntime::queueSnapshot(std::vector<RenderParticle> snapshot, Clock::time_point now)
+void ClientRuntime::queueSnapshot(std::vector<RenderParticle> snapshot, std::size_t sourceSize, Clock::time_point now)
 {
     if (_snapshotRing.empty()) {
         return;
@@ -409,7 +410,7 @@ void ClientRuntime::queueSnapshot(std::vector<RenderParticle> snapshot, Clock::t
     }
 
     SnapshotBufferEntry &entry = _snapshotRing[_snapshotWriteIndex];
-    entry.sourceSize = snapshot.size();
+    entry.sourceSize = sourceSize == 0u ? snapshot.size() : sourceSize;
     entry.receivedAt = now;
     entry.particles = std::move(snapshot);
     _snapshotWriteIndex = advanceSnapshotIndex(_snapshotWriteIndex);

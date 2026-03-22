@@ -12,6 +12,42 @@
 #include <string>
 #include <thread>
 
+namespace grav_test_server_runtime {
+
+std::string findServerExecutableInBuildDirectories(
+    const std::filesystem::path &root,
+    const std::string &defaultName)
+{
+    std::error_code ec;
+    if (root.empty() || !std::filesystem::exists(root, ec) || ec) {
+        return {};
+    }
+
+    for (const auto &entry : std::filesystem::directory_iterator(root, ec)) {
+        if (ec || !entry.is_directory()) {
+            continue;
+        }
+        const std::string stem = entry.path().filename().string();
+        if (stem.rfind("build", 0u) != 0u) {
+            continue;
+        }
+        const std::array<std::filesystem::path, 3u> candidates{
+            entry.path() / defaultName,
+            entry.path() / "Debug" / defaultName,
+            entry.path() / "Release" / defaultName
+        };
+        for (const auto &candidate : candidates) {
+            if (std::filesystem::exists(candidate, ec) && !ec) {
+                return candidate.string();
+            }
+            ec.clear();
+        }
+    }
+    return {};
+}
+
+} // namespace grav_test_server_runtime
+
 std::string RealServerHarness::resolveServerExecutable()
 {
     if (const std::optional<std::string> fromEnv = grav_env::get("GRAVITY_SERVER_EXE");
@@ -34,6 +70,16 @@ std::string RealServerHarness::resolveServerExecutable()
             if (std::filesystem::exists(candidate, ec) && !ec) {
                 return candidate.string();
             }
+        }
+        if (const std::string fromBuildDir =
+                grav_test_server_runtime::findServerExecutableInBuildDirectories(cwd, defaultName);
+            !fromBuildDir.empty()) {
+            return fromBuildDir;
+        }
+        if (const std::string fromParentBuildDir =
+                grav_test_server_runtime::findServerExecutableInBuildDirectories(cwd.parent_path(), defaultName);
+            !fromParentBuildDir.empty()) {
+            return fromParentBuildDir;
         }
     }
 

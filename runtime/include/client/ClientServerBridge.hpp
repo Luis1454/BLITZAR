@@ -94,7 +94,7 @@ class ClientServerBridge {
             const std::string &serverExecutable
         );
 
-        bool tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot);
+        bool tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot, std::size_t *outSourceSize = nullptr);
         SimulationStats getStats();
         void setRemoteSnapshotCap(std::uint32_t maxPoints);
         void requestReconnect();
