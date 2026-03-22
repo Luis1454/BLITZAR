@@ -38,6 +38,7 @@ struct MainWindowPresentation final {
     std::string runtimeText;
     std::string queueText;
     std::string energyText;
+    std::string gpuText;
     std::string statusText;
     std::string consoleTrace;
 };

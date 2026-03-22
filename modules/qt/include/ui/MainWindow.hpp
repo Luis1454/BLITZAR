@@ -28,6 +28,7 @@ class QComboBox;
 class QDoubleSpinBox;
 class QLabel;
 class QLineEdit;
+class QAction;
 class QPushButton;
 class QSlider;
 class QSpinBox;
@@ -86,6 +87,7 @@ class MainWindow : public QMainWindow {
         QPointer<QLabel> _runtimeMetricsLabel;
         QPointer<QLabel> _queueMetricsLabel;
         QPointer<QLabel> _energyMetricsLabel;
+        QPointer<QLabel> _gpuMetricsLabel;
         QPointer<QPushButton> _pauseButton;
         QPointer<QPushButton> _stepButton;
         QPointer<QPushButton> _resetButton;
@@ -121,6 +123,8 @@ class MainWindow : public QMainWindow {
         QPointer<QSlider> _rollSlider;
         QPointer<QCheckBox> _cullingCheck;
         QPointer<QCheckBox> _lodCheck;
+        QPointer<QCheckBox> _gpuTelemetryCheck;
+        QPointer<QAction> _gpuTelemetryAction;
         QPointer<QTimer> _timer;
         MainWindowController _controller;
         MainWindowPresenter _presenter;

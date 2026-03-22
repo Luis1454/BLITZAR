@@ -37,6 +37,12 @@ bool ServerJsonCodec::parseStatusResponse(std::string_view raw, ServerStatusPayl
     readNumber(raw, "etot", parsed.totalEnergy);
     readNumber(raw, "drift_pct", parsed.energyDriftPct);
     readBool(raw, "estimated", parsed.energyEstimated);
+    readBool(raw, "gpu_telemetry_enabled", parsed.gpuTelemetryEnabled);
+    readBool(raw, "gpu_telemetry_available", parsed.gpuTelemetryAvailable);
+    readNumber(raw, "gpu_kernel_ms", parsed.gpuKernelMs);
+    readNumber(raw, "gpu_copy_ms", parsed.gpuCopyMs);
+    readNumber(raw, "gpu_vram_used_bytes", parsed.gpuVramUsedBytes);
+    readNumber(raw, "gpu_vram_total_bytes", parsed.gpuVramTotalBytes);
     out = parsed;
     error.clear();
     return true;

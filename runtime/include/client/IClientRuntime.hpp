@@ -79,6 +79,8 @@ class IClientRuntime {
         virtual void setInitialStateConfig(const InitialStateConfig &config) = 0;
         /// Controls how often energy samples are measured and retained.
         virtual void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit) = 0;
+        /// Enables or disables bounded GPU telemetry sampling on the server.
+        virtual void setGpuTelemetryEnabled(bool enabled) = 0;
         /// Sets default output parameters used by snapshot export requests.
         virtual void setExportDefaults(const std::string &directory, const std::string &format) = 0;
         /// Selects a file-backed initial state and its decoding format.

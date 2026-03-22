@@ -50,6 +50,7 @@
     "set_sph_params": { "request": ["h", "rest_density", "gas_constant", "viscosity"], "response": "response_envelope" },
     "set_substeps": { "request": ["target_dt", "max"], "response": "response_envelope" },
     "set_energy_measure": { "request": ["every_steps", "sample_limit"], "response": "response_envelope" },
+    "set_gpu_telemetry": { "request": ["value"], "response": "response_envelope" },
     "set_snapshot_publish_cadence": { "request": ["period_ms"], "response": "response_envelope" },
     "load": { "request": ["path", "format"], "response": "response_envelope" },
     "export": { "request": ["path", "format"], "response": "response_envelope" },
@@ -63,6 +64,10 @@
         "substeps", "max_substeps", "snapshot_publish_period_ms", "particles",
         "solver", "integrator", "ekin", "epot", "eth", "erad", "etot",
         "drift_pct", "estimated"
+      ],
+      "optional": [
+        "gpu_telemetry_enabled", "gpu_telemetry_available", "gpu_kernel_ms",
+        "gpu_copy_ms", "gpu_vram_used_bytes", "gpu_vram_total_bytes"
       ]
     },
     "snapshot_payload": {

@@ -42,6 +42,7 @@ class ClientRuntime final : public IClientRuntime {
         void setSnapshotPublishPeriodMs(std::uint32_t periodMs) override;
         void setInitialStateConfig(const InitialStateConfig &config) override;
         void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit) override;
+        void setGpuTelemetryEnabled(bool enabled) override;
         void setExportDefaults(const std::string &directory, const std::string &format) override;
         void setInitialStateFile(const std::string &path, const std::string &format) override;
         void requestExportSnapshot(const std::string &outputPath, const std::string &format) override;

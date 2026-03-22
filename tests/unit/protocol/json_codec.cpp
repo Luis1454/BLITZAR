@@ -53,6 +53,12 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
     stats.totalEnergy = 5.0f;
     stats.energyDriftPct = 0.125f;
     stats.energyEstimated = true;
+    stats.gpuTelemetryEnabled = true;
+    stats.gpuTelemetryAvailable = true;
+    stats.gpuKernelMs = 1.5f;
+    stats.gpuCopyMs = 0.75f;
+    stats.gpuVramUsedBytes = 64u * 1024u * 1024u;
+    stats.gpuVramTotalBytes = 256u * 1024u * 1024u;
 
     const std::string raw = grav_protocol::ServerJsonCodec::makeStatusResponse(stats);
 
@@ -80,6 +86,12 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
     EXPECT_EQ(parsed.integrator, "euler");
     EXPECT_FLOAT_EQ(parsed.totalEnergy, 5.0f);
     EXPECT_TRUE(parsed.energyEstimated);
+    EXPECT_TRUE(parsed.gpuTelemetryEnabled);
+    EXPECT_TRUE(parsed.gpuTelemetryAvailable);
+    EXPECT_FLOAT_EQ(parsed.gpuKernelMs, 1.5f);
+    EXPECT_FLOAT_EQ(parsed.gpuCopyMs, 0.75f);
+    EXPECT_EQ(parsed.gpuVramUsedBytes, 64u * 1024u * 1024u);
+    EXPECT_EQ(parsed.gpuVramTotalBytes, 256u * 1024u * 1024u);
 }
 
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_003_RejectsMalformedSnapshotPayload)
@@ -130,6 +142,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_005_ExportsCurrentSchemaVersionLabel)
     EXPECT_EQ(grav_protocol::SchemaVersion, "server-json-v1");
     EXPECT_EQ(grav_protocol::Status, "status");
     EXPECT_EQ(grav_protocol::GetSnapshot, "get_snapshot");
+    EXPECT_EQ(grav_protocol::SetGpuTelemetry, "set_gpu_telemetry");
     EXPECT_EQ(grav_protocol::SetSnapshotPublishCadence, "set_snapshot_publish_cadence");
 }
 
