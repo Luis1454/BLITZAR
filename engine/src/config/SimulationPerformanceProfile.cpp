@@ -52,7 +52,7 @@ void applyPerformanceProfile(SimulationConfig &config)
     if (canonical == kPerformanceProfileInteractive) {
         config.clientParticleCap = grav_protocol::kSnapshotDefaultPoints;
         config.snapshotPublishPeriodMs = 50u;
-        config.energyMeasureEverySteps = 120u;
+        config.energyMeasureEverySteps = 30u;
         config.energySampleLimit = 256u;
         config.substepTargetDt = 0.01f;
         config.maxSubsteps = 4u;
@@ -61,7 +61,7 @@ void applyPerformanceProfile(SimulationConfig &config)
     if (canonical == kPerformanceProfileBalanced) {
         config.clientParticleCap = 8192u;
         config.snapshotPublishPeriodMs = 33u;
-        config.energyMeasureEverySteps = 60u;
+        config.energyMeasureEverySteps = 20u;
         config.energySampleLimit = 1024u;
         config.substepTargetDt = 0.005f;
         config.maxSubsteps = 8u;
@@ -69,7 +69,7 @@ void applyPerformanceProfile(SimulationConfig &config)
     }
     config.clientParticleCap = grav_protocol::kSnapshotMaxPoints;
     config.snapshotPublishPeriodMs = 16u;
-    config.energyMeasureEverySteps = 30u;
+    config.energyMeasureEverySteps = 10u;
     config.energySampleLimit = 5000u;
     config.substepTargetDt = 0.0f;
     config.maxSubsteps = 32u;

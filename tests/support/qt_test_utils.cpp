@@ -4,6 +4,7 @@
 #include "ui/MainWindow.hpp"
 
 #include <QApplication>
+#include <QCheckBox>
 #include <QCoreApplication>
 #include <QComboBox>
 #include <QDir>
@@ -49,12 +50,13 @@ QApplication *ensureQtApp()
 QString findStatusLabelText(const grav_qt::MainWindow &window)
 {
     const QList<QLabel *> labels = window.findChildren<QLabel *>();
+    QStringList summaryLines;
     for (QLabel *label : labels) {
-        if (label != nullptr && label->text().contains("state=")) {
-            return label->text();
+        if (label != nullptr && label->objectName() == "runtimeSummaryValue") {
+            summaryLines.push_back(label->text());
         }
     }
-    return {};
+    return summaryLines.join("\n");
 }
 
 std::string readAllFile(const std::filesystem::path &path)
@@ -77,6 +79,28 @@ QComboBox *findSolverCombo(grav_qt::MainWindow &window)
             && combo->findText("octree_gpu") >= 0
             && combo->findText("octree_cpu") >= 0) {
             return combo;
+        }
+    }
+    return nullptr;
+}
+
+QComboBox *findComboByObjectName(grav_qt::MainWindow &window, const QString &objectName)
+{
+    const QList<QComboBox *> combos = window.findChildren<QComboBox *>();
+    for (QComboBox *combo : combos) {
+        if (combo != nullptr && combo->objectName() == objectName) {
+            return combo;
+        }
+    }
+    return nullptr;
+}
+
+QCheckBox *findCheckBoxByText(grav_qt::MainWindow &window, const QString &text)
+{
+    const QList<QCheckBox *> checks = window.findChildren<QCheckBox *>();
+    for (QCheckBox *check : checks) {
+        if (check != nullptr && check->text() == text) {
+            return check;
         }
     }
     return nullptr;

@@ -61,7 +61,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_027_DirectivePerformanceOverrideForcesCustomPr
     EXPECT_FLOAT_EQ(loaded.substepTargetDt, 0.004f);
     EXPECT_EQ(loaded.maxSubsteps, 6u);
     EXPECT_EQ(loaded.snapshotPublishPeriodMs, 50u);
-    EXPECT_EQ(loaded.energyMeasureEverySteps, 120u);
+    EXPECT_EQ(loaded.energyMeasureEverySteps, 30u);
     EXPECT_EQ(loaded.energySampleLimit, 256u);
     std::error_code ec;
     std::filesystem::remove(path, ec);

@@ -81,7 +81,7 @@ TEST(PhysicsTest, TST_UNT_RUNT_005_ServerAppliesInteractivePerformancePreset)
     EXPECT_EQ(stats.maxSubsteps, 4u);
     EXPECT_EQ(config.performanceProfile, "interactive");
     EXPECT_EQ(config.snapshotPublishPeriodMs, 50u);
-    EXPECT_EQ(config.energyMeasureEverySteps, 120u);
+    EXPECT_EQ(config.energyMeasureEverySteps, 30u);
     EXPECT_EQ(config.energySampleLimit, 256u);
 
     server.stop();

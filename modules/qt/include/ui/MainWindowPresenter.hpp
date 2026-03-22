@@ -33,6 +33,10 @@ struct MainWindowPresentationInput final {
 
 /// Holds the formatted strings consumed by status and trace widgets.
 struct MainWindowPresentation final {
+    std::string headlineText;
+    std::string runtimeText;
+    std::string queueText;
+    std::string energyText;
     std::string statusText;
     std::string consoleTrace;
 };

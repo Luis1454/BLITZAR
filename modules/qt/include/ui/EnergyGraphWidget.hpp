@@ -23,9 +23,12 @@ class EnergyGraphWidget : public QWidget {
     public:
         /// Builds an empty energy graph widget.
         explicit EnergyGraphWidget();
-
+        /// Clears the current energy history and redraws the widget.
+        void clearHistory();
         /// Appends a telemetry sample to the visible energy history.
         void pushSample(const SimulationStats &stats);
+        /// Returns the number of samples currently retained by the widget.
+        std::size_t sampleCount() const;
         /// Returns the localized X-axis label for the energy plot.
         static QString energyXAxisLabel();
         /// Returns the localized Y-axis label for the energy plot.

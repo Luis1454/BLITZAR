@@ -30,6 +30,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
     SimulationStats stats{};
     stats.steps = 42u;
     stats.dt = 0.02f;
+    stats.totalTime = 1.25f;
     stats.paused = true;
     stats.faulted = true;
     stats.faultStep = 41u;
@@ -61,6 +62,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
     ASSERT_TRUE(parsed.envelope.ok);
     EXPECT_EQ(parsed.steps, 42u);
     EXPECT_FLOAT_EQ(parsed.dt, 0.02f);
+    EXPECT_FLOAT_EQ(parsed.totalTime, 1.25f);
     EXPECT_TRUE(parsed.paused);
     EXPECT_TRUE(parsed.faulted);
     EXPECT_EQ(parsed.faultStep, 41u);

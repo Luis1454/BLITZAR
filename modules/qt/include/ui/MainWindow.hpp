@@ -10,7 +10,9 @@
 #include "config/SimulationConfig.hpp"
 #include "ui/MainWindowController.hpp"
 #include "ui/MainWindowPresenter.hpp"
+#include "ui/WorkspaceLayoutStore.hpp"
 
+#include <QByteArray>
 #include <QMainWindow>
 #include <QPointer>
 
@@ -45,6 +47,7 @@ class MainWindow : public QMainWindow {
     private:
         static std::string formatFromSelectedFilter(const QString &filter);
         bool applyConfigToServer(bool requestReset);
+        void applyConnectorSettings(bool reconnectNow);
         void applyConfigToUi();
         void applyViewSettings();
         void captureUiIntoConfig();
@@ -56,6 +59,12 @@ class MainWindow : public QMainWindow {
         void handleLoadPresetRequest();
         void markConfigDirty(bool dirty = true);
         bool refreshValidationReport(bool blockOnErrors);
+        void requestReconnectFromUi();
+        void resetSimulationFromUi();
+        void restoreDefaultWorkspace();
+        void saveWorkspacePreset();
+        void loadWorkspacePreset();
+        void deleteWorkspacePreset();
         bool saveConfigToDisk();
         void update3DCameraFromSliders();
         void tick();
@@ -67,16 +76,17 @@ class MainWindow : public QMainWindow {
         QPointer<EnergyGraphWidget> _energyGraph;
         QPointer<QLabel> _validationLabel;
         QPointer<QLabel> _statusLabel;
+        QPointer<QLabel> _runtimeMetricsLabel;
+        QPointer<QLabel> _queueMetricsLabel;
+        QPointer<QLabel> _energyMetricsLabel;
         QPointer<QPushButton> _pauseButton;
         QPointer<QPushButton> _stepButton;
         QPointer<QPushButton> _resetButton;
         QPointer<QPushButton> _recoverButton;
-        QPointer<QPushButton> _reconnectButton;
         QPointer<QPushButton> _applyConnectorButton;
         QPointer<QPushButton> _exportButton;
         QPointer<QPushButton> _saveConfigButton;
         QPointer<QPushButton> _loadInputButton;
-        QPointer<QPushButton> _validateButton;
         QPointer<QCheckBox> _serverAutostartCheck;
         QPointer<QLineEdit> _serverHostEdit;
         QPointer<QLineEdit> _serverBinEdit;
@@ -92,6 +102,7 @@ class MainWindow : public QMainWindow {
         QPointer<QComboBox> _solverCombo;
         QPointer<QComboBox> _integratorCombo;
         QPointer<QComboBox> _performanceCombo;
+        QPointer<QComboBox> _simulationProfileCombo;
         QPointer<QComboBox> _presetCombo;
         QPointer<QComboBox> _view3dCombo;
         QPointer<QDoubleSpinBox> _thetaSpin;
@@ -106,6 +117,9 @@ class MainWindow : public QMainWindow {
         QPointer<QTimer> _timer;
         MainWindowController _controller;
         MainWindowPresenter _presenter;
+        WorkspaceLayoutStore _workspaceLayouts;
+        QByteArray _defaultWorkspaceGeometry;
+        QByteArray _defaultWorkspaceState;
         std::uint64_t _lastEnergyStep;
         std::uint32_t _clientDrawCap;
         float _uiTickFps;

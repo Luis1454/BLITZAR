@@ -592,6 +592,7 @@ SimulationStats ClientServerBridge::fromRemoteStatus(const ServerClientStatus &s
     SimulationStats stats{};
     stats.steps = status.steps;
     stats.dt = status.dt;
+    stats.totalTime = status.totalTime;
     stats.paused = status.paused;
     stats.faulted = status.faulted;
     stats.faultStep = status.faultStep;
