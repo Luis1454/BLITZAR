@@ -22,6 +22,10 @@ QApplication *ensureQtApp();
 
 QString findStatusLabelText(const grav_qt::MainWindow &window);
 
+std::filesystem::path saveFailureEvidence(grav_qt::MainWindow &window, const std::string &stem);
+
+std::uint64_t findSummaryUnsignedMetric(const grav_qt::MainWindow &window, const std::string &label);
+
 std::string readAllFile(const std::filesystem::path &path);
 
 QComboBox *findSolverCombo(grav_qt::MainWindow &window);
