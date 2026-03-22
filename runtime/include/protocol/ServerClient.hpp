@@ -56,7 +56,10 @@ class ServerClient {
         ServerClientResponse sendJson(const std::string &jsonLine);
         ServerClientResponse sendCommand(const std::string &cmd, const std::string &fieldsJson = "");
         ServerClientResponse getStatus(ServerClientStatus &outStatus);
-        ServerClientResponse getSnapshot(std::vector<RenderParticle> &outSnapshot, std::uint32_t maxPoints = 4096u);
+        ServerClientResponse getSnapshot(
+            std::vector<RenderParticle> &outSnapshot,
+            std::uint32_t maxPoints = 4096u,
+            std::size_t *outSourceSize = nullptr);
 
     private:
         typedef std::intptr_t SocketHandle;

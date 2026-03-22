@@ -82,7 +82,7 @@ class ClientRuntime final : public IClientRuntime {
         void pollOnce(bool pollSnapshot, bool pollStats);
         static std::uint32_t ageMsSince(Clock::time_point at, bool valid);
         std::size_t advanceSnapshotIndex(std::size_t index) const;
-        void queueSnapshot(std::vector<RenderParticle> snapshot, Clock::time_point now);
+        void queueSnapshot(std::vector<RenderParticle> snapshot, std::size_t sourceSize, Clock::time_point now);
 
         ClientServerBridge _bridge;
         std::thread _pollThread;

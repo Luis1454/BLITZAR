@@ -5,6 +5,7 @@
 #include "config/SimulationProfile.hpp"
 #include "config/SimulationModes.hpp"
 #include "platform/PlatformPaths.hpp"
+#include "protocol/ServerProtocol.hpp"
 
 #include <algorithm>
 #include <array>
@@ -96,6 +97,15 @@ std::string_view solverLabel(ParticleSystem::SolverMode mode)
 
 constexpr std::size_t kMaxImportedParticles = 2'000'000;
 constexpr std::uint32_t kPairwiseRealtimeParticleLimit = 20'000u;
+
+std::uint32_t resolvePublishedSnapshotCap(std::uint32_t drawCap)
+{
+    const std::uint32_t clampedDrawCap = grav_protocol::clampSnapshotPoints(std::max(grav_protocol::kSnapshotMinPoints, drawCap));
+    const std::uint32_t oversampled = std::min<std::uint32_t>(
+        grav_protocol::kSnapshotMaxPoints,
+        std::max<std::uint32_t>(clampedDrawCap, clampedDrawCap * 2u));
+    return std::max(grav_protocol::kSnapshotMinPoints, oversampled);
+}
 
 bool readRawBytes(std::istream &in, std::byte *data, std::size_t size)
 {
@@ -1120,6 +1130,7 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
         _configuredSubstepTargetDt(0.01f),
         _configuredMaxSubsteps(4u),
         _snapshotPublishPeriodMs(50u),
+      _snapshotTransferCap(resolvePublishedSnapshotCap(grav_protocol::kSnapshotDefaultPoints)),
       _lastAppliedSubstepTargetDt(0.0f),
       _lastAppliedSubstepDt(0.0f),
       _lastAppliedSubsteps(0u),
@@ -1170,6 +1181,7 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
     _runtimeConfigMirror.substepTargetDt = _configuredSubstepTargetDt.load(std::memory_order_relaxed);
     _runtimeConfigMirror.maxSubsteps = _configuredMaxSubsteps.load(std::memory_order_relaxed);
     _runtimeConfigMirror.snapshotPublishPeriodMs = _snapshotPublishPeriodMs.load(std::memory_order_relaxed);
+    _runtimeConfigMirror.clientParticleCap = grav_protocol::kSnapshotDefaultPoints;
     _runtimeConfigMirror.octreeTheta = _octreeTheta;
     _runtimeConfigMirror.octreeSoftening = _octreeSoftening;
     _runtimeConfigMirror.sphEnabled = _sphEnabled;
@@ -1243,6 +1255,7 @@ SimulationServer::SimulationServer(const std::string &configPath)
     _configuredSubstepTargetDt.store(std::max(0.0f, loaded.substepTargetDt), std::memory_order_relaxed);
     _configuredMaxSubsteps.store(std::max<std::uint32_t>(1u, loaded.maxSubsteps), std::memory_order_relaxed);
     _snapshotPublishPeriodMs.store(std::max<std::uint32_t>(1u, loaded.snapshotPublishPeriodMs), std::memory_order_relaxed);
+    _snapshotTransferCap.store(resolvePublishedSnapshotCap(loaded.clientParticleCap), std::memory_order_relaxed);
 }
 
 SimulationServer::~SimulationServer()
@@ -1463,6 +1476,13 @@ void SimulationServer::setSnapshotPublishPeriodMs(std::uint32_t periodMs)
     _runtimeConfigMirror.snapshotPublishPeriodMs = safePeriodMs;
 }
 
+void SimulationServer::setSnapshotTransferCap(std::uint32_t maxPoints)
+{
+    const std::uint32_t safeMaxPoints = grav_protocol::clampSnapshotPoints(maxPoints);
+    _snapshotTransferCap.store(resolvePublishedSnapshotCap(safeMaxPoints), std::memory_order_relaxed);
+    _runtimeConfigMirror.clientParticleCap = safeMaxPoints;
+}
+
 void SimulationServer::setInitialStateConfig(const InitialStateConfig &config)
 {
     {
@@ -1536,12 +1556,21 @@ bool SimulationServer::tryConsumeSnapshot(std::vector<RenderParticle> &outSnapsh
     return true;
 }
 
-bool SimulationServer::copyLatestSnapshot(std::vector<RenderParticle> &outSnapshot, std::size_t maxPoints) const
+bool SimulationServer::copyLatestSnapshot(
+    std::vector<RenderParticle> &outSnapshot,
+    std::size_t maxPoints,
+    std::size_t *outSourceSize) const
 {
     std::lock_guard<std::mutex> lock(_snapshotMutex);
     if (_publishedSnapshot.empty()) {
         outSnapshot.clear();
+        if (outSourceSize != nullptr) {
+            *outSourceSize = 0u;
+        }
         return false;
+    }
+    if (outSourceSize != nullptr) {
+        *outSourceSize = _publishedSnapshot.size();
     }
     if (maxPoints == 0 || _publishedSnapshot.size() <= maxPoints) {
         outSnapshot = _publishedSnapshot;
@@ -1907,11 +1936,15 @@ void SimulationServer::publishSnapshot()
     }
     const std::vector<Particle> &particles = _system->getParticles();
     const size_t count = particles.size();
-    if (_scratchSnapshot.size() != count) {
-        _scratchSnapshot.resize(count);
+    const std::size_t publishCap = static_cast<std::size_t>(_snapshotTransferCap.load(std::memory_order_relaxed));
+    const std::size_t publishedCount = std::min<std::size_t>(count, std::max<std::size_t>(1u, publishCap));
+    if (_scratchSnapshot.size() != publishedCount) {
+        _scratchSnapshot.resize(publishedCount);
     }
-    for (size_t i = 0; i < count; ++i) {
-        _scratchSnapshot[i] = RenderParticle{
+    const std::size_t stride = std::max<std::size_t>(1u, (count + publishedCount - 1u) / publishedCount);
+    std::size_t outIndex = 0u;
+    for (size_t i = 0; i < count && outIndex < publishedCount; i += stride) {
+        _scratchSnapshot[outIndex] = RenderParticle{
             particles[i].getPosition().x,
             particles[i].getPosition().y,
             particles[i].getPosition().z,
@@ -1919,6 +1952,7 @@ void SimulationServer::publishSnapshot()
             particles[i].getPressure().norm(),
             particles[i].getTemperature()
         };
+        outIndex += 1u;
     }
 
     std::lock_guard<std::mutex> lock(_snapshotMutex);

@@ -484,17 +484,19 @@ void ClientServerBridge::configureRemoteConnector(
     ensureRemoteConnected(true);
 }
 
-bool ClientServerBridge::tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot)
+bool ClientServerBridge::tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot, std::size_t *outSourceSize)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     if (!ensureRemoteConnected(false)) {
         return false;
     }
     std::vector<RenderParticle> remoteSnapshot;
+    std::size_t sourceSize = 0u;
     SocketTimeoutScope timeoutScope(_remoteClient, static_cast<int>(_remoteSnapshotTimeoutMs));
     const ServerClientResponse response = _remoteClient.getSnapshot(
         remoteSnapshot,
-        _runtimeState.remoteSnapshotCap());
+        _runtimeState.remoteSnapshotCap(),
+        &sourceSize);
     if (!response.ok) {
         if (isTransportClientFailure(response.error)) {
             markRemoteDisconnected("get_snapshot", response.error);
@@ -509,6 +511,9 @@ bool ClientServerBridge::tryConsumeSnapshot(std::vector<RenderParticle> &outSnap
     }
     if (remoteSnapshot.empty()) {
         return false;
+    }
+    if (outSourceSize != nullptr) {
+        *outSourceSize = sourceSize;
     }
     outSnapshot = std::move(remoteSnapshot);
     return true;
@@ -525,6 +530,10 @@ void ClientServerBridge::setRemoteSnapshotCap(std::uint32_t maxPoints)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     _runtimeState.setRemoteSnapshotCap(maxPoints);
+    const std::uint32_t clamped = grav_protocol::clampSnapshotPoints(maxPoints);
+    (void)sendOrQueueRemote(
+        std::string(grav_protocol::SetSnapshotTransferCap),
+        "\"max_points\":" + std::to_string(clamped));
 }
 
 void ClientServerBridge::requestReconnect()

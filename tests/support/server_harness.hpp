@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 class RealServerHarness {
     public:
@@ -20,7 +21,8 @@ class RealServerHarness {
         bool start(
             std::string &outError,
             std::uint16_t preferredPort = 0u,
-            const std::string &authToken = {}
+            const std::string &authToken = {},
+            const std::vector<std::string> &extraArgs = {}
         );
         void stop();
 

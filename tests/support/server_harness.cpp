@@ -67,7 +67,11 @@ RealServerHarness::~RealServerHarness()
     stop();
 }
 
-bool RealServerHarness::start(std::string &outError, std::uint16_t preferredPort, const std::string &authToken)
+bool RealServerHarness::start(
+    std::string &outError,
+    std::uint16_t preferredPort,
+    const std::string &authToken,
+    const std::vector<std::string> &extraArgs)
 {
     stop();
     outError.clear();
@@ -110,6 +114,7 @@ bool RealServerHarness::start(std::string &outError, std::uint16_t preferredPort
             "false"
         };
         std::vector<std::string> effectiveArgs = args;
+        effectiveArgs.insert(effectiveArgs.end(), extraArgs.begin(), extraArgs.end());
         if (!_authToken.empty()) {
             effectiveArgs.push_back("--server-token");
             effectiveArgs.push_back(_authToken);

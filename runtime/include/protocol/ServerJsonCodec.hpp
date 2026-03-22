@@ -54,6 +54,7 @@ struct ServerStatusPayload {
 struct ServerSnapshotPayload {
     ServerResponseEnvelope envelope;
     bool hasSnapshot = false;
+    std::size_t sourceSize = 0u;
     std::vector<RenderParticle> particles;
 };
 
@@ -74,7 +75,8 @@ class ServerJsonCodec {
         static std::string makeStatusResponse(const SimulationStats &stats);
         static std::string makeSnapshotResponse(
             bool hasSnapshot,
-            const std::vector<RenderParticle> &snapshot);
+            const std::vector<RenderParticle> &snapshot,
+            std::size_t sourceSize = 0u);
 
         static bool parseResponseEnvelope(
             std::string_view raw,

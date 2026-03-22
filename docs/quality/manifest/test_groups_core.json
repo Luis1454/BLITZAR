@@ -360,6 +360,13 @@
                 "req_ids": [
                     "REQ-RUN-001"
                 ]
+            },
+            "TST-CNT-RUNT-011": {
+                "id": "ClientRuntimeTest.TST_CNT_RUNT_011_BackendSnapshotPolicyReducesTransferForLowDrawCap",
+                "req_ids": [
+                    "REQ-RUN-001",
+                    "REQ-UI-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_CORE_API": {
@@ -920,6 +927,12 @@
             },
             "TST-UNT-PROT-005": {
                 "id": "ServerProtocolCodecTest.TST_UNT_PROT_005_ExportsCurrentSchemaVersionLabel",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-PROT-006": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_006_ParsesSnapshotSourceCountMetadata",
                 "req_ids": [
                     "REQ-PROT-001"
                 ]
