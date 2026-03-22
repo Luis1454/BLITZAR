@@ -12,7 +12,8 @@ Vector3 Octree::computeForceRecursive(
     float softening,
     float minSoftening,
     float minDistance2,
-    float minTheta
+    float minTheta,
+    OctreeOpeningCriterion criterion
 ) const {
     if (nodeIndex < 0) return Vector3(0.0f, 0.0f, 0.0f);
     const Node &node = _nodes[nodeIndex];
@@ -36,25 +37,31 @@ Vector3 Octree::computeForceRecursive(
         && std::fabs(particlePos.z - node.center.z) <= node.halfSize;
     const Vector3 direction = node.centerOfMass - particlePos;
     const float distance2 = softenedDistanceSquared(direction, softening, minSoftening);
-    const float distance = sqrtf(distance2);
-    if (!containsSelf && (size / distance) < theta) {
+    float criterionDistance = sqrtf(distance2);
+    if (criterion == OctreeOpeningCriterion::Bounds) {
+        const float dx = std::max(std::fabs(particlePos.x - node.center.x) - node.halfSize, 0.0f);
+        const float dy = std::max(std::fabs(particlePos.y - node.center.y) - node.halfSize, 0.0f);
+        const float dz = std::max(std::fabs(particlePos.z - node.center.z) - node.halfSize, 0.0f);
+        criterionDistance = std::max(std::sqrt(dx * dx + dy * dy + dz * dz), 1.0e-6f);
+    }
+    if (!containsSelf && (size / criterionDistance) < theta) {
         return gravityAccelerationFromSource(particlePos, node.centerOfMass, node.mass, softening, minSoftening, minDistance2);
     }
 
     Vector3 force(0.0f, 0.0f, 0.0f);
     for (int child = 0; child < 8; ++child) {
         if ((node.childMask & (1u << child)) == 0) continue;
-        force += computeForceRecursive(particles, node.children[child], particle, selfIndex, theta, softening, minSoftening, minDistance2, minTheta);
+        force += computeForceRecursive(particles, node.children[child], particle, selfIndex, theta, softening, minSoftening, minDistance2, minTheta, criterion);
     }
     return force;
 }
 
-Vector3 Octree::computeForceOn(const Particle &particle, std::size_t selfIndex, float theta, float softening, float minSoftening, float minDistance2, float minTheta) const
+Vector3 Octree::computeForceOn(const Particle &particle, std::size_t selfIndex, float theta, float softening, float minSoftening, float minDistance2, float minTheta, OctreeOpeningCriterion criterion) const
 {
     if (_root < 0 || !_particlesRef.has_value()) {
         return Vector3(0.0f, 0.0f, 0.0f);
     }
     const float clampedTheta = clampThetaValue(theta, minTheta);
     const float clampedSoftening = clampSofteningValue(softening, minSoftening);
-    return computeForceRecursive(_particlesRef->get(), _root, particle, selfIndex, clampedTheta, clampedSoftening, minSoftening, minDistance2, minTheta);
+    return computeForceRecursive(_particlesRef->get(), _root, particle, selfIndex, clampedTheta, clampedSoftening, minSoftening, minDistance2, minTheta, criterion);
 }

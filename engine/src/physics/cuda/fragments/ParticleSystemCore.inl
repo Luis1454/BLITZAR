@@ -111,6 +111,7 @@ bool ParticleSystem::setParticles(std::vector<Particle> particles)
 void ParticleSystem::setUseOctree(bool enabled) { _solverMode = enabled ? SolverMode::OctreeGpu : SolverMode::PairwiseCuda; }
 bool ParticleSystem::usesOctree() const { return _solverMode != SolverMode::PairwiseCuda; }
 void ParticleSystem::setOctreeTheta(float theta) { if (theta > 0.01f) _octreeTheta = theta; }
+void ParticleSystem::setOctreeOpeningCriterion(OctreeOpeningCriterion criterion) { _octreeOpeningCriterion = criterion; }
 void ParticleSystem::setOctreeSoftening(float softening) { if (softening > 1e-5f) _octreeSoftening = softening; }
 void ParticleSystem::setSphEnabled(bool enabled) { _sphEnabled = enabled; }
 bool ParticleSystem::isSphEnabled() const { return _sphEnabled; }
