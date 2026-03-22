@@ -272,7 +272,8 @@
                                                "tests":  [
                                                              "^TST_QLT_REPO_006_GravityQualityBaselineCheck$",
                                                              "^TST_QLT_REPO_008_PyChecksUnit$",
-                                                             "^TST_QLT_REPO_009_PythonQualityGate$"
+                                                             "^TST_QLT_REPO_009_PythonQualityGate$",
+                                                             "^test_tst_unt_perf_00[1-3]_.*$"
                                                          ],
                                                "artifacts":  [
                                                                  "EVD_QLT_MANIFEST",

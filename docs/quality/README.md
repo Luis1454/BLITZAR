@@ -20,6 +20,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `api_documentation_standard.md`: file-header and public API comment conventions for C++ surfaces.
 - `ivv_plan.md`: independent verification and validation plan.
 - `numerical_validation.md`: physics-oriented numerical acceptance criteria.
+- `manifest/performance_campaign.json`: fixed GPU benchmark matrix with throughput baselines and regression thresholds.
 - `traceability.md`: how to declare impacted requirement IDs and update the PR traceability register.
 - `traceability.csv`: canonical requirement-to-surface register updated by critical functional PRs.
 - `manifest/numerical_campaign.json`: fixed nightly numerical campaign definitions and thresholds.
@@ -35,6 +36,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `pr-fast` is the deterministic merge gate only: strict policy checks, analyzer lane, and integration-safe fast subset.
 - CI runs Python quality checks directly (check runner + `ruff`/`mypy`/`pytest`); CTest fast subsets exclude `TST_QLT_REPO_008_PyChecksUnit` and `TST_QLT_REPO_009_PythonQualityGate` (kept for manual regression and manifest compatibility).
 - `nightly-full` broadens deterministic evidence with standalone integration repeats, coverage publication, and optional GPU/numerical campaigns.
+- `performance-benchmark` is a dedicated GPU workflow for deterministic throughput matrix execution and artifact publication.
 - `release-lane` packages qualification-oriented release evidence after a strict `prod` validation pass; optional GPU release lanes remain supplemental only.
 - Every requirement ID must be traceable to at least one verification artifact.
 - Traceability and quality documents are enforced by `python tests/checks/check.py quality --root .` against `quality_manifest.json`.

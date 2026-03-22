@@ -1,0 +1,83 @@
+name: performance-benchmark
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+
+permissions:
+  contents: read
+
+env:
+  CI_PYTHON_VERSION: "3.12"
+
+jobs:
+  gpu-runner-readiness:
+    name: GPU Runner Readiness
+    uses: ./.github/workflows/gpu-runner-health.yml
+    with:
+      enable_gpu_lane: ${{ vars.HAS_GPU_RUNNER == 'true' }}
+    secrets: inherit
+
+  performance-benchmark:
+    name: Performance Benchmark (self-hosted windows/x64/cuda / python3.12, optional)
+    needs: gpu-runner-readiness
+    if: ${{ needs.gpu-runner-readiness.outputs.ready == 'true' }}
+    runs-on: [self-hosted, windows, x64, cuda]
+    timeout-minutes: 90
+    steps:
+      - {name: Checkout, uses: actions/checkout@v4}
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with: {python-version: "${{ env.CI_PYTHON_VERSION }}"}
+      - name: Install Python tooling
+        shell: pwsh
+        run: python -m pip install --upgrade pip pytest ruff mypy
+      - name: Setup MSVC toolchain
+        uses: ilammy/msvc-dev-cmd@v1
+        with: {arch: x64}
+      - name: Validate CUDA runtime/toolchain presence
+        shell: pwsh
+        run: |
+          $hasNvidiaSmi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
+          $hasNvcc = Get-Command nvcc -ErrorAction SilentlyContinue
+          if (-not $hasNvidiaSmi) { throw "nvidia-smi not found." }
+          if (-not $hasNvcc) { throw "nvcc not found in PATH." }
+          nvidia-smi
+          nvcc --version
+      - name: Run repository quality gate
+        shell: pwsh
+        run: python tests/checks/check.py quality --root .
+      - name: Run Python quality subset
+        shell: pwsh
+        run: |
+          python -m ruff check python_tools scripts/ci tests/checks
+          python -m mypy tests/checks scripts/ci python_tools
+          python -m pytest -q tests/checks/suites/release/test_performance_benchmark.py
+      - name: Configure benchmark build
+        shell: pwsh
+        run: cmake -S . -B build-performance -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_PROFILE=prod -DGRAVITY_STRICT_WARNINGS=ON
+      - name: Build benchmark tool
+        shell: pwsh
+        run: cmake --build build-performance --target gravityPerformanceBenchmarkTool --parallel
+      - name: Run performance benchmark campaign
+        shell: pwsh
+        run: |
+          $tool = Resolve-Path "build-performance/gravityPerformanceBenchmarkTool.exe"
+          python scripts/ci/nightly/package_performance_benchmark.py --root . --tool $tool --profile gpu-nightly --dist-dir dist/performance-benchmark
+      - name: Upload performance benchmark artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: performance-benchmark-${{ github.run_number }}
+          path: dist/performance-benchmark
+          if-no-files-found: error
+
+  performance-benchmark-fallback:
+    name: Performance Benchmark Fallback (linux-ubuntu24.04)
+    needs: gpu-runner-readiness
+    if: ${{ needs.gpu-runner-readiness.outputs.ready != 'true' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Record GPU fallback reason
+        run: echo "GPU performance benchmark skipped: ${{ needs.gpu-runner-readiness.outputs.reason }}" >> "$GITHUB_STEP_SUMMARY"
