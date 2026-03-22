@@ -1,4 +1,6 @@
 #include "ui/ParticleView.hpp"
+#include "ui/OctreeOverlay.hpp"
+#include "ui/OctreeOverlayPainter.hpp"
 #include "ui/ParticleViewColor.hpp"
 
 #include <QMouseEvent>
@@ -65,6 +67,14 @@ void ParticleView::setRenderSettings(bool culling, bool lod, float nearDist, flo
     _lodEnabled = lod;
     _lodNearDistance = nearDist;
     _lodFarDistance = farDist;
+    update();
+}
+
+void ParticleView::setOctreeOverlay(const std::vector<OctreeOverlayNode> &overlay, bool enabled, int opacity)
+{
+    _octreeOverlay = std::cref(overlay);
+    _octreeOverlayEnabled = enabled;
+    _octreeOverlayOpacity = std::clamp(opacity, 0, 255);
     update();
 }
 
@@ -192,6 +202,16 @@ void ParticleView::paintEvent(PaintEventHandle event)
 
     QPainter painter(this);
     painter.drawImage(0, 0, _framebuffer);
+    if (_octreeOverlayEnabled && _octreeOverlay.has_value()) {
+        OctreeOverlayPainter::paint(
+            painter,
+            rect(),
+            _mode,
+            _camera,
+            _octreeOverlay->get(),
+            _zoom,
+            _octreeOverlayOpacity);
+    }
 
     const GimbalOverlay gimbal = computeGimbal(rect(), _mode, _camera);
     painter.setRenderHint(QPainter::Antialiasing, true);

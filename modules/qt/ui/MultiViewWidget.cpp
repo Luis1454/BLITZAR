@@ -15,7 +15,10 @@ MultiViewWidget::MultiViewWidget()
       _xz(new ParticleView(grav::ViewMode::XZ)),
       _yz(new ParticleView(grav::ViewMode::YZ)),
       _view3d(new ParticleView(grav::ViewMode::Perspective)),
-      _maxDrawParticles(50000u)
+      _maxDrawParticles(50000u),
+      _octreeOverlayEnabled(false),
+      _octreeOverlayDepth(3),
+      _octreeOverlayOpacity(96)
 {
     auto *grid = new QGridLayout(this);
     grid->setSpacing(6);
@@ -41,6 +44,7 @@ void MultiViewWidget::setSnapshot(std::vector<RenderParticle> snapshot)
         }
     }
 
+    rebuildOctreeOverlay();
     if (_xy) {
         _xy->setSnapshot(_snapshot);
     }
@@ -53,6 +57,7 @@ void MultiViewWidget::setSnapshot(std::vector<RenderParticle> snapshot)
     if (_view3d) {
         _view3d->setSnapshot(_snapshot);
     }
+    applyOctreeOverlay();
 }
 
 void MultiViewWidget::setMaxDrawParticles(std::size_t maxDrawParticles)
@@ -125,6 +130,66 @@ void MultiViewWidget::setRenderSettings(bool culling, bool lod, float nearDist, 
     if (_view3d) {
         _view3d->setRenderSettings(culling, lod, nearDist, farDist);
     }
+}
+
+void MultiViewWidget::setOctreeOverlay(bool enabled, int depth, int opacity)
+{
+    const bool overlayChanged = _octreeOverlayEnabled != enabled
+        || _octreeOverlayDepth != depth
+        || _octreeOverlayOpacity != opacity;
+    _octreeOverlayEnabled = enabled;
+    _octreeOverlayDepth = std::clamp(depth, 0, 8);
+    _octreeOverlayOpacity = std::clamp(opacity, 0, 255);
+    if (!overlayChanged) {
+        return;
+    }
+    rebuildOctreeOverlay();
+    applyOctreeOverlay();
+}
+
+bool MultiViewWidget::octreeOverlayEnabled() const
+{
+    return _octreeOverlayEnabled;
+}
+
+int MultiViewWidget::octreeOverlayDepth() const
+{
+    return _octreeOverlayDepth;
+}
+
+int MultiViewWidget::octreeOverlayOpacity() const
+{
+    return _octreeOverlayOpacity;
+}
+
+std::size_t MultiViewWidget::octreeOverlayNodeCount() const
+{
+    return _octreeOverlay.size();
+}
+
+void MultiViewWidget::applyOctreeOverlay()
+{
+    if (_xy) {
+        _xy->setOctreeOverlay(_octreeOverlay, _octreeOverlayEnabled, _octreeOverlayOpacity);
+    }
+    if (_xz) {
+        _xz->setOctreeOverlay(_octreeOverlay, _octreeOverlayEnabled, _octreeOverlayOpacity);
+    }
+    if (_yz) {
+        _yz->setOctreeOverlay(_octreeOverlay, _octreeOverlayEnabled, _octreeOverlayOpacity);
+    }
+    if (_view3d) {
+        _view3d->setOctreeOverlay(_octreeOverlay, _octreeOverlayEnabled, _octreeOverlayOpacity);
+    }
+}
+
+void MultiViewWidget::rebuildOctreeOverlay()
+{
+    if (!_octreeOverlayEnabled) {
+        _octreeOverlay.clear();
+        return;
+    }
+    _octreeOverlay = OctreeOverlay::build(_snapshot, _octreeOverlayDepth);
 }
 
 } // namespace grav_qt

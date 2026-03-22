@@ -6,6 +6,7 @@
  * Responsibility: Coordinate the four synchronized particle views shown in the Qt workspace.
  */
 
+#include "ui/OctreeOverlay.hpp"
 #include "ui/ParticleView.hpp"
 
 #include <QPointer>
@@ -38,14 +39,30 @@ class MultiViewWidget : public QWidget {
         void set3DCameraAngles(float yaw, float pitch, float roll);
         /// Applies the shared culling and level-of-detail settings.
         void setRenderSettings(bool culling, bool lod, float nearDist, float farDist);
+        /// Enables the octree debugging overlay and updates its depth/opacity parameters.
+        void setOctreeOverlay(bool enabled, int depth, int opacity);
+        /// Reports whether the overlay is currently active.
+        bool octreeOverlayEnabled() const;
+        /// Reports the configured maximum overlay depth.
+        int octreeOverlayDepth() const;
+        /// Reports the configured overlay opacity.
+        int octreeOverlayOpacity() const;
+        /// Reports how many overlay cells are currently cached.
+        std::size_t octreeOverlayNodeCount() const;
 
     private:
+        void applyOctreeOverlay();
+        void rebuildOctreeOverlay();
         QPointer<ParticleView> _xy;
         QPointer<ParticleView> _xz;
         QPointer<ParticleView> _yz;
         QPointer<ParticleView> _view3d;
         std::size_t _maxDrawParticles;
         std::vector<RenderParticle> _snapshot;
+        std::vector<OctreeOverlayNode> _octreeOverlay;
+        bool _octreeOverlayEnabled;
+        int _octreeOverlayDepth;
+        int _octreeOverlayOpacity;
 };
 
 } // namespace grav_qt

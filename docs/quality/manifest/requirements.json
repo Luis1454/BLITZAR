@@ -264,8 +264,8 @@
                                                                "EVD_MOD_QT_MAINWINDOW"
                                                            ],
                                              "tests":  [
-                                                           "^Qt(MainWindowTest\\.TST_UIX_UI_00[1-6]_.*|WorkspaceControlsTest\\.TST_UIX_UI_0(07|08|09|15|18)_.*|WorkspaceRuntimeControlsTest\\.TST_UIX_UI_0(10|11|12|13|19)_.*)$",
-                                                           "^QtUiLogicTest\\.TST_UNT_UI_00[1-8]_"
+                                                           "^Qt(MainWindowTest\\.TST_UIX_UI_00[1-6]_.*|WorkspaceControlsTest\\.TST_UIX_UI_0(07|08|09|15|18)_.*|WorkspaceRuntimeControlsTest\\.TST_UIX_UI_0(10|11|12|13|19|20)_.*)$",
+                                                           "^QtUiLogicTest\\.TST_UNT_UI_0(0[1-9]|10)_"
                                                          ]
                                            },
                           "REQ-TEST-001":  {
