@@ -37,12 +37,13 @@
     },
     "test_ids": {
       "repo_quality": {
-        "regex": "\\b(TST_QLT_REPO|test_tst_unt_rel)_[0-9]{3}_[A-Za-z0-9_]+\\b",
+        "regex": "\\b(TST_QLT_REPO|test_tst_unt_rel|test_tst_unt_perf)_[0-9]{3}_[A-Za-z0-9_]+\\b",
         "files": [
           "tests/cmake/targets.cmake",
           "tests/cmake/targets_gtests.cmake",
           "tests/cmake/targets_repo_checks.cmake",
-          "tests/checks/suites/test_changelog.py"
+          "tests/checks/suites/test_changelog.py",
+          "tests/checks/suites/release/test_performance_benchmark.py"
         ]
       }
     }

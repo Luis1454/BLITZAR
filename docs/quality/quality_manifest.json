@@ -1,8 +1,8 @@
 {
   "metadata": {
     "system": "BLITZAR",
-    "revision": "2026-03-20",
-    "revision_note": "Added configurable client snapshot queue controls, runtime drop/latency evidence for the frontend snapshot pipeline, and kept SI-oriented validation and status evidence synchronized."
+    "revision": "2026-03-22",
+    "revision_note": "Added a deterministic performance benchmark campaign, GPU benchmark workflow, and summarized artifact generation for solver, integrator, dt, and particle-count matrices."
   },
   "includes": [
     "manifest/evidence.json",
