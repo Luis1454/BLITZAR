@@ -123,7 +123,11 @@ class MainWindow : public QMainWindow {
         QPointer<QSlider> _rollSlider;
         QPointer<QCheckBox> _cullingCheck;
         QPointer<QCheckBox> _lodCheck;
+        QPointer<QCheckBox> _octreeOverlayCheck;
+        QPointer<QSpinBox> _octreeOverlayDepthSpin;
+        QPointer<QSpinBox> _octreeOverlayOpacitySpin;
         QPointer<QCheckBox> _gpuTelemetryCheck;
+        QPointer<QAction> _octreeOverlayAction;
         QPointer<QAction> _gpuTelemetryAction;
         QPointer<QTimer> _timer;
         MainWindowController _controller;
