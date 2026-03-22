@@ -79,6 +79,7 @@ set(GRAVITY_COMMAND_CONFIG_SOURCES
 )
 add_library(gravityCoreFfi STATIC
     ${GRAVITY_CORE_FFI_SOURCES}
+    ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
     ${GRAVITY_SERVER_SOURCES}
 )
 configure_gravity_cuda_target(gravityCoreFfi)
