@@ -387,6 +387,30 @@
                 "req_ids": [
                     "REQ-CORE-001"
                 ]
+            },
+            "TST-UNT-CORE-004": {
+                "id": "BlitzarCoreApiTest.TST_UNT_CORE_004_LoadsAsciiVtkGoldenFile",
+                "req_ids": [
+                    "REQ-CORE-001"
+                ]
+            },
+            "TST-UNT-CORE-005": {
+                "id": "BlitzarCoreApiTest.TST_UNT_CORE_005_LoadsBinaryVtkGoldenFile",
+                "req_ids": [
+                    "REQ-CORE-001"
+                ]
+            },
+            "TST-UNT-CORE-006": {
+                "id": "BlitzarCoreApiTest.TST_UNT_CORE_006_RoundTripsAsciiAndBinaryVtkWithinTolerance",
+                "req_ids": [
+                    "REQ-CORE-001"
+                ]
+            },
+            "TST-UNT-CORE-007": {
+                "id": "BlitzarCoreApiTest.TST_UNT_CORE_007_InvalidAndCorruptVtkInputsFallBackDeterministically",
+                "req_ids": [
+                    "REQ-CORE-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_PHYSICS_ORBIT": {
