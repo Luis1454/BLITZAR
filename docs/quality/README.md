@@ -45,7 +45,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - The enforceable subset of the `Power of 10` profile is checked in repository policy, including open-ended loop, macro, and function-pointer constraints on production C++ paths; non-automatable rules remain review-gated.
 - Strict analyzer lanes also cover ignored return values via `clang-tidy` and `[[nodiscard]]` on internal status APIs.
 - Quality payload is loaded through deterministic include merge with cycle/duplicate-key protections.
-- All quality artifacts remain constrained by repository file-size policy (target `<=200`, hard `<=300` lines).
+- All quality artifacts remain constrained by repository file-size policy (target `<=200`, hard `<=300` lines) and review-oriented decomposition signals for oversized or clustered implementation functions.
 - Evidence references remain `EVD_*` only (no hardcoded file paths in policy rows).
 - Temporary exceptions must be recorded in `manifest/deviations.json` with owner, approver, rationale, and review date.
 - Release candidates should emit a release-quality index before deep evidence review.

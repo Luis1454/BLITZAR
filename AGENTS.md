@@ -102,9 +102,12 @@ make quality-strict CONFIG=simulation.ini QUALITY_BUILD_DIR=build-quality
 ## File Size Policy (All Files)
 
 - Apply this policy to every file type (`.cpp`, `.hpp`, `.cu`, `.cmake`, `.md`, scripts, etc.).
+- One file must keep one clear primary responsibility.
 - Target file length: `<= 200` lines.
 - Hard limit: `<= 300` lines.
-- If a file grows past the hard limit, split it by responsibility immediately.
+- Files above the target remain reviewable only if the responsibility is still clear and the implementation stays simple.
+- If a file grows past the hard limit, split it by responsibility immediately instead of creating thin wrapper files just to satisfy the counter.
+- Repository policy warnings may also flag very large functions or multiple substantial functions in the same implementation file as decomposition signals even when the file still fits under the hard limit.
 - Allowed exceptions: generated files, vendored third-party code, or performance-critical fragments; document the reason in the related PR/issue.
 
 ## C++ Conventions

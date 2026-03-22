@@ -131,6 +131,57 @@ def test_repo_policy_rejects_json_above_hard_limit(tmp_path: Path) -> None:
     assert any("oversize.json" in error and "exceeds hard limit" in error for error in errors)
 
 
+def test_repo_policy_warns_when_file_exceeds_target_but_not_hard_limit(tmp_path: Path) -> None:
+    content = "line\n" * 205
+    _write(tmp_path / "docs" / "quality" / "target_warning.md", content)
+    ok, errors, warnings = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok
+    assert not errors
+    assert any("target_warning.md: 205 lines exceeds target 200" in warning for warning in warnings)
+
+
+def test_repo_policy_warns_on_oversized_implementation_function(tmp_path: Path) -> None:
+    body = "".join(f"    value += {index};\n" for index in range(85))
+    _write(
+        tmp_path / cpp_file(ENGINE_SERVER_DIR, "large_function"),
+        "int largeFunction() {\n"
+        "    int value = 0;\n"
+        f"{body}"
+        "    return value;\n"
+        "}\n",
+    )
+    ok, errors, warnings = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok
+    assert not errors
+    assert any("function spans" in warning and "large_function.cpp:1" in warning for warning in warnings)
+
+
+def test_repo_policy_warns_on_multiple_substantial_functions_in_one_file(tmp_path: Path) -> None:
+    function_block = "".join(f"    value += {index};\n" for index in range(38))
+    content = (
+        "int alpha() {\n"
+        "    int value = 0;\n"
+        f"{function_block}"
+        "    return value;\n"
+        "}\n\n"
+        "int beta() {\n"
+        "    int value = 0;\n"
+        f"{function_block}"
+        "    return value;\n"
+        "}\n\n"
+        "int gamma() {\n"
+        "    int value = 0;\n"
+        f"{function_block}"
+        "    return value;\n"
+        "}\n"
+    )
+    _write(tmp_path / cpp_file(ENGINE_SERVER_DIR, "clustered_functions"), content)
+    ok, errors, warnings = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok
+    assert not errors
+    assert any("contains 3 substantial functions" in warning for warning in warnings)
+
+
 def test_repo_policy_rejects_evidence_workflow_without_prod_profile(tmp_path: Path) -> None:
     _write(
         tmp_path / ".github" / "workflows" / "release-lane.yml",
