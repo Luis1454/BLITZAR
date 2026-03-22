@@ -146,7 +146,7 @@
                                           },
                           "REQ-CORE-001":  {
                                                "tests":  [
-                                                             "^BlitzarCoreApiTest\\.TST_UNT_CORE_00[1-3]_"
+                                                             "^BlitzarCoreApiTest\\.TST_UNT_CORE_00[1-7]_"
                                                          ],
                                                "artifacts":  [
                                                                  "EVD_TEST_UNIT_CORE_API",
