@@ -94,6 +94,23 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_003_RejectsMalformedSnapshotPayload)
     EXPECT_EQ(error, "invalid snapshot payload");
 }
 
+TEST(ServerProtocolCodecTest, TST_UNT_PROT_006_ParsesSnapshotSourceCountMetadata)
+{
+    std::vector<RenderParticle> snapshot(2u);
+    snapshot[0].x = 1.0f;
+    snapshot[1].x = 2.0f;
+
+    const std::string raw = grav_protocol::ServerJsonCodec::makeSnapshotResponse(true, snapshot, 8u);
+
+    grav_protocol::ServerSnapshotPayload parsed{};
+    std::string error;
+    ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error)) << error;
+    ASSERT_TRUE(parsed.envelope.ok);
+    EXPECT_TRUE(parsed.hasSnapshot);
+    EXPECT_EQ(parsed.particles.size(), 2u);
+    EXPECT_EQ(parsed.sourceSize, 8u);
+}
+
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_004_ParsesErrorEnvelopeForControlCommand)
 {
     const std::string raw = grav_protocol::ServerJsonCodec::makeErrorResponse(

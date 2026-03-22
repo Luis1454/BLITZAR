@@ -118,9 +118,15 @@ bool ServerJsonCodec::parseSnapshotResponse(std::string_view raw, ServerSnapshot
         return true;
     }
     readBool(raw, "has_snapshot", parsed.hasSnapshot);
+    if (!ServerJsonCodec::readNumber(raw, "source_count", parsed.sourceSize)) {
+        parsed.sourceSize = 0u;
+    }
     if (!SnapshotArrayParser(raw).parse(parsed.particles)) {
         error = "invalid snapshot payload";
         return false;
+    }
+    if (parsed.sourceSize == 0u) {
+        parsed.sourceSize = parsed.particles.size();
     }
     out = parsed;
     error.clear();

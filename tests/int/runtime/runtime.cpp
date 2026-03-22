@@ -209,6 +209,51 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_010_PacedSnapshotQueuePreservesBacklogAndRe
     std::filesystem::remove(configPath, ec);
 }
 
+TEST(ClientRuntimeTest, TST_CNT_RUNT_011_BackendSnapshotPolicyReducesTransferForLowDrawCap)
+{
+    RealServerHarness server;
+    std::string startError;
+    const std::vector<std::string> serverArgs{
+        "--particle-count",
+        "40000",
+        "--solver",
+        "octree_cpu",
+        "--integrator",
+        "euler",
+        "--init-config-style",
+        "preset",
+        "--preset-structure",
+        "random_cloud"
+    };
+    ASSERT_TRUE(server.start(startError, 0u, {}, serverArgs)) << startError;
+
+    grav_client::ClientRuntime runtime("simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
+    ASSERT_TRUE(runtime.start());
+
+    ASSERT_TRUE(testsupport::waitUntil([&]() {
+        const SimulationStats stats = runtime.getStats();
+        return runtime.linkStateLabel() == "connected"
+            && stats.particleCount == 40000u
+            && stats.solverName == "octree_cpu";
+    }, std::chrono::milliseconds(4000)));
+
+    runtime.setRemoteSnapshotCap(4096u);
+
+    std::optional<grav_client::ConsumedSnapshot> consumedSnapshot;
+    ASSERT_TRUE(testsupport::waitUntil([&]() {
+        consumedSnapshot = runtime.consumeLatestSnapshot();
+        return consumedSnapshot.has_value() && consumedSnapshot->sourceSize == 8192u;
+    }, std::chrono::milliseconds(4000)));
+    ASSERT_TRUE(consumedSnapshot.has_value());
+    EXPECT_EQ(runtime.getStats().particleCount, 40000u);
+    EXPECT_EQ(consumedSnapshot->particles.size(), 4096u);
+    EXPECT_LT(consumedSnapshot->sourceSize, 40000u);
+    EXPECT_EQ(consumedSnapshot->sourceSize, 8192u);
+
+    runtime.stop();
+    server.stop();
+}
+
 } // namespace grav_test_client_runtime
 
 

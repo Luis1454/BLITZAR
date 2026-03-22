@@ -78,6 +78,8 @@ class SimulationServer {
         void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit);
         /// Sets default output parameters for snapshot export.
         void setExportDefaults(const std::string &directory, const std::string &format);
+        /// Updates the frontend-advertised snapshot draw budget used for transfer trimming.
+        void setSnapshotTransferCap(std::uint32_t maxPoints);
         /// Selects a file-backed initial state and its parsing format.
         void setInitialStateFile(const std::string &path, const std::string &format);
         /// Queues an export of the current runtime state.
@@ -86,7 +88,10 @@ class SimulationServer {
         /// Moves the newest snapshot into `outSnapshot` when one is available.
         bool tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot);
         /// Copies the newest published snapshot into `outSnapshot`.
-        bool copyLatestSnapshot(std::vector<RenderParticle> &outSnapshot, std::size_t maxPoints = 0) const;
+        bool copyLatestSnapshot(
+            std::vector<RenderParticle> &outSnapshot,
+            std::size_t maxPoints = 0,
+            std::size_t *outSourceSize = nullptr) const;
         /// Returns the latest authoritative telemetry sample.
         SimulationStats getStats() const;
         /// Returns the current configuration mirror used by the runtime.
@@ -136,6 +141,7 @@ class SimulationServer {
         std::atomic<float> _configuredSubstepTargetDt;
         std::atomic<std::uint32_t> _configuredMaxSubsteps;
         std::atomic<std::uint32_t> _snapshotPublishPeriodMs;
+        std::atomic<std::uint32_t> _snapshotTransferCap;
         std::atomic<float> _lastAppliedSubstepTargetDt;
         std::atomic<float> _lastAppliedSubstepDt;
         std::atomic<std::uint32_t> _lastAppliedSubsteps;

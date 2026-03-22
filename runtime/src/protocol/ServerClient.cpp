@@ -306,7 +306,10 @@ ServerClientResponse ServerClient::getStatus(ServerClientStatus &outStatus)
     }
 }
 
-ServerClientResponse ServerClient::getSnapshot(std::vector<RenderParticle> &outSnapshot, std::uint32_t maxPoints)
+ServerClientResponse ServerClient::getSnapshot(
+    std::vector<RenderParticle> &outSnapshot,
+    std::uint32_t maxPoints,
+    std::size_t *outSourceSize)
 {
     try {
         maxPoints = grav_protocol::clampSnapshotPoints(maxPoints);
@@ -323,6 +326,9 @@ ServerClientResponse ServerClient::getSnapshot(std::vector<RenderParticle> &outS
             response.ok = false;
             response.error = serverClientError("getSnapshot", parseError);
             return response;
+        }
+        if (outSourceSize != nullptr) {
+            *outSourceSize = parsed.sourceSize;
         }
         outSnapshot = std::move(parsed.particles);
         return response;
