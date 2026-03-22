@@ -20,6 +20,7 @@ const std::string_view SetOctree = "set_octree";
 const std::string_view SetSphParams = "set_sph_params";
 const std::string_view SetSubsteps = "set_substeps";
 const std::string_view SetEnergyMeasure = "set_energy_measure";
+const std::string_view SetGpuTelemetry = "set_gpu_telemetry";
 const std::string_view SetSnapshotPublishCadence = "set_snapshot_publish_cadence";
 const std::string_view SetSnapshotTransferCap = "set_snapshot_transfer_cap";
 const std::string_view Load = "load";

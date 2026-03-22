@@ -294,6 +294,12 @@ ServerClientResponse ServerClient::getStatus(ServerClientStatus &outStatus)
         outStatus.totalEnergy = parsed.totalEnergy;
         outStatus.energyDriftPct = parsed.energyDriftPct;
         outStatus.energyEstimated = parsed.energyEstimated;
+        outStatus.gpuTelemetryEnabled = parsed.gpuTelemetryEnabled;
+        outStatus.gpuTelemetryAvailable = parsed.gpuTelemetryAvailable;
+        outStatus.gpuKernelMs = parsed.gpuKernelMs;
+        outStatus.gpuCopyMs = parsed.gpuCopyMs;
+        outStatus.gpuVramUsedBytes = parsed.gpuVramUsedBytes;
+        outStatus.gpuVramTotalBytes = parsed.gpuVramTotalBytes;
         return response;
     } catch (const std::exception &ex) {
         ServerClientResponse response;

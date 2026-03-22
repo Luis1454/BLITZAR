@@ -53,4 +53,16 @@ pub struct StatusPayload {
     pub energy_drift_pct: f32,
     #[serde(default, rename = "estimated")]
     pub energy_estimated: bool,
+    #[serde(default, rename = "gpu_telemetry_enabled")]
+    pub gpu_telemetry_enabled: bool,
+    #[serde(default, rename = "gpu_telemetry_available")]
+    pub gpu_telemetry_available: bool,
+    #[serde(default, rename = "gpu_kernel_ms")]
+    pub gpu_kernel_ms: f32,
+    #[serde(default, rename = "gpu_copy_ms")]
+    pub gpu_copy_ms: f32,
+    #[serde(default, rename = "gpu_vram_used_bytes")]
+    pub gpu_vram_used_bytes: u64,
+    #[serde(default, rename = "gpu_vram_total_bytes")]
+    pub gpu_vram_total_bytes: u64,
 }

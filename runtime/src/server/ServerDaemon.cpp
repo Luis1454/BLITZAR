@@ -463,6 +463,14 @@ std::string ServerDaemon::processRequest(const std::string &request)
             _server.setEnergyMeasurementConfig(everySteps, sampleLimit);
             return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
+        if (cmd == grav_protocol::SetGpuTelemetry) {
+            bool enabled = false;
+            if (!grav_protocol::ServerJsonCodec::readBool(request, "value", enabled)) {
+                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "missing bool gpu telemetry value");
+            }
+            _server.setGpuTelemetryEnabled(enabled);
+            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+        }
         if (cmd == grav_protocol::SetSnapshotPublishCadence) {
             std::uint32_t periodMs = 0;
             if (!grav_protocol::ServerJsonCodec::readNumber(request, "period_ms", periodMs) || periodMs < 1u) {

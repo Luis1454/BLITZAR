@@ -160,4 +160,30 @@ TEST(ServerProtocolTest, TST_INT_PROT_008_ServerRejectsRequestsWithoutConfigured
     server.stop();
 }
 
+TEST(ServerProtocolTest, TST_INT_PROT_010_ServerAcceptsGpuTelemetryToggle)
+{
+    RealServerHarness server;
+    std::string startError;
+    ASSERT_TRUE(server.start(startError)) << startError;
+
+    ServerClient client;
+    client.setSocketTimeoutMs(200);
+    ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
+
+    ServerClientResponse response = client.sendCommand(std::string(grav_protocol::SetGpuTelemetry), "\"value\":true");
+    ASSERT_TRUE(response.ok) << response.error;
+
+    ServerClientStatus status{};
+    ASSERT_TRUE(client.getStatus(status).ok);
+    EXPECT_TRUE(status.gpuTelemetryEnabled);
+
+    response = client.sendCommand(std::string(grav_protocol::SetGpuTelemetry), "\"value\":false");
+    ASSERT_TRUE(response.ok) << response.error;
+    ASSERT_TRUE(client.getStatus(status).ok);
+    EXPECT_FALSE(status.gpuTelemetryEnabled);
+
+    client.disconnect();
+    server.stop();
+}
+
 } // namespace grav_test_server_protocol_control

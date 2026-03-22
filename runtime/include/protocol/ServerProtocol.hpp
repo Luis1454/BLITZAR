@@ -24,6 +24,7 @@ extern const std::string_view SetOctree;
 extern const std::string_view SetSphParams;
 extern const std::string_view SetSubsteps;
 extern const std::string_view SetEnergyMeasure;
+extern const std::string_view SetGpuTelemetry;
 extern const std::string_view SetSnapshotPublishCadence;
 extern const std::string_view SetSnapshotTransferCap;
 extern const std::string_view Load;
