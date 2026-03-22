@@ -55,6 +55,10 @@ static void writeOctree(std::ostream &out, const SimulationConfig &config)
     DirectiveStreamWriter writer(out, "octree");
     writer.writeFloat("theta", config.octreeTheta);
     writer.writeFloat("softening", config.octreeSoftening);
+    writer.writeString("criterion", config.octreeOpeningCriterion);
+    writer.writeBool("theta_auto", config.octreeThetaAutoTune);
+    writer.writeFloat("theta_auto_min", config.octreeThetaAutoMin);
+    writer.writeFloat("theta_auto_max", config.octreeThetaAutoMax);
     writer.finish();
 }
 

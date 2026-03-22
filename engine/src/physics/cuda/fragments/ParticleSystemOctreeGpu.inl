@@ -10,6 +10,14 @@ __device__ bool octreeNodeContains(const GpuOctreeNode &node, const Vector3 &pos
         && fabsf(pos.z - node.centerZ) <= node.halfSize;
 }
 
+__device__ float octreeNodeDistanceToBounds(const GpuOctreeNode &node, const Vector3 &pos)
+{
+    const float dx = fmaxf(fabsf(pos.x - node.centerX) - node.halfSize, 0.0f);
+    const float dy = fmaxf(fabsf(pos.y - node.centerY) - node.halfSize, 0.0f);
+    const float dz = fmaxf(fabsf(pos.z - node.centerZ) - node.halfSize, 0.0f);
+    return sqrtf(dx * dx + dy * dy + dz * dz);
+}
+
 __global__ void updateParticlesOctree(
     ParticleSoAView lastState,
     ParticleSoAView particlesOut,
@@ -23,7 +31,8 @@ __global__ void updateParticlesOctree(
     float maxAcceleration,
     float minSoftening,
     float minDistance2,
-    float minTheta
+    float minTheta,
+    int openingCriterion
 ) {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles || rootIndex < 0) {
@@ -61,11 +70,13 @@ __global__ void updateParticlesOctree(
 
         const Vector3 direction(node.comX - selfPos.x, node.comY - selfPos.y, node.comZ - selfPos.z);
         const float dist2 = dot(direction, direction) + clampedSoftening * clampedSoftening;
-        const float dist = sqrtf(dist2);
         const bool containsSelf = octreeNodeContains(node, selfPos);
         const float size = node.halfSize * 2.0f;
+        const float criterionDistance = openingCriterion == 1
+            ? fmaxf(octreeNodeDistanceToBounds(node, selfPos), 1.0e-6f)
+            : sqrtf(dist2);
 
-        if (!containsSelf && (size / dist) < clampedTheta) {
+        if (!containsSelf && (size / criterionDistance) < clampedTheta) {
             force += gravityAccelerationFromSource(
                 selfPos, Vector3(node.comX, node.comY, node.comZ),
                 node.mass, clampedSoftening, minSoftening, minDistance2);

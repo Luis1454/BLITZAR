@@ -191,11 +191,133 @@ float autoTargetSubstepDt(std::string_view solver, bool eulerIntegrator, bool sp
     return 0.0005f;
 }
 
+OctreeOpeningCriterion openingCriterionFromCanonicalName(std::string_view name)
+{
+    if (name == grav_modes::kOctreeCriterionBounds) {
+        return OctreeOpeningCriterion::Bounds;
+    }
+    return OctreeOpeningCriterion::CenterOfMass;
+}
+
+float clampThetaBound(float value)
+{
+    return std::clamp(value, 0.05f, 4.0f);
+}
+
+float computeOctreeDistributionScore(const std::vector<Particle> &particles)
+{
+    if (particles.empty()) {
+        return 0.0f;
+    }
+
+    Vector3 minPos = particles.front().getPosition();
+    Vector3 maxPos = minPos;
+    for (const Particle &particle : particles) {
+        const Vector3 pos = particle.getPosition();
+        minPos.x = std::min(minPos.x, pos.x);
+        minPos.y = std::min(minPos.y, pos.y);
+        minPos.z = std::min(minPos.z, pos.z);
+        maxPos.x = std::max(maxPos.x, pos.x);
+        maxPos.y = std::max(maxPos.y, pos.y);
+        maxPos.z = std::max(maxPos.z, pos.z);
+    }
+
+    const Vector3 center(
+        0.5f * (minPos.x + maxPos.x),
+        0.5f * (minPos.y + maxPos.y),
+        0.5f * (minPos.z + maxPos.z));
+    std::array<std::size_t, 8> octants{};
+    for (const Particle &particle : particles) {
+        const Vector3 pos = particle.getPosition();
+        int index = 0;
+        if (pos.x >= center.x) {
+            index |= 1;
+        }
+        if (pos.y >= center.y) {
+            index |= 2;
+        }
+        if (pos.z >= center.z) {
+            index |= 4;
+        }
+        octants[static_cast<std::size_t>(index)] += 1u;
+    }
+
+    std::size_t activeOctants = 0u;
+    std::size_t dominantCount = 0u;
+    for (const std::size_t count : octants) {
+        if (count > 0u) {
+            activeOctants += 1u;
+            dominantCount = std::max(dominantCount, count);
+        }
+    }
+
+    const float occupancyScore = static_cast<float>(activeOctants) / 8.0f;
+    const float dominantFraction = static_cast<float>(dominantCount) / static_cast<float>(particles.size());
+    return std::clamp(0.6f * occupancyScore + 0.4f * (1.0f - dominantFraction), 0.0f, 1.0f);
+}
+
+float profileThetaBias(std::string_view performanceProfile)
+{
+    if (performanceProfile == "interactive") {
+        return 0.9f;
+    }
+    if (performanceProfile == "balanced") {
+        return 0.6f;
+    }
+    if (performanceProfile == "quality") {
+        return 0.2f;
+    }
+    return 0.5f;
+}
+
+float particleThetaBias(std::size_t particleCount)
+{
+    if (particleCount <= 512u) {
+        return 0.0f;
+    }
+    const float normalized = static_cast<float>(particleCount - 512u) / static_cast<float>(65536u - 512u);
+    return std::clamp(normalized, 0.0f, 1.0f);
+}
+
+float resolveOctreeTheta(
+    float configuredTheta,
+    bool autoTune,
+    float autoMin,
+    float autoMax,
+    std::string_view performanceProfile,
+    const std::vector<Particle> &particles,
+    float distributionScore)
+{
+    const float clampedMin = clampThetaBound(autoMin);
+    const float clampedMax = std::max(clampedMin, clampThetaBound(autoMax));
+    const float clampedConfigured = std::clamp(configuredTheta, clampedMin, clampedMax);
+    if (!autoTune) {
+        return clampedConfigured;
+    }
+
+    const float span = std::max(1e-6f, clampedMax - clampedMin);
+    const float configuredBias = std::clamp((clampedConfigured - clampedMin) / span, 0.0f, 1.0f);
+    const float blendedBias = std::clamp(
+        0.45f * profileThetaBias(performanceProfile)
+        + 0.25f * particleThetaBias(particles.size())
+        + 0.15f * distributionScore
+        + 0.15f * configuredBias,
+        0.0f,
+        1.0f);
+    return clampedMin + span * blendedBias;
+}
+
 void logEffectiveExecutionModes(
     std::string_view solver,
     std::string_view integrator,
     std::string_view performanceProfile,
+    std::string_view openingCriterion,
     float theta,
+    float effectiveTheta,
+    bool thetaAutoTune,
+    float thetaAutoMin,
+    float thetaAutoMax,
+    float octreeDistributionScore,
     float softening,
     float physicsMaxAcceleration,
     float physicsMinSoftening,
@@ -204,13 +326,21 @@ void logEffectiveExecutionModes(
     bool sphEnabled,
     float configuredSubstepTargetDt,
     std::uint32_t configuredMaxSubsteps,
-    std::uint32_t snapshotPublishPeriodMs)
+    std::uint32_t snapshotPublishPeriodMs,
+    float serverFps,
+    float energyDriftPct)
 {
     std::cout << "[server] active solver=" << solver
               << " integrator=" << integrator
               << " perf=" << performanceProfile;
     if (solver == grav_modes::kSolverOctreeCpu || solver == grav_modes::kSolverOctreeGpu) {
-        std::cout << " theta=" << theta
+        std::cout << " criterion=" << openingCriterion
+                  << " theta=" << theta
+                  << " theta_effective=" << effectiveTheta
+                  << " theta_auto=" << (thetaAutoTune ? "on" : "off")
+                  << " theta_auto_min=" << thetaAutoMin
+                  << " theta_auto_max=" << thetaAutoMax
+                  << " distribution_score=" << octreeDistributionScore
                   << " softening=" << softening;
     }
     std::cout << " physics_max_acceleration=" << physicsMaxAcceleration
@@ -220,7 +350,9 @@ void logEffectiveExecutionModes(
     std::cout << " sph=" << (sphEnabled ? "on" : "off")
               << " substep_target_dt=" << configuredSubstepTargetDt
               << " max_substeps=" << configuredMaxSubsteps
-              << " snapshot_publish_ms=" << snapshotPublishPeriodMs << "\n";
+              << " snapshot_publish_ms=" << snapshotPublishPeriodMs
+              << " perf_fps=" << serverFps
+              << " error_energy_drift_pct=" << energyDriftPct << "\n";
 }
 
 std::string defaultExportPath(const std::string &directory, const std::string &format, std::uint64_t step)
@@ -1148,6 +1280,12 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
       _performanceProfile("interactive"),
       _octreeTheta(1.2f),
       _octreeSoftening(2.5f),
+      _octreeOpeningCriterion("com"),
+      _octreeEffectiveTheta(1.2f),
+      _octreeThetaAutoMin(0.4f),
+      _octreeThetaAutoMax(1.2f),
+      _octreeDistributionScore(0.0f),
+      _octreeThetaAutoTune(false),
       _sphEnabled(false),
       _sphSmoothingLength(1.25f),
       _sphRestDensity(1.0f),
@@ -1190,6 +1328,10 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
     _runtimeConfigMirror.clientParticleCap = grav_protocol::kSnapshotDefaultPoints;
     _runtimeConfigMirror.octreeTheta = _octreeTheta;
     _runtimeConfigMirror.octreeSoftening = _octreeSoftening;
+    _runtimeConfigMirror.octreeOpeningCriterion = _octreeOpeningCriterion;
+    _runtimeConfigMirror.octreeThetaAutoTune = _octreeThetaAutoTune;
+    _runtimeConfigMirror.octreeThetaAutoMin = _octreeThetaAutoMin;
+    _runtimeConfigMirror.octreeThetaAutoMax = _octreeThetaAutoMax;
     _runtimeConfigMirror.sphEnabled = _sphEnabled;
     _runtimeConfigMirror.sphSmoothingLength = _sphSmoothingLength;
     _runtimeConfigMirror.sphRestDensity = _sphRestDensity;
@@ -1237,6 +1379,11 @@ SimulationServer::SimulationServer(const std::string &configPath)
         coerceConfigSolverIntegratorCompatibility(_solverMode, _integratorMode, "config");
         _octreeTheta = loaded.octreeTheta;
         _octreeSoftening = loaded.octreeSoftening;
+        _octreeOpeningCriterion = loaded.octreeOpeningCriterion;
+        _octreeThetaAutoTune = loaded.octreeThetaAutoTune;
+        _octreeThetaAutoMin = loaded.octreeThetaAutoMin;
+        _octreeThetaAutoMax = loaded.octreeThetaAutoMax;
+        _octreeEffectiveTheta = loaded.octreeTheta;
         _sphEnabled = loaded.sphEnabled;
         _sphSmoothingLength = loaded.sphSmoothingLength;
         _sphRestDensity = loaded.sphRestDensity;
@@ -1427,6 +1574,9 @@ void SimulationServer::setOctreeParameters(float theta, float softening)
     std::lock_guard<std::mutex> lock(_commandMutex);
     if (theta > 0.01f) {
         _octreeTheta = theta;
+        const float clampedMin = clampThetaBound(_octreeThetaAutoMin);
+        const float clampedMax = std::max(clampedMin, clampThetaBound(_octreeThetaAutoMax));
+        _octreeEffectiveTheta = std::clamp(theta, clampedMin, clampedMax);
         _runtimeConfigMirror.octreeTheta = _octreeTheta;
     }
     if (softening > 1e-6f) {
@@ -1667,6 +1817,10 @@ SimulationConfig SimulationServer::getRuntimeConfig() const
         config.performanceProfile = _performanceProfile;
         config.octreeTheta = _octreeTheta;
         config.octreeSoftening = _octreeSoftening;
+        config.octreeOpeningCriterion = _octreeOpeningCriterion;
+        config.octreeThetaAutoTune = _octreeThetaAutoTune;
+        config.octreeThetaAutoMin = _octreeThetaAutoMin;
+        config.octreeThetaAutoMax = _octreeThetaAutoMax;
         config.sphEnabled = _sphEnabled;
         config.sphSmoothingLength = _sphSmoothingLength;
         config.sphRestDensity = _sphRestDensity;
@@ -1748,8 +1902,15 @@ void SimulationServer::rebuildSystem()
 
     std::string solver;
     std::string integrator;
+    std::string openingCriterion = "com";
+    std::string performanceProfile = "interactive";
     float theta = 1.2f;
+    float effectiveTheta = 1.2f;
     float softening = 2.5f;
+    float thetaAutoMin = 0.4f;
+    float thetaAutoMax = 1.2f;
+    float octreeDistributionScore = 0.0f;
+    bool thetaAutoTune = false;
     bool sphEnabled = false;
     float sphSmoothingLength = 1.25f;
     float sphRestDensity = 1.0f;
@@ -1769,8 +1930,15 @@ void SimulationServer::rebuildSystem()
         std::lock_guard<std::mutex> lock(_commandMutex);
         solver = _solverMode;
         integrator = _integratorMode;
+        openingCriterion = _octreeOpeningCriterion;
+        performanceProfile = _performanceProfile;
         theta = _octreeTheta;
+        effectiveTheta = _octreeEffectiveTheta;
         softening = _octreeSoftening;
+        thetaAutoMin = _octreeThetaAutoMin;
+        thetaAutoMax = _octreeThetaAutoMax;
+        octreeDistributionScore = _octreeDistributionScore;
+        thetaAutoTune = _octreeThetaAutoTune;
         sphEnabled = _sphEnabled;
         sphSmoothingLength = _sphSmoothingLength;
         sphRestDensity = _sphRestDensity;
@@ -1801,6 +1969,12 @@ void SimulationServer::rebuildSystem()
         } else {
             integrator.assign(grav_modes::kIntegratorEuler);
             std::cerr << "[server] invalid internal integrator mode detected, resetting to euler\n";
+        }
+        if (grav_modes::normalizeOctreeOpeningCriterion(openingCriterion, canonical)) {
+            openingCriterion = canonical;
+        } else {
+            openingCriterion.assign(grav_modes::kOctreeCriterionCom);
+            std::cerr << "[server] invalid internal octree criterion detected, resetting to com\n";
         }
         coerceConfigSolverIntegratorCompatibility(solver, integrator, "rebuild");
     }
@@ -1883,8 +2057,25 @@ void SimulationServer::rebuildSystem()
         _particleCount = targetParticleCount;
     }
 
-    _system->setOctreeTheta(theta);
+    octreeDistributionScore = computeOctreeDistributionScore(configuredParticles);
+    effectiveTheta = resolveOctreeTheta(
+        theta,
+        thetaAutoTune,
+        thetaAutoMin,
+        thetaAutoMax,
+        performanceProfile,
+        configuredParticles,
+        octreeDistributionScore);
+    {
+        std::lock_guard<std::mutex> lock(_commandMutex);
+        _octreeOpeningCriterion = openingCriterion;
+        _octreeDistributionScore = octreeDistributionScore;
+        _octreeEffectiveTheta = effectiveTheta;
+    }
+
+    _system->setOctreeTheta(effectiveTheta);
     _system->setOctreeSoftening(softening);
+    _system->setOctreeOpeningCriterion(openingCriterionFromCanonicalName(openingCriterion));
     _system->setSolverMode(solverModeFromCanonicalName(effectiveSolver));
     _system->setIntegratorMode(integratorModeFromCanonicalName(integrator));
     _system->setSphEnabled(sphEnabled);
@@ -1900,8 +2091,14 @@ void SimulationServer::rebuildSystem()
     logEffectiveExecutionModes(
         effectiveSolver,
         integrator,
-        _performanceProfile,
+        performanceProfile,
+        openingCriterion,
         theta,
+        effectiveTheta,
+        thetaAutoTune,
+        thetaAutoMin,
+        thetaAutoMax,
+        octreeDistributionScore,
         softening,
         physicsMaxAcceleration,
         physicsMinSoftening,
@@ -1910,7 +2107,9 @@ void SimulationServer::rebuildSystem()
         sphEnabled,
         _configuredSubstepTargetDt.load(std::memory_order_relaxed),
         _configuredMaxSubsteps.load(std::memory_order_relaxed),
-        _snapshotPublishPeriodMs.load(std::memory_order_relaxed));
+        _snapshotPublishPeriodMs.load(std::memory_order_relaxed),
+        _serverFps.load(std::memory_order_relaxed),
+        _energyDriftPct.load(std::memory_order_relaxed));
     if (initConfig.thermalHeatingCoeff > 0.0f || initConfig.thermalRadiationCoeff > 0.0f) {
         std::cout << "[server] warning: thermal model active (heating="
                   << initConfig.thermalHeatingCoeff
@@ -2399,13 +2598,15 @@ void SimulationServer::loop()
         float sphViscosity = 0.0f;
         std::string solverMode;
         std::string integratorMode;
+        std::string openingCriterion;
         bool sphEnabled = false;
         {
             std::lock_guard<std::mutex> lock(_commandMutex);
-            theta = _octreeTheta;
+            theta = _octreeThetaAutoTune ? _octreeEffectiveTheta : _octreeTheta;
             softening = _octreeSoftening;
             solverMode = _solverMode;
             integratorMode = _integratorMode;
+            openingCriterion = _octreeOpeningCriterion;
             sphEnabled = _sphEnabled;
             sphSmoothingLength = _sphSmoothingLength;
             sphRestDensity = _sphRestDensity;
@@ -2416,6 +2617,7 @@ void SimulationServer::loop()
         _system->setIntegratorMode(integratorModeFromCanonicalName(integratorMode));
         _system->setOctreeTheta(theta);
         _system->setOctreeSoftening(softening);
+        _system->setOctreeOpeningCriterion(openingCriterionFromCanonicalName(openingCriterion));
         _system->setSphEnabled(sphEnabled);
         _system->setSphParameters(sphSmoothingLength, sphRestDensity, sphGasConstant, sphViscosity);
 

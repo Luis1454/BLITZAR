@@ -19,6 +19,7 @@ enum class OptionKind {
     PerformanceProfile,
     Solver,
     Integrator,
+    OctreeCriterion,
     ClientParticleCap,
     TimeoutTriple,
 };

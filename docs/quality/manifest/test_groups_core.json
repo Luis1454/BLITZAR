@@ -104,6 +104,12 @@
                 "req_ids": [
                     "REQ-CONF-001"
                 ]
+            },
+            "TST-UNT-CONF-037": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_037_CliAcceptsOctreeCriterionAndAutoThetaRange",
+                "req_ids": [
+                    "REQ-CONF-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_ARGS_IO": {
@@ -190,6 +196,18 @@
                 "req_ids": [
                     "REQ-CONF-002",
                     "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-CONF-038": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_038_LoadSupportsOctreeCriterionAndAutoThetaDirective",
+                "req_ids": [
+                    "REQ-CONF-001"
+                ]
+            },
+            "TST-UNT-CONF-039": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_039_LoadRejectsInvalidOctreeCriterionAndAutoThetaRange",
+                "req_ids": [
+                    "REQ-CONF-002"
                 ]
             }
         },
@@ -527,8 +545,20 @@
                     "REQ-UI-001"
                 ]
             },
+            "TST-UNT-RUNT-006": {
+                "id": "PhysicsTest.TST_UNT_RUNT_006_ServerLogsOctreeCriterionAndAutoThetaMetrics",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
+            },
             "TST-UNT-PHYS-018": {
                 "id": "PhysicsTest.TST_UNT_PHYS_018_EnergyEstimateUsesConfiguredStabilityConstants",
+                "req_ids": [
+                    "REQ-PHYS-001"
+                ]
+            },
+            "TST-UNT-PHYS-019": {
+                "id": "PhysicsTest.TST_UNT_PHYS_019_BoundsCriterionIsMoreConservativeThanComCriterion",
                 "req_ids": [
                     "REQ-PHYS-001"
                 ]

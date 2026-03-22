@@ -40,6 +40,8 @@ class ParticleSystem {
         bool usesOctree() const;
         /// Sets the Barnes-Hut opening angle threshold.
         void setOctreeTheta(float theta);
+        /// Selects the Barnes-Hut opening criterion.
+        void setOctreeOpeningCriterion(OctreeOpeningCriterion criterion);
         /// Sets the minimum softening radius used by gravity interactions.
         void setOctreeSoftening(float softening);
         /// Enables or disables SPH processing.
@@ -103,6 +105,7 @@ class ParticleSystem {
         SolverMode _solverMode;
         IntegratorMode _integratorMode;
         float _octreeTheta;
+        OctreeOpeningCriterion _octreeOpeningCriterion;
         float _octreeSoftening;
         bool _sphEnabled;
         float _sphSmoothingLength;

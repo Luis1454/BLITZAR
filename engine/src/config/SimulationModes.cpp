@@ -27,6 +27,8 @@ const std::string_view kSolverOctreeGpu = "octree_gpu";
 const std::string_view kSolverOctreeCpu = "octree_cpu";
 const std::string_view kIntegratorEuler = "euler";
 const std::string_view kIntegratorRk4 = "rk4";
+const std::string_view kOctreeCriterionCom = "com";
+const std::string_view kOctreeCriterionBounds = "bounds";
 
 bool normalizeSolver(std::string_view value, std::string &outCanonical)
 {
@@ -55,6 +57,20 @@ bool normalizeIntegrator(std::string_view value, std::string &outCanonical)
     }
     if (normalized == "rk4" || normalized == "runge_kutta4" || normalized == "runge-kutta4") {
         outCanonical.assign(kIntegratorRk4);
+        return true;
+    }
+    return false;
+}
+
+bool normalizeOctreeOpeningCriterion(std::string_view value, std::string &outCanonical)
+{
+    const std::string normalized = toLowerTrimmed(value);
+    if (normalized == "com" || normalized == "center" || normalized == "center_distance" || normalized == "center-distance") {
+        outCanonical.assign(kOctreeCriterionCom);
+        return true;
+    }
+    if (normalized == "bounds" || normalized == "box" || normalized == "bounds_distance" || normalized == "bounds-distance") {
+        outCanonical.assign(kOctreeCriterionBounds);
         return true;
     }
     return false;

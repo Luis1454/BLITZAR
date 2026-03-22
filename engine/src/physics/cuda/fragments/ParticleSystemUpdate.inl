@@ -95,7 +95,7 @@ bool ParticleSystem::update(float deltaTime) {
             }
 
             for (size_t i = 0; i < _particles.size(); ++i) {
-                _octreeForces[i] = _octree.computeForceOn(_particles[i], i, _octreeTheta, _octreeSoftening, _physicsMinSoftening, _physicsMinDistance2, _physicsMinTheta);
+                _octreeForces[i] = _octree.computeForceOn(_particles[i], i, _octreeTheta, _octreeSoftening, _physicsMinSoftening, _physicsMinDistance2, _physicsMinTheta, _octreeOpeningCriterion);
                 _octreeForces[i] = clampAcceleration(_octreeForces[i], _physicsMaxAcceleration);
                 _particles[i].setPressure(_octreeForces[i] * 100.0f);
             }
@@ -129,7 +129,7 @@ bool ParticleSystem::update(float deltaTime) {
         auto computeOctreeAcceleration = [&](const std::vector<Particle> &state, std::vector<Vector3> &outAcc) {
             _octree.build(state);
             for (size_t i = 0; i < state.size(); ++i) {
-                outAcc[i] = _octree.computeForceOn(state[i], i, _octreeTheta, _octreeSoftening, _physicsMinSoftening, _physicsMinDistance2, _physicsMinTheta);
+                outAcc[i] = _octree.computeForceOn(state[i], i, _octreeTheta, _octreeSoftening, _physicsMinSoftening, _physicsMinDistance2, _physicsMinTheta, _octreeOpeningCriterion);
                 outAcc[i] = clampAcceleration(outAcc[i], _physicsMaxAcceleration);
             }
         };
@@ -256,7 +256,8 @@ bool ParticleSystem::update(float deltaTime) {
             _physicsMaxAcceleration,
             _physicsMinSoftening,
             _physicsMinDistance2,
-            _physicsMinTheta
+            _physicsMinTheta,
+            _octreeOpeningCriterion == OctreeOpeningCriterion::Bounds ? 1 : 0
         );
         if (!checkCudaStatus(cudaGetLastError(), "updateParticlesOctree kernel launch")) {
             return false;

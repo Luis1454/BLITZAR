@@ -24,6 +24,11 @@ struct GpuOctreeNode {
     unsigned int childMask;
 };
 
+enum class OctreeOpeningCriterion {
+    CenterOfMass,
+    Bounds
+};
+
 class Octree {
     public:
         Octree();
@@ -31,7 +36,7 @@ class Octree {
 
         void clear();
         void build(const std::vector<Particle> &particles);
-        Vector3 computeForceOn(const Particle &particle, std::size_t selfIndex, float theta, float softening, float minSoftening, float minDistance2, float minTheta) const;
+        Vector3 computeForceOn(const Particle &particle, std::size_t selfIndex, float theta, float softening, float minSoftening, float minDistance2, float minTheta, OctreeOpeningCriterion criterion) const;
         std::size_t getNodeCount() const;
         int getRootIndex() const;
         void exportGpu(std::vector<GpuOctreeNode> &outNodes, std::vector<int> &outLeafIndices) const;
@@ -59,7 +64,8 @@ class Octree {
             float softening,
             float minSoftening,
             float minDistance2,
-            float minTheta
+            float minTheta,
+            OctreeOpeningCriterion criterion
         ) const;
         static int childIndexForPosition(const Vector3 &position, const Vector3 &center);
         static bool hasChildren(const Node &node);

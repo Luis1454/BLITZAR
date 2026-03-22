@@ -151,6 +151,16 @@ bool applyEntry(
             memberAt<std::string>(config, entry.offset) = canonical;
             return true;
         }
+        case OptionKind::OctreeCriterion: {
+            std::string canonical;
+            if (!grav_modes::normalizeOctreeOpeningCriterion(value, canonical)) {
+                warnings << source << " invalid " << optionName
+                         << ": " << value << " (allowed: com|bounds)\n";
+                return true;
+            }
+            memberAt<std::string>(config, entry.offset) = canonical;
+            return true;
+        }
         case OptionKind::ClientParticleCap: {
             std::uint32_t parsed = memberAt<std::uint32_t>(config, entry.offset);
             if (!SimulationArgsParse::parseUint(value, parsed) || parsed < 2u) {

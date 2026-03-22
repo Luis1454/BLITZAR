@@ -9,6 +9,7 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
     _solverMode = solverModeFromEnv();
     _integratorMode = integratorModeFromEnv();
     _octreeTheta = parseFloatEnv("GRAVITY_OCTREE_THETA", 1.2f);
+    _octreeOpeningCriterion = OctreeOpeningCriterion::CenterOfMass;
     _octreeSoftening = parseFloatEnv("GRAVITY_OCTREE_SOFTENING", 2.5f);
     _sphEnabled = parseBoolEnv("GRAVITY_SPH_ENABLED", false);
     _sphSmoothingLength = parseFloatEnv("GRAVITY_SPH_H", 1.25f);

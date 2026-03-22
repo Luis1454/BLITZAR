@@ -23,6 +23,10 @@ struct SimulationConfig {
     std::uint32_t snapshotPublishPeriodMs = 50u;
     float octreeTheta = 1.2f;
     float octreeSoftening = 2.5f;
+    std::string octreeOpeningCriterion = "com";
+    bool octreeThetaAutoTune = false;
+    float octreeThetaAutoMin = 0.4f;
+    float octreeThetaAutoMax = 1.2f;
     std::uint32_t clientParticleCap = 4096u;
     float defaultZoom = 8.0f;
     int defaultLuminosity = 100;

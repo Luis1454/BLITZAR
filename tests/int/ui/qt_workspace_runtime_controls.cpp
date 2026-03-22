@@ -200,7 +200,7 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_012_PhysicsAndRenderControlsPers
     ASSERT_TRUE(testsupport::waitUntilUi([&]() {
         const std::string saved = testsupport::readAllFile(configPath);
         return saved.find("simulation(particle_count=10000, dt=0.25, solver=octree_cpu, integrator=euler)") != std::string::npos
-            && saved.find("octree(theta=0.65, softening=0.1234)") != std::string::npos
+            && saved.find("octree(theta=0.65, softening=0.1234") != std::string::npos
             && saved.find("client(zoom=12, luminosity=77") != std::string::npos
             && saved.find("sph(enabled=true, smoothing_length=0.8, rest_density=2.5, gas_constant=5.5, viscosity=0.33") != std::string::npos
             && saved.find("render(culling=false, lod=false") != std::string::npos;
