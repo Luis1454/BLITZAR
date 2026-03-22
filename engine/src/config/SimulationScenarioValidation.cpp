@@ -1,6 +1,7 @@
 #include "config/SimulationScenarioValidation.hpp"
 
 #include "config/SimulationConfig.hpp"
+#include "config/SimulationScenarioValidationRender.hpp"
 #include "server/SimulationInitConfig.hpp"
 #include <algorithm>
 #include <cctype>
@@ -121,6 +122,14 @@ public:
                 "client_snapshot_drop_policy",
                 "Snapshot drop policy must be latest-only or paced.",
                 "Set client_snapshot_drop_policy to latest-only or paced.");
+        }
+        const std::string uiTheme = normalized(config.uiTheme);
+        if (uiTheme != "light" && uiTheme != "dark") {
+            addDiagnostic(
+                ScenarioDiagnosticLevel::Error,
+                "ui_theme",
+                "Qt UI theme must be light or dark.",
+                "Set ui_theme to light or dark.");
         }
         if (config.octreeSoftening <= 0.0f) {
             addDiagnostic(
@@ -264,28 +273,6 @@ public:
         }
         return report;
     }
-    static std::string renderText(const ScenarioValidationReport &report)
-    {
-        std::ostringstream out;
-        if (report.errorCount == 0u && report.warningCount == 0u) {
-            out << "[preflight] OK: no blocking scenario issues detected.";
-            return out.str();
-        }
-
-        out << "[preflight] "
-            << (report.validForRun ? "warnings" : "blocked")
-            << ": " << report.errorCount << " error(s), " << report.warningCount << " warning(s)";
-        for (const ScenarioDiagnostic &diagnostic : report.diagnostics) {
-            out << "\n- "
-                << (diagnostic.level == ScenarioDiagnosticLevel::Error ? "error" : "warning")
-                << " [" << diagnostic.field << "] "
-                << diagnostic.message;
-            if (!diagnostic.action.empty()) {
-                out << " Action: " << diagnostic.action;
-            }
-        }
-        return out.str();
-    }
 };
 
 ScenarioValidationReport SimulationScenarioValidation::evaluate(const SimulationConfig &config)
@@ -295,6 +282,7 @@ ScenarioValidationReport SimulationScenarioValidation::evaluate(const Simulation
 
 std::string SimulationScenarioValidation::renderText(const ScenarioValidationReport &report)
 {
-    return SimulationScenarioValidationLocal::renderText(report);
+    return SimulationScenarioValidationRender::render(report);
 }
+
 } // namespace grav_config

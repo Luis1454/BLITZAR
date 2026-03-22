@@ -123,6 +123,7 @@ static bool applyDirectiveArgs(
             const std::string iniKey =
                 arg.first == "zoom" ? "default_zoom" :
                 arg.first == "luminosity" ? "default_luminosity" :
+                arg.first == "theme" ? "ui_theme" :
                 arg.first == "ui_fps" ? "ui_fps_limit" :
                 arg.first == "command_timeout_ms" ? "client_remote_command_timeout_ms" :
                 arg.first == "status_timeout_ms" ? "client_remote_status_timeout_ms" :

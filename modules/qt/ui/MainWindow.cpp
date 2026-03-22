@@ -7,8 +7,11 @@
 #include "server/SimulationInitConfig.hpp"
 #include "ui/EnergyGraphWidget.hpp"
 #include "ui/MultiViewWidget.hpp"
+#include "ui/QtTheme.hpp"
 #include "ui/QtViewMath.hpp"
 
+#include <QAction>
+#include <QActionGroup>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDockWidget>
@@ -146,39 +149,6 @@ MainWindow::MainWindow(
     setStyle(QStyleFactory::create("Fusion"));
     setDockNestingEnabled(true);
     setDockOptions(QMainWindow::AnimatedDocks | QMainWindow::AllowNestedDocks | QMainWindow::AllowTabbedDocks);
-    setStyleSheet(
-        "QMainWindow { background: #edf2f7; }"
-        "QMenuBar { background: #eef3f8; color: #102a43; border-bottom: 1px solid #cbd5e0; }"
-        "QMenuBar::item { padding: 6px 10px; }"
-        "QMenuBar::item:selected { background: #d7e3f1; color: #102a43; border-radius: 4px; }"
-        "QMenu { background: #ffffff; color: #102a43; border: 1px solid #cbd5e0; }"
-        "QMenu::item:selected { background: #d7e3f1; color: #102a43; }"
-        "QDockWidget { color: #102a43; }"
-        "QDockWidget::title { background: #dce6f2; color: #102a43; padding: 7px 10px; font-weight: 700; }"
-        "QGroupBox { border: 1px solid #d3ddea; border-radius: 10px; margin-top: 10px; padding-top: 10px; background: #f8fbff; }"
-        "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 4px; color: #243b53; font-weight: 700; }"
-        "QPushButton { background: #0f4c81; color: #f8fbff; border: 1px solid #0b3a60; border-radius: 8px; padding: 7px 10px; min-height: 18px; font-weight: 700; }"
-        "QPushButton:hover { background: #1363a3; }"
-        "QPushButton:pressed { background: #0b3a60; }"
-        "QPushButton:checked { background: #114b5f; border-color: #0d3947; }"
-        "QPushButton:disabled { background: #e7edf5; color: #7b8794; border: 1px solid #c7d2df; }"
-        "QLineEdit, QComboBox, QDoubleSpinBox, QSpinBox {"
-        "  background: #ffffff; color: #102a43; border: 1px solid #b9c7d8; border-radius: 7px; padding: 4px 6px;"
-        "}"
-        "QLineEdit:disabled, QComboBox:disabled, QDoubleSpinBox:disabled, QSpinBox:disabled {"
-        "  background: #f1f5f9; color: #7b8794; border-color: #d9e2ec;"
-        "}"
-        "QComboBox QAbstractItemView { color: #102a43; background: #ffffff; selection-background-color: #d7e3f1; }"
-        "QLabel { color: #243b53; }"
-        "QCheckBox { color: #243b53; spacing: 6px; }"
-        "QCheckBox::indicator { width: 16px; height: 16px; border-radius: 4px; border: 1px solid #97a6ba; background: #ffffff; }"
-        "QCheckBox::indicator:checked { background: #0f4c81; border-color: #0b3a60; image: none; }"
-        "QCheckBox::indicator:unchecked:hover, QCheckBox::indicator:checked:hover { border-color: #1363a3; }"
-        "QTabWidget::pane { border: 0; }"
-        "QTabBar::tab { background: #d7e1ed; color: #486581; border-radius: 8px; padding: 10px 10px; margin: 2px; font-weight: 600; }"
-        "QTabBar::tab:selected { background: #ffffff; color: #102a43; font-weight: 700; }"
-        "QStatusBar { background: #f8fafc; border-top: 1px solid #d9e2ec; color: #486581; }"
-    );
 
     _pauseButton->setCheckable(true);
     _solverCombo->addItem("pairwise_cuda");
@@ -313,24 +283,16 @@ MainWindow::MainWindow(
     _energyMetricsLabel->setWordWrap(true);
     _energyMetricsLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     _energyMetricsLabel->setObjectName("runtimeSummaryValue");
-    _validationLabel->setStyleSheet("color: #8b1e1e;");
+    _validationLabel->setObjectName("validationLabel");
     _energyGraph->setObjectName("energyGraphWidget");
 
     auto *sidebarTabs = new QTabWidget(this);
+    sidebarTabs->setObjectName("workspaceSidebarTabs");
     sidebarTabs->setTabPosition(QTabWidget::West);
     sidebarTabs->setDocumentMode(true);
     sidebarTabs->setMinimumWidth(220);
     sidebarTabs->setMaximumWidth(248);
     sidebarTabs->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-    sidebarTabs->setStyleSheet(
-        "QTabWidget::pane { border: 0; }"
-        "QTabBar::tab {"
-        "  min-width: 58px;"
-        "  min-height: 58px;"
-        "  padding: 8px 6px;"
-        "  margin: 2px;"
-        "}"
-    );
 
     auto *runPage = new QWidget(sidebarTabs);
     auto *runLayout = new QVBoxLayout(runPage);
@@ -458,26 +420,11 @@ MainWindow::MainWindow(
     sidebarTabs->addTab(renderPage, "Render");
 
     auto *summaryPane = new QWidget(this);
+    summaryPane->setObjectName("telemetrySummaryPane");
     auto *summaryLayout = new QGridLayout(summaryPane);
     summaryLayout->setContentsMargins(8, 8, 8, 8);
     summaryLayout->setHorizontalSpacing(8);
     summaryLayout->setVerticalSpacing(8);
-    summaryPane->setStyleSheet(
-        "QFrame#runtimeCard {"
-        "  border: 1px solid #d7dee6;"
-        "  border-radius: 8px;"
-        "  background: #f7f9fb;"
-        "}"
-        "QLabel#runtimeCardTitle {"
-        "  color: #486581;"
-        "  font-size: 11px;"
-        "  font-weight: 700;"
-        "  text-transform: uppercase;"
-        "}"
-        "QLabel#runtimeSummaryValue {"
-        "  color: #102a43;"
-        "}"
-    );
     summaryLayout->addWidget(makeSummaryCard(summaryPane, "Session", _statusLabel), 0, 0);
     summaryLayout->addWidget(makeSummaryCard(summaryPane, "Timing", _runtimeMetricsLabel), 0, 1);
     summaryLayout->addWidget(makeSummaryCard(summaryPane, "Pipeline", _queueMetricsLabel), 1, 0);
@@ -542,6 +489,22 @@ MainWindow::MainWindow(
     viewMenu->addAction(energyDock->toggleViewAction());
     viewMenu->addAction(telemetryDock->toggleViewAction());
     viewMenu->addAction(validationDock->toggleViewAction());
+    auto *themeMenu = viewMenu->addMenu("Theme");
+    auto *themeGroup = new QActionGroup(themeMenu);
+    themeGroup->setExclusive(true);
+    auto *lightThemeAction = themeMenu->addAction("Light");
+    lightThemeAction->setObjectName("themeLightAction");
+    lightThemeAction->setCheckable(true);
+    themeGroup->addAction(lightThemeAction);
+    auto *darkThemeAction = themeMenu->addAction("Dark");
+    darkThemeAction->setObjectName("themeDarkAction");
+    darkThemeAction->setCheckable(true);
+    themeGroup->addAction(darkThemeAction);
+    if (QtTheme::resolve(_config.uiTheme) == QtThemeMode::Dark) {
+        darkThemeAction->setChecked(true);
+    } else {
+        lightThemeAction->setChecked(true);
+    }
 
     auto *simulationMenu = menuBar()->addMenu("&Simulation");
     simulationMenu->addAction("Pause / Resume", this, [this]() { _pauseButton->click(); }, Qt::Key_Space);
@@ -566,6 +529,19 @@ MainWindow::MainWindow(
         _statusLabel->setText("Workspace shell active");
         statusBar()->showMessage("Workspace shell active", 3000);
     });
+    connect(lightThemeAction, &QAction::triggered, this, [this]() {
+        _config.uiTheme = "light";
+        applyTheme();
+        markConfigDirty();
+        statusBar()->showMessage("Theme applied: light", 3000);
+    });
+    connect(darkThemeAction, &QAction::triggered, this, [this]() {
+        _config.uiTheme = "dark";
+        applyTheme();
+        markConfigDirty();
+        statusBar()->showMessage("Theme applied: dark", 3000);
+    });
+    applyTheme();
     statusBar()->showMessage("Qt workspace ready", 3000);
 
     resize(1280, 820);
@@ -599,6 +575,15 @@ MainWindow::MainWindow(
 MainWindow::~MainWindow()
 {
     _runtime->stop();
+}
+
+void MainWindow::applyTheme()
+{
+    const QtThemeMode mode = QtTheme::resolve(_config.uiTheme);
+    _config.uiTheme = QtTheme::toConfigValue(mode);
+    setPalette(QtTheme::buildPalette(mode));
+    setAutoFillBackground(true);
+    setStyleSheet(QtTheme::buildMainWindowStyleSheet(mode));
 }
 
 void MainWindow::applyViewSettings()

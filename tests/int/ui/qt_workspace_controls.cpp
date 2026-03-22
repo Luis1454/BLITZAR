@@ -5,11 +5,13 @@
 
 #include <gtest/gtest.h>
 
+#include <QAction>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QDockWidget>
 #include <QEventLoop>
+#include <QPalette>
 #include <QPushButton>
 
 #include <chrono>
@@ -136,6 +138,58 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_009_EnergyDockIsVisibleAndSidebarStaysC
     EXPECT_TRUE(energyDock->isVisible());
     EXPECT_GE(energyDock->height(), 120);
     EXPECT_LE(controlsDock->width(), 260);
+}
+
+TEST(QtWorkspaceControlsTest, TST_UIX_UI_015_ThemeTogglePersistsAcrossSaveAndReload)
+{
+    (void)testsupport::ensureQtApp();
+
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path configPath =
+        std::filesystem::temp_directory_path() / ("gravity_qt_theme_" + std::to_string(stamp) + ".ini");
+    SimulationConfig initialConfig = makeWorkspaceUiConfig();
+    initialConfig.uiTheme = "dark";
+    ASSERT_TRUE(initialConfig.save(configPath.string()));
+
+    auto runtime = std::make_unique<grav_client::ClientRuntime>(
+        configPath.string(),
+        testsupport::makeTransport(1u, std::string()));
+    grav_qt::MainWindow window(initialConfig, configPath.string(), std::move(runtime));
+    window.show();
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+    QAction *lightAction = window.findChild<QAction *>("themeLightAction");
+    QAction *darkAction = window.findChild<QAction *>("themeDarkAction");
+    QPushButton *saveButton = testsupport::findButtonByText(window, "Save config");
+    ASSERT_NE(lightAction, nullptr);
+    ASSERT_NE(darkAction, nullptr);
+    ASSERT_NE(saveButton, nullptr);
+    EXPECT_LT(window.palette().color(QPalette::Window).lightness(), 128);
+    EXPECT_TRUE(darkAction->isChecked());
+
+    lightAction->trigger();
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
+    EXPECT_GT(window.palette().color(QPalette::Window).lightness(), 180);
+    EXPECT_TRUE(lightAction->isChecked());
+
+    saveButton->click();
+    ASSERT_TRUE(testsupport::waitUntilUi([&]() {
+        return testsupport::readAllFile(configPath).find("theme=light") != std::string::npos;
+    }, std::chrono::milliseconds(2000)));
+
+    const SimulationConfig reloaded = SimulationConfig::loadOrCreate(configPath.string());
+    EXPECT_EQ(reloaded.uiTheme, "light");
+
+    auto secondRuntime = std::make_unique<grav_client::ClientRuntime>(
+        configPath.string(),
+        testsupport::makeTransport(1u, std::string()));
+    grav_qt::MainWindow secondWindow(reloaded, configPath.string(), std::move(secondRuntime));
+    secondWindow.show();
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    EXPECT_GT(secondWindow.palette().color(QPalette::Window).lightness(), 180);
+
+    std::error_code ec;
+    std::filesystem::remove(configPath, ec);
 }
 
 } // namespace grav_test_qt_workspace_controls
