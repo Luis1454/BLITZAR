@@ -615,6 +615,12 @@
                     "REQ-UI-001",
                     "REQ-RUN-001"
                 ]
+            },
+            "TST-UIX-UI-015": {
+                "id": "QtWorkspaceControlsTest.TST_UIX_UI_015_ThemeTogglePersistsAcrossSaveAndReload",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_UI_QT_LOGIC": {

@@ -29,6 +29,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_010_SimulationConfigSaveLoadRoundTrip)
     config.clientRemoteSnapshotTimeoutMs = 200u;
     config.clientSnapshotQueueCapacity = 6u;
     config.clientSnapshotDropPolicy = "paced";
+    config.uiTheme = "dark";
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() / ("gravity_config_roundtrip_" + std::to_string(stamp) + ".ini");
@@ -51,6 +52,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_010_SimulationConfigSaveLoadRoundTrip)
     EXPECT_EQ(loaded.clientRemoteSnapshotTimeoutMs, config.clientRemoteSnapshotTimeoutMs);
     EXPECT_EQ(loaded.clientSnapshotQueueCapacity, config.clientSnapshotQueueCapacity);
     EXPECT_EQ(loaded.clientSnapshotDropPolicy, config.clientSnapshotDropPolicy);
+    EXPECT_EQ(loaded.uiTheme, config.uiTheme);
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }

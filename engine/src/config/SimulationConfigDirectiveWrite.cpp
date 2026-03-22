@@ -73,6 +73,7 @@ static void writeClient(std::ostream &out, const SimulationConfig &config)
     DirectiveStreamWriter writer(out, "client");
     writer.writeFloat("zoom", config.defaultZoom);
     writer.writeInt("luminosity", config.defaultLuminosity);
+    writer.writeString("theme", config.uiTheme);
     writer.writeUint32("ui_fps", config.uiFpsLimit);
     writer.writeUint32("command_timeout_ms", config.clientRemoteCommandTimeoutMs);
     writer.writeUint32("status_timeout_ms", config.clientRemoteStatusTimeoutMs);

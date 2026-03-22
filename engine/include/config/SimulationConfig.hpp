@@ -26,6 +26,7 @@ struct SimulationConfig {
     std::uint32_t clientParticleCap = 4096u;
     float defaultZoom = 8.0f;
     int defaultLuminosity = 100;
+    std::string uiTheme = "light";
     std::uint32_t uiFpsLimit = 60u;
     std::uint32_t clientRemoteCommandTimeoutMs = 80u;
     std::uint32_t clientRemoteStatusTimeoutMs = 40u;

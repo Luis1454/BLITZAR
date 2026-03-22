@@ -67,6 +67,7 @@ set(GRAVITY_COMMAND_CONFIG_SOURCES
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidationRender.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
@@ -227,6 +228,7 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
             modules/qt/ui/MultiViewWidget.cpp
             modules/qt/ui/ParticleView.cpp
             modules/qt/ui/ParticleViewColor.cpp
+            modules/qt/ui/QtTheme.cpp
             modules/qt/ui/QtViewMath.cpp
             modules/qt/ui/WorkspaceLayoutStore.cpp
             ${GRAVITY_GRAPHICS_SOURCES}

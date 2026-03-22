@@ -21,6 +21,7 @@ const SimulationOptionEntry kSimulationOptions[] = {
     {SimulationOptionGroup::Core, OptionKind::ClientParticleCap, "--client-particle-cap", "", "client_particle_cap", "", "GRAVITY_CLIENT_DRAW_CAP", "  --client-particle-cap <n>\n", "", offsetof(SimulationConfig, clientParticleCap), 0.0, 0.0, false, false},
     {SimulationOptionGroup::Client, OptionKind::Float, "--zoom", "", "default_zoom", "", "", "  --zoom <float>\n", "", offsetof(SimulationConfig, defaultZoom), 0.01, 0.0, true, false},
     {SimulationOptionGroup::Client, OptionKind::Int, "--luminosity", "", "default_luminosity", "", "", "  --luminosity <0..255>\n", "", offsetof(SimulationConfig, defaultLuminosity), 0.0, 255.0, true, true},
+    {SimulationOptionGroup::Client, OptionKind::String, "--ui-theme", "", "ui_theme", "", "", "  --ui-theme <light|dark>\n", "", offsetof(SimulationConfig, uiTheme), 0.0, 0.0, false, false},
     {SimulationOptionGroup::Client, OptionKind::Uint, "--ui-fps", "", "ui_fps_limit", "", "", "  --ui-fps <n>\n", "", offsetof(SimulationConfig, uiFpsLimit), 1.0, 0.0, true, false},
     {SimulationOptionGroup::Client, OptionKind::TimeoutTriple, "--server-timeout-ms", "", "client_remote_timeout_ms", "", "", "  --server-timeout-ms <10..60000>\n", "", 0, 10.0, 60000.0, true, true},
     {SimulationOptionGroup::Client, OptionKind::Uint, "--server-command-timeout-ms", "", "client_remote_command_timeout_ms", "", "", "  --server-command-timeout-ms <10..60000>\n", "", offsetof(SimulationConfig, clientRemoteCommandTimeoutMs), 10.0, 60000.0, true, true},
