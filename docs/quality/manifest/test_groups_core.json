@@ -672,6 +672,12 @@
                     "REQ-UI-001",
                     "REQ-RUN-001"
                 ]
+            },
+            "TST-UIX-UI-020": {
+                "id": "QtWorkspaceRuntimeControlsTest.TST_UIX_UI_020_OctreeOverlayControlsUpdateWorkspaceView",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_UI_QT_LOGIC": {
@@ -721,6 +727,12 @@
             },
             "TST-UNT-UI-008": {
                 "id": "QtUiLogicTest.TST_UNT_UI_008_PresenterReportsGpuTelemetryWaitingState",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UNT-UI-009": {
+                "id": "QtUiLogicTest.TST_UNT_UI_009_OctreeOverlayBuildRespectsDepthLimit",
                 "req_ids": [
                     "REQ-UI-001"
                 ]

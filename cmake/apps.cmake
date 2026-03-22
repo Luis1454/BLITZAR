@@ -227,6 +227,8 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
             modules/qt/ui/MainWindow.cpp
             modules/qt/ui/MainWindowPresenter.cpp
             modules/qt/ui/MultiViewWidget.cpp
+            modules/qt/ui/OctreeOverlay.cpp
+            modules/qt/ui/OctreeOverlayPainter.cpp
             modules/qt/ui/ParticleView.cpp
             modules/qt/ui/ParticleViewColor.cpp
             modules/qt/ui/ThroughputAdvisor.cpp

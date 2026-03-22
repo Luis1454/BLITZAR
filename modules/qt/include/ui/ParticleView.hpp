@@ -6,6 +6,7 @@
  * Responsibility: Render a single particle projection or 3D view inside the Qt workspace.
  */
 
+#include "ui/OctreeOverlay.hpp"
 #include "ui/QtViewMath.hpp"
 
 #include <QImage>
@@ -41,6 +42,8 @@ class ParticleView : public QWidget {
         void setCameraAngles(float yaw, float pitch, float roll);
         /// Updates culling and level-of-detail settings.
         void setRenderSettings(bool culling, bool lod, float nearDist, float farDist);
+        /// Replaces the shared octree overlay rendered on top of the snapshot.
+        void setOctreeOverlay(const std::vector<OctreeOverlayNode> &overlay, bool enabled, int opacity);
 
     private:
         typedef UiMouseEvent * MouseEventHandle;
@@ -63,6 +66,9 @@ class ParticleView : public QWidget {
         bool _lodEnabled = true;
         float _lodNearDistance = 10.0f;
         float _lodFarDistance = 60.0f;
+        std::optional<std::reference_wrapper<const std::vector<OctreeOverlayNode>>> _octreeOverlay;
+        bool _octreeOverlayEnabled = false;
+        int _octreeOverlayOpacity = 96;
 };
 
 } // namespace grav_qt

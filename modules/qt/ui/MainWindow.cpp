@@ -133,7 +133,11 @@ MainWindow::MainWindow(
       _rollSlider(new QSlider(Qt::Horizontal, this)),
       _cullingCheck(new QCheckBox("Culling", this)),
       _lodCheck(new QCheckBox("LOD", this)),
+      _octreeOverlayCheck(new QCheckBox("Octree overlay", this)),
+      _octreeOverlayDepthSpin(new QSpinBox(this)),
+      _octreeOverlayOpacitySpin(new QSpinBox(this)),
       _gpuTelemetryCheck(new QCheckBox("GPU telemetry", this)),
+      _octreeOverlayAction(nullptr),
       _gpuTelemetryAction(nullptr),
       _timer(new QTimer(this)),
       _workspaceLayouts(_configPath),
@@ -200,6 +204,9 @@ MainWindow::MainWindow(
     _sphCheck->setObjectName("sphEnabledCheck");
     _cullingCheck->setObjectName("renderCullingCheck");
     _lodCheck->setObjectName("renderLodCheck");
+    _octreeOverlayCheck->setObjectName("octreeOverlayCheck");
+    _octreeOverlayDepthSpin->setObjectName("octreeOverlayDepthSpin");
+    _octreeOverlayOpacitySpin->setObjectName("octreeOverlayOpacitySpin");
     _serverHostEdit->setObjectName("serverHostEdit");
     _serverBinEdit->setObjectName("serverBinaryEdit");
     _serverPortSpin->setObjectName("serverPortSpin");
@@ -262,6 +269,10 @@ MainWindow::MainWindow(
     _pitchSlider->setValue(0);
     _rollSlider->setRange(-180, 180);
     _rollSlider->setValue(0);
+    _octreeOverlayDepthSpin->setRange(0, 8);
+    _octreeOverlayDepthSpin->setValue(3);
+    _octreeOverlayOpacitySpin->setRange(0, 255);
+    _octreeOverlayOpacitySpin->setValue(96);
     _cullingCheck->setChecked(_config.renderCullingEnabled);
     _lodCheck->setChecked(_config.renderLODEnabled);
     _serverHostEdit->setText("127.0.0.1");
@@ -292,6 +303,7 @@ MainWindow::MainWindow(
     _validationLabel->setObjectName("validationLabel");
     _energyGraph->setObjectName("energyGraphWidget");
     _gpuTelemetryCheck->setObjectName("gpuTelemetryCheck");
+    _multiView->setObjectName("multiViewWidget");
 
     auto *sidebarTabs = new QTabWidget(this);
     sidebarTabs->setObjectName("workspaceSidebarTabs");
@@ -389,6 +401,12 @@ MainWindow::MainWindow(
     exportLayout->addWidget(_gpuTelemetryCheck);
     exportLayout->addStretch(1);
 
+    auto *overlayBox = new QGroupBox("Octree Overlay", renderPage);
+    auto *overlayLayout = new QFormLayout(overlayBox);
+    overlayLayout->addRow(_octreeOverlayCheck);
+    overlayLayout->addRow("depth", _octreeOverlayDepthSpin);
+    overlayLayout->addRow("opacity", _octreeOverlayOpacitySpin);
+
     auto *cameraBox = new QGroupBox("View & Camera", renderPage);
     auto *cameraLayout = new QGridLayout(cameraBox);
     cameraLayout->addWidget(new QLabel("zoom", this), 0, 0);
@@ -419,6 +437,7 @@ MainWindow::MainWindow(
     physicsLayout->addStretch(1);
 
     renderLayout->addWidget(cameraBox);
+    renderLayout->addWidget(overlayBox);
     renderLayout->addWidget(exportBox);
     renderLayout->addStretch(1);
 
@@ -498,6 +517,10 @@ MainWindow::MainWindow(
     viewMenu->addAction(energyDock->toggleViewAction());
     viewMenu->addAction(telemetryDock->toggleViewAction());
     viewMenu->addAction(validationDock->toggleViewAction());
+    _octreeOverlayAction = viewMenu->addAction("Octree Overlay");
+    _octreeOverlayAction->setObjectName("octreeOverlayAction");
+    _octreeOverlayAction->setCheckable(true);
+    _octreeOverlayAction->setChecked(false);
     _gpuTelemetryAction = viewMenu->addAction("GPU Telemetry");
     _gpuTelemetryAction->setObjectName("gpuTelemetryAction");
     _gpuTelemetryAction->setCheckable(true);
@@ -553,6 +576,24 @@ MainWindow::MainWindow(
         applyTheme();
         markConfigDirty();
         statusBar()->showMessage("Theme applied: dark", 3000);
+    });
+    connect(_octreeOverlayCheck, &QCheckBox::toggled, this, [this](bool enabled) {
+        if (_octreeOverlayAction != nullptr && _octreeOverlayAction->isChecked() != enabled) {
+            _octreeOverlayAction->blockSignals(true);
+            _octreeOverlayAction->setChecked(enabled);
+            _octreeOverlayAction->blockSignals(false);
+        }
+        _multiView->setOctreeOverlay(enabled, _octreeOverlayDepthSpin->value(), _octreeOverlayOpacitySpin->value());
+        statusBar()->showMessage(enabled ? "Octree overlay enabled" : "Octree overlay disabled", 3000);
+    });
+    connect(_octreeOverlayAction, &QAction::toggled, this, [this](bool enabled) {
+        if (_octreeOverlayCheck != nullptr && _octreeOverlayCheck->isChecked() != enabled) {
+            _octreeOverlayCheck->blockSignals(true);
+            _octreeOverlayCheck->setChecked(enabled);
+            _octreeOverlayCheck->blockSignals(false);
+            _multiView->setOctreeOverlay(enabled, _octreeOverlayDepthSpin->value(), _octreeOverlayOpacitySpin->value());
+            statusBar()->showMessage(enabled ? "Octree overlay enabled" : "Octree overlay disabled", 3000);
+        }
     });
     connect(_gpuTelemetryCheck, &QCheckBox::toggled, this, [this, telemetryDock](bool enabled) {
         if (_gpuTelemetryAction != nullptr && _gpuTelemetryAction->isChecked() != enabled) {
@@ -625,6 +666,10 @@ void MainWindow::applyViewSettings()
 {
     _multiView->setZoom(static_cast<float>(_zoomSlider->value()) / 10.0f);
     _multiView->setLuminosity(_luminositySlider->value());
+    _multiView->setOctreeOverlay(
+        _octreeOverlayCheck->isChecked(),
+        _octreeOverlayDepthSpin->value(),
+        _octreeOverlayOpacitySpin->value());
     _multiView->setRenderSettings(
         _config.renderCullingEnabled,
         _config.renderLODEnabled,
@@ -842,6 +887,14 @@ void MainWindow::connectControls()
         _config.defaultLuminosity = value;
         _multiView->setLuminosity(value);
         markConfigDirty();
+    });
+    connect(_octreeOverlayDepthSpin, qOverload<int>(&QSpinBox::valueChanged), this, [this](int value) {
+        _multiView->setOctreeOverlay(_octreeOverlayCheck->isChecked(), value, _octreeOverlayOpacitySpin->value());
+        statusBar()->showMessage(QString("Octree overlay depth: %1").arg(value), 2000);
+    });
+    connect(_octreeOverlayOpacitySpin, qOverload<int>(&QSpinBox::valueChanged), this, [this](int value) {
+        _multiView->setOctreeOverlay(_octreeOverlayCheck->isChecked(), _octreeOverlayDepthSpin->value(), value);
+        statusBar()->showMessage(QString("Octree overlay opacity: %1").arg(value), 2000);
     });
     connect(_solverCombo, &QComboBox::currentTextChanged, this, [this](const QString &solver) {
         _config.solver = solver.toStdString();
