@@ -228,6 +228,7 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
             modules/qt/ui/MultiViewWidget.cpp
             modules/qt/ui/ParticleView.cpp
             modules/qt/ui/ParticleViewColor.cpp
+            modules/qt/ui/ThroughputAdvisor.cpp
             modules/qt/ui/QtTheme.cpp
             modules/qt/ui/QtViewMath.cpp
             modules/qt/ui/WorkspaceLayoutStore.cpp
