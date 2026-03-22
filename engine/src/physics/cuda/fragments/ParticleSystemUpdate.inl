@@ -1,3 +1,8 @@
+/*
+ * Module: physics/cuda
+ * Responsibility: Advance the particle system for one deterministic update step.
+ */
+
 bool ParticleSystem::update(float deltaTime) {
     const float softening = std::max(1e-4f, _octreeSoftening);
     const bool thermalActive = (_thermalHeatingCoeff > 0.0f || _thermalRadiationCoeff > 0.0f);

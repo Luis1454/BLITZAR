@@ -1,3 +1,8 @@
+/*
+ * Module: physics/cuda
+ * Responsibility: Implement CPU-side octree construction primitives.
+ */
+
 Octree::Node::Node()
     : center(0.0f, 0.0f, 0.0f),
       halfSize(0.0f),

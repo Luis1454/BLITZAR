@@ -1,3 +1,8 @@
+/*
+ * Module: physics/cuda
+ * Responsibility: Implement CPU-side octree force evaluation helpers.
+ */
+
 Vector3 Octree::computeForceRecursive(
     const std::vector<Particle> &particles,
     int nodeIndex,

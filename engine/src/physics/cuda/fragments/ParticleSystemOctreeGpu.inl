@@ -1,3 +1,8 @@
+/*
+ * Module: physics/cuda
+ * Responsibility: Implement GPU octree helpers and traversal kernels.
+ */
+
 __device__ bool octreeNodeContains(const GpuOctreeNode &node, const Vector3 &pos)
 {
     return fabsf(pos.x - node.centerX) <= node.halfSize

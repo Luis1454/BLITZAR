@@ -1,3 +1,8 @@
+/*
+ * Module: physics/cuda
+ * Responsibility: Implement particle-system construction and core mode setters.
+ */
+
 void ParticleSystem::buildBootstrapState(int particleCount)
 {
     Particle p;

@@ -1,6 +1,11 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONSERVER_HPP_
 #define GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONSERVER_HPP_
 
+/*
+ * Module: server
+ * Responsibility: Own the authoritative simulation runtime and publish snapshots and telemetry.
+ */
+
 #include "config/SimulationConfig.hpp"
 #include "physics/ParticleSystem.hpp"
 #include "types/SimulationTypes.hpp"
@@ -14,44 +19,77 @@
 #include <thread>
 #include <vector>
 
+/// Runs the authoritative simulation loop and exposes deterministic control operations.
 class SimulationServer {
     public:
+        /// Builds a server from explicit particle-count and timestep defaults.
         explicit SimulationServer(std::uint32_t particleCount, float initialDt);
+        /// Builds a server from a persisted configuration file.
         explicit SimulationServer(const std::string &configPath);
+        /// Stops the server thread and releases owned physics resources.
         ~SimulationServer();
 
+        /// Starts the simulation loop thread.
         void start();
+        /// Stops the simulation loop thread.
         void stop();
 
+        /// Forces the paused state seen by the update loop.
         void setPaused(bool paused);
+        /// Reports whether the update loop is currently paused.
         bool isPaused() const;
+        /// Toggles the paused state.
         void togglePaused();
+        /// Queues exactly one deterministic step while paused.
         void stepOnce();
 
+        /// Rebuilds the runtime with a new particle count.
         void setParticleCount(std::uint32_t particleCount);
+        /// Sets the simulation timestep in seconds.
         void setDt(float dt);
+        /// Multiplies the current timestep by `factor`.
         void scaleDt(float factor);
+        /// Returns the currently configured timestep in seconds.
         float getDt() const;
 
+        /// Reinitializes the active scenario using the current configuration.
         void requestReset();
+        /// Attempts recovery from a latched runtime fault.
         void requestRecover();
+        /// Selects the gravity solver implementation.
         void setSolverMode(const std::string &mode);
+        /// Selects the numerical integrator implementation.
         void setIntegratorMode(const std::string &mode);
+        /// Applies a named performance profile.
         void setPerformanceProfile(const std::string &profile);
+        /// Updates octree approximation parameters.
         void setOctreeParameters(float theta, float softening);
+        /// Enables or disables SPH processing.
         void setSphEnabled(bool enabled);
+        /// Updates the SPH model parameters in SI units.
         void setSphParameters(float smoothingLength, float restDensity, float gasConstant, float viscosity);
+        /// Configures deterministic substep sizing.
         void setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps);
+        /// Sets how often snapshots are published to remote clients.
         void setSnapshotPublishPeriodMs(std::uint32_t periodMs);
+        /// Replaces the procedural initial-state configuration.
         void setInitialStateConfig(const InitialStateConfig &config);
+        /// Configures energy measurement cadence and retention.
         void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit);
+        /// Sets default output parameters for snapshot export.
         void setExportDefaults(const std::string &directory, const std::string &format);
+        /// Selects a file-backed initial state and its parsing format.
         void setInitialStateFile(const std::string &path, const std::string &format);
+        /// Queues an export of the current runtime state.
         void requestExportSnapshot(const std::string &outputPath, const std::string &format);
 
+        /// Moves the newest snapshot into `outSnapshot` when one is available.
         bool tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot);
+        /// Copies the newest published snapshot into `outSnapshot`.
         bool copyLatestSnapshot(std::vector<RenderParticle> &outSnapshot, std::size_t maxPoints = 0) const;
+        /// Returns the latest authoritative telemetry sample.
         SimulationStats getStats() const;
+        /// Returns the current configuration mirror used by the runtime.
         SimulationConfig getRuntimeConfig() const;
 
     private:

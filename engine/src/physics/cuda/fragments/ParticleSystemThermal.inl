@@ -1,3 +1,8 @@
+/*
+ * Module: physics/cuda
+ * Responsibility: Apply thermal-model configuration and energy integration helpers.
+ */
+
 void ParticleSystem::setThermalParameters(float ambientTemperature, float specificHeat, float heatingCoeff, float radiationCoeff)
 {
     _thermalAmbientTemperature = std::max(0.0f, ambientTemperature);
