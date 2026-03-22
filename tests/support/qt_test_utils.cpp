@@ -59,6 +59,31 @@ QString findStatusLabelText(const grav_qt::MainWindow &window)
     return summaryLines.join("\n");
 }
 
+std::filesystem::path saveFailureEvidence(grav_qt::MainWindow &window, const std::string &stem)
+{
+    const std::filesystem::path basePath = std::filesystem::temp_directory_path() / stem;
+    (void)window.grab().save(QString::fromStdString(basePath.string() + ".png"));
+    std::ofstream out(basePath.string() + ".txt", std::ios::binary);
+    out << findStatusLabelText(window).toStdString();
+    return basePath;
+}
+
+std::uint64_t findSummaryUnsignedMetric(const grav_qt::MainWindow &window, const std::string &label)
+{
+    const std::string status = findStatusLabelText(window).toStdString();
+    const std::size_t offset = status.find(label);
+    if (offset == std::string::npos) {
+        return 0u;
+    }
+    std::size_t cursor = offset + label.size();
+    std::uint64_t value = 0u;
+    while (cursor < status.size() && status[cursor] >= '0' && status[cursor] <= '9') {
+        value = (value * 10u) + static_cast<std::uint64_t>(status[cursor] - '0');
+        cursor += 1u;
+    }
+    return value;
+}
+
 std::string readAllFile(const std::filesystem::path &path)
 {
     std::ifstream in(path, std::ios::binary);

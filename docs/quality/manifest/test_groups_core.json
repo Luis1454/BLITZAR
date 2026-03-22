@@ -608,6 +608,13 @@
                 "req_ids": [
                     "REQ-UI-001"
                 ]
+            },
+            "TST-UIX-UI-014": {
+                "id": "QtMainWindowTest.TST_UIX_UI_014_RealRuntimeProgressesAndSurfacesFreshOrStaleViewportState",
+                "req_ids": [
+                    "REQ-UI-001",
+                    "REQ-RUN-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_UI_QT_LOGIC": {
