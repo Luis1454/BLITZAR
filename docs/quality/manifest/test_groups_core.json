@@ -634,6 +634,12 @@
                 "req_ids": [
                     "REQ-UI-001"
                 ]
+            },
+            "TST-UNT-UI-005": {
+                "id": "QtUiLogicTest.TST_UNT_UI_005_PresenterHighlightsStaleBackendAndKnownHorizonEta",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
             }
         },
         "EVD_CHECK_INI": {
