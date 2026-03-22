@@ -98,6 +98,12 @@
                 "req_ids": [
                     "REQ-CONF-002"
                 ]
+            },
+            "TST-UNT-CONF-036": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_036_CliPerformanceProfileAppliesBalancedAndQualityPresets",
+                "req_ids": [
+                    "REQ-CONF-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_ARGS_IO": {
@@ -554,6 +560,54 @@
                 "req_ids": [
                     "REQ-UI-001"
                 ]
+            },
+            "TST-UIX-UI-006": {
+                "id": "QtMainWindowTest.TST_UIX_UI_006_ResponsiveControlsAllowSubHdWindow",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UIX-UI-007": {
+                "id": "QtWorkspaceControlsTest.TST_UIX_UI_007_ProfilesAndCheckboxesRemainInteractiveWithoutServer",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UIX-UI-008": {
+                "id": "QtWorkspaceControlsTest.TST_UIX_UI_008_SavePersistsProfilesSelectedFromWorkspace",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UIX-UI-009": {
+                "id": "QtWorkspaceControlsTest.TST_UIX_UI_009_EnergyDockIsVisibleAndSidebarStaysCompact",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UIX-UI-010": {
+                "id": "QtWorkspaceRuntimeControlsTest.TST_UIX_UI_010_RunButtonsAndConnectorForwardToRuntime",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UIX-UI-011": {
+                "id": "QtWorkspaceRuntimeControlsTest.TST_UIX_UI_011_RunAndSceneProfilesPropagateToRuntimeAndUi",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UIX-UI-012": {
+                "id": "QtWorkspaceRuntimeControlsTest.TST_UIX_UI_012_PhysicsAndRenderControlsPersistWorkspaceChoices",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UIX-UI-013": {
+                "id": "QtWorkspaceRuntimeControlsTest.TST_UIX_UI_013_ResetClearsEnergyTimelineHistory",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_UI_QT_LOGIC": {
@@ -571,6 +625,12 @@
             },
             "TST-UNT-UI-003": {
                 "id": "QtUiLogicTest.TST_UNT_UI_003_ControllerRejectsInvalidConfigBeforeRuntimeMutation",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UNT-UI-004": {
+                "id": "QtUiLogicTest.TST_UNT_UI_004_WorkspaceLayoutStoreRoundTripsNamedPreset",
                 "req_ids": [
                     "REQ-UI-001"
                 ]

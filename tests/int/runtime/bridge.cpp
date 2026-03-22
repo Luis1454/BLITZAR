@@ -41,6 +41,10 @@ TEST(ClientBridgeTest, TST_INT_RUNT_001_ReconnectsAfterRealServerRestart)
 
     bridge.stepOnce();
     EXPECT_EQ(bridge.linkState(), grav_client::ClientLinkState::Connected);
+    EXPECT_TRUE(testsupport::waitUntil([&]() {
+        stats = bridge.getStats();
+        return stats.steps > 0u && stats.totalTime > 0.0f;
+    }, std::chrono::milliseconds(3000)));
 
     std::vector<RenderParticle> snapshot;
     EXPECT_TRUE(testsupport::waitUntil([&]() {

@@ -220,6 +220,7 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
             ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
             ${GRAVITY_SERVER_SOURCES}
             modules/qt/ui/EnergyGraphWidget.cpp
+            modules/qt/ui/EnergyGraphWidgetPaint.cpp
             modules/qt/ui/MainWindowController.cpp
             modules/qt/ui/MainWindow.cpp
             modules/qt/ui/MainWindowPresenter.cpp
@@ -227,6 +228,7 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
             modules/qt/ui/ParticleView.cpp
             modules/qt/ui/ParticleViewColor.cpp
             modules/qt/ui/QtViewMath.cpp
+            modules/qt/ui/WorkspaceLayoutStore.cpp
             ${GRAVITY_GRAPHICS_SOURCES}
         )
         configure_gravity_cuda_target(${CLIENT_MODULE_QT_INPROC_NAME})

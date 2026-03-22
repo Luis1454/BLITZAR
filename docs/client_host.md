@@ -134,6 +134,19 @@ restart
 
 The Qt module runs inside `blitzar-client`, but it no longer embeds a backend path. All runtime control and snapshots flow through the server service connector.
 
+The Qt frontend now exposes a modular desktop-style workspace:
+- top menu bar with `File`, `Edit`, `View`, `Simulation`, `Window`, `Help`
+- left control dock with `Run`, `Scene`, `Physics`, `Render`
+- dockable `Telemetry` and `Validation` panes
+
+Workspace presets can be managed from `Window > Workspace`:
+- `Save Workspace...`
+- `Load Workspace...`
+- `Delete Workspace...`
+- `Restore Default Workspace`
+
+Saved presets are stored next to the active config under `workspace_layouts/qt/`.
+
 In `dev`, you can still hot-switch to another module:
 
 ```text

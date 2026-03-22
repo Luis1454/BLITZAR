@@ -14,6 +14,7 @@ if(GRAVITY_TEST_UNIT_CONFIG_SOURCES)
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
+            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
@@ -64,6 +65,7 @@ if(GRAVITY_TEST_UNIT_MODULE_SOURCES)
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
+            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
@@ -127,6 +129,7 @@ set(GRAVITY_TEST_BASE_RUNTIME_SOURCES
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
@@ -141,6 +144,7 @@ set(GRAVITY_TEST_BASE_QT_LOGIC_SOURCES
     ${GRAVITY_TEST_BASE_RUNTIME_SOURCES}
     "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowController.cpp"
     "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowPresenter.cpp"
+    "${GRAVITY_ROOT_DIR}/modules/qt/ui/WorkspaceLayoutStore.cpp"
 )
 
 if(GRAVITY_TEST_INT_PROTOCOL_SOURCES)
@@ -207,6 +211,7 @@ if(TARGET Qt6::Widgets AND GRAVITY_TEST_INT_UI_SOURCES)
             "${GRAVITY_ROOT_DIR}/tests/support/qt_test_utils.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/EnergyGraphWidget.cpp"
+            "${GRAVITY_ROOT_DIR}/modules/qt/ui/EnergyGraphWidgetPaint.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowController.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindow.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowPresenter.cpp"
@@ -214,6 +219,7 @@ if(TARGET Qt6::Widgets AND GRAVITY_TEST_INT_UI_SOURCES)
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/ParticleView.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/ParticleViewColor.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/QtViewMath.cpp"
+            "${GRAVITY_ROOT_DIR}/modules/qt/ui/WorkspaceLayoutStore.cpp"
             ${GRAVITY_GRAPHICS_SOURCES}
         LIBS
             gravityRustRuntime

@@ -45,10 +45,14 @@ TEST(QtUiLogicTest, TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeStat
 
     const grav_qt::MainWindowPresentation presentation = grav_qt::MainWindowPresenter().present(input);
 
-    EXPECT_NE(presentation.statusText.find("link=connected"), std::string::npos);
-    EXPECT_NE(presentation.statusText.find("q=2/4"), std::string::npos);
-    EXPECT_NE(presentation.statusText.find("policy=latest-only"), std::string::npos);
-    EXPECT_NE(presentation.statusText.find("lat=7ms"), std::string::npos);
+    EXPECT_NE(presentation.headlineText.find("Link: connected"), std::string::npos);
+    EXPECT_NE(presentation.headlineText.find("Owner: external"), std::string::npos);
+    EXPECT_NE(presentation.runtimeText.find("Substeps: 2 x 0.005"), std::string::npos);
+    EXPECT_NE(presentation.queueText.find("Queue: 2 / 4"), std::string::npos);
+    EXPECT_NE(presentation.queueText.find("Policy: latest-only"), std::string::npos);
+    EXPECT_NE(presentation.queueText.find("Latency: 7ms"), std::string::npos);
+    EXPECT_NE(presentation.energyText.find("Total: -0.5"), std::string::npos);
+    EXPECT_NE(presentation.statusText.find('\n'), std::string::npos);
     EXPECT_NE(presentation.consoleTrace.find("queue_depth=2"), std::string::npos);
     EXPECT_NE(presentation.consoleTrace.find("drop_policy=latest-only"), std::string::npos);
 }
