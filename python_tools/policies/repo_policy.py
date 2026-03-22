@@ -7,6 +7,10 @@ from pathlib import Path
 from python_tools.core.base_check import BaseCheck
 from python_tools.core.models import CheckContext, CheckResult
 from python_tools.policies.header_definition_policy import find_header_function_definition_lines
+from python_tools.policies.repo_policy_function_metrics import (
+    IMPLEMENTATION_SCAN_EXTS,
+    collect_function_decomposition_warnings,
+)
 
 FORBIDDEN_CPP_EXTS = {".h", ".hh", ".hxx", ".c", ".cc", ".cxx"}
 LINE_COUNT_EXTS = {
@@ -41,7 +45,6 @@ QT_REFERENCE_NEW_RE = re.compile(
 PREPROCESSOR_CONDITIONAL_RE = re.compile(r"(?m)^\s*#(?:if|ifdef|ifndef|elif|else|endif)\b")
 PRAGMA_ONCE_RE = re.compile(r"(?m)^\s*#pragma\s+once\b")
 DEFINE_RE = re.compile(r"(?m)^\s*#define\s+([A-Z][A-Z0-9_]+)\b(?!\s*\()")
-
 
 def should_skip_dir(dirname: str) -> bool:
     return dirname in IGNORED_DIRS or dirname.startswith(("build-", "cmake-build-", ".pytest-basetemp"))
@@ -108,6 +111,8 @@ class RepoPolicyCheck(BaseCheck):
             if content is None:
                 content = path.read_text(encoding="utf-8", errors="ignore")
             self._check_line_count(rel, content, context, allowlist, used_allowlist, result)
+            if suffix in IMPLEMENTATION_SCAN_EXTS:
+                self._check_function_decomposition(rel, content, result)
 
         for stale in sorted(allowlist - used_allowlist):
             result.add_warning(f"allowlist entry not needed anymore: {stale}")
@@ -195,6 +200,10 @@ class RepoPolicyCheck(BaseCheck):
             return
         if line_count > context.target_lines:
             result.add_warning(f"{rel}: {line_count} lines exceeds target {context.target_lines}")
+
+    def _check_function_decomposition(self, rel: str, content: str, result: CheckResult) -> None:
+        for warning in collect_function_decomposition_warnings(rel, content):
+            result.add_warning(warning)
 
     def _check_evidence_workflow_commands(
         self,

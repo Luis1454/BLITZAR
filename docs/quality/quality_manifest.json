@@ -2,7 +2,7 @@
   "metadata": {
     "system": "BLITZAR",
     "revision": "2026-03-22",
-    "revision_note": "Added a deterministic performance benchmark campaign, GPU benchmark workflow, and summarized artifact generation for solver, integrator, dt, and particle-count matrices."
+    "revision_note": "Refined repository decomposition policy with responsibility-first file-size guidance and large-function warnings, while preserving deterministic benchmark and GPU evidence coverage."
   },
   "includes": [
     "manifest/evidence.json",
