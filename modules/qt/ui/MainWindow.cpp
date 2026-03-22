@@ -867,9 +867,11 @@ bool MainWindow::applyConfigToServer(bool requestReset)
 {
     captureUiIntoConfig();
     const MainWindowApplyConfigResult result = _controller.applyConfig(_config, *_runtime, requestReset);
+    const ThroughputAdvisory advisory = ThroughputAdvisor::evaluate(_config, result.clientDrawCap);
     if (_validationLabel != nullptr) {
-        _validationLabel->setText(QString::fromStdString(grav_config::SimulationScenarioValidation::renderText(result.report)));
+        _validationLabel->setText(buildValidationText(result.report, advisory));
     }
+    showThroughputAdvisory(advisory);
     if (!result.report.validForRun) {
         if (_statusLabel != nullptr) {
             _statusLabel->setText(QString("preflight validation failed; fix config errors"));
@@ -1103,13 +1105,38 @@ void MainWindow::restoreDefaultWorkspace()
 bool MainWindow::refreshValidationReport(bool blockOnErrors)
 {
     const grav_config::ScenarioValidationReport report = _controller.validate(_config);
+    const ThroughputAdvisory advisory = ThroughputAdvisor::evaluate(_config, _clientDrawCap);
     if (_validationLabel != nullptr) {
-        _validationLabel->setText(QString::fromStdString(grav_config::SimulationScenarioValidation::renderText(report)));
+        _validationLabel->setText(buildValidationText(report, advisory));
     }
     if (blockOnErrors && !report.validForRun && _statusLabel != nullptr) {
         _statusLabel->setText(QString("preflight validation failed; fix config errors"));
     }
     return !blockOnErrors || report.validForRun;
+}
+
+QString MainWindow::buildValidationText(
+    const grav_config::ScenarioValidationReport &report,
+    const ThroughputAdvisory &advisory) const
+{
+    std::string text = grav_config::SimulationScenarioValidation::renderText(report);
+    if (advisory.severity != ThroughputAdvisorySeverity::None) {
+        text += "\n\n[" + std::string(advisory.severity == ThroughputAdvisorySeverity::Warning ? "throughput-warning" : "throughput-advisory") + "] ";
+        text += advisory.summary;
+        if (!advisory.action.empty()) {
+            text += "\nAction: " + advisory.action;
+        }
+    }
+    return QString::fromStdString(text);
+}
+
+void MainWindow::showThroughputAdvisory(const ThroughputAdvisory &advisory)
+{
+    if (advisory.severity == ThroughputAdvisorySeverity::None) {
+        return;
+    }
+    std::cout << "[qt] " << advisory.statusBarText << "\n";
+    statusBar()->showMessage(QString::fromStdString(advisory.statusBarText), 6000);
 }
 
 void MainWindow::update3DCameraFromSliders()

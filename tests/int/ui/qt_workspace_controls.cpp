@@ -11,6 +11,7 @@
 #include <QCoreApplication>
 #include <QDockWidget>
 #include <QEventLoop>
+#include <QLabel>
 #include <QPalette>
 #include <QPushButton>
 
@@ -190,6 +191,33 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_015_ThemeTogglePersistsAcrossSaveAndRel
 
     std::error_code ec;
     std::filesystem::remove(configPath, ec);
+}
+
+TEST(QtWorkspaceControlsTest, TST_UIX_UI_018_ShowsThroughputAdvisoryForHeavyConfig)
+{
+    (void)testsupport::ensureQtApp();
+
+    SimulationConfig config = makeWorkspaceUiConfig();
+    config.particleCount = 100000u;
+    config.dt = 0.1f;
+    config.substepTargetDt = 0.01f;
+    config.maxSubsteps = 6u;
+    config.clientParticleCap = 100000u;
+
+    auto runtime = std::make_unique<grav_client::ClientRuntime>(
+        "simulation.ini",
+        testsupport::makeTransport(1u, std::string()));
+    grav_qt::MainWindow window(config, "simulation.ini", std::move(runtime));
+    window.show();
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+    QLabel *validationLabel = window.findChild<QLabel *>("validationLabel");
+    ASSERT_NE(validationLabel, nullptr);
+    const std::string text = validationLabel->text().toStdString();
+    EXPECT_NE(text.find("throughput-warning"), std::string::npos) << text;
+    EXPECT_NE(text.find("pairwise_cuda"), std::string::npos) << text;
+    EXPECT_NE(text.find("octree_gpu"), std::string::npos) << text;
+    EXPECT_NE(text.find("draw cap"), std::string::npos) << text;
 }
 
 } // namespace grav_test_qt_workspace_controls
