@@ -1,3 +1,8 @@
+/*
+ * Module: physics/cuda
+ * Responsibility: Synchronize particle-system state between host and device views.
+ */
+
 void ParticleSystem::syncDeviceState()
 {
     if (_particles.empty()) return;

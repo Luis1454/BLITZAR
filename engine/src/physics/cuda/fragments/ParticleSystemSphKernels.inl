@@ -1,3 +1,8 @@
+/*
+ * Module: physics/cuda
+ * Responsibility: Define SPH density, pressure, and force kernels.
+ */
+
 // SPH simulation kernels using spatial hash grid acceleration.
 // These kernels iterate over neighboring cells instead of the full particle list.
 

@@ -17,6 +17,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `power_of_10.md`: repository-specific `Power of 10` coding-discipline profile with automated vs manual enforcement mapping.
 - `prod_baseline.md`: explicit evidence-grade `prod` environment baseline.
 - `interface_contracts.md`: versioned critical interface contracts and compatibility rules.
+- `api_documentation_standard.md`: file-header and public API comment conventions for C++ surfaces.
 - `ivv_plan.md`: independent verification and validation plan.
 - `numerical_validation.md`: physics-oriented numerical acceptance criteria.
 - `traceability.md`: how to declare impacted requirement IDs and update the PR traceability register.
