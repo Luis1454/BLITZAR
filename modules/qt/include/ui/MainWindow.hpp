@@ -1,6 +1,11 @@
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOW_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOW_HPP_
 
+/*
+ * Module: ui
+ * Responsibility: Define the top-level Qt workspace and its persistent widget state.
+ */
+
 #include "client/IClientRuntime.hpp"
 #include "config/SimulationConfig.hpp"
 #include "ui/MainWindowController.hpp"
@@ -31,9 +36,12 @@ namespace grav_qt {
 class EnergyGraphWidget;
 class MultiViewWidget;
 
+/// Owns the primary Qt workspace and synchronizes visible controls with the client runtime.
 class MainWindow : public QMainWindow {
     public:
+        /// Builds the workspace from a configuration snapshot and takes ownership of `runtime`.
         MainWindow(SimulationConfig config, std::string configPath, std::unique_ptr<grav_client::IClientRuntime> runtime);
+        /// Stops periodic UI updates and releases owned Qt/runtime resources.
         ~MainWindow() override;
 
     private:

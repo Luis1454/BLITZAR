@@ -1,3 +1,8 @@
+/*
+ * Module: physics/cuda
+ * Responsibility: Gather shared CUDA includes and prelude helpers for particle-system fragments.
+ */
+
 #include <cuda_runtime.h>
 #include "physics/Octree.hpp"
 #include "physics/ParticleSystem.hpp"

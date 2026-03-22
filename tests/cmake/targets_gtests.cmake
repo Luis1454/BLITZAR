@@ -55,6 +55,7 @@ if(GRAVITY_TEST_UNIT_MODULE_SOURCES)
             "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_text.cpp"
             "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_server_ops.cpp"
             "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_commands.cpp"
+            ${GRAVITY_RUNTIME_COMMAND_SOURCES}
             "${GRAVITY_ROOT_DIR}/apps/client-host/client_host_cli.cpp"
             "${GRAVITY_ROOT_DIR}/apps/client-host/client_host_cli_args.cpp"
             "${GRAVITY_ROOT_DIR}/apps/client-host/client_host_module_ops.cpp"
@@ -80,7 +81,9 @@ if(GRAVITY_TEST_UNIT_MODULE_SOURCES)
             "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleHandle.cpp"
             "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleHandleLoad.cpp"
             "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleManifest.cpp"
+            "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientCommon.cpp"
             "${GRAVITY_ROOT_DIR}/runtime/src/client/RustRuntimeBridgeState.cpp"
+            ${GRAVITY_ENV_UTILS_SOURCES}
             ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
             "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
         LIBS
@@ -208,6 +211,7 @@ if(TARGET Qt6::Widgets AND GRAVITY_TEST_INT_UI_SOURCES)
             "${GRAVITY_ROOT_DIR}/tests/support/qt_test_utils.cpp"
             "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/EnergyGraphWidget.cpp"
+            "${GRAVITY_ROOT_DIR}/modules/qt/ui/EnergyGraphWidgetPaint.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowController.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindow.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowPresenter.cpp"

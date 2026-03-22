@@ -8,6 +8,8 @@
 #include "apps/client-host/client_host_cli_text.hpp"
 #include "apps/client-host/client_host_module_ops.hpp"
 #include "client/ClientModuleHandle.hpp"
+#include "command/CommandBatchRunner.hpp"
+#include "command/CommandContext.hpp"
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationScenarioValidation.hpp"
 
@@ -24,6 +26,24 @@ public:
             const grav_config::ScenarioValidationReport report = grav_config::SimulationScenarioValidation::evaluate(config);
             std::cout << grav_config::SimulationScenarioValidation::renderText(report) << "\n";
             return report.validForRun ? 0 : 3;
+        }
+        if (!options.scriptPath.empty()) {
+            grav_cmd::ServerClientCommandTransport transport(150);
+            grav_cmd::CommandSessionState session{};
+            session.configPath = options.configPath;
+            session.config = SimulationConfig::loadOrCreate(options.configPath);
+            grav_cmd::CommandExecutionContext context{
+                transport,
+                session,
+                grav_cmd::CommandExecutionMode::Batch,
+                std::cout
+            };
+            const grav_cmd::CommandResult result = grav_cmd::CommandBatchRunner::runScriptFile(options.scriptPath, context);
+            if (!result.ok) {
+                std::cerr << "[client-host] " << result.message << "\n";
+                return 4;
+            }
+            return 0;
         }
 
         const std::vector<std::filesystem::path> searchRoots = ClientHostModuleOps::buildSearchRoots(programName);

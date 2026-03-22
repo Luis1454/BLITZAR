@@ -1,3 +1,8 @@
+/*
+ * Module: physics/cuda
+ * Responsibility: Build and maintain the SPH spatial hash grid.
+ */
+
 // Spatial hash grid for SPH neighbor search acceleration.
 // Grid cell size = smoothingLength; particles hashed into 3D uniform grid.
 // Neighbor queries iterate 27 adjacent cells instead of all particles.

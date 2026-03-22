@@ -186,7 +186,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_026_CliPerformanceProfileAppliesInteractivePre
     EXPECT_FALSE(runtime.hasArgumentError);
 }
 
-TEST(ConfigArgsTest, TST_UNT_CONF_034_CliPerformanceProfileAppliesBalancedAndQualityPresets)
+TEST(ConfigArgsTest, TST_UNT_CONF_036_CliPerformanceProfileAppliesBalancedAndQualityPresets)
 {
     SimulationConfig balanced = SimulationConfig::defaults();
     RuntimeArgs runtime;

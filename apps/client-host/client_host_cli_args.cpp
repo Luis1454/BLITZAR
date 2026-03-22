@@ -19,6 +19,14 @@ public:
                 outOptions.validateOnly = true;
                 continue;
             }
+            if (arg == "--script" && i + 1 < argc) {
+                outOptions.scriptPath = argv[++i];
+                continue;
+            }
+            if (arg.rfind("--script=", 0) == 0) {
+                outOptions.scriptPath = arg.substr(std::string("--script=").size());
+                continue;
+            }
             if (arg == "--config" && i + 1 < argc) {
                 outOptions.configPath = argv[++i];
                 continue;
@@ -44,7 +52,7 @@ public:
     static void printHelp(std::string_view programName)
     {
         std::cout
-            << "Usage: " << programName << " [--config PATH] [--module <alias|path>] [--validate-only]\n"
+            << "Usage: " << programName << " [--config PATH] [--module <alias|path>] [--script PATH] [--validate-only]\n"
             << "[client-host] commands:\n"
             << "  help\n"
             << "  modules\n"
@@ -52,6 +60,7 @@ public:
             << "  quit | exit\n"
             << "  <any other line> -> forwarded to loaded module\n"
             << "[client-host] aliases: cli, gui, echo, qt\n"
+            << "[client-host] --script runs deterministic batch commands and exits.\n"
             << "[client-host] --validate-only runs scenario pre-flight checks and exits without starting a module.\n";
         if (ClientHostCli::liveReloadEnabled()) {
             std::cout

@@ -991,7 +991,6 @@ void MainWindow::markConfigDirty(bool dirty)
 
 bool MainWindow::saveConfigToDisk()
 {
-    captureUiIntoConfig();
     (void)refreshValidationReport(false);
     if (_configPath.empty()) {
         _configPath = "simulation.ini";
@@ -1151,7 +1150,7 @@ void MainWindow::tick()
 
     std::vector<RenderParticle> snapshot;
     const SimulationStats stats = _runtime->getCachedStats();
-    if (_solverCombo && !stats.solverName.empty()) {
+    if (!_configDirty && _solverCombo && !stats.solverName.empty()) {
         const QString solverText = QString::fromStdString(stats.solverName);
         const int solverIndex = _solverCombo->findText(solverText);
         if (solverIndex >= 0 && _solverCombo->currentIndex() != solverIndex) {
@@ -1161,7 +1160,7 @@ void MainWindow::tick()
             _config.solver = stats.solverName;
         }
     }
-    if (_integratorCombo && !stats.integratorName.empty()) {
+    if (!_configDirty && _integratorCombo && !stats.integratorName.empty()) {
         const QString integratorText = QString::fromStdString(stats.integratorName);
         const int integratorIndex = _integratorCombo->findText(integratorText);
         if (integratorIndex >= 0 && _integratorCombo->currentIndex() != integratorIndex) {
