@@ -50,6 +50,7 @@ class MainWindow : public QMainWindow {
         void applyConnectorSettings(bool reconnectNow);
         void applyConfigToUi();
         void applyViewSettings();
+        void applyTheme();
         void captureUiIntoConfig();
         void applyPerformanceProfileToRuntime();
         void configureRemoteConnectorFromUi();
