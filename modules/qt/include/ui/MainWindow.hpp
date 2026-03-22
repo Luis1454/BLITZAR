@@ -8,8 +8,10 @@
 
 #include "client/IClientRuntime.hpp"
 #include "config/SimulationConfig.hpp"
+#include "config/SimulationScenarioValidation.hpp"
 #include "ui/MainWindowController.hpp"
 #include "ui/MainWindowPresenter.hpp"
+#include "ui/ThroughputAdvisor.hpp"
 #include "ui/WorkspaceLayoutStore.hpp"
 
 #include <QByteArray>
@@ -66,7 +68,11 @@ class MainWindow : public QMainWindow {
         void saveWorkspacePreset();
         void loadWorkspacePreset();
         void deleteWorkspacePreset();
+        QString buildValidationText(
+            const grav_config::ScenarioValidationReport &report,
+            const ThroughputAdvisory &advisory) const;
         bool saveConfigToDisk();
+        void showThroughputAdvisory(const ThroughputAdvisory &advisory);
         void update3DCameraFromSliders();
         void tick();
 

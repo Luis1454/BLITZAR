@@ -621,6 +621,13 @@
                 "req_ids": [
                     "REQ-UI-001"
                 ]
+            },
+            "TST-UIX-UI-018": {
+                "id": "QtWorkspaceControlsTest.TST_UIX_UI_018_ShowsThroughputAdvisoryForHeavyConfig",
+                "req_ids": [
+                    "REQ-UI-001",
+                    "REQ-RUN-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_UI_QT_LOGIC": {
@@ -652,6 +659,20 @@
                 "id": "QtUiLogicTest.TST_UNT_UI_005_PresenterHighlightsStaleBackendAndKnownHorizonEta",
                 "req_ids": [
                     "REQ-UI-001"
+                ]
+            },
+            "TST-UNT-UI-006": {
+                "id": "QtUiLogicTest.TST_UNT_UI_006_ThroughputAdvisorWarnsOnHeavyPairwiseConfig",
+                "req_ids": [
+                    "REQ-UI-001",
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-UI-007": {
+                "id": "QtUiLogicTest.TST_UNT_UI_007_ThroughputAdvisorStaysQuietForInteractiveOctreeConfig",
+                "req_ids": [
+                    "REQ-UI-001",
+                    "REQ-RUN-001"
                 ]
             }
         },
