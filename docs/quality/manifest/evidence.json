@@ -1,6 +1,7 @@
 {
     "evidence":  {
                      "EVD_CI_PR_FAST":  ".github/workflows/pr-fast.yml",
+                     "EVD_CI_PERFORMANCE_BENCHMARK":  ".github/workflows/performance-benchmark.yml",
                      "EVD_CI_NIGHTLY_FULL":  ".github/workflows/nightly-full.yml",
                      "EVD_CI_RELEASE_LANE":  ".github/workflows/release-lane.yml",
                      "EVD_CI_GPU_RUNNER_HEALTH":  ".github/workflows/gpu-runner-health.yml",
@@ -22,6 +23,7 @@
                      "EVD_QLT_IVV_PLAN":  "docs/quality/ivv_plan.md",
                      "EVD_QLT_NUMERICAL_VALIDATION":  "docs/quality/numerical_validation.md",
                      "EVD_QLT_NUMERICAL_CAMPAIGN":  "docs/quality/manifest/numerical_campaign.json",
+                     "EVD_QLT_PERFORMANCE_CAMPAIGN":  "docs/quality/manifest/performance_campaign.json",
                      "EVD_QLT_TRACEABILITY_GUIDE":  "docs/quality/traceability.md",
                      "EVD_QLT_TRACEABILITY_CSV":  "docs/quality/traceability.csv",
                      "EVD_QLT_MANIFEST":  "docs/quality/quality_manifest.json",
@@ -85,6 +87,7 @@
                      "EVD_SCRIPT_GPU_RUNNER_BOOTSTRAP":  "scripts/ci/gpu/bootstrap_windows_runner.py",
                      "EVD_SCRIPT_NIGHTLY_FMEA_STATUS":  "scripts/ci/nightly/package_fmea_status.py",
                      "EVD_SCRIPT_NIGHTLY_NUMERICAL_VALIDATION":  "scripts/ci/nightly/package_numerical_validation.py",
+                     "EVD_SCRIPT_NIGHTLY_PERFORMANCE_BENCHMARK":  "scripts/ci/nightly/package_performance_benchmark.py",
                      "EVD_TEST_UNIT_PROTOCOL_CODEC":  "tests/unit/protocol/json_codec.cpp",
                      "EVD_TEST_GPU_RUNNER_OPS":  "tests/checks/suites/core/test_gpu_runner_ops.py",
                      "EVD_RUST_TOOLCHAIN":  "rust-toolchain.toml",
@@ -103,6 +106,7 @@
                      "EVD_TEST_UNIT_WEB_GATEWAY_HTTP_RUST":  "rust/blitzar-web-gateway/tests/http.rs",
                      "EVD_TEST_UNIT_WEB_GATEWAY_EVENTS_RUST":  "rust/blitzar-web-gateway/tests/events.rs",
                      "EVD_TEST_UNIT_RELEASE_CHANGELOG": "tests/checks/suites/test_changelog.py",
+                     "EVD_TEST_UNIT_RELEASE_PERFORMANCE": "tests/checks/suites/release/test_performance_benchmark.py",
                      "EVD_TEST_UNIT_GRAPHICS_PIPELINE": "tests/unit/graphics/TST_UNT_GRA_GraphicsTests.cpp"
                  }
 }

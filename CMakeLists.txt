@@ -63,6 +63,20 @@ if(GRAVITY_BUILD_TESTS)
             GRAVITY_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
     )
 
+    add_executable(gravityPerformanceBenchmarkTool
+        tests/tools/performance_benchmark_main.cpp
+        tests/support/performance_benchmark_tool.cpp
+        tests/support/physics_scenario.cpp
+        tests/support/physics_test_utils.cpp
+        runtime/src/protocol/ServerProtocol.cpp
+        ${GRAVITY_SERVER_SOURCES}
+    )
+    configure_gravity_cuda_target(gravityPerformanceBenchmarkTool)
+    target_compile_definitions(gravityPerformanceBenchmarkTool
+        PRIVATE
+            GRAVITY_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+
     add_subdirectory(tests)
 endif()
 

@@ -1131,6 +1131,26 @@
                     "REQ-REL-001"
                 ]
             }
+        },
+        "EVD_TEST_UNIT_RELEASE_PERFORMANCE": {
+            "TST-UNT-PERF-001": {
+                "id": "test_tst_unt_perf_001_performance_campaign_passes_when_baselines_hold",
+                "req_ids": [
+                    "REQ-TEST-001"
+                ]
+            },
+            "TST-UNT-PERF-002": {
+                "id": "test_tst_unt_perf_002_performance_campaign_fails_on_threshold_and_regression",
+                "req_ids": [
+                    "REQ-TEST-001"
+                ]
+            },
+            "TST-UNT-PERF-003": {
+                "id": "test_tst_unt_perf_003_performance_campaign_writes_summary_archive",
+                "req_ids": [
+                    "REQ-TEST-001"
+                ]
+            }
         }
     }
 }
