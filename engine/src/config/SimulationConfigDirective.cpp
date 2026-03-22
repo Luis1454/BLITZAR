@@ -118,7 +118,15 @@ static bool applyDirectiveArgs(
         } else if (directive == "substeps") {
             handled = applyIniAlias(arg, arg.first == "target_dt" ? "substep_target_dt" : (arg.first == "max" ? "max_substeps" : arg.first), config, warnings);
         } else if (directive == "octree") {
-            handled = applyIniAlias(arg, arg.first == "theta" ? "octree_theta" : (arg.first == "softening" ? "octree_softening" : arg.first), config, warnings);
+            const std::string iniKey =
+                arg.first == "theta" ? "octree_theta" :
+                arg.first == "softening" ? "octree_softening" :
+                arg.first == "criterion" ? "octree_opening_criterion" :
+                arg.first == "theta_auto" ? "octree_theta_auto_tune" :
+                arg.first == "theta_auto_min" ? "octree_theta_auto_min" :
+                arg.first == "theta_auto_max" ? "octree_theta_auto_max" :
+                arg.first;
+            handled = applyIniAlias(arg, iniKey, config, warnings);
         } else if (directive == "client") {
             const std::string iniKey =
                 arg.first == "zoom" ? "default_zoom" :

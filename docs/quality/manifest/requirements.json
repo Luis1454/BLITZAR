@@ -30,7 +30,8 @@
                                                "tests":  [
                                                              "^ConfigArgsTest\\.TST_UNT_CONF_00(1|2|3|7)_",
                                                              "^ConfigArgsTest\\.TST_UNT_CONF_01(0|3)_",
-                                                             "^ConfigArgsTest\\.TST_UNT_CONF_02(2|3|4|5|6)_"
+                                                             "^ConfigArgsTest\\.TST_UNT_CONF_02(2|3|4|5|6)_",
+                                                             "^ConfigArgsTest\\.TST_UNT_CONF_03(7|8)_"
                                                          ],
                                                "artifacts":  [
                                                                  "EVD_TEST_UNIT_CONFIG_ARGS_CLI",
@@ -42,7 +43,7 @@
                                                              "^ConfigArgsTest\\.TST_UNT_CONF_00(4|5|6|8|9)_",
                                                              "^ConfigArgsTest\\.TST_UNT_CONF_01(1|2)_",
                                                              "^ConfigArgsTest\\.TST_UNT_CONF_02(0|1|7)_",
-                                                             "^ConfigArgsTest\\.TST_UNT_CONF_03(3|4|5)_"
+                                                             "^ConfigArgsTest\\.TST_UNT_CONF_03(3|4|5|9)_"
                                                          ],
                                                "artifacts":  [
                                                                  "EVD_TEST_UNIT_CONFIG_ARGS_CLI",
@@ -124,7 +125,7 @@
                                                             "^ClientBridgeTest\\.TST_INT_RUNT_00[1-2]_",
                                                             "^ClientRuntimeTest\\.TST_CNT_RUNT_00[1-9]_",
                                                             "^ClientRuntimeTest\\.TST_CNT_RUNT_010_",
-                                                            "^PhysicsTest\\.TST_UNT_RUNT_00[1-5]_",
+                                                            "^PhysicsTest\\.TST_UNT_RUNT_00[1-6]_",
                                                         "^blitzar_runtime::tests::bridge_state::tst_rust_runt_00[1-4]_"
                                                         ]
                                           },
@@ -157,7 +158,7 @@
                           "REQ-PHYS-001":  {
                                                "tests":  [
                                                              "^PhysicsTest\\.TST_UNT_PHYS_00(1|2|5|6|7|8|9)_",
-                                                             "^PhysicsTest\\.TST_UNT_PHYS_01(0|1|2|8)_"
+                                                             "^PhysicsTest\\.TST_UNT_PHYS_01(0|1|2|8|9)_"
                                                          ],
                                                "artifacts":  [
                                                                  "EVD_TEST_UNIT_PHYSICS_ORBIT",

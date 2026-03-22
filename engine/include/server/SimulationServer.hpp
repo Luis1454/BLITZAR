@@ -165,6 +165,12 @@ class SimulationServer {
 
         float _octreeTheta;
         float _octreeSoftening;
+        std::string _octreeOpeningCriterion;
+        float _octreeEffectiveTheta;
+        float _octreeThetaAutoMin;
+        float _octreeThetaAutoMax;
+        float _octreeDistributionScore;
+        bool _octreeThetaAutoTune;
         bool _sphEnabled;
         float _sphSmoothingLength;
         float _sphRestDensity;
