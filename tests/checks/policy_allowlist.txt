@@ -1,4 +1,4 @@
-# Temporary exceptions for files above the 300-line hard limit.
+# Temporary coherent exceptions for files above the 300-line strong alert threshold.
 # Keep this list short and remove entries as files are split by responsibility.
 # Each active group must also exist in docs/quality/manifest/deviations.json.
 

@@ -192,14 +192,21 @@ class RepoPolicyCheck(BaseCheck):
         if line_count > context.hard_lines:
             if rel in allowlist:
                 used_allowlist.add(rel)
+                result.add_warning(
+                    f"{rel}: strong file-size alert; {line_count} lines exceeds {context.hard_lines} "
+                    "under an explicit deviation, keep the file coherent until it is split"
+                )
             else:
                 result.add_error(
-                    f"{rel}: {line_count} lines exceeds hard limit {context.hard_lines} "
-                    "(split file or document explicit exception)"
+                    f"{rel}: {line_count} lines exceeds strong alert threshold {context.hard_lines} "
+                    "(split file or document a coherent exception in the deviation register)"
                 )
             return
         if line_count > context.target_lines:
-            result.add_warning(f"{rel}: {line_count} lines exceeds target {context.target_lines}")
+            result.add_warning(
+                f"{rel}: {line_count} lines exceeds target {context.target_lines}; "
+                "keep one primary responsibility and avoid artificial wrapper splits"
+            )
 
     def _check_function_decomposition(self, rel: str, content: str, result: CheckResult) -> None:
         for warning in collect_function_decomposition_warnings(rel, content):
