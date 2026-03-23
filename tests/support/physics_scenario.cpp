@@ -67,6 +67,7 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
     SimulationServer server(std::max<std::uint32_t>(2u, cfg.particleCount), cfg.dt);
     server.setSolverMode(cfg.solver);
     server.setIntegratorMode(cfg.integrator);
+    server.setPerformanceProfile(cfg.performanceProfile);
     server.setOctreeParameters(cfg.octreeTheta, cfg.octreeSoftening);
     server.setDt(cfg.dt);
     server.setParticleCount(std::max<std::uint32_t>(2u, cfg.particleCount));
@@ -132,6 +133,10 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
     if (out.stats.steps < cfg.steps) {
         error = "final step count too low";
         return false;
+    }
+    const std::size_t comparableCount = std::min(out.initial.size(), out.final.size());
+    for (std::size_t index = 0; index < comparableCount; index += 1u) {
+        out.maxParticleDeltaFromInitial = std::max(out.maxParticleDeltaFromInitial, distance(out.initial[index], out.final[index]));
     }
     return true;
 }

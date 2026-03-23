@@ -1,6 +1,7 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_OCTREE_HPP_
 #define GRAVITY_ENGINE_INCLUDE_PHYSICS_OCTREE_HPP_
 
+#include "physics/ForceLawPolicy.hpp"
 #include "physics/Vector.hpp"
 #include "physics/Particle.hpp"
 #include <array>
@@ -36,7 +37,7 @@ class Octree {
 
         void clear();
         void build(const std::vector<Particle> &particles);
-        Vector3 computeForceOn(const Particle &particle, std::size_t selfIndex, float theta, float softening, float minSoftening, float minDistance2, float minTheta, OctreeOpeningCriterion criterion) const;
+        Vector3 computeForceOn(const Particle &particle, std::size_t selfIndex, const ForceLawPolicy &policy, OctreeOpeningCriterion criterion) const;
         std::size_t getNodeCount() const;
         int getRootIndex() const;
         void exportGpu(std::vector<GpuOctreeNode> &outNodes, std::vector<int> &outLeafIndices) const;
@@ -60,11 +61,7 @@ class Octree {
             int nodeIndex,
             const Particle &particle,
             std::size_t selfIndex,
-            float theta,
-            float softening,
-            float minSoftening,
-            float minDistance2,
-            float minTheta,
+            const ForceLawPolicy &policy,
             OctreeOpeningCriterion criterion
         ) const;
         static int childIndexForPosition(const Vector3 &position, const Vector3 &center);

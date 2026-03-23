@@ -592,6 +592,12 @@
                 "req_ids": [
                     "REQ-PHYS-001"
                 ]
+            },
+            "TST-UNT-PHYS-021": {
+                "id": "PhysicsTest.TST_UNT_PHYS_021_ForceLawPolicyClampsConfiguredThresholds",
+                "req_ids": [
+                    "REQ-PHYS-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_PHYSICS_DETERMINISM": {

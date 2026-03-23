@@ -25,6 +25,20 @@ static std::size_t countOccurrences(const std::string &text, const std::string &
     return count;
 }
 
+static float maxParticleDelta(
+    const std::vector<RenderParticle> &baseline,
+    const std::vector<RenderParticle> &candidate)
+{
+    if (baseline.size() != candidate.size()) {
+        return std::numeric_limits<float>::infinity();
+    }
+    float maxDelta = 0.0f;
+    for (std::size_t index = 0; index < baseline.size(); index += 1u) {
+        maxDelta = std::max(maxDelta, testsupport::distance(baseline[index], candidate[index]));
+    }
+    return maxDelta;
+}
+
 static std::filesystem::path writeStabilityConfig(float minSoftening, float minDistance2)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -127,13 +141,17 @@ TEST(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
         / std::max(std::fabs(pairwiseEnergy), 1e-6f) * 100.0f;
     const float gpuEnergyDiffPct = std::fabs(octreeGpu.stats.totalEnergy - pairwiseEnergy)
         / std::max(std::fabs(pairwiseEnergy), 1e-6f) * 100.0f;
+    const float cpuParticleDelta = maxParticleDelta(pairwise.final, octreeCpu.final);
+    const float gpuParticleDelta = maxParticleDelta(pairwise.final, octreeGpu.final);
 
-    EXPECT_LE(comCpuDelta, 0.45f);
-    EXPECT_LE(comGpuDelta, 0.45f);
-    EXPECT_LE(std::fabs(octreeCpuAvgRadius - pairwiseAvgRadius), 0.9f);
-    EXPECT_LE(std::fabs(octreeGpuAvgRadius - pairwiseAvgRadius), 0.9f);
-    EXPECT_LE(cpuEnergyDiffPct, 8.0f);
-    EXPECT_LE(gpuEnergyDiffPct, 8.0f);
+    EXPECT_LE(comCpuDelta, 0.02f);
+    EXPECT_LE(comGpuDelta, 0.02f);
+    EXPECT_LE(std::fabs(octreeCpuAvgRadius - pairwiseAvgRadius), 0.05f);
+    EXPECT_LE(std::fabs(octreeGpuAvgRadius - pairwiseAvgRadius), 0.05f);
+    EXPECT_LE(cpuEnergyDiffPct, 0.25f);
+    EXPECT_LE(gpuEnergyDiffPct, 0.25f);
+    EXPECT_LE(cpuParticleDelta, 0.05f);
+    EXPECT_LE(gpuParticleDelta, 0.05f);
 }
 
 TEST(PhysicsTest, TST_UNT_RUNT_001_ServerLogsEffectiveModesAfterReset)

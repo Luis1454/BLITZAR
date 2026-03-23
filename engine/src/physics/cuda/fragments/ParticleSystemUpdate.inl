@@ -4,7 +4,12 @@
  */
 
 bool ParticleSystem::update(float deltaTime) {
-    const float softening = std::max(1e-4f, _octreeSoftening);
+    const ForceLawPolicy forceLaw = resolveForceLawPolicy(
+        _octreeTheta,
+        _octreeSoftening,
+        _physicsMinSoftening,
+        _physicsMinDistance2,
+        _physicsMinTheta);
     const bool thermalActive = (_thermalHeatingCoeff > 0.0f || _thermalRadiationCoeff > 0.0f);
     auto syncParticlesFromDevice = [&]() -> bool {
         return syncHostState();
@@ -95,7 +100,7 @@ bool ParticleSystem::update(float deltaTime) {
             }
 
             for (size_t i = 0; i < _particles.size(); ++i) {
-                _octreeForces[i] = _octree.computeForceOn(_particles[i], i, _octreeTheta, _octreeSoftening, _physicsMinSoftening, _physicsMinDistance2, _physicsMinTheta, _octreeOpeningCriterion);
+                _octreeForces[i] = _octree.computeForceOn(_particles[i], i, forceLaw, _octreeOpeningCriterion);
                 _octreeForces[i] = clampAcceleration(_octreeForces[i], _physicsMaxAcceleration);
                 _particles[i].setPressure(_octreeForces[i] * 100.0f);
             }
@@ -129,7 +134,7 @@ bool ParticleSystem::update(float deltaTime) {
         auto computeOctreeAcceleration = [&](const std::vector<Particle> &state, std::vector<Vector3> &outAcc) {
             _octree.build(state);
             for (size_t i = 0; i < state.size(); ++i) {
-                outAcc[i] = _octree.computeForceOn(state[i], i, _octreeTheta, _octreeSoftening, _physicsMinSoftening, _physicsMinDistance2, _physicsMinTheta, _octreeOpeningCriterion);
+                outAcc[i] = _octree.computeForceOn(state[i], i, forceLaw, _octreeOpeningCriterion);
                 outAcc[i] = clampAcceleration(outAcc[i], _physicsMaxAcceleration);
             }
         };
@@ -250,13 +255,9 @@ bool ParticleSystem::update(float deltaTime) {
             g_dOctreeNodes,
             rootIndex,
             g_dOctreeLeafIndices,
-            _octreeTheta,
-            softening,
+            forceLaw,
             deltaTime,
             _physicsMaxAcceleration,
-            _physicsMinSoftening,
-            _physicsMinDistance2,
-            _physicsMinTheta,
             _octreeOpeningCriterion == OctreeOpeningCriterion::Bounds ? 1 : 0
         );
         if (!checkCudaStatus(cudaGetLastError(), "updateParticlesOctree kernel launch")) {
@@ -321,7 +322,7 @@ bool ParticleSystem::update(float deltaTime) {
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k1 launch")) {
             return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(currentView, d_k1v, numParticles, softening, _physicsMaxAcceleration, _physicsMinSoftening, _physicsMinDistance2);
+        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(currentView, d_k1v, numParticles, forceLaw, _physicsMaxAcceleration);
         if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k1 launch")) {
             return false;
         }
@@ -334,7 +335,7 @@ bool ParticleSystem::update(float deltaTime) {
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k2 launch")) {
             return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(nextView, d_k2v, numParticles, softening, _physicsMaxAcceleration, _physicsMinSoftening, _physicsMinDistance2);
+        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(nextView, d_k2v, numParticles, forceLaw, _physicsMaxAcceleration);
         if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k2 launch")) {
             return false;
         }
@@ -347,7 +348,7 @@ bool ParticleSystem::update(float deltaTime) {
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k3 launch")) {
             return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(nextView, d_k3v, numParticles, softening, _physicsMaxAcceleration, _physicsMinSoftening, _physicsMinDistance2);
+        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(nextView, d_k3v, numParticles, forceLaw, _physicsMaxAcceleration);
         if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k3 launch")) {
             return false;
         }
@@ -360,7 +361,7 @@ bool ParticleSystem::update(float deltaTime) {
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k4 launch")) {
             return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(nextView, d_k4v, numParticles, softening, _physicsMaxAcceleration, _physicsMinSoftening, _physicsMinDistance2);
+        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(nextView, d_k4v, numParticles, forceLaw, _physicsMaxAcceleration);
         if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k4 launch")) {
             return false;
         }
@@ -380,7 +381,7 @@ bool ParticleSystem::update(float deltaTime) {
             return false;
         }
     } else {
-        updateParticles<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(currentView, nextView, numParticles, deltaTime, softening, _physicsMaxAcceleration, _physicsMinSoftening, _physicsMinDistance2);
+        updateParticles<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(currentView, nextView, numParticles, deltaTime, forceLaw, _physicsMaxAcceleration);
         if (!checkCudaStatus(cudaGetLastError(), "updateParticles kernel launch")) {
             return false;
         }
