@@ -274,6 +274,18 @@ CommandResult CommandExecutor::execute(const CommandRequest &request, CommandExe
                 + "\",\"format\":\"" + grav_protocol::ServerJsonCodec::escapeString(
                     grav_client::normalizeExportFormat(format.empty() ? context.session.config.exportFormat : format)) + "\"");
     }
+    if (request.id == CommandId::SaveCheckpoint) {
+        return sendChecked(
+            context,
+            std::string(grav_protocol::SaveCheckpoint),
+            "\"path\":\"" + grav_protocol::ServerJsonCodec::escapeString(argString(request, 0u)) + "\"");
+    }
+    if (request.id == CommandId::LoadCheckpoint) {
+        return sendChecked(
+            context,
+            std::string(grav_protocol::LoadCheckpoint),
+            "\"path\":\"" + grav_protocol::ServerJsonCodec::escapeString(argString(request, 0u)) + "\"");
+    }
     if (request.id == CommandId::RunSteps) {
         return runSteps(context, argUint(request, 0u));
     }

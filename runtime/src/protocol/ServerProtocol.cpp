@@ -25,6 +25,8 @@ const std::string_view SetSnapshotPublishCadence = "set_snapshot_publish_cadence
 const std::string_view SetSnapshotTransferCap = "set_snapshot_transfer_cap";
 const std::string_view Load = "load";
 const std::string_view Export = "export";
+const std::string_view SaveCheckpoint = "save_checkpoint";
+const std::string_view LoadCheckpoint = "load_checkpoint";
 const std::string_view Shutdown = "shutdown";
 
 std::uint32_t clampSnapshotPoints(std::uint32_t requested)

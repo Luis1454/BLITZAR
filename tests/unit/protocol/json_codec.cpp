@@ -156,6 +156,8 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_005_ExportsCurrentSchemaVersionLabel)
     EXPECT_EQ(grav_protocol::SchemaVersion, "server-json-v1");
     EXPECT_EQ(grav_protocol::Status, "status");
     EXPECT_EQ(grav_protocol::GetSnapshot, "get_snapshot");
+    EXPECT_EQ(grav_protocol::SaveCheckpoint, "save_checkpoint");
+    EXPECT_EQ(grav_protocol::LoadCheckpoint, "load_checkpoint");
     EXPECT_EQ(grav_protocol::SetGpuTelemetry, "set_gpu_telemetry");
     EXPECT_EQ(grav_protocol::SetSnapshotPublishCadence, "set_snapshot_publish_cadence");
 }

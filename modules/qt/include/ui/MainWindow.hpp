@@ -59,6 +59,8 @@ class MainWindow : public QMainWindow {
         void configureRemoteConnectorFromUi();
         void connectControls();
         void handleExportRequest();
+        void handleSaveCheckpointRequest();
+        void handleLoadCheckpointRequest();
         void handleLoadInputRequest();
         void handleLoadPresetRequest();
         void markConfigDirty(bool dirty = true);

@@ -28,6 +28,8 @@ enum class CommandId {
     SetProfile,
     SetParticleCount,
     ExportSnapshot,
+    SaveCheckpoint,
+    LoadCheckpoint,
     RunSteps,
     RunUntil
 };

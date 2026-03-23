@@ -43,6 +43,8 @@ class RecordingClientRuntime final : public grav_client::IClientRuntime {
         void setExportDefaults(const std::string &directory, const std::string &format) override { exportDirectory = directory; exportFormat = format; }
         void setInitialStateFile(const std::string &path, const std::string &format) override { initialStateFile = path; initialStateFormat = format; }
         void requestExportSnapshot(const std::string &, const std::string &) override {}
+        void requestSaveCheckpoint(const std::string &outputPath) override { checkpointSavePath = outputPath; }
+        void requestLoadCheckpoint(const std::string &inputPath) override { checkpointLoadPath = inputPath; }
         void requestShutdown() override {}
         void setRemoteSnapshotCap(std::uint32_t maxPoints) override { remoteSnapshotCap = maxPoints; }
         void requestReconnect() override {}
@@ -83,6 +85,8 @@ class RecordingClientRuntime final : public grav_client::IClientRuntime {
         std::string exportFormat;
         std::string initialStateFile;
         std::string initialStateFormat;
+        std::string checkpointSavePath;
+        std::string checkpointLoadPath;
         InitialStateConfig initialStateConfig;
 };
 

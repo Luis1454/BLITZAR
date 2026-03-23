@@ -563,6 +563,24 @@
                     "REQ-RUN-001"
                 ]
             },
+            "TST-UNT-RUNT-009": {
+                "id": "PhysicsTest.TST_UNT_RUNT_009_CheckpointRoundTripRestoresRuntimeState",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-RUNT-010": {
+                "id": "PhysicsTest.TST_UNT_RUNT_010_CheckpointRejectsInvalidMagic",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-RUNT-011": {
+                "id": "PhysicsTest.TST_UNT_RUNT_011_CheckpointRejectsUnsupportedVersion",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
+            },
             "TST-UNT-PHYS-018": {
                 "id": "PhysicsTest.TST_UNT_PHYS_018_EnergyEstimateUsesConfiguredStabilityConstants",
                 "req_ids": [
@@ -909,6 +927,13 @@
                     "REQ-MOD-001",
                     "REQ-CONF-001",
                     "REQ-CONF-002"
+                ]
+            },
+            "TST-UNT-MODCLI-012": {
+                "id": "CommandExecutorTest.TST_UNT_MODCLI_012_CheckpointCommandsMapToProtocolCommands",
+                "req_ids": [
+                    "REQ-MOD-001",
+                    "REQ-RUN-001"
                 ]
             }
         },

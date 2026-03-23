@@ -41,6 +41,8 @@ const std::vector<CommandSpec> &CommandCatalog::all()
         makeSpec(CommandId::SetProfile, "set_profile", "apply performance profile", true, {{"name", CommandArgumentKind::Enum, false, {"interactive", "balanced", "quality", "custom"}}}),
         makeSpec(CommandId::SetParticleCount, "set_particle_count", "set particle count", true, {{"count", CommandArgumentKind::Uint, false, {}}}),
         makeSpec(CommandId::ExportSnapshot, "export_snapshot", "export snapshot to a file", true, {{"path", CommandArgumentKind::Path, false, {}}, {"format", CommandArgumentKind::Enum, true, {"vtk", "vtk_binary", "xyz", "bin"}}}),
+        makeSpec(CommandId::SaveCheckpoint, "save_checkpoint", "save full restartable checkpoint to a file", true, {{"path", CommandArgumentKind::Path, false, {}}}),
+        makeSpec(CommandId::LoadCheckpoint, "load_checkpoint", "load full restartable checkpoint from a file", true, {{"path", CommandArgumentKind::Path, false, {}}}),
         makeSpec(CommandId::RunSteps, "run_steps", "run deterministically for a fixed number of steps", true, {{"count", CommandArgumentKind::Uint, false, {}}}),
         makeSpec(CommandId::RunUntil, "run_until", "run deterministically until simulated time", true, {{"seconds", CommandArgumentKind::Float, false, {}}})
     };

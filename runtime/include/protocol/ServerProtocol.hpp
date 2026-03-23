@@ -29,6 +29,8 @@ extern const std::string_view SetSnapshotPublishCadence;
 extern const std::string_view SetSnapshotTransferCap;
 extern const std::string_view Load;
 extern const std::string_view Export;
+extern const std::string_view SaveCheckpoint;
+extern const std::string_view LoadCheckpoint;
 extern const std::string_view Shutdown;
 
 inline constexpr std::uint32_t kSnapshotMinPoints = 1u;

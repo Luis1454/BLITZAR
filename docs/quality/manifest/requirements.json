@@ -125,7 +125,9 @@
                                                             "^ClientBridgeTest\\.TST_INT_RUNT_00[1-2]_",
                                                             "^ClientRuntimeTest\\.TST_CNT_RUNT_00[1-9]_",
                                                             "^ClientRuntimeTest\\.TST_CNT_RUNT_010_",
-                                                            "^PhysicsTest\\.TST_UNT_RUNT_00[1-8]_",
+                                                            "^PhysicsTest\\.TST_UNT_RUNT_00[1-9]_",
+                                                            "^PhysicsTest\\.TST_UNT_RUNT_010_",
+                                                            "^PhysicsTest\\.TST_UNT_RUNT_011_",
                                                         "^blitzar_runtime::tests::bridge_state::tst_rust_runt_00[1-4]_"
                                                         ]
                                           },

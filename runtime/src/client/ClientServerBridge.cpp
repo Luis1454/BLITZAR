@@ -455,6 +455,22 @@ void ClientServerBridge::requestExportSnapshot(const std::string &outputPath, co
     sendOrQueueRemote(std::string(grav_protocol::Export), fields);
 }
 
+void ClientServerBridge::requestSaveCheckpoint(const std::string &outputPath)
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    sendOrQueueRemote(
+        std::string(grav_protocol::SaveCheckpoint),
+        "\"path\":\"" + jsonEscape(outputPath) + "\"");
+}
+
+void ClientServerBridge::requestLoadCheckpoint(const std::string &inputPath)
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    sendOrQueueRemote(
+        std::string(grav_protocol::LoadCheckpoint),
+        "\"path\":\"" + jsonEscape(inputPath) + "\"");
+}
+
 void ClientServerBridge::requestShutdown()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);

@@ -59,7 +59,9 @@ pub fn latest_schema_value() -> Value {
             "set_gpu_telemetry": { "request": ["value"], "response": "response_envelope" },
             "set_snapshot_publish_cadence": { "request": ["period_ms"], "response": "response_envelope" },
             "load": { "request": ["path", "format"], "response": "response_envelope" },
+            "load_checkpoint": { "request": ["path"], "response": "response_envelope" },
             "export": { "request": ["path", "format"], "response": "response_envelope" },
+            "save_checkpoint": { "request": ["path"], "response": "response_envelope" },
             "shutdown": { "request": [], "response": "response_envelope" }
         },
         "payloads": {
