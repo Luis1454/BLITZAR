@@ -21,6 +21,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <random>
 #include <sstream>
 #include <string>
@@ -477,6 +478,13 @@ struct BinarySnapshotParticle {
 
 constexpr char kBinarySnapshotMagic[8] = {'N', 'B', 'S', 'I', 'M', 'B', 'I', 'N'};
 constexpr std::uint32_t kBinarySnapshotVersion = 1u;
+constexpr char kCheckpointMagic[8] = {'B', 'L', 'T', 'Z', 'C', 'H', 'K', '1'};
+constexpr std::uint32_t kCheckpointVersion = 1u;
+constexpr std::uint32_t kCheckpointFlagPaused = 1u << 0;
+constexpr std::uint32_t kCheckpointFlagHasEnergyBaseline = 1u << 1;
+constexpr std::uint32_t kCheckpointFlagSphEnabled = 1u << 2;
+constexpr std::uint32_t kCheckpointFlagThetaAutoTune = 1u << 3;
+constexpr std::uint32_t kCheckpointFlagGpuTelemetryEnabled = 1u << 4;
 
 struct AsyncExportJob final {
     std::string outputPath;
@@ -494,6 +502,355 @@ struct SimulationServer::ExportQueueState final {
     bool stopRequested = false;
     std::thread worker;
 };
+
+struct SimulationCheckpointState final {
+    SimulationConfig config;
+    std::vector<Particle> particles;
+    std::uint64_t steps = 0u;
+    float totalTime = 0.0f;
+    bool paused = false;
+    bool hasEnergyBaseline = false;
+    float energyBaseline = 0.0f;
+    bool gpuTelemetryEnabled = false;
+};
+
+struct CheckpointSaveResult final {
+    std::mutex mutex;
+    std::condition_variable condition;
+    bool completed = false;
+    bool ok = false;
+    std::string error;
+};
+
+struct PendingCheckpointSaveRequest final {
+    std::string outputPath;
+    std::shared_ptr<CheckpointSaveResult> result;
+};
+
+struct SimulationCheckpointQueueState final {
+    std::mutex mutex;
+    std::deque<PendingCheckpointSaveRequest> saveRequests;
+};
+
+bool readLeU64(std::istream &in, std::uint64_t &outValue)
+{
+    std::array<std::byte, 8> bytes{};
+    if (!readRawBytes(in, bytes.data(), bytes.size())) {
+        return false;
+    }
+    outValue = 0u;
+    for (std::size_t index = 0; index < bytes.size(); ++index) {
+        outValue |= static_cast<std::uint64_t>(std::to_integer<unsigned char>(bytes[index])) << (index * 8u);
+    }
+    return true;
+}
+
+void writeLeU64(std::ostream &out, std::uint64_t value)
+{
+    std::array<std::byte, 8> bytes{};
+    for (std::size_t index = 0; index < bytes.size(); ++index) {
+        bytes[index] = std::byte{static_cast<unsigned char>((value >> (index * 8u)) & 0xFFu)};
+    }
+    (void)writeRawBytes(out, bytes.data(), bytes.size());
+}
+
+void writeLeU32(std::ostream &out, std::uint32_t value)
+{
+    std::array<std::byte, 4> bytes{};
+    for (std::size_t index = 0; index < bytes.size(); ++index) {
+        bytes[index] = std::byte{static_cast<unsigned char>((value >> (index * 8u)) & 0xFFu)};
+    }
+    (void)writeRawBytes(out, bytes.data(), bytes.size());
+}
+
+bool readLeU32(std::istream &in, std::uint32_t &outValue)
+{
+    std::array<std::byte, 4> bytes{};
+    if (!readRawBytes(in, bytes.data(), bytes.size())) {
+        return false;
+    }
+    outValue = 0u;
+    for (std::size_t index = 0; index < bytes.size(); ++index) {
+        outValue |= static_cast<std::uint32_t>(std::to_integer<unsigned char>(bytes[index])) << (index * 8u);
+    }
+    return true;
+}
+
+void writeLeF32(std::ostream &out, float value)
+{
+    std::uint32_t bits = 0u;
+    std::memcpy(&bits, &value, sizeof(bits));
+    writeLeU32(out, bits);
+}
+
+bool readLeF32(std::istream &in, float &outValue)
+{
+    std::uint32_t bits = 0u;
+    if (!readLeU32(in, bits)) {
+        return false;
+    }
+    std::memcpy(&outValue, &bits, sizeof(outValue));
+    return true;
+}
+
+bool writeSizedString(std::ostream &out, const std::string &value)
+{
+    if (value.size() > static_cast<std::size_t>(std::numeric_limits<std::uint32_t>::max())) {
+        return false;
+    }
+    writeLeU32(out, static_cast<std::uint32_t>(value.size()));
+    if (value.empty()) {
+        return static_cast<bool>(out);
+    }
+    out.write(value.data(), static_cast<std::streamsize>(value.size()));
+    return static_cast<bool>(out);
+}
+
+bool readSizedString(std::istream &in, std::string &outValue, std::size_t maxLength)
+{
+    std::uint32_t size = 0u;
+    if (!readLeU32(in, size) || size > maxLength) {
+        return false;
+    }
+    outValue.assign(static_cast<std::size_t>(size), '\0');
+    if (size == 0u) {
+        return true;
+    }
+    return static_cast<bool>(in.read(outValue.data(), static_cast<std::streamsize>(size)));
+}
+
+bool isSupportedCheckpointString(std::string_view solver, std::string_view integrator, std::string_view profile, std::string_view criterion)
+{
+    std::string normalizedSolver;
+    std::string normalizedIntegrator;
+    std::string normalizedProfile;
+    std::string normalizedCriterion;
+    return grav_modes::normalizeSolver(std::string(solver), normalizedSolver)
+        && grav_modes::normalizeIntegrator(std::string(integrator), normalizedIntegrator)
+        && grav_config::normalizePerformanceProfile(std::string(profile), normalizedProfile)
+        && grav_modes::normalizeOctreeOpeningCriterion(std::string(criterion), normalizedCriterion);
+}
+
+bool writeCheckpointFile(const std::string &outputPath, const SimulationCheckpointState &state, std::string *outError)
+{
+    std::filesystem::path outPath(outputPath);
+    if (outPath.has_parent_path()) {
+        std::error_code ec;
+        std::filesystem::create_directories(outPath.parent_path(), ec);
+    }
+
+    std::ofstream out(outputPath, std::ios::binary | std::ios::trunc);
+    if (!out.is_open()) {
+        if (outError != nullptr) {
+            *outError = "could not open checkpoint output";
+        }
+        return false;
+    }
+
+    if (!isValidImportedParticleCount(state.particles.size()) || !isSupportedCheckpointString(
+            state.config.solver,
+            state.config.integrator,
+            state.config.performanceProfile,
+            state.config.octreeOpeningCriterion)) {
+        if (outError != nullptr) {
+            *outError = "checkpoint state is not serializable";
+        }
+        return false;
+    }
+
+    const std::uint32_t flags =
+        (state.paused ? kCheckpointFlagPaused : 0u)
+        | (state.hasEnergyBaseline ? kCheckpointFlagHasEnergyBaseline : 0u)
+        | (state.config.sphEnabled ? kCheckpointFlagSphEnabled : 0u)
+        | (state.config.octreeThetaAutoTune ? kCheckpointFlagThetaAutoTune : 0u)
+        | (state.gpuTelemetryEnabled ? kCheckpointFlagGpuTelemetryEnabled : 0u);
+
+    if (!writeRawBytes(out, reinterpret_cast<const std::byte *>(kCheckpointMagic), sizeof(kCheckpointMagic))) {
+        if (outError != nullptr) {
+            *outError = "could not write checkpoint header";
+        }
+        return false;
+    }
+    writeLeU32(out, kCheckpointVersion);
+    writeLeU32(out, flags);
+    writeLeU64(out, state.steps);
+    writeLeU32(out, static_cast<std::uint32_t>(state.particles.size()));
+    writeLeF32(out, state.totalTime);
+    writeLeF32(out, state.config.dt);
+    writeLeF32(out, state.config.substepTargetDt);
+    writeLeU32(out, state.config.maxSubsteps);
+    writeLeU32(out, state.config.snapshotPublishPeriodMs);
+    writeLeF32(out, state.config.octreeTheta);
+    writeLeF32(out, state.config.octreeSoftening);
+    writeLeF32(out, state.config.octreeThetaAutoMin);
+    writeLeF32(out, state.config.octreeThetaAutoMax);
+    writeLeF32(out, state.config.sphSmoothingLength);
+    writeLeF32(out, state.config.sphRestDensity);
+    writeLeF32(out, state.config.sphGasConstant);
+    writeLeF32(out, state.config.sphViscosity);
+    writeLeU32(out, state.config.energyMeasureEverySteps);
+    writeLeU32(out, state.config.energySampleLimit);
+    writeLeF32(out, state.config.physicsMaxAcceleration);
+    writeLeF32(out, state.config.physicsMinSoftening);
+    writeLeF32(out, state.config.physicsMinDistance2);
+    writeLeF32(out, state.config.physicsMinTheta);
+    writeLeF32(out, state.config.sphMaxAcceleration);
+    writeLeF32(out, state.config.sphMaxSpeed);
+    writeLeF32(out, state.energyBaseline);
+    if (!writeSizedString(out, state.config.solver)
+        || !writeSizedString(out, state.config.integrator)
+        || !writeSizedString(out, state.config.performanceProfile)
+        || !writeSizedString(out, state.config.octreeOpeningCriterion)) {
+        if (outError != nullptr) {
+            *outError = "could not write checkpoint metadata strings";
+        }
+        return false;
+    }
+
+    for (const Particle &particle : state.particles) {
+        const Vector3 position = particle.getPosition();
+        const Vector3 velocity = particle.getVelocity();
+        writeLeF32(out, position.x);
+        writeLeF32(out, position.y);
+        writeLeF32(out, position.z);
+        writeLeF32(out, velocity.x);
+        writeLeF32(out, velocity.y);
+        writeLeF32(out, velocity.z);
+        writeLeF32(out, particle.getMass());
+        writeLeF32(out, particle.getTemperature());
+    }
+    if (!out) {
+        if (outError != nullptr) {
+            *outError = "could not finish checkpoint write";
+        }
+        return false;
+    }
+    return true;
+}
+
+bool readCheckpointFile(const std::string &inputPath, SimulationCheckpointState &outState, std::string *outError)
+{
+    std::ifstream in(inputPath, std::ios::binary);
+    if (!in.is_open()) {
+        if (outError != nullptr) {
+            *outError = "could not open checkpoint input";
+        }
+        return false;
+    }
+
+    std::array<std::byte, sizeof(kCheckpointMagic)> magic{};
+    if (!readRawBytes(in, magic.data(), magic.size())
+        || std::memcmp(magic.data(), kCheckpointMagic, sizeof(kCheckpointMagic)) != 0) {
+        if (outError != nullptr) {
+            *outError = "invalid checkpoint magic";
+        }
+        return false;
+    }
+
+    std::uint32_t version = 0u;
+    std::uint32_t flags = 0u;
+    std::uint64_t steps = 0u;
+    std::uint32_t count = 0u;
+    if (!readLeU32(in, version) || version != kCheckpointVersion
+        || !readLeU32(in, flags)
+        || !readLeU64(in, steps)
+        || !readLeU32(in, count)
+        || !isValidImportedParticleCount(count)) {
+        if (outError != nullptr) {
+            *outError = "unsupported checkpoint version";
+        }
+        return false;
+    }
+
+    outState = SimulationCheckpointState{};
+    outState.steps = steps;
+    outState.paused = (flags & kCheckpointFlagPaused) != 0u;
+    outState.hasEnergyBaseline = (flags & kCheckpointFlagHasEnergyBaseline) != 0u;
+    outState.config.sphEnabled = (flags & kCheckpointFlagSphEnabled) != 0u;
+    outState.config.octreeThetaAutoTune = (flags & kCheckpointFlagThetaAutoTune) != 0u;
+    outState.gpuTelemetryEnabled = (flags & kCheckpointFlagGpuTelemetryEnabled) != 0u;
+    outState.config.particleCount = count;
+
+    if (!readLeF32(in, outState.totalTime)
+        || !readLeF32(in, outState.config.dt)
+        || !readLeF32(in, outState.config.substepTargetDt)
+        || !readLeU32(in, outState.config.maxSubsteps)
+        || !readLeU32(in, outState.config.snapshotPublishPeriodMs)
+        || !readLeF32(in, outState.config.octreeTheta)
+        || !readLeF32(in, outState.config.octreeSoftening)
+        || !readLeF32(in, outState.config.octreeThetaAutoMin)
+        || !readLeF32(in, outState.config.octreeThetaAutoMax)
+        || !readLeF32(in, outState.config.sphSmoothingLength)
+        || !readLeF32(in, outState.config.sphRestDensity)
+        || !readLeF32(in, outState.config.sphGasConstant)
+        || !readLeF32(in, outState.config.sphViscosity)
+        || !readLeU32(in, outState.config.energyMeasureEverySteps)
+        || !readLeU32(in, outState.config.energySampleLimit)
+        || !readLeF32(in, outState.config.physicsMaxAcceleration)
+        || !readLeF32(in, outState.config.physicsMinSoftening)
+        || !readLeF32(in, outState.config.physicsMinDistance2)
+        || !readLeF32(in, outState.config.physicsMinTheta)
+        || !readLeF32(in, outState.config.sphMaxAcceleration)
+        || !readLeF32(in, outState.config.sphMaxSpeed)
+        || !readLeF32(in, outState.energyBaseline)
+        || !readSizedString(in, outState.config.solver, 32u)
+        || !readSizedString(in, outState.config.integrator, 32u)
+        || !readSizedString(in, outState.config.performanceProfile, 32u)
+        || !readSizedString(in, outState.config.octreeOpeningCriterion, 32u)) {
+        if (outError != nullptr) {
+            *outError = "checkpoint metadata is truncated";
+        }
+        return false;
+    }
+
+    if (!isSupportedCheckpointString(
+            outState.config.solver,
+            outState.config.integrator,
+            outState.config.performanceProfile,
+            outState.config.octreeOpeningCriterion)) {
+        if (outError != nullptr) {
+            *outError = "checkpoint metadata is not supported by this build";
+        }
+        return false;
+    }
+
+    outState.particles.clear();
+    outState.particles.reserve(count);
+    for (std::uint32_t index = 0u; index < count; ++index) {
+        float px = 0.0f;
+        float py = 0.0f;
+        float pz = 0.0f;
+        float vx = 0.0f;
+        float vy = 0.0f;
+        float vz = 0.0f;
+        float mass = 0.0f;
+        float temperature = 0.0f;
+        if (!readLeF32(in, px)
+            || !readLeF32(in, py)
+            || !readLeF32(in, pz)
+            || !readLeF32(in, vx)
+            || !readLeF32(in, vy)
+            || !readLeF32(in, vz)
+            || !readLeF32(in, mass)
+            || !readLeF32(in, temperature)) {
+            if (outError != nullptr) {
+                *outError = "checkpoint particle payload is truncated";
+            }
+            return false;
+        }
+        Particle particle;
+        particle.setPosition(Vector3(px, py, pz));
+        particle.setVelocity(Vector3(vx, vy, vz));
+        particle.setPressure(Vector3(0.0f, 0.0f, 0.0f));
+        particle.setDensity(0.0f);
+        if (mass > 0.0f) {
+            particle.setMass(mass);
+        }
+        particle.setTemperature(std::max(0.0f, temperature));
+        outState.particles.push_back(particle);
+    }
+    return outState.particles.size() >= 2u;
+}
 
 static bool writeExportSnapshotFile(const AsyncExportJob &job)
 {
@@ -1500,7 +1857,9 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
       _exportLastPath(),
       _exportLastMessage(),
       _system(nullptr),
-      _exportQueueState(new ExportQueueState())
+      _exportQueueState(new ExportQueueState()),
+      _activeCheckpointState(nullptr),
+      _checkpointQueueState(new SimulationCheckpointQueueState())
 {
     _runtimeConfigMirror.particleCount = _particleCount;
     _runtimeConfigMirror.dt = std::max(1e-6f, initialDt);
@@ -1841,6 +2200,7 @@ void SimulationServer::setInitialStateConfig(const InitialStateConfig &config)
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
         _initialStateConfig = config;
+        _activeCheckpointState.reset();
     }
     if (_running.load(std::memory_order_relaxed)) {
         requestReset();
@@ -1883,6 +2243,7 @@ void SimulationServer::setInitialStateFile(const std::string &path, const std::s
         std::lock_guard<std::mutex> lock(_commandMutex);
         _initialStatePath = path;
         _initialStateFormat = format.empty() ? "auto" : format;
+        _activeCheckpointState.reset();
         _runtimeConfigMirror.inputFile = _initialStatePath;
         _runtimeConfigMirror.inputFormat = _initialStateFormat;
         if (!_initialStatePath.empty()) {
@@ -1963,6 +2324,110 @@ void SimulationServer::stopExportWorker()
     if (_exportQueueState->worker.joinable()) {
         _exportQueueState->worker.join();
     }
+}
+
+bool SimulationServer::saveCheckpoint(const std::string &outputPath)
+{
+    if (outputPath.empty() || !_running.load(std::memory_order_relaxed) || _checkpointQueueState == nullptr) {
+        return false;
+    }
+    const std::shared_ptr<CheckpointSaveResult> result = std::make_shared<CheckpointSaveResult>();
+    {
+        std::lock_guard<std::mutex> lock(_checkpointQueueState->mutex);
+        PendingCheckpointSaveRequest request{};
+        request.outputPath = outputPath;
+        request.result = result;
+        _checkpointQueueState->saveRequests.push_back(std::move(request));
+    }
+
+    std::unique_lock<std::mutex> waitLock(result->mutex);
+    result->condition.wait(waitLock, [result]() { return result->completed; });
+    return result->ok;
+}
+
+bool SimulationServer::loadCheckpoint(const std::string &inputPath, std::string *outError)
+{
+    if (inputPath.empty()) {
+        if (outError != nullptr) {
+            *outError = "missing checkpoint path";
+        }
+        return false;
+    }
+
+    SimulationCheckpointState loaded{};
+    if (!readCheckpointFile(inputPath, loaded, outError)) {
+        return false;
+    }
+
+    loaded.config.particleCount = static_cast<std::uint32_t>(loaded.particles.size());
+    {
+        std::lock_guard<std::mutex> lock(_commandMutex);
+        _particleCount = loaded.config.particleCount;
+        _solverMode = loaded.config.solver;
+        _integratorMode = loaded.config.integrator;
+        _performanceProfile = loaded.config.performanceProfile;
+        _octreeTheta = loaded.config.octreeTheta;
+        _octreeSoftening = loaded.config.octreeSoftening;
+        _octreeOpeningCriterion = loaded.config.octreeOpeningCriterion;
+        _octreeThetaAutoTune = loaded.config.octreeThetaAutoTune;
+        _octreeThetaAutoMin = loaded.config.octreeThetaAutoMin;
+        _octreeThetaAutoMax = loaded.config.octreeThetaAutoMax;
+        _sphEnabled = loaded.config.sphEnabled;
+        _sphSmoothingLength = loaded.config.sphSmoothingLength;
+        _sphRestDensity = loaded.config.sphRestDensity;
+        _sphGasConstant = loaded.config.sphGasConstant;
+        _sphViscosity = loaded.config.sphViscosity;
+        _physicsMaxAcceleration = loaded.config.physicsMaxAcceleration;
+        _physicsMinSoftening = loaded.config.physicsMinSoftening;
+        _physicsMinDistance2 = loaded.config.physicsMinDistance2;
+        _physicsMinTheta = loaded.config.physicsMinTheta;
+        _sphMaxAcceleration = loaded.config.sphMaxAcceleration;
+        _sphMaxSpeed = loaded.config.sphMaxSpeed;
+        _runtimeConfigMirror.particleCount = loaded.config.particleCount;
+        _runtimeConfigMirror.dt = loaded.config.dt;
+        _runtimeConfigMirror.solver = loaded.config.solver;
+        _runtimeConfigMirror.integrator = loaded.config.integrator;
+        _runtimeConfigMirror.performanceProfile = loaded.config.performanceProfile;
+        _runtimeConfigMirror.substepTargetDt = loaded.config.substepTargetDt;
+        _runtimeConfigMirror.maxSubsteps = loaded.config.maxSubsteps;
+        _runtimeConfigMirror.snapshotPublishPeriodMs = loaded.config.snapshotPublishPeriodMs;
+        _runtimeConfigMirror.octreeTheta = loaded.config.octreeTheta;
+        _runtimeConfigMirror.octreeSoftening = loaded.config.octreeSoftening;
+        _runtimeConfigMirror.octreeOpeningCriterion = loaded.config.octreeOpeningCriterion;
+        _runtimeConfigMirror.octreeThetaAutoTune = loaded.config.octreeThetaAutoTune;
+        _runtimeConfigMirror.octreeThetaAutoMin = loaded.config.octreeThetaAutoMin;
+        _runtimeConfigMirror.octreeThetaAutoMax = loaded.config.octreeThetaAutoMax;
+        _runtimeConfigMirror.sphEnabled = loaded.config.sphEnabled;
+        _runtimeConfigMirror.sphSmoothingLength = loaded.config.sphSmoothingLength;
+        _runtimeConfigMirror.sphRestDensity = loaded.config.sphRestDensity;
+        _runtimeConfigMirror.sphGasConstant = loaded.config.sphGasConstant;
+        _runtimeConfigMirror.sphViscosity = loaded.config.sphViscosity;
+        _runtimeConfigMirror.energyMeasureEverySteps = loaded.config.energyMeasureEverySteps;
+        _runtimeConfigMirror.energySampleLimit = loaded.config.energySampleLimit;
+        _runtimeConfigMirror.physicsMaxAcceleration = loaded.config.physicsMaxAcceleration;
+        _runtimeConfigMirror.physicsMinSoftening = loaded.config.physicsMinSoftening;
+        _runtimeConfigMirror.physicsMinDistance2 = loaded.config.physicsMinDistance2;
+        _runtimeConfigMirror.physicsMinTheta = loaded.config.physicsMinTheta;
+        _runtimeConfigMirror.sphMaxAcceleration = loaded.config.sphMaxAcceleration;
+        _runtimeConfigMirror.sphMaxSpeed = loaded.config.sphMaxSpeed;
+        _runtimeConfigMirror.inputFile = inputPath;
+        _runtimeConfigMirror.inputFormat = "checkpoint";
+        _runtimeConfigMirror.initMode = "file";
+        _runtimeConfigMirror.presetStructure = "file";
+        _dt.store(std::max(1e-6f, loaded.config.dt), std::memory_order_relaxed);
+        _configuredSubstepTargetDt.store(loaded.config.substepTargetDt, std::memory_order_relaxed);
+        _configuredMaxSubsteps.store(std::max<std::uint32_t>(1u, loaded.config.maxSubsteps), std::memory_order_relaxed);
+        _snapshotPublishPeriodMs.store(std::max<std::uint32_t>(1u, loaded.config.snapshotPublishPeriodMs), std::memory_order_relaxed);
+        _energyMeasureEverySteps.store(std::max<std::uint32_t>(1u, loaded.config.energyMeasureEverySteps), std::memory_order_relaxed);
+        _energySampleLimit.store(std::max<std::uint32_t>(2u, loaded.config.energySampleLimit), std::memory_order_relaxed);
+        _gpuTelemetryEnabled.store(loaded.gpuTelemetryEnabled, std::memory_order_relaxed);
+        _paused.store(loaded.paused, std::memory_order_relaxed);
+        _initialStatePath.clear();
+        _initialStateFormat = "checkpoint";
+        _activeCheckpointState.reset(new SimulationCheckpointState(loaded));
+    }
+    requestReset();
+    return true;
 }
 
 void SimulationServer::enqueueExportWrite(
@@ -2230,6 +2695,7 @@ void SimulationServer::rebuildSystem()
     std::string inputPath;
     std::string inputFormat;
     InitialStateConfig initConfig;
+    std::unique_ptr<SimulationCheckpointState> checkpointStateCopy;
     std::uint32_t configuredParticleCount = 2u;
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
@@ -2258,6 +2724,9 @@ void SimulationServer::rebuildSystem()
         inputPath = _initialStatePath;
         inputFormat = _initialStateFormat;
         initConfig = _initialStateConfig;
+        if (_activeCheckpointState) {
+            checkpointStateCopy.reset(new SimulationCheckpointState(*_activeCheckpointState));
+        }
         configuredParticleCount = std::max<std::uint32_t>(2u, _particleCount);
     }
 
@@ -2286,8 +2755,14 @@ void SimulationServer::rebuildSystem()
 
     std::vector<Particle> importedParticles;
     const std::string initMode = toLower(initConfig.mode);
-    const bool shouldTryFile = initMode == "file" && !inputPath.empty();
-    const bool hasImportedState = shouldTryFile && loadInitialState(importedParticles, inputPath, inputFormat);
+    const bool shouldTryFile = !checkpointStateCopy && initMode == "file" && !inputPath.empty();
+    bool hasImportedState = false;
+    if (checkpointStateCopy) {
+        importedParticles = checkpointStateCopy->particles;
+        hasImportedState = importedParticles.size() >= 2u;
+    } else {
+        hasImportedState = shouldTryFile && loadInitialState(importedParticles, inputPath, inputFormat);
+    }
 
     std::vector<Particle> generatedParticles;
     const bool hasGeneratedState = hasImportedState
@@ -2448,6 +2923,14 @@ void SimulationServer::rebuildSystem()
     _scratchSnapshot.clear();
     publishSnapshot();
     maybeUpdateEnergy(0);
+    if (checkpointStateCopy) {
+        _steps.store(checkpointStateCopy->steps, std::memory_order_relaxed);
+        _totalTime.store(checkpointStateCopy->totalTime, std::memory_order_relaxed);
+        _paused.store(checkpointStateCopy->paused, std::memory_order_relaxed);
+        _hasEnergyBaseline = checkpointStateCopy->hasEnergyBaseline;
+        _energyBaseline = checkpointStateCopy->energyBaseline;
+        maybeUpdateEnergy(checkpointStateCopy->steps);
+    }
 }
 
 void SimulationServer::publishSnapshot()
@@ -2700,6 +3183,36 @@ void SimulationServer::processPendingExport()
     }
 }
 
+void SimulationServer::processPendingCheckpointSave()
+{
+    if (_checkpointQueueState == nullptr) {
+        return;
+    }
+    PendingCheckpointSaveRequest request{};
+    bool hasRequest = false;
+    {
+        std::lock_guard<std::mutex> lock(_checkpointQueueState->mutex);
+        if (!_checkpointQueueState->saveRequests.empty()) {
+            request = std::move(_checkpointQueueState->saveRequests.front());
+            _checkpointQueueState->saveRequests.pop_front();
+            hasRequest = true;
+        }
+    }
+    if (!hasRequest || request.result == nullptr) {
+        return;
+    }
+
+    std::string error;
+    const bool ok = captureCheckpointToFile(request.outputPath, &error);
+    {
+        std::lock_guard<std::mutex> lock(request.result->mutex);
+        request.result->completed = true;
+        request.result->ok = ok;
+        request.result->error = error;
+    }
+    request.result->condition.notify_all();
+}
+
 bool SimulationServer::exportCurrentState(const std::string &outputPath, const std::string &format)
 {
     if (!_system) {
@@ -2724,6 +3237,64 @@ bool SimulationServer::exportCurrentState(const std::string &outputPath, const s
         integratorModeLabel,
         _steps.load(std::memory_order_relaxed));
     return true;
+}
+
+bool SimulationServer::captureCheckpointToFile(const std::string &outputPath, std::string *outError)
+{
+    if (!_system) {
+        if (outError != nullptr) {
+            *outError = "runtime is not ready";
+        }
+        return false;
+    }
+    if (!_system->syncHostState()) {
+        if (outError != nullptr) {
+            *outError = "could not synchronize host state";
+        }
+        return false;
+    }
+
+    SimulationCheckpointState state{};
+    {
+        std::lock_guard<std::mutex> lock(_commandMutex);
+        state.config = _runtimeConfigMirror;
+        state.config.particleCount = _particleCount;
+        state.config.dt = _dt.load(std::memory_order_relaxed);
+        state.config.substepTargetDt = _configuredSubstepTargetDt.load(std::memory_order_relaxed);
+        state.config.maxSubsteps = _configuredMaxSubsteps.load(std::memory_order_relaxed);
+        state.config.snapshotPublishPeriodMs = _snapshotPublishPeriodMs.load(std::memory_order_relaxed);
+        state.config.solver = _solverMode;
+        state.config.integrator = _integratorMode;
+        state.config.performanceProfile = _performanceProfile;
+        state.config.octreeTheta = _octreeTheta;
+        state.config.octreeSoftening = _octreeSoftening;
+        state.config.octreeOpeningCriterion = _octreeOpeningCriterion;
+        state.config.octreeThetaAutoTune = _octreeThetaAutoTune;
+        state.config.octreeThetaAutoMin = _octreeThetaAutoMin;
+        state.config.octreeThetaAutoMax = _octreeThetaAutoMax;
+        state.config.sphEnabled = _sphEnabled;
+        state.config.sphSmoothingLength = _sphSmoothingLength;
+        state.config.sphRestDensity = _sphRestDensity;
+        state.config.sphGasConstant = _sphGasConstant;
+        state.config.sphViscosity = _sphViscosity;
+        state.config.energyMeasureEverySteps = _energyMeasureEverySteps.load(std::memory_order_relaxed);
+        state.config.energySampleLimit = _energySampleLimit.load(std::memory_order_relaxed);
+        state.gpuTelemetryEnabled = _gpuTelemetryEnabled.load(std::memory_order_relaxed);
+        state.config.physicsMaxAcceleration = _physicsMaxAcceleration;
+        state.config.physicsMinSoftening = _physicsMinSoftening;
+        state.config.physicsMinDistance2 = _physicsMinDistance2;
+        state.config.physicsMinTheta = _physicsMinTheta;
+        state.config.sphMaxAcceleration = _sphMaxAcceleration;
+        state.config.sphMaxSpeed = _sphMaxSpeed;
+    }
+
+    state.particles = _system->getParticles();
+    state.steps = _steps.load(std::memory_order_relaxed);
+    state.totalTime = _totalTime.load(std::memory_order_relaxed);
+    state.paused = _paused.load(std::memory_order_relaxed);
+    state.hasEnergyBaseline = _hasEnergyBaseline;
+    state.energyBaseline = _energyBaseline;
+    return writeCheckpointFile(outputPath, state, outError);
 }
 
 void SimulationServer::loop()
@@ -2751,6 +3322,7 @@ void SimulationServer::loop()
             stepBatch = _stepRequests.exchange(0, std::memory_order_relaxed);
             if (stepBatch == 0) {
                 processPendingExport();
+                processPendingCheckpointSave();
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 continue;
             }
@@ -2923,6 +3495,7 @@ void SimulationServer::loop()
         maybeUpdateEnergy(currentStep);
         maybeSampleGpuTelemetry(solverMode, currentStep);
         processPendingExport();
+        processPendingCheckpointSave();
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }

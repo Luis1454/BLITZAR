@@ -210,6 +210,17 @@ void ClientRuntime::requestExportSnapshot(const std::string &outputPath, const s
     _bridge.requestExportSnapshot(outputPath, format);
 }
 
+void ClientRuntime::requestSaveCheckpoint(const std::string &outputPath)
+{
+    _bridge.requestSaveCheckpoint(outputPath);
+}
+
+void ClientRuntime::requestLoadCheckpoint(const std::string &inputPath)
+{
+    _bridge.requestLoadCheckpoint(inputPath);
+    invalidateCachedSnapshot();
+}
+
 void ClientRuntime::requestShutdown()
 {
     _bridge.requestShutdown();

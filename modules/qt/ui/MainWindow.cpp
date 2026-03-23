@@ -503,7 +503,9 @@ MainWindow::MainWindow(
     auto *fileMenu = menuBar()->addMenu("&File");
     fileMenu->addAction("Save Config", this, [this]() { (void)saveConfigToDisk(); }, QKeySequence::Save);
     fileMenu->addAction("Load Preset...", this, [this]() { handleLoadPresetRequest(); });
+    fileMenu->addAction("Load Checkpoint...", this, [this]() { handleLoadCheckpointRequest(); });
     fileMenu->addAction("Load Input...", this, [this]() { handleLoadInputRequest(); });
+    fileMenu->addAction("Save Checkpoint...", this, [this]() { handleSaveCheckpointRequest(); });
     fileMenu->addAction("Export Snapshot...", this, [this]() { handleExportRequest(); });
     fileMenu->addSeparator();
     fileMenu->addAction("Quit", this, [this]() { close(); }, QKeySequence::Quit);
@@ -769,6 +771,52 @@ void MainWindow::handleExportRequest()
         _config.exportDirectory = outPath.parent_path().string();
     }
     markConfigDirty();
+}
+
+void MainWindow::handleSaveCheckpointRequest()
+{
+    const SimulationStats stats = _runtime->getCachedStats();
+    std::filesystem::path startPath =
+        std::filesystem::path(_config.exportDirectory.empty() ? "exports" : _config.exportDirectory)
+        / ("checkpoint_s" + std::to_string(stats.steps) + ".chk");
+    const QString pathChosen = QFileDialog::getSaveFileName(
+        this,
+        "Save Checkpoint",
+        QString::fromStdString(startPath.string()),
+        "Checkpoint (*.chk);;All files (*.*)");
+    if (pathChosen.isEmpty()) {
+        return;
+    }
+
+    std::filesystem::path outputPath(pathChosen.toStdString());
+    if (outputPath.extension().empty()) {
+        outputPath += ".chk";
+    }
+    _runtime->requestSaveCheckpoint(outputPath.string());
+    if (outputPath.has_parent_path()) {
+        _config.exportDirectory = outputPath.parent_path().string();
+    }
+    statusBar()->showMessage("Checkpoint save requested", 3000);
+    markConfigDirty();
+}
+
+void MainWindow::handleLoadCheckpointRequest()
+{
+    const QString startPath = _config.inputFile.empty()
+        ? QString::fromStdString(_config.exportDirectory)
+        : QString::fromStdString(_config.inputFile);
+    const QString path = QFileDialog::getOpenFileName(
+        this,
+        "Load Checkpoint",
+        startPath,
+        "Checkpoint (*.chk);;All files (*.*)");
+    if (path.isEmpty()) {
+        return;
+    }
+    _runtime->requestLoadCheckpoint(path.toStdString());
+    _energyGraph->clearHistory();
+    _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
+    statusBar()->showMessage("Checkpoint load requested", 3000);
 }
 
 void MainWindow::handleLoadInputRequest()

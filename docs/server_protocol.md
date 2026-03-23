@@ -73,10 +73,15 @@ Runtime config commands:
 
 I/O commands:
 - `load` (`path:string`, `format:string=auto`) triggers reset on server
+- `load_checkpoint` (`path:string`)
+  - loads a versioned binary checkpoint
+  - rejects unsupported checkpoint versions or metadata that this build cannot restore
 - `export` (`path?:string`, `format?:string`)
   - enqueues a background file-write job after the authoritative server thread captures the current state
   - status replies expose `export_queue_depth`, `export_active`, cumulative completion/failure counters, and the last export path/state/message
   - orderly shutdown drains queued export jobs before the process exits; abrupt termination may still interrupt pending writes
+- `save_checkpoint` (`path:string`)
+  - saves a versioned binary checkpoint containing particles and restartable runtime state
 
 Reference:
 - Constants and clamp rules are defined in `runtime/include/protocol/ServerProtocol.hpp`.

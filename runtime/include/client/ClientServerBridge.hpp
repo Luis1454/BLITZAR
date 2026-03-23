@@ -87,6 +87,8 @@ class ClientServerBridge {
         void setExportDefaults(const std::string &directory, const std::string &format);
         void setInitialStateFile(const std::string &path, const std::string &format);
         void requestExportSnapshot(const std::string &outputPath, const std::string &format);
+        void requestSaveCheckpoint(const std::string &outputPath);
+        void requestLoadCheckpoint(const std::string &inputPath);
         void requestShutdown();
         void configureRemoteConnector(
             const std::string &host,

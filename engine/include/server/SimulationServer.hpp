@@ -20,6 +20,9 @@
 #include <thread>
 #include <vector>
 
+struct SimulationCheckpointState;
+struct SimulationCheckpointQueueState;
+
 /// Runs the authoritative simulation loop and exposes deterministic control operations.
 class SimulationServer {
     public:
@@ -87,6 +90,10 @@ class SimulationServer {
         void setInitialStateFile(const std::string &path, const std::string &format);
         /// Queues an export of the current runtime state.
         void requestExportSnapshot(const std::string &outputPath, const std::string &format);
+        /// Captures the current runtime into a restartable checkpoint file.
+        bool saveCheckpoint(const std::string &outputPath);
+        /// Loads a restartable checkpoint and rebuilds the runtime from it.
+        bool loadCheckpoint(const std::string &inputPath, std::string *outError = nullptr);
 
         /// Moves the newest snapshot into `outSnapshot` when one is available.
         bool tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot);
@@ -116,7 +123,6 @@ class SimulationServer {
         };
 
         struct ExportQueueState;
-
         void loop();
         void publishSnapshot();
         void rebuildSystem();
@@ -125,7 +131,9 @@ class SimulationServer {
         void clearGpuTelemetry();
         void maybeSampleGpuTelemetry(std::string_view solverMode, std::uint64_t currentStep);
         void processPendingExport();
+        void processPendingCheckpointSave();
         bool exportCurrentState(const std::string &outputPath, const std::string &format);
+        bool captureCheckpointToFile(const std::string &outputPath, std::string *outError);
         void startExportWorker();
         void stopExportWorker();
         void enqueueExportWrite(
@@ -232,6 +240,8 @@ class SimulationServer {
         std::string _exportLastMessage;
         std::unique_ptr<ParticleSystem> _system;
         std::unique_ptr<ExportQueueState> _exportQueueState;
+        std::unique_ptr<SimulationCheckpointState> _activeCheckpointState;
+        std::unique_ptr<SimulationCheckpointQueueState> _checkpointQueueState;
 
         static constexpr std::uint64_t kGpuTelemetrySampleStride = 8u;
 };

@@ -87,6 +87,10 @@ class IClientRuntime {
         virtual void setInitialStateFile(const std::string &path, const std::string &format) = 0;
         /// Exports the current simulation snapshot to `outputPath` using `format`.
         virtual void requestExportSnapshot(const std::string &outputPath, const std::string &format) = 0;
+        /// Saves a restartable checkpoint to `outputPath`.
+        virtual void requestSaveCheckpoint(const std::string &outputPath) = 0;
+        /// Loads a restartable checkpoint from `inputPath`.
+        virtual void requestLoadCheckpoint(const std::string &inputPath) = 0;
         /// Requests a remote runtime shutdown.
         virtual void requestShutdown() = 0;
         /// Limits the number of particles retained in the remote snapshot path.
