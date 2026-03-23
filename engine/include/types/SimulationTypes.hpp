@@ -72,6 +72,13 @@ struct SimulationStats {
     float gpuCopyMs;
     std::uint64_t gpuVramUsedBytes;
     std::uint64_t gpuVramTotalBytes;
+    std::uint32_t exportQueueDepth;
+    bool exportActive;
+    std::uint64_t exportCompletedCount;
+    std::uint64_t exportFailedCount;
+    std::string exportLastState;
+    std::string exportLastPath;
+    std::string exportLastMessage;
 };
 
 

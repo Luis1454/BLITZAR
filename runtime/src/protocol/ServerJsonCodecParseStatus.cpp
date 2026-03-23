@@ -43,6 +43,13 @@ bool ServerJsonCodec::parseStatusResponse(std::string_view raw, ServerStatusPayl
     readNumber(raw, "gpu_copy_ms", parsed.gpuCopyMs);
     readNumber(raw, "gpu_vram_used_bytes", parsed.gpuVramUsedBytes);
     readNumber(raw, "gpu_vram_total_bytes", parsed.gpuVramTotalBytes);
+    readNumber(raw, "export_queue_depth", parsed.exportQueueDepth);
+    readBool(raw, "export_active", parsed.exportActive);
+    readNumber(raw, "export_completed_count", parsed.exportCompletedCount);
+    readNumber(raw, "export_failed_count", parsed.exportFailedCount);
+    readString(raw, "export_last_state", parsed.exportLastState);
+    readString(raw, "export_last_path", parsed.exportLastPath);
+    readString(raw, "export_last_message", parsed.exportLastMessage);
     out = parsed;
     error.clear();
     return true;

@@ -74,6 +74,9 @@ Runtime config commands:
 I/O commands:
 - `load` (`path:string`, `format:string=auto`) triggers reset on server
 - `export` (`path?:string`, `format?:string`)
+  - enqueues a background file-write job after the authoritative server thread captures the current state
+  - status replies expose `export_queue_depth`, `export_active`, cumulative completion/failure counters, and the last export path/state/message
+  - orderly shutdown drains queued export jobs before the process exits; abrupt termination may still interrupt pending writes
 
 Reference:
 - Constants and clamp rules are defined in `runtime/include/protocol/ServerProtocol.hpp`.

@@ -59,6 +59,13 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
     stats.gpuCopyMs = 0.75f;
     stats.gpuVramUsedBytes = 64u * 1024u * 1024u;
     stats.gpuVramTotalBytes = 256u * 1024u * 1024u;
+    stats.exportQueueDepth = 3u;
+    stats.exportActive = true;
+    stats.exportCompletedCount = 9u;
+    stats.exportFailedCount = 2u;
+    stats.exportLastState = "writing";
+    stats.exportLastPath = "exports/demo.vtk";
+    stats.exportLastMessage = "background export active";
 
     const std::string raw = grav_protocol::ServerJsonCodec::makeStatusResponse(stats);
 
@@ -92,6 +99,13 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
     EXPECT_FLOAT_EQ(parsed.gpuCopyMs, 0.75f);
     EXPECT_EQ(parsed.gpuVramUsedBytes, 64u * 1024u * 1024u);
     EXPECT_EQ(parsed.gpuVramTotalBytes, 256u * 1024u * 1024u);
+    EXPECT_EQ(parsed.exportQueueDepth, 3u);
+    EXPECT_TRUE(parsed.exportActive);
+    EXPECT_EQ(parsed.exportCompletedCount, 9u);
+    EXPECT_EQ(parsed.exportFailedCount, 2u);
+    EXPECT_EQ(parsed.exportLastState, "writing");
+    EXPECT_EQ(parsed.exportLastPath, "exports/demo.vtk");
+    EXPECT_EQ(parsed.exportLastMessage, "background export active");
 }
 
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_003_RejectsMalformedSnapshotPayload)

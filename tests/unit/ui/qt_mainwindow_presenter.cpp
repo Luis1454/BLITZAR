@@ -53,6 +53,13 @@ TEST(QtUiLogicTest, TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeStat
     input.stats.gpuCopyMs = 0.456f;
     input.stats.gpuVramUsedBytes = 128u * 1024u * 1024u;
     input.stats.gpuVramTotalBytes = 512u * 1024u * 1024u;
+    input.stats.exportQueueDepth = 2u;
+    input.stats.exportActive = true;
+    input.stats.exportCompletedCount = 4u;
+    input.stats.exportFailedCount = 1u;
+    input.stats.exportLastState = "writing";
+    input.stats.exportLastPath = "exports/demo.vtk";
+    input.stats.exportLastMessage = "background export active";
 
     const grav_qt::MainWindowPresentation presentation = grav_qt::MainWindowPresenter().present(input);
 
@@ -64,6 +71,11 @@ TEST(QtUiLogicTest, TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeStat
     EXPECT_NE(presentation.runtimeText.find("Substeps: 2 x 0.005"), std::string::npos);
     EXPECT_NE(presentation.queueText.find("Progress: open-ended"), std::string::npos);
     EXPECT_NE(presentation.queueText.find("ETA: n/a"), std::string::npos);
+    EXPECT_NE(presentation.queueText.find("Export: writing"), std::string::npos);
+    EXPECT_NE(presentation.queueText.find("Export backlog: 2"), std::string::npos);
+    EXPECT_NE(presentation.queueText.find("Export done: 4"), std::string::npos);
+    EXPECT_NE(presentation.queueText.find("Export failed: 1"), std::string::npos);
+    EXPECT_NE(presentation.queueText.find("Last export: exports/demo.vtk"), std::string::npos);
     EXPECT_NE(presentation.queueText.find("Queue: 2 / 4"), std::string::npos);
     EXPECT_NE(presentation.queueText.find("Policy: latest-only"), std::string::npos);
     EXPECT_NE(presentation.queueText.find("Latency: 7ms"), std::string::npos);
@@ -75,6 +87,8 @@ TEST(QtUiLogicTest, TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeStat
     EXPECT_NE(presentation.consoleTrace.find("backend_state=busy"), std::string::npos) << presentation.consoleTrace;
     EXPECT_NE(presentation.consoleTrace.find("gpu_telemetry=on"), std::string::npos);
     EXPECT_NE(presentation.consoleTrace.find("progress=\"open-ended\""), std::string::npos);
+    EXPECT_NE(presentation.consoleTrace.find("export_state=writing"), std::string::npos);
+    EXPECT_NE(presentation.consoleTrace.find("export_backlog=2"), std::string::npos);
     EXPECT_NE(presentation.consoleTrace.find("queue_depth=2"), std::string::npos);
     EXPECT_NE(presentation.consoleTrace.find("drop_policy=latest-only"), std::string::npos);
 }

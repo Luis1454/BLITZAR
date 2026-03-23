@@ -300,6 +300,13 @@ ServerClientResponse ServerClient::getStatus(ServerClientStatus &outStatus)
         outStatus.gpuCopyMs = parsed.gpuCopyMs;
         outStatus.gpuVramUsedBytes = parsed.gpuVramUsedBytes;
         outStatus.gpuVramTotalBytes = parsed.gpuVramTotalBytes;
+        outStatus.exportQueueDepth = parsed.exportQueueDepth;
+        outStatus.exportActive = parsed.exportActive;
+        outStatus.exportCompletedCount = parsed.exportCompletedCount;
+        outStatus.exportFailedCount = parsed.exportFailedCount;
+        outStatus.exportLastState = parsed.exportLastState;
+        outStatus.exportLastPath = parsed.exportLastPath;
+        outStatus.exportLastMessage = parsed.exportLastMessage;
         return response;
     } catch (const std::exception &ex) {
         ServerClientResponse response;

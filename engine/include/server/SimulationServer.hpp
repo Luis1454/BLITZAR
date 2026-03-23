@@ -13,6 +13,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <deque>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -109,6 +110,13 @@ class SimulationServer {
             bool estimated;
         };
 
+        struct PendingExportRequest final {
+            std::string outputPath;
+            std::string format;
+        };
+
+        struct ExportQueueState;
+
         void loop();
         void publishSnapshot();
         void rebuildSystem();
@@ -118,13 +126,25 @@ class SimulationServer {
         void maybeSampleGpuTelemetry(std::string_view solverMode, std::uint64_t currentStep);
         void processPendingExport();
         bool exportCurrentState(const std::string &outputPath, const std::string &format);
+        void startExportWorker();
+        void stopExportWorker();
+        void enqueueExportWrite(
+            const std::string &outputPath,
+            const std::string &format,
+            const std::vector<Particle> &particles,
+            const std::string &solverModeLabel,
+            const std::string &integratorModeLabel,
+            std::uint64_t step);
+        void updateExportStatus(
+            const std::string &state,
+            const std::string &path,
+            const std::string &message);
         bool loadInitialState(std::vector<Particle> &outParticles, const std::string &inputPath, const std::string &format) const;
         void clearPublishedSnapshotCache();
 
         std::atomic<bool> _running;
         std::atomic<bool> _paused;
         std::atomic<bool> _resetRequested;
-        std::atomic<bool> _exportRequested;
         std::atomic<bool> _cudaContextDirty;
         std::atomic<std::uint32_t> _stepRequests;
 
@@ -148,6 +168,10 @@ class SimulationServer {
         std::atomic<float> _gpuCopyMs;
         std::atomic<std::uint64_t> _gpuVramUsedBytes;
         std::atomic<std::uint64_t> _gpuVramTotalBytes;
+        std::atomic<std::uint32_t> _exportQueueDepth;
+        std::atomic<bool> _exportActive;
+        std::atomic<std::uint64_t> _exportCompletedCount;
+        std::atomic<std::uint64_t> _exportFailedCount;
         std::atomic<float> _configuredSubstepTargetDt;
         std::atomic<std::uint32_t> _configuredMaxSubsteps;
         std::atomic<std::uint32_t> _snapshotPublishPeriodMs;
@@ -186,8 +210,6 @@ class SimulationServer {
 
         bool _hasEnergyBaseline;
 
-        std::string _pendingExportPath;
-        std::string _pendingExportFormat;
         std::string _exportDirectory;
         std::string _exportFormatDefault;
         std::string _initialStatePath;
@@ -200,10 +222,16 @@ class SimulationServer {
         mutable std::mutex _snapshotMutex;
         mutable std::mutex _commandMutex;
         mutable std::mutex _faultMutex;
+        mutable std::mutex _exportStatusMutex;
+        std::deque<PendingExportRequest> _pendingExportRequests;
         std::vector<RenderParticle> _publishedSnapshot;
         std::vector<RenderParticle> _scratchSnapshot;
         std::string _faultReason;
+        std::string _exportLastState;
+        std::string _exportLastPath;
+        std::string _exportLastMessage;
         std::unique_ptr<ParticleSystem> _system;
+        std::unique_ptr<ExportQueueState> _exportQueueState;
 
         static constexpr std::uint64_t kGpuTelemetrySampleStride = 8u;
 };
