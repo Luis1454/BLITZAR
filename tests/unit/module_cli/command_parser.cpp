@@ -12,16 +12,22 @@ TEST(CommandParserTest, TST_UNT_MODCLI_006_ParsesQuotedPathsAndComments)
         "  # heading\n"
         "\n"
         "load_config \"configs/test scene.ini\" # keep\n"
-        "export_snapshot \"exports/final state.vtk\" vtk\n";
+        "export_snapshot \"exports/final state.vtk\" vtk\n"
+        "save_checkpoint \"checkpoints/final state.chk\"\n"
+        "load_checkpoint \"checkpoints/final state.chk\"\n";
 
     const grav_cmd::CommandParseResult result = grav_cmd::CommandParser::parseScript(script);
     ASSERT_TRUE(result.ok);
-    ASSERT_EQ(result.requests.size(), 2u);
+    ASSERT_EQ(result.requests.size(), 4u);
     EXPECT_EQ(result.requests[0].name, "load_config");
     EXPECT_EQ(std::get<std::string>(result.requests[0].arguments[0]), "configs/test scene.ini");
     EXPECT_EQ(result.requests[1].name, "export_snapshot");
     EXPECT_EQ(std::get<std::string>(result.requests[1].arguments[0]), "exports/final state.vtk");
     EXPECT_EQ(std::get<std::string>(result.requests[1].arguments[1]), "vtk");
+    EXPECT_EQ(result.requests[2].name, "save_checkpoint");
+    EXPECT_EQ(std::get<std::string>(result.requests[2].arguments[0]), "checkpoints/final state.chk");
+    EXPECT_EQ(result.requests[3].name, "load_checkpoint");
+    EXPECT_EQ(std::get<std::string>(result.requests[3].arguments[0]), "checkpoints/final state.chk");
 }
 
 TEST(CommandParserTest, TST_UNT_MODCLI_007_RejectsUnknownCommandWithLineNumber)

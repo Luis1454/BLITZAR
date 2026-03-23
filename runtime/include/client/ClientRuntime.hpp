@@ -46,6 +46,8 @@ class ClientRuntime final : public IClientRuntime {
         void setExportDefaults(const std::string &directory, const std::string &format) override;
         void setInitialStateFile(const std::string &path, const std::string &format) override;
         void requestExportSnapshot(const std::string &outputPath, const std::string &format) override;
+        void requestSaveCheckpoint(const std::string &outputPath) override;
+        void requestLoadCheckpoint(const std::string &inputPath) override;
         void requestShutdown() override;
         void setRemoteSnapshotCap(std::uint32_t maxPoints) override;
         void requestReconnect() override;

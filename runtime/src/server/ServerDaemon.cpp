@@ -508,6 +508,29 @@ std::string ServerDaemon::processRequest(const std::string &request)
             _server.requestExportSnapshot(path, format);
             return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
+        if (cmd == grav_protocol::SaveCheckpoint) {
+            std::string path;
+            if (!grav_protocol::ServerJsonCodec::readString(request, "path", path) || path.empty()) {
+                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "missing path");
+            }
+            if (!_server.saveCheckpoint(path)) {
+                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "failed to save checkpoint");
+            }
+            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+        }
+        if (cmd == grav_protocol::LoadCheckpoint) {
+            std::string path;
+            if (!grav_protocol::ServerJsonCodec::readString(request, "path", path) || path.empty()) {
+                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "missing path");
+            }
+            std::string error;
+            if (!_server.loadCheckpoint(path, &error)) {
+                return grav_protocol::ServerJsonCodec::makeErrorResponse(
+                    cmd,
+                    error.empty() ? "failed to load checkpoint" : error);
+            }
+            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+        }
         if (cmd == grav_protocol::Shutdown) {
             _shutdownRequested.store(true);
             return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);

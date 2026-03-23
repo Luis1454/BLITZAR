@@ -136,4 +136,27 @@ TEST(CommandExecutorTest, TST_UNT_MODCLI_011_LoadConfigUpdatesSessionPathAndReje
     EXPECT_NE(session.configPath, originalPath);
 }
 
+TEST(CommandExecutorTest, TST_UNT_MODCLI_012_CheckpointCommandsMapToProtocolCommands)
+{
+    FakeCommandTransport transport;
+    grav_cmd::CommandSessionState session;
+    std::ostringstream output;
+    grav_cmd::CommandExecutionContext context{transport, session, grav_cmd::CommandExecutionMode::Batch, output};
+
+    const grav_cmd::CommandResult saveResult =
+        grav_cmd::CommandExecutor::execute(parseSingle("save_checkpoint checkpoints/demo.chk"), context);
+    ASSERT_TRUE(saveResult.ok);
+    ASSERT_EQ(transport.commandHistory.size(), 1u);
+    EXPECT_EQ(transport.commandHistory[0].first, "save_checkpoint");
+    EXPECT_EQ(transport.commandHistory[0].second, "\"path\":\"checkpoints/demo.chk\"");
+
+    transport.commandHistory.clear();
+    const grav_cmd::CommandResult loadResult =
+        grav_cmd::CommandExecutor::execute(parseSingle("load_checkpoint checkpoints/demo.chk"), context);
+    ASSERT_TRUE(loadResult.ok);
+    ASSERT_EQ(transport.commandHistory.size(), 1u);
+    EXPECT_EQ(transport.commandHistory[0].first, "load_checkpoint");
+    EXPECT_EQ(transport.commandHistory[0].second, "\"path\":\"checkpoints/demo.chk\"");
+}
+
 } // namespace grav_test_module_cli_command_executor
