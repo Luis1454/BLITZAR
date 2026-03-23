@@ -38,9 +38,9 @@ jobs:
       ready: ${{ steps.report.outputs.ready }}
       reason: ${{ steps.report.outputs.reason }}
     steps:
-      - {name: Checkout, uses: actions/checkout@v4}
+      - {name: Checkout, uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd}
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: {python-version: "${{ env.CI_PYTHON_VERSION }}"}
       - name: Collect GPU runner health report
         env:
@@ -91,7 +91,7 @@ jobs:
           PY
       - name: Upload GPU runner health artifact
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: gpu-runner-health-${{ github.run_number }}
           path: dist/gpu-runner-health/report.json

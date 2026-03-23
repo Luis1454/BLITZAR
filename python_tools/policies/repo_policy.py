@@ -11,6 +11,13 @@ from python_tools.policies.repo_policy_function_metrics import (
     IMPLEMENTATION_SCAN_EXTS,
     collect_function_decomposition_warnings,
 )
+from python_tools.policies.repo_policy_workflows import (
+    check_evidence_workflow_commands,
+    check_legacy_ctest_selectors,
+    check_release_lane_subset,
+    check_workflow_action_pinning,
+    check_workflow_pip_manifest_usage,
+)
 
 FORBIDDEN_CPP_EXTS = {".h", ".hh", ".hxx", ".c", ".cc", ".cxx"}
 LINE_COUNT_EXTS = {
@@ -31,8 +38,6 @@ INLINE_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+[A-Za-z0-9_]+::[A-Za-z0-9
 NAMESPACE_BLOCK_RE = re.compile(r"(?m)^\s*namespace\s+[A-Za-z0-9_]+\s*\{")
 GRAVITY_INTERNAL_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+gravity_internal_")
 PROD_ROOTS = ("apps/", "engine/", "runtime/", "modules/")
-EVIDENCE_WORKFLOW_PATHS = (".github/workflows/pr-fast-quality-gate.yml", ".github/workflows/nightly-full.yml", ".github/workflows/release-lane.yml")
-LEGACY_CTEST_SELECTORS = ("ConfigArgsTest", "ServerProtocolTest", "ClientBridgeTest", "ClientRuntimeTest", "QtMainWindowTest")
 GOTO_RE = re.compile(r"\bgoto\b")
 SETJMP_LONGJMP_RE = re.compile(r"\b(?:setjmp|longjmp)\b")
 DO_WHILE_RE = re.compile(r"\bdo\b\s*\{", re.DOTALL)
@@ -117,9 +122,12 @@ class RepoPolicyCheck(BaseCheck):
         for stale in sorted(allowlist - used_allowlist):
             result.add_warning(f"allowlist entry not needed anymore: {stale}")
 
-        self._check_evidence_workflow_commands(context.root, result, "cmake -S", "-DGRAVITY_PROFILE=prod", "evidence configure command must include -DGRAVITY_PROFILE=prod")
-        self._check_evidence_workflow_commands(context.root, result, "ctest ", "--no-tests=error", "CI ctest command must include --no-tests=error")
-        self._check_legacy_ctest_selectors(context.root, result)
+        check_evidence_workflow_commands(context.root, result, "cmake -S", "-DGRAVITY_PROFILE=prod", "evidence configure command must include -DGRAVITY_PROFILE=prod")
+        check_evidence_workflow_commands(context.root, result, "ctest ", "--no-tests=error", "CI ctest command must include --no-tests=error")
+        check_legacy_ctest_selectors(context.root, result)
+        check_workflow_action_pinning(context.root, result)
+        check_workflow_pip_manifest_usage(context.root, result)
+        check_release_lane_subset(context.root, result)
 
     def _check_cpp_content(self, rel: str, content: str, result: CheckResult) -> None:
         suffix = Path(rel).suffix.lower()
@@ -211,52 +219,6 @@ class RepoPolicyCheck(BaseCheck):
     def _check_function_decomposition(self, rel: str, content: str, result: CheckResult) -> None:
         for warning in collect_function_decomposition_warnings(rel, content):
             result.add_warning(warning)
-
-    def _check_evidence_workflow_commands(
-        self,
-        root: Path,
-        result: CheckResult,
-        marker_text: str,
-        required_text: str,
-        error_text: str,
-    ) -> None:
-        for rel in EVIDENCE_WORKFLOW_PATHS:
-            path = root / rel
-            if not path.exists():
-                continue
-            content = path.read_text(encoding="utf-8", errors="ignore")
-            for command in self._collect_marker_commands(content, marker_text):
-                if required_text in command:
-                    continue
-                result.add_error(f"{rel}: {error_text}: {command}")
-
-    def _collect_marker_commands(self, content: str, marker_text: str) -> list[str]:
-        commands: list[str] = []
-        lines = content.splitlines()
-        index = 0
-        while index < len(lines):
-            stripped = lines[index].strip()
-            marker = stripped.find(marker_text)
-            if marker == -1:
-                index += 1
-                continue
-            command = stripped[marker:]
-            while command.endswith("\\") and index + 1 < len(lines):
-                index += 1
-                command = f"{command} {lines[index].strip()}"
-            commands.append(command)
-            index += 1
-        return commands
-
-    def _check_legacy_ctest_selectors(self, root: Path, result: CheckResult) -> None:
-        for rel in EVIDENCE_WORKFLOW_PATHS:
-            path = root / rel
-            if not path.exists():
-                continue
-            content = path.read_text(encoding="utf-8", errors="ignore")
-            for command in self._collect_marker_commands(content, "ctest "):
-                if any(selector in command for selector in LEGACY_CTEST_SELECTORS):
-                    result.add_error(f"{rel}: CI ctest selector must use normalized TST_* ids: {command}")
 
 
 def _check_power_of_10_content(rel: str, content: str) -> list[str]:
