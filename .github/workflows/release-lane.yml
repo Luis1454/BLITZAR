@@ -207,25 +207,25 @@ jobs:
         run: python -m pip install -r .github/ci/requirements-py312.txt
 
       - name: Download release bundle
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: release-bundle-${{ github.ref_name || github.run_number }}
           path: dist/release-bundle
 
       - name: Download release SBOM
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: release-sbom-${{ github.ref_name || github.run_number }}
           path: dist/release-sbom
 
       - name: Download release evidence
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: release-evidence-${{ github.ref_name || github.run_number }}
           path: dist/evidence-pack
 
       - name: Download release quality index
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: release-quality-index-${{ github.ref_name || github.run_number }}
           path: dist/release-quality-index
