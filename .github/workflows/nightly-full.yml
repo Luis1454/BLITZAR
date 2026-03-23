@@ -21,34 +21,34 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 30
     steps:
-      - {name: Checkout, uses: actions/checkout@v4}
+      - {name: Checkout, uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd}
       - name: Setup Python
         id: setup-python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: {python-version: "${{ env.CI_PYTHON_VERSION }}"}
       - name: Restore pip cache
         id: restore-pip-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~\AppData\Local\pip\Cache
-          key: windows-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/workflows/nightly-full.yml') }}
+          key: windows-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/nightly-full.yml') }}
           restore-keys: |
             windows-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-
       - name: Install Python test tooling
         shell: pwsh
-        run: python -m pip install --upgrade pip pytest ruff mypy
+        run: python -m pip install -r .github/ci/requirements-py312.txt
       - name: Save pip cache
         if: ${{ success() && steps.restore-pip-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~\AppData\Local\pip\Cache
-          key: ${{ steps.restore-pip-cache.outputs.cache-primary-key }}
+          key: windows-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/nightly-full.yml') }}
       - name: Setup MSVC toolchain
-        uses: ilammy/msvc-dev-cmd@v1
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
         with: {arch: x64}
       - name: Restore integration build cache
         id: restore-build-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: |
             build-integration
@@ -81,14 +81,14 @@ jobs:
         run: python scripts/ci/nightly/package_fmea_status.py --root . --dist-dir dist/fmea-status
       - name: Upload FMEA status snapshot
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: nightly-fmea-status-${{ github.run_number }}
           path: dist/fmea-status
           if-no-files-found: error
       - name: Upload test and build logs
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: nightly-full-logs-${{ github.run_number }}
           path: |
@@ -98,30 +98,30 @@ jobs:
           if-no-files-found: ignore
       - name: Save integration build cache
         if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: |
             build-integration
             ~\AppData\Local\vcpkg\archives
             C:\vcpkg\installed
             C:\vcpkg\packages
-          key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
+          key: windows-build-integration-${{ env.CI_CACHE_VERSION }}-msvc-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/nightly-full.yml') }}
   nightly-integration-coverage:
     name: Nightly Integration Coverage (linux-ubuntu24.04 / hosted-gnu / python3.12)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - {name: Checkout, uses: actions/checkout@v4}
+      - {name: Checkout, uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd}
       - name: Setup Python
         id: setup-python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: {python-version: "${{ env.CI_PYTHON_VERSION }}"}
       - name: Restore pip cache
         id: restore-pip-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~/.cache/pip
-          key: linux-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/workflows/nightly-full.yml') }}
+          key: linux-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/nightly-full.yml') }}
           restore-keys: |
             linux-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-
       - name: Run repository quality gate
@@ -130,17 +130,16 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ninja-build
-          python3 -m pip install --upgrade pip
-          python3 -m pip install gcovr pytest ruff mypy
+          python3 -m pip install -r .github/ci/requirements-py312.txt
       - name: Save pip cache
         if: ${{ success() && steps.restore-pip-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~/.cache/pip
-          key: ${{ steps.restore-pip-cache.outputs.cache-primary-key }}
+          key: linux-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/nightly-full.yml') }}
       - name: Restore coverage build cache
         id: restore-build-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: |
             build-integration-cov
@@ -169,11 +168,11 @@ jobs:
           BRANCH_PCT: ${{ steps.coverage.outputs.branch_pct }}
       - name: Upload coverage dashboard pages artifact
         if: ${{ github.ref == 'refs/heads/main' }}
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
         with: {path: coverage-dashboard}
       - name: Publish coverage status check
         if: always()
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
         with:
           script: |
             const ok = '${{ job.status }}' === 'success';
@@ -187,7 +186,7 @@ jobs:
               description, target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
       - name: Upload coverage artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: nightly-integration-coverage-${{ github.run_number }}
           path: |
@@ -197,12 +196,12 @@ jobs:
           if-no-files-found: error
       - name: Save coverage build cache
         if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: |
             build-integration-cov
             ~/.cache/vcpkg/archives
-          key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
+          key: linux-build-coverage-${{ env.CI_CACHE_VERSION }}-gcc-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/nightly-full.yml') }}
   deploy-coverage-pages:
     name: Deploy Coverage Pages
     needs: nightly-integration-coverage
@@ -218,7 +217,7 @@ jobs:
       - name: Deploy coverage dashboard
         id: deployment
         continue-on-error: true
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
   gpu-runner-readiness:
     name: GPU Runner Readiness
     uses: ./.github/workflows/gpu-runner-health.yml
@@ -232,13 +231,13 @@ jobs:
     runs-on: [self-hosted, windows, x64, cuda]
     timeout-minutes: 120
     steps:
-      - {name: Checkout, uses: actions/checkout@v4}
-      - {name: Setup Python, uses: actions/setup-python@v5, with: {python-version: "${{ env.CI_PYTHON_VERSION }}"}}
+      - {name: Checkout, uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd}
+      - {name: Setup Python, uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405, with: {python-version: "${{ env.CI_PYTHON_VERSION }}"}}
       - name: Install Python test tooling
         shell: pwsh
-        run: python -m pip install --upgrade pip pytest ruff mypy
+        run: python -m pip install -r .github/ci/requirements-py312.txt
       - name: Setup MSVC toolchain
-        uses: ilammy/msvc-dev-cmd@v1
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
         with: {arch: x64}
       - name: Validate CUDA runtime/toolchain presence
         shell: pwsh
@@ -281,7 +280,7 @@ jobs:
           cmake -E env "GRAVITY_SERVER_EXE=$server" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error
       - name: Upload numerical validation artifacts
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: nightly-numerical-validation-${{ github.run_number }}
           path: dist/numerical-validation

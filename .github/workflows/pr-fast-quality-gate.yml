@@ -23,12 +23,12 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
       - name: Setup Python
         id: setup-python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: "${{ env.CI_PYTHON_VERSION }}"
       - name: Cache metadata
@@ -39,27 +39,26 @@ jobs:
           echo "build-prefix=cmake-${{ env.CI_CACHE_VERSION }}-${{ runner.os }}-linux-clang-ninja-prod-tests" >> "$GITHUB_OUTPUT"
       - name: Restore pip cache
         id: restore-pip-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~/.cache/pip
-          key: ${{ steps.cache-meta.outputs.pip-prefix }}-${{ hashFiles('.github/workflows/pr-fast.yml', '.github/workflows/pr-fast-quality-gate.yml') }}
+          key: ${{ steps.cache-meta.outputs.pip-prefix }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/pr-fast.yml', '.github/workflows/pr-fast-quality-gate.yml') }}
           restore-keys: |
             ${{ steps.cache-meta.outputs.pip-prefix }}-
       - name: Install build and analysis tools
         run: |
           sudo apt-get update
           sudo apt-get install -y make ninja-build clang-tidy
-          python -m pip install --upgrade pip
-          python -m pip install pytest ruff mypy
+          python -m pip install -r .github/ci/requirements-py312.txt
       - name: Save pip cache
         if: ${{ success() && steps.restore-pip-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~/.cache/pip
-          key: ${{ steps.restore-pip-cache.outputs.cache-primary-key }}
+          key: ${{ steps.cache-meta.outputs.pip-prefix }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/pr-fast.yml', '.github/workflows/pr-fast-quality-gate.yml') }}
       - name: Restore CMake and dependency cache
         id: restore-build-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: |
             build-quality
@@ -88,14 +87,14 @@ jobs:
         run: make quality-test QUALITY_BUILD_DIR=build-quality
       - name: Save CMake and dependency cache
         if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: |
             build-quality
             ~/.cache/vcpkg/archives
-          key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
+          key: ${{ steps.cache-meta.outputs.build-prefix }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/pr-fast-quality-gate.yml') }}
       - name: Upload tool qualification manifest
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: tool-qualification-pr-fast-${{ github.run_number }}
           path: dist/tool-qualification/tool_manifest.json
