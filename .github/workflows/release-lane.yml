@@ -47,7 +47,7 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~\AppData\Local\pip\Cache
-          key: ${{ steps.restore-pip-cache.outputs.cache-primary-key }}
+          key: windows-release-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
 
       - name: Setup MSVC toolchain
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
@@ -184,7 +184,7 @@ jobs:
             ~\AppData\Local\vcpkg\archives
             C:\vcpkg\installed
             C:\vcpkg\packages
-          key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
+          key: windows-release-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'simulation.ini', '.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
 
   publish-github-release:
     name: Publish GitHub Release (windows-2022 / python3.12)
@@ -285,7 +285,7 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~\AppData\Local\pip\Cache
-          key: ${{ steps.restore-pip-cache.outputs.cache-primary-key }}
+          key: windows-release-gpu-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
 
       - name: Setup MSVC toolchain
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
@@ -347,7 +347,7 @@ jobs:
             ~\AppData\Local\vcpkg\archives
             C:\vcpkg\installed
             C:\vcpkg\packages
-          key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
+          key: windows-release-gpu-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'simulation.ini', '.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
 
   release-gpu-fallback:
     name: Release GPU Fallback (linux-ubuntu24.04)

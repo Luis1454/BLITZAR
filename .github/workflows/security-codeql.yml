@@ -82,4 +82,4 @@ jobs:
           path: |
             build-codeql
             ~/.cache/vcpkg/archives
-          key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
+          key: linux-codeql-build-${{ env.CI_CACHE_VERSION }}-${{ matrix.language }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/security-codeql.yml') }}

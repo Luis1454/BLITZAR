@@ -42,7 +42,7 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~\AppData\Local\pip\Cache
-          key: ${{ steps.restore-pip-cache.outputs.cache-primary-key }}
+          key: windows-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/nightly-full.yml') }}
       - name: Setup MSVC toolchain
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
         with: {arch: x64}
@@ -105,7 +105,7 @@ jobs:
             ~\AppData\Local\vcpkg\archives
             C:\vcpkg\installed
             C:\vcpkg\packages
-          key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
+          key: windows-build-integration-${{ env.CI_CACHE_VERSION }}-msvc-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/nightly-full.yml') }}
   nightly-integration-coverage:
     name: Nightly Integration Coverage (linux-ubuntu24.04 / hosted-gnu / python3.12)
     runs-on: ubuntu-24.04
@@ -136,7 +136,7 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~/.cache/pip
-          key: ${{ steps.restore-pip-cache.outputs.cache-primary-key }}
+          key: linux-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/nightly-full.yml') }}
       - name: Restore coverage build cache
         id: restore-build-cache
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
@@ -201,7 +201,7 @@ jobs:
           path: |
             build-integration-cov
             ~/.cache/vcpkg/archives
-          key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
+          key: linux-build-coverage-${{ env.CI_CACHE_VERSION }}-gcc-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/nightly-full.yml') }}
   deploy-coverage-pages:
     name: Deploy Coverage Pages
     needs: nightly-integration-coverage
