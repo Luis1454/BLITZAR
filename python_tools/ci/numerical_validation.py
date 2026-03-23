@@ -68,7 +68,26 @@ class NumericalValidationCampaign:
             results.append({"metric": metric_name, "value": value, "threshold": float(threshold), "passed": passed})
             if not passed:
                 failures.append(f"{run['id']}: {metric_name}={value:.6f} exceeds {float(threshold):.6f}")
-        return {"id": run["id"], "preset": run["preset"], "solver": run["solver"], "dataset": run["dataset"], "seed": run["seed"], "checks": results}
+        metrics = {
+            "simulated_time": run.get("simulated_time", 0.0),
+            "particle_count": run.get("particle_count", 0),
+            "max_abs_energy_drift_pct": run.get("max_abs_energy_drift_pct", 0.0),
+            "max_particle_delta_from_initial": run.get("max_particle_delta_from_initial", 0.0),
+            "average_radius": run.get("average_radius", 0.0),
+            "total_energy": run.get("total_energy", 0.0),
+            "center_of_mass_drift": run.get("center_of_mass_drift", 0.0),
+        }
+        return {
+            "id": run["id"],
+            "preset": run["preset"],
+            "solver": run["solver"],
+            "integrator": run.get("integrator", ""),
+            "performance_profile": run.get("performance_profile", ""),
+            "dataset": run["dataset"],
+            "seed": run["seed"],
+            "metrics": metrics,
+            "checks": results,
+        }
 
     def _evaluate_comparisons(self, runs: dict[str, dict[str, object]], raw_comparisons: object, failures: list[str]) -> list[dict[str, object]]:
         if not isinstance(raw_comparisons, list):

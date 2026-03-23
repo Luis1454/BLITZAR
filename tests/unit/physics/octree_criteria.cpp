@@ -1,3 +1,4 @@
+#include "physics/ForceLawPolicy.hpp"
 #include "config/SimulationConfig.hpp"
 #include "physics/Octree.hpp"
 #include "physics/Particle.hpp"
@@ -17,20 +18,17 @@ namespace grav_test_octree_criteria {
 Vector3 pairwiseAcceleration(
     const std::vector<Particle> &particles,
     std::size_t selfIndex,
-    float softening,
-    float minSoftening,
-    float minDistance2)
+    const ForceLawPolicy &policy)
 {
     Vector3 total(0.0f, 0.0f, 0.0f);
     const Vector3 selfPosition = particles[selfIndex].getPosition();
-    const float safeSoftening = std::max(softening, minSoftening);
     for (std::size_t i = 0; i < particles.size(); ++i) {
         if (i == selfIndex) {
             continue;
         }
         const Vector3 delta = particles[i].getPosition() - selfPosition;
-        const float dist2 = dot(delta, delta) + safeSoftening * safeSoftening;
-        if (dist2 <= minDistance2) {
+        const float dist2 = dot(delta, delta) + policy.softening * policy.softening;
+        if (dist2 <= policy.minDistance2) {
             continue;
         }
         const float invDist = 1.0f / std::sqrt(dist2);
@@ -108,29 +106,20 @@ TEST(PhysicsTest, TST_UNT_PHYS_019_BoundsCriterionIsMoreConservativeThanComCrite
     const float minSoftening = 1.0e-4f;
     const float minDistance2 = 1.0e-12f;
     const float minTheta = 0.05f;
+    const ForceLawPolicy policy = resolveForceLawPolicy(theta, softening, minSoftening, minDistance2, minTheta);
     const Vector3 reference = grav_test_octree_criteria::pairwiseAcceleration(
         particles,
         0u,
-        softening,
-        minSoftening,
-        minDistance2);
+        policy);
     const Vector3 comForce = octree.computeForceOn(
         particles[0],
         0u,
-        theta,
-        softening,
-        minSoftening,
-        minDistance2,
-        minTheta,
+        policy,
         OctreeOpeningCriterion::CenterOfMass);
     const Vector3 boundsForce = octree.computeForceOn(
         particles[0],
         0u,
-        theta,
-        softening,
-        minSoftening,
-        minDistance2,
-        minTheta,
+        policy,
         OctreeOpeningCriterion::Bounds);
 
     const float comError = grav_test_octree_criteria::magnitude(reference - comForce);

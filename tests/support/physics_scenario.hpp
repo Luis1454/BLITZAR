@@ -15,6 +15,7 @@ struct ScenarioConfig {
     std::string inputFormat = "xyz";
     std::string solver = "pairwise_cuda";
     std::string integrator = "rk4";
+    std::string performanceProfile = "interactive";
     float dt = 0.002f;
     float octreeTheta = 1.2f;
     float octreeSoftening = 2.5f;
@@ -33,6 +34,7 @@ struct ScenarioResult {
     std::vector<RenderParticle> final;
     SimulationStats stats{};
     float maxAbsEnergyDriftPct = 0.0f;
+    float maxParticleDeltaFromInitial = 0.0f;
 };
 
 float distance(const RenderParticle &a, const RenderParticle &b);

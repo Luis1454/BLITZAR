@@ -185,12 +185,16 @@ int NumericalValidationTool::run(int argc, const char *const *argv, std::ostream
     out << std::fixed << std::setprecision(8);
     out << "preset=" << options.preset << "\n";
     out << "solver=" << options.solver << "\n";
+    out << "integrator=" << preset.scenario.integrator << "\n";
+    out << "performance_profile=" << preset.scenario.performanceProfile << "\n";
     out << "dataset=" << preset.dataset << "\n";
     out << "seed=" << preset.seed << "\n";
     out << "steps_completed=" << result.stats.steps << "\n";
+    out << "simulated_time=" << result.stats.totalTime << "\n";
     out << "particle_count=" << result.final.size() << "\n";
     out << "energy_estimated=" << (result.stats.energyEstimated ? 1 : 0) << "\n";
     out << "max_abs_energy_drift_pct=" << result.maxAbsEnergyDriftPct << "\n";
+    out << "max_particle_delta_from_initial=" << result.maxParticleDeltaFromInitial << "\n";
     out << "average_radius=" << testsupport::averageRadius(result.final) << "\n";
     out << "total_energy=" << result.stats.totalEnergy << "\n";
     out << "thermal_energy=" << result.stats.thermalEnergy << "\n";
@@ -198,7 +202,7 @@ int NumericalValidationTool::run(int argc, const char *const *argv, std::ostream
     out << "center_of_mass_drift=" << grav_test_numerics_tool::centerOfMassDrift(result.initial, result.final) << "\n";
     grav_test_numerics_tool::writeVector(out, "initial_center_of_mass", testsupport::centerOfMassAll(result.initial));
     grav_test_numerics_tool::writeVector(out, "final_center_of_mass", testsupport::centerOfMassAll(result.final));
-    if (result.final.size() <= 8u) {
+    if (options.preset == "disk_solver_parity" || result.final.size() <= 8u) {
         for (std::size_t index = 0; index < result.final.size(); index += 1u) {
             const RenderParticle &particle = result.final[index];
             out << "final_particle_" << index << "=" << particle.x << "," << particle.y << "," << particle.z << "\n";

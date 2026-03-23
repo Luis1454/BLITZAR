@@ -73,6 +73,7 @@ set(GRAVITY_SERVER_SOURCES
     "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationServer.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
+    "${GRAVITY_ROOT_DIR}/engine/src/physics/ForceLawPolicy.cpp"
     "${GRAVITY_ROOT_DIR}/engine/src/physics/CudaMemoryPool.cu"
     "${GRAVITY_ROOT_DIR}/engine/src/physics/cuda/ParticleSystem.cu"
 )
