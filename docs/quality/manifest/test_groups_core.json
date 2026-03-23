@@ -551,6 +551,18 @@
                     "REQ-RUN-001"
                 ]
             },
+            "TST-UNT-RUNT-007": {
+                "id": "PhysicsTest.TST_UNT_RUNT_007_ServerPublishesAsyncExportQueueStatus",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-RUNT-008": {
+                "id": "PhysicsTest.TST_UNT_RUNT_008_ServerStopFlushesQueuedExports",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
+            },
             "TST-UNT-PHYS-018": {
                 "id": "PhysicsTest.TST_UNT_PHYS_018_EnergyEstimateUsesConfiguredStabilityConstants",
                 "req_ids": [

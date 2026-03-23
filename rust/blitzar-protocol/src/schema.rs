@@ -73,7 +73,10 @@ pub fn latest_schema_value() -> Value {
                 ],
                 "optional": [
                     "gpu_telemetry_enabled", "gpu_telemetry_available", "gpu_kernel_ms",
-                    "gpu_copy_ms", "gpu_vram_used_bytes", "gpu_vram_total_bytes"
+                    "gpu_copy_ms", "gpu_vram_used_bytes", "gpu_vram_total_bytes",
+                    "export_queue_depth", "export_active", "export_completed_count",
+                    "export_failed_count", "export_last_state", "export_last_path",
+                    "export_last_message"
                 ]
             },
             "snapshot_payload": {

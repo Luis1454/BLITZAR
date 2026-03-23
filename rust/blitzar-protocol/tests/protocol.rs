@@ -66,6 +66,13 @@ fn tst_rust_prot_002_round_trip_status_payload() {
         gpu_copy_ms: 0.75,
         gpu_vram_used_bytes: 64 * 1024 * 1024,
         gpu_vram_total_bytes: 256 * 1024 * 1024,
+        export_queue_depth: 3,
+        export_active: true,
+        export_completed_count: 9,
+        export_failed_count: 2,
+        export_last_state: "writing".to_string(),
+        export_last_path: "exports/demo.vtk".to_string(),
+        export_last_message: "background export active".to_string(),
     };
 
     let encoded = codec::encode_status_payload(&payload).unwrap();

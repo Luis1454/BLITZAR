@@ -638,6 +638,13 @@ SimulationStats ClientServerBridge::fromRemoteStatus(const ServerClientStatus &s
     stats.gpuCopyMs = status.gpuCopyMs;
     stats.gpuVramUsedBytes = status.gpuVramUsedBytes;
     stats.gpuVramTotalBytes = status.gpuVramTotalBytes;
+    stats.exportQueueDepth = status.exportQueueDepth;
+    stats.exportActive = status.exportActive;
+    stats.exportCompletedCount = status.exportCompletedCount;
+    stats.exportFailedCount = status.exportFailedCount;
+    stats.exportLastState = status.exportLastState;
+    stats.exportLastPath = status.exportLastPath;
+    stats.exportLastMessage = status.exportLastMessage;
     return stats;
 }
 

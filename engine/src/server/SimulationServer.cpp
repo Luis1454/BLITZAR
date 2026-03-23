@@ -12,6 +12,7 @@
 #include <chrono>
 #include <cmath>
 #include <cctype>
+#include <condition_variable>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -476,6 +477,183 @@ struct BinarySnapshotParticle {
 
 constexpr char kBinarySnapshotMagic[8] = {'N', 'B', 'S', 'I', 'M', 'B', 'I', 'N'};
 constexpr std::uint32_t kBinarySnapshotVersion = 1u;
+
+struct AsyncExportJob final {
+    std::string outputPath;
+    std::string format;
+    std::vector<Particle> particles;
+    std::string solverModeLabel;
+    std::string integratorModeLabel;
+    std::uint64_t step = 0u;
+};
+
+struct SimulationServer::ExportQueueState final {
+    std::mutex mutex;
+    std::condition_variable condition;
+    std::deque<AsyncExportJob> jobs;
+    bool stopRequested = false;
+    std::thread worker;
+};
+
+static bool writeExportSnapshotFile(const AsyncExportJob &job)
+{
+    std::filesystem::path outPath(job.outputPath);
+    if (outPath.has_parent_path()) {
+        std::error_code ec;
+        std::filesystem::create_directories(outPath.parent_path(), ec);
+    }
+
+    const std::string fmt = normalizeSnapshotFormat(job.format);
+
+    if (fmt == "bin") {
+        std::ofstream out(job.outputPath, std::ios::binary | std::ios::trunc);
+        if (!out.is_open()) {
+            return false;
+        }
+        BinarySnapshotHeader header{};
+        std::memcpy(header.magic, kBinarySnapshotMagic, sizeof(kBinarySnapshotMagic));
+        header.version = kBinarySnapshotVersion;
+        header.count = static_cast<std::uint32_t>(job.particles.size());
+        std::array<std::byte, sizeof(BinarySnapshotHeader)> headerBytes{};
+        std::memcpy(headerBytes.data(), &header, sizeof(header));
+        if (!writeRawBytes(out, headerBytes.data(), headerBytes.size())) {
+            return false;
+        }
+        for (const Particle &particle : job.particles) {
+            const Vector3 position = particle.getPosition();
+            const Vector3 velocity = particle.getVelocity();
+            const BinarySnapshotParticle record{
+                position.x,
+                position.y,
+                position.z,
+                velocity.x,
+                velocity.y,
+                velocity.z,
+                particle.getMass(),
+                particle.getTemperature()
+            };
+            std::array<std::byte, sizeof(BinarySnapshotParticle)> recordBytes{};
+            std::memcpy(recordBytes.data(), &record, sizeof(record));
+            if (!writeRawBytes(out, recordBytes.data(), recordBytes.size())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    const bool vtkBinary = (fmt == "vtk_binary");
+    std::ofstream out(
+        job.outputPath,
+        (vtkBinary ? (std::ios::binary | std::ios::trunc) : std::ios::trunc)
+    );
+    if (!out.is_open()) {
+        return false;
+    }
+
+    if (fmt == "xyz") {
+        out << job.particles.size() << "\n";
+        out << "solver=" << job.solverModeLabel
+            << " integrator=" << job.integratorModeLabel
+            << " step=" << job.step << "\n";
+        for (const Particle &particle : job.particles) {
+            const Vector3 position = particle.getPosition();
+            out << "P " << position.x << " " << position.y << " " << position.z << " "
+                << particle.getMass() << " " << particle.getTemperature() << "\n";
+        }
+        return true;
+    }
+
+    out << "# vtk DataFile Version 3.0\n";
+    out << "CUDA gravity snapshot solver=" << job.solverModeLabel
+        << " integrator=" << job.integratorModeLabel << "\n";
+    out << (vtkBinary ? "BINARY\n" : "ASCII\n");
+    out << "DATASET POLYDATA\n";
+    out << "POINTS " << job.particles.size() << " float\n";
+    if (vtkBinary) {
+        for (const Particle &particle : job.particles) {
+            const Vector3 position = particle.getPosition();
+            writeBeF32(out, position.x);
+            writeBeF32(out, position.y);
+            writeBeF32(out, position.z);
+        }
+        out << "\n";
+    } else {
+        for (const Particle &particle : job.particles) {
+            const Vector3 position = particle.getPosition();
+            out << position.x << " " << position.y << " " << position.z << "\n";
+        }
+    }
+
+    out << "VERTICES " << job.particles.size() << " " << (job.particles.size() * 2) << "\n";
+    if (vtkBinary) {
+        for (std::size_t i = 0; i < job.particles.size(); ++i) {
+            writeBeI32(out, 1);
+            writeBeI32(out, static_cast<std::int32_t>(i));
+        }
+        out << "\n";
+    } else {
+        for (std::size_t i = 0; i < job.particles.size(); ++i) {
+            out << "1 " << i << "\n";
+        }
+    }
+
+    out << "POINT_DATA " << job.particles.size() << "\n";
+    out << "SCALARS mass float 1\n";
+    out << "LOOKUP_TABLE default\n";
+    if (vtkBinary) {
+        for (const Particle &particle : job.particles) {
+            writeBeF32(out, particle.getMass());
+        }
+        out << "\n";
+    } else {
+        for (const Particle &particle : job.particles) {
+            out << particle.getMass() << "\n";
+        }
+    }
+
+    out << "SCALARS pressure float 1\n";
+    out << "LOOKUP_TABLE default\n";
+    if (vtkBinary) {
+        for (const Particle &particle : job.particles) {
+            writeBeF32(out, particle.getPressure().norm());
+        }
+        out << "\n";
+    } else {
+        for (const Particle &particle : job.particles) {
+            out << particle.getPressure().norm() << "\n";
+        }
+    }
+
+    out << "SCALARS temperature float 1\n";
+    out << "LOOKUP_TABLE default\n";
+    if (vtkBinary) {
+        for (const Particle &particle : job.particles) {
+            writeBeF32(out, particle.getTemperature());
+        }
+        out << "\n";
+    } else {
+        for (const Particle &particle : job.particles) {
+            out << particle.getTemperature() << "\n";
+        }
+    }
+
+    out << "VECTORS velocity float\n";
+    if (vtkBinary) {
+        for (const Particle &particle : job.particles) {
+            const Vector3 velocity = particle.getVelocity();
+            writeBeF32(out, velocity.x);
+            writeBeF32(out, velocity.y);
+            writeBeF32(out, velocity.z);
+        }
+        out << "\n";
+    } else {
+        for (const Particle &particle : job.particles) {
+            const Vector3 velocity = particle.getVelocity();
+            out << velocity.x << " " << velocity.y << " " << velocity.z << "\n";
+        }
+    }
+    return true;
+}
 
 bool parseBinarySnapshot(const std::string &inputPath, std::vector<Particle> &outParticles)
 {
@@ -1243,7 +1421,6 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
     : _running(false),
       _paused(false),
       _resetRequested(false),
-      _exportRequested(false),
       _cudaContextDirty(false),
       _stepRequests(0),
       _dt(initialDt),
@@ -1265,6 +1442,10 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
       _gpuCopyMs(0.0f),
       _gpuVramUsedBytes(0u),
       _gpuVramTotalBytes(0u),
+      _exportQueueDepth(0u),
+      _exportActive(false),
+      _exportCompletedCount(0u),
+      _exportFailedCount(0u),
       _configuredSubstepTargetDt(0.01f),
       _configuredMaxSubsteps(4u),
       _snapshotPublishPeriodMs(50u),
@@ -1299,8 +1480,6 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
       _sphMaxSpeed(120.0f),
       _energyBaseline(0.0f),
       _hasEnergyBaseline(false),
-      _pendingExportPath(),
-      _pendingExportFormat("vtk"),
       _exportDirectory("exports"),
       _exportFormatDefault("vtk"),
       _initialStatePath(),
@@ -1312,10 +1491,16 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
       _snapshotMutex(),
       _commandMutex(),
       _faultMutex(),
+      _exportStatusMutex(),
+      _pendingExportRequests(),
       _publishedSnapshot(),
       _scratchSnapshot(),
       _faultReason(),
-      _system(nullptr)
+      _exportLastState("idle"),
+      _exportLastPath(),
+      _exportLastMessage(),
+      _system(nullptr),
+      _exportQueueState(new ExportQueueState())
 {
     _runtimeConfigMirror.particleCount = _particleCount;
     _runtimeConfigMirror.dt = std::max(1e-6f, initialDt);
@@ -1422,6 +1607,7 @@ void SimulationServer::start()
     if (_running.exchange(true)) {
         return;
     }
+    startExportWorker();
     std::cout << "[server] start particles=" << _particleCount
               << " dt=" << _dt.load(std::memory_order_relaxed) << "\n";
     _thread = std::thread(&SimulationServer::loop, this);
@@ -1436,6 +1622,17 @@ void SimulationServer::stop()
     if (_thread.joinable()) {
         _thread.join();
     }
+    bool hasPendingRequests = true;
+    while (hasPendingRequests) {
+        {
+            std::lock_guard<std::mutex> lock(_commandMutex);
+            hasPendingRequests = !_pendingExportRequests.empty();
+        }
+        if (hasPendingRequests) {
+            processPendingExport();
+        }
+    }
+    stopExportWorker();
 }
 
 void SimulationServer::setPaused(bool paused)
@@ -1703,10 +1900,102 @@ void SimulationServer::requestExportSnapshot(const std::string &outputPath, cons
 {
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
-        _pendingExportPath = outputPath;
-        _pendingExportFormat = format.empty() ? _exportFormatDefault : format;
+        PendingExportRequest request{};
+        request.outputPath = outputPath;
+        request.format = format.empty() ? _exportFormatDefault : format;
+        _pendingExportRequests.push_back(std::move(request));
     }
-    _exportRequested.store(true, std::memory_order_relaxed);
+    _exportQueueDepth.fetch_add(1u, std::memory_order_relaxed);
+    updateExportStatus("queued", outputPath, "queued for background write");
+}
+
+void SimulationServer::startExportWorker()
+{
+    if (_exportQueueState == nullptr || _exportQueueState->worker.joinable()) {
+        return;
+    }
+    _exportQueueState->stopRequested = false;
+    _exportQueueState->worker = std::thread([this]() {
+        bool workerDone = false;
+        while (!workerDone) {
+            AsyncExportJob job{};
+            {
+                std::unique_lock<std::mutex> lock(_exportQueueState->mutex);
+                _exportQueueState->condition.wait(lock, [this]() {
+                    return _exportQueueState->stopRequested || !_exportQueueState->jobs.empty();
+                });
+                if (_exportQueueState->jobs.empty()) {
+                    workerDone = _exportQueueState->stopRequested;
+                    continue;
+                }
+                job = std::move(_exportQueueState->jobs.front());
+                _exportQueueState->jobs.pop_front();
+            }
+
+            _exportActive.store(true, std::memory_order_relaxed);
+            updateExportStatus("writing", job.outputPath, "writing snapshot on background worker");
+            const bool ok = writeExportSnapshotFile(job);
+            _exportActive.store(false, std::memory_order_relaxed);
+            _exportQueueDepth.fetch_sub(1u, std::memory_order_relaxed);
+            if (ok) {
+                _exportCompletedCount.fetch_add(1u, std::memory_order_relaxed);
+                updateExportStatus("completed", job.outputPath, "background export finished");
+                std::cout << "[server] export ok: " << job.outputPath << "\n";
+            } else {
+                _exportFailedCount.fetch_add(1u, std::memory_order_relaxed);
+                updateExportStatus("failed", job.outputPath, "background export failed");
+                std::cerr << "[server] export failed: " << job.outputPath << "\n";
+            }
+        }
+    });
+}
+
+void SimulationServer::stopExportWorker()
+{
+    if (_exportQueueState == nullptr) {
+        return;
+    }
+    {
+        std::lock_guard<std::mutex> lock(_exportQueueState->mutex);
+        _exportQueueState->stopRequested = true;
+    }
+    _exportQueueState->condition.notify_all();
+    if (_exportQueueState->worker.joinable()) {
+        _exportQueueState->worker.join();
+    }
+}
+
+void SimulationServer::enqueueExportWrite(
+    const std::string &outputPath,
+    const std::string &format,
+    const std::vector<Particle> &particles,
+    const std::string &solverModeLabel,
+    const std::string &integratorModeLabel,
+    std::uint64_t step)
+{
+    AsyncExportJob job{};
+    job.outputPath = outputPath;
+    job.format = format;
+    job.particles = particles;
+    job.solverModeLabel = solverModeLabel;
+    job.integratorModeLabel = integratorModeLabel;
+    job.step = step;
+    {
+        std::lock_guard<std::mutex> lock(_exportQueueState->mutex);
+        _exportQueueState->jobs.push_back(std::move(job));
+    }
+    _exportQueueState->condition.notify_one();
+}
+
+void SimulationServer::updateExportStatus(
+    const std::string &state,
+    const std::string &path,
+    const std::string &message)
+{
+    std::lock_guard<std::mutex> lock(_exportStatusMutex);
+    _exportLastState = state;
+    _exportLastPath = path;
+    _exportLastMessage = message;
 }
 
 bool SimulationServer::tryConsumeSnapshot(std::vector<RenderParticle> &outSnapshot)
@@ -1757,6 +2046,9 @@ SimulationStats SimulationServer::getStats() const
     std::string performanceProfile;
     std::uint32_t particleCount = 0u;
     bool sphEnabled = false;
+    std::string exportLastState;
+    std::string exportLastPath;
+    std::string exportLastMessage;
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
         mode = solverModeFromCanonicalName(_solverMode);
@@ -1769,6 +2061,12 @@ SimulationStats SimulationServer::getStats() const
     {
         std::lock_guard<std::mutex> lock(_faultMutex);
         faultReason = _faultReason;
+    }
+    {
+        std::lock_guard<std::mutex> lock(_exportStatusMutex);
+        exportLastState = _exportLastState;
+        exportLastPath = _exportLastPath;
+        exportLastMessage = _exportLastMessage;
     }
     return SimulationStats{
         _steps.load(std::memory_order_relaxed),
@@ -1801,7 +2099,14 @@ SimulationStats SimulationServer::getStats() const
         _gpuKernelMs.load(std::memory_order_relaxed),
         _gpuCopyMs.load(std::memory_order_relaxed),
         _gpuVramUsedBytes.load(std::memory_order_relaxed),
-        _gpuVramTotalBytes.load(std::memory_order_relaxed)
+        _gpuVramTotalBytes.load(std::memory_order_relaxed),
+        _exportQueueDepth.load(std::memory_order_relaxed),
+        _exportActive.load(std::memory_order_relaxed),
+        _exportCompletedCount.load(std::memory_order_relaxed),
+        _exportFailedCount.load(std::memory_order_relaxed),
+        std::move(exportLastState),
+        std::move(exportLastPath),
+        std::move(exportLastMessage)
     };
 }
 
@@ -2363,25 +2668,35 @@ void SimulationServer::maybeSampleGpuTelemetry(std::string_view solverMode, std:
 
 void SimulationServer::processPendingExport()
 {
-    if (!_exportRequested.exchange(false, std::memory_order_relaxed)) {
-        return;
-    }
+    PendingExportRequest request{};
+    bool hasRequest = false;
     std::string outputPath;
     std::string format;
     std::string exportDirectory;
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
-        outputPath = _pendingExportPath;
-        format = _pendingExportFormat.empty() ? _exportFormatDefault : _pendingExportFormat;
+        if (!_pendingExportRequests.empty()) {
+            request = std::move(_pendingExportRequests.front());
+            _pendingExportRequests.pop_front();
+            hasRequest = true;
+        }
         exportDirectory = _exportDirectory;
     }
+    if (!hasRequest) {
+        return;
+    }
+    outputPath = request.outputPath;
+    format = request.format.empty() ? _exportFormatDefault : request.format;
     if (outputPath.empty()) {
         outputPath = defaultExportPath(exportDirectory, format, _steps.load(std::memory_order_relaxed));
     }
     if (exportCurrentState(outputPath, format)) {
-        std::cout << "[server] export ok: " << outputPath << "\n";
+        updateExportStatus("captured", outputPath, "snapshot captured and queued");
     } else {
-        std::cerr << "[server] export failed: " << outputPath << "\n";
+        _exportQueueDepth.fetch_sub(1u, std::memory_order_relaxed);
+        _exportFailedCount.fetch_add(1u, std::memory_order_relaxed);
+        updateExportStatus("failed", outputPath, "could not capture snapshot for export");
+        std::cerr << "[server] export capture failed: " << outputPath << "\n";
     }
 }
 
@@ -2401,159 +2716,13 @@ bool SimulationServer::exportCurrentState(const std::string &outputPath, const s
         solverModeLabel = _solverMode;
         integratorModeLabel = _integratorMode;
     }
-    std::filesystem::path outPath(outputPath);
-    if (outPath.has_parent_path()) {
-        std::error_code ec;
-        std::filesystem::create_directories(outPath.parent_path(), ec);
-    }
-
-    std::string fmt = normalizeSnapshotFormat(format);
-
-    if (fmt == "bin") {
-        std::ofstream out(outputPath, std::ios::binary | std::ios::trunc);
-        if (!out.is_open()) {
-            return false;
-        }
-        BinarySnapshotHeader header{};
-        std::memcpy(header.magic, kBinarySnapshotMagic, sizeof(kBinarySnapshotMagic));
-        header.version = kBinarySnapshotVersion;
-        header.count = static_cast<std::uint32_t>(particles.size());
-        std::array<std::byte, sizeof(BinarySnapshotHeader)> headerBytes{};
-        std::memcpy(headerBytes.data(), &header, sizeof(header));
-        if (!writeRawBytes(out, headerBytes.data(), headerBytes.size())) {
-            return false;
-        }
-        for (const Particle &p : particles) {
-            const Vector3 pos = p.getPosition();
-            const Vector3 vel = p.getVelocity();
-            const BinarySnapshotParticle rec{
-                pos.x,
-                pos.y,
-                pos.z,
-                vel.x,
-                vel.y,
-                vel.z,
-                p.getMass(),
-                p.getTemperature()
-            };
-            std::array<std::byte, sizeof(BinarySnapshotParticle)> recBytes{};
-            std::memcpy(recBytes.data(), &rec, sizeof(rec));
-            if (!writeRawBytes(out, recBytes.data(), recBytes.size())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    const bool vtkBinary = (fmt == "vtk_binary");
-    std::ofstream out(
+    enqueueExportWrite(
         outputPath,
-        (vtkBinary ? (std::ios::binary | std::ios::trunc) : std::ios::trunc)
-    );
-    if (!out.is_open()) {
-        return false;
-    }
-
-    if (fmt == "xyz") {
-        out << particles.size() << "\n";
-        out << "solver=" << solverModeLabel
-            << " integrator=" << integratorModeLabel
-            << " step=" << _steps.load(std::memory_order_relaxed) << "\n";
-        for (const Particle &p : particles) {
-            const Vector3 pos = p.getPosition();
-            out << "P " << pos.x << " " << pos.y << " " << pos.z << " " << p.getMass() << " " << p.getTemperature() << "\n";
-        }
-        return true;
-    }
-
-    out << "# vtk DataFile Version 3.0\n";
-    out << "CUDA gravity snapshot solver=" << solverModeLabel << " integrator=" << integratorModeLabel << "\n";
-    out << (vtkBinary ? "BINARY\n" : "ASCII\n");
-    out << "DATASET POLYDATA\n";
-    out << "POINTS " << particles.size() << " float\n";
-    if (vtkBinary) {
-        for (const Particle &p : particles) {
-            const Vector3 pos = p.getPosition();
-            writeBeF32(out, pos.x);
-            writeBeF32(out, pos.y);
-            writeBeF32(out, pos.z);
-        }
-        out << "\n";
-    } else {
-        for (const Particle &p : particles) {
-            const Vector3 pos = p.getPosition();
-            out << pos.x << " " << pos.y << " " << pos.z << "\n";
-        }
-    }
-
-    out << "VERTICES " << particles.size() << " " << (particles.size() * 2) << "\n";
-    if (vtkBinary) {
-        for (std::size_t i = 0; i < particles.size(); ++i) {
-            writeBeI32(out, 1);
-            writeBeI32(out, static_cast<std::int32_t>(i));
-        }
-        out << "\n";
-    } else {
-        for (std::size_t i = 0; i < particles.size(); ++i) {
-            out << "1 " << i << "\n";
-        }
-    }
-
-    out << "POINT_DATA " << particles.size() << "\n";
-    out << "SCALARS mass float 1\n";
-    out << "LOOKUP_TABLE default\n";
-    if (vtkBinary) {
-        for (const Particle &p : particles) {
-            writeBeF32(out, p.getMass());
-        }
-        out << "\n";
-    } else {
-        for (const Particle &p : particles) {
-            out << p.getMass() << "\n";
-        }
-    }
-
-    out << "SCALARS pressure float 1\n";
-    out << "LOOKUP_TABLE default\n";
-    if (vtkBinary) {
-        for (const Particle &p : particles) {
-            writeBeF32(out, p.getPressure().norm());
-        }
-        out << "\n";
-    } else {
-        for (const Particle &p : particles) {
-            out << p.getPressure().norm() << "\n";
-        }
-    }
-
-    out << "SCALARS temperature float 1\n";
-    out << "LOOKUP_TABLE default\n";
-    if (vtkBinary) {
-        for (const Particle &p : particles) {
-            writeBeF32(out, p.getTemperature());
-        }
-        out << "\n";
-    } else {
-        for (const Particle &p : particles) {
-            out << p.getTemperature() << "\n";
-        }
-    }
-
-    out << "VECTORS velocity float\n";
-    if (vtkBinary) {
-        for (const Particle &p : particles) {
-            const Vector3 v = p.getVelocity();
-            writeBeF32(out, v.x);
-            writeBeF32(out, v.y);
-            writeBeF32(out, v.z);
-        }
-        out << "\n";
-    } else {
-        for (const Particle &p : particles) {
-            const Vector3 v = p.getVelocity();
-            out << v.x << " " << v.y << " " << v.z << "\n";
-        }
-    }
+        format,
+        particles,
+        solverModeLabel,
+        integratorModeLabel,
+        _steps.load(std::memory_order_relaxed));
     return true;
 }
 

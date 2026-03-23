@@ -114,6 +114,14 @@ class MainWindowPresenterLocal final {
             }
             return fixedLabel((input.simulationHorizonSeconds - input.stats.totalTime) / simRate, 1) + "s";
         }
+
+        static std::string exportStateLabel(const MainWindowPresentationInput &input)
+        {
+            if (input.stats.exportLastState.empty()) {
+                return input.stats.exportActive ? "writing" : "idle";
+            }
+            return input.stats.exportLastState;
+        }
 };
 
 MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentationInput &input) const
@@ -129,6 +137,7 @@ MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentation
     const float simRate = MainWindowPresenterLocal::simulatedSecondsPerSecond(input);
     const std::string progress = MainWindowPresenterLocal::progressLabel(input);
     const std::string eta = MainWindowPresenterLocal::etaLabel(input);
+    const std::string exportState = MainWindowPresenterLocal::exportStateLabel(input);
 
     MainWindowPresentation output;
     std::ostringstream headline;
@@ -159,6 +168,11 @@ MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentation
     std::ostringstream queue;
     queue << "Progress: " << progress
           << "\nETA: " << eta
+          << "\nExport: " << exportState
+          << "\nExport backlog: " << input.stats.exportQueueDepth
+          << "\nExport done: " << input.stats.exportCompletedCount
+          << "\nExport failed: " << input.stats.exportFailedCount
+          << "\nLast export: " << (input.stats.exportLastPath.empty() ? "n/a" : input.stats.exportLastPath)
           << "\nSteps: " << input.stats.steps
           << "\nParticles: " << input.stats.particleCount
           << "\nDraw budget: " << input.displayedParticles << " / " << input.clientDrawCap
@@ -217,6 +231,12 @@ MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentation
           << " sim_rate=" << MainWindowPresenterLocal::fixedLabel(simRate, 2)
           << " progress=\"" << progress << "\""
           << " eta=\"" << eta << "\""
+          << " export_state=" << exportState
+          << " export_backlog=" << input.stats.exportQueueDepth
+          << " export_done=" << input.stats.exportCompletedCount
+          << " export_failed=" << input.stats.exportFailedCount
+          << " export_path=\"" << input.stats.exportLastPath << "\""
+          << " export_message=\"" << input.stats.exportLastMessage << "\""
           << " ui_fps=" << input.uiTickFps
           << " draw=" << input.displayedParticles
           << " draw_cap=" << input.clientDrawCap
