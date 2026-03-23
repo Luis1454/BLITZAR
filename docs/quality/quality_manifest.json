@@ -2,7 +2,7 @@
   "metadata": {
     "system": "BLITZAR",
     "revision": "2026-03-22",
-    "revision_note": "Refined repository decomposition policy with responsibility-first file-size guidance and large-function warnings, while preserving deterministic benchmark and GPU evidence coverage."
+    "revision_note": "Refined repository decomposition policy with responsibility-first file thresholds, coherent >300 deviations, and lightweight function-count, size, and complexity warnings."
   },
   "includes": [
     "manifest/evidence.json",
