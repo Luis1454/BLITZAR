@@ -55,6 +55,13 @@ struct ServerStatusPayload {
     float gpuCopyMs = 0.0f;
     std::uint64_t gpuVramUsedBytes = 0u;
     std::uint64_t gpuVramTotalBytes = 0u;
+    std::uint32_t exportQueueDepth = 0u;
+    bool exportActive = false;
+    std::uint64_t exportCompletedCount = 0u;
+    std::uint64_t exportFailedCount = 0u;
+    std::string exportLastState;
+    std::string exportLastPath;
+    std::string exportLastMessage;
 };
 
 struct ServerSnapshotPayload {

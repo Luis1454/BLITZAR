@@ -65,4 +65,18 @@ pub struct StatusPayload {
     pub gpu_vram_used_bytes: u64,
     #[serde(default, rename = "gpu_vram_total_bytes")]
     pub gpu_vram_total_bytes: u64,
+    #[serde(default, rename = "export_queue_depth")]
+    pub export_queue_depth: u32,
+    #[serde(default, rename = "export_active")]
+    pub export_active: bool,
+    #[serde(default, rename = "export_completed_count")]
+    pub export_completed_count: u64,
+    #[serde(default, rename = "export_failed_count")]
+    pub export_failed_count: u64,
+    #[serde(default, rename = "export_last_state")]
+    pub export_last_state: String,
+    #[serde(default, rename = "export_last_path")]
+    pub export_last_path: String,
+    #[serde(default, rename = "export_last_message")]
+    pub export_last_message: String,
 }

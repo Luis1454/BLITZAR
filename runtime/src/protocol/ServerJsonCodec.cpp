@@ -180,6 +180,13 @@ std::string ServerJsonCodec::makeStatusResponse(const SimulationStats &stats)
     writer.writeNumber("gpu_copy_ms", stats.gpuCopyMs);
     writer.writeNumber("gpu_vram_used_bytes", stats.gpuVramUsedBytes);
     writer.writeNumber("gpu_vram_total_bytes", stats.gpuVramTotalBytes);
+    writer.writeNumber("export_queue_depth", stats.exportQueueDepth);
+    writer.writeBool("export_active", stats.exportActive);
+    writer.writeNumber("export_completed_count", stats.exportCompletedCount);
+    writer.writeNumber("export_failed_count", stats.exportFailedCount);
+    writer.writeString("export_last_state", stats.exportLastState);
+    writer.writeString("export_last_path", stats.exportLastPath);
+    writer.writeString("export_last_message", stats.exportLastMessage);
     writer.finish();
     return out.str();
 }
