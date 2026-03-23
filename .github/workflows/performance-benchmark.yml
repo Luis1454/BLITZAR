@@ -26,15 +26,15 @@ jobs:
     runs-on: [self-hosted, windows, x64, cuda]
     timeout-minutes: 90
     steps:
-      - {name: Checkout, uses: actions/checkout@v4}
+      - {name: Checkout, uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd}
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: {python-version: "${{ env.CI_PYTHON_VERSION }}"}
       - name: Install Python tooling
         shell: pwsh
-        run: python -m pip install --upgrade pip pytest ruff mypy
+        run: python -m pip install -r .github/ci/requirements-py312.txt
       - name: Setup MSVC toolchain
-        uses: ilammy/msvc-dev-cmd@v1
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
         with: {arch: x64}
       - name: Validate CUDA runtime/toolchain presence
         shell: pwsh
@@ -67,7 +67,7 @@ jobs:
           python scripts/ci/nightly/package_performance_benchmark.py --root . --tool $tool --profile gpu-nightly --dist-dir dist/performance-benchmark
       - name: Upload performance benchmark artifacts
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: performance-benchmark-${{ github.run_number }}
           path: dist/performance-benchmark
