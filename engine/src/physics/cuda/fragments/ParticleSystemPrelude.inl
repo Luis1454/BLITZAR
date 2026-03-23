@@ -4,6 +4,7 @@
  */
 
 #include <cuda_runtime.h>
+#include "physics/ForceLawPolicy.hpp"
 #include "physics/Octree.hpp"
 #include "physics/ParticleSystem.hpp"
 #include "config/EnvUtils.hpp"
@@ -247,24 +248,21 @@ GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampThetaValue(float theta, float minTh
     return fmaxf(theta, minTheta);
 }
 
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE float softenedDistanceSquared(Vector3 delta, float softening, float minSoftening)
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE float softenedDistanceSquared(Vector3 delta, ForceLawPolicy policy)
 {
-    const float safeSoftening = clampSofteningValue(softening, minSoftening);
-    return dot(delta, delta) + safeSoftening * safeSoftening;
+    return dot(delta, delta) + policy.softening * policy.softening;
 }
 
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 gravityAccelerationFromSource(
     Vector3 selfPosition,
     Vector3 sourcePosition,
     float sourceMass,
-    float softening,
-    float minSoftening,
-    float minDistance2
+    ForceLawPolicy policy
 )
 {
     const Vector3 delta = sourcePosition - selfPosition;
-    const float dist2 = softenedDistanceSquared(delta, softening, minSoftening);
-    if (dist2 <= minDistance2) {
+    const float dist2 = softenedDistanceSquared(delta, policy);
+    if (dist2 <= policy.minDistance2) {
         return Vector3(0.0f, 0.0f, 0.0f);
     }
     const float invDist = 1.0f / sqrtf(dist2);
@@ -276,10 +274,8 @@ __host__ __device__ Vector3 computePairwiseAcceleration(
     ParticleSoAView state,
     int numParticles,
     int idx,
-    float softening,
-    float maxAcceleration,
-    float minSoftening,
-    float minDistance2
+    ForceLawPolicy policy,
+    float maxAcceleration
 )
 {
     Vector3 force = {0.0f, 0.0f, 0.0f};
@@ -295,9 +291,7 @@ __host__ __device__ Vector3 computePairwiseAcceleration(
             selfPos,
             otherPos,
             otherMass,
-            softening,
-            minSoftening,
-            minDistance2);
+            policy);
     }
     return clampAcceleration(force, maxAcceleration);
 }
@@ -337,16 +331,14 @@ __global__ void updateParticles(
     ParticleSoAView current,
     int numParticles,
     float deltaTime,
-    float softening,
-    float maxAcceleration,
-    float minSoftening,
-    float minDistance2
+    ForceLawPolicy policy,
+    float maxAcceleration
 ) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < numParticles) {
         const Vector3 pos = getSoAPosition(last, i);
         const Vector3 vel = getSoAVelocity(last, i);
-        const Vector3 force = computePairwiseAcceleration(last, numParticles, i, softening, maxAcceleration, minSoftening, minDistance2);
+        const Vector3 force = computePairwiseAcceleration(last, numParticles, i, policy, maxAcceleration);
 
         const Vector3 nextVel = vel + force * deltaTime;
         const Vector3 nextPos = pos + nextVel * deltaTime;
@@ -499,17 +491,15 @@ __global__ void computePairwiseAccelerationKernel(
     ParticleSoAView state,
     Vector3Handle outAcceleration,
     int numParticles,
-    float softening,
-    float maxAcceleration,
-    float minSoftening,
-    float minDistance2
+    ForceLawPolicy policy,
+    float maxAcceleration
 )
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
         return;
     }
-    outAcceleration[i] = computePairwiseAcceleration(state, numParticles, i, softening, maxAcceleration, minSoftening, minDistance2);
+    outAcceleration[i] = computePairwiseAcceleration(state, numParticles, i, policy, maxAcceleration);
 }
 
 __global__ void buildRk4StageKernel(

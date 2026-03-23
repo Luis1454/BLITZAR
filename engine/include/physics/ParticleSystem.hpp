@@ -2,6 +2,7 @@
 #define GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
 
 #include "physics/CudaMemoryPool.hpp"
+#include "physics/ForceLawPolicy.hpp"
 #include "physics/Octree.hpp"
 #include "physics/ParticleSoAView.hpp"
 

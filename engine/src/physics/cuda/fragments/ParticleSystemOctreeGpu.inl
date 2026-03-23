@@ -25,13 +25,9 @@ __global__ void updateParticlesOctree(
     OctreeNodeConstHandle nodes,
     int rootIndex,
     IndexConstHandle leafIndices,
-    float theta,
-    float softening,
+    ForceLawPolicy forceLaw,
     float deltaTime,
     float maxAcceleration,
-    float minSoftening,
-    float minDistance2,
-    float minTheta,
     int openingCriterion
 ) {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -40,8 +36,6 @@ __global__ void updateParticlesOctree(
     }
 
     const Vector3 selfPos = getSoAPosition(lastState, i);
-    const float clampedTheta = clampThetaValue(theta, minTheta);
-    const float clampedSoftening = clampSofteningValue(softening, minSoftening);
     Vector3 force(0.0f, 0.0f, 0.0f);
 
     constexpr int kStackCapacity = 64;
@@ -61,25 +55,23 @@ __global__ void updateParticlesOctree(
                     selfPos,
                     getSoAPosition(lastState, otherIndex),
                     lastState.mass[otherIndex],
-                    clampedSoftening,
-                    minSoftening,
-                    minDistance2);
+                    forceLaw);
             }
             continue;
         }
 
         const Vector3 direction(node.comX - selfPos.x, node.comY - selfPos.y, node.comZ - selfPos.z);
-        const float dist2 = dot(direction, direction) + clampedSoftening * clampedSoftening;
+        const float dist2 = softenedDistanceSquared(direction, forceLaw);
         const bool containsSelf = octreeNodeContains(node, selfPos);
         const float size = node.halfSize * 2.0f;
         const float criterionDistance = openingCriterion == 1
             ? fmaxf(octreeNodeDistanceToBounds(node, selfPos), 1.0e-6f)
             : sqrtf(dist2);
 
-        if (!containsSelf && (size / criterionDistance) < clampedTheta) {
+        if (!containsSelf && (size / criterionDistance) < forceLaw.theta) {
             force += gravityAccelerationFromSource(
                 selfPos, Vector3(node.comX, node.comY, node.comZ),
-                node.mass, clampedSoftening, minSoftening, minDistance2);
+                node.mass, forceLaw);
             continue;
         }
 

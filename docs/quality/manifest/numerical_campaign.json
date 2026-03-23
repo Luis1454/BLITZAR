@@ -35,7 +35,7 @@
           "dataset": "generated:disk_orbit",
           "seed": 12345,
           "checks": {
-            "max_abs_energy_drift_pct": 8.0
+            "max_abs_energy_drift_pct": 0.25
           }
         },
         {
@@ -45,7 +45,7 @@
           "dataset": "generated:disk_orbit",
           "seed": 12345,
           "checks": {
-            "max_abs_energy_drift_pct": 8.0
+            "max_abs_energy_drift_pct": 0.25
           }
         },
         {
@@ -55,7 +55,7 @@
           "dataset": "generated:disk_orbit",
           "seed": 12345,
           "checks": {
-            "max_abs_energy_drift_pct": 8.0
+            "max_abs_energy_drift_pct": 0.25
           }
         },
         {
@@ -119,9 +119,10 @@
           "baseline": "solver-parity-pairwise",
           "candidate": "solver-parity-octree-cpu",
           "checks": {
-            "center_of_mass_delta": 0.45,
-            "average_radius_delta": 0.9,
-            "total_energy_diff_pct": 8.0
+            "center_of_mass_delta": 0.02,
+            "average_radius_delta": 0.05,
+            "total_energy_diff_pct": 0.25,
+            "max_particle_delta": 0.05
           }
         },
         {
@@ -129,9 +130,10 @@
           "baseline": "solver-parity-pairwise",
           "candidate": "solver-parity-octree-gpu",
           "checks": {
-            "center_of_mass_delta": 0.45,
-            "average_radius_delta": 0.9,
-            "total_energy_diff_pct": 8.0
+            "center_of_mass_delta": 0.02,
+            "average_radius_delta": 0.05,
+            "total_energy_diff_pct": 0.25,
+            "max_particle_delta": 0.05
           }
         }
       ]
