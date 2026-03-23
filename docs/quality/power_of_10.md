@@ -36,7 +36,7 @@ The profile is used in two modes:
    Automation status: `partial`
    Automated checks:
    - repository file-size policy remains enforced
-   - repository policy warns on oversized implementation functions and files with multiple substantial functions
+   - repository policy warns on oversized implementation functions, excessive implementation-function counts per file, and elevated lightweight branching complexity
    Policy note:
    - line count is only a proxy; split by responsibility, not by mechanical wrapper extraction
    - function size and decomposition remain review items

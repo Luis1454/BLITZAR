@@ -104,10 +104,12 @@ make quality-strict CONFIG=simulation.ini QUALITY_BUILD_DIR=build-quality
 - Apply this policy to every file type (`.cpp`, `.hpp`, `.cu`, `.cmake`, `.md`, scripts, etc.).
 - One file must keep one clear primary responsibility.
 - Target file length: `<= 200` lines.
-- Hard limit: `<= 300` lines.
+- Strong alert threshold: `> 300` lines.
 - Files above the target remain reviewable only if the responsibility is still clear and the implementation stays simple.
-- If a file grows past the hard limit, split it by responsibility immediately instead of creating thin wrapper files just to satisfy the counter.
-- Repository policy warnings may also flag very large functions or multiple substantial functions in the same implementation file as decomposition signals even when the file still fits under the hard limit.
+- Files above `300` lines require an explicit deviation and must stay coherent while the split is prepared.
+- If a file grows past the strong alert threshold, split it by responsibility instead of creating thin wrapper files just to satisfy the counter.
+- Artificial refactors whose only purpose is to game the line counter are forbidden.
+- Repository policy warnings may also flag very large functions, too many implementation functions in one file, and functions with excessive branching complexity as decomposition signals even when the file still fits under the alert threshold.
 - Allowed exceptions: generated files, vendored third-party code, or performance-critical fragments; document the reason in the related PR/issue.
 
 ## C++ Conventions

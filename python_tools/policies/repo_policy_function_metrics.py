@@ -4,8 +4,13 @@ import re
 
 IMPLEMENTATION_SCAN_EXTS = {".cpp", ".cc", ".cxx", ".cu", ".inl"}
 FUNCTION_TARGET_LINES = 80
+FUNCTION_ALERT_LINES = 140
 SUBSTANTIAL_FUNCTION_LINES = 40
 MULTI_FUNCTION_TARGET = 3
+FILE_FUNCTION_TARGET = 8
+FILE_FUNCTION_ALERT = 12
+FUNCTION_COMPLEXITY_TARGET = 12
+FUNCTION_COMPLEXITY_ALERT = 20
 
 FUNCTION_START_RE = re.compile(
     r"[A-Za-z_~][A-Za-z0-9_:<>~*&\s,]*\([^;]*\)\s*(?:const\s*)?"
@@ -13,19 +18,33 @@ FUNCTION_START_RE = re.compile(
 )
 CONTROL_FLOW_PREFIXES = ("if", "for", "while", "switch", "catch")
 NON_FUNCTION_PREFIXES = ("class", "struct", "enum", "union", "namespace", "else", "do", "try")
+COMPLEXITY_RE = re.compile(r"\bif\b|\bfor\b|\bwhile\b|\bcase\b|\bcatch\b|&&|\|\||\?")
 
 
 def collect_function_decomposition_warnings(rel: str, content: str) -> list[str]:
     warnings: list[str] = []
     functions = _collect_function_metrics(content)
     substantial = [metric for metric in functions if metric["lines"] >= SUBSTANTIAL_FUNCTION_LINES]
-    oversized = [metric for metric in functions if metric["lines"] > FUNCTION_TARGET_LINES]
-
-    for metric in oversized:
+    if len(functions) > FILE_FUNCTION_TARGET:
+        level = "strong function-count alert" if len(functions) > FILE_FUNCTION_ALERT else "function-count warning"
         warnings.append(
-            f"{rel}:{metric['start_line']}: function spans {metric['lines']} lines; "
-            f"target <= {FUNCTION_TARGET_LINES} lines and split by responsibility, not wrappers"
+            f"{rel}: {level}; {len(functions)} implementation functions exceeds target {FILE_FUNCTION_TARGET} "
+            "for one primary responsibility"
         )
+
+    for metric in functions:
+        if metric["lines"] > FUNCTION_TARGET_LINES:
+            level = "strong function-size alert" if metric["lines"] > FUNCTION_ALERT_LINES else "function-size warning"
+            warnings.append(
+                f"{rel}:{metric['start_line']}: {level}; function spans {metric['lines']} lines "
+                f"(target <= {FUNCTION_TARGET_LINES})"
+            )
+        if metric["complexity"] > FUNCTION_COMPLEXITY_TARGET:
+            level = "strong complexity alert" if metric["complexity"] > FUNCTION_COMPLEXITY_ALERT else "complexity warning"
+            warnings.append(
+                f"{rel}:{metric['start_line']}: {level}; estimated branching complexity {metric['complexity']} "
+                f"exceeds target {FUNCTION_COMPLEXITY_TARGET}"
+            )
 
     if len(substantial) >= MULTI_FUNCTION_TARGET:
         lines = ", ".join(str(metric["start_line"]) for metric in substantial[:MULTI_FUNCTION_TARGET])
@@ -54,6 +73,7 @@ def _collect_function_metrics(content: str) -> list[dict[str, int]]:
         metrics.append({
             "start_line": start_index + 1,
             "lines": end_index - start_index + 1,
+            "complexity": _estimate_branching_complexity(lines[start_index:end_index + 1]),
         })
         index = end_index + 1
     return metrics
@@ -108,3 +128,8 @@ def _find_matching_block_end(lines: list[str], start_index: int) -> int | None:
         if depth == 0 and "}" in line:
             return index
     return None
+
+
+def _estimate_branching_complexity(function_lines: list[str]) -> int:
+    body = "\n".join(function_lines)
+    return 1 + len(COMPLEXITY_RE.findall(body))
