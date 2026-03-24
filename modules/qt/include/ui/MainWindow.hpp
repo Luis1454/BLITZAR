@@ -25,6 +25,7 @@
 
 class QCheckBox;
 class QComboBox;
+class QDockWidget;
 class QDoubleSpinBox;
 class QLabel;
 class QLineEdit;
@@ -32,7 +33,9 @@ class QAction;
 class QPushButton;
 class QSlider;
 class QSpinBox;
+class QTabWidget;
 class QTimer;
+class QWidget;
 
 namespace grav_qt {
 
@@ -56,6 +59,11 @@ class MainWindow : public QMainWindow {
         void applyTheme();
         void captureUiIntoConfig();
         void applyPerformanceProfileToRuntime();
+        void buildMenus();
+        void buildWorkspaceDocks(QTabWidget *sidebarTabs, QWidget *summaryPane, QWidget *validationPane);
+        QWidget *buildTelemetryPane();
+        QTabWidget *buildSidebarTabs();
+        QWidget *buildValidationPane();
         void configureRemoteConnectorFromUi();
         void connectControls();
         void handleExportRequest();
@@ -63,6 +71,7 @@ class MainWindow : public QMainWindow {
         void handleLoadCheckpointRequest();
         void handleLoadInputRequest();
         void handleLoadPresetRequest();
+        void initializeControlState();
         void markConfigDirty(bool dirty = true);
         bool refreshValidationReport(bool blockOnErrors);
         void requestReconnectFromUi();
@@ -131,6 +140,10 @@ class MainWindow : public QMainWindow {
         QPointer<QCheckBox> _gpuTelemetryCheck;
         QPointer<QAction> _octreeOverlayAction;
         QPointer<QAction> _gpuTelemetryAction;
+        QPointer<QDockWidget> _controlsDock;
+        QPointer<QDockWidget> _energyDock;
+        QPointer<QDockWidget> _telemetryDock;
+        QPointer<QDockWidget> _validationDock;
         QPointer<QTimer> _timer;
         MainWindowController _controller;
         MainWindowPresenter _presenter;
