@@ -16,7 +16,6 @@ engine/src/physics/cuda/fragments/ParticleSystemUpdate.inl
 # Client module composition files pending per-feature extraction.
 modules/proxy/module.cpp
 modules/qt/module.cpp
-modules/qt/ui/MainWindow.cpp
 
 # Quality manifest catalog is temporarily kept as a single evidence index while split tooling is prepared.
 docs/quality/manifest/test_groups_core.json
