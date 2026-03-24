@@ -526,7 +526,7 @@ MainWindow::MainWindow(
     validationDock->hide();
 
     auto *fileMenu = menuBar()->addMenu("&File");
-    fileMenu->addAction("Save Config", this, [this]() { (void)saveConfigToDisk(); }, QKeySequence::Save);
+    fileMenu->addAction("Save Config", QKeySequence::Save, this, [this]() { (void)saveConfigToDisk(); });
     fileMenu->addAction("Load Preset...", this, [this]() { handleLoadPresetRequest(); });
     fileMenu->addAction("Load Input...", this, [this]() { handleLoadInputRequest(); });
     fileMenu->addAction("Export Snapshot...", this, [this]() { handleExportRequest(); });
@@ -1210,16 +1210,18 @@ void MainWindow::tick()
     presentationInput.uiTickFps = _uiTickFps;
     const MainWindowPresentation presentation = _presenter.present(presentationInput);
 
-    _statusLabel->setText(QString::fromStdString(presentation.headlineText));
-    _runtimeMetricsLabel->setText(QString::fromStdString(presentation.runtimeText));
-    _queueMetricsLabel->setText(QString::fromStdString(presentation.queueText));
-    _energyMetricsLabel->setText(QString::fromStdString(presentation.energyText));
+    if (_statusLabel) _statusLabel->setText(QString::fromStdString(presentation.headlineText));
+    if (_runtimeMetricsLabel) _runtimeMetricsLabel->setText(QString::fromStdString(presentation.runtimeText));
+    if (_queueMetricsLabel) _queueMetricsLabel->setText(QString::fromStdString(presentation.queueText));
+    if (_energyMetricsLabel) _energyMetricsLabel->setText(QString::fromStdString(presentation.energyText));
 
-    _pauseButton->blockSignals(true);
-    _pauseButton->setChecked(stats.paused);
-    _pauseButton->setText(stats.paused ? "Resume" : "Pause");
-    _pauseButton->blockSignals(false);
-    _recoverButton->setEnabled(stats.faulted);
+    if (_pauseButton) {
+        _pauseButton->blockSignals(true);
+        _pauseButton->setChecked(stats.paused);
+        _pauseButton->setText(stats.paused ? "Resume" : "Pause");
+        _pauseButton->blockSignals(false);
+    }
+    if (_recoverButton) _recoverButton->setEnabled(stats.faulted);
 
     static auto lastConsoleTrace = std::chrono::steady_clock::now();
     const auto now = std::chrono::steady_clock::now();

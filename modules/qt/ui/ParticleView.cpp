@@ -147,7 +147,6 @@ void ParticleView::paintEvent(PaintEventHandle event)
         const std::vector<RenderParticle> &snapshot = _snapshot->get();
         updateAdaptiveScales(snapshot, _adaptiveTemperatureScale, _adaptivePressureScale);
         const float lodNear2 = _lodNearDistance * _lodNearDistance;
-        const float lodFar2 = _lodFarDistance * _lodFarDistance;
 
         for (const RenderParticle &particle : snapshot) {
             if (_lodEnabled && _mode == grav::ViewMode::Perspective) {
