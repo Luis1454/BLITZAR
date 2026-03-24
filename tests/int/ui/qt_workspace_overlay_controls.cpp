@@ -39,6 +39,8 @@ class IdleRuntime final : public grav_client::IClientRuntime {
         void setExportDefaults(const std::string &, const std::string &) override {}
         void setInitialStateFile(const std::string &, const std::string &) override {}
         void requestExportSnapshot(const std::string &, const std::string &) override {}
+        void requestSaveCheckpoint(const std::string &) override {}
+        void requestLoadCheckpoint(const std::string &) override {}
         void requestShutdown() override {}
         void setRemoteSnapshotCap(std::uint32_t) override {}
         void requestReconnect() override {}

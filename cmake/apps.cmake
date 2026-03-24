@@ -226,7 +226,14 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
             modules/qt/ui/EnergyGraphWidgetPaint.cpp
             modules/qt/ui/MainWindowController.cpp
             modules/qt/ui/MainWindow.cpp
+            modules/qt/ui/MainWindowConfig.cpp
+            modules/qt/ui/MainWindowControls.cpp
+            modules/qt/ui/MainWindowFileActions.cpp
+            modules/qt/ui/MainWindowLayout.cpp
             modules/qt/ui/MainWindowPresenter.cpp
+            modules/qt/ui/MainWindowTelemetry.cpp
+            modules/qt/ui/MainWindowWorkspacePersistence.cpp
+            modules/qt/ui/MainWindowWorkspaceShell.cpp
             modules/qt/ui/MultiViewWidget.cpp
             modules/qt/ui/OctreeOverlay.cpp
             modules/qt/ui/OctreeOverlayPainter.cpp
