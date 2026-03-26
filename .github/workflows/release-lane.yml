@@ -118,6 +118,11 @@ jobs:
         run: |
           python scripts/ci/release/package_bundle.py --build-dir build --dist-dir dist/release-bundle --tool-manifest dist/tool-qualification/tool_manifest.json
 
+      - name: Smoke-validate portable release bundle
+        shell: pwsh
+        run: |
+          python scripts/ci/release/smoke_portable_bundle.py --archive (Get-ChildItem dist/release-bundle/*.zip | Select-Object -First 1).FullName --extract-dir dist/release-bundle-smoke
+
       - name: Package release SBOM
         run: |
           python scripts/ci/release/package_sbom.py --artifacts-dir dist/release-bundle --dist-dir dist/release-sbom

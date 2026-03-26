@@ -156,6 +156,8 @@ build/blitzar-headless.exe --config simulation.ini --particle-count 50000 --targ
 
 On Windows, building `gravityClientModuleQtInProc` now runs `windeployqt` automatically when the tool is available, so `platforms/qwindows.dll` and the required Qt DLLs land in the build directory next to `blitzar-client.exe`.
 
+The release lane packages the resulting Windows runtime layout as a portable ZIP bundle. When Qt/client-module artifacts are present in the build directory, the bundle keeps the adjacent `.dll`, `.dll.manifest`, and plugin directories, then extracts the archive and smoke-runs the packaged executables on the hosted Windows runner.
+
 Manual fallback if needed:
 
 ```bash
