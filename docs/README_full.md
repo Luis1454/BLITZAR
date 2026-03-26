@@ -5,15 +5,15 @@ Baryonic Lagrangian Integration for Trajectories & Zero-drift Astrophysical Reso
 [![nightly-full](https://github.com/Luis1454/BLITZAR/actions/workflows/nightly-full.yml/badge.svg?branch=main)](https://github.com/Luis1454/BLITZAR/actions/workflows/nightly-full.yml)
 
 ## Coverage Dashboard
-[![Coverage control widget](https://luis1454.github.io/BLITZAR/coverage/widget.svg)](https://luis1454.github.io/BLITZAR/)
+[![Coverage control widget](https://raw.githubusercontent.com/Luis1454/BLITZAR/coverage-data/coverage/widget.svg)](https://github.com/Luis1454/BLITZAR/tree/coverage-data/coverage)
 
 | Metric | Live Percent |
 |---|---|
-| Lines | ![Coverage lines](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FBLITZAR%2Fcoverage%2Flines.json) |
-| Functions | ![Coverage functions](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FBLITZAR%2Fcoverage%2Ffunctions.json) |
-| Branches | ![Coverage branches](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FBLITZAR%2Fcoverage%2Fbranches.json) |
+| Lines | ![Coverage lines](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FLuis1454%2FBLITZAR%2Fcoverage-data%2Fcoverage%2Flines.json) |
+| Functions | ![Coverage functions](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FLuis1454%2FBLITZAR%2Fcoverage-data%2Fcoverage%2Ffunctions.json) |
+| Branches | ![Coverage branches](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FLuis1454%2FBLITZAR%2Fcoverage-data%2Fcoverage%2Fbranches.json) |
 
-Coverage payload is published by `nightly-full` to GitHub Pages (`coverage/*.json`).
+Coverage payload is published by `nightly-full` to the dedicated `coverage-data` branch (`coverage/*.json`, `coverage/widget.svg`).
 
 Operational steering rules for using coverage as a central signal are documented in [docs/quality/operational_control.md](quality/operational_control.md).
 

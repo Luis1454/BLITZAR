@@ -3,18 +3,18 @@
 Baryonic Lagrangian Integration of Trajectories for Zero-drift Astrophysical Resolution
 
 [![nightly-full](https://github.com/Luis1454/BLITZAR/actions/workflows/nightly-full.yml/badge.svg?branch=main)](https://github.com/Luis1454/BLITZAR/actions/workflows/nightly-full.yml)
-[![Coverage lines](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FBLITZAR%2Fcoverage%2Flines.json)](https://luis1454.github.io/BLITZAR/)
-[![Coverage functions](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FBLITZAR%2Fcoverage%2Ffunctions.json)](https://luis1454.github.io/BLITZAR/)
-[![Coverage branches](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FBLITZAR%2Fcoverage%2Fbranches.json)](https://luis1454.github.io/BLITZAR/)
+[![Coverage lines](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FLuis1454%2FBLITZAR%2Fcoverage-data%2Fcoverage%2Flines.json)](https://github.com/Luis1454/BLITZAR/tree/coverage-data/coverage)
+[![Coverage functions](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FLuis1454%2FBLITZAR%2Fcoverage-data%2Fcoverage%2Ffunctions.json)](https://github.com/Luis1454/BLITZAR/tree/coverage-data/coverage)
+[![Coverage branches](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FLuis1454%2FBLITZAR%2Fcoverage-data%2Fcoverage%2Fbranches.json)](https://github.com/Luis1454/BLITZAR/tree/coverage-data/coverage)
 
 ## Operational Control
 
 Coverage is now treated as a first-class steering signal for execution risk, alongside deterministic tests and issue state transitions.
 
-[![Coverage control widget](https://luis1454.github.io/BLITZAR/coverage/widget.svg)](https://luis1454.github.io/BLITZAR/)
+[![Coverage control widget](https://raw.githubusercontent.com/Luis1454/BLITZAR/coverage-data/coverage/widget.svg)](https://github.com/Luis1454/BLITZAR/tree/coverage-data/coverage)
 
 - Operational framework: [docs/quality/operational_control.md](docs/quality/operational_control.md)
-- Coverage dashboard: https://luis1454.github.io/BLITZAR/
+- Coverage dashboard payload: `coverage-data/coverage/*`
 - Coverage workflow: `nightly-full`
 
 ## Quick Start
