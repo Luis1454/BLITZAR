@@ -55,7 +55,7 @@ Status note:
 - [x] `P0` Reorganize the tree structure into domains (`apps/`, `engine/`, `modules/`) with consistent paths.
 - [x] `P0` Reconnect the build to the new tree (`CMakeLists.txt` root + `tests/CMakeLists.txt`).
 - [x] `P0` Revalidate full compilation (`make build-run` and `make build-ci`).
-- [~] `P0` Stabilize Qt integration tests (`QtMainWindowIntegration.*` crash `0xc0000409` to fix).
+- [x] `P0` Stabilize Qt integration tests (`QtMainWindowIntegration.*` crash `0xc0000409` no longer reproduces on `main`; see issue `#301` and `docs/quality/static_audit_remediation_plan.md`).
 - [ ] `P0` Split the monolithic CMake into modules (`cmake/targets/*.cmake`).
 - [ ] `P0` Create domain libraries to remove source redundancy.
 - [ ] `P1` Introduce a dedicated CUDA layer (object lib or specialized lib) to avoid unnecessary recompilations.
@@ -65,7 +65,7 @@ Status note:
 - [ ] `P1` Update the build/run docs with the new architecture (README + scripts + command examples).
 
 Recommended Execution Order:
-1. Fix `QtMainWindowIntegration.*`.
+1. Validate `QtMainWindowIntegration.*` stays green on `main`.
 2. Extract CMake into modules.
 3. Introduce domain libraries.
 4. Clean includes/targets and remove redundancy.

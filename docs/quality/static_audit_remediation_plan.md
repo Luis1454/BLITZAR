@@ -36,7 +36,7 @@ Immediate rule from this point forward:
 
 | Finding | Status | Evidence | Required action |
 |---|---|---|---|
-| Qt integration crash `0xc0000409` mentioned in `MODIFS.md` | needs verification | [MODIFS.md](C:/Users/luisf/EpitechPromo2027/CUDA-GRAVITY-SIMULATION-restored/MODIFS.md), focused issue [#301](https://github.com/Luis1454/BLITZAR/issues/301) | Reproduce on current `main`; if reproducible, keep as `P0` with deterministic repro and owning issue. |
+| Qt integration crash `0xc0000409` mentioned in `MODIFS.md` | already remediated | [MODIFS.md](C:/Users/luisf/EpitechPromo2027/CUDA-GRAVITY-SIMULATION-restored/MODIFS.md), focused issue [#301](https://github.com/Luis1454/BLITZAR/issues/301), validation command `cmake -S tests -B build-issue301 -G Ninja -DCMAKE_BUILD_TYPE=Debug -DGRAVITY_PROFILE=dev -DCMAKE_PREFIX_PATH=C:/Qt/6.8.2/msvc2022_64`, build command `cmake -E env "PATH=C:/Qt/6.8.2/msvc2022_64/bin;%PATH%" cmake --build build-issue301 --target gravityQtMainWindowGTests --parallel 8`, test command `cmake -E env "PATH=C:/Qt/6.8.2/msvc2022_64/bin;%PATH%" build-issue301\\gravityQtMainWindowGTests.exe --gtest_color=yes` | Current `main` no longer reproduces the crash; keep `gravityQtMainWindowGTests` green as the regression proof and do not reopen unless a fresh deterministic repro exists. |
 | SPH mode can explode numerically | confirmed | [MODIFS.md](C:/Users/luisf/EpitechPromo2027/CUDA-GRAVITY-SIMULATION-restored/MODIFS.md), focused issue [#302](https://github.com/Luis1454/BLITZAR/issues/302), open hardening tracker [#72](https://github.com/Luis1454/BLITZAR/issues/72) | Add deterministic SPH acceptance scenarios and block any overclaim of production readiness until evidence exists. |
 | GPU octree exactness/performance remains unfinished | confirmed | [MODIFS.md](C:/Users/luisf/EpitechPromo2027/CUDA-GRAVITY-SIMULATION-restored/MODIFS.md), focused issue [#303](https://github.com/Luis1454/BLITZAR/issues/303), open hardening tracker [#72](https://github.com/Luis1454/BLITZAR/issues/72) | Keep as `P0`; add parity harness and tolerances against pairwise reference. |
 | VTK snapshot format lacks formal documentation | confirmed | [MODIFS.md](C:/Users/luisf/EpitechPromo2027/CUDA-GRAVITY-SIMULATION-restored/MODIFS.md), focused issue [#304](https://github.com/Luis1454/BLITZAR/issues/304) | Publish a versioned snapshot format note. |
@@ -115,7 +115,7 @@ Exit evidence:
 
 ## Immediate Follow-Up Tasks
 
-- Execute focused issues [#301](https://github.com/Luis1454/BLITZAR/issues/301), [#302](https://github.com/Luis1454/BLITZAR/issues/302), [#303](https://github.com/Luis1454/BLITZAR/issues/303), [#304](https://github.com/Luis1454/BLITZAR/issues/304), and [#305](https://github.com/Luis1454/BLITZAR/issues/305) for the former `MODIFS.md`-only `P0` items.
+- Execute focused issues [#302](https://github.com/Luis1454/BLITZAR/issues/302), [#303](https://github.com/Luis1454/BLITZAR/issues/303), [#304](https://github.com/Luis1454/BLITZAR/issues/304), and [#305](https://github.com/Luis1454/BLITZAR/issues/305) for the remaining former `MODIFS.md`-only `P0` items.
 - Execute focused issue [#306](https://github.com/Luis1454/BLITZAR/issues/306) for `rust-toolchain.toml` portability/validity.
 - Execute focused issue [#307](https://github.com/Luis1454/BLITZAR/issues/307) for `.gitignore` cleanup and tracked local artifact removal.
 - Review the last GPU runner artifacts before making any further public claim about GPU evidence depth.
