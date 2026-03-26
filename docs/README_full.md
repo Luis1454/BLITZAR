@@ -5,6 +5,8 @@ Baryonic Lagrangian Integration for Trajectories & Zero-drift Astrophysical Reso
 [![nightly-full](https://github.com/Luis1454/BLITZAR/actions/workflows/nightly-full.yml/badge.svg?branch=main)](https://github.com/Luis1454/BLITZAR/actions/workflows/nightly-full.yml)
 
 ## Coverage Dashboard
+[![Coverage control widget](https://luis1454.github.io/BLITZAR/coverage/widget.svg)](https://luis1454.github.io/BLITZAR/)
+
 | Metric | Live Percent |
 |---|---|
 | Lines | ![Coverage lines](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FBLITZAR%2Fcoverage%2Flines.json) |
@@ -12,6 +14,8 @@ Baryonic Lagrangian Integration for Trajectories & Zero-drift Astrophysical Reso
 | Branches | ![Coverage branches](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FBLITZAR%2Fcoverage%2Fbranches.json) |
 
 Coverage payload is published by `nightly-full` to GitHub Pages (`coverage/*.json`).
+
+Operational steering rules for using coverage as a central signal are documented in [docs/quality/operational_control.md](quality/operational_control.md).
 
 ## Build
 
