@@ -16,6 +16,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `gpu_runner_operations.md`: bootstrap, health monitoring, and fallback policy for optional self-hosted CUDA runners.
 - `power_of_10.md`: repository-specific `Power of 10` coding-discipline profile with automated vs manual enforcement mapping.
 - `prod_baseline.md`: explicit evidence-grade `prod` environment baseline.
+- `operational_control.md`: execution control framework, issue states, evidence rules, and coverage steering policy.
 - `static_audit_remediation_plan.md`: triage and execution plan for the March 2026 static audit findings.
 - `interface_contracts.md`: versioned critical interface contracts and compatibility rules.
 - `api_documentation_standard.md`: file-header and public API comment conventions for C++ surfaces.
@@ -37,6 +38,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `pr-fast` is the deterministic merge gate only: strict policy checks, analyzer lane, and integration-safe fast subset.
 - CI runs Python quality checks directly (check runner + `ruff`/`mypy`/`pytest`); CTest fast subsets exclude `TST_QLT_REPO_008_PyChecksUnit` and `TST_QLT_REPO_009_PythonQualityGate` (kept for manual regression and manifest compatibility).
 - `nightly-full` broadens deterministic evidence with standalone integration repeats, coverage publication, and optional GPU/numerical campaigns.
+- Coverage is reviewed as a central steering signal through the nightly dashboard, but never replaces deterministic subsystem validation.
 - `performance-benchmark` is a dedicated GPU workflow for deterministic throughput matrix execution and artifact publication.
 - `release-lane` packages qualification-oriented release evidence after a strict `prod` validation pass; optional GPU release lanes remain supplemental only.
 - Every requirement ID must be traceable to at least one verification artifact.

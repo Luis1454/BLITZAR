@@ -9,6 +9,9 @@ compile_commands.json
 
 # Runtime outputs
 exports/
+coverage-dashboard/
+dist/
+dist_py/
 *.log
 tmp_repo_check.log
 test_output.txt

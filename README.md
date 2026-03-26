@@ -3,6 +3,19 @@
 Baryonic Lagrangian Integration of Trajectories for Zero-drift Astrophysical Resolution
 
 [![nightly-full](https://github.com/Luis1454/BLITZAR/actions/workflows/nightly-full.yml/badge.svg?branch=main)](https://github.com/Luis1454/BLITZAR/actions/workflows/nightly-full.yml)
+[![Coverage lines](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FBLITZAR%2Fcoverage%2Flines.json)](https://luis1454.github.io/BLITZAR/)
+[![Coverage functions](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FBLITZAR%2Fcoverage%2Ffunctions.json)](https://luis1454.github.io/BLITZAR/)
+[![Coverage branches](https://img.shields.io/endpoint?url=https%3A%2F%2Fluis1454.github.io%2FBLITZAR%2Fcoverage%2Fbranches.json)](https://luis1454.github.io/BLITZAR/)
+
+## Operational Control
+
+Coverage is now treated as a first-class steering signal for execution risk, alongside deterministic tests and issue state transitions.
+
+[![Coverage control widget](https://luis1454.github.io/BLITZAR/coverage/widget.svg)](https://luis1454.github.io/BLITZAR/)
+
+- Operational framework: [docs/quality/operational_control.md](docs/quality/operational_control.md)
+- Coverage dashboard: https://luis1454.github.io/BLITZAR/
+- Coverage workflow: `nightly-full`
 
 ## Quick Start
 
@@ -58,12 +71,6 @@ In `PROFILE=prod`, `blitzar-client` and dynamic client modules are disabled by d
 The release lane packages a zipped Windows runtime bundle in `dist/release-bundle/`. The bundle always includes the built BLITZAR executables plus `simulation.ini`, `README.md`, and `tool_manifest.json` when available. When a Windows build also contains client modules or Qt runtime files, the bundle now preserves the required adjacent `.dll`, `.dll.manifest`, and Qt plugin directories such as `platforms/qwindows.dll`.
 
 The release lane also extracts the generated archive and smoke-validates the portable layout on a clean hosted Windows runner by executing the packaged help commands for each bundled executable.
-
-## Coverage
-
-- Dashboard: https://luis1454.github.io/BLITZAR/
-- Workflow: `nightly-full`
-- Artifact: `nightly-integration-coverage-<run_number>`
 
 ## Documentation
 
