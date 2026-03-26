@@ -53,6 +53,12 @@ make quality-strict
 
 In `PROFILE=prod`, `blitzar-client` and dynamic client modules are disabled by design. In `PROFILE=dev`, client modules load through a manifest-verified, checksum-checked host path.
 
+## Portable Windows Bundle
+
+The release lane packages a zipped Windows runtime bundle in `dist/release-bundle/`. The bundle always includes the built BLITZAR executables plus `simulation.ini`, `README.md`, and `tool_manifest.json` when available. When a Windows build also contains client modules or Qt runtime files, the bundle now preserves the required adjacent `.dll`, `.dll.manifest`, and Qt plugin directories such as `platforms/qwindows.dll`.
+
+The release lane also extracts the generated archive and smoke-validates the portable layout on a clean hosted Windows runner by executing the packaged help commands for each bundled executable.
+
 ## Coverage
 
 - Dashboard: https://luis1454.github.io/BLITZAR/
