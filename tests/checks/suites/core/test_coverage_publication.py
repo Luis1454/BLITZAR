@@ -21,4 +21,6 @@ def test_nightly_workflow_publishes_coverage_data_branch() -> None:
     workflow = Path(".github/workflows/nightly-full.yml").read_text(encoding="utf-8")
     assert "Publish coverage payload branch" in workflow
     assert "bash scripts/ci/nightly/publish_coverage_branch.sh coverage-dashboard" in workflow
+    assert "nightly-integration-coverage:" in workflow
+    assert "permissions:\n      contents: write\n      statuses: write" in workflow
     assert "Deploy Coverage Pages" not in workflow
