@@ -32,6 +32,7 @@
                      "EVD_QLT_GPU_RUNNER_OPERATIONS":  "docs/quality/gpu_runner_operations.md",
                      "EVD_QLT_EVIDENCE_PACK_FORMAT":  "docs/quality/evidence_pack.md",
                      "EVD_QLT_RELEASE_INDEX_FORMAT":  "docs/quality/release_index.md",
+                     "EVD_QLT_STATIC_AUDIT_REMEDIATION":  "docs/quality/static_audit_remediation_plan.md",
                      "EVD_QLT_STANDARDS_PROFILE":  "docs/quality/standards_profile.md",
                      "EVD_QLT_POWER_OF_TEN":  "docs/quality/power_of_10.md",
                      "EVD_QLT_TOOL_QUALIFICATION":  "docs/quality/tool_qualification.md",
