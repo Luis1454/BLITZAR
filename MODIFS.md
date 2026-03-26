@@ -2,6 +2,11 @@
 
 Objective: Centralize remaining modifications and track progress.
 
+Status note:
+- This file is a local working scratchpad, not the authoritative issue tracker.
+- Any `P0` or `P1` item listed here must also exist as a GitHub issue or a quality-baseline action before it can be considered actively tracked.
+- The canonical remediation response to the March 2026 static audit is documented in `docs/quality/static_audit_remediation_plan.md`.
+
 ## Legend
 - Priority: `P0` critical, `P1` important, `P2` nice-to-have
 - Status: `[ ]` to do, `[~]` in progress, `[x]` done

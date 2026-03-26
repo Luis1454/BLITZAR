@@ -16,6 +16,7 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - `gpu_runner_operations.md`: bootstrap, health monitoring, and fallback policy for optional self-hosted CUDA runners.
 - `power_of_10.md`: repository-specific `Power of 10` coding-discipline profile with automated vs manual enforcement mapping.
 - `prod_baseline.md`: explicit evidence-grade `prod` environment baseline.
+- `static_audit_remediation_plan.md`: triage and execution plan for the March 2026 static audit findings.
 - `interface_contracts.md`: versioned critical interface contracts and compatibility rules.
 - `api_documentation_standard.md`: file-header and public API comment conventions for C++ surfaces.
 - `ivv_plan.md`: independent verification and validation plan.
