@@ -15,6 +15,7 @@ set(GRAVITY_TEST_UNIT_CONFIG_SOURCES
 
 set(GRAVITY_TEST_UNIT_PROTOCOL_SOURCES
     "${GRAVITY_ROOT_DIR}/tests/unit/protocol/json_codec.cpp"
+    "${GRAVITY_ROOT_DIR}/tests/unit/protocol/json_codec_parse.cpp"
 )
 
 set(GRAVITY_TEST_UNIT_MODULE_CLI_SOURCES
