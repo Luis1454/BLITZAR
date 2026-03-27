@@ -1009,6 +1009,76 @@
                     "REQ-MOD-001",
                     "REQ-RUN-001"
                 ]
+            },
+            "TST-UNT-MODCLI-013": {
+                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_013_HelpRendersCatalogAndReturnsSuccess",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-014": {
+                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_014_ConnectionCommandsHandleSuccessAndFailure",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-015": {
+                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_015_ControlCommandsMapToProtocol",
+                "req_ids": [
+                    "REQ-MOD-001",
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-MODCLI-016": {
+                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_016_StatusReportsStateAndHandlesStatusFailure",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-017": {
+                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_017_RunUntilAndSendCheckedFailurePaths",
+                "req_ids": [
+                    "REQ-MOD-001",
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-MODCLI-018": {
+                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_018_SetModeCommandsValidateAndMap",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-019": {
+                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_019_ExportSnapshotUsesDerivedAndExplicitFormats",
+                "req_ids": [
+                    "REQ-MOD-001",
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-MODCLI-020": {
+                "id": "CommandBatchRunnerTest.TST_UNT_MODCLI_020_RunScriptFileReportsOpenError",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-021": {
+                "id": "CommandBatchRunnerTest.TST_UNT_MODCLI_021_RunScriptFileReportsParserErrors",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-022": {
+                "id": "CommandBatchRunnerTest.TST_UNT_MODCLI_022_RunScriptFilePrefixesFailingLineNumber",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-023": {
+                "id": "CommandBatchRunnerTest.TST_UNT_MODCLI_023_RunScriptFileSucceedsOnValidCommands",
+                "req_ids": [
+                    "REQ-MOD-001",
+                    "REQ-RUN-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_MODULE_CLI_SERVER": {
@@ -1393,6 +1463,60 @@
             },
             "TST-UNT-GRA-003": {
                 "id": "ColorPipelineTest.TST_UNT_GRA_003_HeavyBodyDetect",
+                "req_ids": [
+                    "REQ-GRA-002"
+                ]
+            },
+            "TST-UNT-GRA-004": {
+                "id": "ViewMathTest.TST_UNT_GRA_004_ProjectYZSwapsAxes",
+                "req_ids": [
+                    "REQ-GRA-001"
+                ]
+            },
+            "TST-UNT-GRA-005": {
+                "id": "ViewMathTest.TST_UNT_GRA_005_PerspectiveRejectsNearPlane",
+                "req_ids": [
+                    "REQ-GRA-001"
+                ]
+            },
+            "TST-UNT-GRA-006": {
+                "id": "ViewMathTest.TST_UNT_GRA_006_PerspectiveRejectsInvalidScaleRange",
+                "req_ids": [
+                    "REQ-GRA-001"
+                ]
+            },
+            "TST-UNT-GRA-007": {
+                "id": "ViewMathTest.TST_UNT_GRA_007_PerspectiveScalesWhenValid",
+                "req_ids": [
+                    "REQ-GRA-001"
+                ]
+            },
+            "TST-UNT-GRA-008": {
+                "id": "ViewMathTest.TST_UNT_GRA_008_ComputeGimbalClampsBoundsAndPickAxis",
+                "req_ids": [
+                    "REQ-GRA-001"
+                ]
+            },
+            "TST-UNT-GRA-009": {
+                "id": "ColorPipelineTest.TST_UNT_GRA_009_HeavyBodyColorClampsLuminosity",
+                "req_ids": [
+                    "REQ-GRA-002"
+                ]
+            },
+            "TST-UNT-GRA-010": {
+                "id": "ColorPipelineTest.TST_UNT_GRA_010_ParticleRampColorFastClampsBinsAndAlpha",
+                "req_ids": [
+                    "REQ-GRA-002"
+                ]
+            },
+            "TST-UNT-GRA-011": {
+                "id": "ColorPipelineTest.TST_UNT_GRA_011_UpdateAdaptiveScalesSupportsRiseAndFall",
+                "req_ids": [
+                    "REQ-GRA-002"
+                ]
+            },
+            "TST-UNT-GRA-012": {
+                "id": "ColorPipelineTest.TST_UNT_GRA_012_UpdateAdaptiveScalesIgnoresNegativeObservations",
                 "req_ids": [
                     "REQ-GRA-002"
                 ]
