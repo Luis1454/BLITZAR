@@ -269,6 +269,38 @@
             "TST-UNT-CONF-054": {
                 "id": "SimulationProfileTest.TST_UNT_CONF_054_ApplySimulationProfileUnknownIsNoOp",
                 "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-055": {
+                "id": "ScenarioValidationTest.TST_UNT_CONF_055_DefaultConfigurationIsRunnable",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-056": {
+                "id": "ScenarioValidationTest.TST_UNT_CONF_056_InvalidCoreFieldsBlockRun",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-057": {
+                "id": "ScenarioValidationTest.TST_UNT_CONF_057_WarningPathsRemainRunnable",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-058": {
+                "id": "ScenarioValidationTest.TST_UNT_CONF_058_FileModeWithoutInputProducesError",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-059": {
+                "id": "ScenarioValidationTest.TST_UNT_CONF_059_DiskOrbitPresetChecksMassAndRadius",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-060": {
+                "id": "ScenarioValidationTest.TST_UNT_CONF_060_SphValidationChecksParametersAndLowParticleWarning",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-061": {
+                "id": "ScenarioValidationTest.TST_UNT_CONF_061_OctreeSolverValidationChecksCriterionAndThetaRange",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-062": {
+                "id": "ScenarioValidationTest.TST_UNT_CONF_062_RenderTextShowsBlockedSummaryAndActions",
+                "req_ids": [ "REQ-CONF-002" ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_PROFILE": {
@@ -1132,6 +1164,32 @@
                     "REQ-MOD-002",
                     "REQ-RUN-001"
                 ]
+            },
+            "TST-UNT-MODHOST-012": {
+                "id": "ClientCommonTest.TST_UNT_MODHOST_012_ResolveParticleAndDrawCapsClampToProtocolBounds",
+                "req_ids": [
+                    "REQ-MOD-002",
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-MODHOST-013": {
+                "id": "ClientCommonTest.TST_UNT_MODHOST_013_ResolveCapsUseEnvironmentOverrides",
+                "req_ids": [
+                    "REQ-MOD-002",
+                    "REQ-CONF-001"
+                ]
+            },
+            "TST-UNT-MODHOST-014": {
+                "id": "ClientCommonTest.TST_UNT_MODHOST_014_NormalizeInferAndExtensionCoverAliases",
+                "req_ids": [
+                    "REQ-MOD-002"
+                ]
+            },
+            "TST-UNT-MODHOST-015": {
+                "id": "ClientCommonTest.TST_UNT_MODHOST_015_BuildSuggestedExportPathUsesExpectedPattern",
+                "req_ids": [
+                    "REQ-MOD-002"
+                ]
             }
         },
         "EVD_TEST_UNIT_MODULE_HOST_BOUNDARY": {
@@ -1658,6 +1716,41 @@
             },
             "TST-UNT-PROT-040": {
                 "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_040_ReadBoolHandlesFalse",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-041": {
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_041_ReadNumberParsesSupportedNumericTypes",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-042": {
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_042_ReadNumberReturnsFalseWhenKeyMissing",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-043": {
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_043_ReadNumberRejectsInvalidIntegerToken",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-044": {
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_044_ReadNumberRejectsInvalidFloatToken",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-045": {
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_045_ReadNumberParsesScientificNotation",
                 "req_ids": [
                     "REQ-PROT-001",
                     "REQ-PROT-002"
