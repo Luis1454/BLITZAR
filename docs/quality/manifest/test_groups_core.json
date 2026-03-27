@@ -1072,6 +1072,150 @@
                 "req_ids": [
                     "REQ-PROT-001"
                 ]
+            },
+            "TST-UNT-PROT-007": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_007_ParsesFloatPrecisionBoundaries",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-PROT-008": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_008_ParsesLargeNumericStatus",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-PROT-009": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_009_ParsesBoundaryNumericValues",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-PROT-010": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_010_ParsesExtremeEnergyStatus",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-PROT-011": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_011_RejectsMalformedJsonMissingOkField",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-012": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_012_RejectsIncompleteJson",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-013": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_013_RejectsWrongFieldTypes",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-014": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_014_RejectsEmptyJsonObject",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-015": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_015_RejectsInvalidJsonSyntax",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-016": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_016_ParsesMinimalStatusPayload",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-PROT-017": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_017_ParsesAllBooleanFlagsTrue",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-PROT-018": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_018_ParsesAllBooleanFlagsFalse",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-PROT-019": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_019_ParsesStatusWithSpecialCharsInStrings",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-PROT-020": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_020_ParsesStatusWithEmptyStrings",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-PROT-021": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_021_ParsesSnapshotWithSingleParticle",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-PROT-022": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_022_ParsesSnapshotWithManyParticles",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-PROT-023": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_023_ParsesSnapshotUnavailable",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-PROT-024": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_024_ParsesSnapshotBoundaryCoordinates",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-PROT-025": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_025_RejectsSnapshotArrayMismatch",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-026": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_026_CommandRequestWithEmptyToken",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-027": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_027_CommandRequestWithLongToken",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-028": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_028_ErrorResponseWithDifferentCommands",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-029": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_029_StringEscapingRoundTrip",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-PROT-030": {
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_030_ConsecutiveCommandResponseCycles",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
             }
         },
         "EVD_TEST_UNIT_PROTOCOL_RUST": {
