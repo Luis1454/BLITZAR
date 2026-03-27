@@ -49,6 +49,7 @@ add_test(
         ${CMAKE_BINARY_DIR}/pytest-basetemp-tst-qlt-repo-008
         -q
         ${GRAVITY_ROOT_DIR}/tests/checks/suites
+    WORKING_DIRECTORY ${GRAVITY_ROOT_DIR}
 )
 set_tests_properties(TST_QLT_REPO_008_PyChecksUnit PROPERTIES LABELS "integration")
 
