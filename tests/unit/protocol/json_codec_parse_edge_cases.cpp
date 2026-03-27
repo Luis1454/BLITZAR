@@ -90,3 +90,50 @@ TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_054_ParseResponseEnvelopeKee
     EXPECT_EQ(envelope.error, "boom");
     EXPECT_TRUE(error.empty());
 }
+
+TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_055_ParseSnapshotResponseRejectsMissingParticlesArray)
+{
+    const std::string raw = R"({"ok":true,"cmd":"get_snapshot","has_snapshot":true})";
+
+    grav_protocol::ServerSnapshotPayload payload{};
+    std::string error;
+    EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseSnapshotResponse(raw, payload, error));
+    EXPECT_EQ(error, "invalid snapshot payload");
+}
+
+TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_056_ParseSnapshotResponseRejectsNonNumericParticleCoordinate)
+{
+    const std::string raw =
+        R"({"ok":true,"cmd":"get_snapshot","has_snapshot":true,"particles":[[1,2,3,4,5,"hot"]]})";
+
+    grav_protocol::ServerSnapshotPayload payload{};
+    std::string error;
+    EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseSnapshotResponse(raw, payload, error));
+    EXPECT_EQ(error, "invalid snapshot payload");
+}
+
+TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_057_ParseStatusResponseAcceptsErrorEnvelopeWithoutMetrics)
+{
+    const std::string raw = R"({"ok":false,"cmd":"status","error":"faulted"})";
+
+    grav_protocol::ServerStatusPayload payload{};
+    std::string error;
+    ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, payload, error));
+    EXPECT_FALSE(payload.envelope.ok);
+    EXPECT_EQ(payload.envelope.error, "faulted");
+    EXPECT_TRUE(error.empty());
+}
+
+TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_058_ParseSnapshotResponseFallsBackSourceCountWhenMissing)
+{
+    const std::string raw =
+        R"({"ok":true,"cmd":"get_snapshot","has_snapshot":true,"particles":[[1,2,3,4,5,6],[7,8,9,10,11,12]]})";
+
+    grav_protocol::ServerSnapshotPayload payload{};
+    std::string error;
+    ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseSnapshotResponse(raw, payload, error));
+    EXPECT_TRUE(payload.envelope.ok);
+    EXPECT_EQ(payload.particles.size(), 2u);
+    EXPECT_EQ(payload.sourceSize, 2u);
+    EXPECT_TRUE(error.empty());
+}
