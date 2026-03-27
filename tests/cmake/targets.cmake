@@ -76,6 +76,7 @@ set(GRAVITY_TEST_INT_RUNTIME_SOURCES
     "${GRAVITY_ROOT_DIR}/tests/int/runtime/runtime.cpp"
     "${GRAVITY_ROOT_DIR}/tests/int/runtime/runtime_draw_cap.cpp"
     "${GRAVITY_ROOT_DIR}/tests/int/runtime/runtime_reload.cpp"
+    "${GRAVITY_ROOT_DIR}/tests/int/runtime/runtime_unit_like.cpp"
 )
 
 set(GRAVITY_TEST_INT_UI_SOURCES
