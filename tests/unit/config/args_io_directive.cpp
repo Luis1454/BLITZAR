@@ -1,4 +1,5 @@
 #include "config/SimulationConfig.hpp"
+#include "config/SimulationPerformanceProfile.hpp"
 #include "protocol/ServerProtocol.hpp"
 
 #include <gtest/gtest.h>
@@ -99,6 +100,73 @@ TEST(ConfigArgsTest, TST_UNT_CONF_025_SaveWritesDirectiveSyntax)
     );
     EXPECT_EQ(content.find("\nparticle_count="), std::string::npos);
     EXPECT_EQ(content.find("\nthermal_ambient_temperature="), std::string::npos);
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_068_LoadDirectiveFallbackHandlesMalformedDirectiveLine)
+{
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path =
+        std::filesystem::temp_directory_path() / ("gravity_config_directive_invalid_" + std::to_string(stamp) + ".ini");
+    {
+        std::ofstream out(path, std::ios::trunc);
+        ASSERT_TRUE(out.is_open());
+        out << "simulation(particles)\n";
+        out << "particle_count=77\n";
+    }
+
+    std::stringstream err;
+    std::streambuf *previous = std::cerr.rdbuf(err.rdbuf());
+    const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
+    std::cerr.rdbuf(previous);
+
+    EXPECT_EQ(loaded.particleCount, 77u);
+    EXPECT_NE(err.str().find("[config] invalid line ignored: simulation(particles)"), std::string::npos);
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_069_LoadDirectiveWarnsUnknownDirectiveArgument)
+{
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path =
+        std::filesystem::temp_directory_path() / ("gravity_config_directive_unknown_arg_" + std::to_string(stamp) + ".ini");
+    {
+        std::ofstream out(path, std::ios::trunc);
+        ASSERT_TRUE(out.is_open());
+        out << "client(theme=dark, mystery=42)\n";
+    }
+
+    std::stringstream err;
+    std::streambuf *previous = std::cerr.rdbuf(err.rdbuf());
+    const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
+    std::cerr.rdbuf(previous);
+
+    EXPECT_EQ(loaded.uiTheme, "dark");
+    EXPECT_NE(err.str().find("[config] unknown directive argument ignored: client.mystery"), std::string::npos);
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_070_SaveDirectiveKeepsBalancedProfileWithoutCustomOverrides)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    config.performanceProfile = "balanced";
+    grav_config::applyPerformanceProfile(config);
+
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path =
+        std::filesystem::temp_directory_path() / ("gravity_config_directive_perf_balanced_" + std::to_string(stamp) + ".ini");
+
+    ASSERT_TRUE(config.save(path.string()));
+
+    std::ifstream in(path);
+    ASSERT_TRUE(in.is_open());
+    const std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    EXPECT_NE(content.find("performance(profile=balanced)\n"), std::string::npos);
+    EXPECT_EQ(content.find("performance(profile=balanced, draw_cap="), std::string::npos);
+
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }

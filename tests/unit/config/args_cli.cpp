@@ -230,3 +230,31 @@ TEST(ConfigArgsTest, TST_UNT_CONF_033_CliRejectsInvalidSiPhysicsParameters)
     EXPECT_NE(log.find("physics_min_softening [m]"), std::string::npos);
     EXPECT_NE(log.find("physics_min_distance2 [m^2]"), std::string::npos);
 }
+
+TEST(ConfigArgsTest, TST_UNT_CONF_071_CliExportOnExitRejectsInvalidExplicitBool)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    runtime.exportOnExit = false;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--export-on-exit", "banana"};
+
+    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+
+    EXPECT_FALSE(runtime.exportOnExit);
+    EXPECT_NE(warnings.str().find("invalid bool for --export-on-exit"), std::string::npos);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_072_CliExportOnExitParsesSeparatedBoolValue)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--export-on-exit", "false"};
+
+    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+
+    EXPECT_FALSE(runtime.exportOnExit);
+    EXPECT_FALSE(runtime.hasArgumentError);
+    EXPECT_TRUE(warnings.str().empty());
+}

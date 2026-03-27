@@ -110,6 +110,18 @@
                 "req_ids": [
                     "REQ-CONF-001"
                 ]
+            },
+            "TST-UNT-CONF-071": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_071_CliExportOnExitRejectsInvalidExplicitBool",
+                "req_ids": [
+                    "REQ-CONF-002"
+                ]
+            },
+            "TST-UNT-CONF-072": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_072_CliExportOnExitParsesSeparatedBoolValue",
+                "req_ids": [
+                    "REQ-CONF-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_ARGS_IO": {
@@ -321,6 +333,18 @@
             "TST-UNT-CONF-067": {
                 "id": "ScenarioValidationInitModesTest.TST_UNT_CONF_067_PhysicsMinDistanceAboveSofteningSquareTriggersWarning",
                 "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-068": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_068_LoadDirectiveFallbackHandlesMalformedDirectiveLine",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-069": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_069_LoadDirectiveWarnsUnknownDirectiveArgument",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-070": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_070_SaveDirectiveKeepsBalancedProfileWithoutCustomOverrides",
+                "req_ids": [ "REQ-CONF-001" ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_PROFILE": {
