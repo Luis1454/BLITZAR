@@ -1,6 +1,6 @@
 # BLITZAR
 
-Baryonic Lagrangian Integration of Trajectories for Zero-drift Astrophysical Resolution
+Baryonic Lagrangian Integration of Trajectories for Zero-drift Astrophysical Research
 
 [![nightly-full](https://github.com/Luis1454/BLITZAR/actions/workflows/nightly-full.yml/badge.svg?branch=main)](https://github.com/Luis1454/BLITZAR/actions/workflows/nightly-full.yml)
 [![Coverage lines](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FLuis1454%2FBLITZAR%2Fcoverage-data%2Fcoverage%2Flines.json)](https://github.com/Luis1454/BLITZAR/tree/coverage-data/coverage)
