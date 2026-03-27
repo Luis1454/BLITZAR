@@ -209,6 +209,66 @@
                 "req_ids": [
                     "REQ-CONF-002"
                 ]
+            },
+            "TST-UNT-CONF-040": {
+                "id": "EnvUtilsTest.TST_UNT_CONF_040_ParseBoolReturnsTrueForValidTrues",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-041": {
+                "id": "EnvUtilsTest.TST_UNT_CONF_041_ParseBoolReturnsFalseForValidFalses",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-042": {
+                "id": "EnvUtilsTest.TST_UNT_CONF_042_ParseBoolReturnsFallbackForInvalid",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-043": {
+                "id": "EnvUtilsTest.TST_UNT_CONF_043_GetReturnsEmptyOptionalForMissingVariable",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-044": {
+                "id": "EnvUtilsTest.TST_UNT_CONF_044_GetBoolReturnsFallbackForMissingVariable",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-045": {
+                "id": "EnvUtilsTest.TST_UNT_CONF_045_GetNumberReturnsFalseForMissingVariable",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-046": {
+                "id": "SimulationProfileTest.TST_UNT_CONF_046_NormalizeDiskOrbitProfile",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-047": {
+                "id": "SimulationProfileTest.TST_UNT_CONF_047_NormalizeProfilesAllValid",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-048": {
+                "id": "SimulationProfileTest.TST_UNT_CONF_048_NormalizeRejectsInvalid",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-049": {
+                "id": "SimulationProfileTest.TST_UNT_CONF_049_ApplySimulationProfileDiskOrbit",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-050": {
+                "id": "SimulationProfileTest.TST_UNT_CONF_050_ApplySimulationProfileGalaxyCollision",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-051": {
+                "id": "SimulationProfileTest.TST_UNT_CONF_051_ApplySimulationProfilePlummerSphere",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-052": {
+                "id": "SimulationProfileTest.TST_UNT_CONF_052_ApplySimulationProfileBinaryStar",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-053": {
+                "id": "SimulationProfileTest.TST_UNT_CONF_053_ApplySimulationProfileSolarSystem",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-054": {
+                "id": "SimulationProfileTest.TST_UNT_CONF_054_ApplySimulationProfileUnknownIsNoOp",
+                "req_ids": [ "REQ-CONF-002" ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_PROFILE": {
