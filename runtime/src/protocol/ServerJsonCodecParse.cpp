@@ -7,7 +7,7 @@ namespace grav_protocol {
 
 bool ServerJsonCodec::parseCommandRequest(std::string_view raw, ServerCommandRequest &out, std::string &error)
 {
-    const std::string_view trimmedRaw = trim(raw);
+    const std::string trimmedRaw = trim(raw);
     if (trimmedRaw.empty() || trimmedRaw.front() != '{' || trimmedRaw.back() != '}') {
         error = "invalid json";
         return false;
@@ -31,7 +31,7 @@ bool ServerJsonCodec::parseCommandRequest(std::string_view raw, ServerCommandReq
 
 bool ServerJsonCodec::parseResponseEnvelope(std::string_view raw, ServerResponseEnvelope &out, std::string &error)
 {
-    const std::string_view trimmedRaw = trim(raw);
+    const std::string trimmedRaw = trim(raw);
     if (trimmedRaw.empty() || trimmedRaw.front() != '{' || trimmedRaw.back() != '}') {
         error = "invalid json";
         return false;
