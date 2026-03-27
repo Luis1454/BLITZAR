@@ -17,6 +17,10 @@ Coverage is now treated as a first-class steering signal for execution risk, alo
 - Coverage dashboard payload: `coverage-data/coverage/*`
 - Coverage workflow: `nightly-full`
 
+### GPU Coverage Limitations
+*Note: The actual physics simulation tests rely predominantly on the GPU framework (`__device__` compiled code or CUDA hooks). They cannot be reliably fully isolated in the CPU-only Linux coverage build without breaking the strict `CMakeLists.txt` repository separation between pure logical C++ tests and GPU/runtime binaries. Furthermore, MSVC + CUDA compilation limits the usability of tools like `gcovr` for device coverage. Thus, GPU device coverage is structurally unmeasurable with the current standard C++ CI tooling and intentionally omitted from the line coverage metrics, which strictly measure host-side logic.*
+
+
 ## Quick Start
 
 ```bash
