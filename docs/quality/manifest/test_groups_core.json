@@ -439,6 +439,33 @@
                 "req_ids": [
                     "REQ-RUN-001"
                 ]
+            },
+            "TST-UNT-RUNT-012": {
+                "id": "ClientBridgeTest.TST_UNT_RUNT_012_ClampRemoteTimeoutRespectsBounds",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-RUNT-013": {
+                "id": "ClientBridgeTest.TST_UNT_RUNT_013_SplitTransportArgsParsesKnownServerFlags",
+                "req_ids": [
+                    "REQ-RUN-001",
+                    "REQ-CONF-001"
+                ]
+            },
+            "TST-UNT-RUNT-014": {
+                "id": "ClientBridgeTest.TST_UNT_RUNT_014_SplitTransportArgsRejectsInvalidPortInputs",
+                "req_ids": [
+                    "REQ-RUN-001",
+                    "REQ-CONF-002"
+                ]
+            },
+            "TST-UNT-RUNT-015": {
+                "id": "ClientBridgeTest.TST_UNT_RUNT_015_DisconnectedBridgeOperationsRemainBounded",
+                "req_ids": [
+                    "REQ-RUN-001",
+                    "REQ-PROT-001"
+                ]
             }
         },
         "EVD_TEST_INT_RUNTIME_RUNTIME": {
@@ -510,6 +537,19 @@
                 "req_ids": [
                     "REQ-RUN-001",
                     "REQ-UI-001"
+                ]
+            },
+            "TST-UNT-RUNT-016": {
+                "id": "ClientRuntimeUnitLikeTest.TST_UNT_RUNT_016_RuntimeDefaultsRemainDeterministicBeforeStart",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-RUNT-017": {
+                "id": "ClientRuntimeUnitLikeTest.TST_UNT_RUNT_017_RuntimeControlMethodsRemainBoundedWhenDisconnected",
+                "req_ids": [
+                    "REQ-RUN-001",
+                    "REQ-PROT-001"
                 ]
             }
         },
