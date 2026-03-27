@@ -307,6 +307,14 @@
                 ]
             }
         },
+        "EVD_TEST_INT_PROTOCOL_REPLAY": {
+            "TST-INT-PROT-011": {
+                "id": "ServerProtocolTest.TST_INT_PROT_011_FixedSeedServerReplayIsDeterministic",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            }
+        },
         "EVD_TEST_INT_RUNTIME_BRIDGE": {
             "TST-INT-RUNT-001": {
                 "id": "ClientBridgeTest.TST_INT_RUNT_001_ReconnectsAfterRealServerRestart",
