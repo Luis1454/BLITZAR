@@ -390,7 +390,8 @@ __global__ void computeSphDensityPressureKernel(
 }
 
 __global__ void integrateSphKernel(
-    ParticleSoAView particles,
+    ParticleSoAView inParticles,
+    ParticleSoAView outParticles,
     ConstFloatHandle density,
     ConstFloatHandle pressure,
     int numParticles,
@@ -411,13 +412,22 @@ __global__ void integrateSphKernel(
         return;
     }
 
-    const float selfMass = particles.mass[i];
+    const float selfMass = inParticles.mass[i];
     if (selfMass > 0.1f) {
+        outParticles.posX[i] = inParticles.posX[i];
+        outParticles.posY[i] = inParticles.posY[i];
+        outParticles.posZ[i] = inParticles.posZ[i];
+        outParticles.velX[i] = inParticles.velX[i];
+        outParticles.velY[i] = inParticles.velY[i];
+        outParticles.velZ[i] = inParticles.velZ[i];
+        outParticles.dens[i] = inParticles.dens[i];
+        outParticles.pressure[i] = inParticles.pressure[i];
+        outParticles.mass[i] = inParticles.mass[i];
         return;
     }
 
-    const Vector3 pi = getSoAPosition(particles, i);
-    const Vector3 vi = getSoAVelocity(particles, i);
+    const Vector3 pi = getSoAPosition(inParticles, i);
+    const Vector3 vi = getSoAVelocity(inParticles, i);
     const float rhoI = fmaxf(density[i], 1e-6f);
     const float pI = pressure[i];
 
@@ -428,10 +438,10 @@ __global__ void integrateSphKernel(
         if (j == i) {
             continue;
         }
-        if (particles.mass[j] > 0.1f) {
+        if (inParticles.mass[j] > 0.1f) {
             continue;
         }
-        const Vector3 pj = getSoAPosition(particles, j);
+        const Vector3 pj = getSoAPosition(inParticles, j);
         const Vector3 rij = pi - pj;
         const float r = sqrtf(dot(rij, rij));
         if (r >= smoothingLength || r <= 1e-6f) {
@@ -442,10 +452,10 @@ __global__ void integrateSphKernel(
         const float pJ = pressure[j];
         const Vector3 gradDir = rij / r;
         const float grad = sphSpikyGrad(r, smoothingLength);
-        pressureForce += gradDir * (-particles.mass[j] * (pI + pJ) * 0.5f / rhoJ * grad);
+        pressureForce += gradDir * (-inParticles.mass[j] * (pI + pJ) * 0.5f / rhoJ * grad);
 
         const float lap = sphViscosityLaplacian(r, smoothingLength);
-        viscosityForce += (getSoAVelocity(particles, j) - vi) * (viscosity * particles.mass[j] / rhoJ * lap);
+        viscosityForce += (getSoAVelocity(inParticles, j) - vi) * (viscosity * inParticles.mass[j] / rhoJ * lap);
     }
 
     const Vector3 totalForce = pressureForce + viscosityForce;
@@ -463,10 +473,11 @@ __global__ void integrateSphKernel(
     }
     Vector3 position = pi + velocity * (deltaTime * correctionScale);
 
-    particles.velX[i] = velocity.x; particles.velY[i] = velocity.y; particles.velZ[i] = velocity.z;
-    particles.posX[i] = position.x; particles.posY[i] = position.y; particles.posZ[i] = position.z;
-    particles.dens[i] = rhoI;
-    setSoAPressure(particles, i, (pressureForce + viscosityForce) * 2.0f);
+    outParticles.velX[i] = velocity.x; outParticles.velY[i] = velocity.y; outParticles.velZ[i] = velocity.z;
+    outParticles.posX[i] = position.x; outParticles.posY[i] = position.y; outParticles.posZ[i] = position.z;
+    outParticles.dens[i] = rhoI;
+    setSoAPressure(outParticles, i, (pressureForce + viscosityForce) * 2.0f);
+    outParticles.mass[i] = selfMass;
 }
 
 __global__ void copyParticlesKernel(ParticleConstHandle src, ParticleHandle dst, int numParticles)

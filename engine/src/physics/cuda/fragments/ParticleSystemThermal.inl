@@ -22,7 +22,7 @@ float ParticleSystem::applyThermalModel(float deltaTime)
     for (Particle &p : _particles) {
         const float mass = std::max(1e-6f, p.getMass());
         const float heatCapacity = _thermalSpecificHeat * mass;
-        float temperature = std::max(0.0f, p.getTemperature());
+        float temperature = std::min(std::max(0.0f, p.getTemperature()), 1e6f);
         Vector3 velocity = p.getVelocity();
         const float speed2 = dot(velocity, velocity);
         float kineticEnergy = 0.5f * mass * speed2;
