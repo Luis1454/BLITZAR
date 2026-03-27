@@ -104,4 +104,18 @@ TEST(CommandParserTest, TST_UNT_MODCLI_034_ParseLineSupportsSingleQuotedTokens)
     EXPECT_EQ(std::get<std::string>(parsed.requests[0].arguments[0]), "configs/release build.ini");
 }
 
+TEST(CommandParserTest, TST_UNT_MODCLI_035_ParseLineRejectsIntegerWithTrailingGarbage)
+{
+    const grav_cmd::CommandParseResult parsed = grav_cmd::CommandParser::parseLine("step 12ms", 21u);
+    ASSERT_FALSE(parsed.ok);
+    EXPECT_EQ(parsed.error, "line 21: invalid integer '12ms'");
+}
+
+TEST(CommandParserTest, TST_UNT_MODCLI_036_ParseLineRejectsFloatWithTrailingGarbage)
+{
+    const grav_cmd::CommandParseResult parsed = grav_cmd::CommandParser::parseLine("run_until 1.5s", 22u);
+    ASSERT_FALSE(parsed.ok);
+    EXPECT_EQ(parsed.error, "line 22: invalid float '1.5s'");
+}
+
 } // namespace grav_test_module_cli_command_parser
