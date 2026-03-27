@@ -140,6 +140,13 @@ def test_repo_policy_warns_when_file_exceeds_target_but_not_hard_limit(tmp_path:
     assert any("target_warning.md: 205 lines exceeds target 200" in warning for warning in warnings)
 
 
+def test_repo_policy_ignores_rust_target_but_not_unrelated_target_dir(tmp_path: Path) -> None:
+    _write(tmp_path / "rust" / "target" / "generated.c", "int f(){return 0;}\n")
+    _write(tmp_path / "target" / "bad.c", "int f(){return 0;}\n")
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("target/bad.c" in error and "forbidden C/C++ extension '.c'" in error for error in errors)
+    assert not any("rust/target/generated.c" in error for error in errors)
 
 
 def test_repo_policy_rejects_evidence_workflow_without_prod_profile(tmp_path: Path) -> None:
@@ -228,4 +235,43 @@ def test_repo_policy_accepts_normalized_ctest_selector_prefix(tmp_path: Path) ->
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert ok
     assert not errors
+
+
+def test_repo_policy_ignores_venv_directory_and_cache_artifacts(tmp_path: Path) -> None:
+    """Anti-recurrence test: verify .venv and cache dirs never enter policy scan."""
+    _write(tmp_path / ".venv" / "lib" / "python3.12" / "site-packages" / "numpy" / "__init__.py", "# numpy\n")
+    _write(tmp_path / ".tox" / "py312" / "lib" / "python3.12" / "site-packages" / "pytest" / "__init__.py", "# pytest\n")
+    _write(tmp_path / ".pytest_cache" / "v" / ".gitkeep", "")
+    _write(tmp_path / ".ruff_cache" / "ruff.db", "")
+    _write(tmp_path / ".mypy_cache" / "json.data", "")
+    _write(tmp_path / "engine" / "src" / "good.cpp", "int main() { return 0; }\n")
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok
+    assert not errors
+    assert not any(".venv" in error or ".tox" in error or "site-packages" in error for error in errors)
+
+
+def test_repo_policy_explicitly_ignores_rust_target_path_not_naked_target(tmp_path: Path) -> None:
+    """Anti-recurrence test: verify rust/target is skipped but naked target/ is not."""
+    _write(tmp_path / "rust" / "target" / "release" / "artifact.lib", "")
+    _write(tmp_path / "tools" / "target" / "bad_file.c", "int badFunc() { return 0; }\n")
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("tools/target/bad_file.c" in error and "forbidden C/C++ extension" in error for error in errors)
+    assert not any("rust/target" in error for error in errors)
+
+
+def test_repo_policy_workflow_forbids_failure_masking_with_shell_alternative(tmp_path: Path) -> None:
+    """Anti-recurrence test: verify || shell fallback on build commands is rejected."""
+    _write(
+        tmp_path / ".github" / "workflows" / "pr-fast.yml",
+        "jobs:\n"
+        "  build:\n"
+        "    steps:\n"
+        "      - name: Build with fallback\n"
+        "        run: cmake --build build-dev-mod || echo 'build failed but ignoring'\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("mask build/test command failures with shell fallbacks" in error for error in errors)
 

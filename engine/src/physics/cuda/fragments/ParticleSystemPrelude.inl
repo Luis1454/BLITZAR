@@ -58,11 +58,21 @@ bool checkCudaStatus(cudaError_t status, std::string_view stage)
 
 bool parseBoolEnv(std::string_view name, bool fallback)
 {
+    constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
+    if (!kDevProfile) {
+        (void)name;
+        return fallback;
+    }
     return grav_env::getBool(name, fallback);
 }
 
 float parseFloatEnv(std::string_view name, float fallback)
 {
+    constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
+    if (!kDevProfile) {
+        (void)name;
+        return fallback;
+    }
     float parsed = 0.0f;
     if (!grav_env::getNumber(name, parsed)) {
         return fallback;
@@ -72,6 +82,10 @@ float parseFloatEnv(std::string_view name, float fallback)
 
 ParticleSystem::SolverMode solverModeFromEnv()
 {
+    constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
+    if (!kDevProfile) {
+        return ParticleSystem::SolverMode::PairwiseCuda;
+    }
     if (parseBoolEnv("GRAVITY_USE_OCTREE", false)) {
         return ParticleSystem::SolverMode::OctreeGpu;
     }
@@ -90,6 +104,10 @@ ParticleSystem::SolverMode solverModeFromEnv()
 
 ParticleSystem::IntegratorMode integratorModeFromEnv()
 {
+    constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
+    if (!kDevProfile) {
+        return ParticleSystem::IntegratorMode::Euler;
+    }
     const auto integrator = grav_env::get("GRAVITY_INTEGRATOR");
     if (!integrator.has_value()) {
         return ParticleSystem::IntegratorMode::Euler;

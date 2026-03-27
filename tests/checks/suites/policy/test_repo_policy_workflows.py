@@ -84,6 +84,32 @@ def test_repo_policy_rejects_release_lane_without_explicit_protocol_cli_physics_
     assert any("release lane must exercise an explicit deterministic product subset containing TST_UNT_PHYS_" in error for error in errors)
 
 
+def test_repo_policy_rejects_workflow_build_failure_masking_with_shell_fallback(tmp_path: Path) -> None:
+    _write(
+        tmp_path / ".github" / "workflows" / "pr-fast.yml",
+        "jobs:\n"
+        "  ci:\n"
+        "    steps:\n"
+        "      - run: cmake --build build-dev-mod --parallel --target gravityClientModuleQtInProc || echo \"skip\"\n",
+    )
+    ok, errors, _ = _run(tmp_path)
+    assert not ok
+    assert any("must not mask build/test command failures" in error for error in errors)
+
+
+def test_repo_policy_accepts_workflow_build_command_without_shell_fallback(tmp_path: Path) -> None:
+    _write(
+        tmp_path / ".github" / "workflows" / "pr-fast.yml",
+        "jobs:\n"
+        "  ci:\n"
+        "    steps:\n"
+        "      - run: cmake --build build-dev-mod --parallel --target gravityClientModuleQtInProc\n",
+    )
+    ok, errors, _ = _run(tmp_path)
+    assert ok
+    assert not errors
+
+
 def test_repo_policy_accepts_release_lane_with_explicit_protocol_cli_physics_subset(tmp_path: Path) -> None:
     _write(
         tmp_path / ".github" / "workflows" / "release-lane.yml",

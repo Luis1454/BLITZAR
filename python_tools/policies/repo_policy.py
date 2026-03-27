@@ -16,6 +16,7 @@ from python_tools.policies.repo_policy_workflows import (
     check_legacy_ctest_selectors,
     check_release_lane_subset,
     check_workflow_action_pinning,
+    check_workflow_failure_masking,
     check_workflow_pip_manifest_usage,
 )
 
@@ -25,7 +26,18 @@ LINE_COUNT_EXTS = {
     ".md", ".mk", ".ps1", ".py", ".sh", ".toml", ".txt", ".xml", ".yaml", ".yml",
 }
 LINE_COUNT_NAMES = {"CMakeLists.txt", "Makefile"}
-IGNORED_DIRS = {".git", ".idea", ".vs", "__pycache__", "build", "exports"}
+IGNORED_DIRS = {
+    ".git",
+    ".idea",
+    ".vs",
+    "__pycache__",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".pytest_cache",
+    "build",
+    "exports",
+    "site-packages",
+}
 FORBIDDEN_MARKER_RE = re.compile(r"(?m)(#|//|/\*)\s*(TODO|FIXME|HACK)\b")
 HEADER_EXTS = {".hpp", ".h", ".hh", ".hxx"}
 TEXT_EXTS = LINE_COUNT_EXTS | {".json", ".toml", ".xml"}
@@ -52,7 +64,18 @@ PRAGMA_ONCE_RE = re.compile(r"(?m)^\s*#pragma\s+once\b")
 DEFINE_RE = re.compile(r"(?m)^\s*#define\s+([A-Z][A-Z0-9_]+)\b(?!\s*\()")
 
 def should_skip_dir(dirname: str) -> bool:
-    return dirname in IGNORED_DIRS or dirname.startswith(("build-", "cmake-build-", ".pytest-basetemp"))
+    if dirname in IGNORED_DIRS:
+        return True
+    return dirname.startswith(("build-", "cmake-build-", ".pytest-basetemp", ".venv", ".tox"))
+
+
+def should_skip_rel_parts(rel_parts: tuple[str, ...]) -> bool:
+    if any(should_skip_dir(part) for part in rel_parts):
+        return True
+    for index, part in enumerate(rel_parts[:-1]):
+        if part == "rust" and rel_parts[index + 1] == "target":
+            return True
+    return False
 
 
 def should_count_lines(path: Path) -> bool:
@@ -89,7 +112,7 @@ class RepoPolicyCheck(BaseCheck):
             if path.is_dir():
                 continue
             rel_parts = path.relative_to(context.root).parts
-            if any(should_skip_dir(part) for part in rel_parts):
+            if should_skip_rel_parts(rel_parts):
                 continue
 
             rel = path.relative_to(context.root).as_posix()
@@ -126,6 +149,7 @@ class RepoPolicyCheck(BaseCheck):
         check_evidence_workflow_commands(context.root, result, "ctest ", "--no-tests=error", "CI ctest command must include --no-tests=error")
         check_legacy_ctest_selectors(context.root, result)
         check_workflow_action_pinning(context.root, result)
+        check_workflow_failure_masking(context.root, result)
         check_workflow_pip_manifest_usage(context.root, result)
         check_release_lane_subset(context.root, result)
 
