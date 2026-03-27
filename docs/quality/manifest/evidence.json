@@ -57,6 +57,7 @@
                      "EVD_CHECK_TEST_RUNNER":  "tests/checks/suites/core/test_framework_core.py",
                      "EVD_TEST_INT_PROTOCOL_CONNECT":  "tests/int/protocol/connect.cpp",
                      "EVD_TEST_INT_PROTOCOL_CONTROL":  "tests/int/protocol/control.cpp",
+                     "EVD_TEST_INT_PROTOCOL_REPLAY":  "tests/int/protocol/replay.cpp",
                      "EVD_TEST_INT_RUNTIME_BRIDGE":  "tests/int/runtime/bridge.cpp",
                      "EVD_TEST_INT_RUNTIME_RUNTIME":  "tests/int/runtime/runtime.cpp",
                      "EVD_TEST_INT_UI_QT_WINDOW":  "tests/int/ui/qt_window.cpp",
