@@ -20,6 +20,34 @@ This document defines minimum confidence controls for development and CI tools.
 | self-hosted GPU runner automation | optional CUDA execution | scripted bootstrap plan, daily readiness report, and hosted fallback job summaries |
 | release packaging scripts | artifact assembly | reproducible scripts + review of output manifest |
 
+## clang-tidy Analyzer Profile
+
+### Active Checks
+
+The CI analyzer profile is: `-*,clang-analyzer-*,bugprone-unused-return-value`.
+
+| Check group | Purpose |
+|---|---|
+| `clang-analyzer-*` | Clang static analyzer suite: null-pointer dereference, use-after-free, uninitialized reads, dead stores, logic errors. Core safety net for C++ memory and control-flow correctness |
+| `bugprone-unused-return-value` | Detects ignored return values from status-returning APIs. Complements `[[nodiscard]]` annotations on internal status types |
+
+### Deliberately Excluded
+
+All other `clang-tidy` check families (`modernize-*`, `readability-*`, `performance-*`, `cppcoreguidelines-*`, `misc-*`, `cert-*`) are disabled (`-*` prefix). Rationale:
+
+- **Noise risk**: enabling broad style/modernize checks on a codebase with legacy patterns produces high-volume warnings that dilute safety-critical findings and slow the CI gate.
+- **Incremental widening policy**: additional check families may be enabled only when (1) file decomposition issues #288 and #289 are closed, reducing per-file complexity, and (2) the resulting warnings can be resolved within one sprint without destabilizing the physics engine.
+
+### CUDA Device Code Exclusion
+
+CUDA device code (`.cu` files, `__global__`/`__device__` kernels) is structurally excluded from clang-tidy analysis:
+
+- **Compile database**: on the Linux CI runner (no CUDA toolkit), `ParticleSystem.cu` is not compiled and therefore absent from `compile_commands.json`.
+- **Path scope**: `DEFAULT_PATHS` in the Python runner covers `engine/src/config/`, `runtime/src/`, and `tests/` — not `engine/src/physics/cuda/`.
+- **Language support**: clang-tidy cannot parse CUDA-specific syntax (`<<<...>>>`, `__shared__`, `__syncthreads()`) without `--cuda-gpu-arch` and a CUDA-aware compilation database.
+
+This exclusion is permanent with the current CI architecture. Mitigating it would require a self-hosted Linux runner with the CUDA toolkit installed and a dedicated analysis step using a CUDA-aware `compile_commands.json`. Until such a runner is operational, CUDA device code quality is verified through deterministic simulation tests (`TST_UNT_PHYS_*`, `TST_INT_PROT_011`) rather than static analysis.
+
 ## Qualification Evidence
 
 - Workflow definitions in `.github/workflows/`.
