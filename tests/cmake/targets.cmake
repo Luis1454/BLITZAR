@@ -12,6 +12,7 @@ set(GRAVITY_TEST_UNIT_CONFIG_SOURCES
     "${GRAVITY_ROOT_DIR}/tests/unit/config/args_io_validation.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/config/args_octree.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/config/env_utils.cpp"
+    "${GRAVITY_ROOT_DIR}/tests/unit/config/scenario_validation.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/config/simulation_profile.cpp"
 )
 
@@ -30,6 +31,7 @@ set(GRAVITY_TEST_UNIT_MODULE_CLI_SOURCES
 )
 
 set(GRAVITY_TEST_UNIT_CLIENT_HOST_SOURCES
+    "${GRAVITY_ROOT_DIR}/tests/unit/module_client/client_common.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/module_client/cli_args_text.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/module_client/client_module_boundary.cpp"
 )

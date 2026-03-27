@@ -84,3 +84,49 @@ TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_040_ReadBoolHandlesFalse) {
     EXPECT_FALSE(out);
 }
 
+TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_041_ReadNumberParsesSupportedNumericTypes) {
+    const std::string raw = R"({"i": -7, "u32": 42, "u64": 1234567890123, "f": 1.5, "d": -2.5e-3})";
+
+    int i = 0;
+    std::uint32_t u32 = 0u;
+    std::uint64_t u64 = 0u;
+    float f = 0.0f;
+    double d = 0.0;
+
+    EXPECT_TRUE(grav_protocol::ServerJsonCodec::readNumber(raw, "i", i));
+    EXPECT_TRUE(grav_protocol::ServerJsonCodec::readNumber(raw, "u32", u32));
+    EXPECT_TRUE(grav_protocol::ServerJsonCodec::readNumber(raw, "u64", u64));
+    EXPECT_TRUE(grav_protocol::ServerJsonCodec::readNumber(raw, "f", f));
+    EXPECT_TRUE(grav_protocol::ServerJsonCodec::readNumber(raw, "d", d));
+
+    EXPECT_EQ(i, -7);
+    EXPECT_EQ(u32, 42u);
+    EXPECT_EQ(u64, 1234567890123ull);
+    EXPECT_FLOAT_EQ(f, 1.5f);
+    EXPECT_DOUBLE_EQ(d, -2.5e-3);
+}
+
+TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_042_ReadNumberReturnsFalseWhenKeyMissing) {
+    int out = 17;
+    EXPECT_FALSE(grav_protocol::ServerJsonCodec::readNumber(R"({"other": 1})", "missing", out));
+    EXPECT_EQ(out, 17);
+}
+
+TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_043_ReadNumberRejectsInvalidIntegerToken) {
+    std::uint32_t out = 5u;
+    EXPECT_FALSE(grav_protocol::ServerJsonCodec::readNumber(R"({"u32": -1})", "u32", out));
+    EXPECT_EQ(out, 5u);
+}
+
+TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_044_ReadNumberRejectsInvalidFloatToken) {
+    float out = 2.0f;
+    EXPECT_FALSE(grav_protocol::ServerJsonCodec::readNumber(R"({"f": 1.2.3})", "f", out));
+    EXPECT_FLOAT_EQ(out, 2.0f);
+}
+
+TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_045_ReadNumberParsesScientificNotation) {
+    double out = 0.0;
+    EXPECT_TRUE(grav_protocol::ServerJsonCodec::readNumber(R"({"d": 6.022e2})", "d", out));
+    EXPECT_DOUBLE_EQ(out, 602.2);
+}
+
