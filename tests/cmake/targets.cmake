@@ -13,16 +13,19 @@ set(GRAVITY_TEST_UNIT_CONFIG_SOURCES
     "${GRAVITY_ROOT_DIR}/tests/unit/config/args_octree.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/config/env_utils.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/config/scenario_validation.cpp"
+    "${GRAVITY_ROOT_DIR}/tests/unit/config/scenario_validation_init_modes.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/config/simulation_profile.cpp"
 )
 
 set(GRAVITY_TEST_UNIT_PROTOCOL_SOURCES
     "${GRAVITY_ROOT_DIR}/tests/unit/protocol/json_codec.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/protocol/json_codec_parse.cpp"
+    "${GRAVITY_ROOT_DIR}/tests/unit/protocol/json_codec_parse_edge_cases.cpp"
 )
 
 set(GRAVITY_TEST_UNIT_MODULE_CLI_SOURCES
     "${GRAVITY_ROOT_DIR}/tests/unit/module_cli/command_batch_runner.cpp"
+    "${GRAVITY_ROOT_DIR}/tests/unit/module_cli/command_catalog.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/module_cli/command_executor.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/module_cli/command_executor_flows.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/module_cli/command_parser.cpp"

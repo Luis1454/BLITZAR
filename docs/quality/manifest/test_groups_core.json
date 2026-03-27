@@ -301,6 +301,26 @@
             "TST-UNT-CONF-062": {
                 "id": "ScenarioValidationTest.TST_UNT_CONF_062_RenderTextShowsBlockedSummaryAndActions",
                 "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-063": {
+                "id": "ScenarioValidationInitModesTest.TST_UNT_CONF_063_DetailedRandomCloudValidatesGeneratedMassAndExtent",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-064": {
+                "id": "ScenarioValidationInitModesTest.TST_UNT_CONF_064_DetailedDiskOrbitCentralBodyRequiresPositiveMass",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-065": {
+                "id": "ScenarioValidationInitModesTest.TST_UNT_CONF_065_DetailedFileModeWithoutInputFileIsRejected",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-066": {
+                "id": "ScenarioValidationInitModesTest.TST_UNT_CONF_066_OctreeAutoMaxLowerThanMinRaisesError",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-067": {
+                "id": "ScenarioValidationInitModesTest.TST_UNT_CONF_067_PhysicsMinDistanceAboveSofteningSquareTriggersWarning",
+                "req_ids": [ "REQ-CONF-002" ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_PROFILE": {
@@ -1111,6 +1131,73 @@
                     "REQ-MOD-001",
                     "REQ-RUN-001"
                 ]
+            },
+            "TST-UNT-MODCLI-024": {
+                "id": "CommandCatalogTest.TST_UNT_MODCLI_024_AllSpecsRoundTripByNameAndId",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-025": {
+                "id": "CommandCatalogTest.TST_UNT_MODCLI_025_RenderHelpFormatsRequiredAndOptionalArguments",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-026": {
+                "id": "CommandCatalogTest.TST_UNT_MODCLI_026_FindByNameRejectsCaseAndWhitespaceVariants",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-027": {
+                "id": "CommandCatalogTest.TST_UNT_MODCLI_027_CommandMetadataIsDeterministicAndDocumented",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-028": {
+                "id": "CommandParserTest.TST_UNT_MODCLI_028_ParseScriptKeepsTailLineWithoutTrailingNewline",
+                "req_ids": [
+                    "REQ-MOD-001",
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-MODCLI-029": {
+                "id": "CommandParserTest.TST_UNT_MODCLI_029_ParseLineKeepsHashInsideQuotedToken",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-030": {
+                "id": "CommandParserTest.TST_UNT_MODCLI_030_ParseScriptStopsAtFirstInvalidLine",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-031": {
+                "id": "CommandCatalogTest.TST_UNT_MODCLI_031_FindByIdRejectsUnknownIdentifier",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-032": {
+                "id": "CommandCatalogTest.TST_UNT_MODCLI_032_RenderHelpStartsWithStableHeaderAndFirstCommand",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-033": {
+                "id": "CommandParserTest.TST_UNT_MODCLI_033_ParseLineAcceptsCommentOnlyAndWhitespace",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-034": {
+                "id": "CommandParserTest.TST_UNT_MODCLI_034_ParseLineSupportsSingleQuotedTokens",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_MODULE_CLI_SERVER": {
@@ -1187,6 +1274,41 @@
             },
             "TST-UNT-MODHOST-015": {
                 "id": "ClientCommonTest.TST_UNT_MODHOST_015_BuildSuggestedExportPathUsesExpectedPattern",
+                "req_ids": [
+                    "REQ-MOD-002"
+                ]
+            },
+            "TST-UNT-MODHOST-016": {
+                "id": "ClientCommonTest.TST_UNT_MODHOST_016_EnvironmentOverridesClampServerAndDrawCaps",
+                "req_ids": [
+                    "REQ-MOD-002",
+                    "REQ-CONF-001",
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-MODHOST-017": {
+                "id": "ClientCommonTest.TST_UNT_MODHOST_017_InvalidEnvironmentOverridesPreserveConfiguredValues",
+                "req_ids": [
+                    "REQ-MOD-002",
+                    "REQ-CONF-002"
+                ]
+            },
+            "TST-UNT-MODHOST-018": {
+                "id": "ClientCommonTest.TST_UNT_MODHOST_018_BuildSuggestedExportPathUnknownFormatOmitsExtension",
+                "req_ids": [
+                    "REQ-MOD-002"
+                ]
+            },
+            "TST-UNT-MODHOST-019": {
+                "id": "ClientCommonTest.TST_UNT_MODHOST_019_EnvironmentOverridesBelowMinimumAreRejected",
+                "req_ids": [
+                    "REQ-MOD-002",
+                    "REQ-CONF-001",
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-MODHOST-020": {
+                "id": "ClientCommonTest.TST_UNT_MODHOST_020_InferExportFormatAcceptsBinaryExtensionAlias",
                 "req_ids": [
                     "REQ-MOD-002"
                 ]
@@ -1751,6 +1873,64 @@
             },
             "TST-UNT-PROT-045": {
                 "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_045_ReadNumberParsesScientificNotation",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-046": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_046_ParseCommandRequestRejectsInvalidEnvelope",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-047": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_047_ParseCommandRequestNormalizesWhitespaceAndCase",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-048": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_048_ParseCommandRequestRejectsWhitespaceOnlyCommand",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-049": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_049_ParseResponseEnvelopeRejectsInvalidJsonAndBoolToken",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-050": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_050_ReadStringAndBoolRejectMalformedTokens",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-051": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_051_ParseCommandRequestRejectsMissingColonSyntax",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-052": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_052_ReadStringSupportsEscapedQuotes",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-053": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_053_ReadBoolRejectsEmptyToken",
+                "req_ids": [
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-054": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_054_ParseResponseEnvelopeKeepsProvidedErrorMessage",
                 "req_ids": [
                     "REQ-PROT-001",
                     "REQ-PROT-002"
