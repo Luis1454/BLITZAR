@@ -2,6 +2,7 @@
 
 #include "config/SimulationConfig.hpp"
 #include "protocol/ServerProtocol.hpp"
+#include "tests/support/scoped_env_var.hpp"
 
 #include <gtest/gtest.h>
 
@@ -87,6 +88,61 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_015_BuildSuggestedExportPathUsesExpectedP
     const std::filesystem::path defaultExportPath(defaultPath);
     EXPECT_EQ(defaultExportPath.parent_path().string(), "exports");
     EXPECT_TRUE(hasExpectedSuggestedName(defaultExportPath.filename().string(), 9u));
+}
+
+TEST(ClientCommonTest, TST_UNT_MODHOST_016_EnvironmentOverridesClampServerAndDrawCaps)
+{
+    testsupport::ScopedEnvVar serverParticles("GRAVITY_SERVER_PARTICLES", "2");
+    testsupport::ScopedEnvVar drawCap("GRAVITY_CLIENT_DRAW_CAP", "999999999");
+
+    SimulationConfig config;
+    config.particleCount = 500u;
+    config.clientParticleCap = 12u;
+
+    EXPECT_EQ(grav_client::resolveServerParticleCount(config), 2u);
+    EXPECT_EQ(grav_client::resolveClientDrawCap(config), grav_protocol::kSnapshotMaxPoints);
+}
+
+TEST(ClientCommonTest, TST_UNT_MODHOST_017_InvalidEnvironmentOverridesPreserveConfiguredValues)
+{
+    testsupport::ScopedEnvVar serverParticles("GRAVITY_SERVER_PARTICLES", "bad");
+    testsupport::ScopedEnvVar drawCap("GRAVITY_CLIENT_DRAW_CAP", "bad");
+
+    SimulationConfig config;
+    config.particleCount = 123u;
+    config.clientParticleCap = 77u;
+
+    EXPECT_EQ(grav_client::resolveServerParticleCount(config), 123u);
+    EXPECT_EQ(grav_client::resolveClientDrawCap(config), 77u);
+}
+
+TEST(ClientCommonTest, TST_UNT_MODHOST_018_BuildSuggestedExportPathUnknownFormatOmitsExtension)
+{
+    const std::string path = grav_client::buildSuggestedExportPath("exports", "mystery", 3u);
+    const std::filesystem::path exportPath(path);
+    const std::string fileName = exportPath.filename().string();
+
+    EXPECT_EQ(exportPath.parent_path().string(), "exports");
+    EXPECT_NE(fileName.find("_s3"), std::string::npos);
+    EXPECT_TRUE(exportPath.extension().string().empty());
+}
+
+TEST(ClientCommonTest, TST_UNT_MODHOST_019_EnvironmentOverridesBelowMinimumAreRejected)
+{
+    testsupport::ScopedEnvVar serverParticles("GRAVITY_SERVER_PARTICLES", "1");
+    testsupport::ScopedEnvVar drawCap("GRAVITY_CLIENT_DRAW_CAP", "1");
+
+    SimulationConfig config;
+    config.particleCount = 500u;
+    config.clientParticleCap = 500u;
+
+    EXPECT_EQ(grav_client::resolveServerParticleCount(config), 500u);
+    EXPECT_EQ(grav_client::resolveClientDrawCap(config), 500u);
+}
+
+TEST(ClientCommonTest, TST_UNT_MODHOST_020_InferExportFormatAcceptsBinaryExtensionAlias)
+{
+    EXPECT_EQ(grav_client::inferExportFormatFromPath("checkpoint.binary"), "bin");
 }
 
 } // namespace grav_test_client_common

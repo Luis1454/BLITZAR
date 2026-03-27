@@ -105,6 +105,7 @@ if(GRAVITY_TEST_UNIT_MODULE_SOURCES)
             "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleManifest.cpp"
             "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientCommon.cpp"
             "${GRAVITY_ROOT_DIR}/runtime/src/client/RustRuntimeBridgeState.cpp"
+            ${GRAVITY_TEST_SCOPED_ENV_VAR_SOURCE}
             ${GRAVITY_ENV_UTILS_SOURCES}
             ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
             "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
