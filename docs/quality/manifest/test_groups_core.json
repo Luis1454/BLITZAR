@@ -1407,6 +1407,78 @@
                     "REQ-TEST-001"
                 ]
             }
+        },
+        "EVD_TEST_UNIT_PROTOCOL_CODEC_PARSE": {
+            "TST-UNT-PROT-031": {
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_031_ParseCommandRequestValid",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-032": {
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_032_ParseCommandRequestMissingCmd",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-033": {
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_033_ParseResponseEnvelopeValidOk",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-034": {
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_034_ParseResponseEnvelopeError",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-035": {
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_035_ParseResponseEnvelopeErrorDefault",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-036": {
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_036_ParseResponseEnvelopeInvalid",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-037": {
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_037_ReadStringExtractsValue",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-038": {
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_038_ReadStringHandlesEscapes",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-039": {
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_039_ReadBoolExtractsValue",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-040": {
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_040_ReadBoolHandlesFalse",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            }
         }
     }
 }
