@@ -52,7 +52,7 @@ TEST(CommandCatalogTest, TST_UNT_MODCLI_027_CommandMetadataIsDeterministicAndDoc
 TEST(CommandCatalogTest, TST_UNT_MODCLI_031_FindByIdRejectsUnknownIdentifier)
 {
     const std::vector<grav_cmd::CommandSpec> &specs = grav_cmd::CommandCatalog::all();
-    using CommandIdBase = std::underlying_type_t<grav_cmd::CommandId>;
+    typedef std::underlying_type<grav_cmd::CommandId>::type CommandIdBase;
     const grav_cmd::CommandId unknownId = static_cast<grav_cmd::CommandId>(static_cast<CommandIdBase>(specs.size()));
     const grav_cmd::CommandSpec *unknown = grav_cmd::CommandCatalog::findById(unknownId);
     EXPECT_EQ(unknown, nullptr);
