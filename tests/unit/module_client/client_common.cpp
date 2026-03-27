@@ -5,10 +5,33 @@
 
 #include <gtest/gtest.h>
 
-#include <regex>
+#include <cctype>
+#include <filesystem>
 #include <string>
 
 namespace grav_test_client_common {
+
+static bool hasExpectedSuggestedName(const std::string &fileName, std::uint64_t step)
+{
+    if (fileName.size() < 26u || fileName.rfind("sim_", 0u) != 0u) {
+        return false;
+    }
+    for (std::size_t i = 4u; i < 12u; ++i) {
+        if (!std::isdigit(static_cast<unsigned char>(fileName[i]))) {
+            return false;
+        }
+    }
+    if (fileName[12] != '_') {
+        return false;
+    }
+    for (std::size_t i = 13u; i < 19u; ++i) {
+        if (!std::isdigit(static_cast<unsigned char>(fileName[i]))) {
+            return false;
+        }
+    }
+    const std::string expectedSuffix = "_s" + std::to_string(step) + ".vtk";
+    return fileName.compare(fileName.size() - expectedSuffix.size(), expectedSuffix.size(), expectedSuffix) == 0;
+}
 
 TEST(ClientCommonTest, TST_UNT_MODHOST_012_ResolveParticleAndDrawCapsClampToProtocolBounds)
 {
@@ -56,12 +79,14 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_014_NormalizeInferAndExtensionCoverAliase
 TEST(ClientCommonTest, TST_UNT_MODHOST_015_BuildSuggestedExportPathUsesExpectedPattern)
 {
     const std::string withDirectory = grav_client::buildSuggestedExportPath("out", "vtk_binary", 42u);
-    EXPECT_NE(withDirectory.find("out"), std::string::npos);
-    EXPECT_TRUE(std::regex_search(withDirectory, std::regex("sim_[0-9]{8}_[0-9]{6}_s42\\.vtk$")));
+    const std::filesystem::path withDirectoryPath(withDirectory);
+    EXPECT_EQ(withDirectoryPath.parent_path().string(), "out");
+    EXPECT_TRUE(hasExpectedSuggestedName(withDirectoryPath.filename().string(), 42u));
 
     const std::string defaultPath = grav_client::buildSuggestedExportPath("", "", 9u);
-    EXPECT_NE(defaultPath.find("exports"), std::string::npos);
-    EXPECT_TRUE(std::regex_search(defaultPath, std::regex("sim_[0-9]{8}_[0-9]{6}_s9\\.vtk$")));
+    const std::filesystem::path defaultExportPath(defaultPath);
+    EXPECT_EQ(defaultExportPath.parent_path().string(), "exports");
+    EXPECT_TRUE(hasExpectedSuggestedName(defaultExportPath.filename().string(), 9u));
 }
 
 } // namespace grav_test_client_common
