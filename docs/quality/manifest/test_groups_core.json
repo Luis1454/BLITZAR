@@ -1400,6 +1400,42 @@
                 "req_ids": [
                     "REQ-MOD-002"
                 ]
+            },
+            "TST-UNT-MODHOST-021": {
+                "id": "PlatformAdaptersTest.TST_UNT_MODHOST_021_QuoteProcessArgHandlesSpacesAndQuotes",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-MODHOST-022": {
+                "id": "PlatformAdaptersTest.TST_UNT_MODHOST_022_BuildProcessCommandLinePreservesArgumentOrderAndEscaping",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-MODHOST-023": {
+                "id": "PlatformAdaptersTest.TST_UNT_MODHOST_023_SocketByteViewsAndTimeoutClampHandleBounds",
+                "req_ids": [
+                    "REQ-PROT-001"
+                ]
+            },
+            "TST-UNT-MODHOST-024": {
+                "id": "PlatformAdaptersTest.TST_UNT_MODHOST_024_DynamicLibraryRejectsSymbolLookupWhenNotOpen",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-MODHOST-025": {
+                "id": "PlatformAdaptersTest.TST_UNT_MODHOST_025_ProcessHandleNonRunningTerminateAndClearAreSafe",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UNT-MODHOST-026": {
+                "id": "PlatformAdaptersTest.TST_UNT_MODHOST_026_RunProcessBlockingInvalidExecutableReturnsFailure",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_MODULE_HOST_BOUNDARY": {
