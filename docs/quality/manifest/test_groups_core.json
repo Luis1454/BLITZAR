@@ -1238,6 +1238,30 @@
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
+            },
+            "TST-UNT-MODCLI-035": {
+                "id": "CommandParserTest.TST_UNT_MODCLI_035_ParseLineRejectsIntegerWithTrailingGarbage",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-036": {
+                "id": "CommandParserTest.TST_UNT_MODCLI_036_ParseLineRejectsFloatWithTrailingGarbage",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-037": {
+                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_037_RunUntilPropagatesStatusErrorDetails",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-038": {
+                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_038_SendCheckedReturnsServerErrorDetail",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_MODULE_CLI_SERVER": {
@@ -1971,6 +1995,34 @@
             },
             "TST-UNT-PROT-054": {
                 "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_054_ParseResponseEnvelopeKeepsProvidedErrorMessage",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-055": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_055_ParseSnapshotResponseRejectsMissingParticlesArray",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-056": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_056_ParseSnapshotResponseRejectsNonNumericParticleCoordinate",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-057": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_057_ParseStatusResponseAcceptsErrorEnvelopeWithoutMetrics",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-058": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_058_ParseSnapshotResponseFallsBackSourceCountWhenMissing",
                 "req_ids": [
                     "REQ-PROT-001",
                     "REQ-PROT-002"

@@ -235,4 +235,38 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_019_ExportSnapshotUsesDerivedAndExp
     EXPECT_NE(transport.commandHistory[1].second.find("\"format\":\"vtk_binary\""), std::string::npos);
 }
 
+TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_037_RunUntilPropagatesStatusErrorDetails)
+{
+    FakeCommandTransport transport;
+    transport.connected = true;
+    transport.nextStatusResponse = ServerClientResponse{false, {}, "status timeout"};
+
+    grav_cmd::CommandSessionState session;
+    std::ostringstream output;
+    grav_cmd::CommandExecutionContext context{transport, session, grav_cmd::CommandExecutionMode::Batch, output};
+
+    const grav_cmd::CommandResult result = grav_cmd::CommandExecutor::execute(parseSingle("run_until 5.0"), context);
+    ASSERT_FALSE(result.ok);
+    EXPECT_EQ(result.message, "status timeout");
+    ASSERT_FALSE(transport.commandHistory.empty());
+    EXPECT_EQ(transport.commandHistory[0].first, "pause");
+}
+
+TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_038_SendCheckedReturnsServerErrorDetail)
+{
+    FakeCommandTransport transport;
+    transport.connected = true;
+    transport.nextCommandResponse = ServerClientResponse{false, {}, "permission denied"};
+
+    grav_cmd::CommandSessionState session;
+    std::ostringstream output;
+    grav_cmd::CommandExecutionContext context{transport, session, grav_cmd::CommandExecutionMode::Interactive, output};
+
+    const grav_cmd::CommandResult result = grav_cmd::CommandExecutor::execute(parseSingle("resume"), context);
+    ASSERT_FALSE(result.ok);
+    EXPECT_EQ(result.message, "permission denied");
+    ASSERT_EQ(transport.commandHistory.size(), 1u);
+    EXPECT_EQ(transport.commandHistory[0].first, "resume");
+}
+
 } // namespace grav_test_module_cli_command_executor_flows
