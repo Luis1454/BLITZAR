@@ -173,7 +173,13 @@ jobs:
       - name: Build optional Qt module target
         if: ${{ steps.cuda.outputs.available == 'true' && matrix.qt_target != '' }}
         shell: bash
-        run: cmake --build build-dev-mod --parallel --target ${{ matrix.qt_target }} || echo "Qt module target unavailable in this environment, skipping."
+        run: |
+          set -euo pipefail
+          if cmake --build build-dev-mod --target help | grep -q "${{ matrix.qt_target }}"; then
+            cmake --build build-dev-mod --parallel --target ${{ matrix.qt_target }}
+          else
+            echo "Qt module target '${{ matrix.qt_target }}' is unavailable in this environment, skipping."
+          fi
       - name: Save dev-module build cache
         if: ${{ success() && steps.cuda.outputs.available == 'true' && steps.restore-dev-module-cache.outputs.cache-hit != 'true' }}
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830

@@ -74,6 +74,21 @@ def check_workflow_pip_manifest_usage(root: Path, result: CheckResult) -> None:
                 result.add_error(f"{rel}: workflow pip installs must use {CI_PYTHON_REQUIREMENTS}: {command}")
 
 
+def check_workflow_failure_masking(root: Path, result: CheckResult) -> None:
+    workflows_root = root / WORKFLOW_ROOT
+    if not workflows_root.exists():
+        return
+    for path in sorted(workflows_root.glob("*.yml")):
+        rel = path.relative_to(root).as_posix()
+        content = path.read_text(encoding="utf-8", errors="ignore")
+        for marker in ("cmake --build", "ctest "):
+            for command in collect_marker_commands(content, marker):
+                if "||" in command:
+                    result.add_error(
+                        f"{rel}: workflow must not mask build/test command failures with shell fallbacks: {command}"
+                    )
+
+
 def check_release_lane_subset(root: Path, result: CheckResult) -> None:
     path = root / ".github/workflows/release-lane.yml"
     if not path.exists():
