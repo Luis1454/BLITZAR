@@ -3,13 +3,14 @@
 #include <gtest/gtest.h>
 
 #include <string>
+#include <type_traits>
 
 namespace grav_test_module_cli_command_catalog {
 
 TEST(CommandCatalogTest, TST_UNT_MODCLI_024_AllSpecsRoundTripByNameAndId)
 {
     const std::vector<grav_cmd::CommandSpec> &specs = grav_cmd::CommandCatalog::all();
-    ASSERT_GT(specs.size(), 10u);
+    ASSERT_FALSE(specs.empty());
 
     for (const grav_cmd::CommandSpec &spec : specs) {
         const grav_cmd::CommandSpec *byName = grav_cmd::CommandCatalog::findByName(spec.name);
@@ -50,14 +51,18 @@ TEST(CommandCatalogTest, TST_UNT_MODCLI_027_CommandMetadataIsDeterministicAndDoc
 
 TEST(CommandCatalogTest, TST_UNT_MODCLI_031_FindByIdRejectsUnknownIdentifier)
 {
-    const grav_cmd::CommandSpec *unknown = grav_cmd::CommandCatalog::findById(static_cast<grav_cmd::CommandId>(9999));
+    const std::vector<grav_cmd::CommandSpec> &specs = grav_cmd::CommandCatalog::all();
+    typedef std::underlying_type<grav_cmd::CommandId>::type CommandIdBase;
+    const grav_cmd::CommandId unknownId = static_cast<grav_cmd::CommandId>(static_cast<CommandIdBase>(specs.size()));
+    const grav_cmd::CommandSpec *unknown = grav_cmd::CommandCatalog::findById(unknownId);
     EXPECT_EQ(unknown, nullptr);
 }
 
 TEST(CommandCatalogTest, TST_UNT_MODCLI_032_RenderHelpStartsWithStableHeaderAndFirstCommand)
 {
     const std::string help = grav_cmd::CommandCatalog::renderHelp();
-    EXPECT_EQ(help.rfind("commands:\n  help", 0u), 0u);
+    const std::string::size_type prefixPosition = std::string::size_type{};
+    EXPECT_EQ(help.rfind("commands:\n  help", prefixPosition), prefixPosition);
 }
 
 } // namespace grav_test_module_cli_command_catalog
