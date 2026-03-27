@@ -123,6 +123,30 @@
         "EVD_CHECK_MAIN",
         "EVD_CHECK_POLICY_ALLOWLIST"
       ]
+    },
+    "DEV-QUAL-006": {
+      "kind": "deviation",
+      "status": "open",
+      "scope": "repository-policy:file-size",
+      "owner": "project-maintainer",
+      "approver": "quality-review",
+      "introduced_on": "2026-03-27",
+      "review_by": "2026-06-30",
+      "rationale": "Unit tests for protocol codec exceeded file size limits after expanding test coverage to meet requirements.",
+      "mitigation": "Keep entries isolated in allowlist and review on every PR touching these files. Plan to split the file by test functionality.",
+      "closure_criteria": "Split the test file into smaller domain-specific files below the limit and update evidence traceability.",
+      "paths": [
+        "tests/unit/protocol/json_codec.cpp"
+      ],
+      "requirements": [
+        "REQ-QUAL-001",
+        "REQ-PROT-001"
+      ],
+      "artifacts": [
+        "EVD_CHECK_MAIN",
+        "EVD_CHECK_POLICY_ALLOWLIST",
+        "EVD_TEST_UNIT_PROTOCOL_CODEC"
+      ]
     }
   }
 }
