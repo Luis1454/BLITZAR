@@ -41,10 +41,11 @@ bool ParticleSystem::update(float deltaTime) {
         grid.totalCells = _sphGridTotalCells;
         grid.cellSize = std::max(0.01f, _sphSmoothingLength);
         
-        ParticleSoAView view = getSoAView();
+        ParticleSoAView currentView = getSoAView(false);
+        ParticleSoAView nextView = getSoAView(true);
 
         computeSphDensityPressureGridKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-            view,
+            currentView,
             d_sphDensity,
             d_sphPressure,
             numParticles,
@@ -63,7 +64,8 @@ bool ParticleSystem::update(float deltaTime) {
 
         constexpr float kSphCorrectionScale = 0.22f;
         integrateSphGridKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-            view,
+            currentView,
+            nextView,
             d_sphDensity,
             d_sphPressure,
             numParticles,
@@ -85,6 +87,14 @@ bool ParticleSystem::update(float deltaTime) {
         if (!checkCudaStatus(cudaDeviceSynchronize(), "sph grid kernels sync")) {
             return false;
         }
+
+        std::swap(d_soaPosX, d_soaNextPosX);
+        std::swap(d_soaPosY, d_soaNextPosY);
+        std::swap(d_soaPosZ, d_soaNextPosZ);
+        std::swap(d_soaVelX, d_soaNextVelX);
+        std::swap(d_soaVelY, d_soaNextVelY);
+        std::swap(d_soaVelZ, d_soaNextVelZ);
+
         _hostStateDirty = true;
         return true;
     };
