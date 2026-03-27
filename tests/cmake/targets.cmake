@@ -21,7 +21,9 @@ set(GRAVITY_TEST_UNIT_PROTOCOL_SOURCES
 )
 
 set(GRAVITY_TEST_UNIT_MODULE_CLI_SOURCES
+    "${GRAVITY_ROOT_DIR}/tests/unit/module_cli/command_batch_runner.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/module_cli/command_executor.cpp"
+    "${GRAVITY_ROOT_DIR}/tests/unit/module_cli/command_executor_flows.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/module_cli/command_parser.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/module_cli/server_ops_validation.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/module_cli/text_and_commands.cpp"
