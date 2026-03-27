@@ -55,6 +55,7 @@ set(GRAVITY_TEST_UNIT_UI_SOURCES
 set(GRAVITY_TEST_INT_PROTOCOL_SOURCES
     "${GRAVITY_ROOT_DIR}/tests/int/protocol/connect.cpp"
     "${GRAVITY_ROOT_DIR}/tests/int/protocol/control.cpp"
+    "${GRAVITY_ROOT_DIR}/tests/int/protocol/replay.cpp"
 )
 
 set(GRAVITY_TEST_INT_BRIDGE_SOURCES
