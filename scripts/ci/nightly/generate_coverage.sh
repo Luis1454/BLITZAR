@@ -19,6 +19,16 @@ gcovr \
   --filter "runtime/src" \
   --exclude "build-integration-cov/_deps" \
   --exclude "tests/" \
+  --csv-pretty \
+  --output build-integration-cov/coverage-files.csv
+
+gcovr \
+  --root "${GITHUB_WORKSPACE}" \
+  --object-directory build-integration-cov \
+  --filter "engine/src" \
+  --filter "runtime/src" \
+  --exclude "build-integration-cov/_deps" \
+  --exclude "tests/" \
   --print-summary | tee build-integration-cov/coverage-summary.txt
 
 LINES_PCT="$(awk '/^lines:/{gsub("%","",$2); print $2}' build-integration-cov/coverage-summary.txt)"

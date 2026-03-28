@@ -53,6 +53,46 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python tests/checks/run.py traceability_gate --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}"
 
+  coverage-delta-report:
+    name: Coverage Delta Report (linux-ubuntu24.04 / gcovr / python3.12)
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - {name: Checkout, uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd}
+      - {name: Setup Python, uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405, with: {python-version: "${{ env.CI_PYTHON_VERSION }}"}}
+      - name: Install coverage tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+          python3 -m pip install -r .github/ci/requirements-py312.txt
+      - name: Configure coverage build
+        run: cmake -S tests -B build-integration-cov -G Ninja -DCMAKE_BUILD_TYPE=Debug -DGRAVITY_PROFILE=prod -DGRAVITY_INTEGRATION_ENABLE_COVERAGE=ON -DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON
+      - name: Build coverage target
+        run: cmake --build build-integration-cov --parallel
+      - name: Run integration tests for coverage
+        run: ctest --test-dir build-integration-cov --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_|TST_QLT_"
+      - {name: Generate coverage report, run: bash scripts/ci/nightly/generate_coverage.sh}
+      - name: Build PR coverage delta report
+        run: >-
+          python3 scripts/ci/coverage/build_pr_delta_report.py
+          --summary build-integration-cov/coverage-summary.txt
+          --files-csv build-integration-cov/coverage-files.csv
+          --repo "${{ github.repository }}"
+          --output build-integration-cov/pr-coverage-delta.md
+      - name: Append PR coverage delta summary
+        run: cat build-integration-cov/pr-coverage-delta.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload PR coverage artifacts
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: pr-coverage-delta-${{ github.run_number }}
+          path: |
+            build-integration-cov/coverage.xml
+            build-integration-cov/coverage.html
+            build-integration-cov/coverage-summary.txt
+            build-integration-cov/coverage-files.csv
+            build-integration-cov/pr-coverage-delta.md
+          if-no-files-found: error
+
   ivv-gate:
     name: IV&V Gate (linux-ubuntu24.04 / python3.12)
     if: ${{ github.event_name == 'pull_request' }}

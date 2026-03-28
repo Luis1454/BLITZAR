@@ -197,6 +197,7 @@ jobs:
             build-integration-cov/coverage.xml
             build-integration-cov/coverage.html
             build-integration-cov/coverage-summary.txt
+            build-integration-cov/coverage-files.csv
           if-no-files-found: error
       - name: Save coverage build cache
         if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
