@@ -12,7 +12,6 @@
       "mitigation": "Keep entries isolated in the allowlist, review on every PR touching these files, and forbid new unrelated growth.",
       "closure_criteria": "Split each file below the hard limit and remove the corresponding allowlist paths.",
       "paths": [
-        "engine/src/server/SimulationServer.cpp",
         "runtime/src/server/ServerDaemon.cpp",
         "runtime/src/protocol/ServerClient.cpp",
         "runtime/src/client/ClientServerBridge.cpp",

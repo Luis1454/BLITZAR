@@ -1,17 +1,15 @@
 #include "protocol/ServerJsonCodec.hpp"
-
 namespace grav_protocol {
-
-bool ServerJsonCodec::parseStatusResponse(std::string_view raw, ServerStatusPayload &out, std::string &error)
+bool ServerJsonCodec::parseStatusResponse(std::string_view raw, ServerStatusPayload& out,
+                                          std::string& error)
 {
     ServerStatusPayload parsed{};
     if (!parseResponseEnvelope(raw, parsed.envelope, error)) {
         return false;
     }
-    if (!parsed.envelope.ok) {
+    if (!parsed.envelope.ok)
         out = parsed;
-        return true;
-    }
+    return true;
     readNumber(raw, "steps", parsed.steps);
     readNumber(raw, "dt", parsed.dt);
     readNumber(raw, "total_time", parsed.totalTime);
@@ -54,5 +52,4 @@ bool ServerJsonCodec::parseStatusResponse(std::string_view raw, ServerStatusPayl
     error.clear();
     return true;
 }
-
 } // namespace grav_protocol

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import subprocess
@@ -116,7 +116,7 @@ def test_clang_tidy_skips_clean_diffs(monkeypatch, tmp_path: Path) -> None:
     source = _make_source(tmp_path, "file")
     build_dir = tmp_path / "build-quality"
     _write_compile_db(build_dir, [source])
-    check, _ = _make_check(monkeypatch, _FakeRunner(diff_output="docs/quality/README.md\n"))
+    check, _ = _make_check(monkeypatch, _FakeRunner(diff_output="docs/quality/quality-overview.md\n"))
 
     result = check.run(_context(tmp_path, build_dir, diff_base="origin/main"))
 
@@ -241,3 +241,4 @@ def test_clang_tidy_timeout_without_fallback_fails(monkeypatch, tmp_path: Path) 
 
     assert not result.ok
     assert any("clang-tidy timed out after 1s" in error for error in result.errors)
+

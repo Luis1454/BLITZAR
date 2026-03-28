@@ -1,9 +1,7 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_TYPES_SIMULATIONTYPES_HPP_
 #define GRAVITY_ENGINE_INCLUDE_TYPES_SIMULATIONTYPES_HPP_
-
 #include <cstdint>
 #include <string>
-
 struct RenderParticle {
     float x;
     float y;
@@ -12,7 +10,6 @@ struct RenderParticle {
     float pressureNorm;
     float temperature;
 };
-
 struct InitialStateConfig {
     std::string mode = "disk_orbit";
     std::uint32_t seed = 42u;
@@ -39,7 +36,6 @@ struct InitialStateConfig {
     float cloudSpeed = 0.0f;
     float particleMass = 0.01f;
 };
-
 struct SimulationStats {
     std::uint64_t steps;
     float dt;
@@ -80,6 +76,4 @@ struct SimulationStats {
     std::string exportLastPath;
     std::string exportLastMessage;
 };
-
-
 #endif // GRAVITY_ENGINE_INCLUDE_TYPES_SIMULATIONTYPES_HPP_

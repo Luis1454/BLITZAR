@@ -1,8 +1,6 @@
-#include "ui/MainWindow.hpp"
-
 #include "ui/EnergyGraphWidget.hpp"
+#include "ui/MainWindow.hpp"
 #include "ui/MultiViewWidget.hpp"
-
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
@@ -18,27 +16,29 @@
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QWidget>
-
 #include <algorithm>
-
 namespace grav_qt {
-
 void MainWindow::initializeControlState()
 {
     _pauseButton->setCheckable(true);
-
     _solverCombo->addItems({"pairwise_cuda", "octree_gpu", "octree_cpu"});
-    _solverCombo->setCurrentIndex(std::max(0, _solverCombo->findText(QString::fromStdString(_config.solver))));
+    _solverCombo->setCurrentIndex(
+        std::max(0, _solverCombo->findText(QString::fromStdString(_config.solver))));
     _integratorCombo->addItems({"euler", "rk4"});
-    _integratorCombo->setCurrentIndex(std::max(0, _integratorCombo->findText(QString::fromStdString(_config.integrator))));
+    _integratorCombo->setCurrentIndex(
+        std::max(0, _integratorCombo->findText(QString::fromStdString(_config.integrator))));
     _performanceCombo->addItems({"interactive", "balanced", "quality", "custom"});
-    _performanceCombo->setCurrentIndex(std::max(0, _performanceCombo->findText(QString::fromStdString(_config.performanceProfile))));
-    _simulationProfileCombo->addItems({"disk_orbit", "galaxy_collision", "plummer_sphere", "binary_star", "solar_system", "sph_collapse"});
-    _simulationProfileCombo->setCurrentIndex(std::max(0, _simulationProfileCombo->findText(QString::fromStdString(_config.simulationProfile))));
-    _presetCombo->addItems({"disk_orbit", "galaxy_collision", "random_cloud", "two_body", "three_body", "plummer_sphere", "file"});
-    _presetCombo->setCurrentIndex(std::max(0, _presetCombo->findText(QString::fromStdString(_config.presetStructure))));
+    _performanceCombo->setCurrentIndex(std::max(
+        0, _performanceCombo->findText(QString::fromStdString(_config.performanceProfile))));
+    _simulationProfileCombo->addItems({"disk_orbit", "galaxy_collision", "plummer_sphere",
+                                       "binary_star", "solar_system", "sph_collapse"});
+    _simulationProfileCombo->setCurrentIndex(std::max(
+        0, _simulationProfileCombo->findText(QString::fromStdString(_config.simulationProfile))));
+    _presetCombo->addItems({"disk_orbit", "galaxy_collision", "random_cloud", "two_body",
+                            "three_body", "plummer_sphere", "file"});
+    _presetCombo->setCurrentIndex(
+        std::max(0, _presetCombo->findText(QString::fromStdString(_config.presetStructure))));
     _view3dCombo->addItems({"perspective", "iso"});
-
     _performanceCombo->setObjectName("performanceProfileCombo");
     _simulationProfileCombo->setObjectName("simulationProfileCombo");
     _presetCombo->setObjectName("scenePresetCombo");
@@ -80,7 +80,6 @@ void MainWindow::initializeControlState()
     _energyGraph->setObjectName("energyGraphWidget");
     _gpuTelemetryCheck->setObjectName("gpuTelemetryCheck");
     _multiView->setObjectName("multiViewWidget");
-
     _dtSpin->setDecimals(5);
     _dtSpin->setRange(0.00001, 100.0);
     _dtSpin->setSingleStep(0.001);
@@ -93,7 +92,6 @@ void MainWindow::initializeControlState()
     _softeningSpin->setRange(0.0001, 5.0);
     _softeningSpin->setSingleStep(0.01);
     _softeningSpin->setValue(std::clamp(_config.octreeSoftening, 0.0001f, 5.0f));
-
     _sphCheck->setChecked(_config.sphEnabled);
     _sphSmoothingSpin->setDecimals(3);
     _sphSmoothingSpin->setRange(0.05, 10.0);
@@ -111,7 +109,6 @@ void MainWindow::initializeControlState()
     _sphViscositySpin->setRange(0.0, 100.0);
     _sphViscositySpin->setSingleStep(0.01);
     _sphViscositySpin->setValue(std::max(0.0f, _config.sphViscosity));
-
     _zoomSlider->setRange(1, 400);
     _zoomSlider->setValue(static_cast<int>(std::clamp(_config.defaultZoom * 10.0f, 1.0f, 400.0f)));
     _luminositySlider->setRange(0, 255);
@@ -130,12 +127,12 @@ void MainWindow::initializeControlState()
     _serverPortSpin->setValue(4545);
     _serverBinEdit->setPlaceholderText("blitzar-server(.exe)");
     _serverBinEdit->setToolTip("Path to the server executable used when autostart is enabled");
-    _applyConnectorButton->setToolTip("Apply host, port and server binary settings, then reconnect now");
-
-    for (QLabel *label : {_validationLabel, _statusLabel, _runtimeMetricsLabel, _queueMetricsLabel, _energyMetricsLabel, _gpuMetricsLabel}) {
+    _applyConnectorButton->setToolTip(
+        "Apply host, port and server binary settings, then reconnect now");
+    for (QLabel* label : {_validationLabel, _statusLabel, _runtimeMetricsLabel, _queueMetricsLabel,
+                          _energyMetricsLabel, _gpuMetricsLabel})
         label->setWordWrap(true);
-        label->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    }
+    label->setTextInteractionFlags(Qt::TextSelectableByMouse);
     _validationLabel->setObjectName("validationLabel");
     _validationLabel->setContentsMargins(6, 4, 6, 4);
     _statusLabel->setObjectName("runtimeSummaryValue");
@@ -144,45 +141,40 @@ void MainWindow::initializeControlState()
     _energyMetricsLabel->setObjectName("runtimeSummaryValue");
     _gpuMetricsLabel->setObjectName("runtimeSummaryValue");
 }
-
-QTabWidget *MainWindow::buildSidebarTabs()
+QTabWidget* MainWindow::buildSidebarTabs()
 {
-    auto *sidebarTabs = new QTabWidget(this);
+    auto* sidebarTabs = new QTabWidget(this);
     sidebarTabs->setObjectName("workspaceSidebarTabs");
     sidebarTabs->setTabPosition(QTabWidget::West);
     sidebarTabs->setDocumentMode(true);
     sidebarTabs->setMinimumWidth(220);
     sidebarTabs->setMaximumWidth(248);
     sidebarTabs->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-
-    auto *runPage = new QWidget(sidebarTabs);
-    auto *runLayout = new QVBoxLayout(runPage);
-    auto *scenePage = new QWidget(sidebarTabs);
-    auto *sceneLayout = new QVBoxLayout(scenePage);
-    auto *physicsPage = new QWidget(sidebarTabs);
-    auto *physicsLayout = new QVBoxLayout(physicsPage);
-    auto *renderPage = new QWidget(sidebarTabs);
-    auto *renderLayout = new QVBoxLayout(renderPage);
-    for (QVBoxLayout *layout : {runLayout, sceneLayout, physicsLayout, renderLayout}) {
+    auto* runPage = new QWidget(sidebarTabs);
+    auto* runLayout = new QVBoxLayout(runPage);
+    auto* scenePage = new QWidget(sidebarTabs);
+    auto* sceneLayout = new QVBoxLayout(scenePage);
+    auto* physicsPage = new QWidget(sidebarTabs);
+    auto* physicsLayout = new QVBoxLayout(physicsPage);
+    auto* renderPage = new QWidget(sidebarTabs);
+    auto* renderLayout = new QVBoxLayout(renderPage);
+    for (QVBoxLayout* layout : {runLayout, sceneLayout, physicsLayout, renderLayout})
         layout->setContentsMargins(4, 4, 4, 4);
-        layout->setSpacing(8);
-    }
-
-    auto *runBox = new QGroupBox("Run Control", runPage);
-    auto *runBoxLayout = new QVBoxLayout(runBox);
-    auto *runForm = new QFormLayout();
+    layout->setSpacing(8);
+    auto* runBox = new QGroupBox("Run Control", runPage);
+    auto* runBoxLayout = new QVBoxLayout(runBox);
+    auto* runForm = new QFormLayout();
     runForm->addRow("performance", _performanceCombo);
-    auto *runActions = new QGridLayout();
+    auto* runActions = new QGridLayout();
     runActions->addWidget(_pauseButton, 0, 0);
     runActions->addWidget(_stepButton, 0, 1);
     runActions->addWidget(_resetButton, 1, 0);
     runActions->addWidget(_recoverButton, 1, 1);
     runBoxLayout->addLayout(runForm);
     runBoxLayout->addLayout(runActions);
-
-    auto *connectorBox = new QGroupBox("Connector", runPage);
-    auto *connectorLayout = new QVBoxLayout(connectorBox);
-    auto *connectorForm = new QFormLayout();
+    auto* connectorBox = new QGroupBox("Connector", runPage);
+    auto* connectorLayout = new QVBoxLayout(connectorBox);
+    auto* connectorForm = new QFormLayout();
     connectorForm->addRow("host", _serverHostEdit);
     connectorForm->addRow("port", _serverPortSpin);
     connectorForm->addRow("server bin", _serverBinEdit);
@@ -190,44 +182,39 @@ QTabWidget *MainWindow::buildSidebarTabs()
     connectorLayout->addWidget(_serverAutostartCheck);
     connectorLayout->addWidget(_applyConnectorButton);
     connectorLayout->addStretch(1);
-
-    auto *sceneBox = new QGroupBox("Scene Setup", scenePage);
-    auto *sceneBoxLayout = new QVBoxLayout(sceneBox);
-    auto *sceneForm = new QFormLayout();
+    auto* sceneBox = new QGroupBox("Scene Setup", scenePage);
+    auto* sceneBoxLayout = new QVBoxLayout(sceneBox);
+    auto* sceneForm = new QFormLayout();
     sceneForm->addRow("profile", _simulationProfileCombo);
     sceneForm->addRow("preset", _presetCombo);
     sceneBoxLayout->addLayout(sceneForm);
     sceneBoxLayout->addWidget(_applyPresetButton);
     sceneBoxLayout->addWidget(_loadPresetButton);
     sceneBoxLayout->addWidget(_loadInputButton);
-
-    auto *projectBox = new QGroupBox("Project", scenePage);
-    auto *projectLayout = new QVBoxLayout(projectBox);
+    auto* projectBox = new QGroupBox("Project", scenePage);
+    auto* projectLayout = new QVBoxLayout(projectBox);
     projectLayout->addWidget(_saveConfigButton);
     projectLayout->addStretch(1);
-
-    auto *physicsCoreBox = new QGroupBox("Physics Core", physicsPage);
-    auto *physicsCoreLayout = new QVBoxLayout(physicsCoreBox);
-    auto *physicsForm = new QFormLayout();
+    auto* physicsCoreBox = new QGroupBox("Physics Core", physicsPage);
+    auto* physicsCoreLayout = new QVBoxLayout(physicsCoreBox);
+    auto* physicsForm = new QFormLayout();
     physicsForm->addRow("solver", _solverCombo);
     physicsForm->addRow("integrator", _integratorCombo);
     physicsForm->addRow("dt", _dtSpin);
     physicsForm->addRow("theta", _thetaSpin);
     physicsForm->addRow("softening", _softeningSpin);
     physicsCoreLayout->addLayout(physicsForm);
-
-    auto *sphBox = new QGroupBox("SPH", physicsPage);
-    auto *sphLayout = new QVBoxLayout(sphBox);
-    auto *sphForm = new QFormLayout();
+    auto* sphBox = new QGroupBox("SPH", physicsPage);
+    auto* sphLayout = new QVBoxLayout(sphBox);
+    auto* sphForm = new QFormLayout();
     sphForm->addRow("h", _sphSmoothingSpin);
     sphForm->addRow("rest density", _sphRestDensitySpin);
     sphForm->addRow("gas K", _sphGasConstantSpin);
     sphForm->addRow("viscosity", _sphViscositySpin);
     sphLayout->addWidget(_sphCheck);
     sphLayout->addLayout(sphForm);
-
-    auto *cameraBox = new QGroupBox("View & Camera", renderPage);
-    auto *cameraLayout = new QGridLayout(cameraBox);
+    auto* cameraBox = new QGroupBox("View & Camera", renderPage);
+    auto* cameraLayout = new QGridLayout(cameraBox);
     cameraLayout->addWidget(new QLabel("zoom", this), 0, 0);
     cameraLayout->addWidget(_zoomSlider, 0, 1);
     cameraLayout->addWidget(new QLabel("luminosity", this), 0, 2);
@@ -242,19 +229,16 @@ QTabWidget *MainWindow::buildSidebarTabs()
     cameraLayout->addWidget(_rollSlider, 2, 3);
     cameraLayout->addWidget(_cullingCheck, 3, 0);
     cameraLayout->addWidget(_lodCheck, 3, 1);
-
-    auto *overlayBox = new QGroupBox("Octree Overlay", renderPage);
-    auto *overlayLayout = new QFormLayout(overlayBox);
+    auto* overlayBox = new QGroupBox("Octree Overlay", renderPage);
+    auto* overlayLayout = new QFormLayout(overlayBox);
     overlayLayout->addRow(_octreeOverlayCheck);
     overlayLayout->addRow("depth", _octreeOverlayDepthSpin);
     overlayLayout->addRow("opacity", _octreeOverlayOpacitySpin);
-
-    auto *exportBox = new QGroupBox("Export", renderPage);
-    auto *exportLayout = new QVBoxLayout(exportBox);
+    auto* exportBox = new QGroupBox("Export", renderPage);
+    auto* exportLayout = new QVBoxLayout(exportBox);
     exportLayout->addWidget(_exportButton);
     exportLayout->addWidget(_gpuTelemetryCheck);
     exportLayout->addStretch(1);
-
     runLayout->addWidget(runBox);
     runLayout->addWidget(connectorBox);
     runLayout->addStretch(1);
@@ -268,12 +252,10 @@ QTabWidget *MainWindow::buildSidebarTabs()
     renderLayout->addWidget(overlayBox);
     renderLayout->addWidget(exportBox);
     renderLayout->addStretch(1);
-
     sidebarTabs->addTab(runPage, "Run");
     sidebarTabs->addTab(scenePage, "Scene");
     sidebarTabs->addTab(physicsPage, "Physics");
     sidebarTabs->addTab(renderPage, "Render");
     return sidebarTabs;
 }
-
 } // namespace grav_qt

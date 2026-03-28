@@ -1,25 +1,19 @@
 #include "apps/server-service/server_args.hpp"
-
 #include "config/SimulationArgs.hpp"
 #include "config/TextParse.hpp"
-
 #include <algorithm>
 #include <atomic>
-#include <csignal>
 #include <cctype>
+#include <csignal>
 #include <iostream>
 #include <string>
-
 namespace grav_server_service {
-
 std::atomic<bool> g_stopRequested{false};
-
 void onSignal(int)
 {
     g_stopRequested.store(true);
 }
-
-bool parsePort(std::string_view token, std::uint16_t &out)
+bool parsePort(std::string_view token, std::uint16_t& out)
 {
     unsigned int parsed = 0;
     if (!grav_text::parseNumber(token, parsed) || parsed == 0 || parsed > 65535u) {
@@ -28,34 +22,27 @@ bool parsePort(std::string_view token, std::uint16_t &out)
     out = static_cast<std::uint16_t>(parsed);
     return true;
 }
-
-bool parseBool(std::string_view value, bool &out)
+bool parseBool(std::string_view value, bool& out)
 {
     std::string normalized(value);
-    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
-    if (normalized == "1" || normalized == "true" || normalized == "on" || normalized == "yes") {
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    if (normalized == "1" || normalized == "true" || normalized == "on" || normalized == "yes")
         out = true;
-        return true;
-    }
-    if (normalized == "0" || normalized == "false" || normalized == "off" || normalized == "no") {
+    return true;
+    if (normalized == "0" || normalized == "false" || normalized == "off" || normalized == "no")
         out = false;
-        return true;
-    }
+    return true;
     return false;
 }
-bool parseServerArgs(
-    const std::vector<std::string_view> &rawArgs,
-    DaemonOptions &outOptions,
-    std::ostream &outError)
+bool parseServerArgs(const std::vector<std::string_view>& rawArgs, DaemonOptions& outOptions,
+                     std::ostream& outError)
 {
     outOptions = DaemonOptions{};
     outOptions.simArgs.reserve(rawArgs.size());
     if (!rawArgs.empty()) {
         outOptions.simArgs.push_back(rawArgs[0]);
     }
-
     for (std::size_t i = 1; i < rawArgs.size(); ++i) {
         const std::string token(rawArgs[i]);
         if (token == "--server-help") {
@@ -106,7 +93,8 @@ bool parseServerArgs(
         }
         if (token.rfind("--server-port=", 0) == 0) {
             std::uint16_t parsed = 0;
-            if (!parsePort(std::string_view(token).substr(std::string("--server-port=").size()), parsed)) {
+            if (!parsePort(std::string_view(token).substr(std::string("--server-port=").size()),
+                           parsed)) {
                 outError << "[server] invalid --server-port value\n";
                 return false;
             }
@@ -128,24 +116,20 @@ bool parseServerArgs(
         }
         outOptions.simArgs.push_back(rawArgs[i]);
     }
-
     return true;
 }
-
 void printServerHelp(std::string_view programName)
 {
-    std::cout
-        << "Server daemon options:\n"
-        << "  --server-host <ipv4>     Bind address (default: 127.0.0.1)\n"
-        << "  --server-port <1..65535> TCP port (default: 4545)\n"
-        << "  --server-token <secret>  Optional auth token required on every request\n"
-        << "  --server-allow-remote    Allow non-loopback bind host (explicit opt-in)\n"
-        << "  --server-paused          Start simulation paused\n"
-        << "  --server-help            Show this server-specific help\n"
-        << "\n";
+    std::cout << "Server daemon options:\n"
+              << "  --server-host <ipv4>     Bind address (default: 127.0.0.1)\n"
+              << "  --server-port <1..65535> TCP port (default: 4545)\n"
+              << "  --server-token <secret>  Optional auth token required on every request\n"
+              << "  --server-allow-remote    Allow non-loopback bind host (explicit opt-in)\n"
+              << "  --server-paused          Start simulation paused\n"
+              << "  --server-help            Show this server-specific help\n"
+              << "\n";
     printUsage(std::cout, programName, true);
 }
-
 bool isLoopbackBindHost(std::string_view host)
 {
     if (host.empty() || host == "localhost") {
@@ -153,21 +137,17 @@ bool isLoopbackBindHost(std::string_view host)
     }
     return host.rfind("127.", 0) == 0;
 }
-
 void installStopSignalHandlers()
 {
     std::signal(SIGINT, onSignal);
     std::signal(SIGTERM, onSignal);
 }
-
 bool stopRequested()
 {
     return g_stopRequested.load();
 }
-
 void resetStopRequested()
 {
     g_stopRequested.store(false);
 }
-
 } // namespace grav_server_service

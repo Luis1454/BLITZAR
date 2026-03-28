@@ -1,9 +1,7 @@
-#include "ui/MainWindow.hpp"
-
 #include "client/ClientCommon.hpp"
 #include "ui/EnergyGraphWidget.hpp"
+#include "ui/MainWindow.hpp"
 #include "ui/MultiViewWidget.hpp"
-
 #include <QComboBox>
 #include <QFrame>
 #include <QGridLayout>
@@ -11,7 +9,6 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>
-
 #include <chrono>
 #include <cstdint>
 #include <iostream>
@@ -19,30 +16,26 @@
 #include <optional>
 #include <string>
 #include <vector>
-
 namespace grav_qt {
-
-static QFrame *makeSummaryCard(QWidget *parent, const QString &title, QLabel *content)
+static QFrame* makeSummaryCard(QWidget* parent, const QString& title, QLabel* content)
 {
-    auto *card = new QFrame(parent);
+    auto* card = new QFrame(parent);
     card->setObjectName("runtimeCard");
-    auto *layout = new QVBoxLayout(card);
+    auto* layout = new QVBoxLayout(card);
     layout->setContentsMargins(10, 8, 10, 8);
     layout->setSpacing(4);
-
-    auto *titleLabel = new QLabel(title, card);
+    auto* titleLabel = new QLabel(title, card);
     titleLabel->setObjectName("runtimeCardTitle");
     layout->addWidget(titleLabel);
     layout->addWidget(content);
     layout->addStretch(1);
     return card;
 }
-
-QWidget *MainWindow::buildTelemetryPane()
+QWidget* MainWindow::buildTelemetryPane()
 {
-    auto *summaryPane = new QWidget(this);
+    auto* summaryPane = new QWidget(this);
     summaryPane->setObjectName("telemetrySummaryPane");
-    auto *summaryLayout = new QGridLayout(summaryPane);
+    auto* summaryLayout = new QGridLayout(summaryPane);
     summaryLayout->setContentsMargins(8, 8, 8, 8);
     summaryLayout->setHorizontalSpacing(8);
     summaryLayout->setVerticalSpacing(8);
@@ -53,18 +46,16 @@ QWidget *MainWindow::buildTelemetryPane()
     summaryLayout->addWidget(makeSummaryCard(summaryPane, "GPU", _gpuMetricsLabel), 2, 0, 1, 2);
     return summaryPane;
 }
-
-QWidget *MainWindow::buildValidationPane()
+QWidget* MainWindow::buildValidationPane()
 {
-    auto *validationPane = new QWidget(this);
-    auto *validationLayout = new QVBoxLayout(validationPane);
+    auto* validationPane = new QWidget(this);
+    auto* validationLayout = new QVBoxLayout(validationPane);
     validationLayout->setContentsMargins(8, 8, 8, 8);
     validationLayout->setSpacing(4);
     validationLayout->addWidget(_validationLabel);
     validationLayout->addStretch(1);
     return validationPane;
 }
-
 void MainWindow::tick()
 {
     const auto uiNow = std::chrono::steady_clock::now();
@@ -76,7 +67,6 @@ void MainWindow::tick()
         }
     }
     _lastUiTickAt = uiNow;
-
     std::vector<RenderParticle> snapshot;
     const SimulationStats stats = _runtime->getCachedStats();
     if (!_configDirty && _solverCombo && !stats.solverName.empty()) {
@@ -101,13 +91,13 @@ void MainWindow::tick()
     }
     std::size_t snapshotSize = 0u;
     std::uint32_t consumedSnapshotLatencyMs = std::numeric_limits<std::uint32_t>::max();
-    std::optional<grav_client::ConsumedSnapshot> consumedSnapshot = _runtime->consumeLatestSnapshot();
+    std::optional<grav_client::ConsumedSnapshot> consumedSnapshot =
+        _runtime->consumeLatestSnapshot();
     const bool gotSnapshot = consumedSnapshot.has_value();
-    if (gotSnapshot) {
+    if (gotSnapshot)
         snapshotSize = consumedSnapshot->sourceSize;
-        consumedSnapshotLatencyMs = consumedSnapshot->latencyMs;
-        snapshot = std::move(consumedSnapshot->particles);
-    }
+    consumedSnapshotLatencyMs = consumedSnapshot->latencyMs;
+    snapshot = std::move(consumedSnapshot->particles);
     const grav_client::SnapshotPipelineState snapshotPipeline = _runtime->snapshotPipelineState();
     const std::string linkLabel = _runtime->linkStateLabel();
     const std::string ownerLabel = _runtime->serverOwnerLabel();
@@ -117,7 +107,8 @@ void MainWindow::tick()
         _multiView->setSnapshot(std::move(snapshot));
     }
     const std::size_t displayedParticles = _multiView->displayedParticleCount();
-    if (_lastEnergyStep != std::numeric_limits<std::uint64_t>::max() && stats.steps < _lastEnergyStep) {
+    if (_lastEnergyStep != std::numeric_limits<std::uint64_t>::max() &&
+        stats.steps < _lastEnergyStep) {
         _energyGraph->clearHistory();
         _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
     }
@@ -130,7 +121,8 @@ void MainWindow::tick()
     presentationInput.snapshotPipeline = snapshotPipeline;
     presentationInput.linkLabel = linkLabel;
     presentationInput.ownerLabel = ownerLabel;
-    presentationInput.performanceProfile = stats.performanceProfile.empty() ? _config.performanceProfile : stats.performanceProfile;
+    presentationInput.performanceProfile =
+        stats.performanceProfile.empty() ? _config.performanceProfile : stats.performanceProfile;
     presentationInput.displayedParticles = displayedParticles;
     presentationInput.clientDrawCap = _clientDrawCap;
     presentationInput.statsAgeMs = statsAgeMs;
@@ -138,19 +130,16 @@ void MainWindow::tick()
     presentationInput.snapshotLatencyMs = consumedSnapshotLatencyMs;
     presentationInput.uiTickFps = _uiTickFps;
     const MainWindowPresentation presentation = _presenter.present(presentationInput);
-
     _statusLabel->setText(QString::fromStdString(presentation.headlineText));
     _runtimeMetricsLabel->setText(QString::fromStdString(presentation.runtimeText));
     _queueMetricsLabel->setText(QString::fromStdString(presentation.queueText));
     _energyMetricsLabel->setText(QString::fromStdString(presentation.energyText));
     _gpuMetricsLabel->setText(QString::fromStdString(presentation.gpuText));
-
     _pauseButton->blockSignals(true);
     _pauseButton->setChecked(stats.paused);
     _pauseButton->setText(stats.paused ? "Resume" : "Pause");
     _pauseButton->blockSignals(false);
     _recoverButton->setEnabled(stats.faulted);
-
     static auto lastConsoleTrace = std::chrono::steady_clock::now();
     const auto now = std::chrono::steady_clock::now();
     if (now - lastConsoleTrace >= std::chrono::seconds(1)) {
@@ -158,5 +147,4 @@ void MainWindow::tick()
         lastConsoleTrace = now;
     }
 }
-
 } // namespace grav_qt

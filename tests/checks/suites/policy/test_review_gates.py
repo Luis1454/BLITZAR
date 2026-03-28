@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 from __future__ import annotations
 
 import json
@@ -181,7 +181,7 @@ Deviation: DEV-QUAL-001
     assert any("APPROVED review" in error for error in result.errors)
 
     def docs_fetch(repo: str, number: int, suffix: str, token: str, result):  # noqa: ARG001
-        return [{"filename": "docs/quality/README.md"}] if suffix == "files" else []
+        return [{"filename": "docs/quality/quality-overview.md"}] if suffix == "files" else []
 
     result = FakeIvvGateCheck(docs_fetch).run(_event_context(tmp_path, _write_pr_event(tmp_path, "Independent reviewer: @reviewer\nAnalyzer evidence: ruff\nDeterministic test evidence: ctest\nDeviation: none\n")))
     assert result.ok
@@ -207,7 +207,7 @@ def test_traceability_gate_fails_without_ids_or_csv_and_skips_non_critical_pr(tm
     assert any("traceability.csv" in error for error in result.errors)
 
     event_path = _write_pr_event(tmp_path, "Requirements impacted:\n- REQ-PROT-001")
-    result = FakeTraceabilityGateCheck([{"filename": "docs/README_full.md"}]).run(_event_context(tmp_path, event_path))
+    result = FakeTraceabilityGateCheck([{"filename": "README.md"}]).run(_event_context(tmp_path, event_path))
     assert result.ok
     assert "skipped" in result.success_message
 
@@ -255,3 +255,4 @@ def test_main_delivery_gate_rejects_untraceable_commit_in_aggregation_range(tmp_
     )
     result = check.run(CheckContext(root=tmp_path, event_name="push", event_path=str(payload), options={"repo": "owner/repo", "token": "token"}))
     assert any("badc0de" in error for error in result.errors)
+

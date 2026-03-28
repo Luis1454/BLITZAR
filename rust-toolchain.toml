@@ -1,5 +1,5 @@
 [toolchain]
-channel = "1.94.0"
+channel = "stable"
 profile = "default"
-components = ["rustfmt"]
-targets = ["x86_64-pc-windows-msvc"]
+components = ["rustfmt", "clippy"]
+targets = ["x86_64-pc-windows-msvc", "x86_64-unknown-linux-gnu"]

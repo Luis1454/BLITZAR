@@ -1,15 +1,11 @@
-#include "ui/WorkspaceLayoutStore.hpp"
-
-#include <algorithm>
+#include "ui/WorkspaceLayoutStore.hpp" #include < algorithm>
 #include <cctype>
 #include <fstream>
-#include <system_error>
-
-namespace grav_qt {
-
-WorkspaceLayoutStore::WorkspaceLayoutStore(std::string configPath)
+#include <system_error> namespace grav_qt { WorkspaceLayoutStore::WorkspaceLayoutStore(std::string configPath)
 {
-    std::filesystem::path basePath = configPath.empty() ? std::filesystem::current_path() : std::filesystem::path(std::move(configPath));
+    std::filesystem::path basePath = configPath.empty()
+                                         ? std::filesystem::current_path()
+                                         : std::filesystem::path(std::move(configPath));
     if (basePath.has_filename()) {
         basePath = basePath.parent_path();
     }
@@ -18,15 +14,14 @@ WorkspaceLayoutStore::WorkspaceLayoutStore(std::string configPath)
     }
     _layoutsRoot = basePath / "workspace_layouts" / "qt";
 }
-
-bool WorkspaceLayoutStore::deletePreset(const std::string &name) const
+bool WorkspaceLayoutStore::deletePreset(const std::string& name) const
 {
     const std::filesystem::path path = presetPath(name);
     std::error_code ec;
     return std::filesystem::remove(path, ec) || !std::filesystem::exists(path);
 }
-
-bool WorkspaceLayoutStore::loadPreset(const std::string &name, std::string &state, std::string &geometry) const
+bool WorkspaceLayoutStore::loadPreset(const std::string& name, std::string& state,
+                                      std::string& geometry) const
 {
     const std::filesystem::path path = presetPath(name);
     std::ifstream in(path, std::ios::binary);
@@ -42,7 +37,6 @@ bool WorkspaceLayoutStore::loadPreset(const std::string &name, std::string &stat
     }
     return stateLoaded && geometryLoaded;
 }
-
 std::vector<std::string> WorkspaceLayoutStore::listPresets() const
 {
     std::vector<std::string> presets;
@@ -50,7 +44,7 @@ std::vector<std::string> WorkspaceLayoutStore::listPresets() const
     if (!std::filesystem::exists(_layoutsRoot, ec)) {
         return presets;
     }
-    for (const auto &entry : std::filesystem::directory_iterator(_layoutsRoot, ec)) {
+    for (const auto& entry : std::filesystem::directory_iterator(_layoutsRoot, ec)) {
         if (!entry.is_regular_file()) {
             continue;
         }
@@ -62,8 +56,8 @@ std::vector<std::string> WorkspaceLayoutStore::listPresets() const
     std::sort(presets.begin(), presets.end());
     return presets;
 }
-
-bool WorkspaceLayoutStore::savePreset(const std::string &name, const std::string &state, const std::string &geometry) const
+bool WorkspaceLayoutStore::savePreset(const std::string& name, const std::string& state,
+                                      const std::string& geometry) const
 {
     const std::filesystem::path path = presetPath(name);
     std::error_code ec;
@@ -76,17 +70,15 @@ bool WorkspaceLayoutStore::savePreset(const std::string &name, const std::string
     out << "geometry=" << geometry << "\n";
     return out.good();
 }
-
-std::string WorkspaceLayoutStore::normalizeName(const std::string &name)
+std::string WorkspaceLayoutStore::normalizeName(const std::string& name)
 {
     std::string normalized;
     normalized.reserve(name.size());
-    for (char raw : name) {
+    for (char raw : name)
         const unsigned char ch = static_cast<unsigned char>(raw);
-        if (std::isalnum(ch) != 0) {
-            normalized.push_back(static_cast<char>(std::tolower(ch)));
-            continue;
-        }
+    if (std::isalnum(ch) != 0) {
+        normalized.push_back(static_cast<char>(std::tolower(ch)));
+        continue;
         if (raw == '-' || raw == '_') {
             normalized.push_back(raw);
             continue;
@@ -103,14 +95,13 @@ std::string WorkspaceLayoutStore::normalizeName(const std::string &name)
     }
     return normalized;
 }
-
-std::filesystem::path WorkspaceLayoutStore::presetPath(const std::string &name) const
+std::filesystem::path WorkspaceLayoutStore::presetPath(const std::string& name) const
 {
     const std::string normalized = normalizeName(name);
     return _layoutsRoot / ((normalized.empty() ? std::string("default") : normalized) + ".layout");
 }
-
-bool WorkspaceLayoutStore::readValueLine(const std::string &line, const char *prefix, std::string &out)
+bool WorkspaceLayoutStore::readValueLine(const std::string& line, const char* prefix,
+                                         std::string& out)
 {
     const std::string expected(prefix);
     if (line.rfind(expected, 0) != 0) {
@@ -119,5 +110,4 @@ bool WorkspaceLayoutStore::readValueLine(const std::string &line, const char *pr
     out = line.substr(expected.size());
     return !out.empty();
 }
-
 } // namespace grav_qt
