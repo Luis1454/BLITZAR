@@ -1,0 +1,82 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "msvc-dev",
+      "displayName": "MSVC + Ninja (Dev)",
+      "description": "Developer preset with MSVC host compiler through Ninja and RelWithDebInfo.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-msvc-dev",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "GRAVITY_PROFILE": "dev",
+        "GRAVITY_STRICT_WARNINGS": "OFF",
+        "GRAVITY_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "msvc-strict",
+      "displayName": "MSVC + Ninja (Strict)",
+      "description": "Strict preset for CI/quality gate with Release, prod profile and warnings as errors.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-msvc-strict",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "GRAVITY_PROFILE": "prod",
+        "GRAVITY_STRICT_WARNINGS": "ON",
+        "GRAVITY_BUILD_TESTS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "build-dev",
+      "displayName": "Build Dev",
+      "configurePreset": "msvc-dev"
+    },
+    {
+      "name": "build-strict",
+      "displayName": "Build Strict",
+      "configurePreset": "msvc-strict"
+    },
+    {
+      "name": "clang-format-check",
+      "displayName": "clang-format check",
+      "configurePreset": "msvc-dev",
+      "targets": [
+        "clang-format-check"
+      ]
+    },
+    {
+      "name": "clang-format-fix",
+      "displayName": "clang-format fix",
+      "configurePreset": "msvc-dev",
+      "targets": [
+        "clang-format-fix"
+      ]
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "test-dev",
+      "displayName": "CTest Dev",
+      "configurePreset": "msvc-dev",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "test-strict",
+      "displayName": "CTest Strict",
+      "configurePreset": "msvc-strict",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

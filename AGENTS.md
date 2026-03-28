@@ -1,4 +1,4 @@
-# AI Contribution Workflow
+﻿# AI Contribution Workflow
 
 This file defines the standard procedure for AI agents working in this repository.
 
@@ -75,7 +75,7 @@ Treat this repository as high-assurance software (astrophysics/space simulation)
 - Repository policy checks must pass (naming, extension policy, file-size policy, no legacy tokens).
 - Keep runtime behavior deterministic where possible (fixed seeds/timeouts in tests).
 - Any temporary exception (file-size or policy) must be explicit and traceable in repo policy allowlists.
-- Quality baseline artifacts in `docs/quality/` must stay synchronized (`quality_manifest.json`, `standards_profile.md`, FMEA, IV&V, tool qualification, numerical validation).
+- Quality baseline artifacts in `docs/quality/` must stay synchronized (`quality_manifest.json`, `standards-profile.md`, FMEA, IV&V, tool qualification, numerical validation).
 - Every automated test case must be listed in `docs/quality/quality_manifest.json` (`test_groups` section) with a unique normalized code (`TST-...` format).
 
 ## NASA-First Standards Profile (Mandatory)
@@ -87,7 +87,7 @@ Treat this repository as high-assurance software (astrophysics/space simulation)
   - `dev`: exploratory path; not qualification evidence unless reproduced under `prod` constraints.
 - Do not introduce dynamic reload behavior in mission-critical runtime paths in `prod`.
 - Any standards-impacting change must update:
-  - `docs/quality/standards_profile.md`
+  - `docs/quality/standards-profile.md`
   - `docs/quality/quality_manifest.json`
 
 Required local pre-flight before opening PR:
@@ -169,3 +169,5 @@ Use manual close after pushing to `main`:
 ```bash
 gh issue close <N> --comment "Implemented and merged to main."
 ```
+
+

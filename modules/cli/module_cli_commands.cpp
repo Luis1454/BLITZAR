@@ -1,32 +1,25 @@
-#include <cstddef>
-#include <exception>
-#include <iostream>
-#include <string>
-
+#include "modules/cli/module_cli_commands.hpp"
+namespace grav_module_cli {
+class ModuleCliCommandsLocal final {
 #include "client/ErrorBuffer.hpp"
 #include "command/CommandCatalog.hpp"
 #include "command/CommandContext.hpp"
 #include "command/CommandExecutor.hpp"
 #include "command/CommandParser.hpp"
-#include "modules/cli/module_cli_commands.hpp"
-
-namespace grav_module_cli {
-
-class ModuleCliCommandsLocal final {
+#include <cstddef>
+#include <exception>
+#include <iostream>
+#include <string>
 public:
     static void printHelp()
     {
         std::cout << "[module-cli] commands:\n"
-                  << grav_cmd::CommandCatalog::renderHelp()
-                  << "  quit\n"
+                  << grav_cmd::CommandCatalog::renderHelp() << "  quit\n"
                   << "  exit\n";
     }
-
-    static bool handleCommand(
-        ModuleState &state,
-        std::string_view commandLine,
-        const grav_module::ClientModuleCommandControl &commandControl,
-        const grav_client::ErrorBufferView &errorBuffer)
+    static bool handleCommand(ModuleState& state, std::string_view commandLine,
+                              const grav_module::ClientModuleCommandControl& commandControl,
+                              const grav_client::ErrorBufferView& errorBuffer)
     {
         try {
             commandControl.setContinue();
@@ -38,7 +31,8 @@ public:
                 commandControl.requestStop();
                 return true;
             }
-            const grav_cmd::CommandParseResult parsed = grav_cmd::CommandParser::parseLine(line, 1u);
+            const grav_cmd::CommandParseResult parsed =
+                grav_cmd::CommandParser::parseLine(line, 1u);
             if (!parsed.ok) {
                 errorBuffer.write(parsed.error);
                 return false;
@@ -46,40 +40,35 @@ public:
             if (parsed.requests.empty()) {
                 return true;
             }
-            grav_cmd::CommandExecutionContext context{
-                state.transport,
-                state.session,
-                grav_cmd::CommandExecutionMode::Interactive,
-                std::cout
-            };
-            const grav_cmd::CommandResult result = grav_cmd::CommandExecutor::execute(parsed.requests.front(), context);
+            grav_cmd::CommandExecutionContext context{state.transport, state.session,
+                                                      grav_cmd::CommandExecutionMode::Interactive,
+                                                      std::cout};
+            const grav_cmd::CommandResult result =
+                grav_cmd::CommandExecutor::execute(parsed.requests.front(), context);
             if (!result.ok) {
                 errorBuffer.write(result.message);
                 return false;
             }
             return true;
-        } catch (const std::exception &ex) {
+        }
+        catch (const std::exception& ex) {
             errorBuffer.write(ex.what());
             return false;
-        } catch (...) {
+        }
+        catch (...) {
             errorBuffer.write("unknown module command error");
             return false;
         }
     }
 };
-
 void ModuleCliCommands::printHelp()
 {
     ModuleCliCommandsLocal::printHelp();
 }
-
-bool ModuleCliCommands::handleCommand(
-    ModuleState &state,
-    std::string_view commandLine,
-    const grav_module::ClientModuleCommandControl &commandControl,
-    const grav_client::ErrorBufferView &errorBuffer)
+bool ModuleCliCommands::handleCommand(ModuleState& state, std::string_view commandLine,
+                                      const grav_module::ClientModuleCommandControl& commandControl,
+                                      const grav_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliCommandsLocal::handleCommand(state, commandLine, commandControl, errorBuffer);
 }
-
 } // namespace grav_module_cli

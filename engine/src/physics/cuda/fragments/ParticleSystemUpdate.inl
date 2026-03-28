@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Module: physics/cuda
  * Responsibility: Advance the particle system for one deterministic update step.
  */
@@ -15,16 +15,10 @@ bool ParticleSystem::update(float deltaTime) {
         return syncHostState();
     };
     auto applySphCorrection = [&](bool uploadHostState) -> bool {
-        if (!_sphEnabled) {
-            return true;
-        }
-        if (!d_soaPosX || !d_sphDensity || !d_sphPressure) {
-            return false;
-        }
+        if (!_sphEnabled)`n            return true;
+        if (!d_soaPosX || !d_sphDensity || !d_sphPressure)`n            return false;
         const int numParticles = static_cast<int>(_particles.size());
-        if (numParticles < 2) {
-            return true;
-        }
+        if (numParticles < 2)`n            return true;
         const int numBlocks = (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
 
         if (uploadHostState) {
@@ -203,9 +197,7 @@ bool ParticleSystem::update(float deltaTime) {
             fprintf(stderr, "[integrator] rk4 is not supported with octree_gpu\n");
             return false;
         }
-        if (!d_soaPosX) {
-            return false;
-        }
+        if (!d_soaPosX)`n            return false;
         if (!syncParticlesFromDevice()) {
             return false;
         }
@@ -308,9 +300,7 @@ bool ParticleSystem::update(float deltaTime) {
         cudaEventRecord(start);
     }
 
-    if (!d_soaPosX) {
-        return false;
-    }
+    if (!d_soaPosX)`n        return false;
 
     const int numParticles = static_cast<int>(_particles.size());
     const int numBlocks = (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;

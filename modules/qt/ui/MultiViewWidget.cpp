@@ -1,14 +1,10 @@
 #include "ui/MultiViewWidget.hpp"
-
 #include <QGridLayout>
 #include <QSizePolicy>
-
 #include <algorithm>
 #include <cstddef>
 #include <utility>
-
 namespace grav_qt {
-
 MultiViewWidget::MultiViewWidget()
     : QWidget(nullptr),
       _xy(new ParticleView(grav::ViewMode::XY)),
@@ -20,7 +16,7 @@ MultiViewWidget::MultiViewWidget()
       _octreeOverlayDepth(3),
       _octreeOverlayOpacity(96)
 {
-    auto *grid = new QGridLayout(this);
+    auto* grid = new QGridLayout(this);
     grid->setSpacing(6);
     grid->setContentsMargins(0, 0, 0, 0);
     grid->addWidget(_xy, 0, 0);
@@ -29,13 +25,13 @@ MultiViewWidget::MultiViewWidget()
     grid->addWidget(_view3d, 1, 1);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
-
 void MultiViewWidget::setSnapshot(std::vector<RenderParticle> snapshot)
 {
     const std::size_t cap = std::max<std::size_t>(2u, _maxDrawParticles);
     if (snapshot.size() <= cap) {
         _snapshot = std::move(snapshot);
-    } else {
+    }
+    else {
         _snapshot.clear();
         _snapshot.reserve(cap);
         const std::size_t stride = (snapshot.size() + cap - 1u) / cap;
@@ -43,7 +39,6 @@ void MultiViewWidget::setSnapshot(std::vector<RenderParticle> snapshot)
             _snapshot.push_back(snapshot[i]);
         }
     }
-
     rebuildOctreeOverlay();
     if (_xy) {
         _xy->setSnapshot(_snapshot);
@@ -59,17 +54,14 @@ void MultiViewWidget::setSnapshot(std::vector<RenderParticle> snapshot)
     }
     applyOctreeOverlay();
 }
-
 void MultiViewWidget::setMaxDrawParticles(std::size_t maxDrawParticles)
 {
     _maxDrawParticles = std::max<std::size_t>(2u, maxDrawParticles);
 }
-
 std::size_t MultiViewWidget::displayedParticleCount() const
 {
     return _snapshot.size();
 }
-
 void MultiViewWidget::setZoom(float zoom)
 {
     if (_xy) {
@@ -85,7 +77,6 @@ void MultiViewWidget::setZoom(float zoom)
         _view3d->setZoom(zoom);
     }
 }
-
 void MultiViewWidget::setLuminosity(int luminosity)
 {
     if (_xy) {
@@ -101,21 +92,18 @@ void MultiViewWidget::setLuminosity(int luminosity)
         _view3d->setLuminosity(luminosity);
     }
 }
-
 void MultiViewWidget::set3DMode(grav::ViewMode mode)
 {
     if (_view3d) {
         _view3d->setMode(mode);
     }
 }
-
 void MultiViewWidget::set3DCameraAngles(float yaw, float pitch, float roll)
 {
     if (_view3d) {
         _view3d->setCameraAngles(yaw, pitch, roll);
     }
 }
-
 void MultiViewWidget::setRenderSettings(bool culling, bool lod, float nearDist, float farDist)
 {
     if (_xy) {
@@ -131,12 +119,10 @@ void MultiViewWidget::setRenderSettings(bool culling, bool lod, float nearDist, 
         _view3d->setRenderSettings(culling, lod, nearDist, farDist);
     }
 }
-
 void MultiViewWidget::setOctreeOverlay(bool enabled, int depth, int opacity)
 {
-    const bool overlayChanged = _octreeOverlayEnabled != enabled
-        || _octreeOverlayDepth != depth
-        || _octreeOverlayOpacity != opacity;
+    const bool overlayChanged = _octreeOverlayEnabled != enabled || _octreeOverlayDepth != depth ||
+                                _octreeOverlayOpacity != opacity;
     _octreeOverlayEnabled = enabled;
     _octreeOverlayDepth = std::clamp(depth, 0, 8);
     _octreeOverlayOpacity = std::clamp(opacity, 0, 255);
@@ -146,27 +132,22 @@ void MultiViewWidget::setOctreeOverlay(bool enabled, int depth, int opacity)
     rebuildOctreeOverlay();
     applyOctreeOverlay();
 }
-
 bool MultiViewWidget::octreeOverlayEnabled() const
 {
     return _octreeOverlayEnabled;
 }
-
 int MultiViewWidget::octreeOverlayDepth() const
 {
     return _octreeOverlayDepth;
 }
-
 int MultiViewWidget::octreeOverlayOpacity() const
 {
     return _octreeOverlayOpacity;
 }
-
 std::size_t MultiViewWidget::octreeOverlayNodeCount() const
 {
     return _octreeOverlay.size();
 }
-
 void MultiViewWidget::applyOctreeOverlay()
 {
     if (_xy) {
@@ -182,7 +163,6 @@ void MultiViewWidget::applyOctreeOverlay()
         _view3d->setOctreeOverlay(_octreeOverlay, _octreeOverlayEnabled, _octreeOverlayOpacity);
     }
 }
-
 void MultiViewWidget::rebuildOctreeOverlay()
 {
     if (!_octreeOverlayEnabled) {
@@ -191,5 +171,4 @@ void MultiViewWidget::rebuildOctreeOverlay()
     }
     _octreeOverlay = OctreeOverlay::build(_snapshot, _octreeOverlayDepth);
 }
-
 } // namespace grav_qt

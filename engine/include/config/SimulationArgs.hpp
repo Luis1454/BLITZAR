@@ -1,13 +1,10 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_
-
 #include <iosfwd>
 #include <string>
 #include <string_view>
 #include <vector>
-
 struct SimulationConfig;
-
 struct RuntimeArgs {
     std::string configPath = "simulation.ini";
     int targetSteps = 1000;
@@ -16,14 +13,9 @@ struct RuntimeArgs {
     bool showHelp = false;
     bool hasArgumentError = false;
 };
-
-std::string findConfigPathArg(const std::vector<std::string_view> &args, const std::string &fallback = "simulation.ini");
-void applyArgsToConfig(
-    const std::vector<std::string_view> &args,
-    SimulationConfig &config,
-    RuntimeArgs &runtime,
-    std::ostream &warnings
-);
-void printUsage(std::ostream &out, std::string_view programName, bool headlessMode);
-
+std::string findConfigPathArg(const std::vector<std::string_view>& args,
+                              const std::string& fallback = "simulation.ini");
+void applyArgsToConfig(const std::vector<std::string_view>& args, SimulationConfig& config,
+                       RuntimeArgs& runtime, std::ostream& warnings);
+void printUsage(std::ostream& out, std::string_view programName, bool headlessMode);
 #endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_

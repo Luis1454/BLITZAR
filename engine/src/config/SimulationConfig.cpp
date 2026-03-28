@@ -1,37 +1,35 @@
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationConfigDirective.hpp"
-#include "config/SimulationPerformanceProfile.hpp"
-#include "config/SimulationScenarioValidation.hpp"
 #include "config/SimulationModes.hpp"
 #include "config/SimulationOptionRegistry.hpp"
+#include "config/SimulationPerformanceProfile.hpp"
+#include "config/SimulationScenarioValidation.hpp"
 #include "protocol/ServerProtocol.hpp"
-
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
-
 static_assert(grav_protocol::kSnapshotDefaultPoints == 4096u);
-
-static std::string trim(const std::string &value)
+static std::string trim(const std::string& value)
 {
-    const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char c) { return std::isspace(c) != 0; });
-    const auto end = std::find_if_not(value.rbegin(), value.rend(), [](unsigned char c) { return std::isspace(c) != 0; }).base();
-    if (begin >= end) {
+    const auto begin = std::find_if_not(value.begin(), value.end(),
+                                        [](unsigned char c) { return std::isspace(c) != 0; });
+    const auto end = std::find_if_not(value.rbegin(), value.rend(), [](unsigned char c) {
+                         return std::isspace(c) != 0;
+                     }).base();
+    if (begin >= end)
         return {};
-    }
     return std::string(begin, end);
 }
-
 SimulationConfig SimulationConfig::defaults()
 {
     SimulationConfig config{};
     grav_config::applyPerformanceProfile(config);
     return config;
 }
-SimulationConfig SimulationConfig::loadOrCreate(const std::string &path)
+SimulationConfig SimulationConfig::loadOrCreate(const std::string& path)
 {
     SimulationConfig config = defaults();
     std::ifstream in(path);
@@ -61,16 +59,17 @@ SimulationConfig SimulationConfig::loadOrCreate(const std::string &path)
     }
     if (!grav_modes::isSupportedSolverIntegratorPair(config.solver, config.integrator)) {
         config.integrator = std::string(grav_modes::kIntegratorEuler);
-        std::cerr << "[config] unsupported solver/integrator combination: solver=octree_gpu requires integrator=euler\n";
+        std::cerr << "[config] unsupported solver/integrator combination: solver=octree_gpu "
+                     "requires integrator=euler\n";
     }
-    const grav_config::ScenarioValidationReport report = grav_config::SimulationScenarioValidation::evaluate(config);
+    const grav_config::ScenarioValidationReport report =
+        grav_config::SimulationScenarioValidation::evaluate(config);
     if (report.errorCount != 0u || report.warningCount != 0u) {
         std::cerr << grav_config::SimulationScenarioValidation::renderText(report) << "\n";
     }
     return config;
 }
-
-bool SimulationConfig::save(const std::string &path) const
+bool SimulationConfig::save(const std::string& path) const
 {
     std::filesystem::path fsPath(path);
     if (fsPath.has_parent_path()) {

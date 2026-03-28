@@ -1,4 +1,4 @@
-{
+﻿{
   "schema": "server-json-v1",
   "transport": {
     "kind": "tcp-json-lines",
@@ -27,7 +27,7 @@
     ]
   },
   "deprecation": {
-    "announce_in": "docs/server_protocol.md",
+    "announce_in": "docs/server-protocol.md",
     "minimum_support_window": "one release",
     "removal_requires_new_schema": true
   },
@@ -81,3 +81,4 @@
     }
   }
 }
+

@@ -1,4 +1,4 @@
-# BLITZAR
+﻿# BLITZAR
 
 Baryonic Lagrangian Integration of Trajectories for Zero-drift Astrophysical Research
 
@@ -13,7 +13,7 @@ Coverage is now treated as a first-class steering signal for execution risk, alo
 
 [![Coverage control widget](https://raw.githubusercontent.com/Luis1454/BLITZAR/coverage-data/coverage/widget.svg)](https://github.com/Luis1454/BLITZAR/tree/coverage-data/coverage)
 
-- Operational framework: [docs/quality/operational_control.md](docs/quality/operational_control.md)
+- Operational framework: [docs/quality/operational-control.md](docs/quality/operational-control.md)
 - Coverage dashboard payload: `coverage-data/coverage/*`
 - Coverage workflow: `nightly-full`
 
@@ -78,10 +78,9 @@ The release lane also extracts the generated archive and smoke-validates the por
 
 ## Documentation
 
-- Full README: [docs/README_full.md](docs/README_full.md)
-- Server protocol: [docs/server_protocol.md](docs/server_protocol.md)
-- Client host: [docs/client_host.md](docs/client_host.md)
-- Quality baseline: [docs/quality/README.md](docs/quality/README.md)
+- Server protocol: [docs/server-protocol.md](docs/server-protocol.md)
+- Client host: [docs/client-host.md](docs/client-host.md)
+- Quality baseline: [docs/quality/quality-overview.md](docs/quality/quality-overview.md)
 
 ## Project Layout
 
@@ -96,4 +95,5 @@ The release lane also extracts the generated archive and smoke-validates the por
 
 `simulation.ini` is auto-created at first launch and now uses directive blocks such as `simulation(...)`, `performance(...)`, `scene(...)`, `thermal(...)`, and `client(...)`.
 
-Main options are documented in [docs/README_full.md](docs/README_full.md).
+
+

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Module: physics/cuda
  * Responsibility: Gather shared CUDA includes and prelude helpers for particle-system fragments.
  */
@@ -83,9 +83,7 @@ float parseFloatEnv(std::string_view name, float fallback)
 ParticleSystem::SolverMode solverModeFromEnv()
 {
     constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
-    if (!kDevProfile) {
-        return ParticleSystem::SolverMode::PairwiseCuda;
-    }
+    if (!kDevProfile)`n        return ParticleSystem::SolverMode::PairwiseCuda;
     if (parseBoolEnv("GRAVITY_USE_OCTREE", false)) {
         return ParticleSystem::SolverMode::OctreeGpu;
     }
@@ -93,28 +91,20 @@ ParticleSystem::SolverMode solverModeFromEnv()
     if (!solver.has_value()) {
         return ParticleSystem::SolverMode::PairwiseCuda;
     }
-    if (*solver == "octree" || *solver == "octree_cpu") {
-        return ParticleSystem::SolverMode::OctreeCpu;
-    }
-    if (*solver == "octree_gpu") {
-        return ParticleSystem::SolverMode::OctreeGpu;
-    }
+    if (*solver == "octree" || *solver == "octree_cpu")`n        return ParticleSystem::SolverMode::OctreeCpu;
+    if (*solver == "octree_gpu")`n        return ParticleSystem::SolverMode::OctreeGpu;
     return ParticleSystem::SolverMode::PairwiseCuda;
 }
 
 ParticleSystem::IntegratorMode integratorModeFromEnv()
 {
     constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
-    if (!kDevProfile) {
-        return ParticleSystem::IntegratorMode::Euler;
-    }
+    if (!kDevProfile)`n        return ParticleSystem::IntegratorMode::Euler;
     const auto integrator = grav_env::get("GRAVITY_INTEGRATOR");
     if (!integrator.has_value()) {
         return ParticleSystem::IntegratorMode::Euler;
     }
-    if (*integrator == "rk4" || *integrator == "RK4") {
-        return ParticleSystem::IntegratorMode::Rk4;
-    }
+    if (*integrator == "rk4" || *integrator == "RK4")`n        return ParticleSystem::IntegratorMode::Rk4;
     return ParticleSystem::IntegratorMode::Euler;
 }
 __host__ __device__ Vector3 operator+(Vector3 a, Vector3 b) {
@@ -250,9 +240,7 @@ __host__ __device__ Vector3 normalize(Vector3 v) {
 __host__ __device__ Vector3 clampAcceleration(Vector3 accel, float maxAcceleration)
 {
     const float accelNorm = accel.norm();
-    if (accelNorm > maxAcceleration && accelNorm > 1e-12f) {
-        return accel * (maxAcceleration / accelNorm);
-    }
+    if (accelNorm > maxAcceleration && accelNorm > 1e-12f)`n        return accel * (maxAcceleration / accelNorm);
     return accel;
 }
 
@@ -280,9 +268,7 @@ GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 gravityAccelerationFromSource(
 {
     const Vector3 delta = sourcePosition - selfPosition;
     const float dist2 = softenedDistanceSquared(delta, policy);
-    if (dist2 <= policy.minDistance2) {
-        return Vector3(0.0f, 0.0f, 0.0f);
-    }
+    if (dist2 <= policy.minDistance2)`n        return Vector3(0.0f, 0.0f, 0.0f);
     const float invDist = 1.0f / sqrtf(dist2);
     const float invDist3 = invDist * invDist * invDist;
     return delta * (sourceMass * invDist3);
@@ -317,9 +303,7 @@ __host__ __device__ Vector3 computePairwiseAcceleration(
 __device__ float sphPoly6(float r2, float h)
 {
     const float h2 = h * h;
-    if (r2 >= h2) {
-        return 0.0f;
-    }
+    if (r2 >= h2)`n        return 0.0f;
     const float diff = h2 - r2;
     const float coeff = 315.0f / (64.0f * kPi * powf(h, 9.0f));
     return coeff * diff * diff * diff;
@@ -327,9 +311,7 @@ __device__ float sphPoly6(float r2, float h)
 
 __device__ float sphSpikyGrad(float r, float h)
 {
-    if (r <= 1e-6f || r >= h) {
-        return 0.0f;
-    }
+    if (r <= 1e-6f || r >= h)`n        return 0.0f;
     const float coeff = -45.0f / (kPi * powf(h, 6.0f));
     const float diff = h - r;
     return coeff * diff * diff;
@@ -337,9 +319,7 @@ __device__ float sphSpikyGrad(float r, float h)
 
 __device__ float sphViscosityLaplacian(float r, float h)
 {
-    if (r >= h) {
-        return 0.0f;
-    }
+    if (r >= h)`n        return 0.0f;
     const float coeff = 45.0f / (kPi * powf(h, 6.0f));
     return coeff * (h - r);
 }

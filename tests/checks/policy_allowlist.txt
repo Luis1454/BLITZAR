@@ -3,7 +3,6 @@
 # Each active group must also exist in docs/quality/manifest/deviations.json.
 
 # Core server orchestration pending split by protocol/state/controls.
-engine/src/server/SimulationServer.cpp
 runtime/src/server/ServerDaemon.cpp
 runtime/src/protocol/ServerClient.cpp
 runtime/src/client/ClientServerBridge.cpp

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 from __future__ import annotations
 
 import json
@@ -10,8 +10,8 @@ from python_tools.core.base_check import BaseCheck
 from python_tools.core.models import CheckContext, CheckResult
 
 CRITICAL_PATHS = (
-    "docs/server_protocol.md",
-    "docs/quality/numerical_validation.md",
+    "docs/server-protocol.md",
+    "docs/quality/numerical-validation.md",
     "engine/include/physics/",
     "engine/src/physics/",
     "runtime/",
@@ -165,3 +165,5 @@ class IvvGateCheck(BaseCheck):
             if state == "APPROVED" and reviewer and reviewer.lower() != author.lower():
                 return
         result.add_error("critical-path PR requires at least one APPROVED review from a non-author reviewer")
+
+

@@ -51,9 +51,9 @@ This exclusion is permanent with the current CI architecture. Mitigating it woul
 ## Qualification Evidence
 
 - Workflow definitions in `.github/workflows/`.
-- Qualified environment baseline in `docs/quality/prod_baseline.md`.
-- Self-hosted GPU runner operations note in `docs/quality/gpu_runner_operations.md`.
-- Generated tool manifest format in `docs/quality/tool_manifest.md`.
+- Qualified environment baseline in `docs/quality/production-baseline.md`.
+- Self-hosted GPU runner operations note in `docs/quality/gpu-runner-operations.md`.
+- Generated tool manifest format in `docs/quality/tool-manifest.md`.
 - Reproducible check entrypoints:
   - `make quality-local CONFIG=simulation.ini`
   - `make quality-python`
@@ -77,7 +77,7 @@ This exclusion is permanent with the current CI architecture. Mitigating it woul
 - Review compiler, CMake, Python, `clang-tidy`, and runner OS version changes from the generated manifest.
 - Review `rust-toolchain.toml`, `Cargo.lock`, crate additions, and exported FFI symbols when the Rust workspace changes.
 - Confirm hosted evidence lanes still pin `ubuntu-24.04` or `windows-2022`, Python `3.12`, and CUDA `12.4.1` where the release lane requires it.
-- Confirm the affected CI lane still matches `docs/quality/prod_baseline.md`.
+- Confirm the affected CI lane still matches `docs/quality/production-baseline.md`.
 - Confirm release bundle and release review artifacts still carry `tool_manifest.json` with CI run references.
 - Treat any tool change that can alter diagnostics, ABI, generated files, or analyzer behavior as standards-impacting.
 
@@ -94,4 +94,5 @@ This exclusion is permanent with the current CI architecture. Mitigating it woul
 - CI pipeline updates must keep the strict merge gate green and preserve the documented separation between merge, nightly, and release evidence scopes.
 - Optional hardware lanes cannot be the sole evidence for core requirements.
 - Qualification evidence for mission-impacting changes must come from `prod` profile constraints.
-- Changes to the qualified `prod` environment must be synchronized with `prod_baseline.md`.
+- Changes to the qualified `prod` environment must be synchronized with `production-baseline.md`.
+

@@ -1,8 +1,8 @@
-# Server JSON Protocol (TCP)
+﻿# Server JSON Protocol (TCP)
 
-Canonical compatibility governance for this surface is defined in `docs/quality/interface_contracts.md` (`CTR-PROT-001`). The Rust mirror for this contract lives in `rust/blitzar-protocol`.
-The machine-readable schema artifact for the current wire contract is `docs/server_protocol_schema.json`.
-The optional browser transport wrapper that preserves this contract is documented in `docs/web_gateway.md`.
+Canonical compatibility governance for this surface is defined in `docs/quality/interface-contracts.md` (`CTR-PROT-001`). The Rust mirror for this contract lives in `rust/blitzar-protocol`.
+The machine-readable schema artifact for the current wire contract is `runtime/protocol/server-protocol-schema.json`.
+The optional browser transport wrapper that preserves this contract is documented in `docs/web-gateway.md`.
 
 Transport:
 - TCP, one JSON object per line (`\n` delimited)
@@ -95,8 +95,11 @@ Compatibility rules:
 Deprecation strategy:
 - A deprecated command or field must be marked in this document and kept wire-compatible for at least one release.
 - Removal of a deprecated command or field requires a new schema version and synchronized contract/test updates.
-- The committed schema artifact in `docs/server_protocol_schema.json` is the source of truth for service transport adapters and client/runtime integrations.
+- The committed schema artifact in `runtime/protocol/server-protocol-schema.json` is the source of truth for service transport adapters and client/runtime integrations.
 - Web adapters must preserve backend command identifiers, mandatory fields, and payload shapes; any translation that changes those semantics is breaking.
+
+
+
 
 
 

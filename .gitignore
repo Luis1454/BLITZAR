@@ -13,6 +13,7 @@ coverage-dashboard/
 dist/
 dist_py/
 *.log
+build_output.txt
 tmp_repo_check.log
 test_output.txt
 
