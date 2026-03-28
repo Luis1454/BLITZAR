@@ -371,6 +371,26 @@
             "TST-UNT-CONF-070": {
                 "id": "ConfigArgsTest.TST_UNT_CONF_070_SaveDirectiveKeepsBalancedProfileWithoutCustomOverrides",
                 "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-079": {
+                "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_079_PhysicsMaxAccelerationMustBePositive",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-080": {
+                "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_080_PhysicsMinSofteningMustBePositive",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-081": {
+                "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_081_PhysicsMinDistanceSquaredMustBePositive",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-082": {
+                "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_082_SphLowParticleCountWarningWhenParametersAreValid",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-083": {
+                "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_083_PlummerSphereRequiresPositiveCloudExtent",
+                "req_ids": [ "REQ-CONF-002" ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_PROFILE": {
