@@ -288,4 +288,56 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_039_RunUntilReturnsImmediatelyWhenT
     EXPECT_EQ(transport.commandHistory.size(), 1u);
 }
 
+TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_040_SetProfileValidAppliesConfigWithoutReset)
+{
+    FakeCommandTransport transport;
+    transport.connected = true;
+
+    grav_cmd::CommandSessionState session;
+    session.config.initConfigStyle = "preset";
+    session.config.presetStructure = "disk_orbit";
+    session.config.inputFile.clear();
+
+    std::ostringstream output;
+    grav_cmd::CommandExecutionContext context{transport, session, grav_cmd::CommandExecutionMode::Batch, output};
+
+    const grav_cmd::CommandResult result = grav_cmd::CommandExecutor::execute(parseSingle("set_profile balanced"), context);
+    ASSERT_TRUE(result.ok);
+    EXPECT_EQ(session.config.performanceProfile, "balanced");
+    EXPECT_EQ(result.message, "config applied");
+    ASSERT_FALSE(transport.commandHistory.empty());
+    EXPECT_EQ(transport.commandHistory.front().first, "set_particle_count");
+
+    bool sawReset = false;
+    bool sawEnergyMeasure = false;
+    for (const auto &entry : transport.commandHistory) {
+        if (entry.first == "reset") {
+            sawReset = true;
+        }
+        if (entry.first == "set_energy_measure") {
+            sawEnergyMeasure = true;
+        }
+    }
+    EXPECT_FALSE(sawReset);
+    EXPECT_TRUE(sawEnergyMeasure);
+}
+
+TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_041_ExportSnapshotWithoutExtensionUsesSessionDefaultFormat)
+{
+    FakeCommandTransport transport;
+    transport.connected = true;
+
+    grav_cmd::CommandSessionState session;
+    session.config.exportFormat = "vtk_binary";
+
+    std::ostringstream output;
+    grav_cmd::CommandExecutionContext context{transport, session, grav_cmd::CommandExecutionMode::Interactive, output};
+
+    const grav_cmd::CommandResult result = grav_cmd::CommandExecutor::execute(parseSingle("export_snapshot outputs/frame"), context);
+    ASSERT_TRUE(result.ok);
+    ASSERT_EQ(transport.commandHistory.size(), 1u);
+    EXPECT_EQ(transport.commandHistory[0].first, "export");
+    EXPECT_NE(transport.commandHistory[0].second.find("\"format\":\"vtk_binary\""), std::string::npos);
+}
+
 } // namespace grav_test_module_cli_command_executor_flows

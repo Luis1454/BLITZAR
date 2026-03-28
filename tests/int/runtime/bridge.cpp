@@ -170,6 +170,44 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_014_SplitTransportArgsRejectsInvalidPortInpu
     }
 }
 
+TEST(ClientBridgeTest, TST_UNT_RUNT_018_SplitTransportArgsRejectsInvalidAutostartEqualsValue)
+{
+    const std::vector<std::string_view> rawArgs = {
+        "blitzar-client",
+        "--server-autostart=maybe"
+    };
+
+    std::vector<std::string_view> filtered;
+    grav_client::ClientTransportArgs transport;
+    std::ostringstream warnings;
+
+    EXPECT_FALSE(grav_client::splitClientTransportArgs(rawArgs, filtered, transport, warnings));
+    EXPECT_NE(warnings.str().find("invalid --server-autostart value"), std::string::npos);
+}
+
+TEST(ClientBridgeTest, TST_UNT_RUNT_019_SplitTransportArgsKeepsUnparsedAutostartTokenInFilteredArgs)
+{
+    const std::vector<std::string_view> rawArgs = {
+        "blitzar-client",
+        "--server-autostart",
+        "maybe",
+        "--config",
+        "simulation.ini"
+    };
+
+    std::vector<std::string_view> filtered;
+    grav_client::ClientTransportArgs transport;
+    std::ostringstream warnings;
+
+    ASSERT_TRUE(grav_client::splitClientTransportArgs(rawArgs, filtered, transport, warnings));
+    EXPECT_FALSE(transport.remoteAutoStart);
+    ASSERT_EQ(filtered.size(), 4u);
+    EXPECT_EQ(filtered[0], "blitzar-client");
+    EXPECT_EQ(filtered[1], "maybe");
+    EXPECT_EQ(filtered[2], "--config");
+    EXPECT_EQ(filtered[3], "simulation.ini");
+}
+
 TEST(ClientBridgeTest, TST_UNT_RUNT_015_DisconnectedBridgeOperationsRemainBounded)
 {
     grav_client::ClientServerBridge bridge(
