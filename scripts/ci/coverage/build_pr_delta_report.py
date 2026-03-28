@@ -38,7 +38,7 @@ def fetch_baseline_metric(repo: str, ref: str, name: str) -> float:
     url = f"https://raw.githubusercontent.com/{repo}/{ref}/coverage/{name}.json"
     with urllib.request.urlopen(url, timeout=20) as response:
         payload = json.loads(response.read().decode("utf-8"))
-    message = str(payload.get("message", "")).strip()
+    message = str(payload.get("message", "")).strip().rstrip("%")
     try:
         return float(message)
     except ValueError as exc:
