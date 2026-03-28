@@ -1386,6 +1386,126 @@
                     "REQ-MOD-001",
                     "REQ-RUN-001"
                 ]
+            },
+            "TST-UNT-MODCLI-042": {
+                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_042_ParseLineTrimsLeadingAndTrailingWhitespace",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-043": {
+                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_043_ParseLineAcceptsOptionalStepCountOmitted",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-044": {
+                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_044_ParseLineRejectsTooManyArgumentsForStatus",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-045": {
+                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_045_ParseLineRejectsInvalidPortToken",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-046": {
+                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_046_ParseLineParsesConnectPortAsUint",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-047": {
+                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_047_ParseLineAcceptsScientificFloatForSetDt",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-048": {
+                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_048_ParseLineRejectsMalformedFloatForSetDt",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-049": {
+                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_049_ParseLineAcceptsExportSnapshotWithoutFormat",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-050": {
+                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_050_ParseLineRejectsExportSnapshotTooManyArguments",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-051": {
+                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_051_ParseLineSupportsSingleQuotedCheckpointPath",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-052": {
+                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_052_ParseLineSupportsDoubleQuotedCheckpointPath",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-053": {
+                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_053_ParseScriptHandlesCrlfLineEndings",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-054": {
+                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_054_ParseLineTreatsCommandNamesAsCaseSensitive",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-055": {
+                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_055_ParseLineAcceptsSetSolverModeToken",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-056": {
+                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_056_ParseLineAcceptsSetProfileToken",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-057": {
+                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_057_ParseLineAcceptsZeroRunSteps",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-058": {
+                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_058_ParseLineRejectsNegativeUnsignedValue",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-059": {
+                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_059_ParseLineAcceptsUnterminatedQuoteAsSingleToken",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-060": {
+                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_060_ParseLineKeepsCommentMarkerInsideQuotes",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
+            },
+            "TST-UNT-MODCLI-061": {
+                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_061_ParseScriptAcceptsEmptyInput",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_MODULE_CLI_SERVER": {
