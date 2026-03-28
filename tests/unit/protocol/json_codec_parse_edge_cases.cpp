@@ -137,3 +137,48 @@ TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_058_ParseSnapshotResponseFal
     EXPECT_EQ(payload.sourceSize, 2u);
     EXPECT_TRUE(error.empty());
 }
+
+TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_059_ParseSnapshotResponseAcceptsEmptyParticlesArray)
+{
+    const std::string raw = R"({"ok":true,"cmd":"get_snapshot","has_snapshot":true,"particles":[]})";
+
+    grav_protocol::ServerSnapshotPayload payload{};
+    std::string error;
+    ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseSnapshotResponse(raw, payload, error));
+    EXPECT_TRUE(payload.envelope.ok);
+    EXPECT_TRUE(payload.hasSnapshot);
+    EXPECT_TRUE(payload.particles.empty());
+    EXPECT_EQ(payload.sourceSize, 0u);
+    EXPECT_TRUE(error.empty());
+}
+
+TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_060_ParseSnapshotResponseAcceptsErrorEnvelopeWithoutSnapshotFields)
+{
+    const std::string raw = R"({"ok":false,"cmd":"get_snapshot","error":"snapshot unavailable"})";
+
+    grav_protocol::ServerSnapshotPayload payload{};
+    std::string error;
+    ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseSnapshotResponse(raw, payload, error));
+    EXPECT_FALSE(payload.envelope.ok);
+    EXPECT_EQ(payload.envelope.error, "snapshot unavailable");
+    EXPECT_FALSE(payload.hasSnapshot);
+    EXPECT_TRUE(payload.particles.empty());
+    EXPECT_TRUE(error.empty());
+}
+
+TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_061_ParseStatusResponseIgnoresMalformedOptionalMetrics)
+{
+    const std::string raw =
+        R"({"ok":true,"cmd":"status","steps":"oops","paused":true,"faulted":false,"total_time":"later","drift_pct":"nanish"})";
+
+    grav_protocol::ServerStatusPayload payload{};
+    std::string error;
+    ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, payload, error));
+    EXPECT_TRUE(payload.envelope.ok);
+    EXPECT_EQ(payload.steps, 0u);
+    EXPECT_TRUE(payload.paused);
+    EXPECT_FALSE(payload.faulted);
+    EXPECT_FLOAT_EQ(payload.totalTime, 0.0f);
+    EXPECT_FLOAT_EQ(payload.energyDriftPct, 0.0f);
+    EXPECT_TRUE(error.empty());
+}

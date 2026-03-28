@@ -258,3 +258,19 @@ TEST(ConfigArgsTest, TST_UNT_CONF_072_CliExportOnExitParsesSeparatedBoolValue)
     EXPECT_FALSE(runtime.hasArgumentError);
     EXPECT_TRUE(warnings.str().empty());
 }
+
+TEST(ConfigArgsTest, TST_UNT_CONF_073_CliExportOnExitDefaultsToTrueWithoutValue)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    runtime.exportOnExit = false;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--export-on-exit", "--target-steps", "10"};
+
+    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+
+    EXPECT_TRUE(runtime.exportOnExit);
+    EXPECT_EQ(runtime.targetSteps, 10);
+    EXPECT_FALSE(runtime.hasArgumentError);
+    EXPECT_TRUE(warnings.str().empty());
+}
