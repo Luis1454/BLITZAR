@@ -128,6 +128,26 @@
                 "req_ids": [
                     "REQ-CONF-001"
                 ]
+            },
+            "TST-UNT-CONF-074": {
+                "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_074_NegativeSubstepTargetDtBlocksRun",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-075": {
+                "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_075_InvalidInitStyleAddsInitialStateWarning",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-076": {
+                "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_076_OctreeThetaAboveTwoProducesWarning",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-077": {
+                "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_077_StepTravelWarningsTriggerForSofteningAndLengthScale",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-078": {
+                "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_078_RenderTextWarningModeOmitsActionWhenEmpty",
+                "req_ids": [ "REQ-CONF-001" ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_ARGS_IO": {
