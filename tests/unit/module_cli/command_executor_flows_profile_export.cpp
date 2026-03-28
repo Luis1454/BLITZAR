@@ -65,7 +65,7 @@ static grav_cmd::CommandRequest parseSingle(const std::string &line)
     return parsed.requests.front();
 }
 
-TEST(CommandExecutorFlowProfileExportTest, TST_UNT_MODCLI_040_SetProfileValidAppliesConfigWithoutReset)
+TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_040_SetProfileValidAppliesConfigWithoutReset)
 {
     FakeCommandTransport transport;
     transport.connected = true;
@@ -99,7 +99,7 @@ TEST(CommandExecutorFlowProfileExportTest, TST_UNT_MODCLI_040_SetProfileValidApp
     EXPECT_TRUE(sawEnergyMeasure);
 }
 
-TEST(CommandExecutorFlowProfileExportTest, TST_UNT_MODCLI_041_ExportSnapshotWithoutExtensionUsesSessionDefaultFormat)
+TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_041_ExportSnapshotWithoutExtensionUsesSessionDefaultFormat)
 {
     FakeCommandTransport transport;
     transport.connected = true;
