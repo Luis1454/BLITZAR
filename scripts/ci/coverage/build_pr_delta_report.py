@@ -7,7 +7,6 @@ import json
 import re
 import urllib.request
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 
 def parse_args() -> argparse.Namespace:
@@ -20,8 +19,8 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def parse_summary(summary_path: Path) -> Dict[str, float]:
-    metrics: Dict[str, float] = {}
+def parse_summary(summary_path: Path) -> dict[str, float]:
+    metrics: dict[str, float] = {}
     pattern = re.compile(r"^(lines|functions|branches):\s+([0-9]+(?:\.[0-9]+)?)%")
     for line in summary_path.read_text(encoding="utf-8", errors="replace").splitlines():
         match = pattern.match(line.strip())
@@ -46,8 +45,8 @@ def fetch_baseline_metric(repo: str, ref: str, name: str) -> float:
         raise ValueError(f"invalid baseline metric in {name}.json: {message!r}") from exc
 
 
-def parse_residual_files(csv_path: Path, top_n: int = 10) -> List[Tuple[str, int, int, float]]:
-    rows: List[Tuple[str, int, int, float]] = []
+def parse_residual_files(csv_path: Path, top_n: int = 10) -> list[tuple[str, int, int, float]]:
+    rows: list[tuple[str, int, int, float]] = []
     with csv_path.open("r", encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
         for row in reader:
@@ -71,11 +70,11 @@ def signed_delta(current: float, baseline: float) -> str:
 
 
 def build_markdown(
-    current: Dict[str, float],
-    baseline: Dict[str, float],
-    residual: List[Tuple[str, int, int, float]],
+    current: dict[str, float],
+    baseline: dict[str, float],
+    residual: list[tuple[str, int, int, float]],
 ) -> str:
-    lines: List[str] = []
+    lines: list[str] = []
     lines.append("## Coverage Delta (PR vs baseline)")
     lines.append("")
     lines.append("| Metric | Baseline (%) | PR (%) | Delta (pp) |")
