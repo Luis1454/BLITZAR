@@ -12,6 +12,7 @@ set(GRAVITY_TEST_UNIT_CONFIG_SOURCES
     "${GRAVITY_ROOT_DIR}/tests/unit/config/args_io_validation.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/config/args_octree.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/config/env_utils.cpp"
+    "${GRAVITY_ROOT_DIR}/tests/unit/config/init_plan_edges.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/config/scenario_validation.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/config/scenario_validation_edges.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/config/scenario_validation_init_modes.cpp"

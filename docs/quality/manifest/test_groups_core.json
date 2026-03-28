@@ -391,6 +391,26 @@
             "TST-UNT-CONF-083": {
                 "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_083_PlummerSphereRequiresPositiveCloudExtent",
                 "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-084": {
+                "id": "ConfigInitPlanEdgesTest.TST_UNT_CONF_084_PresetFileModeKeepsConfiguredInputAndAutoFormat",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-085": {
+                "id": "ConfigInitPlanEdgesTest.TST_UNT_CONF_085_PresetFileModeKeepsExplicitInputFormat",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-086": {
+                "id": "ConfigInitPlanEdgesTest.TST_UNT_CONF_086_PresetRandomCloudClampsMassForSingleParticle",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-087": {
+                "id": "ConfigInitPlanEdgesTest.TST_UNT_CONF_087_PresetTwoBodyResolvesGeneratedOrbitDefaults",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-088": {
+                "id": "ConfigInitPlanEdgesTest.TST_UNT_CONF_088_PresetPlummerSphereComputesParticleMassFromCount",
+                "req_ids": [ "REQ-CONF-001" ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_PROFILE": {
