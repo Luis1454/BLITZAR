@@ -269,4 +269,23 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_038_SendCheckedReturnsServerErrorDe
     EXPECT_EQ(transport.commandHistory[0].first, "resume");
 }
 
+TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_039_RunUntilReturnsImmediatelyWhenTargetAlreadyReached)
+{
+    FakeCommandTransport transport;
+    transport.connected = true;
+    ServerClientStatus status{};
+    status.totalTime = 6.0f;
+    transport.scriptedStatuses = {status};
+
+    grav_cmd::CommandSessionState session;
+    std::ostringstream output;
+    grav_cmd::CommandExecutionContext context{transport, session, grav_cmd::CommandExecutionMode::Batch, output};
+
+    const grav_cmd::CommandResult result = grav_cmd::CommandExecutor::execute(parseSingle("run_until 5.0"), context);
+    ASSERT_TRUE(result.ok);
+    ASSERT_FALSE(transport.commandHistory.empty());
+    EXPECT_EQ(transport.commandHistory[0].first, "pause");
+    EXPECT_EQ(transport.commandHistory.size(), 1u);
+}
+
 } // namespace grav_test_module_cli_command_executor_flows
