@@ -122,6 +122,12 @@
                 "req_ids": [
                     "REQ-CONF-001"
                 ]
+            },
+            "TST-UNT-CONF-073": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_073_CliExportOnExitDefaultsToTrueWithoutValue",
+                "req_ids": [
+                    "REQ-CONF-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_ARGS_IO": {
@@ -1286,6 +1292,12 @@
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
+            },
+            "TST-UNT-MODCLI-039": {
+                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_039_RunUntilReturnsImmediatelyWhenTargetAlreadyReached",
+                "req_ids": [
+                    "REQ-MOD-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_MODULE_CLI_SERVER": {
@@ -2083,6 +2095,27 @@
             },
             "TST-UNT-PROT-058": {
                 "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_058_ParseSnapshotResponseFallsBackSourceCountWhenMissing",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-059": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_059_ParseSnapshotResponseAcceptsEmptyParticlesArray",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-060": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_060_ParseSnapshotResponseAcceptsErrorEnvelopeWithoutSnapshotFields",
+                "req_ids": [
+                    "REQ-PROT-001",
+                    "REQ-PROT-002"
+                ]
+            },
+            "TST-UNT-PROT-061": {
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_061_ParseStatusResponseIgnoresMalformedOptionalMetrics",
                 "req_ids": [
                     "REQ-PROT-001",
                     "REQ-PROT-002"
