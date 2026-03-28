@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 gcovr \
@@ -19,7 +19,7 @@ gcovr \
   --filter "runtime/src" \
   --exclude "build-integration-cov/_deps" \
   --exclude "tests/" \
-  --csv-pretty \
+  --csv \
   --output build-integration-cov/coverage-files.csv
 
 gcovr \
