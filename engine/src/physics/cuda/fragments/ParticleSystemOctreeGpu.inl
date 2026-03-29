@@ -39,11 +39,17 @@ __global__ void updateParticlesOctree(
     Vector3 force(0.0f, 0.0f, 0.0f);
 
     constexpr int kStackCapacity = 64;
+    constexpr int kMaxTraversalIterations = 2048;
     int stack[kStackCapacity];
     int top = 0;
+    int traversalIterations = 0;
     stack[top++] = rootIndex;
 
     while (top > 0) {
+        // Watchdog: prevent infinite loops in octree traversal
+        if (++traversalIterations > kMaxTraversalIterations) {
+            break;
+        }
         const GpuOctreeNode node = nodes[stack[--top]];
         if (node.mass <= 0.0f) continue;
 
