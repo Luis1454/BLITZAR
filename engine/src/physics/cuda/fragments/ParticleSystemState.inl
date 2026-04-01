@@ -13,13 +13,6 @@ void ParticleSystem::syncDeviceState()
         if (!allocateRk4Buffers(numParticles)) return;
     }
 
-    // printf("[debug] syncDeviceState: d_stage=%p, host_ptr=%p, bytes=%zu\n", (void*)d_stage, (void*)_particles.data(), bytes);
-    cudaPointerAttributes attr;
-    if (cudaPointerGetAttributes(&attr, d_stage) != cudaSuccess) {
-        printf("[error] d_stage %p is NOT a valid managed or device pointer!\n", (void*)d_stage);
-    } else {
-        printf("[debug] d_stage %p type=%d device=%d\n", (void*)d_stage, (int)attr.type, attr.device);
-    }
     if (!checkCudaStatus(cudaMemcpy(d_stage, _particles.data(), bytes, cudaMemcpyHostToDevice), "memcpy(HtoD stage)")) return;
 
     ParticleSoAView view = getSoAView(false);
@@ -27,6 +20,7 @@ void ParticleSystem::syncDeviceState()
     packSoAKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(d_stage, view, numParticles);
     cudaDeviceSynchronize();
     _hostStateDirty = false;
+    _leapfrogPrimed = false;
 }
 
 bool ParticleSystem::syncHostState()
@@ -64,4 +58,37 @@ ParticleSoAView ParticleSystem::getSoAView(bool next) const
     view.mass = d_soaMass; view.temp = d_soaTemp; view.dens = d_soaDens;
     view.count = static_cast<int>(_particles.size());
     return view;
+}
+
+void ParticleSystem::publishMappedMetrics(float deltaTime)
+{
+    if (_mappedMetricsDevice == nullptr || d_soaPosX == nullptr || _particles.empty()) {
+        return;
+    }
+
+    _metricsStepId += 1u;
+    _metricsSimTime += deltaTime;
+
+    std::uint64_t vramUsedBytes = 0u;
+    std::uint64_t vramPeakBytes = 0u;
+    int device = 0;
+    cudaMemPool_t pool = nullptr;
+    if (cudaGetDevice(&device) == cudaSuccess
+        && cudaDeviceGetDefaultMemPool(&pool, device) == cudaSuccess
+        && pool != nullptr) {
+        cudaMemPoolGetAttribute(pool, cudaMemPoolAttrUsedMemCurrent, &vramUsedBytes);
+        cudaMemPoolGetAttribute(pool, cudaMemPoolAttrUsedMemHigh, &vramPeakBytes);
+    }
+
+    const ParticleSoAView currentView = getSoAView(false);
+    publishMetricsKernel<<<1, 1>>>(
+        _mappedMetricsDevice,
+        currentView,
+        static_cast<int>(_particles.size()),
+        _metricsStepId,
+        _metricsSimTime,
+        deltaTime,
+        vramUsedBytes,
+        vramPeakBytes);
+    checkCudaStatus(cudaGetLastError(), "publishMetricsKernel launch");
 }

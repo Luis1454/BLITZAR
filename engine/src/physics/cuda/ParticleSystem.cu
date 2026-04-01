@@ -2,9 +2,13 @@
 #include "fragments/ParticleSystemCore.inl"
 #include "fragments/ParticleSystemBuffer.inl"
 #include "fragments/ParticleSystemOctreeGpu.inl"
+#include "fragments/ParticleSystemLinearOctreeGpu.inl"
 #include "fragments/ParticleSystemState.inl"
+#include "fragments/ParticleSystemEnergyGpu.inl"
 #include "fragments/ParticleSystemThermal.inl"
 #include "fragments/ParticleSystemSphGrid.inl"
 #include "fragments/ParticleSystemSphKernels.inl"
 #include "fragments/OctreeImpl.inl"
 #include "fragments/ParticleSystemUpdate.inl"
+
+static_assert(alignof(GpuSystemMetrics) == 64, "GpuSystemMetrics alignment must remain 64");
