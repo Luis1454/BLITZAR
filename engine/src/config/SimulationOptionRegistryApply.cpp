@@ -145,7 +145,7 @@ bool applyEntry(
             std::string canonical;
             if (!grav_modes::normalizeIntegrator(value, canonical)) {
                 warnings << source << " invalid " << optionName
-                         << ": " << value << " (allowed: euler|rk4)\n";
+                         << ": " << value << " (allowed: euler|rk4|leapfrog)\n";
                 return true;
             }
             memberAt<std::string>(config, entry.offset) = canonical;

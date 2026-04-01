@@ -58,13 +58,21 @@ ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
     if (!allocateParticleBuffers(static_cast<std::size_t>(clampedParticles))) return;
     if (bootstrapInitialState && !seedDeviceState()) return;
 
+    if (_solverMode == SolverMode::OctreeGpu) {
+        if (!ensureLinearOctreeScratchCapacity(clampedParticles)) {
+            fprintf(stderr,
+                    "[octree-gpu] scratch preallocation failed, falling back to pairwise_cuda\n");
+            _solverMode = SolverMode::PairwiseCuda;
+        }
+    }
+
     if (!allocateSphBuffers(clampedParticles) || !allocateSphGridBuffers(clampedParticles)) {
         fprintf(stderr, "[sph] buffers allocation failed, SPH disabled\n");
         _sphEnabled = false;
     }
-    if (_integratorMode == IntegratorMode::Rk4) {
+    if (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog) {
         if (!allocateRk4Buffers(clampedParticles)) {
-            _integratorMode = IntegratorMode::Euler;
+            throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
         }
     }
 }
@@ -83,32 +91,65 @@ ParticleSystem::ParticleSystem(std::vector<Particle> initialParticles)
     if (!allocateParticleBuffers(particleCapacity)) return;
     if (!seedDeviceState()) return;
 
+    if (_solverMode == SolverMode::OctreeGpu) {
+        if (!ensureLinearOctreeScratchCapacity(static_cast<int>(particleCapacity))) {
+            fprintf(stderr,
+                    "[octree-gpu] scratch preallocation failed, falling back to pairwise_cuda\n");
+            _solverMode = SolverMode::PairwiseCuda;
+        }
+    }
+
     const int clampedParticles = static_cast<int>(particleCapacity);
     if (!allocateSphBuffers(clampedParticles) || !allocateSphGridBuffers(clampedParticles)) {
         _sphEnabled = false;
     }
-    if (_integratorMode == IntegratorMode::Rk4) {
-        if (!allocateRk4Buffers(clampedParticles)) _integratorMode = IntegratorMode::Euler;
+    if (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog) {
+        if (!allocateRk4Buffers(clampedParticles)) {
+            throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
+        }
     }
 }
 
 ParticleSystem::~ParticleSystem() {
-    if (g_dOctreeNodes) { cudaFree(g_dOctreeNodes); g_dOctreeNodes = nullptr; }
-    if (g_dOctreeLeafIndices) { cudaFree(g_dOctreeLeafIndices); g_dOctreeLeafIndices = nullptr; }
     releaseParticleBuffers();
 }
 
 const std::vector<Particle> &ParticleSystem::getParticles() const { return _particles; }
+
+const GpuSystemMetrics *ParticleSystem::getMappedGpuMetrics() const
+{
+    return _mappedMetricsHost;
+}
 
 bool ParticleSystem::setParticles(std::vector<Particle> particles)
 {
     if (particles.empty() || particles.size() != _deviceParticleCapacity) return false;
     _particles = std::move(particles);
     _hostStateDirty = false;
+    _leapfrogPrimed = false;
+    if (_solverMode == SolverMode::OctreeGpu) {
+        if (!ensureLinearOctreeScratchCapacity(static_cast<int>(_particles.size()))) {
+            fprintf(stderr,
+                    "[octree-gpu] scratch preallocation failed after setParticles, falling back to pairwise_cuda\n");
+            _solverMode = SolverMode::PairwiseCuda;
+        }
+    }
     return true;
 }
 
-void ParticleSystem::setUseOctree(bool enabled) { _solverMode = enabled ? SolverMode::OctreeGpu : SolverMode::PairwiseCuda; }
+void ParticleSystem::setUseOctree(bool enabled)
+{
+    if (!enabled) {
+        _solverMode = SolverMode::PairwiseCuda;
+        return;
+    }
+    if (!ensureLinearOctreeScratchCapacity(static_cast<int>(_particles.size()))) {
+        fprintf(stderr,
+                "[octree-gpu] scratch preallocation failed, keeping current solver\n");
+        return;
+    }
+    _solverMode = SolverMode::OctreeGpu;
+}
 bool ParticleSystem::usesOctree() const { return _solverMode != SolverMode::PairwiseCuda; }
 void ParticleSystem::setOctreeTheta(float theta) { if (theta > 0.01f) _octreeTheta = theta; }
 void ParticleSystem::setOctreeOpeningCriterion(OctreeOpeningCriterion criterion) { _octreeOpeningCriterion = criterion; }
@@ -133,7 +174,45 @@ void ParticleSystem::setSphCaps(float maxA, float maxS) {
 }
 float ParticleSystem::getCumulativeRadiatedEnergy() const { return _cumulativeRadiatedEnergy; }
 float ParticleSystem::getThermalSpecificHeat() const { return _thermalSpecificHeat; }
-void ParticleSystem::setSolverMode(SolverMode mode) { _solverMode = mode; }
+void ParticleSystem::setSolverMode(SolverMode mode)
+{
+    if (mode == SolverMode::OctreeGpu) {
+        if (!ensureLinearOctreeScratchCapacity(static_cast<int>(_particles.size()))) {
+            fprintf(stderr,
+                    "[octree-gpu] scratch preallocation failed, keeping current solver\n");
+            return;
+        }
+    }
+    _solverMode = mode;
+}
 ParticleSystem::SolverMode ParticleSystem::getSolverMode() const { return _solverMode; }
-void ParticleSystem::setIntegratorMode(IntegratorMode mode) { _integratorMode = mode; }
+void ParticleSystem::setIntegratorMode(IntegratorMode mode) {
+    if ((mode == IntegratorMode::Rk4 || mode == IntegratorMode::Leapfrog)
+        && !allocateRk4Buffers(static_cast<int>(_particles.size()))) {
+        throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
+    }
+    _integratorMode = mode;
+    _leapfrogPrimed = false;
+
+    std::size_t baseAndIntegratorBytes = 0u;
+    std::size_t sphBytes = 0u;
+    std::size_t octreeBytes = 0u;
+    const std::size_t totalBytes = estimateMemoryUsage(
+        _particles.size(),
+        _sphEnabled,
+        _solverMode,
+        _integratorMode,
+        65536u,
+        0,
+        &baseAndIntegratorBytes,
+        &sphBytes,
+        &octreeBytes);
+    const std::string breakdown = formatMemoryBreakdown(
+        baseAndIntegratorBytes,
+        sphBytes,
+        octreeBytes,
+        totalBytes,
+        6656ull * 1024ull * 1024ull);
+    fprintf(stdout, "%s\n", breakdown.c_str());
+}
 ParticleSystem::IntegratorMode ParticleSystem::getIntegratorMode() const { return _integratorMode; }
