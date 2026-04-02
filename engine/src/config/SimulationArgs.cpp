@@ -44,9 +44,6 @@ void applyArgsToConfig(
 )
 {
     runtime.configPath = findConfigPathArg(args, runtime.configPath);
-    const std::string initialSolver = config.solver;
-    const std::string initialIntegrator = config.integrator;
-
     for (std::size_t i = 1; i < args.size(); ++i) {
         if (args[i].empty()) {
             continue;
@@ -116,10 +113,13 @@ void applyArgsToConfig(
     }
 
     if (!grav_modes::isSupportedSolverIntegratorPair(config.solver, config.integrator)) {
-        runtime.hasArgumentError = true;
-        warnings << "[args] unsupported solver/integrator combination: solver=octree_gpu requires integrator=euler\n";
-        config.solver = initialSolver;
-        config.integrator = initialIntegrator;
+        if (config.solver == grav_modes::kSolverOctreeGpu && config.integrator == grav_modes::kIntegratorRk4) {
+            warnings << "[args] unsupported solver/integrator combination: solver=octree_gpu does not support rk4, switching solver to pairwise_cuda\n";
+            config.solver = std::string(grav_modes::kSolverPairwiseCuda);
+        } else {
+            warnings << "[args] unsupported solver/integrator combination, switching integrator to euler\n";
+            config.integrator = std::string(grav_modes::kIntegratorEuler);
+        }
     }
 
     const grav_config::ScenarioValidationReport report = grav_config::SimulationScenarioValidation::evaluate(config);

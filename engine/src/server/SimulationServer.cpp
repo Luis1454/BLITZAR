@@ -8,6 +8,7 @@
 #include "protocol/ServerProtocol.hpp"
 
 #include <algorithm>
+#include <atomic>
 #include <array>
 #include <chrono>
 #include <cmath>
@@ -81,6 +82,9 @@ ParticleSystem::IntegratorMode integratorModeFromCanonicalName(std::string_view 
     if (name == grav_modes::kIntegratorRk4) {
         return ParticleSystem::IntegratorMode::Rk4;
     }
+    if (name == grav_modes::kIntegratorLeapfrog) {
+        return ParticleSystem::IntegratorMode::Leapfrog;
+    }
     return ParticleSystem::IntegratorMode::Euler;
 }
 
@@ -139,6 +143,51 @@ bool isAutoSolverFallbackEnabled()
     }
     const std::string v = toLower(trim(raw));
     return v == "1" || v == "true" || v == "on" || v == "yes";
+}
+
+std::uint32_t readGpuMetricSequence(const std::uint32_t *sequencePtr)
+{
+    return *reinterpret_cast<volatile const std::uint32_t *>(sequencePtr);
+}
+
+bool tryReadMetrics(const GpuSystemMetrics *mappedMetrics, GpuMetricsPayload &out)
+{
+    if (mappedMetrics == nullptr) {
+        return false;
+    }
+
+    constexpr int kMaxRetries = 3;
+    for (int attempt = 0; attempt < kMaxRetries; ++attempt) {
+        const std::uint32_t s1 = readGpuMetricSequence(&mappedMetrics->sequence);
+        std::atomic_thread_fence(std::memory_order_acquire);
+        if ((s1 & 1u) != 0u) {
+            continue;
+        }
+
+        GpuMetricsPayload snapshot{};
+        snapshot.flags = mappedMetrics->flags;
+        snapshot.stepId = mappedMetrics->stepId;
+        snapshot.simTime = mappedMetrics->simTime;
+        snapshot.dt = mappedMetrics->dt;
+        snapshot.particleCount = mappedMetrics->particleCount;
+        snapshot.nanCount = mappedMetrics->nanCount;
+        snapshot.infCount = mappedMetrics->infCount;
+        snapshot.minSpeed = mappedMetrics->minSpeed;
+        snapshot.maxSpeed = mappedMetrics->maxSpeed;
+        snapshot.kineticEnergy = mappedMetrics->kineticEnergy;
+        snapshot.potentialEnergy = mappedMetrics->potentialEnergy;
+        snapshot.totalEnergy = mappedMetrics->totalEnergy;
+        snapshot.vramUsedBytes = mappedMetrics->vramUsedBytes;
+        snapshot.vramPeakBytes = mappedMetrics->vramPeakBytes;
+
+        std::atomic_thread_fence(std::memory_order_acquire);
+        const std::uint32_t s2 = readGpuMetricSequence(&mappedMetrics->sequence);
+        if (s1 == s2 && (s2 & 1u) == 0u && (snapshot.flags & kGpuMetricsValid) != 0u) {
+            out = snapshot;
+            return true;
+        }
+    }
+    return false;
 }
 
 bool shouldForceCudaFailureOnceForTesting(std::string_view solver)
@@ -1900,10 +1949,6 @@ SimulationServer::SimulationServer(const std::string &configPath)
 {
     _configPath = configPath.empty() ? "simulation.ini" : configPath;
     SimulationConfig loaded = SimulationConfig::loadOrCreate(_configPath);
-    
-    // Apply simulation profile first, then performance profile
-    grav_config::applySimulationProfile(loaded);
-    grav_config::applyPerformanceProfile(loaded);
 
     const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(loaded, std::cerr);
     _runtimeConfigMirror = loaded;
@@ -2990,6 +3035,49 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
     if (!_system) {
         return values;
     }
+
+    GpuMetricsPayload liveMetrics{};
+    if (tryReadMetrics(_system->getMappedGpuMetrics(), liveMetrics)) {
+        values.kinetic = liveMetrics.kineticEnergy;
+        values.potential = liveMetrics.potentialEnergy;
+        values.thermal = 0.0f;
+        values.radiated = _system->getCumulativeRadiatedEnergy();
+        values.total = liveMetrics.totalEnergy + values.radiated;
+        values.estimated = (liveMetrics.flags & kGpuMetricsEstimated) != 0u;
+        return values;
+    }
+
+    const std::size_t sampleLimit = static_cast<std::size_t>(_energySampleLimit.load(std::memory_order_relaxed));
+    const float specificHeat = _system ? std::max(1e-6f, _system->getThermalSpecificHeat()) : 1.0f;
+    float energySoftening = 0.0f;
+    float energyMinSoftening = 0.0f;
+    float energyMinDistance2 = 0.0f;
+    std::string solverMode;
+    {
+        std::lock_guard<std::mutex> lock(_commandMutex);
+        energySoftening = _octreeSoftening;
+        energyMinSoftening = _physicsMinSoftening;
+        energyMinDistance2 = _physicsMinDistance2;
+        solverMode = _solverMode;
+    }
+    const float softening = std::max(energySoftening, energyMinSoftening);
+
+    if (solverMode == "pairwise_cuda" || solverMode == "octree_gpu") {
+        if (_system->computeEnergyEstimateGpu(
+                sampleLimit,
+                softening,
+                energyMinDistance2,
+                specificHeat,
+                values.kinetic,
+                values.potential,
+                values.thermal,
+                values.estimated)) {
+            values.radiated = _system->getCumulativeRadiatedEnergy();
+            values.total = values.kinetic + values.potential + values.thermal + values.radiated;
+            return values;
+        }
+    }
+
     if (!_system->syncHostState()) {
         values.estimated = true;
         return values;
@@ -3000,18 +3088,7 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
         return values;
     }
 
-    const std::size_t sampleLimit = static_cast<std::size_t>(_energySampleLimit.load(std::memory_order_relaxed));
     const bool sampled = n > sampleLimit;
-    const float specificHeat = _system ? std::max(1e-6f, _system->getThermalSpecificHeat()) : 1.0f;
-    float energySoftening = 0.0f;
-    float energyMinSoftening = 0.0f;
-    float energyMinDistance2 = 0.0f;
-    {
-        std::lock_guard<std::mutex> lock(_commandMutex);
-        energySoftening = _octreeSoftening;
-        energyMinSoftening = _physicsMinSoftening;
-        energyMinDistance2 = _physicsMinDistance2;
-    }
     std::vector<std::size_t> indices;
     if (!sampled) {
         indices.resize(n);
@@ -3033,7 +3110,6 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
     const double pairCountFull = static_cast<double>(n) * static_cast<double>(n - 1) * 0.5;
     const double pairCountSample = static_cast<double>(indices.size()) * static_cast<double>(indices.size() - 1) * 0.5;
     const double potentialScale = (sampled && pairCountSample > 0.0) ? (pairCountFull / pairCountSample) : 1.0;
-    const float softening = std::max(energySoftening, energyMinSoftening);
 
     double kinetic = 0.0;
     double thermal = 0.0;
@@ -3130,6 +3206,16 @@ void SimulationServer::maybeSampleGpuTelemetry(std::string_view solverMode, std:
     }
     if ((currentStep % kGpuTelemetrySampleStride) != 0u) {
         return;
+    }
+
+    if (_system != nullptr) {
+        GpuMetricsPayload snapshot{};
+        if (tryReadMetrics(_system->getMappedGpuMetrics(), snapshot)) {
+            _gpuTelemetryAvailable.store(true, std::memory_order_relaxed);
+            _gpuVramUsedBytes.store(snapshot.vramUsedBytes, std::memory_order_relaxed);
+            _gpuVramTotalBytes.store(snapshot.vramPeakBytes, std::memory_order_relaxed);
+            return;
+        }
     }
 
     std::size_t freeBytes = 0u;
