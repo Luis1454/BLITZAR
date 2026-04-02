@@ -52,6 +52,8 @@ void Octree::exportGpu(std::vector<GpuOctreeNode> &outNodes, std::vector<int> &o
         dst.childMask = src.childMask;
         dst.leafStart = static_cast<int>(outLeafIndices.size());
         dst.leafCount = static_cast<int>(src.particleIndices.size());
+        dst.parentIndex = -1;
+        dst.nextIndex = -1;
         for (int leafIndex : src.particleIndices) outLeafIndices.push_back(leafIndex);
         outNodes[i] = dst;
     }
