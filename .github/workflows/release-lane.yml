@@ -67,7 +67,7 @@ jobs:
           python -m pytest -q tests/checks/suites
 
       - name: Install CUDA toolkit
-        uses: Jimver/cuda-toolkit@b6fc3a9f3f15256d9d94ffe1254f9c5a2565cde6
+        uses: Jimver/cuda-toolkit@3d45d157f327c09c04b50ee6ccdea2d9d017ec76
         with:
           cuda: "12.4.1"
 
