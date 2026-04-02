@@ -13,7 +13,7 @@ namespace {
 constexpr std::size_t kVramBudgetBytes = 6656ull * 1024ull * 1024ull;
 constexpr std::size_t kDefaultEnergySampleLimit = 65536u;
 constexpr std::size_t kPlanAEnergySampleLimit = 4096u;
-constexpr int kDefaultOctreeLeafCapacity = 128;
+constexpr int kDefaultOctreeLeafCapacity = 1024;
 constexpr int kPlanBOctreeLeafCapacity = 4096;
 
 double bytesToMiB(std::size_t bytes)

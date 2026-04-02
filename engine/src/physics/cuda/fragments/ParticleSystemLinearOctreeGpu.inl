@@ -4,6 +4,7 @@
  */
 
 #include <cfloat>
+#include <chrono>
 #include <cstddef>
 #include <thrust/device_ptr.h>
 #include <thrust/execution_policy.h>
@@ -349,6 +350,9 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
 {
     cudaStream_t stream = 0;
     const bool hardAuditMode = parseBoolEnv("GRAVITY_LINEAR_OCTREE_AUDIT", false);
+    const bool profileFlashMode = parseBoolEnv("GRAVITY_OCTREE_PROFILE_FLASH", false);
+    const auto buildStartTime = std::chrono::high_resolution_clock::now();
+    double sortByKeyMs = 0.0;
     if (numParticles <= 0) {
         return false;
     }
@@ -423,9 +427,22 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
     thrust::device_ptr<int> parentCounts(d_octreeParentCounts);
     thrust::device_ptr<int> parentOffsets(d_octreeParentOffsets);
 
+    if (profileFlashMode) {
+        if (!checkCudaStatus(cudaStreamSynchronize(stream), "linear octree pre-sort sync")) {
+            return false;
+        }
+    }
+    const auto sortStartTime = std::chrono::high_resolution_clock::now();
     thrust::sort_by_key(exec, sortedKeys, sortedKeys + numParticles, sortedIndices);
     if (!checkCudaStatus(cudaGetLastError(), "linear octree sort_by_key")) {
         return false;
+    }
+    if (profileFlashMode) {
+        if (!checkCudaStatus(cudaStreamSynchronize(stream), "linear octree post-sort sync")) {
+            return false;
+        }
+        const auto sortStopTime = std::chrono::high_resolution_clock::now();
+        sortByKeyMs = std::chrono::duration<double, std::milli>(sortStopTime - sortStartTime).count();
     }
 
     buildLeafPrefixesKernel<<<blocks, threads, 0, stream>>>(d_octreeMortonKeys, numParticles,
@@ -560,5 +577,20 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
                 "nodes=%d root=%d\n",
                 leafCapacity, leafDepth, leafCount, _gpuOctreeNodeCount, _gpuOctreeRootIndex);
     }
+
+    if (profileFlashMode) {
+        if (!checkCudaStatus(cudaStreamSynchronize(stream), "linear octree profiling sync")) {
+            return false;
+        }
+        const auto buildStopTime = std::chrono::high_resolution_clock::now();
+        const double buildMs =
+            std::chrono::duration<double, std::milli>(buildStopTime - buildStartTime).count();
+        fprintf(stderr,
+                "[octree-profile] buildLinearOctree_ms=%.3f sort_ms=%.3f leaf_capacity=%d\n",
+                buildMs,
+                sortByKeyMs,
+                leafCapacity);
+    }
+
     return _gpuOctreeRootIndex >= 0;
 }

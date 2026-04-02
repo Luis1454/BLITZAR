@@ -3,6 +3,8 @@
  * Responsibility: Advance the particle system for one deterministic update step.
  */
 
+#include <chrono>
+
 bool ParticleSystem::update(float deltaTime) {
     const ForceLawPolicy forceLaw = resolveForceLawPolicy(
         _octreeTheta,
@@ -246,6 +248,7 @@ bool ParticleSystem::update(float deltaTime) {
     }
 
     if (_solverMode == SolverMode::OctreeGpu) {
+        const bool profileFlashMode = parseBoolEnv("GRAVITY_OCTREE_PROFILE_FLASH", false);
         if (_integratorMode == IntegratorMode::Rk4) {
             fprintf(stderr, "[integrator] rk4 is not supported with octree_gpu\n");
             return false;
@@ -257,6 +260,18 @@ bool ParticleSystem::update(float deltaTime) {
         ParticleSoAView nextView = getSoAView(true);
 
         const int numParticles = static_cast<int>(_particles.size());
+
+        // Prefer L1 for octree node reads in BH traversal kernels.
+        if (!checkCudaStatus(
+                cudaFuncSetCacheConfig(computeOctreeAccelerationKernel, cudaFuncCachePreferL1),
+                "computeOctreeAccelerationKernel cache config")) {
+            return false;
+        }
+        if (!checkCudaStatus(cudaFuncSetCacheConfig(updateParticlesOctree, cudaFuncCachePreferL1),
+                             "updateParticlesOctree cache config")) {
+            return false;
+        }
+
         if (!buildLinearOctreeGpu(currentView, numParticles)) {
             return false;
         }
@@ -380,6 +395,7 @@ bool ParticleSystem::update(float deltaTime) {
             std::swap(d_soaVelY, d_soaNextVelY);
             std::swap(d_soaVelZ, d_soaNextVelZ);
         } else if (_integratorMode == IntegratorMode::Euler) {
+            const auto forceStartTime = std::chrono::high_resolution_clock::now();
             updateParticlesOctree<<<(_particles.size() + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize, Particle::kDefaultCudaBlockSize>>>(
                 currentView,
                 nextView,
@@ -397,6 +413,12 @@ bool ParticleSystem::update(float deltaTime) {
             }
             if (!checkCudaStatus(cudaDeviceSynchronize(), "updateParticlesOctree kernel sync")) {
                 return false;
+            }
+            if (profileFlashMode) {
+                const auto forceStopTime = std::chrono::high_resolution_clock::now();
+                const double forceMs =
+                    std::chrono::duration<double, std::milli>(forceStopTime - forceStartTime).count();
+                fprintf(stderr, "[octree-profile] computeBarnesHutForce_ms=%.3f\n", forceMs);
             }
 
             // Swap buffers
