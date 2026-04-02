@@ -70,23 +70,6 @@ struct OctreeAabbMerge {
     }
 };
 
-__device__ __forceinline__ unsigned long long expandBits21(unsigned int v)
-{
-    unsigned long long x = static_cast<unsigned long long>(v & 0x1fffffu);
-    x = (x | (x << 32)) & 0x1f00000000ffffULL;
-    x = (x | (x << 16)) & 0x1f0000ff0000ffULL;
-    x = (x | (x << 8)) & 0x100f00f00f00f00fULL;
-    x = (x | (x << 4)) & 0x10c30c30c30c30c3ULL;
-    x = (x | (x << 2)) & 0x1249249249249249ULL;
-    return x;
-}
-
-__device__ __forceinline__ unsigned long long mortonEncode63(unsigned int x, unsigned int y,
-                                                             unsigned int z)
-{
-    return (expandBits21(x) << 2) | (expandBits21(y) << 1) | expandBits21(z);
-}
-
 __global__ void buildMortonCodesKernel(ParticleSoAView state, int numParticles, float minX,
                                        float minY, float minZ, float maxX, float maxY, float maxZ,
                                        unsigned long long* mortonKeys, int* particleIndices)
