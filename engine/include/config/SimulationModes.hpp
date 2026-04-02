@@ -12,6 +12,7 @@ extern const std::string_view kSolverOctreeCpu;
 
 extern const std::string_view kIntegratorEuler;
 extern const std::string_view kIntegratorRk4;
+extern const std::string_view kIntegratorLeapfrog;
 extern const std::string_view kOctreeCriterionCom;
 extern const std::string_view kOctreeCriterionBounds;
 

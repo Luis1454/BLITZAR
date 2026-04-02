@@ -27,6 +27,7 @@ const std::string_view kSolverOctreeGpu = "octree_gpu";
 const std::string_view kSolverOctreeCpu = "octree_cpu";
 const std::string_view kIntegratorEuler = "euler";
 const std::string_view kIntegratorRk4 = "rk4";
+const std::string_view kIntegratorLeapfrog = "leapfrog";
 const std::string_view kOctreeCriterionCom = "com";
 const std::string_view kOctreeCriterionBounds = "bounds";
 
@@ -53,6 +54,10 @@ bool normalizeIntegrator(std::string_view value, std::string &outCanonical)
     const std::string normalized = toLowerTrimmed(value);
     if (normalized == "euler") {
         outCanonical.assign(kIntegratorEuler);
+        return true;
+    }
+    if (normalized == "leapfrog" || normalized == "kdk" || normalized == "verlet") {
+        outCanonical.assign(kIntegratorLeapfrog);
         return true;
     }
     if (normalized == "rk4" || normalized == "runge_kutta4" || normalized == "runge-kutta4") {

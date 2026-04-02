@@ -10,12 +10,19 @@
 #include "config/EnvUtils.hpp"
 #include <algorithm>
 #include <array>
+#include <cfloat>
 #include <cmath>
 #include <cstring>
 #include <numeric>
+#include <stdexcept>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <stdio.h>
+
+static_assert(
+    (sizeof(GpuSystemMetrics) % 64u) == 0u,
+    "GpuSystemMetrics must remain cacheline aligned");
 
 struct SphGridParams {
     int gridSize;
@@ -114,6 +121,9 @@ ParticleSystem::IntegratorMode integratorModeFromEnv()
     }
     if (*integrator == "rk4" || *integrator == "RK4") {
         return ParticleSystem::IntegratorMode::Rk4;
+    }
+    if (*integrator == "leapfrog" || *integrator == "LEAPFROG") {
+        return ParticleSystem::IntegratorMode::Leapfrog;
     }
     return ParticleSystem::IntegratorMode::Euler;
 }
@@ -344,6 +354,107 @@ __device__ float sphViscosityLaplacian(float r, float h)
     return coeff * (h - r);
 }
 
+__global__ void publishMetricsKernel(
+    GpuSystemMetrics *mappedMetrics,
+    ParticleSoAView state,
+    int numParticles,
+    std::uint64_t stepId,
+    float simTime,
+    float dt,
+    std::uint64_t vramUsedBytes,
+    std::uint64_t vramPeakBytes)
+{
+    if (blockIdx.x != 0 || threadIdx.x != 0 || mappedMetrics == nullptr) {
+        return;
+    }
+
+    GpuMetricsPayload payload{};
+    payload.flags = static_cast<std::uint32_t>(kGpuMetricsValid | kGpuMetricsEstimated);
+    payload.stepId = stepId;
+    payload.simTime = simTime;
+    payload.dt = dt;
+    payload.particleCount = static_cast<std::uint32_t>(numParticles > 0 ? numParticles : 0);
+    payload.nanCount = 0u;
+    payload.infCount = 0u;
+    payload.minSpeed = 0.0f;
+    payload.maxSpeed = 0.0f;
+    payload.kineticEnergy = 0.0f;
+    payload.potentialEnergy = 0.0f;
+    payload.totalEnergy = 0.0f;
+    payload.vramUsedBytes = vramUsedBytes;
+    payload.vramPeakBytes = vramPeakBytes;
+
+    if (numParticles > 0) {
+        constexpr int kMaxSamples = 4096;
+        const int sampleCount = numParticles < kMaxSamples ? numParticles : kMaxSamples;
+        const int stride = sampleCount > 0 ? max(1, numParticles / sampleCount) : 1;
+        float minSpeed = FLT_MAX;
+        float maxSpeed = 0.0f;
+        float kinetic = 0.0f;
+        int counted = 0;
+
+        for (int i = 0; i < numParticles && counted < sampleCount; i += stride, ++counted) {
+            const float vx = state.velX[i];
+            const float vy = state.velY[i];
+            const float vz = state.velZ[i];
+            const float mass = state.mass[i];
+            const float speed2 = vx * vx + vy * vy + vz * vz;
+            const float speed = sqrtf(speed2);
+
+            if (!isfinite(speed) || !isfinite(mass)) {
+                if (!isfinite(speed)) {
+                    payload.infCount += 1u;
+                }
+                if (isnan(speed) || isnan(mass)) {
+                    payload.nanCount += 1u;
+                }
+                continue;
+            }
+
+            minSpeed = fminf(minSpeed, speed);
+            maxSpeed = fmaxf(maxSpeed, speed);
+            kinetic += 0.5f * mass * speed2;
+        }
+
+        if (counted > 0 && sampleCount > 0) {
+            const float scale = static_cast<float>(numParticles) / static_cast<float>(sampleCount);
+            payload.minSpeed = minSpeed == FLT_MAX ? 0.0f : minSpeed;
+            payload.maxSpeed = maxSpeed;
+            payload.kineticEnergy = kinetic * scale;
+            payload.totalEnergy = payload.kineticEnergy;
+        }
+    }
+
+    volatile std::uint32_t *sequence = &mappedMetrics->sequence;
+    const std::uint32_t observed = *sequence;
+    const std::uint32_t evenBase = (observed & 1u) == 0u ? observed : (observed + 1u);
+    const std::uint32_t odd = evenBase + 1u;
+    const std::uint32_t even = evenBase + 2u;
+
+    *sequence = odd;
+    __threadfence_system();
+
+    mappedMetrics->flags = payload.flags;
+    mappedMetrics->stepId = payload.stepId;
+    mappedMetrics->simTime = payload.simTime;
+    mappedMetrics->dt = payload.dt;
+    mappedMetrics->particleCount = payload.particleCount;
+    mappedMetrics->nanCount = payload.nanCount;
+    mappedMetrics->infCount = payload.infCount;
+    mappedMetrics->minSpeed = payload.minSpeed;
+    mappedMetrics->maxSpeed = payload.maxSpeed;
+    mappedMetrics->kineticEnergy = payload.kineticEnergy;
+    mappedMetrics->potentialEnergy = payload.potentialEnergy;
+    mappedMetrics->totalEnergy = payload.totalEnergy;
+    mappedMetrics->vramUsedBytes = payload.vramUsedBytes;
+    mappedMetrics->vramPeakBytes = payload.vramPeakBytes;
+    mappedMetrics->reserved0 = 0u;
+    mappedMetrics->reserved1 = 0u;
+
+    __threadfence_system();
+    *sequence = even;
+}
+
 __global__ void updateParticles(
     ParticleSoAView last,
     ParticleSoAView current,
@@ -439,7 +550,7 @@ __global__ void integrateSphKernel(
         outParticles.velY[i] = inParticles.velY[i];
         outParticles.velZ[i] = inParticles.velZ[i];
         outParticles.dens[i] = inParticles.dens[i];
-        outParticles.pressure[i] = inParticles.pressure[i];
+        setSoAPressure(outParticles, i, getSoAPressure(inParticles, i));
         outParticles.mass[i] = inParticles.mass[i];
         return;
     }
@@ -552,6 +663,124 @@ __global__ void buildRk4StageKernel(
     stage.mass[i] = base.mass[i];
     stage.temp[i] = base.temp[i];
     stage.dens[i] = base.dens[i];
+}
+
+__global__ void primeHalfVelocityKernel(ParticleSoAView state, float3 *vHalf, int numParticles)
+{
+    const int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= numParticles) {
+        return;
+    }
+
+    __shared__ float3 sVel[Particle::kDefaultCudaBlockSize];
+    sVel[threadIdx.x] = make_float3(state.velX[i], state.velY[i], state.velZ[i]);
+    __syncthreads();
+
+    vHalf[i] = sVel[threadIdx.x];
+}
+
+__global__ void applyKickHalfStepKernel(
+    ParticleSoAView state,
+    Vector3ConstHandle acceleration,
+    float deltaTime,
+    float3 *vHalf,
+    int numParticles)
+{
+    const int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= numParticles) {
+        return;
+    }
+
+    __shared__ float3 sVel[Particle::kDefaultCudaBlockSize];
+    __shared__ float3 sAcc[Particle::kDefaultCudaBlockSize];
+
+    sVel[threadIdx.x] = make_float3(state.velX[i], state.velY[i], state.velZ[i]);
+    sAcc[threadIdx.x] = make_float3(acceleration[i].x, acceleration[i].y, acceleration[i].z);
+    __syncthreads();
+
+    const float halfDt = 0.5f * deltaTime;
+    const float3 vel = sVel[threadIdx.x];
+    const float3 acc = sAcc[threadIdx.x];
+    vHalf[i] = make_float3(
+        vel.x + acc.x * halfDt,
+        vel.y + acc.y * halfDt,
+        vel.z + acc.z * halfDt);
+}
+
+__global__ void driftWithHalfVelocityKernel(
+    ParticleSoAView state,
+    const float3 *vHalf,
+    float deltaTime,
+    ParticleSoAView out,
+    int numParticles)
+{
+    const int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= numParticles) {
+        return;
+    }
+
+    __shared__ float3 sPos[Particle::kDefaultCudaBlockSize];
+    __shared__ float3 sHalf[Particle::kDefaultCudaBlockSize];
+
+    sPos[threadIdx.x] = make_float3(state.posX[i], state.posY[i], state.posZ[i]);
+    sHalf[threadIdx.x] = vHalf[i];
+    __syncthreads();
+
+    const float3 pos = sPos[threadIdx.x];
+    const float3 halfVel = sHalf[threadIdx.x];
+    const Vector3 nextPos(
+        pos.x + halfVel.x * deltaTime,
+        pos.y + halfVel.y * deltaTime,
+        pos.z + halfVel.z * deltaTime);
+
+    setSoAPosition(out, i, nextPos);
+    setSoAVelocity(out, i, getSoAVelocity(state, i));
+    out.mass[i] = state.mass[i];
+    out.temp[i] = state.temp[i];
+    out.dens[i] = state.dens[i];
+}
+
+__global__ void finalizeLeapfrogKickKernel(
+    ParticleSoAView driftedState,
+    const float3 *vHalf,
+    Vector3ConstHandle acceleration,
+    float deltaTime,
+    ParticleSoAView out,
+    float3 *vHalfOut,
+    int numParticles)
+{
+    const int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= numParticles) {
+        return;
+    }
+
+    __shared__ float3 sHalf[Particle::kDefaultCudaBlockSize];
+    __shared__ float3 sAcc[Particle::kDefaultCudaBlockSize];
+
+    sHalf[threadIdx.x] = vHalf[i];
+    sAcc[threadIdx.x] = make_float3(acceleration[i].x, acceleration[i].y, acceleration[i].z);
+    __syncthreads();
+
+    const float3 halfVel = sHalf[threadIdx.x];
+    const float3 acc = sAcc[threadIdx.x];
+    const float halfDt = 0.5f * deltaTime;
+
+    const Vector3 nextVel(
+        halfVel.x + acc.x * halfDt,
+        halfVel.y + acc.y * halfDt,
+        halfVel.z + acc.z * halfDt);
+
+    setSoAPosition(out, i, getSoAPosition(driftedState, i));
+    setSoAVelocity(out, i, nextVel);
+    setSoAPressure(out, i, Vector3(acc.x, acc.y, acc.z) * 100.0f);
+    out.mass[i] = driftedState.mass[i];
+    out.temp[i] = driftedState.temp[i];
+    out.dens[i] = driftedState.dens[i];
+
+    vHalfOut[i] = make_float3(
+        halfVel.x + acc.x * deltaTime,
+        halfVel.y + acc.y * deltaTime,
+        halfVel.z + acc.z * deltaTime);
 }
 
 __global__ void packSoAKernel(ParticleConstHandle src, ParticleSoAView dst, int numParticles)

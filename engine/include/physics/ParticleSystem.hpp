@@ -6,12 +6,58 @@
 #include "physics/Octree.hpp"
 #include "physics/ParticleSoAView.hpp"
 
+#include <vector_types.h>
+
 /*
  * Module: physics
  * Responsibility: Own the particle-state buffers and advance the gravitational/SPH simulation.
  */
 
 #include <vector>
+#include <cstdint>
+#include <string>
+
+struct alignas(64) GpuSystemMetrics {
+    std::uint32_t sequence;
+    std::uint32_t flags;
+    std::uint64_t stepId;
+    float simTime;
+    float dt;
+    std::uint32_t particleCount;
+    std::uint32_t nanCount;
+    std::uint32_t infCount;
+    float minSpeed;
+    float maxSpeed;
+    float kineticEnergy;
+    float potentialEnergy;
+    float totalEnergy;
+    std::uint64_t vramUsedBytes;
+    std::uint64_t vramPeakBytes;
+    std::uint32_t reserved0;
+    std::uint64_t reserved1;
+};
+
+struct GpuMetricsPayload {
+    std::uint32_t flags;
+    std::uint64_t stepId;
+    float simTime;
+    float dt;
+    std::uint32_t particleCount;
+    std::uint32_t nanCount;
+    std::uint32_t infCount;
+    float minSpeed;
+    float maxSpeed;
+    float kineticEnergy;
+    float potentialEnergy;
+    float totalEnergy;
+    std::uint64_t vramUsedBytes;
+    std::uint64_t vramPeakBytes;
+};
+
+enum GpuMetricsFlags : std::uint32_t {
+    kGpuMetricsValid = 1u << 0,
+    kGpuMetricsEstimated = 1u << 1
+};
 
 /// Owns particle state on host and device and advances it with the selected solver.
 class ParticleSystem {
@@ -23,7 +69,8 @@ class ParticleSystem {
         };
         enum class IntegratorMode {
             Euler,
-            Rk4
+            Rk4,
+            Leapfrog
         };
 
         /// Builds a particle system with `numParticles`, optionally using the built-in bootstrap state.
@@ -73,6 +120,16 @@ class ParticleSystem {
         void syncDeviceState();
         /// Synchronizes device-side state back to host memory.
         bool syncHostState();
+        /// Computes energy metrics directly from device buffers without host particle copies.
+        bool computeEnergyEstimateGpu(
+            std::size_t sampleLimit,
+            float softening,
+            float minDistance2,
+            float specificHeat,
+            float &kinetic,
+            float &potential,
+            float &thermal,
+            bool &estimated);
 
         /// Returns the authoritative host-side particle vector.
         const std::vector<Particle> &getParticles() const;
@@ -86,6 +143,8 @@ class ParticleSystem {
 
         /// Exposes the current structure-of-arrays views for diagnostics and tests.
         ParticleSoAView getSoAView(bool next = false) const;
+        /// Returns the mapped host metrics snapshot used for asynchronous telemetry reads.
+        const GpuSystemMetrics *getMappedGpuMetrics() const;
 
     private:
         void initializeRuntimeState(std::size_t particleCapacity);
@@ -101,6 +160,28 @@ class ParticleSystem {
         bool allocateRk4Buffers(int numParticles);
         bool allocateSphBuffers(int numParticles);
         bool allocateSphGridBuffers(int numParticles);
+        bool ensureLinearOctreeScratchCapacity(int numParticles);
+        bool ensureEnergyScratchCapacity(int numParticles, int sampleCount);
+        bool buildLinearOctreeGpu(ParticleSoAView currentView, int numParticles);
+        bool allocateMappedMetrics();
+        void releaseMappedMetrics();
+        void publishMappedMetrics(float deltaTime);
+        std::size_t estimateMemoryUsage(
+            std::size_t particleCount,
+            bool sphEnabled,
+            SolverMode solverMode,
+            IntegratorMode integratorMode,
+            std::size_t energySampleLimit,
+            int octreeLeafCapacity,
+            std::size_t *baseAndIntegratorBytes,
+            std::size_t *sphBytes,
+            std::size_t *octreeBytes) const;
+        static std::string formatMemoryBreakdown(
+            std::size_t baseAndIntegratorBytes,
+            std::size_t sphBytes,
+            std::size_t octreeBytes,
+            std::size_t totalBytes,
+            std::size_t budgetBytes);
 
         std::vector<Particle> _particles;
         SolverMode _solverMode;
@@ -166,6 +247,8 @@ class ParticleSystem {
         Vector3 *d_k2v;
         Vector3 *d_k3v;
         Vector3 *d_k4v;
+        float3 *d_vHalf;
+        bool _leapfrogPrimed;
         float *d_sphDensity;
         float *d_sphPressure;
         int *d_sphCellHash;
@@ -174,6 +257,16 @@ class ParticleSystem {
         int *d_sphCellEnd;
         GpuOctreeNode *g_dOctreeNodes;
         int *g_dOctreeLeafIndices;
+        unsigned long long *d_octreeMortonKeys;
+        unsigned long long *d_octreePrefixesA;
+        unsigned long long *d_octreePrefixesB;
+        int *d_octreeLevelIndicesA;
+        int *d_octreeLevelIndicesB;
+        int *d_octreeParentCounts;
+        int *d_octreeParentOffsets;
+        float *d_energyKineticBlocks;
+        float *d_energyThermalBlocks;
+        double *d_energyPotentialPartials;
 
         // Host shadows for SPH
         std::vector<int> _hostCellHash;
@@ -182,6 +275,19 @@ class ParticleSystem {
         // Octree capacity tracking
         std::size_t g_dOctreeNodeCapacity;
         std::size_t g_dOctreeLeafCapacity;
+        std::size_t d_octreeMortonCapacity;
+        std::size_t d_octreePrefixCapacity;
+        std::size_t d_octreeLevelCapacity;
+        std::size_t d_energyBlockCapacity;
+        std::size_t d_energySampleCapacity;
+        int _gpuOctreeRootIndex;
+        int _gpuOctreeNodeCount;
+        int _gpuOctreeLeafCount;
+        GpuSystemMetrics *_mappedMetricsHost;
+        GpuSystemMetrics *_mappedMetricsDevice;
+        std::uint64_t _metricsStepId;
+        float _metricsSimTime;
+        int _linearOctreeLeafCapacity;
 };
 
 
