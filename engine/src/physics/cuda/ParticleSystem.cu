@@ -8,6 +8,7 @@
 #include "fragments/ParticleSystemThermal.inl"
 #include "fragments/ParticleSystemSphGrid.inl"
 #include "fragments/ParticleSystemSphKernels.inl"
+#include "fragments/ParticleSystemTiledAcceleration.inl"
 #include "fragments/OctreeImpl.inl"
 #include "fragments/ParticleSystemUpdate.inl"
 

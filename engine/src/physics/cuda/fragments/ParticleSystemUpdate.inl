@@ -463,8 +463,8 @@ bool ParticleSystem::update(float deltaTime) {
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k1 launch")) {
             return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(currentView, d_k1v, numParticles, forceLaw, _physicsMaxAcceleration);
-        if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k1 launch")) {
+        computePairwiseAccelerationKernelTiled<<<numBlocks, Particle::kDefaultCudaBlockSize, 4096>>>(currentView, d_k1v, numParticles, forceLaw, _physicsMaxAcceleration);
+        if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k1 launch (tiled)")) {
             return false;
         }
 
@@ -476,8 +476,8 @@ bool ParticleSystem::update(float deltaTime) {
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k2 launch")) {
             return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(nextView, d_k2v, numParticles, forceLaw, _physicsMaxAcceleration);
-        if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k2 launch")) {
+        computePairwiseAccelerationKernelTiled<<<numBlocks, Particle::kDefaultCudaBlockSize, 4096>>>(nextView, d_k2v, numParticles, forceLaw, _physicsMaxAcceleration);
+        if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k2 launch (tiled)")) {
             return false;
         }
 
@@ -489,8 +489,8 @@ bool ParticleSystem::update(float deltaTime) {
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k3 launch")) {
             return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(nextView, d_k3v, numParticles, forceLaw, _physicsMaxAcceleration);
-        if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k3 launch")) {
+        computePairwiseAccelerationKernelTiled<<<numBlocks, Particle::kDefaultCudaBlockSize, 4096>>>(nextView, d_k3v, numParticles, forceLaw, _physicsMaxAcceleration);
+        if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k3 launch (tiled)")) {
             return false;
         }
 
@@ -502,8 +502,8 @@ bool ParticleSystem::update(float deltaTime) {
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k4 launch")) {
             return false;
         }
-        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(nextView, d_k4v, numParticles, forceLaw, _physicsMaxAcceleration);
-        if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k4 launch")) {
+        computePairwiseAccelerationKernelTiled<<<numBlocks, Particle::kDefaultCudaBlockSize, 4096>>>(nextView, d_k4v, numParticles, forceLaw, _physicsMaxAcceleration);
+        if (!checkCudaStatus(cudaGetLastError(), "computeAcceleration k4 launch (tiled)")) {
             return false;
         }
 
@@ -530,13 +530,13 @@ bool ParticleSystem::update(float deltaTime) {
             _leapfrogPrimed = true;
         }
 
-        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
+        computePairwiseAccelerationKernelTiled<<<numBlocks, Particle::kDefaultCudaBlockSize, 4096>>>(
             currentView,
             d_k1v,
             numParticles,
             forceLaw,
             _physicsMaxAcceleration);
-        if (!checkCudaStatus(cudaGetLastError(), "pairwise leapfrog kick1 acceleration launch")) {
+        if (!checkCudaStatus(cudaGetLastError(), "pairwise leapfrog kick1 acceleration launch (tiled)")) {
             return false;
         }
 
@@ -573,13 +573,13 @@ bool ParticleSystem::update(float deltaTime) {
         currentView = getSoAView(false);
         nextView = getSoAView(true);
 
-        computePairwiseAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
+        computePairwiseAccelerationKernelTiled<<<numBlocks, Particle::kDefaultCudaBlockSize, 4096>>>(
             currentView,
             d_k2v,
             numParticles,
             forceLaw,
             _physicsMaxAcceleration);
-        if (!checkCudaStatus(cudaGetLastError(), "pairwise leapfrog kick2 acceleration launch")) {
+        if (!checkCudaStatus(cudaGetLastError(), "pairwise leapfrog kick2 acceleration launch (tiled)")) {
             return false;
         }
 
