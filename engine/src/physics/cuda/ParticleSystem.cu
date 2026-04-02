@@ -2,6 +2,7 @@
 #include "fragments/ParticleSystemCore.inl"
 #include "fragments/ParticleSystemBuffer.inl"
 #include "fragments/ParticleSystemOctreeGpu.inl"
+#include "fragments/ParticleSystemMortonSorting.inl"
 #include "fragments/ParticleSystemLinearOctreeGpu.inl"
 #include "fragments/ParticleSystemState.inl"
 #include "fragments/ParticleSystemEnergyGpu.inl"

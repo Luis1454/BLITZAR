@@ -193,6 +193,8 @@ __global__ void buildLinearOctreeLeafNodesKernel(OctreeNodeHandle nodes,
     }
     node.leafStart = start;
     node.leafCount = count;
+    node.parentIndex = -1;
+    node.nextIndex = -1;
     node.childMask = 0u;
 
     nodes[leafId] = node;
@@ -229,7 +231,11 @@ __global__ void buildLinearOctreeParentNodesKernel8(OctreeNodeHandle nodes,
     for (int c = 0; c < 8; ++c) {
         node.children[c] = -1;
     }
+    node.parentIndex = -1;
+    node.nextIndex = -1;
     node.childMask = 0u;
+
+    const int nodeIndex = parentNodeBase + parentId;
 
     for (int localChild = 0; localChild < childCount; ++localChild) {
         const int childSlot = childStart + localChild;
@@ -249,6 +255,10 @@ __global__ void buildLinearOctreeParentNodesKernel8(OctreeNodeHandle nodes,
 
         node.children[octant] = childIndex;
         node.childMask |= static_cast<unsigned char>(1u << octant);
+
+    GpuOctreeNode childNode = nodes[childIndex];
+    childNode.parentIndex = nodeIndex;
+    nodes[childIndex] = childNode;
 
         const GpuOctreeNode child = nodes[childIndex];
         minX = fminf(minX, child.centerX - child.halfSize);
@@ -284,9 +294,55 @@ __global__ void buildLinearOctreeParentNodesKernel8(OctreeNodeHandle nodes,
     node.leafStart = 0;
     node.leafCount = 0;
 
-    const int nodeIndex = parentNodeBase + parentId;
     nodes[nodeIndex] = node;
     nextLevelIndices[parentId] = nodeIndex;
+}
+
+__global__ void buildLinearOctreeNextLinksKernel(OctreeNodeHandle nodes, int nodeCount, int rootIndex)
+{
+    const int nodeIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    if (nodeIndex >= nodeCount || nodeIndex < 0) {
+        return;
+    }
+
+    if (nodeIndex == rootIndex) {
+        nodes[nodeIndex].nextIndex = -1;
+        return;
+    }
+
+    int nextIndex = -1;
+    int current = nodeIndex;
+    int parent = nodes[current].parentIndex;
+
+    while (parent >= 0) {
+        const GpuOctreeNode parentNode = nodes[parent];
+
+        int childSlot = -1;
+        for (int c = 0; c < 8; ++c) {
+            if (parentNode.children[c] == current) {
+                childSlot = c;
+                break;
+            }
+        }
+
+        if (childSlot >= 0) {
+            for (int c = childSlot + 1; c < 8; ++c) {
+                if (parentNode.children[c] >= 0) {
+                    nextIndex = parentNode.children[c];
+                    break;
+                }
+            }
+        }
+
+        if (nextIndex >= 0) {
+            break;
+        }
+
+        current = parent;
+        parent = nodes[current].parentIndex;
+    }
+
+    nodes[nodeIndex].nextIndex = nextIndex;
 }
 
 bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numParticles)
@@ -468,6 +524,35 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
     _gpuOctreeLeafCount = numParticles;
     _gpuOctreeNodeCount = totalNodeCount;
     _gpuOctreeRootIndex = totalNodeCount - 1;
+
+    if (_gpuOctreeRootIndex >= 0) {
+        GpuOctreeNode rootNode = {};
+        if (!checkCudaStatus(cudaMemcpyAsync(&rootNode,
+                                             g_dOctreeNodes + _gpuOctreeRootIndex,
+                                             sizeof(GpuOctreeNode),
+                                             cudaMemcpyDeviceToHost,
+                                             stream),
+                             "copy linear octree root node to host")) {
+            return false;
+        }
+        rootNode.parentIndex = -1;
+        rootNode.nextIndex = -1;
+        if (!checkCudaStatus(cudaMemcpyAsync(g_dOctreeNodes + _gpuOctreeRootIndex,
+                                             &rootNode,
+                                             sizeof(GpuOctreeNode),
+                                             cudaMemcpyHostToDevice,
+                                             stream),
+                             "write linear octree root links")) {
+            return false;
+        }
+
+        const int linkBlocks = (_gpuOctreeNodeCount + threads - 1) / threads;
+        buildLinearOctreeNextLinksKernel<<<linkBlocks, threads, 0, stream>>>(
+            g_dOctreeNodes, _gpuOctreeNodeCount, _gpuOctreeRootIndex);
+        if (!checkCudaStatus(cudaGetLastError(), "buildLinearOctreeNextLinks kernel launch")) {
+            return false;
+        }
+    }
 
     if (hardAuditMode) {
         fprintf(stderr,

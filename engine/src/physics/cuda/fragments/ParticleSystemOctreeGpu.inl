@@ -18,6 +18,87 @@ __device__ float octreeNodeDistanceToBounds(const GpuOctreeNode &node, const Vec
     return sqrtf(dx * dx + dy * dy + dz * dz);
 }
 
+__device__ int octreeFirstChildIndex(const GpuOctreeNode &node)
+{
+    for (int child = 0; child < 8; ++child) {
+        if ((node.childMask & (1u << child)) != 0u) {
+            return node.children[child];
+        }
+    }
+    return -1;
+}
+
+__device__ Vector3 computeOctreeAccelerationStackless(
+    ParticleSoAView state,
+    int selfIndex,
+    OctreeNodeConstHandle nodes,
+    int rootIndex,
+    IndexConstHandle leafIndices,
+    ForceLawPolicy forceLaw,
+    float maxAcceleration,
+    int openingCriterion
+)
+{
+    constexpr float kBarnesHutTheta = 0.5f;
+    constexpr int kMaxTraversalIterations = 8192;
+
+    const Vector3 selfPos = getSoAPosition(state, selfIndex);
+    Vector3 force(0.0f, 0.0f, 0.0f);
+
+    int traversalIterations = 0;
+    int nodeIndex = rootIndex;
+    while (nodeIndex >= 0) {
+        if (++traversalIterations > kMaxTraversalIterations) {
+            break;
+        }
+
+        const GpuOctreeNode node = nodes[nodeIndex];
+        if (node.mass <= 0.0f) {
+            nodeIndex = node.nextIndex;
+            continue;
+        }
+
+        if (node.childMask == 0u) {
+            for (int k = 0; k < node.leafCount; ++k) {
+                const int otherIndex = leafIndices[node.leafStart + k];
+                if (otherIndex == selfIndex) {
+                    continue;
+                }
+                force += gravityAccelerationFromSource(
+                    selfPos,
+                    getSoAPosition(state, otherIndex),
+                    state.mass[otherIndex],
+                    forceLaw);
+            }
+            nodeIndex = node.nextIndex;
+            continue;
+        }
+
+        const Vector3 direction(node.comX - selfPos.x, node.comY - selfPos.y, node.comZ - selfPos.z);
+        const float dist2 = softenedDistanceSquared(direction, forceLaw);
+        const bool containsSelf = octreeNodeContains(node, selfPos);
+        const float size = node.halfSize * 2.0f;
+        const float criterionDistance = openingCriterion == 1
+            ? fmaxf(octreeNodeDistanceToBounds(node, selfPos), 1.0e-6f)
+            : sqrtf(dist2);
+
+        if (!containsSelf && (size / criterionDistance) < kBarnesHutTheta) {
+            force += gravityAccelerationFromSource(
+                selfPos,
+                Vector3(node.comX, node.comY, node.comZ),
+                node.mass,
+                forceLaw);
+            nodeIndex = node.nextIndex;
+            continue;
+        }
+
+        const int childIndex = octreeFirstChildIndex(node);
+        nodeIndex = childIndex >= 0 ? childIndex : node.nextIndex;
+    }
+
+    return clampAcceleration(force, maxAcceleration);
+}
+
 __global__ void computeOctreeAccelerationKernel(
     ParticleSoAView state,
     Vector3Handle outAcceleration,
@@ -34,69 +115,8 @@ __global__ void computeOctreeAccelerationKernel(
         return;
     }
 
-    const Vector3 selfPos = getSoAPosition(state, i);
-    Vector3 force(0.0f, 0.0f, 0.0f);
-
-    constexpr int kStackCapacity = 64;
-    constexpr int kMaxTraversalIterations = 2048;
-    int stack[kStackCapacity];
-    int top = 0;
-    int traversalIterations = 0;
-    stack[top++] = rootIndex;
-
-    while (top > 0) {
-        if (++traversalIterations > kMaxTraversalIterations) {
-            break;
-        }
-        const GpuOctreeNode node = nodes[stack[--top]];
-        if (node.mass <= 0.0f) {
-            continue;
-        }
-
-        if (node.childMask == 0) {
-            for (int k = 0; k < node.leafCount; ++k) {
-                const int otherIndex = leafIndices[node.leafStart + k];
-                if (otherIndex == i) {
-                    continue;
-                }
-                force += gravityAccelerationFromSource(
-                    selfPos,
-                    getSoAPosition(state, otherIndex),
-                    state.mass[otherIndex],
-                    forceLaw);
-            }
-            continue;
-        }
-
-        const Vector3 direction(node.comX - selfPos.x, node.comY - selfPos.y, node.comZ - selfPos.z);
-        const float dist2 = softenedDistanceSquared(direction, forceLaw);
-        const bool containsSelf = octreeNodeContains(node, selfPos);
-        const float size = node.halfSize * 2.0f;
-        const float criterionDistance = openingCriterion == 1
-            ? fmaxf(octreeNodeDistanceToBounds(node, selfPos), 1.0e-6f)
-            : sqrtf(dist2);
-
-        if (!containsSelf && (size / criterionDistance) < forceLaw.theta) {
-            force += gravityAccelerationFromSource(
-                selfPos,
-                Vector3(node.comX, node.comY, node.comZ),
-                node.mass,
-                forceLaw);
-            continue;
-        }
-
-        for (int child = 0; child < 8; ++child) {
-            if ((node.childMask & (1u << child)) == 0) {
-                continue;
-            }
-            const int childIndex = node.children[child];
-            if (childIndex >= 0 && top < kStackCapacity) {
-                stack[top++] = childIndex;
-            }
-        }
-    }
-
-    outAcceleration[i] = clampAcceleration(force, maxAcceleration);
+    outAcceleration[i] = computeOctreeAccelerationStackless(
+        state, i, nodes, rootIndex, leafIndices, forceLaw, maxAcceleration, openingCriterion);
 }
 
 __global__ void updateParticlesOctree(
@@ -117,59 +137,8 @@ __global__ void updateParticlesOctree(
     }
 
     const Vector3 selfPos = getSoAPosition(lastState, i);
-    Vector3 force(0.0f, 0.0f, 0.0f);
-
-    constexpr int kStackCapacity = 64;
-    constexpr int kMaxTraversalIterations = 2048;
-    int stack[kStackCapacity];
-    int top = 0;
-    int traversalIterations = 0;
-    stack[top++] = rootIndex;
-
-    while (top > 0) {
-        // Watchdog: prevent infinite loops in octree traversal
-        if (++traversalIterations > kMaxTraversalIterations) {
-            break;
-        }
-        const GpuOctreeNode node = nodes[stack[--top]];
-        if (node.mass <= 0.0f) continue;
-
-        if (node.childMask == 0) {
-            for (int k = 0; k < node.leafCount; ++k) {
-                const int otherIndex = leafIndices[node.leafStart + k];
-                if (otherIndex == i) continue;
-                force += gravityAccelerationFromSource(
-                    selfPos,
-                    getSoAPosition(lastState, otherIndex),
-                    lastState.mass[otherIndex],
-                    forceLaw);
-            }
-            continue;
-        }
-
-        const Vector3 direction(node.comX - selfPos.x, node.comY - selfPos.y, node.comZ - selfPos.z);
-        const float dist2 = softenedDistanceSquared(direction, forceLaw);
-        const bool containsSelf = octreeNodeContains(node, selfPos);
-        const float size = node.halfSize * 2.0f;
-        const float criterionDistance = openingCriterion == 1
-            ? fmaxf(octreeNodeDistanceToBounds(node, selfPos), 1.0e-6f)
-            : sqrtf(dist2);
-
-        if (!containsSelf && (size / criterionDistance) < forceLaw.theta) {
-            force += gravityAccelerationFromSource(
-                selfPos, Vector3(node.comX, node.comY, node.comZ),
-                node.mass, forceLaw);
-            continue;
-        }
-
-        for (int child = 0; child < 8; ++child) {
-            if ((node.childMask & (1u << child)) == 0) continue;
-            const int childIndex = node.children[child];
-            if (childIndex >= 0 && top < kStackCapacity) stack[top++] = childIndex;
-        }
-    }
-
-    force = clampAcceleration(force, maxAcceleration);
+    const Vector3 force = computeOctreeAccelerationStackless(
+        lastState, i, nodes, rootIndex, leafIndices, forceLaw, maxAcceleration, openingCriterion);
     const Vector3 vel = getSoAVelocity(lastState, i);
     const Vector3 nextVel = vel + force * deltaTime;
     const Vector3 nextPos = selfPos + nextVel * deltaTime;

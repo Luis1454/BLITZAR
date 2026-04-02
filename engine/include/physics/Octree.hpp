@@ -22,6 +22,8 @@ struct GpuOctreeNode {
     int children[8];
     int leafStart;
     int leafCount;
+    int parentIndex;
+    int nextIndex;
     unsigned int childMask;
 };
 
