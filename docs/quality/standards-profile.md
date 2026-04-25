@@ -1,4 +1,4 @@
-﻿# Standards Profile (NASA-First)
+# Standards Profile (NASA-First)
 
 This repository is independent from any company stack but aligned for US space recruiting review (JPL and California space-tech).
 

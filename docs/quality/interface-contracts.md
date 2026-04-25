@@ -1,4 +1,4 @@
-﻿# Critical Interface Contracts
+# Critical Interface Contracts
 
 This artifact defines the versioned contracts that gate server, protocol, and runtime-critical compatibility reviews.
 

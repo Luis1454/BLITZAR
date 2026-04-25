@@ -1,4 +1,4 @@
-﻿# Server JSON Protocol (TCP)
+# Server JSON Protocol (TCP)
 
 Canonical compatibility governance for this surface is defined in `docs/quality/interface-contracts.md` (`CTR-PROT-001`). The Rust mirror for this contract lives in `rust/blitzar-protocol`.
 The machine-readable schema artifact for the current wire contract is `runtime/protocol/server-protocol-schema.json`.

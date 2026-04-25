@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Module: physics/cuda
  * Responsibility: Build and maintain the SPH spatial hash grid.
  */

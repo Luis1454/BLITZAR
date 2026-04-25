@@ -1,4 +1,4 @@
-﻿requirement_id,domain,primary_surface,verification_refs
+requirement_id,domain,primary_surface,verification_refs
 REQ-CONF-001,config,engine/include/config|engine/src/config|engine/include/config/SimulationScenarioValidationPhysics.hpp|engine/src/config/SimulationScenarioValidationPhysics.cpp|engine/include/server|engine/src/server|docs/quality/api-documentation-standard.md,EVD_TEST_UNIT_CONFIG_ARGS_CLI|EVD_TEST_UNIT_CONFIG_ARGS_IO
 REQ-CONF-002,config,engine/include/config|engine/src/config|engine/include/config/SimulationScenarioValidationPhysics.hpp|engine/src/config/SimulationScenarioValidationPhysics.cpp|engine/include/server|engine/src/server,EVD_TEST_UNIT_CONFIG_ARGS_CLI|EVD_TEST_UNIT_CONFIG_ARGS_IO
 REQ-PROT-001,protocol,runtime/include/protocol|runtime/include/server|runtime/src/server|runtime/src/protocol|docs/server-protocol.md|runtime/protocol/server-protocol-schema.json,EVD_TEST_INT_PROTOCOL_CONNECT|EVD_TEST_UNIT_PROTOCOL_CODEC|EVD_DOC_SERVER_PROTOCOL|EVD_DOC_SERVER_PROTOCOL_SCHEMA|EVD_QLT_INTERFACE_CONTRACTS|EVD_IFACE_SERVER_PROTOCOL

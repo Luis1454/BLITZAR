@@ -113,5 +113,3 @@
         "EVD_TEST_UNIT_PROTOCOL_CODEC_PARSE": "tests/unit/protocol/json_codec_parse.cpp"
     }
 }
-
-

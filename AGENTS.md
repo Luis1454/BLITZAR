@@ -1,4 +1,4 @@
-﻿# AI Contribution Workflow
+# AI Contribution Workflow
 
 This file defines the standard procedure for AI agents working in this repository.
 

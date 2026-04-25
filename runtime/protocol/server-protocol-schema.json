@@ -1,4 +1,4 @@
-﻿{
+{
   "schema": "server-json-v1",
   "transport": {
     "kind": "tcp-json-lines",
