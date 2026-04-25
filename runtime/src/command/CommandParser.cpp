@@ -22,24 +22,26 @@ static std::vector<std::string> splitTokens(const std::string& line)
     std::string current;
     bool inQuotes = false;
     char quoteChar = '\0';
-    for (char c : line)
+    for (char c : line) {
         if (!inQuotes && (c == '"' || c == '\'')) {
             inQuotes = true;
             quoteChar = c;
             continue;
-            if (inQuotes && c == quoteChar)
-                inQuotes = false;
+        }
+        if (inQuotes && c == quoteChar) {
+            inQuotes = false;
             quoteChar = '\0';
             continue;
-            if (!inQuotes && std::isspace(static_cast<unsigned char>(c)) != 0) {
-                if (!current.empty()) {
-                    tokens.push_back(current);
-                    current.clear();
-                }
-                continue;
-            }
-            current.push_back(c);
         }
+        if (!inQuotes && std::isspace(static_cast<unsigned char>(c)) != 0) {
+            if (!current.empty()) {
+                tokens.push_back(current);
+                current.clear();
+            }
+            continue;
+        }
+        current.push_back(c);
+    }
     if (!current.empty()) {
         tokens.push_back(current);
     }
@@ -50,21 +52,24 @@ static std::string stripComment(const std::string& line)
     std::string output;
     bool inQuotes = false;
     char quoteChar = '\0';
-    for (char c : line)
+    for (char c : line) {
         if (!inQuotes && (c == '"' || c == '\'')) {
             inQuotes = true;
             quoteChar = c;
             output.push_back(c);
             continue;
-            if (inQuotes && c == quoteChar)
-                inQuotes = false;
+        }
+        if (inQuotes && c == quoteChar) {
+            inQuotes = false;
             quoteChar = '\0';
             output.push_back(c);
             continue;
-            if (!inQuotes && c == '#')
-                break;
-            output.push_back(c);
         }
+        if (!inQuotes && c == '#') {
+            break;
+        }
+        output.push_back(c);
+    }
     return output;
 }
 static bool parseUintToken(const std::string& token, std::uint64_t& outValue)
@@ -109,15 +114,17 @@ static CommandParseResult parseTokens(const std::vector<std::string>& tokens,
     request.id = spec->id;
     request.name = spec->name;
     request.lineNumber = lineNumber;
-    for (std::size_t index = 0u; index < provided; ++index)
+    for (std::size_t index = 0u; index < provided; ++index) {
         const std::string& token = tokens[index + 1u];
-    const CommandArgumentSpec& argument = spec->arguments[index];
-    if (argument.kind == CommandArgumentKind::Uint || argument.kind == CommandArgumentKind::Port) {
-        std::uint64_t value = 0u;
-        if (!parseUintToken(token, value)) {
-            result.error =
-                "line " + std::to_string(lineNumber) + ": invalid integer '" + token + "'";
-            return result;
+        const CommandArgumentSpec& argument = spec->arguments[index];
+        if (argument.kind == CommandArgumentKind::Uint ||
+            argument.kind == CommandArgumentKind::Port) {
+            std::uint64_t value = 0u;
+            if (!parseUintToken(token, value)) {
+                result.error =
+                    "line " + std::to_string(lineNumber) + ": invalid integer '" + token + "'";
+                return result;
+            }
             request.arguments.push_back(value);
             continue;
         }
@@ -143,22 +150,25 @@ CommandParseResult CommandParser::parseScript(const std::string& scriptText)
     result.ok = true;
     std::size_t lineNumber = 1u;
     std::string current;
-    for (char c : scriptText)
+    for (char c : scriptText) {
         if (c == '\n') {
             CommandParseResult lineResult = parseLine(current, lineNumber);
-            if (!lineResult.ok)
+            if (!lineResult.ok) {
                 return lineResult;
+            }
             if (!lineResult.requests.empty()) {
                 result.requests.push_back(std::move(lineResult.requests.front()));
-                current.clear();
-                lineNumber += 1u;
-                continue;
             }
-            current.push_back(c);
+            current.clear();
+            lineNumber += 1u;
+            continue;
         }
+        current.push_back(c);
+    }
     CommandParseResult tailResult = parseLine(current, lineNumber);
-    if (!tailResult.ok)
+    if (!tailResult.ok) {
         return tailResult;
+    }
     if (!tailResult.requests.empty()) {
         result.requests.push_back(std::move(tailResult.requests.front()));
     }
