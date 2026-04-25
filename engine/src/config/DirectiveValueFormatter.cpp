@@ -1,11 +1,8 @@
 #include "config/DirectiveValueFormatter.hpp"
-
 #include <algorithm>
 #include <cctype>
-
 namespace grav_config {
-
-std::string DirectiveValueFormatter::quote(const std::string &value)
+std::string DirectiveValueFormatter::quote(const std::string& value)
 {
     if (value.empty()) {
         return "\"\"";
@@ -28,5 +25,4 @@ std::string DirectiveValueFormatter::quote(const std::string &value)
     quoted.push_back('"');
     return quoted;
 }
-
 } // namespace grav_config

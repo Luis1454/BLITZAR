@@ -3,7 +3,6 @@
 # Each active group must also exist in docs/quality/manifest/deviations.json.
 
 # Core server orchestration pending split by protocol/state/controls.
-engine/src/server/SimulationServer.cpp
 runtime/src/server/ServerDaemon.cpp
 runtime/src/protocol/ServerClient.cpp
 runtime/src/client/ClientServerBridge.cpp
@@ -29,3 +28,4 @@ docs/quality/manifest/requirements.json
 
 # Test support and unit tests exceeding 200 lines pending refactor.
 tests/unit/protocol/json_codec.cpp
+tests/int/ui/qt_workspace_runtime_controls.cpp

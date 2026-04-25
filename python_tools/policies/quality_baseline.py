@@ -18,18 +18,18 @@ from python_tools.policies.repo_policy import load_allowlist
 
 REQUIRED_FILES = (
     "AGENTS.md",
-    "docs/quality/README.md",
+    "docs/quality/quality-overview.md",
     QUALITY_MANIFEST_PATH,
-    "docs/quality/standards_profile.md",
+    "docs/quality/standards-profile.md",
     "docs/quality/fmea.md",
-    "docs/quality/tool_qualification.md",
-    "docs/quality/tool_manifest.md",
-    "docs/quality/power_of_10.md",
-    "docs/quality/prod_baseline.md",
-    "docs/quality/release_index.md",
-    "docs/quality/interface_contracts.md",
-    "docs/quality/ivv_plan.md",
-    "docs/quality/numerical_validation.md",
+    "docs/quality/tool-qualification.md",
+    "docs/quality/tool-manifest.md",
+    "docs/quality/power-of-10.md",
+    "docs/quality/production-baseline.md",
+    "docs/quality/release-index.md",
+    "docs/quality/interface-contracts.md",
+    "docs/quality/ivv-plan.md",
+    "docs/quality/numerical-validation.md",
 )
 REQUIRED_EVIDENCE = {"EVD_AGENTS": "AGENTS.md"}
 REQUIRED_CROSSWALK_ARTIFACTS = {"SWE-004": "EVD_AGENTS"}
@@ -182,4 +182,5 @@ class QualityBaselineCheck(BaseCheck):
         if not isinstance(value, list):
             return []
         return [item.strip() for item in value if isinstance(item, str) and item.strip()]
+
 

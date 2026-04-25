@@ -1,23 +1,17 @@
 #include "config/SimulationPerformanceProfile.hpp"
-
 #include "config/SimulationConfig.hpp"
 #include "protocol/ServerProtocol.hpp"
-
 #include <algorithm>
 #include <cctype>
-
 namespace grav_config {
-
 static std::string toLowerProfile(std::string_view raw)
 {
     std::string lowered(raw);
-    std::transform(lowered.begin(), lowered.end(), lowered.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(lowered.begin(), lowered.end(), lowered.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return lowered;
 }
-
-bool normalizePerformanceProfile(std::string_view raw, std::string &outCanonical)
+bool normalizePerformanceProfile(std::string_view raw, std::string& outCanonical)
 {
     const std::string lowered = toLowerProfile(raw);
     if (lowered == kPerformanceProfileInteractive) {
@@ -38,8 +32,7 @@ bool normalizePerformanceProfile(std::string_view raw, std::string &outCanonical
     }
     return false;
 }
-
-void applyPerformanceProfile(SimulationConfig &config)
+void applyPerformanceProfile(SimulationConfig& config)
 {
     std::string canonical;
     if (!normalizePerformanceProfile(config.performanceProfile, canonical)) {
@@ -74,15 +67,10 @@ void applyPerformanceProfile(SimulationConfig &config)
     config.substepTargetDt = 0.0f;
     config.maxSubsteps = 32u;
 }
-
 bool isPerformanceManagedField(std::string_view key)
 {
-    return key == "substep_target_dt"
-        || key == "max_substeps"
-        || key == "snapshot_publish_period_ms"
-        || key == "client_particle_cap"
-        || key == "energy_measure_every_steps"
-        || key == "energy_sample_limit";
+    return key == "substep_target_dt" || key == "max_substeps" ||
+           key == "snapshot_publish_period_ms" || key == "client_particle_cap" ||
+           key == "energy_measure_every_steps" || key == "energy_sample_limit";
 }
-
 } // namespace grav_config

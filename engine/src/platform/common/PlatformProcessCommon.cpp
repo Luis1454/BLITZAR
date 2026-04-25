@@ -1,8 +1,6 @@
 #include "platform/common/PlatformProcessCommon.hpp"
-
 namespace grav_platform {
-
-std::string quoteProcessArg(const std::string &arg)
+std::string quoteProcessArg(const std::string& arg)
 {
     if (arg.empty()) {
         return "\"\"";
@@ -22,15 +20,14 @@ std::string quoteProcessArg(const std::string &arg)
     }
     return "\"" + escaped + "\"";
 }
-
-std::string buildProcessCommandLine(const std::string &executable, const std::vector<std::string> &args)
+std::string buildProcessCommandLine(const std::string& executable,
+                                    const std::vector<std::string>& args)
 {
     std::string command = quoteProcessArg(executable);
-    for (const std::string &arg : args) {
+    for (const std::string& arg : args) {
         command.push_back(' ');
         command += quoteProcessArg(arg);
     }
     return command;
 }
-
 } // namespace grav_platform

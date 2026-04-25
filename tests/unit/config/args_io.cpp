@@ -1,17 +1,14 @@
-#include "server/SimulationInitConfig.hpp"
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationScenarioValidation.hpp"
 #include "protocol/ServerProtocol.hpp"
-
-#include <gtest/gtest.h>
-
+#include "server/SimulationInitConfig.hpp"
 #include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <gtest/gtest.h>
 #include <iostream>
 #include <sstream>
 #include <string>
-
 TEST(ConfigArgsTest, TST_UNT_CONF_010_SimulationConfigSaveLoadRoundTrip)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -32,7 +29,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_010_SimulationConfigSaveLoadRoundTrip)
     config.uiTheme = "dark";
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
-        std::filesystem::temp_directory_path() / ("gravity_config_roundtrip_" + std::to_string(stamp) + ".ini");
+        std::filesystem::temp_directory_path() /
+        ("gravity_config_roundtrip_" + std::to_string(stamp) + ".ini");
     ASSERT_TRUE(config.save(path.string()));
     const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
     EXPECT_EQ(loaded.particleCount, config.particleCount);
@@ -56,12 +54,12 @@ TEST(ConfigArgsTest, TST_UNT_CONF_010_SimulationConfigSaveLoadRoundTrip)
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
-
 TEST(ConfigArgsTest, TST_UNT_CONF_011_LoadIgnoresTrailingGarbageInNumericConfigValues)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    const std::filesystem::path path = std::filesystem::temp_directory_path()
-        / ("gravity_config_invalid_numbers_" + std::to_string(stamp) + ".ini");
+    const std::filesystem::path path =
+        std::filesystem::temp_directory_path() /
+        ("gravity_config_invalid_numbers_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
@@ -83,12 +81,12 @@ TEST(ConfigArgsTest, TST_UNT_CONF_011_LoadIgnoresTrailingGarbageInNumericConfigV
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
-
 TEST(ConfigArgsTest, TST_UNT_CONF_012_LoadOrCreateRejectsInvalidSolverAndIntegrator)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
-        std::filesystem::temp_directory_path() / ("gravity_config_invalid_modes_" + std::to_string(stamp) + ".ini");
+        std::filesystem::temp_directory_path() /
+        ("gravity_config_invalid_modes_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
@@ -101,9 +99,9 @@ TEST(ConfigArgsTest, TST_UNT_CONF_012_LoadOrCreateRejectsInvalidSolverAndIntegra
     EXPECT_EQ(loaded.integrator, defaults.integrator);
     std::error_code ec;
     std::filesystem::remove(path, ec);
-
     const std::filesystem::path incompatiblePath =
-        std::filesystem::temp_directory_path() / ("gravity_config_unsupported_modes_" + std::to_string(stamp) + ".ini");
+        std::filesystem::temp_directory_path() /
+        ("gravity_config_unsupported_modes_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(incompatiblePath, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
@@ -111,20 +109,20 @@ TEST(ConfigArgsTest, TST_UNT_CONF_012_LoadOrCreateRejectsInvalidSolverAndIntegra
         out << "integrator=rk4\n";
     }
     std::stringstream err;
-    std::streambuf *previous = std::cerr.rdbuf(err.rdbuf());
-    const SimulationConfig incompatibleLoaded = SimulationConfig::loadOrCreate(incompatiblePath.string());
+    std::streambuf* previous = std::cerr.rdbuf(err.rdbuf());
+    const SimulationConfig incompatibleLoaded =
+        SimulationConfig::loadOrCreate(incompatiblePath.string());
     std::cerr.rdbuf(previous);
     EXPECT_EQ(incompatibleLoaded.solver, "octree_gpu");
     EXPECT_EQ(incompatibleLoaded.integrator, "euler");
     EXPECT_NE(err.str().find("unsupported solver/integrator combination"), std::string::npos);
     std::filesystem::remove(incompatiblePath, ec);
 }
-
 TEST(ConfigArgsTest, TST_UNT_CONF_013_LoadOrCreateCreatesFileWhenMissing)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    const std::filesystem::path path =
-        std::filesystem::temp_directory_path() / ("gravity_config_create_" + std::to_string(stamp) + ".ini");
+    const std::filesystem::path path = std::filesystem::temp_directory_path() /
+                                       ("gravity_config_create_" + std::to_string(stamp) + ".ini");
     ASSERT_FALSE(std::filesystem::exists(path));
     const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
     EXPECT_TRUE(std::filesystem::exists(path));
@@ -132,7 +130,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_013_LoadOrCreateCreatesFileWhenMissing)
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
-
 TEST(ConfigArgsTest, TST_UNT_CONF_015_DefaultClientParticleCapMatchesProtocolMax)
 {
     const SimulationConfig defaults = SimulationConfig::defaults();
@@ -142,19 +139,19 @@ TEST(ConfigArgsTest, TST_UNT_CONF_015_DefaultClientParticleCapMatchesProtocolMax
     EXPECT_FLOAT_EQ(defaults.substepTargetDt, 0.01f);
     EXPECT_EQ(defaults.maxSubsteps, 4u);
 }
-
 TEST(ConfigArgsTest, TST_UNT_CONF_016_LoadClampsClientParticleCapToProtocolMax)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
-        std::filesystem::temp_directory_path() / ("gravity_config_client_cap_" + std::to_string(stamp) + ".ini");
+        std::filesystem::temp_directory_path() /
+        ("gravity_config_client_cap_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
         out << "client_particle_cap=50000\n";
     }
     std::stringstream err;
-    std::streambuf *previous = std::cerr.rdbuf(err.rdbuf());
+    std::streambuf* previous = std::cerr.rdbuf(err.rdbuf());
     const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
     std::cerr.rdbuf(previous);
     EXPECT_EQ(loaded.clientParticleCap, grav_protocol::kSnapshotMaxPoints);
@@ -162,19 +159,19 @@ TEST(ConfigArgsTest, TST_UNT_CONF_016_LoadClampsClientParticleCapToProtocolMax)
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
-
 TEST(ConfigArgsTest, TST_UNT_CONF_017_LoadWarnsOnUnknownIniKey)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
-        std::filesystem::temp_directory_path() / ("gravity_config_unknown_key_" + std::to_string(stamp) + ".ini");
+        std::filesystem::temp_directory_path() /
+        ("gravity_config_unknown_key_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
         out << "mystery_option=42\n";
     }
     std::stringstream err;
-    std::streambuf *previous = std::cerr.rdbuf(err.rdbuf());
+    std::streambuf* previous = std::cerr.rdbuf(err.rdbuf());
     const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
     std::cerr.rdbuf(previous);
     EXPECT_EQ(loaded.particleCount, SimulationConfig::defaults().particleCount);
@@ -182,12 +179,11 @@ TEST(ConfigArgsTest, TST_UNT_CONF_017_LoadWarnsOnUnknownIniKey)
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
-
 TEST(ConfigArgsTest, TST_UNT_CONF_018_LoadSupportsRegistryAliases)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    const std::filesystem::path path =
-        std::filesystem::temp_directory_path() / ("gravity_config_aliases_" + std::to_string(stamp) + ".ini");
+    const std::filesystem::path path = std::filesystem::temp_directory_path() /
+                                       ("gravity_config_aliases_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
@@ -213,15 +209,15 @@ TEST(ConfigArgsTest, TST_UNT_CONF_020_ResolveInitPlanRejectsFileModeWithoutInput
     EXPECT_TRUE(plan.inputFile.empty());
     EXPECT_NE(log.str().find("init_mode=file ignored"), std::string::npos);
     EXPECT_NE(plan.summary.find("mode=disk_orbit"), std::string::npos);
-
     SimulationConfig invalidParticleConfig = SimulationConfig::defaults();
     invalidParticleConfig.particleCount = 1u;
-    const grav_config::ScenarioValidationReport report = grav_config::SimulationScenarioValidation::evaluate(invalidParticleConfig);
+    const grav_config::ScenarioValidationReport report =
+        grav_config::SimulationScenarioValidation::evaluate(invalidParticleConfig);
     EXPECT_FALSE(report.validForRun);
     EXPECT_EQ(report.errorCount, 1u);
-    EXPECT_NE(grav_config::SimulationScenarioValidation::renderText(report).find("particle_count"), std::string::npos);
+    EXPECT_NE(grav_config::SimulationScenarioValidation::renderText(report).find("particle_count"),
+              std::string::npos);
 }
-
 TEST(ConfigArgsTest, TST_UNT_CONF_021_ResolveInitPlanIgnoresStaleInputFileOutsideFileMode)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -231,7 +227,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_021_ResolveInitPlanIgnoresStaleInputFileOutsid
     config.inputFile = "tests/data/two_body_rest.xyz";
     std::stringstream log;
     const ResolvedInitialStatePlan plan = resolveInitialStatePlan(config, log);
-    const grav_config::ScenarioValidationReport report = grav_config::SimulationScenarioValidation::evaluate(config);
+    const grav_config::ScenarioValidationReport report =
+        grav_config::SimulationScenarioValidation::evaluate(config);
     EXPECT_EQ(plan.config.mode, "random_cloud");
     EXPECT_TRUE(plan.inputFile.empty());
     EXPECT_NE(log.str().find("preset_structure=file ignored"), std::string::npos);
@@ -239,9 +236,9 @@ TEST(ConfigArgsTest, TST_UNT_CONF_021_ResolveInitPlanIgnoresStaleInputFileOutsid
     EXPECT_NE(plan.summary.find("source=generated"), std::string::npos);
     EXPECT_TRUE(report.validForRun);
     EXPECT_GE(report.warningCount, 1u);
-    EXPECT_NE(grav_config::SimulationScenarioValidation::renderText(report).find("initial_state"), std::string::npos);
+    EXPECT_NE(grav_config::SimulationScenarioValidation::renderText(report).find("initial_state"),
+              std::string::npos);
 }
-
 TEST(ConfigArgsTest, TST_UNT_CONF_023_ResolveInitPlanSupportsCalibrationPresets)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -252,7 +249,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_023_ResolveInitPlanSupportsCalibrationPresets)
     EXPECT_EQ(presetPlan.config.mode, "three_body");
     EXPECT_FALSE(presetPlan.config.includeCentralBody);
     EXPECT_FLOAT_EQ(presetPlan.config.cloudHalfExtent, 3.5f);
-
     config.initConfigStyle = "detailed";
     config.initMode = "plummer_sphere";
     config.initCloudHalfExtent = 9.0f;

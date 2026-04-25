@@ -1,6 +1,4 @@
 #ifndef GRAVITY_SIM_SIMULATIONOPTIONREGISTRYAPPLY_HPP
 #define GRAVITY_SIM_SIMULATIONOPTIONREGISTRYAPPLY_HPP
-
 #include "config/SimulationOptionRegistry.hpp"
-
 #endif

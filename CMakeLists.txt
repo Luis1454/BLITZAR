@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.24)
 
 include(cmake/win.cmake)
 
-project(CUDA_GRAVITY_SIMULATION LANGUAGES CUDA CXX)
+project(BLITZAR LANGUAGES CUDA CXX)
 
 include(cmake/targets.cmake)
 

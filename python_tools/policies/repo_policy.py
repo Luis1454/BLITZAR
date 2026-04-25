@@ -56,6 +56,7 @@ DO_WHILE_RE = re.compile(r"\bdo\b\s*\{", re.DOTALL)
 WHILE_TRUE_RE = re.compile(r"\bwhile\s*\(\s*true\s*\)")
 FUNCTION_POINTER_TYPEDEF_RE = re.compile(r"(?m)^\s*(?:typedef|using)\b[^\n;]*\(\s*\*\s*[A-Za-z0-9_]*\s*\)")
 FUNCTION_POINTER_ABI_PATHS = {"runtime/include/client/ClientModuleApi.hpp"}
+NON_WAIVABLE_STRONG_SIZE_PATHS = {"engine/src/server/SimulationServer.cpp"}
 QT_REFERENCE_NEW_RE = re.compile(
     r"(?m)^\s*(?:auto|Q[A-Za-z0-9_<>:]+)\s*&\s*[A-Za-z0-9_]+\s*=\s*\*new\s+Q[A-Za-z0-9_<>:]+\s*\("
 )
@@ -222,6 +223,12 @@ class RepoPolicyCheck(BaseCheck):
     ) -> None:
         line_count = len(content.splitlines())
         if line_count > context.hard_lines:
+            if rel in NON_WAIVABLE_STRONG_SIZE_PATHS:
+                result.add_error(
+                    f"{rel}: {line_count} lines exceeds non-waivable strong alert threshold {context.hard_lines} "
+                    "(split by responsibility; deviation/allowlist is not permitted for this file)"
+                )
+                return
             if rel in allowlist:
                 used_allowlist.add(rel)
                 result.add_warning(

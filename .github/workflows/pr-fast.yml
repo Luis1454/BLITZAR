@@ -94,17 +94,27 @@ jobs:
           if-no-files-found: error
 
   ivv-gate:
-    name: IV&V Gate (linux-ubuntu24.04 / python3.12)
+    name: IV&V Approval Gate - requires non-author review
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-24.04
     permissions: {pull-requests: read, contents: read}
     steps:
       - {name: Checkout, uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd}
       - {name: Setup Python, uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405, with: {python-version: "${{ env.CI_PYTHON_VERSION }}"}}
-      - name: Validate IV&V independence gate
+      - name: Validate IV&V approval requirement
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python tests/checks/run.py ivv_gate --event-name "${{ github.event_name }}" --event-path "${{ github.event_path }}" --repo "${{ github.repository }}"
+      - name: Explain pending IV&V approval
+        if: failure()
+        run: |
+          {
+            echo "## IV&V approval required"
+            echo ""
+            echo "This red check means the PR touches critical paths and still needs one GitHub **Approve** review from a non-author reviewer."
+            echo ""
+            echo "It is not a compiler, test, analyzer, or repository-quality failure."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   workflow-yaml-lint:
     name: Workflow YAML Lint (linux-ubuntu24.04 / python3.12)

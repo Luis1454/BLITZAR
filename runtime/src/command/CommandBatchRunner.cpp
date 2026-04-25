@@ -1,14 +1,11 @@
 #include "command/CommandBatchRunner.hpp"
-
 #include "command/CommandExecutor.hpp"
 #include "command/CommandParser.hpp"
-
 #include <fstream>
 #include <sstream>
-
 namespace grav_cmd {
-
-CommandResult CommandBatchRunner::runScriptFile(const std::string &path, CommandExecutionContext &context)
+CommandResult CommandBatchRunner::runScriptFile(const std::string& path,
+                                                CommandExecutionContext& context)
 {
     std::ifstream in(path);
     if (!in.is_open()) {
@@ -26,16 +23,16 @@ CommandResult CommandBatchRunner::runScriptFile(const std::string &path, Command
         result.message = parsed.error;
         return result;
     }
-    for (const CommandRequest &request : parsed.requests) {
+    for (const CommandRequest& request : parsed.requests) {
         const CommandResult stepResult = CommandExecutor::execute(request, context);
         if (!stepResult.ok) {
             CommandResult result{};
             result.ok = false;
-            result.message = "line " + std::to_string(request.lineNumber) + ": " + stepResult.message;
+            result.message =
+                "line " + std::to_string(request.lineNumber) + ": " + stepResult.message;
             return result;
         }
     }
     return CommandResult{true, {}};
 }
-
 } // namespace grav_cmd

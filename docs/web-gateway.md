@@ -1,6 +1,6 @@
 # Web Gateway Contract
 
-Canonical compatibility governance for this surface is defined in `docs/quality/interface_contracts.md` (`CTR-WEB-001`).
+Canonical compatibility governance for this surface is defined in `docs/quality/interface-contracts.md` (`CTR-WEB-001`).
 
 ## Purpose
 
@@ -61,3 +61,4 @@ Canonical compatibility governance for this surface is defined in `docs/quality/
 - The gateway is built from the Rust workspace as `blitzar-web-gateway`.
 - It is intended for loopback or explicitly managed development deployments.
 - Backend auth, when configured on `blitzar-server`, is forwarded through the gateway using the configured server token.
+

@@ -1,15 +1,11 @@
 #ifndef GRAVITY_SIM_SIMULATIONOPTIONREGISTRYINTERNAL_HPP
 #define GRAVITY_SIM_SIMULATIONOPTIONREGISTRYINTERNAL_HPP
-
 #include "config/SimulationArgsParse.hpp"
 #include "config/SimulationOptionRegistry.hpp"
-
 #include <cstddef>
 #include <cstdint>
 #include <string_view>
-
 namespace grav_config {
-
 enum class OptionKind {
     Uint,
     Int,
@@ -23,7 +19,6 @@ enum class OptionKind {
     ClientParticleCap,
     TimeoutTriple,
 };
-
 struct SimulationOptionEntry {
     SimulationOptionGroup group;
     OptionKind kind;
@@ -40,22 +35,14 @@ struct SimulationOptionEntry {
     bool hasMin;
     bool hasMax;
 };
-
 extern const SimulationOptionEntry kSimulationOptions[];
 extern const std::size_t kSimulationOptionCount;
-
-bool matchesCli(const SimulationOptionEntry &entry, const std::string &key, SimulationOptionGroup group);
-bool matchesIni(const SimulationOptionEntry &entry, const std::string &key);
-bool matchesEnv(const SimulationOptionEntry &entry, const std::string &key);
-bool applyEntry(
-    const SimulationOptionEntry &entry,
-    const std::string &value,
-    SimulationConfig &config,
-    std::ostream &warnings,
-    std::string_view source,
-    std::string_view optionName
-);
-
+bool matchesCli(const SimulationOptionEntry& entry, const std::string& key,
+                SimulationOptionGroup group);
+bool matchesIni(const SimulationOptionEntry& entry, const std::string& key);
+bool matchesEnv(const SimulationOptionEntry& entry, const std::string& key);
+bool applyEntry(const SimulationOptionEntry& entry, const std::string& value,
+                SimulationConfig& config, std::ostream& warnings, std::string_view source,
+                std::string_view optionName);
 } // namespace grav_config
-
 #endif // GRAVITY_SIM_SIMULATIONOPTIONREGISTRYINTERNAL_HPP

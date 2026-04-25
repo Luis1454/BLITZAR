@@ -128,8 +128,9 @@ fn tst_rust_prot_005_latest_schema_matches_committed_contract_artifact() {
     let schema_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("..")
         .join("..")
-        .join("docs")
-        .join("server_protocol_schema.json");
+        .join("runtime")
+        .join("protocol")
+        .join("server-protocol-schema.json");
     let committed: Value =
         serde_json::from_str(&std::fs::read_to_string(schema_path).unwrap()).unwrap();
     assert_eq!(committed, schema::latest_schema_value());

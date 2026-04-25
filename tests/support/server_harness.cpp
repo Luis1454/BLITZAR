@@ -1,20 +1,14 @@
 #include "tests/support/server_harness.hpp"
-
 #include "protocol/ServerClient.hpp"
 #include "protocol/ServerProtocol.hpp"
-
 #include <array>
 #include <chrono>
 #include <filesystem>
 #include <string>
 #include <vector>
-
 namespace grav_test_server_harness {
-
 constexpr std::array<std::uint16_t, 12u> kFallbackPorts{
-    4545u, 4546u, 14545u, 14546u, 24545u, 24546u, 34545u, 34546u, 44545u, 44546u, 54545u, 54546u
-};
-
+    4545u, 4546u, 14545u, 14546u, 24545u, 24546u, 34545u, 34546u, 44545u, 44546u, 54545u, 54546u};
 std::string resolveInputFilePath()
 {
     std::error_code ec;
@@ -24,18 +18,15 @@ std::string resolveInputFilePath()
             cwd / "tests" / "data" / "two_body_rest.xyz",
             cwd / ".." / "tests" / "data" / "two_body_rest.xyz",
             cwd / ".." / ".." / "tests" / "data" / "two_body_rest.xyz",
-            cwd / ".." / ".." / ".." / "tests" / "data" / "two_body_rest.xyz"
-        };
-        for (const auto &candidate : candidates) {
+            cwd / ".." / ".." / ".." / "tests" / "data" / "two_body_rest.xyz"};
+        for (const auto& candidate : candidates)
             if (std::filesystem::exists(candidate, ec) && !ec) {
                 return std::filesystem::weakly_canonical(candidate, ec).string();
+                ec.clear();
             }
-            ec.clear();
-        }
     }
     return "tests/data/two_body_rest.xyz";
 }
-
 std::vector<std::uint16_t> buildPortCandidates(std::uint16_t preferredPort)
 {
     std::vector<std::uint16_t> ports;
@@ -43,7 +34,6 @@ std::vector<std::uint16_t> buildPortCandidates(std::uint16_t preferredPort)
     if (preferredPort != 0u) {
         ports.push_back(preferredPort);
     }
-
     const auto now = std::chrono::steady_clock::now().time_since_epoch();
     const std::uint64_t ticks = static_cast<std::uint64_t>(
         std::chrono::duration_cast<std::chrono::milliseconds>(now).count());
@@ -59,19 +49,14 @@ std::vector<std::uint16_t> buildPortCandidates(std::uint16_t preferredPort)
     }
     return ports;
 }
-
 } // namespace grav_test_server_harness
-
 RealServerHarness::~RealServerHarness()
 {
     stop();
 }
-
-bool RealServerHarness::start(
-    std::string &outError,
-    std::uint16_t preferredPort,
-    const std::string &authToken,
-    const std::vector<std::string> &extraArgs)
+bool RealServerHarness::start(std::string& outError, std::uint16_t preferredPort,
+                              const std::string& authToken,
+                              const std::vector<std::string>& extraArgs)
 {
     stop();
     outError.clear();
@@ -81,61 +66,54 @@ bool RealServerHarness::start(
         outError = "server executable could not be resolved";
         return false;
     }
-
-    const std::vector<std::uint16_t> portCandidates = grav_test_server_harness::buildPortCandidates(preferredPort);
-    for (const std::uint16_t candidatePort : portCandidates) {
+    const std::vector<std::uint16_t> portCandidates =
+        grav_test_server_harness::buildPortCandidates(preferredPort);
+    for (const std::uint16_t candidatePort : portCandidates)
         if (candidatePort == 0u || !isPortBindable(candidatePort)) {
             continue;
+            _port = candidatePort;
+            const std::string inputFilePath = grav_test_server_harness::resolveInputFilePath();
+            const std::vector<std::string> args{"--server-host",
+                                                "127.0.0.1",
+                                                "--server-port",
+                                                std::to_string(_port),
+                                                "--server-paused",
+                                                "--particle-count",
+                                                "64",
+                                                "--dt",
+                                                "0.01",
+                                                "--solver",
+                                                "pairwise_cuda",
+                                                "--integrator",
+                                                "euler",
+                                                "--sph",
+                                                "false",
+                                                "--input-file",
+                                                inputFilePath,
+                                                "--input-format",
+                                                "xyz",
+                                                "--export-on-exit",
+                                                "false"};
+            std::vector<std::string> effectiveArgs = args;
+            effectiveArgs.insert(effectiveArgs.end(), extraArgs.begin(), extraArgs.end());
+            if (!_authToken.empty()) {
+                effectiveArgs.push_back("--server-token");
+                effectiveArgs.push_back(_authToken);
+            }
+            std::string launchError;
+            if (!_process.launch(_executable, effectiveArgs, false, launchError)) {
+                continue;
+            }
+            if (waitUntilReady(outError)) {
+                return true;
+            }
+            stop();
         }
-
-        _port = candidatePort;
-        const std::string inputFilePath = grav_test_server_harness::resolveInputFilePath();
-        const std::vector<std::string> args{
-            "--server-host",
-            "127.0.0.1",
-            "--server-port",
-            std::to_string(_port),
-            "--server-paused",
-            "--particle-count",
-            "64",
-            "--dt",
-            "0.01",
-            "--solver",
-            "pairwise_cuda",
-            "--integrator",
-            "euler",
-            "--sph",
-            "false",
-            "--input-file",
-            inputFilePath,
-            "--input-format",
-            "xyz",
-            "--export-on-exit",
-            "false"
-        };
-        std::vector<std::string> effectiveArgs = args;
-        effectiveArgs.insert(effectiveArgs.end(), extraArgs.begin(), extraArgs.end());
-        if (!_authToken.empty()) {
-            effectiveArgs.push_back("--server-token");
-            effectiveArgs.push_back(_authToken);
-        }
-
-        std::string launchError;
-        if (!_process.launch(_executable, effectiveArgs, false, launchError)) {
-            continue;
-        }
-        if (waitUntilReady(outError)) {
-            return true;
-        }
-        stop();
-    }
-
     if (outError.empty()) {
         outError = "failed to launch server daemon on any candidate port";
     }
     return false;
 }
-
 void RealServerHarness::stop()
 {
     if (_port != 0u) {
@@ -147,26 +125,21 @@ void RealServerHarness::stop()
             client.disconnect();
         }
     }
-
     std::string terminateError;
     (void)_process.terminate(1000u, terminateError);
     _process.clear();
     _port = 0u;
     _authToken.clear();
 }
-
 bool RealServerHarness::isRunning() const
 {
     return _process.isRunning();
 }
-
 std::uint16_t RealServerHarness::port() const
 {
     return _port;
 }
-
-const std::string &RealServerHarness::executablePath() const
+const std::string& RealServerHarness::executablePath() const
 {
     return _executable;
 }
-

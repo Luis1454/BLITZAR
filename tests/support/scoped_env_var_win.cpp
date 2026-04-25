@@ -1,11 +1,7 @@
 #include "tests/support/scoped_env_var.hpp"
-
 #include <cstdlib>
-
 namespace testsupport {
-
-ScopedEnvVar::ScopedEnvVar(const char *name, const char *value)
-    : _name(name), _hadValue(false)
+ScopedEnvVar::ScopedEnvVar(const char* name, const char* value) : _name(name), _hadValue(false)
 {
     const std::string current = read(name);
     if (!current.empty()) {
@@ -14,7 +10,6 @@ ScopedEnvVar::ScopedEnvVar(const char *name, const char *value)
     }
     set(value);
 }
-
 ScopedEnvVar::~ScopedEnvVar()
 {
     if (_hadValue) {
@@ -23,10 +18,9 @@ ScopedEnvVar::~ScopedEnvVar()
     }
     clear();
 }
-
-std::string ScopedEnvVar::read(const char *name)
+std::string ScopedEnvVar::read(const char* name)
 {
-    char *rawValue = nullptr;
+    char* rawValue = nullptr;
     std::size_t rawSize = 0;
     if (_dupenv_s(&rawValue, &rawSize, name) != 0 || rawValue == nullptr) {
         return {};
@@ -35,15 +29,12 @@ std::string ScopedEnvVar::read(const char *name)
     std::free(rawValue);
     return value;
 }
-
-void ScopedEnvVar::set(const char *value) const
+void ScopedEnvVar::set(const char* value) const
 {
     _putenv_s(_name.c_str(), value);
 }
-
 void ScopedEnvVar::clear() const
 {
     _putenv_s(_name.c_str(), "");
 }
-
 } // namespace testsupport

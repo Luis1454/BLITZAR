@@ -48,17 +48,17 @@ def _seed_catalog_repo(root: Path) -> None:
 def _seed_required_quality_files(root: Path) -> None:
     for rel, content in {
         "AGENTS.md": "# AGENTS\n",
-        "docs/quality/README.md": "# Quality\n",
-        "docs/quality/standards_profile.md": "profile\n",
+        "docs/quality/quality-overview.md": "# Quality\n",
+        "docs/quality/standards-profile.md": "profile\n",
         "docs/quality/fmea.md": "fmea\n",
-        "docs/quality/tool_qualification.md": "tools\n",
-        "docs/quality/tool_manifest.md": "tool manifest\n",
-        "docs/quality/power_of_10.md": "power of ten\n",
-        "docs/quality/prod_baseline.md": "prod baseline\n",
-        "docs/quality/release_index.md": "release index\n",
-        "docs/quality/interface_contracts.md": "contracts\n",
-        "docs/quality/ivv_plan.md": "ivv\n",
-        "docs/quality/numerical_validation.md": "numerical\n",
+        "docs/quality/tool-qualification.md": "tools\n",
+        "docs/quality/tool-manifest.md": "tool manifest\n",
+        "docs/quality/power-of-10.md": "power of ten\n",
+        "docs/quality/production-baseline.md": "prod baseline\n",
+        "docs/quality/release-index.md": "release index\n",
+        "docs/quality/interface-contracts.md": "contracts\n",
+        "docs/quality/ivv-plan.md": "ivv\n",
+        "docs/quality/numerical-validation.md": "numerical\n",
         "docs/quality/quality_manifest.json": "{}\n",
         ".github/CODEOWNERS": "* @owner\n",
         ".github/PULL_REQUEST_TEMPLATE.md": "template\n",
@@ -75,7 +75,7 @@ def _seed_baseline_payloads(root: Path, test_regex: str) -> None:
             "evidence": {
                 "EVD_AGENTS": "AGENTS.md",
                 "EVD_QLT_MANIFEST": "docs/quality/quality_manifest.json",
-                "EVD_QLT_README": "docs/quality/README.md",
+                "EVD_QLT_README": "docs/quality/quality-overview.md",
             },
             "policies": {"test_ids": {"repo_quality": {"regex": r"\bTST_QLT_REPO_[0-9]{3}_[A-Za-z0-9_]+\b", "files": ["tests/cmake/targets.cmake"]}}},
             "requirements": {"REQ-COMP-001": {"tests": [test_regex], "artifacts": ["EVD_QLT_MANIFEST"]}},
@@ -184,3 +184,4 @@ def test_quality_baseline_fails_when_agents_is_missing(tmp_path: Path) -> None:
     result = QualityBaselineCheck().run(CheckContext(root=tmp_path))
     assert not result.ok
     assert any("missing required evidence id: EVD_AGENTS" in error for error in result.errors)
+

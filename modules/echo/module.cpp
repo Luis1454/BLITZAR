@@ -1,6 +1,5 @@
 #include "client/ClientModuleApi.hpp"
 #include "client/ClientModuleBoundary.hpp"
-
 #include <algorithm>
 #include <cctype>
 #include <cstddef>
@@ -8,31 +7,25 @@
 #include <iostream>
 #include <memory>
 #include <string>
-
-static std::string trim(const std::string &input)
+static std::string trim(const std::string& input)
 {
-    const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
-        return std::isspace(c) != 0;
-    });
+    const auto begin = std::find_if_not(input.begin(), input.end(),
+                                        [](unsigned char c) { return std::isspace(c) != 0; });
     const auto end = std::find_if_not(input.rbegin(), input.rend(), [](unsigned char c) {
-        return std::isspace(c) != 0;
-    }).base();
-    if (begin >= end) {
+                         return std::isspace(c) != 0;
+                     }).base();
+    if (begin >= end)
         return {};
-    }
     return std::string(begin, end);
 }
-
 struct EchoState {
     std::string configPath;
 };
-
 class EchoModuleLocal final {
 public:
-    static bool create(
-        const grav_module::ClientHostContextV1 *context,
-        const grav_module::ClientModuleStateSlot &outModuleState,
-        const grav_client::ErrorBufferView &errorBuffer)
+    static bool create(const grav_module::ClientHostContextV1* context,
+                       const grav_module::ClientModuleStateSlot& outModuleState,
+                       const grav_client::ErrorBufferView& errorBuffer)
     {
         try {
             if (!outModuleState.isAvailable()) {
@@ -40,53 +33,57 @@ public:
                 return false;
             }
             std::unique_ptr<EchoState> state = std::make_unique<EchoState>();
-            state->configPath = (context != nullptr && context->configPath != nullptr) ? context->configPath : "simulation.ini";
-            return outModuleState.assign(grav_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
-        } catch (const std::exception &ex) {
+            state->configPath = (context != nullptr && context->configPath != nullptr)
+                                    ? context->configPath
+                                    : "simulation.ini";
+            return outModuleState.assign(
+                grav_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
+        }
+        catch (const std::exception& ex) {
             errorBuffer.write(ex.what());
             return false;
-        } catch (...) {
+        }
+        catch (...) {
             errorBuffer.write("unknown module create error");
             return false;
         }
     }
-
     static void destroy(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
-            std::unique_ptr<EchoState> state(static_cast<EchoState *>(moduleState.rawPointer()));
-        } catch (const std::exception &ex) {
+            std::unique_ptr<EchoState> state(static_cast<EchoState*>(moduleState.rawPointer()));
+        }
+        catch (const std::exception& ex) {
             std::cerr << "[module-echo] destroy error: " << ex.what() << "\n";
-        } catch (...) {
+        }
+        catch (...) {
             std::cerr << "[module-echo] destroy error: unknown\n";
         }
     }
-
-    static bool start(
-        grav_module::ClientModuleOpaqueState moduleState,
-        const grav_client::ErrorBufferView &errorBuffer)
+    static bool start(grav_module::ClientModuleOpaqueState moduleState,
+                      const grav_client::ErrorBufferView& errorBuffer)
     {
         try {
-            EchoState *state = static_cast<EchoState *>(moduleState.rawPointer());
+            EchoState* state = static_cast<EchoState*>(moduleState.rawPointer());
             if (state == nullptr) {
                 errorBuffer.write("module state is null");
                 return false;
             }
             std::cout << "[module-echo] started (config=" << state->configPath << ")\n";
             return true;
-        } catch (const std::exception &ex) {
+        }
+        catch (const std::exception& ex) {
             errorBuffer.write(ex.what());
             return false;
-        } catch (...) {
+        }
+        catch (...) {
             errorBuffer.write("unknown module start error");
             return false;
         }
     }
-
-    static bool handleCommand(
-        std::string_view commandLine,
-        const grav_module::ClientModuleCommandControl &commandControl,
-        const grav_client::ErrorBufferView &errorBuffer)
+    static bool handleCommand(std::string_view commandLine,
+                              const grav_module::ClientModuleCommandControl& commandControl,
+                              const grav_client::ErrorBufferView& errorBuffer)
     {
         try {
             commandControl.setContinue();
@@ -100,48 +97,51 @@ public:
             }
             std::cout << "[module-echo] " << line << "\n";
             return true;
-        } catch (const std::exception &ex) {
+        }
+        catch (const std::exception& ex) {
             errorBuffer.write(ex.what());
             return false;
-        } catch (...) {
+        }
+        catch (...) {
             errorBuffer.write("unknown module command error");
             return false;
         }
     }
 };
-
-extern "C" GRAVITY_CLIENT_MODULE_EXPORT_ATTR const grav_module::ClientModuleExportsV1 *gravity_client_module_v1()
+extern "C" GRAVITY_CLIENT_MODULE_EXPORT_ATTR const grav_module::ClientModuleExportsV1*
+gravity_client_module_v1()
 {
     static const grav_module::ClientModuleExportsV1 exports{
         grav_module::kClientModuleApiVersionV1,
         "echo",
-        [](const grav_module::ClientHostContextV1 *context, void **outModuleState, char *errorBuffer, std::size_t errorBufferSize) -> bool {
+        [](const grav_module::ClientHostContextV1* context, void** outModuleState,
+           char* errorBuffer, std::size_t errorBufferSize) -> bool {
             return EchoModuleLocal::create(
-                context,
-                grav_module::ClientModuleStateSlot(outModuleState),
+                context, grav_module::ClientModuleStateSlot(outModuleState),
                 grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
         },
-        [](void *moduleState) {
-            EchoModuleLocal::destroy(grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
+        [](void* moduleState) {
+            EchoModuleLocal::destroy(
+                grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
         },
-        [](void *moduleState, char *errorBuffer, std::size_t errorBufferSize) -> bool {
+        [](void* moduleState, char* errorBuffer, std::size_t errorBufferSize) -> bool {
             return EchoModuleLocal::start(
                 grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState),
                 grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
         },
-        [](void *) {
+        [](void*) {
             try {
                 std::cout << "[module-echo] stopped\n";
-            } catch (...) {
+            }
+            catch (...) {
             }
         },
-        [](void *, const char *commandLine, bool *outKeepRunning, char *errorBuffer, std::size_t errorBufferSize) -> bool {
+        [](void*, const char* commandLine, bool* outKeepRunning, char* errorBuffer,
+           std::size_t errorBufferSize) -> bool {
             return EchoModuleLocal::handleCommand(
                 commandLine != nullptr ? std::string_view(commandLine) : std::string_view(),
                 grav_module::ClientModuleCommandControl(outKeepRunning),
                 grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
-        }
-    };
+        }};
     return &exports;
 }
-

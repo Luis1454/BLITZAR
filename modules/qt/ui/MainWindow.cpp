@@ -1,10 +1,8 @@
 #include "ui/MainWindow.hpp"
-
 #include "client/ClientCommon.hpp"
 #include "ui/EnergyGraphWidget.hpp"
 #include "ui/MultiViewWidget.hpp"
 #include "ui/QtTheme.hpp"
-
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
@@ -17,19 +15,14 @@
 #include <QStatusBar>
 #include <QStyleFactory>
 #include <QTimer>
-
 #include <algorithm>
 #include <cstdint>
 #include <limits>
 #include <stdexcept>
 #include <utility>
-
 namespace grav_qt {
-
-MainWindow::MainWindow(
-    SimulationConfig config,
-    std::string configPath,
-    std::unique_ptr<grav_client::IClientRuntime> runtime)
+MainWindow::MainWindow(SimulationConfig config, std::string configPath,
+                       std::unique_ptr<grav_client::IClientRuntime> runtime)
     : QMainWindow(nullptr),
       _config(std::move(config)),
       _configPath(std::move(configPath)),
@@ -98,24 +91,21 @@ MainWindow::MainWindow(
     if (!_runtime) {
         throw std::invalid_argument("grav_qt::MainWindow requires a valid client runtime");
     }
-
     setWindowTitle("N-Body Qt Client");
     menuBar()->setNativeMenuBar(false);
     setStyle(QStyleFactory::create("Fusion"));
     setDockNestingEnabled(true);
-    setDockOptions(QMainWindow::AnimatedDocks | QMainWindow::AllowNestedDocks | QMainWindow::AllowTabbedDocks);
-
+    setDockOptions(QMainWindow::AnimatedDocks | QMainWindow::AllowNestedDocks |
+                   QMainWindow::AllowTabbedDocks);
     initializeControlState();
     setCentralWidget(_multiView);
     buildWorkspaceDocks(buildSidebarTabs(), buildTelemetryPane(), buildValidationPane());
     buildMenus();
     applyTheme();
     statusBar()->showMessage("Qt workspace ready", 3000);
-
     resize(1280, 820);
     _defaultWorkspaceGeometry = saveGeometry();
     _defaultWorkspaceState = saveState();
-
     const bool startupConfigValid = applyConfigToServer(false);
     markConfigDirty(false);
     applyViewSettings();
@@ -126,22 +116,21 @@ MainWindow::MainWindow(
     _serverPortSpin->setEnabled(true);
     _serverBinEdit->setEnabled(true);
     connectControls();
-
     const std::uint32_t fps = std::max<std::uint32_t>(1u, _config.uiFpsLimit);
     if (startupConfigValid && _runtime->start()) {
         _timer->start(std::max(1, static_cast<int>(1000 / fps)));
-    } else if (!startupConfigValid) {
+    }
+    else if (!startupConfigValid) {
         _statusLabel->setText(QString("preflight validation failed; fix config before starting"));
-    } else {
+    }
+    else {
         _statusLabel->setText(QString("server connection failed (service)"));
     }
 }
-
 MainWindow::~MainWindow()
 {
     _runtime->stop();
 }
-
 void MainWindow::applyTheme()
 {
     const QtThemeMode mode = QtTheme::resolve(_config.uiTheme);
@@ -150,23 +139,16 @@ void MainWindow::applyTheme()
     setAutoFillBackground(true);
     setStyleSheet(QtTheme::buildMainWindowStyleSheet(mode));
 }
-
 void MainWindow::applyViewSettings()
 {
     _multiView->setZoom(static_cast<float>(_zoomSlider->value()) / 10.0f);
     _multiView->setLuminosity(_luminositySlider->value());
-    _multiView->setOctreeOverlay(
-        _octreeOverlayCheck->isChecked(),
-        _octreeOverlayDepthSpin->value(),
-        _octreeOverlayOpacitySpin->value());
-    _multiView->setRenderSettings(
-        _config.renderCullingEnabled,
-        _config.renderLODEnabled,
-        _config.renderLODNearDistance,
-        _config.renderLODFarDistance);
+    _multiView->setOctreeOverlay(_octreeOverlayCheck->isChecked(), _octreeOverlayDepthSpin->value(),
+                                 _octreeOverlayOpacitySpin->value());
+    _multiView->setRenderSettings(_config.renderCullingEnabled, _config.renderLODEnabled,
+                                  _config.renderLODNearDistance, _config.renderLODFarDistance);
     _clientDrawCap = grav_client::resolveClientDrawCap(_config);
     _multiView->setMaxDrawParticles(_clientDrawCap);
     _runtime->setRemoteSnapshotCap(_clientDrawCap);
 }
-
 } // namespace grav_qt

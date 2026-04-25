@@ -1,19 +1,15 @@
 #include "config/SimulationArgsParse.hpp"
 #include "config/TextParse.hpp"
-
 #include <algorithm>
 #include <cctype>
 #include <limits>
-
 std::string SimulationArgsParse::toLower(std::string value)
 {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(value.begin(), value.end(), value.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return value;
 }
-
-bool SimulationArgsParse::parseBool(const std::string &value, bool &out)
+bool SimulationArgsParse::parseBool(const std::string& value, bool& out)
 {
     const std::string normalized = SimulationArgsParse::toLower(value);
     if (normalized == "1" || normalized == "true" || normalized == "on" || normalized == "yes") {
@@ -26,8 +22,7 @@ bool SimulationArgsParse::parseBool(const std::string &value, bool &out)
     }
     return false;
 }
-
-bool SimulationArgsParse::parseUint(const std::string &value, std::uint32_t &out)
+bool SimulationArgsParse::parseUint(const std::string& value, std::uint32_t& out)
 {
     std::uint64_t parsed = 0;
     if (!grav_text::parseNumber(value, parsed)) {
@@ -39,27 +34,24 @@ bool SimulationArgsParse::parseUint(const std::string &value, std::uint32_t &out
     out = static_cast<std::uint32_t>(parsed);
     return true;
 }
-
-bool SimulationArgsParse::parseInt(const std::string &value, int &out)
+bool SimulationArgsParse::parseInt(const std::string& value, int& out)
 {
     long long parsed = 0;
     if (!grav_text::parseNumber(value, parsed)) {
         return false;
     }
-    if (parsed < static_cast<long long>(std::numeric_limits<int>::min())
-        || parsed > static_cast<long long>(std::numeric_limits<int>::max())) {
+    if (parsed < static_cast<long long>(std::numeric_limits<int>::min()) ||
+        parsed > static_cast<long long>(std::numeric_limits<int>::max())) {
         return false;
     }
     out = static_cast<int>(parsed);
     return true;
 }
-
-bool SimulationArgsParse::parseFloat(const std::string &value, float &out)
+bool SimulationArgsParse::parseFloat(const std::string& value, float& out)
 {
     return grav_text::parseNumber(value, out);
 }
-
-bool SimulationArgsParse::splitOption(const std::string &raw, std::string &key, std::string &value)
+bool SimulationArgsParse::splitOption(const std::string& raw, std::string& key, std::string& value)
 {
     if (raw.rfind("--", 0) != 0) {
         return false;
@@ -74,13 +66,8 @@ bool SimulationArgsParse::splitOption(const std::string &raw, std::string &key, 
     value = raw.substr(eq + 1);
     return true;
 }
-
-bool SimulationArgsParse::readValue(
-    const std::vector<std::string_view> &args,
-    std::size_t &index,
-    const std::string &inlined,
-    std::string &outValue
-)
+bool SimulationArgsParse::readValue(const std::vector<std::string_view>& args, std::size_t& index,
+                                    const std::string& inlined, std::string& outValue)
 {
     if (!inlined.empty()) {
         outValue = inlined;

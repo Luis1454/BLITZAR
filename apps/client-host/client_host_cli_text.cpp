@@ -1,28 +1,22 @@
+#include "apps/client-host/client_host_cli_text.hpp"
 #include <algorithm>
 #include <cctype>
 #include <utility>
-
-#include "apps/client-host/client_host_cli_text.hpp"
-
 namespace grav_client_host {
-
 class ClientHostCliTextLocal final {
 public:
-    static std::string trim(const std::string &input)
+    static std::string trim(const std::string& input)
     {
-        const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
-            return std::isspace(c) != 0;
-        });
+        const auto begin = std::find_if_not(input.begin(), input.end(),
+                                            [](unsigned char c) { return std::isspace(c) != 0; });
         const auto end = std::find_if_not(input.rbegin(), input.rend(), [](unsigned char c) {
-            return std::isspace(c) != 0;
-        }).base();
-        if (begin >= end) {
+                             return std::isspace(c) != 0;
+                         }).base();
+        if (begin >= end)
             return {};
-        }
         return std::string(begin, end);
     }
-
-    static std::vector<std::string> splitTokens(const std::string &line)
+    static std::vector<std::string> splitTokens(const std::string& line)
     {
         std::vector<std::string> tokens;
         std::string current;
@@ -53,29 +47,23 @@ public:
         }
         return tokens;
     }
-
     static std::string toLower(std::string value)
     {
-        std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
-            return static_cast<char>(std::tolower(c));
-        });
+        std::transform(value.begin(), value.end(), value.begin(),
+                       [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
         return value;
     }
 };
-
-std::string ClientHostCliText::trim(const std::string &input)
+std::string ClientHostCliText::trim(const std::string& input)
 {
     return ClientHostCliTextLocal::trim(input);
 }
-
-std::vector<std::string> ClientHostCliText::splitTokens(const std::string &line)
+std::vector<std::string> ClientHostCliText::splitTokens(const std::string& line)
 {
     return ClientHostCliTextLocal::splitTokens(line);
 }
-
 std::string ClientHostCliText::toLower(std::string value)
 {
     return ClientHostCliTextLocal::toLower(std::move(value));
 }
-
 } // namespace grav_client_host

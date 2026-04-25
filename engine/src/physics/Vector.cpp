@@ -4,7 +4,4 @@
 ** File description:
 ** Vector
 */
-
 #include "physics/Vector.hpp"
-
-

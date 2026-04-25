@@ -71,13 +71,13 @@ void SimulationServer::loop()
                 _resetRequested.load(std::memory_order_relaxed)) {
                 break;
             }
-            
+
             if (shouldForceCudaFailureOnceForTesting(solverMode)) {
                 std::cerr << "[server] forcing CUDA failure once for integration test\n";
                 updateFailed = true;
                 break;
             }
-            
+
             const float dt = std::max(1e-6f, _dt.load(std::memory_order_relaxed));
             const std::size_t liveParticleCount = _system ? _system->getParticles().size() : 0u;
             const bool eulerIntegrator =

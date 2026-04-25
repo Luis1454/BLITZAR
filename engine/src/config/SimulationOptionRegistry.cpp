@@ -1,13 +1,10 @@
 #include "SimulationOptionRegistryInternal.hpp"
-
 #include <ostream>
-
 namespace grav_config {
-
-void printCliUsage(std::ostream &out, SimulationOptionGroup group)
+void printCliUsage(std::ostream& out, SimulationOptionGroup group)
 {
     for (std::size_t index = 0; index < kSimulationOptionCount; ++index) {
-        const SimulationOptionEntry &entry = kSimulationOptions[index];
+        const SimulationOptionEntry& entry = kSimulationOptions[index];
         if (entry.group != group || entry.usage.empty()) {
             continue;
         }
@@ -17,5 +14,4 @@ void printCliUsage(std::ostream &out, SimulationOptionGroup group)
         }
     }
 }
-
 } // namespace grav_config

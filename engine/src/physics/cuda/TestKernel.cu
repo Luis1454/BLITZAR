@@ -1,13 +1,13 @@
-#include <cuda_runtime.h>
 #include <cstdio>
-
-__global__ void minimalTestKernel(int value) {
+#include <cuda_runtime.h>
+__global__ void minimalTestKernel(int value)
+{
     if (threadIdx.x == 0) {
         printf("[device] minimalTestKernel running with value: %d\n", value);
     }
 }
-
-extern "C" bool launchMinimalTestKernel(int value) {
+extern "C" bool launchMinimalTestKernel(int value)
+{
     minimalTestKernel<<<1, 32>>>(value);
     cudaError_t err = cudaGetLastError();
     if (err != cudaSuccess) {

@@ -33,7 +33,7 @@ pub fn latest_schema_value() -> Value {
             ]
         },
         "deprecation": {
-            "announce_in": "docs/server_protocol.md",
+            "announce_in": "docs/server-protocol.md",
             "minimum_support_window": "one release",
             "removal_requires_new_schema": true
         },
