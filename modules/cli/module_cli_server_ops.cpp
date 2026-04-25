@@ -1,14 +1,14 @@
 #include "modules/cli/module_cli_server_ops.hpp"
+#include "client/ErrorBuffer.hpp"
 #include "config/TextParse.hpp"
 #include "protocol/ServerProtocol.hpp"
-namespace grav_module_cli {
-class ModuleCliServerOpsLocal final {
-#include "client/ErrorBuffer.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
+namespace grav_module_cli {
+class ModuleCliServerOpsLocal final {
 public:
     static bool ensureConnected(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer)
     {

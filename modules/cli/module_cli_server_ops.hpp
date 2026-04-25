@@ -1,11 +1,11 @@
 #ifndef GRAVITY_MODULES_CLI_MODULE_CLI_SERVER_OPS_HPP_
 #define GRAVITY_MODULES_CLI_MODULE_CLI_SERVER_OPS_HPP_
+#include "client/ErrorBuffer.hpp"
 #include "modules/cli/module_cli_state.hpp"
 #include <string>
+#include <vector>
 namespace grav_module_cli {
 class ModuleCliServerOps final {
-#include "client/ErrorBuffer.hpp"
-#include <vector>
 public:
     static bool commandStatus(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer);
     static bool commandStep(ModuleState& state, const std::vector<std::string>& tokens,
