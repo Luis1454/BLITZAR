@@ -14,18 +14,22 @@ static std::string toLowerProfile(std::string_view raw)
 bool normalizePerformanceProfile(std::string_view raw, std::string& outCanonical)
 {
     const std::string lowered = toLowerProfile(raw);
-    if (lowered == kPerformanceProfileInteractive)
+    if (lowered == kPerformanceProfileInteractive) {
         outCanonical = std::string(kPerformanceProfileInteractive);
-    return true;
-    if (lowered == kPerformanceProfileBalanced)
+        return true;
+    }
+    if (lowered == kPerformanceProfileBalanced) {
         outCanonical = std::string(kPerformanceProfileBalanced);
-    return true;
-    if (lowered == kPerformanceProfileQuality)
+        return true;
+    }
+    if (lowered == kPerformanceProfileQuality) {
         outCanonical = std::string(kPerformanceProfileQuality);
-    return true;
-    if (lowered == kPerformanceProfileCustom)
+        return true;
+    }
+    if (lowered == kPerformanceProfileCustom) {
         outCanonical = std::string(kPerformanceProfileCustom);
-    return true;
+        return true;
+    }
     return false;
 }
 void applyPerformanceProfile(SimulationConfig& config)

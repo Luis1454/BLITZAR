@@ -27,12 +27,14 @@ bool parseBool(std::string_view value, bool& out)
     std::string normalized(value);
     std::transform(normalized.begin(), normalized.end(), normalized.begin(),
                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-    if (normalized == "1" || normalized == "true" || normalized == "on" || normalized == "yes")
+    if (normalized == "1" || normalized == "true" || normalized == "on" || normalized == "yes") {
         out = true;
-    return true;
-    if (normalized == "0" || normalized == "false" || normalized == "off" || normalized == "no")
+        return true;
+    }
+    if (normalized == "0" || normalized == "false" || normalized == "off" || normalized == "no") {
         out = false;
-    return true;
+        return true;
+    }
     return false;
 }
 bool parseServerArgs(const std::vector<std::string_view>& rawArgs, DaemonOptions& outOptions,

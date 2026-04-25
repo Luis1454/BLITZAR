@@ -80,13 +80,14 @@ bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t part
             Vector3(kVx * speedScale, kVy * speedScale, 0.0f),
             Vector3(kVx * speedScale, kVy * speedScale, 0.0f),
             Vector3(-2.0f * kVx * speedScale, -2.0f * kVy * speedScale, 0.0f)};
-        for (int index = 0; index < 3; index += 1)
+        for (int index = 0; index < 3; index += 1) {
             Particle particle;
-        particle.setMass(mass);
-        particle.setPosition(centralPos + positions[index]);
-        particle.setVelocity(centralVel + velocities[index]);
-        finalizeParticle(particle);
-        outParticles.push_back(particle);
+            particle.setMass(mass);
+            particle.setPosition(centralPos + positions[index]);
+            particle.setVelocity(centralVel + velocities[index]);
+            finalizeParticle(particle);
+            outParticles.push_back(particle);
+        }
         return true;
     }
     if (mode == "plummer_sphere") {
@@ -121,9 +122,10 @@ bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t part
         const float invCount = 1.0f / static_cast<float>(outParticles.size());
         meanPosition = meanPosition * invCount;
         meanVelocity = meanVelocity * invCount;
-        for (Particle& particle : outParticles)
+        for (Particle& particle : outParticles) {
             particle.setPosition(particle.getPosition() - meanPosition + centralPos);
-        particle.setVelocity(particle.getVelocity() - meanVelocity + centralVel);
+            particle.setVelocity(particle.getVelocity() - meanVelocity + centralVel);
+        }
         return outParticles.size() >= 2;
     }
     if (mode == "random_cloud") {
@@ -164,20 +166,21 @@ bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t part
                 std::max(1e-6f, (config.diskMass * 0.5f) / static_cast<float>(n));
             std::uniform_real_distribution<float> rDist(rMin, rMax);
             std::uniform_real_distribution<float> aDist(0.0f, 2.0f * 3.1415926535f);
-            for (std::uint32_t i = 0; i < n; ++i)
+            for (std::uint32_t i = 0; i < n; ++i) {
                 const float r = rDist(diskRng);
-            const float a = aDist(diskRng);
-            const Vector3 pos = offset + Vector3(r * std::cos(a), r * std::sin(a), 0.0f);
-            const float frac = std::clamp((r * r - rMin2) / rRange2, 0.0f, 1.0f);
-            const float speed =
-                std::sqrt((config.diskMass * 0.5f * frac + 0.1f) / std::max(r, 0.01f));
-            const Vector3 tangent(-std::sin(a) * speed, std::cos(a) * speed, 0.0f);
-            Particle p;
-            p.setMass(massPerPart);
-            p.setPosition(centralPos + pos);
-            p.setVelocity(centralVel + velocity + tangent);
-            finalizeParticle(p);
-            outParticles.push_back(p);
+                const float a = aDist(diskRng);
+                const Vector3 pos = offset + Vector3(r * std::cos(a), r * std::sin(a), 0.0f);
+                const float frac = std::clamp((r * r - rMin2) / rRange2, 0.0f, 1.0f);
+                const float speed =
+                    std::sqrt((config.diskMass * 0.5f * frac + 0.1f) / std::max(r, 0.01f));
+                const Vector3 tangent(-std::sin(a) * speed, std::cos(a) * speed, 0.0f);
+                Particle p;
+                p.setMass(massPerPart);
+                p.setPosition(centralPos + pos);
+                p.setVelocity(centralVel + velocity + tangent);
+                finalizeParticle(p);
+                outParticles.push_back(p);
+            }
         };
         generateDisk(halfCount, Vector3(-galaxySeparation, 0.0f, 0.0f),
                      Vector3(0.0f, orbitalSpeed, 0.0f), 0);
@@ -201,16 +204,19 @@ bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t part
                             {marsR, marsM},       {jupiterR, jupiterM}, {saturnR, saturnM},
                             {uranusR, uranusM},   {neptuneR, neptuneM}};
         addCentralBody();
-        for (const auto& pInfo : planets)
+        for (const auto& pInfo : planets) {
             std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * 3.1415926535f);
-        const float a = angleDist(rng);
-        const float speed = std::sqrt(centralMass / pInfo.r) * std::max(0.0f, config.velocityScale);
-        Particle p;
-        p.setMass(pInfo.m);
-        p.setPosition(centralPos + Vector3(pInfo.r * std::cos(a), pInfo.r * std::sin(a), 0.0f));
-        p.setVelocity(centralVel + Vector3(-std::sin(a) * speed, std::cos(a) * speed, 0.0f));
-        finalizeParticle(p);
-        outParticles.push_back(p);
+            const float a = angleDist(rng);
+            const float speed =
+                std::sqrt(centralMass / pInfo.r) * std::max(0.0f, config.velocityScale);
+            Particle p;
+            p.setMass(pInfo.m);
+            p.setPosition(
+                centralPos + Vector3(pInfo.r * std::cos(a), pInfo.r * std::sin(a), 0.0f));
+            p.setVelocity(centralVel + Vector3(-std::sin(a) * speed, std::cos(a) * speed, 0.0f));
+            finalizeParticle(p);
+            outParticles.push_back(p);
+        }
         return outParticles.size() >= 2;
     }
     if (mode == "sph_collapse" || mode == "sph_sphere") {

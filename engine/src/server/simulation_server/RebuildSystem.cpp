@@ -94,11 +94,11 @@ void SimulationServer::rebuildSystem()
     const std::string initMode = toLower(initConfig.mode);
     const bool shouldTryFile = !checkpointStateCopy && initMode == "file" && !inputPath.empty();
     bool hasImportedState = false;
-    if (checkpointStateCopy)
+    if (checkpointStateCopy) {
         importedParticles = checkpointStateCopy->particles;
-    hasImportedState = importedParticles.size() >= 2u;
-    else
-    {
+        hasImportedState = importedParticles.size() >= 2u;
+    }
+    else {
         hasImportedState =
             shouldTryFile && loadInitialState(importedParticles, inputPath, inputFormat);
     }
@@ -143,15 +143,18 @@ void SimulationServer::rebuildSystem()
     }
     if (hasInitialParticles) {
         std::vector<Particle> particles = initialParticles;
-        for (Particle& p : particles)
+        for (Particle& p : particles) {
             p.setPressure(Vector3(0.0f, 0.0f, 0.0f));
-        p.setDensity(0.0f);
-        float temp = p.getTemperature();
-        if (temp < 0.0f)
-            temp = 0.0f;
-        if (temp == 0.0f && initConfig.particleTemperature > 0.0f)
-            temp = initConfig.particleTemperature;
-        p.setTemperature(temp);
+            p.setDensity(0.0f);
+            float temp = p.getTemperature();
+            if (temp < 0.0f) {
+                temp = 0.0f;
+            }
+            if (temp == 0.0f && initConfig.particleTemperature > 0.0f) {
+                temp = initConfig.particleTemperature;
+            }
+            p.setTemperature(temp);
+        }
         _system = std::make_unique<ParticleSystem>(std::move(particles));
     }
     else {

@@ -1,6 +1,10 @@
-#include "ui/WorkspaceLayoutStore.hpp" #include < gtest / gtest.h> #include < chrono>
+#include "ui/WorkspaceLayoutStore.hpp"
+#include <gtest/gtest.h>
+#include <chrono>
 #include <filesystem>
-#include <string> namespace grav_test_qt_ui { TEST(QtUiLogicTest, TST_UNT_UI_004_WorkspaceLayoutStoreRoundTripsNamedPreset)
+#include <string>
+namespace grav_test_qt_ui {
+TEST(QtUiLogicTest, TST_UNT_UI_004_WorkspaceLayoutStoreRoundTripsNamedPreset)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path root =

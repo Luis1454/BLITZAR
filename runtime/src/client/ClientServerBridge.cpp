@@ -34,12 +34,14 @@ bool parseBoolArg(std::string_view raw, bool& out)
     std::string normalized(raw);
     std::transform(normalized.begin(), normalized.end(), normalized.begin(),
                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-    if (normalized == "1" || normalized == "true" || normalized == "on" || normalized == "yes")
+    if (normalized == "1" || normalized == "true" || normalized == "on" || normalized == "yes") {
         out = true;
-    return true;
-    if (normalized == "0" || normalized == "false" || normalized == "off" || normalized == "no")
+        return true;
+    }
+    if (normalized == "0" || normalized == "false" || normalized == "off" || normalized == "no") {
         out = false;
-    return true;
+        return true;
+    }
     return false;
 }
 bool isTransportClientFailure(std::string_view reason)
@@ -500,8 +502,9 @@ void ClientServerBridge::requestReconnect()
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     _remoteClient.disconnect();
     _runtimeState.setConnected(false);
-    if (_remoteAutoStart)
+    if (_remoteAutoStart) {
         _remoteLaunchAttempted = false;
+    }
     _runtimeState.setServerLaunched(false);
     _runtimeState.clearPendingCommands();
     _reconnectRetryDelay = kReconnectRetryIntervalMin;
@@ -721,11 +724,12 @@ void ClientServerBridge::flushPendingRemoteCommands()
 {
     std::size_t sentCount = 0u;
     const std::size_t pendingCount = _runtimeState.pendingCommandCount();
-    for (; sentCount < pendingCount; ++sentCount)
+    for (; sentCount < pendingCount; ++sentCount) {
         const std::pair<std::string, std::string> command =
             _runtimeState.pendingCommandAt(sentCount);
-    if (!sendRemoteNow(command.first, command.second)) {
-        break;
+        if (!sendRemoteNow(command.first, command.second)) {
+            break;
+        }
     }
     _runtimeState.erasePendingPrefix(sentCount);
 }

@@ -63,12 +63,13 @@ void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoin
         std::max<qreal>(120.0, outerRect.width() - legendInset * 2.0);
     int legendRows = 1;
     qreal legendRowWidth = 0.0;
-    for (const QString& label : shortLabels)
+    for (const QString& label : shortLabels) {
         const qreal entryWidth =
             legendLineWidth + legendTextGap + metrics.horizontalAdvance(label) + legendGapX;
-    if (legendRowWidth > 0.0 && legendRowWidth + entryWidth > legendAvailableWidth) {
-        legendRows += 1;
-        legendRowWidth = 0.0;
+        if (legendRowWidth > 0.0 && legendRowWidth + entryWidth > legendAvailableWidth) {
+            legendRows += 1;
+            legendRowWidth = 0.0;
+        }
         legendRowWidth += entryWidth;
     }
     const qreal legendHeight = legendRows * legendRowHeight + 2.0;
@@ -158,9 +159,10 @@ void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoin
     const EnergyPoint& latest = history.back();
     for (std::size_t i = history.size(); i > 0u; --i) {
         const std::size_t index = i - 1u;
-        if (latest.time - history[index].time > visibleTimeSpanSec && index >= visibleStart)
+        if (latest.time - history[index].time > visibleTimeSpanSec && index >= visibleStart) {
             visibleStart = index + 1u;
-        break;
+            break;
+        }
     }
     if (history.size() - visibleStart < 2u) {
         visibleStart = history.size() >= 2u ? (history.size() - 2u) : 0u;

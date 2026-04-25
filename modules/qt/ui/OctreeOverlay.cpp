@@ -20,13 +20,14 @@ static OverlayBounds computeBounds(const std::vector<RenderParticle>& particles)
     float maxX = std::numeric_limits<float>::lowest();
     float maxY = std::numeric_limits<float>::lowest();
     float maxZ = std::numeric_limits<float>::lowest();
-    for (const RenderParticle& particle : particles)
+    for (const RenderParticle& particle : particles) {
         minX = std::min(minX, particle.x);
-    minY = std::min(minY, particle.y);
-    minZ = std::min(minZ, particle.z);
-    maxX = std::max(maxX, particle.x);
-    maxY = std::max(maxY, particle.y);
-    maxZ = std::max(maxZ, particle.z);
+        minY = std::min(minY, particle.y);
+        minZ = std::min(minZ, particle.z);
+        maxX = std::max(maxX, particle.x);
+        maxY = std::max(maxY, particle.y);
+        maxZ = std::max(maxZ, particle.z);
+    }
     const float maxExtent = std::max({maxX - minX, maxY - minY, maxZ - minZ, 1.0e-3f});
     return OverlayBounds{(minX + maxX) * 0.5f, (minY + maxY) * 0.5f, (minZ + maxZ) * 0.5f,
                          std::max(maxExtent * 0.5f, 1.0e-3f) * 1.001f};
@@ -62,14 +63,16 @@ static void appendNodes(const std::vector<RenderParticle>& particles,
         return;
     }
     std::array<std::vector<std::size_t>, 8> children{};
-    for (const std::size_t index : indices)
+    for (const std::size_t index : indices) {
         children[static_cast<std::size_t>(childIndexForParticle(particles[index], node.centerX,
                                                                 node.centerY, node.centerZ))]
             .push_back(index);
-    for (int child = 0; child < 8; ++child)
+    }
+    for (int child = 0; child < 8; ++child) {
         const std::vector<std::size_t>& childIndices = children[static_cast<std::size_t>(child)];
-    if (childIndices.empty()) {
-        continue;
+        if (childIndices.empty()) {
+            continue;
+        }
         appendNodes(
             particles, childIndices,
             OctreeOverlayNode{node.centerX + ((child & 1) != 0 ? childHalfSize : -childHalfSize),

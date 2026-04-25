@@ -22,13 +22,15 @@ static void drawOrthographicNode(QPainter& painter, const QRect& viewport, grav:
 {
     float projectedX = 0.0f;
     float projectedY = 0.0f;
-    if (mode == grav::ViewMode::XY)
+    if (mode == grav::ViewMode::XY) {
         projectedX = node.centerX;
-    projectedY = node.centerY;
-    else if (mode == grav::ViewMode::XZ) projectedX = node.centerX;
-    projectedY = node.centerZ;
-    else
-    {
+        projectedY = node.centerY;
+    }
+    else if (mode == grav::ViewMode::XZ) {
+        projectedX = node.centerX;
+        projectedY = node.centerZ;
+    }
+    else {
         projectedX = node.centerY;
         projectedY = node.centerZ;
     }
@@ -62,9 +64,10 @@ void OctreeOverlayPainter::paint(QPainter& painter, const QRect& viewport, grav:
     painter.save();
     painter.setRenderHint(QPainter::Antialiasing, true);
     if (mode == grav::ViewMode::XY || mode == grav::ViewMode::XZ || mode == grav::ViewMode::YZ) {
-        for (const OctreeOverlayNode& node : nodes)
+        for (const OctreeOverlayNode& node : nodes) {
             painter.setPen(QPen(colorForDepth(node.depth, opacity), 1.0));
-        drawOrthographicNode(painter, viewport, mode, node, zoom);
+            drawOrthographicNode(painter, viewport, mode, node, zoom);
+        }
         painter.restore();
         return;
     }
@@ -100,12 +103,14 @@ void OctreeOverlayPainter::paint(QPainter& painter, const QRect& viewport, grav:
                 break;
             }
         }
-        if (!allProjected)
+        if (!allProjected) {
             continue;
+        }
         painter.setPen(QPen(colorForDepth(node.depth, opacity), 1.0));
-        for (const std::array<int, 2>& edge : kCubeEdges)
+        for (const std::array<int, 2>& edge : kCubeEdges) {
             painter.drawLine(projectedCorners[static_cast<std::size_t>(edge[0])],
                              projectedCorners[static_cast<std::size_t>(edge[1])]);
+        }
     }
     painter.restore();
 }

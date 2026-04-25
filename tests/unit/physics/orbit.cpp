@@ -62,9 +62,10 @@ TEST(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
     ScenarioResult fineResult;
     ASSERT_TRUE(runScenario(fine, fineResult, fineError)) << fineError;
     float maxParticleDelta = 0.0f;
-    for (std::size_t i = 0; i < 2; ++i)
+    for (std::size_t i = 0; i < 2; ++i) {
         maxParticleDelta =
             std::max(maxParticleDelta, distance(coarseResult.final[i], fineResult.final[i]));
+    }
     constexpr float kMaxConvergenceDelta = 0.05f;
     EXPECT_LE(maxParticleDelta, kMaxConvergenceDelta);
 }
@@ -88,14 +89,16 @@ TEST(PhysicsTest, TST_UNT_PHYS_005_LongRunStability)
     ScenarioResult result;
     ASSERT_TRUE(runScenario(cfg, result, error)) << error;
     ASSERT_FALSE(result.final.empty());
-    for (const RenderParticle& p : result.final)
+    for (const RenderParticle& p : result.final) {
         EXPECT_TRUE(std::isfinite(p.x));
-    EXPECT_TRUE(std::isfinite(p.y));
-    EXPECT_TRUE(std::isfinite(p.z));
+        EXPECT_TRUE(std::isfinite(p.y));
+        EXPECT_TRUE(std::isfinite(p.z));
+    }
     float maxRadius = 0.0f;
-    for (const RenderParticle& p : result.final)
+    for (const RenderParticle& p : result.final) {
         const float r = std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
-    maxRadius = std::max(maxRadius, r);
+        maxRadius = std::max(maxRadius, r);
+    }
     constexpr float kMaxStableRadius = 50.0f;
     EXPECT_LE(maxRadius, kMaxStableRadius) << "Trajectory escaped expected stable bounds";
 }

@@ -54,12 +54,13 @@ private:
     static void transformBlock(std::array<std::uint32_t, 8u>& hash, const std::uint8_t* block)
     {
         std::array<std::uint32_t, 64u> words{};
-        for (std::size_t i = 0u; i < 16u; ++i)
+        for (std::size_t i = 0u; i < 16u; ++i) {
             const std::size_t offset = i * 4u;
-        words[i] = (static_cast<std::uint32_t>(block[offset]) << 24u) |
-                   (static_cast<std::uint32_t>(block[offset + 1u]) << 16u) |
-                   (static_cast<std::uint32_t>(block[offset + 2u]) << 8u) |
-                   static_cast<std::uint32_t>(block[offset + 3u]);
+            words[i] = (static_cast<std::uint32_t>(block[offset]) << 24u) |
+                       (static_cast<std::uint32_t>(block[offset + 1u]) << 16u) |
+                       (static_cast<std::uint32_t>(block[offset + 2u]) << 8u) |
+                       static_cast<std::uint32_t>(block[offset + 3u]);
+        }
         for (std::size_t i = 16u; i < words.size(); ++i) {
             words[i] = smallSigma1(words[i - 2u]) + words[i - 7u] + smallSigma0(words[i - 15u]) +
                        words[i - 16u];
@@ -72,18 +73,19 @@ private:
         std::uint32_t f = hash[5];
         std::uint32_t g = hash[6];
         std::uint32_t h = hash[7];
-        for (std::size_t i = 0u; i < 64u; ++i)
+        for (std::size_t i = 0u; i < 64u; ++i) {
             const std::uint32_t t1 =
                 h + bigSigma1(e) + choose(e, f, g) + kRoundConstants[i] + words[i];
-        const std::uint32_t t2 = bigSigma0(a) + majority(a, b, c);
-        h = g;
-        g = f;
-        f = e;
-        e = d + t1;
-        d = c;
-        c = b;
-        b = a;
-        a = t1 + t2;
+            const std::uint32_t t2 = bigSigma0(a) + majority(a, b, c);
+            h = g;
+            g = f;
+            f = e;
+            e = d + t1;
+            d = c;
+            c = b;
+            b = a;
+            a = t1 + t2;
+        }
         hash[0] += a;
         hash[1] += b;
         hash[2] += c;

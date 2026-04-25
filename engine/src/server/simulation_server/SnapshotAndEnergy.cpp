@@ -75,16 +75,18 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
     std::vector<std::size_t> indices;
     if (!sampled) {
         indices.resize(n);
-        for (std::size_t i = 0; i < n; ++i)
+        for (std::size_t i = 0; i < n; ++i) {
             indices[i] = i;
+        }
     }
     else {
         const std::size_t sampleCount = std::max<std::size_t>(64u, sampleLimit);
         const std::size_t stride = std::max<std::size_t>(1, n / sampleCount);
-        for (std::size_t i = 0; i < n; i += stride)
+        for (std::size_t i = 0; i < n; i += stride) {
             indices.push_back(i);
-        if (indices.size() >= sampleCount) {
-            break;
+            if (indices.size() >= sampleCount) {
+                break;
+            }
         }
     }
     const double kineticScale =
@@ -97,13 +99,14 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
     const float softening = std::max(energySoftening, energyMinSoftening);
     double kinetic = 0.0;
     double thermal = 0.0;
-    for (std::size_t idx : indices)
+    for (std::size_t idx : indices) {
         const Particle& p = particles[idx];
-    const Vector3 v = p.getVelocity();
-    const double speed2 = static_cast<double>(v.x * v.x + v.y * v.y + v.z * v.z);
-    kinetic += 0.5 * static_cast<double>(p.getMass()) * speed2;
-    thermal += static_cast<double>(p.getMass()) * static_cast<double>(specificHeat) *
-               static_cast<double>(std::max(0.0f, p.getTemperature()));
+        const Vector3 v = p.getVelocity();
+        const double speed2 = static_cast<double>(v.x * v.x + v.y * v.y + v.z * v.z);
+        kinetic += 0.5 * static_cast<double>(p.getMass()) * speed2;
+        thermal += static_cast<double>(p.getMass()) * static_cast<double>(specificHeat) *
+                   static_cast<double>(std::max(0.0f, p.getTemperature()));
+    }
     kinetic *= kineticScale;
     thermal *= kineticScale;
     double potential = 0.0;
@@ -148,11 +151,12 @@ void SimulationServer::maybeUpdateEnergy(std::uint64_t currentStep)
     _radiatedEnergy.store(values.radiated, std::memory_order_relaxed);
     _totalEnergy.store(values.total, std::memory_order_relaxed);
     _energyEstimated.store(values.estimated, std::memory_order_relaxed);
-    if (!_hasEnergyBaseline)
+    if (!_hasEnergyBaseline) {
         _energyBaseline = values.total;
-    _hasEnergyBaseline = true;
-    _energyDriftPct.store(0.0f, std::memory_order_relaxed);
-    return;
+        _hasEnergyBaseline = true;
+        _energyDriftPct.store(0.0f, std::memory_order_relaxed);
+        return;
+    }
     const float denom = std::max(std::fabs(_energyBaseline), 1e-6f);
     const float drift = ((values.total - _energyBaseline) / denom) * 100.0f;
     _energyDriftPct.store(drift, std::memory_order_relaxed);

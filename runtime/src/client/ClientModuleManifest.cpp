@@ -39,11 +39,13 @@ public:
         if (rawValue.size() != 64u) {
             return false;
         }
-        for (const char ch : rawValue)
+        for (const char ch : rawValue) {
             const bool digit = ch >= '0' && ch <= '9';
-        const bool lowerHex = ch >= 'a' && ch <= 'f';
-        if (!digit && !lowerHex)
-            return false;
+            const bool lowerHex = ch >= 'a' && ch <= 'f';
+            if (!digit && !lowerHex) {
+                return false;
+            }
+        }
         return true;
     }
 };
@@ -129,15 +131,18 @@ bool ClientModuleManifest::validateForLoad(std::string_view modulePath,
         outError = "module manifest id mismatch";
         return false;
     }
-    if (m_apiVersion != kClientModuleApiVersionV1)
+    if (m_apiVersion != kClientModuleApiVersionV1) {
         outError = "unsupported module api version";
-    return false;
-    if (m_productName != kClientModuleProductName)
+        return false;
+    }
+    if (m_productName != kClientModuleProductName) {
         outError = "module manifest product mismatch";
-    return false;
-    if (m_productVersion != kClientModuleProductVersion)
+        return false;
+    }
+    if (m_productVersion != kClientModuleProductVersion) {
         outError = "module manifest product version mismatch";
-    return false;
+        return false;
+    }
     const std::filesystem::path moduleFile{std::string(modulePath)};
     if (moduleFile.filename().string() != m_libraryFile) {
         outError = "module manifest library_file mismatch";

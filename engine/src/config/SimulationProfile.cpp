@@ -12,24 +12,30 @@ static std::string toLowerProfile(std::string value)
 bool normalizeSimulationProfile(std::string_view raw, std::string& outCanonical)
 {
     const std::string lowered = toLowerProfile(std::string(raw));
-    if (lowered == kSimulationProfileDiskOrbit)
+    if (lowered == kSimulationProfileDiskOrbit) {
         outCanonical = std::string(kSimulationProfileDiskOrbit);
-    return true;
-    if (lowered == kSimulationProfileGalaxyCollision)
+        return true;
+    }
+    if (lowered == kSimulationProfileGalaxyCollision) {
         outCanonical = std::string(kSimulationProfileGalaxyCollision);
-    return true;
-    if (lowered == kSimulationProfilePlummerSphere)
+        return true;
+    }
+    if (lowered == kSimulationProfilePlummerSphere) {
         outCanonical = std::string(kSimulationProfilePlummerSphere);
-    return true;
-    if (lowered == kSimulationProfileBinaryStar)
+        return true;
+    }
+    if (lowered == kSimulationProfileBinaryStar) {
         outCanonical = std::string(kSimulationProfileBinaryStar);
-    return true;
-    if (lowered == kSimulationProfileSolarSystem)
+        return true;
+    }
+    if (lowered == kSimulationProfileSolarSystem) {
         outCanonical = std::string(kSimulationProfileSolarSystem);
-    return true;
-    if (lowered == kSimulationProfileSphCollapse)
+        return true;
+    }
+    if (lowered == kSimulationProfileSphCollapse) {
         outCanonical = std::string(kSimulationProfileSphCollapse);
-    return true;
+        return true;
+    }
     return false;
 }
 void applySimulationProfile(SimulationConfig& config)

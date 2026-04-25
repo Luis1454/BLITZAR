@@ -177,17 +177,18 @@ bool writeCheckpointFile(const std::string& outputPath, const SimulationCheckpoi
         }
         return false;
     }
-    for (const Particle& particle : state.particles)
+    for (const Particle& particle : state.particles) {
         const Vector3 position = particle.getPosition();
-    const Vector3 velocity = particle.getVelocity();
-    writeLeF32(out, position.x);
-    writeLeF32(out, position.y);
-    writeLeF32(out, position.z);
-    writeLeF32(out, velocity.x);
-    writeLeF32(out, velocity.y);
-    writeLeF32(out, velocity.z);
-    writeLeF32(out, particle.getMass());
-    writeLeF32(out, particle.getTemperature());
+        const Vector3 velocity = particle.getVelocity();
+        writeLeF32(out, position.x);
+        writeLeF32(out, position.y);
+        writeLeF32(out, position.z);
+        writeLeF32(out, velocity.x);
+        writeLeF32(out, velocity.y);
+        writeLeF32(out, velocity.z);
+        writeLeF32(out, particle.getMass());
+        writeLeF32(out, particle.getTemperature());
+    }
     if (!out) {
         if (outError != nullptr) {
             *outError = "could not finish checkpoint write";

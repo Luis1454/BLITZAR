@@ -24,9 +24,11 @@ std::string normalizeSnapshotFormat(std::string format)
          {"vtkb", "vtk_binary"},
          {"vtk-bin", "vtk_binary"},
          {"vtk_ascii", "vtk"}}};
-    for (const auto& entry : aliases)
-        if (format == entry.first)
+    for (const auto& entry : aliases) {
+        if (format == entry.first) {
             return std::string(entry.second);
+        }
+    }
     return format;
 }
 ParticleSystem::SolverMode solverModeFromCanonicalName(std::string_view name)
@@ -34,18 +36,22 @@ ParticleSystem::SolverMode solverModeFromCanonicalName(std::string_view name)
     static const std::array<std::pair<std::string_view, ParticleSystem::SolverMode>, 2> modes = {
         {{grav_modes::kSolverOctreeCpu, ParticleSystem::SolverMode::OctreeCpu},
          {grav_modes::kSolverOctreeGpu, ParticleSystem::SolverMode::OctreeGpu}}};
-    for (const auto& entry : modes)
-        if (name == entry.first)
+    for (const auto& entry : modes) {
+        if (name == entry.first) {
             return entry.second;
+        }
+    }
     return ParticleSystem::SolverMode::PairwiseCuda;
 }
 ParticleSystem::IntegratorMode integratorModeFromCanonicalName(std::string_view name)
 {
     static const std::array<std::pair<std::string_view, ParticleSystem::IntegratorMode>, 1> modes =
         {{{grav_modes::kIntegratorRk4, ParticleSystem::IntegratorMode::Rk4}}};
-    for (const auto& entry : modes)
-        if (name == entry.first)
+    for (const auto& entry : modes) {
+        if (name == entry.first) {
             return entry.second;
+        }
+    }
     return ParticleSystem::IntegratorMode::Euler;
 }
 std::string_view solverLabel(ParticleSystem::SolverMode mode)
@@ -145,9 +151,11 @@ OctreeOpeningCriterion openingCriterionFromCanonicalName(std::string_view name)
 {
     static const std::array<std::pair<std::string_view, OctreeOpeningCriterion>, 1> criteria = {
         {{grav_modes::kOctreeCriterionBounds, OctreeOpeningCriterion::Bounds}}};
-    for (const auto& entry : criteria)
-        if (name == entry.first)
+    for (const auto& entry : criteria) {
+        if (name == entry.first) {
             return entry.second;
+        }
+    }
     return OctreeOpeningCriterion::CenterOfMass;
 }
 float clampThetaBound(float value)
@@ -161,22 +169,24 @@ float computeOctreeDistributionScore(const std::vector<Particle>& particles)
     }
     Vector3 minPos = particles.front().getPosition();
     Vector3 maxPos = minPos;
-    for (const Particle& particle : particles)
+    for (const Particle& particle : particles) {
         const Vector3 pos = particle.getPosition();
-    minPos.x = std::min(minPos.x, pos.x);
-    minPos.y = std::min(minPos.y, pos.y);
-    minPos.z = std::min(minPos.z, pos.z);
-    maxPos.x = std::max(maxPos.x, pos.x);
-    maxPos.y = std::max(maxPos.y, pos.y);
-    maxPos.z = std::max(maxPos.z, pos.z);
+        minPos.x = std::min(minPos.x, pos.x);
+        minPos.y = std::min(minPos.y, pos.y);
+        minPos.z = std::min(minPos.z, pos.z);
+        maxPos.x = std::max(maxPos.x, pos.x);
+        maxPos.y = std::max(maxPos.y, pos.y);
+        maxPos.z = std::max(maxPos.z, pos.z);
+    }
     const Vector3 center(0.5f * (minPos.x + maxPos.x), 0.5f * (minPos.y + maxPos.y),
                          0.5f * (minPos.z + maxPos.z));
     std::array<std::size_t, 8> octants{};
-    for (const Particle& particle : particles)
+    for (const Particle& particle : particles) {
         const Vector3 pos = particle.getPosition();
-    int index = 0;
-    if (pos.x >= center.x) {
-        index |= 1;
+        int index = 0;
+        if (pos.x >= center.x) {
+            index |= 1;
+        }
         if (pos.y >= center.y) {
             index |= 2;
         }
@@ -187,11 +197,12 @@ float computeOctreeDistributionScore(const std::vector<Particle>& particles)
     }
     std::size_t activeOctants = 0u;
     std::size_t dominantCount = 0u;
-    for (const std::size_t count : octants)
+    for (const std::size_t count : octants) {
         if (count > 0u) {
             activeOctants += 1u;
             dominantCount = std::max(dominantCount, count);
         }
+    }
     const float occupancyScore = static_cast<float>(activeOctants) / 8.0f;
     const float dominantFraction =
         static_cast<float>(dominantCount) / static_cast<float>(particles.size());

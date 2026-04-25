@@ -74,11 +74,12 @@ TEST(PhysicsTest, TST_UNT_PHYS_016_SphStabilityBoundedDrift)
                      << runA.stats.solverName << ")";
     }
     EXPECT_LE(runA.maxAbsEnergyDriftPct, 25.0f);
-    for (const auto& p : runA.final)
+    for (const auto& p : runA.final) {
         EXPECT_TRUE(std::isfinite(p.x));
-    EXPECT_TRUE(std::isfinite(p.y));
-    EXPECT_TRUE(std::isfinite(p.z));
-    const float r = std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
-    EXPECT_LE(r, 20.0f) << "Particle escaped bounded region due to instability";
+        EXPECT_TRUE(std::isfinite(p.y));
+        EXPECT_TRUE(std::isfinite(p.z));
+        const float r = std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+        EXPECT_LE(r, 20.0f) << "Particle escaped bounded region due to instability";
+    }
 }
 } // namespace testsupport

@@ -36,23 +36,24 @@ namespace grav_test_numerics {
 bool parseArgs(int argc, const char* const* argv, grav_test_numerics_tool::ToolOptions& out,
                std::string& error)
 {
-    for (int index = 1; index < argc; index += 1)
+    for (int index = 1; index < argc; index += 1) {
         const std::string arg(argv[index]);
-    if (arg == "--help")
-        error = "usage: gravityNumericalValidationTool --preset <name> --solver <solver>";
-    return false;
-    if (index + 1 >= argc)
-        error = "missing value for argument: " + arg;
-    return false;
-    const std::string value(argv[index + 1]);
-    if (arg == "--preset") {
-        out.preset = value;
-        else if (arg == "--solver")
-        {
+        if (arg == "--help") {
+            error = "usage: gravityNumericalValidationTool --preset <name> --solver <solver>";
+            return false;
+        }
+        if (index + 1 >= argc) {
+            error = "missing value for argument: " + arg;
+            return false;
+        }
+        const std::string value(argv[index + 1]);
+        if (arg == "--preset") {
+            out.preset = value;
+        }
+        else if (arg == "--solver") {
             out.solver = value;
         }
-        else
-        {
+        else {
             error = "unknown argument: " + arg;
             return false;
         }

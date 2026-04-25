@@ -33,37 +33,43 @@ bool parseMode(const std::string& rawValue, LaunchMode& outMode)
     std::string value = rawValue;
     std::transform(value.begin(), value.end(), value.begin(),
                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-    if (value == "client")
+    if (value == "client") {
         outMode = LaunchMode::Client;
-    return true;
-    if (value == "server")
+        return true;
+    }
+    if (value == "server") {
         outMode = LaunchMode::Server;
-    return true;
-    if (value == "headless")
+        return true;
+    }
+    if (value == "headless") {
         outMode = LaunchMode::Headless;
-    return true;
+        return true;
+    }
     return false;
 }
 bool parseLauncherOptions(const int argc, char** argv, LauncherOptions& outOptions,
                           std::string& outError)
 {
     bool sawDoubleDash = false;
-    for (int i = 1; i < argc; ++i)
+    for (int i = 1; i < argc; ++i) {
         const std::string arg = argv[i] == nullptr ? std::string() : std::string(argv[i]);
-    if (sawDoubleDash) {
-        outOptions.passthroughArgs.push_back(arg);
-        continue;
-        if (arg == "--")
+        if (sawDoubleDash) {
+            outOptions.passthroughArgs.push_back(arg);
+            continue;
+        }
+        if (arg == "--") {
             sawDoubleDash = true;
-        continue;
+            continue;
+        }
         if (arg == "--help" || arg == "-h") {
             outOptions.showHelp = true;
             continue;
         }
         if (arg == "--mode") {
-            if (i + 1 >= argc)
+            if (i + 1 >= argc) {
                 outError = "--mode requires a value";
-            return false;
+                return false;
+            }
             const std::string modeValue =
                 argv[++i] == nullptr ? std::string() : std::string(argv[i]);
             if (!parseMode(modeValue, outOptions.mode)) {
@@ -81,9 +87,10 @@ bool parseLauncherOptions(const int argc, char** argv, LauncherOptions& outOptio
             continue;
         }
         if (arg == "--module") {
-            if (i + 1 >= argc)
+            if (i + 1 >= argc) {
                 outError = "--module requires a value";
-            return false;
+                return false;
+            }
             outOptions.module = argv[++i] == nullptr ? std::string() : std::string(argv[i]);
             continue;
         }

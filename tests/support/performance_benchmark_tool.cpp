@@ -1,20 +1,22 @@
 #include "tests/support/performance_benchmark_tool.hpp"
-#include "tests/support/physics_test_utils.hpp"
 #include <chrono>
+#include <iomanip>
+#include <ostream>
+#include "tests/support/physics_scenario.hpp"
+#include "tests/support/physics_test_utils.hpp"
 namespace grav_test_perf_tool {
 bool buildScenario(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& options,
                    testsupport::ScenarioConfig& cfg, std::string& error)
-#include "tests/support/physics_scenario.hpp"
-#include <iomanip>
-#include <ostream>
 {
-    if (options.workload == "disk_orbit")
+    if (options.workload == "disk_orbit") {
         cfg = testsupport::buildDiskOrbitScenario(options.particleCount, options.dt, options.steps,
                                                   options.seed, options.solver, options.integrator);
-    else if (options.workload == "random_cloud")
+    }
+    else if (options.workload == "random_cloud") {
         cfg =
             testsupport::buildRandomCloudScenario(options.particleCount, options.dt, options.steps,
                                                   options.seed, options.solver, options.integrator);
+    }
     else {
         error = "unknown workload: " + options.workload;
         return false;
@@ -73,57 +75,53 @@ bool PerformanceBenchmarkTool::parseUintValue(const std::string& text, std::uint
 bool PerformanceBenchmarkTool::parseArgs(int argc, const char* const* argv, ToolOptions& out,
                                          std::string& error)
 {
-    for (int index = 1; index < argc; index += 1)
+    for (int index = 1; index < argc; index += 1) {
         const std::string arg(argv[index]);
-    if (arg == "--help")
-        error =
-            "usage: gravityPerformanceBenchmarkTool --workload <name> --solver <solver> "
-            "--integrator <integrator> --dt <seconds> --particle-count <n> --steps <n> --seed <n>";
-    return false;
-    if (index + 1 >= argc)
-        error = "missing value for argument: " + arg;
-    return false;
-    const std::string value(argv[index + 1]);
-    if (arg == "--workload") {
-        out.workload = value;
-        else if (arg == "--solver")
-        {
+        if (arg == "--help") {
+            error =
+                "usage: gravityPerformanceBenchmarkTool --workload <name> --solver <solver> "
+                "--integrator <integrator> --dt <seconds> --particle-count <n> --steps <n> --seed <n>";
+            return false;
+        }
+        if (index + 1 >= argc) {
+            error = "missing value for argument: " + arg;
+            return false;
+        }
+        const std::string value(argv[index + 1]);
+        if (arg == "--workload") {
+            out.workload = value;
+        }
+        else if (arg == "--solver") {
             out.solver = value;
         }
-        else if (arg == "--integrator")
-        {
+        else if (arg == "--integrator") {
             out.integrator = value;
         }
-        else if (arg == "--dt")
-        {
+        else if (arg == "--dt") {
             if (!parseFloatValue(value, out.dt) || out.dt <= 0.0f) {
                 error = "invalid --dt value: " + value;
                 return false;
             }
         }
-        else if (arg == "--particle-count")
-        {
+        else if (arg == "--particle-count") {
             if (!parseUintValue(value, out.particleCount) || out.particleCount < 2u) {
                 error = "invalid --particle-count value: " + value;
                 return false;
             }
         }
-        else if (arg == "--steps")
-        {
+        else if (arg == "--steps") {
             if (!parseUintValue(value, out.steps) || out.steps == 0u) {
                 error = "invalid --steps value: " + value;
                 return false;
             }
         }
-        else if (arg == "--seed")
-        {
+        else if (arg == "--seed") {
             if (!parseUintValue(value, out.seed)) {
                 error = "invalid --seed value: " + value;
                 return false;
             }
         }
-        else
-        {
+        else {
             error = "unknown argument: " + arg;
             return false;
         }

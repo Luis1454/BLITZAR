@@ -41,9 +41,10 @@ TEST(PhysicsTest, TST_UNT_PHYS_007_MultiBodyInteractions)
     EXPECT_GT(avgDisplacement, 4e-4f);
     EXPECT_GT(maxDisplacement, 2e-3f);
     float maxRadius = 0.0f;
-    for (const RenderParticle& p : result.final)
+    for (const RenderParticle& p : result.final) {
         const float r = std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
-    maxRadius = std::max(maxRadius, r);
+        maxRadius = std::max(maxRadius, r);
+    }
     constexpr float kMaxStableRadius = 100.0f;
     EXPECT_LE(maxRadius, kMaxStableRadius);
 }
@@ -78,8 +79,9 @@ TEST(PhysicsTest, TST_UNT_PHYS_008_RadiationExchangeConservation)
     ASSERT_TRUE(runScenario(cfg, result, error)) << error;
     EXPECT_FALSE(result.stats.energyEstimated);
     float initialThermal = 0.0f;
-    for (const RenderParticle& p : result.initial)
+    for (const RenderParticle& p : result.initial) {
         initialThermal += p.mass * std::max(0.0f, p.temperature);
+    }
     constexpr float kMaxEnergyDriftPct = 1.5f;
     EXPECT_LE(result.maxAbsEnergyDriftPct, kMaxEnergyDriftPct)
         << "Radiative exchange should conserve total (thermal + radiated) energy";
@@ -96,13 +98,14 @@ TEST(PhysicsTest, TST_UNT_PHYS_011_CalibrationThreeBodyPresetStaysFiniteAndCente
     ASSERT_TRUE(runScenario(cfg, result, error)) << error;
     ASSERT_EQ(result.final.size(), 3u);
     float maxRadius = 0.0f;
-    for (const RenderParticle& particle : result.final)
+    for (const RenderParticle& particle : result.final) {
         EXPECT_TRUE(std::isfinite(particle.x));
-    EXPECT_TRUE(std::isfinite(particle.y));
-    EXPECT_TRUE(std::isfinite(particle.z));
-    const float radius =
-        std::sqrt(particle.x * particle.x + particle.y * particle.y + particle.z * particle.z);
-    maxRadius = std::max(maxRadius, radius);
+        EXPECT_TRUE(std::isfinite(particle.y));
+        EXPECT_TRUE(std::isfinite(particle.z));
+        const float radius =
+            std::sqrt(particle.x * particle.x + particle.y * particle.y + particle.z * particle.z);
+        maxRadius = std::max(maxRadius, radius);
+    }
     const auto finalCenter = centerOfMassAll(result.final);
     const float centerMagnitude =
         std::sqrt(finalCenter[0] * finalCenter[0] + finalCenter[1] * finalCenter[1] +
@@ -123,13 +126,14 @@ TEST(PhysicsTest, TST_UNT_PHYS_012_CalibrationPlummerPresetProducesBoundCluster)
     ASSERT_EQ(result.initial.size(), 96u);
     ASSERT_EQ(result.final.size(), 96u);
     float maxRadius = 0.0f;
-    for (const RenderParticle& particle : result.final)
+    for (const RenderParticle& particle : result.final) {
         EXPECT_TRUE(std::isfinite(particle.x));
-    EXPECT_TRUE(std::isfinite(particle.y));
-    EXPECT_TRUE(std::isfinite(particle.z));
-    const float radius =
-        std::sqrt(particle.x * particle.x + particle.y * particle.y + particle.z * particle.z);
-    maxRadius = std::max(maxRadius, radius);
+        EXPECT_TRUE(std::isfinite(particle.y));
+        EXPECT_TRUE(std::isfinite(particle.z));
+        const float radius =
+            std::sqrt(particle.x * particle.x + particle.y * particle.y + particle.z * particle.z);
+        maxRadius = std::max(maxRadius, radius);
+    }
     const auto finalCenter = centerOfMassAll(result.final);
     const float centerMagnitude =
         std::sqrt(finalCenter[0] * finalCenter[0] + finalCenter[1] * finalCenter[1] +

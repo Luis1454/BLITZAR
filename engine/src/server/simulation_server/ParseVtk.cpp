@@ -38,20 +38,22 @@ bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
         std::string token;
         auto skipScalars = [&in](std::size_t count) {
             float discard = 0.0f;
-            for (std::size_t i = 0; i < count; ++i)
+            for (std::size_t i = 0; i < count; ++i) {
                 if (!(in >> discard)) {
                     return false;
                 }
+            }
             return true;
         };
         auto skipVectors = [&in](std::size_t count) {
             float x = 0.0f;
             float y = 0.0f;
             float z = 0.0f;
-            for (std::size_t i = 0; i < count; ++i)
+            for (std::size_t i = 0; i < count; ++i) {
                 if (!(in >> x >> y >> z)) {
                     return false;
                 }
+            }
             return true;
         };
         while (in >> token) {
@@ -62,12 +64,13 @@ bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
                     return false;
                 }
                 positions.resize(pointCount);
-                for (std::size_t i = 0; i < pointCount; ++i)
+                for (std::size_t i = 0; i < pointCount; ++i) {
                     float x = 0.0f;
-                float y = 0.0f;
-                float z = 0.0f;
-                if (!(in >> x >> y >> z)) {
-                    return false;
+                    float y = 0.0f;
+                    float z = 0.0f;
+                    if (!(in >> x >> y >> z)) {
+                        return false;
+                    }
                     positions[i] = Vector3(x, y, z);
                 }
                 continue;
@@ -88,17 +91,19 @@ bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
                     pointCount * static_cast<std::size_t>(std::max(1, components));
                 if (toLower(name) == "mass" && components == 1) {
                     masses.resize(pointCount);
-                    for (std::size_t i = 0; i < pointCount; ++i)
+                    for (std::size_t i = 0; i < pointCount; ++i) {
                         if (!(in >> masses[i])) {
                             return false;
                         }
+                    }
                 }
                 else if (toLower(name) == "temperature" && components == 1) {
                     temperatures.resize(pointCount);
-                    for (std::size_t i = 0; i < pointCount; ++i)
+                    for (std::size_t i = 0; i < pointCount; ++i) {
                         if (!(in >> temperatures[i])) {
                             return false;
                         }
+                    }
                 }
                 else {
                     if (!skipScalars(scalarCount)) {
@@ -113,12 +118,13 @@ bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
                 in >> name >> type;
                 if (toLower(name) == "velocity") {
                     velocities.resize(pointCount);
-                    for (std::size_t i = 0; i < pointCount; ++i)
+                    for (std::size_t i = 0; i < pointCount; ++i) {
                         float x = 0.0f;
-                    float y = 0.0f;
-                    float z = 0.0f;
-                    if (!(in >> x >> y >> z)) {
-                        return false;
+                        float y = 0.0f;
+                        float z = 0.0f;
+                        if (!(in >> x >> y >> z)) {
+                            return false;
+                        }
                         velocities[i] = Vector3(x, y, z);
                     }
                 }
@@ -154,12 +160,13 @@ bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
                     return false;
                 }
                 positions.resize(pointCount);
-                for (std::size_t i = 0; i < pointCount; ++i)
+                for (std::size_t i = 0; i < pointCount; ++i) {
                     float x = 0.0f;
-                float y = 0.0f;
-                float z = 0.0f;
-                if (!readBeF32(in, x) || !readBeF32(in, y) || !readBeF32(in, z)) {
-                    return false;
+                    float y = 0.0f;
+                    float z = 0.0f;
+                    if (!readBeF32(in, x) || !readBeF32(in, y) || !readBeF32(in, z)) {
+                        return false;
+                    }
                     positions[i] = Vector3(x, y, z);
                 }
                 consumeOptionalLineBreak(in);
@@ -170,10 +177,11 @@ bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
                 std::size_t totalInts = 0;
                 iss >> cellCount >> totalInts;
                 std::int32_t discard = 0;
-                for (std::size_t i = 0; i < totalInts; ++i)
+                for (std::size_t i = 0; i < totalInts; ++i) {
                     if (!readBeI32(in, discard)) {
                         return false;
                     }
+                }
                 consumeOptionalLineBreak(in);
                 continue;
             }
@@ -195,24 +203,27 @@ bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
                     pointCount * static_cast<std::size_t>(std::max(1, components));
                 if (toLower(name) == "mass" && components == 1) {
                     masses.resize(pointCount);
-                    for (std::size_t i = 0; i < pointCount; ++i)
+                    for (std::size_t i = 0; i < pointCount; ++i) {
                         if (!readBeF32(in, masses[i])) {
                             return false;
                         }
+                    }
                 }
                 else if (toLower(name) == "temperature" && components == 1) {
                     temperatures.resize(pointCount);
-                    for (std::size_t i = 0; i < pointCount; ++i)
+                    for (std::size_t i = 0; i < pointCount; ++i) {
                         if (!readBeF32(in, temperatures[i])) {
                             return false;
                         }
+                    }
                 }
                 else {
                     float discard = 0.0f;
-                    for (std::size_t i = 0; i < scalarCount; ++i)
+                    for (std::size_t i = 0; i < scalarCount; ++i) {
                         if (!readBeF32(in, discard)) {
                             return false;
                         }
+                    }
                 }
                 consumeOptionalLineBreak(in);
                 continue;
@@ -223,21 +234,23 @@ bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
                 iss >> name >> type;
                 if (toLower(name) == "velocity") {
                     velocities.resize(pointCount);
-                    for (std::size_t i = 0; i < pointCount; ++i)
+                    for (std::size_t i = 0; i < pointCount; ++i) {
                         float x = 0.0f;
-                    float y = 0.0f;
-                    float z = 0.0f;
-                    if (!readBeF32(in, x) || !readBeF32(in, y) || !readBeF32(in, z)) {
-                        return false;
+                        float y = 0.0f;
+                        float z = 0.0f;
+                        if (!readBeF32(in, x) || !readBeF32(in, y) || !readBeF32(in, z)) {
+                            return false;
+                        }
                         velocities[i] = Vector3(x, y, z);
                     }
                 }
                 else {
                     float discard = 0.0f;
-                    for (std::size_t i = 0; i < pointCount * 3; ++i)
+                    for (std::size_t i = 0; i < pointCount * 3; ++i) {
                         if (!readBeF32(in, discard)) {
                             return false;
                         }
+                    }
                 }
                 consumeOptionalLineBreak(in);
                 continue;
@@ -258,7 +271,8 @@ bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
         return false;
     }
     const std::string encoding = toLower(trim(line3));
-    if (encoding == "binary")
+    if (encoding == "binary") {
         return parseBinaryPayload(in);
+    }
     return parseAsciiPayload(in);
 }

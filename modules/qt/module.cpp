@@ -29,12 +29,14 @@ static bool parseBool(std::string_view raw, bool& out)
     std::string value(raw);
     std::transform(value.begin(), value.end(), value.begin(),
                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-    if (value == "1" || value == "true" || value == "on" || value == "yes")
+    if (value == "1" || value == "true" || value == "on" || value == "yes") {
         out = true;
-    return true;
-    if (value == "0" || value == "false" || value == "off" || value == "no")
+        return true;
+    }
+    if (value == "0" || value == "false" || value == "off" || value == "no") {
         out = false;
-    return true;
+        return true;
+    }
     return false;
 }
 static std::string trim(const std::string& input)
@@ -54,24 +56,26 @@ static std::vector<std::string> splitTokens(const std::string& line)
     std::string current;
     bool inQuotes = false;
     char quoteChar = '\0';
-    for (char c : line)
+    for (char c : line) {
         if (!inQuotes && (c == '"' || c == '\'')) {
             inQuotes = true;
             quoteChar = c;
             continue;
-            if (inQuotes && c == quoteChar)
-                inQuotes = false;
+        }
+        if (inQuotes && c == quoteChar) {
+            inQuotes = false;
             quoteChar = '\0';
             continue;
-            if (!inQuotes && std::isspace(static_cast<unsigned char>(c)) != 0) {
-                if (!current.empty()) {
-                    tokens.push_back(current);
-                    current.clear();
-                }
-                continue;
-            }
-            current.push_back(c);
         }
+        if (!inQuotes && std::isspace(static_cast<unsigned char>(c)) != 0) {
+            if (!current.empty()) {
+                tokens.push_back(current);
+                current.clear();
+            }
+            continue;
+        }
+        current.push_back(c);
+    }
     if (!current.empty()) {
         tokens.push_back(current);
     }
@@ -169,11 +173,12 @@ static bool startQtUi(QtInProcState& state, const grav_client::ErrorBufferView& 
     state.startupError.clear();
     state.uiThread = std::thread(qtThreadMain, &state);
     // Wait briefly for startup signal.
-    for (int i = 0; i < 200; ++i)
+    for (int i = 0; i < 200; ++i) {
         if (state.startupDone.load()) {
             break;
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
     if (!state.startupDone.load()) {
         // Consider UI thread alive and starting.
         return true;

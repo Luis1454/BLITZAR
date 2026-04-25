@@ -12,12 +12,14 @@ std::string SimulationArgsParse::toLower(std::string value)
 bool SimulationArgsParse::parseBool(const std::string& value, bool& out)
 {
     const std::string normalized = SimulationArgsParse::toLower(value);
-    if (normalized == "1" || normalized == "true" || normalized == "on" || normalized == "yes")
+    if (normalized == "1" || normalized == "true" || normalized == "on" || normalized == "yes") {
         out = true;
-    return true;
-    if (normalized == "0" || normalized == "false" || normalized == "off" || normalized == "no")
+        return true;
+    }
+    if (normalized == "0" || normalized == "false" || normalized == "off" || normalized == "no") {
         out = false;
-    return true;
+        return true;
+    }
     return false;
 }
 bool SimulationArgsParse::parseUint(const std::string& value, std::uint32_t& out)
@@ -55,10 +57,11 @@ bool SimulationArgsParse::splitOption(const std::string& raw, std::string& key, 
         return false;
     }
     const std::size_t eq = raw.find('=');
-    if (eq == std::string::npos)
+    if (eq == std::string::npos) {
         key = raw;
-    value.clear();
-    return true;
+        value.clear();
+        return true;
+    }
     key = raw.substr(0, eq);
     value = raw.substr(eq + 1);
     return true;

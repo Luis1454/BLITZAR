@@ -1,7 +1,13 @@
-#include "ui/WorkspaceLayoutStore.hpp" #include < algorithm>
+#include "ui/WorkspaceLayoutStore.hpp"
+
+#include <algorithm>
 #include <cctype>
 #include <fstream>
-#include <system_error> namespace grav_qt { WorkspaceLayoutStore::WorkspaceLayoutStore(std::string configPath)
+#include <system_error>
+
+namespace grav_qt {
+
+WorkspaceLayoutStore::WorkspaceLayoutStore(std::string configPath)
 {
     std::filesystem::path basePath = configPath.empty()
                                          ? std::filesystem::current_path()
@@ -74,11 +80,12 @@ std::string WorkspaceLayoutStore::normalizeName(const std::string& name)
 {
     std::string normalized;
     normalized.reserve(name.size());
-    for (char raw : name)
+    for (char raw : name) {
         const unsigned char ch = static_cast<unsigned char>(raw);
-    if (std::isalnum(ch) != 0) {
-        normalized.push_back(static_cast<char>(std::tolower(ch)));
-        continue;
+        if (std::isalnum(ch) != 0) {
+            normalized.push_back(static_cast<char>(std::tolower(ch)));
+            continue;
+        }
         if (raw == '-' || raw == '_') {
             normalized.push_back(raw);
             continue;

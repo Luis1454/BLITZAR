@@ -24,12 +24,13 @@ std::array<float, 3> centerOfMassAll(const std::vector<RenderParticle>& snapshot
     double cx = 0.0;
     double cy = 0.0;
     double cz = 0.0;
-    for (const RenderParticle& p : snapshot)
+    for (const RenderParticle& p : snapshot) {
         const double mass = static_cast<double>(std::max(1e-9f, p.mass));
-    totalMass += mass;
-    cx += static_cast<double>(p.x) * mass;
-    cy += static_cast<double>(p.y) * mass;
-    cz += static_cast<double>(p.z) * mass;
+        totalMass += mass;
+        cx += static_cast<double>(p.x) * mass;
+        cy += static_cast<double>(p.y) * mass;
+        cz += static_cast<double>(p.z) * mass;
+    }
     if (totalMass <= 1e-12)
         return {0.0f, 0.0f, 0.0f};
     return {static_cast<float>(cx / totalMass), static_cast<float>(cy / totalMass),
@@ -41,11 +42,12 @@ float averageRadius(const std::vector<RenderParticle>& snapshot)
         return 0.0f;
     }
     double radiusSum = 0.0;
-    for (const RenderParticle& p : snapshot)
+    for (const RenderParticle& p : snapshot) {
         const double x = static_cast<double>(p.x);
-    const double y = static_cast<double>(p.y);
-    const double z = static_cast<double>(p.z);
-    radiusSum += std::sqrt(x * x + y * y + z * z);
+        const double y = static_cast<double>(p.y);
+        const double z = static_cast<double>(p.z);
+        radiusSum += std::sqrt(x * x + y * y + z * z);
+    }
     return static_cast<float>(radiusSum / static_cast<double>(snapshot.size()));
 }
 bool runScenario(const ScenarioConfig& cfg, ScenarioResult& out, std::string& error)
@@ -85,12 +87,13 @@ bool runScenario(const ScenarioConfig& cfg, ScenarioResult& out, std::string& er
         error = "initial snapshot has less than 2 particles";
         return false;
     }
-    for (std::uint32_t s = 0; s < cfg.steps; ++s)
+    for (std::uint32_t s = 0; s < cfg.steps; ++s) {
         server.stepOnce();
-    if (!waitForStepCount(server, static_cast<std::uint64_t>(s) + 1ull, cfg.stepTimeoutMs)) {
-        server.stop();
-        error = "step timeout at " + std::to_string(s + 1);
-        return false;
+        if (!waitForStepCount(server, static_cast<std::uint64_t>(s) + 1ull, cfg.stepTimeoutMs)) {
+            server.stop();
+            error = "step timeout at " + std::to_string(s + 1);
+            return false;
+        }
         const SimulationStats stats = server.getStats();
         if (std::isfinite(stats.energyDriftPct)) {
             out.maxAbsEnergyDriftPct =
@@ -110,13 +113,15 @@ bool runScenario(const ScenarioConfig& cfg, ScenarioResult& out, std::string& er
         error = "final snapshot has less than 2 particles";
         return false;
     }
-    if (out.stats.steps < cfg.steps)
+    if (out.stats.steps < cfg.steps) {
         error = "final step count too low";
-    return false;
+        return false;
+    }
     const std::size_t comparableCount = std::min(out.initial.size(), out.final.size());
-    for (std::size_t index = 0; index < comparableCount; index += 1u)
+    for (std::size_t index = 0; index < comparableCount; index += 1u) {
         out.maxParticleDeltaFromInitial = std::max(out.maxParticleDeltaFromInitial,
                                                    distance(out.initial[index], out.final[index]));
+    }
     return true;
 }
 std::string getTwoBodyInputPath()

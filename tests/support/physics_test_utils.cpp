@@ -122,16 +122,19 @@ bool haveExactReplayMatch(const ScenarioResult& lhs, const ScenarioResult& rhs, 
     }
     for (std::size_t i = 0; i < lhs.final.size(); ++i) {
         if (lhs.final[i].x != rhs.final[i].x || lhs.final[i].y != rhs.final[i].y ||
-            lhs.final[i].z != rhs.final[i].z)
+            lhs.final[i].z != rhs.final[i].z) {
             error = "particle position mismatch at index " + std::to_string(i);
+            return false;
+        }
+    }
+    if (lhs.stats.totalEnergy != rhs.stats.totalEnergy) {
+        error = "total energy mismatch";
         return false;
     }
-    if (lhs.stats.totalEnergy != rhs.stats.totalEnergy)
-        error = "total energy mismatch";
-    return false;
-    if (lhs.stats.steps != rhs.stats.steps)
+    if (lhs.stats.steps != rhs.stats.steps) {
         error = "step count mismatch";
-    return false;
+        return false;
+    }
     error.clear();
     return true;
 }

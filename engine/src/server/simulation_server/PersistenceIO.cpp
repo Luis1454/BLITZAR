@@ -75,20 +75,21 @@ bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState&
     }
     outState.particles.clear();
     outState.particles.reserve(count);
-    for (std::uint32_t index = 0u; index < count; ++index)
+    for (std::uint32_t index = 0u; index < count; ++index) {
         float px = 0.0f;
-    float py = 0.0f;
-    float pz = 0.0f;
-    float vx = 0.0f;
-    float vy = 0.0f;
-    float vz = 0.0f;
-    float mass = 0.0f;
-    float temperature = 0.0f;
-    if (!readLeF32(in, px) || !readLeF32(in, py) || !readLeF32(in, pz) || !readLeF32(in, vx) ||
-        !readLeF32(in, vy) || !readLeF32(in, vz) || !readLeF32(in, mass) ||
-        !readLeF32(in, temperature)) {
-        if (outError != nullptr) {
-            *outError = "checkpoint particle payload is truncated";
+        float py = 0.0f;
+        float pz = 0.0f;
+        float vx = 0.0f;
+        float vy = 0.0f;
+        float vz = 0.0f;
+        float mass = 0.0f;
+        float temperature = 0.0f;
+        if (!readLeF32(in, px) || !readLeF32(in, py) || !readLeF32(in, pz) ||
+            !readLeF32(in, vx) || !readLeF32(in, vy) || !readLeF32(in, vz) ||
+            !readLeF32(in, mass) || !readLeF32(in, temperature)) {
+            if (outError != nullptr) {
+                *outError = "checkpoint particle payload is truncated";
+            }
             return false;
         }
         Particle particle;
@@ -150,10 +151,11 @@ bool writeExportSnapshotFile(const AsyncExportJob& job)
         out << job.particles.size() << "\n";
         out << "solver=" << job.solverModeLabel << " integrator=" << job.integratorModeLabel
             << " step=" << job.step << "\n";
-        for (const Particle& particle : job.particles)
+        for (const Particle& particle : job.particles) {
             const Vector3 position = particle.getPosition();
-        out << "P " << position.x << " " << position.y << " " << position.z << " "
-            << particle.getMass() << " " << particle.getTemperature() << "\n";
+            out << "P " << position.x << " " << position.y << " " << position.z << " "
+                << particle.getMass() << " " << particle.getTemperature() << "\n";
+        }
         return true;
     }
     out << "# vtk DataFile Version 3.0\n";
@@ -163,17 +165,19 @@ bool writeExportSnapshotFile(const AsyncExportJob& job)
     out << "DATASET POLYDATA\n";
     out << "POINTS " << job.particles.size() << " float\n";
     if (vtkBinary) {
-        for (const Particle& particle : job.particles)
+        for (const Particle& particle : job.particles) {
             const Vector3 position = particle.getPosition();
-        writeBeF32(out, position.x);
-        writeBeF32(out, position.y);
-        writeBeF32(out, position.z);
+            writeBeF32(out, position.x);
+            writeBeF32(out, position.y);
+            writeBeF32(out, position.z);
+        }
         out << "\n";
     }
     else {
-        for (const Particle& particle : job.particles)
+        for (const Particle& particle : job.particles) {
             const Vector3 position = particle.getPosition();
-        out << position.x << " " << position.y << " " << position.z << "\n";
+            out << position.x << " " << position.y << " " << position.z << "\n";
+        }
     }
     out << "VERTICES " << job.particles.size() << " " << (job.particles.size() * 2) << "\n";
     if (vtkBinary) {
@@ -192,49 +196,57 @@ bool writeExportSnapshotFile(const AsyncExportJob& job)
     out << "SCALARS mass float 1\n";
     out << "LOOKUP_TABLE default\n";
     if (vtkBinary) {
-        for (const Particle& particle : job.particles)
+        for (const Particle& particle : job.particles) {
             writeBeF32(out, particle.getMass());
+        }
         out << "\n";
     }
     else {
-        for (const Particle& particle : job.particles)
+        for (const Particle& particle : job.particles) {
             out << particle.getMass() << "\n";
+        }
     }
     out << "SCALARS pressure float 1\n";
     out << "LOOKUP_TABLE default\n";
     if (vtkBinary) {
-        for (const Particle& particle : job.particles)
+        for (const Particle& particle : job.particles) {
             writeBeF32(out, particle.getPressure().norm());
+        }
         out << "\n";
     }
     else {
-        for (const Particle& particle : job.particles)
+        for (const Particle& particle : job.particles) {
             out << particle.getPressure().norm() << "\n";
+        }
     }
     out << "SCALARS temperature float 1\n";
     out << "LOOKUP_TABLE default\n";
     if (vtkBinary) {
-        for (const Particle& particle : job.particles)
+        for (const Particle& particle : job.particles) {
             writeBeF32(out, particle.getTemperature());
+        }
         out << "\n";
     }
     else {
-        for (const Particle& particle : job.particles)
+        for (const Particle& particle : job.particles) {
             out << particle.getTemperature() << "\n";
+        }
     }
     out << "VECTORS velocity float\n";
     if (vtkBinary) {
-        for (const Particle& particle : job.particles)
+        for (const Particle& particle : job.particles) {
             const Vector3 velocity = particle.getVelocity();
-        writeBeF32(out, velocity.x);
-        writeBeF32(out, velocity.y);
-        writeBeF32(out, velocity.z);
+            writeBeF32(out, velocity.x);
+            writeBeF32(out, velocity.y);
+            writeBeF32(out, velocity.z);
+        }
         out << "\n";
     }
     else {
-        for (const Particle& particle : job.particles)
+        for (const Particle& particle : job.particles) {
             const Vector3 velocity = particle.getVelocity();
-        out << velocity.x << " " << velocity.y << " " << velocity.z << "\n";
+            out << velocity.x << " " << velocity.y << " " << velocity.z << "\n";
+        }
     }
     return true;
 }
