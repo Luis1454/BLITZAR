@@ -113,12 +113,11 @@ void applyArgsToConfig(
     }
 
     if (!grav_modes::isSupportedSolverIntegratorPair(config.solver, config.integrator)) {
+        runtime.hasArgumentError = true;
         if (config.solver == grav_modes::kSolverOctreeGpu && config.integrator == grav_modes::kIntegratorRk4) {
-            warnings << "[args] unsupported solver/integrator combination: solver=octree_gpu does not support rk4, switching solver to pairwise_cuda\n";
-            config.solver = std::string(grav_modes::kSolverPairwiseCuda);
+            warnings << "[args] unsupported solver/integrator combination: solver=octree_gpu does not support rk4\n";
         } else {
-            warnings << "[args] unsupported solver/integrator combination, switching integrator to euler\n";
-            config.integrator = std::string(grav_modes::kIntegratorEuler);
+            warnings << "[args] unsupported solver/integrator combination\n";
         }
     }
 
