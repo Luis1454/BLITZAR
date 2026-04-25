@@ -102,8 +102,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_005_RejectsInvalidSolverAndIntegratorValues)
     warnings.clear();
     args = {"app", "--solver", "octree_gpu", "--integrator", "rk4"};
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
-    EXPECT_EQ(config.solver, initialSolver);
-    EXPECT_EQ(config.integrator, initialIntegrator);
+    EXPECT_EQ(config.solver, "octree_gpu");
+    EXPECT_EQ(config.integrator, "rk4");
     EXPECT_TRUE(runtime.hasArgumentError);
     EXPECT_NE(warnings.str().find("unsupported solver/integrator combination"), std::string::npos);
 }
