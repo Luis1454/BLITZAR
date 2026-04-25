@@ -1,6 +1,4 @@
 #include "modules/cli/module_cli_commands.hpp"
-namespace grav_module_cli {
-class ModuleCliCommandsLocal final {
 #include "client/ErrorBuffer.hpp"
 #include "command/CommandCatalog.hpp"
 #include "command/CommandContext.hpp"
@@ -10,6 +8,8 @@ class ModuleCliCommandsLocal final {
 #include <exception>
 #include <iostream>
 #include <string>
+namespace grav_module_cli {
+class ModuleCliCommandsLocal final {
 public:
     static void printHelp()
     {

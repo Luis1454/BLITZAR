@@ -1,6 +1,7 @@
 #ifndef GRAVITY_MODULES_CLI_MODULE_CLI_COMMANDS_HPP_
 #define GRAVITY_MODULES_CLI_MODULE_CLI_COMMANDS_HPP_
 #include "client/ClientModuleBoundary.hpp"
+#include "client/ErrorBuffer.hpp"
 #include "modules/cli/module_cli_state.hpp"
 #include <string_view>
 namespace grav_module_cli {
