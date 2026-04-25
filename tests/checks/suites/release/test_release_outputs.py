@@ -1,13 +1,14 @@
-#!/usr/bin/env python3
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 import zipfile
 from pathlib import Path
 
 from python_tools.ci.numerical_validation import NumericalValidationCampaign
 from python_tools.ci.release_bundle import ReleaseBundlePackager, ReleaseBundleSmokeValidator
+from python_tools.ci.release_source import ReleaseSourcePackager
 from python_tools.ci.tool_manifest import ToolManifestCollector
 
 
@@ -118,13 +119,25 @@ def test_release_bundle_smoke_validator_runs_help_commands_for_present_binaries(
     validator.validate_layout(bundle_root)
     validator.run_smoke(bundle_root)
 
-    assert [Path(command[0]).name for command, _ in seen] == [
-        "blitzar.exe",
-        "blitzar-headless.exe",
-        "blitzar-server.exe",
-        "blitzar-client.exe",
-    ]
+    expected = ["blitzar.exe", "blitzar-headless.exe", "blitzar-server.exe", "blitzar-client.exe"]
+    assert [Path(command[0]).name for command, _ in seen] == expected
     assert all(cwd == bundle_root for _, cwd in seen)
+
+
+def test_release_source_packager_archives_tracked_files_only(tmp_path: Path) -> None:
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True, text=True)
+    (tmp_path / "README.md").write_text("readme\n", encoding="utf-8")
+    (tmp_path / "untracked.log").write_text("log\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md"], cwd=tmp_path, check=True)
+    commit = ["git", "-c", "user.email=ci@example.invalid", "-c", "user.name=CI", "commit", "-m", "test: seed source archive"]
+    subprocess.run(commit, cwd=tmp_path, check=True, capture_output=True, text=True)
+
+    archive = ReleaseSourcePackager().package(tmp_path, tmp_path / "dist/source", "v1.0.0")
+
+    with zipfile.ZipFile(archive) as source:
+        names = source.namelist()
+    assert "blitzar-v1.0.0-source/README.md" in names
+    assert "blitzar-v1.0.0-source/untracked.log" not in names
 
 
 def test_tool_manifest_collector_records_versions_and_missing_tools(tmp_path: Path) -> None:

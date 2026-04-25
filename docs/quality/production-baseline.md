@@ -28,7 +28,7 @@ This artifact defines the evidence-grade baseline for qualification-oriented `pr
 - Repository quality gate: `make quality-local CONFIG=simulation.ini`
 - Python analysis: `make quality-python`
 - Strict integration lane: `make quality-strict CONFIG=simulation.ini QUALITY_BUILD_DIR=build-quality`
-- Release lane packaging: `scripts/ci/release/package_bundle.py` and `scripts/ci/release/package_evidence.py`
+- Release lane packaging: `scripts/ci/release/package_source.py`, `scripts/ci/release/package_bundle.py`, and `scripts/ci/release/package_evidence.py`
 
 ## Change Control
 
