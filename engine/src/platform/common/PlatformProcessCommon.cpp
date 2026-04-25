@@ -6,27 +6,28 @@ std::string quoteProcessArg(const std::string& arg)
         return "\"\"";
     }
     const bool needsQuotes = arg.find_first_of(" \t\"") != std::string::npos;
-    if (!needsQuotes)
+    if (!needsQuotes) {
         return arg;
+    }
     std::string escaped;
     escaped.reserve(arg.size() + 8u);
-    for (char c : arg)
+    for (char c : arg) {
         if (c == '"') {
             escaped += "\\\"";
-            else
-            {
-                escaped.push_back(c);
-            }
+        } else {
+            escaped.push_back(c);
         }
+    }
     return "\"" + escaped + "\"";
 }
 std::string buildProcessCommandLine(const std::string& executable,
                                     const std::vector<std::string>& args)
 {
     std::string command = quoteProcessArg(executable);
-    for (const std::string& arg : args)
+    for (const std::string& arg : args) {
         command.push_back(' ');
-    command += quoteProcessArg(arg);
+        command += quoteProcessArg(arg);
+    }
     return command;
 }
 } // namespace grav_platform

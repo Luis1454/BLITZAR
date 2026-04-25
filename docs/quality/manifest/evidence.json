@@ -1,4 +1,4 @@
-﻿{
+{
     "evidence": {
         "EVD_CI_PR_FAST": ".github/workflows/pr-fast.yml",
         "EVD_CI_PERFORMANCE_BENCHMARK": ".github/workflows/performance-benchmark.yml",
