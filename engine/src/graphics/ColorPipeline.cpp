@@ -29,10 +29,12 @@ static std::array<RgbColor, kTempBins> buildTemperatureLut()
     const RgbColor cold{56, 105, 255};
     const RgbColor warm{255, 170, 90};
     const RgbColor hot{255, 76, 66};
-    for (int i = 0; i < kTempBins; ++i)
+    for (int i = 0; i < kTempBins; ++i) {
         const float tNorm = static_cast<float>(i) / static_cast<float>(kTempBins - 1);
-    lut[static_cast<std::size_t>(i)] = tNorm < 0.55f ? blend(cold, warm, tNorm / 0.55f)
-                                                     : blend(warm, hot, (tNorm - 0.55f) / 0.45f);
+        lut[static_cast<std::size_t>(i)] =
+            tNorm < 0.55f ? blend(cold, warm, tNorm / 0.55f)
+                          : blend(warm, hot, (tNorm - 0.55f) / 0.45f);
+    }
     return lut;
 }
 static int quantizeToBin(float value, float rangeMax, int bins)
@@ -53,10 +55,11 @@ static std::array<std::uint8_t, kPressureBins> buildAlphaLut(int luminosity)
 {
     std::array<std::uint8_t, kPressureBins> lut{};
     const int clampedLum = std::clamp(luminosity, 0, 255);
-    for (int i = 0; i < kPressureBins; ++i)
+    for (int i = 0; i < kPressureBins; ++i) {
         const float pNorm = static_cast<float>(i) / static_cast<float>(kPressureBins - 1);
-    const int alpha = static_cast<int>(clampedLum * (0.2f + 0.8f * pNorm));
-    lut[static_cast<std::size_t>(i)] = static_cast<std::uint8_t>(std::clamp(alpha, 6, 255));
+        const int alpha = static_cast<int>(clampedLum * (0.2f + 0.8f * pNorm));
+        lut[static_cast<std::size_t>(i)] = static_cast<std::uint8_t>(std::clamp(alpha, 6, 255));
+    }
     return lut;
 }
 void updateAdaptiveScales(const std::vector<RenderParticle>& snapshot,
@@ -64,9 +67,10 @@ void updateAdaptiveScales(const std::vector<RenderParticle>& snapshot,
 {
     float observedTempMax = kTemperatureScaleFloor;
     float observedPressureMax = kPressureScaleFloor;
-    for (const RenderParticle& particle : snapshot)
+    for (const RenderParticle& particle : snapshot) {
         observedTempMax = std::max(observedTempMax, std::max(0.0f, particle.temperature));
-    observedPressureMax = std::max(observedPressureMax, std::max(0.0f, particle.pressureNorm));
+        observedPressureMax = std::max(observedPressureMax, std::max(0.0f, particle.pressureNorm));
+    }
     adaptiveTemperatureScale = updateAdaptiveParameter(adaptiveTemperatureScale, observedTempMax,
                                                        kTemperatureScaleFloor, 0.32f, 0.04f);
     adaptivePressureScale = updateAdaptiveParameter(adaptivePressureScale, observedPressureMax,
