@@ -70,26 +70,34 @@ class CoverageDashboardBuilder:
             f"<circle cx='{cx}' cy='{cy}' r='{radius}' fill='none' stroke='{color}' stroke-width='14' "
             f"stroke-linecap='round' stroke-dasharray='{dash:.1f} {gap:.1f}' "
             f"transform='rotate(-90 {cx} {cy})' />"
-            f"<text x='{cx}' y='{cy - 6}' text-anchor='middle' font-size='28' font-weight='700' fill='#24292f'>{pct:.1f}%</text>"
-            f"<text x='{cx}' y='{cy + 20}' text-anchor='middle' font-size='16' fill='#57606a'>{safe_label}</text>"
+            f"<text x='{cx}' y='{cy + 4}' text-anchor='middle' class='metric-value'>{pct:.1f}%</text>"
+            f"<text x='{cx}' y='{cy + 30}' text-anchor='middle' class='metric-label'>{safe_label}</text>"
         )
 
     def _write_widget(self, out: Path, metrics: CoverageMetrics, updated: str) -> None:
         circles = (
-            self._circle_markup(130, 112, 58, "Lines", metrics.lines)
-            + self._circle_markup(360, 112, 58, "Functions", metrics.functions)
-            + self._circle_markup(590, 112, 58, "Branches", metrics.branches)
+            self._circle_markup(135, 132, 58, "Lines", metrics.lines)
+            + self._circle_markup(390, 132, 58, "Functions", metrics.functions)
+            + self._circle_markup(645, 132, 58, "Branches", metrics.branches)
         )
         svg = (
-            "<svg xmlns='http://www.w3.org/2000/svg' width='720' height='240' viewBox='0 0 720 240' role='img' "
+            "<svg xmlns='http://www.w3.org/2000/svg' width='780' height='280' viewBox='0 0 780 280' role='img' "
             "aria-labelledby='title desc'>"
             "<title id='title'>BLITZAR integration coverage</title>"
             "<desc id='desc'>Lines, functions, and branches coverage percentages published by nightly-full.</desc>"
-            "<rect width='720' height='240' rx='18' fill='#ffffff' stroke='#d0d7de'/>"
-            "<text x='32' y='42' font-size='28' font-weight='700' fill='#24292f'>Coverage Control</text>"
-            "<text x='32' y='68' font-size='16' fill='#57606a'>Nightly integration coverage steering widget</text>"
+            "<style>"
+            "text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;}"
+            ".title{font-size:30px;font-weight:700;fill:#24292f;}"
+            ".subtitle{font-size:16px;fill:#57606a;}"
+            ".metric-value{font-size:28px;font-weight:700;fill:#24292f;}"
+            ".metric-label{font-size:16px;fill:#57606a;}"
+            ".updated{font-size:14px;fill:#57606a;}"
+            "</style>"
+            "<rect width='780' height='280' rx='18' fill='#ffffff' stroke='#d0d7de'/>"
+            "<text x='32' y='52' class='title'>Coverage Control</text>"
+            "<text x='32' y='78' class='subtitle'>Nightly integration coverage steering widget</text>"
             f"{circles}"
-            f"<text x='32' y='214' font-size='14' fill='#57606a'>Updated {html.escape(updated)}</text>"
+            f"<text x='32' y='250' class='updated'>Updated {html.escape(updated)}</text>"
             "</svg>"
         )
         (out / "widget.svg").write_text(svg, encoding="utf-8")
