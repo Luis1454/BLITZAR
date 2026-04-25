@@ -178,7 +178,7 @@ Deviation: DEV-QUAL-001
         return [{"filename": "tests/unit/physics/orbit.cpp"}] if suffix == "files" else [{"state": "COMMENTED", "user": {"login": "reviewer"}}]
 
     result = FakeIvvGateCheck(critical_fetch).run(_event_context(tmp_path, _write_pr_event(tmp_path, critical_body)))
-    assert any("APPROVED review" in error for error in result.errors)
+    assert any("waiting for one GitHub APPROVED review" in error for error in result.errors)
 
     def docs_fetch(repo: str, number: int, suffix: str, token: str, result):  # noqa: ARG001
         return [{"filename": "docs/quality/quality-overview.md"}] if suffix == "files" else []
