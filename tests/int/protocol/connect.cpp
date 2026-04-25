@@ -29,14 +29,15 @@ TEST(ServerProtocolTest, TST_INT_PROT_001_ServerClientParsesStatusAndSnapshotFro
     ServerClientResponse snapshotResponse{};
     bool gotSnapshot = false;
     bool requestedStep = false;
-    for (int atmp = 0; atmp < 200 && !gotSnapshot; ++atmp)
+    for (int attempt = 0; attempt < 200 && !gotSnapshot; ++attempt) {
         snapshotResponse = client.getSnapshot(snapshot, 128u);
-    gotSnapshot = snapshotResponse.ok && !snapshot.empty();
-    if (!gotSnapshot && !requestedStep && atmp >= 10) {
-        const ServerClientResponse stepResponse =
-            client.sendCommand(std::string(grav_protocol::Step), "\"count\":1");
-        ASSERT_TRUE(stepResponse.ok) << stepResponse.error;
-        requestedStep = true;
+        gotSnapshot = snapshotResponse.ok && !snapshot.empty();
+        if (!gotSnapshot && !requestedStep && attempt >= 10) {
+            const ServerClientResponse stepResponse =
+                client.sendCommand(std::string(grav_protocol::Step), "\"count\":1");
+            ASSERT_TRUE(stepResponse.ok) << stepResponse.error;
+            requestedStep = true;
+        }
         if (!gotSnapshot) {
             std::this_thread::sleep_for(std::chrono::milliseconds(25));
         }
