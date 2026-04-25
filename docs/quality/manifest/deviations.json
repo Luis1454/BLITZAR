@@ -147,6 +147,75 @@
         "EVD_CHECK_POLICY_ALLOWLIST",
         "EVD_TEST_UNIT_PROTOCOL_CODEC"
       ]
+    },
+    "DEV-QUAL-007": {
+      "kind": "deviation",
+      "status": "open",
+      "scope": "repository-policy:file-size",
+      "owner": "project-maintainer",
+      "approver": "quality-review",
+      "introduced_on": "2026-04-24",
+      "review_by": "2026-06-30",
+      "rationale": "CUDA buffer management remains consolidated while the octree GPU path is being decomposed and the new compact layout is being stabilized.",
+      "mitigation": "Keep this file isolated in the allowlist and review all changes for allocator and scratch-buffer correctness.",
+      "closure_criteria": "Split the CUDA buffer fragment below the hard limit and remove the allowlist path.",
+      "paths": [
+        "engine/src/physics/cuda/fragments/ParticleSystemBuffer.inl"
+      ],
+      "requirements": [
+        "REQ-QUAL-001",
+        "REQ-PHYS-001"
+      ],
+      "artifacts": [
+        "EVD_CHECK_MAIN",
+        "EVD_CHECK_POLICY_ALLOWLIST"
+      ]
+    },
+    "DEV-QUAL-008": {
+      "kind": "deviation",
+      "status": "open",
+      "scope": "repository-policy:file-size",
+      "owner": "project-maintainer",
+      "approver": "quality-review",
+      "introduced_on": "2026-04-24",
+      "review_by": "2026-06-30",
+      "rationale": "The compact linear octree GPU fragment is still grouped while traversal and packing logic are being refactored together.",
+      "mitigation": "Keep this file isolated in the allowlist and review all changes for traversal correctness and memory layout stability.",
+      "closure_criteria": "Split the linear octree GPU fragment below the hard limit and remove the allowlist path.",
+      "paths": [
+        "engine/src/physics/cuda/fragments/ParticleSystemLinearOctreeGpu.inl"
+      ],
+      "requirements": [
+        "REQ-QUAL-001",
+        "REQ-PHYS-001"
+      ],
+      "artifacts": [
+        "EVD_CHECK_MAIN",
+        "EVD_CHECK_POLICY_ALLOWLIST"
+      ]
+    },
+    "DEV-QUAL-009": {
+      "kind": "deviation",
+      "status": "open",
+      "scope": "repository-policy:file-size",
+      "owner": "project-maintainer",
+      "approver": "quality-review",
+      "introduced_on": "2026-04-24",
+      "review_by": "2026-06-30",
+      "rationale": "The physics system header still aggregates the particle system interface while the underlying runtime contracts are being reshaped.",
+      "mitigation": "Keep this header isolated in the allowlist and review all interface changes for consistency with the implementation files.",
+      "closure_criteria": "Split the physics interface header below the hard limit and remove the allowlist path.",
+      "paths": [
+        "engine/include/physics/ParticleSystem.hpp"
+      ],
+      "requirements": [
+        "REQ-QUAL-001",
+        "REQ-PHYS-001"
+      ],
+      "artifacts": [
+        "EVD_CHECK_MAIN",
+        "EVD_CHECK_POLICY_ALLOWLIST"
+      ]
     }
   }
 }

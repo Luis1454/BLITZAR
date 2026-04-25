@@ -17,7 +17,7 @@
 #include <thrust/tuple.h>
 
 struct ThrustPoolAllocator {
-    using value_type = char;
+    typedef char value_type;
 
     char* allocate(std::ptrdiff_t numBytes)
     {
@@ -346,6 +346,50 @@ __global__ void buildLinearOctreeNextLinksKernel(OctreeNodeHandle nodes, int nod
     nodes[nodeIndex].nextIndex = nextIndex;
 }
 
+__global__ void packLinearOctreeCompactKernel(
+    const GpuOctreeNode* nodes,
+    int nodeCount,
+    GpuOctreeNodeHotData* hot,
+    GpuOctreeNodeNavData* nav,
+    int* firstChild,
+    int* leafStarts,
+    int* leafCounts)
+{
+    const int nodeIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    if (nodeIndex < 0 || nodeIndex >= nodeCount) {
+        return;
+    }
+
+    const GpuOctreeNode node = nodes[nodeIndex];
+
+    GpuOctreeNodeHotData h = {};
+    h.centerX = node.centerX;
+    h.centerY = node.centerY;
+    h.centerZ = node.centerZ;
+    h.halfSize = node.halfSize;
+    h.mass = node.mass;
+    h.comX = node.comX;
+    h.comY = node.comY;
+    h.comZ = node.comZ;
+    hot[nodeIndex] = h;
+
+    GpuOctreeNodeNavData n = {};
+    n.nextIndex = node.nextIndex;
+    n.childMask = node.childMask;
+    nav[nodeIndex] = n;
+
+    int fc = -1;
+    for (int c = 0; c < 8; ++c) {
+        if (node.children[c] >= 0) {
+            fc = node.children[c];
+            break;
+        }
+    }
+    firstChild[nodeIndex] = fc;
+    leafStarts[nodeIndex] = node.leafStart;
+    leafCounts[nodeIndex] = node.leafCount;
+}
+
 bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numParticles)
 {
     cudaStream_t stream = 0;
@@ -384,7 +428,12 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
         || !d_octreeLevelIndicesA
         || !d_octreeLevelIndicesB
         || !d_octreeParentCounts
-        || !d_octreeParentOffsets) {
+        || !d_octreeParentOffsets
+        || !d_octreeNodeHot
+        || !d_octreeNodeNav
+        || !d_octreeFirstChild
+        || !d_octreeLeafStarts
+        || !d_octreeLeafCounts) {
         fprintf(stderr,
                 "[cuda-critical] linear octree scratch is not preallocated for %d entries\n",
                 numParticles);
@@ -567,6 +616,19 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
         buildLinearOctreeNextLinksKernel<<<linkBlocks, threads, 0, stream>>>(
             g_dOctreeNodes, _gpuOctreeNodeCount, _gpuOctreeRootIndex);
         if (!checkCudaStatus(cudaGetLastError(), "buildLinearOctreeNextLinks kernel launch")) {
+            return false;
+        }
+
+        const int packBlocks = (_gpuOctreeNodeCount + threads - 1) / threads;
+        packLinearOctreeCompactKernel<<<packBlocks, threads, 0, stream>>>(
+            g_dOctreeNodes,
+            _gpuOctreeNodeCount,
+            d_octreeNodeHot,
+            d_octreeNodeNav,
+            d_octreeFirstChild,
+            d_octreeLeafStarts,
+            d_octreeLeafCounts);
+        if (!checkCudaStatus(cudaGetLastError(), "packLinearOctreeCompact kernel launch")) {
             return false;
         }
     }
