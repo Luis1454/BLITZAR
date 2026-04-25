@@ -8,20 +8,16 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace {
-
 constexpr std::size_t kVramBudgetBytes = 6656ull * 1024ull * 1024ull;
 constexpr std::size_t kDefaultEnergySampleLimit = 65536u;
 constexpr std::size_t kPlanAEnergySampleLimit = 4096u;
-constexpr int kDefaultOctreeLeafCapacity = 128;
+constexpr int kDefaultOctreeLeafCapacity = 256;
 constexpr int kPlanBOctreeLeafCapacity = 4096;
 
-double bytesToMiB(std::size_t bytes)
+static double bytesToMiB(std::size_t bytes)
 {
     return static_cast<double>(bytes) / (1024.0 * 1024.0);
 }
-
-} // namespace
 
 std::size_t ParticleSystem::estimateMemoryUsage(
     std::size_t particleCount,
@@ -82,6 +78,9 @@ std::size_t ParticleSystem::estimateMemoryUsage(
         const int requiredNodeCapacity =
             std::max(2, expectedLeaves * (leafDepth + 1) * 4 + 8);
         octreeBufferBytes += static_cast<std::size_t>(requiredNodeCapacity) * sizeof(GpuOctreeNode);
+        octreeBufferBytes += static_cast<std::size_t>(requiredNodeCapacity) * sizeof(GpuOctreeNodeHotData);
+        octreeBufferBytes += static_cast<std::size_t>(requiredNodeCapacity) * sizeof(GpuOctreeNodeNavData);
+        octreeBufferBytes += static_cast<std::size_t>(requiredNodeCapacity) * sizeof(int) * 3u;
     }
 
     const std::size_t boundedSample = std::max<std::size_t>(64u, std::min(particleCount, energySampleLimit));
@@ -193,6 +192,11 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
     d_octreeLevelIndicesB = nullptr;
     d_octreeParentCounts = nullptr;
     d_octreeParentOffsets = nullptr;
+    d_octreeNodeHot = nullptr;
+    d_octreeNodeNav = nullptr;
+    d_octreeFirstChild = nullptr;
+    d_octreeLeafStarts = nullptr;
+    d_octreeLeafCounts = nullptr;
     d_energyKineticBlocks = nullptr;
     d_energyThermalBlocks = nullptr;
     d_energyPotentialPartials = nullptr;
@@ -423,6 +427,26 @@ void ParticleSystem::releaseParticleBuffers()
         grav_x::CudaMemoryPool::deallocate(d_octreeParentOffsets);
         d_octreeParentOffsets = nullptr;
     }
+    if (d_octreeNodeHot) {
+        grav_x::CudaMemoryPool::deallocate(d_octreeNodeHot);
+        d_octreeNodeHot = nullptr;
+    }
+    if (d_octreeNodeNav) {
+        grav_x::CudaMemoryPool::deallocate(d_octreeNodeNav);
+        d_octreeNodeNav = nullptr;
+    }
+    if (d_octreeFirstChild) {
+        grav_x::CudaMemoryPool::deallocate(d_octreeFirstChild);
+        d_octreeFirstChild = nullptr;
+    }
+    if (d_octreeLeafStarts) {
+        grav_x::CudaMemoryPool::deallocate(d_octreeLeafStarts);
+        d_octreeLeafStarts = nullptr;
+    }
+    if (d_octreeLeafCounts) {
+        grav_x::CudaMemoryPool::deallocate(d_octreeLeafCounts);
+        d_octreeLeafCounts = nullptr;
+    }
     if (d_energyKineticBlocks) {
         grav_x::CudaMemoryPool::deallocate(d_energyKineticBlocks);
         d_energyKineticBlocks = nullptr;
@@ -619,9 +643,66 @@ bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
             grav_x::CudaMemoryPool::deallocate(g_dOctreeNodes);
             g_dOctreeNodes = nullptr;
         }
+        if (d_octreeNodeHot) {
+            grav_x::CudaMemoryPool::deallocate(d_octreeNodeHot);
+            d_octreeNodeHot = nullptr;
+        }
+        if (d_octreeNodeNav) {
+            grav_x::CudaMemoryPool::deallocate(d_octreeNodeNav);
+            d_octreeNodeNav = nullptr;
+        }
+        if (d_octreeFirstChild) {
+            grav_x::CudaMemoryPool::deallocate(d_octreeFirstChild);
+            d_octreeFirstChild = nullptr;
+        }
+        if (d_octreeLeafStarts) {
+            grav_x::CudaMemoryPool::deallocate(d_octreeLeafStarts);
+            d_octreeLeafStarts = nullptr;
+        }
+        if (d_octreeLeafCounts) {
+            grav_x::CudaMemoryPool::deallocate(d_octreeLeafCounts);
+            d_octreeLeafCounts = nullptr;
+        }
+
         g_dOctreeNodes = static_cast<GpuOctreeNode*>(grav_x::CudaMemoryPool::allocate(
             static_cast<std::size_t>(requiredNodeCapacity) * sizeof(GpuOctreeNode)));
-        if (!g_dOctreeNodes) {
+        d_octreeNodeHot = static_cast<GpuOctreeNodeHotData*>(grav_x::CudaMemoryPool::allocate(
+            static_cast<std::size_t>(requiredNodeCapacity) * sizeof(GpuOctreeNodeHotData)));
+        d_octreeNodeNav = static_cast<GpuOctreeNodeNavData*>(grav_x::CudaMemoryPool::allocate(
+            static_cast<std::size_t>(requiredNodeCapacity) * sizeof(GpuOctreeNodeNavData)));
+        d_octreeFirstChild = static_cast<int*>(grav_x::CudaMemoryPool::allocate(
+            static_cast<std::size_t>(requiredNodeCapacity) * sizeof(int)));
+        d_octreeLeafStarts = static_cast<int*>(grav_x::CudaMemoryPool::allocate(
+            static_cast<std::size_t>(requiredNodeCapacity) * sizeof(int)));
+        d_octreeLeafCounts = static_cast<int*>(grav_x::CudaMemoryPool::allocate(
+            static_cast<std::size_t>(requiredNodeCapacity) * sizeof(int)));
+
+        if (!g_dOctreeNodes || !d_octreeNodeHot || !d_octreeNodeNav || !d_octreeFirstChild ||
+            !d_octreeLeafStarts || !d_octreeLeafCounts) {
+            if (g_dOctreeNodes) {
+                grav_x::CudaMemoryPool::deallocate(g_dOctreeNodes);
+                g_dOctreeNodes = nullptr;
+            }
+            if (d_octreeNodeHot) {
+                grav_x::CudaMemoryPool::deallocate(d_octreeNodeHot);
+                d_octreeNodeHot = nullptr;
+            }
+            if (d_octreeNodeNav) {
+                grav_x::CudaMemoryPool::deallocate(d_octreeNodeNav);
+                d_octreeNodeNav = nullptr;
+            }
+            if (d_octreeFirstChild) {
+                grav_x::CudaMemoryPool::deallocate(d_octreeFirstChild);
+                d_octreeFirstChild = nullptr;
+            }
+            if (d_octreeLeafStarts) {
+                grav_x::CudaMemoryPool::deallocate(d_octreeLeafStarts);
+                d_octreeLeafStarts = nullptr;
+            }
+            if (d_octreeLeafCounts) {
+                grav_x::CudaMemoryPool::deallocate(d_octreeLeafCounts);
+                d_octreeLeafCounts = nullptr;
+            }
             g_dOctreeNodeCapacity = 0;
             return false;
         }

@@ -6,9 +6,29 @@
 #include "physics/Particle.hpp"
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <optional>
 #include <vector>
+
+struct alignas(32) GpuOctreeNodeHotData {
+    float centerX;
+    float centerY;
+    float centerZ;
+    float halfSize;
+    float mass;
+    float comX;
+    float comY;
+    float comZ;
+};
+
+struct GpuOctreeNodeNavData {
+    int nextIndex;
+    std::uint8_t childMask;
+    std::uint8_t reserved0;
+    std::uint8_t reserved1;
+    std::uint8_t reserved2;
+};
 
 struct GpuOctreeNode {
     float centerX;
