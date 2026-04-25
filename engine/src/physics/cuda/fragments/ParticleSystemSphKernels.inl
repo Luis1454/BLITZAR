@@ -104,7 +104,7 @@ __global__ void integrateSphGridKernel(
         outParticles.velY[i] = inParticles.velY[i];
         outParticles.velZ[i] = inParticles.velZ[i];
         outParticles.dens[i] = inParticles.dens[i];
-        outParticles.pressure[i] = inParticles.pressure[i];
+        setSoAPressure(outParticles, i, getSoAPressure(inParticles, i));
         outParticles.mass[i] = inParticles.mass[i];
         return;
     }

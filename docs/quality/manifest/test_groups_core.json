@@ -862,6 +862,12 @@
                 "req_ids": [
                     "REQ-PHYS-001"
                 ]
+            },
+            "TST-UNT-PHYS-022": {
+                "id": "OctreeGpuStability.SmallBatch_100ParticlesMultiStep",
+                "req_ids": [
+                    "REQ-PHYS-001"
+                ]
             }
         },
         "EVD_TEST_UNIT_PHYSICS_DETERMINISM": {

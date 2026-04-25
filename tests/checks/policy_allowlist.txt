@@ -11,6 +11,11 @@ runtime/src/client/ClientRuntime.cpp
 # CUDA fragment blocks retained while kernel-level decomposition is prepared.
 engine/src/physics/cuda/fragments/ParticleSystemPrelude.inl
 engine/src/physics/cuda/fragments/ParticleSystemUpdate.inl
+engine/src/physics/cuda/fragments/ParticleSystemBuffer.inl
+engine/src/physics/cuda/fragments/ParticleSystemLinearOctreeGpu.inl
+
+# Physics interface and kernel support files pending split.
+engine/include/physics/ParticleSystem.hpp
 
 # Client module composition files pending per-feature extraction.
 modules/proxy/module.cpp

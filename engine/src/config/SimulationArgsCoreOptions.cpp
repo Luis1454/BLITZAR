@@ -22,7 +22,7 @@ bool SimulationArgsCoreOptions::apply(const std::string& key, const std::string&
         std::string canonical;
         if (!grav_modes::normalizeIntegrator(value, canonical)) {
             runtime.hasArgumentError = true;
-            warnings << "[args] invalid --integrator: " << value << " (allowed: euler|rk4)\n";
+            warnings << "[args] invalid --integrator: " << value << " (allowed: euler|rk4|leapfrog)\n";
             return true;
         }
     }

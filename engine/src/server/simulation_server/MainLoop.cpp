@@ -66,81 +66,84 @@ void SimulationServer::loop()
         std::uint32_t executedSteps = 0;
         bool updateFailed = false;
         const bool steppedWhilePaused = _paused.load(std::memory_order_relaxed) && stepBatch > 0;
-        for (std::uint32_t i = 0; i < stepBatch; ++i)
+        for (std::uint32_t i = 0; i < stepBatch; ++i) {
             if (!_running.load(std::memory_order_relaxed) ||
                 _resetRequested.load(std::memory_order_relaxed)) {
                 break;
-                if (shouldForceCudaFailureOnceForTesting(solverMode)) {
-                    std::cerr << "[server] forcing CUDA failure once for integration test\n";
+            }
+
+            if (shouldForceCudaFailureOnceForTesting(solverMode)) {
+                std::cerr << "[server] forcing CUDA failure once for integration test\n";
+                updateFailed = true;
+                break;
+            }
+
+            const float dt = std::max(1e-6f, _dt.load(std::memory_order_relaxed));
+            const std::size_t liveParticleCount = _system ? _system->getParticles().size() : 0u;
+            const bool eulerIntegrator =
+                _system->getIntegratorMode() == ParticleSystem::IntegratorMode::Euler;
+            const float configuredTargetSubstepDt =
+                _configuredSubstepTargetDt.load(std::memory_order_relaxed);
+            const float appliedTargetSubstepDt =
+                configuredTargetSubstepDt > 0.0f
+                    ? configuredTargetSubstepDt
+                    : autoTargetSubstepDt(solverMode, eulerIntegrator, sphEnabled,
+                                          liveParticleCount);
+            const std::uint32_t configuredMaxSubsteps = std::max<std::uint32_t>(
+                1u, _configuredMaxSubsteps.load(std::memory_order_relaxed));
+            const std::uint32_t requiredSubsteps = std::max<std::uint32_t>(
+                1u, static_cast<std::uint32_t>(std::ceil(dt / appliedTargetSubstepDt)));
+            const std::uint32_t substeps =
+                std::min<std::uint32_t>(requiredSubsteps, configuredMaxSubsteps);
+            const float dtSub = dt / static_cast<float>(substeps);
+            _lastAppliedSubstepTargetDt.store(appliedTargetSubstepDt,
+                                              std::memory_order_relaxed);
+            _lastAppliedSubstepDt.store(dtSub, std::memory_order_relaxed);
+            _lastAppliedSubsteps.store(substeps, std::memory_order_relaxed);
+            if (requiredSubsteps > configuredMaxSubsteps &&
+                (_steps.load(std::memory_order_relaxed) % 256u) == 0u) {
+                std::cerr << "[server] substep clamp active dt=" << dt
+                          << " target_dt=" << appliedTargetSubstepDt
+                          << " required=" << requiredSubsteps
+                          << " max=" << configuredMaxSubsteps << " applied_dt=" << dtSub
+                          << "\n";
+            }
+            const bool sampleGpuStep = _gpuTelemetryEnabled.load(std::memory_order_relaxed) &&
+                                       ((solverMode == grav_modes::kSolverPairwiseCuda ||
+                                         solverMode == grav_modes::kSolverOctreeGpu)) &&
+                                       (((_steps.load(std::memory_order_relaxed) + 1u) %
+                                         kGpuTelemetrySampleStride) == 0u);
+            if (sampleGpuStep) {
+                _gpuKernelMs.store(0.0f, std::memory_order_relaxed);
+            }
+            for (std::uint32_t s = 0; s < substeps; ++s) {
+                const auto gpuStepStart = sampleGpuStep
+                                              ? std::chrono::steady_clock::now()
+                                              : std::chrono::steady_clock::time_point{};
+                if (!_system->update(dtSub)) {
                     updateFailed = true;
                     break;
                 }
-                const float dt = std::max(1e-6f, _dt.load(std::memory_order_relaxed));
-                const std::size_t liveParticleCount = _system ? _system->getParticles().size() : 0u;
-                const bool eulerIntegrator =
-                    _system->getIntegratorMode() == ParticleSystem::IntegratorMode::Euler;
-                const float configuredTargetSubstepDt =
-                    _configuredSubstepTargetDt.load(std::memory_order_relaxed);
-                const float appliedTargetSubstepDt =
-                    configuredTargetSubstepDt > 0.0f
-                        ? configuredTargetSubstepDt
-                        : autoTargetSubstepDt(solverMode, eulerIntegrator, sphEnabled,
-                                              liveParticleCount);
-                const std::uint32_t configuredMaxSubsteps = std::max<std::uint32_t>(
-                    1u, _configuredMaxSubsteps.load(std::memory_order_relaxed));
-                const std::uint32_t requiredSubsteps = std::max<std::uint32_t>(
-                    1u, static_cast<std::uint32_t>(std::ceil(dt / appliedTargetSubstepDt)));
-                const std::uint32_t substeps =
-                    std::min<std::uint32_t>(requiredSubsteps, configuredMaxSubsteps);
-                const float dtSub = dt / static_cast<float>(substeps);
-                _lastAppliedSubstepTargetDt.store(appliedTargetSubstepDt,
-                                                  std::memory_order_relaxed);
-                _lastAppliedSubstepDt.store(dtSub, std::memory_order_relaxed);
-                _lastAppliedSubsteps.store(substeps, std::memory_order_relaxed);
-                if (requiredSubsteps > configuredMaxSubsteps &&
-                    (_steps.load(std::memory_order_relaxed) % 256u) == 0u) {
-                    std::cerr << "[server] substep clamp active dt=" << dt
-                              << " target_dt=" << appliedTargetSubstepDt
-                              << " required=" << requiredSubsteps
-                              << " max=" << configuredMaxSubsteps << " applied_dt=" << dtSub
-                              << "\n";
-                }
-                const bool sampleGpuStep = _gpuTelemetryEnabled.load(std::memory_order_relaxed) &&
-                                           ((solverMode == grav_modes::kSolverPairwiseCuda ||
-                                             solverMode == grav_modes::kSolverOctreeGpu)) &&
-                                           (((_steps.load(std::memory_order_relaxed) + 1u) %
-                                             kGpuTelemetrySampleStride) == 0u);
                 if (sampleGpuStep) {
-                    _gpuKernelMs.store(0.0f, std::memory_order_relaxed);
+                    const std::chrono::duration<float, std::milli> gpuStepElapsed =
+                        std::chrono::steady_clock::now() - gpuStepStart;
+                    _gpuKernelMs.store(gpuStepElapsed.count() +
+                                           _gpuKernelMs.load(std::memory_order_relaxed),
+                                       std::memory_order_relaxed);
                 }
-                for (std::uint32_t s = 0; s < substeps; ++s) {
-                    const auto gpuStepStart = sampleGpuStep
-                                                  ? std::chrono::steady_clock::now()
-                                                  : std::chrono::steady_clock::time_point{};
-                    if (!_system->update(dtSub)) {
-                        updateFailed = true;
-                        break;
-                    }
-                    if (sampleGpuStep) {
-                        const std::chrono::duration<float, std::milli> gpuStepElapsed =
-                            std::chrono::steady_clock::now() - gpuStepStart;
-                        _gpuKernelMs.store(gpuStepElapsed.count() +
-                                               _gpuKernelMs.load(std::memory_order_relaxed),
-                                           std::memory_order_relaxed);
-                    }
-                    atomicAddFloat(_totalTime, dtSub);
-                }
-                if (sampleGpuStep) {
-                    _gpuTelemetryAvailable.store(true, std::memory_order_relaxed);
-                }
-                else if (!_gpuTelemetryEnabled.load(std::memory_order_relaxed)) {
-                    clearGpuTelemetry();
-                }
-                if (updateFailed)
-                    break;
-                _steps.fetch_add(1, std::memory_order_relaxed);
-                ++executedSteps;
+                atomicAddFloat(_totalTime, dtSub);
             }
+            if (sampleGpuStep) {
+                _gpuTelemetryAvailable.store(true, std::memory_order_relaxed);
+            }
+            else if (!_gpuTelemetryEnabled.load(std::memory_order_relaxed)) {
+                clearGpuTelemetry();
+            }
+            if (updateFailed)
+                break;
+            _steps.fetch_add(1, std::memory_order_relaxed);
+            ++executedSteps;
+        }
         const auto batchEnd = std::chrono::steady_clock::now();
         const std::chrono::duration<float> elapsed = batchEnd - batchStart;
         if (executedSteps == 0 || elapsed.count() <= 1e-6f) {

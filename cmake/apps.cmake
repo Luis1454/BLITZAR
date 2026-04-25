@@ -104,9 +104,13 @@ configure_gravity_cpp_target(${APP_NAME})
 if(GRAVITY_BUILD_HEADLESS_BINARY)
     add_executable(${HEADLESS_NAME}
         apps/headless/main.cu
+        ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
         ${GRAVITY_SERVER_SOURCES}
     )
     configure_gravity_cuda_target(${HEADLESS_NAME})
+    target_compile_options(${HEADLESS_NAME} PRIVATE
+        $<$<COMPILE_LANGUAGE:CUDA>:-Xptxas=-v>
+    )
 endif()
 
 if(GRAVITY_BUILD_SERVER_DAEMON)
