@@ -1,59 +1,48 @@
 #include "tests/support/physics_scenario.hpp"
 #include "tests/support/physics_test_utils.hpp"
-
 #include <algorithm>
 #include <cmath>
 #include <filesystem>
-
 namespace testsupport {
 namespace grav_test_physics_scenario {
-
 std::filesystem::path twoBodyInputPath()
 {
     const std::filesystem::path sourceFile(__FILE__);
     return sourceFile.parent_path().parent_path() / "data" / "two_body_rest.xyz";
 }
-
 } // namespace grav_test_physics_scenario
-
-float distance(const RenderParticle &a, const RenderParticle &b)
+float distance(const RenderParticle& a, const RenderParticle& b)
 {
     const float dx = a.x - b.x;
     const float dy = a.y - b.y;
     const float dz = a.z - b.z;
     return std::sqrt(dx * dx + dy * dy + dz * dz);
 }
-
-std::array<float, 3> centerOfMassAll(const std::vector<RenderParticle> &snapshot)
+std::array<float, 3> centerOfMassAll(const std::vector<RenderParticle>& snapshot)
 {
     double totalMass = 0.0;
     double cx = 0.0;
     double cy = 0.0;
     double cz = 0.0;
-    for (const RenderParticle &p : snapshot) {
+    for (const RenderParticle& p : snapshot) {
         const double mass = static_cast<double>(std::max(1e-9f, p.mass));
         totalMass += mass;
         cx += static_cast<double>(p.x) * mass;
         cy += static_cast<double>(p.y) * mass;
         cz += static_cast<double>(p.z) * mass;
     }
-    if (totalMass <= 1e-12) {
+    if (totalMass <= 1e-12)
         return {0.0f, 0.0f, 0.0f};
-    }
-    return {
-        static_cast<float>(cx / totalMass),
-        static_cast<float>(cy / totalMass),
-        static_cast<float>(cz / totalMass)
-    };
+    return {static_cast<float>(cx / totalMass), static_cast<float>(cy / totalMass),
+            static_cast<float>(cz / totalMass)};
 }
-
-float averageRadius(const std::vector<RenderParticle> &snapshot)
+float averageRadius(const std::vector<RenderParticle>& snapshot)
 {
     if (snapshot.empty()) {
         return 0.0f;
     }
     double radiusSum = 0.0;
-    for (const RenderParticle &p : snapshot) {
+    for (const RenderParticle& p : snapshot) {
         const double x = static_cast<double>(p.x);
         const double y = static_cast<double>(p.y);
         const double z = static_cast<double>(p.z);
@@ -61,8 +50,7 @@ float averageRadius(const std::vector<RenderParticle> &snapshot)
     }
     return static_cast<float>(radiusSum / static_cast<double>(snapshot.size()));
 }
-
-bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &error)
+bool runScenario(const ScenarioConfig& cfg, ScenarioResult& out, std::string& error)
 {
     SimulationServer server(std::max<std::uint32_t>(2u, cfg.particleCount), cfg.dt);
     server.setSolverMode(cfg.solver);
@@ -73,17 +61,15 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
     server.setParticleCount(std::max<std::uint32_t>(2u, cfg.particleCount));
     server.setSphEnabled(cfg.sphEnabled);
     server.setSphParameters(1.25f, 1.0f, 4.0f, 0.08f);
-
     const std::uint32_t energyEvery = std::max<std::uint32_t>(1u, cfg.energyMeasureEverySteps);
     const std::uint32_t energySampleLimit = std::max<std::uint32_t>(
-        64u,
-        cfg.energySampleLimit == 0u ? std::max<std::uint32_t>(cfg.particleCount, 64u) : cfg.energySampleLimit);
+        64u, cfg.energySampleLimit == 0u ? std::max<std::uint32_t>(cfg.particleCount, 64u)
+                                         : cfg.energySampleLimit);
     server.setEnergyMeasurementConfig(energyEvery, energySampleLimit);
-
     if (!cfg.inputPath.empty()) {
-        server.setInitialStateFile(cfg.inputPath, cfg.inputFormat.empty() ? "auto" : cfg.inputFormat);
+        server.setInitialStateFile(cfg.inputPath,
+                                   cfg.inputFormat.empty() ? "auto" : cfg.inputFormat);
     }
-
     InitialStateConfig init = cfg.initState;
     if (init.mode.empty()) {
         init.mode = cfg.inputPath.empty() ? "disk_orbit" : "file";
@@ -91,7 +77,6 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
     server.setInitialStateConfig(init);
     server.setPaused(true);
     server.start();
-
     if (!waitForConsumedSnapshot(server, out.initial, cfg.snapshotTimeoutMs)) {
         server.stop();
         error = "initial snapshot timeout";
@@ -102,7 +87,6 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
         error = "initial snapshot has less than 2 particles";
         return false;
     }
-
     for (std::uint32_t s = 0; s < cfg.steps; ++s) {
         server.stepOnce();
         if (!waitForStepCount(server, static_cast<std::uint64_t>(s) + 1ull, cfg.stepTimeoutMs)) {
@@ -112,10 +96,10 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
         }
         const SimulationStats stats = server.getStats();
         if (std::isfinite(stats.energyDriftPct)) {
-            out.maxAbsEnergyDriftPct = std::max(out.maxAbsEnergyDriftPct, std::abs(stats.energyDriftPct));
+            out.maxAbsEnergyDriftPct =
+                std::max(out.maxAbsEnergyDriftPct, std::abs(stats.energyDriftPct));
         }
     }
-
     std::vector<RenderParticle> latest;
     if (!waitForConsumedSnapshot(server, latest, cfg.snapshotTimeoutMs)) {
         server.stop();
@@ -125,7 +109,6 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
     out.final = latest;
     out.stats = server.getStats();
     server.stop();
-
     if (out.final.size() < 2) {
         error = "final snapshot has less than 2 particles";
         return false;
@@ -136,17 +119,16 @@ bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &er
     }
     const std::size_t comparableCount = std::min(out.initial.size(), out.final.size());
     for (std::size_t index = 0; index < comparableCount; index += 1u) {
-        out.maxParticleDeltaFromInitial = std::max(out.maxParticleDeltaFromInitial, distance(out.initial[index], out.final[index]));
+        out.maxParticleDeltaFromInitial = std::max(out.maxParticleDeltaFromInitial,
+                                                   distance(out.initial[index], out.final[index]));
     }
     return true;
 }
-
 std::string getTwoBodyInputPath()
 {
     return grav_test_physics_scenario::twoBodyInputPath().string();
 }
-
-bool prepareTwoBodyScenario(ScenarioConfig &cfg, std::string &error)
+bool prepareTwoBodyScenario(ScenarioConfig& cfg, std::string& error)
 {
     const std::filesystem::path inputPath = grav_test_physics_scenario::twoBodyInputPath();
     if (!std::filesystem::exists(inputPath)) {
@@ -161,8 +143,8 @@ bool prepareTwoBodyScenario(ScenarioConfig &cfg, std::string &error)
     cfg.initState.thermalRadiationCoeff = 0.0f;
     return true;
 }
-
-bool prepareGeneratedCalibrationScenario(const std::string &mode, ScenarioConfig &cfg, std::string &error)
+bool prepareGeneratedCalibrationScenario(const std::string& mode, ScenarioConfig& cfg,
+                                         std::string& error)
 {
     cfg.inputPath.clear();
     cfg.inputFormat = "auto";
@@ -174,7 +156,6 @@ bool prepareGeneratedCalibrationScenario(const std::string &mode, ScenarioConfig
     cfg.initState.thermalHeatingCoeff = 0.0f;
     cfg.initState.thermalRadiationCoeff = 0.0f;
     cfg.energyMeasureEverySteps = 1u;
-
     if (mode == "two_body") {
         cfg.particleCount = 2u;
         cfg.integrator = "rk4";
@@ -207,10 +188,7 @@ bool prepareGeneratedCalibrationScenario(const std::string &mode, ScenarioConfig
         cfg.initState.velocityScale = 0.75f;
         return true;
     }
-
     error = "unknown generated calibration mode: " + mode;
     return false;
 }
-
 } // namespace testsupport
-

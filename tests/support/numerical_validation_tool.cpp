@@ -1,5 +1,5 @@
 #include "tests/support/numerical_validation_tool.hpp"
-
+#include "tests/support/physics_scenario.hpp"
 #include <array>
 #include <cmath>
 #include <cstdint>
@@ -7,9 +7,6 @@
 #include <ostream>
 #include <string>
 #include <vector>
-
-#include "tests/support/physics_scenario.hpp"
-
 namespace grav_test_numerics_tool {
 struct ToolOptions {
     std::string preset;
@@ -20,8 +17,8 @@ struct PresetConfig {
     std::string dataset;
     std::uint32_t seed = 0u;
 };
-
-float centerOfMassDrift(const std::vector<RenderParticle> &initial, const std::vector<RenderParticle> &final)
+float centerOfMassDrift(const std::vector<RenderParticle>& initial,
+                        const std::vector<RenderParticle>& final)
 {
     const std::array<float, 3> start = testsupport::centerOfMassAll(initial);
     const std::array<float, 3> end = testsupport::centerOfMassAll(final);
@@ -30,16 +27,14 @@ float centerOfMassDrift(const std::vector<RenderParticle> &initial, const std::v
     const float dz = end[2] - start[2];
     return std::sqrt(dx * dx + dy * dy + dz * dz);
 }
-
-void writeVector(std::ostream &out, const std::string &name, const std::array<float, 3> &value)
+void writeVector(std::ostream& out, const std::string& name, const std::array<float, 3>& value)
 {
     out << name << "=" << value[0] << "," << value[1] << "," << value[2] << "\n";
 }
 } // namespace grav_test_numerics_tool
-
 namespace grav_test_numerics {
-
-bool parseArgs(int argc, const char *const *argv, grav_test_numerics_tool::ToolOptions &out, std::string &error)
+bool parseArgs(int argc, const char* const* argv, grav_test_numerics_tool::ToolOptions& out,
+               std::string& error)
 {
     for (int index = 1; index < argc; index += 1) {
         const std::string arg(argv[index]);
@@ -54,9 +49,11 @@ bool parseArgs(int argc, const char *const *argv, grav_test_numerics_tool::ToolO
         const std::string value(argv[index + 1]);
         if (arg == "--preset") {
             out.preset = value;
-        } else if (arg == "--solver") {
+        }
+        else if (arg == "--solver") {
             out.solver = value;
-        } else {
+        }
+        else {
             error = "unknown argument: " + arg;
             return false;
         }
@@ -68,23 +65,24 @@ bool parseArgs(int argc, const char *const *argv, grav_test_numerics_tool::ToolO
     }
     return true;
 }
-
-bool applyPreset(
-    const grav_test_numerics_tool::ToolOptions &options,
-    grav_test_numerics_tool::PresetConfig &out,
-    std::string &error)
+bool applyPreset(const grav_test_numerics_tool::ToolOptions& options,
+                 grav_test_numerics_tool::PresetConfig& out, std::string& error)
 {
     testsupport::ScenarioConfig cfg;
     cfg.solver = options.solver;
-    if (options.preset == "two_body_orbit_drift" || options.preset == "two_body_orbit_convergence_coarse"
-        || options.preset == "two_body_orbit_convergence_fine") {
+    if (options.preset == "two_body_orbit_drift" ||
+        options.preset == "two_body_orbit_convergence_coarse" ||
+        options.preset == "two_body_orbit_convergence_fine") {
         if (!testsupport::prepareTwoBodyScenario(cfg, error)) {
             return false;
         }
         cfg.dt = options.preset == "two_body_orbit_convergence_fine" ? 0.001f : 0.002f;
-        cfg.steps = options.preset == "two_body_orbit_drift" ? 800u : (options.preset == "two_body_orbit_convergence_fine" ? 200u : 100u);
+        cfg.steps = options.preset == "two_body_orbit_drift"
+                        ? 800u
+                        : (options.preset == "two_body_orbit_convergence_fine" ? 200u : 100u);
         out.dataset = "tests/data/two_body_rest.xyz";
-    } else if (options.preset == "disk_solver_parity") {
+    }
+    else if (options.preset == "disk_solver_parity") {
         cfg.particleCount = 384u;
         cfg.dt = 0.004f;
         cfg.steps = 180u;
@@ -112,7 +110,8 @@ bool applyPreset(
         cfg.initState.thermalRadiationCoeff = 0.0f;
         out.dataset = "generated:disk_orbit";
         out.seed = 12345u;
-    } else if (options.preset == "radiation_exchange") {
+    }
+    else if (options.preset == "radiation_exchange") {
         cfg.particleCount = 128u;
         cfg.dt = 0.1f;
         cfg.steps = 80u;
@@ -135,33 +134,37 @@ bool applyPreset(
         cfg.initState.thermalRadiationCoeff = 1.0f;
         out.dataset = "generated:random_cloud";
         out.seed = 7u;
-    } else if (options.preset == "calibration_two_body") {
+    }
+    else if (options.preset == "calibration_two_body") {
         if (!testsupport::prepareGeneratedCalibrationScenario("two_body", cfg, error)) {
             return false;
         }
         out.dataset = "generated:two_body";
         out.seed = cfg.initState.seed;
-    } else if (options.preset == "calibration_three_body") {
+    }
+    else if (options.preset == "calibration_three_body") {
         if (!testsupport::prepareGeneratedCalibrationScenario("three_body", cfg, error)) {
             return false;
         }
         out.dataset = "generated:three_body";
         out.seed = cfg.initState.seed;
-    } else if (options.preset == "calibration_plummer") {
+    }
+    else if (options.preset == "calibration_plummer") {
         if (!testsupport::prepareGeneratedCalibrationScenario("plummer_sphere", cfg, error)) {
             return false;
         }
         out.dataset = "generated:plummer_sphere";
         out.seed = cfg.initState.seed;
-    } else {
+    }
+    else {
         error = "unknown preset: " + options.preset;
         return false;
     }
     out.scenario = cfg;
     return true;
 }
-
-int NumericalValidationTool::run(int argc, const char *const *argv, std::ostream &out, std::ostream &err) const
+int NumericalValidationTool::run(int argc, const char* const* argv, std::ostream& out,
+                                 std::ostream& err) const
 {
     grav_test_numerics_tool::ToolOptions options;
     std::string error;
@@ -169,19 +172,16 @@ int NumericalValidationTool::run(int argc, const char *const *argv, std::ostream
         err << error << "\n";
         return error.rfind("usage:", 0) == 0 ? 0 : 1;
     }
-
     grav_test_numerics_tool::PresetConfig preset;
     if (!applyPreset(options, preset, error)) {
         err << error << "\n";
         return 1;
     }
-
     testsupport::ScenarioResult result;
     if (!testsupport::runScenario(preset.scenario, result, error)) {
         err << error << "\n";
         return 1;
     }
-
     out << std::fixed << std::setprecision(8);
     out << "preset=" << options.preset << "\n";
     out << "solver=" << options.solver << "\n";
@@ -199,16 +199,19 @@ int NumericalValidationTool::run(int argc, const char *const *argv, std::ostream
     out << "total_energy=" << result.stats.totalEnergy << "\n";
     out << "thermal_energy=" << result.stats.thermalEnergy << "\n";
     out << "radiated_energy=" << result.stats.radiatedEnergy << "\n";
-    out << "center_of_mass_drift=" << grav_test_numerics_tool::centerOfMassDrift(result.initial, result.final) << "\n";
-    grav_test_numerics_tool::writeVector(out, "initial_center_of_mass", testsupport::centerOfMassAll(result.initial));
-    grav_test_numerics_tool::writeVector(out, "final_center_of_mass", testsupport::centerOfMassAll(result.final));
+    out << "center_of_mass_drift="
+        << grav_test_numerics_tool::centerOfMassDrift(result.initial, result.final) << "\n";
+    grav_test_numerics_tool::writeVector(out, "initial_center_of_mass",
+                                         testsupport::centerOfMassAll(result.initial));
+    grav_test_numerics_tool::writeVector(out, "final_center_of_mass",
+                                         testsupport::centerOfMassAll(result.final));
     if (options.preset == "disk_solver_parity" || result.final.size() <= 8u) {
         for (std::size_t index = 0; index < result.final.size(); index += 1u) {
-            const RenderParticle &particle = result.final[index];
-            out << "final_particle_" << index << "=" << particle.x << "," << particle.y << "," << particle.z << "\n";
+            const RenderParticle& particle = result.final[index];
+            out << "final_particle_" << index << "=" << particle.x << "," << particle.y << ","
+                << particle.z << "\n";
         }
     }
     return 0;
 }
-
 } // namespace grav_test_numerics

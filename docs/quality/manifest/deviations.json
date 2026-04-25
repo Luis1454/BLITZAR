@@ -216,6 +216,29 @@
         "EVD_CHECK_MAIN",
         "EVD_CHECK_POLICY_ALLOWLIST"
       ]
+    },
+    "DEV-QUAL-010": {
+      "kind": "deviation",
+      "status": "open",
+      "scope": "repository-policy:file-size",
+      "owner": "project-maintainer",
+      "approver": "quality-review",
+      "introduced_on": "2026-03-28",
+      "review_by": "2026-06-30",
+      "rationale": "Qt workspace runtime-control integration tests remain consolidated while the shared runtime spy is extracted into focused test support.",
+      "mitigation": "Keep the exception isolated to this integration test file and require follow-up split work before adding unrelated UI scenarios.",
+      "closure_criteria": "Extract shared runtime test support and split runtime-control scenarios below the strong size threshold.",
+      "paths": [
+        "tests/int/ui/qt_workspace_runtime_controls.cpp"
+      ],
+      "requirements": [
+        "REQ-QUAL-001",
+        "REQ-UI-001"
+      ],
+      "artifacts": [
+        "EVD_CHECK_MAIN",
+        "EVD_CHECK_POLICY_ALLOWLIST"
+      ]
     }
   }
 }

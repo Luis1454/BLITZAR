@@ -10,8 +10,8 @@ from python_tools.core.base_check import BaseCheck
 from python_tools.core.models import CheckContext, CheckResult
 
 CRITICAL_PATHS = (
-    "docs/server_protocol.md",
-    "docs/quality/numerical_validation.md",
+    "docs/server-protocol.md",
+    "docs/quality/numerical-validation.md",
     "engine/include/physics/",
     "engine/src/physics/",
     "runtime/",
@@ -33,7 +33,7 @@ SOLO_WAIVER_IDS = {"DEV-SOLO-IVV", "WVR-SOLO-IVV"}
 class IvvGateCheck(BaseCheck):
     name = "ivv_gate"
     success_message = "IV&V gate passed"
-    failure_title = "IV&V gate failed:"
+    failure_title = "IV&V approval required (not a technical quality failure):"
 
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         if context.event_name.strip() != "pull_request":
@@ -164,4 +164,9 @@ class IvvGateCheck(BaseCheck):
             reviewer = str(user.get("login", "")).strip() if isinstance(user, dict) else ""
             if state == "APPROVED" and reviewer and reviewer.lower() != author.lower():
                 return
-        result.add_error("critical-path PR requires at least one APPROVED review from a non-author reviewer")
+        result.add_error(
+            "critical-path PR is waiting for one GitHub APPROVED review from a non-author reviewer; "
+            "compiler, test, analyzer, and repository-quality gates should be checked separately"
+        )
+
+

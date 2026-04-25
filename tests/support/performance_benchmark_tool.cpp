@@ -1,36 +1,23 @@
 #include "tests/support/performance_benchmark_tool.hpp"
-
 #include <chrono>
 #include <iomanip>
 #include <ostream>
-
 #include "tests/support/physics_scenario.hpp"
 #include "tests/support/physics_test_utils.hpp"
-
 namespace grav_test_perf_tool {
-
-bool buildScenario(
-    const grav_test_perf::PerformanceBenchmarkTool::ToolOptions &options,
-    testsupport::ScenarioConfig &cfg,
-    std::string &error)
+bool buildScenario(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& options,
+                   testsupport::ScenarioConfig& cfg, std::string& error)
 {
     if (options.workload == "disk_orbit") {
-        cfg = testsupport::buildDiskOrbitScenario(
-            options.particleCount,
-            options.dt,
-            options.steps,
-            options.seed,
-            options.solver,
-            options.integrator);
-    } else if (options.workload == "random_cloud") {
-        cfg = testsupport::buildRandomCloudScenario(
-            options.particleCount,
-            options.dt,
-            options.steps,
-            options.seed,
-            options.solver,
-            options.integrator);
-    } else {
+        cfg = testsupport::buildDiskOrbitScenario(options.particleCount, options.dt, options.steps,
+                                                  options.seed, options.solver, options.integrator);
+    }
+    else if (options.workload == "random_cloud") {
+        cfg =
+            testsupport::buildRandomCloudScenario(options.particleCount, options.dt, options.steps,
+                                                  options.seed, options.solver, options.integrator);
+    }
+    else {
         error = "unknown workload: " + options.workload;
         return false;
     }
@@ -38,12 +25,9 @@ bool buildScenario(
     testsupport::setScenarioEnergySampling(cfg, 1u, options.particleCount);
     return true;
 }
-
-void writeMeasurement(
-    const grav_test_perf::PerformanceBenchmarkTool::ToolOptions &options,
-    const testsupport::ScenarioResult &result,
-    const double wallSeconds,
-    std::ostream &out)
+void writeMeasurement(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& options,
+                      const testsupport::ScenarioResult& result, const double wallSeconds,
+                      std::ostream& out)
 {
     const double steps = static_cast<double>(options.steps);
     const double particleUpdates = steps * static_cast<double>(result.final.size());
@@ -64,34 +48,32 @@ void writeMeasurement(
     out << "server_fps_final=" << result.stats.serverFps << "\n";
     out << "energy_drift_pct=" << result.stats.energyDriftPct << "\n";
 }
-
 } // namespace grav_test_perf_tool
-
 namespace grav_test_perf {
-
-bool PerformanceBenchmarkTool::parseFloatValue(const std::string &text, float &out)
+bool PerformanceBenchmarkTool::parseFloatValue(const std::string& text, float& out)
 {
     std::size_t consumed = 0u;
     try {
         out = std::stof(text, &consumed);
-    } catch (...) {
+    }
+    catch (...) {
         return false;
     }
     return consumed == text.size();
 }
-
-bool PerformanceBenchmarkTool::parseUintValue(const std::string &text, std::uint32_t &out)
+bool PerformanceBenchmarkTool::parseUintValue(const std::string& text, std::uint32_t& out)
 {
     std::size_t consumed = 0u;
     try {
         out = static_cast<std::uint32_t>(std::stoul(text, &consumed, 10));
-    } catch (...) {
+    }
+    catch (...) {
         return false;
     }
     return consumed == text.size();
 }
-
-bool PerformanceBenchmarkTool::parseArgs(int argc, const char *const *argv, ToolOptions &out, std::string &error)
+bool PerformanceBenchmarkTool::parseArgs(int argc, const char* const* argv, ToolOptions& out,
+                                         std::string& error)
 {
     for (int index = 1; index < argc; index += 1) {
         const std::string arg(argv[index]);
@@ -108,31 +90,38 @@ bool PerformanceBenchmarkTool::parseArgs(int argc, const char *const *argv, Tool
         const std::string value(argv[index + 1]);
         if (arg == "--workload") {
             out.workload = value;
-        } else if (arg == "--solver") {
+        }
+        else if (arg == "--solver") {
             out.solver = value;
-        } else if (arg == "--integrator") {
+        }
+        else if (arg == "--integrator") {
             out.integrator = value;
-        } else if (arg == "--dt") {
+        }
+        else if (arg == "--dt") {
             if (!parseFloatValue(value, out.dt) || out.dt <= 0.0f) {
                 error = "invalid --dt value: " + value;
                 return false;
             }
-        } else if (arg == "--particle-count") {
+        }
+        else if (arg == "--particle-count") {
             if (!parseUintValue(value, out.particleCount) || out.particleCount < 2u) {
                 error = "invalid --particle-count value: " + value;
                 return false;
             }
-        } else if (arg == "--steps") {
+        }
+        else if (arg == "--steps") {
             if (!parseUintValue(value, out.steps) || out.steps == 0u) {
                 error = "invalid --steps value: " + value;
                 return false;
             }
-        } else if (arg == "--seed") {
+        }
+        else if (arg == "--seed") {
             if (!parseUintValue(value, out.seed)) {
                 error = "invalid --seed value: " + value;
                 return false;
             }
-        } else {
+        }
+        else {
             error = "unknown argument: " + arg;
             return false;
         }
@@ -144,8 +133,8 @@ bool PerformanceBenchmarkTool::parseArgs(int argc, const char *const *argv, Tool
     }
     return true;
 }
-
-int PerformanceBenchmarkTool::run(int argc, const char *const *argv, std::ostream &out, std::ostream &err) const
+int PerformanceBenchmarkTool::run(int argc, const char* const* argv, std::ostream& out,
+                                  std::ostream& err) const
 {
     ToolOptions options;
     std::string error;
@@ -153,13 +142,11 @@ int PerformanceBenchmarkTool::run(int argc, const char *const *argv, std::ostrea
         err << error << "\n";
         return error.rfind("usage:", 0) == 0 ? 0 : 1;
     }
-
     testsupport::ScenarioConfig cfg;
     if (!grav_test_perf_tool::buildScenario(options, cfg, error)) {
         err << error << "\n";
         return 1;
     }
-
     testsupport::ScenarioResult result;
     const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
     if (!testsupport::runScenario(cfg, result, error)) {
@@ -170,5 +157,4 @@ int PerformanceBenchmarkTool::run(int argc, const char *const *argv, std::ostrea
     grav_test_perf_tool::writeMeasurement(options, result, elapsed.count(), out);
     return 0;
 }
-
 } // namespace grav_test_perf

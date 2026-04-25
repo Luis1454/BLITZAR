@@ -1,18 +1,16 @@
 #include "config/SimulationConfig.hpp"
-
-#include <gtest/gtest.h>
-
 #include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <gtest/gtest.h>
 #include <sstream>
 #include <string>
-
 TEST(ConfigArgsTest, TST_UNT_CONF_034_LoadOrCreateReportsSiValidationDiagnostics)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
-        std::filesystem::temp_directory_path() / ("gravity_config_si_validation_" + std::to_string(stamp) + ".ini");
+        std::filesystem::temp_directory_path() /
+        ("gravity_config_si_validation_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
@@ -29,7 +27,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_034_LoadOrCreateReportsSiValidationDiagnostics
         out << "particle_temperature=0\n";
     }
     std::stringstream err;
-    std::streambuf *previous = std::cerr.rdbuf(err.rdbuf());
+    std::streambuf* previous = std::cerr.rdbuf(err.rdbuf());
     const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
     std::cerr.rdbuf(previous);
     EXPECT_EQ(loaded.particleCount, 128u);
@@ -41,12 +39,12 @@ TEST(ConfigArgsTest, TST_UNT_CONF_034_LoadOrCreateReportsSiValidationDiagnostics
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
-
 TEST(ConfigArgsTest, TST_UNT_CONF_035_LoadValidatesSnapshotPipelineClientSettings)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
-        std::filesystem::temp_directory_path() / ("gravity_config_snapshot_pipeline_" + std::to_string(stamp) + ".ini");
+        std::filesystem::temp_directory_path() /
+        ("gravity_config_snapshot_pipeline_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
@@ -54,10 +52,11 @@ TEST(ConfigArgsTest, TST_UNT_CONF_035_LoadValidatesSnapshotPipelineClientSetting
         out << "client_snapshot_drop_policy=oldest\n";
     }
     std::stringstream err;
-    std::streambuf *previous = std::cerr.rdbuf(err.rdbuf());
+    std::streambuf* previous = std::cerr.rdbuf(err.rdbuf());
     const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
     std::cerr.rdbuf(previous);
-    EXPECT_EQ(loaded.clientSnapshotQueueCapacity, SimulationConfig::defaults().clientSnapshotQueueCapacity);
+    EXPECT_EQ(loaded.clientSnapshotQueueCapacity,
+              SimulationConfig::defaults().clientSnapshotQueueCapacity);
     EXPECT_EQ(loaded.clientSnapshotDropPolicy, "oldest");
     const std::string log = err.str();
     EXPECT_NE(log.find("client_snapshot_queue_capacity"), std::string::npos);

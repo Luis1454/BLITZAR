@@ -1,60 +1,46 @@
 #include "protocol/ServerJsonCodec.hpp"
-
 #include "protocol/ServerProtocol.hpp"
-
 #include <iomanip>
 #include <sstream>
-
 namespace grav_protocol {
-
 class ServerJsonObjectWriter final {
 public:
-    explicit ServerJsonObjectWriter(std::ostringstream &out)
-        : _out(out), _hasField(false)
+    explicit ServerJsonObjectWriter(std::ostringstream& out) : _out(out), _hasField(false)
     {
         _out << "{";
     }
-
     void writeBool(std::string_view key, bool value)
     {
         writeKey(key);
         _out << (value ? "true" : "false");
     }
-
-    template <typename NumberType>
-    void writeNumber(std::string_view key, NumberType value)
+    template <typename NumberType> void writeNumber(std::string_view key, NumberType value)
     {
         writeKey(key);
         _out << value;
     }
-
     void writeString(std::string_view key, std::string_view value)
     {
         writeKey(key);
         _out << "\"" << ServerJsonCodec::escapeString(value) << "\"";
     }
-
     void beginArray(std::string_view key)
     {
         writeKey(key);
         _out << "[";
     }
-
     void writeArraySeparator()
     {
         _out << ",";
     }
-
     void writeRaw(std::string_view raw)
     {
         _out << raw;
     }
-
     void endArray()
     {
         _out << "]";
     }
-
     void finish()
     {
         _out << "}";
@@ -69,43 +55,38 @@ private:
         _out << "\"" << key << "\":";
         _hasField = true;
     }
-
-    std::ostringstream &_out;
+    std::ostringstream& _out;
     bool _hasField;
 };
-
 std::string ServerJsonCodec::escapeString(std::string_view value)
 {
     std::string escaped;
     escaped.reserve(value.size() + 8u);
-    for (unsigned char c : value) {
+    for (unsigned char c : value)
         switch (c) {
-            case '\\':
-                escaped += "\\\\";
-                break;
-            case '"':
-                escaped += "\\\"";
-                break;
-            case '\n':
-                escaped += "\\n";
-                break;
-            case '\r':
-                escaped += "\\r";
-                break;
-            case '\t':
-                escaped += "\\t";
-                break;
-            default:
-                escaped.push_back(static_cast<char>(c));
-                break;
+        case '\\':
+            escaped += "\\\\";
+            break;
+        case '"':
+            escaped += "\\\"";
+            break;
+        case '\n':
+            escaped += "\\n";
+            break;
+        case '\r':
+            escaped += "\\r";
+            break;
+        case '\t':
+            escaped += "\\t";
+            break;
+        default:
+            escaped.push_back(static_cast<char>(c));
+            break;
         }
-    }
     return escaped;
 }
-
-std::string ServerJsonCodec::makeCommandRequest(
-    const ServerCommandRequest &request,
-    std::string_view fieldsJson)
+std::string ServerJsonCodec::makeCommandRequest(const ServerCommandRequest& request,
+                                                std::string_view fieldsJson)
 {
     std::string payload = std::string("{\"cmd\":\"") + escapeString(request.cmd) + "\"";
     if (!request.token.empty()) {
@@ -120,7 +101,6 @@ std::string ServerJsonCodec::makeCommandRequest(
     payload += "}";
     return payload;
 }
-
 std::string ServerJsonCodec::makeOkResponse(std::string_view cmd)
 {
     std::ostringstream out;
@@ -130,7 +110,6 @@ std::string ServerJsonCodec::makeOkResponse(std::string_view cmd)
     writer.finish();
     return out.str();
 }
-
 std::string ServerJsonCodec::makeErrorResponse(std::string_view cmd, std::string_view message)
 {
     std::ostringstream out;
@@ -141,8 +120,7 @@ std::string ServerJsonCodec::makeErrorResponse(std::string_view cmd, std::string
     writer.finish();
     return out.str();
 }
-
-std::string ServerJsonCodec::makeStatusResponse(const SimulationStats &stats)
+std::string ServerJsonCodec::makeStatusResponse(const SimulationStats& stats)
 {
     std::ostringstream out;
     out << std::fixed << std::setprecision(6);
@@ -190,11 +168,9 @@ std::string ServerJsonCodec::makeStatusResponse(const SimulationStats &stats)
     writer.finish();
     return out.str();
 }
-
-std::string ServerJsonCodec::makeSnapshotResponse(
-    bool hasSnapshot,
-    const std::vector<RenderParticle> &snapshot,
-    std::size_t sourceSize)
+std::string ServerJsonCodec::makeSnapshotResponse(bool hasSnapshot,
+                                                  const std::vector<RenderParticle>& snapshot,
+                                                  std::size_t sourceSize)
 {
     std::ostringstream out;
     out << std::fixed << std::setprecision(6);
@@ -206,7 +182,7 @@ std::string ServerJsonCodec::makeSnapshotResponse(
     writer.writeNumber("source_count", sourceSize == 0u ? snapshot.size() : sourceSize);
     writer.beginArray("particles");
     for (std::size_t i = 0; i < snapshot.size(); ++i) {
-        const RenderParticle &particle = snapshot[i];
+        const RenderParticle& particle = snapshot[i];
         if (i > 0) {
             writer.writeArraySeparator();
         }
@@ -228,5 +204,4 @@ std::string ServerJsonCodec::makeSnapshotResponse(
     writer.finish();
     return out.str();
 }
-
 } // namespace grav_protocol

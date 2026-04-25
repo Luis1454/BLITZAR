@@ -1,14 +1,9 @@
 #include "config/SimulationArgsCoreOptions.hpp"
 #include "config/SimulationModes.hpp"
 #include "config/SimulationOptionRegistry.hpp"
-
-bool SimulationArgsCoreOptions::apply(
-    const std::string &key,
-    const std::string &value,
-    SimulationConfig &config,
-    RuntimeArgs &runtime,
-    std::ostream &warnings
-)
+bool SimulationArgsCoreOptions::apply(const std::string& key, const std::string& value,
+                                      SimulationConfig& config, RuntimeArgs& runtime,
+                                      std::ostream& warnings)
 {
     if (key == "--config") {
         runtime.configPath = value;
@@ -18,7 +13,8 @@ bool SimulationArgsCoreOptions::apply(
         std::string canonical;
         if (!grav_modes::normalizeSolver(value, canonical)) {
             runtime.hasArgumentError = true;
-            warnings << "[args] invalid --solver: " << value << " (allowed: pairwise_cuda|octree_gpu|octree_cpu)\n";
+            warnings << "[args] invalid --solver: " << value
+                     << " (allowed: pairwise_cuda|octree_gpu|octree_cpu)\n";
             return true;
         }
     }
@@ -30,5 +26,6 @@ bool SimulationArgsCoreOptions::apply(
             return true;
         }
     }
-    return grav_config::applyCliOption(grav_config::SimulationOptionGroup::Core, key, value, config, warnings);
+    return grav_config::applyCliOption(grav_config::SimulationOptionGroup::Core, key, value, config,
+                                       warnings);
 }

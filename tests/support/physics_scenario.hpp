@@ -1,15 +1,11 @@
 #ifndef GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_
 #define GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_
-
+#include "server/SimulationServer.hpp"
 #include <array>
 #include <cstdint>
 #include <string>
 #include <vector>
-
-#include "server/SimulationServer.hpp"
-
 namespace testsupport {
-
 struct ScenarioConfig {
     std::string inputPath;
     std::string inputFormat = "xyz";
@@ -28,7 +24,6 @@ struct ScenarioConfig {
     bool sphEnabled = false;
     InitialStateConfig initState{};
 };
-
 struct ScenarioResult {
     std::vector<RenderParticle> initial;
     std::vector<RenderParticle> final;
@@ -36,16 +31,13 @@ struct ScenarioResult {
     float maxAbsEnergyDriftPct = 0.0f;
     float maxParticleDeltaFromInitial = 0.0f;
 };
-
-float distance(const RenderParticle &a, const RenderParticle &b);
-std::array<float, 3> centerOfMassAll(const std::vector<RenderParticle> &snapshot);
-float averageRadius(const std::vector<RenderParticle> &snapshot);
-bool runScenario(const ScenarioConfig &cfg, ScenarioResult &out, std::string &error);
+float distance(const RenderParticle& a, const RenderParticle& b);
+std::array<float, 3> centerOfMassAll(const std::vector<RenderParticle>& snapshot);
+float averageRadius(const std::vector<RenderParticle>& snapshot);
+bool runScenario(const ScenarioConfig& cfg, ScenarioResult& out, std::string& error);
 std::string getTwoBodyInputPath();
-bool prepareTwoBodyScenario(ScenarioConfig &cfg, std::string &error);
-bool prepareGeneratedCalibrationScenario(const std::string &mode, ScenarioConfig &cfg, std::string &error);
-
+bool prepareTwoBodyScenario(ScenarioConfig& cfg, std::string& error);
+bool prepareGeneratedCalibrationScenario(const std::string& mode, ScenarioConfig& cfg,
+                                         std::string& error);
 } // namespace testsupport
-
-
 #endif // GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_

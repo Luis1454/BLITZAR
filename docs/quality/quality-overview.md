@@ -4,31 +4,25 @@ This folder contains the repository-level quality baseline for high-assurance wo
 
 ## Contents
 
-- `quality_manifest.json`: canonical quality manifest index (`metadata` + `includes`).
 - `AGENTS.md`: versioned contribution workflow artifact referenced by the NASA-first governance crosswalk.
-- `manifest/*.json`: sharded quality payloads (`evidence`, `policies`, `requirements`, `test_groups`, `crosswalk`).
+- Machine-readable quality payloads (`quality_manifest.json` and `manifest/*.json`) are CI/internal artifacts and stay out of day-to-day reading paths.
 - `python_tools/policies/quality_manifest.py`: manifest loader and evidence resolver for `EVD_*` mappings.
-- `standards_profile.md`: NASA-first standards profile and scope.
+- `standards-profile.md`: NASA-first standards profile and scope.
 - `fmea.md`: failure mode and effects analysis baseline.
-- `manifest/fmea_actions.json`: canonical owner/status/task register for FMEA mitigations.
-- `tool_qualification.md`: tool confidence and qualification strategy.
-- `tool_manifest.md`: generated toolchain version manifest for CI evidence lanes.
-- `gpu_runner_operations.md`: bootstrap, health monitoring, and fallback policy for optional self-hosted CUDA runners.
-- `power_of_10.md`: repository-specific `Power of 10` coding-discipline profile with automated vs manual enforcement mapping.
-- `prod_baseline.md`: explicit evidence-grade `prod` environment baseline.
-- `operational_control.md`: execution control framework, issue states, evidence rules, and coverage steering policy.
-- `static_audit_remediation_plan.md`: triage and execution plan for the March 2026 static audit findings.
-- `interface_contracts.md`: versioned critical interface contracts and compatibility rules.
-- `api_documentation_standard.md`: file-header and public API comment conventions for C++ surfaces.
-- `ivv_plan.md`: independent verification and validation plan.
-- `numerical_validation.md`: physics-oriented numerical acceptance criteria.
-- `manifest/performance_campaign.json`: fixed GPU benchmark matrix with throughput baselines and regression thresholds.
-- `traceability.md`: how to declare impacted requirement IDs and update the PR traceability register.
+- `tool-qualification.md`: tool confidence and qualification strategy.
+- `tool-manifest.md`: generated toolchain version manifest for CI evidence lanes.
+- `gpu-runner-operations.md`: bootstrap, health monitoring, and fallback policy for optional self-hosted CUDA runners.
+- `power-of-10.md`: repository-specific `Power of 10` coding-discipline profile with automated vs manual enforcement mapping.
+- `production-baseline.md`: explicit evidence-grade `prod` environment baseline.
+- `operational-control.md`: execution control framework, issue states, evidence rules, and coverage steering policy.
+- `interface-contracts.md`: versioned critical interface contracts and compatibility rules.
+- `api-documentation-standard.md`: file-header and public API comment conventions for C++ surfaces.
+- `ivv-plan.md`: independent verification and validation plan.
+- `numerical-validation.md`: physics-oriented numerical acceptance criteria.
+- `traceability-guide.md`: how to declare impacted requirement IDs and update the PR traceability register.
 - `traceability.csv`: canonical requirement-to-surface register updated by critical functional PRs.
-- `manifest/numerical_campaign.json`: fixed nightly numerical campaign definitions and thresholds.
-- `evidence_pack.md`: format and generation rules for release evidence bundles.
-- `release_index.md`: audit entry-point format for release-quality summaries.
-- `manifest/deviations.json`: canonical waiver/deviation register for temporary exceptions.
+- `evidence-pack.md`: format and generation rules for release evidence bundles.
+- `release-index.md`: audit entry-point format for release-quality summaries.
 
 ## Policy
 
@@ -55,3 +49,4 @@ This folder contains the repository-level quality baseline for high-assurance wo
 - Release candidates should emit an evidence pack generated from the canonical manifest and strict lane commands.
 - Mission-impacting PRs must follow the IV&V checklist and non-author approval workflow.
 - Changes to this folder must be reviewed with the same rigor as code changes.
+

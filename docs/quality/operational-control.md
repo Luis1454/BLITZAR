@@ -6,7 +6,7 @@ This document defines how BLITZAR is steered while product-core, quality, and st
 
 - GitHub issues are the only authoritative task tracker.
 - `docs/quality/` is the only authoritative quality baseline.
-- `MODIFS.md` is a scratchpad only; no `P0` or `P1` item may live there alone.
+- Local scratchpads are non-authoritative; no `P0` or `P1` item may live there alone.
 - One branch targets one issue, from `main` only.
 - No public claim may exceed the current evidence.
 - Coverage is a steering signal and must be reviewed every planning cycle, but it is never accepted as a substitute for deterministic scenario validation.

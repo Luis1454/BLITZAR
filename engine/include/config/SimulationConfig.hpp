@@ -1,17 +1,13 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
-
-/*
- * Module: config
- * Responsibility: Define the persistent simulation and client configuration surface.
- */
-
+/* * Module: config * Responsibility: Define the persistent simulation and client configuration
+ * surface. */
 #include <cstdint>
 #include <string>
-
 /// Stores the persisted runtime, rendering, export, and scenario initialization parameters.
 struct SimulationConfig {
-    // Physical quantities use SI units unless a field name explicitly carries another unit such as ms or fps.
+    // Physical quantities use SI units unless a field name explicitly carries another unit such as
+    // ms or fps.
     std::uint32_t particleCount = 10000u;
     float dt = 0.01f;
     std::string solver = "pairwise_cuda";
@@ -86,14 +82,11 @@ struct SimulationConfig {
     bool renderLODEnabled = true;
     float renderLODNearDistance = 10.0f;
     float renderLODFarDistance = 60.0f;
-
     /// Returns the repository default configuration used for new projects and tests.
     static SimulationConfig defaults();
     /// Loads the configuration at `path` or writes defaults there when the file does not exist.
-    static SimulationConfig loadOrCreate(const std::string &path);
+    static SimulationConfig loadOrCreate(const std::string& path);
     /// Persists the current configuration to `path`.
-    bool save(const std::string &path) const;
+    bool save(const std::string& path) const;
 };
-
-
 #endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_

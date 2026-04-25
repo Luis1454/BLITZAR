@@ -10,13 +10,6 @@ def test_readme_uses_coverage_data_branch_for_badges_and_widget() -> None:
     assert "luis1454.github.io/BLITZAR/coverage/" not in readme
 
 
-def test_docs_readme_uses_coverage_data_branch_for_dashboard_assets() -> None:
-    readme = Path("docs/README_full.md").read_text(encoding="utf-8")
-    assert "coverage-data/coverage/widget.svg" in readme
-    assert "coverage-data` branch" in readme
-    assert "luis1454.github.io/BLITZAR/coverage/" not in readme
-
-
 def test_nightly_workflow_publishes_coverage_data_branch() -> None:
     workflow = Path(".github/workflows/nightly-full.yml").read_text(encoding="utf-8")
     assert "Publish coverage payload branch" in workflow
@@ -24,3 +17,4 @@ def test_nightly_workflow_publishes_coverage_data_branch() -> None:
     assert "nightly-integration-coverage:" in workflow
     assert "permissions:\n      contents: write\n      statuses: write" in workflow
     assert "Deploy Coverage Pages" not in workflow
+

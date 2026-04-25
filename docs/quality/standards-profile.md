@@ -22,7 +22,7 @@ This repository is independent from any company stack but aligned for US space r
   - strict PR quality gate must be green before merge.
   - CI lanes must force `-DGRAVITY_PROFILE=prod` for qualification evidence.
   - repository policy checks reject evidence workflow configure commands that omit `-DGRAVITY_PROFILE=prod`.
-  - evidence-grade environment assumptions are fixed by `docs/quality/prod_baseline.md`.
+  - evidence-grade environment assumptions are fixed by `docs/quality/production-baseline.md`.
 - `dev` profile (iteration path):
   - broader experimentation allowed;
   - Rust workspace crates may mirror protocol or runtime contracts here before they are wired into the qualified CI lanes;
@@ -38,18 +38,18 @@ Build switch:
 
 - Contribution workflow artifact: `AGENTS.md`.
 - Canonical quality manifest: `docs/quality/quality_manifest.json`.
-- IV&V plan: `docs/quality/ivv_plan.md`.
+- IV&V plan: `docs/quality/ivv-plan.md`.
 - Failure analysis: `docs/quality/fmea.md`.
-- Numerical acceptance policy: `docs/quality/numerical_validation.md`.
-- Tool confidence strategy: `docs/quality/tool_qualification.md`.
-- Power of 10 coding profile: `docs/quality/power_of_10.md`.
-- Qualified `prod` baseline: `docs/quality/prod_baseline.md`.
-- Critical interface contracts: `docs/quality/interface_contracts.md`.
+- Numerical acceptance policy: `docs/quality/numerical-validation.md`.
+- Tool confidence strategy: `docs/quality/tool-qualification.md`.
+- Power of 10 coding profile: `docs/quality/power-of-10.md`.
+- Qualified `prod` baseline: `docs/quality/production-baseline.md`.
+- Critical interface contracts: `docs/quality/interface-contracts.md`.
 - Deviation register: `docs/quality/manifest/deviations.json`.
-- Release quality index format: `docs/quality/release_index.md`.
+- Release quality index format: `docs/quality/release-index.md`.
 - Strict merge gate definition: `.github/workflows/pr-fast.yml` and `.github/workflows/pr-fast-quality-gate.yml`.
 - Extended deterministic evidence lanes: `.github/workflows/nightly-full.yml` and `.github/workflows/release-lane.yml`.
-- Release evidence pack format: `docs/quality/evidence_pack.md`.
+- Release evidence pack format: `docs/quality/evidence-pack.md`.
 
 ## Determinism Baseline
 
@@ -69,7 +69,7 @@ Build switch:
 - Single-maintainer critical-path PRs may use an explicit solo IV&V waiver token plus `DEV-SOLO-IVV` or `WVR-SOLO-IVV`; otherwise a non-author approval remains mandatory.
 - Release review should begin from the release-quality index before opening the full evidence pack.
 - Breaking interface changes must update the canonical contract artifact and linked tests in the same review.
-- Breaking IPC changes must update both `docs/server_protocol.md` and `docs/server_protocol_schema.json` in the same review.
+- Breaking IPC changes must update both `docs/server-protocol.md` and `runtime/protocol/server-protocol-schema.json` in the same review.
 - Release candidates must publish an evidence pack generated from the `release-lane` commands under the selected profile.
 - Runtime behavior in critical paths must be reproducible under pinned toolchain settings.
 - Dynamic client-module verification in `prod` must remain deterministic: allowlist, `apiVersion`, product metadata, and binary `sha256` are all part of the loader contract.
@@ -87,3 +87,6 @@ Build switch:
 - Repository C++ sources must not define macros outside header include guards.
 - Strict analyzer lanes also enforce ignored-return-value coverage for internal status APIs through `clang-tidy` and targeted `[[nodiscard]]` annotations.
 - Any requirement, tolerance, or toolchain update must update the quality artifacts in this directory in the same change.
+
+
+

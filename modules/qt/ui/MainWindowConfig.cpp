@@ -1,25 +1,21 @@
-#include "ui/MainWindow.hpp"
-
 #include "config/SimulationScenarioValidation.hpp"
+#include "ui/MainWindow.hpp"
 #include "ui/MultiViewWidget.hpp"
-
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QLabel>
 #include <QSlider>
 #include <QStatusBar>
-
 #include <algorithm>
 #include <iostream>
 #include <string>
-
 namespace grav_qt {
-
 bool MainWindow::applyConfigToServer(bool requestReset)
 {
     captureUiIntoConfig();
-    const MainWindowApplyConfigResult result = _controller.applyConfig(_config, *_runtime, requestReset);
+    const MainWindowApplyConfigResult result =
+        _controller.applyConfig(_config, *_runtime, requestReset);
     const ThroughputAdvisory advisory = ThroughputAdvisor::evaluate(_config, result.clientDrawCap);
     if (_validationLabel != nullptr) {
         _validationLabel->setText(buildValidationText(result.report, advisory));
@@ -35,7 +31,6 @@ bool MainWindow::applyConfigToServer(bool requestReset)
     applyViewSettings();
     return true;
 }
-
 void MainWindow::applyConfigToUi()
 {
     _solverCombo->blockSignals(true);
@@ -55,12 +50,16 @@ void MainWindow::applyConfigToUi()
     _luminositySlider->blockSignals(true);
     _cullingCheck->blockSignals(true);
     _lodCheck->blockSignals(true);
-
-    _solverCombo->setCurrentIndex(std::max(0, _solverCombo->findText(QString::fromStdString(_config.solver))));
-    _integratorCombo->setCurrentIndex(std::max(0, _integratorCombo->findText(QString::fromStdString(_config.integrator))));
-    _performanceCombo->setCurrentIndex(std::max(0, _performanceCombo->findText(QString::fromStdString(_config.performanceProfile))));
-    _simulationProfileCombo->setCurrentIndex(std::max(0, _simulationProfileCombo->findText(QString::fromStdString(_config.simulationProfile))));
-    const int presetIndex = std::max(0, _presetCombo->findText(QString::fromStdString(_config.presetStructure)));
+    _solverCombo->setCurrentIndex(
+        std::max(0, _solverCombo->findText(QString::fromStdString(_config.solver))));
+    _integratorCombo->setCurrentIndex(
+        std::max(0, _integratorCombo->findText(QString::fromStdString(_config.integrator))));
+    _performanceCombo->setCurrentIndex(std::max(
+        0, _performanceCombo->findText(QString::fromStdString(_config.performanceProfile))));
+    _simulationProfileCombo->setCurrentIndex(std::max(
+        0, _simulationProfileCombo->findText(QString::fromStdString(_config.simulationProfile))));
+    const int presetIndex =
+        std::max(0, _presetCombo->findText(QString::fromStdString(_config.presetStructure)));
     _presetCombo->setCurrentIndex(presetIndex);
     _sphCheck->setChecked(_config.sphEnabled);
     _dtSpin->setValue(std::max(0.00001f, _config.dt));
@@ -74,7 +73,6 @@ void MainWindow::applyConfigToUi()
     _luminositySlider->setValue(std::clamp(_config.defaultLuminosity, 0, 255));
     _cullingCheck->setChecked(_config.renderCullingEnabled);
     _lodCheck->setChecked(_config.renderLODEnabled);
-
     _solverCombo->blockSignals(false);
     _integratorCombo->blockSignals(false);
     _performanceCombo->blockSignals(false);
@@ -92,10 +90,8 @@ void MainWindow::applyConfigToUi()
     _luminositySlider->blockSignals(false);
     _cullingCheck->blockSignals(false);
     _lodCheck->blockSignals(false);
-
     applyViewSettings();
 }
-
 void MainWindow::captureUiIntoConfig()
 {
     _config.solver = _solverCombo->currentText().toStdString();
@@ -116,19 +112,16 @@ void MainWindow::captureUiIntoConfig()
     _config.renderCullingEnabled = _cullingCheck->isChecked();
     _config.renderLODEnabled = _lodCheck->isChecked();
 }
-
 void MainWindow::applyPerformanceProfileToRuntime()
 {
     _clientDrawCap = _controller.applyPerformanceProfile(_config, *_runtime);
     applyViewSettings();
 }
-
 void MainWindow::markConfigDirty(bool dirty)
 {
     _configDirty = dirty;
     setWindowTitle(_configDirty ? "N-Body Qt Client *" : "N-Body Qt Client");
 }
-
 bool MainWindow::saveConfigToDisk()
 {
     (void)refreshValidationReport(false);
@@ -143,7 +136,6 @@ bool MainWindow::saveConfigToDisk()
     std::cout << "[qt] config saved: " << _configPath << "\n";
     return true;
 }
-
 bool MainWindow::refreshValidationReport(bool blockOnErrors)
 {
     const grav_config::ScenarioValidationReport report = _controller.validate(_config);
@@ -156,14 +148,16 @@ bool MainWindow::refreshValidationReport(bool blockOnErrors)
     }
     return !blockOnErrors || report.validForRun;
 }
-
-QString MainWindow::buildValidationText(
-    const grav_config::ScenarioValidationReport &report,
-    const ThroughputAdvisory &advisory) const
+QString MainWindow::buildValidationText(const grav_config::ScenarioValidationReport& report,
+                                        const ThroughputAdvisory& advisory) const
 {
     std::string text = grav_config::SimulationScenarioValidation::renderText(report);
     if (advisory.severity != ThroughputAdvisorySeverity::None) {
-        text += "\n\n[" + std::string(advisory.severity == ThroughputAdvisorySeverity::Warning ? "throughput-warning" : "throughput-advisory") + "] ";
+        text += "\n\n[" +
+                std::string(advisory.severity == ThroughputAdvisorySeverity::Warning
+                                ? "throughput-warning"
+                                : "throughput-advisory") +
+                "] ";
         text += advisory.summary;
         if (!advisory.action.empty()) {
             text += "\nAction: " + advisory.action;
@@ -171,8 +165,7 @@ QString MainWindow::buildValidationText(
     }
     return QString::fromStdString(text);
 }
-
-void MainWindow::showThroughputAdvisory(const ThroughputAdvisory &advisory)
+void MainWindow::showThroughputAdvisory(const ThroughputAdvisory& advisory)
 {
     if (advisory.severity == ThroughputAdvisorySeverity::None) {
         return;
@@ -180,7 +173,6 @@ void MainWindow::showThroughputAdvisory(const ThroughputAdvisory &advisory)
     std::cout << "[qt] " << advisory.statusBarText << "\n";
     statusBar()->showMessage(QString::fromStdString(advisory.statusBarText), 6000);
 }
-
 void MainWindow::update3DCameraFromSliders()
 {
     constexpr float pi = 3.14159265359f;
@@ -189,5 +181,4 @@ void MainWindow::update3DCameraFromSliders()
     const float roll = static_cast<float>(_rollSlider->value()) * pi / 180.0f;
     _multiView->set3DCameraAngles(yaw, pitch, roll);
 }
-
 } // namespace grav_qt

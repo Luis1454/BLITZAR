@@ -1,13 +1,7 @@
 #include "physics/ForceLawPolicy.hpp"
-
 #include <algorithm>
-
-ForceLawPolicy resolveForceLawPolicy(
-    float theta,
-    float softening,
-    float minSoftening,
-    float minDistance2,
-    float minTheta)
+ForceLawPolicy resolveForceLawPolicy(float theta, float softening, float minSoftening,
+                                     float minDistance2, float minTheta)
 {
     ForceLawPolicy policy;
     constexpr float kMinThetaFloor = 0.05f;

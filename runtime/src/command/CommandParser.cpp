@@ -1,29 +1,22 @@
 #include "command/CommandParser.hpp"
-
 #include "command/CommandCatalog.hpp"
-
 #include <algorithm>
-#include <charconv>
 #include <cctype>
+#include <charconv>
 #include <cstdlib>
-
 namespace grav_cmd {
-
-static std::string trimTokenLine(const std::string &input)
+static std::string trimTokenLine(const std::string& input)
 {
-    const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
-        return std::isspace(c) != 0;
-    });
+    const auto begin = std::find_if_not(input.begin(), input.end(),
+                                        [](unsigned char c) { return std::isspace(c) != 0; });
     const auto end = std::find_if_not(input.rbegin(), input.rend(), [](unsigned char c) {
-        return std::isspace(c) != 0;
-    }).base();
-    if (begin >= end) {
+                         return std::isspace(c) != 0;
+                     }).base();
+    if (begin >= end)
         return {};
-    }
     return std::string(begin, end);
 }
-
-static std::vector<std::string> splitTokens(const std::string &line)
+static std::vector<std::string> splitTokens(const std::string& line)
 {
     std::vector<std::string> tokens;
     std::string current;
@@ -54,8 +47,7 @@ static std::vector<std::string> splitTokens(const std::string &line)
     }
     return tokens;
 }
-
-static std::string stripComment(const std::string &line)
+static std::string stripComment(const std::string& line)
 {
     std::string output;
     bool inQuotes = false;
@@ -80,57 +72,57 @@ static std::string stripComment(const std::string &line)
     }
     return output;
 }
-
-static bool parseUintToken(const std::string &token, std::uint64_t &outValue)
+static bool parseUintToken(const std::string& token, std::uint64_t& outValue)
 {
-    const char *begin = token.data();
-    const char *end = token.data() + token.size();
+    const char* begin = token.data();
+    const char* end = token.data() + token.size();
     const std::from_chars_result result = std::from_chars(begin, end, outValue);
     return result.ec == std::errc() && result.ptr == end;
 }
-
-static bool parseFloatToken(const std::string &token, double &outValue)
+static bool parseFloatToken(const std::string& token, double& outValue)
 {
-    char *end = nullptr;
+    char* end = nullptr;
     outValue = std::strtod(token.c_str(), &end);
     return end != nullptr && *end == '\0';
 }
-
-static CommandParseResult parseTokens(const std::vector<std::string> &tokens, std::size_t lineNumber)
+static CommandParseResult parseTokens(const std::vector<std::string>& tokens,
+                                      std::size_t lineNumber)
 {
     CommandParseResult result{};
     if (tokens.empty()) {
         result.ok = true;
         return result;
     }
-    const CommandSpec *spec = CommandCatalog::findByName(tokens.front());
+    const CommandSpec* spec = CommandCatalog::findByName(tokens.front());
     if (spec == nullptr) {
-        result.error = "line " + std::to_string(lineNumber) + ": unknown command '" + tokens.front() + "'";
+        result.error =
+            "line " + std::to_string(lineNumber) + ": unknown command '" + tokens.front() + "'";
         return result;
     }
     std::size_t required = 0u;
-    for (const CommandArgumentSpec &argument : spec->arguments) {
+    for (const CommandArgumentSpec& argument : spec->arguments)
         if (!argument.optional) {
             required += 1u;
         }
-    }
     const std::size_t provided = tokens.size() - 1u;
     if (provided < required || provided > spec->arguments.size()) {
-        result.error = "line " + std::to_string(lineNumber) + ": wrong arity for '" + spec->name + "'";
+        result.error =
+            "line " + std::to_string(lineNumber) + ": wrong arity for '" + spec->name + "'";
         return result;
     }
-
     CommandRequest request{};
     request.id = spec->id;
     request.name = spec->name;
     request.lineNumber = lineNumber;
     for (std::size_t index = 0u; index < provided; ++index) {
-        const std::string &token = tokens[index + 1u];
-        const CommandArgumentSpec &argument = spec->arguments[index];
-        if (argument.kind == CommandArgumentKind::Uint || argument.kind == CommandArgumentKind::Port) {
+        const std::string& token = tokens[index + 1u];
+        const CommandArgumentSpec& argument = spec->arguments[index];
+        if (argument.kind == CommandArgumentKind::Uint ||
+            argument.kind == CommandArgumentKind::Port) {
             std::uint64_t value = 0u;
             if (!parseUintToken(token, value)) {
-                result.error = "line " + std::to_string(lineNumber) + ": invalid integer '" + token + "'";
+                result.error =
+                    "line " + std::to_string(lineNumber) + ": invalid integer '" + token + "'";
                 return result;
             }
             request.arguments.push_back(value);
@@ -139,7 +131,8 @@ static CommandParseResult parseTokens(const std::vector<std::string> &tokens, st
         if (argument.kind == CommandArgumentKind::Float) {
             double value = 0.0;
             if (!parseFloatToken(token, value)) {
-                result.error = "line " + std::to_string(lineNumber) + ": invalid float '" + token + "'";
+                result.error =
+                    "line " + std::to_string(lineNumber) + ": invalid float '" + token + "'";
                 return result;
             }
             request.arguments.push_back(value);
@@ -151,8 +144,7 @@ static CommandParseResult parseTokens(const std::vector<std::string> &tokens, st
     result.requests.push_back(std::move(request));
     return result;
 }
-
-CommandParseResult CommandParser::parseScript(const std::string &scriptText)
+CommandParseResult CommandParser::parseScript(const std::string& scriptText)
 {
     CommandParseResult result{};
     result.ok = true;
@@ -182,8 +174,7 @@ CommandParseResult CommandParser::parseScript(const std::string &scriptText)
     }
     return result;
 }
-
-CommandParseResult CommandParser::parseLine(const std::string &line, std::size_t lineNumber)
+CommandParseResult CommandParser::parseLine(const std::string& line, std::size_t lineNumber)
 {
     const std::string stripped = trimTokenLine(stripComment(line));
     if (stripped.empty()) {
@@ -193,5 +184,4 @@ CommandParseResult CommandParser::parseLine(const std::string &line, std::size_t
     }
     return parseTokens(splitTokens(stripped), lineNumber);
 }
-
 } // namespace grav_cmd

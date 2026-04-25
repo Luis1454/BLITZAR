@@ -33,7 +33,8 @@ This artifact defines the evidence-grade baseline for qualification-oriented `pr
 ## Change Control
 
 - Any standards-impacting change to runner family, toolchain family, CUDA expectation, or required `prod` flags must update:
-  - `docs/quality/standards_profile.md`
-  - `docs/quality/tool_qualification.md`
+  - `docs/quality/standards-profile.md`
+  - `docs/quality/tool-qualification.md`
   - `docs/quality/quality_manifest.json`
 - Evidence produced outside this baseline must be labeled exploratory, not qualification-grade.
+

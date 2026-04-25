@@ -1,8 +1,7 @@
 #include "protocol/ServerJsonCodec.hpp"
-
 namespace grav_protocol {
-
-bool ServerJsonCodec::parseStatusResponse(std::string_view raw, ServerStatusPayload &out, std::string &error)
+bool ServerJsonCodec::parseStatusResponse(std::string_view raw, ServerStatusPayload& out,
+                                          std::string& error)
 {
     ServerStatusPayload parsed{};
     if (!parseResponseEnvelope(raw, parsed.envelope, error)) {
@@ -54,5 +53,4 @@ bool ServerJsonCodec::parseStatusResponse(std::string_view raw, ServerStatusPayl
     error.clear();
     return true;
 }
-
 } // namespace grav_protocol

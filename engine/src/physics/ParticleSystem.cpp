@@ -4,7 +4,4 @@
 ** File description:
 ** ParticleSystem
 */
-
 #include "physics/ParticleSystem.hpp"
-
-

@@ -1,24 +1,18 @@
 #include "config/SimulationScenarioValidationRender.hpp"
-
 #include <sstream>
-
 namespace grav_config {
-std::string SimulationScenarioValidationRender::render(const ScenarioValidationReport &report)
+std::string SimulationScenarioValidationRender::render(const ScenarioValidationReport& report)
 {
     std::ostringstream out;
     if (report.errorCount == 0u && report.warningCount == 0u) {
         out << "[preflight] OK: no blocking scenario issues detected.";
         return out.str();
     }
-
-    out << "[preflight] "
-        << (report.validForRun ? "warnings" : "blocked")
-        << ": " << report.errorCount << " error(s), " << report.warningCount << " warning(s)";
-    for (const ScenarioDiagnostic &diagnostic : report.diagnostics) {
-        out << "\n- "
-            << (diagnostic.level == ScenarioDiagnosticLevel::Error ? "error" : "warning")
-            << " [" << diagnostic.field << "] "
-            << diagnostic.message;
+    out << "[preflight] " << (report.validForRun ? "warnings" : "blocked") << ": "
+        << report.errorCount << " error(s), " << report.warningCount << " warning(s)";
+    for (const ScenarioDiagnostic& diagnostic : report.diagnostics) {
+        out << "\n- " << (diagnostic.level == ScenarioDiagnosticLevel::Error ? "error" : "warning")
+            << " [" << diagnostic.field << "] " << diagnostic.message;
         if (!diagnostic.action.empty()) {
             out << " Action: " << diagnostic.action;
         }
