@@ -1,12 +1,12 @@
 #include "apps/client-host/client_host_module_ops.hpp"
+#include "apps/client-host/client_host_cli_text.hpp"
 #include "client/ClientModuleHandle.hpp"
 #include "platform/PlatformPaths.hpp"
-namespace grav_client_host {
-class ClientHostModuleOpsLocal final {
-#include "apps/client-host/client_host_cli_text.hpp"
 #include <iostream>
 #include <system_error>
 #include <utility>
+namespace grav_client_host {
+class ClientHostModuleOpsLocal final {
 public:
     static std::vector<std::string> moduleFilenameCandidatesForAlias(const std::string& alias)
     {
