@@ -292,7 +292,8 @@ bool ParticleSystem::update(float deltaTime) {
 
         if (_integratorMode == IntegratorMode::Leapfrog) {
             const int openingCriterion = _octreeOpeningCriterion == OctreeOpeningCriterion::Bounds ? 1 : 0;
-            const int numBlocks = (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
+            const int numBlocks =
+                (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
 
             if (!_leapfrogPrimed) {
                 primeHalfVelocityKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(currentView, d_vHalf, numParticles);
@@ -306,7 +307,11 @@ bool ParticleSystem::update(float deltaTime) {
                 currentView,
                 d_k1v,
                 numParticles,
-                g_dOctreeNodes,
+                d_octreeNodeHot,
+                d_octreeNodeNav,
+                d_octreeFirstChild,
+                d_octreeLeafStarts,
+                d_octreeLeafCounts,
                 rootIndex,
                 g_dOctreeLeafIndices,
                 forceLaw,
@@ -361,7 +366,11 @@ bool ParticleSystem::update(float deltaTime) {
                 currentView,
                 d_k2v,
                 numParticles,
-                g_dOctreeNodes,
+                d_octreeNodeHot,
+                d_octreeNodeNav,
+                d_octreeFirstChild,
+                d_octreeLeafStarts,
+                d_octreeLeafCounts,
                 nextRootIndex,
                 g_dOctreeLeafIndices,
                 forceLaw,
@@ -396,11 +405,17 @@ bool ParticleSystem::update(float deltaTime) {
             std::swap(d_soaVelZ, d_soaNextVelZ);
         } else if (_integratorMode == IntegratorMode::Euler) {
             const auto forceStartTime = std::chrono::high_resolution_clock::now();
-            updateParticlesOctree<<<(_particles.size() + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize, Particle::kDefaultCudaBlockSize>>>(
+            const int numBlocks =
+                (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
+            updateParticlesOctree<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
                 currentView,
                 nextView,
-                static_cast<int>(_particles.size()),
-                g_dOctreeNodes,
+                numParticles,
+                d_octreeNodeHot,
+                d_octreeNodeNav,
+                d_octreeFirstChild,
+                d_octreeLeafStarts,
+                d_octreeLeafCounts,
                 rootIndex,
                 g_dOctreeLeafIndices,
                 forceLaw,

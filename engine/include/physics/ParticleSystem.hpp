@@ -264,6 +264,11 @@ class ParticleSystem {
         int *d_octreeLevelIndicesB;
         int *d_octreeParentCounts;
         int *d_octreeParentOffsets;
+        GpuOctreeNodeHotData *d_octreeNodeHot;
+        GpuOctreeNodeNavData *d_octreeNodeNav;
+        int *d_octreeFirstChild;
+        int *d_octreeLeafStarts;
+        int *d_octreeLeafCounts;
         float *d_energyKineticBlocks;
         float *d_energyThermalBlocks;
         double *d_energyPotentialPartials;
