@@ -1,16 +1,21 @@
-#include "apps/client-host/client_host_cli_args.hpp"
 #include <iostream>
+
+#include "apps/client-host/client_host_cli_args.hpp"
+
 namespace grav_client_host {
+
 class ClientHostCliArgsLocal final {
 public:
-    static bool parseArgs(int argc, char** argv, HostOptions& outOptions, std::string& outError)
+    static bool parseArgs(int argc, char** argv, HostOptions& outOptions,
+                          std::string& outError)
     {
         outOptions = HostOptions{};
-        for (int i = 1; i < argc; ++i)
+        for (int i = 1; i < argc; ++i) {
             const std::string arg(argv[i] ? argv[i] : "");
-        if (arg == "--help") {
-            outOptions.showHelp = true;
-            continue;
+            if (arg == "--help") {
+                outOptions.showHelp = true;
+                continue;
+            }
             if (arg == "--validate-only") {
                 outOptions.validateOnly = true;
                 continue;
@@ -44,6 +49,7 @@ public:
         }
         return true;
     }
+
     static void printHelp(std::string_view programName)
     {
         std::cout << "Usage: " << programName
@@ -69,13 +75,16 @@ public:
         }
     }
 };
+
 bool ClientHostCliArgs::parseArgs(int argc, char** argv, HostOptions& outOptions,
                                   std::string& outError)
 {
     return ClientHostCliArgsLocal::parseArgs(argc, argv, outOptions, outError);
 }
+
 void ClientHostCliArgs::printHelp(std::string_view programName)
 {
     ClientHostCliArgsLocal::printHelp(programName);
 }
+
 } // namespace grav_client_host

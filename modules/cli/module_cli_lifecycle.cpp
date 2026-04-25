@@ -1,13 +1,16 @@
-#include "modules/cli/module_cli_lifecycle.hpp"
-#include "config/SimulationConfig.hpp"
-#include "modules/cli/module_cli_state.hpp"
-namespace grav_module_cli {
-class ModuleCliLifecycleLocal final {
-#include "client/ErrorBuffer.hpp"
 #include <cstddef>
 #include <exception>
 #include <iostream>
 #include <memory>
+
+#include "client/ErrorBuffer.hpp"
+#include "config/SimulationConfig.hpp"
+#include "modules/cli/module_cli_lifecycle.hpp"
+#include "modules/cli/module_cli_state.hpp"
+
+namespace grav_module_cli {
+
+class ModuleCliLifecycleLocal final {
 public:
     static bool create(const grav_module::ClientHostContextV1* hostContext,
                        const grav_module::ClientModuleStateSlot& outModuleState,
@@ -35,6 +38,7 @@ public:
             return false;
         }
     }
+
     static void destroy(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
@@ -51,6 +55,7 @@ public:
             std::cerr << "[module-cli] destroy error: unknown\n";
         }
     }
+
     static bool start(grav_module::ClientModuleOpaqueState moduleState,
                       const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -79,6 +84,7 @@ public:
             return false;
         }
     }
+
     static void stop(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
@@ -95,23 +101,28 @@ public:
         }
     }
 };
+
 bool ModuleCliLifecycle::create(const grav_module::ClientHostContextV1* hostContext,
                                 const grav_module::ClientModuleStateSlot& outModuleState,
                                 const grav_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliLifecycleLocal::create(hostContext, outModuleState, errorBuffer);
 }
+
 void ModuleCliLifecycle::destroy(grav_module::ClientModuleOpaqueState moduleState)
 {
     ModuleCliLifecycleLocal::destroy(moduleState);
 }
+
 bool ModuleCliLifecycle::start(grav_module::ClientModuleOpaqueState moduleState,
                                const grav_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliLifecycleLocal::start(moduleState, errorBuffer);
 }
+
 void ModuleCliLifecycle::stop(grav_module::ClientModuleOpaqueState moduleState)
 {
     ModuleCliLifecycleLocal::stop(moduleState);
 }
+
 } // namespace grav_module_cli

@@ -1,3 +1,9 @@
+#include <filesystem>
+#include <iostream>
+#include <string>
+#include <vector>
+
+#include "apps/client-host/client_host_cli.hpp"
 #include "apps/client-host/client_host_cli_args.hpp"
 #include "apps/client-host/client_host_cli_text.hpp"
 #include "apps/client-host/client_host_module_ops.hpp"
@@ -6,15 +12,13 @@
 #include "command/CommandContext.hpp"
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationScenarioValidation.hpp"
+
 namespace grav_client_host {
+
 class ClientHostCliLocal final {
-#include "apps/client-host/client_host_cli.hpp"
-#include <filesystem>
-#include <iostream>
-#include <string>
-#include <vector>
 public:
     static constexpr bool kLiveReloadEnabled = GRAVITY_PROFILE_IS_PROD == 0;
+
     static int run(const HostOptions& options, std::string_view programName)
     {
         if (options.validateOnly) {
@@ -100,9 +104,10 @@ private:
             printCurrentModule(module, currentModuleSpecifier);
             return false;
         }
-        if (tokens[0] == "quit" || tokens[0] == "exit")
+        if (tokens[0] == "quit" || tokens[0] == "exit") {
             keepRunning = false;
-        return false;
+            return false;
+        }
         if (tokens[0] == "reload") {
             if (!kLiveReloadEnabled) {
                 std::cout << "[client-host] reload is disabled in prod profile\n";
@@ -137,10 +142,12 @@ private:
             std::cout << "[client-host] " << commandError << "\n";
             return false;
         }
-        if (!moduleKeepRunning)
+        if (!moduleKeepRunning) {
             keepRunning = false;
+        }
         return true;
     }
+
     static void printAvailableModules(const std::vector<std::filesystem::path>& searchRoots)
     {
         std::cout << "[client-host] available aliases:\n";
@@ -164,20 +171,25 @@ private:
         std::cout << "\n";
     }
 };
+
 bool ClientHostCli::parseArgs(int argc, char** argv, HostOptions& outOptions, std::string& outError)
 {
     return ClientHostCliArgs::parseArgs(argc, argv, outOptions, outError);
 }
+
 bool ClientHostCli::liveReloadEnabled() noexcept
 {
     return ClientHostCliLocal::kLiveReloadEnabled;
 }
+
 void ClientHostCli::printHelp(std::string_view programName)
 {
     ClientHostCliArgs::printHelp(programName);
 }
+
 int ClientHostCli::run(const HostOptions& options, std::string_view programName)
 {
     return ClientHostCliLocal::run(options, programName);
 }
+
 } // namespace grav_client_host
