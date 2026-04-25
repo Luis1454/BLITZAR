@@ -57,9 +57,10 @@ bool ServerJsonCodec::readString(std::string_view raw, std::string_view key, std
     value.reserve(32u);
     while (cursor < raw.size()) {
         const char current = raw[cursor++];
-        if (current == '"')
+        if (current == '"') {
             out = value;
-        return true;
+            return true;
+        }
         if (current == '\\') {
             if (cursor >= raw.size()) {
                 return false;
@@ -92,12 +93,14 @@ bool ServerJsonCodec::readBool(std::string_view raw, std::string_view key, bool&
         return false;
     }
     token = toLower(token);
-    if (token == "true")
+    if (token == "true") {
         out = true;
-    return true;
-    if (token == "false")
+        return true;
+    }
+    if (token == "false") {
         out = false;
-    return true;
+        return true;
+    }
     return false;
 }
 std::string ServerJsonCodec::trim(std::string_view value)

@@ -26,9 +26,10 @@ static void baseOrientation(ViewMode mode, float& yaw, float& pitch, float& roll
     yaw = 0.0f;
     pitch = 0.0f;
     roll = 0.0f;
-    if (mode == ViewMode::Iso || mode == ViewMode::Perspective)
+    if (mode == ViewMode::Iso || mode == ViewMode::Perspective) {
         yaw = kIsoYaw;
-    pitch = kIsoPitch;
+        pitch = kIsoPitch;
+    }
 }
 static void modeComponents(ViewMode mode, float x, float y, float z, float& sx, float& sy,
                            float& depth)

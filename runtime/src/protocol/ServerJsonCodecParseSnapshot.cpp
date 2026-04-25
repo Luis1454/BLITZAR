@@ -97,9 +97,10 @@ bool ServerJsonCodec::parseSnapshotResponse(std::string_view raw, ServerSnapshot
     if (!parseResponseEnvelope(raw, parsed.envelope, error)) {
         return false;
     }
-    if (!parsed.envelope.ok)
+    if (!parsed.envelope.ok) {
         out = parsed;
-    return true;
+        return true;
+    }
     readBool(raw, "has_snapshot", parsed.hasSnapshot);
     if (!ServerJsonCodec::readNumber(raw, "source_count", parsed.sourceSize)) {
         parsed.sourceSize = 0u;

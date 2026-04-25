@@ -7,9 +7,10 @@ bool ServerJsonCodec::parseStatusResponse(std::string_view raw, ServerStatusPayl
     if (!parseResponseEnvelope(raw, parsed.envelope, error)) {
         return false;
     }
-    if (!parsed.envelope.ok)
+    if (!parsed.envelope.ok) {
         out = parsed;
-    return true;
+        return true;
+    }
     readNumber(raw, "steps", parsed.steps);
     readNumber(raw, "dt", parsed.dt);
     readNumber(raw, "total_time", parsed.totalTime);
