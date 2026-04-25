@@ -24,8 +24,9 @@ static void emitClamped(std::ostream& warnings, std::string_view source,
 }
 static std::uint32_t clampClientParticleCap(std::uint32_t requested)
 {
-    if (requested > grav_protocol::kSnapshotMaxPoints)
+    if (requested > grav_protocol::kSnapshotMaxPoints) {
         return grav_protocol::kSnapshotMaxPoints;
+    }
     return requested < 2u ? 2u : requested;
 }
 static void markCustomPerformanceProfile(const SimulationOptionEntry& entry,
@@ -38,8 +39,9 @@ static void markCustomPerformanceProfile(const SimulationOptionEntry& entry,
 bool matchesCli(const SimulationOptionEntry& entry, const std::string& key,
                 SimulationOptionGroup group)
 {
-    if (entry.group != group)
+    if (entry.group != group) {
         return false;
+    }
     return key == entry.cliName || (!entry.cliAlias.empty() && key == entry.cliAlias);
 }
 bool matchesIni(const SimulationOptionEntry& entry, const std::string& key)
@@ -175,10 +177,11 @@ static bool applyMatchingEntry(Matcher matcher, const std::string& key, const st
                                SimulationConfig& config, std::ostream& warnings,
                                std::string_view source)
 {
-    for (std::size_t index = 0; index < kSimulationOptionCount; ++index)
+    for (std::size_t index = 0; index < kSimulationOptionCount; ++index) {
         const SimulationOptionEntry& entry = kSimulationOptions[index];
-    if (!matcher(entry, key)) {
-        continue;
+        if (!matcher(entry, key)) {
+            continue;
+        }
         return applyEntry(entry, value, config, warnings, source, key);
     }
     return false;
