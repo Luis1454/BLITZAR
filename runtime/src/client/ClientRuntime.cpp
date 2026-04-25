@@ -15,12 +15,14 @@ constexpr std::uint32_t kSnapshotQueueCapacityMax = 64u;
 constexpr std::uint32_t kSnapshotQueueCapacityDefault = 4u;
 static std::string normalizeSnapshotDropPolicyValue(std::string value)
 {
-    for (char& c : value)
-        if (c == '_')
+    for (char& c : value) {
+        if (c == '_') {
             c = '-';
+        }
         else {
             c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
         }
+    }
     return value;
 }
 ClientRuntime::ClientRuntime(const std::string& configPath, const ClientTransportArgs& transport)
@@ -215,8 +217,9 @@ SimulationStats ClientRuntime::getStats() const
 std::optional<ConsumedSnapshot> ClientRuntime::consumeLatestSnapshot()
 {
     std::lock_guard<std::mutex> lock(_dataMutex);
-    if (_snapshotCount == 0u)
+    if (_snapshotCount == 0u) {
         return std::nullopt;
+    }
     SnapshotBufferEntry& entry = _snapshotRing[_snapshotReadIndex];
     ConsumedSnapshot snapshot{};
     snapshot.sourceSize = entry.sourceSize;
@@ -280,10 +283,11 @@ std::uint32_t ClientRuntime::snapshotAgeMs() const
 void ClientRuntime::invalidateCachedSnapshot()
 {
     std::lock_guard<std::mutex> lock(_dataMutex);
-    for (SnapshotBufferEntry& entry : _snapshotRing)
+    for (SnapshotBufferEntry& entry : _snapshotRing) {
         entry.particles.clear();
-    entry.sourceSize = 0u;
-    entry.receivedAt = Clock::time_point();
+        entry.sourceSize = 0u;
+        entry.receivedAt = Clock::time_point();
+    }
     _snapshotReadIndex = 0u;
     _snapshotWriteIndex = 0u;
     _snapshotCount = 0u;
@@ -303,10 +307,12 @@ void ClientRuntime::pollLoop()
         if (pollSnapshot || pollStats) {
             pollOnce(pollSnapshot, pollStats);
             const auto afterPoll = Clock::now();
-            if (pollSnapshot)
+            if (pollSnapshot) {
                 nextSnapshotPoll = afterPoll + kSnapshotPollInterval;
-            if (pollStats)
+            }
+            if (pollStats) {
                 nextStatusPoll = afterPoll + kStatusPollInterval;
+            }
             continue;
         }
         std::this_thread::sleep_for(kIdleSleepInterval);
@@ -317,19 +323,22 @@ void ClientRuntime::pollOnce(bool pollSnapshot, bool pollStats)
     std::vector<RenderParticle> snapshot;
     std::size_t snapshotSourceSize = 0u;
     bool gotSnapshot = false;
-    if (pollSnapshot)
+    if (pollSnapshot) {
         gotSnapshot = _bridge.tryConsumeSnapshot(snapshot, &snapshotSourceSize);
+    }
     SimulationStats stats{};
-    if (pollStats)
+    if (pollStats) {
         stats = _bridge.getStats();
+    }
     const std::string linkLabel(_bridge.linkStateLabel());
     const std::string ownerLabel(_bridge.serverOwnerLabel());
     const auto now = Clock::now();
     std::lock_guard<std::mutex> lock(_dataMutex);
-    if (pollStats)
+    if (pollStats) {
         _latestStats = stats;
-    _lastStatsAt = now;
-    _hasStats = true;
+        _lastStatsAt = now;
+        _hasStats = true;
+    }
     _latestLinkLabel = linkLabel;
     _latestOwnerLabel = ownerLabel;
     if (gotSnapshot) {
@@ -369,11 +378,13 @@ void ClientRuntime::queueSnapshot(std::vector<RenderParticle> snapshot, std::siz
 }
 std::uint32_t ClientRuntime::ageMsSince(Clock::time_point at, bool valid)
 {
-    if (!valid)
+    if (!valid) {
         return std::numeric_limits<std::uint32_t>::max();
+    }
     const auto now = Clock::now();
-    if (at > now)
+    if (at > now) {
         return 0u;
+    }
     const auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(now - at);
     const auto clamped = std::clamp<std::uint64_t>(
         static_cast<std::uint64_t>(delta.count()), 0u,
