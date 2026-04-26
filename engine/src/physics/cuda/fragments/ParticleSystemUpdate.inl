@@ -129,8 +129,10 @@ bool ParticleSystem::update(float deltaTime) {
             if (thermalActive) {
                 applyThermalModel(deltaTime);
             }
-            syncDeviceState();
-            publishMappedMetrics(deltaTime);
+            if (_cudaRuntimeAvailable) {
+                syncDeviceState();
+                publishMappedMetrics(deltaTime);
+            }
             return true;
         }
 
@@ -174,8 +176,10 @@ bool ParticleSystem::update(float deltaTime) {
             if (thermalActive) {
                 applyThermalModel(deltaTime);
             }
-            syncDeviceState();
-            publishMappedMetrics(deltaTime);
+            if (_cudaRuntimeAvailable) {
+                syncDeviceState();
+                publishMappedMetrics(deltaTime);
+            }
             return true;
         }
 
@@ -242,8 +246,10 @@ bool ParticleSystem::update(float deltaTime) {
         if (thermalActive) {
             applyThermalModel(deltaTime);
         }
-        syncDeviceState();
-        publishMappedMetrics(deltaTime);
+        if (_cudaRuntimeAvailable) {
+            syncDeviceState();
+            publishMappedMetrics(deltaTime);
+        }
         return true;
     }
 

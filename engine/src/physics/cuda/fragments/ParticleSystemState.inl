@@ -5,6 +5,9 @@
 
 void ParticleSystem::syncDeviceState()
 {
+    if (!_cudaRuntimeAvailable) {
+        return;
+    }
     if (_particles.empty()) return;
     const int numParticles = static_cast<int>(_particles.size());
     const std::size_t bytes = _particles.size() * sizeof(Particle);
@@ -25,6 +28,9 @@ void ParticleSystem::syncDeviceState()
 
 bool ParticleSystem::syncHostState()
 {
+    if (!_cudaRuntimeAvailable) {
+        return !_hostStateDirty;
+    }
     if (!_hostStateDirty) return true;
     const int numParticles = static_cast<int>(_particles.size());
     const std::size_t bytes = _particles.size() * sizeof(Particle);
@@ -62,6 +68,9 @@ ParticleSoAView ParticleSystem::getSoAView(bool next) const
 
 void ParticleSystem::publishMappedMetrics(float deltaTime)
 {
+    if (!_cudaRuntimeAvailable) {
+        return;
+    }
     if (_mappedMetricsDevice == nullptr || d_soaPosX == nullptr || _particles.empty()) {
         return;
     }
