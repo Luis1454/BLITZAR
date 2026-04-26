@@ -13,6 +13,8 @@ class WindowsInstallerBuilder:
         self._runner = runner if runner is not None else subprocess.run
 
     def build(self, source_dir: Path, output_dir: Path, tag: str) -> Path:
+        source_dir = source_dir.resolve()
+        output_dir = output_dir.resolve()
         output_dir.mkdir(parents=True, exist_ok=True)
         installer_path = output_dir / f"blitzar-{tag}-windows-desktop-installer.exe"
         script_path = self._script_path()
