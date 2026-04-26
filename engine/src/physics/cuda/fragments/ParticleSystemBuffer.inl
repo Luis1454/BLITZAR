@@ -19,6 +19,20 @@ static double bytesToMiB(std::size_t bytes)
     return static_cast<double>(bytes) / (1024.0 * 1024.0);
 }
 
+static bool cudaRuntimeAvailable()
+{
+    int deviceCount = 0;
+    const cudaError_t status = cudaGetDeviceCount(&deviceCount);
+    if (status == cudaSuccess && deviceCount > 0) {
+        return true;
+    }
+    if (status != cudaSuccess && status != cudaErrorNoDevice) {
+        std::cerr << "[cuda] runtime disabled: " << cudaGetErrorString(status) << "\n";
+    }
+    cudaGetLastError();
+    return false;
+}
+
 std::size_t ParticleSystem::estimateMemoryUsage(
     std::size_t particleCount,
     bool sphEnabled,
@@ -124,11 +138,17 @@ std::string ParticleSystem::formatMemoryBreakdown(
 
 void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
 {
-    const cudaError_t mapHostStatus = cudaSetDeviceFlags(cudaDeviceMapHost);
-    if (mapHostStatus != cudaSuccess && mapHostStatus != cudaErrorSetOnActiveProcess) {
-        checkCudaStatus(mapHostStatus, "cudaSetDeviceFlags(cudaDeviceMapHost)");
+    _cudaRuntimeAvailable = cudaRuntimeAvailable();
+    if (_cudaRuntimeAvailable) {
+        const cudaError_t mapHostStatus = cudaSetDeviceFlags(cudaDeviceMapHost);
+        if (mapHostStatus != cudaSuccess && mapHostStatus != cudaErrorSetOnActiveProcess) {
+            checkCudaStatus(mapHostStatus, "cudaSetDeviceFlags(cudaDeviceMapHost)");
+            _cudaRuntimeAvailable = false;
+        }
     }
-    grav_x::CudaMemoryPool::initialize();
+    if (_cudaRuntimeAvailable) {
+        grav_x::CudaMemoryPool::initialize();
+    }
     _solverMode = solverModeFromEnv();
     _integratorMode = integratorModeFromEnv();
     _octreeTheta = parseFloatEnv("GRAVITY_OCTREE_THETA", 1.2f);
@@ -331,11 +351,16 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
             + "\n[memory] plan Z: strict mode abort");
     }
 
-    allocateMappedMetrics();
+    if (_cudaRuntimeAvailable) {
+        allocateMappedMetrics();
+    }
 }
 
 bool ParticleSystem::allocateParticleBuffers(std::size_t particleCapacity)
 {
+    if (!_cudaRuntimeAvailable) {
+        return false;
+    }
     const std::size_t bytesTotal = particleCapacity * sizeof(float);
     bool ok = true;
     ok &= ((d_soaPosX = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
@@ -475,6 +500,9 @@ void ParticleSystem::releaseParticleBuffers()
 
 bool ParticleSystem::allocateMappedMetrics()
 {
+    if (!_cudaRuntimeAvailable) {
+        return false;
+    }
     releaseMappedMetrics();
     void *hostPtr = nullptr;
     cudaError_t status = cudaHostAlloc(
@@ -514,6 +542,9 @@ void ParticleSystem::releaseMappedMetrics()
 
 bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
 {
+    if (!_cudaRuntimeAvailable) {
+        return false;
+    }
     if (numParticles <= 0) {
         return false;
     }
@@ -714,6 +745,9 @@ bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
 
 bool ParticleSystem::ensureEnergyScratchCapacity(int numParticles, int sampleCount)
 {
+    if (!_cudaRuntimeAvailable) {
+        return false;
+    }
     if (numParticles <= 0 || sampleCount <= 0) {
         return false;
     }
@@ -766,6 +800,9 @@ bool ParticleSystem::ensureEnergyScratchCapacity(int numParticles, int sampleCou
 
 bool ParticleSystem::allocateRk4Buffers(int numParticles)
 {
+    if (!_cudaRuntimeAvailable) {
+        return false;
+    }
     releaseRk4Buffers();
     d_stage = static_cast<Particle*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(Particle)));
     d_k1x = static_cast<Vector3*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(Vector3)));
@@ -804,6 +841,9 @@ void ParticleSystem::releaseRk4Buffers()
 
 bool ParticleSystem::allocateSphBuffers(int numParticles)
 {
+    if (!_cudaRuntimeAvailable) {
+        return false;
+    }
     releaseSphBuffers();
     d_sphDensity = static_cast<float*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(float)));
     d_sphPressure = static_cast<float*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(float)));
@@ -823,6 +863,9 @@ void ParticleSystem::releaseSphBuffers()
 
 bool ParticleSystem::allocateSphGridBuffers(int numParticles)
 {
+    if (!_cudaRuntimeAvailable) {
+        return false;
+    }
     releaseSphGridBuffers();
     const std::size_t particleBytes = static_cast<std::size_t>(numParticles) * sizeof(int);
     d_sphCellHash = static_cast<int*>(grav_x::CudaMemoryPool::allocate(particleBytes));
