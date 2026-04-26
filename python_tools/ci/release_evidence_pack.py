@@ -146,7 +146,10 @@ class ReleaseEvidencePackager:
             source = root / item["path"]
             destination = evidence_root / item["path"]
             destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source, destination)
+            if source.is_dir():
+                shutil.copytree(source, destination, dirs_exist_ok=True)
+            else:
+                shutil.copy2(source, destination)
         archive_base = dist_dir / f"ASTER-{tag}-evidence"
         return Path(shutil.make_archive(str(archive_base), "zip", root_dir=dist_dir))
 
