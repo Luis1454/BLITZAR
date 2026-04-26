@@ -97,7 +97,7 @@ def _seed_repo(root: Path) -> None:
         "scripts/ci/release/package_quality_index.py",
         "scripts/ci/release/package_sbom.py",
         "scripts/ci/release/package_source.py",
-        "scripts/install/windows/Install-BLITZAR.ps1",
+        "scripts/install/windows/BLITZAR.nsi",
         "tests/unit/ffi/test_stub.cpp",
     ]:
         _write_text(root / rel)
