@@ -70,7 +70,8 @@ ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
         fprintf(stderr, "[sph] buffers allocation failed, SPH disabled\n");
         _sphEnabled = false;
     }
-    if (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog) {
+    if (_solverMode != SolverMode::OctreeCpu &&
+        (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog)) {
         if (!allocateRk4Buffers(clampedParticles)) {
             throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
         }
@@ -103,7 +104,8 @@ ParticleSystem::ParticleSystem(std::vector<Particle> initialParticles)
     if (!allocateSphBuffers(clampedParticles) || !allocateSphGridBuffers(clampedParticles)) {
         _sphEnabled = false;
     }
-    if (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog) {
+    if (_solverMode != SolverMode::OctreeCpu &&
+        (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog)) {
         if (!allocateRk4Buffers(clampedParticles)) {
             throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
         }
@@ -187,7 +189,8 @@ void ParticleSystem::setSolverMode(SolverMode mode)
 }
 ParticleSystem::SolverMode ParticleSystem::getSolverMode() const { return _solverMode; }
 void ParticleSystem::setIntegratorMode(IntegratorMode mode) {
-    if ((mode == IntegratorMode::Rk4 || mode == IntegratorMode::Leapfrog)
+    if (_solverMode != SolverMode::OctreeCpu
+        && (mode == IntegratorMode::Rk4 || mode == IntegratorMode::Leapfrog)
         && !allocateRk4Buffers(static_cast<int>(_particles.size()))) {
         throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
     }
