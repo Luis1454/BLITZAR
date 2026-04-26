@@ -27,6 +27,9 @@ permissions:
 env:
   CI_CACHE_VERSION: v1
   CI_PYTHON_VERSION: "3.12"
+  QT_VERSION: "6.8.2"
+  QT_ARCH: win64_msvc2022_64
+  QT_DIR: C:\Qt\6.8.2\msvc2022_64
   RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
 
 concurrency:
@@ -87,6 +90,19 @@ jobs:
         with:
           cuda: "12.4.1"
 
+      - name: Restore Qt desktop cache
+        id: restore-qt-cache
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        with:
+          path: C:\Qt\${{ env.QT_VERSION }}\msvc2022_64
+          key: windows-release-qt-${{ env.CI_CACHE_VERSION }}-${{ env.QT_VERSION }}-${{ env.QT_ARCH }}
+
+      - name: Install Qt desktop runtime
+        if: ${{ steps.restore-qt-cache.outputs.cache-hit != 'true' }}
+        shell: pwsh
+        run: |
+          python -m aqt install-qt windows desktop "${{ env.QT_VERSION }}" "${{ env.QT_ARCH }}" -O C:\Qt --archives qtbase
+
       - name: Validate CUDA toolchain presence
         shell: pwsh
         run: |
@@ -139,6 +155,39 @@ jobs:
         run: |
           python scripts/ci/release/smoke_portable_bundle.py --archive (Get-ChildItem dist/release-bundle/*.zip | Select-Object -First 1).FullName --extract-dir dist/release-bundle-smoke
 
+      - name: Configure desktop GUI build
+        shell: pwsh
+        run: |
+          cmake -S . -B build-desktop -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_PROFILE=dev -DGRAVITY_BUILD_TESTS=OFF -DCMAKE_PREFIX_PATH="${{ env.QT_DIR }}"
+
+      - name: Build desktop GUI targets
+        shell: pwsh
+        run: |
+          cmake --build build-desktop --target blitzar blitzar-server blitzar-client gravityClientModuleQtInProc --parallel
+
+      - name: Validate desktop GUI runtime
+        shell: pwsh
+        run: |
+          if (-not (Test-Path build-desktop\gravityClientModuleQtInProc.dll)) {
+            throw "Qt GUI module was not built."
+          }
+          if (-not (Test-Path build-desktop\platforms\qwindows.dll)) {
+            & "${{ env.QT_DIR }}\bin\windeployqt.exe" --dir build-desktop --release --compiler-runtime build-desktop\gravityClientModuleQtInProc.dll
+          }
+          if (-not (Test-Path build-desktop\platforms\qwindows.dll)) {
+            throw "Qt platform plugin qwindows.dll is missing from desktop runtime."
+          }
+
+      - name: Package desktop GUI installer
+        shell: pwsh
+        run: |
+          python scripts/ci/release/package_bundle.py --build-dir build-desktop --dist-dir dist/desktop-installer --tag "${{ env.RELEASE_TAG }}" --tool-manifest dist/tool-qualification/tool_manifest.json --artifact-kind desktop-installer
+
+      - name: Smoke-validate desktop GUI installer
+        shell: pwsh
+        run: |
+          python scripts/ci/release/smoke_portable_bundle.py --archive (Get-ChildItem dist/desktop-installer/*.zip | Select-Object -First 1).FullName --extract-dir dist/desktop-installer-smoke --layout-only
+
       - name: Package release SBOM
         run: |
           python scripts/ci/release/package_sbom.py --artifacts-dir dist/release-bundle --dist-dir dist/release-sbom --tag "${{ env.RELEASE_TAG }}"
@@ -160,6 +209,13 @@ jobs:
         with:
           name: release-bundle-${{ env.RELEASE_TAG }}
           path: dist/release-bundle/*.zip
+          if-no-files-found: error
+
+      - name: Upload desktop GUI installer
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: desktop-installer-${{ env.RELEASE_TAG }}
+          path: dist/desktop-installer/*.zip
           if-no-files-found: error
 
       - name: Upload source archive
@@ -244,6 +300,12 @@ jobs:
           name: release-bundle-${{ env.RELEASE_TAG }}
           path: dist/release-bundle
 
+      - name: Download desktop GUI installer
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: desktop-installer-${{ env.RELEASE_TAG }}
+          path: dist/desktop-installer
+
       - name: Download source archive
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
@@ -298,6 +360,7 @@ jobs:
             "--assets",
             "dist/source/*.zip",
             "dist/release-bundle/*.zip",
+            "dist/desktop-installer/*.zip",
             "dist/release-sbom/*.json",
             "dist/evidence-pack/*.zip",
             "dist/release-quality-index/*.zip"

@@ -114,6 +114,15 @@ Start host directly with `qt`:
 build/blitzar-client --config simulation.ini --module qt
 ```
 
+For release users on Windows, use the desktop GUI installer archive from the GitHub Release:
+
+```text
+Install BLITZAR.cmd
+Launch BLITZAR GUI.cmd
+```
+
+The installer creates per-user Start Menu/Desktop shortcuts and does not require administrator rights.
+
 On Windows, the Qt module build now runs `windeployqt` automatically when that tool is available. That copies the Qt DLLs and `platforms/qwindows.dll` next to `blitzar-client.exe`, which removes the common clean-machine launch failure.
 
 Manual fallback if needed:

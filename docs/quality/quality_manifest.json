@@ -2,7 +2,7 @@
   "metadata": {
     "system": "BLITZAR",
     "revision": "2026-03-22",
-    "revision_note": "Pinned CI action/tool versions for prod-facing workflows, made release-lane deterministic subset explicit, and kept repository decomposition policy responsibility-first."
+    "revision_note": "Pinned CI action/tool versions for prod-facing workflows, kept release-lane deterministic subset explicit, and separated prod release evidence from the dev desktop GUI installer artifact."
   },
   "includes": [
     "manifest/evidence.json",

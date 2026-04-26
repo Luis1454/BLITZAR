@@ -130,9 +130,10 @@ void MainWindow::initializeControlState()
     _applyConnectorButton->setToolTip(
         "Apply host, port and server binary settings, then reconnect now");
     for (QLabel* label : {_validationLabel, _statusLabel, _runtimeMetricsLabel, _queueMetricsLabel,
-                          _energyMetricsLabel, _gpuMetricsLabel})
+                          _energyMetricsLabel, _gpuMetricsLabel}) {
         label->setWordWrap(true);
-    label->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        label->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    }
     _validationLabel->setObjectName("validationLabel");
     _validationLabel->setContentsMargins(6, 4, 6, 4);
     _statusLabel->setObjectName("runtimeSummaryValue");
@@ -158,9 +159,10 @@ QTabWidget* MainWindow::buildSidebarTabs()
     auto* physicsLayout = new QVBoxLayout(physicsPage);
     auto* renderPage = new QWidget(sidebarTabs);
     auto* renderLayout = new QVBoxLayout(renderPage);
-    for (QVBoxLayout* layout : {runLayout, sceneLayout, physicsLayout, renderLayout})
+    for (QVBoxLayout* layout : {runLayout, sceneLayout, physicsLayout, renderLayout}) {
         layout->setContentsMargins(4, 4, 4, 4);
-    layout->setSpacing(8);
+        layout->setSpacing(8);
+    }
     auto* runBox = new QGroupBox("Run Control", runPage);
     auto* runBoxLayout = new QVBoxLayout(runBox);
     auto* runForm = new QFormLayout();

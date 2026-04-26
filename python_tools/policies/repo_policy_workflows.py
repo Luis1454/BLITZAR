@@ -33,7 +33,18 @@ def check_evidence_workflow_commands(
         for command in collect_marker_commands(content, marker_text):
             if required_text in command:
                 continue
+            if is_allowed_non_evidence_desktop_configure(rel, marker_text, command):
+                continue
             result.add_error(f"{rel}: {error_text}: {command}")
+
+
+def is_allowed_non_evidence_desktop_configure(rel: str, marker_text: str, command: str) -> bool:
+    return (
+        rel == ".github/workflows/release-lane.yml"
+        and marker_text == "cmake -S"
+        and "-B build-desktop" in command
+        and "-DGRAVITY_PROFILE=dev" in command
+    )
 
 
 def check_legacy_ctest_selectors(root: Path, result: CheckResult) -> None:

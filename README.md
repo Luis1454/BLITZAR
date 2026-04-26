@@ -84,6 +84,8 @@ In `PROFILE=prod`, `blitzar-client` and dynamic client modules are disabled by d
 
 The release lane packages a tracked source archive in `dist/source/` and a zipped Windows runtime bundle in `dist/release-bundle/`. The runtime bundle always includes the built BLITZAR executables plus `simulation.ini`, `README.md`, and `tool_manifest.json` when available. When a Windows build also contains client modules or Qt runtime files, the bundle now preserves the required adjacent `.dll`, `.dll.manifest`, and Qt plugin directories such as `platforms/qwindows.dll`.
 
+The same lane also publishes a separate desktop GUI installer archive named `blitzar-<tag>-windows-desktop-installer.zip`. This is a convenience `dev`-profile desktop package, not the qualification evidence artifact. Extract it and run `Install BLITZAR.cmd` to install under `%LOCALAPPDATA%\Programs\BLITZAR` with Start Menu/Desktop shortcuts, or run `Launch BLITZAR GUI.cmd` directly for portable use.
+
 On `v*` tags, or manual dispatch with a `v*` release tag, the lane publishes a GitHub Release with the source archive, executable bundle, SBOM, evidence pack, and release-quality index. It also extracts the generated runtime archive and smoke-validates the portable layout on a clean hosted Windows runner by executing the packaged help commands for each bundled executable.
 
 ## Documentation
