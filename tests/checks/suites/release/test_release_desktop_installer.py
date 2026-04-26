@@ -12,6 +12,7 @@ def test_nsis_installer_does_not_use_executable_as_wizard_icon() -> None:
 
     assert "!define MUI_ICON" not in nsis_script
     assert "!define MUI_UNICON" not in nsis_script
+    assert "--wait-for-module" in nsis_script
 
 
 def test_release_desktop_installer_builds_native_windows_installer(tmp_path: Path, monkeypatch) -> None:

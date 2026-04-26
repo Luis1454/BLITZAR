@@ -14,7 +14,6 @@
 #include "config/SimulationScenarioValidation.hpp"
 
 namespace grav_client_host {
-
 class ClientHostCliLocal final {
 public:
     static constexpr bool kLiveReloadEnabled = GRAVITY_PROFILE_IS_PROD == 0;
@@ -66,6 +65,13 @@ public:
         while (keepRunning) {
             std::cout << "client-host> " << std::flush;
             if (!std::getline(std::cin, line)) {
+                if (options.waitForModule) {
+                    bool moduleKeepRunning = true;
+                    std::string commandError;
+                    if (!module.handleCommand("wait", moduleKeepRunning, commandError)) {
+                        std::cerr << "[client-host] wait failed: " << commandError << "\n";
+                    }
+                }
                 break;
             }
             if (!handleLine(line, programName, options, searchRoots, module, currentModuleSpecifier,
@@ -76,7 +82,6 @@ public:
         module.unload();
         return 0;
     }
-
 private:
     static bool handleLine(const std::string& line, std::string_view programName,
                            const HostOptions& options,

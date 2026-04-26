@@ -114,6 +114,13 @@ Start host directly with `qt`:
 build/blitzar-client --config simulation.ini --module qt
 ```
 
+When launching the Qt module from a desktop shortcut or any non-interactive process, pass
+`--wait-for-module` so the host stays alive until the Qt window exits:
+
+```bash
+build/blitzar-client --config simulation.ini --module qt --wait-for-module
+```
+
 For release users on Windows, use the desktop GUI installer executable from the GitHub Release:
 
 ```text
@@ -138,6 +145,7 @@ set-endpoint 127.0.0.1 4545
 set-autostart false
 set-server-bin build/blitzar-server.exe
 restart
+wait
 ```
 
 The Qt module runs inside `blitzar-client`, but it no longer embeds a backend path. All runtime control and snapshots flow through the server service connector.
