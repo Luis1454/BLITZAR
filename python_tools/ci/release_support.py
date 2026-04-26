@@ -21,6 +21,7 @@ DEFAULT_EVIDENCE_REFS = (
     "EVD_SCRIPT_RELEASE_PACKAGE_BUNDLE",
     "EVD_SCRIPT_RELEASE_PACKAGE_EVIDENCE",
     "EVD_SCRIPT_RELEASE_PACKAGE_SBOM",
+    "EVD_SCRIPT_RELEASE_PACKAGE_SOURCE",
 )
 
 
@@ -56,6 +57,11 @@ def build_release_lane_activities(profile: str) -> list[dict[str, str]]:
         },
         {"name": "release-bundle", "status": "pass", "command": "python scripts/ci/release/package_bundle.py --build-dir build --dist-dir dist/release-bundle"},
         {
+            "name": "release-source",
+            "status": "pass",
+            "command": "python scripts/ci/release/package_source.py --repo-root . --dist-dir dist/source --tag <tag> --ref HEAD",
+        },
+        {
             "name": "release-sbom",
             "status": "pass",
             "command": "python scripts/ci/release/package_sbom.py --artifacts-dir dist/release-bundle --dist-dir dist/release-sbom",
@@ -78,7 +84,7 @@ def build_release_lane_activities(profile: str) -> list[dict[str, str]]:
         {
             "name": "publish-release",
             "status": "pass",
-            "command": "python scripts/ci/release/publish_release.py --tag <tag> --notes-file dist/CHANGELOG.md --assets dist/release-bundle/*.zip",
+            "command": "python scripts/ci/release/publish_release.py --tag <tag> --notes-file dist/CHANGELOG.md --assets dist/source/*.zip dist/release-bundle/*.zip",
         },
     ]
 

@@ -5,6 +5,21 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to create or update, for example v1.2.3"
+        required: true
+        type: string
+      prerelease:
+        description: "Mark the GitHub release as a pre-release"
+        required: false
+        default: false
+        type: boolean
+      draft:
+        description: "Create or keep the GitHub release as a draft"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -12,6 +27,7 @@ permissions:
 env:
   CI_CACHE_VERSION: v1
   CI_PYTHON_VERSION: "3.12"
+  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
 
 concurrency:
   group: release-lane-${{ github.workflow }}-${{ github.ref }}
@@ -116,7 +132,7 @@ jobs:
 
       - name: Package release artifacts
         run: |
-          python scripts/ci/release/package_bundle.py --build-dir build --dist-dir dist/release-bundle --tool-manifest dist/tool-qualification/tool_manifest.json
+          python scripts/ci/release/package_bundle.py --build-dir build --dist-dir dist/release-bundle --tag "${{ env.RELEASE_TAG }}" --tool-manifest dist/tool-qualification/tool_manifest.json
 
       - name: Smoke-validate portable release bundle
         shell: pwsh
@@ -125,48 +141,59 @@ jobs:
 
       - name: Package release SBOM
         run: |
-          python scripts/ci/release/package_sbom.py --artifacts-dir dist/release-bundle --dist-dir dist/release-sbom
+          python scripts/ci/release/package_sbom.py --artifacts-dir dist/release-bundle --dist-dir dist/release-sbom --tag "${{ env.RELEASE_TAG }}"
 
       - name: Package release evidence
         run: |
-          python scripts/ci/release/package_evidence.py --root . --dist-dir dist/evidence-pack --profile prod
+          python scripts/ci/release/package_evidence.py --root . --dist-dir dist/evidence-pack --profile prod --tag "${{ env.RELEASE_TAG }}"
 
       - name: Package release quality index
         run: |
-          python scripts/ci/release/package_quality_index.py --root . --dist-dir dist/release-quality-index --profile prod
+          python scripts/ci/release/package_quality_index.py --root . --dist-dir dist/release-quality-index --profile prod --tag "${{ env.RELEASE_TAG }}"
+
+      - name: Package source archive
+        run: |
+          python scripts/ci/release/package_source.py --repo-root . --dist-dir dist/source --tag "${{ env.RELEASE_TAG }}" --ref HEAD
 
       - name: Upload release bundle
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
-          name: release-bundle-${{ github.ref_name || github.run_number }}
+          name: release-bundle-${{ env.RELEASE_TAG }}
           path: dist/release-bundle/*.zip
+          if-no-files-found: error
+
+      - name: Upload source archive
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: release-source-${{ env.RELEASE_TAG }}
+          path: dist/source/*.zip
           if-no-files-found: error
 
       - name: Upload tool qualification manifest
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
-          name: tool-qualification-release-${{ github.ref_name || github.run_number }}
+          name: tool-qualification-release-${{ env.RELEASE_TAG }}
           path: dist/tool-qualification/tool_manifest.json
           if-no-files-found: error
 
       - name: Upload release SBOM
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
-          name: release-sbom-${{ github.ref_name || github.run_number }}
+          name: release-sbom-${{ env.RELEASE_TAG }}
           path: dist/release-sbom/*.json
           if-no-files-found: error
 
       - name: Upload release evidence pack
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
-          name: release-evidence-${{ github.ref_name || github.run_number }}
+          name: release-evidence-${{ env.RELEASE_TAG }}
           path: dist/evidence-pack/*.zip
           if-no-files-found: error
 
       - name: Upload release quality index
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
-          name: release-quality-index-${{ github.ref_name || github.run_number }}
+          name: release-quality-index-${{ env.RELEASE_TAG }}
           path: dist/release-quality-index/*.zip
           if-no-files-found: error
 
@@ -214,32 +241,47 @@ jobs:
       - name: Download release bundle
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          name: release-bundle-${{ github.ref_name || github.run_number }}
+          name: release-bundle-${{ env.RELEASE_TAG }}
           path: dist/release-bundle
+
+      - name: Download source archive
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: release-source-${{ env.RELEASE_TAG }}
+          path: dist/source
 
       - name: Download release SBOM
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          name: release-sbom-${{ github.ref_name || github.run_number }}
+          name: release-sbom-${{ env.RELEASE_TAG }}
           path: dist/release-sbom
 
       - name: Download release evidence
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          name: release-evidence-${{ github.ref_name || github.run_number }}
+          name: release-evidence-${{ env.RELEASE_TAG }}
           path: dist/evidence-pack
 
       - name: Download release quality index
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          name: release-quality-index-${{ github.ref_name || github.run_number }}
+          name: release-quality-index-${{ env.RELEASE_TAG }}
           path: dist/release-quality-index
+
+      - name: Prepare release tag for changelog
+        shell: pwsh
+        run: |
+          $tag = "${{ env.RELEASE_TAG }}"
+          $existing = git rev-parse -q --verify "refs/tags/$tag" 2>$null
+          if (-not $existing) {
+            git tag $tag "${{ github.sha }}"
+          }
 
       - name: Generate changelog
         shell: pwsh
         run: |
           python scripts/ci/release/generate_changelog.py `
-            --tag "${{ github.ref_name }}" `
+            --tag "${{ env.RELEASE_TAG }}" `
             --repo-root . `
             --output dist/CHANGELOG.md
 
@@ -248,10 +290,25 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          python scripts/ci/release/publish_release.py `
-            --tag "${{ github.ref_name }}" `
-            --notes-file dist/CHANGELOG.md `
-            --assets "dist/release-bundle/*.zip" "dist/release-sbom/*.json" "dist/evidence-pack/*.zip" "dist/release-quality-index/*.zip"
+          $args = @(
+            "scripts/ci/release/publish_release.py",
+            "--tag", "${{ env.RELEASE_TAG }}",
+            "--target", "${{ github.sha }}",
+            "--notes-file", "dist/CHANGELOG.md",
+            "--assets",
+            "dist/source/*.zip",
+            "dist/release-bundle/*.zip",
+            "dist/release-sbom/*.json",
+            "dist/evidence-pack/*.zip",
+            "dist/release-quality-index/*.zip"
+          )
+          if ("${{ inputs.prerelease }}" -eq "true") {
+            $args += "--prerelease"
+          }
+          if ("${{ inputs.draft }}" -eq "true") {
+            $args += "--draft"
+          }
+          python @args
 
   gpu-runner-readiness:
     name: GPU Runner Readiness
