@@ -20,6 +20,9 @@ bool ParticleSystem::update(float deltaTime) {
         if (!_sphEnabled) {
             return true;
         }
+        if (!_cudaRuntimeAvailable) {
+            return true;
+        }
         if (!d_soaPosX || !d_sphDensity || !d_sphPressure) {
             return false;
         }
@@ -476,7 +479,7 @@ bool ParticleSystem::update(float deltaTime) {
         cudaEventRecord(start);
     }
 
-    if (!d_soaPosX) {
+    if (!_cudaRuntimeAvailable || !d_soaPosX) {
         return false;
     }
 

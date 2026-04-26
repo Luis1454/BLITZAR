@@ -163,9 +163,10 @@ void SimulationServer::loop()
             {
                 std::lock_guard<std::mutex> lock(_commandMutex);
                 previousSolver = _solverMode;
-                if (_solverMode == "pairwise_cuda" || _solverMode == "octree_gpu")
+                if (_solverMode == "pairwise_cuda" || _solverMode == "octree_gpu") {
                     _solverMode = "octree_cpu";
-                autoFallbackToCpu = true;
+                    autoFallbackToCpu = true;
+                }
             }
             if (autoFallbackToCpu) {
                 _serverFps.store(0.0f, std::memory_order_relaxed);
