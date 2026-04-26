@@ -1,4 +1,4 @@
-#include "server/simulation_server/Internal.hpp"
+#include "Internal.hpp"
 SimulationConfig SimulationServer::getRuntimeConfig() const
 {
     SimulationConfig config;

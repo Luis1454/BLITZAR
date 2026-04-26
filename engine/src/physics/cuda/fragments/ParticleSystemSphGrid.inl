@@ -99,7 +99,10 @@ static void sortParticlesByHash(
 
 bool ParticleSystem::buildSphGrid(int numParticles)
 {
-    if (numParticles <= 0 || !d_soaPosX || !d_sphCellHash || !d_sphSortedIndex)`n        return false;
+    if (numParticles <= 0 || !d_soaPosX || !d_sphCellHash ||
+            !d_sphSortedIndex) {
+        return false;
+    }
 
     // Compute bounding box on host particles (already synced).
     float minX = _particles[0].getPosition().x;
@@ -148,7 +151,9 @@ bool ParticleSystem::buildSphGrid(int numParticles)
     d_sphCellStart = static_cast<int*>(grav_x::CudaMemoryPool::allocate(cellBytes));
     d_sphCellEnd = static_cast<int*>(grav_x::CudaMemoryPool::allocate(cellBytes));
 
-    if (!d_sphCellStart || !d_sphCellEnd)`n        return false;
+    if (!d_sphCellStart || !d_sphCellEnd) {
+        return false;
+    }
 
     // 1) Hash particles into cells on GPU.
     const int numBlocks =

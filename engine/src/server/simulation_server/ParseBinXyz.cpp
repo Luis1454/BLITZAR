@@ -1,4 +1,4 @@
-#include "server/simulation_server/Internal.hpp"
+#include "Internal.hpp"
 bool parseBinarySnapshot(const std::string& inputPath, std::vector<Particle>& outParticles)
 {
     std::ifstream in(inputPath, std::ios::binary);

@@ -1,4 +1,4 @@
-#include "server/simulation_server/Internal.hpp"
+#include "Internal.hpp"
 bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t particleCount,
                          const InitialStateConfig& config)
 {

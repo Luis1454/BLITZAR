@@ -1,4 +1,4 @@
-#include "server/simulation_server/Internal.hpp"
+#include "Internal.hpp"
 void SimulationServer::rebuildSystem()
 {
     // Important with the current CUDA global-buffer model:

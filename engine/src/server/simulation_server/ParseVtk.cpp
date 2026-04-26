@@ -1,4 +1,4 @@
-#include "server/simulation_server/Internal.hpp"
+#include "Internal.hpp"
 bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outParticles)
 {
     auto validatePointCount = [](std::size_t pointCount) {
