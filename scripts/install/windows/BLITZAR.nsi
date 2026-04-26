@@ -22,8 +22,6 @@ ShowUninstDetails show
 SetCompressor /SOLID lzma
 
 !define MUI_ABORTWARNING
-!define MUI_ICON "${INPUT_DIR}\blitzar-client.exe"
-!define MUI_UNICON "${INPUT_DIR}\blitzar-client.exe"
 
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES

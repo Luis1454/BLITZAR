@@ -7,6 +7,13 @@ from python_tools.ci import windows_installer as windows_installer_module
 from python_tools.ci.release_bundle import ReleaseBundlePackager
 
 
+def test_nsis_installer_does_not_use_executable_as_wizard_icon() -> None:
+    nsis_script = Path("scripts/install/windows/BLITZAR.nsi").read_text(encoding="utf-8")
+
+    assert "!define MUI_ICON" not in nsis_script
+    assert "!define MUI_UNICON" not in nsis_script
+
+
 def test_release_desktop_installer_builds_native_windows_installer(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.chdir(tmp_path)
     build_dir = tmp_path / "build"
