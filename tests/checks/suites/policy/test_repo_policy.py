@@ -165,6 +165,22 @@ def test_repo_policy_rejects_evidence_workflow_without_prod_profile(tmp_path: Pa
     assert any("evidence configure command must include -DGRAVITY_PROFILE=prod" in error for error in errors)
 
 
+def test_repo_policy_allows_release_lane_desktop_convenience_build(tmp_path: Path) -> None:
+    _write(
+        tmp_path / ".github" / "workflows" / "release-lane.yml",
+        "jobs:\n"
+        "  release:\n"
+        "    steps:\n"
+        "      - name: Configure prod evidence\n"
+        "        run: cmake -S . -B build -G Ninja -DGRAVITY_PROFILE=prod\n"
+        "      - name: Configure desktop GUI build\n"
+        "        run: cmake -S . -B build-desktop -G Ninja -DGRAVITY_PROFILE=dev\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    del ok
+    assert not any("evidence configure command must include -DGRAVITY_PROFILE=prod" in error for error in errors)
+
+
 def test_repo_policy_ignores_non_evidence_dev_workflow(tmp_path: Path) -> None:
     _write(
         tmp_path / ".github" / "workflows" / "pr-fast.yml",

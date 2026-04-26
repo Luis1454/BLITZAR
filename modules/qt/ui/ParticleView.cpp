@@ -112,13 +112,12 @@ void ParticleView::mouseMoveEvent(MouseEventHandle event)
 }
 void ParticleView::mouseReleaseEvent(MouseEventHandle event)
 {
-    if (_dragAxis != grav::GimbalAxis::None)
+    if (_dragAxis != grav::GimbalAxis::None) {
         _dragAxis = grav::GimbalAxis::None;
-    event->accept();
-    else
-    {
-        QWidget::mouseReleaseEvent(event);
+        event->accept();
+        return;
     }
+    QWidget::mouseReleaseEvent(event);
 }
 void ParticleView::paintEvent(PaintEventHandle event)
 {
