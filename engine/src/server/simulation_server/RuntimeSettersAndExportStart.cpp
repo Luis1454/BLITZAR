@@ -1,4 +1,4 @@
-#include "server/simulation_server/Internal.hpp"
+#include "Internal.hpp"
 void SimulationServer::setSolverMode(const std::string& mode)
 {
     std::string canonical;

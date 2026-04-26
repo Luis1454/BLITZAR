@@ -1,4 +1,4 @@
-#include "server/simulation_server/Internal.hpp"
+#include "Internal.hpp"
 std::string toLower(std::string value)
 {
     std::transform(value.begin(), value.end(), value.begin(),

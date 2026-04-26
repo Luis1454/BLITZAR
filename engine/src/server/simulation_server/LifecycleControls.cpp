@@ -1,4 +1,4 @@
-#include "server/simulation_server/Internal.hpp"
+#include "Internal.hpp"
 SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
     : _running(false),
       _paused(false),

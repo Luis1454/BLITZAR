@@ -1,4 +1,4 @@
-#include "server/simulation_server/Internal.hpp"
+#include "Internal.hpp"
 void SimulationServer::clearGpuTelemetry()
 {
     _gpuTelemetryAvailable.store(false, std::memory_order_relaxed);
