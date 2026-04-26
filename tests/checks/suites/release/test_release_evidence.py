@@ -45,6 +45,7 @@ def _seed_repo(root: Path) -> None:
                 "EVD_SCRIPT_RELEASE_PACKAGE_SBOM": "scripts/ci/release/package_sbom.py",
                 "EVD_SCRIPT_RELEASE_PACKAGE_SOURCE": "scripts/ci/release/package_source.py",
                 "EVD_SAMPLE": "docs/quality/sample_requirement.md",
+                "EVD_SAMPLE_DIR": "tests/unit/ffi",
             }
         },
     )
@@ -52,7 +53,7 @@ def _seed_repo(root: Path) -> None:
         root / "docs/quality/manifest/requirements.json",
         {
             "requirements": {
-                "REQ-TEST-001": {"tests": ["^TST_ONE$"], "artifacts": ["EVD_SAMPLE"]},
+                "REQ-TEST-001": {"tests": ["^TST_ONE$"], "artifacts": ["EVD_SAMPLE", "EVD_SAMPLE_DIR"]},
                 "REQ-TEST-002": {"tests": ["^TST_TWO$"], "artifacts": ["EVD_SAMPLE"]},
             }
         },
@@ -95,6 +96,7 @@ def _seed_repo(root: Path) -> None:
         "scripts/ci/release/package_quality_index.py",
         "scripts/ci/release/package_sbom.py",
         "scripts/ci/release/package_source.py",
+        "tests/unit/ffi/test_stub.cpp",
     ]:
         _write_text(root / rel)
 
@@ -125,6 +127,7 @@ def test_release_evidence_packager_packages_selected_requirements(tmp_path: Path
     assert payload["open_exceptions"][0]["id"] == "DEV-QUAL-001"
     assert payload["open_exceptions"][0]["paths"] == ["engine/src/server/SimulationServer.cpp"]
     assert "evidence/docs/quality/sample_requirement.md" in names
+    assert "evidence/tests/unit/ffi/test_stub.cpp" in names
     assert "README.md" in names
 
 
