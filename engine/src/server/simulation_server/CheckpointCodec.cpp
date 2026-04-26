@@ -1,4 +1,4 @@
-#include "server/simulation_server/Internal.hpp"
+#include "Internal.hpp"
 void consumeOptionalLineBreak(std::istream& in)
 {
     const int next = in.peek();

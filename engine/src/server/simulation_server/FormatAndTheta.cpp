@@ -1,4 +1,4 @@
-#include "server/simulation_server/Internal.hpp"
+#include "Internal.hpp"
 float profileThetaBias(std::string_view performanceProfile)
 {
     if (performanceProfile == "interactive")

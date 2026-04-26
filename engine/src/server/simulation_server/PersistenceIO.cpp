@@ -1,4 +1,4 @@
-#include "server/simulation_server/Internal.hpp"
+#include "Internal.hpp"
 bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState& outState,
                         std::string* outError)
 {
