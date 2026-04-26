@@ -34,7 +34,13 @@ struct alignas(64) GpuSystemMetrics {
     std::uint64_t vramUsedBytes;
     std::uint64_t vramPeakBytes;
     std::uint32_t reserved0;
+    std::uint32_t reservedAlignment;
     std::uint64_t reserved1;
+    std::uint64_t reserved2;
+    std::uint64_t reserved3;
+    std::uint64_t reserved4;
+    std::uint64_t reserved5;
+    std::uint64_t reserved6;
 };
 
 struct GpuMetricsPayload {
