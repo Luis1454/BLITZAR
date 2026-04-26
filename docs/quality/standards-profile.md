@@ -59,7 +59,7 @@ Build switch:
 - Human-authored pull requests must follow `issue/<N>-<slug>` branch policy; automated Dependabot update PRs may use their native `dependabot/<ecosystem>/<dependency>` branch form when the bot-authored title/body remain intact.
 - `nightly-full` extends deterministic evidence with repeated standalone integration runs, coverage publication, FMEA status snapshots, and optional GPU full-suite or numerical artifacts.
 - `release-lane` reruns strict `prod` validation, then publishes the tracked source archive, executable release bundle, release-quality index, and evidence pack for review.
-- `release-lane` may also publish a separate `dev` desktop GUI installer for operator convenience; it must be labeled as non-qualification evidence and must not replace the `prod` release bundle or evidence pack.
+- `release-lane` may also publish a separate `dev` desktop GUI installer executable for operator convenience; it must be labeled as non-qualification evidence and must not replace the `prod` release bundle or evidence pack.
 - Security CI coverage must include CodeQL code scanning, pull-request dependency vulnerability review, and an automated SBOM for packaged release artifacts.
 - Hosted evidence lanes must pin runner images and Python versions explicitly, and job names must expose the platform/toolchain axis for failure triage.
 - Hosted evidence lanes must also pin external GitHub Actions by full commit SHA and install CI Python tooling from a repo-owned pinned manifest.

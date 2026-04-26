@@ -2,7 +2,7 @@
   "metadata": {
     "system": "BLITZAR",
     "revision": "2026-03-22",
-    "revision_note": "Pinned CI action/tool versions for prod-facing workflows, kept release-lane deterministic subset explicit, and separated prod release evidence from the dev desktop GUI installer artifact."
+    "revision_note": "Pinned CI action/tool versions for prod-facing workflows, kept release-lane deterministic subset explicit, and replaced the dev desktop GUI script bundle with a native installer executable artifact."
   },
   "includes": [
     "manifest/evidence.json",
