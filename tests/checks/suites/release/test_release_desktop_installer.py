@@ -3,8 +3,8 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-from python_tools.ci.release_bundle import ReleaseBundlePackager
 from python_tools.ci import windows_installer as windows_installer_module
+from python_tools.ci.release_bundle import ReleaseBundlePackager
 
 
 def test_release_desktop_installer_builds_native_windows_installer(tmp_path: Path, monkeypatch) -> None:
