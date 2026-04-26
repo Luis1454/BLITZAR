@@ -8,6 +8,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from python_tools.ci.release_support import resolve_release_tag
+from python_tools.ci.windows_installer import WindowsInstallerBuilder
 
 
 class ReleaseBundlePackager:
@@ -31,14 +32,6 @@ class ReleaseBundlePackager:
         "qt.conf",
         "vc_redist.x64.exe",
     )
-    _DESKTOP_INSTALLER_FILES = (
-        "Launch BLITZAR GUI.cmd",
-        "Install BLITZAR.cmd",
-        "Install-BLITZAR.ps1",
-        "Uninstall BLITZAR.cmd",
-        "Uninstall-BLITZAR.ps1",
-    )
-
     def resolve_tag(self, explicit: str | None) -> str:
         return resolve_release_tag(explicit)
 
@@ -53,12 +46,11 @@ class ReleaseBundlePackager:
         if dist_dir.exists():
             shutil.rmtree(dist_dir)
         dist_dir.mkdir(parents=True, exist_ok=True)
+        if artifact_kind == "desktop-installer":
+            return self._package_desktop_installer(build_dir, dist_dir, tag, tool_manifest)
         self._copy_binaries(build_dir, dist_dir)
         self._copy_metadata(dist_dir, tool_manifest)
-        if artifact_kind == "desktop-installer":
-            self._require_desktop_gui(dist_dir)
-            self._copy_desktop_installer(dist_dir)
-        archive_suffix = "windows-desktop-installer" if artifact_kind == "desktop-installer" else "windows"
+        archive_suffix = "windows"
         archive_base = dist_dir.parent / f"blitzar-{tag}-{archive_suffix}"
         archive_path = Path(shutil.make_archive(str(archive_base), "zip", root_dir=dist_dir))
         final_archive = dist_dir / archive_path.name
@@ -66,6 +58,18 @@ class ReleaseBundlePackager:
             final_archive.unlink()
         shutil.move(str(archive_path), str(final_archive))
         return final_archive
+
+    def _package_desktop_installer(self, build_dir: Path, dist_dir: Path, tag: str, tool_manifest: Path | None) -> Path:
+        stage_dir = dist_dir / "stage"
+        stage_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            self._copy_binaries(build_dir, stage_dir)
+            self._copy_metadata(stage_dir, tool_manifest)
+            self._require_desktop_gui(stage_dir)
+            installer = WindowsInstallerBuilder().build(stage_dir, dist_dir, tag)
+        finally:
+            shutil.rmtree(stage_dir, ignore_errors=True)
+        return installer
 
     def _copy_binaries(self, build_dir: Path, dist_dir: Path) -> None:
         for name in self._EXECUTABLES:
@@ -92,14 +96,6 @@ class ReleaseBundlePackager:
                 shutil.copy2(src, dist_dir / src.name)
         if tool_manifest is not None and tool_manifest.exists():
             shutil.copy2(tool_manifest, dist_dir / "tool_manifest.json")
-
-    def _copy_desktop_installer(self, dist_dir: Path) -> None:
-        source_root = Path(__file__).resolve().parents[2] / "scripts" / "install" / "windows"
-        for name in self._DESKTOP_INSTALLER_FILES:
-            src = source_root / name
-            if not src.exists():
-                raise RuntimeError(f"missing desktop installer file: {src}")
-            shutil.copy2(src, dist_dir / name)
 
     @staticmethod
     def _require_desktop_gui(dist_dir: Path) -> None:
