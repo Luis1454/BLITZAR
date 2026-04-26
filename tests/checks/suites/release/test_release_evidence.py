@@ -43,6 +43,7 @@ def _seed_repo(root: Path) -> None:
                 "EVD_SCRIPT_RELEASE_PACKAGE_EVIDENCE": "scripts/ci/release/package_evidence.py",
                 "EVD_SCRIPT_RELEASE_PACKAGE_INDEX": "scripts/ci/release/package_quality_index.py",
                 "EVD_SCRIPT_RELEASE_PACKAGE_SBOM": "scripts/ci/release/package_sbom.py",
+                "EVD_SCRIPT_RELEASE_PACKAGE_SOURCE": "scripts/ci/release/package_source.py",
                 "EVD_SAMPLE": "docs/quality/sample_requirement.md",
             }
         },
@@ -93,6 +94,7 @@ def _seed_repo(root: Path) -> None:
         "scripts/ci/release/package_evidence.py",
         "scripts/ci/release/package_quality_index.py",
         "scripts/ci/release/package_sbom.py",
+        "scripts/ci/release/package_source.py",
     ]:
         _write_text(root / rel)
 
