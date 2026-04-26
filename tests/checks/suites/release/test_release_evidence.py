@@ -44,6 +44,7 @@ def _seed_repo(root: Path) -> None:
                 "EVD_SCRIPT_RELEASE_PACKAGE_INDEX": "scripts/ci/release/package_quality_index.py",
                 "EVD_SCRIPT_RELEASE_PACKAGE_SBOM": "scripts/ci/release/package_sbom.py",
                 "EVD_SCRIPT_RELEASE_PACKAGE_SOURCE": "scripts/ci/release/package_source.py",
+                "EVD_SCRIPT_WINDOWS_INSTALLER": "scripts/install/windows",
                 "EVD_SAMPLE": "docs/quality/sample_requirement.md",
                 "EVD_SAMPLE_DIR": "tests/unit/ffi",
             }
@@ -96,6 +97,7 @@ def _seed_repo(root: Path) -> None:
         "scripts/ci/release/package_quality_index.py",
         "scripts/ci/release/package_sbom.py",
         "scripts/ci/release/package_source.py",
+        "scripts/install/windows/Install-BLITZAR.ps1",
         "tests/unit/ffi/test_stub.cpp",
     ]:
         _write_text(root / rel)

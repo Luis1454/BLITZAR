@@ -59,6 +59,7 @@ Build switch:
 - Human-authored pull requests must follow `issue/<N>-<slug>` branch policy; automated Dependabot update PRs may use their native `dependabot/<ecosystem>/<dependency>` branch form when the bot-authored title/body remain intact.
 - `nightly-full` extends deterministic evidence with repeated standalone integration runs, coverage publication, FMEA status snapshots, and optional GPU full-suite or numerical artifacts.
 - `release-lane` reruns strict `prod` validation, then publishes the tracked source archive, executable release bundle, release-quality index, and evidence pack for review.
+- `release-lane` may also publish a separate `dev` desktop GUI installer for operator convenience; it must be labeled as non-qualification evidence and must not replace the `prod` release bundle or evidence pack.
 - Security CI coverage must include CodeQL code scanning, pull-request dependency vulnerability review, and an automated SBOM for packaged release artifacts.
 - Hosted evidence lanes must pin runner images and Python versions explicitly, and job names must expose the platform/toolchain axis for failure triage.
 - Hosted evidence lanes must also pin external GitHub Actions by full commit SHA and install CI Python tooling from a repo-owned pinned manifest.
@@ -70,7 +71,7 @@ Build switch:
 - Release review should begin from the release-quality index before opening the full evidence pack.
 - Breaking interface changes must update the canonical contract artifact and linked tests in the same review.
 - Breaking IPC changes must update both `docs/server-protocol.md` and `runtime/protocol/server-protocol-schema.json` in the same review.
-- Release candidates must publish source and executable assets plus an evidence pack generated from the `release-lane` commands under the selected profile.
+- Release candidates must publish source and executable assets plus an evidence pack generated from the `release-lane` commands under the selected qualification profile.
 - Runtime behavior in critical paths must be reproducible under pinned toolchain settings.
 - Dynamic client-module verification in `prod` must remain deterministic: allowlist, `apiVersion`, product metadata, and binary `sha256` are all part of the loader contract.
 - Mixed-language seams must remain narrow and deterministic: the compute-core FFI may expose only opaque handles plus POD request/status/snapshot structs, never C++/CUDA implementation types.
