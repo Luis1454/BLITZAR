@@ -216,6 +216,7 @@ class ParticleSystem {
         std::vector<GpuOctreeNode> _octreeGpuNodes;
         std::vector<int> _octreeGpuLeafIndices;
         std::size_t _deviceParticleCapacity;
+        bool _cudaRuntimeAvailable;
         bool _hostStateDirty;
         int _sphGridSize;
         int _sphGridTotalCells;
