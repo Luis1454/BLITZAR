@@ -194,7 +194,14 @@ class RepoPolicyCheck(BaseCheck):
             result.add_error(f"{rel}: header must use a strict include guard")
             return
 
-        (_, first), (_, second), (_, last) = non_empty[0], non_empty[1], non_empty[-1]
+        guard_start = 0
+        while guard_start < len(non_empty) and self._is_leading_header_comment(non_empty[guard_start][1]):
+            guard_start += 1
+        if len(non_empty) - guard_start < 3:
+            result.add_error(f"{rel}: header must use a strict include guard")
+            return
+
+        (_, first), (_, second), (_, last) = non_empty[guard_start], non_empty[guard_start + 1], non_empty[-1]
         if not first.startswith("#ifndef "):
             result.add_error(f"{rel}: header must start with #ifndef include guard")
             return
@@ -204,13 +211,17 @@ class RepoPolicyCheck(BaseCheck):
         if not last.startswith("#endif"):
             result.add_error(f"{rel}: header must end with #endif include guard")
 
-        conditional_positions = [index for index, line in non_empty if PREPROCESSOR_CONDITIONAL_RE.match(line)]
-        if conditional_positions != [non_empty[0][0], non_empty[-1][0]]:
+        conditional_positions = [index for index, line in non_empty[guard_start:] if PREPROCESSOR_CONDITIONAL_RE.match(line)]
+        if conditional_positions != [non_empty[guard_start][0], non_empty[-1][0]]:
             result.add_error(f"{rel}: header must not use preprocessor conditionals beyond the include guard")
 
-        define_positions = [(index, name) for index, line in non_empty for name in DEFINE_RE.findall(line)]
-        if define_positions != [(non_empty[1][0], guard_name)]:
+        define_positions = [(index, name) for index, line in non_empty[guard_start:] for name in DEFINE_RE.findall(line)]
+        if define_positions != [(non_empty[guard_start + 1][0], guard_name)]:
             result.add_error(f"{rel}: header must not define macros beyond the include guard")
+
+    @staticmethod
+    def _is_leading_header_comment(stripped: str) -> bool:
+        return stripped.startswith(("//", "/*", "*"))
 
     def _check_line_count(
         self,

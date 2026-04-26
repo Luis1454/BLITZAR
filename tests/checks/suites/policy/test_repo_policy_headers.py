@@ -39,6 +39,26 @@ def test_repo_policy_accepts_declaration_only_header(tmp_path: Path) -> None:
     assert not errors
 
 
+def test_repo_policy_accepts_documented_header_before_include_guard(tmp_path: Path) -> None:
+    _write(
+        tmp_path / "runtime" / "include" / "protocol" / "documented.hpp",
+        "// File: runtime/include/protocol/documented.hpp\n"
+        "// Purpose: Documents the protocol test header surface.\n"
+        "#ifndef RUNTIME_INCLUDE_PROTOCOL_DOCUMENTED_HPP_\n"
+        "#define RUNTIME_INCLUDE_PROTOCOL_DOCUMENTED_HPP_\n"
+        "\n"
+        "class Documented {\n"
+        "    public:\n"
+        "        int value() const;\n"
+        "};\n"
+        "\n"
+        "#endif // RUNTIME_INCLUDE_PROTOCOL_DOCUMENTED_HPP_\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok
+    assert not errors
+
+
 def test_repo_policy_accepts_header_declaration_with_default_braced_arg(tmp_path: Path) -> None:
     _write(
         tmp_path / "runtime" / "include" / "protocol" / "good_default.hpp",
