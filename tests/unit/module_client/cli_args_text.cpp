@@ -41,6 +41,15 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_001_ParseArgsDefaultsAndVariants)
         EXPECT_EQ(options.moduleSpecifier, "qt");
         EXPECT_TRUE(options.validateOnly);
         EXPECT_EQ(options.scriptPath, "batch.dsl");
+        EXPECT_FALSE(options.waitForModule);
+    }
+    {
+        std::vector<std::string> raw = {"host", "--module=qt", "--wait-for-module"};
+        std::vector<char*> argv = makeArgv(raw);
+        ASSERT_TRUE(grav_client_host::ClientHostCliArgs::parseArgs(static_cast<int>(argv.size()),
+                                                                   argv.data(), options, error));
+        EXPECT_EQ(options.moduleSpecifier, "qt");
+        EXPECT_TRUE(options.waitForModule);
     }
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path = std::filesystem::temp_directory_path() /
@@ -109,6 +118,7 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_008_HelpReflectsProfileReloadPolicy)
     }
     EXPECT_NE(rendered.find("--validate-only"), std::string::npos);
     EXPECT_NE(rendered.find("--script"), std::string::npos);
+    EXPECT_NE(rendered.find("--wait-for-module"), std::string::npos);
 }
 TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_011_BatchScriptRunsDeterministicHelpAndExits)
 {

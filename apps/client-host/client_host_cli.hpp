@@ -9,6 +9,7 @@ struct HostOptions {
     std::string scriptPath;
     bool showHelp = false;
     bool validateOnly = false;
+    bool waitForModule = false;
 };
 class ClientHostCli final {
 public:

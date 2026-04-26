@@ -63,10 +63,11 @@ bool ClientModuleHandle::load(const std::string& modulePath, const std::string& 
         return false;
     }
     auto entryPoint = reinterpret_cast<ClientModuleEntryPointFn>(entryPointAddress);
-    if (entryPoint == nullptr)
+    if (entryPoint == nullptr) {
         outError = "module entry point resolved to null";
-    m_impl->library.close();
-    return false;
+        m_impl->library.close();
+        return false;
+    }
     try {
         m_impl->exports = entryPoint();
     }

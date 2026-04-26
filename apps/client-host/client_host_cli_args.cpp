@@ -20,6 +20,10 @@ public:
                 outOptions.validateOnly = true;
                 continue;
             }
+            if (arg == "--wait-for-module") {
+                outOptions.waitForModule = true;
+                continue;
+            }
             if (arg == "--script" && i + 1 < argc) {
                 outOptions.scriptPath = argv[++i];
                 continue;
@@ -53,7 +57,8 @@ public:
     static void printHelp(std::string_view programName)
     {
         std::cout << "Usage: " << programName
-                  << " [--config PATH] [--module <alias|path>] [--script PATH] [--validate-only]\n"
+                  << " [--config PATH] [--module <alias|path>] [--script PATH] [--validate-only]"
+                     " [--wait-for-module]\n"
                   << "[client-host] commands:\n"
                   << "  help\n"
                   << "  modules\n"
@@ -63,7 +68,9 @@ public:
                   << "[client-host] aliases: cli, gui, echo, qt\n"
                   << "[client-host] --script runs deterministic batch commands and exits.\n"
                   << "[client-host] --validate-only runs scenario pre-flight checks and exits "
-                     "without starting a module.\n";
+                     "without starting a module.\n"
+                  << "[client-host] --wait-for-module keeps GUI-style modules alive when no "
+                     "interactive stdin is attached.\n";
         if (ClientHostCli::liveReloadEnabled()) {
             std::cout << "  reload\n"
                       << "  switch <module_alias_or_path>\n"

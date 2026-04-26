@@ -96,9 +96,10 @@ bool ClientModuleHandle::handleCommand(std::string_view commandLine, bool& outKe
         return false;
     }
     outKeepRunning = commandResult.keepRunning();
-    if (!commandOk)
+    if (!commandOk) {
         outError = errorFromBuffer(errorBuffer, "module command failed");
-    return false;
+        return false;
+    }
     outError.clear();
     return true;
 }

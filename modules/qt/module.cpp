@@ -141,12 +141,12 @@ static void qtThreadMain(QtInProcState* state)
             std::make_unique<grav_client::ClientRuntime>(state->configPath, state->transport);
         grav_qt::MainWindow window(config, state->configPath, std::move(runtime));
         window.show();
+        state->running.store(true);
         {
             std::lock_guard<std::mutex> lock(state->startupMutex);
             state->startupOk.store(true);
             state->startupDone.store(true);
         }
-        state->running.store(true);
         (void)app.exec();
     }
     catch (const std::exception& ex) {
@@ -213,7 +213,8 @@ static void printHelp()
               << "  set-endpoint <host> <port>\n"
               << "  set-autostart <true|false>\n"
               << "  set-server-bin <path>\n"
-              << "  restart\n";
+              << "  restart\n"
+              << "  wait\n";
 }
 class QtModuleBoundary final {
 public:
@@ -363,6 +364,13 @@ gravity_client_module_v1()
                         std::cout << " server_bin=" << state->transport.serverExecutable;
                     }
                     std::cout << "\n";
+                    return true;
+                }
+                if (cmd == "wait") {
+                    while (!state->startupDone.load() || state->running.load()) {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                    }
+                    commandControl.requestStop();
                     return true;
                 }
                 if (cmd == "set-endpoint") {
