@@ -165,6 +165,11 @@ jobs:
         run: |
           cmake --build build-desktop --target blitzar blitzar-server blitzar-client gravityClientModuleQtInProc --parallel
 
+      - name: Install NSIS
+        shell: pwsh
+        run: |
+          choco install nsis -y --no-progress
+
       - name: Validate desktop GUI runtime
         shell: pwsh
         run: |
@@ -186,7 +191,7 @@ jobs:
       - name: Smoke-validate desktop GUI installer
         shell: pwsh
         run: |
-          python scripts/ci/release/smoke_portable_bundle.py --archive (Get-ChildItem dist/desktop-installer/*.zip | Select-Object -First 1).FullName --extract-dir dist/desktop-installer-smoke --layout-only
+          python scripts/ci/release/smoke_windows_installer.py --installer (Get-ChildItem dist/desktop-installer/*.exe | Select-Object -First 1).FullName --extract-dir dist/desktop-installer-smoke
 
       - name: Package release SBOM
         run: |
@@ -215,7 +220,7 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: desktop-installer-${{ env.RELEASE_TAG }}
-          path: dist/desktop-installer/*.zip
+          path: dist/desktop-installer/*.exe
           if-no-files-found: error
 
       - name: Upload source archive
@@ -360,7 +365,7 @@ jobs:
             "--assets",
             "dist/source/*.zip",
             "dist/release-bundle/*.zip",
-            "dist/desktop-installer/*.zip",
+            "dist/desktop-installer/*.exe",
             "dist/release-sbom/*.json",
             "dist/evidence-pack/*.zip",
             "dist/release-quality-index/*.zip"

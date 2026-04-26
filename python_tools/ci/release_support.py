@@ -58,6 +58,11 @@ def build_release_lane_activities(profile: str) -> list[dict[str, str]]:
         },
         {"name": "release-bundle", "status": "pass", "command": "python scripts/ci/release/package_bundle.py --build-dir build --dist-dir dist/release-bundle"},
         {
+            "name": "desktop-installer",
+            "status": "pass",
+            "command": "python scripts/ci/release/package_bundle.py --build-dir build-desktop --dist-dir dist/desktop-installer --tag <tag> --tool-manifest dist/tool-qualification/tool_manifest.json --artifact-kind desktop-installer",
+        },
+        {
             "name": "release-source",
             "status": "pass",
             "command": "python scripts/ci/release/package_source.py --repo-root . --dist-dir dist/source --tag <tag> --ref HEAD",
