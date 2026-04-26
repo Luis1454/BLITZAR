@@ -449,7 +449,13 @@ __global__ void publishMetricsKernel(
     mappedMetrics->vramUsedBytes = payload.vramUsedBytes;
     mappedMetrics->vramPeakBytes = payload.vramPeakBytes;
     mappedMetrics->reserved0 = 0u;
+    mappedMetrics->reservedAlignment = 0u;
     mappedMetrics->reserved1 = 0u;
+    mappedMetrics->reserved2 = 0u;
+    mappedMetrics->reserved3 = 0u;
+    mappedMetrics->reserved4 = 0u;
+    mappedMetrics->reserved5 = 0u;
+    mappedMetrics->reserved6 = 0u;
 
     __threadfence_system();
     *sequence = even;

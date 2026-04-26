@@ -14,3 +14,4 @@
 #include "fragments/ParticleSystemUpdate.inl"
 
 static_assert(alignof(GpuSystemMetrics) == 64, "GpuSystemMetrics alignment must remain 64");
+static_assert(sizeof(GpuSystemMetrics) == 128, "GpuSystemMetrics layout must remain explicitly padded");
