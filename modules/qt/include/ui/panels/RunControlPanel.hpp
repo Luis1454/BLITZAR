@@ -1,12 +1,11 @@
 /*
- * @file modules/qt/ui/panels/RunControlPanel.hpp
+ * @file modules/qt/include/ui/panels/RunControlPanel.hpp
  * Small UI panel extracted from MainWindow to host run/connector controls.
  */
-#pragma once
+#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_PANELS_RUNCONTROLPANEL_HPP_
+#define GRAVITY_MODULES_QT_INCLUDE_UI_PANELS_RUNCONTROLPANEL_HPP_
 
 #include <QWidget>
-
-namespace grav_qt {
 
 class QComboBox;
 class QPushButton;
@@ -14,10 +13,10 @@ class QLineEdit;
 class QSpinBox;
 class QCheckBox;
 
+namespace grav_qt {
+
 class RunControlPanel {
 public:
-    // Build the run control page; this function re-uses widgets owned by
-    // MainWindow and arranges them into the panel returned.
     static QWidget* build(QWidget* parent, QComboBox* performanceCombo,
                           QPushButton* pauseButton, QPushButton* stepButton,
                           QPushButton* resetButton, QPushButton* recoverButton,
@@ -27,3 +26,5 @@ public:
 };
 
 } // namespace grav_qt
+
+#endif // GRAVITY_MODULES_QT_INCLUDE_UI_PANELS_RUNCONTROLPANEL_HPP_

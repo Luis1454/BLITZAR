@@ -2,11 +2,16 @@
  * @file modules/qt/ui/panels/RunControlPanel.cpp
  */
 #include "ui/panels/RunControlPanel.hpp"
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLineEdit>
 #include <QGroupBox>
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QLabel>
+#include <QPushButton>
 #include <QVBoxLayout>
+#include <QSpinBox>
 
 namespace grav_qt {
 

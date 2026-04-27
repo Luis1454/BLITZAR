@@ -1062,7 +1062,19 @@
                 ]
             },
             "TST-UNT-UI-021": {
-                "id": "UiEnumsTest.TST_UNT_UI_021_EnumConverters",
+                "id": "UiEnumsTest.SolverConverters",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UNT-UI-022": {
+                "id": "UiEnumsTest.IntegratorConverters",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UNT-UI-023": {
+                "id": "UiEnumsTest.PerformanceConverters",
                 "req_ids": [
                     "REQ-UI-001"
                 ]

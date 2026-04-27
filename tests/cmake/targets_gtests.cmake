@@ -158,6 +158,7 @@ set(GRAVITY_TEST_BASE_QT_LOGIC_SOURCES
     "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowController.cpp"
     "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowPresenter.cpp"
     "${GRAVITY_ROOT_DIR}/modules/qt/ui/OctreeOverlay.cpp"
+    "${GRAVITY_ROOT_DIR}/modules/qt/ui/UiEnums.cpp"
     "${GRAVITY_ROOT_DIR}/modules/qt/ui/ThroughputAdvisor.cpp"
     "${GRAVITY_ROOT_DIR}/modules/qt/ui/WorkspaceLayoutStore.cpp"
 )
@@ -233,6 +234,7 @@ if(TARGET Qt6::Widgets AND GRAVITY_TEST_INT_UI_SOURCES)
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowControls.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowFileActions.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowLayout.cpp"
+            "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowLayoutState.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowPresenter.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowTelemetry.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowWorkspacePersistence.cpp"
@@ -242,10 +244,12 @@ if(TARGET Qt6::Widgets AND GRAVITY_TEST_INT_UI_SOURCES)
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/OctreeOverlayPainter.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/ParticleView.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/ParticleViewColor.cpp"
+            "${GRAVITY_ROOT_DIR}/modules/qt/ui/UiEnums.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/ThroughputAdvisor.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/QtTheme.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/QtViewMath.cpp"
             "${GRAVITY_ROOT_DIR}/modules/qt/ui/WorkspaceLayoutStore.cpp"
+            "${GRAVITY_ROOT_DIR}/modules/qt/ui/panels/RunControlPanel.cpp"
             ${GRAVITY_GRAPHICS_SOURCES}
         LIBS
             gravityRustRuntime

@@ -123,11 +123,12 @@ TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabel
     QString preflightText;
     QString statusText;
     const QList<QLabel*> labelsInWindow = invalidWindow.findChildren<QLabel*>();
-    for (QLabel* label : labelsInWindow)
+    for (QLabel* label : labelsInWindow) {
         if (label == nullptr)
             continue;
-    if (label->text().contains("[preflight]")) {
-        preflightText = label->text();
+        if (label->text().contains("[preflight]")) {
+            preflightText = label->text();
+        }
         if (label->text().contains("preflight validation failed")) {
             statusText = label->text();
         }

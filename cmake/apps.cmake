@@ -239,6 +239,7 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
             modules/qt/ui/MainWindowControls.cpp
             modules/qt/ui/MainWindowFileActions.cpp
             modules/qt/ui/MainWindowLayout.cpp
+            modules/qt/ui/MainWindowLayoutState.cpp
             modules/qt/ui/MainWindowPresenter.cpp
             modules/qt/ui/MainWindowTelemetry.cpp
             modules/qt/ui/MainWindowWorkspacePersistence.cpp
@@ -248,10 +249,12 @@ if(GRAVITY_BUILD_CLIENT_MODULES)
             modules/qt/ui/OctreeOverlayPainter.cpp
             modules/qt/ui/ParticleView.cpp
             modules/qt/ui/ParticleViewColor.cpp
+            modules/qt/ui/UiEnums.cpp
             modules/qt/ui/ThroughputAdvisor.cpp
             modules/qt/ui/QtTheme.cpp
             modules/qt/ui/QtViewMath.cpp
             modules/qt/ui/WorkspaceLayoutStore.cpp
+            modules/qt/ui/panels/RunControlPanel.cpp
             ${GRAVITY_GRAPHICS_SOURCES}
         )
         configure_gravity_cuda_target(${CLIENT_MODULE_QT_INPROC_NAME})
