@@ -151,6 +151,11 @@ private:
     void handleLoadInputRequest();
     void handleLoadPresetRequest();
     void initializeControlState();
+    // Helpers to keep initialization concise and testable
+    void initializeComboBoxes();
+    void initializeObjectNames();
+    void initializeSpinAndSliderValues();
+    void initializeLabelsAndTooltips();
     void markConfigDirty(bool dirty = true);
     bool refreshValidationReport(bool blockOnErrors);
     void requestReconnectFromUi();

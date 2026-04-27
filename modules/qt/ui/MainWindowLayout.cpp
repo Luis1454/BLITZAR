@@ -23,71 +23,101 @@
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QStringList>
 #include <algorithm>
 
 namespace grav_qt {
+static const QStringList kSolverList = {"pairwise_cuda", "octree_gpu", "octree_cpu"};
+static const QStringList kIntegratorList = {"euler", "rk4"};
+static const QStringList kPerformanceList = {"interactive", "balanced", "quality", "custom"};
+static const QStringList kSimulationProfiles = {"disk_orbit", "galaxy_collision", "plummer_sphere",
+                                               "binary_star", "solar_system", "sph_collapse"};
+static const QStringList kPresets = {"disk_orbit", "galaxy_collision", "random_cloud", "two_body",
+                                     "three_body", "plummer_sphere", "file"};
+static const QStringList kView3dModes = {"perspective", "iso"};
+
 void MainWindow::initializeControlState()
 {
+    // Decompose initialization into focused helpers for readability and testing.
+    initializeComboBoxes();
+    initializeObjectNames();
+    initializeSpinAndSliderValues();
+    initializeLabelsAndTooltips();
+}
+
+void MainWindow::initializeComboBoxes()
+{
     _pauseButton->setCheckable(true);
-    _solverCombo->addItems({"pairwise_cuda", "octree_gpu", "octree_cpu"});
+    _solverCombo->addItems(kSolverList);
     _solverCombo->setCurrentIndex(
         std::max(0, _solverCombo->findText(QString::fromStdString(_config.solver))));
-    _integratorCombo->addItems({"euler", "rk4"});
+    _integratorCombo->addItems(kIntegratorList);
     _integratorCombo->setCurrentIndex(
         std::max(0, _integratorCombo->findText(QString::fromStdString(_config.integrator))));
-    _performanceCombo->addItems({"interactive", "balanced", "quality", "custom"});
+    _performanceCombo->addItems(kPerformanceList);
     _performanceCombo->setCurrentIndex(std::max(
         0, _performanceCombo->findText(QString::fromStdString(_config.performanceProfile))));
-    _simulationProfileCombo->addItems({"disk_orbit", "galaxy_collision", "plummer_sphere",
-                                       "binary_star", "solar_system", "sph_collapse"});
+    _simulationProfileCombo->addItems(kSimulationProfiles);
     _simulationProfileCombo->setCurrentIndex(std::max(
         0, _simulationProfileCombo->findText(QString::fromStdString(_config.simulationProfile))));
-    _presetCombo->addItems({"disk_orbit", "galaxy_collision", "random_cloud", "two_body",
-                            "three_body", "plummer_sphere", "file"});
+    _presetCombo->addItems(kPresets);
     _presetCombo->setCurrentIndex(
         std::max(0, _presetCombo->findText(QString::fromStdString(_config.presetStructure))));
-    _view3dCombo->addItems({"perspective", "iso"});
-    _performanceCombo->setObjectName("performanceProfileCombo");
-    _simulationProfileCombo->setObjectName("simulationProfileCombo");
-    _presetCombo->setObjectName("scenePresetCombo");
-    _pauseButton->setObjectName("pauseToggleButton");
-    _stepButton->setObjectName("stepButton");
-    _resetButton->setObjectName("resetButton");
-    _recoverButton->setObjectName("recoverButton");
-    _applyConnectorButton->setObjectName("connectButton");
-    _exportButton->setObjectName("exportSnapshotButton");
-    _saveConfigButton->setObjectName("saveConfigButton");
-    _loadInputButton->setObjectName("loadInputButton");
-    _applyPresetButton->setObjectName("applyPresetButton");
-    _loadPresetButton->setObjectName("loadPresetButton");
-    _serverAutostartCheck->setObjectName("serverAutostartCheck");
-    _sphCheck->setObjectName("sphEnabledCheck");
-    _cullingCheck->setObjectName("renderCullingCheck");
-    _lodCheck->setObjectName("renderLodCheck");
-    _octreeOverlayCheck->setObjectName("octreeOverlayCheck");
-    _octreeOverlayDepthSpin->setObjectName("octreeOverlayDepthSpin");
-    _octreeOverlayOpacitySpin->setObjectName("octreeOverlayOpacitySpin");
-    _serverHostEdit->setObjectName("serverHostEdit");
-    _serverBinEdit->setObjectName("serverBinaryEdit");
-    _serverPortSpin->setObjectName("serverPortSpin");
-    _solverCombo->setObjectName("solverCombo");
-    _integratorCombo->setObjectName("integratorCombo");
-    _view3dCombo->setObjectName("view3dModeCombo");
-    _dtSpin->setObjectName("dtSpin");
-    _thetaSpin->setObjectName("octreeThetaSpin");
-    _softeningSpin->setObjectName("octreeSofteningSpin");
-    _sphSmoothingSpin->setObjectName("sphSmoothingSpin");
-    _sphRestDensitySpin->setObjectName("sphRestDensitySpin");
-    _sphGasConstantSpin->setObjectName("sphGasConstantSpin");
-    _sphViscositySpin->setObjectName("sphViscositySpin");
-    _zoomSlider->setObjectName("zoomSlider");
-    _luminositySlider->setObjectName("luminositySlider");
-    _yawSlider->setObjectName("yawSlider");
-    _pitchSlider->setObjectName("pitchSlider");
-    _rollSlider->setObjectName("rollSlider");
-    _energyGraph->setObjectName("energyGraphWidget");
-    _gpuTelemetryCheck->setObjectName("gpuTelemetryCheck");
-    _multiView->setObjectName("multiViewWidget");
+    _view3dCombo->addItems(kView3dModes);
+}
+
+void MainWindow::initializeObjectNames()
+{
+    struct ObjN { QObject* o; const char* n; };
+    ObjN objs[] = {{_performanceCombo, "performanceProfileCombo"},
+                   {_simulationProfileCombo, "simulationProfileCombo"},
+                   {_presetCombo, "scenePresetCombo"},
+                   {_pauseButton, "pauseToggleButton"},
+                   {_stepButton, "stepButton"},
+                   {_resetButton, "resetButton"},
+                   {_recoverButton, "recoverButton"},
+                   {_applyConnectorButton, "connectButton"},
+                   {_exportButton, "exportSnapshotButton"},
+                   {_saveConfigButton, "saveConfigButton"},
+                   {_loadInputButton, "loadInputButton"},
+                   {_applyPresetButton, "applyPresetButton"},
+                   {_loadPresetButton, "loadPresetButton"},
+                   {_serverAutostartCheck, "serverAutostartCheck"},
+                   {_sphCheck, "sphEnabledCheck"},
+                   {_cullingCheck, "renderCullingCheck"},
+                   {_lodCheck, "renderLodCheck"},
+                   {_octreeOverlayCheck, "octreeOverlayCheck"},
+                   {_octreeOverlayDepthSpin, "octreeOverlayDepthSpin"},
+                   {_octreeOverlayOpacitySpin, "octreeOverlayOpacitySpin"},
+                   {_serverHostEdit, "serverHostEdit"},
+                   {_serverBinEdit, "serverBinaryEdit"},
+                   {_serverPortSpin, "serverPortSpin"},
+                   {_solverCombo, "solverCombo"},
+                   {_integratorCombo, "integratorCombo"},
+                   {_view3dCombo, "view3dModeCombo"},
+                   {_dtSpin, "dtSpin"},
+                   {_thetaSpin, "octreeThetaSpin"},
+                   {_softeningSpin, "octreeSofteningSpin"},
+                   {_sphSmoothingSpin, "sphSmoothingSpin"},
+                   {_sphRestDensitySpin, "sphRestDensitySpin"},
+                   {_sphGasConstantSpin, "sphGasConstantSpin"},
+                   {_sphViscositySpin, "sphViscositySpin"},
+                   {_zoomSlider, "zoomSlider"},
+                   {_luminositySlider, "luminositySlider"},
+                   {_yawSlider, "yawSlider"},
+                   {_pitchSlider, "pitchSlider"},
+                   {_rollSlider, "rollSlider"},
+                   {_energyGraph, "energyGraphWidget"},
+                   {_gpuTelemetryCheck, "gpuTelemetryCheck"},
+                   {_multiView, "multiViewWidget"}};
+    for (const auto& e : objs) {
+        if (e.o)
+            e.o->setObjectName(e.n);
+    }
+}
+
+void MainWindow::initializeSpinAndSliderValues()
+{
     _dtSpin->setDecimals(5);
     _dtSpin->setRange(0.00001, 100.0);
     _dtSpin->setSingleStep(0.001);
@@ -130,6 +160,10 @@ void MainWindow::initializeControlState()
     _octreeOverlayOpacitySpin->setValue(96);
     _cullingCheck->setChecked(_config.renderCullingEnabled);
     _lodCheck->setChecked(_config.renderLODEnabled);
+}
+
+void MainWindow::initializeLabelsAndTooltips()
+{
     _serverHostEdit->setText("127.0.0.1");
     _serverPortSpin->setRange(1, 65535);
     _serverPortSpin->setValue(4545);
@@ -139,16 +173,25 @@ void MainWindow::initializeControlState()
         "Apply host, port and server binary settings, then reconnect now");
     for (QLabel* label : {_validationLabel, _statusLabel, _runtimeMetricsLabel, _queueMetricsLabel,
                           _energyMetricsLabel, _gpuMetricsLabel}) {
-        label->setWordWrap(true);
-        label->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        if (label) {
+            label->setWordWrap(true);
+            label->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        }
     }
-    _validationLabel->setObjectName("validationLabel");
-    _validationLabel->setContentsMargins(6, 4, 6, 4);
-    _statusLabel->setObjectName("runtimeSummaryValue");
-    _runtimeMetricsLabel->setObjectName("runtimeSummaryValue");
-    _queueMetricsLabel->setObjectName("runtimeSummaryValue");
-    _energyMetricsLabel->setObjectName("runtimeSummaryValue");
-    _gpuMetricsLabel->setObjectName("runtimeSummaryValue");
+    if (_validationLabel) {
+        _validationLabel->setObjectName("validationLabel");
+        _validationLabel->setContentsMargins(6, 4, 6, 4);
+    }
+    if (_statusLabel)
+        _statusLabel->setObjectName("runtimeSummaryValue");
+    if (_runtimeMetricsLabel)
+        _runtimeMetricsLabel->setObjectName("runtimeSummaryValue");
+    if (_queueMetricsLabel)
+        _queueMetricsLabel->setObjectName("runtimeSummaryValue");
+    if (_energyMetricsLabel)
+        _energyMetricsLabel->setObjectName("runtimeSummaryValue");
+    if (_gpuMetricsLabel)
+        _gpuMetricsLabel->setObjectName("runtimeSummaryValue");
 }
 
 QTabWidget* MainWindow::buildSidebarTabs()
