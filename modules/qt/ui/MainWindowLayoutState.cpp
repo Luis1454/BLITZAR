@@ -1,6 +1,6 @@
 /*
  * @file modules/qt/ui/MainWindowLayoutState.cpp
- * Helper definitions for MainWindow control initialization.
+ * @brief Helper definitions for MainWindow control initialization.
  */
 
 #include "ui/MainWindow.hpp"

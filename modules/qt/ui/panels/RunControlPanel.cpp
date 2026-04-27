@@ -1,5 +1,6 @@
 /*
  * @file modules/qt/ui/panels/RunControlPanel.cpp
+ * @brief Implementation of the extracted run/connector control panel.
  */
 #include "ui/panels/RunControlPanel.hpp"
 #include <QCheckBox>
@@ -23,7 +24,6 @@ QWidget* RunControlPanel::build(QWidget* parent, QComboBox* performanceCombo,
                                  QPushButton* applyConnectorButton)
 {
     QWidget* runPage = parent;
-    // reuse existing layout if present, otherwise create a new one
     QLayout* existing = runPage->layout();
     QVBoxLayout* runLayout = existing ? qobject_cast<QVBoxLayout*>(existing) : nullptr;
     if (!runLayout)

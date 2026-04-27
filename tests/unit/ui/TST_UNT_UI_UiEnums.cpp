@@ -1,5 +1,7 @@
-// @file tests/unit/ui/TST_UNT_UI_UiEnums.cpp
-// @brief Unit tests for UI enum converters
+/*
+ * @file tests/unit/ui/TST_UNT_UI_UiEnums.cpp
+ * @brief Unit tests for UI enum converters.
+ */
 
 #include "ui/UiEnums.hpp"
 #include <gtest/gtest.h>

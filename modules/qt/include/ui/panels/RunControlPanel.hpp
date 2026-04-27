@@ -1,6 +1,6 @@
 /*
  * @file modules/qt/include/ui/panels/RunControlPanel.hpp
- * Small UI panel extracted from MainWindow to host run/connector controls.
+ * @brief Small UI panel extracted from MainWindow to host run/connector controls.
  */
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_PANELS_RUNCONTROLPANEL_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_PANELS_RUNCONTROLPANEL_HPP_

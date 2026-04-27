@@ -1,6 +1,6 @@
 /*
  * @file modules/qt/include/ui/UiEnums.hpp
- * Centralized UI enums and converters for readability and consistency.
+ * @brief Centralized UI enums and converters for readability and consistency.
  */
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_UIENUMS_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_UIENUMS_HPP_

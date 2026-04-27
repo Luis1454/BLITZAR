@@ -1,6 +1,6 @@
 /*
  * @file modules/qt/ui/UiEnums.cpp
- * Implementation of central UI enum converters.
+ * @brief Implementation of central UI enum converters.
  */
 
 #include "ui/UiEnums.hpp"
