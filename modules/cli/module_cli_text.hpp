@@ -6,9 +6,12 @@
 #include <string>
 #include <vector>
 namespace grav_module_cli {
+/// Description: Defines the ModuleCliText data or behavior contract.
 class ModuleCliText final {
 public:
+    /// Description: Executes the trim operation.
     static std::string trim(const std::string& input);
+    /// Description: Executes the splitTokens operation.
     static std::vector<std::string> splitTokens(const std::string& line);
 };
 } // namespace grav_module_cli

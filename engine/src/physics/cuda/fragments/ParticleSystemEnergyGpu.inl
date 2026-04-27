@@ -29,6 +29,7 @@ __global__ void computeKineticThermalBlockSumsKernel(
 
     sharedKinetic[threadIdx.x] = kinetic;
     sharedThermal[threadIdx.x] = thermal;
+    /// Description: Executes the __syncthreads operation.
     __syncthreads();
 
     for (int stride = blockDim.x / 2; stride > 0; stride >>= 1) {
@@ -36,6 +37,7 @@ __global__ void computeKineticThermalBlockSumsKernel(
             sharedKinetic[threadIdx.x] += sharedKinetic[threadIdx.x + stride];
             sharedThermal[threadIdx.x] += sharedThermal[threadIdx.x + stride];
         }
+        /// Description: Executes the __syncthreads operation.
         __syncthreads();
     }
 
@@ -146,8 +148,11 @@ bool ParticleSystem::computeEnergyEstimateGpu(
         return false;
     }
 
+    /// Description: Executes the kineticBlocks operation.
     std::vector<float> kineticBlocks(static_cast<std::size_t>(blockCount), 0.0f);
+    /// Description: Executes the thermalBlocks operation.
     std::vector<float> thermalBlocks(static_cast<std::size_t>(blockCount), 0.0f);
+    /// Description: Executes the potentialPartials operation.
     std::vector<double> potentialPartials(static_cast<std::size_t>(sampleCount), 0.0);
 
     if (!checkCudaStatus(cudaMemcpy(kineticBlocks.data(), d_energyKineticBlocks,

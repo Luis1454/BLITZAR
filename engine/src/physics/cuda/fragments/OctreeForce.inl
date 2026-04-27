@@ -20,6 +20,7 @@ Vector3 Octree::computeForceRecursive(
 
     const Vector3 particlePos = particle.getPosition();
     if (!hasChildren(node)) {
+        /// Description: Executes the force operation.
         Vector3 force(0.0f, 0.0f, 0.0f);
         for (size_t i = 0; i < node.particleIndices.size(); ++i) {
             const int otherIndex = node.particleIndices[i];
@@ -47,6 +48,7 @@ Vector3 Octree::computeForceRecursive(
         return gravityAccelerationFromSource(particlePos, node.centerOfMass, node.mass, policy);
     }
 
+    /// Description: Executes the force operation.
     Vector3 force(0.0f, 0.0f, 0.0f);
     for (int child = 0; child < 8; ++child) {
         if ((node.childMask & (1u << child)) == 0) continue;
@@ -55,6 +57,7 @@ Vector3 Octree::computeForceRecursive(
     return force;
 }
 
+/// Description: Executes the computeForceOn operation.
 Vector3 Octree::computeForceOn(const Particle &particle, std::size_t selfIndex, const ForceLawPolicy &policy, OctreeOpeningCriterion criterion) const
 {
     if (_root < 0 || !_particlesRef.has_value()) {

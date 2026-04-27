@@ -5,6 +5,7 @@
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_DIRECTIVEVALUEFORMATTER_HPP_
 #include <string>
 namespace grav_config {
+/// Description: Defines the DirectiveValueFormatter data or behavior contract.
 class DirectiveValueFormatter final {
 public:
     [[nodiscard]] static std::string quote(const std::string& value);

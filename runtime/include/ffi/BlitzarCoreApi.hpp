@@ -63,9 +63,11 @@ typedef struct blitzar_core_status {
     char performance_profile[BLITZAR_CORE_TEXT_CAPACITY];
     char fault_reason[BLITZAR_CORE_ERROR_CAPACITY];
 } blitzar_core_status_t;
+/// Description: Executes the blitzar_core_default_config operation.
 blitzar_core_config_t blitzar_core_default_config(void);
 blitzar_core_t* blitzar_core_create(const blitzar_core_config_t* config, char* error_buffer,
                                     size_t error_buffer_capacity);
+/// Description: Executes the blitzar_core_destroy operation.
 void blitzar_core_destroy(blitzar_core_t* core);
 blitzar_core_result_t blitzar_core_apply_config(blitzar_core_t* core,
                                                 const blitzar_core_config_t* config);
@@ -75,6 +77,7 @@ blitzar_core_result_t blitzar_core_get_status(const blitzar_core_t* core,
                                               blitzar_core_status_t* out_status);
 blitzar_core_result_t blitzar_core_get_snapshot(const blitzar_core_t* core, size_t max_points,
                                                 blitzar_core_snapshot_t* out_snapshot);
+/// Description: Executes the blitzar_core_free_snapshot operation.
 void blitzar_core_free_snapshot(blitzar_core_snapshot_t* snapshot);
 blitzar_core_result_t blitzar_core_load_state(blitzar_core_t* core, const char* path,
                                               const char* format, uint32_t timeout_ms);

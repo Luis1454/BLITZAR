@@ -7,6 +7,7 @@
 #include <string>
 #include <string_view>
 namespace grav_module {
+/// Description: Defines the ClientModuleManifest data or behavior contract.
 class ClientModuleManifest final {
 public:
     static bool load(std::string_view modulePath, ClientModuleManifest& outManifest,

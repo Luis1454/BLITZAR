@@ -3,12 +3,18 @@
 
 #include "physics/ForceLawPolicy.hpp"
 #include <gtest/gtest.h>
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_021_ForceLawPolicyClampsConfiguredThresholds)
 {
     const ForceLawPolicy policy = resolveForceLawPolicy(0.01f, 1.0e-6f, 2.0e-4f, -1.0f, 0.001f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(policy.theta, 0.05f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(policy.softening, 2.0e-4f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(policy.minSoftening, 2.0e-4f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(policy.minDistance2, 0.0f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(policy.minTheta, 0.05f);
 }

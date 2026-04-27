@@ -11,8 +11,10 @@
 #include <string>
 #include <vector>
 namespace grav_module_cli {
+/// Description: Defines the ModuleCliServerOpsLocal data or behavior contract.
 class ModuleCliServerOpsLocal final {
 public:
+    /// Description: Executes the ensureConnected operation.
     static bool ensureConnected(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer)
     {
         if (state.transport.isConnected()) {
@@ -20,6 +22,7 @@ public:
         }
         if (!state.transport.connect(state.session.host, state.session.port)) {
             errorBuffer.write("unable to connect to server " + state.session.host + ":" +
+                              /// Description: Executes the to_string operation.
                               std::to_string(state.session.port));
             return false;
         }
@@ -43,6 +46,7 @@ public:
         }
         return true;
     }
+    /// Description: Executes the commandStatus operation.
     static bool commandStatus(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer)
     {
         if (!ensureConnected(state, errorBuffer)) {
@@ -89,6 +93,7 @@ public:
             return false;
         }
         const ServerClientResponse response = state.transport.sendCommand(
+            /// Description: Executes the string operation.
             std::string(grav_protocol::Step), "\"count\":" + std::to_string(count));
         if (!response.ok) {
             const std::string message = response.error.empty() ? "step failed" : response.error;
@@ -124,6 +129,7 @@ public:
                   << "\n";
         return true;
     }
+    /// Description: Executes the reconnect operation.
     static bool reconnect(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer)
     {
         state.transport.disconnect();

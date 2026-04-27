@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <string_view>
 namespace grav_client {
+/// Description: Defines the ErrorBufferView data or behavior contract.
 class ErrorBufferView final {
 public:
     ErrorBufferView(char* buffer, std::size_t bufferSize) noexcept;

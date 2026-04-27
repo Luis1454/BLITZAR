@@ -2,6 +2,7 @@
 // Purpose: Engine implementation for the BLITZAR simulation core.
 
 #include "Internal.hpp"
+/// Description: Executes the setSolverMode operation.
 void SimulationServer::setSolverMode(const std::string& mode)
 {
     std::string canonical;
@@ -11,6 +12,7 @@ void SimulationServer::setSolverMode(const std::string& mode)
     }
     bool changed = false;
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         std::string nextSolver = canonical;
         if (!grav_modes::isSupportedSolverIntegratorPair(nextSolver, _integratorMode)) {
@@ -24,9 +26,11 @@ void SimulationServer::setSolverMode(const std::string& mode)
         _runtimeConfigMirror.solver = _solverMode;
     }
     if (changed && _running.load(std::memory_order_relaxed)) {
+        /// Description: Executes the requestReset operation.
         requestReset();
     }
 }
+/// Description: Executes the setIntegratorMode operation.
 void SimulationServer::setIntegratorMode(const std::string& mode)
 {
     std::string canonical;
@@ -36,6 +40,7 @@ void SimulationServer::setIntegratorMode(const std::string& mode)
     }
     bool changed = false;
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         std::string nextIntegrator = canonical;
         if (!grav_modes::isSupportedSolverIntegratorPair(_solverMode, nextIntegrator)) {
@@ -49,9 +54,11 @@ void SimulationServer::setIntegratorMode(const std::string& mode)
         _runtimeConfigMirror.integrator = _integratorMode;
     }
     if (changed && _running.load(std::memory_order_relaxed)) {
+        /// Description: Executes the requestReset operation.
         requestReset();
     }
 }
+/// Description: Executes the setPerformanceProfile operation.
 void SimulationServer::setPerformanceProfile(const std::string& profile)
 {
     std::string canonical;
@@ -59,12 +66,15 @@ void SimulationServer::setPerformanceProfile(const std::string& profile)
         std::cerr << "[server] ignored invalid performance profile: " << profile << "\n";
         return;
     }
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_commandMutex);
     _performanceProfile = canonical;
     _runtimeConfigMirror.performanceProfile = canonical;
 }
+/// Description: Executes the setOctreeParameters operation.
 void SimulationServer::setOctreeParameters(float theta, float softening)
 {
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_commandMutex);
     if (theta > 0.01f)
         _octreeTheta = theta;
@@ -76,19 +86,23 @@ void SimulationServer::setOctreeParameters(float theta, float softening)
         _octreeSoftening = softening;
     _runtimeConfigMirror.octreeSoftening = _octreeSoftening;
 }
+/// Description: Executes the setSphEnabled operation.
 void SimulationServer::setSphEnabled(bool enabled)
 {
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         _sphEnabled = enabled;
     }
     if (_running.load(std::memory_order_relaxed)) {
+        /// Description: Executes the requestReset operation.
         requestReset();
     }
 }
 void SimulationServer::setSphParameters(float smoothingLength, float restDensity, float gasConstant,
                                         float viscosity)
 {
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_commandMutex);
     if (smoothingLength > 0.05f)
         _sphSmoothingLength = smoothingLength;
@@ -99,23 +113,28 @@ void SimulationServer::setSphParameters(float smoothingLength, float restDensity
     if (viscosity >= 0.0f)
         _sphViscosity = viscosity;
 }
+/// Description: Executes the setSubstepPolicy operation.
 void SimulationServer::setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps)
 {
     const float safeTargetDt = std::max(0.0f, targetDt);
     const std::uint32_t safeMaxSubsteps = std::max<std::uint32_t>(1u, maxSubsteps);
     _configuredSubstepTargetDt.store(safeTargetDt, std::memory_order_relaxed);
     _configuredMaxSubsteps.store(safeMaxSubsteps, std::memory_order_relaxed);
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_commandMutex);
     _runtimeConfigMirror.substepTargetDt = safeTargetDt;
     _runtimeConfigMirror.maxSubsteps = safeMaxSubsteps;
 }
+/// Description: Executes the setSnapshotPublishPeriodMs operation.
 void SimulationServer::setSnapshotPublishPeriodMs(std::uint32_t periodMs)
 {
     const std::uint32_t safePeriodMs = std::max<std::uint32_t>(1u, periodMs);
     _snapshotPublishPeriodMs.store(safePeriodMs, std::memory_order_relaxed);
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_commandMutex);
     _runtimeConfigMirror.snapshotPublishPeriodMs = safePeriodMs;
 }
+/// Description: Executes the setSnapshotTransferCap operation.
 void SimulationServer::setSnapshotTransferCap(std::uint32_t maxPoints)
 {
     const std::uint32_t safeMaxPoints = grav_protocol::clampSnapshotPoints(maxPoints);
@@ -123,14 +142,17 @@ void SimulationServer::setSnapshotTransferCap(std::uint32_t maxPoints)
                                std::memory_order_relaxed);
     _runtimeConfigMirror.clientParticleCap = safeMaxPoints;
 }
+/// Description: Executes the setInitialStateConfig operation.
 void SimulationServer::setInitialStateConfig(const InitialStateConfig& config)
 {
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         _initialStateConfig = config;
         _activeCheckpointState.reset();
     }
     if (_running.load(std::memory_order_relaxed)) {
+        /// Description: Executes the requestReset operation.
         requestReset();
     }
 }
@@ -141,19 +163,24 @@ void SimulationServer::setEnergyMeasurementConfig(std::uint32_t everySteps,
     const std::uint32_t safeSampleLimit = std::max<std::uint32_t>(64u, sampleLimit);
     _energyMeasureEverySteps.store(safeEverySteps, std::memory_order_relaxed);
     _energySampleLimit.store(safeSampleLimit, std::memory_order_relaxed);
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_commandMutex);
     _runtimeConfigMirror.energyMeasureEverySteps = safeEverySteps;
     _runtimeConfigMirror.energySampleLimit = safeSampleLimit;
 }
+/// Description: Executes the setGpuTelemetryEnabled operation.
 void SimulationServer::setGpuTelemetryEnabled(bool enabled)
 {
     _gpuTelemetryEnabled.store(enabled, std::memory_order_relaxed);
     if (!enabled) {
+        /// Description: Executes the clearGpuTelemetry operation.
         clearGpuTelemetry();
     }
 }
+/// Description: Executes the setExportDefaults operation.
 void SimulationServer::setExportDefaults(const std::string& directory, const std::string& format)
 {
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_commandMutex);
     if (!directory.empty()) {
         _exportDirectory = directory;
@@ -162,9 +189,11 @@ void SimulationServer::setExportDefaults(const std::string& directory, const std
         _exportFormatDefault = format;
     }
 }
+/// Description: Executes the setInitialStateFile operation.
 void SimulationServer::setInitialStateFile(const std::string& path, const std::string& format)
 {
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         _initialStatePath = path;
         _initialStateFormat = format.empty() ? "auto" : format;
@@ -178,6 +207,7 @@ void SimulationServer::setInitialStateFile(const std::string& path, const std::s
         }
     }
     if (_running.load(std::memory_order_relaxed)) {
+        /// Description: Executes the requestReset operation.
         requestReset();
     }
 }
@@ -185,6 +215,7 @@ void SimulationServer::requestExportSnapshot(const std::string& outputPath,
                                              const std::string& format)
 {
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         PendingExportRequest request{};
         request.outputPath = outputPath;
@@ -192,8 +223,10 @@ void SimulationServer::requestExportSnapshot(const std::string& outputPath,
         _pendingExportRequests.push_back(std::move(request));
     }
     _exportQueueDepth.fetch_add(1u, std::memory_order_relaxed);
+    /// Description: Executes the updateExportStatus operation.
     updateExportStatus("queued", outputPath, "queued for background write");
 }
+/// Description: Executes the startExportWorker operation.
 void SimulationServer::startExportWorker()
 {
     if (_exportQueueState == nullptr || _exportQueueState->worker.joinable()) {
@@ -205,6 +238,7 @@ void SimulationServer::startExportWorker()
         while (!workerDone) {
             AsyncExportJob job{};
             {
+                /// Description: Executes the lock operation.
                 std::unique_lock<std::mutex> lock(_exportQueueState->mutex);
                 _exportQueueState->condition.wait(lock, [this]() {
                     return _exportQueueState->stopRequested || !_exportQueueState->jobs.empty();
@@ -217,17 +251,20 @@ void SimulationServer::startExportWorker()
                 _exportQueueState->jobs.pop_front();
             }
             _exportActive.store(true, std::memory_order_relaxed);
+            /// Description: Executes the updateExportStatus operation.
             updateExportStatus("writing", job.outputPath, "writing snapshot on background worker");
             const bool ok = writeExportSnapshotFile(job);
             _exportActive.store(false, std::memory_order_relaxed);
             _exportQueueDepth.fetch_sub(1u, std::memory_order_relaxed);
             if (ok) {
                 _exportCompletedCount.fetch_add(1u, std::memory_order_relaxed);
+                /// Description: Executes the updateExportStatus operation.
                 updateExportStatus("completed", job.outputPath, "background export finished");
                 std::cout << "[server] export ok: " << job.outputPath << "\n";
             }
             else {
                 _exportFailedCount.fetch_add(1u, std::memory_order_relaxed);
+                /// Description: Executes the updateExportStatus operation.
                 updateExportStatus("failed", job.outputPath, "background export failed");
                 std::cerr << "[server] export failed: " << job.outputPath << "\n";
             }

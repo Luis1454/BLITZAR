@@ -19,21 +19,26 @@
 #include <thrust/transform_reduce.h>
 #include <thrust/tuple.h>
 
+/// Description: Defines the ThrustPoolAllocator data or behavior contract.
 struct ThrustPoolAllocator {
     typedef char value_type;
 
+    /// Description: Executes the allocate operation.
     char* allocate(std::ptrdiff_t numBytes)
     {
         const std::size_t bytes = static_cast<std::size_t>(std::max<std::ptrdiff_t>(0, numBytes));
         return static_cast<char*>(grav_x::CudaMemoryPool::allocate(bytes));
     }
 
+    /// Description: Executes the deallocate operation.
     void deallocate(char* ptr, std::size_t)
     {
+        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(ptr);
     }
 };
 
+/// Description: Defines the OctreeAabb data or behavior contract.
 struct OctreeAabb {
     float minX;
     float minY;
@@ -43,6 +48,7 @@ struct OctreeAabb {
     float maxZ;
 };
 
+/// Description: Defines the OctreeAabbFromTuple data or behavior contract.
 struct OctreeAabbFromTuple {
     __host__ __device__ OctreeAabb operator()(const thrust::tuple<float, float, float>& value) const
     {
@@ -60,6 +66,7 @@ struct OctreeAabbFromTuple {
     }
 };
 
+/// Description: Defines the OctreeAabbMerge data or behavior contract.
 struct OctreeAabbMerge {
     __host__ __device__ OctreeAabb operator()(const OctreeAabb& lhs, const OctreeAabb& rhs) const
     {
@@ -120,6 +127,7 @@ __global__ void buildParentPrefixesKernel(const unsigned long long* currentPrefi
     outParentPrefixes[i] = currentPrefixes[i] >> 3;
 }
 
+/// Description: Executes the initLevelIndicesKernel operation.
 __global__ void initLevelIndicesKernel(int* levelIndices, int count)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -302,6 +310,7 @@ __global__ void buildLinearOctreeParentNodesKernel8(OctreeNodeHandle nodes,
     nextLevelIndices[parentId] = nodeIndex;
 }
 
+/// Description: Executes the buildLinearOctreeNextLinksKernel operation.
 __global__ void buildLinearOctreeNextLinksKernel(OctreeNodeHandle nodes, int nodeCount, int rootIndex)
 {
     const int nodeIndex = blockIdx.x * blockDim.x + threadIdx.x;
@@ -393,6 +402,7 @@ __global__ void packLinearOctreeCompactKernel(
     leafCounts[nodeIndex] = node.leafCount;
 }
 
+/// Description: Executes the buildLinearOctreeGpu operation.
 bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numParticles)
 {
     cudaStream_t stream = 0;
@@ -446,8 +456,11 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
     ThrustPoolAllocator thrustAllocator;
     auto exec = thrust::cuda::par(thrustAllocator).on(stream);
 
+    /// Description: Executes the posX operation.
     thrust::device_ptr<float> posX(currentView.posX);
+    /// Description: Executes the posY operation.
     thrust::device_ptr<float> posY(currentView.posY);
+    /// Description: Executes the posZ operation.
     thrust::device_ptr<float> posZ(currentView.posZ);
     const auto zipBegin = thrust::make_zip_iterator(thrust::make_tuple(posX, posY, posZ));
     const auto zipEnd = zipBegin + numParticles;
@@ -470,13 +483,21 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
         return false;
     }
 
+    /// Description: Executes the sortedKeys operation.
     thrust::device_ptr<unsigned long long> sortedKeys(d_octreeMortonKeys);
+    /// Description: Executes the sortedIndices operation.
     thrust::device_ptr<int> sortedIndices(g_dOctreeLeafIndices);
+    /// Description: Executes the prefixesA operation.
     thrust::device_ptr<unsigned long long> prefixesA(d_octreePrefixesA);
+    /// Description: Executes the prefixesB operation.
     thrust::device_ptr<unsigned long long> prefixesB(d_octreePrefixesB);
+    /// Description: Executes the levelIndicesA operation.
     thrust::device_ptr<int> levelIndicesA(d_octreeLevelIndicesA);
+    /// Description: Executes the levelIndicesB operation.
     thrust::device_ptr<int> levelIndicesB(d_octreeLevelIndicesB);
+    /// Description: Executes the parentCounts operation.
     thrust::device_ptr<int> parentCounts(d_octreeParentCounts);
+    /// Description: Executes the parentOffsets operation.
     thrust::device_ptr<int> parentOffsets(d_octreeParentOffsets);
 
     if (profileFlashMode) {
@@ -485,6 +506,7 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
         }
     }
     const auto sortStartTime = std::chrono::high_resolution_clock::now();
+    /// Description: Executes the sort_by_key operation.
     thrust::sort_by_key(exec, sortedKeys, sortedKeys + numParticles, sortedIndices);
     if (!checkCudaStatus(cudaGetLastError(), "linear octree sort_by_key")) {
         return false;
@@ -508,10 +530,12 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
                               thrust::make_constant_iterator<int>(1), prefixesB, parentCounts);
     const int leafCount = static_cast<int>(leafEnd.first - prefixesB);
     if (leafCount <= 0) {
+        /// Description: Executes the fprintf operation.
         fprintf(stderr, "[cuda-critical] linear octree produced zero leaves\n");
         return false;
     }
 
+    /// Description: Executes the exclusive_scan operation.
     thrust::exclusive_scan(exec, parentCounts, parentCounts + leafCount, parentOffsets);
 
     // Worst-case bound: parent count may stay close to leafCount for several levels
@@ -548,6 +572,7 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
     while (currentCount > 1) {
         const int currentBlocks = (currentCount + threads - 1) / threads;
         buildParentPrefixesKernel<<<currentBlocks, threads, 0, stream>>>(
+            /// Description: Executes the raw_pointer_cast operation.
             thrust::raw_pointer_cast(currentPrefixes), currentCount, d_octreePrefixesA);
         if (!checkCudaStatus(cudaGetLastError(), "buildParentPrefixes kernel launch")) {
             return false;
@@ -559,6 +584,7 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
                                               parentCounts);
         const int parentCount = static_cast<int>(parentEnd.first - prefixesB);
         if (parentCount <= 0) {
+            /// Description: Executes the fprintf operation.
             fprintf(stderr, "[cuda-critical] linear octree produced zero parents\n");
             return false;
         }
@@ -569,12 +595,14 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
             return false;
         }
 
+        /// Description: Executes the exclusive_scan operation.
         thrust::exclusive_scan(exec, parentCounts, parentCounts + parentCount, parentOffsets);
 
         const int parentBlocks = (parentCount + threads - 1) / threads;
         buildLinearOctreeParentNodesKernel8<<<parentBlocks, threads, 0, stream>>>(
             g_dOctreeNodes, thrust::raw_pointer_cast(currentLevelIndices),
             thrust::raw_pointer_cast(currentPrefixes), d_octreeParentOffsets, d_octreeParentCounts,
+            /// Description: Executes the raw_pointer_cast operation.
             parentCount, nextNodeBase, thrust::raw_pointer_cast(nextLevelIndices));
         if (!checkCudaStatus(cudaGetLastError(), "buildLinearOctreeParentNodes8 kernel launch")) {
             return false;

@@ -20,6 +20,7 @@ from python_tools.core.reporting import ResultReporter
 from tests.checks.catalog import import_symbol, load_command_spec, load_command_specs
 
 
+# Description: Executes the _build_root_parser operation.
 def _build_root_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run catalog-driven repository quality commands.")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -51,6 +52,7 @@ def _build_root_parser() -> argparse.ArgumentParser:
     return parser
 
 
+# Description: Executes the _resolve_value operation.
 def _resolve_value(spec: dict[str, Any], args: argparse.Namespace) -> Any:
     source = spec["source"]
     if source == "arg":
@@ -72,18 +74,21 @@ def _resolve_value(spec: dict[str, Any], args: argparse.Namespace) -> Any:
     return value
 
 
+# Description: Executes the build_context operation.
 def build_context(args: argparse.Namespace) -> CheckContext:
     spec = load_command_spec(args.command)
     payload = {field_name: _resolve_value(field_spec, args) for field_name, field_spec in spec["context"].items()}
     return CheckContext(**payload)
 
 
+# Description: Executes the build_check operation.
 def build_check(args: argparse.Namespace) -> BaseCheck:
     spec = load_command_spec(args.command)
     check_type = cast(type[BaseCheck], import_symbol(spec["check"]))
     return check_type()
 
 
+# Description: Executes the main operation.
 def main(argv: list[str] | None = None) -> int:
     parser = _build_root_parser()
     args = parser.parse_args(argv)

@@ -21,14 +21,17 @@
 #include <QWidget>
 #include <algorithm>
 namespace grav_qt {
+/// Description: Executes the initializeControlState operation.
 void MainWindow::initializeControlState()
 {
     _pauseButton->setCheckable(true);
     _solverCombo->addItems({"pairwise_cuda", "octree_gpu", "octree_cpu"});
     _solverCombo->setCurrentIndex(
+        /// Description: Executes the max operation.
         std::max(0, _solverCombo->findText(QString::fromStdString(_config.solver))));
     _integratorCombo->addItems({"euler", "rk4"});
     _integratorCombo->setCurrentIndex(
+        /// Description: Executes the max operation.
         std::max(0, _integratorCombo->findText(QString::fromStdString(_config.integrator))));
     _performanceCombo->addItems({"interactive", "balanced", "quality", "custom"});
     _performanceCombo->setCurrentIndex(std::max(
@@ -40,6 +43,7 @@ void MainWindow::initializeControlState()
     _presetCombo->addItems({"disk_orbit", "galaxy_collision", "random_cloud", "two_body",
                             "three_body", "plummer_sphere", "file"});
     _presetCombo->setCurrentIndex(
+        /// Description: Executes the max operation.
         std::max(0, _presetCombo->findText(QString::fromStdString(_config.presetStructure))));
     _view3dCombo->addItems({"perspective", "iso"});
     _performanceCombo->setObjectName("performanceProfileCombo");
@@ -145,6 +149,7 @@ void MainWindow::initializeControlState()
     _energyMetricsLabel->setObjectName("runtimeSummaryValue");
     _gpuMetricsLabel->setObjectName("runtimeSummaryValue");
 }
+/// Description: Executes the buildSidebarTabs operation.
 QTabWidget* MainWindow::buildSidebarTabs()
 {
     auto* sidebarTabs = new QTabWidget(this);

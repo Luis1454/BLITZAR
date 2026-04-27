@@ -12,6 +12,7 @@
 #include <string_view>
 #include <thread>
 #include <vector>
+/// Description: Executes the main operation.
 int main(int argc, char** argv)
 {
     std::vector<std::string_view> args;
@@ -20,14 +21,18 @@ int main(int argc, char** argv)
         args.emplace_back(argv[i] ? argv[i] : "");
     RuntimeArgs runtime;
     runtime.configPath = findConfigPathArg(args, "simulation.ini");
+    /// Description: Executes the server operation.
     SimulationServer server(runtime.configPath);
     SimulationConfig config = server.getRuntimeConfig();
+    /// Description: Executes the applyArgsToConfig operation.
     applyArgsToConfig(args, config, runtime, std::cerr);
     if (runtime.hasArgumentError) {
+        /// Description: Executes the printUsage operation.
         printUsage(std::cerr, args.empty() ? std::string_view("blitzar-headless") : args[0], true);
         return 2;
     }
     if (runtime.showHelp) {
+        /// Description: Executes the printUsage operation.
         printUsage(std::cout, args.empty() ? std::string_view("blitzar.exe") : args[0], true);
         return 0;
     }
@@ -82,12 +87,14 @@ int main(int argc, char** argv)
                           << (stats.energyEstimated ? " est" : "") << "\n";
             }
         }
+        /// Description: Executes the sleep_for operation.
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
         stats = server.getStats();
     }
     if (exportOnExit) {
         server.setPaused(true);
         server.requestExportSnapshot("", exportFormat);
+        /// Description: Executes the sleep_for operation.
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
     server.stop();

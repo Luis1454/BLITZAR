@@ -65,6 +65,7 @@ __global__ void computePairwiseAccelerationKernelTiled(
             smem_posZ[i] = state.posZ[globalIdx];
             smem_mass[i] = state.mass[globalIdx];
         }
+        /// Description: Executes the __syncthreads operation.
         __syncthreads();
 
         // Each thread processes its target particle against all particles in this tile

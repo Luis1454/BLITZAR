@@ -6,12 +6,14 @@
 #include <algorithm>
 #include <cctype>
 #include <limits>
+/// Description: Executes the toLower operation.
 std::string SimulationArgsParse::toLower(std::string value)
 {
     std::transform(value.begin(), value.end(), value.begin(),
                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return value;
 }
+/// Description: Executes the parseBool operation.
 bool SimulationArgsParse::parseBool(const std::string& value, bool& out)
 {
     const std::string normalized = SimulationArgsParse::toLower(value);
@@ -25,6 +27,7 @@ bool SimulationArgsParse::parseBool(const std::string& value, bool& out)
     }
     return false;
 }
+/// Description: Executes the parseUint operation.
 bool SimulationArgsParse::parseUint(const std::string& value, std::uint32_t& out)
 {
     std::uint64_t parsed = 0;
@@ -37,6 +40,7 @@ bool SimulationArgsParse::parseUint(const std::string& value, std::uint32_t& out
     out = static_cast<std::uint32_t>(parsed);
     return true;
 }
+/// Description: Executes the parseInt operation.
 bool SimulationArgsParse::parseInt(const std::string& value, int& out)
 {
     long long parsed = 0;
@@ -50,10 +54,12 @@ bool SimulationArgsParse::parseInt(const std::string& value, int& out)
     out = static_cast<int>(parsed);
     return true;
 }
+/// Description: Executes the parseFloat operation.
 bool SimulationArgsParse::parseFloat(const std::string& value, float& out)
 {
     return grav_text::parseNumber(value, out);
 }
+/// Description: Executes the splitOption operation.
 bool SimulationArgsParse::splitOption(const std::string& raw, std::string& key, std::string& value)
 {
     if (raw.rfind("--", 0) != 0) {

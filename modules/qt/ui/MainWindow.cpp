@@ -89,35 +89,52 @@ MainWindow::MainWindow(SimulationConfig config, std::string configPath,
       _clientDrawCap(grav_client::resolveClientDrawCap(_config)),
       _uiTickFps(0.0f),
       _configDirty(false),
+      /// Description: Executes the _lastUiTickAt operation.
       _lastUiTickAt()
 {
     if (!_runtime) {
+        /// Description: Executes the invalid_argument operation.
         throw std::invalid_argument("grav_qt::MainWindow requires a valid client runtime");
     }
+    /// Description: Executes the setWindowTitle operation.
     setWindowTitle("N-Body Qt Client");
+    /// Description: Executes the menuBar operation.
     menuBar()->setNativeMenuBar(false);
+    /// Description: Executes the setStyle operation.
     setStyle(QStyleFactory::create("Fusion"));
+    /// Description: Executes the setDockNestingEnabled operation.
     setDockNestingEnabled(true);
     setDockOptions(QMainWindow::AnimatedDocks | QMainWindow::AllowNestedDocks |
                    QMainWindow::AllowTabbedDocks);
+    /// Description: Executes the initializeControlState operation.
     initializeControlState();
+    /// Description: Executes the setCentralWidget operation.
     setCentralWidget(_multiView);
+    /// Description: Executes the buildWorkspaceDocks operation.
     buildWorkspaceDocks(buildSidebarTabs(), buildTelemetryPane(), buildValidationPane());
+    /// Description: Executes the buildMenus operation.
     buildMenus();
+    /// Description: Executes the applyTheme operation.
     applyTheme();
+    /// Description: Executes the statusBar operation.
     statusBar()->showMessage("Qt workspace ready", 3000);
+    /// Description: Executes the resize operation.
     resize(1280, 820);
     _defaultWorkspaceGeometry = saveGeometry();
     _defaultWorkspaceState = saveState();
     const bool startupConfigValid = applyConfigToServer(false);
+    /// Description: Executes the markConfigDirty operation.
     markConfigDirty(false);
+    /// Description: Executes the applyViewSettings operation.
     applyViewSettings();
+    /// Description: Executes the update3DCameraFromSliders operation.
     update3DCameraFromSliders();
     _applyConnectorButton->setEnabled(true);
     _serverAutostartCheck->setEnabled(true);
     _serverHostEdit->setEnabled(true);
     _serverPortSpin->setEnabled(true);
     _serverBinEdit->setEnabled(true);
+    /// Description: Executes the connectControls operation.
     connectControls();
     const std::uint32_t fps = std::max<std::uint32_t>(1u, _config.uiFpsLimit);
     if (startupConfigValid && _runtime->start()) {
@@ -130,18 +147,24 @@ MainWindow::MainWindow(SimulationConfig config, std::string configPath,
         _statusLabel->setText(QString("server connection failed (service)"));
     }
 }
+/// Description: Releases resources owned by MainWindow.
 MainWindow::~MainWindow()
 {
     _runtime->stop();
 }
+/// Description: Executes the applyTheme operation.
 void MainWindow::applyTheme()
 {
     const QtThemeMode mode = QtTheme::resolve(_config.uiTheme);
     _config.uiTheme = QtTheme::toConfigValue(mode);
+    /// Description: Executes the setPalette operation.
     setPalette(QtTheme::buildPalette(mode));
+    /// Description: Executes the setAutoFillBackground operation.
     setAutoFillBackground(true);
+    /// Description: Executes the setStyleSheet operation.
     setStyleSheet(QtTheme::buildMainWindowStyleSheet(mode));
 }
+/// Description: Executes the applyViewSettings operation.
 void MainWindow::applyViewSettings()
 {
     _multiView->setZoom(static_cast<float>(_zoomSlider->value()) / 10.0f);

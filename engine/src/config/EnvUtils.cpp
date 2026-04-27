@@ -4,6 +4,7 @@
 #include "config/EnvUtils.hpp"
 #include "config/SimulationArgsParse.hpp"
 namespace grav_env {
+/// Description: Executes the parseBool operation.
 bool parseBool(std::string_view value, bool fallback)
 {
     bool parsed = fallback;
@@ -12,6 +13,7 @@ bool parseBool(std::string_view value, bool fallback)
     }
     return fallback;
 }
+/// Description: Executes the getBool operation.
 bool getBool(std::string_view name, bool fallback)
 {
     const auto value = get(name);
@@ -20,6 +22,7 @@ bool getBool(std::string_view name, bool fallback)
     }
     return parseBool(*value, fallback);
 }
+/// Description: Executes the getNumber operation.
 template <typename NumberType> bool getNumber(std::string_view name, NumberType& out)
 {
     const auto value = get(name);

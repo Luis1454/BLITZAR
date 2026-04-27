@@ -112,6 +112,7 @@ set(GRAVITY_CORE_FFI_SOURCES
     "${GRAVITY_ROOT_DIR}/runtime/src/ffi/BlitzarCoreApi.cpp"
 )
 
+# Description: Defines the gravity_collect_existing_paths function helper.
 function(gravity_collect_existing_paths out_var)
     set(_result "")
     foreach(_path IN LISTS ARGN)

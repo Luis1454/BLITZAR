@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 namespace grav_module {
+/// Description: Defines the ClientModuleOpaqueState data or behavior contract.
 class ClientModuleOpaqueState final {
 public:
     ClientModuleOpaqueState() noexcept;
@@ -20,6 +21,7 @@ public:
 private:
     std::uintptr_t m_opaqueValue;
 };
+/// Description: Defines the ClientModuleCreateResult data or behavior contract.
 class ClientModuleCreateResult final {
 public:
     ClientModuleCreateResult() noexcept;
@@ -30,6 +32,7 @@ public:
 private:
     void* m_rawState;
 };
+/// Description: Defines the ClientModuleStateSlot data or behavior contract.
 class ClientModuleStateSlot final {
 public:
     explicit ClientModuleStateSlot(void** slot) noexcept;
@@ -39,6 +42,7 @@ public:
 private:
     void** m_slot;
 };
+/// Description: Defines the ClientModuleCommandControl data or behavior contract.
 class ClientModuleCommandControl final {
 public:
     explicit ClientModuleCommandControl(bool* keepRunningFlag) noexcept;
@@ -48,6 +52,7 @@ public:
 private:
     bool* m_keepRunningFlag;
 };
+/// Description: Defines the ClientModuleCommandResult data or behavior contract.
 class ClientModuleCommandResult final {
 public:
     ClientModuleCommandResult() noexcept;

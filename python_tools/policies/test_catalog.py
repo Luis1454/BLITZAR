@@ -16,15 +16,18 @@ TEST_CODE_RE = re.compile(r"^TST-[A-Z]{3}-[A-Z0-9]{2,8}-[0-9]{3}$")
 TEST_GROUPS_KEY = "test_groups"
 
 
+# Description: Defines the TestCatalogCheck contract.
 class TestCatalogCheck(BaseCheck):
     __test__ = False
     name = "test_catalog"
     success_message = "test catalog check passed"
     failure_title = "test catalog check failed:"
 
+    # Description: Executes the __init__ operation.
     def __init__(self) -> None:
         self._manifest = QualityManifestLoader()
 
+    # Description: Executes the _execute operation.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         manifest = self._manifest.load(context.root, result)
         override = context.options.get("extra_test_ids")
@@ -41,6 +44,7 @@ class TestCatalogCheck(BaseCheck):
             result.add_error(f"{QUALITY_MANIFEST_PATH}: '{TEST_GROUPS_KEY}' must contain at least one row")
         self._check_rows(rows, context.root, known_tests, known_req_ids, result)
 
+    # Description: Executes the _load_catalog_rows operation.
     def _load_catalog_rows(self, manifest: dict[str, JsonValue], result: CheckResult) -> list[dict[str, JsonValue]]:
         groups = manifest.get(TEST_GROUPS_KEY)
         if not isinstance(groups, dict):
@@ -68,6 +72,7 @@ class TestCatalogCheck(BaseCheck):
                 )
         return rows
 
+    # Description: Executes the _load_requirements operation.
     def _load_requirements(
         self,
         manifest: dict[str, JsonValue],
@@ -100,6 +105,7 @@ class TestCatalogCheck(BaseCheck):
                     result.add_error(f"{req_id}: test regex did not match any test id: {pattern}")
         return parsed
 
+    # Description: Executes the _check_rows operation.
     def _check_rows(
         self,
         rows: list[dict[str, JsonValue]],
@@ -122,6 +128,7 @@ class TestCatalogCheck(BaseCheck):
         for test_id in sorted(known_tests - used_tests):
             result.add_error(f"missing test_id in {QUALITY_MANIFEST_PATH}: {test_id}")
 
+    # Description: Executes the _check_test_code operation.
     def _check_test_code(self, test_code: str, used_codes: set[str], result: CheckResult) -> None:
         if not test_code:
             result.add_error("test catalog row has empty test_code")
@@ -134,6 +141,7 @@ class TestCatalogCheck(BaseCheck):
             return
         used_codes.add(test_code)
 
+    # Description: Executes the _check_test_id operation.
     def _check_test_id(
         self,
         test_code: str,
@@ -152,6 +160,7 @@ class TestCatalogCheck(BaseCheck):
         if test_id not in known_tests:
             result.add_error(f"{test_code or '<missing code>'}: unknown test_id '{test_id}'")
 
+    # Description: Executes the _check_req_ids operation.
     def _check_req_ids(self, test_code: str, req_ids: list[str], known_req_ids: set[str], result: CheckResult) -> None:
         if not req_ids:
             result.add_error(f"{test_code or '<missing code>'}: req_ids must not be empty")
@@ -163,6 +172,7 @@ class TestCatalogCheck(BaseCheck):
             if req_id not in known_req_ids:
                 result.add_error(f"{test_code or '<missing code>'}: unknown req_id '{req_id}'")
 
+    # Description: Executes the _check_source operation.
     def _check_source(self, test_code: str, source_ref: str, root: Path, result: CheckResult) -> None:
         if not source_ref:
             result.add_error(f"{test_code or '<missing code>'}: source ref is empty")
@@ -178,16 +188,19 @@ class TestCatalogCheck(BaseCheck):
             result.add_error(f"{test_code or '<missing code>'}: source ref does not exist: {source_ref} -> {source_path}")
 
     @staticmethod
+    # Description: Executes the _as_string operation.
     def _as_string(value: JsonValue | None) -> str:
         return value.strip() if isinstance(value, str) else ""
 
     @staticmethod
+    # Description: Executes the _as_string_list operation.
     def _as_string_list(value: JsonValue | None) -> list[str]:
         if not isinstance(value, list):
             return []
         return [item.strip() for item in value if isinstance(item, str) and item.strip()]
 
     @staticmethod
+    # Description: Executes the _to_req_ids operation.
     def _to_req_ids(value: JsonValue | None) -> list[str]:
         if isinstance(value, list):
             return [item.strip() for item in value if isinstance(item, str) and item.strip()]
@@ -196,6 +209,7 @@ class TestCatalogCheck(BaseCheck):
         return []
 
 
+# Description: Executes the collect_repo_quality_test_ids operation.
 def collect_repo_quality_test_ids(root: Path, manifest: dict[str, JsonValue], result: CheckResult) -> set[str]:
     policies = manifest.get("policies")
     if not isinstance(policies, dict):

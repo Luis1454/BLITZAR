@@ -37,6 +37,7 @@ TEST(OctreeGpuStability, SmallBatch_100ParticlesMultiStep)
     
     // Prepare scenario with generated particles
     std::string prepError;
+    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(prepareGeneratedCalibrationScenario("three_body", cfg, prepError))
         << "Failed to prepare scenario: " << prepError;
     

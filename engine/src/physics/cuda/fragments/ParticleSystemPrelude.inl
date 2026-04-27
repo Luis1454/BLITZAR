@@ -24,6 +24,7 @@ static_assert(
     (sizeof(GpuSystemMetrics) % 64u) == 0u,
     "GpuSystemMetrics must remain cacheline aligned");
 
+/// Description: Defines the SphGridParams data or behavior contract.
 struct SphGridParams {
     int gridSize;
     int totalCells;
@@ -49,6 +50,7 @@ typedef GpuOctreeNode * OctreeNodeHandle;
 typedef const GpuOctreeNode * OctreeNodeConstHandle;
 typedef int * IndexHandle;
 typedef const int * IndexConstHandle;
+/// Description: Executes the checkCudaStatus operation.
 bool checkCudaStatus(cudaError_t status, std::string_view stage)
 {
     if (status != cudaSuccess) {
@@ -57,12 +59,14 @@ bool checkCudaStatus(cudaError_t status, std::string_view stage)
             "[cuda] %.*s failed: %s\n",
             static_cast<int>(stage.size()),
             stage.data(),
+            /// Description: Executes the cudaGetErrorString operation.
             cudaGetErrorString(status));
         return false;
     }
     return true;
 }
 
+/// Description: Executes the parseBoolEnv operation.
 bool parseBoolEnv(std::string_view name, bool fallback)
 {
     constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
@@ -73,6 +77,7 @@ bool parseBoolEnv(std::string_view name, bool fallback)
     return grav_env::getBool(name, fallback);
 }
 
+/// Description: Executes the parseFloatEnv operation.
 float parseFloatEnv(std::string_view name, float fallback)
 {
     constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
@@ -87,6 +92,7 @@ float parseFloatEnv(std::string_view name, float fallback)
     return parsed;
 }
 
+/// Description: Executes the solverModeFromEnv operation.
 ParticleSystem::SolverMode solverModeFromEnv()
 {
     constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
@@ -109,6 +115,7 @@ ParticleSystem::SolverMode solverModeFromEnv()
     return ParticleSystem::SolverMode::PairwiseCuda;
 }
 
+/// Description: Executes the integratorModeFromEnv operation.
 ParticleSystem::IntegratorMode integratorModeFromEnv()
 {
     constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
@@ -165,10 +172,12 @@ __host__ __device__ Vector3 &operator-=(Vector3 &a, Vector3 b) {
     return a;
 }
 
+/// Description: Executes the dot operation.
 __host__ __device__ float dot(Vector3 a, Vector3 b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
+/// Description: Executes the Particle operation.
 __host__ __device__ Particle::Particle() {
     _position = Vector3{0.0f, 0.0f, 0.0f};
     _velocity = Vector3{0.0f, 0.0f, 0.0f};
@@ -179,84 +188,104 @@ __host__ __device__ Particle::Particle() {
     _temperature = 0.0f;
 }
 
+/// Description: Releases resources owned by Particle.
 __host__ __device__ Particle::~Particle() {
 }
 
+/// Description: Executes the applyForce operation.
 __host__ __device__ void Particle::applyForce(Vector3 force) {
     _force += force;
 }
 
+/// Description: Executes the getMass operation.
 __device__ __host__ float Particle::getMass() const {
     return _mass;
 }
 
+/// Description: Executes the setMass operation.
 __device__ __host__ void Particle::setMass(float mass) {
     _mass = mass;
 }
 
+/// Description: Executes the getPosition operation.
 __device__ __host__ Vector3 Particle::getPosition() const {
     return _position;
 }
 
+/// Description: Executes the setPosition operation.
 __device__ __host__ void Particle::setPosition(Vector3 position) {
     _position = position;
 }
 
+/// Description: Executes the getVelocity operation.
 __device__ __host__ Vector3 Particle::getVelocity() const {
     return _velocity;
 }
 
+/// Description: Executes the setVelocity operation.
 __device__ __host__ void Particle::setVelocity(Vector3 velocity) {
     _velocity = velocity;
 }
 
+/// Description: Executes the getPressure operation.
 __device__ __host__ Vector3 Particle::getPressure() const {
     return _pressure;
 }
 
+/// Description: Executes the setPressure operation.
 __device__ __host__ void Particle::setPressure(Vector3 pressure) {
     _pressure = pressure;
 }
 
+/// Description: Executes the setTemperature operation.
 __device__ __host__ void Particle::setTemperature(float temperature) {
     _temperature = temperature;
 }
 
+/// Description: Executes the getDensity operation.
 __device__ __host__ float Particle::getDensity() const {
     return _density;
 }
 
+/// Description: Executes the setDensity operation.
 __device__ __host__ void Particle::setDensity(float density) {
     _density = density;
 }
 
+/// Description: Executes the getTemperature operation.
 __device__ __host__ float Particle::getTemperature() const {
     return _temperature;
 }
 
+/// Description: Executes the move operation.
 __device__ __host__ void Particle::move(Vector3 position) {
     _position += position;
 }
 
+/// Description: Executes the bounce operation.
 __device__ __host__ void Particle::bounce(Vector3 normal, float dt) {
     _position -= _velocity * dt;
     _velocity -= normal * 2.0f * dot(_velocity, normal);
 }
 
+/// Description: Executes the update operation.
 __host__ __device__ void Particle::update(float deltaTime) {
     _velocity += _force * deltaTime;
     _position += _velocity * deltaTime;
     _force = Vector3{0.0f, 0.0f, 0.0f};
 }
 
+/// Description: Executes the norm operation.
 __host__ __device__ float Vector3::norm() const {
     return sqrtf(x * x + y * y + z * z);
 }
 
+/// Description: Executes the normalize operation.
 __host__ __device__ Vector3 normalize(Vector3 v) {
     return v / sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
+/// Description: Executes the clampAcceleration operation.
 __host__ __device__ Vector3 clampAcceleration(Vector3 accel, float maxAcceleration)
 {
     const float accelNorm = accel.norm();
@@ -266,16 +295,19 @@ __host__ __device__ Vector3 clampAcceleration(Vector3 accel, float maxAccelerati
     return accel;
 }
 
+/// Description: Executes the clampSofteningValue operation.
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampSofteningValue(float softening, float minSoftening)
 {
     return fmaxf(softening, minSoftening);
 }
 
+/// Description: Executes the clampThetaValue operation.
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampThetaValue(float theta, float minTheta)
 {
     return fmaxf(theta, minTheta);
 }
 
+/// Description: Executes the softenedDistanceSquared operation.
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE float softenedDistanceSquared(Vector3 delta, ForceLawPolicy policy)
 {
     return dot(delta, delta) + policy.softening * policy.softening;
@@ -324,6 +356,7 @@ __host__ __device__ Vector3 computePairwiseAcceleration(
     return clampAcceleration(force, maxAcceleration);
 }
 
+/// Description: Executes the sphPoly6 operation.
 __device__ float sphPoly6(float r2, float h)
 {
     const float h2 = h * h;
@@ -335,6 +368,7 @@ __device__ float sphPoly6(float r2, float h)
     return coeff * diff * diff * diff;
 }
 
+/// Description: Executes the sphSpikyGrad operation.
 __device__ float sphSpikyGrad(float r, float h)
 {
     if (r <= 1e-6f || r >= h) {
@@ -345,6 +379,7 @@ __device__ float sphSpikyGrad(float r, float h)
     return coeff * diff * diff;
 }
 
+/// Description: Executes the sphViscosityLaplacian operation.
 __device__ float sphViscosityLaplacian(float r, float h)
 {
     if (r >= h) {
@@ -432,6 +467,7 @@ __global__ void publishMetricsKernel(
     const std::uint32_t even = evenBase + 2u;
 
     *sequence = odd;
+    /// Description: Executes the __threadfence_system operation.
     __threadfence_system();
 
     mappedMetrics->flags = payload.flags;
@@ -457,6 +493,7 @@ __global__ void publishMetricsKernel(
     mappedMetrics->reserved5 = 0u;
     mappedMetrics->reserved6 = 0u;
 
+    /// Description: Executes the __threadfence_system operation.
     __threadfence_system();
     *sequence = even;
 }
@@ -478,8 +515,11 @@ __global__ void updateParticles(
         const Vector3 nextVel = vel + force * deltaTime;
         const Vector3 nextPos = pos + nextVel * deltaTime;
 
+        /// Description: Executes the setSoAPressure operation.
         setSoAPressure(current, i, force * 100.0f);
+        /// Description: Executes the setSoAVelocity operation.
         setSoAVelocity(current, i, nextVel);
+        /// Description: Executes the setSoAPosition operation.
         setSoAPosition(current, i, nextPos);
         current.mass[i] = last.mass[i];
         current.temp[i] = last.temp[i];
@@ -556,6 +596,7 @@ __global__ void integrateSphKernel(
         outParticles.velY[i] = inParticles.velY[i];
         outParticles.velZ[i] = inParticles.velZ[i];
         outParticles.dens[i] = inParticles.dens[i];
+        /// Description: Executes the setSoAPressure operation.
         setSoAPressure(outParticles, i, getSoAPressure(inParticles, i));
         outParticles.mass[i] = inParticles.mass[i];
         return;
@@ -566,7 +607,9 @@ __global__ void integrateSphKernel(
     const float rhoI = fmaxf(density[i], 1e-6f);
     const float pI = pressure[i];
 
+    /// Description: Executes the pressureForce operation.
     Vector3 pressureForce(0.0f, 0.0f, 0.0f);
+    /// Description: Executes the viscosityForce operation.
     Vector3 viscosityForce(0.0f, 0.0f, 0.0f);
 
     for (int j = 0; j < numParticles; ++j) {
@@ -611,10 +654,12 @@ __global__ void integrateSphKernel(
     outParticles.velX[i] = velocity.x; outParticles.velY[i] = velocity.y; outParticles.velZ[i] = velocity.z;
     outParticles.posX[i] = position.x; outParticles.posY[i] = position.y; outParticles.posZ[i] = position.z;
     outParticles.dens[i] = rhoI;
+    /// Description: Executes the setSoAPressure operation.
     setSoAPressure(outParticles, i, (pressureForce + viscosityForce) * 2.0f);
     outParticles.mass[i] = selfMass;
 }
 
+/// Description: Executes the copyParticlesKernel operation.
 __global__ void copyParticlesKernel(ParticleConstHandle src, ParticleHandle dst, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -624,6 +669,7 @@ __global__ void copyParticlesKernel(ParticleConstHandle src, ParticleHandle dst,
     dst[i] = src[i];
 }
 
+/// Description: Executes the extractVelocityKernel operation.
 __global__ void extractVelocityKernel(ParticleSoAView particles, Vector3Handle outVelocity, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -664,13 +710,16 @@ __global__ void buildRk4StageKernel(
     const Vector3 nextPos = getSoAPosition(base, i) + kPos[i] * dtScale;
     const Vector3 nextVel = getSoAVelocity(base, i) + kVel[i] * dtScale;
 
+    /// Description: Executes the setSoAPosition operation.
     setSoAPosition(stage, i, nextPos);
+    /// Description: Executes the setSoAVelocity operation.
     setSoAVelocity(stage, i, nextVel);
     stage.mass[i] = base.mass[i];
     stage.temp[i] = base.temp[i];
     stage.dens[i] = base.dens[i];
 }
 
+/// Description: Executes the primeHalfVelocityKernel operation.
 __global__ void primeHalfVelocityKernel(ParticleSoAView state, float3 *vHalf, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -680,6 +729,7 @@ __global__ void primeHalfVelocityKernel(ParticleSoAView state, float3 *vHalf, in
 
     __shared__ float3 sVel[Particle::kDefaultCudaBlockSize];
     sVel[threadIdx.x] = make_float3(state.velX[i], state.velY[i], state.velZ[i]);
+    /// Description: Executes the __syncthreads operation.
     __syncthreads();
 
     vHalf[i] = sVel[threadIdx.x];
@@ -702,6 +752,7 @@ __global__ void applyKickHalfStepKernel(
 
     sVel[threadIdx.x] = make_float3(state.velX[i], state.velY[i], state.velZ[i]);
     sAcc[threadIdx.x] = make_float3(acceleration[i].x, acceleration[i].y, acceleration[i].z);
+    /// Description: Executes the __syncthreads operation.
     __syncthreads();
 
     const float halfDt = 0.5f * deltaTime;
@@ -730,6 +781,7 @@ __global__ void driftWithHalfVelocityKernel(
 
     sPos[threadIdx.x] = make_float3(state.posX[i], state.posY[i], state.posZ[i]);
     sHalf[threadIdx.x] = vHalf[i];
+    /// Description: Executes the __syncthreads operation.
     __syncthreads();
 
     const float3 pos = sPos[threadIdx.x];
@@ -739,7 +791,9 @@ __global__ void driftWithHalfVelocityKernel(
         pos.y + halfVel.y * deltaTime,
         pos.z + halfVel.z * deltaTime);
 
+    /// Description: Executes the setSoAPosition operation.
     setSoAPosition(out, i, nextPos);
+    /// Description: Executes the setSoAVelocity operation.
     setSoAVelocity(out, i, getSoAVelocity(state, i));
     out.mass[i] = state.mass[i];
     out.temp[i] = state.temp[i];
@@ -765,6 +819,7 @@ __global__ void finalizeLeapfrogKickKernel(
 
     sHalf[threadIdx.x] = vHalf[i];
     sAcc[threadIdx.x] = make_float3(acceleration[i].x, acceleration[i].y, acceleration[i].z);
+    /// Description: Executes the __syncthreads operation.
     __syncthreads();
 
     const float3 halfVel = sHalf[threadIdx.x];
@@ -776,8 +831,11 @@ __global__ void finalizeLeapfrogKickKernel(
         halfVel.y + acc.y * halfDt,
         halfVel.z + acc.z * halfDt);
 
+    /// Description: Executes the setSoAPosition operation.
     setSoAPosition(out, i, getSoAPosition(driftedState, i));
+    /// Description: Executes the setSoAVelocity operation.
     setSoAVelocity(out, i, nextVel);
+    /// Description: Executes the setSoAPressure operation.
     setSoAPressure(out, i, Vector3(acc.x, acc.y, acc.z) * 100.0f);
     out.mass[i] = driftedState.mass[i];
     out.temp[i] = driftedState.temp[i];
@@ -789,6 +847,7 @@ __global__ void finalizeLeapfrogKickKernel(
         halfVel.z + acc.z * deltaTime);
 }
 
+/// Description: Executes the packSoAKernel operation.
 __global__ void packSoAKernel(ParticleConstHandle src, ParticleSoAView dst, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -813,6 +872,7 @@ __global__ void packSoAKernel(ParticleConstHandle src, ParticleSoAView dst, int 
     dst.dens[i] = p.getDensity();
 }
 
+/// Description: Executes the unpackSoAKernel operation.
 __global__ void unpackSoAKernel(ParticleSoAView src, ParticleHandle dst, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -853,8 +913,11 @@ __global__ void finalizeRk4Kernel(
     const Vector3 nextVel = getSoAVelocity(base, i) + weightedVel * deltaTime;
     const Vector3 nextPos = getSoAPosition(base, i) + weightedPos * deltaTime;
 
+    /// Description: Executes the setSoAVelocity operation.
     setSoAVelocity(out, i, nextVel);
+    /// Description: Executes the setSoAPosition operation.
     setSoAPosition(out, i, nextPos);
+    /// Description: Executes the setSoAPressure operation.
     setSoAPressure(out, i, weightedVel * 100.0f);
     out.mass[i] = base.mass[i];
     out.temp[i] = base.temp[i];

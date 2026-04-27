@@ -9,6 +9,7 @@ namespace grav_x {
 bool CudaMemoryPool::_initialized = false;
 bool CudaMemoryPool::_supported = false;
 void* CudaMemoryPool::_pool = nullptr;
+/// Description: Executes the initialize operation.
 void CudaMemoryPool::initialize()
 {
     if (_initialized)
@@ -42,6 +43,7 @@ void CudaMemoryPool::initialize()
             _supported = true;
             // Set release threshold to prevent excessive memory retention
             uint64_t threshold = 256 * 1024 * 1024;
+            /// Description: Executes the cudaMemPoolSetAttribute operation.
             cudaMemPoolSetAttribute(pool, cudaMemPoolAttrReleaseThreshold, &threshold);
         }
         else {
@@ -55,15 +57,18 @@ void CudaMemoryPool::initialize()
     }
     _initialized = true;
 }
+/// Description: Executes the destroy operation.
 void CudaMemoryPool::destroy()
 {
     _initialized = false;
     _supported = false;
     _pool = nullptr;
 }
+/// Description: Executes the allocate operation.
 void* CudaMemoryPool::allocate(std::size_t size, void* stream)
 {
     if (!_initialized)
+        /// Description: Executes the initialize operation.
         initialize();
     void* ptr = nullptr;
     cudaError_t err;
@@ -77,20 +82,25 @@ void* CudaMemoryPool::allocate(std::size_t size, void* stream)
     // fprintf(stdout, "[cuda-pool] allocated %zu bytes at %p\n", size, ptr);
     return ptr;
 }
+/// Description: Executes the deallocate operation.
 void CudaMemoryPool::deallocate(void* ptr, void* stream)
 {
     if (!ptr)
         return;
     if (_supported) {
+        /// Description: Executes the cudaFreeAsync operation.
         cudaFreeAsync(ptr, static_cast<cudaStream_t>(stream));
     }
     else {
+        /// Description: Executes the cudaFree operation.
         cudaFree(ptr);
     }
 }
+/// Description: Executes the isSupported operation.
 bool CudaMemoryPool::isSupported()
 {
     if (!_initialized)
+        /// Description: Executes the initialize operation.
         initialize();
     return _supported;
 }

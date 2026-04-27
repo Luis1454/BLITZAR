@@ -9,6 +9,7 @@ from pathlib import Path
 from tests.checks.suites.policy.test_repo_policy import _run, _write
 
 
+# Description: Executes the test_repo_policy_rejects_function_definition_in_header operation.
 def test_repo_policy_rejects_function_definition_in_header(tmp_path: Path) -> None:
     _write(
         tmp_path / "runtime" / "include" / "protocol" / "bad.hpp",
@@ -24,6 +25,7 @@ def test_repo_policy_rejects_function_definition_in_header(tmp_path: Path) -> No
     assert any("function definitions in headers are forbidden" in error for error in errors)
 
 
+# Description: Executes the test_repo_policy_accepts_declaration_only_header operation.
 def test_repo_policy_accepts_declaration_only_header(tmp_path: Path) -> None:
     _write(
         tmp_path / "runtime" / "include" / "protocol" / "good.hpp",
@@ -42,6 +44,7 @@ def test_repo_policy_accepts_declaration_only_header(tmp_path: Path) -> None:
     assert not errors
 
 
+# Description: Executes the test_repo_policy_accepts_documented_header_before_include_guard operation.
 def test_repo_policy_accepts_documented_header_before_include_guard(tmp_path: Path) -> None:
     _write(
         tmp_path / "runtime" / "include" / "protocol" / "documented.hpp",
@@ -62,6 +65,7 @@ def test_repo_policy_accepts_documented_header_before_include_guard(tmp_path: Pa
     assert not errors
 
 
+# Description: Executes the test_repo_policy_accepts_header_declaration_with_default_braced_arg operation.
 def test_repo_policy_accepts_header_declaration_with_default_braced_arg(tmp_path: Path) -> None:
     _write(
         tmp_path / "runtime" / "include" / "protocol" / "good_default.hpp",
@@ -82,6 +86,7 @@ def test_repo_policy_accepts_header_declaration_with_default_braced_arg(tmp_path
     assert not errors
 
 
+# Description: Executes the test_repo_policy_accepts_alignas_struct_declaration operation.
 def test_repo_policy_accepts_alignas_struct_declaration(tmp_path: Path) -> None:
     _write(
         tmp_path / "engine" / "include" / "physics" / "good_struct.hpp",

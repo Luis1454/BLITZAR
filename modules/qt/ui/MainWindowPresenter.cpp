@@ -10,16 +10,20 @@
 #include <limits>
 #include <sstream>
 namespace grav_qt {
+/// Description: Defines the MainWindowPresenterLocal data or behavior contract.
 class MainWindowPresenterLocal final {
 public:
+    /// Description: Executes the hasAge operation.
     static bool hasAge(std::uint32_t ageMs)
     {
         return ageMs != std::numeric_limits<std::uint32_t>::max();
     }
+    /// Description: Executes the ageLabel operation.
     static std::string ageLabel(std::uint32_t ageMs)
     {
         return hasAge(ageMs) ? std::to_string(ageMs) + "ms" : "n/a";
     }
+    /// Description: Executes the latencyLabel operation.
     static std::string latencyLabel(const MainWindowPresentationInput& input)
     {
         if (input.snapshotLatencyMs != std::numeric_limits<std::uint32_t>::max()) {
@@ -30,24 +34,29 @@ public:
         }
         return "n/a";
     }
+    /// Description: Executes the isStale operation.
     static bool isStale(std::uint32_t ageMs)
     {
         return hasAge(ageMs) && ageMs > 1000u;
     }
+    /// Description: Executes the fixedLabel operation.
     static std::string fixedLabel(float value, int precision)
     {
         std::ostringstream stream;
         stream << std::fixed << std::setprecision(precision) << value;
         return stream.str();
     }
+    /// Description: Executes the bytesLabel operation.
     static std::string bytesLabel(std::uint64_t bytes)
     {
         constexpr double kMiB = 1024.0 * 1024.0;
         std::ostringstream stream;
+        /// Description: Executes the setprecision operation.
         stream << std::fixed << std::setprecision(1) << (static_cast<double>(bytes) / kMiB)
                << " MiB";
         return stream.str();
     }
+    /// Description: Executes the simulatedSecondsPerSecond operation.
     static float simulatedSecondsPerSecond(const MainWindowPresentationInput& input)
     {
         float simulatedStep = std::max(0.0f, input.stats.dt);
@@ -70,6 +79,7 @@ public:
             return "busy";
         return "idle";
     }
+    /// Description: Executes the viewportStateLabel operation.
     static std::string viewportStateLabel(std::uint32_t snapshotAgeMs)
     {
         if (!hasAge(snapshotAgeMs))
@@ -77,16 +87,19 @@ public:
         const std::string age = ageLabel(snapshotAgeMs);
         return isStale(snapshotAgeMs) ? "stale (" + age + " old)" : "fresh (" + age + " old)";
     }
+    /// Description: Executes the progressLabel operation.
     static std::string progressLabel(const MainWindowPresentationInput& input)
     {
         if (input.simulationHorizonSeconds <= 0.0f)
             return "open-ended";
         const float clampedTime =
+            /// Description: Executes the clamp operation.
             std::clamp(input.stats.totalTime, 0.0f, input.simulationHorizonSeconds);
         const float pct = (clampedTime / input.simulationHorizonSeconds) * 100.0f;
         return fixedLabel(pct, 1) + "% (" + fixedLabel(clampedTime, 2) + " / " +
                fixedLabel(input.simulationHorizonSeconds, 2) + " s)";
     }
+    /// Description: Executes the etaLabel operation.
     static std::string etaLabel(const MainWindowPresentationInput& input)
     {
         if (input.simulationHorizonSeconds <= 0.0f ||
@@ -99,6 +112,7 @@ public:
         return fixedLabel((input.simulationHorizonSeconds - input.stats.totalTime) / simRate, 1) +
                "s";
     }
+    /// Description: Executes the exportStateLabel operation.
     static std::string exportStateLabel(const MainWindowPresentationInput& input)
     {
         if (input.stats.exportLastState.empty()) {
@@ -107,6 +121,7 @@ public:
         return input.stats.exportLastState;
     }
 };
+/// Description: Executes the present operation.
 MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentationInput& input) const
 {
     const bool staleStats = MainWindowPresenterLocal::isStale(input.statsAgeMs);
@@ -117,8 +132,10 @@ MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentation
                             : (input.stats.energyEstimated ? " (estimated)" : std::string());
     const std::string latency = MainWindowPresenterLocal::latencyLabel(input);
     const std::string backendState =
+        /// Description: Executes the backendStateLabel operation.
         MainWindowPresenterLocal::backendStateLabel(input, staleStats, staleSnapshot);
     const std::string viewportState =
+        /// Description: Executes the viewportStateLabel operation.
         MainWindowPresenterLocal::viewportStateLabel(input.snapshotAgeMs);
     const float simRate = MainWindowPresenterLocal::simulatedSecondsPerSecond(input);
     const std::string progress = MainWindowPresenterLocal::progressLabel(input);

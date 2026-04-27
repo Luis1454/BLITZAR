@@ -20,16 +20,19 @@ __device__ __forceinline__ float octreeNodeDistanceToBoundsHot(const GpuOctreeNo
     return sqrtf(dx * dx + dy * dy + dz * dz);
 }
 
+/// Description: Executes the octreeLoadParticlePosition operation.
 __device__ __forceinline__ Vector3 octreeLoadParticlePosition(ParticleSoAView state, int index)
 {
     return Vector3(__ldg(&state.posX[index]), __ldg(&state.posY[index]), __ldg(&state.posZ[index]));
 }
 
+/// Description: Executes the octreeLoadParticleMass operation.
 __device__ __forceinline__ float octreeLoadParticleMass(ParticleSoAView state, int index)
 {
     return __ldg(&state.mass[index]);
 }
 
+/// Description: Executes the octreeLoadParticleVelocity operation.
 __device__ __forceinline__ Vector3 octreeLoadParticleVelocity(ParticleSoAView state, int index)
 {
     return Vector3(__ldg(&state.velX[index]), __ldg(&state.velY[index]), __ldg(&state.velZ[index]));
@@ -52,6 +55,7 @@ __device__ Vector3 computeOctreeAccelerationStacklessCompact(
     constexpr int kMaxTraversalIterations = 8192;
 
     const Vector3 selfPos = octreeLoadParticlePosition(state, selfIndex);
+    /// Description: Executes the force operation.
     Vector3 force(0.0f, 0.0f, 0.0f);
 
     int traversalIterations = 0;
@@ -86,6 +90,7 @@ __device__ Vector3 computeOctreeAccelerationStacklessCompact(
             continue;
         }
 
+        /// Description: Executes the direction operation.
         const Vector3 direction(node.comX - selfPos.x, node.comY - selfPos.y, node.comZ - selfPos.z);
         const float dist2 = softenedDistanceSquared(direction, forceLaw);
         const bool containsSelf = octreeNodeContainsHot(node, selfPos);
@@ -186,8 +191,11 @@ __global__ void updateParticlesOctree(
     const Vector3 nextVel = vel + force * deltaTime;
     const Vector3 nextPos = selfPos + nextVel * deltaTime;
 
+    /// Description: Executes the setSoAPressure operation.
     setSoAPressure(particlesOut, i, force * 100.0f);
+    /// Description: Executes the setSoAVelocity operation.
     setSoAVelocity(particlesOut, i, nextVel);
+    /// Description: Executes the setSoAPosition operation.
     setSoAPosition(particlesOut, i, nextPos);
 
     particlesOut.mass[i] = __ldg(&lastState.mass[i]);

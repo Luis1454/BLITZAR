@@ -10,6 +10,7 @@
 #include <thread>
 #include <vector>
 namespace grav_test_server_protocol_replay {
+/// Description: Executes the waitForSteps operation.
 static void waitForSteps(ServerClient& client, uint64_t targetSteps)
 {
     ServerClientStatus status{};
@@ -19,10 +20,12 @@ static void waitForSteps(ServerClient& client, uint64_t targetSteps)
         if (status.steps >= targetSteps) {
             return;
         }
+        /// Description: Executes the sleep_for operation.
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
     FAIL() << "Timeout waiting for simulation to reach step " << targetSteps;
 }
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_011_FixedSeedServerReplayIsDeterministic)
 {
     std::vector<std::string> args = {"--init-seed",      "424242", "--init-mode", "random_cloud",
@@ -34,15 +37,18 @@ TEST(ServerProtocolTest, TST_INT_PROT_011_FixedSeedServerReplayIsDeterministic)
     ASSERT_TRUE(serverA.start(startErrorA, 0u, "", args)) << startErrorA;
     ServerClient clientA;
     clientA.setSocketTimeoutMs(5000);
+    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(clientA.connect("127.0.0.1", serverA.port()));
     ServerClientResponse responseA = clientA.sendCommand(std::string(grav_protocol::Pause));
     ASSERT_TRUE(responseA.ok) << responseA.error;
+    /// Description: Executes the waitForSteps operation.
     waitForSteps(clientA, 0u);
     std::vector<RenderParticle> snapshotZeroA;
     responseA = clientA.getSnapshot(snapshotZeroA, 4096u);
     ASSERT_TRUE(responseA.ok) << responseA.error;
     responseA = clientA.sendCommand(std::string(grav_protocol::Step), "\"count\":10");
     ASSERT_TRUE(responseA.ok) << responseA.error;
+    /// Description: Executes the waitForSteps operation.
     waitForSteps(clientA, 10u);
     std::vector<RenderParticle> snapshotA;
     responseA = clientA.getSnapshot(snapshotA, 4096u);
@@ -51,6 +57,7 @@ TEST(ServerProtocolTest, TST_INT_PROT_011_FixedSeedServerReplayIsDeterministic)
     serverA.stop();
     // Verify snapshot is not stale (particles moved)
     ASSERT_EQ(snapshotZeroA.size(), snapshotA.size());
+    /// Description: Executes the ASSERT_GT operation.
     ASSERT_GT(snapshotA.size(), 0u);
     bool particleMoved = false;
     for (size_t i = 0; i < snapshotA.size(); ++i) {
@@ -66,10 +73,12 @@ TEST(ServerProtocolTest, TST_INT_PROT_011_FixedSeedServerReplayIsDeterministic)
     ASSERT_TRUE(serverB.start(startErrorB, 0u, "", args)) << startErrorB;
     ServerClient clientB;
     clientB.setSocketTimeoutMs(5000);
+    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(clientB.connect("127.0.0.1", serverB.port()));
     ServerClientResponse responseB =
         clientB.sendCommand(std::string(grav_protocol::Step), "\"count\":10");
     ASSERT_TRUE(responseB.ok) << responseB.error;
+    /// Description: Executes the waitForSteps operation.
     waitForSteps(clientB, 10u);
     std::vector<RenderParticle> snapshotB;
     responseB = clientB.getSnapshot(snapshotB, 4096u);
@@ -79,10 +88,13 @@ TEST(ServerProtocolTest, TST_INT_PROT_011_FixedSeedServerReplayIsDeterministic)
     // Verify determinism
     ASSERT_EQ(snapshotA.size(), snapshotB.size());
     for (size_t i = 0; i < snapshotA.size(); ++i) {
+        /// Description: Executes the EXPECT_EQ operation.
         EXPECT_EQ(snapshotA[i].x, snapshotB[i].x)
             << "Mismatch at particle " << i << " X coordinate (drift)";
+        /// Description: Executes the EXPECT_EQ operation.
         EXPECT_EQ(snapshotA[i].y, snapshotB[i].y)
             << "Mismatch at particle " << i << " Y coordinate (drift)";
+        /// Description: Executes the EXPECT_EQ operation.
         EXPECT_EQ(snapshotA[i].z, snapshotB[i].z)
             << "Mismatch at particle " << i << " Z coordinate (drift)";
     }

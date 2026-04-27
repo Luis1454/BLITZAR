@@ -10,6 +10,7 @@
 #include "client/IClientRuntime.hpp"
 #include "config/SimulationScenarioValidation.hpp"
 #include <cstdint>
+/// Description: Defines the SimulationConfig data or behavior contract.
 struct SimulationConfig;
 namespace grav_qt {
 /// Reports whether a configuration update was validated and applied to the runtime.

@@ -16,6 +16,7 @@ from python_tools.ci.release_support import default_ci_context
 CommandRunner = Callable[[list[str]], str]
 
 
+# Description: Executes the default_command_runner operation.
 def default_command_runner(command: list[str]) -> str:
     try:
         completed = subprocess.run(command, capture_output=True, check=False, text=True)
@@ -27,10 +28,13 @@ def default_command_runner(command: list[str]) -> str:
     return output
 
 
+# Description: Defines the ToolManifestCollector contract.
 class ToolManifestCollector:
+    # Description: Executes the __init__ operation.
     def __init__(self, command_runner: CommandRunner | None = None) -> None:
         self._run = command_runner or default_command_runner
 
+    # Description: Executes the collect operation.
     def collect(self, lane: str, profile: str, compiler_command: list[str] | None = None) -> dict[str, object]:
         compiler = compiler_command or self._default_compiler_command()
         return {
@@ -47,11 +51,13 @@ class ToolManifestCollector:
             "ci_context": default_ci_context(),
         }
 
+    # Description: Executes the write operation.
     def write(self, manifest: Mapping[str, object], output_path: Path) -> Path:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
         return output_path
 
+    # Description: Executes the _runner_info operation.
     def _runner_info(self) -> dict[str, str]:
         return {
             "os": platform.system(),
@@ -60,6 +66,7 @@ class ToolManifestCollector:
             "machine": platform.machine(),
         }
 
+    # Description: Executes the _tool_entry operation.
     def _tool_entry(self, command: list[str]) -> dict[str, object]:
         try:
             version = self._run(command)
@@ -68,6 +75,7 @@ class ToolManifestCollector:
             return {"status": "unavailable", "command": command, "error": str(exc)}
 
     @staticmethod
+    # Description: Executes the _default_compiler_command operation.
     def _default_compiler_command() -> list[str]:
         if platform.system().lower().startswith("win"):
             return ["cl"]

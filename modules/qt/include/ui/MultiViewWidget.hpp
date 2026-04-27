@@ -48,7 +48,9 @@ public:
     std::size_t octreeOverlayNodeCount() const;
 
 private:
+    /// Description: Executes the applyOctreeOverlay operation.
     void applyOctreeOverlay();
+    /// Description: Executes the rebuildOctreeOverlay operation.
     void rebuildOctreeOverlay();
     QPointer<ParticleView> _xy;
     QPointer<ParticleView> _xz;

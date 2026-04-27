@@ -6,6 +6,7 @@
 #include <limits>
 #include <string>
 namespace grav_test_qt_ui {
+/// Description: Executes the TEST operation.
 TEST(QtUiLogicTest, TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeState)
 {
     grav_qt::MainWindowPresentationInput input;
@@ -60,38 +61,68 @@ TEST(QtUiLogicTest, TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeStat
     input.stats.exportLastPath = "exports/demo.vtk";
     input.stats.exportLastMessage = "background export active";
     const grav_qt::MainWindowPresentation presentation =
+        /// Description: Executes the MainWindowPresenter operation.
         grav_qt::MainWindowPresenter().present(input);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.headlineText.find("Backend: busy"), std::string::npos)
         << presentation.headlineText;
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.headlineText.find("Viewport: fresh (18ms old)"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.headlineText.find("Link: connected"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.headlineText.find("Owner: external"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.runtimeText.find("Sim rate: 1.20 sim s/s"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.runtimeText.find("Substeps: 2 x 0.005"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.queueText.find("Progress: open-ended"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.queueText.find("ETA: n/a"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.queueText.find("Export: writing"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.queueText.find("Export backlog: 2"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.queueText.find("Export done: 4"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.queueText.find("Export failed: 1"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.queueText.find("Last export: exports/demo.vtk"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.queueText.find("Queue: 2 / 4"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.queueText.find("Policy: latest-only"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.queueText.find("Latency: 7ms"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.energyText.find("Total: -0.5"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.gpuText.find("Kernel: 1.234 ms"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.gpuText.find("Copy: 0.456 ms"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.gpuText.find("VRAM: 128.0 MiB / 512.0 MiB"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.statusText.find('\n'), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.consoleTrace.find("backend_state=busy"), std::string::npos)
         << presentation.consoleTrace;
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.consoleTrace.find("gpu_telemetry=on"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.consoleTrace.find("progress=\"open-ended\""), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.consoleTrace.find("export_state=writing"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.consoleTrace.find("export_backlog=2"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.consoleTrace.find("queue_depth=2"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.consoleTrace.find("drop_policy=latest-only"), std::string::npos);
 }
+/// Description: Executes the TEST operation.
 TEST(QtUiLogicTest, TST_UNT_UI_005_PresenterHighlightsStaleBackendAndKnownHorizonEta)
 {
     grav_qt::MainWindowPresentationInput input;
@@ -129,20 +160,28 @@ TEST(QtUiLogicTest, TST_UNT_UI_005_PresenterHighlightsStaleBackendAndKnownHorizo
     input.stats.energyDriftPct = 0.0f;
     input.stats.energyEstimated = false;
     const grav_qt::MainWindowPresentation presentation =
+        /// Description: Executes the MainWindowPresenter operation.
         grav_qt::MainWindowPresenter().present(input);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.headlineText.find("Backend: stalled"), std::string::npos)
         << presentation.headlineText;
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.headlineText.find("Viewport: stale (2600ms old)"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.queueText.find("Progress: 40.0% (4.00 / 10.00 s)"), std::string::npos);
     EXPECT_NE(presentation.queueText.find("ETA: "), std::string::npos) << presentation.queueText;
     EXPECT_EQ(presentation.queueText.find("ETA: n/a"), std::string::npos) << presentation.queueText;
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.consoleTrace.find("backend_state=stalled"), std::string::npos)
         << presentation.consoleTrace;
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.consoleTrace.find("eta=\""), std::string::npos)
         << presentation.consoleTrace;
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(presentation.consoleTrace.find("eta=\"n/a\""), std::string::npos)
         << presentation.consoleTrace;
 }
+/// Description: Executes the TEST operation.
 TEST(QtUiLogicTest, TST_UNT_UI_008_PresenterReportsGpuTelemetryWaitingState)
 {
     grav_qt::MainWindowPresentationInput input;
@@ -153,10 +192,14 @@ TEST(QtUiLogicTest, TST_UNT_UI_008_PresenterReportsGpuTelemetryWaitingState)
     input.stats.gpuTelemetryEnabled = true;
     input.stats.gpuTelemetryAvailable = false;
     const grav_qt::MainWindowPresentation presentation =
+        /// Description: Executes the MainWindowPresenter operation.
         grav_qt::MainWindowPresenter().present(input);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.gpuText.find("State: waiting"), std::string::npos)
         << presentation.gpuText;
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.gpuText.find("Sampling: every 8 steps"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(presentation.statusText.find("State: waiting"), std::string::npos);
 }
 } // namespace grav_test_qt_ui

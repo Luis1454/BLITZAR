@@ -4,15 +4,19 @@
 #include "config/EnvUtilsWin.hpp"
 #include "config/EnvUtils.hpp"
 namespace grav_env {
+/// Description: Executes the get operation.
 std::optional<std::string> get(std::string_view name)
 {
+    /// Description: Executes the key operation.
     const std::string key(name);
     char* rawValue = nullptr;
     std::size_t rawSize = 0;
     if (_dupenv_s(&rawValue, &rawSize, key.c_str()) != 0 || rawValue == nullptr) {
         return std::nullopt;
     }
+    /// Description: Executes the value operation.
     const std::string value(rawValue);
+    /// Description: Executes the free operation.
     std::free(rawValue);
     return value;
 }

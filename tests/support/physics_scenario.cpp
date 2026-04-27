@@ -8,12 +8,15 @@
 #include <filesystem>
 namespace testsupport {
 namespace grav_test_physics_scenario {
+/// Description: Executes the twoBodyInputPath operation.
 std::filesystem::path twoBodyInputPath()
 {
+    /// Description: Executes the sourceFile operation.
     const std::filesystem::path sourceFile(__FILE__);
     return sourceFile.parent_path().parent_path() / "data" / "two_body_rest.xyz";
 }
 } // namespace grav_test_physics_scenario
+/// Description: Executes the distance operation.
 float distance(const RenderParticle& a, const RenderParticle& b)
 {
     const float dx = a.x - b.x;
@@ -21,6 +24,7 @@ float distance(const RenderParticle& a, const RenderParticle& b)
     const float dz = a.z - b.z;
     return std::sqrt(dx * dx + dy * dy + dz * dz);
 }
+/// Description: Executes the centerOfMassAll operation.
 std::array<float, 3> centerOfMassAll(const std::vector<RenderParticle>& snapshot)
 {
     double totalMass = 0.0;
@@ -39,6 +43,7 @@ std::array<float, 3> centerOfMassAll(const std::vector<RenderParticle>& snapshot
     return {static_cast<float>(cx / totalMass), static_cast<float>(cy / totalMass),
             static_cast<float>(cz / totalMass)};
 }
+/// Description: Executes the averageRadius operation.
 float averageRadius(const std::vector<RenderParticle>& snapshot)
 {
     if (snapshot.empty()) {
@@ -53,8 +58,10 @@ float averageRadius(const std::vector<RenderParticle>& snapshot)
     }
     return static_cast<float>(radiusSum / static_cast<double>(snapshot.size()));
 }
+/// Description: Executes the runScenario operation.
 bool runScenario(const ScenarioConfig& cfg, ScenarioResult& out, std::string& error)
 {
+    /// Description: Executes the server operation.
     SimulationServer server(std::max<std::uint32_t>(2u, cfg.particleCount), cfg.dt);
     server.setSolverMode(cfg.solver);
     server.setIntegratorMode(cfg.integrator);
@@ -100,6 +107,7 @@ bool runScenario(const ScenarioConfig& cfg, ScenarioResult& out, std::string& er
         const SimulationStats stats = server.getStats();
         if (std::isfinite(stats.energyDriftPct)) {
             out.maxAbsEnergyDriftPct =
+                /// Description: Executes the max operation.
                 std::max(out.maxAbsEnergyDriftPct, std::abs(stats.energyDriftPct));
         }
     }
@@ -123,14 +131,17 @@ bool runScenario(const ScenarioConfig& cfg, ScenarioResult& out, std::string& er
     const std::size_t comparableCount = std::min(out.initial.size(), out.final.size());
     for (std::size_t index = 0; index < comparableCount; index += 1u) {
         out.maxParticleDeltaFromInitial = std::max(out.maxParticleDeltaFromInitial,
+                                                   /// Description: Executes the distance operation.
                                                    distance(out.initial[index], out.final[index]));
     }
     return true;
 }
+/// Description: Executes the getTwoBodyInputPath operation.
 std::string getTwoBodyInputPath()
 {
     return grav_test_physics_scenario::twoBodyInputPath().string();
 }
+/// Description: Executes the prepareTwoBodyScenario operation.
 bool prepareTwoBodyScenario(ScenarioConfig& cfg, std::string& error)
 {
     const std::filesystem::path inputPath = grav_test_physics_scenario::twoBodyInputPath();

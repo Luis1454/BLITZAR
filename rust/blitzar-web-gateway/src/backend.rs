@@ -10,28 +10,35 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::net::TcpStream;
 
 #[derive(Clone, Debug, PartialEq)]
+/// Description: Defines the BackendConfig struct contract.
 pub struct BackendConfig {
     pub host: String,
     pub port: u16,
     pub token: String,
 }
 
+/// Description: Implements behavior for the associated Rust type.
 impl BackendConfig {
+    /// Description: Executes the socket_addr operation.
     pub fn socket_addr(&self) -> String {
         format!("{}:{}", self.host, self.port)
     }
 }
 
 #[derive(Clone, Debug)]
+/// Description: Defines the BackendClient struct contract.
 pub struct BackendClient {
     config: BackendConfig,
 }
 
+/// Description: Implements behavior for the associated Rust type.
 impl BackendClient {
+    /// Description: Executes the new operation.
     pub fn new(config: BackendConfig) -> Self {
         Self { config }
     }
 
+    /// Description: Executes the send_command operation.
     pub async fn send_command(&self, request: &CommandRequest) -> Result<Value, GatewayError> {
         let mut request = request.clone();
         if !self.config.token.is_empty() {
@@ -63,11 +70,13 @@ impl BackendClient {
             .map_err(|error| GatewayError::backend(error.to_string()))
     }
 
+    /// Description: Executes the get_status operation.
     pub async fn get_status(&self) -> Result<StatusPayload, GatewayError> {
         let response = self.send_named_command("status", BTreeMap::new()).await?;
         self.parse_typed_response::<StatusPayload>(response)
     }
 
+    /// Description: Executes the get_snapshot operation.
     pub async fn get_snapshot(&self, max_points: u32) -> Result<SnapshotPayload, GatewayError> {
         let mut fields = BTreeMap::new();
         fields.insert("max_points".to_string(), Value::from(max_points));
@@ -75,6 +84,7 @@ impl BackendClient {
         self.parse_typed_response::<SnapshotPayload>(response)
     }
 
+    /// Description: Executes the send_named_command operation.
     pub async fn send_named_command(
         &self,
         command: &str,
@@ -88,6 +98,7 @@ impl BackendClient {
         .await
     }
 
+    /// Description: Executes the parse_typed_response operation.
     fn parse_typed_response<T>(&self, value: Value) -> Result<T, GatewayError>
     where
         T: serde::de::DeserializeOwned,

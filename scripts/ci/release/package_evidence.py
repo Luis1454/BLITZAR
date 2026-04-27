@@ -20,6 +20,7 @@ from python_tools.ci.release_support import (
 )
 
 
+# Description: Executes the parse_args operation.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Package qualification-oriented release evidence.")
     parser.add_argument("--root", default=".", help="Repository root")
@@ -31,6 +32,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+# Description: Executes the main operation.
 def main() -> int:
     args = parse_args()
     packager = ReleaseEvidencePackager()

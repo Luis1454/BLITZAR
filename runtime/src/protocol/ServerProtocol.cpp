@@ -30,6 +30,7 @@ const std::string_view Export = "export";
 const std::string_view SaveCheckpoint = "save_checkpoint";
 const std::string_view LoadCheckpoint = "load_checkpoint";
 const std::string_view Shutdown = "shutdown";
+/// Description: Executes the clampSnapshotPoints operation.
 std::uint32_t clampSnapshotPoints(std::uint32_t requested)
 {
     if (requested < kSnapshotMinPoints)

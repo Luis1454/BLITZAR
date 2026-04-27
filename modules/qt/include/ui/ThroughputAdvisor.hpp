@@ -5,9 +5,12 @@
 #define GRAVITY_MODULES_QT_INCLUDE_UI_THROUGHPUTADVISOR_HPP_
 #include <cstdint>
 #include <string>
+/// Description: Defines the SimulationConfig data or behavior contract.
 struct SimulationConfig;
 namespace grav_qt {
+/// Description: Enumerates the supported ThroughputAdvisorySeverity values.
 enum class ThroughputAdvisorySeverity { None, Advisory, Warning };
+/// Description: Defines the ThroughputAdvisory data or behavior contract.
 struct ThroughputAdvisory final {
     ThroughputAdvisorySeverity severity = ThroughputAdvisorySeverity::None;
     std::uint32_t estimatedSubsteps = 1u;
@@ -16,8 +19,10 @@ struct ThroughputAdvisory final {
     std::string action;
     std::string statusBarText;
 };
+/// Description: Defines the ThroughputAdvisor data or behavior contract.
 class ThroughputAdvisor final {
 public:
+    /// Description: Executes the evaluate operation.
     static ThroughputAdvisory evaluate(const SimulationConfig& config, std::uint32_t drawCap);
 };
 } // namespace grav_qt

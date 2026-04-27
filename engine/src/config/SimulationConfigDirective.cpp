@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 namespace grav_config {
+/// Description: Executes the trimDirective operation.
 static std::string trimDirective(std::string_view value)
 {
     const auto begin = std::find_if_not(value.begin(), value.end(),
@@ -22,6 +23,7 @@ static std::string trimDirective(std::string_view value)
     }
     return std::string(begin, end);
 }
+/// Description: Executes the unquoteDirective operation.
 static std::string unquoteDirective(std::string value)
 {
     if (value.size() >= 2u) {
@@ -70,6 +72,7 @@ static bool splitDirective(std::string_view raw, std::string& name,
                 return false;
             }
             args.emplace_back(trimDirective(entry.substr(0u, eq)),
+                              /// Description: Executes the unquoteDirective operation.
                               unquoteDirective(trimDirective(entry.substr(eq + 1u))));
             continue;
         }
@@ -84,6 +87,7 @@ static bool splitDirective(std::string_view raw, std::string& name,
         return false;
     }
     args.emplace_back(trimDirective(entry.substr(0u, eq)),
+                      /// Description: Executes the unquoteDirective operation.
                       unquoteDirective(trimDirective(entry.substr(eq + 1u))));
     return true;
 }
@@ -150,6 +154,7 @@ static bool applyDirectiveArgs(std::string_view directive,
         } else if (directive == "scene") {
             if (arg.first == "kind") {
                 handled = applyIniOption("preset_structure", arg.second, config, warnings) &&
+                          /// Description: Executes the applyIniOption operation.
                           applyIniOption("init_mode", arg.second, config, warnings);
             } else {
                 const std::string iniKey = arg.first == "style"    ? "init_config_style"

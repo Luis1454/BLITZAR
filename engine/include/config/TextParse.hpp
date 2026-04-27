@@ -8,10 +8,15 @@
 #include <string>
 #include <string_view>
 namespace grav_text {
+/// Description: Executes the trimView operation.
 std::string_view trimView(std::string_view value);
+/// Description: Executes the parseSigned64 operation.
 bool parseSigned64(std::string_view rawValue, long long& out);
+/// Description: Executes the parseUnsigned64 operation.
 bool parseUnsigned64(std::string_view rawValue, unsigned long long& out);
+/// Description: Executes the parseFloat64 operation.
 bool parseFloat64(std::string_view rawValue, double& out);
+/// Description: Executes the parseNumber operation.
 template <typename NumberType> bool parseNumber(std::string_view rawValue, NumberType& out);
 extern template bool parseNumber<short>(std::string_view rawValue, short& out);
 extern template bool parseNumber<unsigned short>(std::string_view rawValue, unsigned short& out);

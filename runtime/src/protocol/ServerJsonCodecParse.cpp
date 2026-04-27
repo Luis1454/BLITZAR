@@ -18,6 +18,7 @@ bool ServerJsonCodec::parseCommandRequest(std::string_view raw, ServerCommandReq
         error = "missing cmd";
         return false;
     }
+    /// Description: Executes the readString operation.
     readString(raw, "token", parsed.token);
     parsed.cmd = toLower(trim(parsed.cmd));
     if (parsed.cmd.empty()) {
@@ -41,6 +42,7 @@ bool ServerJsonCodec::parseResponseEnvelope(std::string_view raw, ServerResponse
         error = "invalid response";
         return false;
     }
+    /// Description: Executes the readString operation.
     readString(raw, "cmd", parsed.cmd);
     if (!parsed.ok && !readString(raw, "error", parsed.error)) {
         parsed.error = "server error";
@@ -49,6 +51,7 @@ bool ServerJsonCodec::parseResponseEnvelope(std::string_view raw, ServerResponse
     error.clear();
     return true;
 }
+/// Description: Executes the readString operation.
 bool ServerJsonCodec::readString(std::string_view raw, std::string_view key, std::string& out)
 {
     std::size_t cursor = 0;
@@ -89,6 +92,7 @@ bool ServerJsonCodec::readString(std::string_view raw, std::string_view key, std
     }
     return false;
 }
+/// Description: Executes the readBool operation.
 bool ServerJsonCodec::readBool(std::string_view raw, std::string_view key, bool& out)
 {
     std::string token;
@@ -106,6 +110,7 @@ bool ServerJsonCodec::readBool(std::string_view raw, std::string_view key, bool&
     }
     return false;
 }
+/// Description: Executes the trim operation.
 std::string ServerJsonCodec::trim(std::string_view value)
 {
     const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char current) {
@@ -118,12 +123,14 @@ std::string ServerJsonCodec::trim(std::string_view value)
         return {};
     return std::string(begin, end);
 }
+/// Description: Executes the toLower operation.
 std::string ServerJsonCodec::toLower(std::string value)
 {
     std::transform(value.begin(), value.end(), value.begin(),
                    [](unsigned char current) { return static_cast<char>(std::tolower(current)); });
     return value;
 }
+/// Description: Executes the findValueStart operation.
 bool ServerJsonCodec::findValueStart(std::string_view raw, std::string_view key, std::size_t& start)
 {
     const std::string pattern = "\"" + std::string(key) + "\"";
@@ -143,6 +150,7 @@ bool ServerJsonCodec::findValueStart(std::string_view raw, std::string_view key,
     start = cursor;
     return true;
 }
+/// Description: Executes the readToken operation.
 bool ServerJsonCodec::readToken(std::string_view raw, std::string_view key, std::string& out)
 {
     std::size_t cursor = 0;

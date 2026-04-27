@@ -9,16 +9,22 @@
 #include <string>
 #include <string_view>
 namespace grav_platform {
+/// Description: Defines the DynamicLibrary data or behavior contract.
 class DynamicLibrary {
 public:
+    /// Description: Executes the DynamicLibrary operation.
     DynamicLibrary();
+    /// Description: Releases resources owned by DynamicLibrary.
     ~DynamicLibrary();
     DynamicLibrary(const DynamicLibrary&) = delete;
     DynamicLibrary& operator=(const DynamicLibrary&) = delete;
     DynamicLibrary(DynamicLibrary&& other) noexcept;
     DynamicLibrary& operator=(DynamicLibrary&& other) noexcept;
+    /// Description: Executes the open operation.
     bool open(const std::string& path, std::string& outError);
+    /// Description: Executes the close operation.
     void close();
+    /// Description: Executes the isOpen operation.
     bool isOpen() const;
     bool loadSymbolAddress(std::string_view name, std::uintptr_t& outSymbol,
                            std::string& outError) const;
@@ -26,6 +32,7 @@ public:
 private:
     bool loadRawSymbol(std::string_view name, std::uintptr_t& outSymbol,
                        std::string& outError) const;
+    /// Description: Defines the Impl data or behavior contract.
     struct Impl;
     std::unique_ptr<Impl> _impl;
 };

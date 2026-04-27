@@ -33,11 +33,13 @@ REVIEWER_MARKER = "- [x] Independent reviewer identified"
 SOLO_WAIVER_IDS = {"DEV-SOLO-IVV", "WVR-SOLO-IVV"}
 
 
+# Description: Defines the IvvGateCheck contract.
 class IvvGateCheck(BaseCheck):
     name = "ivv_gate"
     success_message = "IV&V gate passed"
     failure_title = "IV&V approval required (not a technical quality failure):"
 
+    # Description: Executes the _execute operation.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         if context.event_name.strip() != "pull_request":
             result.success_message = "ivv gate skipped: not a pull_request event"
@@ -69,6 +71,7 @@ class IvvGateCheck(BaseCheck):
             self._check_non_author_approval(author, reviews, result)
 
     @staticmethod
+    # Description: Executes the _read_payload operation.
     def _read_payload(path_text: str, result: CheckResult) -> dict[str, object]:
         if not path_text:
             result.add_error("missing event payload path")
@@ -83,6 +86,7 @@ class IvvGateCheck(BaseCheck):
             return {}
         return payload
 
+    # Description: Executes the _fetch_items operation.
     def _fetch_items(self, repo: str, number: int, suffix: str, token: str, result: CheckResult) -> list[dict[str, object]]:
         request = urllib.request.Request(
             f"https://api.github.com/repos/{repo}/pulls/{number}/{suffix}?per_page=100",
@@ -104,6 +108,7 @@ class IvvGateCheck(BaseCheck):
         return [item for item in payload if isinstance(item, dict)]
 
     @staticmethod
+    # Description: Executes the _touches_critical_paths operation.
     def _touches_critical_paths(files: Sequence[dict[str, object]]) -> bool:
         for item in files:
             filename = str(item.get("filename", "")).strip()
@@ -111,6 +116,7 @@ class IvvGateCheck(BaseCheck):
                 return True
         return False
 
+    # Description: Executes the _check_template operation.
     def _check_template(self, author: str, owner: str, body: str, result: CheckResult) -> bool:
         for marker in COMMON_CHECKLIST_MARKERS:
             if marker not in body:
@@ -140,6 +146,7 @@ class IvvGateCheck(BaseCheck):
         return solo_waiver
 
     @staticmethod
+    # Description: Executes the _extract_line operation.
     def _extract_line(body: str, label: str) -> str:
         prefix = f"{label}:"
         for raw in body.splitlines():
@@ -148,9 +155,11 @@ class IvvGateCheck(BaseCheck):
         return ""
 
     @staticmethod
+    # Description: Executes the _repo_owner operation.
     def _repo_owner(repo: str) -> str:
         return repo.split("/", 1)[0].strip()
 
+    # Description: Executes the _is_solo_waiver operation.
     def _is_solo_waiver(self, author: str, owner: str, body: str, deviation: str) -> bool:
         waiver = self._extract_line(body, "Solo maintainer waiver")
         return (
@@ -160,6 +169,7 @@ class IvvGateCheck(BaseCheck):
         )
 
     @staticmethod
+    # Description: Executes the _check_non_author_approval operation.
     def _check_non_author_approval(author: str, reviews: Sequence[dict[str, object]], result: CheckResult) -> None:
         for review in reviews:
             state = str(review.get("state", "")).upper()

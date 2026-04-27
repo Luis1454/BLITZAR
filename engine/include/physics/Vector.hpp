@@ -4,11 +4,15 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_VECTOR_HPP_
 #define GRAVITY_ENGINE_INCLUDE_PHYSICS_VECTOR_HPP_
 #include <cmath>
+/// Description: Defines the Vector3 data or behavior contract.
 class Vector3 {
 public:
+    /// Description: Executes the Vector3 operation.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3();
+    /// Description: Executes the Vector3 operation.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3(float xValue, float yValue, float zValue);
     float x, y, z;
+    /// Description: Executes the norm operation.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE float norm() const;
 };
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 operator+(Vector3 a, Vector3 b);
@@ -17,7 +21,9 @@ GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 operator*(Vector3 a, float b);
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 operator/(Vector3 a, float b);
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3& operator+=(Vector3& a, Vector3 b);
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3& operator-=(Vector3& a, Vector3 b);
+/// Description: Executes the dot operation.
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE float dot(Vector3 a, Vector3 b);
+/// Description: Executes the normalize operation.
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 normalize(Vector3 v);
 #include "physics/Vector.inl"
 #endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_VECTOR_HPP_

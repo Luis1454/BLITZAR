@@ -8,8 +8,10 @@
 #include "modules/cli/module_cli_state.hpp"
 #include <string_view>
 namespace grav_module_cli {
+/// Description: Defines the ModuleCliCommands data or behavior contract.
 class ModuleCliCommands final {
 public:
+    /// Description: Executes the printHelp operation.
     static void printHelp();
     static bool handleCommand(ModuleState& state, std::string_view commandLine,
                               const grav_module::ClientModuleCommandControl& commandControl,

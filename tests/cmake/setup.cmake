@@ -90,6 +90,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/windows_paths.cmake")
 include("${GRAVITY_ROOT_DIR}/cmake/rust.cmake")
 gravity_ensure_rust_runtime_target()
 
+# Description: Defines the gravity_apply_test_quality_flags function helper.
 function(gravity_apply_test_quality_flags target_name)
     if(GRAVITY_INTEGRATION_STRICT_WARNINGS)
         if(MSVC)
@@ -183,6 +184,7 @@ if(NOT TARGET ${GRAVITY_TEST_PLATFORM_TARGET})
     endif()
 endif()
 
+# Description: Defines the gravity_add_gtest function helper.
 function(gravity_add_gtest target_name)
     set(options SERVER_LOCK)
     set(oneValueArgs TIMEOUT)

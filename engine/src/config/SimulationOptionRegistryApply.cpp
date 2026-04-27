@@ -15,6 +15,7 @@ static ValueType &memberAt(SimulationConfig &config, std::ptrdiff_t offset)
     return *reinterpret_cast<ValueType *>(reinterpret_cast<char *>(&config) + offset);
 }
 
+/// Description: Executes the emitInvalid operation.
 static void emitInvalid(std::ostream &warnings, std::string_view source, std::string_view optionName, const std::string &value)
 {
     warnings << source << " invalid " << optionName << ": " << value << "\n";
@@ -32,6 +33,7 @@ static void emitClamped(
              << requested << " -> " << clamped << "\n";
 }
 
+/// Description: Executes the clampClientParticleCap operation.
 static std::uint32_t clampClientParticleCap(std::uint32_t requested)
 {
     if (requested > grav_protocol::kSnapshotMaxPoints) {
@@ -40,6 +42,7 @@ static std::uint32_t clampClientParticleCap(std::uint32_t requested)
     return requested < 2u ? 2u : requested;
 }
 
+/// Description: Executes the markCustomPerformanceProfile operation.
 static void markCustomPerformanceProfile(const SimulationOptionEntry &entry, SimulationConfig &config)
 {
     if (grav_config::isPerformanceManagedField(entry.iniName)) {
@@ -47,6 +50,7 @@ static void markCustomPerformanceProfile(const SimulationOptionEntry &entry, Sim
     }
 }
 
+/// Description: Executes the matchesCli operation.
 bool matchesCli(const SimulationOptionEntry &entry, const std::string &key, SimulationOptionGroup group)
 {
     if (entry.group != group) {
@@ -55,11 +59,13 @@ bool matchesCli(const SimulationOptionEntry &entry, const std::string &key, Simu
     return key == entry.cliName || (!entry.cliAlias.empty() && key == entry.cliAlias);
 }
 
+/// Description: Executes the matchesIni operation.
 bool matchesIni(const SimulationOptionEntry &entry, const std::string &key)
 {
     return key == entry.iniName || (!entry.iniAlias.empty() && key == entry.iniAlias);
 }
 
+/// Description: Executes the matchesEnv operation.
 bool matchesEnv(const SimulationOptionEntry &entry, const std::string &key)
 {
     return !entry.envName.empty() && key == entry.envName;
@@ -79,10 +85,12 @@ bool applyEntry(
             if (!SimulationArgsParse::parseUint(value, parsed)
                 || (entry.hasMin && parsed < static_cast<std::uint32_t>(entry.minValue))
                 || (entry.hasMax && parsed > static_cast<std::uint32_t>(entry.maxValue))) {
+                /// Description: Executes the emitInvalid operation.
                 emitInvalid(warnings, source, optionName, value);
                 return true;
             }
             memberAt<std::uint32_t>(config, entry.offset) = parsed;
+            /// Description: Executes the markCustomPerformanceProfile operation.
             markCustomPerformanceProfile(entry, config);
             return true;
         }
@@ -91,6 +99,7 @@ bool applyEntry(
             if (!SimulationArgsParse::parseInt(value, parsed)
                 || (entry.hasMin && parsed < static_cast<int>(entry.minValue))
                 || (entry.hasMax && parsed > static_cast<int>(entry.maxValue))) {
+                /// Description: Executes the emitInvalid operation.
                 emitInvalid(warnings, source, optionName, value);
                 return true;
             }
@@ -102,6 +111,7 @@ bool applyEntry(
             if (!SimulationArgsParse::parseFloat(value, parsed)
                 || (entry.hasMin && parsed < static_cast<float>(entry.minValue))
                 || (entry.hasMax && parsed > static_cast<float>(entry.maxValue))) {
+                /// Description: Executes the emitInvalid operation.
                 emitInvalid(warnings, source, optionName, value);
                 return true;
             }
@@ -111,6 +121,7 @@ bool applyEntry(
         case OptionKind::Bool: {
             bool parsed = memberAt<bool>(config, entry.offset);
             if (!SimulationArgsParse::parseBool(value, parsed)) {
+                /// Description: Executes the emitInvalid operation.
                 emitInvalid(warnings, source, optionName, value);
                 return true;
             }
@@ -128,6 +139,7 @@ bool applyEntry(
                 return true;
             }
             memberAt<std::string>(config, entry.offset) = canonical;
+            /// Description: Executes the applyPerformanceProfile operation.
             grav_config::applyPerformanceProfile(config);
             return true;
         }
@@ -164,20 +176,24 @@ bool applyEntry(
         case OptionKind::ClientParticleCap: {
             std::uint32_t parsed = memberAt<std::uint32_t>(config, entry.offset);
             if (!SimulationArgsParse::parseUint(value, parsed) || parsed < 2u) {
+                /// Description: Executes the emitInvalid operation.
                 emitInvalid(warnings, source, optionName, value);
                 return true;
             }
             const std::uint32_t clamped = clampClientParticleCap(parsed);
             memberAt<std::uint32_t>(config, entry.offset) = clamped;
             if (clamped != parsed) {
+                /// Description: Executes the emitClamped operation.
                 emitClamped(warnings, source, optionName, parsed, clamped);
             }
+            /// Description: Executes the markCustomPerformanceProfile operation.
             markCustomPerformanceProfile(entry, config);
             return true;
         }
         case OptionKind::TimeoutTriple: {
             std::uint32_t parsed = config.clientRemoteCommandTimeoutMs;
             if (!SimulationArgsParse::parseUint(value, parsed) || parsed < 10u || parsed > 60000u) {
+                /// Description: Executes the emitInvalid operation.
                 emitInvalid(warnings, source, optionName, value);
                 return true;
             }
@@ -227,11 +243,13 @@ bool applyCliOption(
         "[args]");
 }
 
+/// Description: Executes the applyIniOption operation.
 bool applyIniOption(const std::string &key, const std::string &value, SimulationConfig &config, std::ostream &warnings)
 {
     return applyMatchingEntry(matchesIni, key, value, config, warnings, "[config]");
 }
 
+/// Description: Executes the applyEnvOption operation.
 bool applyEnvOption(const std::string &key, const std::string &value, SimulationConfig &config, std::ostream &warnings)
 {
     return applyMatchingEntry(matchesEnv, key, value, config, warnings, "[env]");

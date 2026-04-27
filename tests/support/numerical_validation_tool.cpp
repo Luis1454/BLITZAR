@@ -11,10 +11,12 @@
 #include <string>
 #include <vector>
 namespace grav_test_numerics_tool {
+/// Description: Defines the ToolOptions data or behavior contract.
 struct ToolOptions {
     std::string preset;
     std::string solver;
 };
+/// Description: Defines the PresetConfig data or behavior contract.
 struct PresetConfig {
     testsupport::ScenarioConfig scenario{};
     std::string dataset;
@@ -30,6 +32,7 @@ float centerOfMassDrift(const std::vector<RenderParticle>& initial,
     const float dz = end[2] - start[2];
     return std::sqrt(dx * dx + dy * dy + dz * dz);
 }
+/// Description: Executes the writeVector operation.
 void writeVector(std::ostream& out, const std::string& name, const std::array<float, 3>& value)
 {
     out << name << "=" << value[0] << "," << value[1] << "," << value[2] << "\n";
@@ -40,6 +43,7 @@ bool parseArgs(int argc, const char* const* argv, grav_test_numerics_tool::ToolO
                std::string& error)
 {
     for (int index = 1; index < argc; index += 1) {
+        /// Description: Executes the arg operation.
         const std::string arg(argv[index]);
         if (arg == "--help") {
             error = "usage: gravityNumericalValidationTool --preset <name> --solver <solver>";
@@ -49,6 +53,7 @@ bool parseArgs(int argc, const char* const* argv, grav_test_numerics_tool::ToolO
             error = "missing value for argument: " + arg;
             return false;
         }
+        /// Description: Executes the value operation.
         const std::string value(argv[index + 1]);
         if (arg == "--preset") {
             out.preset = value;
@@ -185,6 +190,7 @@ int NumericalValidationTool::run(int argc, const char* const* argv, std::ostream
         err << error << "\n";
         return 1;
     }
+    /// Description: Executes the setprecision operation.
     out << std::fixed << std::setprecision(8);
     out << "preset=" << options.preset << "\n";
     out << "solver=" << options.solver << "\n";
@@ -205,8 +211,10 @@ int NumericalValidationTool::run(int argc, const char* const* argv, std::ostream
     out << "center_of_mass_drift="
         << grav_test_numerics_tool::centerOfMassDrift(result.initial, result.final) << "\n";
     grav_test_numerics_tool::writeVector(out, "initial_center_of_mass",
+                                         /// Description: Executes the centerOfMassAll operation.
                                          testsupport::centerOfMassAll(result.initial));
     grav_test_numerics_tool::writeVector(out, "final_center_of_mass",
+                                         /// Description: Executes the centerOfMassAll operation.
                                          testsupport::centerOfMassAll(result.final));
     if (options.preset == "disk_solver_parity" || result.final.size() <= 8u) {
         for (std::size_t index = 0; index < result.final.size(); index += 1u) {

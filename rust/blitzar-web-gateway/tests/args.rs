@@ -3,6 +3,7 @@
 
 use blitzar_web_gateway::args::{GatewayOptions, parse_args};
 
+/// Description: Executes the tst_rust_web_001_parse_args_supports_gateway_and_backend_flags operation.
 #[test]
 fn tst_rust_web_001_parse_args_supports_gateway_and_backend_flags() {
     let args = vec![
@@ -27,6 +28,7 @@ fn tst_rust_web_001_parse_args_supports_gateway_and_backend_flags() {
     );
 }
 
+/// Description: Executes the tst_rust_web_002_parse_args_rejects_unknown_flag operation.
 #[test]
 fn tst_rust_web_002_parse_args_rejects_unknown_flag() {
     let args = vec![

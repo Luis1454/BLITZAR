@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
 from python_tools.ci.gpu_runner_bootstrap import WindowsGpuRunnerBootstrap
 
 
+# Description: Executes the parse_args operation.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Validate and bootstrap a Windows self-hosted GPU runner.")
     parser.add_argument("--repo", required=True, help="owner/repo")
@@ -28,6 +29,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+# Description: Executes the main operation.
 def main() -> int:
     args = parse_args()
     bootstrap = WindowsGpuRunnerBootstrap()

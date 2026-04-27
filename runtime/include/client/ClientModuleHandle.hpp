@@ -7,9 +7,12 @@
 #include <string>
 #include <string_view>
 namespace grav_module {
+/// Description: Defines the ClientModuleHandle data or behavior contract.
 class ClientModuleHandle {
 public:
+    /// Description: Executes the ClientModuleHandle operation.
     ClientModuleHandle();
+    /// Description: Releases resources owned by ClientModuleHandle.
     ~ClientModuleHandle();
     ClientModuleHandle(ClientModuleHandle&& other) noexcept;
     ClientModuleHandle& operator=(ClientModuleHandle&& other) noexcept;
@@ -21,9 +24,11 @@ public:
     [[nodiscard]] bool isLoaded() const noexcept;
     [[nodiscard]] std::string_view moduleName() const noexcept;
     [[nodiscard]] std::string_view loadedPath() const noexcept;
+    /// Description: Executes the handleCommand operation.
     bool handleCommand(std::string_view commandLine, bool& outKeepRunning, std::string& outError);
 
 private:
+    /// Description: Defines the Impl data or behavior contract.
     struct Impl;
     std::unique_ptr<Impl> m_impl;
 };

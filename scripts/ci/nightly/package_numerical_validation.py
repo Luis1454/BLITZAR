@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
 from python_tools.ci.numerical_validation import NumericalValidationCampaign
 
 
+# Description: Executes the parse_args operation.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run the nightly numerical validation campaign.")
     parser.add_argument("--root", default=".", help="Repository root")
@@ -24,6 +25,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+# Description: Executes the main operation.
 def main() -> int:
     args = parse_args()
     campaign = NumericalValidationCampaign()

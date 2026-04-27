@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 namespace grav_qt {
+/// Description: Executes the makeSummaryCard operation.
 static QFrame* makeSummaryCard(QWidget* parent, const QString& title, QLabel* content)
 {
     auto* card = new QFrame(parent);
@@ -34,6 +35,7 @@ static QFrame* makeSummaryCard(QWidget* parent, const QString& title, QLabel* co
     layout->addStretch(1);
     return card;
 }
+/// Description: Executes the buildTelemetryPane operation.
 QWidget* MainWindow::buildTelemetryPane()
 {
     auto* summaryPane = new QWidget(this);
@@ -49,6 +51,7 @@ QWidget* MainWindow::buildTelemetryPane()
     summaryLayout->addWidget(makeSummaryCard(summaryPane, "GPU", _gpuMetricsLabel), 2, 0, 1, 2);
     return summaryPane;
 }
+/// Description: Executes the buildValidationPane operation.
 QWidget* MainWindow::buildValidationPane()
 {
     auto* validationPane = new QWidget(this);
@@ -59,6 +62,7 @@ QWidget* MainWindow::buildValidationPane()
     validationLayout->addStretch(1);
     return validationPane;
 }
+/// Description: Executes the tick operation.
 void MainWindow::tick()
 {
     const auto uiNow = std::chrono::steady_clock::now();

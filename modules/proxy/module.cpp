@@ -16,6 +16,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+/// Description: Executes the trim operation.
 static std::string trim(const std::string& input)
 {
     const auto begin = std::find_if_not(input.begin(), input.end(),
@@ -27,6 +28,7 @@ static std::string trim(const std::string& input)
         return {};
     return std::string(begin, end);
 }
+/// Description: Executes the splitTokens operation.
 static std::vector<std::string> splitTokens(const std::string& line)
 {
     std::vector<std::string> tokens;
@@ -58,6 +60,7 @@ static std::vector<std::string> splitTokens(const std::string& line)
     }
     return tokens;
 }
+/// Description: Executes the proxyError operation.
 static std::string proxyError(std::string_view operation, std::string_view detail)
 {
     return std::string("module-gui-proxy ") + std::string(operation) + ": " + std::string(detail);
@@ -67,6 +70,7 @@ static void writeProxyError(const grav_client::ErrorBufferView& errorBuffer,
 {
     errorBuffer.write(proxyError(operation, detail));
 }
+/// Description: Defines the GuiProxyState data or behavior contract.
 struct GuiProxyState {
     std::string configPath = "simulation.ini";
     std::string host = "127.0.0.1";
@@ -74,10 +78,12 @@ struct GuiProxyState {
     bool autoStartServer = false;
     grav_platform::ProcessHandle clientProcess;
 };
+/// Description: Executes the isRunning operation.
 static bool isRunning(const GuiProxyState& state)
 {
     return state.clientProcess.isRunning();
 }
+/// Description: Executes the stopProcess operation.
 static bool stopProcess(GuiProxyState& state, const grav_client::ErrorBufferView& errorBuffer)
 {
     std::string processError;
@@ -88,6 +94,7 @@ static bool stopProcess(GuiProxyState& state, const grav_client::ErrorBufferView
     }
     return true;
 }
+/// Description: Executes the clientLaunchArgs operation.
 static std::vector<std::string> clientLaunchArgs(const GuiProxyState& state)
 {
     return {"--config",           state.configPath,
@@ -110,10 +117,12 @@ static bool launchProcess(GuiProxyState& state, const std::string& clientExecuta
     }
     return true;
 }
+/// Description: Executes the runningCommandLine operation.
 static std::string runningCommandLine(const GuiProxyState& state)
 {
     return state.clientProcess.commandLine();
 }
+/// Description: Executes the runningPidLabel operation.
 static std::string runningPidLabel(const GuiProxyState& state)
 {
     if (!state.clientProcess.isRunning()) {
@@ -121,6 +130,7 @@ static std::string runningPidLabel(const GuiProxyState& state)
     }
     return state.clientProcess.pidString();
 }
+/// Description: Executes the parseUnsignedPort operation.
 static bool parseUnsignedPort(std::string_view raw, std::uint16_t& outPort)
 {
     const std::string trimmed = trim(std::string(raw));
@@ -142,6 +152,7 @@ static bool parseUnsignedPort(std::string_view raw, std::uint16_t& outPort)
     outPort = static_cast<std::uint16_t>(parsedPort);
     return true;
 }
+/// Description: Executes the printHelp operation.
 static void printHelp()
 {
     std::cout << "[module-gui-proxy] commands:\n"
@@ -152,8 +163,10 @@ static void printHelp()
               << "  launch <client_executable_path>\n"
               << "  stop\n";
 }
+/// Description: Executes the parseBool operation.
 static bool parseBool(std::string_view raw, bool& out)
 {
+    /// Description: Executes the value operation.
     std::string value(raw);
     std::transform(value.begin(), value.end(), value.begin(),
                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
@@ -167,6 +180,7 @@ static bool parseBool(std::string_view raw, bool& out)
     }
     return false;
 }
+/// Description: Defines the GuiProxyModuleBoundary data or behavior contract.
 class GuiProxyModuleBoundary final {
 public:
     static bool create(const grav_module::ClientHostContextV1* context,
@@ -183,13 +197,16 @@ public:
                 state->configPath = context->configPath;
             }
             return outModuleState.assign(
+                /// Description: Executes the fromRawPointer operation.
                 grav_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
         }
         catch (const std::exception& ex) {
+            /// Description: Executes the writeProxyError operation.
             writeProxyError(errorBuffer, "create", ex.what());
             return false;
         }
         catch (...) {
+            /// Description: Executes the writeProxyError operation.
             writeProxyError(errorBuffer, "create", "non-standard exception");
             return false;
         }
@@ -203,6 +220,7 @@ public:
         }
         return state;
     }
+    /// Description: Executes the destroy operation.
     static void destroy(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
@@ -211,6 +229,7 @@ public:
             if (state != nullptr) {
                 std::array<char, 32> ignored{};
                 (void)stopProcess(*state,
+                                  /// Description: Executes the ErrorBufferView operation.
                                   grav_client::ErrorBufferView(ignored.data(), ignored.size()));
             }
         }
@@ -234,14 +253,17 @@ public:
             return true;
         }
         catch (const std::exception& ex) {
+            /// Description: Executes the writeProxyError operation.
             writeProxyError(errorBuffer, "start", ex.what());
             return false;
         }
         catch (...) {
+            /// Description: Executes the writeProxyError operation.
             writeProxyError(errorBuffer, "start", "non-standard exception");
             return false;
         }
     }
+    /// Description: Executes the stop operation.
     static void stop(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
@@ -249,6 +271,7 @@ public:
             if (state != nullptr) {
                 std::array<char, 32> ignored{};
                 (void)stopProcess(*state,
+                                  /// Description: Executes the ErrorBufferView operation.
                                   grav_client::ErrorBufferView(ignored.data(), ignored.size()));
             }
         }
@@ -261,6 +284,7 @@ public:
     }
 };
 extern "C" GRAVITY_CLIENT_MODULE_EXPORT_ATTR const grav_module::ClientModuleExportsV1*
+/// Description: Executes the gravity_client_module_v1 operation.
 gravity_client_module_v1()
 {
     static const grav_module::ClientModuleExportsV1 exports{
@@ -270,38 +294,48 @@ gravity_client_module_v1()
            char* errorBuffer, std::size_t errorBufferSize) -> bool {
             return GuiProxyModuleBoundary::create(
                 context, grav_module::ClientModuleStateSlot(outModuleState),
+                /// Description: Executes the ErrorBufferView operation.
                 grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void* moduleState) {
             GuiProxyModuleBoundary::destroy(
+                /// Description: Executes the fromRawPointer operation.
                 grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
         },
         [](void* moduleState, char* errorBuffer, std::size_t errorBufferSize) -> bool {
+            /// Description: Executes the errorView operation.
             const grav_client::ErrorBufferView errorView(errorBuffer, errorBufferSize);
             try {
                 return GuiProxyModuleBoundary::start(
+                    /// Description: Executes the fromRawPointer operation.
                     grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState), errorView);
             }
             catch (...) {
+                /// Description: Executes the writeProxyError operation.
                 writeProxyError(errorView, "start", "non-standard exception");
                 return false;
             }
         },
         [](void* moduleState) {
             GuiProxyModuleBoundary::stop(
+                /// Description: Executes the fromRawPointer operation.
                 grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
         },
         [](void* moduleState, const char* commandLine, bool* outKeepRunning, char* errorBuffer,
            std::size_t errorBufferSize) -> bool {
+            /// Description: Executes the errorView operation.
             const grav_client::ErrorBufferView errorView(errorBuffer, errorBufferSize);
+            /// Description: Executes the commandControl operation.
             const grav_module::ClientModuleCommandControl commandControl(outKeepRunning);
             try {
                 GuiProxyState* state = GuiProxyModuleBoundary::requireState(
+                    /// Description: Executes the fromRawPointer operation.
                     grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState), errorView);
                 if (state == nullptr)
                     return false;
                 commandControl.setContinue();
                 const std::string line =
+                    /// Description: Executes the trim operation.
                     trim(commandLine != nullptr ? std::string(commandLine) : std::string());
                 if (line.empty()) {
                     return true;
@@ -312,6 +346,7 @@ gravity_client_module_v1()
                 }
                 const std::string& cmd = tokens[0];
                 if (cmd == "help") {
+                    /// Description: Executes the printHelp operation.
                     printHelp();
                     return true;
                 }
@@ -388,10 +423,12 @@ gravity_client_module_v1()
                 return false;
             }
             catch (const std::exception& ex) {
+                /// Description: Executes the writeProxyError operation.
                 writeProxyError(errorView, "command", ex.what());
                 return false;
             }
             catch (...) {
+                /// Description: Executes the writeProxyError operation.
                 writeProxyError(errorView, "command", "non-standard exception");
                 return false;
             }

@@ -9,6 +9,7 @@ from tests.checks.suites.policy.test_repo_policy import _run, _write
 from tests.checks.suites.support.path_specs import ENGINE_SERVER_DIR, cpp_file
 
 
+# Description: Executes the test_repo_policy_warns_when_allowlisted_file_exceeds_strong_alert_threshold operation.
 def test_repo_policy_warns_when_allowlisted_file_exceeds_strong_alert_threshold(tmp_path: Path) -> None:
     oversize = "{\n" + "\"k\":0,\n" * 305 + "\"end\":1\n}\n"
     rel = Path("docs/quality/oversize.json")
@@ -21,6 +22,7 @@ def test_repo_policy_warns_when_allowlisted_file_exceeds_strong_alert_threshold(
     assert any("strong file-size alert" in warning and rel.as_posix() in warning for warning in warnings)
 
 
+# Description: Executes the test_repo_policy_warns_on_oversized_implementation_function operation.
 def test_repo_policy_warns_on_oversized_implementation_function(tmp_path: Path) -> None:
     body = "".join(f"    value += {index};\n" for index in range(85))
     _write(
@@ -37,6 +39,7 @@ def test_repo_policy_warns_on_oversized_implementation_function(tmp_path: Path) 
     assert any("function-size warning" in warning and "large_function.cpp:1" in warning for warning in warnings)
 
 
+# Description: Executes the test_repo_policy_warns_on_multiple_substantial_functions_in_one_file operation.
 def test_repo_policy_warns_on_multiple_substantial_functions_in_one_file(tmp_path: Path) -> None:
     function_block = "".join(f"    value += {index};\n" for index in range(38))
     content = (
@@ -63,6 +66,7 @@ def test_repo_policy_warns_on_multiple_substantial_functions_in_one_file(tmp_pat
     assert any("contains 3 substantial functions" in warning for warning in warnings)
 
 
+# Description: Executes the test_repo_policy_warns_on_excessive_function_count_in_one_file operation.
 def test_repo_policy_warns_on_excessive_function_count_in_one_file(tmp_path: Path) -> None:
     functions = []
     for index in range(9):
@@ -78,6 +82,7 @@ def test_repo_policy_warns_on_excessive_function_count_in_one_file(tmp_path: Pat
     assert any("function-count warning" in warning and "many_functions.cpp" in warning for warning in warnings)
 
 
+# Description: Executes the test_repo_policy_warns_on_elevated_branching_complexity operation.
 def test_repo_policy_warns_on_elevated_branching_complexity(tmp_path: Path) -> None:
     conditions = "".join(
         f"    if (value == {index} && ready) {{\n        total += {index};\n    }}\n"

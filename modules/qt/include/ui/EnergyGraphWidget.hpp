@@ -11,6 +11,7 @@
 #include <QStringList>
 #include <QWidget>
 #include <vector>
+/// Description: Defines the QPaintEvent data or behavior contract.
 class QPaintEvent;
 typedef QPaintEvent UiPaintEvent;
 namespace grav_qt {
@@ -38,6 +39,7 @@ public:
 
 private:
     typedef UiPaintEvent* PaintEventHandle;
+    /// Description: Executes the paintEvent operation.
     void paintEvent(PaintEventHandle event) override;
     std::vector<EnergyPoint> _history;
 };

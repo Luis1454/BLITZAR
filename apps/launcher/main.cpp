@@ -10,13 +10,16 @@
 #include <string>
 #include <string_view>
 #include <vector>
+/// Description: Enumerates the supported LaunchMode values.
 enum class LaunchMode { Client, Server, Headless };
+/// Description: Defines the LauncherOptions data or behavior contract.
 struct LauncherOptions {
     LaunchMode mode = LaunchMode::Client;
     std::string module = "cli";
     std::vector<std::string> passthroughArgs;
     bool showHelp = false;
 };
+/// Description: Executes the printUsage operation.
 void printUsage(const std::string_view programName)
 {
     std::cout << "Usage: " << programName
@@ -31,6 +34,7 @@ void printUsage(const std::string_view programName)
               << "  " << programName
               << " --mode headless -- --particle-count 10000 --target-steps 1000\n";
 }
+/// Description: Executes the parseMode operation.
 bool parseMode(const std::string& rawValue, LaunchMode& outMode)
 {
     std::string value = rawValue;
@@ -105,6 +109,7 @@ bool parseLauncherOptions(const int argc, char** argv, LauncherOptions& outOptio
     }
     return true;
 }
+/// Description: Executes the targetBasename operation.
 std::string targetBasename(const LaunchMode mode)
 {
     switch (mode) {
@@ -117,6 +122,7 @@ std::string targetBasename(const LaunchMode mode)
     }
     return "blitzar-client";
 }
+/// Description: Executes the containsModuleOverride operation.
 bool containsModuleOverride(const std::vector<std::string>& args)
 {
     return std::any_of(args.begin(), args.end(), [](const std::string& arg) {
@@ -127,6 +133,7 @@ std::string resolveExecutablePath(const std::string_view launcherPath,
                                   const std::string& executableName)
 {
     std::error_code ec;
+    /// Description: Executes the launcherFsPath operation.
     const std::filesystem::path launcherFsPath(launcherPath);
     if (!launcherFsPath.empty()) {
         const std::filesystem::path absLauncher = std::filesystem::absolute(launcherFsPath, ec);
@@ -144,6 +151,7 @@ int runChildBlocking(const std::string& resolvedExecutable,
 {
     std::string launchError;
     const int exitCode =
+        /// Description: Executes the runProcessBlocking operation.
         grav_platform::runProcessBlocking(resolvedExecutable, childArgs, false, launchError);
     if (!launchError.empty()) {
         std::cerr << "[launcher] failed to launch child process: "
@@ -152,16 +160,19 @@ int runChildBlocking(const std::string& resolvedExecutable,
     }
     return exitCode;
 }
+/// Description: Executes the main operation.
 int main(int argc, char** argv)
 {
     LauncherOptions options{};
     std::string parseError;
     if (!parseLauncherOptions(argc, argv, options, parseError)) {
         std::cerr << "[launcher] " << parseError << '\n';
+        /// Description: Executes the printUsage operation.
         printUsage(argc > 0 && argv != nullptr && argv[0] != nullptr ? argv[0] : "blitzar");
         return 2;
     }
     if (options.showHelp) {
+        /// Description: Executes the printUsage operation.
         printUsage(argc > 0 && argv != nullptr && argv[0] != nullptr ? argv[0] : "blitzar");
         return 0;
     }

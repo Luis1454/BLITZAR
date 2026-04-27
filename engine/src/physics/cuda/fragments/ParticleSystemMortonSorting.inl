@@ -49,12 +49,15 @@ __global__ void computeMortonCodesKernel(
     const float NORM_SCALE = 2097151.0f;  // 2^21 - 1
     
     const unsigned int xi = static_cast<unsigned int>(
+        /// Description: Executes the fmaxf operation.
         fmaxf(0.0f, fminf(NORM_SCALE, (pos.x - aabbMin.x) / extent.x * NORM_SCALE))
     );
     const unsigned int yi = static_cast<unsigned int>(
+        /// Description: Executes the fmaxf operation.
         fmaxf(0.0f, fminf(NORM_SCALE, (pos.y - aabbMin.y) / extent.y * NORM_SCALE))
     );
     const unsigned int zi = static_cast<unsigned int>(
+        /// Description: Executes the fmaxf operation.
         fmaxf(0.0f, fminf(NORM_SCALE, (pos.z - aabbMin.z) / extent.z * NORM_SCALE))
     );
     

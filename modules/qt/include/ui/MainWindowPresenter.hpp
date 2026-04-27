@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+/// Description: Defines the SimulationStats data or behavior contract.
 struct SimulationStats;
 namespace grav_qt {
 /// Collects the runtime fields required to render the workspace status area.

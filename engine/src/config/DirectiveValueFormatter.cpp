@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cctype>
 namespace grav_config {
+/// Description: Executes the quote operation.
 std::string DirectiveValueFormatter::quote(const std::string& value)
 {
     if (value.empty()) {

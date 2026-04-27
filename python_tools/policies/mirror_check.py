@@ -12,14 +12,17 @@ from python_tools.core.models import CheckContext, CheckResult
 from python_tools.policies.quality_manifest import QUALITY_MANIFEST_PATH, QualityManifestLoader
 
 
+# Description: Defines the MirrorCheck contract.
 class MirrorCheck(BaseCheck):
     name = "mirror"
     success_message = "Header/CPP mirror validation passed"
     failure_title = "Header/CPP mirror validation failed:"
 
+    # Description: Executes the __init__ operation.
     def __init__(self) -> None:
         self._manifest = QualityManifestLoader()
 
+    # Description: Executes the _execute operation.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         mirror_pairs, header_only = self._load_config(context, result)
         if not mirror_pairs:
@@ -37,6 +40,7 @@ class MirrorCheck(BaseCheck):
                 continue
             self._check_pair(hdr_rel, src_rel, headers, src_dir, header_only, result)
 
+    # Description: Executes the _check_pair operation.
     def _check_pair(
         self,
         hdr_rel: str,
@@ -58,10 +62,12 @@ class MirrorCheck(BaseCheck):
             if base not in header_bases:
                 result.add_error(f"Missing hpp for {src_rel}/{source.name} -> expected {hdr_rel}/{base}.hpp")
 
+    # Description: Executes the _has_source_mirror operation.
     def _has_source_mirror(self, src_dir: Path, base: str) -> bool:
         return (src_dir / f"{base}.cpp").exists() or (src_dir / f"{base}.cu").exists()
         return (src_dir / f"{base}.cpp").exists() or (src_dir / f"{base}.cu").exists()
 
+    # Description: Executes the _all_headers_header_only operation.
     def _all_headers_header_only(self, hdr_rel: str, headers, header_only: set[str]) -> bool:
         if not headers:
             return True
@@ -71,6 +77,7 @@ class MirrorCheck(BaseCheck):
                 return False
         return True
 
+    # Description: Executes the _load_config operation.
     def _load_config(self, context: CheckContext, result: CheckResult) -> tuple[list[tuple[str, str]], set[str]]:
         manifest = self._manifest.load(context.root, result)
         policies = manifest.get("policies")
@@ -85,6 +92,7 @@ class MirrorCheck(BaseCheck):
         header_only = self._read_header_only(mirror.get("header_only"), result)
         return pairs, header_only
 
+    # Description: Executes the _read_pairs operation.
     def _read_pairs(self, value: JsonValue | None, result: CheckResult) -> list[tuple[str, str]]:
         if not isinstance(value, dict):
             result.add_error(f"{QUALITY_MANIFEST_PATH}: 'policies.mirror.pairs' must be an object")
@@ -97,6 +105,7 @@ class MirrorCheck(BaseCheck):
             pairs.append((hdr_rel.strip(), src_rel.strip()))
         return pairs
 
+    # Description: Executes the _read_header_only operation.
     def _read_header_only(self, value: JsonValue | None, result: CheckResult) -> set[str]:
         if not isinstance(value, list):
             result.add_error(f"{QUALITY_MANIFEST_PATH}: 'policies.mirror.header_only' must be a list")

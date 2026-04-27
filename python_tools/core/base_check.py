@@ -9,12 +9,14 @@ from abc import ABC, abstractmethod
 from .models import CheckContext, CheckResult
 
 
+# Description: Defines the BaseCheck contract.
 class BaseCheck(ABC):
     name = "check"
     success_message = ""
     failure_title = "Check failed:"
     warning_title = "Warnings:"
 
+    # Description: Executes the _new_result operation.
     def _new_result(self) -> CheckResult:
         return CheckResult(
             name=self.name,
@@ -23,6 +25,7 @@ class BaseCheck(ABC):
             warning_title=self.warning_title,
         )
 
+    # Description: Executes the run operation.
     def run(self, context: CheckContext) -> CheckResult:
         result = self._new_result()
         self._preflight(context, result)
@@ -32,13 +35,16 @@ class BaseCheck(ABC):
         self._postprocess(context, result)
         return result
 
+    # Description: Executes the _preflight operation.
     def _preflight(self, context: CheckContext, result: CheckResult) -> None:
         del context, result
 
     @abstractmethod
+    # Description: Executes the _execute operation.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         raise NotImplementedError
 
+    # Description: Executes the _postprocess operation.
     def _postprocess(self, context: CheckContext, result: CheckResult) -> None:
         del context, result
 

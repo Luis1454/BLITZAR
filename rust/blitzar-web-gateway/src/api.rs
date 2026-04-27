@@ -17,6 +17,7 @@ use std::sync::Arc;
 use tokio::time::Duration;
 
 #[derive(Clone)]
+/// Description: Defines the WebGatewayState struct contract.
 pub struct WebGatewayState {
     pub backend: BackendClient,
     pub snapshot_max_points: u32,
@@ -24,6 +25,7 @@ pub struct WebGatewayState {
 }
 
 #[derive(Serialize)]
+/// Description: Defines the HealthPayload struct contract.
 struct HealthPayload {
     ok: bool,
     service: &'static str,
@@ -31,22 +33,26 @@ struct HealthPayload {
 }
 
 #[derive(Deserialize)]
+/// Description: Defines the SnapshotQuery struct contract.
 pub struct SnapshotQuery {
     pub max_points: Option<u32>,
 }
 
 #[derive(Deserialize)]
+/// Description: Defines the LoadRequest struct contract.
 pub struct LoadRequest {
     pub path: String,
     pub format: Option<String>,
 }
 
 #[derive(Deserialize)]
+/// Description: Defines the ExportRequest struct contract.
 pub struct ExportRequest {
     pub path: Option<String>,
     pub format: Option<String>,
 }
 
+/// Description: Executes the build_router operation.
 pub fn build_router(state: WebGatewayState) -> Router {
     Router::new()
         .route("/healthz", get(health))
@@ -60,6 +66,7 @@ pub fn build_router(state: WebGatewayState) -> Router {
         .with_state(Arc::new(state))
 }
 
+/// Description: Executes the health operation.
 async fn health() -> Json<HealthPayload> {
     Json(HealthPayload {
         ok: true,
@@ -68,16 +75,19 @@ async fn health() -> Json<HealthPayload> {
     })
 }
 
+/// Description: Executes the schema_doc operation.
 async fn schema_doc() -> Json<Value> {
     Json(schema::latest_schema_value())
 }
 
+/// Description: Executes the get_status operation.
 async fn get_status(
     State(state): State<Arc<WebGatewayState>>,
 ) -> Result<Json<blitzar_protocol::v1::StatusPayload>, GatewayError> {
     state.backend.get_status().await.map(Json)
 }
 
+/// Description: Executes the get_snapshot operation.
 async fn get_snapshot(
     State(state): State<Arc<WebGatewayState>>,
     Query(query): Query<SnapshotQuery>,
@@ -86,6 +96,7 @@ async fn get_snapshot(
     state.backend.get_snapshot(max_points).await.map(Json)
 }
 
+/// Description: Executes the post_command operation.
 async fn post_command(
     State(state): State<Arc<WebGatewayState>>,
     Json(request): Json<CommandRequest>,
@@ -93,6 +104,7 @@ async fn post_command(
     state.backend.send_command(&request).await.map(Json)
 }
 
+/// Description: Executes the post_load operation.
 async fn post_load(
     State(state): State<Arc<WebGatewayState>>,
     Json(request): Json<LoadRequest>,
@@ -110,6 +122,7 @@ async fn post_load(
         .map(Json)
 }
 
+/// Description: Executes the post_export operation.
 async fn post_export(
     State(state): State<Arc<WebGatewayState>>,
     Json(request): Json<ExportRequest>,

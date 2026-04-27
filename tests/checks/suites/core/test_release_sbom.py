@@ -9,6 +9,7 @@ from pathlib import Path
 from python_tools.ci.release_sbom import ReleaseSbomPackager
 
 
+# Description: Executes the test_release_sbom_packages_release_artifacts operation.
 def test_release_sbom_packages_release_artifacts(tmp_path: Path) -> None:
     artifacts_dir = tmp_path / "dist" / "release-bundle"
     artifacts_dir.mkdir(parents=True, exist_ok=True)
@@ -29,6 +30,7 @@ def test_release_sbom_packages_release_artifacts(tmp_path: Path) -> None:
     assert any(component["bom-ref"] == "README.md" for component in components)
 
 
+# Description: Executes the test_release_sbom_requires_artifacts_dir operation.
 def test_release_sbom_requires_artifacts_dir(tmp_path: Path) -> None:
     packager = ReleaseSbomPackager()
 

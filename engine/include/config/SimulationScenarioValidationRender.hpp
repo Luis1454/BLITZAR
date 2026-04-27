@@ -6,8 +6,10 @@
 #include "config/SimulationScenarioValidation.hpp"
 #include <string>
 namespace grav_config {
+/// Description: Defines the SimulationScenarioValidationRender data or behavior contract.
 class SimulationScenarioValidationRender final {
 public:
+    /// Description: Executes the render operation.
     static std::string render(const ScenarioValidationReport& report);
 };
 } // namespace grav_config

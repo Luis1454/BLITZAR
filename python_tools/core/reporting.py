@@ -9,7 +9,9 @@ import sys
 from .models import CheckResult
 
 
+# Description: Defines the ResultReporter contract.
 class ResultReporter:
+    # Description: Executes the emit operation.
     def emit(self, result: CheckResult) -> bool:
         if result.stdout:
             print(result.stdout, end="")
@@ -29,6 +31,7 @@ class ResultReporter:
         return result.ok
 
 
+# Description: Executes the emit_result operation.
 def emit_result(result: CheckResult) -> bool:
     return ResultReporter().emit(result)
 

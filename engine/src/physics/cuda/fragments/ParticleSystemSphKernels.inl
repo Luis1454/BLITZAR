@@ -104,6 +104,7 @@ __global__ void integrateSphGridKernel(
         outParticles.velY[i] = inParticles.velY[i];
         outParticles.velZ[i] = inParticles.velZ[i];
         outParticles.dens[i] = inParticles.dens[i];
+        /// Description: Executes the setSoAPressure operation.
         setSoAPressure(outParticles, i, getSoAPressure(inParticles, i));
         outParticles.mass[i] = inParticles.mass[i];
         return;
@@ -121,7 +122,9 @@ __global__ void integrateSphGridKernel(
     cy = max(0, min(cy, grid.gridSize - 1));
     cz = max(0, min(cz, grid.gridSize - 1));
 
+    /// Description: Executes the pressureForce operation.
     Vector3 pressureForce(0.0f, 0.0f, 0.0f);
+    /// Description: Executes the viscosityForce operation.
     Vector3 viscosityForce(0.0f, 0.0f, 0.0f);
 
     for (int dz = -1; dz <= 1; ++dz) {
@@ -171,9 +174,12 @@ __global__ void integrateSphGridKernel(
     }
     Vector3 nextPos = pi + nextVel * (deltaTime * correctionScale);
 
+    /// Description: Executes the setSoAVelocity operation.
     setSoAVelocity(outParticles, i, nextVel);
+    /// Description: Executes the setSoAPosition operation.
     setSoAPosition(outParticles, i, nextPos);
     outParticles.dens[i] = rhoI;
+    /// Description: Executes the setSoAPressure operation.
     setSoAPressure(outParticles, i, (pressureForce + viscosityForce) * 2.0f);
     outParticles.mass[i] = selfMass;
 }

@@ -6,6 +6,7 @@ use serde::Serialize;
 use serde_json::Value;
 
 #[derive(Debug, Serialize)]
+/// Description: Defines the WebEvent struct contract.
 pub struct WebEvent<'a, T> {
     #[serde(rename = "type")]
     pub kind: &'a str,
@@ -13,12 +14,14 @@ pub struct WebEvent<'a, T> {
 }
 
 #[derive(Debug, Serialize)]
+/// Description: Defines the WebErrorEvent struct contract.
 pub struct WebErrorEvent<'a> {
     #[serde(rename = "type")]
     pub kind: &'a str,
     pub message: &'a str,
 }
 
+/// Description: Executes the status_event operation.
 pub fn status_event(payload: StatusPayload) -> WebEvent<'static, StatusPayload> {
     WebEvent {
         kind: "status",
@@ -26,6 +29,7 @@ pub fn status_event(payload: StatusPayload) -> WebEvent<'static, StatusPayload> 
     }
 }
 
+/// Description: Executes the snapshot_event operation.
 pub fn snapshot_event(payload: SnapshotPayload) -> WebEvent<'static, SnapshotPayload> {
     WebEvent {
         kind: "snapshot",
@@ -33,6 +37,7 @@ pub fn snapshot_event(payload: SnapshotPayload) -> WebEvent<'static, SnapshotPay
     }
 }
 
+/// Description: Executes the command_event operation.
 pub fn command_event(payload: Value) -> WebEvent<'static, Value> {
     WebEvent {
         kind: "command_response",
@@ -40,6 +45,7 @@ pub fn command_event(payload: Value) -> WebEvent<'static, Value> {
     }
 }
 
+/// Description: Executes the error_event operation.
 pub fn error_event(message: &str) -> WebErrorEvent<'_> {
     WebErrorEvent {
         kind: "error",

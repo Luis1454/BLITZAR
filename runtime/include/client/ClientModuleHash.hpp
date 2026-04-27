@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 namespace grav_module {
+/// Description: Defines the ClientModuleHash data or behavior contract.
 class ClientModuleHash final {
 public:
     static bool computeFileSha256Hex(std::string_view filePath, std::string& outHexDigest,

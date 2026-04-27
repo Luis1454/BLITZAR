@@ -12,6 +12,7 @@
 #include <array>
 #include <cmath>
 namespace grav_qt {
+/// Description: Executes the colorForDepth operation.
 static QColor colorForDepth(int depth, int opacity)
 {
     const int clampedOpacity = std::clamp(opacity, 0, 255);
@@ -69,6 +70,7 @@ void OctreeOverlayPainter::paint(QPainter& painter, const QRect& viewport, grav:
     if (mode == grav::ViewMode::XY || mode == grav::ViewMode::XZ || mode == grav::ViewMode::YZ) {
         for (const OctreeOverlayNode& node : nodes) {
             painter.setPen(QPen(colorForDepth(node.depth, opacity), 1.0));
+            /// Description: Executes the drawOrthographicNode operation.
             drawOrthographicNode(painter, viewport, mode, node, zoom);
         }
         painter.restore();

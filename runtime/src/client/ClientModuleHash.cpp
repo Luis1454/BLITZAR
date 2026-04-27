@@ -10,11 +10,13 @@
 #include <string>
 #include <vector>
 namespace grav_module {
+/// Description: Defines the ClientModuleHashLocal data or behavior contract.
 class ClientModuleHashLocal final {
 public:
     static bool computeFileSha256Hex(std::string_view filePath, std::string& outHexDigest,
                                      std::string& outError)
     {
+        /// Description: Executes the input operation.
         std::ifstream input(std::string(filePath), std::ios::binary);
         if (!input.is_open()) {
             outError = "failed to open module for hashing: " + std::string(filePath);
@@ -28,20 +30,24 @@ public:
     }
 
 private:
+    /// Description: Executes the digest operation.
     static std::string digest(const std::vector<std::uint8_t>& input)
     {
         std::array<std::uint32_t, 8u> hash{0x6a09e667u, 0xbb67ae85u, 0x3c6ef372u, 0xa54ff53au,
                                            0x510e527fu, 0x9b05688cu, 0x1f83d9abu, 0x5be0cd19u};
         std::vector<std::uint8_t> padded = pad(input);
         for (std::size_t offset = 0u; offset < padded.size(); offset += 64u) {
+            /// Description: Executes the transformBlock operation.
             transformBlock(hash, padded.data() + offset);
         }
         std::ostringstream output;
+        /// Description: Executes the setfill operation.
         output << std::hex << std::setfill('0');
         for (const std::uint32_t value : hash)
             output << std::setw(8) << value;
         return output.str();
     }
+    /// Description: Executes the pad operation.
     static std::vector<std::uint8_t> pad(const std::vector<std::uint8_t>& input)
     {
         std::vector<std::uint8_t> padded = input;
@@ -54,6 +60,7 @@ private:
             padded.push_back(static_cast<std::uint8_t>((bitLength >> shift) & 0xffu));
         return padded;
     }
+    /// Description: Executes the transformBlock operation.
     static void transformBlock(std::array<std::uint32_t, 8u>& hash, const std::uint8_t* block)
     {
         std::array<std::uint32_t, 64u> words{};

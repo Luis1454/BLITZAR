@@ -9,8 +9,10 @@
 #include <system_error>
 #include <utility>
 namespace grav_client_host {
+/// Description: Defines the ClientHostModuleOpsLocal data or behavior contract.
 class ClientHostModuleOpsLocal final {
 public:
+    /// Description: Executes the moduleFilenameCandidatesForAlias operation.
     static std::vector<std::string> moduleFilenameCandidatesForAlias(const std::string& alias)
     {
         if (alias == "cli")
@@ -23,17 +25,21 @@ public:
             return grav_platform::sharedLibraryCandidates("gravityClientModuleQtInProc");
         return {};
     }
+    /// Description: Executes the isExplicitPath operation.
     static bool isExplicitPath(const std::string& specifier)
     {
+        /// Description: Executes the asPath operation.
         const std::filesystem::path asPath(specifier);
         return asPath.is_absolute() || (specifier.find('/') != std::string::npos) ||
                (specifier.find('\\') != std::string::npos) || asPath.has_extension();
     }
+    /// Description: Executes the buildSearchRoots operation.
     static std::vector<std::filesystem::path> buildSearchRoots(std::string_view programName)
     {
         std::vector<std::filesystem::path> roots;
         roots.reserve(4u);
         roots.push_back(std::filesystem::current_path());
+        /// Description: Executes the executablePath operation.
         const std::filesystem::path executablePath(programName);
         if (!executablePath.empty()) {
             roots.push_back(executablePath.parent_path());
@@ -66,6 +72,7 @@ public:
             }
         return filenames.front();
     }
+    /// Description: Executes the expectedModuleIdForSpecifier operation.
     static std::string expectedModuleIdForSpecifier(const std::string& rawSpecifier)
     {
         const std::string specifier = ClientHostCliText::trim(rawSpecifier);
@@ -98,6 +105,7 @@ public:
                              grav_module::ClientModuleHandle& module)
     {
         const std::string resolvedPath =
+            /// Description: Executes the resolveModuleSpecifier operation.
             resolveModuleSpecifier(currentModuleSpecifier, searchRoots);
         const std::string expectedModuleId = expectedModuleIdForSpecifier(currentModuleSpecifier);
         grav_module::ClientModuleHandle replacement{};
@@ -113,6 +121,7 @@ public:
     }
 };
 std::vector<std::filesystem::path>
+/// Description: Executes the buildSearchRoots operation.
 ClientHostModuleOps::buildSearchRoots(std::string_view programName)
 {
     return ClientHostModuleOpsLocal::buildSearchRoots(programName);
@@ -123,6 +132,7 @@ ClientHostModuleOps::resolveModuleSpecifier(const std::string& rawSpecifier,
 {
     return ClientHostModuleOpsLocal::resolveModuleSpecifier(rawSpecifier, searchRoots);
 }
+/// Description: Executes the expectedModuleIdForSpecifier operation.
 std::string ClientHostModuleOps::expectedModuleIdForSpecifier(const std::string& rawSpecifier)
 {
     return ClientHostModuleOpsLocal::expectedModuleIdForSpecifier(rawSpecifier);

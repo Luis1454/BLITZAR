@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <utility>
 namespace grav_qt {
+/// Description: Executes the MultiViewWidget operation.
 MultiViewWidget::MultiViewWidget()
     : QWidget(nullptr),
       _xy(new ParticleView(grav::ViewMode::XY)),
@@ -17,6 +18,7 @@ MultiViewWidget::MultiViewWidget()
       _maxDrawParticles(50000u),
       _octreeOverlayEnabled(false),
       _octreeOverlayDepth(3),
+      /// Description: Executes the _octreeOverlayOpacity operation.
       _octreeOverlayOpacity(96)
 {
     auto* grid = new QGridLayout(this);
@@ -26,8 +28,10 @@ MultiViewWidget::MultiViewWidget()
     grid->addWidget(_xz, 0, 1);
     grid->addWidget(_yz, 1, 0);
     grid->addWidget(_view3d, 1, 1);
+    /// Description: Executes the setSizePolicy operation.
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
+/// Description: Executes the setSnapshot operation.
 void MultiViewWidget::setSnapshot(std::vector<RenderParticle> snapshot)
 {
     const std::size_t cap = std::max<std::size_t>(2u, _maxDrawParticles);
@@ -42,6 +46,7 @@ void MultiViewWidget::setSnapshot(std::vector<RenderParticle> snapshot)
             _snapshot.push_back(snapshot[i]);
         }
     }
+    /// Description: Executes the rebuildOctreeOverlay operation.
     rebuildOctreeOverlay();
     if (_xy) {
         _xy->setSnapshot(_snapshot);
@@ -55,16 +60,20 @@ void MultiViewWidget::setSnapshot(std::vector<RenderParticle> snapshot)
     if (_view3d) {
         _view3d->setSnapshot(_snapshot);
     }
+    /// Description: Executes the applyOctreeOverlay operation.
     applyOctreeOverlay();
 }
+/// Description: Executes the setMaxDrawParticles operation.
 void MultiViewWidget::setMaxDrawParticles(std::size_t maxDrawParticles)
 {
     _maxDrawParticles = std::max<std::size_t>(2u, maxDrawParticles);
 }
+/// Description: Executes the displayedParticleCount operation.
 std::size_t MultiViewWidget::displayedParticleCount() const
 {
     return _snapshot.size();
 }
+/// Description: Executes the setZoom operation.
 void MultiViewWidget::setZoom(float zoom)
 {
     if (_xy) {
@@ -80,6 +89,7 @@ void MultiViewWidget::setZoom(float zoom)
         _view3d->setZoom(zoom);
     }
 }
+/// Description: Executes the setLuminosity operation.
 void MultiViewWidget::setLuminosity(int luminosity)
 {
     if (_xy) {
@@ -95,18 +105,21 @@ void MultiViewWidget::setLuminosity(int luminosity)
         _view3d->setLuminosity(luminosity);
     }
 }
+/// Description: Executes the set3DMode operation.
 void MultiViewWidget::set3DMode(grav::ViewMode mode)
 {
     if (_view3d) {
         _view3d->setMode(mode);
     }
 }
+/// Description: Executes the set3DCameraAngles operation.
 void MultiViewWidget::set3DCameraAngles(float yaw, float pitch, float roll)
 {
     if (_view3d) {
         _view3d->setCameraAngles(yaw, pitch, roll);
     }
 }
+/// Description: Executes the setRenderSettings operation.
 void MultiViewWidget::setRenderSettings(bool culling, bool lod, float nearDist, float farDist)
 {
     if (_xy) {
@@ -122,6 +135,7 @@ void MultiViewWidget::setRenderSettings(bool culling, bool lod, float nearDist, 
         _view3d->setRenderSettings(culling, lod, nearDist, farDist);
     }
 }
+/// Description: Executes the setOctreeOverlay operation.
 void MultiViewWidget::setOctreeOverlay(bool enabled, int depth, int opacity)
 {
     const bool overlayChanged = _octreeOverlayEnabled != enabled || _octreeOverlayDepth != depth ||
@@ -132,25 +146,32 @@ void MultiViewWidget::setOctreeOverlay(bool enabled, int depth, int opacity)
     if (!overlayChanged) {
         return;
     }
+    /// Description: Executes the rebuildOctreeOverlay operation.
     rebuildOctreeOverlay();
+    /// Description: Executes the applyOctreeOverlay operation.
     applyOctreeOverlay();
 }
+/// Description: Executes the octreeOverlayEnabled operation.
 bool MultiViewWidget::octreeOverlayEnabled() const
 {
     return _octreeOverlayEnabled;
 }
+/// Description: Executes the octreeOverlayDepth operation.
 int MultiViewWidget::octreeOverlayDepth() const
 {
     return _octreeOverlayDepth;
 }
+/// Description: Executes the octreeOverlayOpacity operation.
 int MultiViewWidget::octreeOverlayOpacity() const
 {
     return _octreeOverlayOpacity;
 }
+/// Description: Executes the octreeOverlayNodeCount operation.
 std::size_t MultiViewWidget::octreeOverlayNodeCount() const
 {
     return _octreeOverlay.size();
 }
+/// Description: Executes the applyOctreeOverlay operation.
 void MultiViewWidget::applyOctreeOverlay()
 {
     if (_xy) {
@@ -166,6 +187,7 @@ void MultiViewWidget::applyOctreeOverlay()
         _view3d->setOctreeOverlay(_octreeOverlay, _octreeOverlayEnabled, _octreeOverlayOpacity);
     }
 }
+/// Description: Executes the rebuildOctreeOverlay operation.
 void MultiViewWidget::rebuildOctreeOverlay()
 {
     if (!_octreeOverlayEnabled) {

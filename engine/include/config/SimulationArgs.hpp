@@ -7,7 +7,9 @@
 #include <string>
 #include <string_view>
 #include <vector>
+/// Description: Defines the SimulationConfig data or behavior contract.
 struct SimulationConfig;
+/// Description: Defines the RuntimeArgs data or behavior contract.
 struct RuntimeArgs {
     std::string configPath = "simulation.ini";
     int targetSteps = 1000;
@@ -20,5 +22,6 @@ std::string findConfigPathArg(const std::vector<std::string_view>& args,
                               const std::string& fallback = "simulation.ini");
 void applyArgsToConfig(const std::vector<std::string_view>& args, SimulationConfig& config,
                        RuntimeArgs& runtime, std::ostream& warnings);
+/// Description: Executes the printUsage operation.
 void printUsage(std::ostream& out, std::string_view programName, bool headlessMode);
 #endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_

@@ -15,10 +15,13 @@ from python_tools.ci.release_source import ReleaseSourcePackager
 from python_tools.ci.tool_manifest import ToolManifestCollector
 
 
+# Description: Defines the FakeNumericalValidationCampaign contract.
 class FakeNumericalValidationCampaign(NumericalValidationCampaign):
+    # Description: Executes the __init__ operation.
     def __init__(self, measurements: dict[str, dict[str, object]]) -> None:
         self._measurements = measurements
 
+    # Description: Executes the _collect_runs operation.
     def _collect_runs(self, tool_path: Path, raw_runs: object) -> dict[str, dict[str, object]]:
         del tool_path
         assert isinstance(raw_runs, list)
@@ -31,7 +34,9 @@ class FakeNumericalValidationCampaign(NumericalValidationCampaign):
         return rows
 
 
+# Description: Executes the _fake_runner operation.
 def _fake_runner(outputs: dict[tuple[str, ...], str]):
+    # Description: Executes the run operation.
     def run(command: list[str]) -> str:
         key = tuple(command)
         if key not in outputs:
@@ -41,6 +46,7 @@ def _fake_runner(outputs: dict[tuple[str, ...], str]):
     return run
 
 
+# Description: Executes the _write_campaign operation.
 def _write_campaign(root: Path) -> None:
     payload = {
         "profiles": {
@@ -59,6 +65,7 @@ def _write_campaign(root: Path) -> None:
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
+# Description: Executes the test_release_bundle_embeds_tool_manifest operation.
 def test_release_bundle_embeds_tool_manifest(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.chdir(tmp_path)
     build_dir = tmp_path / "build"
@@ -89,6 +96,7 @@ def test_release_bundle_embeds_tool_manifest(tmp_path: Path, monkeypatch) -> Non
         assert archive.name not in names
 
 
+# Description: Executes the test_release_bundle_smoke_validator_requires_qt_platform_plugin_for_qt_module operation.
 def test_release_bundle_smoke_validator_requires_qt_platform_plugin_for_qt_module(tmp_path: Path) -> None:
     bundle_root = tmp_path / "bundle"
     bundle_root.mkdir()
@@ -106,6 +114,7 @@ def test_release_bundle_smoke_validator_requires_qt_platform_plugin_for_qt_modul
         assert "platforms/" in str(error)
 
 
+# Description: Executes the test_release_bundle_smoke_validator_runs_help_commands_for_present_binaries operation.
 def test_release_bundle_smoke_validator_runs_help_commands_for_present_binaries(tmp_path: Path) -> None:
     bundle_root = tmp_path / "bundle"
     bundle_root.mkdir()
@@ -115,6 +124,7 @@ def test_release_bundle_smoke_validator_runs_help_commands_for_present_binaries(
     (bundle_root / "README.md").write_text("readme\n", encoding="utf-8")
     seen: list[tuple[list[str], Path]] = []
 
+    # Description: Executes the _runner operation.
     def _runner(command: list[str], cwd: Path) -> None:
         seen.append((command, cwd))
 
@@ -127,6 +137,7 @@ def test_release_bundle_smoke_validator_runs_help_commands_for_present_binaries(
     assert all(cwd == bundle_root for _, cwd in seen)
 
 
+# Description: Executes the test_release_source_packager_archives_tracked_files_only operation.
 def test_release_source_packager_archives_tracked_files_only(tmp_path: Path) -> None:
     subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True, text=True)
     (tmp_path / "README.md").write_text("readme\n", encoding="utf-8")
@@ -143,6 +154,7 @@ def test_release_source_packager_archives_tracked_files_only(tmp_path: Path) -> 
     assert "blitzar-v1.0.0-source/untracked.log" not in names
 
 
+# Description: Executes the test_tool_manifest_collector_records_versions_and_missing_tools operation.
 def test_tool_manifest_collector_records_versions_and_missing_tools(tmp_path: Path) -> None:
     collector = ToolManifestCollector(
         _fake_runner(
@@ -173,6 +185,7 @@ def test_tool_manifest_collector_records_versions_and_missing_tools(tmp_path: Pa
     assert tools["clang_tidy"]["status"] == "unavailable"
 
 
+# Description: Executes the test_numerical_validation_passes_when_thresholds_hold operation.
 def test_numerical_validation_passes_when_thresholds_hold(tmp_path: Path) -> None:
     _write_campaign(tmp_path)
     campaign = FakeNumericalValidationCampaign(
@@ -187,6 +200,7 @@ def test_numerical_validation_passes_when_thresholds_hold(tmp_path: Path) -> Non
     assert report["failures"] == []
 
 
+# Description: Executes the test_numerical_validation_fails_when_thresholds_are_exceeded operation.
 def test_numerical_validation_fails_when_thresholds_are_exceeded(tmp_path: Path) -> None:
     _write_campaign(tmp_path)
     campaign = FakeNumericalValidationCampaign(

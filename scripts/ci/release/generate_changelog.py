@@ -16,6 +16,7 @@ if str(ROOT) not in sys.path:
 from python_tools.ci.changelog import generate_changelog, render_markdown
 
 
+# Description: Executes the parse_args operation.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate changelog from git history.")
     parser.add_argument("--tag", required=True, help="Current release tag (e.g. v1.2.3)")
@@ -25,6 +26,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+# Description: Executes the main operation.
 def main() -> int:
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()

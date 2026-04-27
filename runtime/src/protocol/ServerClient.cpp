@@ -13,10 +13,12 @@
 #include <string>
 #include <string_view>
 #include <utility>
+/// Description: Executes the asBytes operation.
 static grav_socket::ConstBytes asBytes(std::string_view text)
 {
     return grav_socket::ConstBytes{reinterpret_cast<const std::byte*>(text.data()), text.size()};
 }
+/// Description: Executes the sendAll operation.
 static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes bytes)
 {
     std::size_t offset = 0;
@@ -28,29 +30,37 @@ static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes by
     }
     return true;
 }
+/// Description: Executes the clampTimeoutMs operation.
 static int clampTimeoutMs(int timeoutMs)
 {
     return grav_socket::clampTimeoutMs(timeoutMs);
 }
+/// Description: Executes the serverClientError operation.
 static std::string serverClientError(std::string_view operation, std::string_view detail)
 {
     return std::string("[server-client] ") + std::string(operation) + ": " + std::string(detail);
 }
+/// Description: Executes the ServerClient operation.
 ServerClient::ServerClient()
     : _socket(grav_socket::invalidHandle()),
       _socketTimeoutMs(3000),
       _networkInitialized(false),
       _recvBuffer(),
+      /// Description: Executes the _authToken operation.
       _authToken()
 {
 }
+/// Description: Releases resources owned by ServerClient.
 ServerClient::~ServerClient()
 {
+    /// Description: Executes the disconnect operation.
     disconnect();
 }
+/// Description: Executes the connect operation.
 bool ServerClient::connect(const std::string& host, std::uint16_t port)
 {
     try {
+        /// Description: Executes the disconnect operation.
         disconnect();
         if (!grav_socket::initializeSocketLayer()) {
             return false;
@@ -58,14 +68,18 @@ bool ServerClient::connect(const std::string& host, std::uint16_t port)
         _networkInitialized = true;
         const grav_socket::Handle socketHandle = grav_socket::createTcpSocket();
         if (!grav_socket::isValid(socketHandle)) {
+            /// Description: Executes the disconnect operation.
             disconnect();
             return false;
         }
         if (!grav_socket::connectIpv4(socketHandle, host, port, _socketTimeoutMs)) {
+            /// Description: Executes the closeSocket operation.
             grav_socket::closeSocket(socketHandle);
+            /// Description: Executes the disconnect operation.
             disconnect();
             return false;
         }
+        /// Description: Executes the setSocketTimeoutMs operation.
         grav_socket::setSocketTimeoutMs(socketHandle, _socketTimeoutMs);
         _socket = socketHandle;
         _recvBuffer.clear();
@@ -73,37 +87,46 @@ bool ServerClient::connect(const std::string& host, std::uint16_t port)
     }
     catch (const std::exception& ex) {
         std::cerr << serverClientError("connect", ex.what()) << "\n";
+        /// Description: Executes the disconnect operation.
         disconnect();
         return false;
     }
     catch (...) {
         std::cerr << serverClientError("connect", "non-standard exception") << "\n";
+        /// Description: Executes the disconnect operation.
         disconnect();
         return false;
     }
 }
+/// Description: Executes the setSocketTimeoutMs operation.
 void ServerClient::setSocketTimeoutMs(int timeoutMs)
 {
     _socketTimeoutMs = clampTimeoutMs(timeoutMs);
     if (isConnected()) {
+        /// Description: Executes the setSocketTimeoutMs operation.
         grav_socket::setSocketTimeoutMs(_socket, _socketTimeoutMs);
     }
 }
+/// Description: Executes the socketTimeoutMs operation.
 int ServerClient::socketTimeoutMs() const
 {
     return _socketTimeoutMs;
 }
+/// Description: Executes the setAuthToken operation.
 void ServerClient::setAuthToken(std::string token)
 {
     _authToken = std::move(token);
 }
+/// Description: Executes the disconnect operation.
 void ServerClient::disconnect()
 {
     try {
+        /// Description: Executes the closeSocket operation.
         grav_socket::closeSocket(_socket);
         _socket = grav_socket::invalidHandle();
         _recvBuffer.clear();
         if (_networkInitialized) {
+            /// Description: Executes the shutdownSocketLayer operation.
             grav_socket::shutdownSocketLayer();
             _networkInitialized = false;
         }
@@ -121,10 +144,12 @@ void ServerClient::disconnect()
         _networkInitialized = false;
     }
 }
+/// Description: Executes the isConnected operation.
 bool ServerClient::isConnected() const
 {
     return grav_socket::isValid(_socket);
 }
+/// Description: Executes the trim operation.
 std::string ServerClient::trim(const std::string& value)
 {
     const auto begin = std::find_if_not(value.begin(), value.end(),
@@ -136,6 +161,7 @@ std::string ServerClient::trim(const std::string& value)
         return {};
     return std::string(begin, end);
 }
+/// Description: Executes the readLine operation.
 bool ServerClient::readLine(std::string& outLine)
 {
     try {
@@ -172,6 +198,7 @@ bool ServerClient::readLine(std::string& outLine)
         return false;
     }
 }
+/// Description: Executes the sendJson operation.
 ServerClientResponse ServerClient::sendJson(const std::string& jsonLine)
 {
     ServerClientResponse response;
@@ -188,11 +215,13 @@ ServerClientResponse ServerClient::sendJson(const std::string& jsonLine)
         line.push_back('\n');
         if (!sendAll(_socket, asBytes(line))) {
             response.error = serverClientError("sendJson", "send failed");
+            /// Description: Executes the disconnect operation.
             disconnect();
             return response;
         }
         if (!readLine(response.raw)) {
             response.error = serverClientError("sendJson", "recv failed");
+            /// Description: Executes the disconnect operation.
             disconnect();
             return response;
         }
@@ -209,12 +238,14 @@ ServerClientResponse ServerClient::sendJson(const std::string& jsonLine)
     catch (const std::exception& ex) {
         response.ok = false;
         response.error = serverClientError("sendJson", ex.what());
+        /// Description: Executes the disconnect operation.
         disconnect();
         return response;
     }
     catch (...) {
         response.ok = false;
         response.error = serverClientError("sendJson", "non-standard exception");
+        /// Description: Executes the disconnect operation.
         disconnect();
         return response;
     }
@@ -227,6 +258,7 @@ ServerClientResponse ServerClient::sendCommand(const std::string& cmd,
     request.token = _authToken;
     return sendJson(grav_protocol::ServerJsonCodec::makeCommandRequest(request, fieldsJson));
 }
+/// Description: Executes the getStatus operation.
 ServerClientResponse ServerClient::getStatus(ServerClientStatus& outStatus)
 {
     try {

@@ -7,6 +7,7 @@
 #include <cstring>
 #include <new>
 namespace grav_ffi_internal {
+/// Description: Executes the writeErrorMessage operation.
 static void writeErrorMessage(const char* message, char* buffer, std::size_t capacity)
 {
     if (buffer == nullptr || capacity == 0u) {
@@ -17,18 +18,22 @@ static void writeErrorMessage(const char* message, char* buffer, std::size_t cap
         return;
     }
     const std::size_t length = std::min<std::size_t>(capacity - 1u, std::strlen(message));
+    /// Description: Executes the memcpy operation.
     std::memcpy(buffer, message, length);
     buffer[length] = '\0';
 }
+/// Description: Executes the invalidArgumentIfNull operation.
 static blitzar_core_result_t invalidArgumentIfNull(const void* value)
 {
     return value == nullptr ? BLITZAR_CORE_INVALID_ARGUMENT : BLITZAR_CORE_OK;
 }
 } // namespace grav_ffi_internal
+/// Description: Executes the blitzar_core operation.
 blitzar_core::blitzar_core(const blitzar_core_config_t& config) : impl(config)
 {
 }
 extern "C" {
+/// Description: Executes the blitzar_core_default_config operation.
 blitzar_core_config_t blitzar_core_default_config(void)
 {
     return blitzar_core_config_t{10000u, 0.01f, "pairwise_cuda", "euler", "interactive", 0.01f,
@@ -48,6 +53,7 @@ blitzar_core_t* blitzar_core_create(const blitzar_core_config_t* config, char* e
             delete core;
             return nullptr;
         }
+        /// Description: Executes the writeErrorMessage operation.
         grav_ffi_internal::writeErrorMessage("", error_buffer, error_buffer_capacity);
         return core;
     }
@@ -62,6 +68,7 @@ blitzar_core_t* blitzar_core_create(const blitzar_core_config_t* config, char* e
         return nullptr;
     }
 }
+/// Description: Executes the blitzar_core_destroy operation.
 void blitzar_core_destroy(blitzar_core_t* core)
 {
     delete core;
@@ -70,6 +77,7 @@ blitzar_core_result_t blitzar_core_apply_config(blitzar_core_t* core,
                                                 const blitzar_core_config_t* config)
 {
     if (grav_ffi_internal::invalidArgumentIfNull(core) != BLITZAR_CORE_OK ||
+        /// Description: Executes the invalidArgumentIfNull operation.
         grav_ffi_internal::invalidArgumentIfNull(config) != BLITZAR_CORE_OK) {
         return BLITZAR_CORE_INVALID_ARGUMENT;
     }
@@ -87,6 +95,7 @@ blitzar_core_result_t blitzar_core_get_status(const blitzar_core_t* core,
                                               blitzar_core_status_t* out_status)
 {
     if (grav_ffi_internal::invalidArgumentIfNull(core) != BLITZAR_CORE_OK ||
+        /// Description: Executes the invalidArgumentIfNull operation.
         grav_ffi_internal::invalidArgumentIfNull(out_status) != BLITZAR_CORE_OK) {
         return BLITZAR_CORE_INVALID_ARGUMENT;
     }
@@ -96,6 +105,7 @@ blitzar_core_result_t blitzar_core_get_snapshot(const blitzar_core_t* core, size
                                                 blitzar_core_snapshot_t* out_snapshot)
 {
     if (grav_ffi_internal::invalidArgumentIfNull(core) != BLITZAR_CORE_OK ||
+        /// Description: Executes the invalidArgumentIfNull operation.
         grav_ffi_internal::invalidArgumentIfNull(out_snapshot) != BLITZAR_CORE_OK) {
         return BLITZAR_CORE_INVALID_ARGUMENT;
     }
@@ -103,6 +113,7 @@ blitzar_core_result_t blitzar_core_get_snapshot(const blitzar_core_t* core, size
     out_snapshot->count = 0u;
     return core->impl.getSnapshot(max_points, *out_snapshot);
 }
+/// Description: Executes the blitzar_core_free_snapshot operation.
 void blitzar_core_free_snapshot(blitzar_core_snapshot_t* snapshot)
 {
     if (snapshot == nullptr) {

@@ -16,6 +16,7 @@
 #include <thread>
 #include <vector>
 namespace grav_server_service {
+/// Description: Executes the applyConfigToServer operation.
 void applyConfigToServer(SimulationServer& server, const SimulationConfig& config)
 {
     const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(config, std::cerr);
@@ -34,12 +35,14 @@ void applyConfigToServer(SimulationServer& server, const SimulationConfig& confi
     std::cout << "[server] " << initPlan.summary << "\n";
 }
 } // namespace grav_server_service
+/// Description: Executes the main operation.
 int main(int argc, char** argv)
 {
     std::vector<std::string_view> args;
     args.reserve(static_cast<std::size_t>(std::max(0, argc)));
     for (int i = 0; i < argc; ++i)
         args.emplace_back(argv[i] ? argv[i] : "");
+    /// Description: Executes the resetStopRequested operation.
     grav_server_service::resetStopRequested();
     grav_server_service::DaemonOptions options{};
     if (!grav_server_service::parseServerArgs(args, options, std::cerr)) {
@@ -47,8 +50,10 @@ int main(int argc, char** argv)
     }
     RuntimeArgs runtime;
     runtime.configPath = findConfigPathArg(options.simArgs, "simulation.ini");
+    /// Description: Executes the simulationServer operation.
     SimulationServer simulationServer(runtime.configPath);
     SimulationConfig config = simulationServer.getRuntimeConfig();
+    /// Description: Executes the applyArgsToConfig operation.
     applyArgsToConfig(options.simArgs, config, runtime, std::cerr);
     if (runtime.hasArgumentError) {
         grav_server_service::printServerHelp(
@@ -68,11 +73,13 @@ int main(int argc, char** argv)
                   << "' without --server-allow-remote\n";
         return 2;
     }
+    /// Description: Executes the applyConfigToServer operation.
     grav_server_service::applyConfigToServer(simulationServer, config);
     simulationServer.start();
     if (options.startPaused) {
         simulationServer.setPaused(true);
     }
+    /// Description: Executes the daemon operation.
     ServerDaemon daemon(simulationServer, options.authToken);
     if (!daemon.start(options.port, options.host)) {
         std::cerr << "[server] failed to start IPC server on " << options.host << ":"
@@ -80,12 +87,14 @@ int main(int argc, char** argv)
         simulationServer.stop();
         return 1;
     }
+    /// Description: Executes the installStopSignalHandlers operation.
     grav_server_service::installStopSignalHandlers();
     std::cout << "[server] daemon running on " << options.host << ":" << options.port
               << " (json control over TCP, newline-delimited)\n";
     std::cout << "[server] example request: {\"cmd\":\"status\"}\n";
     auto lastLog = std::chrono::steady_clock::now();
     while (!grav_server_service::stopRequested() && !daemon.shutdownRequested()) {
+        /// Description: Executes the sleep_for operation.
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         const auto now = std::chrono::steady_clock::now();
         if (std::chrono::duration_cast<std::chrono::seconds>(now - lastLog).count() >= 2) {

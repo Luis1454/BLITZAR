@@ -7,9 +7,12 @@
 #include <cstddef>
 #include <string>
 namespace grav_cmd {
+/// Description: Defines the CommandParser data or behavior contract.
 class CommandParser final {
 public:
+    /// Description: Executes the parseScript operation.
     static CommandParseResult parseScript(const std::string& scriptText);
+    /// Description: Executes the parseLine operation.
     static CommandParseResult parseLine(const std::string& line, std::size_t lineNumber);
 };
 } // namespace grav_cmd

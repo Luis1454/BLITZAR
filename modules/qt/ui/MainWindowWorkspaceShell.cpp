@@ -25,24 +25,29 @@ void MainWindow::buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPa
     _controlsDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     _controlsDock->setWidget(sidebarTabs);
     _controlsDock->setMinimumWidth(236);
+    /// Description: Executes the addDockWidget operation.
     addDockWidget(Qt::LeftDockWidgetArea, _controlsDock);
     _telemetryDock = new QDockWidget("Telemetry", this);
     _telemetryDock->setObjectName("telemetryDock");
     _telemetryDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     _telemetryDock->setWidget(summaryPane);
     _telemetryDock->setMinimumHeight(164);
+    /// Description: Executes the addDockWidget operation.
     addDockWidget(Qt::BottomDockWidgetArea, _telemetryDock);
     _energyDock = new QDockWidget("Energy", this);
     _energyDock->setObjectName("energyDock");
     _energyDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     _energyDock->setWidget(_energyGraph);
     _energyDock->setMinimumHeight(136);
+    /// Description: Executes the addDockWidget operation.
     addDockWidget(Qt::BottomDockWidgetArea, _energyDock);
     _validationDock = new QDockWidget("Validation", this);
     _validationDock->setObjectName("validationDock");
     _validationDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     _validationDock->setWidget(validationPane);
+    /// Description: Executes the addDockWidget operation.
     addDockWidget(Qt::BottomDockWidgetArea, _validationDock);
+    /// Description: Executes the tabifyDockWidget operation.
     tabifyDockWidget(_telemetryDock, _validationDock);
     resizeDocks({_controlsDock}, {236}, Qt::Horizontal);
     resizeDocks({_energyDock}, {148}, Qt::Vertical);
@@ -50,6 +55,7 @@ void MainWindow::buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPa
     _telemetryDock->hide();
     _validationDock->hide();
 }
+/// Description: Executes the buildMenus operation.
 void MainWindow::buildMenus()
 {
     auto* fileMenu = menuBar()->addMenu("&File");
@@ -115,20 +121,30 @@ void MainWindow::buildMenus()
     auto* helpMenu = menuBar()->addMenu("&Help");
     helpMenu->addAction("About Workspace", this, [this]() {
         _statusLabel->setText("Workspace shell active");
+        /// Description: Executes the statusBar operation.
         statusBar()->showMessage("Workspace shell active", 3000);
     });
+    /// Description: Executes the connect operation.
     connect(lightThemeAction, &QAction::triggered, this, [this]() {
         _config.uiTheme = "light";
+        /// Description: Executes the applyTheme operation.
         applyTheme();
+        /// Description: Executes the markConfigDirty operation.
         markConfigDirty();
+        /// Description: Executes the statusBar operation.
         statusBar()->showMessage("Theme applied: light", 3000);
     });
+    /// Description: Executes the connect operation.
     connect(darkThemeAction, &QAction::triggered, this, [this]() {
         _config.uiTheme = "dark";
+        /// Description: Executes the applyTheme operation.
         applyTheme();
+        /// Description: Executes the markConfigDirty operation.
         markConfigDirty();
+        /// Description: Executes the statusBar operation.
         statusBar()->showMessage("Theme applied: dark", 3000);
     });
+    /// Description: Executes the connect operation.
     connect(_octreeOverlayCheck, &QCheckBox::toggled, this, [this](bool enabled) {
         if (_octreeOverlayAction != nullptr && _octreeOverlayAction->isChecked() != enabled) {
             _octreeOverlayAction->blockSignals(true);
@@ -140,6 +156,7 @@ void MainWindow::buildMenus()
         statusBar()->showMessage(enabled ? "Octree overlay enabled" : "Octree overlay disabled",
                                  3000);
     });
+    /// Description: Executes the connect operation.
     connect(_octreeOverlayAction, &QAction::toggled, this, [this](bool enabled) {
         if (_octreeOverlayCheck != nullptr && _octreeOverlayCheck->isChecked() != enabled) {
             _octreeOverlayCheck->blockSignals(true);
@@ -151,6 +168,7 @@ void MainWindow::buildMenus()
                                      3000);
         }
     });
+    /// Description: Executes the connect operation.
     connect(_gpuTelemetryCheck, &QCheckBox::toggled, this, [this](bool enabled) {
         if (_gpuTelemetryAction != nullptr && _gpuTelemetryAction->isChecked() != enabled) {
             _gpuTelemetryAction->blockSignals(true);
@@ -165,6 +183,7 @@ void MainWindow::buildMenus()
         statusBar()->showMessage(enabled ? "GPU telemetry enabled" : "GPU telemetry disabled",
                                  3000);
     });
+    /// Description: Executes the connect operation.
     connect(_gpuTelemetryAction, &QAction::toggled, this, [this](bool enabled) {
         if (_gpuTelemetryCheck != nullptr && _gpuTelemetryCheck->isChecked() != enabled) {
             _gpuTelemetryCheck->blockSignals(true);

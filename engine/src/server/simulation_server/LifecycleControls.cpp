@@ -2,6 +2,7 @@
 // Purpose: Engine implementation for the BLITZAR simulation core.
 
 #include "Internal.hpp"
+/// Description: Executes the SimulationServer operation.
 SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
     : _running(false),
       _paused(false),
@@ -87,6 +88,7 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
       _system(nullptr),
       _exportQueueState(new ExportQueueState()),
       _activeCheckpointState(nullptr),
+      /// Description: Executes the _checkpointQueueState operation.
       _checkpointQueueState(new SimulationCheckpointQueueState())
 {
     _runtimeConfigMirror.particleCount = _particleCount;
@@ -125,16 +127,19 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
         _energyMeasureEverySteps.load(std::memory_order_relaxed);
     _runtimeConfigMirror.energySampleLimit = _energySampleLimit.load(std::memory_order_relaxed);
 }
+/// Description: Executes the SimulationServer operation.
 SimulationServer::SimulationServer(const std::string& configPath) : SimulationServer(2u, 0.01f)
 {
     _configPath = configPath.empty() ? "simulation.ini" : configPath;
     SimulationConfig loaded = SimulationConfig::loadOrCreate(_configPath);
     // Apply simulation profile first, then performance profile
     grav_config::applySimulationProfile(loaded);
+    /// Description: Executes the applyPerformanceProfile operation.
     grav_config::applyPerformanceProfile(loaded);
     const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(loaded, std::cerr);
     _runtimeConfigMirror = loaded;
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         _particleCount = std::max<std::uint32_t>(2u, loaded.particleCount);
         std::string solverCanonical;
@@ -146,6 +151,7 @@ SimulationServer::SimulationServer(const std::string& configPath) : SimulationSe
                               ? integratorCanonical
                               : std::string(grav_modes::kIntegratorEuler);
         _performanceProfile = loaded.performanceProfile;
+        /// Description: Executes the coerceConfigSolverIntegratorCompatibility operation.
         coerceConfigSolverIntegratorCompatibility(_solverMode, _integratorMode, "config");
         _octreeTheta = loaded.octreeTheta;
         _octreeSoftening = loaded.octreeSoftening;
@@ -186,21 +192,26 @@ SimulationServer::SimulationServer(const std::string& configPath) : SimulationSe
     _snapshotTransferCap.store(resolvePublishedSnapshotCap(loaded.clientParticleCap),
                                std::memory_order_relaxed);
 }
+/// Description: Releases resources owned by SimulationServer.
 SimulationServer::~SimulationServer()
 {
+    /// Description: Executes the stop operation.
     stop();
     _system.reset();
 }
+/// Description: Executes the start operation.
 void SimulationServer::start()
 {
     if (_running.exchange(true)) {
         return;
     }
+    /// Description: Executes the startExportWorker operation.
     startExportWorker();
     std::cout << "[server] start particles=" << _particleCount
               << " dt=" << _dt.load(std::memory_order_relaxed) << "\n";
     _thread = std::thread(&SimulationServer::loop, this);
 }
+/// Description: Executes the stop operation.
 void SimulationServer::stop()
 {
     if (!_running.exchange(false)) {
@@ -213,69 +224,87 @@ void SimulationServer::stop()
     bool hasPendingRequests = true;
     while (hasPendingRequests) {
         {
+            /// Description: Executes the lock operation.
             std::lock_guard<std::mutex> lock(_commandMutex);
             hasPendingRequests = !_pendingExportRequests.empty();
         }
         if (hasPendingRequests) {
+            /// Description: Executes the processPendingExport operation.
             processPendingExport();
         }
     }
+    /// Description: Executes the stopExportWorker operation.
     stopExportWorker();
 }
+/// Description: Executes the setPaused operation.
 void SimulationServer::setPaused(bool paused)
 {
     _paused.store(paused, std::memory_order_relaxed);
 }
+/// Description: Executes the isPaused operation.
 bool SimulationServer::isPaused() const
 {
     return _paused.load(std::memory_order_relaxed);
 }
+/// Description: Executes the togglePaused operation.
 void SimulationServer::togglePaused()
 {
     _paused.store(!_paused.load(std::memory_order_relaxed), std::memory_order_relaxed);
 }
+/// Description: Executes the stepOnce operation.
 void SimulationServer::stepOnce()
 {
     _stepRequests.fetch_add(1, std::memory_order_relaxed);
 }
+/// Description: Executes the setDt operation.
 void SimulationServer::setDt(float dt)
 {
     if (dt > 0.0f) {
         _dt.store(dt, std::memory_order_relaxed);
     }
 }
+/// Description: Executes the scaleDt operation.
 void SimulationServer::scaleDt(float factor)
 {
     if (factor <= 0.0f) {
         return;
     }
     const float current = _dt.load(std::memory_order_relaxed);
+    /// Description: Executes the setDt operation.
     setDt(current * factor);
 }
+/// Description: Executes the getDt operation.
 float SimulationServer::getDt() const
 {
     return _dt.load(std::memory_order_relaxed);
 }
+/// Description: Executes the requestReset operation.
 void SimulationServer::requestReset()
 {
     _stepRequests.store(0, std::memory_order_relaxed);
     _serverFps.store(0.0f, std::memory_order_relaxed);
     _paused.store(false, std::memory_order_relaxed);
+    /// Description: Executes the clearPublishedSnapshotCache operation.
     clearPublishedSnapshotCache();
     _resetRequested.store(true, std::memory_order_relaxed);
 }
+/// Description: Executes the requestRecover operation.
 void SimulationServer::requestRecover()
 {
+    /// Description: Executes the requestReset operation.
     requestReset();
 }
+/// Description: Executes the setParticleCount operation.
 void SimulationServer::setParticleCount(std::uint32_t particleCount)
 {
     const std::uint32_t clamped = std::max<std::uint32_t>(2u, particleCount);
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         _particleCount = clamped;
     }
     if (_running.load(std::memory_order_relaxed)) {
+        /// Description: Executes the requestReset operation.
         requestReset();
     }
 }

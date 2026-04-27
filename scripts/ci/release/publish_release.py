@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 
+# Description: Executes the parse_args operation.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Publish a GitHub Release.")
     parser.add_argument("--tag", required=True, help="Release tag name (e.g. v1.2.3)")
@@ -24,6 +25,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+# Description: Executes the _resolve_assets operation.
 def _resolve_assets(patterns: list[str]) -> list[str]:
     files: list[str] = []
     for pattern in patterns:
@@ -32,17 +34,20 @@ def _resolve_assets(patterns: list[str]) -> list[str]:
     return sorted(set(files))
 
 
+# Description: Executes the _repo_flags operation.
 def _repo_flags(repo: str) -> list[str]:
     if repo:
         return ["--repo", repo]
     return []
 
 
+# Description: Executes the _release_exists operation.
 def _release_exists(tag: str, repo: str) -> bool:
     cmd = ["gh", "release", "view", tag, *_repo_flags(repo)]
     return subprocess.run(cmd, check=False, capture_output=True, text=True).returncode == 0
 
 
+# Description: Executes the _notes_flags operation.
 def _notes_flags(notes_file: str, generate_when_missing: bool) -> list[str]:
     if notes_file:
         notes_path = Path(notes_file)
@@ -53,6 +58,7 @@ def _notes_flags(notes_file: str, generate_when_missing: bool) -> list[str]:
     return ["--generate-notes"] if generate_when_missing else []
 
 
+# Description: Executes the _state_flags operation.
 def _state_flags(prerelease: bool, draft: bool) -> list[str]:
     flags: list[str] = []
     if prerelease:
@@ -62,12 +68,14 @@ def _state_flags(prerelease: bool, draft: bool) -> list[str]:
     return flags
 
 
+# Description: Executes the _run operation.
 def _run(cmd: list[str]) -> int:
     print(f"Running: {' '.join(cmd)}")
     result = subprocess.run(cmd, check=False)
     return result.returncode
 
 
+# Description: Executes the main operation.
 def main() -> int:
     args = parse_args()
     try:

@@ -11,10 +11,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 
+# Description: Defines the PerformanceBenchmarkCampaign contract.
 class PerformanceBenchmarkCampaign:
+    # Description: Executes the __init__ operation.
     def __init__(self, runner: Callable[[list[str]], str] | None = None) -> None:
         self._runner = runner
 
+    # Description: Executes the load_profile operation.
     def load_profile(self, root: Path, profile: str) -> dict[str, object]:
         payload = json.loads((root / "docs/quality/manifest/performance_campaign.json").read_text(encoding="utf-8"))
         profiles = payload.get("profiles")
@@ -25,6 +28,7 @@ class PerformanceBenchmarkCampaign:
             raise PerformanceBenchmarkError(f"unknown performance benchmark profile: {profile}")
         return profile_payload
 
+    # Description: Executes the run operation.
     def run(self, root: Path, dist_dir: Path, profile: str, tool_path: Path) -> tuple[Path, dict[str, object]]:
         profile_payload = self.load_profile(root.resolve(), profile)
         runs = self._collect_runs(tool_path.resolve(), profile_payload.get("runs"))
@@ -32,6 +36,7 @@ class PerformanceBenchmarkCampaign:
         archive = self._archive(dist_dir.resolve(), report)
         return archive, report
 
+    # Description: Executes the _collect_runs operation.
     def _collect_runs(self, tool_path: Path, raw_runs: object) -> list[dict[str, object]]:
         if not isinstance(raw_runs, list):
             raise PerformanceBenchmarkError("performance benchmark runs must be a list")
@@ -68,6 +73,7 @@ class PerformanceBenchmarkCampaign:
             rows.append(measurement)
         return rows
 
+    # Description: Executes the _run_command operation.
     def _run_command(self, command: list[str]) -> str:
         if self._runner is not None:
             return self._runner(command)
@@ -76,6 +82,7 @@ class PerformanceBenchmarkCampaign:
             raise PerformanceBenchmarkError(completed.stderr.strip() or completed.stdout.strip() or "benchmark tool failed")
         return completed.stdout
 
+    # Description: Executes the _build_report operation.
     def _build_report(self, profile: str, runs: list[dict[str, object]]) -> dict[str, object]:
         failures: list[str] = []
         run_rows = [self._evaluate_run(run, failures) for run in runs]
@@ -88,6 +95,7 @@ class PerformanceBenchmarkCampaign:
             "failures": failures,
         }
 
+    # Description: Executes the _evaluate_run operation.
     def _evaluate_run(self, run: dict[str, object], failures: list[str]) -> dict[str, object]:
         check_rows = []
         for metric_name, threshold in sorted(require_mapping(run.get("checks")).items()):
@@ -142,6 +150,7 @@ class PerformanceBenchmarkCampaign:
             "regressions": regression_rows,
         }
 
+    # Description: Executes the _archive operation.
     def _archive(self, dist_dir: Path, report: dict[str, object]) -> Path:
         if dist_dir.exists():
             shutil.rmtree(dist_dir)
@@ -152,10 +161,12 @@ class PerformanceBenchmarkCampaign:
         return Path(shutil.make_archive(str(archive_base), "zip", root_dir=dist_dir))
 
 
+# Description: Defines the PerformanceBenchmarkError contract.
 class PerformanceBenchmarkError(RuntimeError):
     pass
 
 
+# Description: Executes the parse_measurement operation.
 def parse_measurement(stdout: str) -> dict[str, object]:
     result: dict[str, object] = {}
     for raw_line in stdout.splitlines():
@@ -170,6 +181,7 @@ def parse_measurement(stdout: str) -> dict[str, object]:
     return result
 
 
+# Description: Executes the render_performance_readme operation.
 def render_performance_readme(report: Mapping[str, object]) -> str:
     raw_runs = report.get("runs")
     raw_failures = report.get("failures")
@@ -202,6 +214,7 @@ def render_performance_readme(report: Mapping[str, object]) -> str:
     return "\n".join(lines) + "\n"
 
 
+# Description: Executes the require_mapping operation.
 def require_mapping(raw: object) -> dict[str, float]:
     if raw is None:
         return {}
@@ -210,6 +223,7 @@ def require_mapping(raw: object) -> dict[str, float]:
     return {str(name): float(value) for name, value in raw.items()}
 
 
+# Description: Executes the require_string operation.
 def require_string(row: dict[str, object], field: str) -> str:
     value = row.get(field)
     if not isinstance(value, str) or not value.strip():
@@ -217,6 +231,7 @@ def require_string(row: dict[str, object], field: str) -> str:
     return value.strip()
 
 
+# Description: Executes the require_float operation.
 def require_float(row: dict[str, object], field: str) -> float:
     value = row.get(field)
     if isinstance(value, (int, float)):
@@ -224,6 +239,7 @@ def require_float(row: dict[str, object], field: str) -> float:
     raise PerformanceBenchmarkError(f"missing numeric field: {field}")
 
 
+# Description: Executes the require_int operation.
 def require_int(row: dict[str, object], field: str) -> int:
     value = row.get(field)
     if isinstance(value, int):

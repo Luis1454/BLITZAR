@@ -82,11 +82,15 @@ static void sortParticlesByHash(
 {
     // Simple O(n log n) sort using index array.
     std::vector<int> order(static_cast<std::size_t>(numParticles));
+    /// Description: Executes the iota operation.
     std::iota(order.begin(), order.end(), 0);
+    /// Description: Executes the sort operation.
     std::sort(order.begin(), order.end(), [&](int a, int b) {
         return cellHash[a] < cellHash[b];
     });
+    /// Description: Executes the tempHash operation.
     std::vector<int> tempHash(static_cast<std::size_t>(numParticles));
+    /// Description: Executes the tempIdx operation.
     std::vector<int> tempIdx(static_cast<std::size_t>(numParticles));
     for (int i = 0; i < numParticles; ++i) {
         tempHash[static_cast<std::size_t>(i)] =
@@ -100,6 +104,7 @@ static void sortParticlesByHash(
         static_cast<std::size_t>(numParticles) * sizeof(int));
 }
 
+/// Description: Executes the buildSphGrid operation.
 bool ParticleSystem::buildSphGrid(int numParticles)
 {
     if (numParticles <= 0 || !d_soaPosX || !d_sphCellHash ||
@@ -127,6 +132,7 @@ bool ParticleSystem::buildSphGrid(int numParticles)
     const float extent = std::max(
         {maxX - minX, maxY - minY, maxZ - minZ, cellSize});
     const int gridSize = std::min(256,
+        /// Description: Executes the max operation.
         std::max(1, static_cast<int>(std::ceil(extent / cellSize)) + 2));
     const int totalCells = gridSize * gridSize * gridSize;
     _sphGridSize = gridSize;
@@ -144,10 +150,12 @@ bool ParticleSystem::buildSphGrid(int numParticles)
     const std::size_t cellBytes =
         static_cast<std::size_t>(totalCells) * sizeof(int);
     if (d_sphCellStart) {
+        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_sphCellStart);
         d_sphCellStart = nullptr;
     }
     if (d_sphCellEnd) {
+        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_sphCellEnd);
         d_sphCellEnd = nullptr;
     }

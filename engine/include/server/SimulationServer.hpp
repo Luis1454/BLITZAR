@@ -20,7 +20,9 @@
 #include <string>
 #include <thread>
 #include <vector>
+/// Description: Defines the SimulationCheckpointState data or behavior contract.
 struct SimulationCheckpointState;
+/// Description: Defines the SimulationCheckpointQueueState data or behavior contract.
 struct SimulationCheckpointQueueState;
 /// Runs the authoritative simulation loop and exposes deterministic control operations.
 class SimulationServer {
@@ -101,6 +103,7 @@ public:
     SimulationConfig getRuntimeConfig() const;
 
 private:
+    /// Description: Defines the EnergyValues data or behavior contract.
     struct EnergyValues {
         float kinetic;
         float potential;
@@ -109,23 +112,38 @@ private:
         float total;
         bool estimated;
     };
+    /// Description: Defines the PendingExportRequest data or behavior contract.
     struct PendingExportRequest final {
         std::string outputPath;
         std::string format;
     };
+    /// Description: Defines the ExportQueueState data or behavior contract.
     struct ExportQueueState;
+    /// Description: Executes the loop operation.
     void loop();
+    /// Description: Executes the publishSnapshot operation.
     void publishSnapshot();
+    /// Description: Executes the rebuildSystem operation.
     void rebuildSystem();
+    /// Description: Executes the computeEnergyValues operation.
     EnergyValues computeEnergyValues();
+    /// Description: Executes the maybeUpdateEnergy operation.
     void maybeUpdateEnergy(std::uint64_t currentStep);
+    /// Description: Executes the clearGpuTelemetry operation.
     void clearGpuTelemetry();
+    /// Description: Executes the maybeSampleGpuTelemetry operation.
     void maybeSampleGpuTelemetry(std::string_view solverMode, std::uint64_t currentStep);
+    /// Description: Executes the processPendingExport operation.
     void processPendingExport();
+    /// Description: Executes the processPendingCheckpointSave operation.
     void processPendingCheckpointSave();
+    /// Description: Executes the exportCurrentState operation.
     bool exportCurrentState(const std::string& outputPath, const std::string& format);
+    /// Description: Executes the captureCheckpointToFile operation.
     bool captureCheckpointToFile(const std::string& outputPath, std::string* outError);
+    /// Description: Executes the startExportWorker operation.
     void startExportWorker();
+    /// Description: Executes the stopExportWorker operation.
     void stopExportWorker();
     void enqueueExportWrite(const std::string& outputPath, const std::string& format,
                             const std::vector<Particle>& particles,
@@ -135,6 +153,7 @@ private:
                             const std::string& message);
     bool loadInitialState(std::vector<Particle>& outParticles, const std::string& inputPath,
                           const std::string& format) const;
+    /// Description: Executes the clearPublishedSnapshotCache operation.
     void clearPublishedSnapshotCache();
     std::atomic<bool> _running;
     std::atomic<bool> _paused;

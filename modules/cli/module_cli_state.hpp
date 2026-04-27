@@ -6,7 +6,9 @@
 #include "command/CommandContext.hpp"
 #include "command/CommandTransport.hpp"
 namespace grav_module_cli {
+/// Description: Defines the ModuleState data or behavior contract.
 struct ModuleState {
+    /// Description: Executes the ModuleState operation.
     ModuleState();
     grav_cmd::ServerClientCommandTransport transport;
     grav_cmd::CommandSessionState session;

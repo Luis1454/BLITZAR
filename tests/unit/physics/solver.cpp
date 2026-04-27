@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 namespace testsupport {
+/// Description: Executes the countOccurrences operation.
 static std::size_t countOccurrences(const std::string& text, const std::string& pattern)
 {
     if (pattern.empty()) {
@@ -36,12 +37,14 @@ static float maxParticleDelta(const std::vector<RenderParticle>& baseline,
     }
     return maxDelta;
 }
+/// Description: Executes the writeStabilityConfig operation.
 static std::filesystem::path writeStabilityConfig(float minSoftening, float minDistance2)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() /
         ("gravity_physics_stability_" + std::to_string(stamp) + ".ini");
+    /// Description: Executes the out operation.
     std::ofstream out(path, std::ios::trunc);
     out << "particle_count=2\n";
     out << "dt=0.001\n";
@@ -63,26 +66,36 @@ static std::filesystem::path writeStabilityConfig(float minSoftening, float minD
     out << "energy_sample_limit=64\n";
     return path;
 }
+/// Description: Executes the runTotalEnergyFromConfig operation.
 static float runTotalEnergyFromConfig(const std::filesystem::path& path)
 {
+    /// Description: Executes the server operation.
     SimulationServer server(path.string());
     server.setPaused(true);
     server.start();
     std::vector<RenderParticle> snapshot;
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(waitForConsumedSnapshot(server, snapshot, 4000));
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(snapshot.size(), 2u);
     server.stepOnce();
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(waitForStepCount(server, 1u, 4000));
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(waitForConsumedSnapshot(server, snapshot, 4000));
     const float totalEnergy = server.getStats().totalEnergy;
     server.stop();
     return totalEnergy;
 }
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
 {
     ScenarioConfig base =
+        /// Description: Executes the buildDiskOrbitScenario operation.
         buildDiskOrbitScenario(96u, 0.004f, 36u, 12345u, "pairwise_cuda", "euler");
+    /// Description: Executes the setScenarioEnergySampling operation.
     setScenarioEnergySampling(base, 1u, 96u);
+    /// Description: Executes the setScenarioTiming operation.
     setScenarioTiming(base, 8000, 8000);
     base.octreeTheta = 0.35f;
     base.octreeSoftening = 0.08f;
@@ -131,21 +144,32 @@ TEST(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
                                    std::max(std::fabs(pairwiseEnergy), 1e-6f) * 100.0f;
     const float cpuParticleDelta = maxParticleDelta(pairwise.final, octreeCpu.final);
     const float gpuParticleDelta = maxParticleDelta(pairwise.final, octreeGpu.final);
+    /// Description: Executes the EXPECT_LE operation.
     EXPECT_LE(comCpuDelta, 0.02f);
+    /// Description: Executes the EXPECT_LE operation.
     EXPECT_LE(comGpuDelta, 0.02f);
+    /// Description: Executes the EXPECT_LE operation.
     EXPECT_LE(std::fabs(octreeCpuAvgRadius - pairwiseAvgRadius), 0.05f);
+    /// Description: Executes the EXPECT_LE operation.
     EXPECT_LE(std::fabs(octreeGpuAvgRadius - pairwiseAvgRadius), 0.05f);
+    /// Description: Executes the EXPECT_LE operation.
     EXPECT_LE(cpuEnergyDiffPct, 0.25f);
+    /// Description: Executes the EXPECT_LE operation.
     EXPECT_LE(gpuEnergyDiffPct, 0.25f);
+    /// Description: Executes the EXPECT_LE operation.
     EXPECT_LE(cpuParticleDelta, 0.05f);
+    /// Description: Executes the EXPECT_LE operation.
     EXPECT_LE(gpuParticleDelta, 0.05f);
 }
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_001_ServerLogsEffectiveModesAfterReset)
 {
+    /// Description: Executes the server operation.
     SimulationServer server(48u, 0.01f);
     server.setSolverMode("octree_cpu");
     server.setIntegratorMode("rk4");
     server.setPaused(true);
+    /// Description: Executes the CaptureStdout operation.
     testing::internal::CaptureStdout();
     server.start();
     std::vector<RenderParticle> snapshot;
@@ -155,18 +179,29 @@ TEST(PhysicsTest, TST_UNT_RUNT_001_ServerLogsEffectiveModesAfterReset)
     server.stop();
     const std::string output = testing::internal::GetCapturedStdout();
     const std::string expected = "[server] active solver=octree_cpu integrator=rk4";
+    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(startupReady);
+    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(resetReady);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(countOccurrences(output, expected), 2u);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(output.find("physics_max_acceleration=64"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(output.find("physics_min_softening=0.0001"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(output.find("physics_min_distance2=1e-12"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(output.find("physics_min_theta=0.05"), std::string::npos);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(output.find("[solver] using"), std::string::npos);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(output.find("[integrator] mode="), std::string::npos);
 }
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_002_ParticleSystemCtorKeepsExplicitInitialState)
 {
+    /// Description: Executes the initialParticles operation.
     std::vector<Particle> initialParticles(2);
     initialParticles[0].setPosition(Vector3(-2.0f, 0.5f, 0.0f));
     initialParticles[0].setVelocity(Vector3(0.0f, 0.25f, 0.0f));
@@ -176,24 +211,39 @@ TEST(PhysicsTest, TST_UNT_RUNT_002_ParticleSystemCtorKeepsExplicitInitialState)
     initialParticles[1].setVelocity(Vector3(-0.1f, 0.0f, 0.0f));
     initialParticles[1].setMass(0.5f);
     initialParticles[1].setTemperature(2.0f);
+    /// Description: Executes the system operation.
     ParticleSystem system(std::move(initialParticles));
     const std::vector<Particle>& configuredParticles = system.getParticles();
+    /// Description: Executes the ASSERT_EQ operation.
     ASSERT_EQ(configuredParticles.size(), 2u);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(configuredParticles[0].getPosition().x, -2.0f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(configuredParticles[0].getPosition().y, 0.5f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(configuredParticles[0].getVelocity().y, 0.25f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(configuredParticles[0].getMass(), 3.0f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(configuredParticles[0].getTemperature(), 7.0f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(configuredParticles[1].getPosition().x, 4.0f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(configuredParticles[1].getPosition().y, -1.0f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(configuredParticles[1].getVelocity().x, -0.1f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(configuredParticles[1].getMass(), 0.5f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(configuredParticles[1].getTemperature(), 2.0f);
 }
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_010_DeterministicReplayIdentical)
 {
     ScenarioConfig cfg = buildDiskOrbitScenario(64u, 0.005f, 20u, 77777u, "pairwise_cuda", "euler");
+    /// Description: Executes the setScenarioEnergySampling operation.
     setScenarioEnergySampling(cfg, 1u, 64u);
+    /// Description: Executes the setScenarioTiming operation.
     setScenarioTiming(cfg, 6000, 6000);
     cfg.initState.diskMass = 0.5f;
     cfg.initState.diskRadiusMax = 8.0f;
@@ -209,6 +259,7 @@ TEST(PhysicsTest, TST_UNT_PHYS_010_DeterministicReplayIdentical)
     std::string replayError;
     EXPECT_TRUE(haveExactReplayMatch(runA, runB, replayError)) << replayError;
 }
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_018_EnergyEstimateUsesConfiguredStabilityConstants)
 {
     const std::filesystem::path permissivePath = writeStabilityConfig(0.01f, 0.01f);
@@ -216,9 +267,13 @@ TEST(PhysicsTest, TST_UNT_PHYS_018_EnergyEstimateUsesConfiguredStabilityConstant
     const float permissiveEnergy = runTotalEnergyFromConfig(permissivePath);
     const float clampedEnergy = runTotalEnergyFromConfig(clampedPath);
     std::error_code ec;
+    /// Description: Executes the remove operation.
     std::filesystem::remove(permissivePath, ec);
+    /// Description: Executes the remove operation.
     std::filesystem::remove(clampedPath, ec);
+    /// Description: Executes the EXPECT_LT operation.
     EXPECT_LT(permissiveEnergy, -0.1f);
+    /// Description: Executes the EXPECT_GT operation.
     EXPECT_GT(clampedEnergy, permissiveEnergy + 0.1f);
 }
 } // namespace testsupport

@@ -2,12 +2,14 @@
 // Purpose: Engine implementation for the BLITZAR simulation core.
 
 #include "Internal.hpp"
+/// Description: Executes the stopExportWorker operation.
 void SimulationServer::stopExportWorker()
 {
     if (_exportQueueState == nullptr) {
         return;
     }
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_exportQueueState->mutex);
         _exportQueueState->stopRequested = true;
     }
@@ -16,6 +18,7 @@ void SimulationServer::stopExportWorker()
         _exportQueueState->worker.join();
     }
 }
+/// Description: Executes the saveCheckpoint operation.
 bool SimulationServer::saveCheckpoint(const std::string& outputPath)
 {
     if (outputPath.empty() || !_running.load(std::memory_order_relaxed) ||
@@ -24,16 +27,19 @@ bool SimulationServer::saveCheckpoint(const std::string& outputPath)
     }
     const std::shared_ptr<CheckpointSaveResult> result = std::make_shared<CheckpointSaveResult>();
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_checkpointQueueState->mutex);
         PendingCheckpointSaveRequest request{};
         request.outputPath = outputPath;
         request.result = result;
         _checkpointQueueState->saveRequests.push_back(std::move(request));
     }
+    /// Description: Executes the waitLock operation.
     std::unique_lock<std::mutex> waitLock(result->mutex);
     result->condition.wait(waitLock, [result]() { return result->completed; });
     return result->ok;
 }
+/// Description: Executes the loadCheckpoint operation.
 bool SimulationServer::loadCheckpoint(const std::string& inputPath, std::string* outError)
 {
     if (inputPath.empty()) {
@@ -48,6 +54,7 @@ bool SimulationServer::loadCheckpoint(const std::string& inputPath, std::string*
     }
     loaded.config.particleCount = static_cast<std::uint32_t>(loaded.particles.size());
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         _particleCount = loaded.config.particleCount;
         _solverMode = loaded.config.solver;
@@ -119,6 +126,7 @@ bool SimulationServer::loadCheckpoint(const std::string& inputPath, std::string*
         _initialStateFormat = "checkpoint";
         _activeCheckpointState.reset(new SimulationCheckpointState(loaded));
     }
+    /// Description: Executes the requestReset operation.
     requestReset();
     return true;
 }
@@ -136,6 +144,7 @@ void SimulationServer::enqueueExportWrite(const std::string& outputPath, const s
     job.integratorModeLabel = integratorModeLabel;
     job.step = step;
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_exportQueueState->mutex);
         _exportQueueState->jobs.push_back(std::move(job));
     }
@@ -144,13 +153,16 @@ void SimulationServer::enqueueExportWrite(const std::string& outputPath, const s
 void SimulationServer::updateExportStatus(const std::string& state, const std::string& path,
                                           const std::string& message)
 {
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_exportStatusMutex);
     _exportLastState = state;
     _exportLastPath = path;
     _exportLastMessage = message;
 }
+/// Description: Executes the tryConsumeSnapshot operation.
 bool SimulationServer::tryConsumeSnapshot(std::vector<RenderParticle>& outSnapshot)
 {
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_snapshotMutex);
     if (_publishedSnapshot.empty()) {
         return false;
@@ -162,6 +174,7 @@ bool SimulationServer::tryConsumeSnapshot(std::vector<RenderParticle>& outSnapsh
 bool SimulationServer::copyLatestSnapshot(std::vector<RenderParticle>& outSnapshot,
                                           std::size_t maxPoints, std::size_t* outSourceSize) const
 {
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_snapshotMutex);
     if (_publishedSnapshot.empty()) {
         outSnapshot.clear();
@@ -187,6 +200,7 @@ bool SimulationServer::copyLatestSnapshot(std::vector<RenderParticle>& outSnapsh
     }
     return true;
 }
+/// Description: Executes the getStats operation.
 SimulationStats SimulationServer::getStats() const
 {
     ParticleSystem::SolverMode mode = ParticleSystem::SolverMode::PairwiseCuda;
@@ -198,6 +212,7 @@ SimulationStats SimulationServer::getStats() const
     std::string exportLastPath;
     std::string exportLastMessage;
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         mode = solverModeFromCanonicalName(_solverMode);
         integratorMode = _integratorMode;
@@ -207,10 +222,12 @@ SimulationStats SimulationServer::getStats() const
     }
     std::string faultReason;
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_faultMutex);
         faultReason = _faultReason;
     }
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_exportStatusMutex);
         exportLastState = _exportLastState;
         exportLastPath = _exportLastPath;

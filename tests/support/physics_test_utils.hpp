@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 namespace testsupport {
+/// Description: Executes the setScenarioTiming operation.
 void setScenarioTiming(ScenarioConfig& cfg, int snapshotTimeoutMs, int stepTimeoutMs);
 void setScenarioEnergySampling(ScenarioConfig& cfg, std::uint32_t measureEverySteps,
                                std::uint32_t sampleLimit);
@@ -20,11 +21,13 @@ ScenarioConfig buildDiskOrbitScenario(std::uint32_t particleCount, float dt, std
 ScenarioConfig buildRandomCloudScenario(std::uint32_t particleCount, float dt, std::uint32_t steps,
                                         std::uint32_t seed, const std::string& solver,
                                         const std::string& integrator);
+/// Description: Executes the waitForStepCount operation.
 bool waitForStepCount(const SimulationServer& server, std::uint64_t targetStep, int timeoutMs);
 bool waitForConsumedSnapshot(SimulationServer& server, std::vector<RenderParticle>& outSnapshot,
                              int timeoutMs);
 bool waitForPublishedSnapshot(const SimulationServer& server,
                               std::vector<RenderParticle>& outSnapshot, int timeoutMs);
+/// Description: Executes the haveExactReplayMatch operation.
 bool haveExactReplayMatch(const ScenarioResult& lhs, const ScenarioResult& rhs, std::string& error);
 } // namespace testsupport
 #endif // GRAVITY_TESTS_SUPPORT_PHYSICS_TEST_UTILS_HPP_

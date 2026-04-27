@@ -22,6 +22,7 @@ bool ErrorBufferView::hasStorage() const noexcept
 }
 void ErrorBufferView::write(std::string_view message) const noexcept
 {
+    /// Description: Executes the writeErrorBuffer operation.
     writeErrorBuffer(m_buffer, m_bufferSize, message);
 }
 void writeErrorBuffer(char* buffer, std::size_t bufferSize, std::string_view message) noexcept
@@ -30,6 +31,7 @@ void writeErrorBuffer(char* buffer, std::size_t bufferSize, std::string_view mes
         return;
     }
     const std::size_t copySize = std::min(bufferSize - 1u, message.size());
+    /// Description: Executes the copy_n operation.
     std::copy_n(message.data(), copySize, buffer);
     buffer[copySize] = '\0';
 }

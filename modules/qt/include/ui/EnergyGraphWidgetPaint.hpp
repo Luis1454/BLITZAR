@@ -11,9 +11,11 @@
 #include "ui/QtViewMath.hpp"
 #include <QWidget>
 #include <vector>
+/// Description: Defines the QPaintEvent data or behavior contract.
 class QPaintEvent;
 typedef QPaintEvent UiPaintEvent;
 namespace grav_qt {
+/// Description: Defines the EnergyGraphWidgetPaint data or behavior contract.
 class EnergyGraphWidgetPaint final {
 public:
     static void paint(QWidget& widget, const std::vector<EnergyPoint>& history,

@@ -9,8 +9,10 @@
 #include <unistd.h>
 extern char** environ;
 namespace grav_platform_detail {
+/// Description: Defines the SpawnArguments data or behavior contract.
 class SpawnArguments {
 public:
+    /// Description: Executes the SpawnArguments operation.
     explicit SpawnArguments(const std::string& executable, const std::vector<std::string>& args)
     {
         _parts.reserve(args.size() + 1u);
@@ -21,6 +23,7 @@ public:
             _argv.push_back(part.data());
         _argv.push_back(nullptr);
     }
+    /// Description: Executes the argv operation.
     char* const* argv()
     {
         return _argv.data();
@@ -38,9 +41,11 @@ bool launchProcess(const std::string& executable, const std::vector<std::string>
     outError.clear();
     outHandle = 0u;
     outPid = 0;
+    /// Description: Executes the argv operation.
     SpawnArguments argv(executable, args);
     pid_t pid = -1;
     const int spawnResult =
+        /// Description: Executes the posix_spawnp operation.
         posix_spawnp(&pid, argv.argv()[0], nullptr, nullptr, argv.argv(), environ);
     if (spawnResult != 0)
         outError = grav_platform_errors::kProcessLaunchFailed;
@@ -61,10 +66,12 @@ bool terminateProcess(NativeProcessHandle& handle, std::int64_t& pid, std::uint3
         outError = grav_platform_errors::kProcessTerminateFailed;
         return false;
     }
+    /// Description: Executes the waitpid operation.
     waitpid(static_cast<pid_t>(pid), nullptr, 0);
     pid = 0;
     return true;
 }
+/// Description: Executes the isProcessRunning operation.
 bool isProcessRunning(NativeProcessHandle handle, std::int64_t pid)
 {
     (void)handle;
@@ -74,11 +81,13 @@ bool isProcessRunning(NativeProcessHandle handle, std::int64_t pid)
     const pid_t waitResult = waitpid(static_cast<pid_t>(pid), &status, WNOHANG);
     return waitResult == 0;
 }
+/// Description: Executes the clearProcessHandle operation.
 void clearProcessHandle(NativeProcessHandle& handle, std::int64_t& pid)
 {
     handle = 0u;
     pid = 0;
 }
+/// Description: Executes the formatProcessId operation.
 std::string formatProcessId(std::int64_t pid)
 {
     return std::to_string(pid);
@@ -87,9 +96,11 @@ bool launchDetachedProcess(const std::string& executable, const std::vector<std:
                            std::string& outError)
 {
     outError.clear();
+    /// Description: Executes the argv operation.
     SpawnArguments argv(executable, args);
     pid_t pid = -1;
     const int spawnResult =
+        /// Description: Executes the posix_spawnp operation.
         posix_spawnp(&pid, argv.argv()[0], nullptr, nullptr, argv.argv(), environ);
     if (spawnResult != 0)
         outError = grav_platform_errors::kProcessLaunchFailed;
@@ -101,9 +112,11 @@ int runProcessBlocking(const std::string& executable, const std::vector<std::str
 {
     (void)createNewConsole;
     outError.clear();
+    /// Description: Executes the argv operation.
     SpawnArguments argv(executable, args);
     pid_t pid = -1;
     const int spawnResult =
+        /// Description: Executes the posix_spawnp operation.
         posix_spawnp(&pid, argv.argv()[0], nullptr, nullptr, argv.argv(), environ);
     if (spawnResult != 0)
         outError = grav_platform_errors::kProcessLaunchFailed;

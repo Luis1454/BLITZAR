@@ -4,6 +4,7 @@
 #include "config/SimulationScenarioValidationRender.hpp"
 #include <sstream>
 namespace grav_config {
+/// Description: Executes the render operation.
 std::string SimulationScenarioValidationRender::render(const ScenarioValidationReport& report)
 {
     std::ostringstream out;

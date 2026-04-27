@@ -9,12 +9,14 @@
 #include <string>
 #include <string_view>
 namespace grav_module {
+/// Description: Defines the ClientModuleManifestLocal data or behavior contract.
 class ClientModuleManifestLocal final {
 public:
     static bool isSupportedModuleId(std::string_view moduleId) noexcept
     {
         return moduleId == "cli" || moduleId == "echo" || moduleId == "gui" || moduleId == "qt";
     }
+    /// Description: Executes the parseLine operation.
     static bool parseLine(std::string_view line, std::string& outKey, std::string& outValue)
     {
         const std::string_view trimmed = grav_text::trimView(line);
@@ -28,6 +30,7 @@ public:
         outValue.assign(grav_text::trimView(trimmed.substr(separator + 1u)));
         return !outKey.empty();
     }
+    /// Description: Executes the readUnsigned operation.
     static bool readUnsigned(std::string_view rawValue, std::uint32_t& outValue)
     {
         unsigned int parsed = 0u;
@@ -58,6 +61,7 @@ bool ClientModuleManifest::load(std::string_view modulePath, ClientModuleManifes
     outManifest = ClientModuleManifest{};
     const std::filesystem::path moduleFile{std::string(modulePath)};
     const std::filesystem::path manifestPath{moduleFile.string() + ".manifest"};
+    /// Description: Executes the input operation.
     std::ifstream input(manifestPath, std::ios::binary);
     if (!input.is_open()) {
         outError = "module manifest missing: " + manifestPath.string();

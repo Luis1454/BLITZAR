@@ -4,11 +4,14 @@
 #include "protocol/ServerJsonCodec.hpp"
 #include <cctype>
 namespace grav_protocol {
+/// Description: Defines the SnapshotArrayParser data or behavior contract.
 class SnapshotArrayParser {
 public:
+    /// Description: Executes the SnapshotArrayParser operation.
     explicit SnapshotArrayParser(std::string_view raw) : m_raw(raw), m_cursor(0)
     {
     }
+    /// Description: Executes the parse operation.
     bool parse(std::vector<RenderParticle>& out)
     {
         out.clear();
@@ -17,11 +20,13 @@ public:
         if (markerPos == std::string_view::npos)
             return false;
         m_cursor = markerPos + marker.size();
+        /// Description: Executes the skipSpaces operation.
         skipSpaces();
         if (at(']')) {
             return true;
         }
         while (m_cursor < m_raw.size()) {
+            /// Description: Executes the skipSpaces operation.
             skipSpaces();
             if (at(']')) {
                 return true;
@@ -45,8 +50,10 @@ public:
     }
 
 private:
+    /// Description: Executes the parseFloat operation.
     bool parseFloat(float& out)
     {
+        /// Description: Executes the skipSpaces operation.
         skipSpaces();
         if (m_cursor >= m_raw.size()) {
             return false;
@@ -65,15 +72,19 @@ private:
             return false;
         return grav_text::parseNumber(m_raw.substr(start, m_cursor - start), out);
     }
+    /// Description: Executes the skipSpaces operation.
     void skipSpaces()
     {
         while (m_cursor < m_raw.size() &&
+               /// Description: Executes the isspace operation.
                std::isspace(static_cast<unsigned char>(m_raw[m_cursor])) != 0) {
             ++m_cursor;
         }
     }
+    /// Description: Executes the consume operation.
     bool consume(char expected)
     {
+        /// Description: Executes the skipSpaces operation.
         skipSpaces();
         if (m_cursor >= m_raw.size() || m_raw[m_cursor] != expected) {
             return false;
@@ -81,8 +92,10 @@ private:
         ++m_cursor;
         return true;
     }
+    /// Description: Executes the at operation.
     bool at(char expected)
     {
+        /// Description: Executes the skipSpaces operation.
         skipSpaces();
         if (m_cursor >= m_raw.size() || m_raw[m_cursor] != expected) {
             return false;
@@ -104,6 +117,7 @@ bool ServerJsonCodec::parseSnapshotResponse(std::string_view raw, ServerSnapshot
         out = parsed;
         return true;
     }
+    /// Description: Executes the readBool operation.
     readBool(raw, "has_snapshot", parsed.hasSnapshot);
     if (!ServerJsonCodec::readNumber(raw, "source_count", parsed.sourceSize)) {
         parsed.sourceSize = 0u;

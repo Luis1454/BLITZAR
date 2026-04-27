@@ -18,11 +18,14 @@ std::string errorFromBuffer(const std::array<char, kErrorBufferSize>& buffer,
     }
     return error;
 }
+/// Description: Executes the ClientModuleHandle operation.
 ClientModuleHandle::ClientModuleHandle() : m_impl(std::make_unique<Impl>())
 {
 }
+/// Description: Releases resources owned by ClientModuleHandle.
 ClientModuleHandle::~ClientModuleHandle()
 {
+    /// Description: Executes the unload operation.
     unload();
 }
 ClientModuleHandle::ClientModuleHandle(ClientModuleHandle&& other) noexcept = default;
@@ -81,6 +84,7 @@ bool ClientModuleHandle::handleCommand(std::string_view commandLine, bool& outKe
         return false;
     }
     std::array<char, kErrorBufferSize> errorBuffer{};
+    /// Description: Executes the command operation.
     std::string command(commandLine);
     ClientModuleCommandResult commandResult{};
     outKeepRunning = commandResult.keepRunning();

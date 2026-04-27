@@ -14,6 +14,7 @@ from tests.checks.suites.policy.test_review_gates import (
 )
 
 
+# Description: Executes the test_ivv_gate_passes_for_solo_owner_waiver operation.
 def test_ivv_gate_passes_for_solo_owner_waiver(tmp_path: Path) -> None:
     body = """## IV&V Checklist
 
@@ -28,6 +29,7 @@ Solo maintainer waiver: true
 Deviation: WVR-SOLO-IVV
 """
 
+    # Description: Executes the fetch_items operation.
     def fetch_items(repo: str, number: int, suffix: str, token: str, result):  # noqa: ARG001
         return [{"filename": "runtime/src/client/ClientRuntime.cpp"}] if suffix == "files" else []
 
@@ -37,6 +39,7 @@ Deviation: WVR-SOLO-IVV
     assert result.ok
 
 
+# Description: Executes the test_ivv_gate_rejects_invalid_solo_waiver_for_non_owner operation.
 def test_ivv_gate_rejects_invalid_solo_waiver_for_non_owner(tmp_path: Path) -> None:
     body = """## IV&V Checklist
 
@@ -51,6 +54,7 @@ Solo maintainer waiver: true
 Deviation: DEV-SOLO-IVV
 """
 
+    # Description: Executes the fetch_items operation.
     def fetch_items(repo: str, number: int, suffix: str, token: str, result):  # noqa: ARG001
         return [{"filename": "tests/unit/physics/orbit.cpp"}] if suffix == "files" else []
 

@@ -12,6 +12,7 @@ use tokio::runtime::Builder;
 use tokio::time::Duration;
 use tower::ServiceExt;
 
+/// Description: Executes the spawn_mock_backend operation.
 async fn spawn_mock_backend(response: &'static str) -> u16 {
     let listener = TcpListener::bind("127.0.0.1:0").await.expect("bind");
     let port = listener.local_addr().expect("local addr").port();
@@ -27,6 +28,7 @@ async fn spawn_mock_backend(response: &'static str) -> u16 {
     port
 }
 
+/// Description: Executes the tst_rust_web_003_http_status_route_proxies_backend_status_payload operation.
 #[test]
 fn tst_rust_web_003_http_status_route_proxies_backend_status_payload() {
     Builder::new_current_thread()
@@ -65,6 +67,7 @@ fn tst_rust_web_003_http_status_route_proxies_backend_status_payload() {
         });
 }
 
+/// Description: Executes the tst_rust_web_004_http_command_route_preserves_backend_error_envelope operation.
 #[test]
 fn tst_rust_web_004_http_command_route_preserves_backend_error_envelope() {
     Builder::new_current_thread()

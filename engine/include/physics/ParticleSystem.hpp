@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <string>
 
+/// Description: Defines the alignas data or behavior contract.
 struct alignas(64) GpuSystemMetrics {
     std::uint32_t sequence;
     std::uint32_t flags;
@@ -46,6 +47,7 @@ struct alignas(64) GpuSystemMetrics {
     std::uint64_t reserved6;
 };
 
+/// Description: Defines the GpuMetricsPayload data or behavior contract.
 struct GpuMetricsPayload {
     std::uint32_t flags;
     std::uint64_t stepId;
@@ -63,6 +65,7 @@ struct GpuMetricsPayload {
     std::uint64_t vramPeakBytes;
 };
 
+/// Description: Enumerates the supported GpuMetricsFlags values.
 enum GpuMetricsFlags : std::uint32_t {
     kGpuMetricsValid = 1u << 0,
     kGpuMetricsEstimated = 1u << 1
@@ -71,11 +74,13 @@ enum GpuMetricsFlags : std::uint32_t {
 /// Owns particle state on host and device and advances it with the selected solver.
 class ParticleSystem {
     public:
+        /// Description: Enumerates the supported SolverMode values.
         enum class SolverMode {
             PairwiseCuda,
             OctreeCpu,
             OctreeGpu
         };
+        /// Description: Enumerates the supported IntegratorMode values.
         enum class IntegratorMode {
             Euler,
             Rk4,
@@ -156,24 +161,43 @@ class ParticleSystem {
         const GpuSystemMetrics *getMappedGpuMetrics() const;
 
     private:
+        /// Description: Executes the initializeRuntimeState operation.
         void initializeRuntimeState(std::size_t particleCapacity);
+        /// Description: Executes the buildBootstrapState operation.
         void buildBootstrapState(int particleCount);
+        /// Description: Executes the allocateParticleBuffers operation.
         bool allocateParticleBuffers(std::size_t particleCapacity);
+        /// Description: Executes the seedDeviceState operation.
         bool seedDeviceState();
+        /// Description: Executes the releaseParticleBuffers operation.
         void releaseParticleBuffers();
+        /// Description: Executes the applyThermalModel operation.
         float applyThermalModel(float deltaTime);
+        /// Description: Executes the buildSphGrid operation.
         bool buildSphGrid(int numParticles);
+        /// Description: Executes the releaseRk4Buffers operation.
         void releaseRk4Buffers();
+        /// Description: Executes the releaseSphBuffers operation.
         void releaseSphBuffers();
+        /// Description: Executes the releaseSphGridBuffers operation.
         void releaseSphGridBuffers();
+        /// Description: Executes the allocateRk4Buffers operation.
         bool allocateRk4Buffers(int numParticles);
+        /// Description: Executes the allocateSphBuffers operation.
         bool allocateSphBuffers(int numParticles);
+        /// Description: Executes the allocateSphGridBuffers operation.
         bool allocateSphGridBuffers(int numParticles);
+        /// Description: Executes the ensureLinearOctreeScratchCapacity operation.
         bool ensureLinearOctreeScratchCapacity(int numParticles);
+        /// Description: Executes the ensureEnergyScratchCapacity operation.
         bool ensureEnergyScratchCapacity(int numParticles, int sampleCount);
+        /// Description: Executes the buildLinearOctreeGpu operation.
         bool buildLinearOctreeGpu(ParticleSoAView currentView, int numParticles);
+        /// Description: Executes the allocateMappedMetrics operation.
         bool allocateMappedMetrics();
+        /// Description: Executes the releaseMappedMetrics operation.
         void releaseMappedMetrics();
+        /// Description: Executes the publishMappedMetrics operation.
         void publishMappedMetrics(float deltaTime);
         std::size_t estimateMemoryUsage(
             std::size_t particleCount,

@@ -21,6 +21,7 @@ WORKFLOW_USES_RE = re.compile(r"(?m)^\s*(?:-\s*)?uses:\s*([^\s#]+)")
 ACTION_SHA_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*@[0-9a-f]{40}$")
 
 
+# Description: Executes the check_evidence_workflow_commands operation.
 def check_evidence_workflow_commands(
     root: Path,
     result: CheckResult,
@@ -41,6 +42,7 @@ def check_evidence_workflow_commands(
             result.add_error(f"{rel}: {error_text}: {command}")
 
 
+# Description: Executes the is_allowed_non_evidence_desktop_configure operation.
 def is_allowed_non_evidence_desktop_configure(rel: str, marker_text: str, command: str) -> bool:
     return (
         rel == ".github/workflows/release-lane.yml"
@@ -50,6 +52,7 @@ def is_allowed_non_evidence_desktop_configure(rel: str, marker_text: str, comman
     )
 
 
+# Description: Executes the check_legacy_ctest_selectors operation.
 def check_legacy_ctest_selectors(root: Path, result: CheckResult) -> None:
     for rel in EVIDENCE_WORKFLOW_PATHS:
         path = root / rel
@@ -61,6 +64,7 @@ def check_legacy_ctest_selectors(root: Path, result: CheckResult) -> None:
                 result.add_error(f"{rel}: CI ctest selector must use normalized TST_* ids: {command}")
 
 
+# Description: Executes the check_workflow_action_pinning operation.
 def check_workflow_action_pinning(root: Path, result: CheckResult) -> None:
     workflows_root = root / WORKFLOW_ROOT
     if not workflows_root.exists():
@@ -76,6 +80,7 @@ def check_workflow_action_pinning(root: Path, result: CheckResult) -> None:
                 result.add_error(f"{rel}: workflow actions must pin full commit SHAs: {target}")
 
 
+# Description: Executes the check_workflow_pip_manifest_usage operation.
 def check_workflow_pip_manifest_usage(root: Path, result: CheckResult) -> None:
     workflows_root = root / WORKFLOW_ROOT
     if not workflows_root.exists():
@@ -88,6 +93,7 @@ def check_workflow_pip_manifest_usage(root: Path, result: CheckResult) -> None:
                 result.add_error(f"{rel}: workflow pip installs must use {CI_PYTHON_REQUIREMENTS}: {command}")
 
 
+# Description: Executes the check_workflow_failure_masking operation.
 def check_workflow_failure_masking(root: Path, result: CheckResult) -> None:
     workflows_root = root / WORKFLOW_ROOT
     if not workflows_root.exists():
@@ -103,6 +109,7 @@ def check_workflow_failure_masking(root: Path, result: CheckResult) -> None:
                     )
 
 
+# Description: Executes the check_release_lane_subset operation.
 def check_release_lane_subset(root: Path, result: CheckResult) -> None:
     path = root / ".github/workflows/release-lane.yml"
     if not path.exists():
@@ -116,6 +123,7 @@ def check_release_lane_subset(root: Path, result: CheckResult) -> None:
             )
 
 
+# Description: Executes the collect_marker_commands operation.
 def collect_marker_commands(content: str, marker_text: str) -> list[str]:
     commands: list[str] = []
     lines = content.splitlines()

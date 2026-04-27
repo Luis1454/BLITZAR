@@ -6,6 +6,7 @@
 #include "config/SimulationArgs.hpp"
 #include <ostream>
 #include <string>
+/// Description: Defines the SimulationArgsInitStateOptions data or behavior contract.
 class SimulationArgsInitStateOptions final {
 public:
     static bool apply(const std::string& key, const std::string& value, SimulationConfig& config,

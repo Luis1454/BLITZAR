@@ -12,14 +12,17 @@ from python_tools.core.io import ProcessRunner
 from python_tools.core.models import CheckContext, CheckResult
 
 
+# Description: Defines the PythonQualityGateCheck contract.
 class PythonQualityGateCheck(BaseCheck):
     name = "python_quality"
     success_message = "python quality gate passed"
     failure_title = "python quality gate failed:"
 
+    # Description: Executes the __init__ operation.
     def __init__(self) -> None:
         self._runner = ProcessRunner()
 
+    # Description: Executes the _execute operation.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         pytest_temp_dir = context.root / ".pytest-basetemp-python-quality"
         pytest_temp = str(pytest_temp_dir)

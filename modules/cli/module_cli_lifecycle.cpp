@@ -13,6 +13,7 @@
 
 namespace grav_module_cli {
 
+/// Description: Defines the ModuleCliLifecycleLocal data or behavior contract.
 class ModuleCliLifecycleLocal final {
 public:
     static bool create(const grav_module::ClientHostContextV1* hostContext,
@@ -30,6 +31,7 @@ public:
             }
             state->session.config = SimulationConfig::loadOrCreate(state->session.configPath);
             return outModuleState.assign(
+                /// Description: Executes the fromRawPointer operation.
                 grav_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
         }
         catch (const std::exception& ex) {
@@ -42,11 +44,13 @@ public:
         }
     }
 
+    /// Description: Executes the destroy operation.
     static void destroy(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
             ModuleState* state = static_cast<ModuleState*>(moduleState.rawPointer());
             if (state != nullptr) {
+                /// Description: Executes the ownedState operation.
                 std::unique_ptr<ModuleState> ownedState(state);
                 ownedState->transport.disconnect();
             }
@@ -88,6 +92,7 @@ public:
         }
     }
 
+    /// Description: Executes the stop operation.
     static void stop(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
@@ -112,8 +117,10 @@ bool ModuleCliLifecycle::create(const grav_module::ClientHostContextV1* hostCont
     return ModuleCliLifecycleLocal::create(hostContext, outModuleState, errorBuffer);
 }
 
+/// Description: Executes the destroy operation.
 void ModuleCliLifecycle::destroy(grav_module::ClientModuleOpaqueState moduleState)
 {
+    /// Description: Executes the destroy operation.
     ModuleCliLifecycleLocal::destroy(moduleState);
 }
 
@@ -123,8 +130,10 @@ bool ModuleCliLifecycle::start(grav_module::ClientModuleOpaqueState moduleState,
     return ModuleCliLifecycleLocal::start(moduleState, errorBuffer);
 }
 
+/// Description: Executes the stop operation.
 void ModuleCliLifecycle::stop(grav_module::ClientModuleOpaqueState moduleState)
 {
+    /// Description: Executes the stop operation.
     ModuleCliLifecycleLocal::stop(moduleState);
 }
 

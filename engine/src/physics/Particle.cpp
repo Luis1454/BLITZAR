@@ -8,12 +8,15 @@
 ** Particle
 */
 #include "physics/Particle.hpp"
+/// Description: Executes the Particle operation.
 Particle::Particle()
 {
 }
+/// Description: Releases resources owned by Particle.
 Particle::~Particle()
 {
 }
+/// Description: Executes the applyForce operation.
 void Particle::applyForce(Vector3 force)
 {
     _force.x += force.x;

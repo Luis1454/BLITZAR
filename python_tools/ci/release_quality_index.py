@@ -25,19 +25,24 @@ DEFAULT_INDEX_EVIDENCE_REFS = (
 )
 
 
+# Description: Defines the ReleaseQualityIndexError contract.
 class ReleaseQualityIndexError(RuntimeError):
     pass
 
 
+# Description: Defines the ReleaseQualityIndexBuilder contract.
 class ReleaseQualityIndexBuilder:
+    # Description: Executes the __init__ operation.
     def __init__(self) -> None:
         self._manifest = QualityManifestLoader()
         self._registry = EvidenceRegistry()
         self._deviations = DeviationRegister()
 
+    # Description: Executes the resolve_tag operation.
     def resolve_tag(self, explicit: str | None) -> str:
         return resolve_release_tag(explicit)
 
+    # Description: Executes the package operation.
     def package(
         self,
         root: Path,
@@ -58,6 +63,7 @@ class ReleaseQualityIndexBuilder:
         index = self._build_index(repo_root, tag, profile, requirement_rows, deviation_rows, verification_activities, analyzer_status, ci_context)
         return self._archive_index(dist_dir.resolve(), tag, index)
 
+    # Description: Executes the _select_requirements operation.
     def _select_requirements(
         self,
         raw_requirements: object,
@@ -79,6 +85,7 @@ class ReleaseQualityIndexBuilder:
             )
         return rows
 
+    # Description: Executes the _select_deviations operation.
     def _select_deviations(
         self,
         root: Path,
@@ -97,6 +104,7 @@ class ReleaseQualityIndexBuilder:
                 selected.append(row)
         return selected
 
+    # Description: Executes the _build_index operation.
     def _build_index(
         self,
         root: Path,
@@ -130,6 +138,7 @@ class ReleaseQualityIndexBuilder:
             "ci_context": dict(ci_context or {}),
         }
 
+    # Description: Executes the _archive_index operation.
     def _archive_index(self, dist_dir: Path, tag: str, index: Mapping[str, object]) -> Path:
         if dist_dir.exists():
             shutil.rmtree(dist_dir)
@@ -139,6 +148,7 @@ class ReleaseQualityIndexBuilder:
         archive_base = dist_dir / f"ASTER-{tag}-quality-index"
         return Path(shutil.make_archive(str(archive_base), "zip", root_dir=dist_dir))
 
+    # Description: Executes the _collect_evidence_refs operation.
     def _collect_evidence_refs(self, root: Path, requirements: Sequence[Mapping[str, object]]) -> list[dict[str, str]]:
         refs = set(DEFAULT_INDEX_EVIDENCE_REFS)
         for row in requirements:
@@ -154,6 +164,7 @@ class ReleaseQualityIndexBuilder:
         return entries
 
     @staticmethod
+    # Description: Executes the _summarize_deviation operation.
     def _summarize_deviation(row: Mapping[str, object]) -> dict[str, object]:
         return {
             "id": row.get("id", ""),
@@ -164,6 +175,7 @@ class ReleaseQualityIndexBuilder:
         }
 
     @staticmethod
+    # Description: Executes the _read_string_list operation.
     def _read_string_list(row: Mapping[str, object], requirement_id: str, field: str) -> list[str]:
         raw = row.get(field)
         if not isinstance(raw, list):
@@ -176,6 +188,7 @@ class ReleaseQualityIndexBuilder:
         return values
 
     @staticmethod
+    # Description: Executes the _render_readme operation.
     def _render_readme(index: Mapping[str, object]) -> str:
         summary = index.get("summary")
         if not isinstance(summary, dict):

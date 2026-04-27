@@ -6,10 +6,14 @@
 #include <string>
 #include <vector>
 namespace grav_client_host {
+/// Description: Defines the ClientHostCliText data or behavior contract.
 class ClientHostCliText final {
 public:
+    /// Description: Executes the trim operation.
     static std::string trim(const std::string& input);
+    /// Description: Executes the splitTokens operation.
     static std::vector<std::string> splitTokens(const std::string& line);
+    /// Description: Executes the toLower operation.
     static std::string toLower(std::string value);
 };
 } // namespace grav_client_host

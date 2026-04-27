@@ -15,10 +15,12 @@ if str(ROOT) not in sys.path:
 from python_tools.ci.coverage_dashboard import CoverageDashboardBuilder, CoverageMetrics
 
 
+# Description: Executes the _read_metric operation.
 def _read_metric(name: str) -> float:
     return float(os.environ[name])
 
 
+# Description: Executes the main operation.
 def main() -> int:
     builder = CoverageDashboardBuilder()
     metrics = CoverageMetrics(

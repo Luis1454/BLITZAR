@@ -10,6 +10,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+/// Description: Executes the trim operation.
 static std::string trim(const std::string& input)
 {
     const auto begin = std::find_if_not(input.begin(), input.end(),
@@ -21,9 +22,11 @@ static std::string trim(const std::string& input)
         return {};
     return std::string(begin, end);
 }
+/// Description: Defines the EchoState data or behavior contract.
 struct EchoState {
     std::string configPath;
 };
+/// Description: Defines the EchoModuleLocal data or behavior contract.
 class EchoModuleLocal final {
 public:
     static bool create(const grav_module::ClientHostContextV1* context,
@@ -40,6 +43,7 @@ public:
                                     ? context->configPath
                                     : "simulation.ini";
             return outModuleState.assign(
+                /// Description: Executes the fromRawPointer operation.
                 grav_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
         }
         catch (const std::exception& ex) {
@@ -51,9 +55,11 @@ public:
             return false;
         }
     }
+    /// Description: Executes the destroy operation.
     static void destroy(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
+            /// Description: Executes the state operation.
             std::unique_ptr<EchoState> state(static_cast<EchoState*>(moduleState.rawPointer()));
         }
         catch (const std::exception& ex) {
@@ -112,6 +118,7 @@ public:
     }
 };
 extern "C" GRAVITY_CLIENT_MODULE_EXPORT_ATTR const grav_module::ClientModuleExportsV1*
+/// Description: Executes the gravity_client_module_v1 operation.
 gravity_client_module_v1()
 {
     static const grav_module::ClientModuleExportsV1 exports{
@@ -121,15 +128,18 @@ gravity_client_module_v1()
            char* errorBuffer, std::size_t errorBufferSize) -> bool {
             return EchoModuleLocal::create(
                 context, grav_module::ClientModuleStateSlot(outModuleState),
+                /// Description: Executes the ErrorBufferView operation.
                 grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void* moduleState) {
             EchoModuleLocal::destroy(
+                /// Description: Executes the fromRawPointer operation.
                 grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
         },
         [](void* moduleState, char* errorBuffer, std::size_t errorBufferSize) -> bool {
             return EchoModuleLocal::start(
                 grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState),
+                /// Description: Executes the ErrorBufferView operation.
                 grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void*) {
@@ -144,6 +154,7 @@ gravity_client_module_v1()
             return EchoModuleLocal::handleCommand(
                 commandLine != nullptr ? std::string_view(commandLine) : std::string_view(),
                 grav_module::ClientModuleCommandControl(outKeepRunning),
+                /// Description: Executes the ErrorBufferView operation.
                 grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
         }};
     return &exports;

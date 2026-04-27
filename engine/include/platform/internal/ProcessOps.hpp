@@ -14,8 +14,11 @@ bool launchProcess(const std::string& executable, const std::vector<std::string>
                    std::string& outError);
 bool terminateProcess(NativeProcessHandle& handle, std::int64_t& pid, std::uint32_t waitMs,
                       std::string& outError);
+/// Description: Executes the isProcessRunning operation.
 bool isProcessRunning(NativeProcessHandle handle, std::int64_t pid);
+/// Description: Executes the clearProcessHandle operation.
 void clearProcessHandle(NativeProcessHandle& handle, std::int64_t& pid);
+/// Description: Executes the formatProcessId operation.
 std::string formatProcessId(std::int64_t pid);
 bool launchDetachedProcess(const std::string& executable, const std::vector<std::string>& args,
                            std::string& outError);

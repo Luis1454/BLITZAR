@@ -4,10 +4,12 @@
 #include "physics/ParticleSystem.hpp"
 #include <gtest/gtest.h>
 #include <vector>
+/// Description: Executes the TEST operation.
 TEST(PhysicsReentrancyTest, TST_UNT_PHYS_017_MultipleInstancesCoexistence)
 {
     // Create two independent particle systems.
     ParticleSystem ps1(128, true);
+    /// Description: Executes the ps2 operation.
     ParticleSystem ps2(64, true);
     // Set different properties.
     ps1.setSolverMode(ParticleSystem::SolverMode::OctreeCpu);
@@ -18,6 +20,7 @@ TEST(PhysicsReentrancyTest, TST_UNT_PHYS_017_MultipleInstancesCoexistence)
     ps2.setSolverMode(ParticleSystem::SolverMode::OctreeCpu);
     // Verify initial state.
     EXPECT_EQ(ps1.getParticles().size(), 128);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(ps2.getParticles().size(), 64);
     // Step both systems.
     // Note: On this machine, CUDA kernels will fail, but we want to ensure
@@ -26,5 +29,6 @@ TEST(PhysicsReentrancyTest, TST_UNT_PHYS_017_MultipleInstancesCoexistence)
     (void)ps2.update(0.01f);
     // Verify that ps1 didn't change ps2's particle count or mode.
     EXPECT_EQ(ps1.getParticles().size(), 128);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(ps2.getParticles().size(), 64);
 }

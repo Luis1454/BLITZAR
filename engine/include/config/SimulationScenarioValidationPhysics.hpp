@@ -9,6 +9,7 @@
 #include <functional>
 #include <string>
 namespace grav_config {
+/// Description: Defines the SimulationScenarioValidationPhysics data or behavior contract.
 class SimulationScenarioValidationPhysics final {
 public:
     static void appendDiagnostics(

@@ -24,6 +24,7 @@ static void rotate3D(float x, float y, float z, float yaw, float pitch, float ro
     outY = sr * x1 + cr * y1;
     outZ = z2;
 }
+/// Description: Executes the baseOrientation operation.
 static void baseOrientation(ViewMode mode, float& yaw, float& pitch, float& roll)
 {
     yaw = 0.0f;
@@ -62,6 +63,7 @@ static void modeComponents(ViewMode mode, float x, float y, float z, float& sx, 
         break;
     }
 }
+/// Description: Executes the distanceSquared operation.
 static float distanceSquared(const Point2D& a, const Point2D& b)
 {
     const float dx = a.x - b.x;
@@ -74,6 +76,7 @@ ProjectedPoint projectParticle(const RenderParticle& particle, ViewMode mode,
     float baseYaw = 0.0f;
     float basePitch = 0.0f;
     float baseRoll = 0.0f;
+    /// Description: Executes the baseOrientation operation.
     baseOrientation(mode, baseYaw, basePitch, baseRoll);
     float rx = 0.0f;
     float ry = 0.0f;
@@ -83,6 +86,7 @@ ProjectedPoint projectParticle(const RenderParticle& particle, ViewMode mode,
     float sx = 0.0f;
     float sy = 0.0f;
     float depth = 0.0f;
+    /// Description: Executes the modeComponents operation.
     modeComponents(mode, rx, ry, rz, sx, sy, depth);
     if (mode != ViewMode::Perspective)
         return ProjectedPoint{sx, sy, depth, true};
@@ -95,6 +99,7 @@ ProjectedPoint projectParticle(const RenderParticle& particle, ViewMode mode,
         return ProjectedPoint{0.0f, 0.0f, depth, false};
     return ProjectedPoint{sx * perspectiveScale, sy * perspectiveScale, depth, true};
 }
+/// Description: Executes the computeGimbal operation.
 GimbalOverlay computeGimbal(const Rect2D& viewport, ViewMode mode, const CameraState& camera)
 {
     const float size = std::clamp(std::min(viewport.width, viewport.height) * 0.26f, 54.0f, 94.0f);
@@ -105,6 +110,7 @@ GimbalOverlay computeGimbal(const Rect2D& viewport, ViewMode mode, const CameraS
     float baseYaw = 0.0f;
     float basePitch = 0.0f;
     float baseRoll = 0.0f;
+    /// Description: Executes the baseOrientation operation.
     baseOrientation(mode, baseYaw, basePitch, baseRoll);
     std::array<Point2D, 3> handles{};
     const std::array<std::array<float, 3>, 3> axes = {std::array<float, 3>{1.0f, 0.0f, 0.0f},
@@ -119,12 +125,14 @@ GimbalOverlay computeGimbal(const Rect2D& viewport, ViewMode mode, const CameraS
         float sx = 0.0f;
         float sy = 0.0f;
         float depth = 0.0f;
+        /// Description: Executes the modeComponents operation.
         modeComponents(mode, rx, ry, rz, sx, sy, depth);
         (void)depth;
         handles[i] = Point2D{center.x + sx * radius * 0.8f, center.y - sy * radius * 0.8f};
     }
     return GimbalOverlay{bounds, center, radius, handles};
 }
+/// Description: Executes the pickGimbalAxis operation.
 GimbalAxis pickGimbalAxis(const GimbalOverlay& overlay, const Point2D& mouse)
 {
     const float threshold2 = 11.0f * 11.0f;

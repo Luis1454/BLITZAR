@@ -7,19 +7,24 @@
 #include <string>
 #include <vector>
 namespace grav_test_protocol_codec {
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_001_ParsesCommandEnvelopeWithEscapedToken)
 {
     grav_protocol::ServerCommandRequest request{};
     request.cmd = std::string(grav_protocol::SetSolver);
     request.token = "secret\"token";
     const std::string json =
+        /// Description: Executes the makeCommandRequest operation.
         grav_protocol::ServerJsonCodec::makeCommandRequest(request, "\"value\":\"octree_gpu\"");
     grav_protocol::ServerCommandRequest parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseCommandRequest(json, parsed, error)) << error;
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.cmd, grav_protocol::SetSolver);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.token, "secret\"token");
 }
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
 {
     SimulationStats stats{};
@@ -65,41 +70,76 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
     grav_protocol::ServerStatusPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(parsed.envelope.ok);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.steps, 42u);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(parsed.dt, 0.02f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(parsed.totalTime, 1.25f);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.paused);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.faulted);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.faultStep, 41u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.faultReason, "bad\\nstate");
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.sphEnabled);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(parsed.serverFps, 144.5f);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.performanceProfile, "interactive");
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(parsed.substepTargetDt, 0.0025f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(parsed.substepDt, 0.00125f);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.substeps, 8u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.maxSubsteps, 32u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.snapshotPublishPeriodMs, 50u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.particleCount, 128u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.solver, "octree_gpu");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.integrator, "euler");
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(parsed.totalEnergy, 5.0f);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.energyEstimated);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.gpuTelemetryEnabled);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.gpuTelemetryAvailable);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(parsed.gpuKernelMs, 1.5f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(parsed.gpuCopyMs, 0.75f);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.gpuVramUsedBytes, 64u * 1024u * 1024u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.gpuVramTotalBytes, 256u * 1024u * 1024u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.exportQueueDepth, 3u);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.exportActive);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.exportCompletedCount, 9u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.exportFailedCount, 2u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.exportLastState, "writing");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.exportLastPath, "exports/demo.vtk");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.exportLastMessage, "background export active");
 }
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_003_RejectsMalformedSnapshotPayload)
 {
     const std::string raw =
@@ -107,24 +147,34 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_003_RejectsMalformedSnapshotPayload)
         "\"particles\":[[1,2,3,4,5]]}";
     grav_protocol::ServerSnapshotPayload parsed{};
     std::string error;
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error));
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(error, "invalid snapshot payload");
 }
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_006_ParsesSnapshotSourceCountMetadata)
 {
+    /// Description: Executes the snapshot operation.
     std::vector<RenderParticle> snapshot(2u);
     snapshot[0].x = 1.0f;
     snapshot[1].x = 2.0f;
     const std::string raw =
+        /// Description: Executes the makeSnapshotResponse operation.
         grav_protocol::ServerJsonCodec::makeSnapshotResponse(true, snapshot, 8u);
     grav_protocol::ServerSnapshotPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error)) << error;
+    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(parsed.envelope.ok);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.hasSnapshot);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.particles.size(), 2u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.sourceSize, 8u);
 }
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_004_ParsesErrorEnvelopeForControlCommand)
 {
     const std::string raw = grav_protocol::ServerJsonCodec::makeErrorResponse(
@@ -132,18 +182,29 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_004_ParsesErrorEnvelopeForControlComm
     grav_protocol::ServerResponseEnvelope parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseResponseEnvelope(raw, parsed, error)) << error;
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(parsed.ok);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.cmd, grav_protocol::SetIntegrator);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.error, "invalid integrator value");
 }
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_005_ExportsCurrentSchemaVersionLabel)
 {
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(grav_protocol::SchemaVersion, "server-json-v1");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(grav_protocol::Status, "status");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(grav_protocol::GetSnapshot, "get_snapshot");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(grav_protocol::SaveCheckpoint, "save_checkpoint");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(grav_protocol::LoadCheckpoint, "load_checkpoint");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(grav_protocol::SetGpuTelemetry, "set_gpu_telemetry");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(grav_protocol::SetSnapshotPublishCadence, "set_snapshot_publish_cadence");
 }
 // TST_UNT_PROT_007: Number parsing with maximum float32 precision
@@ -158,8 +219,11 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_007_ParsesFloatPrecisionBoundaries)
     grav_protocol::ServerStatusPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.envelope.ok);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(parsed.dt, 1.23456789f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(parsed.totalTime, 0.00001f);
 }
 // TST_UNT_PROT_008: Very large numeric values in status
@@ -174,7 +238,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_008_ParsesLargeNumericStatus)
     grav_protocol::ServerStatusPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.steps, 999999999u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.particleCount, 1024u * 1024u);
 }
 // TST_UNT_PROT_009: Zero and boundary values in numeric fields
@@ -189,6 +255,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_009_ParsesBoundaryNumericValues)
     grav_protocol::ServerStatusPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.envelope.ok);
 }
 // TST_UNT_PROT_010: Status with extreme energy values
@@ -203,6 +270,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_010_ParsesExtremeEnergyStatus)
     grav_protocol::ServerStatusPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.envelope.ok);
 }
 // TST_UNT_PROT_011: Rejects malformed JSON with missing required fields
@@ -211,6 +279,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_011_RejectsMalformedJsonMissingOkFiel
     const std::string raw = "{\"cmd\":\"set_solver\"}"; // Missing "ok" field
     grav_protocol::ServerResponseEnvelope parsed{};
     std::string error;
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseResponseEnvelope(raw, parsed, error));
 }
 // TST_UNT_PROT_012: Rejects incomplete JSON
@@ -219,6 +288,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_012_RejectsIncompleteJson)
     const std::string raw = "{\"ok\":true,\"cmd\":\"get_status\""; // Incomplete
     grav_protocol::ServerStatusPayload parsed{};
     std::string error;
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error));
 }
 // TST_UNT_PROT_013: Rejects JSON with wrong field types
@@ -227,6 +297,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_013_RejectsWrongFieldTypes)
     const std::string raw = "{\"ok\":\"true\",\"cmd\":\"get_status\",\"steps\":\"not_a_number\"}";
     grav_protocol::ServerStatusPayload parsed{};
     std::string error;
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error));
 }
 // TST_UNT_PROT_014: Handles empty JSON object
@@ -235,6 +306,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_014_RejectsEmptyJsonObject)
     const std::string raw = "{}";
     grav_protocol::ServerResponseEnvelope parsed{};
     std::string error;
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseResponseEnvelope(raw, parsed, error));
 }
 // TST_UNT_PROT_015: Rejects invalid JSON syntax
@@ -243,6 +315,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_015_RejectsInvalidJsonSyntax)
     const std::string raw = "{ok: true, cmd: 'get_status'}"; // Invalid: unquoted keys/values
     grav_protocol::ServerResponseEnvelope parsed{};
     std::string error;
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseResponseEnvelope(raw, parsed, error));
 }
 // TST_UNT_PROT_016: Status with minimal field set
@@ -254,6 +327,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_016_ParsesMinimalStatusPayload)
     grav_protocol::ServerStatusPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.envelope.ok);
 }
 // TST_UNT_PROT_017: Status with all boolean flags set to true
@@ -271,9 +345,13 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_017_ParsesAllBooleanFlagsTrue)
     grav_protocol::ServerStatusPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.paused);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.faulted);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.sphEnabled);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.energyEstimated);
 }
 // TST_UNT_PROT_018: Status with all boolean flags set to false
@@ -291,7 +369,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_018_ParsesAllBooleanFlagsFalse)
     grav_protocol::ServerStatusPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(parsed.paused);
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(parsed.faulted);
 }
 // TST_UNT_PROT_019: Status with special characters in string fields
@@ -305,6 +385,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_019_ParsesStatusWithSpecialCharsInStr
     grav_protocol::ServerStatusPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.envelope.ok);
 }
 // TST_UNT_PROT_020: Empty strings in status fields
@@ -320,11 +401,13 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_020_ParsesStatusWithEmptyStrings)
     grav_protocol::ServerStatusPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(parsed.envelope.ok);
 }
 // TST_UNT_PROT_021: Snapshot with single particle
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_021_ParsesSnapshotWithSingleParticle)
 {
+    /// Description: Executes the snapshot operation.
     std::vector<RenderParticle> snapshot(1u);
     snapshot[0].x = 1.0f;
     snapshot[0].y = 2.0f;
@@ -333,16 +416,20 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_021_ParsesSnapshotWithSingleParticle)
     snapshot[0].pressureNorm = 0.1f;
     snapshot[0].temperature = 0.3f;
     const std::string raw =
+        /// Description: Executes the makeSnapshotResponse operation.
         grav_protocol::ServerJsonCodec::makeSnapshotResponse(true, snapshot, 1u);
     grav_protocol::ServerSnapshotPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error)) << error;
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.particles.size(), 1u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.sourceSize, 1u);
 }
 // TST_UNT_PROT_022: Snapshot with many particles
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_022_ParsesSnapshotWithManyParticles)
 {
+    /// Description: Executes the snapshot operation.
     std::vector<RenderParticle> snapshot(1000u);
     for (size_t i = 0u; i < snapshot.size(); ++i) {
         snapshot[i].x = static_cast<float>(i);
@@ -350,11 +437,14 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_022_ParsesSnapshotWithManyParticles)
         snapshot[i].z = static_cast<float>(i + 2u);
     }
     const std::string raw =
+        /// Description: Executes the makeSnapshotResponse operation.
         grav_protocol::ServerJsonCodec::makeSnapshotResponse(true, snapshot, 1000u);
     grav_protocol::ServerSnapshotPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error)) << error;
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.particles.size(), 1000u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.sourceSize, 1000u);
 }
 // TST_UNT_PROT_023: Snapshot with no snapshot data available
@@ -362,16 +452,20 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_023_ParsesSnapshotUnavailable)
 {
     std::vector<RenderParticle> empty_snapshot;
     const std::string raw =
+        /// Description: Executes the makeSnapshotResponse operation.
         grav_protocol::ServerJsonCodec::makeSnapshotResponse(false, empty_snapshot, 0u);
     grav_protocol::ServerSnapshotPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error)) << error;
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(parsed.hasSnapshot);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.particles.size(), 0u);
 }
 // TST_UNT_PROT_024: Snapshot with boundary coordinate values
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_024_ParsesSnapshotBoundaryCoordinates)
 {
+    /// Description: Executes the snapshot operation.
     std::vector<RenderParticle> snapshot(3u);
     snapshot[0].x = 0.0f;
     snapshot[0].y = 0.0f;
@@ -383,12 +477,16 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_024_ParsesSnapshotBoundaryCoordinates
     snapshot[2].y = 1e6f;
     snapshot[2].z = -1e-6f;
     const std::string raw =
+        /// Description: Executes the makeSnapshotResponse operation.
         grav_protocol::ServerJsonCodec::makeSnapshotResponse(true, snapshot, 3u);
     grav_protocol::ServerSnapshotPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error)) << error;
+    /// Description: Executes the ASSERT_EQ operation.
     ASSERT_EQ(parsed.particles.size(), 3u);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(parsed.particles[0].x, 0.0f);
+    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(parsed.particles[1].x, 1e6f);
 }
 // TST_UNT_PROT_025: Rejects snapshot with mismatched particle count
@@ -400,6 +498,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_025_RejectsSnapshotArrayMismatch)
         "\"particles\":[[1,2,3,4,5,6,7]]}"; // Only 1 particle, but count says 10
     grav_protocol::ServerSnapshotPayload parsed{};
     std::string error;
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error));
 }
 // TST_UNT_PROT_026: Command request round-trip with empty token
@@ -409,10 +508,12 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_026_CommandRequestWithEmptyToken)
     request.cmd = std::string(grav_protocol::SetSolver);
     request.token = "";
     const std::string json =
+        /// Description: Executes the makeCommandRequest operation.
         grav_protocol::ServerJsonCodec::makeCommandRequest(request, "\"value\":\"octree_gpu\"");
     grav_protocol::ServerCommandRequest parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseCommandRequest(json, parsed, error)) << error;
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.token, "");
 }
 // TST_UNT_PROT_027: Command request with very long token
@@ -422,10 +523,12 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_027_CommandRequestWithLongToken)
     request.cmd = std::string(grav_protocol::SetSolver);
     request.token = std::string(1000u, 'x');
     const std::string json =
+        /// Description: Executes the makeCommandRequest operation.
         grav_protocol::ServerJsonCodec::makeCommandRequest(request, "\"value\":\"octree_gpu\"");
     grav_protocol::ServerCommandRequest parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseCommandRequest(json, parsed, error)) << error;
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.token.size(), 1000u);
 }
 // TST_UNT_PROT_028: Error response with various command types
@@ -433,18 +536,27 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_028_ErrorResponseWithDifferentCommand
 {
     const auto test_command = [](std::string_view cmd) {
         const std::string raw =
+            /// Description: Executes the makeErrorResponse operation.
             grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "test error");
         grav_protocol::ServerResponseEnvelope parsed{};
         std::string error;
+        /// Description: Executes the EXPECT_TRUE operation.
         EXPECT_TRUE(grav_protocol::ServerJsonCodec::parseResponseEnvelope(raw, parsed, error))
             << error;
+        /// Description: Executes the EXPECT_FALSE operation.
         EXPECT_FALSE(parsed.ok);
+        /// Description: Executes the EXPECT_EQ operation.
         EXPECT_EQ(parsed.cmd, cmd);
+        /// Description: Executes the EXPECT_EQ operation.
         EXPECT_EQ(parsed.error, "test error");
     };
+    /// Description: Executes the test_command operation.
     test_command(grav_protocol::SetSolver);
+    /// Description: Executes the test_command operation.
     test_command(grav_protocol::SetIntegrator);
+    /// Description: Executes the test_command operation.
     test_command(grav_protocol::Status);
+    /// Description: Executes the test_command operation.
     test_command(grav_protocol::GetSnapshot);
 }
 // TST_UNT_PROT_029: String escaping preserves all special sequences
@@ -456,6 +568,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_029_StringEscapingRoundTrip)
     grav_protocol::ServerStatusPayload parsed{};
     std::string error;
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(parsed.faultReason, "Complex: \\ \" \n \r \t special");
 }
 // TST_UNT_PROT_030: Consecutive rapid command-response cycles
@@ -466,17 +579,22 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_030_ConsecutiveCommandResponseCycles)
         request.cmd = std::string(grav_protocol::SetSolver);
         request.token = "token_" + std::to_string(i);
         const std::string json =
+            /// Description: Executes the makeCommandRequest operation.
             grav_protocol::ServerJsonCodec::makeCommandRequest(request, "\"value\":\"octree_gpu\"");
         grav_protocol::ServerCommandRequest parsed{};
         std::string error;
+        /// Description: Executes the ASSERT_TRUE operation.
         ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseCommandRequest(json, parsed, error))
             << error;
         const std::string response =
+            /// Description: Executes the makeOkResponse operation.
             grav_protocol::ServerJsonCodec::makeOkResponse(grav_protocol::SetSolver);
         grav_protocol::ServerResponseEnvelope parsed_resp{};
         ASSERT_TRUE(
+            /// Description: Executes the parseResponseEnvelope operation.
             grav_protocol::ServerJsonCodec::parseResponseEnvelope(response, parsed_resp, error))
             << error;
+        /// Description: Executes the EXPECT_TRUE operation.
         EXPECT_TRUE(parsed_resp.ok);
     }
 }

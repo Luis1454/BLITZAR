@@ -7,6 +7,7 @@
 #include "server/SimulationInitConfig.hpp"
 #include <iostream>
 namespace grav_qt {
+/// Description: Defines the MainWindowControllerLocal data or behavior contract.
 class MainWindowControllerLocal final {
 public:
     static void applySharedConfig(const SimulationConfig& config,
@@ -39,6 +40,7 @@ MainWindowApplyConfigResult MainWindowController::applyConfig(const SimulationCo
     if (!result.report.validForRun)
         return result;
     const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(config, std::cerr);
+    /// Description: Executes the applySharedConfig operation.
     MainWindowControllerLocal::applySharedConfig(config, runtime);
     runtime.setInitialStateFile(initPlan.inputFile, initPlan.inputFormat);
     runtime.setInitialStateConfig(initPlan.config);
@@ -52,10 +54,12 @@ std::uint32_t
 MainWindowController::applyPerformanceProfile(const SimulationConfig& config,
                                               grav_client::IClientRuntime& runtime) const
 {
+    /// Description: Executes the applySharedConfig operation.
     MainWindowControllerLocal::applySharedConfig(config, runtime);
     return grav_client::resolveClientDrawCap(config);
 }
 grav_config::ScenarioValidationReport
+/// Description: Executes the validate operation.
 MainWindowController::validate(const SimulationConfig& config) const
 {
     return grav_config::SimulationScenarioValidation::evaluate(config);

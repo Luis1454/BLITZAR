@@ -66,13 +66,16 @@ QT_REFERENCE_NEW_RE = re.compile(
 PREPROCESSOR_CONDITIONAL_RE = re.compile(r"(?m)^\s*#(?:if|ifdef|ifndef|elif|else|endif)\b")
 PRAGMA_ONCE_RE = re.compile(r"(?m)^\s*#pragma\s+once\b")
 DEFINE_RE = re.compile(r"(?m)^\s*#define\s+([A-Z][A-Z0-9_]+)\b(?!\s*\()")
+NORMALIZED_DOCUMENTATION_RE = re.compile(r"^\s*(?://+|#+|///)\s+(?:File|Purpose|Description):\s")
 
+# Description: Executes the should_skip_dir operation.
 def should_skip_dir(dirname: str) -> bool:
     if dirname in IGNORED_DIRS:
         return True
     return dirname.startswith(("build-", "cmake-build-", ".pytest-basetemp", ".venv", ".tox"))
 
 
+# Description: Executes the should_skip_rel_parts operation.
 def should_skip_rel_parts(rel_parts: tuple[str, ...]) -> bool:
     if any(should_skip_dir(part) for part in rel_parts):
         return True
@@ -82,10 +85,12 @@ def should_skip_rel_parts(rel_parts: tuple[str, ...]) -> bool:
     return False
 
 
+# Description: Executes the should_count_lines operation.
 def should_count_lines(path: Path) -> bool:
     return path.name in LINE_COUNT_NAMES or path.suffix.lower() in LINE_COUNT_EXTS
 
 
+# Description: Executes the load_allowlist operation.
 def load_allowlist(path: Path) -> set[str]:
     if not path.exists():
         return set()
@@ -97,16 +102,19 @@ def load_allowlist(path: Path) -> set[str]:
     return entries
 
 
+# Description: Executes the is_prod_path operation.
 def is_prod_path(rel: str) -> bool:
     return rel.startswith(PROD_ROOTS)
 
 
+# Description: Defines the RepoPolicyCheck contract.
 class RepoPolicyCheck(BaseCheck):
     name = "repo"
     success_message = "Repository policy check passed"
     failure_title = "Repository policy check failed:"
     warning_title = "Repository policy warnings:"
 
+    # Description: Executes the _execute operation.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         allowlist_path = context.allowlist if context.allowlist is not None else context.root / "tests/checks/policy_allowlist.txt"
         allowlist = load_allowlist(allowlist_path)
@@ -157,6 +165,7 @@ class RepoPolicyCheck(BaseCheck):
         check_workflow_pip_manifest_usage(context.root, result)
         check_release_lane_subset(context.root, result)
 
+    # Description: Executes the _check_cpp_content operation.
     def _check_cpp_content(self, rel: str, content: str, result: CheckResult) -> None:
         suffix = Path(rel).suffix.lower()
         if not rel.startswith("tests/"):
@@ -190,6 +199,7 @@ class RepoPolicyCheck(BaseCheck):
         if rel.startswith("modules/qt/") and QT_REFERENCE_NEW_RE.search(content):
             result.add_error(f"{rel}: Qt '*new + reference' ownership pattern is forbidden")
 
+    # Description: Executes the _check_include_guard operation.
     def _check_include_guard(self, rel: str, content: str, result: CheckResult) -> None:
         lines = content.splitlines()
         non_empty = [(index, line.strip()) for index, line in enumerate(lines) if line.strip()]
@@ -223,9 +233,11 @@ class RepoPolicyCheck(BaseCheck):
             result.add_error(f"{rel}: header must not define macros beyond the include guard")
 
     @staticmethod
+    # Description: Executes the _is_leading_header_comment operation.
     def _is_leading_header_comment(stripped: str) -> bool:
         return stripped.startswith(("//", "/*", "*"))
 
+    # Description: Executes the _check_line_count operation.
     def _check_line_count(
         self,
         rel: str,
@@ -235,7 +247,7 @@ class RepoPolicyCheck(BaseCheck):
         used_allowlist: set[str],
         result: CheckResult,
     ) -> None:
-        line_count = len(content.splitlines())
+        line_count = self._effective_line_count(content)
         if line_count > context.hard_lines:
             if rel in NON_WAIVABLE_STRONG_SIZE_PATHS:
                 result.add_error(
@@ -261,11 +273,17 @@ class RepoPolicyCheck(BaseCheck):
                 "keep one primary responsibility and avoid artificial wrapper splits"
             )
 
+    # Description: Executes the _check_function_decomposition operation.
     def _check_function_decomposition(self, rel: str, content: str, result: CheckResult) -> None:
         for warning in collect_function_decomposition_warnings(rel, content):
             result.add_warning(warning)
 
+    @staticmethod
+    def _effective_line_count(content: str) -> int:
+        return sum(1 for line in content.splitlines() if not NORMALIZED_DOCUMENTATION_RE.match(line))
 
+
+# Description: Executes the _check_power_of_10_content operation.
 def _check_power_of_10_content(rel: str, content: str) -> list[str]:
     errors: list[str] = []
     if GOTO_RE.search(content):

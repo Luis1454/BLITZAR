@@ -16,7 +16,9 @@
 #include <functional>
 #include <optional>
 #include <vector>
+/// Description: Defines the QMouseEvent data or behavior contract.
 class QMouseEvent;
+/// Description: Defines the QPaintEvent data or behavior contract.
 class QPaintEvent;
 typedef QMouseEvent UiMouseEvent;
 typedef QPaintEvent UiPaintEvent;
@@ -44,9 +46,13 @@ public:
 private:
     typedef UiMouseEvent* MouseEventHandle;
     typedef UiPaintEvent* PaintEventHandle;
+    /// Description: Executes the mousePressEvent operation.
     void mousePressEvent(MouseEventHandle event) override;
+    /// Description: Executes the mouseMoveEvent operation.
     void mouseMoveEvent(MouseEventHandle event) override;
+    /// Description: Executes the paintEvent operation.
     void paintEvent(PaintEventHandle event) override;
+    /// Description: Executes the mouseReleaseEvent operation.
     void mouseReleaseEvent(MouseEventHandle event) override;
     grav::ViewMode _mode;
     std::optional<std::reference_wrapper<const std::vector<RenderParticle>>> _snapshot;

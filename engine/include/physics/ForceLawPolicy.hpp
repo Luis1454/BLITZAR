@@ -8,6 +8,7 @@
  * Responsibility: Normalize the canonical force-law clamps shared by all
  * gravity solvers.
  */
+/// Description: Defines the ForceLawPolicy data or behavior contract.
 struct ForceLawPolicy {
     float theta = 0.05f;
     float softening = 1.0e-4f;

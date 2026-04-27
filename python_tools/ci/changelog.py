@@ -31,6 +31,7 @@ _TYPE_HEADERS: dict[str, str] = {
 
 
 @dataclass
+# Description: Defines the CommitEntry contract.
 class CommitEntry:
     sha: str
     commit_type: str
@@ -40,6 +41,7 @@ class CommitEntry:
 
 
 @dataclass
+# Description: Defines the ChangelogData contract.
 class ChangelogData:
     tag: str
     previous_tag: str
@@ -47,6 +49,7 @@ class ChangelogData:
     by_type: dict[str, list[CommitEntry]] = field(default_factory=dict)
 
 
+# Description: Executes the _git_log_range operation.
 def _git_log_range(repo_root: Path, from_ref: str, to_ref: str) -> list[str]:
     """Return commit lines between two refs (exclusive from, inclusive to)."""
     sep = "|||"
@@ -61,6 +64,7 @@ def _git_log_range(repo_root: Path, from_ref: str, to_ref: str) -> list[str]:
     return [line for line in result.stdout.splitlines() if line.strip()]
 
 
+# Description: Executes the _latest_previous_tag operation.
 def _latest_previous_tag(repo_root: Path, current_tag: str) -> str:
     """Return the tag just before current_tag, or empty string if none."""
     result = subprocess.run(
@@ -78,6 +82,7 @@ def _latest_previous_tag(repo_root: Path, current_tag: str) -> str:
         return tags[0] if tags else ""
 
 
+# Description: Executes the parse_commits operation.
 def parse_commits(raw_lines: list[str]) -> list[CommitEntry]:
     """Parse raw git log lines into CommitEntry objects."""
     entries: list[CommitEntry] = []
@@ -101,6 +106,7 @@ def parse_commits(raw_lines: list[str]) -> list[CommitEntry]:
     return entries
 
 
+# Description: Executes the generate_changelog operation.
 def generate_changelog(
     repo_root: Path,
     tag: str,
@@ -118,6 +124,7 @@ def generate_changelog(
     return data
 
 
+# Description: Executes the render_markdown operation.
 def render_markdown(data: ChangelogData) -> str:
     """Render a ChangelogData into GitHub-flavoured Markdown."""
     lines: list[str] = [f"# Release {data.tag}\n"]

@@ -13,6 +13,7 @@ function(gravity_apply_windows_paths target_name)
     endif()
 endfunction()
 
+# Description: Defines the gravity_apply_strict_warnings function helper.
 function(gravity_apply_strict_warnings target_name)
     if(NOT GRAVITY_STRICT_WARNINGS)
         return()
@@ -24,6 +25,7 @@ function(gravity_apply_strict_warnings target_name)
     endif()
 endfunction()
 
+# Description: Defines the configure_gravity_cpp_target function helper.
 function(configure_gravity_cpp_target target_name)
     target_include_directories(${target_name} PRIVATE ${GRAVITY_PROJECT_INCLUDE_DIRS})
     target_compile_features(${target_name} PRIVATE cxx_std_17)
@@ -53,6 +55,7 @@ function(configure_gravity_cpp_target target_name)
     endif()
 endfunction()
 
+# Description: Defines the configure_gravity_cuda_target function helper.
 function(configure_gravity_cuda_target target_name)
     configure_gravity_cpp_target(${target_name})
     set_target_properties(${target_name} PROPERTIES CUDA_SEPARABLE_COMPILATION OFF)
@@ -76,6 +79,7 @@ function(configure_gravity_cuda_target target_name)
     endif()
 endfunction()
 
+# Description: Defines the gravity_ensure_gtest function helper.
 function(gravity_ensure_gtest)
     if(TARGET GTest::gtest_main)
         return()

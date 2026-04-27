@@ -24,7 +24,9 @@ bool buildScenario(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& 
         error = "unknown workload: " + options.workload;
         return false;
     }
+    /// Description: Executes the setScenarioTiming operation.
     testsupport::setScenarioTiming(cfg, 30000, 30000);
+    /// Description: Executes the setScenarioEnergySampling operation.
     testsupport::setScenarioEnergySampling(cfg, 1u, options.particleCount);
     return true;
 }
@@ -35,6 +37,7 @@ void writeMeasurement(const grav_test_perf::PerformanceBenchmarkTool::ToolOption
     const double steps = static_cast<double>(options.steps);
     const double particleUpdates = steps * static_cast<double>(result.final.size());
     const double safeWallSeconds = wallSeconds > 1e-9 ? wallSeconds : 1e-9;
+    /// Description: Executes the setprecision operation.
     out << std::fixed << std::setprecision(8);
     out << "workload=" << options.workload << "\n";
     out << "solver=" << options.solver << "\n";
@@ -53,6 +56,7 @@ void writeMeasurement(const grav_test_perf::PerformanceBenchmarkTool::ToolOption
 }
 } // namespace grav_test_perf_tool
 namespace grav_test_perf {
+/// Description: Executes the parseFloatValue operation.
 bool PerformanceBenchmarkTool::parseFloatValue(const std::string& text, float& out)
 {
     std::size_t consumed = 0u;
@@ -64,6 +68,7 @@ bool PerformanceBenchmarkTool::parseFloatValue(const std::string& text, float& o
     }
     return consumed == text.size();
 }
+/// Description: Executes the parseUintValue operation.
 bool PerformanceBenchmarkTool::parseUintValue(const std::string& text, std::uint32_t& out)
 {
     std::size_t consumed = 0u;
@@ -79,6 +84,7 @@ bool PerformanceBenchmarkTool::parseArgs(int argc, const char* const* argv, Tool
                                          std::string& error)
 {
     for (int index = 1; index < argc; index += 1) {
+        /// Description: Executes the arg operation.
         const std::string arg(argv[index]);
         if (arg == "--help") {
             error =
@@ -90,6 +96,7 @@ bool PerformanceBenchmarkTool::parseArgs(int argc, const char* const* argv, Tool
             error = "missing value for argument: " + arg;
             return false;
         }
+        /// Description: Executes the value operation.
         const std::string value(argv[index + 1]);
         if (arg == "--workload") {
             out.workload = value;
@@ -157,6 +164,7 @@ int PerformanceBenchmarkTool::run(int argc, const char* const* argv, std::ostrea
         return 1;
     }
     const std::chrono::duration<double> elapsed = std::chrono::steady_clock::now() - start;
+    /// Description: Executes the writeMeasurement operation.
     grav_test_perf_tool::writeMeasurement(options, result, elapsed.count(), out);
     return 0;
 }

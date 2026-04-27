@@ -11,6 +11,7 @@
 #include <optional>
 #include <vector>
 
+/// Description: Defines the alignas data or behavior contract.
 struct alignas(32) GpuOctreeNodeHotData {
     float centerX;
     float centerY;
@@ -22,6 +23,7 @@ struct alignas(32) GpuOctreeNodeHotData {
     float comZ;
 };
 
+/// Description: Defines the GpuOctreeNodeNavData data or behavior contract.
 struct GpuOctreeNodeNavData {
     int nextIndex;
     std::uint8_t childMask;
@@ -30,6 +32,7 @@ struct GpuOctreeNodeNavData {
     std::uint8_t reserved2;
 };
 
+/// Description: Defines the GpuOctreeNode data or behavior contract.
 struct GpuOctreeNode {
     float centerX;
     float centerY;
@@ -47,24 +50,35 @@ struct GpuOctreeNode {
     unsigned int childMask;
 };
 
+/// Description: Enumerates the supported OctreeOpeningCriterion values.
 enum class OctreeOpeningCriterion {
     CenterOfMass,
     Bounds
 };
 
+/// Description: Defines the Octree data or behavior contract.
 class Octree {
     public:
+        /// Description: Executes the Octree operation.
         Octree();
+        /// Description: Releases resources owned by Octree.
         ~Octree();
 
+        /// Description: Executes the clear operation.
         void clear();
+        /// Description: Executes the build operation.
         void build(const std::vector<Particle> &particles);
+        /// Description: Executes the computeForceOn operation.
         Vector3 computeForceOn(const Particle &particle, std::size_t selfIndex, const ForceLawPolicy &policy, OctreeOpeningCriterion criterion) const;
+        /// Description: Executes the getNodeCount operation.
         std::size_t getNodeCount() const;
+        /// Description: Executes the getRootIndex operation.
         int getRootIndex() const;
+        /// Description: Executes the exportGpu operation.
         void exportGpu(std::vector<GpuOctreeNode> &outNodes, std::vector<int> &outLeafIndices) const;
 
     private:
+        /// Description: Defines the Node data or behavior contract.
         struct Node {
             Vector3 center;
             float halfSize;
@@ -74,9 +88,11 @@ class Octree {
             unsigned char childMask;
             std::vector<int> particleIndices;
 
+            /// Description: Executes the Node operation.
             Node();
         };
 
+        /// Description: Executes the buildNodeRecursive operation.
         int buildNodeRecursive(const std::vector<Particle> &particles, const std::vector<int> &indices, const Vector3 &center, float halfSize, int depth);
         Vector3 computeForceRecursive(
             const std::vector<Particle> &particles,
@@ -86,7 +102,9 @@ class Octree {
             const ForceLawPolicy &policy,
             OctreeOpeningCriterion criterion
         ) const;
+        /// Description: Executes the childIndexForPosition operation.
         static int childIndexForPosition(const Vector3 &position, const Vector3 &center);
+        /// Description: Executes the hasChildren operation.
         static bool hasChildren(const Node &node);
 
         std::vector<Node> _nodes;

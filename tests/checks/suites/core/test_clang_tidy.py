@@ -12,7 +12,9 @@ from python_tools.ci.clang_tidy import ClangTidyCheck
 from python_tools.core.models import CheckContext
 
 
+# Description: Defines the _FakeRunner contract.
 class _FakeRunner:
+    # Description: Executes the __init__ operation.
     def __init__(self, diff_output: str = "", diff_rc: int = 0, timeout_analyzer_once: bool = False) -> None:
         self.calls: list[tuple[list[str], Path | None]] = []
         self.diff_output = diff_output
@@ -20,6 +22,7 @@ class _FakeRunner:
         self.timeout_analyzer_once = timeout_analyzer_once
         self._timed_out = False
 
+    # Description: Executes the run operation.
     def run(
         self,
         args: list[str],
@@ -33,6 +36,7 @@ class _FakeRunner:
             return subprocess.CompletedProcess(args, self.diff_rc, stdout=self.diff_output, stderr=stderr)
         return subprocess.CompletedProcess(args, 0, stdout="tidy ok\n", stderr="")
 
+    # Description: Executes the run_with_heartbeat operation.
     def run_with_heartbeat(
         self,
         args: list[str],
@@ -51,12 +55,14 @@ class _FakeRunner:
         return subprocess.CompletedProcess(args, 0, stdout="tidy ok\n", stderr="")
 
 
+# Description: Executes the _write_compile_db operation.
 def _write_compile_db(build_dir: Path, files: list[Path], compiler: str = "clang++") -> None:
     build_dir.mkdir(parents=True, exist_ok=True)
     entries = [{"directory": str(path.parent), "command": f"{compiler} -c {path.name}", "file": str(path)} for path in files]
     (build_dir / "compile_commands.json").write_text(json.dumps(entries), encoding="utf-8")
 
 
+# Description: Executes the _context operation.
 def _context(
     root: Path,
     build_dir: Path,
@@ -79,6 +85,7 @@ def _context(
     )
 
 
+# Description: Executes the _make_source operation.
 def _make_source(root: Path, name: str, suffix: str = ".cpp") -> Path:
     path = root / "runtime" / "src" / "server" / f"{name}{suffix}"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -86,6 +93,7 @@ def _make_source(root: Path, name: str, suffix: str = ".cpp") -> Path:
     return path
 
 
+# Description: Executes the _make_check operation.
 def _make_check(monkeypatch, runner: _FakeRunner | None = None) -> tuple[ClangTidyCheck, _FakeRunner]:
     fake_runner = runner or _FakeRunner()
     check = ClangTidyCheck()
@@ -94,10 +102,12 @@ def _make_check(monkeypatch, runner: _FakeRunner | None = None) -> tuple[ClangTi
     return check, fake_runner
 
 
+# Description: Executes the _tidy_calls operation.
 def _tidy_calls(runner: _FakeRunner) -> list[list[str]]:
     return [args for args, _ in runner.calls if args[0].endswith("clang-tidy")]
 
 
+# Description: Executes the test_clang_tidy_runs_only_changed_compile_entries operation.
 def test_clang_tidy_runs_only_changed_compile_entries(monkeypatch, tmp_path: Path) -> None:
     changed = _make_source(tmp_path, "changed")
     unchanged = _make_source(tmp_path, "unchanged")
@@ -115,6 +125,7 @@ def test_clang_tidy_runs_only_changed_compile_entries(monkeypatch, tmp_path: Pat
     assert "clang-tidy-logs" in result.success_message
 
 
+# Description: Executes the test_clang_tidy_skips_clean_diffs operation.
 def test_clang_tidy_skips_clean_diffs(monkeypatch, tmp_path: Path) -> None:
     source = _make_source(tmp_path, "file")
     build_dir = tmp_path / "build-quality"
@@ -127,6 +138,7 @@ def test_clang_tidy_skips_clean_diffs(monkeypatch, tmp_path: Path) -> None:
     assert result.success_message == "clang-tidy skipped (no matching changed files)"
 
 
+# Description: Executes the test_clang_tidy_expands_scope_for_header_only_diffs operation.
 def test_clang_tidy_expands_scope_for_header_only_diffs(monkeypatch, tmp_path: Path) -> None:
     first = _make_source(tmp_path, "first")
     second = _make_source(tmp_path, "second")
@@ -142,6 +154,7 @@ def test_clang_tidy_expands_scope_for_header_only_diffs(monkeypatch, tmp_path: P
     assert "clang-tidy skipped" not in result.success_message
 
 
+# Description: Executes the test_clang_tidy_reports_git_diff_failures operation.
 def test_clang_tidy_reports_git_diff_failures(monkeypatch, tmp_path: Path) -> None:
     source = _make_source(tmp_path, "file")
     build_dir = tmp_path / "build-quality"
@@ -154,6 +167,7 @@ def test_clang_tidy_reports_git_diff_failures(monkeypatch, tmp_path: Path) -> No
     assert any("git diff failed: bad rev" in error for error in result.errors)
 
 
+# Description: Executes the test_clang_tidy_uses_windows_llvm_fallback operation.
 def test_clang_tidy_uses_windows_llvm_fallback(monkeypatch, tmp_path: Path) -> None:
     source = _make_source(tmp_path, "file")
     build_dir = tmp_path / "build-quality"
@@ -174,6 +188,7 @@ def test_clang_tidy_uses_windows_llvm_fallback(monkeypatch, tmp_path: Path) -> N
     assert len([args for args, _ in runner.calls if args[0] == str(fallback)]) == 1
 
 
+# Description: Executes the test_clang_tidy_adds_cl_driver_mode_for_msvc_compile_db operation.
 def test_clang_tidy_adds_cl_driver_mode_for_msvc_compile_db(monkeypatch, tmp_path: Path) -> None:
     source = _make_source(tmp_path, "file")
     build_dir = tmp_path / "build-quality"
@@ -188,6 +203,7 @@ def test_clang_tidy_adds_cl_driver_mode_for_msvc_compile_db(monkeypatch, tmp_pat
     assert "--extra-arg-before=--driver-mode=cl" in tidy_calls[0]
 
 
+# Description: Executes the test_clang_tidy_auto_job_cap_is_visible_in_progress operation.
 def test_clang_tidy_auto_job_cap_is_visible_in_progress(monkeypatch, tmp_path: Path, capsys) -> None:
     files = [_make_source(tmp_path, f"file_{index}") for index in range(10)]
     build_dir = tmp_path / "build-quality"
@@ -202,6 +218,7 @@ def test_clang_tidy_auto_job_cap_is_visible_in_progress(monkeypatch, tmp_path: P
     assert "[clang-tidy] analyzing 10 file(s) with jobs=6" in captured.out
 
 
+# Description: Executes the test_clang_tidy_emits_progress_in_terminal operation.
 def test_clang_tidy_emits_progress_in_terminal(monkeypatch, tmp_path: Path, capsys) -> None:
     source = _make_source(tmp_path, "file")
     build_dir = tmp_path / "build-quality"
@@ -218,6 +235,7 @@ def test_clang_tidy_emits_progress_in_terminal(monkeypatch, tmp_path: Path, caps
     assert "[clang-tidy] [1/1] done runtime" in captured.out
 
 
+# Description: Executes the test_clang_tidy_timeout_falls_back_to_light_checks operation.
 def test_clang_tidy_timeout_falls_back_to_light_checks(monkeypatch, tmp_path: Path) -> None:
     source = _make_source(tmp_path, "file")
     build_dir = tmp_path / "build-quality"
@@ -234,6 +252,7 @@ def test_clang_tidy_timeout_falls_back_to_light_checks(monkeypatch, tmp_path: Pa
     assert "-checks=-*,bugprone-unused-return-value" in tidy_calls[1]
 
 
+# Description: Executes the test_clang_tidy_timeout_without_fallback_fails operation.
 def test_clang_tidy_timeout_without_fallback_fails(monkeypatch, tmp_path: Path) -> None:
     source = _make_source(tmp_path, "file")
     build_dir = tmp_path / "build-quality"

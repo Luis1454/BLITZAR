@@ -16,6 +16,7 @@ constexpr auto kStatusPollInterval = std::chrono::milliseconds(120);
 constexpr std::uint32_t kSnapshotQueueCapacityMin = 1u;
 constexpr std::uint32_t kSnapshotQueueCapacityMax = 64u;
 constexpr std::uint32_t kSnapshotQueueCapacityDefault = 4u;
+/// Description: Executes the normalizeSnapshotDropPolicyValue operation.
 static std::string normalizeSnapshotDropPolicyValue(std::string value)
 {
     for (char& c : value) {
@@ -28,6 +29,7 @@ static std::string normalizeSnapshotDropPolicyValue(std::string value)
     }
     return value;
 }
+/// Description: Executes the ClientRuntime operation.
 ClientRuntime::ClientRuntime(const std::string& configPath, const ClientTransportArgs& transport)
     : _bridge(configPath, transport.remoteHost, transport.remotePort, transport.remoteAutoStart,
               transport.serverExecutable, transport.remoteAuthToken,
@@ -50,6 +52,7 @@ ClientRuntime::ClientRuntime(const std::string& configPath, const ClientTranspor
       _lastSnapshotAt(),
       _hasStats(false),
       _hasSnapshotEver(false),
+      /// Description: Executes the _hasDeliveredSnapshot operation.
       _hasDeliveredSnapshot(false)
 {
     const SimulationConfig config = SimulationConfig::loadOrCreate(configPath);
@@ -61,21 +64,27 @@ ClientRuntime::ClientRuntime(const std::string& configPath, const ClientTranspor
             ? SnapshotDropPolicyMode::Paced
             : SnapshotDropPolicyMode::LatestOnly;
 }
+/// Description: Releases resources owned by ClientRuntime.
 ClientRuntime::~ClientRuntime()
 {
+    /// Description: Executes the stop operation.
     stop();
 }
+/// Description: Executes the start operation.
 bool ClientRuntime::start()
 {
+    /// Description: Executes the stop operation.
     stop();
     if (!_bridge.start()) {
         return false;
     }
+    /// Description: Executes the pollOnce operation.
     pollOnce(true, true);
     _pollRunning.store(true);
     _pollThread = std::thread([this]() { pollLoop(); });
     return true;
 }
+/// Description: Executes the stop operation.
 void ClientRuntime::stop()
 {
     _pollRunning.store(false);
@@ -84,56 +93,71 @@ void ClientRuntime::stop()
     }
     _bridge.stop();
 }
+/// Description: Executes the setPaused operation.
 void ClientRuntime::setPaused(bool paused)
 {
     _bridge.setPaused(paused);
 }
+/// Description: Executes the togglePaused operation.
 void ClientRuntime::togglePaused()
 {
     _bridge.togglePaused();
 }
+/// Description: Executes the stepOnce operation.
 void ClientRuntime::stepOnce()
 {
     _bridge.stepOnce();
 }
+/// Description: Executes the setParticleCount operation.
 void ClientRuntime::setParticleCount(std::uint32_t particleCount)
 {
     _bridge.setParticleCount(particleCount);
 }
+/// Description: Executes the setDt operation.
 void ClientRuntime::setDt(float dt)
 {
     _bridge.setDt(dt);
 }
+/// Description: Executes the scaleDt operation.
 void ClientRuntime::scaleDt(float factor)
 {
     _bridge.scaleDt(factor);
 }
+/// Description: Executes the requestReset operation.
 void ClientRuntime::requestReset()
 {
     _bridge.requestReset();
+    /// Description: Executes the invalidateCachedSnapshot operation.
     invalidateCachedSnapshot();
 }
+/// Description: Executes the requestRecover operation.
 void ClientRuntime::requestRecover()
 {
     _bridge.requestRecover();
+    /// Description: Executes the invalidateCachedSnapshot operation.
     invalidateCachedSnapshot();
 }
+/// Description: Executes the setSolverMode operation.
 void ClientRuntime::setSolverMode(const std::string& mode)
 {
     _bridge.setSolverMode(mode);
 }
+/// Description: Executes the setIntegratorMode operation.
 void ClientRuntime::setIntegratorMode(const std::string& mode)
 {
     _bridge.setIntegratorMode(mode);
 }
+/// Description: Executes the setPerformanceProfile operation.
 void ClientRuntime::setPerformanceProfile(const std::string& profile)
 {
     _bridge.setPerformanceProfile(profile);
 }
+/// Description: Executes the setOctreeParameters operation.
 void ClientRuntime::setOctreeParameters(float theta, float softening)
 {
     _bridge.setOctreeParameters(theta, softening);
 }
+/// Description: Executes the setSphEnabled operation.
 void ClientRuntime::setSphEnabled(bool enabled)
 {
     _bridge.setSphEnabled(enabled);
@@ -143,60 +167,77 @@ void ClientRuntime::setSphParameters(float smoothingLength, float restDensity, f
 {
     _bridge.setSphParameters(smoothingLength, restDensity, gasConstant, viscosity);
 }
+/// Description: Executes the setSubstepPolicy operation.
 void ClientRuntime::setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps)
 {
     _bridge.setSubstepPolicy(targetDt, maxSubsteps);
 }
+/// Description: Executes the setSnapshotPublishPeriodMs operation.
 void ClientRuntime::setSnapshotPublishPeriodMs(std::uint32_t periodMs)
 {
     _bridge.setSnapshotPublishPeriodMs(periodMs);
 }
+/// Description: Executes the setInitialStateConfig operation.
 void ClientRuntime::setInitialStateConfig(const InitialStateConfig& config)
 {
     _bridge.setInitialStateConfig(config);
+    /// Description: Executes the invalidateCachedSnapshot operation.
     invalidateCachedSnapshot();
 }
+/// Description: Executes the setEnergyMeasurementConfig operation.
 void ClientRuntime::setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit)
 {
     _bridge.setEnergyMeasurementConfig(everySteps, sampleLimit);
 }
+/// Description: Executes the setGpuTelemetryEnabled operation.
 void ClientRuntime::setGpuTelemetryEnabled(bool enabled)
 {
     _bridge.setGpuTelemetryEnabled(enabled);
 }
+/// Description: Executes the setExportDefaults operation.
 void ClientRuntime::setExportDefaults(const std::string& directory, const std::string& format)
 {
     _bridge.setExportDefaults(directory, format);
 }
+/// Description: Executes the setInitialStateFile operation.
 void ClientRuntime::setInitialStateFile(const std::string& path, const std::string& format)
 {
     _bridge.setInitialStateFile(path, format);
+    /// Description: Executes the invalidateCachedSnapshot operation.
     invalidateCachedSnapshot();
 }
+/// Description: Executes the requestExportSnapshot operation.
 void ClientRuntime::requestExportSnapshot(const std::string& outputPath, const std::string& format)
 {
     _bridge.requestExportSnapshot(outputPath, format);
 }
+/// Description: Executes the requestSaveCheckpoint operation.
 void ClientRuntime::requestSaveCheckpoint(const std::string& outputPath)
 {
     _bridge.requestSaveCheckpoint(outputPath);
 }
+/// Description: Executes the requestLoadCheckpoint operation.
 void ClientRuntime::requestLoadCheckpoint(const std::string& inputPath)
 {
     _bridge.requestLoadCheckpoint(inputPath);
+    /// Description: Executes the invalidateCachedSnapshot operation.
     invalidateCachedSnapshot();
 }
+/// Description: Executes the requestShutdown operation.
 void ClientRuntime::requestShutdown()
 {
     _bridge.requestShutdown();
 }
+/// Description: Executes the setRemoteSnapshotCap operation.
 void ClientRuntime::setRemoteSnapshotCap(std::uint32_t maxPoints)
 {
     _bridge.setRemoteSnapshotCap(maxPoints);
 }
+/// Description: Executes the requestReconnect operation.
 void ClientRuntime::requestReconnect()
 {
     _bridge.requestReconnect();
+    /// Description: Executes the invalidateCachedSnapshot operation.
     invalidateCachedSnapshot();
 }
 void ClientRuntime::configureRemoteConnector(const std::string& host, std::uint16_t port,
@@ -204,21 +245,27 @@ void ClientRuntime::configureRemoteConnector(const std::string& host, std::uint1
 {
     _bridge.configureRemoteConnector(host, port, autoStart, serverExecutable);
 }
+/// Description: Executes the isRemoteMode operation.
 bool ClientRuntime::isRemoteMode() const
 {
     return true;
 }
+/// Description: Executes the getCachedStats operation.
 SimulationStats ClientRuntime::getCachedStats() const
 {
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_dataMutex);
     return _latestStats;
 }
+/// Description: Executes the getStats operation.
 SimulationStats ClientRuntime::getStats() const
 {
     return getCachedStats();
 }
+/// Description: Executes the consumeLatestSnapshot operation.
 std::optional<ConsumedSnapshot> ClientRuntime::consumeLatestSnapshot()
 {
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_dataMutex);
     if (_snapshotCount == 0u) {
         return std::nullopt;
@@ -236,6 +283,7 @@ std::optional<ConsumedSnapshot> ClientRuntime::consumeLatestSnapshot()
     _hasDeliveredSnapshot = true;
     return snapshot;
 }
+/// Description: Executes the tryConsumeSnapshot operation.
 bool ClientRuntime::tryConsumeSnapshot(std::vector<RenderParticle>& outSnapshot)
 {
     std::optional<ConsumedSnapshot> snapshot = consumeLatestSnapshot();
@@ -245,8 +293,10 @@ bool ClientRuntime::tryConsumeSnapshot(std::vector<RenderParticle>& outSnapshot)
     outSnapshot = std::move(snapshot->particles);
     return true;
 }
+/// Description: Executes the snapshotPipelineState operation.
 SnapshotPipelineState ClientRuntime::snapshotPipelineState() const
 {
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_dataMutex);
     SnapshotPipelineState state{};
     state.queueDepth = _snapshotCount;
@@ -263,28 +313,38 @@ SnapshotPipelineState ClientRuntime::snapshotPipelineState() const
     }
     return state;
 }
+/// Description: Executes the linkStateLabel operation.
 std::string ClientRuntime::linkStateLabel() const
 {
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_dataMutex);
     return _latestLinkLabel;
 }
+/// Description: Executes the serverOwnerLabel operation.
 std::string ClientRuntime::serverOwnerLabel() const
 {
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_dataMutex);
     return _latestOwnerLabel;
 }
+/// Description: Executes the statsAgeMs operation.
 std::uint32_t ClientRuntime::statsAgeMs() const
 {
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_dataMutex);
     return ageMsSince(_lastStatsAt, _hasStats);
 }
+/// Description: Executes the snapshotAgeMs operation.
 std::uint32_t ClientRuntime::snapshotAgeMs() const
 {
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_dataMutex);
     return ageMsSince(_lastSnapshotAt, _hasSnapshotEver);
 }
+/// Description: Executes the invalidateCachedSnapshot operation.
 void ClientRuntime::invalidateCachedSnapshot()
 {
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_dataMutex);
     for (SnapshotBufferEntry& entry : _snapshotRing) {
         entry.particles.clear();
@@ -299,6 +359,7 @@ void ClientRuntime::invalidateCachedSnapshot()
     _hasSnapshotEver = false;
     _hasDeliveredSnapshot = false;
 }
+/// Description: Executes the pollLoop operation.
 void ClientRuntime::pollLoop()
 {
     auto nextSnapshotPoll = Clock::now();
@@ -308,6 +369,7 @@ void ClientRuntime::pollLoop()
         const bool pollSnapshot = now >= nextSnapshotPoll;
         const bool pollStats = now >= nextStatusPoll;
         if (pollSnapshot || pollStats) {
+            /// Description: Executes the pollOnce operation.
             pollOnce(pollSnapshot, pollStats);
             const auto afterPoll = Clock::now();
             if (pollSnapshot) {
@@ -318,9 +380,11 @@ void ClientRuntime::pollLoop()
             }
             continue;
         }
+        /// Description: Executes the sleep_for operation.
         std::this_thread::sleep_for(kIdleSleepInterval);
     }
 }
+/// Description: Executes the pollOnce operation.
 void ClientRuntime::pollOnce(bool pollSnapshot, bool pollStats)
 {
     std::vector<RenderParticle> snapshot;
@@ -333,9 +397,12 @@ void ClientRuntime::pollOnce(bool pollSnapshot, bool pollStats)
     if (pollStats) {
         stats = _bridge.getStats();
     }
+    /// Description: Executes the linkLabel operation.
     const std::string linkLabel(_bridge.linkStateLabel());
+    /// Description: Executes the ownerLabel operation.
     const std::string ownerLabel(_bridge.serverOwnerLabel());
     const auto now = Clock::now();
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_dataMutex);
     if (pollStats) {
         _latestStats = stats;
@@ -345,9 +412,11 @@ void ClientRuntime::pollOnce(bool pollSnapshot, bool pollStats)
     _latestLinkLabel = linkLabel;
     _latestOwnerLabel = ownerLabel;
     if (gotSnapshot) {
+        /// Description: Executes the queueSnapshot operation.
         queueSnapshot(std::move(snapshot), snapshotSourceSize, now);
     }
 }
+/// Description: Executes the advanceSnapshotIndex operation.
 std::size_t ClientRuntime::advanceSnapshotIndex(std::size_t index) const
 {
     return _snapshotRing.empty() ? 0u : (index + 1u) % _snapshotRing.size();
@@ -379,6 +448,7 @@ void ClientRuntime::queueSnapshot(std::vector<RenderParticle> snapshot, std::siz
     _lastSnapshotAt = now;
     _hasSnapshotEver = true;
 }
+/// Description: Executes the ageMsSince operation.
 std::uint32_t ClientRuntime::ageMsSince(Clock::time_point at, bool valid)
 {
     if (!valid) {

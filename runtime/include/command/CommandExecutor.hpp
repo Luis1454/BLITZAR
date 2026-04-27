@@ -6,8 +6,10 @@
 #include "command/CommandContext.hpp"
 #include "command/CommandTypes.hpp"
 namespace grav_cmd {
+/// Description: Defines the CommandExecutor data or behavior contract.
 class CommandExecutor final {
 public:
+    /// Description: Executes the execute operation.
     static CommandResult execute(const CommandRequest& request, CommandExecutionContext& context);
 };
 } // namespace grav_cmd

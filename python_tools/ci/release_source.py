@@ -12,10 +12,13 @@ from pathlib import Path
 from python_tools.ci.release_support import resolve_release_tag
 
 
+# Description: Defines the ReleaseSourcePackager contract.
 class ReleaseSourcePackager:
+    # Description: Executes the resolve_tag operation.
     def resolve_tag(self, explicit: str | None) -> str:
         return resolve_release_tag(explicit)
 
+    # Description: Executes the package operation.
     def package(self, repo_root: Path, dist_dir: Path, tag: str, ref: str = "HEAD") -> Path:
         if dist_dir.exists():
             shutil.rmtree(dist_dir)
@@ -36,6 +39,7 @@ class ReleaseSourcePackager:
         return archive
 
     @staticmethod
+    # Description: Executes the _safe_filename operation.
     def _safe_filename(value: str) -> str:
         cleaned = re.sub(r"[^A-Za-z0-9_.-]+", "-", value.strip())
         return cleaned.strip(".-") or "manual"

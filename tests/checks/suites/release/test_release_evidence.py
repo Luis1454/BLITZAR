@@ -15,16 +15,19 @@ from python_tools.ci.release_quality_index import ReleaseQualityIndexBuilder, Re
 from python_tools.ci.release_support import build_release_lane_activities, build_release_lane_analyzers
 
 
+# Description: Executes the _write_json operation.
 def _write_json(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
+# Description: Executes the _write_text operation.
 def _write_text(path: Path, content: str = "sample\n") -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
 
 
+# Description: Executes the _seed_repo operation.
 def _seed_repo(root: Path) -> None:
     _write_json(root / "docs/quality/quality_manifest.json", {"metadata": {"system": "test", "revision": "2026-03-07"}, "includes": ["manifest/evidence.json", "manifest/requirements.json", "manifest/deviations.json"]})
     _write_json(
@@ -106,11 +109,13 @@ def _seed_repo(root: Path) -> None:
         _write_text(root / rel)
 
 
+# Description: Executes the _read_json_from_archive operation.
 def _read_json_from_archive(archive: Path, member: str) -> tuple[dict[str, object], list[str]]:
     with zipfile.ZipFile(archive) as bundle:
         return json.loads(bundle.read(member)), bundle.namelist()
 
 
+# Description: Executes the test_release_evidence_packager_packages_selected_requirements operation.
 def test_release_evidence_packager_packages_selected_requirements(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     archive = ReleaseEvidencePackager().package(
@@ -136,6 +141,7 @@ def test_release_evidence_packager_packages_selected_requirements(tmp_path: Path
     assert "README.md" in names
 
 
+# Description: Executes the test_release_evidence_packager_defaults_and_rejects_unknown_requirements operation.
 def test_release_evidence_packager_defaults_and_rejects_unknown_requirements(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     archive = ReleaseEvidencePackager().package(root=tmp_path, dist_dir=tmp_path / "dist/evidence-pack", tag="rc-2", profile="prod")
@@ -152,6 +158,7 @@ def test_release_evidence_packager_defaults_and_rejects_unknown_requirements(tmp
         )
 
 
+# Description: Executes the test_release_quality_index_packages_selected_requirements operation.
 def test_release_quality_index_packages_selected_requirements(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     archive = ReleaseQualityIndexBuilder().package(
@@ -176,6 +183,7 @@ def test_release_quality_index_packages_selected_requirements(tmp_path: Path) ->
     assert "README.md" in names
 
 
+# Description: Executes the test_release_quality_index_defaults_and_rejects_unknown_requirements operation.
 def test_release_quality_index_defaults_and_rejects_unknown_requirements(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     archive = ReleaseQualityIndexBuilder().package(root=tmp_path, dist_dir=tmp_path / "dist/release-quality-index", tag="rc-2", profile="prod")

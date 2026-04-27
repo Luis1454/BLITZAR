@@ -10,6 +10,7 @@
 #include <thread>
 #include <vector>
 namespace grav_test_server_export_queue {
+/// Description: Executes the makeTempExportPath operation.
 static std::filesystem::path makeTempExportPath(const char* stem)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -29,54 +30,78 @@ static bool waitForExportCompletion(SimulationServer& server, const std::filesys
             !stats.exportActive && stats.exportQueueDepth == 0u) {
             return true;
         }
+        /// Description: Executes the sleep_for operation.
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     return false;
 }
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_007_ServerPublishesAsyncExportQueueStatus)
 {
+    /// Description: Executes the server operation.
     SimulationServer server(32u, 0.01f);
     server.setSolverMode("octree_cpu");
     server.setPaused(true);
     server.start();
     std::vector<RenderParticle> snapshot;
+    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(testsupport::waitForPublishedSnapshot(server, snapshot, 4000));
     const std::filesystem::path exportPath = makeTempExportPath("grav_export_async");
     server.requestExportSnapshot(exportPath.string(), "vtk");
     bool observedBacklog = false;
+    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(waitForExportCompletion(server, exportPath, 1u, 4000u, observedBacklog));
     const SimulationStats stats = server.getStats();
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(observedBacklog);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(stats.exportQueueDepth, 0u);
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(stats.exportActive);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(stats.exportCompletedCount, 1u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(stats.exportFailedCount, 0u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(stats.exportLastState, "completed");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(stats.exportLastPath, exportPath.string());
     server.stop();
     std::error_code ec;
+    /// Description: Executes the remove operation.
     std::filesystem::remove(exportPath, ec);
 }
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_008_ServerStopFlushesQueuedExports)
 {
+    /// Description: Executes the server operation.
     SimulationServer server(32u, 0.01f);
     server.setSolverMode("octree_cpu");
     server.setPaused(true);
     server.start();
     std::vector<RenderParticle> snapshot;
+    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(testsupport::waitForPublishedSnapshot(server, snapshot, 4000));
     const std::filesystem::path exportPath = makeTempExportPath("grav_export_flush");
     server.requestExportSnapshot(exportPath.string(), "vtk");
     server.stop();
+    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(std::filesystem::exists(exportPath));
+    /// Description: Executes the EXPECT_GT operation.
     EXPECT_GT(std::filesystem::file_size(exportPath), 0u);
     const SimulationStats stats = server.getStats();
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(stats.exportQueueDepth, 0u);
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(stats.exportActive);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(stats.exportCompletedCount, 1u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(stats.exportFailedCount, 0u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(stats.exportLastState, "completed");
     std::error_code ec;
+    /// Description: Executes the remove operation.
     std::filesystem::remove(exportPath, ec);
 }
 } // namespace grav_test_server_export_queue

@@ -14,6 +14,7 @@
 #include <string_view>
 namespace grav_module {
 constexpr std::size_t kErrorBufferSize = 1024u;
+/// Description: Defines the ClientModuleHandle data or behavior contract.
 struct ClientModuleHandle::Impl {
     grav_platform::DynamicLibrary library{};
     const ClientModuleExportsV1* exports = nullptr;

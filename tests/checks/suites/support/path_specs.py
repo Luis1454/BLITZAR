@@ -15,5 +15,6 @@ MODULES_QT_UI_DIR = Path("modules") / "qt" / "ui"
 TESTS_UNIT_DIR = Path("tests") / "unit"
 
 
+# Description: Executes the cpp_file operation.
 def cpp_file(base_dir: Path, stem: str) -> Path:
     return base_dir / f"{stem}{CPP_EXT}"

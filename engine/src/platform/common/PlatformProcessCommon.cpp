@@ -3,6 +3,7 @@
 
 #include "platform/common/PlatformProcessCommon.hpp"
 namespace grav_platform {
+/// Description: Executes the quoteProcessArg operation.
 std::string quoteProcessArg(const std::string& arg)
 {
     if (arg.empty()) {

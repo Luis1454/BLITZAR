@@ -7,15 +7,18 @@
 #include <exception>
 #include <utility>
 namespace grav_platform {
+/// Description: Defines the ProcessHandle data or behavior contract.
 struct ProcessHandle::Impl {
     grav_platform_detail::NativeProcessHandle nativeHandle = 0u;
     std::int64_t pid = 0;
     std::string commandLine;
 };
+/// Description: Executes the ProcessHandle operation.
 ProcessHandle::ProcessHandle() : _impl(std::make_unique<Impl>())
 {
 }
 ProcessHandle::~ProcessHandle() = default;
+/// Description: Executes the ProcessHandle operation.
 ProcessHandle::ProcessHandle(ProcessHandle&& other) noexcept : _impl(std::move(other._impl))
 {
 }
@@ -31,6 +34,7 @@ bool ProcessHandle::launch(const std::string& executable, const std::vector<std:
     try {
         if (!_impl)
             _impl = std::make_unique<Impl>();
+        /// Description: Executes the clear operation.
         clear();
         _impl->commandLine = buildProcessCommandLine(executable, args);
         if (!grav_platform_detail::launchProcess(executable, args, createNewConsole,
@@ -52,10 +56,12 @@ bool ProcessHandle::launch(const std::string& executable, const std::vector<std:
         return false;
     }
 }
+/// Description: Executes the terminate operation.
 bool ProcessHandle::terminate(std::uint32_t waitMs, std::string& outError)
 {
     try {
         if (!isRunning()) {
+            /// Description: Executes the clear operation.
             clear();
             return true;
         }
@@ -80,24 +86,29 @@ bool ProcessHandle::terminate(std::uint32_t waitMs, std::string& outError)
         return false;
     }
 }
+/// Description: Executes the isRunning operation.
 bool ProcessHandle::isRunning() const
 {
     return _impl && grav_platform_detail::isProcessRunning(_impl->nativeHandle, _impl->pid);
 }
+/// Description: Executes the clear operation.
 void ProcessHandle::clear()
 {
     if (!_impl) {
         return;
     }
+    /// Description: Executes the clearProcessHandle operation.
     grav_platform_detail::clearProcessHandle(_impl->nativeHandle, _impl->pid);
     _impl->commandLine.clear();
 }
+/// Description: Executes the pidString operation.
 std::string ProcessHandle::pidString() const
 {
     if (!_impl)
         return {};
     return grav_platform_detail::formatProcessId(_impl->pid);
 }
+/// Description: Executes the commandLine operation.
 const std::string& ProcessHandle::commandLine() const
 {
     static const std::string kEmpty;

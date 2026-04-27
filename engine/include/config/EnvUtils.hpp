@@ -11,9 +11,13 @@
 #include <string>
 #include <string_view>
 namespace grav_env {
+/// Description: Executes the get operation.
 std::optional<std::string> get(std::string_view name);
+/// Description: Executes the parseBool operation.
 bool parseBool(std::string_view value, bool fallback);
+/// Description: Executes the getBool operation.
 bool getBool(std::string_view name, bool fallback);
+/// Description: Executes the getNumber operation.
 template <typename NumberType> bool getNumber(std::string_view name, NumberType& out);
 extern template bool getNumber<short>(std::string_view name, short& out);
 extern template bool getNumber<unsigned short>(std::string_view name, unsigned short& out);

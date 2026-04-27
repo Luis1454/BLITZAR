@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
 from python_tools.ci.tool_manifest import ToolManifestCollector
 
 
+# Description: Executes the parse_args operation.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate tool qualification manifest.")
     parser.add_argument("--output", default="dist/tool-qualification/tool_manifest.json", help="Output manifest path")
@@ -23,6 +24,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+# Description: Executes the main operation.
 def main() -> int:
     args = parse_args()
     collector = ToolManifestCollector()

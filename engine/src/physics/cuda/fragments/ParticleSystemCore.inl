@@ -3,6 +3,7 @@
  * Responsibility: Implement particle-system construction and core mode setters.
  */
 
+/// Description: Executes the buildBootstrapState operation.
 void ParticleSystem::buildBootstrapState(int particleCount)
 {
     Particle p;
@@ -43,10 +44,13 @@ void ParticleSystem::buildBootstrapState(int particleCount)
     }
 }
 
+/// Description: Executes the ParticleSystem operation.
 ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
     const int clampedParticles = std::max(2, numParticles);
+    /// Description: Executes the initializeRuntimeState operation.
     initializeRuntimeState(static_cast<std::size_t>(clampedParticles));
     if (bootstrapInitialState) {
+        /// Description: Executes the buildBootstrapState operation.
         buildBootstrapState(clampedParticles);
     } else {
         _particles.assign(static_cast<std::size_t>(clampedParticles), Particle{});
@@ -67,20 +71,24 @@ ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
     }
 
     if (!allocateSphBuffers(clampedParticles) || !allocateSphGridBuffers(clampedParticles)) {
+        /// Description: Executes the fprintf operation.
         fprintf(stderr, "[sph] buffers allocation failed, SPH disabled\n");
         _sphEnabled = false;
     }
     if (_solverMode != SolverMode::OctreeCpu &&
         (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog)) {
         if (!allocateRk4Buffers(clampedParticles)) {
+            /// Description: Executes the runtime_error operation.
             throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
         }
     }
 }
 
+/// Description: Executes the ParticleSystem operation.
 ParticleSystem::ParticleSystem(std::vector<Particle> initialParticles)
 {
     const std::size_t particleCapacity = std::max<std::size_t>(2u, initialParticles.size());
+    /// Description: Executes the initializeRuntimeState operation.
     initializeRuntimeState(particleCapacity);
     _particles = std::move(initialParticles);
     if (_particles.size() < particleCapacity) _particles.resize(particleCapacity);
@@ -107,12 +115,15 @@ ParticleSystem::ParticleSystem(std::vector<Particle> initialParticles)
     if (_solverMode != SolverMode::OctreeCpu &&
         (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog)) {
         if (!allocateRk4Buffers(clampedParticles)) {
+            /// Description: Executes the runtime_error operation.
             throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
         }
     }
 }
 
+/// Description: Releases resources owned by ParticleSystem.
 ParticleSystem::~ParticleSystem() {
+    /// Description: Executes the releaseParticleBuffers operation.
     releaseParticleBuffers();
 }
 
@@ -123,6 +134,7 @@ const GpuSystemMetrics *ParticleSystem::getMappedGpuMetrics() const
     return _mappedMetricsHost;
 }
 
+/// Description: Executes the setParticles operation.
 bool ParticleSystem::setParticles(std::vector<Particle> particles)
 {
     if (particles.empty() || particles.size() != _deviceParticleCapacity) return false;
@@ -139,6 +151,7 @@ bool ParticleSystem::setParticles(std::vector<Particle> particles)
     return true;
 }
 
+/// Description: Executes the setUseOctree operation.
 void ParticleSystem::setUseOctree(bool enabled)
 {
     if (!enabled) {
@@ -152,30 +165,42 @@ void ParticleSystem::setUseOctree(bool enabled)
     }
     _solverMode = SolverMode::OctreeGpu;
 }
+/// Description: Executes the usesOctree operation.
 bool ParticleSystem::usesOctree() const { return _solverMode != SolverMode::PairwiseCuda; }
+/// Description: Executes the setOctreeTheta operation.
 void ParticleSystem::setOctreeTheta(float theta) { if (theta > 0.01f) _octreeTheta = theta; }
+/// Description: Executes the setOctreeOpeningCriterion operation.
 void ParticleSystem::setOctreeOpeningCriterion(OctreeOpeningCriterion criterion) { _octreeOpeningCriterion = criterion; }
+/// Description: Executes the setOctreeSoftening operation.
 void ParticleSystem::setOctreeSoftening(float softening) { if (softening > 1e-5f) _octreeSoftening = softening; }
+/// Description: Executes the setSphEnabled operation.
 void ParticleSystem::setSphEnabled(bool enabled) { _sphEnabled = enabled; }
+/// Description: Executes the isSphEnabled operation.
 bool ParticleSystem::isSphEnabled() const { return _sphEnabled; }
+/// Description: Executes the setSphParameters operation.
 void ParticleSystem::setSphParameters(float h, float rho, float k, float mu) {
     if (h > 0.05f) _sphSmoothingLength = h;
     if (rho > 0.01f) _sphRestDensity = rho;
     if (k > 0.01f) _sphGasConstant = k;
     if (mu >= 0.0f) _sphViscosity = mu;
 }
+/// Description: Executes the setPhysicsStabilityConstants operation.
 void ParticleSystem::setPhysicsStabilityConstants(float maxA, float minS, float minD2, float minT) {
     if (maxA > 0.0f) _physicsMaxAcceleration = maxA;
     if (minS >= 0.0f) _physicsMinSoftening = minS;
     if (minD2 >= 0.0f) _physicsMinDistance2 = minD2;
     if (minT >= 0.0f) _physicsMinTheta = minT;
 }
+/// Description: Executes the setSphCaps operation.
 void ParticleSystem::setSphCaps(float maxA, float maxS) {
     if (maxA > 0.0f) _sphMaxAcceleration = maxA;
     if (maxS > 0.0f) _sphMaxSpeed = maxS;
 }
+/// Description: Executes the getCumulativeRadiatedEnergy operation.
 float ParticleSystem::getCumulativeRadiatedEnergy() const { return _cumulativeRadiatedEnergy; }
+/// Description: Executes the getThermalSpecificHeat operation.
 float ParticleSystem::getThermalSpecificHeat() const { return _thermalSpecificHeat; }
+/// Description: Executes the setSolverMode operation.
 void ParticleSystem::setSolverMode(SolverMode mode)
 {
     if (mode == SolverMode::OctreeGpu) {
@@ -187,11 +212,14 @@ void ParticleSystem::setSolverMode(SolverMode mode)
     }
     _solverMode = mode;
 }
+/// Description: Executes the getSolverMode operation.
 ParticleSystem::SolverMode ParticleSystem::getSolverMode() const { return _solverMode; }
+/// Description: Executes the setIntegratorMode operation.
 void ParticleSystem::setIntegratorMode(IntegratorMode mode) {
     if (_solverMode != SolverMode::OctreeCpu
         && (mode == IntegratorMode::Rk4 || mode == IntegratorMode::Leapfrog)
         && !allocateRk4Buffers(static_cast<int>(_particles.size()))) {
+        /// Description: Executes the runtime_error operation.
         throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
     }
     _integratorMode = mode;
@@ -216,6 +244,8 @@ void ParticleSystem::setIntegratorMode(IntegratorMode mode) {
         octreeBytes,
         totalBytes,
         6656ull * 1024ull * 1024ull);
+    /// Description: Executes the fprintf operation.
     fprintf(stdout, "%s\n", breakdown.c_str());
 }
+/// Description: Executes the getIntegratorMode operation.
 ParticleSystem::IntegratorMode ParticleSystem::getIntegratorMode() const { return _integratorMode; }

@@ -6,6 +6,7 @@
 #include <functional>
 #include <thread>
 namespace testsupport {
+/// Description: Executes the applyPassiveThermalDefaults operation.
 static void applyPassiveThermalDefaults(InitialStateConfig& initState)
 {
     initState.thermalAmbientTemperature = 0.0f;
@@ -21,10 +22,12 @@ static bool waitForSnapshot(const std::function<bool(std::vector<RenderParticle>
         if (snapshotReader(outSnapshot)) {
             return true;
         }
+        /// Description: Executes the sleep_for operation.
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     return snapshotReader(outSnapshot);
 }
+/// Description: Executes the setScenarioTiming operation.
 void setScenarioTiming(ScenarioConfig& cfg, int snapshotTimeoutMs, int stepTimeoutMs)
 {
     cfg.snapshotTimeoutMs = snapshotTimeoutMs;
@@ -69,6 +72,7 @@ ScenarioConfig buildDiskOrbitScenario(std::uint32_t particleCount, float dt, std
     cfg.initState.diskRadiusMax = 11.5f;
     cfg.initState.diskThickness = 0.0f;
     cfg.initState.velocityScale = 1.0f;
+    /// Description: Executes the applyPassiveThermalDefaults operation.
     applyPassiveThermalDefaults(cfg.initState);
     return cfg;
 }
@@ -85,9 +89,11 @@ ScenarioConfig buildRandomCloudScenario(std::uint32_t particleCount, float dt, s
     cfg.initState.mode = "random_cloud";
     cfg.initState.seed = seed;
     cfg.initState.includeCentralBody = false;
+    /// Description: Executes the applyPassiveThermalDefaults operation.
     applyPassiveThermalDefaults(cfg.initState);
     return cfg;
 }
+/// Description: Executes the waitForStepCount operation.
 bool waitForStepCount(const SimulationServer& server, std::uint64_t targetStep, int timeoutMs)
 {
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
@@ -95,6 +101,7 @@ bool waitForStepCount(const SimulationServer& server, std::uint64_t targetStep, 
         if (server.getStats().steps >= targetStep) {
             return true;
         }
+        /// Description: Executes the sleep_for operation.
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     return server.getStats().steps >= targetStep;
@@ -117,6 +124,7 @@ bool waitForPublishedSnapshot(const SimulationServer& server,
         },
         outSnapshot, timeoutMs);
 }
+/// Description: Executes the haveExactReplayMatch operation.
 bool haveExactReplayMatch(const ScenarioResult& lhs, const ScenarioResult& rhs, std::string& error)
 {
     if (lhs.final.size() != rhs.final.size()) {

@@ -8,13 +8,16 @@
 #include <string>
 #include <vector>
 namespace grav_module_cli {
+/// Description: Defines the ModuleCliServerOps data or behavior contract.
 class ModuleCliServerOps final {
 public:
+    /// Description: Executes the commandStatus operation.
     static bool commandStatus(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer);
     static bool commandStep(ModuleState& state, const std::vector<std::string>& tokens,
                             const grav_client::ErrorBufferView& errorBuffer);
     static bool connect(ModuleState& state, const std::vector<std::string>& tokens,
                         const grav_client::ErrorBufferView& errorBuffer);
+    /// Description: Executes the reconnect operation.
     static bool reconnect(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer);
     static bool sendSimpleCommand(ModuleState& state, const std::string& cmd,
                                   const grav_client::ErrorBufferView& errorBuffer);

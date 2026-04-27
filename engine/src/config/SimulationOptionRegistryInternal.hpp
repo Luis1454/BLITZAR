@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <string_view>
 namespace grav_config {
+/// Description: Enumerates the supported OptionKind values.
 enum class OptionKind {
     Uint,
     Int,
@@ -22,6 +23,7 @@ enum class OptionKind {
     ClientParticleCap,
     TimeoutTriple,
 };
+/// Description: Defines the SimulationOptionEntry data or behavior contract.
 struct SimulationOptionEntry {
     SimulationOptionGroup group;
     OptionKind kind;
@@ -42,7 +44,9 @@ extern const SimulationOptionEntry kSimulationOptions[];
 extern const std::size_t kSimulationOptionCount;
 bool matchesCli(const SimulationOptionEntry& entry, const std::string& key,
                 SimulationOptionGroup group);
+/// Description: Executes the matchesIni operation.
 bool matchesIni(const SimulationOptionEntry& entry, const std::string& key);
+/// Description: Executes the matchesEnv operation.
 bool matchesEnv(const SimulationOptionEntry& entry, const std::string& key);
 bool applyEntry(const SimulationOptionEntry& entry, const std::string& value,
                 SimulationConfig& config, std::ostream& warnings, std::string_view source,

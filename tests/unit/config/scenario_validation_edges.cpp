@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <string>
 namespace grav_test_config_scenario_validation_edges {
+/// Description: Executes the hasField operation.
 static bool hasField(const grav_config::ScenarioValidationReport& report, const std::string& field)
 {
     for (const grav_config::ScenarioDiagnostic& diagnostic : report.diagnostics)
@@ -23,25 +24,35 @@ static std::size_t countField(const grav_config::ScenarioValidationReport& repor
         }
     return count;
 }
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_074_NegativeSubstepTargetDtBlocksRun)
 {
     SimulationConfig config;
     config.substepTargetDt = -0.1f;
     const grav_config::ScenarioValidationReport report =
+        /// Description: Executes the evaluate operation.
         grav_config::SimulationScenarioValidation::evaluate(config);
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(report.validForRun);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(hasField(report, "substep_target_dt"));
 }
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_075_InvalidInitStyleAddsInitialStateWarning)
 {
     SimulationConfig config;
     config.initConfigStyle = "nonsense";
     const grav_config::ScenarioValidationReport report =
+        /// Description: Executes the evaluate operation.
         grav_config::SimulationScenarioValidation::evaluate(config);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(report.validForRun);
+    /// Description: Executes the EXPECT_GT operation.
     EXPECT_GT(report.warningCount, 0u);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(hasField(report, "initial_state"));
 }
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_076_OctreeThetaAboveTwoProducesWarning)
 {
     SimulationConfig config;
@@ -51,9 +62,13 @@ TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_076_OctreeThetaAboveTwoProducesWa
     config.octreeThetaAutoMin = 0.4f;
     config.octreeThetaAutoMax = 1.6f;
     const grav_config::ScenarioValidationReport report =
+        /// Description: Executes the evaluate operation.
         grav_config::SimulationScenarioValidation::evaluate(config);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(report.validForRun);
+    /// Description: Executes the EXPECT_GT operation.
     EXPECT_GT(report.warningCount, 0u);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(hasField(report, "octree_theta"));
 }
 TEST(ScenarioValidationEdgesTest,
@@ -65,10 +80,14 @@ TEST(ScenarioValidationEdgesTest,
     config.octreeSoftening = 2.0f;
     config.presetSize = 10.0f;
     const grav_config::ScenarioValidationReport report =
+        /// Description: Executes the evaluate operation.
         grav_config::SimulationScenarioValidation::evaluate(config);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(report.validForRun);
+    /// Description: Executes the EXPECT_GE operation.
     EXPECT_GE(countField(report, "dt"), 2u);
 }
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_078_RenderTextWarningModeOmitsActionWhenEmpty)
 {
     grav_config::ScenarioValidationReport report;
@@ -81,37 +100,53 @@ TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_078_RenderTextWarningModeOmitsAct
     warning.action.clear();
     report.diagnostics.push_back(warning);
     const std::string rendered = grav_config::SimulationScenarioValidation::renderText(report);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(rendered.find("[preflight] warnings"), std::string::npos);
+    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(rendered.find("example warning"), std::string::npos);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(rendered.find("Action:"), std::string::npos);
 }
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_079_PhysicsMaxAccelerationMustBePositive)
 {
     SimulationConfig config;
     config.physicsMaxAcceleration = 0.0f;
     const grav_config::ScenarioValidationReport report =
+        /// Description: Executes the evaluate operation.
         grav_config::SimulationScenarioValidation::evaluate(config);
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(report.validForRun);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(hasField(report, "physics_max_acceleration"));
 }
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_080_PhysicsMinSofteningMustBePositive)
 {
     SimulationConfig config;
     config.physicsMinSoftening = 0.0f;
     const grav_config::ScenarioValidationReport report =
+        /// Description: Executes the evaluate operation.
         grav_config::SimulationScenarioValidation::evaluate(config);
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(report.validForRun);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(hasField(report, "physics_min_softening"));
 }
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_081_PhysicsMinDistanceSquaredMustBePositive)
 {
     SimulationConfig config;
     config.physicsMinDistance2 = 0.0f;
     const grav_config::ScenarioValidationReport report =
+        /// Description: Executes the evaluate operation.
         grav_config::SimulationScenarioValidation::evaluate(config);
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(report.validForRun);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(hasField(report, "physics_min_distance2"));
 }
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_082_SphLowParticleCountWarningWhenParametersAreValid)
 {
     SimulationConfig config;
@@ -122,11 +157,16 @@ TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_082_SphLowParticleCountWarningWhe
     config.sphGasConstant = 2.0f;
     config.sphViscosity = 0.1f;
     const grav_config::ScenarioValidationReport report =
+        /// Description: Executes the evaluate operation.
         grav_config::SimulationScenarioValidation::evaluate(config);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(report.validForRun);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(report.errorCount, 0u);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(hasField(report, "sph"));
 }
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_083_PlummerSphereRequiresPositiveCloudExtent)
 {
     SimulationConfig config;
@@ -136,8 +176,11 @@ TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_083_PlummerSphereRequiresPositive
     config.initParticleMass = 1.0f;
     config.initCloudHalfExtent = 0.0f;
     const grav_config::ScenarioValidationReport report =
+        /// Description: Executes the evaluate operation.
         grav_config::SimulationScenarioValidation::evaluate(config);
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(report.validForRun);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(hasField(report, "init_cloud_half_extent"));
 }
 } // namespace grav_test_config_scenario_validation_edges

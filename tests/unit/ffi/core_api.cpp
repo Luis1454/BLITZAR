@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <string>
+/// Description: Executes the makeCpuConfig operation.
 static blitzar_core_config_t makeCpuConfig()
 {
     blitzar_core_config_t config = blitzar_core_default_config();
@@ -20,12 +21,14 @@ static blitzar_core_config_t makeCpuConfig()
     config.snapshot_publish_period_ms = 5u;
     return config;
 }
+/// Description: Executes the makeTempPath operation.
 static std::filesystem::path makeTempPath(const char* stem, const char* extension)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     return std::filesystem::temp_directory_path() /
            (std::string(stem) + "_" + std::to_string(stamp) + extension);
 }
+/// Description: Executes the createCore operation.
 static blitzar_core_t* createCore(const blitzar_core_config_t& config)
 {
     char error[BLITZAR_CORE_ERROR_CAPACITY] = {};
@@ -33,63 +36,100 @@ static blitzar_core_t* createCore(const blitzar_core_config_t& config)
     EXPECT_NE(core, nullptr) << error;
     return core;
 }
+/// Description: Executes the TEST operation.
 TEST(BlitzarCoreApiTest, TST_UNT_CORE_001_CreateRunAndReportStatus)
 {
     blitzar_core_t* core = createCore(makeCpuConfig());
+    /// Description: Executes the ASSERT_NE operation.
     ASSERT_NE(core, nullptr);
     blitzar_core_status_t status{};
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(blitzar_core_get_status(core, &status), BLITZAR_CORE_OK);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(status.paused, 1u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(status.steps, 0u);
+    /// Description: Executes the EXPECT_STREQ operation.
     EXPECT_STREQ(status.solver_name, "octree_cpu");
+    /// Description: Executes the EXPECT_STREQ operation.
     EXPECT_STREQ(status.integrator_name, "euler");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(blitzar_core_run_steps(core, 3u, 5000u), BLITZAR_CORE_OK);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(blitzar_core_get_status(core, &status), BLITZAR_CORE_OK);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(status.paused, 1u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(status.steps, 3u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(status.faulted, 0u);
+    /// Description: Executes the blitzar_core_destroy operation.
     blitzar_core_destroy(core);
 }
+/// Description: Executes the TEST operation.
 TEST(BlitzarCoreApiTest, TST_UNT_CORE_002_CopiesAndFreesSnapshotBuffer)
 {
     blitzar_core_t* core = createCore(makeCpuConfig());
+    /// Description: Executes the ASSERT_NE operation.
     ASSERT_NE(core, nullptr);
+    /// Description: Executes the ASSERT_EQ operation.
     ASSERT_EQ(blitzar_core_run_steps(core, 1u, 5000u), BLITZAR_CORE_OK);
     blitzar_core_snapshot_t snapshot{};
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(blitzar_core_get_snapshot(core, 0u, &snapshot), BLITZAR_CORE_OK);
+    /// Description: Executes the ASSERT_NE operation.
     ASSERT_NE(snapshot.particles, nullptr);
+    /// Description: Executes the EXPECT_GE operation.
     EXPECT_GE(snapshot.count, 24u);
     EXPECT_TRUE(std::any_of(
         snapshot.particles, snapshot.particles + snapshot.count,
         [](const blitzar_render_particle_t& particle) { return particle.mass > 0.0f; }));
+    /// Description: Executes the blitzar_core_free_snapshot operation.
     blitzar_core_free_snapshot(&snapshot);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(snapshot.particles, nullptr);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(snapshot.count, 0u);
+    /// Description: Executes the blitzar_core_destroy operation.
     blitzar_core_destroy(core);
 }
+/// Description: Executes the TEST operation.
 TEST(BlitzarCoreApiTest, TST_UNT_CORE_003_ExportsAndReloadsState)
 {
     const std::filesystem::path exportPath = makeTempPath("blitzar_core_export", ".vtk");
     const blitzar_core_config_t config = makeCpuConfig();
     blitzar_core_t* source = createCore(config);
+    /// Description: Executes the ASSERT_NE operation.
     ASSERT_NE(source, nullptr);
+    /// Description: Executes the ASSERT_EQ operation.
     ASSERT_EQ(blitzar_core_run_steps(source, 2u, 5000u), BLITZAR_CORE_OK);
     ASSERT_EQ(blitzar_core_export_state(source, exportPath.string().c_str(), "vtk", 5000u),
               BLITZAR_CORE_OK);
+    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(std::filesystem::exists(exportPath));
+    /// Description: Executes the blitzar_core_destroy operation.
     blitzar_core_destroy(source);
     blitzar_core_t* target = createCore(config);
+    /// Description: Executes the ASSERT_NE operation.
     ASSERT_NE(target, nullptr);
     ASSERT_EQ(blitzar_core_load_state(target, exportPath.string().c_str(), "vtk", 5000u),
               BLITZAR_CORE_OK);
     blitzar_core_status_t status{};
+    /// Description: Executes the ASSERT_EQ operation.
     ASSERT_EQ(blitzar_core_get_status(target, &status), BLITZAR_CORE_OK);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(status.steps, 0u);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(status.faulted, 0u);
     blitzar_core_snapshot_t snapshot{};
+    /// Description: Executes the ASSERT_EQ operation.
     ASSERT_EQ(blitzar_core_get_snapshot(target, 0u, &snapshot), BLITZAR_CORE_OK);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(snapshot.count, 24u);
+    /// Description: Executes the blitzar_core_free_snapshot operation.
     blitzar_core_free_snapshot(&snapshot);
+    /// Description: Executes the blitzar_core_destroy operation.
     blitzar_core_destroy(target);
+    /// Description: Executes the remove operation.
     std::filesystem::remove(exportPath);
 }

@@ -3,6 +3,7 @@
 
 #include "client/ClientModuleBoundary.hpp"
 namespace grav_module {
+/// Description: Executes the ClientModuleOpaqueState operation.
 ClientModuleOpaqueState::ClientModuleOpaqueState() noexcept : m_opaqueValue(0u)
 {
 }
@@ -30,6 +31,7 @@ void ClientModuleOpaqueState::clear() noexcept
 {
     m_opaqueValue = 0u;
 }
+/// Description: Executes the ClientModuleCreateResult operation.
 ClientModuleCreateResult::ClientModuleCreateResult() noexcept : m_rawState(nullptr)
 {
 }
@@ -45,6 +47,7 @@ ClientModuleOpaqueState ClientModuleCreateResult::state() const noexcept
 {
     return ClientModuleOpaqueState::fromRawPointer(m_rawState);
 }
+/// Description: Executes the ClientModuleStateSlot operation.
 ClientModuleStateSlot::ClientModuleStateSlot(void** slot) noexcept : m_slot(slot)
 {
 }
@@ -75,6 +78,7 @@ void ClientModuleCommandControl::setContinue() const noexcept
         *m_keepRunningFlag = true;
     }
 }
+/// Description: Executes the ClientModuleCommandResult operation.
 ClientModuleCommandResult::ClientModuleCommandResult() noexcept : m_keepRunning(true)
 {
 }

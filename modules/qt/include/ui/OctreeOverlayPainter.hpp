@@ -9,9 +9,12 @@
  */
 #include "graphics/ViewMath.hpp"
 #include "ui/OctreeOverlay.hpp"
+/// Description: Defines the QPainter data or behavior contract.
 class QPainter;
+/// Description: Defines the QRect data or behavior contract.
 class QRect;
 namespace grav_qt {
+/// Description: Defines the OctreeOverlayPainter data or behavior contract.
 class OctreeOverlayPainter {
 public:
     static void paint(QPainter& painter, const QRect& viewport, grav::ViewMode mode,

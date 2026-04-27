@@ -10,15 +10,18 @@
 #include <string_view>
 #include <vector>
 namespace grav_protocol {
+/// Description: Defines the ServerCommandRequest data or behavior contract.
 struct ServerCommandRequest {
     std::string cmd;
     std::string token;
 };
+/// Description: Defines the ServerResponseEnvelope data or behavior contract.
 struct ServerResponseEnvelope {
     bool ok = false;
     std::string cmd;
     std::string error;
 };
+/// Description: Defines the ServerStatusPayload data or behavior contract.
 struct ServerStatusPayload {
     ServerResponseEnvelope envelope;
     std::uint64_t steps = 0;
@@ -60,21 +63,27 @@ struct ServerStatusPayload {
     std::string exportLastPath;
     std::string exportLastMessage;
 };
+/// Description: Defines the ServerSnapshotPayload data or behavior contract.
 struct ServerSnapshotPayload {
     ServerResponseEnvelope envelope;
     bool hasSnapshot = false;
     std::size_t sourceSize = 0u;
     std::vector<RenderParticle> particles;
 };
+/// Description: Defines the ServerJsonCodec data or behavior contract.
 class ServerJsonCodec {
 public:
+    /// Description: Executes the escapeString operation.
     static std::string escapeString(std::string_view value);
     static std::string makeCommandRequest(const ServerCommandRequest& request,
                                           std::string_view fieldsJson = {});
     static bool parseCommandRequest(std::string_view raw, ServerCommandRequest& out,
                                     std::string& error);
+    /// Description: Executes the makeOkResponse operation.
     static std::string makeOkResponse(std::string_view cmd);
+    /// Description: Executes the makeErrorResponse operation.
     static std::string makeErrorResponse(std::string_view cmd, std::string_view message);
+    /// Description: Executes the makeStatusResponse operation.
     static std::string makeStatusResponse(const SimulationStats& stats);
     static std::string makeSnapshotResponse(bool hasSnapshot,
                                             const std::vector<RenderParticle>& snapshot,
@@ -85,15 +94,22 @@ public:
                                     std::string& error);
     static bool parseSnapshotResponse(std::string_view raw, ServerSnapshotPayload& out,
                                       std::string& error);
+    /// Description: Executes the readString operation.
     static bool readString(std::string_view raw, std::string_view key, std::string& out);
+    /// Description: Executes the readBool operation.
     static bool readBool(std::string_view raw, std::string_view key, bool& out);
     template <typename NumberType>
+    /// Description: Executes the readNumber operation.
     static bool readNumber(std::string_view raw, std::string_view key, NumberType& out);
 
 private:
+    /// Description: Executes the trim operation.
     static std::string trim(std::string_view value);
+    /// Description: Executes the toLower operation.
     static std::string toLower(std::string value);
+    /// Description: Executes the findValueStart operation.
     static bool findValueStart(std::string_view raw, std::string_view key, std::size_t& start);
+    /// Description: Executes the readToken operation.
     static bool readToken(std::string_view raw, std::string_view key, std::string& out);
 };
 } // namespace grav_protocol

@@ -10,6 +10,7 @@
 
 namespace grav_qt {
 
+/// Description: Executes the WorkspaceLayoutStore operation.
 WorkspaceLayoutStore::WorkspaceLayoutStore(std::string configPath)
 {
     std::filesystem::path basePath = configPath.empty()
@@ -23,6 +24,7 @@ WorkspaceLayoutStore::WorkspaceLayoutStore(std::string configPath)
     }
     _layoutsRoot = basePath / "workspace_layouts" / "qt";
 }
+/// Description: Executes the deletePreset operation.
 bool WorkspaceLayoutStore::deletePreset(const std::string& name) const
 {
     const std::filesystem::path path = presetPath(name);
@@ -33,6 +35,7 @@ bool WorkspaceLayoutStore::loadPreset(const std::string& name, std::string& stat
                                       std::string& geometry) const
 {
     const std::filesystem::path path = presetPath(name);
+    /// Description: Executes the in operation.
     std::ifstream in(path, std::ios::binary);
     if (!in.is_open()) {
         return false;
@@ -46,6 +49,7 @@ bool WorkspaceLayoutStore::loadPreset(const std::string& name, std::string& stat
     }
     return stateLoaded && geometryLoaded;
 }
+/// Description: Executes the listPresets operation.
 std::vector<std::string> WorkspaceLayoutStore::listPresets() const
 {
     std::vector<std::string> presets;
@@ -62,6 +66,7 @@ std::vector<std::string> WorkspaceLayoutStore::listPresets() const
         }
         presets.push_back(entry.path().stem().string());
     }
+    /// Description: Executes the sort operation.
     std::sort(presets.begin(), presets.end());
     return presets;
 }
@@ -70,7 +75,9 @@ bool WorkspaceLayoutStore::savePreset(const std::string& name, const std::string
 {
     const std::filesystem::path path = presetPath(name);
     std::error_code ec;
+    /// Description: Executes the create_directories operation.
     std::filesystem::create_directories(path.parent_path(), ec);
+    /// Description: Executes the out operation.
     std::ofstream out(path, std::ios::binary | std::ios::trunc);
     if (!out.is_open()) {
         return false;
@@ -79,6 +86,7 @@ bool WorkspaceLayoutStore::savePreset(const std::string& name, const std::string
     out << "geometry=" << geometry << "\n";
     return out.good();
 }
+/// Description: Executes the normalizeName operation.
 std::string WorkspaceLayoutStore::normalizeName(const std::string& name)
 {
     std::string normalized;
@@ -105,6 +113,7 @@ std::string WorkspaceLayoutStore::normalizeName(const std::string& name)
     }
     return normalized;
 }
+/// Description: Executes the presetPath operation.
 std::filesystem::path WorkspaceLayoutStore::presetPath(const std::string& name) const
 {
     const std::string normalized = normalizeName(name);
@@ -113,6 +122,7 @@ std::filesystem::path WorkspaceLayoutStore::presetPath(const std::string& name) 
 bool WorkspaceLayoutStore::readValueLine(const std::string& line, const char* prefix,
                                          std::string& out)
 {
+    /// Description: Executes the expected operation.
     const std::string expected(prefix);
     if (line.rfind(expected, 0) != 0) {
         return false;

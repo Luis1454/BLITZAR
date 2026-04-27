@@ -2,6 +2,7 @@
 // Purpose: Engine implementation for the BLITZAR simulation core.
 
 #include "Internal.hpp"
+/// Description: Executes the clearGpuTelemetry operation.
 void SimulationServer::clearGpuTelemetry()
 {
     _gpuTelemetryAvailable.store(false, std::memory_order_relaxed);
@@ -43,6 +44,7 @@ void SimulationServer::maybeSampleGpuTelemetry(std::string_view solverMode,
         std::memory_order_relaxed);
     _gpuVramTotalBytes.store(static_cast<std::uint64_t>(totalBytes), std::memory_order_relaxed);
 }
+/// Description: Executes the processPendingExport operation.
 void SimulationServer::processPendingExport()
 {
     PendingExportRequest request{};
@@ -51,6 +53,7 @@ void SimulationServer::processPendingExport()
     std::string format;
     std::string exportDirectory;
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         if (!_pendingExportRequests.empty()) {
             request = std::move(_pendingExportRequests.front());
@@ -66,18 +69,22 @@ void SimulationServer::processPendingExport()
     format = request.format.empty() ? _exportFormatDefault : request.format;
     if (outputPath.empty()) {
         outputPath =
+            /// Description: Executes the defaultExportPath operation.
             defaultExportPath(exportDirectory, format, _steps.load(std::memory_order_relaxed));
     }
     if (exportCurrentState(outputPath, format)) {
+        /// Description: Executes the updateExportStatus operation.
         updateExportStatus("captured", outputPath, "snapshot captured and queued");
     }
     else {
         _exportQueueDepth.fetch_sub(1u, std::memory_order_relaxed);
         _exportFailedCount.fetch_add(1u, std::memory_order_relaxed);
+        /// Description: Executes the updateExportStatus operation.
         updateExportStatus("failed", outputPath, "could not capture snapshot for export");
         std::cerr << "[server] export capture failed: " << outputPath << "\n";
     }
 }
+/// Description: Executes the processPendingCheckpointSave operation.
 void SimulationServer::processPendingCheckpointSave()
 {
     if (_checkpointQueueState == nullptr) {
@@ -86,6 +93,7 @@ void SimulationServer::processPendingCheckpointSave()
     PendingCheckpointSaveRequest request{};
     bool hasRequest = false;
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_checkpointQueueState->mutex);
         if (!_checkpointQueueState->saveRequests.empty()) {
             request = std::move(_checkpointQueueState->saveRequests.front());
@@ -99,6 +107,7 @@ void SimulationServer::processPendingCheckpointSave()
     std::string error;
     const bool ok = captureCheckpointToFile(request.outputPath, &error);
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(request.result->mutex);
         request.result->completed = true;
         request.result->ok = ok;
@@ -106,6 +115,7 @@ void SimulationServer::processPendingCheckpointSave()
     }
     request.result->condition.notify_all();
 }
+/// Description: Executes the exportCurrentState operation.
 bool SimulationServer::exportCurrentState(const std::string& outputPath, const std::string& format)
 {
     if (!_system)
@@ -117,6 +127,7 @@ bool SimulationServer::exportCurrentState(const std::string& outputPath, const s
     std::string solverModeLabel;
     std::string integratorModeLabel;
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         solverModeLabel = _solverMode;
         integratorModeLabel = _integratorMode;

@@ -22,21 +22,36 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+/// Description: Defines the QCheckBox data or behavior contract.
 class QCheckBox;
+/// Description: Defines the QComboBox data or behavior contract.
 class QComboBox;
+/// Description: Defines the QDockWidget data or behavior contract.
 class QDockWidget;
+/// Description: Defines the QDoubleSpinBox data or behavior contract.
 class QDoubleSpinBox;
+/// Description: Defines the QLabel data or behavior contract.
 class QLabel;
+/// Description: Defines the QLineEdit data or behavior contract.
 class QLineEdit;
+/// Description: Defines the QAction data or behavior contract.
 class QAction;
+/// Description: Defines the QPushButton data or behavior contract.
 class QPushButton;
+/// Description: Defines the QSlider data or behavior contract.
 class QSlider;
+/// Description: Defines the QSpinBox data or behavior contract.
 class QSpinBox;
+/// Description: Defines the QTabWidget data or behavior contract.
 class QTabWidget;
+/// Description: Defines the QTimer data or behavior contract.
 class QTimer;
+/// Description: Defines the QWidget data or behavior contract.
 class QWidget;
 namespace grav_qt {
+/// Description: Defines the EnergyGraphWidget data or behavior contract.
 class EnergyGraphWidget;
+/// Description: Defines the MultiViewWidget data or behavior contract.
 class MultiViewWidget;
 /// Owns the primary Qt workspace and synchronizes visible controls with the client runtime.
 class MainWindow : public QMainWindow {
@@ -48,41 +63,73 @@ public:
     ~MainWindow() override;
 
 private:
+    /// Description: Executes the formatFromSelectedFilter operation.
     static std::string formatFromSelectedFilter(const QString& filter);
+    /// Description: Executes the applyConfigToServer operation.
     bool applyConfigToServer(bool requestReset);
+    /// Description: Executes the applyConnectorSettings operation.
     void applyConnectorSettings(bool reconnectNow);
+    /// Description: Executes the applyConfigToUi operation.
     void applyConfigToUi();
+    /// Description: Executes the applyViewSettings operation.
     void applyViewSettings();
+    /// Description: Executes the applyTheme operation.
     void applyTheme();
+    /// Description: Executes the captureUiIntoConfig operation.
     void captureUiIntoConfig();
+    /// Description: Executes the applyPerformanceProfileToRuntime operation.
     void applyPerformanceProfileToRuntime();
+    /// Description: Executes the buildMenus operation.
     void buildMenus();
     void buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPane,
                              QWidget* validationPane);
+    /// Description: Executes the buildTelemetryPane operation.
     QWidget* buildTelemetryPane();
+    /// Description: Executes the buildSidebarTabs operation.
     QTabWidget* buildSidebarTabs();
+    /// Description: Executes the buildValidationPane operation.
     QWidget* buildValidationPane();
+    /// Description: Executes the configureRemoteConnectorFromUi operation.
     void configureRemoteConnectorFromUi();
+    /// Description: Executes the connectControls operation.
     void connectControls();
+    /// Description: Executes the handleExportRequest operation.
     void handleExportRequest();
+    /// Description: Executes the handleSaveCheckpointRequest operation.
     void handleSaveCheckpointRequest();
+    /// Description: Executes the handleLoadCheckpointRequest operation.
     void handleLoadCheckpointRequest();
+    /// Description: Executes the handleLoadInputRequest operation.
     void handleLoadInputRequest();
+    /// Description: Executes the handleLoadPresetRequest operation.
     void handleLoadPresetRequest();
+    /// Description: Executes the initializeControlState operation.
     void initializeControlState();
+    /// Description: Executes the markConfigDirty operation.
     void markConfigDirty(bool dirty = true);
+    /// Description: Executes the refreshValidationReport operation.
     bool refreshValidationReport(bool blockOnErrors);
+    /// Description: Executes the requestReconnectFromUi operation.
     void requestReconnectFromUi();
+    /// Description: Executes the resetSimulationFromUi operation.
     void resetSimulationFromUi();
+    /// Description: Executes the restoreDefaultWorkspace operation.
     void restoreDefaultWorkspace();
+    /// Description: Executes the saveWorkspacePreset operation.
     void saveWorkspacePreset();
+    /// Description: Executes the loadWorkspacePreset operation.
     void loadWorkspacePreset();
+    /// Description: Executes the deleteWorkspacePreset operation.
     void deleteWorkspacePreset();
     QString buildValidationText(const grav_config::ScenarioValidationReport& report,
                                 const ThroughputAdvisory& advisory) const;
+    /// Description: Executes the saveConfigToDisk operation.
     bool saveConfigToDisk();
+    /// Description: Executes the showThroughputAdvisory operation.
     void showThroughputAdvisory(const ThroughputAdvisory& advisory);
+    /// Description: Executes the update3DCameraFromSliders operation.
     void update3DCameraFromSliders();
+    /// Description: Executes the tick operation.
     void tick();
     SimulationConfig _config;
     std::string _configPath;

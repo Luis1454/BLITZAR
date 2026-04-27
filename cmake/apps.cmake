@@ -32,6 +32,7 @@ if(APPLE)
     )
 endif()
 
+# Description: Defines the gravity_add_client_module_manifest function helper.
 function(gravity_add_client_module_manifest target_name module_id)
     add_custom_command(TARGET ${target_name} POST_BUILD
         COMMAND ${CMAKE_COMMAND}

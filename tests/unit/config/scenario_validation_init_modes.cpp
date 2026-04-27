@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <string>
 namespace grav_test_config_scenario_validation_init_modes {
+/// Description: Executes the hasField operation.
 static bool hasField(const grav_config::ScenarioValidationReport& report, const std::string& field)
 {
     for (const grav_config::ScenarioDiagnostic& diagnostic : report.diagnostics)
@@ -23,9 +24,13 @@ TEST(ScenarioValidationInitModesTest,
     config.initParticleMass = 0.0f;
     config.initCloudHalfExtent = 0.0f;
     const grav_config::ScenarioValidationReport report =
+        /// Description: Executes the evaluate operation.
         grav_config::SimulationScenarioValidation::evaluate(config);
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(report.validForRun);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(hasField(report, "init_particle_mass"));
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(hasField(report, "init_cloud_half_extent"));
 }
 TEST(ScenarioValidationInitModesTest,
@@ -41,10 +46,14 @@ TEST(ScenarioValidationInitModesTest,
     config.initDiskRadiusMin = 1.0f;
     config.initDiskRadiusMax = 2.0f;
     const grav_config::ScenarioValidationReport report =
+        /// Description: Executes the evaluate operation.
         grav_config::SimulationScenarioValidation::evaluate(config);
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(report.validForRun);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(hasField(report, "init_central_mass"));
 }
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationInitModesTest, TST_UNT_CONF_065_DetailedFileModeWithoutInputFileIsRejected)
 {
     SimulationConfig config;
@@ -52,10 +61,14 @@ TEST(ScenarioValidationInitModesTest, TST_UNT_CONF_065_DetailedFileModeWithoutIn
     config.initMode = "file";
     config.inputFile.clear();
     const grav_config::ScenarioValidationReport report =
+        /// Description: Executes the evaluate operation.
         grav_config::SimulationScenarioValidation::evaluate(config);
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(report.validForRun);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(hasField(report, "input_file"));
 }
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationInitModesTest, TST_UNT_CONF_066_OctreeAutoMaxLowerThanMinRaisesError)
 {
     SimulationConfig config;
@@ -65,8 +78,11 @@ TEST(ScenarioValidationInitModesTest, TST_UNT_CONF_066_OctreeAutoMaxLowerThanMin
     config.octreeThetaAutoMin = 0.8f;
     config.octreeThetaAutoMax = 0.2f;
     const grav_config::ScenarioValidationReport report =
+        /// Description: Executes the evaluate operation.
         grav_config::SimulationScenarioValidation::evaluate(config);
+    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(report.validForRun);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(hasField(report, "octree_theta_auto_max"));
 }
 TEST(ScenarioValidationInitModesTest,
@@ -76,8 +92,11 @@ TEST(ScenarioValidationInitModesTest,
     config.octreeSoftening = 0.5f;
     config.physicsMinDistance2 = 0.4f;
     const grav_config::ScenarioValidationReport report =
+        /// Description: Executes the evaluate operation.
         grav_config::SimulationScenarioValidation::evaluate(config);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(report.validForRun);
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(hasField(report, "physics_min_distance2"));
 }
 } // namespace grav_test_config_scenario_validation_init_modes

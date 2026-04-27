@@ -2,6 +2,7 @@
 // Purpose: Engine implementation for the BLITZAR simulation core.
 
 #include "Internal.hpp"
+/// Description: Executes the profileThetaBias operation.
 float profileThetaBias(std::string_view performanceProfile)
 {
     if (performanceProfile == "interactive")
@@ -12,6 +13,7 @@ float profileThetaBias(std::string_view performanceProfile)
         return 0.2f;
     return 0.5f;
 }
+/// Description: Executes the particleThetaBias operation.
 float particleThetaBias(std::size_t particleCount)
 {
     if (particleCount <= 512u)
@@ -80,8 +82,10 @@ std::string defaultExportPath(const std::string& directory, const std::string& f
     std::filesystem::path outPath = std::filesystem::path(directory) / fileName.str();
     return outPath.string();
 }
+/// Description: Executes the guessFormatFromPath operation.
 std::string guessFormatFromPath(const std::string& path)
 {
+    /// Description: Executes the p operation.
     const std::filesystem::path p(path);
     std::string ext = toLower(p.extension().string());
     if (!ext.empty() && ext[0] == '.') {
@@ -93,6 +97,7 @@ std::string guessFormatFromPath(const std::string& path)
         return "vtk_binary";
     return ext;
 }
+/// Description: Executes the readBeU32 operation.
 bool readBeU32(std::istream& in, std::uint32_t& outValue)
 {
     std::array<std::byte, 4> bytes{std::byte{0}, std::byte{0}, std::byte{0}, std::byte{0}};
@@ -105,6 +110,7 @@ bool readBeU32(std::istream& in, std::uint32_t& outValue)
                static_cast<std::uint32_t>(std::to_integer<unsigned char>(bytes[3]));
     return true;
 }
+/// Description: Executes the readBeI32 operation.
 bool readBeI32(std::istream& in, std::int32_t& outValue)
 {
     std::uint32_t unsignedValue = 0u;
@@ -114,15 +120,18 @@ bool readBeI32(std::istream& in, std::int32_t& outValue)
     outValue = static_cast<std::int32_t>(unsignedValue);
     return true;
 }
+/// Description: Executes the readBeF32 operation.
 bool readBeF32(std::istream& in, float& outValue)
 {
     std::uint32_t bits = 0u;
     if (!readBeU32(in, bits)) {
         return false;
     }
+    /// Description: Executes the memcpy operation.
     std::memcpy(&outValue, &bits, sizeof(float));
     return true;
 }
+/// Description: Executes the writeBeU32 operation.
 void writeBeU32(std::ostream& out, std::uint32_t value)
 {
     const std::array<std::byte, 4> bytes{
@@ -132,13 +141,18 @@ void writeBeU32(std::ostream& out, std::uint32_t value)
         std::byte{static_cast<unsigned char>(value & 0xFFu)}};
     (void)writeRawBytes(out, bytes.data(), bytes.size());
 }
+/// Description: Executes the writeBeI32 operation.
 void writeBeI32(std::ostream& out, std::int32_t value)
 {
+    /// Description: Executes the writeBeU32 operation.
     writeBeU32(out, static_cast<std::uint32_t>(value));
 }
+/// Description: Executes the writeBeF32 operation.
 void writeBeF32(std::ostream& out, float value)
 {
     std::uint32_t bits = 0u;
+    /// Description: Executes the memcpy operation.
     std::memcpy(&bits, &value, sizeof(float));
+    /// Description: Executes the writeBeU32 operation.
     writeBeU32(out, bits);
 }

@@ -10,6 +10,7 @@ namespace grav_cmd {
 CommandResult CommandBatchRunner::runScriptFile(const std::string& path,
                                                 CommandExecutionContext& context)
 {
+    /// Description: Executes the in operation.
     std::ifstream in(path);
     if (!in.is_open()) {
         CommandResult result{};

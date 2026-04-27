@@ -2,10 +2,12 @@
 // Purpose: Engine implementation for the BLITZAR simulation core.
 
 #include "Internal.hpp"
+/// Description: Executes the getRuntimeConfig operation.
 SimulationConfig SimulationServer::getRuntimeConfig() const
 {
     SimulationConfig config;
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         config = _runtimeConfigMirror;
         config.particleCount = _particleCount;
@@ -50,6 +52,7 @@ bool SimulationServer::loadInitialState(std::vector<Particle>& outParticles,
     if (inputPath.empty()) {
         return false;
     }
+    /// Description: Executes the path operation.
     const std::filesystem::path path(inputPath);
     if (!std::filesystem::exists(path)) {
         std::cerr << "[server] input file not found: " << inputPath << "\n";
@@ -70,6 +73,7 @@ bool SimulationServer::loadInitialState(std::vector<Particle>& outParticles,
     }
     return true;
 }
+/// Description: Executes the captureCheckpointToFile operation.
 bool SimulationServer::captureCheckpointToFile(const std::string& outputPath, std::string* outError)
 {
     if (!_system) {
@@ -86,6 +90,7 @@ bool SimulationServer::captureCheckpointToFile(const std::string& outputPath, st
     }
     SimulationCheckpointState state{};
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         state.config = _runtimeConfigMirror;
         state.config.particleCount = _particleCount;

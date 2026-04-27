@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 namespace grav_client_host {
+/// Description: Defines the HostOptions data or behavior contract.
 struct HostOptions {
     std::string configPath = "simulation.ini";
     std::string moduleSpecifier = "cli";
@@ -14,10 +15,14 @@ struct HostOptions {
     bool validateOnly = false;
     bool waitForModule = false;
 };
+/// Description: Defines the ClientHostCli data or behavior contract.
 class ClientHostCli final {
 public:
+    /// Description: Executes the parseArgs operation.
     static bool parseArgs(int argc, char** argv, HostOptions& outOptions, std::string& outError);
+    /// Description: Executes the printHelp operation.
     static void printHelp(std::string_view programName);
+    /// Description: Executes the run operation.
     static int run(const HostOptions& options, std::string_view programName);
     [[nodiscard]] static bool liveReloadEnabled() noexcept;
 };

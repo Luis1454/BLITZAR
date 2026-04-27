@@ -12,10 +12,13 @@ from pathlib import Path
 from python_tools.ci.release_support import resolve_release_tag
 
 
+# Description: Defines the ReleaseSbomPackager contract.
 class ReleaseSbomPackager:
+    # Description: Executes the resolve_tag operation.
     def resolve_tag(self, explicit: str | None) -> str:
         return resolve_release_tag(explicit)
 
+    # Description: Executes the package operation.
     def package(self, artifacts_dir: Path, dist_dir: Path, tag: str) -> Path:
         dist_dir.mkdir(parents=True, exist_ok=True)
         sbom_path = dist_dir / f"blitzar-{tag}-sbom.cdx.json"
@@ -23,6 +26,7 @@ class ReleaseSbomPackager:
         sbom_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
         return sbom_path
 
+    # Description: Executes the _build_payload operation.
     def _build_payload(self, artifacts_dir: Path, tag: str) -> dict[str, object]:
         components = [self._build_component(path, artifacts_dir) for path in self._iter_artifacts(artifacts_dir)]
         return {
@@ -41,11 +45,13 @@ class ReleaseSbomPackager:
             "components": components,
         }
 
+    # Description: Executes the _iter_artifacts operation.
     def _iter_artifacts(self, artifacts_dir: Path) -> list[Path]:
         if not artifacts_dir.exists():
             raise FileNotFoundError(f"artifacts directory not found: {artifacts_dir}")
         return sorted(path for path in artifacts_dir.rglob("*") if path.is_file())
 
+    # Description: Executes the _build_component operation.
     def _build_component(self, path: Path, artifacts_dir: Path) -> dict[str, object]:
         rel = path.relative_to(artifacts_dir).as_posix()
         digest = hashlib.sha256(path.read_bytes()).hexdigest()

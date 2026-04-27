@@ -2,6 +2,7 @@
 // Purpose: Engine implementation for the BLITZAR simulation core.
 
 #include "Internal.hpp"
+/// Description: Executes the publishSnapshot operation.
 void SimulationServer::publishSnapshot()
 {
     if (!_system) {
@@ -40,15 +41,19 @@ void SimulationServer::publishSnapshot()
                            particles[i].getPressure().norm(), particles[i].getTemperature()};
         outIndex += 1u;
     }
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_snapshotMutex);
     _publishedSnapshot.swap(_scratchSnapshot);
 }
+/// Description: Executes the clearPublishedSnapshotCache operation.
 void SimulationServer::clearPublishedSnapshotCache()
 {
+    /// Description: Executes the lock operation.
     std::lock_guard<std::mutex> lock(_snapshotMutex);
     _publishedSnapshot.clear();
     _scratchSnapshot.clear();
 }
+/// Description: Executes the computeEnergyValues operation.
 SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
 {
     EnergyValues values{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, false};
@@ -70,6 +75,7 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
     float energyMinSoftening = 0.0f;
     float energyMinDistance2 = 0.0f;
     {
+        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         energySoftening = _octreeSoftening;
         energyMinSoftening = _physicsMinSoftening;
@@ -141,6 +147,7 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
     values.estimated = sampled;
     return values;
 }
+/// Description: Executes the maybeUpdateEnergy operation.
 void SimulationServer::maybeUpdateEnergy(std::uint64_t currentStep)
 {
     const std::uint32_t every = _energyMeasureEverySteps.load(std::memory_order_relaxed);

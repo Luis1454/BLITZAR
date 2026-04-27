@@ -11,6 +11,7 @@
 #include <ostream>
 #include <string>
 
+/// Description: Executes the findConfigPathArg operation.
 std::string findConfigPathArg(const std::vector<std::string_view> &args, const std::string &fallback)
 {
     for (std::size_t i = 1; i < args.size(); ++i) {
@@ -48,6 +49,7 @@ void applyArgsToConfig(
         if (args[i].empty()) {
             continue;
         }
+        /// Description: Executes the raw operation.
         const std::string raw(args[i]);
         if (raw == "-h") {
             runtime.showHelp = true;
@@ -80,6 +82,7 @@ void applyArgsToConfig(
             if (!inlineValue.empty()) {
                 parsed = SimulationArgsParse::parseBool(inlineValue, value);
             } else if (i + 1 < args.size() && !args[i + 1].empty() && std::string(args[i + 1]).rfind("--", 0) != 0) {
+                /// Description: Executes the explicitValue operation.
                 std::string explicitValue(args[++i]);
                 parsed = SimulationArgsParse::parseBool(explicitValue, value);
             }
@@ -130,14 +133,19 @@ void applyArgsToConfig(
     }
 }
 
+/// Description: Executes the printUsage operation.
 void printUsage(std::ostream &out, std::string_view programName, bool headlessMode)
 {
     out << "Usage: " << programName << " [options]\n";
     out << "Common options:\n";
     out << "  --config <path>\n";
+    /// Description: Executes the printCliUsage operation.
     grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::Core);
+    /// Description: Executes the printCliUsage operation.
     grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::Client);
+    /// Description: Executes the printCliUsage operation.
     grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::InitState);
+    /// Description: Executes the printCliUsage operation.
     grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::Fluid);
     if (headlessMode) {
         out << "  --target-steps <n>\n";

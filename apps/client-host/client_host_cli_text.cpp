@@ -6,8 +6,10 @@
 #include <cctype>
 #include <utility>
 namespace grav_client_host {
+/// Description: Defines the ClientHostCliTextLocal data or behavior contract.
 class ClientHostCliTextLocal final {
 public:
+    /// Description: Executes the trim operation.
     static std::string trim(const std::string& input)
     {
         const auto begin = std::find_if_not(input.begin(), input.end(),
@@ -19,6 +21,7 @@ public:
             return {};
         return std::string(begin, end);
     }
+    /// Description: Executes the splitTokens operation.
     static std::vector<std::string> splitTokens(const std::string& line)
     {
         std::vector<std::string> tokens;
@@ -50,6 +53,7 @@ public:
         }
         return tokens;
     }
+    /// Description: Executes the toLower operation.
     static std::string toLower(std::string value)
     {
         std::transform(value.begin(), value.end(), value.begin(),
@@ -57,14 +61,17 @@ public:
         return value;
     }
 };
+/// Description: Executes the trim operation.
 std::string ClientHostCliText::trim(const std::string& input)
 {
     return ClientHostCliTextLocal::trim(input);
 }
+/// Description: Executes the splitTokens operation.
 std::vector<std::string> ClientHostCliText::splitTokens(const std::string& line)
 {
     return ClientHostCliTextLocal::splitTokens(line);
 }
+/// Description: Executes the toLower operation.
 std::string ClientHostCliText::toLower(std::string value)
 {
     return ClientHostCliTextLocal::toLower(std::move(value));

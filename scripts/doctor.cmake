@@ -16,6 +16,7 @@ endif()
 
 message(STATUS "[doctor] cmake version: ${CMAKE_VERSION}")
 
+# Description: Defines the gravity_doctor_program function helper.
 function(gravity_doctor_program name)
     unset(_prog CACHE)
     unset(_prog)

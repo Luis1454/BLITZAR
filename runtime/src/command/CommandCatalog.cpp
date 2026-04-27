@@ -15,6 +15,7 @@ static CommandSpec makeSpec(CommandId id, std::string name, std::string help, bo
     spec.arguments = std::move(arguments);
     return spec;
 }
+/// Description: Executes the all operation.
 const std::vector<CommandSpec>& CommandCatalog::all()
 {
     static const std::vector<CommandSpec> specs = {
@@ -67,6 +68,7 @@ const std::vector<CommandSpec>& CommandCatalog::all()
                  true, {{"seconds", CommandArgumentKind::Float, false, {}}})};
     return specs;
 }
+/// Description: Executes the findByName operation.
 const CommandSpec* CommandCatalog::findByName(std::string_view name)
 {
     for (const CommandSpec& spec : all()) {
@@ -75,6 +77,7 @@ const CommandSpec* CommandCatalog::findByName(std::string_view name)
     }
     return nullptr;
 }
+/// Description: Executes the findById operation.
 const CommandSpec* CommandCatalog::findById(CommandId id)
 {
     for (const CommandSpec& spec : all()) {
@@ -83,6 +86,7 @@ const CommandSpec* CommandCatalog::findById(CommandId id)
     }
     return nullptr;
 }
+/// Description: Executes the renderHelp operation.
 std::string CommandCatalog::renderHelp()
 {
     std::ostringstream out;

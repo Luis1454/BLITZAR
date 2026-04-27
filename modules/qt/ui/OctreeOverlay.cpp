@@ -8,6 +8,7 @@
 #include <limits>
 #include <vector>
 namespace grav_qt {
+/// Description: Defines the OverlayBounds data or behavior contract.
 struct OverlayBounds final {
     float centerX;
     float centerY;
@@ -15,6 +16,7 @@ struct OverlayBounds final {
     float halfSize;
 };
 static constexpr std::size_t kMaxOverlayNodes = 4096u;
+/// Description: Executes the computeBounds operation.
 static OverlayBounds computeBounds(const std::vector<RenderParticle>& particles)
 {
     float minX = std::numeric_limits<float>::max();

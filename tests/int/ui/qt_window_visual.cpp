@@ -16,6 +16,7 @@
 #include <memory>
 #include <string>
 namespace grav_test_qt_window_visual {
+/// Description: Executes the makeUiConfig operation.
 static SimulationConfig makeUiConfig()
 {
     SimulationConfig config{};
@@ -28,20 +29,32 @@ static SimulationConfig makeUiConfig()
     config.dt = 0.01f;
     return config;
 }
+/// Description: Executes the TEST operation.
 TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabels)
 {
     (void)testsupport::ensureQtApp();
     const QStringList labels = grav_qt::EnergyGraphWidget::legendLabels();
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(grav_qt::EnergyGraphWidget::energyXAxisLabel().toStdString(), "Simulation time [s]");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(grav_qt::EnergyGraphWidget::energyYAxisLabel().toStdString(), "Energy [J]");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(grav_qt::EnergyGraphWidget::driftXAxisLabel().toStdString(), "Simulation time [s]");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(grav_qt::EnergyGraphWidget::driftYAxisLabel().toStdString(), "Drift [%]");
+    /// Description: Executes the ASSERT_EQ operation.
     ASSERT_EQ(labels.size(), 6);
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(labels.at(0).toStdString(), "Kinetic [J]");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(labels.at(1).toStdString(), "Potential [J]");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(labels.at(2).toStdString(), "Thermal [J]");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(labels.at(3).toStdString(), "Radiated [J]");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(labels.at(4).toStdString(), "Total [J]");
+    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(labels.at(5).toStdString(), "Drift [%]");
     grav_qt::EnergyGraphWidget widget;
     widget.resize(900, 240);
@@ -71,6 +84,7 @@ TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabel
                 const QColor pixel = image.pixelColor(x, y);
                 const int distance = std::abs(pixel.red() - target.red()) +
                                      std::abs(pixel.green() - target.green()) +
+                                     /// Description: Executes the abs operation.
                                      std::abs(pixel.blue() - target.blue());
                 if (distance <= 60)
                     minY = std::min(minY, y);
@@ -86,24 +100,30 @@ TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabel
         palette.setColor(QPalette::Mid, midColor);
         widget.setPalette(palette);
         widget.setAutoFillBackground(true);
+        /// Description: Executes the image operation.
         QImage image(widget.size(), QImage::Format_ARGB32_Premultiplied);
         image.fill(windowColor);
+        /// Description: Executes the painter operation.
         QPainter painter(&image);
         widget.render(&painter);
         painter.end();
         return image;
     };
     const QImage darkImage =
+        /// Description: Executes the renderWithPalette operation.
         renderWithPalette(QColor(18, 22, 28), QColor(232, 236, 242), QColor(112, 120, 132));
     const QImage lightImage =
+        /// Description: Executes the renderWithPalette operation.
         renderWithPalette(QColor(245, 247, 250), QColor(25, 28, 33), QColor(155, 160, 170));
     const int fullLeft = 48;
     const int fullWidth = widget.width() - 64;
     const int timeMappedX = fullLeft + static_cast<int>(fullWidth * (1.0 / 9.0));
     const int sampleMappedX = fullLeft + fullWidth / 2;
     EXPECT_LT(minTotalColorYInBand(darkImage, QColor(120, 200, 255), timeMappedX),
+              /// Description: Executes the minTotalColorYInBand operation.
               minTotalColorYInBand(darkImage, QColor(120, 200, 255), sampleMappedX));
     EXPECT_LT(minTotalColorYInBand(lightImage, QColor(0, 102, 170), timeMappedX),
+              /// Description: Executes the minTotalColorYInBand operation.
               minTotalColorYInBand(lightImage, QColor(0, 102, 170), sampleMappedX));
     SimulationConfig invalidConfig = makeUiConfig();
     invalidConfig.particleCount = 1u;
@@ -112,7 +132,9 @@ TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabel
     invalidConfig.inputFile.clear();
     auto invalidRuntime = std::make_unique<grav_client::ClientRuntime>(
         "simulation.ini", testsupport::makeTransport(1u, std::string()));
+    /// Description: Executes the invalidWindow operation.
     grav_qt::MainWindow invalidWindow(invalidConfig, "simulation.ini", std::move(invalidRuntime));
+    /// Description: Executes the processEvents operation.
     QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
     QString preflightText;
     QString statusText;
@@ -126,21 +148,30 @@ TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabel
             statusText = label->text();
         }
     }
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(preflightText.contains("blocked"));
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(preflightText.contains("input_file"));
+    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(statusText.contains("preflight validation failed"));
 }
+/// Description: Executes the TEST operation.
 TEST(QtMainWindowTest, TST_UIX_UI_006_ResponsiveControlsAllowSubHdWindow)
 {
     (void)testsupport::ensureQtApp();
     auto runtime = std::make_unique<grav_client::ClientRuntime>(
         "simulation.ini", testsupport::makeTransport(1u, std::string()));
+    /// Description: Executes the window operation.
     grav_qt::MainWindow window(makeUiConfig(), "simulation.ini", std::move(runtime));
     window.resize(1024, 768);
     window.show();
+    /// Description: Executes the processEvents operation.
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    /// Description: Executes the EXPECT_LE operation.
     EXPECT_LE(window.width(), 1100);
+    /// Description: Executes the EXPECT_LE operation.
     EXPECT_LE(window.height(), 850);
+    /// Description: Executes the EXPECT_LE operation.
     EXPECT_LE(window.minimumSizeHint().width(), 1100);
 }
 } // namespace grav_test_qt_window_visual

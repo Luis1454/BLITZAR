@@ -9,6 +9,7 @@ use tokio::net::TcpListener;
 use tokio::time::Duration;
 
 #[tokio::main(flavor = "current_thread")]
+/// Description: Executes the main operation.
 async fn main() -> ExitCode {
     let args = std::env::args().collect::<Vec<_>>();
     let binary_name = args

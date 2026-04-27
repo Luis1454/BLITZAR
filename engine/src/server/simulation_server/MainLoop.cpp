@@ -2,8 +2,10 @@
 // Purpose: Engine implementation for the BLITZAR simulation core.
 
 #include "Internal.hpp"
+/// Description: Executes the loop operation.
 void SimulationServer::loop()
 {
+    /// Description: Executes the rebuildSystem operation.
     rebuildSystem();
     auto nextSnapshotPublish = std::chrono::steady_clock::now();
     while (_running.load(std::memory_order_relaxed)) {
@@ -19,14 +21,18 @@ void SimulationServer::loop()
                     std::cout << "[server] CUDA context reset after previous failure\n";
                 }
             }
+            /// Description: Executes the rebuildSystem operation.
             rebuildSystem();
         }
         std::uint32_t stepBatch = 0;
         if (_paused.load(std::memory_order_relaxed)) {
             stepBatch = _stepRequests.exchange(0, std::memory_order_relaxed);
             if (stepBatch == 0) {
+                /// Description: Executes the processPendingExport operation.
                 processPendingExport();
+                /// Description: Executes the processPendingCheckpointSave operation.
                 processPendingCheckpointSave();
+                /// Description: Executes the sleep_for operation.
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 continue;
             }
@@ -46,6 +52,7 @@ void SimulationServer::loop()
         std::string openingCriterion;
         bool sphEnabled = false;
         {
+            /// Description: Executes the lock operation.
             std::lock_guard<std::mutex> lock(_commandMutex);
             theta = _octreeThetaAutoTune ? _octreeEffectiveTheta : _octreeTheta;
             softening = _octreeSoftening;
@@ -134,12 +141,14 @@ void SimulationServer::loop()
                                            _gpuKernelMs.load(std::memory_order_relaxed),
                                        std::memory_order_relaxed);
                 }
+                /// Description: Executes the atomicAddFloat operation.
                 atomicAddFloat(_totalTime, dtSub);
             }
             if (sampleGpuStep) {
                 _gpuTelemetryAvailable.store(true, std::memory_order_relaxed);
             }
             else if (!_gpuTelemetryEnabled.load(std::memory_order_relaxed)) {
+                /// Description: Executes the clearGpuTelemetry operation.
                 clearGpuTelemetry();
             }
             if (updateFailed)
@@ -164,6 +173,7 @@ void SimulationServer::loop()
             bool autoFallbackToCpu = false;
             std::string previousSolver;
             {
+                /// Description: Executes the lock operation.
                 std::lock_guard<std::mutex> lock(_commandMutex);
                 previousSolver = _solverMode;
                 if (_solverMode == "pairwise_cuda" || _solverMode == "octree_gpu") {
@@ -174,10 +184,12 @@ void SimulationServer::loop()
             if (autoFallbackToCpu) {
                 _serverFps.store(0.0f, std::memory_order_relaxed);
                 _cudaContextDirty.store(true, std::memory_order_relaxed);
+                /// Description: Executes the requestReset operation.
                 requestReset();
                 _faulted.store(false, std::memory_order_relaxed);
                 _faultStep.store(0, std::memory_order_relaxed);
                 {
+                    /// Description: Executes the lock operation.
                     std::lock_guard<std::mutex> lock(_faultMutex);
                     _faultReason.clear();
                 }
@@ -191,6 +203,7 @@ void SimulationServer::loop()
                 _faulted.store(true, std::memory_order_relaxed);
                 _faultStep.store(_steps.load(std::memory_order_relaxed), std::memory_order_relaxed);
                 {
+                    /// Description: Executes the lock operation.
                     std::lock_guard<std::mutex> lock(_faultMutex);
                     _faultReason = "cuda update failed (request recover/reset)";
                 }
@@ -201,16 +214,23 @@ void SimulationServer::loop()
         const bool publishByCadence = (executedSteps > 0) && (now >= nextSnapshotPublish);
         const bool publishAfterStepRequest = steppedWhilePaused && executedSteps > 0;
         if (publishByCadence || publishAfterStepRequest || updateFailed) {
+            /// Description: Executes the publishSnapshot operation.
             publishSnapshot();
             const auto snapshotPublishPeriod =
+                /// Description: Executes the milliseconds operation.
                 std::chrono::milliseconds(_snapshotPublishPeriodMs.load(std::memory_order_relaxed));
             nextSnapshotPublish = now + snapshotPublishPeriod;
         }
         const std::uint64_t currentStep = _steps.load(std::memory_order_relaxed);
+        /// Description: Executes the maybeUpdateEnergy operation.
         maybeUpdateEnergy(currentStep);
+        /// Description: Executes the maybeSampleGpuTelemetry operation.
         maybeSampleGpuTelemetry(solverMode, currentStep);
+        /// Description: Executes the processPendingExport operation.
         processPendingExport();
+        /// Description: Executes the processPendingCheckpointSave operation.
         processPendingCheckpointSave();
+        /// Description: Executes the sleep_for operation.
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }

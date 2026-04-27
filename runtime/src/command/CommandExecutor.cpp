@@ -12,18 +12,22 @@
 #include "server/SimulationInitConfig.hpp"
 #include <ostream>
 namespace grav_cmd {
+/// Description: Executes the argString operation.
 static std::string argString(const CommandRequest& request, std::size_t index)
 {
     return std::get<std::string>(request.arguments[index]);
 }
+/// Description: Executes the argUint operation.
 static std::uint64_t argUint(const CommandRequest& request, std::size_t index)
 {
     return std::get<std::uint64_t>(request.arguments[index]);
 }
+/// Description: Executes the argFloat operation.
 static double argFloat(const CommandRequest& request, std::size_t index)
 {
     return std::get<double>(request.arguments[index]);
 }
+/// Description: Executes the makeFailure operation.
 static CommandResult makeFailure(std::string message)
 {
     CommandResult result{};
@@ -44,6 +48,7 @@ static CommandResult sendChecked(CommandExecutionContext& context, const std::st
     if (!context.transport.isConnected() &&
         !context.transport.connect(context.session.host, context.session.port)) {
         return makeFailure("unable to connect to server " + context.session.host + ":" +
+                           /// Description: Executes the to_string operation.
                            std::to_string(context.session.port));
     }
     const ServerClientResponse response = context.transport.sendCommand(cmd, fields);
@@ -51,15 +56,18 @@ static CommandResult sendChecked(CommandExecutionContext& context, const std::st
         return makeFailure(response.error.empty() ? "server command failed" : response.error);
     return makeSuccess();
 }
+/// Description: Executes the applyConfig operation.
 static CommandResult applyConfig(CommandExecutionContext& context, bool requestReset)
 {
     const grav_config::ScenarioValidationReport report =
+        /// Description: Executes the evaluate operation.
         grav_config::SimulationScenarioValidation::evaluate(context.session.config);
     if (!report.validForRun)
         return makeFailure(grav_config::SimulationScenarioValidation::renderText(report));
     CommandResult result = sendChecked(
         context, std::string(grav_protocol::SetParticleCount),
         "\"value\":" +
+            /// Description: Executes the to_string operation.
             std::to_string(grav_client::resolveServerParticleCount(context.session.config)));
     if (!result.ok)
         return result;
@@ -70,12 +78,14 @@ static CommandResult applyConfig(CommandExecutionContext& context, bool requestR
     result = sendChecked(
         context, std::string(grav_protocol::SetSolver),
         "\"value\":\"" +
+            /// Description: Executes the escapeString operation.
             grav_protocol::ServerJsonCodec::escapeString(context.session.config.solver) + "\"");
     if (!result.ok)
         return result;
     result = sendChecked(
         context, std::string(grav_protocol::SetIntegrator),
         "\"value\":\"" +
+            /// Description: Executes the escapeString operation.
             grav_protocol::ServerJsonCodec::escapeString(context.session.config.integrator) + "\"");
     if (!result.ok)
         return result;
@@ -113,6 +123,7 @@ static CommandResult applyConfig(CommandExecutionContext& context, bool requestR
         return result;
     result = sendChecked(context, std::string(grav_protocol::SetSnapshotPublishCadence),
                          "\"period_ms\":" +
+                             /// Description: Executes the to_string operation.
                              std::to_string(context.session.config.snapshotPublishPeriodMs));
     if (!result.ok)
         return result;
@@ -123,6 +134,7 @@ static CommandResult applyConfig(CommandExecutionContext& context, bool requestR
     if (!result.ok)
         return result;
     const ResolvedInitialStatePlan initPlan =
+        /// Description: Executes the resolveInitialStatePlan operation.
         resolveInitialStatePlan(context.session.config, context.output);
     if (!initPlan.inputFile.empty()) {
         result = sendChecked(context, std::string(grav_protocol::Load),
@@ -142,12 +154,14 @@ static CommandResult applyConfig(CommandExecutionContext& context, bool requestR
     context.output << "[command] initial-state templates remain server-owned over the remote API\n";
     return makeSuccess("config applied");
 }
+/// Description: Executes the renderStatus operation.
 static CommandResult renderStatus(CommandExecutionContext& context)
 {
     ServerClientStatus status{};
     if (!context.transport.isConnected() &&
         !context.transport.connect(context.session.host, context.session.port)) {
         return makeFailure("unable to connect to server " + context.session.host + ":" +
+                           /// Description: Executes the to_string operation.
                            std::to_string(context.session.port));
     }
     const ServerClientResponse response = context.transport.getStatus(status);
@@ -160,6 +174,7 @@ static CommandResult renderStatus(CommandExecutionContext& context)
                    << " drift=" << status.energyDriftPct << "\n";
     return makeSuccess();
 }
+/// Description: Executes the runSteps operation.
 static CommandResult runSteps(CommandExecutionContext& context, std::uint64_t stepCount)
 {
     CommandResult result = sendChecked(context, std::string(grav_protocol::Pause));
@@ -168,6 +183,7 @@ static CommandResult runSteps(CommandExecutionContext& context, std::uint64_t st
     return sendChecked(context, std::string(grav_protocol::Step),
                        "\"count\":" + std::to_string(stepCount));
 }
+/// Description: Executes the runUntil operation.
 static CommandResult runUntil(CommandExecutionContext& context, double targetTime)
 {
     if (targetTime < 0.0)
@@ -246,6 +262,7 @@ CommandResult CommandExecutor::execute(const CommandRequest& request,
         context.session.config.solver = canonical;
         return sendChecked(context, std::string(grav_protocol::SetSolver),
                            "\"value\":\"" +
+                               /// Description: Executes the escapeString operation.
                                grav_protocol::ServerJsonCodec::escapeString(canonical) + "\"");
     }
     if (request.id == CommandId::SetIntegrator) {
@@ -256,6 +273,7 @@ CommandResult CommandExecutor::execute(const CommandRequest& request,
         context.session.config.integrator = canonical;
         return sendChecked(context, std::string(grav_protocol::SetIntegrator),
                            "\"value\":\"" +
+                               /// Description: Executes the escapeString operation.
                                grav_protocol::ServerJsonCodec::escapeString(canonical) + "\"");
     }
     if (request.id == CommandId::SetProfile) {
@@ -264,6 +282,7 @@ CommandResult CommandExecutor::execute(const CommandRequest& request,
             return makeFailure("invalid performance profile");
         }
         context.session.config.performanceProfile = canonical;
+        /// Description: Executes the applyPerformanceProfile operation.
         grav_config::applyPerformanceProfile(context.session.config);
         return applyConfig(context, false);
     }

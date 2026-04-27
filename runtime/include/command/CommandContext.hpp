@@ -10,12 +10,14 @@
 #include <iosfwd>
 #include <string>
 namespace grav_cmd {
+/// Description: Defines the CommandSessionState data or behavior contract.
 struct CommandSessionState final {
     SimulationConfig config{};
     std::string configPath = "simulation.ini";
     std::string host = "127.0.0.1";
     std::uint16_t port = 4545u;
 };
+/// Description: Defines the CommandExecutionContext data or behavior contract.
 struct CommandExecutionContext final {
     CommandTransport& transport;
     CommandSessionState& session;

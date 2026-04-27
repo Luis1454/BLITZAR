@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
 from python_tools.ci.fmea_status import FmeaStatusSnapshot
 
 
+# Description: Executes the parse_args operation.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Package nightly FMEA risk status snapshot.")
     parser.add_argument("--root", default=".", help="Repository root")
@@ -22,6 +23,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+# Description: Executes the main operation.
 def main() -> int:
     args = parse_args()
     archive = FmeaStatusSnapshot().package(root=Path(args.root), dist_dir=Path(args.dist_dir))
