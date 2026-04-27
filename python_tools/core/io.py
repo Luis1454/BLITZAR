@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/core/io.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/core/io.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -21,27 +23,41 @@ RUST_TEST_RE = re.compile(r"#\s*\[\s*test\s*\][\s\r\n]*fn\s+([A-Za-z0-9_]+)\s*\(
 
 
 @dataclass(frozen=True)
-# Description: Defines the RegexSpec contract.
+# @brief Defines the regex spec type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class RegexSpec:
     pattern: str
     flags: int = 0
 
-    # Description: Executes the compile operation.
+    # @brief Documents the compile operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def compile(self) -> Pattern[str]:
         return re.compile(self.pattern, self.flags)
 
-    # Description: Executes the search operation.
+    # @brief Documents the search operation contract.
+    # @param text Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def search(self, text: str) -> bool:
         return self.compile().search(text) is not None
 
 
 @dataclass(frozen=True)
-# Description: Defines the PathSpec contract.
+# @brief Defines the path spec type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class PathSpec:
     root: Path
 
     @staticmethod
-    # Description: Executes the is_under operation.
+    # @brief Documents the is under operation contract.
+    # @param path Input value used by this contract.
+    # @param parent Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def is_under(path: Path, parent: Path) -> bool:
         try:
             path.relative_to(parent)
@@ -49,14 +65,22 @@ class PathSpec:
         except ValueError:
             return False
 
-    # Description: Executes the resolve operation.
+    # @brief Documents the resolve operation contract.
+    # @param relative Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def resolve(self, relative: str) -> Path:
         return (self.root / relative).resolve()
 
 
-# Description: Defines the JsonLoader contract.
+# @brief Defines the json loader type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class JsonLoader:
-    # Description: Executes the load operation.
+    # @brief Documents the load operation contract.
+    # @param path Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def load(self, path: Path) -> tuple[JsonValue | None, str | None]:
         try:
             return json.loads(path.read_text(encoding="utf-8")), None
@@ -64,9 +88,17 @@ class JsonLoader:
             return None, str(exc)
 
 
-# Description: Defines the CsvLoader contract.
+# @brief Defines the csv loader type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class CsvLoader:
-    # Description: Executes the load_rows operation.
+    # @brief Documents the load rows operation contract.
+    # @param path Input value used by this contract.
+    # @param expected_columns Input value used by this contract.
+    # @param parse_error_label Input value used by this contract.
+    # @param column_error_label Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def load_rows(
         self,
         path: Path,
@@ -89,9 +121,15 @@ class CsvLoader:
         return rows, errors
 
 
-# Description: Defines the GitTrackedService contract.
+# @brief Defines the git tracked service type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class GitTrackedService:
-    # Description: Executes the is_tracked operation.
+    # @brief Documents the is tracked operation contract.
+    # @param root Input value used by this contract.
+    # @param rel_path Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def is_tracked(self, root: Path, rel_path: str) -> bool:
         result = subprocess.run(
             ["git", "ls-files", "--error-unmatch", rel_path],
@@ -103,9 +141,16 @@ class GitTrackedService:
         return result.returncode == 0
 
 
-# Description: Defines the ProcessRunner contract.
+# @brief Defines the process runner type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class ProcessRunner:
-    # Description: Executes the run operation.
+    # @brief Documents the run operation contract.
+    # @param args Input value used by this contract.
+    # @param timeout Input value used by this contract.
+    # @param cwd Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def run(
         self,
         args: list[str],
@@ -121,7 +166,14 @@ class ProcessRunner:
             check=False,
         )
 
-    # Description: Executes the run_with_heartbeat operation.
+    # @brief Documents the run with heartbeat operation contract.
+    # @param args Input value used by this contract.
+    # @param timeout Input value used by this contract.
+    # @param cwd Input value used by this contract.
+    # @param heartbeat_seconds Input value used by this contract.
+    # @param on_heartbeat Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def run_with_heartbeat(
         self,
         args: list[str],
@@ -161,7 +213,12 @@ class ProcessRunner:
                 process.kill()
 
 
-# Description: Executes the collect_test_ids operation.
+# @brief Documents the collect test ids operation contract.
+# @param root Input value used by this contract.
+# @param extra_test_ids Input value used by this contract.
+# @param test_macro_re Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def collect_test_ids(root: Path, extra_test_ids: set[str], test_macro_re: Pattern[str] = TEST_MACRO_RE) -> set[str]:
     tests: set[str] = set(extra_test_ids)
     for path in (root / "tests").rglob("*.cpp"):
@@ -177,7 +234,12 @@ def collect_test_ids(root: Path, extra_test_ids: set[str], test_macro_re: Patter
     return tests
 
 
-# Description: Executes the _normalize_rust_test_id operation.
+# @brief Documents the normalize rust test id operation contract.
+# @param root Input value used by this contract.
+# @param path Input value used by this contract.
+# @param test_name Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _normalize_rust_test_id(root: Path, path: Path, test_name: str) -> str:
     rel_parts = list(path.relative_to(root).with_suffix("").parts)
     if rel_parts and rel_parts[0] == "rust":
@@ -186,7 +248,12 @@ def _normalize_rust_test_id(root: Path, path: Path, test_name: str) -> str:
     return "::".join((*normalized_parts, test_name))
 
 
-# Description: Executes the collect_filtered_test_ids operation.
+# @brief Documents the collect filtered test ids operation contract.
+# @param root Input value used by this contract.
+# @param id_re Input value used by this contract.
+# @param relative_files Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def collect_filtered_test_ids(
     root: Path,
     id_re: Pattern[str],

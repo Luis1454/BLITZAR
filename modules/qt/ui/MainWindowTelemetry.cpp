@@ -1,5 +1,9 @@
-// File: modules/qt/ui/MainWindowTelemetry.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/MainWindowTelemetry.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "client/ClientCommon.hpp"
 #include "ui/EnergyGraphWidget.hpp"
@@ -21,7 +25,6 @@
 #include <vector>
 
 namespace grav_qt {
-/// Description: Executes the makeSummaryCard operation.
 static QFrame* makeSummaryCard(QWidget* parent, const QString& title, QLabel* content)
 {
     auto* card = new QFrame(parent);
@@ -37,7 +40,6 @@ static QFrame* makeSummaryCard(QWidget* parent, const QString& title, QLabel* co
     return card;
 }
 
-/// Description: Executes the buildTelemetryPane operation.
 QWidget* MainWindow::buildTelemetryPane()
 {
     auto* summaryPane = new QWidget(this);
@@ -54,7 +56,6 @@ QWidget* MainWindow::buildTelemetryPane()
     return summaryPane;
 }
 
-/// Description: Executes the buildValidationPane operation.
 QWidget* MainWindow::buildValidationPane()
 {
     auto* validationPane = new QWidget(this);
@@ -66,7 +67,6 @@ QWidget* MainWindow::buildValidationPane()
     return validationPane;
 }
 
-/// Description: Executes the tick operation.
 void MainWindow::tick()
 {
     const auto uiNow = std::chrono::steady_clock::now();

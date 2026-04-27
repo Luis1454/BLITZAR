@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/ci/clang_tidy.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/ci/clang_tidy.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -34,16 +36,25 @@ DEFAULT_AUTO_JOB_CAP = 6
 HEARTBEAT_SECONDS = 30
 
 
-# Description: Defines the ClangTidyCheck contract.
+# @brief Defines the clang tidy check type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class ClangTidyCheck(BaseCheck):
     name = "clang_tidy"
     failure_title = "clang-tidy check failed:"
 
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self) -> None:
         self._runner = ProcessRunner()
 
-    # Description: Executes the _execute operation.
+    # @brief Documents the execute operation contract.
+    # @param context Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         binary = self._resolve_binary(context.clang_tidy_binary)
         if binary is None:
@@ -66,7 +77,11 @@ class ClangTidyCheck(BaseCheck):
         if result.ok and not result.success_message:
             result.success_message = f"clang-tidy check passed ({len(files)} files)"
 
-    # Description: Executes the _load_compile_database operation.
+    # @brief Documents the load compile database operation contract.
+    # @param context Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _load_compile_database(self, context: CheckContext, result: CheckResult) -> list[dict[str, object]]:
         build_dir = context.build_dir
         if build_dir is None:
@@ -86,7 +101,11 @@ class ClangTidyCheck(BaseCheck):
             return []
         return loaded
 
-    # Description: Executes the _load_files operation.
+    # @brief Documents the load files operation contract.
+    # @param context Input value used by this contract.
+    # @param entries Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _load_files(self, context: CheckContext, entries: list[dict[str, object]]) -> list[Path]:
         path_spec = PathSpec(context.root)
         allowed_abs = [path_spec.resolve(rel) for rel in (context.paths if context.paths else DEFAULT_PATHS)]
@@ -104,7 +123,14 @@ class ClangTidyCheck(BaseCheck):
             files.append(file_path)
         return files
 
-    # Description: Executes the _run_tidy operation.
+    # @brief Documents the run tidy operation contract.
+    # @param files Input value used by this contract.
+    # @param context Input value used by this contract.
+    # @param binary Input value used by this contract.
+    # @param entries Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _run_tidy(
         self,
         files: list[Path],
@@ -162,7 +188,11 @@ class ClangTidyCheck(BaseCheck):
         if result.ok:
             result.success_message = f"clang-tidy check passed ({len(files)} files) logs: {log_dir}"
 
-    # Description: Executes the _resolve_jobs operation.
+    # @brief Documents the resolve jobs operation contract.
+    # @param jobs Input value used by this contract.
+    # @param file_count Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _resolve_jobs(self, jobs: int, file_count: int) -> int:
         if file_count <= 0:
             return 1
@@ -171,7 +201,11 @@ class ClangTidyCheck(BaseCheck):
             jobs = max(1, min(DEFAULT_AUTO_JOB_CAP, cpu_count // 2 if cpu_count > 1 else 1))
         return max(1, min(jobs, file_count))
 
-    # Description: Executes the _resolve_log_dir operation.
+    # @brief Documents the resolve log dir operation contract.
+    # @param context Input value used by this contract.
+    # @param build_dir Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _resolve_log_dir(self, context: CheckContext, build_dir: Path) -> Path:
         if context.clang_tidy_log_dir is not None:
             log_dir = context.clang_tidy_log_dir
@@ -180,7 +214,10 @@ class ClangTidyCheck(BaseCheck):
         log_dir.mkdir(parents=True, exist_ok=True)
         return log_dir
 
-    # Description: Executes the _resolve_binary operation.
+    # @brief Documents the resolve binary operation contract.
+    # @param configured_binary Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _resolve_binary(self, configured_binary: str) -> str | None:
         resolved = shutil.which(configured_binary)
         if resolved is not None:
@@ -195,13 +232,19 @@ class ClangTidyCheck(BaseCheck):
                 return str(candidate)
         return None
 
-    # Description: Executes the _resolve_extra_args operation.
+    # @brief Documents the resolve extra args operation contract.
+    # @param entries Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _resolve_extra_args(self, entries: list[dict[str, object]]) -> list[str]:
         if self._uses_msvc_driver(entries):
             return ["--extra-arg-before=--driver-mode=cl"]
         return []
 
-    # Description: Executes the _uses_msvc_driver operation.
+    # @brief Documents the uses msvc driver operation contract.
+    # @param entries Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _uses_msvc_driver(self, entries: list[dict[str, object]]) -> bool:
         for entry in entries:
             command = str(entry.get("command", "")).lower()
@@ -215,14 +258,22 @@ class ClangTidyCheck(BaseCheck):
                 return True
         return False
 
-    # Description: Executes the _print_progress operation.
+    # @brief Documents the print progress operation contract.
+    # @param message Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _print_progress(self, message: str) -> None:
         try:
             print(message, flush=True)
         except OSError:
             return
 
-    # Description: Executes the _filter_diff_files operation.
+    # @brief Documents the filter diff files operation contract.
+    # @param files Input value used by this contract.
+    # @param context Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _filter_diff_files(self, files: list[Path], context: CheckContext, result: CheckResult) -> list[Path]:
         if not context.clang_tidy_diff_base:
             return files
@@ -247,7 +298,10 @@ class ClangTidyCheck(BaseCheck):
         diff_paths = {Path(context.root / rel).resolve() for rel in rel_paths}
         return [path for path in files if path in diff_paths]
 
-    # Description: Executes the _contains_header_like_diff operation.
+    # @brief Documents the contains header like diff operation contract.
+    # @param rel_paths Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _contains_header_like_diff(self, rel_paths: list[str]) -> bool:
         for rel_path in rel_paths:
             suffix = Path(rel_path).suffix.lower()

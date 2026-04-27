@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: scripts/ci/release/smoke_windows_installer.py
-# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+# @file scripts/ci/release/smoke_windows_installer.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Build, release, and CI helper automation for BLITZAR workflows.
 
 from __future__ import annotations
 
@@ -16,7 +18,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-# Description: Executes the _locate_7z operation.
+# @brief Documents the locate 7z operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _locate_7z() -> Path:
     candidate = shutil.which("7z") or shutil.which("7z.exe")
     if candidate:
@@ -32,7 +37,10 @@ def _locate_7z() -> Path:
     raise RuntimeError("7z executable not found. Install 7-Zip to validate the installer archive.")
 
 
-# Description: Executes the parse_args operation.
+# @brief Documents the parse args operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Validate a packaged native Windows installer.")
     parser.add_argument("--installer", required=True, help="Installer executable produced by package_bundle.py")
@@ -40,7 +48,10 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-# Description: Executes the main operation.
+# @brief Documents the main operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def main() -> int:
     args = parse_args()
     installer = Path(args.installer)

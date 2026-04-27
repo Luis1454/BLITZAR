@@ -1,5 +1,7 @@
-# File: tests/checks/suites/core/test_gpu_runner_ops.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/checks/suites/core/test_gpu_runner_ops.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 from __future__ import annotations
 
@@ -12,26 +14,45 @@ from python_tools.ci.gpu_runner_bootstrap import WindowsGpuRunnerBootstrap
 from python_tools.ci.gpu_runner_inventory import GitHubGpuRunnerInventory
 
 
-# Description: Defines the _Response contract.
+# @brief Defines the response type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class _Response:
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param payload Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self, payload: Mapping[str, object]) -> None:
         self._payload = json.dumps(payload).encode("utf-8")
 
-    # Description: Executes the read operation.
+    # @brief Documents the read operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def read(self) -> bytes:
         return self._payload
 
-    # Description: Executes the __enter__ operation.
+    # @brief Documents the enter operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __enter__(self) -> _Response:
         return self
 
-    # Description: Executes the __exit__ operation.
+    # @brief Documents the exit operation contract.
+    # @param exc_type Input value used by this contract.
+    # @param exc Input value used by this contract.
+    # @param tb Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __exit__(self, exc_type, exc, tb) -> Literal[False]:
         return False
 
 
-# Description: Executes the test_gpu_runner_inventory_reports_disabled_lane operation.
+# @brief Documents the test gpu runner inventory reports disabled lane operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_gpu_runner_inventory_reports_disabled_lane() -> None:
     report = GitHubGpuRunnerInventory().collect(
         repo="owner/repo",
@@ -46,7 +67,10 @@ def test_gpu_runner_inventory_reports_disabled_lane() -> None:
     assert "disabled" in str(report["reason"]).lower()
 
 
-# Description: Executes the test_gpu_runner_inventory_reports_degraded_without_token operation.
+# @brief Documents the test gpu runner inventory reports degraded without token operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_gpu_runner_inventory_reports_degraded_without_token() -> None:
     report = GitHubGpuRunnerInventory().collect(
         repo="owner/repo",
@@ -62,7 +86,10 @@ def test_gpu_runner_inventory_reports_degraded_without_token() -> None:
     assert "falling back" in str(report["reason"]).lower()
 
 
-# Description: Executes the test_gpu_runner_inventory_filters_matching_idle_runner operation.
+# @brief Documents the test gpu runner inventory filters matching idle runner operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_gpu_runner_inventory_filters_matching_idle_runner() -> None:
     payload = {
         "runners": [
@@ -98,7 +125,10 @@ def test_gpu_runner_inventory_filters_matching_idle_runner() -> None:
     assert capacity["idle"] == 1
 
 
-# Description: Executes the test_gpu_runner_bootstrap_plan_requires_runner_files operation.
+# @brief Documents the test gpu runner bootstrap plan requires runner files operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_gpu_runner_bootstrap_plan_requires_runner_files(tmp_path: Path) -> None:
     bootstrap = WindowsGpuRunnerBootstrap()
 
@@ -116,7 +146,11 @@ def test_gpu_runner_bootstrap_plan_requires_runner_files(tmp_path: Path) -> None
         raise AssertionError("expected missing runner files to fail")
 
 
-# Description: Executes the test_gpu_runner_bootstrap_emits_commands operation.
+# @brief Documents the test gpu runner bootstrap emits commands operation contract.
+# @param tmp_path Input value used by this contract.
+# @param monkeypatch Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_gpu_runner_bootstrap_emits_commands(tmp_path: Path, monkeypatch) -> None:
     for file_name in ("config.cmd", "run.cmd", "svc.cmd"):
         (tmp_path / file_name).write_text("echo ok\n", encoding="utf-8")

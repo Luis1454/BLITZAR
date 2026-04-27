@@ -1,5 +1,9 @@
-// File: modules/qt/ui/MainWindow.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/MainWindow.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "ui/MainWindow.hpp"
 #include "client/ClientCommon.hpp"
@@ -132,13 +136,11 @@ MainWindow::MainWindow(SimulationConfig config, std::string configPath,
     }
 }
 
-/// Description: Releases resources owned by MainWindow.
 MainWindow::~MainWindow()
 {
     _runtime->stop();
 }
 
-/// Description: Executes the applyTheme operation.
 void MainWindow::applyTheme()
 {
     const QtThemeMode mode = QtTheme::resolve(_config.uiTheme);
@@ -148,7 +150,6 @@ void MainWindow::applyTheme()
     setStyleSheet(QtTheme::buildMainWindowStyleSheet(mode));
 }
 
-/// Description: Executes the applyViewSettings operation.
 void MainWindow::applyViewSettings()
 {
     _multiView->setZoom(static_cast<float>(_zoomSlider->value()) / 10.0f);

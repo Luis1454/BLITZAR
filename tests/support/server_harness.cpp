@@ -1,5 +1,9 @@
-// File: tests/support/server_harness.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/support/server_harness.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "tests/support/server_harness.hpp"
 #include "protocol/ServerClient.hpp"
@@ -14,7 +18,6 @@ namespace grav_test_server_harness {
 constexpr std::array<std::uint16_t, 12u> kFallbackPorts{
     4545u, 4546u, 14545u, 14546u, 24545u, 24546u, 34545u, 34546u, 44545u, 44546u, 54545u, 54546u};
 
-/// Description: Executes the resolveInputFilePath operation.
 std::string resolveInputFilePath()
 {
     std::error_code ec;
@@ -34,7 +37,6 @@ std::string resolveInputFilePath()
     return "tests/data/two_body_rest.xyz";
 }
 
-/// Description: Executes the buildPortCandidates operation.
 std::vector<std::uint16_t> buildPortCandidates(std::uint16_t preferredPort)
 {
     std::vector<std::uint16_t> ports;
@@ -59,13 +61,26 @@ std::vector<std::uint16_t> buildPortCandidates(std::uint16_t preferredPort)
 }
 } // namespace grav_test_server_harness
 
-/// Description: Releases resources owned by RealServerHarness.
+/*
+ * @brief Documents the ~real server harness operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return RealServerHarness:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 RealServerHarness::~RealServerHarness()
 {
     stop();
 }
 
-/// Description: Describes the start operation contract.
+/*
+ * @brief Documents the start operation contract.
+ * @param outError Input value used by this contract.
+ * @param preferredPort Input value used by this contract.
+ * @param authToken Input value used by this contract.
+ * @param extraArgs Input value used by this contract.
+ * @return bool RealServerHarness:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool RealServerHarness::start(std::string& outError, std::uint16_t preferredPort,
                               const std::string& authToken,
                               const std::vector<std::string>& extraArgs)
@@ -127,7 +142,12 @@ bool RealServerHarness::start(std::string& outError, std::uint16_t preferredPort
     return false;
 }
 
-/// Description: Executes the stop operation.
+/*
+ * @brief Documents the stop operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void RealServerHarness:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void RealServerHarness::stop()
 {
     if (_port != 0u) {
@@ -146,19 +166,34 @@ void RealServerHarness::stop()
     _authToken.clear();
 }
 
-/// Description: Executes the isRunning operation.
+/*
+ * @brief Documents the is running operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return bool RealServerHarness:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool RealServerHarness::isRunning() const
 {
     return _process.isRunning();
 }
 
-/// Description: Executes the port operation.
+/*
+ * @brief Documents the port operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return std::uint16_t RealServerHarness:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::uint16_t RealServerHarness::port() const
 {
     return _port;
 }
 
-/// Description: Executes the executablePath operation.
+/*
+ * @brief Documents the executable path operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return const std::string& RealServerHarness:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 const std::string& RealServerHarness::executablePath() const
 {
     return _executable;

@@ -1,5 +1,9 @@
-// File: engine/src/config/SimulationConfigDirective.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/config/SimulationConfigDirective.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Configuration parsing, validation, and serialization implementation.
+ */
 
 #include "config/SimulationConfigDirective.hpp"
 #include "config/SimulationConfig.hpp"
@@ -11,7 +15,6 @@
 #include <vector>
 
 namespace grav_config {
-/// Description: Executes the trimDirective operation.
 static std::string trimDirective(std::string_view value)
 {
     const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char c) {
@@ -26,7 +29,6 @@ static std::string trimDirective(std::string_view value)
     return std::string(begin, end);
 }
 
-/// Description: Executes the unquoteDirective operation.
 static std::string unquoteDirective(std::string value)
 {
     if (value.size() >= 2u) {
@@ -39,7 +41,6 @@ static std::string unquoteDirective(std::string value)
     return value;
 }
 
-/// Description: Describes the split directive operation contract.
 static bool splitDirective(std::string_view raw, std::string& name,
                            std::vector<std::pair<std::string, std::string>>& args)
 {
@@ -95,14 +96,12 @@ static bool splitDirective(std::string_view raw, std::string& name,
     return true;
 }
 
-/// Description: Describes the apply ini alias operation contract.
 static bool applyIniAlias(const std::pair<std::string, std::string>& arg, std::string_view iniKey,
                           SimulationConfig& config, std::ostream& warnings)
 {
     return applyIniOption(std::string(iniKey), arg.second, config, warnings);
 }
 
-/// Description: Describes the apply directive args operation contract.
 static bool applyDirectiveArgs(std::string_view directive,
                                const std::vector<std::pair<std::string, std::string>>& args,
                                SimulationConfig& config, std::ostream& warnings)
@@ -261,7 +260,6 @@ static bool applyDirectiveArgs(std::string_view directive,
     return true;
 }
 
-/// Description: Describes the apply line operation contract.
 bool SimulationConfigDirective::applyLine(const std::string& line, SimulationConfig& config,
                                           std::ostream& warnings)
 {

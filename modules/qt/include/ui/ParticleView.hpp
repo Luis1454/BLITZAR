@@ -1,5 +1,9 @@
-// File: modules/qt/include/ui/ParticleView.hpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/include/ui/ParticleView.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEW_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEW_HPP_
@@ -16,44 +20,41 @@
 #include <functional>
 #include <optional>
 #include <vector>
-/// Description: Defines the QMouseEvent data or behavior contract.
+/*
+ * @brief Defines the qmouse event type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class QMouseEvent;
-/// Description: Defines the QPaintEvent data or behavior contract.
+/*
+ * @brief Defines the qpaint event type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class QPaintEvent;
 typedef QMouseEvent UiMouseEvent;
 typedef QPaintEvent UiPaintEvent;
 
 namespace grav_qt {
-/// Renders one projection of the current particle snapshot.
 class ParticleView : public QWidget {
 public:
-    /// Builds a view configured for the requested projection mode.
     explicit ParticleView(grav::ViewMode mode);
-    /// Replaces the snapshot rendered by this view.
     void setSnapshot(const std::vector<RenderParticle>& snapshot);
-    /// Changes the projection mode used when painting.
     void setMode(grav::ViewMode mode);
-    /// Sets the magnification applied during painting.
     void setZoom(float zoom);
-    /// Sets the luminosity bias applied to particle colors.
     void setLuminosity(int luminosity);
-    /// Updates the camera angles used by the 3D projection.
     void setCameraAngles(float yaw, float pitch, float roll);
-    /// Updates culling and level-of-detail settings.
     void setRenderSettings(bool culling, bool lod, float nearDist, float farDist);
-    /// Replaces the shared octree overlay rendered on top of the snapshot.
     void setOctreeOverlay(const std::vector<OctreeOverlayNode>& overlay, bool enabled, int opacity);
 
 private:
     typedef UiMouseEvent* MouseEventHandle;
     typedef UiPaintEvent* PaintEventHandle;
-    /// Description: Describes the mouse press event operation contract.
     void mousePressEvent(MouseEventHandle event) override;
-    /// Description: Describes the mouse move event operation contract.
     void mouseMoveEvent(MouseEventHandle event) override;
-    /// Description: Describes the paint event operation contract.
     void paintEvent(PaintEventHandle event) override;
-    /// Description: Describes the mouse release event operation contract.
     void mouseReleaseEvent(MouseEventHandle event) override;
     grav::ViewMode _mode;
     std::optional<std::reference_wrapper<const std::vector<RenderParticle>>> _snapshot;

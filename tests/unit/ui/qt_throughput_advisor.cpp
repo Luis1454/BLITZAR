@@ -1,12 +1,15 @@
-// File: tests/unit/ui/qt_throughput_advisor.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/ui/qt_throughput_advisor.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "config/SimulationConfig.hpp"
 #include "ui/ThroughputAdvisor.hpp"
 #include <gtest/gtest.h>
 
 namespace grav_test_qt_throughput_advisor {
-/// Description: Executes the TEST operation.
 TEST(QtUiLogicTest, TST_UNT_UI_006_ThroughputAdvisorWarnsOnHeavyPairwiseConfig)
 {
     SimulationConfig config{};
@@ -25,7 +28,6 @@ TEST(QtUiLogicTest, TST_UNT_UI_006_ThroughputAdvisorWarnsOnHeavyPairwiseConfig)
     EXPECT_NE(advisory.action.find("octree_gpu"), std::string::npos);
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtUiLogicTest, TST_UNT_UI_007_ThroughputAdvisorStaysQuietForInteractiveOctreeConfig)
 {
     SimulationConfig config{};

@@ -1,3 +1,10 @@
+/*
+ * @file engine/src/config/SimulationOptionRegistryApply.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Configuration parsing, validation, and serialization implementation.
+ */
+
 #include "SimulationOptionRegistryInternal.hpp"
 
 #include "config/SimulationConfig.hpp"
@@ -10,20 +17,17 @@
 namespace grav_config {
 
 template <typename ValueType>
-/// Description: Describes the member at operation contract.
 static ValueType& memberAt(SimulationConfig& config, std::ptrdiff_t offset)
 {
     return *reinterpret_cast<ValueType*>(reinterpret_cast<char*>(&config) + offset);
 }
 
-/// Description: Executes the emitInvalid operation.
 static void emitInvalid(std::ostream& warnings, std::string_view source,
                         std::string_view optionName, const std::string& value)
 {
     warnings << source << " invalid " << optionName << ": " << value << "\n";
 }
 
-/// Description: Describes the emit clamped operation contract.
 static void emitClamped(std::ostream& warnings, std::string_view source,
                         std::string_view optionName, std::uint32_t requested, std::uint32_t clamped)
 {
@@ -32,7 +36,6 @@ static void emitClamped(std::ostream& warnings, std::string_view source,
              << "\n";
 }
 
-/// Description: Executes the clampClientParticleCap operation.
 static std::uint32_t clampClientParticleCap(std::uint32_t requested)
 {
     if (requested > grav_protocol::kSnapshotMaxPoints) {
@@ -41,7 +44,6 @@ static std::uint32_t clampClientParticleCap(std::uint32_t requested)
     return requested < 2u ? 2u : requested;
 }
 
-/// Description: Executes the markCustomPerformanceProfile operation.
 static void markCustomPerformanceProfile(const SimulationOptionEntry& entry,
                                          SimulationConfig& config)
 {
@@ -50,7 +52,6 @@ static void markCustomPerformanceProfile(const SimulationOptionEntry& entry,
     }
 }
 
-/// Description: Executes the matchesCli operation.
 bool matchesCli(const SimulationOptionEntry& entry, const std::string& key,
                 SimulationOptionGroup group)
 {
@@ -60,19 +61,16 @@ bool matchesCli(const SimulationOptionEntry& entry, const std::string& key,
     return key == entry.cliName || (!entry.cliAlias.empty() && key == entry.cliAlias);
 }
 
-/// Description: Executes the matchesIni operation.
 bool matchesIni(const SimulationOptionEntry& entry, const std::string& key)
 {
     return key == entry.iniName || (!entry.iniAlias.empty() && key == entry.iniAlias);
 }
 
-/// Description: Executes the matchesEnv operation.
 bool matchesEnv(const SimulationOptionEntry& entry, const std::string& key)
 {
     return !entry.envName.empty() && key == entry.envName;
 }
 
-/// Description: Describes the apply entry operation contract.
 bool applyEntry(const SimulationOptionEntry& entry, const std::string& value,
                 SimulationConfig& config, std::ostream& warnings, std::string_view source,
                 std::string_view optionName)
@@ -195,7 +193,6 @@ bool applyEntry(const SimulationOptionEntry& entry, const std::string& value,
 }
 
 template <typename Matcher>
-/// Description: Describes the apply matching entry operation contract.
 static bool applyMatchingEntry(Matcher matcher, const std::string& key, const std::string& value,
                                SimulationConfig& config, std::ostream& warnings,
                                std::string_view source)
@@ -210,7 +207,6 @@ static bool applyMatchingEntry(Matcher matcher, const std::string& key, const st
     return false;
 }
 
-/// Description: Describes the apply cli option operation contract.
 bool applyCliOption(SimulationOptionGroup group, const std::string& key, const std::string& value,
                     SimulationConfig& config, std::ostream& warnings)
 {
@@ -221,14 +217,12 @@ bool applyCliOption(SimulationOptionGroup group, const std::string& key, const s
         key, value, config, warnings, "[args]");
 }
 
-/// Description: Executes the applyIniOption operation.
 bool applyIniOption(const std::string& key, const std::string& value, SimulationConfig& config,
                     std::ostream& warnings)
 {
     return applyMatchingEntry(matchesIni, key, value, config, warnings, "[config]");
 }
 
-/// Description: Executes the applyEnvOption operation.
 bool applyEnvOption(const std::string& key, const std::string& value, SimulationConfig& config,
                     std::ostream& warnings)
 {

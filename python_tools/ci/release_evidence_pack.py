@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/ci/release_evidence_pack.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/ci/release_evidence_pack.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -19,23 +21,44 @@ from python_tools.ci.release_support import (
 from python_tools.policies.quality_manifest import EvidenceRegistry, QualityManifestLoader
 
 
-# Description: Defines the ReleaseEvidencePackError contract.
+# @brief Defines the release evidence pack error type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class ReleaseEvidencePackError(RuntimeError):
     pass
 
 
-# Description: Defines the ReleaseEvidencePackager contract.
+# @brief Defines the release evidence packager type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class ReleaseEvidencePackager:
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self) -> None:
         self._manifest = QualityManifestLoader()
         self._registry = EvidenceRegistry()
 
-    # Description: Executes the resolve_tag operation.
+    # @brief Documents the resolve tag operation contract.
+    # @param explicit Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def resolve_tag(self, explicit: str | None) -> str:
         return resolve_release_tag(explicit)
 
-    # Description: Executes the package operation.
+    # @brief Documents the package operation contract.
+    # @param root Input value used by this contract.
+    # @param dist_dir Input value used by this contract.
+    # @param tag Input value used by this contract.
+    # @param profile Input value used by this contract.
+    # @param requirements Input value used by this contract.
+    # @param verification_activities Input value used by this contract.
+    # @param analyzer_status Input value used by this contract.
+    # @param ci_context Input value used by this contract.
+    # @param extra_evidence_refs Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def package(
         self,
         root: Path,
@@ -66,7 +89,11 @@ class ReleaseEvidencePackager:
         )
         return self._archive_pack(repo_root, dist_dir.resolve(), tag, pack, evidence_files)
 
-    # Description: Executes the _select_requirements operation.
+    # @brief Documents the select requirements operation contract.
+    # @param raw_requirements Input value used by this contract.
+    # @param selected Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _select_requirements(
         self,
         raw_requirements: object,
@@ -89,7 +116,12 @@ class ReleaseEvidencePackager:
             )
         return rows
 
-    # Description: Executes the _resolve_evidence_files operation.
+    # @brief Documents the resolve evidence files operation contract.
+    # @param root Input value used by this contract.
+    # @param requirement_rows Input value used by this contract.
+    # @param extra_evidence_refs Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _resolve_evidence_files(
         self,
         root: Path,
@@ -113,7 +145,17 @@ class ReleaseEvidencePackager:
             files.append({"id": ref, "path": path_str})
         return files
 
-    # Description: Executes the _build_pack operation.
+    # @brief Documents the build pack operation contract.
+    # @param root Input value used by this contract.
+    # @param tag Input value used by this contract.
+    # @param profile Input value used by this contract.
+    # @param requirement_rows Input value used by this contract.
+    # @param evidence_files Input value used by this contract.
+    # @param verification_activities Input value used by this contract.
+    # @param analyzer_status Input value used by this contract.
+    # @param ci_context Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _build_pack(
         self,
         root: Path,
@@ -139,7 +181,14 @@ class ReleaseEvidencePackager:
             "open_exceptions": load_open_exceptions(root),
         }
 
-    # Description: Executes the _archive_pack operation.
+    # @brief Documents the archive pack operation contract.
+    # @param root Input value used by this contract.
+    # @param dist_dir Input value used by this contract.
+    # @param tag Input value used by this contract.
+    # @param pack Input value used by this contract.
+    # @param evidence_files Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _archive_pack(
         self,
         root: Path,
@@ -166,7 +215,12 @@ class ReleaseEvidencePackager:
         return Path(shutil.make_archive(str(archive_base), "zip", root_dir=dist_dir))
 
     @staticmethod
-    # Description: Executes the _read_string_list operation.
+    # @brief Documents the read string list operation contract.
+    # @param row Input value used by this contract.
+    # @param requirement_id Input value used by this contract.
+    # @param field Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _read_string_list(row: Mapping[str, object], requirement_id: str, field: str) -> list[str]:
         raw = row.get(field)
         if not isinstance(raw, list):

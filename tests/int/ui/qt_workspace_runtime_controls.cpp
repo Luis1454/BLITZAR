@@ -1,5 +1,9 @@
-// File: tests/int/ui/qt_workspace_runtime_controls.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/int/ui/qt_workspace_runtime_controls.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "tests/support/qt_test_utils.hpp"
 #include "ui/EnergyGraphWidget.hpp"
@@ -22,7 +26,6 @@
 #include <vector>
 
 namespace grav_test_qt_workspace_runtime_controls {
-/// Description: Defines the RecordingRuntime data or behavior contract.
 class RecordingRuntime final : public grav_client::IClientRuntime {
 public:
     bool start() override
@@ -267,7 +270,6 @@ public:
     InitialStateConfig initialStateConfig;
 };
 
-/// Description: Executes the makeRuntimeUiConfig operation.
 static SimulationConfig makeRuntimeUiConfig()
 {
     SimulationConfig config{};
@@ -281,7 +283,6 @@ static SimulationConfig makeRuntimeUiConfig()
     return config;
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_010_RunButtonsAndConnectorForwardToRuntime)
 {
     (void)testsupport::ensureQtApp();
@@ -312,7 +313,6 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_010_RunButtonsAndConnectorForwar
     EXPECT_EQ(spy->recoverCount, 1u);
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_011_RunAndSceneProfilesPropagateToRuntimeAndUi)
 {
     (void)testsupport::ensureQtApp();
@@ -342,7 +342,6 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_011_RunAndSceneProfilesPropagate
     EXPECT_GE(spy->resetCount, 1u);
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_012_PhysicsAndRenderControlsPersistWorkspaceChoices)
 {
     (void)testsupport::ensureQtApp();
@@ -401,7 +400,6 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_012_PhysicsAndRenderControlsPers
     std::filesystem::remove(configPath, ec);
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_013_ResetClearsEnergyTimelineHistory)
 {
     (void)testsupport::ensureQtApp();
@@ -430,7 +428,6 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_013_ResetClearsEnergyTimelineHis
     EXPECT_EQ(graph->sampleCount(), 0u);
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_019_GpuTelemetryToggleForwardsToRuntime)
 {
     (void)testsupport::ensureQtApp();

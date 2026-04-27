@@ -1,5 +1,9 @@
-// File: runtime/include/protocol/ServerProtocol.hpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/include/protocol/ServerProtocol.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
+ */
 
 #ifndef GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERPROTOCOL_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERPROTOCOL_HPP_
@@ -37,7 +41,6 @@ extern const std::string_view Shutdown;
 inline constexpr std::uint32_t kSnapshotMinPoints = 1u;
 inline constexpr std::uint32_t kSnapshotDefaultPoints = 4096u;
 inline constexpr std::uint32_t kSnapshotMaxPoints = 20000u;
-/// Description: Executes the clampSnapshotPoints operation.
 std::uint32_t clampSnapshotPoints(std::uint32_t requested);
 } // namespace grav_protocol
 #endif // GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERPROTOCOL_HPP_

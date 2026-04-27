@@ -1,22 +1,29 @@
-// File: engine/include/config/SimulationScenarioValidation.hpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/include/config/SimulationScenarioValidation.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Public configuration interfaces and validation contracts for simulation setup.
+ */
 
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATION_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATION_HPP_
 #include <cstdint>
 #include <string>
 #include <vector>
-/// Description: Defines the SimulationConfig data or behavior contract.
+/*
+ * @brief Defines the simulation config type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct SimulationConfig;
 
 namespace grav_config {
-/// Description: Enumerates the supported ScenarioDiagnosticLevel values.
 enum class ScenarioDiagnosticLevel {
     Warning,
     Error
 };
 
-/// Description: Defines the ScenarioDiagnostic data or behavior contract.
 struct ScenarioDiagnostic {
     ScenarioDiagnosticLevel level = ScenarioDiagnosticLevel::Warning;
     std::string field;
@@ -24,7 +31,6 @@ struct ScenarioDiagnostic {
     std::string action;
 };
 
-/// Description: Defines the ScenarioValidationReport data or behavior contract.
 struct ScenarioValidationReport {
     std::vector<ScenarioDiagnostic> diagnostics;
     std::uint32_t warningCount = 0u;
@@ -32,12 +38,9 @@ struct ScenarioValidationReport {
     bool validForRun = true;
 };
 
-/// Description: Defines the SimulationScenarioValidation data or behavior contract.
 class SimulationScenarioValidation final {
 public:
-    /// Description: Describes the evaluate operation contract.
     static ScenarioValidationReport evaluate(const SimulationConfig& config);
-    /// Description: Describes the render text operation contract.
     static std::string renderText(const ScenarioValidationReport& report);
 };
 } // namespace grav_config

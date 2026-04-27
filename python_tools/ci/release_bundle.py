@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/ci/release_bundle.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/ci/release_bundle.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -14,7 +16,9 @@ from python_tools.ci.release_support import resolve_release_tag
 from python_tools.ci.windows_installer import WindowsInstallerBuilder
 
 
-# Description: Defines the ReleaseBundlePackager contract.
+# @brief Defines the release bundle packager type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class ReleaseBundlePackager:
     _EXECUTABLES = (
         "blitzar.exe",
@@ -36,11 +40,21 @@ class ReleaseBundlePackager:
         "qt.conf",
         "vc_redist.x64.exe",
     )
-    # Description: Executes the resolve_tag operation.
+    # @brief Documents the resolve tag operation contract.
+    # @param explicit Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def resolve_tag(self, explicit: str | None) -> str:
         return resolve_release_tag(explicit)
 
-    # Description: Executes the package operation.
+    # @brief Documents the package operation contract.
+    # @param build_dir Input value used by this contract.
+    # @param dist_dir Input value used by this contract.
+    # @param tag Input value used by this contract.
+    # @param tool_manifest Input value used by this contract.
+    # @param artifact_kind Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def package(
         self,
         build_dir: Path,
@@ -65,7 +79,13 @@ class ReleaseBundlePackager:
         shutil.move(str(archive_path), str(final_archive))
         return final_archive
 
-    # Description: Executes the _package_desktop_installer operation.
+    # @brief Documents the package desktop installer operation contract.
+    # @param build_dir Input value used by this contract.
+    # @param dist_dir Input value used by this contract.
+    # @param tag Input value used by this contract.
+    # @param tool_manifest Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _package_desktop_installer(self, build_dir: Path, dist_dir: Path, tag: str, tool_manifest: Path | None) -> Path:
         stage_dir = dist_dir / "stage"
         stage_dir.mkdir(parents=True, exist_ok=True)
@@ -78,7 +98,11 @@ class ReleaseBundlePackager:
             shutil.rmtree(stage_dir, ignore_errors=True)
         return installer
 
-    # Description: Executes the _copy_binaries operation.
+    # @brief Documents the copy binaries operation contract.
+    # @param build_dir Input value used by this contract.
+    # @param dist_dir Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _copy_binaries(self, build_dir: Path, dist_dir: Path) -> None:
         for name in self._EXECUTABLES:
             src = build_dir / name
@@ -97,7 +121,11 @@ class ReleaseBundlePackager:
             if src.exists() and src.is_dir():
                 shutil.copytree(src, dist_dir / name, dirs_exist_ok=True)
 
-    # Description: Executes the _copy_metadata operation.
+    # @brief Documents the copy metadata operation contract.
+    # @param dist_dir Input value used by this contract.
+    # @param tool_manifest Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _copy_metadata(self, dist_dir: Path, tool_manifest: Path | None) -> None:
         for extra in ("simulation.ini", "README.md"):
             src = Path(extra)
@@ -107,7 +135,10 @@ class ReleaseBundlePackager:
             shutil.copy2(tool_manifest, dist_dir / "tool_manifest.json")
 
     @staticmethod
-    # Description: Executes the _require_desktop_gui operation.
+    # @brief Documents the require desktop gui operation contract.
+    # @param dist_dir Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _require_desktop_gui(dist_dir: Path) -> None:
         required = (
             "blitzar.exe",
@@ -121,7 +152,9 @@ class ReleaseBundlePackager:
             raise RuntimeError(f"desktop installer missing GUI runtime files: {', '.join(missing)}")
 
 
-# Description: Defines the ReleaseBundleSmokeValidator contract.
+# @brief Defines the release bundle smoke validator type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class ReleaseBundleSmokeValidator:
     _HELP_COMMANDS = (
         ("blitzar.exe", "--help"),
@@ -130,11 +163,19 @@ class ReleaseBundleSmokeValidator:
         ("blitzar-client.exe", "--help"),
     )
 
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param runner Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self, runner: Callable[[list[str], Path], None] | None = None) -> None:
         self._runner = runner if runner is not None else self._run_command
 
-    # Description: Executes the validate_archive operation.
+    # @brief Documents the validate archive operation contract.
+    # @param archive Input value used by this contract.
+    # @param extract_dir Input value used by this contract.
+    # @param run_commands Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def validate_archive(self, archive: Path, extract_dir: Path | None = None, run_commands: bool = True) -> Path:
         bundle_root = extract_dir if extract_dir is not None else archive.with_suffix("")
         if bundle_root.exists():
@@ -147,7 +188,10 @@ class ReleaseBundleSmokeValidator:
             self.run_smoke(bundle_root)
         return bundle_root
 
-    # Description: Executes the validate_layout operation.
+    # @brief Documents the validate layout operation contract.
+    # @param bundle_root Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def validate_layout(self, bundle_root: Path) -> None:
         required_files = ("simulation.ini", "README.md")
         if not any((bundle_root / name).exists() for name, *_ in self._HELP_COMMANDS):
@@ -158,7 +202,10 @@ class ReleaseBundleSmokeValidator:
         self._validate_module_manifests(bundle_root)
         self._validate_qt_runtime(bundle_root)
 
-    # Description: Executes the run_smoke operation.
+    # @brief Documents the run smoke operation contract.
+    # @param bundle_root Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def run_smoke(self, bundle_root: Path) -> None:
         for program, *args in self._HELP_COMMANDS:
             exe = bundle_root / program
@@ -166,7 +213,11 @@ class ReleaseBundleSmokeValidator:
                 self._runner([str(exe), *args], bundle_root)
 
     @staticmethod
-    # Description: Executes the _run_command operation.
+    # @brief Documents the run command operation contract.
+    # @param command Input value used by this contract.
+    # @param cwd Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _run_command(command: list[str], cwd: Path) -> None:
         completed = subprocess.run(
             command,
@@ -180,7 +231,10 @@ class ReleaseBundleSmokeValidator:
             raise RuntimeError(f"portable smoke command failed ({' '.join(command)}): {detail}")
 
     @staticmethod
-    # Description: Executes the _validate_module_manifests operation.
+    # @brief Documents the validate module manifests operation contract.
+    # @param bundle_root Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _validate_module_manifests(bundle_root: Path) -> None:
         for module_path in sorted(bundle_root.glob("gravityClientModule*.dll")):
             manifest_path = bundle_root / f"{module_path.name}.manifest"
@@ -188,7 +242,10 @@ class ReleaseBundleSmokeValidator:
                 raise RuntimeError(f"portable bundle missing module manifest for {module_path.name}")
 
     @staticmethod
-    # Description: Executes the _validate_qt_runtime operation.
+    # @brief Documents the validate qt runtime operation contract.
+    # @param bundle_root Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _validate_qt_runtime(bundle_root: Path) -> None:
         has_qt_module = (bundle_root / "gravityClientModuleQtInProc.dll").exists()
         has_qt_runtime = any((bundle_root / dll).exists() for dll in ("Qt6Core.dll", "Qt6Cored.dll"))

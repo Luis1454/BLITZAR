@@ -1,5 +1,9 @@
-// File: tests/unit/physics/orbit.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/physics/orbit.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "tests/support/physics_scenario.hpp"
 #include "tests/support/physics_test_utils.hpp"
@@ -11,7 +15,6 @@
 #include <vector>
 
 namespace testsupport {
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_001_AttractionDistance)
 {
     ScenarioConfig cfg;
@@ -28,7 +31,6 @@ TEST(PhysicsTest, TST_UNT_PHYS_001_AttractionDistance)
     EXPECT_LE(ratio, kMaxRatio) << "No attraction detected";
 }
 
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_003_CenterOfMassDrift)
 {
     ScenarioConfig cfg;
@@ -55,7 +57,6 @@ TEST(PhysicsTest, TST_UNT_PHYS_003_CenterOfMassDrift)
     EXPECT_LE(drift, kMaxCenterOfMassDrift);
 }
 
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
 {
     ScenarioConfig coarse;
@@ -79,7 +80,6 @@ TEST(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
     EXPECT_LE(maxParticleDelta, kMaxConvergenceDelta);
 }
 
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_002_EnergyConservation)
 {
     ScenarioConfig cfg;
@@ -93,7 +93,6 @@ TEST(PhysicsTest, TST_UNT_PHYS_002_EnergyConservation)
     EXPECT_FALSE(result.stats.energyEstimated);
 }
 
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_005_LongRunStability)
 {
     ScenarioConfig cfg;
@@ -116,7 +115,6 @@ TEST(PhysicsTest, TST_UNT_PHYS_005_LongRunStability)
     EXPECT_LE(maxRadius, kMaxStableRadius) << "Trajectory escaped expected stable bounds";
 }
 
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_010_CalibrationTwoBodyPresetMaintainsBoundOrbit)
 {
     ScenarioConfig cfg;

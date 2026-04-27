@@ -1,5 +1,9 @@
-// File: modules/cli/module_cli_commands.hpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/cli/module_cli_commands.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Command-line client module for runtime control workflows.
+ */
 
 #ifndef GRAVITY_MODULES_CLI_MODULE_CLI_COMMANDS_HPP_
 #define GRAVITY_MODULES_CLI_MODULE_CLI_COMMANDS_HPP_
@@ -9,12 +13,9 @@
 #include <string_view>
 
 namespace grav_module_cli {
-/// Description: Defines the ModuleCliCommands data or behavior contract.
 class ModuleCliCommands final {
 public:
-    /// Description: Describes the print help operation contract.
     static void printHelp();
-    /// Description: Describes the handle command operation contract.
     static bool handleCommand(ModuleState& state, std::string_view commandLine,
                               const grav_module::ClientModuleCommandControl& commandControl,
                               const grav_client::ErrorBufferView& errorBuffer);

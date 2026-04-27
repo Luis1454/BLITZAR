@@ -1,3 +1,5 @@
 #!/usr/bin/env python3
-# File: python_tools/__init__.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/__init__.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.

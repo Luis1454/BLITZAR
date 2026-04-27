@@ -1,5 +1,9 @@
-// File: tests/unit/module_cli/command_batch_runner.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/module_cli/command_batch_runner.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "command/CommandBatchRunner.hpp"
 #include "command/CommandContext.hpp"
@@ -13,7 +17,6 @@
 #include <vector>
 
 namespace grav_test_module_cli_batch_runner {
-/// Description: Defines the FakeCommandTransport data or behavior contract.
 class FakeCommandTransport final : public grav_cmd::CommandTransport {
 public:
     bool connect(const std::string& host, std::uint16_t port) override
@@ -53,7 +56,6 @@ public:
     std::vector<std::pair<std::string, std::string>> commandHistory;
 };
 
-/// Description: Executes the writeTempScript operation.
 static std::string writeTempScript(const std::string& name, const std::string& content)
 {
     const std::filesystem::path path = std::filesystem::temp_directory_path() / name;
@@ -63,7 +65,6 @@ static std::string writeTempScript(const std::string& name, const std::string& c
     return path.string();
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandBatchRunnerTest, TST_UNT_MODCLI_020_RunScriptFileReportsOpenError)
 {
     FakeCommandTransport transport;
@@ -80,7 +81,6 @@ TEST(CommandBatchRunnerTest, TST_UNT_MODCLI_020_RunScriptFileReportsOpenError)
     EXPECT_NE(result.message.find("failed to open script"), std::string::npos);
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandBatchRunnerTest, TST_UNT_MODCLI_021_RunScriptFileReportsParserErrors)
 {
     FakeCommandTransport transport;
@@ -96,7 +96,6 @@ TEST(CommandBatchRunnerTest, TST_UNT_MODCLI_021_RunScriptFileReportsParserErrors
     EXPECT_EQ(result.message, "line 2: unknown command 'bogus'");
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandBatchRunnerTest, TST_UNT_MODCLI_022_RunScriptFilePrefixesFailingLineNumber)
 {
     FakeCommandTransport transport;
@@ -113,7 +112,6 @@ TEST(CommandBatchRunnerTest, TST_UNT_MODCLI_022_RunScriptFilePrefixesFailingLine
     EXPECT_EQ(result.message, "line 1: transport down");
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandBatchRunnerTest, TST_UNT_MODCLI_023_RunScriptFileSucceedsOnValidCommands)
 {
     FakeCommandTransport transport;

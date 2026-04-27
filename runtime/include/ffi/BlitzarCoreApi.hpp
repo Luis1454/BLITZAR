@@ -1,5 +1,9 @@
-// File: runtime/include/ffi/BlitzarCoreApi.hpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/include/ffi/BlitzarCoreApi.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
+ */
 
 #ifndef GRAVITY_RUNTIME_INCLUDE_FFI_BLITZARCOREAPI_H_
 #define GRAVITY_RUNTIME_INCLUDE_FFI_BLITZARCOREAPI_H_
@@ -73,34 +77,23 @@ typedef struct blitzar_core_status {
     char fault_reason[BLITZAR_CORE_ERROR_CAPACITY];
 } blitzar_core_status_t;
 
-/// Description: Executes the blitzar_core_default_config operation.
 blitzar_core_config_t blitzar_core_default_config(void);
-/// Description: Describes the blitzar core create operation contract.
 blitzar_core_t* blitzar_core_create(const blitzar_core_config_t* config, char* error_buffer,
                                     size_t error_buffer_capacity);
-/// Description: Executes the blitzar_core_destroy operation.
 void blitzar_core_destroy(blitzar_core_t* core);
-/// Description: Describes the blitzar core apply config operation contract.
 blitzar_core_result_t blitzar_core_apply_config(blitzar_core_t* core,
                                                 const blitzar_core_config_t* config);
-/// Description: Describes the blitzar core run steps operation contract.
 blitzar_core_result_t blitzar_core_run_steps(blitzar_core_t* core, uint32_t steps,
                                              uint32_t timeout_ms);
-/// Description: Describes the blitzar core get status operation contract.
 blitzar_core_result_t blitzar_core_get_status(const blitzar_core_t* core,
                                               blitzar_core_status_t* out_status);
-/// Description: Describes the blitzar core get snapshot operation contract.
 blitzar_core_result_t blitzar_core_get_snapshot(const blitzar_core_t* core, size_t max_points,
                                                 blitzar_core_snapshot_t* out_snapshot);
-/// Description: Executes the blitzar_core_free_snapshot operation.
 void blitzar_core_free_snapshot(blitzar_core_snapshot_t* snapshot);
-/// Description: Describes the blitzar core load state operation contract.
 blitzar_core_result_t blitzar_core_load_state(blitzar_core_t* core, const char* path,
                                               const char* format, uint32_t timeout_ms);
-/// Description: Describes the blitzar core export state operation contract.
 blitzar_core_result_t blitzar_core_export_state(blitzar_core_t* core, const char* path,
                                                 const char* format, uint32_t timeout_ms);
-/// Description: Describes the blitzar core get last error operation contract.
 size_t blitzar_core_get_last_error(const blitzar_core_t* core, char* error_buffer,
                                    size_t error_buffer_capacity);
 }

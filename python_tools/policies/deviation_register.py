@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/policies/deviation_register.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/policies/deviation_register.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -22,13 +24,24 @@ ALLOWED_KINDS = {"deviation", "waiver"}
 ALLOWED_STATUSES = {"open", "closed"}
 
 
-# Description: Defines the DeviationRegister contract.
+# @brief Defines the deviation register type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class DeviationRegister:
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self) -> None:
         self._manifest = QualityManifestLoader()
 
-    # Description: Executes the load operation.
+    # @brief Documents the load operation contract.
+    # @param root Input value used by this contract.
+    # @param manifest Input value used by this contract.
+    # @param requirement_ids Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def load(
         self,
         root: Path,
@@ -47,7 +60,10 @@ class DeviationRegister:
                 parsed.append(parsed_row)
         return parsed
 
-    # Description: Executes the load_open_with_errors operation.
+    # @brief Documents the load open with errors operation contract.
+    # @param root Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def load_open_with_errors(self, root: Path) -> tuple[list[dict[str, object]], list[str]]:
         payload, errors = self._manifest.load_with_errors(root)
         if errors:
@@ -58,7 +74,13 @@ class DeviationRegister:
         rows = self.load(root, payload, requirement_ids, result)
         return [row for row in rows if row["status"] == "open"], result.errors
 
-    # Description: Executes the _parse_row operation.
+    # @brief Documents the parse row operation contract.
+    # @param root Input value used by this contract.
+    # @param row Input value used by this contract.
+    # @param requirement_ids Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _parse_row(
         self,
         root: Path,
@@ -121,7 +143,13 @@ class DeviationRegister:
         }
 
     @staticmethod
-    # Description: Executes the _required_string operation.
+    # @brief Documents the required string operation contract.
+    # @param row Input value used by this contract.
+    # @param deviation_id Input value used by this contract.
+    # @param field Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _required_string(row: dict[str, JsonValue], deviation_id: str, field: str, result: CheckResult) -> str:
         value = DeviationRegister._as_string(row.get(field))
         if not value:
@@ -129,7 +157,13 @@ class DeviationRegister:
         return value
 
     @staticmethod
-    # Description: Executes the _validate_date operation.
+    # @brief Documents the validate date operation contract.
+    # @param value Input value used by this contract.
+    # @param deviation_id Input value used by this contract.
+    # @param field Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _validate_date(value: str, deviation_id: str, field: str, result: CheckResult) -> None:
         try:
             date.fromisoformat(value)
@@ -137,12 +171,18 @@ class DeviationRegister:
             result.add_error(f"{deviation_id}: invalid ISO date in {field}: {value}")
 
     @staticmethod
-    # Description: Executes the _as_string operation.
+    # @brief Documents the as string operation contract.
+    # @param value Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _as_string(value: JsonValue | None) -> str:
         return value.strip() if isinstance(value, str) else ""
 
     @staticmethod
-    # Description: Executes the _string_list operation.
+    # @brief Documents the string list operation contract.
+    # @param value Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _string_list(value: JsonValue | None) -> list[str]:
         if not isinstance(value, list):
             return []

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/ci/coverage_dashboard.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/ci/coverage_dashboard.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -12,16 +14,23 @@ from pathlib import Path
 
 
 @dataclass(frozen=True)
-# Description: Defines the CoverageMetrics contract.
+# @brief Defines the coverage metrics type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class CoverageMetrics:
     lines: float
     functions: float
     branches: float
 
 
-# Description: Defines the CoverageDashboardBuilder contract.
+# @brief Defines the coverage dashboard builder type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class CoverageDashboardBuilder:
-    # Description: Executes the color_for operation.
+    # @brief Documents the color for operation contract.
+    # @param pct Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def color_for(self, pct: float) -> str:
         if pct >= 90.0:
             return "brightgreen"
@@ -33,7 +42,11 @@ class CoverageDashboardBuilder:
             return "orange"
         return "red"
 
-    # Description: Executes the build operation.
+    # @brief Documents the build operation contract.
+    # @param root Input value used by this contract.
+    # @param metrics Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def build(self, root: Path, metrics: CoverageMetrics) -> Path:
         out = root / "coverage"
         out.mkdir(parents=True, exist_ok=True)
@@ -52,12 +65,20 @@ class CoverageDashboardBuilder:
         self._write_index(root, metrics, updated)
         return root / "index.html"
 
-    # Description: Executes the _write_badge operation.
+    # @brief Documents the write badge operation contract.
+    # @param out Input value used by this contract.
+    # @param name Input value used by this contract.
+    # @param pct Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _write_badge(self, out: Path, name: str, pct: float) -> None:
         payload = {"schemaVersion": 1, "label": name, "message": f"{pct:.1f}%", "color": self.color_for(pct)}
         (out / f"{name}.json").write_text(json.dumps(payload), encoding="utf-8")
 
-    # Description: Executes the _svg_color operation.
+    # @brief Documents the svg color operation contract.
+    # @param slug Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _svg_color(self, slug: str) -> str:
         mapping = {
             "brightgreen": "#2ea043",
@@ -68,7 +89,14 @@ class CoverageDashboardBuilder:
         }
         return mapping.get(slug, "#6e7781")
 
-    # Description: Executes the _circle_markup operation.
+    # @brief Documents the circle markup operation contract.
+    # @param cx Input value used by this contract.
+    # @param cy Input value used by this contract.
+    # @param radius Input value used by this contract.
+    # @param label Input value used by this contract.
+    # @param pct Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _circle_markup(self, cx: int, cy: int, radius: int, label: str, pct: float) -> str:
         circumference = 2.0 * 3.141592653589793 * float(radius)
         dash = circumference * max(0.0, min(pct, 100.0)) / 100.0
@@ -84,7 +112,12 @@ class CoverageDashboardBuilder:
             f"<text x='{cx}' y='{cy + 30}' text-anchor='middle' class='metric-label'>{safe_label}</text>"
         )
 
-    # Description: Executes the _write_widget operation.
+    # @brief Documents the write widget operation contract.
+    # @param out Input value used by this contract.
+    # @param metrics Input value used by this contract.
+    # @param updated Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _write_widget(self, out: Path, metrics: CoverageMetrics, updated: str) -> None:
         circles = (
             self._circle_markup(135, 132, 58, "Lines", metrics.lines)
@@ -113,7 +146,12 @@ class CoverageDashboardBuilder:
         )
         (out / "widget.svg").write_text(svg, encoding="utf-8")
 
-    # Description: Executes the _write_index operation.
+    # @brief Documents the write index operation contract.
+    # @param root Input value used by this contract.
+    # @param metrics Input value used by this contract.
+    # @param updated Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _write_index(self, root: Path, metrics: CoverageMetrics, updated: str) -> None:
         content = (
             "<!doctype html><html><head><meta charset='utf-8'>"

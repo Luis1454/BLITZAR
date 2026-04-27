@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/policies/traceability_gate.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/policies/traceability_gate.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -25,13 +27,19 @@ REQUIREMENT_LINE_RE = re.compile(r"REQ-[A-Z]+-[0-9]{3}")
 TRACEABILITY_FILE = "docs/quality/traceability.csv"
 
 
-# Description: Defines the TraceabilityGateCheck contract.
+# @brief Defines the traceability gate check type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class TraceabilityGateCheck(BaseCheck):
     name = "traceability_gate"
     success_message = "Traceability gate passed"
     failure_title = "Traceability gate failed:"
 
-    # Description: Executes the _execute operation.
+    # @brief Documents the execute operation contract.
+    # @param context Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         if context.event_name.strip() != "pull_request":
             result.success_message = "traceability gate skipped: not a pull_request event"
@@ -65,7 +73,11 @@ class TraceabilityGateCheck(BaseCheck):
             result.add_error(f"critical-path PR must update {TRACEABILITY_FILE}")
 
     @staticmethod
-    # Description: Executes the _read_payload operation.
+    # @brief Documents the read payload operation contract.
+    # @param path_text Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _read_payload(path_text: str, result: CheckResult) -> dict[str, object]:
         if not path_text:
             result.add_error("missing event payload path")
@@ -80,7 +92,13 @@ class TraceabilityGateCheck(BaseCheck):
             return {}
         return payload
 
-    # Description: Executes the _fetch_files operation.
+    # @brief Documents the fetch files operation contract.
+    # @param repo Input value used by this contract.
+    # @param number Input value used by this contract.
+    # @param token Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _fetch_files(self, repo: str, number: int, token: str, result: CheckResult) -> list[dict[str, object]]:
         request = urllib.request.Request(
             f"https://api.github.com/repos/{repo}/pulls/{number}/files?per_page=100",
@@ -102,7 +120,10 @@ class TraceabilityGateCheck(BaseCheck):
         return [item for item in payload if isinstance(item, dict)]
 
     @staticmethod
-    # Description: Executes the _touches_traceability_paths operation.
+    # @brief Documents the touches traceability paths operation contract.
+    # @param files Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _touches_traceability_paths(files: Sequence[dict[str, object]]) -> bool:
         for item in files:
             filename = str(item.get("filename", "")).strip()
@@ -111,7 +132,10 @@ class TraceabilityGateCheck(BaseCheck):
         return False
 
     @staticmethod
-    # Description: Executes the _extract_requirement_ids operation.
+    # @brief Documents the extract requirement ids operation contract.
+    # @param body Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _extract_requirement_ids(body: str) -> list[str]:
         capture = False
         lines: list[str] = []
@@ -131,7 +155,11 @@ class TraceabilityGateCheck(BaseCheck):
         return sorted(requirement_ids)
 
     @staticmethod
-    # Description: Executes the _load_requirement_ids operation.
+    # @brief Documents the load requirement ids operation contract.
+    # @param root Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _load_requirement_ids(root: Path, result: CheckResult) -> set[str]:
         path = root / "docs/quality/manifest/requirements.json"
         try:

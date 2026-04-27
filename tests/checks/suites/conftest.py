@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: tests/checks/suites/conftest.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/checks/suites/conftest.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 from __future__ import annotations
 

@@ -1,5 +1,9 @@
-// File: modules/qt/ui/MainWindowWorkspaceShell.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/MainWindowWorkspaceShell.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "ui/EnergyGraphWidget.hpp"
 #include "ui/MainWindow.hpp"
@@ -18,7 +22,6 @@
 #include <QStatusBar>
 
 namespace grav_qt {
-/// Description: Describes the build workspace docks operation contract.
 void MainWindow::buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPane,
                                      QWidget* validationPane)
 {
@@ -53,7 +56,6 @@ void MainWindow::buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPa
     _validationDock->hide();
 }
 
-/// Description: Executes the buildMenus operation.
 void MainWindow::buildMenus()
 {
     auto* fileMenu = menuBar()->addMenu("&File");

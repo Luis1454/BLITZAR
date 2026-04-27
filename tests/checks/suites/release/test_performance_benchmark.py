@@ -1,5 +1,7 @@
-# File: tests/checks/suites/release/test_performance_benchmark.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/checks/suites/release/test_performance_benchmark.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 from __future__ import annotations
 
@@ -9,7 +11,10 @@ from pathlib import Path
 from python_tools.ci.performance_benchmark import PerformanceBenchmarkCampaign
 
 
-# Description: Executes the _write_campaign operation.
+# @brief Documents the write campaign operation contract.
+# @param root Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _write_campaign(root: Path) -> None:
     payload = {
         "profiles": {
@@ -48,9 +53,15 @@ def _write_campaign(root: Path) -> None:
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
-# Description: Executes the _runner operation.
+# @brief Documents the runner operation contract.
+# @param outputs Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _runner(outputs: dict[tuple[str, ...], str]):
-    # Description: Executes the run operation.
+    # @brief Documents the run operation contract.
+    # @param command Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def run(command: list[str]) -> str:
         key = tuple(command)
         if key not in outputs:
@@ -60,7 +71,10 @@ def _runner(outputs: dict[tuple[str, ...], str]):
     return run
 
 
-# Description: Executes the test_tst_unt_perf_001_performance_campaign_passes_when_baselines_hold operation.
+# @brief Documents the test tst unt perf 001 performance campaign passes when baselines hold operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_tst_unt_perf_001_performance_campaign_passes_when_baselines_hold(tmp_path: Path) -> None:
     _write_campaign(tmp_path)
     tool = tmp_path / "fake-tool"
@@ -77,7 +91,10 @@ def test_tst_unt_perf_001_performance_campaign_passes_when_baselines_hold(tmp_pa
     assert report["failures"] == []
 
 
-# Description: Executes the test_tst_unt_perf_002_performance_campaign_fails_on_threshold_and_regression operation.
+# @brief Documents the test tst unt perf 002 performance campaign fails on threshold and regression operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_tst_unt_perf_002_performance_campaign_fails_on_threshold_and_regression(tmp_path: Path) -> None:
     _write_campaign(tmp_path)
     tool = tmp_path / "fake-tool"
@@ -95,7 +112,10 @@ def test_tst_unt_perf_002_performance_campaign_fails_on_threshold_and_regression
     assert len(report["failures"]) == 4
 
 
-# Description: Executes the test_tst_unt_perf_003_performance_campaign_writes_summary_archive operation.
+# @brief Documents the test tst unt perf 003 performance campaign writes summary archive operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_tst_unt_perf_003_performance_campaign_writes_summary_archive(tmp_path: Path) -> None:
     _write_campaign(tmp_path)
     tool = tmp_path / "fake-tool"

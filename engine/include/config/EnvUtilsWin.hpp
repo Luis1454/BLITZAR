@@ -1,5 +1,9 @@
-// File: engine/include/config/EnvUtilsWin.hpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/include/config/EnvUtilsWin.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Public configuration interfaces and validation contracts for simulation setup.
+ */
 
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_ENVUTILSWIN_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_ENVUTILSWIN_HPP_

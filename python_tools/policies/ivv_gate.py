@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/policies/ivv_gate.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/policies/ivv_gate.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -33,13 +35,19 @@ REVIEWER_MARKER = "- [x] Independent reviewer identified"
 SOLO_WAIVER_IDS = {"DEV-SOLO-IVV", "WVR-SOLO-IVV"}
 
 
-# Description: Defines the IvvGateCheck contract.
+# @brief Defines the ivv gate check type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class IvvGateCheck(BaseCheck):
     name = "ivv_gate"
     success_message = "IV&V gate passed"
     failure_title = "IV&V approval required (not a technical quality failure):"
 
-    # Description: Executes the _execute operation.
+    # @brief Documents the execute operation contract.
+    # @param context Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         if context.event_name.strip() != "pull_request":
             result.success_message = "ivv gate skipped: not a pull_request event"
@@ -71,7 +79,11 @@ class IvvGateCheck(BaseCheck):
             self._check_non_author_approval(author, reviews, result)
 
     @staticmethod
-    # Description: Executes the _read_payload operation.
+    # @brief Documents the read payload operation contract.
+    # @param path_text Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _read_payload(path_text: str, result: CheckResult) -> dict[str, object]:
         if not path_text:
             result.add_error("missing event payload path")
@@ -86,7 +98,14 @@ class IvvGateCheck(BaseCheck):
             return {}
         return payload
 
-    # Description: Executes the _fetch_items operation.
+    # @brief Documents the fetch items operation contract.
+    # @param repo Input value used by this contract.
+    # @param number Input value used by this contract.
+    # @param suffix Input value used by this contract.
+    # @param token Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _fetch_items(self, repo: str, number: int, suffix: str, token: str, result: CheckResult) -> list[dict[str, object]]:
         request = urllib.request.Request(
             f"https://api.github.com/repos/{repo}/pulls/{number}/{suffix}?per_page=100",
@@ -108,7 +127,10 @@ class IvvGateCheck(BaseCheck):
         return [item for item in payload if isinstance(item, dict)]
 
     @staticmethod
-    # Description: Executes the _touches_critical_paths operation.
+    # @brief Documents the touches critical paths operation contract.
+    # @param files Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _touches_critical_paths(files: Sequence[dict[str, object]]) -> bool:
         for item in files:
             filename = str(item.get("filename", "")).strip()
@@ -116,7 +138,13 @@ class IvvGateCheck(BaseCheck):
                 return True
         return False
 
-    # Description: Executes the _check_template operation.
+    # @brief Documents the check template operation contract.
+    # @param author Input value used by this contract.
+    # @param owner Input value used by this contract.
+    # @param body Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_template(self, author: str, owner: str, body: str, result: CheckResult) -> bool:
         for marker in COMMON_CHECKLIST_MARKERS:
             if marker not in body:
@@ -146,7 +174,11 @@ class IvvGateCheck(BaseCheck):
         return solo_waiver
 
     @staticmethod
-    # Description: Executes the _extract_line operation.
+    # @brief Documents the extract line operation contract.
+    # @param body Input value used by this contract.
+    # @param label Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _extract_line(body: str, label: str) -> str:
         prefix = f"{label}:"
         for raw in body.splitlines():
@@ -155,11 +187,20 @@ class IvvGateCheck(BaseCheck):
         return ""
 
     @staticmethod
-    # Description: Executes the _repo_owner operation.
+    # @brief Documents the repo owner operation contract.
+    # @param repo Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _repo_owner(repo: str) -> str:
         return repo.split("/", 1)[0].strip()
 
-    # Description: Executes the _is_solo_waiver operation.
+    # @brief Documents the is solo waiver operation contract.
+    # @param author Input value used by this contract.
+    # @param owner Input value used by this contract.
+    # @param body Input value used by this contract.
+    # @param deviation Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _is_solo_waiver(self, author: str, owner: str, body: str, deviation: str) -> bool:
         waiver = self._extract_line(body, "Solo maintainer waiver")
         return (
@@ -169,7 +210,12 @@ class IvvGateCheck(BaseCheck):
         )
 
     @staticmethod
-    # Description: Executes the _check_non_author_approval operation.
+    # @brief Documents the check non author approval operation contract.
+    # @param author Input value used by this contract.
+    # @param reviews Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_non_author_approval(author: str, reviews: Sequence[dict[str, object]], result: CheckResult) -> None:
         for review in reviews:
             state = str(review.get("state", "")).upper()

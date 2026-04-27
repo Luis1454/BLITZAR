@@ -1,5 +1,9 @@
-// File: modules/qt/module.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/module.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "client/ClientModuleApi.hpp"
 #include "client/ClientModuleBoundary.hpp"
@@ -28,7 +32,13 @@
 #include <thread>
 #include <vector>
 
-/// Description: Executes the parseBool operation.
+/*
+ * @brief Documents the parse bool operation contract.
+ * @param raw Input value used by this contract.
+ * @param out Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static bool parseBool(std::string_view raw, bool& out)
 {
     std::string value(raw);
@@ -46,7 +56,12 @@ static bool parseBool(std::string_view raw, bool& out)
     return false;
 }
 
-/// Description: Executes the trim operation.
+/*
+ * @brief Documents the trim operation contract.
+ * @param input Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::string trim(const std::string& input)
 {
     const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
@@ -60,7 +75,12 @@ static std::string trim(const std::string& input)
     return std::string(begin, end);
 }
 
-/// Description: Executes the splitTokens operation.
+/*
+ * @brief Documents the split tokens operation contract.
+ * @param line Input value used by this contract.
+ * @return std::vector<std::string> value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::vector<std::string> splitTokens(const std::string& line)
 {
     std::vector<std::string> tokens;
@@ -93,7 +113,12 @@ static std::vector<std::string> splitTokens(const std::string& line)
     return tokens;
 }
 
-/// Description: Defines the QtInProcState data or behavior contract.
+/*
+ * @brief Defines the qt in proc state type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct QtInProcState {
     std::string configPath = "simulation.ini";
     grav_client::ClientTransportArgs transport{"127.0.0.1",
@@ -112,7 +137,12 @@ struct QtInProcState {
     std::mutex startupMutex;
 };
 
-/// Description: Executes the configureQtPluginPathFallback operation.
+/*
+ * @brief Documents the configure qt plugin path fallback operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static void configureQtPluginPathFallback()
 {
     QString pluginRoot;
@@ -136,7 +166,12 @@ static void configureQtPluginPathFallback()
     qputenv("QT_PLUGIN_PATH", pluginRoot.toUtf8());
 }
 
-/// Description: Executes the qtThreadMain operation.
+/*
+ * @brief Documents the qt thread main operation contract.
+ * @param state Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static void qtThreadMain(QtInProcState* state)
 {
     try {
@@ -181,7 +216,13 @@ static void qtThreadMain(QtInProcState* state)
     state->running.store(false);
 }
 
-/// Description: Executes the startQtUi operation.
+/*
+ * @brief Documents the start qt ui operation contract.
+ * @param state Input value used by this contract.
+ * @param errorBuffer Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static bool startQtUi(QtInProcState& state, const grav_client::ErrorBufferView& errorBuffer)
 {
     if (state.uiThread.joinable() || state.running.load()) {
@@ -214,7 +255,12 @@ static bool startQtUi(QtInProcState& state, const grav_client::ErrorBufferView& 
     return true;
 }
 
-/// Description: Executes the stopQtUi operation.
+/*
+ * @brief Documents the stop qt ui operation contract.
+ * @param state Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static void stopQtUi(QtInProcState& state)
 {
     if (state.uiThread.joinable()) {
@@ -227,7 +273,12 @@ static void stopQtUi(QtInProcState& state)
     state.running.store(false);
 }
 
-/// Description: Executes the printHelp operation.
+/*
+ * @brief Documents the print help operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static void printHelp()
 {
     std::cout << "[module-qt] commands:\n"
@@ -240,9 +291,23 @@ static void printHelp()
               << "  wait\n";
 }
 
-/// Description: Defines the QtModuleBoundary data or behavior contract.
+/*
+ * @brief Defines the qt module boundary type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class QtModuleBoundary final {
 public:
+    /*
+     * @brief Documents the create operation contract.
+     * @param context Input value used by this contract.
+     * @param outModuleState Input value used by this contract.
+     * @param errorBuffer Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static bool create(const grav_module::ClientHostContextV1* context,
                        const grav_module::ClientModuleStateSlot& outModuleState,
                        const grav_client::ErrorBufferView& errorBuffer)
@@ -269,6 +334,14 @@ public:
         }
     }
 
+    /*
+     * @brief Documents the require state operation contract.
+     * @param moduleState Input value used by this contract.
+     * @param errorBuffer Input value used by this contract.
+     * @return QtInProcState* value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static QtInProcState* requireState(grav_module::ClientModuleOpaqueState moduleState,
                                        const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -279,6 +352,13 @@ public:
         return state;
     }
 
+    /*
+     * @brief Documents the destroy operation contract.
+     * @param moduleState Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static void destroy(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
@@ -296,6 +376,14 @@ public:
         }
     }
 
+    /*
+     * @brief Documents the start operation contract.
+     * @param moduleState Input value used by this contract.
+     * @param errorBuffer Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static bool start(grav_module::ClientModuleOpaqueState moduleState,
                       const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -315,6 +403,13 @@ public:
         }
     }
 
+    /*
+     * @brief Documents the stop operation contract.
+     * @param moduleState Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static void stop(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {

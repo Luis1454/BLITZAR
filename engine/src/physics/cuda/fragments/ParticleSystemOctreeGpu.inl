@@ -1,20 +1,39 @@
 /*
+ * @file engine/src/physics/cuda/fragments/ParticleSystemOctreeGpu.inl
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
+
+/*
  * Module: physics/cuda
  * Responsibility: Implement GPU octree helpers and traversal kernels.
  */
 
-/// Description: Describes the octree node contains hot operation contract.
-__device__ __forceinline__ bool octreeNodeContainsHot(const GpuOctreeNodeHotData &node,
-                                                       const Vector3 &pos)
+/*
+ * @brief Documents the octree node contains hot operation contract.
+ * @param node Input value used by this contract.
+ * @param pos Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __forceinline__ bool octreeNodeContainsHot(const GpuOctreeNodeHotData& node,
+                                                      const Vector3& pos)
 {
-    return fabsf(pos.x - node.centerX) <= node.halfSize
-        && fabsf(pos.y - node.centerY) <= node.halfSize
-        && fabsf(pos.z - node.centerZ) <= node.halfSize;
+    return fabsf(pos.x - node.centerX) <= node.halfSize &&
+           fabsf(pos.y - node.centerY) <= node.halfSize &&
+           fabsf(pos.z - node.centerZ) <= node.halfSize;
 }
 
-/// Description: Describes the octree node distance to bounds hot operation contract.
-__device__ __forceinline__ float octreeNodeDistanceToBoundsHot(const GpuOctreeNodeHotData &node,
-                                                                const Vector3 &pos)
+/*
+ * @brief Documents the octree node distance to bounds hot operation contract.
+ * @param node Input value used by this contract.
+ * @param pos Input value used by this contract.
+ * @return float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __forceinline__ float octreeNodeDistanceToBoundsHot(const GpuOctreeNodeHotData& node,
+                                                               const Vector3& pos)
 {
     const float dx = fmaxf(fabsf(pos.x - node.centerX) - node.halfSize, 0.0f);
     const float dy = fmaxf(fabsf(pos.y - node.centerY) - node.halfSize, 0.0f);
@@ -22,36 +41,47 @@ __device__ __forceinline__ float octreeNodeDistanceToBoundsHot(const GpuOctreeNo
     return sqrtf(dx * dx + dy * dy + dz * dz);
 }
 
-/// Description: Executes the octreeLoadParticlePosition operation.
+/*
+ * @brief Documents the octree load particle position operation contract.
+ * @param state Input value used by this contract.
+ * @param index Input value used by this contract.
+ * @return Vector3 value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __device__ __forceinline__ Vector3 octreeLoadParticlePosition(ParticleSoAView state, int index)
 {
     return Vector3(__ldg(&state.posX[index]), __ldg(&state.posY[index]), __ldg(&state.posZ[index]));
 }
 
-/// Description: Executes the octreeLoadParticleMass operation.
+/*
+ * @brief Documents the octree load particle mass operation contract.
+ * @param state Input value used by this contract.
+ * @param index Input value used by this contract.
+ * @return float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __device__ __forceinline__ float octreeLoadParticleMass(ParticleSoAView state, int index)
 {
     return __ldg(&state.mass[index]);
 }
 
-/// Description: Executes the octreeLoadParticleVelocity operation.
+/*
+ * @brief Documents the octree load particle velocity operation contract.
+ * @param state Input value used by this contract.
+ * @param index Input value used by this contract.
+ * @return Vector3 value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __device__ __forceinline__ Vector3 octreeLoadParticleVelocity(ParticleSoAView state, int index)
 {
     return Vector3(__ldg(&state.velX[index]), __ldg(&state.velY[index]), __ldg(&state.velZ[index]));
 }
 
 __device__ Vector3 computeOctreeAccelerationStacklessCompact(
-    ParticleSoAView state,
-    int selfIndex,
-    const GpuOctreeNodeHotData *nodeHot,
-    const GpuOctreeNodeNavData *nodeNav,
-    IndexConstHandle nodeFirstChild,
-    IndexConstHandle leafStarts,
-    IndexConstHandle leafCounts,
-    int rootIndex,
-    IndexConstHandle leafIndices,
-    ForceLawPolicy forceLaw,
-    float maxAcceleration,
+    ParticleSoAView state, int selfIndex, const GpuOctreeNodeHotData* nodeHot,
+    const GpuOctreeNodeNavData* nodeNav, IndexConstHandle nodeFirstChild,
+    IndexConstHandle leafStarts, IndexConstHandle leafCounts, int rootIndex,
+    IndexConstHandle leafIndices, ForceLawPolicy forceLaw, float maxAcceleration,
     int openingCriterion)
 {
     constexpr int kMaxTraversalIterations = 8192;
@@ -82,30 +112,26 @@ __device__ Vector3 computeOctreeAccelerationStacklessCompact(
                     continue;
                 }
                 force += gravityAccelerationFromSource(
-                    selfPos,
-                    octreeLoadParticlePosition(state, otherIndex),
-                    octreeLoadParticleMass(state, otherIndex),
-                    forceLaw);
+                    selfPos, octreeLoadParticlePosition(state, otherIndex),
+                    octreeLoadParticleMass(state, otherIndex), forceLaw);
             }
             nodeIndex = nav.nextIndex;
             continue;
         }
 
-        const Vector3 direction(node.comX - selfPos.x, node.comY - selfPos.y, node.comZ - selfPos.z);
+        const Vector3 direction(node.comX - selfPos.x, node.comY - selfPos.y,
+                                node.comZ - selfPos.z);
         const float dist2 = softenedDistanceSquared(direction, forceLaw);
         const bool containsSelf = octreeNodeContainsHot(node, selfPos);
         const float size = node.halfSize * 2.0f;
-        const float criterionDistance = openingCriterion == 1
-            ? fmaxf(octreeNodeDistanceToBoundsHot(node, selfPos), 1.0e-6f)
-            : sqrtf(dist2);
+        const float criterionDistance =
+            openingCriterion == 1 ? fmaxf(octreeNodeDistanceToBoundsHot(node, selfPos), 1.0e-6f)
+                                  : sqrtf(dist2);
         const bool acceptNode = !containsSelf && (size / criterionDistance) < forceLaw.theta;
 
         if (acceptNode) {
             force += gravityAccelerationFromSource(
-                selfPos,
-                Vector3(node.comX, node.comY, node.comZ),
-                node.mass,
-                forceLaw);
+                selfPos, Vector3(node.comX, node.comY, node.comZ), node.mass, forceLaw);
             nodeIndex = nav.nextIndex;
             continue;
         }
@@ -118,18 +144,10 @@ __device__ Vector3 computeOctreeAccelerationStacklessCompact(
 }
 
 __global__ void computeOctreeAccelerationKernel(
-    ParticleSoAView state,
-    Vector3Handle outAcceleration,
-    int numParticles,
-    const GpuOctreeNodeHotData *nodeHot,
-    const GpuOctreeNodeNavData *nodeNav,
-    IndexConstHandle nodeFirstChild,
-    IndexConstHandle leafStarts,
-    IndexConstHandle leafCounts,
-    int rootIndex,
-    IndexConstHandle leafIndices,
-    ForceLawPolicy forceLaw,
-    float maxAcceleration,
+    ParticleSoAView state, Vector3Handle outAcceleration, int numParticles,
+    const GpuOctreeNodeHotData* nodeHot, const GpuOctreeNodeNavData* nodeNav,
+    IndexConstHandle nodeFirstChild, IndexConstHandle leafStarts, IndexConstHandle leafCounts,
+    int rootIndex, IndexConstHandle leafIndices, ForceLawPolicy forceLaw, float maxAcceleration,
     int openingCriterion)
 {
     const int particleIndex = blockIdx.x * blockDim.x + threadIdx.x;
@@ -138,35 +156,17 @@ __global__ void computeOctreeAccelerationKernel(
     }
 
     outAcceleration[particleIndex] = computeOctreeAccelerationStacklessCompact(
-        state,
-        particleIndex,
-        nodeHot,
-        nodeNav,
-        nodeFirstChild,
-        leafStarts,
-        leafCounts,
-        rootIndex,
-        leafIndices,
-        forceLaw,
-        maxAcceleration,
-        openingCriterion);
+        state, particleIndex, nodeHot, nodeNav, nodeFirstChild, leafStarts, leafCounts, rootIndex,
+        leafIndices, forceLaw, maxAcceleration, openingCriterion);
 }
 
-__global__ void updateParticlesOctree(
-    ParticleSoAView lastState,
-    ParticleSoAView particlesOut,
-    int numParticles,
-    const GpuOctreeNodeHotData *nodeHot,
-    const GpuOctreeNodeNavData *nodeNav,
-    IndexConstHandle nodeFirstChild,
-    IndexConstHandle leafStarts,
-    IndexConstHandle leafCounts,
-    int rootIndex,
-    IndexConstHandle leafIndices,
-    ForceLawPolicy forceLaw,
-    float deltaTime,
-    float maxAcceleration,
-    int openingCriterion)
+__global__ void updateParticlesOctree(ParticleSoAView lastState, ParticleSoAView particlesOut,
+                                      int numParticles, const GpuOctreeNodeHotData* nodeHot,
+                                      const GpuOctreeNodeNavData* nodeNav,
+                                      IndexConstHandle nodeFirstChild, IndexConstHandle leafStarts,
+                                      IndexConstHandle leafCounts, int rootIndex,
+                                      IndexConstHandle leafIndices, ForceLawPolicy forceLaw,
+                                      float deltaTime, float maxAcceleration, int openingCriterion)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles || rootIndex < 0) {
@@ -175,18 +175,8 @@ __global__ void updateParticlesOctree(
 
     const Vector3 selfPos = octreeLoadParticlePosition(lastState, i);
     const Vector3 force = computeOctreeAccelerationStacklessCompact(
-        lastState,
-        i,
-        nodeHot,
-        nodeNav,
-        nodeFirstChild,
-        leafStarts,
-        leafCounts,
-        rootIndex,
-        leafIndices,
-        forceLaw,
-        maxAcceleration,
-        openingCriterion);
+        lastState, i, nodeHot, nodeNav, nodeFirstChild, leafStarts, leafCounts, rootIndex,
+        leafIndices, forceLaw, maxAcceleration, openingCriterion);
     const Vector3 vel = octreeLoadParticleVelocity(lastState, i);
     const Vector3 nextVel = vel + force * deltaTime;
     const Vector3 nextPos = selfPos + nextVel * deltaTime;

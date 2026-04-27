@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/ci/gpu_runner_inventory.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/ci/gpu_runner_inventory.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -12,17 +14,30 @@ from pathlib import Path
 from typing import Protocol
 
 
-# Description: Defines the ResponseLike contract.
+# @brief Defines the response like type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class ResponseLike(Protocol):
-    # Description: Executes the read operation.
+    # @brief Documents the read operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def read(self) -> bytes:
         ...
 
-    # Description: Executes the __enter__ operation.
+    # @brief Documents the enter operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __enter__(self) -> ResponseLike:
         ...
 
-    # Description: Executes the __exit__ operation.
+    # @brief Documents the exit operation contract.
+    # @param exc_type Input value used by this contract.
+    # @param exc Input value used by this contract.
+    # @param tb Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __exit__(self, exc_type: object, exc: object, tb: object) -> bool | None:
         ...
 
@@ -30,18 +45,35 @@ class ResponseLike(Protocol):
 UrlOpen = Callable[[urllib.request.Request], ResponseLike]
 
 
-# Description: Executes the _normalize_labels operation.
+# @brief Documents the normalize labels operation contract.
+# @param labels Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _normalize_labels(labels: Iterable[str]) -> list[str]:
     return [label.strip() for label in labels if label.strip()]
 
 
-# Description: Defines the GitHubGpuRunnerInventory contract.
+# @brief Defines the git hub gpu runner inventory type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class GitHubGpuRunnerInventory:
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param urlopen Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self, urlopen: UrlOpen | None = None) -> None:
         self._urlopen = urlopen or urllib.request.urlopen
 
-    # Description: Executes the collect operation.
+    # @brief Documents the collect operation contract.
+    # @param repo Input value used by this contract.
+    # @param labels Input value used by this contract.
+    # @param enabled Input value used by this contract.
+    # @param min_online Input value used by this contract.
+    # @param min_idle Input value used by this contract.
+    # @param token Input value used by this contract.
+    # @param api_url Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def collect(
         self,
         repo: str,
@@ -107,13 +139,22 @@ class GitHubGpuRunnerInventory:
             min_idle=min_idle,
         )
 
-    # Description: Executes the write operation.
+    # @brief Documents the write operation contract.
+    # @param report Input value used by this contract.
+    # @param output_path Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def write(self, report: dict[str, object], output_path: str) -> None:
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as handle:
             json.dump(report, handle, indent=2)
 
-    # Description: Executes the _fetch_runners operation.
+    # @brief Documents the fetch runners operation contract.
+    # @param repo Input value used by this contract.
+    # @param token Input value used by this contract.
+    # @param api_url Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _fetch_runners(self, repo: str, token: str, api_url: str) -> list[dict[str, object]]:
         request = urllib.request.Request(
             f"{api_url}/repos/{repo}/actions/runners?per_page=100",
@@ -146,7 +187,11 @@ class GitHubGpuRunnerInventory:
         return runners
 
     @staticmethod
-    # Description: Executes the _matches_required_labels operation.
+    # @brief Documents the matches required labels operation contract.
+    # @param runner Input value used by this contract.
+    # @param required Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _matches_required_labels(runner: dict[str, object], required: list[str]) -> bool:
         if not required:
             return True
@@ -155,7 +200,17 @@ class GitHubGpuRunnerInventory:
         return all(label in labels for label in required)
 
     @staticmethod
-    # Description: Executes the _report operation.
+    # @brief Documents the report operation contract.
+    # @param repo Input value used by this contract.
+    # @param labels Input value used by this contract.
+    # @param ready Input value used by this contract.
+    # @param reason Input value used by this contract.
+    # @param monitoring Input value used by this contract.
+    # @param runners Input value used by this contract.
+    # @param min_online Input value used by this contract.
+    # @param min_idle Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _report(
         repo: str,
         labels: list[str],

@@ -1,9 +1,19 @@
-// File: engine/src/server/simulation_server/ParseBinXyz.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/server/simulation_server/ParseBinXyz.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "Internal.hpp"
 
-/// Description: Executes the parseBinarySnapshot operation.
+/*
+ * @brief Documents the parse binary snapshot operation contract.
+ * @param inputPath Input value used by this contract.
+ * @param outParticles Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool parseBinarySnapshot(const std::string& inputPath, std::vector<Particle>& outParticles)
 {
     std::ifstream in(inputPath, std::ios::binary);
@@ -58,7 +68,13 @@ bool parseBinarySnapshot(const std::string& inputPath, std::vector<Particle>& ou
     return outParticles.size() >= 2;
 }
 
-/// Description: Executes the parseXyzSnapshot operation.
+/*
+ * @brief Documents the parse xyz snapshot operation contract.
+ * @param inputPath Input value used by this contract.
+ * @param outParticles Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool parseXyzSnapshot(const std::string& inputPath, std::vector<Particle>& outParticles)
 {
     std::ifstream in(inputPath);
@@ -136,7 +152,14 @@ bool parseXyzSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
     return outParticles.size() >= 2;
 }
 
-/// Description: Describes the parse snapshot by format operation contract.
+/*
+ * @brief Documents the parse snapshot by format operation contract.
+ * @param format Input value used by this contract.
+ * @param inputPath Input value used by this contract.
+ * @param outParticles Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool parseSnapshotByFormat(std::string_view format, const std::string& inputPath,
                            std::vector<Particle>& outParticles)
 {
@@ -153,7 +176,13 @@ bool parseSnapshotByFormat(std::string_view format, const std::string& inputPath
     return false;
 }
 
-/// Description: Executes the parseSnapshotWithFallback operation.
+/*
+ * @brief Documents the parse snapshot with fallback operation contract.
+ * @param inputPath Input value used by this contract.
+ * @param outParticles Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool parseSnapshotWithFallback(const std::string& inputPath, std::vector<Particle>& outParticles)
 {
     static const std::array<std::string_view, 3> fallbackOrder = {{"bin", "vtk", "xyz"}};

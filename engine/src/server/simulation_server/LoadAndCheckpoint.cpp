@@ -1,9 +1,18 @@
-// File: engine/src/server/simulation_server/LoadAndCheckpoint.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/server/simulation_server/LoadAndCheckpoint.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "Internal.hpp"
 
-/// Description: Executes the getRuntimeConfig operation.
+/*
+ * @brief Documents the get runtime config operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return SimulationConfig SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 SimulationConfig SimulationServer::getRuntimeConfig() const
 {
     SimulationConfig config;
@@ -45,7 +54,14 @@ SimulationConfig SimulationServer::getRuntimeConfig() const
     return config;
 }
 
-/// Description: Describes the load initial state operation contract.
+/*
+ * @brief Documents the load initial state operation contract.
+ * @param outParticles Input value used by this contract.
+ * @param inputPath Input value used by this contract.
+ * @param format Input value used by this contract.
+ * @return bool SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool SimulationServer::loadInitialState(std::vector<Particle>& outParticles,
                                         const std::string& inputPath,
                                         const std::string& format) const
@@ -75,7 +91,13 @@ bool SimulationServer::loadInitialState(std::vector<Particle>& outParticles,
     return true;
 }
 
-/// Description: Executes the captureCheckpointToFile operation.
+/*
+ * @brief Documents the capture checkpoint to file operation contract.
+ * @param outputPath Input value used by this contract.
+ * @param outError Input value used by this contract.
+ * @return bool SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool SimulationServer::captureCheckpointToFile(const std::string& outputPath, std::string* outError)
 {
     if (!_system) {

@@ -1,5 +1,9 @@
-// File: rust/blitzar-protocol/tests/protocol.rs
-// Purpose: Rust component implementation for BLITZAR runtime services.
+/*
+ * @file rust/blitzar-protocol/tests/protocol.rs
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Rust protocol and gateway components for BLITZAR runtime integration.
+ */
 
 use blitzar_protocol::codec;
 use blitzar_protocol::framing;
@@ -13,7 +17,6 @@ use serde_json::json;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
-/// Description: Executes the tst_rust_prot_001_round_trip_command_request_with_escaped_token operation.
 #[test]
 fn tst_rust_prot_001_round_trip_command_request_with_escaped_token() {
     let mut extra_fields = BTreeMap::new();
@@ -32,7 +35,6 @@ fn tst_rust_prot_001_round_trip_command_request_with_escaped_token() {
     assert_eq!(LATEST_PROTOCOL_VERSION.label(), "server-json-v1");
 }
 
-/// Description: Executes the tst_rust_prot_002_round_trip_status_payload operation.
 #[test]
 fn tst_rust_prot_002_round_trip_status_payload() {
     let payload = StatusPayload {
@@ -88,7 +90,6 @@ fn tst_rust_prot_002_round_trip_status_payload() {
     assert_eq!(decoded, payload);
 }
 
-/// Description: Executes the tst_rust_prot_003_rejects_malformed_snapshot_payload operation.
 #[test]
 fn tst_rust_prot_003_rejects_malformed_snapshot_payload() {
     let raw = "{\"ok\":true,\"cmd\":\"get_snapshot\",\"has_snapshot\":true,\"count\":1,\"particles\":[[1,2,3,4,5]]}";
@@ -96,7 +97,6 @@ fn tst_rust_prot_003_rejects_malformed_snapshot_payload() {
     assert!(error.contains("invalid length") || error.contains("expected"));
 }
 
-/// Description: Executes the tst_rust_prot_004_round_trip_snapshot_and_error_envelope operation.
 #[test]
 fn tst_rust_prot_004_round_trip_snapshot_and_error_envelope() {
     let snapshot = SnapshotPayload {
@@ -130,7 +130,6 @@ fn tst_rust_prot_004_round_trip_snapshot_and_error_envelope() {
     assert_eq!(decoded_envelope, envelope);
 }
 
-/// Description: Executes the tst_rust_prot_005_latest_schema_matches_committed_contract_artifact operation.
 #[test]
 fn tst_rust_prot_005_latest_schema_matches_committed_contract_artifact() {
     let schema_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -144,7 +143,6 @@ fn tst_rust_prot_005_latest_schema_matches_committed_contract_artifact() {
     assert_eq!(committed, schema::latest_schema_value());
 }
 
-/// Description: Executes the tst_rust_prot_006_latest_schema_exposes_compatibility_and_deprecation_rules operation.
 #[test]
 fn tst_rust_prot_006_latest_schema_exposes_compatibility_and_deprecation_rules() {
     let schema = schema::latest_schema_value();

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/policies/pr_policy.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/policies/pr_policy.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -21,13 +23,19 @@ DEPENDABOT_BRANCH_RE = re.compile(r"^dependabot/[a-z0-9_.-]+/.+$")
 DEPENDABOT_LOGINS = {"app/dependabot", "dependabot[bot]"}
 
 
-# Description: Defines the PrPolicyCheck contract.
+# @brief Defines the pr policy check type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class PrPolicyCheck(BaseCheck):
     name = "pr_policy"
     success_message = "PR policy check passed"
     failure_title = "PR policy check failed:"
 
-    # Description: Executes the _execute operation.
+    # @brief Documents the execute operation contract.
+    # @param context Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         event_name = context.event_name.strip()
         if event_name != "pull_request":
@@ -66,7 +74,11 @@ class PrPolicyCheck(BaseCheck):
         body_issue = self._extract_issue("PR body", body, BODY_RE, result)
         self._check_issue_mismatch(branch_issue, title_issue, implements_issue, body_issue, result)
 
-    # Description: Executes the _read_event_payload operation.
+    # @brief Documents the read event payload operation contract.
+    # @param path Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _read_event_payload(self, path: Path, result: CheckResult) -> dict[str, Any]:
         if not path.exists():
             result.add_error(f"event payload not found: {path}")
@@ -81,7 +93,11 @@ class PrPolicyCheck(BaseCheck):
             result.add_error(f"failed to parse event payload: {exc}")
             return {}
 
-    # Description: Executes the _extract_branch_issue operation.
+    # @brief Documents the extract branch issue operation contract.
+    # @param branch Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _extract_branch_issue(self, branch: str, result: CheckResult) -> int | None:
         match = BRANCH_RE.match(branch or "")
         if not match:
@@ -89,7 +105,13 @@ class PrPolicyCheck(BaseCheck):
             return None
         return int(match.group("issue"))
 
-    # Description: Executes the _extract_issue operation.
+    # @brief Documents the extract issue operation contract.
+    # @param label Input value used by this contract.
+    # @param text Input value used by this contract.
+    # @param regex Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _extract_issue(self, label: str, text: str, regex: re.Pattern[str], result: CheckResult) -> int | None:
         match = regex.search(text or "")
         if not match:
@@ -97,7 +119,14 @@ class PrPolicyCheck(BaseCheck):
             return None
         return int(match.group("issue"))
 
-    # Description: Executes the _check_issue_mismatch operation.
+    # @brief Documents the check issue mismatch operation contract.
+    # @param branch_issue Input value used by this contract.
+    # @param title_issue Input value used by this contract.
+    # @param implements_issue Input value used by this contract.
+    # @param body_issue Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_issue_mismatch(
         self,
         branch_issue: int | None,
@@ -120,11 +149,21 @@ class PrPolicyCheck(BaseCheck):
             result.add_error(f"issue mismatch: implements #{implements_issue} vs body #{body_issue}")
 
     @staticmethod
-    # Description: Executes the _is_dependabot_pr operation.
+    # @brief Documents the is dependabot pr operation contract.
+    # @param author Input value used by this contract.
+    # @param branch Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _is_dependabot_pr(author: str, branch: str) -> bool:
         return author in DEPENDABOT_LOGINS or branch.startswith("dependabot/")
 
-    # Description: Executes the _validate_dependabot_pr operation.
+    # @brief Documents the validate dependabot pr operation contract.
+    # @param branch Input value used by this contract.
+    # @param title Input value used by this contract.
+    # @param body Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _validate_dependabot_pr(self, branch: str, title: str, body: str, result: CheckResult) -> None:
         if not DEPENDABOT_BRANCH_RE.match(branch):
             result.add_error("dependabot branch must match dependabot/<ecosystem>/<dependency>")
@@ -134,13 +173,19 @@ class PrPolicyCheck(BaseCheck):
             result.add_error("dependabot PR body must preserve the autogenerated dependabot footer")
 
 
-# Description: Defines the PrPolicySelfTestCheck contract.
+# @brief Defines the pr policy self test check type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class PrPolicySelfTestCheck(BaseCheck):
     name = "pr_policy_self_test"
     success_message = "PR policy check self-test passed"
     failure_title = "PR policy check self-test failed:"
 
-    # Description: Executes the _execute operation.
+    # @brief Documents the execute operation contract.
+    # @param context Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         fixtures_dir = context.root / "tests/checks/fixtures"
         valid_context = CheckContext(

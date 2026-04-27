@@ -1,5 +1,9 @@
-// File: tests/unit/physics/octree_gpu_stability.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/physics/octree_gpu_stability.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 /*
  * Test: octree_gpu_stability

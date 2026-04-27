@@ -1,5 +1,9 @@
-// File: rust/blitzar-web-gateway/src/main.rs
-// Purpose: Rust component implementation for BLITZAR runtime services.
+/*
+ * @file rust/blitzar-web-gateway/src/main.rs
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Rust protocol and gateway components for BLITZAR runtime integration.
+ */
 
 use blitzar_web_gateway::api::{WebGatewayState, build_router};
 use blitzar_web_gateway::args::{help, parse_args};
@@ -9,7 +13,6 @@ use tokio::net::TcpListener;
 use tokio::time::Duration;
 
 #[tokio::main(flavor = "current_thread")]
-/// Description: Executes the main operation.
 async fn main() -> ExitCode {
     let args = std::env::args().collect::<Vec<_>>();
     let binary_name = args

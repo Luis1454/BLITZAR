@@ -1,3 +1,10 @@
+/*
+ * @file tests/unit/config/args_cli.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
+
 #include "config/SimulationArgs.hpp"
 #include "config/SimulationConfig.hpp"
 #include "protocol/ServerProtocol.hpp"
@@ -8,7 +15,6 @@
 #include <vector>
 
 namespace grav_test_config_args_cli {
-/// Description: Executes the toArgViews operation.
 std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage)
 {
     std::vector<std::string_view> args;
@@ -19,21 +25,18 @@ std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage
 }
 } // namespace grav_test_config_args_cli
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_001_FindsConfigPathInline)
 {
     std::vector<std::string> args = {"app", "--config=custom.ini"};
     EXPECT_EQ(findConfigPathArg(grav_test_config_args_cli::toArgViews(args)), "custom.ini");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_002_FindsConfigPathSeparated)
 {
     std::vector<std::string> args = {"app", "--config", "custom.ini"};
     EXPECT_EQ(findConfigPathArg(grav_test_config_args_cli::toArgViews(args)), "custom.ini");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -84,7 +87,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
     EXPECT_TRUE(warnings.str().empty());
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_004_RejectsInvalidArgumentsAndKeepsPreviousValues)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -106,7 +108,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_004_RejectsInvalidArgumentsAndKeepsPreviousVal
     EXPECT_NE(log.find("unknown option"), std::string::npos);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_005_RejectsInvalidSolverAndIntegratorValues)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -134,7 +135,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_005_RejectsInvalidSolverAndIntegratorValues)
     EXPECT_NE(warnings.str().find("unsupported solver/integrator combination"), std::string::npos);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_006_RejectsTrailingGarbageNumericArguments)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -159,7 +159,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_006_RejectsTrailingGarbageNumericArguments)
     EXPECT_NE(log.find("invalid --luminosity"), std::string::npos);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_014_ClampsClientParticleCapArgumentToProtocolMax)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -172,7 +171,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_014_ClampsClientParticleCapArgumentToProtocolM
     EXPECT_FALSE(runtime.hasArgumentError);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_019_CliAliasesApplyThroughSharedRegistry)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -186,7 +184,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_019_CliAliasesApplyThroughSharedRegistry)
     EXPECT_FALSE(runtime.hasArgumentError);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_022_CliAcceptsCalibrationSceneModes)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -201,7 +198,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_022_CliAcceptsCalibrationSceneModes)
     EXPECT_FALSE(runtime.hasArgumentError);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_026_CliPerformanceProfileAppliesInteractivePreset)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -220,7 +216,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_026_CliPerformanceProfileAppliesInteractivePre
     EXPECT_FALSE(runtime.hasArgumentError);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_036_CliPerformanceProfileAppliesBalancedAndQualityPresets)
 {
     SimulationConfig balanced = SimulationConfig::defaults();
@@ -252,7 +247,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_036_CliPerformanceProfileAppliesBalancedAndQua
     EXPECT_EQ(quality.maxSubsteps, 32u);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_033_CliRejectsInvalidSiPhysicsParameters)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -269,7 +263,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_033_CliRejectsInvalidSiPhysicsParameters)
     EXPECT_NE(log.find("physics_min_distance2 [m^2]"), std::string::npos);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_071_CliExportOnExitRejectsInvalidExplicitBool)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -282,7 +275,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_071_CliExportOnExitRejectsInvalidExplicitBool)
     EXPECT_NE(warnings.str().find("invalid bool for --export-on-exit"), std::string::npos);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_072_CliExportOnExitParsesSeparatedBoolValue)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -295,7 +287,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_072_CliExportOnExitParsesSeparatedBoolValue)
     EXPECT_TRUE(warnings.str().empty());
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_073_CliExportOnExitDefaultsToTrueWithoutValue)
 {
     SimulationConfig config = SimulationConfig::defaults();

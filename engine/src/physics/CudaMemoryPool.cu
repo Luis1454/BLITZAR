@@ -1,5 +1,9 @@
-// File: engine/src/physics/CudaMemoryPool.cu
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/physics/CudaMemoryPool.cu
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
 
 #include "physics/CudaMemoryPool.hpp"
 #include <cstdint>
@@ -11,7 +15,6 @@ bool CudaMemoryPool::_initialized = false;
 bool CudaMemoryPool::_supported = false;
 void* CudaMemoryPool::_pool = nullptr;
 
-/// Description: Executes the initialize operation.
 void CudaMemoryPool::initialize()
 {
     if (_initialized)
@@ -59,7 +62,6 @@ void CudaMemoryPool::initialize()
     _initialized = true;
 }
 
-/// Description: Executes the destroy operation.
 void CudaMemoryPool::destroy()
 {
     _initialized = false;
@@ -67,7 +69,6 @@ void CudaMemoryPool::destroy()
     _pool = nullptr;
 }
 
-/// Description: Executes the allocate operation.
 void* CudaMemoryPool::allocate(std::size_t size, void* stream)
 {
     if (!_initialized)
@@ -85,7 +86,6 @@ void* CudaMemoryPool::allocate(std::size_t size, void* stream)
     return ptr;
 }
 
-/// Description: Executes the deallocate operation.
 void CudaMemoryPool::deallocate(void* ptr, void* stream)
 {
     if (!ptr)
@@ -98,7 +98,6 @@ void CudaMemoryPool::deallocate(void* ptr, void* stream)
     }
 }
 
-/// Description: Executes the isSupported operation.
 bool CudaMemoryPool::isSupported()
 {
     if (!_initialized)

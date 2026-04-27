@@ -1,11 +1,26 @@
-// File: engine/src/physics/cuda/fragments/OctreeForce.inl
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/physics/cuda/fragments/OctreeForce.inl
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
 
 /*
  * Module: physics/cuda
  * Responsibility: Implement CPU-side octree force evaluation helpers.
  */
 
+/*
+ * @brief Documents the compute force recursive operation contract.
+ * @param particles Input value used by this contract.
+ * @param nodeIndex Input value used by this contract.
+ * @param particle Input value used by this contract.
+ * @param selfIndex Input value used by this contract.
+ * @param policy Input value used by this contract.
+ * @param criterion Input value used by this contract.
+ * @return Vector3 Octree:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 Vector3 Octree::computeForceRecursive(
     const std::vector<Particle> &particles,
     int nodeIndex,
@@ -55,6 +70,15 @@ Vector3 Octree::computeForceRecursive(
     return force;
 }
 
+/*
+ * @brief Documents the compute force on operation contract.
+ * @param particle Input value used by this contract.
+ * @param selfIndex Input value used by this contract.
+ * @param policy Input value used by this contract.
+ * @param criterion Input value used by this contract.
+ * @return Vector3 Octree:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 Vector3 Octree::computeForceOn(const Particle &particle, std::size_t selfIndex, const ForceLawPolicy &policy, OctreeOpeningCriterion criterion) const
 {
     if (_root < 0 || !_particlesRef.has_value()) {

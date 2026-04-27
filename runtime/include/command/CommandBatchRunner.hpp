@@ -1,5 +1,9 @@
-// File: runtime/include/command/CommandBatchRunner.hpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/include/command/CommandBatchRunner.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
+ */
 
 #ifndef GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDBATCHRUNNER_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDBATCHRUNNER_HPP_
@@ -8,10 +12,8 @@
 #include <string>
 
 namespace grav_cmd {
-/// Description: Defines the CommandBatchRunner data or behavior contract.
 class CommandBatchRunner final {
 public:
-    /// Description: Describes the run script file operation contract.
     static CommandResult runScriptFile(const std::string& path, CommandExecutionContext& context);
 };
 } // namespace grav_cmd

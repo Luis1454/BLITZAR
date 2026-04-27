@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: tests/checks/suites/policy/test_quality_structure.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/checks/suites/policy/test_quality_structure.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 from __future__ import annotations
 
@@ -15,30 +17,48 @@ from python_tools.policies.test_catalog import TestCatalogCheck
 from tests.checks.suites.support.path_specs import TESTS_UNIT_DIR, cpp_file
 
 
-# Description: Executes the _write operation.
+# @brief Documents the write operation contract.
+# @param path Input value used by this contract.
+# @param content Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
 
 
-# Description: Executes the _write_json operation.
+# @brief Documents the write json operation contract.
+# @param path Input value used by this contract.
+# @param payload Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _write_json(path: Path, payload: object) -> None:
     _write(path, json.dumps(payload) + "\n")
 
 
-# Description: Executes the _init_git_repo operation.
+# @brief Documents the init git repo operation contract.
+# @param root Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _init_git_repo(root: Path) -> None:
     subprocess.run(["git", "init"], cwd=root, check=True, capture_output=True, text=True)
     subprocess.run(["git", "config", "user.email", "tests@example.com"], cwd=root, check=True, capture_output=True, text=True)
     subprocess.run(["git", "config", "user.name", "Tests"], cwd=root, check=True, capture_output=True, text=True)
 
 
-# Description: Executes the _seed_minimal_manifest operation.
+# @brief Documents the seed minimal manifest operation contract.
+# @param root Input value used by this contract.
+# @param includes Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _seed_minimal_manifest(root: Path, includes: list[str]) -> None:
     _write_json(root / "docs/quality/quality_manifest.json", {"metadata": {"system": "test", "revision": "2026-03-02"}, "includes": includes})
 
 
-# Description: Executes the _seed_catalog_repo operation.
+# @brief Documents the seed catalog repo operation contract.
+# @param root Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _seed_catalog_repo(root: Path) -> None:
     _write_json(
         root / "docs/quality/quality_manifest.json",
@@ -53,7 +73,10 @@ def _seed_catalog_repo(root: Path) -> None:
     _write(root / "tests/checks/check.py", "def main() -> int:\n    return 0\n")
 
 
-# Description: Executes the _seed_required_quality_files operation.
+# @brief Documents the seed required quality files operation contract.
+# @param root Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _seed_required_quality_files(root: Path) -> None:
     for rel, content in {
         "AGENTS.md": "# AGENTS\n",
@@ -76,7 +99,11 @@ def _seed_required_quality_files(root: Path) -> None:
         _write(root / rel, content)
 
 
-# Description: Executes the _seed_baseline_payloads operation.
+# @brief Documents the seed baseline payloads operation contract.
+# @param root Input value used by this contract.
+# @param test_regex Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _seed_baseline_payloads(root: Path, test_regex: str) -> None:
     _write_json(
         root / "docs/quality/quality_manifest.json",
@@ -113,7 +140,10 @@ def _seed_baseline_payloads(root: Path, test_regex: str) -> None:
     _write(root / "tests/checks/policy_allowlist.txt", "tests/cmake/targets.cmake\n")
 
 
-# Description: Executes the test_quality_manifest_loader_merges_includes operation.
+# @brief Documents the test quality manifest loader merges includes operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_quality_manifest_loader_merges_includes(tmp_path: Path) -> None:
     _write_json(tmp_path / "docs/quality/manifest/evidence.json", {"evidence": {"EVD_A": "a.txt"}})
     _write_json(tmp_path / "docs/quality/manifest/requirements.json", {"requirements": {"REQ-TEST-001": {"tests": [".*"], "artifacts": ["EVD_A"]}}})
@@ -124,7 +154,10 @@ def test_quality_manifest_loader_merges_includes(tmp_path: Path) -> None:
     assert {"metadata", "evidence", "requirements"} <= set(payload)
 
 
-# Description: Executes the test_quality_manifest_loader_rejects_missing_duplicate_and_cycle operation.
+# @brief Documents the test quality manifest loader rejects missing duplicate and cycle operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_quality_manifest_loader_rejects_missing_duplicate_and_cycle(tmp_path: Path) -> None:
     _seed_minimal_manifest(tmp_path, ["manifest/missing.json"])
     result = CheckResult(name="manifest")
@@ -146,7 +179,10 @@ def test_quality_manifest_loader_rejects_missing_duplicate_and_cycle(tmp_path: P
     assert any("include cycle detected" in error for error in result.errors)
 
 
-# Description: Executes the test_test_catalog_passes_with_matching_known_test operation.
+# @brief Documents the test test catalog passes with matching known test operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_test_catalog_passes_with_matching_known_test(tmp_path: Path) -> None:
     _seed_catalog_repo(tmp_path)
     _write(tmp_path / cpp_file(TESTS_UNIT_DIR, "sample"), "TEST(SampleSuite, SampleCase) {}\n")
@@ -158,7 +194,10 @@ def test_test_catalog_passes_with_matching_known_test(tmp_path: Path) -> None:
     assert result.errors == []
 
 
-# Description: Executes the test_test_catalog_fails_on_unknown_test_id operation.
+# @brief Documents the test test catalog fails on unknown test id operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_test_catalog_fails_on_unknown_test_id(tmp_path: Path) -> None:
     _seed_catalog_repo(tmp_path)
     _write(tmp_path / cpp_file(TESTS_UNIT_DIR, "sample"), "TEST(SampleSuite, SampleCase) {}\n")
@@ -170,7 +209,10 @@ def test_test_catalog_fails_on_unknown_test_id(tmp_path: Path) -> None:
     assert any("unknown test_id" in error for error in result.errors)
 
 
-# Description: Executes the test_quality_baseline_passes_with_valid_minimal_repo operation.
+# @brief Documents the test quality baseline passes with valid minimal repo operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_quality_baseline_passes_with_valid_minimal_repo(tmp_path: Path) -> None:
     _init_git_repo(tmp_path)
     _seed_required_quality_files(tmp_path)
@@ -181,7 +223,10 @@ def test_quality_baseline_passes_with_valid_minimal_repo(tmp_path: Path) -> None
     assert result.errors == []
 
 
-# Description: Executes the test_test_catalog_fails_when_requirement_test_regex_has_no_match operation.
+# @brief Documents the test test catalog fails when requirement test regex has no match operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_test_catalog_fails_when_requirement_test_regex_has_no_match(tmp_path: Path) -> None:
     _seed_required_quality_files(tmp_path)
     _seed_baseline_payloads(tmp_path, r"^NO_MATCH$")
@@ -190,7 +235,10 @@ def test_test_catalog_fails_when_requirement_test_regex_has_no_match(tmp_path: P
     assert any("did not match any test id" in error for error in result.errors)
 
 
-# Description: Executes the test_quality_baseline_fails_when_agents_is_missing operation.
+# @brief Documents the test quality baseline fails when agents is missing operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_quality_baseline_fails_when_agents_is_missing(tmp_path: Path) -> None:
     _init_git_repo(tmp_path)
     _seed_required_quality_files(tmp_path)

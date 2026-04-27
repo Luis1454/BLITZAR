@@ -1,10 +1,13 @@
-// File: tests/unit/physics/force_law_policy.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/physics/force_law_policy.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "physics/ForceLawPolicy.hpp"
 #include <gtest/gtest.h>
 
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_021_ForceLawPolicyClampsConfiguredThresholds)
 {
     const ForceLawPolicy policy = resolveForceLawPolicy(0.01f, 1.0e-6f, 2.0e-4f, -1.0f, 0.001f);

@@ -1,5 +1,7 @@
-# File: CMakeLists.txt
-# Purpose: Source artifact for the BLITZAR project.
+# @file CMakeLists.txt
+# @author Luis1454
+# @project BLITZAR
+# @brief Source artifact for the BLITZAR simulation project.
 
 cmake_minimum_required(VERSION 3.24)
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: tests/checks/suites/policy/test_review_gates.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/checks/suites/policy/test_review_gates.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 from __future__ import annotations
 
@@ -14,81 +16,146 @@ from python_tools.policies.pr_policy import PrPolicyCheck, PrPolicySelfTestCheck
 from python_tools.policies.traceability_gate import TraceabilityGateCheck
 
 
-# Description: Executes the _write_json operation.
+# @brief Documents the write json operation contract.
+# @param path Input value used by this contract.
+# @param payload Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _write_json(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
-# Description: Executes the _write_pr_event operation.
+# @brief Documents the write pr event operation contract.
+# @param root Input value used by this contract.
+# @param body Input value used by this contract.
+# @param user Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _write_pr_event(root: Path, body: str, user: str = "author") -> Path:
     path = root / "event.json"
     _write_json(path, {"pull_request": {"number": 42, "body": body, "user": {"login": user}}})
     return path
 
 
-# Description: Executes the _write_pr_payload operation.
+# @brief Documents the write pr payload operation contract.
+# @param root Input value used by this contract.
+# @param payload Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _write_pr_payload(root: Path, payload: object) -> Path:
     path = root / "event.json"
     _write_json(path, payload)
     return path
 
 
-# Description: Defines the FakeIvvGateCheck contract.
+# @brief Defines the fake ivv gate check type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class FakeIvvGateCheck(IvvGateCheck):
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param fetch_items Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self, fetch_items) -> None:
         super().__init__()
         self._fetch_items_impl = fetch_items
 
-    # Description: Executes the _fetch_items operation.
+    # @brief Documents the fetch items operation contract.
+    # @param repo Input value used by this contract.
+    # @param number Input value used by this contract.
+    # @param suffix Input value used by this contract.
+    # @param token Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _fetch_items(self, repo: str, number: int, suffix: str, token: str, result):
         return self._fetch_items_impl(repo, number, suffix, token, result)
 
 
-# Description: Defines the FakeTraceabilityGateCheck contract.
+# @brief Defines the fake traceability gate check type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class FakeTraceabilityGateCheck(TraceabilityGateCheck):
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param files Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self, files: list[dict[str, object]]) -> None:
         self._files = files
 
-    # Description: Executes the _fetch_files operation.
+    # @brief Documents the fetch files operation contract.
+    # @param repo Input value used by this contract.
+    # @param number Input value used by this contract.
+    # @param token Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _fetch_files(self, repo: str, number: int, token: str, result: object) -> list[dict[str, object]]:
         del repo, number, token, result
         return list(self._files)
 
 
-# Description: Defines the FakeMainDeliveryGateCheck contract.
+# @brief Defines the fake main delivery gate check type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class FakeMainDeliveryGateCheck(MainDeliveryGateCheck):
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param pulls_by_sha Input value used by this contract.
+    # @param compare_commits Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(
         self, pulls_by_sha: dict[str, list[dict[str, object]]] | None = None, compare_commits: list[dict[str, object]] | None = None
     ) -> None:
         self._pulls_by_sha = pulls_by_sha or {}
         self._compare_commits = compare_commits or []
 
-    # Description: Executes the _fetch_associated_pulls operation.
+    # @brief Documents the fetch associated pulls operation contract.
+    # @param repo Input value used by this contract.
+    # @param sha Input value used by this contract.
+    # @param token Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _fetch_associated_pulls(self, repo: str, sha: str, token: str, result: CheckResult) -> list[dict[str, object]]:
         del repo, token, result
         return list(self._pulls_by_sha.get(sha, []))
 
-    # Description: Executes the _fetch_compare_commits operation.
+    # @brief Documents the fetch compare commits operation contract.
+    # @param repo Input value used by this contract.
+    # @param before Input value used by this contract.
+    # @param after Input value used by this contract.
+    # @param token Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _fetch_compare_commits(self, repo: str, before: str, after: str, token: str, result: CheckResult) -> list[dict[str, object]]:
         del repo, before, after, token, result
         return list(self._compare_commits)
 
 
-# Description: Executes the _event_context operation.
+# @brief Documents the event context operation contract.
+# @param root Input value used by this contract.
+# @param event_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _event_context(root: Path, event_path: Path) -> CheckContext:
     return CheckContext(root=root, event_name="pull_request", event_path=str(event_path), options={"repo": "owner/repo", "token": "token"})
 
 
-# Description: Executes the _write_requirements operation.
+# @brief Documents the write requirements operation contract.
+# @param root Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _write_requirements(root: Path) -> None:
     _write_json(root / "docs/quality/manifest/requirements.json", {"requirements": {"REQ-PROT-001": {}, "REQ-RUN-001": {}, "REQ-PHYS-001": {}}})
 
 
-# Description: Executes the test_pr_policy_accepts_valid_branch_title_body operation.
+# @brief Documents the test pr policy accepts valid branch title body operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_pr_policy_accepts_valid_branch_title_body() -> None:
     context = CheckContext(root=Path(".").resolve(), event_name="pull_request", branch="issue/106-enforce-pr-policy", title="Issue #106: Enforce PR policy", body="Implements #106\n\nCloses #106")
     result = PrPolicyCheck().run(context)
@@ -96,7 +163,10 @@ def test_pr_policy_accepts_valid_branch_title_body() -> None:
     assert result.errors == []
 
 
-# Description: Executes the test_pr_policy_accepts_valid_body_with_escaped_newlines operation.
+# @brief Documents the test pr policy accepts valid body with escaped newlines operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_pr_policy_accepts_valid_body_with_escaped_newlines() -> None:
     context = CheckContext(
         root=Path(".").resolve(),
@@ -110,7 +180,10 @@ def test_pr_policy_accepts_valid_body_with_escaped_newlines() -> None:
     assert result.errors == []
 
 
-# Description: Executes the test_pr_policy_rejects_issue_mismatch operation.
+# @brief Documents the test pr policy rejects issue mismatch operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_pr_policy_rejects_issue_mismatch() -> None:
     context = CheckContext(root=Path(".").resolve(), event_name="pull_request", branch="issue/106-enforce-pr-policy", title="Issue #106: Enforce PR policy", body="Implements #106\n\nCloses #107")
     result = PrPolicyCheck().run(context)
@@ -118,7 +191,10 @@ def test_pr_policy_rejects_issue_mismatch() -> None:
     assert any("issue mismatch" in error for error in result.errors)
 
 
-# Description: Executes the test_pr_policy_self_test_uses_fixtures operation.
+# @brief Documents the test pr policy self test uses fixtures operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_pr_policy_self_test_uses_fixtures(tmp_path: Path) -> None:
     _write_json(tmp_path / "tests/checks/fixtures/pr_policy_valid.json", {"pull_request": {"title": "Issue #106: Enforce branch-per-issue policy", "body": "Implements #106\n\nCloses #106", "head": {"ref": "issue/106-enforce-branch-per-issue-policy"}, "base": {"ref": "main"}}})
     _write_json(tmp_path / "tests/checks/fixtures/pr_policy_invalid.json", {"pull_request": {"title": "Issue #106: Enforce branch-per-issue policy", "body": "Implements #106\n\nCloses #107", "head": {"ref": "feature/missing-issue-prefix"}, "base": {"ref": "main"}}})
@@ -127,7 +203,10 @@ def test_pr_policy_self_test_uses_fixtures(tmp_path: Path) -> None:
     assert PrPolicySelfTestCheck().run(CheckContext(root=tmp_path)).ok
 
 
-# Description: Executes the test_pr_policy_accepts_dependabot_branch_and_autogenerated_body operation.
+# @brief Documents the test pr policy accepts dependabot branch and autogenerated body operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_pr_policy_accepts_dependabot_branch_and_autogenerated_body(tmp_path: Path) -> None:
     event_path = _write_pr_payload(
         tmp_path,
@@ -145,7 +224,10 @@ def test_pr_policy_accepts_dependabot_branch_and_autogenerated_body(tmp_path: Pa
     assert result.ok
 
 
-# Description: Executes the test_pr_policy_rejects_non_dependabot_branch_spoofing_bot_shape operation.
+# @brief Documents the test pr policy rejects non dependabot branch spoofing bot shape operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_pr_policy_rejects_non_dependabot_branch_spoofing_bot_shape(tmp_path: Path) -> None:
     event_path = _write_pr_payload(
         tmp_path,
@@ -163,7 +245,10 @@ def test_pr_policy_rejects_non_dependabot_branch_spoofing_bot_shape(tmp_path: Pa
     assert any("dependabot branch must match" in error for error in result.errors)
 
 
-# Description: Executes the test_ivv_gate_passes_for_critical_path_with_non_author_approval operation.
+# @brief Documents the test ivv gate passes for critical path with non author approval operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_ivv_gate_passes_for_critical_path_with_non_author_approval(tmp_path: Path) -> None:
     body = """## IV&V Checklist
 
@@ -178,7 +263,14 @@ Deterministic test evidence: ctest fast subset
 Deviation: none
 """
 
-    # Description: Executes the fetch_items operation.
+    # @brief Documents the fetch items operation contract.
+    # @param repo Input value used by this contract.
+    # @param number Input value used by this contract.
+    # @param suffix Input value used by this contract.
+    # @param token Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def fetch_items(repo: str, number: int, suffix: str, token: str, result):  # noqa: ARG001
         return [{"filename": "runtime/src/client/ClientRuntime.cpp"}] if suffix == "files" else [{"state": "APPROVED", "user": {"login": "reviewer"}}]
 
@@ -186,7 +278,10 @@ Deviation: none
     assert result.ok
 
 
-# Description: Executes the test_ivv_gate_fails_without_non_author_approval_and_skips_non_critical_pr operation.
+# @brief Documents the test ivv gate fails without non author approval and skips non critical pr operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_ivv_gate_fails_without_non_author_approval_and_skips_non_critical_pr(tmp_path: Path) -> None:
     critical_body = """## IV&V Checklist
 
@@ -201,14 +296,28 @@ Deterministic test evidence: ctest fast subset
 Deviation: DEV-QUAL-001
 """
 
-    # Description: Executes the critical_fetch operation.
+    # @brief Documents the critical fetch operation contract.
+    # @param repo Input value used by this contract.
+    # @param number Input value used by this contract.
+    # @param suffix Input value used by this contract.
+    # @param token Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def critical_fetch(repo: str, number: int, suffix: str, token: str, result):  # noqa: ARG001
         return [{"filename": "tests/unit/physics/orbit.cpp"}] if suffix == "files" else [{"state": "COMMENTED", "user": {"login": "reviewer"}}]
 
     result = FakeIvvGateCheck(critical_fetch).run(_event_context(tmp_path, _write_pr_event(tmp_path, critical_body)))
     assert any("waiting for one GitHub APPROVED review" in error for error in result.errors)
 
-    # Description: Executes the docs_fetch operation.
+    # @brief Documents the docs fetch operation contract.
+    # @param repo Input value used by this contract.
+    # @param number Input value used by this contract.
+    # @param suffix Input value used by this contract.
+    # @param token Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def docs_fetch(repo: str, number: int, suffix: str, token: str, result):  # noqa: ARG001
         return [{"filename": "docs/quality/quality-overview.md"}] if suffix == "files" else []
 
@@ -217,7 +326,10 @@ Deviation: DEV-QUAL-001
     assert "skipped" in result.success_message
 
 
-# Description: Executes the test_traceability_gate_passes_for_critical_pr_with_ids_and_csv operation.
+# @brief Documents the test traceability gate passes for critical pr with ids and csv operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_traceability_gate_passes_for_critical_pr_with_ids_and_csv(tmp_path: Path) -> None:
     _write_requirements(tmp_path)
     event_path = _write_pr_event(tmp_path, "Requirements impacted:\n- REQ-PROT-001\n- REQ-RUN-001\n\n## Notes\nBody")
@@ -225,7 +337,10 @@ def test_traceability_gate_passes_for_critical_pr_with_ids_and_csv(tmp_path: Pat
     assert check.run(_event_context(tmp_path, event_path)).ok
 
 
-# Description: Executes the test_traceability_gate_fails_without_ids_or_csv_and_skips_non_critical_pr operation.
+# @brief Documents the test traceability gate fails without ids or csv and skips non critical pr operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_traceability_gate_fails_without_ids_or_csv_and_skips_non_critical_pr(tmp_path: Path) -> None:
     _write_requirements(tmp_path)
     event_path = _write_pr_event(tmp_path, "Requirements impacted:\n\n## Notes\nBody")
@@ -243,7 +358,10 @@ def test_traceability_gate_fails_without_ids_or_csv_and_skips_non_critical_pr(tm
     assert "skipped" in result.success_message
 
 
-# Description: Executes the test_main_delivery_gate_accepts_main_push_with_merged_issue_pr operation.
+# @brief Documents the test main delivery gate accepts main push with merged issue pr operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_main_delivery_gate_accepts_main_push_with_merged_issue_pr(tmp_path: Path) -> None:
     payload = tmp_path / "event.json"
     _write_json(payload, {"ref": "refs/heads/main", "after": "abc123"})
@@ -253,7 +371,10 @@ def test_main_delivery_gate_accepts_main_push_with_merged_issue_pr(tmp_path: Pat
     assert check.run(CheckContext(root=tmp_path, event_name="push", event_path=str(payload), options={"repo": "owner/repo", "token": "token"})).ok
 
 
-# Description: Executes the test_main_delivery_gate_rejects_main_push_without_issue_pr_branch operation.
+# @brief Documents the test main delivery gate rejects main push without issue pr branch operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_main_delivery_gate_rejects_main_push_without_issue_pr_branch(tmp_path: Path) -> None:
     payload = tmp_path / "event.json"
     _write_json(payload, {"ref": "refs/heads/main", "after": "abc123"})
@@ -264,7 +385,10 @@ def test_main_delivery_gate_rejects_main_push_without_issue_pr_branch(tmp_path: 
     assert any("push to main must come from a merged issue/" in error for error in result.errors)
 
 
-# Description: Executes the test_main_delivery_gate_accepts_traceable_aggregation_merge operation.
+# @brief Documents the test main delivery gate accepts traceable aggregation merge operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_main_delivery_gate_accepts_traceable_aggregation_merge(tmp_path: Path) -> None:
     payload = tmp_path / "event.json"
     _write_json(payload, {"ref": "refs/heads/main", "before": "oldmain", "after": "merge123"})
@@ -278,7 +402,10 @@ def test_main_delivery_gate_accepts_traceable_aggregation_merge(tmp_path: Path) 
     assert check.run(CheckContext(root=tmp_path, event_name="push", event_path=str(payload), options={"repo": "owner/repo", "token": "token"})).ok
 
 
-# Description: Executes the test_main_delivery_gate_rejects_untraceable_commit_in_aggregation_range operation.
+# @brief Documents the test main delivery gate rejects untraceable commit in aggregation range operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_main_delivery_gate_rejects_untraceable_commit_in_aggregation_range(tmp_path: Path) -> None:
     payload = tmp_path / "event.json"
     _write_json(payload, {"ref": "refs/heads/main", "before": "oldmain", "after": "merge123"})

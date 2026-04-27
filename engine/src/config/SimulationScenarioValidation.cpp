@@ -1,5 +1,9 @@
-// File: engine/src/config/SimulationScenarioValidation.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/config/SimulationScenarioValidation.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Configuration parsing, validation, and serialization implementation.
+ */
 
 #include "config/SimulationScenarioValidation.hpp"
 #include "config/SimulationConfig.hpp"
@@ -14,7 +18,6 @@
 #include <utility>
 
 namespace grav_config {
-/// Description: Defines the SimulationScenarioValidationLocal data or behavior contract.
 class SimulationScenarioValidationLocal final {
 public:
     static ScenarioValidationReport evaluate(const SimulationConfig& config)
@@ -198,13 +201,11 @@ public:
     }
 };
 
-/// Description: Executes the evaluate operation.
 ScenarioValidationReport SimulationScenarioValidation::evaluate(const SimulationConfig& config)
 {
     return SimulationScenarioValidationLocal::evaluate(config);
 }
 
-/// Description: Executes the renderText operation.
 std::string SimulationScenarioValidation::renderText(const ScenarioValidationReport& report)
 {
     return SimulationScenarioValidationRender::render(report);

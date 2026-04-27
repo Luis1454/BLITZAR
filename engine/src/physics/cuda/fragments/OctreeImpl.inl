@@ -1,5 +1,9 @@
-// File: engine/src/physics/cuda/fragments/OctreeImpl.inl
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/physics/cuda/fragments/OctreeImpl.inl
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
 
 /*
  * Module: physics/cuda

@@ -1,5 +1,7 @@
-# File: tests/checks/suites/release/test_release_outputs.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/checks/suites/release/test_release_outputs.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 from __future__ import annotations
 
@@ -15,13 +17,22 @@ from python_tools.ci.release_source import ReleaseSourcePackager
 from python_tools.ci.tool_manifest import ToolManifestCollector
 
 
-# Description: Defines the FakeNumericalValidationCampaign contract.
+# @brief Defines the fake numerical validation campaign type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class FakeNumericalValidationCampaign(NumericalValidationCampaign):
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param measurements Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self, measurements: dict[str, dict[str, object]]) -> None:
         self._measurements = measurements
 
-    # Description: Executes the _collect_runs operation.
+    # @brief Documents the collect runs operation contract.
+    # @param tool_path Input value used by this contract.
+    # @param raw_runs Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _collect_runs(self, tool_path: Path, raw_runs: object) -> dict[str, dict[str, object]]:
         del tool_path
         assert isinstance(raw_runs, list)
@@ -34,9 +45,15 @@ class FakeNumericalValidationCampaign(NumericalValidationCampaign):
         return rows
 
 
-# Description: Executes the _fake_runner operation.
+# @brief Documents the fake runner operation contract.
+# @param outputs Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _fake_runner(outputs: dict[tuple[str, ...], str]):
-    # Description: Executes the run operation.
+    # @brief Documents the run operation contract.
+    # @param command Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def run(command: list[str]) -> str:
         key = tuple(command)
         if key not in outputs:
@@ -46,7 +63,10 @@ def _fake_runner(outputs: dict[tuple[str, ...], str]):
     return run
 
 
-# Description: Executes the _write_campaign operation.
+# @brief Documents the write campaign operation contract.
+# @param root Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _write_campaign(root: Path) -> None:
     payload = {
         "profiles": {
@@ -65,7 +85,11 @@ def _write_campaign(root: Path) -> None:
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
-# Description: Executes the test_release_bundle_embeds_tool_manifest operation.
+# @brief Documents the test release bundle embeds tool manifest operation contract.
+# @param tmp_path Input value used by this contract.
+# @param monkeypatch Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_release_bundle_embeds_tool_manifest(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.chdir(tmp_path)
     build_dir = tmp_path / "build"
@@ -96,7 +120,10 @@ def test_release_bundle_embeds_tool_manifest(tmp_path: Path, monkeypatch) -> Non
         assert archive.name not in names
 
 
-# Description: Executes the test_release_bundle_smoke_validator_requires_qt_platform_plugin_for_qt_module operation.
+# @brief Documents the test release bundle smoke validator requires qt platform plugin for qt module operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_release_bundle_smoke_validator_requires_qt_platform_plugin_for_qt_module(tmp_path: Path) -> None:
     bundle_root = tmp_path / "bundle"
     bundle_root.mkdir()
@@ -114,7 +141,10 @@ def test_release_bundle_smoke_validator_requires_qt_platform_plugin_for_qt_modul
         assert "platforms/" in str(error)
 
 
-# Description: Executes the test_release_bundle_smoke_validator_runs_help_commands_for_present_binaries operation.
+# @brief Documents the test release bundle smoke validator runs help commands for present binaries operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_release_bundle_smoke_validator_runs_help_commands_for_present_binaries(tmp_path: Path) -> None:
     bundle_root = tmp_path / "bundle"
     bundle_root.mkdir()
@@ -124,7 +154,11 @@ def test_release_bundle_smoke_validator_runs_help_commands_for_present_binaries(
     (bundle_root / "README.md").write_text("readme\n", encoding="utf-8")
     seen: list[tuple[list[str], Path]] = []
 
-    # Description: Executes the _runner operation.
+    # @brief Documents the runner operation contract.
+    # @param command Input value used by this contract.
+    # @param cwd Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _runner(command: list[str], cwd: Path) -> None:
         seen.append((command, cwd))
 
@@ -137,7 +171,10 @@ def test_release_bundle_smoke_validator_runs_help_commands_for_present_binaries(
     assert all(cwd == bundle_root for _, cwd in seen)
 
 
-# Description: Executes the test_release_source_packager_archives_tracked_files_only operation.
+# @brief Documents the test release source packager archives tracked files only operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_release_source_packager_archives_tracked_files_only(tmp_path: Path) -> None:
     subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True, text=True)
     (tmp_path / "README.md").write_text("readme\n", encoding="utf-8")
@@ -154,7 +191,10 @@ def test_release_source_packager_archives_tracked_files_only(tmp_path: Path) -> 
     assert "blitzar-v1.0.0-source/untracked.log" not in names
 
 
-# Description: Executes the test_tool_manifest_collector_records_versions_and_missing_tools operation.
+# @brief Documents the test tool manifest collector records versions and missing tools operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_tool_manifest_collector_records_versions_and_missing_tools(tmp_path: Path) -> None:
     collector = ToolManifestCollector(
         _fake_runner(
@@ -185,7 +225,10 @@ def test_tool_manifest_collector_records_versions_and_missing_tools(tmp_path: Pa
     assert tools["clang_tidy"]["status"] == "unavailable"
 
 
-# Description: Executes the test_numerical_validation_passes_when_thresholds_hold operation.
+# @brief Documents the test numerical validation passes when thresholds hold operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_numerical_validation_passes_when_thresholds_hold(tmp_path: Path) -> None:
     _write_campaign(tmp_path)
     campaign = FakeNumericalValidationCampaign(
@@ -200,7 +243,10 @@ def test_numerical_validation_passes_when_thresholds_hold(tmp_path: Path) -> Non
     assert report["failures"] == []
 
 
-# Description: Executes the test_numerical_validation_fails_when_thresholds_are_exceeded operation.
+# @brief Documents the test numerical validation fails when thresholds are exceeded operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_numerical_validation_fails_when_thresholds_are_exceeded(tmp_path: Path) -> None:
     _write_campaign(tmp_path)
     campaign = FakeNumericalValidationCampaign(

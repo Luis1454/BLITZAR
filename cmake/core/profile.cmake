@@ -1,5 +1,7 @@
-# File: cmake/core/profile.cmake
-# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+# @file cmake/core/profile.cmake
+# @author Luis1454
+# @project BLITZAR
+# @brief CMake build orchestration for BLITZAR targets and tooling.
 
 set(APP_NAME blitzar)
 set(HEADLESS_NAME blitzar-headless)

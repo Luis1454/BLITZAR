@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/ci/release_quality_index.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/ci/release_quality_index.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -25,24 +27,44 @@ DEFAULT_INDEX_EVIDENCE_REFS = (
 )
 
 
-# Description: Defines the ReleaseQualityIndexError contract.
+# @brief Defines the release quality index error type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class ReleaseQualityIndexError(RuntimeError):
     pass
 
 
-# Description: Defines the ReleaseQualityIndexBuilder contract.
+# @brief Defines the release quality index builder type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class ReleaseQualityIndexBuilder:
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self) -> None:
         self._manifest = QualityManifestLoader()
         self._registry = EvidenceRegistry()
         self._deviations = DeviationRegister()
 
-    # Description: Executes the resolve_tag operation.
+    # @brief Documents the resolve tag operation contract.
+    # @param explicit Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def resolve_tag(self, explicit: str | None) -> str:
         return resolve_release_tag(explicit)
 
-    # Description: Executes the package operation.
+    # @brief Documents the package operation contract.
+    # @param root Input value used by this contract.
+    # @param dist_dir Input value used by this contract.
+    # @param tag Input value used by this contract.
+    # @param profile Input value used by this contract.
+    # @param requirements Input value used by this contract.
+    # @param verification_activities Input value used by this contract.
+    # @param analyzer_status Input value used by this contract.
+    # @param ci_context Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def package(
         self,
         root: Path,
@@ -63,7 +85,11 @@ class ReleaseQualityIndexBuilder:
         index = self._build_index(repo_root, tag, profile, requirement_rows, deviation_rows, verification_activities, analyzer_status, ci_context)
         return self._archive_index(dist_dir.resolve(), tag, index)
 
-    # Description: Executes the _select_requirements operation.
+    # @brief Documents the select requirements operation contract.
+    # @param raw_requirements Input value used by this contract.
+    # @param selected Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _select_requirements(
         self,
         raw_requirements: object,
@@ -85,7 +111,11 @@ class ReleaseQualityIndexBuilder:
             )
         return rows
 
-    # Description: Executes the _select_deviations operation.
+    # @brief Documents the select deviations operation contract.
+    # @param root Input value used by this contract.
+    # @param requirements Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _select_deviations(
         self,
         root: Path,
@@ -104,7 +134,17 @@ class ReleaseQualityIndexBuilder:
                 selected.append(row)
         return selected
 
-    # Description: Executes the _build_index operation.
+    # @brief Documents the build index operation contract.
+    # @param root Input value used by this contract.
+    # @param tag Input value used by this contract.
+    # @param profile Input value used by this contract.
+    # @param requirement_rows Input value used by this contract.
+    # @param deviation_rows Input value used by this contract.
+    # @param verification_activities Input value used by this contract.
+    # @param analyzer_status Input value used by this contract.
+    # @param ci_context Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _build_index(
         self,
         root: Path,
@@ -138,7 +178,12 @@ class ReleaseQualityIndexBuilder:
             "ci_context": dict(ci_context or {}),
         }
 
-    # Description: Executes the _archive_index operation.
+    # @brief Documents the archive index operation contract.
+    # @param dist_dir Input value used by this contract.
+    # @param tag Input value used by this contract.
+    # @param index Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _archive_index(self, dist_dir: Path, tag: str, index: Mapping[str, object]) -> Path:
         if dist_dir.exists():
             shutil.rmtree(dist_dir)
@@ -148,7 +193,11 @@ class ReleaseQualityIndexBuilder:
         archive_base = dist_dir / f"ASTER-{tag}-quality-index"
         return Path(shutil.make_archive(str(archive_base), "zip", root_dir=dist_dir))
 
-    # Description: Executes the _collect_evidence_refs operation.
+    # @brief Documents the collect evidence refs operation contract.
+    # @param root Input value used by this contract.
+    # @param requirements Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _collect_evidence_refs(self, root: Path, requirements: Sequence[Mapping[str, object]]) -> list[dict[str, str]]:
         refs = set(DEFAULT_INDEX_EVIDENCE_REFS)
         for row in requirements:
@@ -164,7 +213,10 @@ class ReleaseQualityIndexBuilder:
         return entries
 
     @staticmethod
-    # Description: Executes the _summarize_deviation operation.
+    # @brief Documents the summarize deviation operation contract.
+    # @param row Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _summarize_deviation(row: Mapping[str, object]) -> dict[str, object]:
         return {
             "id": row.get("id", ""),
@@ -175,7 +227,12 @@ class ReleaseQualityIndexBuilder:
         }
 
     @staticmethod
-    # Description: Executes the _read_string_list operation.
+    # @brief Documents the read string list operation contract.
+    # @param row Input value used by this contract.
+    # @param requirement_id Input value used by this contract.
+    # @param field Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _read_string_list(row: Mapping[str, object], requirement_id: str, field: str) -> list[str]:
         raw = row.get(field)
         if not isinstance(raw, list):
@@ -188,7 +245,10 @@ class ReleaseQualityIndexBuilder:
         return values
 
     @staticmethod
-    # Description: Executes the _render_readme operation.
+    # @brief Documents the render readme operation contract.
+    # @param index Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _render_readme(index: Mapping[str, object]) -> str:
         summary = index.get("summary")
         if not isinstance(summary, dict):

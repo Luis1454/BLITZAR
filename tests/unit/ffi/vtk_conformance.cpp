@@ -1,5 +1,9 @@
-// File: tests/unit/ffi/vtk_conformance.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/ffi/vtk_conformance.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "ffi/BlitzarCoreApi.hpp"
 #include <array>
@@ -10,7 +14,12 @@
 #include <string>
 #include <vector>
 
-/// Description: Defines the ExpectedCoreParticle data or behavior contract.
+/*
+ * @brief Defines the expected core particle type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct ExpectedCoreParticle {
     float x;
     float y;
@@ -19,7 +28,12 @@ struct ExpectedCoreParticle {
     float temperature;
 };
 
-/// Description: Executes the makeCpuConfig operation.
+/*
+ * @brief Documents the make cpu config operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return blitzar_core_config_t value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static blitzar_core_config_t makeCpuConfig()
 {
     blitzar_core_config_t config = blitzar_core_default_config();
@@ -34,7 +48,12 @@ static blitzar_core_config_t makeCpuConfig()
     return config;
 }
 
-/// Description: Executes the createCore operation.
+/*
+ * @brief Documents the create core operation contract.
+ * @param config Input value used by this contract.
+ * @return blitzar_core_t* value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static blitzar_core_t* createCore(const blitzar_core_config_t& config)
 {
     char error[BLITZAR_CORE_ERROR_CAPACITY] = {};
@@ -43,14 +62,25 @@ static blitzar_core_t* createCore(const blitzar_core_config_t& config)
     return core;
 }
 
-/// Description: Executes the fixturePath operation.
+/*
+ * @brief Documents the fixture path operation contract.
+ * @param fileName Input value used by this contract.
+ * @return std::filesystem::path value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::filesystem::path fixturePath(const char* fileName)
 {
     const std::filesystem::path sourceFile(__FILE__);
     return sourceFile.parent_path().parent_path().parent_path() / "data" / fileName;
 }
 
-/// Description: Executes the makeTempPath operation.
+/*
+ * @brief Documents the make temp path operation contract.
+ * @param stem Input value used by this contract.
+ * @param extension Input value used by this contract.
+ * @return std::filesystem::path value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::filesystem::path makeTempPath(const char* stem, const char* extension)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -58,7 +88,12 @@ static std::filesystem::path makeTempPath(const char* stem, const char* extensio
            (std::string(stem) + "_" + std::to_string(stamp) + extension);
 }
 
-/// Description: Executes the readSnapshot operation.
+/*
+ * @brief Documents the read snapshot operation contract.
+ * @param core Input value used by this contract.
+ * @return std::vector<blitzar_render_particle_t> value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::vector<blitzar_render_particle_t> readSnapshot(const blitzar_core_t* core)
 {
     blitzar_core_snapshot_t snapshot{};
@@ -69,7 +104,13 @@ static std::vector<blitzar_render_particle_t> readSnapshot(const blitzar_core_t*
     return particles;
 }
 
-/// Description: Describes the expect particle near operation contract.
+/*
+ * @brief Documents the expect particle near operation contract.
+ * @param actual Input value used by this contract.
+ * @param expected Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static void expectParticleNear(const blitzar_render_particle_t& actual,
                                const ExpectedCoreParticle& expected)
 {
@@ -81,7 +122,12 @@ static void expectParticleNear(const blitzar_render_particle_t& actual,
     EXPECT_NEAR(actual.pressure_norm, 0.0f, 1e-5f);
 }
 
-/// Description: Executes the expectFixtureParticles operation.
+/*
+ * @brief Documents the expect fixture particles operation contract.
+ * @param particles Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static void expectFixtureParticles(const std::vector<blitzar_render_particle_t>& particles)
 {
     static const std::array<ExpectedCoreParticle, 2> expected{
@@ -93,7 +139,13 @@ static void expectFixtureParticles(const std::vector<blitzar_render_particle_t>&
     expectParticleNear(particles[1], expected[1]);
 }
 
-/// Description: Executes the expectFileContains operation.
+/*
+ * @brief Documents the expect file contains operation contract.
+ * @param path Input value used by this contract.
+ * @param needle Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static void expectFileContains(const std::filesystem::path& path, const std::string& needle)
 {
     std::ifstream in(path, std::ios::binary);
@@ -103,14 +155,19 @@ static void expectFileContains(const std::filesystem::path& path, const std::str
     EXPECT_NE(content.find(needle), std::string::npos) << path.string();
 }
 
-/// Description: Executes the loadFixtureAndExpect operation.
+/*
+ * @brief Documents the load fixture and expect operation contract.
+ * @param core Input value used by this contract.
+ * @param path Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static void loadFixtureAndExpect(blitzar_core_t* core, const std::filesystem::path& path)
 {
     ASSERT_EQ(blitzar_core_load_state(core, path.string().c_str(), "vtk", 5000u), BLITZAR_CORE_OK);
     expectFixtureParticles(readSnapshot(core));
 }
 
-/// Description: Executes the TEST operation.
 TEST(BlitzarCoreApiTest, TST_UNT_CORE_004_LoadsAsciiVtkGoldenFile)
 {
     blitzar_core_t* core = createCore(makeCpuConfig());
@@ -119,7 +176,6 @@ TEST(BlitzarCoreApiTest, TST_UNT_CORE_004_LoadsAsciiVtkGoldenFile)
     blitzar_core_destroy(core);
 }
 
-/// Description: Executes the TEST operation.
 TEST(BlitzarCoreApiTest, TST_UNT_CORE_005_LoadsBinaryVtkGoldenFile)
 {
     blitzar_core_t* core = createCore(makeCpuConfig());
@@ -128,7 +184,6 @@ TEST(BlitzarCoreApiTest, TST_UNT_CORE_005_LoadsBinaryVtkGoldenFile)
     blitzar_core_destroy(core);
 }
 
-/// Description: Executes the TEST operation.
 TEST(BlitzarCoreApiTest, TST_UNT_CORE_006_RoundTripsAsciiAndBinaryVtkWithinTolerance)
 {
     const auto runRoundTrip = [](const char* fixtureName, const char* exportFormat,
@@ -152,7 +207,6 @@ TEST(BlitzarCoreApiTest, TST_UNT_CORE_006_RoundTripsAsciiAndBinaryVtkWithinToler
     runRoundTrip("vtk_fixture_binary.vtk", "vtk_binary", "BINARY");
 }
 
-/// Description: Executes the TEST operation.
 TEST(BlitzarCoreApiTest, TST_UNT_CORE_007_InvalidAndCorruptVtkInputsFallBackDeterministically)
 {
     const auto expectGeneratedFallback = [](const std::filesystem::path& path, const char* format) {

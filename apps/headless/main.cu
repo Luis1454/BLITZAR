@@ -1,5 +1,9 @@
-// File: apps/headless/main.cu
-// Purpose: Application entry point or host support for BLITZAR executables.
+/*
+ * @file apps/headless/main.cu
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Application entry points and host executables for BLITZAR.
+ */
 
 #include "config/EnvUtils.hpp"
 #include "config/SimulationArgs.hpp"
@@ -13,7 +17,13 @@
 #include <thread>
 #include <vector>
 
-/// Description: Executes the main operation.
+/*
+ * @brief Documents the main operation contract.
+ * @param argc Input value used by this contract.
+ * @param argv Input value used by this contract.
+ * @return int value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 int main(int argc, char** argv)
 {
     std::vector<std::string_view> args;

@@ -1,5 +1,9 @@
-// File: tests/support/poll_utils.hpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/support/poll_utils.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #ifndef GRAVITY_TESTS_SUPPORT_POLL_UTILS_HPP_
 #define GRAVITY_TESTS_SUPPORT_POLL_UTILS_HPP_
@@ -7,7 +11,6 @@
 #include <functional>
 
 namespace testsupport {
-/// Description: Describes the wait until operation contract.
 bool waitUntil(const std::function<bool()>& predicate, std::chrono::milliseconds timeout,
                std::chrono::milliseconds pollInterval = std::chrono::milliseconds(10),
                const std::function<void()>& onPoll = {});

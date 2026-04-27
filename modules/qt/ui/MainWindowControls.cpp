@@ -1,5 +1,9 @@
-// File: modules/qt/ui/MainWindowControls.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/MainWindowControls.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "config/SimulationPerformanceProfile.hpp"
 #include "config/SimulationProfile.hpp"
@@ -15,7 +19,6 @@
 #include <QTimer>
 
 namespace grav_qt {
-/// Description: Executes the connectControls operation.
 void MainWindow::connectControls()
 {
     const auto applySphParams = [this]() {

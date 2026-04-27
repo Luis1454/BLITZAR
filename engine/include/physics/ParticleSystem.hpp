@@ -1,5 +1,9 @@
-// File: engine/include/physics/ParticleSystem.hpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/include/physics/ParticleSystem.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
+ */
 
 #ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
 #define GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
@@ -20,7 +24,12 @@
 #include <string>
 #include <vector>
 
-/// Description: Defines the alignas data or behavior contract.
+/*
+ * @brief Defines the alignas type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct alignas(64) GpuSystemMetrics {
     std::uint32_t sequence;
     std::uint32_t flags;
@@ -47,7 +56,12 @@ struct alignas(64) GpuSystemMetrics {
     std::uint64_t reserved6;
 };
 
-/// Description: Defines the GpuMetricsPayload data or behavior contract.
+/*
+ * @brief Defines the gpu metrics payload type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct GpuMetricsPayload {
     std::uint32_t flags;
     std::uint64_t stepId;
@@ -65,148 +79,484 @@ struct GpuMetricsPayload {
     std::uint64_t vramPeakBytes;
 };
 
-/// Description: Enumerates the supported GpuMetricsFlags values.
+/*
+ * @brief Defines the gpu metrics flags type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 enum GpuMetricsFlags : std::uint32_t {
     kGpuMetricsValid = 1u << 0,
     kGpuMetricsEstimated = 1u << 1
 };
 
-/// Owns particle state on host and device and advances it with the selected solver.
+/*
+ * @brief Defines the particle system type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class ParticleSystem {
 public:
-    /// Description: Enumerates the supported SolverMode values.
+    /*
+     * @brief Defines the solver mode type contract.
+     * @param None This contract does not take explicit parameters.
+     * @return Not applicable; this block documents a type contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     enum class SolverMode {
         PairwiseCuda,
         OctreeCpu,
         OctreeGpu
     };
-    /// Description: Enumerates the supported IntegratorMode values.
+    /*
+     * @brief Defines the integrator mode type contract.
+     * @param None This contract does not take explicit parameters.
+     * @return Not applicable; this block documents a type contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     enum class IntegratorMode {
         Euler,
         Rk4,
         Leapfrog
     };
 
-    /// Builds a particle system with `numParticles`, optionally using the built-in bootstrap state.
     ParticleSystem(int numParticles, bool bootstrapInitialState = true);
-    /// Builds a particle system from an explicit particle set.
+    /*
+     * @brief Documents the particle system operation contract.
+     * @param initialParticles Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     explicit ParticleSystem(std::vector<Particle> initialParticles);
-    /// Releases all host and device allocations owned by the system.
+    /*
+     * @brief Documents the ~particle system operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     ~ParticleSystem();
 
-    /// Advances the system by `deltaTime` seconds.
+    /*
+     * @brief Documents the update operation contract.
+     * @param deltaTime Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool update(float deltaTime);
-    /// Switches between pairwise CUDA and octree-driven gravity.
+    /*
+     * @brief Documents the set use octree operation contract.
+     * @param enabled Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setUseOctree(bool enabled);
-    /// Reports whether an octree-backed gravity solver is active.
+    /*
+     * @brief Documents the uses octree operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool usesOctree() const;
-    /// Sets the Barnes-Hut opening angle threshold.
+    /*
+     * @brief Documents the set octree theta operation contract.
+     * @param theta Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setOctreeTheta(float theta);
-    /// Selects the Barnes-Hut opening criterion.
+    /*
+     * @brief Documents the set octree opening criterion operation contract.
+     * @param criterion Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setOctreeOpeningCriterion(OctreeOpeningCriterion criterion);
-    /// Sets the minimum softening radius used by gravity interactions.
+    /*
+     * @brief Documents the set octree softening operation contract.
+     * @param softening Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setOctreeSoftening(float softening);
-    /// Enables or disables SPH processing.
+    /*
+     * @brief Documents the set sph enabled operation contract.
+     * @param enabled Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setSphEnabled(bool enabled);
-    /// Reports whether SPH processing is active.
+    /*
+     * @brief Documents the is sph enabled operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool isSphEnabled() const;
-    /// Updates the SPH parameter set in SI units.
+    /*
+     * @brief Documents the set sph parameters operation contract.
+     * @param smoothingLength Input value used by this contract.
+     * @param restDensity Input value used by this contract.
+     * @param gasConstant Input value used by this contract.
+     * @param viscosity Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setSphParameters(float smoothingLength, float restDensity, float gasConstant,
                           float viscosity);
-    /// Updates the gravity stability clamps applied during integration.
+    /*
+     * @brief Documents the set physics stability constants operation contract.
+     * @param maxAcceleration Input value used by this contract.
+     * @param minSoftening Input value used by this contract.
+     * @param minDistance2 Input value used by this contract.
+     * @param minTheta Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setPhysicsStabilityConstants(float maxAcceleration, float minSoftening, float minDistance2,
                                       float minTheta);
-    /// Updates the SPH acceleration and speed caps.
+    /*
+     * @brief Documents the set sph caps operation contract.
+     * @param maxAcceleration Input value used by this contract.
+     * @param maxSpeed Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setSphCaps(float maxAcceleration, float maxSpeed);
-    /// Updates the thermal model parameters in SI units.
+    /*
+     * @brief Documents the set thermal parameters operation contract.
+     * @param ambientTemperature Input value used by this contract.
+     * @param specificHeat Input value used by this contract.
+     * @param heatingCoeff Input value used by this contract.
+     * @param radiationCoeff Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setThermalParameters(float ambientTemperature, float specificHeat, float heatingCoeff,
                               float radiationCoeff);
-    /// Returns the cumulative radiated energy emitted since initialization.
+    /*
+     * @brief Documents the get cumulative radiated energy operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return float value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     float getCumulativeRadiatedEnergy() const;
-    /// Returns the thermal specific heat used by the thermal model.
+    /*
+     * @brief Documents the get thermal specific heat operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return float value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     float getThermalSpecificHeat() const;
-    /// Selects the gravity solver implementation.
+    /*
+     * @brief Documents the set solver mode operation contract.
+     * @param mode Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setSolverMode(SolverMode mode);
-    /// Returns the active gravity solver implementation.
+    /*
+     * @brief Documents the get solver mode operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return SolverMode value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     SolverMode getSolverMode() const;
-    /// Selects the numerical integrator implementation.
+    /*
+     * @brief Documents the set integrator mode operation contract.
+     * @param mode Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setIntegratorMode(IntegratorMode mode);
-    /// Returns the active numerical integrator implementation.
+    /*
+     * @brief Documents the get integrator mode operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return IntegratorMode value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     IntegratorMode getIntegratorMode() const;
-    /// Uploads the current host-side state to the device buffers.
+    /*
+     * @brief Documents the sync device state operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void syncDeviceState();
-    /// Synchronizes device-side state back to host memory.
+    /*
+     * @brief Documents the sync host state operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool syncHostState();
-    /// Computes energy metrics directly from device buffers without host particle copies.
+    /*
+     * @brief Documents the compute energy estimate gpu operation contract.
+     * @param sampleLimit Input value used by this contract.
+     * @param softening Input value used by this contract.
+     * @param minDistance2 Input value used by this contract.
+     * @param specificHeat Input value used by this contract.
+     * @param kinetic Input value used by this contract.
+     * @param potential Input value used by this contract.
+     * @param thermal Input value used by this contract.
+     * @param estimated Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool computeEnergyEstimateGpu(std::size_t sampleLimit, float softening, float minDistance2,
                                   float specificHeat, float& kinetic, float& potential,
                                   float& thermal, bool& estimated);
 
-    /// Returns the authoritative host-side particle vector.
+    /*
+     * @brief Documents the get particles operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return const std::vector<Particle>& value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     const std::vector<Particle>& getParticles() const;
-    /// Replaces the host-side particle vector when the size matches the device capacity.
+    /*
+     * @brief Documents the set particles operation contract.
+     * @param particles Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool setParticles(std::vector<Particle> particles);
 
-    /// Description: Describes the particle system operation contract.
     ParticleSystem(const ParticleSystem&) = delete;
-    /// Description: Describes the operator= operation contract.
     ParticleSystem& operator=(const ParticleSystem&) = delete;
-    /// Description: Describes the particle system operation contract.
     ParticleSystem(ParticleSystem&&) = delete;
-    /// Description: Describes the operator= operation contract.
     ParticleSystem& operator=(ParticleSystem&&) = delete;
 
-    /// Exposes the current structure-of-arrays views for diagnostics and tests.
+    /*
+     * @brief Documents the get so aview operation contract.
+     * @param next Input value used by this contract.
+     * @return ParticleSoAView value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     ParticleSoAView getSoAView(bool next = false) const;
-    /// Returns the mapped host metrics snapshot used for asynchronous telemetry reads.
+    /*
+     * @brief Documents the get mapped gpu metrics operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return const GpuSystemMetrics* value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     const GpuSystemMetrics* getMappedGpuMetrics() const;
 
 private:
-    /// Description: Describes the initialize runtime state operation contract.
+    /*
+     * @brief Documents the initialize runtime state operation contract.
+     * @param particleCapacity Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void initializeRuntimeState(std::size_t particleCapacity);
-    /// Description: Describes the build bootstrap state operation contract.
+    /*
+     * @brief Documents the build bootstrap state operation contract.
+     * @param particleCount Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void buildBootstrapState(int particleCount);
-    /// Description: Describes the allocate particle buffers operation contract.
+    /*
+     * @brief Documents the allocate particle buffers operation contract.
+     * @param particleCapacity Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool allocateParticleBuffers(std::size_t particleCapacity);
-    /// Description: Describes the seed device state operation contract.
+    /*
+     * @brief Documents the seed device state operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool seedDeviceState();
-    /// Description: Describes the release particle buffers operation contract.
+    /*
+     * @brief Documents the release particle buffers operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void releaseParticleBuffers();
-    /// Description: Describes the apply thermal model operation contract.
+    /*
+     * @brief Documents the apply thermal model operation contract.
+     * @param deltaTime Input value used by this contract.
+     * @return float value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     float applyThermalModel(float deltaTime);
-    /// Description: Describes the build sph grid operation contract.
+    /*
+     * @brief Documents the build sph grid operation contract.
+     * @param numParticles Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool buildSphGrid(int numParticles);
-    /// Description: Describes the release rk4 buffers operation contract.
+    /*
+     * @brief Documents the release rk4 buffers operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void releaseRk4Buffers();
-    /// Description: Describes the release sph buffers operation contract.
+    /*
+     * @brief Documents the release sph buffers operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void releaseSphBuffers();
-    /// Description: Describes the release sph grid buffers operation contract.
+    /*
+     * @brief Documents the release sph grid buffers operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void releaseSphGridBuffers();
-    /// Description: Describes the allocate rk4 buffers operation contract.
+    /*
+     * @brief Documents the allocate rk4 buffers operation contract.
+     * @param numParticles Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool allocateRk4Buffers(int numParticles);
-    /// Description: Describes the allocate sph buffers operation contract.
+    /*
+     * @brief Documents the allocate sph buffers operation contract.
+     * @param numParticles Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool allocateSphBuffers(int numParticles);
-    /// Description: Describes the allocate sph grid buffers operation contract.
+    /*
+     * @brief Documents the allocate sph grid buffers operation contract.
+     * @param numParticles Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool allocateSphGridBuffers(int numParticles);
-    /// Description: Describes the ensure linear octree scratch capacity operation contract.
+    /*
+     * @brief Documents the ensure linear octree scratch capacity operation contract.
+     * @param numParticles Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool ensureLinearOctreeScratchCapacity(int numParticles);
-    /// Description: Describes the ensure energy scratch capacity operation contract.
+    /*
+     * @brief Documents the ensure energy scratch capacity operation contract.
+     * @param numParticles Input value used by this contract.
+     * @param sampleCount Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool ensureEnergyScratchCapacity(int numParticles, int sampleCount);
-    /// Description: Describes the build linear octree gpu operation contract.
+    /*
+     * @brief Documents the build linear octree gpu operation contract.
+     * @param currentView Input value used by this contract.
+     * @param numParticles Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool buildLinearOctreeGpu(ParticleSoAView currentView, int numParticles);
-    /// Description: Describes the allocate mapped metrics operation contract.
+    /*
+     * @brief Documents the allocate mapped metrics operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool allocateMappedMetrics();
-    /// Description: Describes the release mapped metrics operation contract.
+    /*
+     * @brief Documents the release mapped metrics operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void releaseMappedMetrics();
-    /// Description: Describes the publish mapped metrics operation contract.
+    /*
+     * @brief Documents the publish mapped metrics operation contract.
+     * @param deltaTime Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void publishMappedMetrics(float deltaTime);
-    /// Description: Describes the estimate memory usage operation contract.
+    /*
+     * @brief Documents the estimate memory usage operation contract.
+     * @param particleCount Input value used by this contract.
+     * @param sphEnabled Input value used by this contract.
+     * @param solverMode Input value used by this contract.
+     * @param integratorMode Input value used by this contract.
+     * @param energySampleLimit Input value used by this contract.
+     * @param octreeLeafCapacity Input value used by this contract.
+     * @param baseAndIntegratorBytes Input value used by this contract.
+     * @param sphBytes Input value used by this contract.
+     * @param octreeBytes Input value used by this contract.
+     * @return std::size_t value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     std::size_t estimateMemoryUsage(std::size_t particleCount, bool sphEnabled,
                                     SolverMode solverMode, IntegratorMode integratorMode,
                                     std::size_t energySampleLimit, int octreeLeafCapacity,
                                     std::size_t* baseAndIntegratorBytes, std::size_t* sphBytes,
                                     std::size_t* octreeBytes) const;
-    /// Description: Describes the format memory breakdown operation contract.
+    /*
+     * @brief Documents the format memory breakdown operation contract.
+     * @param baseAndIntegratorBytes Input value used by this contract.
+     * @param sphBytes Input value used by this contract.
+     * @param octreeBytes Input value used by this contract.
+     * @param totalBytes Input value used by this contract.
+     * @param budgetBytes Input value used by this contract.
+     * @return std::string value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static std::string formatMemoryBreakdown(std::size_t baseAndIntegratorBytes,
                                              std::size_t sphBytes, std::size_t octreeBytes,
                                              std::size_t totalBytes, std::size_t budgetBytes);

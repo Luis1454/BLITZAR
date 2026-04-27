@@ -1,5 +1,7 @@
-# File: tests/cmake/targets_repo_checks.cmake
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/cmake/targets_repo_checks.cmake
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 function(gravity_add_python_check test_name check_script)
     set(options)

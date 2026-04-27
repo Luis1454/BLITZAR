@@ -1,5 +1,9 @@
-// File: apps/server-service/main.cpp
-// Purpose: Application entry point or host support for BLITZAR executables.
+/*
+ * @file apps/server-service/main.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Application entry points and host executables for BLITZAR.
+ */
 
 #include "apps/server-service/server_args.hpp"
 #include "config/SimulationArgs.hpp"
@@ -17,7 +21,6 @@
 #include <vector>
 
 namespace grav_server_service {
-/// Description: Executes the applyConfigToServer operation.
 void applyConfigToServer(SimulationServer& server, const SimulationConfig& config)
 {
     const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(config, std::cerr);
@@ -37,7 +40,13 @@ void applyConfigToServer(SimulationServer& server, const SimulationConfig& confi
 }
 } // namespace grav_server_service
 
-/// Description: Executes the main operation.
+/*
+ * @brief Documents the main operation contract.
+ * @param argc Input value used by this contract.
+ * @param argv Input value used by this contract.
+ * @return int value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 int main(int argc, char** argv)
 {
     std::vector<std::string_view> args;

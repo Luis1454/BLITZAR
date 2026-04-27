@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/policies/quality_baseline.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/policies/quality_baseline.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -39,19 +41,28 @@ REQUIRED_CROSSWALK_ARTIFACTS = {"SWE-004": "EVD_AGENTS"}
 SUPPORTED_STANDARDS = {"NPR-7150.2D", "NASA-STD-8739.8B", "ECSS-E-ST-40C", "ECSS-Q-ST-80C", "ECSS-E-ST-40-07C"}
 
 
-# Description: Defines the QualityBaselineCheck contract.
+# @brief Defines the quality baseline check type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class QualityBaselineCheck(BaseCheck):
     name = "quality"
     success_message = "quality baseline check passed"
     failure_title = "quality baseline check failed:"
 
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self) -> None:
         self._manifest = QualityManifestLoader()
         self._deviations = DeviationRegister()
         self._git = GitTrackedService()
 
-    # Description: Executes the _execute operation.
+    # @brief Documents the execute operation contract.
+    # @param context Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         self._ensure_required_files(context.root, result)
         manifest = self._manifest.load(context.root, result)
@@ -65,7 +76,11 @@ class QualityBaselineCheck(BaseCheck):
         self._check_required_evidence(context.root, manifest, result)
         self._check_crosswalk(context.root, manifest, result)
 
-    # Description: Executes the _ensure_required_files operation.
+    # @brief Documents the ensure required files operation contract.
+    # @param root Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _ensure_required_files(self, root: Path, result: CheckResult) -> None:
         for rel in REQUIRED_FILES:
             path = root / rel
@@ -75,7 +90,11 @@ class QualityBaselineCheck(BaseCheck):
             if path.stat().st_size == 0:
                 result.add_error(f"quality file is empty: {rel}")
 
-    # Description: Executes the _load_requirement_artifacts operation.
+    # @brief Documents the load requirement artifacts operation contract.
+    # @param manifest Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _load_requirement_artifacts(self, manifest: dict[str, JsonValue], result: CheckResult) -> dict[str, list[str]]:
         rows = self._manifest.get_list(manifest, REQUIREMENTS_KEY, result, keyed_field="id")
         parsed: dict[str, list[str]] = {}
@@ -93,7 +112,12 @@ class QualityBaselineCheck(BaseCheck):
             parsed[req_id] = artifacts
         return parsed
 
-    # Description: Executes the _check_requirement_artifacts operation.
+    # @brief Documents the check requirement artifacts operation contract.
+    # @param root Input value used by this contract.
+    # @param requirements Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_requirement_artifacts(self, root: Path, requirements: dict[str, list[str]], result: CheckResult) -> None:
         for req_id, artifacts in requirements.items():
             for artifact_ref in artifacts:
@@ -107,7 +131,13 @@ class QualityBaselineCheck(BaseCheck):
                 if not (root / artifact_path).exists():
                     result.add_error(f"{req_id}: referenced artifact does not exist: {artifact_ref} -> {artifact_path}")
 
-    # Description: Executes the _check_deviations operation.
+    # @brief Documents the check deviations operation contract.
+    # @param root Input value used by this contract.
+    # @param manifest Input value used by this contract.
+    # @param requirements Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_deviations(
         self,
         root: Path,
@@ -127,7 +157,12 @@ class QualityBaselineCheck(BaseCheck):
         for path in sorted(allowlist - registered_paths):
             result.add_error(f"policy allowlist path is missing from deviation register: {path}")
 
-    # Description: Executes the _check_required_evidence operation.
+    # @brief Documents the check required evidence operation contract.
+    # @param root Input value used by this contract.
+    # @param manifest Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_required_evidence(self, root: Path, manifest: dict[str, JsonValue], result: CheckResult) -> None:
         evidence = manifest.get("evidence")
         if not isinstance(evidence, dict):
@@ -146,7 +181,12 @@ class QualityBaselineCheck(BaseCheck):
                     f"{QUALITY_MANIFEST_PATH}: required evidence must be git-tracked: {artifact_id} -> {expected_path}"
                 )
 
-    # Description: Executes the _check_crosswalk operation.
+    # @brief Documents the check crosswalk operation contract.
+    # @param root Input value used by this contract.
+    # @param manifest Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_crosswalk(self, root: Path, manifest: dict[str, JsonValue], result: CheckResult) -> None:
         rows = self._manifest.get_list(manifest, CROSSWALK_KEY, result, keyed_field="control_id")
         if not rows:
@@ -186,12 +226,18 @@ class QualityBaselineCheck(BaseCheck):
                 result.add_error(f"{QUALITY_MANIFEST_PATH}: crosswalk control {control_id} must reference {artifact_ref}")
 
     @staticmethod
-    # Description: Executes the _as_string operation.
+    # @brief Documents the as string operation contract.
+    # @param value Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _as_string(value: JsonValue | None) -> str:
         return value.strip() if isinstance(value, str) else ""
 
     @staticmethod
-    # Description: Executes the _as_string_list operation.
+    # @brief Documents the as string list operation contract.
+    # @param value Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _as_string_list(value: JsonValue | None) -> list[str]:
         if not isinstance(value, list):
             return []

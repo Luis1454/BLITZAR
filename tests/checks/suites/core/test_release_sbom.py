@@ -1,5 +1,7 @@
-# File: tests/checks/suites/core/test_release_sbom.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/checks/suites/core/test_release_sbom.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 from __future__ import annotations
 
@@ -9,7 +11,10 @@ from pathlib import Path
 from python_tools.ci.release_sbom import ReleaseSbomPackager
 
 
-# Description: Executes the test_release_sbom_packages_release_artifacts operation.
+# @brief Documents the test release sbom packages release artifacts operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_release_sbom_packages_release_artifacts(tmp_path: Path) -> None:
     artifacts_dir = tmp_path / "dist" / "release-bundle"
     artifacts_dir.mkdir(parents=True, exist_ok=True)
@@ -30,7 +35,10 @@ def test_release_sbom_packages_release_artifacts(tmp_path: Path) -> None:
     assert any(component["bom-ref"] == "README.md" for component in components)
 
 
-# Description: Executes the test_release_sbom_requires_artifacts_dir operation.
+# @brief Documents the test release sbom requires artifacts dir operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_release_sbom_requires_artifacts_dir(tmp_path: Path) -> None:
     packager = ReleaseSbomPackager()
 

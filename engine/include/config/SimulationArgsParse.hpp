@@ -1,5 +1,9 @@
-// File: engine/include/config/SimulationArgsParse.hpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/include/config/SimulationArgsParse.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Public configuration interfaces and validation contracts for simulation setup.
+ */
 
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSPARSE_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSPARSE_HPP_
@@ -9,22 +13,78 @@
 #include <string_view>
 #include <vector>
 
-/// Description: Defines the SimulationArgsParse data or behavior contract.
+/*
+ * @brief Defines the simulation args parse type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class SimulationArgsParse final {
 public:
-    /// Description: Describes the to lower operation contract.
+    /*
+     * @brief Documents the to lower operation contract.
+     * @param value Input value used by this contract.
+     * @return std::string value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static std::string toLower(std::string value);
-    /// Description: Describes the parse bool operation contract.
+    /*
+     * @brief Documents the parse bool operation contract.
+     * @param value Input value used by this contract.
+     * @param out Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static bool parseBool(const std::string& value, bool& out);
-    /// Description: Describes the parse uint operation contract.
+    /*
+     * @brief Documents the parse uint operation contract.
+     * @param value Input value used by this contract.
+     * @param out Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static bool parseUint(const std::string& value, std::uint32_t& out);
-    /// Description: Describes the parse int operation contract.
+    /*
+     * @brief Documents the parse int operation contract.
+     * @param value Input value used by this contract.
+     * @param out Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static bool parseInt(const std::string& value, int& out);
-    /// Description: Describes the parse float operation contract.
+    /*
+     * @brief Documents the parse float operation contract.
+     * @param value Input value used by this contract.
+     * @param out Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static bool parseFloat(const std::string& value, float& out);
-    /// Description: Describes the split option operation contract.
+    /*
+     * @brief Documents the split option operation contract.
+     * @param raw Input value used by this contract.
+     * @param key Input value used by this contract.
+     * @param value Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static bool splitOption(const std::string& raw, std::string& key, std::string& value);
-    /// Description: Describes the read value operation contract.
+    /*
+     * @brief Documents the read value operation contract.
+     * @param args Input value used by this contract.
+     * @param index Input value used by this contract.
+     * @param inlined Input value used by this contract.
+     * @param outValue Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static bool readValue(const std::vector<std::string_view>& args, std::size_t& index,
                           const std::string& inlined, std::string& outValue);
 };

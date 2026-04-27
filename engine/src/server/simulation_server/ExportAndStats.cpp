@@ -1,9 +1,18 @@
-// File: engine/src/server/simulation_server/ExportAndStats.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/server/simulation_server/ExportAndStats.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "Internal.hpp"
 
-/// Description: Executes the stopExportWorker operation.
+/*
+ * @brief Documents the stop export worker operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::stopExportWorker()
 {
     if (_exportQueueState == nullptr) {
@@ -19,7 +28,12 @@ void SimulationServer::stopExportWorker()
     }
 }
 
-/// Description: Executes the saveCheckpoint operation.
+/*
+ * @brief Documents the save checkpoint operation contract.
+ * @param outputPath Input value used by this contract.
+ * @return bool SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool SimulationServer::saveCheckpoint(const std::string& outputPath)
 {
     if (outputPath.empty() || !_running.load(std::memory_order_relaxed) ||
@@ -41,7 +55,13 @@ bool SimulationServer::saveCheckpoint(const std::string& outputPath)
     return result->ok;
 }
 
-/// Description: Executes the loadCheckpoint operation.
+/*
+ * @brief Documents the load checkpoint operation contract.
+ * @param inputPath Input value used by this contract.
+ * @param outError Input value used by this contract.
+ * @return bool SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool SimulationServer::loadCheckpoint(const std::string& inputPath, std::string* outError)
 {
     if (inputPath.empty()) {
@@ -131,7 +151,17 @@ bool SimulationServer::loadCheckpoint(const std::string& inputPath, std::string*
     return true;
 }
 
-/// Description: Describes the enqueue export write operation contract.
+/*
+ * @brief Documents the enqueue export write operation contract.
+ * @param outputPath Input value used by this contract.
+ * @param format Input value used by this contract.
+ * @param particles Input value used by this contract.
+ * @param solverModeLabel Input value used by this contract.
+ * @param integratorModeLabel Input value used by this contract.
+ * @param step Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::enqueueExportWrite(const std::string& outputPath, const std::string& format,
                                           const std::vector<Particle>& particles,
                                           const std::string& solverModeLabel,
@@ -152,7 +182,14 @@ void SimulationServer::enqueueExportWrite(const std::string& outputPath, const s
     _exportQueueState->condition.notify_one();
 }
 
-/// Description: Describes the update export status operation contract.
+/*
+ * @brief Documents the update export status operation contract.
+ * @param state Input value used by this contract.
+ * @param path Input value used by this contract.
+ * @param message Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::updateExportStatus(const std::string& state, const std::string& path,
                                           const std::string& message)
 {
@@ -162,7 +199,12 @@ void SimulationServer::updateExportStatus(const std::string& state, const std::s
     _exportLastMessage = message;
 }
 
-/// Description: Executes the tryConsumeSnapshot operation.
+/*
+ * @brief Documents the try consume snapshot operation contract.
+ * @param outSnapshot Input value used by this contract.
+ * @return bool SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool SimulationServer::tryConsumeSnapshot(std::vector<RenderParticle>& outSnapshot)
 {
     std::lock_guard<std::mutex> lock(_snapshotMutex);
@@ -174,7 +216,14 @@ bool SimulationServer::tryConsumeSnapshot(std::vector<RenderParticle>& outSnapsh
     return true;
 }
 
-/// Description: Describes the copy latest snapshot operation contract.
+/*
+ * @brief Documents the copy latest snapshot operation contract.
+ * @param outSnapshot Input value used by this contract.
+ * @param maxPoints Input value used by this contract.
+ * @param outSourceSize Input value used by this contract.
+ * @return bool SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool SimulationServer::copyLatestSnapshot(std::vector<RenderParticle>& outSnapshot,
                                           std::size_t maxPoints, std::size_t* outSourceSize) const
 {
@@ -204,7 +253,12 @@ bool SimulationServer::copyLatestSnapshot(std::vector<RenderParticle>& outSnapsh
     return true;
 }
 
-/// Description: Executes the getStats operation.
+/*
+ * @brief Documents the get stats operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return SimulationStats SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 SimulationStats SimulationServer::getStats() const
 {
     ParticleSystem::SolverMode mode = ParticleSystem::SolverMode::PairwiseCuda;

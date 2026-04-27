@@ -1,11 +1,14 @@
-// File: rust/blitzar-protocol/src/v1/snapshot.rs
-// Purpose: Rust component implementation for BLITZAR runtime services.
+/*
+ * @file rust/blitzar-protocol/src/v1/snapshot.rs
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Rust protocol and gateway components for BLITZAR runtime integration.
+ */
 
 use crate::v1::ResponseEnvelope;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq)]
-/// Description: Defines the RenderParticle struct contract.
 pub struct RenderParticle {
     pub x: f32,
     pub y: f32,
@@ -16,12 +19,9 @@ pub struct RenderParticle {
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-/// Description: Defines the RenderParticleTuple struct contract.
 struct RenderParticleTuple(f32, f32, f32, f32, f32, f32);
 
-/// Description: Implements behavior for the associated Rust type.
 impl From<RenderParticle> for RenderParticleTuple {
-    /// Description: Executes the from operation.
     fn from(value: RenderParticle) -> Self {
         Self(
             value.x,
@@ -34,11 +34,9 @@ impl From<RenderParticle> for RenderParticleTuple {
     }
 }
 
-/// Description: Implements behavior for the associated Rust type.
 impl TryFrom<RenderParticleTuple> for RenderParticle {
     type Error = &'static str;
 
-    /// Description: Executes the try_from operation.
     fn try_from(value: RenderParticleTuple) -> Result<Self, Self::Error> {
         Ok(Self {
             x: value.0,
@@ -51,9 +49,7 @@ impl TryFrom<RenderParticleTuple> for RenderParticle {
     }
 }
 
-/// Description: Implements behavior for the associated Rust type.
 impl Serialize for RenderParticle {
-    /// Description: Executes the serialize operation.
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -63,7 +59,6 @@ impl Serialize for RenderParticle {
 }
 
 impl<'de> Deserialize<'de> for RenderParticle {
-    /// Description: Executes the deserialize operation.
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -75,7 +70,6 @@ impl<'de> Deserialize<'de> for RenderParticle {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-/// Description: Defines the SnapshotPayload struct contract.
 pub struct SnapshotPayload {
     #[serde(flatten)]
     pub envelope: ResponseEnvelope,

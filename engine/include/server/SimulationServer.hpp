@@ -1,5 +1,9 @@
-// File: engine/include/server/SimulationServer.hpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/include/server/SimulationServer.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #ifndef GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONSERVER_HPP_
 #define GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONSERVER_HPP_
@@ -20,91 +24,341 @@
 #include <string>
 #include <thread>
 #include <vector>
-/// Description: Defines the SimulationCheckpointState data or behavior contract.
+/*
+ * @brief Defines the simulation checkpoint state type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct SimulationCheckpointState;
-/// Description: Defines the SimulationCheckpointQueueState data or behavior contract.
+/*
+ * @brief Defines the simulation checkpoint queue state type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct SimulationCheckpointQueueState;
 
-/// Runs the authoritative simulation loop and exposes deterministic control operations.
+/*
+ * @brief Defines the simulation server type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class SimulationServer {
 public:
-    /// Builds a server from explicit particle-count and timestep defaults.
+    /*
+     * @brief Documents the simulation server operation contract.
+     * @param particleCount Input value used by this contract.
+     * @param initialDt Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     explicit SimulationServer(std::uint32_t particleCount, float initialDt);
-    /// Builds a server from a persisted configuration file.
+    /*
+     * @brief Documents the simulation server operation contract.
+     * @param configPath Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     explicit SimulationServer(const std::string& configPath);
-    /// Stops the server thread and releases owned physics resources.
+    /*
+     * @brief Documents the ~simulation server operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     ~SimulationServer();
-    /// Starts the simulation loop thread.
+    /*
+     * @brief Documents the start operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void start();
-    /// Stops the simulation loop thread.
+    /*
+     * @brief Documents the stop operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void stop();
-    /// Forces the paused state seen by the update loop.
+    /*
+     * @brief Documents the set paused operation contract.
+     * @param paused Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setPaused(bool paused);
-    /// Reports whether the update loop is currently paused.
+    /*
+     * @brief Documents the is paused operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool isPaused() const;
-    /// Toggles the paused state.
+    /*
+     * @brief Documents the toggle paused operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void togglePaused();
-    /// Queues exactly one deterministic step while paused.
+    /*
+     * @brief Documents the step once operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void stepOnce();
-    /// Rebuilds the runtime with a new particle count.
+    /*
+     * @brief Documents the set particle count operation contract.
+     * @param particleCount Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setParticleCount(std::uint32_t particleCount);
-    /// Sets the simulation timestep in seconds.
+    /*
+     * @brief Documents the set dt operation contract.
+     * @param dt Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setDt(float dt);
-    /// Multiplies the current timestep by `factor`.
+    /*
+     * @brief Documents the scale dt operation contract.
+     * @param factor Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void scaleDt(float factor);
-    /// Returns the currently configured timestep in seconds.
+    /*
+     * @brief Documents the get dt operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return float value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     float getDt() const;
-    /// Reinitializes the active scenario using the current configuration.
+    /*
+     * @brief Documents the request reset operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void requestReset();
-    /// Attempts recovery from a latched runtime fault.
+    /*
+     * @brief Documents the request recover operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void requestRecover();
-    /// Selects the gravity solver implementation.
+    /*
+     * @brief Documents the set solver mode operation contract.
+     * @param mode Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setSolverMode(const std::string& mode);
-    /// Selects the numerical integrator implementation.
+    /*
+     * @brief Documents the set integrator mode operation contract.
+     * @param mode Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setIntegratorMode(const std::string& mode);
-    /// Applies a named performance profile.
+    /*
+     * @brief Documents the set performance profile operation contract.
+     * @param profile Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setPerformanceProfile(const std::string& profile);
-    /// Updates octree approximation parameters.
+    /*
+     * @brief Documents the set octree parameters operation contract.
+     * @param theta Input value used by this contract.
+     * @param softening Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setOctreeParameters(float theta, float softening);
-    /// Enables or disables SPH processing.
+    /*
+     * @brief Documents the set sph enabled operation contract.
+     * @param enabled Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setSphEnabled(bool enabled);
-    /// Updates the SPH model parameters in SI units.
+    /*
+     * @brief Documents the set sph parameters operation contract.
+     * @param smoothingLength Input value used by this contract.
+     * @param restDensity Input value used by this contract.
+     * @param gasConstant Input value used by this contract.
+     * @param viscosity Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setSphParameters(float smoothingLength, float restDensity, float gasConstant,
                           float viscosity);
-    /// Configures deterministic substep sizing.
+    /*
+     * @brief Documents the set substep policy operation contract.
+     * @param targetDt Input value used by this contract.
+     * @param maxSubsteps Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps);
-    /// Sets how often snapshots are published to remote clients.
+    /*
+     * @brief Documents the set snapshot publish period ms operation contract.
+     * @param periodMs Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setSnapshotPublishPeriodMs(std::uint32_t periodMs);
-    /// Replaces the procedural initial-state configuration.
+    /*
+     * @brief Documents the set initial state config operation contract.
+     * @param config Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setInitialStateConfig(const InitialStateConfig& config);
-    /// Configures energy measurement cadence and retention.
+    /*
+     * @brief Documents the set energy measurement config operation contract.
+     * @param everySteps Input value used by this contract.
+     * @param sampleLimit Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit);
-    /// Enables or disables bounded GPU telemetry sampling.
+    /*
+     * @brief Documents the set gpu telemetry enabled operation contract.
+     * @param enabled Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setGpuTelemetryEnabled(bool enabled);
-    /// Sets default output parameters for snapshot export.
+    /*
+     * @brief Documents the set export defaults operation contract.
+     * @param directory Input value used by this contract.
+     * @param format Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setExportDefaults(const std::string& directory, const std::string& format);
-    /// Updates the frontend-advertised snapshot draw budget used for transfer trimming.
+    /*
+     * @brief Documents the set snapshot transfer cap operation contract.
+     * @param maxPoints Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setSnapshotTransferCap(std::uint32_t maxPoints);
-    /// Selects a file-backed initial state and its parsing format.
+    /*
+     * @brief Documents the set initial state file operation contract.
+     * @param path Input value used by this contract.
+     * @param format Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setInitialStateFile(const std::string& path, const std::string& format);
-    /// Queues an export of the current runtime state.
+    /*
+     * @brief Documents the request export snapshot operation contract.
+     * @param outputPath Input value used by this contract.
+     * @param format Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void requestExportSnapshot(const std::string& outputPath, const std::string& format);
-    /// Captures the current runtime into a restartable checkpoint file.
+    /*
+     * @brief Documents the save checkpoint operation contract.
+     * @param outputPath Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool saveCheckpoint(const std::string& outputPath);
-    /// Loads a restartable checkpoint and rebuilds the runtime from it.
+    /*
+     * @brief Documents the load checkpoint operation contract.
+     * @param inputPath Input value used by this contract.
+     * @param outError Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool loadCheckpoint(const std::string& inputPath, std::string* outError = nullptr);
-    /// Moves the newest snapshot into `outSnapshot` when one is available.
+    /*
+     * @brief Documents the try consume snapshot operation contract.
+     * @param outSnapshot Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool tryConsumeSnapshot(std::vector<RenderParticle>& outSnapshot);
-    /// Copies the newest published snapshot into `outSnapshot`.
+    /*
+     * @brief Documents the copy latest snapshot operation contract.
+     * @param outSnapshot Input value used by this contract.
+     * @param maxPoints Input value used by this contract.
+     * @param outSourceSize Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool copyLatestSnapshot(std::vector<RenderParticle>& outSnapshot, std::size_t maxPoints = 0,
                             std::size_t* outSourceSize = nullptr) const;
-    /// Returns the latest authoritative telemetry sample.
+    /*
+     * @brief Documents the get stats operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return SimulationStats value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     SimulationStats getStats() const;
-    /// Returns the current configuration mirror used by the runtime.
+    /*
+     * @brief Documents the get runtime config operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return SimulationConfig value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     SimulationConfig getRuntimeConfig() const;
 
 private:
-    /// Description: Defines the EnergyValues data or behavior contract.
+    /*
+     * @brief Defines the energy values type contract.
+     * @param None This contract does not take explicit parameters.
+     * @return Not applicable; this block documents a type contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     struct EnergyValues {
         float kinetic;
         float potential;
@@ -114,51 +368,177 @@ private:
         bool estimated;
     };
 
-    /// Description: Defines the PendingExportRequest data or behavior contract.
+    /*
+     * @brief Defines the pending export request type contract.
+     * @param None This contract does not take explicit parameters.
+     * @return Not applicable; this block documents a type contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     struct PendingExportRequest final {
         std::string outputPath;
         std::string format;
     };
-    /// Description: Defines the ExportQueueState data or behavior contract.
+    /*
+     * @brief Defines the export queue state type contract.
+     * @param None This contract does not take explicit parameters.
+     * @return Not applicable; this block documents a type contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     struct ExportQueueState;
-    /// Description: Describes the loop operation contract.
+    /*
+     * @brief Documents the loop operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void loop();
-    /// Description: Describes the publish snapshot operation contract.
+    /*
+     * @brief Documents the publish snapshot operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void publishSnapshot();
-    /// Description: Describes the rebuild system operation contract.
+    /*
+     * @brief Documents the rebuild system operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void rebuildSystem();
-    /// Description: Describes the compute energy values operation contract.
+    /*
+     * @brief Documents the compute energy values operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return EnergyValues value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     EnergyValues computeEnergyValues();
-    /// Description: Describes the maybe update energy operation contract.
+    /*
+     * @brief Documents the maybe update energy operation contract.
+     * @param currentStep Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void maybeUpdateEnergy(std::uint64_t currentStep);
-    /// Description: Describes the clear gpu telemetry operation contract.
+    /*
+     * @brief Documents the clear gpu telemetry operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void clearGpuTelemetry();
-    /// Description: Describes the maybe sample gpu telemetry operation contract.
+    /*
+     * @brief Documents the maybe sample gpu telemetry operation contract.
+     * @param solverMode Input value used by this contract.
+     * @param currentStep Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void maybeSampleGpuTelemetry(std::string_view solverMode, std::uint64_t currentStep);
-    /// Description: Describes the process pending export operation contract.
+    /*
+     * @brief Documents the process pending export operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void processPendingExport();
-    /// Description: Describes the process pending checkpoint save operation contract.
+    /*
+     * @brief Documents the process pending checkpoint save operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void processPendingCheckpointSave();
-    /// Description: Describes the export current state operation contract.
+    /*
+     * @brief Documents the export current state operation contract.
+     * @param outputPath Input value used by this contract.
+     * @param format Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool exportCurrentState(const std::string& outputPath, const std::string& format);
-    /// Description: Describes the capture checkpoint to file operation contract.
+    /*
+     * @brief Documents the capture checkpoint to file operation contract.
+     * @param outputPath Input value used by this contract.
+     * @param outError Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool captureCheckpointToFile(const std::string& outputPath, std::string* outError);
-    /// Description: Describes the start export worker operation contract.
+    /*
+     * @brief Documents the start export worker operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void startExportWorker();
-    /// Description: Describes the stop export worker operation contract.
+    /*
+     * @brief Documents the stop export worker operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void stopExportWorker();
-    /// Description: Describes the enqueue export write operation contract.
+    /*
+     * @brief Documents the enqueue export write operation contract.
+     * @param outputPath Input value used by this contract.
+     * @param format Input value used by this contract.
+     * @param particles Input value used by this contract.
+     * @param solverModeLabel Input value used by this contract.
+     * @param integratorModeLabel Input value used by this contract.
+     * @param step Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void enqueueExportWrite(const std::string& outputPath, const std::string& format,
                             const std::vector<Particle>& particles,
                             const std::string& solverModeLabel,
                             const std::string& integratorModeLabel, std::uint64_t step);
-    /// Description: Describes the update export status operation contract.
+    /*
+     * @brief Documents the update export status operation contract.
+     * @param state Input value used by this contract.
+     * @param path Input value used by this contract.
+     * @param message Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void updateExportStatus(const std::string& state, const std::string& path,
                             const std::string& message);
-    /// Description: Describes the load initial state operation contract.
+    /*
+     * @brief Documents the load initial state operation contract.
+     * @param outParticles Input value used by this contract.
+     * @param inputPath Input value used by this contract.
+     * @param format Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool loadInitialState(std::vector<Particle>& outParticles, const std::string& inputPath,
                           const std::string& format) const;
-    /// Description: Describes the clear published snapshot cache operation contract.
+    /*
+     * @brief Documents the clear published snapshot cache operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void clearPublishedSnapshotCache();
     std::atomic<bool> _running;
     std::atomic<bool> _paused;

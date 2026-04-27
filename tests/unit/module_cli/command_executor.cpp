@@ -1,5 +1,9 @@
-// File: tests/unit/module_cli/command_executor.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/module_cli/command_executor.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "command/CommandContext.hpp"
 #include "command/CommandExecutor.hpp"
@@ -11,7 +15,6 @@
 #include <vector>
 
 namespace grav_test_module_cli_command_executor {
-/// Description: Defines the FakeCommandTransport data or behavior contract.
 class FakeCommandTransport final : public grav_cmd::CommandTransport {
 public:
     bool connect(const std::string& host, std::uint16_t port) override
@@ -59,7 +62,6 @@ public:
     std::vector<ServerClientStatus> scriptedStatuses;
 };
 
-/// Description: Executes the parseSingle operation.
 static grav_cmd::CommandRequest parseSingle(const std::string& line)
 {
     const grav_cmd::CommandParseResult parsed = grav_cmd::CommandParser::parseLine(line, 1u);
@@ -68,7 +70,6 @@ static grav_cmd::CommandRequest parseSingle(const std::string& line)
     return parsed.requests.front();
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandExecutorTest, TST_UNT_MODCLI_009_SetDtMapsToProtocolCommand)
 {
     FakeCommandTransport transport;
@@ -85,7 +86,6 @@ TEST(CommandExecutorTest, TST_UNT_MODCLI_009_SetDtMapsToProtocolCommand)
     EXPECT_FLOAT_EQ(session.config.dt, 0.25F);
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandExecutorTest, TST_UNT_MODCLI_010_RunStepsAndRunUntilUseDeterministicStepFlow)
 {
     FakeCommandTransport transport;
@@ -122,7 +122,6 @@ TEST(CommandExecutorTest, TST_UNT_MODCLI_010_RunStepsAndRunUntilUseDeterministic
     EXPECT_EQ(transport.statusCallCount, 3u);
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandExecutorTest, TST_UNT_MODCLI_011_LoadConfigUpdatesSessionPathAndRejectsInvalidProfile)
 {
     FakeCommandTransport transport;
@@ -143,7 +142,6 @@ TEST(CommandExecutorTest, TST_UNT_MODCLI_011_LoadConfigUpdatesSessionPathAndReje
     EXPECT_NE(session.configPath, originalPath);
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandExecutorTest, TST_UNT_MODCLI_012_CheckpointCommandsMapToProtocolCommands)
 {
     FakeCommandTransport transport;

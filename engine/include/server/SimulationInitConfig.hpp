@@ -1,15 +1,29 @@
-// File: engine/include/server/SimulationInitConfig.hpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/include/server/SimulationInitConfig.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #ifndef GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONINITCONFIG_HPP_
 #define GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONINITCONFIG_HPP_
 #include "types/SimulationTypes.hpp"
 #include <iosfwd>
 #include <string>
-/// Description: Defines the SimulationConfig data or behavior contract.
+/*
+ * @brief Defines the simulation config type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct SimulationConfig;
 
-/// Description: Defines the ResolvedInitialStatePlan data or behavior contract.
+/*
+ * @brief Defines the resolved initial state plan type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct ResolvedInitialStatePlan {
     InitialStateConfig config;
     std::string inputFile;
@@ -17,8 +31,19 @@ struct ResolvedInitialStatePlan {
     std::string summary;
 };
 
-/// Description: Executes the resolveInitialStatePlan operation.
+/*
+ * @brief Documents the resolve initial state plan operation contract.
+ * @param config Input value used by this contract.
+ * @param log Input value used by this contract.
+ * @return ResolvedInitialStatePlan value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config, std::ostream& log);
-/// Description: Executes the buildInitialStateConfig operation.
+/*
+ * @brief Documents the build initial state config operation contract.
+ * @param config Input value used by this contract.
+ * @return InitialStateConfig value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 InitialStateConfig buildInitialStateConfig(const SimulationConfig& config);
 #endif // GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONINITCONFIG_HPP_

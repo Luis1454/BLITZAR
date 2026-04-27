@@ -1,10 +1,13 @@
-// File: tests/unit/config/env_utils.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/config/env_utils.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "config/EnvUtils.hpp"
 #include <gtest/gtest.h>
 
-/// Description: Executes the TEST operation.
 TEST(EnvUtilsTest, TST_UNT_CONF_040_ParseBoolReturnsTrueForValidTrues)
 {
     EXPECT_TRUE(grav_env::parseBool("1", false));
@@ -14,7 +17,6 @@ TEST(EnvUtilsTest, TST_UNT_CONF_040_ParseBoolReturnsTrueForValidTrues)
     EXPECT_TRUE(grav_env::parseBool("YES", false));
 }
 
-/// Description: Executes the TEST operation.
 TEST(EnvUtilsTest, TST_UNT_CONF_041_ParseBoolReturnsFalseForValidFalses)
 {
     EXPECT_FALSE(grav_env::parseBool("0", true));
@@ -24,7 +26,6 @@ TEST(EnvUtilsTest, TST_UNT_CONF_041_ParseBoolReturnsFalseForValidFalses)
     EXPECT_FALSE(grav_env::parseBool("no", true));
 }
 
-/// Description: Executes the TEST operation.
 TEST(EnvUtilsTest, TST_UNT_CONF_042_ParseBoolReturnsFallbackForInvalid)
 {
     EXPECT_TRUE(grav_env::parseBool("invalid", true));
@@ -35,21 +36,18 @@ TEST(EnvUtilsTest, TST_UNT_CONF_042_ParseBoolReturnsFallbackForInvalid)
 
 // Cannot easily mock std::getenv cross-platform for testing 'get' but we can verify it doesn't
 // crash on non-existent env variables.
-/// Description: Verifies the TEST behavior.
 TEST(EnvUtilsTest, TST_UNT_CONF_043_GetReturnsEmptyOptionalForMissingVariable)
 {
     const auto value = grav_env::get("GRAVITY_DEFINITELY_MISSING_ENV_VAR_12345");
     EXPECT_FALSE(value.has_value());
 }
 
-/// Description: Executes the TEST operation.
 TEST(EnvUtilsTest, TST_UNT_CONF_044_GetBoolReturnsFallbackForMissingVariable)
 {
     EXPECT_TRUE(grav_env::getBool("GRAVITY_MISSING_VAR_BOOL_TEST", true));
     EXPECT_FALSE(grav_env::getBool("GRAVITY_MISSING_VAR_BOOL_TEST", false));
 }
 
-/// Description: Executes the TEST operation.
 TEST(EnvUtilsTest, TST_UNT_CONF_045_GetNumberReturnsFalseForMissingVariable)
 {
     int outInt = 42;

@@ -1,9 +1,21 @@
 /*
+ * @file engine/src/physics/cuda/fragments/ParticleSystemCore.inl
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
+
+/*
  * Module: physics/cuda
  * Responsibility: Implement particle-system construction and core mode setters.
  */
 
-/// Description: Executes the buildBootstrapState operation.
+/*
+ * @brief Documents the build bootstrap state operation contract.
+ * @param particleCount Input value used by this contract.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ParticleSystem::buildBootstrapState(int particleCount)
 {
     Particle p;
@@ -19,46 +31,49 @@ void ParticleSystem::buildBootstrapState(int particleCount)
     p.setPosition(Vector3{0, 0, 0});
     _particles.push_back(p);
     for (int i = 1; i < particleCount; ++i) {
-        p.setPosition(Vector3{
-            rand() / (float)RAND_MAX * 10.0f + 1.5f,
-            rand() / (float)RAND_MAX * 10.0f + 1.5f,
-            0.0f
-        });
+        p.setPosition(Vector3{rand() / (float)RAND_MAX * 10.0f + 1.5f,
+                              rand() / (float)RAND_MAX * 10.0f + 1.5f, 0.0f});
         const float angle = rand() / (float)RAND_MAX * 2.0f * kPi;
-        p.setPosition(Vector3{
-            p.getPosition().x * cosf(angle) - p.getPosition().y * sinf(angle),
-            p.getPosition().x * sinf(angle) + p.getPosition().y * cosf(angle),
-            0.0f
-        });
+        p.setPosition(Vector3{p.getPosition().x * cosf(angle) - p.getPosition().y * sinf(angle),
+                              p.getPosition().x * sinf(angle) + p.getPosition().y * cosf(angle),
+                              0.0f});
         p.setMass(diskMassPerParticle);
         const float radius = std::max(p.getPosition().norm(), 1e-4f);
-        const float enclosedFraction = std::clamp((radius * radius - radiusMin * radiusMin) / radiusRange2, 0.0f, 1.0f);
+        const float enclosedFraction =
+            std::clamp((radius * radius - radiusMin * radiusMin) / radiusRange2, 0.0f, 1.0f);
         const float enclosedMass = massTerre + diskMass * enclosedFraction;
         const float orbitalSpeed = sqrtf(enclosedMass / radius);
-        p.setVelocity(Vector3{
-            -p.getPosition().y * orbitalSpeed / radius,
-            p.getPosition().x * orbitalSpeed / radius,
-            0.0f
-        });
+        p.setVelocity(Vector3{-p.getPosition().y * orbitalSpeed / radius,
+                              p.getPosition().x * orbitalSpeed / radius, 0.0f});
         _particles.push_back(p);
     }
 }
 
-/// Description: Executes the ParticleSystem operation.
-ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
+/*
+ * @brief Documents the particle system operation contract.
+ * @param numParticles Input value used by this contract.
+ * @param bootstrapInitialState Input value used by this contract.
+ * @return ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState)
+{
     const int clampedParticles = std::max(2, numParticles);
     initializeRuntimeState(static_cast<std::size_t>(clampedParticles));
     if (bootstrapInitialState) {
         buildBootstrapState(clampedParticles);
-    } else {
+    }
+    else {
         _particles.assign(static_cast<std::size_t>(clampedParticles), Particle{});
     }
     if (_sphEnabled) {
         fprintf(stdout, "[sph] enabled h=%f restDensity=%f gas=%f viscosity=%f\n",
-            _sphSmoothingLength, _sphRestDensity, _sphGasConstant, _sphViscosity);
+                _sphSmoothingLength, _sphRestDensity, _sphGasConstant, _sphViscosity);
     }
-    if (!allocateParticleBuffers(static_cast<std::size_t>(clampedParticles))) return;
-    if (bootstrapInitialState && !seedDeviceState()) return;
+    if (!allocateParticleBuffers(static_cast<std::size_t>(clampedParticles)))
+        return;
+    if (bootstrapInitialState && !seedDeviceState())
+        return;
 
     if (_solverMode == SolverMode::OctreeGpu) {
         if (!ensureLinearOctreeScratchCapacity(clampedParticles)) {
@@ -75,25 +90,34 @@ ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
     if (_solverMode != SolverMode::OctreeCpu &&
         (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog)) {
         if (!allocateRk4Buffers(clampedParticles)) {
-            throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
+            throw std::runtime_error(
+                "[integrator] failed to allocate required RK4/Leapfrog buffers");
         }
     }
 }
 
-/// Description: Executes the ParticleSystem operation.
+/*
+ * @brief Documents the particle system operation contract.
+ * @param initialParticles Input value used by this contract.
+ * @return ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ParticleSystem::ParticleSystem(std::vector<Particle> initialParticles)
 {
     const std::size_t particleCapacity = std::max<std::size_t>(2u, initialParticles.size());
     initializeRuntimeState(particleCapacity);
     _particles = std::move(initialParticles);
-    if (_particles.size() < particleCapacity) _particles.resize(particleCapacity);
+    if (_particles.size() < particleCapacity)
+        _particles.resize(particleCapacity);
 
     if (_sphEnabled) {
         fprintf(stdout, "[sph] enabled h=%f restDensity=%f gas=%f viscosity=%f\n",
-            _sphSmoothingLength, _sphRestDensity, _sphGasConstant, _sphViscosity);
+                _sphSmoothingLength, _sphRestDensity, _sphGasConstant, _sphViscosity);
     }
-    if (!allocateParticleBuffers(particleCapacity)) return;
-    if (!seedDeviceState()) return;
+    if (!allocateParticleBuffers(particleCapacity))
+        return;
+    if (!seedDeviceState())
+        return;
 
     if (_solverMode == SolverMode::OctreeGpu) {
         if (!ensureLinearOctreeScratchCapacity(static_cast<int>(particleCapacity))) {
@@ -110,43 +134,74 @@ ParticleSystem::ParticleSystem(std::vector<Particle> initialParticles)
     if (_solverMode != SolverMode::OctreeCpu &&
         (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog)) {
         if (!allocateRk4Buffers(clampedParticles)) {
-            throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
+            throw std::runtime_error(
+                "[integrator] failed to allocate required RK4/Leapfrog buffers");
         }
     }
 }
 
-/// Description: Releases resources owned by ParticleSystem.
-ParticleSystem::~ParticleSystem() {
+/*
+ * @brief Documents the ~particle system operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+ParticleSystem::~ParticleSystem()
+{
     releaseParticleBuffers();
 }
 
-/// Description: Describes the get particles operation contract.
-const std::vector<Particle> &ParticleSystem::getParticles() const { return _particles; }
+/*
+ * @brief Documents the get particles operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return const std::vector<Particle> &ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+const std::vector<Particle>& ParticleSystem::getParticles() const
+{
+    return _particles;
+}
 
-/// Description: Describes the get mapped gpu metrics operation contract.
-const GpuSystemMetrics *ParticleSystem::getMappedGpuMetrics() const
+/*
+ * @brief Documents the get mapped gpu metrics operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return const GpuSystemMetrics *ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+const GpuSystemMetrics* ParticleSystem::getMappedGpuMetrics() const
 {
     return _mappedMetricsHost;
 }
 
-/// Description: Executes the setParticles operation.
+/*
+ * @brief Documents the set particles operation contract.
+ * @param particles Input value used by this contract.
+ * @return bool ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ParticleSystem::setParticles(std::vector<Particle> particles)
 {
-    if (particles.empty() || particles.size() != _deviceParticleCapacity) return false;
+    if (particles.empty() || particles.size() != _deviceParticleCapacity)
+        return false;
     _particles = std::move(particles);
     _hostStateDirty = false;
     _leapfrogPrimed = false;
     if (_solverMode == SolverMode::OctreeGpu) {
         if (!ensureLinearOctreeScratchCapacity(static_cast<int>(_particles.size()))) {
-            fprintf(stderr,
-                    "[octree-gpu] scratch preallocation failed after setParticles, falling back to pairwise_cuda\n");
+            fprintf(stderr, "[octree-gpu] scratch preallocation failed after setParticles, falling "
+                            "back to pairwise_cuda\n");
             _solverMode = SolverMode::PairwiseCuda;
         }
     }
     return true;
 }
 
-/// Description: Executes the setUseOctree operation.
+/*
+ * @brief Documents the set use octree operation contract.
+ * @param enabled Input value used by this contract.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ParticleSystem::setUseOctree(bool enabled)
 {
     if (!enabled) {
@@ -154,66 +209,186 @@ void ParticleSystem::setUseOctree(bool enabled)
         return;
     }
     if (!ensureLinearOctreeScratchCapacity(static_cast<int>(_particles.size()))) {
-        fprintf(stderr,
-                "[octree-gpu] scratch preallocation failed, keeping current solver\n");
+        fprintf(stderr, "[octree-gpu] scratch preallocation failed, keeping current solver\n");
         return;
     }
     _solverMode = SolverMode::OctreeGpu;
 }
-/// Description: Executes the usesOctree operation.
-bool ParticleSystem::usesOctree() const { return _solverMode != SolverMode::PairwiseCuda; }
-/// Description: Executes the setOctreeTheta operation.
-void ParticleSystem::setOctreeTheta(float theta) { if (theta > 0.01f) _octreeTheta = theta; }
-/// Description: Executes the setOctreeOpeningCriterion operation.
-void ParticleSystem::setOctreeOpeningCriterion(OctreeOpeningCriterion criterion) { _octreeOpeningCriterion = criterion; }
-/// Description: Executes the setOctreeSoftening operation.
-void ParticleSystem::setOctreeSoftening(float softening) { if (softening > 1e-5f) _octreeSoftening = softening; }
-/// Description: Executes the setSphEnabled operation.
-void ParticleSystem::setSphEnabled(bool enabled) { _sphEnabled = enabled; }
-/// Description: Executes the isSphEnabled operation.
-bool ParticleSystem::isSphEnabled() const { return _sphEnabled; }
-/// Description: Executes the setSphParameters operation.
-void ParticleSystem::setSphParameters(float h, float rho, float k, float mu) {
-    if (h > 0.05f) _sphSmoothingLength = h;
-    if (rho > 0.01f) _sphRestDensity = rho;
-    if (k > 0.01f) _sphGasConstant = k;
-    if (mu >= 0.0f) _sphViscosity = mu;
+
+/*
+ * @brief Documents the uses octree operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return bool ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+bool ParticleSystem::usesOctree() const
+{
+    return _solverMode != SolverMode::PairwiseCuda;
 }
-/// Description: Executes the setPhysicsStabilityConstants operation.
-void ParticleSystem::setPhysicsStabilityConstants(float maxA, float minS, float minD2, float minT) {
-    if (maxA > 0.0f) _physicsMaxAcceleration = maxA;
-    if (minS >= 0.0f) _physicsMinSoftening = minS;
-    if (minD2 >= 0.0f) _physicsMinDistance2 = minD2;
-    if (minT >= 0.0f) _physicsMinTheta = minT;
+
+void ParticleSystem::setOctreeTheta(float theta)
+{
+    if (theta > 0.01f)
+        _octreeTheta = theta;
 }
-/// Description: Executes the setSphCaps operation.
-void ParticleSystem::setSphCaps(float maxA, float maxS) {
-    if (maxA > 0.0f) _sphMaxAcceleration = maxA;
-    if (maxS > 0.0f) _sphMaxSpeed = maxS;
+
+/*
+ * @brief Documents the set octree opening criterion operation contract.
+ * @param criterion Input value used by this contract.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+void ParticleSystem::setOctreeOpeningCriterion(OctreeOpeningCriterion criterion)
+{
+    _octreeOpeningCriterion = criterion;
 }
-/// Description: Executes the getCumulativeRadiatedEnergy operation.
-float ParticleSystem::getCumulativeRadiatedEnergy() const { return _cumulativeRadiatedEnergy; }
-/// Description: Executes the getThermalSpecificHeat operation.
-float ParticleSystem::getThermalSpecificHeat() const { return _thermalSpecificHeat; }
-/// Description: Executes the setSolverMode operation.
+
+void ParticleSystem::setOctreeSoftening(float softening)
+{
+    if (softening > 1e-5f)
+        _octreeSoftening = softening;
+}
+
+/*
+ * @brief Documents the set sph enabled operation contract.
+ * @param enabled Input value used by this contract.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+void ParticleSystem::setSphEnabled(bool enabled)
+{
+    _sphEnabled = enabled;
+}
+
+/*
+ * @brief Documents the is sph enabled operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return bool ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+bool ParticleSystem::isSphEnabled() const
+{
+    return _sphEnabled;
+}
+
+/*
+ * @brief Documents the set sph parameters operation contract.
+ * @param h Input value used by this contract.
+ * @param rho Input value used by this contract.
+ * @param k Input value used by this contract.
+ * @param mu Input value used by this contract.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+void ParticleSystem::setSphParameters(float h, float rho, float k, float mu)
+{
+    if (h > 0.05f)
+        _sphSmoothingLength = h;
+    if (rho > 0.01f)
+        _sphRestDensity = rho;
+    if (k > 0.01f)
+        _sphGasConstant = k;
+    if (mu >= 0.0f)
+        _sphViscosity = mu;
+}
+
+/*
+ * @brief Documents the set physics stability constants operation contract.
+ * @param maxA Input value used by this contract.
+ * @param minS Input value used by this contract.
+ * @param minD2 Input value used by this contract.
+ * @param minT Input value used by this contract.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+void ParticleSystem::setPhysicsStabilityConstants(float maxA, float minS, float minD2, float minT)
+{
+    if (maxA > 0.0f)
+        _physicsMaxAcceleration = maxA;
+    if (minS >= 0.0f)
+        _physicsMinSoftening = minS;
+    if (minD2 >= 0.0f)
+        _physicsMinDistance2 = minD2;
+    if (minT >= 0.0f)
+        _physicsMinTheta = minT;
+}
+
+/*
+ * @brief Documents the set sph caps operation contract.
+ * @param maxA Input value used by this contract.
+ * @param maxS Input value used by this contract.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+void ParticleSystem::setSphCaps(float maxA, float maxS)
+{
+    if (maxA > 0.0f)
+        _sphMaxAcceleration = maxA;
+    if (maxS > 0.0f)
+        _sphMaxSpeed = maxS;
+}
+
+/*
+ * @brief Documents the get cumulative radiated energy operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return float ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+float ParticleSystem::getCumulativeRadiatedEnergy() const
+{
+    return _cumulativeRadiatedEnergy;
+}
+
+/*
+ * @brief Documents the get thermal specific heat operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return float ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+float ParticleSystem::getThermalSpecificHeat() const
+{
+    return _thermalSpecificHeat;
+}
+
+/*
+ * @brief Documents the set solver mode operation contract.
+ * @param mode Input value used by this contract.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ParticleSystem::setSolverMode(SolverMode mode)
 {
     if (mode == SolverMode::OctreeGpu) {
         if (!ensureLinearOctreeScratchCapacity(static_cast<int>(_particles.size()))) {
-            fprintf(stderr,
-                    "[octree-gpu] scratch preallocation failed, keeping current solver\n");
+            fprintf(stderr, "[octree-gpu] scratch preallocation failed, keeping current solver\n");
             return;
         }
     }
     _solverMode = mode;
 }
-/// Description: Executes the getSolverMode operation.
-ParticleSystem::SolverMode ParticleSystem::getSolverMode() const { return _solverMode; }
-/// Description: Executes the setIntegratorMode operation.
-void ParticleSystem::setIntegratorMode(IntegratorMode mode) {
-    if (_solverMode != SolverMode::OctreeCpu
-        && (mode == IntegratorMode::Rk4 || mode == IntegratorMode::Leapfrog)
-        && !allocateRk4Buffers(static_cast<int>(_particles.size()))) {
+
+/*
+ * @brief Documents the get solver mode operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return ParticleSystem::SolverMode ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+ParticleSystem::SolverMode ParticleSystem::getSolverMode() const
+{
+    return _solverMode;
+}
+
+/*
+ * @brief Documents the set integrator mode operation contract.
+ * @param mode Input value used by this contract.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+void ParticleSystem::setIntegratorMode(IntegratorMode mode)
+{
+    if (_solverMode != SolverMode::OctreeCpu &&
+        (mode == IntegratorMode::Rk4 || mode == IntegratorMode::Leapfrog) &&
+        !allocateRk4Buffers(static_cast<int>(_particles.size()))) {
         throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
     }
     _integratorMode = mode;
@@ -222,23 +397,21 @@ void ParticleSystem::setIntegratorMode(IntegratorMode mode) {
     std::size_t baseAndIntegratorBytes = 0u;
     std::size_t sphBytes = 0u;
     std::size_t octreeBytes = 0u;
-    const std::size_t totalBytes = estimateMemoryUsage(
-        _particles.size(),
-        _sphEnabled,
-        _solverMode,
-        _integratorMode,
-        65536u,
-        0,
-        &baseAndIntegratorBytes,
-        &sphBytes,
-        &octreeBytes);
+    const std::size_t totalBytes =
+        estimateMemoryUsage(_particles.size(), _sphEnabled, _solverMode, _integratorMode, 65536u, 0,
+                            &baseAndIntegratorBytes, &sphBytes, &octreeBytes);
     const std::string breakdown = formatMemoryBreakdown(
-        baseAndIntegratorBytes,
-        sphBytes,
-        octreeBytes,
-        totalBytes,
-        6656ull * 1024ull * 1024ull);
+        baseAndIntegratorBytes, sphBytes, octreeBytes, totalBytes, 6656ull * 1024ull * 1024ull);
     fprintf(stdout, "%s\n", breakdown.c_str());
 }
-/// Description: Executes the getIntegratorMode operation.
-ParticleSystem::IntegratorMode ParticleSystem::getIntegratorMode() const { return _integratorMode; }
+
+/*
+ * @brief Documents the get integrator mode operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return ParticleSystem::IntegratorMode ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+ParticleSystem::IntegratorMode ParticleSystem::getIntegratorMode() const
+{
+    return _integratorMode;
+}

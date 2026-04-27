@@ -1,5 +1,9 @@
-// File: tests/unit/module_cli/server_ops_validation.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/module_cli/server_ops_validation.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "client/ErrorBuffer.hpp"
 #include "modules/cli/module_cli_server_ops.hpp"
@@ -9,7 +13,6 @@
 #include <vector>
 
 namespace grav_test_module_cli_server_ops {
-/// Description: Executes the TEST operation.
 TEST(ModuleCliServerOpsTest, TST_UNT_MODCLI_004_CommandStepRejectsInvalidCount)
 {
     grav_module_cli::ModuleState state;
@@ -20,7 +23,6 @@ TEST(ModuleCliServerOpsTest, TST_UNT_MODCLI_004_CommandStepRejectsInvalidCount)
     EXPECT_EQ(std::string(errorBuffer), "invalid step count");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ModuleCliServerOpsTest, TST_UNT_MODCLI_005_ConnectRejectsInvalidPort)
 {
     grav_module_cli::ModuleState state;

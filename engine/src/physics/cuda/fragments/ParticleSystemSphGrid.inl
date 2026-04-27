@@ -1,5 +1,9 @@
-// File: engine/src/physics/cuda/fragments/ParticleSystemSphGrid.inl
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/physics/cuda/fragments/ParticleSystemSphGrid.inl
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
 
 /*
  * Module: physics/cuda
@@ -12,7 +16,15 @@
 
 // Definition moved to ParticleSystemPrelude.inl
 
-/// Description: Describes the sph grid cell index operation contract.
+/*
+ * @brief Documents the sph grid cell index operation contract.
+ * @param px Input value used by this contract.
+ * @param py Input value used by this contract.
+ * @param pz Input value used by this contract.
+ * @param grid Input value used by this contract.
+ * @return int value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __device__ int sphGridCellIndex(
     float px, float py, float pz,
     const SphGridParams &grid)
@@ -26,7 +38,16 @@ __device__ int sphGridCellIndex(
     return cx + cy * grid.gridSize + cz * grid.gridSize * grid.gridSize;
 }
 
-/// Description: Describes the compute sph cell hash kernel operation contract.
+/*
+ * @brief Documents the compute sph cell hash kernel operation contract.
+ * @param particles Input value used by this contract.
+ * @param outCellHash Input value used by this contract.
+ * @param outParticleIndex Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @param grid Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void computeSphCellHashKernel(
     ParticleSoAView particles,
     IndexHandle outCellHash,
@@ -43,7 +64,14 @@ __global__ void computeSphCellHashKernel(
     outParticleIndex[i] = i;
 }
 
-/// Description: Describes the reset cell bounds kernel operation contract.
+/*
+ * @brief Documents the reset cell bounds kernel operation contract.
+ * @param cellStart Input value used by this contract.
+ * @param cellEnd Input value used by this contract.
+ * @param totalCells Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void resetCellBoundsKernel(
     IndexHandle cellStart,
     IndexHandle cellEnd,
@@ -57,7 +85,15 @@ __global__ void resetCellBoundsKernel(
     cellEnd[i] = -1;
 }
 
-/// Description: Describes the find cell bounds kernel operation contract.
+/*
+ * @brief Documents the find cell bounds kernel operation contract.
+ * @param sortedHash Input value used by this contract.
+ * @param cellStart Input value used by this contract.
+ * @param cellEnd Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void findCellBoundsKernel(
     IndexConstHandle sortedHash,
     IndexHandle cellStart,
@@ -81,7 +117,14 @@ __global__ void findCellBoundsKernel(
 
 // CPU-side comparison sort for cell hashes (simple insertion sort for GPU-built arrays).
 // Used host-side after downloading hash array — avoids needing thrust.
-/// Description: Describes the sort particles by hash operation contract.
+/*
+ * @brief Documents the sort particles by hash operation contract.
+ * @param cellHash Input value used by this contract.
+ * @param particleIndex Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static void sortParticlesByHash(
     int *cellHash, int *particleIndex, int numParticles)
 {
@@ -105,7 +148,12 @@ static void sortParticlesByHash(
         static_cast<std::size_t>(numParticles) * sizeof(int));
 }
 
-/// Description: Executes the buildSphGrid operation.
+/*
+ * @brief Documents the build sph grid operation contract.
+ * @param numParticles Input value used by this contract.
+ * @return bool ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ParticleSystem::buildSphGrid(int numParticles)
 {
     if (numParticles <= 0 || !d_soaPosX || !d_sphCellHash ||

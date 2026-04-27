@@ -1,5 +1,7 @@
-# File: tests/checks/suites/core/test_clang_tidy.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/checks/suites/core/test_clang_tidy.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 from __future__ import annotations
 
@@ -12,9 +14,16 @@ from python_tools.ci.clang_tidy import ClangTidyCheck
 from python_tools.core.models import CheckContext
 
 
-# Description: Defines the _FakeRunner contract.
+# @brief Defines the fake runner type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class _FakeRunner:
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param diff_output Input value used by this contract.
+    # @param diff_rc Input value used by this contract.
+    # @param timeout_analyzer_once Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self, diff_output: str = "", diff_rc: int = 0, timeout_analyzer_once: bool = False) -> None:
         self.calls: list[tuple[list[str], Path | None]] = []
         self.diff_output = diff_output
@@ -22,7 +31,12 @@ class _FakeRunner:
         self.timeout_analyzer_once = timeout_analyzer_once
         self._timed_out = False
 
-    # Description: Executes the run operation.
+    # @brief Documents the run operation contract.
+    # @param args Input value used by this contract.
+    # @param timeout Input value used by this contract.
+    # @param cwd Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def run(
         self,
         args: list[str],
@@ -36,7 +50,14 @@ class _FakeRunner:
             return subprocess.CompletedProcess(args, self.diff_rc, stdout=self.diff_output, stderr=stderr)
         return subprocess.CompletedProcess(args, 0, stdout="tidy ok\n", stderr="")
 
-    # Description: Executes the run_with_heartbeat operation.
+    # @brief Documents the run with heartbeat operation contract.
+    # @param args Input value used by this contract.
+    # @param timeout Input value used by this contract.
+    # @param cwd Input value used by this contract.
+    # @param heartbeat_seconds Input value used by this contract.
+    # @param on_heartbeat Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def run_with_heartbeat(
         self,
         args: list[str],
@@ -55,14 +76,28 @@ class _FakeRunner:
         return subprocess.CompletedProcess(args, 0, stdout="tidy ok\n", stderr="")
 
 
-# Description: Executes the _write_compile_db operation.
+# @brief Documents the write compile db operation contract.
+# @param build_dir Input value used by this contract.
+# @param files Input value used by this contract.
+# @param compiler Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _write_compile_db(build_dir: Path, files: list[Path], compiler: str = "clang++") -> None:
     build_dir.mkdir(parents=True, exist_ok=True)
     entries = [{"directory": str(path.parent), "command": f"{compiler} -c {path.name}", "file": str(path)} for path in files]
     (build_dir / "compile_commands.json").write_text(json.dumps(entries), encoding="utf-8")
 
 
-# Description: Executes the _context operation.
+# @brief Documents the context operation contract.
+# @param root Input value used by this contract.
+# @param build_dir Input value used by this contract.
+# @param diff_base Input value used by this contract.
+# @param diff_target Input value used by this contract.
+# @param header_filter Input value used by this contract.
+# @param file_timeout_sec Input value used by this contract.
+# @param timeout_fallback_checks Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _context(
     root: Path,
     build_dir: Path,
@@ -85,7 +120,12 @@ def _context(
     )
 
 
-# Description: Executes the _make_source operation.
+# @brief Documents the make source operation contract.
+# @param root Input value used by this contract.
+# @param name Input value used by this contract.
+# @param suffix Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _make_source(root: Path, name: str, suffix: str = ".cpp") -> Path:
     path = root / "runtime" / "src" / "server" / f"{name}{suffix}"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -93,7 +133,11 @@ def _make_source(root: Path, name: str, suffix: str = ".cpp") -> Path:
     return path
 
 
-# Description: Executes the _make_check operation.
+# @brief Documents the make check operation contract.
+# @param monkeypatch Input value used by this contract.
+# @param runner Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _make_check(monkeypatch, runner: _FakeRunner | None = None) -> tuple[ClangTidyCheck, _FakeRunner]:
     fake_runner = runner or _FakeRunner()
     check = ClangTidyCheck()
@@ -102,12 +146,19 @@ def _make_check(monkeypatch, runner: _FakeRunner | None = None) -> tuple[ClangTi
     return check, fake_runner
 
 
-# Description: Executes the _tidy_calls operation.
+# @brief Documents the tidy calls operation contract.
+# @param runner Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _tidy_calls(runner: _FakeRunner) -> list[list[str]]:
     return [args for args, _ in runner.calls if args[0].endswith("clang-tidy")]
 
 
-# Description: Executes the test_clang_tidy_runs_only_changed_compile_entries operation.
+# @brief Documents the test clang tidy runs only changed compile entries operation contract.
+# @param monkeypatch Input value used by this contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_clang_tidy_runs_only_changed_compile_entries(monkeypatch, tmp_path: Path) -> None:
     changed = _make_source(tmp_path, "changed")
     unchanged = _make_source(tmp_path, "unchanged")
@@ -125,7 +176,11 @@ def test_clang_tidy_runs_only_changed_compile_entries(monkeypatch, tmp_path: Pat
     assert "clang-tidy-logs" in result.success_message
 
 
-# Description: Executes the test_clang_tidy_skips_clean_diffs operation.
+# @brief Documents the test clang tidy skips clean diffs operation contract.
+# @param monkeypatch Input value used by this contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_clang_tidy_skips_clean_diffs(monkeypatch, tmp_path: Path) -> None:
     source = _make_source(tmp_path, "file")
     build_dir = tmp_path / "build-quality"
@@ -138,7 +193,11 @@ def test_clang_tidy_skips_clean_diffs(monkeypatch, tmp_path: Path) -> None:
     assert result.success_message == "clang-tidy skipped (no matching changed files)"
 
 
-# Description: Executes the test_clang_tidy_expands_scope_for_header_only_diffs operation.
+# @brief Documents the test clang tidy expands scope for header only diffs operation contract.
+# @param monkeypatch Input value used by this contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_clang_tidy_expands_scope_for_header_only_diffs(monkeypatch, tmp_path: Path) -> None:
     first = _make_source(tmp_path, "first")
     second = _make_source(tmp_path, "second")
@@ -154,7 +213,11 @@ def test_clang_tidy_expands_scope_for_header_only_diffs(monkeypatch, tmp_path: P
     assert "clang-tidy skipped" not in result.success_message
 
 
-# Description: Executes the test_clang_tidy_reports_git_diff_failures operation.
+# @brief Documents the test clang tidy reports git diff failures operation contract.
+# @param monkeypatch Input value used by this contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_clang_tidy_reports_git_diff_failures(monkeypatch, tmp_path: Path) -> None:
     source = _make_source(tmp_path, "file")
     build_dir = tmp_path / "build-quality"
@@ -167,7 +230,11 @@ def test_clang_tidy_reports_git_diff_failures(monkeypatch, tmp_path: Path) -> No
     assert any("git diff failed: bad rev" in error for error in result.errors)
 
 
-# Description: Executes the test_clang_tidy_uses_windows_llvm_fallback operation.
+# @brief Documents the test clang tidy uses windows llvm fallback operation contract.
+# @param monkeypatch Input value used by this contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_clang_tidy_uses_windows_llvm_fallback(monkeypatch, tmp_path: Path) -> None:
     source = _make_source(tmp_path, "file")
     build_dir = tmp_path / "build-quality"
@@ -188,7 +255,11 @@ def test_clang_tidy_uses_windows_llvm_fallback(monkeypatch, tmp_path: Path) -> N
     assert len([args for args, _ in runner.calls if args[0] == str(fallback)]) == 1
 
 
-# Description: Executes the test_clang_tidy_adds_cl_driver_mode_for_msvc_compile_db operation.
+# @brief Documents the test clang tidy adds cl driver mode for msvc compile db operation contract.
+# @param monkeypatch Input value used by this contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_clang_tidy_adds_cl_driver_mode_for_msvc_compile_db(monkeypatch, tmp_path: Path) -> None:
     source = _make_source(tmp_path, "file")
     build_dir = tmp_path / "build-quality"
@@ -203,7 +274,12 @@ def test_clang_tidy_adds_cl_driver_mode_for_msvc_compile_db(monkeypatch, tmp_pat
     assert "--extra-arg-before=--driver-mode=cl" in tidy_calls[0]
 
 
-# Description: Executes the test_clang_tidy_auto_job_cap_is_visible_in_progress operation.
+# @brief Documents the test clang tidy auto job cap is visible in progress operation contract.
+# @param monkeypatch Input value used by this contract.
+# @param tmp_path Input value used by this contract.
+# @param capsys Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_clang_tidy_auto_job_cap_is_visible_in_progress(monkeypatch, tmp_path: Path, capsys) -> None:
     files = [_make_source(tmp_path, f"file_{index}") for index in range(10)]
     build_dir = tmp_path / "build-quality"
@@ -218,7 +294,12 @@ def test_clang_tidy_auto_job_cap_is_visible_in_progress(monkeypatch, tmp_path: P
     assert "[clang-tidy] analyzing 10 file(s) with jobs=6" in captured.out
 
 
-# Description: Executes the test_clang_tidy_emits_progress_in_terminal operation.
+# @brief Documents the test clang tidy emits progress in terminal operation contract.
+# @param monkeypatch Input value used by this contract.
+# @param tmp_path Input value used by this contract.
+# @param capsys Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_clang_tidy_emits_progress_in_terminal(monkeypatch, tmp_path: Path, capsys) -> None:
     source = _make_source(tmp_path, "file")
     build_dir = tmp_path / "build-quality"
@@ -235,7 +316,11 @@ def test_clang_tidy_emits_progress_in_terminal(monkeypatch, tmp_path: Path, caps
     assert "[clang-tidy] [1/1] done runtime" in captured.out
 
 
-# Description: Executes the test_clang_tidy_timeout_falls_back_to_light_checks operation.
+# @brief Documents the test clang tidy timeout falls back to light checks operation contract.
+# @param monkeypatch Input value used by this contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_clang_tidy_timeout_falls_back_to_light_checks(monkeypatch, tmp_path: Path) -> None:
     source = _make_source(tmp_path, "file")
     build_dir = tmp_path / "build-quality"
@@ -252,7 +337,11 @@ def test_clang_tidy_timeout_falls_back_to_light_checks(monkeypatch, tmp_path: Pa
     assert "-checks=-*,bugprone-unused-return-value" in tidy_calls[1]
 
 
-# Description: Executes the test_clang_tidy_timeout_without_fallback_fails operation.
+# @brief Documents the test clang tidy timeout without fallback fails operation contract.
+# @param monkeypatch Input value used by this contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_clang_tidy_timeout_without_fallback_fails(monkeypatch, tmp_path: Path) -> None:
     source = _make_source(tmp_path, "file")
     build_dir = tmp_path / "build-quality"

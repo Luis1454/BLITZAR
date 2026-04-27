@@ -1,10 +1,38 @@
-// File: engine/src/server/simulation_server/LifecycleControls.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/server/simulation_server/LifecycleControls.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "Internal.hpp"
 
-/// Description: Executes the SimulationServer operation.
+/*
+ * @brief Documents the simulation server operation contract.
+ * @param particleCount Input value used by this contract.
+ * @param initialDt Input value used by this contract.
+ * @return SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
+    /*
+     * @brief Documents the running operation contract.
+     * @param false Input value used by this contract.
+     * @param false Input value used by this contract.
+     * @param false Input value used by this contract.
+     * @param false Input value used by this contract.
+     * @param _stepRequests Input value used by this contract.
+     * @param initialDt Input value used by this contract.
+     * @param _steps Input value used by this contract.
+     * @param f Input value used by this contract.
+     * @param f Input value used by this contract.
+     * @param f Input value used by this contract.
+     * @param f Input value used by this contract.
+     * @param f Input value used by this contract.
+     * @return : value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     : _running(false),
       _paused(false),
       _resetRequested(false),
@@ -128,7 +156,12 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
     _runtimeConfigMirror.energySampleLimit = _energySampleLimit.load(std::memory_order_relaxed);
 }
 
-/// Description: Executes the SimulationServer operation.
+/*
+ * @brief Documents the simulation server operation contract.
+ * @param f Input value used by this contract.
+ * @return SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 SimulationServer::SimulationServer(const std::string& configPath) : SimulationServer(2u, 0.01f)
 {
     _configPath = configPath.empty() ? "simulation.ini" : configPath;
@@ -191,14 +224,24 @@ SimulationServer::SimulationServer(const std::string& configPath) : SimulationSe
                                std::memory_order_relaxed);
 }
 
-/// Description: Releases resources owned by SimulationServer.
+/*
+ * @brief Documents the ~simulation server operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 SimulationServer::~SimulationServer()
 {
     stop();
     _system.reset();
 }
 
-/// Description: Executes the start operation.
+/*
+ * @brief Documents the start operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::start()
 {
     if (_running.exchange(true)) {
@@ -210,7 +253,12 @@ void SimulationServer::start()
     _thread = std::thread(&SimulationServer::loop, this);
 }
 
-/// Description: Executes the stop operation.
+/*
+ * @brief Documents the stop operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::stop()
 {
     if (!_running.exchange(false)) {
@@ -233,31 +281,56 @@ void SimulationServer::stop()
     stopExportWorker();
 }
 
-/// Description: Executes the setPaused operation.
+/*
+ * @brief Documents the set paused operation contract.
+ * @param paused Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setPaused(bool paused)
 {
     _paused.store(paused, std::memory_order_relaxed);
 }
 
-/// Description: Executes the isPaused operation.
+/*
+ * @brief Documents the is paused operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return bool SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool SimulationServer::isPaused() const
 {
     return _paused.load(std::memory_order_relaxed);
 }
 
-/// Description: Executes the togglePaused operation.
+/*
+ * @brief Documents the toggle paused operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::togglePaused()
 {
     _paused.store(!_paused.load(std::memory_order_relaxed), std::memory_order_relaxed);
 }
 
-/// Description: Executes the stepOnce operation.
+/*
+ * @brief Documents the step once operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::stepOnce()
 {
     _stepRequests.fetch_add(1, std::memory_order_relaxed);
 }
 
-/// Description: Executes the setDt operation.
+/*
+ * @brief Documents the set dt operation contract.
+ * @param dt Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setDt(float dt)
 {
     if (dt > 0.0f) {
@@ -265,7 +338,12 @@ void SimulationServer::setDt(float dt)
     }
 }
 
-/// Description: Executes the scaleDt operation.
+/*
+ * @brief Documents the scale dt operation contract.
+ * @param factor Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::scaleDt(float factor)
 {
     if (factor <= 0.0f) {
@@ -275,13 +353,23 @@ void SimulationServer::scaleDt(float factor)
     setDt(current * factor);
 }
 
-/// Description: Executes the getDt operation.
+/*
+ * @brief Documents the get dt operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return float SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 float SimulationServer::getDt() const
 {
     return _dt.load(std::memory_order_relaxed);
 }
 
-/// Description: Executes the requestReset operation.
+/*
+ * @brief Documents the request reset operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::requestReset()
 {
     _stepRequests.store(0, std::memory_order_relaxed);
@@ -291,13 +379,23 @@ void SimulationServer::requestReset()
     _resetRequested.store(true, std::memory_order_relaxed);
 }
 
-/// Description: Executes the requestRecover operation.
+/*
+ * @brief Documents the request recover operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::requestRecover()
 {
     requestReset();
 }
 
-/// Description: Executes the setParticleCount operation.
+/*
+ * @brief Documents the set particle count operation contract.
+ * @param particleCount Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setParticleCount(std::uint32_t particleCount)
 {
     const std::uint32_t clamped = std::max<std::uint32_t>(2u, particleCount);

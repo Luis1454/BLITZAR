@@ -1,12 +1,15 @@
-// File: tests/unit/ui/qt_octree_overlay.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/ui/qt_octree_overlay.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "ui/OctreeOverlay.hpp"
 #include <gtest/gtest.h>
 #include <vector>
 
 namespace grav_test_qt_ui {
-/// Description: Executes the TEST operation.
 TEST(QtUiLogicTest, TST_UNT_UI_009_OctreeOverlayBuildRespectsDepthLimit)
 {
     const std::vector<RenderParticle> particles = {

@@ -1,5 +1,9 @@
-// File: runtime/src/server/ServerDaemon.cpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/src/server/ServerDaemon.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
+ */
 
 #include "server/ServerDaemon.hpp"
 #include "config/SimulationModes.hpp"
@@ -17,7 +21,12 @@
 #include <string_view>
 #include <utility>
 
-/// Description: Executes the trim operation.
+/*
+ * @brief Documents the trim operation contract.
+ * @param input Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::string trim(const std::string& input)
 {
     const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
@@ -31,13 +40,24 @@ static std::string trim(const std::string& input)
     return std::string(begin, end);
 }
 
-/// Description: Executes the asBytes operation.
+/*
+ * @brief Documents the as bytes operation contract.
+ * @param text Input value used by this contract.
+ * @return grav_socket::ConstBytes value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static grav_socket::ConstBytes asBytes(std::string_view text)
 {
     return grav_socket::ConstBytes{reinterpret_cast<const std::byte*>(text.data()), text.size()};
 }
 
-/// Description: Executes the sendAll operation.
+/*
+ * @brief Documents the send all operation contract.
+ * @param socketHandle Input value used by this contract.
+ * @param bytes Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes bytes)
 {
     std::size_t offset = 0;
@@ -50,14 +70,43 @@ static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes by
     return true;
 }
 
-/// Description: Executes the serverDaemonError operation.
+/*
+ * @brief Documents the server daemon error operation contract.
+ * @param operation Input value used by this contract.
+ * @param detail Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::string serverDaemonError(std::string_view operation, std::string_view detail)
 {
     return std::string("[ipc] ") + std::string(operation) + ": " + std::string(detail);
 }
 
-/// Description: Executes the ServerDaemon operation.
+/*
+ * @brief Documents the server daemon operation contract.
+ * @param server Input value used by this contract.
+ * @param authToken Input value used by this contract.
+ * @return ServerDaemon:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ServerDaemon::ServerDaemon(SimulationServer& server, std::string authToken)
+    /*
+     * @brief Documents the server operation contract.
+     * @param server Input value used by this contract.
+     * @param false Input value used by this contract.
+     * @param false Input value used by this contract.
+     * @param _acceptThread Input value used by this contract.
+     * @param invalidHandle Input value used by this contract.
+     * @param _bindAddress Input value used by this contract.
+     * @param authToken Input value used by this contract.
+     * @param _port Input value used by this contract.
+     * @param false Input value used by this contract.
+     * @param _socketMutex Input value used by this contract.
+     * @param _clientThreads Input value used by this contract.
+     * @return : value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     : _server(server),
       _running(false),
       _shutdownRequested(false),
@@ -72,13 +121,24 @@ ServerDaemon::ServerDaemon(SimulationServer& server, std::string authToken)
 {
 }
 
-/// Description: Releases resources owned by ServerDaemon.
+/*
+ * @brief Documents the ~server daemon operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return ServerDaemon:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ServerDaemon::~ServerDaemon()
 {
     stop();
 }
 
-/// Description: Executes the start operation.
+/*
+ * @brief Documents the start operation contract.
+ * @param port Input value used by this contract.
+ * @param bindAddress Input value used by this contract.
+ * @return bool ServerDaemon:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ServerDaemon::start(std::uint16_t port, const std::string& bindAddress)
 {
     try {
@@ -132,7 +192,12 @@ bool ServerDaemon::start(std::uint16_t port, const std::string& bindAddress)
     }
 }
 
-/// Description: Executes the stop operation.
+/*
+ * @brief Documents the stop operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void ServerDaemon:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ServerDaemon::stop()
 {
     try {
@@ -181,19 +246,34 @@ void ServerDaemon::stop()
     }
 }
 
-/// Description: Executes the isRunning operation.
+/*
+ * @brief Documents the is running operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return bool ServerDaemon:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ServerDaemon::isRunning() const
 {
     return _running.load();
 }
 
-/// Description: Executes the shutdownRequested operation.
+/*
+ * @brief Documents the shutdown requested operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return bool ServerDaemon:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ServerDaemon::shutdownRequested() const
 {
     return _shutdownRequested.load();
 }
 
-/// Description: Executes the acceptLoop operation.
+/*
+ * @brief Documents the accept loop operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void ServerDaemon:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ServerDaemon::acceptLoop()
 {
     try {
@@ -227,7 +307,12 @@ void ServerDaemon::acceptLoop()
     }
 }
 
-/// Description: Executes the handleClient operation.
+/*
+ * @brief Documents the handle client operation contract.
+ * @param client Input value used by this contract.
+ * @return void ServerDaemon:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ServerDaemon::handleClient(SocketHandle client)
 {
     try {
@@ -281,7 +366,12 @@ void ServerDaemon::handleClient(SocketHandle client)
     }
 }
 
-/// Description: Executes the processRequest operation.
+/*
+ * @brief Documents the process request operation contract.
+ * @param request Input value used by this contract.
+ * @return std::string ServerDaemon:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::string ServerDaemon::processRequest(const std::string& request)
 {
     try {

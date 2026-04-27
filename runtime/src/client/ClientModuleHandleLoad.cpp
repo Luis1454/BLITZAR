@@ -1,5 +1,9 @@
-// File: runtime/src/client/ClientModuleHandleLoad.cpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/src/client/ClientModuleHandleLoad.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
+ */
 
 #include "client/ClientModuleHandleLoad.hpp"
 #include "client/ClientModuleHandle.hpp"
@@ -13,7 +17,6 @@
 #include <system_error>
 
 namespace grav_module {
-/// Description: Executes the hasRequiredExports operation.
 static bool hasRequiredExports(const ClientModuleExportsV1* exports)
 {
     return exports != nullptr && exports->apiVersion == kClientModuleApiVersionV1 &&
@@ -21,7 +24,6 @@ static bool hasRequiredExports(const ClientModuleExportsV1* exports)
            exports->stop != nullptr && exports->handleCommand != nullptr;
 }
 
-/// Description: Describes the load operation contract.
 bool ClientModuleHandle::load(const std::string& modulePath, const std::string& configPath,
                               std::string_view expectedModuleId, std::string& outError)
 {

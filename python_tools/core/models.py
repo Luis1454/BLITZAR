@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/core/models.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/core/models.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -13,7 +15,9 @@ OptionsMap = dict[str, Any]
 
 
 @dataclass(frozen=True)
-# Description: Defines the CheckContext contract.
+# @brief Defines the check context type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class CheckContext:
     root: Path
     config: Path | None = None
@@ -42,7 +46,9 @@ class CheckContext:
 
 
 @dataclass
-# Description: Defines the CheckResult contract.
+# @brief Defines the check result type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class CheckResult:
     name: str
     ok: bool = True
@@ -54,28 +60,43 @@ class CheckResult:
     stdout: str = ""
     stderr: str = ""
 
-    # Description: Executes the add_error operation.
+    # @brief Documents the add error operation contract.
+    # @param message Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def add_error(self, message: str) -> None:
         self.ok = False
         self.errors.append(message)
 
-    # Description: Executes the add_warning operation.
+    # @brief Documents the add warning operation contract.
+    # @param message Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def add_warning(self, message: str) -> None:
         self.warnings.append(message)
 
 
-# Description: Defines the CheckContract contract.
+# @brief Defines the check contract type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class CheckContract(Protocol):
-    # Description: Executes the run operation.
+    # @brief Documents the run operation contract.
+    # @param context Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def run(self, context: CheckContext) -> CheckResult:
         ...
 
 
-# Description: Defines the CheckExecutionError contract.
+# @brief Defines the check execution error type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class CheckExecutionError(RuntimeError):
     pass
 
 
-# Description: Defines the ConfigurationError contract.
+# @brief Defines the configuration error type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class ConfigurationError(CheckExecutionError):
     pass

@@ -1,9 +1,18 @@
-// File: engine/src/server/simulation_server/RuntimeSettersAndExportStart.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/server/simulation_server/RuntimeSettersAndExportStart.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "Internal.hpp"
 
-/// Description: Executes the setSolverMode operation.
+/*
+ * @brief Documents the set solver mode operation contract.
+ * @param mode Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setSolverMode(const std::string& mode)
 {
     std::string canonical;
@@ -30,7 +39,12 @@ void SimulationServer::setSolverMode(const std::string& mode)
     }
 }
 
-/// Description: Executes the setIntegratorMode operation.
+/*
+ * @brief Documents the set integrator mode operation contract.
+ * @param mode Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setIntegratorMode(const std::string& mode)
 {
     std::string canonical;
@@ -57,7 +71,12 @@ void SimulationServer::setIntegratorMode(const std::string& mode)
     }
 }
 
-/// Description: Executes the setPerformanceProfile operation.
+/*
+ * @brief Documents the set performance profile operation contract.
+ * @param profile Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setPerformanceProfile(const std::string& profile)
 {
     std::string canonical;
@@ -70,7 +89,13 @@ void SimulationServer::setPerformanceProfile(const std::string& profile)
     _runtimeConfigMirror.performanceProfile = canonical;
 }
 
-/// Description: Executes the setOctreeParameters operation.
+/*
+ * @brief Documents the set octree parameters operation contract.
+ * @param theta Input value used by this contract.
+ * @param softening Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setOctreeParameters(float theta, float softening)
 {
     std::lock_guard<std::mutex> lock(_commandMutex);
@@ -85,7 +110,12 @@ void SimulationServer::setOctreeParameters(float theta, float softening)
     _runtimeConfigMirror.octreeSoftening = _octreeSoftening;
 }
 
-/// Description: Executes the setSphEnabled operation.
+/*
+ * @brief Documents the set sph enabled operation contract.
+ * @param enabled Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setSphEnabled(bool enabled)
 {
     {
@@ -97,7 +127,15 @@ void SimulationServer::setSphEnabled(bool enabled)
     }
 }
 
-/// Description: Describes the set sph parameters operation contract.
+/*
+ * @brief Documents the set sph parameters operation contract.
+ * @param smoothingLength Input value used by this contract.
+ * @param restDensity Input value used by this contract.
+ * @param gasConstant Input value used by this contract.
+ * @param viscosity Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setSphParameters(float smoothingLength, float restDensity, float gasConstant,
                                         float viscosity)
 {
@@ -112,7 +150,13 @@ void SimulationServer::setSphParameters(float smoothingLength, float restDensity
         _sphViscosity = viscosity;
 }
 
-/// Description: Executes the setSubstepPolicy operation.
+/*
+ * @brief Documents the set substep policy operation contract.
+ * @param targetDt Input value used by this contract.
+ * @param maxSubsteps Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps)
 {
     const float safeTargetDt = std::max(0.0f, targetDt);
@@ -124,7 +168,12 @@ void SimulationServer::setSubstepPolicy(float targetDt, std::uint32_t maxSubstep
     _runtimeConfigMirror.maxSubsteps = safeMaxSubsteps;
 }
 
-/// Description: Executes the setSnapshotPublishPeriodMs operation.
+/*
+ * @brief Documents the set snapshot publish period ms operation contract.
+ * @param periodMs Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setSnapshotPublishPeriodMs(std::uint32_t periodMs)
 {
     const std::uint32_t safePeriodMs = std::max<std::uint32_t>(1u, periodMs);
@@ -133,7 +182,12 @@ void SimulationServer::setSnapshotPublishPeriodMs(std::uint32_t periodMs)
     _runtimeConfigMirror.snapshotPublishPeriodMs = safePeriodMs;
 }
 
-/// Description: Executes the setSnapshotTransferCap operation.
+/*
+ * @brief Documents the set snapshot transfer cap operation contract.
+ * @param maxPoints Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setSnapshotTransferCap(std::uint32_t maxPoints)
 {
     const std::uint32_t safeMaxPoints = grav_protocol::clampSnapshotPoints(maxPoints);
@@ -142,7 +196,12 @@ void SimulationServer::setSnapshotTransferCap(std::uint32_t maxPoints)
     _runtimeConfigMirror.clientParticleCap = safeMaxPoints;
 }
 
-/// Description: Executes the setInitialStateConfig operation.
+/*
+ * @brief Documents the set initial state config operation contract.
+ * @param config Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setInitialStateConfig(const InitialStateConfig& config)
 {
     {
@@ -155,7 +214,13 @@ void SimulationServer::setInitialStateConfig(const InitialStateConfig& config)
     }
 }
 
-/// Description: Describes the set energy measurement config operation contract.
+/*
+ * @brief Documents the set energy measurement config operation contract.
+ * @param everySteps Input value used by this contract.
+ * @param sampleLimit Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setEnergyMeasurementConfig(std::uint32_t everySteps,
                                                   std::uint32_t sampleLimit)
 {
@@ -168,7 +233,12 @@ void SimulationServer::setEnergyMeasurementConfig(std::uint32_t everySteps,
     _runtimeConfigMirror.energySampleLimit = safeSampleLimit;
 }
 
-/// Description: Executes the setGpuTelemetryEnabled operation.
+/*
+ * @brief Documents the set gpu telemetry enabled operation contract.
+ * @param enabled Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setGpuTelemetryEnabled(bool enabled)
 {
     _gpuTelemetryEnabled.store(enabled, std::memory_order_relaxed);
@@ -177,7 +247,13 @@ void SimulationServer::setGpuTelemetryEnabled(bool enabled)
     }
 }
 
-/// Description: Executes the setExportDefaults operation.
+/*
+ * @brief Documents the set export defaults operation contract.
+ * @param directory Input value used by this contract.
+ * @param format Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setExportDefaults(const std::string& directory, const std::string& format)
 {
     std::lock_guard<std::mutex> lock(_commandMutex);
@@ -189,7 +265,13 @@ void SimulationServer::setExportDefaults(const std::string& directory, const std
     }
 }
 
-/// Description: Executes the setInitialStateFile operation.
+/*
+ * @brief Documents the set initial state file operation contract.
+ * @param path Input value used by this contract.
+ * @param format Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::setInitialStateFile(const std::string& path, const std::string& format)
 {
     {
@@ -210,7 +292,13 @@ void SimulationServer::setInitialStateFile(const std::string& path, const std::s
     }
 }
 
-/// Description: Describes the request export snapshot operation contract.
+/*
+ * @brief Documents the request export snapshot operation contract.
+ * @param outputPath Input value used by this contract.
+ * @param format Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::requestExportSnapshot(const std::string& outputPath,
                                              const std::string& format)
 {
@@ -225,7 +313,12 @@ void SimulationServer::requestExportSnapshot(const std::string& outputPath,
     updateExportStatus("queued", outputPath, "queued for background write");
 }
 
-/// Description: Executes the startExportWorker operation.
+/*
+ * @brief Documents the start export worker operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::startExportWorker()
 {
     if (_exportQueueState == nullptr || _exportQueueState->worker.joinable()) {

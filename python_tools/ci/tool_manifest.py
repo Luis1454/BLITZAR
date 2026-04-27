@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/ci/tool_manifest.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/ci/tool_manifest.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -16,7 +18,10 @@ from python_tools.ci.release_support import default_ci_context
 CommandRunner = Callable[[list[str]], str]
 
 
-# Description: Executes the default_command_runner operation.
+# @brief Documents the default command runner operation contract.
+# @param command Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def default_command_runner(command: list[str]) -> str:
     try:
         completed = subprocess.run(command, capture_output=True, check=False, text=True)
@@ -28,13 +33,23 @@ def default_command_runner(command: list[str]) -> str:
     return output
 
 
-# Description: Defines the ToolManifestCollector contract.
+# @brief Defines the tool manifest collector type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class ToolManifestCollector:
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param command_runner Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self, command_runner: CommandRunner | None = None) -> None:
         self._run = command_runner or default_command_runner
 
-    # Description: Executes the collect operation.
+    # @brief Documents the collect operation contract.
+    # @param lane Input value used by this contract.
+    # @param profile Input value used by this contract.
+    # @param compiler_command Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def collect(self, lane: str, profile: str, compiler_command: list[str] | None = None) -> dict[str, object]:
         compiler = compiler_command or self._default_compiler_command()
         return {
@@ -51,13 +66,20 @@ class ToolManifestCollector:
             "ci_context": default_ci_context(),
         }
 
-    # Description: Executes the write operation.
+    # @brief Documents the write operation contract.
+    # @param manifest Input value used by this contract.
+    # @param output_path Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def write(self, manifest: Mapping[str, object], output_path: Path) -> Path:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
         return output_path
 
-    # Description: Executes the _runner_info operation.
+    # @brief Documents the runner info operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _runner_info(self) -> dict[str, str]:
         return {
             "os": platform.system(),
@@ -66,7 +88,10 @@ class ToolManifestCollector:
             "machine": platform.machine(),
         }
 
-    # Description: Executes the _tool_entry operation.
+    # @brief Documents the tool entry operation contract.
+    # @param command Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _tool_entry(self, command: list[str]) -> dict[str, object]:
         try:
             version = self._run(command)
@@ -75,7 +100,10 @@ class ToolManifestCollector:
             return {"status": "unavailable", "command": command, "error": str(exc)}
 
     @staticmethod
-    # Description: Executes the _default_compiler_command operation.
+    # @brief Documents the default compiler command operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _default_compiler_command() -> list[str]:
         if platform.system().lower().startswith("win"):
             return ["cl"]

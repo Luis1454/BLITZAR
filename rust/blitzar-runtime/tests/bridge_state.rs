@@ -1,9 +1,12 @@
-// File: rust/blitzar-runtime/tests/bridge_state.rs
-// Purpose: Rust component implementation for BLITZAR runtime services.
+/*
+ * @file rust/blitzar-runtime/tests/bridge_state.rs
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Rust protocol and gateway components for BLITZAR runtime integration.
+ */
 
 use blitzar_runtime::bridge_state::BridgeState;
 
-/// Description: Executes the tst_rust_runt_001_labels_follow_remote_link_state operation.
 #[test]
 fn tst_rust_runt_001_labels_follow_remote_link_state() {
     let mut state = BridgeState::new();
@@ -16,7 +19,6 @@ fn tst_rust_runt_001_labels_follow_remote_link_state() {
     assert_eq!(state.server_owner_label(), "managed");
 }
 
-/// Description: Executes the tst_rust_runt_002_snapshot_cap_is_clamped_to_protocol_bounds operation.
 #[test]
 fn tst_rust_runt_002_snapshot_cap_is_clamped_to_protocol_bounds() {
     let mut state = BridgeState::new();
@@ -24,7 +26,6 @@ fn tst_rust_runt_002_snapshot_cap_is_clamped_to_protocol_bounds() {
     assert_eq!(state.set_remote_snapshot_cap(999999), 20000);
 }
 
-/// Description: Executes the tst_rust_runt_003_queue_replaces_trailing_duplicate_command operation.
 #[test]
 fn tst_rust_runt_003_queue_replaces_trailing_duplicate_command() {
     let mut state = BridgeState::new();
@@ -34,7 +35,6 @@ fn tst_rust_runt_003_queue_replaces_trailing_duplicate_command() {
     assert_eq!(state.pending_commands()[0].fields, "\"value\":0.2");
 }
 
-/// Description: Executes the tst_rust_runt_004_queue_drops_oldest_once_when_capacity_is_exceeded operation.
 #[test]
 fn tst_rust_runt_004_queue_drops_oldest_once_when_capacity_is_exceeded() {
     let mut state = BridgeState::new();

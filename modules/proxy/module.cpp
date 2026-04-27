@@ -1,5 +1,9 @@
-// File: modules/proxy/module.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/proxy/module.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Proxy module used to validate runtime forwarding behavior.
+ */
 
 #include "client/ClientModuleApi.hpp"
 #include "client/ClientModuleBoundary.hpp"
@@ -17,7 +21,12 @@
 #include <string_view>
 #include <vector>
 
-/// Description: Executes the trim operation.
+/*
+ * @brief Documents the trim operation contract.
+ * @param input Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::string trim(const std::string& input)
 {
     const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
@@ -31,7 +40,12 @@ static std::string trim(const std::string& input)
     return std::string(begin, end);
 }
 
-/// Description: Executes the splitTokens operation.
+/*
+ * @brief Documents the split tokens operation contract.
+ * @param line Input value used by this contract.
+ * @return std::vector<std::string> value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::vector<std::string> splitTokens(const std::string& line)
 {
     std::vector<std::string> tokens;
@@ -64,20 +78,38 @@ static std::vector<std::string> splitTokens(const std::string& line)
     return tokens;
 }
 
-/// Description: Executes the proxyError operation.
+/*
+ * @brief Documents the proxy error operation contract.
+ * @param operation Input value used by this contract.
+ * @param detail Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::string proxyError(std::string_view operation, std::string_view detail)
 {
     return std::string("module-gui-proxy ") + std::string(operation) + ": " + std::string(detail);
 }
 
-/// Description: Describes the write proxy error operation contract.
+/*
+ * @brief Documents the write proxy error operation contract.
+ * @param errorBuffer Input value used by this contract.
+ * @param operation Input value used by this contract.
+ * @param detail Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static void writeProxyError(const grav_client::ErrorBufferView& errorBuffer,
                             std::string_view operation, std::string_view detail)
 {
     errorBuffer.write(proxyError(operation, detail));
 }
 
-/// Description: Defines the GuiProxyState data or behavior contract.
+/*
+ * @brief Defines the gui proxy state type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct GuiProxyState {
     std::string configPath = "simulation.ini";
     std::string host = "127.0.0.1";
@@ -86,13 +118,24 @@ struct GuiProxyState {
     grav_platform::ProcessHandle clientProcess;
 };
 
-/// Description: Executes the isRunning operation.
+/*
+ * @brief Documents the is running operation contract.
+ * @param state Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static bool isRunning(const GuiProxyState& state)
 {
     return state.clientProcess.isRunning();
 }
 
-/// Description: Executes the stopProcess operation.
+/*
+ * @brief Documents the stop process operation contract.
+ * @param state Input value used by this contract.
+ * @param errorBuffer Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static bool stopProcess(GuiProxyState& state, const grav_client::ErrorBufferView& errorBuffer)
 {
     std::string processError;
@@ -104,7 +147,12 @@ static bool stopProcess(GuiProxyState& state, const grav_client::ErrorBufferView
     return true;
 }
 
-/// Description: Executes the clientLaunchArgs operation.
+/*
+ * @brief Documents the client launch args operation contract.
+ * @param state Input value used by this contract.
+ * @return std::vector<std::string> value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::vector<std::string> clientLaunchArgs(const GuiProxyState& state)
 {
     return {"--config",           state.configPath,
@@ -113,7 +161,14 @@ static std::vector<std::string> clientLaunchArgs(const GuiProxyState& state)
             "--server-autostart", state.autoStartServer ? "true" : "false"};
 }
 
-/// Description: Describes the launch process operation contract.
+/*
+ * @brief Documents the launch process operation contract.
+ * @param state Input value used by this contract.
+ * @param clientExecutable Input value used by this contract.
+ * @param errorBuffer Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static bool launchProcess(GuiProxyState& state, const std::string& clientExecutable,
                           const grav_client::ErrorBufferView& errorBuffer)
 {
@@ -130,13 +185,23 @@ static bool launchProcess(GuiProxyState& state, const std::string& clientExecuta
     return true;
 }
 
-/// Description: Executes the runningCommandLine operation.
+/*
+ * @brief Documents the running command line operation contract.
+ * @param state Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::string runningCommandLine(const GuiProxyState& state)
 {
     return state.clientProcess.commandLine();
 }
 
-/// Description: Executes the runningPidLabel operation.
+/*
+ * @brief Documents the running pid label operation contract.
+ * @param state Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::string runningPidLabel(const GuiProxyState& state)
 {
     if (!state.clientProcess.isRunning()) {
@@ -145,7 +210,13 @@ static std::string runningPidLabel(const GuiProxyState& state)
     return state.clientProcess.pidString();
 }
 
-/// Description: Executes the parseUnsignedPort operation.
+/*
+ * @brief Documents the parse unsigned port operation contract.
+ * @param raw Input value used by this contract.
+ * @param outPort Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static bool parseUnsignedPort(std::string_view raw, std::uint16_t& outPort)
 {
     const std::string trimmed = trim(std::string(raw));
@@ -168,7 +239,12 @@ static bool parseUnsignedPort(std::string_view raw, std::uint16_t& outPort)
     return true;
 }
 
-/// Description: Executes the printHelp operation.
+/*
+ * @brief Documents the print help operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static void printHelp()
 {
     std::cout << "[module-gui-proxy] commands:\n"
@@ -180,7 +256,13 @@ static void printHelp()
               << "  stop\n";
 }
 
-/// Description: Executes the parseBool operation.
+/*
+ * @brief Documents the parse bool operation contract.
+ * @param raw Input value used by this contract.
+ * @param out Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static bool parseBool(std::string_view raw, bool& out)
 {
     std::string value(raw);
@@ -198,9 +280,23 @@ static bool parseBool(std::string_view raw, bool& out)
     return false;
 }
 
-/// Description: Defines the GuiProxyModuleBoundary data or behavior contract.
+/*
+ * @brief Defines the gui proxy module boundary type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class GuiProxyModuleBoundary final {
 public:
+    /*
+     * @brief Documents the create operation contract.
+     * @param context Input value used by this contract.
+     * @param outModuleState Input value used by this contract.
+     * @param errorBuffer Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static bool create(const grav_module::ClientHostContextV1* context,
                        const grav_module::ClientModuleStateSlot& outModuleState,
                        const grav_client::ErrorBufferView& errorBuffer)
@@ -227,6 +323,14 @@ public:
         }
     }
 
+    /*
+     * @brief Documents the require state operation contract.
+     * @param moduleState Input value used by this contract.
+     * @param errorBuffer Input value used by this contract.
+     * @return GuiProxyState* value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static GuiProxyState* requireState(grav_module::ClientModuleOpaqueState moduleState,
                                        const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -237,6 +341,13 @@ public:
         return state;
     }
 
+    /*
+     * @brief Documents the destroy operation contract.
+     * @param moduleState Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static void destroy(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
@@ -256,6 +367,14 @@ public:
         }
     }
 
+    /*
+     * @brief Documents the start operation contract.
+     * @param moduleState Input value used by this contract.
+     * @param errorBuffer Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static bool start(grav_module::ClientModuleOpaqueState moduleState,
                       const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -278,6 +397,13 @@ public:
         }
     }
 
+    /*
+     * @brief Documents the stop operation contract.
+     * @param moduleState Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static void stop(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {

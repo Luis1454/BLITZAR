@@ -1,5 +1,9 @@
-// File: tests/int/protocol/control.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/int/protocol/control.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "protocol/ServerClient.hpp"
 #include "protocol/ServerProtocol.hpp"
@@ -11,7 +15,6 @@
 #include <thread>
 
 namespace grav_test_server_protocol_control {
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_004_ServerAcceptsControlCommandsFromClient)
 {
     RealServerHarness server;
@@ -39,7 +42,6 @@ TEST(ServerProtocolTest, TST_INT_PROT_004_ServerAcceptsControlCommandsFromClient
     server.stop();
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_005_ServerRejectsInvalidSolverAndIntegratorCommands)
 {
     RealServerHarness server;
@@ -60,7 +62,6 @@ TEST(ServerProtocolTest, TST_INT_PROT_005_ServerRejectsInvalidSolverAndIntegrato
     server.stop();
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_006_ServerRejectsUnsupportedIntegratorForOctreeGpu)
 {
     RealServerHarness server;
@@ -85,7 +86,6 @@ TEST(ServerProtocolTest, TST_INT_PROT_006_ServerRejectsUnsupportedIntegratorForO
     server.stop();
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_007_ServerFallsBackToCpuAfterForcedCudaFailure)
 {
     testsupport::ScopedEnvVar forceCudaFail("GRAVITY_TEST_FORCE_CUDA_FAIL_ONCE", "1");
@@ -118,7 +118,6 @@ TEST(ServerProtocolTest, TST_INT_PROT_007_ServerFallsBackToCpuAfterForcedCudaFai
     server.stop();
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_008_ServerRejectsRequestsWithoutConfiguredToken)
 {
     RealServerHarness server;
@@ -141,7 +140,6 @@ TEST(ServerProtocolTest, TST_INT_PROT_008_ServerRejectsRequestsWithoutConfigured
     server.stop();
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_010_ServerAcceptsGpuTelemetryToggle)
 {
     RealServerHarness server;

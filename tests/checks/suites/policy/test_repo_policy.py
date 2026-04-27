@@ -1,5 +1,7 @@
-# File: tests/checks/suites/policy/test_repo_policy.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/checks/suites/policy/test_repo_policy.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 from __future__ import annotations
 
@@ -19,13 +21,21 @@ from tests.checks.suites.support.path_specs import (
 )
 
 
-# Description: Executes the _write operation.
+# @brief Documents the write operation contract.
+# @param path Input value used by this contract.
+# @param content Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
 
 
-# Description: Executes the _run operation.
+# @brief Documents the run operation contract.
+# @param root Input value used by this contract.
+# @param allowlist Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _run(root: Path, allowlist: Path) -> tuple[bool, list[str], list[str]]:
     context = CheckContext(root=root, allowlist=allowlist, target_lines=200, hard_lines=300)
     result = RepoPolicyCheck().run(context)
@@ -65,7 +75,13 @@ def _run(root: Path, allowlist: Path) -> tuple[bool, list[str], list[str]]:
         ),
     ],
 )
-# Description: Executes the test_repo_policy_rejects_cpp_patterns operation.
+# @brief Documents the test repo policy rejects cpp patterns operation contract.
+# @param tmp_path Input value used by this contract.
+# @param path Input value used by this contract.
+# @param content Input value used by this contract.
+# @param expected Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_rejects_cpp_patterns(tmp_path: Path, path: Path, content: str, expected: str) -> None:
     _write(tmp_path / path, content)
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
@@ -80,7 +96,13 @@ def test_repo_policy_rejects_cpp_patterns(tmp_path: Path, path: Path, content: s
         ("good_layout", "void build() {\n    auto *layout = new QVBoxLayout(this);\n    layout->setSpacing(6);\n}\n", True),
     ],
 )
-# Description: Executes the test_repo_policy_enforces_qt_layout_ownership operation.
+# @brief Documents the test repo policy enforces qt layout ownership operation contract.
+# @param tmp_path Input value used by this contract.
+# @param stem Input value used by this contract.
+# @param content Input value used by this contract.
+# @param should_pass Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_enforces_qt_layout_ownership(tmp_path: Path, stem: str, content: str, should_pass: bool) -> None:
     _write(tmp_path / cpp_file(MODULES_QT_UI_DIR, stem), content)
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
@@ -91,7 +113,10 @@ def test_repo_policy_enforces_qt_layout_ownership(tmp_path: Path, stem: str, con
     assert any("Qt '*new + reference' ownership pattern is forbidden" in error for error in errors)
 
 
-# Description: Executes the test_repo_policy_warns_on_stale_allowlist_entry operation.
+# @brief Documents the test repo policy warns on stale allowlist entry operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_warns_on_stale_allowlist_entry(tmp_path: Path) -> None:
     sample_path = cpp_file(TESTS_UNIT_DIR, "sample")
     _write(tmp_path / sample_path, "int main() { return 0; }\n")
@@ -102,7 +127,10 @@ def test_repo_policy_warns_on_stale_allowlist_entry(tmp_path: Path) -> None:
     assert any("allowlist entry not needed anymore" in warning for warning in warnings)
 
 
-# Description: Executes the test_repo_policy_rejects_unnamed_namespace_in_tests_cpp operation.
+# @brief Documents the test repo policy rejects unnamed namespace in tests cpp operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_rejects_unnamed_namespace_in_tests_cpp(tmp_path: Path) -> None:
     _write(tmp_path / cpp_file(TESTS_UNIT_DIR, "bad_namespace"), "namespace {\nint g = 1;\n}\n")
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
@@ -110,7 +138,10 @@ def test_repo_policy_rejects_unnamed_namespace_in_tests_cpp(tmp_path: Path) -> N
     assert any("unnamed namespace is forbidden" in error for error in errors)
 
 
-# Description: Executes the test_repo_policy_accepts_header_include_guard operation.
+# @brief Documents the test repo policy accepts header include guard operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_accepts_header_include_guard(tmp_path: Path) -> None:
     _write(
         tmp_path / "engine" / "include" / "ok.hpp",
@@ -126,7 +157,10 @@ def test_repo_policy_accepts_header_include_guard(tmp_path: Path) -> None:
     assert not errors
 
 
-# Description: Executes the test_repo_policy_rejects_pragma_once_in_header operation.
+# @brief Documents the test repo policy rejects pragma once in header operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_rejects_pragma_once_in_header(tmp_path: Path) -> None:
     _write(tmp_path / "engine" / "include" / "bad.hpp", "#pragma once\nstruct Bad {};\n")
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
@@ -134,7 +168,10 @@ def test_repo_policy_rejects_pragma_once_in_header(tmp_path: Path) -> None:
     assert any("#pragma once is forbidden" in error for error in errors)
 
 
-# Description: Executes the test_repo_policy_rejects_json_above_hard_limit operation.
+# @brief Documents the test repo policy rejects json above hard limit operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_rejects_json_above_hard_limit(tmp_path: Path) -> None:
     oversize = "{\n" + "\"k\":0,\n" * 305 + "\"end\":1\n}\n"
     _write(tmp_path / "docs" / "quality" / "oversize.json", oversize)
@@ -143,7 +180,10 @@ def test_repo_policy_rejects_json_above_hard_limit(tmp_path: Path) -> None:
     assert any("oversize.json" in error and "strong alert threshold" in error for error in errors)
 
 
-# Description: Executes the test_repo_policy_warns_when_file_exceeds_target_but_not_hard_limit operation.
+# @brief Documents the test repo policy warns when file exceeds target but not hard limit operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_warns_when_file_exceeds_target_but_not_hard_limit(tmp_path: Path) -> None:
     content = "line\n" * 205
     _write(tmp_path / "docs" / "quality" / "target_warning.md", content)
@@ -153,7 +193,10 @@ def test_repo_policy_warns_when_file_exceeds_target_but_not_hard_limit(tmp_path:
     assert any("target_warning.md: 205 lines exceeds target 200" in warning for warning in warnings)
 
 
-# Description: Executes the test_repo_policy_ignores_rust_target_but_not_unrelated_target_dir operation.
+# @brief Documents the test repo policy ignores rust target but not unrelated target dir operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_ignores_rust_target_but_not_unrelated_target_dir(tmp_path: Path) -> None:
     _write(tmp_path / "rust" / "target" / "generated.c", "int f(){return 0;}\n")
     _write(tmp_path / "target" / "bad.c", "int f(){return 0;}\n")
@@ -163,7 +206,10 @@ def test_repo_policy_ignores_rust_target_but_not_unrelated_target_dir(tmp_path: 
     assert not any("rust/target/generated.c" in error for error in errors)
 
 
-# Description: Executes the test_repo_policy_rejects_evidence_workflow_without_prod_profile operation.
+# @brief Documents the test repo policy rejects evidence workflow without prod profile operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_rejects_evidence_workflow_without_prod_profile(tmp_path: Path) -> None:
     _write(
         tmp_path / ".github" / "workflows" / "release-lane.yml",
@@ -180,7 +226,10 @@ def test_repo_policy_rejects_evidence_workflow_without_prod_profile(tmp_path: Pa
     assert any("evidence configure command must include -DGRAVITY_PROFILE=prod" in error for error in errors)
 
 
-# Description: Executes the test_repo_policy_allows_release_lane_desktop_convenience_build operation.
+# @brief Documents the test repo policy allows release lane desktop convenience build operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_allows_release_lane_desktop_convenience_build(tmp_path: Path) -> None:
     _write(
         tmp_path / ".github" / "workflows" / "release-lane.yml",
@@ -197,7 +246,10 @@ def test_repo_policy_allows_release_lane_desktop_convenience_build(tmp_path: Pat
     assert not any("evidence configure command must include -DGRAVITY_PROFILE=prod" in error for error in errors)
 
 
-# Description: Executes the test_repo_policy_ignores_non_evidence_dev_workflow operation.
+# @brief Documents the test repo policy ignores non evidence dev workflow operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_ignores_non_evidence_dev_workflow(tmp_path: Path) -> None:
     _write(
         tmp_path / ".github" / "workflows" / "pr-fast.yml",
@@ -214,7 +266,10 @@ def test_repo_policy_ignores_non_evidence_dev_workflow(tmp_path: Path) -> None:
     assert not errors
 
 
-# Description: Executes the test_repo_policy_rejects_evidence_ctest_without_no_tests_guard operation.
+# @brief Documents the test repo policy rejects evidence ctest without no tests guard operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_rejects_evidence_ctest_without_no_tests_guard(tmp_path: Path) -> None:
     _write(
         tmp_path / ".github" / "workflows" / "nightly-full.yml",
@@ -229,7 +284,10 @@ def test_repo_policy_rejects_evidence_ctest_without_no_tests_guard(tmp_path: Pat
     assert any("CI ctest command must include --no-tests=error" in error for error in errors)
 
 
-# Description: Executes the test_repo_policy_accepts_evidence_ctest_with_no_tests_guard operation.
+# @brief Documents the test repo policy accepts evidence ctest with no tests guard operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_accepts_evidence_ctest_with_no_tests_guard(tmp_path: Path) -> None:
     _write(
         tmp_path / ".github" / "workflows" / "nightly-full.yml",
@@ -244,7 +302,10 @@ def test_repo_policy_accepts_evidence_ctest_with_no_tests_guard(tmp_path: Path) 
     assert not errors
 
 
-# Description: Executes the test_repo_policy_rejects_legacy_ctest_selector_prefix operation.
+# @brief Documents the test repo policy rejects legacy ctest selector prefix operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_rejects_legacy_ctest_selector_prefix(tmp_path: Path) -> None:
     _write(
         tmp_path / ".github" / "workflows" / "nightly-full.yml",
@@ -259,7 +320,10 @@ def test_repo_policy_rejects_legacy_ctest_selector_prefix(tmp_path: Path) -> Non
     assert any("CI ctest selector must use normalized TST_* ids" in error for error in errors)
 
 
-# Description: Executes the test_repo_policy_accepts_normalized_ctest_selector_prefix operation.
+# @brief Documents the test repo policy accepts normalized ctest selector prefix operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_accepts_normalized_ctest_selector_prefix(tmp_path: Path) -> None:
     _write(
         tmp_path / ".github" / "workflows" / "nightly-full.yml",
@@ -274,7 +338,10 @@ def test_repo_policy_accepts_normalized_ctest_selector_prefix(tmp_path: Path) ->
     assert not errors
 
 
-# Description: Executes the test_repo_policy_ignores_venv_directory_and_cache_artifacts operation.
+# @brief Documents the test repo policy ignores venv directory and cache artifacts operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_ignores_venv_directory_and_cache_artifacts(tmp_path: Path) -> None:
     """Anti-recurrence test: verify .venv and cache dirs never enter policy scan."""
     _write(tmp_path / ".venv" / "lib" / "python3.12" / "site-packages" / "numpy" / "__init__.py", "# numpy\n")
@@ -289,7 +356,10 @@ def test_repo_policy_ignores_venv_directory_and_cache_artifacts(tmp_path: Path) 
     assert not any(".venv" in error or ".tox" in error or "site-packages" in error for error in errors)
 
 
-# Description: Executes the test_repo_policy_explicitly_ignores_rust_target_path_not_naked_target operation.
+# @brief Documents the test repo policy explicitly ignores rust target path not naked target operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_explicitly_ignores_rust_target_path_not_naked_target(tmp_path: Path) -> None:
     """Anti-recurrence test: verify rust/target is skipped but naked target/ is not."""
     _write(tmp_path / "rust" / "target" / "release" / "artifact.lib", "")
@@ -300,7 +370,10 @@ def test_repo_policy_explicitly_ignores_rust_target_path_not_naked_target(tmp_pa
     assert not any("rust/target" in error for error in errors)
 
 
-# Description: Executes the test_repo_policy_workflow_forbids_failure_masking_with_shell_alternative operation.
+# @brief Documents the test repo policy workflow forbids failure masking with shell alternative operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_workflow_forbids_failure_masking_with_shell_alternative(tmp_path: Path) -> None:
     """Anti-recurrence test: verify || shell fallback on build commands is rejected."""
     _write(

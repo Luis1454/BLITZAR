@@ -1,5 +1,9 @@
-// File: runtime/include/client/ClientModuleHandleLoad.hpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/include/client/ClientModuleHandleLoad.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
+ */
 
 #ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEHANDLELOAD_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEHANDLELOAD_HPP_

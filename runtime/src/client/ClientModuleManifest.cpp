@@ -1,5 +1,9 @@
-// File: runtime/src/client/ClientModuleManifest.cpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/src/client/ClientModuleManifest.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
+ */
 
 #include "client/ClientModuleManifest.hpp"
 #include "client/ClientModuleApi.hpp"
@@ -10,7 +14,6 @@
 #include <string_view>
 
 namespace grav_module {
-/// Description: Defines the ClientModuleManifestLocal data or behavior contract.
 class ClientModuleManifestLocal final {
 public:
     static bool isSupportedModuleId(std::string_view moduleId) noexcept
@@ -58,7 +61,6 @@ public:
     }
 };
 
-/// Description: Describes the load operation contract.
 bool ClientModuleManifest::load(std::string_view modulePath, ClientModuleManifest& outManifest,
                                 std::string& outError)
 {
@@ -130,7 +132,6 @@ bool ClientModuleManifest::load(std::string_view modulePath, ClientModuleManifes
     return true;
 }
 
-/// Description: Describes the validate for load operation contract.
 bool ClientModuleManifest::validateForLoad(std::string_view modulePath,
                                            std::string_view expectedModuleId,
                                            std::string& outError) const
@@ -164,25 +165,21 @@ bool ClientModuleManifest::validateForLoad(std::string_view modulePath,
     return true;
 }
 
-/// Description: Describes the module id operation contract.
 std::string_view ClientModuleManifest::moduleId() const noexcept
 {
     return m_moduleId;
 }
 
-/// Description: Describes the module name operation contract.
 std::string_view ClientModuleManifest::moduleName() const noexcept
 {
     return m_moduleName;
 }
 
-/// Description: Describes the sha256 operation contract.
 std::string_view ClientModuleManifest::sha256() const noexcept
 {
     return m_sha256;
 }
 
-/// Description: Describes the api version operation contract.
 std::uint32_t ClientModuleManifest::apiVersion() const noexcept
 {
     return m_apiVersion;

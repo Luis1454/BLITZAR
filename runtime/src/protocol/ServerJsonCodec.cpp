@@ -1,5 +1,9 @@
-// File: runtime/src/protocol/ServerJsonCodec.cpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/src/protocol/ServerJsonCodec.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
+ */
 
 #include "protocol/ServerJsonCodec.hpp"
 #include "protocol/ServerProtocol.hpp"
@@ -7,7 +11,6 @@
 #include <sstream>
 
 namespace grav_protocol {
-/// Description: Defines the ServerJsonObjectWriter data or behavior contract.
 class ServerJsonObjectWriter final {
 public:
     explicit ServerJsonObjectWriter(std::ostringstream& out) : _out(out), _hasField(false)
@@ -73,7 +76,6 @@ private:
     bool _hasField;
 };
 
-/// Description: Executes the escapeString operation.
 std::string ServerJsonCodec::escapeString(std::string_view value)
 {
     std::string escaped;
@@ -102,7 +104,6 @@ std::string ServerJsonCodec::escapeString(std::string_view value)
     return escaped;
 }
 
-/// Description: Describes the make command request operation contract.
 std::string ServerJsonCodec::makeCommandRequest(const ServerCommandRequest& request,
                                                 std::string_view fieldsJson)
 {
@@ -120,7 +121,6 @@ std::string ServerJsonCodec::makeCommandRequest(const ServerCommandRequest& requ
     return payload;
 }
 
-/// Description: Executes the makeOkResponse operation.
 std::string ServerJsonCodec::makeOkResponse(std::string_view cmd)
 {
     std::ostringstream out;
@@ -131,7 +131,6 @@ std::string ServerJsonCodec::makeOkResponse(std::string_view cmd)
     return out.str();
 }
 
-/// Description: Executes the makeErrorResponse operation.
 std::string ServerJsonCodec::makeErrorResponse(std::string_view cmd, std::string_view message)
 {
     std::ostringstream out;
@@ -143,7 +142,6 @@ std::string ServerJsonCodec::makeErrorResponse(std::string_view cmd, std::string
     return out.str();
 }
 
-/// Description: Executes the makeStatusResponse operation.
 std::string ServerJsonCodec::makeStatusResponse(const SimulationStats& stats)
 {
     std::ostringstream out;
@@ -193,7 +191,6 @@ std::string ServerJsonCodec::makeStatusResponse(const SimulationStats& stats)
     return out.str();
 }
 
-/// Description: Describes the make snapshot response operation contract.
 std::string ServerJsonCodec::makeSnapshotResponse(bool hasSnapshot,
                                                   const std::vector<RenderParticle>& snapshot,
                                                   std::size_t sourceSize)

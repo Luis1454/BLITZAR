@@ -1,5 +1,9 @@
-// File: runtime/include/protocol/ServerJsonCodecParse.hpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/include/protocol/ServerJsonCodecParse.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
+ */
 
 #ifndef GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERJSONCODECPARSE_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERJSONCODECPARSE_HPP_

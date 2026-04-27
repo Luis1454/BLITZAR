@@ -1,10 +1,13 @@
-// File: tests/unit/protocol/json_codec_parse.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/protocol/json_codec_parse.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "protocol/ServerJsonCodec.hpp"
 #include <gtest/gtest.h>
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_031_ParseCommandRequestValid)
 {
     std::string err;
@@ -16,7 +19,6 @@ TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_031_ParseCommandRequestValid)
     EXPECT_EQ(req.token, "xyz");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_032_ParseCommandRequestMissingCmd)
 {
     std::string err;
@@ -26,7 +28,6 @@ TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_032_ParseCommandRequestMissingCm
     EXPECT_EQ(err, "missing cmd");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_033_ParseResponseEnvelopeValidOk)
 {
     std::string err;
@@ -39,7 +40,6 @@ TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_033_ParseResponseEnvelopeValidOk
     EXPECT_EQ(env.error, "");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_034_ParseResponseEnvelopeError)
 {
     std::string err;
@@ -52,7 +52,6 @@ TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_034_ParseResponseEnvelopeError)
     EXPECT_EQ(env.error, "broken");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_035_ParseResponseEnvelopeErrorDefault)
 {
     std::string err;
@@ -65,7 +64,6 @@ TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_035_ParseResponseEnvelopeErrorDe
     EXPECT_EQ(env.error, "server error");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_036_ParseResponseEnvelopeInvalid)
 {
     std::string err;
@@ -75,7 +73,6 @@ TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_036_ParseResponseEnvelopeInvalid
     EXPECT_EQ(err, "invalid response");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_037_ReadStringExtractsValue)
 {
     std::string out;
@@ -85,7 +82,6 @@ TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_037_ReadStringExtractsValue)
     EXPECT_EQ(out, "val");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_038_ReadStringHandlesEscapes)
 {
     std::string out;
@@ -95,7 +91,6 @@ TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_038_ReadStringHandlesEscapes)
     EXPECT_EQ(out, "line\nbreak\rtest");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_039_ReadBoolExtractsValue)
 {
     bool out = false;
@@ -105,7 +100,6 @@ TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_039_ReadBoolExtractsValue)
     EXPECT_TRUE(out);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_040_ReadBoolHandlesFalse)
 {
     bool out = true;
@@ -115,7 +109,6 @@ TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_040_ReadBoolHandlesFalse)
     EXPECT_FALSE(out);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_041_ReadNumberParsesSupportedNumericTypes)
 {
     const std::string raw = R"({"i": -7, "u32": 42, "u64": 1234567890123, "f": 1.5, "d": -2.5e-3})";
@@ -136,7 +129,6 @@ TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_041_ReadNumberParsesSupportedNum
     EXPECT_DOUBLE_EQ(d, -2.5e-3);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_042_ReadNumberReturnsFalseWhenKeyMissing)
 {
     int out = 17;
@@ -144,7 +136,6 @@ TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_042_ReadNumberReturnsFalseWhenKe
     EXPECT_EQ(out, 17);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_043_ReadNumberRejectsInvalidIntegerToken)
 {
     std::uint32_t out = 5u;
@@ -152,7 +143,6 @@ TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_043_ReadNumberRejectsInvalidInte
     EXPECT_EQ(out, 5u);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_044_ReadNumberRejectsInvalidFloatToken)
 {
     float out = 2.0f;
@@ -160,7 +150,6 @@ TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_044_ReadNumberRejectsInvalidFloa
     EXPECT_FLOAT_EQ(out, 2.0f);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_045_ReadNumberParsesScientificNotation)
 {
     double out = 0.0;

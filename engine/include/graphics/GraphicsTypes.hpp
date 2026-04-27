@@ -1,5 +1,9 @@
-// File: engine/include/graphics/GraphicsTypes.hpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/include/graphics/GraphicsTypes.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #ifndef GRAVITY_ENGINE_INCLUDE_GRAPHICS_GRAPHICSTYPES_HPP_
 #define GRAVITY_ENGINE_INCLUDE_GRAPHICS_GRAPHICSTYPES_HPP_
@@ -7,13 +11,11 @@
 #include <cstdint>
 
 namespace grav {
-/// Description: Defines the Point2D data or behavior contract.
 struct Point2D {
     float x;
     float y;
 };
 
-/// Description: Defines the Rect2D data or behavior contract.
 struct Rect2D {
     float x;
     float y;
@@ -21,7 +23,6 @@ struct Rect2D {
     float height;
 };
 
-/// Description: Defines the ColorRGBA data or behavior contract.
 struct ColorRGBA {
     std::uint8_t r;
     std::uint8_t g;

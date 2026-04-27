@@ -1,9 +1,19 @@
-// File: engine/src/server/simulation_server/ParseVtk.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/server/simulation_server/ParseVtk.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "Internal.hpp"
 
-/// Description: Executes the parseVtkSnapshot operation.
+/*
+ * @brief Documents the parse vtk snapshot operation contract.
+ * @param inputPath Input value used by this contract.
+ * @param outParticles Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outParticles)
 {
     auto validatePointCount = [](std::size_t pointCount) {

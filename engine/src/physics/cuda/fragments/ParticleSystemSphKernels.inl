@@ -1,4 +1,11 @@
 /*
+ * @file engine/src/physics/cuda/fragments/ParticleSystemSphKernels.inl
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
+
+/*
  * Module: physics/cuda
  * Responsibility: Define SPH density, pressure, and force kernels.
  */

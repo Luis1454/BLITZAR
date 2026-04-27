@@ -1,5 +1,9 @@
-// File: runtime/src/client/ClientModuleHandle.cpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/src/client/ClientModuleHandle.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
+ */
 
 #include "client/ClientModuleHandle.hpp"
 #include "runtime/src/client/ClientModuleHandleInternal.hpp"
@@ -10,7 +14,6 @@
 #include <string_view>
 
 namespace grav_module {
-/// Description: Describes the error from buffer operation contract.
 std::string errorFromBuffer(const std::array<char, kErrorBufferSize>& buffer,
                             std::string_view fallback)
 {
@@ -21,22 +24,18 @@ std::string errorFromBuffer(const std::array<char, kErrorBufferSize>& buffer,
     return error;
 }
 
-/// Description: Executes the ClientModuleHandle operation.
 ClientModuleHandle::ClientModuleHandle() : m_impl(std::make_unique<Impl>())
 {
 }
 
-/// Description: Releases resources owned by ClientModuleHandle.
 ClientModuleHandle::~ClientModuleHandle()
 {
     unload();
 }
 
-/// Description: Describes the client module handle operation contract.
 ClientModuleHandle::ClientModuleHandle(ClientModuleHandle&& other) noexcept = default;
 ClientModuleHandle& ClientModuleHandle::operator=(ClientModuleHandle&& other) noexcept = default;
 
-/// Description: Describes the unload operation contract.
 void ClientModuleHandle::unload() noexcept
 {
     if (!m_impl) {
@@ -68,13 +67,11 @@ void ClientModuleHandle::unload() noexcept
     m_impl->library.close();
 }
 
-/// Description: Describes the is loaded operation contract.
 bool ClientModuleHandle::isLoaded() const noexcept
 {
     return m_impl && m_impl->exports != nullptr && m_impl->state.hasValue();
 }
 
-/// Description: Describes the module name operation contract.
 std::string_view ClientModuleHandle::moduleName() const noexcept
 {
     if (!m_impl || m_impl->exports == nullptr || m_impl->exports->moduleName == nullptr)
@@ -82,7 +79,6 @@ std::string_view ClientModuleHandle::moduleName() const noexcept
     return m_impl->exports->moduleName;
 }
 
-/// Description: Describes the loaded path operation contract.
 std::string_view ClientModuleHandle::loadedPath() const noexcept
 {
     if (!m_impl)
@@ -90,7 +86,6 @@ std::string_view ClientModuleHandle::loadedPath() const noexcept
     return m_impl->path;
 }
 
-/// Description: Describes the handle command operation contract.
 bool ClientModuleHandle::handleCommand(std::string_view commandLine, bool& outKeepRunning,
                                        std::string& outError)
 {

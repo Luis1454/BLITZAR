@@ -1,5 +1,7 @@
-# File: cmake/core/toolchain.cmake
-# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+# @file cmake/core/toolchain.cmake
+# @author Luis1454
+# @project BLITZAR
+# @brief CMake build orchestration for BLITZAR targets and tooling.
 
 set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
@@ -112,7 +114,6 @@ set(GRAVITY_CORE_FFI_SOURCES
     "${GRAVITY_ROOT_DIR}/runtime/src/ffi/BlitzarCoreApi.cpp"
 )
 
-# Description: Defines the gravity_collect_existing_paths function helper.
 function(gravity_collect_existing_paths out_var)
     set(_result "")
     foreach(_path IN LISTS ARGN)

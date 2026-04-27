@@ -1,5 +1,9 @@
-// File: apps/client-host/client_host_cli_args.hpp
-// Purpose: Application entry point or host support for BLITZAR executables.
+/*
+ * @file apps/client-host/client_host_cli_args.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Application entry points and host executables for BLITZAR.
+ */
 
 #ifndef GRAVITY_APPS_MODULE_HOST_MODULE_HOST_CLI_ARGS_HPP_
 #define GRAVITY_APPS_MODULE_HOST_MODULE_HOST_CLI_ARGS_HPP_
@@ -8,12 +12,9 @@
 #include <string_view>
 
 namespace grav_client_host {
-/// Description: Defines the ClientHostCliArgs data or behavior contract.
 class ClientHostCliArgs final {
 public:
-    /// Description: Describes the parse args operation contract.
     static bool parseArgs(int argc, char** argv, HostOptions& outOptions, std::string& outError);
-    /// Description: Describes the print help operation contract.
     static void printHelp(std::string_view programName);
 };
 } // namespace grav_client_host

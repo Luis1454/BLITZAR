@@ -1,5 +1,9 @@
-// File: modules/qt/ui/ThroughputAdvisor.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/ThroughputAdvisor.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "ui/ThroughputAdvisor.hpp"
 #include "config/SimulationConfig.hpp"
@@ -8,7 +12,6 @@
 #include <sstream>
 
 namespace grav_qt {
-/// Description: Defines the ThroughputAdvisorLocal data or behavior contract.
 class ThroughputAdvisorLocal final {
 public:
     static std::uint32_t estimateSubsteps(const SimulationConfig& config)
@@ -70,7 +73,6 @@ public:
     }
 };
 
-/// Description: Describes the evaluate operation contract.
 ThroughputAdvisory ThroughputAdvisor::evaluate(const SimulationConfig& config,
                                                std::uint32_t drawCap)
 {

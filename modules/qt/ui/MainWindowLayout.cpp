@@ -1,5 +1,9 @@
-// File: modules/qt/ui/MainWindowLayout.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/MainWindowLayout.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "ui/EnergyGraphWidget.hpp"
 #include "ui/MainWindow.hpp"
@@ -22,7 +26,6 @@
 #include <algorithm>
 
 namespace grav_qt {
-/// Description: Executes the initializeControlState operation.
 void MainWindow::initializeControlState()
 {
     _pauseButton->setCheckable(true);
@@ -148,7 +151,6 @@ void MainWindow::initializeControlState()
     _gpuMetricsLabel->setObjectName("runtimeSummaryValue");
 }
 
-/// Description: Executes the buildSidebarTabs operation.
 QTabWidget* MainWindow::buildSidebarTabs()
 {
     auto* sidebarTabs = new QTabWidget(this);

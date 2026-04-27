@@ -1,5 +1,9 @@
-// File: modules/qt/ui/ParticleView.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/ParticleView.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "ui/ParticleView.hpp"
 #include "ui/OctreeOverlay.hpp"
@@ -15,7 +19,6 @@
 #include <cmath>
 
 namespace grav_qt {
-/// Description: Executes the ParticleView operation.
 ParticleView::ParticleView(grav::ViewMode mode)
     : QWidget(nullptr),
       _mode(mode),
@@ -31,35 +34,30 @@ ParticleView::ParticleView(grav::ViewMode mode)
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
-/// Description: Executes the setSnapshot operation.
 void ParticleView::setSnapshot(const std::vector<RenderParticle>& snapshot)
 {
     _snapshot = std::cref(snapshot);
     update();
 }
 
-/// Description: Executes the setMode operation.
 void ParticleView::setMode(grav::ViewMode mode)
 {
     _mode = mode;
     update();
 }
 
-/// Description: Executes the setZoom operation.
 void ParticleView::setZoom(float zoom)
 {
     _zoom = std::max(0.1f, zoom);
     update();
 }
 
-/// Description: Executes the setLuminosity operation.
 void ParticleView::setLuminosity(int luminosity)
 {
     _luminosity = std::clamp(luminosity, 0, 255);
     update();
 }
 
-/// Description: Executes the setCameraAngles operation.
 void ParticleView::setCameraAngles(float yaw, float pitch, float roll)
 {
     _camera.yaw = yaw;
@@ -68,7 +66,6 @@ void ParticleView::setCameraAngles(float yaw, float pitch, float roll)
     update();
 }
 
-/// Description: Executes the setRenderSettings operation.
 void ParticleView::setRenderSettings(bool culling, bool lod, float nearDist, float farDist)
 {
     _cullingEnabled = culling;
@@ -78,7 +75,6 @@ void ParticleView::setRenderSettings(bool culling, bool lod, float nearDist, flo
     update();
 }
 
-/// Description: Describes the set octree overlay operation contract.
 void ParticleView::setOctreeOverlay(const std::vector<OctreeOverlayNode>& overlay, bool enabled,
                                     int opacity)
 {
@@ -88,7 +84,6 @@ void ParticleView::setOctreeOverlay(const std::vector<OctreeOverlayNode>& overla
     update();
 }
 
-/// Description: Executes the mousePressEvent operation.
 void ParticleView::mousePressEvent(MouseEventHandle event)
 {
     if (event->button() != Qt::LeftButton) {
@@ -110,7 +105,6 @@ void ParticleView::mousePressEvent(MouseEventHandle event)
     event->accept();
 }
 
-/// Description: Executes the mouseMoveEvent operation.
 void ParticleView::mouseMoveEvent(MouseEventHandle event)
 {
     if (_dragAxis == grav::GimbalAxis::None) {
@@ -134,7 +128,6 @@ void ParticleView::mouseMoveEvent(MouseEventHandle event)
     event->accept();
 }
 
-/// Description: Executes the mouseReleaseEvent operation.
 void ParticleView::mouseReleaseEvent(MouseEventHandle event)
 {
     if (_dragAxis != grav::GimbalAxis::None) {
@@ -145,7 +138,6 @@ void ParticleView::mouseReleaseEvent(MouseEventHandle event)
     QWidget::mouseReleaseEvent(event);
 }
 
-/// Description: Executes the paintEvent operation.
 void ParticleView::paintEvent(PaintEventHandle event)
 {
     (void)event;

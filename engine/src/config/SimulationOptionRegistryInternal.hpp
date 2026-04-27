@@ -1,5 +1,9 @@
-// File: engine/src/config/SimulationOptionRegistryInternal.hpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/config/SimulationOptionRegistryInternal.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Configuration parsing, validation, and serialization implementation.
+ */
 
 #ifndef GRAVITY_SIM_SIMULATIONOPTIONREGISTRYINTERNAL_HPP
 #define GRAVITY_SIM_SIMULATIONOPTIONREGISTRYINTERNAL_HPP
@@ -10,7 +14,6 @@
 #include <string_view>
 
 namespace grav_config {
-/// Description: Enumerates the supported OptionKind values.
 enum class OptionKind {
     Uint,
     Int,
@@ -25,7 +28,6 @@ enum class OptionKind {
     TimeoutTriple,
 };
 
-/// Description: Defines the SimulationOptionEntry data or behavior contract.
 struct SimulationOptionEntry {
     SimulationOptionGroup group;
     OptionKind kind;
@@ -45,14 +47,10 @@ struct SimulationOptionEntry {
 
 extern const SimulationOptionEntry kSimulationOptions[];
 extern const std::size_t kSimulationOptionCount;
-/// Description: Describes the matches cli operation contract.
 bool matchesCli(const SimulationOptionEntry& entry, const std::string& key,
                 SimulationOptionGroup group);
-/// Description: Executes the matchesIni operation.
 bool matchesIni(const SimulationOptionEntry& entry, const std::string& key);
-/// Description: Executes the matchesEnv operation.
 bool matchesEnv(const SimulationOptionEntry& entry, const std::string& key);
-/// Description: Describes the apply entry operation contract.
 bool applyEntry(const SimulationOptionEntry& entry, const std::string& value,
                 SimulationConfig& config, std::ostream& warnings, std::string_view source,
                 std::string_view optionName);

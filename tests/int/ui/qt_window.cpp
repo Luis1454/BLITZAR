@@ -1,5 +1,9 @@
-// File: tests/int/ui/qt_window.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/int/ui/qt_window.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "client/ClientRuntime.hpp"
 #include "protocol/ServerProtocol.hpp"
@@ -20,7 +24,6 @@
 #include <string>
 
 namespace grav_test_qt_window {
-/// Description: Executes the makeUiConfig operation.
 SimulationConfig makeUiConfig()
 {
     SimulationConfig config{};
@@ -34,7 +37,6 @@ SimulationConfig makeUiConfig()
     return config;
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtMainWindowTest, TST_UIX_UI_001_ConstructsAndTicksWithRealRuntime)
 {
     (void)testsupport::ensureQtApp();
@@ -53,7 +55,6 @@ TEST(QtMainWindowTest, TST_UIX_UI_001_ConstructsAndTicksWithRealRuntime)
     server.stop();
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtMainWindowTest, TST_UIX_UI_002_ShowsReconnectingWhenServerStopsAndRecovers)
 {
     (void)testsupport::ensureQtApp();
@@ -84,7 +85,6 @@ TEST(QtMainWindowTest, TST_UIX_UI_002_ShowsReconnectingWhenServerStopsAndRecover
     server.stop();
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtMainWindowTest, TST_UIX_UI_003_SavesConfigOnlyOnExplicitSaveAction)
 {
     (void)testsupport::ensureQtApp();
@@ -129,7 +129,6 @@ TEST(QtMainWindowTest, TST_UIX_UI_003_SavesConfigOnlyOnExplicitSaveAction)
     std::filesystem::remove(configPath, ec);
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtMainWindowTest, TST_UIX_UI_004_ShowsEffectiveClientCapWhenConfiguredCapExceedsProtocolMax)
 {
     (void)testsupport::ensureQtApp();
@@ -152,7 +151,6 @@ TEST(QtMainWindowTest, TST_UIX_UI_004_ShowsEffectiveClientCapWhenConfiguredCapEx
     server.stop();
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtMainWindowTest, TST_UIX_UI_014_RealRuntimeProgressesAndSurfacesFreshOrStaleViewportState)
 {
     (void)testsupport::ensureQtApp();

@@ -1,5 +1,7 @@
-# File: scripts/doctor.cmake
-# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+# @file scripts/doctor.cmake
+# @author Luis1454
+# @project BLITZAR
+# @brief Build, release, and CI helper automation for BLITZAR workflows.
 
 cmake_minimum_required(VERSION 3.24)
 
@@ -16,7 +18,6 @@ endif()
 
 message(STATUS "[doctor] cmake version: ${CMAKE_VERSION}")
 
-# Description: Defines the gravity_doctor_program function helper.
 function(gravity_doctor_program name)
     unset(_prog CACHE)
     unset(_prog)

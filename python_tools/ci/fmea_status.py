@@ -1,5 +1,7 @@
-# File: python_tools/ci/fmea_status.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/ci/fmea_status.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -12,19 +14,31 @@ from pathlib import Path
 from python_tools.policies.fmea_action_register import FmeaActionRegister
 
 
-# Description: Defines the FmeaStatusSnapshot contract.
+# @brief Defines the fmea status snapshot type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class FmeaStatusSnapshot:
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self) -> None:
         self._register = FmeaActionRegister()
 
-    # Description: Executes the package operation.
+    # @brief Documents the package operation contract.
+    # @param root Input value used by this contract.
+    # @param dist_dir Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def package(self, root: Path, dist_dir: Path) -> Path:
         rows = self._register.load(root.resolve())
         snapshot = self._build_snapshot(rows)
         return self._archive(dist_dir.resolve(), snapshot)
 
-    # Description: Executes the _build_snapshot operation.
+    # @brief Documents the build snapshot operation contract.
+    # @param rows Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _build_snapshot(self, rows: list[dict[str, object]]) -> dict[str, object]:
         open_count = sum(1 for row in rows if row["status"] == "open")
         in_progress_count = sum(1 for row in rows if row["status"] == "in-progress")
@@ -42,7 +56,11 @@ class FmeaStatusSnapshot:
             "rows": rows,
         }
 
-    # Description: Executes the _archive operation.
+    # @brief Documents the archive operation contract.
+    # @param dist_dir Input value used by this contract.
+    # @param snapshot Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _archive(self, dist_dir: Path, snapshot: dict[str, object]) -> Path:
         if dist_dir.exists():
             shutil.rmtree(dist_dir)
@@ -53,7 +71,10 @@ class FmeaStatusSnapshot:
         return Path(shutil.make_archive(str(archive_base), "zip", root_dir=dist_dir))
 
 
-# Description: Executes the render_fmea_status_readme operation.
+# @brief Documents the render fmea status readme operation contract.
+# @param snapshot Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def render_fmea_status_readme(snapshot: Mapping[str, object]) -> str:
     summary = snapshot.get("summary")
     if not isinstance(summary, dict):

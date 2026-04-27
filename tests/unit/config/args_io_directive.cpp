@@ -1,5 +1,9 @@
-// File: tests/unit/config/args_io_directive.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/config/args_io_directive.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationPerformanceProfile.hpp"
@@ -10,7 +14,6 @@
 #include <gtest/gtest.h>
 #include <string>
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_024_LoadSupportsDirectiveSyntax)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -53,7 +56,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_024_LoadSupportsDirectiveSyntax)
     std::filesystem::remove(path, ec);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_027_DirectivePerformanceOverrideForcesCustomProfile)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -77,7 +79,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_027_DirectivePerformanceOverrideForcesCustomPr
     std::filesystem::remove(path, ec);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_025_SaveWritesDirectiveSyntax)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -117,7 +118,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_025_SaveWritesDirectiveSyntax)
     std::filesystem::remove(path, ec);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_068_LoadDirectiveFallbackHandlesMalformedDirectiveLine)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -141,7 +141,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_068_LoadDirectiveFallbackHandlesMalformedDirec
     std::filesystem::remove(path, ec);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_069_LoadDirectiveWarnsUnknownDirectiveArgument)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -164,7 +163,6 @@ TEST(ConfigArgsTest, TST_UNT_CONF_069_LoadDirectiveWarnsUnknownDirectiveArgument
     std::filesystem::remove(path, ec);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_070_SaveDirectiveKeepsBalancedProfileWithoutCustomOverrides)
 {
     SimulationConfig config = SimulationConfig::defaults();

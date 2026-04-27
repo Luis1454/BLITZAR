@@ -1,11 +1,14 @@
-// File: engine/src/config/EnvUtilsWin.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/config/EnvUtilsWin.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Configuration parsing, validation, and serialization implementation.
+ */
 
 #include "config/EnvUtilsWin.hpp"
 #include "config/EnvUtils.hpp"
 
 namespace grav_env {
-/// Description: Executes the get operation.
 std::optional<std::string> get(std::string_view name)
 {
     const std::string key(name);

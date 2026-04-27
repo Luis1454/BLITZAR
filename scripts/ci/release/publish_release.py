@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: scripts/ci/release/publish_release.py
-# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+# @file scripts/ci/release/publish_release.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Build, release, and CI helper automation for BLITZAR workflows.
 
 """CLI: Create or update a GitHub Release with notes and artifact files."""
 from __future__ import annotations
@@ -12,7 +14,10 @@ import sys
 from pathlib import Path
 
 
-# Description: Executes the parse_args operation.
+# @brief Documents the parse args operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Publish a GitHub Release.")
     parser.add_argument("--tag", required=True, help="Release tag name (e.g. v1.2.3)")
@@ -25,7 +30,10 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-# Description: Executes the _resolve_assets operation.
+# @brief Documents the resolve assets operation contract.
+# @param patterns Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _resolve_assets(patterns: list[str]) -> list[str]:
     files: list[str] = []
     for pattern in patterns:
@@ -34,20 +42,31 @@ def _resolve_assets(patterns: list[str]) -> list[str]:
     return sorted(set(files))
 
 
-# Description: Executes the _repo_flags operation.
+# @brief Documents the repo flags operation contract.
+# @param repo Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _repo_flags(repo: str) -> list[str]:
     if repo:
         return ["--repo", repo]
     return []
 
 
-# Description: Executes the _release_exists operation.
+# @brief Documents the release exists operation contract.
+# @param tag Input value used by this contract.
+# @param repo Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _release_exists(tag: str, repo: str) -> bool:
     cmd = ["gh", "release", "view", tag, *_repo_flags(repo)]
     return subprocess.run(cmd, check=False, capture_output=True, text=True).returncode == 0
 
 
-# Description: Executes the _notes_flags operation.
+# @brief Documents the notes flags operation contract.
+# @param notes_file Input value used by this contract.
+# @param generate_when_missing Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _notes_flags(notes_file: str, generate_when_missing: bool) -> list[str]:
     if notes_file:
         notes_path = Path(notes_file)
@@ -58,7 +77,11 @@ def _notes_flags(notes_file: str, generate_when_missing: bool) -> list[str]:
     return ["--generate-notes"] if generate_when_missing else []
 
 
-# Description: Executes the _state_flags operation.
+# @brief Documents the state flags operation contract.
+# @param prerelease Input value used by this contract.
+# @param draft Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _state_flags(prerelease: bool, draft: bool) -> list[str]:
     flags: list[str] = []
     if prerelease:
@@ -68,14 +91,20 @@ def _state_flags(prerelease: bool, draft: bool) -> list[str]:
     return flags
 
 
-# Description: Executes the _run operation.
+# @brief Documents the run operation contract.
+# @param cmd Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _run(cmd: list[str]) -> int:
     print(f"Running: {' '.join(cmd)}")
     result = subprocess.run(cmd, check=False)
     return result.returncode
 
 
-# Description: Executes the main operation.
+# @brief Documents the main operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def main() -> int:
     args = parse_args()
     try:

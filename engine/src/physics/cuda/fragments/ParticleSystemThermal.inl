@@ -1,12 +1,24 @@
-// File: engine/src/physics/cuda/fragments/ParticleSystemThermal.inl
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/physics/cuda/fragments/ParticleSystemThermal.inl
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
 
 /*
  * Module: physics/cuda
  * Responsibility: Apply thermal-model configuration and energy integration helpers.
  */
 
-/// Description: Executes the setThermalParameters operation.
+/*
+ * @brief Documents the set thermal parameters operation contract.
+ * @param ambientTemperature Input value used by this contract.
+ * @param specificHeat Input value used by this contract.
+ * @param heatingCoeff Input value used by this contract.
+ * @param radiationCoeff Input value used by this contract.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ParticleSystem::setThermalParameters(float ambientTemperature, float specificHeat, float heatingCoeff, float radiationCoeff)
 {
     _thermalAmbientTemperature = std::max(0.0f, ambientTemperature);
@@ -15,7 +27,12 @@ void ParticleSystem::setThermalParameters(float ambientTemperature, float specif
     _thermalRadiationCoeff = std::max(0.0f, radiationCoeff);
 }
 
-/// Description: Executes the applyThermalModel operation.
+/*
+ * @brief Documents the apply thermal model operation contract.
+ * @param deltaTime Input value used by this contract.
+ * @return float ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 float ParticleSystem::applyThermalModel(float deltaTime)
 {
     if (deltaTime <= 0.0f) return 0.0f;

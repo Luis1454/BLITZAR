@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: scripts/ci/nightly/build_dashboard.py
-# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+# @file scripts/ci/nightly/build_dashboard.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Build, release, and CI helper automation for BLITZAR workflows.
 
 from __future__ import annotations
 
@@ -15,12 +17,18 @@ if str(ROOT) not in sys.path:
 from python_tools.ci.coverage_dashboard import CoverageDashboardBuilder, CoverageMetrics
 
 
-# Description: Executes the _read_metric operation.
+# @brief Documents the read metric operation contract.
+# @param name Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _read_metric(name: str) -> float:
     return float(os.environ[name])
 
 
-# Description: Executes the main operation.
+# @brief Documents the main operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def main() -> int:
     builder = CoverageDashboardBuilder()
     metrics = CoverageMetrics(

@@ -1,5 +1,7 @@
-# File: tests/CMakeLists.txt
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/CMakeLists.txt
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 cmake_minimum_required(VERSION 3.24)
 

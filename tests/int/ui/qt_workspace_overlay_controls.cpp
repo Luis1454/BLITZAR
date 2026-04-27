@@ -1,5 +1,9 @@
-// File: tests/int/ui/qt_workspace_overlay_controls.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/int/ui/qt_workspace_overlay_controls.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "tests/support/qt_test_utils.hpp"
 #include "ui/MainWindow.hpp"
@@ -12,7 +16,6 @@
 #include <memory>
 
 namespace grav_test_qt_workspace_overlay_controls {
-/// Description: Defines the IdleRuntime data or behavior contract.
 class IdleRuntime final : public grav_client::IClientRuntime {
 public:
     bool start() override
@@ -188,7 +191,6 @@ public:
     }
 };
 
-/// Description: Executes the TEST operation.
 TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_020_OctreeOverlayControlsUpdateWorkspaceView)
 {
     (void)testsupport::ensureQtApp();

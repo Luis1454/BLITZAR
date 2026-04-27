@@ -1,5 +1,9 @@
-// File: tests/support/physics_scenario.hpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/support/physics_scenario.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #ifndef GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_
 #define GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_
@@ -10,7 +14,6 @@
 #include <vector>
 
 namespace testsupport {
-/// Description: Defines the ScenarioConfig data or behavior contract.
 struct ScenarioConfig {
     std::string inputPath;
     std::string inputFormat = "xyz";
@@ -30,7 +33,6 @@ struct ScenarioConfig {
     InitialStateConfig initState{};
 };
 
-/// Description: Defines the ScenarioResult data or behavior contract.
 struct ScenarioResult {
     std::vector<RenderParticle> initial;
     std::vector<RenderParticle> final;
@@ -39,19 +41,12 @@ struct ScenarioResult {
     float maxParticleDeltaFromInitial = 0.0f;
 };
 
-/// Description: Executes the distance operation.
 float distance(const RenderParticle& a, const RenderParticle& b);
-/// Description: Executes the centerOfMassAll operation.
 std::array<float, 3> centerOfMassAll(const std::vector<RenderParticle>& snapshot);
-/// Description: Executes the averageRadius operation.
 float averageRadius(const std::vector<RenderParticle>& snapshot);
-/// Description: Executes the runScenario operation.
 bool runScenario(const ScenarioConfig& cfg, ScenarioResult& out, std::string& error);
-/// Description: Executes the getTwoBodyInputPath operation.
 std::string getTwoBodyInputPath();
-/// Description: Executes the prepareTwoBodyScenario operation.
 bool prepareTwoBodyScenario(ScenarioConfig& cfg, std::string& error);
-/// Description: Describes the prepare generated calibration scenario operation contract.
 bool prepareGeneratedCalibrationScenario(const std::string& mode, ScenarioConfig& cfg,
                                          std::string& error);
 } // namespace testsupport

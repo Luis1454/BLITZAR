@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: scripts/ci/gpu/bootstrap_windows_runner.py
-# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+# @file scripts/ci/gpu/bootstrap_windows_runner.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Build, release, and CI helper automation for BLITZAR workflows.
 
 from __future__ import annotations
 
@@ -15,7 +17,10 @@ if str(ROOT) not in sys.path:
 from python_tools.ci.gpu_runner_bootstrap import WindowsGpuRunnerBootstrap
 
 
-# Description: Executes the parse_args operation.
+# @brief Documents the parse args operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Validate and bootstrap a Windows self-hosted GPU runner.")
     parser.add_argument("--repo", required=True, help="owner/repo")
@@ -29,7 +34,10 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-# Description: Executes the main operation.
+# @brief Documents the main operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def main() -> int:
     args = parse_args()
     bootstrap = WindowsGpuRunnerBootstrap()

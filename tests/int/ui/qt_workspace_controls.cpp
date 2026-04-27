@@ -1,5 +1,9 @@
-// File: tests/int/ui/qt_workspace_controls.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/int/ui/qt_workspace_controls.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "client/ClientRuntime.hpp"
 #include "tests/support/client_utils.hpp"
@@ -21,7 +25,6 @@
 #include <string>
 
 namespace grav_test_qt_workspace_controls {
-/// Description: Executes the makeWorkspaceUiConfig operation.
 static SimulationConfig makeWorkspaceUiConfig()
 {
     SimulationConfig config{};
@@ -35,7 +38,6 @@ static SimulationConfig makeWorkspaceUiConfig()
     return config;
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtWorkspaceControlsTest, TST_UIX_UI_007_ProfilesAndCheckboxesRemainInteractiveWithoutServer)
 {
     (void)testsupport::ensureQtApp();
@@ -71,7 +73,6 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_007_ProfilesAndCheckboxesRemainInteract
     EXPECT_NE(autostartCheck->isChecked(), initialAutostart);
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtWorkspaceControlsTest, TST_UIX_UI_008_SavePersistsProfilesSelectedFromWorkspace)
 {
     (void)testsupport::ensureQtApp();
@@ -115,7 +116,6 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_008_SavePersistsProfilesSelectedFromWor
     std::filesystem::remove(configPath, ec);
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtWorkspaceControlsTest, TST_UIX_UI_009_EnergyDockIsVisibleAndSidebarStaysCompact)
 {
     (void)testsupport::ensureQtApp();
@@ -134,7 +134,6 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_009_EnergyDockIsVisibleAndSidebarStaysC
     EXPECT_LE(controlsDock->width(), 260);
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtWorkspaceControlsTest, TST_UIX_UI_015_ThemeTogglePersistsAcrossSaveAndReload)
 {
     (void)testsupport::ensureQtApp();
@@ -179,7 +178,6 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_015_ThemeTogglePersistsAcrossSaveAndRel
     std::filesystem::remove(configPath, ec);
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtWorkspaceControlsTest, TST_UIX_UI_018_ShowsThroughputAdvisoryForHeavyConfig)
 {
     (void)testsupport::ensureQtApp();

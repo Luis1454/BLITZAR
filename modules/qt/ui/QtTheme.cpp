@@ -1,11 +1,14 @@
-// File: modules/qt/ui/QtTheme.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/QtTheme.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "ui/QtTheme.hpp"
 #include <QColor>
 
 namespace grav_qt {
-/// Description: Defines the QtThemeLocal data or behavior contract.
 class QtThemeLocal final {
 public:
     static QString lightStyleSheet()
@@ -113,19 +116,16 @@ public:
     }
 };
 
-/// Description: Executes the resolve operation.
 QtThemeMode QtTheme::resolve(const std::string& themeName)
 {
     return themeName == "dark" ? QtThemeMode::Dark : QtThemeMode::Light;
 }
 
-/// Description: Executes the toConfigValue operation.
 std::string QtTheme::toConfigValue(QtThemeMode mode)
 {
     return mode == QtThemeMode::Dark ? "dark" : "light";
 }
 
-/// Description: Executes the buildPalette operation.
 QPalette QtTheme::buildPalette(QtThemeMode mode)
 {
     QPalette palette;

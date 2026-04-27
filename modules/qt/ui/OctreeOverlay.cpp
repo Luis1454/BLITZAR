@@ -1,5 +1,9 @@
-// File: modules/qt/ui/OctreeOverlay.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/OctreeOverlay.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "ui/OctreeOverlay.hpp"
 #include <algorithm>
@@ -9,7 +13,6 @@
 #include <vector>
 
 namespace grav_qt {
-/// Description: Defines the OverlayBounds data or behavior contract.
 struct OverlayBounds final {
     float centerX;
     float centerY;
@@ -19,7 +22,6 @@ struct OverlayBounds final {
 
 static constexpr std::size_t kMaxOverlayNodes = 4096u;
 
-/// Description: Executes the computeBounds operation.
 static OverlayBounds computeBounds(const std::vector<RenderParticle>& particles)
 {
     float minX = std::numeric_limits<float>::max();
@@ -41,7 +43,6 @@ static OverlayBounds computeBounds(const std::vector<RenderParticle>& particles)
                          std::max(maxExtent * 0.5f, 1.0e-3f) * 1.001f};
 }
 
-/// Description: Describes the child index for particle operation contract.
 static int childIndexForParticle(const RenderParticle& particle, float centerX, float centerY,
                                  float centerZ)
 {
@@ -58,7 +59,6 @@ static int childIndexForParticle(const RenderParticle& particle, float centerX, 
     return childIndex;
 }
 
-/// Description: Describes the append nodes operation contract.
 static void appendNodes(const std::vector<RenderParticle>& particles,
                         const std::vector<std::size_t>& indices, const OctreeOverlayNode& node,
                         int maxDepth, std::vector<OctreeOverlayNode>& nodes)

@@ -1,5 +1,9 @@
-// File: engine/src/config/SimulationScenarioValidationPhysics.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/config/SimulationScenarioValidationPhysics.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Configuration parsing, validation, and serialization implementation.
+ */
 
 #include "config/SimulationScenarioValidationPhysics.hpp"
 #include "config/SimulationModes.hpp"
@@ -8,7 +12,6 @@
 #include <string>
 
 namespace grav_config {
-/// Description: Describes the append diagnostics operation contract.
 void SimulationScenarioValidationPhysics::appendDiagnostics(
     const SimulationConfig& config, const InitialStateConfig& resolvedInitConfig,
     const std::function<void(ScenarioDiagnosticLevel, std::string, std::string, std::string)>&

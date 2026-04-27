@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/ci/python_quality_gate.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/ci/python_quality_gate.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -12,17 +14,26 @@ from python_tools.core.io import ProcessRunner
 from python_tools.core.models import CheckContext, CheckResult
 
 
-# Description: Defines the PythonQualityGateCheck contract.
+# @brief Defines the python quality gate check type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class PythonQualityGateCheck(BaseCheck):
     name = "python_quality"
     success_message = "python quality gate passed"
     failure_title = "python quality gate failed:"
 
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self) -> None:
         self._runner = ProcessRunner()
 
-    # Description: Executes the _execute operation.
+    # @brief Documents the execute operation contract.
+    # @param context Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         pytest_temp_dir = context.root / ".pytest-basetemp-python-quality"
         pytest_temp = str(pytest_temp_dir)

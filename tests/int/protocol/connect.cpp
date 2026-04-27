@@ -1,5 +1,9 @@
-// File: tests/int/protocol/connect.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/int/protocol/connect.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "protocol/ServerClient.hpp"
 #include "protocol/ServerProtocol.hpp"
@@ -11,7 +15,6 @@
 #include <vector>
 
 namespace grav_test_server_protocol_connect {
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_001_ServerClientParsesStatusAndSnapshotFromRealServer)
 {
     RealServerHarness server;
@@ -56,7 +59,6 @@ TEST(ServerProtocolTest, TST_INT_PROT_001_ServerClientParsesStatusAndSnapshotFro
     server.stop();
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_002_ServerClientRecoversAfterRealServerRestartOnSamePort)
 {
     RealServerHarness server;
@@ -83,7 +85,6 @@ TEST(ServerProtocolTest, TST_INT_PROT_002_ServerClientRecoversAfterRealServerRes
     server.stop();
 }
 
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolTest,
      TST_INT_PROT_009_ServerClientRejectsRequestsWithoutConnectionWithOperationContext)
 {
@@ -93,7 +94,6 @@ TEST(ServerProtocolTest,
     EXPECT_EQ(response.error, "[server-client] sendJson: not connected");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_003_ServerClientConnectTimeoutIsBounded)
 {
     ServerClient client;

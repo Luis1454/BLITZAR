@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/policies/quality_manifest.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/policies/quality_manifest.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -17,27 +19,45 @@ TESTS_KEY = "tests"
 CROSSWALK_KEY = "crosswalk"
 
 
-# Description: Defines the QualityManifestLoader contract.
+# @brief Defines the quality manifest loader type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class QualityManifestLoader:
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self) -> None:
         self._json = JsonLoader()
 
-    # Description: Executes the load operation.
+    # @brief Documents the load operation contract.
+    # @param root Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def load(self, root: Path, result: CheckResult) -> dict[str, JsonValue]:
         payload, errors = self.load_with_errors(root)
         for error in errors:
             result.add_error(error)
         return payload
 
-    # Description: Executes the load_with_errors operation.
+    # @brief Documents the load with errors operation contract.
+    # @param root Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def load_with_errors(self, root: Path) -> tuple[dict[str, JsonValue], list[str]]:
         errors: list[str] = []
         manifest_path = (root / QUALITY_MANIFEST_PATH).resolve()
         payload = self._load_manifest_object(root.resolve(), manifest_path, (), errors)
         return ({}, errors) if payload is None else (payload, errors)
 
-    # Description: Executes the _load_manifest_object operation.
+    # @brief Documents the load manifest object operation contract.
+    # @param root Input value used by this contract.
+    # @param path Input value used by this contract.
+    # @param stack Input value used by this contract.
+    # @param errors Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _load_manifest_object(
         self,
         root: Path,
@@ -92,7 +112,13 @@ class QualityManifestLoader:
         return merged
 
     @staticmethod
-    # Description: Executes the _read_includes operation.
+    # @brief Documents the read includes operation contract.
+    # @param root Input value used by this contract.
+    # @param source_path Input value used by this contract.
+    # @param value Input value used by this contract.
+    # @param errors Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _read_includes(
         root: Path,
         source_path: Path,
@@ -115,7 +141,12 @@ class QualityManifestLoader:
         return refs
 
     @staticmethod
-    # Description: Executes the _resolve_include_path operation.
+    # @brief Documents the resolve include path operation contract.
+    # @param root Input value used by this contract.
+    # @param source_path Input value used by this contract.
+    # @param include_ref Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _resolve_include_path(root: Path, source_path: Path, include_ref: str) -> Path | None:
         include_path = Path(include_ref)
         include_path = include_path.resolve() if include_path.is_absolute() else (source_path.parent / include_path).resolve()
@@ -126,7 +157,13 @@ class QualityManifestLoader:
         return include_path
 
     @staticmethod
-    # Description: Executes the _merge_top_level operation.
+    # @brief Documents the merge top level operation contract.
+    # @param target Input value used by this contract.
+    # @param incoming Input value used by this contract.
+    # @param errors Input value used by this contract.
+    # @param source Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _merge_top_level(
         target: dict[str, JsonValue],
         incoming: dict[str, JsonValue],
@@ -140,7 +177,11 @@ class QualityManifestLoader:
             target[key] = value
 
     @staticmethod
-    # Description: Executes the _display_path operation.
+    # @brief Documents the display path operation contract.
+    # @param root Input value used by this contract.
+    # @param path Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _display_path(root: Path, path: Path) -> str:
         try:
             return path.resolve().relative_to(root).as_posix()
@@ -148,7 +189,13 @@ class QualityManifestLoader:
             return path.as_posix()
 
     @staticmethod
-    # Description: Executes the get_list operation.
+    # @brief Documents the get list operation contract.
+    # @param payload Input value used by this contract.
+    # @param key Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @param keyed_field Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def get_list(
         payload: dict[str, JsonValue],
         key: str,
@@ -168,7 +215,13 @@ class QualityManifestLoader:
         return rows
 
     @staticmethod
-    # Description: Executes the _coerce_dict_rows operation.
+    # @brief Documents the coerce dict rows operation contract.
+    # @param raw Input value used by this contract.
+    # @param key Input value used by this contract.
+    # @param keyed_field Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _coerce_dict_rows(
         raw: dict[str, JsonValue],
         key: str,
@@ -185,14 +238,23 @@ class QualityManifestLoader:
         return rows
 
 
-# Description: Defines the EvidenceRegistry contract.
+# @brief Defines the evidence registry type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class EvidenceRegistry:
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self) -> None:
         self._manifest = QualityManifestLoader()
         self._cache_by_root: dict[Path, tuple[Mapping[str, str], Mapping[str, str]]] = {}
 
-    # Description: Executes the resolve operation.
+    # @brief Documents the resolve operation contract.
+    # @param root Input value used by this contract.
+    # @param ref Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def resolve(self, root: Path, ref: str) -> tuple[str | None, str | None]:
         by_id, _by_path, load_error = self._load(root)
         if load_error is not None:
@@ -205,7 +267,11 @@ class EvidenceRegistry:
             return None, f"path refs are not allowed in quality manifest: {ref} (use EVD_* id)"
         return None, f"unknown evidence reference id: {ref}"
 
-    # Description: Executes the normalize operation.
+    # @brief Documents the normalize operation contract.
+    # @param root Input value used by this contract.
+    # @param value Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def normalize(self, root: Path, value: str) -> str:
         _by_id, by_path, load_error = self._load(root)
         if load_error is not None or by_path is None:
@@ -214,7 +280,10 @@ class EvidenceRegistry:
             return by_path[value]
         return value
 
-    # Description: Executes the _load operation.
+    # @brief Documents the load operation contract.
+    # @param root Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _load(self, root: Path) -> tuple[Mapping[str, str] | None, Mapping[str, str] | None, str | None]:
         if root in self._cache_by_root:
             by_id, by_path = self._cache_by_root[root]
@@ -241,6 +310,10 @@ class EvidenceRegistry:
 _REGISTRY = EvidenceRegistry()
 
 
-# Description: Executes the resolve_evidence_ref operation.
+# @brief Documents the resolve evidence ref operation contract.
+# @param root Input value used by this contract.
+# @param ref Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def resolve_evidence_ref(root: Path, ref: str) -> tuple[str | None, str | None]:
     return _REGISTRY.resolve(root, ref)

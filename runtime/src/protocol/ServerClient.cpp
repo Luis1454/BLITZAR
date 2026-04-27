@@ -1,5 +1,9 @@
-// File: runtime/src/protocol/ServerClient.cpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/src/protocol/ServerClient.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
+ */
 
 #include "protocol/ServerClient.hpp"
 #include "platform/SocketPlatform.hpp"
@@ -14,13 +18,24 @@
 #include <string_view>
 #include <utility>
 
-/// Description: Executes the asBytes operation.
+/*
+ * @brief Documents the as bytes operation contract.
+ * @param text Input value used by this contract.
+ * @return grav_socket::ConstBytes value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static grav_socket::ConstBytes asBytes(std::string_view text)
 {
     return grav_socket::ConstBytes{reinterpret_cast<const std::byte*>(text.data()), text.size()};
 }
 
-/// Description: Executes the sendAll operation.
+/*
+ * @brief Documents the send all operation contract.
+ * @param socketHandle Input value used by this contract.
+ * @param bytes Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes bytes)
 {
     std::size_t offset = 0;
@@ -33,20 +48,47 @@ static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes by
     return true;
 }
 
-/// Description: Executes the clampTimeoutMs operation.
+/*
+ * @brief Documents the clamp timeout ms operation contract.
+ * @param timeoutMs Input value used by this contract.
+ * @return int value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static int clampTimeoutMs(int timeoutMs)
 {
     return grav_socket::clampTimeoutMs(timeoutMs);
 }
 
-/// Description: Executes the serverClientError operation.
+/*
+ * @brief Documents the server client error operation contract.
+ * @param operation Input value used by this contract.
+ * @param detail Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::string serverClientError(std::string_view operation, std::string_view detail)
 {
     return std::string("[server-client] ") + std::string(operation) + ": " + std::string(detail);
 }
 
-/// Description: Executes the ServerClient operation.
+/*
+ * @brief Documents the server client operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return ServerClient:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ServerClient::ServerClient()
+    /*
+     * @brief Documents the socket operation contract.
+     * @param invalidHandle Input value used by this contract.
+     * @param _socketTimeoutMs Input value used by this contract.
+     * @param false Input value used by this contract.
+     * @param _recvBuffer Input value used by this contract.
+     * @param _authToken Input value used by this contract.
+     * @return : value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     : _socket(grav_socket::invalidHandle()),
       _socketTimeoutMs(3000),
       _networkInitialized(false),
@@ -55,13 +97,24 @@ ServerClient::ServerClient()
 {
 }
 
-/// Description: Releases resources owned by ServerClient.
+/*
+ * @brief Documents the ~server client operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return ServerClient:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ServerClient::~ServerClient()
 {
     disconnect();
 }
 
-/// Description: Executes the connect operation.
+/*
+ * @brief Documents the connect operation contract.
+ * @param host Input value used by this contract.
+ * @param port Input value used by this contract.
+ * @return bool ServerClient:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ServerClient::connect(const std::string& host, std::uint16_t port)
 {
     try {
@@ -97,7 +150,12 @@ bool ServerClient::connect(const std::string& host, std::uint16_t port)
     }
 }
 
-/// Description: Executes the setSocketTimeoutMs operation.
+/*
+ * @brief Documents the set socket timeout ms operation contract.
+ * @param timeoutMs Input value used by this contract.
+ * @return void ServerClient:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ServerClient::setSocketTimeoutMs(int timeoutMs)
 {
     _socketTimeoutMs = clampTimeoutMs(timeoutMs);
@@ -106,19 +164,34 @@ void ServerClient::setSocketTimeoutMs(int timeoutMs)
     }
 }
 
-/// Description: Executes the socketTimeoutMs operation.
+/*
+ * @brief Documents the socket timeout ms operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return int ServerClient:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 int ServerClient::socketTimeoutMs() const
 {
     return _socketTimeoutMs;
 }
 
-/// Description: Executes the setAuthToken operation.
+/*
+ * @brief Documents the set auth token operation contract.
+ * @param token Input value used by this contract.
+ * @return void ServerClient:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ServerClient::setAuthToken(std::string token)
 {
     _authToken = std::move(token);
 }
 
-/// Description: Executes the disconnect operation.
+/*
+ * @brief Documents the disconnect operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void ServerClient:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ServerClient::disconnect()
 {
     try {
@@ -144,13 +217,23 @@ void ServerClient::disconnect()
     }
 }
 
-/// Description: Executes the isConnected operation.
+/*
+ * @brief Documents the is connected operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return bool ServerClient:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ServerClient::isConnected() const
 {
     return grav_socket::isValid(_socket);
 }
 
-/// Description: Executes the trim operation.
+/*
+ * @brief Documents the trim operation contract.
+ * @param value Input value used by this contract.
+ * @return std::string ServerClient:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::string ServerClient::trim(const std::string& value)
 {
     const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char c) {
@@ -164,7 +247,12 @@ std::string ServerClient::trim(const std::string& value)
     return std::string(begin, end);
 }
 
-/// Description: Executes the readLine operation.
+/*
+ * @brief Documents the read line operation contract.
+ * @param outLine Input value used by this contract.
+ * @return bool ServerClient:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ServerClient::readLine(std::string& outLine)
 {
     try {
@@ -202,7 +290,12 @@ bool ServerClient::readLine(std::string& outLine)
     }
 }
 
-/// Description: Executes the sendJson operation.
+/*
+ * @brief Documents the send json operation contract.
+ * @param jsonLine Input value used by this contract.
+ * @return ServerClientResponse ServerClient:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ServerClientResponse ServerClient::sendJson(const std::string& jsonLine)
 {
     ServerClientResponse response;
@@ -251,7 +344,13 @@ ServerClientResponse ServerClient::sendJson(const std::string& jsonLine)
     }
 }
 
-/// Description: Describes the send command operation contract.
+/*
+ * @brief Documents the send command operation contract.
+ * @param cmd Input value used by this contract.
+ * @param fieldsJson Input value used by this contract.
+ * @return ServerClientResponse ServerClient:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ServerClientResponse ServerClient::sendCommand(const std::string& cmd,
                                                const std::string& fieldsJson)
 {
@@ -261,7 +360,12 @@ ServerClientResponse ServerClient::sendCommand(const std::string& cmd,
     return sendJson(grav_protocol::ServerJsonCodec::makeCommandRequest(request, fieldsJson));
 }
 
-/// Description: Executes the getStatus operation.
+/*
+ * @brief Documents the get status operation contract.
+ * @param outStatus Input value used by this contract.
+ * @return ServerClientResponse ServerClient:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ServerClientResponse ServerClient::getStatus(ServerClientStatus& outStatus)
 {
     try {
@@ -328,7 +432,14 @@ ServerClientResponse ServerClient::getStatus(ServerClientStatus& outStatus)
     }
 }
 
-/// Description: Describes the get snapshot operation contract.
+/*
+ * @brief Documents the get snapshot operation contract.
+ * @param outSnapshot Input value used by this contract.
+ * @param maxPoints Input value used by this contract.
+ * @param outSourceSize Input value used by this contract.
+ * @return ServerClientResponse ServerClient:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ServerClientResponse ServerClient::getSnapshot(std::vector<RenderParticle>& outSnapshot,
                                                std::uint32_t maxPoints, std::size_t* outSourceSize)
 {

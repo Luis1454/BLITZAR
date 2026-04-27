@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: scripts/ci/release/generate_changelog.py
-# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+# @file scripts/ci/release/generate_changelog.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Build, release, and CI helper automation for BLITZAR workflows.
 
 """CLI: Generate a Markdown changelog from Conventional Commits git history."""
 from __future__ import annotations
@@ -16,7 +18,10 @@ if str(ROOT) not in sys.path:
 from python_tools.ci.changelog import generate_changelog, render_markdown
 
 
-# Description: Executes the parse_args operation.
+# @brief Documents the parse args operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate changelog from git history.")
     parser.add_argument("--tag", required=True, help="Current release tag (e.g. v1.2.3)")
@@ -26,7 +31,10 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-# Description: Executes the main operation.
+# @brief Documents the main operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def main() -> int:
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()

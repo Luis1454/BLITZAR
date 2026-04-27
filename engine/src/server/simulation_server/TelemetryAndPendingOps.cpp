@@ -1,9 +1,18 @@
-// File: engine/src/server/simulation_server/TelemetryAndPendingOps.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/server/simulation_server/TelemetryAndPendingOps.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "Internal.hpp"
 
-/// Description: Executes the clearGpuTelemetry operation.
+/*
+ * @brief Documents the clear gpu telemetry operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::clearGpuTelemetry()
 {
     _gpuTelemetryAvailable.store(false, std::memory_order_relaxed);
@@ -13,7 +22,13 @@ void SimulationServer::clearGpuTelemetry()
     _gpuVramTotalBytes.store(0u, std::memory_order_relaxed);
 }
 
-/// Description: Describes the maybe sample gpu telemetry operation contract.
+/*
+ * @brief Documents the maybe sample gpu telemetry operation contract.
+ * @param solverMode Input value used by this contract.
+ * @param currentStep Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::maybeSampleGpuTelemetry(std::string_view solverMode,
                                                std::uint64_t currentStep)
 {
@@ -48,7 +63,12 @@ void SimulationServer::maybeSampleGpuTelemetry(std::string_view solverMode,
     _gpuVramTotalBytes.store(static_cast<std::uint64_t>(totalBytes), std::memory_order_relaxed);
 }
 
-/// Description: Executes the processPendingExport operation.
+/*
+ * @brief Documents the process pending export operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::processPendingExport()
 {
     PendingExportRequest request{};
@@ -85,7 +105,12 @@ void SimulationServer::processPendingExport()
     }
 }
 
-/// Description: Executes the processPendingCheckpointSave operation.
+/*
+ * @brief Documents the process pending checkpoint save operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::processPendingCheckpointSave()
 {
     if (_checkpointQueueState == nullptr) {
@@ -115,7 +140,13 @@ void SimulationServer::processPendingCheckpointSave()
     request.result->condition.notify_all();
 }
 
-/// Description: Executes the exportCurrentState operation.
+/*
+ * @brief Documents the export current state operation contract.
+ * @param outputPath Input value used by this contract.
+ * @param format Input value used by this contract.
+ * @return bool SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool SimulationServer::exportCurrentState(const std::string& outputPath, const std::string& format)
 {
     if (!_system)

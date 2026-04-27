@@ -1,3 +1,8 @@
+# @file tests/checks/suites/release/test_release_desktop_installer.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
+
 from __future__ import annotations
 
 import subprocess
@@ -7,7 +12,10 @@ from python_tools.ci import windows_installer as windows_installer_module
 from python_tools.ci.release_bundle import ReleaseBundlePackager
 
 
-# Description: Executes the test_nsis_installer_does_not_use_executable_as_wizard_icon operation.
+# @brief Documents the test nsis installer does not use executable as wizard icon operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_nsis_installer_does_not_use_executable_as_wizard_icon() -> None:
     nsis_script = Path("scripts/install/windows/BLITZAR.nsi").read_text(encoding="utf-8")
 
@@ -16,7 +24,11 @@ def test_nsis_installer_does_not_use_executable_as_wizard_icon() -> None:
     assert "--wait-for-module" in nsis_script
 
 
-# Description: Executes the test_release_desktop_installer_builds_native_windows_installer operation.
+# @brief Documents the test release desktop installer builds native windows installer operation contract.
+# @param tmp_path Input value used by this contract.
+# @param monkeypatch Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_release_desktop_installer_builds_native_windows_installer(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.chdir(tmp_path)
     build_dir = tmp_path / "build"
@@ -32,7 +44,14 @@ def test_release_desktop_installer_builds_native_windows_installer(tmp_path: Pat
 
     installer_output = tmp_path / "dist/desktop-installer" / "blitzar-rc-1-windows-desktop-installer.exe"
 
-    # Description: Executes the fake_run operation.
+    # @brief Documents the fake run operation contract.
+    # @param command Input value used by this contract.
+    # @param cwd Input value used by this contract.
+    # @param check Input value used by this contract.
+    # @param capture_output Input value used by this contract.
+    # @param text Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def fake_run(command: list[str], cwd: Path, check: bool, capture_output: bool, text: bool):
         del cwd, check, capture_output, text
         for entry in command:
