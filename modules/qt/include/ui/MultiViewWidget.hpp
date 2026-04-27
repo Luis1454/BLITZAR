@@ -1,13 +1,20 @@
+// File: modules/qt/include/ui/MultiViewWidget.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_MULTIVIEWWIDGET_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_MULTIVIEWWIDGET_HPP_
-/* * Module: ui * Responsibility: Coordinate the four synchronized particle views shown in the Qt
- * workspace. */
+/*
+ * Module: ui
+ * Responsibility: Coordinate the four synchronized particle views shown in the Qt
+ * workspace.
+ */
 #include "ui/OctreeOverlay.hpp"
 #include "ui/ParticleView.hpp"
 #include <QPointer>
 #include <QWidget>
 #include <cstddef>
 #include <vector>
+
 namespace grav_qt {
 /// Owns the synchronized XY, XZ, YZ, and 3D particle views.
 class MultiViewWidget : public QWidget {
@@ -42,7 +49,9 @@ public:
     std::size_t octreeOverlayNodeCount() const;
 
 private:
+    /// Description: Describes the apply octree overlay operation contract.
     void applyOctreeOverlay();
+    /// Description: Describes the rebuild octree overlay operation contract.
     void rebuildOctreeOverlay();
     QPointer<ParticleView> _xy;
     QPointer<ParticleView> _xz;

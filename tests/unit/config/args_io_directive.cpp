@@ -1,3 +1,6 @@
+// File: tests/unit/config/args_io_directive.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationPerformanceProfile.hpp"
 #include "protocol/ServerProtocol.hpp"
@@ -6,6 +9,8 @@
 #include <fstream>
 #include <gtest/gtest.h>
 #include <string>
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_024_LoadSupportsDirectiveSyntax)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -47,6 +52,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_024_LoadSupportsDirectiveSyntax)
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_027_DirectivePerformanceOverrideForcesCustomProfile)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -69,6 +76,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_027_DirectivePerformanceOverrideForcesCustomPr
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_025_SaveWritesDirectiveSyntax)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -107,6 +116,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_025_SaveWritesDirectiveSyntax)
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_068_LoadDirectiveFallbackHandlesMalformedDirectiveLine)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -129,6 +140,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_068_LoadDirectiveFallbackHandlesMalformedDirec
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_069_LoadDirectiveWarnsUnknownDirectiveArgument)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -150,6 +163,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_069_LoadDirectiveWarnsUnknownDirectiveArgument
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_070_SaveDirectiveKeepsBalancedProfileWithoutCustomOverrides)
 {
     SimulationConfig config = SimulationConfig::defaults();

@@ -1,3 +1,6 @@
+# File: CMakeLists.txt
+# Purpose: Source artifact for the BLITZAR project.
+
 cmake_minimum_required(VERSION 3.24)
 
 include(cmake/win.cmake)

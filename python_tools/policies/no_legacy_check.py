@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/policies/no_legacy_check.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import os
@@ -23,11 +26,13 @@ EXPECTED_VARIANTS = (
 )
 
 
+# Description: Defines the NoLegacyCheck contract.
 class NoLegacyCheck(BaseCheck):
     name = "no_legacy"
     success_message = "Legacy standalone client guard check passed."
     failure_title = "Legacy standalone client guard check failed:"
 
+    # Description: Executes the _execute operation.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         root_cmake = context.root / "CMakeLists.txt"
         if not root_cmake.exists():
@@ -40,6 +45,7 @@ class NoLegacyCheck(BaseCheck):
         if context.check_build_targets:
             self._check_build_targets(context.build_dir, result)
 
+    # Description: Executes the _check_build_targets operation.
     def _check_build_targets(self, build_dir: Path | None, result: CheckResult) -> None:
         if build_dir is None:
             result.add_error("build-dir is required when --check-build-targets is enabled")

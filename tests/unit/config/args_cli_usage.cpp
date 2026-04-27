@@ -1,3 +1,6 @@
+// File: tests/unit/config/args_cli_usage.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationArgs.hpp"
 #include "config/SimulationConfig.hpp"
 #include <gtest/gtest.h>
@@ -5,7 +8,9 @@
 #include <string>
 #include <string_view>
 #include <vector>
+
 namespace grav_test_config_args_cli_usage {
+/// Description: Executes the toArgViews operation.
 std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage)
 {
     std::vector<std::string_view> args;
@@ -15,6 +20,8 @@ std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage
     return args;
 }
 } // namespace grav_test_config_args_cli_usage
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_007_UsageIncludesCoreOptions)
 {
     std::stringstream out;
@@ -29,6 +36,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_007_UsageIncludesCoreOptions)
     EXPECT_EQ(usage.find("Legacy positional"), std::string::npos);
     EXPECT_EQ(usage.find("--temperature"), std::string::npos);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_008_RejectsPositionalArguments)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -46,6 +55,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_008_RejectsPositionalArguments)
     EXPECT_TRUE(runtime.hasArgumentError);
     EXPECT_NE(log.find("unexpected positional argument"), std::string::npos);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_009_RejectsLegacyTemperatureAlias)
 {
     SimulationConfig config = SimulationConfig::defaults();

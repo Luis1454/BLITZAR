@@ -1,3 +1,6 @@
+// File: modules/qt/ui/MainWindowControls.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "config/SimulationPerformanceProfile.hpp"
 #include "config/SimulationProfile.hpp"
 #include "ui/MainWindow.hpp"
@@ -10,7 +13,9 @@
 #include <QSpinBox>
 #include <QStatusBar>
 #include <QTimer>
+
 namespace grav_qt {
+/// Description: Executes the connectControls operation.
 void MainWindow::connectControls()
 {
     const auto applySphParams = [this]() {
@@ -26,14 +31,27 @@ void MainWindow::connectControls()
         _runtime->setPaused(checked);
         _pauseButton->setText(checked ? "Resume" : "Pause");
     });
-    connect(_stepButton, &QPushButton::clicked, this, [this]() { _runtime->stepOnce(); });
-    connect(_resetButton, &QPushButton::clicked, this, [this]() { resetSimulationFromUi(); });
-    connect(_recoverButton, &QPushButton::clicked, this, [this]() { _runtime->requestRecover(); });
-    connect(_applyConnectorButton, &QPushButton::clicked, this,
-            [this]() { applyConnectorSettings(true); });
-    connect(_exportButton, &QPushButton::clicked, this, [this]() { handleExportRequest(); });
-    connect(_saveConfigButton, &QPushButton::clicked, this, [this]() { (void)saveConfigToDisk(); });
-    connect(_loadInputButton, &QPushButton::clicked, this, [this]() { handleLoadInputRequest(); });
+    connect(_stepButton, &QPushButton::clicked, this, [this]() {
+        _runtime->stepOnce();
+    });
+    connect(_resetButton, &QPushButton::clicked, this, [this]() {
+        resetSimulationFromUi();
+    });
+    connect(_recoverButton, &QPushButton::clicked, this, [this]() {
+        _runtime->requestRecover();
+    });
+    connect(_applyConnectorButton, &QPushButton::clicked, this, [this]() {
+        applyConnectorSettings(true);
+    });
+    connect(_exportButton, &QPushButton::clicked, this, [this]() {
+        handleExportRequest();
+    });
+    connect(_saveConfigButton, &QPushButton::clicked, this, [this]() {
+        (void)saveConfigToDisk();
+    });
+    connect(_loadInputButton, &QPushButton::clicked, this, [this]() {
+        handleLoadInputRequest();
+    });
     connect(_applyPresetButton, &QPushButton::clicked, this, [this]() {
         _config.initConfigStyle = "preset";
         _config.presetStructure = _presetCombo->currentText().toStdString();
@@ -45,8 +63,9 @@ void MainWindow::connectControls()
         statusBar()->showMessage(
             QString("Scene preset applied: %1").arg(_presetCombo->currentText()), 3000);
     });
-    connect(_loadPresetButton, &QPushButton::clicked, this,
-            [this]() { handleLoadPresetRequest(); });
+    connect(_loadPresetButton, &QPushButton::clicked, this, [this]() {
+        handleLoadPresetRequest();
+    });
     connect(_simulationProfileCombo, &QComboBox::currentTextChanged, this,
             [this](const QString& profile) {
                 _config.simulationProfile = profile.toStdString();
@@ -63,13 +82,21 @@ void MainWindow::connectControls()
         markConfigDirty();
     });
     connect(_sphSmoothingSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this,
-            [applySphParams](double) { applySphParams(); });
+            [applySphParams](double) {
+                applySphParams();
+            });
     connect(_sphRestDensitySpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this,
-            [applySphParams](double) { applySphParams(); });
+            [applySphParams](double) {
+                applySphParams();
+            });
     connect(_sphGasConstantSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this,
-            [applySphParams](double) { applySphParams(); });
+            [applySphParams](double) {
+                applySphParams();
+            });
     connect(_sphViscositySpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this,
-            [applySphParams](double) { applySphParams(); });
+            [applySphParams](double) {
+                applySphParams();
+            });
     connect(_dtSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double value) {
         _config.dt = static_cast<float>(value);
         _runtime->setDt(static_cast<float>(value));
@@ -146,9 +173,17 @@ void MainWindow::connectControls()
                                       _config.renderLODNearDistance, _config.renderLODFarDistance);
         markConfigDirty();
     });
-    connect(_yawSlider, &QSlider::valueChanged, this, [this]() { update3DCameraFromSliders(); });
-    connect(_pitchSlider, &QSlider::valueChanged, this, [this]() { update3DCameraFromSliders(); });
-    connect(_rollSlider, &QSlider::valueChanged, this, [this]() { update3DCameraFromSliders(); });
-    connect(_timer, &QTimer::timeout, this, [this]() { tick(); });
+    connect(_yawSlider, &QSlider::valueChanged, this, [this]() {
+        update3DCameraFromSliders();
+    });
+    connect(_pitchSlider, &QSlider::valueChanged, this, [this]() {
+        update3DCameraFromSliders();
+    });
+    connect(_rollSlider, &QSlider::valueChanged, this, [this]() {
+        update3DCameraFromSliders();
+    });
+    connect(_timer, &QTimer::timeout, this, [this]() {
+        tick();
+    });
 }
 } // namespace grav_qt

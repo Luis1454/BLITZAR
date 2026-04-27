@@ -1,6 +1,11 @@
+// File: engine/src/config/SimulationArgsInitStateOptions.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "config/SimulationArgsInitStateOptions.hpp"
 #include "config/SimulationArgsParse.hpp"
 #include "config/SimulationOptionRegistry.hpp"
+
+/// Description: Describes the apply operation contract.
 bool SimulationArgsInitStateOptions::apply(const std::string& key, const std::string& value,
                                            SimulationConfig& config, RuntimeArgs& runtime,
                                            std::ostream& warnings)

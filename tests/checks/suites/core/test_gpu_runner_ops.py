@@ -1,3 +1,6 @@
+# File: tests/checks/suites/core/test_gpu_runner_ops.py
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 from __future__ import annotations
 
 import json
@@ -9,20 +12,26 @@ from python_tools.ci.gpu_runner_bootstrap import WindowsGpuRunnerBootstrap
 from python_tools.ci.gpu_runner_inventory import GitHubGpuRunnerInventory
 
 
+# Description: Defines the _Response contract.
 class _Response:
+    # Description: Executes the __init__ operation.
     def __init__(self, payload: Mapping[str, object]) -> None:
         self._payload = json.dumps(payload).encode("utf-8")
 
+    # Description: Executes the read operation.
     def read(self) -> bytes:
         return self._payload
 
+    # Description: Executes the __enter__ operation.
     def __enter__(self) -> _Response:
         return self
 
+    # Description: Executes the __exit__ operation.
     def __exit__(self, exc_type, exc, tb) -> Literal[False]:
         return False
 
 
+# Description: Executes the test_gpu_runner_inventory_reports_disabled_lane operation.
 def test_gpu_runner_inventory_reports_disabled_lane() -> None:
     report = GitHubGpuRunnerInventory().collect(
         repo="owner/repo",
@@ -37,6 +46,7 @@ def test_gpu_runner_inventory_reports_disabled_lane() -> None:
     assert "disabled" in str(report["reason"]).lower()
 
 
+# Description: Executes the test_gpu_runner_inventory_reports_degraded_without_token operation.
 def test_gpu_runner_inventory_reports_degraded_without_token() -> None:
     report = GitHubGpuRunnerInventory().collect(
         repo="owner/repo",
@@ -52,6 +62,7 @@ def test_gpu_runner_inventory_reports_degraded_without_token() -> None:
     assert "falling back" in str(report["reason"]).lower()
 
 
+# Description: Executes the test_gpu_runner_inventory_filters_matching_idle_runner operation.
 def test_gpu_runner_inventory_filters_matching_idle_runner() -> None:
     payload = {
         "runners": [
@@ -87,6 +98,7 @@ def test_gpu_runner_inventory_filters_matching_idle_runner() -> None:
     assert capacity["idle"] == 1
 
 
+# Description: Executes the test_gpu_runner_bootstrap_plan_requires_runner_files operation.
 def test_gpu_runner_bootstrap_plan_requires_runner_files(tmp_path: Path) -> None:
     bootstrap = WindowsGpuRunnerBootstrap()
 
@@ -104,6 +116,7 @@ def test_gpu_runner_bootstrap_plan_requires_runner_files(tmp_path: Path) -> None
         raise AssertionError("expected missing runner files to fail")
 
 
+# Description: Executes the test_gpu_runner_bootstrap_emits_commands operation.
 def test_gpu_runner_bootstrap_emits_commands(tmp_path: Path, monkeypatch) -> None:
     for file_name in ("config.cmd", "run.cmd", "svc.cmd"):
         (tmp_path / file_name).write_text("echo ok\n", encoding="utf-8")

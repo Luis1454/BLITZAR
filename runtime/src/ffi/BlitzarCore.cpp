@@ -1,3 +1,6 @@
+// File: runtime/src/ffi/BlitzarCore.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "config/SimulationModes.hpp"
 #include "runtime/src/ffi/BlitzarCoreInternal.hpp"
 #include <algorithm>
@@ -7,6 +10,8 @@
 #include <thread>
 #include <vector>
 static constexpr std::uint32_t kDefaultTimeoutMs = 3000u;
+
+/// Description: Executes the normalizedConfig operation.
 static blitzar_core_config_t normalizedConfig(const blitzar_core_config_t& config)
 {
     const blitzar_core_config_t defaults = blitzar_core_default_config();
@@ -34,6 +39,8 @@ static blitzar_core_config_t normalizedConfig(const blitzar_core_config_t& confi
                                                 : config.snapshot_publish_period_ms;
     return normalized;
 }
+
+/// Description: Executes the copyText operation.
 static void copyText(const std::string& value, char* buffer, std::size_t capacity)
 {
     if (buffer == nullptr || capacity == 0u) {
@@ -43,6 +50,8 @@ static void copyText(const std::string& value, char* buffer, std::size_t capacit
     std::memcpy(buffer, value.data(), limit);
     buffer[limit] = '\0';
 }
+
+/// Description: Executes the fillStatus operation.
 static void fillStatus(const SimulationStats& stats, blitzar_core_status_t& outStatus)
 {
     outStatus.steps = stats.steps;
@@ -70,7 +79,9 @@ static void fillStatus(const SimulationStats& stats, blitzar_core_status_t& outS
     copyText(stats.performanceProfile, outStatus.performance_profile, BLITZAR_CORE_TEXT_CAPACITY);
     copyText(stats.faultReason, outStatus.fault_reason, BLITZAR_CORE_ERROR_CAPACITY);
 }
+
 namespace grav_ffi {
+/// Description: Executes the BlitzarCore operation.
 BlitzarCore::BlitzarCore(const blitzar_core_config_t& config)
     : _server(std::max<std::uint32_t>(2u, normalizedConfig(config).particle_count),
               normalizedConfig(config).dt)
@@ -86,10 +97,14 @@ BlitzarCore::BlitzarCore(const blitzar_core_config_t& config)
         _server.stop();
     }
 }
+
+/// Description: Releases resources owned by BlitzarCore.
 BlitzarCore::~BlitzarCore()
 {
     _server.stop();
 }
+
+/// Description: Executes the applyConfig operation.
 blitzar_core_result_t BlitzarCore::applyConfig(const blitzar_core_config_t& config)
 {
     clearError();
@@ -112,12 +127,16 @@ blitzar_core_result_t BlitzarCore::applyConfig(const blitzar_core_config_t& conf
     _server.setPaused(true);
     return waitForAppliedConfig(normalized, kDefaultTimeoutMs);
 }
+
+/// Description: Executes the getStatus operation.
 blitzar_core_result_t BlitzarCore::getStatus(blitzar_core_status_t& outStatus) const
 {
     clearError();
     fillStatus(_server.getStats(), outStatus);
     return BLITZAR_CORE_OK;
 }
+
+/// Description: Describes the get snapshot operation contract.
 blitzar_core_result_t BlitzarCore::getSnapshot(std::size_t maxPoints,
                                                blitzar_core_snapshot_t& outSnapshot) const
 {

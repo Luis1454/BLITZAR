@@ -1,8 +1,12 @@
+// File: engine/src/physics/cuda/fragments/ParticleSystemThermal.inl
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 /*
  * Module: physics/cuda
  * Responsibility: Apply thermal-model configuration and energy integration helpers.
  */
 
+/// Description: Executes the setThermalParameters operation.
 void ParticleSystem::setThermalParameters(float ambientTemperature, float specificHeat, float heatingCoeff, float radiationCoeff)
 {
     _thermalAmbientTemperature = std::max(0.0f, ambientTemperature);
@@ -11,6 +15,7 @@ void ParticleSystem::setThermalParameters(float ambientTemperature, float specif
     _thermalRadiationCoeff = std::max(0.0f, radiationCoeff);
 }
 
+/// Description: Executes the applyThermalModel operation.
 float ParticleSystem::applyThermalModel(float deltaTime)
 {
     if (deltaTime <= 0.0f) return 0.0f;

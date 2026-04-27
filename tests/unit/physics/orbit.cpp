@@ -1,3 +1,6 @@
+// File: tests/unit/physics/orbit.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "tests/support/physics_scenario.hpp"
 #include "tests/support/physics_test_utils.hpp"
 #include <algorithm>
@@ -6,7 +9,9 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
+
 namespace testsupport {
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_001_AttractionDistance)
 {
     ScenarioConfig cfg;
@@ -22,6 +27,8 @@ TEST(PhysicsTest, TST_UNT_PHYS_001_AttractionDistance)
     EXPECT_GE(ratio, kMinRatio) << "Distance collapsed too much";
     EXPECT_LE(ratio, kMaxRatio) << "No attraction detected";
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_003_CenterOfMassDrift)
 {
     ScenarioConfig cfg;
@@ -47,6 +54,8 @@ TEST(PhysicsTest, TST_UNT_PHYS_003_CenterOfMassDrift)
     constexpr float kMaxCenterOfMassDrift = 1e-2f;
     EXPECT_LE(drift, kMaxCenterOfMassDrift);
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
 {
     ScenarioConfig coarse;
@@ -69,6 +78,8 @@ TEST(PhysicsTest, TST_UNT_PHYS_004_TimeStepConvergence)
     constexpr float kMaxConvergenceDelta = 0.05f;
     EXPECT_LE(maxParticleDelta, kMaxConvergenceDelta);
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_002_EnergyConservation)
 {
     ScenarioConfig cfg;
@@ -81,6 +92,8 @@ TEST(PhysicsTest, TST_UNT_PHYS_002_EnergyConservation)
         << "Energy drift too high: " << result.maxAbsEnergyDriftPct << "%";
     EXPECT_FALSE(result.stats.energyEstimated);
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_005_LongRunStability)
 {
     ScenarioConfig cfg;
@@ -102,6 +115,8 @@ TEST(PhysicsTest, TST_UNT_PHYS_005_LongRunStability)
     constexpr float kMaxStableRadius = 50.0f;
     EXPECT_LE(maxRadius, kMaxStableRadius) << "Trajectory escaped expected stable bounds";
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_010_CalibrationTwoBodyPresetMaintainsBoundOrbit)
 {
     ScenarioConfig cfg;

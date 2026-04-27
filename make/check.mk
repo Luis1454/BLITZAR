@@ -1,3 +1,6 @@
+# File: make/check.mk
+# Purpose: Source artifact for the BLITZAR project.
+
 check:
 	python tests/checks/check.py $(CHECK) --root . --config $(CONFIG) $(if $(strip $(BUILD_DIR)),--build-dir $(BUILD_DIR),) $(if $(filter 1,$(CHECK_BUILD_TARGETS)),--check-build-targets,)
 

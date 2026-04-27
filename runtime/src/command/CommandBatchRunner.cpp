@@ -1,9 +1,14 @@
+// File: runtime/src/command/CommandBatchRunner.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "command/CommandBatchRunner.hpp"
 #include "command/CommandExecutor.hpp"
 #include "command/CommandParser.hpp"
 #include <fstream>
 #include <sstream>
+
 namespace grav_cmd {
+/// Description: Describes the run script file operation contract.
 CommandResult CommandBatchRunner::runScriptFile(const std::string& path,
                                                 CommandExecutionContext& context)
 {

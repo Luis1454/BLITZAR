@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: scripts/ci/coverage/build_pr_delta_report.py
+# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+
 from __future__ import annotations
 
 import argparse
@@ -9,6 +12,7 @@ import urllib.request
 from pathlib import Path
 
 
+# Description: Executes the parse_args operation.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build per-PR coverage delta summary and residual gaps table.")
     parser.add_argument("--summary", required=True, help="Path to gcovr text summary file.")
@@ -19,6 +23,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+# Description: Executes the parse_summary operation.
 def parse_summary(summary_path: Path) -> dict[str, float]:
     metrics: dict[str, float] = {}
     pattern = re.compile(r"^(lines|functions|branches):\s+([0-9]+(?:\.[0-9]+)?)%")
@@ -34,6 +39,7 @@ def parse_summary(summary_path: Path) -> dict[str, float]:
     return metrics
 
 
+# Description: Executes the fetch_baseline_metric operation.
 def fetch_baseline_metric(repo: str, ref: str, name: str) -> float:
     url = f"https://raw.githubusercontent.com/{repo}/{ref}/coverage/{name}.json"
     with urllib.request.urlopen(url, timeout=20) as response:
@@ -45,6 +51,7 @@ def fetch_baseline_metric(repo: str, ref: str, name: str) -> float:
         raise ValueError(f"invalid baseline metric in {name}.json: {message!r}") from exc
 
 
+# Description: Executes the parse_residual_files operation.
 def parse_residual_files(csv_path: Path, top_n: int = 10) -> list[tuple[str, int, int, float]]:
     rows: list[tuple[str, int, int, float]] = []
     with csv_path.open("r", encoding="utf-8", newline="") as handle:
@@ -64,11 +71,13 @@ def parse_residual_files(csv_path: Path, top_n: int = 10) -> list[tuple[str, int
     return rows[:top_n]
 
 
+# Description: Executes the signed_delta operation.
 def signed_delta(current: float, baseline: float) -> str:
     delta = current - baseline
     return f"{delta:+.2f}"
 
 
+# Description: Executes the build_markdown operation.
 def build_markdown(
     current: dict[str, float],
     baseline: dict[str, float],
@@ -96,6 +105,7 @@ def build_markdown(
     return "\n".join(lines)
 
 
+# Description: Executes the main operation.
 def main() -> int:
     args = parse_args()
     summary_path = Path(args.summary)

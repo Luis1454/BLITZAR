@@ -1,9 +1,15 @@
+// File: tests/unit/graphics/TST_UNT_GRA_GraphicsTests.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "graphics/ColorPipeline.hpp"
 #include "graphics/ViewMath.hpp"
 #include <gtest/gtest.h>
+
 namespace grav {
 constexpr float kIsoYawForTest = 0.78539816339f;
 constexpr float kIsoPitchForTest = 0.61547970867f;
+
+/// Description: Executes the TEST operation.
 TEST(ViewMathTest, TST_UNT_GRA_001_ProjectXYIsIdentity)
 {
     RenderParticle p;
@@ -16,6 +22,8 @@ TEST(ViewMathTest, TST_UNT_GRA_001_ProjectXYIsIdentity)
     EXPECT_NEAR(pp.x, 10.0f, 1e-4f);
     EXPECT_NEAR(pp.y, 20.0f, 1e-4f);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ViewMathTest, TST_UNT_GRA_002_ProjectXZSwapsYZ)
 {
     RenderParticle p;
@@ -28,6 +36,8 @@ TEST(ViewMathTest, TST_UNT_GRA_002_ProjectXZSwapsYZ)
     EXPECT_NEAR(pp.x, 10.0f, 1e-4f);
     EXPECT_NEAR(pp.y, 30.0f, 1e-4f);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ViewMathTest, TST_UNT_GRA_004_ProjectYZSwapsAxes)
 {
     RenderParticle p;
@@ -41,6 +51,8 @@ TEST(ViewMathTest, TST_UNT_GRA_004_ProjectYZSwapsAxes)
     EXPECT_NEAR(pp.y, 33.0f, 1e-4f);
     EXPECT_NEAR(pp.depth, 11.0f, 1e-4f);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ViewMathTest, TST_UNT_GRA_005_PerspectiveRejectsNearPlane)
 {
     RenderParticle p;
@@ -51,6 +63,8 @@ TEST(ViewMathTest, TST_UNT_GRA_005_PerspectiveRejectsNearPlane)
     const ProjectedPoint pp = projectParticle(p, ViewMode::Perspective, cam);
     EXPECT_FALSE(pp.valid);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ViewMathTest, TST_UNT_GRA_006_PerspectiveRejectsInvalidScaleRange)
 {
     CameraState cam{-kIsoYawForTest, -kIsoPitchForTest, 0.0f};
@@ -67,6 +81,8 @@ TEST(ViewMathTest, TST_UNT_GRA_006_PerspectiveRejectsInvalidScaleRange)
     const ProjectedPoint negative = projectParticle(behindCamera, ViewMode::Perspective, cam);
     EXPECT_FALSE(negative.valid);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ViewMathTest, TST_UNT_GRA_007_PerspectiveScalesWhenValid)
 {
     RenderParticle p;
@@ -80,6 +96,8 @@ TEST(ViewMathTest, TST_UNT_GRA_007_PerspectiveScalesWhenValid)
     EXPECT_NEAR(pp.y, 14.0f, 1e-3f);
     EXPECT_NEAR(pp.depth, 20.0f, 1e-3f);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ViewMathTest, TST_UNT_GRA_008_ComputeGimbalClampsBoundsAndPickAxis)
 {
     CameraState cam{0.0f, 0.0f, 0.0f};
@@ -97,6 +115,8 @@ TEST(ViewMathTest, TST_UNT_GRA_008_ComputeGimbalClampsBoundsAndPickAxis)
     const Point2D farPoint{large.center.x + 200.0f, large.center.y + 200.0f};
     EXPECT_EQ(pickGimbalAxis(large, farPoint), GimbalAxis::None);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ColorPipelineTest, TST_UNT_GRA_003_HeavyBodyDetect)
 {
     RenderParticle p1;
@@ -106,6 +126,8 @@ TEST(ColorPipelineTest, TST_UNT_GRA_003_HeavyBodyDetect)
     p2.mass = 150.0f;
     EXPECT_TRUE(isHeavyBody(p2));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ColorPipelineTest, TST_UNT_GRA_009_HeavyBodyColorClampsLuminosity)
 {
     const ColorRGBA low = heavyBodyColor(-5);
@@ -116,6 +138,8 @@ TEST(ColorPipelineTest, TST_UNT_GRA_009_HeavyBodyColorClampsLuminosity)
     const ColorRGBA high = heavyBodyColor(300);
     EXPECT_EQ(high.a, 255);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ColorPipelineTest, TST_UNT_GRA_010_ParticleRampColorFastClampsBinsAndAlpha)
 {
     RenderParticle cold;
@@ -135,6 +159,8 @@ TEST(ColorPipelineTest, TST_UNT_GRA_010_ParticleRampColorFastClampsBinsAndAlpha)
     EXPECT_EQ(hotColor.b, 66);
     EXPECT_EQ(hotColor.a, 255);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ColorPipelineTest, TST_UNT_GRA_011_UpdateAdaptiveScalesSupportsRiseAndFall)
 {
     float adaptiveTemperatureScale = 1.0f;
@@ -151,6 +177,8 @@ TEST(ColorPipelineTest, TST_UNT_GRA_011_UpdateAdaptiveScalesSupportsRiseAndFall)
     EXPECT_GT(adaptiveTemperatureScale, 0.97f);
     EXPECT_GT(adaptivePressureScale, 0.97f);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ColorPipelineTest, TST_UNT_GRA_012_UpdateAdaptiveScalesIgnoresNegativeObservations)
 {
     float adaptiveTemperatureScale = 0.1f;

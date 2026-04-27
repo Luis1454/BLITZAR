@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/policies/traceability_gate.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import json
@@ -22,11 +25,13 @@ REQUIREMENT_LINE_RE = re.compile(r"REQ-[A-Z]+-[0-9]{3}")
 TRACEABILITY_FILE = "docs/quality/traceability.csv"
 
 
+# Description: Defines the TraceabilityGateCheck contract.
 class TraceabilityGateCheck(BaseCheck):
     name = "traceability_gate"
     success_message = "Traceability gate passed"
     failure_title = "Traceability gate failed:"
 
+    # Description: Executes the _execute operation.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         if context.event_name.strip() != "pull_request":
             result.success_message = "traceability gate skipped: not a pull_request event"
@@ -60,6 +65,7 @@ class TraceabilityGateCheck(BaseCheck):
             result.add_error(f"critical-path PR must update {TRACEABILITY_FILE}")
 
     @staticmethod
+    # Description: Executes the _read_payload operation.
     def _read_payload(path_text: str, result: CheckResult) -> dict[str, object]:
         if not path_text:
             result.add_error("missing event payload path")
@@ -74,6 +80,7 @@ class TraceabilityGateCheck(BaseCheck):
             return {}
         return payload
 
+    # Description: Executes the _fetch_files operation.
     def _fetch_files(self, repo: str, number: int, token: str, result: CheckResult) -> list[dict[str, object]]:
         request = urllib.request.Request(
             f"https://api.github.com/repos/{repo}/pulls/{number}/files?per_page=100",
@@ -95,6 +102,7 @@ class TraceabilityGateCheck(BaseCheck):
         return [item for item in payload if isinstance(item, dict)]
 
     @staticmethod
+    # Description: Executes the _touches_traceability_paths operation.
     def _touches_traceability_paths(files: Sequence[dict[str, object]]) -> bool:
         for item in files:
             filename = str(item.get("filename", "")).strip()
@@ -103,6 +111,7 @@ class TraceabilityGateCheck(BaseCheck):
         return False
 
     @staticmethod
+    # Description: Executes the _extract_requirement_ids operation.
     def _extract_requirement_ids(body: str) -> list[str]:
         capture = False
         lines: list[str] = []
@@ -122,6 +131,7 @@ class TraceabilityGateCheck(BaseCheck):
         return sorted(requirement_ids)
 
     @staticmethod
+    # Description: Executes the _load_requirement_ids operation.
     def _load_requirement_ids(root: Path, result: CheckResult) -> set[str]:
         path = root / "docs/quality/manifest/requirements.json"
         try:

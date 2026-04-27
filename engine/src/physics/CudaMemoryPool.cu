@@ -1,11 +1,17 @@
+// File: engine/src/physics/CudaMemoryPool.cu
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "physics/CudaMemoryPool.hpp"
 #include <cstdint>
 #include <cstdio>
 #include <cuda_runtime.h>
+
 namespace grav_x {
 bool CudaMemoryPool::_initialized = false;
 bool CudaMemoryPool::_supported = false;
 void* CudaMemoryPool::_pool = nullptr;
+
+/// Description: Executes the initialize operation.
 void CudaMemoryPool::initialize()
 {
     if (_initialized)
@@ -24,8 +30,8 @@ void CudaMemoryPool::initialize()
         return;
     }
     int supportsAsync = 0;
-    if (cudaDeviceGetAttribute(&supportsAsync, cudaDevAttrMemoryPoolsSupported, device)
-        != cudaSuccess) {
+    if (cudaDeviceGetAttribute(&supportsAsync, cudaDevAttrMemoryPoolsSupported, device) !=
+        cudaSuccess) {
         _initialized = true;
         _supported = false;
         _pool = nullptr;
@@ -52,12 +58,16 @@ void CudaMemoryPool::initialize()
     }
     _initialized = true;
 }
+
+/// Description: Executes the destroy operation.
 void CudaMemoryPool::destroy()
 {
     _initialized = false;
     _supported = false;
     _pool = nullptr;
 }
+
+/// Description: Executes the allocate operation.
 void* CudaMemoryPool::allocate(std::size_t size, void* stream)
 {
     if (!_initialized)
@@ -74,6 +84,8 @@ void* CudaMemoryPool::allocate(std::size_t size, void* stream)
     // fprintf(stdout, "[cuda-pool] allocated %zu bytes at %p\n", size, ptr);
     return ptr;
 }
+
+/// Description: Executes the deallocate operation.
 void CudaMemoryPool::deallocate(void* ptr, void* stream)
 {
     if (!ptr)
@@ -85,6 +97,8 @@ void CudaMemoryPool::deallocate(void* ptr, void* stream)
         cudaFree(ptr);
     }
 }
+
+/// Description: Executes the isSupported operation.
 bool CudaMemoryPool::isSupported()
 {
     if (!_initialized)

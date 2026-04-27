@@ -1,3 +1,6 @@
+# File: make/runtime.mk
+# Purpose: Source artifact for the BLITZAR project.
+
 run: pre-run gui
 
 run-ui: pre-run gui

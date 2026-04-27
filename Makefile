@@ -1,3 +1,6 @@
+# File: Makefile
+# Purpose: Source artifact for the BLITZAR project.
+
 EXECUTABLE := blitzar
 HEADLESS_EXECUTABLE := blitzar-headless
 SERVER_EXECUTABLE := blitzar-server

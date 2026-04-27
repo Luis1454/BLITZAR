@@ -1,4 +1,9 @@
+// File: engine/src/server/simulation_server/SnapshotAndEnergy.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
+
+/// Description: Executes the publishSnapshot operation.
 void SimulationServer::publishSnapshot()
 {
     if (!_system) {
@@ -40,12 +45,16 @@ void SimulationServer::publishSnapshot()
     std::lock_guard<std::mutex> lock(_snapshotMutex);
     _publishedSnapshot.swap(_scratchSnapshot);
 }
+
+/// Description: Executes the clearPublishedSnapshotCache operation.
 void SimulationServer::clearPublishedSnapshotCache()
 {
     std::lock_guard<std::mutex> lock(_snapshotMutex);
     _publishedSnapshot.clear();
     _scratchSnapshot.clear();
 }
+
+/// Description: Executes the computeEnergyValues operation.
 SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
 {
     EnergyValues values{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, false};
@@ -138,6 +147,8 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
     values.estimated = sampled;
     return values;
 }
+
+/// Description: Executes the maybeUpdateEnergy operation.
 void SimulationServer::maybeUpdateEnergy(std::uint64_t currentStep)
 {
     const std::uint32_t every = _energyMeasureEverySteps.load(std::memory_order_relaxed);

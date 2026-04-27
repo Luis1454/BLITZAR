@@ -1,4 +1,8 @@
+// File: runtime/src/protocol/ServerProtocol.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "protocol/ServerProtocol.hpp"
+
 namespace grav_protocol {
 const std::string_view SchemaVersion = "server-json-v1";
 const std::string_view Status = "status";
@@ -27,6 +31,8 @@ const std::string_view Export = "export";
 const std::string_view SaveCheckpoint = "save_checkpoint";
 const std::string_view LoadCheckpoint = "load_checkpoint";
 const std::string_view Shutdown = "shutdown";
+
+/// Description: Executes the clampSnapshotPoints operation.
 std::uint32_t clampSnapshotPoints(std::uint32_t requested)
 {
     if (requested < kSnapshotMinPoints)

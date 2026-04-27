@@ -1,3 +1,6 @@
+# File: python_tools/ci/fmea_status.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import json
@@ -9,15 +12,19 @@ from pathlib import Path
 from python_tools.policies.fmea_action_register import FmeaActionRegister
 
 
+# Description: Defines the FmeaStatusSnapshot contract.
 class FmeaStatusSnapshot:
+    # Description: Executes the __init__ operation.
     def __init__(self) -> None:
         self._register = FmeaActionRegister()
 
+    # Description: Executes the package operation.
     def package(self, root: Path, dist_dir: Path) -> Path:
         rows = self._register.load(root.resolve())
         snapshot = self._build_snapshot(rows)
         return self._archive(dist_dir.resolve(), snapshot)
 
+    # Description: Executes the _build_snapshot operation.
     def _build_snapshot(self, rows: list[dict[str, object]]) -> dict[str, object]:
         open_count = sum(1 for row in rows if row["status"] == "open")
         in_progress_count = sum(1 for row in rows if row["status"] == "in-progress")
@@ -35,6 +42,7 @@ class FmeaStatusSnapshot:
             "rows": rows,
         }
 
+    # Description: Executes the _archive operation.
     def _archive(self, dist_dir: Path, snapshot: dict[str, object]) -> Path:
         if dist_dir.exists():
             shutil.rmtree(dist_dir)
@@ -45,6 +53,7 @@ class FmeaStatusSnapshot:
         return Path(shutil.make_archive(str(archive_base), "zip", root_dir=dist_dir))
 
 
+# Description: Executes the render_fmea_status_readme operation.
 def render_fmea_status_readme(snapshot: Mapping[str, object]) -> str:
     summary = snapshot.get("summary")
     if not isinstance(summary, dict):

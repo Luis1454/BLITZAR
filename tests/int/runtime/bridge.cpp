@@ -1,3 +1,6 @@
+// File: tests/int/runtime/bridge.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ClientServerBridge.hpp"
 #include "tests/support/poll_utils.hpp"
 #include "tests/support/server_harness.hpp"
@@ -9,7 +12,9 @@
 #include <string>
 #include <thread>
 #include <vector>
+
 namespace grav_test_client_bridge {
+/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_INT_RUNT_001_ReconnectsAfterRealServerRestart)
 {
     RealServerHarness server;
@@ -36,8 +41,11 @@ TEST(ClientBridgeTest, TST_INT_RUNT_001_ReconnectsAfterRealServerRestart)
         },
         std::chrono::milliseconds(3000)));
     std::vector<RenderParticle> snapshot;
-    EXPECT_TRUE(testsupport::waitUntil([&]() { return bridge.tryConsumeSnapshot(snapshot); },
-                                       std::chrono::milliseconds(2000)));
+    EXPECT_TRUE(testsupport::waitUntil(
+        [&]() {
+            return bridge.tryConsumeSnapshot(snapshot);
+        },
+        std::chrono::milliseconds(2000)));
     EXPECT_FALSE(snapshot.empty());
     server.stop();
     EXPECT_TRUE(testsupport::waitUntil(
@@ -58,6 +66,8 @@ TEST(ClientBridgeTest, TST_INT_RUNT_001_ReconnectsAfterRealServerRestart)
     bridge.stop();
     server.stop();
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_INT_RUNT_002_ServerAbsenceDoesNotCauseLongBlockingLoops)
 {
     RealServerHarness server;
@@ -81,6 +91,8 @@ TEST(ClientBridgeTest, TST_INT_RUNT_002_ServerAbsenceDoesNotCauseLongBlockingLoo
         << "poll loop took too long without server: " << elapsedMs.count() << " ms";
     bridge.stop();
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_UNT_RUNT_012_ClampRemoteTimeoutRespectsBounds)
 {
     EXPECT_EQ(grav_client::clampClientRemoteTimeoutMs(0u), grav_client::kClientRemoteTimeoutMinMs);
@@ -89,6 +101,8 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_012_ClampRemoteTimeoutRespectsBounds)
               grav_client::kClientRemoteTimeoutMaxMs);
     EXPECT_EQ(grav_client::clampClientRemoteTimeoutMs(1000u), 1000u);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_UNT_RUNT_013_SplitTransportArgsParsesKnownServerFlags)
 {
     const std::vector<std::string_view> rawArgs = {"blitzar-client",
@@ -116,6 +130,8 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_013_SplitTransportArgsParsesKnownServerFlags
     EXPECT_EQ(transport.remoteAuthToken, "secret-token");
     EXPECT_TRUE(warnings.str().empty());
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_UNT_RUNT_014_SplitTransportArgsRejectsInvalidPortInputs)
 {
     {
@@ -133,6 +149,8 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_014_SplitTransportArgsRejectsInvalidPortInpu
         EXPECT_FALSE(grav_client::splitClientTransportArgs(rawArgs, filtered, transport, warnings));
     }
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_UNT_RUNT_018_SplitTransportArgsRejectsInvalidAutostartEqualsValue)
 {
     const std::vector<std::string_view> rawArgs = {"blitzar-client", "--server-autostart=maybe"};
@@ -142,6 +160,8 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_018_SplitTransportArgsRejectsInvalidAutostar
     EXPECT_FALSE(grav_client::splitClientTransportArgs(rawArgs, filtered, transport, warnings));
     EXPECT_NE(warnings.str().find("invalid --server-autostart value"), std::string::npos);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_UNT_RUNT_019_SplitTransportArgsKeepsUnparsedAutostartTokenInFilteredArgs)
 {
     const std::vector<std::string_view> rawArgs = {"blitzar-client", "--server-autostart", "maybe",
@@ -157,6 +177,8 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_019_SplitTransportArgsKeepsUnparsedAutostart
     EXPECT_EQ(filtered[2], "--config");
     EXPECT_EQ(filtered[3], "simulation.ini");
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_UNT_RUNT_015_DisconnectedBridgeOperationsRemainBounded)
 {
     grav_client::ClientServerBridge bridge("simulation.ini", "127.0.0.1",

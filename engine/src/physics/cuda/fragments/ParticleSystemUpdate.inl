@@ -1,3 +1,6 @@
+// File: engine/src/physics/cuda/fragments/ParticleSystemUpdate.inl
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 /*
  * Module: physics/cuda
  * Responsibility: Advance the particle system for one deterministic update step.
@@ -5,6 +8,7 @@
 
 #include <chrono>
 
+/// Description: Executes the update operation.
 bool ParticleSystem::update(float deltaTime) {
     const ForceLawPolicy forceLaw = resolveForceLawPolicy(
         _octreeTheta,

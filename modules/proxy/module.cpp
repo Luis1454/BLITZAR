@@ -1,3 +1,6 @@
+// File: modules/proxy/module.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "client/ClientModuleApi.hpp"
 #include "client/ClientModuleBoundary.hpp"
 #include "platform/PlatformProcess.hpp"
@@ -13,10 +16,13 @@
 #include <string>
 #include <string_view>
 #include <vector>
+
+/// Description: Executes the trim operation.
 static std::string trim(const std::string& input)
 {
-    const auto begin = std::find_if_not(input.begin(), input.end(),
-                                        [](unsigned char c) { return std::isspace(c) != 0; });
+    const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
+        return std::isspace(c) != 0;
+    });
     const auto end = std::find_if_not(input.rbegin(), input.rend(), [](unsigned char c) {
                          return std::isspace(c) != 0;
                      }).base();
@@ -24,6 +30,8 @@ static std::string trim(const std::string& input)
         return {};
     return std::string(begin, end);
 }
+
+/// Description: Executes the splitTokens operation.
 static std::vector<std::string> splitTokens(const std::string& line)
 {
     std::vector<std::string> tokens;
@@ -55,15 +63,21 @@ static std::vector<std::string> splitTokens(const std::string& line)
     }
     return tokens;
 }
+
+/// Description: Executes the proxyError operation.
 static std::string proxyError(std::string_view operation, std::string_view detail)
 {
     return std::string("module-gui-proxy ") + std::string(operation) + ": " + std::string(detail);
 }
+
+/// Description: Describes the write proxy error operation contract.
 static void writeProxyError(const grav_client::ErrorBufferView& errorBuffer,
                             std::string_view operation, std::string_view detail)
 {
     errorBuffer.write(proxyError(operation, detail));
 }
+
+/// Description: Defines the GuiProxyState data or behavior contract.
 struct GuiProxyState {
     std::string configPath = "simulation.ini";
     std::string host = "127.0.0.1";
@@ -71,10 +85,14 @@ struct GuiProxyState {
     bool autoStartServer = false;
     grav_platform::ProcessHandle clientProcess;
 };
+
+/// Description: Executes the isRunning operation.
 static bool isRunning(const GuiProxyState& state)
 {
     return state.clientProcess.isRunning();
 }
+
+/// Description: Executes the stopProcess operation.
 static bool stopProcess(GuiProxyState& state, const grav_client::ErrorBufferView& errorBuffer)
 {
     std::string processError;
@@ -85,6 +103,8 @@ static bool stopProcess(GuiProxyState& state, const grav_client::ErrorBufferView
     }
     return true;
 }
+
+/// Description: Executes the clientLaunchArgs operation.
 static std::vector<std::string> clientLaunchArgs(const GuiProxyState& state)
 {
     return {"--config",           state.configPath,
@@ -92,6 +112,8 @@ static std::vector<std::string> clientLaunchArgs(const GuiProxyState& state)
             "--server-port",      std::to_string(state.port),
             "--server-autostart", state.autoStartServer ? "true" : "false"};
 }
+
+/// Description: Describes the launch process operation contract.
 static bool launchProcess(GuiProxyState& state, const std::string& clientExecutable,
                           const grav_client::ErrorBufferView& errorBuffer)
 {
@@ -107,10 +129,14 @@ static bool launchProcess(GuiProxyState& state, const std::string& clientExecuta
     }
     return true;
 }
+
+/// Description: Executes the runningCommandLine operation.
 static std::string runningCommandLine(const GuiProxyState& state)
 {
     return state.clientProcess.commandLine();
 }
+
+/// Description: Executes the runningPidLabel operation.
 static std::string runningPidLabel(const GuiProxyState& state)
 {
     if (!state.clientProcess.isRunning()) {
@@ -118,6 +144,8 @@ static std::string runningPidLabel(const GuiProxyState& state)
     }
     return state.clientProcess.pidString();
 }
+
+/// Description: Executes the parseUnsignedPort operation.
 static bool parseUnsignedPort(std::string_view raw, std::uint16_t& outPort)
 {
     const std::string trimmed = trim(std::string(raw));
@@ -139,6 +167,8 @@ static bool parseUnsignedPort(std::string_view raw, std::uint16_t& outPort)
     outPort = static_cast<std::uint16_t>(parsedPort);
     return true;
 }
+
+/// Description: Executes the printHelp operation.
 static void printHelp()
 {
     std::cout << "[module-gui-proxy] commands:\n"
@@ -149,11 +179,14 @@ static void printHelp()
               << "  launch <client_executable_path>\n"
               << "  stop\n";
 }
+
+/// Description: Executes the parseBool operation.
 static bool parseBool(std::string_view raw, bool& out)
 {
     std::string value(raw);
-    std::transform(value.begin(), value.end(), value.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
     if (value == "1" || value == "true" || value == "on" || value == "yes") {
         out = true;
         return true;
@@ -164,6 +197,8 @@ static bool parseBool(std::string_view raw, bool& out)
     }
     return false;
 }
+
+/// Description: Defines the GuiProxyModuleBoundary data or behavior contract.
 class GuiProxyModuleBoundary final {
 public:
     static bool create(const grav_module::ClientHostContextV1* context,
@@ -191,6 +226,7 @@ public:
             return false;
         }
     }
+
     static GuiProxyState* requireState(grav_module::ClientModuleOpaqueState moduleState,
                                        const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -200,6 +236,7 @@ public:
         }
         return state;
     }
+
     static void destroy(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
@@ -218,6 +255,7 @@ public:
             std::cerr << proxyError("destroy", "non-standard exception") << "\n";
         }
     }
+
     static bool start(grav_module::ClientModuleOpaqueState moduleState,
                       const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -239,6 +277,7 @@ public:
             return false;
         }
     }
+
     static void stop(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
@@ -257,6 +296,7 @@ public:
         }
     }
 };
+
 extern "C" GRAVITY_CLIENT_MODULE_EXPORT_ATTR const grav_module::ClientModuleExportsV1*
 gravity_client_module_v1()
 {

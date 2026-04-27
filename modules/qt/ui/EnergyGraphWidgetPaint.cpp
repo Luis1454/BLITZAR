@@ -1,3 +1,6 @@
+// File: modules/qt/ui/EnergyGraphWidgetPaint.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/EnergyGraphWidgetPaint.hpp"
 #include "ui/EnergyGraphWidget.hpp"
 #include <QPaintEvent>
@@ -11,15 +14,21 @@
 #include <array>
 #include <cmath>
 #include <limits>
+
 namespace grav_qt {
+/// Description: Executes the isDarkTheme operation.
 static bool isDarkTheme(const QPalette& palette)
 {
     return palette.color(QPalette::Window).lightness() < 128;
 }
+
+/// Description: Executes the panelCurveColor operation.
 static QColor panelCurveColor(const QColor& darkColor, const QColor& lightColor, bool darkTheme)
 {
     return darkTheme ? darkColor : lightColor;
 }
+
+/// Description: Describes the paint operation contract.
 void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoint>& history,
                                    UiPaintEvent* event)
 {
@@ -220,20 +229,35 @@ void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoin
         return color;
     };
     p.setPen(QPen(faded(kineticColor), 1.2));
-    p.drawPath(buildPath([](const EnergyPoint& point) { return point.kinetic; }, energyRect,
-                         minEnergy, maxEnergy, false));
+    p.drawPath(buildPath(
+        [](const EnergyPoint& point) {
+            return point.kinetic;
+        },
+        energyRect, minEnergy, maxEnergy, false));
     p.setPen(QPen(faded(potentialColor), 1.2));
-    p.drawPath(buildPath([](const EnergyPoint& point) { return point.potential; }, energyRect,
-                         minEnergy, maxEnergy, false));
+    p.drawPath(buildPath(
+        [](const EnergyPoint& point) {
+            return point.potential;
+        },
+        energyRect, minEnergy, maxEnergy, false));
     p.setPen(QPen(totalColor, 2.1));
-    p.drawPath(buildPath([](const EnergyPoint& point) { return point.total; }, energyRect,
-                         minEnergy, maxEnergy, false));
+    p.drawPath(buildPath(
+        [](const EnergyPoint& point) {
+            return point.total;
+        },
+        energyRect, minEnergy, maxEnergy, false));
     p.setPen(QPen(faded(thermalColor), 1.0));
-    p.drawPath(buildPath([](const EnergyPoint& point) { return point.thermal; }, energyRect,
-                         minEnergy, maxEnergy, false));
+    p.drawPath(buildPath(
+        [](const EnergyPoint& point) {
+            return point.thermal;
+        },
+        energyRect, minEnergy, maxEnergy, false));
     p.setPen(QPen(faded(radiatedColor), 1.0));
-    p.drawPath(buildPath([](const EnergyPoint& point) { return point.radiated; }, energyRect,
-                         minEnergy, maxEnergy, false));
+    p.drawPath(buildPath(
+        [](const EnergyPoint& point) {
+            return point.radiated;
+        },
+        energyRect, minEnergy, maxEnergy, false));
     p.setPen(gridColor);
     if (minEnergy < 0.0f && maxEnergy > 0.0f) {
         const qreal zeroNorm = static_cast<qreal>((0.0f - minEnergy) / (maxEnergy - minEnergy));
@@ -243,8 +267,11 @@ void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoin
     p.drawLine(QPointF(driftRect.left(), driftRect.center().y()),
                QPointF(driftRect.right(), driftRect.center().y()));
     p.setPen(QPen(driftColor, 1.8));
-    p.drawPath(buildPath([](const EnergyPoint& point) { return point.drift; }, driftRect,
-                         -maxAbsDrift, maxAbsDrift, true));
+    p.drawPath(buildPath(
+        [](const EnergyPoint& point) {
+            return point.drift;
+        },
+        driftRect, -maxAbsDrift, maxAbsDrift, true));
     const qreal latestTimeNorm = static_cast<qreal>((latest.time - minTime) / (maxTime - minTime));
     const qreal latestEnergyY =
         energyRect.top() +

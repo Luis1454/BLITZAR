@@ -1,3 +1,6 @@
+// File: tests/unit/module_cli/command_batch_runner.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "command/CommandBatchRunner.hpp"
 #include "command/CommandContext.hpp"
 #include "command/CommandTransport.hpp"
@@ -8,7 +11,9 @@
 #include <string>
 #include <utility>
 #include <vector>
+
 namespace grav_test_module_cli_batch_runner {
+/// Description: Defines the FakeCommandTransport data or behavior contract.
 class FakeCommandTransport final : public grav_cmd::CommandTransport {
 public:
     bool connect(const std::string& host, std::uint16_t port) override
@@ -17,31 +22,38 @@ public:
         connectHistory.emplace_back(host, port);
         return connectResult;
     }
+
     void disconnect() override
     {
         connected = false;
     }
+
     bool isConnected() const override
     {
         return connected;
     }
+
     ServerClientResponse sendCommand(const std::string& cmd,
                                      const std::string& fieldsJson = "") override
     {
         commandHistory.emplace_back(cmd, fieldsJson);
         return nextCommandResponse;
     }
+
     ServerClientResponse getStatus(ServerClientStatus& outStatus) override
     {
         (void)outStatus;
         return ServerClientResponse{true, {}, {}};
     }
+
     bool connectResult = true;
     bool connected = false;
     ServerClientResponse nextCommandResponse{true, {}, {}};
     std::vector<std::pair<std::string, std::uint16_t>> connectHistory;
     std::vector<std::pair<std::string, std::string>> commandHistory;
 };
+
+/// Description: Executes the writeTempScript operation.
 static std::string writeTempScript(const std::string& name, const std::string& content)
 {
     const std::filesystem::path path = std::filesystem::temp_directory_path() / name;
@@ -50,6 +62,8 @@ static std::string writeTempScript(const std::string& name, const std::string& c
     out.close();
     return path.string();
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandBatchRunnerTest, TST_UNT_MODCLI_020_RunScriptFileReportsOpenError)
 {
     FakeCommandTransport transport;
@@ -65,6 +79,8 @@ TEST(CommandBatchRunnerTest, TST_UNT_MODCLI_020_RunScriptFileReportsOpenError)
     ASSERT_FALSE(result.ok);
     EXPECT_NE(result.message.find("failed to open script"), std::string::npos);
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandBatchRunnerTest, TST_UNT_MODCLI_021_RunScriptFileReportsParserErrors)
 {
     FakeCommandTransport transport;
@@ -79,6 +95,8 @@ TEST(CommandBatchRunnerTest, TST_UNT_MODCLI_021_RunScriptFileReportsParserErrors
     ASSERT_FALSE(result.ok);
     EXPECT_EQ(result.message, "line 2: unknown command 'bogus'");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandBatchRunnerTest, TST_UNT_MODCLI_022_RunScriptFilePrefixesFailingLineNumber)
 {
     FakeCommandTransport transport;
@@ -94,6 +112,8 @@ TEST(CommandBatchRunnerTest, TST_UNT_MODCLI_022_RunScriptFilePrefixesFailingLine
     ASSERT_FALSE(result.ok);
     EXPECT_EQ(result.message, "line 1: transport down");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandBatchRunnerTest, TST_UNT_MODCLI_023_RunScriptFileSucceedsOnValidCommands)
 {
     FakeCommandTransport transport;

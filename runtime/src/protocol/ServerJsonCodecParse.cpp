@@ -1,7 +1,12 @@
+// File: runtime/src/protocol/ServerJsonCodecParse.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "protocol/ServerJsonCodec.hpp"
 #include <algorithm>
 #include <cctype>
+
 namespace grav_protocol {
+/// Description: Describes the parse command request operation contract.
 bool ServerJsonCodec::parseCommandRequest(std::string_view raw, ServerCommandRequest& out,
                                           std::string& error)
 {
@@ -25,6 +30,8 @@ bool ServerJsonCodec::parseCommandRequest(std::string_view raw, ServerCommandReq
     error.clear();
     return true;
 }
+
+/// Description: Describes the parse response envelope operation contract.
 bool ServerJsonCodec::parseResponseEnvelope(std::string_view raw, ServerResponseEnvelope& out,
                                             std::string& error)
 {
@@ -46,6 +53,8 @@ bool ServerJsonCodec::parseResponseEnvelope(std::string_view raw, ServerResponse
     error.clear();
     return true;
 }
+
+/// Description: Executes the readString operation.
 bool ServerJsonCodec::readString(std::string_view raw, std::string_view key, std::string& out)
 {
     std::size_t cursor = 0;
@@ -86,6 +95,8 @@ bool ServerJsonCodec::readString(std::string_view raw, std::string_view key, std
     }
     return false;
 }
+
+/// Description: Executes the readBool operation.
 bool ServerJsonCodec::readBool(std::string_view raw, std::string_view key, bool& out)
 {
     std::string token;
@@ -103,6 +114,8 @@ bool ServerJsonCodec::readBool(std::string_view raw, std::string_view key, bool&
     }
     return false;
 }
+
+/// Description: Executes the trim operation.
 std::string ServerJsonCodec::trim(std::string_view value)
 {
     const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char current) {
@@ -115,12 +128,17 @@ std::string ServerJsonCodec::trim(std::string_view value)
         return {};
     return std::string(begin, end);
 }
+
+/// Description: Executes the toLower operation.
 std::string ServerJsonCodec::toLower(std::string value)
 {
-    std::transform(value.begin(), value.end(), value.begin(),
-                   [](unsigned char current) { return static_cast<char>(std::tolower(current)); });
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char current) {
+        return static_cast<char>(std::tolower(current));
+    });
     return value;
 }
+
+/// Description: Executes the findValueStart operation.
 bool ServerJsonCodec::findValueStart(std::string_view raw, std::string_view key, std::size_t& start)
 {
     const std::string pattern = "\"" + std::string(key) + "\"";
@@ -140,6 +158,8 @@ bool ServerJsonCodec::findValueStart(std::string_view raw, std::string_view key,
     start = cursor;
     return true;
 }
+
+/// Description: Executes the readToken operation.
 bool ServerJsonCodec::readToken(std::string_view raw, std::string_view key, std::string& out)
 {
     std::size_t cursor = 0;

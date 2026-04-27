@@ -1,3 +1,6 @@
+// File: modules/qt/ui/MainWindowWorkspacePersistence.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/MainWindow.hpp"
 #include <QInputDialog>
 #include <QLabel>
@@ -5,7 +8,9 @@
 #include <QStatusBar>
 #include <string>
 #include <vector>
+
 namespace grav_qt {
+/// Description: Executes the saveWorkspacePreset operation.
 void MainWindow::saveWorkspacePreset()
 {
     bool accepted = false;
@@ -23,6 +28,8 @@ void MainWindow::saveWorkspacePreset()
                                    : QString("Failed to save workspace"),
                              3000);
 }
+
+/// Description: Executes the loadWorkspacePreset operation.
 void MainWindow::loadWorkspacePreset()
 {
     const std::vector<std::string> presets = _workspaceLayouts.listPresets();
@@ -59,6 +66,8 @@ void MainWindow::loadWorkspacePreset()
                                  : QString("Workspace preset invalid"),
                              3000);
 }
+
+/// Description: Executes the deleteWorkspacePreset operation.
 void MainWindow::deleteWorkspacePreset()
 {
     const std::vector<std::string> presets = _workspaceLayouts.listPresets();
@@ -83,6 +92,8 @@ void MainWindow::deleteWorkspacePreset()
                                      : QString("Failed to delete workspace"),
                              3000);
 }
+
+/// Description: Executes the restoreDefaultWorkspace operation.
 void MainWindow::restoreDefaultWorkspace()
 {
     const bool geometryRestored = restoreGeometry(_defaultWorkspaceGeometry);

@@ -1,3 +1,6 @@
+// File: tests/unit/module_client/client_module_boundary.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ClientModuleBoundary.hpp"
 #include "client/ClientModuleHash.hpp"
 #include "client/ClientModuleManifest.hpp"
@@ -5,7 +8,9 @@
 #include <fstream>
 #include <gtest/gtest.h>
 #include <string>
+
 namespace grav_test_client_host_boundary {
+/// Description: Executes the TEST operation.
 TEST(ClientModuleBoundaryTest, TST_UNT_MODHOST_004_CreateResultTracksOpaqueModuleState)
 {
     int payload = 42;
@@ -16,6 +21,8 @@ TEST(ClientModuleBoundaryTest, TST_UNT_MODHOST_004_CreateResultTracksOpaqueModul
     EXPECT_TRUE(moduleState.hasValue());
     EXPECT_EQ(moduleState.rawPointer(), &payload);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientModuleBoundaryTest, TST_UNT_MODHOST_005_ErrorBufferViewWritesTruncatedMessage)
 {
     char buffer[6] = {};
@@ -23,6 +30,8 @@ TEST(ClientModuleBoundaryTest, TST_UNT_MODHOST_005_ErrorBufferViewWritesTruncate
     errorBuffer.write("abcdefghi");
     EXPECT_EQ(std::string(buffer), "abcde");
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientModuleBoundaryTest, TST_UNT_MODHOST_006_CommandControlUpdatesKeepRunningFlag)
 {
     grav_module::ClientModuleCommandResult commandResult;
@@ -34,6 +43,8 @@ TEST(ClientModuleBoundaryTest, TST_UNT_MODHOST_006_CommandControlUpdatesKeepRunn
     commandControl.setContinue();
     EXPECT_TRUE(commandResult.keepRunning());
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientModuleBoundaryTest, TST_UNT_MODHOST_009_ModuleManifestAndHashValidateExpectedModule)
 {
     const std::filesystem::path tempRoot =
@@ -63,6 +74,8 @@ TEST(ClientModuleBoundaryTest, TST_UNT_MODHOST_009_ModuleManifestAndHashValidate
         grav_module::ClientModuleHash::computeFileSha256Hex(modulePath.string(), digest, error));
     EXPECT_EQ(digest, parsed.sha256());
 }
+
+/// Description: Verifies the TEST behavior.
 TEST(ClientModuleBoundaryTest,
      TST_UNT_MODHOST_010_ModuleManifestRejectsUnsupportedModuleAndDigestMismatch)
 {

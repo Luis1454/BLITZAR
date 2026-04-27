@@ -1,6 +1,10 @@
+// File: rust/blitzar-web-gateway/tests/events.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use blitzar_protocol::v1::{ResponseEnvelope, SnapshotPayload, StatusPayload};
 use blitzar_web_gateway::events::{snapshot_event, status_event};
 
+/// Description: Executes the tst_rust_web_005_event_helpers_emit_typed_status_and_snapshot_tags operation.
 #[test]
 fn tst_rust_web_005_event_helpers_emit_typed_status_and_snapshot_tags() {
     let status = status_event(StatusPayload {

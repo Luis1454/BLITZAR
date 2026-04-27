@@ -1,3 +1,6 @@
+// File: modules/qt/ui/MainWindow.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/MainWindow.hpp"
 #include "client/ClientCommon.hpp"
 #include "ui/EnergyGraphWidget.hpp"
@@ -20,6 +23,7 @@
 #include <limits>
 #include <stdexcept>
 #include <utility>
+
 namespace grav_qt {
 MainWindow::MainWindow(SimulationConfig config, std::string configPath,
                        std::unique_ptr<grav_client::IClientRuntime> runtime)
@@ -127,10 +131,14 @@ MainWindow::MainWindow(SimulationConfig config, std::string configPath,
         _statusLabel->setText(QString("server connection failed (service)"));
     }
 }
+
+/// Description: Releases resources owned by MainWindow.
 MainWindow::~MainWindow()
 {
     _runtime->stop();
 }
+
+/// Description: Executes the applyTheme operation.
 void MainWindow::applyTheme()
 {
     const QtThemeMode mode = QtTheme::resolve(_config.uiTheme);
@@ -139,6 +147,8 @@ void MainWindow::applyTheme()
     setAutoFillBackground(true);
     setStyleSheet(QtTheme::buildMainWindowStyleSheet(mode));
 }
+
+/// Description: Executes the applyViewSettings operation.
 void MainWindow::applyViewSettings()
 {
     _multiView->setZoom(static_cast<float>(_zoomSlider->value()) / 10.0f);

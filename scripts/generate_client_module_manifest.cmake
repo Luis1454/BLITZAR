@@ -1,3 +1,6 @@
+# File: scripts/generate_client_module_manifest.cmake
+# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+
 cmake_minimum_required(VERSION 3.24)
 
 if(NOT DEFINED MODULE_FILE OR MODULE_FILE STREQUAL "")

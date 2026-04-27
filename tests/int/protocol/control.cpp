@@ -1,3 +1,6 @@
+// File: tests/int/protocol/control.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "protocol/ServerClient.hpp"
 #include "protocol/ServerProtocol.hpp"
 #include "tests/support/scoped_env_var.hpp"
@@ -6,7 +9,9 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <thread>
+
 namespace grav_test_server_protocol_control {
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_004_ServerAcceptsControlCommandsFromClient)
 {
     RealServerHarness server;
@@ -33,6 +38,8 @@ TEST(ServerProtocolTest, TST_INT_PROT_004_ServerAcceptsControlCommandsFromClient
     client.disconnect();
     server.stop();
 }
+
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_005_ServerRejectsInvalidSolverAndIntegratorCommands)
 {
     RealServerHarness server;
@@ -52,6 +59,8 @@ TEST(ServerProtocolTest, TST_INT_PROT_005_ServerRejectsInvalidSolverAndIntegrato
     client.disconnect();
     server.stop();
 }
+
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_006_ServerRejectsUnsupportedIntegratorForOctreeGpu)
 {
     RealServerHarness server;
@@ -75,6 +84,8 @@ TEST(ServerProtocolTest, TST_INT_PROT_006_ServerRejectsUnsupportedIntegratorForO
     client.disconnect();
     server.stop();
 }
+
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_007_ServerFallsBackToCpuAfterForcedCudaFailure)
 {
     testsupport::ScopedEnvVar forceCudaFail("GRAVITY_TEST_FORCE_CUDA_FAIL_ONCE", "1");
@@ -106,6 +117,8 @@ TEST(ServerProtocolTest, TST_INT_PROT_007_ServerFallsBackToCpuAfterForcedCudaFai
     client.disconnect();
     server.stop();
 }
+
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_008_ServerRejectsRequestsWithoutConfiguredToken)
 {
     RealServerHarness server;
@@ -127,6 +140,8 @@ TEST(ServerProtocolTest, TST_INT_PROT_008_ServerRejectsRequestsWithoutConfigured
     client.disconnect();
     server.stop();
 }
+
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_010_ServerAcceptsGpuTelemetryToggle)
 {
     RealServerHarness server;

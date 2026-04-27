@@ -1,3 +1,6 @@
+// File: tests/int/ui/qt_workspace_controls.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ClientRuntime.hpp"
 #include "tests/support/client_utils.hpp"
 #include "tests/support/qt_test_utils.hpp"
@@ -16,7 +19,9 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
+
 namespace grav_test_qt_workspace_controls {
+/// Description: Executes the makeWorkspaceUiConfig operation.
 static SimulationConfig makeWorkspaceUiConfig()
 {
     SimulationConfig config{};
@@ -29,6 +34,8 @@ static SimulationConfig makeWorkspaceUiConfig()
     config.dt = 0.01f;
     return config;
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtWorkspaceControlsTest, TST_UIX_UI_007_ProfilesAndCheckboxesRemainInteractiveWithoutServer)
 {
     (void)testsupport::ensureQtApp();
@@ -63,6 +70,8 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_007_ProfilesAndCheckboxesRemainInteract
     QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
     EXPECT_NE(autostartCheck->isChecked(), initialAutostart);
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtWorkspaceControlsTest, TST_UIX_UI_008_SavePersistsProfilesSelectedFromWorkspace)
 {
     (void)testsupport::ensureQtApp();
@@ -105,6 +114,8 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_008_SavePersistsProfilesSelectedFromWor
     std::error_code ec;
     std::filesystem::remove(configPath, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtWorkspaceControlsTest, TST_UIX_UI_009_EnergyDockIsVisibleAndSidebarStaysCompact)
 {
     (void)testsupport::ensureQtApp();
@@ -122,6 +133,8 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_009_EnergyDockIsVisibleAndSidebarStaysC
     EXPECT_GE(energyDock->height(), 120);
     EXPECT_LE(controlsDock->width(), 260);
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtWorkspaceControlsTest, TST_UIX_UI_015_ThemeTogglePersistsAcrossSaveAndReload)
 {
     (void)testsupport::ensureQtApp();
@@ -165,6 +178,8 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_015_ThemeTogglePersistsAcrossSaveAndRel
     std::error_code ec;
     std::filesystem::remove(configPath, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtWorkspaceControlsTest, TST_UIX_UI_018_ShowsThroughputAdvisoryForHeavyConfig)
 {
     (void)testsupport::ensureQtApp();

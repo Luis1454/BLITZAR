@@ -1,7 +1,12 @@
+// File: tests/unit/physics/TST_PHY_ProfileTests.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationProfile.hpp"
 #include <gtest/gtest.h>
+
 namespace grav_test {
+/// Description: Executes the TEST operation.
 TEST(SimulationProfileTests, TST_PHY_PRO_001_DiskOrbitProfile)
 {
     SimulationConfig config;
@@ -13,6 +18,8 @@ TEST(SimulationProfileTests, TST_PHY_PRO_001_DiskOrbitProfile)
     EXPECT_EQ(config.solver, "pairwise_cuda");
     EXPECT_EQ(config.initMode, "disk_orbit");
 }
+
+/// Description: Executes the TEST operation.
 TEST(SimulationProfileTests, TST_PHY_PRO_002_GalaxyCollisionProfile)
 {
     SimulationConfig config;
@@ -23,6 +30,8 @@ TEST(SimulationProfileTests, TST_PHY_PRO_002_GalaxyCollisionProfile)
     EXPECT_EQ(config.solver, "octree_gpu");
     EXPECT_EQ(config.initMode, "galaxy_collision");
 }
+
+/// Description: Executes the TEST operation.
 TEST(SimulationProfileTests, TST_PHY_PRO_003_SolarSystemProfile)
 {
     SimulationConfig config;
@@ -33,6 +42,8 @@ TEST(SimulationProfileTests, TST_PHY_PRO_003_SolarSystemProfile)
     EXPECT_EQ(config.integrator, "rk4");
     EXPECT_LT(config.dt, 0.001f);
 }
+
+/// Description: Executes the TEST operation.
 TEST(SimulationProfileTests, TST_PHY_PRO_004_InvalidProfile)
 {
     SimulationConfig config;
@@ -43,6 +54,8 @@ TEST(SimulationProfileTests, TST_PHY_PRO_004_InvalidProfile)
     EXPECT_EQ(config.simulationProfile, "invalid_profile_name");
     EXPECT_EQ(config.particleCount, 123u);
 }
+
+/// Description: Executes the TEST operation.
 TEST(SimulationProfileTests, TST_PHY_PRO_005_BinaryStarProfile)
 {
     SimulationConfig config;

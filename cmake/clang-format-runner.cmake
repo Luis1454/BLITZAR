@@ -1,3 +1,6 @@
+# File: cmake/clang-format-runner.cmake
+# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+
 # This CMake script runs clang-format on source files.
 # Usage:
 #   cmake -DMODE=check -DCLANG_FORMAT_EXECUTABLE=<path> -DSOURCE_DIR=<path> -P cmake/clang-format-runner.cmake

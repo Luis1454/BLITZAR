@@ -1,3 +1,6 @@
+// File: tests/int/ui/qt_workspace_runtime_controls.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "tests/support/qt_test_utils.hpp"
 #include "ui/EnergyGraphWidget.hpp"
 #include "ui/MainWindow.hpp"
@@ -17,69 +20,86 @@
 #include <optional>
 #include <string>
 #include <vector>
+
 namespace grav_test_qt_workspace_runtime_controls {
+/// Description: Defines the RecordingRuntime data or behavior contract.
 class RecordingRuntime final : public grav_client::IClientRuntime {
 public:
     bool start() override
     {
         return false;
     }
+
     void stop() override
     {
     }
+
     void setPaused(bool paused) override
     {
         pausedState = paused;
     }
+
     void togglePaused() override
     {
         pausedState = !pausedState;
     }
+
     void stepOnce() override
     {
         stepCount += 1;
     }
+
     void setParticleCount(std::uint32_t particleCount) override
     {
         configuredParticleCount = particleCount;
     }
+
     void setDt(float dt) override
     {
         configuredDt = dt;
     }
+
     void scaleDt(float factor) override
     {
         configuredDt *= factor;
     }
+
     void requestReset() override
     {
         resetCount += 1;
     }
+
     void requestRecover() override
     {
         recoverCount += 1;
     }
+
     void setSolverMode(const std::string& mode) override
     {
         solverMode = mode;
     }
+
     void setIntegratorMode(const std::string& mode) override
     {
         integratorMode = mode;
     }
+
     void setPerformanceProfile(const std::string& profile) override
     {
         performanceProfile = profile;
     }
+
     void setOctreeParameters(float theta, float softening) override
     {
         octreeTheta = theta;
         octreeSoftening = softening;
     }
+
     void setSphEnabled(bool enabled) override
     {
         sphEnabled = enabled;
     }
+
     void setSphParameters(float h, float rho, float gasK, float visc) override
     {
         sphSmoothingLength = h;
@@ -87,58 +107,72 @@ public:
         sphGasConstant = gasK;
         sphViscosity = visc;
     }
+
     void setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps) override
     {
         substepTargetDt = targetDt;
         configuredMaxSubsteps = maxSubsteps;
     }
+
     void setSnapshotPublishPeriodMs(std::uint32_t periodMs) override
     {
         snapshotPublishPeriodMs = periodMs;
     }
+
     void setInitialStateConfig(const InitialStateConfig& config) override
     {
         initialStateConfig = config;
     }
+
     void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit) override
     {
         energyEverySteps = everySteps;
         energySampleLimit = sampleLimit;
     }
+
     void setGpuTelemetryEnabled(bool enabled) override
     {
         gpuTelemetryEnabled = enabled;
     }
+
     void setExportDefaults(const std::string& directory, const std::string& format) override
     {
         exportDirectory = directory;
         exportFormat = format;
     }
+
     void setInitialStateFile(const std::string& path, const std::string& format) override
     {
         initialStateFile = path;
         initialStateFormat = format;
     }
+
     void requestExportSnapshot(const std::string&, const std::string&) override
     {
     }
+
     void requestSaveCheckpoint(const std::string&) override
     {
     }
+
     void requestLoadCheckpoint(const std::string&) override
     {
     }
+
     void requestShutdown() override
     {
     }
+
     void setRemoteSnapshotCap(std::uint32_t maxPoints) override
     {
         remoteSnapshotCap = maxPoints;
     }
+
     void requestReconnect() override
     {
         reconnectCount += 1;
     }
+
     void configureRemoteConnector(const std::string& host, std::uint16_t port, bool autoStart,
                                   const std::string& serverExecutable) override
     {
@@ -147,46 +181,57 @@ public:
         connectorAutoStart = autoStart;
         connectorServerExecutable = serverExecutable;
     }
+
     bool isRemoteMode() const override
     {
         return true;
     }
+
     SimulationStats getCachedStats() const override
     {
         return {};
     }
+
     SimulationStats getStats() const override
     {
         return {};
     }
+
     std::optional<grav_client::ConsumedSnapshot> consumeLatestSnapshot() override
     {
         return std::nullopt;
     }
+
     bool tryConsumeSnapshot(std::vector<RenderParticle>&) override
     {
         return false;
     }
+
     grav_client::SnapshotPipelineState snapshotPipelineState() const override
     {
         return {};
     }
+
     std::string linkStateLabel() const override
     {
         return "disconnected";
     }
+
     std::string serverOwnerLabel() const override
     {
         return "external";
     }
+
     std::uint32_t statsAgeMs() const override
     {
         return 0u;
     }
+
     std::uint32_t snapshotAgeMs() const override
     {
         return 0u;
     }
+
     bool pausedState = false;
     bool sphEnabled = false;
     bool connectorAutoStart = false;
@@ -221,6 +266,8 @@ public:
     std::string connectorServerExecutable;
     InitialStateConfig initialStateConfig;
 };
+
+/// Description: Executes the makeRuntimeUiConfig operation.
 static SimulationConfig makeRuntimeUiConfig()
 {
     SimulationConfig config{};
@@ -233,6 +280,8 @@ static SimulationConfig makeRuntimeUiConfig()
     config.dt = 0.01f;
     return config;
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_010_RunButtonsAndConnectorForwardToRuntime)
 {
     (void)testsupport::ensureQtApp();
@@ -262,6 +311,8 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_010_RunButtonsAndConnectorForwar
     EXPECT_GE(spy->resetCount, 1u);
     EXPECT_EQ(spy->recoverCount, 1u);
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_011_RunAndSceneProfilesPropagateToRuntimeAndUi)
 {
     (void)testsupport::ensureQtApp();
@@ -290,6 +341,8 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_011_RunAndSceneProfilesPropagate
     EXPECT_EQ(spy->initialStateConfig.mode, "two_body");
     EXPECT_GE(spy->resetCount, 1u);
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_012_PhysicsAndRenderControlsPersistWorkspaceChoices)
 {
     (void)testsupport::ensureQtApp();
@@ -347,6 +400,8 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_012_PhysicsAndRenderControlsPers
     std::error_code ec;
     std::filesystem::remove(configPath, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_013_ResetClearsEnergyTimelineHistory)
 {
     (void)testsupport::ensureQtApp();
@@ -374,6 +429,8 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_013_ResetClearsEnergyTimelineHis
     QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
     EXPECT_EQ(graph->sampleCount(), 0u);
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_019_GpuTelemetryToggleForwardsToRuntime)
 {
     (void)testsupport::ensureQtApp();

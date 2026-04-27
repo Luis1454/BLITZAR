@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: tests/checks/suites/policy/test_deviation_fmea.py
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 from __future__ import annotations
 
 import json
@@ -13,16 +16,19 @@ from python_tools.policies.fmea_action_register import FmeaActionRegister, FmeaA
 from python_tools.policies.quality_manifest import QualityManifestLoader
 
 
+# Description: Executes the _write_json operation.
 def _write_json(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
+# Description: Executes the _write_text operation.
 def _write_text(path: Path, content: str = "sample\n") -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
 
 
+# Description: Executes the _seed_deviation_repo operation.
 def _seed_deviation_repo(root: Path, review_by: str = "2026-06-30") -> None:
     _write_json(root / "docs/quality/quality_manifest.json", {"metadata": {"system": "test", "revision": "2026-03-07"}, "includes": ["manifest/evidence.json", "manifest/requirements.json", "manifest/deviations.json"]})
     _write_json(root / "docs/quality/manifest/evidence.json", {"evidence": {"EVD_SAMPLE": "docs/quality/sample.md"}})
@@ -52,10 +58,12 @@ def _seed_deviation_repo(root: Path, review_by: str = "2026-06-30") -> None:
     _write_text(root / "docs/quality/sample.md")
 
 
+# Description: Executes the _write_fmea_rows operation.
 def _write_fmea_rows(root: Path, rows: list[dict[str, object]]) -> None:
     _write_json(root / "docs/quality/manifest/fmea_actions.json", {"fmea_actions": rows})
 
 
+# Description: Executes the test_deviation_register_loads_valid_rows_and_rejects_invalid_review_date operation.
 def test_deviation_register_loads_valid_rows_and_rejects_invalid_review_date(tmp_path: Path) -> None:
     _seed_deviation_repo(tmp_path)
     manifest, errors = QualityManifestLoader().load_with_errors(tmp_path)
@@ -74,6 +82,7 @@ def test_deviation_register_loads_valid_rows_and_rejects_invalid_review_date(tmp
     assert any("invalid ISO date in review_by" in error for error in result.errors)
 
 
+# Description: Executes the test_fmea_action_register_accepts_linked_medium_risk operation.
 def test_fmea_action_register_accepts_linked_medium_risk(tmp_path: Path) -> None:
     _write_fmea_rows(
         tmp_path,
@@ -92,12 +101,14 @@ def test_fmea_action_register_accepts_linked_medium_risk(tmp_path: Path) -> None
         ([{"id": "FMEA-001", "owner": "maintainer", "status": "closed", "residual_risk": "Low", "linked_tasks": [], "verification_evidence": []}], "require linked verification evidence"),
     ],
 )
+# Description: Executes the test_fmea_action_register_rejects_invalid_rows operation.
 def test_fmea_action_register_rejects_invalid_rows(tmp_path: Path, rows: list[dict[str, object]], expected: str) -> None:
     _write_fmea_rows(tmp_path, rows)
     with pytest.raises(FmeaActionRegisterError, match=expected):
         FmeaActionRegister().load(tmp_path)
 
 
+# Description: Executes the test_fmea_status_snapshot_packages_summary operation.
 def test_fmea_status_snapshot_packages_summary(tmp_path: Path) -> None:
     _write_fmea_rows(
         tmp_path,

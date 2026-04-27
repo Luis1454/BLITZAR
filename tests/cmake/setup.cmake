@@ -1,3 +1,6 @@
+# File: tests/cmake/setup.cmake
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 if(NOT DEFINED GRAVITY_GRAPHICS_SOURCES)
     set(GRAVITY_GRAPHICS_SOURCES
         "${GRAVITY_ROOT_DIR}/engine/src/graphics/ViewMath.cpp"
@@ -87,6 +90,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/windows_paths.cmake")
 include("${GRAVITY_ROOT_DIR}/cmake/rust.cmake")
 gravity_ensure_rust_runtime_target()
 
+# Description: Defines the gravity_apply_test_quality_flags function helper.
 function(gravity_apply_test_quality_flags target_name)
     if(GRAVITY_INTEGRATION_STRICT_WARNINGS)
         if(MSVC)
@@ -180,6 +184,7 @@ if(NOT TARGET ${GRAVITY_TEST_PLATFORM_TARGET})
     endif()
 endif()
 
+# Description: Defines the gravity_add_gtest function helper.
 function(gravity_add_gtest target_name)
     set(options SERVER_LOCK)
     set(oneValueArgs TIMEOUT)

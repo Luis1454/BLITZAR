@@ -1,14 +1,21 @@
+// File: runtime/include/protocol/ServerClient.hpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #ifndef GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERCLIENT_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERCLIENT_HPP_
 #include "protocol/ServerJsonCodec.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>
+
+/// Description: Defines the ServerClientResponse data or behavior contract.
 struct ServerClientResponse {
     bool ok = false;
     std::string raw;
     std::string error;
 };
+
+/// Description: Defines the ServerClientStatus data or behavior contract.
 struct ServerClientStatus {
     std::uint64_t steps = 0;
     float dt = 0.0f;
@@ -49,26 +56,42 @@ struct ServerClientStatus {
     std::string exportLastPath;
     std::string exportLastMessage;
 };
+
+/// Description: Defines the ServerClient data or behavior contract.
 class ServerClient {
 public:
+    /// Description: Describes the server client operation contract.
     ServerClient();
+    /// Description: Releases resources owned by ServerClient.
     ~ServerClient();
+    /// Description: Describes the connect operation contract.
     bool connect(const std::string& host, std::uint16_t port);
+    /// Description: Describes the set socket timeout ms operation contract.
     void setSocketTimeoutMs(int timeoutMs);
+    /// Description: Describes the socket timeout ms operation contract.
     int socketTimeoutMs() const;
+    /// Description: Describes the set auth token operation contract.
     void setAuthToken(std::string token);
+    /// Description: Describes the disconnect operation contract.
     void disconnect();
+    /// Description: Describes the is connected operation contract.
     bool isConnected() const;
+    /// Description: Describes the send json operation contract.
     ServerClientResponse sendJson(const std::string& jsonLine);
+    /// Description: Describes the send command operation contract.
     ServerClientResponse sendCommand(const std::string& cmd, const std::string& fieldsJson = "");
+    /// Description: Describes the get status operation contract.
     ServerClientResponse getStatus(ServerClientStatus& outStatus);
+    /// Description: Describes the get snapshot operation contract.
     ServerClientResponse getSnapshot(std::vector<RenderParticle>& outSnapshot,
                                      std::uint32_t maxPoints = 4096u,
                                      std::size_t* outSourceSize = nullptr);
 
 private:
     typedef std::intptr_t SocketHandle;
+    /// Description: Describes the trim operation contract.
     static std::string trim(const std::string& value);
+    /// Description: Describes the read line operation contract.
     bool readLine(std::string& outLine);
     SocketHandle _socket;
     int _socketTimeoutMs;

@@ -1,9 +1,14 @@
+// File: modules/qt/ui/MainWindowController.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/MainWindowController.hpp"
 #include "client/ClientCommon.hpp"
 #include "config/SimulationConfig.hpp"
 #include "server/SimulationInitConfig.hpp"
 #include <iostream>
+
 namespace grav_qt {
+/// Description: Defines the MainWindowControllerLocal data or behavior contract.
 class MainWindowControllerLocal final {
 public:
     static void applySharedConfig(const SimulationConfig& config,
@@ -26,6 +31,8 @@ public:
         runtime.setRemoteSnapshotCap(grav_client::resolveClientDrawCap(config));
     }
 };
+
+/// Description: Describes the apply config operation contract.
 MainWindowApplyConfigResult MainWindowController::applyConfig(const SimulationConfig& config,
                                                               grav_client::IClientRuntime& runtime,
                                                               bool requestReset) const
@@ -45,14 +52,18 @@ MainWindowApplyConfigResult MainWindowController::applyConfig(const SimulationCo
     result.applied = true;
     return result;
 }
+
 std::uint32_t
+/// Description: Describes the apply performance profile operation contract.
 MainWindowController::applyPerformanceProfile(const SimulationConfig& config,
                                               grav_client::IClientRuntime& runtime) const
 {
     MainWindowControllerLocal::applySharedConfig(config, runtime);
     return grav_client::resolveClientDrawCap(config);
 }
+
 grav_config::ScenarioValidationReport
+/// Description: Executes the validate operation.
 MainWindowController::validate(const SimulationConfig& config) const
 {
     return grav_config::SimulationScenarioValidation::evaluate(config);

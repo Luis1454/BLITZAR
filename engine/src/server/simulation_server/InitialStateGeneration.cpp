@@ -1,4 +1,9 @@
+// File: engine/src/server/simulation_server/InitialStateGeneration.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
+
+/// Description: Describes the build generated state operation contract.
 bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t particleCount,
                          const InitialStateConfig& config)
 {
@@ -197,9 +202,11 @@ bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t part
         const float saturnR = 9.54f, saturnM = 2.8e-4f;
         const float uranusR = 19.2f, uranusM = 4.3e-5f;
         const float neptuneR = 30.1f, neptuneM = 5.1e-5f;
+
         struct Planet {
             float r, m;
         };
+
         Planet planets[] = {{mercuryR, mercuryM}, {venusR, venusM},     {earthR, earthM},
                             {marsR, marsM},       {jupiterR, jupiterM}, {saturnR, saturnM},
                             {uranusR, uranusM},   {neptuneR, neptuneM}};
@@ -211,8 +218,7 @@ bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t part
                 std::sqrt(centralMass / pInfo.r) * std::max(0.0f, config.velocityScale);
             Particle p;
             p.setMass(pInfo.m);
-            p.setPosition(
-                centralPos + Vector3(pInfo.r * std::cos(a), pInfo.r * std::sin(a), 0.0f));
+            p.setPosition(centralPos + Vector3(pInfo.r * std::cos(a), pInfo.r * std::sin(a), 0.0f));
             p.setVelocity(centralVel + Vector3(-std::sin(a) * speed, std::cos(a) * speed, 0.0f));
             finalizeParticle(p);
             outParticles.push_back(p);
@@ -285,6 +291,8 @@ bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t part
     }
     return outParticles.size() >= 2;
 }
+
+/// Description: Executes the atomicAddFloat operation.
 void atomicAddFloat(std::atomic<float>& atom, float val)
 {
     float current = atom.load(std::memory_order_relaxed);

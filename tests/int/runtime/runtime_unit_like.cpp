@@ -1,3 +1,6 @@
+// File: tests/int/runtime/runtime_unit_like.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ClientRuntime.hpp"
 #include "tests/support/client_utils.hpp"
 #include <chrono>
@@ -5,7 +8,9 @@
 #include <limits>
 #include <string>
 #include <vector>
+
 namespace grav_test_client_runtime_unit_like {
+/// Description: Executes the TEST operation.
 TEST(ClientRuntimeUnitLikeTest, TST_UNT_RUNT_016_RuntimeDefaultsRemainDeterministicBeforeStart)
 {
     grav_client::ClientRuntime runtime(
@@ -22,6 +27,8 @@ TEST(ClientRuntimeUnitLikeTest, TST_UNT_RUNT_016_RuntimeDefaultsRemainDeterminis
     EXPECT_EQ(pipelineState.dropPolicy, "latest-only");
     EXPECT_EQ(pipelineState.latencyMs, std::numeric_limits<std::uint32_t>::max());
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientRuntimeUnitLikeTest, TST_UNT_RUNT_017_RuntimeControlMethodsRemainBoundedWhenDisconnected)
 {
     grav_client::ClientRuntime runtime(

@@ -1,7 +1,12 @@
+// File: tests/unit/module_cli/command_parser.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "command/CommandParser.hpp"
 #include <gtest/gtest.h>
 #include <string>
+
 namespace grav_test_module_cli_command_parser {
+/// Description: Executes the TEST operation.
 TEST(CommandParserTest, TST_UNT_MODCLI_006_ParsesQuotedPathsAndComments)
 {
     const std::string script = "  # heading\n"
@@ -25,6 +30,8 @@ TEST(CommandParserTest, TST_UNT_MODCLI_006_ParsesQuotedPathsAndComments)
     EXPECT_EQ(std::get<std::string>(result.requests[3].arguments[0]),
               "checkpoints/final state.chk");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserTest, TST_UNT_MODCLI_007_RejectsUnknownCommandWithLineNumber)
 {
     const grav_cmd::CommandParseResult result =
@@ -32,6 +39,8 @@ TEST(CommandParserTest, TST_UNT_MODCLI_007_RejectsUnknownCommandWithLineNumber)
     ASSERT_FALSE(result.ok);
     EXPECT_EQ(result.error, "line 2: unknown command 'bogus'");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserTest, TST_UNT_MODCLI_008_RejectsWrongArityAndInvalidNumericValues)
 {
     const grav_cmd::CommandParseResult arity =
@@ -47,6 +56,8 @@ TEST(CommandParserTest, TST_UNT_MODCLI_008_RejectsWrongArityAndInvalidNumericVal
     ASSERT_FALSE(floating.ok);
     EXPECT_EQ(floating.error, "line 9: invalid float 'soon'");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserTest, TST_UNT_MODCLI_028_ParseScriptKeepsTailLineWithoutTrailingNewline)
 {
     const grav_cmd::CommandParseResult parsed =
@@ -58,6 +69,8 @@ TEST(CommandParserTest, TST_UNT_MODCLI_028_ParseScriptKeepsTailLineWithoutTraili
     ASSERT_EQ(parsed.requests[1].arguments.size(), 1u);
     EXPECT_EQ(std::get<std::uint64_t>(parsed.requests[1].arguments[0]), 2u);
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserTest, TST_UNT_MODCLI_029_ParseLineKeepsHashInsideQuotedToken)
 {
     const grav_cmd::CommandParseResult parsed = grav_cmd::CommandParser::parseLine(
@@ -68,6 +81,8 @@ TEST(CommandParserTest, TST_UNT_MODCLI_029_ParseLineKeepsHashInsideQuotedToken)
     EXPECT_EQ(parsed.requests[0].name, "load_config");
     EXPECT_EQ(std::get<std::string>(parsed.requests[0].arguments[0]), "cfg#release.ini");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserTest, TST_UNT_MODCLI_030_ParseScriptStopsAtFirstInvalidLine)
 {
     const std::string script = "status\n"
@@ -78,6 +93,8 @@ TEST(CommandParserTest, TST_UNT_MODCLI_030_ParseScriptStopsAtFirstInvalidLine)
     ASSERT_FALSE(parsed.ok);
     EXPECT_EQ(parsed.error, "line 3: invalid integer 'nope'");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserTest, TST_UNT_MODCLI_033_ParseLineAcceptsCommentOnlyAndWhitespace)
 {
     const grav_cmd::CommandParseResult parsed =
@@ -85,6 +102,8 @@ TEST(CommandParserTest, TST_UNT_MODCLI_033_ParseLineAcceptsCommentOnlyAndWhitesp
     ASSERT_TRUE(parsed.ok);
     EXPECT_TRUE(parsed.requests.empty());
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserTest, TST_UNT_MODCLI_034_ParseLineSupportsSingleQuotedTokens)
 {
     const grav_cmd::CommandParseResult parsed =
@@ -94,6 +113,8 @@ TEST(CommandParserTest, TST_UNT_MODCLI_034_ParseLineSupportsSingleQuotedTokens)
     ASSERT_EQ(parsed.requests[0].arguments.size(), 1u);
     EXPECT_EQ(std::get<std::string>(parsed.requests[0].arguments[0]), "configs/release build.ini");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserTest, TST_UNT_MODCLI_035_ParseLineRejectsIntegerWithTrailingGarbage)
 {
     const grav_cmd::CommandParseResult parsed =
@@ -101,6 +122,8 @@ TEST(CommandParserTest, TST_UNT_MODCLI_035_ParseLineRejectsIntegerWithTrailingGa
     ASSERT_FALSE(parsed.ok);
     EXPECT_EQ(parsed.error, "line 21: invalid integer '12ms'");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserTest, TST_UNT_MODCLI_036_ParseLineRejectsFloatWithTrailingGarbage)
 {
     const grav_cmd::CommandParseResult parsed =

@@ -1,3 +1,6 @@
+// File: tests/unit/physics/runtime_reload.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "server/SimulationServer.hpp"
 #include "tests/support/physics_test_utils.hpp"
 #include <filesystem>
@@ -5,7 +8,9 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
+
 namespace grav_test_server_reload {
+/// Description: Executes the writeTempXyz operation.
 static std::filesystem::path writeTempXyz(const char* basename, const std::vector<float>& xs)
 {
     const std::filesystem::path path = std::filesystem::temp_directory_path() / basename;
@@ -17,6 +22,8 @@ static std::filesystem::path writeTempXyz(const char* basename, const std::vecto
     }
     return path;
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_003_ServerReloadClearsPublishedSnapshotCache)
 {
     SimulationServer server(24u, 0.01f);

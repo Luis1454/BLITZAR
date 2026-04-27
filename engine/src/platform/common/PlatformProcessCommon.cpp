@@ -1,5 +1,10 @@
+// File: engine/src/platform/common/PlatformProcessCommon.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/common/PlatformProcessCommon.hpp"
+
 namespace grav_platform {
+/// Description: Executes the quoteProcessArg operation.
 std::string quoteProcessArg(const std::string& arg)
 {
     if (arg.empty()) {
@@ -14,12 +19,15 @@ std::string quoteProcessArg(const std::string& arg)
     for (char c : arg) {
         if (c == '"') {
             escaped += "\\\"";
-        } else {
+        }
+        else {
             escaped.push_back(c);
         }
     }
     return "\"" + escaped + "\"";
 }
+
+/// Description: Describes the build process command line operation contract.
 std::string buildProcessCommandLine(const std::string& executable,
                                     const std::vector<std::string>& args)
 {

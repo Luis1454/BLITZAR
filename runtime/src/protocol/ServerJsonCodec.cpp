@@ -1,46 +1,59 @@
+// File: runtime/src/protocol/ServerJsonCodec.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "protocol/ServerJsonCodec.hpp"
 #include "protocol/ServerProtocol.hpp"
 #include <iomanip>
 #include <sstream>
+
 namespace grav_protocol {
+/// Description: Defines the ServerJsonObjectWriter data or behavior contract.
 class ServerJsonObjectWriter final {
 public:
     explicit ServerJsonObjectWriter(std::ostringstream& out) : _out(out), _hasField(false)
     {
         _out << "{";
     }
+
     void writeBool(std::string_view key, bool value)
     {
         writeKey(key);
         _out << (value ? "true" : "false");
     }
+
     template <typename NumberType> void writeNumber(std::string_view key, NumberType value)
     {
         writeKey(key);
         _out << value;
     }
+
     void writeString(std::string_view key, std::string_view value)
     {
         writeKey(key);
         _out << "\"" << ServerJsonCodec::escapeString(value) << "\"";
     }
+
     void beginArray(std::string_view key)
     {
         writeKey(key);
         _out << "[";
     }
+
     void writeArraySeparator()
     {
         _out << ",";
     }
+
     void writeRaw(std::string_view raw)
     {
         _out << raw;
     }
+
     void endArray()
     {
         _out << "]";
     }
+
     void finish()
     {
         _out << "}";
@@ -55,9 +68,12 @@ private:
         _out << "\"" << key << "\":";
         _hasField = true;
     }
+
     std::ostringstream& _out;
     bool _hasField;
 };
+
+/// Description: Executes the escapeString operation.
 std::string ServerJsonCodec::escapeString(std::string_view value)
 {
     std::string escaped;
@@ -85,6 +101,8 @@ std::string ServerJsonCodec::escapeString(std::string_view value)
         }
     return escaped;
 }
+
+/// Description: Describes the make command request operation contract.
 std::string ServerJsonCodec::makeCommandRequest(const ServerCommandRequest& request,
                                                 std::string_view fieldsJson)
 {
@@ -101,6 +119,8 @@ std::string ServerJsonCodec::makeCommandRequest(const ServerCommandRequest& requ
     payload += "}";
     return payload;
 }
+
+/// Description: Executes the makeOkResponse operation.
 std::string ServerJsonCodec::makeOkResponse(std::string_view cmd)
 {
     std::ostringstream out;
@@ -110,6 +130,8 @@ std::string ServerJsonCodec::makeOkResponse(std::string_view cmd)
     writer.finish();
     return out.str();
 }
+
+/// Description: Executes the makeErrorResponse operation.
 std::string ServerJsonCodec::makeErrorResponse(std::string_view cmd, std::string_view message)
 {
     std::ostringstream out;
@@ -120,6 +142,8 @@ std::string ServerJsonCodec::makeErrorResponse(std::string_view cmd, std::string
     writer.finish();
     return out.str();
 }
+
+/// Description: Executes the makeStatusResponse operation.
 std::string ServerJsonCodec::makeStatusResponse(const SimulationStats& stats)
 {
     std::ostringstream out;
@@ -168,6 +192,8 @@ std::string ServerJsonCodec::makeStatusResponse(const SimulationStats& stats)
     writer.finish();
     return out.str();
 }
+
+/// Description: Describes the make snapshot response operation contract.
 std::string ServerJsonCodec::makeSnapshotResponse(bool hasSnapshot,
                                                   const std::vector<RenderParticle>& snapshot,
                                                   std::size_t sourceSize)

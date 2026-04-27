@@ -3,6 +3,7 @@
  * Responsibility: Compute energy diagnostics from device buffers without host particle copies.
  */
 
+/// Description: Describes the compute kinetic thermal block sums kernel operation contract.
 __global__ void computeKineticThermalBlockSumsKernel(
     ParticleSoAView state,
     int numParticles,
@@ -45,6 +46,7 @@ __global__ void computeKineticThermalBlockSumsKernel(
     }
 }
 
+/// Description: Describes the compute sample potential partials kernel operation contract.
 __global__ void computeSamplePotentialPartialsKernel(
     ParticleSoAView state,
     int numParticles,
@@ -86,6 +88,7 @@ __global__ void computeSamplePotentialPartialsKernel(
     potentialPartials[sampleA] = partial;
 }
 
+/// Description: Describes the compute energy estimate gpu operation contract.
 bool ParticleSystem::computeEnergyEstimateGpu(
     std::size_t sampleLimit,
     float softening,

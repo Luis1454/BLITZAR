@@ -1,3 +1,6 @@
+// File: tests/unit/module_client/client_common.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ClientCommon.hpp"
 #include "config/SimulationConfig.hpp"
 #include "protocol/ServerProtocol.hpp"
@@ -6,7 +9,9 @@
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <string>
+
 namespace grav_test_client_common {
+/// Description: Executes the hasExpectedSuggestedName operation.
 static bool hasExpectedSuggestedName(const std::string& fileName, std::uint64_t step)
 {
     if (fileName.size() < 26u || fileName.rfind("sim_", 0u) != 0u) {
@@ -26,6 +31,8 @@ static bool hasExpectedSuggestedName(const std::string& fileName, std::uint64_t 
     return fileName.compare(fileName.size() - expectedSuffix.size(), expectedSuffix.size(),
                             expectedSuffix) == 0;
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_012_ResolveParticleAndDrawCapsClampToProtocolBounds)
 {
     SimulationConfig config;
@@ -36,6 +43,8 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_012_ResolveParticleAndDrawCapsClampToProt
     config.clientParticleCap = grav_protocol::kSnapshotMaxPoints + 999u;
     EXPECT_EQ(grav_client::resolveClientDrawCap(config), grav_protocol::kSnapshotMaxPoints);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_013_ResolveCapsUseEnvironmentOverrides)
 {
     SimulationConfig config;
@@ -44,6 +53,8 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_013_ResolveCapsUseEnvironmentOverrides)
     EXPECT_EQ(grav_client::resolveServerParticleCount(config), 123u);
     EXPECT_EQ(grav_client::resolveClientDrawCap(config), 77u);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_014_NormalizeInferAndExtensionCoverAliases)
 {
     EXPECT_EQ(grav_client::normalizeExportFormat("BINARY"), "bin");
@@ -61,6 +72,8 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_014_NormalizeInferAndExtensionCoverAliase
     EXPECT_EQ(grav_client::inferExportFormatFromPath("frame.nbin"), "bin");
     EXPECT_EQ(grav_client::inferExportFormatFromPath("frame.noext"), "");
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_015_BuildSuggestedExportPathUsesExpectedPattern)
 {
     const std::string withDirectory =
@@ -73,6 +86,8 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_015_BuildSuggestedExportPathUsesExpectedP
     EXPECT_EQ(defaultExportPath.parent_path().string(), "exports");
     EXPECT_TRUE(hasExpectedSuggestedName(defaultExportPath.filename().string(), 9u));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_016_EnvironmentOverridesClampServerAndDrawCaps)
 {
     testsupport::ScopedEnvVar serverParticles("GRAVITY_SERVER_PARTICLES", "2");
@@ -83,6 +98,8 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_016_EnvironmentOverridesClampServerAndDra
     EXPECT_EQ(grav_client::resolveServerParticleCount(config), 2u);
     EXPECT_EQ(grav_client::resolveClientDrawCap(config), grav_protocol::kSnapshotMaxPoints);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_017_InvalidEnvironmentOverridesPreserveConfiguredValues)
 {
     testsupport::ScopedEnvVar serverParticles("GRAVITY_SERVER_PARTICLES", "bad");
@@ -93,6 +110,8 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_017_InvalidEnvironmentOverridesPreserveCo
     EXPECT_EQ(grav_client::resolveServerParticleCount(config), 123u);
     EXPECT_EQ(grav_client::resolveClientDrawCap(config), 77u);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_018_BuildSuggestedExportPathUnknownFormatOmitsExtension)
 {
     const std::string path = grav_client::buildSuggestedExportPath("exports", "mystery", 3u);
@@ -102,6 +121,8 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_018_BuildSuggestedExportPathUnknownFormat
     EXPECT_NE(fileName.find("_s3"), std::string::npos);
     EXPECT_TRUE(exportPath.extension().string().empty());
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_019_EnvironmentOverridesBelowMinimumAreRejected)
 {
     testsupport::ScopedEnvVar serverParticles("GRAVITY_SERVER_PARTICLES", "1");
@@ -112,6 +133,8 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_019_EnvironmentOverridesBelowMinimumAreRe
     EXPECT_EQ(grav_client::resolveServerParticleCount(config), 500u);
     EXPECT_EQ(grav_client::resolveClientDrawCap(config), 500u);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_020_InferExportFormatAcceptsBinaryExtensionAlias)
 {
     EXPECT_EQ(grav_client::inferExportFormatFromPath("checkpoint.binary"), "bin");

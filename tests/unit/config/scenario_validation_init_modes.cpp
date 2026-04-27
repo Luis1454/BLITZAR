@@ -1,8 +1,13 @@
+// File: tests/unit/config/scenario_validation_init_modes.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationScenarioValidation.hpp"
 #include <gtest/gtest.h>
 #include <string>
+
 namespace grav_test_config_scenario_validation_init_modes {
+/// Description: Executes the hasField operation.
 static bool hasField(const grav_config::ScenarioValidationReport& report, const std::string& field)
 {
     for (const grav_config::ScenarioDiagnostic& diagnostic : report.diagnostics)
@@ -10,6 +15,8 @@ static bool hasField(const grav_config::ScenarioValidationReport& report, const 
             return true;
     return false;
 }
+
+/// Description: Verifies the TEST behavior.
 TEST(ScenarioValidationInitModesTest,
      TST_UNT_CONF_063_DetailedRandomCloudValidatesGeneratedMassAndExtent)
 {
@@ -25,6 +32,8 @@ TEST(ScenarioValidationInitModesTest,
     EXPECT_TRUE(hasField(report, "init_particle_mass"));
     EXPECT_TRUE(hasField(report, "init_cloud_half_extent"));
 }
+
+/// Description: Verifies the TEST behavior.
 TEST(ScenarioValidationInitModesTest,
      TST_UNT_CONF_064_DetailedDiskOrbitCentralBodyRequiresPositiveMass)
 {
@@ -42,6 +51,8 @@ TEST(ScenarioValidationInitModesTest,
     EXPECT_FALSE(report.validForRun);
     EXPECT_TRUE(hasField(report, "init_central_mass"));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationInitModesTest, TST_UNT_CONF_065_DetailedFileModeWithoutInputFileIsRejected)
 {
     SimulationConfig config;
@@ -53,6 +64,8 @@ TEST(ScenarioValidationInitModesTest, TST_UNT_CONF_065_DetailedFileModeWithoutIn
     EXPECT_FALSE(report.validForRun);
     EXPECT_TRUE(hasField(report, "input_file"));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationInitModesTest, TST_UNT_CONF_066_OctreeAutoMaxLowerThanMinRaisesError)
 {
     SimulationConfig config;
@@ -66,6 +79,8 @@ TEST(ScenarioValidationInitModesTest, TST_UNT_CONF_066_OctreeAutoMaxLowerThanMin
     EXPECT_FALSE(report.validForRun);
     EXPECT_TRUE(hasField(report, "octree_theta_auto_max"));
 }
+
+/// Description: Verifies the TEST behavior.
 TEST(ScenarioValidationInitModesTest,
      TST_UNT_CONF_067_PhysicsMinDistanceAboveSofteningSquareTriggersWarning)
 {

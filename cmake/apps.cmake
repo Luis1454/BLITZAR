@@ -1,3 +1,6 @@
+# File: cmake/apps.cmake
+# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+
 set(GRAVITY_PLATFORM_SOURCES
     engine/src/platform/PlatformErrors.cpp
     engine/src/platform/common/DynamicLibraryCommon.cpp
@@ -29,6 +32,7 @@ if(APPLE)
     )
 endif()
 
+# Description: Defines the gravity_add_client_module_manifest function helper.
 function(gravity_add_client_module_manifest target_name module_id)
     add_custom_command(TARGET ${target_name} POST_BUILD
         COMMAND ${CMAKE_COMMAND}

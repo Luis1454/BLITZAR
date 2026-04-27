@@ -1,4 +1,9 @@
+// File: engine/src/server/simulation_server/ExportAndStats.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
+
+/// Description: Executes the stopExportWorker operation.
 void SimulationServer::stopExportWorker()
 {
     if (_exportQueueState == nullptr) {
@@ -13,6 +18,8 @@ void SimulationServer::stopExportWorker()
         _exportQueueState->worker.join();
     }
 }
+
+/// Description: Executes the saveCheckpoint operation.
 bool SimulationServer::saveCheckpoint(const std::string& outputPath)
 {
     if (outputPath.empty() || !_running.load(std::memory_order_relaxed) ||
@@ -28,9 +35,13 @@ bool SimulationServer::saveCheckpoint(const std::string& outputPath)
         _checkpointQueueState->saveRequests.push_back(std::move(request));
     }
     std::unique_lock<std::mutex> waitLock(result->mutex);
-    result->condition.wait(waitLock, [result]() { return result->completed; });
+    result->condition.wait(waitLock, [result]() {
+        return result->completed;
+    });
     return result->ok;
 }
+
+/// Description: Executes the loadCheckpoint operation.
 bool SimulationServer::loadCheckpoint(const std::string& inputPath, std::string* outError)
 {
     if (inputPath.empty()) {
@@ -119,6 +130,8 @@ bool SimulationServer::loadCheckpoint(const std::string& inputPath, std::string*
     requestReset();
     return true;
 }
+
+/// Description: Describes the enqueue export write operation contract.
 void SimulationServer::enqueueExportWrite(const std::string& outputPath, const std::string& format,
                                           const std::vector<Particle>& particles,
                                           const std::string& solverModeLabel,
@@ -138,6 +151,8 @@ void SimulationServer::enqueueExportWrite(const std::string& outputPath, const s
     }
     _exportQueueState->condition.notify_one();
 }
+
+/// Description: Describes the update export status operation contract.
 void SimulationServer::updateExportStatus(const std::string& state, const std::string& path,
                                           const std::string& message)
 {
@@ -146,6 +161,8 @@ void SimulationServer::updateExportStatus(const std::string& state, const std::s
     _exportLastPath = path;
     _exportLastMessage = message;
 }
+
+/// Description: Executes the tryConsumeSnapshot operation.
 bool SimulationServer::tryConsumeSnapshot(std::vector<RenderParticle>& outSnapshot)
 {
     std::lock_guard<std::mutex> lock(_snapshotMutex);
@@ -156,6 +173,8 @@ bool SimulationServer::tryConsumeSnapshot(std::vector<RenderParticle>& outSnapsh
     _publishedSnapshot.clear();
     return true;
 }
+
+/// Description: Describes the copy latest snapshot operation contract.
 bool SimulationServer::copyLatestSnapshot(std::vector<RenderParticle>& outSnapshot,
                                           std::size_t maxPoints, std::size_t* outSourceSize) const
 {
@@ -184,6 +203,8 @@ bool SimulationServer::copyLatestSnapshot(std::vector<RenderParticle>& outSnapsh
     }
     return true;
 }
+
+/// Description: Executes the getStats operation.
 SimulationStats SimulationServer::getStats() const
 {
     ParticleSystem::SolverMode mode = ParticleSystem::SolverMode::PairwiseCuda;

@@ -1,3 +1,6 @@
+// File: modules/qt/module.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "client/ClientModuleApi.hpp"
 #include "client/ClientModuleBoundary.hpp"
 #include "client/ClientRuntime.hpp"
@@ -24,11 +27,14 @@
 #include <string_view>
 #include <thread>
 #include <vector>
+
+/// Description: Executes the parseBool operation.
 static bool parseBool(std::string_view raw, bool& out)
 {
     std::string value(raw);
-    std::transform(value.begin(), value.end(), value.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
     if (value == "1" || value == "true" || value == "on" || value == "yes") {
         out = true;
         return true;
@@ -39,10 +45,13 @@ static bool parseBool(std::string_view raw, bool& out)
     }
     return false;
 }
+
+/// Description: Executes the trim operation.
 static std::string trim(const std::string& input)
 {
-    const auto begin = std::find_if_not(input.begin(), input.end(),
-                                        [](unsigned char c) { return std::isspace(c) != 0; });
+    const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
+        return std::isspace(c) != 0;
+    });
     const auto end = std::find_if_not(input.rbegin(), input.rend(), [](unsigned char c) {
                          return std::isspace(c) != 0;
                      }).base();
@@ -50,6 +59,8 @@ static std::string trim(const std::string& input)
         return {};
     return std::string(begin, end);
 }
+
+/// Description: Executes the splitTokens operation.
 static std::vector<std::string> splitTokens(const std::string& line)
 {
     std::vector<std::string> tokens;
@@ -81,6 +92,8 @@ static std::vector<std::string> splitTokens(const std::string& line)
     }
     return tokens;
 }
+
+/// Description: Defines the QtInProcState data or behavior contract.
 struct QtInProcState {
     std::string configPath = "simulation.ini";
     grav_client::ClientTransportArgs transport{"127.0.0.1",
@@ -98,6 +111,8 @@ struct QtInProcState {
     std::string startupError;
     std::mutex startupMutex;
 };
+
+/// Description: Executes the configureQtPluginPathFallback operation.
 static void configureQtPluginPathFallback()
 {
     QString pluginRoot;
@@ -120,6 +135,8 @@ static void configureQtPluginPathFallback()
     }
     qputenv("QT_PLUGIN_PATH", pluginRoot.toUtf8());
 }
+
+/// Description: Executes the qtThreadMain operation.
 static void qtThreadMain(QtInProcState* state)
 {
     try {
@@ -163,6 +180,8 @@ static void qtThreadMain(QtInProcState* state)
     }
     state->running.store(false);
 }
+
+/// Description: Executes the startQtUi operation.
 static bool startQtUi(QtInProcState& state, const grav_client::ErrorBufferView& errorBuffer)
 {
     if (state.uiThread.joinable() || state.running.load()) {
@@ -194,6 +213,8 @@ static bool startQtUi(QtInProcState& state, const grav_client::ErrorBufferView& 
     }
     return true;
 }
+
+/// Description: Executes the stopQtUi operation.
 static void stopQtUi(QtInProcState& state)
 {
     if (state.uiThread.joinable()) {
@@ -205,6 +226,8 @@ static void stopQtUi(QtInProcState& state)
     }
     state.running.store(false);
 }
+
+/// Description: Executes the printHelp operation.
 static void printHelp()
 {
     std::cout << "[module-qt] commands:\n"
@@ -216,6 +239,8 @@ static void printHelp()
               << "  restart\n"
               << "  wait\n";
 }
+
+/// Description: Defines the QtModuleBoundary data or behavior contract.
 class QtModuleBoundary final {
 public:
     static bool create(const grav_module::ClientHostContextV1* context,
@@ -243,6 +268,7 @@ public:
             return false;
         }
     }
+
     static QtInProcState* requireState(grav_module::ClientModuleOpaqueState moduleState,
                                        const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -252,6 +278,7 @@ public:
         }
         return state;
     }
+
     static void destroy(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
@@ -268,6 +295,7 @@ public:
             std::cerr << "[module-qt] destroy error: unknown\n";
         }
     }
+
     static bool start(grav_module::ClientModuleOpaqueState moduleState,
                       const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -286,6 +314,7 @@ public:
             return false;
         }
     }
+
     static void stop(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
@@ -302,6 +331,7 @@ public:
         }
     }
 };
+
 extern "C" GRAVITY_CLIENT_MODULE_EXPORT_ATTR const grav_module::ClientModuleExportsV1*
 gravity_client_module_v1()
 {

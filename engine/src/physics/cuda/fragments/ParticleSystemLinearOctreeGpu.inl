@@ -1,3 +1,6 @@
+// File: engine/src/physics/cuda/fragments/ParticleSystemLinearOctreeGpu.inl
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 /*
  * Module: physics/cuda
  * Responsibility: Build a true 8-way octree fully on GPU.
@@ -16,6 +19,7 @@
 #include <thrust/transform_reduce.h>
 #include <thrust/tuple.h>
 
+/// Description: Defines the ThrustPoolAllocator data or behavior contract.
 struct ThrustPoolAllocator {
     typedef char value_type;
 
@@ -31,6 +35,7 @@ struct ThrustPoolAllocator {
     }
 };
 
+/// Description: Defines the OctreeAabb data or behavior contract.
 struct OctreeAabb {
     float minX;
     float minY;
@@ -40,6 +45,7 @@ struct OctreeAabb {
     float maxZ;
 };
 
+/// Description: Defines the OctreeAabbFromTuple data or behavior contract.
 struct OctreeAabbFromTuple {
     __host__ __device__ OctreeAabb operator()(const thrust::tuple<float, float, float>& value) const
     {
@@ -57,6 +63,7 @@ struct OctreeAabbFromTuple {
     }
 };
 
+/// Description: Defines the OctreeAabbMerge data or behavior contract.
 struct OctreeAabbMerge {
     __host__ __device__ OctreeAabb operator()(const OctreeAabb& lhs, const OctreeAabb& rhs) const
     {
@@ -71,6 +78,7 @@ struct OctreeAabbMerge {
     }
 };
 
+/// Description: Describes the build morton codes kernel operation contract.
 __global__ void buildMortonCodesKernel(ParticleSoAView state, int numParticles, float minX,
                                        float minY, float minZ, float maxX, float maxY, float maxZ,
                                        unsigned long long* mortonKeys, int* particleIndices)
@@ -97,6 +105,7 @@ __global__ void buildMortonCodesKernel(ParticleSoAView state, int numParticles, 
     particleIndices[i] = i;
 }
 
+/// Description: Describes the build leaf prefixes kernel operation contract.
 __global__ void buildLeafPrefixesKernel(const unsigned long long* sortedKeys, int count,
                                         int shiftBits, unsigned long long* outLeafPrefixes)
 {
@@ -107,6 +116,7 @@ __global__ void buildLeafPrefixesKernel(const unsigned long long* sortedKeys, in
     outLeafPrefixes[i] = sortedKeys[i] >> shiftBits;
 }
 
+/// Description: Describes the build parent prefixes kernel operation contract.
 __global__ void buildParentPrefixesKernel(const unsigned long long* currentPrefixes, int count,
                                           unsigned long long* outParentPrefixes)
 {
@@ -117,6 +127,7 @@ __global__ void buildParentPrefixesKernel(const unsigned long long* currentPrefi
     outParentPrefixes[i] = currentPrefixes[i] >> 3;
 }
 
+/// Description: Executes the initLevelIndicesKernel operation.
 __global__ void initLevelIndicesKernel(int* levelIndices, int count)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -125,6 +136,7 @@ __global__ void initLevelIndicesKernel(int* levelIndices, int count)
     }
 }
 
+/// Description: Describes the build linear octree leaf nodes kernel operation contract.
 __global__ void buildLinearOctreeLeafNodesKernel(OctreeNodeHandle nodes,
                                                  IndexConstHandle sortedParticleIndices,
                                                  IndexConstHandle leafStarts,
@@ -201,6 +213,7 @@ __global__ void buildLinearOctreeLeafNodesKernel(OctreeNodeHandle nodes,
     nodes[leafId] = node;
 }
 
+/// Description: Describes the build linear octree parent nodes kernel8 operation contract.
 __global__ void buildLinearOctreeParentNodesKernel8(OctreeNodeHandle nodes,
                                                     IndexConstHandle currentLevelIndices,
                                                     const unsigned long long* currentPrefixes,
@@ -299,6 +312,7 @@ __global__ void buildLinearOctreeParentNodesKernel8(OctreeNodeHandle nodes,
     nextLevelIndices[parentId] = nodeIndex;
 }
 
+/// Description: Executes the buildLinearOctreeNextLinksKernel operation.
 __global__ void buildLinearOctreeNextLinksKernel(OctreeNodeHandle nodes, int nodeCount, int rootIndex)
 {
     const int nodeIndex = blockIdx.x * blockDim.x + threadIdx.x;
@@ -346,6 +360,7 @@ __global__ void buildLinearOctreeNextLinksKernel(OctreeNodeHandle nodes, int nod
     nodes[nodeIndex].nextIndex = nextIndex;
 }
 
+/// Description: Describes the pack linear octree compact kernel operation contract.
 __global__ void packLinearOctreeCompactKernel(
     const GpuOctreeNode* nodes,
     int nodeCount,
@@ -390,6 +405,7 @@ __global__ void packLinearOctreeCompactKernel(
     leafCounts[nodeIndex] = node.leafCount;
 }
 
+/// Description: Executes the buildLinearOctreeGpu operation.
 bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numParticles)
 {
     cudaStream_t stream = 0;

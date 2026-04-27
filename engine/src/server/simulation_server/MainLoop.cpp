@@ -1,4 +1,9 @@
+// File: engine/src/server/simulation_server/MainLoop.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
+
+/// Description: Executes the loop operation.
 void SimulationServer::loop()
 {
     rebuildSystem();
@@ -89,37 +94,34 @@ void SimulationServer::loop()
                     ? configuredTargetSubstepDt
                     : autoTargetSubstepDt(solverMode, eulerIntegrator, sphEnabled,
                                           liveParticleCount);
-            const std::uint32_t configuredMaxSubsteps = std::max<std::uint32_t>(
-                1u, _configuredMaxSubsteps.load(std::memory_order_relaxed));
+            const std::uint32_t configuredMaxSubsteps =
+                std::max<std::uint32_t>(1u, _configuredMaxSubsteps.load(std::memory_order_relaxed));
             const std::uint32_t requiredSubsteps = std::max<std::uint32_t>(
                 1u, static_cast<std::uint32_t>(std::ceil(dt / appliedTargetSubstepDt)));
             const std::uint32_t substeps =
                 std::min<std::uint32_t>(requiredSubsteps, configuredMaxSubsteps);
             const float dtSub = dt / static_cast<float>(substeps);
-            _lastAppliedSubstepTargetDt.store(appliedTargetSubstepDt,
-                                              std::memory_order_relaxed);
+            _lastAppliedSubstepTargetDt.store(appliedTargetSubstepDt, std::memory_order_relaxed);
             _lastAppliedSubstepDt.store(dtSub, std::memory_order_relaxed);
             _lastAppliedSubsteps.store(substeps, std::memory_order_relaxed);
             if (requiredSubsteps > configuredMaxSubsteps &&
                 (_steps.load(std::memory_order_relaxed) % 256u) == 0u) {
                 std::cerr << "[server] substep clamp active dt=" << dt
                           << " target_dt=" << appliedTargetSubstepDt
-                          << " required=" << requiredSubsteps
-                          << " max=" << configuredMaxSubsteps << " applied_dt=" << dtSub
-                          << "\n";
+                          << " required=" << requiredSubsteps << " max=" << configuredMaxSubsteps
+                          << " applied_dt=" << dtSub << "\n";
             }
-            const bool sampleGpuStep = _gpuTelemetryEnabled.load(std::memory_order_relaxed) &&
-                                       ((solverMode == grav_modes::kSolverPairwiseCuda ||
-                                         solverMode == grav_modes::kSolverOctreeGpu)) &&
-                                       (((_steps.load(std::memory_order_relaxed) + 1u) %
-                                         kGpuTelemetrySampleStride) == 0u);
+            const bool sampleGpuStep =
+                _gpuTelemetryEnabled.load(std::memory_order_relaxed) &&
+                ((solverMode == grav_modes::kSolverPairwiseCuda ||
+                  solverMode == grav_modes::kSolverOctreeGpu)) &&
+                (((_steps.load(std::memory_order_relaxed) + 1u) % kGpuTelemetrySampleStride) == 0u);
             if (sampleGpuStep) {
                 _gpuKernelMs.store(0.0f, std::memory_order_relaxed);
             }
             for (std::uint32_t s = 0; s < substeps; ++s) {
-                const auto gpuStepStart = sampleGpuStep
-                                              ? std::chrono::steady_clock::now()
-                                              : std::chrono::steady_clock::time_point{};
+                const auto gpuStepStart = sampleGpuStep ? std::chrono::steady_clock::now()
+                                                        : std::chrono::steady_clock::time_point{};
                 if (!_system->update(dtSub)) {
                     updateFailed = true;
                     break;

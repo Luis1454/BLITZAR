@@ -1,3 +1,6 @@
+// File: tests/unit/physics/checkpoint.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "server/SimulationServer.hpp"
 #include "tests/support/physics_test_utils.hpp"
 #include <chrono>
@@ -8,13 +11,17 @@
 #include <system_error>
 #include <thread>
 #include <vector>
+
 namespace grav_test_server_checkpoint {
+/// Description: Executes the makeTempCheckpointPath operation.
 static std::filesystem::path makeTempCheckpointPath(const char* stem)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     return std::filesystem::temp_directory_path() /
            (std::string(stem) + "_" + std::to_string(stamp) + ".chk");
 }
+
+/// Description: Executes the waitForTotalTime operation.
 static bool waitForTotalTime(const SimulationServer& server, float minimumTotalTime, int timeoutMs)
 {
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
@@ -26,12 +33,16 @@ static bool waitForTotalTime(const SimulationServer& server, float minimumTotalT
     }
     return server.getStats().totalTime >= minimumTotalTime;
 }
+
+/// Description: Executes the readFileBytes operation.
 static std::vector<char> readFileBytes(const std::filesystem::path& path)
 {
     std::ifstream in(path, std::ios::binary);
     return std::vector<char>((std::istreambuf_iterator<char>(in)),
                              std::istreambuf_iterator<char>());
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_009_CheckpointRoundTripRestoresRuntimeState)
 {
     const std::filesystem::path checkpointPath =
@@ -77,6 +88,8 @@ TEST(PhysicsTest, TST_UNT_RUNT_009_CheckpointRoundTripRestoresRuntimeState)
     std::filesystem::remove(checkpointPath, ec);
     std::filesystem::remove(roundTripPath, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_010_CheckpointRejectsInvalidMagic)
 {
     const std::filesystem::path checkpointPath = makeTempCheckpointPath("grav_checkpoint_invalid");
@@ -94,6 +107,8 @@ TEST(PhysicsTest, TST_UNT_RUNT_010_CheckpointRejectsInvalidMagic)
     std::error_code ec;
     std::filesystem::remove(checkpointPath, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_011_CheckpointRejectsUnsupportedVersion)
 {
     const std::filesystem::path checkpointPath = makeTempCheckpointPath("grav_checkpoint_version");

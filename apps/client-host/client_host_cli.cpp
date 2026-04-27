@@ -1,3 +1,6 @@
+// File: apps/client-host/client_host_cli.cpp
+// Purpose: Application entry point or host support for BLITZAR executables.
+
 #include <filesystem>
 #include <iostream>
 #include <string>
@@ -14,6 +17,7 @@
 #include "config/SimulationScenarioValidation.hpp"
 
 namespace grav_client_host {
+/// Description: Defines the ClientHostCliLocal data or behavior contract.
 class ClientHostCliLocal final {
 public:
     static constexpr bool kLiveReloadEnabled = GRAVITY_PROFILE_IS_PROD == 0;
@@ -82,6 +86,7 @@ public:
         module.unload();
         return 0;
     }
+
 private:
     static bool handleLine(const std::string& line, std::string_view programName,
                            const HostOptions& options,
@@ -165,6 +170,7 @@ private:
         std::cout << "  qt   -> " << ClientHostModuleOps::resolveModuleSpecifier("qt", searchRoots)
                   << "\n";
     }
+
     static void printCurrentModule(const grav_module::ClientModuleHandle& module,
                                    const std::string& currentModuleSpecifier)
     {
@@ -177,21 +183,25 @@ private:
     }
 };
 
+/// Description: Executes the parseArgs operation.
 bool ClientHostCli::parseArgs(int argc, char** argv, HostOptions& outOptions, std::string& outError)
 {
     return ClientHostCliArgs::parseArgs(argc, argv, outOptions, outError);
 }
 
+/// Description: Describes the live reload enabled operation contract.
 bool ClientHostCli::liveReloadEnabled() noexcept
 {
     return ClientHostCliLocal::kLiveReloadEnabled;
 }
 
+/// Description: Executes the printHelp operation.
 void ClientHostCli::printHelp(std::string_view programName)
 {
     ClientHostCliArgs::printHelp(programName);
 }
 
+/// Description: Executes the run operation.
 int ClientHostCli::run(const HostOptions& options, std::string_view programName)
 {
     return ClientHostCliLocal::run(options, programName);

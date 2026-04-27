@@ -1,4 +1,9 @@
+// File: engine/src/server/simulation_server/RuntimeSettersAndExportStart.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
+
+/// Description: Executes the setSolverMode operation.
 void SimulationServer::setSolverMode(const std::string& mode)
 {
     std::string canonical;
@@ -24,6 +29,8 @@ void SimulationServer::setSolverMode(const std::string& mode)
         requestReset();
     }
 }
+
+/// Description: Executes the setIntegratorMode operation.
 void SimulationServer::setIntegratorMode(const std::string& mode)
 {
     std::string canonical;
@@ -49,6 +56,8 @@ void SimulationServer::setIntegratorMode(const std::string& mode)
         requestReset();
     }
 }
+
+/// Description: Executes the setPerformanceProfile operation.
 void SimulationServer::setPerformanceProfile(const std::string& profile)
 {
     std::string canonical;
@@ -60,6 +69,8 @@ void SimulationServer::setPerformanceProfile(const std::string& profile)
     _performanceProfile = canonical;
     _runtimeConfigMirror.performanceProfile = canonical;
 }
+
+/// Description: Executes the setOctreeParameters operation.
 void SimulationServer::setOctreeParameters(float theta, float softening)
 {
     std::lock_guard<std::mutex> lock(_commandMutex);
@@ -73,6 +84,8 @@ void SimulationServer::setOctreeParameters(float theta, float softening)
         _octreeSoftening = softening;
     _runtimeConfigMirror.octreeSoftening = _octreeSoftening;
 }
+
+/// Description: Executes the setSphEnabled operation.
 void SimulationServer::setSphEnabled(bool enabled)
 {
     {
@@ -83,6 +96,8 @@ void SimulationServer::setSphEnabled(bool enabled)
         requestReset();
     }
 }
+
+/// Description: Describes the set sph parameters operation contract.
 void SimulationServer::setSphParameters(float smoothingLength, float restDensity, float gasConstant,
                                         float viscosity)
 {
@@ -96,6 +111,8 @@ void SimulationServer::setSphParameters(float smoothingLength, float restDensity
     if (viscosity >= 0.0f)
         _sphViscosity = viscosity;
 }
+
+/// Description: Executes the setSubstepPolicy operation.
 void SimulationServer::setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps)
 {
     const float safeTargetDt = std::max(0.0f, targetDt);
@@ -106,6 +123,8 @@ void SimulationServer::setSubstepPolicy(float targetDt, std::uint32_t maxSubstep
     _runtimeConfigMirror.substepTargetDt = safeTargetDt;
     _runtimeConfigMirror.maxSubsteps = safeMaxSubsteps;
 }
+
+/// Description: Executes the setSnapshotPublishPeriodMs operation.
 void SimulationServer::setSnapshotPublishPeriodMs(std::uint32_t periodMs)
 {
     const std::uint32_t safePeriodMs = std::max<std::uint32_t>(1u, periodMs);
@@ -113,6 +132,8 @@ void SimulationServer::setSnapshotPublishPeriodMs(std::uint32_t periodMs)
     std::lock_guard<std::mutex> lock(_commandMutex);
     _runtimeConfigMirror.snapshotPublishPeriodMs = safePeriodMs;
 }
+
+/// Description: Executes the setSnapshotTransferCap operation.
 void SimulationServer::setSnapshotTransferCap(std::uint32_t maxPoints)
 {
     const std::uint32_t safeMaxPoints = grav_protocol::clampSnapshotPoints(maxPoints);
@@ -120,6 +141,8 @@ void SimulationServer::setSnapshotTransferCap(std::uint32_t maxPoints)
                                std::memory_order_relaxed);
     _runtimeConfigMirror.clientParticleCap = safeMaxPoints;
 }
+
+/// Description: Executes the setInitialStateConfig operation.
 void SimulationServer::setInitialStateConfig(const InitialStateConfig& config)
 {
     {
@@ -131,6 +154,8 @@ void SimulationServer::setInitialStateConfig(const InitialStateConfig& config)
         requestReset();
     }
 }
+
+/// Description: Describes the set energy measurement config operation contract.
 void SimulationServer::setEnergyMeasurementConfig(std::uint32_t everySteps,
                                                   std::uint32_t sampleLimit)
 {
@@ -142,6 +167,8 @@ void SimulationServer::setEnergyMeasurementConfig(std::uint32_t everySteps,
     _runtimeConfigMirror.energyMeasureEverySteps = safeEverySteps;
     _runtimeConfigMirror.energySampleLimit = safeSampleLimit;
 }
+
+/// Description: Executes the setGpuTelemetryEnabled operation.
 void SimulationServer::setGpuTelemetryEnabled(bool enabled)
 {
     _gpuTelemetryEnabled.store(enabled, std::memory_order_relaxed);
@@ -149,6 +176,8 @@ void SimulationServer::setGpuTelemetryEnabled(bool enabled)
         clearGpuTelemetry();
     }
 }
+
+/// Description: Executes the setExportDefaults operation.
 void SimulationServer::setExportDefaults(const std::string& directory, const std::string& format)
 {
     std::lock_guard<std::mutex> lock(_commandMutex);
@@ -159,6 +188,8 @@ void SimulationServer::setExportDefaults(const std::string& directory, const std
         _exportFormatDefault = format;
     }
 }
+
+/// Description: Executes the setInitialStateFile operation.
 void SimulationServer::setInitialStateFile(const std::string& path, const std::string& format)
 {
     {
@@ -178,6 +209,8 @@ void SimulationServer::setInitialStateFile(const std::string& path, const std::s
         requestReset();
     }
 }
+
+/// Description: Describes the request export snapshot operation contract.
 void SimulationServer::requestExportSnapshot(const std::string& outputPath,
                                              const std::string& format)
 {
@@ -191,6 +224,8 @@ void SimulationServer::requestExportSnapshot(const std::string& outputPath,
     _exportQueueDepth.fetch_add(1u, std::memory_order_relaxed);
     updateExportStatus("queued", outputPath, "queued for background write");
 }
+
+/// Description: Executes the startExportWorker operation.
 void SimulationServer::startExportWorker()
 {
     if (_exportQueueState == nullptr || _exportQueueState->worker.joinable()) {

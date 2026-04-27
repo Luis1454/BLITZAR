@@ -1,3 +1,6 @@
+// File: apps/server-service/server_args.cpp
+// Purpose: Application entry point or host support for BLITZAR executables.
+
 #include "apps/server-service/server_args.hpp"
 #include "config/SimulationArgs.hpp"
 #include "config/TextParse.hpp"
@@ -7,12 +10,17 @@
 #include <csignal>
 #include <iostream>
 #include <string>
+
 namespace grav_server_service {
 std::atomic<bool> g_stopRequested{false};
+
+/// Description: Executes the onSignal operation.
 void onSignal(int)
 {
     g_stopRequested.store(true);
 }
+
+/// Description: Executes the parsePort operation.
 bool parsePort(std::string_view token, std::uint16_t& out)
 {
     unsigned int parsed = 0;
@@ -22,11 +30,14 @@ bool parsePort(std::string_view token, std::uint16_t& out)
     out = static_cast<std::uint16_t>(parsed);
     return true;
 }
+
+/// Description: Executes the parseBool operation.
 bool parseBool(std::string_view value, bool& out)
 {
     std::string normalized(value);
-    std::transform(normalized.begin(), normalized.end(), normalized.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
     if (normalized == "1" || normalized == "true" || normalized == "on" || normalized == "yes") {
         out = true;
         return true;
@@ -37,6 +48,8 @@ bool parseBool(std::string_view value, bool& out)
     }
     return false;
 }
+
+/// Description: Describes the parse server args operation contract.
 bool parseServerArgs(const std::vector<std::string_view>& rawArgs, DaemonOptions& outOptions,
                      std::ostream& outError)
 {
@@ -120,6 +133,8 @@ bool parseServerArgs(const std::vector<std::string_view>& rawArgs, DaemonOptions
     }
     return true;
 }
+
+/// Description: Executes the printServerHelp operation.
 void printServerHelp(std::string_view programName)
 {
     std::cout << "Server daemon options:\n"
@@ -132,6 +147,8 @@ void printServerHelp(std::string_view programName)
               << "\n";
     printUsage(std::cout, programName, true);
 }
+
+/// Description: Executes the isLoopbackBindHost operation.
 bool isLoopbackBindHost(std::string_view host)
 {
     if (host.empty() || host == "localhost") {
@@ -139,15 +156,21 @@ bool isLoopbackBindHost(std::string_view host)
     }
     return host.rfind("127.", 0) == 0;
 }
+
+/// Description: Executes the installStopSignalHandlers operation.
 void installStopSignalHandlers()
 {
     std::signal(SIGINT, onSignal);
     std::signal(SIGTERM, onSignal);
 }
+
+/// Description: Executes the stopRequested operation.
 bool stopRequested()
 {
     return g_stopRequested.load();
 }
+
+/// Description: Executes the resetStopRequested operation.
 void resetStopRequested()
 {
     g_stopRequested.store(false);

@@ -1,3 +1,6 @@
+// File: modules/cli/module_cli_lifecycle.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include <cstddef>
 #include <exception>
 #include <iostream>
@@ -10,6 +13,7 @@
 
 namespace grav_module_cli {
 
+/// Description: Defines the ModuleCliLifecycleLocal data or behavior contract.
 class ModuleCliLifecycleLocal final {
 public:
     static bool create(const grav_module::ClientHostContextV1* hostContext,
@@ -102,6 +106,7 @@ public:
     }
 };
 
+/// Description: Describes the create operation contract.
 bool ModuleCliLifecycle::create(const grav_module::ClientHostContextV1* hostContext,
                                 const grav_module::ClientModuleStateSlot& outModuleState,
                                 const grav_client::ErrorBufferView& errorBuffer)
@@ -109,17 +114,20 @@ bool ModuleCliLifecycle::create(const grav_module::ClientHostContextV1* hostCont
     return ModuleCliLifecycleLocal::create(hostContext, outModuleState, errorBuffer);
 }
 
+/// Description: Executes the destroy operation.
 void ModuleCliLifecycle::destroy(grav_module::ClientModuleOpaqueState moduleState)
 {
     ModuleCliLifecycleLocal::destroy(moduleState);
 }
 
+/// Description: Describes the start operation contract.
 bool ModuleCliLifecycle::start(grav_module::ClientModuleOpaqueState moduleState,
                                const grav_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliLifecycleLocal::start(moduleState, errorBuffer);
 }
 
+/// Description: Executes the stop operation.
 void ModuleCliLifecycle::stop(grav_module::ClientModuleOpaqueState moduleState)
 {
     ModuleCliLifecycleLocal::stop(moduleState);

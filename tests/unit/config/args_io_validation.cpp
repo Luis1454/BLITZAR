@@ -1,3 +1,6 @@
+// File: tests/unit/config/args_io_validation.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationConfig.hpp"
 #include <chrono>
 #include <filesystem>
@@ -5,6 +8,8 @@
 #include <gtest/gtest.h>
 #include <sstream>
 #include <string>
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_034_LoadOrCreateReportsSiValidationDiagnostics)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -39,6 +44,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_034_LoadOrCreateReportsSiValidationDiagnostics
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_035_LoadValidatesSnapshotPipelineClientSettings)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();

@@ -7,6 +7,7 @@ from python_tools.ci import windows_installer as windows_installer_module
 from python_tools.ci.release_bundle import ReleaseBundlePackager
 
 
+# Description: Executes the test_nsis_installer_does_not_use_executable_as_wizard_icon operation.
 def test_nsis_installer_does_not_use_executable_as_wizard_icon() -> None:
     nsis_script = Path("scripts/install/windows/BLITZAR.nsi").read_text(encoding="utf-8")
 
@@ -15,6 +16,7 @@ def test_nsis_installer_does_not_use_executable_as_wizard_icon() -> None:
     assert "--wait-for-module" in nsis_script
 
 
+# Description: Executes the test_release_desktop_installer_builds_native_windows_installer operation.
 def test_release_desktop_installer_builds_native_windows_installer(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.chdir(tmp_path)
     build_dir = tmp_path / "build"
@@ -30,6 +32,7 @@ def test_release_desktop_installer_builds_native_windows_installer(tmp_path: Pat
 
     installer_output = tmp_path / "dist/desktop-installer" / "blitzar-rc-1-windows-desktop-installer.exe"
 
+    # Description: Executes the fake_run operation.
     def fake_run(command: list[str], cwd: Path, check: bool, capture_output: bool, text: bool):
         del cwd, check, capture_output, text
         for entry in command:

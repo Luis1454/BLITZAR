@@ -1,8 +1,13 @@
+// File: tests/unit/config/scenario_validation_edges.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationScenarioValidation.hpp"
 #include <gtest/gtest.h>
 #include <string>
+
 namespace grav_test_config_scenario_validation_edges {
+/// Description: Executes the hasField operation.
 static bool hasField(const grav_config::ScenarioValidationReport& report, const std::string& field)
 {
     for (const grav_config::ScenarioDiagnostic& diagnostic : report.diagnostics)
@@ -10,6 +15,8 @@ static bool hasField(const grav_config::ScenarioValidationReport& report, const 
             return true;
     return false;
 }
+
+/// Description: Describes the count field operation contract.
 static std::size_t countField(const grav_config::ScenarioValidationReport& report,
                               const std::string& field)
 {
@@ -20,6 +27,8 @@ static std::size_t countField(const grav_config::ScenarioValidationReport& repor
         }
     return count;
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_074_NegativeSubstepTargetDtBlocksRun)
 {
     SimulationConfig config;
@@ -29,6 +38,8 @@ TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_074_NegativeSubstepTargetDtBlocks
     EXPECT_FALSE(report.validForRun);
     EXPECT_TRUE(hasField(report, "substep_target_dt"));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_075_InvalidInitStyleAddsInitialStateWarning)
 {
     SimulationConfig config;
@@ -39,6 +50,8 @@ TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_075_InvalidInitStyleAddsInitialSt
     EXPECT_GT(report.warningCount, 0u);
     EXPECT_TRUE(hasField(report, "initial_state"));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_076_OctreeThetaAboveTwoProducesWarning)
 {
     SimulationConfig config;
@@ -53,6 +66,8 @@ TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_076_OctreeThetaAboveTwoProducesWa
     EXPECT_GT(report.warningCount, 0u);
     EXPECT_TRUE(hasField(report, "octree_theta"));
 }
+
+/// Description: Verifies the TEST behavior.
 TEST(ScenarioValidationEdgesTest,
      TST_UNT_CONF_077_StepTravelWarningsTriggerForSofteningAndLengthScale)
 {
@@ -66,6 +81,8 @@ TEST(ScenarioValidationEdgesTest,
     EXPECT_TRUE(report.validForRun);
     EXPECT_GE(countField(report, "dt"), 2u);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_078_RenderTextWarningModeOmitsActionWhenEmpty)
 {
     grav_config::ScenarioValidationReport report;
@@ -82,6 +99,8 @@ TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_078_RenderTextWarningModeOmitsAct
     EXPECT_NE(rendered.find("example warning"), std::string::npos);
     EXPECT_EQ(rendered.find("Action:"), std::string::npos);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_079_PhysicsMaxAccelerationMustBePositive)
 {
     SimulationConfig config;
@@ -91,6 +110,8 @@ TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_079_PhysicsMaxAccelerationMustBeP
     EXPECT_FALSE(report.validForRun);
     EXPECT_TRUE(hasField(report, "physics_max_acceleration"));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_080_PhysicsMinSofteningMustBePositive)
 {
     SimulationConfig config;
@@ -100,6 +121,8 @@ TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_080_PhysicsMinSofteningMustBePosi
     EXPECT_FALSE(report.validForRun);
     EXPECT_TRUE(hasField(report, "physics_min_softening"));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_081_PhysicsMinDistanceSquaredMustBePositive)
 {
     SimulationConfig config;
@@ -109,6 +132,8 @@ TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_081_PhysicsMinDistanceSquaredMust
     EXPECT_FALSE(report.validForRun);
     EXPECT_TRUE(hasField(report, "physics_min_distance2"));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_082_SphLowParticleCountWarningWhenParametersAreValid)
 {
     SimulationConfig config;
@@ -124,6 +149,8 @@ TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_082_SphLowParticleCountWarningWhe
     EXPECT_EQ(report.errorCount, 0u);
     EXPECT_TRUE(hasField(report, "sph"));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_083_PlummerSphereRequiresPositiveCloudExtent)
 {
     SimulationConfig config;

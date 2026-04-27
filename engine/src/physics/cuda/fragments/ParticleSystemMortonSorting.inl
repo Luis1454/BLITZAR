@@ -22,6 +22,7 @@
  }
  
  // Compute Morton code for each particle based on its position
+/// Description: Describes the compute morton codes kernel operation contract.
 __global__ void computeMortonCodesKernel(
     ParticleSoAView state,
     Vector3 aabbMin,
@@ -64,6 +65,7 @@ __global__ void computeMortonCodesKernel(
 
 // Reorder particle SoA buffers by sorted Morton indices for spatial cache coherency
 // This kernel reorders only position and velocity (which are double-buffered)
+/// Description: Describes the reorder particle buffers kernel operation contract.
 __global__ void reorderParticleBuffersKernel(
     ParticleSoAView srcState,
     ParticleSoAView dstState,

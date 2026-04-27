@@ -1,14 +1,20 @@
+// File: runtime/src/command/CommandParser.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "command/CommandParser.hpp"
 #include "command/CommandCatalog.hpp"
 #include <algorithm>
 #include <cctype>
 #include <charconv>
 #include <cstdlib>
+
 namespace grav_cmd {
+/// Description: Executes the trimTokenLine operation.
 static std::string trimTokenLine(const std::string& input)
 {
-    const auto begin = std::find_if_not(input.begin(), input.end(),
-                                        [](unsigned char c) { return std::isspace(c) != 0; });
+    const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
+        return std::isspace(c) != 0;
+    });
     const auto end = std::find_if_not(input.rbegin(), input.rend(), [](unsigned char c) {
                          return std::isspace(c) != 0;
                      }).base();
@@ -16,6 +22,8 @@ static std::string trimTokenLine(const std::string& input)
         return {};
     return std::string(begin, end);
 }
+
+/// Description: Executes the splitTokens operation.
 static std::vector<std::string> splitTokens(const std::string& line)
 {
     std::vector<std::string> tokens;
@@ -47,6 +55,8 @@ static std::vector<std::string> splitTokens(const std::string& line)
     }
     return tokens;
 }
+
+/// Description: Executes the stripComment operation.
 static std::string stripComment(const std::string& line)
 {
     std::string output;
@@ -72,6 +82,8 @@ static std::string stripComment(const std::string& line)
     }
     return output;
 }
+
+/// Description: Executes the parseUintToken operation.
 static bool parseUintToken(const std::string& token, std::uint64_t& outValue)
 {
     const char* begin = token.data();
@@ -79,12 +91,16 @@ static bool parseUintToken(const std::string& token, std::uint64_t& outValue)
     const std::from_chars_result result = std::from_chars(begin, end, outValue);
     return result.ec == std::errc() && result.ptr == end;
 }
+
+/// Description: Executes the parseFloatToken operation.
 static bool parseFloatToken(const std::string& token, double& outValue)
 {
     char* end = nullptr;
     outValue = std::strtod(token.c_str(), &end);
     return end != nullptr && *end == '\0';
 }
+
+/// Description: Describes the parse tokens operation contract.
 static CommandParseResult parseTokens(const std::vector<std::string>& tokens,
                                       std::size_t lineNumber)
 {
@@ -144,6 +160,8 @@ static CommandParseResult parseTokens(const std::vector<std::string>& tokens,
     result.requests.push_back(std::move(request));
     return result;
 }
+
+/// Description: Executes the parseScript operation.
 CommandParseResult CommandParser::parseScript(const std::string& scriptText)
 {
     CommandParseResult result{};
@@ -174,6 +192,8 @@ CommandParseResult CommandParser::parseScript(const std::string& scriptText)
     }
     return result;
 }
+
+/// Description: Executes the parseLine operation.
 CommandParseResult CommandParser::parseLine(const std::string& line, std::size_t lineNumber)
 {
     const std::string stripped = trimTokenLine(stripComment(line));

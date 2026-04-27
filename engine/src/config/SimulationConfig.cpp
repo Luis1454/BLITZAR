@@ -1,3 +1,6 @@
+// File: engine/src/config/SimulationConfig.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationConfigDirective.hpp"
 #include "config/SimulationModes.hpp"
@@ -12,10 +15,13 @@
 #include <iostream>
 #include <sstream>
 static_assert(grav_protocol::kSnapshotDefaultPoints == 4096u);
+
+/// Description: Executes the trim operation.
 static std::string trim(const std::string& value)
 {
-    const auto begin = std::find_if_not(value.begin(), value.end(),
-                                        [](unsigned char c) { return std::isspace(c) != 0; });
+    const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char c) {
+        return std::isspace(c) != 0;
+    });
     const auto end = std::find_if_not(value.rbegin(), value.rend(), [](unsigned char c) {
                          return std::isspace(c) != 0;
                      }).base();
@@ -23,12 +29,16 @@ static std::string trim(const std::string& value)
         return {};
     return std::string(begin, end);
 }
+
+/// Description: Executes the defaults operation.
 SimulationConfig SimulationConfig::defaults()
 {
     SimulationConfig config{};
     grav_config::applyPerformanceProfile(config);
     return config;
 }
+
+/// Description: Executes the loadOrCreate operation.
 SimulationConfig SimulationConfig::loadOrCreate(const std::string& path)
 {
     SimulationConfig config = defaults();
@@ -69,6 +79,8 @@ SimulationConfig SimulationConfig::loadOrCreate(const std::string& path)
     }
     return config;
 }
+
+/// Description: Executes the save operation.
 bool SimulationConfig::save(const std::string& path) const
 {
     std::filesystem::path fsPath(path);

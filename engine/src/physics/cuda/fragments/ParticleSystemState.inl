@@ -3,6 +3,7 @@
  * Responsibility: Synchronize particle-system state between host and device views.
  */
 
+/// Description: Executes the syncDeviceState operation.
 void ParticleSystem::syncDeviceState()
 {
     if (!_cudaRuntimeAvailable) {
@@ -26,6 +27,7 @@ void ParticleSystem::syncDeviceState()
     _leapfrogPrimed = false;
 }
 
+/// Description: Executes the syncHostState operation.
 bool ParticleSystem::syncHostState()
 {
     if (!_cudaRuntimeAvailable) {
@@ -50,6 +52,7 @@ bool ParticleSystem::syncHostState()
     return true;
 }
 
+/// Description: Executes the getSoAView operation.
 ParticleSoAView ParticleSystem::getSoAView(bool next) const
 {
     ParticleSoAView view;
@@ -66,6 +69,7 @@ ParticleSoAView ParticleSystem::getSoAView(bool next) const
     return view;
 }
 
+/// Description: Executes the publishMappedMetrics operation.
 void ParticleSystem::publishMappedMetrics(float deltaTime)
 {
     if (!_cudaRuntimeAvailable) {

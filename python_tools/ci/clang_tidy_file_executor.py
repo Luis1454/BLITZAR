@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/ci/clang_tidy_file_executor.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import subprocess
@@ -9,11 +12,14 @@ from python_tools.core.io import ProcessRunner
 from python_tools.core.models import CheckContext
 
 
+# Description: Defines the ClangTidyFileExecutor contract.
 class ClangTidyFileExecutor:
+    # Description: Executes the __init__ operation.
     def __init__(self, runner: ProcessRunner, heartbeat_seconds: int) -> None:
         self._runner = runner
         self._heartbeat_seconds = heartbeat_seconds
 
+    # Description: Executes the run operation.
     def run(
         self,
         index: int,
@@ -56,6 +62,7 @@ class ClangTidyFileExecutor:
 
         return self._handle_completion(index, total, file_path, display_path, context, log_dir, start, completed)
 
+    # Description: Executes the _handle_timeout operation.
     def _handle_timeout(
         self,
         index: int,
@@ -114,6 +121,7 @@ class ClangTidyFileExecutor:
         warning = f"{display_path}: analyzer timed out after {timeout_seconds}s; fallback checks applied ({fallback_checks})"
         return True, "", warning
 
+    # Description: Executes the _handle_completion operation.
     def _handle_completion(
         self,
         index: int,
@@ -137,6 +145,7 @@ class ClangTidyFileExecutor:
         self._print_progress(f"[clang-tidy] [{index}/{total}] done {display_path} ({elapsed:.1f}s)")
         return True, "", ""
 
+    # Description: Executes the _make_command operation.
     def _make_command(
         self,
         binary: str,
@@ -159,6 +168,7 @@ class ClangTidyFileExecutor:
         return cmd
 
     @staticmethod
+    # Description: Executes the _resolve_timeout_fallback_checks operation.
     def _resolve_timeout_fallback_checks(checks: str, fallback_checks: str) -> str:
         if "clang-analyzer-" not in checks:
             return ""
@@ -168,12 +178,14 @@ class ClangTidyFileExecutor:
         return trimmed
 
     @staticmethod
+    # Description: Executes the _stringify_output operation.
     def _stringify_output(value: str | bytes | None) -> str:
         if isinstance(value, bytes):
             return value.decode("utf-8", errors="ignore")
         return value or ""
 
     @staticmethod
+    # Description: Executes the _write_log operation.
     def _write_log(log_path: Path, content: str) -> str:
         try:
             log_path.write_text(content, encoding="utf-8", errors="ignore")
@@ -182,6 +194,7 @@ class ClangTidyFileExecutor:
             return f"log write error: {exc}"
 
     @staticmethod
+    # Description: Executes the _log_path_for operation.
     def _log_path_for(file_path: Path, context: CheckContext, log_dir: Path) -> Path:
         try:
             rel_str = str(file_path.relative_to(context.root))
@@ -191,6 +204,7 @@ class ClangTidyFileExecutor:
         return log_dir / f"{safe_name}.log"
 
     @staticmethod
+    # Description: Executes the _display_path operation.
     def _display_path(file_path: Path, context: CheckContext) -> str:
         try:
             return str(file_path.relative_to(context.root))
@@ -198,6 +212,7 @@ class ClangTidyFileExecutor:
             return str(file_path)
 
     @staticmethod
+    # Description: Executes the _print_progress operation.
     def _print_progress(message: str) -> None:
         try:
             print(message, flush=True)

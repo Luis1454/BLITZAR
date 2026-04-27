@@ -1,3 +1,6 @@
+// File: tests/unit/ffi/vtk_conformance.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "ffi/BlitzarCoreApi.hpp"
 #include <array>
 #include <chrono>
@@ -6,6 +9,8 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
+
+/// Description: Defines the ExpectedCoreParticle data or behavior contract.
 struct ExpectedCoreParticle {
     float x;
     float y;
@@ -13,6 +18,8 @@ struct ExpectedCoreParticle {
     float mass;
     float temperature;
 };
+
+/// Description: Executes the makeCpuConfig operation.
 static blitzar_core_config_t makeCpuConfig()
 {
     blitzar_core_config_t config = blitzar_core_default_config();
@@ -26,6 +33,8 @@ static blitzar_core_config_t makeCpuConfig()
     config.snapshot_publish_period_ms = 5u;
     return config;
 }
+
+/// Description: Executes the createCore operation.
 static blitzar_core_t* createCore(const blitzar_core_config_t& config)
 {
     char error[BLITZAR_CORE_ERROR_CAPACITY] = {};
@@ -33,17 +42,23 @@ static blitzar_core_t* createCore(const blitzar_core_config_t& config)
     EXPECT_NE(core, nullptr) << error;
     return core;
 }
+
+/// Description: Executes the fixturePath operation.
 static std::filesystem::path fixturePath(const char* fileName)
 {
     const std::filesystem::path sourceFile(__FILE__);
     return sourceFile.parent_path().parent_path().parent_path() / "data" / fileName;
 }
+
+/// Description: Executes the makeTempPath operation.
 static std::filesystem::path makeTempPath(const char* stem, const char* extension)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     return std::filesystem::temp_directory_path() /
            (std::string(stem) + "_" + std::to_string(stamp) + extension);
 }
+
+/// Description: Executes the readSnapshot operation.
 static std::vector<blitzar_render_particle_t> readSnapshot(const blitzar_core_t* core)
 {
     blitzar_core_snapshot_t snapshot{};
@@ -53,6 +68,8 @@ static std::vector<blitzar_render_particle_t> readSnapshot(const blitzar_core_t*
     blitzar_core_free_snapshot(&snapshot);
     return particles;
 }
+
+/// Description: Describes the expect particle near operation contract.
 static void expectParticleNear(const blitzar_render_particle_t& actual,
                                const ExpectedCoreParticle& expected)
 {
@@ -63,6 +80,8 @@ static void expectParticleNear(const blitzar_render_particle_t& actual,
     EXPECT_NEAR(actual.temperature, expected.temperature, 1e-5f);
     EXPECT_NEAR(actual.pressure_norm, 0.0f, 1e-5f);
 }
+
+/// Description: Executes the expectFixtureParticles operation.
 static void expectFixtureParticles(const std::vector<blitzar_render_particle_t>& particles)
 {
     static const std::array<ExpectedCoreParticle, 2> expected{
@@ -73,6 +92,8 @@ static void expectFixtureParticles(const std::vector<blitzar_render_particle_t>&
     expectParticleNear(particles[0], expected[0]);
     expectParticleNear(particles[1], expected[1]);
 }
+
+/// Description: Executes the expectFileContains operation.
 static void expectFileContains(const std::filesystem::path& path, const std::string& needle)
 {
     std::ifstream in(path, std::ios::binary);
@@ -81,11 +102,15 @@ static void expectFileContains(const std::filesystem::path& path, const std::str
                               std::istreambuf_iterator<char>());
     EXPECT_NE(content.find(needle), std::string::npos) << path.string();
 }
+
+/// Description: Executes the loadFixtureAndExpect operation.
 static void loadFixtureAndExpect(blitzar_core_t* core, const std::filesystem::path& path)
 {
     ASSERT_EQ(blitzar_core_load_state(core, path.string().c_str(), "vtk", 5000u), BLITZAR_CORE_OK);
     expectFixtureParticles(readSnapshot(core));
 }
+
+/// Description: Executes the TEST operation.
 TEST(BlitzarCoreApiTest, TST_UNT_CORE_004_LoadsAsciiVtkGoldenFile)
 {
     blitzar_core_t* core = createCore(makeCpuConfig());
@@ -93,6 +118,8 @@ TEST(BlitzarCoreApiTest, TST_UNT_CORE_004_LoadsAsciiVtkGoldenFile)
     loadFixtureAndExpect(core, fixturePath("vtk_fixture_ascii.vtk"));
     blitzar_core_destroy(core);
 }
+
+/// Description: Executes the TEST operation.
 TEST(BlitzarCoreApiTest, TST_UNT_CORE_005_LoadsBinaryVtkGoldenFile)
 {
     blitzar_core_t* core = createCore(makeCpuConfig());
@@ -100,6 +127,8 @@ TEST(BlitzarCoreApiTest, TST_UNT_CORE_005_LoadsBinaryVtkGoldenFile)
     loadFixtureAndExpect(core, fixturePath("vtk_fixture_binary.vtk"));
     blitzar_core_destroy(core);
 }
+
+/// Description: Executes the TEST operation.
 TEST(BlitzarCoreApiTest, TST_UNT_CORE_006_RoundTripsAsciiAndBinaryVtkWithinTolerance)
 {
     const auto runRoundTrip = [](const char* fixtureName, const char* exportFormat,
@@ -122,6 +151,8 @@ TEST(BlitzarCoreApiTest, TST_UNT_CORE_006_RoundTripsAsciiAndBinaryVtkWithinToler
     runRoundTrip("vtk_fixture_ascii.vtk", "vtk", "ASCII");
     runRoundTrip("vtk_fixture_binary.vtk", "vtk_binary", "BINARY");
 }
+
+/// Description: Executes the TEST operation.
 TEST(BlitzarCoreApiTest, TST_UNT_CORE_007_InvalidAndCorruptVtkInputsFallBackDeterministically)
 {
     const auto expectGeneratedFallback = [](const std::filesystem::path& path, const char* format) {

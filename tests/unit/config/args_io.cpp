@@ -1,3 +1,6 @@
+// File: tests/unit/config/args_io.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationScenarioValidation.hpp"
 #include "protocol/ServerProtocol.hpp"
@@ -9,6 +12,8 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_010_SimulationConfigSaveLoadRoundTrip)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -54,6 +59,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_010_SimulationConfigSaveLoadRoundTrip)
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_011_LoadIgnoresTrailingGarbageInNumericConfigValues)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -81,6 +88,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_011_LoadIgnoresTrailingGarbageInNumericConfigV
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_012_LoadOrCreateRejectsInvalidSolverAndIntegrator)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -118,6 +127,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_012_LoadOrCreateRejectsInvalidSolverAndIntegra
     EXPECT_NE(err.str().find("unsupported solver/integrator combination"), std::string::npos);
     std::filesystem::remove(incompatiblePath, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_013_LoadOrCreateCreatesFileWhenMissing)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -130,6 +141,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_013_LoadOrCreateCreatesFileWhenMissing)
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_015_DefaultClientParticleCapMatchesProtocolMax)
 {
     const SimulationConfig defaults = SimulationConfig::defaults();
@@ -139,6 +152,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_015_DefaultClientParticleCapMatchesProtocolMax
     EXPECT_FLOAT_EQ(defaults.substepTargetDt, 0.01f);
     EXPECT_EQ(defaults.maxSubsteps, 4u);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_016_LoadClampsClientParticleCapToProtocolMax)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -159,6 +174,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_016_LoadClampsClientParticleCapToProtocolMax)
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_017_LoadWarnsOnUnknownIniKey)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -179,6 +196,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_017_LoadWarnsOnUnknownIniKey)
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_018_LoadSupportsRegistryAliases)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -198,6 +217,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_018_LoadSupportsRegistryAliases)
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_020_ResolveInitPlanRejectsFileModeWithoutInput)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -218,6 +239,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_020_ResolveInitPlanRejectsFileModeWithoutInput
     EXPECT_NE(grav_config::SimulationScenarioValidation::renderText(report).find("particle_count"),
               std::string::npos);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_021_ResolveInitPlanIgnoresStaleInputFileOutsideFileMode)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -239,6 +262,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_021_ResolveInitPlanIgnoresStaleInputFileOutsid
     EXPECT_NE(grav_config::SimulationScenarioValidation::renderText(report).find("initial_state"),
               std::string::npos);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_023_ResolveInitPlanSupportsCalibrationPresets)
 {
     SimulationConfig config = SimulationConfig::defaults();

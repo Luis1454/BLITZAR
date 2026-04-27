@@ -1,6 +1,11 @@
+// File: tests/unit/physics/reentrancy.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "physics/ParticleSystem.hpp"
 #include <gtest/gtest.h>
 #include <vector>
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsReentrancyTest, TST_UNT_PHYS_017_MultipleInstancesCoexistence)
 {
     // Create two independent particle systems.

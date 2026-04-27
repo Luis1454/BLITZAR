@@ -1,4 +1,9 @@
+// File: engine/src/server/simulation_server/ParseBinXyz.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
+
+/// Description: Executes the parseBinarySnapshot operation.
 bool parseBinarySnapshot(const std::string& inputPath, std::vector<Particle>& outParticles)
 {
     std::ifstream in(inputPath, std::ios::binary);
@@ -52,6 +57,8 @@ bool parseBinarySnapshot(const std::string& inputPath, std::vector<Particle>& ou
     }
     return outParticles.size() >= 2;
 }
+
+/// Description: Executes the parseXyzSnapshot operation.
 bool parseXyzSnapshot(const std::string& inputPath, std::vector<Particle>& outParticles)
 {
     std::ifstream in(inputPath);
@@ -128,6 +135,8 @@ bool parseXyzSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
     }
     return outParticles.size() >= 2;
 }
+
+/// Description: Describes the parse snapshot by format operation contract.
 bool parseSnapshotByFormat(std::string_view format, const std::string& inputPath,
                            std::vector<Particle>& outParticles)
 {
@@ -135,6 +144,7 @@ bool parseSnapshotByFormat(std::string_view format, const std::string& inputPath
         std::string_view format;
         bool (*parser)(const std::string&, std::vector<Particle>&);
     };
+
     static const std::array<FormatParserEntry, 3> parsers = {
         {{"bin", parseBinarySnapshot}, {"vtk", parseVtkSnapshot}, {"xyz", parseXyzSnapshot}}};
     for (const FormatParserEntry& entry : parsers)
@@ -142,6 +152,8 @@ bool parseSnapshotByFormat(std::string_view format, const std::string& inputPath
             return entry.parser(inputPath, outParticles);
     return false;
 }
+
+/// Description: Executes the parseSnapshotWithFallback operation.
 bool parseSnapshotWithFallback(const std::string& inputPath, std::vector<Particle>& outParticles)
 {
     static const std::array<std::string_view, 3> fallbackOrder = {{"bin", "vtk", "xyz"}};

@@ -1,3 +1,6 @@
+// File: modules/qt/ui/MainWindowPresenter.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/MainWindowPresenter.hpp"
 #include "types/SimulationTypes.hpp"
 #include <algorithm>
@@ -6,17 +9,21 @@
 #include <iomanip>
 #include <limits>
 #include <sstream>
+
 namespace grav_qt {
+/// Description: Defines the MainWindowPresenterLocal data or behavior contract.
 class MainWindowPresenterLocal final {
 public:
     static bool hasAge(std::uint32_t ageMs)
     {
         return ageMs != std::numeric_limits<std::uint32_t>::max();
     }
+
     static std::string ageLabel(std::uint32_t ageMs)
     {
         return hasAge(ageMs) ? std::to_string(ageMs) + "ms" : "n/a";
     }
+
     static std::string latencyLabel(const MainWindowPresentationInput& input)
     {
         if (input.snapshotLatencyMs != std::numeric_limits<std::uint32_t>::max()) {
@@ -27,16 +34,19 @@ public:
         }
         return "n/a";
     }
+
     static bool isStale(std::uint32_t ageMs)
     {
         return hasAge(ageMs) && ageMs > 1000u;
     }
+
     static std::string fixedLabel(float value, int precision)
     {
         std::ostringstream stream;
         stream << std::fixed << std::setprecision(precision) << value;
         return stream.str();
     }
+
     static std::string bytesLabel(std::uint64_t bytes)
     {
         constexpr double kMiB = 1024.0 * 1024.0;
@@ -45,6 +55,7 @@ public:
                << " MiB";
         return stream.str();
     }
+
     static float simulatedSecondsPerSecond(const MainWindowPresentationInput& input)
     {
         float simulatedStep = std::max(0.0f, input.stats.dt);
@@ -52,6 +63,7 @@ public:
             simulatedStep = input.stats.substepDt * static_cast<float>(input.stats.substeps);
         return std::max(0.0f, simulatedStep * std::max(0.0f, input.stats.serverFps));
     }
+
     static std::string backendStateLabel(const MainWindowPresentationInput& input, bool staleStats,
                                          bool staleSnapshot)
     {
@@ -67,6 +79,7 @@ public:
             return "busy";
         return "idle";
     }
+
     static std::string viewportStateLabel(std::uint32_t snapshotAgeMs)
     {
         if (!hasAge(snapshotAgeMs))
@@ -74,6 +87,7 @@ public:
         const std::string age = ageLabel(snapshotAgeMs);
         return isStale(snapshotAgeMs) ? "stale (" + age + " old)" : "fresh (" + age + " old)";
     }
+
     static std::string progressLabel(const MainWindowPresentationInput& input)
     {
         if (input.simulationHorizonSeconds <= 0.0f)
@@ -84,6 +98,7 @@ public:
         return fixedLabel(pct, 1) + "% (" + fixedLabel(clampedTime, 2) + " / " +
                fixedLabel(input.simulationHorizonSeconds, 2) + " s)";
     }
+
     static std::string etaLabel(const MainWindowPresentationInput& input)
     {
         if (input.simulationHorizonSeconds <= 0.0f ||
@@ -96,6 +111,7 @@ public:
         return fixedLabel((input.simulationHorizonSeconds - input.stats.totalTime) / simRate, 1) +
                "s";
     }
+
     static std::string exportStateLabel(const MainWindowPresentationInput& input)
     {
         if (input.stats.exportLastState.empty()) {
@@ -104,6 +120,8 @@ public:
         return input.stats.exportLastState;
     }
 };
+
+/// Description: Executes the present operation.
 MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentationInput& input) const
 {
     const bool staleStats = MainWindowPresenterLocal::isStale(input.statsAgeMs);

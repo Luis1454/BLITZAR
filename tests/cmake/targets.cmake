@@ -1,3 +1,6 @@
+# File: tests/cmake/targets.cmake
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 # Explicit source manifests for all test target compilation groups.
 # Rationale: file(GLOB) masks build-truth and prevents reviewers from verifying
 # test scope at a glance. All sources are listed explicitly; add new files here

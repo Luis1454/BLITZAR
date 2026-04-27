@@ -1,13 +1,20 @@
+// File: modules/qt/include/ui/QtViewMath.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_QTVIEWMATH_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_QTVIEWMATH_HPP_
-/* * Module: ui * Responsibility: Provide Qt-specific geometric helpers shared by particle and
- * energy widgets. */
+/*
+ * Module: ui
+ * Responsibility: Provide Qt-specific geometric helpers shared by particle and
+ * energy widgets.
+ */
 #include "graphics/ViewMath.hpp"
 #include <QPointF>
 #include <QRect>
 #include <QRectF>
 #include <array>
 #include <vector>
+
 namespace grav_qt {
 /// Stores one energy-history sample for the Qt energy graph.
 struct EnergyPoint {
@@ -19,6 +26,7 @@ struct EnergyPoint {
     float drift;
     float time;
 };
+
 /// Describes the geometry of the interactive 3D camera gimbal overlay.
 struct GimbalOverlay {
     QRectF rect;
@@ -26,6 +34,7 @@ struct GimbalOverlay {
     float radius;
     std::array<QPointF, 3> handles;
 };
+
 /// Converts a generic 2D point into a Qt point.
 QPointF toQPointF(const grav::Point2D& p);
 /// Converts a Qt point into the generic 2D point representation.

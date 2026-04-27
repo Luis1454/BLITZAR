@@ -1,8 +1,12 @@
+// File: engine/src/physics/cuda/fragments/OctreeBuild.inl
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 /*
  * Module: physics/cuda
  * Responsibility: Implement CPU-side octree construction primitives.
  */
 
+/// Description: Executes the Node operation.
 Octree::Node::Node()
     : center(0.0f, 0.0f, 0.0f),
       halfSize(0.0f),
@@ -15,9 +19,12 @@ Octree::Node::Node()
     children.fill(-1);
 }
 
+/// Description: Executes the Octree operation.
 Octree::Octree() : _nodes(), _particlesRef(std::nullopt), _root(-1) {}
+/// Description: Describes the destroy  octree operation contract.
 Octree::~Octree() = default;
 
+/// Description: Executes the clear operation.
 void Octree::clear()
 {
     _nodes.clear();
@@ -25,9 +32,12 @@ void Octree::clear()
     _root = -1;
 }
 
+/// Description: Executes the getNodeCount operation.
 std::size_t Octree::getNodeCount() const { return _nodes.size(); }
+/// Description: Executes the getRootIndex operation.
 int Octree::getRootIndex() const { return _root; }
 
+/// Description: Executes the exportGpu operation.
 void Octree::exportGpu(std::vector<GpuOctreeNode> &outNodes, std::vector<int> &outLeafIndices) const
 {
     outNodes.clear();
@@ -59,6 +69,7 @@ void Octree::exportGpu(std::vector<GpuOctreeNode> &outNodes, std::vector<int> &o
     }
 }
 
+/// Description: Executes the childIndexForPosition operation.
 int Octree::childIndexForPosition(const Vector3 &position, const Vector3 &center)
 {
     int child = 0;
@@ -68,8 +79,10 @@ int Octree::childIndexForPosition(const Vector3 &position, const Vector3 &center
     return child;
 }
 
+/// Description: Executes the hasChildren operation.
 bool Octree::hasChildren(const Node &node) { return node.childMask != 0; }
 
+/// Description: Describes the build node recursive operation contract.
 int Octree::buildNodeRecursive(
     const std::vector<Particle> &particles,
     const std::vector<int> &indices,
@@ -132,6 +145,7 @@ int Octree::buildNodeRecursive(
     return nodeIndex;
 }
 
+/// Description: Executes the build operation.
 void Octree::build(const std::vector<Particle> &particles)
 {
     clear();

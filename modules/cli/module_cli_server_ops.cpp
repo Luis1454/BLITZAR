@@ -1,3 +1,6 @@
+// File: modules/cli/module_cli_server_ops.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "modules/cli/module_cli_server_ops.hpp"
 #include "client/ErrorBuffer.hpp"
 #include "config/TextParse.hpp"
@@ -7,7 +10,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
 namespace grav_module_cli {
+/// Description: Defines the ModuleCliServerOpsLocal data or behavior contract.
 class ModuleCliServerOpsLocal final {
 public:
     static bool ensureConnected(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer)
@@ -22,6 +27,7 @@ public:
         }
         return true;
     }
+
     static bool sendSimpleCommand(ModuleState& state, const std::string& cmd,
                                   const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -40,6 +46,7 @@ public:
         }
         return true;
     }
+
     static bool commandStatus(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer)
     {
         if (!ensureConnected(state, errorBuffer)) {
@@ -72,6 +79,7 @@ public:
                   << (status.energyEstimated ? " est" : "") << "\n";
         return true;
     }
+
     static bool commandStep(ModuleState& state, const std::vector<std::string>& tokens,
                             const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -97,6 +105,7 @@ public:
         }
         return true;
     }
+
     static bool connect(ModuleState& state, const std::vector<std::string>& tokens,
                         const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -121,6 +130,7 @@ public:
                   << "\n";
         return true;
     }
+
     static bool reconnect(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer)
     {
         state.transport.disconnect();
@@ -133,26 +143,36 @@ public:
         return true;
     }
 };
+
+/// Description: Describes the command status operation contract.
 bool ModuleCliServerOps::commandStatus(ModuleState& state,
                                        const grav_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliServerOpsLocal::commandStatus(state, errorBuffer);
 }
+
+/// Description: Describes the command step operation contract.
 bool ModuleCliServerOps::commandStep(ModuleState& state, const std::vector<std::string>& tokens,
                                      const grav_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliServerOpsLocal::commandStep(state, tokens, errorBuffer);
 }
+
+/// Description: Describes the connect operation contract.
 bool ModuleCliServerOps::connect(ModuleState& state, const std::vector<std::string>& tokens,
                                  const grav_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliServerOpsLocal::connect(state, tokens, errorBuffer);
 }
+
+/// Description: Describes the reconnect operation contract.
 bool ModuleCliServerOps::reconnect(ModuleState& state,
                                    const grav_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliServerOpsLocal::reconnect(state, errorBuffer);
 }
+
+/// Description: Describes the send simple command operation contract.
 bool ModuleCliServerOps::sendSimpleCommand(ModuleState& state, const std::string& cmd,
                                            const grav_client::ErrorBufferView& errorBuffer)
 {

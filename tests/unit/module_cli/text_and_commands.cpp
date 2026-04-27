@@ -1,3 +1,6 @@
+// File: tests/unit/module_cli/text_and_commands.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ClientModuleBoundary.hpp"
 #include "modules/cli/module_cli_commands.hpp"
 #include "modules/cli/module_cli_state.hpp"
@@ -5,7 +8,9 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
+
 namespace grav_test_module_cli_text_and_commands {
+/// Description: Executes the TEST operation.
 TEST(ModuleCliTextTest, TST_UNT_MODCLI_001_TrimAndSplitTokens)
 {
     EXPECT_EQ(grav_module_cli::ModuleCliText::trim("  hello  "), "hello");
@@ -16,6 +21,8 @@ TEST(ModuleCliTextTest, TST_UNT_MODCLI_001_TrimAndSplitTokens)
     EXPECT_EQ(tokens[0], "step");
     EXPECT_EQ(tokens[1], "12");
 }
+
+/// Description: Executes the TEST operation.
 TEST(ModuleCliCommandsTest, TST_UNT_MODCLI_002_HelpAndQuitCommandBehavior)
 {
     grav_module_cli::ModuleState state;
@@ -30,6 +37,8 @@ TEST(ModuleCliCommandsTest, TST_UNT_MODCLI_002_HelpAndQuitCommandBehavior)
         grav_client::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
     EXPECT_FALSE(commandResult.keepRunning());
 }
+
+/// Description: Executes the TEST operation.
 TEST(ModuleCliCommandsTest, TST_UNT_MODCLI_003_UnknownCommandReturnsError)
 {
     grav_module_cli::ModuleState state;

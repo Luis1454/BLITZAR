@@ -1,3 +1,6 @@
+// File: runtime/src/server/ServerDaemon.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "server/ServerDaemon.hpp"
 #include "config/SimulationModes.hpp"
 #include "platform/SocketPlatform.hpp"
@@ -13,10 +16,13 @@
 #include <string>
 #include <string_view>
 #include <utility>
+
+/// Description: Executes the trim operation.
 static std::string trim(const std::string& input)
 {
-    const auto begin = std::find_if_not(input.begin(), input.end(),
-                                        [](unsigned char c) { return std::isspace(c) != 0; });
+    const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
+        return std::isspace(c) != 0;
+    });
     const auto end = std::find_if_not(input.rbegin(), input.rend(), [](unsigned char c) {
                          return std::isspace(c) != 0;
                      }).base();
@@ -24,10 +30,14 @@ static std::string trim(const std::string& input)
         return {};
     return std::string(begin, end);
 }
+
+/// Description: Executes the asBytes operation.
 static grav_socket::ConstBytes asBytes(std::string_view text)
 {
     return grav_socket::ConstBytes{reinterpret_cast<const std::byte*>(text.data()), text.size()};
 }
+
+/// Description: Executes the sendAll operation.
 static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes bytes)
 {
     std::size_t offset = 0;
@@ -39,10 +49,14 @@ static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes by
     }
     return true;
 }
+
+/// Description: Executes the serverDaemonError operation.
 static std::string serverDaemonError(std::string_view operation, std::string_view detail)
 {
     return std::string("[ipc] ") + std::string(operation) + ": " + std::string(detail);
 }
+
+/// Description: Executes the ServerDaemon operation.
 ServerDaemon::ServerDaemon(SimulationServer& server, std::string authToken)
     : _server(server),
       _running(false),
@@ -57,10 +71,14 @@ ServerDaemon::ServerDaemon(SimulationServer& server, std::string authToken)
       _clientThreads()
 {
 }
+
+/// Description: Releases resources owned by ServerDaemon.
 ServerDaemon::~ServerDaemon()
 {
     stop();
 }
+
+/// Description: Executes the start operation.
 bool ServerDaemon::start(std::uint16_t port, const std::string& bindAddress)
 {
     try {
@@ -113,6 +131,8 @@ bool ServerDaemon::start(std::uint16_t port, const std::string& bindAddress)
         return false;
     }
 }
+
+/// Description: Executes the stop operation.
 void ServerDaemon::stop()
 {
     try {
@@ -160,14 +180,20 @@ void ServerDaemon::stop()
         _networkInitialized = false;
     }
 }
+
+/// Description: Executes the isRunning operation.
 bool ServerDaemon::isRunning() const
 {
     return _running.load();
 }
+
+/// Description: Executes the shutdownRequested operation.
 bool ServerDaemon::shutdownRequested() const
 {
     return _shutdownRequested.load();
 }
+
+/// Description: Executes the acceptLoop operation.
 void ServerDaemon::acceptLoop()
 {
     try {
@@ -200,6 +226,8 @@ void ServerDaemon::acceptLoop()
         _running.store(false);
     }
 }
+
+/// Description: Executes the handleClient operation.
 void ServerDaemon::handleClient(SocketHandle client)
 {
     try {
@@ -252,6 +280,8 @@ void ServerDaemon::handleClient(SocketHandle client)
         grav_socket::closeSocket(static_cast<grav_socket::Handle>(client));
     }
 }
+
+/// Description: Executes the processRequest operation.
 std::string ServerDaemon::processRequest(const std::string& request)
 {
     try {

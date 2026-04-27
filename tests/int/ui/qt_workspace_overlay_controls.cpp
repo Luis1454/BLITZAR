@@ -1,3 +1,6 @@
+// File: tests/int/ui/qt_workspace_overlay_controls.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "tests/support/qt_test_utils.hpp"
 #include "ui/MainWindow.hpp"
 #include "ui/MultiViewWidget.hpp"
@@ -7,142 +10,185 @@
 #include <QSpinBox>
 #include <gtest/gtest.h>
 #include <memory>
+
 namespace grav_test_qt_workspace_overlay_controls {
+/// Description: Defines the IdleRuntime data or behavior contract.
 class IdleRuntime final : public grav_client::IClientRuntime {
 public:
     bool start() override
     {
         return false;
     }
+
     void stop() override
     {
     }
+
     void setPaused(bool) override
     {
     }
+
     void togglePaused() override
     {
     }
+
     void stepOnce() override
     {
     }
+
     void setParticleCount(std::uint32_t) override
     {
     }
+
     void setDt(float) override
     {
     }
+
     void scaleDt(float) override
     {
     }
+
     void requestReset() override
     {
     }
+
     void requestRecover() override
     {
     }
+
     void setSolverMode(const std::string&) override
     {
     }
+
     void setIntegratorMode(const std::string&) override
     {
     }
+
     void setPerformanceProfile(const std::string&) override
     {
     }
+
     void setOctreeParameters(float, float) override
     {
     }
+
     void setSphEnabled(bool) override
     {
     }
+
     void setSphParameters(float, float, float, float) override
     {
     }
+
     void setSubstepPolicy(float, std::uint32_t) override
     {
     }
+
     void setSnapshotPublishPeriodMs(std::uint32_t) override
     {
     }
+
     void setInitialStateConfig(const InitialStateConfig&) override
     {
     }
+
     void setEnergyMeasurementConfig(std::uint32_t, std::uint32_t) override
     {
     }
+
     void setGpuTelemetryEnabled(bool) override
     {
     }
+
     void setExportDefaults(const std::string&, const std::string&) override
     {
     }
+
     void setInitialStateFile(const std::string&, const std::string&) override
     {
     }
+
     void requestExportSnapshot(const std::string&, const std::string&) override
     {
     }
+
     void requestSaveCheckpoint(const std::string&) override
     {
     }
+
     void requestLoadCheckpoint(const std::string&) override
     {
     }
+
     void requestShutdown() override
     {
     }
+
     void setRemoteSnapshotCap(std::uint32_t) override
     {
     }
+
     void requestReconnect() override
     {
     }
+
     void configureRemoteConnector(const std::string&, std::uint16_t, bool,
                                   const std::string&) override
     {
     }
+
     bool isRemoteMode() const override
     {
         return false;
     }
+
     SimulationStats getCachedStats() const override
     {
         return {};
     }
+
     SimulationStats getStats() const override
     {
         return {};
     }
+
     std::optional<grav_client::ConsumedSnapshot> consumeLatestSnapshot() override
     {
         return std::nullopt;
     }
+
     bool tryConsumeSnapshot(std::vector<RenderParticle>&) override
     {
         return false;
     }
+
     grav_client::SnapshotPipelineState snapshotPipelineState() const override
     {
         return {};
     }
+
     std::string linkStateLabel() const override
     {
         return "disconnected";
     }
+
     std::string serverOwnerLabel() const override
     {
         return "local";
     }
+
     std::uint32_t statsAgeMs() const override
     {
         return 0u;
     }
+
     std::uint32_t snapshotAgeMs() const override
     {
         return 0u;
     }
 };
+
+/// Description: Executes the TEST operation.
 TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_020_OctreeOverlayControlsUpdateWorkspaceView)
 {
     (void)testsupport::ensureQtApp();

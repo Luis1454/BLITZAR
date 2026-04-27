@@ -1,6 +1,11 @@
+// File: engine/src/platform/posix/DynamicLibraryPosix.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/posix/DynamicLibraryPosix.hpp"
 #include <dlfcn.h>
+
 namespace grav_platform_detail {
+/// Description: Describes the open dynamic library operation contract.
 bool openDynamicLibrary(const std::string& path, NativeLibraryHandle& outHandle,
                         std::string& outError)
 {
@@ -15,6 +20,8 @@ bool openDynamicLibrary(const std::string& path, NativeLibraryHandle& outHandle,
     }
     return true;
 }
+
+/// Description: Executes the closeDynamicLibrary operation.
 void closeDynamicLibrary(NativeLibraryHandle& handle)
 {
     if (handle == 0u) {
@@ -23,10 +30,14 @@ void closeDynamicLibrary(NativeLibraryHandle& handle)
     dlclose(reinterpret_cast<void*>(handle));
     handle = 0u;
 }
+
+/// Description: Executes the isDynamicLibraryOpen operation.
 bool isDynamicLibraryOpen(NativeLibraryHandle handle)
 {
     return handle != 0u;
 }
+
+/// Description: Describes the load dynamic symbol operation contract.
 bool loadDynamicSymbol(NativeLibraryHandle handle, std::string_view name,
                        NativeSymbolAddress& outSymbol, std::string& outError)
 {

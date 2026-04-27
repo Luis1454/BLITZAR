@@ -1,10 +1,16 @@
+// File: engine/include/config/SimulationArgs.hpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_
 #include <iosfwd>
 #include <string>
 #include <string_view>
 #include <vector>
+/// Description: Defines the SimulationConfig data or behavior contract.
 struct SimulationConfig;
+
+/// Description: Defines the RuntimeArgs data or behavior contract.
 struct RuntimeArgs {
     std::string configPath = "simulation.ini";
     int targetSteps = 1000;
@@ -13,9 +19,13 @@ struct RuntimeArgs {
     bool showHelp = false;
     bool hasArgumentError = false;
 };
+
+/// Description: Describes the find config path arg operation contract.
 std::string findConfigPathArg(const std::vector<std::string_view>& args,
                               const std::string& fallback = "simulation.ini");
+/// Description: Describes the apply args to config operation contract.
 void applyArgsToConfig(const std::vector<std::string_view>& args, SimulationConfig& config,
                        RuntimeArgs& runtime, std::ostream& warnings);
+/// Description: Executes the printUsage operation.
 void printUsage(std::ostream& out, std::string_view programName, bool headlessMode);
 #endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_

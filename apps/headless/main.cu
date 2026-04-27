@@ -1,3 +1,6 @@
+// File: apps/headless/main.cu
+// Purpose: Application entry point or host support for BLITZAR executables.
+
 #include "config/EnvUtils.hpp"
 #include "config/SimulationArgs.hpp"
 #include "config/SimulationConfig.hpp"
@@ -9,6 +12,8 @@
 #include <string_view>
 #include <thread>
 #include <vector>
+
+/// Description: Executes the main operation.
 int main(int argc, char** argv)
 {
     std::vector<std::string_view> args;

@@ -1,9 +1,14 @@
+// File: modules/qt/ui/ThroughputAdvisor.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/ThroughputAdvisor.hpp"
 #include "config/SimulationConfig.hpp"
 #include <algorithm>
 #include <cmath>
 #include <sstream>
+
 namespace grav_qt {
+/// Description: Defines the ThroughputAdvisorLocal data or behavior contract.
 class ThroughputAdvisorLocal final {
 public:
     static std::uint32_t estimateSubsteps(const SimulationConfig& config)
@@ -13,6 +18,7 @@ public:
         const float raw = std::ceil(config.dt / config.substepTargetDt);
         return std::max(1u, std::min(config.maxSubsteps, static_cast<std::uint32_t>(raw)));
     }
+
     static float solverPenalty(const SimulationConfig& config, std::uint32_t substeps)
     {
         const float particles = static_cast<float>(std::max(2u, config.particleCount));
@@ -25,12 +31,14 @@ public:
             return std::max(1.0f, particles / 50000.0f) * substepPenalty * 1.5f;
         return std::max(1.0f, particles / 200000.0f) * substepPenalty;
     }
+
     static float drawPenalty(const SimulationConfig& config, std::uint32_t drawCap)
     {
         const std::uint32_t effectiveCap =
             std::max<std::uint32_t>(2u, drawCap == 0u ? config.clientParticleCap : drawCap);
         return std::max(1.0f, static_cast<float>(effectiveCap) / 50000.0f);
     }
+
     static std::string suggestedAction(const SimulationConfig& config, std::uint32_t substeps,
                                        std::uint32_t drawCap)
     {
@@ -61,6 +69,8 @@ public:
         return out.str();
     }
 };
+
+/// Description: Describes the evaluate operation contract.
 ThroughputAdvisory ThroughputAdvisor::evaluate(const SimulationConfig& config,
                                                std::uint32_t drawCap)
 {

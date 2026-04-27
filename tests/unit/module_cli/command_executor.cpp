@@ -1,3 +1,6 @@
+// File: tests/unit/module_cli/command_executor.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "command/CommandContext.hpp"
 #include "command/CommandExecutor.hpp"
 #include "command/CommandParser.hpp"
@@ -6,7 +9,9 @@
 #include <string>
 #include <utility>
 #include <vector>
+
 namespace grav_test_module_cli_command_executor {
+/// Description: Defines the FakeCommandTransport data or behavior contract.
 class FakeCommandTransport final : public grav_cmd::CommandTransport {
 public:
     bool connect(const std::string& host, std::uint16_t port) override
@@ -15,21 +20,25 @@ public:
         connectHistory.emplace_back(host, port);
         return connectResult;
     }
+
     void disconnect() override
     {
         connected = false;
         disconnected = true;
     }
+
     bool isConnected() const override
     {
         return connected;
     }
+
     ServerClientResponse sendCommand(const std::string& cmd,
                                      const std::string& fieldsJson = "") override
     {
         commandHistory.emplace_back(cmd, fieldsJson);
         return nextCommandResponse;
     }
+
     ServerClientResponse getStatus(ServerClientStatus& outStatus) override
     {
         statusCallCount += 1u;
@@ -38,6 +47,7 @@ public:
         }
         return nextStatusResponse;
     }
+
     bool connectResult = true;
     bool connected = false;
     bool disconnected = false;
@@ -48,6 +58,8 @@ public:
     std::vector<std::pair<std::string, std::string>> commandHistory;
     std::vector<ServerClientStatus> scriptedStatuses;
 };
+
+/// Description: Executes the parseSingle operation.
 static grav_cmd::CommandRequest parseSingle(const std::string& line)
 {
     const grav_cmd::CommandParseResult parsed = grav_cmd::CommandParser::parseLine(line, 1u);
@@ -55,6 +67,8 @@ static grav_cmd::CommandRequest parseSingle(const std::string& line)
     EXPECT_EQ(parsed.requests.size(), 1u);
     return parsed.requests.front();
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandExecutorTest, TST_UNT_MODCLI_009_SetDtMapsToProtocolCommand)
 {
     FakeCommandTransport transport;
@@ -70,6 +84,8 @@ TEST(CommandExecutorTest, TST_UNT_MODCLI_009_SetDtMapsToProtocolCommand)
     EXPECT_EQ(transport.commandHistory[0].second, "\"value\":0.250000");
     EXPECT_FLOAT_EQ(session.config.dt, 0.25F);
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandExecutorTest, TST_UNT_MODCLI_010_RunStepsAndRunUntilUseDeterministicStepFlow)
 {
     FakeCommandTransport transport;
@@ -105,6 +121,8 @@ TEST(CommandExecutorTest, TST_UNT_MODCLI_010_RunStepsAndRunUntilUseDeterministic
     EXPECT_EQ(transport.commandHistory[2].first, "step");
     EXPECT_EQ(transport.statusCallCount, 3u);
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandExecutorTest, TST_UNT_MODCLI_011_LoadConfigUpdatesSessionPathAndRejectsInvalidProfile)
 {
     FakeCommandTransport transport;
@@ -124,6 +142,8 @@ TEST(CommandExecutorTest, TST_UNT_MODCLI_011_LoadConfigUpdatesSessionPathAndReje
     EXPECT_EQ(session.configPath, "simulation.ini");
     EXPECT_NE(session.configPath, originalPath);
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandExecutorTest, TST_UNT_MODCLI_012_CheckpointCommandsMapToProtocolCommands)
 {
     FakeCommandTransport transport;

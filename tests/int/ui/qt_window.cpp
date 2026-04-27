@@ -1,3 +1,6 @@
+// File: tests/int/ui/qt_window.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ClientRuntime.hpp"
 #include "protocol/ServerProtocol.hpp"
 #include "tests/support/client_utils.hpp"
@@ -15,7 +18,9 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
+
 namespace grav_test_qt_window {
+/// Description: Executes the makeUiConfig operation.
 SimulationConfig makeUiConfig()
 {
     SimulationConfig config{};
@@ -28,6 +33,8 @@ SimulationConfig makeUiConfig()
     config.dt = 0.01f;
     return config;
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtMainWindowTest, TST_UIX_UI_001_ConstructsAndTicksWithRealRuntime)
 {
     (void)testsupport::ensureQtApp();
@@ -45,6 +52,8 @@ TEST(QtMainWindowTest, TST_UIX_UI_001_ConstructsAndTicksWithRealRuntime)
         std::chrono::milliseconds(5000)));
     server.stop();
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtMainWindowTest, TST_UIX_UI_002_ShowsReconnectingWhenServerStopsAndRecovers)
 {
     (void)testsupport::ensureQtApp();
@@ -56,18 +65,26 @@ TEST(QtMainWindowTest, TST_UIX_UI_002_ShowsReconnectingWhenServerStopsAndRecover
         "simulation.ini", testsupport::makeTransport(fixedPort, server.executablePath()));
     grav_qt::MainWindow window(makeUiConfig(), "simulation.ini", std::move(runtime));
     ASSERT_TRUE(testsupport::waitUntilUi(
-        [&]() { return testsupport::findStatusLabelText(window).contains("Link: connected"); },
+        [&]() {
+            return testsupport::findStatusLabelText(window).contains("Link: connected");
+        },
         std::chrono::milliseconds(5000)));
     server.stop();
     ASSERT_TRUE(testsupport::waitUntilUi(
-        [&]() { return testsupport::findStatusLabelText(window).contains("Link: reconnecting"); },
+        [&]() {
+            return testsupport::findStatusLabelText(window).contains("Link: reconnecting");
+        },
         std::chrono::milliseconds(5000)));
     ASSERT_TRUE(server.start(startError, fixedPort)) << startError;
     ASSERT_TRUE(testsupport::waitUntilUi(
-        [&]() { return testsupport::findStatusLabelText(window).contains("Link: connected"); },
+        [&]() {
+            return testsupport::findStatusLabelText(window).contains("Link: connected");
+        },
         std::chrono::milliseconds(7000)));
     server.stop();
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtMainWindowTest, TST_UIX_UI_003_SavesConfigOnlyOnExplicitSaveAction)
 {
     (void)testsupport::ensureQtApp();
@@ -84,7 +101,9 @@ TEST(QtMainWindowTest, TST_UIX_UI_003_SavesConfigOnlyOnExplicitSaveAction)
         configPath.string(), testsupport::makeTransport(server.port(), server.executablePath()));
     grav_qt::MainWindow window(initialConfig, configPath.string(), std::move(runtime));
     ASSERT_TRUE(testsupport::waitUntilUi(
-        [&]() { return testsupport::findStatusLabelText(window).contains("Link: connected"); },
+        [&]() {
+            return testsupport::findStatusLabelText(window).contains("Link: connected");
+        },
         std::chrono::milliseconds(5000)));
     QComboBox* solverCombo = testsupport::findSolverCombo(window);
     ASSERT_NE(solverCombo, nullptr);
@@ -109,6 +128,8 @@ TEST(QtMainWindowTest, TST_UIX_UI_003_SavesConfigOnlyOnExplicitSaveAction)
     std::error_code ec;
     std::filesystem::remove(configPath, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtMainWindowTest, TST_UIX_UI_004_ShowsEffectiveClientCapWhenConfiguredCapExceedsProtocolMax)
 {
     (void)testsupport::ensureQtApp();
@@ -130,6 +151,8 @@ TEST(QtMainWindowTest, TST_UIX_UI_004_ShowsEffectiveClientCapWhenConfiguredCapEx
         std::chrono::milliseconds(5000)));
     server.stop();
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtMainWindowTest, TST_UIX_UI_014_RealRuntimeProgressesAndSurfacesFreshOrStaleViewportState)
 {
     (void)testsupport::ensureQtApp();
@@ -141,7 +164,9 @@ TEST(QtMainWindowTest, TST_UIX_UI_014_RealRuntimeProgressesAndSurfacesFreshOrSta
     grav_qt::MainWindow window(makeUiConfig(), "simulation.ini", std::move(runtime));
     window.show();
     ASSERT_TRUE(testsupport::waitUntilUi(
-        [&]() { return testsupport::findStatusLabelText(window).contains("Link: connected"); },
+        [&]() {
+            return testsupport::findStatusLabelText(window).contains("Link: connected");
+        },
         std::chrono::milliseconds(5000)));
     QWidget* graphWidget = window.findChild<QWidget*>("energyGraphWidget");
     auto* graph = dynamic_cast<grav_qt::EnergyGraphWidget*>(graphWidget);

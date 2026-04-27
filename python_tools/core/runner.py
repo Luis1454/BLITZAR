@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/core/runner.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -10,6 +13,7 @@ from .reporting import ResultReporter
 CheckFactory = Callable[[], BaseCheck]
 
 
+# Description: Executes the resolve_sequence operation.
 def resolve_sequence(check_name: str, with_launcher: bool, sequences: dict[str, list[str]] | None = None) -> list[str]:
     if sequences is not None and check_name in sequences:
         ordered = list(sequences[check_name])
@@ -26,11 +30,14 @@ def resolve_sequence(check_name: str, with_launcher: bool, sequences: dict[str, 
     return [check_name]
 
 
+# Description: Defines the CheckRunner contract.
 class CheckRunner:
+    # Description: Executes the __init__ operation.
     def __init__(self, registry: dict[str, CheckFactory], sequences: dict[str, list[str]] | None = None) -> None:
         self._registry = registry
         self._sequences = sequences
 
+    # Description: Executes the run operation.
     def run(self, check_name: str, context: CheckContext, reporter: ResultReporter | None = None) -> bool:
         current_reporter = reporter if reporter is not None else ResultReporter()
         all_ok = True

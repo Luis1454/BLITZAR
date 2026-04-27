@@ -1,3 +1,6 @@
+// File: modules/qt/ui/MainWindowFileActions.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "client/ClientCommon.hpp"
 #include "ui/EnergyGraphWidget.hpp"
 #include "ui/MainWindow.hpp"
@@ -10,7 +13,9 @@
 #include <filesystem>
 #include <limits>
 #include <string>
+
 namespace grav_qt {
+/// Description: Executes the formatFromSelectedFilter operation.
 std::string MainWindow::formatFromSelectedFilter(const QString& filter)
 {
     if (filter.startsWith("VTK ASCII")) {
@@ -27,6 +32,8 @@ std::string MainWindow::formatFromSelectedFilter(const QString& filter)
     }
     return {};
 }
+
+/// Description: Executes the configureRemoteConnectorFromUi operation.
 void MainWindow::configureRemoteConnectorFromUi()
 {
     std::string host = _serverHostEdit->text().trimmed().toStdString();
@@ -38,6 +45,8 @@ void MainWindow::configureRemoteConnectorFromUi()
                                        _serverAutostartCheck->isChecked(),
                                        _serverBinEdit->text().trimmed().toStdString());
 }
+
+/// Description: Executes the applyConnectorSettings operation.
 void MainWindow::applyConnectorSettings(bool reconnectNow)
 {
     configureRemoteConnectorFromUi();
@@ -50,6 +59,8 @@ void MainWindow::applyConnectorSettings(bool reconnectNow)
     }
     statusBar()->showMessage("Connector settings updated", 3000);
 }
+
+/// Description: Executes the requestReconnectFromUi operation.
 void MainWindow::requestReconnectFromUi()
 {
     _runtime->requestReconnect();
@@ -57,6 +68,8 @@ void MainWindow::requestReconnectFromUi()
     _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
     statusBar()->showMessage("Reconnect requested", 3000);
 }
+
+/// Description: Executes the handleExportRequest operation.
 void MainWindow::handleExportRequest()
 {
     const SimulationStats stats = _runtime->getCachedStats();
@@ -106,6 +119,8 @@ void MainWindow::handleExportRequest()
     }
     markConfigDirty();
 }
+
+/// Description: Executes the handleSaveCheckpointRequest operation.
 void MainWindow::handleSaveCheckpointRequest()
 {
     const SimulationStats stats = _runtime->getCachedStats();
@@ -130,6 +145,8 @@ void MainWindow::handleSaveCheckpointRequest()
     statusBar()->showMessage("Checkpoint save requested", 3000);
     markConfigDirty();
 }
+
+/// Description: Executes the handleLoadCheckpointRequest operation.
 void MainWindow::handleLoadCheckpointRequest()
 {
     const QString startPath = _config.inputFile.empty()
@@ -145,6 +162,8 @@ void MainWindow::handleLoadCheckpointRequest()
     _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
     statusBar()->showMessage("Checkpoint load requested", 3000);
 }
+
+/// Description: Executes the handleLoadInputRequest operation.
 void MainWindow::handleLoadInputRequest()
 {
     const QString startPath = _config.inputFile.empty()
@@ -163,6 +182,8 @@ void MainWindow::handleLoadInputRequest()
     (void)applyConfigToServer(true);
     markConfigDirty();
 }
+
+/// Description: Executes the handleLoadPresetRequest operation.
 void MainWindow::handleLoadPresetRequest()
 {
     const QString path = QFileDialog::getOpenFileName(this, "Load Preset Config",
@@ -179,6 +200,8 @@ void MainWindow::handleLoadPresetRequest()
     _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
     markConfigDirty(false);
 }
+
+/// Description: Executes the resetSimulationFromUi operation.
 void MainWindow::resetSimulationFromUi()
 {
     _runtime->requestReset();

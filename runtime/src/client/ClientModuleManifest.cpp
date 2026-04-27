@@ -1,3 +1,6 @@
+// File: runtime/src/client/ClientModuleManifest.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "client/ClientModuleManifest.hpp"
 #include "client/ClientModuleApi.hpp"
 #include "config/TextParse.hpp"
@@ -5,13 +8,16 @@
 #include <fstream>
 #include <string>
 #include <string_view>
+
 namespace grav_module {
+/// Description: Defines the ClientModuleManifestLocal data or behavior contract.
 class ClientModuleManifestLocal final {
 public:
     static bool isSupportedModuleId(std::string_view moduleId) noexcept
     {
         return moduleId == "cli" || moduleId == "echo" || moduleId == "gui" || moduleId == "qt";
     }
+
     static bool parseLine(std::string_view line, std::string& outKey, std::string& outValue)
     {
         const std::string_view trimmed = grav_text::trimView(line);
@@ -25,6 +31,7 @@ public:
         outValue.assign(grav_text::trimView(trimmed.substr(separator + 1u)));
         return !outKey.empty();
     }
+
     static bool readUnsigned(std::string_view rawValue, std::uint32_t& outValue)
     {
         unsigned int parsed = 0u;
@@ -34,6 +41,7 @@ public:
         outValue = parsed;
         return true;
     }
+
     static bool isHexDigest(std::string_view rawValue) noexcept
     {
         if (rawValue.size() != 64u) {
@@ -49,6 +57,8 @@ public:
         return true;
     }
 };
+
+/// Description: Describes the load operation contract.
 bool ClientModuleManifest::load(std::string_view modulePath, ClientModuleManifest& outManifest,
                                 std::string& outError)
 {
@@ -119,6 +129,8 @@ bool ClientModuleManifest::load(std::string_view modulePath, ClientModuleManifes
     outError.clear();
     return true;
 }
+
+/// Description: Describes the validate for load operation contract.
 bool ClientModuleManifest::validateForLoad(std::string_view modulePath,
                                            std::string_view expectedModuleId,
                                            std::string& outError) const
@@ -151,18 +163,26 @@ bool ClientModuleManifest::validateForLoad(std::string_view modulePath,
     outError.clear();
     return true;
 }
+
+/// Description: Describes the module id operation contract.
 std::string_view ClientModuleManifest::moduleId() const noexcept
 {
     return m_moduleId;
 }
+
+/// Description: Describes the module name operation contract.
 std::string_view ClientModuleManifest::moduleName() const noexcept
 {
     return m_moduleName;
 }
+
+/// Description: Describes the sha256 operation contract.
 std::string_view ClientModuleManifest::sha256() const noexcept
 {
     return m_sha256;
 }
+
+/// Description: Describes the api version operation contract.
 std::uint32_t ClientModuleManifest::apiVersion() const noexcept
 {
     return m_apiVersion;

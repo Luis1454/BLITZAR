@@ -1,3 +1,6 @@
+# File: cmake/rust.cmake
+# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+
 find_program(GRAVITY_CARGO_EXECUTABLE cargo REQUIRED)
 
 if(DEFINED GRAVITY_ROOT_DIR)
@@ -33,6 +36,7 @@ file(GLOB_RECURSE GRAVITY_RUST_RUNTIME_INPUTS CONFIGURE_DEPENDS
     "${GRAVITY_RUST_WORKSPACE_DIR}/blitzar-web-gateway/tests/*.rs"
 )
 
+# Description: Defines the gravity_ensure_rust_runtime_target function helper.
 function(gravity_ensure_rust_runtime_target)
     if(TARGET gravityRustRuntime)
         return()
@@ -61,6 +65,7 @@ function(gravity_ensure_rust_runtime_target)
     add_dependencies(gravityRustRuntime gravityRustRuntimeBuild)
 endfunction()
 
+# Description: Defines the gravity_ensure_rust_web_gateway_target function helper.
 function(gravity_ensure_rust_web_gateway_target)
     if(TARGET blitzar-web-gateway)
         return()

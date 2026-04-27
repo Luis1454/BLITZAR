@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/core/io.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import csv
@@ -18,22 +21,27 @@ RUST_TEST_RE = re.compile(r"#\s*\[\s*test\s*\][\s\r\n]*fn\s+([A-Za-z0-9_]+)\s*\(
 
 
 @dataclass(frozen=True)
+# Description: Defines the RegexSpec contract.
 class RegexSpec:
     pattern: str
     flags: int = 0
 
+    # Description: Executes the compile operation.
     def compile(self) -> Pattern[str]:
         return re.compile(self.pattern, self.flags)
 
+    # Description: Executes the search operation.
     def search(self, text: str) -> bool:
         return self.compile().search(text) is not None
 
 
 @dataclass(frozen=True)
+# Description: Defines the PathSpec contract.
 class PathSpec:
     root: Path
 
     @staticmethod
+    # Description: Executes the is_under operation.
     def is_under(path: Path, parent: Path) -> bool:
         try:
             path.relative_to(parent)
@@ -41,11 +49,14 @@ class PathSpec:
         except ValueError:
             return False
 
+    # Description: Executes the resolve operation.
     def resolve(self, relative: str) -> Path:
         return (self.root / relative).resolve()
 
 
+# Description: Defines the JsonLoader contract.
 class JsonLoader:
+    # Description: Executes the load operation.
     def load(self, path: Path) -> tuple[JsonValue | None, str | None]:
         try:
             return json.loads(path.read_text(encoding="utf-8")), None
@@ -53,7 +64,9 @@ class JsonLoader:
             return None, str(exc)
 
 
+# Description: Defines the CsvLoader contract.
 class CsvLoader:
+    # Description: Executes the load_rows operation.
     def load_rows(
         self,
         path: Path,
@@ -76,7 +89,9 @@ class CsvLoader:
         return rows, errors
 
 
+# Description: Defines the GitTrackedService contract.
 class GitTrackedService:
+    # Description: Executes the is_tracked operation.
     def is_tracked(self, root: Path, rel_path: str) -> bool:
         result = subprocess.run(
             ["git", "ls-files", "--error-unmatch", rel_path],
@@ -88,7 +103,9 @@ class GitTrackedService:
         return result.returncode == 0
 
 
+# Description: Defines the ProcessRunner contract.
 class ProcessRunner:
+    # Description: Executes the run operation.
     def run(
         self,
         args: list[str],
@@ -104,6 +121,7 @@ class ProcessRunner:
             check=False,
         )
 
+    # Description: Executes the run_with_heartbeat operation.
     def run_with_heartbeat(
         self,
         args: list[str],
@@ -143,6 +161,7 @@ class ProcessRunner:
                 process.kill()
 
 
+# Description: Executes the collect_test_ids operation.
 def collect_test_ids(root: Path, extra_test_ids: set[str], test_macro_re: Pattern[str] = TEST_MACRO_RE) -> set[str]:
     tests: set[str] = set(extra_test_ids)
     for path in (root / "tests").rglob("*.cpp"):
@@ -158,6 +177,7 @@ def collect_test_ids(root: Path, extra_test_ids: set[str], test_macro_re: Patter
     return tests
 
 
+# Description: Executes the _normalize_rust_test_id operation.
 def _normalize_rust_test_id(root: Path, path: Path, test_name: str) -> str:
     rel_parts = list(path.relative_to(root).with_suffix("").parts)
     if rel_parts and rel_parts[0] == "rust":
@@ -166,6 +186,7 @@ def _normalize_rust_test_id(root: Path, path: Path, test_name: str) -> str:
     return "::".join((*normalized_parts, test_name))
 
 
+# Description: Executes the collect_filtered_test_ids operation.
 def collect_filtered_test_ids(
     root: Path,
     id_re: Pattern[str],

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/ci/gpu_runner_inventory.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import json
@@ -9,13 +12,17 @@ from pathlib import Path
 from typing import Protocol
 
 
+# Description: Defines the ResponseLike contract.
 class ResponseLike(Protocol):
+    # Description: Executes the read operation.
     def read(self) -> bytes:
         ...
 
+    # Description: Executes the __enter__ operation.
     def __enter__(self) -> ResponseLike:
         ...
 
+    # Description: Executes the __exit__ operation.
     def __exit__(self, exc_type: object, exc: object, tb: object) -> bool | None:
         ...
 
@@ -23,14 +30,18 @@ class ResponseLike(Protocol):
 UrlOpen = Callable[[urllib.request.Request], ResponseLike]
 
 
+# Description: Executes the _normalize_labels operation.
 def _normalize_labels(labels: Iterable[str]) -> list[str]:
     return [label.strip() for label in labels if label.strip()]
 
 
+# Description: Defines the GitHubGpuRunnerInventory contract.
 class GitHubGpuRunnerInventory:
+    # Description: Executes the __init__ operation.
     def __init__(self, urlopen: UrlOpen | None = None) -> None:
         self._urlopen = urlopen or urllib.request.urlopen
 
+    # Description: Executes the collect operation.
     def collect(
         self,
         repo: str,
@@ -96,11 +107,13 @@ class GitHubGpuRunnerInventory:
             min_idle=min_idle,
         )
 
+    # Description: Executes the write operation.
     def write(self, report: dict[str, object], output_path: str) -> None:
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as handle:
             json.dump(report, handle, indent=2)
 
+    # Description: Executes the _fetch_runners operation.
     def _fetch_runners(self, repo: str, token: str, api_url: str) -> list[dict[str, object]]:
         request = urllib.request.Request(
             f"{api_url}/repos/{repo}/actions/runners?per_page=100",
@@ -133,6 +146,7 @@ class GitHubGpuRunnerInventory:
         return runners
 
     @staticmethod
+    # Description: Executes the _matches_required_labels operation.
     def _matches_required_labels(runner: dict[str, object], required: list[str]) -> bool:
         if not required:
             return True
@@ -141,6 +155,7 @@ class GitHubGpuRunnerInventory:
         return all(label in labels for label in required)
 
     @staticmethod
+    # Description: Executes the _report operation.
     def _report(
         repo: str,
         labels: list[str],

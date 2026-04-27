@@ -1,3 +1,6 @@
+# File: python_tools/ci/numerical_validation.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import json
@@ -9,7 +12,9 @@ from pathlib import Path
 from typing import cast
 
 
+# Description: Defines the NumericalValidationCampaign contract.
 class NumericalValidationCampaign:
+    # Description: Executes the load_profile operation.
     def load_profile(self, root: Path, profile: str) -> dict[str, object]:
         payload = json.loads((root / "docs/quality/manifest/numerical_campaign.json").read_text(encoding="utf-8"))
         profiles = payload.get("profiles")
@@ -20,6 +25,7 @@ class NumericalValidationCampaign:
             raise NumericalValidationError(f"unknown numerical validation profile: {profile}")
         return profile_payload
 
+    # Description: Executes the run operation.
     def run(self, root: Path, dist_dir: Path, profile: str, tool_path: Path) -> tuple[Path, dict[str, object]]:
         profile_payload = self.load_profile(root.resolve(), profile)
         runs = self._collect_runs(tool_path.resolve(), profile_payload.get("runs"))
@@ -27,6 +33,7 @@ class NumericalValidationCampaign:
         archive = self._archive(dist_dir.resolve(), report)
         return archive, report
 
+    # Description: Executes the _collect_runs operation.
     def _collect_runs(self, tool_path: Path, raw_runs: object) -> dict[str, dict[str, object]]:
         if not isinstance(raw_runs, list):
             raise NumericalValidationError("numerical validation runs must be a list")
@@ -53,12 +60,14 @@ class NumericalValidationCampaign:
             rows[run_id] = measurement
         return rows
 
+    # Description: Executes the _build_report operation.
     def _build_report(self, profile: str, runs: dict[str, dict[str, object]], raw_comparisons: object) -> dict[str, object]:
         failures: list[str] = []
         run_rows = [self._evaluate_run(run, failures) for run in runs.values()]
         comparison_rows = self._evaluate_comparisons(runs, raw_comparisons, failures)
         return {"format_version": "1.0", "generated_at_utc": datetime.now(UTC).isoformat(timespec="seconds"), "profile": profile, "status": "failed" if failures else "passed", "runs": run_rows, "comparisons": comparison_rows, "failures": failures}
 
+    # Description: Executes the _evaluate_run operation.
     def _evaluate_run(self, run: dict[str, object], failures: list[str]) -> dict[str, object]:
         checks = as_mapping(run.get("checks"))
         results = []
@@ -89,6 +98,7 @@ class NumericalValidationCampaign:
             "checks": results,
         }
 
+    # Description: Executes the _evaluate_comparisons operation.
     def _evaluate_comparisons(self, runs: dict[str, dict[str, object]], raw_comparisons: object, failures: list[str]) -> list[dict[str, object]]:
         if not isinstance(raw_comparisons, list):
             raise NumericalValidationError("numerical validation comparisons must be a list")
@@ -108,6 +118,7 @@ class NumericalValidationCampaign:
             rows.append({"id": entry["id"], "baseline": entry["baseline"], "candidate": entry["candidate"], "checks": check_rows})
         return rows
 
+    # Description: Executes the _archive operation.
     def _archive(self, dist_dir: Path, report: dict[str, object]) -> Path:
         if dist_dir.exists():
             shutil.rmtree(dist_dir)
@@ -118,10 +129,12 @@ class NumericalValidationCampaign:
         return Path(shutil.make_archive(str(archive_base), "zip", root_dir=dist_dir))
 
 
+# Description: Defines the NumericalValidationError contract.
 class NumericalValidationError(RuntimeError):
     pass
 
 
+# Description: Executes the render_numerical_validation_readme operation.
 def render_numerical_validation_readme(report: Mapping[str, object]) -> str:
     run_rows = _as_sequence(report.get("runs"))
     comparison_rows = _as_sequence(report.get("comparisons"))
@@ -144,6 +157,7 @@ def render_numerical_validation_readme(report: Mapping[str, object]) -> str:
     return "\n".join(lines) + "\n"
 
 
+# Description: Executes the parse_measurement operation.
 def parse_measurement(stdout: str) -> dict[str, object]:
     particles: list[list[float]] = []
     result: dict[str, object] = {"final_particles": particles}
@@ -171,6 +185,7 @@ def parse_measurement(stdout: str) -> dict[str, object]:
     return result
 
 
+# Description: Executes the comparison_metric operation.
 def comparison_metric(metric_name: str, baseline: dict[str, object], candidate: dict[str, object]) -> float:
     if metric_name == "center_of_mass_delta":
         return vector_distance(baseline, candidate, "final_center_of_mass")
@@ -183,6 +198,7 @@ def comparison_metric(metric_name: str, baseline: dict[str, object], candidate: 
     raise NumericalValidationError(f"unsupported comparison metric: {metric_name}")
 
 
+# Description: Executes the as_mapping operation.
 def as_mapping(raw: object) -> dict[str, float]:
     if raw is None:
         return {}
@@ -191,6 +207,7 @@ def as_mapping(raw: object) -> dict[str, float]:
     return {str(name): float(value) for name, value in raw.items()}
 
 
+# Description: Executes the require_string operation.
 def require_string(row: dict[str, object], field: str) -> str:
     value = row.get(field)
     if not isinstance(value, str) or not value.strip():
@@ -198,6 +215,7 @@ def require_string(row: dict[str, object], field: str) -> str:
     return value.strip()
 
 
+# Description: Executes the require_float operation.
 def require_float(row: dict[str, object], field: str) -> float:
     value = row.get(field)
     if isinstance(value, (int, float)):
@@ -205,10 +223,12 @@ def require_float(row: dict[str, object], field: str) -> float:
     raise NumericalValidationError(f"missing numeric field: {field}")
 
 
+# Description: Executes the vector_distance operation.
 def vector_distance(row_a: dict[str, object], row_b: dict[str, object], field: str) -> float:
     return _distance(_vector3(row_a, field), _vector3(row_b, field))
 
 
+# Description: Executes the max_particle_delta operation.
 def max_particle_delta(baseline: dict[str, object], candidate: dict[str, object]) -> float:
     particles_a = baseline.get("final_particles")
     particles_b = candidate.get("final_particles")
@@ -219,16 +239,19 @@ def max_particle_delta(baseline: dict[str, object], candidate: dict[str, object]
     return max(_distance(_row3(row_a), _row3(row_b)) for row_a, row_b in zip(rows_a, rows_b, strict=True))
 
 
+# Description: Executes the percent_delta operation.
 def percent_delta(baseline: float, candidate: float) -> float:
     return abs(candidate - baseline) / max(abs(baseline), 1e-6) * 100.0
 
 
+# Description: Executes the coerce_float operation.
 def coerce_float(value: object) -> float:
     if isinstance(value, (int, float)):
         return float(value)
     raise NumericalValidationError("numerical vector entries must be numeric")
 
 
+# Description: Executes the _vector3 operation.
 def _vector3(row: dict[str, object], field: str) -> list[float]:
     vector = row.get(field)
     if not isinstance(vector, list) or len(vector) != 3:
@@ -236,10 +259,12 @@ def _vector3(row: dict[str, object], field: str) -> list[float]:
     return [coerce_float(value) for value in cast(list[object], vector)]
 
 
+# Description: Executes the _row3 operation.
 def _row3(row: list[object]) -> list[float]:
     return [coerce_float(value) for value in row]
 
 
+# Description: Executes the _distance operation.
 def _distance(values_a: Sequence[float], values_b: Sequence[float]) -> float:
     dx = values_a[0] - values_b[0]
     dy = values_a[1] - values_b[1]
@@ -247,5 +272,6 @@ def _distance(values_a: Sequence[float], values_b: Sequence[float]) -> float:
     return float((dx * dx + dy * dy + dz * dz) ** 0.5)
 
 
+# Description: Executes the _as_sequence operation.
 def _as_sequence(value: object) -> Sequence[object]:
     return value if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)) else ()

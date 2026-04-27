@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: scripts/ci/release/package_sbom.py
+# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+
 from __future__ import annotations
 
 import argparse
@@ -12,6 +15,7 @@ if str(ROOT) not in sys.path:
 from python_tools.ci.release_sbom import ReleaseSbomPackager
 
 
+# Description: Executes the parse_args operation.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Package a CycloneDX SBOM for release artifacts.")
     parser.add_argument("--artifacts-dir", default="dist/release-bundle", help="Directory containing packaged release artifacts")
@@ -20,6 +24,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+# Description: Executes the main operation.
 def main() -> int:
     args = parse_args()
     packager = ReleaseSbomPackager()

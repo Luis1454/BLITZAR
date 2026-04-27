@@ -1,3 +1,6 @@
+# File: tests/checks/suites/release/test_performance_benchmark.py
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 from __future__ import annotations
 
 import json
@@ -6,6 +9,7 @@ from pathlib import Path
 from python_tools.ci.performance_benchmark import PerformanceBenchmarkCampaign
 
 
+# Description: Executes the _write_campaign operation.
 def _write_campaign(root: Path) -> None:
     payload = {
         "profiles": {
@@ -44,7 +48,9 @@ def _write_campaign(root: Path) -> None:
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
+# Description: Executes the _runner operation.
 def _runner(outputs: dict[tuple[str, ...], str]):
+    # Description: Executes the run operation.
     def run(command: list[str]) -> str:
         key = tuple(command)
         if key not in outputs:
@@ -54,6 +60,7 @@ def _runner(outputs: dict[tuple[str, ...], str]):
     return run
 
 
+# Description: Executes the test_tst_unt_perf_001_performance_campaign_passes_when_baselines_hold operation.
 def test_tst_unt_perf_001_performance_campaign_passes_when_baselines_hold(tmp_path: Path) -> None:
     _write_campaign(tmp_path)
     tool = tmp_path / "fake-tool"
@@ -70,6 +77,7 @@ def test_tst_unt_perf_001_performance_campaign_passes_when_baselines_hold(tmp_pa
     assert report["failures"] == []
 
 
+# Description: Executes the test_tst_unt_perf_002_performance_campaign_fails_on_threshold_and_regression operation.
 def test_tst_unt_perf_002_performance_campaign_fails_on_threshold_and_regression(tmp_path: Path) -> None:
     _write_campaign(tmp_path)
     tool = tmp_path / "fake-tool"
@@ -87,6 +95,7 @@ def test_tst_unt_perf_002_performance_campaign_fails_on_threshold_and_regression
     assert len(report["failures"]) == 4
 
 
+# Description: Executes the test_tst_unt_perf_003_performance_campaign_writes_summary_archive operation.
 def test_tst_unt_perf_003_performance_campaign_writes_summary_archive(tmp_path: Path) -> None:
     _write_campaign(tmp_path)
     tool = tmp_path / "fake-tool"

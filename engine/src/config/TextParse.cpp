@@ -1,3 +1,6 @@
+// File: engine/src/config/TextParse.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "config/TextParse.hpp"
 #include <charconv>
 #include <limits>
@@ -6,11 +9,14 @@
 #include <string>
 #include <system_error>
 #include <type_traits>
+
 namespace grav_text {
+/// Description: Executes the trimView operation.
 std::string_view trimView(std::string_view value)
 {
-    const auto begin = std::find_if_not(value.begin(), value.end(),
-                                        [](unsigned char c) { return std::isspace(c) != 0; });
+    const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char c) {
+        return std::isspace(c) != 0;
+    });
     const auto end = std::find_if_not(value.rbegin(), value.rend(), [](unsigned char c) {
                          return std::isspace(c) != 0;
                      }).base();
@@ -20,6 +26,8 @@ std::string_view trimView(std::string_view value)
     const std::size_t trimmedSize = static_cast<std::size_t>(std::distance(begin, end));
     return value.substr(beginOffset, trimmedSize);
 }
+
+/// Description: Executes the parseSigned64 operation.
 bool parseSigned64(std::string_view rawValue, long long& out)
 {
     const std::string_view trimmed = trimView(rawValue);
@@ -35,6 +43,8 @@ bool parseSigned64(std::string_view rawValue, long long& out)
     out = parsed;
     return true;
 }
+
+/// Description: Executes the parseUnsigned64 operation.
 bool parseUnsigned64(std::string_view rawValue, unsigned long long& out)
 {
     const std::string_view trimmed = trimView(rawValue);
@@ -50,6 +60,8 @@ bool parseUnsigned64(std::string_view rawValue, unsigned long long& out)
     out = parsed;
     return true;
 }
+
+/// Description: Executes the parseFloat64 operation.
 bool parseFloat64(std::string_view rawValue, double& out)
 {
     const std::string_view trimmed = trimView(rawValue);
@@ -71,6 +83,8 @@ bool parseFloat64(std::string_view rawValue, double& out)
     out = static_cast<double>(parsedFallback);
     return true;
 }
+
+/// Description: Executes the parseNumber operation.
 template <typename NumberType> bool parseNumber(std::string_view rawValue, NumberType& out)
 {
     if constexpr (std::is_integral_v<NumberType>) {
@@ -115,14 +129,25 @@ template <typename NumberType> bool parseNumber(std::string_view rawValue, Numbe
         return false;
     }
 }
+
+/// Description: Describes the parse number<short> operation contract.
 template bool parseNumber<short>(std::string_view rawValue, short& out);
+/// Description: Describes the short> operation contract.
 template bool parseNumber<unsigned short>(std::string_view rawValue, unsigned short& out);
+/// Description: Describes the parse number<int> operation contract.
 template bool parseNumber<int>(std::string_view rawValue, int& out);
+/// Description: Describes the int> operation contract.
 template bool parseNumber<unsigned int>(std::string_view rawValue, unsigned int& out);
+/// Description: Describes the parse number<long> operation contract.
 template bool parseNumber<long>(std::string_view rawValue, long& out);
+/// Description: Describes the long> operation contract.
 template bool parseNumber<unsigned long>(std::string_view rawValue, unsigned long& out);
+/// Description: Describes the long> operation contract.
 template bool parseNumber<long long>(std::string_view rawValue, long long& out);
+/// Description: Describes the long> operation contract.
 template bool parseNumber<unsigned long long>(std::string_view rawValue, unsigned long long& out);
+/// Description: Describes the parse number<float> operation contract.
 template bool parseNumber<float>(std::string_view rawValue, float& out);
+/// Description: Describes the parse number<double> operation contract.
 template bool parseNumber<double>(std::string_view rawValue, double& out);
 } // namespace grav_text

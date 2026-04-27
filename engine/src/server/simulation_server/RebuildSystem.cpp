@@ -1,4 +1,9 @@
+// File: engine/src/server/simulation_server/RebuildSystem.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
+
+/// Description: Executes the rebuildSystem operation.
 void SimulationServer::rebuildSystem()
 {
     // Important with the current CUDA global-buffer model:

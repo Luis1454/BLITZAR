@@ -1,3 +1,6 @@
+// File: modules/echo/module.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "client/ClientModuleApi.hpp"
 #include "client/ClientModuleBoundary.hpp"
 #include <algorithm>
@@ -7,10 +10,13 @@
 #include <iostream>
 #include <memory>
 #include <string>
+
+/// Description: Executes the trim operation.
 static std::string trim(const std::string& input)
 {
-    const auto begin = std::find_if_not(input.begin(), input.end(),
-                                        [](unsigned char c) { return std::isspace(c) != 0; });
+    const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
+        return std::isspace(c) != 0;
+    });
     const auto end = std::find_if_not(input.rbegin(), input.rend(), [](unsigned char c) {
                          return std::isspace(c) != 0;
                      }).base();
@@ -18,9 +24,13 @@ static std::string trim(const std::string& input)
         return {};
     return std::string(begin, end);
 }
+
+/// Description: Defines the EchoState data or behavior contract.
 struct EchoState {
     std::string configPath;
 };
+
+/// Description: Defines the EchoModuleLocal data or behavior contract.
 class EchoModuleLocal final {
 public:
     static bool create(const grav_module::ClientHostContextV1* context,
@@ -48,6 +58,7 @@ public:
             return false;
         }
     }
+
     static void destroy(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
@@ -60,6 +71,7 @@ public:
             std::cerr << "[module-echo] destroy error: unknown\n";
         }
     }
+
     static bool start(grav_module::ClientModuleOpaqueState moduleState,
                       const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -81,6 +93,7 @@ public:
             return false;
         }
     }
+
     static bool handleCommand(std::string_view commandLine,
                               const grav_module::ClientModuleCommandControl& commandControl,
                               const grav_client::ErrorBufferView& errorBuffer)
@@ -108,6 +121,7 @@ public:
         }
     }
 };
+
 extern "C" GRAVITY_CLIENT_MODULE_EXPORT_ATTR const grav_module::ClientModuleExportsV1*
 gravity_client_module_v1()
 {

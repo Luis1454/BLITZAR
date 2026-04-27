@@ -1,7 +1,13 @@
+// File: modules/qt/include/ui/ParticleView.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEW_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEW_HPP_
-/* * Module: ui * Responsibility: Render a single particle projection or 3D view inside the Qt
- * workspace. */
+/*
+ * Module: ui
+ * Responsibility: Render a single particle projection or 3D view inside the Qt
+ * workspace.
+ */
 #include "ui/OctreeOverlay.hpp"
 #include "ui/QtViewMath.hpp"
 #include <QImage>
@@ -10,10 +16,13 @@
 #include <functional>
 #include <optional>
 #include <vector>
+/// Description: Defines the QMouseEvent data or behavior contract.
 class QMouseEvent;
+/// Description: Defines the QPaintEvent data or behavior contract.
 class QPaintEvent;
 typedef QMouseEvent UiMouseEvent;
 typedef QPaintEvent UiPaintEvent;
+
 namespace grav_qt {
 /// Renders one projection of the current particle snapshot.
 class ParticleView : public QWidget {
@@ -38,9 +47,13 @@ public:
 private:
     typedef UiMouseEvent* MouseEventHandle;
     typedef UiPaintEvent* PaintEventHandle;
+    /// Description: Describes the mouse press event operation contract.
     void mousePressEvent(MouseEventHandle event) override;
+    /// Description: Describes the mouse move event operation contract.
     void mouseMoveEvent(MouseEventHandle event) override;
+    /// Description: Describes the paint event operation contract.
     void paintEvent(PaintEventHandle event) override;
+    /// Description: Describes the mouse release event operation contract.
     void mouseReleaseEvent(MouseEventHandle event) override;
     grav::ViewMode _mode;
     std::optional<std::reference_wrapper<const std::vector<RenderParticle>>> _snapshot;

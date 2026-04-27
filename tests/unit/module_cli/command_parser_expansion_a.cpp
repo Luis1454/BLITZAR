@@ -1,7 +1,12 @@
+// File: tests/unit/module_cli/command_parser_expansion_a.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "command/CommandParser.hpp"
 #include <gtest/gtest.h>
 #include <string>
+
 namespace grav_test_module_cli_command_parser_expansion_a {
+/// Description: Executes the TEST operation.
 TEST(CommandParserExpansionATest, TST_UNT_MODCLI_042_ParseLineTrimsLeadingAndTrailingWhitespace)
 {
     const grav_cmd::CommandParseResult parsed =
@@ -10,6 +15,8 @@ TEST(CommandParserExpansionATest, TST_UNT_MODCLI_042_ParseLineTrimsLeadingAndTra
     ASSERT_EQ(parsed.requests.size(), 1u);
     EXPECT_EQ(parsed.requests.front().name, "status");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserExpansionATest, TST_UNT_MODCLI_043_ParseLineAcceptsOptionalStepCountOmitted)
 {
     const grav_cmd::CommandParseResult parsed = grav_cmd::CommandParser::parseLine("step", 2u);
@@ -18,6 +25,8 @@ TEST(CommandParserExpansionATest, TST_UNT_MODCLI_043_ParseLineAcceptsOptionalSte
     EXPECT_EQ(parsed.requests.front().name, "step");
     EXPECT_TRUE(parsed.requests.front().arguments.empty());
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserExpansionATest, TST_UNT_MODCLI_044_ParseLineRejectsTooManyArgumentsForStatus)
 {
     const grav_cmd::CommandParseResult parsed =
@@ -25,6 +34,8 @@ TEST(CommandParserExpansionATest, TST_UNT_MODCLI_044_ParseLineRejectsTooManyArgu
     ASSERT_FALSE(parsed.ok);
     EXPECT_EQ(parsed.error, "line 3: wrong arity for 'status'");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserExpansionATest, TST_UNT_MODCLI_045_ParseLineRejectsInvalidPortToken)
 {
     const grav_cmd::CommandParseResult parsed =
@@ -32,6 +43,8 @@ TEST(CommandParserExpansionATest, TST_UNT_MODCLI_045_ParseLineRejectsInvalidPort
     ASSERT_FALSE(parsed.ok);
     EXPECT_EQ(parsed.error, "line 4: invalid integer '45a'");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserExpansionATest, TST_UNT_MODCLI_046_ParseLineParsesConnectPortAsUint)
 {
     const grav_cmd::CommandParseResult parsed =
@@ -42,6 +55,8 @@ TEST(CommandParserExpansionATest, TST_UNT_MODCLI_046_ParseLineParsesConnectPortA
     EXPECT_EQ(std::get<std::string>(parsed.requests.front().arguments[0]), "10.0.0.5");
     EXPECT_EQ(std::get<std::uint64_t>(parsed.requests.front().arguments[1]), 4545u);
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserExpansionATest, TST_UNT_MODCLI_047_ParseLineAcceptsScientificFloatForSetDt)
 {
     const grav_cmd::CommandParseResult parsed =
@@ -51,6 +66,8 @@ TEST(CommandParserExpansionATest, TST_UNT_MODCLI_047_ParseLineAcceptsScientificF
     ASSERT_EQ(parsed.requests.front().arguments.size(), 1u);
     EXPECT_DOUBLE_EQ(std::get<double>(parsed.requests.front().arguments[0]), 1e-3);
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserExpansionATest, TST_UNT_MODCLI_048_ParseLineRejectsMalformedFloatForSetDt)
 {
     const grav_cmd::CommandParseResult parsed =
@@ -58,6 +75,8 @@ TEST(CommandParserExpansionATest, TST_UNT_MODCLI_048_ParseLineRejectsMalformedFl
     ASSERT_FALSE(parsed.ok);
     EXPECT_EQ(parsed.error, "line 7: invalid float '0.5,'");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserExpansionATest, TST_UNT_MODCLI_049_ParseLineAcceptsExportSnapshotWithoutFormat)
 {
     const grav_cmd::CommandParseResult parsed =
@@ -67,6 +86,8 @@ TEST(CommandParserExpansionATest, TST_UNT_MODCLI_049_ParseLineAcceptsExportSnaps
     ASSERT_EQ(parsed.requests.front().arguments.size(), 1u);
     EXPECT_EQ(std::get<std::string>(parsed.requests.front().arguments[0]), "outputs/frame");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserExpansionATest, TST_UNT_MODCLI_050_ParseLineRejectsExportSnapshotTooManyArguments)
 {
     const grav_cmd::CommandParseResult parsed =
@@ -74,6 +95,8 @@ TEST(CommandParserExpansionATest, TST_UNT_MODCLI_050_ParseLineRejectsExportSnaps
     ASSERT_FALSE(parsed.ok);
     EXPECT_EQ(parsed.error, "line 9: wrong arity for 'export_snapshot'");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandParserExpansionATest, TST_UNT_MODCLI_051_ParseLineSupportsSingleQuotedCheckpointPath)
 {
     const grav_cmd::CommandParseResult parsed =

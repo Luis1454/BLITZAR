@@ -1,8 +1,13 @@
+// File: engine/src/platform/win/PlatformProcessWin.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/win/PlatformProcessWin.hpp"
 #include "platform/PlatformErrors.hpp"
 #include "platform/PlatformProcess.hpp"
 #include <windows.h>
+
 namespace grav_platform_detail {
+/// Description: Describes the launch process operation contract.
 bool launchProcess(const std::string& executable, const std::vector<std::string>& args,
                    bool createNewConsole, NativeProcessHandle& outHandle, std::int64_t& outPid,
                    std::string& outError)
@@ -26,6 +31,8 @@ bool launchProcess(const std::string& executable, const std::vector<std::string>
     outPid = static_cast<std::int64_t>(processInfo.dwProcessId);
     return true;
 }
+
+/// Description: Describes the terminate process operation contract.
 bool terminateProcess(NativeProcessHandle& handle, std::int64_t& pid, std::uint32_t waitMs,
                       std::string& outError)
 {
@@ -44,6 +51,8 @@ bool terminateProcess(NativeProcessHandle& handle, std::int64_t& pid, std::uint3
     pid = 0;
     return true;
 }
+
+/// Description: Executes the isProcessRunning operation.
 bool isProcessRunning(NativeProcessHandle handle, std::int64_t pid)
 {
     (void)pid;
@@ -55,6 +64,8 @@ bool isProcessRunning(NativeProcessHandle handle, std::int64_t pid)
     }
     return code == STILL_ACTIVE;
 }
+
+/// Description: Executes the clearProcessHandle operation.
 void clearProcessHandle(NativeProcessHandle& handle, std::int64_t& pid)
 {
     if (handle != 0u) {
@@ -63,10 +74,14 @@ void clearProcessHandle(NativeProcessHandle& handle, std::int64_t& pid)
     }
     pid = 0;
 }
+
+/// Description: Executes the formatProcessId operation.
 std::string formatProcessId(std::int64_t pid)
 {
     return std::to_string(pid);
 }
+
+/// Description: Describes the launch detached process operation contract.
 bool launchDetachedProcess(const std::string& executable, const std::vector<std::string>& args,
                            std::string& outError)
 {
@@ -86,6 +101,8 @@ bool launchDetachedProcess(const std::string& executable, const std::vector<std:
     CloseHandle(processInfo.hProcess);
     return true;
 }
+
+/// Description: Describes the run process blocking operation contract.
 int runProcessBlocking(const std::string& executable, const std::vector<std::string>& args,
                        bool createNewConsole, std::string& outError)
 {

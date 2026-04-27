@@ -1,13 +1,16 @@
+// File: apps/client-host/client_host_cli_args.cpp
+// Purpose: Application entry point or host support for BLITZAR executables.
+
 #include <iostream>
 
 #include "apps/client-host/client_host_cli_args.hpp"
 
 namespace grav_client_host {
 
+/// Description: Defines the ClientHostCliArgsLocal data or behavior contract.
 class ClientHostCliArgsLocal final {
 public:
-    static bool parseArgs(int argc, char** argv, HostOptions& outOptions,
-                          std::string& outError)
+    static bool parseArgs(int argc, char** argv, HostOptions& outOptions, std::string& outError)
     {
         outOptions = HostOptions{};
         for (int i = 1; i < argc; ++i) {
@@ -83,12 +86,14 @@ public:
     }
 };
 
+/// Description: Describes the parse args operation contract.
 bool ClientHostCliArgs::parseArgs(int argc, char** argv, HostOptions& outOptions,
                                   std::string& outError)
 {
     return ClientHostCliArgsLocal::parseArgs(argc, argv, outOptions, outError);
 }
 
+/// Description: Executes the printHelp operation.
 void ClientHostCliArgs::printHelp(std::string_view programName)
 {
     ClientHostCliArgsLocal::printHelp(programName);

@@ -1,3 +1,6 @@
+// File: tests/support/qt_test_utils.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "tests/support/qt_test_utils.hpp"
 #include "tests/support/poll_utils.hpp"
 #include "ui/MainWindow.hpp"
@@ -15,7 +18,9 @@
 #include <cstring>
 #include <fstream>
 #include <sstream>
+
 namespace testsupport {
+/// Description: Executes the ensureQtApp operation.
 QApplication* ensureQtApp()
 {
     if (QApplication::instance() != nullptr) {
@@ -40,6 +45,7 @@ QApplication* ensureQtApp()
     static QApplication app(argc, argv);
     return &app;
 }
+
 QString findStatusLabelText(const grav_qt::MainWindow& window)
 {
     const QList<QLabel*> labels = window.findChildren<QLabel*>();
@@ -50,6 +56,8 @@ QString findStatusLabelText(const grav_qt::MainWindow& window)
         }
     return summaryLines.join("\n");
 }
+
+/// Description: Executes the saveFailureEvidence operation.
 std::filesystem::path saveFailureEvidence(grav_qt::MainWindow& window, const std::string& stem)
 {
     const std::filesystem::path basePath = std::filesystem::temp_directory_path() / stem;
@@ -58,6 +66,8 @@ std::filesystem::path saveFailureEvidence(grav_qt::MainWindow& window, const std
     out << findStatusLabelText(window).toStdString();
     return basePath;
 }
+
+/// Description: Executes the findSummaryUnsignedMetric operation.
 std::uint64_t findSummaryUnsignedMetric(const grav_qt::MainWindow& window, const std::string& label)
 {
     const std::string status = findStatusLabelText(window).toStdString();
@@ -72,6 +82,8 @@ std::uint64_t findSummaryUnsignedMetric(const grav_qt::MainWindow& window, const
     }
     return value;
 }
+
+/// Description: Executes the readAllFile operation.
 std::string readAllFile(const std::filesystem::path& path)
 {
     std::ifstream in(path, std::ios::binary);
@@ -82,6 +94,8 @@ std::string readAllFile(const std::filesystem::path& path)
     out << in.rdbuf();
     return out.str();
 }
+
+/// Description: Executes the findSolverCombo operation.
 QComboBox* findSolverCombo(grav_qt::MainWindow& window)
 {
     const QList<QComboBox*> combos = window.findChildren<QComboBox*>();
@@ -92,6 +106,8 @@ QComboBox* findSolverCombo(grav_qt::MainWindow& window)
         }
     return nullptr;
 }
+
+/// Description: Executes the findComboByObjectName operation.
 QComboBox* findComboByObjectName(grav_qt::MainWindow& window, const QString& objectName)
 {
     const QList<QComboBox*> combos = window.findChildren<QComboBox*>();
@@ -101,6 +117,8 @@ QComboBox* findComboByObjectName(grav_qt::MainWindow& window, const QString& obj
         }
     return nullptr;
 }
+
+/// Description: Executes the findCheckBoxByText operation.
 QCheckBox* findCheckBoxByText(grav_qt::MainWindow& window, const QString& text)
 {
     const QList<QCheckBox*> checks = window.findChildren<QCheckBox*>();
@@ -110,6 +128,8 @@ QCheckBox* findCheckBoxByText(grav_qt::MainWindow& window, const QString& text)
         }
     return nullptr;
 }
+
+/// Description: Executes the findButtonByText operation.
 QPushButton* findButtonByText(grav_qt::MainWindow& window, const QString& text)
 {
     const QList<QPushButton*> buttons = window.findChildren<QPushButton*>();
@@ -119,10 +139,13 @@ QPushButton* findButtonByText(grav_qt::MainWindow& window, const QString& text)
         }
     return nullptr;
 }
+
+/// Description: Describes the wait until ui operation contract.
 bool waitUntilUi(const std::function<bool()>& predicate, std::chrono::milliseconds timeout,
                  std::chrono::milliseconds pollInterval)
 {
-    return waitUntil(predicate, timeout, pollInterval,
-                     []() { QCoreApplication::processEvents(QEventLoop::AllEvents, 20); });
+    return waitUntil(predicate, timeout, pollInterval, []() {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
+    });
 }
 } // namespace testsupport

@@ -1,3 +1,6 @@
+// File: tests/int/runtime/runtime_draw_cap.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ClientCommon.hpp"
 #include "config/SimulationConfig.hpp"
 #include "protocol/ServerProtocol.hpp"
@@ -5,13 +8,17 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <sstream>
+
 namespace grav_test_client_runtime {
+/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_005_ClampsConfiguredClientCapToProtocolMax)
 {
     SimulationConfig config = SimulationConfig::defaults();
     config.clientParticleCap = grav_protocol::kSnapshotMaxPoints + 5000u;
     EXPECT_EQ(grav_client::resolveClientDrawCap(config), grav_protocol::kSnapshotMaxPoints);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_006_ClampsEnvironmentOverrideToProtocolMax)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -19,6 +26,8 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_006_ClampsEnvironmentOverrideToProtocolMax)
     testsupport::ScopedEnvVar drawCapOverride("GRAVITY_CLIENT_DRAW_CAP", "50000");
     EXPECT_EQ(grav_client::resolveClientDrawCap(config), grav_protocol::kSnapshotMaxPoints);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_007_InvalidEnvironmentOverrideFallsBackToConfigAndWarns)
 {
     SimulationConfig config = SimulationConfig::defaults();

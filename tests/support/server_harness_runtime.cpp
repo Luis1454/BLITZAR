@@ -1,3 +1,6 @@
+// File: tests/support/server_harness_runtime.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/EnvUtils.hpp"
 #include "platform/PlatformPaths.hpp"
 #include "platform/SocketPlatform.hpp"
@@ -9,7 +12,9 @@
 #include <optional>
 #include <string>
 #include <thread>
+
 namespace grav_test_server_runtime {
+/// Description: Describes the find server executable in build directories operation contract.
 std::string findServerExecutableInBuildDirectories(const std::filesystem::path& root,
                                                    const std::string& defaultName)
 {
@@ -37,6 +42,8 @@ std::string findServerExecutableInBuildDirectories(const std::filesystem::path& 
     return {};
 }
 } // namespace grav_test_server_runtime
+
+/// Description: Executes the resolveServerExecutable operation.
 std::string RealServerHarness::resolveServerExecutable()
 {
     if (const std::optional<std::string> fromEnv = grav_env::get("GRAVITY_SERVER_EXE");
@@ -60,14 +67,17 @@ std::string RealServerHarness::resolveServerExecutable()
             return fromBuildDir;
         }
         if (const std::string fromParentBuildDir =
-                grav_test_server_runtime::findServerExecutableInBuildDirectories(cwd.parent_path(),
-                                                                                 defaultName);
+                /// contract.
+            grav_test_server_runtime::findServerExecutableInBuildDirectories(cwd.parent_path(),
+                                                                             defaultName);
             !fromParentBuildDir.empty()) {
             return fromParentBuildDir;
         }
     }
     return defaultName;
 }
+
+/// Description: Executes the isPortBindable operation.
 bool RealServerHarness::isPortBindable(std::uint16_t port)
 {
     if (port == 0u)
@@ -86,6 +96,8 @@ bool RealServerHarness::isPortBindable(std::uint16_t port)
     grav_socket::shutdownSocketLayer();
     return ok;
 }
+
+/// Description: Executes the waitUntilReady operation.
 bool RealServerHarness::waitUntilReady(std::string& outError) const
 {
     ServerClient client;

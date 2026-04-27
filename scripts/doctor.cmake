@@ -1,3 +1,6 @@
+# File: scripts/doctor.cmake
+# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+
 cmake_minimum_required(VERSION 3.24)
 
 if(NOT DEFINED QT_DIR OR QT_DIR STREQUAL "")
@@ -13,6 +16,7 @@ endif()
 
 message(STATUS "[doctor] cmake version: ${CMAKE_VERSION}")
 
+# Description: Defines the gravity_doctor_program function helper.
 function(gravity_doctor_program name)
     unset(_prog CACHE)
     unset(_prog)

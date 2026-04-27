@@ -1,3 +1,6 @@
+// File: tests/int/runtime/runtime.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ClientRuntime.hpp"
 #include "tests/support/client_utils.hpp"
 #include "tests/support/poll_utils.hpp"
@@ -11,7 +14,9 @@
 #include <optional>
 #include <string>
 #include <vector>
+
 namespace grav_test_client_runtime {
+/// Description: Describes the write snapshot pipeline config operation contract.
 static std::filesystem::path writeSnapshotPipelineConfig(const char* basename,
                                                          std::uint32_t queueCapacity,
                                                          const char* dropPolicy)
@@ -25,6 +30,8 @@ static std::filesystem::path writeSnapshotPipelineConfig(const char* basename,
     out << "client_snapshot_drop_policy=" << dropPolicy << "\n";
     return path;
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAndSnapshot)
 {
     RealServerHarness server;
@@ -33,8 +40,11 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAn
     grav_client::ClientRuntime runtime(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
-    ASSERT_TRUE(testsupport::waitUntil([&]() { return runtime.linkStateLabel() == "connected"; },
-                                       std::chrono::milliseconds(4000)));
+    ASSERT_TRUE(testsupport::waitUntil(
+        [&]() {
+            return runtime.linkStateLabel() == "connected";
+        },
+        std::chrono::milliseconds(4000)));
     const SimulationStats stats = runtime.getStats();
     EXPECT_GT(stats.particleCount, 0u);
     EXPECT_GT(stats.dt, 0.0f);
@@ -57,6 +67,8 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAn
     runtime.stop();
     server.stop();
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_002_StartFailsWhenRemoteServerIsUnavailable)
 {
     RealServerHarness server;
@@ -69,6 +81,8 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_002_StartFailsWhenRemoteServerIsUnavailable
     EXPECT_FALSE(runtime.start());
     EXPECT_EQ(runtime.linkStateLabel(), "reconnecting");
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_003_ReconnectsWhenRealServerRestarts)
 {
     RealServerHarness server;
@@ -78,18 +92,29 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_003_ReconnectsWhenRealServerRestarts)
     grav_client::ClientRuntime runtime(
         "simulation.ini", testsupport::makeTransport(fixedPort, server.executablePath()));
     ASSERT_TRUE(runtime.start());
-    ASSERT_TRUE(testsupport::waitUntil([&]() { return runtime.linkStateLabel() == "connected"; },
-                                       std::chrono::milliseconds(4000)));
+    ASSERT_TRUE(testsupport::waitUntil(
+        [&]() {
+            return runtime.linkStateLabel() == "connected";
+        },
+        std::chrono::milliseconds(4000)));
     server.stop();
-    ASSERT_TRUE(testsupport::waitUntil([&]() { return runtime.linkStateLabel() == "reconnecting"; },
-                                       std::chrono::milliseconds(4000)));
+    ASSERT_TRUE(testsupport::waitUntil(
+        [&]() {
+            return runtime.linkStateLabel() == "reconnecting";
+        },
+        std::chrono::milliseconds(4000)));
     ASSERT_TRUE(server.start(startError, fixedPort)) << startError;
     runtime.requestReconnect();
-    ASSERT_TRUE(testsupport::waitUntil([&]() { return runtime.linkStateLabel() == "connected"; },
-                                       std::chrono::milliseconds(5000)));
+    ASSERT_TRUE(testsupport::waitUntil(
+        [&]() {
+            return runtime.linkStateLabel() == "connected";
+        },
+        std::chrono::milliseconds(5000)));
     runtime.stop();
     server.stop();
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeToReachRealServer)
 {
     RealServerHarness server;
@@ -98,23 +123,34 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeToRe
     grav_client::ClientRuntime runtime(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
-    ASSERT_TRUE(testsupport::waitUntil([&]() { return runtime.linkStateLabel() == "connected"; },
-                                       std::chrono::milliseconds(4000)));
+    ASSERT_TRUE(testsupport::waitUntil(
+        [&]() {
+            return runtime.linkStateLabel() == "connected";
+        },
+        std::chrono::milliseconds(4000)));
     const std::uint16_t wrongPort = static_cast<std::uint16_t>(
         server.port() == 65535u ? server.port() - 1u : server.port() + 1u);
     runtime.configureRemoteConnector("127.0.0.1", wrongPort, false, server.executablePath());
     runtime.requestReconnect();
-    ASSERT_TRUE(testsupport::waitUntil([&]() { return runtime.linkStateLabel() == "reconnecting"; },
-                                       std::chrono::milliseconds(3000)));
+    ASSERT_TRUE(testsupport::waitUntil(
+        [&]() {
+            return runtime.linkStateLabel() == "reconnecting";
+        },
+        std::chrono::milliseconds(3000)));
     runtime.configureRemoteConnector("127.0.0.1", server.port(), false, server.executablePath());
     runtime.requestReconnect();
-    ASSERT_TRUE(testsupport::waitUntil([&]() { return runtime.linkStateLabel() == "connected"; },
-                                       std::chrono::milliseconds(5000)));
+    ASSERT_TRUE(testsupport::waitUntil(
+        [&]() {
+            return runtime.linkStateLabel() == "connected";
+        },
+        std::chrono::milliseconds(5000)));
     EXPECT_TRUE(runtime.isRemoteMode());
     EXPECT_EQ(runtime.serverOwnerLabel(), "external");
     runtime.stop();
     server.stop();
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_009_LatestOnlySnapshotQueueKeepsLatencyLowWhileDroppingBacklog)
 {
     RealServerHarness server;
@@ -145,6 +181,8 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_009_LatestOnlySnapshotQueueKeepsLatencyLowW
     std::error_code ec;
     std::filesystem::remove(configPath, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_010_PacedSnapshotQueuePreservesBacklogAndReportsLatencyGrowth)
 {
     RealServerHarness server;
@@ -178,6 +216,8 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_010_PacedSnapshotQueuePreservesBacklogAndRe
     std::error_code ec;
     std::filesystem::remove(configPath, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_011_BackendSnapshotPolicyReducesTransferForLowDrawCap)
 {
     RealServerHarness server;

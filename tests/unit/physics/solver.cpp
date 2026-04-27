@@ -1,3 +1,6 @@
+// File: tests/unit/physics/solver.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "tests/support/physics_scenario.hpp"
 #include "tests/support/physics_test_utils.hpp"
 #include <chrono>
@@ -7,7 +10,9 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
+
 namespace testsupport {
+/// Description: Executes the countOccurrences operation.
 static std::size_t countOccurrences(const std::string& text, const std::string& pattern)
 {
     if (pattern.empty()) {
@@ -21,6 +26,8 @@ static std::size_t countOccurrences(const std::string& text, const std::string& 
     }
     return count;
 }
+
+/// Description: Describes the max particle delta operation contract.
 static float maxParticleDelta(const std::vector<RenderParticle>& baseline,
                               const std::vector<RenderParticle>& candidate)
 {
@@ -33,6 +40,8 @@ static float maxParticleDelta(const std::vector<RenderParticle>& baseline,
     }
     return maxDelta;
 }
+
+/// Description: Executes the writeStabilityConfig operation.
 static std::filesystem::path writeStabilityConfig(float minSoftening, float minDistance2)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -60,6 +69,8 @@ static std::filesystem::path writeStabilityConfig(float minSoftening, float minD
     out << "energy_sample_limit=64\n";
     return path;
 }
+
+/// Description: Executes the runTotalEnergyFromConfig operation.
 static float runTotalEnergyFromConfig(const std::filesystem::path& path)
 {
     SimulationServer server(path.string());
@@ -75,6 +86,8 @@ static float runTotalEnergyFromConfig(const std::filesystem::path& path)
     server.stop();
     return totalEnergy;
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
 {
     ScenarioConfig base =
@@ -137,6 +150,8 @@ TEST(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
     EXPECT_LE(cpuParticleDelta, 0.05f);
     EXPECT_LE(gpuParticleDelta, 0.05f);
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_001_ServerLogsEffectiveModesAfterReset)
 {
     SimulationServer server(48u, 0.01f);
@@ -162,6 +177,8 @@ TEST(PhysicsTest, TST_UNT_RUNT_001_ServerLogsEffectiveModesAfterReset)
     EXPECT_EQ(output.find("[solver] using"), std::string::npos);
     EXPECT_EQ(output.find("[integrator] mode="), std::string::npos);
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_002_ParticleSystemCtorKeepsExplicitInitialState)
 {
     std::vector<Particle> initialParticles(2);
@@ -187,6 +204,8 @@ TEST(PhysicsTest, TST_UNT_RUNT_002_ParticleSystemCtorKeepsExplicitInitialState)
     EXPECT_FLOAT_EQ(configuredParticles[1].getMass(), 0.5f);
     EXPECT_FLOAT_EQ(configuredParticles[1].getTemperature(), 2.0f);
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_010_DeterministicReplayIdentical)
 {
     ScenarioConfig cfg = buildDiskOrbitScenario(64u, 0.005f, 20u, 77777u, "pairwise_cuda", "euler");
@@ -206,6 +225,8 @@ TEST(PhysicsTest, TST_UNT_PHYS_010_DeterministicReplayIdentical)
     std::string replayError;
     EXPECT_TRUE(haveExactReplayMatch(runA, runB, replayError)) << replayError;
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_018_EnergyEstimateUsesConfiguredStabilityConstants)
 {
     const std::filesystem::path permissivePath = writeStabilityConfig(0.01f, 0.01f);

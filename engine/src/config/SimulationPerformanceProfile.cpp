@@ -1,16 +1,24 @@
+// File: engine/src/config/SimulationPerformanceProfile.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "config/SimulationPerformanceProfile.hpp"
 #include "config/SimulationConfig.hpp"
 #include "protocol/ServerProtocol.hpp"
 #include <algorithm>
 #include <cctype>
+
 namespace grav_config {
+/// Description: Executes the toLowerProfile operation.
 static std::string toLowerProfile(std::string_view raw)
 {
     std::string lowered(raw);
-    std::transform(lowered.begin(), lowered.end(), lowered.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::transform(lowered.begin(), lowered.end(), lowered.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
     return lowered;
 }
+
+/// Description: Executes the normalizePerformanceProfile operation.
 bool normalizePerformanceProfile(std::string_view raw, std::string& outCanonical)
 {
     const std::string lowered = toLowerProfile(raw);
@@ -32,6 +40,8 @@ bool normalizePerformanceProfile(std::string_view raw, std::string& outCanonical
     }
     return false;
 }
+
+/// Description: Executes the applyPerformanceProfile operation.
 void applyPerformanceProfile(SimulationConfig& config)
 {
     std::string canonical;
@@ -67,6 +77,8 @@ void applyPerformanceProfile(SimulationConfig& config)
     config.substepTargetDt = 0.0f;
     config.maxSubsteps = 32u;
 }
+
+/// Description: Executes the isPerformanceManagedField operation.
 bool isPerformanceManagedField(std::string_view key)
 {
     return key == "substep_target_dt" || key == "max_substeps" ||

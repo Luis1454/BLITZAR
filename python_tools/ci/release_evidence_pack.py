@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/ci/release_evidence_pack.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import json
@@ -16,18 +19,23 @@ from python_tools.ci.release_support import (
 from python_tools.policies.quality_manifest import EvidenceRegistry, QualityManifestLoader
 
 
+# Description: Defines the ReleaseEvidencePackError contract.
 class ReleaseEvidencePackError(RuntimeError):
     pass
 
 
+# Description: Defines the ReleaseEvidencePackager contract.
 class ReleaseEvidencePackager:
+    # Description: Executes the __init__ operation.
     def __init__(self) -> None:
         self._manifest = QualityManifestLoader()
         self._registry = EvidenceRegistry()
 
+    # Description: Executes the resolve_tag operation.
     def resolve_tag(self, explicit: str | None) -> str:
         return resolve_release_tag(explicit)
 
+    # Description: Executes the package operation.
     def package(
         self,
         root: Path,
@@ -58,6 +66,7 @@ class ReleaseEvidencePackager:
         )
         return self._archive_pack(repo_root, dist_dir.resolve(), tag, pack, evidence_files)
 
+    # Description: Executes the _select_requirements operation.
     def _select_requirements(
         self,
         raw_requirements: object,
@@ -80,6 +89,7 @@ class ReleaseEvidencePackager:
             )
         return rows
 
+    # Description: Executes the _resolve_evidence_files operation.
     def _resolve_evidence_files(
         self,
         root: Path,
@@ -103,6 +113,7 @@ class ReleaseEvidencePackager:
             files.append({"id": ref, "path": path_str})
         return files
 
+    # Description: Executes the _build_pack operation.
     def _build_pack(
         self,
         root: Path,
@@ -128,6 +139,7 @@ class ReleaseEvidencePackager:
             "open_exceptions": load_open_exceptions(root),
         }
 
+    # Description: Executes the _archive_pack operation.
     def _archive_pack(
         self,
         root: Path,
@@ -154,6 +166,7 @@ class ReleaseEvidencePackager:
         return Path(shutil.make_archive(str(archive_base), "zip", root_dir=dist_dir))
 
     @staticmethod
+    # Description: Executes the _read_string_list operation.
     def _read_string_list(row: Mapping[str, object], requirement_id: str, field: str) -> list[str]:
         raw = row.get(field)
         if not isinstance(raw, list):

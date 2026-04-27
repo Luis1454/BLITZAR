@@ -24,6 +24,7 @@ static_assert(
     (sizeof(GpuSystemMetrics) % 64u) == 0u,
     "GpuSystemMetrics must remain cacheline aligned");
 
+/// Description: Defines the SphGridParams data or behavior contract.
 struct SphGridParams {
     int gridSize;
     int totalCells;
@@ -49,6 +50,7 @@ typedef GpuOctreeNode * OctreeNodeHandle;
 typedef const GpuOctreeNode * OctreeNodeConstHandle;
 typedef int * IndexHandle;
 typedef const int * IndexConstHandle;
+/// Description: Executes the checkCudaStatus operation.
 bool checkCudaStatus(cudaError_t status, std::string_view stage)
 {
     if (status != cudaSuccess) {
@@ -63,6 +65,7 @@ bool checkCudaStatus(cudaError_t status, std::string_view stage)
     return true;
 }
 
+/// Description: Executes the parseBoolEnv operation.
 bool parseBoolEnv(std::string_view name, bool fallback)
 {
     constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
@@ -73,6 +76,7 @@ bool parseBoolEnv(std::string_view name, bool fallback)
     return grav_env::getBool(name, fallback);
 }
 
+/// Description: Executes the parseFloatEnv operation.
 float parseFloatEnv(std::string_view name, float fallback)
 {
     constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
@@ -87,6 +91,7 @@ float parseFloatEnv(std::string_view name, float fallback)
     return parsed;
 }
 
+/// Description: Executes the solverModeFromEnv operation.
 ParticleSystem::SolverMode solverModeFromEnv()
 {
     constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
@@ -109,6 +114,7 @@ ParticleSystem::SolverMode solverModeFromEnv()
     return ParticleSystem::SolverMode::PairwiseCuda;
 }
 
+/// Description: Executes the integratorModeFromEnv operation.
 ParticleSystem::IntegratorMode integratorModeFromEnv()
 {
     constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
@@ -127,26 +133,32 @@ ParticleSystem::IntegratorMode integratorModeFromEnv()
     }
     return ParticleSystem::IntegratorMode::Euler;
 }
+/// Description: Describes the operator+ operation contract.
 __host__ __device__ Vector3 operator+(Vector3 a, Vector3 b) {
     return Vector3{a.x + b.x, a.y + b.y, a.z + b.z};
 }
 
+/// Description: Describes the operator- operation contract.
 __host__ __device__ Vector3 operator-(Vector3 a, Vector3 b) {
     return Vector3{a.x - b.x, a.y - b.y, a.z - b.z};
 }
 
+/// Description: Describes the operator* operation contract.
 __host__ __device__ Vector3 operator*(Vector3 a, float b) {
     return Vector3{a.x * b, a.y * b, a.z * b};
 }
 
+/// Description: Describes the operator/ operation contract.
 __host__ __device__ Vector3 operator/(Vector3 a, float b) {
     return Vector3{a.x / b, a.y / b, a.z / b};
 }
 
+/// Description: Describes the operator* operation contract.
 __host__ __device__ Vector3 operator*(Vector3 a, Vector3 b) {
     return Vector3{a.x * b.x, a.y * b.y, a.z * b.z};
 }
 
+/// Description: Describes the operator/ operation contract.
 __host__ __device__ Vector3 operator/(Vector3 a, Vector3 b) {
     return Vector3{a.x / b.x, a.y / b.y, a.z / b.z};
 }
@@ -165,10 +177,12 @@ __host__ __device__ Vector3 &operator-=(Vector3 &a, Vector3 b) {
     return a;
 }
 
+/// Description: Executes the dot operation.
 __host__ __device__ float dot(Vector3 a, Vector3 b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
+/// Description: Executes the Particle operation.
 __host__ __device__ Particle::Particle() {
     _position = Vector3{0.0f, 0.0f, 0.0f};
     _velocity = Vector3{0.0f, 0.0f, 0.0f};
@@ -179,84 +193,104 @@ __host__ __device__ Particle::Particle() {
     _temperature = 0.0f;
 }
 
+/// Description: Releases resources owned by Particle.
 __host__ __device__ Particle::~Particle() {
 }
 
+/// Description: Executes the applyForce operation.
 __host__ __device__ void Particle::applyForce(Vector3 force) {
     _force += force;
 }
 
+/// Description: Executes the getMass operation.
 __device__ __host__ float Particle::getMass() const {
     return _mass;
 }
 
+/// Description: Executes the setMass operation.
 __device__ __host__ void Particle::setMass(float mass) {
     _mass = mass;
 }
 
+/// Description: Executes the getPosition operation.
 __device__ __host__ Vector3 Particle::getPosition() const {
     return _position;
 }
 
+/// Description: Executes the setPosition operation.
 __device__ __host__ void Particle::setPosition(Vector3 position) {
     _position = position;
 }
 
+/// Description: Executes the getVelocity operation.
 __device__ __host__ Vector3 Particle::getVelocity() const {
     return _velocity;
 }
 
+/// Description: Executes the setVelocity operation.
 __device__ __host__ void Particle::setVelocity(Vector3 velocity) {
     _velocity = velocity;
 }
 
+/// Description: Executes the getPressure operation.
 __device__ __host__ Vector3 Particle::getPressure() const {
     return _pressure;
 }
 
+/// Description: Executes the setPressure operation.
 __device__ __host__ void Particle::setPressure(Vector3 pressure) {
     _pressure = pressure;
 }
 
+/// Description: Executes the setTemperature operation.
 __device__ __host__ void Particle::setTemperature(float temperature) {
     _temperature = temperature;
 }
 
+/// Description: Executes the getDensity operation.
 __device__ __host__ float Particle::getDensity() const {
     return _density;
 }
 
+/// Description: Executes the setDensity operation.
 __device__ __host__ void Particle::setDensity(float density) {
     _density = density;
 }
 
+/// Description: Executes the getTemperature operation.
 __device__ __host__ float Particle::getTemperature() const {
     return _temperature;
 }
 
+/// Description: Executes the move operation.
 __device__ __host__ void Particle::move(Vector3 position) {
     _position += position;
 }
 
+/// Description: Executes the bounce operation.
 __device__ __host__ void Particle::bounce(Vector3 normal, float dt) {
     _position -= _velocity * dt;
     _velocity -= normal * 2.0f * dot(_velocity, normal);
 }
 
+/// Description: Executes the update operation.
 __host__ __device__ void Particle::update(float deltaTime) {
     _velocity += _force * deltaTime;
     _position += _velocity * deltaTime;
     _force = Vector3{0.0f, 0.0f, 0.0f};
 }
 
+/// Description: Executes the norm operation.
 __host__ __device__ float Vector3::norm() const {
     return sqrtf(x * x + y * y + z * z);
 }
 
+/// Description: Executes the normalize operation.
 __host__ __device__ Vector3 normalize(Vector3 v) {
     return v / sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
+/// Description: Executes the clampAcceleration operation.
 __host__ __device__ Vector3 clampAcceleration(Vector3 accel, float maxAcceleration)
 {
     const float accelNorm = accel.norm();
@@ -266,21 +300,25 @@ __host__ __device__ Vector3 clampAcceleration(Vector3 accel, float maxAccelerati
     return accel;
 }
 
+/// Description: Executes the clampSofteningValue operation.
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampSofteningValue(float softening, float minSoftening)
 {
     return fmaxf(softening, minSoftening);
 }
 
+/// Description: Executes the clampThetaValue operation.
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampThetaValue(float theta, float minTheta)
 {
     return fmaxf(theta, minTheta);
 }
 
+/// Description: Executes the softenedDistanceSquared operation.
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE float softenedDistanceSquared(Vector3 delta, ForceLawPolicy policy)
 {
     return dot(delta, delta) + policy.softening * policy.softening;
 }
 
+/// Description: Describes the gravity acceleration from source operation contract.
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 gravityAccelerationFromSource(
     Vector3 selfPosition,
     Vector3 sourcePosition,
@@ -298,6 +336,7 @@ GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 gravityAccelerationFromSource(
     return delta * (sourceMass * invDist3);
 }
 
+/// Description: Describes the compute pairwise acceleration operation contract.
 __host__ __device__ Vector3 computePairwiseAcceleration(
     ParticleSoAView state,
     int numParticles,
@@ -324,6 +363,7 @@ __host__ __device__ Vector3 computePairwiseAcceleration(
     return clampAcceleration(force, maxAcceleration);
 }
 
+/// Description: Executes the sphPoly6 operation.
 __device__ float sphPoly6(float r2, float h)
 {
     const float h2 = h * h;
@@ -335,6 +375,7 @@ __device__ float sphPoly6(float r2, float h)
     return coeff * diff * diff * diff;
 }
 
+/// Description: Executes the sphSpikyGrad operation.
 __device__ float sphSpikyGrad(float r, float h)
 {
     if (r <= 1e-6f || r >= h) {
@@ -345,6 +386,7 @@ __device__ float sphSpikyGrad(float r, float h)
     return coeff * diff * diff;
 }
 
+/// Description: Executes the sphViscosityLaplacian operation.
 __device__ float sphViscosityLaplacian(float r, float h)
 {
     if (r >= h) {
@@ -354,6 +396,7 @@ __device__ float sphViscosityLaplacian(float r, float h)
     return coeff * (h - r);
 }
 
+/// Description: Describes the publish metrics kernel operation contract.
 __global__ void publishMetricsKernel(
     GpuSystemMetrics *mappedMetrics,
     ParticleSoAView state,
@@ -461,6 +504,7 @@ __global__ void publishMetricsKernel(
     *sequence = even;
 }
 
+/// Description: Describes the update particles operation contract.
 __global__ void updateParticles(
     ParticleSoAView last,
     ParticleSoAView current,
@@ -487,6 +531,7 @@ __global__ void updateParticles(
     }
 }
 
+/// Description: Describes the compute sph density pressure kernel operation contract.
 __global__ void computeSphDensityPressureKernel(
     ParticleSoAView particles,
     FloatHandle outDensity,
@@ -615,6 +660,7 @@ __global__ void integrateSphKernel(
     outParticles.mass[i] = selfMass;
 }
 
+/// Description: Executes the copyParticlesKernel operation.
 __global__ void copyParticlesKernel(ParticleConstHandle src, ParticleHandle dst, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -624,6 +670,7 @@ __global__ void copyParticlesKernel(ParticleConstHandle src, ParticleHandle dst,
     dst[i] = src[i];
 }
 
+/// Description: Executes the extractVelocityKernel operation.
 __global__ void extractVelocityKernel(ParticleSoAView particles, Vector3Handle outVelocity, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -633,6 +680,7 @@ __global__ void extractVelocityKernel(ParticleSoAView particles, Vector3Handle o
     outVelocity[i] = getSoAVelocity(particles, i);
 }
 
+/// Description: Describes the compute pairwise acceleration kernel operation contract.
 __global__ void computePairwiseAccelerationKernel(
     ParticleSoAView state,
     Vector3Handle outAcceleration,
@@ -648,6 +696,7 @@ __global__ void computePairwiseAccelerationKernel(
     outAcceleration[i] = computePairwiseAcceleration(state, numParticles, i, policy, maxAcceleration);
 }
 
+/// Description: Describes the build rk4 stage kernel operation contract.
 __global__ void buildRk4StageKernel(
     ParticleSoAView base,
     Vector3ConstHandle kPos,
@@ -671,6 +720,7 @@ __global__ void buildRk4StageKernel(
     stage.dens[i] = base.dens[i];
 }
 
+/// Description: Executes the primeHalfVelocityKernel operation.
 __global__ void primeHalfVelocityKernel(ParticleSoAView state, float3 *vHalf, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -685,6 +735,7 @@ __global__ void primeHalfVelocityKernel(ParticleSoAView state, float3 *vHalf, in
     vHalf[i] = sVel[threadIdx.x];
 }
 
+/// Description: Describes the apply kick half step kernel operation contract.
 __global__ void applyKickHalfStepKernel(
     ParticleSoAView state,
     Vector3ConstHandle acceleration,
@@ -713,6 +764,7 @@ __global__ void applyKickHalfStepKernel(
         vel.z + acc.z * halfDt);
 }
 
+/// Description: Describes the drift with half velocity kernel operation contract.
 __global__ void driftWithHalfVelocityKernel(
     ParticleSoAView state,
     const float3 *vHalf,
@@ -746,6 +798,7 @@ __global__ void driftWithHalfVelocityKernel(
     out.dens[i] = state.dens[i];
 }
 
+/// Description: Describes the finalize leapfrog kick kernel operation contract.
 __global__ void finalizeLeapfrogKickKernel(
     ParticleSoAView driftedState,
     const float3 *vHalf,
@@ -789,6 +842,7 @@ __global__ void finalizeLeapfrogKickKernel(
         halfVel.z + acc.z * deltaTime);
 }
 
+/// Description: Executes the packSoAKernel operation.
 __global__ void packSoAKernel(ParticleConstHandle src, ParticleSoAView dst, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -813,6 +867,7 @@ __global__ void packSoAKernel(ParticleConstHandle src, ParticleSoAView dst, int 
     dst.dens[i] = p.getDensity();
 }
 
+/// Description: Executes the unpackSoAKernel operation.
 __global__ void unpackSoAKernel(ParticleSoAView src, ParticleHandle dst, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;

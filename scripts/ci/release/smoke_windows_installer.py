@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: scripts/ci/release/smoke_windows_installer.py
+# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+
 from __future__ import annotations
 
 import argparse
@@ -13,6 +16,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
+# Description: Executes the _locate_7z operation.
 def _locate_7z() -> Path:
     candidate = shutil.which("7z") or shutil.which("7z.exe")
     if candidate:
@@ -28,6 +32,7 @@ def _locate_7z() -> Path:
     raise RuntimeError("7z executable not found. Install 7-Zip to validate the installer archive.")
 
 
+# Description: Executes the parse_args operation.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Validate a packaged native Windows installer.")
     parser.add_argument("--installer", required=True, help="Installer executable produced by package_bundle.py")
@@ -35,6 +40,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+# Description: Executes the main operation.
 def main() -> int:
     args = parse_args()
     installer = Path(args.installer)

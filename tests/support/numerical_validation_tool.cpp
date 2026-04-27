@@ -1,3 +1,6 @@
+// File: tests/support/numerical_validation_tool.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "tests/support/numerical_validation_tool.hpp"
 #include "tests/support/physics_scenario.hpp"
 #include <array>
@@ -7,16 +10,22 @@
 #include <ostream>
 #include <string>
 #include <vector>
+
 namespace grav_test_numerics_tool {
+/// Description: Defines the ToolOptions data or behavior contract.
 struct ToolOptions {
     std::string preset;
     std::string solver;
 };
+
+/// Description: Defines the PresetConfig data or behavior contract.
 struct PresetConfig {
     testsupport::ScenarioConfig scenario{};
     std::string dataset;
     std::uint32_t seed = 0u;
 };
+
+/// Description: Describes the center of mass drift operation contract.
 float centerOfMassDrift(const std::vector<RenderParticle>& initial,
                         const std::vector<RenderParticle>& final)
 {
@@ -27,12 +36,16 @@ float centerOfMassDrift(const std::vector<RenderParticle>& initial,
     const float dz = end[2] - start[2];
     return std::sqrt(dx * dx + dy * dy + dz * dz);
 }
+
+/// Description: Executes the writeVector operation.
 void writeVector(std::ostream& out, const std::string& name, const std::array<float, 3>& value)
 {
     out << name << "=" << value[0] << "," << value[1] << "," << value[2] << "\n";
 }
 } // namespace grav_test_numerics_tool
+
 namespace grav_test_numerics {
+/// Description: Describes the parse args operation contract.
 bool parseArgs(int argc, const char* const* argv, grav_test_numerics_tool::ToolOptions& out,
                std::string& error)
 {
@@ -65,6 +78,8 @@ bool parseArgs(int argc, const char* const* argv, grav_test_numerics_tool::ToolO
     }
     return true;
 }
+
+/// Description: Describes the apply preset operation contract.
 bool applyPreset(const grav_test_numerics_tool::ToolOptions& options,
                  grav_test_numerics_tool::PresetConfig& out, std::string& error)
 {
@@ -163,6 +178,8 @@ bool applyPreset(const grav_test_numerics_tool::ToolOptions& options,
     out.scenario = cfg;
     return true;
 }
+
+/// Description: Describes the run operation contract.
 int NumericalValidationTool::run(int argc, const char* const* argv, std::ostream& out,
                                  std::ostream& err) const
 {

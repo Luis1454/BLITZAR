@@ -1,9 +1,15 @@
+// File: engine/src/graphics/ViewMath.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "graphics/ViewMath.hpp"
 #include <algorithm>
 #include <cmath>
+
 namespace grav {
 constexpr float kIsoYaw = 0.78539816339f;
 constexpr float kIsoPitch = 0.61547970867f;
+
+/// Description: Describes the rotate3 d operation contract.
 static void rotate3D(float x, float y, float z, float yaw, float pitch, float roll, float& outX,
                      float& outY, float& outZ)
 {
@@ -21,6 +27,8 @@ static void rotate3D(float x, float y, float z, float yaw, float pitch, float ro
     outY = sr * x1 + cr * y1;
     outZ = z2;
 }
+
+/// Description: Executes the baseOrientation operation.
 static void baseOrientation(ViewMode mode, float& yaw, float& pitch, float& roll)
 {
     yaw = 0.0f;
@@ -31,6 +39,8 @@ static void baseOrientation(ViewMode mode, float& yaw, float& pitch, float& roll
         pitch = kIsoPitch;
     }
 }
+
+/// Description: Describes the mode components operation contract.
 static void modeComponents(ViewMode mode, float x, float y, float z, float& sx, float& sy,
                            float& depth)
 {
@@ -59,12 +69,16 @@ static void modeComponents(ViewMode mode, float x, float y, float z, float& sx, 
         break;
     }
 }
+
+/// Description: Executes the distanceSquared operation.
 static float distanceSquared(const Point2D& a, const Point2D& b)
 {
     const float dx = a.x - b.x;
     const float dy = a.y - b.y;
     return dx * dx + dy * dy;
 }
+
+/// Description: Describes the project particle operation contract.
 ProjectedPoint projectParticle(const RenderParticle& particle, ViewMode mode,
                                const CameraState& camera)
 {
@@ -92,6 +106,8 @@ ProjectedPoint projectParticle(const RenderParticle& particle, ViewMode mode,
         return ProjectedPoint{0.0f, 0.0f, depth, false};
     return ProjectedPoint{sx * perspectiveScale, sy * perspectiveScale, depth, true};
 }
+
+/// Description: Executes the computeGimbal operation.
 GimbalOverlay computeGimbal(const Rect2D& viewport, ViewMode mode, const CameraState& camera)
 {
     const float size = std::clamp(std::min(viewport.width, viewport.height) * 0.26f, 54.0f, 94.0f);
@@ -122,6 +138,8 @@ GimbalOverlay computeGimbal(const Rect2D& viewport, ViewMode mode, const CameraS
     }
     return GimbalOverlay{bounds, center, radius, handles};
 }
+
+/// Description: Executes the pickGimbalAxis operation.
 GimbalAxis pickGimbalAxis(const GimbalOverlay& overlay, const Point2D& mouse)
 {
     const float threshold2 = 11.0f * 11.0f;

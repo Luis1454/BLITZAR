@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/ci/gpu_runner_bootstrap.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import json
@@ -9,10 +12,12 @@ from pathlib import Path
 from typing import Any, cast
 
 
+# Description: Defines the WindowsGpuRunnerBootstrap contract.
 class WindowsGpuRunnerBootstrap:
     REQUIRED_TOOLS = ("python", "cmake", "ninja", "nvidia-smi", "nvcc")
     REQUIRED_FILES = ("config.cmd", "run.cmd", "svc.cmd")
 
+    # Description: Executes the plan operation.
     def plan(
         self,
         repo: str,
@@ -56,12 +61,14 @@ class WindowsGpuRunnerBootstrap:
         }
 
     @staticmethod
+    # Description: Executes the write operation.
     def write(plan: dict[str, Any], output_path: Path) -> Path:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(json.dumps(plan, indent=2), encoding="utf-8")
         return output_path
 
     @staticmethod
+    # Description: Executes the emit_script operation.
     def emit_script(plan: dict[str, Any], output_path: Path) -> Path:
         commands = cast(dict[str, list[str]], plan["commands"])
         script = [
@@ -76,6 +83,7 @@ class WindowsGpuRunnerBootstrap:
         return output_path
 
     @staticmethod
+    # Description: Executes the execute operation.
     def execute(plan: dict[str, Any]) -> None:
         token_env = cast(str, plan["token_env"])
         commands = cast(dict[str, list[str]], plan["commands"])
@@ -91,5 +99,6 @@ class WindowsGpuRunnerBootstrap:
                 raise RuntimeError(f"bootstrap command failed: {' '.join(command)}")
 
     @staticmethod
+    # Description: Executes the _quote_command operation.
     def _quote_command(command: list[str]) -> str:
         return " ".join(f'"{part}"' if " " in part else part for part in command)

@@ -1,3 +1,6 @@
+// File: tests/unit/physics/substep_policy.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "server/SimulationServer.hpp"
 #include <chrono>
 #include <filesystem>
@@ -5,7 +8,9 @@
 #include <gtest/gtest.h>
 #include <thread>
 #include <vector>
+
 namespace grav_test_substep_policy {
+/// Description: Executes the writeTempConfig operation.
 static std::filesystem::path writeTempConfig()
 {
     const std::filesystem::path path =
@@ -22,6 +27,8 @@ static std::filesystem::path writeTempConfig()
     out << "sph_enabled=false\n";
     return path;
 }
+
+/// Description: Executes the waitForSteps operation.
 static bool waitForSteps(SimulationServer& server, std::uint64_t expectedSteps, int timeoutMs)
 {
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
@@ -33,6 +40,8 @@ static bool waitForSteps(SimulationServer& server, std::uint64_t expectedSteps, 
     }
     return server.getStats().steps >= expectedSteps;
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_004_ServerAppliesConfiguredSubstepPolicy)
 {
     const std::filesystem::path configPath = writeTempConfig();
@@ -48,6 +57,8 @@ TEST(PhysicsTest, TST_UNT_RUNT_004_ServerAppliesConfiguredSubstepPolicy)
     std::error_code ec;
     std::filesystem::remove(configPath, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_005_ServerAppliesInteractivePerformancePreset)
 {
     const std::filesystem::path path =

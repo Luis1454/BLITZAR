@@ -1,4 +1,9 @@
+// File: engine/src/server/simulation_server/TelemetryAndPendingOps.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
+
+/// Description: Executes the clearGpuTelemetry operation.
 void SimulationServer::clearGpuTelemetry()
 {
     _gpuTelemetryAvailable.store(false, std::memory_order_relaxed);
@@ -7,6 +12,8 @@ void SimulationServer::clearGpuTelemetry()
     _gpuVramUsedBytes.store(0u, std::memory_order_relaxed);
     _gpuVramTotalBytes.store(0u, std::memory_order_relaxed);
 }
+
+/// Description: Describes the maybe sample gpu telemetry operation contract.
 void SimulationServer::maybeSampleGpuTelemetry(std::string_view solverMode,
                                                std::uint64_t currentStep)
 {
@@ -40,6 +47,8 @@ void SimulationServer::maybeSampleGpuTelemetry(std::string_view solverMode,
         std::memory_order_relaxed);
     _gpuVramTotalBytes.store(static_cast<std::uint64_t>(totalBytes), std::memory_order_relaxed);
 }
+
+/// Description: Executes the processPendingExport operation.
 void SimulationServer::processPendingExport()
 {
     PendingExportRequest request{};
@@ -75,6 +84,8 @@ void SimulationServer::processPendingExport()
         std::cerr << "[server] export capture failed: " << outputPath << "\n";
     }
 }
+
+/// Description: Executes the processPendingCheckpointSave operation.
 void SimulationServer::processPendingCheckpointSave()
 {
     if (_checkpointQueueState == nullptr) {
@@ -103,6 +114,8 @@ void SimulationServer::processPendingCheckpointSave()
     }
     request.result->condition.notify_all();
 }
+
+/// Description: Executes the exportCurrentState operation.
 bool SimulationServer::exportCurrentState(const std::string& outputPath, const std::string& format)
 {
     if (!_system)

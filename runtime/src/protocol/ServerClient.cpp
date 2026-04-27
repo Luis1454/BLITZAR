@@ -1,3 +1,6 @@
+// File: runtime/src/protocol/ServerClient.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "protocol/ServerClient.hpp"
 #include "platform/SocketPlatform.hpp"
 #include "protocol/ServerProtocol.hpp"
@@ -10,10 +13,14 @@
 #include <string>
 #include <string_view>
 #include <utility>
+
+/// Description: Executes the asBytes operation.
 static grav_socket::ConstBytes asBytes(std::string_view text)
 {
     return grav_socket::ConstBytes{reinterpret_cast<const std::byte*>(text.data()), text.size()};
 }
+
+/// Description: Executes the sendAll operation.
 static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes bytes)
 {
     std::size_t offset = 0;
@@ -25,14 +32,20 @@ static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes by
     }
     return true;
 }
+
+/// Description: Executes the clampTimeoutMs operation.
 static int clampTimeoutMs(int timeoutMs)
 {
     return grav_socket::clampTimeoutMs(timeoutMs);
 }
+
+/// Description: Executes the serverClientError operation.
 static std::string serverClientError(std::string_view operation, std::string_view detail)
 {
     return std::string("[server-client] ") + std::string(operation) + ": " + std::string(detail);
 }
+
+/// Description: Executes the ServerClient operation.
 ServerClient::ServerClient()
     : _socket(grav_socket::invalidHandle()),
       _socketTimeoutMs(3000),
@@ -41,10 +54,14 @@ ServerClient::ServerClient()
       _authToken()
 {
 }
+
+/// Description: Releases resources owned by ServerClient.
 ServerClient::~ServerClient()
 {
     disconnect();
 }
+
+/// Description: Executes the connect operation.
 bool ServerClient::connect(const std::string& host, std::uint16_t port)
 {
     try {
@@ -79,6 +96,8 @@ bool ServerClient::connect(const std::string& host, std::uint16_t port)
         return false;
     }
 }
+
+/// Description: Executes the setSocketTimeoutMs operation.
 void ServerClient::setSocketTimeoutMs(int timeoutMs)
 {
     _socketTimeoutMs = clampTimeoutMs(timeoutMs);
@@ -86,14 +105,20 @@ void ServerClient::setSocketTimeoutMs(int timeoutMs)
         grav_socket::setSocketTimeoutMs(_socket, _socketTimeoutMs);
     }
 }
+
+/// Description: Executes the socketTimeoutMs operation.
 int ServerClient::socketTimeoutMs() const
 {
     return _socketTimeoutMs;
 }
+
+/// Description: Executes the setAuthToken operation.
 void ServerClient::setAuthToken(std::string token)
 {
     _authToken = std::move(token);
 }
+
+/// Description: Executes the disconnect operation.
 void ServerClient::disconnect()
 {
     try {
@@ -118,14 +143,19 @@ void ServerClient::disconnect()
         _networkInitialized = false;
     }
 }
+
+/// Description: Executes the isConnected operation.
 bool ServerClient::isConnected() const
 {
     return grav_socket::isValid(_socket);
 }
+
+/// Description: Executes the trim operation.
 std::string ServerClient::trim(const std::string& value)
 {
-    const auto begin = std::find_if_not(value.begin(), value.end(),
-                                        [](unsigned char c) { return std::isspace(c) != 0; });
+    const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char c) {
+        return std::isspace(c) != 0;
+    });
     const auto end = std::find_if_not(value.rbegin(), value.rend(), [](unsigned char c) {
                          return std::isspace(c) != 0;
                      }).base();
@@ -133,6 +163,8 @@ std::string ServerClient::trim(const std::string& value)
         return {};
     return std::string(begin, end);
 }
+
+/// Description: Executes the readLine operation.
 bool ServerClient::readLine(std::string& outLine)
 {
     try {
@@ -169,6 +201,8 @@ bool ServerClient::readLine(std::string& outLine)
         return false;
     }
 }
+
+/// Description: Executes the sendJson operation.
 ServerClientResponse ServerClient::sendJson(const std::string& jsonLine)
 {
     ServerClientResponse response;
@@ -216,6 +250,8 @@ ServerClientResponse ServerClient::sendJson(const std::string& jsonLine)
         return response;
     }
 }
+
+/// Description: Describes the send command operation contract.
 ServerClientResponse ServerClient::sendCommand(const std::string& cmd,
                                                const std::string& fieldsJson)
 {
@@ -224,6 +260,8 @@ ServerClientResponse ServerClient::sendCommand(const std::string& cmd,
     request.token = _authToken;
     return sendJson(grav_protocol::ServerJsonCodec::makeCommandRequest(request, fieldsJson));
 }
+
+/// Description: Executes the getStatus operation.
 ServerClientResponse ServerClient::getStatus(ServerClientStatus& outStatus)
 {
     try {
@@ -289,6 +327,8 @@ ServerClientResponse ServerClient::getStatus(ServerClientStatus& outStatus)
         return response;
     }
 }
+
+/// Description: Describes the get snapshot operation contract.
 ServerClientResponse ServerClient::getSnapshot(std::vector<RenderParticle>& outSnapshot,
                                                std::uint32_t maxPoints, std::size_t* outSourceSize)
 {

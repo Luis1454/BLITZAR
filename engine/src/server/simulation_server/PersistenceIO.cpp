@@ -1,4 +1,9 @@
+// File: engine/src/server/simulation_server/PersistenceIO.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
+
+/// Description: Describes the read checkpoint file operation contract.
 bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState& outState,
                         std::string* outError)
 {
@@ -84,9 +89,9 @@ bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState&
         float vz = 0.0f;
         float mass = 0.0f;
         float temperature = 0.0f;
-        if (!readLeF32(in, px) || !readLeF32(in, py) || !readLeF32(in, pz) ||
-            !readLeF32(in, vx) || !readLeF32(in, vy) || !readLeF32(in, vz) ||
-            !readLeF32(in, mass) || !readLeF32(in, temperature)) {
+        if (!readLeF32(in, px) || !readLeF32(in, py) || !readLeF32(in, pz) || !readLeF32(in, vx) ||
+            !readLeF32(in, vy) || !readLeF32(in, vz) || !readLeF32(in, mass) ||
+            !readLeF32(in, temperature)) {
             if (outError != nullptr) {
                 *outError = "checkpoint particle payload is truncated";
             }
@@ -105,6 +110,8 @@ bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState&
     }
     return outState.particles.size() >= 2u;
 }
+
+/// Description: Executes the writeExportSnapshotFile operation.
 bool writeExportSnapshotFile(const AsyncExportJob& job)
 {
     std::filesystem::path outPath(job.outputPath);

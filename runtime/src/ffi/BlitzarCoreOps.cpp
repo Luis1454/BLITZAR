@@ -1,10 +1,16 @@
+// File: runtime/src/ffi/BlitzarCoreOps.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "runtime/src/ffi/BlitzarCoreInternal.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cstring>
 #include <filesystem>
 #include <thread>
+/// Description: Executes the kPollInterval operation.
 static constexpr std::chrono::milliseconds kPollInterval(5);
+
+/// Description: Executes the hasMatchingConfig operation.
 static bool hasMatchingConfig(const SimulationStats& stats, const blitzar_core_config_t& config)
 {
     return stats.particleCount == std::max<std::uint32_t>(2u, config.particle_count) &&
@@ -14,6 +20,8 @@ static bool hasMatchingConfig(const SimulationStats& stats, const blitzar_core_c
            stats.maxSubsteps == std::max<std::uint32_t>(1u, config.max_substeps) &&
            stats.snapshotPublishPeriodMs == config.snapshot_publish_period_ms;
 }
+
+/// Description: Executes the pollUntil operation.
 template <typename TPredicate> static bool pollUntil(std::uint32_t timeoutMs, TPredicate predicate)
 {
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
@@ -25,7 +33,9 @@ template <typename TPredicate> static bool pollUntil(std::uint32_t timeoutMs, TP
     }
     return false;
 }
+
 namespace grav_ffi {
+/// Description: Executes the runSteps operation.
 blitzar_core_result_t BlitzarCore::runSteps(std::uint32_t steps, std::uint32_t timeoutMs)
 {
     clearError();
@@ -39,6 +49,8 @@ blitzar_core_result_t BlitzarCore::runSteps(std::uint32_t steps, std::uint32_t t
     }
     return waitForStepTarget(startSteps + steps, timeoutMs);
 }
+
+/// Description: Describes the load state operation contract.
 blitzar_core_result_t BlitzarCore::loadState(const char* path, const char* format,
                                              std::uint32_t timeoutMs)
 {
@@ -53,6 +65,8 @@ blitzar_core_result_t BlitzarCore::loadState(const char* path, const char* forma
     _server.setPaused(true);
     return waitForSnapshot(timeoutMs);
 }
+
+/// Description: Describes the export state operation contract.
 blitzar_core_result_t BlitzarCore::exportState(const char* path, const char* format,
                                                std::uint32_t timeoutMs)
 {
@@ -64,6 +78,8 @@ blitzar_core_result_t BlitzarCore::exportState(const char* path, const char* for
     _server.requestExportSnapshot(path, format == nullptr ? "" : format);
     return waitForFile(path, timeoutMs);
 }
+
+/// Description: Executes the copyLastError operation.
 std::size_t BlitzarCore::copyLastError(char* buffer, std::size_t capacity) const
 {
     std::lock_guard<std::mutex> lock(_errorMutex);
@@ -75,6 +91,8 @@ std::size_t BlitzarCore::copyLastError(char* buffer, std::size_t capacity) const
     buffer[limit] = '\0';
     return _lastError.size();
 }
+
+/// Description: Executes the waitForSnapshot operation.
 blitzar_core_result_t BlitzarCore::waitForSnapshot(std::uint32_t timeoutMs) const
 {
     std::vector<RenderParticle> snapshot;
@@ -86,6 +104,8 @@ blitzar_core_result_t BlitzarCore::waitForSnapshot(std::uint32_t timeoutMs) cons
     setError("timed out waiting for snapshot");
     return BLITZAR_CORE_TIMEOUT;
 }
+
+/// Description: Describes the wait for applied config operation contract.
 blitzar_core_result_t BlitzarCore::waitForAppliedConfig(const blitzar_core_config_t& config,
                                                         std::uint32_t timeoutMs) const
 {
@@ -99,6 +119,8 @@ blitzar_core_result_t BlitzarCore::waitForAppliedConfig(const blitzar_core_confi
     setError("timed out waiting for config application");
     return BLITZAR_CORE_TIMEOUT;
 }
+
+/// Description: Describes the wait for step target operation contract.
 blitzar_core_result_t BlitzarCore::waitForStepTarget(std::uint64_t expectedSteps,
                                                      std::uint32_t timeoutMs) const
 {
@@ -112,23 +134,28 @@ blitzar_core_result_t BlitzarCore::waitForStepTarget(std::uint64_t expectedSteps
     setError(stats.faulted ? stats.faultReason : "timed out waiting for requested steps");
     return stats.faulted ? BLITZAR_CORE_INTERNAL_ERROR : BLITZAR_CORE_TIMEOUT;
 }
+
+/// Description: Executes the waitForFile operation.
 blitzar_core_result_t BlitzarCore::waitForFile(const char* path, std::uint32_t timeoutMs) const
 {
     const std::filesystem::path fsPath(path);
     if (pollUntil(timeoutMs, [fsPath]() {
-            return std::filesystem::exists(fsPath) &&
-                   std::filesystem::file_size(fsPath) > 0u;
+            return std::filesystem::exists(fsPath) && std::filesystem::file_size(fsPath) > 0u;
         })) {
         return BLITZAR_CORE_OK;
     }
     setError("timed out waiting for exported state file");
     return BLITZAR_CORE_TIMEOUT;
 }
+
+/// Description: Executes the setError operation.
 void BlitzarCore::setError(const std::string& message) const
 {
     std::lock_guard<std::mutex> lock(_errorMutex);
     _lastError = message;
 }
+
+/// Description: Executes the clearError operation.
 void BlitzarCore::clearError() const
 {
     setError("");

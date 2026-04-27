@@ -1,3 +1,6 @@
+// File: tests/int/protocol/replay.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "protocol/ServerClient.hpp"
 #include "protocol/ServerProtocol.hpp"
 #include "tests/support/server_harness.hpp"
@@ -6,7 +9,9 @@
 #include <string>
 #include <thread>
 #include <vector>
+
 namespace grav_test_server_protocol_replay {
+/// Description: Executes the waitForSteps operation.
 static void waitForSteps(ServerClient& client, uint64_t targetSteps)
 {
     ServerClientStatus status{};
@@ -20,6 +25,8 @@ static void waitForSteps(ServerClient& client, uint64_t targetSteps)
     }
     FAIL() << "Timeout waiting for simulation to reach step " << targetSteps;
 }
+
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_011_FixedSeedServerReplayIsDeterministic)
 {
     std::vector<std::string> args = {"--init-seed",      "424242", "--init-mode", "random_cloud",

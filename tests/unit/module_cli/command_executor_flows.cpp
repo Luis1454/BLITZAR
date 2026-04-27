@@ -1,3 +1,6 @@
+// File: tests/unit/module_cli/command_executor_flows.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "command/CommandContext.hpp"
 #include "command/CommandExecutor.hpp"
 #include "command/CommandParser.hpp"
@@ -6,7 +9,9 @@
 #include <string>
 #include <utility>
 #include <vector>
+
 namespace grav_test_module_cli_command_executor_flows {
+/// Description: Defines the FakeCommandTransport data or behavior contract.
 class FakeCommandTransport final : public grav_cmd::CommandTransport {
 public:
     bool connect(const std::string& host, std::uint16_t port) override
@@ -15,21 +20,25 @@ public:
         connectHistory.emplace_back(host, port);
         return connectResult;
     }
+
     void disconnect() override
     {
         connected = false;
         disconnected = true;
     }
+
     bool isConnected() const override
     {
         return connected;
     }
+
     ServerClientResponse sendCommand(const std::string& cmd,
                                      const std::string& fieldsJson = "") override
     {
         commandHistory.emplace_back(cmd, fieldsJson);
         return nextCommandResponse;
     }
+
     ServerClientResponse getStatus(ServerClientStatus& outStatus) override
     {
         statusCallCount += 1u;
@@ -38,6 +47,7 @@ public:
         }
         return nextStatusResponse;
     }
+
     bool connectResult = true;
     bool connected = false;
     bool disconnected = false;
@@ -48,6 +58,8 @@ public:
     std::vector<std::pair<std::string, std::string>> commandHistory;
     std::vector<ServerClientStatus> scriptedStatuses;
 };
+
+/// Description: Executes the parseSingle operation.
 static grav_cmd::CommandRequest parseSingle(const std::string& line)
 {
     const grav_cmd::CommandParseResult parsed = grav_cmd::CommandParser::parseLine(line, 1u);
@@ -55,6 +67,8 @@ static grav_cmd::CommandRequest parseSingle(const std::string& line)
     EXPECT_EQ(parsed.requests.size(), 1u);
     return parsed.requests.front();
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_013_HelpRendersCatalogAndReturnsSuccess)
 {
     FakeCommandTransport transport;
@@ -69,6 +83,8 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_013_HelpRendersCatalogAndReturnsSuc
     EXPECT_NE(output.str().find("load_config"), std::string::npos);
     EXPECT_TRUE(transport.commandHistory.empty());
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_014_ConnectionCommandsHandleSuccessAndFailure)
 {
     FakeCommandTransport transport;
@@ -90,6 +106,8 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_014_ConnectionCommandsHandleSuccess
     ASSERT_FALSE(reconnectResult.ok);
     EXPECT_EQ(reconnectResult.message, "reconnect failed");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_015_ControlCommandsMapToProtocol)
 {
     FakeCommandTransport transport;
@@ -119,6 +137,8 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_015_ControlCommandsMapToProtocol)
     EXPECT_EQ(transport.commandHistory[7].first, "set_particle_count");
     EXPECT_EQ(transport.commandHistory[7].second, "\"value\":42");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_016_StatusReportsStateAndHandlesStatusFailure)
 {
     FakeCommandTransport transport;
@@ -149,6 +169,8 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_016_StatusReportsStateAndHandlesSta
     ASSERT_FALSE(failedStatus.ok);
     EXPECT_EQ(failedStatus.message, "status failed");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_017_RunUntilAndSendCheckedFailurePaths)
 {
     FakeCommandTransport transport;
@@ -174,6 +196,8 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_017_RunUntilAndSendCheckedFailurePa
     ASSERT_FALSE(commandFailure.ok);
     EXPECT_EQ(commandFailure.message, "server command failed");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_018_SetModeCommandsValidateAndMap)
 {
     FakeCommandTransport transport;
@@ -202,6 +226,8 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_018_SetModeCommandsValidateAndMap)
     EXPECT_EQ(transport.commandHistory[1].first, "set_integrator");
     EXPECT_EQ(transport.commandHistory[1].second, "\"value\":\"rk4\"");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_019_ExportSnapshotUsesDerivedAndExplicitFormats)
 {
     FakeCommandTransport transport;
@@ -223,6 +249,8 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_019_ExportSnapshotUsesDerivedAndExp
     EXPECT_NE(transport.commandHistory[1].second.find("\"format\":\"vtk_binary\""),
               std::string::npos);
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_037_RunUntilPropagatesStatusErrorDetails)
 {
     FakeCommandTransport transport;
@@ -239,6 +267,8 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_037_RunUntilPropagatesStatusErrorDe
     ASSERT_FALSE(transport.commandHistory.empty());
     EXPECT_EQ(transport.commandHistory[0].first, "pause");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_038_SendCheckedReturnsServerErrorDetail)
 {
     FakeCommandTransport transport;
@@ -255,6 +285,8 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_038_SendCheckedReturnsServerErrorDe
     ASSERT_EQ(transport.commandHistory.size(), 1u);
     EXPECT_EQ(transport.commandHistory[0].first, "resume");
 }
+
+/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_039_RunUntilReturnsImmediatelyWhenTargetAlreadyReached)
 {
     FakeCommandTransport transport;

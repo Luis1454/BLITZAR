@@ -1,9 +1,14 @@
+// File: tests/unit/protocol/json_codec.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "protocol/ServerJsonCodec.hpp"
 #include "protocol/ServerProtocol.hpp"
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
+
 namespace grav_test_protocol_codec {
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_001_ParsesCommandEnvelopeWithEscapedToken)
 {
     grav_protocol::ServerCommandRequest request{};
@@ -17,6 +22,8 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_001_ParsesCommandEnvelopeWithEscapedT
     EXPECT_EQ(parsed.cmd, grav_protocol::SetSolver);
     EXPECT_EQ(parsed.token, "secret\"token");
 }
+
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
 {
     SimulationStats stats{};
@@ -97,6 +104,8 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
     EXPECT_EQ(parsed.exportLastPath, "exports/demo.vtk");
     EXPECT_EQ(parsed.exportLastMessage, "background export active");
 }
+
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_003_RejectsMalformedSnapshotPayload)
 {
     const std::string raw =
@@ -107,6 +116,8 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_003_RejectsMalformedSnapshotPayload)
     EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error));
     EXPECT_EQ(error, "invalid snapshot payload");
 }
+
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_006_ParsesSnapshotSourceCountMetadata)
 {
     std::vector<RenderParticle> snapshot(2u);
@@ -122,6 +133,8 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_006_ParsesSnapshotSourceCountMetadata
     EXPECT_EQ(parsed.particles.size(), 2u);
     EXPECT_EQ(parsed.sourceSize, 8u);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_004_ParsesErrorEnvelopeForControlCommand)
 {
     const std::string raw = grav_protocol::ServerJsonCodec::makeErrorResponse(
@@ -133,6 +146,8 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_004_ParsesErrorEnvelopeForControlComm
     EXPECT_EQ(parsed.cmd, grav_protocol::SetIntegrator);
     EXPECT_EQ(parsed.error, "invalid integrator value");
 }
+
+/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_005_ExportsCurrentSchemaVersionLabel)
 {
     EXPECT_EQ(grav_protocol::SchemaVersion, "server-json-v1");
@@ -143,7 +158,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_005_ExportsCurrentSchemaVersionLabel)
     EXPECT_EQ(grav_protocol::SetGpuTelemetry, "set_gpu_telemetry");
     EXPECT_EQ(grav_protocol::SetSnapshotPublishCadence, "set_snapshot_publish_cadence");
 }
+
 // TST_UNT_PROT_007: Number parsing with maximum float32 precision
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_007_ParsesFloatPrecisionBoundaries)
 {
     SimulationStats stats{};
@@ -159,7 +176,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_007_ParsesFloatPrecisionBoundaries)
     EXPECT_FLOAT_EQ(parsed.dt, 1.23456789f);
     EXPECT_FLOAT_EQ(parsed.totalTime, 0.00001f);
 }
+
 // TST_UNT_PROT_008: Very large numeric values in status
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_008_ParsesLargeNumericStatus)
 {
     SimulationStats stats{};
@@ -174,7 +193,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_008_ParsesLargeNumericStatus)
     EXPECT_EQ(parsed.steps, 999999999u);
     EXPECT_EQ(parsed.particleCount, 1024u * 1024u);
 }
+
 // TST_UNT_PROT_009: Zero and boundary values in numeric fields
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_009_ParsesBoundaryNumericValues)
 {
     SimulationStats stats{};
@@ -188,7 +209,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_009_ParsesBoundaryNumericValues)
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_TRUE(parsed.envelope.ok);
 }
+
 // TST_UNT_PROT_010: Status with extreme energy values
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_010_ParsesExtremeEnergyStatus)
 {
     SimulationStats stats{};
@@ -202,7 +225,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_010_ParsesExtremeEnergyStatus)
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_TRUE(parsed.envelope.ok);
 }
+
 // TST_UNT_PROT_011: Rejects malformed JSON with missing required fields
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_011_RejectsMalformedJsonMissingOkField)
 {
     const std::string raw = "{\"cmd\":\"set_solver\"}"; // Missing "ok" field
@@ -210,7 +235,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_011_RejectsMalformedJsonMissingOkFiel
     std::string error;
     EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseResponseEnvelope(raw, parsed, error));
 }
+
 // TST_UNT_PROT_012: Rejects incomplete JSON
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_012_RejectsIncompleteJson)
 {
     const std::string raw = "{\"ok\":true,\"cmd\":\"get_status\""; // Incomplete
@@ -218,7 +245,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_012_RejectsIncompleteJson)
     std::string error;
     EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error));
 }
+
 // TST_UNT_PROT_013: Rejects JSON with wrong field types
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_013_RejectsWrongFieldTypes)
 {
     const std::string raw = "{\"ok\":\"true\",\"cmd\":\"get_status\",\"steps\":\"not_a_number\"}";
@@ -226,7 +255,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_013_RejectsWrongFieldTypes)
     std::string error;
     EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error));
 }
+
 // TST_UNT_PROT_014: Handles empty JSON object
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_014_RejectsEmptyJsonObject)
 {
     const std::string raw = "{}";
@@ -234,7 +265,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_014_RejectsEmptyJsonObject)
     std::string error;
     EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseResponseEnvelope(raw, parsed, error));
 }
+
 // TST_UNT_PROT_015: Rejects invalid JSON syntax
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_015_RejectsInvalidJsonSyntax)
 {
     const std::string raw = "{ok: true, cmd: 'get_status'}"; // Invalid: unquoted keys/values
@@ -242,7 +275,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_015_RejectsInvalidJsonSyntax)
     std::string error;
     EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseResponseEnvelope(raw, parsed, error));
 }
+
 // TST_UNT_PROT_016: Status with minimal field set
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_016_ParsesMinimalStatusPayload)
 {
     SimulationStats minimal_stats{};
@@ -253,7 +288,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_016_ParsesMinimalStatusPayload)
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_TRUE(parsed.envelope.ok);
 }
+
 // TST_UNT_PROT_017: Status with all boolean flags set to true
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_017_ParsesAllBooleanFlagsTrue)
 {
     SimulationStats stats{};
@@ -273,7 +310,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_017_ParsesAllBooleanFlagsTrue)
     EXPECT_TRUE(parsed.sphEnabled);
     EXPECT_TRUE(parsed.energyEstimated);
 }
+
 // TST_UNT_PROT_018: Status with all boolean flags set to false
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_018_ParsesAllBooleanFlagsFalse)
 {
     SimulationStats stats{};
@@ -291,7 +330,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_018_ParsesAllBooleanFlagsFalse)
     EXPECT_FALSE(parsed.paused);
     EXPECT_FALSE(parsed.faulted);
 }
+
 // TST_UNT_PROT_019: Status with special characters in string fields
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_019_ParsesStatusWithSpecialCharsInStrings)
 {
     SimulationStats stats{};
@@ -304,7 +345,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_019_ParsesStatusWithSpecialCharsInStr
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_TRUE(parsed.envelope.ok);
 }
+
 // TST_UNT_PROT_020: Empty strings in status fields
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_020_ParsesStatusWithEmptyStrings)
 {
     SimulationStats stats{};
@@ -319,7 +362,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_020_ParsesStatusWithEmptyStrings)
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_TRUE(parsed.envelope.ok);
 }
+
 // TST_UNT_PROT_021: Snapshot with single particle
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_021_ParsesSnapshotWithSingleParticle)
 {
     std::vector<RenderParticle> snapshot(1u);
@@ -337,7 +382,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_021_ParsesSnapshotWithSingleParticle)
     EXPECT_EQ(parsed.particles.size(), 1u);
     EXPECT_EQ(parsed.sourceSize, 1u);
 }
+
 // TST_UNT_PROT_022: Snapshot with many particles
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_022_ParsesSnapshotWithManyParticles)
 {
     std::vector<RenderParticle> snapshot(1000u);
@@ -354,7 +401,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_022_ParsesSnapshotWithManyParticles)
     EXPECT_EQ(parsed.particles.size(), 1000u);
     EXPECT_EQ(parsed.sourceSize, 1000u);
 }
+
 // TST_UNT_PROT_023: Snapshot with no snapshot data available
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_023_ParsesSnapshotUnavailable)
 {
     std::vector<RenderParticle> empty_snapshot;
@@ -366,7 +415,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_023_ParsesSnapshotUnavailable)
     EXPECT_FALSE(parsed.hasSnapshot);
     EXPECT_EQ(parsed.particles.size(), 0u);
 }
+
 // TST_UNT_PROT_024: Snapshot with boundary coordinate values
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_024_ParsesSnapshotBoundaryCoordinates)
 {
     std::vector<RenderParticle> snapshot(3u);
@@ -388,7 +439,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_024_ParsesSnapshotBoundaryCoordinates
     EXPECT_FLOAT_EQ(parsed.particles[0].x, 0.0f);
     EXPECT_FLOAT_EQ(parsed.particles[1].x, 1e6f);
 }
+
 // TST_UNT_PROT_025: Rejects snapshot with mismatched particle count
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_025_RejectsSnapshotArrayMismatch)
 {
     // Manually craft JSON with mismatch between count and actual array size
@@ -399,7 +452,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_025_RejectsSnapshotArrayMismatch)
     std::string error;
     EXPECT_FALSE(grav_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error));
 }
+
 // TST_UNT_PROT_026: Command request round-trip with empty token
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_026_CommandRequestWithEmptyToken)
 {
     grav_protocol::ServerCommandRequest request{};
@@ -412,7 +467,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_026_CommandRequestWithEmptyToken)
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseCommandRequest(json, parsed, error)) << error;
     EXPECT_EQ(parsed.token, "");
 }
+
 // TST_UNT_PROT_027: Command request with very long token
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_027_CommandRequestWithLongToken)
 {
     grav_protocol::ServerCommandRequest request{};
@@ -425,7 +482,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_027_CommandRequestWithLongToken)
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseCommandRequest(json, parsed, error)) << error;
     EXPECT_EQ(parsed.token.size(), 1000u);
 }
+
 // TST_UNT_PROT_028: Error response with various command types
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_028_ErrorResponseWithDifferentCommands)
 {
     const auto test_command = [](std::string_view cmd) {
@@ -444,7 +503,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_028_ErrorResponseWithDifferentCommand
     test_command(grav_protocol::Status);
     test_command(grav_protocol::GetSnapshot);
 }
+
 // TST_UNT_PROT_029: String escaping preserves all special sequences
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_029_StringEscapingRoundTrip)
 {
     SimulationStats stats{};
@@ -455,7 +516,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_029_StringEscapingRoundTrip)
     ASSERT_TRUE(grav_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_EQ(parsed.faultReason, "Complex: \\ \" \n \r \t special");
 }
+
 // TST_UNT_PROT_030: Consecutive rapid command-response cycles
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_030_ConsecutiveCommandResponseCycles)
 {
     for (int i = 0; i < 10; ++i) {

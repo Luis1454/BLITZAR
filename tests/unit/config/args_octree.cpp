@@ -1,3 +1,6 @@
+// File: tests/unit/config/args_octree.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationArgs.hpp"
 #include "config/SimulationConfig.hpp"
 #include <chrono>
@@ -8,7 +11,9 @@
 #include <string>
 #include <string_view>
 #include <vector>
+
 namespace grav_test_config_args_octree {
+/// Description: Executes the toArgViews operation.
 std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage)
 {
     std::vector<std::string_view> args;
@@ -18,6 +23,8 @@ std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage
     return args;
 }
 } // namespace grav_test_config_args_octree
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_037_CliAcceptsOctreeCriterionAndAutoThetaRange)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -38,6 +45,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_037_CliAcceptsOctreeCriterionAndAutoThetaRange
     EXPECT_FALSE(runtime.hasArgumentError);
     EXPECT_TRUE(warnings.str().empty());
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_038_LoadSupportsOctreeCriterionAndAutoThetaDirective)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -62,6 +71,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_038_LoadSupportsOctreeCriterionAndAutoThetaDir
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_039_LoadRejectsInvalidOctreeCriterionAndAutoThetaRange)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();

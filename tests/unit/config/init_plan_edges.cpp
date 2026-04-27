@@ -1,8 +1,13 @@
+// File: tests/unit/config/init_plan_edges.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationConfig.hpp"
 #include "server/SimulationInitConfig.hpp"
 #include <gtest/gtest.h>
 #include <sstream>
 #include <string>
+
+/// Description: Executes the TEST operation.
 TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_084_PresetFileModeKeepsConfiguredInputAndAutoFormat)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -17,6 +22,8 @@ TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_084_PresetFileModeKeepsConfiguredInpu
     EXPECT_EQ(plan.inputFormat, "auto");
     EXPECT_NE(plan.summary.find("source=file"), std::string::npos);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_085_PresetFileModeKeepsExplicitInputFormat)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -30,6 +37,8 @@ TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_085_PresetFileModeKeepsExplicitInputF
     EXPECT_EQ(plan.inputFormat, "xyz");
     EXPECT_NE(plan.summary.find("input_format=xyz"), std::string::npos);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_086_PresetRandomCloudClampsMassForSingleParticle)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -44,6 +53,8 @@ TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_086_PresetRandomCloudClampsMassForSin
     EXPECT_FLOAT_EQ(plan.config.cloudHalfExtent, 4.0f);
     EXPECT_FLOAT_EQ(plan.config.particleMass, 0.5f);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_087_PresetTwoBodyResolvesGeneratedOrbitDefaults)
 {
     SimulationConfig config = SimulationConfig::defaults();
@@ -60,6 +71,8 @@ TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_087_PresetTwoBodyResolvesGeneratedOrb
     EXPECT_FLOAT_EQ(plan.config.particleMass, 1.0f);
     EXPECT_NE(plan.summary.find("source=generated"), std::string::npos);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_088_PresetPlummerSphereComputesParticleMassFromCount)
 {
     SimulationConfig config = SimulationConfig::defaults();

@@ -3,6 +3,7 @@
  * Responsibility: Implement GPU octree helpers and traversal kernels.
  */
 
+/// Description: Describes the octree node contains hot operation contract.
 __device__ __forceinline__ bool octreeNodeContainsHot(const GpuOctreeNodeHotData &node,
                                                        const Vector3 &pos)
 {
@@ -11,6 +12,7 @@ __device__ __forceinline__ bool octreeNodeContainsHot(const GpuOctreeNodeHotData
         && fabsf(pos.z - node.centerZ) <= node.halfSize;
 }
 
+/// Description: Describes the octree node distance to bounds hot operation contract.
 __device__ __forceinline__ float octreeNodeDistanceToBoundsHot(const GpuOctreeNodeHotData &node,
                                                                 const Vector3 &pos)
 {
@@ -20,16 +22,19 @@ __device__ __forceinline__ float octreeNodeDistanceToBoundsHot(const GpuOctreeNo
     return sqrtf(dx * dx + dy * dy + dz * dz);
 }
 
+/// Description: Executes the octreeLoadParticlePosition operation.
 __device__ __forceinline__ Vector3 octreeLoadParticlePosition(ParticleSoAView state, int index)
 {
     return Vector3(__ldg(&state.posX[index]), __ldg(&state.posY[index]), __ldg(&state.posZ[index]));
 }
 
+/// Description: Executes the octreeLoadParticleMass operation.
 __device__ __forceinline__ float octreeLoadParticleMass(ParticleSoAView state, int index)
 {
     return __ldg(&state.mass[index]);
 }
 
+/// Description: Executes the octreeLoadParticleVelocity operation.
 __device__ __forceinline__ Vector3 octreeLoadParticleVelocity(ParticleSoAView state, int index)
 {
     return Vector3(__ldg(&state.velX[index]), __ldg(&state.velY[index]), __ldg(&state.velZ[index]));

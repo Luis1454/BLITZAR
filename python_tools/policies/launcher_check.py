@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/policies/launcher_check.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import os
@@ -11,6 +14,7 @@ from python_tools.core.models import CheckContext, CheckResult
 
 
 @dataclass(frozen=True)
+# Description: Defines the LauncherCase contract.
 class LauncherCase:
     name: str
     expected_code: int
@@ -19,14 +23,17 @@ class LauncherCase:
     must_stderr: str = ""
 
 
+# Description: Defines the LauncherContractCheck contract.
 class LauncherContractCheck(BaseCheck):
     name = "launcher"
     success_message = "Launcher contract check passed."
     failure_title = "Launcher contract check failed:"
 
+    # Description: Executes the __init__ operation.
     def __init__(self) -> None:
         self._runner = ProcessRunner()
 
+    # Description: Executes the _execute operation.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         build_dir = context.build_dir
         if build_dir is None:
@@ -40,6 +47,7 @@ class LauncherContractCheck(BaseCheck):
         for case in self._cases():
             self._run_case(launcher, case, result)
 
+    # Description: Executes the _cases operation.
     def _cases(self) -> tuple[LauncherCase, ...]:
         return (
             LauncherCase("launcher-help", 0, ["--help"], must_stdout="--mode client|server|headless"),
@@ -50,6 +58,7 @@ class LauncherContractCheck(BaseCheck):
             LauncherCase("launcher-server-non-loopback-rejected", 2, ["--mode", "server", "--", "--server-host", "0.0.0.0"], must_stderr="refusing non-loopback bind host"),
         )
 
+    # Description: Executes the _run_case operation.
     def _run_case(self, launcher: Path, case: LauncherCase, result: CheckResult) -> None:
         completed = self._runner.run([str(launcher), *case.args], timeout=20)
         if completed.returncode != case.expected_code:

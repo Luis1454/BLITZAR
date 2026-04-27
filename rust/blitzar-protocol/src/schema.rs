@@ -1,8 +1,12 @@
+// File: rust/blitzar-protocol/src/schema.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use crate::LATEST_PROTOCOL_VERSION;
 use serde_json::Value;
 use serde_json::json;
 
 #[must_use]
+/// Description: Executes the latest_schema_value operation.
 pub fn latest_schema_value() -> Value {
     json!({
         "schema": LATEST_PROTOCOL_VERSION.label(),
@@ -90,6 +94,7 @@ pub fn latest_schema_value() -> Value {
 }
 
 #[must_use]
+/// Description: Executes the latest_schema_pretty_json operation.
 pub fn latest_schema_pretty_json() -> String {
     serde_json::to_string_pretty(&latest_schema_value())
         .expect("protocol schema serialization must succeed")

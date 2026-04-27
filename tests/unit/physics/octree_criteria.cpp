@@ -1,3 +1,6 @@
+// File: tests/unit/physics/octree_criteria.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationConfig.hpp"
 #include "physics/ForceLawPolicy.hpp"
 #include "physics/Octree.hpp"
@@ -10,6 +13,7 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
+
 namespace grav_test_octree_criteria {
 Vector3 pairwiseAcceleration(const std::vector<Particle>& particles, std::size_t selfIndex,
                              const ForceLawPolicy& policy)
@@ -29,10 +33,14 @@ Vector3 pairwiseAcceleration(const std::vector<Particle>& particles, std::size_t
     }
     return total;
 }
+
+/// Description: Executes the magnitude operation.
 float magnitude(Vector3 value)
 {
     return std::sqrt(dot(value, value));
 }
+
+/// Description: Executes the buildCriterionScenario operation.
 std::vector<Particle> buildCriterionScenario()
 {
     std::vector<Particle> particles(9);
@@ -50,6 +58,8 @@ std::vector<Particle> buildCriterionScenario()
     }
     return particles;
 }
+
+/// Description: Executes the writeOctreeServerConfig operation.
 std::filesystem::path writeOctreeServerConfig()
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -76,6 +86,8 @@ std::filesystem::path writeOctreeServerConfig()
     return path;
 }
 } // namespace grav_test_octree_criteria
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_019_BoundsCriterionIsMoreConservativeThanComCriterion)
 {
     const std::vector<Particle> particles = grav_test_octree_criteria::buildCriterionScenario();
@@ -98,6 +110,8 @@ TEST(PhysicsTest, TST_UNT_PHYS_019_BoundsCriterionIsMoreConservativeThanComCrite
     const float boundsError = grav_test_octree_criteria::magnitude(reference - boundsForce);
     EXPECT_LE(boundsError, comError + 1.0e-6f);
 }
+
+/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_006_ServerLogsOctreeCriterionAndAutoThetaMetrics)
 {
     const std::filesystem::path path = grav_test_octree_criteria::writeOctreeServerConfig();

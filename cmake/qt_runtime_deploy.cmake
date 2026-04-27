@@ -1,5 +1,9 @@
+# File: cmake/qt_runtime_deploy.cmake
+# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+
 set(GRAVITY_DEPLOY_QT_RUNTIME ON CACHE BOOL "Deploy Qt runtime plugins next to built Qt client artifacts on Windows")
 
+# Description: Defines the gravity_find_windeployqt function helper.
 function(gravity_find_windeployqt out_var)
     if(DEFINED GRAVITY_WINDEPLOYQT_EXECUTABLE AND EXISTS "${GRAVITY_WINDEPLOYQT_EXECUTABLE}")
         set(${out_var} "${GRAVITY_WINDEPLOYQT_EXECUTABLE}" PARENT_SCOPE)
@@ -28,6 +32,7 @@ function(gravity_find_windeployqt out_var)
     set(${out_var} "${_gravity_windeployqt}" PARENT_SCOPE)
 endfunction()
 
+# Description: Defines the gravity_configure_qt_runtime_deploy function helper.
 function(gravity_configure_qt_runtime_deploy target_name)
     if(NOT WIN32)
         return()

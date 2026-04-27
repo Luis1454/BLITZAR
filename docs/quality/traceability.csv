@@ -10,10 +10,10 @@ REQ-PHYS-001,physics,engine/include/config|engine/src/config|engine/include/serv
 REQ-PHYS-002,physics,engine/src/physics,EVD_TEST_UNIT_PHYSICS_ORBIT
 REQ-OPS-001,operations,repo-policy,EVD_CHECK_NO_LEGACY
 REQ-OPS-002,operations,apps/launcher,EVD_CHECK_LAUNCHER
-REQ-QUAL-001,quality,tests/checks|python_tools/ci|python_tools/ci/numerical_validation.py|python_tools/core|python_tools/policies|docs/quality/manifest/numerical_campaign.json|make/check.mk|Makefile,EVD_CHECK_MAIN|EVD_QLT_NUMERICAL_CAMPAIGN|EVD_SCRIPT_NIGHTLY_NUMERICAL_VALIDATION
+REQ-QUAL-001,quality,.clang-format|tests/checks|python_tools/ci|python_tools/ci/numerical_validation.py|python_tools/core|python_tools/policies|docs/quality/manifest/numerical_campaign.json|make/check.mk|Makefile,EVD_CHECK_MAIN|EVD_QLT_NUMERICAL_CAMPAIGN|EVD_SCRIPT_NIGHTLY_NUMERICAL_VALIDATION
 REQ-QUAL-002,quality,tests/checks,EVD_CHECK_INI|EVD_CHECK_MIRROR
 REQ-COMP-001,compliance,docs/quality|python_tools/policies|engine/include/config|engine/include/physics|engine/include/server|engine/src/server|engine/src/config|engine/src/physics/cuda/fragments|modules/qt|runtime/include/client,EVD_CHECK_QUALITY|EVD_QLT_POWER_OF_TEN
-REQ-COMP-002,compliance,.github/workflows/pr-fast.yml|python_tools/policies,EVD_CHECK_MAIN|EVD_CHECK_PR_POLICY|EVD_CHECK_IVV_GATE
+REQ-COMP-002,compliance,.clang-format|.github/workflows/pr-fast.yml|python_tools/policies,EVD_CHECK_MAIN|EVD_CHECK_PR_POLICY|EVD_CHECK_IVV_GATE
 REQ-UI-001,ui,apps/client-host|docs/client-host.md|modules/qt/include/ui/MainWindow.hpp|modules/qt/include/ui/MainWindowPresenter.hpp|modules/qt/include/ui/EnergyGraphWidget.hpp|modules/qt/include/ui/WorkspaceLayoutStore.hpp|modules/qt/module.cpp|modules/qt/ui/MainWindow.cpp|modules/qt/ui/MainWindowPresenter.cpp|modules/qt/ui/EnergyGraphWidget.cpp|modules/qt/ui/EnergyGraphWidgetPaint.cpp|modules/qt/ui/WorkspaceLayoutStore.cpp|runtime/include/client|scripts/install/windows/BLITZAR.nsi,EVD_TEST_INT_UI_QT_WINDOW|EVD_TEST_UNIT_UI_QT_LOGIC|EVD_MOD_QT_MAINWINDOW
 REQ-TEST-001,test-governance,docs/quality/quality_manifest.json,EVD_CHECK_TEST_CATALOG|EVD_CHECK_TEST_RUNNER
 REQ-MOD-001,modules,modules/cli|runtime/include/command|runtime/src/command|tests/unit/module_cli/command_executor_flows.cpp,EVD_TEST_UNIT_MODULE_CLI|EVD_TEST_UNIT_MODULE_CLI_SERVER|EVD_QLT_INTERFACE_CONTRACTS|EVD_IFACE_CLIENT_MODULE_API

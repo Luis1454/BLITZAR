@@ -1,13 +1,20 @@
+// File: modules/qt/include/ui/EnergyGraphWidget.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_ENERGYGRAPHWIDGET_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_ENERGYGRAPHWIDGET_HPP_
-/* * Module: ui * Responsibility: Render the recent energy history exposed by the client runtime.
+/*
+ * Module: ui
+ * Responsibility: Render the recent energy history exposed by the client runtime.
  */
 #include "ui/QtViewMath.hpp"
 #include <QStringList>
 #include <QWidget>
 #include <vector>
+/// Description: Defines the QPaintEvent data or behavior contract.
 class QPaintEvent;
 typedef QPaintEvent UiPaintEvent;
+
 namespace grav_qt {
 /// Renders the rolling energy and drift history for the current simulation session.
 class EnergyGraphWidget : public QWidget {
@@ -33,6 +40,7 @@ public:
 
 private:
     typedef UiPaintEvent* PaintEventHandle;
+    /// Description: Describes the paint event operation contract.
     void paintEvent(PaintEventHandle event) override;
     std::vector<EnergyPoint> _history;
 };

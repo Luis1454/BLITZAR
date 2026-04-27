@@ -1,3 +1,6 @@
+# File: tests/checks/suites/core/test_coverage_dashboard.py
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 from __future__ import annotations
 
 import json
@@ -6,6 +9,7 @@ from pathlib import Path
 from python_tools.ci.coverage_dashboard import CoverageDashboardBuilder, CoverageMetrics
 
 
+# Description: Executes the test_coverage_dashboard_writes_widget_and_summary operation.
 def test_coverage_dashboard_writes_widget_and_summary(tmp_path: Path) -> None:
     builder = CoverageDashboardBuilder()
 
@@ -30,6 +34,7 @@ def test_coverage_dashboard_writes_widget_and_summary(tmp_path: Path) -> None:
     assert summary["branches_pct"] == 63.8
 
 
+# Description: Executes the test_coverage_dashboard_index_links_widget operation.
 def test_coverage_dashboard_index_links_widget(tmp_path: Path) -> None:
     builder = CoverageDashboardBuilder()
 

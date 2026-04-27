@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: scripts/ci/nightly/build_dashboard.py
+# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+
 from __future__ import annotations
 
 import os
@@ -12,10 +15,12 @@ if str(ROOT) not in sys.path:
 from python_tools.ci.coverage_dashboard import CoverageDashboardBuilder, CoverageMetrics
 
 
+# Description: Executes the _read_metric operation.
 def _read_metric(name: str) -> float:
     return float(os.environ[name])
 
 
+# Description: Executes the main operation.
 def main() -> int:
     builder = CoverageDashboardBuilder()
     metrics = CoverageMetrics(

@@ -1,6 +1,10 @@
+// File: rust/blitzar-web-gateway/src/args.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use std::fmt::Write;
 
 #[derive(Clone, Debug, PartialEq)]
+/// Description: Defines the GatewayOptions struct contract.
 pub struct GatewayOptions {
     pub listen_host: String,
     pub listen_port: u16,
@@ -11,7 +15,9 @@ pub struct GatewayOptions {
     pub snapshot_interval_ms: u64,
 }
 
+/// Description: Implements behavior for the associated Rust type.
 impl Default for GatewayOptions {
+    /// Description: Executes the default operation.
     fn default() -> Self {
         Self {
             listen_host: "127.0.0.1".to_string(),
@@ -25,30 +31,36 @@ impl Default for GatewayOptions {
     }
 }
 
+/// Description: Implements behavior for the associated Rust type.
 impl GatewayOptions {
+    /// Description: Executes the listen_addr operation.
     pub fn listen_addr(&self) -> String {
         format!("{}:{}", self.listen_host, self.listen_port)
     }
 }
 
+/// Description: Executes the parse_u16 operation.
 fn parse_u16(value: &str, name: &str) -> Result<u16, String> {
     value
         .parse::<u16>()
         .map_err(|_| format!("invalid {name}: {value}"))
 }
 
+/// Description: Executes the parse_u32 operation.
 fn parse_u32(value: &str, name: &str) -> Result<u32, String> {
     value
         .parse::<u32>()
         .map_err(|_| format!("invalid {name}: {value}"))
 }
 
+/// Description: Executes the parse_u64 operation.
 fn parse_u64(value: &str, name: &str) -> Result<u64, String> {
     value
         .parse::<u64>()
         .map_err(|_| format!("invalid {name}: {value}"))
 }
 
+/// Description: Executes the parse_args operation.
 pub fn parse_args<I>(args: I) -> Result<(GatewayOptions, bool), String>
 where
     I: IntoIterator<Item = String>,
@@ -81,6 +93,7 @@ where
     Ok((options, false))
 }
 
+/// Description: Executes the help operation.
 pub fn help(binary_name: &str) -> String {
     let mut output = String::new();
     let _ = writeln!(&mut output, "Usage: {binary_name} [options]");

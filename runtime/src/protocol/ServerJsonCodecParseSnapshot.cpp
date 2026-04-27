@@ -1,11 +1,17 @@
+// File: runtime/src/protocol/ServerJsonCodecParseSnapshot.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "protocol/ServerJsonCodec.hpp"
 #include <cctype>
+
 namespace grav_protocol {
+/// Description: Defines the SnapshotArrayParser data or behavior contract.
 class SnapshotArrayParser {
 public:
     explicit SnapshotArrayParser(std::string_view raw) : m_raw(raw), m_cursor(0)
     {
     }
+
     bool parse(std::vector<RenderParticle>& out)
     {
         out.clear();
@@ -62,6 +68,7 @@ private:
             return false;
         return grav_text::parseNumber(m_raw.substr(start, m_cursor - start), out);
     }
+
     void skipSpaces()
     {
         while (m_cursor < m_raw.size() &&
@@ -69,6 +76,7 @@ private:
             ++m_cursor;
         }
     }
+
     bool consume(char expected)
     {
         skipSpaces();
@@ -78,6 +86,7 @@ private:
         ++m_cursor;
         return true;
     }
+
     bool at(char expected)
     {
         skipSpaces();
@@ -87,9 +96,12 @@ private:
         ++m_cursor;
         return true;
     }
+
     std::string_view m_raw;
     std::size_t m_cursor;
 };
+
+/// Description: Describes the parse snapshot response operation contract.
 bool ServerJsonCodec::parseSnapshotResponse(std::string_view raw, ServerSnapshotPayload& out,
                                             std::string& error)
 {

@@ -1,8 +1,13 @@
+// File: tests/unit/config/scenario_validation.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationScenarioValidation.hpp"
 #include <gtest/gtest.h>
 #include <string>
+
 namespace grav_test_config_scenario_validation {
+/// Description: Executes the hasField operation.
 static bool hasField(const grav_config::ScenarioValidationReport& report, const std::string& field)
 {
     for (const grav_config::ScenarioDiagnostic& diagnostic : report.diagnostics)
@@ -10,6 +15,8 @@ static bool hasField(const grav_config::ScenarioValidationReport& report, const 
             return true;
     return false;
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationTest, TST_UNT_CONF_055_DefaultConfigurationIsRunnable)
 {
     const SimulationConfig config;
@@ -20,6 +27,8 @@ TEST(ScenarioValidationTest, TST_UNT_CONF_055_DefaultConfigurationIsRunnable)
     const std::string rendered = grav_config::SimulationScenarioValidation::renderText(report);
     EXPECT_NE(rendered.find("[preflight] OK"), std::string::npos);
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationTest, TST_UNT_CONF_056_InvalidCoreFieldsBlockRun)
 {
     SimulationConfig config;
@@ -42,6 +51,8 @@ TEST(ScenarioValidationTest, TST_UNT_CONF_056_InvalidCoreFieldsBlockRun)
     EXPECT_TRUE(hasField(report, "ui_theme"));
     EXPECT_TRUE(hasField(report, "octree_softening"));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationTest, TST_UNT_CONF_057_WarningPathsRemainRunnable)
 {
     SimulationConfig config;
@@ -62,6 +73,8 @@ TEST(ScenarioValidationTest, TST_UNT_CONF_057_WarningPathsRemainRunnable)
     EXPECT_TRUE(hasField(report, "client_snapshot_queue_capacity"));
     EXPECT_TRUE(hasField(report, "octree_softening"));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationTest, TST_UNT_CONF_058_FileModeWithoutInputProducesError)
 {
     SimulationConfig config;
@@ -73,6 +86,8 @@ TEST(ScenarioValidationTest, TST_UNT_CONF_058_FileModeWithoutInputProducesError)
     EXPECT_FALSE(report.validForRun);
     EXPECT_TRUE(hasField(report, "input_file"));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationTest, TST_UNT_CONF_059_DiskOrbitPresetChecksMassAndRadius)
 {
     SimulationConfig config;
@@ -87,6 +102,8 @@ TEST(ScenarioValidationTest, TST_UNT_CONF_059_DiskOrbitPresetChecksMassAndRadius
     EXPECT_TRUE(hasField(report, "init_disk_mass"));
     EXPECT_TRUE(hasField(report, "init_disk_radius"));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationTest, TST_UNT_CONF_060_SphValidationChecksParametersAndLowParticleWarning)
 {
     SimulationConfig config;
@@ -102,6 +119,8 @@ TEST(ScenarioValidationTest, TST_UNT_CONF_060_SphValidationChecksParametersAndLo
     EXPECT_TRUE(hasField(report, "sph"));
     EXPECT_TRUE(hasField(report, "sph_viscosity"));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationTest, TST_UNT_CONF_061_OctreeSolverValidationChecksCriterionAndThetaRange)
 {
     SimulationConfig config;
@@ -118,6 +137,8 @@ TEST(ScenarioValidationTest, TST_UNT_CONF_061_OctreeSolverValidationChecksCriter
     EXPECT_TRUE(hasField(report, "octree_theta_auto_min"));
     EXPECT_TRUE(hasField(report, "octree_theta_auto_max"));
 }
+
+/// Description: Executes the TEST operation.
 TEST(ScenarioValidationTest, TST_UNT_CONF_062_RenderTextShowsBlockedSummaryAndActions)
 {
     SimulationConfig config;

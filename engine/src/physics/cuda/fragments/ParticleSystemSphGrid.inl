@@ -1,3 +1,6 @@
+// File: engine/src/physics/cuda/fragments/ParticleSystemSphGrid.inl
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 /*
  * Module: physics/cuda
  * Responsibility: Build and maintain the SPH spatial hash grid.
@@ -9,6 +12,7 @@
 
 // Definition moved to ParticleSystemPrelude.inl
 
+/// Description: Describes the sph grid cell index operation contract.
 __device__ int sphGridCellIndex(
     float px, float py, float pz,
     const SphGridParams &grid)
@@ -22,6 +26,7 @@ __device__ int sphGridCellIndex(
     return cx + cy * grid.gridSize + cz * grid.gridSize * grid.gridSize;
 }
 
+/// Description: Describes the compute sph cell hash kernel operation contract.
 __global__ void computeSphCellHashKernel(
     ParticleSoAView particles,
     IndexHandle outCellHash,
@@ -38,6 +43,7 @@ __global__ void computeSphCellHashKernel(
     outParticleIndex[i] = i;
 }
 
+/// Description: Describes the reset cell bounds kernel operation contract.
 __global__ void resetCellBoundsKernel(
     IndexHandle cellStart,
     IndexHandle cellEnd,
@@ -51,6 +57,7 @@ __global__ void resetCellBoundsKernel(
     cellEnd[i] = -1;
 }
 
+/// Description: Describes the find cell bounds kernel operation contract.
 __global__ void findCellBoundsKernel(
     IndexConstHandle sortedHash,
     IndexHandle cellStart,
@@ -74,6 +81,7 @@ __global__ void findCellBoundsKernel(
 
 // CPU-side comparison sort for cell hashes (simple insertion sort for GPU-built arrays).
 // Used host-side after downloading hash array — avoids needing thrust.
+/// Description: Describes the sort particles by hash operation contract.
 static void sortParticlesByHash(
     int *cellHash, int *particleIndex, int numParticles)
 {
@@ -97,6 +105,7 @@ static void sortParticlesByHash(
         static_cast<std::size_t>(numParticles) * sizeof(int));
 }
 
+/// Description: Executes the buildSphGrid operation.
 bool ParticleSystem::buildSphGrid(int numParticles)
 {
     if (numParticles <= 0 || !d_soaPosX || !d_sphCellHash ||

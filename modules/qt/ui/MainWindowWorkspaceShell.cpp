@@ -1,3 +1,6 @@
+// File: modules/qt/ui/MainWindowWorkspaceShell.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/EnergyGraphWidget.hpp"
 #include "ui/MainWindow.hpp"
 #include "ui/MultiViewWidget.hpp"
@@ -13,7 +16,9 @@
 #include <QPushButton>
 #include <QSpinBox>
 #include <QStatusBar>
+
 namespace grav_qt {
+/// Description: Describes the build workspace docks operation contract.
 void MainWindow::buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPane,
                                      QWidget* validationPane)
 {
@@ -47,22 +52,46 @@ void MainWindow::buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPa
     _telemetryDock->hide();
     _validationDock->hide();
 }
+
+/// Description: Executes the buildMenus operation.
 void MainWindow::buildMenus()
 {
     auto* fileMenu = menuBar()->addMenu("&File");
     fileMenu->addAction(
-        "Save Config", this, [this]() { (void)saveConfigToDisk(); }, QKeySequence::Save);
-    fileMenu->addAction("Load Preset...", this, [this]() { handleLoadPresetRequest(); });
-    fileMenu->addAction("Load Checkpoint...", this, [this]() { handleLoadCheckpointRequest(); });
-    fileMenu->addAction("Load Input...", this, [this]() { handleLoadInputRequest(); });
-    fileMenu->addAction("Save Checkpoint...", this, [this]() { handleSaveCheckpointRequest(); });
-    fileMenu->addAction("Export Snapshot...", this, [this]() { handleExportRequest(); });
+        "Save Config", this,
+        [this]() {
+            (void)saveConfigToDisk();
+        },
+        QKeySequence::Save);
+    fileMenu->addAction("Load Preset...", this, [this]() {
+        handleLoadPresetRequest();
+    });
+    fileMenu->addAction("Load Checkpoint...", this, [this]() {
+        handleLoadCheckpointRequest();
+    });
+    fileMenu->addAction("Load Input...", this, [this]() {
+        handleLoadInputRequest();
+    });
+    fileMenu->addAction("Save Checkpoint...", this, [this]() {
+        handleSaveCheckpointRequest();
+    });
+    fileMenu->addAction("Export Snapshot...", this, [this]() {
+        handleExportRequest();
+    });
     fileMenu->addSeparator();
-    fileMenu->addAction("Quit", this, [this]() { close(); }, QKeySequence::Quit);
+    fileMenu->addAction(
+        "Quit", this,
+        [this]() {
+            close();
+        },
+        QKeySequence::Quit);
     auto* editMenu = menuBar()->addMenu("&Edit");
-    editMenu->addAction("Validate Config", this,
-                        [this]() { (void)refreshValidationReport(false); });
-    editMenu->addAction("Reconnect", this, [this]() { requestReconnectFromUi(); });
+    editMenu->addAction("Validate Config", this, [this]() {
+        (void)refreshValidationReport(false);
+    });
+    editMenu->addAction("Reconnect", this, [this]() {
+        requestReconnectFromUi();
+    });
     auto* viewMenu = menuBar()->addMenu("&View");
     viewMenu->addAction(_controlsDock->toggleViewAction());
     viewMenu->addAction(_energyDock->toggleViewAction());
@@ -93,22 +122,47 @@ void MainWindow::buildMenus()
     }
     auto* simulationMenu = menuBar()->addMenu("&Simulation");
     simulationMenu->addAction(
-        "Pause / Resume", this, [this]() { _pauseButton->click(); }, Qt::Key_Space);
-    simulationMenu->addAction("Step", this, [this]() { _stepButton->click(); });
-    simulationMenu->addAction("Reset", this, [this]() { _resetButton->click(); });
-    simulationMenu->addAction("Recover", this, [this]() { _recoverButton->click(); });
+        "Pause / Resume", this,
+        [this]() {
+            _pauseButton->click();
+        },
+        Qt::Key_Space);
+    simulationMenu->addAction("Step", this, [this]() {
+        _stepButton->click();
+    });
+    simulationMenu->addAction("Reset", this, [this]() {
+        _resetButton->click();
+    });
+    simulationMenu->addAction("Recover", this, [this]() {
+        _recoverButton->click();
+    });
     auto* windowMenu = menuBar()->addMenu("&Window");
-    windowMenu->addAction("Raise Controls", this, [this]() { _controlsDock->raise(); });
-    windowMenu->addAction("Raise Energy", this, [this]() { _energyDock->raise(); });
-    windowMenu->addAction("Raise Telemetry", this, [this]() { _telemetryDock->raise(); });
-    windowMenu->addAction("Raise Validation", this, [this]() { _validationDock->raise(); });
+    windowMenu->addAction("Raise Controls", this, [this]() {
+        _controlsDock->raise();
+    });
+    windowMenu->addAction("Raise Energy", this, [this]() {
+        _energyDock->raise();
+    });
+    windowMenu->addAction("Raise Telemetry", this, [this]() {
+        _telemetryDock->raise();
+    });
+    windowMenu->addAction("Raise Validation", this, [this]() {
+        _validationDock->raise();
+    });
     auto* workspaceMenu = windowMenu->addMenu("Workspace");
-    workspaceMenu->addAction("Save Workspace...", this, [this]() { saveWorkspacePreset(); });
-    workspaceMenu->addAction("Load Workspace...", this, [this]() { loadWorkspacePreset(); });
-    workspaceMenu->addAction("Delete Workspace...", this, [this]() { deleteWorkspacePreset(); });
+    workspaceMenu->addAction("Save Workspace...", this, [this]() {
+        saveWorkspacePreset();
+    });
+    workspaceMenu->addAction("Load Workspace...", this, [this]() {
+        loadWorkspacePreset();
+    });
+    workspaceMenu->addAction("Delete Workspace...", this, [this]() {
+        deleteWorkspacePreset();
+    });
     workspaceMenu->addSeparator();
-    workspaceMenu->addAction("Restore Default Workspace", this,
-                             [this]() { restoreDefaultWorkspace(); });
+    workspaceMenu->addAction("Restore Default Workspace", this, [this]() {
+        restoreDefaultWorkspace();
+    });
     auto* helpMenu = menuBar()->addMenu("&Help");
     helpMenu->addAction("About Workspace", this, [this]() {
         _statusLabel->setText("Workspace shell active");

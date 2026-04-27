@@ -1,7 +1,12 @@
+// File: engine/include/types/SimulationTypes.hpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #ifndef GRAVITY_ENGINE_INCLUDE_TYPES_SIMULATIONTYPES_HPP_
 #define GRAVITY_ENGINE_INCLUDE_TYPES_SIMULATIONTYPES_HPP_
 #include <cstdint>
 #include <string>
+
+/// Description: Defines the RenderParticle data or behavior contract.
 struct RenderParticle {
     float x;
     float y;
@@ -10,6 +15,8 @@ struct RenderParticle {
     float pressureNorm;
     float temperature;
 };
+
+/// Description: Defines the InitialStateConfig data or behavior contract.
 struct InitialStateConfig {
     std::string mode = "disk_orbit";
     std::uint32_t seed = 42u;
@@ -36,6 +43,8 @@ struct InitialStateConfig {
     float cloudSpeed = 0.0f;
     float particleMass = 0.01f;
 };
+
+/// Description: Defines the SimulationStats data or behavior contract.
 struct SimulationStats {
     std::uint64_t steps;
     float dt;

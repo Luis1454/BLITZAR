@@ -1,3 +1,6 @@
+# File: python_tools/policies/fmea_action_register.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import json
@@ -7,11 +10,14 @@ ALLOWED_STATUSES = {"open", "in-progress", "closed"}
 ALLOWED_RISKS = {"Low", "Medium", "High"}
 
 
+# Description: Defines the FmeaActionRegisterError contract.
 class FmeaActionRegisterError(RuntimeError):
     pass
 
 
+# Description: Defines the FmeaActionRegister contract.
 class FmeaActionRegister:
+    # Description: Executes the load operation.
     def load(self, root: Path) -> list[dict[str, object]]:
         path = root / "docs/quality/manifest/fmea_actions.json"
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -20,6 +26,7 @@ class FmeaActionRegister:
             raise FmeaActionRegisterError("fmea_actions payload must be a list")
         return [self._validate_row(row) for row in rows]
 
+    # Description: Executes the _validate_row operation.
     def _validate_row(self, raw: object) -> dict[str, object]:
         if not isinstance(raw, dict):
             raise FmeaActionRegisterError("fmea_actions entries must be objects")
@@ -42,6 +49,7 @@ class FmeaActionRegister:
         return row
 
     @staticmethod
+    # Description: Executes the _require_string operation.
     def _require_string(row: dict[str, object], field: str) -> str:
         value = row.get(field)
         if not isinstance(value, str) or not value.strip():
@@ -49,6 +57,7 @@ class FmeaActionRegister:
         return value.strip()
 
     @staticmethod
+    # Description: Executes the _require_list operation.
     def _require_list(row: dict[str, object], field: str) -> list[str]:
         value = row.get(field)
         if not isinstance(value, list):

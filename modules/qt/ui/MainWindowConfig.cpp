@@ -1,3 +1,6 @@
+// File: modules/qt/ui/MainWindowConfig.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "config/SimulationScenarioValidation.hpp"
 #include "ui/MainWindow.hpp"
 #include "ui/MultiViewWidget.hpp"
@@ -10,7 +13,9 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
+
 namespace grav_qt {
+/// Description: Executes the applyConfigToServer operation.
 bool MainWindow::applyConfigToServer(bool requestReset)
 {
     captureUiIntoConfig();
@@ -31,6 +36,8 @@ bool MainWindow::applyConfigToServer(bool requestReset)
     applyViewSettings();
     return true;
 }
+
+/// Description: Executes the applyConfigToUi operation.
 void MainWindow::applyConfigToUi()
 {
     _solverCombo->blockSignals(true);
@@ -92,6 +99,8 @@ void MainWindow::applyConfigToUi()
     _lodCheck->blockSignals(false);
     applyViewSettings();
 }
+
+/// Description: Executes the captureUiIntoConfig operation.
 void MainWindow::captureUiIntoConfig()
 {
     _config.solver = _solverCombo->currentText().toStdString();
@@ -112,16 +121,22 @@ void MainWindow::captureUiIntoConfig()
     _config.renderCullingEnabled = _cullingCheck->isChecked();
     _config.renderLODEnabled = _lodCheck->isChecked();
 }
+
+/// Description: Executes the applyPerformanceProfileToRuntime operation.
 void MainWindow::applyPerformanceProfileToRuntime()
 {
     _clientDrawCap = _controller.applyPerformanceProfile(_config, *_runtime);
     applyViewSettings();
 }
+
+/// Description: Executes the markConfigDirty operation.
 void MainWindow::markConfigDirty(bool dirty)
 {
     _configDirty = dirty;
     setWindowTitle(_configDirty ? "N-Body Qt Client *" : "N-Body Qt Client");
 }
+
+/// Description: Executes the saveConfigToDisk operation.
 bool MainWindow::saveConfigToDisk()
 {
     (void)refreshValidationReport(false);
@@ -136,6 +151,8 @@ bool MainWindow::saveConfigToDisk()
     std::cout << "[qt] config saved: " << _configPath << "\n";
     return true;
 }
+
+/// Description: Executes the refreshValidationReport operation.
 bool MainWindow::refreshValidationReport(bool blockOnErrors)
 {
     const grav_config::ScenarioValidationReport report = _controller.validate(_config);
@@ -148,6 +165,7 @@ bool MainWindow::refreshValidationReport(bool blockOnErrors)
     }
     return !blockOnErrors || report.validForRun;
 }
+
 QString MainWindow::buildValidationText(const grav_config::ScenarioValidationReport& report,
                                         const ThroughputAdvisory& advisory) const
 {
@@ -165,6 +183,8 @@ QString MainWindow::buildValidationText(const grav_config::ScenarioValidationRep
     }
     return QString::fromStdString(text);
 }
+
+/// Description: Executes the showThroughputAdvisory operation.
 void MainWindow::showThroughputAdvisory(const ThroughputAdvisory& advisory)
 {
     if (advisory.severity == ThroughputAdvisorySeverity::None) {
@@ -173,6 +193,8 @@ void MainWindow::showThroughputAdvisory(const ThroughputAdvisory& advisory)
     std::cout << "[qt] " << advisory.statusBarText << "\n";
     statusBar()->showMessage(QString::fromStdString(advisory.statusBarText), 6000);
 }
+
+/// Description: Executes the update3DCameraFromSliders operation.
 void MainWindow::update3DCameraFromSliders()
 {
     constexpr float pi = 3.14159265359f;

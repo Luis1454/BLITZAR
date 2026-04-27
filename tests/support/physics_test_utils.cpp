@@ -1,8 +1,13 @@
+// File: tests/support/physics_test_utils.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "tests/support/physics_test_utils.hpp"
 #include <chrono>
 #include <functional>
 #include <thread>
+
 namespace testsupport {
+/// Description: Executes the applyPassiveThermalDefaults operation.
 static void applyPassiveThermalDefaults(InitialStateConfig& initState)
 {
     initState.thermalAmbientTemperature = 0.0f;
@@ -10,6 +15,8 @@ static void applyPassiveThermalDefaults(InitialStateConfig& initState)
     initState.thermalHeatingCoeff = 0.0f;
     initState.thermalRadiationCoeff = 0.0f;
 }
+
+/// Description: Describes the wait for snapshot operation contract.
 static bool waitForSnapshot(const std::function<bool(std::vector<RenderParticle>&)>& snapshotReader,
                             std::vector<RenderParticle>& outSnapshot, int timeoutMs)
 {
@@ -22,17 +29,23 @@ static bool waitForSnapshot(const std::function<bool(std::vector<RenderParticle>
     }
     return snapshotReader(outSnapshot);
 }
+
+/// Description: Executes the setScenarioTiming operation.
 void setScenarioTiming(ScenarioConfig& cfg, int snapshotTimeoutMs, int stepTimeoutMs)
 {
     cfg.snapshotTimeoutMs = snapshotTimeoutMs;
     cfg.stepTimeoutMs = stepTimeoutMs;
 }
+
+/// Description: Describes the set scenario energy sampling operation contract.
 void setScenarioEnergySampling(ScenarioConfig& cfg, std::uint32_t measureEverySteps,
                                std::uint32_t sampleLimit)
 {
     cfg.energyMeasureEverySteps = measureEverySteps;
     cfg.energySampleLimit = sampleLimit;
 }
+
+/// Description: Describes the build two body file scenario operation contract.
 bool buildTwoBodyFileScenario(ScenarioConfig& outConfig, std::uint32_t steps, float dt,
                               const std::string& solver, const std::string& integrator,
                               std::string& error)
@@ -48,6 +61,8 @@ bool buildTwoBodyFileScenario(ScenarioConfig& outConfig, std::uint32_t steps, fl
     outConfig.integrator = integrator;
     return true;
 }
+
+/// Description: Describes the build disk orbit scenario operation contract.
 ScenarioConfig buildDiskOrbitScenario(std::uint32_t particleCount, float dt, std::uint32_t steps,
                                       std::uint32_t seed, const std::string& solver,
                                       const std::string& integrator)
@@ -69,6 +84,8 @@ ScenarioConfig buildDiskOrbitScenario(std::uint32_t particleCount, float dt, std
     applyPassiveThermalDefaults(cfg.initState);
     return cfg;
 }
+
+/// Description: Describes the build random cloud scenario operation contract.
 ScenarioConfig buildRandomCloudScenario(std::uint32_t particleCount, float dt, std::uint32_t steps,
                                         std::uint32_t seed, const std::string& solver,
                                         const std::string& integrator)
@@ -85,6 +102,8 @@ ScenarioConfig buildRandomCloudScenario(std::uint32_t particleCount, float dt, s
     applyPassiveThermalDefaults(cfg.initState);
     return cfg;
 }
+
+/// Description: Executes the waitForStepCount operation.
 bool waitForStepCount(const SimulationServer& server, std::uint64_t targetStep, int timeoutMs)
 {
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
@@ -96,6 +115,8 @@ bool waitForStepCount(const SimulationServer& server, std::uint64_t targetStep, 
     }
     return server.getStats().steps >= targetStep;
 }
+
+/// Description: Describes the wait for consumed snapshot operation contract.
 bool waitForConsumedSnapshot(SimulationServer& server, std::vector<RenderParticle>& outSnapshot,
                              int timeoutMs)
 {
@@ -105,6 +126,8 @@ bool waitForConsumedSnapshot(SimulationServer& server, std::vector<RenderParticl
         },
         outSnapshot, timeoutMs);
 }
+
+/// Description: Describes the wait for published snapshot operation contract.
 bool waitForPublishedSnapshot(const SimulationServer& server,
                               std::vector<RenderParticle>& outSnapshot, int timeoutMs)
 {
@@ -114,6 +137,8 @@ bool waitForPublishedSnapshot(const SimulationServer& server,
         },
         outSnapshot, timeoutMs);
 }
+
+/// Description: Executes the haveExactReplayMatch operation.
 bool haveExactReplayMatch(const ScenarioResult& lhs, const ScenarioResult& rhs, std::string& error)
 {
     if (lhs.final.size() != rhs.final.size()) {

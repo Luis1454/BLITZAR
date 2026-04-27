@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/policies/deviation_register.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import re
@@ -19,10 +22,13 @@ ALLOWED_KINDS = {"deviation", "waiver"}
 ALLOWED_STATUSES = {"open", "closed"}
 
 
+# Description: Defines the DeviationRegister contract.
 class DeviationRegister:
+    # Description: Executes the __init__ operation.
     def __init__(self) -> None:
         self._manifest = QualityManifestLoader()
 
+    # Description: Executes the load operation.
     def load(
         self,
         root: Path,
@@ -41,6 +47,7 @@ class DeviationRegister:
                 parsed.append(parsed_row)
         return parsed
 
+    # Description: Executes the load_open_with_errors operation.
     def load_open_with_errors(self, root: Path) -> tuple[list[dict[str, object]], list[str]]:
         payload, errors = self._manifest.load_with_errors(root)
         if errors:
@@ -51,6 +58,7 @@ class DeviationRegister:
         rows = self.load(root, payload, requirement_ids, result)
         return [row for row in rows if row["status"] == "open"], result.errors
 
+    # Description: Executes the _parse_row operation.
     def _parse_row(
         self,
         root: Path,
@@ -113,6 +121,7 @@ class DeviationRegister:
         }
 
     @staticmethod
+    # Description: Executes the _required_string operation.
     def _required_string(row: dict[str, JsonValue], deviation_id: str, field: str, result: CheckResult) -> str:
         value = DeviationRegister._as_string(row.get(field))
         if not value:
@@ -120,6 +129,7 @@ class DeviationRegister:
         return value
 
     @staticmethod
+    # Description: Executes the _validate_date operation.
     def _validate_date(value: str, deviation_id: str, field: str, result: CheckResult) -> None:
         try:
             date.fromisoformat(value)
@@ -127,10 +137,12 @@ class DeviationRegister:
             result.add_error(f"{deviation_id}: invalid ISO date in {field}: {value}")
 
     @staticmethod
+    # Description: Executes the _as_string operation.
     def _as_string(value: JsonValue | None) -> str:
         return value.strip() if isinstance(value, str) else ""
 
     @staticmethod
+    # Description: Executes the _string_list operation.
     def _string_list(value: JsonValue | None) -> list[str]:
         if not isinstance(value, list):
             return []

@@ -1,4 +1,9 @@
+// File: engine/src/server/simulation_server/FormatAndTheta.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
+
+/// Description: Executes the profileThetaBias operation.
 float profileThetaBias(std::string_view performanceProfile)
 {
     if (performanceProfile == "interactive")
@@ -9,6 +14,8 @@ float profileThetaBias(std::string_view performanceProfile)
         return 0.2f;
     return 0.5f;
 }
+
+/// Description: Executes the particleThetaBias operation.
 float particleThetaBias(std::size_t particleCount)
 {
     if (particleCount <= 512u)
@@ -17,6 +24,8 @@ float particleThetaBias(std::size_t particleCount)
         static_cast<float>(particleCount - 512u) / static_cast<float>(65536u - 512u);
     return std::clamp(normalized, 0.0f, 1.0f);
 }
+
+/// Description: Describes the resolve octree theta operation contract.
 float resolveOctreeTheta(float configuredTheta, bool autoTune, float autoMin, float autoMax,
                          std::string_view performanceProfile,
                          const std::vector<Particle>& particles, float distributionScore)
@@ -34,6 +43,8 @@ float resolveOctreeTheta(float configuredTheta, bool autoTune, float autoMin, fl
                                          0.0f, 1.0f);
     return clampedMin + span * blendedBias;
 }
+
+/// Description: Describes the log effective execution modes operation contract.
 void logEffectiveExecutionModes(
     std::string_view solver, std::string_view integrator, std::string_view performanceProfile,
     std::string_view openingCriterion, float theta, float effectiveTheta, bool thetaAutoTune,
@@ -63,6 +74,8 @@ void logEffectiveExecutionModes(
               << " snapshot_publish_ms=" << snapshotPublishPeriodMs << " perf_fps=" << serverFps
               << " error_energy_drift_pct=" << energyDriftPct << "\n";
 }
+
+/// Description: Describes the default export path operation contract.
 std::string defaultExportPath(const std::string& directory, const std::string& format,
                               std::uint64_t step)
 {
@@ -77,6 +90,8 @@ std::string defaultExportPath(const std::string& directory, const std::string& f
     std::filesystem::path outPath = std::filesystem::path(directory) / fileName.str();
     return outPath.string();
 }
+
+/// Description: Executes the guessFormatFromPath operation.
 std::string guessFormatFromPath(const std::string& path)
 {
     const std::filesystem::path p(path);
@@ -90,6 +105,8 @@ std::string guessFormatFromPath(const std::string& path)
         return "vtk_binary";
     return ext;
 }
+
+/// Description: Executes the readBeU32 operation.
 bool readBeU32(std::istream& in, std::uint32_t& outValue)
 {
     std::array<std::byte, 4> bytes{std::byte{0}, std::byte{0}, std::byte{0}, std::byte{0}};
@@ -102,6 +119,8 @@ bool readBeU32(std::istream& in, std::uint32_t& outValue)
                static_cast<std::uint32_t>(std::to_integer<unsigned char>(bytes[3]));
     return true;
 }
+
+/// Description: Executes the readBeI32 operation.
 bool readBeI32(std::istream& in, std::int32_t& outValue)
 {
     std::uint32_t unsignedValue = 0u;
@@ -111,6 +130,8 @@ bool readBeI32(std::istream& in, std::int32_t& outValue)
     outValue = static_cast<std::int32_t>(unsignedValue);
     return true;
 }
+
+/// Description: Executes the readBeF32 operation.
 bool readBeF32(std::istream& in, float& outValue)
 {
     std::uint32_t bits = 0u;
@@ -120,6 +141,8 @@ bool readBeF32(std::istream& in, float& outValue)
     std::memcpy(&outValue, &bits, sizeof(float));
     return true;
 }
+
+/// Description: Executes the writeBeU32 operation.
 void writeBeU32(std::ostream& out, std::uint32_t value)
 {
     const std::array<std::byte, 4> bytes{
@@ -129,10 +152,14 @@ void writeBeU32(std::ostream& out, std::uint32_t value)
         std::byte{static_cast<unsigned char>(value & 0xFFu)}};
     (void)writeRawBytes(out, bytes.data(), bytes.size());
 }
+
+/// Description: Executes the writeBeI32 operation.
 void writeBeI32(std::ostream& out, std::int32_t value)
 {
     writeBeU32(out, static_cast<std::uint32_t>(value));
 }
+
+/// Description: Executes the writeBeF32 operation.
 void writeBeF32(std::ostream& out, float value)
 {
     std::uint32_t bits = 0u;

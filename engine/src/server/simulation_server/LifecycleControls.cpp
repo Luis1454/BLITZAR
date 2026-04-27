@@ -1,4 +1,9 @@
+// File: engine/src/server/simulation_server/LifecycleControls.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
+
+/// Description: Executes the SimulationServer operation.
 SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
     : _running(false),
       _paused(false),
@@ -122,6 +127,8 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
         _energyMeasureEverySteps.load(std::memory_order_relaxed);
     _runtimeConfigMirror.energySampleLimit = _energySampleLimit.load(std::memory_order_relaxed);
 }
+
+/// Description: Executes the SimulationServer operation.
 SimulationServer::SimulationServer(const std::string& configPath) : SimulationServer(2u, 0.01f)
 {
     _configPath = configPath.empty() ? "simulation.ini" : configPath;
@@ -183,11 +190,15 @@ SimulationServer::SimulationServer(const std::string& configPath) : SimulationSe
     _snapshotTransferCap.store(resolvePublishedSnapshotCap(loaded.clientParticleCap),
                                std::memory_order_relaxed);
 }
+
+/// Description: Releases resources owned by SimulationServer.
 SimulationServer::~SimulationServer()
 {
     stop();
     _system.reset();
 }
+
+/// Description: Executes the start operation.
 void SimulationServer::start()
 {
     if (_running.exchange(true)) {
@@ -198,6 +209,8 @@ void SimulationServer::start()
               << " dt=" << _dt.load(std::memory_order_relaxed) << "\n";
     _thread = std::thread(&SimulationServer::loop, this);
 }
+
+/// Description: Executes the stop operation.
 void SimulationServer::stop()
 {
     if (!_running.exchange(false)) {
@@ -219,28 +232,40 @@ void SimulationServer::stop()
     }
     stopExportWorker();
 }
+
+/// Description: Executes the setPaused operation.
 void SimulationServer::setPaused(bool paused)
 {
     _paused.store(paused, std::memory_order_relaxed);
 }
+
+/// Description: Executes the isPaused operation.
 bool SimulationServer::isPaused() const
 {
     return _paused.load(std::memory_order_relaxed);
 }
+
+/// Description: Executes the togglePaused operation.
 void SimulationServer::togglePaused()
 {
     _paused.store(!_paused.load(std::memory_order_relaxed), std::memory_order_relaxed);
 }
+
+/// Description: Executes the stepOnce operation.
 void SimulationServer::stepOnce()
 {
     _stepRequests.fetch_add(1, std::memory_order_relaxed);
 }
+
+/// Description: Executes the setDt operation.
 void SimulationServer::setDt(float dt)
 {
     if (dt > 0.0f) {
         _dt.store(dt, std::memory_order_relaxed);
     }
 }
+
+/// Description: Executes the scaleDt operation.
 void SimulationServer::scaleDt(float factor)
 {
     if (factor <= 0.0f) {
@@ -249,10 +274,14 @@ void SimulationServer::scaleDt(float factor)
     const float current = _dt.load(std::memory_order_relaxed);
     setDt(current * factor);
 }
+
+/// Description: Executes the getDt operation.
 float SimulationServer::getDt() const
 {
     return _dt.load(std::memory_order_relaxed);
 }
+
+/// Description: Executes the requestReset operation.
 void SimulationServer::requestReset()
 {
     _stepRequests.store(0, std::memory_order_relaxed);
@@ -261,10 +290,14 @@ void SimulationServer::requestReset()
     clearPublishedSnapshotCache();
     _resetRequested.store(true, std::memory_order_relaxed);
 }
+
+/// Description: Executes the requestRecover operation.
 void SimulationServer::requestRecover()
 {
     requestReset();
 }
+
+/// Description: Executes the setParticleCount operation.
 void SimulationServer::setParticleCount(std::uint32_t particleCount)
 {
     const std::uint32_t clamped = std::max<std::uint32_t>(2u, particleCount);

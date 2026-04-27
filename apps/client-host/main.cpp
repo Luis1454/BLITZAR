@@ -1,7 +1,12 @@
+// File: apps/client-host/main.cpp
+// Purpose: Application entry point or host support for BLITZAR executables.
+
 #include "apps/client-host/client_host_cli.hpp"
 #include <exception>
 #include <iostream>
 #include <string>
+
+/// Description: Executes the main operation.
 int main(int argc, char** argv)
 {
     try {

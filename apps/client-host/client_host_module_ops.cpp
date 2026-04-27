@@ -1,3 +1,6 @@
+// File: apps/client-host/client_host_module_ops.cpp
+// Purpose: Application entry point or host support for BLITZAR executables.
+
 #include "apps/client-host/client_host_module_ops.hpp"
 #include "apps/client-host/client_host_cli_text.hpp"
 #include "client/ClientModuleHandle.hpp"
@@ -5,7 +8,9 @@
 #include <iostream>
 #include <system_error>
 #include <utility>
+
 namespace grav_client_host {
+/// Description: Defines the ClientHostModuleOpsLocal data or behavior contract.
 class ClientHostModuleOpsLocal final {
 public:
     static std::vector<std::string> moduleFilenameCandidatesForAlias(const std::string& alias)
@@ -20,12 +25,14 @@ public:
             return grav_platform::sharedLibraryCandidates("gravityClientModuleQtInProc");
         return {};
     }
+
     static bool isExplicitPath(const std::string& specifier)
     {
         const std::filesystem::path asPath(specifier);
         return asPath.is_absolute() || (specifier.find('/') != std::string::npos) ||
                (specifier.find('\\') != std::string::npos) || asPath.has_extension();
     }
+
     static std::vector<std::filesystem::path> buildSearchRoots(std::string_view programName)
     {
         std::vector<std::filesystem::path> roots;
@@ -38,6 +45,7 @@ public:
         roots.push_back(std::filesystem::current_path() / "build");
         return roots;
     }
+
     static std::string resolveModuleSpecifier(const std::string& rawSpecifier,
                                               const std::vector<std::filesystem::path>& searchRoots)
     {
@@ -63,6 +71,7 @@ public:
             }
         return filenames.front();
     }
+
     static std::string expectedModuleIdForSpecifier(const std::string& rawSpecifier)
     {
         const std::string specifier = ClientHostCliText::trim(rawSpecifier);
@@ -72,6 +81,7 @@ public:
         const std::string alias = ClientHostCliText::toLower(specifier);
         return moduleFilenameCandidatesForAlias(alias).empty() ? std::string() : alias;
     }
+
     static bool switchModule(const std::string& moduleSpecifier, const std::string& configPath,
                              const std::vector<std::filesystem::path>& searchRoots,
                              grav_module::ClientModuleHandle& module)
@@ -89,6 +99,7 @@ public:
                   << module.loadedPath() << ")\n";
         return true;
     }
+
     static bool reloadModule(const std::string& currentModuleSpecifier,
                              const std::string& configPath,
                              const std::vector<std::filesystem::path>& searchRoots,
@@ -109,21 +120,29 @@ public:
         return true;
     }
 };
+
 std::vector<std::filesystem::path>
+/// Description: Executes the buildSearchRoots operation.
 ClientHostModuleOps::buildSearchRoots(std::string_view programName)
 {
     return ClientHostModuleOpsLocal::buildSearchRoots(programName);
 }
+
 std::string
+/// Description: Describes the resolve module specifier operation contract.
 ClientHostModuleOps::resolveModuleSpecifier(const std::string& rawSpecifier,
                                             const std::vector<std::filesystem::path>& searchRoots)
 {
     return ClientHostModuleOpsLocal::resolveModuleSpecifier(rawSpecifier, searchRoots);
 }
+
+/// Description: Executes the expectedModuleIdForSpecifier operation.
 std::string ClientHostModuleOps::expectedModuleIdForSpecifier(const std::string& rawSpecifier)
 {
     return ClientHostModuleOpsLocal::expectedModuleIdForSpecifier(rawSpecifier);
 }
+
+/// Description: Describes the switch module operation contract.
 bool ClientHostModuleOps::switchModule(const std::string& moduleSpecifier,
                                        const std::string& configPath,
                                        const std::vector<std::filesystem::path>& searchRoots,
@@ -131,6 +150,8 @@ bool ClientHostModuleOps::switchModule(const std::string& moduleSpecifier,
 {
     return ClientHostModuleOpsLocal::switchModule(moduleSpecifier, configPath, searchRoots, module);
 }
+
+/// Description: Describes the reload module operation contract.
 bool ClientHostModuleOps::reloadModule(const std::string& currentModuleSpecifier,
                                        const std::string& configPath,
                                        const std::vector<std::filesystem::path>& searchRoots,

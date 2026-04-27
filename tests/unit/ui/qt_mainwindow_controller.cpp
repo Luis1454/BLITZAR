@@ -1,3 +1,6 @@
+// File: tests/unit/ui/qt_mainwindow_controller.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/IClientRuntime.hpp"
 #include "config/SimulationConfig.hpp"
 #include "ui/MainWindowController.hpp"
@@ -6,67 +9,84 @@
 #include <optional>
 #include <string>
 #include <vector>
+
 namespace grav_test_qt_ui {
+/// Description: Defines the RecordingClientRuntime data or behavior contract.
 class RecordingClientRuntime final : public grav_client::IClientRuntime {
 public:
     bool start() override
     {
         return true;
     }
+
     void stop() override
     {
     }
+
     void setPaused(bool paused) override
     {
         pausedState = paused;
     }
+
     void togglePaused() override
     {
         pausedState = !pausedState;
     }
+
     void stepOnce() override
     {
     }
+
     void setParticleCount(std::uint32_t particleCount) override
     {
         configuredParticleCount = particleCount;
     }
+
     void setDt(float dt) override
     {
         configuredDt = dt;
     }
+
     void scaleDt(float factor) override
     {
         configuredDt *= factor;
     }
+
     void requestReset() override
     {
         resetRequested = true;
     }
+
     void requestRecover() override
     {
     }
+
     void setSolverMode(const std::string& mode) override
     {
         solverMode = mode;
     }
+
     void setIntegratorMode(const std::string& mode) override
     {
         integratorMode = mode;
     }
+
     void setPerformanceProfile(const std::string& profile) override
     {
         performanceProfile = profile;
     }
+
     void setOctreeParameters(float theta, float softening) override
     {
         octreeTheta = theta;
         octreeSoftening = softening;
     }
+
     void setSphEnabled(bool enabled) override
     {
         sphEnabled = enabled;
     }
+
     void setSphParameters(float smoothingLength, float restDensity, float gasConstant,
                           float viscosity) override
     {
@@ -75,103 +95,128 @@ public:
         sphGasConstant = gasConstant;
         sphViscosity = viscosity;
     }
+
     void setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps) override
     {
         substepTargetDt = targetDt;
         configuredMaxSubsteps = maxSubsteps;
     }
+
     void setSnapshotPublishPeriodMs(std::uint32_t periodMs) override
     {
         snapshotPublishPeriodMs = periodMs;
     }
+
     void setInitialStateConfig(const InitialStateConfig& config) override
     {
         initialStateConfig = config;
     }
+
     void setEnergyMeasurementConfig(std::uint32_t everySteps, std::uint32_t sampleLimit) override
     {
         energyEverySteps = everySteps;
         energySampleLimit = sampleLimit;
     }
+
     void setGpuTelemetryEnabled(bool enabled) override
     {
         gpuTelemetryEnabled = enabled;
     }
+
     void setExportDefaults(const std::string& directory, const std::string& format) override
     {
         exportDirectory = directory;
         exportFormat = format;
     }
+
     void setInitialStateFile(const std::string& path, const std::string& format) override
     {
         initialStateFile = path;
         initialStateFormat = format;
     }
+
     void requestExportSnapshot(const std::string&, const std::string&) override
     {
     }
+
     void requestSaveCheckpoint(const std::string& outputPath) override
     {
         checkpointSavePath = outputPath;
     }
+
     void requestLoadCheckpoint(const std::string& inputPath) override
     {
         checkpointLoadPath = inputPath;
     }
+
     void requestShutdown() override
     {
     }
+
     void setRemoteSnapshotCap(std::uint32_t maxPoints) override
     {
         remoteSnapshotCap = maxPoints;
     }
+
     void requestReconnect() override
     {
     }
+
     void configureRemoteConnector(const std::string&, std::uint16_t, bool,
                                   const std::string&) override
     {
     }
+
     bool isRemoteMode() const override
     {
         return false;
     }
+
     SimulationStats getCachedStats() const override
     {
         return {};
     }
+
     SimulationStats getStats() const override
     {
         return {};
     }
+
     std::optional<grav_client::ConsumedSnapshot> consumeLatestSnapshot() override
     {
         return std::nullopt;
     }
+
     bool tryConsumeSnapshot(std::vector<RenderParticle>&) override
     {
         return false;
     }
+
     grav_client::SnapshotPipelineState snapshotPipelineState() const override
     {
         return {};
     }
+
     std::string linkStateLabel() const override
     {
         return "disconnected";
     }
+
     std::string serverOwnerLabel() const override
     {
         return "local";
     }
+
     std::uint32_t statsAgeMs() const override
     {
         return 0u;
     }
+
     std::uint32_t snapshotAgeMs() const override
     {
         return 0u;
     }
+
     bool pausedState = false;
     bool resetRequested = false;
     bool sphEnabled = false;
@@ -201,6 +246,8 @@ public:
     std::string checkpointLoadPath;
     InitialStateConfig initialStateConfig;
 };
+
+/// Description: Executes the TEST operation.
 TEST(QtUiLogicTest, TST_UNT_UI_002_ControllerAppliesRuntimeMappingsWithoutWidgetDependency)
 {
     SimulationConfig config{};
@@ -238,6 +285,8 @@ TEST(QtUiLogicTest, TST_UNT_UI_002_ControllerAppliesRuntimeMappingsWithoutWidget
     EXPECT_EQ(runtime.exportDirectory, config.exportDirectory);
     EXPECT_EQ(runtime.exportFormat, config.exportFormat);
 }
+
+/// Description: Executes the TEST operation.
 TEST(QtUiLogicTest, TST_UNT_UI_003_ControllerRejectsInvalidConfigBeforeRuntimeMutation)
 {
     SimulationConfig config{};

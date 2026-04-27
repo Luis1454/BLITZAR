@@ -1,10 +1,15 @@
+// File: tests/support/performance_benchmark_tool.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "tests/support/performance_benchmark_tool.hpp"
+#include "tests/support/physics_scenario.hpp"
+#include "tests/support/physics_test_utils.hpp"
 #include <chrono>
 #include <iomanip>
 #include <ostream>
-#include "tests/support/physics_scenario.hpp"
-#include "tests/support/physics_test_utils.hpp"
+
 namespace grav_test_perf_tool {
+/// Description: Describes the build scenario operation contract.
 bool buildScenario(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& options,
                    testsupport::ScenarioConfig& cfg, std::string& error)
 {
@@ -25,6 +30,8 @@ bool buildScenario(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& 
     testsupport::setScenarioEnergySampling(cfg, 1u, options.particleCount);
     return true;
 }
+
+/// Description: Describes the write measurement operation contract.
 void writeMeasurement(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& options,
                       const testsupport::ScenarioResult& result, const double wallSeconds,
                       std::ostream& out)
@@ -49,7 +56,9 @@ void writeMeasurement(const grav_test_perf::PerformanceBenchmarkTool::ToolOption
     out << "energy_drift_pct=" << result.stats.energyDriftPct << "\n";
 }
 } // namespace grav_test_perf_tool
+
 namespace grav_test_perf {
+/// Description: Executes the parseFloatValue operation.
 bool PerformanceBenchmarkTool::parseFloatValue(const std::string& text, float& out)
 {
     std::size_t consumed = 0u;
@@ -61,6 +70,8 @@ bool PerformanceBenchmarkTool::parseFloatValue(const std::string& text, float& o
     }
     return consumed == text.size();
 }
+
+/// Description: Executes the parseUintValue operation.
 bool PerformanceBenchmarkTool::parseUintValue(const std::string& text, std::uint32_t& out)
 {
     std::size_t consumed = 0u;
@@ -72,15 +83,17 @@ bool PerformanceBenchmarkTool::parseUintValue(const std::string& text, std::uint
     }
     return consumed == text.size();
 }
+
+/// Description: Describes the parse args operation contract.
 bool PerformanceBenchmarkTool::parseArgs(int argc, const char* const* argv, ToolOptions& out,
                                          std::string& error)
 {
     for (int index = 1; index < argc; index += 1) {
         const std::string arg(argv[index]);
         if (arg == "--help") {
-            error =
-                "usage: gravityPerformanceBenchmarkTool --workload <name> --solver <solver> "
-                "--integrator <integrator> --dt <seconds> --particle-count <n> --steps <n> --seed <n>";
+            error = "usage: gravityPerformanceBenchmarkTool --workload <name> --solver <solver> "
+                    "--integrator <integrator> --dt <seconds> --particle-count <n> --steps <n> "
+                    "--seed <n>";
             return false;
         }
         if (index + 1 >= argc) {
@@ -133,6 +146,8 @@ bool PerformanceBenchmarkTool::parseArgs(int argc, const char* const* argv, Tool
     }
     return true;
 }
+
+/// Description: Describes the run operation contract.
 int PerformanceBenchmarkTool::run(int argc, const char* const* argv, std::ostream& out,
                                   std::ostream& err) const
 {

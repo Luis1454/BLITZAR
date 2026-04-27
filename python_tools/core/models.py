@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/core/models.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -10,6 +13,7 @@ OptionsMap = dict[str, Any]
 
 
 @dataclass(frozen=True)
+# Description: Defines the CheckContext contract.
 class CheckContext:
     root: Path
     config: Path | None = None
@@ -38,6 +42,7 @@ class CheckContext:
 
 
 @dataclass
+# Description: Defines the CheckResult contract.
 class CheckResult:
     name: str
     ok: bool = True
@@ -49,22 +54,28 @@ class CheckResult:
     stdout: str = ""
     stderr: str = ""
 
+    # Description: Executes the add_error operation.
     def add_error(self, message: str) -> None:
         self.ok = False
         self.errors.append(message)
 
+    # Description: Executes the add_warning operation.
     def add_warning(self, message: str) -> None:
         self.warnings.append(message)
 
 
+# Description: Defines the CheckContract contract.
 class CheckContract(Protocol):
+    # Description: Executes the run operation.
     def run(self, context: CheckContext) -> CheckResult:
         ...
 
 
+# Description: Defines the CheckExecutionError contract.
 class CheckExecutionError(RuntimeError):
     pass
 
 
+# Description: Defines the ConfigurationError contract.
 class ConfigurationError(CheckExecutionError):
     pass
