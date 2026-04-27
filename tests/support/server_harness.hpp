@@ -1,5 +1,9 @@
-// File: tests/support/server_harness.hpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/support/server_harness.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #ifndef GRAVITY_TESTS_SUPPORT_SERVER_HARNESS_HPP_
 #define GRAVITY_TESTS_SUPPORT_SERVER_HARNESS_HPP_
@@ -8,38 +12,96 @@
 #include <string>
 #include <vector>
 
-/// Description: Defines the RealServerHarness data or behavior contract.
+/*
+ * @brief Defines the real server harness type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class RealServerHarness {
 public:
-    /// Description: Describes the real server harness operation contract.
     RealServerHarness() = default;
-    /// Description: Releases resources owned by RealServerHarness.
+    /*
+     * @brief Documents the ~real server harness operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     ~RealServerHarness();
-    /// Description: Describes the real server harness operation contract.
     RealServerHarness(const RealServerHarness&) = delete;
-    /// Description: Describes the operator= operation contract.
     RealServerHarness& operator=(const RealServerHarness&) = delete;
-    /// Description: Describes the real server harness operation contract.
     RealServerHarness(RealServerHarness&&) = delete;
-    /// Description: Describes the operator= operation contract.
     RealServerHarness& operator=(RealServerHarness&&) = delete;
-    /// Description: Describes the start operation contract.
+    /*
+     * @brief Documents the start operation contract.
+     * @param outError Input value used by this contract.
+     * @param preferredPort Input value used by this contract.
+     * @param authToken Input value used by this contract.
+     * @param extraArgs Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool start(std::string& outError, std::uint16_t preferredPort = 0u,
                const std::string& authToken = {}, const std::vector<std::string>& extraArgs = {});
-    /// Description: Describes the stop operation contract.
+    /*
+     * @brief Documents the stop operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void stop();
-    /// Description: Describes the is running operation contract.
+    /*
+     * @brief Documents the is running operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool isRunning() const;
-    /// Description: Describes the port operation contract.
+    /*
+     * @brief Documents the port operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return std::uint16_t value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     std::uint16_t port() const;
+    /*
+     * @brief Documents the executable path operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return const std::string& value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     const std::string& executablePath() const;
 
 private:
-    /// Description: Describes the resolve server executable operation contract.
+    /*
+     * @brief Documents the resolve server executable operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return std::string value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static std::string resolveServerExecutable();
-    /// Description: Describes the is port bindable operation contract.
+    /*
+     * @brief Documents the is port bindable operation contract.
+     * @param port Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static bool isPortBindable(std::uint16_t port);
-    /// Description: Describes the wait until ready operation contract.
+    /*
+     * @brief Documents the wait until ready operation contract.
+     * @param outError Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool waitUntilReady(std::string& outError) const;
     grav_platform::ProcessHandle _process;
     std::uint16_t _port = 0u;

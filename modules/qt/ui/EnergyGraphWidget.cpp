@@ -1,5 +1,9 @@
-// File: modules/qt/ui/EnergyGraphWidget.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/EnergyGraphWidget.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "ui/EnergyGraphWidget.hpp"
 #include "ui/EnergyGraphWidgetPaint.hpp"
@@ -7,14 +11,12 @@
 #include <algorithm>
 
 namespace grav_qt {
-/// Description: Executes the EnergyGraphWidget operation.
 EnergyGraphWidget::EnergyGraphWidget() : QWidget(nullptr)
 {
     setMinimumHeight(128);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
-/// Description: Executes the clearHistory operation.
 void EnergyGraphWidget::clearHistory()
 {
     _history.clear();
@@ -41,7 +43,6 @@ QString EnergyGraphWidget::driftYAxisLabel()
     return QStringLiteral("Drift [%]");
 }
 
-/// Description: Executes the legendLabels operation.
 QStringList EnergyGraphWidget::legendLabels()
 {
     return {QStringLiteral("Kinetic [J]"), QStringLiteral("Potential [J]"),
@@ -49,13 +50,11 @@ QStringList EnergyGraphWidget::legendLabels()
             QStringLiteral("Total [J]"),   QStringLiteral("Drift [%]")};
 }
 
-/// Description: Executes the sampleCount operation.
 std::size_t EnergyGraphWidget::sampleCount() const
 {
     return _history.size();
 }
 
-/// Description: Executes the pushSample operation.
 void EnergyGraphWidget::pushSample(const SimulationStats& stats)
 {
     const float sampleTime =
@@ -71,7 +70,6 @@ void EnergyGraphWidget::pushSample(const SimulationStats& stats)
     update();
 }
 
-/// Description: Executes the paintEvent operation.
 void EnergyGraphWidget::paintEvent(PaintEventHandle event)
 {
     EnergyGraphWidgetPaint::paint(*this, _history, event);

@@ -1,5 +1,9 @@
-// File: engine/include/physics/Particle.hpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/include/physics/Particle.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
+ */
 
 #ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLE_HPP_
 #define GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLE_HPP_
@@ -12,46 +16,160 @@
 #include "physics/Vector.hpp"
 #include <vector>
 
-/// Description: Defines the Particle data or behavior contract.
+/*
+ * @brief Defines the particle type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class Particle {
 public:
     static constexpr float kDefaultMass = 0.01f;
     static constexpr int kDefaultCudaBlockSize = 256;
-    /// Description: Describes the particle operation contract.
+    /*
+     * @brief Documents the particle operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE Particle();
-    /// Description: Releases resources owned by Particle.
+    /*
+     * @brief Documents the ~particle operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE ~Particle();
-    /// Description: Describes the update operation contract.
+    /*
+     * @brief Documents the update operation contract.
+     * @param deltaTime Input value used by this contract.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE void value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void update(float deltaTime);
-    /// Description: Describes the set mass operation contract.
+    /*
+     * @brief Documents the set mass operation contract.
+     * @param mass Input value used by this contract.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE void value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setMass(float mass);
-    /// Description: Describes the move operation contract.
+    /*
+     * @brief Documents the move operation contract.
+     * @param force Input value used by this contract.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE void value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void move(Vector3 force);
-    /// Description: Describes the bounce operation contract.
+    /*
+     * @brief Documents the bounce operation contract.
+     * @param normal Input value used by this contract.
+     * @param dt Input value used by this contract.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE void value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void bounce(Vector3 normal, float dt);
-    /// Description: Describes the apply force operation contract.
+    /*
+     * @brief Documents the apply force operation contract.
+     * @param force Input value used by this contract.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE void value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void applyForce(Vector3 force);
-    /// Description: Describes the set density operation contract.
+    /*
+     * @brief Documents the set density operation contract.
+     * @param density Input value used by this contract.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE void value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setDensity(float density);
-    /// Description: Describes the set position operation contract.
+    /*
+     * @brief Documents the set position operation contract.
+     * @param position Input value used by this contract.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE void value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setPosition(Vector3 position);
-    /// Description: Describes the set velocity operation contract.
+    /*
+     * @brief Documents the set velocity operation contract.
+     * @param velocity Input value used by this contract.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE void value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setVelocity(Vector3 velocity);
-    /// Description: Describes the set pressure operation contract.
+    /*
+     * @brief Documents the set pressure operation contract.
+     * @param pressure Input value used by this contract.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE void value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setPressure(Vector3 pressure);
-    /// Description: Describes the set temperature operation contract.
+    /*
+     * @brief Documents the set temperature operation contract.
+     * @param temperature Input value used by this contract.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE void value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setTemperature(float temperature);
-    /// Description: Describes the get pressure operation contract.
+    /*
+     * @brief Documents the get pressure operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 getPressure() const;
-    /// Description: Describes the get position operation contract.
+    /*
+     * @brief Documents the get position operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 getPosition() const;
-    /// Description: Describes the get velocity operation contract.
+    /*
+     * @brief Documents the get velocity operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 getVelocity() const;
-    /// Description: Describes the get density operation contract.
+    /*
+     * @brief Documents the get density operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE float value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE float getDensity() const;
-    /// Description: Describes the get mass operation contract.
+    /*
+     * @brief Documents the get mass operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE float value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE float getMass() const;
-    /// Description: Describes the get temperature operation contract.
+    /*
+     * @brief Documents the get temperature operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE float value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE float getTemperature() const;
 
 private:

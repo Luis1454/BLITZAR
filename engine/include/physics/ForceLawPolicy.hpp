@@ -1,5 +1,9 @@
-// File: engine/include/physics/ForceLawPolicy.hpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/include/physics/ForceLawPolicy.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
+ */
 
 #ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_FORCELAWPOLICY_HPP_
 #define GRAVITY_ENGINE_INCLUDE_PHYSICS_FORCELAWPOLICY_HPP_
@@ -9,7 +13,12 @@
  * Responsibility: Normalize the canonical force-law clamps shared by all
  * gravity solvers.
  */
-/// Description: Defines the ForceLawPolicy data or behavior contract.
+/*
+ * @brief Defines the force law policy type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct ForceLawPolicy {
     float theta = 0.05f;
     float softening = 1.0e-4f;
@@ -18,7 +27,16 @@ struct ForceLawPolicy {
     float minTheta = 0.05f;
 };
 
-/// Description: Describes the resolve force law policy operation contract.
+/*
+ * @brief Documents the resolve force law policy operation contract.
+ * @param theta Input value used by this contract.
+ * @param softening Input value used by this contract.
+ * @param minSoftening Input value used by this contract.
+ * @param minDistance2 Input value used by this contract.
+ * @param minTheta Input value used by this contract.
+ * @return ForceLawPolicy value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ForceLawPolicy resolveForceLawPolicy(float theta, float softening, float minSoftening,
                                      float minDistance2, float minTheta);
 #endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_FORCELAWPOLICY_HPP_

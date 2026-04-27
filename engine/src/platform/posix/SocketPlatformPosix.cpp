@@ -1,5 +1,9 @@
-// File: engine/src/platform/posix/SocketPlatformPosix.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/platform/posix/SocketPlatformPosix.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Platform abstraction implementation for portable runtime services.
+ */
 
 #include "platform/posix/SocketPlatformPosix.hpp"
 #include <arpa/inet.h>
@@ -16,19 +20,16 @@ namespace grav_socket_detail {
 typedef int NativeSocket;
 static constexpr NativeSocket kInvalidNativeSocket = -1;
 
-/// Description: Executes the toNative operation.
 static NativeSocket toNative(std::intptr_t handle)
 {
     return static_cast<NativeSocket>(handle);
 }
 
-/// Description: Executes the toStored operation.
 static std::intptr_t toStored(NativeSocket handle)
 {
     return static_cast<std::intptr_t>(handle);
 }
 
-/// Description: Executes the setNonBlocking operation.
 static bool setNonBlocking(NativeSocket socket, bool enabled)
 {
     const int flags = ::fcntl(socket, F_GETFL, 0);
@@ -37,7 +38,6 @@ static bool setNonBlocking(NativeSocket socket, bool enabled)
     return ::fcntl(socket, F_SETFL, enabled ? (flags | O_NONBLOCK) : (flags & ~O_NONBLOCK)) == 0;
 }
 
-/// Description: Executes the toSockaddr operation.
 static sockaddr_in toSockaddr(const SocketAddressV4& address)
 {
     sockaddr_in out{};
@@ -52,30 +52,25 @@ static sockaddr_in toSockaddr(const SocketAddressV4& address)
     return out;
 }
 
-/// Description: Executes the invalidNativeSocket operation.
 std::intptr_t invalidNativeSocket()
 {
     return toStored(kInvalidNativeSocket);
 }
 
-/// Description: Executes the initializeSocketLayer operation.
 bool initializeSocketLayer()
 {
     return true;
 }
 
-/// Description: Executes the shutdownSocketLayer operation.
 void shutdownSocketLayer()
 {
 }
 
-/// Description: Executes the createTcpSocketNative operation.
 std::intptr_t createTcpSocketNative()
 {
     return toStored(::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP));
 }
 
-/// Description: Executes the closeSocketNative operation.
 void closeSocketNative(std::intptr_t handle)
 {
     const NativeSocket socket = toNative(handle);
@@ -83,7 +78,6 @@ void closeSocketNative(std::intptr_t handle)
         close(socket);
 }
 
-/// Description: Executes the setReuseAddressNative operation.
 bool setReuseAddressNative(std::intptr_t handle, bool enabled)
 {
     const int value = enabled ? 1 : 0;
@@ -91,7 +85,6 @@ bool setReuseAddressNative(std::intptr_t handle, bool enabled)
                         reinterpret_cast<const char*>(&value), sizeof(value)) == 0;
 }
 
-/// Description: Executes the setSocketTimeoutNative operation.
 bool setSocketTimeoutNative(std::intptr_t handle, int timeoutMs)
 {
     timeval timeout{};
@@ -104,7 +97,6 @@ bool setSocketTimeoutNative(std::intptr_t handle, int timeoutMs)
     return recvOk && sendOk;
 }
 
-/// Description: Executes the parseIpv4Address operation.
 bool parseIpv4Address(const std::string& host, SocketAddressV4& outAddress)
 {
     in_addr addr{};
@@ -115,7 +107,6 @@ bool parseIpv4Address(const std::string& host, SocketAddressV4& outAddress)
     return true;
 }
 
-/// Description: Executes the connectIpv4Native operation.
 bool connectIpv4Native(std::intptr_t handle, const SocketAddressV4& address, int timeoutMs)
 {
     const NativeSocket socket = toNative(handle);
@@ -148,20 +139,17 @@ bool connectIpv4Native(std::intptr_t handle, const SocketAddressV4& address, int
     return getOptResult == 0 && soError == 0;
 }
 
-/// Description: Executes the bindIpv4Native operation.
 bool bindIpv4Native(std::intptr_t handle, const SocketAddressV4& address)
 {
     sockaddr_in endpoint = toSockaddr(address);
     return ::bind(toNative(handle), reinterpret_cast<sockaddr*>(&endpoint), sizeof(endpoint)) == 0;
 }
 
-/// Description: Executes the listenSocketNative operation.
 bool listenSocketNative(std::intptr_t handle, int backlog)
 {
     return ::listen(toNative(handle), backlog) == 0;
 }
 
-/// Description: Executes the acceptSocketNative operation.
 std::intptr_t acceptSocketNative(std::intptr_t handle)
 {
     sockaddr_in clientAddr{};
@@ -170,7 +158,6 @@ std::intptr_t acceptSocketNative(std::intptr_t handle)
         ::accept(toNative(handle), reinterpret_cast<sockaddr*>(&clientAddr), &clientAddrLen));
 }
 
-/// Description: Executes the waitReadableNative operation.
 bool waitReadableNative(std::intptr_t handle, int timeoutMs)
 {
     fd_set readSet;
@@ -183,21 +170,18 @@ bool waitReadableNative(std::intptr_t handle, int timeoutMs)
            0;
 }
 
-/// Description: Executes the recvBytesNative operation.
 int recvBytesNative(std::intptr_t handle, grav_socket::MutableBytes buffer)
 {
     return buffer.empty() ? 0
                           : static_cast<int>(::recv(toNative(handle), buffer.data, buffer.size, 0));
 }
 
-/// Description: Executes the sendBytesNative operation.
 int sendBytesNative(std::intptr_t handle, grav_socket::ConstBytes buffer)
 {
     return buffer.empty() ? 0
                           : static_cast<int>(::send(toNative(handle), buffer.data, buffer.size, 0));
 }
 
-/// Description: Executes the wouldBlockOrTimeoutLastErrorNative operation.
 bool wouldBlockOrTimeoutLastErrorNative()
 {
     return errno == EAGAIN || errno == EWOULDBLOCK;

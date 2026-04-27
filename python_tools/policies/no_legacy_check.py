@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/policies/no_legacy_check.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/policies/no_legacy_check.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -26,13 +28,19 @@ EXPECTED_VARIANTS = (
 )
 
 
-# Description: Defines the NoLegacyCheck contract.
+# @brief Defines the no legacy check type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class NoLegacyCheck(BaseCheck):
     name = "no_legacy"
     success_message = "Legacy standalone client guard check passed."
     failure_title = "Legacy standalone client guard check failed:"
 
-    # Description: Executes the _execute operation.
+    # @brief Documents the execute operation contract.
+    # @param context Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         root_cmake = context.root / "CMakeLists.txt"
         if not root_cmake.exists():
@@ -45,7 +53,11 @@ class NoLegacyCheck(BaseCheck):
         if context.check_build_targets:
             self._check_build_targets(context.build_dir, result)
 
-    # Description: Executes the _check_build_targets operation.
+    # @brief Documents the check build targets operation contract.
+    # @param build_dir Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_build_targets(self, build_dir: Path | None, result: CheckResult) -> None:
         if build_dir is None:
             result.add_error("build-dir is required when --check-build-targets is enabled")

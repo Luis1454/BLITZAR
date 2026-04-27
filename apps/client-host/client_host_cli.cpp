@@ -1,5 +1,9 @@
-// File: apps/client-host/client_host_cli.cpp
-// Purpose: Application entry point or host support for BLITZAR executables.
+/*
+ * @file apps/client-host/client_host_cli.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Application entry points and host executables for BLITZAR.
+ */
 
 #include <filesystem>
 #include <iostream>
@@ -17,7 +21,6 @@
 #include "config/SimulationScenarioValidation.hpp"
 
 namespace grav_client_host {
-/// Description: Defines the ClientHostCliLocal data or behavior contract.
 class ClientHostCliLocal final {
 public:
     static constexpr bool kLiveReloadEnabled = GRAVITY_PROFILE_IS_PROD == 0;
@@ -183,25 +186,21 @@ private:
     }
 };
 
-/// Description: Executes the parseArgs operation.
 bool ClientHostCli::parseArgs(int argc, char** argv, HostOptions& outOptions, std::string& outError)
 {
     return ClientHostCliArgs::parseArgs(argc, argv, outOptions, outError);
 }
 
-/// Description: Describes the live reload enabled operation contract.
 bool ClientHostCli::liveReloadEnabled() noexcept
 {
     return ClientHostCliLocal::kLiveReloadEnabled;
 }
 
-/// Description: Executes the printHelp operation.
 void ClientHostCli::printHelp(std::string_view programName)
 {
     ClientHostCliArgs::printHelp(programName);
 }
 
-/// Description: Executes the run operation.
 int ClientHostCli::run(const HostOptions& options, std::string_view programName)
 {
     return ClientHostCliLocal::run(options, programName);

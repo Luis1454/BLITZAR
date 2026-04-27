@@ -1,3 +1,10 @@
+/*
+ * @file engine/src/physics/cuda/ParticleSystem.cu
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
+
 #include "fragments/OctreeImpl.inl"
 #include "fragments/ParticleSystemBuffer.inl"
 #include "fragments/ParticleSystemCore.inl"

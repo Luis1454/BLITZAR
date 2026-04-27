@@ -1,5 +1,7 @@
-# File: tests/checks/suites/core/test_coverage_dashboard.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/checks/suites/core/test_coverage_dashboard.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 from __future__ import annotations
 
@@ -9,7 +11,10 @@ from pathlib import Path
 from python_tools.ci.coverage_dashboard import CoverageDashboardBuilder, CoverageMetrics
 
 
-# Description: Executes the test_coverage_dashboard_writes_widget_and_summary operation.
+# @brief Documents the test coverage dashboard writes widget and summary operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_coverage_dashboard_writes_widget_and_summary(tmp_path: Path) -> None:
     builder = CoverageDashboardBuilder()
 
@@ -34,7 +39,10 @@ def test_coverage_dashboard_writes_widget_and_summary(tmp_path: Path) -> None:
     assert summary["branches_pct"] == 63.8
 
 
-# Description: Executes the test_coverage_dashboard_index_links_widget operation.
+# @brief Documents the test coverage dashboard index links widget operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_coverage_dashboard_index_links_widget(tmp_path: Path) -> None:
     builder = CoverageDashboardBuilder()
 

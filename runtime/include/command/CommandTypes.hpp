@@ -1,5 +1,9 @@
-// File: runtime/include/command/CommandTypes.hpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/include/command/CommandTypes.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
+ */
 
 #ifndef GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDTYPES_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDTYPES_HPP_
@@ -10,7 +14,6 @@
 #include <vector>
 
 namespace grav_cmd {
-/// Description: Enumerates the supported CommandId values.
 enum class CommandId {
     Help,
     LoadConfig,
@@ -35,7 +38,6 @@ enum class CommandId {
     RunSteps,
     RunUntil
 };
-/// Description: Enumerates the supported CommandArgumentKind values.
 enum class CommandArgumentKind {
     String,
     Uint,
@@ -45,14 +47,12 @@ enum class CommandArgumentKind {
     Port,
     Enum
 };
-/// Description: Enumerates the supported CommandExecutionMode values.
 enum class CommandExecutionMode {
     Interactive,
     Batch
 };
 typedef std::variant<std::string, std::uint64_t, double> CommandArgumentValue;
 
-/// Description: Defines the CommandArgumentSpec data or behavior contract.
 struct CommandArgumentSpec final {
     std::string name;
     CommandArgumentKind kind = CommandArgumentKind::String;
@@ -60,7 +60,6 @@ struct CommandArgumentSpec final {
     std::vector<std::string> suggestions;
 };
 
-/// Description: Defines the CommandSpec data or behavior contract.
 struct CommandSpec final {
     CommandId id = CommandId::Help;
     std::string name;
@@ -69,7 +68,6 @@ struct CommandSpec final {
     std::vector<CommandArgumentSpec> arguments;
 };
 
-/// Description: Defines the CommandRequest data or behavior contract.
 struct CommandRequest final {
     CommandId id = CommandId::Help;
     std::string name;
@@ -77,14 +75,12 @@ struct CommandRequest final {
     std::vector<CommandArgumentValue> arguments;
 };
 
-/// Description: Defines the CommandParseResult data or behavior contract.
 struct CommandParseResult final {
     bool ok = false;
     std::vector<CommandRequest> requests;
     std::string error;
 };
 
-/// Description: Defines the CommandResult data or behavior contract.
 struct CommandResult final {
     bool ok = false;
     std::string message;

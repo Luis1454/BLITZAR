@@ -1,9 +1,18 @@
-// File: engine/src/server/simulation_server/CheckpointCodec.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/server/simulation_server/CheckpointCodec.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "Internal.hpp"
 
-/// Description: Executes the consumeOptionalLineBreak operation.
+/*
+ * @brief Documents the consume optional line break operation contract.
+ * @param in Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void consumeOptionalLineBreak(std::istream& in)
 {
     const int next = in.peek();
@@ -19,7 +28,13 @@ void consumeOptionalLineBreak(std::istream& in)
     }
 }
 
-/// Description: Executes the readLeU64 operation.
+/*
+ * @brief Documents the read le u64 operation contract.
+ * @param in Input value used by this contract.
+ * @param outValue Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool readLeU64(std::istream& in, std::uint64_t& outValue)
 {
     std::array<std::byte, 8> bytes{};
@@ -34,7 +49,13 @@ bool readLeU64(std::istream& in, std::uint64_t& outValue)
     return true;
 }
 
-/// Description: Executes the writeLeU64 operation.
+/*
+ * @brief Documents the write le u64 operation contract.
+ * @param out Input value used by this contract.
+ * @param value Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void writeLeU64(std::ostream& out, std::uint64_t value)
 {
     std::array<std::byte, 8> bytes{};
@@ -44,7 +65,13 @@ void writeLeU64(std::ostream& out, std::uint64_t value)
     (void)writeRawBytes(out, bytes.data(), bytes.size());
 }
 
-/// Description: Executes the writeLeU32 operation.
+/*
+ * @brief Documents the write le u32 operation contract.
+ * @param out Input value used by this contract.
+ * @param value Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void writeLeU32(std::ostream& out, std::uint32_t value)
 {
     std::array<std::byte, 4> bytes{};
@@ -54,7 +81,13 @@ void writeLeU32(std::ostream& out, std::uint32_t value)
     (void)writeRawBytes(out, bytes.data(), bytes.size());
 }
 
-/// Description: Executes the readLeU32 operation.
+/*
+ * @brief Documents the read le u32 operation contract.
+ * @param in Input value used by this contract.
+ * @param outValue Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool readLeU32(std::istream& in, std::uint32_t& outValue)
 {
     std::array<std::byte, 4> bytes{};
@@ -69,7 +102,13 @@ bool readLeU32(std::istream& in, std::uint32_t& outValue)
     return true;
 }
 
-/// Description: Executes the writeLeF32 operation.
+/*
+ * @brief Documents the write le f32 operation contract.
+ * @param out Input value used by this contract.
+ * @param value Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void writeLeF32(std::ostream& out, float value)
 {
     std::uint32_t bits = 0u;
@@ -77,7 +116,13 @@ void writeLeF32(std::ostream& out, float value)
     writeLeU32(out, bits);
 }
 
-/// Description: Executes the readLeF32 operation.
+/*
+ * @brief Documents the read le f32 operation contract.
+ * @param in Input value used by this contract.
+ * @param outValue Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool readLeF32(std::istream& in, float& outValue)
 {
     std::uint32_t bits = 0u;
@@ -88,7 +133,13 @@ bool readLeF32(std::istream& in, float& outValue)
     return true;
 }
 
-/// Description: Executes the writeSizedString operation.
+/*
+ * @brief Documents the write sized string operation contract.
+ * @param out Input value used by this contract.
+ * @param value Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool writeSizedString(std::ostream& out, const std::string& value)
 {
     if (value.size() > static_cast<std::size_t>(std::numeric_limits<std::uint32_t>::max())) {
@@ -102,7 +153,14 @@ bool writeSizedString(std::ostream& out, const std::string& value)
     return static_cast<bool>(out);
 }
 
-/// Description: Executes the readSizedString operation.
+/*
+ * @brief Documents the read sized string operation contract.
+ * @param in Input value used by this contract.
+ * @param outValue Input value used by this contract.
+ * @param maxLength Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool readSizedString(std::istream& in, std::string& outValue, std::size_t maxLength)
 {
     std::uint32_t size = 0u;
@@ -115,7 +173,15 @@ bool readSizedString(std::istream& in, std::string& outValue, std::size_t maxLen
     return static_cast<bool>(in.read(outValue.data(), static_cast<std::streamsize>(size)));
 }
 
-/// Description: Describes the is supported checkpoint string operation contract.
+/*
+ * @brief Documents the is supported checkpoint string operation contract.
+ * @param solver Input value used by this contract.
+ * @param integrator Input value used by this contract.
+ * @param profile Input value used by this contract.
+ * @param criterion Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool isSupportedCheckpointString(std::string_view solver, std::string_view integrator,
                                  std::string_view profile, std::string_view criterion)
 {
@@ -129,7 +195,14 @@ bool isSupportedCheckpointString(std::string_view solver, std::string_view integ
            grav_modes::normalizeOctreeOpeningCriterion(std::string(criterion), normalizedCriterion);
 }
 
-/// Description: Describes the write checkpoint file operation contract.
+/*
+ * @brief Documents the write checkpoint file operation contract.
+ * @param outputPath Input value used by this contract.
+ * @param state Input value used by this contract.
+ * @param outError Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool writeCheckpointFile(const std::string& outputPath, const SimulationCheckpointState& state,
                          std::string* outError)
 {

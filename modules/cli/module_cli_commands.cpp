@@ -1,5 +1,9 @@
-// File: modules/cli/module_cli_commands.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/cli/module_cli_commands.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Command-line client module for runtime control workflows.
+ */
 
 #include "modules/cli/module_cli_commands.hpp"
 #include "client/ErrorBuffer.hpp"
@@ -13,7 +17,6 @@
 #include <string>
 
 namespace grav_module_cli {
-/// Description: Defines the ModuleCliCommandsLocal data or behavior contract.
 class ModuleCliCommandsLocal final {
 public:
     static void printHelp()
@@ -68,13 +71,11 @@ public:
     }
 };
 
-/// Description: Executes the printHelp operation.
 void ModuleCliCommands::printHelp()
 {
     ModuleCliCommandsLocal::printHelp();
 }
 
-/// Description: Describes the handle command operation contract.
 bool ModuleCliCommands::handleCommand(ModuleState& state, std::string_view commandLine,
                                       const grav_module::ClientModuleCommandControl& commandControl,
                                       const grav_client::ErrorBufferView& errorBuffer)

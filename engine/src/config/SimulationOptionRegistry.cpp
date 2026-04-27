@@ -1,11 +1,14 @@
-// File: engine/src/config/SimulationOptionRegistry.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/config/SimulationOptionRegistry.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Configuration parsing, validation, and serialization implementation.
+ */
 
 #include "SimulationOptionRegistryInternal.hpp"
 #include <ostream>
 
 namespace grav_config {
-/// Description: Executes the printCliUsage operation.
 void printCliUsage(std::ostream& out, SimulationOptionGroup group)
 {
     for (std::size_t index = 0; index < kSimulationOptionCount; ++index) {

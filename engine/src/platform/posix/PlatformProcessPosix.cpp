@@ -1,5 +1,9 @@
-// File: engine/src/platform/posix/PlatformProcessPosix.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/platform/posix/PlatformProcessPosix.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Platform abstraction implementation for portable runtime services.
+ */
 
 #include "platform/posix/PlatformProcessPosix.hpp"
 #include "platform/PlatformErrors.hpp"
@@ -10,7 +14,6 @@
 extern char** environ;
 
 namespace grav_platform_detail {
-/// Description: Defines the SpawnArguments data or behavior contract.
 class SpawnArguments {
 public:
     explicit SpawnArguments(const std::string& executable, const std::vector<std::string>& args)
@@ -34,7 +37,6 @@ private:
     std::vector<char*> _argv;
 };
 
-/// Description: Describes the launch process operation contract.
 bool launchProcess(const std::string& executable, const std::vector<std::string>& args,
                    bool createNewConsole, NativeProcessHandle& outHandle, std::int64_t& outPid,
                    std::string& outError)
@@ -54,7 +56,6 @@ bool launchProcess(const std::string& executable, const std::vector<std::string>
     return true;
 }
 
-/// Description: Describes the terminate process operation contract.
 bool terminateProcess(NativeProcessHandle& handle, std::int64_t& pid, std::uint32_t waitMs,
                       std::string& outError)
 {
@@ -73,7 +74,6 @@ bool terminateProcess(NativeProcessHandle& handle, std::int64_t& pid, std::uint3
     return true;
 }
 
-/// Description: Executes the isProcessRunning operation.
 bool isProcessRunning(NativeProcessHandle handle, std::int64_t pid)
 {
     (void)handle;
@@ -84,20 +84,17 @@ bool isProcessRunning(NativeProcessHandle handle, std::int64_t pid)
     return waitResult == 0;
 }
 
-/// Description: Executes the clearProcessHandle operation.
 void clearProcessHandle(NativeProcessHandle& handle, std::int64_t& pid)
 {
     handle = 0u;
     pid = 0;
 }
 
-/// Description: Executes the formatProcessId operation.
 std::string formatProcessId(std::int64_t pid)
 {
     return std::to_string(pid);
 }
 
-/// Description: Describes the launch detached process operation contract.
 bool launchDetachedProcess(const std::string& executable, const std::vector<std::string>& args,
                            std::string& outError)
 {
@@ -112,7 +109,6 @@ bool launchDetachedProcess(const std::string& executable, const std::vector<std:
     return true;
 }
 
-/// Description: Describes the run process blocking operation contract.
 int runProcessBlocking(const std::string& executable, const std::vector<std::string>& args,
                        bool createNewConsole, std::string& outError)
 {

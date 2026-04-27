@@ -1,5 +1,9 @@
-// File: modules/qt/ui/QtViewMath.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/QtViewMath.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "ui/QtViewMath.hpp"
 
@@ -9,7 +13,6 @@ QPointF toQPointF(const grav::Point2D& p)
     return QPointF(static_cast<double>(p.x), static_cast<double>(p.y));
 }
 
-/// Description: Executes the fromQPointF operation.
 grav::Point2D fromQPointF(const QPointF& p)
 {
     return grav::Point2D{static_cast<float>(p.x()), static_cast<float>(p.y())};
@@ -21,14 +24,12 @@ QRectF toQRectF(const grav::Rect2D& r)
                   static_cast<double>(r.height));
 }
 
-/// Description: Executes the fromQRectF operation.
 grav::Rect2D fromQRectF(const QRectF& r)
 {
     return grav::Rect2D{static_cast<float>(r.x()), static_cast<float>(r.y()),
                         static_cast<float>(r.width()), static_cast<float>(r.height())};
 }
 
-/// Description: Describes the compute gimbal operation contract.
 GimbalOverlay computeGimbal(const QRect& bounds, grav::ViewMode mode,
                             const grav::CameraState& camera)
 {
@@ -44,7 +45,6 @@ GimbalOverlay computeGimbal(const QRect& bounds, grav::ViewMode mode,
     return result;
 }
 
-/// Description: Executes the pickGimbalAxis operation.
 grav::GimbalAxis pickGimbalAxis(const GimbalOverlay& overlay, const QPointF& mouse)
 {
     grav::GimbalOverlay go;

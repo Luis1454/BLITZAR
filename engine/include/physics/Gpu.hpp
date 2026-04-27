@@ -1,5 +1,9 @@
-// File: engine/include/physics/Gpu.hpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/include/physics/Gpu.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
+ */
 
 #ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_GPU_HPP_
 #define GRAVITY_ENGINE_INCLUDE_PHYSICS_GPU_HPP_
@@ -7,11 +11,8 @@
 #include <vector>
 
 namespace gpu {
-/// Description: Executes the initializeParticles operation.
 void initializeParticles(std::vector<Particle>& particles);
-/// Description: Executes the destroyParticles operation.
 void destroyParticles(std::vector<Particle>& particles);
-/// Description: Executes the callUpdateParticles operation.
 void callUpdateParticles(std::vector<Particle>& particles, float deltaTime);
 } // namespace gpu
 #endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_GPU_HPP_

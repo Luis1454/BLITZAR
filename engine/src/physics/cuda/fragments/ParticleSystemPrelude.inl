@@ -1,30 +1,41 @@
 /*
+ * @file engine/src/physics/cuda/fragments/ParticleSystemPrelude.inl
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
+
+/*
  * Module: physics/cuda
  * Responsibility: Gather shared CUDA includes and prelude helpers for particle-system fragments.
  */
 
-#include <cuda_runtime.h>
+#include "config/EnvUtils.hpp"
 #include "physics/ForceLawPolicy.hpp"
 #include "physics/Octree.hpp"
 #include "physics/ParticleSystem.hpp"
-#include "config/EnvUtils.hpp"
 #include <algorithm>
 #include <array>
 #include <cfloat>
 #include <cmath>
 #include <cstring>
+#include <cuda_runtime.h>
 #include <numeric>
 #include <stdexcept>
+#include <stdio.h>
 #include <string>
 #include <string_view>
 #include <utility>
-#include <stdio.h>
 
-static_assert(
-    (sizeof(GpuSystemMetrics) % 64u) == 0u,
-    "GpuSystemMetrics must remain cacheline aligned");
+static_assert((sizeof(GpuSystemMetrics) % 64u) == 0u,
+              "GpuSystemMetrics must remain cacheline aligned");
 
-/// Description: Defines the SphGridParams data or behavior contract.
+/*
+ * @brief Defines the sph grid params type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct SphGridParams {
     int gridSize;
     int totalCells;
@@ -40,32 +51,41 @@ constexpr float kPi = 3.1415926535f;
 
 #include "physics/ParticleSoAView.hpp"
 
-typedef Particle * ParticleHandle;
-typedef const Particle * ParticleConstHandle;
-typedef Vector3 * Vector3Handle;
-typedef const Vector3 * Vector3ConstHandle;
-typedef float * FloatHandle;
-typedef const float * ConstFloatHandle;
-typedef GpuOctreeNode * OctreeNodeHandle;
-typedef const GpuOctreeNode * OctreeNodeConstHandle;
-typedef int * IndexHandle;
-typedef const int * IndexConstHandle;
-/// Description: Executes the checkCudaStatus operation.
+typedef Particle* ParticleHandle;
+typedef const Particle* ParticleConstHandle;
+typedef Vector3* Vector3Handle;
+typedef const Vector3* Vector3ConstHandle;
+typedef float* FloatHandle;
+typedef const float* ConstFloatHandle;
+typedef GpuOctreeNode* OctreeNodeHandle;
+typedef const GpuOctreeNode* OctreeNodeConstHandle;
+typedef int* IndexHandle;
+typedef const int* IndexConstHandle;
+
+/*
+ * @brief Documents the check cuda status operation contract.
+ * @param status Input value used by this contract.
+ * @param stage Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool checkCudaStatus(cudaError_t status, std::string_view stage)
 {
     if (status != cudaSuccess) {
-        fprintf(
-            stderr,
-            "[cuda] %.*s failed: %s\n",
-            static_cast<int>(stage.size()),
-            stage.data(),
-            cudaGetErrorString(status));
+        fprintf(stderr, "[cuda] %.*s failed: %s\n", static_cast<int>(stage.size()), stage.data(),
+                cudaGetErrorString(status));
         return false;
     }
     return true;
 }
 
-/// Description: Executes the parseBoolEnv operation.
+/*
+ * @brief Documents the parse bool env operation contract.
+ * @param name Input value used by this contract.
+ * @param fallback Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool parseBoolEnv(std::string_view name, bool fallback)
 {
     constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
@@ -76,7 +96,13 @@ bool parseBoolEnv(std::string_view name, bool fallback)
     return grav_env::getBool(name, fallback);
 }
 
-/// Description: Executes the parseFloatEnv operation.
+/*
+ * @brief Documents the parse float env operation contract.
+ * @param name Input value used by this contract.
+ * @param fallback Input value used by this contract.
+ * @return float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 float parseFloatEnv(std::string_view name, float fallback)
 {
     constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
@@ -91,7 +117,12 @@ float parseFloatEnv(std::string_view name, float fallback)
     return parsed;
 }
 
-/// Description: Executes the solverModeFromEnv operation.
+/*
+ * @brief Documents the solver mode from env operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return ParticleSystem::SolverMode value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ParticleSystem::SolverMode solverModeFromEnv()
 {
     constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
@@ -114,7 +145,12 @@ ParticleSystem::SolverMode solverModeFromEnv()
     return ParticleSystem::SolverMode::PairwiseCuda;
 }
 
-/// Description: Executes the integratorModeFromEnv operation.
+/*
+ * @brief Documents the integrator mode from env operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return ParticleSystem::IntegratorMode value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ParticleSystem::IntegratorMode integratorModeFromEnv()
 {
     constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
@@ -133,57 +169,115 @@ ParticleSystem::IntegratorMode integratorModeFromEnv()
     }
     return ParticleSystem::IntegratorMode::Euler;
 }
-/// Description: Describes the operator+ operation contract.
-__host__ __device__ Vector3 operator+(Vector3 a, Vector3 b) {
+
+/*
+ * @brief Documents the operator + operation contract.
+ * @param a Input value used by this contract.
+ * @param b Input value used by this contract.
+ * @return Vector3 value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__host__ __device__ Vector3 operator+(Vector3 a, Vector3 b)
+{
     return Vector3{a.x + b.x, a.y + b.y, a.z + b.z};
 }
 
-/// Description: Describes the operator- operation contract.
-__host__ __device__ Vector3 operator-(Vector3 a, Vector3 b) {
+/*
+ * @brief Documents the operator - operation contract.
+ * @param a Input value used by this contract.
+ * @param b Input value used by this contract.
+ * @return Vector3 value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__host__ __device__ Vector3 operator-(Vector3 a, Vector3 b)
+{
     return Vector3{a.x - b.x, a.y - b.y, a.z - b.z};
 }
 
-/// Description: Describes the operator* operation contract.
-__host__ __device__ Vector3 operator*(Vector3 a, float b) {
+/*
+ * @brief Documents the operator * operation contract.
+ * @param a Input value used by this contract.
+ * @param b Input value used by this contract.
+ * @return Vector3 value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__host__ __device__ Vector3 operator*(Vector3 a, float b)
+{
     return Vector3{a.x * b, a.y * b, a.z * b};
 }
 
-/// Description: Describes the operator/ operation contract.
-__host__ __device__ Vector3 operator/(Vector3 a, float b) {
+/*
+ * @brief Documents the operator / operation contract.
+ * @param a Input value used by this contract.
+ * @param b Input value used by this contract.
+ * @return Vector3 value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__host__ __device__ Vector3 operator/(Vector3 a, float b)
+{
     return Vector3{a.x / b, a.y / b, a.z / b};
 }
 
-/// Description: Describes the operator* operation contract.
-__host__ __device__ Vector3 operator*(Vector3 a, Vector3 b) {
+/*
+ * @brief Documents the operator * operation contract.
+ * @param a Input value used by this contract.
+ * @param b Input value used by this contract.
+ * @return Vector3 value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__host__ __device__ Vector3 operator*(Vector3 a, Vector3 b)
+{
     return Vector3{a.x * b.x, a.y * b.y, a.z * b.z};
 }
 
-/// Description: Describes the operator/ operation contract.
-__host__ __device__ Vector3 operator/(Vector3 a, Vector3 b) {
+/*
+ * @brief Documents the operator / operation contract.
+ * @param a Input value used by this contract.
+ * @param b Input value used by this contract.
+ * @return Vector3 value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__host__ __device__ Vector3 operator/(Vector3 a, Vector3 b)
+{
     return Vector3{a.x / b.x, a.y / b.y, a.z / b.z};
 }
 
-__host__ __device__ Vector3 &operator+=(Vector3 &a, Vector3 b) {
+__host__ __device__ Vector3& operator+=(Vector3& a, Vector3 b)
+{
     a.x += b.x;
     a.y += b.y;
     a.z += b.z;
     return a;
 }
 
-__host__ __device__ Vector3 &operator-=(Vector3 &a, Vector3 b) {
+__host__ __device__ Vector3& operator-=(Vector3& a, Vector3 b)
+{
     a.x -= b.x;
     a.y -= b.y;
     a.z -= b.z;
     return a;
 }
 
-/// Description: Executes the dot operation.
-__host__ __device__ float dot(Vector3 a, Vector3 b) {
+/*
+ * @brief Documents the dot operation contract.
+ * @param a Input value used by this contract.
+ * @param b Input value used by this contract.
+ * @return float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__host__ __device__ float dot(Vector3 a, Vector3 b)
+{
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-/// Description: Executes the Particle operation.
-__host__ __device__ Particle::Particle() {
+/*
+ * @brief Documents the particle operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__host__ __device__ Particle::Particle()
+{
     _position = Vector3{0.0f, 0.0f, 0.0f};
     _velocity = Vector3{0.0f, 0.0f, 0.0f};
     _pressure = Vector3{0.0f, 0.0f, 0.0f};
@@ -193,104 +287,225 @@ __host__ __device__ Particle::Particle() {
     _temperature = 0.0f;
 }
 
-/// Description: Releases resources owned by Particle.
-__host__ __device__ Particle::~Particle() {
+/*
+ * @brief Documents the ~particle operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__host__ __device__ Particle::~Particle()
+{
 }
 
-/// Description: Executes the applyForce operation.
-__host__ __device__ void Particle::applyForce(Vector3 force) {
+/*
+ * @brief Documents the apply force operation contract.
+ * @param force Input value used by this contract.
+ * @return void Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__host__ __device__ void Particle::applyForce(Vector3 force)
+{
     _force += force;
 }
 
-/// Description: Executes the getMass operation.
-__device__ __host__ float Particle::getMass() const {
+/*
+ * @brief Documents the get mass operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return float Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __host__ float Particle::getMass() const
+{
     return _mass;
 }
 
-/// Description: Executes the setMass operation.
-__device__ __host__ void Particle::setMass(float mass) {
+/*
+ * @brief Documents the set mass operation contract.
+ * @param mass Input value used by this contract.
+ * @return void Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __host__ void Particle::setMass(float mass)
+{
     _mass = mass;
 }
 
-/// Description: Executes the getPosition operation.
-__device__ __host__ Vector3 Particle::getPosition() const {
+/*
+ * @brief Documents the get position operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Vector3 Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __host__ Vector3 Particle::getPosition() const
+{
     return _position;
 }
 
-/// Description: Executes the setPosition operation.
-__device__ __host__ void Particle::setPosition(Vector3 position) {
+/*
+ * @brief Documents the set position operation contract.
+ * @param position Input value used by this contract.
+ * @return void Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __host__ void Particle::setPosition(Vector3 position)
+{
     _position = position;
 }
 
-/// Description: Executes the getVelocity operation.
-__device__ __host__ Vector3 Particle::getVelocity() const {
+/*
+ * @brief Documents the get velocity operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Vector3 Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __host__ Vector3 Particle::getVelocity() const
+{
     return _velocity;
 }
 
-/// Description: Executes the setVelocity operation.
-__device__ __host__ void Particle::setVelocity(Vector3 velocity) {
+/*
+ * @brief Documents the set velocity operation contract.
+ * @param velocity Input value used by this contract.
+ * @return void Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __host__ void Particle::setVelocity(Vector3 velocity)
+{
     _velocity = velocity;
 }
 
-/// Description: Executes the getPressure operation.
-__device__ __host__ Vector3 Particle::getPressure() const {
+/*
+ * @brief Documents the get pressure operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Vector3 Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __host__ Vector3 Particle::getPressure() const
+{
     return _pressure;
 }
 
-/// Description: Executes the setPressure operation.
-__device__ __host__ void Particle::setPressure(Vector3 pressure) {
+/*
+ * @brief Documents the set pressure operation contract.
+ * @param pressure Input value used by this contract.
+ * @return void Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __host__ void Particle::setPressure(Vector3 pressure)
+{
     _pressure = pressure;
 }
 
-/// Description: Executes the setTemperature operation.
-__device__ __host__ void Particle::setTemperature(float temperature) {
+/*
+ * @brief Documents the set temperature operation contract.
+ * @param temperature Input value used by this contract.
+ * @return void Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __host__ void Particle::setTemperature(float temperature)
+{
     _temperature = temperature;
 }
 
-/// Description: Executes the getDensity operation.
-__device__ __host__ float Particle::getDensity() const {
+/*
+ * @brief Documents the get density operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return float Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __host__ float Particle::getDensity() const
+{
     return _density;
 }
 
-/// Description: Executes the setDensity operation.
-__device__ __host__ void Particle::setDensity(float density) {
+/*
+ * @brief Documents the set density operation contract.
+ * @param density Input value used by this contract.
+ * @return void Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __host__ void Particle::setDensity(float density)
+{
     _density = density;
 }
 
-/// Description: Executes the getTemperature operation.
-__device__ __host__ float Particle::getTemperature() const {
+/*
+ * @brief Documents the get temperature operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return float Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __host__ float Particle::getTemperature() const
+{
     return _temperature;
 }
 
-/// Description: Executes the move operation.
-__device__ __host__ void Particle::move(Vector3 position) {
+/*
+ * @brief Documents the move operation contract.
+ * @param position Input value used by this contract.
+ * @return void Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __host__ void Particle::move(Vector3 position)
+{
     _position += position;
 }
 
-/// Description: Executes the bounce operation.
-__device__ __host__ void Particle::bounce(Vector3 normal, float dt) {
+/*
+ * @brief Documents the bounce operation contract.
+ * @param normal Input value used by this contract.
+ * @param dt Input value used by this contract.
+ * @return void Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__device__ __host__ void Particle::bounce(Vector3 normal, float dt)
+{
     _position -= _velocity * dt;
     _velocity -= normal * 2.0f * dot(_velocity, normal);
 }
 
-/// Description: Executes the update operation.
-__host__ __device__ void Particle::update(float deltaTime) {
+/*
+ * @brief Documents the update operation contract.
+ * @param deltaTime Input value used by this contract.
+ * @return void Particle:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__host__ __device__ void Particle::update(float deltaTime)
+{
     _velocity += _force * deltaTime;
     _position += _velocity * deltaTime;
     _force = Vector3{0.0f, 0.0f, 0.0f};
 }
 
-/// Description: Executes the norm operation.
-__host__ __device__ float Vector3::norm() const {
+/*
+ * @brief Documents the norm operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return float Vector3:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__host__ __device__ float Vector3::norm() const
+{
     return sqrtf(x * x + y * y + z * z);
 }
 
-/// Description: Executes the normalize operation.
-__host__ __device__ Vector3 normalize(Vector3 v) {
+/*
+ * @brief Documents the normalize operation contract.
+ * @param v Input value used by this contract.
+ * @return Vector3 value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__host__ __device__ Vector3 normalize(Vector3 v)
+{
     return v / sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
-/// Description: Executes the clampAcceleration operation.
+/*
+ * @brief Documents the clamp acceleration operation contract.
+ * @param accel Input value used by this contract.
+ * @param maxAcceleration Input value used by this contract.
+ * @return Vector3 value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __host__ __device__ Vector3 clampAcceleration(Vector3 accel, float maxAcceleration)
 {
     const float accelNorm = accel.norm();
@@ -300,31 +515,56 @@ __host__ __device__ Vector3 clampAcceleration(Vector3 accel, float maxAccelerati
     return accel;
 }
 
-/// Description: Executes the clampSofteningValue operation.
+/*
+ * @brief Documents the clamp softening value operation contract.
+ * @param softening Input value used by this contract.
+ * @param minSoftening Input value used by this contract.
+ * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampSofteningValue(float softening, float minSoftening)
 {
     return fmaxf(softening, minSoftening);
 }
 
-/// Description: Executes the clampThetaValue operation.
+/*
+ * @brief Documents the clamp theta value operation contract.
+ * @param theta Input value used by this contract.
+ * @param minTheta Input value used by this contract.
+ * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampThetaValue(float theta, float minTheta)
 {
     return fmaxf(theta, minTheta);
 }
 
-/// Description: Executes the softenedDistanceSquared operation.
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE float softenedDistanceSquared(Vector3 delta, ForceLawPolicy policy)
+/*
+ * @brief Documents the softened distance squared operation contract.
+ * @param delta Input value used by this contract.
+ * @param policy Input value used by this contract.
+ * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE float softenedDistanceSquared(Vector3 delta,
+                                                                ForceLawPolicy policy)
 {
     return dot(delta, delta) + policy.softening * policy.softening;
 }
 
-/// Description: Describes the gravity acceleration from source operation contract.
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 gravityAccelerationFromSource(
-    Vector3 selfPosition,
-    Vector3 sourcePosition,
-    float sourceMass,
-    ForceLawPolicy policy
-)
+/*
+ * @brief Documents the gravity acceleration from source operation contract.
+ * @param selfPosition Input value used by this contract.
+ * @param sourcePosition Input value used by this contract.
+ * @param sourceMass Input value used by this contract.
+ * @param policy Input value used by this contract.
+ * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 gravityAccelerationFromSource(Vector3 selfPosition,
+                                                                        Vector3 sourcePosition,
+                                                                        float sourceMass,
+                                                                        ForceLawPolicy policy)
 {
     const Vector3 delta = sourcePosition - selfPosition;
     const float dist2 = softenedDistanceSquared(delta, policy);
@@ -336,14 +576,19 @@ GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 gravityAccelerationFromSource(
     return delta * (sourceMass * invDist3);
 }
 
-/// Description: Describes the compute pairwise acceleration operation contract.
-__host__ __device__ Vector3 computePairwiseAcceleration(
-    ParticleSoAView state,
-    int numParticles,
-    int idx,
-    ForceLawPolicy policy,
-    float maxAcceleration
-)
+/*
+ * @brief Documents the compute pairwise acceleration operation contract.
+ * @param state Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @param idx Input value used by this contract.
+ * @param policy Input value used by this contract.
+ * @param maxAcceleration Input value used by this contract.
+ * @return Vector3 value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__host__ __device__ Vector3 computePairwiseAcceleration(ParticleSoAView state, int numParticles,
+                                                        int idx, ForceLawPolicy policy,
+                                                        float maxAcceleration)
 {
     Vector3 force = {0.0f, 0.0f, 0.0f};
     const Vector3 selfPos = getSoAPosition(state, idx);
@@ -354,16 +599,18 @@ __host__ __device__ Vector3 computePairwiseAcceleration(
         }
         const Vector3 otherPos = getSoAPosition(state, i);
         const float otherMass = state.mass[i];
-        force += gravityAccelerationFromSource(
-            selfPos,
-            otherPos,
-            otherMass,
-            policy);
+        force += gravityAccelerationFromSource(selfPos, otherPos, otherMass, policy);
     }
     return clampAcceleration(force, maxAcceleration);
 }
 
-/// Description: Executes the sphPoly6 operation.
+/*
+ * @brief Documents the sph poly6 operation contract.
+ * @param r2 Input value used by this contract.
+ * @param h Input value used by this contract.
+ * @return float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __device__ float sphPoly6(float r2, float h)
 {
     const float h2 = h * h;
@@ -375,7 +622,13 @@ __device__ float sphPoly6(float r2, float h)
     return coeff * diff * diff * diff;
 }
 
-/// Description: Executes the sphSpikyGrad operation.
+/*
+ * @brief Documents the sph spiky grad operation contract.
+ * @param r Input value used by this contract.
+ * @param h Input value used by this contract.
+ * @return float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __device__ float sphSpikyGrad(float r, float h)
 {
     if (r <= 1e-6f || r >= h) {
@@ -386,7 +639,13 @@ __device__ float sphSpikyGrad(float r, float h)
     return coeff * diff * diff;
 }
 
-/// Description: Executes the sphViscosityLaplacian operation.
+/*
+ * @brief Documents the sph viscosity laplacian operation contract.
+ * @param r Input value used by this contract.
+ * @param h Input value used by this contract.
+ * @return float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __device__ float sphViscosityLaplacian(float r, float h)
 {
     if (r >= h) {
@@ -396,16 +655,23 @@ __device__ float sphViscosityLaplacian(float r, float h)
     return coeff * (h - r);
 }
 
-/// Description: Describes the publish metrics kernel operation contract.
-__global__ void publishMetricsKernel(
-    GpuSystemMetrics *mappedMetrics,
-    ParticleSoAView state,
-    int numParticles,
-    std::uint64_t stepId,
-    float simTime,
-    float dt,
-    std::uint64_t vramUsedBytes,
-    std::uint64_t vramPeakBytes)
+/*
+ * @brief Documents the publish metrics kernel operation contract.
+ * @param mappedMetrics Input value used by this contract.
+ * @param state Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @param stepId Input value used by this contract.
+ * @param simTime Input value used by this contract.
+ * @param dt Input value used by this contract.
+ * @param vramUsedBytes Input value used by this contract.
+ * @param vramPeakBytes Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__global__ void publishMetricsKernel(GpuSystemMetrics* mappedMetrics, ParticleSoAView state,
+                                     int numParticles, std::uint64_t stepId, float simTime,
+                                     float dt, std::uint64_t vramUsedBytes,
+                                     std::uint64_t vramPeakBytes)
 {
     if (blockIdx.x != 0 || threadIdx.x != 0 || mappedMetrics == nullptr) {
         return;
@@ -468,7 +734,7 @@ __global__ void publishMetricsKernel(
         }
     }
 
-    volatile std::uint32_t *sequence = &mappedMetrics->sequence;
+    volatile std::uint32_t* sequence = &mappedMetrics->sequence;
     const std::uint32_t observed = *sequence;
     const std::uint32_t evenBase = (observed & 1u) == 0u ? observed : (observed + 1u);
     const std::uint32_t odd = evenBase + 1u;
@@ -504,20 +770,26 @@ __global__ void publishMetricsKernel(
     *sequence = even;
 }
 
-/// Description: Describes the update particles operation contract.
-__global__ void updateParticles(
-    ParticleSoAView last,
-    ParticleSoAView current,
-    int numParticles,
-    float deltaTime,
-    ForceLawPolicy policy,
-    float maxAcceleration
-) {
+/*
+ * @brief Documents the update particles operation contract.
+ * @param last Input value used by this contract.
+ * @param current Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @param deltaTime Input value used by this contract.
+ * @param policy Input value used by this contract.
+ * @param maxAcceleration Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__global__ void updateParticles(ParticleSoAView last, ParticleSoAView current, int numParticles,
+                                float deltaTime, ForceLawPolicy policy, float maxAcceleration)
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < numParticles) {
         const Vector3 pos = getSoAPosition(last, i);
         const Vector3 vel = getSoAVelocity(last, i);
-        const Vector3 force = computePairwiseAcceleration(last, numParticles, i, policy, maxAcceleration);
+        const Vector3 force =
+            computePairwiseAcceleration(last, numParticles, i, policy, maxAcceleration);
 
         const Vector3 nextVel = vel + force * deltaTime;
         const Vector3 nextPos = pos + nextVel * deltaTime;
@@ -531,16 +803,23 @@ __global__ void updateParticles(
     }
 }
 
-/// Description: Describes the compute sph density pressure kernel operation contract.
-__global__ void computeSphDensityPressureKernel(
-    ParticleSoAView particles,
-    FloatHandle outDensity,
-    FloatHandle outPressure,
-    int numParticles,
-    float smoothingLength,
-    float restDensity,
-    float gasConstant
-) {
+/*
+ * @brief Documents the compute sph density pressure kernel operation contract.
+ * @param particles Input value used by this contract.
+ * @param outDensity Input value used by this contract.
+ * @param outPressure Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @param smoothingLength Input value used by this contract.
+ * @param restDensity Input value used by this contract.
+ * @param gasConstant Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__global__ void computeSphDensityPressureKernel(ParticleSoAView particles, FloatHandle outDensity,
+                                                FloatHandle outPressure, int numParticles,
+                                                float smoothingLength, float restDensity,
+                                                float gasConstant)
+{
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
         return;
@@ -569,24 +848,14 @@ __global__ void computeSphDensityPressureKernel(
     outPressure[i] = fminf(pressure, gasConstant * restDensity * 20.0f);
 }
 
-__global__ void integrateSphKernel(
-    ParticleSoAView inParticles,
-    ParticleSoAView outParticles,
-    ConstFloatHandle density,
-    ConstFloatHandle pressure,
-    int numParticles,
-    float smoothingLength,
-    float viscosity,
-    float deltaTime,
-    float correctionScale,
-    IndexConstHandle cellHash,
-    IndexConstHandle sortedIndex,
-    IndexConstHandle cellStart,
-    IndexConstHandle cellEnd,
-    SphGridParams grid,
-    float maxAcceleration,
-    float maxSpeed
-) {
+__global__ void integrateSphKernel(ParticleSoAView inParticles, ParticleSoAView outParticles,
+                                   ConstFloatHandle density, ConstFloatHandle pressure,
+                                   int numParticles, float smoothingLength, float viscosity,
+                                   float deltaTime, float correctionScale,
+                                   IndexConstHandle cellHash, IndexConstHandle sortedIndex,
+                                   IndexConstHandle cellStart, IndexConstHandle cellEnd,
+                                   SphGridParams grid, float maxAcceleration, float maxSpeed)
+{
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
         return;
@@ -635,7 +904,8 @@ __global__ void integrateSphKernel(
         pressureForce += gradDir * (-inParticles.mass[j] * (pI + pJ) * 0.5f / rhoJ * grad);
 
         const float lap = sphViscosityLaplacian(r, smoothingLength);
-        viscosityForce += (getSoAVelocity(inParticles, j) - vi) * (viscosity * inParticles.mass[j] / rhoJ * lap);
+        viscosityForce +=
+            (getSoAVelocity(inParticles, j) - vi) * (viscosity * inParticles.mass[j] / rhoJ * lap);
     }
 
     const Vector3 totalForce = pressureForce + viscosityForce;
@@ -653,14 +923,25 @@ __global__ void integrateSphKernel(
     }
     Vector3 position = pi + velocity * (deltaTime * correctionScale);
 
-    outParticles.velX[i] = velocity.x; outParticles.velY[i] = velocity.y; outParticles.velZ[i] = velocity.z;
-    outParticles.posX[i] = position.x; outParticles.posY[i] = position.y; outParticles.posZ[i] = position.z;
+    outParticles.velX[i] = velocity.x;
+    outParticles.velY[i] = velocity.y;
+    outParticles.velZ[i] = velocity.z;
+    outParticles.posX[i] = position.x;
+    outParticles.posY[i] = position.y;
+    outParticles.posZ[i] = position.z;
     outParticles.dens[i] = rhoI;
     setSoAPressure(outParticles, i, (pressureForce + viscosityForce) * 2.0f);
     outParticles.mass[i] = selfMass;
 }
 
-/// Description: Executes the copyParticlesKernel operation.
+/*
+ * @brief Documents the copy particles kernel operation contract.
+ * @param src Input value used by this contract.
+ * @param dst Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void copyParticlesKernel(ParticleConstHandle src, ParticleHandle dst, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -670,8 +951,16 @@ __global__ void copyParticlesKernel(ParticleConstHandle src, ParticleHandle dst,
     dst[i] = src[i];
 }
 
-/// Description: Executes the extractVelocityKernel operation.
-__global__ void extractVelocityKernel(ParticleSoAView particles, Vector3Handle outVelocity, int numParticles)
+/*
+ * @brief Documents the extract velocity kernel operation contract.
+ * @param particles Input value used by this contract.
+ * @param outVelocity Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__global__ void extractVelocityKernel(ParticleSoAView particles, Vector3Handle outVelocity,
+                                      int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
@@ -680,31 +969,43 @@ __global__ void extractVelocityKernel(ParticleSoAView particles, Vector3Handle o
     outVelocity[i] = getSoAVelocity(particles, i);
 }
 
-/// Description: Describes the compute pairwise acceleration kernel operation contract.
-__global__ void computePairwiseAccelerationKernel(
-    ParticleSoAView state,
-    Vector3Handle outAcceleration,
-    int numParticles,
-    ForceLawPolicy policy,
-    float maxAcceleration
-)
+/*
+ * @brief Documents the compute pairwise acceleration kernel operation contract.
+ * @param state Input value used by this contract.
+ * @param outAcceleration Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @param policy Input value used by this contract.
+ * @param maxAcceleration Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__global__ void computePairwiseAccelerationKernel(ParticleSoAView state,
+                                                  Vector3Handle outAcceleration, int numParticles,
+                                                  ForceLawPolicy policy, float maxAcceleration)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
         return;
     }
-    outAcceleration[i] = computePairwiseAcceleration(state, numParticles, i, policy, maxAcceleration);
+    outAcceleration[i] =
+        computePairwiseAcceleration(state, numParticles, i, policy, maxAcceleration);
 }
 
-/// Description: Describes the build rk4 stage kernel operation contract.
-__global__ void buildRk4StageKernel(
-    ParticleSoAView base,
-    Vector3ConstHandle kPos,
-    Vector3ConstHandle kVel,
-    float dtScale,
-    ParticleSoAView stage,
-    int numParticles
-) {
+/*
+ * @brief Documents the build rk4 stage kernel operation contract.
+ * @param base Input value used by this contract.
+ * @param kPos Input value used by this contract.
+ * @param kVel Input value used by this contract.
+ * @param dtScale Input value used by this contract.
+ * @param stage Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__global__ void buildRk4StageKernel(ParticleSoAView base, Vector3ConstHandle kPos,
+                                    Vector3ConstHandle kVel, float dtScale, ParticleSoAView stage,
+                                    int numParticles)
+{
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
         return;
@@ -720,8 +1021,15 @@ __global__ void buildRk4StageKernel(
     stage.dens[i] = base.dens[i];
 }
 
-/// Description: Executes the primeHalfVelocityKernel operation.
-__global__ void primeHalfVelocityKernel(ParticleSoAView state, float3 *vHalf, int numParticles)
+/*
+ * @brief Documents the prime half velocity kernel operation contract.
+ * @param state Input value used by this contract.
+ * @param vHalf Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__global__ void primeHalfVelocityKernel(ParticleSoAView state, float3* vHalf, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
@@ -735,13 +1043,18 @@ __global__ void primeHalfVelocityKernel(ParticleSoAView state, float3 *vHalf, in
     vHalf[i] = sVel[threadIdx.x];
 }
 
-/// Description: Describes the apply kick half step kernel operation contract.
-__global__ void applyKickHalfStepKernel(
-    ParticleSoAView state,
-    Vector3ConstHandle acceleration,
-    float deltaTime,
-    float3 *vHalf,
-    int numParticles)
+/*
+ * @brief Documents the apply kick half step kernel operation contract.
+ * @param state Input value used by this contract.
+ * @param acceleration Input value used by this contract.
+ * @param deltaTime Input value used by this contract.
+ * @param vHalf Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__global__ void applyKickHalfStepKernel(ParticleSoAView state, Vector3ConstHandle acceleration,
+                                        float deltaTime, float3* vHalf, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
@@ -758,19 +1071,21 @@ __global__ void applyKickHalfStepKernel(
     const float halfDt = 0.5f * deltaTime;
     const float3 vel = sVel[threadIdx.x];
     const float3 acc = sAcc[threadIdx.x];
-    vHalf[i] = make_float3(
-        vel.x + acc.x * halfDt,
-        vel.y + acc.y * halfDt,
-        vel.z + acc.z * halfDt);
+    vHalf[i] = make_float3(vel.x + acc.x * halfDt, vel.y + acc.y * halfDt, vel.z + acc.z * halfDt);
 }
 
-/// Description: Describes the drift with half velocity kernel operation contract.
-__global__ void driftWithHalfVelocityKernel(
-    ParticleSoAView state,
-    const float3 *vHalf,
-    float deltaTime,
-    ParticleSoAView out,
-    int numParticles)
+/*
+ * @brief Documents the drift with half velocity kernel operation contract.
+ * @param state Input value used by this contract.
+ * @param vHalf Input value used by this contract.
+ * @param deltaTime Input value used by this contract.
+ * @param out Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__global__ void driftWithHalfVelocityKernel(ParticleSoAView state, const float3* vHalf,
+                                            float deltaTime, ParticleSoAView out, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
@@ -786,10 +1101,8 @@ __global__ void driftWithHalfVelocityKernel(
 
     const float3 pos = sPos[threadIdx.x];
     const float3 halfVel = sHalf[threadIdx.x];
-    const Vector3 nextPos(
-        pos.x + halfVel.x * deltaTime,
-        pos.y + halfVel.y * deltaTime,
-        pos.z + halfVel.z * deltaTime);
+    const Vector3 nextPos(pos.x + halfVel.x * deltaTime, pos.y + halfVel.y * deltaTime,
+                          pos.z + halfVel.z * deltaTime);
 
     setSoAPosition(out, i, nextPos);
     setSoAVelocity(out, i, getSoAVelocity(state, i));
@@ -798,15 +1111,21 @@ __global__ void driftWithHalfVelocityKernel(
     out.dens[i] = state.dens[i];
 }
 
-/// Description: Describes the finalize leapfrog kick kernel operation contract.
-__global__ void finalizeLeapfrogKickKernel(
-    ParticleSoAView driftedState,
-    const float3 *vHalf,
-    Vector3ConstHandle acceleration,
-    float deltaTime,
-    ParticleSoAView out,
-    float3 *vHalfOut,
-    int numParticles)
+/*
+ * @brief Documents the finalize leapfrog kick kernel operation contract.
+ * @param driftedState Input value used by this contract.
+ * @param vHalf Input value used by this contract.
+ * @param acceleration Input value used by this contract.
+ * @param deltaTime Input value used by this contract.
+ * @param out Input value used by this contract.
+ * @param vHalfOut Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+__global__ void finalizeLeapfrogKickKernel(ParticleSoAView driftedState, const float3* vHalf,
+                                           Vector3ConstHandle acceleration, float deltaTime,
+                                           ParticleSoAView out, float3* vHalfOut, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
@@ -824,10 +1143,8 @@ __global__ void finalizeLeapfrogKickKernel(
     const float3 acc = sAcc[threadIdx.x];
     const float halfDt = 0.5f * deltaTime;
 
-    const Vector3 nextVel(
-        halfVel.x + acc.x * halfDt,
-        halfVel.y + acc.y * halfDt,
-        halfVel.z + acc.z * halfDt);
+    const Vector3 nextVel(halfVel.x + acc.x * halfDt, halfVel.y + acc.y * halfDt,
+                          halfVel.z + acc.z * halfDt);
 
     setSoAPosition(out, i, getSoAPosition(driftedState, i));
     setSoAVelocity(out, i, nextVel);
@@ -836,23 +1153,29 @@ __global__ void finalizeLeapfrogKickKernel(
     out.temp[i] = driftedState.temp[i];
     out.dens[i] = driftedState.dens[i];
 
-    vHalfOut[i] = make_float3(
-        halfVel.x + acc.x * deltaTime,
-        halfVel.y + acc.y * deltaTime,
-        halfVel.z + acc.z * deltaTime);
+    vHalfOut[i] = make_float3(halfVel.x + acc.x * deltaTime, halfVel.y + acc.y * deltaTime,
+                              halfVel.z + acc.z * deltaTime);
 }
 
-/// Description: Executes the packSoAKernel operation.
+/*
+ * @brief Documents the pack so akernel operation contract.
+ * @param src Input value used by this contract.
+ * @param dst Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void packSoAKernel(ParticleConstHandle src, ParticleSoAView dst, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i >= numParticles) return;
+    if (i >= numParticles)
+        return;
 
     const Particle p = src[i];
     const Vector3 pos = p.getPosition();
     const Vector3 vel = p.getVelocity();
     const Vector3 press = p.getPressure();
-    
+
     dst.posX[i] = pos.x;
     dst.posY[i] = pos.y;
     dst.posZ[i] = pos.z;
@@ -867,11 +1190,19 @@ __global__ void packSoAKernel(ParticleConstHandle src, ParticleSoAView dst, int 
     dst.dens[i] = p.getDensity();
 }
 
-/// Description: Executes the unpackSoAKernel operation.
+/*
+ * @brief Documents the unpack so akernel operation contract.
+ * @param src Input value used by this contract.
+ * @param dst Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void unpackSoAKernel(ParticleSoAView src, ParticleHandle dst, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i >= numParticles) return;
+    if (i >= numParticles)
+        return;
 
     Particle p;
     p.setPosition(getSoAPosition(src, i));
@@ -883,20 +1214,13 @@ __global__ void unpackSoAKernel(ParticleSoAView src, ParticleHandle dst, int num
     dst[i] = p;
 }
 
-__global__ void finalizeRk4Kernel(
-    ParticleSoAView base,
-    Vector3ConstHandle k1x,
-    Vector3ConstHandle k2x,
-    Vector3ConstHandle k3x,
-    Vector3ConstHandle k4x,
-    Vector3ConstHandle k1v,
-    Vector3ConstHandle k2v,
-    Vector3ConstHandle k3v,
-    Vector3ConstHandle k4v,
-    float deltaTime,
-    ParticleSoAView out,
-    int numParticles
-) {
+__global__ void finalizeRk4Kernel(ParticleSoAView base, Vector3ConstHandle k1x,
+                                  Vector3ConstHandle k2x, Vector3ConstHandle k3x,
+                                  Vector3ConstHandle k4x, Vector3ConstHandle k1v,
+                                  Vector3ConstHandle k2v, Vector3ConstHandle k3v,
+                                  Vector3ConstHandle k4v, float deltaTime, ParticleSoAView out,
+                                  int numParticles)
+{
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
         return;
@@ -915,4 +1239,5 @@ __global__ void finalizeRk4Kernel(
     out.temp[i] = base.temp[i];
     out.dens[i] = base.dens[i];
 }
+
 // Note: Device buffers and management functions moved to ParticleSystem class members/methods.

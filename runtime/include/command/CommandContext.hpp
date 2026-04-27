@@ -1,5 +1,9 @@
-// File: runtime/include/command/CommandContext.hpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/include/command/CommandContext.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
+ */
 
 #ifndef GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDCONTEXT_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDCONTEXT_HPP_
@@ -11,7 +15,6 @@
 #include <string>
 
 namespace grav_cmd {
-/// Description: Defines the CommandSessionState data or behavior contract.
 struct CommandSessionState final {
     SimulationConfig config{};
     std::string configPath = "simulation.ini";
@@ -19,7 +22,6 @@ struct CommandSessionState final {
     std::uint16_t port = 4545u;
 };
 
-/// Description: Defines the CommandExecutionContext data or behavior contract.
 struct CommandExecutionContext final {
     CommandTransport& transport;
     CommandSessionState& session;

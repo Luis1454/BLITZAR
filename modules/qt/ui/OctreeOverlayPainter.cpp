@@ -1,5 +1,9 @@
-// File: modules/qt/ui/OctreeOverlayPainter.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/OctreeOverlayPainter.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "ui/OctreeOverlayPainter.hpp"
 #include <QColor>
@@ -13,7 +17,6 @@
 #include <cmath>
 
 namespace grav_qt {
-/// Description: Executes the colorForDepth operation.
 static QColor colorForDepth(int depth, int opacity)
 {
     const int clampedOpacity = std::clamp(opacity, 0, 255);
@@ -23,7 +26,6 @@ static QColor colorForDepth(int depth, int opacity)
     return QColor(red, green, blue, clampedOpacity);
 }
 
-/// Description: Describes the draw orthographic node operation contract.
 static void drawOrthographicNode(QPainter& painter, const QRect& viewport, grav::ViewMode mode,
                                  const OctreeOverlayNode& node, float zoom)
 {
@@ -50,7 +52,6 @@ static void drawOrthographicNode(QPainter& painter, const QRect& viewport, grav:
     painter.drawRect(box);
 }
 
-/// Description: Describes the project corner operation contract.
 static bool projectCorner(const QRect& viewport, grav::ViewMode mode,
                           const grav::CameraState& camera, float zoom, const RenderParticle& corner,
                           QPointF& projected)
@@ -63,7 +64,6 @@ static bool projectCorner(const QRect& viewport, grav::ViewMode mode,
     return true;
 }
 
-/// Description: Describes the paint operation contract.
 void OctreeOverlayPainter::paint(QPainter& painter, const QRect& viewport, grav::ViewMode mode,
                                  const grav::CameraState& camera,
                                  const std::vector<OctreeOverlayNode>& nodes, float zoom,

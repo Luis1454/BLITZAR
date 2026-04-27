@@ -1,3 +1,10 @@
+/*
+ * @file engine/src/config/SimulationOptionRegistryEntries.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Configuration parsing, validation, and serialization implementation.
+ */
+
 #include "SimulationOptionRegistryInternal.hpp"
 
 #include "config/SimulationConfig.hpp"

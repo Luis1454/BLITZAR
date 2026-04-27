@@ -1,5 +1,9 @@
-// File: tests/unit/module_client/cli_args_text.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/module_client/cli_args_text.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "apps/client-host/client_host_cli.hpp"
 #include "apps/client-host/client_host_cli_args.hpp"
@@ -14,7 +18,6 @@
 #include <vector>
 
 namespace grav_test_client_host_args_text {
-/// Description: Executes the makeArgv operation.
 std::vector<char*> makeArgv(std::vector<std::string>& storage)
 {
     std::vector<char*> argv;
@@ -24,7 +27,6 @@ std::vector<char*> makeArgv(std::vector<std::string>& storage)
     return argv;
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_001_ParseArgsDefaultsAndVariants)
 {
     grav_client_host::HostOptions options{};
@@ -81,7 +83,6 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_001_ParseArgsDefaultsAndVariants)
     std::filesystem::remove(path, ec);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_002_ParseArgsRejectsUnknownArgument)
 {
     grav_client_host::HostOptions options{};
@@ -93,7 +94,6 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_002_ParseArgsRejectsUnknownArgument)
     EXPECT_NE(error.find("unknown argument"), std::string::npos);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientHostCliTextTest, TST_UNT_MODHOST_003_SplitTokensPreservesQuotedSegments)
 {
     const std::vector<std::string> tokens =
@@ -104,7 +104,6 @@ TEST(ClientHostCliTextTest, TST_UNT_MODHOST_003_SplitTokensPreservesQuotedSegmen
     EXPECT_EQ(tokens[2], "cli mode");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_007_AliasResolutionReturnsExpectedModuleId)
 {
     EXPECT_EQ(grav_client_host::ClientHostModuleOps::expectedModuleIdForSpecifier("qt"), "qt");
@@ -114,7 +113,6 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_007_AliasResolutionReturnsExpectedMo
             .empty());
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_008_HelpReflectsProfileReloadPolicy)
 {
     std::ostringstream buffer;
@@ -136,7 +134,6 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_008_HelpReflectsProfileReloadPolicy)
     EXPECT_NE(rendered.find("--wait-for-module"), std::string::npos);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_011_BatchScriptRunsDeterministicHelpAndExits)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();

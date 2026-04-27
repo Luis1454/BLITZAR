@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/ci/release_support.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/ci/release_support.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -29,7 +31,10 @@ DEFAULT_EVIDENCE_REFS = (
 )
 
 
-# Description: Executes the resolve_release_tag operation.
+# @brief Documents the resolve release tag operation contract.
+# @param explicit Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def resolve_release_tag(explicit: str | None) -> str:
     if explicit is not None and explicit.strip():
         return explicit.strip()
@@ -44,7 +49,10 @@ def resolve_release_tag(explicit: str | None) -> str:
     return "manual"
 
 
-# Description: Executes the build_release_lane_activities operation.
+# @brief Documents the build release lane activities operation contract.
+# @param profile Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def build_release_lane_activities(profile: str) -> list[dict[str, str]]:
     return [
         {"name": "repo-quality-gate", "status": "pass", "command": "python tests/checks/check.py all --root . --config simulation.ini"},
@@ -100,12 +108,18 @@ def build_release_lane_activities(profile: str) -> list[dict[str, str]]:
     ]
 
 
-# Description: Executes the build_release_lane_analyzers operation.
+# @brief Documents the build release lane analyzers operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def build_release_lane_analyzers() -> dict[str, str]:
     return {"ruff": "pass", "mypy": "pass"}
 
 
-# Description: Executes the default_ci_context operation.
+# @brief Documents the default ci context operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def default_ci_context() -> dict[str, str]:
     context = {
         "workflow": os.environ.get("GITHUB_WORKFLOW", "manual"),
@@ -121,7 +135,10 @@ def default_ci_context() -> dict[str, str]:
     return {key: value for key, value in context.items() if value}
 
 
-# Description: Executes the load_open_exceptions operation.
+# @brief Documents the load open exceptions operation contract.
+# @param root Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def load_open_exceptions(root: Path) -> list[dict[str, object]]:
     rows, errors = DeviationRegister().load_open_with_errors(root)
     if errors:
@@ -129,7 +146,10 @@ def load_open_exceptions(root: Path) -> list[dict[str, object]]:
     return [row for row in rows if isinstance(row, dict)]
 
 
-# Description: Executes the render_pack_readme operation.
+# @brief Documents the render pack readme operation contract.
+# @param pack Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def render_pack_readme(pack: Mapping[str, object]) -> str:
     requirement_ids = pack.get("requirement_ids")
     evidence_refs = pack.get("evidence_refs")

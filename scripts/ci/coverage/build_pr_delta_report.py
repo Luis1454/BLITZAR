@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: scripts/ci/coverage/build_pr_delta_report.py
-# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+# @file scripts/ci/coverage/build_pr_delta_report.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Build, release, and CI helper automation for BLITZAR workflows.
 
 from __future__ import annotations
 
@@ -12,7 +14,10 @@ import urllib.request
 from pathlib import Path
 
 
-# Description: Executes the parse_args operation.
+# @brief Documents the parse args operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build per-PR coverage delta summary and residual gaps table.")
     parser.add_argument("--summary", required=True, help="Path to gcovr text summary file.")
@@ -23,7 +28,10 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-# Description: Executes the parse_summary operation.
+# @brief Documents the parse summary operation contract.
+# @param summary_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def parse_summary(summary_path: Path) -> dict[str, float]:
     metrics: dict[str, float] = {}
     pattern = re.compile(r"^(lines|functions|branches):\s+([0-9]+(?:\.[0-9]+)?)%")
@@ -39,7 +47,12 @@ def parse_summary(summary_path: Path) -> dict[str, float]:
     return metrics
 
 
-# Description: Executes the fetch_baseline_metric operation.
+# @brief Documents the fetch baseline metric operation contract.
+# @param repo Input value used by this contract.
+# @param ref Input value used by this contract.
+# @param name Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def fetch_baseline_metric(repo: str, ref: str, name: str) -> float:
     url = f"https://raw.githubusercontent.com/{repo}/{ref}/coverage/{name}.json"
     with urllib.request.urlopen(url, timeout=20) as response:
@@ -51,7 +64,11 @@ def fetch_baseline_metric(repo: str, ref: str, name: str) -> float:
         raise ValueError(f"invalid baseline metric in {name}.json: {message!r}") from exc
 
 
-# Description: Executes the parse_residual_files operation.
+# @brief Documents the parse residual files operation contract.
+# @param csv_path Input value used by this contract.
+# @param top_n Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def parse_residual_files(csv_path: Path, top_n: int = 10) -> list[tuple[str, int, int, float]]:
     rows: list[tuple[str, int, int, float]] = []
     with csv_path.open("r", encoding="utf-8", newline="") as handle:
@@ -71,13 +88,22 @@ def parse_residual_files(csv_path: Path, top_n: int = 10) -> list[tuple[str, int
     return rows[:top_n]
 
 
-# Description: Executes the signed_delta operation.
+# @brief Documents the signed delta operation contract.
+# @param current Input value used by this contract.
+# @param baseline Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def signed_delta(current: float, baseline: float) -> str:
     delta = current - baseline
     return f"{delta:+.2f}"
 
 
-# Description: Executes the build_markdown operation.
+# @brief Documents the build markdown operation contract.
+# @param current Input value used by this contract.
+# @param baseline Input value used by this contract.
+# @param residual Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def build_markdown(
     current: dict[str, float],
     baseline: dict[str, float],
@@ -105,7 +131,10 @@ def build_markdown(
     return "\n".join(lines)
 
 
-# Description: Executes the main operation.
+# @brief Documents the main operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def main() -> int:
     args = parse_args()
     summary_path = Path(args.summary)

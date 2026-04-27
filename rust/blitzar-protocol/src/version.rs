@@ -1,13 +1,15 @@
-// File: rust/blitzar-protocol/src/version.rs
-// Purpose: Rust component implementation for BLITZAR runtime services.
+/*
+ * @file rust/blitzar-protocol/src/version.rs
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Rust protocol and gateway components for BLITZAR runtime integration.
+ */
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-/// Description: Defines the ProtocolVersion enum contract.
 pub enum ProtocolVersion {
     V1,
 }
 
-/// Description: Implements behavior for the associated Rust type.
 impl ProtocolVersion {
     #[must_use]
     pub const fn label(self) -> &'static str {

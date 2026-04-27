@@ -1,5 +1,9 @@
-// File: runtime/include/server/ServerDaemon.hpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/include/server/ServerDaemon.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
+ */
 
 #ifndef GRAVITY_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_
@@ -9,32 +13,98 @@
 #include <string>
 #include <thread>
 #include <vector>
-/// Description: Defines the SimulationServer data or behavior contract.
+/*
+ * @brief Defines the simulation server type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class SimulationServer;
 
-/// Description: Defines the ServerDaemon data or behavior contract.
+/*
+ * @brief Defines the server daemon type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class ServerDaemon {
 public:
-    /// Description: Describes the server daemon operation contract.
+    /*
+     * @brief Documents the server daemon operation contract.
+     * @param server Input value used by this contract.
+     * @param authToken Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     explicit ServerDaemon(SimulationServer& server, std::string authToken = {});
-    /// Description: Releases resources owned by ServerDaemon.
+    /*
+     * @brief Documents the ~server daemon operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     ~ServerDaemon();
-    /// Description: Describes the start operation contract.
+    /*
+     * @brief Documents the start operation contract.
+     * @param port Input value used by this contract.
+     * @param bindAddress Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool start(std::uint16_t port, const std::string& bindAddress = "127.0.0.1");
-    /// Description: Describes the stop operation contract.
+    /*
+     * @brief Documents the stop operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void stop();
-    /// Description: Describes the is running operation contract.
+    /*
+     * @brief Documents the is running operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool isRunning() const;
-    /// Description: Describes the shutdown requested operation contract.
+    /*
+     * @brief Documents the shutdown requested operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool shutdownRequested() const;
 
 private:
     typedef std::intptr_t SocketHandle;
-    /// Description: Describes the accept loop operation contract.
+    /*
+     * @brief Documents the accept loop operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void acceptLoop();
-    /// Description: Describes the handle client operation contract.
+    /*
+     * @brief Documents the handle client operation contract.
+     * @param client Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void handleClient(SocketHandle client);
-    /// Description: Describes the process request operation contract.
+    /*
+     * @brief Documents the process request operation contract.
+     * @param request Input value used by this contract.
+     * @return std::string value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     std::string processRequest(const std::string& request);
     SimulationServer& _server;
     std::atomic<bool> _running;

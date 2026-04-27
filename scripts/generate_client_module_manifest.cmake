@@ -1,5 +1,7 @@
-# File: scripts/generate_client_module_manifest.cmake
-# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+# @file scripts/generate_client_module_manifest.cmake
+# @author Luis1454
+# @project BLITZAR
+# @brief Build, release, and CI helper automation for BLITZAR workflows.
 
 cmake_minimum_required(VERSION 3.24)
 

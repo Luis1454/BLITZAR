@@ -1,5 +1,9 @@
-// File: modules/cli/module_cli_text.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/cli/module_cli_text.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Command-line client module for runtime control workflows.
+ */
 
 #include "modules/cli/module_cli_text.hpp"
 #include <algorithm>
@@ -9,7 +13,6 @@
 #include <vector>
 
 namespace grav_module_cli {
-/// Description: Defines the ModuleCliTextLocal data or behavior contract.
 class ModuleCliTextLocal final {
 public:
     static std::string trim(const std::string& input)
@@ -37,13 +40,11 @@ public:
     }
 };
 
-/// Description: Executes the trim operation.
 std::string ModuleCliText::trim(const std::string& input)
 {
     return ModuleCliTextLocal::trim(input);
 }
 
-/// Description: Executes the splitTokens operation.
 std::vector<std::string> ModuleCliText::splitTokens(const std::string& line)
 {
     return ModuleCliTextLocal::splitTokens(line);

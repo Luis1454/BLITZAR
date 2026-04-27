@@ -1,5 +1,9 @@
-// File: tests/int/runtime/bridge.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/int/runtime/bridge.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "client/ClientServerBridge.hpp"
 #include "tests/support/poll_utils.hpp"
@@ -14,7 +18,6 @@
 #include <vector>
 
 namespace grav_test_client_bridge {
-/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_INT_RUNT_001_ReconnectsAfterRealServerRestart)
 {
     RealServerHarness server;
@@ -67,7 +70,6 @@ TEST(ClientBridgeTest, TST_INT_RUNT_001_ReconnectsAfterRealServerRestart)
     server.stop();
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_INT_RUNT_002_ServerAbsenceDoesNotCauseLongBlockingLoops)
 {
     RealServerHarness server;
@@ -92,7 +94,6 @@ TEST(ClientBridgeTest, TST_INT_RUNT_002_ServerAbsenceDoesNotCauseLongBlockingLoo
     bridge.stop();
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_UNT_RUNT_012_ClampRemoteTimeoutRespectsBounds)
 {
     EXPECT_EQ(grav_client::clampClientRemoteTimeoutMs(0u), grav_client::kClientRemoteTimeoutMinMs);
@@ -102,7 +103,6 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_012_ClampRemoteTimeoutRespectsBounds)
     EXPECT_EQ(grav_client::clampClientRemoteTimeoutMs(1000u), 1000u);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_UNT_RUNT_013_SplitTransportArgsParsesKnownServerFlags)
 {
     const std::vector<std::string_view> rawArgs = {"blitzar-client",
@@ -131,7 +131,6 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_013_SplitTransportArgsParsesKnownServerFlags
     EXPECT_TRUE(warnings.str().empty());
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_UNT_RUNT_014_SplitTransportArgsRejectsInvalidPortInputs)
 {
     {
@@ -150,7 +149,6 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_014_SplitTransportArgsRejectsInvalidPortInpu
     }
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_UNT_RUNT_018_SplitTransportArgsRejectsInvalidAutostartEqualsValue)
 {
     const std::vector<std::string_view> rawArgs = {"blitzar-client", "--server-autostart=maybe"};
@@ -161,7 +159,6 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_018_SplitTransportArgsRejectsInvalidAutostar
     EXPECT_NE(warnings.str().find("invalid --server-autostart value"), std::string::npos);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_UNT_RUNT_019_SplitTransportArgsKeepsUnparsedAutostartTokenInFilteredArgs)
 {
     const std::vector<std::string_view> rawArgs = {"blitzar-client", "--server-autostart", "maybe",
@@ -178,7 +175,6 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_019_SplitTransportArgsKeepsUnparsedAutostart
     EXPECT_EQ(filtered[3], "simulation.ini");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientBridgeTest, TST_UNT_RUNT_015_DisconnectedBridgeOperationsRemainBounded)
 {
     grav_client::ClientServerBridge bridge("simulation.ini", "127.0.0.1",

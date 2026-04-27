@@ -1,5 +1,9 @@
-// File: tests/unit/module_cli/command_catalog.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/module_cli/command_catalog.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "command/CommandCatalog.hpp"
 #include <gtest/gtest.h>
@@ -7,7 +11,6 @@
 #include <type_traits>
 
 namespace grav_test_module_cli_command_catalog {
-/// Description: Executes the TEST operation.
 TEST(CommandCatalogTest, TST_UNT_MODCLI_024_AllSpecsRoundTripByNameAndId)
 {
     const std::vector<grav_cmd::CommandSpec>& specs = grav_cmd::CommandCatalog::all();
@@ -22,7 +25,6 @@ TEST(CommandCatalogTest, TST_UNT_MODCLI_024_AllSpecsRoundTripByNameAndId)
     }
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandCatalogTest, TST_UNT_MODCLI_025_RenderHelpFormatsRequiredAndOptionalArguments)
 {
     const std::string help = grav_cmd::CommandCatalog::renderHelp();
@@ -32,7 +34,6 @@ TEST(CommandCatalogTest, TST_UNT_MODCLI_025_RenderHelpFormatsRequiredAndOptional
     EXPECT_NE(help.find("export_snapshot <path> [format]"), std::string::npos);
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandCatalogTest, TST_UNT_MODCLI_026_FindByNameRejectsCaseAndWhitespaceVariants)
 {
     EXPECT_EQ(grav_cmd::CommandCatalog::findByName("HELP"), nullptr);
@@ -40,7 +41,6 @@ TEST(CommandCatalogTest, TST_UNT_MODCLI_026_FindByNameRejectsCaseAndWhitespaceVa
     EXPECT_EQ(grav_cmd::CommandCatalog::findByName("status "), nullptr);
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandCatalogTest, TST_UNT_MODCLI_027_CommandMetadataIsDeterministicAndDocumented)
 {
     const std::vector<grav_cmd::CommandSpec>& specs = grav_cmd::CommandCatalog::all();
@@ -51,7 +51,6 @@ TEST(CommandCatalogTest, TST_UNT_MODCLI_027_CommandMetadataIsDeterministicAndDoc
     }
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandCatalogTest, TST_UNT_MODCLI_031_FindByIdRejectsUnknownIdentifier)
 {
     const std::vector<grav_cmd::CommandSpec>& specs = grav_cmd::CommandCatalog::all();
@@ -62,7 +61,6 @@ TEST(CommandCatalogTest, TST_UNT_MODCLI_031_FindByIdRejectsUnknownIdentifier)
     EXPECT_EQ(unknown, nullptr);
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandCatalogTest, TST_UNT_MODCLI_032_RenderHelpStartsWithStableHeaderAndFirstCommand)
 {
     const std::string help = grav_cmd::CommandCatalog::renderHelp();

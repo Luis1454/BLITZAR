@@ -1,7 +1,7 @@
-# File: tests/cmake/targets_gtests.cmake
-# Purpose: Verification coverage for the BLITZAR quality gate.
-
-
+# @file tests/cmake/targets_gtests.cmake
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 if(WIN32)
     set(GRAVITY_TEST_SCOPED_ENV_VAR_SOURCE "${GRAVITY_ROOT_DIR}/tests/support/scoped_env_var_win.cpp")

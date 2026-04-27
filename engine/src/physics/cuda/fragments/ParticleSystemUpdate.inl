@@ -1,5 +1,9 @@
-// File: engine/src/physics/cuda/fragments/ParticleSystemUpdate.inl
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/physics/cuda/fragments/ParticleSystemUpdate.inl
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
 
 /*
  * Module: physics/cuda
@@ -8,7 +12,12 @@
 
 #include <chrono>
 
-/// Description: Executes the update operation.
+/*
+ * @brief Documents the update operation contract.
+ * @param deltaTime Input value used by this contract.
+ * @return bool ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ParticleSystem::update(float deltaTime) {
     const ForceLawPolicy forceLaw = resolveForceLawPolicy(
         _octreeTheta,

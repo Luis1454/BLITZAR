@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/policies/repo_policy_workflows.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/policies/repo_policy_workflows.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -21,7 +23,14 @@ WORKFLOW_USES_RE = re.compile(r"(?m)^\s*(?:-\s*)?uses:\s*([^\s#]+)")
 ACTION_SHA_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*@[0-9a-f]{40}$")
 
 
-# Description: Executes the check_evidence_workflow_commands operation.
+# @brief Documents the check evidence workflow commands operation contract.
+# @param root Input value used by this contract.
+# @param result Input value used by this contract.
+# @param marker_text Input value used by this contract.
+# @param required_text Input value used by this contract.
+# @param error_text Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def check_evidence_workflow_commands(
     root: Path,
     result: CheckResult,
@@ -42,7 +51,12 @@ def check_evidence_workflow_commands(
             result.add_error(f"{rel}: {error_text}: {command}")
 
 
-# Description: Executes the is_allowed_non_evidence_desktop_configure operation.
+# @brief Documents the is allowed non evidence desktop configure operation contract.
+# @param rel Input value used by this contract.
+# @param marker_text Input value used by this contract.
+# @param command Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def is_allowed_non_evidence_desktop_configure(rel: str, marker_text: str, command: str) -> bool:
     return (
         rel == ".github/workflows/release-lane.yml"
@@ -52,7 +66,11 @@ def is_allowed_non_evidence_desktop_configure(rel: str, marker_text: str, comman
     )
 
 
-# Description: Executes the check_legacy_ctest_selectors operation.
+# @brief Documents the check legacy ctest selectors operation contract.
+# @param root Input value used by this contract.
+# @param result Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def check_legacy_ctest_selectors(root: Path, result: CheckResult) -> None:
     for rel in EVIDENCE_WORKFLOW_PATHS:
         path = root / rel
@@ -64,7 +82,11 @@ def check_legacy_ctest_selectors(root: Path, result: CheckResult) -> None:
                 result.add_error(f"{rel}: CI ctest selector must use normalized TST_* ids: {command}")
 
 
-# Description: Executes the check_workflow_action_pinning operation.
+# @brief Documents the check workflow action pinning operation contract.
+# @param root Input value used by this contract.
+# @param result Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def check_workflow_action_pinning(root: Path, result: CheckResult) -> None:
     workflows_root = root / WORKFLOW_ROOT
     if not workflows_root.exists():
@@ -80,7 +102,11 @@ def check_workflow_action_pinning(root: Path, result: CheckResult) -> None:
                 result.add_error(f"{rel}: workflow actions must pin full commit SHAs: {target}")
 
 
-# Description: Executes the check_workflow_pip_manifest_usage operation.
+# @brief Documents the check workflow pip manifest usage operation contract.
+# @param root Input value used by this contract.
+# @param result Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def check_workflow_pip_manifest_usage(root: Path, result: CheckResult) -> None:
     workflows_root = root / WORKFLOW_ROOT
     if not workflows_root.exists():
@@ -93,7 +119,11 @@ def check_workflow_pip_manifest_usage(root: Path, result: CheckResult) -> None:
                 result.add_error(f"{rel}: workflow pip installs must use {CI_PYTHON_REQUIREMENTS}: {command}")
 
 
-# Description: Executes the check_workflow_failure_masking operation.
+# @brief Documents the check workflow failure masking operation contract.
+# @param root Input value used by this contract.
+# @param result Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def check_workflow_failure_masking(root: Path, result: CheckResult) -> None:
     workflows_root = root / WORKFLOW_ROOT
     if not workflows_root.exists():
@@ -109,7 +139,11 @@ def check_workflow_failure_masking(root: Path, result: CheckResult) -> None:
                     )
 
 
-# Description: Executes the check_release_lane_subset operation.
+# @brief Documents the check release lane subset operation contract.
+# @param root Input value used by this contract.
+# @param result Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def check_release_lane_subset(root: Path, result: CheckResult) -> None:
     path = root / ".github/workflows/release-lane.yml"
     if not path.exists():
@@ -123,7 +157,11 @@ def check_release_lane_subset(root: Path, result: CheckResult) -> None:
             )
 
 
-# Description: Executes the collect_marker_commands operation.
+# @brief Documents the collect marker commands operation contract.
+# @param content Input value used by this contract.
+# @param marker_text Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def collect_marker_commands(content: str, marker_text: str) -> list[str]:
     commands: list[str] = []
     lines = content.splitlines()

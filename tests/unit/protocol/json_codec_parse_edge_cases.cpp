@@ -1,11 +1,14 @@
-// File: tests/unit/protocol/json_codec_parse_edge_cases.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/protocol/json_codec_parse_edge_cases.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "protocol/ServerJsonCodec.hpp"
 #include <gtest/gtest.h>
 #include <string>
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_046_ParseCommandRequestRejectsInvalidEnvelope)
 {
     std::string error;
@@ -14,7 +17,6 @@ TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_046_ParseCommandRequestRejec
     EXPECT_EQ(error, "invalid json");
 }
 
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecParseEdgeTest,
      TST_UNT_PROT_047_ParseCommandRequestNormalizesWhitespaceAndCase)
 {
@@ -27,7 +29,6 @@ TEST(ServerProtocolCodecParseEdgeTest,
     EXPECT_TRUE(error.empty());
 }
 
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecParseEdgeTest,
      TST_UNT_PROT_048_ParseCommandRequestRejectsWhitespaceOnlyCommand)
 {
@@ -38,7 +39,6 @@ TEST(ServerProtocolCodecParseEdgeTest,
     EXPECT_EQ(error, "missing cmd");
 }
 
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecParseEdgeTest,
      TST_UNT_PROT_049_ParseResponseEnvelopeRejectsInvalidJsonAndBoolToken)
 {
@@ -51,7 +51,6 @@ TEST(ServerProtocolCodecParseEdgeTest,
     EXPECT_EQ(error, "invalid response");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_050_ReadStringAndBoolRejectMalformedTokens)
 {
     std::string stringValue;
@@ -63,18 +62,25 @@ TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_050_ReadStringAndBoolRejectM
     EXPECT_TRUE(boolValue);
 }
 
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecParseEdgeTest,
      TST_UNT_PROT_051_ParseCommandRequestRejectsMissingColonSyntax)
 {
     std::string error;
     grav_protocol::ServerCommandRequest request;
     EXPECT_FALSE(
+        /*
+         * @brief Documents the parse command request operation contract.
+         * @param status Input value used by this contract.
+         * @param request Input value used by this contract.
+         * @param error Input value used by this contract.
+         * @return grav_protocol::ServerJsonCodec:: value produced by this contract.
+         * @note Keep side effects explicit and preserve deterministic behavior where callers depend
+         * on it.
+         */
         grav_protocol::ServerJsonCodec::parseCommandRequest(R"({"cmd" "status"})", request, error));
     EXPECT_EQ(error, "missing cmd");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_052_ReadStringSupportsEscapedQuotes)
 {
     std::string value;
@@ -83,7 +89,6 @@ TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_052_ReadStringSupportsEscape
     EXPECT_EQ(value, "a \"quoted\" value");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_053_ReadBoolRejectsEmptyToken)
 {
     bool value = true;
@@ -91,7 +96,6 @@ TEST(ServerProtocolCodecParseEdgeTest, TST_UNT_PROT_053_ReadBoolRejectsEmptyToke
     EXPECT_TRUE(value);
 }
 
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecParseEdgeTest,
      TST_UNT_PROT_054_ParseResponseEnvelopeKeepsProvidedErrorMessage)
 {
@@ -104,7 +108,6 @@ TEST(ServerProtocolCodecParseEdgeTest,
     EXPECT_TRUE(error.empty());
 }
 
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecParseEdgeTest,
      TST_UNT_PROT_055_ParseSnapshotResponseRejectsMissingParticlesArray)
 {
@@ -115,7 +118,6 @@ TEST(ServerProtocolCodecParseEdgeTest,
     EXPECT_EQ(error, "invalid snapshot payload");
 }
 
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecParseEdgeTest,
      TST_UNT_PROT_056_ParseSnapshotResponseRejectsNonNumericParticleCoordinate)
 {
@@ -127,7 +129,6 @@ TEST(ServerProtocolCodecParseEdgeTest,
     EXPECT_EQ(error, "invalid snapshot payload");
 }
 
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecParseEdgeTest,
      TST_UNT_PROT_057_ParseStatusResponseAcceptsErrorEnvelopeWithoutMetrics)
 {
@@ -140,7 +141,6 @@ TEST(ServerProtocolCodecParseEdgeTest,
     EXPECT_TRUE(error.empty());
 }
 
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecParseEdgeTest,
      TST_UNT_PROT_058_ParseSnapshotResponseFallsBackSourceCountWhenMissing)
 {
@@ -155,7 +155,6 @@ TEST(ServerProtocolCodecParseEdgeTest,
     EXPECT_TRUE(error.empty());
 }
 
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecParseEdgeTest,
      TST_UNT_PROT_059_ParseSnapshotResponseAcceptsEmptyParticlesArray)
 {
@@ -171,7 +170,6 @@ TEST(ServerProtocolCodecParseEdgeTest,
     EXPECT_TRUE(error.empty());
 }
 
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecParseEdgeTest,
      TST_UNT_PROT_060_ParseSnapshotResponseAcceptsErrorEnvelopeWithoutSnapshotFields)
 {
@@ -186,7 +184,6 @@ TEST(ServerProtocolCodecParseEdgeTest,
     EXPECT_TRUE(error.empty());
 }
 
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecParseEdgeTest,
      TST_UNT_PROT_061_ParseStatusResponseIgnoresMalformedOptionalMetrics)
 {

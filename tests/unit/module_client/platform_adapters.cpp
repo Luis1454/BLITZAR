@@ -1,5 +1,9 @@
-// File: tests/unit/module_client/platform_adapters.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/module_client/platform_adapters.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "platform/DynamicLibrary.hpp"
 #include "platform/PlatformProcess.hpp"
@@ -12,7 +16,6 @@
 #include <vector>
 
 namespace grav_test_module_client_platform_adapters {
-/// Description: Executes the TEST operation.
 TEST(PlatformAdaptersTest, TST_UNT_MODHOST_021_QuoteProcessArgHandlesSpacesAndQuotes)
 {
     EXPECT_EQ(grav_platform::quoteProcessArg("simple"), "simple");
@@ -21,7 +24,6 @@ TEST(PlatformAdaptersTest, TST_UNT_MODHOST_021_QuoteProcessArgHandlesSpacesAndQu
     EXPECT_EQ(grav_platform::quoteProcessArg("a\"b"), "\"a\\\"b\"");
 }
 
-/// Description: Verifies the TEST behavior.
 TEST(PlatformAdaptersTest,
      TST_UNT_MODHOST_022_BuildProcessCommandLinePreservesArgumentOrderAndEscaping)
 {
@@ -34,7 +36,6 @@ TEST(PlatformAdaptersTest,
     EXPECT_NE(command.find("\"--tag=\\\"x\\\"\""), std::string::npos);
 }
 
-/// Description: Executes the TEST operation.
 TEST(PlatformAdaptersTest, TST_UNT_MODHOST_023_SocketByteViewsAndTimeoutClampHandleBounds)
 {
     std::array<std::byte, 4> writable{};
@@ -53,7 +54,6 @@ TEST(PlatformAdaptersTest, TST_UNT_MODHOST_023_SocketByteViewsAndTimeoutClampHan
     EXPECT_EQ(grav_socket::clampTimeoutMs(61000), 60000);
 }
 
-/// Description: Executes the TEST operation.
 TEST(PlatformAdaptersTest, TST_UNT_MODHOST_024_DynamicLibraryRejectsSymbolLookupWhenNotOpen)
 {
     grav_platform::DynamicLibrary library;
@@ -69,7 +69,6 @@ TEST(PlatformAdaptersTest, TST_UNT_MODHOST_024_DynamicLibraryRejectsSymbolLookup
     EXPECT_FALSE(error.empty());
 }
 
-/// Description: Executes the TEST operation.
 TEST(PlatformAdaptersTest, TST_UNT_MODHOST_025_ProcessHandleNonRunningTerminateAndClearAreSafe)
 {
     grav_platform::ProcessHandle handle;
@@ -83,7 +82,6 @@ TEST(PlatformAdaptersTest, TST_UNT_MODHOST_025_ProcessHandleNonRunningTerminateA
     EXPECT_TRUE(handle.commandLine().empty());
 }
 
-/// Description: Executes the TEST operation.
 TEST(PlatformAdaptersTest, TST_UNT_MODHOST_026_RunProcessBlockingInvalidExecutableReturnsFailure)
 {
     std::string error;

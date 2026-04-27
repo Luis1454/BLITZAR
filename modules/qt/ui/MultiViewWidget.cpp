@@ -1,5 +1,9 @@
-// File: modules/qt/ui/MultiViewWidget.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/MultiViewWidget.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "ui/MultiViewWidget.hpp"
 #include <QGridLayout>
@@ -9,7 +13,6 @@
 #include <utility>
 
 namespace grav_qt {
-/// Description: Executes the MultiViewWidget operation.
 MultiViewWidget::MultiViewWidget()
     : QWidget(nullptr),
       _xy(new ParticleView(grav::ViewMode::XY)),
@@ -31,7 +34,6 @@ MultiViewWidget::MultiViewWidget()
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
-/// Description: Executes the setSnapshot operation.
 void MultiViewWidget::setSnapshot(std::vector<RenderParticle> snapshot)
 {
     const std::size_t cap = std::max<std::size_t>(2u, _maxDrawParticles);
@@ -62,19 +64,16 @@ void MultiViewWidget::setSnapshot(std::vector<RenderParticle> snapshot)
     applyOctreeOverlay();
 }
 
-/// Description: Executes the setMaxDrawParticles operation.
 void MultiViewWidget::setMaxDrawParticles(std::size_t maxDrawParticles)
 {
     _maxDrawParticles = std::max<std::size_t>(2u, maxDrawParticles);
 }
 
-/// Description: Executes the displayedParticleCount operation.
 std::size_t MultiViewWidget::displayedParticleCount() const
 {
     return _snapshot.size();
 }
 
-/// Description: Executes the setZoom operation.
 void MultiViewWidget::setZoom(float zoom)
 {
     if (_xy) {
@@ -91,7 +90,6 @@ void MultiViewWidget::setZoom(float zoom)
     }
 }
 
-/// Description: Executes the setLuminosity operation.
 void MultiViewWidget::setLuminosity(int luminosity)
 {
     if (_xy) {
@@ -108,7 +106,6 @@ void MultiViewWidget::setLuminosity(int luminosity)
     }
 }
 
-/// Description: Executes the set3DMode operation.
 void MultiViewWidget::set3DMode(grav::ViewMode mode)
 {
     if (_view3d) {
@@ -116,7 +113,6 @@ void MultiViewWidget::set3DMode(grav::ViewMode mode)
     }
 }
 
-/// Description: Executes the set3DCameraAngles operation.
 void MultiViewWidget::set3DCameraAngles(float yaw, float pitch, float roll)
 {
     if (_view3d) {
@@ -124,7 +120,6 @@ void MultiViewWidget::set3DCameraAngles(float yaw, float pitch, float roll)
     }
 }
 
-/// Description: Executes the setRenderSettings operation.
 void MultiViewWidget::setRenderSettings(bool culling, bool lod, float nearDist, float farDist)
 {
     if (_xy) {
@@ -141,7 +136,6 @@ void MultiViewWidget::setRenderSettings(bool culling, bool lod, float nearDist, 
     }
 }
 
-/// Description: Executes the setOctreeOverlay operation.
 void MultiViewWidget::setOctreeOverlay(bool enabled, int depth, int opacity)
 {
     const bool overlayChanged = _octreeOverlayEnabled != enabled || _octreeOverlayDepth != depth ||
@@ -156,31 +150,26 @@ void MultiViewWidget::setOctreeOverlay(bool enabled, int depth, int opacity)
     applyOctreeOverlay();
 }
 
-/// Description: Executes the octreeOverlayEnabled operation.
 bool MultiViewWidget::octreeOverlayEnabled() const
 {
     return _octreeOverlayEnabled;
 }
 
-/// Description: Executes the octreeOverlayDepth operation.
 int MultiViewWidget::octreeOverlayDepth() const
 {
     return _octreeOverlayDepth;
 }
 
-/// Description: Executes the octreeOverlayOpacity operation.
 int MultiViewWidget::octreeOverlayOpacity() const
 {
     return _octreeOverlayOpacity;
 }
 
-/// Description: Executes the octreeOverlayNodeCount operation.
 std::size_t MultiViewWidget::octreeOverlayNodeCount() const
 {
     return _octreeOverlay.size();
 }
 
-/// Description: Executes the applyOctreeOverlay operation.
 void MultiViewWidget::applyOctreeOverlay()
 {
     if (_xy) {
@@ -197,7 +186,6 @@ void MultiViewWidget::applyOctreeOverlay()
     }
 }
 
-/// Description: Executes the rebuildOctreeOverlay operation.
 void MultiViewWidget::rebuildOctreeOverlay()
 {
     if (!_octreeOverlayEnabled) {

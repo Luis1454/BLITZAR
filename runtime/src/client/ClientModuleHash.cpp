@@ -1,5 +1,9 @@
-// File: runtime/src/client/ClientModuleHash.cpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/src/client/ClientModuleHash.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
+ */
 
 #include "client/ClientModuleHash.hpp"
 #include <array>
@@ -11,7 +15,6 @@
 #include <vector>
 
 namespace grav_module {
-/// Description: Defines the ClientModuleHashLocal data or behavior contract.
 class ClientModuleHashLocal final {
 public:
     static bool computeFileSha256Hex(std::string_view filePath, std::string& outHexDigest,
@@ -153,7 +156,6 @@ const std::array<std::uint32_t, 64u> ClientModuleHashLocal::kRoundConstants{
     0x748f82eeu, 0x78a5636fu, 0x84c87814u, 0x8cc70208u, 0x90befffau, 0xa4506cebu, 0xbef9a3f7u,
     0xc67178f2u};
 
-/// Description: Describes the compute file sha256 hex operation contract.
 bool ClientModuleHash::computeFileSha256Hex(std::string_view filePath, std::string& outHexDigest,
                                             std::string& outError)
 {

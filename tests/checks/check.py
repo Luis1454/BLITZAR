@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: tests/checks/check.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/checks/check.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 from __future__ import annotations
 
@@ -17,12 +19,18 @@ from python_tools.core.runner import CheckRunner
 from tests.checks.catalog import load_check_registry, load_check_sequences
 
 
-# Description: Executes the _check_choices operation.
+# @brief Documents the check choices operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _check_choices() -> list[str]:
     return sorted(set(load_check_registry()) | set(load_check_sequences()))
 
 
-# Description: Executes the parse_args operation.
+# @brief Documents the parse args operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Unified repository quality checks.")
     parser.add_argument("check", choices=_check_choices())
@@ -41,7 +49,10 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-# Description: Executes the build_context operation.
+# @brief Documents the build context operation contract.
+# @param args Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def build_context(args: argparse.Namespace) -> CheckContext:
     root = Path(args.root).resolve()
     allowlist = Path(args.allowlist)
@@ -63,12 +74,18 @@ def build_context(args: argparse.Namespace) -> CheckContext:
     )
 
 
-# Description: Executes the build_runner operation.
+# @brief Documents the build runner operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def build_runner() -> CheckRunner:
     return CheckRunner(registry=load_check_registry(), sequences=load_check_sequences())
 
 
-# Description: Executes the main operation.
+# @brief Documents the main operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def main() -> int:
     args = parse_args()
     context = build_context(args)

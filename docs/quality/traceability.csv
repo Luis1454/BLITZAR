@@ -10,7 +10,7 @@ REQ-PHYS-001,physics,engine/include/config|engine/src/config|engine/include/serv
 REQ-PHYS-002,physics,engine/src/physics,EVD_TEST_UNIT_PHYSICS_ORBIT
 REQ-OPS-001,operations,repo-policy,EVD_CHECK_NO_LEGACY
 REQ-OPS-002,operations,apps/launcher,EVD_CHECK_LAUNCHER
-REQ-QUAL-001,quality,.clang-format|tests/checks|python_tools/ci|python_tools/ci/numerical_validation.py|python_tools/core|python_tools/policies|docs/quality/manifest/numerical_campaign.json|make/check.mk|Makefile,EVD_CHECK_MAIN|EVD_QLT_NUMERICAL_CAMPAIGN|EVD_SCRIPT_NIGHTLY_NUMERICAL_VALIDATION
+REQ-QUAL-001,quality,.clang-format|tests/checks|python_tools/ci|python_tools/ci/numerical_validation.py|python_tools/core|python_tools/policies|docs/quality/api-documentation-standard.md|docs/quality/manifest/numerical_campaign.json|make/check.mk|Makefile,EVD_CHECK_MAIN|EVD_QLT_NUMERICAL_CAMPAIGN|EVD_SCRIPT_NIGHTLY_NUMERICAL_VALIDATION
 REQ-QUAL-002,quality,tests/checks,EVD_CHECK_INI|EVD_CHECK_MIRROR
 REQ-COMP-001,compliance,docs/quality|python_tools/policies|engine/include/config|engine/include/physics|engine/include/server|engine/src/server|engine/src/config|engine/src/physics/cuda/fragments|modules/qt|runtime/include/client,EVD_CHECK_QUALITY|EVD_QLT_POWER_OF_TEN
 REQ-COMP-002,compliance,.clang-format|.github/workflows/pr-fast.yml|python_tools/policies,EVD_CHECK_MAIN|EVD_CHECK_PR_POLICY|EVD_CHECK_IVV_GATE

@@ -1,5 +1,9 @@
-// File: runtime/src/command/CommandExecutor.cpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/src/command/CommandExecutor.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
+ */
 
 #include "command/CommandExecutor.hpp"
 #include "client/ClientCommon.hpp"
@@ -13,25 +17,21 @@
 #include <ostream>
 
 namespace grav_cmd {
-/// Description: Executes the argString operation.
 static std::string argString(const CommandRequest& request, std::size_t index)
 {
     return std::get<std::string>(request.arguments[index]);
 }
 
-/// Description: Executes the argUint operation.
 static std::uint64_t argUint(const CommandRequest& request, std::size_t index)
 {
     return std::get<std::uint64_t>(request.arguments[index]);
 }
 
-/// Description: Executes the argFloat operation.
 static double argFloat(const CommandRequest& request, std::size_t index)
 {
     return std::get<double>(request.arguments[index]);
 }
 
-/// Description: Executes the makeFailure operation.
 static CommandResult makeFailure(std::string message)
 {
     CommandResult result{};
@@ -40,7 +40,6 @@ static CommandResult makeFailure(std::string message)
     return result;
 }
 
-/// Description: Describes the make success operation contract.
 static CommandResult makeSuccess(std::string message = {})
 {
     CommandResult result{};
@@ -49,7 +48,6 @@ static CommandResult makeSuccess(std::string message = {})
     return result;
 }
 
-/// Description: Describes the send checked operation contract.
 static CommandResult sendChecked(CommandExecutionContext& context, const std::string& cmd,
                                  const std::string& fields = {})
 {
@@ -64,7 +62,6 @@ static CommandResult sendChecked(CommandExecutionContext& context, const std::st
     return makeSuccess();
 }
 
-/// Description: Executes the applyConfig operation.
 static CommandResult applyConfig(CommandExecutionContext& context, bool requestReset)
 {
     const grav_config::ScenarioValidationReport report =
@@ -157,7 +154,6 @@ static CommandResult applyConfig(CommandExecutionContext& context, bool requestR
     return makeSuccess("config applied");
 }
 
-/// Description: Executes the renderStatus operation.
 static CommandResult renderStatus(CommandExecutionContext& context)
 {
     ServerClientStatus status{};
@@ -177,7 +173,6 @@ static CommandResult renderStatus(CommandExecutionContext& context)
     return makeSuccess();
 }
 
-/// Description: Executes the runSteps operation.
 static CommandResult runSteps(CommandExecutionContext& context, std::uint64_t stepCount)
 {
     CommandResult result = sendChecked(context, std::string(grav_protocol::Pause));
@@ -187,7 +182,6 @@ static CommandResult runSteps(CommandExecutionContext& context, std::uint64_t st
                        "\"count\":" + std::to_string(stepCount));
 }
 
-/// Description: Executes the runUntil operation.
 static CommandResult runUntil(CommandExecutionContext& context, double targetTime)
 {
     if (targetTime < 0.0)
@@ -210,7 +204,6 @@ static CommandResult runUntil(CommandExecutionContext& context, double targetTim
     }
 }
 
-/// Description: Describes the execute operation contract.
 CommandResult CommandExecutor::execute(const CommandRequest& request,
                                        CommandExecutionContext& context)
 {

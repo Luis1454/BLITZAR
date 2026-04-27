@@ -1,5 +1,9 @@
-// File: tests/int/ui/qt_window_visual.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/int/ui/qt_window_visual.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "client/ClientRuntime.hpp"
 #include "tests/support/client_utils.hpp"
@@ -17,7 +21,6 @@
 #include <string>
 
 namespace grav_test_qt_window_visual {
-/// Description: Executes the makeUiConfig operation.
 static SimulationConfig makeUiConfig()
 {
     SimulationConfig config{};
@@ -31,7 +34,6 @@ static SimulationConfig makeUiConfig()
     return config;
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabels)
 {
     (void)testsupport::ensureQtApp();
@@ -135,7 +137,6 @@ TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabel
     EXPECT_TRUE(statusText.contains("preflight validation failed"));
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtMainWindowTest, TST_UIX_UI_006_ResponsiveControlsAllowSubHdWindow)
 {
     (void)testsupport::ensureQtApp();

@@ -1,5 +1,9 @@
-// File: tests/support/performance_benchmark_tool.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/support/performance_benchmark_tool.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "tests/support/performance_benchmark_tool.hpp"
 #include "tests/support/physics_scenario.hpp"
@@ -9,7 +13,6 @@
 #include <ostream>
 
 namespace grav_test_perf_tool {
-/// Description: Describes the build scenario operation contract.
 bool buildScenario(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& options,
                    testsupport::ScenarioConfig& cfg, std::string& error)
 {
@@ -31,7 +34,6 @@ bool buildScenario(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& 
     return true;
 }
 
-/// Description: Describes the write measurement operation contract.
 void writeMeasurement(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& options,
                       const testsupport::ScenarioResult& result, const double wallSeconds,
                       std::ostream& out)
@@ -58,7 +60,6 @@ void writeMeasurement(const grav_test_perf::PerformanceBenchmarkTool::ToolOption
 } // namespace grav_test_perf_tool
 
 namespace grav_test_perf {
-/// Description: Executes the parseFloatValue operation.
 bool PerformanceBenchmarkTool::parseFloatValue(const std::string& text, float& out)
 {
     std::size_t consumed = 0u;
@@ -71,7 +72,6 @@ bool PerformanceBenchmarkTool::parseFloatValue(const std::string& text, float& o
     return consumed == text.size();
 }
 
-/// Description: Executes the parseUintValue operation.
 bool PerformanceBenchmarkTool::parseUintValue(const std::string& text, std::uint32_t& out)
 {
     std::size_t consumed = 0u;
@@ -84,7 +84,6 @@ bool PerformanceBenchmarkTool::parseUintValue(const std::string& text, std::uint
     return consumed == text.size();
 }
 
-/// Description: Describes the parse args operation contract.
 bool PerformanceBenchmarkTool::parseArgs(int argc, const char* const* argv, ToolOptions& out,
                                          std::string& error)
 {
@@ -147,7 +146,6 @@ bool PerformanceBenchmarkTool::parseArgs(int argc, const char* const* argv, Tool
     return true;
 }
 
-/// Description: Describes the run operation contract.
 int PerformanceBenchmarkTool::run(int argc, const char* const* argv, std::ostream& out,
                                   std::ostream& err) const
 {

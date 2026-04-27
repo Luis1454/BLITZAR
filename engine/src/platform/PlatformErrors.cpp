@@ -1,5 +1,9 @@
-// File: engine/src/platform/PlatformErrors.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/platform/PlatformErrors.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Platform abstraction implementation for portable runtime services.
+ */
 
 #include "platform/PlatformErrors.hpp"
 

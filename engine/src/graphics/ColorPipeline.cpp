@@ -1,5 +1,9 @@
-// File: engine/src/graphics/ColorPipeline.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/graphics/ColorPipeline.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "graphics/ColorPipeline.hpp"
 #include <algorithm>
@@ -12,20 +16,17 @@ constexpr int kPressureBins = 256;
 constexpr float kTemperatureScaleFloor = 0.25f;
 constexpr float kPressureScaleFloor = 0.25f;
 
-/// Description: Defines the RgbColor data or behavior contract.
 struct RgbColor {
     std::uint8_t r;
     std::uint8_t g;
     std::uint8_t b;
 };
 
-/// Description: Executes the saturate operation.
 static float saturate(float value)
 {
     return std::clamp(value, 0.0f, 1.0f);
 }
 
-/// Description: Executes the blend operation.
 static RgbColor blend(RgbColor a, RgbColor b, float t)
 {
     const float tt = saturate(t);
@@ -34,7 +35,6 @@ static RgbColor blend(RgbColor a, RgbColor b, float t)
                     static_cast<std::uint8_t>(a.b + (b.b - a.b) * tt)};
 }
 
-/// Description: Executes the buildTemperatureLut operation.
 static std::array<RgbColor, kTempBins> buildTemperatureLut()
 {
     std::array<RgbColor, kTempBins> lut{};
@@ -50,7 +50,6 @@ static std::array<RgbColor, kTempBins> buildTemperatureLut()
     return lut;
 }
 
-/// Description: Executes the quantizeToBin operation.
 static int quantizeToBin(float value, float rangeMax, int bins)
 {
     if (value <= 0.0f)
@@ -59,7 +58,6 @@ static int quantizeToBin(float value, float rangeMax, int bins)
     return static_cast<int>(normalized * static_cast<float>(bins - 1));
 }
 
-/// Description: Describes the update adaptive parameter operation contract.
 static float updateAdaptiveParameter(float current, float observed, float floorValue,
                                      float riseRate, float fallRate)
 {
@@ -68,7 +66,6 @@ static float updateAdaptiveParameter(float current, float observed, float floorV
     return current + (target - current) * std::clamp(rate, 0.0f, 1.0f);
 }
 
-/// Description: Executes the buildAlphaLut operation.
 static std::array<std::uint8_t, kPressureBins> buildAlphaLut(int luminosity)
 {
     std::array<std::uint8_t, kPressureBins> lut{};
@@ -81,7 +78,6 @@ static std::array<std::uint8_t, kPressureBins> buildAlphaLut(int luminosity)
     return lut;
 }
 
-/// Description: Describes the update adaptive scales operation contract.
 void updateAdaptiveScales(const std::vector<RenderParticle>& snapshot,
                           float& adaptiveTemperatureScale, float& adaptivePressureScale)
 {
@@ -97,7 +93,6 @@ void updateAdaptiveScales(const std::vector<RenderParticle>& snapshot,
                                                     kPressureScaleFloor, 0.32f, 0.04f);
 }
 
-/// Description: Describes the particle ramp color fast operation contract.
 ColorRGBA particleRampColorFast(const RenderParticle& particle, float temperatureScale,
                                 float pressureScale, int luminosity)
 {
@@ -112,13 +107,11 @@ ColorRGBA particleRampColorFast(const RenderParticle& particle, float temperatur
     return ColorRGBA{c.r, c.g, c.b, alpha};
 }
 
-/// Description: Executes the heavyBodyColor operation.
 ColorRGBA heavyBodyColor(int luminosity)
 {
     return ColorRGBA{255, 90, 90, static_cast<std::uint8_t>(std::clamp(luminosity, 0, 255))};
 }
 
-/// Description: Executes the isHeavyBody operation.
 bool isHeavyBody(const RenderParticle& particle)
 {
     return particle.mass > 100.0f;

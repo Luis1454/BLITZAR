@@ -1,5 +1,9 @@
-// File: runtime/include/protocol/ServerClient.hpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/include/protocol/ServerClient.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
+ */
 
 #ifndef GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERCLIENT_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERCLIENT_HPP_
@@ -8,14 +12,24 @@
 #include <string>
 #include <vector>
 
-/// Description: Defines the ServerClientResponse data or behavior contract.
+/*
+ * @brief Defines the server client response type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct ServerClientResponse {
     bool ok = false;
     std::string raw;
     std::string error;
 };
 
-/// Description: Defines the ServerClientStatus data or behavior contract.
+/*
+ * @brief Defines the server client status type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct ServerClientStatus {
     std::uint64_t steps = 0;
     float dt = 0.0f;
@@ -57,41 +71,127 @@ struct ServerClientStatus {
     std::string exportLastMessage;
 };
 
-/// Description: Defines the ServerClient data or behavior contract.
+/*
+ * @brief Defines the server client type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class ServerClient {
 public:
-    /// Description: Describes the server client operation contract.
     ServerClient();
-    /// Description: Releases resources owned by ServerClient.
+    /*
+     * @brief Documents the ~server client operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     ~ServerClient();
-    /// Description: Describes the connect operation contract.
+    /*
+     * @brief Documents the connect operation contract.
+     * @param host Input value used by this contract.
+     * @param port Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool connect(const std::string& host, std::uint16_t port);
-    /// Description: Describes the set socket timeout ms operation contract.
+    /*
+     * @brief Documents the set socket timeout ms operation contract.
+     * @param timeoutMs Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setSocketTimeoutMs(int timeoutMs);
-    /// Description: Describes the socket timeout ms operation contract.
+    /*
+     * @brief Documents the socket timeout ms operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return int value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     int socketTimeoutMs() const;
-    /// Description: Describes the set auth token operation contract.
+    /*
+     * @brief Documents the set auth token operation contract.
+     * @param token Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void setAuthToken(std::string token);
-    /// Description: Describes the disconnect operation contract.
+    /*
+     * @brief Documents the disconnect operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void disconnect();
-    /// Description: Describes the is connected operation contract.
+    /*
+     * @brief Documents the is connected operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool isConnected() const;
-    /// Description: Describes the send json operation contract.
+    /*
+     * @brief Documents the send json operation contract.
+     * @param jsonLine Input value used by this contract.
+     * @return ServerClientResponse value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     ServerClientResponse sendJson(const std::string& jsonLine);
-    /// Description: Describes the send command operation contract.
+    /*
+     * @brief Documents the send command operation contract.
+     * @param cmd Input value used by this contract.
+     * @param fieldsJson Input value used by this contract.
+     * @return ServerClientResponse value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     ServerClientResponse sendCommand(const std::string& cmd, const std::string& fieldsJson = "");
-    /// Description: Describes the get status operation contract.
+    /*
+     * @brief Documents the get status operation contract.
+     * @param outStatus Input value used by this contract.
+     * @return ServerClientResponse value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     ServerClientResponse getStatus(ServerClientStatus& outStatus);
-    /// Description: Describes the get snapshot operation contract.
+    /*
+     * @brief Documents the get snapshot operation contract.
+     * @param outSnapshot Input value used by this contract.
+     * @param maxPoints Input value used by this contract.
+     * @param outSourceSize Input value used by this contract.
+     * @return ServerClientResponse value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     ServerClientResponse getSnapshot(std::vector<RenderParticle>& outSnapshot,
                                      std::uint32_t maxPoints = 4096u,
                                      std::size_t* outSourceSize = nullptr);
 
 private:
     typedef std::intptr_t SocketHandle;
-    /// Description: Describes the trim operation contract.
+    /*
+     * @brief Documents the trim operation contract.
+     * @param value Input value used by this contract.
+     * @return std::string value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static std::string trim(const std::string& value);
-    /// Description: Describes the read line operation contract.
+    /*
+     * @brief Documents the read line operation contract.
+     * @param outLine Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool readLine(std::string& outLine);
     SocketHandle _socket;
     int _socketTimeoutMs;

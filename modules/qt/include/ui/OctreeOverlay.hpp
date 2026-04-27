@@ -1,5 +1,9 @@
-// File: modules/qt/include/ui/OctreeOverlay.hpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/include/ui/OctreeOverlay.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_OCTREEOVERLAY_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_OCTREEOVERLAY_HPP_
@@ -12,7 +16,6 @@
 #include <vector>
 
 namespace grav_qt {
-/// Description: Defines the OctreeOverlayNode data or behavior contract.
 struct OctreeOverlayNode final {
     float centerX;
     float centerY;
@@ -21,10 +24,8 @@ struct OctreeOverlayNode final {
     int depth;
 };
 
-/// Description: Defines the OctreeOverlay data or behavior contract.
 class OctreeOverlay {
 public:
-    /// Description: Describes the build operation contract.
     static std::vector<OctreeOverlayNode> build(const std::vector<RenderParticle>& particles,
                                                 int maxDepth);
 };

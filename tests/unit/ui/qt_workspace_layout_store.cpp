@@ -1,5 +1,9 @@
-// File: tests/unit/ui/qt_workspace_layout_store.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/ui/qt_workspace_layout_store.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "ui/WorkspaceLayoutStore.hpp"
 #include <chrono>
@@ -8,7 +12,6 @@
 #include <string>
 
 namespace grav_test_qt_ui {
-/// Description: Executes the TEST operation.
 TEST(QtUiLogicTest, TST_UNT_UI_004_WorkspaceLayoutStoreRoundTripsNamedPreset)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();

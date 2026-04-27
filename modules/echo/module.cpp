@@ -1,5 +1,9 @@
-// File: modules/echo/module.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/echo/module.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Echo module used to validate client module loading behavior.
+ */
 
 #include "client/ClientModuleApi.hpp"
 #include "client/ClientModuleBoundary.hpp"
@@ -11,7 +15,12 @@
 #include <memory>
 #include <string>
 
-/// Description: Executes the trim operation.
+/*
+ * @brief Documents the trim operation contract.
+ * @param input Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::string trim(const std::string& input)
 {
     const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
@@ -25,14 +34,33 @@ static std::string trim(const std::string& input)
     return std::string(begin, end);
 }
 
-/// Description: Defines the EchoState data or behavior contract.
+/*
+ * @brief Defines the echo state type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct EchoState {
     std::string configPath;
 };
 
-/// Description: Defines the EchoModuleLocal data or behavior contract.
+/*
+ * @brief Defines the echo module local type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class EchoModuleLocal final {
 public:
+    /*
+     * @brief Documents the create operation contract.
+     * @param context Input value used by this contract.
+     * @param outModuleState Input value used by this contract.
+     * @param errorBuffer Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static bool create(const grav_module::ClientHostContextV1* context,
                        const grav_module::ClientModuleStateSlot& outModuleState,
                        const grav_client::ErrorBufferView& errorBuffer)
@@ -59,6 +87,13 @@ public:
         }
     }
 
+    /*
+     * @brief Documents the destroy operation contract.
+     * @param moduleState Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static void destroy(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
@@ -72,6 +107,14 @@ public:
         }
     }
 
+    /*
+     * @brief Documents the start operation contract.
+     * @param moduleState Input value used by this contract.
+     * @param errorBuffer Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static bool start(grav_module::ClientModuleOpaqueState moduleState,
                       const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -94,6 +137,15 @@ public:
         }
     }
 
+    /*
+     * @brief Documents the handle command operation contract.
+     * @param commandLine Input value used by this contract.
+     * @param commandControl Input value used by this contract.
+     * @param errorBuffer Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static bool handleCommand(std::string_view commandLine,
                               const grav_module::ClientModuleCommandControl& commandControl,
                               const grav_client::ErrorBufferView& errorBuffer)

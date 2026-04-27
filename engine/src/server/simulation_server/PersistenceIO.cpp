@@ -1,9 +1,20 @@
-// File: engine/src/server/simulation_server/PersistenceIO.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/server/simulation_server/PersistenceIO.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "Internal.hpp"
 
-/// Description: Describes the read checkpoint file operation contract.
+/*
+ * @brief Documents the read checkpoint file operation contract.
+ * @param inputPath Input value used by this contract.
+ * @param outState Input value used by this contract.
+ * @param outError Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState& outState,
                         std::string* outError)
 {
@@ -111,7 +122,12 @@ bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState&
     return outState.particles.size() >= 2u;
 }
 
-/// Description: Executes the writeExportSnapshotFile operation.
+/*
+ * @brief Documents the write export snapshot file operation contract.
+ * @param job Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool writeExportSnapshotFile(const AsyncExportJob& job)
 {
     std::filesystem::path outPath(job.outputPath);

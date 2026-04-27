@@ -1,5 +1,9 @@
-// File: modules/qt/include/ui/MainWindowPresenter.hpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/include/ui/MainWindowPresenter.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOWPRESENTER_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOWPRESENTER_HPP_
@@ -12,11 +16,15 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
-/// Description: Defines the SimulationStats data or behavior contract.
+/*
+ * @brief Defines the simulation stats type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct SimulationStats;
 
 namespace grav_qt {
-/// Collects the runtime fields required to render the workspace status area.
 struct MainWindowPresentationInput final {
     SimulationStats stats;
     grav_client::SnapshotPipelineState snapshotPipeline;
@@ -32,7 +40,6 @@ struct MainWindowPresentationInput final {
     float simulationHorizonSeconds = 0.0f;
 };
 
-/// Holds the formatted strings consumed by status and trace widgets.
 struct MainWindowPresentation final {
     std::string headlineText;
     std::string runtimeText;
@@ -43,10 +50,8 @@ struct MainWindowPresentation final {
     std::string consoleTrace;
 };
 
-/// Formats runtime telemetry into stable Qt presentation strings.
 class MainWindowPresenter final {
 public:
-    /// Produces the status and trace strings shown by the main window.
     MainWindowPresentation present(const MainWindowPresentationInput& input) const;
 };
 } // namespace grav_qt

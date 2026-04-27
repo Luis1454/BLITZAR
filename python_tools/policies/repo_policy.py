@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/policies/repo_policy.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/policies/repo_policy.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -66,16 +68,29 @@ QT_REFERENCE_NEW_RE = re.compile(
 PREPROCESSOR_CONDITIONAL_RE = re.compile(r"(?m)^\s*#(?:if|ifdef|ifndef|elif|else|endif)\b")
 PRAGMA_ONCE_RE = re.compile(r"(?m)^\s*#pragma\s+once\b")
 DEFINE_RE = re.compile(r"(?m)^\s*#define\s+([A-Z][A-Z0-9_]+)\b(?!\s*\()")
-NORMALIZED_DOCUMENTATION_RE = re.compile(r"^\s*(?://+|#+|///)\s+(?:File|Purpose|Description):\s")
+NORMALIZED_DOCUMENTATION_RE = re.compile(
+    r"^\s*(?://+|#+)\s+(?:File|Author|Project|Purpose|Description|Args|Return|Notes):\s"
+    r"|^\s*(?://+|#+)\s+-\s+[^:]+:\s"
+    r"|^\s*/\*+\s*$"
+    r"|^\s*\*/\s*$"
+    r"|^\s*\*\s.*$"
+    r"|^\s*#\s+@(?:file|author|project|brief|param|return|note)\b"
+)
 
-# Description: Executes the should_skip_dir operation.
+# @brief Documents the should skip dir operation contract.
+# @param dirname Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def should_skip_dir(dirname: str) -> bool:
     if dirname in IGNORED_DIRS:
         return True
     return dirname.startswith(("build-", "cmake-build-", ".pytest-basetemp", ".venv", ".tox"))
 
 
-# Description: Executes the should_skip_rel_parts operation.
+# @brief Documents the should skip rel parts operation contract.
+# @param rel_parts Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def should_skip_rel_parts(rel_parts: tuple[str, ...]) -> bool:
     if any(should_skip_dir(part) for part in rel_parts):
         return True
@@ -85,12 +100,18 @@ def should_skip_rel_parts(rel_parts: tuple[str, ...]) -> bool:
     return False
 
 
-# Description: Executes the should_count_lines operation.
+# @brief Documents the should count lines operation contract.
+# @param path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def should_count_lines(path: Path) -> bool:
     return path.name in LINE_COUNT_NAMES or path.suffix.lower() in LINE_COUNT_EXTS
 
 
-# Description: Executes the load_allowlist operation.
+# @brief Documents the load allowlist operation contract.
+# @param path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def load_allowlist(path: Path) -> set[str]:
     if not path.exists():
         return set()
@@ -102,19 +123,28 @@ def load_allowlist(path: Path) -> set[str]:
     return entries
 
 
-# Description: Executes the is_prod_path operation.
+# @brief Documents the is prod path operation contract.
+# @param rel Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def is_prod_path(rel: str) -> bool:
     return rel.startswith(PROD_ROOTS)
 
 
-# Description: Defines the RepoPolicyCheck contract.
+# @brief Defines the repo policy check type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class RepoPolicyCheck(BaseCheck):
     name = "repo"
     success_message = "Repository policy check passed"
     failure_title = "Repository policy check failed:"
     warning_title = "Repository policy warnings:"
 
-    # Description: Executes the _execute operation.
+    # @brief Documents the execute operation contract.
+    # @param context Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         allowlist_path = context.allowlist if context.allowlist is not None else context.root / "tests/checks/policy_allowlist.txt"
         allowlist = load_allowlist(allowlist_path)
@@ -165,7 +195,12 @@ class RepoPolicyCheck(BaseCheck):
         check_workflow_pip_manifest_usage(context.root, result)
         check_release_lane_subset(context.root, result)
 
-    # Description: Executes the _check_cpp_content operation.
+    # @brief Documents the check cpp content operation contract.
+    # @param rel Input value used by this contract.
+    # @param content Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_cpp_content(self, rel: str, content: str, result: CheckResult) -> None:
         suffix = Path(rel).suffix.lower()
         if not rel.startswith("tests/"):
@@ -199,7 +234,12 @@ class RepoPolicyCheck(BaseCheck):
         if rel.startswith("modules/qt/") and QT_REFERENCE_NEW_RE.search(content):
             result.add_error(f"{rel}: Qt '*new + reference' ownership pattern is forbidden")
 
-    # Description: Executes the _check_include_guard operation.
+    # @brief Documents the check include guard operation contract.
+    # @param rel Input value used by this contract.
+    # @param content Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_include_guard(self, rel: str, content: str, result: CheckResult) -> None:
         lines = content.splitlines()
         non_empty = [(index, line.strip()) for index, line in enumerate(lines) if line.strip()]
@@ -233,11 +273,22 @@ class RepoPolicyCheck(BaseCheck):
             result.add_error(f"{rel}: header must not define macros beyond the include guard")
 
     @staticmethod
-    # Description: Executes the _is_leading_header_comment operation.
+    # @brief Documents the is leading header comment operation contract.
+    # @param stripped Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _is_leading_header_comment(stripped: str) -> bool:
         return stripped.startswith(("//", "/*", "*"))
 
-    # Description: Executes the _check_line_count operation.
+    # @brief Documents the check line count operation contract.
+    # @param rel Input value used by this contract.
+    # @param content Input value used by this contract.
+    # @param context Input value used by this contract.
+    # @param allowlist Input value used by this contract.
+    # @param used_allowlist Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_line_count(
         self,
         rel: str,
@@ -273,17 +324,30 @@ class RepoPolicyCheck(BaseCheck):
                 "keep one primary responsibility and avoid artificial wrapper splits"
             )
 
-    # Description: Executes the _check_function_decomposition operation.
+    # @brief Documents the check function decomposition operation contract.
+    # @param rel Input value used by this contract.
+    # @param content Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_function_decomposition(self, rel: str, content: str, result: CheckResult) -> None:
         for warning in collect_function_decomposition_warnings(rel, content):
             result.add_warning(warning)
 
     @staticmethod
+    # @brief Documents the effective line count operation contract.
+    # @param content Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _effective_line_count(content: str) -> int:
         return sum(1 for line in content.splitlines() if not NORMALIZED_DOCUMENTATION_RE.match(line))
 
 
-# Description: Executes the _check_power_of_10_content operation.
+# @brief Documents the check power of 10 content operation contract.
+# @param rel Input value used by this contract.
+# @param content Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _check_power_of_10_content(rel: str, content: str) -> list[str]:
     errors: list[str] = []
     if GOTO_RE.search(content):

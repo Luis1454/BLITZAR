@@ -1,5 +1,9 @@
-// File: engine/src/config/SimulationProfile.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/config/SimulationProfile.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Configuration parsing, validation, and serialization implementation.
+ */
 
 #include "config/SimulationProfile.hpp"
 #include "config/SimulationConfig.hpp"
@@ -7,7 +11,6 @@
 #include <cctype>
 
 namespace grav_config {
-/// Description: Executes the toLowerProfile operation.
 static std::string toLowerProfile(std::string value)
 {
     std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
@@ -16,7 +19,6 @@ static std::string toLowerProfile(std::string value)
     return value;
 }
 
-/// Description: Executes the normalizeSimulationProfile operation.
 bool normalizeSimulationProfile(std::string_view raw, std::string& outCanonical)
 {
     const std::string lowered = toLowerProfile(std::string(raw));
@@ -47,7 +49,6 @@ bool normalizeSimulationProfile(std::string_view raw, std::string& outCanonical)
     return false;
 }
 
-/// Description: Executes the applySimulationProfile operation.
 void applySimulationProfile(SimulationConfig& config)
 {
     std::string canonical;

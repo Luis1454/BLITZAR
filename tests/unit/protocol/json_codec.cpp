@@ -1,5 +1,9 @@
-// File: tests/unit/protocol/json_codec.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/protocol/json_codec.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "protocol/ServerJsonCodec.hpp"
 #include "protocol/ServerProtocol.hpp"
@@ -8,7 +12,6 @@
 #include <vector>
 
 namespace grav_test_protocol_codec {
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_001_ParsesCommandEnvelopeWithEscapedToken)
 {
     grav_protocol::ServerCommandRequest request{};
@@ -23,7 +26,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_001_ParsesCommandEnvelopeWithEscapedT
     EXPECT_EQ(parsed.token, "secret\"token");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
 {
     SimulationStats stats{};
@@ -105,7 +107,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
     EXPECT_EQ(parsed.exportLastMessage, "background export active");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_003_RejectsMalformedSnapshotPayload)
 {
     const std::string raw =
@@ -117,7 +118,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_003_RejectsMalformedSnapshotPayload)
     EXPECT_EQ(error, "invalid snapshot payload");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_006_ParsesSnapshotSourceCountMetadata)
 {
     std::vector<RenderParticle> snapshot(2u);
@@ -134,7 +134,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_006_ParsesSnapshotSourceCountMetadata
     EXPECT_EQ(parsed.sourceSize, 8u);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_004_ParsesErrorEnvelopeForControlCommand)
 {
     const std::string raw = grav_protocol::ServerJsonCodec::makeErrorResponse(
@@ -147,7 +146,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_004_ParsesErrorEnvelopeForControlComm
     EXPECT_EQ(parsed.error, "invalid integrator value");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_005_ExportsCurrentSchemaVersionLabel)
 {
     EXPECT_EQ(grav_protocol::SchemaVersion, "server-json-v1");
@@ -160,7 +158,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_005_ExportsCurrentSchemaVersionLabel)
 }
 
 // TST_UNT_PROT_007: Number parsing with maximum float32 precision
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_007_ParsesFloatPrecisionBoundaries)
 {
     SimulationStats stats{};
@@ -178,7 +175,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_007_ParsesFloatPrecisionBoundaries)
 }
 
 // TST_UNT_PROT_008: Very large numeric values in status
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_008_ParsesLargeNumericStatus)
 {
     SimulationStats stats{};
@@ -195,7 +191,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_008_ParsesLargeNumericStatus)
 }
 
 // TST_UNT_PROT_009: Zero and boundary values in numeric fields
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_009_ParsesBoundaryNumericValues)
 {
     SimulationStats stats{};
@@ -211,7 +206,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_009_ParsesBoundaryNumericValues)
 }
 
 // TST_UNT_PROT_010: Status with extreme energy values
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_010_ParsesExtremeEnergyStatus)
 {
     SimulationStats stats{};
@@ -227,7 +221,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_010_ParsesExtremeEnergyStatus)
 }
 
 // TST_UNT_PROT_011: Rejects malformed JSON with missing required fields
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_011_RejectsMalformedJsonMissingOkField)
 {
     const std::string raw = "{\"cmd\":\"set_solver\"}"; // Missing "ok" field
@@ -237,7 +230,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_011_RejectsMalformedJsonMissingOkFiel
 }
 
 // TST_UNT_PROT_012: Rejects incomplete JSON
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_012_RejectsIncompleteJson)
 {
     const std::string raw = "{\"ok\":true,\"cmd\":\"get_status\""; // Incomplete
@@ -247,7 +239,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_012_RejectsIncompleteJson)
 }
 
 // TST_UNT_PROT_013: Rejects JSON with wrong field types
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_013_RejectsWrongFieldTypes)
 {
     const std::string raw = "{\"ok\":\"true\",\"cmd\":\"get_status\",\"steps\":\"not_a_number\"}";
@@ -257,7 +248,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_013_RejectsWrongFieldTypes)
 }
 
 // TST_UNT_PROT_014: Handles empty JSON object
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_014_RejectsEmptyJsonObject)
 {
     const std::string raw = "{}";
@@ -267,7 +257,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_014_RejectsEmptyJsonObject)
 }
 
 // TST_UNT_PROT_015: Rejects invalid JSON syntax
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_015_RejectsInvalidJsonSyntax)
 {
     const std::string raw = "{ok: true, cmd: 'get_status'}"; // Invalid: unquoted keys/values
@@ -277,7 +266,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_015_RejectsInvalidJsonSyntax)
 }
 
 // TST_UNT_PROT_016: Status with minimal field set
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_016_ParsesMinimalStatusPayload)
 {
     SimulationStats minimal_stats{};
@@ -290,7 +278,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_016_ParsesMinimalStatusPayload)
 }
 
 // TST_UNT_PROT_017: Status with all boolean flags set to true
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_017_ParsesAllBooleanFlagsTrue)
 {
     SimulationStats stats{};
@@ -312,7 +299,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_017_ParsesAllBooleanFlagsTrue)
 }
 
 // TST_UNT_PROT_018: Status with all boolean flags set to false
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_018_ParsesAllBooleanFlagsFalse)
 {
     SimulationStats stats{};
@@ -332,7 +318,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_018_ParsesAllBooleanFlagsFalse)
 }
 
 // TST_UNT_PROT_019: Status with special characters in string fields
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_019_ParsesStatusWithSpecialCharsInStrings)
 {
     SimulationStats stats{};
@@ -347,7 +332,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_019_ParsesStatusWithSpecialCharsInStr
 }
 
 // TST_UNT_PROT_020: Empty strings in status fields
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_020_ParsesStatusWithEmptyStrings)
 {
     SimulationStats stats{};
@@ -364,7 +348,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_020_ParsesStatusWithEmptyStrings)
 }
 
 // TST_UNT_PROT_021: Snapshot with single particle
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_021_ParsesSnapshotWithSingleParticle)
 {
     std::vector<RenderParticle> snapshot(1u);
@@ -384,7 +367,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_021_ParsesSnapshotWithSingleParticle)
 }
 
 // TST_UNT_PROT_022: Snapshot with many particles
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_022_ParsesSnapshotWithManyParticles)
 {
     std::vector<RenderParticle> snapshot(1000u);
@@ -403,7 +385,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_022_ParsesSnapshotWithManyParticles)
 }
 
 // TST_UNT_PROT_023: Snapshot with no snapshot data available
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_023_ParsesSnapshotUnavailable)
 {
     std::vector<RenderParticle> empty_snapshot;
@@ -417,7 +398,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_023_ParsesSnapshotUnavailable)
 }
 
 // TST_UNT_PROT_024: Snapshot with boundary coordinate values
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_024_ParsesSnapshotBoundaryCoordinates)
 {
     std::vector<RenderParticle> snapshot(3u);
@@ -441,7 +421,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_024_ParsesSnapshotBoundaryCoordinates
 }
 
 // TST_UNT_PROT_025: Rejects snapshot with mismatched particle count
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_025_RejectsSnapshotArrayMismatch)
 {
     // Manually craft JSON with mismatch between count and actual array size
@@ -454,7 +433,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_025_RejectsSnapshotArrayMismatch)
 }
 
 // TST_UNT_PROT_026: Command request round-trip with empty token
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_026_CommandRequestWithEmptyToken)
 {
     grav_protocol::ServerCommandRequest request{};
@@ -469,7 +447,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_026_CommandRequestWithEmptyToken)
 }
 
 // TST_UNT_PROT_027: Command request with very long token
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_027_CommandRequestWithLongToken)
 {
     grav_protocol::ServerCommandRequest request{};
@@ -484,7 +461,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_027_CommandRequestWithLongToken)
 }
 
 // TST_UNT_PROT_028: Error response with various command types
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_028_ErrorResponseWithDifferentCommands)
 {
     const auto test_command = [](std::string_view cmd) {
@@ -505,7 +481,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_028_ErrorResponseWithDifferentCommand
 }
 
 // TST_UNT_PROT_029: String escaping preserves all special sequences
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_029_StringEscapingRoundTrip)
 {
     SimulationStats stats{};
@@ -518,7 +493,6 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_029_StringEscapingRoundTrip)
 }
 
 // TST_UNT_PROT_030: Consecutive rapid command-response cycles
-/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_030_ConsecutiveCommandResponseCycles)
 {
     for (int i = 0; i < 10; ++i) {

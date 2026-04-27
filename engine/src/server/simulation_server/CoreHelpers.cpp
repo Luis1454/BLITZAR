@@ -1,9 +1,18 @@
-// File: engine/src/server/simulation_server/CoreHelpers.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/server/simulation_server/CoreHelpers.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "Internal.hpp"
 
-/// Description: Executes the toLower operation.
+/*
+ * @brief Documents the to lower operation contract.
+ * @param value Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::string toLower(std::string value)
 {
     std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
@@ -12,7 +21,12 @@ std::string toLower(std::string value)
     return value;
 }
 
-/// Description: Executes the trim operation.
+/*
+ * @brief Documents the trim operation contract.
+ * @param value Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::string trim(std::string value)
 {
     const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char c) {
@@ -26,7 +40,12 @@ std::string trim(std::string value)
     return std::string(begin, end);
 }
 
-/// Description: Executes the normalizeSnapshotFormat operation.
+/*
+ * @brief Documents the normalize snapshot format operation contract.
+ * @param format Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::string normalizeSnapshotFormat(std::string format)
 {
     format = toLower(std::move(format));
@@ -43,7 +62,12 @@ std::string normalizeSnapshotFormat(std::string format)
     return format;
 }
 
-/// Description: Executes the solverModeFromCanonicalName operation.
+/*
+ * @brief Documents the solver mode from canonical name operation contract.
+ * @param name Input value used by this contract.
+ * @return ParticleSystem::SolverMode value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ParticleSystem::SolverMode solverModeFromCanonicalName(std::string_view name)
 {
     static const std::array<std::pair<std::string_view, ParticleSystem::SolverMode>, 2> modes = {
@@ -57,7 +81,12 @@ ParticleSystem::SolverMode solverModeFromCanonicalName(std::string_view name)
     return ParticleSystem::SolverMode::PairwiseCuda;
 }
 
-/// Description: Executes the integratorModeFromCanonicalName operation.
+/*
+ * @brief Documents the integrator mode from canonical name operation contract.
+ * @param name Input value used by this contract.
+ * @return ParticleSystem::IntegratorMode value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ParticleSystem::IntegratorMode integratorModeFromCanonicalName(std::string_view name)
 {
     static const std::array<std::pair<std::string_view, ParticleSystem::IntegratorMode>, 1> modes =
@@ -70,7 +99,12 @@ ParticleSystem::IntegratorMode integratorModeFromCanonicalName(std::string_view 
     return ParticleSystem::IntegratorMode::Euler;
 }
 
-/// Description: Executes the solverLabel operation.
+/*
+ * @brief Documents the solver label operation contract.
+ * @param mode Input value used by this contract.
+ * @return std::string_view value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::string_view solverLabel(ParticleSystem::SolverMode mode)
 {
     switch (mode) {
@@ -84,7 +118,12 @@ std::string_view solverLabel(ParticleSystem::SolverMode mode)
     }
 }
 
-/// Description: Executes the resolvePublishedSnapshotCap operation.
+/*
+ * @brief Documents the resolve published snapshot cap operation contract.
+ * @param drawCap Input value used by this contract.
+ * @return std::uint32_t value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::uint32_t resolvePublishedSnapshotCap(std::uint32_t drawCap)
 {
     const std::uint32_t clampedDrawCap =
@@ -95,34 +134,63 @@ std::uint32_t resolvePublishedSnapshotCap(std::uint32_t drawCap)
     return std::max(grav_protocol::kSnapshotMinPoints, oversampled);
 }
 
-/// Description: Executes the readRawBytes operation.
+/*
+ * @brief Documents the read raw bytes operation contract.
+ * @param in Input value used by this contract.
+ * @param data Input value used by this contract.
+ * @param size Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool readRawBytes(std::istream& in, std::byte* data, std::size_t size)
 {
     return static_cast<bool>(
         in.read(reinterpret_cast<char*>(data), static_cast<std::streamsize>(size)));
 }
 
-/// Description: Executes the writeRawBytes operation.
+/*
+ * @brief Documents the write raw bytes operation contract.
+ * @param out Input value used by this contract.
+ * @param data Input value used by this contract.
+ * @param size Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool writeRawBytes(std::ostream& out, const std::byte* data, std::size_t size)
 {
     out.write(reinterpret_cast<const char*>(data), static_cast<std::streamsize>(size));
     return static_cast<bool>(out);
 }
 
-/// Description: Executes the readEnvironment operation.
+/*
+ * @brief Documents the read environment operation contract.
+ * @param key Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::string readEnvironment(std::string_view key)
 {
     const std::optional<std::string> value = grav_env::get(key);
     return value.value_or(std::string{});
 }
 
-/// Description: Executes the isValidImportedParticleCount operation.
+/*
+ * @brief Documents the is valid imported particle count operation contract.
+ * @param count Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool isValidImportedParticleCount(std::size_t count)
 {
     return count >= 2 && count <= kMaxImportedParticles;
 }
 
-/// Description: Executes the isAutoSolverFallbackEnabled operation.
+/*
+ * @brief Documents the is auto solver fallback enabled operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool isAutoSolverFallbackEnabled()
 {
     const std::string raw = readEnvironment("GRAVITY_AUTO_SOLVER_FALLBACK");
@@ -133,7 +201,12 @@ bool isAutoSolverFallbackEnabled()
     return v == "1" || v == "true" || v == "on" || v == "yes";
 }
 
-/// Description: Executes the shouldForceCudaFailureOnceForTesting operation.
+/*
+ * @brief Documents the should force cuda failure once for testing operation contract.
+ * @param solver Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool shouldForceCudaFailureOnceForTesting(std::string_view solver)
 {
     if (solver != grav_modes::kSolverPairwiseCuda && solver != grav_modes::kSolverOctreeGpu)
@@ -151,7 +224,14 @@ bool shouldForceCudaFailureOnceForTesting(std::string_view solver)
     return injected.compare_exchange_strong(expected, true, std::memory_order_relaxed);
 }
 
-/// Description: Describes the coerce config solver integrator compatibility operation contract.
+/*
+ * @brief Documents the coerce config solver integrator compatibility operation contract.
+ * @param solver Input value used by this contract.
+ * @param integrator Input value used by this contract.
+ * @param source Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool coerceConfigSolverIntegratorCompatibility(std::string& solver, std::string& integrator,
                                                std::string_view source)
 {
@@ -164,7 +244,15 @@ bool coerceConfigSolverIntegratorCompatibility(std::string& solver, std::string&
     return false;
 }
 
-/// Description: Describes the auto target substep dt operation contract.
+/*
+ * @brief Documents the auto target substep dt operation contract.
+ * @param solver Input value used by this contract.
+ * @param eulerIntegrator Input value used by this contract.
+ * @param sphEnabled Input value used by this contract.
+ * @param liveParticleCount Input value used by this contract.
+ * @return float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 float autoTargetSubstepDt(std::string_view solver, bool eulerIntegrator, bool sphEnabled,
                           std::size_t liveParticleCount)
 {
@@ -183,7 +271,12 @@ float autoTargetSubstepDt(std::string_view solver, bool eulerIntegrator, bool sp
     return 0.0005f;
 }
 
-/// Description: Executes the openingCriterionFromCanonicalName operation.
+/*
+ * @brief Documents the opening criterion from canonical name operation contract.
+ * @param name Input value used by this contract.
+ * @return OctreeOpeningCriterion value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 OctreeOpeningCriterion openingCriterionFromCanonicalName(std::string_view name)
 {
     static const std::array<std::pair<std::string_view, OctreeOpeningCriterion>, 1> criteria = {
@@ -196,13 +289,23 @@ OctreeOpeningCriterion openingCriterionFromCanonicalName(std::string_view name)
     return OctreeOpeningCriterion::CenterOfMass;
 }
 
-/// Description: Executes the clampThetaBound operation.
+/*
+ * @brief Documents the clamp theta bound operation contract.
+ * @param value Input value used by this contract.
+ * @return float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 float clampThetaBound(float value)
 {
     return std::clamp(value, 0.05f, 4.0f);
 }
 
-/// Description: Executes the computeOctreeDistributionScore operation.
+/*
+ * @brief Documents the compute octree distribution score operation contract.
+ * @param particles Input value used by this contract.
+ * @return float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 float computeOctreeDistributionScore(const std::vector<Particle>& particles)
 {
     if (particles.empty()) {

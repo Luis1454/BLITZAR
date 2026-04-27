@@ -1,3 +1,10 @@
+/*
+ * @file engine/include/config/SimulationModes.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Public configuration interfaces and validation contracts for simulation setup.
+ */
+
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONMODES_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONMODES_HPP_
 #include <string>
@@ -12,14 +19,10 @@ extern const std::string_view kIntegratorRk4;
 extern const std::string_view kIntegratorLeapfrog;
 extern const std::string_view kOctreeCriterionCom;
 extern const std::string_view kOctreeCriterionBounds;
-/// Description: Describes the normalize solver operation contract.
 [[nodiscard]] bool normalizeSolver(std::string_view value, std::string& outCanonical);
-/// Description: Describes the normalize integrator operation contract.
 [[nodiscard]] bool normalizeIntegrator(std::string_view value, std::string& outCanonical);
-/// Description: Describes the normalize octree opening criterion operation contract.
 [[nodiscard]] bool normalizeOctreeOpeningCriterion(std::string_view value,
                                                    std::string& outCanonical);
-/// Description: Describes the is supported solver integrator pair operation contract.
 [[nodiscard]] bool isSupportedSolverIntegratorPair(std::string_view solver,
                                                    std::string_view integrator);
 } // namespace grav_modes

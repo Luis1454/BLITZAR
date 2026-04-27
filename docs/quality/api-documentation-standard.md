@@ -20,13 +20,23 @@ Rules:
 
 ## Public API Comment Format
 
-Document each public type and public function with concise `///` comments:
+Document each public type and public function with concise block comments using normalized tags:
 
 ```cpp
-/// Renders the rolling energy and drift history for the current simulation session.
+/*
+ * @brief Renders the rolling energy and drift history for the current simulation session.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep ownership and runtime side effects explicit.
+ */
 class EnergyGraphWidget : public QWidget {
 public:
-    /// Appends a telemetry sample to the visible energy history.
+    /*
+     * @brief Appends a telemetry sample to the visible energy history.
+     * @param stats Latest telemetry sample received from the runtime.
+     * @return No return value.
+     * @note Preserve deterministic retention limits when updating graph history.
+     */
     void pushSample(const SimulationStats &stats);
 };
 ```
@@ -35,7 +45,7 @@ Rules:
 - Describe purpose, not implementation detail.
 - Mention units or constraints when they are not obvious.
 - Mention ownership transfer when constructors or functions take ownership.
-- Prefer one sentence per declaration.
+- Use `@brief`, `@param`, `@return`, and `@note` consistently.
 
 ## Scope
 

@@ -1,5 +1,7 @@
-# File: tests/checks/suites/test_changelog.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/checks/suites/test_changelog.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 """Unit tests for the changelog generator."""
 from __future__ import annotations
@@ -14,14 +16,23 @@ from python_tools.ci.changelog import (
 _SEP = "|||"
 
 
-# Description: Executes the _raw operation.
+# @brief Documents the raw operation contract.
+# @param sha Input value used by this contract.
+# @param subject Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _raw(sha: str, subject: str) -> str:
     return f"{sha}{_SEP}{subject}"
 
 
-# Description: Defines the TestParseCommits contract.
+# @brief Defines the test parse commits type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class TestParseCommits:
-    # Description: Executes the test_tst_unt_rel_001_feat_parsed_correctly operation.
+    # @brief Documents the test tst unt rel 001 feat parsed correctly operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def test_tst_unt_rel_001_feat_parsed_correctly(self) -> None:
         lines = [_raw("abc123456789", "feat(engine): add GPU octree")]
         entries = parse_commits(lines)
@@ -32,7 +43,10 @@ class TestParseCommits:
         assert e.description == "add GPU octree"
         assert not e.breaking
 
-    # Description: Executes the test_tst_unt_rel_002_fix_parsed_correctly operation.
+    # @brief Documents the test tst unt rel 002 fix parsed correctly operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def test_tst_unt_rel_002_fix_parsed_correctly(self) -> None:
         lines = [_raw("def000000001", "fix: resolve null deref in particle system")]
         entries = parse_commits(lines)
@@ -40,7 +54,10 @@ class TestParseCommits:
         assert entries[0].commit_type == "fix"
         assert entries[0].scope == ""
 
-    # Description: Executes the test_tst_unt_rel_003_non_conventional_skipped operation.
+    # @brief Documents the test tst unt rel 003 non conventional skipped operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def test_tst_unt_rel_003_non_conventional_skipped(self) -> None:
         lines = [
             _raw("aaa000000001", "update some stuff"),
@@ -50,12 +67,18 @@ class TestParseCommits:
         assert len(entries) == 1
         assert entries[0].commit_type == "feat"
 
-    # Description: Executes the test_tst_unt_rel_004_empty_input_returns_empty operation.
+    # @brief Documents the test tst unt rel 004 empty input returns empty operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def test_tst_unt_rel_004_empty_input_returns_empty(self) -> None:
         entries = parse_commits([])
         assert entries == []
 
-    # Description: Executes the test_tst_unt_rel_005_breaking_flag_detected operation.
+    # @brief Documents the test tst unt rel 005 breaking flag detected operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def test_tst_unt_rel_005_breaking_flag_detected(self) -> None:
         lines = [_raw("ccc000000003", "feat!: drop legacy API")]
         entries = parse_commits(lines)
@@ -63,15 +86,26 @@ class TestParseCommits:
         assert entries[0].breaking is True
 
 
-# Description: Defines the TestRenderMarkdown contract.
+# @brief Defines the test render markdown type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class TestRenderMarkdown:
-    # Description: Executes the _make_entry operation.
+    # @brief Documents the make entry operation contract.
+    # @param ctype Input value used by this contract.
+    # @param desc Input value used by this contract.
+    # @param scope Input value used by this contract.
+    # @param breaking Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _make_entry(
         self, ctype: str, desc: str, scope: str = "", breaking: bool = False
     ) -> CommitEntry:
         return CommitEntry(sha="sha12345", commit_type=ctype, scope=scope, breaking=breaking, description=desc)
 
-    # Description: Executes the test_tst_unt_rel_006_features_section_present operation.
+    # @brief Documents the test tst unt rel 006 features section present operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def test_tst_unt_rel_006_features_section_present(self) -> None:
         data = ChangelogData(tag="v1.0.0", previous_tag="v0.9.0")
         data.by_type["feat"] = [self._make_entry("feat", "add new thing")]
@@ -79,7 +113,10 @@ class TestRenderMarkdown:
         assert "## Features" in md
         assert "add new thing" in md
 
-    # Description: Executes the test_tst_unt_rel_007_breaking_section_present operation.
+    # @brief Documents the test tst unt rel 007 breaking section present operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def test_tst_unt_rel_007_breaking_section_present(self) -> None:
         data = ChangelogData(tag="v2.0.0", previous_tag="v1.0.0")
         entry = self._make_entry("feat", "drop legacy", breaking=True)
@@ -89,7 +126,10 @@ class TestRenderMarkdown:
         assert "Breaking Changes" in md
         assert "drop legacy" in md
 
-    # Description: Executes the test_tst_unt_rel_008_empty_data_produces_header_only operation.
+    # @brief Documents the test tst unt rel 008 empty data produces header only operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def test_tst_unt_rel_008_empty_data_produces_header_only(self) -> None:
         data = ChangelogData(tag="v0.1.0", previous_tag="")
         md = render_markdown(data)

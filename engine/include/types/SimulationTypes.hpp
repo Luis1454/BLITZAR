@@ -1,12 +1,21 @@
-// File: engine/include/types/SimulationTypes.hpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/include/types/SimulationTypes.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #ifndef GRAVITY_ENGINE_INCLUDE_TYPES_SIMULATIONTYPES_HPP_
 #define GRAVITY_ENGINE_INCLUDE_TYPES_SIMULATIONTYPES_HPP_
 #include <cstdint>
 #include <string>
 
-/// Description: Defines the RenderParticle data or behavior contract.
+/*
+ * @brief Defines the render particle type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct RenderParticle {
     float x;
     float y;
@@ -16,7 +25,12 @@ struct RenderParticle {
     float temperature;
 };
 
-/// Description: Defines the InitialStateConfig data or behavior contract.
+/*
+ * @brief Defines the initial state config type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct InitialStateConfig {
     std::string mode = "disk_orbit";
     std::uint32_t seed = 42u;
@@ -44,7 +58,12 @@ struct InitialStateConfig {
     float particleMass = 0.01f;
 };
 
-/// Description: Defines the SimulationStats data or behavior contract.
+/*
+ * @brief Defines the simulation stats type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct SimulationStats {
     std::uint64_t steps;
     float dt;

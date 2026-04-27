@@ -1,5 +1,9 @@
-// File: runtime/src/ffi/BlitzarCore.cpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/src/ffi/BlitzarCore.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
+ */
 
 #include "config/SimulationModes.hpp"
 #include "runtime/src/ffi/BlitzarCoreInternal.hpp"
@@ -11,7 +15,12 @@
 #include <vector>
 static constexpr std::uint32_t kDefaultTimeoutMs = 3000u;
 
-/// Description: Executes the normalizedConfig operation.
+/*
+ * @brief Documents the normalized config operation contract.
+ * @param config Input value used by this contract.
+ * @return blitzar_core_config_t value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static blitzar_core_config_t normalizedConfig(const blitzar_core_config_t& config)
 {
     const blitzar_core_config_t defaults = blitzar_core_default_config();
@@ -40,7 +49,14 @@ static blitzar_core_config_t normalizedConfig(const blitzar_core_config_t& confi
     return normalized;
 }
 
-/// Description: Executes the copyText operation.
+/*
+ * @brief Documents the copy text operation contract.
+ * @param value Input value used by this contract.
+ * @param buffer Input value used by this contract.
+ * @param capacity Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static void copyText(const std::string& value, char* buffer, std::size_t capacity)
 {
     if (buffer == nullptr || capacity == 0u) {
@@ -51,7 +67,13 @@ static void copyText(const std::string& value, char* buffer, std::size_t capacit
     buffer[limit] = '\0';
 }
 
-/// Description: Executes the fillStatus operation.
+/*
+ * @brief Documents the fill status operation contract.
+ * @param stats Input value used by this contract.
+ * @param outStatus Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static void fillStatus(const SimulationStats& stats, blitzar_core_status_t& outStatus)
 {
     outStatus.steps = stats.steps;
@@ -81,7 +103,6 @@ static void fillStatus(const SimulationStats& stats, blitzar_core_status_t& outS
 }
 
 namespace grav_ffi {
-/// Description: Executes the BlitzarCore operation.
 BlitzarCore::BlitzarCore(const blitzar_core_config_t& config)
     : _server(std::max<std::uint32_t>(2u, normalizedConfig(config).particle_count),
               normalizedConfig(config).dt)
@@ -98,13 +119,11 @@ BlitzarCore::BlitzarCore(const blitzar_core_config_t& config)
     }
 }
 
-/// Description: Releases resources owned by BlitzarCore.
 BlitzarCore::~BlitzarCore()
 {
     _server.stop();
 }
 
-/// Description: Executes the applyConfig operation.
 blitzar_core_result_t BlitzarCore::applyConfig(const blitzar_core_config_t& config)
 {
     clearError();
@@ -128,7 +147,6 @@ blitzar_core_result_t BlitzarCore::applyConfig(const blitzar_core_config_t& conf
     return waitForAppliedConfig(normalized, kDefaultTimeoutMs);
 }
 
-/// Description: Executes the getStatus operation.
 blitzar_core_result_t BlitzarCore::getStatus(blitzar_core_status_t& outStatus) const
 {
     clearError();
@@ -136,7 +154,6 @@ blitzar_core_result_t BlitzarCore::getStatus(blitzar_core_status_t& outStatus) c
     return BLITZAR_CORE_OK;
 }
 
-/// Description: Describes the get snapshot operation contract.
 blitzar_core_result_t BlitzarCore::getSnapshot(std::size_t maxPoints,
                                                blitzar_core_snapshot_t& outSnapshot) const
 {

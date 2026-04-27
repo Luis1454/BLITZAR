@@ -1,5 +1,9 @@
-// File: rust/blitzar-web-gateway/src/lib.rs
-// Purpose: Rust component implementation for BLITZAR runtime services.
+/*
+ * @file rust/blitzar-web-gateway/src/lib.rs
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Rust protocol and gateway components for BLITZAR runtime integration.
+ */
 
 pub mod api;
 pub mod args;

@@ -1,5 +1,9 @@
-// File: runtime/include/command/CommandExecutor.hpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/include/command/CommandExecutor.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
+ */
 
 #ifndef GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDEXECUTOR_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDEXECUTOR_HPP_
@@ -7,10 +11,8 @@
 #include "command/CommandTypes.hpp"
 
 namespace grav_cmd {
-/// Description: Defines the CommandExecutor data or behavior contract.
 class CommandExecutor final {
 public:
-    /// Description: Describes the execute operation contract.
     static CommandResult execute(const CommandRequest& request, CommandExecutionContext& context);
 };
 } // namespace grav_cmd

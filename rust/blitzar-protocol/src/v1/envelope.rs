@@ -1,10 +1,13 @@
-// File: rust/blitzar-protocol/src/v1/envelope.rs
-// Purpose: Rust component implementation for BLITZAR runtime services.
+/*
+ * @file rust/blitzar-protocol/src/v1/envelope.rs
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Rust protocol and gateway components for BLITZAR runtime integration.
+ */
 
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-/// Description: Defines the ResponseEnvelope struct contract.
 pub struct ResponseEnvelope {
     pub ok: bool,
     pub cmd: String,

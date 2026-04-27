@@ -1,5 +1,9 @@
-// File: engine/include/config/SimulationConfig.hpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/include/config/SimulationConfig.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Public configuration interfaces and validation contracts for simulation setup.
+ */
 
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
@@ -11,7 +15,12 @@
 #include <cstdint>
 #include <string>
 
-/// Stores the persisted runtime, rendering, export, and scenario initialization parameters.
+/*
+ * @brief Defines the simulation config type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct SimulationConfig {
     // Physical quantities use SI units unless a field name explicitly carries another unit such as
     // ms or fps.
@@ -89,11 +98,29 @@ struct SimulationConfig {
     bool renderLODEnabled = true;
     float renderLODNearDistance = 10.0f;
     float renderLODFarDistance = 60.0f;
-    /// Returns the repository default configuration used for new projects and tests.
+    /*
+     * @brief Documents the defaults operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return SimulationConfig value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static SimulationConfig defaults();
-    /// Loads the configuration at `path` or writes defaults there when the file does not exist.
+    /*
+     * @brief Documents the load or create operation contract.
+     * @param path Input value used by this contract.
+     * @return SimulationConfig value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static SimulationConfig loadOrCreate(const std::string& path);
-    /// Persists the current configuration to `path`.
+    /*
+     * @brief Documents the save operation contract.
+     * @param path Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     bool save(const std::string& path) const;
 };
 #endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_

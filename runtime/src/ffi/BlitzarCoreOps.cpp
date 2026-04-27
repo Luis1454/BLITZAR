@@ -1,5 +1,9 @@
-// File: runtime/src/ffi/BlitzarCoreOps.cpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/src/ffi/BlitzarCoreOps.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
+ */
 
 #include "runtime/src/ffi/BlitzarCoreInternal.hpp"
 #include <algorithm>
@@ -7,10 +11,21 @@
 #include <cstring>
 #include <filesystem>
 #include <thread>
-/// Description: Executes the kPollInterval operation.
+/*
+ * @brief Documents the k poll interval operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return std::chrono::milliseconds value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static constexpr std::chrono::milliseconds kPollInterval(5);
 
-/// Description: Executes the hasMatchingConfig operation.
+/*
+ * @brief Documents the has matching config operation contract.
+ * @param stats Input value used by this contract.
+ * @param config Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static bool hasMatchingConfig(const SimulationStats& stats, const blitzar_core_config_t& config)
 {
     return stats.particleCount == std::max<std::uint32_t>(2u, config.particle_count) &&
@@ -21,7 +36,13 @@ static bool hasMatchingConfig(const SimulationStats& stats, const blitzar_core_c
            stats.snapshotPublishPeriodMs == config.snapshot_publish_period_ms;
 }
 
-/// Description: Executes the pollUntil operation.
+/*
+ * @brief Documents the poll until operation contract.
+ * @param timeoutMs Input value used by this contract.
+ * @param predicate Input value used by this contract.
+ * @return template <typename TPredicate> bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 template <typename TPredicate> static bool pollUntil(std::uint32_t timeoutMs, TPredicate predicate)
 {
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
@@ -35,7 +56,6 @@ template <typename TPredicate> static bool pollUntil(std::uint32_t timeoutMs, TP
 }
 
 namespace grav_ffi {
-/// Description: Executes the runSteps operation.
 blitzar_core_result_t BlitzarCore::runSteps(std::uint32_t steps, std::uint32_t timeoutMs)
 {
     clearError();
@@ -50,7 +70,6 @@ blitzar_core_result_t BlitzarCore::runSteps(std::uint32_t steps, std::uint32_t t
     return waitForStepTarget(startSteps + steps, timeoutMs);
 }
 
-/// Description: Describes the load state operation contract.
 blitzar_core_result_t BlitzarCore::loadState(const char* path, const char* format,
                                              std::uint32_t timeoutMs)
 {
@@ -66,7 +85,6 @@ blitzar_core_result_t BlitzarCore::loadState(const char* path, const char* forma
     return waitForSnapshot(timeoutMs);
 }
 
-/// Description: Describes the export state operation contract.
 blitzar_core_result_t BlitzarCore::exportState(const char* path, const char* format,
                                                std::uint32_t timeoutMs)
 {
@@ -79,7 +97,6 @@ blitzar_core_result_t BlitzarCore::exportState(const char* path, const char* for
     return waitForFile(path, timeoutMs);
 }
 
-/// Description: Executes the copyLastError operation.
 std::size_t BlitzarCore::copyLastError(char* buffer, std::size_t capacity) const
 {
     std::lock_guard<std::mutex> lock(_errorMutex);
@@ -92,7 +109,6 @@ std::size_t BlitzarCore::copyLastError(char* buffer, std::size_t capacity) const
     return _lastError.size();
 }
 
-/// Description: Executes the waitForSnapshot operation.
 blitzar_core_result_t BlitzarCore::waitForSnapshot(std::uint32_t timeoutMs) const
 {
     std::vector<RenderParticle> snapshot;
@@ -105,7 +121,6 @@ blitzar_core_result_t BlitzarCore::waitForSnapshot(std::uint32_t timeoutMs) cons
     return BLITZAR_CORE_TIMEOUT;
 }
 
-/// Description: Describes the wait for applied config operation contract.
 blitzar_core_result_t BlitzarCore::waitForAppliedConfig(const blitzar_core_config_t& config,
                                                         std::uint32_t timeoutMs) const
 {
@@ -120,7 +135,6 @@ blitzar_core_result_t BlitzarCore::waitForAppliedConfig(const blitzar_core_confi
     return BLITZAR_CORE_TIMEOUT;
 }
 
-/// Description: Describes the wait for step target operation contract.
 blitzar_core_result_t BlitzarCore::waitForStepTarget(std::uint64_t expectedSteps,
                                                      std::uint32_t timeoutMs) const
 {
@@ -135,7 +149,6 @@ blitzar_core_result_t BlitzarCore::waitForStepTarget(std::uint64_t expectedSteps
     return stats.faulted ? BLITZAR_CORE_INTERNAL_ERROR : BLITZAR_CORE_TIMEOUT;
 }
 
-/// Description: Executes the waitForFile operation.
 blitzar_core_result_t BlitzarCore::waitForFile(const char* path, std::uint32_t timeoutMs) const
 {
     const std::filesystem::path fsPath(path);
@@ -148,14 +161,12 @@ blitzar_core_result_t BlitzarCore::waitForFile(const char* path, std::uint32_t t
     return BLITZAR_CORE_TIMEOUT;
 }
 
-/// Description: Executes the setError operation.
 void BlitzarCore::setError(const std::string& message) const
 {
     std::lock_guard<std::mutex> lock(_errorMutex);
     _lastError = message;
 }
 
-/// Description: Executes the clearError operation.
 void BlitzarCore::clearError() const
 {
     setError("");

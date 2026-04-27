@@ -1,9 +1,18 @@
-// File: engine/src/server/simulation_server/RebuildSystem.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/server/simulation_server/RebuildSystem.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "Internal.hpp"
 
-/// Description: Executes the rebuildSystem operation.
+/*
+ * @brief Documents the rebuild system operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::rebuildSystem()
 {
     // Important with the current CUDA global-buffer model:

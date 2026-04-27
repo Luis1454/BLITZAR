@@ -1,12 +1,22 @@
-// File: apps/client-host/main.cpp
-// Purpose: Application entry point or host support for BLITZAR executables.
+/*
+ * @file apps/client-host/main.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Application entry points and host executables for BLITZAR.
+ */
 
 #include "apps/client-host/client_host_cli.hpp"
 #include <exception>
 #include <iostream>
 #include <string>
 
-/// Description: Executes the main operation.
+/*
+ * @brief Documents the main operation contract.
+ * @param argc Input value used by this contract.
+ * @param argv Input value used by this contract.
+ * @return int value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 int main(int argc, char** argv)
 {
     try {

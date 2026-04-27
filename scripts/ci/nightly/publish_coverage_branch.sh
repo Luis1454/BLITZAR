@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# File: scripts/ci/nightly/publish_coverage_branch.sh
-# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+# @file scripts/ci/nightly/publish_coverage_branch.sh
+# @author Luis1454
+# @project BLITZAR
+# @brief Build, release, and CI helper automation for BLITZAR workflows.
 
 set -euo pipefail
 

@@ -1,5 +1,9 @@
-// File: runtime/src/client/ClientModuleHandleInternal.hpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/src/client/ClientModuleHandleInternal.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
+ */
 
 #ifndef GRAVITY_RUNTIME_SRC_CLIENT_CLIENTMODULEHANDLEINTERNAL_HPP_
 #define GRAVITY_RUNTIME_SRC_CLIENT_CLIENTMODULEHANDLEINTERNAL_HPP_
@@ -16,7 +20,6 @@
 namespace grav_module {
 constexpr std::size_t kErrorBufferSize = 1024u;
 
-/// Description: Defines the ClientModuleHandle data or behavior contract.
 struct ClientModuleHandle::Impl {
     grav_platform::DynamicLibrary library{};
     const ClientModuleExportsV1* exports = nullptr;
@@ -24,7 +27,6 @@ struct ClientModuleHandle::Impl {
     std::string path;
 };
 
-/// Description: Describes the error from buffer operation contract.
 std::string errorFromBuffer(const std::array<char, kErrorBufferSize>& buffer,
                             std::string_view fallback);
 } // namespace grav_module

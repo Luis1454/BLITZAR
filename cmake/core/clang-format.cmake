@@ -1,5 +1,7 @@
-# File: cmake/core/clang-format.cmake
-# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+# @file cmake/core/clang-format.cmake
+# @author Luis1454
+# @project BLITZAR
+# @brief CMake build orchestration for BLITZAR targets and tooling.
 
 # clang-format target for code style enforcement
 

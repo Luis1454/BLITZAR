@@ -1,5 +1,9 @@
-// File: engine/src/config/SimulationArgsParse.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/config/SimulationArgsParse.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Configuration parsing, validation, and serialization implementation.
+ */
 
 #include "config/SimulationArgsParse.hpp"
 #include "config/TextParse.hpp"
@@ -7,7 +11,12 @@
 #include <cctype>
 #include <limits>
 
-/// Description: Executes the toLower operation.
+/*
+ * @brief Documents the to lower operation contract.
+ * @param value Input value used by this contract.
+ * @return std::string SimulationArgsParse:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::string SimulationArgsParse::toLower(std::string value)
 {
     std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
@@ -16,7 +25,13 @@ std::string SimulationArgsParse::toLower(std::string value)
     return value;
 }
 
-/// Description: Executes the parseBool operation.
+/*
+ * @brief Documents the parse bool operation contract.
+ * @param value Input value used by this contract.
+ * @param out Input value used by this contract.
+ * @return bool SimulationArgsParse:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool SimulationArgsParse::parseBool(const std::string& value, bool& out)
 {
     const std::string normalized = SimulationArgsParse::toLower(value);
@@ -31,7 +46,13 @@ bool SimulationArgsParse::parseBool(const std::string& value, bool& out)
     return false;
 }
 
-/// Description: Executes the parseUint operation.
+/*
+ * @brief Documents the parse uint operation contract.
+ * @param value Input value used by this contract.
+ * @param out Input value used by this contract.
+ * @return bool SimulationArgsParse:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool SimulationArgsParse::parseUint(const std::string& value, std::uint32_t& out)
 {
     std::uint64_t parsed = 0;
@@ -45,7 +66,13 @@ bool SimulationArgsParse::parseUint(const std::string& value, std::uint32_t& out
     return true;
 }
 
-/// Description: Executes the parseInt operation.
+/*
+ * @brief Documents the parse int operation contract.
+ * @param value Input value used by this contract.
+ * @param out Input value used by this contract.
+ * @return bool SimulationArgsParse:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool SimulationArgsParse::parseInt(const std::string& value, int& out)
 {
     long long parsed = 0;
@@ -60,13 +87,26 @@ bool SimulationArgsParse::parseInt(const std::string& value, int& out)
     return true;
 }
 
-/// Description: Executes the parseFloat operation.
+/*
+ * @brief Documents the parse float operation contract.
+ * @param value Input value used by this contract.
+ * @param out Input value used by this contract.
+ * @return bool SimulationArgsParse:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool SimulationArgsParse::parseFloat(const std::string& value, float& out)
 {
     return grav_text::parseNumber(value, out);
 }
 
-/// Description: Executes the splitOption operation.
+/*
+ * @brief Documents the split option operation contract.
+ * @param raw Input value used by this contract.
+ * @param key Input value used by this contract.
+ * @param value Input value used by this contract.
+ * @return bool SimulationArgsParse:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool SimulationArgsParse::splitOption(const std::string& raw, std::string& key, std::string& value)
 {
     if (raw.rfind("--", 0) != 0) {
@@ -83,7 +123,15 @@ bool SimulationArgsParse::splitOption(const std::string& raw, std::string& key, 
     return true;
 }
 
-/// Description: Describes the read value operation contract.
+/*
+ * @brief Documents the read value operation contract.
+ * @param args Input value used by this contract.
+ * @param index Input value used by this contract.
+ * @param inlined Input value used by this contract.
+ * @param outValue Input value used by this contract.
+ * @return bool SimulationArgsParse:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool SimulationArgsParse::readValue(const std::vector<std::string_view>& args, std::size_t& index,
                                     const std::string& inlined, std::string& outValue)
 {

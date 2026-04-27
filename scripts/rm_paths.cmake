@@ -1,5 +1,7 @@
-# File: scripts/rm_paths.cmake
-# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+# @file scripts/rm_paths.cmake
+# @author Luis1454
+# @project BLITZAR
+# @brief Build, release, and CI helper automation for BLITZAR workflows.
 
 if(NOT DEFINED TARGETS OR "${TARGETS}" STREQUAL "")
     message(FATAL_ERROR "TARGETS must be provided (semicolon-separated list).")

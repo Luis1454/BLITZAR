@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/core/reporting.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/core/reporting.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -9,9 +11,14 @@ import sys
 from .models import CheckResult
 
 
-# Description: Defines the ResultReporter contract.
+# @brief Defines the result reporter type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class ResultReporter:
-    # Description: Executes the emit operation.
+    # @brief Documents the emit operation contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def emit(self, result: CheckResult) -> bool:
         if result.stdout:
             print(result.stdout, end="")
@@ -31,7 +38,10 @@ class ResultReporter:
         return result.ok
 
 
-# Description: Executes the emit_result operation.
+# @brief Documents the emit result operation contract.
+# @param result Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def emit_result(result: CheckResult) -> bool:
     return ResultReporter().emit(result)
 

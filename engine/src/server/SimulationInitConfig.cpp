@@ -1,5 +1,9 @@
-// File: engine/src/server/SimulationInitConfig.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/server/SimulationInitConfig.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "server/SimulationInitConfig.hpp"
 #include "config/SimulationConfig.hpp"
@@ -9,7 +13,12 @@
 #include <ostream>
 #include <sstream>
 
-/// Description: Executes the toLowerInitConfig operation.
+/*
+ * @brief Documents the to lower init config operation contract.
+ * @param value Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::string toLowerInitConfig(std::string value)
 {
     std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
@@ -18,7 +27,12 @@ std::string toLowerInitConfig(std::string value)
     return value;
 }
 
-/// Description: Executes the isSupportedInitMode operation.
+/*
+ * @brief Documents the is supported init mode operation contract.
+ * @param value Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static bool isSupportedInitMode(const std::string& value)
 {
     return value == "disk_orbit" || value == "random_cloud" || value == "two_body" ||
@@ -26,7 +40,15 @@ static bool isSupportedInitMode(const std::string& value)
            value == "solar_system" || value == "sph_collapse" || value == "file";
 }
 
-/// Description: Describes the normalize init field operation contract.
+/*
+ * @brief Documents the normalize init field operation contract.
+ * @param rawValue Input value used by this contract.
+ * @param fieldName Input value used by this contract.
+ * @param fallbackValue Input value used by this contract.
+ * @param log Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::string normalizeInitField(const std::string& rawValue, const char* fieldName,
                                       const char* fallbackValue, std::ostream& log)
 {
@@ -41,7 +63,12 @@ static std::string normalizeInitField(const std::string& rawValue, const char* f
     return fallbackValue;
 }
 
-/// Description: Executes the hasConfiguredInputFile operation.
+/*
+ * @brief Documents the has configured input file operation contract.
+ * @param value Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static bool hasConfiguredInputFile(const std::string& value)
 {
     return std::any_of(value.begin(), value.end(), [](unsigned char c) {
@@ -49,7 +76,16 @@ static bool hasConfiguredInputFile(const std::string& value)
     });
 }
 
-/// Description: Describes the summarize plan operation contract.
+/*
+ * @brief Documents the summarize plan operation contract.
+ * @param style Input value used by this contract.
+ * @param selector Input value used by this contract.
+ * @param mode Input value used by this contract.
+ * @param inputFile Input value used by this contract.
+ * @param inputFormat Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::string summarizePlan(const std::string& style, const std::string& selector,
                                  const std::string& mode, const std::string& inputFile,
                                  const std::string& inputFormat)
@@ -67,7 +103,13 @@ static std::string summarizePlan(const std::string& style, const std::string& se
     return out.str();
 }
 
-/// Description: Executes the resolveInitialStatePlan operation.
+/*
+ * @brief Documents the resolve initial state plan operation contract.
+ * @param config Input value used by this contract.
+ * @param log Input value used by this contract.
+ * @return ResolvedInitialStatePlan value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config, std::ostream& log)
 {
     ResolvedInitialStatePlan plan;
@@ -197,7 +239,12 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config,
     return plan;
 }
 
-/// Description: Executes the buildInitialStateConfig operation.
+/*
+ * @brief Documents the build initial state config operation contract.
+ * @param config Input value used by this contract.
+ * @return InitialStateConfig value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 InitialStateConfig buildInitialStateConfig(const SimulationConfig& config)
 {
     return resolveInitialStatePlan(config, std::cerr).config;

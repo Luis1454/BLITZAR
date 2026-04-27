@@ -1,3 +1,5 @@
 #!/usr/bin/env python3
-# File: tests/__init__.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/__init__.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.

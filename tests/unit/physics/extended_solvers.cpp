@@ -1,5 +1,9 @@
-// File: tests/unit/physics/extended_solvers.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/physics/extended_solvers.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "tests/support/physics_scenario.hpp"
 #include "tests/support/physics_test_utils.hpp"
@@ -8,7 +12,6 @@
 #include <string>
 
 namespace testsupport {
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_014_OctreeCpuDeterministicReplay)
 {
     ScenarioConfig cfg = buildDiskOrbitScenario(128u, 0.005f, 20u, 22222u, "octree_cpu", "rk4");
@@ -29,7 +32,6 @@ TEST(PhysicsTest, TST_UNT_PHYS_014_OctreeCpuDeterministicReplay)
     EXPECT_TRUE(haveExactReplayMatch(runA, runB, replayError)) << replayError;
 }
 
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_015_OctreeGpuDeterministicReplay)
 {
     ScenarioConfig cfg = buildDiskOrbitScenario(128u, 0.004f, 25u, 33333u, "octree_gpu", "euler");
@@ -53,7 +55,6 @@ TEST(PhysicsTest, TST_UNT_PHYS_015_OctreeGpuDeterministicReplay)
     EXPECT_TRUE(haveExactReplayMatch(runA, runB, replayError)) << replayError;
 }
 
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_016_SphStabilityBoundedDrift)
 {
     ScenarioConfig cfg = buildDiskOrbitScenario(96u, 0.002f, 30u, 44444u, "pairwise_cuda", "euler");

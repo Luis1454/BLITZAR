@@ -1,9 +1,18 @@
-// File: engine/src/server/simulation_server/SnapshotAndEnergy.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/server/simulation_server/SnapshotAndEnergy.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "Internal.hpp"
 
-/// Description: Executes the publishSnapshot operation.
+/*
+ * @brief Documents the publish snapshot operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::publishSnapshot()
 {
     if (!_system) {
@@ -46,7 +55,12 @@ void SimulationServer::publishSnapshot()
     _publishedSnapshot.swap(_scratchSnapshot);
 }
 
-/// Description: Executes the clearPublishedSnapshotCache operation.
+/*
+ * @brief Documents the clear published snapshot cache operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::clearPublishedSnapshotCache()
 {
     std::lock_guard<std::mutex> lock(_snapshotMutex);
@@ -54,7 +68,12 @@ void SimulationServer::clearPublishedSnapshotCache()
     _scratchSnapshot.clear();
 }
 
-/// Description: Executes the computeEnergyValues operation.
+/*
+ * @brief Documents the compute energy values operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return SimulationServer::EnergyValues SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
 {
     EnergyValues values{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, false};
@@ -148,7 +167,12 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
     return values;
 }
 
-/// Description: Executes the maybeUpdateEnergy operation.
+/*
+ * @brief Documents the maybe update energy operation contract.
+ * @param currentStep Input value used by this contract.
+ * @return void SimulationServer:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void SimulationServer::maybeUpdateEnergy(std::uint64_t currentStep)
 {
     const std::uint32_t every = _energyMeasureEverySteps.load(std::memory_order_relaxed);

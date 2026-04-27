@@ -1,12 +1,15 @@
-// File: rust/blitzar-protocol/src/v1/command.rs
-// Purpose: Rust component implementation for BLITZAR runtime services.
+/*
+ * @file rust/blitzar-protocol/src/v1/command.rs
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Rust protocol and gateway components for BLITZAR runtime integration.
+ */
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-/// Description: Defines the CommandRequest struct contract.
 pub struct CommandRequest {
     pub cmd: String,
     #[serde(default, skip_serializing_if = "String::is_empty")]

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: tests/checks/run.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/checks/run.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 from __future__ import annotations
 
@@ -20,7 +22,10 @@ from python_tools.core.reporting import ResultReporter
 from tests.checks.catalog import import_symbol, load_command_spec, load_command_specs
 
 
-# Description: Executes the _build_root_parser operation.
+# @brief Documents the build root parser operation contract.
+# @param None This contract does not take explicit parameters.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _build_root_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run catalog-driven repository quality commands.")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -52,7 +57,11 @@ def _build_root_parser() -> argparse.ArgumentParser:
     return parser
 
 
-# Description: Executes the _resolve_value operation.
+# @brief Documents the resolve value operation contract.
+# @param spec Input value used by this contract.
+# @param args Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _resolve_value(spec: dict[str, Any], args: argparse.Namespace) -> Any:
     source = spec["source"]
     if source == "arg":
@@ -74,21 +83,30 @@ def _resolve_value(spec: dict[str, Any], args: argparse.Namespace) -> Any:
     return value
 
 
-# Description: Executes the build_context operation.
+# @brief Documents the build context operation contract.
+# @param args Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def build_context(args: argparse.Namespace) -> CheckContext:
     spec = load_command_spec(args.command)
     payload = {field_name: _resolve_value(field_spec, args) for field_name, field_spec in spec["context"].items()}
     return CheckContext(**payload)
 
 
-# Description: Executes the build_check operation.
+# @brief Documents the build check operation contract.
+# @param args Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def build_check(args: argparse.Namespace) -> BaseCheck:
     spec = load_command_spec(args.command)
     check_type = cast(type[BaseCheck], import_symbol(spec["check"]))
     return check_type()
 
 
-# Description: Executes the main operation.
+# @brief Documents the main operation contract.
+# @param argv Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def main(argv: list[str] | None = None) -> int:
     parser = _build_root_parser()
     args = parser.parse_args(argv)

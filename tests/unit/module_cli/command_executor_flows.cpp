@@ -1,5 +1,9 @@
-// File: tests/unit/module_cli/command_executor_flows.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/module_cli/command_executor_flows.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "command/CommandContext.hpp"
 #include "command/CommandExecutor.hpp"
@@ -11,7 +15,6 @@
 #include <vector>
 
 namespace grav_test_module_cli_command_executor_flows {
-/// Description: Defines the FakeCommandTransport data or behavior contract.
 class FakeCommandTransport final : public grav_cmd::CommandTransport {
 public:
     bool connect(const std::string& host, std::uint16_t port) override
@@ -59,7 +62,6 @@ public:
     std::vector<ServerClientStatus> scriptedStatuses;
 };
 
-/// Description: Executes the parseSingle operation.
 static grav_cmd::CommandRequest parseSingle(const std::string& line)
 {
     const grav_cmd::CommandParseResult parsed = grav_cmd::CommandParser::parseLine(line, 1u);
@@ -68,7 +70,6 @@ static grav_cmd::CommandRequest parseSingle(const std::string& line)
     return parsed.requests.front();
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_013_HelpRendersCatalogAndReturnsSuccess)
 {
     FakeCommandTransport transport;
@@ -84,7 +85,6 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_013_HelpRendersCatalogAndReturnsSuc
     EXPECT_TRUE(transport.commandHistory.empty());
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_014_ConnectionCommandsHandleSuccessAndFailure)
 {
     FakeCommandTransport transport;
@@ -107,7 +107,6 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_014_ConnectionCommandsHandleSuccess
     EXPECT_EQ(reconnectResult.message, "reconnect failed");
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_015_ControlCommandsMapToProtocol)
 {
     FakeCommandTransport transport;
@@ -138,7 +137,6 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_015_ControlCommandsMapToProtocol)
     EXPECT_EQ(transport.commandHistory[7].second, "\"value\":42");
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_016_StatusReportsStateAndHandlesStatusFailure)
 {
     FakeCommandTransport transport;
@@ -170,7 +168,6 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_016_StatusReportsStateAndHandlesSta
     EXPECT_EQ(failedStatus.message, "status failed");
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_017_RunUntilAndSendCheckedFailurePaths)
 {
     FakeCommandTransport transport;
@@ -197,7 +194,6 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_017_RunUntilAndSendCheckedFailurePa
     EXPECT_EQ(commandFailure.message, "server command failed");
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_018_SetModeCommandsValidateAndMap)
 {
     FakeCommandTransport transport;
@@ -227,7 +223,6 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_018_SetModeCommandsValidateAndMap)
     EXPECT_EQ(transport.commandHistory[1].second, "\"value\":\"rk4\"");
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_019_ExportSnapshotUsesDerivedAndExplicitFormats)
 {
     FakeCommandTransport transport;
@@ -250,7 +245,6 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_019_ExportSnapshotUsesDerivedAndExp
               std::string::npos);
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_037_RunUntilPropagatesStatusErrorDetails)
 {
     FakeCommandTransport transport;
@@ -268,7 +262,6 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_037_RunUntilPropagatesStatusErrorDe
     EXPECT_EQ(transport.commandHistory[0].first, "pause");
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_038_SendCheckedReturnsServerErrorDetail)
 {
     FakeCommandTransport transport;
@@ -286,7 +279,6 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_038_SendCheckedReturnsServerErrorDe
     EXPECT_EQ(transport.commandHistory[0].first, "resume");
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_039_RunUntilReturnsImmediatelyWhenTargetAlreadyReached)
 {
     FakeCommandTransport transport;

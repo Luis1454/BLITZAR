@@ -1,9 +1,20 @@
-// File: engine/src/server/simulation_server/InitialStateGeneration.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/server/simulation_server/InitialStateGeneration.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "Internal.hpp"
 
-/// Description: Describes the build generated state operation contract.
+/*
+ * @brief Documents the build generated state operation contract.
+ * @param outParticles Input value used by this contract.
+ * @param particleCount Input value used by this contract.
+ * @param config Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t particleCount,
                          const InitialStateConfig& config)
 {
@@ -292,7 +303,13 @@ bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t part
     return outParticles.size() >= 2;
 }
 
-/// Description: Executes the atomicAddFloat operation.
+/*
+ * @brief Documents the atomic add float operation contract.
+ * @param atom Input value used by this contract.
+ * @param val Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void atomicAddFloat(std::atomic<float>& atom, float val)
 {
     float current = atom.load(std::memory_order_relaxed);

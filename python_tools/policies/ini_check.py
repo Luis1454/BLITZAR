@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/policies/ini_check.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/policies/ini_check.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -40,13 +42,19 @@ PERFORMANCE_PRESETS: dict[str, dict[str, str]] = {
 }
 
 
-# Description: Defines the IniCheck contract.
+# @brief Defines the ini check type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class IniCheck(BaseCheck):
     name = "ini"
     success_message = "simulation.ini validation OK"
     failure_title = "simulation.ini validation failed:"
 
-    # Description: Executes the _execute operation.
+    # @brief Documents the execute operation contract.
+    # @param context Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         config_path = context.config
         if config_path is None or not config_path.exists():
@@ -58,7 +66,10 @@ class IniCheck(BaseCheck):
         self._check_float_constraints(values, result)
         self._check_enum_constraints(values, result)
 
-    # Description: Executes the _parse_ini operation.
+    # @brief Documents the parse ini operation contract.
+    # @param content Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _parse_ini(self, content: str) -> dict[str, str]:
         values: dict[str, str] = {}
         for raw_line in content.splitlines():
@@ -76,7 +87,11 @@ class IniCheck(BaseCheck):
         self._apply_performance_defaults(values)
         return values
 
-    # Description: Executes the _parse_directive operation.
+    # @brief Documents the parse directive operation contract.
+    # @param line Input value used by this contract.
+    # @param values Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _parse_directive(self, line: str, values: dict[str, str]) -> bool:
         if "(" not in line or not line.endswith(")"):
             return False
@@ -147,7 +162,11 @@ class IniCheck(BaseCheck):
                 values[target] = args[key]
         return True
 
-    # Description: Executes the _consume_directive_arg operation.
+    # @brief Documents the consume directive arg operation contract.
+    # @param token Input value used by this contract.
+    # @param values Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _consume_directive_arg(self, token: str, values: dict[str, str]) -> None:
         entry = token.strip()
         if not entry or "=" not in entry:
@@ -158,7 +177,10 @@ class IniCheck(BaseCheck):
             cleaned = cleaned[1:-1]
         values[key.strip()] = cleaned
 
-    # Description: Executes the _apply_performance_defaults operation.
+    # @brief Documents the apply performance defaults operation contract.
+    # @param values Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _apply_performance_defaults(self, values: dict[str, str]) -> None:
         profile = values.get("performance_profile")
         if profile is None:
@@ -169,7 +191,11 @@ class IniCheck(BaseCheck):
         for key, value in preset.items():
             values.setdefault(key, value)
 
-    # Description: Executes the _check_required_keys operation.
+    # @brief Documents the check required keys operation contract.
+    # @param values Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_required_keys(self, values: dict[str, str], result: CheckResult) -> None:
         required_keys = (
             "particle_count", "dt", "solver", "integrator", "performance_profile", "octree_theta", "octree_softening",
@@ -180,7 +206,11 @@ class IniCheck(BaseCheck):
             if key not in values:
                 result.add_error(f"{key}: missing key")
 
-    # Description: Executes the _check_int_constraints operation.
+    # @brief Documents the check int constraints operation contract.
+    # @param values Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_int_constraints(self, values: dict[str, str], result: CheckResult) -> None:
         for key, minimum in (
             ("particle_count", 1), ("client_particle_cap", 1), ("ui_fps_limit", 1),
@@ -198,7 +228,11 @@ class IniCheck(BaseCheck):
             if int(raw) < minimum:
                 result.add_error(f"{key}: expected >= {minimum}, got {raw}")
 
-    # Description: Executes the _check_float_constraints operation.
+    # @brief Documents the check float constraints operation contract.
+    # @param values Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_float_constraints(self, values: dict[str, str], result: CheckResult) -> None:
         for key, minimum in (
             ("dt", 0.0), ("octree_theta", 0.0), ("octree_softening", 0.0), ("default_zoom", 0.0), ("default_luminosity", 0.0),
@@ -212,7 +246,11 @@ class IniCheck(BaseCheck):
             if float(raw) < minimum:
                 result.add_error(f"{key}: expected >= {minimum}, got {raw}")
 
-    # Description: Executes the _check_enum_constraints operation.
+    # @brief Documents the check enum constraints operation contract.
+    # @param values Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_enum_constraints(self, values: dict[str, str], result: CheckResult) -> None:
         enums = (
             ("solver", ("pairwise_cuda", "octree_gpu", "octree_cpu")),

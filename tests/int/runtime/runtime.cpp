@@ -1,5 +1,9 @@
-// File: tests/int/runtime/runtime.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/int/runtime/runtime.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "client/ClientRuntime.hpp"
 #include "tests/support/client_utils.hpp"
@@ -16,7 +20,6 @@
 #include <vector>
 
 namespace grav_test_client_runtime {
-/// Description: Describes the write snapshot pipeline config operation contract.
 static std::filesystem::path writeSnapshotPipelineConfig(const char* basename,
                                                          std::uint32_t queueCapacity,
                                                          const char* dropPolicy)
@@ -31,7 +34,6 @@ static std::filesystem::path writeSnapshotPipelineConfig(const char* basename,
     return path;
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAndSnapshot)
 {
     RealServerHarness server;
@@ -68,7 +70,6 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAn
     server.stop();
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_002_StartFailsWhenRemoteServerIsUnavailable)
 {
     RealServerHarness server;
@@ -82,7 +83,6 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_002_StartFailsWhenRemoteServerIsUnavailable
     EXPECT_EQ(runtime.linkStateLabel(), "reconnecting");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_003_ReconnectsWhenRealServerRestarts)
 {
     RealServerHarness server;
@@ -114,7 +114,6 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_003_ReconnectsWhenRealServerRestarts)
     server.stop();
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeToReachRealServer)
 {
     RealServerHarness server;
@@ -150,7 +149,6 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeToRe
     server.stop();
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_009_LatestOnlySnapshotQueueKeepsLatencyLowWhileDroppingBacklog)
 {
     RealServerHarness server;
@@ -182,7 +180,6 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_009_LatestOnlySnapshotQueueKeepsLatencyLowW
     std::filesystem::remove(configPath, ec);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_010_PacedSnapshotQueuePreservesBacklogAndReportsLatencyGrowth)
 {
     RealServerHarness server;
@@ -217,7 +214,6 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_010_PacedSnapshotQueuePreservesBacklogAndRe
     std::filesystem::remove(configPath, ec);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_011_BackendSnapshotPolicyReducesTransferForLowDrawCap)
 {
     RealServerHarness server;

@@ -1,5 +1,7 @@
-# File: cmake/win.cmake
-# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+# @file cmake/win.cmake
+# @author Luis1454
+# @project BLITZAR
+# @brief CMake build orchestration for BLITZAR targets and tooling.
 
 option(
     GRAVITY_WINDOWS_AUTODETECT_TOOLCHAIN
@@ -79,7 +81,6 @@ if(WIN32 AND GRAVITY_WINDOWS_AUTODETECT_TOOLCHAIN)
     endif()
 endif()
 
-# Description: Defines the gravity_populate_windows_toolchain_hints function helper.
 function(gravity_populate_windows_toolchain_hints)
     if(NOT WIN32)
         return()

@@ -1,5 +1,9 @@
-// File: modules/qt/ui/EnergyGraphWidgetPaint.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/EnergyGraphWidgetPaint.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "ui/EnergyGraphWidgetPaint.hpp"
 #include "ui/EnergyGraphWidget.hpp"
@@ -16,19 +20,16 @@
 #include <limits>
 
 namespace grav_qt {
-/// Description: Executes the isDarkTheme operation.
 static bool isDarkTheme(const QPalette& palette)
 {
     return palette.color(QPalette::Window).lightness() < 128;
 }
 
-/// Description: Executes the panelCurveColor operation.
 static QColor panelCurveColor(const QColor& darkColor, const QColor& lightColor, bool darkTheme)
 {
     return darkTheme ? darkColor : lightColor;
 }
 
-/// Description: Describes the paint operation contract.
 void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoint>& history,
                                    UiPaintEvent* event)
 {

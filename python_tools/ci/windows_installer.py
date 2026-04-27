@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/ci/windows_installer.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/ci/windows_installer.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -11,13 +13,23 @@ from collections.abc import Callable
 from pathlib import Path
 
 
-# Description: Defines the WindowsInstallerBuilder contract.
+# @brief Defines the windows installer builder type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class WindowsInstallerBuilder:
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param runner Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self, runner: Callable[..., subprocess.CompletedProcess[str]] | None = None) -> None:
         self._runner = runner if runner is not None else subprocess.run
 
-    # Description: Executes the build operation.
+    # @brief Documents the build operation contract.
+    # @param source_dir Input value used by this contract.
+    # @param output_dir Input value used by this contract.
+    # @param tag Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def build(self, source_dir: Path, output_dir: Path, tag: str) -> Path:
         source_dir = source_dir.resolve()
         output_dir = output_dir.resolve()
@@ -41,12 +53,18 @@ class WindowsInstallerBuilder:
         return installer_path
 
     @staticmethod
-    # Description: Executes the _script_path operation.
+    # @brief Documents the script path operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _script_path() -> Path:
         return Path(__file__).resolve().parents[2] / "scripts" / "install" / "windows" / "BLITZAR.nsi"
 
     @staticmethod
-    # Description: Executes the _locate_makensis operation.
+    # @brief Documents the locate makensis operation contract.
+    # @param None This contract does not take explicit parameters.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _locate_makensis() -> Path:
         candidate = shutil.which("makensis") or shutil.which("makensis.exe")
         if candidate:

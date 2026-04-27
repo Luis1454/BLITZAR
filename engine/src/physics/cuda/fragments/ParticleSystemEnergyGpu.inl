@@ -1,9 +1,25 @@
 /*
+ * @file engine/src/physics/cuda/fragments/ParticleSystemEnergyGpu.inl
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
+
+/*
  * Module: physics/cuda
  * Responsibility: Compute energy diagnostics from device buffers without host particle copies.
  */
 
-/// Description: Describes the compute kinetic thermal block sums kernel operation contract.
+/*
+ * @brief Documents the compute kinetic thermal block sums kernel operation contract.
+ * @param state Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @param specificHeat Input value used by this contract.
+ * @param kineticBlocks Input value used by this contract.
+ * @param thermalBlocks Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void computeKineticThermalBlockSumsKernel(
     ParticleSoAView state,
     int numParticles,
@@ -46,7 +62,18 @@ __global__ void computeKineticThermalBlockSumsKernel(
     }
 }
 
-/// Description: Describes the compute sample potential partials kernel operation contract.
+/*
+ * @brief Documents the compute sample potential partials kernel operation contract.
+ * @param state Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @param sampleCount Input value used by this contract.
+ * @param sampleStride Input value used by this contract.
+ * @param softening Input value used by this contract.
+ * @param minDistance2 Input value used by this contract.
+ * @param potentialPartials Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void computeSamplePotentialPartialsKernel(
     ParticleSoAView state,
     int numParticles,
@@ -88,7 +115,19 @@ __global__ void computeSamplePotentialPartialsKernel(
     potentialPartials[sampleA] = partial;
 }
 
-/// Description: Describes the compute energy estimate gpu operation contract.
+/*
+ * @brief Documents the compute energy estimate gpu operation contract.
+ * @param sampleLimit Input value used by this contract.
+ * @param softening Input value used by this contract.
+ * @param minDistance2 Input value used by this contract.
+ * @param specificHeat Input value used by this contract.
+ * @param kinetic Input value used by this contract.
+ * @param potential Input value used by this contract.
+ * @param thermal Input value used by this contract.
+ * @param estimated Input value used by this contract.
+ * @return bool ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ParticleSystem::computeEnergyEstimateGpu(
     std::size_t sampleLimit,
     float softening,

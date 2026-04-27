@@ -1,5 +1,9 @@
-// File: modules/qt/ui/WorkspaceLayoutStore.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/WorkspaceLayoutStore.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "ui/WorkspaceLayoutStore.hpp"
 
@@ -10,7 +14,6 @@
 
 namespace grav_qt {
 
-/// Description: Executes the WorkspaceLayoutStore operation.
 WorkspaceLayoutStore::WorkspaceLayoutStore(std::string configPath)
 {
     std::filesystem::path basePath = configPath.empty()
@@ -25,7 +28,6 @@ WorkspaceLayoutStore::WorkspaceLayoutStore(std::string configPath)
     _layoutsRoot = basePath / "workspace_layouts" / "qt";
 }
 
-/// Description: Executes the deletePreset operation.
 bool WorkspaceLayoutStore::deletePreset(const std::string& name) const
 {
     const std::filesystem::path path = presetPath(name);
@@ -33,7 +35,6 @@ bool WorkspaceLayoutStore::deletePreset(const std::string& name) const
     return std::filesystem::remove(path, ec) || !std::filesystem::exists(path);
 }
 
-/// Description: Describes the load preset operation contract.
 bool WorkspaceLayoutStore::loadPreset(const std::string& name, std::string& state,
                                       std::string& geometry) const
 {
@@ -52,7 +53,6 @@ bool WorkspaceLayoutStore::loadPreset(const std::string& name, std::string& stat
     return stateLoaded && geometryLoaded;
 }
 
-/// Description: Executes the listPresets operation.
 std::vector<std::string> WorkspaceLayoutStore::listPresets() const
 {
     std::vector<std::string> presets;
@@ -73,7 +73,6 @@ std::vector<std::string> WorkspaceLayoutStore::listPresets() const
     return presets;
 }
 
-/// Description: Describes the save preset operation contract.
 bool WorkspaceLayoutStore::savePreset(const std::string& name, const std::string& state,
                                       const std::string& geometry) const
 {
@@ -89,7 +88,6 @@ bool WorkspaceLayoutStore::savePreset(const std::string& name, const std::string
     return out.good();
 }
 
-/// Description: Executes the normalizeName operation.
 std::string WorkspaceLayoutStore::normalizeName(const std::string& name)
 {
     std::string normalized;
@@ -117,14 +115,12 @@ std::string WorkspaceLayoutStore::normalizeName(const std::string& name)
     return normalized;
 }
 
-/// Description: Executes the presetPath operation.
 std::filesystem::path WorkspaceLayoutStore::presetPath(const std::string& name) const
 {
     const std::string normalized = normalizeName(name);
     return _layoutsRoot / ((normalized.empty() ? std::string("default") : normalized) + ".layout");
 }
 
-/// Description: Describes the read value line operation contract.
 bool WorkspaceLayoutStore::readValueLine(const std::string& line, const char* prefix,
                                          std::string& out)
 {

@@ -1,11 +1,14 @@
-// File: engine/src/config/SimulationScenarioValidationRender.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/config/SimulationScenarioValidationRender.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Configuration parsing, validation, and serialization implementation.
+ */
 
 #include "config/SimulationScenarioValidationRender.hpp"
 #include <sstream>
 
 namespace grav_config {
-/// Description: Executes the render operation.
 std::string SimulationScenarioValidationRender::render(const ScenarioValidationReport& report)
 {
     std::ostringstream out;

@@ -1,5 +1,9 @@
-// File: rust/blitzar-protocol/src/v1/mod.rs
-// Purpose: Rust component implementation for BLITZAR runtime services.
+/*
+ * @file rust/blitzar-protocol/src/v1/mod.rs
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Rust protocol and gateway components for BLITZAR runtime integration.
+ */
 
 mod command;
 mod envelope;

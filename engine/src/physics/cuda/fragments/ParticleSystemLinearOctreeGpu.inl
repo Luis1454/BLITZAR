@@ -1,5 +1,9 @@
-// File: engine/src/physics/cuda/fragments/ParticleSystemLinearOctreeGpu.inl
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/physics/cuda/fragments/ParticleSystemLinearOctreeGpu.inl
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
 
 /*
  * Module: physics/cuda
@@ -19,23 +23,46 @@
 #include <thrust/transform_reduce.h>
 #include <thrust/tuple.h>
 
-/// Description: Defines the ThrustPoolAllocator data or behavior contract.
+/*
+ * @brief Defines the thrust pool allocator type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct ThrustPoolAllocator {
     typedef char value_type;
 
+    /*
+     * @brief Documents the allocate operation contract.
+     * @param numBytes Input value used by this contract.
+     * @return char* value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+     */
     char* allocate(std::ptrdiff_t numBytes)
     {
         const std::size_t bytes = static_cast<std::size_t>(std::max<std::ptrdiff_t>(0, numBytes));
         return static_cast<char*>(grav_x::CudaMemoryPool::allocate(bytes));
     }
 
+    /*
+     * @brief Documents the deallocate operation contract.
+     * @param ptr Input value used by this contract.
+     * @param size_t Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+     */
     void deallocate(char* ptr, std::size_t)
     {
         grav_x::CudaMemoryPool::deallocate(ptr);
     }
 };
 
-/// Description: Defines the OctreeAabb data or behavior contract.
+/*
+ * @brief Defines the octree aabb type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct OctreeAabb {
     float minX;
     float minY;
@@ -45,8 +72,19 @@ struct OctreeAabb {
     float maxZ;
 };
 
-/// Description: Defines the OctreeAabbFromTuple data or behavior contract.
+/*
+ * @brief Defines the octree aabb from tuple type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct OctreeAabbFromTuple {
+    /*
+     * @brief Documents the operator operation contract.
+     * @param value Input value used by this contract.
+     * @return OctreeAabb value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+     */
     __host__ __device__ OctreeAabb operator()(const thrust::tuple<float, float, float>& value) const
     {
         const float x = thrust::get<0>(value);
@@ -63,8 +101,19 @@ struct OctreeAabbFromTuple {
     }
 };
 
-/// Description: Defines the OctreeAabbMerge data or behavior contract.
+/*
+ * @brief Defines the octree aabb merge type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct OctreeAabbMerge {
+    /*
+     * @brief Documents the operator operation contract.
+     * @param rhs Input value used by this contract.
+     * @return OctreeAabb value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+     */
     __host__ __device__ OctreeAabb operator()(const OctreeAabb& lhs, const OctreeAabb& rhs) const
     {
         OctreeAabb out{};
@@ -78,7 +127,21 @@ struct OctreeAabbMerge {
     }
 };
 
-/// Description: Describes the build morton codes kernel operation contract.
+/*
+ * @brief Documents the build morton codes kernel operation contract.
+ * @param state Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @param minX Input value used by this contract.
+ * @param minY Input value used by this contract.
+ * @param minZ Input value used by this contract.
+ * @param maxX Input value used by this contract.
+ * @param maxY Input value used by this contract.
+ * @param maxZ Input value used by this contract.
+ * @param mortonKeys Input value used by this contract.
+ * @param particleIndices Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void buildMortonCodesKernel(ParticleSoAView state, int numParticles, float minX,
                                        float minY, float minZ, float maxX, float maxY, float maxZ,
                                        unsigned long long* mortonKeys, int* particleIndices)
@@ -105,7 +168,15 @@ __global__ void buildMortonCodesKernel(ParticleSoAView state, int numParticles, 
     particleIndices[i] = i;
 }
 
-/// Description: Describes the build leaf prefixes kernel operation contract.
+/*
+ * @brief Documents the build leaf prefixes kernel operation contract.
+ * @param sortedKeys Input value used by this contract.
+ * @param count Input value used by this contract.
+ * @param shiftBits Input value used by this contract.
+ * @param outLeafPrefixes Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void buildLeafPrefixesKernel(const unsigned long long* sortedKeys, int count,
                                         int shiftBits, unsigned long long* outLeafPrefixes)
 {
@@ -116,7 +187,14 @@ __global__ void buildLeafPrefixesKernel(const unsigned long long* sortedKeys, in
     outLeafPrefixes[i] = sortedKeys[i] >> shiftBits;
 }
 
-/// Description: Describes the build parent prefixes kernel operation contract.
+/*
+ * @brief Documents the build parent prefixes kernel operation contract.
+ * @param currentPrefixes Input value used by this contract.
+ * @param count Input value used by this contract.
+ * @param outParentPrefixes Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void buildParentPrefixesKernel(const unsigned long long* currentPrefixes, int count,
                                           unsigned long long* outParentPrefixes)
 {
@@ -127,7 +205,13 @@ __global__ void buildParentPrefixesKernel(const unsigned long long* currentPrefi
     outParentPrefixes[i] = currentPrefixes[i] >> 3;
 }
 
-/// Description: Executes the initLevelIndicesKernel operation.
+/*
+ * @brief Documents the init level indices kernel operation contract.
+ * @param levelIndices Input value used by this contract.
+ * @param count Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void initLevelIndicesKernel(int* levelIndices, int count)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -136,7 +220,17 @@ __global__ void initLevelIndicesKernel(int* levelIndices, int count)
     }
 }
 
-/// Description: Describes the build linear octree leaf nodes kernel operation contract.
+/*
+ * @brief Documents the build linear octree leaf nodes kernel operation contract.
+ * @param nodes Input value used by this contract.
+ * @param sortedParticleIndices Input value used by this contract.
+ * @param leafStarts Input value used by this contract.
+ * @param leafCounts Input value used by this contract.
+ * @param state Input value used by this contract.
+ * @param leafCount Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void buildLinearOctreeLeafNodesKernel(OctreeNodeHandle nodes,
                                                  IndexConstHandle sortedParticleIndices,
                                                  IndexConstHandle leafStarts,
@@ -213,7 +307,19 @@ __global__ void buildLinearOctreeLeafNodesKernel(OctreeNodeHandle nodes,
     nodes[leafId] = node;
 }
 
-/// Description: Describes the build linear octree parent nodes kernel8 operation contract.
+/*
+ * @brief Documents the build linear octree parent nodes kernel8 operation contract.
+ * @param nodes Input value used by this contract.
+ * @param currentLevelIndices Input value used by this contract.
+ * @param currentPrefixes Input value used by this contract.
+ * @param parentOffsets Input value used by this contract.
+ * @param parentCounts Input value used by this contract.
+ * @param parentCount Input value used by this contract.
+ * @param parentNodeBase Input value used by this contract.
+ * @param nextLevelIndices Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void buildLinearOctreeParentNodesKernel8(OctreeNodeHandle nodes,
                                                     IndexConstHandle currentLevelIndices,
                                                     const unsigned long long* currentPrefixes,
@@ -312,7 +418,14 @@ __global__ void buildLinearOctreeParentNodesKernel8(OctreeNodeHandle nodes,
     nextLevelIndices[parentId] = nodeIndex;
 }
 
-/// Description: Executes the buildLinearOctreeNextLinksKernel operation.
+/*
+ * @brief Documents the build linear octree next links kernel operation contract.
+ * @param nodes Input value used by this contract.
+ * @param nodeCount Input value used by this contract.
+ * @param rootIndex Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void buildLinearOctreeNextLinksKernel(OctreeNodeHandle nodes, int nodeCount, int rootIndex)
 {
     const int nodeIndex = blockIdx.x * blockDim.x + threadIdx.x;
@@ -360,7 +473,18 @@ __global__ void buildLinearOctreeNextLinksKernel(OctreeNodeHandle nodes, int nod
     nodes[nodeIndex].nextIndex = nextIndex;
 }
 
-/// Description: Describes the pack linear octree compact kernel operation contract.
+/*
+ * @brief Documents the pack linear octree compact kernel operation contract.
+ * @param nodes Input value used by this contract.
+ * @param nodeCount Input value used by this contract.
+ * @param hot Input value used by this contract.
+ * @param nav Input value used by this contract.
+ * @param firstChild Input value used by this contract.
+ * @param leafStarts Input value used by this contract.
+ * @param leafCounts Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void packLinearOctreeCompactKernel(
     const GpuOctreeNode* nodes,
     int nodeCount,
@@ -405,7 +529,13 @@ __global__ void packLinearOctreeCompactKernel(
     leafCounts[nodeIndex] = node.leafCount;
 }
 
-/// Description: Executes the buildLinearOctreeGpu operation.
+/*
+ * @brief Documents the build linear octree gpu operation contract.
+ * @param currentView Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @return bool ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numParticles)
 {
     cudaStream_t stream = 0;

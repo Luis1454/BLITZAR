@@ -1,4 +1,11 @@
 /*
+ * @file engine/src/physics/cuda/fragments/ParticleSystemTiledAcceleration.inl
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
+
+/*
  * Module: physics/cuda
  * Responsibility: Optimized tiled pairwise acceleration with shared memory and warp shuffles.
  */
@@ -6,7 +13,12 @@
 #include <cuda_runtime.h>
 
 // Warp shuffle reduction for single float (0xffffffff = warp mask for sm_86 32-thread warps)
-/// Description: Describes the warp reduce sum operation contract.
+/*
+ * @brief Documents the warp reduce sum operation contract.
+ * @param val Input value used by this contract.
+ * @return float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __device__ __forceinline__ float warp_reduce_sum(float val) {
     for (int offset = warpSize / 2; offset > 0; offset /= 2) {
         val += __shfl_down_sync(0xffffffff, val, offset);
@@ -15,7 +27,12 @@ __device__ __forceinline__ float warp_reduce_sum(float val) {
 }
 
 // Warp shuffle reduction for Vector3
-/// Description: Describes the warp reduce vec3 operation contract.
+/*
+ * @brief Documents the warp reduce vec3 operation contract.
+ * @param val Input value used by this contract.
+ * @return Vector3 value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __device__ __forceinline__ Vector3 warp_reduce_vec3(Vector3 val) {
     val.x = warp_reduce_sum(val.x);
     val.y = warp_reduce_sum(val.y);
@@ -24,7 +41,16 @@ __device__ __forceinline__ Vector3 warp_reduce_vec3(Vector3 val) {
 }
 
 // Optimized tiled pairwise acceleration kernel with shared memory and warp shuffles
-/// Description: Describes the compute pairwise acceleration kernel tiled operation contract.
+/*
+ * @brief Documents the compute pairwise acceleration kernel tiled operation contract.
+ * @param state Input value used by this contract.
+ * @param outAcceleration Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @param policy Input value used by this contract.
+ * @param maxAcceleration Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void computePairwiseAccelerationKernelTiled(
     ParticleSoAView state,
     Vector3Handle outAcceleration,
@@ -94,7 +120,16 @@ __global__ void computePairwiseAccelerationKernelTiled(
 }
 
 // Alternative: Optimized pairwise acceleration with warp-level reduction for intermediate results
-/// Description: Describes the compute pairwise acceleration kernel warp reduced operation contract.
+/*
+ * @brief Documents the compute pairwise acceleration kernel warp reduced operation contract.
+ * @param state Input value used by this contract.
+ * @param outAcceleration Input value used by this contract.
+ * @param numParticles Input value used by this contract.
+ * @param policy Input value used by this contract.
+ * @param maxAcceleration Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 __global__ void computePairwiseAccelerationKernelWarpReduced(
     ParticleSoAView state,
     Vector3Handle outAcceleration,

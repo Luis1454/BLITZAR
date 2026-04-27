@@ -1,5 +1,9 @@
-// File: modules/qt/ui/MainWindowPresenter.cpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/ui/MainWindowPresenter.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #include "ui/MainWindowPresenter.hpp"
 #include "types/SimulationTypes.hpp"
@@ -11,7 +15,6 @@
 #include <sstream>
 
 namespace grav_qt {
-/// Description: Defines the MainWindowPresenterLocal data or behavior contract.
 class MainWindowPresenterLocal final {
 public:
     static bool hasAge(std::uint32_t ageMs)
@@ -121,7 +124,6 @@ public:
     }
 };
 
-/// Description: Executes the present operation.
 MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentationInput& input) const
 {
     const bool staleStats = MainWindowPresenterLocal::isStale(input.statsAgeMs);

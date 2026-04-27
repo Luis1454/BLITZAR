@@ -1,5 +1,9 @@
-// File: apps/client-host/client_host_module_ops.cpp
-// Purpose: Application entry point or host support for BLITZAR executables.
+/*
+ * @file apps/client-host/client_host_module_ops.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Application entry points and host executables for BLITZAR.
+ */
 
 #include "apps/client-host/client_host_module_ops.hpp"
 #include "apps/client-host/client_host_cli_text.hpp"
@@ -10,7 +14,6 @@
 #include <utility>
 
 namespace grav_client_host {
-/// Description: Defines the ClientHostModuleOpsLocal data or behavior contract.
 class ClientHostModuleOpsLocal final {
 public:
     static std::vector<std::string> moduleFilenameCandidatesForAlias(const std::string& alias)
@@ -122,27 +125,23 @@ public:
 };
 
 std::vector<std::filesystem::path>
-/// Description: Executes the buildSearchRoots operation.
 ClientHostModuleOps::buildSearchRoots(std::string_view programName)
 {
     return ClientHostModuleOpsLocal::buildSearchRoots(programName);
 }
 
 std::string
-/// Description: Describes the resolve module specifier operation contract.
 ClientHostModuleOps::resolveModuleSpecifier(const std::string& rawSpecifier,
                                             const std::vector<std::filesystem::path>& searchRoots)
 {
     return ClientHostModuleOpsLocal::resolveModuleSpecifier(rawSpecifier, searchRoots);
 }
 
-/// Description: Executes the expectedModuleIdForSpecifier operation.
 std::string ClientHostModuleOps::expectedModuleIdForSpecifier(const std::string& rawSpecifier)
 {
     return ClientHostModuleOpsLocal::expectedModuleIdForSpecifier(rawSpecifier);
 }
 
-/// Description: Describes the switch module operation contract.
 bool ClientHostModuleOps::switchModule(const std::string& moduleSpecifier,
                                        const std::string& configPath,
                                        const std::vector<std::filesystem::path>& searchRoots,
@@ -151,7 +150,6 @@ bool ClientHostModuleOps::switchModule(const std::string& moduleSpecifier,
     return ClientHostModuleOpsLocal::switchModule(moduleSpecifier, configPath, searchRoots, module);
 }
 
-/// Description: Describes the reload module operation contract.
 bool ClientHostModuleOps::reloadModule(const std::string& currentModuleSpecifier,
                                        const std::string& configPath,
                                        const std::vector<std::filesystem::path>& searchRoots,

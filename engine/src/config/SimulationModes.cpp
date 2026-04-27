@@ -1,8 +1,20 @@
+/*
+ * @file engine/src/config/SimulationModes.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Configuration parsing, validation, and serialization implementation.
+ */
+
 #include "config/SimulationModes.hpp"
 #include <algorithm>
 #include <cctype>
 
-/// Description: Executes the toLowerTrimmed operation.
+/*
+ * @brief Documents the to lower trimmed operation contract.
+ * @param value Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::string toLowerTrimmed(std::string_view value)
 {
     std::size_t begin = 0u;
@@ -30,7 +42,6 @@ const std::string_view kIntegratorLeapfrog = "leapfrog";
 const std::string_view kOctreeCriterionCom = "com";
 const std::string_view kOctreeCriterionBounds = "bounds";
 
-/// Description: Executes the normalizeSolver operation.
 bool normalizeSolver(std::string_view value, std::string& outCanonical)
 {
     const std::string normalized = toLowerTrimmed(value);
@@ -50,7 +61,6 @@ bool normalizeSolver(std::string_view value, std::string& outCanonical)
     return false;
 }
 
-/// Description: Executes the normalizeIntegrator operation.
 bool normalizeIntegrator(std::string_view value, std::string& outCanonical)
 {
     const std::string normalized = toLowerTrimmed(value);
@@ -69,7 +79,6 @@ bool normalizeIntegrator(std::string_view value, std::string& outCanonical)
     return false;
 }
 
-/// Description: Executes the normalizeOctreeOpeningCriterion operation.
 bool normalizeOctreeOpeningCriterion(std::string_view value, std::string& outCanonical)
 {
     const std::string normalized = toLowerTrimmed(value);
@@ -86,7 +95,6 @@ bool normalizeOctreeOpeningCriterion(std::string_view value, std::string& outCan
     return false;
 }
 
-/// Description: Executes the isSupportedSolverIntegratorPair operation.
 bool isSupportedSolverIntegratorPair(std::string_view solver, std::string_view integrator)
 {
     return !(solver == kSolverOctreeGpu && integrator == kIntegratorRk4);

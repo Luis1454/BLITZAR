@@ -1,5 +1,9 @@
-// File: engine/src/platform/common/DynamicLibraryCommon.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/platform/common/DynamicLibraryCommon.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Platform abstraction implementation for portable runtime services.
+ */
 
 #include "platform/common/DynamicLibraryCommon.hpp"
 #include "platform/PlatformErrors.hpp"
@@ -9,20 +13,16 @@
 #include <utility>
 
 namespace grav_platform {
-/// Description: Defines the DynamicLibrary data or behavior contract.
 struct DynamicLibrary::Impl {
     grav_platform_detail::NativeLibraryHandle handle = 0u;
 };
 
-/// Description: Executes the DynamicLibrary operation.
 DynamicLibrary::DynamicLibrary() : _impl(std::make_unique<Impl>())
 {
 }
 
-/// Description: Describes the destroy  dynamic library operation contract.
 DynamicLibrary::~DynamicLibrary() = default;
 
-/// Description: Executes the DynamicLibrary operation.
 DynamicLibrary::DynamicLibrary(DynamicLibrary&& other) noexcept : _impl(std::move(other._impl))
 {
 }
@@ -34,7 +34,6 @@ DynamicLibrary& DynamicLibrary::operator=(DynamicLibrary&& other) noexcept
     return *this;
 }
 
-/// Description: Executes the open operation.
 bool DynamicLibrary::open(const std::string& path, std::string& outError)
 {
     try {
@@ -59,7 +58,6 @@ bool DynamicLibrary::open(const std::string& path, std::string& outError)
     }
 }
 
-/// Description: Executes the close operation.
 void DynamicLibrary::close()
 {
     if (_impl) {
@@ -67,13 +65,11 @@ void DynamicLibrary::close()
     }
 }
 
-/// Description: Executes the isOpen operation.
 bool DynamicLibrary::isOpen() const
 {
     return _impl && grav_platform_detail::isDynamicLibraryOpen(_impl->handle);
 }
 
-/// Description: Describes the load symbol address operation contract.
 bool DynamicLibrary::loadSymbolAddress(std::string_view name, std::uintptr_t& outSymbol,
                                        std::string& outError) const
 {
@@ -85,7 +81,6 @@ bool DynamicLibrary::loadSymbolAddress(std::string_view name, std::uintptr_t& ou
     return loadRawSymbol(name, outSymbol, outError);
 }
 
-/// Description: Describes the load raw symbol operation contract.
 bool DynamicLibrary::loadRawSymbol(std::string_view name, std::uintptr_t& outSymbol,
                                    std::string& outError) const
 {

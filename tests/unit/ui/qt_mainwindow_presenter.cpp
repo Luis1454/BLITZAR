@@ -1,5 +1,9 @@
-// File: tests/unit/ui/qt_mainwindow_presenter.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/ui/qt_mainwindow_presenter.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "ui/MainWindowPresenter.hpp"
 #include <gtest/gtest.h>
@@ -7,7 +11,6 @@
 #include <string>
 
 namespace grav_test_qt_ui {
-/// Description: Executes the TEST operation.
 TEST(QtUiLogicTest, TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeState)
 {
     grav_qt::MainWindowPresentationInput input;
@@ -95,7 +98,6 @@ TEST(QtUiLogicTest, TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeStat
     EXPECT_NE(presentation.consoleTrace.find("drop_policy=latest-only"), std::string::npos);
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtUiLogicTest, TST_UNT_UI_005_PresenterHighlightsStaleBackendAndKnownHorizonEta)
 {
     grav_qt::MainWindowPresentationInput input;
@@ -148,7 +150,6 @@ TEST(QtUiLogicTest, TST_UNT_UI_005_PresenterHighlightsStaleBackendAndKnownHorizo
         << presentation.consoleTrace;
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtUiLogicTest, TST_UNT_UI_008_PresenterReportsGpuTelemetryWaitingState)
 {
     grav_qt::MainWindowPresentationInput input;

@@ -1,11 +1,14 @@
-// File: tests/unit/config/simulation_profile.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/config/simulation_profile.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationProfile.hpp"
 #include <gtest/gtest.h>
 
-/// Description: Executes the TEST operation.
 TEST(SimulationProfileTest, TST_UNT_CONF_046_NormalizeDiskOrbitProfile)
 {
     std::string canonical;
@@ -15,7 +18,6 @@ TEST(SimulationProfileTest, TST_UNT_CONF_046_NormalizeDiskOrbitProfile)
     EXPECT_EQ(canonical, grav_config::kSimulationProfileDiskOrbit);
 }
 
-/// Description: Executes the TEST operation.
 TEST(SimulationProfileTest, TST_UNT_CONF_047_NormalizeProfilesAllValid)
 {
     std::string canonical;
@@ -31,7 +33,6 @@ TEST(SimulationProfileTest, TST_UNT_CONF_047_NormalizeProfilesAllValid)
     EXPECT_EQ(canonical, grav_config::kSimulationProfileSphCollapse);
 }
 
-/// Description: Executes the TEST operation.
 TEST(SimulationProfileTest, TST_UNT_CONF_048_NormalizeRejectsInvalid)
 {
     std::string canonical = "kept";
@@ -41,7 +42,6 @@ TEST(SimulationProfileTest, TST_UNT_CONF_048_NormalizeRejectsInvalid)
     EXPECT_FALSE(grav_config::normalizeSimulationProfile("disk_orbit_typo", canonical));
 }
 
-/// Description: Executes the TEST operation.
 TEST(SimulationProfileTest, TST_UNT_CONF_049_ApplySimulationProfileDiskOrbit)
 {
     SimulationConfig config;
@@ -52,7 +52,6 @@ TEST(SimulationProfileTest, TST_UNT_CONF_049_ApplySimulationProfileDiskOrbit)
     EXPECT_EQ(config.solver, "pairwise_cuda");
 }
 
-/// Description: Executes the TEST operation.
 TEST(SimulationProfileTest, TST_UNT_CONF_050_ApplySimulationProfileGalaxyCollision)
 {
     SimulationConfig config;
@@ -61,7 +60,6 @@ TEST(SimulationProfileTest, TST_UNT_CONF_050_ApplySimulationProfileGalaxyCollisi
     EXPECT_EQ(config.particleCount, 40000u);
 }
 
-/// Description: Executes the TEST operation.
 TEST(SimulationProfileTest, TST_UNT_CONF_051_ApplySimulationProfilePlummerSphere)
 {
     SimulationConfig config;
@@ -71,7 +69,6 @@ TEST(SimulationProfileTest, TST_UNT_CONF_051_ApplySimulationProfilePlummerSphere
     EXPECT_EQ(config.solver, "octree_gpu");
 }
 
-/// Description: Executes the TEST operation.
 TEST(SimulationProfileTest, TST_UNT_CONF_052_ApplySimulationProfileBinaryStar)
 {
     SimulationConfig config;
@@ -80,7 +77,6 @@ TEST(SimulationProfileTest, TST_UNT_CONF_052_ApplySimulationProfileBinaryStar)
     EXPECT_EQ(config.particleCount, 2u);
 }
 
-/// Description: Executes the TEST operation.
 TEST(SimulationProfileTest, TST_UNT_CONF_053_ApplySimulationProfileSolarSystem)
 {
     SimulationConfig config;
@@ -91,7 +87,6 @@ TEST(SimulationProfileTest, TST_UNT_CONF_053_ApplySimulationProfileSolarSystem)
     EXPECT_EQ(config.dt, 0.0001f);
 }
 
-/// Description: Executes the TEST operation.
 TEST(SimulationProfileTest, TST_UNT_CONF_054_ApplySimulationProfileUnknownIsNoOp)
 {
     SimulationConfig config;

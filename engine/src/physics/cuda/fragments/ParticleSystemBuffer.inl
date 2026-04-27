@@ -1,5 +1,9 @@
-// File: engine/src/physics/cuda/fragments/ParticleSystemBuffer.inl
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/physics/cuda/fragments/ParticleSystemBuffer.inl
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
 
 /*
  * Module: physics/cuda
@@ -17,13 +21,23 @@ constexpr std::size_t kPlanAEnergySampleLimit = 4096u;
 constexpr int kDefaultOctreeLeafCapacity = 256;
 constexpr int kPlanBOctreeLeafCapacity = 4096;
 
-/// Description: Executes the bytesToMiB operation.
+/*
+ * @brief Documents the bytes to mi b operation contract.
+ * @param bytes Input value used by this contract.
+ * @return double value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static double bytesToMiB(std::size_t bytes)
 {
     return static_cast<double>(bytes) / (1024.0 * 1024.0);
 }
 
-/// Description: Executes the cudaRuntimeAvailable operation.
+/*
+ * @brief Documents the cuda runtime available operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static bool cudaRuntimeAvailable()
 {
     int deviceCount = 0;
@@ -38,7 +52,20 @@ static bool cudaRuntimeAvailable()
     return false;
 }
 
-/// Description: Describes the estimate memory usage operation contract.
+/*
+ * @brief Documents the estimate memory usage operation contract.
+ * @param particleCount Input value used by this contract.
+ * @param sphEnabled Input value used by this contract.
+ * @param solverMode Input value used by this contract.
+ * @param integratorMode Input value used by this contract.
+ * @param energySampleLimit Input value used by this contract.
+ * @param octreeLeafCapacity Input value used by this contract.
+ * @param baseAndIntegratorBytes Input value used by this contract.
+ * @param sphBytes Input value used by this contract.
+ * @param octreeBytes Input value used by this contract.
+ * @return std::size_t ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::size_t ParticleSystem::estimateMemoryUsage(
     std::size_t particleCount,
     bool sphEnabled,
@@ -125,7 +152,16 @@ std::size_t ParticleSystem::estimateMemoryUsage(
     return total;
 }
 
-/// Description: Describes the format memory breakdown operation contract.
+/*
+ * @brief Documents the format memory breakdown operation contract.
+ * @param baseAndIntegratorBytes Input value used by this contract.
+ * @param sphBytes Input value used by this contract.
+ * @param octreeBytes Input value used by this contract.
+ * @param totalBytes Input value used by this contract.
+ * @param budgetBytes Input value used by this contract.
+ * @return std::string ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::string ParticleSystem::formatMemoryBreakdown(
     std::size_t baseAndIntegratorBytes,
     std::size_t sphBytes,
@@ -143,7 +179,12 @@ std::string ParticleSystem::formatMemoryBreakdown(
     return out.str();
 }
 
-/// Description: Executes the initializeRuntimeState operation.
+/*
+ * @brief Documents the initialize runtime state operation contract.
+ * @param particleCapacity Input value used by this contract.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
 {
     _cudaRuntimeAvailable = cudaRuntimeAvailable();
@@ -364,7 +405,12 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
     }
 }
 
-/// Description: Executes the allocateParticleBuffers operation.
+/*
+ * @brief Documents the allocate particle buffers operation contract.
+ * @param particleCapacity Input value used by this contract.
+ * @return bool ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ParticleSystem::allocateParticleBuffers(std::size_t particleCapacity)
 {
     if (!_cudaRuntimeAvailable) {
@@ -398,7 +444,12 @@ bool ParticleSystem::allocateParticleBuffers(std::size_t particleCapacity)
     return true;
 }
 
-/// Description: Executes the releaseParticleBuffers operation.
+/*
+ * @brief Documents the release particle buffers operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ParticleSystem::releaseParticleBuffers()
 {
     releaseRk4Buffers();
@@ -508,7 +559,12 @@ void ParticleSystem::releaseParticleBuffers()
     releaseMappedMetrics();
 }
 
-/// Description: Executes the allocateMappedMetrics operation.
+/*
+ * @brief Documents the allocate mapped metrics operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return bool ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ParticleSystem::allocateMappedMetrics()
 {
     if (!_cudaRuntimeAvailable) {
@@ -540,7 +596,12 @@ bool ParticleSystem::allocateMappedMetrics()
     return true;
 }
 
-/// Description: Executes the releaseMappedMetrics operation.
+/*
+ * @brief Documents the release mapped metrics operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ParticleSystem::releaseMappedMetrics()
 {
     if (_mappedMetricsHost != nullptr) {
@@ -552,7 +613,12 @@ void ParticleSystem::releaseMappedMetrics()
     _metricsSimTime = 0.0f;
 }
 
-/// Description: Executes the ensureLinearOctreeScratchCapacity operation.
+/*
+ * @brief Documents the ensure linear octree scratch capacity operation contract.
+ * @param numParticles Input value used by this contract.
+ * @return bool ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
 {
     if (!_cudaRuntimeAvailable) {
@@ -756,7 +822,13 @@ bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
     return true;
 }
 
-/// Description: Executes the ensureEnergyScratchCapacity operation.
+/*
+ * @brief Documents the ensure energy scratch capacity operation contract.
+ * @param numParticles Input value used by this contract.
+ * @param sampleCount Input value used by this contract.
+ * @return bool ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ParticleSystem::ensureEnergyScratchCapacity(int numParticles, int sampleCount)
 {
     if (!_cudaRuntimeAvailable) {
@@ -812,7 +884,12 @@ bool ParticleSystem::ensureEnergyScratchCapacity(int numParticles, int sampleCou
     return true;
 }
 
-/// Description: Executes the allocateRk4Buffers operation.
+/*
+ * @brief Documents the allocate rk4 buffers operation contract.
+ * @param numParticles Input value used by this contract.
+ * @return bool ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ParticleSystem::allocateRk4Buffers(int numParticles)
 {
     if (!_cudaRuntimeAvailable) {
@@ -840,7 +917,12 @@ bool ParticleSystem::allocateRk4Buffers(int numParticles)
     return true;
 }
 
-/// Description: Executes the releaseRk4Buffers operation.
+/*
+ * @brief Documents the release rk4 buffers operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ParticleSystem::releaseRk4Buffers()
 {
     if (d_stage) { grav_x::CudaMemoryPool::deallocate(d_stage); d_stage = nullptr; }
@@ -855,7 +937,12 @@ void ParticleSystem::releaseRk4Buffers()
     if (d_vHalf) { grav_x::CudaMemoryPool::deallocate(d_vHalf); d_vHalf = nullptr; }
 }
 
-/// Description: Executes the allocateSphBuffers operation.
+/*
+ * @brief Documents the allocate sph buffers operation contract.
+ * @param numParticles Input value used by this contract.
+ * @return bool ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ParticleSystem::allocateSphBuffers(int numParticles)
 {
     if (!_cudaRuntimeAvailable) {
@@ -872,14 +959,24 @@ bool ParticleSystem::allocateSphBuffers(int numParticles)
     return true;
 }
 
-/// Description: Executes the releaseSphBuffers operation.
+/*
+ * @brief Documents the release sph buffers operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ParticleSystem::releaseSphBuffers()
 {
     if (d_sphDensity) { grav_x::CudaMemoryPool::deallocate(d_sphDensity); d_sphDensity = nullptr; }
     if (d_sphPressure) { grav_x::CudaMemoryPool::deallocate(d_sphPressure); d_sphPressure = nullptr; }
 }
 
-/// Description: Executes the allocateSphGridBuffers operation.
+/*
+ * @brief Documents the allocate sph grid buffers operation contract.
+ * @param numParticles Input value used by this contract.
+ * @return bool ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ParticleSystem::allocateSphGridBuffers(int numParticles)
 {
     if (!_cudaRuntimeAvailable) {
@@ -899,7 +996,12 @@ bool ParticleSystem::allocateSphGridBuffers(int numParticles)
     return true;
 }
 
-/// Description: Executes the releaseSphGridBuffers operation.
+/*
+ * @brief Documents the release sph grid buffers operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void ParticleSystem::releaseSphGridBuffers()
 {
     if (d_sphCellHash) { grav_x::CudaMemoryPool::deallocate(d_sphCellHash); d_sphCellHash = nullptr; }
@@ -910,7 +1012,12 @@ void ParticleSystem::releaseSphGridBuffers()
     _hostSortedIndex.clear();
 }
 
-/// Description: Executes the seedDeviceState operation.
+/*
+ * @brief Documents the seed device state operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return bool ParticleSystem:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool ParticleSystem::seedDeviceState()
 {
     if (_particles.empty()) return true;

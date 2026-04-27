@@ -1,5 +1,7 @@
-# File: python_tools/policies/fmea_action_register.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/policies/fmea_action_register.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -10,14 +12,21 @@ ALLOWED_STATUSES = {"open", "in-progress", "closed"}
 ALLOWED_RISKS = {"Low", "Medium", "High"}
 
 
-# Description: Defines the FmeaActionRegisterError contract.
+# @brief Defines the fmea action register error type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class FmeaActionRegisterError(RuntimeError):
     pass
 
 
-# Description: Defines the FmeaActionRegister contract.
+# @brief Defines the fmea action register type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class FmeaActionRegister:
-    # Description: Executes the load operation.
+    # @brief Documents the load operation contract.
+    # @param root Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def load(self, root: Path) -> list[dict[str, object]]:
         path = root / "docs/quality/manifest/fmea_actions.json"
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -26,7 +35,10 @@ class FmeaActionRegister:
             raise FmeaActionRegisterError("fmea_actions payload must be a list")
         return [self._validate_row(row) for row in rows]
 
-    # Description: Executes the _validate_row operation.
+    # @brief Documents the validate row operation contract.
+    # @param raw Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _validate_row(self, raw: object) -> dict[str, object]:
         if not isinstance(raw, dict):
             raise FmeaActionRegisterError("fmea_actions entries must be objects")
@@ -49,7 +61,11 @@ class FmeaActionRegister:
         return row
 
     @staticmethod
-    # Description: Executes the _require_string operation.
+    # @brief Documents the require string operation contract.
+    # @param row Input value used by this contract.
+    # @param field Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _require_string(row: dict[str, object], field: str) -> str:
         value = row.get(field)
         if not isinstance(value, str) or not value.strip():
@@ -57,7 +73,11 @@ class FmeaActionRegister:
         return value.strip()
 
     @staticmethod
-    # Description: Executes the _require_list operation.
+    # @brief Documents the require list operation contract.
+    # @param row Input value used by this contract.
+    # @param field Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _require_list(row: dict[str, object], field: str) -> list[str]:
         value = row.get(field)
         if not isinstance(value, list):

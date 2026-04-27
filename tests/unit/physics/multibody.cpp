@@ -1,5 +1,9 @@
-// File: tests/unit/physics/multibody.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/physics/multibody.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "tests/support/physics_scenario.hpp"
 #include "tests/support/physics_test_utils.hpp"
@@ -9,7 +13,6 @@
 #include <string>
 
 namespace testsupport {
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_007_MultiBodyInteractions)
 {
     ScenarioConfig cfg = buildDiskOrbitScenario(256u, 0.05f, 8u, 42u, "octree_cpu", "euler");
@@ -54,7 +57,6 @@ TEST(PhysicsTest, TST_UNT_PHYS_007_MultiBodyInteractions)
     EXPECT_LE(maxRadius, kMaxStableRadius);
 }
 
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_006_EnergyConservationHighMassNoSph)
 {
     ScenarioConfig cfg = buildDiskOrbitScenario(96u, 0.1f, 12u, 42u, "octree_cpu", "euler");
@@ -71,7 +73,6 @@ TEST(PhysicsTest, TST_UNT_PHYS_006_EnergyConservationHighMassNoSph)
         << "High-mass no-SPH drift too high: " << result.maxAbsEnergyDriftPct << "%";
 }
 
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_008_RadiationExchangeConservation)
 {
     ScenarioConfig cfg = buildRandomCloudScenario(48u, 0.1f, 16u, 7u, "octree_cpu", "euler");
@@ -98,7 +99,6 @@ TEST(PhysicsTest, TST_UNT_PHYS_008_RadiationExchangeConservation)
     EXPECT_LT(result.stats.thermalEnergy, initialThermal);
 }
 
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_011_CalibrationThreeBodyPresetStaysFiniteAndCentered)
 {
     ScenarioConfig cfg;
@@ -127,7 +127,6 @@ TEST(PhysicsTest, TST_UNT_PHYS_011_CalibrationThreeBodyPresetStaysFiniteAndCente
     EXPECT_LE(centerMagnitude, 1e-3f);
 }
 
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_012_CalibrationPlummerPresetProducesBoundCluster)
 {
     ScenarioConfig cfg;

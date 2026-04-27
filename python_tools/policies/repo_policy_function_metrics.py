@@ -1,5 +1,7 @@
-# File: python_tools/policies/repo_policy_function_metrics.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/policies/repo_policy_function_metrics.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -22,10 +24,18 @@ FUNCTION_START_RE = re.compile(
 CONTROL_FLOW_PREFIXES = ("if", "for", "while", "switch", "catch")
 NON_FUNCTION_PREFIXES = ("class", "struct", "enum", "union", "namespace", "else", "do", "try")
 COMPLEXITY_RE = re.compile(r"\bif\b|\bfor\b|\bwhile\b|\bcase\b|\bcatch\b|&&|\|\||\?")
-NORMALIZED_DOCUMENTATION_RE = re.compile(r"^\s*///\s+Description:\s")
+NORMALIZED_DOCUMENTATION_RE = re.compile(
+    r"^\s*/\*+\s*$"
+    r"|^\s*\*/\s*$"
+    r"|^\s*\*\s.*$"
+)
 
 
-# Description: Executes the collect_function_decomposition_warnings operation.
+# @brief Documents the collect function decomposition warnings operation contract.
+# @param rel Input value used by this contract.
+# @param content Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def collect_function_decomposition_warnings(rel: str, content: str) -> list[str]:
     warnings: list[str] = []
     functions = _collect_function_metrics(content)
@@ -61,7 +71,10 @@ def collect_function_decomposition_warnings(rel: str, content: str) -> list[str]
     return warnings
 
 
-# Description: Executes the _collect_function_metrics operation.
+# @brief Documents the collect function metrics operation contract.
+# @param content Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _collect_function_metrics(content: str) -> list[dict[str, int]]:
     lines = content.splitlines()
     metrics: list[dict[str, int]] = []
@@ -85,7 +98,11 @@ def _collect_function_metrics(content: str) -> list[dict[str, int]]:
     return metrics
 
 
-# Description: Executes the _find_function_signature_start operation.
+# @brief Documents the find function signature start operation contract.
+# @param lines Input value used by this contract.
+# @param index Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _find_function_signature_start(lines: list[str], index: int) -> tuple[int, int] | None:
     line = lines[index].strip()
     if not line or line.startswith("#"):
@@ -114,7 +131,10 @@ def _find_function_signature_start(lines: list[str], index: int) -> tuple[int, i
     return None
 
 
-# Description: Executes the _is_function_signature operation.
+# @brief Documents the is function signature operation contract.
+# @param candidate Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _is_function_signature(candidate: str) -> bool:
     normalized = candidate.strip()
     if not FUNCTION_START_RE.search(normalized):
@@ -127,7 +147,11 @@ def _is_function_signature(candidate: str) -> bool:
     return True
 
 
-# Description: Executes the _find_matching_block_end operation.
+# @brief Documents the find matching block end operation contract.
+# @param lines Input value used by this contract.
+# @param start_index Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _find_matching_block_end(lines: list[str], start_index: int) -> int | None:
     depth = 0
     for index in range(start_index, len(lines)):
@@ -139,12 +163,18 @@ def _find_matching_block_end(lines: list[str], start_index: int) -> int | None:
     return None
 
 
-# Description: Executes the _estimate_branching_complexity operation.
+# @brief Documents the estimate branching complexity operation contract.
+# @param function_lines Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _estimate_branching_complexity(function_lines: list[str]) -> int:
     body = "\n".join(function_lines)
     return 1 + len(COMPLEXITY_RE.findall(body))
 
 
-# Description: Executes the _effective_function_line_count operation.
+# @brief Documents the effective function line count operation contract.
+# @param function_lines Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _effective_function_line_count(function_lines: list[str]) -> int:
     return sum(1 for line in function_lines if not NORMALIZED_DOCUMENTATION_RE.match(line))

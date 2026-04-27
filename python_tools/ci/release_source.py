@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/ci/release_source.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/ci/release_source.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -12,13 +14,24 @@ from pathlib import Path
 from python_tools.ci.release_support import resolve_release_tag
 
 
-# Description: Defines the ReleaseSourcePackager contract.
+# @brief Defines the release source packager type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class ReleaseSourcePackager:
-    # Description: Executes the resolve_tag operation.
+    # @brief Documents the resolve tag operation contract.
+    # @param explicit Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def resolve_tag(self, explicit: str | None) -> str:
         return resolve_release_tag(explicit)
 
-    # Description: Executes the package operation.
+    # @brief Documents the package operation contract.
+    # @param repo_root Input value used by this contract.
+    # @param dist_dir Input value used by this contract.
+    # @param tag Input value used by this contract.
+    # @param ref Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def package(self, repo_root: Path, dist_dir: Path, tag: str, ref: str = "HEAD") -> Path:
         if dist_dir.exists():
             shutil.rmtree(dist_dir)
@@ -39,7 +52,10 @@ class ReleaseSourcePackager:
         return archive
 
     @staticmethod
-    # Description: Executes the _safe_filename operation.
+    # @brief Documents the safe filename operation contract.
+    # @param value Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _safe_filename(value: str) -> str:
         cleaned = re.sub(r"[^A-Za-z0-9_.-]+", "-", value.strip())
         return cleaned.strip(".-") or "manual"

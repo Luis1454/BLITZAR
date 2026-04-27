@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: tests/checks/suites/policy/test_deviation_fmea.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/checks/suites/policy/test_deviation_fmea.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 from __future__ import annotations
 
@@ -16,19 +18,31 @@ from python_tools.policies.fmea_action_register import FmeaActionRegister, FmeaA
 from python_tools.policies.quality_manifest import QualityManifestLoader
 
 
-# Description: Executes the _write_json operation.
+# @brief Documents the write json operation contract.
+# @param path Input value used by this contract.
+# @param payload Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _write_json(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
-# Description: Executes the _write_text operation.
+# @brief Documents the write text operation contract.
+# @param path Input value used by this contract.
+# @param content Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _write_text(path: Path, content: str = "sample\n") -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
 
 
-# Description: Executes the _seed_deviation_repo operation.
+# @brief Documents the seed deviation repo operation contract.
+# @param root Input value used by this contract.
+# @param review_by Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _seed_deviation_repo(root: Path, review_by: str = "2026-06-30") -> None:
     _write_json(root / "docs/quality/quality_manifest.json", {"metadata": {"system": "test", "revision": "2026-03-07"}, "includes": ["manifest/evidence.json", "manifest/requirements.json", "manifest/deviations.json"]})
     _write_json(root / "docs/quality/manifest/evidence.json", {"evidence": {"EVD_SAMPLE": "docs/quality/sample.md"}})
@@ -58,12 +72,19 @@ def _seed_deviation_repo(root: Path, review_by: str = "2026-06-30") -> None:
     _write_text(root / "docs/quality/sample.md")
 
 
-# Description: Executes the _write_fmea_rows operation.
+# @brief Documents the write fmea rows operation contract.
+# @param root Input value used by this contract.
+# @param rows Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _write_fmea_rows(root: Path, rows: list[dict[str, object]]) -> None:
     _write_json(root / "docs/quality/manifest/fmea_actions.json", {"fmea_actions": rows})
 
 
-# Description: Executes the test_deviation_register_loads_valid_rows_and_rejects_invalid_review_date operation.
+# @brief Documents the test deviation register loads valid rows and rejects invalid review date operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_deviation_register_loads_valid_rows_and_rejects_invalid_review_date(tmp_path: Path) -> None:
     _seed_deviation_repo(tmp_path)
     manifest, errors = QualityManifestLoader().load_with_errors(tmp_path)
@@ -82,7 +103,10 @@ def test_deviation_register_loads_valid_rows_and_rejects_invalid_review_date(tmp
     assert any("invalid ISO date in review_by" in error for error in result.errors)
 
 
-# Description: Executes the test_fmea_action_register_accepts_linked_medium_risk operation.
+# @brief Documents the test fmea action register accepts linked medium risk operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_fmea_action_register_accepts_linked_medium_risk(tmp_path: Path) -> None:
     _write_fmea_rows(
         tmp_path,
@@ -101,14 +125,22 @@ def test_fmea_action_register_accepts_linked_medium_risk(tmp_path: Path) -> None
         ([{"id": "FMEA-001", "owner": "maintainer", "status": "closed", "residual_risk": "Low", "linked_tasks": [], "verification_evidence": []}], "require linked verification evidence"),
     ],
 )
-# Description: Executes the test_fmea_action_register_rejects_invalid_rows operation.
+# @brief Documents the test fmea action register rejects invalid rows operation contract.
+# @param tmp_path Input value used by this contract.
+# @param rows Input value used by this contract.
+# @param expected Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_fmea_action_register_rejects_invalid_rows(tmp_path: Path, rows: list[dict[str, object]], expected: str) -> None:
     _write_fmea_rows(tmp_path, rows)
     with pytest.raises(FmeaActionRegisterError, match=expected):
         FmeaActionRegister().load(tmp_path)
 
 
-# Description: Executes the test_fmea_status_snapshot_packages_summary operation.
+# @brief Documents the test fmea status snapshot packages summary operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_fmea_status_snapshot_packages_summary(tmp_path: Path) -> None:
     _write_fmea_rows(
         tmp_path,

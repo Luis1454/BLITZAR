@@ -1,13 +1,33 @@
-// File: engine/src/physics/cuda/fragments/OctreeBuild.inl
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/physics/cuda/fragments/OctreeBuild.inl
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Physics and CUDA implementation for the deterministic simulation core.
+ */
 
 /*
  * Module: physics/cuda
  * Responsibility: Implement CPU-side octree construction primitives.
  */
 
-/// Description: Executes the Node operation.
+/*
+ * @brief Documents the node operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Octree::Node:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 Octree::Node::Node()
+    /*
+     * @brief Documents the center operation contract.
+     * @param f Input value used by this contract.
+     * @param f Input value used by this contract.
+     * @param f Input value used by this contract.
+     * @param f Input value used by this contract.
+     * @param f Input value used by this contract.
+     * @param f Input value used by this contract.
+     * @return : value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+     */
     : center(0.0f, 0.0f, 0.0f),
       halfSize(0.0f),
       mass(0.0f),
@@ -19,12 +39,29 @@ Octree::Node::Node()
     children.fill(-1);
 }
 
-/// Description: Executes the Octree operation.
+/*
+ * @brief Documents the octree operation contract.
+ * @param _nodes Input value used by this contract.
+ * @param nullopt Input value used by this contract.
+ * @param _root Input value used by this contract.
+ * @return Octree:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 Octree::Octree() : _nodes(), _particlesRef(std::nullopt), _root(-1) {}
-/// Description: Describes the destroy  octree operation contract.
+/*
+ * @brief Documents the ~octree operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Octree:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 Octree::~Octree() = default;
 
-/// Description: Executes the clear operation.
+/*
+ * @brief Documents the clear operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return void Octree:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void Octree::clear()
 {
     _nodes.clear();
@@ -32,12 +69,28 @@ void Octree::clear()
     _root = -1;
 }
 
-/// Description: Executes the getNodeCount operation.
+/*
+ * @brief Documents the get node count operation contract.
+ * @param size Input value used by this contract.
+ * @return std::size_t Octree:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::size_t Octree::getNodeCount() const { return _nodes.size(); }
-/// Description: Executes the getRootIndex operation.
+/*
+ * @brief Documents the get root index operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return int Octree:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 int Octree::getRootIndex() const { return _root; }
 
-/// Description: Executes the exportGpu operation.
+/*
+ * @brief Documents the export gpu operation contract.
+ * @param outNodes Input value used by this contract.
+ * @param outLeafIndices Input value used by this contract.
+ * @return void Octree:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void Octree::exportGpu(std::vector<GpuOctreeNode> &outNodes, std::vector<int> &outLeafIndices) const
 {
     outNodes.clear();
@@ -69,7 +122,13 @@ void Octree::exportGpu(std::vector<GpuOctreeNode> &outNodes, std::vector<int> &o
     }
 }
 
-/// Description: Executes the childIndexForPosition operation.
+/*
+ * @brief Documents the child index for position operation contract.
+ * @param position Input value used by this contract.
+ * @param center Input value used by this contract.
+ * @return int Octree:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 int Octree::childIndexForPosition(const Vector3 &position, const Vector3 &center)
 {
     int child = 0;
@@ -79,10 +138,24 @@ int Octree::childIndexForPosition(const Vector3 &position, const Vector3 &center
     return child;
 }
 
-/// Description: Executes the hasChildren operation.
+/*
+ * @brief Documents the has children operation contract.
+ * @param node Input value used by this contract.
+ * @return bool Octree:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool Octree::hasChildren(const Node &node) { return node.childMask != 0; }
 
-/// Description: Describes the build node recursive operation contract.
+/*
+ * @brief Documents the build node recursive operation contract.
+ * @param particles Input value used by this contract.
+ * @param indices Input value used by this contract.
+ * @param center Input value used by this contract.
+ * @param halfSize Input value used by this contract.
+ * @param depth Input value used by this contract.
+ * @return int Octree:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 int Octree::buildNodeRecursive(
     const std::vector<Particle> &particles,
     const std::vector<int> &indices,
@@ -145,7 +218,12 @@ int Octree::buildNodeRecursive(
     return nodeIndex;
 }
 
-/// Description: Executes the build operation.
+/*
+ * @brief Documents the build operation contract.
+ * @param particles Input value used by this contract.
+ * @return void Octree:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void Octree::build(const std::vector<Particle> &particles)
 {
     clear();

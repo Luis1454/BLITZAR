@@ -1,5 +1,9 @@
-// File: tests/unit/ui/qt_mainwindow_controller.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/ui/qt_mainwindow_controller.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "client/IClientRuntime.hpp"
 #include "config/SimulationConfig.hpp"
@@ -11,7 +15,6 @@
 #include <vector>
 
 namespace grav_test_qt_ui {
-/// Description: Defines the RecordingClientRuntime data or behavior contract.
 class RecordingClientRuntime final : public grav_client::IClientRuntime {
 public:
     bool start() override
@@ -247,7 +250,6 @@ public:
     InitialStateConfig initialStateConfig;
 };
 
-/// Description: Executes the TEST operation.
 TEST(QtUiLogicTest, TST_UNT_UI_002_ControllerAppliesRuntimeMappingsWithoutWidgetDependency)
 {
     SimulationConfig config{};
@@ -286,7 +288,6 @@ TEST(QtUiLogicTest, TST_UNT_UI_002_ControllerAppliesRuntimeMappingsWithoutWidget
     EXPECT_EQ(runtime.exportFormat, config.exportFormat);
 }
 
-/// Description: Executes the TEST operation.
 TEST(QtUiLogicTest, TST_UNT_UI_003_ControllerRejectsInvalidConfigBeforeRuntimeMutation)
 {
     SimulationConfig config{};

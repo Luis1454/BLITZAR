@@ -1,5 +1,9 @@
-// File: engine/src/config/SimulationConfig.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/config/SimulationConfig.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Configuration parsing, validation, and serialization implementation.
+ */
 
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationConfigDirective.hpp"
@@ -16,7 +20,12 @@
 #include <sstream>
 static_assert(grav_protocol::kSnapshotDefaultPoints == 4096u);
 
-/// Description: Executes the trim operation.
+/*
+ * @brief Documents the trim operation contract.
+ * @param value Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::string trim(const std::string& value)
 {
     const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char c) {
@@ -30,7 +39,12 @@ static std::string trim(const std::string& value)
     return std::string(begin, end);
 }
 
-/// Description: Executes the defaults operation.
+/*
+ * @brief Documents the defaults operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return SimulationConfig SimulationConfig:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 SimulationConfig SimulationConfig::defaults()
 {
     SimulationConfig config{};
@@ -38,7 +52,12 @@ SimulationConfig SimulationConfig::defaults()
     return config;
 }
 
-/// Description: Executes the loadOrCreate operation.
+/*
+ * @brief Documents the load or create operation contract.
+ * @param path Input value used by this contract.
+ * @return SimulationConfig SimulationConfig:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 SimulationConfig SimulationConfig::loadOrCreate(const std::string& path)
 {
     SimulationConfig config = defaults();
@@ -80,7 +99,12 @@ SimulationConfig SimulationConfig::loadOrCreate(const std::string& path)
     return config;
 }
 
-/// Description: Executes the save operation.
+/*
+ * @brief Documents the save operation contract.
+ * @param path Input value used by this contract.
+ * @return bool SimulationConfig:: value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool SimulationConfig::save(const std::string& path) const
 {
     std::filesystem::path fsPath(path);

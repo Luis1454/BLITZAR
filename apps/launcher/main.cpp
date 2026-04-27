@@ -1,5 +1,9 @@
-// File: apps/launcher/main.cpp
-// Purpose: Application entry point or host support for BLITZAR executables.
+/*
+ * @file apps/launcher/main.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Application entry points and host executables for BLITZAR.
+ */
 
 #include "platform/PlatformPaths.hpp"
 #include "platform/PlatformProcess.hpp"
@@ -10,14 +14,24 @@
 #include <string>
 #include <string_view>
 #include <vector>
-/// Description: Enumerates the supported LaunchMode values.
+/*
+ * @brief Defines the launch mode type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 enum class LaunchMode {
     Client,
     Server,
     Headless
 };
 
-/// Description: Defines the LauncherOptions data or behavior contract.
+/*
+ * @brief Defines the launcher options type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct LauncherOptions {
     LaunchMode mode = LaunchMode::Client;
     std::string module = "cli";
@@ -25,7 +39,12 @@ struct LauncherOptions {
     bool showHelp = false;
 };
 
-/// Description: Executes the printUsage operation.
+/*
+ * @brief Documents the print usage operation contract.
+ * @param programName Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void printUsage(const std::string_view programName)
 {
     std::cout << "Usage: " << programName
@@ -41,7 +60,13 @@ void printUsage(const std::string_view programName)
               << " --mode headless -- --particle-count 10000 --target-steps 1000\n";
 }
 
-/// Description: Executes the parseMode operation.
+/*
+ * @brief Documents the parse mode operation contract.
+ * @param rawValue Input value used by this contract.
+ * @param outMode Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool parseMode(const std::string& rawValue, LaunchMode& outMode)
 {
     std::string value = rawValue;
@@ -63,7 +88,15 @@ bool parseMode(const std::string& rawValue, LaunchMode& outMode)
     return false;
 }
 
-/// Description: Describes the parse launcher options operation contract.
+/*
+ * @brief Documents the parse launcher options operation contract.
+ * @param argc Input value used by this contract.
+ * @param argv Input value used by this contract.
+ * @param outOptions Input value used by this contract.
+ * @param outError Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool parseLauncherOptions(const int argc, char** argv, LauncherOptions& outOptions,
                           std::string& outError)
 {
@@ -120,7 +153,12 @@ bool parseLauncherOptions(const int argc, char** argv, LauncherOptions& outOptio
     return true;
 }
 
-/// Description: Executes the targetBasename operation.
+/*
+ * @brief Documents the target basename operation contract.
+ * @param mode Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::string targetBasename(const LaunchMode mode)
 {
     switch (mode) {
@@ -134,7 +172,12 @@ std::string targetBasename(const LaunchMode mode)
     return "blitzar-client";
 }
 
-/// Description: Executes the containsModuleOverride operation.
+/*
+ * @brief Documents the contains module override operation contract.
+ * @param args Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool containsModuleOverride(const std::vector<std::string>& args)
 {
     return std::any_of(args.begin(), args.end(), [](const std::string& arg) {
@@ -142,7 +185,13 @@ bool containsModuleOverride(const std::vector<std::string>& args)
     });
 }
 
-/// Description: Describes the resolve executable path operation contract.
+/*
+ * @brief Documents the resolve executable path operation contract.
+ * @param launcherPath Input value used by this contract.
+ * @param executableName Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::string resolveExecutablePath(const std::string_view launcherPath,
                                   const std::string& executableName)
 {
@@ -160,7 +209,13 @@ std::string resolveExecutablePath(const std::string_view launcherPath,
     return executableName;
 }
 
-/// Description: Describes the run child blocking operation contract.
+/*
+ * @brief Documents the run child blocking operation contract.
+ * @param resolvedExecutable Input value used by this contract.
+ * @param childArgs Input value used by this contract.
+ * @return int value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 int runChildBlocking(const std::string& resolvedExecutable,
                      const std::vector<std::string>& childArgs)
 {
@@ -175,7 +230,13 @@ int runChildBlocking(const std::string& resolvedExecutable,
     return exitCode;
 }
 
-/// Description: Executes the main operation.
+/*
+ * @brief Documents the main operation contract.
+ * @param argc Input value used by this contract.
+ * @param argv Input value used by this contract.
+ * @return int value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 int main(int argc, char** argv)
 {
     LauncherOptions options{};

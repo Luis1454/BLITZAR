@@ -1,5 +1,9 @@
-// File: tests/unit/module_cli/command_executor_flows_profile_export.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/module_cli/command_executor_flows_profile_export.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "command/CommandContext.hpp"
 #include "command/CommandExecutor.hpp"
@@ -11,7 +15,6 @@
 #include <vector>
 
 namespace grav_test_module_cli_command_executor_flows_profile_export {
-/// Description: Defines the FakeCommandTransport data or behavior contract.
 class FakeCommandTransport final : public grav_cmd::CommandTransport {
 public:
     bool connect(const std::string& host, std::uint16_t port) override
@@ -59,7 +62,6 @@ public:
     std::vector<ServerClientStatus> scriptedStatuses;
 };
 
-/// Description: Executes the parseSingle operation.
 static grav_cmd::CommandRequest parseSingle(const std::string& line)
 {
     const grav_cmd::CommandParseResult parsed = grav_cmd::CommandParser::parseLine(line, 1u);
@@ -68,7 +70,6 @@ static grav_cmd::CommandRequest parseSingle(const std::string& line)
     return parsed.requests.front();
 }
 
-/// Description: Executes the TEST operation.
 TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_040_SetProfileValidAppliesConfigWithoutReset)
 {
     FakeCommandTransport transport;
@@ -99,7 +100,6 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_040_SetProfileValidAppliesConfigWit
     EXPECT_TRUE(sawEnergyMeasure);
 }
 
-/// Description: Verifies the TEST behavior.
 TEST(CommandExecutorFlowTest,
      TST_UNT_MODCLI_041_ExportSnapshotWithoutExtensionUsesSessionDefaultFormat)
 {

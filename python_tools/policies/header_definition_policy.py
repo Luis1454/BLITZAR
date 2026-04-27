@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/policies/header_definition_policy.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/policies/header_definition_policy.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -10,7 +12,10 @@ CONTROL_STATEMENT_RE = re.compile(r"\b(if|for|while|switch|catch)\s*\(")
 TYPE_DECLARATION_RE = re.compile(r"^(?:class|struct|enum|union)\b")
 
 
-# Description: Executes the find_header_function_definition_lines operation.
+# @brief Documents the find header function definition lines operation contract.
+# @param content Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def find_header_function_definition_lines(content: str) -> list[int]:
     lines = content.splitlines()
     matches: list[int] = []

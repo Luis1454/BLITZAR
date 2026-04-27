@@ -1,11 +1,14 @@
-// File: runtime/src/protocol/ServerJsonCodecParseSnapshot.cpp
-// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+/*
+ * @file runtime/src/protocol/ServerJsonCodecParseSnapshot.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
+ */
 
 #include "protocol/ServerJsonCodec.hpp"
 #include <cctype>
 
 namespace grav_protocol {
-/// Description: Defines the SnapshotArrayParser data or behavior contract.
 class SnapshotArrayParser {
 public:
     explicit SnapshotArrayParser(std::string_view raw) : m_raw(raw), m_cursor(0)
@@ -101,7 +104,6 @@ private:
     std::size_t m_cursor;
 };
 
-/// Description: Describes the parse snapshot response operation contract.
 bool ServerJsonCodec::parseSnapshotResponse(std::string_view raw, ServerSnapshotPayload& out,
                                             std::string& error)
 {

@@ -1,5 +1,9 @@
-// File: modules/cli/module_cli_state.hpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/cli/module_cli_state.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Command-line client module for runtime control workflows.
+ */
 
 #ifndef GRAVITY_MODULES_CLI_MODULE_CLI_STATE_HPP_
 #define GRAVITY_MODULES_CLI_MODULE_CLI_STATE_HPP_
@@ -7,9 +11,7 @@
 #include "command/CommandTransport.hpp"
 
 namespace grav_module_cli {
-/// Description: Defines the ModuleState data or behavior contract.
 struct ModuleState {
-    /// Description: Describes the module state operation contract.
     ModuleState();
     grav_cmd::ServerClientCommandTransport transport;
     grav_cmd::CommandSessionState session;

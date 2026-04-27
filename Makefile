@@ -1,5 +1,7 @@
-# File: Makefile
-# Purpose: Source artifact for the BLITZAR project.
+# @file Makefile
+# @author Luis1454
+# @project BLITZAR
+# @brief Source artifact for the BLITZAR simulation project.
 
 EXECUTABLE := blitzar
 HEADLESS_EXECUTABLE := blitzar-headless

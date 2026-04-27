@@ -1,5 +1,9 @@
-// File: tests/int/runtime/runtime_reload.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/int/runtime/runtime_reload.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "client/ClientRuntime.hpp"
 #include "tests/support/client_utils.hpp"
@@ -16,7 +20,6 @@
 #include <vector>
 
 namespace grav_test_client_runtime_reload {
-/// Description: Executes the writeTempXyz operation.
 static std::filesystem::path writeTempXyz(const char* basename, const std::vector<float>& xs)
 {
     const std::filesystem::path path = std::filesystem::temp_directory_path() / basename;
@@ -29,7 +32,6 @@ static std::filesystem::path writeTempXyz(const char* basename, const std::vecto
     return path;
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_008_LoadResetInvalidatesClientSnapshotCacheUntilReloaded)
 {
     RealServerHarness server;

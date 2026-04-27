@@ -1,9 +1,18 @@
-// File: engine/src/server/simulation_server/FormatAndTheta.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/server/simulation_server/FormatAndTheta.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Source artifact for the BLITZAR simulation project.
+ */
 
 #include "Internal.hpp"
 
-/// Description: Executes the profileThetaBias operation.
+/*
+ * @brief Documents the profile theta bias operation contract.
+ * @param performanceProfile Input value used by this contract.
+ * @return float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 float profileThetaBias(std::string_view performanceProfile)
 {
     if (performanceProfile == "interactive")
@@ -15,7 +24,12 @@ float profileThetaBias(std::string_view performanceProfile)
     return 0.5f;
 }
 
-/// Description: Executes the particleThetaBias operation.
+/*
+ * @brief Documents the particle theta bias operation contract.
+ * @param particleCount Input value used by this contract.
+ * @return float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 float particleThetaBias(std::size_t particleCount)
 {
     if (particleCount <= 512u)
@@ -25,7 +39,18 @@ float particleThetaBias(std::size_t particleCount)
     return std::clamp(normalized, 0.0f, 1.0f);
 }
 
-/// Description: Describes the resolve octree theta operation contract.
+/*
+ * @brief Documents the resolve octree theta operation contract.
+ * @param configuredTheta Input value used by this contract.
+ * @param autoTune Input value used by this contract.
+ * @param autoMin Input value used by this contract.
+ * @param autoMax Input value used by this contract.
+ * @param performanceProfile Input value used by this contract.
+ * @param particles Input value used by this contract.
+ * @param distributionScore Input value used by this contract.
+ * @return float value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 float resolveOctreeTheta(float configuredTheta, bool autoTune, float autoMin, float autoMax,
                          std::string_view performanceProfile,
                          const std::vector<Particle>& particles, float distributionScore)
@@ -44,7 +69,32 @@ float resolveOctreeTheta(float configuredTheta, bool autoTune, float autoMin, fl
     return clampedMin + span * blendedBias;
 }
 
-/// Description: Describes the log effective execution modes operation contract.
+/*
+ * @brief Documents the log effective execution modes operation contract.
+ * @param solver Input value used by this contract.
+ * @param integrator Input value used by this contract.
+ * @param performanceProfile Input value used by this contract.
+ * @param openingCriterion Input value used by this contract.
+ * @param theta Input value used by this contract.
+ * @param effectiveTheta Input value used by this contract.
+ * @param thetaAutoTune Input value used by this contract.
+ * @param thetaAutoMin Input value used by this contract.
+ * @param thetaAutoMax Input value used by this contract.
+ * @param octreeDistributionScore Input value used by this contract.
+ * @param softening Input value used by this contract.
+ * @param physicsMaxAcceleration Input value used by this contract.
+ * @param physicsMinSoftening Input value used by this contract.
+ * @param physicsMinDistance2 Input value used by this contract.
+ * @param physicsMinTheta Input value used by this contract.
+ * @param sphEnabled Input value used by this contract.
+ * @param configuredSubstepTargetDt Input value used by this contract.
+ * @param configuredMaxSubsteps Input value used by this contract.
+ * @param snapshotPublishPeriodMs Input value used by this contract.
+ * @param serverFps Input value used by this contract.
+ * @param energyDriftPct Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void logEffectiveExecutionModes(
     std::string_view solver, std::string_view integrator, std::string_view performanceProfile,
     std::string_view openingCriterion, float theta, float effectiveTheta, bool thetaAutoTune,
@@ -75,7 +125,14 @@ void logEffectiveExecutionModes(
               << " error_energy_drift_pct=" << energyDriftPct << "\n";
 }
 
-/// Description: Describes the default export path operation contract.
+/*
+ * @brief Documents the default export path operation contract.
+ * @param directory Input value used by this contract.
+ * @param format Input value used by this contract.
+ * @param step Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::string defaultExportPath(const std::string& directory, const std::string& format,
                               std::uint64_t step)
 {
@@ -91,7 +148,12 @@ std::string defaultExportPath(const std::string& directory, const std::string& f
     return outPath.string();
 }
 
-/// Description: Executes the guessFormatFromPath operation.
+/*
+ * @brief Documents the guess format from path operation contract.
+ * @param path Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 std::string guessFormatFromPath(const std::string& path)
 {
     const std::filesystem::path p(path);
@@ -106,7 +168,13 @@ std::string guessFormatFromPath(const std::string& path)
     return ext;
 }
 
-/// Description: Executes the readBeU32 operation.
+/*
+ * @brief Documents the read be u32 operation contract.
+ * @param in Input value used by this contract.
+ * @param outValue Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool readBeU32(std::istream& in, std::uint32_t& outValue)
 {
     std::array<std::byte, 4> bytes{std::byte{0}, std::byte{0}, std::byte{0}, std::byte{0}};
@@ -120,7 +188,13 @@ bool readBeU32(std::istream& in, std::uint32_t& outValue)
     return true;
 }
 
-/// Description: Executes the readBeI32 operation.
+/*
+ * @brief Documents the read be i32 operation contract.
+ * @param in Input value used by this contract.
+ * @param outValue Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool readBeI32(std::istream& in, std::int32_t& outValue)
 {
     std::uint32_t unsignedValue = 0u;
@@ -131,7 +205,13 @@ bool readBeI32(std::istream& in, std::int32_t& outValue)
     return true;
 }
 
-/// Description: Executes the readBeF32 operation.
+/*
+ * @brief Documents the read be f32 operation contract.
+ * @param in Input value used by this contract.
+ * @param outValue Input value used by this contract.
+ * @return bool value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 bool readBeF32(std::istream& in, float& outValue)
 {
     std::uint32_t bits = 0u;
@@ -142,7 +222,13 @@ bool readBeF32(std::istream& in, float& outValue)
     return true;
 }
 
-/// Description: Executes the writeBeU32 operation.
+/*
+ * @brief Documents the write be u32 operation contract.
+ * @param out Input value used by this contract.
+ * @param value Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void writeBeU32(std::ostream& out, std::uint32_t value)
 {
     const std::array<std::byte, 4> bytes{
@@ -153,13 +239,25 @@ void writeBeU32(std::ostream& out, std::uint32_t value)
     (void)writeRawBytes(out, bytes.data(), bytes.size());
 }
 
-/// Description: Executes the writeBeI32 operation.
+/*
+ * @brief Documents the write be i32 operation contract.
+ * @param out Input value used by this contract.
+ * @param value Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void writeBeI32(std::ostream& out, std::int32_t value)
 {
     writeBeU32(out, static_cast<std::uint32_t>(value));
 }
 
-/// Description: Executes the writeBeF32 operation.
+/*
+ * @brief Documents the write be f32 operation contract.
+ * @param out Input value used by this contract.
+ * @param value Input value used by this contract.
+ * @return No return value.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 void writeBeF32(std::ostream& out, float value)
 {
     std::uint32_t bits = 0u;

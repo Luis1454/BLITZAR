@@ -1,5 +1,9 @@
-// File: tests/unit/ffi/core_api.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/ffi/core_api.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "ffi/BlitzarCoreApi.hpp"
 #include <algorithm>
@@ -8,7 +12,12 @@
 #include <gtest/gtest.h>
 #include <string>
 
-/// Description: Executes the makeCpuConfig operation.
+/*
+ * @brief Documents the make cpu config operation contract.
+ * @param None This contract does not take explicit parameters.
+ * @return blitzar_core_config_t value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static blitzar_core_config_t makeCpuConfig()
 {
     blitzar_core_config_t config = blitzar_core_default_config();
@@ -23,7 +32,13 @@ static blitzar_core_config_t makeCpuConfig()
     return config;
 }
 
-/// Description: Executes the makeTempPath operation.
+/*
+ * @brief Documents the make temp path operation contract.
+ * @param stem Input value used by this contract.
+ * @param extension Input value used by this contract.
+ * @return std::filesystem::path value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static std::filesystem::path makeTempPath(const char* stem, const char* extension)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -31,7 +46,12 @@ static std::filesystem::path makeTempPath(const char* stem, const char* extensio
            (std::string(stem) + "_" + std::to_string(stamp) + extension);
 }
 
-/// Description: Executes the createCore operation.
+/*
+ * @brief Documents the create core operation contract.
+ * @param config Input value used by this contract.
+ * @return blitzar_core_t* value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 static blitzar_core_t* createCore(const blitzar_core_config_t& config)
 {
     char error[BLITZAR_CORE_ERROR_CAPACITY] = {};
@@ -40,7 +60,6 @@ static blitzar_core_t* createCore(const blitzar_core_config_t& config)
     return core;
 }
 
-/// Description: Executes the TEST operation.
 TEST(BlitzarCoreApiTest, TST_UNT_CORE_001_CreateRunAndReportStatus)
 {
     blitzar_core_t* core = createCore(makeCpuConfig());
@@ -59,7 +78,6 @@ TEST(BlitzarCoreApiTest, TST_UNT_CORE_001_CreateRunAndReportStatus)
     blitzar_core_destroy(core);
 }
 
-/// Description: Executes the TEST operation.
 TEST(BlitzarCoreApiTest, TST_UNT_CORE_002_CopiesAndFreesSnapshotBuffer)
 {
     blitzar_core_t* core = createCore(makeCpuConfig());
@@ -79,7 +97,6 @@ TEST(BlitzarCoreApiTest, TST_UNT_CORE_002_CopiesAndFreesSnapshotBuffer)
     blitzar_core_destroy(core);
 }
 
-/// Description: Executes the TEST operation.
 TEST(BlitzarCoreApiTest, TST_UNT_CORE_003_ExportsAndReloadsState)
 {
     const std::filesystem::path exportPath = makeTempPath("blitzar_core_export", ".vtk");

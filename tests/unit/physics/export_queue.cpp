@@ -1,5 +1,9 @@
-// File: tests/unit/physics/export_queue.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/physics/export_queue.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "server/SimulationServer.hpp"
 #include "tests/support/physics_test_utils.hpp"
@@ -11,7 +15,6 @@
 #include <vector>
 
 namespace grav_test_server_export_queue {
-/// Description: Executes the makeTempExportPath operation.
 static std::filesystem::path makeTempExportPath(const char* stem)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -19,7 +22,6 @@ static std::filesystem::path makeTempExportPath(const char* stem)
            (std::string(stem) + "_" + std::to_string(stamp) + ".vtk");
 }
 
-/// Description: Describes the wait for export completion operation contract.
 static bool waitForExportCompletion(SimulationServer& server, const std::filesystem::path& path,
                                     std::uint64_t expectedCompletedCount, std::uint32_t timeoutMs,
                                     bool& outObservedBacklog)
@@ -38,7 +40,6 @@ static bool waitForExportCompletion(SimulationServer& server, const std::filesys
     return false;
 }
 
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_007_ServerPublishesAsyncExportQueueStatus)
 {
     SimulationServer server(32u, 0.01f);
@@ -64,7 +65,6 @@ TEST(PhysicsTest, TST_UNT_RUNT_007_ServerPublishesAsyncExportQueueStatus)
     std::filesystem::remove(exportPath, ec);
 }
 
-/// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_008_ServerStopFlushesQueuedExports)
 {
     SimulationServer server(32u, 0.01f);

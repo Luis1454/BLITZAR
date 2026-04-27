@@ -1,5 +1,9 @@
-// File: modules/qt/include/ui/OctreeOverlayPainter.hpp
-// Purpose: Client module implementation for BLITZAR extension workflows.
+/*
+ * @file modules/qt/include/ui/OctreeOverlayPainter.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
 
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_OCTREEOVERLAYPAINTER_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_OCTREEOVERLAYPAINTER_HPP_
@@ -9,16 +13,24 @@
  */
 #include "graphics/ViewMath.hpp"
 #include "ui/OctreeOverlay.hpp"
-/// Description: Defines the QPainter data or behavior contract.
+/*
+ * @brief Defines the qpainter type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class QPainter;
-/// Description: Defines the QRect data or behavior contract.
+/*
+ * @brief Defines the qrect type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class QRect;
 
 namespace grav_qt {
-/// Description: Defines the OctreeOverlayPainter data or behavior contract.
 class OctreeOverlayPainter {
 public:
-    /// Description: Describes the paint operation contract.
     static void paint(QPainter& painter, const QRect& viewport, grav::ViewMode mode,
                       const grav::CameraState& camera, const std::vector<OctreeOverlayNode>& nodes,
                       float zoom, int opacity);

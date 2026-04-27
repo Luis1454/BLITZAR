@@ -1,3 +1,10 @@
+/*
+ * @file engine/include/physics/Octree.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
+ */
+
 #ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_OCTREE_HPP_
 #define GRAVITY_ENGINE_INCLUDE_PHYSICS_OCTREE_HPP_
 
@@ -11,7 +18,12 @@
 #include <optional>
 #include <vector>
 
-/// Description: Defines the alignas data or behavior contract.
+/*
+ * @brief Defines the alignas type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct alignas(32) GpuOctreeNodeHotData {
     float centerX;
     float centerY;
@@ -23,7 +35,12 @@ struct alignas(32) GpuOctreeNodeHotData {
     float comZ;
 };
 
-/// Description: Defines the GpuOctreeNodeNavData data or behavior contract.
+/*
+ * @brief Defines the gpu octree node nav data type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct GpuOctreeNodeNavData {
     int nextIndex;
     std::uint8_t childMask;
@@ -32,7 +49,12 @@ struct GpuOctreeNodeNavData {
     std::uint8_t reserved2;
 };
 
-/// Description: Defines the GpuOctreeNode data or behavior contract.
+/*
+ * @brief Defines the gpu octree node type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 struct GpuOctreeNode {
     float centerX;
     float centerY;
@@ -50,36 +72,97 @@ struct GpuOctreeNode {
     unsigned int childMask;
 };
 
-/// Description: Enumerates the supported OctreeOpeningCriterion values.
+/*
+ * @brief Defines the octree opening criterion type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 enum class OctreeOpeningCriterion {
     CenterOfMass,
     Bounds
 };
 
-/// Description: Defines the Octree data or behavior contract.
+/*
+ * @brief Defines the octree type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
 class Octree {
 public:
-    /// Description: Describes the octree operation contract.
     Octree();
-    /// Description: Releases resources owned by Octree.
+    /*
+     * @brief Documents the ~octree operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     ~Octree();
 
-    /// Description: Describes the clear operation contract.
+    /*
+     * @brief Documents the clear operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void clear();
-    /// Description: Describes the build operation contract.
+    /*
+     * @brief Documents the build operation contract.
+     * @param particles Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void build(const std::vector<Particle>& particles);
-    /// Description: Describes the compute force on operation contract.
+    /*
+     * @brief Documents the compute force on operation contract.
+     * @param particle Input value used by this contract.
+     * @param selfIndex Input value used by this contract.
+     * @param policy Input value used by this contract.
+     * @param criterion Input value used by this contract.
+     * @return Vector3 value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     Vector3 computeForceOn(const Particle& particle, std::size_t selfIndex,
                            const ForceLawPolicy& policy, OctreeOpeningCriterion criterion) const;
-    /// Description: Describes the get node count operation contract.
+    /*
+     * @brief Documents the get node count operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return std::size_t value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     std::size_t getNodeCount() const;
-    /// Description: Describes the get root index operation contract.
+    /*
+     * @brief Documents the get root index operation contract.
+     * @param None This contract does not take explicit parameters.
+     * @return int value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     int getRootIndex() const;
-    /// Description: Describes the export gpu operation contract.
+    /*
+     * @brief Documents the export gpu operation contract.
+     * @param outNodes Input value used by this contract.
+     * @param outLeafIndices Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     void exportGpu(std::vector<GpuOctreeNode>& outNodes, std::vector<int>& outLeafIndices) const;
 
 private:
-    /// Description: Defines the Node data or behavior contract.
+    /*
+     * @brief Defines the node type contract.
+     * @param None This contract does not take explicit parameters.
+     * @return Not applicable; this block documents a type contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     struct Node {
         Vector3 center;
         float halfSize;
@@ -89,21 +172,54 @@ private:
         unsigned char childMask;
         std::vector<int> particleIndices;
 
-        /// Description: Describes the node operation contract.
         Node();
     };
 
-    /// Description: Describes the build node recursive operation contract.
+    /*
+     * @brief Documents the build node recursive operation contract.
+     * @param particles Input value used by this contract.
+     * @param indices Input value used by this contract.
+     * @param center Input value used by this contract.
+     * @param halfSize Input value used by this contract.
+     * @param depth Input value used by this contract.
+     * @return int value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     int buildNodeRecursive(const std::vector<Particle>& particles, const std::vector<int>& indices,
                            const Vector3& center, float halfSize, int depth);
-    /// Description: Describes the compute force recursive operation contract.
+    /*
+     * @brief Documents the compute force recursive operation contract.
+     * @param particles Input value used by this contract.
+     * @param nodeIndex Input value used by this contract.
+     * @param particle Input value used by this contract.
+     * @param selfIndex Input value used by this contract.
+     * @param policy Input value used by this contract.
+     * @param criterion Input value used by this contract.
+     * @return Vector3 value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     Vector3 computeForceRecursive(const std::vector<Particle>& particles, int nodeIndex,
                                   const Particle& particle, std::size_t selfIndex,
                                   const ForceLawPolicy& policy,
                                   OctreeOpeningCriterion criterion) const;
-    /// Description: Describes the child index for position operation contract.
+    /*
+     * @brief Documents the child index for position operation contract.
+     * @param position Input value used by this contract.
+     * @param center Input value used by this contract.
+     * @return int value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static int childIndexForPosition(const Vector3& position, const Vector3& center);
-    /// Description: Describes the has children operation contract.
+    /*
+     * @brief Documents the has children operation contract.
+     * @param node Input value used by this contract.
+     * @return bool value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
     static bool hasChildren(const Node& node);
 
     std::vector<Node> _nodes;

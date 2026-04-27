@@ -1,5 +1,9 @@
-// File: engine/src/platform/common/PlatformProcessCommonImpl.cpp
-// Purpose: Engine implementation for the BLITZAR simulation core.
+/*
+ * @file engine/src/platform/common/PlatformProcessCommonImpl.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Platform abstraction implementation for portable runtime services.
+ */
 
 #include "platform/common/PlatformProcessCommonImpl.hpp"
 #include "platform/PlatformErrors.hpp"
@@ -8,22 +12,18 @@
 #include <utility>
 
 namespace grav_platform {
-/// Description: Defines the ProcessHandle data or behavior contract.
 struct ProcessHandle::Impl {
     grav_platform_detail::NativeProcessHandle nativeHandle = 0u;
     std::int64_t pid = 0;
     std::string commandLine;
 };
 
-/// Description: Executes the ProcessHandle operation.
 ProcessHandle::ProcessHandle() : _impl(std::make_unique<Impl>())
 {
 }
 
-/// Description: Describes the destroy  process handle operation contract.
 ProcessHandle::~ProcessHandle() = default;
 
-/// Description: Executes the ProcessHandle operation.
 ProcessHandle::ProcessHandle(ProcessHandle&& other) noexcept : _impl(std::move(other._impl))
 {
 }
@@ -35,7 +35,6 @@ ProcessHandle& ProcessHandle::operator=(ProcessHandle&& other) noexcept
     return *this;
 }
 
-/// Description: Describes the launch operation contract.
 bool ProcessHandle::launch(const std::string& executable, const std::vector<std::string>& args,
                            bool createNewConsole, std::string& outError)
 {
@@ -64,7 +63,6 @@ bool ProcessHandle::launch(const std::string& executable, const std::vector<std:
     }
 }
 
-/// Description: Executes the terminate operation.
 bool ProcessHandle::terminate(std::uint32_t waitMs, std::string& outError)
 {
     try {
@@ -94,13 +92,11 @@ bool ProcessHandle::terminate(std::uint32_t waitMs, std::string& outError)
     }
 }
 
-/// Description: Executes the isRunning operation.
 bool ProcessHandle::isRunning() const
 {
     return _impl && grav_platform_detail::isProcessRunning(_impl->nativeHandle, _impl->pid);
 }
 
-/// Description: Executes the clear operation.
 void ProcessHandle::clear()
 {
     if (!_impl) {
@@ -110,7 +106,6 @@ void ProcessHandle::clear()
     _impl->commandLine.clear();
 }
 
-/// Description: Executes the pidString operation.
 std::string ProcessHandle::pidString() const
 {
     if (!_impl)
@@ -118,7 +113,6 @@ std::string ProcessHandle::pidString() const
     return grav_platform_detail::formatProcessId(_impl->pid);
 }
 
-/// Description: Executes the commandLine operation.
 const std::string& ProcessHandle::commandLine() const
 {
     static const std::string kEmpty;
@@ -127,7 +121,6 @@ const std::string& ProcessHandle::commandLine() const
     return _impl->commandLine;
 }
 
-/// Description: Describes the launch detached process operation contract.
 bool launchDetachedProcess(const std::string& executable, const std::vector<std::string>& args,
                            std::string& outError)
 {
@@ -150,7 +143,6 @@ bool launchDetachedProcess(const std::string& executable, const std::vector<std:
     }
 }
 
-/// Description: Describes the run process blocking operation contract.
 int runProcessBlocking(const std::string& executable, const std::vector<std::string>& args,
                        bool createNewConsole, std::string& outError)
 {

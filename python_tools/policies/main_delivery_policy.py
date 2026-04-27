@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: python_tools/policies/main_delivery_policy.py
-# Purpose: Python quality and automation support for BLITZAR governance.
+# @file python_tools/policies/main_delivery_policy.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Python quality and automation support for BLITZAR governance.
 
 from __future__ import annotations
 
@@ -15,13 +17,19 @@ from python_tools.core.models import CheckContext, CheckResult
 BRANCH_RE = re.compile(r"^issue/(?P<issue>\d+)-[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
-# Description: Defines the MainDeliveryGateCheck contract.
+# @brief Defines the main delivery gate check type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class MainDeliveryGateCheck(BaseCheck):
     name = "main_delivery_gate"
     success_message = "Main delivery gate passed"
     failure_title = "Main delivery gate failed:"
 
-    # Description: Executes the _execute operation.
+    # @brief Documents the execute operation contract.
+    # @param context Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         if context.event_name.strip() != "push":
             result.success_message = "main delivery gate skipped: not a push event"
@@ -49,7 +57,13 @@ class MainDeliveryGateCheck(BaseCheck):
                 return
         result.add_error("push to main must come from a merged issue/<N>-<slug> pull request")
 
-    # Description: Executes the _fetch_associated_pulls operation.
+    # @brief Documents the fetch associated pulls operation contract.
+    # @param repo Input value used by this contract.
+    # @param sha Input value used by this contract.
+    # @param token Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _fetch_associated_pulls(self, repo: str, sha: str, token: str, result: CheckResult) -> list[dict[str, object]]:
         request = urllib.request.Request(
             f"https://api.github.com/repos/{repo}/commits/{sha}/pulls",
@@ -70,7 +84,14 @@ class MainDeliveryGateCheck(BaseCheck):
             return []
         return [item for item in payload if isinstance(item, dict)]
 
-    # Description: Executes the _fetch_compare_commits operation.
+    # @brief Documents the fetch compare commits operation contract.
+    # @param repo Input value used by this contract.
+    # @param before Input value used by this contract.
+    # @param after Input value used by this contract.
+    # @param token Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _fetch_compare_commits(
         self, repo: str, before: str, after: str, token: str, result: CheckResult
     ) -> list[dict[str, object]]:
@@ -94,7 +115,13 @@ class MainDeliveryGateCheck(BaseCheck):
             return []
         return [item for item in commits if isinstance(item, dict)]
 
-    # Description: Executes the _compare_range_is_valid operation.
+    # @brief Documents the compare range is valid operation contract.
+    # @param repo Input value used by this contract.
+    # @param commits Input value used by this contract.
+    # @param token Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _compare_range_is_valid(
         self, repo: str, commits: list[dict[str, object]], token: str, result: CheckResult
     ) -> bool:
@@ -121,7 +148,11 @@ class MainDeliveryGateCheck(BaseCheck):
         return False
 
     @staticmethod
-    # Description: Executes the _read_event_payload operation.
+    # @brief Documents the read event payload operation contract.
+    # @param path Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _read_event_payload(path: Path, result: CheckResult) -> dict[str, object]:
         if not path.exists():
             result.add_error(f"event payload not found: {path}")
@@ -137,7 +168,10 @@ class MainDeliveryGateCheck(BaseCheck):
         return payload
 
     @staticmethod
-    # Description: Executes the _is_valid_delivery_pr operation.
+    # @brief Documents the is valid delivery pr operation contract.
+    # @param pull_request Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _is_valid_delivery_pr(pull_request: dict[str, object]) -> bool:
         base = pull_request.get("base", {})
         head = pull_request.get("head", {})
@@ -147,20 +181,35 @@ class MainDeliveryGateCheck(BaseCheck):
         return base_ref == "main" and bool(merged_at) and bool(BRANCH_RE.match(head_ref))
 
 
-# Description: Defines the MainDeliverySelfTestCheck contract.
+# @brief Defines the main delivery self test check type contract.
+# @param None This contract does not take explicit parameters.
+# @note Keep construction and side effects explicit for deterministic quality gates.
 class MainDeliverySelfTestCheck(MainDeliveryGateCheck):
-    # Description: Executes the __init__ operation.
+    # @brief Documents the init operation contract.
+    # @param valid Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def __init__(self, valid: bool) -> None:
         self._valid = valid
 
-    # Description: Executes the _fetch_associated_pulls operation.
+    # @brief Documents the fetch associated pulls operation contract.
+    # @param repo Input value used by this contract.
+    # @param sha Input value used by this contract.
+    # @param token Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _fetch_associated_pulls(self, repo: str, sha: str, token: str, result: CheckResult) -> list[dict[str, object]]:
         del repo, sha, token, result
         if not self._valid:
             return [{"base": {"ref": "main"}, "head": {"ref": "feature/direct-main-push"}, "merged_at": "2026-03-07T00:00:00Z"}]
         return [{"base": {"ref": "main"}, "head": {"ref": "issue/106-enforce-branch-per-issue"}, "merged_at": "2026-03-07T00:00:00Z"}]
 
-    # Description: Executes the _execute operation.
+    # @brief Documents the execute operation contract.
+    # @param context Input value used by this contract.
+    # @param result Input value used by this contract.
+    # @return Value produced by this contract when applicable.
+    # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         fixture = "main_delivery_valid.json" if self._valid else "main_delivery_invalid.json"
         super()._execute(

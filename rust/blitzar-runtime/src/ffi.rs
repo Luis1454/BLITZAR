@@ -1,25 +1,26 @@
-// File: rust/blitzar-runtime/src/ffi.rs
-// Purpose: Rust component implementation for BLITZAR runtime services.
+/*
+ * @file rust/blitzar-runtime/src/ffi.rs
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Rust protocol and gateway components for BLITZAR runtime integration.
+ */
 
 use crate::bridge_state::BridgeState;
 use crate::bridge_state::PendingCommand;
 use std::slice;
 
 #[repr(C)]
-/// Description: Defines the BlitzarRuntimeStringView struct contract.
 pub struct BlitzarRuntimeStringView {
     pub data: *const u8,
     pub len: usize,
 }
 
 #[repr(C)]
-/// Description: Defines the BlitzarRuntimePendingCommandView struct contract.
 pub struct BlitzarRuntimePendingCommandView {
     pub cmd: BlitzarRuntimeStringView,
     pub fields: BlitzarRuntimeStringView,
 }
 
-/// Description: Executes the string_view operation.
 fn string_view(value: &str) -> BlitzarRuntimeStringView {
     BlitzarRuntimeStringView {
         data: value.as_ptr(),
@@ -27,7 +28,6 @@ fn string_view(value: &str) -> BlitzarRuntimeStringView {
     }
 }
 
-/// Description: Executes the pending_command_view operation.
 fn pending_command_view(value: &PendingCommand) -> BlitzarRuntimePendingCommandView {
     BlitzarRuntimePendingCommandView {
         cmd: string_view(value.cmd.as_str()),
@@ -35,17 +35,14 @@ fn pending_command_view(value: &PendingCommand) -> BlitzarRuntimePendingCommandV
     }
 }
 
-/// Description: Executes the state_ref operation.
 fn state_ref<'a>(state: *const BridgeState) -> Option<&'a BridgeState> {
     unsafe { state.as_ref() }
 }
 
-/// Description: Executes the state_mut operation.
 fn state_mut<'a>(state: *mut BridgeState) -> Option<&'a mut BridgeState> {
     unsafe { state.as_mut() }
 }
 
-/// Description: Executes the decode_string operation.
 fn decode_string(data: *const u8, len: usize) -> Option<String> {
     if data.is_null() && len != 0 {
         return None;

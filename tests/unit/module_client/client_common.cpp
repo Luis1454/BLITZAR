@@ -1,5 +1,9 @@
-// File: tests/unit/module_client/client_common.cpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/unit/module_client/client_common.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #include "client/ClientCommon.hpp"
 #include "config/SimulationConfig.hpp"
@@ -11,7 +15,6 @@
 #include <string>
 
 namespace grav_test_client_common {
-/// Description: Executes the hasExpectedSuggestedName operation.
 static bool hasExpectedSuggestedName(const std::string& fileName, std::uint64_t step)
 {
     if (fileName.size() < 26u || fileName.rfind("sim_", 0u) != 0u) {
@@ -32,7 +35,6 @@ static bool hasExpectedSuggestedName(const std::string& fileName, std::uint64_t 
                             expectedSuffix) == 0;
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_012_ResolveParticleAndDrawCapsClampToProtocolBounds)
 {
     SimulationConfig config;
@@ -44,7 +46,6 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_012_ResolveParticleAndDrawCapsClampToProt
     EXPECT_EQ(grav_client::resolveClientDrawCap(config), grav_protocol::kSnapshotMaxPoints);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_013_ResolveCapsUseEnvironmentOverrides)
 {
     SimulationConfig config;
@@ -54,7 +55,6 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_013_ResolveCapsUseEnvironmentOverrides)
     EXPECT_EQ(grav_client::resolveClientDrawCap(config), 77u);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_014_NormalizeInferAndExtensionCoverAliases)
 {
     EXPECT_EQ(grav_client::normalizeExportFormat("BINARY"), "bin");
@@ -73,7 +73,6 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_014_NormalizeInferAndExtensionCoverAliase
     EXPECT_EQ(grav_client::inferExportFormatFromPath("frame.noext"), "");
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_015_BuildSuggestedExportPathUsesExpectedPattern)
 {
     const std::string withDirectory =
@@ -87,7 +86,6 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_015_BuildSuggestedExportPathUsesExpectedP
     EXPECT_TRUE(hasExpectedSuggestedName(defaultExportPath.filename().string(), 9u));
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_016_EnvironmentOverridesClampServerAndDrawCaps)
 {
     testsupport::ScopedEnvVar serverParticles("GRAVITY_SERVER_PARTICLES", "2");
@@ -99,7 +97,6 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_016_EnvironmentOverridesClampServerAndDra
     EXPECT_EQ(grav_client::resolveClientDrawCap(config), grav_protocol::kSnapshotMaxPoints);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_017_InvalidEnvironmentOverridesPreserveConfiguredValues)
 {
     testsupport::ScopedEnvVar serverParticles("GRAVITY_SERVER_PARTICLES", "bad");
@@ -111,7 +108,6 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_017_InvalidEnvironmentOverridesPreserveCo
     EXPECT_EQ(grav_client::resolveClientDrawCap(config), 77u);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_018_BuildSuggestedExportPathUnknownFormatOmitsExtension)
 {
     const std::string path = grav_client::buildSuggestedExportPath("exports", "mystery", 3u);
@@ -122,7 +118,6 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_018_BuildSuggestedExportPathUnknownFormat
     EXPECT_TRUE(exportPath.extension().string().empty());
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_019_EnvironmentOverridesBelowMinimumAreRejected)
 {
     testsupport::ScopedEnvVar serverParticles("GRAVITY_SERVER_PARTICLES", "1");
@@ -134,7 +129,6 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_019_EnvironmentOverridesBelowMinimumAreRe
     EXPECT_EQ(grav_client::resolveClientDrawCap(config), 500u);
 }
 
-/// Description: Executes the TEST operation.
 TEST(ClientCommonTest, TST_UNT_MODHOST_020_InferExportFormatAcceptsBinaryExtensionAlias)
 {
     EXPECT_EQ(grav_client::inferExportFormatFromPath("checkpoint.binary"), "bin");

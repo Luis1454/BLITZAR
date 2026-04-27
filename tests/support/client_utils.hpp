@@ -1,5 +1,9 @@
-// File: tests/support/client_utils.hpp
-// Purpose: Verification coverage for the BLITZAR quality gate.
+/*
+ * @file tests/support/client_utils.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
 
 #ifndef GRAVITY_TESTS_SUPPORT_CLIENT_UTILS_HPP_
 #define GRAVITY_TESTS_SUPPORT_CLIENT_UTILS_HPP_
@@ -8,7 +12,6 @@
 #include <string>
 
 namespace testsupport {
-/// Description: Describes the make transport operation contract.
 grav_client::ClientTransportArgs makeTransport(std::uint16_t port,
                                                const std::string& serverExecutable);
 } // namespace testsupport

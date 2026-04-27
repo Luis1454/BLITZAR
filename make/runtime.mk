@@ -1,5 +1,7 @@
-# File: make/runtime.mk
-# Purpose: Source artifact for the BLITZAR project.
+# @file make/runtime.mk
+# @author Luis1454
+# @project BLITZAR
+# @brief Makefile fragments for local quality and runtime workflows.
 
 run: pre-run gui
 

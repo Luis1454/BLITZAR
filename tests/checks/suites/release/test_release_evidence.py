@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# File: tests/checks/suites/release/test_release_evidence.py
-# Purpose: Verification coverage for the BLITZAR quality gate.
+# @file tests/checks/suites/release/test_release_evidence.py
+# @author Luis1454
+# @project BLITZAR
+# @brief Automated verification assets for BLITZAR quality gates.
 
 from __future__ import annotations
 
@@ -15,19 +17,30 @@ from python_tools.ci.release_quality_index import ReleaseQualityIndexBuilder, Re
 from python_tools.ci.release_support import build_release_lane_activities, build_release_lane_analyzers
 
 
-# Description: Executes the _write_json operation.
+# @brief Documents the write json operation contract.
+# @param path Input value used by this contract.
+# @param payload Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _write_json(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
-# Description: Executes the _write_text operation.
+# @brief Documents the write text operation contract.
+# @param path Input value used by this contract.
+# @param content Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _write_text(path: Path, content: str = "sample\n") -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
 
 
-# Description: Executes the _seed_repo operation.
+# @brief Documents the seed repo operation contract.
+# @param root Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _seed_repo(root: Path) -> None:
     _write_json(root / "docs/quality/quality_manifest.json", {"metadata": {"system": "test", "revision": "2026-03-07"}, "includes": ["manifest/evidence.json", "manifest/requirements.json", "manifest/deviations.json"]})
     _write_json(
@@ -109,13 +122,20 @@ def _seed_repo(root: Path) -> None:
         _write_text(root / rel)
 
 
-# Description: Executes the _read_json_from_archive operation.
+# @brief Documents the read json from archive operation contract.
+# @param archive Input value used by this contract.
+# @param member Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _read_json_from_archive(archive: Path, member: str) -> tuple[dict[str, object], list[str]]:
     with zipfile.ZipFile(archive) as bundle:
         return json.loads(bundle.read(member)), bundle.namelist()
 
 
-# Description: Executes the test_release_evidence_packager_packages_selected_requirements operation.
+# @brief Documents the test release evidence packager packages selected requirements operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_release_evidence_packager_packages_selected_requirements(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     archive = ReleaseEvidencePackager().package(
@@ -141,7 +161,10 @@ def test_release_evidence_packager_packages_selected_requirements(tmp_path: Path
     assert "README.md" in names
 
 
-# Description: Executes the test_release_evidence_packager_defaults_and_rejects_unknown_requirements operation.
+# @brief Documents the test release evidence packager defaults and rejects unknown requirements operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_release_evidence_packager_defaults_and_rejects_unknown_requirements(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     archive = ReleaseEvidencePackager().package(root=tmp_path, dist_dir=tmp_path / "dist/evidence-pack", tag="rc-2", profile="prod")
@@ -158,7 +181,10 @@ def test_release_evidence_packager_defaults_and_rejects_unknown_requirements(tmp
         )
 
 
-# Description: Executes the test_release_quality_index_packages_selected_requirements operation.
+# @brief Documents the test release quality index packages selected requirements operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_release_quality_index_packages_selected_requirements(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     archive = ReleaseQualityIndexBuilder().package(
@@ -183,7 +209,10 @@ def test_release_quality_index_packages_selected_requirements(tmp_path: Path) ->
     assert "README.md" in names
 
 
-# Description: Executes the test_release_quality_index_defaults_and_rejects_unknown_requirements operation.
+# @brief Documents the test release quality index defaults and rejects unknown requirements operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_release_quality_index_defaults_and_rejects_unknown_requirements(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     archive = ReleaseQualityIndexBuilder().package(root=tmp_path, dist_dir=tmp_path / "dist/release-quality-index", tag="rc-2", profile="prod")
