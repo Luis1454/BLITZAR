@@ -1,3 +1,6 @@
+// File: engine/include/physics/ParticleSystem.hpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
 #define GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
 

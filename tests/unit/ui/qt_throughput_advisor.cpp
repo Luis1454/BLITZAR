@@ -1,3 +1,6 @@
+// File: tests/unit/ui/qt_throughput_advisor.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationConfig.hpp"
 #include "ui/ThroughputAdvisor.hpp"
 #include <gtest/gtest.h>

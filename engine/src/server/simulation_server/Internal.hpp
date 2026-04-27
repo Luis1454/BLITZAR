@@ -1,3 +1,6 @@
+// File: engine/src/server/simulation_server/Internal.hpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #ifndef GRAVITY_ENGINE_SRC_SERVER_SIMULATION_SERVER_INTERNAL_HPP_
 #define GRAVITY_ENGINE_SRC_SERVER_SIMULATION_SERVER_INTERNAL_HPP_
 #include "config/EnvUtils.hpp"

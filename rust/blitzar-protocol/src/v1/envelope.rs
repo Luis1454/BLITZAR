@@ -1,3 +1,6 @@
+// File: rust/blitzar-protocol/src/v1/envelope.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]

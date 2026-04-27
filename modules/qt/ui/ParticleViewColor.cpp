@@ -1,3 +1,6 @@
+// File: modules/qt/ui/ParticleViewColor.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/ParticleViewColor.hpp"
 namespace grav_qt {
 QRgb toQRgb(const grav::ColorRGBA& c)

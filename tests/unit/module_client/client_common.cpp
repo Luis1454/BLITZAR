@@ -1,3 +1,6 @@
+// File: tests/unit/module_client/client_common.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ClientCommon.hpp"
 #include "config/SimulationConfig.hpp"
 #include "protocol/ServerProtocol.hpp"

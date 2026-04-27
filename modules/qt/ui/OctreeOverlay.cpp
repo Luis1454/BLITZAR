@@ -1,3 +1,6 @@
+// File: modules/qt/ui/OctreeOverlay.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/OctreeOverlay.hpp"
 #include <algorithm>
 #include <array>

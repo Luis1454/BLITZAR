@@ -1,3 +1,6 @@
+// File: engine/src/physics/cuda/fragments/ParticleSystemSphGrid.inl
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 /*
  * Module: physics/cuda
  * Responsibility: Build and maintain the SPH spatial hash grid.

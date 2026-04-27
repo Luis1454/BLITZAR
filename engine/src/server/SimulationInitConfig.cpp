@@ -1,3 +1,6 @@
+// File: engine/src/server/SimulationInitConfig.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "server/SimulationInitConfig.hpp"
 #include "config/SimulationConfig.hpp"
 #include <algorithm>

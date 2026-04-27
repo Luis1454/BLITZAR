@@ -1,6 +1,11 @@
+// File: modules/qt/include/ui/EnergyGraphWidget.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_ENERGYGRAPHWIDGET_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_ENERGYGRAPHWIDGET_HPP_
-/* * Module: ui * Responsibility: Render the recent energy history exposed by the client runtime.
+/*
+ * Module: ui
+ * Responsibility: Render the recent energy history exposed by the client runtime.
  */
 #include "ui/QtViewMath.hpp"
 #include <QStringList>

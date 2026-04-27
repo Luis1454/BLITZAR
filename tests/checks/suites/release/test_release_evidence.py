@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: tests/checks/suites/release/test_release_evidence.py
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 from __future__ import annotations
 
 import json

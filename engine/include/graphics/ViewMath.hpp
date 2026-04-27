@@ -1,3 +1,6 @@
+// File: engine/include/graphics/ViewMath.hpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #ifndef GRAVITY_ENGINE_INCLUDE_GRAPHICS_VIEWMATH_HPP_
 #define GRAVITY_ENGINE_INCLUDE_GRAPHICS_VIEWMATH_HPP_
 #include "graphics/GraphicsTypes.hpp"

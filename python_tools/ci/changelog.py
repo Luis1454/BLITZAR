@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/ci/changelog.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 """Changelog generator from Conventional Commits git history."""
 from __future__ import annotations
 

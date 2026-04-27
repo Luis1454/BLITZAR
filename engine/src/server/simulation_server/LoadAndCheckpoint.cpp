@@ -1,3 +1,6 @@
+// File: engine/src/server/simulation_server/LoadAndCheckpoint.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
 SimulationConfig SimulationServer::getRuntimeConfig() const
 {

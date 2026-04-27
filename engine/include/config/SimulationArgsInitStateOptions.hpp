@@ -1,3 +1,6 @@
+// File: engine/include/config/SimulationArgsInitStateOptions.hpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSINITSTATEOPTIONS_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSINITSTATEOPTIONS_HPP_
 #include "config/SimulationArgs.hpp"

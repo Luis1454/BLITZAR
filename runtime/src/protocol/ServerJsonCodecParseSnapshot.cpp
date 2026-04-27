@@ -1,3 +1,6 @@
+// File: runtime/src/protocol/ServerJsonCodecParseSnapshot.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "protocol/ServerJsonCodec.hpp"
 #include <cctype>
 namespace grav_protocol {

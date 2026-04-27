@@ -1,3 +1,6 @@
+// File: tests/unit/module_cli/command_batch_runner.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "command/CommandBatchRunner.hpp"
 #include "command/CommandContext.hpp"
 #include "command/CommandTransport.hpp"

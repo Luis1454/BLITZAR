@@ -1,3 +1,6 @@
+// File: engine/src/graphics/ColorPipeline.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "graphics/ColorPipeline.hpp"
 #include <algorithm>
 #include <array>

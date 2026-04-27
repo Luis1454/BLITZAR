@@ -1,3 +1,6 @@
+// File: engine/src/platform/common/PlatformProcessCommon.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/common/PlatformProcessCommon.hpp"
 namespace grav_platform {
 std::string quoteProcessArg(const std::string& arg)

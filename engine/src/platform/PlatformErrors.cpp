@@ -1,3 +1,6 @@
+// File: engine/src/platform/PlatformErrors.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/PlatformErrors.hpp"
 namespace grav_platform_errors {
 const std::string_view kInvalidLibraryHandleOrSymbol = "invalid library handle or symbol name";

@@ -1,3 +1,6 @@
+// File: runtime/src/command/CommandTransport.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "command/CommandTransport.hpp"
 namespace grav_cmd {
 ServerClientCommandTransport::ServerClientCommandTransport(int timeoutMs) : _client()

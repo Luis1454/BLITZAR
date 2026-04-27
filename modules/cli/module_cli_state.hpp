@@ -1,3 +1,6 @@
+// File: modules/cli/module_cli_state.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_CLI_MODULE_CLI_STATE_HPP_
 #define GRAVITY_MODULES_CLI_MODULE_CLI_STATE_HPP_
 #include "command/CommandContext.hpp"

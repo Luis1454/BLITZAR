@@ -1,3 +1,6 @@
+// File: tests/unit/config/env_utils.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/EnvUtils.hpp"
 #include <gtest/gtest.h>
 TEST(EnvUtilsTest, TST_UNT_CONF_040_ParseBoolReturnsTrueForValidTrues)

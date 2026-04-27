@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/ci/python_quality_gate.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import shutil

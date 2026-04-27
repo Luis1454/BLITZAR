@@ -1,7 +1,13 @@
+// File: engine/include/config/SimulationConfig.hpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
-/* * Module: config * Responsibility: Define the persistent simulation and client configuration
- * surface. */
+/*
+ * Module: config
+ * Responsibility: Define the persistent simulation and client configuration
+ * surface.
+ */
 #include <cstdint>
 #include <string>
 /// Stores the persisted runtime, rendering, export, and scenario initialization parameters.

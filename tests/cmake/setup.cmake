@@ -1,3 +1,6 @@
+# File: tests/cmake/setup.cmake
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 if(NOT DEFINED GRAVITY_GRAPHICS_SOURCES)
     set(GRAVITY_GRAPHICS_SOURCES
         "${GRAVITY_ROOT_DIR}/engine/src/graphics/ViewMath.cpp"

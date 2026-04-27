@@ -1,3 +1,6 @@
+// File: engine/src/platform/win/PlatformProcessWin.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/win/PlatformProcessWin.hpp"
 #include "platform/PlatformErrors.hpp"
 #include "platform/PlatformProcess.hpp"

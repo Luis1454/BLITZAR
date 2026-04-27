@@ -1,3 +1,6 @@
+// File: apps/launcher/main.cpp
+// Purpose: Application entry point or host support for BLITZAR executables.
+
 #include "platform/PlatformPaths.hpp"
 #include "platform/PlatformProcess.hpp"
 #include <algorithm>

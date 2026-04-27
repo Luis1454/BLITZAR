@@ -1,3 +1,6 @@
+# File: cmake/core/profile.cmake
+# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+
 set(APP_NAME blitzar)
 set(HEADLESS_NAME blitzar-headless)
 set(SERVER_DAEMON_NAME blitzar-server)

@@ -1,3 +1,6 @@
+// File: tests/unit/ui/qt_mainwindow_presenter.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "ui/MainWindowPresenter.hpp"
 #include <gtest/gtest.h>
 #include <limits>

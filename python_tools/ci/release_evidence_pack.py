@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/ci/release_evidence_pack.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import json

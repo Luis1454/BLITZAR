@@ -1,3 +1,6 @@
+// File: engine/src/graphics/ViewMath.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "graphics/ViewMath.hpp"
 #include <algorithm>
 #include <cmath>

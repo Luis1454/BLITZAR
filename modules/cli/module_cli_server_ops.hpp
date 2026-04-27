@@ -1,3 +1,6 @@
+// File: modules/cli/module_cli_server_ops.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_CLI_MODULE_CLI_SERVER_OPS_HPP_
 #define GRAVITY_MODULES_CLI_MODULE_CLI_SERVER_OPS_HPP_
 #include "client/ErrorBuffer.hpp"

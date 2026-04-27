@@ -1,3 +1,6 @@
+// File: runtime/src/protocol/ServerClient.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "protocol/ServerClient.hpp"
 #include "platform/SocketPlatform.hpp"
 #include "protocol/ServerProtocol.hpp"

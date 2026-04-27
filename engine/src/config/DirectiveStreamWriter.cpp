@@ -1,3 +1,6 @@
+// File: engine/src/config/DirectiveStreamWriter.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "config/DirectiveStreamWriter.hpp"
 #include "config/DirectiveValueFormatter.hpp"
 #include <ostream>

@@ -1,3 +1,6 @@
+# File: python_tools/policies/fmea_action_register.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import json

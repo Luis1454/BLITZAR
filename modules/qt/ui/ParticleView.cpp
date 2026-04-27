@@ -1,3 +1,6 @@
+// File: modules/qt/ui/ParticleView.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/ParticleView.hpp"
 #include "ui/OctreeOverlay.hpp"
 #include "ui/OctreeOverlayPainter.hpp"

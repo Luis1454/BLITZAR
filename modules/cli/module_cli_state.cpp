@@ -1,3 +1,6 @@
+// File: modules/cli/module_cli_state.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "modules/cli/module_cli_state.hpp"
 #include "config/SimulationConfig.hpp"
 namespace grav_module_cli {

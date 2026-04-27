@@ -1,3 +1,6 @@
+// File: tests/unit/graphics/TST_UNT_GRA_GraphicsTests.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "graphics/ColorPipeline.hpp"
 #include "graphics/ViewMath.hpp"
 #include <gtest/gtest.h>

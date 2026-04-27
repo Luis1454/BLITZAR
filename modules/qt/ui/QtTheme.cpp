@@ -1,3 +1,6 @@
+// File: modules/qt/ui/QtTheme.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/QtTheme.hpp"
 #include <QColor>
 namespace grav_qt {

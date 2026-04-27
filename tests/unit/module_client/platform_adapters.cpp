@@ -1,3 +1,6 @@
+// File: tests/unit/module_client/platform_adapters.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "platform/DynamicLibrary.hpp"
 #include "platform/PlatformProcess.hpp"
 #include "platform/SocketPlatform.hpp"

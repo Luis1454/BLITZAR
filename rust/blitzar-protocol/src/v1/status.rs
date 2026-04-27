@@ -1,3 +1,6 @@
+// File: rust/blitzar-protocol/src/v1/status.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use crate::v1::ResponseEnvelope;
 use serde::{Deserialize, Serialize};
 

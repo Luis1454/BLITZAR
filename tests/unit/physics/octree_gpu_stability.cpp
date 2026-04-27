@@ -1,3 +1,6 @@
+// File: tests/unit/physics/octree_gpu_stability.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 /*
  * Test: octree_gpu_stability
  * Responsibility: Verify octree_gpu solver does not hang after step 1 (issue #386)

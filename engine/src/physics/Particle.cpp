@@ -1,3 +1,6 @@
+// File: engine/src/physics/Particle.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 /*
 ** EPITECH PROJECT, 2024
 ** rtxcpp

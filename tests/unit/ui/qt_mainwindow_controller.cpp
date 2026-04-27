@@ -1,3 +1,6 @@
+// File: tests/unit/ui/qt_mainwindow_controller.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/IClientRuntime.hpp"
 #include "config/SimulationConfig.hpp"
 #include "ui/MainWindowController.hpp"

@@ -1,3 +1,6 @@
+// File: runtime/src/client/ClientModuleHandle.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "client/ClientModuleHandle.hpp"
 #include "runtime/src/client/ClientModuleHandleInternal.hpp"
 #include <array>

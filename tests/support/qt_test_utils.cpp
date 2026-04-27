@@ -1,3 +1,6 @@
+// File: tests/support/qt_test_utils.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "tests/support/qt_test_utils.hpp"
 #include "tests/support/poll_utils.hpp"
 #include "ui/MainWindow.hpp"

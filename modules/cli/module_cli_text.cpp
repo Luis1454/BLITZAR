@@ -1,3 +1,6 @@
+// File: modules/cli/module_cli_text.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "modules/cli/module_cli_text.hpp"
 #include <algorithm>
 #include <cctype>

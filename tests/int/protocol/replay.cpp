@@ -1,3 +1,6 @@
+// File: tests/int/protocol/replay.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "protocol/ServerClient.hpp"
 #include "protocol/ServerProtocol.hpp"
 #include "tests/support/server_harness.hpp"

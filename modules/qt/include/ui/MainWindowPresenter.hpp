@@ -1,7 +1,13 @@
+// File: modules/qt/include/ui/MainWindowPresenter.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOWPRESENTER_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOWPRESENTER_HPP_
-/* * Module: ui * Responsibility: Format runtime telemetry into user-facing status strings for the
- * Qt workspace. */
+/*
+ * Module: ui
+ * Responsibility: Format runtime telemetry into user-facing status strings for the
+ * Qt workspace.
+ */
 #include "client/IClientRuntime.hpp"
 #include <cstddef>
 #include <cstdint>

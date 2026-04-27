@@ -1,3 +1,6 @@
+// File: engine/src/config/SimulationScenarioValidationRender.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "config/SimulationScenarioValidationRender.hpp"
 #include <sstream>
 namespace grav_config {

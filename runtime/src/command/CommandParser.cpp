@@ -1,3 +1,6 @@
+// File: runtime/src/command/CommandParser.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "command/CommandParser.hpp"
 #include "command/CommandCatalog.hpp"
 #include <algorithm>

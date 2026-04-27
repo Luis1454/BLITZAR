@@ -1,3 +1,6 @@
+// File: engine/src/platform/common/DynamicLibraryCommon.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/common/DynamicLibraryCommon.hpp"
 #include "platform/PlatformErrors.hpp"
 #include "platform/internal/DynamicLibraryOps.hpp"

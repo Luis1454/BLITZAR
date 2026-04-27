@@ -1,3 +1,6 @@
+// File: tests/support/numerical_validation_tool.hpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #ifndef GRAVITY_TESTS_SUPPORT_NUMERICAL_VALIDATION_TOOL_HPP_
 #define GRAVITY_TESTS_SUPPORT_NUMERICAL_VALIDATION_TOOL_HPP_
 #include <iosfwd>

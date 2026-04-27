@@ -1,3 +1,6 @@
+// File: engine/src/physics/cuda/TestKernel.cu
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include <cstdio>
 #include <cuda_runtime.h>
 __global__ void minimalTestKernel(int value)

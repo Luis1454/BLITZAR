@@ -1,3 +1,6 @@
+// File: rust/blitzar-web-gateway/src/main.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use blitzar_web_gateway::api::{WebGatewayState, build_router};
 use blitzar_web_gateway::args::{help, parse_args};
 use blitzar_web_gateway::backend::{BackendClient, BackendConfig};

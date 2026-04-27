@@ -1,3 +1,6 @@
+// File: engine/src/config/SimulationOptionRegistryInternal.hpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #ifndef GRAVITY_SIM_SIMULATIONOPTIONREGISTRYINTERNAL_HPP
 #define GRAVITY_SIM_SIMULATIONOPTIONREGISTRYINTERNAL_HPP
 #include "config/SimulationArgsParse.hpp"

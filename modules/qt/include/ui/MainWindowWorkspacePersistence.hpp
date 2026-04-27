@@ -1,6 +1,11 @@
+// File: modules/qt/include/ui/MainWindowWorkspacePersistence.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOWWORKSPACEPERSISTENCE_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOWWORKSPACEPERSISTENCE_HPP_
-/* * Module: ui * Responsibility: Mirror the MainWindow workspace persistence implementation unit.
+/*
+ * Module: ui
+ * Responsibility: Mirror the MainWindow workspace persistence implementation unit.
  */
 #include "ui/MainWindow.hpp"
 #endif // GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOWWORKSPACEPERSISTENCE_HPP_

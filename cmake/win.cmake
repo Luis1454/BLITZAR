@@ -1,3 +1,6 @@
+# File: cmake/win.cmake
+# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+
 option(
     GRAVITY_WINDOWS_AUTODETECT_TOOLCHAIN
     "Autodetect MSVC/Windows SDK paths and mutate PATH/INCLUDE/LIB during configure (Windows only)"

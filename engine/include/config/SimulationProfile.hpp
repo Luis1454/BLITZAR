@@ -1,3 +1,6 @@
+// File: engine/include/config/SimulationProfile.hpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONPROFILE_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONPROFILE_HPP_
 #include <string>

@@ -1,7 +1,13 @@
+// File: modules/qt/include/ui/ParticleView.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEW_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEW_HPP_
-/* * Module: ui * Responsibility: Render a single particle projection or 3D view inside the Qt
- * workspace. */
+/*
+ * Module: ui
+ * Responsibility: Render a single particle projection or 3D view inside the Qt
+ * workspace.
+ */
 #include "ui/OctreeOverlay.hpp"
 #include "ui/QtViewMath.hpp"
 #include <QImage>

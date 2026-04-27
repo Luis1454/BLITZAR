@@ -1,3 +1,6 @@
+// File: tests/unit/protocol/json_codec_parse.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "protocol/ServerJsonCodec.hpp"
 #include <gtest/gtest.h>
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_031_ParseCommandRequestValid)

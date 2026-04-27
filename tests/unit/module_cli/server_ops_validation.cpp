@@ -1,3 +1,6 @@
+// File: tests/unit/module_cli/server_ops_validation.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ErrorBuffer.hpp"
 #include "modules/cli/module_cli_server_ops.hpp"
 #include "modules/cli/module_cli_state.hpp"

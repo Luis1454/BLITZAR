@@ -1,3 +1,6 @@
+// File: tests/support/numerical_validation_tool.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "tests/support/numerical_validation_tool.hpp"
 #include "tests/support/physics_scenario.hpp"
 #include <array>

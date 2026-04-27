@@ -1,3 +1,6 @@
+# File: cmake/apps.cmake
+# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+
 set(GRAVITY_PLATFORM_SOURCES
     engine/src/platform/PlatformErrors.cpp
     engine/src/platform/common/DynamicLibraryCommon.cpp

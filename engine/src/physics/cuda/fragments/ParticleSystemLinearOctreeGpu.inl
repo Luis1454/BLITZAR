@@ -1,3 +1,6 @@
+// File: engine/src/physics/cuda/fragments/ParticleSystemLinearOctreeGpu.inl
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 /*
  * Module: physics/cuda
  * Responsibility: Build a true 8-way octree fully on GPU.

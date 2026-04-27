@@ -1,3 +1,6 @@
+// File: modules/qt/ui/MainWindowControls.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "config/SimulationPerformanceProfile.hpp"
 #include "config/SimulationProfile.hpp"
 #include "ui/MainWindow.hpp"

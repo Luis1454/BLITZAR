@@ -1,3 +1,6 @@
+// File: engine/src/server/simulation_server/SnapshotAndEnergy.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
 void SimulationServer::publishSnapshot()
 {

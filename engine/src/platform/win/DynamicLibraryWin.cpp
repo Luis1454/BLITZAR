@@ -1,3 +1,6 @@
+// File: engine/src/platform/win/DynamicLibraryWin.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/win/DynamicLibraryWin.hpp"
 #include <windows.h>
 namespace grav_platform_detail {

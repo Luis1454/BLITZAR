@@ -1,3 +1,6 @@
+// File: tests/unit/module_client/client_module_boundary.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ClientModuleBoundary.hpp"
 #include "client/ClientModuleHash.hpp"
 #include "client/ClientModuleManifest.hpp"

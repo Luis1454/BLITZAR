@@ -1,3 +1,6 @@
+// File: engine/src/platform/common/PlatformProcessCommonImpl.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/common/PlatformProcessCommonImpl.hpp"
 #include "platform/PlatformErrors.hpp"
 #include "platform/internal/ProcessOps.hpp"

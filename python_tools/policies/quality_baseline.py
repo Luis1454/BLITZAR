@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/policies/quality_baseline.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 from pathlib import Path

@@ -1,3 +1,6 @@
+// File: tests/unit/ui/qt_octree_overlay.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "ui/OctreeOverlay.hpp"
 #include <gtest/gtest.h>
 #include <vector>

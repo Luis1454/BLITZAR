@@ -1,3 +1,6 @@
+// File: engine/src/server/simulation_server/LifecycleControls.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
 SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
     : _running(false),

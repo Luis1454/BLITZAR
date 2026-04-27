@@ -1,3 +1,6 @@
+// File: engine/src/platform/win/SocketPlatformWin.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/win/SocketPlatformWin.hpp"
 #include <cstring>
 #include <winsock2.h>

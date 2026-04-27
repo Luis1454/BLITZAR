@@ -1,3 +1,6 @@
+// File: engine/src/platform/win/PlatformPathsWin.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/win/PlatformPathsWin.hpp"
 namespace grav_platform {
 std::string executableName(std::string_view basename)

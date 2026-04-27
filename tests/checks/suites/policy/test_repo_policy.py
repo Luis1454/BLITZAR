@@ -1,3 +1,6 @@
+# File: tests/checks/suites/policy/test_repo_policy.py
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 from __future__ import annotations
 
 from pathlib import Path

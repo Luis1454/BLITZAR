@@ -1,3 +1,6 @@
+// File: tests/unit/physics/octree_criteria.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationConfig.hpp"
 #include "physics/ForceLawPolicy.hpp"
 #include "physics/Octree.hpp"

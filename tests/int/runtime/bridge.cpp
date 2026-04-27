@@ -1,3 +1,6 @@
+// File: tests/int/runtime/bridge.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ClientServerBridge.hpp"
 #include "tests/support/poll_utils.hpp"
 #include "tests/support/server_harness.hpp"

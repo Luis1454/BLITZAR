@@ -1,3 +1,6 @@
+// File: rust/blitzar-protocol/tests/protocol.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use blitzar_protocol::codec;
 use blitzar_protocol::framing;
 use blitzar_protocol::schema;

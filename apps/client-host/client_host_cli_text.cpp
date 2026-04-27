@@ -1,3 +1,6 @@
+// File: apps/client-host/client_host_cli_text.cpp
+// Purpose: Application entry point or host support for BLITZAR executables.
+
 #include "apps/client-host/client_host_cli_text.hpp"
 #include <algorithm>
 #include <cctype>

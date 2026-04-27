@@ -1,3 +1,6 @@
+# File: cmake/core/clang-format.cmake
+# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+
 # clang-format target for code style enforcement
 
 set(GRAVITY_CLANG_FORMAT_EXECUTABLE "" CACHE FILEPATH "Path to clang-format executable")

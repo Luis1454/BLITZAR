@@ -1,6 +1,11 @@
+// File: modules/qt/include/ui/ParticleViewColor.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEWCOLOR_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEWCOLOR_HPP_
-/* * Module: ui * Responsibility: Convert simulation attributes into Qt-friendly particle colors.
+/*
+ * Module: ui
+ * Responsibility: Convert simulation attributes into Qt-friendly particle colors.
  */
 #include "graphics/ColorPipeline.hpp"
 #include <QColor>

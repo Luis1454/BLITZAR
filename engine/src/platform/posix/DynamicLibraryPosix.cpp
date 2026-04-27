@@ -1,3 +1,6 @@
+// File: engine/src/platform/posix/DynamicLibraryPosix.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/posix/DynamicLibraryPosix.hpp"
 #include <dlfcn.h>
 namespace grav_platform_detail {

@@ -1,3 +1,6 @@
+// File: rust/blitzar-web-gateway/src/events.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use blitzar_protocol::v1::{SnapshotPayload, StatusPayload};
 use serde::Serialize;
 use serde_json::Value;

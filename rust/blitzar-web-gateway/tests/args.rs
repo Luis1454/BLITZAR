@@ -1,3 +1,6 @@
+// File: rust/blitzar-web-gateway/tests/args.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use blitzar_web_gateway::args::{GatewayOptions, parse_args};
 
 #[test]

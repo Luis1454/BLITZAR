@@ -1,3 +1,6 @@
+// File: rust/blitzar-web-gateway/src/ws.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use crate::api::WebGatewayState;
 use crate::error::GatewayError;
 use crate::events::{command_event, error_event, snapshot_event, status_event};

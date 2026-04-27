@@ -1,3 +1,6 @@
+// File: engine/include/platform/PlatformErrors.hpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #ifndef GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMERRORS_HPP_
 #define GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMERRORS_HPP_
 #include <string_view>

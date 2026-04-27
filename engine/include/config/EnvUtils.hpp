@@ -1,3 +1,6 @@
+// File: engine/include/config/EnvUtils.hpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_ENVUTILS_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_ENVUTILS_HPP_
 #include "config/TextParse.hpp"

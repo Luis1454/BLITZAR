@@ -1,3 +1,6 @@
+// File: tests/unit/module_cli/command_executor.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "command/CommandContext.hpp"
 #include "command/CommandExecutor.hpp"
 #include "command/CommandParser.hpp"

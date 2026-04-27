@@ -1,3 +1,6 @@
+// File: modules/cli/module_cli_lifecycle.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_CLI_MODULE_CLI_LIFECYCLE_HPP_
 #define GRAVITY_MODULES_CLI_MODULE_CLI_LIFECYCLE_HPP_
 #include "client/ClientModuleApi.hpp"

@@ -1,3 +1,6 @@
+// File: modules/qt/ui/MultiViewWidget.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/MultiViewWidget.hpp"
 #include <QGridLayout>
 #include <QSizePolicy>

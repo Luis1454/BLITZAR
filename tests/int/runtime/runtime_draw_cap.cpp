@@ -1,3 +1,6 @@
+// File: tests/int/runtime/runtime_draw_cap.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ClientCommon.hpp"
 #include "config/SimulationConfig.hpp"
 #include "protocol/ServerProtocol.hpp"

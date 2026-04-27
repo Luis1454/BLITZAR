@@ -1,3 +1,6 @@
+// File: runtime/src/command/CommandBatchRunner.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "command/CommandBatchRunner.hpp"
 #include "command/CommandExecutor.hpp"
 #include "command/CommandParser.hpp"

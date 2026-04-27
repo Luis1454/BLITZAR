@@ -1,3 +1,6 @@
+// File: rust/blitzar-protocol/src/v1/command.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;

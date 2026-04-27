@@ -1,3 +1,6 @@
+// File: engine/src/config/SimulationArgsInitOptions.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "config/SimulationArgsInitOptions.hpp"
 #include "config/SimulationArgsFluidOptions.hpp"
 #include "config/SimulationArgsInitStateOptions.hpp"

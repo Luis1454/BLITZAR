@@ -1,3 +1,6 @@
+# File: cmake/core/targets.cmake
+# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+
 function(gravity_apply_windows_paths target_name)
     if(NOT WIN32)
         return()

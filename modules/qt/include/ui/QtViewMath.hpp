@@ -1,7 +1,13 @@
+// File: modules/qt/include/ui/QtViewMath.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_QTVIEWMATH_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_QTVIEWMATH_HPP_
-/* * Module: ui * Responsibility: Provide Qt-specific geometric helpers shared by particle and
- * energy widgets. */
+/*
+ * Module: ui
+ * Responsibility: Provide Qt-specific geometric helpers shared by particle and
+ * energy widgets.
+ */
 #include "graphics/ViewMath.hpp"
 #include <QPointF>
 #include <QRect>

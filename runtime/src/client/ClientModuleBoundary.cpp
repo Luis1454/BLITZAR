@@ -1,3 +1,6 @@
+// File: runtime/src/client/ClientModuleBoundary.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "client/ClientModuleBoundary.hpp"
 namespace grav_module {
 ClientModuleOpaqueState::ClientModuleOpaqueState() noexcept : m_opaqueValue(0u)

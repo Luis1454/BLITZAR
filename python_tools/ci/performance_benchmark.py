@@ -1,3 +1,6 @@
+# File: python_tools/ci/performance_benchmark.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import json

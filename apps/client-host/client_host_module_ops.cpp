@@ -1,3 +1,6 @@
+// File: apps/client-host/client_host_module_ops.cpp
+// Purpose: Application entry point or host support for BLITZAR executables.
+
 #include "apps/client-host/client_host_module_ops.hpp"
 #include "apps/client-host/client_host_cli_text.hpp"
 #include "client/ClientModuleHandle.hpp"

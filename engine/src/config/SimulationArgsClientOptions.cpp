@@ -1,3 +1,6 @@
+// File: engine/src/config/SimulationArgsClientOptions.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "config/SimulationArgsClientOptions.hpp"
 #include "config/SimulationOptionRegistry.hpp"
 bool SimulationArgsClientOptions::apply(const std::string& key, const std::string& value,

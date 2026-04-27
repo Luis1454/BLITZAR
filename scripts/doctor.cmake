@@ -1,3 +1,6 @@
+# File: scripts/doctor.cmake
+# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+
 cmake_minimum_required(VERSION 3.24)
 
 if(NOT DEFINED QT_DIR OR QT_DIR STREQUAL "")

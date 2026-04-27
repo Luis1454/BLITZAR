@@ -1,3 +1,6 @@
+// File: engine/src/platform/common/SocketPlatformCommon.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/common/SocketPlatformCommon.hpp"
 #include "platform/internal/SocketOps.hpp"
 #include <algorithm>

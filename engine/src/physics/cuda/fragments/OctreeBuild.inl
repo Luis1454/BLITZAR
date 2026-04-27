@@ -1,3 +1,6 @@
+// File: engine/src/physics/cuda/fragments/OctreeBuild.inl
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 /*
  * Module: physics/cuda
  * Responsibility: Implement CPU-side octree construction primitives.

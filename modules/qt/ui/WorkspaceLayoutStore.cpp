@@ -1,3 +1,6 @@
+// File: modules/qt/ui/WorkspaceLayoutStore.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/WorkspaceLayoutStore.hpp"
 
 #include <algorithm>

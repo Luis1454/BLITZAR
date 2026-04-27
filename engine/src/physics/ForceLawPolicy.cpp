@@ -1,3 +1,6 @@
+// File: engine/src/physics/ForceLawPolicy.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "physics/ForceLawPolicy.hpp"
 #include <algorithm>
 ForceLawPolicy resolveForceLawPolicy(float theta, float softening, float minSoftening,

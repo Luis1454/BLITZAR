@@ -1,3 +1,6 @@
+# File: cmake/rust.cmake
+# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+
 find_program(GRAVITY_CARGO_EXECUTABLE cargo REQUIRED)
 
 if(DEFINED GRAVITY_ROOT_DIR)

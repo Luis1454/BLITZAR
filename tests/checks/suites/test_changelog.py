@@ -1,3 +1,6 @@
+# File: tests/checks/suites/test_changelog.py
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 """Unit tests for the changelog generator."""
 from __future__ import annotations
 

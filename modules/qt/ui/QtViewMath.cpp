@@ -1,3 +1,6 @@
+// File: modules/qt/ui/QtViewMath.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/QtViewMath.hpp"
 namespace grav_qt {
 QPointF toQPointF(const grav::Point2D& p)

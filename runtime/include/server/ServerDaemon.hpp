@@ -1,3 +1,6 @@
+// File: runtime/include/server/ServerDaemon.hpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #ifndef GRAVITY_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_
 #include <atomic>

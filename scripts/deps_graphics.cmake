@@ -1,3 +1,6 @@
+# File: scripts/deps_graphics.cmake
+# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+
 cmake_minimum_required(VERSION 3.24)
 
 if(NOT DEFINED TRIPLET OR TRIPLET STREQUAL "")

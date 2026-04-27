@@ -1,3 +1,6 @@
+// File: runtime/include/ffi/BlitzarCoreApi.hpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #ifndef GRAVITY_RUNTIME_INCLUDE_FFI_BLITZARCOREAPI_H_
 #define GRAVITY_RUNTIME_INCLUDE_FFI_BLITZARCOREAPI_H_
 #include <stddef.h>

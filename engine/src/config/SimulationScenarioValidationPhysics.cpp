@@ -1,3 +1,6 @@
+// File: engine/src/config/SimulationScenarioValidationPhysics.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "config/SimulationScenarioValidationPhysics.hpp"
 #include "config/SimulationModes.hpp"
 #include <algorithm>

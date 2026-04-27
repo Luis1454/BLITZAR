@@ -1,3 +1,6 @@
+// File: runtime/src/ffi/BlitzarCoreOps.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "runtime/src/ffi/BlitzarCoreInternal.hpp"
 #include <algorithm>
 #include <chrono>

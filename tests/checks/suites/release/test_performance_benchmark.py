@@ -1,3 +1,6 @@
+# File: tests/checks/suites/release/test_performance_benchmark.py
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 from __future__ import annotations
 
 import json

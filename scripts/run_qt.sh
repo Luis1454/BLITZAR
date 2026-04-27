@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# File: scripts/run_qt.sh
+# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+
 set -euo pipefail
 
 BIN=""

@@ -1,3 +1,6 @@
+// File: rust/blitzar-protocol/src/schema.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use crate::LATEST_PROTOCOL_VERSION;
 use serde_json::Value;
 use serde_json::json;

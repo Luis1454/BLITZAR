@@ -1,3 +1,6 @@
+// File: rust/blitzar-web-gateway/tests/http.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use axum::body::Body;
 use axum::http::{Method, Request, StatusCode};
 use blitzar_web_gateway::api::{WebGatewayState, build_router};

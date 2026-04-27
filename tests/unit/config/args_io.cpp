@@ -1,3 +1,6 @@
+// File: tests/unit/config/args_io.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationScenarioValidation.hpp"
 #include "protocol/ServerProtocol.hpp"

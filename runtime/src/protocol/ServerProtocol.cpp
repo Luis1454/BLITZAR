@@ -1,3 +1,6 @@
+// File: runtime/src/protocol/ServerProtocol.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "protocol/ServerProtocol.hpp"
 namespace grav_protocol {
 const std::string_view SchemaVersion = "server-json-v1";

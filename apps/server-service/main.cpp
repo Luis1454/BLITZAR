@@ -1,3 +1,6 @@
+// File: apps/server-service/main.cpp
+// Purpose: Application entry point or host support for BLITZAR executables.
+
 #include "apps/server-service/server_args.hpp"
 #include "config/SimulationArgs.hpp"
 #include "config/SimulationConfig.hpp"

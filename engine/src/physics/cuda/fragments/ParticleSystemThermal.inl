@@ -1,3 +1,6 @@
+// File: engine/src/physics/cuda/fragments/ParticleSystemThermal.inl
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 /*
  * Module: physics/cuda
  * Responsibility: Apply thermal-model configuration and energy integration helpers.

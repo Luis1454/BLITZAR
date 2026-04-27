@@ -1,3 +1,6 @@
+// File: tests/support/physics_scenario.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "tests/support/physics_scenario.hpp"
 #include "tests/support/physics_test_utils.hpp"
 #include <algorithm>

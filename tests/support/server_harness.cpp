@@ -1,3 +1,6 @@
+// File: tests/support/server_harness.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "tests/support/server_harness.hpp"
 #include "protocol/ServerClient.hpp"
 #include "protocol/ServerProtocol.hpp"

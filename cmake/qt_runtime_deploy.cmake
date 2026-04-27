@@ -1,3 +1,6 @@
+# File: cmake/qt_runtime_deploy.cmake
+# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+
 set(GRAVITY_DEPLOY_QT_RUNTIME ON CACHE BOOL "Deploy Qt runtime plugins next to built Qt client artifacts on Windows")
 
 function(gravity_find_windeployqt out_var)

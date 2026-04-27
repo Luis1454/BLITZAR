@@ -1,3 +1,6 @@
+// File: tests/support/scoped_env_var.hpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #ifndef GRAVITY_TESTS_SUPPORT_SCOPED_ENV_VAR_HPP_
 #define GRAVITY_TESTS_SUPPORT_SCOPED_ENV_VAR_HPP_
 #include <string>

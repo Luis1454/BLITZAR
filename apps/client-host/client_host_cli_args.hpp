@@ -1,3 +1,6 @@
+// File: apps/client-host/client_host_cli_args.hpp
+// Purpose: Application entry point or host support for BLITZAR executables.
+
 #ifndef GRAVITY_APPS_MODULE_HOST_MODULE_HOST_CLI_ARGS_HPP_
 #define GRAVITY_APPS_MODULE_HOST_MODULE_HOST_CLI_ARGS_HPP_
 #include "apps/client-host/client_host_cli.hpp"

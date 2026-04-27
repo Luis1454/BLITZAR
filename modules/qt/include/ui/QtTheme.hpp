@@ -1,6 +1,11 @@
+// File: modules/qt/include/ui/QtTheme.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_QTTHEME_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_QTTHEME_HPP_
-/* * Module: ui * Responsibility: Centralize the Qt workspace theme palette and stylesheet tokens.
+/*
+ * Module: ui
+ * Responsibility: Centralize the Qt workspace theme palette and stylesheet tokens.
  */
 #include <QPalette>
 #include <QString>

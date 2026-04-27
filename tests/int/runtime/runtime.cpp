@@ -1,3 +1,6 @@
+// File: tests/int/runtime/runtime.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ClientRuntime.hpp"
 #include "tests/support/client_utils.hpp"
 #include "tests/support/poll_utils.hpp"

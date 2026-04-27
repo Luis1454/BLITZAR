@@ -1,3 +1,6 @@
+// File: engine/src/platform/posix/SocketPlatformPosix.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/posix/SocketPlatformPosix.hpp"
 #include <arpa/inet.h>
 #include <cerrno>

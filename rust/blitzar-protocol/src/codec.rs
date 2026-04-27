@@ -1,3 +1,6 @@
+// File: rust/blitzar-protocol/src/codec.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use crate::v1::{CommandRequest, ResponseEnvelope, SnapshotPayload, StatusPayload};
 use serde::Serialize;
 use serde::de::DeserializeOwned;

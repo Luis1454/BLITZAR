@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: scripts/ci/release/generate_changelog.py
+# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+
 """CLI: Generate a Markdown changelog from Conventional Commits git history."""
 from __future__ import annotations
 

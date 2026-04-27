@@ -1,3 +1,6 @@
+// File: runtime/include/client/ClientRuntime.hpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTRUNTIME_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTRUNTIME_HPP_
 #include "client/ClientServerBridge.hpp"

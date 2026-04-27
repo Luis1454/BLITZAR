@@ -1,6 +1,11 @@
+// File: modules/qt/include/ui/MainWindowController.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOWCONTROLLER_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOWCONTROLLER_HPP_
-/* * Module: ui * Responsibility: Apply validated UI configuration changes to the client runtime.
+/*
+ * Module: ui
+ * Responsibility: Apply validated UI configuration changes to the client runtime.
  */
 #include "client/IClientRuntime.hpp"
 #include "config/SimulationScenarioValidation.hpp"

@@ -1,3 +1,6 @@
+// File: engine/src/physics/cuda/fragments/ParticleSystemBuffer.inl
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 /*
  * Module: physics/cuda
  * Responsibility: Manage particle-system buffer allocation and release paths.

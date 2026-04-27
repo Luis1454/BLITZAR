@@ -1,3 +1,6 @@
+// File: runtime/src/protocol/ServerJsonCodecParseStatus.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "protocol/ServerJsonCodec.hpp"
 namespace grav_protocol {
 bool ServerJsonCodec::parseStatusResponse(std::string_view raw, ServerStatusPayload& out,

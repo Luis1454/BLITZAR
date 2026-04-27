@@ -1,3 +1,6 @@
+// File: modules/qt/ui/MainWindowWorkspacePersistence.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/MainWindow.hpp"
 #include <QInputDialog>
 #include <QLabel>

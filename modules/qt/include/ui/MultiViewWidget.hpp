@@ -1,7 +1,13 @@
+// File: modules/qt/include/ui/MultiViewWidget.hpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #ifndef GRAVITY_MODULES_QT_INCLUDE_UI_MULTIVIEWWIDGET_HPP_
 #define GRAVITY_MODULES_QT_INCLUDE_UI_MULTIVIEWWIDGET_HPP_
-/* * Module: ui * Responsibility: Coordinate the four synchronized particle views shown in the Qt
- * workspace. */
+/*
+ * Module: ui
+ * Responsibility: Coordinate the four synchronized particle views shown in the Qt
+ * workspace.
+ */
 #include "ui/OctreeOverlay.hpp"
 #include "ui/ParticleView.hpp"
 #include <QPointer>

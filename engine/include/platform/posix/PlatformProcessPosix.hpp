@@ -1,3 +1,6 @@
+// File: engine/include/platform/posix/PlatformProcessPosix.hpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #ifndef GRAVITY_ENGINE_INCLUDE_PLATFORM_POSIX_PLATFORMPROCESSPOSIX_HPP_
 #define GRAVITY_ENGINE_INCLUDE_PLATFORM_POSIX_PLATFORMPROCESSPOSIX_HPP_
 #include "platform/internal/ProcessOps.hpp"

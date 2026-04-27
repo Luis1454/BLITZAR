@@ -1,3 +1,6 @@
+// File: rust/blitzar-web-gateway/src/args.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use std::fmt::Write;
 
 #[derive(Clone, Debug, PartialEq)]

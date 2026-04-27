@@ -1,3 +1,6 @@
+// File: rust/blitzar-runtime/src/bridge_state.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 pub const SNAPSHOT_MIN_POINTS: u32 = 1;
 pub const SNAPSHOT_DEFAULT_POINTS: u32 = 4096;
 pub const SNAPSHOT_MAX_POINTS: u32 = 20000;

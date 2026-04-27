@@ -1,3 +1,6 @@
+// File: engine/src/config/SimulationArgsParse.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "config/SimulationArgsParse.hpp"
 #include "config/TextParse.hpp"
 #include <algorithm>

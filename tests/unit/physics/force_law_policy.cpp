@@ -1,3 +1,6 @@
+// File: tests/unit/physics/force_law_policy.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "physics/ForceLawPolicy.hpp"
 #include <gtest/gtest.h>
 TEST(PhysicsTest, TST_UNT_PHYS_021_ForceLawPolicyClampsConfiguredThresholds)

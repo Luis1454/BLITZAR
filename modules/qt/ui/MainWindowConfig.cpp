@@ -1,3 +1,6 @@
+// File: modules/qt/ui/MainWindowConfig.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "config/SimulationScenarioValidation.hpp"
 #include "ui/MainWindow.hpp"
 #include "ui/MultiViewWidget.hpp"

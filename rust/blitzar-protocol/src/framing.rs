@@ -1,3 +1,6 @@
+// File: rust/blitzar-protocol/src/framing.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use crate::codec::ProtocolCodecError;
 
 pub fn encode_json_line(payload: &str) -> String {

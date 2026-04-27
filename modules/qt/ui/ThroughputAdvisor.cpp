@@ -1,3 +1,6 @@
+// File: modules/qt/ui/ThroughputAdvisor.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/ThroughputAdvisor.hpp"
 #include "config/SimulationConfig.hpp"
 #include <algorithm>

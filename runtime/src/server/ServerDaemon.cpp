@@ -1,3 +1,6 @@
+// File: runtime/src/server/ServerDaemon.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "server/ServerDaemon.hpp"
 #include "config/SimulationModes.hpp"
 #include "platform/SocketPlatform.hpp"

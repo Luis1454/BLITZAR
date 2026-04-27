@@ -1,3 +1,6 @@
+// File: tests/support/qt_test_utils.hpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #ifndef GRAVITY_TESTS_SUPPORT_QT_TEST_UTILS_HPP_
 #define GRAVITY_TESTS_SUPPORT_QT_TEST_UTILS_HPP_
 #include <chrono>

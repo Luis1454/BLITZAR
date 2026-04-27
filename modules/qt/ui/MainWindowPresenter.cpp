@@ -1,3 +1,6 @@
+// File: modules/qt/ui/MainWindowPresenter.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/MainWindowPresenter.hpp"
 #include "types/SimulationTypes.hpp"
 #include <algorithm>

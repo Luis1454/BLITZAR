@@ -1,3 +1,6 @@
+// File: modules/cli/module_cli_server_ops.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "modules/cli/module_cli_server_ops.hpp"
 #include "client/ErrorBuffer.hpp"
 #include "config/TextParse.hpp"

@@ -1,3 +1,6 @@
+// File: rust/blitzar-web-gateway/src/api.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use crate::backend::BackendClient;
 use crate::error::GatewayError;
 use crate::ws::websocket;

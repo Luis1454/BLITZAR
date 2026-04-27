@@ -1,3 +1,6 @@
+// File: apps/server-service/server_args.hpp
+// Purpose: Application entry point or host support for BLITZAR executables.
+
 #ifndef GRAVITY_APPS_SERVER_SERVICE_SERVER_ARGS_HPP_
 #define GRAVITY_APPS_SERVER_SERVICE_SERVER_ARGS_HPP_
 #include <cstdint>

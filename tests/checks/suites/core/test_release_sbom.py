@@ -1,3 +1,6 @@
+# File: tests/checks/suites/core/test_release_sbom.py
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 from __future__ import annotations
 
 import json

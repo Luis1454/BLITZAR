@@ -1,3 +1,6 @@
+// File: modules/qt/module.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "client/ClientModuleApi.hpp"
 #include "client/ClientModuleBoundary.hpp"
 #include "client/ClientRuntime.hpp"

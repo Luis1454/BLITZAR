@@ -1,3 +1,6 @@
+// File: tests/support/physics_scenario.hpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #ifndef GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_
 #define GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_
 #include "server/SimulationServer.hpp"

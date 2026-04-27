@@ -1,3 +1,6 @@
+# File: tests/CMakeLists.txt
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 cmake_minimum_required(VERSION 3.24)
 
 get_filename_component(GRAVITY_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)

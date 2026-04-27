@@ -1,3 +1,6 @@
+// File: tests/unit/ffi/vtk_conformance.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "ffi/BlitzarCoreApi.hpp"
 #include <array>
 #include <chrono>

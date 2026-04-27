@@ -1,3 +1,6 @@
+// File: apps/headless/main.cu
+// Purpose: Application entry point or host support for BLITZAR executables.
+
 #include "config/EnvUtils.hpp"
 #include "config/SimulationArgs.hpp"
 #include "config/SimulationConfig.hpp"

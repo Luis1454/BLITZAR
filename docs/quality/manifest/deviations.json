@@ -16,7 +16,8 @@
         "runtime/src/server/ServerDaemon.cpp",
         "runtime/src/protocol/ServerClient.cpp",
         "runtime/src/client/ClientServerBridge.cpp",
-        "runtime/src/client/ClientRuntime.cpp"
+        "runtime/src/client/ClientRuntime.cpp",
+        "runtime/src/command/CommandExecutor.cpp"
       ],
       "requirements": [
         "REQ-QUAL-001",

@@ -1,3 +1,6 @@
+# File: cmake/core/toolchain.cmake
+# Purpose: CMake build orchestration for BLITZAR targets and tooling.
+
 set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)

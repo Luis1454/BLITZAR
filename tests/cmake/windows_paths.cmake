@@ -1,3 +1,6 @@
+# File: tests/cmake/windows_paths.cmake
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 function(gravity_apply_test_paths target_name)
     if(COMMAND gravity_apply_windows_paths)
         gravity_apply_windows_paths(${target_name})

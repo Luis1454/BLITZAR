@@ -1,3 +1,6 @@
+// File: tests/int/ui/qt_window.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "client/ClientRuntime.hpp"
 #include "protocol/ServerProtocol.hpp"
 #include "tests/support/client_utils.hpp"

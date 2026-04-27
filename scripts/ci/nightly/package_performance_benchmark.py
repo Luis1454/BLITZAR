@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: scripts/ci/nightly/package_performance_benchmark.py
+# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+
 from __future__ import annotations
 
 import argparse

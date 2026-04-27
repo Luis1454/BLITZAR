@@ -1,3 +1,6 @@
+# File: python_tools/policies/repo_policy_function_metrics.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import re

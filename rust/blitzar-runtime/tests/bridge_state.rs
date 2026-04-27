@@ -1,3 +1,6 @@
+// File: rust/blitzar-runtime/tests/bridge_state.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use blitzar_runtime::bridge_state::BridgeState;
 
 #[test]

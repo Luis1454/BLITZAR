@@ -1,3 +1,6 @@
+// File: tests/support/server_harness_runtime.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/EnvUtils.hpp"
 #include "platform/PlatformPaths.hpp"
 #include "platform/SocketPlatform.hpp"

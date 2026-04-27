@@ -1,3 +1,6 @@
+// File: engine/src/server/simulation_server/InitialStateGeneration.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
 bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t particleCount,
                          const InitialStateConfig& config)

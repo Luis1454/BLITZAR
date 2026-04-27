@@ -1,3 +1,6 @@
+# File: tests/cmake/targets_gtests.cmake
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 
 
 if(WIN32)

@@ -1,3 +1,6 @@
+// File: runtime/src/command/CommandCatalog.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "command/CommandCatalog.hpp"
 #include <sstream>
 namespace grav_cmd {

@@ -1,3 +1,6 @@
+// File: rust/blitzar-protocol/src/version.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ProtocolVersion {
     V1,

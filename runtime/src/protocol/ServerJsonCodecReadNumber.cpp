@@ -1,3 +1,6 @@
+// File: runtime/src/protocol/ServerJsonCodecReadNumber.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "protocol/ServerJsonCodecReadNumber.hpp"
 #include "config/TextParse.hpp"
 template <typename NumberType>

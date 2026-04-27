@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: scripts/ci/release/package_sbom.py
+# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+
 from __future__ import annotations
 
 import argparse

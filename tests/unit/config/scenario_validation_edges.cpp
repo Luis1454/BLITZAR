@@ -1,3 +1,6 @@
+// File: tests/unit/config/scenario_validation_edges.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationScenarioValidation.hpp"
 #include <gtest/gtest.h>

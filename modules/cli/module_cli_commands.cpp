@@ -1,3 +1,6 @@
+// File: modules/cli/module_cli_commands.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "modules/cli/module_cli_commands.hpp"
 #include "client/ErrorBuffer.hpp"
 #include "command/CommandCatalog.hpp"

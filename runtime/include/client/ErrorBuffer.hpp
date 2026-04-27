@@ -1,3 +1,6 @@
+// File: runtime/include/client/ErrorBuffer.hpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_ERRORBUFFER_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_CLIENT_ERRORBUFFER_HPP_
 #include <cstddef>

@@ -1,3 +1,6 @@
+// File: runtime/include/protocol/ServerJsonCodecReadNumber.hpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #ifndef GRAVITY_SIM_SERVERJSONCODECREADNUMBER_HPP
 #define GRAVITY_SIM_SERVERJSONCODECREADNUMBER_HPP
 #include "protocol/ServerJsonCodec.hpp"

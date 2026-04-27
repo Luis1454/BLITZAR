@@ -1,3 +1,6 @@
+// File: engine/src/config/DirectiveValueFormatter.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "config/DirectiveValueFormatter.hpp"
 #include <algorithm>
 #include <cctype>

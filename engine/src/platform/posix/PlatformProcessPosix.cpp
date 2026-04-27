@@ -1,3 +1,6 @@
+// File: engine/src/platform/posix/PlatformProcessPosix.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/posix/PlatformProcessPosix.hpp"
 #include "platform/PlatformErrors.hpp"
 #include <signal.h>

@@ -1,3 +1,6 @@
+// File: engine/src/config/EnvUtilsPosix.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "config/EnvUtilsPosix.hpp"
 #include "config/EnvUtils.hpp"
 namespace grav_env {

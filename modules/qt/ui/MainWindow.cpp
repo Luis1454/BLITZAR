@@ -1,3 +1,6 @@
+// File: modules/qt/ui/MainWindow.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/MainWindow.hpp"
 #include "client/ClientCommon.hpp"
 #include "ui/EnergyGraphWidget.hpp"

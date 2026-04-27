@@ -1,3 +1,6 @@
+// File: tests/int/ui/qt_workspace_overlay_controls.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "tests/support/qt_test_utils.hpp"
 #include "ui/MainWindow.hpp"
 #include "ui/MultiViewWidget.hpp"

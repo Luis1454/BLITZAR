@@ -1,3 +1,6 @@
+// File: engine/src/server/simulation_server/FormatAndTheta.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
 float profileThetaBias(std::string_view performanceProfile)
 {

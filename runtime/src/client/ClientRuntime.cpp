@@ -1,3 +1,6 @@
+// File: runtime/src/client/ClientRuntime.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "client/ClientRuntime.hpp"
 #include "config/SimulationConfig.hpp"
 #include <algorithm>

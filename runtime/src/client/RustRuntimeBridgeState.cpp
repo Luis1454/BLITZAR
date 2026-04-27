@@ -1,3 +1,6 @@
+// File: runtime/src/client/RustRuntimeBridgeState.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "client/RustRuntimeBridgeState.hpp"
 #include <stdexcept>
 namespace grav_client {

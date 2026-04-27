@@ -1,7 +1,14 @@
+// File: runtime/include/client/IClientRuntime.hpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_ICLIENTRUNTIME_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_CLIENT_ICLIENTRUNTIME_HPP_
-/* * Module: client * Responsibility: Expose the deterministic runtime control and telemetry
- * contract used by UI * frontends. */
+/*
+ * Module: client
+ * Responsibility: Expose the deterministic runtime control and telemetry
+ * contract used by UI
+ * frontends.
+ */
 #include "types/SimulationTypes.hpp"
 #include <cstddef>
 #include <cstdint>

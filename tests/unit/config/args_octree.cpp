@@ -1,3 +1,6 @@
+// File: tests/unit/config/args_octree.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationArgs.hpp"
 #include "config/SimulationConfig.hpp"
 #include <chrono>

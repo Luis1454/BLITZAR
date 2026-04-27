@@ -1,3 +1,6 @@
+// File: engine/include/config/TextParse.hpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_TEXTPARSE_HPP_
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_TEXTPARSE_HPP_
 #include <algorithm>

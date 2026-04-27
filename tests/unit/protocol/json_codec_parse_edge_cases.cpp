@@ -1,3 +1,6 @@
+// File: tests/unit/protocol/json_codec_parse_edge_cases.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "protocol/ServerJsonCodec.hpp"
 #include <gtest/gtest.h>
 #include <string>

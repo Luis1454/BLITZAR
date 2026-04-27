@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/ci/gpu_runner_inventory.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import json

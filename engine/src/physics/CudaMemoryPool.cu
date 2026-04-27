@@ -1,3 +1,6 @@
+// File: engine/src/physics/CudaMemoryPool.cu
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "physics/CudaMemoryPool.hpp"
 #include <cstdint>
 #include <cstdio>

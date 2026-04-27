@@ -1,3 +1,6 @@
+// File: tests/unit/config/simulation_profile.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationProfile.hpp"
 #include <gtest/gtest.h>

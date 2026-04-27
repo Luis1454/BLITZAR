@@ -1,3 +1,6 @@
+// File: modules/qt/ui/EnergyGraphWidgetPaint.cpp
+// Purpose: Client module implementation for BLITZAR extension workflows.
+
 #include "ui/EnergyGraphWidgetPaint.hpp"
 #include "ui/EnergyGraphWidget.hpp"
 #include <QPaintEvent>

@@ -1,3 +1,6 @@
+// File: rust/blitzar-web-gateway/tests/events.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use blitzar_protocol::v1::{ResponseEnvelope, SnapshotPayload, StatusPayload};
 use blitzar_web_gateway::events::{snapshot_event, status_event};
 

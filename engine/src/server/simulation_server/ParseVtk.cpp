@@ -1,3 +1,6 @@
+// File: engine/src/server/simulation_server/ParseVtk.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
 bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outParticles)
 {

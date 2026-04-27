@@ -1,3 +1,6 @@
+// File: tests/unit/ffi/core_api.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "ffi/BlitzarCoreApi.hpp"
 #include <algorithm>
 #include <chrono>

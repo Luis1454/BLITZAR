@@ -1,3 +1,6 @@
+// File: engine/src/physics/cuda/fragments/OctreeForce.inl
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 /*
  * Module: physics/cuda
  * Responsibility: Implement CPU-side octree force evaluation helpers.

@@ -1,3 +1,6 @@
+// File: tests/unit/module_client/cli_args_text.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "apps/client-host/client_host_cli.hpp"
 #include "apps/client-host/client_host_cli_args.hpp"
 #include "apps/client-host/client_host_cli_text.hpp"

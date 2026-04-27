@@ -1,3 +1,6 @@
+// File: runtime/include/command/CommandContext.hpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #ifndef GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDCONTEXT_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDCONTEXT_HPP_
 #include "command/CommandTransport.hpp"

@@ -1,3 +1,6 @@
+// File: runtime/src/command/CommandExecutor.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "command/CommandExecutor.hpp"
 #include "client/ClientCommon.hpp"
 #include "command/CommandCatalog.hpp"

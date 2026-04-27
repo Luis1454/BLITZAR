@@ -1,3 +1,6 @@
+// File: tests/unit/physics/reentrancy.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "physics/ParticleSystem.hpp"
 #include <gtest/gtest.h>
 #include <vector>

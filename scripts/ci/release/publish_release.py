@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: scripts/ci/release/publish_release.py
+# Purpose: Automation script for BLITZAR build, release, or operations tasks.
+
 """CLI: Create or update a GitHub Release with notes and artifact files."""
 from __future__ import annotations
 

@@ -1,3 +1,6 @@
+// File: runtime/include/client/ClientModuleApi.hpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEAPI_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEAPI_HPP_
 #include <cstddef>

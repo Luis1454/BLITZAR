@@ -1,3 +1,6 @@
+// File: runtime/src/client/ErrorBuffer.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "client/ErrorBuffer.hpp"
 #include <algorithm>
 namespace grav_client {

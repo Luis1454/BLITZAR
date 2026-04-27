@@ -1,3 +1,6 @@
+// File: engine/src/server/simulation_server/CoreHelpers.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
 std::string toLower(std::string value)
 {

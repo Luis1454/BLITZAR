@@ -1,3 +1,6 @@
+// File: engine/src/server/simulation_server/PersistenceIO.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
 bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState& outState,
                         std::string* outError)

@@ -1,3 +1,6 @@
+// File: engine/src/config/SimulationConfigDirectiveWrite.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "config/SimulationConfigDirectiveWrite.hpp"
 #include "config/DirectiveStreamWriter.hpp"
 #include "config/SimulationConfig.hpp"

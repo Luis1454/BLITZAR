@@ -1,3 +1,6 @@
+// File: rust/blitzar-web-gateway/src/backend.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use crate::error::GatewayError;
 use blitzar_protocol::codec;
 use blitzar_protocol::v1::{CommandRequest, ResponseEnvelope, SnapshotPayload, StatusPayload};

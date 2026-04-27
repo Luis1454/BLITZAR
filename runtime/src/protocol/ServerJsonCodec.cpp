@@ -1,3 +1,6 @@
+// File: runtime/src/protocol/ServerJsonCodec.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "protocol/ServerJsonCodec.hpp"
 #include "protocol/ServerProtocol.hpp"
 #include <iomanip>

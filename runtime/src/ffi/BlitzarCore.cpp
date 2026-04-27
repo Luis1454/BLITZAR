@@ -1,3 +1,6 @@
+// File: runtime/src/ffi/BlitzarCore.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "config/SimulationModes.hpp"
 #include "runtime/src/ffi/BlitzarCoreInternal.hpp"
 #include <algorithm>

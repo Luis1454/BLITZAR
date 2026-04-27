@@ -1,3 +1,6 @@
+// File: runtime/include/command/CommandParser.hpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #ifndef GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDPARSER_HPP_
 #define GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDPARSER_HPP_
 #include "command/CommandTypes.hpp"

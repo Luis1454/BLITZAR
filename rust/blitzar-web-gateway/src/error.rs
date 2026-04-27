@@ -1,3 +1,6 @@
+// File: rust/blitzar-web-gateway/src/error.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use axum::Json;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};

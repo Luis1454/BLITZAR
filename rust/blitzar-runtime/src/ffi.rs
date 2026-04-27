@@ -1,3 +1,6 @@
+// File: rust/blitzar-runtime/src/ffi.rs
+// Purpose: Rust component implementation for BLITZAR runtime services.
+
 use crate::bridge_state::BridgeState;
 use crate::bridge_state::PendingCommand;
 use std::slice;

@@ -1,3 +1,6 @@
+// File: engine/src/server/simulation_server/ParseBinXyz.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "Internal.hpp"
 bool parseBinarySnapshot(const std::string& inputPath, std::vector<Particle>& outParticles)
 {

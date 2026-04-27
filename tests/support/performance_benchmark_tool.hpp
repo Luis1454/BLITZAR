@@ -1,3 +1,6 @@
+// File: tests/support/performance_benchmark_tool.hpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #ifndef GRAVITY_TESTS_SUPPORT_PERFORMANCE_BENCHMARK_TOOL_HPP_
 #define GRAVITY_TESTS_SUPPORT_PERFORMANCE_BENCHMARK_TOOL_HPP_
 #include <cstdint>

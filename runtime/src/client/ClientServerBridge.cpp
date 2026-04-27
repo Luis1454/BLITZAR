@@ -1,3 +1,6 @@
+// File: runtime/src/client/ClientServerBridge.cpp
+// Purpose: Runtime integration surface for BLITZAR clients and protocols.
+
 #include "client/ClientServerBridge.hpp"
 #include "config/TextParse.hpp"
 #include "platform/PlatformPaths.hpp"

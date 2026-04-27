@@ -1,3 +1,6 @@
+// File: tests/unit/config/init_plan_edges.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "config/SimulationConfig.hpp"
 #include "server/SimulationInitConfig.hpp"
 #include <gtest/gtest.h>

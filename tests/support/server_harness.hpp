@@ -1,3 +1,6 @@
+// File: tests/support/server_harness.hpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #ifndef GRAVITY_TESTS_SUPPORT_SERVER_HARNESS_HPP_
 #define GRAVITY_TESTS_SUPPORT_SERVER_HARNESS_HPP_
 #include "platform/PlatformProcess.hpp"

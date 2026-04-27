@@ -1,7 +1,13 @@
+// File: engine/include/server/SimulationServer.hpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #ifndef GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONSERVER_HPP_
 #define GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONSERVER_HPP_
-/* * Module: server * Responsibility: Own the authoritative simulation runtime and publish
- * snapshots and telemetry. */
+/*
+ * Module: server
+ * Responsibility: Own the authoritative simulation runtime and publish
+ * snapshots and telemetry.
+ */
 #include "config/SimulationConfig.hpp"
 #include "physics/ParticleSystem.hpp"
 #include "types/SimulationTypes.hpp"

@@ -1,3 +1,6 @@
+// File: engine/src/platform/posix/PlatformPathsPosix.cpp
+// Purpose: Engine implementation for the BLITZAR simulation core.
+
 #include "platform/posix/PlatformPathsPosix.hpp"
 namespace grav_platform {
 static constexpr std::string_view kPlatformDylibExtension = ".so";

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: python_tools/policies/pr_policy.py
+# Purpose: Python quality and automation support for BLITZAR governance.
+
 from __future__ import annotations
 
 import json

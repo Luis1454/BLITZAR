@@ -1,3 +1,6 @@
+// File: tests/support/scoped_env_var_win.cpp
+// Purpose: Verification coverage for the BLITZAR quality gate.
+
 #include "tests/support/scoped_env_var.hpp"
 #include <cstdlib>
 namespace testsupport {

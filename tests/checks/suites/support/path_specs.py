@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# File: tests/checks/suites/support/path_specs.py
+# Purpose: Verification coverage for the BLITZAR quality gate.
+
 from __future__ import annotations
 
 from pathlib import Path
