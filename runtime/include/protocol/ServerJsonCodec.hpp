@@ -9,18 +9,21 @@
 #include <string>
 #include <string_view>
 #include <vector>
+
 namespace grav_protocol {
 /// Description: Defines the ServerCommandRequest data or behavior contract.
 struct ServerCommandRequest {
     std::string cmd;
     std::string token;
 };
+
 /// Description: Defines the ServerResponseEnvelope data or behavior contract.
 struct ServerResponseEnvelope {
     bool ok = false;
     std::string cmd;
     std::string error;
 };
+
 /// Description: Defines the ServerStatusPayload data or behavior contract.
 struct ServerStatusPayload {
     ServerResponseEnvelope envelope;
@@ -63,6 +66,7 @@ struct ServerStatusPayload {
     std::string exportLastPath;
     std::string exportLastMessage;
 };
+
 /// Description: Defines the ServerSnapshotPayload data or behavior contract.
 struct ServerSnapshotPayload {
     ServerResponseEnvelope envelope;
@@ -70,46 +74,53 @@ struct ServerSnapshotPayload {
     std::size_t sourceSize = 0u;
     std::vector<RenderParticle> particles;
 };
+
 /// Description: Defines the ServerJsonCodec data or behavior contract.
 class ServerJsonCodec {
 public:
-    /// Description: Executes the escapeString operation.
+    /// Description: Describes the escape string operation contract.
     static std::string escapeString(std::string_view value);
+    /// Description: Describes the make command request operation contract.
     static std::string makeCommandRequest(const ServerCommandRequest& request,
                                           std::string_view fieldsJson = {});
+    /// Description: Describes the parse command request operation contract.
     static bool parseCommandRequest(std::string_view raw, ServerCommandRequest& out,
                                     std::string& error);
-    /// Description: Executes the makeOkResponse operation.
+    /// Description: Describes the make ok response operation contract.
     static std::string makeOkResponse(std::string_view cmd);
-    /// Description: Executes the makeErrorResponse operation.
+    /// Description: Describes the make error response operation contract.
     static std::string makeErrorResponse(std::string_view cmd, std::string_view message);
-    /// Description: Executes the makeStatusResponse operation.
+    /// Description: Describes the make status response operation contract.
     static std::string makeStatusResponse(const SimulationStats& stats);
+    /// Description: Describes the make snapshot response operation contract.
     static std::string makeSnapshotResponse(bool hasSnapshot,
                                             const std::vector<RenderParticle>& snapshot,
                                             std::size_t sourceSize = 0u);
+    /// Description: Describes the parse response envelope operation contract.
     static bool parseResponseEnvelope(std::string_view raw, ServerResponseEnvelope& out,
                                       std::string& error);
+    /// Description: Describes the parse status response operation contract.
     static bool parseStatusResponse(std::string_view raw, ServerStatusPayload& out,
                                     std::string& error);
+    /// Description: Describes the parse snapshot response operation contract.
     static bool parseSnapshotResponse(std::string_view raw, ServerSnapshotPayload& out,
                                       std::string& error);
-    /// Description: Executes the readString operation.
+    /// Description: Describes the read string operation contract.
     static bool readString(std::string_view raw, std::string_view key, std::string& out);
-    /// Description: Executes the readBool operation.
+    /// Description: Describes the read bool operation contract.
     static bool readBool(std::string_view raw, std::string_view key, bool& out);
     template <typename NumberType>
-    /// Description: Executes the readNumber operation.
+    /// Description: Describes the read number operation contract.
     static bool readNumber(std::string_view raw, std::string_view key, NumberType& out);
 
 private:
-    /// Description: Executes the trim operation.
+    /// Description: Describes the trim operation contract.
     static std::string trim(std::string_view value);
-    /// Description: Executes the toLower operation.
+    /// Description: Describes the to lower operation contract.
     static std::string toLower(std::string value);
-    /// Description: Executes the findValueStart operation.
+    /// Description: Describes the find value start operation contract.
     static bool findValueStart(std::string_view raw, std::string_view key, std::size_t& start);
-    /// Description: Executes the readToken operation.
+    /// Description: Describes the read token operation contract.
     static bool readToken(std::string_view raw, std::string_view key, std::string& out);
 };
 } // namespace grav_protocol

@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <filesystem>
 #include <iostream>
+
 namespace grav_client {
 const std::uint32_t kClientRemoteTimeoutMinMs = 10u;
 const std::uint32_t kClientRemoteTimeoutMaxMs = 60000u;
@@ -23,6 +24,7 @@ constexpr auto kReconnectRetryIntervalMin = std::chrono::milliseconds(50);
 constexpr auto kReconnectRetryIntervalMax = std::chrono::milliseconds(1000);
 constexpr auto kErrorLogInterval = std::chrono::milliseconds(1500);
 const std::string_view kServerDefaultName = grav_platform::serverDefaultExecutableName();
+
 /// Description: Executes the parsePortValue operation.
 bool parsePortValue(std::string_view raw, std::uint16_t& outPort)
 {
@@ -33,13 +35,14 @@ bool parsePortValue(std::string_view raw, std::uint16_t& outPort)
     outPort = static_cast<std::uint16_t>(parsed);
     return true;
 }
+
 /// Description: Executes the parseBoolArg operation.
 bool parseBoolArg(std::string_view raw, bool& out)
 {
-    /// Description: Executes the normalized operation.
     std::string normalized(raw);
-    std::transform(normalized.begin(), normalized.end(), normalized.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
     if (normalized == "1" || normalized == "true" || normalized == "on" || normalized == "yes") {
         out = true;
         return true;
@@ -50,12 +53,14 @@ bool parseBoolArg(std::string_view raw, bool& out)
     }
     return false;
 }
+
 /// Description: Executes the isTransportClientFailure operation.
 bool isTransportClientFailure(std::string_view reason)
 {
     return reason == "not connected" || reason == "send failed" || reason == "recv failed" ||
            reason == "invalid response";
 }
+
 /// Description: Executes the deriveDefaultServerExecutable operation.
 std::string deriveDefaultServerExecutable(const std::vector<std::string_view>& rawArgs)
 {
@@ -63,7 +68,6 @@ std::string deriveDefaultServerExecutable(const std::vector<std::string_view>& r
         return std::string(kServerDefaultName);
     }
     std::error_code ec;
-    /// Description: Executes the executablePath operation.
     const std::filesystem::path executablePath(rawArgs[0]);
     const std::filesystem::path dir = executablePath.parent_path();
     if (!dir.empty()) {
@@ -74,16 +78,16 @@ std::string deriveDefaultServerExecutable(const std::vector<std::string_view>& r
     }
     return std::string(kServerDefaultName);
 }
+
 /// Description: Defines the SocketTimeoutScope data or behavior contract.
 class SocketTimeoutScope {
 public:
-    /// Description: Executes the SocketTimeoutScope operation.
     SocketTimeoutScope(ServerClient& client, int timeoutMs)
         : _client(client), _previousTimeoutMs(client.socketTimeoutMs())
     {
         _client.setSocketTimeoutMs(timeoutMs);
     }
-    /// Description: Releases resources owned by SocketTimeoutScope.
+
     ~SocketTimeoutScope()
     {
         _client.setSocketTimeoutMs(_previousTimeoutMs);
@@ -93,11 +97,14 @@ private:
     ServerClient& _client;
     int _previousTimeoutMs;
 };
+
 /// Description: Executes the clampClientRemoteTimeoutMs operation.
 std::uint32_t clampClientRemoteTimeoutMs(std::uint32_t timeoutMs)
 {
     return std::clamp(timeoutMs, kClientRemoteTimeoutMinMs, kClientRemoteTimeoutMaxMs);
 }
+
+/// Description: Describes the split client transport args operation contract.
 bool splitClientTransportArgs(const std::vector<std::string_view>& rawArgs,
                               std::vector<std::string_view>& filteredArgs,
                               ClientTransportArgs& transport, std::ostream& warnings)
@@ -111,7 +118,6 @@ bool splitClientTransportArgs(const std::vector<std::string_view>& rawArgs,
         filteredArgs.push_back(rawArgs[0]);
     }
     for (std::size_t i = 1; i < rawArgs.size(); ++i) {
-        /// Description: Executes the raw operation.
         const std::string raw(rawArgs[i]);
         if (raw == "--remote") {
             warnings
@@ -201,6 +207,7 @@ bool splitClientTransportArgs(const std::vector<std::string_view>& rawArgs,
     }
     return true;
 }
+
 ClientServerBridge::ClientServerBridge(const std::string& configPath, std::string remoteHost,
                                        std::uint16_t remotePort, bool remoteAutoStart,
                                        std::string serverExecutable, std::string remoteAuthToken,
@@ -211,7 +218,6 @@ ClientServerBridge::ClientServerBridge(const std::string& configPath, std::strin
       _remoteHost(std::move(remoteHost)),
       _remotePort(remotePort),
       _remoteAutoStart(remoteAutoStart),
-      /// Description: Executes the _serverExecutable operation.
       _serverExecutable(serverExecutable.empty() ? std::string(kServerDefaultName)
                                                  : std::move(serverExecutable)),
       _remoteAuthToken(std::move(remoteAuthToken)),
@@ -227,16 +233,15 @@ ClientServerBridge::ClientServerBridge(const std::string& configPath, std::strin
       _reconnectRetryDelay(kReconnectRetryIntervalMin),
       _remoteCommandTimeoutMs(clampClientRemoteTimeoutMs(remoteCommandTimeoutMs)),
       _remoteStatusTimeoutMs(clampClientRemoteTimeoutMs(remoteStatusTimeoutMs)),
-      /// Description: Executes the _remoteSnapshotTimeoutMs operation.
       _remoteSnapshotTimeoutMs(clampClientRemoteTimeoutMs(remoteSnapshotTimeoutMs))
 {
     _remoteClient.setSocketTimeoutMs(static_cast<int>(_remoteCommandTimeoutMs));
     _remoteClient.setAuthToken(_remoteAuthToken);
 }
+
 /// Description: Executes the start operation.
 bool ClientServerBridge::start()
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     if (_runtimeState.isConnected() && _remoteClient.isConnected()) {
         return true;
@@ -244,14 +249,13 @@ bool ClientServerBridge::start()
     if (!ensureRemoteConnected(true)) {
         return false;
     }
-    /// Description: Executes the refreshRemoteStats operation.
     refreshRemoteStats();
     return _runtimeState.isConnected() && _remoteClient.isConnected();
 }
+
 /// Description: Executes the stop operation.
 void ClientServerBridge::stop()
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     if (_runtimeState.serverLaunched() && _remoteClient.isConnected()) {
         (void)_remoteClient.sendCommand(std::string(grav_protocol::Shutdown));
@@ -262,102 +266,95 @@ void ClientServerBridge::stop()
     _runtimeState.setConnected(false);
     _runtimeState.setServerLaunched(false);
 }
+
 /// Description: Executes the setPaused operation.
 void ClientServerBridge::setPaused(bool paused)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    /// Description: Executes the sendOrQueueRemote operation.
     sendOrQueueRemote(std::string(paused ? grav_protocol::Pause : grav_protocol::Resume));
 }
+
 /// Description: Executes the togglePaused operation.
 void ClientServerBridge::togglePaused()
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    /// Description: Executes the sendOrQueueRemote operation.
     sendOrQueueRemote(std::string(grav_protocol::Toggle));
 }
+
 /// Description: Executes the stepOnce operation.
 void ClientServerBridge::stepOnce()
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    /// Description: Executes the sendOrQueueRemote operation.
     sendOrQueueRemote(std::string(grav_protocol::Step), "\"count\":1");
 }
+
 /// Description: Executes the setParticleCount operation.
 void ClientServerBridge::setParticleCount(std::uint32_t particleCount)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const std::uint32_t clamped = std::max<std::uint32_t>(2u, particleCount);
     sendOrQueueRemote(std::string(grav_protocol::SetParticleCount),
                       "\"value\":" + std::to_string(clamped));
 }
+
 /// Description: Executes the setDt operation.
 void ClientServerBridge::setDt(float dt)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const float clamped = std::max(1e-6f, dt);
-    /// Description: Executes the sendOrQueueRemote operation.
     sendOrQueueRemote(std::string(grav_protocol::SetDt), "\"value\":" + std::to_string(clamped));
 }
+
 /// Description: Executes the scaleDt operation.
 void ClientServerBridge::scaleDt(float factor)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const float currentDt = std::max(1e-6f, getStats().dt);
     const float scaled = std::max(1e-6f, currentDt * factor);
-    /// Description: Executes the setDt operation.
     setDt(scaled);
 }
+
 /// Description: Executes the requestReset operation.
 void ClientServerBridge::requestReset()
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    /// Description: Executes the sendOrQueueRemote operation.
     sendOrQueueRemote(std::string(grav_protocol::Reset));
 }
+
 /// Description: Executes the requestRecover operation.
 void ClientServerBridge::requestRecover()
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    /// Description: Executes the sendOrQueueRemote operation.
     sendOrQueueRemote(std::string(grav_protocol::Recover));
 }
+
 /// Description: Executes the setSolverMode operation.
 void ClientServerBridge::setSolverMode(const std::string& mode)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     sendOrQueueRemote(std::string(grav_protocol::SetSolver),
                       "\"value\":\"" + jsonEscape(mode) + "\"");
 }
+
 /// Description: Executes the setIntegratorMode operation.
 void ClientServerBridge::setIntegratorMode(const std::string& mode)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     sendOrQueueRemote(std::string(grav_protocol::SetIntegrator),
                       "\"value\":\"" + jsonEscape(mode) + "\"");
 }
+
 /// Description: Executes the setPerformanceProfile operation.
 void ClientServerBridge::setPerformanceProfile(const std::string& profile)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     sendOrQueueRemote(std::string(grav_protocol::SetPerformanceProfile),
                       "\"value\":\"" + jsonEscape(profile) + "\"");
 }
+
 /// Description: Executes the setOctreeParameters operation.
 void ClientServerBridge::setOctreeParameters(float theta, float softening)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const float safeTheta = std::max(0.0001f, theta);
     const float safeSoftening = std::max(0.000001f, softening);
@@ -365,19 +362,19 @@ void ClientServerBridge::setOctreeParameters(float theta, float softening)
                       "\"theta\":" + std::to_string(safeTheta) +
                           ",\"softening\":" + std::to_string(safeSoftening));
 }
+
 /// Description: Executes the setSphEnabled operation.
 void ClientServerBridge::setSphEnabled(bool enabled)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     sendOrQueueRemote(std::string(grav_protocol::SetSph),
-                      /// Description: Executes the string operation.
                       std::string("\"value\":") + (enabled ? "true" : "false"));
 }
+
+/// Description: Describes the set sph parameters operation contract.
 void ClientServerBridge::setSphParameters(float smoothingLength, float restDensity,
                                           float gasConstant, float viscosity)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const float safeH = std::max(0.000001f, smoothingLength);
     const float safeRestDensity = std::max(0.000001f, restDensity);
@@ -389,10 +386,10 @@ void ClientServerBridge::setSphParameters(float smoothingLength, float restDensi
                           ",\"gas_constant\":" + std::to_string(safeGasConstant) +
                           ",\"viscosity\":" + std::to_string(safeViscosity));
 }
+
 /// Description: Executes the setSubstepPolicy operation.
 void ClientServerBridge::setSubstepPolicy(float targetDt, std::uint32_t maxSubsteps)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const float safeTargetDt = std::max(0.0f, targetDt);
     const std::uint32_t safeMaxSubsteps = std::max<std::uint32_t>(1u, maxSubsteps);
@@ -400,19 +397,19 @@ void ClientServerBridge::setSubstepPolicy(float targetDt, std::uint32_t maxSubst
                       "\"target_dt\":" + std::to_string(safeTargetDt) +
                           ",\"max_substeps\":" + std::to_string(safeMaxSubsteps));
 }
+
 /// Description: Executes the setSnapshotPublishPeriodMs operation.
 void ClientServerBridge::setSnapshotPublishPeriodMs(std::uint32_t periodMs)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const std::uint32_t safePeriodMs = std::max<std::uint32_t>(1u, periodMs);
     sendOrQueueRemote(std::string(grav_protocol::SetSnapshotPublishCadence),
                       "\"period_ms\":" + std::to_string(safePeriodMs));
 }
+
 /// Description: Executes the setInitialStateConfig operation.
 void ClientServerBridge::setInitialStateConfig(const InitialStateConfig& config)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     static_cast<void>(config);
     if (!_warnedRemoteInitialConfig) {
@@ -421,10 +418,11 @@ void ClientServerBridge::setInitialStateConfig(const InitialStateConfig& config)
         _warnedRemoteInitialConfig = true;
     }
 }
+
+/// Description: Describes the set energy measurement config operation contract.
 void ClientServerBridge::setEnergyMeasurementConfig(std::uint32_t everySteps,
                                                     std::uint32_t sampleLimit)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const std::uint32_t safeEvery = std::max<std::uint32_t>(1u, everySteps);
     const std::uint32_t safeSampleLimit = std::max<std::uint32_t>(2u, sampleLimit);
@@ -432,39 +430,38 @@ void ClientServerBridge::setEnergyMeasurementConfig(std::uint32_t everySteps,
                       "\"every_steps\":" + std::to_string(safeEvery) +
                           ",\"sample_limit\":" + std::to_string(safeSampleLimit));
 }
+
 /// Description: Executes the setGpuTelemetryEnabled operation.
 void ClientServerBridge::setGpuTelemetryEnabled(bool enabled)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     sendOrQueueRemote(std::string(grav_protocol::SetGpuTelemetry),
-                      /// Description: Executes the string operation.
                       std::string("\"value\":") + (enabled ? "true" : "false"));
 }
+
 /// Description: Executes the setExportDefaults operation.
 void ClientServerBridge::setExportDefaults(const std::string& directory, const std::string& format)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     static_cast<void>(directory);
     _defaultExportFormat = format;
 }
+
 /// Description: Executes the setInitialStateFile operation.
 void ClientServerBridge::setInitialStateFile(const std::string& path, const std::string& format)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     if (!path.empty()) {
         sendOrQueueRemote(std::string(grav_protocol::Load),
                           "\"path\":\"" + jsonEscape(path) + "\",\"format\":\"" +
-                              /// Description: Executes the jsonEscape operation.
                               jsonEscape(format.empty() ? "auto" : format) + "\"");
     }
 }
+
+/// Description: Describes the request export snapshot operation contract.
 void ClientServerBridge::requestExportSnapshot(const std::string& outputPath,
                                                const std::string& format)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const std::string effectiveFormat = format.empty() ? _defaultExportFormat : format;
     std::string fields;
@@ -477,38 +474,37 @@ void ClientServerBridge::requestExportSnapshot(const std::string& outputPath,
         }
         fields += "\"format\":\"" + jsonEscape(effectiveFormat) + "\"";
     }
-    /// Description: Executes the sendOrQueueRemote operation.
     sendOrQueueRemote(std::string(grav_protocol::Export), fields);
 }
+
 /// Description: Executes the requestSaveCheckpoint operation.
 void ClientServerBridge::requestSaveCheckpoint(const std::string& outputPath)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     sendOrQueueRemote(std::string(grav_protocol::SaveCheckpoint),
                       "\"path\":\"" + jsonEscape(outputPath) + "\"");
 }
+
 /// Description: Executes the requestLoadCheckpoint operation.
 void ClientServerBridge::requestLoadCheckpoint(const std::string& inputPath)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     sendOrQueueRemote(std::string(grav_protocol::LoadCheckpoint),
                       "\"path\":\"" + jsonEscape(inputPath) + "\"");
 }
+
 /// Description: Executes the requestShutdown operation.
 void ClientServerBridge::requestShutdown()
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    /// Description: Executes the sendOrQueueRemote operation.
     sendOrQueueRemote(std::string(grav_protocol::Shutdown));
 }
+
+/// Description: Describes the configure remote connector operation contract.
 void ClientServerBridge::configureRemoteConnector(const std::string& host, std::uint16_t port,
                                                   bool autoStart,
                                                   const std::string& serverExecutable)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     if (!host.empty()) {
         _remoteHost = host;
@@ -528,26 +524,24 @@ void ClientServerBridge::configureRemoteConnector(const std::string& host, std::
     _lastReconnectAttempt = Clock::time_point::min();
     _lastReconnectErrorLog = Clock::time_point::min();
     _lastRemoteErrorLog = Clock::time_point::min();
-    /// Description: Executes the ensureRemoteConnected operation.
     ensureRemoteConnected(true);
 }
+
+/// Description: Describes the try consume snapshot operation contract.
 bool ClientServerBridge::tryConsumeSnapshot(std::vector<RenderParticle>& outSnapshot,
                                             std::size_t* outSourceSize)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     if (!ensureRemoteConnected(false)) {
         return false;
     }
     std::vector<RenderParticle> remoteSnapshot;
     std::size_t sourceSize = 0u;
-    /// Description: Executes the timeoutScope operation.
     SocketTimeoutScope timeoutScope(_remoteClient, static_cast<int>(_remoteSnapshotTimeoutMs));
     const ServerClientResponse response =
         _remoteClient.getSnapshot(remoteSnapshot, _runtimeState.remoteSnapshotCap(), &sourceSize);
     if (!response.ok) {
         if (isTransportClientFailure(response.error)) {
-            /// Description: Executes the markRemoteDisconnected operation.
             markRemoteDisconnected("get_snapshot", response.error);
         }
         else {
@@ -568,29 +562,28 @@ bool ClientServerBridge::tryConsumeSnapshot(std::vector<RenderParticle>& outSnap
     outSnapshot = std::move(remoteSnapshot);
     return true;
 }
+
 /// Description: Executes the getStats operation.
 SimulationStats ClientServerBridge::getStats()
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    /// Description: Executes the refreshRemoteStats operation.
     refreshRemoteStats();
     return _cachedStats;
 }
+
 /// Description: Executes the setRemoteSnapshotCap operation.
 void ClientServerBridge::setRemoteSnapshotCap(std::uint32_t maxPoints)
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     _runtimeState.setRemoteSnapshotCap(maxPoints);
     const std::uint32_t clamped = grav_protocol::clampSnapshotPoints(maxPoints);
     (void)sendOrQueueRemote(std::string(grav_protocol::SetSnapshotTransferCap),
                             "\"max_points\":" + std::to_string(clamped));
 }
+
 /// Description: Executes the requestReconnect operation.
 void ClientServerBridge::requestReconnect()
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     _remoteClient.disconnect();
     _runtimeState.setConnected(false);
@@ -601,31 +594,32 @@ void ClientServerBridge::requestReconnect()
     _runtimeState.clearPendingCommands();
     _reconnectRetryDelay = kReconnectRetryIntervalMin;
     _lastReconnectAttempt = Clock::time_point::min();
-    /// Description: Executes the ensureRemoteConnected operation.
     ensureRemoteConnected(true);
 }
+
 /// Description: Executes the isRemoteMode operation.
 bool ClientServerBridge::isRemoteMode() const
 {
     return true;
 }
+
 /// Description: Executes the launchedByClient operation.
 bool ClientServerBridge::launchedByClient() const
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     return _runtimeState.serverLaunched();
 }
+
 /// Description: Executes the linkState operation.
 ClientLinkState ClientServerBridge::linkState() const
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     if (_runtimeState.isConnected() && _remoteClient.isConnected()) {
         return ClientLinkState::Connected;
     }
     return ClientLinkState::Reconnecting;
 }
+
 /// Description: Executes the linkStateLabel operation.
 std::string_view ClientServerBridge::linkStateLabel() const
 {
@@ -638,20 +632,22 @@ std::string_view ClientServerBridge::linkStateLabel() const
         return "reconnecting";
     }
 }
+
 /// Description: Executes the serverOwnerLabel operation.
 std::string_view ClientServerBridge::serverOwnerLabel() const
 {
-    /// Description: Executes the lock operation.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     static thread_local std::string label;
     label = _runtimeState.serverOwnerLabel();
     return label;
 }
+
 /// Description: Executes the jsonEscape operation.
 std::string ClientServerBridge::jsonEscape(const std::string& value)
 {
     return grav_protocol::ServerJsonCodec::escapeString(value);
 }
+
 /// Description: Executes the fromRemoteStatus operation.
 SimulationStats ClientServerBridge::fromRemoteStatus(const ServerClientStatus& status)
 {
@@ -696,18 +692,17 @@ SimulationStats ClientServerBridge::fromRemoteStatus(const ServerClientStatus& s
     stats.exportLastMessage = status.exportLastMessage;
     return stats;
 }
+
 /// Description: Executes the sendRemoteNow operation.
 bool ClientServerBridge::sendRemoteNow(const std::string& cmd, const std::string& fields)
 {
     if (!ensureRemoteConnected(false)) {
         return false;
     }
-    /// Description: Executes the timeoutScope operation.
     SocketTimeoutScope timeoutScope(_remoteClient, static_cast<int>(_remoteCommandTimeoutMs));
     const ServerClientResponse response = _remoteClient.sendCommand(cmd, fields);
     if (!response.ok) {
         if (isTransportClientFailure(response.error)) {
-            /// Description: Executes the markRemoteDisconnected operation.
             markRemoteDisconnected(cmd, response.error);
             return false;
         }
@@ -720,21 +715,22 @@ bool ClientServerBridge::sendRemoteNow(const std::string& cmd, const std::string
     }
     return true;
 }
+
 /// Description: Executes the sendOrQueueRemote operation.
 bool ClientServerBridge::sendOrQueueRemote(const std::string& cmd, const std::string& fields)
 {
     if (!_runtimeState.isConnected() || !_remoteClient.isConnected()) {
-        /// Description: Executes the queuePendingRemoteCommand operation.
         queuePendingRemoteCommand(cmd, fields);
         return true;
     }
     if (sendRemoteNow(cmd, fields)) {
         return true;
     }
-    /// Description: Executes the queuePendingRemoteCommand operation.
     queuePendingRemoteCommand(cmd, fields);
     return true;
 }
+
+/// Description: Describes the queue pending remote command operation contract.
 void ClientServerBridge::queuePendingRemoteCommand(const std::string& cmd,
                                                    const std::string& fields)
 {
@@ -742,6 +738,7 @@ void ClientServerBridge::queuePendingRemoteCommand(const std::string& cmd,
         std::cerr << "[client] remote queue full; dropping oldest queued command\n";
     }
 }
+
 /// Description: Executes the ensureRemoteConnected operation.
 bool ClientServerBridge::ensureRemoteConnected(bool forceLog)
 {
@@ -760,7 +757,6 @@ bool ClientServerBridge::ensureRemoteConnected(bool forceLog)
         _runtimeState.setConnected(true);
         _remoteLaunchAttempted = true;
         _reconnectRetryDelay = kReconnectRetryIntervalMin;
-        /// Description: Executes the flushPendingRemoteCommands operation.
         flushPendingRemoteCommands();
         return true;
     }
@@ -768,7 +764,6 @@ bool ClientServerBridge::ensureRemoteConnected(bool forceLog)
         const auto grown = _reconnectRetryDelay * 2;
         _reconnectRetryDelay = std::min(grown, kReconnectRetryIntervalMax);
     }
-    /// Description: Executes the tryAutoStartRemoteServer operation.
     tryAutoStartRemoteServer();
     if (forceLog || (now - _lastReconnectErrorLog) >= kErrorLogInterval) {
         std::cerr << "[client] server unreachable " << _remoteHost << ":" << _remotePort
@@ -777,6 +772,8 @@ bool ClientServerBridge::ensureRemoteConnected(bool forceLog)
     }
     return false;
 }
+
+/// Description: Describes the mark remote disconnected operation contract.
 void ClientServerBridge::markRemoteDisconnected(const std::string& context,
                                                 const std::string& reason)
 {
@@ -792,6 +789,7 @@ void ClientServerBridge::markRemoteDisconnected(const std::string& context,
     _reconnectRetryDelay = kReconnectRetryIntervalMin;
     _lastReconnectAttempt = now;
 }
+
 /// Description: Executes the isLoopbackHost operation.
 bool ClientServerBridge::isLoopbackHost(std::string_view host)
 {
@@ -800,11 +798,13 @@ bool ClientServerBridge::isLoopbackHost(std::string_view host)
     }
     return host == "127.0.0.1" || host == "localhost";
 }
+
 /// Description: Executes the shouldAutoStartRemoteServer operation.
 bool ClientServerBridge::shouldAutoStartRemoteServer() const
 {
     return _remoteAutoStart && !_remoteLaunchAttempted && isLoopbackHost(_remoteHost);
 }
+
 /// Description: Executes the tryAutoStartRemoteServer operation.
 void ClientServerBridge::tryAutoStartRemoteServer()
 {
@@ -835,6 +835,7 @@ void ClientServerBridge::tryAutoStartRemoteServer()
                   << " --server-port " << _remotePort << "\n";
     }
 }
+
 /// Description: Executes the flushPendingRemoteCommands operation.
 void ClientServerBridge::flushPendingRemoteCommands()
 {
@@ -849,6 +850,7 @@ void ClientServerBridge::flushPendingRemoteCommands()
     }
     _runtimeState.erasePendingPrefix(sentCount);
 }
+
 /// Description: Executes the refreshRemoteStats operation.
 void ClientServerBridge::refreshRemoteStats()
 {
@@ -856,12 +858,10 @@ void ClientServerBridge::refreshRemoteStats()
         return;
     }
     ServerClientStatus status{};
-    /// Description: Executes the timeoutScope operation.
     SocketTimeoutScope timeoutScope(_remoteClient, static_cast<int>(_remoteStatusTimeoutMs));
     const ServerClientResponse response = _remoteClient.getStatus(status);
     if (!response.ok) {
         if (isTransportClientFailure(response.error)) {
-            /// Description: Executes the markRemoteDisconnected operation.
             markRemoteDisconnected("status", response.error);
         }
         else {

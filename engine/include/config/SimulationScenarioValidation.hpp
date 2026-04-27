@@ -8,9 +8,14 @@
 #include <vector>
 /// Description: Defines the SimulationConfig data or behavior contract.
 struct SimulationConfig;
+
 namespace grav_config {
 /// Description: Enumerates the supported ScenarioDiagnosticLevel values.
-enum class ScenarioDiagnosticLevel { Warning, Error };
+enum class ScenarioDiagnosticLevel {
+    Warning,
+    Error
+};
+
 /// Description: Defines the ScenarioDiagnostic data or behavior contract.
 struct ScenarioDiagnostic {
     ScenarioDiagnosticLevel level = ScenarioDiagnosticLevel::Warning;
@@ -18,6 +23,7 @@ struct ScenarioDiagnostic {
     std::string message;
     std::string action;
 };
+
 /// Description: Defines the ScenarioValidationReport data or behavior contract.
 struct ScenarioValidationReport {
     std::vector<ScenarioDiagnostic> diagnostics;
@@ -25,12 +31,13 @@ struct ScenarioValidationReport {
     std::uint32_t errorCount = 0u;
     bool validForRun = true;
 };
+
 /// Description: Defines the SimulationScenarioValidation data or behavior contract.
 class SimulationScenarioValidation final {
 public:
-    /// Description: Executes the evaluate operation.
+    /// Description: Describes the evaluate operation contract.
     static ScenarioValidationReport evaluate(const SimulationConfig& config);
-    /// Description: Executes the renderText operation.
+    /// Description: Describes the render text operation contract.
     static std::string renderText(const ScenarioValidationReport& report);
 };
 } // namespace grav_config

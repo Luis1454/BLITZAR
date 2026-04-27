@@ -5,6 +5,7 @@
 #define GRAVITY_ENGINE_INCLUDE_PHYSICS_GPU_HPP_
 #include "physics/ParticleSystem.hpp"
 #include <vector>
+
 namespace gpu {
 /// Description: Executes the initializeParticles operation.
 void initializeParticles(std::vector<Particle>& particles);

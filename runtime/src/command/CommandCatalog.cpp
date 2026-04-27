@@ -3,7 +3,9 @@
 
 #include "command/CommandCatalog.hpp"
 #include <sstream>
+
 namespace grav_cmd {
+/// Description: Describes the make spec operation contract.
 static CommandSpec makeSpec(CommandId id, std::string name, std::string help, bool deterministic,
                             std::vector<CommandArgumentSpec> arguments)
 {
@@ -15,6 +17,7 @@ static CommandSpec makeSpec(CommandId id, std::string name, std::string help, bo
     spec.arguments = std::move(arguments);
     return spec;
 }
+
 /// Description: Executes the all operation.
 const std::vector<CommandSpec>& CommandCatalog::all()
 {
@@ -68,6 +71,7 @@ const std::vector<CommandSpec>& CommandCatalog::all()
                  true, {{"seconds", CommandArgumentKind::Float, false, {}}})};
     return specs;
 }
+
 /// Description: Executes the findByName operation.
 const CommandSpec* CommandCatalog::findByName(std::string_view name)
 {
@@ -77,6 +81,7 @@ const CommandSpec* CommandCatalog::findByName(std::string_view name)
     }
     return nullptr;
 }
+
 /// Description: Executes the findById operation.
 const CommandSpec* CommandCatalog::findById(CommandId id)
 {
@@ -86,6 +91,7 @@ const CommandSpec* CommandCatalog::findById(CommandId id)
     }
     return nullptr;
 }
+
 /// Description: Executes the renderHelp operation.
 std::string CommandCatalog::renderHelp()
 {

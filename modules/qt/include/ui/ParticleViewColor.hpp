@@ -11,6 +11,7 @@
 #include <QColor>
 #include <QtGlobal>
 #include <vector>
+
 namespace grav_qt {
 /// Converts a generic RGBA color into the packed Qt pixel representation.
 QRgb toQRgb(const grav::ColorRGBA& c);

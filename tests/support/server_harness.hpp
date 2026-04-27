@@ -7,33 +7,39 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+
 /// Description: Defines the RealServerHarness data or behavior contract.
 class RealServerHarness {
 public:
+    /// Description: Describes the real server harness operation contract.
     RealServerHarness() = default;
     /// Description: Releases resources owned by RealServerHarness.
     ~RealServerHarness();
+    /// Description: Describes the real server harness operation contract.
     RealServerHarness(const RealServerHarness&) = delete;
+    /// Description: Describes the operator= operation contract.
     RealServerHarness& operator=(const RealServerHarness&) = delete;
+    /// Description: Describes the real server harness operation contract.
     RealServerHarness(RealServerHarness&&) = delete;
+    /// Description: Describes the operator= operation contract.
     RealServerHarness& operator=(RealServerHarness&&) = delete;
+    /// Description: Describes the start operation contract.
     bool start(std::string& outError, std::uint16_t preferredPort = 0u,
                const std::string& authToken = {}, const std::vector<std::string>& extraArgs = {});
-    /// Description: Executes the stop operation.
+    /// Description: Describes the stop operation contract.
     void stop();
-    /// Description: Executes the isRunning operation.
+    /// Description: Describes the is running operation contract.
     bool isRunning() const;
-    /// Description: Executes the port operation.
+    /// Description: Describes the port operation contract.
     std::uint16_t port() const;
-    /// Description: Executes the executablePath operation.
     const std::string& executablePath() const;
 
 private:
-    /// Description: Executes the resolveServerExecutable operation.
+    /// Description: Describes the resolve server executable operation contract.
     static std::string resolveServerExecutable();
-    /// Description: Executes the isPortBindable operation.
+    /// Description: Describes the is port bindable operation contract.
     static bool isPortBindable(std::uint16_t port);
-    /// Description: Executes the waitUntilReady operation.
+    /// Description: Describes the wait until ready operation contract.
     bool waitUntilReady(std::string& outError) const;
     grav_platform::ProcessHandle _process;
     std::uint16_t _port = 0u;

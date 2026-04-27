@@ -4,6 +4,7 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMERRORS_HPP_
 #define GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMERRORS_HPP_
 #include <string_view>
+
 namespace grav_platform_errors {
 extern const std::string_view kInvalidLibraryHandleOrSymbol;
 extern const std::string_view kDynamicLibraryLoadFailed;

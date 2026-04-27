@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+
 namespace grav_socket_detail {
 /// Description: Defines the SocketAddressV4 data or behavior contract.
 struct SocketAddressV4 {
@@ -15,6 +16,7 @@ struct SocketAddressV4 {
     std::uint16_t port = 0u;
     bool anyAddress = false;
 };
+
 /// Description: Executes the invalidNativeSocket operation.
 std::intptr_t invalidNativeSocket();
 /// Description: Executes the initializeSocketLayer operation.

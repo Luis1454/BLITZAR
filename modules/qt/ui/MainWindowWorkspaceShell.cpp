@@ -16,7 +16,9 @@
 #include <QPushButton>
 #include <QSpinBox>
 #include <QStatusBar>
+
 namespace grav_qt {
+/// Description: Describes the build workspace docks operation contract.
 void MainWindow::buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPane,
                                      QWidget* validationPane)
 {
@@ -25,29 +27,24 @@ void MainWindow::buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPa
     _controlsDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     _controlsDock->setWidget(sidebarTabs);
     _controlsDock->setMinimumWidth(236);
-    /// Description: Executes the addDockWidget operation.
     addDockWidget(Qt::LeftDockWidgetArea, _controlsDock);
     _telemetryDock = new QDockWidget("Telemetry", this);
     _telemetryDock->setObjectName("telemetryDock");
     _telemetryDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     _telemetryDock->setWidget(summaryPane);
     _telemetryDock->setMinimumHeight(164);
-    /// Description: Executes the addDockWidget operation.
     addDockWidget(Qt::BottomDockWidgetArea, _telemetryDock);
     _energyDock = new QDockWidget("Energy", this);
     _energyDock->setObjectName("energyDock");
     _energyDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     _energyDock->setWidget(_energyGraph);
     _energyDock->setMinimumHeight(136);
-    /// Description: Executes the addDockWidget operation.
     addDockWidget(Qt::BottomDockWidgetArea, _energyDock);
     _validationDock = new QDockWidget("Validation", this);
     _validationDock->setObjectName("validationDock");
     _validationDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     _validationDock->setWidget(validationPane);
-    /// Description: Executes the addDockWidget operation.
     addDockWidget(Qt::BottomDockWidgetArea, _validationDock);
-    /// Description: Executes the tabifyDockWidget operation.
     tabifyDockWidget(_telemetryDock, _validationDock);
     resizeDocks({_controlsDock}, {236}, Qt::Horizontal);
     resizeDocks({_energyDock}, {148}, Qt::Vertical);
@@ -55,23 +52,46 @@ void MainWindow::buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPa
     _telemetryDock->hide();
     _validationDock->hide();
 }
+
 /// Description: Executes the buildMenus operation.
 void MainWindow::buildMenus()
 {
     auto* fileMenu = menuBar()->addMenu("&File");
     fileMenu->addAction(
-        "Save Config", this, [this]() { (void)saveConfigToDisk(); }, QKeySequence::Save);
-    fileMenu->addAction("Load Preset...", this, [this]() { handleLoadPresetRequest(); });
-    fileMenu->addAction("Load Checkpoint...", this, [this]() { handleLoadCheckpointRequest(); });
-    fileMenu->addAction("Load Input...", this, [this]() { handleLoadInputRequest(); });
-    fileMenu->addAction("Save Checkpoint...", this, [this]() { handleSaveCheckpointRequest(); });
-    fileMenu->addAction("Export Snapshot...", this, [this]() { handleExportRequest(); });
+        "Save Config", this,
+        [this]() {
+            (void)saveConfigToDisk();
+        },
+        QKeySequence::Save);
+    fileMenu->addAction("Load Preset...", this, [this]() {
+        handleLoadPresetRequest();
+    });
+    fileMenu->addAction("Load Checkpoint...", this, [this]() {
+        handleLoadCheckpointRequest();
+    });
+    fileMenu->addAction("Load Input...", this, [this]() {
+        handleLoadInputRequest();
+    });
+    fileMenu->addAction("Save Checkpoint...", this, [this]() {
+        handleSaveCheckpointRequest();
+    });
+    fileMenu->addAction("Export Snapshot...", this, [this]() {
+        handleExportRequest();
+    });
     fileMenu->addSeparator();
-    fileMenu->addAction("Quit", this, [this]() { close(); }, QKeySequence::Quit);
+    fileMenu->addAction(
+        "Quit", this,
+        [this]() {
+            close();
+        },
+        QKeySequence::Quit);
     auto* editMenu = menuBar()->addMenu("&Edit");
-    editMenu->addAction("Validate Config", this,
-                        [this]() { (void)refreshValidationReport(false); });
-    editMenu->addAction("Reconnect", this, [this]() { requestReconnectFromUi(); });
+    editMenu->addAction("Validate Config", this, [this]() {
+        (void)refreshValidationReport(false);
+    });
+    editMenu->addAction("Reconnect", this, [this]() {
+        requestReconnectFromUi();
+    });
     auto* viewMenu = menuBar()->addMenu("&View");
     viewMenu->addAction(_controlsDock->toggleViewAction());
     viewMenu->addAction(_energyDock->toggleViewAction());
@@ -102,49 +122,64 @@ void MainWindow::buildMenus()
     }
     auto* simulationMenu = menuBar()->addMenu("&Simulation");
     simulationMenu->addAction(
-        "Pause / Resume", this, [this]() { _pauseButton->click(); }, Qt::Key_Space);
-    simulationMenu->addAction("Step", this, [this]() { _stepButton->click(); });
-    simulationMenu->addAction("Reset", this, [this]() { _resetButton->click(); });
-    simulationMenu->addAction("Recover", this, [this]() { _recoverButton->click(); });
+        "Pause / Resume", this,
+        [this]() {
+            _pauseButton->click();
+        },
+        Qt::Key_Space);
+    simulationMenu->addAction("Step", this, [this]() {
+        _stepButton->click();
+    });
+    simulationMenu->addAction("Reset", this, [this]() {
+        _resetButton->click();
+    });
+    simulationMenu->addAction("Recover", this, [this]() {
+        _recoverButton->click();
+    });
     auto* windowMenu = menuBar()->addMenu("&Window");
-    windowMenu->addAction("Raise Controls", this, [this]() { _controlsDock->raise(); });
-    windowMenu->addAction("Raise Energy", this, [this]() { _energyDock->raise(); });
-    windowMenu->addAction("Raise Telemetry", this, [this]() { _telemetryDock->raise(); });
-    windowMenu->addAction("Raise Validation", this, [this]() { _validationDock->raise(); });
+    windowMenu->addAction("Raise Controls", this, [this]() {
+        _controlsDock->raise();
+    });
+    windowMenu->addAction("Raise Energy", this, [this]() {
+        _energyDock->raise();
+    });
+    windowMenu->addAction("Raise Telemetry", this, [this]() {
+        _telemetryDock->raise();
+    });
+    windowMenu->addAction("Raise Validation", this, [this]() {
+        _validationDock->raise();
+    });
     auto* workspaceMenu = windowMenu->addMenu("Workspace");
-    workspaceMenu->addAction("Save Workspace...", this, [this]() { saveWorkspacePreset(); });
-    workspaceMenu->addAction("Load Workspace...", this, [this]() { loadWorkspacePreset(); });
-    workspaceMenu->addAction("Delete Workspace...", this, [this]() { deleteWorkspacePreset(); });
+    workspaceMenu->addAction("Save Workspace...", this, [this]() {
+        saveWorkspacePreset();
+    });
+    workspaceMenu->addAction("Load Workspace...", this, [this]() {
+        loadWorkspacePreset();
+    });
+    workspaceMenu->addAction("Delete Workspace...", this, [this]() {
+        deleteWorkspacePreset();
+    });
     workspaceMenu->addSeparator();
-    workspaceMenu->addAction("Restore Default Workspace", this,
-                             [this]() { restoreDefaultWorkspace(); });
+    workspaceMenu->addAction("Restore Default Workspace", this, [this]() {
+        restoreDefaultWorkspace();
+    });
     auto* helpMenu = menuBar()->addMenu("&Help");
     helpMenu->addAction("About Workspace", this, [this]() {
         _statusLabel->setText("Workspace shell active");
-        /// Description: Executes the statusBar operation.
         statusBar()->showMessage("Workspace shell active", 3000);
     });
-    /// Description: Executes the connect operation.
     connect(lightThemeAction, &QAction::triggered, this, [this]() {
         _config.uiTheme = "light";
-        /// Description: Executes the applyTheme operation.
         applyTheme();
-        /// Description: Executes the markConfigDirty operation.
         markConfigDirty();
-        /// Description: Executes the statusBar operation.
         statusBar()->showMessage("Theme applied: light", 3000);
     });
-    /// Description: Executes the connect operation.
     connect(darkThemeAction, &QAction::triggered, this, [this]() {
         _config.uiTheme = "dark";
-        /// Description: Executes the applyTheme operation.
         applyTheme();
-        /// Description: Executes the markConfigDirty operation.
         markConfigDirty();
-        /// Description: Executes the statusBar operation.
         statusBar()->showMessage("Theme applied: dark", 3000);
     });
-    /// Description: Executes the connect operation.
     connect(_octreeOverlayCheck, &QCheckBox::toggled, this, [this](bool enabled) {
         if (_octreeOverlayAction != nullptr && _octreeOverlayAction->isChecked() != enabled) {
             _octreeOverlayAction->blockSignals(true);
@@ -156,7 +191,6 @@ void MainWindow::buildMenus()
         statusBar()->showMessage(enabled ? "Octree overlay enabled" : "Octree overlay disabled",
                                  3000);
     });
-    /// Description: Executes the connect operation.
     connect(_octreeOverlayAction, &QAction::toggled, this, [this](bool enabled) {
         if (_octreeOverlayCheck != nullptr && _octreeOverlayCheck->isChecked() != enabled) {
             _octreeOverlayCheck->blockSignals(true);
@@ -168,7 +202,6 @@ void MainWindow::buildMenus()
                                      3000);
         }
     });
-    /// Description: Executes the connect operation.
     connect(_gpuTelemetryCheck, &QCheckBox::toggled, this, [this](bool enabled) {
         if (_gpuTelemetryAction != nullptr && _gpuTelemetryAction->isChecked() != enabled) {
             _gpuTelemetryAction->blockSignals(true);
@@ -183,7 +216,6 @@ void MainWindow::buildMenus()
         statusBar()->showMessage(enabled ? "GPU telemetry enabled" : "GPU telemetry disabled",
                                  3000);
     });
-    /// Description: Executes the connect operation.
     connect(_gpuTelemetryAction, &QAction::toggled, this, [this](bool enabled) {
         if (_gpuTelemetryCheck != nullptr && _gpuTelemetryCheck->isChecked() != enabled) {
             _gpuTelemetryCheck->blockSignals(true);

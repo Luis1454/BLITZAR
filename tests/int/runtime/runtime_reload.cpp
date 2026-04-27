@@ -14,12 +14,12 @@
 #include <optional>
 #include <string>
 #include <vector>
+
 namespace grav_test_client_runtime_reload {
 /// Description: Executes the writeTempXyz operation.
 static std::filesystem::path writeTempXyz(const char* basename, const std::vector<float>& xs)
 {
     const std::filesystem::path path = std::filesystem::temp_directory_path() / basename;
-    /// Description: Executes the out operation.
     std::ofstream out(path, std::ios::trunc);
     out << xs.size() << "\n";
     out << basename << "\n";
@@ -28,6 +28,7 @@ static std::filesystem::path writeTempXyz(const char* basename, const std::vecto
     }
     return path;
 }
+
 /// Description: Executes the TEST operation.
 TEST(ClientRuntimeTest, TST_CNT_RUNT_008_LoadResetInvalidatesClientSnapshotCacheUntilReloaded)
 {
@@ -36,7 +37,6 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_008_LoadResetInvalidatesClientSnapshotCache
     ASSERT_TRUE(server.start(startError)) << startError;
     grav_client::ClientRuntime runtime(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
-    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(runtime.start());
     std::optional<grav_client::ConsumedSnapshot> consumedSnapshot;
     ASSERT_TRUE(testsupport::waitUntil(
@@ -44,51 +44,38 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_008_LoadResetInvalidatesClientSnapshotCache
             consumedSnapshot = runtime.consumeLatestSnapshot();
             return consumedSnapshot.has_value();
         },
-        /// Description: Executes the milliseconds operation.
         std::chrono::milliseconds(3000)));
-    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(consumedSnapshot.has_value());
-    /// Description: Executes the ASSERT_GT operation.
     ASSERT_GT(consumedSnapshot->sourceSize, 0u);
     const std::filesystem::path xyz3 =
         writeTempXyz("grav_test_client_reload_3.xyz", {-2.0f, 0.0f, 2.0f});
     const std::filesystem::path xyz4 =
         writeTempXyz("grav_test_client_reload_4.xyz", {-3.0f, -1.0f, 1.0f, 3.0f});
     runtime.setInitialStateFile(xyz3.string(), "xyz");
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(runtime.consumeLatestSnapshot().has_value());
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(runtime.snapshotAgeMs(), std::numeric_limits<std::uint32_t>::max());
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(runtime.snapshotPipelineState().queueDepth, 0u);
     ASSERT_TRUE(testsupport::waitUntil(
         [&]() {
             consumedSnapshot = runtime.consumeLatestSnapshot();
             return consumedSnapshot.has_value() && consumedSnapshot->sourceSize == 3u;
         },
-        /// Description: Executes the milliseconds operation.
         std::chrono::milliseconds(4000)));
     runtime.setInitialStateFile(xyz4.string(), "xyz");
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(runtime.consumeLatestSnapshot().has_value());
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(runtime.snapshotAgeMs(), std::numeric_limits<std::uint32_t>::max());
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(runtime.snapshotPipelineState().queueDepth, 0u);
     ASSERT_TRUE(testsupport::waitUntil(
         [&]() {
             consumedSnapshot = runtime.consumeLatestSnapshot();
             return consumedSnapshot.has_value() && consumedSnapshot->sourceSize == 4u;
         },
-        /// Description: Executes the milliseconds operation.
         std::chrono::milliseconds(4000)));
     runtime.stop();
     server.stop();
     std::error_code ec;
-    /// Description: Executes the remove operation.
     std::filesystem::remove(xyz3, ec);
     ec.clear();
-    /// Description: Executes the remove operation.
     std::filesystem::remove(xyz4, ec);
 }
 } // namespace grav_test_client_runtime_reload

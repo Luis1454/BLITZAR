@@ -8,10 +8,12 @@
 #include "server/SimulationInitConfig.hpp"
 #include <functional>
 #include <string>
+
 namespace grav_config {
 /// Description: Defines the SimulationScenarioValidationPhysics data or behavior contract.
 class SimulationScenarioValidationPhysics final {
 public:
+    /// Description: Describes the append diagnostics operation contract.
     static void appendDiagnostics(
         const SimulationConfig& config, const InitialStateConfig& resolvedInitConfig,
         const std::function<void(ScenarioDiagnosticLevel, std::string, std::string, std::string)>&

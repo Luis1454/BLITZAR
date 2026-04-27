@@ -6,16 +6,18 @@
 #include "protocol/ServerProtocol.hpp"
 #include <algorithm>
 #include <cctype>
+
 namespace grav_config {
 /// Description: Executes the toLowerProfile operation.
 static std::string toLowerProfile(std::string_view raw)
 {
-    /// Description: Executes the lowered operation.
     std::string lowered(raw);
-    std::transform(lowered.begin(), lowered.end(), lowered.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::transform(lowered.begin(), lowered.end(), lowered.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
     return lowered;
 }
+
 /// Description: Executes the normalizePerformanceProfile operation.
 bool normalizePerformanceProfile(std::string_view raw, std::string& outCanonical)
 {
@@ -38,6 +40,7 @@ bool normalizePerformanceProfile(std::string_view raw, std::string& outCanonical
     }
     return false;
 }
+
 /// Description: Executes the applyPerformanceProfile operation.
 void applyPerformanceProfile(SimulationConfig& config)
 {
@@ -74,6 +77,7 @@ void applyPerformanceProfile(SimulationConfig& config)
     config.substepTargetDt = 0.0f;
     config.maxSubsteps = 32u;
 }
+
 /// Description: Executes the isPerformanceManagedField operation.
 bool isPerformanceManagedField(std::string_view key)
 {

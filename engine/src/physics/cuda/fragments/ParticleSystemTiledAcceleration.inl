@@ -6,6 +6,7 @@
 #include <cuda_runtime.h>
 
 // Warp shuffle reduction for single float (0xffffffff = warp mask for sm_86 32-thread warps)
+/// Description: Describes the warp reduce sum operation contract.
 __device__ __forceinline__ float warp_reduce_sum(float val) {
     for (int offset = warpSize / 2; offset > 0; offset /= 2) {
         val += __shfl_down_sync(0xffffffff, val, offset);
@@ -14,6 +15,7 @@ __device__ __forceinline__ float warp_reduce_sum(float val) {
 }
 
 // Warp shuffle reduction for Vector3
+/// Description: Describes the warp reduce vec3 operation contract.
 __device__ __forceinline__ Vector3 warp_reduce_vec3(Vector3 val) {
     val.x = warp_reduce_sum(val.x);
     val.y = warp_reduce_sum(val.y);
@@ -22,6 +24,7 @@ __device__ __forceinline__ Vector3 warp_reduce_vec3(Vector3 val) {
 }
 
 // Optimized tiled pairwise acceleration kernel with shared memory and warp shuffles
+/// Description: Describes the compute pairwise acceleration kernel tiled operation contract.
 __global__ void computePairwiseAccelerationKernelTiled(
     ParticleSoAView state,
     Vector3Handle outAcceleration,
@@ -65,7 +68,6 @@ __global__ void computePairwiseAccelerationKernelTiled(
             smem_posZ[i] = state.posZ[globalIdx];
             smem_mass[i] = state.mass[globalIdx];
         }
-        /// Description: Executes the __syncthreads operation.
         __syncthreads();
 
         // Each thread processes its target particle against all particles in this tile
@@ -92,6 +94,7 @@ __global__ void computePairwiseAccelerationKernelTiled(
 }
 
 // Alternative: Optimized pairwise acceleration with warp-level reduction for intermediate results
+/// Description: Describes the compute pairwise acceleration kernel warp reduced operation contract.
 __global__ void computePairwiseAccelerationKernelWarpReduced(
     ParticleSoAView state,
     Vector3Handle outAcceleration,

@@ -7,13 +7,15 @@
 #include <string>
 /// Description: Defines the SimulationConfig data or behavior contract.
 struct SimulationConfig;
+
 namespace grav_config {
 /// Description: Defines the SimulationConfigDirective data or behavior contract.
 class SimulationConfigDirective {
 public:
+    /// Description: Describes the apply line operation contract.
     [[nodiscard]] static bool applyLine(const std::string& line, SimulationConfig& config,
                                         std::ostream& warnings);
-    /// Description: Executes the write operation.
+    /// Description: Describes the write operation contract.
     static void write(std::ostream& out, const SimulationConfig& config);
 };
 } // namespace grav_config

@@ -7,7 +7,9 @@
 #include "config/SimulationPerformanceProfile.hpp"
 #include "protocol/ServerProtocol.hpp"
 #include <algorithm>
+
 namespace grav_config {
+/// Description: Describes the matches managed performance fields operation contract.
 static bool matchesManagedPerformanceFields(const SimulationConfig& lhs,
                                             const SimulationConfig& rhs)
 {
@@ -17,10 +19,10 @@ static bool matchesManagedPerformanceFields(const SimulationConfig& lhs,
            lhs.energySampleLimit == rhs.energySampleLimit &&
            lhs.substepTargetDt == rhs.substepTargetDt && lhs.maxSubsteps == rhs.maxSubsteps;
 }
+
 /// Description: Executes the writeSimulation operation.
 static void writeSimulation(std::ostream& out, const SimulationConfig& config)
 {
-    /// Description: Executes the writer operation.
     DirectiveStreamWriter writer(out, "simulation");
     writer.writeUint32("particle_count", config.particleCount);
     writer.writeFloat("dt", config.dt);
@@ -28,12 +30,12 @@ static void writeSimulation(std::ostream& out, const SimulationConfig& config)
     writer.writeString("integrator", config.integrator);
     writer.finish();
 }
+
 /// Description: Executes the writePerformance operation.
 static void writePerformance(std::ostream& out, const SimulationConfig& config)
 {
     SimulationConfig profileReference = SimulationConfig::defaults();
     profileReference.performanceProfile = config.performanceProfile;
-    /// Description: Executes the applyPerformanceProfile operation.
     applyPerformanceProfile(profileReference);
     const bool emitCustomProfile = config.performanceProfile == "custom" ||
                                    !matchesManagedPerformanceFields(config, profileReference);
@@ -51,10 +53,10 @@ static void writePerformance(std::ostream& out, const SimulationConfig& config)
     }
     out << ")\n";
 }
+
 /// Description: Executes the writeOctree operation.
 static void writeOctree(std::ostream& out, const SimulationConfig& config)
 {
-    /// Description: Executes the writer operation.
     DirectiveStreamWriter writer(out, "octree");
     writer.writeFloat("theta", config.octreeTheta);
     writer.writeFloat("softening", config.octreeSoftening);
@@ -64,10 +66,10 @@ static void writeOctree(std::ostream& out, const SimulationConfig& config)
     writer.writeFloat("theta_auto_max", config.octreeThetaAutoMax);
     writer.finish();
 }
+
 /// Description: Executes the writePhysics operation.
 static void writePhysics(std::ostream& out, const SimulationConfig& config)
 {
-    /// Description: Executes the writer operation.
     DirectiveStreamWriter writer(out, "physics");
     writer.writeFloat("max_acceleration", config.physicsMaxAcceleration);
     writer.writeFloat("min_softening", config.physicsMinSoftening);
@@ -75,10 +77,10 @@ static void writePhysics(std::ostream& out, const SimulationConfig& config)
     writer.writeFloat("min_theta", config.physicsMinTheta);
     writer.finish();
 }
+
 /// Description: Executes the writeClient operation.
 static void writeClient(std::ostream& out, const SimulationConfig& config)
 {
-    /// Description: Executes the writer operation.
     DirectiveStreamWriter writer(out, "client");
     writer.writeFloat("zoom", config.defaultZoom);
     writer.writeInt("luminosity", config.defaultLuminosity);
@@ -91,19 +93,19 @@ static void writeClient(std::ostream& out, const SimulationConfig& config)
     writer.writeString("drop_policy", config.clientSnapshotDropPolicy);
     writer.finish();
 }
+
 /// Description: Executes the writeExport operation.
 static void writeExport(std::ostream& out, const SimulationConfig& config)
 {
-    /// Description: Executes the writer operation.
     DirectiveStreamWriter writer(out, "export");
     writer.writeQuotedString("directory", config.exportDirectory);
     writer.writeString("format", config.exportFormat);
     writer.finish();
 }
+
 /// Description: Executes the writeScene operation.
 static void writeScene(std::ostream& out, const SimulationConfig& config)
 {
-    /// Description: Executes the writer operation.
     DirectiveStreamWriter writer(out, "scene");
     writer.writeString("style", config.initConfigStyle);
     writer.writeString("preset", config.presetStructure);
@@ -112,20 +114,20 @@ static void writeScene(std::ostream& out, const SimulationConfig& config)
     writer.writeString("format", config.inputFormat);
     writer.finish();
 }
+
 /// Description: Executes the writePreset operation.
 static void writePreset(std::ostream& out, const SimulationConfig& config)
 {
-    /// Description: Executes the writer operation.
     DirectiveStreamWriter writer(out, "preset");
     writer.writeFloat("size", config.presetSize);
     writer.writeFloat("velocity_temperature", config.velocityTemperature);
     writer.writeFloat("temperature", config.particleTemperature);
     writer.finish();
 }
+
 /// Description: Executes the writeThermal operation.
 static void writeThermal(std::ostream& out, const SimulationConfig& config)
 {
-    /// Description: Executes the writer operation.
     DirectiveStreamWriter writer(out, "thermal");
     writer.writeFloat("ambient", config.thermalAmbientTemperature);
     writer.writeFloat("specific_heat", config.thermalSpecificHeat);
@@ -133,20 +135,20 @@ static void writeThermal(std::ostream& out, const SimulationConfig& config)
     writer.writeFloat("radiation", config.thermalRadiationCoeff);
     writer.finish();
 }
+
 /// Description: Executes the writeGeneration operation.
 static void writeGeneration(std::ostream& out, const SimulationConfig& config)
 {
-    /// Description: Executes the writer operation.
     DirectiveStreamWriter writer(out, "generation");
     writer.writeUint32("seed", config.initSeed);
     writer.writeBool("include_central_body", config.initIncludeCentralBody);
     writer.writeBool("deterministic", config.deterministicMode);
     writer.finish();
 }
+
 /// Description: Executes the writeCentralBody operation.
 static void writeCentralBody(std::ostream& out, const SimulationConfig& config)
 {
-    /// Description: Executes the writer operation.
     DirectiveStreamWriter writer(out, "central_body");
     writer.writeFloat("mass", config.initCentralMass);
     writer.writeFloat("x", config.initCentralX);
@@ -157,10 +159,10 @@ static void writeCentralBody(std::ostream& out, const SimulationConfig& config)
     writer.writeFloat("vz", config.initCentralVz);
     writer.finish();
 }
+
 /// Description: Executes the writeDisk operation.
 static void writeDisk(std::ostream& out, const SimulationConfig& config)
 {
-    /// Description: Executes the writer operation.
     DirectiveStreamWriter writer(out, "disk");
     writer.writeFloat("mass", config.initDiskMass);
     writer.writeFloat("radius_min", config.initDiskRadiusMin);
@@ -169,20 +171,20 @@ static void writeDisk(std::ostream& out, const SimulationConfig& config)
     writer.writeFloat("velocity_scale", config.initVelocityScale);
     writer.finish();
 }
+
 /// Description: Executes the writeCloud operation.
 static void writeCloud(std::ostream& out, const SimulationConfig& config)
 {
-    /// Description: Executes the writer operation.
     DirectiveStreamWriter writer(out, "cloud");
     writer.writeFloat("half_extent", config.initCloudHalfExtent);
     writer.writeFloat("speed", config.initCloudSpeed);
     writer.writeFloat("particle_mass", config.initParticleMass);
     writer.finish();
 }
+
 /// Description: Executes the writeSph operation.
 static void writeSph(std::ostream& out, const SimulationConfig& config)
 {
-    /// Description: Executes the writer operation.
     DirectiveStreamWriter writer(out, "sph");
     writer.writeBool("enabled", config.sphEnabled);
     writer.writeFloat("smoothing_length", config.sphSmoothingLength);
@@ -193,10 +195,10 @@ static void writeSph(std::ostream& out, const SimulationConfig& config)
     writer.writeFloat("max_speed", config.sphMaxSpeed);
     writer.finish();
 }
+
 /// Description: Executes the writeRender operation.
 static void writeRender(std::ostream& out, const SimulationConfig& config)
 {
-    /// Description: Executes the writer operation.
     DirectiveStreamWriter writer(out, "render");
     writer.writeBool("culling", config.renderCullingEnabled);
     writer.writeBool("lod", config.renderLODEnabled);
@@ -204,6 +206,7 @@ static void writeRender(std::ostream& out, const SimulationConfig& config)
     writer.writeFloat("lod_far", config.renderLODFarDistance);
     writer.finish();
 }
+
 /// Description: Executes the write operation.
 void SimulationConfigDirective::write(std::ostream& out, const SimulationConfig& config)
 {
@@ -211,35 +214,20 @@ void SimulationConfigDirective::write(std::ostream& out, const SimulationConfig&
     out << "# BLITZAR directive config\n";
     out << "# Generated automatically. Edit values then restart.\n";
     out << "# ==================================================\n\n";
-    /// Description: Executes the writeSimulation operation.
     writeSimulation(out, config);
-    /// Description: Executes the writePerformance operation.
     writePerformance(out, config);
-    /// Description: Executes the writeOctree operation.
     writeOctree(out, config);
-    /// Description: Executes the writePhysics operation.
     writePhysics(out, config);
-    /// Description: Executes the writeClient operation.
     writeClient(out, config);
-    /// Description: Executes the writeExport operation.
     writeExport(out, config);
-    /// Description: Executes the writeScene operation.
     writeScene(out, config);
-    /// Description: Executes the writePreset operation.
     writePreset(out, config);
-    /// Description: Executes the writeThermal operation.
     writeThermal(out, config);
-    /// Description: Executes the writeGeneration operation.
     writeGeneration(out, config);
-    /// Description: Executes the writeCentralBody operation.
     writeCentralBody(out, config);
-    /// Description: Executes the writeDisk operation.
     writeDisk(out, config);
-    /// Description: Executes the writeCloud operation.
     writeCloud(out, config);
-    /// Description: Executes the writeSph operation.
     writeSph(out, config);
-    /// Description: Executes the writeRender operation.
     writeRender(out, config);
 }
 } // namespace grav_config

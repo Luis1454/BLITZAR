@@ -3,6 +3,8 @@
 
 #include "config/SimulationArgsClientOptions.hpp"
 #include "config/SimulationOptionRegistry.hpp"
+
+/// Description: Describes the apply operation contract.
 bool SimulationArgsClientOptions::apply(const std::string& key, const std::string& value,
                                         SimulationConfig& config, std::ostream& warnings)
 {

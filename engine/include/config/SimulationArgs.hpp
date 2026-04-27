@@ -9,6 +9,7 @@
 #include <vector>
 /// Description: Defines the SimulationConfig data or behavior contract.
 struct SimulationConfig;
+
 /// Description: Defines the RuntimeArgs data or behavior contract.
 struct RuntimeArgs {
     std::string configPath = "simulation.ini";
@@ -18,8 +19,11 @@ struct RuntimeArgs {
     bool showHelp = false;
     bool hasArgumentError = false;
 };
+
+/// Description: Describes the find config path arg operation contract.
 std::string findConfigPathArg(const std::vector<std::string_view>& args,
                               const std::string& fallback = "simulation.ini");
+/// Description: Describes the apply args to config operation contract.
 void applyArgsToConfig(const std::vector<std::string_view>& args, SimulationConfig& config,
                        RuntimeArgs& runtime, std::ostream& warnings);
 /// Description: Executes the printUsage operation.

@@ -7,12 +7,14 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+
 /// Description: Defines the ServerClientResponse data or behavior contract.
 struct ServerClientResponse {
     bool ok = false;
     std::string raw;
     std::string error;
 };
+
 /// Description: Defines the ServerClientStatus data or behavior contract.
 struct ServerClientStatus {
     std::uint64_t steps = 0;
@@ -54,40 +56,42 @@ struct ServerClientStatus {
     std::string exportLastPath;
     std::string exportLastMessage;
 };
+
 /// Description: Defines the ServerClient data or behavior contract.
 class ServerClient {
 public:
-    /// Description: Executes the ServerClient operation.
+    /// Description: Describes the server client operation contract.
     ServerClient();
     /// Description: Releases resources owned by ServerClient.
     ~ServerClient();
-    /// Description: Executes the connect operation.
+    /// Description: Describes the connect operation contract.
     bool connect(const std::string& host, std::uint16_t port);
-    /// Description: Executes the setSocketTimeoutMs operation.
+    /// Description: Describes the set socket timeout ms operation contract.
     void setSocketTimeoutMs(int timeoutMs);
-    /// Description: Executes the socketTimeoutMs operation.
+    /// Description: Describes the socket timeout ms operation contract.
     int socketTimeoutMs() const;
-    /// Description: Executes the setAuthToken operation.
+    /// Description: Describes the set auth token operation contract.
     void setAuthToken(std::string token);
-    /// Description: Executes the disconnect operation.
+    /// Description: Describes the disconnect operation contract.
     void disconnect();
-    /// Description: Executes the isConnected operation.
+    /// Description: Describes the is connected operation contract.
     bool isConnected() const;
-    /// Description: Executes the sendJson operation.
+    /// Description: Describes the send json operation contract.
     ServerClientResponse sendJson(const std::string& jsonLine);
-    /// Description: Executes the sendCommand operation.
+    /// Description: Describes the send command operation contract.
     ServerClientResponse sendCommand(const std::string& cmd, const std::string& fieldsJson = "");
-    /// Description: Executes the getStatus operation.
+    /// Description: Describes the get status operation contract.
     ServerClientResponse getStatus(ServerClientStatus& outStatus);
+    /// Description: Describes the get snapshot operation contract.
     ServerClientResponse getSnapshot(std::vector<RenderParticle>& outSnapshot,
                                      std::uint32_t maxPoints = 4096u,
                                      std::size_t* outSourceSize = nullptr);
 
 private:
     typedef std::intptr_t SocketHandle;
-    /// Description: Executes the trim operation.
+    /// Description: Describes the trim operation contract.
     static std::string trim(const std::string& value);
-    /// Description: Executes the readLine operation.
+    /// Description: Describes the read line operation contract.
     bool readLine(std::string& outLine);
     SocketHandle _socket;
     int _socketTimeoutMs;

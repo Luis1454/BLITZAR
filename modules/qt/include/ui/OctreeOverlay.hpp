@@ -10,6 +10,7 @@
  */
 #include "types/SimulationTypes.hpp"
 #include <vector>
+
 namespace grav_qt {
 /// Description: Defines the OctreeOverlayNode data or behavior contract.
 struct OctreeOverlayNode final {
@@ -19,9 +20,11 @@ struct OctreeOverlayNode final {
     float halfSize;
     int depth;
 };
+
 /// Description: Defines the OctreeOverlay data or behavior contract.
 class OctreeOverlay {
 public:
+    /// Description: Describes the build operation contract.
     static std::vector<OctreeOverlayNode> build(const std::vector<RenderParticle>& particles,
                                                 int maxDepth);
 };

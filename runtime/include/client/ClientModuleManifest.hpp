@@ -6,17 +6,24 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+
 namespace grav_module {
 /// Description: Defines the ClientModuleManifest data or behavior contract.
 class ClientModuleManifest final {
 public:
+    /// Description: Describes the load operation contract.
     static bool load(std::string_view modulePath, ClientModuleManifest& outManifest,
                      std::string& outError);
+    /// Description: Describes the validate for load operation contract.
     bool validateForLoad(std::string_view modulePath, std::string_view expectedModuleId,
                          std::string& outError) const;
+    /// Description: Describes the module id operation contract.
     [[nodiscard]] std::string_view moduleId() const noexcept;
+    /// Description: Describes the module name operation contract.
     [[nodiscard]] std::string_view moduleName() const noexcept;
+    /// Description: Describes the sha256 operation contract.
     [[nodiscard]] std::string_view sha256() const noexcept;
+    /// Description: Describes the api version operation contract.
     [[nodiscard]] std::uint32_t apiVersion() const noexcept;
 
 private:

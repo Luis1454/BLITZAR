@@ -7,12 +7,14 @@
 #include "client/ErrorBuffer.hpp"
 #include "modules/cli/module_cli_state.hpp"
 #include <string_view>
+
 namespace grav_module_cli {
 /// Description: Defines the ModuleCliCommands data or behavior contract.
 class ModuleCliCommands final {
 public:
-    /// Description: Executes the printHelp operation.
+    /// Description: Describes the print help operation contract.
     static void printHelp();
+    /// Description: Describes the handle command operation contract.
     static bool handleCommand(ModuleState& state, std::string_view commandLine,
                               const grav_module::ClientModuleCommandControl& commandControl,
                               const grav_client::ErrorBufferView& errorBuffer);

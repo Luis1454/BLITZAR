@@ -4,7 +4,9 @@
 #include "protocol/ServerJsonCodec.hpp"
 #include <algorithm>
 #include <cctype>
+
 namespace grav_protocol {
+/// Description: Describes the parse command request operation contract.
 bool ServerJsonCodec::parseCommandRequest(std::string_view raw, ServerCommandRequest& out,
                                           std::string& error)
 {
@@ -18,7 +20,6 @@ bool ServerJsonCodec::parseCommandRequest(std::string_view raw, ServerCommandReq
         error = "missing cmd";
         return false;
     }
-    /// Description: Executes the readString operation.
     readString(raw, "token", parsed.token);
     parsed.cmd = toLower(trim(parsed.cmd));
     if (parsed.cmd.empty()) {
@@ -29,6 +30,8 @@ bool ServerJsonCodec::parseCommandRequest(std::string_view raw, ServerCommandReq
     error.clear();
     return true;
 }
+
+/// Description: Describes the parse response envelope operation contract.
 bool ServerJsonCodec::parseResponseEnvelope(std::string_view raw, ServerResponseEnvelope& out,
                                             std::string& error)
 {
@@ -42,7 +45,6 @@ bool ServerJsonCodec::parseResponseEnvelope(std::string_view raw, ServerResponse
         error = "invalid response";
         return false;
     }
-    /// Description: Executes the readString operation.
     readString(raw, "cmd", parsed.cmd);
     if (!parsed.ok && !readString(raw, "error", parsed.error)) {
         parsed.error = "server error";
@@ -51,6 +53,7 @@ bool ServerJsonCodec::parseResponseEnvelope(std::string_view raw, ServerResponse
     error.clear();
     return true;
 }
+
 /// Description: Executes the readString operation.
 bool ServerJsonCodec::readString(std::string_view raw, std::string_view key, std::string& out)
 {
@@ -92,6 +95,7 @@ bool ServerJsonCodec::readString(std::string_view raw, std::string_view key, std
     }
     return false;
 }
+
 /// Description: Executes the readBool operation.
 bool ServerJsonCodec::readBool(std::string_view raw, std::string_view key, bool& out)
 {
@@ -110,6 +114,7 @@ bool ServerJsonCodec::readBool(std::string_view raw, std::string_view key, bool&
     }
     return false;
 }
+
 /// Description: Executes the trim operation.
 std::string ServerJsonCodec::trim(std::string_view value)
 {
@@ -123,13 +128,16 @@ std::string ServerJsonCodec::trim(std::string_view value)
         return {};
     return std::string(begin, end);
 }
+
 /// Description: Executes the toLower operation.
 std::string ServerJsonCodec::toLower(std::string value)
 {
-    std::transform(value.begin(), value.end(), value.begin(),
-                   [](unsigned char current) { return static_cast<char>(std::tolower(current)); });
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char current) {
+        return static_cast<char>(std::tolower(current));
+    });
     return value;
 }
+
 /// Description: Executes the findValueStart operation.
 bool ServerJsonCodec::findValueStart(std::string_view raw, std::string_view key, std::size_t& start)
 {
@@ -150,6 +158,7 @@ bool ServerJsonCodec::findValueStart(std::string_view raw, std::string_view key,
     start = cursor;
     return true;
 }
+
 /// Description: Executes the readToken operation.
 bool ServerJsonCodec::readToken(std::string_view raw, std::string_view key, std::string& out)
 {

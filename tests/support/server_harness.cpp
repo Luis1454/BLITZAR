@@ -9,9 +9,11 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+
 namespace grav_test_server_harness {
 constexpr std::array<std::uint16_t, 12u> kFallbackPorts{
     4545u, 4546u, 14545u, 14546u, 24545u, 24546u, 34545u, 34546u, 44545u, 44546u, 54545u, 54546u};
+
 /// Description: Executes the resolveInputFilePath operation.
 std::string resolveInputFilePath()
 {
@@ -31,6 +33,7 @@ std::string resolveInputFilePath()
     }
     return "tests/data/two_body_rest.xyz";
 }
+
 /// Description: Executes the buildPortCandidates operation.
 std::vector<std::uint16_t> buildPortCandidates(std::uint16_t preferredPort)
 {
@@ -55,17 +58,18 @@ std::vector<std::uint16_t> buildPortCandidates(std::uint16_t preferredPort)
     return ports;
 }
 } // namespace grav_test_server_harness
+
 /// Description: Releases resources owned by RealServerHarness.
 RealServerHarness::~RealServerHarness()
 {
-    /// Description: Executes the stop operation.
     stop();
 }
+
+/// Description: Describes the start operation contract.
 bool RealServerHarness::start(std::string& outError, std::uint16_t preferredPort,
                               const std::string& authToken,
                               const std::vector<std::string>& extraArgs)
 {
-    /// Description: Executes the stop operation.
     stop();
     outError.clear();
     _authToken = authToken;
@@ -75,7 +79,6 @@ bool RealServerHarness::start(std::string& outError, std::uint16_t preferredPort
         return false;
     }
     const std::vector<std::uint16_t> portCandidates =
-        /// Description: Executes the buildPortCandidates operation.
         grav_test_server_harness::buildPortCandidates(preferredPort);
     for (const std::uint16_t candidatePort : portCandidates)
         if (candidatePort == 0u || !isPortBindable(candidatePort)) {
@@ -116,7 +119,6 @@ bool RealServerHarness::start(std::string& outError, std::uint16_t preferredPort
             if (waitUntilReady(outError)) {
                 return true;
             }
-            /// Description: Executes the stop operation.
             stop();
         }
     if (outError.empty()) {
@@ -124,6 +126,7 @@ bool RealServerHarness::start(std::string& outError, std::uint16_t preferredPort
     }
     return false;
 }
+
 /// Description: Executes the stop operation.
 void RealServerHarness::stop()
 {
@@ -142,16 +145,19 @@ void RealServerHarness::stop()
     _port = 0u;
     _authToken.clear();
 }
+
 /// Description: Executes the isRunning operation.
 bool RealServerHarness::isRunning() const
 {
     return _process.isRunning();
 }
+
 /// Description: Executes the port operation.
 std::uint16_t RealServerHarness::port() const
 {
     return _port;
 }
+
 /// Description: Executes the executablePath operation.
 const std::string& RealServerHarness::executablePath() const
 {

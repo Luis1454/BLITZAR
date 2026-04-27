@@ -34,11 +34,11 @@ static bool cudaRuntimeAvailable()
     if (status != cudaSuccess && status != cudaErrorNoDevice) {
         std::cerr << "[cuda] runtime disabled: " << cudaGetErrorString(status) << "\n";
     }
-    /// Description: Executes the cudaGetLastError operation.
     cudaGetLastError();
     return false;
 }
 
+/// Description: Describes the estimate memory usage operation contract.
 std::size_t ParticleSystem::estimateMemoryUsage(
     std::size_t particleCount,
     bool sphEnabled,
@@ -96,7 +96,6 @@ std::size_t ParticleSystem::estimateMemoryUsage(
             1,
             (static_cast<int>(particleCount) + leafCapacity - 1) / leafCapacity);
         const int requiredNodeCapacity =
-            /// Description: Executes the max operation.
             std::max(2, expectedLeaves * (leafDepth + 1) * 4 + 8);
         octreeBufferBytes += static_cast<std::size_t>(requiredNodeCapacity) * sizeof(GpuOctreeNode);
         octreeBufferBytes += static_cast<std::size_t>(requiredNodeCapacity) * sizeof(GpuOctreeNodeHotData);
@@ -126,6 +125,7 @@ std::size_t ParticleSystem::estimateMemoryUsage(
     return total;
 }
 
+/// Description: Describes the format memory breakdown operation contract.
 std::string ParticleSystem::formatMemoryBreakdown(
     std::size_t baseAndIntegratorBytes,
     std::size_t sphBytes,
@@ -134,7 +134,6 @@ std::string ParticleSystem::formatMemoryBreakdown(
     std::size_t budgetBytes)
 {
     std::ostringstream out;
-    /// Description: Executes the setprecision operation.
     out << std::fixed << std::setprecision(2)
         << "[info] [memory] Base/Integrator: " << bytesToMiB(baseAndIntegratorBytes) << " MB\n"
         << "[info] [memory] SPH Buffers: " << bytesToMiB(sphBytes) << " MB\n"
@@ -151,13 +150,11 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
     if (_cudaRuntimeAvailable) {
         const cudaError_t mapHostStatus = cudaSetDeviceFlags(cudaDeviceMapHost);
         if (mapHostStatus != cudaSuccess && mapHostStatus != cudaErrorSetOnActiveProcess) {
-            /// Description: Executes the checkCudaStatus operation.
             checkCudaStatus(mapHostStatus, "cudaSetDeviceFlags(cudaDeviceMapHost)");
             _cudaRuntimeAvailable = false;
         }
     }
     if (_cudaRuntimeAvailable) {
-        /// Description: Executes the initialize operation.
         grav_x::CudaMemoryPool::initialize();
     }
     _solverMode = solverModeFromEnv();
@@ -352,7 +349,6 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
 
     if (strictMemoryMode && totalBytes > kVramBudgetBytes) {
         throw std::runtime_error(
-            /// Description: Executes the string operation.
             std::string("[memory] strict admission-control rejected configuration\n")
             + formatMemoryBreakdown(
                 baseAndIntegratorBytes,
@@ -364,7 +360,6 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
     }
 
     if (_cudaRuntimeAvailable) {
-        /// Description: Executes the allocateMappedMetrics operation.
         allocateMappedMetrics();
     }
 }
@@ -397,7 +392,6 @@ bool ParticleSystem::allocateParticleBuffers(std::size_t particleCapacity)
     ok &= ((d_soaNextVelZ = static_cast<float*>(grav_x::CudaMemoryPool::allocate(bytesTotal))) != nullptr);
     
     if (!ok) {
-        /// Description: Executes the releaseParticleBuffers operation.
         releaseParticleBuffers();
         return false;
     }
@@ -407,135 +401,96 @@ bool ParticleSystem::allocateParticleBuffers(std::size_t particleCapacity)
 /// Description: Executes the releaseParticleBuffers operation.
 void ParticleSystem::releaseParticleBuffers()
 {
-    /// Description: Executes the releaseRk4Buffers operation.
     releaseRk4Buffers();
-    /// Description: Executes the releaseSphBuffers operation.
     releaseSphBuffers();
-    /// Description: Executes the releaseSphGridBuffers operation.
     releaseSphGridBuffers();
     
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaPosX); d_soaPosX = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaPosY); d_soaPosY = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaPosZ); d_soaPosZ = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaVelX); d_soaVelX = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaVelY); d_soaVelY = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaVelZ); d_soaVelZ = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaPressX); d_soaPressX = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaPressY); d_soaPressY = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaPressZ); d_soaPressZ = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaMass); d_soaMass = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaTemp); d_soaTemp = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaDens); d_soaDens = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaNextPosX); d_soaNextPosX = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaNextPosY); d_soaNextPosY = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaNextPosZ); d_soaNextPosZ = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaNextVelX); d_soaNextVelX = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaNextVelY); d_soaNextVelY = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_soaNextVelZ); d_soaNextVelZ = nullptr;
-    /// Description: Executes the deallocate operation.
     grav_x::CudaMemoryPool::deallocate(d_vHalf); d_vHalf = nullptr;
     _leapfrogPrimed = false;
 
     if (g_dOctreeNodes) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(g_dOctreeNodes);
         g_dOctreeNodes = nullptr;
     }
     if (g_dOctreeLeafIndices) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(g_dOctreeLeafIndices);
         g_dOctreeLeafIndices = nullptr;
     }
     if (d_octreeMortonKeys) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_octreeMortonKeys);
         d_octreeMortonKeys = nullptr;
     }
     if (d_octreePrefixesA) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_octreePrefixesA);
         d_octreePrefixesA = nullptr;
     }
     if (d_octreePrefixesB) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_octreePrefixesB);
         d_octreePrefixesB = nullptr;
     }
     if (d_octreeLevelIndicesA) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_octreeLevelIndicesA);
         d_octreeLevelIndicesA = nullptr;
     }
     if (d_octreeLevelIndicesB) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_octreeLevelIndicesB);
         d_octreeLevelIndicesB = nullptr;
     }
     if (d_octreeParentCounts) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_octreeParentCounts);
         d_octreeParentCounts = nullptr;
     }
     if (d_octreeParentOffsets) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_octreeParentOffsets);
         d_octreeParentOffsets = nullptr;
     }
     if (d_octreeNodeHot) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_octreeNodeHot);
         d_octreeNodeHot = nullptr;
     }
     if (d_octreeNodeNav) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_octreeNodeNav);
         d_octreeNodeNav = nullptr;
     }
     if (d_octreeFirstChild) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_octreeFirstChild);
         d_octreeFirstChild = nullptr;
     }
     if (d_octreeLeafStarts) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_octreeLeafStarts);
         d_octreeLeafStarts = nullptr;
     }
     if (d_octreeLeafCounts) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_octreeLeafCounts);
         d_octreeLeafCounts = nullptr;
     }
     if (d_energyKineticBlocks) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_energyKineticBlocks);
         d_energyKineticBlocks = nullptr;
     }
     if (d_energyThermalBlocks) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_energyThermalBlocks);
         d_energyThermalBlocks = nullptr;
     }
     if (d_energyPotentialPartials) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_energyPotentialPartials);
         d_energyPotentialPartials = nullptr;
     }
@@ -550,7 +505,6 @@ void ParticleSystem::releaseParticleBuffers()
     _gpuOctreeRootIndex = -1;
     _gpuOctreeNodeCount = 0;
     _gpuOctreeLeafCount = 0;
-    /// Description: Executes the releaseMappedMetrics operation.
     releaseMappedMetrics();
 }
 
@@ -560,7 +514,6 @@ bool ParticleSystem::allocateMappedMetrics()
     if (!_cudaRuntimeAvailable) {
         return false;
     }
-    /// Description: Executes the releaseMappedMetrics operation.
     releaseMappedMetrics();
     void *hostPtr = nullptr;
     cudaError_t status = cudaHostAlloc(
@@ -571,14 +524,12 @@ bool ParticleSystem::allocateMappedMetrics()
         return false;
     }
 
-    /// Description: Executes the memset operation.
     std::memset(hostPtr, 0, sizeof(GpuSystemMetrics));
     _mappedMetricsHost = static_cast<GpuSystemMetrics *>(hostPtr);
 
     void *devicePtr = nullptr;
     status = cudaHostGetDevicePointer(&devicePtr, hostPtr, 0);
     if (!checkCudaStatus(status, "cudaHostGetDevicePointer(mapped metrics)")) {
-        /// Description: Executes the cudaFreeHost operation.
         cudaFreeHost(hostPtr);
         _mappedMetricsHost = nullptr;
         return false;
@@ -593,7 +544,6 @@ bool ParticleSystem::allocateMappedMetrics()
 void ParticleSystem::releaseMappedMetrics()
 {
     if (_mappedMetricsHost != nullptr) {
-        /// Description: Executes the cudaFreeHost operation.
         cudaFreeHost(_mappedMetricsHost);
     }
     _mappedMetricsHost = nullptr;
@@ -626,12 +576,10 @@ bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
 
     if (g_dOctreeLeafCapacity < static_cast<std::size_t>(numParticles)) {
         if (g_dOctreeLeafIndices) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(g_dOctreeLeafIndices);
             g_dOctreeLeafIndices = nullptr;
         }
         g_dOctreeLeafIndices = static_cast<int*>(
-            /// Description: Executes the allocate operation.
             grav_x::CudaMemoryPool::allocate(static_cast<std::size_t>(numParticles) * sizeof(int)));
         if (!g_dOctreeLeafIndices) {
             g_dOctreeLeafCapacity = 0;
@@ -642,7 +590,6 @@ bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
 
     if (d_octreeMortonCapacity < static_cast<std::size_t>(numParticles)) {
         if (d_octreeMortonKeys) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(d_octreeMortonKeys);
             d_octreeMortonKeys = nullptr;
         }
@@ -657,12 +604,10 @@ bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
 
     if (d_octreePrefixCapacity < static_cast<std::size_t>(numParticles)) {
         if (d_octreePrefixesA) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(d_octreePrefixesA);
             d_octreePrefixesA = nullptr;
         }
         if (d_octreePrefixesB) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(d_octreePrefixesB);
             d_octreePrefixesB = nullptr;
         }
@@ -672,12 +617,10 @@ bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
             static_cast<std::size_t>(numParticles) * sizeof(unsigned long long)));
         if (!d_octreePrefixesA || !d_octreePrefixesB) {
             if (d_octreePrefixesA) {
-                /// Description: Executes the deallocate operation.
                 grav_x::CudaMemoryPool::deallocate(d_octreePrefixesA);
                 d_octreePrefixesA = nullptr;
             }
             if (d_octreePrefixesB) {
-                /// Description: Executes the deallocate operation.
                 grav_x::CudaMemoryPool::deallocate(d_octreePrefixesB);
                 d_octreePrefixesB = nullptr;
             }
@@ -689,57 +632,45 @@ bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
 
     if (d_octreeLevelCapacity < static_cast<std::size_t>(numParticles)) {
         if (d_octreeLevelIndicesA) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(d_octreeLevelIndicesA);
             d_octreeLevelIndicesA = nullptr;
         }
         if (d_octreeLevelIndicesB) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(d_octreeLevelIndicesB);
             d_octreeLevelIndicesB = nullptr;
         }
         if (d_octreeParentCounts) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(d_octreeParentCounts);
             d_octreeParentCounts = nullptr;
         }
         if (d_octreeParentOffsets) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(d_octreeParentOffsets);
             d_octreeParentOffsets = nullptr;
         }
 
         d_octreeLevelIndicesA = static_cast<int*>(
-            /// Description: Executes the allocate operation.
             grav_x::CudaMemoryPool::allocate(static_cast<std::size_t>(numParticles) * sizeof(int)));
         d_octreeLevelIndicesB = static_cast<int*>(
-            /// Description: Executes the allocate operation.
             grav_x::CudaMemoryPool::allocate(static_cast<std::size_t>(numParticles) * sizeof(int)));
         d_octreeParentCounts = static_cast<int*>(
-            /// Description: Executes the allocate operation.
             grav_x::CudaMemoryPool::allocate(static_cast<std::size_t>(numParticles) * sizeof(int)));
         d_octreeParentOffsets = static_cast<int*>(
-            /// Description: Executes the allocate operation.
             grav_x::CudaMemoryPool::allocate(static_cast<std::size_t>(numParticles) * sizeof(int)));
         if (!d_octreeLevelIndicesA || !d_octreeLevelIndicesB || !d_octreeParentCounts ||
             !d_octreeParentOffsets) {
             if (d_octreeLevelIndicesA) {
-                /// Description: Executes the deallocate operation.
                 grav_x::CudaMemoryPool::deallocate(d_octreeLevelIndicesA);
                 d_octreeLevelIndicesA = nullptr;
             }
             if (d_octreeLevelIndicesB) {
-                /// Description: Executes the deallocate operation.
                 grav_x::CudaMemoryPool::deallocate(d_octreeLevelIndicesB);
                 d_octreeLevelIndicesB = nullptr;
             }
             if (d_octreeParentCounts) {
-                /// Description: Executes the deallocate operation.
                 grav_x::CudaMemoryPool::deallocate(d_octreeParentCounts);
                 d_octreeParentCounts = nullptr;
             }
             if (d_octreeParentOffsets) {
-                /// Description: Executes the deallocate operation.
                 grav_x::CudaMemoryPool::deallocate(d_octreeParentOffsets);
                 d_octreeParentOffsets = nullptr;
             }
@@ -753,32 +684,26 @@ bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
     const int requiredNodeCapacity = std::max(2, expectedLeaves * (leafDepth + 1) * 4 + 8);
     if (g_dOctreeNodeCapacity < static_cast<std::size_t>(requiredNodeCapacity)) {
         if (g_dOctreeNodes) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(g_dOctreeNodes);
             g_dOctreeNodes = nullptr;
         }
         if (d_octreeNodeHot) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(d_octreeNodeHot);
             d_octreeNodeHot = nullptr;
         }
         if (d_octreeNodeNav) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(d_octreeNodeNav);
             d_octreeNodeNav = nullptr;
         }
         if (d_octreeFirstChild) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(d_octreeFirstChild);
             d_octreeFirstChild = nullptr;
         }
         if (d_octreeLeafStarts) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(d_octreeLeafStarts);
             d_octreeLeafStarts = nullptr;
         }
         if (d_octreeLeafCounts) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(d_octreeLeafCounts);
             d_octreeLeafCounts = nullptr;
         }
@@ -799,32 +724,26 @@ bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
         if (!g_dOctreeNodes || !d_octreeNodeHot || !d_octreeNodeNav || !d_octreeFirstChild ||
             !d_octreeLeafStarts || !d_octreeLeafCounts) {
             if (g_dOctreeNodes) {
-                /// Description: Executes the deallocate operation.
                 grav_x::CudaMemoryPool::deallocate(g_dOctreeNodes);
                 g_dOctreeNodes = nullptr;
             }
             if (d_octreeNodeHot) {
-                /// Description: Executes the deallocate operation.
                 grav_x::CudaMemoryPool::deallocate(d_octreeNodeHot);
                 d_octreeNodeHot = nullptr;
             }
             if (d_octreeNodeNav) {
-                /// Description: Executes the deallocate operation.
                 grav_x::CudaMemoryPool::deallocate(d_octreeNodeNav);
                 d_octreeNodeNav = nullptr;
             }
             if (d_octreeFirstChild) {
-                /// Description: Executes the deallocate operation.
                 grav_x::CudaMemoryPool::deallocate(d_octreeFirstChild);
                 d_octreeFirstChild = nullptr;
             }
             if (d_octreeLeafStarts) {
-                /// Description: Executes the deallocate operation.
                 grav_x::CudaMemoryPool::deallocate(d_octreeLeafStarts);
                 d_octreeLeafStarts = nullptr;
             }
             if (d_octreeLeafCounts) {
-                /// Description: Executes the deallocate operation.
                 grav_x::CudaMemoryPool::deallocate(d_octreeLeafCounts);
                 d_octreeLeafCounts = nullptr;
             }
@@ -850,12 +769,10 @@ bool ParticleSystem::ensureEnergyScratchCapacity(int numParticles, int sampleCou
         (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
     if (d_energyBlockCapacity < static_cast<std::size_t>(blockCount)) {
         if (d_energyKineticBlocks) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(d_energyKineticBlocks);
             d_energyKineticBlocks = nullptr;
         }
         if (d_energyThermalBlocks) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(d_energyThermalBlocks);
             d_energyThermalBlocks = nullptr;
         }
@@ -865,12 +782,10 @@ bool ParticleSystem::ensureEnergyScratchCapacity(int numParticles, int sampleCou
             static_cast<std::size_t>(blockCount) * sizeof(float)));
         if (!d_energyKineticBlocks || !d_energyThermalBlocks) {
             if (d_energyKineticBlocks) {
-                /// Description: Executes the deallocate operation.
                 grav_x::CudaMemoryPool::deallocate(d_energyKineticBlocks);
                 d_energyKineticBlocks = nullptr;
             }
             if (d_energyThermalBlocks) {
-                /// Description: Executes the deallocate operation.
                 grav_x::CudaMemoryPool::deallocate(d_energyThermalBlocks);
                 d_energyThermalBlocks = nullptr;
             }
@@ -882,7 +797,6 @@ bool ParticleSystem::ensureEnergyScratchCapacity(int numParticles, int sampleCou
 
     if (d_energySampleCapacity < static_cast<std::size_t>(sampleCount)) {
         if (d_energyPotentialPartials) {
-            /// Description: Executes the deallocate operation.
             grav_x::CudaMemoryPool::deallocate(d_energyPotentialPartials);
             d_energyPotentialPartials = nullptr;
         }
@@ -904,7 +818,6 @@ bool ParticleSystem::allocateRk4Buffers(int numParticles)
     if (!_cudaRuntimeAvailable) {
         return false;
     }
-    /// Description: Executes the releaseRk4Buffers operation.
     releaseRk4Buffers();
     d_stage = static_cast<Particle*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(Particle)));
     d_k1x = static_cast<Vector3*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(Vector3)));
@@ -921,7 +834,6 @@ bool ParticleSystem::allocateRk4Buffers(int numParticles)
 
     if (!d_stage || !d_k1x || !d_k2x || !d_k3x || !d_k4x || !d_k1v || !d_k2v || !d_k3v || !d_k4v
         || (_integratorMode == IntegratorMode::Leapfrog && !d_vHalf)) {
-        /// Description: Executes the releaseRk4Buffers operation.
         releaseRk4Buffers();
         return false;
     }
@@ -949,13 +861,11 @@ bool ParticleSystem::allocateSphBuffers(int numParticles)
     if (!_cudaRuntimeAvailable) {
         return false;
     }
-    /// Description: Executes the releaseSphBuffers operation.
     releaseSphBuffers();
     d_sphDensity = static_cast<float*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(float)));
     d_sphPressure = static_cast<float*>(grav_x::CudaMemoryPool::allocate(numParticles * sizeof(float)));
 
     if (!d_sphDensity || !d_sphPressure) {
-        /// Description: Executes the releaseSphBuffers operation.
         releaseSphBuffers();
         return false;
     }
@@ -975,14 +885,12 @@ bool ParticleSystem::allocateSphGridBuffers(int numParticles)
     if (!_cudaRuntimeAvailable) {
         return false;
     }
-    /// Description: Executes the releaseSphGridBuffers operation.
     releaseSphGridBuffers();
     const std::size_t particleBytes = static_cast<std::size_t>(numParticles) * sizeof(int);
     d_sphCellHash = static_cast<int*>(grav_x::CudaMemoryPool::allocate(particleBytes));
     d_sphSortedIndex = static_cast<int*>(grav_x::CudaMemoryPool::allocate(particleBytes));
 
     if (!d_sphCellHash || !d_sphSortedIndex) {
-        /// Description: Executes the releaseSphGridBuffers operation.
         releaseSphGridBuffers();
         return false;
     }
@@ -1006,7 +914,6 @@ void ParticleSystem::releaseSphGridBuffers()
 bool ParticleSystem::seedDeviceState()
 {
     if (_particles.empty()) return true;
-    /// Description: Executes the syncDeviceState operation.
     syncDeviceState();
     return true;
 }

@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+
 namespace grav_qt {
 /// Description: Executes the ParticleView operation.
 ParticleView::ParticleView(grav::ViewMode mode)
@@ -24,51 +25,49 @@ ParticleView::ParticleView(grav::ViewMode mode)
       _camera{0.0f, 0.0f, 0.0f},
       _adaptiveTemperatureScale(2.0f),
       _adaptivePressureScale(2.0f),
-      /// Description: Executes the _dragAxis operation.
       _dragAxis(grav::GimbalAxis::None)
 {
-    /// Description: Executes the setMinimumSize operation.
     setMinimumSize(220, 180);
-    /// Description: Executes the setSizePolicy operation.
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
+
 /// Description: Executes the setSnapshot operation.
 void ParticleView::setSnapshot(const std::vector<RenderParticle>& snapshot)
 {
     _snapshot = std::cref(snapshot);
-    /// Description: Executes the update operation.
     update();
 }
+
 /// Description: Executes the setMode operation.
 void ParticleView::setMode(grav::ViewMode mode)
 {
     _mode = mode;
-    /// Description: Executes the update operation.
     update();
 }
+
 /// Description: Executes the setZoom operation.
 void ParticleView::setZoom(float zoom)
 {
     _zoom = std::max(0.1f, zoom);
-    /// Description: Executes the update operation.
     update();
 }
+
 /// Description: Executes the setLuminosity operation.
 void ParticleView::setLuminosity(int luminosity)
 {
     _luminosity = std::clamp(luminosity, 0, 255);
-    /// Description: Executes the update operation.
     update();
 }
+
 /// Description: Executes the setCameraAngles operation.
 void ParticleView::setCameraAngles(float yaw, float pitch, float roll)
 {
     _camera.yaw = yaw;
     _camera.pitch = pitch;
     _camera.roll = roll;
-    /// Description: Executes the update operation.
     update();
 }
+
 /// Description: Executes the setRenderSettings operation.
 void ParticleView::setRenderSettings(bool culling, bool lod, float nearDist, float farDist)
 {
@@ -76,35 +75,33 @@ void ParticleView::setRenderSettings(bool culling, bool lod, float nearDist, flo
     _lodEnabled = lod;
     _lodNearDistance = nearDist;
     _lodFarDistance = farDist;
-    /// Description: Executes the update operation.
     update();
 }
+
+/// Description: Describes the set octree overlay operation contract.
 void ParticleView::setOctreeOverlay(const std::vector<OctreeOverlayNode>& overlay, bool enabled,
                                     int opacity)
 {
     _octreeOverlay = std::cref(overlay);
     _octreeOverlayEnabled = enabled;
     _octreeOverlayOpacity = std::clamp(opacity, 0, 255);
-    /// Description: Executes the update operation.
     update();
 }
+
 /// Description: Executes the mousePressEvent operation.
 void ParticleView::mousePressEvent(MouseEventHandle event)
 {
     if (event->button() != Qt::LeftButton) {
-        /// Description: Executes the mousePressEvent operation.
         QWidget::mousePressEvent(event);
         return;
     }
     const GimbalOverlay gimbal = computeGimbal(rect(), _mode, _camera);
     if (!gimbal.rect.contains(event->position())) {
-        /// Description: Executes the mousePressEvent operation.
         QWidget::mousePressEvent(event);
         return;
     }
     const grav::GimbalAxis axis = pickGimbalAxis(gimbal, event->position());
     if (axis == grav::GimbalAxis::None) {
-        /// Description: Executes the mousePressEvent operation.
         QWidget::mousePressEvent(event);
         return;
     }
@@ -112,11 +109,11 @@ void ParticleView::mousePressEvent(MouseEventHandle event)
     _lastMousePos = event->position();
     event->accept();
 }
+
 /// Description: Executes the mouseMoveEvent operation.
 void ParticleView::mouseMoveEvent(MouseEventHandle event)
 {
     if (_dragAxis == grav::GimbalAxis::None) {
-        /// Description: Executes the mouseMoveEvent operation.
         QWidget::mouseMoveEvent(event);
         return;
     }
@@ -133,10 +130,10 @@ void ParticleView::mouseMoveEvent(MouseEventHandle event)
         _camera.roll += dx * 0.5f;
     }
     _lastMousePos = pos;
-    /// Description: Executes the update operation.
     update();
     event->accept();
 }
+
 /// Description: Executes the mouseReleaseEvent operation.
 void ParticleView::mouseReleaseEvent(MouseEventHandle event)
 {
@@ -145,9 +142,9 @@ void ParticleView::mouseReleaseEvent(MouseEventHandle event)
         event->accept();
         return;
     }
-    /// Description: Executes the mouseReleaseEvent operation.
     QWidget::mouseReleaseEvent(event);
 }
+
 /// Description: Executes the paintEvent operation.
 void ParticleView::paintEvent(PaintEventHandle event)
 {
@@ -166,7 +163,6 @@ void ParticleView::paintEvent(PaintEventHandle event)
     const QRgb heavyColor = heavyBodyColor(_luminosity);
     if (_snapshot.has_value()) {
         const std::vector<RenderParticle>& snapshot = _snapshot->get();
-        /// Description: Executes the updateAdaptiveScales operation.
         updateAdaptiveScales(snapshot, _adaptiveTemperatureScale, _adaptivePressureScale);
         const float lodNear2 = _lodNearDistance * _lodNearDistance;
         const float lodFar2 = _lodFarDistance * _lodFarDistance;
@@ -211,7 +207,6 @@ void ParticleView::paintEvent(PaintEventHandle event)
                 _framebuffer.setPixel(x, y, color);
             }
     }
-    /// Description: Executes the painter operation.
     QPainter painter(this);
     painter.drawImage(0, 0, _framebuffer);
     if (_octreeOverlayEnabled && _octreeOverlay.has_value()) {

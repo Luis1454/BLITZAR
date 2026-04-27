@@ -5,18 +5,21 @@
 #define GRAVITY_MODULES_CLI_MODULE_CLI_LIFECYCLE_HPP_
 #include "client/ClientModuleApi.hpp"
 #include "client/ClientModuleBoundary.hpp"
+
 namespace grav_module_cli {
 /// Description: Defines the ModuleCliLifecycle data or behavior contract.
 class ModuleCliLifecycle final {
 public:
+    /// Description: Describes the create operation contract.
     static bool create(const grav_module::ClientHostContextV1* hostContext,
                        const grav_module::ClientModuleStateSlot& outModuleState,
                        const grav_client::ErrorBufferView& errorBuffer);
-    /// Description: Executes the destroy operation.
+    /// Description: Describes the destroy operation contract.
     static void destroy(grav_module::ClientModuleOpaqueState moduleState);
+    /// Description: Describes the start operation contract.
     static bool start(grav_module::ClientModuleOpaqueState moduleState,
                       const grav_client::ErrorBufferView& errorBuffer);
-    /// Description: Executes the stop operation.
+    /// Description: Describes the stop operation contract.
     static void stop(grav_module::ClientModuleOpaqueState moduleState);
 };
 } // namespace grav_module_cli

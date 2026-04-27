@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
 namespace grav_module {
 /// Description: Defines the ClientModuleHashLocal data or behavior contract.
 class ClientModuleHashLocal final {
@@ -16,7 +17,6 @@ public:
     static bool computeFileSha256Hex(std::string_view filePath, std::string& outHexDigest,
                                      std::string& outError)
     {
-        /// Description: Executes the input operation.
         std::ifstream input(std::string(filePath), std::ios::binary);
         if (!input.is_open()) {
             outError = "failed to open module for hashing: " + std::string(filePath);
@@ -30,24 +30,21 @@ public:
     }
 
 private:
-    /// Description: Executes the digest operation.
     static std::string digest(const std::vector<std::uint8_t>& input)
     {
         std::array<std::uint32_t, 8u> hash{0x6a09e667u, 0xbb67ae85u, 0x3c6ef372u, 0xa54ff53au,
                                            0x510e527fu, 0x9b05688cu, 0x1f83d9abu, 0x5be0cd19u};
         std::vector<std::uint8_t> padded = pad(input);
         for (std::size_t offset = 0u; offset < padded.size(); offset += 64u) {
-            /// Description: Executes the transformBlock operation.
             transformBlock(hash, padded.data() + offset);
         }
         std::ostringstream output;
-        /// Description: Executes the setfill operation.
         output << std::hex << std::setfill('0');
         for (const std::uint32_t value : hash)
             output << std::setw(8) << value;
         return output.str();
     }
-    /// Description: Executes the pad operation.
+
     static std::vector<std::uint8_t> pad(const std::vector<std::uint8_t>& input)
     {
         std::vector<std::uint8_t> padded = input;
@@ -60,7 +57,7 @@ private:
             padded.push_back(static_cast<std::uint8_t>((bitLength >> shift) & 0xffu));
         return padded;
     }
-    /// Description: Executes the transformBlock operation.
+
     static void transformBlock(std::array<std::uint32_t, 8u>& hash, const std::uint8_t* block)
     {
         std::array<std::uint32_t, 64u> words{};
@@ -105,36 +102,45 @@ private:
         hash[6] += g;
         hash[7] += h;
     }
+
     static std::uint32_t rotateRight(std::uint32_t value, std::uint32_t shift) noexcept
     {
         return (value >> shift) | (value << (32u - shift));
     }
+
     static std::uint32_t choose(std::uint32_t x, std::uint32_t y, std::uint32_t z) noexcept
     {
         return (x & y) ^ (~x & z);
     }
+
     static std::uint32_t majority(std::uint32_t x, std::uint32_t y, std::uint32_t z) noexcept
     {
         return (x & y) ^ (x & z) ^ (y & z);
     }
+
     static std::uint32_t bigSigma0(std::uint32_t value) noexcept
     {
         return rotateRight(value, 2u) ^ rotateRight(value, 13u) ^ rotateRight(value, 22u);
     }
+
     static std::uint32_t bigSigma1(std::uint32_t value) noexcept
     {
         return rotateRight(value, 6u) ^ rotateRight(value, 11u) ^ rotateRight(value, 25u);
     }
+
     static std::uint32_t smallSigma0(std::uint32_t value) noexcept
     {
         return rotateRight(value, 7u) ^ rotateRight(value, 18u) ^ (value >> 3u);
     }
+
     static std::uint32_t smallSigma1(std::uint32_t value) noexcept
     {
         return rotateRight(value, 17u) ^ rotateRight(value, 19u) ^ (value >> 10u);
     }
+
     static const std::array<std::uint32_t, 64u> kRoundConstants;
 };
+
 const std::array<std::uint32_t, 64u> ClientModuleHashLocal::kRoundConstants{
     0x428a2f98u, 0x71374491u, 0xb5c0fbcfu, 0xe9b5dba5u, 0x3956c25bu, 0x59f111f1u, 0x923f82a4u,
     0xab1c5ed5u, 0xd807aa98u, 0x12835b01u, 0x243185beu, 0x550c7dc3u, 0x72be5d74u, 0x80deb1feu,
@@ -146,6 +152,8 @@ const std::array<std::uint32_t, 64u> ClientModuleHashLocal::kRoundConstants{
     0x1e376c08u, 0x2748774cu, 0x34b0bcb5u, 0x391c0cb3u, 0x4ed8aa4au, 0x5b9cca4fu, 0x682e6ff3u,
     0x748f82eeu, 0x78a5636fu, 0x84c87814u, 0x8cc70208u, 0x90befffau, 0xa4506cebu, 0xbef9a3f7u,
     0xc67178f2u};
+
+/// Description: Describes the compute file sha256 hex operation contract.
 bool ClientModuleHash::computeFileSha256Hex(std::string_view filePath, std::string& outHexDigest,
                                             std::string& outError)
 {

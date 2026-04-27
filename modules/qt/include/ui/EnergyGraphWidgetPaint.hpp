@@ -14,10 +14,12 @@
 /// Description: Defines the QPaintEvent data or behavior contract.
 class QPaintEvent;
 typedef QPaintEvent UiPaintEvent;
+
 namespace grav_qt {
 /// Description: Defines the EnergyGraphWidgetPaint data or behavior contract.
 class EnergyGraphWidgetPaint final {
 public:
+    /// Description: Describes the paint operation contract.
     static void paint(QWidget& widget, const std::vector<EnergyPoint>& history,
                       UiPaintEvent* event);
 };

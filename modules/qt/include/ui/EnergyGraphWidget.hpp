@@ -14,6 +14,7 @@
 /// Description: Defines the QPaintEvent data or behavior contract.
 class QPaintEvent;
 typedef QPaintEvent UiPaintEvent;
+
 namespace grav_qt {
 /// Renders the rolling energy and drift history for the current simulation session.
 class EnergyGraphWidget : public QWidget {
@@ -39,7 +40,7 @@ public:
 
 private:
     typedef UiPaintEvent* PaintEventHandle;
-    /// Description: Executes the paintEvent operation.
+    /// Description: Describes the paint event operation contract.
     void paintEvent(PaintEventHandle event) override;
     std::vector<EnergyPoint> _history;
 };

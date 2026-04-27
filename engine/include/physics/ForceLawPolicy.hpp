@@ -3,6 +3,7 @@
 
 #ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_FORCELAWPOLICY_HPP_
 #define GRAVITY_ENGINE_INCLUDE_PHYSICS_FORCELAWPOLICY_HPP_
+
 /*
  * Module: physics
  * Responsibility: Normalize the canonical force-law clamps shared by all
@@ -16,6 +17,8 @@ struct ForceLawPolicy {
     float minDistance2 = 1.0e-12f;
     float minTheta = 0.05f;
 };
+
+/// Description: Describes the resolve force law policy operation contract.
 ForceLawPolicy resolveForceLawPolicy(float theta, float softening, float minSoftening,
                                      float minDistance2, float minTheta);
 #endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_FORCELAWPOLICY_HPP_

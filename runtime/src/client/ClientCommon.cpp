@@ -15,6 +15,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+
 namespace grav_client {
 /// Description: Executes the applyEnvOverride operation.
 static void applyEnvOverride(std::string_view name, SimulationConfig& config)
@@ -25,6 +26,7 @@ static void applyEnvOverride(std::string_view name, SimulationConfig& config)
     }
     (void)grav_config::applyEnvOption(std::string(name), *value, config, std::cerr);
 }
+
 /// Description: Executes the clampClientDrawCap operation.
 static std::uint32_t clampClientDrawCap(std::uint32_t requested)
 {
@@ -32,29 +34,32 @@ static std::uint32_t clampClientDrawCap(std::uint32_t requested)
         return grav_protocol::kSnapshotMaxPoints;
     return requested < 2u ? 2u : requested;
 }
+
 /// Description: Executes the toLower operation.
 std::string toLower(std::string value)
 {
-    std::transform(value.begin(), value.end(), value.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
     return value;
 }
+
 /// Description: Executes the resolveServerParticleCount operation.
 std::uint32_t resolveServerParticleCount(const SimulationConfig& config)
 {
     SimulationConfig effective = config;
-    /// Description: Executes the applyEnvOverride operation.
     applyEnvOverride("GRAVITY_SERVER_PARTICLES", effective);
     return std::max<std::uint32_t>(2u, effective.particleCount);
 }
+
 /// Description: Executes the resolveClientDrawCap operation.
 std::uint32_t resolveClientDrawCap(const SimulationConfig& config)
 {
     SimulationConfig effective = config;
-    /// Description: Executes the applyEnvOverride operation.
     applyEnvOverride("GRAVITY_CLIENT_DRAW_CAP", effective);
     return clampClientDrawCap(effective.clientParticleCap);
 }
+
 /// Description: Executes the normalizeExportFormat operation.
 std::string normalizeExportFormat(std::string_view raw)
 {
@@ -67,6 +72,7 @@ std::string normalizeExportFormat(std::string_view raw)
         return "vtk";
     return format;
 }
+
 /// Description: Executes the extensionForExportFormat operation.
 std::string extensionForExportFormat(std::string_view rawFormat)
 {
@@ -79,6 +85,7 @@ std::string extensionForExportFormat(std::string_view rawFormat)
         return ".bin";
     return {};
 }
+
 /// Description: Executes the inferExportFormatFromPath operation.
 std::string inferExportFormatFromPath(const std::string& path)
 {
@@ -94,11 +101,12 @@ std::string inferExportFormatFromPath(const std::string& path)
         return "bin";
     return {};
 }
+
+/// Description: Describes the build suggested export path operation contract.
 std::string buildSuggestedExportPath(const std::string& directory, std::string_view format,
                                      std::uint64_t step)
 {
     const std::string normalizedFormat =
-        /// Description: Executes the normalizeExportFormat operation.
         normalizeExportFormat(format.empty() ? std::string_view("vtk") : format);
     const std::string extension = extensionForExportFormat(normalizedFormat);
     const auto now = std::chrono::system_clock::now();

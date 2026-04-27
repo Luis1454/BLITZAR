@@ -2,6 +2,7 @@
 // Purpose: Engine implementation for the BLITZAR simulation core.
 
 #include "Internal.hpp"
+
 /// Description: Executes the consumeOptionalLineBreak operation.
 void consumeOptionalLineBreak(std::istream& in)
 {
@@ -17,6 +18,7 @@ void consumeOptionalLineBreak(std::istream& in)
         }
     }
 }
+
 /// Description: Executes the readLeU64 operation.
 bool readLeU64(std::istream& in, std::uint64_t& outValue)
 {
@@ -31,6 +33,7 @@ bool readLeU64(std::istream& in, std::uint64_t& outValue)
     }
     return true;
 }
+
 /// Description: Executes the writeLeU64 operation.
 void writeLeU64(std::ostream& out, std::uint64_t value)
 {
@@ -40,6 +43,7 @@ void writeLeU64(std::ostream& out, std::uint64_t value)
     }
     (void)writeRawBytes(out, bytes.data(), bytes.size());
 }
+
 /// Description: Executes the writeLeU32 operation.
 void writeLeU32(std::ostream& out, std::uint32_t value)
 {
@@ -49,6 +53,7 @@ void writeLeU32(std::ostream& out, std::uint32_t value)
     }
     (void)writeRawBytes(out, bytes.data(), bytes.size());
 }
+
 /// Description: Executes the readLeU32 operation.
 bool readLeU32(std::istream& in, std::uint32_t& outValue)
 {
@@ -63,15 +68,15 @@ bool readLeU32(std::istream& in, std::uint32_t& outValue)
     }
     return true;
 }
+
 /// Description: Executes the writeLeF32 operation.
 void writeLeF32(std::ostream& out, float value)
 {
     std::uint32_t bits = 0u;
-    /// Description: Executes the memcpy operation.
     std::memcpy(&bits, &value, sizeof(bits));
-    /// Description: Executes the writeLeU32 operation.
     writeLeU32(out, bits);
 }
+
 /// Description: Executes the readLeF32 operation.
 bool readLeF32(std::istream& in, float& outValue)
 {
@@ -79,17 +84,16 @@ bool readLeF32(std::istream& in, float& outValue)
     if (!readLeU32(in, bits)) {
         return false;
     }
-    /// Description: Executes the memcpy operation.
     std::memcpy(&outValue, &bits, sizeof(outValue));
     return true;
 }
+
 /// Description: Executes the writeSizedString operation.
 bool writeSizedString(std::ostream& out, const std::string& value)
 {
     if (value.size() > static_cast<std::size_t>(std::numeric_limits<std::uint32_t>::max())) {
         return false;
     }
-    /// Description: Executes the writeLeU32 operation.
     writeLeU32(out, static_cast<std::uint32_t>(value.size()));
     if (value.empty()) {
         return static_cast<bool>(out);
@@ -97,6 +101,7 @@ bool writeSizedString(std::ostream& out, const std::string& value)
     out.write(value.data(), static_cast<std::streamsize>(value.size()));
     return static_cast<bool>(out);
 }
+
 /// Description: Executes the readSizedString operation.
 bool readSizedString(std::istream& in, std::string& outValue, std::size_t maxLength)
 {
@@ -109,6 +114,8 @@ bool readSizedString(std::istream& in, std::string& outValue, std::size_t maxLen
         return true;
     return static_cast<bool>(in.read(outValue.data(), static_cast<std::streamsize>(size)));
 }
+
+/// Description: Describes the is supported checkpoint string operation contract.
 bool isSupportedCheckpointString(std::string_view solver, std::string_view integrator,
                                  std::string_view profile, std::string_view criterion)
 {
@@ -119,20 +126,18 @@ bool isSupportedCheckpointString(std::string_view solver, std::string_view integ
     return grav_modes::normalizeSolver(std::string(solver), normalizedSolver) &&
            grav_modes::normalizeIntegrator(std::string(integrator), normalizedIntegrator) &&
            grav_config::normalizePerformanceProfile(std::string(profile), normalizedProfile) &&
-           /// Description: Executes the normalizeOctreeOpeningCriterion operation.
            grav_modes::normalizeOctreeOpeningCriterion(std::string(criterion), normalizedCriterion);
 }
+
+/// Description: Describes the write checkpoint file operation contract.
 bool writeCheckpointFile(const std::string& outputPath, const SimulationCheckpointState& state,
                          std::string* outError)
 {
-    /// Description: Executes the outPath operation.
     std::filesystem::path outPath(outputPath);
     if (outPath.has_parent_path()) {
         std::error_code ec;
-        /// Description: Executes the create_directories operation.
         std::filesystem::create_directories(outPath.parent_path(), ec);
     }
-    /// Description: Executes the out operation.
     std::ofstream out(outputPath, std::ios::binary | std::ios::trunc);
     if (!out.is_open()) {
         if (outError != nullptr) {
@@ -162,57 +167,31 @@ bool writeCheckpointFile(const std::string& outputPath, const SimulationCheckpoi
         }
         return false;
     }
-    /// Description: Executes the writeLeU32 operation.
     writeLeU32(out, kCheckpointVersion);
-    /// Description: Executes the writeLeU32 operation.
     writeLeU32(out, flags);
-    /// Description: Executes the writeLeU64 operation.
     writeLeU64(out, state.steps);
-    /// Description: Executes the writeLeU32 operation.
     writeLeU32(out, static_cast<std::uint32_t>(state.particles.size()));
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.totalTime);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.dt);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.substepTargetDt);
-    /// Description: Executes the writeLeU32 operation.
     writeLeU32(out, state.config.maxSubsteps);
-    /// Description: Executes the writeLeU32 operation.
     writeLeU32(out, state.config.snapshotPublishPeriodMs);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.octreeTheta);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.octreeSoftening);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.octreeThetaAutoMin);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.octreeThetaAutoMax);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.sphSmoothingLength);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.sphRestDensity);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.sphGasConstant);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.sphViscosity);
-    /// Description: Executes the writeLeU32 operation.
     writeLeU32(out, state.config.energyMeasureEverySteps);
-    /// Description: Executes the writeLeU32 operation.
     writeLeU32(out, state.config.energySampleLimit);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.physicsMaxAcceleration);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.physicsMinSoftening);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.physicsMinDistance2);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.physicsMinTheta);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.sphMaxAcceleration);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.config.sphMaxSpeed);
-    /// Description: Executes the writeLeF32 operation.
     writeLeF32(out, state.energyBaseline);
     if (!writeSizedString(out, state.config.solver) ||
         !writeSizedString(out, state.config.integrator) ||
@@ -226,21 +205,13 @@ bool writeCheckpointFile(const std::string& outputPath, const SimulationCheckpoi
     for (const Particle& particle : state.particles) {
         const Vector3 position = particle.getPosition();
         const Vector3 velocity = particle.getVelocity();
-        /// Description: Executes the writeLeF32 operation.
         writeLeF32(out, position.x);
-        /// Description: Executes the writeLeF32 operation.
         writeLeF32(out, position.y);
-        /// Description: Executes the writeLeF32 operation.
         writeLeF32(out, position.z);
-        /// Description: Executes the writeLeF32 operation.
         writeLeF32(out, velocity.x);
-        /// Description: Executes the writeLeF32 operation.
         writeLeF32(out, velocity.y);
-        /// Description: Executes the writeLeF32 operation.
         writeLeF32(out, velocity.z);
-        /// Description: Executes the writeLeF32 operation.
         writeLeF32(out, particle.getMass());
-        /// Description: Executes the writeLeF32 operation.
         writeLeF32(out, particle.getTemperature());
     }
     if (!out) {

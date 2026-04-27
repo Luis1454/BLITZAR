@@ -2,6 +2,7 @@
 #define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONMODES_HPP_
 #include <string>
 #include <string_view>
+
 namespace grav_modes {
 extern const std::string_view kSolverPairwiseCuda;
 extern const std::string_view kSolverOctreeGpu;
@@ -11,10 +12,14 @@ extern const std::string_view kIntegratorRk4;
 extern const std::string_view kIntegratorLeapfrog;
 extern const std::string_view kOctreeCriterionCom;
 extern const std::string_view kOctreeCriterionBounds;
+/// Description: Describes the normalize solver operation contract.
 [[nodiscard]] bool normalizeSolver(std::string_view value, std::string& outCanonical);
+/// Description: Describes the normalize integrator operation contract.
 [[nodiscard]] bool normalizeIntegrator(std::string_view value, std::string& outCanonical);
+/// Description: Describes the normalize octree opening criterion operation contract.
 [[nodiscard]] bool normalizeOctreeOpeningCriterion(std::string_view value,
                                                    std::string& outCanonical);
+/// Description: Describes the is supported solver integrator pair operation contract.
 [[nodiscard]] bool isSupportedSolverIntegratorPair(std::string_view solver,
                                                    std::string_view integrator);
 } // namespace grav_modes

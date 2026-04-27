@@ -24,6 +24,7 @@
 struct SimulationCheckpointState;
 /// Description: Defines the SimulationCheckpointQueueState data or behavior contract.
 struct SimulationCheckpointQueueState;
+
 /// Runs the authoritative simulation loop and exposes deterministic control operations.
 class SimulationServer {
 public:
@@ -112,6 +113,7 @@ private:
         float total;
         bool estimated;
     };
+
     /// Description: Defines the PendingExportRequest data or behavior contract.
     struct PendingExportRequest final {
         std::string outputPath;
@@ -119,41 +121,44 @@ private:
     };
     /// Description: Defines the ExportQueueState data or behavior contract.
     struct ExportQueueState;
-    /// Description: Executes the loop operation.
+    /// Description: Describes the loop operation contract.
     void loop();
-    /// Description: Executes the publishSnapshot operation.
+    /// Description: Describes the publish snapshot operation contract.
     void publishSnapshot();
-    /// Description: Executes the rebuildSystem operation.
+    /// Description: Describes the rebuild system operation contract.
     void rebuildSystem();
-    /// Description: Executes the computeEnergyValues operation.
+    /// Description: Describes the compute energy values operation contract.
     EnergyValues computeEnergyValues();
-    /// Description: Executes the maybeUpdateEnergy operation.
+    /// Description: Describes the maybe update energy operation contract.
     void maybeUpdateEnergy(std::uint64_t currentStep);
-    /// Description: Executes the clearGpuTelemetry operation.
+    /// Description: Describes the clear gpu telemetry operation contract.
     void clearGpuTelemetry();
-    /// Description: Executes the maybeSampleGpuTelemetry operation.
+    /// Description: Describes the maybe sample gpu telemetry operation contract.
     void maybeSampleGpuTelemetry(std::string_view solverMode, std::uint64_t currentStep);
-    /// Description: Executes the processPendingExport operation.
+    /// Description: Describes the process pending export operation contract.
     void processPendingExport();
-    /// Description: Executes the processPendingCheckpointSave operation.
+    /// Description: Describes the process pending checkpoint save operation contract.
     void processPendingCheckpointSave();
-    /// Description: Executes the exportCurrentState operation.
+    /// Description: Describes the export current state operation contract.
     bool exportCurrentState(const std::string& outputPath, const std::string& format);
-    /// Description: Executes the captureCheckpointToFile operation.
+    /// Description: Describes the capture checkpoint to file operation contract.
     bool captureCheckpointToFile(const std::string& outputPath, std::string* outError);
-    /// Description: Executes the startExportWorker operation.
+    /// Description: Describes the start export worker operation contract.
     void startExportWorker();
-    /// Description: Executes the stopExportWorker operation.
+    /// Description: Describes the stop export worker operation contract.
     void stopExportWorker();
+    /// Description: Describes the enqueue export write operation contract.
     void enqueueExportWrite(const std::string& outputPath, const std::string& format,
                             const std::vector<Particle>& particles,
                             const std::string& solverModeLabel,
                             const std::string& integratorModeLabel, std::uint64_t step);
+    /// Description: Describes the update export status operation contract.
     void updateExportStatus(const std::string& state, const std::string& path,
                             const std::string& message);
+    /// Description: Describes the load initial state operation contract.
     bool loadInitialState(std::vector<Particle>& outParticles, const std::string& inputPath,
                           const std::string& format) const;
-    /// Description: Executes the clearPublishedSnapshotCache operation.
+    /// Description: Describes the clear published snapshot cache operation contract.
     void clearPublishedSnapshotCache();
     std::atomic<bool> _running;
     std::atomic<bool> _paused;

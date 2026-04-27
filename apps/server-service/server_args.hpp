@@ -8,6 +8,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+
 namespace grav_server_service {
 /// Description: Defines the DaemonOptions data or behavior contract.
 struct DaemonOptions {
@@ -19,6 +20,8 @@ struct DaemonOptions {
     bool showServerHelp = false;
     std::vector<std::string_view> simArgs;
 };
+
+/// Description: Describes the parse server args operation contract.
 bool parseServerArgs(const std::vector<std::string_view>& rawArgs, DaemonOptions& outOptions,
                      std::ostream& outError);
 /// Description: Executes the printServerHelp operation.

@@ -14,22 +14,25 @@
 #include <array>
 #include <cmath>
 #include <limits>
+
 namespace grav_qt {
 /// Description: Executes the isDarkTheme operation.
 static bool isDarkTheme(const QPalette& palette)
 {
     return palette.color(QPalette::Window).lightness() < 128;
 }
+
 /// Description: Executes the panelCurveColor operation.
 static QColor panelCurveColor(const QColor& darkColor, const QColor& lightColor, bool darkTheme)
 {
     return darkTheme ? darkColor : lightColor;
 }
+
+/// Description: Describes the paint operation contract.
 void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoint>& history,
                                    UiPaintEvent* event)
 {
     (void)event;
-    /// Description: Executes the p operation.
     QPainter p(&widget);
     const QPalette widgetPalette = widget.palette();
     const bool darkTheme = isDarkTheme(widgetPalette);
@@ -39,22 +42,16 @@ void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoin
     QColor gridColor = border;
     gridColor.setAlpha(darkTheme ? 190 : 120);
     const QColor kineticColor =
-        /// Description: Executes the panelCurveColor operation.
         panelCurveColor(QColor(92, 255, 140), QColor(0, 122, 52), darkTheme);
     const QColor potentialColor =
-        /// Description: Executes the panelCurveColor operation.
         panelCurveColor(QColor(255, 120, 108), QColor(180, 45, 35), darkTheme);
     const QColor thermalColor =
-        /// Description: Executes the panelCurveColor operation.
         panelCurveColor(QColor(255, 170, 90), QColor(176, 99, 10), darkTheme);
     const QColor radiatedColor =
-        /// Description: Executes the panelCurveColor operation.
         panelCurveColor(QColor(180, 120, 255), QColor(108, 52, 188), darkTheme);
     const QColor totalColor =
-        /// Description: Executes the panelCurveColor operation.
         panelCurveColor(QColor(120, 200, 255), QColor(0, 102, 170), darkTheme);
     const QColor driftColor =
-        /// Description: Executes the panelCurveColor operation.
         panelCurveColor(QColor(255, 230, 120), QColor(168, 132, 0), darkTheme);
     p.fillRect(widget.rect(), background);
     p.setPen(border);
@@ -94,7 +91,6 @@ void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoin
                             splitY - plotRect.top() - 6.0);
     const QRectF driftRect(plotRect.left(), splitY + 6.0, plotRect.width(),
                            plotRect.bottom() - (splitY + 6.0));
-    /// Description: Executes the headerRect operation.
     const QRectF headerRect(outerRect.left(), outerRect.top(), outerRect.width(), headerHeight);
     const QRectF legendRect(outerRect.left(), outerRect.top() + headerHeight, outerRect.width(),
                             legendHeight);
@@ -130,7 +126,6 @@ void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoin
             }
             p.setPen(QPen(colors.at(i), 2.0));
             p.drawLine(QPointF(x, y - metrics.ascent() * 0.35),
-                       /// Description: Executes the QPointF operation.
                        QPointF(x + legendLineWidth, y - metrics.ascent() * 0.35));
             p.setPen(labelColor);
             p.drawText(QPointF(x + legendLineWidth + legendTextGap, y), label);
@@ -158,11 +153,8 @@ void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoin
                           headerRect.width(), headerLineHeight),
                    Qt::AlignLeft | Qt::AlignVCenter, summary);
     };
-    /// Description: Executes the drawHeader operation.
     drawHeader();
-    /// Description: Executes the drawAxisLabels operation.
     drawAxisLabels();
-    /// Description: Executes the drawLegend operation.
     drawLegend();
     if (history.size() < 2) {
         p.setPen(labelColor);
@@ -193,11 +185,9 @@ void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoin
         const EnergyPoint& sample = history[i];
         minEnergy = std::min(
             minEnergy, std::min(std::min(sample.kinetic, sample.potential),
-                                /// Description: Executes the min operation.
                                 std::min(sample.thermal, std::min(sample.radiated, sample.total))));
         maxEnergy = std::max(
             maxEnergy, std::max(std::max(sample.kinetic, sample.potential),
-                                /// Description: Executes the max operation.
                                 std::max(sample.thermal, std::max(sample.radiated, sample.total))));
         maxAbsDrift = std::max(maxAbsDrift, std::fabs(sample.drift));
         minTime = std::min(minTime, sample.time);
@@ -239,20 +229,35 @@ void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoin
         return color;
     };
     p.setPen(QPen(faded(kineticColor), 1.2));
-    p.drawPath(buildPath([](const EnergyPoint& point) { return point.kinetic; }, energyRect,
-                         minEnergy, maxEnergy, false));
+    p.drawPath(buildPath(
+        [](const EnergyPoint& point) {
+            return point.kinetic;
+        },
+        energyRect, minEnergy, maxEnergy, false));
     p.setPen(QPen(faded(potentialColor), 1.2));
-    p.drawPath(buildPath([](const EnergyPoint& point) { return point.potential; }, energyRect,
-                         minEnergy, maxEnergy, false));
+    p.drawPath(buildPath(
+        [](const EnergyPoint& point) {
+            return point.potential;
+        },
+        energyRect, minEnergy, maxEnergy, false));
     p.setPen(QPen(totalColor, 2.1));
-    p.drawPath(buildPath([](const EnergyPoint& point) { return point.total; }, energyRect,
-                         minEnergy, maxEnergy, false));
+    p.drawPath(buildPath(
+        [](const EnergyPoint& point) {
+            return point.total;
+        },
+        energyRect, minEnergy, maxEnergy, false));
     p.setPen(QPen(faded(thermalColor), 1.0));
-    p.drawPath(buildPath([](const EnergyPoint& point) { return point.thermal; }, energyRect,
-                         minEnergy, maxEnergy, false));
+    p.drawPath(buildPath(
+        [](const EnergyPoint& point) {
+            return point.thermal;
+        },
+        energyRect, minEnergy, maxEnergy, false));
     p.setPen(QPen(faded(radiatedColor), 1.0));
-    p.drawPath(buildPath([](const EnergyPoint& point) { return point.radiated; }, energyRect,
-                         minEnergy, maxEnergy, false));
+    p.drawPath(buildPath(
+        [](const EnergyPoint& point) {
+            return point.radiated;
+        },
+        energyRect, minEnergy, maxEnergy, false));
     p.setPen(gridColor);
     if (minEnergy < 0.0f && maxEnergy > 0.0f) {
         const qreal zeroNorm = static_cast<qreal>((0.0f - minEnergy) / (maxEnergy - minEnergy));
@@ -260,11 +265,13 @@ void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoin
         p.drawLine(QPointF(energyRect.left(), zeroY), QPointF(energyRect.right(), zeroY));
     }
     p.drawLine(QPointF(driftRect.left(), driftRect.center().y()),
-               /// Description: Executes the QPointF operation.
                QPointF(driftRect.right(), driftRect.center().y()));
     p.setPen(QPen(driftColor, 1.8));
-    p.drawPath(buildPath([](const EnergyPoint& point) { return point.drift; }, driftRect,
-                         -maxAbsDrift, maxAbsDrift, true));
+    p.drawPath(buildPath(
+        [](const EnergyPoint& point) {
+            return point.drift;
+        },
+        driftRect, -maxAbsDrift, maxAbsDrift, true));
     const qreal latestTimeNorm = static_cast<qreal>((latest.time - minTime) / (maxTime - minTime));
     const qreal latestEnergyY =
         energyRect.top() +
@@ -293,15 +300,12 @@ void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoin
                Qt::AlignRight | Qt::AlignVCenter, QString("%1 s").arg(maxTime, 0, 'f', 2));
     p.drawText(QRectF(energyRect.right() - 180.0, energyRect.top() + 2.0, 176.0, 14.0),
                Qt::AlignRight | Qt::AlignVCenter,
-               /// Description: Executes the QStringLiteral operation.
                QStringLiteral("Current %1").arg(formatMetric(latest.total, QStringLiteral(" J"))));
     p.drawText(QRectF(driftRect.right() - 180.0, driftRect.top() + 2.0, 176.0, 14.0),
                Qt::AlignRight | Qt::AlignVCenter,
-               /// Description: Executes the QStringLiteral operation.
                QStringLiteral("Current %1").arg(formatMetric(latest.drift, QStringLiteral("%"))));
     p.drawText(QRectF(driftRect.left(), driftRect.top() + 2.0, 180.0, 14.0),
                Qt::AlignLeft | Qt::AlignVCenter,
-               /// Description: Executes the QStringLiteral operation.
                QStringLiteral("Window %1 s").arg(QString::number(maxTime - minTime, 'f', 2)));
     p.setRenderHint(QPainter::Antialiasing, false);
 }

@@ -14,6 +14,7 @@
 #include <QRectF>
 #include <array>
 #include <vector>
+
 namespace grav_qt {
 /// Stores one energy-history sample for the Qt energy graph.
 struct EnergyPoint {
@@ -25,6 +26,7 @@ struct EnergyPoint {
     float drift;
     float time;
 };
+
 /// Describes the geometry of the interactive 3D camera gimbal overlay.
 struct GimbalOverlay {
     QRectF rect;
@@ -32,6 +34,7 @@ struct GimbalOverlay {
     float radius;
     std::array<QPointF, 3> handles;
 };
+
 /// Converts a generic 2D point into a Qt point.
 QPointF toQPointF(const grav::Point2D& p);
 /// Converts a Qt point into the generic 2D point representation.

@@ -8,43 +8,33 @@
 #include <limits>
 #include <string>
 #include <vector>
+
 namespace grav_test_client_runtime_unit_like {
 /// Description: Executes the TEST operation.
 TEST(ClientRuntimeUnitLikeTest, TST_UNT_RUNT_016_RuntimeDefaultsRemainDeterministicBeforeStart)
 {
     grav_client::ClientRuntime runtime(
         "simulation.ini",
-        /// Description: Executes the makeTransport operation.
         testsupport::makeTransport(static_cast<std::uint16_t>(6553u), std::string()));
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(runtime.linkStateLabel(), "reconnecting");
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(runtime.serverOwnerLabel(), "external");
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(runtime.statsAgeMs(), std::numeric_limits<std::uint32_t>::max());
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(runtime.snapshotAgeMs(), std::numeric_limits<std::uint32_t>::max());
     const grav_client::SnapshotPipelineState pipelineState = runtime.snapshotPipelineState();
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(pipelineState.queueDepth, 0u);
-    /// Description: Executes the EXPECT_GE operation.
     EXPECT_GE(pipelineState.queueCapacity, 1u);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(pipelineState.droppedFrames, 0u);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(pipelineState.dropPolicy, "latest-only");
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(pipelineState.latencyMs, std::numeric_limits<std::uint32_t>::max());
 }
+
 /// Description: Executes the TEST operation.
 TEST(ClientRuntimeUnitLikeTest, TST_UNT_RUNT_017_RuntimeControlMethodsRemainBoundedWhenDisconnected)
 {
     grav_client::ClientRuntime runtime(
         "simulation.ini",
-        /// Description: Executes the makeTransport operation.
         testsupport::makeTransport(static_cast<std::uint16_t>(6553u), std::string()));
     const auto startedAt = std::chrono::steady_clock::now();
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(runtime.start());
     runtime.setPaused(true);
     runtime.togglePaused();
@@ -76,22 +66,14 @@ TEST(ClientRuntimeUnitLikeTest, TST_UNT_RUNT_017_RuntimeControlMethodsRemainBoun
     runtime.requestReconnect();
     runtime.configureRemoteConnector("127.0.0.1", static_cast<std::uint16_t>(6554u), false, "");
     std::vector<RenderParticle> snapshot;
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(runtime.tryConsumeSnapshot(snapshot));
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(runtime.consumeLatestSnapshot().has_value());
     const auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(
-        /// Description: Executes the now operation.
         std::chrono::steady_clock::now() - startedAt);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(runtime.linkStateLabel(), "reconnecting");
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(runtime.serverOwnerLabel(), "external");
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(runtime.snapshotPipelineState().queueDepth, 0u);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(runtime.snapshotAgeMs(), std::numeric_limits<std::uint32_t>::max());
-    /// Description: Executes the EXPECT_LE operation.
     EXPECT_LE(elapsedMs.count(), 3000);
     runtime.stop();
 }

@@ -12,6 +12,7 @@
 #include <cstdint>
 /// Description: Defines the SimulationConfig data or behavior contract.
 struct SimulationConfig;
+
 namespace grav_qt {
 /// Reports whether a configuration update was validated and applied to the runtime.
 struct MainWindowApplyConfigResult final {
@@ -19,6 +20,7 @@ struct MainWindowApplyConfigResult final {
     std::uint32_t clientDrawCap = 0u;
     bool applied = false;
 };
+
 /// Bridges Qt configuration edits to the runtime and validation layers.
 class MainWindowController final {
 public:

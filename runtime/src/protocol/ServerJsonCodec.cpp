@@ -5,66 +5,61 @@
 #include "protocol/ServerProtocol.hpp"
 #include <iomanip>
 #include <sstream>
+
 namespace grav_protocol {
 /// Description: Defines the ServerJsonObjectWriter data or behavior contract.
 class ServerJsonObjectWriter final {
 public:
-    /// Description: Executes the ServerJsonObjectWriter operation.
     explicit ServerJsonObjectWriter(std::ostringstream& out) : _out(out), _hasField(false)
     {
         _out << "{";
     }
-    /// Description: Executes the writeBool operation.
+
     void writeBool(std::string_view key, bool value)
     {
-        /// Description: Executes the writeKey operation.
         writeKey(key);
         _out << (value ? "true" : "false");
     }
-    /// Description: Executes the writeNumber operation.
+
     template <typename NumberType> void writeNumber(std::string_view key, NumberType value)
     {
-        /// Description: Executes the writeKey operation.
         writeKey(key);
         _out << value;
     }
-    /// Description: Executes the writeString operation.
+
     void writeString(std::string_view key, std::string_view value)
     {
-        /// Description: Executes the writeKey operation.
         writeKey(key);
         _out << "\"" << ServerJsonCodec::escapeString(value) << "\"";
     }
-    /// Description: Executes the beginArray operation.
+
     void beginArray(std::string_view key)
     {
-        /// Description: Executes the writeKey operation.
         writeKey(key);
         _out << "[";
     }
-    /// Description: Executes the writeArraySeparator operation.
+
     void writeArraySeparator()
     {
         _out << ",";
     }
-    /// Description: Executes the writeRaw operation.
+
     void writeRaw(std::string_view raw)
     {
         _out << raw;
     }
-    /// Description: Executes the endArray operation.
+
     void endArray()
     {
         _out << "]";
     }
-    /// Description: Executes the finish operation.
+
     void finish()
     {
         _out << "}";
     }
 
 private:
-    /// Description: Executes the writeKey operation.
     void writeKey(std::string_view key)
     {
         if (_hasField) {
@@ -73,9 +68,11 @@ private:
         _out << "\"" << key << "\":";
         _hasField = true;
     }
+
     std::ostringstream& _out;
     bool _hasField;
 };
+
 /// Description: Executes the escapeString operation.
 std::string ServerJsonCodec::escapeString(std::string_view value)
 {
@@ -104,6 +101,8 @@ std::string ServerJsonCodec::escapeString(std::string_view value)
         }
     return escaped;
 }
+
+/// Description: Describes the make command request operation contract.
 std::string ServerJsonCodec::makeCommandRequest(const ServerCommandRequest& request,
                                                 std::string_view fieldsJson)
 {
@@ -120,22 +119,22 @@ std::string ServerJsonCodec::makeCommandRequest(const ServerCommandRequest& requ
     payload += "}";
     return payload;
 }
+
 /// Description: Executes the makeOkResponse operation.
 std::string ServerJsonCodec::makeOkResponse(std::string_view cmd)
 {
     std::ostringstream out;
-    /// Description: Executes the writer operation.
     ServerJsonObjectWriter writer(out);
     writer.writeBool("ok", true);
     writer.writeString("cmd", cmd);
     writer.finish();
     return out.str();
 }
+
 /// Description: Executes the makeErrorResponse operation.
 std::string ServerJsonCodec::makeErrorResponse(std::string_view cmd, std::string_view message)
 {
     std::ostringstream out;
-    /// Description: Executes the writer operation.
     ServerJsonObjectWriter writer(out);
     writer.writeBool("ok", false);
     writer.writeString("cmd", cmd);
@@ -143,13 +142,12 @@ std::string ServerJsonCodec::makeErrorResponse(std::string_view cmd, std::string
     writer.finish();
     return out.str();
 }
+
 /// Description: Executes the makeStatusResponse operation.
 std::string ServerJsonCodec::makeStatusResponse(const SimulationStats& stats)
 {
     std::ostringstream out;
-    /// Description: Executes the setprecision operation.
     out << std::fixed << std::setprecision(6);
-    /// Description: Executes the writer operation.
     ServerJsonObjectWriter writer(out);
     writer.writeBool("ok", true);
     writer.writeString("cmd", Status);
@@ -194,14 +192,14 @@ std::string ServerJsonCodec::makeStatusResponse(const SimulationStats& stats)
     writer.finish();
     return out.str();
 }
+
+/// Description: Describes the make snapshot response operation contract.
 std::string ServerJsonCodec::makeSnapshotResponse(bool hasSnapshot,
                                                   const std::vector<RenderParticle>& snapshot,
                                                   std::size_t sourceSize)
 {
     std::ostringstream out;
-    /// Description: Executes the setprecision operation.
     out << std::fixed << std::setprecision(6);
-    /// Description: Executes the writer operation.
     ServerJsonObjectWriter writer(out);
     writer.writeBool("ok", true);
     writer.writeString("cmd", GetSnapshot);

@@ -22,7 +22,6 @@ void ParticleSystem::syncDeviceState()
     ParticleSoAView view = getSoAView(false);
     const int numBlocks = (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
     packSoAKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(d_stage, view, numParticles);
-    /// Description: Executes the cudaDeviceSynchronize operation.
     cudaDeviceSynchronize();
     _hostStateDirty = false;
     _leapfrogPrimed = false;
@@ -45,7 +44,6 @@ bool ParticleSystem::syncHostState()
     ParticleSoAView view = getSoAView(false);
     const int numBlocks = (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
     unpackSoAKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(view, d_stage, numParticles);
-    /// Description: Executes the cudaDeviceSynchronize operation.
     cudaDeviceSynchronize();
 
     if (!checkCudaStatus(cudaMemcpy(_particles.data(), d_stage, bytes, cudaMemcpyDeviceToHost), "memcpy(DtoH stage)")) return false;
@@ -91,9 +89,7 @@ void ParticleSystem::publishMappedMetrics(float deltaTime)
     if (cudaGetDevice(&device) == cudaSuccess
         && cudaDeviceGetDefaultMemPool(&pool, device) == cudaSuccess
         && pool != nullptr) {
-        /// Description: Executes the cudaMemPoolGetAttribute operation.
         cudaMemPoolGetAttribute(pool, cudaMemPoolAttrUsedMemCurrent, &vramUsedBytes);
-        /// Description: Executes the cudaMemPoolGetAttribute operation.
         cudaMemPoolGetAttribute(pool, cudaMemPoolAttrUsedMemHigh, &vramPeakBytes);
     }
 
@@ -107,6 +103,5 @@ void ParticleSystem::publishMappedMetrics(float deltaTime)
         deltaTime,
         vramUsedBytes,
         vramPeakBytes);
-    /// Description: Executes the checkCudaStatus operation.
     checkCudaStatus(cudaGetLastError(), "publishMetricsKernel launch");
 }

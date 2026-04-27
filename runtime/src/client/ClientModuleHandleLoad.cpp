@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <string>
 #include <system_error>
+
 namespace grav_module {
 /// Description: Executes the hasRequiredExports operation.
 static bool hasRequiredExports(const ClientModuleExportsV1* exports)
@@ -19,12 +20,13 @@ static bool hasRequiredExports(const ClientModuleExportsV1* exports)
            exports->create != nullptr && exports->destroy != nullptr && exports->start != nullptr &&
            exports->stop != nullptr && exports->handleCommand != nullptr;
 }
+
+/// Description: Describes the load operation contract.
 bool ClientModuleHandle::load(const std::string& modulePath, const std::string& configPath,
                               std::string_view expectedModuleId, std::string& outError)
 {
     if (!m_impl)
         m_impl = std::make_unique<Impl>();
-    /// Description: Executes the unload operation.
     unload();
     const auto destroyStateNoexcept = [this]() -> bool {
         if (m_impl->exports == nullptr || !m_impl->state.hasValue()) {
@@ -40,7 +42,6 @@ bool ClientModuleHandle::load(const std::string& modulePath, const std::string& 
         return true;
     };
     std::error_code ec;
-    /// Description: Executes the requested operation.
     const std::filesystem::path requested(modulePath);
     const std::filesystem::path normalized =
         requested.is_absolute() ? requested : std::filesystem::absolute(requested, ec);

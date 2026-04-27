@@ -6,13 +6,16 @@
 #include <algorithm>
 #include <cctype>
 #include <limits>
+
 /// Description: Executes the toLower operation.
 std::string SimulationArgsParse::toLower(std::string value)
 {
-    std::transform(value.begin(), value.end(), value.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
     return value;
 }
+
 /// Description: Executes the parseBool operation.
 bool SimulationArgsParse::parseBool(const std::string& value, bool& out)
 {
@@ -27,6 +30,7 @@ bool SimulationArgsParse::parseBool(const std::string& value, bool& out)
     }
     return false;
 }
+
 /// Description: Executes the parseUint operation.
 bool SimulationArgsParse::parseUint(const std::string& value, std::uint32_t& out)
 {
@@ -40,6 +44,7 @@ bool SimulationArgsParse::parseUint(const std::string& value, std::uint32_t& out
     out = static_cast<std::uint32_t>(parsed);
     return true;
 }
+
 /// Description: Executes the parseInt operation.
 bool SimulationArgsParse::parseInt(const std::string& value, int& out)
 {
@@ -54,11 +59,13 @@ bool SimulationArgsParse::parseInt(const std::string& value, int& out)
     out = static_cast<int>(parsed);
     return true;
 }
+
 /// Description: Executes the parseFloat operation.
 bool SimulationArgsParse::parseFloat(const std::string& value, float& out)
 {
     return grav_text::parseNumber(value, out);
 }
+
 /// Description: Executes the splitOption operation.
 bool SimulationArgsParse::splitOption(const std::string& raw, std::string& key, std::string& value)
 {
@@ -75,6 +82,8 @@ bool SimulationArgsParse::splitOption(const std::string& raw, std::string& key, 
     value = raw.substr(eq + 1);
     return true;
 }
+
+/// Description: Describes the read value operation contract.
 bool SimulationArgsParse::readValue(const std::vector<std::string_view>& args, std::size_t& index,
                                     const std::string& inlined, std::string& outValue)
 {

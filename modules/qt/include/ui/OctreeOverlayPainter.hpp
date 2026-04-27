@@ -13,10 +13,12 @@
 class QPainter;
 /// Description: Defines the QRect data or behavior contract.
 class QRect;
+
 namespace grav_qt {
 /// Description: Defines the OctreeOverlayPainter data or behavior contract.
 class OctreeOverlayPainter {
 public:
+    /// Description: Describes the paint operation contract.
     static void paint(QPainter& painter, const QRect& viewport, grav::ViewMode mode,
                       const grav::CameraState& camera, const std::vector<OctreeOverlayNode>& nodes,
                       float zoom, int opacity);

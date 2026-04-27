@@ -12,11 +12,11 @@
 #include <cmath>
 #include <sstream>
 #include <utility>
+
 namespace grav_config {
 /// Description: Defines the SimulationScenarioValidationLocal data or behavior contract.
 class SimulationScenarioValidationLocal final {
 public:
-    /// Description: Executes the evaluate operation.
     static ScenarioValidationReport evaluate(const SimulationConfig& config)
     {
         ScenarioValidationReport report;
@@ -38,7 +38,6 @@ public:
         };
         std::ostringstream initLog;
         const ResolvedInitialStatePlan plan = resolveInitialStatePlan(config, initLog);
-        /// Description: Executes the logLines operation.
         std::istringstream logLines(initLog.str());
         for (std::string line; std::getline(logLines, line);) {
             if (!line.empty()) {
@@ -47,8 +46,9 @@ public:
             }
         }
         const auto normalized = [](std::string value) {
-            std::transform(value.begin(), value.end(), value.begin(),
-                           [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+            std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
+                return static_cast<char>(std::tolower(c));
+            });
             return value;
         };
         const std::string initStyle = normalized(config.initConfigStyle);
@@ -193,16 +193,17 @@ public:
                           "Cloud-based presets require a strictly positive spatial extent.",
                           "Set init_cloud_half_extent above 0.");
         }
-        /// Description: Executes the appendDiagnostics operation.
         SimulationScenarioValidationPhysics::appendDiagnostics(config, plan.config, addDiagnostic);
         return report;
     }
 };
+
 /// Description: Executes the evaluate operation.
 ScenarioValidationReport SimulationScenarioValidation::evaluate(const SimulationConfig& config)
 {
     return SimulationScenarioValidationLocal::evaluate(config);
 }
+
 /// Description: Executes the renderText operation.
 std::string SimulationScenarioValidation::renderText(const ScenarioValidationReport& report)
 {

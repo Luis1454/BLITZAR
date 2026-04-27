@@ -7,9 +7,11 @@
 #include <string>
 /// Description: Defines the SimulationConfig data or behavior contract.
 struct SimulationConfig;
+
 /// Description: Defines the SimulationArgsClientOptions data or behavior contract.
 class SimulationArgsClientOptions final {
 public:
+    /// Description: Describes the apply operation contract.
     static bool apply(const std::string& key, const std::string& value, SimulationConfig& config,
                       std::ostream& warnings);
 };

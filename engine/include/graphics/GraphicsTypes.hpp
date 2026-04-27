@@ -5,12 +5,14 @@
 #define GRAVITY_ENGINE_INCLUDE_GRAPHICS_GRAPHICSTYPES_HPP_
 #include <array>
 #include <cstdint>
+
 namespace grav {
 /// Description: Defines the Point2D data or behavior contract.
 struct Point2D {
     float x;
     float y;
 };
+
 /// Description: Defines the Rect2D data or behavior contract.
 struct Rect2D {
     float x;
@@ -18,6 +20,7 @@ struct Rect2D {
     float width;
     float height;
 };
+
 /// Description: Defines the ColorRGBA data or behavior contract.
 struct ColorRGBA {
     std::uint8_t r;

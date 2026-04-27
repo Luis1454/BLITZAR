@@ -5,6 +5,7 @@
 #include <exception>
 #include <iostream>
 #include <string>
+
 /// Description: Executes the main operation.
 int main(int argc, char** argv)
 {
@@ -16,12 +17,10 @@ int main(int argc, char** argv)
         std::string parseError;
         if (!grav_client_host::ClientHostCli::parseArgs(argc, argv, options, parseError)) {
             std::cerr << "[client-host] " << parseError << "\n";
-            /// Description: Executes the printHelp operation.
             grav_client_host::ClientHostCli::printHelp(programName);
             return 2;
         }
         if (options.showHelp) {
-            /// Description: Executes the printHelp operation.
             grav_client_host::ClientHostCli::printHelp(programName);
             return 0;
         }

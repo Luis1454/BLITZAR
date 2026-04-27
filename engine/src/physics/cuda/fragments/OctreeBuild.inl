@@ -14,7 +14,6 @@ Octree::Node::Node()
       centerOfMass(0.0f, 0.0f, 0.0f),
       children{},
       childMask(0),
-      /// Description: Executes the particleIndices operation.
       particleIndices()
 {
     children.fill(-1);
@@ -22,6 +21,7 @@ Octree::Node::Node()
 
 /// Description: Executes the Octree operation.
 Octree::Octree() : _nodes(), _particlesRef(std::nullopt), _root(-1) {}
+/// Description: Describes the destroy  octree operation contract.
 Octree::~Octree() = default;
 
 /// Description: Executes the clear operation.
@@ -82,6 +82,7 @@ int Octree::childIndexForPosition(const Vector3 &position, const Vector3 &center
 /// Description: Executes the hasChildren operation.
 bool Octree::hasChildren(const Node &node) { return node.childMask != 0; }
 
+/// Description: Describes the build node recursive operation contract.
 int Octree::buildNodeRecursive(
     const std::vector<Particle> &particles,
     const std::vector<int> &indices,
@@ -94,7 +95,6 @@ int Octree::buildNodeRecursive(
     node.halfSize = halfSize;
 
     float totalMass = 0.0f;
-    /// Description: Executes the weightedCenter operation.
     Vector3 weightedCenter(0.0f, 0.0f, 0.0f);
     for (size_t i = 0; i < indices.size(); ++i) {
         const Particle &p = particles[indices[i]];
@@ -148,7 +148,6 @@ int Octree::buildNodeRecursive(
 /// Description: Executes the build operation.
 void Octree::build(const std::vector<Particle> &particles)
 {
-    /// Description: Executes the clear operation.
     clear();
     _particlesRef = std::cref(particles);
     if (particles.empty()) return;
@@ -166,16 +165,13 @@ void Octree::build(const std::vector<Particle> &particles)
         maxPos.z = std::max(maxPos.z, pos.z);
     }
 
-    /// Description: Executes the center operation.
     const Vector3 center((minPos.x + maxPos.x) * 0.5f, (minPos.y + maxPos.y) * 0.5f, (minPos.z + maxPos.z) * 0.5f);
     const float sizeX = maxPos.x - minPos.x;
     const float sizeY = maxPos.y - minPos.y;
     const float sizeZ = maxPos.z - minPos.z;
     const float halfSize = std::max(0.5f * std::max(sizeX, std::max(sizeY, sizeZ)), 0.01f) + 0.001f;
 
-    /// Description: Executes the rootIndices operation.
     std::vector<int> rootIndices(particles.size());
-    /// Description: Executes the iota operation.
     std::iota(rootIndices.begin(), rootIndices.end(), 0);
     _root = buildNodeRecursive(particles, rootIndices, center, halfSize, 0);
 }

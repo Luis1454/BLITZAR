@@ -3,11 +3,11 @@
 
 #include "ui/QtTheme.hpp"
 #include <QColor>
+
 namespace grav_qt {
 /// Description: Defines the QtThemeLocal data or behavior contract.
 class QtThemeLocal final {
 public:
-    /// Description: Executes the lightStyleSheet operation.
     static QString lightStyleSheet()
     {
         return "QMainWindow { background: #edf2f7; }"
@@ -59,7 +59,7 @@ public:
                "11px; font-weight: 700; text-transform: uppercase; }"
                "QWidget#telemetrySummaryPane QLabel#runtimeSummaryValue { color: #102a43; }";
     }
-    /// Description: Executes the darkStyleSheet operation.
+
     static QString darkStyleSheet()
     {
         return "QMainWindow { background: #101826; }"
@@ -112,16 +112,19 @@ public:
                "QWidget#telemetrySummaryPane QLabel#runtimeSummaryValue { color: #f0f4f8; }";
     }
 };
+
 /// Description: Executes the resolve operation.
 QtThemeMode QtTheme::resolve(const std::string& themeName)
 {
     return themeName == "dark" ? QtThemeMode::Dark : QtThemeMode::Light;
 }
+
 /// Description: Executes the toConfigValue operation.
 std::string QtTheme::toConfigValue(QtThemeMode mode)
 {
     return mode == QtThemeMode::Dark ? "dark" : "light";
 }
+
 /// Description: Executes the buildPalette operation.
 QPalette QtTheme::buildPalette(QtThemeMode mode)
 {
@@ -157,7 +160,7 @@ QPalette QtTheme::buildPalette(QtThemeMode mode)
     palette.setColor(QPalette::PlaceholderText, QColor(123, 135, 148));
     return palette;
 }
-/// Description: Executes the buildMainWindowStyleSheet operation.
+
 QString QtTheme::buildMainWindowStyleSheet(QtThemeMode mode)
 {
     return mode == QtThemeMode::Dark ? QtThemeLocal::darkStyleSheet()

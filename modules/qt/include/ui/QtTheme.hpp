@@ -10,19 +10,24 @@
 #include <QPalette>
 #include <QString>
 #include <string>
+
 namespace grav_qt {
 /// Description: Enumerates the supported QtThemeMode values.
-enum class QtThemeMode { Light, Dark };
+enum class QtThemeMode {
+    Light,
+    Dark
+};
+
 /// Description: Defines the QtTheme data or behavior contract.
 class QtTheme final {
 public:
-    /// Description: Executes the resolve operation.
+    /// Description: Describes the resolve operation contract.
     static QtThemeMode resolve(const std::string& themeName);
-    /// Description: Executes the toConfigValue operation.
+    /// Description: Describes the to config value operation contract.
     static std::string toConfigValue(QtThemeMode mode);
-    /// Description: Executes the buildPalette operation.
+    /// Description: Describes the build palette operation contract.
     static QPalette buildPalette(QtThemeMode mode);
-    /// Description: Executes the buildMainWindowStyleSheet operation.
+    /// Description: Describes the build main window style sheet operation contract.
     static QString buildMainWindowStyleSheet(QtThemeMode mode);
 };
 } // namespace grav_qt

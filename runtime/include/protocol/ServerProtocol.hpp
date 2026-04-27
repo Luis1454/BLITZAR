@@ -5,6 +5,7 @@
 #define GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERPROTOCOL_HPP_
 #include <cstdint>
 #include <string_view>
+
 namespace grav_protocol {
 extern const std::string_view SchemaVersion;
 extern const std::string_view Status;

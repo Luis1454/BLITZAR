@@ -10,13 +10,16 @@
 #include <csignal>
 #include <iostream>
 #include <string>
+
 namespace grav_server_service {
 std::atomic<bool> g_stopRequested{false};
+
 /// Description: Executes the onSignal operation.
 void onSignal(int)
 {
     g_stopRequested.store(true);
 }
+
 /// Description: Executes the parsePort operation.
 bool parsePort(std::string_view token, std::uint16_t& out)
 {
@@ -27,13 +30,14 @@ bool parsePort(std::string_view token, std::uint16_t& out)
     out = static_cast<std::uint16_t>(parsed);
     return true;
 }
+
 /// Description: Executes the parseBool operation.
 bool parseBool(std::string_view value, bool& out)
 {
-    /// Description: Executes the normalized operation.
     std::string normalized(value);
-    std::transform(normalized.begin(), normalized.end(), normalized.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
     if (normalized == "1" || normalized == "true" || normalized == "on" || normalized == "yes") {
         out = true;
         return true;
@@ -44,6 +48,8 @@ bool parseBool(std::string_view value, bool& out)
     }
     return false;
 }
+
+/// Description: Describes the parse server args operation contract.
 bool parseServerArgs(const std::vector<std::string_view>& rawArgs, DaemonOptions& outOptions,
                      std::ostream& outError)
 {
@@ -53,7 +59,6 @@ bool parseServerArgs(const std::vector<std::string_view>& rawArgs, DaemonOptions
         outOptions.simArgs.push_back(rawArgs[0]);
     }
     for (std::size_t i = 1; i < rawArgs.size(); ++i) {
-        /// Description: Executes the token operation.
         const std::string token(rawArgs[i]);
         if (token == "--server-help") {
             outOptions.showServerHelp = true;
@@ -128,6 +133,7 @@ bool parseServerArgs(const std::vector<std::string_view>& rawArgs, DaemonOptions
     }
     return true;
 }
+
 /// Description: Executes the printServerHelp operation.
 void printServerHelp(std::string_view programName)
 {
@@ -139,9 +145,9 @@ void printServerHelp(std::string_view programName)
               << "  --server-paused          Start simulation paused\n"
               << "  --server-help            Show this server-specific help\n"
               << "\n";
-    /// Description: Executes the printUsage operation.
     printUsage(std::cout, programName, true);
 }
+
 /// Description: Executes the isLoopbackBindHost operation.
 bool isLoopbackBindHost(std::string_view host)
 {
@@ -150,19 +156,20 @@ bool isLoopbackBindHost(std::string_view host)
     }
     return host.rfind("127.", 0) == 0;
 }
+
 /// Description: Executes the installStopSignalHandlers operation.
 void installStopSignalHandlers()
 {
-    /// Description: Executes the signal operation.
     std::signal(SIGINT, onSignal);
-    /// Description: Executes the signal operation.
     std::signal(SIGTERM, onSignal);
 }
+
 /// Description: Executes the stopRequested operation.
 bool stopRequested()
 {
     return g_stopRequested.load();
 }
+
 /// Description: Executes the resetStopRequested operation.
 void resetStopRequested()
 {

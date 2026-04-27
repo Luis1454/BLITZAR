@@ -12,7 +12,9 @@
 #include <optional>
 #include <string>
 #include <thread>
+
 namespace grav_test_server_runtime {
+/// Description: Describes the find server executable in build directories operation contract.
 std::string findServerExecutableInBuildDirectories(const std::filesystem::path& root,
                                                    const std::string& defaultName)
 {
@@ -40,6 +42,7 @@ std::string findServerExecutableInBuildDirectories(const std::filesystem::path& 
     return {};
 }
 } // namespace grav_test_server_runtime
+
 /// Description: Executes the resolveServerExecutable operation.
 std::string RealServerHarness::resolveServerExecutable()
 {
@@ -48,7 +51,6 @@ std::string RealServerHarness::resolveServerExecutable()
         return *fromEnv;
     }
     std::error_code ec;
-    /// Description: Executes the defaultName operation.
     const std::string defaultName(grav_platform::serverDefaultExecutableName());
     const std::filesystem::path cwd = std::filesystem::current_path(ec);
     if (!ec) {
@@ -60,20 +62,21 @@ std::string RealServerHarness::resolveServerExecutable()
                 return candidate.string();
             }
         if (const std::string fromBuildDir =
-                /// Description: Executes the findServerExecutableInBuildDirectories operation.
                 grav_test_server_runtime::findServerExecutableInBuildDirectories(cwd, defaultName);
             !fromBuildDir.empty()) {
             return fromBuildDir;
         }
         if (const std::string fromParentBuildDir =
-                grav_test_server_runtime::findServerExecutableInBuildDirectories(cwd.parent_path(),
-                                                                                 defaultName);
+                /// contract.
+            grav_test_server_runtime::findServerExecutableInBuildDirectories(cwd.parent_path(),
+                                                                             defaultName);
             !fromParentBuildDir.empty()) {
             return fromParentBuildDir;
         }
     }
     return defaultName;
 }
+
 /// Description: Executes the isPortBindable operation.
 bool RealServerHarness::isPortBindable(std::uint16_t port)
 {
@@ -84,18 +87,16 @@ bool RealServerHarness::isPortBindable(std::uint16_t port)
     }
     const grav_socket::Handle handle = grav_socket::createTcpSocket();
     if (!grav_socket::isValid(handle)) {
-        /// Description: Executes the shutdownSocketLayer operation.
         grav_socket::shutdownSocketLayer();
         return false;
     }
     (void)grav_socket::setReuseAddress(handle, true);
     const bool ok = grav_socket::bindIpv4(handle, "127.0.0.1", port);
-    /// Description: Executes the closeSocket operation.
     grav_socket::closeSocket(handle);
-    /// Description: Executes the shutdownSocketLayer operation.
     grav_socket::shutdownSocketLayer();
     return ok;
 }
+
 /// Description: Executes the waitUntilReady operation.
 bool RealServerHarness::waitUntilReady(std::string& outError) const
 {
@@ -115,7 +116,6 @@ bool RealServerHarness::waitUntilReady(std::string& outError) const
             if (response.ok)
                 return true;
         }
-        /// Description: Executes the sleep_for operation.
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
     outError = "server did not become ready before timeout";

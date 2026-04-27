@@ -3,6 +3,7 @@
 
 #include "tests/support/numerical_validation_tool.hpp"
 #include <iostream>
+
 /// Description: Executes the main operation.
 int main(int argc, char** argv)
 {

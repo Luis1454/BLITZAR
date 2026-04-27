@@ -2,10 +2,10 @@
 // Purpose: Engine implementation for the BLITZAR simulation core.
 
 #include "Internal.hpp"
+
 /// Description: Executes the parseBinarySnapshot operation.
 bool parseBinarySnapshot(const std::string& inputPath, std::vector<Particle>& outParticles)
 {
-    /// Description: Executes the in operation.
     std::ifstream in(inputPath, std::ios::binary);
     if (!in.is_open()) {
         return false;
@@ -15,7 +15,6 @@ bool parseBinarySnapshot(const std::string& inputPath, std::vector<Particle>& ou
     if (!readRawBytes(in, headerBytes.data(), headerBytes.size())) {
         return false;
     }
-    /// Description: Executes the memcpy operation.
     std::memcpy(&header, headerBytes.data(), sizeof(header));
     if (std::memcmp(header.magic, kBinarySnapshotMagic, sizeof(kBinarySnapshotMagic)) != 0) {
         return false;
@@ -44,7 +43,6 @@ bool parseBinarySnapshot(const std::string& inputPath, std::vector<Particle>& ou
             outParticles.clear();
             return false;
         }
-        /// Description: Executes the memcpy operation.
         std::memcpy(&rec, recBytes.data(), sizeof(rec));
         Particle p;
         p.setPosition(Vector3(rec.px, rec.py, rec.pz));
@@ -59,10 +57,10 @@ bool parseBinarySnapshot(const std::string& inputPath, std::vector<Particle>& ou
     }
     return outParticles.size() >= 2;
 }
+
 /// Description: Executes the parseXyzSnapshot operation.
 bool parseXyzSnapshot(const std::string& inputPath, std::vector<Particle>& outParticles)
 {
-    /// Description: Executes the in operation.
     std::ifstream in(inputPath);
     if (!in.is_open())
         return false;
@@ -71,14 +69,12 @@ bool parseXyzSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
         std::string firstLine;
         if (!std::getline(in, firstLine))
             return false;
-        /// Description: Executes the iss operation.
         std::istringstream iss(firstLine);
         iss >> expectedCount;
     }
     if (expectedCount > kMaxImportedParticles)
         return false;
     std::string commentLine;
-    /// Description: Executes the getline operation.
     std::getline(in, commentLine);
     outParticles.clear();
     outParticles.reserve(expectedCount > 0 ? expectedCount : 128);
@@ -87,7 +83,6 @@ bool parseXyzSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
         if (line.empty()) {
             continue;
         }
-        /// Description: Executes the iss operation.
         std::istringstream iss(line);
         std::vector<std::string> tokens;
         std::string token;
@@ -99,7 +94,6 @@ bool parseXyzSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
         }
         std::size_t offset = 0;
         auto tryParseFloat = [](const std::string& value, float& out) {
-            /// Description: Executes the conv operation.
             std::istringstream conv(value);
             conv >> out;
             return static_cast<bool>(conv);
@@ -141,15 +135,16 @@ bool parseXyzSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
     }
     return outParticles.size() >= 2;
 }
+
+/// Description: Describes the parse snapshot by format operation contract.
 bool parseSnapshotByFormat(std::string_view format, const std::string& inputPath,
                            std::vector<Particle>& outParticles)
 {
-    /// Description: Defines the FormatParserEntry data or behavior contract.
     struct FormatParserEntry {
         std::string_view format;
-        /// Description: Executes the bool operation.
         bool (*parser)(const std::string&, std::vector<Particle>&);
     };
+
     static const std::array<FormatParserEntry, 3> parsers = {
         {{"bin", parseBinarySnapshot}, {"vtk", parseVtkSnapshot}, {"xyz", parseXyzSnapshot}}};
     for (const FormatParserEntry& entry : parsers)
@@ -157,6 +152,7 @@ bool parseSnapshotByFormat(std::string_view format, const std::string& inputPath
             return entry.parser(inputPath, outParticles);
     return false;
 }
+
 /// Description: Executes the parseSnapshotWithFallback operation.
 bool parseSnapshotWithFallback(const std::string& inputPath, std::vector<Particle>& outParticles)
 {

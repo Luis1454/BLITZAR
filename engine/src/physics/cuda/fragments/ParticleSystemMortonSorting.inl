@@ -22,6 +22,7 @@
  }
  
  // Compute Morton code for each particle based on its position
+/// Description: Describes the compute morton codes kernel operation contract.
 __global__ void computeMortonCodesKernel(
     ParticleSoAView state,
     Vector3 aabbMin,
@@ -49,15 +50,12 @@ __global__ void computeMortonCodesKernel(
     const float NORM_SCALE = 2097151.0f;  // 2^21 - 1
     
     const unsigned int xi = static_cast<unsigned int>(
-        /// Description: Executes the fmaxf operation.
         fmaxf(0.0f, fminf(NORM_SCALE, (pos.x - aabbMin.x) / extent.x * NORM_SCALE))
     );
     const unsigned int yi = static_cast<unsigned int>(
-        /// Description: Executes the fmaxf operation.
         fmaxf(0.0f, fminf(NORM_SCALE, (pos.y - aabbMin.y) / extent.y * NORM_SCALE))
     );
     const unsigned int zi = static_cast<unsigned int>(
-        /// Description: Executes the fmaxf operation.
         fmaxf(0.0f, fminf(NORM_SCALE, (pos.z - aabbMin.z) / extent.z * NORM_SCALE))
     );
     
@@ -67,6 +65,7 @@ __global__ void computeMortonCodesKernel(
 
 // Reorder particle SoA buffers by sorted Morton indices for spatial cache coherency
 // This kernel reorders only position and velocity (which are double-buffered)
+/// Description: Describes the reorder particle buffers kernel operation contract.
 __global__ void reorderParticleBuffersKernel(
     ParticleSoAView srcState,
     ParticleSoAView dstState,

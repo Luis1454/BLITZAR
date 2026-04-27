@@ -4,9 +4,12 @@
 #include "graphics/ViewMath.hpp"
 #include <algorithm>
 #include <cmath>
+
 namespace grav {
 constexpr float kIsoYaw = 0.78539816339f;
 constexpr float kIsoPitch = 0.61547970867f;
+
+/// Description: Describes the rotate3 d operation contract.
 static void rotate3D(float x, float y, float z, float yaw, float pitch, float roll, float& outX,
                      float& outY, float& outZ)
 {
@@ -24,6 +27,7 @@ static void rotate3D(float x, float y, float z, float yaw, float pitch, float ro
     outY = sr * x1 + cr * y1;
     outZ = z2;
 }
+
 /// Description: Executes the baseOrientation operation.
 static void baseOrientation(ViewMode mode, float& yaw, float& pitch, float& roll)
 {
@@ -35,6 +39,8 @@ static void baseOrientation(ViewMode mode, float& yaw, float& pitch, float& roll
         pitch = kIsoPitch;
     }
 }
+
+/// Description: Describes the mode components operation contract.
 static void modeComponents(ViewMode mode, float x, float y, float z, float& sx, float& sy,
                            float& depth)
 {
@@ -63,6 +69,7 @@ static void modeComponents(ViewMode mode, float x, float y, float z, float& sx, 
         break;
     }
 }
+
 /// Description: Executes the distanceSquared operation.
 static float distanceSquared(const Point2D& a, const Point2D& b)
 {
@@ -70,13 +77,14 @@ static float distanceSquared(const Point2D& a, const Point2D& b)
     const float dy = a.y - b.y;
     return dx * dx + dy * dy;
 }
+
+/// Description: Describes the project particle operation contract.
 ProjectedPoint projectParticle(const RenderParticle& particle, ViewMode mode,
                                const CameraState& camera)
 {
     float baseYaw = 0.0f;
     float basePitch = 0.0f;
     float baseRoll = 0.0f;
-    /// Description: Executes the baseOrientation operation.
     baseOrientation(mode, baseYaw, basePitch, baseRoll);
     float rx = 0.0f;
     float ry = 0.0f;
@@ -86,7 +94,6 @@ ProjectedPoint projectParticle(const RenderParticle& particle, ViewMode mode,
     float sx = 0.0f;
     float sy = 0.0f;
     float depth = 0.0f;
-    /// Description: Executes the modeComponents operation.
     modeComponents(mode, rx, ry, rz, sx, sy, depth);
     if (mode != ViewMode::Perspective)
         return ProjectedPoint{sx, sy, depth, true};
@@ -99,6 +106,7 @@ ProjectedPoint projectParticle(const RenderParticle& particle, ViewMode mode,
         return ProjectedPoint{0.0f, 0.0f, depth, false};
     return ProjectedPoint{sx * perspectiveScale, sy * perspectiveScale, depth, true};
 }
+
 /// Description: Executes the computeGimbal operation.
 GimbalOverlay computeGimbal(const Rect2D& viewport, ViewMode mode, const CameraState& camera)
 {
@@ -110,7 +118,6 @@ GimbalOverlay computeGimbal(const Rect2D& viewport, ViewMode mode, const CameraS
     float baseYaw = 0.0f;
     float basePitch = 0.0f;
     float baseRoll = 0.0f;
-    /// Description: Executes the baseOrientation operation.
     baseOrientation(mode, baseYaw, basePitch, baseRoll);
     std::array<Point2D, 3> handles{};
     const std::array<std::array<float, 3>, 3> axes = {std::array<float, 3>{1.0f, 0.0f, 0.0f},
@@ -125,13 +132,13 @@ GimbalOverlay computeGimbal(const Rect2D& viewport, ViewMode mode, const CameraS
         float sx = 0.0f;
         float sy = 0.0f;
         float depth = 0.0f;
-        /// Description: Executes the modeComponents operation.
         modeComponents(mode, rx, ry, rz, sx, sy, depth);
         (void)depth;
         handles[i] = Point2D{center.x + sx * radius * 0.8f, center.y - sy * radius * 0.8f};
     }
     return GimbalOverlay{bounds, center, radius, handles};
 }
+
 /// Description: Executes the pickGimbalAxis operation.
 GimbalAxis pickGimbalAxis(const GimbalOverlay& overlay, const Point2D& mouse)
 {

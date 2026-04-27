@@ -3,7 +3,9 @@
 
 #include "platform/win/DynamicLibraryWin.hpp"
 #include <windows.h>
+
 namespace grav_platform_detail {
+/// Description: Describes the open dynamic library operation contract.
 bool openDynamicLibrary(const std::string& path, NativeLibraryHandle& outHandle,
                         std::string& outError)
 {
@@ -12,21 +14,24 @@ bool openDynamicLibrary(const std::string& path, NativeLibraryHandle& outHandle,
     outHandle = reinterpret_cast<NativeLibraryHandle>(module);
     return module != nullptr;
 }
+
 /// Description: Executes the closeDynamicLibrary operation.
 void closeDynamicLibrary(NativeLibraryHandle& handle)
 {
     if (handle == 0u) {
         return;
     }
-    /// Description: Executes the FreeLibrary operation.
     FreeLibrary(reinterpret_cast<HMODULE>(handle));
     handle = 0u;
 }
+
 /// Description: Executes the isDynamicLibraryOpen operation.
 bool isDynamicLibraryOpen(NativeLibraryHandle handle)
 {
     return handle != 0u;
 }
+
+/// Description: Describes the load dynamic symbol operation contract.
 bool loadDynamicSymbol(NativeLibraryHandle handle, std::string_view name,
                        NativeSymbolAddress& outSymbol, std::string& outError)
 {
@@ -35,7 +40,6 @@ bool loadDynamicSymbol(NativeLibraryHandle handle, std::string_view name,
     if (handle == 0u || name.empty()) {
         return false;
     }
-    /// Description: Executes the symbolName operation.
     const std::string symbolName(name);
     FARPROC raw = GetProcAddress(reinterpret_cast<HMODULE>(handle), symbolName.c_str());
     if (raw == nullptr)

@@ -14,6 +14,7 @@
 #include <QWidget>
 #include <cstddef>
 #include <vector>
+
 namespace grav_qt {
 /// Owns the synchronized XY, XZ, YZ, and 3D particle views.
 class MultiViewWidget : public QWidget {
@@ -48,9 +49,9 @@ public:
     std::size_t octreeOverlayNodeCount() const;
 
 private:
-    /// Description: Executes the applyOctreeOverlay operation.
+    /// Description: Describes the apply octree overlay operation contract.
     void applyOctreeOverlay();
-    /// Description: Executes the rebuildOctreeOverlay operation.
+    /// Description: Describes the rebuild octree overlay operation contract.
     void rebuildOctreeOverlay();
     QPointer<ParticleView> _xy;
     QPointer<ParticleView> _xz;

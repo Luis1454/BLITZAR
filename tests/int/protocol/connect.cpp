@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 #include <thread>
 #include <vector>
+
 namespace grav_test_server_protocol_connect {
 /// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_001_ServerClientParsesStatusAndSnapshotFromRealServer)
@@ -18,24 +19,16 @@ TEST(ServerProtocolTest, TST_INT_PROT_001_ServerClientParsesStatusAndSnapshotFro
     ASSERT_TRUE(server.start(startError)) << startError;
     ServerClient client;
     client.setSocketTimeoutMs(200);
-    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
     ServerClientStatus status{};
     const ServerClientResponse statusResponse = client.getStatus(status);
     ASSERT_TRUE(statusResponse.ok) << statusResponse.error;
-    /// Description: Executes the EXPECT_GT operation.
     EXPECT_GT(status.particleCount, 0u);
-    /// Description: Executes the EXPECT_GT operation.
     EXPECT_GT(status.dt, 0.0f);
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(status.solver.empty());
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(status.integrator.empty());
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(status.faulted);
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(status.faultReason.empty());
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(std::isfinite(status.totalEnergy));
     std::vector<RenderParticle> snapshot;
     ServerClientResponse snapshotResponse{};
@@ -51,21 +44,18 @@ TEST(ServerProtocolTest, TST_INT_PROT_001_ServerClientParsesStatusAndSnapshotFro
             requestedStep = true;
         }
         if (!gotSnapshot) {
-            /// Description: Executes the sleep_for operation.
             std::this_thread::sleep_for(std::chrono::milliseconds(25));
         }
     }
     ASSERT_TRUE(gotSnapshot) << (snapshotResponse.error.empty() ? "snapshot stayed empty"
                                                                 : snapshotResponse.error);
-    /// Description: Executes the ASSERT_FALSE operation.
     ASSERT_FALSE(snapshot.empty());
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(std::isfinite(snapshot.front().x));
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(std::isfinite(snapshot.front().mass));
     client.disconnect();
     server.stop();
 }
+
 /// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_002_ServerClientRecoversAfterRealServerRestartOnSamePort)
 {
@@ -75,40 +65,34 @@ TEST(ServerProtocolTest, TST_INT_PROT_002_ServerClientRecoversAfterRealServerRes
     const std::uint16_t fixedPort = server.port();
     ServerClient client;
     client.setSocketTimeoutMs(200);
-    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(client.connect("127.0.0.1", fixedPort));
     ServerClientStatus status{};
-    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(client.getStatus(status).ok);
     server.stop();
     const ServerClientResponse afterStop = client.getStatus(status);
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(afterStop.ok);
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(afterStop.error.find("[server-client] sendJson:"), std::string::npos)
         << afterStop.error;
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(client.isConnected());
     ASSERT_TRUE(server.start(startError, fixedPort)) << startError;
-    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(client.connect("127.0.0.1", fixedPort));
     const ServerClientResponse afterRestart = client.getStatus(status);
     EXPECT_TRUE(afterRestart.ok) << afterRestart.error;
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(client.isConnected());
     client.disconnect();
     server.stop();
 }
+
+/// Description: Verifies the TEST behavior.
 TEST(ServerProtocolTest,
      TST_INT_PROT_009_ServerClientRejectsRequestsWithoutConnectionWithOperationContext)
 {
     ServerClient client;
     const ServerClientResponse response = client.sendJson("   ");
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(response.ok);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(response.error, "[server-client] sendJson: not connected");
 }
+
 /// Description: Executes the TEST operation.
 TEST(ServerProtocolTest, TST_INT_PROT_003_ServerClientConnectTimeoutIsBounded)
 {
@@ -117,11 +101,8 @@ TEST(ServerProtocolTest, TST_INT_PROT_003_ServerClientConnectTimeoutIsBounded)
     const auto startedAt = std::chrono::steady_clock::now();
     const bool connected = client.connect("203.0.113.1", 65000u);
     const auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(
-        /// Description: Executes the now operation.
         std::chrono::steady_clock::now() - startedAt);
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(connected);
-    /// Description: Executes the EXPECT_LE operation.
     EXPECT_LE(elapsedMs.count(), 3000)
         << "connect timeout took too long: " << elapsedMs.count() << " ms";
 }

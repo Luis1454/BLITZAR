@@ -6,26 +6,30 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+
 namespace grav_socket {
 typedef std::intptr_t Handle;
+
 /// Description: Defines the MutableBytes data or behavior contract.
 struct MutableBytes {
     std::byte* data = nullptr;
     std::size_t size = 0u;
-    /// Description: Executes the empty operation.
+    /// Description: Describes the empty operation contract.
     bool empty() const;
-    /// Description: Executes the subview operation.
+    /// Description: Describes the subview operation contract.
     MutableBytes subview(std::size_t offset) const;
 };
+
 /// Description: Defines the ConstBytes data or behavior contract.
 struct ConstBytes {
     const std::byte* data = nullptr;
     std::size_t size = 0u;
-    /// Description: Executes the empty operation.
+    /// Description: Describes the empty operation contract.
     bool empty() const;
-    /// Description: Executes the subview operation.
+    /// Description: Describes the subview operation contract.
     ConstBytes subview(std::size_t offset) const;
 };
+
 /// Description: Executes the invalidHandle operation.
 Handle invalidHandle();
 /// Description: Executes the isValid operation.

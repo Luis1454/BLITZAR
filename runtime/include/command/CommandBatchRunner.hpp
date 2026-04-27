@@ -6,11 +6,12 @@
 #include "command/CommandContext.hpp"
 #include "command/CommandTypes.hpp"
 #include <string>
+
 namespace grav_cmd {
 /// Description: Defines the CommandBatchRunner data or behavior contract.
 class CommandBatchRunner final {
 public:
-    /// Description: Executes the runScriptFile operation.
+    /// Description: Describes the run script file operation contract.
     static CommandResult runScriptFile(const std::string& path, CommandExecutionContext& context);
 };
 } // namespace grav_cmd

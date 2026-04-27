@@ -12,6 +12,7 @@
 
 // Definition moved to ParticleSystemPrelude.inl
 
+/// Description: Describes the sph grid cell index operation contract.
 __device__ int sphGridCellIndex(
     float px, float py, float pz,
     const SphGridParams &grid)
@@ -25,6 +26,7 @@ __device__ int sphGridCellIndex(
     return cx + cy * grid.gridSize + cz * grid.gridSize * grid.gridSize;
 }
 
+/// Description: Describes the compute sph cell hash kernel operation contract.
 __global__ void computeSphCellHashKernel(
     ParticleSoAView particles,
     IndexHandle outCellHash,
@@ -41,6 +43,7 @@ __global__ void computeSphCellHashKernel(
     outParticleIndex[i] = i;
 }
 
+/// Description: Describes the reset cell bounds kernel operation contract.
 __global__ void resetCellBoundsKernel(
     IndexHandle cellStart,
     IndexHandle cellEnd,
@@ -54,6 +57,7 @@ __global__ void resetCellBoundsKernel(
     cellEnd[i] = -1;
 }
 
+/// Description: Describes the find cell bounds kernel operation contract.
 __global__ void findCellBoundsKernel(
     IndexConstHandle sortedHash,
     IndexHandle cellStart,
@@ -77,20 +81,17 @@ __global__ void findCellBoundsKernel(
 
 // CPU-side comparison sort for cell hashes (simple insertion sort for GPU-built arrays).
 // Used host-side after downloading hash array — avoids needing thrust.
+/// Description: Describes the sort particles by hash operation contract.
 static void sortParticlesByHash(
     int *cellHash, int *particleIndex, int numParticles)
 {
     // Simple O(n log n) sort using index array.
     std::vector<int> order(static_cast<std::size_t>(numParticles));
-    /// Description: Executes the iota operation.
     std::iota(order.begin(), order.end(), 0);
-    /// Description: Executes the sort operation.
     std::sort(order.begin(), order.end(), [&](int a, int b) {
         return cellHash[a] < cellHash[b];
     });
-    /// Description: Executes the tempHash operation.
     std::vector<int> tempHash(static_cast<std::size_t>(numParticles));
-    /// Description: Executes the tempIdx operation.
     std::vector<int> tempIdx(static_cast<std::size_t>(numParticles));
     for (int i = 0; i < numParticles; ++i) {
         tempHash[static_cast<std::size_t>(i)] =
@@ -132,7 +133,6 @@ bool ParticleSystem::buildSphGrid(int numParticles)
     const float extent = std::max(
         {maxX - minX, maxY - minY, maxZ - minZ, cellSize});
     const int gridSize = std::min(256,
-        /// Description: Executes the max operation.
         std::max(1, static_cast<int>(std::ceil(extent / cellSize)) + 2));
     const int totalCells = gridSize * gridSize * gridSize;
     _sphGridSize = gridSize;
@@ -150,12 +150,10 @@ bool ParticleSystem::buildSphGrid(int numParticles)
     const std::size_t cellBytes =
         static_cast<std::size_t>(totalCells) * sizeof(int);
     if (d_sphCellStart) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_sphCellStart);
         d_sphCellStart = nullptr;
     }
     if (d_sphCellEnd) {
-        /// Description: Executes the deallocate operation.
         grav_x::CudaMemoryPool::deallocate(d_sphCellEnd);
         d_sphCellEnd = nullptr;
     }

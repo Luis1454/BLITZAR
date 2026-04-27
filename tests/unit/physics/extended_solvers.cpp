@@ -6,14 +6,13 @@
 #include <cmath>
 #include <gtest/gtest.h>
 #include <string>
+
 namespace testsupport {
 /// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_014_OctreeCpuDeterministicReplay)
 {
     ScenarioConfig cfg = buildDiskOrbitScenario(128u, 0.005f, 20u, 22222u, "octree_cpu", "rk4");
-    /// Description: Executes the setScenarioEnergySampling operation.
     setScenarioEnergySampling(cfg, 1u, 128u);
-    /// Description: Executes the setScenarioTiming operation.
     setScenarioTiming(cfg, 6000, 6000);
     cfg.octreeTheta = 0.5f;
     cfg.octreeSoftening = 0.1f;
@@ -29,13 +28,12 @@ TEST(PhysicsTest, TST_UNT_PHYS_014_OctreeCpuDeterministicReplay)
     std::string replayError;
     EXPECT_TRUE(haveExactReplayMatch(runA, runB, replayError)) << replayError;
 }
+
 /// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_015_OctreeGpuDeterministicReplay)
 {
     ScenarioConfig cfg = buildDiskOrbitScenario(128u, 0.004f, 25u, 33333u, "octree_gpu", "euler");
-    /// Description: Executes the setScenarioEnergySampling operation.
     setScenarioEnergySampling(cfg, 1u, 128u);
-    /// Description: Executes the setScenarioTiming operation.
     setScenarioTiming(cfg, 6000, 6000);
     cfg.octreeTheta = 0.35f;
     cfg.octreeSoftening = 0.08f;
@@ -54,13 +52,12 @@ TEST(PhysicsTest, TST_UNT_PHYS_015_OctreeGpuDeterministicReplay)
     std::string replayError;
     EXPECT_TRUE(haveExactReplayMatch(runA, runB, replayError)) << replayError;
 }
+
 /// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_016_SphStabilityBoundedDrift)
 {
     ScenarioConfig cfg = buildDiskOrbitScenario(96u, 0.002f, 30u, 44444u, "pairwise_cuda", "euler");
-    /// Description: Executes the setScenarioEnergySampling operation.
     setScenarioEnergySampling(cfg, 1u, 96u);
-    /// Description: Executes the setScenarioTiming operation.
     setScenarioTiming(cfg, 8000, 8000);
     cfg.sphEnabled = true;
     cfg.initState.includeCentralBody = false;
@@ -85,14 +82,10 @@ TEST(PhysicsTest, TST_UNT_PHYS_016_SphStabilityBoundedDrift)
         GTEST_SKIP() << "pairwise_cuda unavailable in this environment (actual solver="
                      << runA.stats.solverName << ")";
     }
-    /// Description: Executes the EXPECT_LE operation.
     EXPECT_LE(runA.maxAbsEnergyDriftPct, 25.0f);
     for (const auto& p : runA.final) {
-        /// Description: Executes the EXPECT_TRUE operation.
         EXPECT_TRUE(std::isfinite(p.x));
-        /// Description: Executes the EXPECT_TRUE operation.
         EXPECT_TRUE(std::isfinite(p.y));
-        /// Description: Executes the EXPECT_TRUE operation.
         EXPECT_TRUE(std::isfinite(p.z));
         const float r = std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
         EXPECT_LE(r, 20.0f) << "Particle escaped bounded region due to instability";

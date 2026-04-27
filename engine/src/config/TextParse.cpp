@@ -9,12 +9,14 @@
 #include <string>
 #include <system_error>
 #include <type_traits>
+
 namespace grav_text {
 /// Description: Executes the trimView operation.
 std::string_view trimView(std::string_view value)
 {
-    const auto begin = std::find_if_not(value.begin(), value.end(),
-                                        [](unsigned char c) { return std::isspace(c) != 0; });
+    const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char c) {
+        return std::isspace(c) != 0;
+    });
     const auto end = std::find_if_not(value.rbegin(), value.rend(), [](unsigned char c) {
                          return std::isspace(c) != 0;
                      }).base();
@@ -24,6 +26,7 @@ std::string_view trimView(std::string_view value)
     const std::size_t trimmedSize = static_cast<std::size_t>(std::distance(begin, end));
     return value.substr(beginOffset, trimmedSize);
 }
+
 /// Description: Executes the parseSigned64 operation.
 bool parseSigned64(std::string_view rawValue, long long& out)
 {
@@ -33,7 +36,6 @@ bool parseSigned64(std::string_view rawValue, long long& out)
     }
     long long parsed = 0;
     const auto [ptr, ec] =
-        /// Description: Executes the from_chars operation.
         std::from_chars(trimmed.data(), trimmed.data() + trimmed.size(), parsed, 10);
     if (ec != std::errc{} || ptr != (trimmed.data() + trimmed.size())) {
         return false;
@@ -41,6 +43,7 @@ bool parseSigned64(std::string_view rawValue, long long& out)
     out = parsed;
     return true;
 }
+
 /// Description: Executes the parseUnsigned64 operation.
 bool parseUnsigned64(std::string_view rawValue, unsigned long long& out)
 {
@@ -50,7 +53,6 @@ bool parseUnsigned64(std::string_view rawValue, unsigned long long& out)
     }
     unsigned long long parsed = 0;
     const auto [ptr, ec] =
-        /// Description: Executes the from_chars operation.
         std::from_chars(trimmed.data(), trimmed.data() + trimmed.size(), parsed, 10);
     if (ec != std::errc{} || ptr != (trimmed.data() + trimmed.size())) {
         return false;
@@ -58,6 +60,7 @@ bool parseUnsigned64(std::string_view rawValue, unsigned long long& out)
     out = parsed;
     return true;
 }
+
 /// Description: Executes the parseFloat64 operation.
 bool parseFloat64(std::string_view rawValue, double& out)
 {
@@ -75,12 +78,12 @@ bool parseFloat64(std::string_view rawValue, double& out)
     if (!input.eof())
         return false;
     if (parsedFallback < -std::numeric_limits<double>::max() ||
-        /// Description: Executes the max operation.
         parsedFallback > std::numeric_limits<double>::max())
         return false;
     out = static_cast<double>(parsedFallback);
     return true;
 }
+
 /// Description: Executes the parseNumber operation.
 template <typename NumberType> bool parseNumber(std::string_view rawValue, NumberType& out)
 {
@@ -109,7 +112,6 @@ template <typename NumberType> bool parseNumber(std::string_view rawValue, Numbe
             return true;
         }
     }
-    /// Description: Executes the constexpr operation.
     else if constexpr (std::is_floating_point_v<NumberType>) {
         double parsed = 0.0;
         if (!parseFloat64(rawValue, parsed)) {
@@ -127,14 +129,25 @@ template <typename NumberType> bool parseNumber(std::string_view rawValue, Numbe
         return false;
     }
 }
+
+/// Description: Describes the parse number<short> operation contract.
 template bool parseNumber<short>(std::string_view rawValue, short& out);
+/// Description: Describes the short> operation contract.
 template bool parseNumber<unsigned short>(std::string_view rawValue, unsigned short& out);
+/// Description: Describes the parse number<int> operation contract.
 template bool parseNumber<int>(std::string_view rawValue, int& out);
+/// Description: Describes the int> operation contract.
 template bool parseNumber<unsigned int>(std::string_view rawValue, unsigned int& out);
+/// Description: Describes the parse number<long> operation contract.
 template bool parseNumber<long>(std::string_view rawValue, long& out);
+/// Description: Describes the long> operation contract.
 template bool parseNumber<unsigned long>(std::string_view rawValue, unsigned long& out);
+/// Description: Describes the long> operation contract.
 template bool parseNumber<long long>(std::string_view rawValue, long long& out);
+/// Description: Describes the long> operation contract.
 template bool parseNumber<unsigned long long>(std::string_view rawValue, unsigned long long& out);
+/// Description: Describes the parse number<float> operation contract.
 template bool parseNumber<float>(std::string_view rawValue, float& out);
+/// Description: Describes the parse number<double> operation contract.
 template bool parseNumber<double>(std::string_view rawValue, double& out);
 } // namespace grav_text

@@ -14,6 +14,7 @@
 #include <string>
 /// Description: Defines the SimulationStats data or behavior contract.
 struct SimulationStats;
+
 namespace grav_qt {
 /// Collects the runtime fields required to render the workspace status area.
 struct MainWindowPresentationInput final {
@@ -30,6 +31,7 @@ struct MainWindowPresentationInput final {
     float uiTickFps = 0.0f;
     float simulationHorizonSeconds = 0.0f;
 };
+
 /// Holds the formatted strings consumed by status and trace widgets.
 struct MainWindowPresentation final {
     std::string headlineText;
@@ -40,6 +42,7 @@ struct MainWindowPresentation final {
     std::string statusText;
     std::string consoleTrace;
 };
+
 /// Formats runtime telemetry into stable Qt presentation strings.
 class MainWindowPresenter final {
 public:

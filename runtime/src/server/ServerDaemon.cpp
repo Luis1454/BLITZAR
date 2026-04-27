@@ -16,11 +16,13 @@
 #include <string>
 #include <string_view>
 #include <utility>
+
 /// Description: Executes the trim operation.
 static std::string trim(const std::string& input)
 {
-    const auto begin = std::find_if_not(input.begin(), input.end(),
-                                        [](unsigned char c) { return std::isspace(c) != 0; });
+    const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
+        return std::isspace(c) != 0;
+    });
     const auto end = std::find_if_not(input.rbegin(), input.rend(), [](unsigned char c) {
                          return std::isspace(c) != 0;
                      }).base();
@@ -28,11 +30,13 @@ static std::string trim(const std::string& input)
         return {};
     return std::string(begin, end);
 }
+
 /// Description: Executes the asBytes operation.
 static grav_socket::ConstBytes asBytes(std::string_view text)
 {
     return grav_socket::ConstBytes{reinterpret_cast<const std::byte*>(text.data()), text.size()};
 }
+
 /// Description: Executes the sendAll operation.
 static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes bytes)
 {
@@ -45,11 +49,13 @@ static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes by
     }
     return true;
 }
+
 /// Description: Executes the serverDaemonError operation.
 static std::string serverDaemonError(std::string_view operation, std::string_view detail)
 {
     return std::string("[ipc] ") + std::string(operation) + ": " + std::string(detail);
 }
+
 /// Description: Executes the ServerDaemon operation.
 ServerDaemon::ServerDaemon(SimulationServer& server, std::string authToken)
     : _server(server),
@@ -62,16 +68,16 @@ ServerDaemon::ServerDaemon(SimulationServer& server, std::string authToken)
       _port(0),
       _networkInitialized(false),
       _socketMutex(),
-      /// Description: Executes the _clientThreads operation.
       _clientThreads()
 {
 }
+
 /// Description: Releases resources owned by ServerDaemon.
 ServerDaemon::~ServerDaemon()
 {
-    /// Description: Executes the stop operation.
     stop();
 }
+
 /// Description: Executes the start operation.
 bool ServerDaemon::start(std::uint16_t port, const std::string& bindAddress)
 {
@@ -87,30 +93,23 @@ bool ServerDaemon::start(std::uint16_t port, const std::string& bindAddress)
         const grav_socket::Handle listenSocket = grav_socket::createTcpSocket();
         if (!grav_socket::isValid(listenSocket)) {
             std::cerr << "[ipc] failed to create socket\n";
-            /// Description: Executes the stop operation.
             stop();
             return false;
         }
-        /// Description: Executes the setReuseAddress operation.
         grav_socket::setReuseAddress(listenSocket, true);
         if (!grav_socket::bindIpv4(listenSocket, bindAddress, port)) {
             std::cerr << "[ipc] bind failed on " << bindAddress << ":" << port << "\n";
-            /// Description: Executes the closeSocket operation.
             grav_socket::closeSocket(listenSocket);
-            /// Description: Executes the stop operation.
             stop();
             return false;
         }
         if (!grav_socket::listenSocket(listenSocket, 8)) {
             std::cerr << "[ipc] listen failed\n";
-            /// Description: Executes the closeSocket operation.
             grav_socket::closeSocket(listenSocket);
-            /// Description: Executes the stop operation.
             stop();
             return false;
         }
         {
-            /// Description: Executes the lock operation.
             std::lock_guard<std::mutex> lock(_socketMutex);
             _listenSocket = listenSocket;
             _bindAddress = bindAddress;
@@ -123,17 +122,16 @@ bool ServerDaemon::start(std::uint16_t port, const std::string& bindAddress)
     }
     catch (const std::exception& ex) {
         std::cerr << serverDaemonError("start", ex.what()) << "\n";
-        /// Description: Executes the stop operation.
         stop();
         return false;
     }
     catch (...) {
         std::cerr << serverDaemonError("start", "non-standard exception") << "\n";
-        /// Description: Executes the stop operation.
         stop();
         return false;
     }
 }
+
 /// Description: Executes the stop operation.
 void ServerDaemon::stop()
 {
@@ -141,12 +139,10 @@ void ServerDaemon::stop()
         _running.store(false);
         grav_socket::Handle listenSocket;
         {
-            /// Description: Executes the lock operation.
             std::lock_guard<std::mutex> lock(_socketMutex);
             listenSocket = _listenSocket;
             _listenSocket = grav_socket::invalidHandle();
         }
-        /// Description: Executes the closeSocket operation.
         grav_socket::closeSocket(listenSocket);
         if (_acceptThread.joinable()) {
             _acceptThread.join();
@@ -157,7 +153,6 @@ void ServerDaemon::stop()
             }
         _clientThreads.clear();
         if (_networkInitialized) {
-            /// Description: Executes the shutdownSocketLayer operation.
             grav_socket::shutdownSocketLayer();
             _networkInitialized = false;
         }
@@ -173,30 +168,31 @@ void ServerDaemon::stop()
     _clientThreads.clear();
     if (_networkInitialized) {
         try {
-            /// Description: Executes the shutdownSocketLayer operation.
             grav_socket::shutdownSocketLayer();
         }
         catch (const std::exception& ex) {
             std::cerr << serverDaemonError("stop shutdownSocketLayer", ex.what()) << "\n";
         }
         catch (...) {
-            /// Description: Executes the serverDaemonError operation.
             std::cerr << serverDaemonError("stop shutdownSocketLayer", "non-standard exception")
                       << "\n";
         }
         _networkInitialized = false;
     }
 }
+
 /// Description: Executes the isRunning operation.
 bool ServerDaemon::isRunning() const
 {
     return _running.load();
 }
+
 /// Description: Executes the shutdownRequested operation.
 bool ServerDaemon::shutdownRequested() const
 {
     return _shutdownRequested.load();
 }
+
 /// Description: Executes the acceptLoop operation.
 void ServerDaemon::acceptLoop()
 {
@@ -204,7 +200,6 @@ void ServerDaemon::acceptLoop()
         while (_running.load()) {
             grav_socket::Handle listenSocket;
             {
-                /// Description: Executes the lock operation.
                 std::lock_guard<std::mutex> lock(_socketMutex);
                 listenSocket = _listenSocket;
             }
@@ -218,7 +213,6 @@ void ServerDaemon::acceptLoop()
             if (!grav_socket::isValid(clientSocket)) {
                 continue;
             }
-            /// Description: Executes the setSocketTimeoutMs operation.
             grav_socket::setSocketTimeoutMs(clientSocket, 500);
             _clientThreads.emplace_back(&ServerDaemon::handleClient, this, clientSocket);
         }
@@ -232,6 +226,7 @@ void ServerDaemon::acceptLoop()
         _running.store(false);
     }
 }
+
 /// Description: Executes the handleClient operation.
 void ServerDaemon::handleClient(SocketHandle client)
 {
@@ -264,32 +259,28 @@ void ServerDaemon::handleClient(SocketHandle client)
                 }
                 const std::string response = processRequest(request) + "\n";
                 if (!sendAll(clientSocket, asBytes(response))) {
-                    /// Description: Executes the closeSocket operation.
                     grav_socket::closeSocket(clientSocket);
                     return;
                 }
                 if (_shutdownRequested.load()) {
-                    /// Description: Executes the closeSocket operation.
                     grav_socket::closeSocket(clientSocket);
                     return;
                 }
                 newline = buffer.find('\n');
             }
         }
-        /// Description: Executes the closeSocket operation.
         grav_socket::closeSocket(clientSocket);
     }
     catch (const std::exception& ex) {
         std::cerr << serverDaemonError("handleClient", ex.what()) << "\n";
-        /// Description: Executes the closeSocket operation.
         grav_socket::closeSocket(static_cast<grav_socket::Handle>(client));
     }
     catch (...) {
         std::cerr << serverDaemonError("handleClient", "non-standard exception") << "\n";
-        /// Description: Executes the closeSocket operation.
         grav_socket::closeSocket(static_cast<grav_socket::Handle>(client));
     }
 }
+
 /// Description: Executes the processRequest operation.
 std::string ServerDaemon::processRequest(const std::string& request)
 {
@@ -307,7 +298,6 @@ std::string ServerDaemon::processRequest(const std::string& request)
             return grav_protocol::ServerJsonCodec::makeStatusResponse(_server.getStats());
         if (cmd == grav_protocol::GetSnapshot) {
             std::uint32_t maxPoints = grav_protocol::kSnapshotDefaultPoints;
-            /// Description: Executes the readNumber operation.
             grav_protocol::ServerJsonCodec::readNumber(request, "max_points", maxPoints);
             maxPoints = grav_protocol::clampSnapshotPoints(maxPoints);
             std::vector<RenderParticle> snapshot;
@@ -339,7 +329,6 @@ std::string ServerDaemon::processRequest(const std::string& request)
         }
         if (cmd == grav_protocol::Step) {
             int count = 1;
-            /// Description: Executes the readNumber operation.
             grav_protocol::ServerJsonCodec::readNumber(request, "count", count);
             if (count < 1)
                 count = 1;
@@ -519,7 +508,6 @@ std::string ServerDaemon::processRequest(const std::string& request)
                 return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "missing path");
             }
             std::string format = "auto";
-            /// Description: Executes the readString operation.
             grav_protocol::ServerJsonCodec::readString(request, "format", format);
             _server.setInitialStateFile(path, format);
             _server.requestReset();
@@ -528,7 +516,6 @@ std::string ServerDaemon::processRequest(const std::string& request)
         if (cmd == grav_protocol::Export) {
             std::string path;
             std::string format;
-            /// Description: Executes the readString operation.
             grav_protocol::ServerJsonCodec::readString(request, "path", path);
             if (!grav_protocol::ServerJsonCodec::readString(request, "format", format)) {
                 format = "vtk";

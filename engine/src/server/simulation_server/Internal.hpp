@@ -67,8 +67,10 @@ bool isValidImportedParticleCount(std::size_t count);
 bool isAutoSolverFallbackEnabled();
 /// Description: Executes the shouldForceCudaFailureOnceForTesting operation.
 bool shouldForceCudaFailureOnceForTesting(std::string_view solver);
+/// Description: Describes the coerce config solver integrator compatibility operation contract.
 bool coerceConfigSolverIntegratorCompatibility(std::string& solver, std::string& integrator,
                                                std::string_view source);
+/// Description: Describes the auto target substep dt operation contract.
 float autoTargetSubstepDt(std::string_view solver, bool eulerIntegrator, bool sphEnabled,
                           std::size_t liveParticleCount);
 /// Description: Executes the openingCriterionFromCanonicalName operation.
@@ -81,9 +83,11 @@ float computeOctreeDistributionScore(const std::vector<Particle>& particles);
 float profileThetaBias(std::string_view performanceProfile);
 /// Description: Executes the particleThetaBias operation.
 float particleThetaBias(std::size_t particleCount);
+/// Description: Describes the resolve octree theta operation contract.
 float resolveOctreeTheta(float configuredTheta, bool autoTune, float autoMin, float autoMax,
                          std::string_view performanceProfile,
                          const std::vector<Particle>& particles, float distributionScore);
+/// Description: Describes the log effective execution modes operation contract.
 void logEffectiveExecutionModes(
     std::string_view solver, std::string_view integrator, std::string_view performanceProfile,
     std::string_view openingCriterion, float theta, float effectiveTheta, bool thetaAutoTune,
@@ -92,6 +96,7 @@ void logEffectiveExecutionModes(
     float physicsMinTheta, bool sphEnabled, float configuredSubstepTargetDt,
     std::uint32_t configuredMaxSubsteps, std::uint32_t snapshotPublishPeriodMs, float serverFps,
     float energyDriftPct);
+/// Description: Describes the default export path operation contract.
 std::string defaultExportPath(const std::string& directory, const std::string& format,
                               std::uint64_t step);
 /// Description: Executes the guessFormatFromPath operation.
@@ -110,12 +115,14 @@ void writeBeI32(std::ostream& out, std::int32_t value);
 void writeBeF32(std::ostream& out, float value);
 /// Description: Executes the consumeOptionalLineBreak operation.
 void consumeOptionalLineBreak(std::istream& in);
+
 /// Description: Defines the BinarySnapshotHeader data or behavior contract.
 struct BinarySnapshotHeader {
     char magic[8];
     std::uint32_t version;
     std::uint32_t count;
 };
+
 /// Description: Defines the BinarySnapshotParticle data or behavior contract.
 struct BinarySnapshotParticle {
     float px;
@@ -127,6 +134,7 @@ struct BinarySnapshotParticle {
     float mass;
     float temperature;
 };
+
 constexpr char kBinarySnapshotMagic[8] = {'N', 'B', 'S', 'I', 'M', 'B', 'I', 'N'};
 constexpr std::uint32_t kBinarySnapshotVersion = 1u;
 constexpr char kCheckpointMagic[8] = {'B', 'L', 'T', 'Z', 'C', 'H', 'K', '1'};
@@ -136,6 +144,7 @@ constexpr std::uint32_t kCheckpointFlagHasEnergyBaseline = 1u << 1;
 constexpr std::uint32_t kCheckpointFlagSphEnabled = 1u << 2;
 constexpr std::uint32_t kCheckpointFlagThetaAutoTune = 1u << 3;
 constexpr std::uint32_t kCheckpointFlagGpuTelemetryEnabled = 1u << 4;
+
 /// Description: Defines the AsyncExportJob data or behavior contract.
 struct AsyncExportJob final {
     std::string outputPath;
@@ -145,6 +154,7 @@ struct AsyncExportJob final {
     std::string integratorModeLabel;
     std::uint64_t step = 0u;
 };
+
 /// Description: Defines the SimulationServer data or behavior contract.
 struct SimulationServer::ExportQueueState final {
     std::mutex mutex;
@@ -153,6 +163,7 @@ struct SimulationServer::ExportQueueState final {
     bool stopRequested = false;
     std::thread worker;
 };
+
 /// Description: Defines the SimulationCheckpointState data or behavior contract.
 struct SimulationCheckpointState final {
     SimulationConfig config;
@@ -164,6 +175,7 @@ struct SimulationCheckpointState final {
     float energyBaseline = 0.0f;
     bool gpuTelemetryEnabled = false;
 };
+
 /// Description: Defines the CheckpointSaveResult data or behavior contract.
 struct CheckpointSaveResult final {
     std::mutex mutex;
@@ -172,16 +184,19 @@ struct CheckpointSaveResult final {
     bool ok = false;
     std::string error;
 };
+
 /// Description: Defines the PendingCheckpointSaveRequest data or behavior contract.
 struct PendingCheckpointSaveRequest final {
     std::string outputPath;
     std::shared_ptr<CheckpointSaveResult> result;
 };
+
 /// Description: Defines the SimulationCheckpointQueueState data or behavior contract.
 struct SimulationCheckpointQueueState final {
     std::mutex mutex;
     std::deque<PendingCheckpointSaveRequest> saveRequests;
 };
+
 /// Description: Executes the readLeU64 operation.
 bool readLeU64(std::istream& in, std::uint64_t& outValue);
 /// Description: Executes the writeLeU64 operation.
@@ -198,10 +213,13 @@ bool readLeF32(std::istream& in, float& outValue);
 bool writeSizedString(std::ostream& out, const std::string& value);
 /// Description: Executes the readSizedString operation.
 bool readSizedString(std::istream& in, std::string& outValue, std::size_t maxLength);
+/// Description: Describes the is supported checkpoint string operation contract.
 bool isSupportedCheckpointString(std::string_view solver, std::string_view integrator,
                                  std::string_view profile, std::string_view criterion);
+/// Description: Describes the write checkpoint file operation contract.
 bool writeCheckpointFile(const std::string& outputPath, const SimulationCheckpointState& state,
                          std::string* outError);
+/// Description: Describes the read checkpoint file operation contract.
 bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState& outState,
                         std::string* outError);
 /// Description: Executes the writeExportSnapshotFile operation.
@@ -212,10 +230,12 @@ bool parseBinarySnapshot(const std::string& inputPath, std::vector<Particle>& ou
 bool parseXyzSnapshot(const std::string& inputPath, std::vector<Particle>& outParticles);
 /// Description: Executes the parseVtkSnapshot operation.
 bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outParticles);
+/// Description: Describes the parse snapshot by format operation contract.
 bool parseSnapshotByFormat(std::string_view format, const std::string& inputPath,
                            std::vector<Particle>& outParticles);
 /// Description: Executes the parseSnapshotWithFallback operation.
 bool parseSnapshotWithFallback(const std::string& inputPath, std::vector<Particle>& outParticles);
+/// Description: Describes the build generated state operation contract.
 bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t particleCount,
                          const InitialStateConfig& config);
 /// Description: Executes the atomicAddFloat operation.

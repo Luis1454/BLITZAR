@@ -4,6 +4,7 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLE_SOA_VIEW_HPP_
 #define GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLE_SOA_VIEW_HPP_
 #include "physics/Vector.hpp"
+
 /// Description: Defines the ParticleSoAView data or behavior contract.
 struct ParticleSoAView {
     float* posX;
@@ -21,6 +22,7 @@ struct ParticleSoAView {
     int count;
     int _pad[3];
 };
+
 /// Description: Executes the getSoAPosition operation.
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 getSoAPosition(ParticleSoAView view, int i);
 /// Description: Executes the setSoAPosition operation.

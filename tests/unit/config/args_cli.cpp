@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+
 namespace grav_test_config_args_cli {
 /// Description: Executes the toArgViews operation.
 std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage)
@@ -17,20 +18,21 @@ std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage
     return args;
 }
 } // namespace grav_test_config_args_cli
+
 /// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_001_FindsConfigPathInline)
 {
     std::vector<std::string> args = {"app", "--config=custom.ini"};
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(findConfigPathArg(grav_test_config_args_cli::toArgViews(args)), "custom.ini");
 }
+
 /// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_002_FindsConfigPathSeparated)
 {
     std::vector<std::string> args = {"app", "--config", "custom.ini"};
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(findConfigPathArg(grav_test_config_args_cli::toArgViews(args)), "custom.ini");
 }
+
 /// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
 {
@@ -64,39 +66,24 @@ TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
                                      "35",
                                      "--server-snapshot-timeout-ms",
                                      "180"};
-    /// Description: Executes the applyArgsToConfig operation.
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.particleCount, 2048u);
-    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(config.dt, 0.02f);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.solver, "octree_gpu");
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.integrator, "euler");
-    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(config.substepTargetDt, 0.005f);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.maxSubsteps, 12u);
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(config.sphEnabled);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.uiFpsLimit, 75u);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.energyMeasureEverySteps, 2u);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.clientRemoteCommandTimeoutMs, 90u);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.clientRemoteStatusTimeoutMs, 35u);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.clientRemoteSnapshotTimeoutMs, 180u);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(runtime.targetSteps, 333);
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(runtime.exportOnExit);
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(warnings.str().empty());
 }
+
 /// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_004_RejectsInvalidArgumentsAndKeepsPreviousValues)
 {
@@ -108,24 +95,17 @@ TEST(ConfigArgsTest, TST_UNT_CONF_004_RejectsInvalidArgumentsAndKeepsPreviousVal
     const bool initialSphEnabled = config.sphEnabled;
     std::vector<std::string> args = {"app",   "--particle-count", "nope", "--dt", "-1", "--sph",
                                      "maybe", "--unknown",        "value"};
-    /// Description: Executes the applyArgsToConfig operation.
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.particleCount, initialParticleCount);
-    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(config.dt, initialDt);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.sphEnabled, initialSphEnabled);
     const std::string log = warnings.str();
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(log.find("invalid --particle-count"), std::string::npos);
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(log.find("invalid --dt"), std::string::npos);
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(log.find("invalid --sph"), std::string::npos);
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(log.find("unknown option"), std::string::npos);
 }
+
 /// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_005_RejectsInvalidSolverAndIntegratorValues)
 {
@@ -136,34 +116,24 @@ TEST(ConfigArgsTest, TST_UNT_CONF_005_RejectsInvalidSolverAndIntegratorValues)
     const std::string initialIntegrator = config.integrator;
     std::vector<std::string> args = {"app", "--solver", "bad_solver", "--integrator",
                                      "bad_integrator"};
-    /// Description: Executes the applyArgsToConfig operation.
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.solver, initialSolver);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.integrator, initialIntegrator);
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(runtime.hasArgumentError);
     const std::string log = warnings.str();
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(log.find("invalid --solver"), std::string::npos);
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(log.find("invalid --integrator"), std::string::npos);
     runtime = RuntimeArgs{};
     warnings.str("");
     warnings.clear();
     args = {"app", "--solver", "octree_gpu", "--integrator", "rk4"};
-    /// Description: Executes the applyArgsToConfig operation.
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.solver, "octree_gpu");
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.integrator, "rk4");
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(runtime.hasArgumentError);
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(warnings.str().find("unsupported solver/integrator combination"), std::string::npos);
 }
+
 /// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_006_RejectsTrailingGarbageNumericArguments)
 {
@@ -177,26 +147,18 @@ TEST(ConfigArgsTest, TST_UNT_CONF_006_RejectsTrailingGarbageNumericArguments)
     std::vector<std::string> args = {"app",   "--particle-count", "2048abc", "--dt",
                                      "0.01x", "--octree-theta",   "1.4deg",  "--luminosity",
                                      "120%"};
-    /// Description: Executes the applyArgsToConfig operation.
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.particleCount, initialParticleCount);
-    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(config.dt, initialDt);
-    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(config.octreeTheta, initialTheta);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.defaultLuminosity, initialLuminosity);
     const std::string log = warnings.str();
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(log.find("invalid --particle-count"), std::string::npos);
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(log.find("invalid --dt"), std::string::npos);
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(log.find("invalid --octree-theta"), std::string::npos);
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(log.find("invalid --luminosity"), std::string::npos);
 }
+
 /// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_014_ClampsClientParticleCapArgumentToProtocolMax)
 {
@@ -204,15 +166,12 @@ TEST(ConfigArgsTest, TST_UNT_CONF_014_ClampsClientParticleCapArgumentToProtocolM
     RuntimeArgs runtime;
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--client-particle-cap", "50000"};
-    /// Description: Executes the applyArgsToConfig operation.
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.clientParticleCap, grav_protocol::kSnapshotMaxPoints);
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(warnings.str().find("--client-particle-cap clamped"), std::string::npos);
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(runtime.hasArgumentError);
 }
+
 /// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_019_CliAliasesApplyThroughSharedRegistry)
 {
@@ -220,17 +179,13 @@ TEST(ConfigArgsTest, TST_UNT_CONF_019_CliAliasesApplyThroughSharedRegistry)
     RuntimeArgs runtime;
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--structure", "random_cloud", "--size", "24"};
-    /// Description: Executes the applyArgsToConfig operation.
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.presetStructure, "random_cloud");
-    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(config.presetSize, 24.0f);
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(warnings.str().empty());
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(runtime.hasArgumentError);
 }
+
 /// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_022_CliAcceptsCalibrationSceneModes)
 {
@@ -239,17 +194,13 @@ TEST(ConfigArgsTest, TST_UNT_CONF_022_CliAcceptsCalibrationSceneModes)
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--preset-structure", "three_body", "--init-mode",
                                      "plummer_sphere"};
-    /// Description: Executes the applyArgsToConfig operation.
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.presetStructure, "three_body");
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.initMode, "plummer_sphere");
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(warnings.str().empty());
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(runtime.hasArgumentError);
 }
+
 /// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_026_CliPerformanceProfileAppliesInteractivePreset)
 {
@@ -257,27 +208,18 @@ TEST(ConfigArgsTest, TST_UNT_CONF_026_CliPerformanceProfileAppliesInteractivePre
     RuntimeArgs runtime;
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--performance-profile", "interactive"};
-    /// Description: Executes the applyArgsToConfig operation.
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.performanceProfile, "interactive");
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.clientParticleCap, grav_protocol::kSnapshotDefaultPoints);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.snapshotPublishPeriodMs, 50u);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.energyMeasureEverySteps, 30u);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.energySampleLimit, 256u);
-    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(config.substepTargetDt, 0.01f);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(config.maxSubsteps, 4u);
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(warnings.str().empty());
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(runtime.hasArgumentError);
 }
+
 /// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_036_CliPerformanceProfileAppliesBalancedAndQualityPresets)
 {
@@ -287,19 +229,12 @@ TEST(ConfigArgsTest, TST_UNT_CONF_036_CliPerformanceProfileAppliesBalancedAndQua
     std::vector<std::string> balancedArgs = {"app", "--performance-profile", "balanced"};
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(balancedArgs), balanced, runtime,
                       warnings);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(balanced.performanceProfile, "balanced");
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(balanced.clientParticleCap, 8192u);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(balanced.snapshotPublishPeriodMs, 33u);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(balanced.energyMeasureEverySteps, 20u);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(balanced.energySampleLimit, 1024u);
-    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(balanced.substepTargetDt, 0.005f);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(balanced.maxSubsteps, 8u);
     SimulationConfig quality = SimulationConfig::defaults();
     runtime = RuntimeArgs{};
@@ -308,21 +243,15 @@ TEST(ConfigArgsTest, TST_UNT_CONF_036_CliPerformanceProfileAppliesBalancedAndQua
     std::vector<std::string> qualityArgs = {"app", "--performance-profile", "quality"};
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(qualityArgs), quality, runtime,
                       warnings);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(quality.performanceProfile, "quality");
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(quality.clientParticleCap, grav_protocol::kSnapshotMaxPoints);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(quality.snapshotPublishPeriodMs, 16u);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(quality.energyMeasureEverySteps, 10u);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(quality.energySampleLimit, 5000u);
-    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(quality.substepTargetDt, 0.0f);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(quality.maxSubsteps, 32u);
 }
+
 /// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_033_CliRejectsInvalidSiPhysicsParameters)
 {
@@ -331,20 +260,15 @@ TEST(ConfigArgsTest, TST_UNT_CONF_033_CliRejectsInvalidSiPhysicsParameters)
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--physics-max-accel", "0", "--physics-min-softening",
                                      "0",   "--physics-min-dist2", "0"};
-    /// Description: Executes the applyArgsToConfig operation.
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     const std::string log = warnings.str();
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(runtime.hasArgumentError);
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(log.find("[preflight] blocked"), std::string::npos);
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(log.find("physics_max_acceleration [m/s^2]"), std::string::npos);
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(log.find("physics_min_softening [m]"), std::string::npos);
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(log.find("physics_min_distance2 [m^2]"), std::string::npos);
 }
+
 /// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_071_CliExportOnExitRejectsInvalidExplicitBool)
 {
@@ -353,13 +277,11 @@ TEST(ConfigArgsTest, TST_UNT_CONF_071_CliExportOnExitRejectsInvalidExplicitBool)
     runtime.exportOnExit = false;
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--export-on-exit", "banana"};
-    /// Description: Executes the applyArgsToConfig operation.
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(runtime.exportOnExit);
-    /// Description: Executes the EXPECT_NE operation.
     EXPECT_NE(warnings.str().find("invalid bool for --export-on-exit"), std::string::npos);
 }
+
 /// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_072_CliExportOnExitParsesSeparatedBoolValue)
 {
@@ -367,15 +289,12 @@ TEST(ConfigArgsTest, TST_UNT_CONF_072_CliExportOnExitParsesSeparatedBoolValue)
     RuntimeArgs runtime;
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--export-on-exit", "false"};
-    /// Description: Executes the applyArgsToConfig operation.
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(runtime.exportOnExit);
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(runtime.hasArgumentError);
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(warnings.str().empty());
 }
+
 /// Description: Executes the TEST operation.
 TEST(ConfigArgsTest, TST_UNT_CONF_073_CliExportOnExitDefaultsToTrueWithoutValue)
 {
@@ -384,14 +303,9 @@ TEST(ConfigArgsTest, TST_UNT_CONF_073_CliExportOnExitDefaultsToTrueWithoutValue)
     runtime.exportOnExit = false;
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--export-on-exit", "--target-steps", "10"};
-    /// Description: Executes the applyArgsToConfig operation.
     applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(runtime.exportOnExit);
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(runtime.targetSteps, 10);
-    /// Description: Executes the EXPECT_FALSE operation.
     EXPECT_FALSE(runtime.hasArgumentError);
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(warnings.str().empty());
 }

@@ -11,28 +11,30 @@
 #include <vector>
 /// Description: Defines the SimulationServer data or behavior contract.
 class SimulationServer;
+
 /// Description: Defines the ServerDaemon data or behavior contract.
 class ServerDaemon {
 public:
+    /// Description: Describes the server daemon operation contract.
     explicit ServerDaemon(SimulationServer& server, std::string authToken = {});
     /// Description: Releases resources owned by ServerDaemon.
     ~ServerDaemon();
-    /// Description: Executes the start operation.
+    /// Description: Describes the start operation contract.
     bool start(std::uint16_t port, const std::string& bindAddress = "127.0.0.1");
-    /// Description: Executes the stop operation.
+    /// Description: Describes the stop operation contract.
     void stop();
-    /// Description: Executes the isRunning operation.
+    /// Description: Describes the is running operation contract.
     bool isRunning() const;
-    /// Description: Executes the shutdownRequested operation.
+    /// Description: Describes the shutdown requested operation contract.
     bool shutdownRequested() const;
 
 private:
     typedef std::intptr_t SocketHandle;
-    /// Description: Executes the acceptLoop operation.
+    /// Description: Describes the accept loop operation contract.
     void acceptLoop();
-    /// Description: Executes the handleClient operation.
+    /// Description: Describes the handle client operation contract.
     void handleClient(SocketHandle client);
-    /// Description: Executes the processRequest operation.
+    /// Description: Describes the process request operation contract.
     std::string processRequest(const std::string& request);
     SimulationServer& _server;
     std::atomic<bool> _running;

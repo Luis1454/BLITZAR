@@ -8,45 +8,48 @@
 #include <cstdint>
 #include <string>
 #include <utility>
+
 namespace grav_client {
 /// Description: Defines the RustRuntimeBridgeState data or behavior contract.
 class RustRuntimeBridgeState {
 public:
-    /// Description: Executes the RustRuntimeBridgeState operation.
+    /// Description: Describes the rust runtime bridge state operation contract.
     RustRuntimeBridgeState();
     /// Description: Releases resources owned by RustRuntimeBridgeState.
     ~RustRuntimeBridgeState();
+    /// Description: Describes the rust runtime bridge state operation contract.
     RustRuntimeBridgeState(const RustRuntimeBridgeState&) = delete;
+    /// Description: Describes the operator= operation contract.
     RustRuntimeBridgeState& operator=(const RustRuntimeBridgeState&) = delete;
-    /// Description: Executes the setConnected operation.
+    /// Description: Describes the set connected operation contract.
     void setConnected(bool connected);
-    /// Description: Executes the isConnected operation.
+    /// Description: Describes the is connected operation contract.
     bool isConnected() const;
-    /// Description: Executes the setServerLaunched operation.
+    /// Description: Describes the set server launched operation contract.
     void setServerLaunched(bool launched);
-    /// Description: Executes the serverLaunched operation.
+    /// Description: Describes the server launched operation contract.
     bool serverLaunched() const;
-    /// Description: Executes the setRemoteSnapshotCap operation.
+    /// Description: Describes the set remote snapshot cap operation contract.
     std::uint32_t setRemoteSnapshotCap(std::uint32_t requested);
-    /// Description: Executes the remoteSnapshotCap operation.
+    /// Description: Describes the remote snapshot cap operation contract.
     std::uint32_t remoteSnapshotCap() const;
-    /// Description: Executes the clearPendingCommands operation.
+    /// Description: Describes the clear pending commands operation contract.
     void clearPendingCommands();
-    /// Description: Executes the queuePendingCommand operation.
+    /// Description: Describes the queue pending command operation contract.
     bool queuePendingCommand(const std::string& cmd, const std::string& fields);
-    /// Description: Executes the pendingCommandCount operation.
+    /// Description: Describes the pending command count operation contract.
     std::size_t pendingCommandCount() const;
-    /// Description: Executes the pendingCommandAt operation.
+    /// Description: Describes the pending command at operation contract.
     std::pair<std::string, std::string> pendingCommandAt(std::size_t index) const;
-    /// Description: Executes the erasePendingPrefix operation.
+    /// Description: Describes the erase pending prefix operation contract.
     void erasePendingPrefix(std::size_t count);
-    /// Description: Executes the linkStateLabel operation.
+    /// Description: Describes the link state label operation contract.
     std::string linkStateLabel() const;
-    /// Description: Executes the serverOwnerLabel operation.
+    /// Description: Describes the server owner label operation contract.
     std::string serverOwnerLabel() const;
 
 private:
-    /// Description: Executes the copyStringView operation.
+    /// Description: Describes the copy string view operation contract.
     static std::string copyStringView(blitzar_runtime_string_view view);
     blitzar_runtime_bridge_t* _state;
 };

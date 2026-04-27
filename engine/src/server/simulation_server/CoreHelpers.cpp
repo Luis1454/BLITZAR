@@ -2,18 +2,22 @@
 // Purpose: Engine implementation for the BLITZAR simulation core.
 
 #include "Internal.hpp"
+
 /// Description: Executes the toLower operation.
 std::string toLower(std::string value)
 {
-    std::transform(value.begin(), value.end(), value.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
     return value;
 }
+
 /// Description: Executes the trim operation.
 std::string trim(std::string value)
 {
-    const auto begin = std::find_if_not(value.begin(), value.end(),
-                                        [](unsigned char c) { return std::isspace(c) != 0; });
+    const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char c) {
+        return std::isspace(c) != 0;
+    });
     const auto end = std::find_if_not(value.rbegin(), value.rend(), [](unsigned char c) {
                          return std::isspace(c) != 0;
                      }).base();
@@ -21,6 +25,7 @@ std::string trim(std::string value)
         return {};
     return std::string(begin, end);
 }
+
 /// Description: Executes the normalizeSnapshotFormat operation.
 std::string normalizeSnapshotFormat(std::string format)
 {
@@ -37,6 +42,7 @@ std::string normalizeSnapshotFormat(std::string format)
     }
     return format;
 }
+
 /// Description: Executes the solverModeFromCanonicalName operation.
 ParticleSystem::SolverMode solverModeFromCanonicalName(std::string_view name)
 {
@@ -50,6 +56,7 @@ ParticleSystem::SolverMode solverModeFromCanonicalName(std::string_view name)
     }
     return ParticleSystem::SolverMode::PairwiseCuda;
 }
+
 /// Description: Executes the integratorModeFromCanonicalName operation.
 ParticleSystem::IntegratorMode integratorModeFromCanonicalName(std::string_view name)
 {
@@ -62,6 +69,7 @@ ParticleSystem::IntegratorMode integratorModeFromCanonicalName(std::string_view 
     }
     return ParticleSystem::IntegratorMode::Euler;
 }
+
 /// Description: Executes the solverLabel operation.
 std::string_view solverLabel(ParticleSystem::SolverMode mode)
 {
@@ -75,40 +83,45 @@ std::string_view solverLabel(ParticleSystem::SolverMode mode)
         return "pairwise_cuda";
     }
 }
+
 /// Description: Executes the resolvePublishedSnapshotCap operation.
 std::uint32_t resolvePublishedSnapshotCap(std::uint32_t drawCap)
 {
     const std::uint32_t clampedDrawCap =
-        /// Description: Executes the clampSnapshotPoints operation.
         grav_protocol::clampSnapshotPoints(std::max(grav_protocol::kSnapshotMinPoints, drawCap));
     const std::uint32_t oversampled =
         std::min<std::uint32_t>(grav_protocol::kSnapshotMaxPoints,
                                 std::max<std::uint32_t>(clampedDrawCap, clampedDrawCap * 2u));
     return std::max(grav_protocol::kSnapshotMinPoints, oversampled);
 }
+
 /// Description: Executes the readRawBytes operation.
 bool readRawBytes(std::istream& in, std::byte* data, std::size_t size)
 {
     return static_cast<bool>(
         in.read(reinterpret_cast<char*>(data), static_cast<std::streamsize>(size)));
 }
+
 /// Description: Executes the writeRawBytes operation.
 bool writeRawBytes(std::ostream& out, const std::byte* data, std::size_t size)
 {
     out.write(reinterpret_cast<const char*>(data), static_cast<std::streamsize>(size));
     return static_cast<bool>(out);
 }
+
 /// Description: Executes the readEnvironment operation.
 std::string readEnvironment(std::string_view key)
 {
     const std::optional<std::string> value = grav_env::get(key);
     return value.value_or(std::string{});
 }
+
 /// Description: Executes the isValidImportedParticleCount operation.
 bool isValidImportedParticleCount(std::size_t count)
 {
     return count >= 2 && count <= kMaxImportedParticles;
 }
+
 /// Description: Executes the isAutoSolverFallbackEnabled operation.
 bool isAutoSolverFallbackEnabled()
 {
@@ -119,6 +132,7 @@ bool isAutoSolverFallbackEnabled()
     const std::string v = toLower(trim(raw));
     return v == "1" || v == "true" || v == "on" || v == "yes";
 }
+
 /// Description: Executes the shouldForceCudaFailureOnceForTesting operation.
 bool shouldForceCudaFailureOnceForTesting(std::string_view solver)
 {
@@ -136,6 +150,8 @@ bool shouldForceCudaFailureOnceForTesting(std::string_view solver)
     bool expected = false;
     return injected.compare_exchange_strong(expected, true, std::memory_order_relaxed);
 }
+
+/// Description: Describes the coerce config solver integrator compatibility operation contract.
 bool coerceConfigSolverIntegratorCompatibility(std::string& solver, std::string& integrator,
                                                std::string_view source)
 {
@@ -147,6 +163,8 @@ bool coerceConfigSolverIntegratorCompatibility(std::string& solver, std::string&
     }
     return false;
 }
+
+/// Description: Describes the auto target substep dt operation contract.
 float autoTargetSubstepDt(std::string_view solver, bool eulerIntegrator, bool sphEnabled,
                           std::size_t liveParticleCount)
 {
@@ -164,6 +182,7 @@ float autoTargetSubstepDt(std::string_view solver, bool eulerIntegrator, bool sp
         return 0.001f;
     return 0.0005f;
 }
+
 /// Description: Executes the openingCriterionFromCanonicalName operation.
 OctreeOpeningCriterion openingCriterionFromCanonicalName(std::string_view name)
 {
@@ -176,11 +195,13 @@ OctreeOpeningCriterion openingCriterionFromCanonicalName(std::string_view name)
     }
     return OctreeOpeningCriterion::CenterOfMass;
 }
+
 /// Description: Executes the clampThetaBound operation.
 float clampThetaBound(float value)
 {
     return std::clamp(value, 0.05f, 4.0f);
 }
+
 /// Description: Executes the computeOctreeDistributionScore operation.
 float computeOctreeDistributionScore(const std::vector<Particle>& particles)
 {

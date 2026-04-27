@@ -6,11 +6,24 @@
 #include "graphics/GraphicsTypes.hpp"
 #include "types/SimulationTypes.hpp"
 #include <array>
+
 namespace grav {
 /// Description: Enumerates the supported ViewMode values.
-enum class ViewMode { XY, XZ, YZ, Iso, Perspective };
+enum class ViewMode {
+    XY,
+    XZ,
+    YZ,
+    Iso,
+    Perspective
+};
 /// Description: Enumerates the supported GimbalAxis values.
-enum class GimbalAxis { None, X, Y, Z };
+enum class GimbalAxis {
+    None,
+    X,
+    Y,
+    Z
+};
+
 /// Description: Defines the ProjectedPoint data or behavior contract.
 struct ProjectedPoint {
     float x;
@@ -18,12 +31,14 @@ struct ProjectedPoint {
     float depth;
     bool valid;
 };
+
 /// Description: Defines the CameraState data or behavior contract.
 struct CameraState {
     float yaw;
     float pitch;
     float roll;
 };
+
 /// Description: Defines the GimbalOverlay data or behavior contract.
 struct GimbalOverlay {
     Rect2D bounds;
@@ -31,6 +46,8 @@ struct GimbalOverlay {
     float radius;
     std::array<Point2D, 3> handles;
 };
+
+/// Description: Describes the project particle operation contract.
 ProjectedPoint projectParticle(const RenderParticle& particle, ViewMode mode,
                                const CameraState& camera);
 /// Description: Executes the computeGimbal operation.

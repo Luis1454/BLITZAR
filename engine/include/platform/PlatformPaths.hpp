@@ -7,6 +7,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+
 namespace grav_platform {
 /// Description: Executes the executableName operation.
 std::string executableName(std::string_view basename);

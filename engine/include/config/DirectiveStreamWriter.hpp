@@ -7,29 +7,30 @@
 #include <iosfwd>
 #include <string>
 #include <string_view>
+
 namespace grav_config {
 /// Description: Defines the DirectiveStreamWriter data or behavior contract.
 class DirectiveStreamWriter final {
 public:
-    /// Description: Executes the DirectiveStreamWriter operation.
+    /// Description: Describes the directive stream writer operation contract.
     DirectiveStreamWriter(std::ostream& out, std::string_view name);
-    /// Description: Executes the writeBool operation.
+    /// Description: Describes the write bool operation contract.
     void writeBool(std::string_view key, bool value);
-    /// Description: Executes the writeFloat operation.
+    /// Description: Describes the write float operation contract.
     void writeFloat(std::string_view key, float value);
-    /// Description: Executes the writeInt operation.
+    /// Description: Describes the write int operation contract.
     void writeInt(std::string_view key, int value);
-    /// Description: Executes the writeString operation.
+    /// Description: Describes the write string operation contract.
     void writeString(std::string_view key, std::string_view value);
-    /// Description: Executes the writeQuotedString operation.
+    /// Description: Describes the write quoted string operation contract.
     void writeQuotedString(std::string_view key, const std::string& value);
-    /// Description: Executes the writeUint32 operation.
+    /// Description: Describes the write uint32 operation contract.
     void writeUint32(std::string_view key, std::uint32_t value);
-    /// Description: Executes the finish operation.
+    /// Description: Describes the finish operation contract.
     void finish();
 
 private:
-    /// Description: Executes the writeKey operation.
+    /// Description: Describes the write key operation contract.
     void writeKey(std::string_view key);
     std::ostream& _out;
     bool _hasField;

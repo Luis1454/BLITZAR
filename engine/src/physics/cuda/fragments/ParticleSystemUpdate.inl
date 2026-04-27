@@ -37,7 +37,6 @@ bool ParticleSystem::update(float deltaTime) {
         const int numBlocks = (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
 
         if (uploadHostState) {
-            /// Description: Executes the syncDeviceState operation.
             syncDeviceState();
         }
 
@@ -98,17 +97,11 @@ bool ParticleSystem::update(float deltaTime) {
             return false;
         }
 
-        /// Description: Executes the swap operation.
         std::swap(d_soaPosX, d_soaNextPosX);
-        /// Description: Executes the swap operation.
         std::swap(d_soaPosY, d_soaNextPosY);
-        /// Description: Executes the swap operation.
         std::swap(d_soaPosZ, d_soaNextPosZ);
-        /// Description: Executes the swap operation.
         std::swap(d_soaVelX, d_soaNextVelX);
-        /// Description: Executes the swap operation.
         std::swap(d_soaVelY, d_soaNextVelY);
-        /// Description: Executes the swap operation.
         std::swap(d_soaVelZ, d_soaNextVelZ);
 
         _hostStateDirty = true;
@@ -141,13 +134,10 @@ bool ParticleSystem::update(float deltaTime) {
                 return false;
             }
             if (thermalActive) {
-                /// Description: Executes the applyThermalModel operation.
                 applyThermalModel(deltaTime);
             }
             if (_cudaRuntimeAvailable) {
-                /// Description: Executes the syncDeviceState operation.
                 syncDeviceState();
-                /// Description: Executes the publishMappedMetrics operation.
                 publishMappedMetrics(deltaTime);
             }
             return true;
@@ -155,9 +145,7 @@ bool ParticleSystem::update(float deltaTime) {
 
         if (_integratorMode == IntegratorMode::Leapfrog) {
             const size_t n = _particles.size();
-            /// Description: Executes the accStart operation.
             std::vector<Vector3> accStart(n);
-            /// Description: Executes the accEnd operation.
             std::vector<Vector3> accEnd(n);
             std::vector<Particle> stage = _particles;
 
@@ -193,24 +181,18 @@ bool ParticleSystem::update(float deltaTime) {
                 return false;
             }
             if (thermalActive) {
-                /// Description: Executes the applyThermalModel operation.
                 applyThermalModel(deltaTime);
             }
             if (_cudaRuntimeAvailable) {
-                /// Description: Executes the syncDeviceState operation.
                 syncDeviceState();
-                /// Description: Executes the publishMappedMetrics operation.
                 publishMappedMetrics(deltaTime);
             }
             return true;
         }
 
         const size_t n = _particles.size();
-        /// Description: Executes the k1x operation.
         std::vector<Vector3> k1x(n), k2x(n), k3x(n), k4x(n);
-        /// Description: Executes the k1v operation.
         std::vector<Vector3> k1v(n), k2v(n), k3v(n), k4v(n);
-        /// Description: Executes the stage operation.
         std::vector<Particle> stage(n);
         auto resetStage = [&]() {
             for (size_t i = 0; i < n; ++i) {
@@ -229,37 +211,30 @@ bool ParticleSystem::update(float deltaTime) {
         for (size_t i = 0; i < n; ++i) {
             k1x[i] = _particles[i].getVelocity();
         }
-        /// Description: Executes the computeOctreeAcceleration operation.
         computeOctreeAcceleration(_particles, k1v);
 
-        /// Description: Executes the resetStage operation.
         resetStage();
         for (size_t i = 0; i < n; ++i) {
             stage[i].setPosition(_particles[i].getPosition() + k1x[i] * (0.5f * deltaTime));
             stage[i].setVelocity(_particles[i].getVelocity() + k1v[i] * (0.5f * deltaTime));
             k2x[i] = stage[i].getVelocity();
         }
-        /// Description: Executes the computeOctreeAcceleration operation.
         computeOctreeAcceleration(stage, k2v);
 
-        /// Description: Executes the resetStage operation.
         resetStage();
         for (size_t i = 0; i < n; ++i) {
             stage[i].setPosition(_particles[i].getPosition() + k2x[i] * (0.5f * deltaTime));
             stage[i].setVelocity(_particles[i].getVelocity() + k2v[i] * (0.5f * deltaTime));
             k3x[i] = stage[i].getVelocity();
         }
-        /// Description: Executes the computeOctreeAcceleration operation.
         computeOctreeAcceleration(stage, k3v);
 
-        /// Description: Executes the resetStage operation.
         resetStage();
         for (size_t i = 0; i < n; ++i) {
             stage[i].setPosition(_particles[i].getPosition() + k3x[i] * deltaTime);
             stage[i].setVelocity(_particles[i].getVelocity() + k3v[i] * deltaTime);
             k4x[i] = stage[i].getVelocity();
         }
-        /// Description: Executes the computeOctreeAcceleration operation.
         computeOctreeAcceleration(stage, k4v);
 
         for (size_t i = 0; i < n; ++i) {
@@ -276,13 +251,10 @@ bool ParticleSystem::update(float deltaTime) {
             return false;
         }
         if (thermalActive) {
-            /// Description: Executes the applyThermalModel operation.
             applyThermalModel(deltaTime);
         }
         if (_cudaRuntimeAvailable) {
-            /// Description: Executes the syncDeviceState operation.
             syncDeviceState();
-            /// Description: Executes the publishMappedMetrics operation.
             publishMappedMetrics(deltaTime);
         }
         return true;
@@ -291,7 +263,6 @@ bool ParticleSystem::update(float deltaTime) {
     if (_solverMode == SolverMode::OctreeGpu) {
         const bool profileFlashMode = parseBoolEnv("GRAVITY_OCTREE_PROFILE_FLASH", false);
         if (_integratorMode == IntegratorMode::Rk4) {
-            /// Description: Executes the fprintf operation.
             fprintf(stderr, "[integrator] rk4 is not supported with octree_gpu\n");
             return false;
         }
@@ -322,13 +293,11 @@ bool ParticleSystem::update(float deltaTime) {
         if (_integratorMode == IntegratorMode::Leapfrog) {
             if (!d_k1v || !d_k2v) {
                 if (!allocateRk4Buffers(static_cast<int>(_particles.size()))) {
-                    /// Description: Executes the fprintf operation.
                     fprintf(stderr, "[integrator] leapfrog buffers missing\n");
                     return false;
                 }
             }
             if (!d_vHalf) {
-                /// Description: Executes the fprintf operation.
                 fprintf(stderr, "[integrator] leapfrog v_half buffer missing\n");
                 return false;
             }
@@ -391,17 +360,11 @@ bool ParticleSystem::update(float deltaTime) {
                 return false;
             }
 
-            /// Description: Executes the swap operation.
             std::swap(d_soaPosX, d_soaNextPosX);
-            /// Description: Executes the swap operation.
             std::swap(d_soaPosY, d_soaNextPosY);
-            /// Description: Executes the swap operation.
             std::swap(d_soaPosZ, d_soaNextPosZ);
-            /// Description: Executes the swap operation.
             std::swap(d_soaVelX, d_soaNextVelX);
-            /// Description: Executes the swap operation.
             std::swap(d_soaVelY, d_soaNextVelY);
-            /// Description: Executes the swap operation.
             std::swap(d_soaVelZ, d_soaNextVelZ);
 
             currentView = getSoAView(false);
@@ -447,17 +410,11 @@ bool ParticleSystem::update(float deltaTime) {
                 return false;
             }
 
-            /// Description: Executes the swap operation.
             std::swap(d_soaPosX, d_soaNextPosX);
-            /// Description: Executes the swap operation.
             std::swap(d_soaPosY, d_soaNextPosY);
-            /// Description: Executes the swap operation.
             std::swap(d_soaPosZ, d_soaNextPosZ);
-            /// Description: Executes the swap operation.
             std::swap(d_soaVelX, d_soaNextVelX);
-            /// Description: Executes the swap operation.
             std::swap(d_soaVelY, d_soaNextVelY);
-            /// Description: Executes the swap operation.
             std::swap(d_soaVelZ, d_soaNextVelZ);
         } else if (_integratorMode == IntegratorMode::Euler) {
             const auto forceStartTime = std::chrono::high_resolution_clock::now();
@@ -489,21 +446,15 @@ bool ParticleSystem::update(float deltaTime) {
                 const auto forceStopTime = std::chrono::high_resolution_clock::now();
                 const double forceMs =
                     std::chrono::duration<double, std::milli>(forceStopTime - forceStartTime).count();
-                /// Description: Executes the fprintf operation.
                 fprintf(stderr, "[octree-profile] computeBarnesHutForce_ms=%.3f\n", forceMs);
             }
 
             // Swap buffers
             std::swap(d_soaPosX, d_soaNextPosX);
-            /// Description: Executes the swap operation.
             std::swap(d_soaPosY, d_soaNextPosY);
-            /// Description: Executes the swap operation.
             std::swap(d_soaPosZ, d_soaNextPosZ);
-            /// Description: Executes the swap operation.
             std::swap(d_soaVelX, d_soaNextVelX);
-            /// Description: Executes the swap operation.
             std::swap(d_soaVelY, d_soaNextVelY);
-            /// Description: Executes the swap operation.
             std::swap(d_soaVelZ, d_soaNextVelZ);
             _leapfrogPrimed = false;
         }
@@ -516,12 +467,9 @@ bool ParticleSystem::update(float deltaTime) {
             if (!syncParticlesFromDevice()) {
                 return false;
             }
-            /// Description: Executes the applyThermalModel operation.
             applyThermalModel(deltaTime);
-            /// Description: Executes the syncDeviceState operation.
             syncDeviceState();
         }
-        /// Description: Executes the publishMappedMetrics operation.
         publishMappedMetrics(deltaTime);
         return true;
     }
@@ -530,11 +478,8 @@ bool ParticleSystem::update(float deltaTime) {
     cudaEvent_t start = nullptr;
     cudaEvent_t stop = nullptr;
     if constexpr (kProfileLogsEnabled) {
-        /// Description: Executes the cudaEventCreate operation.
         cudaEventCreate(&start);
-        /// Description: Executes the cudaEventCreate operation.
         cudaEventCreate(&stop);
-        /// Description: Executes the cudaEventRecord operation.
         cudaEventRecord(start);
     }
 
@@ -551,14 +496,12 @@ bool ParticleSystem::update(float deltaTime) {
     if (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog) {
         if (!d_stage || !d_k1x || !d_k2x || !d_k3x || !d_k4x || !d_k1v || !d_k2v || !d_k3v || !d_k4v) {
             if (!allocateRk4Buffers(numParticles)) {
-                /// Description: Executes the fprintf operation.
                 fprintf(stderr, "[integrator] advanced integrator buffers missing\n");
                 return false;
             }
         }
         if (_integratorMode == IntegratorMode::Leapfrog && !d_vHalf) {
             if (!allocateRk4Buffers(numParticles)) {
-                /// Description: Executes the fprintf operation.
                 fprintf(stderr, "[integrator] leapfrog v_half buffer missing\n");
                 return false;
             }
@@ -670,17 +613,11 @@ bool ParticleSystem::update(float deltaTime) {
             return false;
         }
 
-        /// Description: Executes the swap operation.
         std::swap(d_soaPosX, d_soaNextPosX);
-        /// Description: Executes the swap operation.
         std::swap(d_soaPosY, d_soaNextPosY);
-        /// Description: Executes the swap operation.
         std::swap(d_soaPosZ, d_soaNextPosZ);
-        /// Description: Executes the swap operation.
         std::swap(d_soaVelX, d_soaNextVelX);
-        /// Description: Executes the swap operation.
         std::swap(d_soaVelY, d_soaNextVelY);
-        /// Description: Executes the swap operation.
         std::swap(d_soaVelZ, d_soaNextVelZ);
 
         currentView = getSoAView(false);
@@ -723,15 +660,10 @@ bool ParticleSystem::update(float deltaTime) {
 
     // Swap buffers
     std::swap(d_soaPosX, d_soaNextPosX);
-    /// Description: Executes the swap operation.
     std::swap(d_soaPosY, d_soaNextPosY);
-    /// Description: Executes the swap operation.
     std::swap(d_soaPosZ, d_soaNextPosZ);
-    /// Description: Executes the swap operation.
     std::swap(d_soaVelX, d_soaNextVelX);
-    /// Description: Executes the swap operation.
     std::swap(d_soaVelY, d_soaNextVelY);
-    /// Description: Executes the swap operation.
     std::swap(d_soaVelZ, d_soaNextVelZ);
 
     if (!applySphCorrection(false)) {
@@ -742,24 +674,17 @@ bool ParticleSystem::update(float deltaTime) {
         if (!syncParticlesFromDevice()) {
             return false;
         }
-        /// Description: Executes the applyThermalModel operation.
         applyThermalModel(deltaTime);
-        /// Description: Executes the syncDeviceState operation.
         syncDeviceState();
     }
 
     if constexpr (kProfileLogsEnabled) {
-        /// Description: Executes the cudaEventRecord operation.
         cudaEventRecord(stop);
-        /// Description: Executes the cudaEventSynchronize operation.
         cudaEventSynchronize(stop);
         float milliseconds = 0;
-        /// Description: Executes the cudaEventElapsedTime operation.
         cudaEventElapsedTime(&milliseconds, start, stop);
-        /// Description: Executes the printf operation.
         printf("Time elapsed: %f ms (%f fps) for computing %zu particles\n", milliseconds, 1000.0f / milliseconds, _particles.size());
     }
-    /// Description: Executes the publishMappedMetrics operation.
     publishMappedMetrics(deltaTime);
     return true;
 }

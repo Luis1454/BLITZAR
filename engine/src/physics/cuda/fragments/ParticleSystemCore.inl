@@ -47,10 +47,8 @@ void ParticleSystem::buildBootstrapState(int particleCount)
 /// Description: Executes the ParticleSystem operation.
 ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
     const int clampedParticles = std::max(2, numParticles);
-    /// Description: Executes the initializeRuntimeState operation.
     initializeRuntimeState(static_cast<std::size_t>(clampedParticles));
     if (bootstrapInitialState) {
-        /// Description: Executes the buildBootstrapState operation.
         buildBootstrapState(clampedParticles);
     } else {
         _particles.assign(static_cast<std::size_t>(clampedParticles), Particle{});
@@ -71,14 +69,12 @@ ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
     }
 
     if (!allocateSphBuffers(clampedParticles) || !allocateSphGridBuffers(clampedParticles)) {
-        /// Description: Executes the fprintf operation.
         fprintf(stderr, "[sph] buffers allocation failed, SPH disabled\n");
         _sphEnabled = false;
     }
     if (_solverMode != SolverMode::OctreeCpu &&
         (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog)) {
         if (!allocateRk4Buffers(clampedParticles)) {
-            /// Description: Executes the runtime_error operation.
             throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
         }
     }
@@ -88,7 +84,6 @@ ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState) {
 ParticleSystem::ParticleSystem(std::vector<Particle> initialParticles)
 {
     const std::size_t particleCapacity = std::max<std::size_t>(2u, initialParticles.size());
-    /// Description: Executes the initializeRuntimeState operation.
     initializeRuntimeState(particleCapacity);
     _particles = std::move(initialParticles);
     if (_particles.size() < particleCapacity) _particles.resize(particleCapacity);
@@ -115,7 +110,6 @@ ParticleSystem::ParticleSystem(std::vector<Particle> initialParticles)
     if (_solverMode != SolverMode::OctreeCpu &&
         (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog)) {
         if (!allocateRk4Buffers(clampedParticles)) {
-            /// Description: Executes the runtime_error operation.
             throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
         }
     }
@@ -123,12 +117,13 @@ ParticleSystem::ParticleSystem(std::vector<Particle> initialParticles)
 
 /// Description: Releases resources owned by ParticleSystem.
 ParticleSystem::~ParticleSystem() {
-    /// Description: Executes the releaseParticleBuffers operation.
     releaseParticleBuffers();
 }
 
+/// Description: Describes the get particles operation contract.
 const std::vector<Particle> &ParticleSystem::getParticles() const { return _particles; }
 
+/// Description: Describes the get mapped gpu metrics operation contract.
 const GpuSystemMetrics *ParticleSystem::getMappedGpuMetrics() const
 {
     return _mappedMetricsHost;
@@ -219,7 +214,6 @@ void ParticleSystem::setIntegratorMode(IntegratorMode mode) {
     if (_solverMode != SolverMode::OctreeCpu
         && (mode == IntegratorMode::Rk4 || mode == IntegratorMode::Leapfrog)
         && !allocateRk4Buffers(static_cast<int>(_particles.size()))) {
-        /// Description: Executes the runtime_error operation.
         throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
     }
     _integratorMode = mode;
@@ -244,7 +238,6 @@ void ParticleSystem::setIntegratorMode(IntegratorMode mode) {
         octreeBytes,
         totalBytes,
         6656ull * 1024ull * 1024ull);
-    /// Description: Executes the fprintf operation.
     fprintf(stdout, "%s\n", breakdown.c_str());
 }
 /// Description: Executes the getIntegratorMode operation.

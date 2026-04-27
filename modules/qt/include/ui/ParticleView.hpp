@@ -22,6 +22,7 @@ class QMouseEvent;
 class QPaintEvent;
 typedef QMouseEvent UiMouseEvent;
 typedef QPaintEvent UiPaintEvent;
+
 namespace grav_qt {
 /// Renders one projection of the current particle snapshot.
 class ParticleView : public QWidget {
@@ -46,13 +47,13 @@ public:
 private:
     typedef UiMouseEvent* MouseEventHandle;
     typedef UiPaintEvent* PaintEventHandle;
-    /// Description: Executes the mousePressEvent operation.
+    /// Description: Describes the mouse press event operation contract.
     void mousePressEvent(MouseEventHandle event) override;
-    /// Description: Executes the mouseMoveEvent operation.
+    /// Description: Describes the mouse move event operation contract.
     void mouseMoveEvent(MouseEventHandle event) override;
-    /// Description: Executes the paintEvent operation.
+    /// Description: Describes the paint event operation contract.
     void paintEvent(PaintEventHandle event) override;
-    /// Description: Executes the mouseReleaseEvent operation.
+    /// Description: Describes the mouse release event operation contract.
     void mouseReleaseEvent(MouseEventHandle event) override;
     grav::ViewMode _mode;
     std::optional<std::reference_wrapper<const std::vector<RenderParticle>>> _snapshot;

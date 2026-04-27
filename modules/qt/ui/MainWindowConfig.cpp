@@ -13,11 +13,11 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
+
 namespace grav_qt {
 /// Description: Executes the applyConfigToServer operation.
 bool MainWindow::applyConfigToServer(bool requestReset)
 {
-    /// Description: Executes the captureUiIntoConfig operation.
     captureUiIntoConfig();
     const MainWindowApplyConfigResult result =
         _controller.applyConfig(_config, *_runtime, requestReset);
@@ -25,7 +25,6 @@ bool MainWindow::applyConfigToServer(bool requestReset)
     if (_validationLabel != nullptr) {
         _validationLabel->setText(buildValidationText(result.report, advisory));
     }
-    /// Description: Executes the showThroughputAdvisory operation.
     showThroughputAdvisory(advisory);
     if (!result.report.validForRun) {
         if (_statusLabel != nullptr) {
@@ -34,10 +33,10 @@ bool MainWindow::applyConfigToServer(bool requestReset)
         return false;
     }
     _clientDrawCap = result.clientDrawCap;
-    /// Description: Executes the applyViewSettings operation.
     applyViewSettings();
     return true;
 }
+
 /// Description: Executes the applyConfigToUi operation.
 void MainWindow::applyConfigToUi()
 {
@@ -59,17 +58,14 @@ void MainWindow::applyConfigToUi()
     _cullingCheck->blockSignals(true);
     _lodCheck->blockSignals(true);
     _solverCombo->setCurrentIndex(
-        /// Description: Executes the max operation.
         std::max(0, _solverCombo->findText(QString::fromStdString(_config.solver))));
     _integratorCombo->setCurrentIndex(
-        /// Description: Executes the max operation.
         std::max(0, _integratorCombo->findText(QString::fromStdString(_config.integrator))));
     _performanceCombo->setCurrentIndex(std::max(
         0, _performanceCombo->findText(QString::fromStdString(_config.performanceProfile))));
     _simulationProfileCombo->setCurrentIndex(std::max(
         0, _simulationProfileCombo->findText(QString::fromStdString(_config.simulationProfile))));
     const int presetIndex =
-        /// Description: Executes the max operation.
         std::max(0, _presetCombo->findText(QString::fromStdString(_config.presetStructure)));
     _presetCombo->setCurrentIndex(presetIndex);
     _sphCheck->setChecked(_config.sphEnabled);
@@ -101,9 +97,9 @@ void MainWindow::applyConfigToUi()
     _luminositySlider->blockSignals(false);
     _cullingCheck->blockSignals(false);
     _lodCheck->blockSignals(false);
-    /// Description: Executes the applyViewSettings operation.
     applyViewSettings();
 }
+
 /// Description: Executes the captureUiIntoConfig operation.
 void MainWindow::captureUiIntoConfig()
 {
@@ -125,20 +121,21 @@ void MainWindow::captureUiIntoConfig()
     _config.renderCullingEnabled = _cullingCheck->isChecked();
     _config.renderLODEnabled = _lodCheck->isChecked();
 }
+
 /// Description: Executes the applyPerformanceProfileToRuntime operation.
 void MainWindow::applyPerformanceProfileToRuntime()
 {
     _clientDrawCap = _controller.applyPerformanceProfile(_config, *_runtime);
-    /// Description: Executes the applyViewSettings operation.
     applyViewSettings();
 }
+
 /// Description: Executes the markConfigDirty operation.
 void MainWindow::markConfigDirty(bool dirty)
 {
     _configDirty = dirty;
-    /// Description: Executes the setWindowTitle operation.
     setWindowTitle(_configDirty ? "N-Body Qt Client *" : "N-Body Qt Client");
 }
+
 /// Description: Executes the saveConfigToDisk operation.
 bool MainWindow::saveConfigToDisk()
 {
@@ -150,11 +147,11 @@ bool MainWindow::saveConfigToDisk()
         std::cerr << "[qt] failed to save config: " << _configPath << "\n";
         return false;
     }
-    /// Description: Executes the markConfigDirty operation.
     markConfigDirty(false);
     std::cout << "[qt] config saved: " << _configPath << "\n";
     return true;
 }
+
 /// Description: Executes the refreshValidationReport operation.
 bool MainWindow::refreshValidationReport(bool blockOnErrors)
 {
@@ -168,6 +165,7 @@ bool MainWindow::refreshValidationReport(bool blockOnErrors)
     }
     return !blockOnErrors || report.validForRun;
 }
+
 QString MainWindow::buildValidationText(const grav_config::ScenarioValidationReport& report,
                                         const ThroughputAdvisory& advisory) const
 {
@@ -185,6 +183,7 @@ QString MainWindow::buildValidationText(const grav_config::ScenarioValidationRep
     }
     return QString::fromStdString(text);
 }
+
 /// Description: Executes the showThroughputAdvisory operation.
 void MainWindow::showThroughputAdvisory(const ThroughputAdvisory& advisory)
 {
@@ -192,9 +191,9 @@ void MainWindow::showThroughputAdvisory(const ThroughputAdvisory& advisory)
         return;
     }
     std::cout << "[qt] " << advisory.statusBarText << "\n";
-    /// Description: Executes the statusBar operation.
     statusBar()->showMessage(QString::fromStdString(advisory.statusBarText), 6000);
 }
+
 /// Description: Executes the update3DCameraFromSliders operation.
 void MainWindow::update3DCameraFromSliders()
 {

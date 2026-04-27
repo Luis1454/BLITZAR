@@ -48,11 +48,13 @@ class QTabWidget;
 class QTimer;
 /// Description: Defines the QWidget data or behavior contract.
 class QWidget;
+
 namespace grav_qt {
 /// Description: Defines the EnergyGraphWidget data or behavior contract.
 class EnergyGraphWidget;
 /// Description: Defines the MultiViewWidget data or behavior contract.
 class MultiViewWidget;
+
 /// Owns the primary Qt workspace and synchronizes visible controls with the client runtime.
 class MainWindow : public QMainWindow {
 public:
@@ -63,73 +65,75 @@ public:
     ~MainWindow() override;
 
 private:
-    /// Description: Executes the formatFromSelectedFilter operation.
+    /// Description: Describes the format from selected filter operation contract.
     static std::string formatFromSelectedFilter(const QString& filter);
-    /// Description: Executes the applyConfigToServer operation.
+    /// Description: Describes the apply config to server operation contract.
     bool applyConfigToServer(bool requestReset);
-    /// Description: Executes the applyConnectorSettings operation.
+    /// Description: Describes the apply connector settings operation contract.
     void applyConnectorSettings(bool reconnectNow);
-    /// Description: Executes the applyConfigToUi operation.
+    /// Description: Describes the apply config to ui operation contract.
     void applyConfigToUi();
-    /// Description: Executes the applyViewSettings operation.
+    /// Description: Describes the apply view settings operation contract.
     void applyViewSettings();
-    /// Description: Executes the applyTheme operation.
+    /// Description: Describes the apply theme operation contract.
     void applyTheme();
-    /// Description: Executes the captureUiIntoConfig operation.
+    /// Description: Describes the capture ui into config operation contract.
     void captureUiIntoConfig();
-    /// Description: Executes the applyPerformanceProfileToRuntime operation.
+    /// Description: Describes the apply performance profile to runtime operation contract.
     void applyPerformanceProfileToRuntime();
-    /// Description: Executes the buildMenus operation.
+    /// Description: Describes the build menus operation contract.
     void buildMenus();
+    /// Description: Describes the build workspace docks operation contract.
     void buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPane,
                              QWidget* validationPane);
-    /// Description: Executes the buildTelemetryPane operation.
+    /// Description: Describes the build telemetry pane operation contract.
     QWidget* buildTelemetryPane();
-    /// Description: Executes the buildSidebarTabs operation.
+    /// Description: Describes the build sidebar tabs operation contract.
     QTabWidget* buildSidebarTabs();
-    /// Description: Executes the buildValidationPane operation.
+    /// Description: Describes the build validation pane operation contract.
     QWidget* buildValidationPane();
-    /// Description: Executes the configureRemoteConnectorFromUi operation.
+    /// Description: Describes the configure remote connector from ui operation contract.
     void configureRemoteConnectorFromUi();
-    /// Description: Executes the connectControls operation.
+    /// Description: Describes the connect controls operation contract.
     void connectControls();
-    /// Description: Executes the handleExportRequest operation.
+    /// Description: Describes the handle export request operation contract.
     void handleExportRequest();
-    /// Description: Executes the handleSaveCheckpointRequest operation.
+    /// Description: Describes the handle save checkpoint request operation contract.
     void handleSaveCheckpointRequest();
-    /// Description: Executes the handleLoadCheckpointRequest operation.
+    /// Description: Describes the handle load checkpoint request operation contract.
     void handleLoadCheckpointRequest();
-    /// Description: Executes the handleLoadInputRequest operation.
+    /// Description: Describes the handle load input request operation contract.
     void handleLoadInputRequest();
-    /// Description: Executes the handleLoadPresetRequest operation.
+    /// Description: Describes the handle load preset request operation contract.
     void handleLoadPresetRequest();
-    /// Description: Executes the initializeControlState operation.
+    /// Description: Describes the initialize control state operation contract.
     void initializeControlState();
-    /// Description: Executes the markConfigDirty operation.
+    /// Description: Describes the mark config dirty operation contract.
     void markConfigDirty(bool dirty = true);
-    /// Description: Executes the refreshValidationReport operation.
+    /// Description: Describes the refresh validation report operation contract.
     bool refreshValidationReport(bool blockOnErrors);
-    /// Description: Executes the requestReconnectFromUi operation.
+    /// Description: Describes the request reconnect from ui operation contract.
     void requestReconnectFromUi();
-    /// Description: Executes the resetSimulationFromUi operation.
+    /// Description: Describes the reset simulation from ui operation contract.
     void resetSimulationFromUi();
-    /// Description: Executes the restoreDefaultWorkspace operation.
+    /// Description: Describes the restore default workspace operation contract.
     void restoreDefaultWorkspace();
-    /// Description: Executes the saveWorkspacePreset operation.
+    /// Description: Describes the save workspace preset operation contract.
     void saveWorkspacePreset();
-    /// Description: Executes the loadWorkspacePreset operation.
+    /// Description: Describes the load workspace preset operation contract.
     void loadWorkspacePreset();
-    /// Description: Executes the deleteWorkspacePreset operation.
+    /// Description: Describes the delete workspace preset operation contract.
     void deleteWorkspacePreset();
+    /// Description: Describes the build validation text operation contract.
     QString buildValidationText(const grav_config::ScenarioValidationReport& report,
                                 const ThroughputAdvisory& advisory) const;
-    /// Description: Executes the saveConfigToDisk operation.
+    /// Description: Describes the save config to disk operation contract.
     bool saveConfigToDisk();
-    /// Description: Executes the showThroughputAdvisory operation.
+    /// Description: Describes the show throughput advisory operation contract.
     void showThroughputAdvisory(const ThroughputAdvisory& advisory);
-    /// Description: Executes the update3DCameraFromSliders operation.
+    /// Description: Describes the update3 d camera from sliders operation contract.
     void update3DCameraFromSliders();
-    /// Description: Executes the tick operation.
+    /// Description: Describes the tick operation contract.
     void tick();
     SimulationConfig _config;
     std::string _configPath;

@@ -10,11 +10,11 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
 namespace grav_module_cli {
 /// Description: Defines the ModuleCliServerOpsLocal data or behavior contract.
 class ModuleCliServerOpsLocal final {
 public:
-    /// Description: Executes the ensureConnected operation.
     static bool ensureConnected(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer)
     {
         if (state.transport.isConnected()) {
@@ -22,12 +22,12 @@ public:
         }
         if (!state.transport.connect(state.session.host, state.session.port)) {
             errorBuffer.write("unable to connect to server " + state.session.host + ":" +
-                              /// Description: Executes the to_string operation.
                               std::to_string(state.session.port));
             return false;
         }
         return true;
     }
+
     static bool sendSimpleCommand(ModuleState& state, const std::string& cmd,
                                   const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -46,7 +46,7 @@ public:
         }
         return true;
     }
-    /// Description: Executes the commandStatus operation.
+
     static bool commandStatus(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer)
     {
         if (!ensureConnected(state, errorBuffer)) {
@@ -79,6 +79,7 @@ public:
                   << (status.energyEstimated ? " est" : "") << "\n";
         return true;
     }
+
     static bool commandStep(ModuleState& state, const std::vector<std::string>& tokens,
                             const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -93,7 +94,6 @@ public:
             return false;
         }
         const ServerClientResponse response = state.transport.sendCommand(
-            /// Description: Executes the string operation.
             std::string(grav_protocol::Step), "\"count\":" + std::to_string(count));
         if (!response.ok) {
             const std::string message = response.error.empty() ? "step failed" : response.error;
@@ -105,6 +105,7 @@ public:
         }
         return true;
     }
+
     static bool connect(ModuleState& state, const std::vector<std::string>& tokens,
                         const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -129,7 +130,7 @@ public:
                   << "\n";
         return true;
     }
-    /// Description: Executes the reconnect operation.
+
     static bool reconnect(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer)
     {
         state.transport.disconnect();
@@ -142,26 +143,36 @@ public:
         return true;
     }
 };
+
+/// Description: Describes the command status operation contract.
 bool ModuleCliServerOps::commandStatus(ModuleState& state,
                                        const grav_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliServerOpsLocal::commandStatus(state, errorBuffer);
 }
+
+/// Description: Describes the command step operation contract.
 bool ModuleCliServerOps::commandStep(ModuleState& state, const std::vector<std::string>& tokens,
                                      const grav_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliServerOpsLocal::commandStep(state, tokens, errorBuffer);
 }
+
+/// Description: Describes the connect operation contract.
 bool ModuleCliServerOps::connect(ModuleState& state, const std::vector<std::string>& tokens,
                                  const grav_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliServerOpsLocal::connect(state, tokens, errorBuffer);
 }
+
+/// Description: Describes the reconnect operation contract.
 bool ModuleCliServerOps::reconnect(ModuleState& state,
                                    const grav_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliServerOpsLocal::reconnect(state, errorBuffer);
 }
+
+/// Description: Describes the send simple command operation contract.
 bool ModuleCliServerOps::sendSimpleCommand(ModuleState& state, const std::string& cmd,
                                            const grav_client::ErrorBufferView& errorBuffer)
 {

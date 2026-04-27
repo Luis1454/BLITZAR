@@ -3,6 +3,7 @@
 
 #include "SimulationOptionRegistryInternal.hpp"
 #include <ostream>
+
 namespace grav_config {
 /// Description: Executes the printCliUsage operation.
 void printCliUsage(std::ostream& out, SimulationOptionGroup group)

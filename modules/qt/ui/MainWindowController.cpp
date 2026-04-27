@@ -6,6 +6,7 @@
 #include "config/SimulationConfig.hpp"
 #include "server/SimulationInitConfig.hpp"
 #include <iostream>
+
 namespace grav_qt {
 /// Description: Defines the MainWindowControllerLocal data or behavior contract.
 class MainWindowControllerLocal final {
@@ -30,6 +31,8 @@ public:
         runtime.setRemoteSnapshotCap(grav_client::resolveClientDrawCap(config));
     }
 };
+
+/// Description: Describes the apply config operation contract.
 MainWindowApplyConfigResult MainWindowController::applyConfig(const SimulationConfig& config,
                                                               grav_client::IClientRuntime& runtime,
                                                               bool requestReset) const
@@ -40,7 +43,6 @@ MainWindowApplyConfigResult MainWindowController::applyConfig(const SimulationCo
     if (!result.report.validForRun)
         return result;
     const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(config, std::cerr);
-    /// Description: Executes the applySharedConfig operation.
     MainWindowControllerLocal::applySharedConfig(config, runtime);
     runtime.setInitialStateFile(initPlan.inputFile, initPlan.inputFormat);
     runtime.setInitialStateConfig(initPlan.config);
@@ -50,14 +52,16 @@ MainWindowApplyConfigResult MainWindowController::applyConfig(const SimulationCo
     result.applied = true;
     return result;
 }
+
 std::uint32_t
+/// Description: Describes the apply performance profile operation contract.
 MainWindowController::applyPerformanceProfile(const SimulationConfig& config,
                                               grav_client::IClientRuntime& runtime) const
 {
-    /// Description: Executes the applySharedConfig operation.
     MainWindowControllerLocal::applySharedConfig(config, runtime);
     return grav_client::resolveClientDrawCap(config);
 }
+
 grav_config::ScenarioValidationReport
 /// Description: Executes the validate operation.
 MainWindowController::validate(const SimulationConfig& config) const

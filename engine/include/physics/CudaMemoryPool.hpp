@@ -4,19 +4,20 @@
 #ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_CUDAMEMORYPOOL_HPP_
 #define GRAVITY_ENGINE_INCLUDE_PHYSICS_CUDAMEMORYPOOL_HPP_
 #include <cstddef>
+
 namespace grav_x {
 /// Description: Defines the CudaMemoryPool data or behavior contract.
 class CudaMemoryPool {
 public:
-    /// Description: Executes the initialize operation.
+    /// Description: Describes the initialize operation contract.
     static void initialize();
-    /// Description: Executes the destroy operation.
+    /// Description: Describes the destroy operation contract.
     static void destroy();
-    /// Description: Executes the allocate operation.
+    /// Description: Describes the allocate operation contract.
     static void* allocate(std::size_t size, void* stream = nullptr);
-    /// Description: Executes the deallocate operation.
+    /// Description: Describes the deallocate operation contract.
     static void deallocate(void* ptr, void* stream = nullptr);
-    /// Description: Executes the isSupported operation.
+    /// Description: Describes the is supported operation contract.
     static bool isSupported();
 
 private:

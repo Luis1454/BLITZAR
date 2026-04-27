@@ -7,6 +7,7 @@
 #include <stdint.h>
 extern "C" {
 typedef struct blitzar_core blitzar_core_t;
+
 typedef enum blitzar_core_result {
     BLITZAR_CORE_OK = 0,
     BLITZAR_CORE_INVALID_ARGUMENT = 1,
@@ -14,7 +15,12 @@ typedef enum blitzar_core_result {
     BLITZAR_CORE_TIMEOUT = 3,
     BLITZAR_CORE_INTERNAL_ERROR = 4
 } blitzar_core_result_t;
-enum { BLITZAR_CORE_TEXT_CAPACITY = 64, BLITZAR_CORE_ERROR_CAPACITY = 256 };
+
+enum {
+    BLITZAR_CORE_TEXT_CAPACITY = 64,
+    BLITZAR_CORE_ERROR_CAPACITY = 256
+};
+
 typedef struct blitzar_core_config {
     uint32_t particle_count;
     float dt;
@@ -25,6 +31,7 @@ typedef struct blitzar_core_config {
     uint32_t max_substeps;
     uint32_t snapshot_publish_period_ms;
 } blitzar_core_config_t;
+
 typedef struct blitzar_render_particle {
     float x;
     float y;
@@ -33,10 +40,12 @@ typedef struct blitzar_render_particle {
     float pressure_norm;
     float temperature;
 } blitzar_render_particle_t;
+
 typedef struct blitzar_core_snapshot {
     blitzar_render_particle_t* particles;
     size_t count;
 } blitzar_core_snapshot_t;
+
 typedef struct blitzar_core_status {
     uint64_t steps;
     float dt;
@@ -63,26 +72,35 @@ typedef struct blitzar_core_status {
     char performance_profile[BLITZAR_CORE_TEXT_CAPACITY];
     char fault_reason[BLITZAR_CORE_ERROR_CAPACITY];
 } blitzar_core_status_t;
+
 /// Description: Executes the blitzar_core_default_config operation.
 blitzar_core_config_t blitzar_core_default_config(void);
+/// Description: Describes the blitzar core create operation contract.
 blitzar_core_t* blitzar_core_create(const blitzar_core_config_t* config, char* error_buffer,
                                     size_t error_buffer_capacity);
 /// Description: Executes the blitzar_core_destroy operation.
 void blitzar_core_destroy(blitzar_core_t* core);
+/// Description: Describes the blitzar core apply config operation contract.
 blitzar_core_result_t blitzar_core_apply_config(blitzar_core_t* core,
                                                 const blitzar_core_config_t* config);
+/// Description: Describes the blitzar core run steps operation contract.
 blitzar_core_result_t blitzar_core_run_steps(blitzar_core_t* core, uint32_t steps,
                                              uint32_t timeout_ms);
+/// Description: Describes the blitzar core get status operation contract.
 blitzar_core_result_t blitzar_core_get_status(const blitzar_core_t* core,
                                               blitzar_core_status_t* out_status);
+/// Description: Describes the blitzar core get snapshot operation contract.
 blitzar_core_result_t blitzar_core_get_snapshot(const blitzar_core_t* core, size_t max_points,
                                                 blitzar_core_snapshot_t* out_snapshot);
 /// Description: Executes the blitzar_core_free_snapshot operation.
 void blitzar_core_free_snapshot(blitzar_core_snapshot_t* snapshot);
+/// Description: Describes the blitzar core load state operation contract.
 blitzar_core_result_t blitzar_core_load_state(blitzar_core_t* core, const char* path,
                                               const char* format, uint32_t timeout_ms);
+/// Description: Describes the blitzar core export state operation contract.
 blitzar_core_result_t blitzar_core_export_state(blitzar_core_t* core, const char* path,
                                                 const char* format, uint32_t timeout_ms);
+/// Description: Describes the blitzar core get last error operation contract.
 size_t blitzar_core_get_last_error(const blitzar_core_t* core, char* error_buffer,
                                    size_t error_buffer_capacity);
 }

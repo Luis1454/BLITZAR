@@ -2,10 +2,11 @@
 // Purpose: Engine implementation for the BLITZAR simulation core.
 
 #include "Internal.hpp"
+
+/// Description: Describes the read checkpoint file operation contract.
 bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState& outState,
                         std::string* outError)
 {
-    /// Description: Executes the in operation.
     std::ifstream in(inputPath, std::ios::binary);
     if (!in.is_open()) {
         if (outError != nullptr) {
@@ -15,7 +16,6 @@ bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState&
     }
     std::array<std::byte, sizeof(kCheckpointMagic)> magic{};
     if (!readRawBytes(in, magic.data(), magic.size()) ||
-        /// Description: Executes the memcmp operation.
         std::memcmp(magic.data(), kCheckpointMagic, sizeof(kCheckpointMagic)) != 0) {
         if (outError != nullptr) {
             *outError = "invalid checkpoint magic";
@@ -89,9 +89,9 @@ bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState&
         float vz = 0.0f;
         float mass = 0.0f;
         float temperature = 0.0f;
-        if (!readLeF32(in, px) || !readLeF32(in, py) || !readLeF32(in, pz) ||
-            !readLeF32(in, vx) || !readLeF32(in, vy) || !readLeF32(in, vz) ||
-            !readLeF32(in, mass) || !readLeF32(in, temperature)) {
+        if (!readLeF32(in, px) || !readLeF32(in, py) || !readLeF32(in, pz) || !readLeF32(in, vx) ||
+            !readLeF32(in, vy) || !readLeF32(in, vz) || !readLeF32(in, mass) ||
+            !readLeF32(in, temperature)) {
             if (outError != nullptr) {
                 *outError = "checkpoint particle payload is truncated";
             }
@@ -110,30 +110,26 @@ bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState&
     }
     return outState.particles.size() >= 2u;
 }
+
 /// Description: Executes the writeExportSnapshotFile operation.
 bool writeExportSnapshotFile(const AsyncExportJob& job)
 {
-    /// Description: Executes the outPath operation.
     std::filesystem::path outPath(job.outputPath);
     if (outPath.has_parent_path()) {
         std::error_code ec;
-        /// Description: Executes the create_directories operation.
         std::filesystem::create_directories(outPath.parent_path(), ec);
     }
     const std::string fmt = normalizeSnapshotFormat(job.format);
     if (fmt == "bin") {
-        /// Description: Executes the out operation.
         std::ofstream out(job.outputPath, std::ios::binary | std::ios::trunc);
         if (!out.is_open()) {
             return false;
         }
         BinarySnapshotHeader header{};
-        /// Description: Executes the memcpy operation.
         std::memcpy(header.magic, kBinarySnapshotMagic, sizeof(kBinarySnapshotMagic));
         header.version = kBinarySnapshotVersion;
         header.count = static_cast<std::uint32_t>(job.particles.size());
         std::array<std::byte, sizeof(BinarySnapshotHeader)> headerBytes{};
-        /// Description: Executes the memcpy operation.
         std::memcpy(headerBytes.data(), &header, sizeof(header));
         if (!writeRawBytes(out, headerBytes.data(), headerBytes.size())) {
             return false;
@@ -145,7 +141,6 @@ bool writeExportSnapshotFile(const AsyncExportJob& job)
                 position.x, position.y, position.z,         velocity.x,
                 velocity.y, velocity.z, particle.getMass(), particle.getTemperature()};
             std::array<std::byte, sizeof(BinarySnapshotParticle)> recordBytes{};
-            /// Description: Executes the memcpy operation.
             std::memcpy(recordBytes.data(), &record, sizeof(record));
             if (!writeRawBytes(out, recordBytes.data(), recordBytes.size())) {
                 return false;
@@ -179,11 +174,8 @@ bool writeExportSnapshotFile(const AsyncExportJob& job)
     if (vtkBinary) {
         for (const Particle& particle : job.particles) {
             const Vector3 position = particle.getPosition();
-            /// Description: Executes the writeBeF32 operation.
             writeBeF32(out, position.x);
-            /// Description: Executes the writeBeF32 operation.
             writeBeF32(out, position.y);
-            /// Description: Executes the writeBeF32 operation.
             writeBeF32(out, position.z);
         }
         out << "\n";
@@ -197,9 +189,7 @@ bool writeExportSnapshotFile(const AsyncExportJob& job)
     out << "VERTICES " << job.particles.size() << " " << (job.particles.size() * 2) << "\n";
     if (vtkBinary) {
         for (std::size_t i = 0; i < job.particles.size(); ++i) {
-            /// Description: Executes the writeBeI32 operation.
             writeBeI32(out, 1);
-            /// Description: Executes the writeBeI32 operation.
             writeBeI32(out, static_cast<std::int32_t>(i));
         }
         out << "\n";
@@ -214,7 +204,6 @@ bool writeExportSnapshotFile(const AsyncExportJob& job)
     out << "LOOKUP_TABLE default\n";
     if (vtkBinary) {
         for (const Particle& particle : job.particles) {
-            /// Description: Executes the writeBeF32 operation.
             writeBeF32(out, particle.getMass());
         }
         out << "\n";
@@ -228,7 +217,6 @@ bool writeExportSnapshotFile(const AsyncExportJob& job)
     out << "LOOKUP_TABLE default\n";
     if (vtkBinary) {
         for (const Particle& particle : job.particles) {
-            /// Description: Executes the writeBeF32 operation.
             writeBeF32(out, particle.getPressure().norm());
         }
         out << "\n";
@@ -242,7 +230,6 @@ bool writeExportSnapshotFile(const AsyncExportJob& job)
     out << "LOOKUP_TABLE default\n";
     if (vtkBinary) {
         for (const Particle& particle : job.particles) {
-            /// Description: Executes the writeBeF32 operation.
             writeBeF32(out, particle.getTemperature());
         }
         out << "\n";
@@ -256,11 +243,8 @@ bool writeExportSnapshotFile(const AsyncExportJob& job)
     if (vtkBinary) {
         for (const Particle& particle : job.particles) {
             const Vector3 velocity = particle.getVelocity();
-            /// Description: Executes the writeBeF32 operation.
             writeBeF32(out, velocity.x);
-            /// Description: Executes the writeBeF32 operation.
             writeBeF32(out, velocity.y);
-            /// Description: Executes the writeBeF32 operation.
             writeBeF32(out, velocity.z);
         }
         out << "\n";

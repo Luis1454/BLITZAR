@@ -6,17 +6,18 @@
 #include "command/CommandTypes.hpp"
 #include <string_view>
 #include <vector>
+
 namespace grav_cmd {
 /// Description: Defines the CommandCatalog data or behavior contract.
 class CommandCatalog final {
 public:
-    /// Description: Executes the findByName operation.
+    /// Description: Describes the find by name operation contract.
     static const CommandSpec* findByName(std::string_view name);
-    /// Description: Executes the findById operation.
+    /// Description: Describes the find by id operation contract.
     static const CommandSpec* findById(CommandId id);
-    /// Description: Executes the all operation.
+    /// Description: Describes the all operation contract.
     static const std::vector<CommandSpec>& all();
-    /// Description: Executes the renderHelp operation.
+    /// Description: Describes the render help operation contract.
     static std::string renderHelp();
 };
 } // namespace grav_cmd

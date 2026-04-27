@@ -6,13 +6,14 @@
 #include "apps/client-host/client_host_cli.hpp"
 #include <string>
 #include <string_view>
+
 namespace grav_client_host {
 /// Description: Defines the ClientHostCliArgs data or behavior contract.
 class ClientHostCliArgs final {
 public:
-    /// Description: Executes the parseArgs operation.
+    /// Description: Describes the parse args operation contract.
     static bool parseArgs(int argc, char** argv, HostOptions& outOptions, std::string& outError);
-    /// Description: Executes the printHelp operation.
+    /// Description: Describes the print help operation contract.
     static void printHelp(std::string_view programName);
 };
 } // namespace grav_client_host

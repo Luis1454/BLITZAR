@@ -2,7 +2,9 @@
 // Purpose: Verification coverage for the BLITZAR quality gate.
 
 #include "tests/support/client_utils.hpp"
+
 namespace testsupport {
+/// Description: Describes the make transport operation contract.
 grav_client::ClientTransportArgs makeTransport(std::uint16_t port,
                                                const std::string& serverExecutable)
 {

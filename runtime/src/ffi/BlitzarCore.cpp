@@ -10,6 +10,7 @@
 #include <thread>
 #include <vector>
 static constexpr std::uint32_t kDefaultTimeoutMs = 3000u;
+
 /// Description: Executes the normalizedConfig operation.
 static blitzar_core_config_t normalizedConfig(const blitzar_core_config_t& config)
 {
@@ -38,6 +39,7 @@ static blitzar_core_config_t normalizedConfig(const blitzar_core_config_t& confi
                                                 : config.snapshot_publish_period_ms;
     return normalized;
 }
+
 /// Description: Executes the copyText operation.
 static void copyText(const std::string& value, char* buffer, std::size_t capacity)
 {
@@ -45,10 +47,10 @@ static void copyText(const std::string& value, char* buffer, std::size_t capacit
         return;
     }
     const std::size_t limit = std::min<std::size_t>(capacity - 1u, value.size());
-    /// Description: Executes the memcpy operation.
     std::memcpy(buffer, value.data(), limit);
     buffer[limit] = '\0';
 }
+
 /// Description: Executes the fillStatus operation.
 static void fillStatus(const SimulationStats& stats, blitzar_core_status_t& outStatus)
 {
@@ -72,20 +74,16 @@ static void fillStatus(const SimulationStats& stats, blitzar_core_status_t& outS
     outStatus.total_energy = stats.totalEnergy;
     outStatus.energy_drift_pct = stats.energyDriftPct;
     outStatus.energy_estimated = stats.energyEstimated ? 1u : 0u;
-    /// Description: Executes the copyText operation.
     copyText(stats.solverName, outStatus.solver_name, BLITZAR_CORE_TEXT_CAPACITY);
-    /// Description: Executes the copyText operation.
     copyText(stats.integratorName, outStatus.integrator_name, BLITZAR_CORE_TEXT_CAPACITY);
-    /// Description: Executes the copyText operation.
     copyText(stats.performanceProfile, outStatus.performance_profile, BLITZAR_CORE_TEXT_CAPACITY);
-    /// Description: Executes the copyText operation.
     copyText(stats.faultReason, outStatus.fault_reason, BLITZAR_CORE_ERROR_CAPACITY);
 }
+
 namespace grav_ffi {
 /// Description: Executes the BlitzarCore operation.
 BlitzarCore::BlitzarCore(const blitzar_core_config_t& config)
     : _server(std::max<std::uint32_t>(2u, normalizedConfig(config).particle_count),
-              /// Description: Executes the normalizedConfig operation.
               normalizedConfig(config).dt)
 {
     const blitzar_core_config_t normalized = normalizedConfig(config);
@@ -99,15 +97,16 @@ BlitzarCore::BlitzarCore(const blitzar_core_config_t& config)
         _server.stop();
     }
 }
+
 /// Description: Releases resources owned by BlitzarCore.
 BlitzarCore::~BlitzarCore()
 {
     _server.stop();
 }
+
 /// Description: Executes the applyConfig operation.
 blitzar_core_result_t BlitzarCore::applyConfig(const blitzar_core_config_t& config)
 {
-    /// Description: Executes the clearError operation.
     clearError();
     const blitzar_core_config_t normalized = normalizedConfig(config);
     std::string canonicalSolver;
@@ -115,7 +114,6 @@ blitzar_core_result_t BlitzarCore::applyConfig(const blitzar_core_config_t& conf
     if (!grav_modes::normalizeSolver(normalized.solver_name, canonicalSolver) ||
         !grav_modes::normalizeIntegrator(normalized.integrator_name, canonicalIntegrator) ||
         !grav_modes::isSupportedSolverIntegratorPair(canonicalSolver, canonicalIntegrator)) {
-        /// Description: Executes the setError operation.
         setError("invalid solver/integrator pair");
         return BLITZAR_CORE_INVALID_ARGUMENT;
     }
@@ -129,23 +127,22 @@ blitzar_core_result_t BlitzarCore::applyConfig(const blitzar_core_config_t& conf
     _server.setPaused(true);
     return waitForAppliedConfig(normalized, kDefaultTimeoutMs);
 }
+
 /// Description: Executes the getStatus operation.
 blitzar_core_result_t BlitzarCore::getStatus(blitzar_core_status_t& outStatus) const
 {
-    /// Description: Executes the clearError operation.
     clearError();
-    /// Description: Executes the fillStatus operation.
     fillStatus(_server.getStats(), outStatus);
     return BLITZAR_CORE_OK;
 }
+
+/// Description: Describes the get snapshot operation contract.
 blitzar_core_result_t BlitzarCore::getSnapshot(std::size_t maxPoints,
                                                blitzar_core_snapshot_t& outSnapshot) const
 {
-    /// Description: Executes the clearError operation.
     clearError();
     std::vector<RenderParticle> snapshot;
     if (!_server.copyLatestSnapshot(snapshot, maxPoints)) {
-        /// Description: Executes the setError operation.
         setError("snapshot not ready");
         return BLITZAR_CORE_NOT_READY;
     }

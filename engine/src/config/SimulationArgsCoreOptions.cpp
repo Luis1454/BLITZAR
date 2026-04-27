@@ -1,6 +1,8 @@
 #include "config/SimulationArgsCoreOptions.hpp"
 #include "config/SimulationModes.hpp"
 #include "config/SimulationOptionRegistry.hpp"
+
+/// Description: Describes the apply operation contract.
 bool SimulationArgsCoreOptions::apply(const std::string& key, const std::string& value,
                                       SimulationConfig& config, RuntimeArgs& runtime,
                                       std::ostream& warnings)
@@ -22,7 +24,8 @@ bool SimulationArgsCoreOptions::apply(const std::string& key, const std::string&
         std::string canonical;
         if (!grav_modes::normalizeIntegrator(value, canonical)) {
             runtime.hasArgumentError = true;
-            warnings << "[args] invalid --integrator: " << value << " (allowed: euler|rk4|leapfrog)\n";
+            warnings << "[args] invalid --integrator: " << value
+                     << " (allowed: euler|rk4|leapfrog)\n";
             return true;
         }
     }

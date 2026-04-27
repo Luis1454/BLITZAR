@@ -2,6 +2,7 @@
 // Purpose: Engine implementation for the BLITZAR simulation core.
 
 #include "Internal.hpp"
+
 /// Description: Executes the parseVtkSnapshot operation.
 bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outParticles)
 {
@@ -154,7 +155,6 @@ bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
             if (stripped.empty()) {
                 continue;
             }
-            /// Description: Executes the iss operation.
             std::istringstream iss(stripped);
             std::string keyword;
             iss >> keyword;
@@ -174,7 +174,6 @@ bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
                     }
                     positions[i] = Vector3(x, y, z);
                 }
-                /// Description: Executes the consumeOptionalLineBreak operation.
                 consumeOptionalLineBreak(in);
                 continue;
             }
@@ -188,7 +187,6 @@ bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
                         return false;
                     }
                 }
-                /// Description: Executes the consumeOptionalLineBreak operation.
                 consumeOptionalLineBreak(in);
                 continue;
             }
@@ -232,7 +230,6 @@ bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
                         }
                     }
                 }
-                /// Description: Executes the consumeOptionalLineBreak operation.
                 consumeOptionalLineBreak(in);
                 continue;
             }
@@ -260,14 +257,12 @@ bool parseVtkSnapshot(const std::string& inputPath, std::vector<Particle>& outPa
                         }
                     }
                 }
-                /// Description: Executes the consumeOptionalLineBreak operation.
                 consumeOptionalLineBreak(in);
                 continue;
             }
         }
         return finalizeParticles(positions, masses, temperatures, velocities);
     };
-    /// Description: Executes the in operation.
     std::ifstream in(inputPath, std::ios::binary);
     if (!in.is_open()) {
         return false;

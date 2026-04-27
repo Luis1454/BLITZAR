@@ -8,7 +8,9 @@
 #include <iostream>
 #include <string>
 #include <string_view>
+
 namespace grav_module {
+/// Description: Describes the error from buffer operation contract.
 std::string errorFromBuffer(const std::array<char, kErrorBufferSize>& buffer,
                             std::string_view fallback)
 {
@@ -18,18 +20,23 @@ std::string errorFromBuffer(const std::array<char, kErrorBufferSize>& buffer,
     }
     return error;
 }
+
 /// Description: Executes the ClientModuleHandle operation.
 ClientModuleHandle::ClientModuleHandle() : m_impl(std::make_unique<Impl>())
 {
 }
+
 /// Description: Releases resources owned by ClientModuleHandle.
 ClientModuleHandle::~ClientModuleHandle()
 {
-    /// Description: Executes the unload operation.
     unload();
 }
+
+/// Description: Describes the client module handle operation contract.
 ClientModuleHandle::ClientModuleHandle(ClientModuleHandle&& other) noexcept = default;
 ClientModuleHandle& ClientModuleHandle::operator=(ClientModuleHandle&& other) noexcept = default;
+
+/// Description: Describes the unload operation contract.
 void ClientModuleHandle::unload() noexcept
 {
     if (!m_impl) {
@@ -60,22 +67,30 @@ void ClientModuleHandle::unload() noexcept
     m_impl->path.clear();
     m_impl->library.close();
 }
+
+/// Description: Describes the is loaded operation contract.
 bool ClientModuleHandle::isLoaded() const noexcept
 {
     return m_impl && m_impl->exports != nullptr && m_impl->state.hasValue();
 }
+
+/// Description: Describes the module name operation contract.
 std::string_view ClientModuleHandle::moduleName() const noexcept
 {
     if (!m_impl || m_impl->exports == nullptr || m_impl->exports->moduleName == nullptr)
         return {};
     return m_impl->exports->moduleName;
 }
+
+/// Description: Describes the loaded path operation contract.
 std::string_view ClientModuleHandle::loadedPath() const noexcept
 {
     if (!m_impl)
         return {};
     return m_impl->path;
 }
+
+/// Description: Describes the handle command operation contract.
 bool ClientModuleHandle::handleCommand(std::string_view commandLine, bool& outKeepRunning,
                                        std::string& outError)
 {
@@ -84,7 +99,6 @@ bool ClientModuleHandle::handleCommand(std::string_view commandLine, bool& outKe
         return false;
     }
     std::array<char, kErrorBufferSize> errorBuffer{};
-    /// Description: Executes the command operation.
     std::string command(commandLine);
     ClientModuleCommandResult commandResult{};
     outKeepRunning = commandResult.keepRunning();

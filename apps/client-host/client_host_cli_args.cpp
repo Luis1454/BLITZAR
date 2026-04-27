@@ -10,12 +10,10 @@ namespace grav_client_host {
 /// Description: Defines the ClientHostCliArgsLocal data or behavior contract.
 class ClientHostCliArgsLocal final {
 public:
-    static bool parseArgs(int argc, char** argv, HostOptions& outOptions,
-                          std::string& outError)
+    static bool parseArgs(int argc, char** argv, HostOptions& outOptions, std::string& outError)
     {
         outOptions = HostOptions{};
         for (int i = 1; i < argc; ++i) {
-            /// Description: Executes the arg operation.
             const std::string arg(argv[i] ? argv[i] : "");
             if (arg == "--help") {
                 outOptions.showHelp = true;
@@ -59,7 +57,6 @@ public:
         return true;
     }
 
-    /// Description: Executes the printHelp operation.
     static void printHelp(std::string_view programName)
     {
         std::cout << "Usage: " << programName
@@ -89,6 +86,7 @@ public:
     }
 };
 
+/// Description: Describes the parse args operation contract.
 bool ClientHostCliArgs::parseArgs(int argc, char** argv, HostOptions& outOptions,
                                   std::string& outError)
 {
@@ -98,7 +96,6 @@ bool ClientHostCliArgs::parseArgs(int argc, char** argv, HostOptions& outOptions
 /// Description: Executes the printHelp operation.
 void ClientHostCliArgs::printHelp(std::string_view programName)
 {
-    /// Description: Executes the printHelp operation.
     ClientHostCliArgsLocal::printHelp(programName);
 }
 

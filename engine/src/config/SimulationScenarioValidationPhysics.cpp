@@ -6,7 +6,9 @@
 #include <algorithm>
 #include <cmath>
 #include <string>
+
 namespace grav_config {
+/// Description: Describes the append diagnostics operation contract.
 void SimulationScenarioValidationPhysics::appendDiagnostics(
     const SimulationConfig& config, const InitialStateConfig& resolvedInitConfig,
     const std::function<void(ScenarioDiagnosticLevel, std::string, std::string, std::string)>&

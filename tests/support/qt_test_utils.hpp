@@ -17,17 +17,20 @@ class QComboBox;
 class QPushButton;
 /// Description: Defines the QString data or behavior contract.
 class QString;
+
 namespace grav_qt {
 /// Description: Defines the MainWindow data or behavior contract.
 class MainWindow;
-}
+} // namespace grav_qt
+
 namespace testsupport {
 /// Description: Executes the ensureQtApp operation.
 QApplication* ensureQtApp();
-/// Description: Executes the findStatusLabelText operation.
+/// Description: Describes the find status label text operation contract.
 QString findStatusLabelText(const grav_qt::MainWindow& window);
 /// Description: Executes the saveFailureEvidence operation.
 std::filesystem::path saveFailureEvidence(grav_qt::MainWindow& window, const std::string& stem);
+/// Description: Describes the find summary unsigned metric operation contract.
 std::uint64_t findSummaryUnsignedMetric(const grav_qt::MainWindow& window,
                                         const std::string& label);
 /// Description: Executes the readAllFile operation.
@@ -40,6 +43,7 @@ QComboBox* findComboByObjectName(grav_qt::MainWindow& window, const QString& obj
 QCheckBox* findCheckBoxByText(grav_qt::MainWindow& window, const QString& text);
 /// Description: Executes the findButtonByText operation.
 QPushButton* findButtonByText(grav_qt::MainWindow& window, const QString& text);
+/// Description: Describes the wait until ui operation contract.
 bool waitUntilUi(const std::function<bool()>& predicate, std::chrono::milliseconds timeout,
                  std::chrono::milliseconds pollInterval = std::chrono::milliseconds(10));
 } // namespace testsupport

@@ -8,13 +8,16 @@
 #include <iostream>
 #include <ostream>
 #include <sstream>
+
 /// Description: Executes the toLowerInitConfig operation.
 std::string toLowerInitConfig(std::string value)
 {
-    std::transform(value.begin(), value.end(), value.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
     return value;
 }
+
 /// Description: Executes the isSupportedInitMode operation.
 static bool isSupportedInitMode(const std::string& value)
 {
@@ -22,6 +25,8 @@ static bool isSupportedInitMode(const std::string& value)
            value == "three_body" || value == "plummer_sphere" || value == "galaxy_collision" ||
            value == "solar_system" || value == "sph_collapse" || value == "file";
 }
+
+/// Description: Describes the normalize init field operation contract.
 static std::string normalizeInitField(const std::string& rawValue, const char* fieldName,
                                       const char* fallbackValue, std::ostream& log)
 {
@@ -35,12 +40,16 @@ static std::string normalizeInitField(const std::string& rawValue, const char* f
         << fallbackValue << "\n";
     return fallbackValue;
 }
+
 /// Description: Executes the hasConfiguredInputFile operation.
 static bool hasConfiguredInputFile(const std::string& value)
 {
-    return std::any_of(value.begin(), value.end(),
-                       [](unsigned char c) { return std::isspace(c) == 0; });
+    return std::any_of(value.begin(), value.end(), [](unsigned char c) {
+        return std::isspace(c) == 0;
+    });
 }
+
+/// Description: Describes the summarize plan operation contract.
 static std::string summarizePlan(const std::string& style, const std::string& selector,
                                  const std::string& mode, const std::string& inputFile,
                                  const std::string& inputFormat)
@@ -57,6 +66,7 @@ static std::string summarizePlan(const std::string& style, const std::string& se
     }
     return out.str();
 }
+
 /// Description: Executes the resolveInitialStatePlan operation.
 ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config, std::ostream& log)
 {
@@ -71,13 +81,10 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config,
     init.thermalRadiationCoeff = std::max(0.0f, config.thermalRadiationCoeff);
     const SimulationConfig defaults = SimulationConfig::defaults();
     const std::string style =
-        /// Description: Executes the normalizeInitField operation.
         normalizeInitField(config.initConfigStyle, "init_config_style", "preset", log);
     const std::string preset =
-        /// Description: Executes the normalizeInitField operation.
         normalizeInitField(config.presetStructure, "preset_structure", "disk_orbit", log);
     const std::string detailed =
-        /// Description: Executes the normalizeInitField operation.
         normalizeInitField(config.initMode, "init_mode", "disk_orbit", log);
     const bool presetSelected = style == "preset";
     const std::string selector = presetSelected ? "preset_structure" : "init_mode";
@@ -189,6 +196,7 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config,
     plan.summary = summarizePlan(style, selector, init.mode, plan.inputFile, plan.inputFormat);
     return plan;
 }
+
 /// Description: Executes the buildInitialStateConfig operation.
 InitialStateConfig buildInitialStateConfig(const SimulationConfig& config)
 {

@@ -5,6 +5,7 @@
 #define GRAVITY_APPS_MODULE_HOST_MODULE_HOST_CLI_HPP_
 #include <string>
 #include <string_view>
+
 namespace grav_client_host {
 /// Description: Defines the HostOptions data or behavior contract.
 struct HostOptions {
@@ -15,15 +16,17 @@ struct HostOptions {
     bool validateOnly = false;
     bool waitForModule = false;
 };
+
 /// Description: Defines the ClientHostCli data or behavior contract.
 class ClientHostCli final {
 public:
-    /// Description: Executes the parseArgs operation.
+    /// Description: Describes the parse args operation contract.
     static bool parseArgs(int argc, char** argv, HostOptions& outOptions, std::string& outError);
-    /// Description: Executes the printHelp operation.
+    /// Description: Describes the print help operation contract.
     static void printHelp(std::string_view programName);
-    /// Description: Executes the run operation.
+    /// Description: Describes the run operation contract.
     static int run(const HostOptions& options, std::string_view programName);
+    /// Description: Describes the live reload enabled operation contract.
     [[nodiscard]] static bool liveReloadEnabled() noexcept;
 };
 } // namespace grav_client_host

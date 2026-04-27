@@ -6,11 +6,12 @@
 #include "command/CommandParser.hpp"
 #include <fstream>
 #include <sstream>
+
 namespace grav_cmd {
+/// Description: Describes the run script file operation contract.
 CommandResult CommandBatchRunner::runScriptFile(const std::string& path,
                                                 CommandExecutionContext& context)
 {
-    /// Description: Executes the in operation.
     std::ifstream in(path);
     if (!in.is_open()) {
         CommandResult result{};

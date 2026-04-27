@@ -2,12 +2,14 @@
 // Purpose: Verification coverage for the BLITZAR quality gate.
 
 #include "tests/support/performance_benchmark_tool.hpp"
+#include "tests/support/physics_scenario.hpp"
+#include "tests/support/physics_test_utils.hpp"
 #include <chrono>
 #include <iomanip>
 #include <ostream>
-#include "tests/support/physics_scenario.hpp"
-#include "tests/support/physics_test_utils.hpp"
+
 namespace grav_test_perf_tool {
+/// Description: Describes the build scenario operation contract.
 bool buildScenario(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& options,
                    testsupport::ScenarioConfig& cfg, std::string& error)
 {
@@ -24,12 +26,12 @@ bool buildScenario(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& 
         error = "unknown workload: " + options.workload;
         return false;
     }
-    /// Description: Executes the setScenarioTiming operation.
     testsupport::setScenarioTiming(cfg, 30000, 30000);
-    /// Description: Executes the setScenarioEnergySampling operation.
     testsupport::setScenarioEnergySampling(cfg, 1u, options.particleCount);
     return true;
 }
+
+/// Description: Describes the write measurement operation contract.
 void writeMeasurement(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& options,
                       const testsupport::ScenarioResult& result, const double wallSeconds,
                       std::ostream& out)
@@ -37,7 +39,6 @@ void writeMeasurement(const grav_test_perf::PerformanceBenchmarkTool::ToolOption
     const double steps = static_cast<double>(options.steps);
     const double particleUpdates = steps * static_cast<double>(result.final.size());
     const double safeWallSeconds = wallSeconds > 1e-9 ? wallSeconds : 1e-9;
-    /// Description: Executes the setprecision operation.
     out << std::fixed << std::setprecision(8);
     out << "workload=" << options.workload << "\n";
     out << "solver=" << options.solver << "\n";
@@ -55,6 +56,7 @@ void writeMeasurement(const grav_test_perf::PerformanceBenchmarkTool::ToolOption
     out << "energy_drift_pct=" << result.stats.energyDriftPct << "\n";
 }
 } // namespace grav_test_perf_tool
+
 namespace grav_test_perf {
 /// Description: Executes the parseFloatValue operation.
 bool PerformanceBenchmarkTool::parseFloatValue(const std::string& text, float& out)
@@ -68,6 +70,7 @@ bool PerformanceBenchmarkTool::parseFloatValue(const std::string& text, float& o
     }
     return consumed == text.size();
 }
+
 /// Description: Executes the parseUintValue operation.
 bool PerformanceBenchmarkTool::parseUintValue(const std::string& text, std::uint32_t& out)
 {
@@ -80,23 +83,23 @@ bool PerformanceBenchmarkTool::parseUintValue(const std::string& text, std::uint
     }
     return consumed == text.size();
 }
+
+/// Description: Describes the parse args operation contract.
 bool PerformanceBenchmarkTool::parseArgs(int argc, const char* const* argv, ToolOptions& out,
                                          std::string& error)
 {
     for (int index = 1; index < argc; index += 1) {
-        /// Description: Executes the arg operation.
         const std::string arg(argv[index]);
         if (arg == "--help") {
-            error =
-                "usage: gravityPerformanceBenchmarkTool --workload <name> --solver <solver> "
-                "--integrator <integrator> --dt <seconds> --particle-count <n> --steps <n> --seed <n>";
+            error = "usage: gravityPerformanceBenchmarkTool --workload <name> --solver <solver> "
+                    "--integrator <integrator> --dt <seconds> --particle-count <n> --steps <n> "
+                    "--seed <n>";
             return false;
         }
         if (index + 1 >= argc) {
             error = "missing value for argument: " + arg;
             return false;
         }
-        /// Description: Executes the value operation.
         const std::string value(argv[index + 1]);
         if (arg == "--workload") {
             out.workload = value;
@@ -143,6 +146,8 @@ bool PerformanceBenchmarkTool::parseArgs(int argc, const char* const* argv, Tool
     }
     return true;
 }
+
+/// Description: Describes the run operation contract.
 int PerformanceBenchmarkTool::run(int argc, const char* const* argv, std::ostream& out,
                                   std::ostream& err) const
 {
@@ -164,7 +169,6 @@ int PerformanceBenchmarkTool::run(int argc, const char* const* argv, std::ostrea
         return 1;
     }
     const std::chrono::duration<double> elapsed = std::chrono::steady_clock::now() - start;
-    /// Description: Executes the writeMeasurement operation.
     grav_test_perf_tool::writeMeasurement(options, result, elapsed.count(), out);
     return 0;
 }

@@ -16,7 +16,8 @@
         "runtime/src/server/ServerDaemon.cpp",
         "runtime/src/protocol/ServerClient.cpp",
         "runtime/src/client/ClientServerBridge.cpp",
-        "runtime/src/client/ClientRuntime.cpp"
+        "runtime/src/client/ClientRuntime.cpp",
+        "runtime/src/command/CommandExecutor.cpp"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -64,7 +65,8 @@
       "closure_criteria": "Extract module composition responsibilities into smaller units and delete the allowlist paths.",
       "paths": [
         "modules/proxy/module.cpp",
-        "modules/qt/module.cpp"
+        "modules/qt/module.cpp",
+        "modules/qt/ui/EnergyGraphWidgetPaint.cpp"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -196,7 +198,7 @@
     },
     "DEV-QUAL-009": {
       "kind": "deviation",
-      "status": "open",
+      "status": "closed",
       "scope": "repository-policy:file-size",
       "owner": "project-maintainer",
       "approver": "quality-review",

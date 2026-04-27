@@ -2,6 +2,7 @@
 // Purpose: Engine implementation for the BLITZAR simulation core.
 
 #include "Internal.hpp"
+
 /// Description: Executes the rebuildSystem operation.
 void SimulationServer::rebuildSystem()
 {
@@ -37,7 +38,6 @@ void SimulationServer::rebuildSystem()
     std::unique_ptr<SimulationCheckpointState> checkpointStateCopy;
     std::uint32_t configuredParticleCount = 2u;
     {
-        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         solver = _solverMode;
         integrator = _integratorMode;
@@ -93,7 +93,6 @@ void SimulationServer::rebuildSystem()
             openingCriterion.assign(grav_modes::kOctreeCriterionCom);
             std::cerr << "[server] invalid internal octree criterion detected, resetting to com\n";
         }
-        /// Description: Executes the coerceConfigSolverIntegratorCompatibility operation.
         coerceConfigSolverIntegratorCompatibility(solver, integrator, "rebuild");
     }
     std::vector<Particle> importedParticles;
@@ -106,7 +105,6 @@ void SimulationServer::rebuildSystem()
     }
     else {
         hasImportedState =
-            /// Description: Executes the loadInitialState operation.
             shouldTryFile && loadInitialState(importedParticles, inputPath, inputFormat);
     }
     std::vector<Particle> generatedParticles;
@@ -142,10 +140,8 @@ void SimulationServer::rebuildSystem()
                       << " or GRAVITY_AUTO_SOLVER_FALLBACK=1\n";
         }
     }
-    /// Description: Executes the coerceConfigSolverIntegratorCompatibility operation.
     coerceConfigSolverIntegratorCompatibility(effectiveSolver, integrator, "rebuild");
     {
-        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         _solverMode = effectiveSolver;
         _integratorMode = integrator;
@@ -182,7 +178,6 @@ void SimulationServer::rebuildSystem()
         std::cerr << "[server] initial state generation failed, using constructor fallback\n";
     }
     {
-        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         _particleCount = targetParticleCount;
     }
@@ -191,7 +186,6 @@ void SimulationServer::rebuildSystem()
         resolveOctreeTheta(theta, thetaAutoTune, thetaAutoMin, thetaAutoMax, performanceProfile,
                            configuredParticles, octreeDistributionScore);
     {
-        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_commandMutex);
         _octreeOpeningCriterion = openingCriterion;
         _octreeDistributionScore = octreeDistributionScore;
@@ -244,14 +238,11 @@ void SimulationServer::rebuildSystem()
     _faulted.store(false, std::memory_order_relaxed);
     _faultStep.store(0, std::memory_order_relaxed);
     {
-        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(_faultMutex);
         _faultReason.clear();
     }
     _scratchSnapshot.clear();
-    /// Description: Executes the publishSnapshot operation.
     publishSnapshot();
-    /// Description: Executes the maybeUpdateEnergy operation.
     maybeUpdateEnergy(0);
     if (checkpointStateCopy) {
         _steps.store(checkpointStateCopy->steps, std::memory_order_relaxed);
@@ -259,7 +250,6 @@ void SimulationServer::rebuildSystem()
         _paused.store(checkpointStateCopy->paused, std::memory_order_relaxed);
         _hasEnergyBaseline = checkpointStateCopy->hasEnergyBaseline;
         _energyBaseline = checkpointStateCopy->energyBaseline;
-        /// Description: Executes the maybeUpdateEnergy operation.
         maybeUpdateEnergy(checkpointStateCopy->steps);
     }
 }

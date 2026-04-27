@@ -15,6 +15,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+
 namespace grav_client {
 /// Carries the latest rendered snapshot consumed by a frontend together with transport metadata.
 struct ConsumedSnapshot final {
@@ -22,6 +23,7 @@ struct ConsumedSnapshot final {
     std::size_t sourceSize = 0u;
     std::uint32_t latencyMs = 0u;
 };
+
 /// Summarizes the state of the client-side snapshot queue.
 struct SnapshotPipelineState final {
     std::size_t queueDepth = 0u;
@@ -30,6 +32,7 @@ struct SnapshotPipelineState final {
     std::uint32_t latencyMs = 0u;
     std::string dropPolicy = "latest-only";
 };
+
 /// Defines the control and telemetry surface consumed by interactive and scripted client frontends.
 class IClientRuntime {
 public:

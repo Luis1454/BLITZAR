@@ -5,7 +5,9 @@
 #include "platform/PlatformErrors.hpp"
 #include "platform/PlatformProcess.hpp"
 #include <windows.h>
+
 namespace grav_platform_detail {
+/// Description: Describes the launch process operation contract.
 bool launchProcess(const std::string& executable, const std::vector<std::string>& args,
                    bool createNewConsole, NativeProcessHandle& outHandle, std::int64_t& outPid,
                    std::string& outError)
@@ -24,12 +26,13 @@ bool launchProcess(const std::string& executable, const std::vector<std::string>
         outError = grav_platform_errors::kProcessLaunchFailed;
         return false;
     }
-    /// Description: Executes the CloseHandle operation.
     CloseHandle(processInfo.hThread);
     outHandle = reinterpret_cast<NativeProcessHandle>(processInfo.hProcess);
     outPid = static_cast<std::int64_t>(processInfo.dwProcessId);
     return true;
 }
+
+/// Description: Describes the terminate process operation contract.
 bool terminateProcess(NativeProcessHandle& handle, std::int64_t& pid, std::uint32_t waitMs,
                       std::string& outError)
 {
@@ -42,14 +45,13 @@ bool terminateProcess(NativeProcessHandle& handle, std::int64_t& pid, std::uint3
         outError = grav_platform_errors::kProcessTerminateFailed;
         return false;
     }
-    /// Description: Executes the WaitForSingleObject operation.
     WaitForSingleObject(processHandle, waitMs);
-    /// Description: Executes the CloseHandle operation.
     CloseHandle(processHandle);
     handle = 0u;
     pid = 0;
     return true;
 }
+
 /// Description: Executes the isProcessRunning operation.
 bool isProcessRunning(NativeProcessHandle handle, std::int64_t pid)
 {
@@ -62,21 +64,24 @@ bool isProcessRunning(NativeProcessHandle handle, std::int64_t pid)
     }
     return code == STILL_ACTIVE;
 }
+
 /// Description: Executes the clearProcessHandle operation.
 void clearProcessHandle(NativeProcessHandle& handle, std::int64_t& pid)
 {
     if (handle != 0u) {
-        /// Description: Executes the CloseHandle operation.
         CloseHandle(reinterpret_cast<HANDLE>(handle));
         handle = 0u;
     }
     pid = 0;
 }
+
 /// Description: Executes the formatProcessId operation.
 std::string formatProcessId(std::int64_t pid)
 {
     return std::to_string(pid);
 }
+
+/// Description: Describes the launch detached process operation contract.
 bool launchDetachedProcess(const std::string& executable, const std::vector<std::string>& args,
                            std::string& outError)
 {
@@ -92,12 +97,12 @@ bool launchDetachedProcess(const std::string& executable, const std::vector<std:
         outError = grav_platform_errors::kProcessLaunchFailed;
         return false;
     }
-    /// Description: Executes the CloseHandle operation.
     CloseHandle(processInfo.hThread);
-    /// Description: Executes the CloseHandle operation.
     CloseHandle(processInfo.hProcess);
     return true;
 }
+
+/// Description: Describes the run process blocking operation contract.
 int runProcessBlocking(const std::string& executable, const std::vector<std::string>& args,
                        bool createNewConsole, std::string& outError)
 {
@@ -113,13 +118,10 @@ int runProcessBlocking(const std::string& executable, const std::vector<std::str
         outError = grav_platform_errors::kProcessLaunchFailed;
         return 1;
     }
-    /// Description: Executes the CloseHandle operation.
     CloseHandle(processInfo.hThread);
-    /// Description: Executes the WaitForSingleObject operation.
     WaitForSingleObject(processInfo.hProcess, INFINITE);
     DWORD exitCode = 1u;
     (void)GetExitCodeProcess(processInfo.hProcess, &exitCode);
-    /// Description: Executes the CloseHandle operation.
     CloseHandle(processInfo.hProcess);
     return static_cast<int>(exitCode);
 }

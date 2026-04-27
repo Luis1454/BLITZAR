@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
+
 namespace grav_test_module_cli_server_ops {
 /// Description: Executes the TEST operation.
 TEST(ModuleCliServerOpsTest, TST_UNT_MODCLI_004_CommandStepRejectsInvalidCount)
@@ -15,11 +16,10 @@ TEST(ModuleCliServerOpsTest, TST_UNT_MODCLI_004_CommandStepRejectsInvalidCount)
     char errorBuffer[128] = {};
     const std::vector<std::string> tokens = {"step", "0"};
     EXPECT_FALSE(grav_module_cli::ModuleCliServerOps::commandStep(
-        /// Description: Executes the ErrorBufferView operation.
         state, tokens, grav_client::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(std::string(errorBuffer), "invalid step count");
 }
+
 /// Description: Executes the TEST operation.
 TEST(ModuleCliServerOpsTest, TST_UNT_MODCLI_005_ConnectRejectsInvalidPort)
 {
@@ -27,9 +27,7 @@ TEST(ModuleCliServerOpsTest, TST_UNT_MODCLI_005_ConnectRejectsInvalidPort)
     char errorBuffer[128] = {};
     const std::vector<std::string> tokens = {"connect", "127.0.0.1", "70000"};
     EXPECT_FALSE(grav_module_cli::ModuleCliServerOps::connect(
-        /// Description: Executes the ErrorBufferView operation.
         state, tokens, grav_client::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(std::string(errorBuffer), "invalid server port");
 }
 } // namespace grav_test_module_cli_server_ops

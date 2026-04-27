@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+
 namespace testsupport {
 /// Description: Defines the ScenarioConfig data or behavior contract.
 struct ScenarioConfig {
@@ -28,6 +29,7 @@ struct ScenarioConfig {
     bool sphEnabled = false;
     InitialStateConfig initState{};
 };
+
 /// Description: Defines the ScenarioResult data or behavior contract.
 struct ScenarioResult {
     std::vector<RenderParticle> initial;
@@ -36,6 +38,7 @@ struct ScenarioResult {
     float maxAbsEnergyDriftPct = 0.0f;
     float maxParticleDeltaFromInitial = 0.0f;
 };
+
 /// Description: Executes the distance operation.
 float distance(const RenderParticle& a, const RenderParticle& b);
 /// Description: Executes the centerOfMassAll operation.
@@ -48,6 +51,7 @@ bool runScenario(const ScenarioConfig& cfg, ScenarioResult& out, std::string& er
 std::string getTwoBodyInputPath();
 /// Description: Executes the prepareTwoBodyScenario operation.
 bool prepareTwoBodyScenario(ScenarioConfig& cfg, std::string& error);
+/// Description: Describes the prepare generated calibration scenario operation contract.
 bool prepareGeneratedCalibrationScenario(const std::string& mode, ScenarioConfig& cfg,
                                          std::string& error);
 } // namespace testsupport

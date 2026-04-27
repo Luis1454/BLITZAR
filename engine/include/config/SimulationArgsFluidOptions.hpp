@@ -6,9 +6,11 @@
 #include "config/SimulationArgs.hpp"
 #include <ostream>
 #include <string>
+
 /// Description: Defines the SimulationArgsFluidOptions data or behavior contract.
 class SimulationArgsFluidOptions final {
 public:
+    /// Description: Describes the apply operation contract.
     static bool apply(const std::string& key, const std::string& value, SimulationConfig& config,
                       RuntimeArgs& runtime, std::ostream& warnings);
 };

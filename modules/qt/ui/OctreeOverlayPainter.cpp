@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+
 namespace grav_qt {
 /// Description: Executes the colorForDepth operation.
 static QColor colorForDepth(int depth, int opacity)
@@ -21,6 +22,8 @@ static QColor colorForDepth(int depth, int opacity)
     const int blue = std::clamp(255 - (depth * 16), 80, 255);
     return QColor(red, green, blue, clampedOpacity);
 }
+
+/// Description: Describes the draw orthographic node operation contract.
 static void drawOrthographicNode(QPainter& painter, const QRect& viewport, grav::ViewMode mode,
                                  const OctreeOverlayNode& node, float zoom)
 {
@@ -46,6 +49,8 @@ static void drawOrthographicNode(QPainter& painter, const QRect& viewport, grav:
                      halfSizePx * 2.0f);
     painter.drawRect(box);
 }
+
+/// Description: Describes the project corner operation contract.
 static bool projectCorner(const QRect& viewport, grav::ViewMode mode,
                           const grav::CameraState& camera, float zoom, const RenderParticle& corner,
                           QPointF& projected)
@@ -57,6 +62,8 @@ static bool projectCorner(const QRect& viewport, grav::ViewMode mode,
     projected.setY(static_cast<float>(viewport.height()) * 0.5f - (point.y * zoom));
     return true;
 }
+
+/// Description: Describes the paint operation contract.
 void OctreeOverlayPainter::paint(QPainter& painter, const QRect& viewport, grav::ViewMode mode,
                                  const grav::CameraState& camera,
                                  const std::vector<OctreeOverlayNode>& nodes, float zoom,
@@ -70,7 +77,6 @@ void OctreeOverlayPainter::paint(QPainter& painter, const QRect& viewport, grav:
     if (mode == grav::ViewMode::XY || mode == grav::ViewMode::XZ || mode == grav::ViewMode::YZ) {
         for (const OctreeOverlayNode& node : nodes) {
             painter.setPen(QPen(colorForDepth(node.depth, opacity), 1.0));
-            /// Description: Executes the drawOrthographicNode operation.
             drawOrthographicNode(painter, viewport, mode, node, zoom);
         }
         painter.restore();

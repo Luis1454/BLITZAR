@@ -12,8 +12,10 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+
 namespace grav_module {
 constexpr std::size_t kErrorBufferSize = 1024u;
+
 /// Description: Defines the ClientModuleHandle data or behavior contract.
 struct ClientModuleHandle::Impl {
     grav_platform::DynamicLibrary library{};
@@ -21,6 +23,8 @@ struct ClientModuleHandle::Impl {
     ClientModuleOpaqueState state{};
     std::string path;
 };
+
+/// Description: Describes the error from buffer operation contract.
 std::string errorFromBuffer(const std::array<char, kErrorBufferSize>& buffer,
                             std::string_view fallback);
 } // namespace grav_module

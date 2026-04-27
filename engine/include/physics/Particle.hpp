@@ -11,46 +11,47 @@
  */
 #include "physics/Vector.hpp"
 #include <vector>
+
 /// Description: Defines the Particle data or behavior contract.
 class Particle {
 public:
     static constexpr float kDefaultMass = 0.01f;
     static constexpr int kDefaultCudaBlockSize = 256;
-    /// Description: Executes the Particle operation.
+    /// Description: Describes the particle operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE Particle();
     /// Description: Releases resources owned by Particle.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE ~Particle();
-    /// Description: Executes the update operation.
+    /// Description: Describes the update operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void update(float deltaTime);
-    /// Description: Executes the setMass operation.
+    /// Description: Describes the set mass operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setMass(float mass);
-    /// Description: Executes the move operation.
+    /// Description: Describes the move operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void move(Vector3 force);
-    /// Description: Executes the bounce operation.
+    /// Description: Describes the bounce operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void bounce(Vector3 normal, float dt);
-    /// Description: Executes the applyForce operation.
+    /// Description: Describes the apply force operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void applyForce(Vector3 force);
-    /// Description: Executes the setDensity operation.
+    /// Description: Describes the set density operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setDensity(float density);
-    /// Description: Executes the setPosition operation.
+    /// Description: Describes the set position operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setPosition(Vector3 position);
-    /// Description: Executes the setVelocity operation.
+    /// Description: Describes the set velocity operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setVelocity(Vector3 velocity);
-    /// Description: Executes the setPressure operation.
+    /// Description: Describes the set pressure operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setPressure(Vector3 pressure);
-    /// Description: Executes the setTemperature operation.
+    /// Description: Describes the set temperature operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE void setTemperature(float temperature);
-    /// Description: Executes the getPressure operation.
+    /// Description: Describes the get pressure operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 getPressure() const;
-    /// Description: Executes the getPosition operation.
+    /// Description: Describes the get position operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 getPosition() const;
-    /// Description: Executes the getVelocity operation.
+    /// Description: Describes the get velocity operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 getVelocity() const;
-    /// Description: Executes the getDensity operation.
+    /// Description: Describes the get density operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE float getDensity() const;
-    /// Description: Executes the getMass operation.
+    /// Description: Describes the get mass operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE float getMass() const;
-    /// Description: Executes the getTemperature operation.
+    /// Description: Describes the get temperature operation contract.
     GRAVITY_HD_HOST GRAVITY_HD_DEVICE float getTemperature() const;
 
 private:

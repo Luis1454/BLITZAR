@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <iosfwd>
 #include <string>
+
 namespace grav_test_perf {
 /// Description: Defines the PerformanceBenchmarkTool data or behavior contract.
 class PerformanceBenchmarkTool {
@@ -20,15 +21,16 @@ public:
         std::uint32_t steps = 120u;
         std::uint32_t seed = 12345u;
     };
-    /// Description: Executes the run operation.
+
+    /// Description: Describes the run operation contract.
     int run(int argc, const char* const* argv, std::ostream& out, std::ostream& err) const;
 
 private:
-    /// Description: Executes the parseArgs operation.
+    /// Description: Describes the parse args operation contract.
     static bool parseArgs(int argc, const char* const* argv, ToolOptions& out, std::string& error);
-    /// Description: Executes the parseFloatValue operation.
+    /// Description: Describes the parse float value operation contract.
     static bool parseFloatValue(const std::string& text, float& out);
-    /// Description: Executes the parseUintValue operation.
+    /// Description: Describes the parse uint value operation contract.
     static bool parseUintValue(const std::string& text, std::uint32_t& out);
 };
 } // namespace grav_test_perf

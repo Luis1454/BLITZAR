@@ -6,9 +6,12 @@
 #include "graphics/GraphicsTypes.hpp"
 #include "types/SimulationTypes.hpp"
 #include <vector>
+
 namespace grav {
+/// Description: Describes the update adaptive scales operation contract.
 void updateAdaptiveScales(const std::vector<RenderParticle>& snapshot,
                           float& adaptiveTemperatureScale, float& adaptivePressureScale);
+/// Description: Describes the particle ramp color fast operation contract.
 ColorRGBA particleRampColorFast(const RenderParticle& particle, float temperatureScale,
                                 float pressureScale, int luminosity);
 /// Description: Executes the heavyBodyColor operation.

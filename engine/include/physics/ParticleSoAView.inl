@@ -1,6 +1,7 @@
 // File: engine/include/physics/ParticleSoAView.inl
 // Purpose: Engine implementation for the BLITZAR simulation core.
 
+/// Description: Describes the get so a position operation contract.
 GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3 getSoAPosition(ParticleSoAView view, int i)
 {
     return Vector3{view.posX[i], view.posY[i], view.posZ[i]};

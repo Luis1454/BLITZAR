@@ -3,6 +3,7 @@
  * Responsibility: Compute energy diagnostics from device buffers without host particle copies.
  */
 
+/// Description: Describes the compute kinetic thermal block sums kernel operation contract.
 __global__ void computeKineticThermalBlockSumsKernel(
     ParticleSoAView state,
     int numParticles,
@@ -29,7 +30,6 @@ __global__ void computeKineticThermalBlockSumsKernel(
 
     sharedKinetic[threadIdx.x] = kinetic;
     sharedThermal[threadIdx.x] = thermal;
-    /// Description: Executes the __syncthreads operation.
     __syncthreads();
 
     for (int stride = blockDim.x / 2; stride > 0; stride >>= 1) {
@@ -37,7 +37,6 @@ __global__ void computeKineticThermalBlockSumsKernel(
             sharedKinetic[threadIdx.x] += sharedKinetic[threadIdx.x + stride];
             sharedThermal[threadIdx.x] += sharedThermal[threadIdx.x + stride];
         }
-        /// Description: Executes the __syncthreads operation.
         __syncthreads();
     }
 
@@ -47,6 +46,7 @@ __global__ void computeKineticThermalBlockSumsKernel(
     }
 }
 
+/// Description: Describes the compute sample potential partials kernel operation contract.
 __global__ void computeSamplePotentialPartialsKernel(
     ParticleSoAView state,
     int numParticles,
@@ -88,6 +88,7 @@ __global__ void computeSamplePotentialPartialsKernel(
     potentialPartials[sampleA] = partial;
 }
 
+/// Description: Describes the compute energy estimate gpu operation contract.
 bool ParticleSystem::computeEnergyEstimateGpu(
     std::size_t sampleLimit,
     float softening,
@@ -148,11 +149,8 @@ bool ParticleSystem::computeEnergyEstimateGpu(
         return false;
     }
 
-    /// Description: Executes the kineticBlocks operation.
     std::vector<float> kineticBlocks(static_cast<std::size_t>(blockCount), 0.0f);
-    /// Description: Executes the thermalBlocks operation.
     std::vector<float> thermalBlocks(static_cast<std::size_t>(blockCount), 0.0f);
-    /// Description: Executes the potentialPartials operation.
     std::vector<double> potentialPartials(static_cast<std::size_t>(sampleCount), 0.0);
 
     if (!checkCudaStatus(cudaMemcpy(kineticBlocks.data(), d_energyKineticBlocks,

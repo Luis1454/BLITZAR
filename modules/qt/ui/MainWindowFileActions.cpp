@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <limits>
 #include <string>
+
 namespace grav_qt {
 /// Description: Executes the formatFromSelectedFilter operation.
 std::string MainWindow::formatFromSelectedFilter(const QString& filter)
@@ -31,6 +32,7 @@ std::string MainWindow::formatFromSelectedFilter(const QString& filter)
     }
     return {};
 }
+
 /// Description: Executes the configureRemoteConnectorFromUi operation.
 void MainWindow::configureRemoteConnectorFromUi()
 {
@@ -43,31 +45,30 @@ void MainWindow::configureRemoteConnectorFromUi()
                                        _serverAutostartCheck->isChecked(),
                                        _serverBinEdit->text().trimmed().toStdString());
 }
+
 /// Description: Executes the applyConnectorSettings operation.
 void MainWindow::applyConnectorSettings(bool reconnectNow)
 {
-    /// Description: Executes the configureRemoteConnectorFromUi operation.
     configureRemoteConnectorFromUi();
     if (reconnectNow) {
         _runtime->requestReconnect();
         _energyGraph->clearHistory();
         _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
-        /// Description: Executes the statusBar operation.
         statusBar()->showMessage("Connector updated and reconnect requested", 3000);
         return;
     }
-    /// Description: Executes the statusBar operation.
     statusBar()->showMessage("Connector settings updated", 3000);
 }
+
 /// Description: Executes the requestReconnectFromUi operation.
 void MainWindow::requestReconnectFromUi()
 {
     _runtime->requestReconnect();
     _energyGraph->clearHistory();
     _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
-    /// Description: Executes the statusBar operation.
     statusBar()->showMessage("Reconnect requested", 3000);
 }
+
 /// Description: Executes the handleExportRequest operation.
 void MainWindow::handleExportRequest()
 {
@@ -92,7 +93,6 @@ void MainWindow::handleExportRequest()
         return;
     }
     std::string format =
-        /// Description: Executes the normalizeExportFormat operation.
         grav_client::normalizeExportFormat(formatFromSelectedFilter(selectedFilter));
     std::string path = pathChosen.toStdString();
     if (format.empty()) {
@@ -104,7 +104,6 @@ void MainWindow::handleExportRequest()
             format = "vtk";
         }
     }
-    /// Description: Executes the outPath operation.
     std::filesystem::path outPath(path);
     if (outPath.extension().empty()) {
         const std::string ext = grav_client::extensionForExportFormat(format);
@@ -118,9 +117,9 @@ void MainWindow::handleExportRequest()
     if (outPath.has_parent_path()) {
         _config.exportDirectory = outPath.parent_path().string();
     }
-    /// Description: Executes the markConfigDirty operation.
     markConfigDirty();
 }
+
 /// Description: Executes the handleSaveCheckpointRequest operation.
 void MainWindow::handleSaveCheckpointRequest()
 {
@@ -135,7 +134,6 @@ void MainWindow::handleSaveCheckpointRequest()
     if (pathChosen.isEmpty()) {
         return;
     }
-    /// Description: Executes the outputPath operation.
     std::filesystem::path outputPath(pathChosen.toStdString());
     if (outputPath.extension().empty()) {
         outputPath += ".chk";
@@ -144,11 +142,10 @@ void MainWindow::handleSaveCheckpointRequest()
     if (outputPath.has_parent_path()) {
         _config.exportDirectory = outputPath.parent_path().string();
     }
-    /// Description: Executes the statusBar operation.
     statusBar()->showMessage("Checkpoint save requested", 3000);
-    /// Description: Executes the markConfigDirty operation.
     markConfigDirty();
 }
+
 /// Description: Executes the handleLoadCheckpointRequest operation.
 void MainWindow::handleLoadCheckpointRequest()
 {
@@ -163,9 +160,9 @@ void MainWindow::handleLoadCheckpointRequest()
     _runtime->requestLoadCheckpoint(path.toStdString());
     _energyGraph->clearHistory();
     _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
-    /// Description: Executes the statusBar operation.
     statusBar()->showMessage("Checkpoint load requested", 3000);
 }
+
 /// Description: Executes the handleLoadInputRequest operation.
 void MainWindow::handleLoadInputRequest()
 {
@@ -183,9 +180,9 @@ void MainWindow::handleLoadInputRequest()
     _config.presetStructure = "file";
     _config.initMode = "file";
     (void)applyConfigToServer(true);
-    /// Description: Executes the markConfigDirty operation.
     markConfigDirty();
 }
+
 /// Description: Executes the handleLoadPresetRequest operation.
 void MainWindow::handleLoadPresetRequest()
 {
@@ -197,22 +194,19 @@ void MainWindow::handleLoadPresetRequest()
     }
     _config = SimulationConfig::loadOrCreate(path.toStdString());
     _configPath = path.toStdString();
-    /// Description: Executes the applyConfigToUi operation.
     applyConfigToUi();
-    /// Description: Executes the applyConfigToServer operation.
     applyConfigToServer(true);
     _energyGraph->clearHistory();
     _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
-    /// Description: Executes the markConfigDirty operation.
     markConfigDirty(false);
 }
+
 /// Description: Executes the resetSimulationFromUi operation.
 void MainWindow::resetSimulationFromUi()
 {
     _runtime->requestReset();
     _energyGraph->clearHistory();
     _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
-    /// Description: Executes the statusBar operation.
     statusBar()->showMessage("Simulation reset requested", 3000);
 }
 } // namespace grav_qt

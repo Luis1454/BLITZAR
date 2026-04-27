@@ -10,6 +10,7 @@
  */
 #include <cstdint>
 #include <string>
+
 /// Stores the persisted runtime, rendering, export, and scenario initialization parameters.
 struct SimulationConfig {
     // Physical quantities use SI units unless a field name explicitly carries another unit such as

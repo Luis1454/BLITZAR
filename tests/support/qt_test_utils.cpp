@@ -18,6 +18,7 @@
 #include <cstring>
 #include <fstream>
 #include <sstream>
+
 namespace testsupport {
 /// Description: Executes the ensureQtApp operation.
 QApplication* ensureQtApp()
@@ -27,10 +28,8 @@ QApplication* ensureQtApp()
     }
     const QString pluginRoot = QLibraryInfo::path(QLibraryInfo::PluginsPath);
     if (!pluginRoot.isEmpty()) {
-        /// Description: Executes the qputenv operation.
         qputenv("QT_PLUGIN_PATH", pluginRoot.toUtf8());
         const QString platformsDir = QDir(pluginRoot).filePath("platforms");
-        /// Description: Executes the qputenv operation.
         qputenv("QT_QPA_PLATFORM_PLUGIN_PATH", platformsDir.toUtf8());
     }
     static int argc = 1;
@@ -39,16 +38,14 @@ QApplication* ensureQtApp()
     static bool initialized = false;
     if (!initialized) {
         const char* appName = "qt-mainwindow-integration-real";
-        /// Description: Executes the copy_n operation.
         std::copy_n(appName, std::strlen(appName), arg0.data());
         arg0[std::strlen(appName)] = '\0';
         initialized = true;
     }
-    /// Description: Executes the app operation.
     static QApplication app(argc, argv);
     return &app;
 }
-/// Description: Executes the findStatusLabelText operation.
+
 QString findStatusLabelText(const grav_qt::MainWindow& window)
 {
     const QList<QLabel*> labels = window.findChildren<QLabel*>();
@@ -59,17 +56,17 @@ QString findStatusLabelText(const grav_qt::MainWindow& window)
         }
     return summaryLines.join("\n");
 }
+
 /// Description: Executes the saveFailureEvidence operation.
 std::filesystem::path saveFailureEvidence(grav_qt::MainWindow& window, const std::string& stem)
 {
     const std::filesystem::path basePath = std::filesystem::temp_directory_path() / stem;
     (void)window.grab().save(QString::fromStdString(basePath.string() + ".png"));
-    /// Description: Executes the out operation.
     std::ofstream out(basePath.string() + ".txt", std::ios::binary);
-    /// Description: Executes the findStatusLabelText operation.
     out << findStatusLabelText(window).toStdString();
     return basePath;
 }
+
 /// Description: Executes the findSummaryUnsignedMetric operation.
 std::uint64_t findSummaryUnsignedMetric(const grav_qt::MainWindow& window, const std::string& label)
 {
@@ -85,10 +82,10 @@ std::uint64_t findSummaryUnsignedMetric(const grav_qt::MainWindow& window, const
     }
     return value;
 }
+
 /// Description: Executes the readAllFile operation.
 std::string readAllFile(const std::filesystem::path& path)
 {
-    /// Description: Executes the in operation.
     std::ifstream in(path, std::ios::binary);
     if (!in.is_open()) {
         return {};
@@ -97,6 +94,7 @@ std::string readAllFile(const std::filesystem::path& path)
     out << in.rdbuf();
     return out.str();
 }
+
 /// Description: Executes the findSolverCombo operation.
 QComboBox* findSolverCombo(grav_qt::MainWindow& window)
 {
@@ -108,6 +106,7 @@ QComboBox* findSolverCombo(grav_qt::MainWindow& window)
         }
     return nullptr;
 }
+
 /// Description: Executes the findComboByObjectName operation.
 QComboBox* findComboByObjectName(grav_qt::MainWindow& window, const QString& objectName)
 {
@@ -118,6 +117,7 @@ QComboBox* findComboByObjectName(grav_qt::MainWindow& window, const QString& obj
         }
     return nullptr;
 }
+
 /// Description: Executes the findCheckBoxByText operation.
 QCheckBox* findCheckBoxByText(grav_qt::MainWindow& window, const QString& text)
 {
@@ -128,6 +128,7 @@ QCheckBox* findCheckBoxByText(grav_qt::MainWindow& window, const QString& text)
         }
     return nullptr;
 }
+
 /// Description: Executes the findButtonByText operation.
 QPushButton* findButtonByText(grav_qt::MainWindow& window, const QString& text)
 {
@@ -138,10 +139,13 @@ QPushButton* findButtonByText(grav_qt::MainWindow& window, const QString& text)
         }
     return nullptr;
 }
+
+/// Description: Describes the wait until ui operation contract.
 bool waitUntilUi(const std::function<bool()>& predicate, std::chrono::milliseconds timeout,
                  std::chrono::milliseconds pollInterval)
 {
-    return waitUntil(predicate, timeout, pollInterval,
-                     []() { QCoreApplication::processEvents(QEventLoop::AllEvents, 20); });
+    return waitUntil(predicate, timeout, pollInterval, []() {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
+    });
 }
 } // namespace testsupport

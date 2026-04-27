@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <limits>
 #include <vector>
+
 namespace grav_qt {
 /// Description: Defines the OverlayBounds data or behavior contract.
 struct OverlayBounds final {
@@ -15,7 +16,9 @@ struct OverlayBounds final {
     float centerZ;
     float halfSize;
 };
+
 static constexpr std::size_t kMaxOverlayNodes = 4096u;
+
 /// Description: Executes the computeBounds operation.
 static OverlayBounds computeBounds(const std::vector<RenderParticle>& particles)
 {
@@ -37,6 +40,8 @@ static OverlayBounds computeBounds(const std::vector<RenderParticle>& particles)
     return OverlayBounds{(minX + maxX) * 0.5f, (minY + maxY) * 0.5f, (minZ + maxZ) * 0.5f,
                          std::max(maxExtent * 0.5f, 1.0e-3f) * 1.001f};
 }
+
+/// Description: Describes the child index for particle operation contract.
 static int childIndexForParticle(const RenderParticle& particle, float centerX, float centerY,
                                  float centerZ)
 {
@@ -52,6 +57,8 @@ static int childIndexForParticle(const RenderParticle& particle, float centerX, 
     }
     return childIndex;
 }
+
+/// Description: Describes the append nodes operation contract.
 static void appendNodes(const std::vector<RenderParticle>& particles,
                         const std::vector<std::size_t>& indices, const OctreeOverlayNode& node,
                         int maxDepth, std::vector<OctreeOverlayNode>& nodes)
@@ -90,6 +97,7 @@ static void appendNodes(const std::vector<RenderParticle>& particles,
         }
     }
 }
+
 std::vector<OctreeOverlayNode> OctreeOverlay::build(const std::vector<RenderParticle>& particles,
                                                     int maxDepth)
 {

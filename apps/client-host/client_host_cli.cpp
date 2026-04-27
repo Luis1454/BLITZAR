@@ -22,19 +22,16 @@ class ClientHostCliLocal final {
 public:
     static constexpr bool kLiveReloadEnabled = GRAVITY_PROFILE_IS_PROD == 0;
 
-    /// Description: Executes the run operation.
     static int run(const HostOptions& options, std::string_view programName)
     {
         if (options.validateOnly) {
             const SimulationConfig config = SimulationConfig::loadOrCreate(options.configPath);
             const grav_config::ScenarioValidationReport report =
-                /// Description: Executes the evaluate operation.
                 grav_config::SimulationScenarioValidation::evaluate(config);
             std::cout << grav_config::SimulationScenarioValidation::renderText(report) << "\n";
             return report.validForRun ? 0 : 3;
         }
         if (!options.scriptPath.empty()) {
-            /// Description: Executes the transport operation.
             grav_cmd::ServerClientCommandTransport transport(150);
             grav_cmd::CommandSessionState session{};
             session.configPath = options.configPath;
@@ -42,7 +39,6 @@ public:
             grav_cmd::CommandExecutionContext context{
                 transport, session, grav_cmd::CommandExecutionMode::Batch, std::cout};
             const grav_cmd::CommandResult result =
-                /// Description: Executes the runScriptFile operation.
                 grav_cmd::CommandBatchRunner::runScriptFile(options.scriptPath, context);
             if (!result.ok) {
                 std::cerr << "[client-host] " << result.message << "\n";
@@ -51,15 +47,12 @@ public:
             return 0;
         }
         const std::vector<std::filesystem::path> searchRoots =
-            /// Description: Executes the buildSearchRoots operation.
             ClientHostModuleOps::buildSearchRoots(programName);
         grav_module::ClientModuleHandle module{};
         std::string currentModuleSpecifier = options.moduleSpecifier;
         const std::string resolvedInitialModulePath =
-            /// Description: Executes the resolveModuleSpecifier operation.
             ClientHostModuleOps::resolveModuleSpecifier(options.moduleSpecifier, searchRoots);
         const std::string expectedInitialModuleId =
-            /// Description: Executes the expectedModuleIdForSpecifier operation.
             ClientHostModuleOps::expectedModuleIdForSpecifier(options.moduleSpecifier);
         std::string loadError;
         if (!module.load(resolvedInitialModulePath, options.configPath, expectedInitialModuleId,
@@ -70,7 +63,6 @@ public:
         }
         std::cout << "[client-host] loaded: " << module.moduleName() << " (" << module.loadedPath()
                   << ")\n";
-        /// Description: Executes the printHelp operation.
         ClientHostCliArgs::printHelp(programName);
         bool keepRunning = true;
         std::string line;
@@ -94,6 +86,7 @@ public:
         module.unload();
         return 0;
     }
+
 private:
     static bool handleLine(const std::string& line, std::string_view programName,
                            const HostOptions& options,
@@ -110,17 +103,14 @@ private:
             return false;
         }
         if (tokens[0] == "help") {
-            /// Description: Executes the printHelp operation.
             ClientHostCliArgs::printHelp(programName);
             return false;
         }
         if (tokens[0] == "modules") {
-            /// Description: Executes the printAvailableModules operation.
             printAvailableModules(searchRoots);
             return false;
         }
         if (tokens[0] == "module") {
-            /// Description: Executes the printCurrentModule operation.
             printCurrentModule(module, currentModuleSpecifier);
             return false;
         }
@@ -168,7 +158,6 @@ private:
         return true;
     }
 
-    /// Description: Executes the printAvailableModules operation.
     static void printAvailableModules(const std::vector<std::filesystem::path>& searchRoots)
     {
         std::cout << "[client-host] available aliases:\n";
@@ -181,6 +170,7 @@ private:
         std::cout << "  qt   -> " << ClientHostModuleOps::resolveModuleSpecifier("qt", searchRoots)
                   << "\n";
     }
+
     static void printCurrentModule(const grav_module::ClientModuleHandle& module,
                                    const std::string& currentModuleSpecifier)
     {
@@ -199,6 +189,7 @@ bool ClientHostCli::parseArgs(int argc, char** argv, HostOptions& outOptions, st
     return ClientHostCliArgs::parseArgs(argc, argv, outOptions, outError);
 }
 
+/// Description: Describes the live reload enabled operation contract.
 bool ClientHostCli::liveReloadEnabled() noexcept
 {
     return ClientHostCliLocal::kLiveReloadEnabled;
@@ -207,7 +198,6 @@ bool ClientHostCli::liveReloadEnabled() noexcept
 /// Description: Executes the printHelp operation.
 void ClientHostCli::printHelp(std::string_view programName)
 {
-    /// Description: Executes the printHelp operation.
     ClientHostCliArgs::printHelp(programName);
 }
 

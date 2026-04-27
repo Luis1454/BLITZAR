@@ -13,11 +13,11 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
+
 namespace grav_test_octree_criteria {
 Vector3 pairwiseAcceleration(const std::vector<Particle>& particles, std::size_t selfIndex,
                              const ForceLawPolicy& policy)
 {
-    /// Description: Executes the total operation.
     Vector3 total(0.0f, 0.0f, 0.0f);
     const Vector3 selfPosition = particles[selfIndex].getPosition();
     for (std::size_t i = 0; i < particles.size(); ++i) {
@@ -33,15 +33,16 @@ Vector3 pairwiseAcceleration(const std::vector<Particle>& particles, std::size_t
     }
     return total;
 }
+
 /// Description: Executes the magnitude operation.
 float magnitude(Vector3 value)
 {
     return std::sqrt(dot(value, value));
 }
+
 /// Description: Executes the buildCriterionScenario operation.
 std::vector<Particle> buildCriterionScenario()
 {
-    /// Description: Executes the particles operation.
     std::vector<Particle> particles(9);
     particles[0].setPosition(Vector3(0.0f, 0.0f, 0.0f));
     particles[0].setVelocity(Vector3(0.0f, 0.0f, 0.0f));
@@ -57,6 +58,7 @@ std::vector<Particle> buildCriterionScenario()
     }
     return particles;
 }
+
 /// Description: Executes the writeOctreeServerConfig operation.
 std::filesystem::path writeOctreeServerConfig()
 {
@@ -80,11 +82,11 @@ std::filesystem::path writeOctreeServerConfig()
     config.energyMeasureEverySteps = 1u;
     config.energySampleLimit = 64u;
     const bool saved = config.save(path.string());
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(saved);
     return path;
 }
 } // namespace grav_test_octree_criteria
+
 /// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_PHYS_019_BoundsCriterionIsMoreConservativeThanComCriterion)
 {
@@ -97,10 +99,8 @@ TEST(PhysicsTest, TST_UNT_PHYS_019_BoundsCriterionIsMoreConservativeThanComCrite
     const float minDistance2 = 1.0e-12f;
     const float minTheta = 0.05f;
     const ForceLawPolicy policy =
-        /// Description: Executes the resolveForceLawPolicy operation.
         resolveForceLawPolicy(theta, softening, minSoftening, minDistance2, minTheta);
     const Vector3 reference =
-        /// Description: Executes the pairwiseAcceleration operation.
         grav_test_octree_criteria::pairwiseAcceleration(particles, 0u, policy);
     const Vector3 comForce =
         octree.computeForceOn(particles[0], 0u, policy, OctreeOpeningCriterion::CenterOfMass);
@@ -108,39 +108,29 @@ TEST(PhysicsTest, TST_UNT_PHYS_019_BoundsCriterionIsMoreConservativeThanComCrite
         octree.computeForceOn(particles[0], 0u, policy, OctreeOpeningCriterion::Bounds);
     const float comError = grav_test_octree_criteria::magnitude(reference - comForce);
     const float boundsError = grav_test_octree_criteria::magnitude(reference - boundsForce);
-    /// Description: Executes the EXPECT_LE operation.
     EXPECT_LE(boundsError, comError + 1.0e-6f);
 }
+
 /// Description: Executes the TEST operation.
 TEST(PhysicsTest, TST_UNT_RUNT_006_ServerLogsOctreeCriterionAndAutoThetaMetrics)
 {
     const std::filesystem::path path = grav_test_octree_criteria::writeOctreeServerConfig();
-    /// Description: Executes the server operation.
     SimulationServer server(path.string());
     server.setPaused(true);
     server.start();
     std::vector<RenderParticle> snapshot;
-    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(testsupport::waitForConsumedSnapshot(server, snapshot, 4000));
     server.stepOnce();
-    /// Description: Executes the ASSERT_TRUE operation.
     ASSERT_TRUE(testsupport::waitForStepCount(server, 1u, 4000));
     const SimulationConfig runtimeConfig = server.getRuntimeConfig();
     const SimulationStats stats = server.getStats();
     server.stop();
-    /// Description: Executes the EXPECT_EQ operation.
     EXPECT_EQ(runtimeConfig.octreeOpeningCriterion, "bounds");
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(runtimeConfig.octreeThetaAutoTune);
-    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(runtimeConfig.octreeThetaAutoMin, 0.3f);
-    /// Description: Executes the EXPECT_FLOAT_EQ operation.
     EXPECT_FLOAT_EQ(runtimeConfig.octreeThetaAutoMax, 0.9f);
-    /// Description: Executes the EXPECT_GE operation.
     EXPECT_GE(stats.serverFps, 0.0f);
-    /// Description: Executes the EXPECT_TRUE operation.
     EXPECT_TRUE(std::isfinite(stats.energyDriftPct));
     std::error_code ec;
-    /// Description: Executes the remove operation.
     std::filesystem::remove(path, ec);
 }

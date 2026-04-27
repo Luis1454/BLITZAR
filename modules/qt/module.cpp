@@ -27,13 +27,14 @@
 #include <string_view>
 #include <thread>
 #include <vector>
+
 /// Description: Executes the parseBool operation.
 static bool parseBool(std::string_view raw, bool& out)
 {
-    /// Description: Executes the value operation.
     std::string value(raw);
-    std::transform(value.begin(), value.end(), value.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
     if (value == "1" || value == "true" || value == "on" || value == "yes") {
         out = true;
         return true;
@@ -44,11 +45,13 @@ static bool parseBool(std::string_view raw, bool& out)
     }
     return false;
 }
+
 /// Description: Executes the trim operation.
 static std::string trim(const std::string& input)
 {
-    const auto begin = std::find_if_not(input.begin(), input.end(),
-                                        [](unsigned char c) { return std::isspace(c) != 0; });
+    const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
+        return std::isspace(c) != 0;
+    });
     const auto end = std::find_if_not(input.rbegin(), input.rend(), [](unsigned char c) {
                          return std::isspace(c) != 0;
                      }).base();
@@ -56,6 +59,7 @@ static std::string trim(const std::string& input)
         return {};
     return std::string(begin, end);
 }
+
 /// Description: Executes the splitTokens operation.
 static std::vector<std::string> splitTokens(const std::string& line)
 {
@@ -88,6 +92,7 @@ static std::vector<std::string> splitTokens(const std::string& line)
     }
     return tokens;
 }
+
 /// Description: Defines the QtInProcState data or behavior contract.
 struct QtInProcState {
     std::string configPath = "simulation.ini";
@@ -106,6 +111,7 @@ struct QtInProcState {
     std::string startupError;
     std::mutex startupMutex;
 };
+
 /// Description: Executes the configureQtPluginPathFallback operation.
 static void configureQtPluginPathFallback()
 {
@@ -125,44 +131,35 @@ static void configureQtPluginPathFallback()
     }
     const QString platformsDir = QDir(pluginRoot).filePath("platforms");
     if (QFileInfo::exists(platformsDir)) {
-        /// Description: Executes the qputenv operation.
         qputenv("QT_QPA_PLATFORM_PLUGIN_PATH", platformsDir.toUtf8());
     }
-    /// Description: Executes the qputenv operation.
     qputenv("QT_PLUGIN_PATH", pluginRoot.toUtf8());
 }
+
 /// Description: Executes the qtThreadMain operation.
 static void qtThreadMain(QtInProcState* state)
 {
     try {
         int argc = 1;
         std::string appName = "gravityQtInProc";
-        /// Description: Executes the appNameBuffer operation.
         std::vector<char> appNameBuffer(appName.begin(), appName.end());
         appNameBuffer.push_back('\0');
         char* argv[] = {appNameBuffer.data(), nullptr};
-        /// Description: Executes the app operation.
         QApplication app(argc, argv);
-        /// Description: Executes the configureQtPluginPathFallback operation.
         configureQtPluginPathFallback();
         SimulationConfig config = SimulationConfig::loadOrCreate(state->configPath);
         state->transport.remoteCommandTimeoutMs =
-            /// Description: Executes the clampClientRemoteTimeoutMs operation.
             grav_client::clampClientRemoteTimeoutMs(config.clientRemoteCommandTimeoutMs);
         state->transport.remoteStatusTimeoutMs =
-            /// Description: Executes the clampClientRemoteTimeoutMs operation.
             grav_client::clampClientRemoteTimeoutMs(config.clientRemoteStatusTimeoutMs);
         state->transport.remoteSnapshotTimeoutMs =
-            /// Description: Executes the clampClientRemoteTimeoutMs operation.
             grav_client::clampClientRemoteTimeoutMs(config.clientRemoteSnapshotTimeoutMs);
         auto runtime =
             std::make_unique<grav_client::ClientRuntime>(state->configPath, state->transport);
-        /// Description: Executes the window operation.
         grav_qt::MainWindow window(config, state->configPath, std::move(runtime));
         window.show();
         state->running.store(true);
         {
-            /// Description: Executes the lock operation.
             std::lock_guard<std::mutex> lock(state->startupMutex);
             state->startupOk.store(true);
             state->startupDone.store(true);
@@ -170,14 +167,12 @@ static void qtThreadMain(QtInProcState* state)
         (void)app.exec();
     }
     catch (const std::exception& ex) {
-        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(state->startupMutex);
         state->startupOk.store(false);
         state->startupDone.store(true);
         state->startupError = ex.what();
     }
     catch (...) {
-        /// Description: Executes the lock operation.
         std::lock_guard<std::mutex> lock(state->startupMutex);
         state->startupOk.store(false);
         state->startupDone.store(true);
@@ -185,6 +180,7 @@ static void qtThreadMain(QtInProcState* state)
     }
     state->running.store(false);
 }
+
 /// Description: Executes the startQtUi operation.
 static bool startQtUi(QtInProcState& state, const grav_client::ErrorBufferView& errorBuffer)
 {
@@ -200,7 +196,6 @@ static bool startQtUi(QtInProcState& state, const grav_client::ErrorBufferView& 
         if (state.startupDone.load()) {
             break;
         }
-        /// Description: Executes the sleep_for operation.
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     if (!state.startupDone.load()) {
@@ -218,19 +213,20 @@ static bool startQtUi(QtInProcState& state, const grav_client::ErrorBufferView& 
     }
     return true;
 }
+
 /// Description: Executes the stopQtUi operation.
 static void stopQtUi(QtInProcState& state)
 {
     if (state.uiThread.joinable()) {
         QCoreApplication* app = QCoreApplication::instance();
         if (app != nullptr) {
-            /// Description: Executes the invokeMethod operation.
             QMetaObject::invokeMethod(app, "quit", Qt::QueuedConnection);
         }
         state.uiThread.join();
     }
     state.running.store(false);
 }
+
 /// Description: Executes the printHelp operation.
 static void printHelp()
 {
@@ -243,6 +239,7 @@ static void printHelp()
               << "  restart\n"
               << "  wait\n";
 }
+
 /// Description: Defines the QtModuleBoundary data or behavior contract.
 class QtModuleBoundary final {
 public:
@@ -260,7 +257,6 @@ public:
                 state->configPath = context->configPath;
             }
             return outModuleState.assign(
-                /// Description: Executes the fromRawPointer operation.
                 grav_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
         }
         catch (const std::exception& ex) {
@@ -272,6 +268,7 @@ public:
             return false;
         }
     }
+
     static QtInProcState* requireState(grav_module::ClientModuleOpaqueState moduleState,
                                        const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -281,14 +278,13 @@ public:
         }
         return state;
     }
-    /// Description: Executes the destroy operation.
+
     static void destroy(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
             std::unique_ptr<QtInProcState> state(
                 static_cast<QtInProcState*>(moduleState.rawPointer()));
             if (state != nullptr) {
-                /// Description: Executes the stopQtUi operation.
                 stopQtUi(*state);
             }
         }
@@ -299,6 +295,7 @@ public:
             std::cerr << "[module-qt] destroy error: unknown\n";
         }
     }
+
     static bool start(grav_module::ClientModuleOpaqueState moduleState,
                       const grav_client::ErrorBufferView& errorBuffer)
     {
@@ -317,13 +314,12 @@ public:
             return false;
         }
     }
-    /// Description: Executes the stop operation.
+
     static void stop(grav_module::ClientModuleOpaqueState moduleState)
     {
         try {
             QtInProcState* state = static_cast<QtInProcState*>(moduleState.rawPointer());
             if (state != nullptr) {
-                /// Description: Executes the stopQtUi operation.
                 stopQtUi(*state);
             }
         }
@@ -335,8 +331,8 @@ public:
         }
     }
 };
+
 extern "C" GRAVITY_CLIENT_MODULE_EXPORT_ATTR const grav_module::ClientModuleExportsV1*
-/// Description: Executes the gravity_client_module_v1 operation.
 gravity_client_module_v1()
 {
     static const grav_module::ClientModuleExportsV1 exports{
@@ -346,40 +342,32 @@ gravity_client_module_v1()
            char* errorBuffer, std::size_t errorBufferSize) -> bool {
             return QtModuleBoundary::create(
                 context, grav_module::ClientModuleStateSlot(outModuleState),
-                /// Description: Executes the ErrorBufferView operation.
                 grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void* moduleState) {
             QtModuleBoundary::destroy(
-                /// Description: Executes the fromRawPointer operation.
                 grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
         },
         [](void* moduleState, char* errorBuffer, std::size_t errorBufferSize) -> bool {
             return QtModuleBoundary::start(
                 grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState),
-                /// Description: Executes the ErrorBufferView operation.
                 grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void* moduleState) {
             QtModuleBoundary::stop(
-                /// Description: Executes the fromRawPointer operation.
                 grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
         },
         [](void* moduleState, const char* commandLine, bool* outKeepRunning, char* errorBuffer,
            std::size_t errorBufferSize) -> bool {
-            /// Description: Executes the errorView operation.
             const grav_client::ErrorBufferView errorView(errorBuffer, errorBufferSize);
-            /// Description: Executes the commandControl operation.
             const grav_module::ClientModuleCommandControl commandControl(outKeepRunning);
             try {
                 QtInProcState* state = QtModuleBoundary::requireState(
-                    /// Description: Executes the fromRawPointer operation.
                     grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState), errorView);
                 if (state == nullptr)
                     return false;
                 commandControl.setContinue();
                 const std::string line =
-                    /// Description: Executes the trim operation.
                     trim(commandLine != nullptr ? std::string(commandLine) : std::string());
                 if (line.empty()) {
                     return true;
@@ -390,7 +378,6 @@ gravity_client_module_v1()
                 }
                 const std::string& cmd = tokens[0];
                 if (cmd == "help") {
-                    /// Description: Executes the printHelp operation.
                     printHelp();
                     return true;
                 }
@@ -411,7 +398,6 @@ gravity_client_module_v1()
                 }
                 if (cmd == "wait") {
                     while (!state->startupDone.load() || state->running.load()) {
-                        /// Description: Executes the sleep_for operation.
                         std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     }
                     commandControl.requestStop();
@@ -457,7 +443,6 @@ gravity_client_module_v1()
                     return true;
                 }
                 if (cmd == "restart") {
-                    /// Description: Executes the stopQtUi operation.
                     stopQtUi(*state);
                     return startQtUi(*state, errorView);
                 }
