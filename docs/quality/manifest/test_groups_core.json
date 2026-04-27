@@ -1061,6 +1061,12 @@
                     "REQ-RUN-001"
                 ]
             },
+            "TST-UNT-UI-021": {
+                "id": "UiEnumsTest.TST_UNT_UI_021_EnumConverters",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
             "TST-UNT-UI-008": {
                 "id": "QtUiLogicTest.TST_UNT_UI_008_PresenterReportsGpuTelemetryWaitingState",
                 "req_ids": [

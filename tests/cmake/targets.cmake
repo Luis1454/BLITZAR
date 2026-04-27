@@ -71,6 +71,7 @@ set(GRAVITY_TEST_UNIT_UI_SOURCES
     "${GRAVITY_ROOT_DIR}/tests/unit/ui/qt_octree_overlay.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/ui/qt_throughput_advisor.cpp"
     "${GRAVITY_ROOT_DIR}/tests/unit/ui/qt_workspace_layout_store.cpp"
+    "${GRAVITY_ROOT_DIR}/tests/unit/ui/TST_UNT_UI_UiEnums.cpp"
 )
 
 set(GRAVITY_TEST_INT_PROTOCOL_SOURCES
