@@ -20,20 +20,21 @@
 #include <QSizePolicy>
 #include <QSlider>
 #include <QSpinBox>
+#include <QStringList>
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QWidget>
-#include <QStringList>
 #include <algorithm>
+#include "ui/panels/RunControlPanel.hpp"
 
 namespace grav_qt {
 static const QStringList kSolverList = {"pairwise_cuda", "octree_gpu", "octree_cpu"};
 static const QStringList kIntegratorList = {"euler", "rk4"};
 static const QStringList kPerformanceList = {"interactive", "balanced", "quality", "custom"};
-static const QStringList kSimulationProfiles = {"disk_orbit", "galaxy_collision", "plummer_sphere",
-                                               "binary_star", "solar_system", "sph_collapse"};
+static const QStringList kSimulationProfiles = {"disk_orbit",  "galaxy_collision", "plummer_sphere",
+                                                "binary_star", "solar_system",     "sph_collapse"};
 static const QStringList kPresets = {"disk_orbit", "galaxy_collision", "random_cloud", "two_body",
-                                     "three_body", "plummer_sphere", "file"};
+                                     "three_body", "plummer_sphere",   "file"};
 static const QStringList kView3dModes = {"perspective", "iso"};
 
 void MainWindow::initializeControlState()
@@ -68,7 +69,11 @@ void MainWindow::initializeComboBoxes()
 
 void MainWindow::initializeObjectNames()
 {
-    struct ObjN { QObject* o; const char* n; };
+    struct ObjN {
+        QObject* o;
+        const char* n;
+    };
+
     ObjN objs[] = {{_performanceCombo, "performanceProfileCombo"},
                    {_simulationProfileCombo, "simulationProfileCombo"},
                    {_presetCombo, "scenePresetCombo"},
@@ -215,27 +220,10 @@ QTabWidget* MainWindow::buildSidebarTabs()
         layout->setContentsMargins(4, 4, 4, 4);
         layout->setSpacing(8);
     }
-    auto* runBox = new QGroupBox("Run Control", runPage);
-    auto* runBoxLayout = new QVBoxLayout(runBox);
-    auto* runForm = new QFormLayout();
-    runForm->addRow("performance", _performanceCombo);
-    auto* runActions = new QGridLayout();
-    runActions->addWidget(_pauseButton, 0, 0);
-    runActions->addWidget(_stepButton, 0, 1);
-    runActions->addWidget(_resetButton, 1, 0);
-    runActions->addWidget(_recoverButton, 1, 1);
-    runBoxLayout->addLayout(runForm);
-    runBoxLayout->addLayout(runActions);
-    auto* connectorBox = new QGroupBox("Connector", runPage);
-    auto* connectorLayout = new QVBoxLayout(connectorBox);
-    auto* connectorForm = new QFormLayout();
-    connectorForm->addRow("host", _serverHostEdit);
-    connectorForm->addRow("port", _serverPortSpin);
-    connectorForm->addRow("server bin", _serverBinEdit);
-    connectorLayout->addLayout(connectorForm);
-    connectorLayout->addWidget(_serverAutostartCheck);
-    connectorLayout->addWidget(_applyConnectorButton);
-    connectorLayout->addStretch(1);
+    RunControlPanel::build(runPage, _performanceCombo, _pauseButton, _stepButton,
+                           _resetButton, _recoverButton, _serverHostEdit,
+                           _serverPortSpin, _serverBinEdit, _serverAutostartCheck,
+                           _applyConnectorButton);
     auto* sceneBox = new QGroupBox("Scene Setup", scenePage);
     auto* sceneBoxLayout = new QVBoxLayout(sceneBox);
     auto* sceneForm = new QFormLayout();
@@ -293,9 +281,7 @@ QTabWidget* MainWindow::buildSidebarTabs()
     exportLayout->addWidget(_exportButton);
     exportLayout->addWidget(_gpuTelemetryCheck);
     exportLayout->addStretch(1);
-    runLayout->addWidget(runBox);
-    runLayout->addWidget(connectorBox);
-    runLayout->addStretch(1);
+    // runPage populated by RunControlPanel::build
     sceneLayout->addWidget(sceneBox);
     sceneLayout->addWidget(projectBox);
     sceneLayout->addStretch(1);
