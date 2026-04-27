@@ -21,6 +21,7 @@
 #include <QSlider>
 #include <QSpinBox>
 #include <QStringList>
+#include "ui/UiEnums.hpp"
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -28,9 +29,16 @@
 #include "ui/panels/RunControlPanel.hpp"
 
 namespace grav_qt {
-static const QStringList kSolverList = {"pairwise_cuda", "octree_gpu", "octree_cpu"};
-static const QStringList kIntegratorList = {"euler", "rk4"};
-static const QStringList kPerformanceList = {"interactive", "balanced", "quality", "custom"};
+static const QStringList kSolverList = {QString::fromStdString(to_string(Solver::PairwiseCuda)),
+                                       QString::fromStdString(to_string(Solver::OctreeGpu)),
+                                       QString::fromStdString(to_string(Solver::OctreeCpu))};
+static const QStringList kIntegratorList = {QString::fromStdString(to_string(Integrator::Euler)),
+                                            QString::fromStdString(to_string(Integrator::Rk4))};
+static const QStringList kPerformanceList = {
+    QString::fromStdString(to_string(PerformanceProfile::Interactive)),
+    QString::fromStdString(to_string(PerformanceProfile::Balanced)),
+    QString::fromStdString(to_string(PerformanceProfile::Quality)),
+    QString::fromStdString(to_string(PerformanceProfile::Custom))};
 static const QStringList kSimulationProfiles = {"disk_orbit",  "galaxy_collision", "plummer_sphere",
                                                 "binary_star", "solar_system",     "sph_collapse"};
 static const QStringList kPresets = {"disk_orbit", "galaxy_collision", "random_cloud", "two_body",
