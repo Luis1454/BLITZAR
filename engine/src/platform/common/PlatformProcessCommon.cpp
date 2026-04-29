@@ -7,7 +7,7 @@
 
 #include "platform/common/PlatformProcessCommon.hpp"
 
-namespace grav_platform {
+namespace bltzr_platform {
 std::string quoteProcessArg(const std::string& arg)
 {
     if (arg.empty()) {
@@ -40,4 +40,4 @@ std::string buildProcessCommandLine(const std::string& executable,
     }
     return command;
 }
-} // namespace grav_platform
+} // namespace bltzr_platform

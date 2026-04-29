@@ -5,7 +5,7 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_SIM_SERVERJSONCODECPARSESNAPSHOT_HPP
-#define GRAVITY_SIM_SERVERJSONCODECPARSESNAPSHOT_HPP
+#ifndef BLITZAR_SIM_SERVERJSONCODECPARSESNAPSHOT_HPP
+#define BLITZAR_SIM_SERVERJSONCODECPARSESNAPSHOT_HPP
 #include "protocol/ServerJsonCodec.hpp"
 #endif

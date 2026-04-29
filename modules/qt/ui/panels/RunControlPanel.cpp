@@ -5,23 +5,24 @@
 #include "ui/panels/RunControlPanel.hpp"
 #include <QCheckBox>
 #include <QComboBox>
-#include <QLineEdit>
-#include <QGroupBox>
 #include <QFormLayout>
 #include <QGridLayout>
+#include <QGroupBox>
 #include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
 #include <QPushButton>
-#include <QVBoxLayout>
 #include <QSpinBox>
+#include <QVBoxLayout>
 
-namespace grav_qt {
+namespace bltzr_qt {
 
 QWidget* RunControlPanel::build(QWidget* parent, QComboBox* performanceCombo,
-                                 QPushButton* pauseButton, QPushButton* stepButton,
-                                 QPushButton* resetButton, QPushButton* recoverButton,
-                                 QLineEdit* serverHostEdit, QSpinBox* serverPortSpin,
-                                 QLineEdit* serverBinEdit, QCheckBox* serverAutostartCheck,
-                                 QPushButton* applyConnectorButton)
+                                QPushButton* pauseButton, QPushButton* stepButton,
+                                QPushButton* resetButton, QPushButton* recoverButton,
+                                QLineEdit* serverHostEdit, QSpinBox* serverPortSpin,
+                                QLineEdit* serverBinEdit, QCheckBox* serverAutostartCheck,
+                                QPushButton* applyConnectorButton)
 {
     QWidget* runPage = parent;
     QLayout* existing = runPage->layout();
@@ -60,4 +61,4 @@ QWidget* RunControlPanel::build(QWidget* parent, QComboBox* performanceCombo,
     return runPage;
 }
 
-} // namespace grav_qt
+} // namespace bltzr_qt

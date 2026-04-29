@@ -121,8 +121,8 @@ make quality-strict CONFIG=simulation.ini QUALITY_BUILD_DIR=build-quality
 - Prefer one class per file.
 - Headers must be self-contained and compile on their own.
 - Do not use `using` in C++ code (`apps/`, `engine/`, `runtime/`, `modules/`, `tests/`), including `using namespace`, symbol imports, and alias declarations.
-- Use single-level namespaces only (`namespace grav_x { ... }`), never nested forms (`namespace a::b {}` or nested namespace blocks).
-- Do not introduce `gravity_internal_*` namespaces.
+- Use single-level namespaces only (`namespace bltzr_x { ... }`), never nested forms (`namespace a::b {}` or nested namespace blocks).
+- Do not introduce `BLITZAR_internal_*` namespaces.
 - Keep includes minimal and use forward declarations when possible.
 - Keep include order stable: standard library, third-party, then project headers.
 - Mark single-argument constructors as `explicit`.
@@ -135,6 +135,15 @@ make quality-strict CONFIG=simulation.ini QUALITY_BUILD_DIR=build-quality
 - New production classes should come with unit tests.
 - No unnamed namespace, prefer static functions instead.
 - No global functions or variables.
+
+## C++ Style Enforcement
+
+- Public C++ headers under `engine/include/`, `runtime/include/`, and `modules/qt/include/ui/` must keep a file header block and normalized documentation blocks above public types and public functions.
+- Keep the top-of-file responsibility block short and explicit; do not add public declarations without a local `@brief` block.
+- Prefer one logical block per paragraph of code: group related declarations together, then insert a blank line when the responsibility changes.
+- Keep `if` / `else if` / `else` chains tight, but separate unrelated control blocks with blank lines so the flow remains readable.
+- Keep variable declarations grouped when they describe the same responsibility; insert a blank line once the code moves to a different task.
+- If a change makes the code denser, the default reaction is to split it into helper methods or helper classes rather than compressing more logic into one block.
 
 ## Test Organization Policy (NASA-First)
 

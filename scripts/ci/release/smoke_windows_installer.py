@@ -74,8 +74,8 @@ def main() -> int:
     required = (
         "blitzar.exe",
         "blitzar-client.exe",
-        "gravityClientModuleQtInProc.dll",
-        "gravityClientModuleQtInProc.dll.manifest",
+        "blitzarClientModuleQtInProc.dll",
+        "blitzarClientModuleQtInProc.dll.manifest",
         "simulation.ini",
         "README.md",
     )

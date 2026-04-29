@@ -13,9 +13,9 @@ from python_tools.core.base_check import BaseCheck
 from python_tools.core.models import CheckContext, CheckResult
 
 FORBIDDEN_TOKENS = (
-    "GRAVITY_BUILD_LEGACY_CLIENTS",
-    "GRAVITY_BUILD_QT_CLIENT",
-    "GRAVITY_BUILD_CLI_CLIENT",
+    "BLITZAR_BUILD_LEGACY_CLIENTS",
+    "BLITZAR_BUILD_QT_CLIENT",
+    "BLITZAR_BUILD_CLI_CLIENT",
     "QT_CLIENT_NAME",
     "CLI_CLIENT_NAME",
 )

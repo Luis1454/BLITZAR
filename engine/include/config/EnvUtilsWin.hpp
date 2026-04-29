@@ -5,7 +5,7 @@
  * @brief Public configuration interfaces and validation contracts for simulation setup.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_ENVUTILSWIN_HPP_
-#define GRAVITY_ENGINE_INCLUDE_CONFIG_ENVUTILSWIN_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_CONFIG_ENVUTILSWIN_HPP_
+#define BLITZAR_ENGINE_INCLUDE_CONFIG_ENVUTILSWIN_HPP_
 // Platform-specific implementation mirror for EnvUtilsWin.cpp.
-#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_ENVUTILSWIN_HPP_
+#endif // BLITZAR_ENGINE_INCLUDE_CONFIG_ENVUTILSWIN_HPP_

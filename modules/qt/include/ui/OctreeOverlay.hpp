@@ -5,8 +5,8 @@
  * @brief Qt desktop user interface module for simulation control and visualization.
  */
 
-#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_OCTREEOVERLAY_HPP_
-#define GRAVITY_MODULES_QT_INCLUDE_UI_OCTREEOVERLAY_HPP_
+#ifndef BLITZAR_MODULES_QT_INCLUDE_UI_OCTREEOVERLAY_HPP_
+#define BLITZAR_MODULES_QT_INCLUDE_UI_OCTREEOVERLAY_HPP_
 /*
  * Module: ui
  * Responsibility: Build a lightweight octree-cell overlay from the displayed
@@ -15,7 +15,7 @@
 #include "types/SimulationTypes.hpp"
 #include <vector>
 
-namespace grav_qt {
+namespace bltzr_qt {
 struct OctreeOverlayNode final {
     float centerX;
     float centerY;
@@ -29,5 +29,5 @@ public:
     static std::vector<OctreeOverlayNode> build(const std::vector<RenderParticle>& particles,
                                                 int maxDepth);
 };
-} // namespace grav_qt
-#endif // GRAVITY_MODULES_QT_INCLUDE_UI_OCTREEOVERLAY_HPP_
+} // namespace bltzr_qt
+#endif // BLITZAR_MODULES_QT_INCLUDE_UI_OCTREEOVERLAY_HPP_

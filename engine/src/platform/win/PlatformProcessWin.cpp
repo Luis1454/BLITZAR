@@ -10,7 +10,7 @@
 #include "platform/PlatformProcess.hpp"
 #include <windows.h>
 
-namespace grav_platform_detail {
+namespace bltzr_platform_detail {
 bool launchProcess(const std::string& executable, const std::vector<std::string>& args,
                    bool createNewConsole, NativeProcessHandle& outHandle, std::int64_t& outPid,
                    std::string& outError)
@@ -18,7 +18,7 @@ bool launchProcess(const std::string& executable, const std::vector<std::string>
     outError.clear();
     outHandle = 0u;
     outPid = 0;
-    const std::string commandLine = grav_platform::buildProcessCommandLine(executable, args);
+    const std::string commandLine = bltzr_platform::buildProcessCommandLine(executable, args);
     STARTUPINFOA startupInfo{};
     startupInfo.cb = sizeof(startupInfo);
     PROCESS_INFORMATION processInfo{};
@@ -26,7 +26,7 @@ bool launchProcess(const std::string& executable, const std::vector<std::string>
     const DWORD flags = createNewConsole ? CREATE_NEW_CONSOLE : 0u;
     if (!CreateProcessA(nullptr, mutableCmd.data(), nullptr, nullptr, FALSE, flags, nullptr,
                         nullptr, &startupInfo, &processInfo)) {
-        outError = grav_platform_errors::kProcessLaunchFailed;
+        outError = bltzr_platform_errors::kProcessLaunchFailed;
         return false;
     }
     CloseHandle(processInfo.hThread);
@@ -44,7 +44,7 @@ bool terminateProcess(NativeProcessHandle& handle, std::int64_t& pid, std::uint3
     return true;
     HANDLE processHandle = reinterpret_cast<HANDLE>(handle);
     if (!TerminateProcess(processHandle, 0)) {
-        outError = grav_platform_errors::kProcessTerminateFailed;
+        outError = bltzr_platform_errors::kProcessTerminateFailed;
         return false;
     }
     WaitForSingleObject(processHandle, waitMs);
@@ -84,7 +84,7 @@ bool launchDetachedProcess(const std::string& executable, const std::vector<std:
                            std::string& outError)
 {
     outError.clear();
-    const std::string commandLine = grav_platform::buildProcessCommandLine(executable, args);
+    const std::string commandLine = bltzr_platform::buildProcessCommandLine(executable, args);
     STARTUPINFOA startupInfo{};
     startupInfo.cb = sizeof(startupInfo);
     PROCESS_INFORMATION processInfo{};
@@ -92,7 +92,7 @@ bool launchDetachedProcess(const std::string& executable, const std::vector<std:
     constexpr DWORD kDetachedFlags = DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW;
     if (!CreateProcessA(nullptr, mutableCmd.data(), nullptr, nullptr, FALSE, kDetachedFlags,
                         nullptr, nullptr, &startupInfo, &processInfo)) {
-        outError = grav_platform_errors::kProcessLaunchFailed;
+        outError = bltzr_platform_errors::kProcessLaunchFailed;
         return false;
     }
     CloseHandle(processInfo.hThread);
@@ -104,7 +104,7 @@ int runProcessBlocking(const std::string& executable, const std::vector<std::str
                        bool createNewConsole, std::string& outError)
 {
     outError.clear();
-    const std::string commandLine = grav_platform::buildProcessCommandLine(executable, args);
+    const std::string commandLine = bltzr_platform::buildProcessCommandLine(executable, args);
     STARTUPINFOA startupInfo{};
     startupInfo.cb = sizeof(startupInfo);
     PROCESS_INFORMATION processInfo{};
@@ -112,7 +112,7 @@ int runProcessBlocking(const std::string& executable, const std::vector<std::str
     const DWORD flags = createNewConsole ? CREATE_NEW_CONSOLE : 0u;
     if (!CreateProcessA(nullptr, mutableCmd.data(), nullptr, nullptr, FALSE, flags, nullptr,
                         nullptr, &startupInfo, &processInfo)) {
-        outError = grav_platform_errors::kProcessLaunchFailed;
+        outError = bltzr_platform_errors::kProcessLaunchFailed;
         return 1;
     }
     CloseHandle(processInfo.hThread);
@@ -122,4 +122,4 @@ int runProcessBlocking(const std::string& executable, const std::vector<std::str
     CloseHandle(processInfo.hProcess);
     return static_cast<int>(exitCode);
 }
-} // namespace grav_platform_detail
+} // namespace bltzr_platform_detail

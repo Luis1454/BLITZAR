@@ -5,14 +5,14 @@
  * @brief Platform abstraction interfaces for portable runtime services.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMPROCESS_HPP_
-#define GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMPROCESS_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_PLATFORM_PLATFORMPROCESS_HPP_
+#define BLITZAR_ENGINE_INCLUDE_PLATFORM_PLATFORMPROCESS_HPP_
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace grav_platform {
+namespace bltzr_platform {
 std::string quoteProcessArg(const std::string& arg);
 std::string buildProcessCommandLine(const std::string& executable,
                                     const std::vector<std::string>& args);
@@ -42,5 +42,5 @@ bool launchDetachedProcess(const std::string& executable, const std::vector<std:
                            std::string& outError);
 int runProcessBlocking(const std::string& executable, const std::vector<std::string>& args,
                        bool createNewConsole, std::string& outError);
-} // namespace grav_platform
-#endif // GRAVITY_ENGINE_INCLUDE_PLATFORM_PLATFORMPROCESS_HPP_
+} // namespace bltzr_platform
+#endif // BLITZAR_ENGINE_INCLUDE_PLATFORM_PLATFORMPROCESS_HPP_

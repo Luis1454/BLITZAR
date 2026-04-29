@@ -47,6 +47,25 @@ Rules:
 - Mention ownership transfer when constructors or functions take ownership.
 - Use `@brief`, `@param`, `@return`, and `@note` consistently.
 
+## Layout and Spacing
+
+Use spacing to keep the code readable instead of dense:
+
+- Keep `if` / `else if` / `else` chains contiguous.
+- Insert a blank line when a block finishes and the next block starts a different responsibility.
+- Keep related variable declarations together, but separate different conceptual phases with a blank line.
+- Prefer splitting dense methods into smaller helpers instead of stacking long cascades of statements.
+
+## Enforcement
+
+The repository quality gate enforces this format for public headers under:
+
+- `engine/include/`
+- `runtime/include/`
+- `modules/qt/include/ui/`
+
+The same gate also checks file header blocks across the main C++ sources so missing documentation is surfaced early.
+
 ## Scope
 
 Apply this format first to:

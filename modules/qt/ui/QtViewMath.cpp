@@ -7,7 +7,7 @@
 
 #include "ui/QtViewMath.hpp"
 
-namespace grav_qt {
+namespace bltzr_qt {
 QPointF toQPointF(const grav::Point2D& p)
 {
     return QPointF(static_cast<double>(p.x), static_cast<double>(p.y));
@@ -52,4 +52,4 @@ grav::GimbalAxis pickGimbalAxis(const GimbalOverlay& overlay, const QPointF& mou
                   fromQPointF(overlay.handles[2])};
     return grav::pickGimbalAxis(go, fromQPointF(mouse));
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

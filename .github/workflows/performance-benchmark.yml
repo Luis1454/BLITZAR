@@ -56,14 +56,14 @@ jobs:
           python -m pytest -q tests/checks/suites/release/test_performance_benchmark.py
       - name: Configure benchmark build
         shell: pwsh
-        run: cmake -S . -B build-performance -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_PROFILE=prod -DGRAVITY_STRICT_WARNINGS=ON
+        run: cmake -S . -B build-performance -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_PROFILE=prod -DBLITZAR_STRICT_WARNINGS=ON
       - name: Build benchmark tool
         shell: pwsh
-        run: cmake --build build-performance --target gravityPerformanceBenchmarkTool --parallel
+        run: cmake --build build-performance --target blitzarPerformanceBenchmarkTool --parallel
       - name: Run performance benchmark campaign
         shell: pwsh
         run: |
-          $tool = Resolve-Path "build-performance/gravityPerformanceBenchmarkTool.exe"
+          $tool = Resolve-Path "build-performance/blitzarPerformanceBenchmarkTool.exe"
           python scripts/ci/nightly/package_performance_benchmark.py --root . --tool $tool --profile gpu-nightly --dist-dir dist/performance-benchmark
       - name: Upload performance benchmark artifacts
         if: always()

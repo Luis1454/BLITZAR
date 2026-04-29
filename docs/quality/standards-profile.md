@@ -20,8 +20,8 @@ This repository is independent from any company stack but aligned for US space r
   - no dynamic reload in mission-critical runtime path;
   - client modules, if explicitly built under `prod`, must be startup-only, allowlisted, manifest-verified, and checksum-verified before loading;
   - strict PR quality gate must be green before merge.
-  - CI lanes must force `-DGRAVITY_PROFILE=prod` for qualification evidence.
-  - repository policy checks reject evidence workflow configure commands that omit `-DGRAVITY_PROFILE=prod`.
+  - CI lanes must force `-DBLITZAR_PROFILE=prod` for qualification evidence.
+  - repository policy checks reject evidence workflow configure commands that omit `-DBLITZAR_PROFILE=prod`.
   - evidence-grade environment assumptions are fixed by `docs/quality/production-baseline.md`.
 - `dev` profile (iteration path):
   - broader experimentation allowed;
@@ -31,8 +31,8 @@ This repository is independent from any company stack but aligned for US space r
 
 Build switch:
 
-- `-DGRAVITY_PROFILE=prod` for qualification-oriented builds.
-- `-DGRAVITY_PROFILE=dev` for iteration builds.
+- `-DBLITZAR_PROFILE=prod` for qualification-oriented builds.
+- `-DBLITZAR_PROFILE=dev` for iteration builds.
 
 ## Mandatory Evidence Set
 

@@ -5,8 +5,8 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDCONTEXT_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDCONTEXT_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDCONTEXT_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDCONTEXT_HPP_
 #include "command/CommandTransport.hpp"
 #include "command/CommandTypes.hpp"
 #include "config/SimulationConfig.hpp"
@@ -14,7 +14,7 @@
 #include <iosfwd>
 #include <string>
 
-namespace grav_cmd {
+namespace bltzr_cmd {
 struct CommandSessionState final {
     SimulationConfig config{};
     std::string configPath = "simulation.ini";
@@ -28,5 +28,5 @@ struct CommandExecutionContext final {
     CommandExecutionMode mode = CommandExecutionMode::Interactive;
     std::ostream& output;
 };
-} // namespace grav_cmd
-#endif // GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDCONTEXT_HPP_
+} // namespace bltzr_cmd
+#endif // BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDCONTEXT_HPP_

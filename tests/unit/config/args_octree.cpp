@@ -16,7 +16,7 @@
 #include <string_view>
 #include <vector>
 
-namespace grav_test_config_args_octree {
+namespace bltzr_test_config_args_octree {
 std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage)
 {
     std::vector<std::string_view> args;
@@ -25,7 +25,7 @@ std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage
         args.emplace_back(item);
     return args;
 }
-} // namespace grav_test_config_args_octree
+} // namespace bltzr_test_config_args_octree
 
 TEST(ConfigArgsTest, TST_UNT_CONF_037_CliAcceptsOctreeCriterionAndAutoThetaRange)
 {
@@ -38,7 +38,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_037_CliAcceptsOctreeCriterionAndAutoThetaRange
                                         "true",       "--octree-theta-auto-min",
                                         "0.3",        "--octree-theta-auto-max",
                                         "0.9"};
-    applyArgsToConfig(grav_test_config_args_octree::toArgViews(args), config, runtime, warnings);
+    applyArgsToConfig(bltzr_test_config_args_octree::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.solver, "octree_cpu");
     EXPECT_EQ(config.octreeOpeningCriterion, "bounds");
     EXPECT_TRUE(config.octreeThetaAutoTune);
@@ -53,7 +53,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_038_LoadSupportsOctreeCriterionAndAutoThetaDir
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() /
-        ("gravity_config_octree_directive_" + std::to_string(stamp) + ".ini");
+        ("BLITZAR_config_octree_directive_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
@@ -78,7 +78,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_039_LoadRejectsInvalidOctreeCriterionAndAutoTh
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() /
-        ("gravity_config_octree_invalid_" + std::to_string(stamp) + ".ini");
+        ("BLITZAR_config_octree_invalid_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());

@@ -5,8 +5,8 @@
  * @brief Qt desktop user interface module for simulation control and visualization.
  */
 
-#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEW_HPP_
-#define GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEW_HPP_
+#ifndef BLITZAR_MODULES_QT_INCLUDE_UI_PARTICLEVIEW_HPP_
+#define BLITZAR_MODULES_QT_INCLUDE_UI_PARTICLEVIEW_HPP_
 /*
  * Module: ui
  * Responsibility: Render a single particle projection or 3D view inside the Qt
@@ -37,7 +37,7 @@ class QPaintEvent;
 typedef QMouseEvent UiMouseEvent;
 typedef QPaintEvent UiPaintEvent;
 
-namespace grav_qt {
+namespace bltzr_qt {
 class ParticleView : public QWidget {
 public:
     explicit ParticleView(grav::ViewMode mode);
@@ -74,5 +74,5 @@ private:
     bool _octreeOverlayEnabled = false;
     int _octreeOverlayOpacity = 96;
 };
-} // namespace grav_qt
-#endif // GRAVITY_MODULES_QT_INCLUDE_UI_PARTICLEVIEW_HPP_
+} // namespace bltzr_qt
+#endif // BLITZAR_MODULES_QT_INCLUDE_UI_PARTICLEVIEW_HPP_

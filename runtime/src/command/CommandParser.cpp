@@ -12,7 +12,7 @@
 #include <charconv>
 #include <cstdlib>
 
-namespace grav_cmd {
+namespace bltzr_cmd {
 static std::string trimTokenLine(const std::string& input)
 {
     const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
@@ -200,4 +200,4 @@ CommandParseResult CommandParser::parseLine(const std::string& line, std::size_t
     }
     return parseTokens(splitTokens(stripped), lineNumber);
 }
-} // namespace grav_cmd
+} // namespace bltzr_cmd

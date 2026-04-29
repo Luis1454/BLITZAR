@@ -88,12 +88,12 @@ bool checkCudaStatus(cudaError_t status, std::string_view stage)
  */
 bool parseBoolEnv(std::string_view name, bool fallback)
 {
-    constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
+    constexpr bool kDevProfile = BLITZAR_PROFILE_IS_DEV != 0;
     if (!kDevProfile) {
         (void)name;
         return fallback;
     }
-    return grav_env::getBool(name, fallback);
+    return bltzr_env::getBool(name, fallback);
 }
 
 /*
@@ -105,13 +105,13 @@ bool parseBoolEnv(std::string_view name, bool fallback)
  */
 float parseFloatEnv(std::string_view name, float fallback)
 {
-    constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
+    constexpr bool kDevProfile = BLITZAR_PROFILE_IS_DEV != 0;
     if (!kDevProfile) {
         (void)name;
         return fallback;
     }
     float parsed = 0.0f;
-    if (!grav_env::getNumber(name, parsed)) {
+    if (!bltzr_env::getNumber(name, parsed)) {
         return fallback;
     }
     return parsed;
@@ -125,14 +125,14 @@ float parseFloatEnv(std::string_view name, float fallback)
  */
 ParticleSystem::SolverMode solverModeFromEnv()
 {
-    constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
+    constexpr bool kDevProfile = BLITZAR_PROFILE_IS_DEV != 0;
     if (!kDevProfile) {
         return ParticleSystem::SolverMode::PairwiseCuda;
     }
-    if (parseBoolEnv("GRAVITY_USE_OCTREE", false)) {
+    if (parseBoolEnv("BLITZAR_USE_OCTREE", false)) {
         return ParticleSystem::SolverMode::OctreeGpu;
     }
-    const auto solver = grav_env::get("GRAVITY_SOLVER");
+    const auto solver = bltzr_env::get("BLITZAR_SOLVER");
     if (!solver.has_value()) {
         return ParticleSystem::SolverMode::PairwiseCuda;
     }
@@ -153,11 +153,11 @@ ParticleSystem::SolverMode solverModeFromEnv()
  */
 ParticleSystem::IntegratorMode integratorModeFromEnv()
 {
-    constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
+    constexpr bool kDevProfile = BLITZAR_PROFILE_IS_DEV != 0;
     if (!kDevProfile) {
         return ParticleSystem::IntegratorMode::Euler;
     }
-    const auto integrator = grav_env::get("GRAVITY_INTEGRATOR");
+    const auto integrator = bltzr_env::get("BLITZAR_INTEGRATOR");
     if (!integrator.has_value()) {
         return ParticleSystem::IntegratorMode::Euler;
     }
@@ -519,10 +519,10 @@ __host__ __device__ Vector3 clampAcceleration(Vector3 accel, float maxAccelerati
  * @brief Documents the clamp softening value operation contract.
  * @param softening Input value used by this contract.
  * @param minSoftening Input value used by this contract.
- * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE float value produced by this contract.
+ * @return BLITZAR_HD_HOST BLITZAR_HD_DEVICE float value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampSofteningValue(float softening, float minSoftening)
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE float clampSofteningValue(float softening, float minSoftening)
 {
     return fmaxf(softening, minSoftening);
 }
@@ -531,10 +531,10 @@ GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampSofteningValue(float softening, flo
  * @brief Documents the clamp theta value operation contract.
  * @param theta Input value used by this contract.
  * @param minTheta Input value used by this contract.
- * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE float value produced by this contract.
+ * @return BLITZAR_HD_HOST BLITZAR_HD_DEVICE float value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampThetaValue(float theta, float minTheta)
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE float clampThetaValue(float theta, float minTheta)
 {
     return fmaxf(theta, minTheta);
 }
@@ -543,25 +543,25 @@ GRAVITY_HD_HOST GRAVITY_HD_DEVICE float clampThetaValue(float theta, float minTh
  * @brief Documents the softened distance squared operation contract.
  * @param delta Input value used by this contract.
  * @param policy Input value used by this contract.
- * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE float value produced by this contract.
+ * @return BLITZAR_HD_HOST BLITZAR_HD_DEVICE float value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE float softenedDistanceSquared(Vector3 delta,
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE float softenedDistanceSquared(Vector3 delta,
                                                                 ForceLawPolicy policy)
 {
     return dot(delta, delta) + policy.softening * policy.softening;
 }
 
 /*
- * @brief Documents the gravity acceleration from source operation contract.
+ * @brief Documents the blitzar acceleration from source operation contract.
  * @param selfPosition Input value used by this contract.
  * @param sourcePosition Input value used by this contract.
  * @param sourceMass Input value used by this contract.
  * @param policy Input value used by this contract.
- * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 value produced by this contract.
+ * @return BLITZAR_HD_HOST BLITZAR_HD_DEVICE Vector3 value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 gravityAccelerationFromSource(Vector3 selfPosition,
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE Vector3 blitzarAccelerationFromSource(Vector3 selfPosition,
                                                                         Vector3 sourcePosition,
                                                                         float sourceMass,
                                                                         ForceLawPolicy policy)
@@ -599,7 +599,7 @@ __host__ __device__ Vector3 computePairwiseAcceleration(ParticleSoAView state, i
         }
         const Vector3 otherPos = getSoAPosition(state, i);
         const float otherMass = state.mass[i];
-        force += gravityAccelerationFromSource(selfPos, otherPos, otherMass, policy);
+        force += blitzarAccelerationFromSource(selfPos, otherPos, otherMass, policy);
     }
     return clampAcceleration(force, maxAcceleration);
 }

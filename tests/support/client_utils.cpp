@@ -8,10 +8,10 @@
 #include "tests/support/client_utils.hpp"
 
 namespace testsupport {
-grav_client::ClientTransportArgs makeTransport(std::uint16_t port,
-                                               const std::string& serverExecutable)
+bltzr_client::ClientTransportArgs makeTransport(std::uint16_t port,
+                                                const std::string& serverExecutable)
 {
-    grav_client::ClientTransportArgs transport{};
+    bltzr_client::ClientTransportArgs transport{};
     transport.remoteHost = "127.0.0.1";
     transport.remotePort = port;
     transport.remoteAutoStart = false;

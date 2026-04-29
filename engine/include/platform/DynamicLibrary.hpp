@@ -5,15 +5,15 @@
  * @brief Platform abstraction interfaces for portable runtime services.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_PLATFORM_DYNAMICLIBRARY_HPP_
-#define GRAVITY_ENGINE_INCLUDE_PLATFORM_DYNAMICLIBRARY_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_PLATFORM_DYNAMICLIBRARY_HPP_
+#define BLITZAR_ENGINE_INCLUDE_PLATFORM_DYNAMICLIBRARY_HPP_
 #include "platform/PlatformErrors.hpp"
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <string_view>
 
-namespace grav_platform {
+namespace bltzr_platform {
 class DynamicLibrary {
 public:
     DynamicLibrary();
@@ -34,5 +34,5 @@ private:
     struct Impl;
     std::unique_ptr<Impl> _impl;
 };
-} // namespace grav_platform
-#endif // GRAVITY_ENGINE_INCLUDE_PLATFORM_DYNAMICLIBRARY_HPP_
+} // namespace bltzr_platform
+#endif // BLITZAR_ENGINE_INCLUDE_PLATFORM_DYNAMICLIBRARY_HPP_

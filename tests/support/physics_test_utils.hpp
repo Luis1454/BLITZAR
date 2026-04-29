@@ -5,8 +5,8 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#ifndef GRAVITY_TESTS_SUPPORT_PHYSICS_TEST_UTILS_HPP_
-#define GRAVITY_TESTS_SUPPORT_PHYSICS_TEST_UTILS_HPP_
+#ifndef BLITZAR_TESTS_SUPPORT_PHYSICS_TEST_UTILS_HPP_
+#define BLITZAR_TESTS_SUPPORT_PHYSICS_TEST_UTILS_HPP_
 #include "tests/support/physics_scenario.hpp"
 #include <cstdint>
 #include <string>
@@ -32,4 +32,4 @@ bool waitForPublishedSnapshot(const SimulationServer& server,
                               std::vector<RenderParticle>& outSnapshot, int timeoutMs);
 bool haveExactReplayMatch(const ScenarioResult& lhs, const ScenarioResult& rhs, std::string& error);
 } // namespace testsupport
-#endif // GRAVITY_TESTS_SUPPORT_PHYSICS_TEST_UTILS_HPP_
+#endif // BLITZAR_TESTS_SUPPORT_PHYSICS_TEST_UTILS_HPP_

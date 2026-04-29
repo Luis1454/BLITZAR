@@ -5,8 +5,8 @@
  * @brief Public configuration interfaces and validation contracts for simulation setup.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATION_HPP_
-#define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATION_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATION_HPP_
+#define BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATION_HPP_
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -18,7 +18,7 @@
  */
 struct SimulationConfig;
 
-namespace grav_config {
+namespace bltzr_config {
 enum class ScenarioDiagnosticLevel {
     Warning,
     Error
@@ -43,5 +43,5 @@ public:
     static ScenarioValidationReport evaluate(const SimulationConfig& config);
     static std::string renderText(const ScenarioValidationReport& report);
 };
-} // namespace grav_config
-#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATION_HPP_
+} // namespace bltzr_config
+#endif // BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATION_HPP_

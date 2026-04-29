@@ -7,7 +7,7 @@
 
 #include "platform/posix/PlatformPathsPosix.hpp"
 
-namespace grav_platform {
+namespace bltzr_platform {
 static constexpr std::string_view kPlatformDylibExtension = ".so";
 
 std::string executableName(std::string_view basename)
@@ -32,4 +32,4 @@ std::tm localTime(std::time_t nowTime)
     localtime_r(&nowTime, &tm);
     return tm;
 }
-} // namespace grav_platform
+} // namespace bltzr_platform

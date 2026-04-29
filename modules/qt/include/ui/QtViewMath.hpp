@@ -5,8 +5,8 @@
  * @brief Qt desktop user interface module for simulation control and visualization.
  */
 
-#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_QTVIEWMATH_HPP_
-#define GRAVITY_MODULES_QT_INCLUDE_UI_QTVIEWMATH_HPP_
+#ifndef BLITZAR_MODULES_QT_INCLUDE_UI_QTVIEWMATH_HPP_
+#define BLITZAR_MODULES_QT_INCLUDE_UI_QTVIEWMATH_HPP_
 /*
  * Module: ui
  * Responsibility: Provide Qt-specific geometric helpers shared by particle and
@@ -19,7 +19,7 @@
 #include <array>
 #include <vector>
 
-namespace grav_qt {
+namespace bltzr_qt {
 struct EnergyPoint {
     float kinetic;
     float potential;
@@ -44,5 +44,5 @@ grav::Rect2D fromQRectF(const QRectF& r);
 GimbalOverlay computeGimbal(const QRect& bounds, grav::ViewMode mode,
                             const grav::CameraState& camera);
 grav::GimbalAxis pickGimbalAxis(const GimbalOverlay& overlay, const QPointF& mouse);
-} // namespace grav_qt
-#endif // GRAVITY_MODULES_QT_INCLUDE_UI_QTVIEWMATH_HPP_
+} // namespace bltzr_qt
+#endif // BLITZAR_MODULES_QT_INCLUDE_UI_QTVIEWMATH_HPP_

@@ -7,7 +7,7 @@
 
 #include "client/ClientModuleBoundary.hpp"
 
-namespace grav_module {
+namespace bltzr_module {
 ClientModuleOpaqueState::ClientModuleOpaqueState() noexcept : m_opaqueValue(0u)
 {
 }
@@ -110,4 +110,4 @@ bool* ClientModuleCommandResult::rawKeepRunningFlag() noexcept
 {
     return &m_keepRunning;
 }
-} // namespace grav_module
+} // namespace bltzr_module

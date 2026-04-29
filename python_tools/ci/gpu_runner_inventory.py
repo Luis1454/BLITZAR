@@ -161,7 +161,7 @@ class GitHubGpuRunnerInventory:
             headers={
                 "Accept": "application/vnd.github+json",
                 "Authorization": f"Bearer {token}",
-                "User-Agent": "gravity-gpu-runner-health",
+                "User-Agent": "blitzar-gpu-runner-health",
             },
         )
         with self._urlopen(request) as response:

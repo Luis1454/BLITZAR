@@ -14,8 +14,8 @@
 #include <utility>
 #include <vector>
 
-namespace grav_test_module_cli_command_executor {
-class FakeCommandTransport final : public grav_cmd::CommandTransport {
+namespace bltzr_test_module_cli_command_executor {
+class FakeCommandTransport final : public bltzr_cmd::CommandTransport {
 public:
     bool connect(const std::string& host, std::uint16_t port) override
     {
@@ -62,9 +62,9 @@ public:
     std::vector<ServerClientStatus> scriptedStatuses;
 };
 
-static grav_cmd::CommandRequest parseSingle(const std::string& line)
+static bltzr_cmd::CommandRequest parseSingle(const std::string& line)
 {
-    const grav_cmd::CommandParseResult parsed = grav_cmd::CommandParser::parseLine(line, 1u);
+    const bltzr_cmd::CommandParseResult parsed = bltzr_cmd::CommandParser::parseLine(line, 1u);
     EXPECT_TRUE(parsed.ok);
     EXPECT_EQ(parsed.requests.size(), 1u);
     return parsed.requests.front();
@@ -73,12 +73,12 @@ static grav_cmd::CommandRequest parseSingle(const std::string& line)
 TEST(CommandExecutorTest, TST_UNT_MODCLI_009_SetDtMapsToProtocolCommand)
 {
     FakeCommandTransport transport;
-    grav_cmd::CommandSessionState session;
+    bltzr_cmd::CommandSessionState session;
     std::ostringstream output;
-    grav_cmd::CommandExecutionContext context{transport, session,
-                                              grav_cmd::CommandExecutionMode::Interactive, output};
-    const grav_cmd::CommandResult result =
-        grav_cmd::CommandExecutor::execute(parseSingle("set_dt 0.25"), context);
+    bltzr_cmd::CommandExecutionContext context{
+        transport, session, bltzr_cmd::CommandExecutionMode::Interactive, output};
+    const bltzr_cmd::CommandResult result =
+        bltzr_cmd::CommandExecutor::execute(parseSingle("set_dt 0.25"), context);
     ASSERT_TRUE(result.ok);
     ASSERT_EQ(transport.commandHistory.size(), 1u);
     EXPECT_EQ(transport.commandHistory[0].first, "set_dt");
@@ -100,20 +100,20 @@ TEST(CommandExecutorTest, TST_UNT_MODCLI_010_RunStepsAndRunUntilUseDeterministic
     finalStatus.steps = 2u;
     finalStatus.totalTime = 1.0F;
     transport.scriptedStatuses = {initialStatus, middleStatus, finalStatus};
-    grav_cmd::CommandSessionState session;
+    bltzr_cmd::CommandSessionState session;
     std::ostringstream output;
-    grav_cmd::CommandExecutionContext context{transport, session,
-                                              grav_cmd::CommandExecutionMode::Batch, output};
-    const grav_cmd::CommandResult runSteps =
-        grav_cmd::CommandExecutor::execute(parseSingle("run_steps 3"), context);
+    bltzr_cmd::CommandExecutionContext context{transport, session,
+                                               bltzr_cmd::CommandExecutionMode::Batch, output};
+    const bltzr_cmd::CommandResult runSteps =
+        bltzr_cmd::CommandExecutor::execute(parseSingle("run_steps 3"), context);
     ASSERT_TRUE(runSteps.ok);
     ASSERT_EQ(transport.commandHistory.size(), 2u);
     EXPECT_EQ(transport.commandHistory[0].first, "pause");
     EXPECT_EQ(transport.commandHistory[1].first, "step");
     EXPECT_EQ(transport.commandHistory[1].second, "\"count\":3");
     transport.commandHistory.clear();
-    const grav_cmd::CommandResult runUntil =
-        grav_cmd::CommandExecutor::execute(parseSingle("run_until 1.0"), context);
+    const bltzr_cmd::CommandResult runUntil =
+        bltzr_cmd::CommandExecutor::execute(parseSingle("run_until 1.0"), context);
     ASSERT_TRUE(runUntil.ok);
     ASSERT_EQ(transport.commandHistory.size(), 3u);
     EXPECT_EQ(transport.commandHistory[0].first, "pause");
@@ -125,18 +125,18 @@ TEST(CommandExecutorTest, TST_UNT_MODCLI_010_RunStepsAndRunUntilUseDeterministic
 TEST(CommandExecutorTest, TST_UNT_MODCLI_011_LoadConfigUpdatesSessionPathAndRejectsInvalidProfile)
 {
     FakeCommandTransport transport;
-    grav_cmd::CommandSessionState session;
+    bltzr_cmd::CommandSessionState session;
     session.configPath = "before.ini";
     std::ostringstream output;
-    grav_cmd::CommandExecutionContext context{transport, session,
-                                              grav_cmd::CommandExecutionMode::Batch, output};
-    const grav_cmd::CommandResult invalidProfile =
-        grav_cmd::CommandExecutor::execute(parseSingle("set_profile impossible"), context);
+    bltzr_cmd::CommandExecutionContext context{transport, session,
+                                               bltzr_cmd::CommandExecutionMode::Batch, output};
+    const bltzr_cmd::CommandResult invalidProfile =
+        bltzr_cmd::CommandExecutor::execute(parseSingle("set_profile impossible"), context);
     ASSERT_FALSE(invalidProfile.ok);
     EXPECT_EQ(invalidProfile.message, "invalid performance profile");
     const std::string originalPath = session.configPath;
-    const grav_cmd::CommandResult loadResult =
-        grav_cmd::CommandExecutor::execute(parseSingle("load_config simulation.ini"), context);
+    const bltzr_cmd::CommandResult loadResult =
+        bltzr_cmd::CommandExecutor::execute(parseSingle("load_config simulation.ini"), context);
     ASSERT_TRUE(loadResult.ok);
     EXPECT_EQ(session.configPath, "simulation.ini");
     EXPECT_NE(session.configPath, originalPath);
@@ -145,22 +145,22 @@ TEST(CommandExecutorTest, TST_UNT_MODCLI_011_LoadConfigUpdatesSessionPathAndReje
 TEST(CommandExecutorTest, TST_UNT_MODCLI_012_CheckpointCommandsMapToProtocolCommands)
 {
     FakeCommandTransport transport;
-    grav_cmd::CommandSessionState session;
+    bltzr_cmd::CommandSessionState session;
     std::ostringstream output;
-    grav_cmd::CommandExecutionContext context{transport, session,
-                                              grav_cmd::CommandExecutionMode::Batch, output};
-    const grav_cmd::CommandResult saveResult = grav_cmd::CommandExecutor::execute(
+    bltzr_cmd::CommandExecutionContext context{transport, session,
+                                               bltzr_cmd::CommandExecutionMode::Batch, output};
+    const bltzr_cmd::CommandResult saveResult = bltzr_cmd::CommandExecutor::execute(
         parseSingle("save_checkpoint checkpoints/demo.chk"), context);
     ASSERT_TRUE(saveResult.ok);
     ASSERT_EQ(transport.commandHistory.size(), 1u);
     EXPECT_EQ(transport.commandHistory[0].first, "save_checkpoint");
     EXPECT_EQ(transport.commandHistory[0].second, "\"path\":\"checkpoints/demo.chk\"");
     transport.commandHistory.clear();
-    const grav_cmd::CommandResult loadResult = grav_cmd::CommandExecutor::execute(
+    const bltzr_cmd::CommandResult loadResult = bltzr_cmd::CommandExecutor::execute(
         parseSingle("load_checkpoint checkpoints/demo.chk"), context);
     ASSERT_TRUE(loadResult.ok);
     ASSERT_EQ(transport.commandHistory.size(), 1u);
     EXPECT_EQ(transport.commandHistory[0].first, "load_checkpoint");
     EXPECT_EQ(transport.commandHistory[0].second, "\"path\":\"checkpoints/demo.chk\"");
 }
-} // namespace grav_test_module_cli_command_executor
+} // namespace bltzr_test_module_cli_command_executor

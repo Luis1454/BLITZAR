@@ -20,29 +20,29 @@
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationScenarioValidation.hpp"
 
-namespace grav_client_host {
+namespace bltzr_client_host {
 class ClientHostCliLocal final {
 public:
-    static constexpr bool kLiveReloadEnabled = GRAVITY_PROFILE_IS_PROD == 0;
+    static constexpr bool kLiveReloadEnabled = BLITZAR_PROFILE_IS_PROD == 0;
 
     static int run(const HostOptions& options, std::string_view programName)
     {
         if (options.validateOnly) {
             const SimulationConfig config = SimulationConfig::loadOrCreate(options.configPath);
-            const grav_config::ScenarioValidationReport report =
-                grav_config::SimulationScenarioValidation::evaluate(config);
-            std::cout << grav_config::SimulationScenarioValidation::renderText(report) << "\n";
+            const bltzr_config::ScenarioValidationReport report =
+                bltzr_config::SimulationScenarioValidation::evaluate(config);
+            std::cout << bltzr_config::SimulationScenarioValidation::renderText(report) << "\n";
             return report.validForRun ? 0 : 3;
         }
         if (!options.scriptPath.empty()) {
-            grav_cmd::ServerClientCommandTransport transport(150);
-            grav_cmd::CommandSessionState session{};
+            bltzr_cmd::ServerClientCommandTransport transport(150);
+            bltzr_cmd::CommandSessionState session{};
             session.configPath = options.configPath;
             session.config = SimulationConfig::loadOrCreate(options.configPath);
-            grav_cmd::CommandExecutionContext context{
-                transport, session, grav_cmd::CommandExecutionMode::Batch, std::cout};
-            const grav_cmd::CommandResult result =
-                grav_cmd::CommandBatchRunner::runScriptFile(options.scriptPath, context);
+            bltzr_cmd::CommandExecutionContext context{
+                transport, session, bltzr_cmd::CommandExecutionMode::Batch, std::cout};
+            const bltzr_cmd::CommandResult result =
+                bltzr_cmd::CommandBatchRunner::runScriptFile(options.scriptPath, context);
             if (!result.ok) {
                 std::cerr << "[client-host] " << result.message << "\n";
                 return 4;
@@ -51,7 +51,7 @@ public:
         }
         const std::vector<std::filesystem::path> searchRoots =
             ClientHostModuleOps::buildSearchRoots(programName);
-        grav_module::ClientModuleHandle module{};
+        bltzr_module::ClientModuleHandle module{};
         std::string currentModuleSpecifier = options.moduleSpecifier;
         const std::string resolvedInitialModulePath =
             ClientHostModuleOps::resolveModuleSpecifier(options.moduleSpecifier, searchRoots);
@@ -72,11 +72,13 @@ public:
         while (keepRunning) {
             std::cout << "client-host> " << std::flush;
             if (!std::getline(std::cin, line)) {
-                if (options.waitForModule) {
+                if (!options.exitAfterModule) {
                     bool moduleKeepRunning = true;
                     std::string commandError;
                     if (!module.handleCommand("wait", moduleKeepRunning, commandError)) {
                         std::cerr << "[client-host] wait failed: " << commandError << "\n";
+                        module.unload();
+                        return 1;
                     }
                 }
                 break;
@@ -94,7 +96,7 @@ private:
     static bool handleLine(const std::string& line, std::string_view programName,
                            const HostOptions& options,
                            const std::vector<std::filesystem::path>& searchRoots,
-                           grav_module::ClientModuleHandle& module,
+                           bltzr_module::ClientModuleHandle& module,
                            std::string& currentModuleSpecifier, bool& keepRunning)
     {
         const std::string trimmed = ClientHostCliText::trim(line);
@@ -174,7 +176,7 @@ private:
                   << "\n";
     }
 
-    static void printCurrentModule(const grav_module::ClientModuleHandle& module,
+    static void printCurrentModule(const bltzr_module::ClientModuleHandle& module,
                                    const std::string& currentModuleSpecifier)
     {
         std::cout << "[client-host] current module: " << module.moduleName() << " ("
@@ -206,4 +208,4 @@ int ClientHostCli::run(const HostOptions& options, std::string_view programName)
     return ClientHostCliLocal::run(options, programName);
 }
 
-} // namespace grav_client_host
+} // namespace bltzr_client_host

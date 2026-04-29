@@ -47,7 +47,7 @@ def _run(root: Path, allowlist: Path) -> tuple[bool, list[str], list[str]]:
     [
         (cpp_file(ENGINE_SERVER_DIR, "bad"), "using Alias = int;\n", "'using' is forbidden in C++ sources"),
         (cpp_file(ENGINE_CONFIG_DIR, "bad"), "namespace a::b {\n}\n", "nested namespace declaration (A::B) is forbidden"),
-        (cpp_file(RUNTIME_SERVER_DIR, "bad"), "namespace gravity_internal_bad {\n}\n", "gravity_internal_* namespace is forbidden"),
+        (cpp_file(RUNTIME_SERVER_DIR, "bad"), "namespace BLITZAR_internal_bad {\n}\n", "BLITZAR_internal_* namespace is forbidden"),
         (
             cpp_file(ENGINE_SERVER_DIR, "bad_namespace"),
             "namespace {\nint g = 1;\n}\n",
@@ -145,12 +145,12 @@ def test_repo_policy_rejects_unnamed_namespace_in_tests_cpp(tmp_path: Path) -> N
 def test_repo_policy_accepts_header_include_guard(tmp_path: Path) -> None:
     _write(
         tmp_path / "engine" / "include" / "ok.hpp",
-        "#ifndef GRAVITY_ENGINE_INCLUDE_OK_HPP_\n"
-        "#define GRAVITY_ENGINE_INCLUDE_OK_HPP_\n"
+        "#ifndef BLITZAR_ENGINE_INCLUDE_OK_HPP_\n"
+        "#define BLITZAR_ENGINE_INCLUDE_OK_HPP_\n"
         "\n"
         "struct Ok {};\n"
         "\n"
-        "#endif // GRAVITY_ENGINE_INCLUDE_OK_HPP_\n",
+        "#endif // BLITZAR_ENGINE_INCLUDE_OK_HPP_\n",
     )
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert ok
@@ -223,7 +223,7 @@ def test_repo_policy_rejects_evidence_workflow_without_prod_profile(tmp_path: Pa
     )
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert not ok
-    assert any("evidence configure command must include -DGRAVITY_PROFILE=prod" in error for error in errors)
+    assert any("evidence configure command must include -DBLITZAR_PROFILE=prod" in error for error in errors)
 
 
 # @brief Documents the test repo policy allows release lane desktop convenience build operation contract.
@@ -237,13 +237,13 @@ def test_repo_policy_allows_release_lane_desktop_convenience_build(tmp_path: Pat
         "  release:\n"
         "    steps:\n"
         "      - name: Configure prod evidence\n"
-        "        run: cmake -S . -B build -G Ninja -DGRAVITY_PROFILE=prod\n"
+        "        run: cmake -S . -B build -G Ninja -DBLITZAR_PROFILE=prod\n"
         "      - name: Configure desktop GUI build\n"
-        "        run: cmake -S . -B build-desktop -G Ninja -DGRAVITY_PROFILE=dev\n",
+        "        run: cmake -S . -B build-desktop -G Ninja -DBLITZAR_PROFILE=dev\n",
     )
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     del ok
-    assert not any("evidence configure command must include -DGRAVITY_PROFILE=prod" in error for error in errors)
+    assert not any("evidence configure command must include -DBLITZAR_PROFILE=prod" in error for error in errors)
 
 
 # @brief Documents the test repo policy ignores non evidence dev workflow operation contract.
@@ -259,7 +259,7 @@ def test_repo_policy_ignores_non_evidence_dev_workflow(tmp_path: Path) -> None:
         "      - name: Configure\n"
         "        run: |\n"
         "          cmake -S . -B build-dev-mod -G Ninja \\\n"
-        "            -DGRAVITY_PROFILE=dev\n",
+        "            -DBLITZAR_PROFILE=dev\n",
     )
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert ok

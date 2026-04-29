@@ -132,7 +132,7 @@ jobs:
       - name: Configure
         shell: pwsh
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_PROFILE=prod -DGRAVITY_STRICT_WARNINGS=ON
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_PROFILE=prod -DBLITZAR_STRICT_WARNINGS=ON
 
       - name: Build
         shell: pwsh
@@ -158,12 +158,12 @@ jobs:
       - name: Configure desktop GUI build
         shell: pwsh
         run: |
-          cmake -S . -B build-desktop -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_PROFILE=dev -DGRAVITY_BUILD_TESTS=OFF -DCMAKE_PREFIX_PATH="${{ env.QT_DIR }}"
+          cmake -S . -B build-desktop -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_PROFILE=dev -DBLITZAR_BUILD_TESTS=OFF -DCMAKE_PREFIX_PATH="${{ env.QT_DIR }}"
 
       - name: Build desktop GUI targets
         shell: pwsh
         run: |
-          cmake --build build-desktop --target blitzar blitzar-server blitzar-client gravityClientModuleQtInProc --parallel
+          cmake --build build-desktop --target blitzar blitzar-server blitzar-client blitzarClientModuleQtInProc --parallel
 
       - name: Install NSIS
         shell: pwsh
@@ -173,11 +173,11 @@ jobs:
       - name: Validate desktop GUI runtime
         shell: pwsh
         run: |
-          if (-not (Test-Path build-desktop\gravityClientModuleQtInProc.dll)) {
+          if (-not (Test-Path build-desktop\blitzarClientModuleQtInProc.dll)) {
             throw "Qt GUI module was not built."
           }
           if (-not (Test-Path build-desktop\platforms\qwindows.dll)) {
-            & "${{ env.QT_DIR }}\bin\windeployqt.exe" --dir build-desktop --release --compiler-runtime build-desktop\gravityClientModuleQtInProc.dll
+            & "${{ env.QT_DIR }}\bin\windeployqt.exe" --dir build-desktop --release --compiler-runtime build-desktop\blitzarClientModuleQtInProc.dll
           }
           if (-not (Test-Path build-desktop\platforms\qwindows.dll)) {
             throw "Qt platform plugin qwindows.dll is missing from desktop runtime."
@@ -457,7 +457,7 @@ jobs:
       - name: Configure
         shell: pwsh
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_PROFILE=prod -DGRAVITY_STRICT_WARNINGS=ON
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_PROFILE=prod -DBLITZAR_STRICT_WARNINGS=ON
 
       - name: Build
         shell: pwsh

@@ -5,8 +5,8 @@
  * @brief Public configuration interfaces and validation contracts for simulation setup.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIGDIRECTIVE_HPP_
-#define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIGDIRECTIVE_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIGDIRECTIVE_HPP_
+#define BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIGDIRECTIVE_HPP_
 #include <ostream>
 #include <string>
 /*
@@ -17,12 +17,12 @@
  */
 struct SimulationConfig;
 
-namespace grav_config {
+namespace bltzr_config {
 class SimulationConfigDirective {
 public:
     [[nodiscard]] static bool applyLine(const std::string& line, SimulationConfig& config,
                                         std::ostream& warnings);
     static void write(std::ostream& out, const SimulationConfig& config);
 };
-} // namespace grav_config
-#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIGDIRECTIVE_HPP_
+} // namespace bltzr_config
+#endif // BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIGDIRECTIVE_HPP_

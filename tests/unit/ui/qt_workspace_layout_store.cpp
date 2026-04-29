@@ -11,14 +11,14 @@
 #include <gtest/gtest.h>
 #include <string>
 
-namespace grav_test_qt_ui {
+namespace bltzr_test_qt_ui {
 TEST(QtUiLogicTest, TST_UNT_UI_004_WorkspaceLayoutStoreRoundTripsNamedPreset)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path root =
-        std::filesystem::temp_directory_path() / ("gravity_qt_workspace_" + std::to_string(stamp));
+        std::filesystem::temp_directory_path() / ("BLITZAR_qt_workspace_" + std::to_string(stamp));
     const std::filesystem::path configPath = root / "simulation.ini";
-    grav_qt::WorkspaceLayoutStore store(configPath.string());
+    bltzr_qt::WorkspaceLayoutStore store(configPath.string());
     const std::string savedState = "dock-state-bytes";
     const std::string savedGeometry = "dock-geometry-bytes";
     ASSERT_TRUE(store.savePreset("Mission Deck 01", savedState, savedGeometry));
@@ -35,4 +35,4 @@ TEST(QtUiLogicTest, TST_UNT_UI_004_WorkspaceLayoutStoreRoundTripsNamedPreset)
     std::error_code ec;
     std::filesystem::remove_all(root, ec);
 }
-} // namespace grav_test_qt_ui
+} // namespace bltzr_test_qt_ui

@@ -18,7 +18,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_034_LoadOrCreateReportsSiValidationDiagnostics
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() /
-        ("gravity_config_si_validation_" + std::to_string(stamp) + ".ini");
+        ("BLITZAR_config_si_validation_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
@@ -53,7 +53,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_035_LoadValidatesSnapshotPipelineClientSetting
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() /
-        ("gravity_config_snapshot_pipeline_" + std::to_string(stamp) + ".ini");
+        ("BLITZAR_config_snapshot_pipeline_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());

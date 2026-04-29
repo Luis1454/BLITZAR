@@ -25,12 +25,12 @@
 #include <string>
 #include <vector>
 
-namespace grav_test_qt_workspace_runtime_controls {
-class RecordingRuntime final : public grav_client::IClientRuntime {
+namespace bltzr_test_qt_workspace_runtime_controls {
+class RecordingRuntime final : public bltzr_client::IClientRuntime {
 public:
     bool start() override
     {
-        return false;
+        return startSucceeded;
     }
 
     void stop() override
@@ -200,7 +200,7 @@ public:
         return {};
     }
 
-    std::optional<grav_client::ConsumedSnapshot> consumeLatestSnapshot() override
+    std::optional<bltzr_client::ConsumedSnapshot> consumeLatestSnapshot() override
     {
         return std::nullopt;
     }
@@ -210,7 +210,7 @@ public:
         return false;
     }
 
-    grav_client::SnapshotPipelineState snapshotPipelineState() const override
+    bltzr_client::SnapshotPipelineState snapshotPipelineState() const override
     {
         return {};
     }
@@ -236,6 +236,7 @@ public:
     }
 
     bool pausedState = false;
+    bool startSucceeded = false;
     bool sphEnabled = false;
     bool connectorAutoStart = false;
     std::uint32_t configuredParticleCount = 0u;
@@ -288,7 +289,7 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_010_RunButtonsAndConnectorForwar
     (void)testsupport::ensureQtApp();
     auto runtime = std::make_unique<RecordingRuntime>();
     RecordingRuntime* spy = runtime.get();
-    grav_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     window.findChild<QLineEdit*>("serverHostEdit")->setText("10.0.0.4");
@@ -318,7 +319,7 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_011_RunAndSceneProfilesPropagate
     (void)testsupport::ensureQtApp();
     auto runtime = std::make_unique<RecordingRuntime>();
     RecordingRuntime* spy = runtime.get();
-    grav_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     window.findChild<QComboBox*>("performanceProfileCombo")->setCurrentText("balanced");
@@ -348,11 +349,11 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_012_PhysicsAndRenderControlsPers
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path configPath =
         std::filesystem::temp_directory_path() /
-        ("gravity_qt_workspace_runtime_" + std::to_string(stamp) + ".ini");
+        ("BLITZAR_qt_workspace_runtime_" + std::to_string(stamp) + ".ini");
     ASSERT_TRUE(makeRuntimeUiConfig().save(configPath.string()));
     auto runtime = std::make_unique<RecordingRuntime>();
     RecordingRuntime* spy = runtime.get();
-    grav_qt::MainWindow window(makeRuntimeUiConfig(), configPath.string(), std::move(runtime));
+    bltzr_qt::MainWindow window(makeRuntimeUiConfig(), configPath.string(), std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     window.findChild<QComboBox*>("solverCombo")->setCurrentText("octree_cpu");
@@ -404,11 +405,11 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_013_ResetClearsEnergyTimelineHis
 {
     (void)testsupport::ensureQtApp();
     auto runtime = std::make_unique<RecordingRuntime>();
-    grav_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     QWidget* graphWidget = window.findChild<QWidget*>("energyGraphWidget");
-    auto* graph = dynamic_cast<grav_qt::EnergyGraphWidget*>(graphWidget);
+    auto* graph = dynamic_cast<bltzr_qt::EnergyGraphWidget*>(graphWidget);
     ASSERT_NE(graph, nullptr);
     SimulationStats first{};
     first.steps = 10u;
@@ -433,7 +434,7 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_019_GpuTelemetryToggleForwardsTo
     (void)testsupport::ensureQtApp();
     auto runtime = std::make_unique<RecordingRuntime>();
     RecordingRuntime* spy = runtime.get();
-    grav_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     QCheckBox* gpuTelemetryCheck = window.findChild<QCheckBox*>("gpuTelemetryCheck");
@@ -446,4 +447,22 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_019_GpuTelemetryToggleForwardsTo
     QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
     EXPECT_FALSE(spy->gpuTelemetryEnabled);
 }
-} // namespace grav_test_qt_workspace_runtime_controls
+
+TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_021_TickSurvivesMissingSnapshot)
+{
+    (void)testsupport::ensureQtApp();
+    auto runtime = std::make_unique<RecordingRuntime>();
+    runtime->startSucceeded = true;
+    bltzr_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
+    window.show();
+    QWidget* graphWidget = window.findChild<QWidget*>("energyGraphWidget");
+    auto* graph = dynamic_cast<bltzr_qt::EnergyGraphWidget*>(graphWidget);
+    ASSERT_NE(graph, nullptr);
+    ASSERT_TRUE(testsupport::waitUntilUi(
+        [&]() {
+            return graph->sampleCount() >= 1u;
+        },
+        std::chrono::milliseconds(500)));
+    EXPECT_TRUE(testsupport::findStatusLabelText(window).contains("Link: disconnected"));
+}
+} // namespace bltzr_test_qt_workspace_runtime_controls

@@ -10,7 +10,7 @@
 #include <cctype>
 #include <utility>
 
-namespace grav_client_host {
+namespace bltzr_client_host {
 class ClientHostCliTextLocal final {
 public:
     static std::string trim(const std::string& input)
@@ -81,4 +81,4 @@ std::string ClientHostCliText::toLower(std::string value)
 {
     return ClientHostCliTextLocal::toLower(std::move(value));
 }
-} // namespace grav_client_host
+} // namespace bltzr_client_host

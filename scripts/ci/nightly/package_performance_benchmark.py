@@ -26,7 +26,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--root", default=".", help="Repository root")
     parser.add_argument("--dist-dir", default="dist/performance-benchmark", help="Output directory for the report bundle")
     parser.add_argument("--profile", default="gpu-nightly", help="Campaign profile from docs/quality/manifest/performance_campaign.json")
-    parser.add_argument("--tool", required=True, help="Path to gravityPerformanceBenchmarkTool executable")
+    parser.add_argument("--tool", required=True, help="Path to blitzarPerformanceBenchmarkTool executable")
     return parser.parse_args()
 
 

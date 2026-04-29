@@ -14,7 +14,7 @@
 #include <limits>
 #include <sstream>
 
-namespace grav_qt {
+namespace bltzr_qt {
 class MainWindowPresenterLocal final {
 public:
     static bool hasAge(std::uint32_t ageMs)
@@ -255,4 +255,4 @@ MainWindowPresentation MainWindowPresenter::present(const MainWindowPresentation
     output.consoleTrace = trace.str();
     return output;
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-namespace grav_module {
+namespace bltzr_module {
 class ClientModuleHashLocal final {
 public:
     static bool computeFileSha256Hex(std::string_view filePath, std::string& outHexDigest,
@@ -161,4 +161,4 @@ bool ClientModuleHash::computeFileSha256Hex(std::string_view filePath, std::stri
 {
     return ClientModuleHashLocal::computeFileSha256Hex(filePath, outHexDigest, outError);
 }
-} // namespace grav_module
+} // namespace bltzr_module

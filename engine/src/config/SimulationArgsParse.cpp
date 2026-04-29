@@ -56,7 +56,7 @@ bool SimulationArgsParse::parseBool(const std::string& value, bool& out)
 bool SimulationArgsParse::parseUint(const std::string& value, std::uint32_t& out)
 {
     std::uint64_t parsed = 0;
-    if (!grav_text::parseNumber(value, parsed)) {
+    if (!bltzr_text::parseNumber(value, parsed)) {
         return false;
     }
     if (parsed > static_cast<std::uint64_t>(std::numeric_limits<std::uint32_t>::max())) {
@@ -76,7 +76,7 @@ bool SimulationArgsParse::parseUint(const std::string& value, std::uint32_t& out
 bool SimulationArgsParse::parseInt(const std::string& value, int& out)
 {
     long long parsed = 0;
-    if (!grav_text::parseNumber(value, parsed)) {
+    if (!bltzr_text::parseNumber(value, parsed)) {
         return false;
     }
     if (parsed < static_cast<long long>(std::numeric_limits<int>::min()) ||
@@ -96,7 +96,7 @@ bool SimulationArgsParse::parseInt(const std::string& value, int& out)
  */
 bool SimulationArgsParse::parseFloat(const std::string& value, float& out)
 {
-    return grav_text::parseNumber(value, out);
+    return bltzr_text::parseNumber(value, out);
 }
 
 /*

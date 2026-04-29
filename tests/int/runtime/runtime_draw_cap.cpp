@@ -13,20 +13,20 @@
 #include <iostream>
 #include <sstream>
 
-namespace grav_test_client_runtime {
+namespace bltzr_test_client_runtime {
 TEST(ClientRuntimeTest, TST_CNT_RUNT_005_ClampsConfiguredClientCapToProtocolMax)
 {
     SimulationConfig config = SimulationConfig::defaults();
-    config.clientParticleCap = grav_protocol::kSnapshotMaxPoints + 5000u;
-    EXPECT_EQ(grav_client::resolveClientDrawCap(config), grav_protocol::kSnapshotMaxPoints);
+    config.clientParticleCap = bltzr_protocol::kSnapshotMaxPoints + 5000u;
+    EXPECT_EQ(bltzr_client::resolveClientDrawCap(config), bltzr_protocol::kSnapshotMaxPoints);
 }
 
 TEST(ClientRuntimeTest, TST_CNT_RUNT_006_ClampsEnvironmentOverrideToProtocolMax)
 {
     SimulationConfig config = SimulationConfig::defaults();
     config.clientParticleCap = 4096u;
-    testsupport::ScopedEnvVar drawCapOverride("GRAVITY_CLIENT_DRAW_CAP", "50000");
-    EXPECT_EQ(grav_client::resolveClientDrawCap(config), grav_protocol::kSnapshotMaxPoints);
+    testsupport::ScopedEnvVar drawCapOverride("BLITZAR_CLIENT_DRAW_CAP", "50000");
+    EXPECT_EQ(bltzr_client::resolveClientDrawCap(config), bltzr_protocol::kSnapshotMaxPoints);
 }
 
 TEST(ClientRuntimeTest, TST_CNT_RUNT_007_InvalidEnvironmentOverrideFallsBackToConfigAndWarns)
@@ -35,9 +35,9 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_007_InvalidEnvironmentOverrideFallsBackToCo
     config.clientParticleCap = 4096u;
     std::stringstream err;
     std::streambuf* previous = std::cerr.rdbuf(err.rdbuf());
-    testsupport::ScopedEnvVar drawCapOverride("GRAVITY_CLIENT_DRAW_CAP", "bad");
-    EXPECT_EQ(grav_client::resolveClientDrawCap(config), 4096u);
+    testsupport::ScopedEnvVar drawCapOverride("BLITZAR_CLIENT_DRAW_CAP", "bad");
+    EXPECT_EQ(bltzr_client::resolveClientDrawCap(config), 4096u);
     std::cerr.rdbuf(previous);
-    EXPECT_NE(err.str().find("invalid GRAVITY_CLIENT_DRAW_CAP"), std::string::npos);
+    EXPECT_NE(err.str().find("invalid BLITZAR_CLIENT_DRAW_CAP"), std::string::npos);
 }
-} // namespace grav_test_client_runtime
+} // namespace bltzr_test_client_runtime

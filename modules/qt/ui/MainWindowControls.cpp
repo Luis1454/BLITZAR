@@ -18,7 +18,7 @@
 #include <QStatusBar>
 #include <QTimer>
 
-namespace grav_qt {
+namespace bltzr_qt {
 void MainWindow::connectControls()
 {
     const auto applySphParams = [this]() {
@@ -72,7 +72,7 @@ void MainWindow::connectControls()
     connect(_simulationProfileCombo, &QComboBox::currentTextChanged, this,
             [this](const QString& profile) {
                 _config.simulationProfile = profile.toStdString();
-                grav_config::applySimulationProfile(_config);
+                bltzr_config::applySimulationProfile(_config);
                 applyConfigToUi();
                 (void)applyConfigToServer(true);
                 markConfigDirty();
@@ -141,7 +141,7 @@ void MainWindow::connectControls()
     connect(_performanceCombo, &QComboBox::currentTextChanged, this,
             [this](const QString& profile) {
                 _config.performanceProfile = profile.toStdString();
-                grav_config::applyPerformanceProfile(_config);
+                bltzr_config::applyPerformanceProfile(_config);
                 applyConfigToUi();
                 applyPerformanceProfileToRuntime();
                 markConfigDirty();
@@ -189,4 +189,4 @@ void MainWindow::connectControls()
         tick();
     });
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

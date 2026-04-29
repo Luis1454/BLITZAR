@@ -5,15 +5,15 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDEXECUTOR_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDEXECUTOR_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDEXECUTOR_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDEXECUTOR_HPP_
 #include "command/CommandContext.hpp"
 #include "command/CommandTypes.hpp"
 
-namespace grav_cmd {
+namespace bltzr_cmd {
 class CommandExecutor final {
 public:
     static CommandResult execute(const CommandRequest& request, CommandExecutionContext& context);
 };
-} // namespace grav_cmd
-#endif // GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDEXECUTOR_HPP_
+} // namespace bltzr_cmd
+#endif // BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDEXECUTOR_HPP_

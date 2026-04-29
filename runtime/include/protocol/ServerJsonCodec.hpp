@@ -5,8 +5,8 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERJSONCODEC_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERJSONCODEC_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_PROTOCOL_SERVERJSONCODEC_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_PROTOCOL_SERVERJSONCODEC_HPP_
 #include "config/TextParse.hpp"
 #include "types/SimulationTypes.hpp"
 #include <cstdint>
@@ -14,7 +14,7 @@
 #include <string_view>
 #include <vector>
 
-namespace grav_protocol {
+namespace bltzr_protocol {
 struct ServerCommandRequest {
     std::string cmd;
     std::string token;
@@ -105,5 +105,5 @@ private:
     static bool findValueStart(std::string_view raw, std::string_view key, std::size_t& start);
     static bool readToken(std::string_view raw, std::string_view key, std::string& out);
 };
-} // namespace grav_protocol
-#endif // GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERJSONCODEC_HPP_
+} // namespace bltzr_protocol
+#endif // BLITZAR_RUNTIME_INCLUDE_PROTOCOL_SERVERJSONCODEC_HPP_

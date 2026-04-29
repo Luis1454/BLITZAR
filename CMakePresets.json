@@ -14,9 +14,9 @@
       "binaryDir": "${sourceDir}/build-msvc-dev",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "GRAVITY_PROFILE": "dev",
-        "GRAVITY_STRICT_WARNINGS": "OFF",
-        "GRAVITY_BUILD_TESTS": "ON"
+        "BLITZAR_PROFILE": "dev",
+        "BLITZAR_STRICT_WARNINGS": "OFF",
+        "BLITZAR_BUILD_TESTS": "ON"
       }
     },
     {
@@ -27,9 +27,9 @@
       "binaryDir": "${sourceDir}/build-msvc-strict",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "GRAVITY_PROFILE": "prod",
-        "GRAVITY_STRICT_WARNINGS": "ON",
-        "GRAVITY_BUILD_TESTS": "ON"
+        "BLITZAR_PROFILE": "prod",
+        "BLITZAR_STRICT_WARNINGS": "ON",
+        "BLITZAR_BUILD_TESTS": "ON"
       }
     }
   ],

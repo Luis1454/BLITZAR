@@ -5,8 +5,8 @@
  * @brief Source artifact for the BLITZAR simulation project.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_GRAPHICS_VIEWMATH_HPP_
-#define GRAVITY_ENGINE_INCLUDE_GRAPHICS_VIEWMATH_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_GRAPHICS_VIEWMATH_HPP_
+#define BLITZAR_ENGINE_INCLUDE_GRAPHICS_VIEWMATH_HPP_
 #include "graphics/GraphicsTypes.hpp"
 #include "types/SimulationTypes.hpp"
 #include <array>
@@ -51,4 +51,4 @@ ProjectedPoint projectParticle(const RenderParticle& particle, ViewMode mode,
 GimbalOverlay computeGimbal(const Rect2D& viewport, ViewMode mode, const CameraState& camera);
 GimbalAxis pickGimbalAxis(const GimbalOverlay& overlay, const Point2D& mouse);
 } // namespace grav
-#endif // GRAVITY_ENGINE_INCLUDE_GRAPHICS_VIEWMATH_HPP_
+#endif // BLITZAR_ENGINE_INCLUDE_GRAPHICS_VIEWMATH_HPP_

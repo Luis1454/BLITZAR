@@ -7,7 +7,7 @@
 
 #include "protocol/ServerProtocol.hpp"
 
-namespace grav_protocol {
+namespace bltzr_protocol {
 const std::string_view SchemaVersion = "server-json-v1";
 const std::string_view Status = "status";
 const std::string_view GetSnapshot = "get_snapshot";
@@ -44,4 +44,4 @@ std::uint32_t clampSnapshotPoints(std::uint32_t requested)
         return kSnapshotMaxPoints;
     return requested;
 }
-} // namespace grav_protocol
+} // namespace bltzr_protocol

@@ -13,7 +13,7 @@
 #include <string>
 #include <string_view>
 
-namespace grav_module {
+namespace bltzr_module {
 std::string errorFromBuffer(const std::array<char, kErrorBufferSize>& buffer,
                             std::string_view fallback)
 {
@@ -119,4 +119,4 @@ bool ClientModuleHandle::handleCommand(std::string_view commandLine, bool& outKe
     outError.clear();
     return true;
 }
-} // namespace grav_module
+} // namespace bltzr_module

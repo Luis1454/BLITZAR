@@ -12,7 +12,7 @@
 #include <limits>
 #include <vector>
 
-namespace grav_qt {
+namespace bltzr_qt {
 struct OverlayBounds final {
     float centerX;
     float centerY;
@@ -117,4 +117,4 @@ std::vector<OctreeOverlayNode> OctreeOverlay::build(const std::vector<RenderPart
         maxDepth, nodes);
     return nodes;
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

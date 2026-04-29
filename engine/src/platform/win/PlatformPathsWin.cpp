@@ -7,7 +7,7 @@
 
 #include "platform/win/PlatformPathsWin.hpp"
 
-namespace grav_platform {
+namespace bltzr_platform {
 std::string executableName(std::string_view basename)
 {
     return std::string(basename) + ".exe";
@@ -29,4 +29,4 @@ std::tm localTime(std::time_t nowTime)
     localtime_s(&tm, &nowTime);
     return tm;
 }
-} // namespace grav_platform
+} // namespace bltzr_platform

@@ -16,7 +16,7 @@
 void SimulationServer::setSolverMode(const std::string& mode)
 {
     std::string canonical;
-    if (!grav_modes::normalizeSolver(mode, canonical)) {
+    if (!bltzr_modes::normalizeSolver(mode, canonical)) {
         std::cerr << "[server] ignored invalid solver mode: " << mode << "\n";
         return;
     }
@@ -24,7 +24,7 @@ void SimulationServer::setSolverMode(const std::string& mode)
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
         std::string nextSolver = canonical;
-        if (!grav_modes::isSupportedSolverIntegratorPair(nextSolver, _integratorMode)) {
+        if (!bltzr_modes::isSupportedSolverIntegratorPair(nextSolver, _integratorMode)) {
             std::cerr << "[server] rejected solver octree_gpu because integrator rk4 is not "
                          "supported with it\n";
             return;
@@ -48,7 +48,7 @@ void SimulationServer::setSolverMode(const std::string& mode)
 void SimulationServer::setIntegratorMode(const std::string& mode)
 {
     std::string canonical;
-    if (!grav_modes::normalizeIntegrator(mode, canonical)) {
+    if (!bltzr_modes::normalizeIntegrator(mode, canonical)) {
         std::cerr << "[server] ignored invalid integrator mode: " << mode << "\n";
         return;
     }
@@ -56,7 +56,7 @@ void SimulationServer::setIntegratorMode(const std::string& mode)
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
         std::string nextIntegrator = canonical;
-        if (!grav_modes::isSupportedSolverIntegratorPair(_solverMode, nextIntegrator)) {
+        if (!bltzr_modes::isSupportedSolverIntegratorPair(_solverMode, nextIntegrator)) {
             std::cerr << "[server] rejected integrator rk4 because solver octree_gpu supports "
                          "euler only\n";
             return;
@@ -80,7 +80,7 @@ void SimulationServer::setIntegratorMode(const std::string& mode)
 void SimulationServer::setPerformanceProfile(const std::string& profile)
 {
     std::string canonical;
-    if (!grav_config::normalizePerformanceProfile(profile, canonical)) {
+    if (!bltzr_config::normalizePerformanceProfile(profile, canonical)) {
         std::cerr << "[server] ignored invalid performance profile: " << profile << "\n";
         return;
     }
@@ -190,7 +190,7 @@ void SimulationServer::setSnapshotPublishPeriodMs(std::uint32_t periodMs)
  */
 void SimulationServer::setSnapshotTransferCap(std::uint32_t maxPoints)
 {
-    const std::uint32_t safeMaxPoints = grav_protocol::clampSnapshotPoints(maxPoints);
+    const std::uint32_t safeMaxPoints = bltzr_protocol::clampSnapshotPoints(maxPoints);
     _snapshotTransferCap.store(resolvePublishedSnapshotCap(safeMaxPoints),
                                std::memory_order_relaxed);
     _runtimeConfigMirror.clientParticleCap = safeMaxPoints;

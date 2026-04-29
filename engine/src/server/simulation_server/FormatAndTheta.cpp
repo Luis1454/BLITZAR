@@ -106,7 +106,7 @@ void logEffectiveExecutionModes(
 {
     std::cout << "[server] active solver=" << solver << " integrator=" << integrator
               << " perf=" << performanceProfile;
-    if (solver == grav_modes::kSolverOctreeCpu || solver == grav_modes::kSolverOctreeGpu) {
+    if (solver == bltzr_modes::kSolverOctreeCpu || solver == bltzr_modes::kSolverOctreeGpu) {
         std::cout << " criterion=" << openingCriterion << " theta=" << theta
                   << " theta_effective=" << effectiveTheta
                   << " theta_auto=" << (thetaAutoTune ? "on" : "off")
@@ -138,7 +138,7 @@ std::string defaultExportPath(const std::string& directory, const std::string& f
 {
     const auto now = std::chrono::system_clock::now();
     const std::time_t nowTime = std::chrono::system_clock::to_time_t(now);
-    const std::tm tm = grav_platform::localTime(nowTime);
+    const std::tm tm = bltzr_platform::localTime(nowTime);
     std::string extension = normalizeSnapshotFormat(format);
     if (extension == "vtk_binary")
         extension = "vtk";

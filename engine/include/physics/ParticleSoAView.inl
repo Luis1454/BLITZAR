@@ -9,10 +9,10 @@
  * @brief Documents the get so aposition operation contract.
  * @param view Input value used by this contract.
  * @param i Input value used by this contract.
- * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 value produced by this contract.
+ * @return BLITZAR_HD_HOST BLITZAR_HD_DEVICE Vector3 value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3 getSoAPosition(ParticleSoAView view, int i)
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3 getSoAPosition(ParticleSoAView view, int i)
 {
     return Vector3{view.posX[i], view.posY[i], view.posZ[i]};
 }
@@ -22,10 +22,10 @@ GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3 getSoAPosition(ParticleSoAView 
  * @param view Input value used by this contract.
  * @param i Input value used by this contract.
  * @param p Input value used by this contract.
- * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE void value produced by this contract.
+ * @return BLITZAR_HD_HOST BLITZAR_HD_DEVICE void value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline void setSoAPosition(ParticleSoAView view, int i, Vector3 p)
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline void setSoAPosition(ParticleSoAView view, int i, Vector3 p)
 {
     view.posX[i] = p.x;
     view.posY[i] = p.y;
@@ -36,10 +36,10 @@ GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline void setSoAPosition(ParticleSoAView vie
  * @brief Documents the get so avelocity operation contract.
  * @param view Input value used by this contract.
  * @param i Input value used by this contract.
- * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 value produced by this contract.
+ * @return BLITZAR_HD_HOST BLITZAR_HD_DEVICE Vector3 value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3 getSoAVelocity(ParticleSoAView view, int i)
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3 getSoAVelocity(ParticleSoAView view, int i)
 {
     return Vector3{view.velX[i], view.velY[i], view.velZ[i]};
 }
@@ -49,10 +49,10 @@ GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3 getSoAVelocity(ParticleSoAView 
  * @param view Input value used by this contract.
  * @param i Input value used by this contract.
  * @param v Input value used by this contract.
- * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE void value produced by this contract.
+ * @return BLITZAR_HD_HOST BLITZAR_HD_DEVICE void value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline void setSoAVelocity(ParticleSoAView view, int i, Vector3 v)
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline void setSoAVelocity(ParticleSoAView view, int i, Vector3 v)
 {
     view.velX[i] = v.x;
     view.velY[i] = v.y;
@@ -64,10 +64,10 @@ GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline void setSoAVelocity(ParticleSoAView vie
  * @param view Input value used by this contract.
  * @param i Input value used by this contract.
  * @param p Input value used by this contract.
- * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE void value produced by this contract.
+ * @return BLITZAR_HD_HOST BLITZAR_HD_DEVICE void value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline void setSoAPressure(ParticleSoAView view, int i, Vector3 p)
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline void setSoAPressure(ParticleSoAView view, int i, Vector3 p)
 {
     view.pressX[i] = p.x;
     view.pressY[i] = p.y;
@@ -78,10 +78,10 @@ GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline void setSoAPressure(ParticleSoAView vie
  * @brief Documents the get so apressure operation contract.
  * @param view Input value used by this contract.
  * @param i Input value used by this contract.
- * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3 value produced by this contract.
+ * @return BLITZAR_HD_HOST BLITZAR_HD_DEVICE Vector3 value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3 getSoAPressure(ParticleSoAView view, int i)
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3 getSoAPressure(ParticleSoAView view, int i)
 {
     return Vector3{view.pressX[i], view.pressY[i], view.pressZ[i]};
 }

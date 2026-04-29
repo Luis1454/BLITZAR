@@ -11,7 +11,7 @@
 #include <cstring>
 #include <new>
 
-namespace grav_ffi_internal {
+namespace bltzr_ffi_internal {
 static void writeErrorMessage(const char* message, char* buffer, std::size_t capacity)
 {
     if (buffer == nullptr || capacity == 0u) {
@@ -30,7 +30,7 @@ static blitzar_core_result_t invalidArgumentIfNull(const void* value)
 {
     return value == nullptr ? BLITZAR_CORE_INVALID_ARGUMENT : BLITZAR_CORE_OK;
 }
-} // namespace grav_ffi_internal
+} // namespace bltzr_ffi_internal
 
 /*
  * @brief Documents the blitzar core operation contract.
@@ -53,8 +53,8 @@ blitzar_core_t* blitzar_core_create(const blitzar_core_config_t* config, char* e
                                     size_t error_buffer_capacity)
 {
     if (config == nullptr) {
-        grav_ffi_internal::writeErrorMessage("config is required", error_buffer,
-                                             error_buffer_capacity);
+        bltzr_ffi_internal::writeErrorMessage("config is required", error_buffer,
+                                              error_buffer_capacity);
         return nullptr;
     }
     try {
@@ -63,17 +63,17 @@ blitzar_core_t* blitzar_core_create(const blitzar_core_config_t* config, char* e
             delete core;
             return nullptr;
         }
-        grav_ffi_internal::writeErrorMessage("", error_buffer, error_buffer_capacity);
+        bltzr_ffi_internal::writeErrorMessage("", error_buffer, error_buffer_capacity);
         return core;
     }
     catch (const std::bad_alloc&) {
-        grav_ffi_internal::writeErrorMessage("allocation failed", error_buffer,
-                                             error_buffer_capacity);
+        bltzr_ffi_internal::writeErrorMessage("allocation failed", error_buffer,
+                                              error_buffer_capacity);
         return nullptr;
     }
     catch (...) {
-        grav_ffi_internal::writeErrorMessage("unexpected exception during core creation",
-                                             error_buffer, error_buffer_capacity);
+        bltzr_ffi_internal::writeErrorMessage("unexpected exception during core creation",
+                                              error_buffer, error_buffer_capacity);
         return nullptr;
     }
 }
@@ -86,8 +86,8 @@ void blitzar_core_destroy(blitzar_core_t* core)
 blitzar_core_result_t blitzar_core_apply_config(blitzar_core_t* core,
                                                 const blitzar_core_config_t* config)
 {
-    if (grav_ffi_internal::invalidArgumentIfNull(core) != BLITZAR_CORE_OK ||
-        grav_ffi_internal::invalidArgumentIfNull(config) != BLITZAR_CORE_OK) {
+    if (bltzr_ffi_internal::invalidArgumentIfNull(core) != BLITZAR_CORE_OK ||
+        bltzr_ffi_internal::invalidArgumentIfNull(config) != BLITZAR_CORE_OK) {
         return BLITZAR_CORE_INVALID_ARGUMENT;
     }
     return core->impl.applyConfig(*config);
@@ -96,7 +96,7 @@ blitzar_core_result_t blitzar_core_apply_config(blitzar_core_t* core,
 blitzar_core_result_t blitzar_core_run_steps(blitzar_core_t* core, uint32_t steps,
                                              uint32_t timeout_ms)
 {
-    if (grav_ffi_internal::invalidArgumentIfNull(core) != BLITZAR_CORE_OK) {
+    if (bltzr_ffi_internal::invalidArgumentIfNull(core) != BLITZAR_CORE_OK) {
         return BLITZAR_CORE_INVALID_ARGUMENT;
     }
     return core->impl.runSteps(steps, timeout_ms);
@@ -105,8 +105,8 @@ blitzar_core_result_t blitzar_core_run_steps(blitzar_core_t* core, uint32_t step
 blitzar_core_result_t blitzar_core_get_status(const blitzar_core_t* core,
                                               blitzar_core_status_t* out_status)
 {
-    if (grav_ffi_internal::invalidArgumentIfNull(core) != BLITZAR_CORE_OK ||
-        grav_ffi_internal::invalidArgumentIfNull(out_status) != BLITZAR_CORE_OK) {
+    if (bltzr_ffi_internal::invalidArgumentIfNull(core) != BLITZAR_CORE_OK ||
+        bltzr_ffi_internal::invalidArgumentIfNull(out_status) != BLITZAR_CORE_OK) {
         return BLITZAR_CORE_INVALID_ARGUMENT;
     }
     return core->impl.getStatus(*out_status);
@@ -115,8 +115,8 @@ blitzar_core_result_t blitzar_core_get_status(const blitzar_core_t* core,
 blitzar_core_result_t blitzar_core_get_snapshot(const blitzar_core_t* core, size_t max_points,
                                                 blitzar_core_snapshot_t* out_snapshot)
 {
-    if (grav_ffi_internal::invalidArgumentIfNull(core) != BLITZAR_CORE_OK ||
-        grav_ffi_internal::invalidArgumentIfNull(out_snapshot) != BLITZAR_CORE_OK) {
+    if (bltzr_ffi_internal::invalidArgumentIfNull(core) != BLITZAR_CORE_OK ||
+        bltzr_ffi_internal::invalidArgumentIfNull(out_snapshot) != BLITZAR_CORE_OK) {
         return BLITZAR_CORE_INVALID_ARGUMENT;
     }
     out_snapshot->particles = nullptr;
@@ -137,7 +137,7 @@ void blitzar_core_free_snapshot(blitzar_core_snapshot_t* snapshot)
 blitzar_core_result_t blitzar_core_load_state(blitzar_core_t* core, const char* path,
                                               const char* format, uint32_t timeout_ms)
 {
-    if (grav_ffi_internal::invalidArgumentIfNull(core) != BLITZAR_CORE_OK) {
+    if (bltzr_ffi_internal::invalidArgumentIfNull(core) != BLITZAR_CORE_OK) {
         return BLITZAR_CORE_INVALID_ARGUMENT;
     }
     return core->impl.loadState(path, format, timeout_ms);
@@ -146,7 +146,7 @@ blitzar_core_result_t blitzar_core_load_state(blitzar_core_t* core, const char* 
 blitzar_core_result_t blitzar_core_export_state(blitzar_core_t* core, const char* path,
                                                 const char* format, uint32_t timeout_ms)
 {
-    if (grav_ffi_internal::invalidArgumentIfNull(core) != BLITZAR_CORE_OK) {
+    if (bltzr_ffi_internal::invalidArgumentIfNull(core) != BLITZAR_CORE_OK) {
         return BLITZAR_CORE_INVALID_ARGUMENT;
     }
     return core->impl.exportState(path, format, timeout_ms);
@@ -156,8 +156,8 @@ size_t blitzar_core_get_last_error(const blitzar_core_t* core, char* error_buffe
                                    size_t error_buffer_capacity)
 {
     if (core == nullptr) {
-        grav_ffi_internal::writeErrorMessage("core is required", error_buffer,
-                                             error_buffer_capacity);
+        bltzr_ffi_internal::writeErrorMessage("core is required", error_buffer,
+                                              error_buffer_capacity);
         return std::strlen("core is required");
     }
     return core->impl.copyLastError(error_buffer, error_buffer_capacity);

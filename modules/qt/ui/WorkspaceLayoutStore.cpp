@@ -12,7 +12,7 @@
 #include <fstream>
 #include <system_error>
 
-namespace grav_qt {
+namespace bltzr_qt {
 
 WorkspaceLayoutStore::WorkspaceLayoutStore(std::string configPath)
 {
@@ -131,4 +131,4 @@ bool WorkspaceLayoutStore::readValueLine(const std::string& line, const char* pr
     out = line.substr(expected.size());
     return !out.empty();
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

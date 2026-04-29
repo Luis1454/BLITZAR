@@ -14,7 +14,7 @@
 #include <thread>
 #include <vector>
 
-namespace grav_test_server_export_queue {
+namespace bltzr_test_server_export_queue {
 static std::filesystem::path makeTempExportPath(const char* stem)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -48,7 +48,7 @@ TEST(PhysicsTest, TST_UNT_RUNT_007_ServerPublishesAsyncExportQueueStatus)
     server.start();
     std::vector<RenderParticle> snapshot;
     ASSERT_TRUE(testsupport::waitForPublishedSnapshot(server, snapshot, 4000));
-    const std::filesystem::path exportPath = makeTempExportPath("grav_export_async");
+    const std::filesystem::path exportPath = makeTempExportPath("bltzr_export_async");
     server.requestExportSnapshot(exportPath.string(), "vtk");
     bool observedBacklog = false;
     ASSERT_TRUE(waitForExportCompletion(server, exportPath, 1u, 4000u, observedBacklog));
@@ -73,7 +73,7 @@ TEST(PhysicsTest, TST_UNT_RUNT_008_ServerStopFlushesQueuedExports)
     server.start();
     std::vector<RenderParticle> snapshot;
     ASSERT_TRUE(testsupport::waitForPublishedSnapshot(server, snapshot, 4000));
-    const std::filesystem::path exportPath = makeTempExportPath("grav_export_flush");
+    const std::filesystem::path exportPath = makeTempExportPath("bltzr_export_flush");
     server.requestExportSnapshot(exportPath.string(), "vtk");
     server.stop();
     ASSERT_TRUE(std::filesystem::exists(exportPath));
@@ -87,4 +87,4 @@ TEST(PhysicsTest, TST_UNT_RUNT_008_ServerStopFlushesQueuedExports)
     std::error_code ec;
     std::filesystem::remove(exportPath, ec);
 }
-} // namespace grav_test_server_export_queue
+} // namespace bltzr_test_server_export_queue

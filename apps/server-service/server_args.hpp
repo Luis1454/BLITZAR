@@ -5,15 +5,15 @@
  * @brief Application entry points and host executables for BLITZAR.
  */
 
-#ifndef GRAVITY_APPS_SERVER_SERVICE_SERVER_ARGS_HPP_
-#define GRAVITY_APPS_SERVER_SERVICE_SERVER_ARGS_HPP_
+#ifndef BLITZAR_APPS_SERVER_SERVICE_SERVER_ARGS_HPP_
+#define BLITZAR_APPS_SERVER_SERVICE_SERVER_ARGS_HPP_
 #include <cstdint>
 #include <ostream>
 #include <string>
 #include <string_view>
 #include <vector>
 
-namespace grav_server_service {
+namespace bltzr_server_service {
 struct DaemonOptions {
     std::string host = "127.0.0.1";
     std::uint16_t port = 4545;
@@ -31,5 +31,5 @@ bool isLoopbackBindHost(std::string_view host);
 void installStopSignalHandlers();
 bool stopRequested();
 void resetStopRequested();
-} // namespace grav_server_service
-#endif // GRAVITY_APPS_SERVER_SERVICE_SERVER_ARGS_HPP_
+} // namespace bltzr_server_service
+#endif // BLITZAR_APPS_SERVER_SERVICE_SERVER_ARGS_HPP_

@@ -14,8 +14,8 @@
 #include <utility>
 #include <vector>
 
-namespace grav_test_module_cli_command_executor_flows_profile_export {
-class FakeCommandTransport final : public grav_cmd::CommandTransport {
+namespace bltzr_test_module_cli_command_executor_flows_profile_export {
+class FakeCommandTransport final : public bltzr_cmd::CommandTransport {
 public:
     bool connect(const std::string& host, std::uint16_t port) override
     {
@@ -62,9 +62,9 @@ public:
     std::vector<ServerClientStatus> scriptedStatuses;
 };
 
-static grav_cmd::CommandRequest parseSingle(const std::string& line)
+static bltzr_cmd::CommandRequest parseSingle(const std::string& line)
 {
-    const grav_cmd::CommandParseResult parsed = grav_cmd::CommandParser::parseLine(line, 1u);
+    const bltzr_cmd::CommandParseResult parsed = bltzr_cmd::CommandParser::parseLine(line, 1u);
     EXPECT_TRUE(parsed.ok);
     EXPECT_EQ(parsed.requests.size(), 1u);
     return parsed.requests.front();
@@ -74,15 +74,15 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_040_SetProfileValidAppliesConfigWit
 {
     FakeCommandTransport transport;
     transport.connected = true;
-    grav_cmd::CommandSessionState session;
+    bltzr_cmd::CommandSessionState session;
     session.config.initConfigStyle = "preset";
     session.config.presetStructure = "disk_orbit";
     session.config.inputFile.clear();
     std::ostringstream output;
-    grav_cmd::CommandExecutionContext context{transport, session,
-                                              grav_cmd::CommandExecutionMode::Batch, output};
-    const grav_cmd::CommandResult result =
-        grav_cmd::CommandExecutor::execute(parseSingle("set_profile balanced"), context);
+    bltzr_cmd::CommandExecutionContext context{transport, session,
+                                               bltzr_cmd::CommandExecutionMode::Batch, output};
+    const bltzr_cmd::CommandResult result =
+        bltzr_cmd::CommandExecutor::execute(parseSingle("set_profile balanced"), context);
     ASSERT_TRUE(result.ok);
     EXPECT_EQ(session.config.performanceProfile, "balanced");
     EXPECT_EQ(result.message, "config applied");
@@ -105,17 +105,17 @@ TEST(CommandExecutorFlowTest,
 {
     FakeCommandTransport transport;
     transport.connected = true;
-    grav_cmd::CommandSessionState session;
+    bltzr_cmd::CommandSessionState session;
     session.config.exportFormat = "vtk_binary";
     std::ostringstream output;
-    grav_cmd::CommandExecutionContext context{transport, session,
-                                              grav_cmd::CommandExecutionMode::Interactive, output};
-    const grav_cmd::CommandResult result =
-        grav_cmd::CommandExecutor::execute(parseSingle("export_snapshot outputs/frame"), context);
+    bltzr_cmd::CommandExecutionContext context{
+        transport, session, bltzr_cmd::CommandExecutionMode::Interactive, output};
+    const bltzr_cmd::CommandResult result =
+        bltzr_cmd::CommandExecutor::execute(parseSingle("export_snapshot outputs/frame"), context);
     ASSERT_TRUE(result.ok);
     ASSERT_EQ(transport.commandHistory.size(), 1u);
     EXPECT_EQ(transport.commandHistory[0].first, "export");
     EXPECT_NE(transport.commandHistory[0].second.find("\"format\":\"vtk_binary\""),
               std::string::npos);
 }
-} // namespace grav_test_module_cli_command_executor_flows_profile_export
+} // namespace bltzr_test_module_cli_command_executor_flows_profile_export

@@ -7,7 +7,7 @@
 
 #include "ui/ParticleViewColor.hpp"
 
-namespace grav_qt {
+namespace bltzr_qt {
 QRgb toQRgb(const grav::ColorRGBA& c)
 {
     return qRgba(c.r, c.g, c.b, c.a);
@@ -35,4 +35,4 @@ bool isHeavyBody(const RenderParticle& particle)
 {
     return grav::isHeavyBody(particle);
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

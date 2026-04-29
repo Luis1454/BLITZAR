@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <cctype>
 
-namespace grav_protocol {
+namespace bltzr_protocol {
 bool ServerJsonCodec::parseCommandRequest(std::string_view raw, ServerCommandRequest& out,
                                           std::string& error)
 {
@@ -167,4 +167,4 @@ bool ServerJsonCodec::readToken(std::string_view raw, std::string_view key, std:
     out = trim(raw.substr(cursor, tokenEnd - cursor));
     return !out.empty();
 }
-} // namespace grav_protocol
+} // namespace bltzr_protocol

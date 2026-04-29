@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-namespace grav_module_cli {
+namespace bltzr_module_cli {
 class ModuleCliTextLocal final {
 public:
     static std::string trim(const std::string& input)
@@ -49,4 +49,4 @@ std::vector<std::string> ModuleCliText::splitTokens(const std::string& line)
 {
     return ModuleCliTextLocal::splitTokens(line);
 }
-} // namespace grav_module_cli
+} // namespace bltzr_module_cli

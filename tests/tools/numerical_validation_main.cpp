@@ -17,6 +17,6 @@
  */
 int main(int argc, char** argv)
 {
-    grav_test_numerics::NumericalValidationTool tool;
+    bltzr_test_numerics::NumericalValidationTool tool;
     return tool.run(argc, argv, std::cout, std::cerr);
 }

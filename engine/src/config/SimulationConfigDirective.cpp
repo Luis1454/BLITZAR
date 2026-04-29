@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-namespace grav_config {
+namespace bltzr_config {
 static std::string trimDirective(std::string_view value)
 {
     const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char c) {
@@ -140,6 +140,14 @@ static bool applyDirectiveArgs(std::string_view directive,
                                                                        : arg.first;
             handled = applyIniAlias(arg, iniKey, config, warnings);
         }
+        else if (directive == "physics") {
+            const std::string iniKey = arg.first == "max_acceleration" ? "physics_max_acceleration"
+                                       : arg.first == "min_softening"  ? "physics_min_softening"
+                                       : arg.first == "min_distance2"  ? "physics_min_distance2"
+                                       : arg.first == "min_theta"      ? "physics_min_theta"
+                                                                       : arg.first;
+            handled = applyIniAlias(arg, iniKey, config, warnings);
+        }
         else if (directive == "client") {
             const std::string iniKey =
                 arg.first == "zoom"                  ? "default_zoom"
@@ -223,10 +231,12 @@ static bool applyDirectiveArgs(std::string_view directive,
             handled = applyIniAlias(arg, iniKey, config, warnings);
         }
         else if (directive == "cloud") {
-            const std::string iniKey = arg.first == "half_extent"     ? "init_cloud_half_extent"
-                                       : arg.first == "speed"         ? "init_cloud_speed"
-                                       : arg.first == "particle_mass" ? "init_particle_mass"
-                                                                      : arg.first;
+            const std::string iniKey = arg.first == "half_extent"        ? "init_cloud_half_extent"
+                                       : arg.first == "cube_half_extent" ? "init_cube_half_extent"
+                                       : arg.first == "sphere_radius"    ? "init_sphere_radius"
+                                       : arg.first == "speed"            ? "init_cloud_speed"
+                                       : arg.first == "particle_mass"    ? "init_particle_mass"
+                                                                         : arg.first;
             handled = applyIniAlias(arg, iniKey, config, warnings);
         }
         else if (directive == "sph") {
@@ -235,6 +245,8 @@ static bool applyDirectiveArgs(std::string_view directive,
                                        : arg.first == "rest_density"     ? "sph_rest_density"
                                        : arg.first == "gas_constant"     ? "sph_gas_constant"
                                        : arg.first == "viscosity"        ? "sph_viscosity"
+                                       : arg.first == "max_acceleration" ? "sph_max_acceleration"
+                                       : arg.first == "max_speed"        ? "sph_max_speed"
                                                                          : arg.first;
             handled = applyIniAlias(arg, iniKey, config, warnings);
         }
@@ -274,4 +286,4 @@ bool SimulationConfigDirective::applyLine(const std::string& line, SimulationCon
     }
     return applyDirectiveArgs(directive, args, config, warnings);
 }
-} // namespace grav_config
+} // namespace bltzr_config

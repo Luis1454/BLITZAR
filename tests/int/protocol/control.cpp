@@ -14,7 +14,7 @@
 #include <string>
 #include <thread>
 
-namespace grav_test_server_protocol_control {
+namespace bltzr_test_server_protocol_control {
 TEST(ServerProtocolTest, TST_INT_PROT_004_ServerAcceptsControlCommandsFromClient)
 {
     RealServerHarness server;
@@ -24,14 +24,14 @@ TEST(ServerProtocolTest, TST_INT_PROT_004_ServerAcceptsControlCommandsFromClient
     client.setSocketTimeoutMs(200);
     ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
     ServerClientResponse response =
-        client.sendCommand(std::string(grav_protocol::SetDt), "\"value\":0.02");
+        client.sendCommand(std::string(bltzr_protocol::SetDt), "\"value\":0.02");
     ASSERT_TRUE(response.ok) << response.error;
     response =
-        client.sendCommand(std::string(grav_protocol::SetSolver), "\"value\":\"pairwise_cuda\"");
+        client.sendCommand(std::string(bltzr_protocol::SetSolver), "\"value\":\"pairwise_cuda\"");
     ASSERT_TRUE(response.ok) << response.error;
-    response = client.sendCommand(std::string(grav_protocol::Step), "\"count\":1");
+    response = client.sendCommand(std::string(bltzr_protocol::Step), "\"count\":1");
     ASSERT_TRUE(response.ok) << response.error;
-    response = client.sendCommand(std::string(grav_protocol::Recover));
+    response = client.sendCommand(std::string(bltzr_protocol::Recover));
     ASSERT_TRUE(response.ok) << response.error;
     ServerClientStatus status{};
     ASSERT_TRUE(client.getStatus(status).ok);
@@ -51,10 +51,10 @@ TEST(ServerProtocolTest, TST_INT_PROT_005_ServerRejectsInvalidSolverAndIntegrato
     client.setSocketTimeoutMs(200);
     ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
     ServerClientResponse response =
-        client.sendCommand(std::string(grav_protocol::SetSolver), "\"value\":\"not_a_solver\"");
+        client.sendCommand(std::string(bltzr_protocol::SetSolver), "\"value\":\"not_a_solver\"");
     ASSERT_FALSE(response.ok);
     EXPECT_NE(response.error.find("invalid solver"), std::string::npos);
-    response = client.sendCommand(std::string(grav_protocol::SetIntegrator),
+    response = client.sendCommand(std::string(bltzr_protocol::SetIntegrator),
                                   "\"value\":\"not_an_integrator\"");
     ASSERT_FALSE(response.ok);
     EXPECT_NE(response.error.find("invalid integrator"), std::string::npos);
@@ -70,12 +70,12 @@ TEST(ServerProtocolTest, TST_INT_PROT_006_ServerRejectsUnsupportedIntegratorForO
     ServerClient client;
     client.setSocketTimeoutMs(200);
     ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
-    ServerClientResponse response = client.sendCommand(std::string(grav_protocol::Pause));
+    ServerClientResponse response = client.sendCommand(std::string(bltzr_protocol::Pause));
     ASSERT_TRUE(response.ok) << response.error;
     response =
-        client.sendCommand(std::string(grav_protocol::SetSolver), "\"value\":\"octree_gpu\"");
+        client.sendCommand(std::string(bltzr_protocol::SetSolver), "\"value\":\"octree_gpu\"");
     ASSERT_TRUE(response.ok) << response.error;
-    response = client.sendCommand(std::string(grav_protocol::SetIntegrator), "\"value\":\"rk4\"");
+    response = client.sendCommand(std::string(bltzr_protocol::SetIntegrator), "\"value\":\"rk4\"");
     ASSERT_FALSE(response.ok);
     EXPECT_NE(response.error.find("unsupported solver/integrator combination"), std::string::npos);
     ServerClientStatus status{};
@@ -88,7 +88,7 @@ TEST(ServerProtocolTest, TST_INT_PROT_006_ServerRejectsUnsupportedIntegratorForO
 
 TEST(ServerProtocolTest, TST_INT_PROT_007_ServerFallsBackToCpuAfterForcedCudaFailure)
 {
-    testsupport::ScopedEnvVar forceCudaFail("GRAVITY_TEST_FORCE_CUDA_FAIL_ONCE", "1");
+    testsupport::ScopedEnvVar forceCudaFail("BLITZAR_TEST_FORCE_CUDA_FAIL_ONCE", "1");
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
@@ -96,11 +96,12 @@ TEST(ServerProtocolTest, TST_INT_PROT_007_ServerFallsBackToCpuAfterForcedCudaFai
     client.setSocketTimeoutMs(200);
     ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
     ServerClientResponse response =
-        client.sendCommand(std::string(grav_protocol::SetSolver), "\"value\":\"octree_gpu\"");
+        client.sendCommand(std::string(bltzr_protocol::SetSolver), "\"value\":\"octree_gpu\"");
     ASSERT_TRUE(response.ok) << response.error;
-    response = client.sendCommand(std::string(grav_protocol::SetIntegrator), "\"value\":\"euler\"");
+    response =
+        client.sendCommand(std::string(bltzr_protocol::SetIntegrator), "\"value\":\"euler\"");
     ASSERT_TRUE(response.ok) << response.error;
-    response = client.sendCommand(std::string(grav_protocol::Step), "\"count\":1");
+    response = client.sendCommand(std::string(bltzr_protocol::Step), "\"count\":1");
     ASSERT_TRUE(response.ok) << response.error;
     ServerClientStatus status{};
     bool switchedToCpu = false;
@@ -149,16 +150,16 @@ TEST(ServerProtocolTest, TST_INT_PROT_010_ServerAcceptsGpuTelemetryToggle)
     client.setSocketTimeoutMs(200);
     ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
     ServerClientResponse response =
-        client.sendCommand(std::string(grav_protocol::SetGpuTelemetry), "\"value\":true");
+        client.sendCommand(std::string(bltzr_protocol::SetGpuTelemetry), "\"value\":true");
     ASSERT_TRUE(response.ok) << response.error;
     ServerClientStatus status{};
     ASSERT_TRUE(client.getStatus(status).ok);
     EXPECT_TRUE(status.gpuTelemetryEnabled);
-    response = client.sendCommand(std::string(grav_protocol::SetGpuTelemetry), "\"value\":false");
+    response = client.sendCommand(std::string(bltzr_protocol::SetGpuTelemetry), "\"value\":false");
     ASSERT_TRUE(response.ok) << response.error;
     ASSERT_TRUE(client.getStatus(status).ok);
     EXPECT_FALSE(status.gpuTelemetryEnabled);
     client.disconnect();
     server.stop();
 }
-} // namespace grav_test_server_protocol_control
+} // namespace bltzr_test_server_protocol_control

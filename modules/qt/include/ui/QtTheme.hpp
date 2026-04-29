@@ -1,32 +1,30 @@
 /*
- * @file modules/qt/include/ui/QtTheme.hpp
+ * @file modules/qt/include/ui/WorkspaceTheme.hpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Qt desktop user interface module for simulation control and visualization.
  */
 
-#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_QTTHEME_HPP_
-#define GRAVITY_MODULES_QT_INCLUDE_UI_QTTHEME_HPP_
+#ifndef BLITZAR_MODULES_QT_INCLUDE_UI_QTTHEME_HPP_
+#define BLITZAR_MODULES_QT_INCLUDE_UI_QTTHEME_HPP_
 /*
  * Module: ui
- * Responsibility: Centralize the Qt workspace theme palette and stylesheet tokens.
+ * Responsibility: Centralize the Qt workspace theme palette tokens.
  */
 #include <QPalette>
-#include <QString>
 #include <string>
 
-namespace grav_qt {
+namespace bltzr_qt {
 enum class QtThemeMode {
     Light,
     Dark
 };
 
-class QtTheme final {
+class WorkspaceTheme final {
 public:
     static QtThemeMode resolve(const std::string& themeName);
     static std::string toConfigValue(QtThemeMode mode);
     static QPalette buildPalette(QtThemeMode mode);
-    static QString buildMainWindowStyleSheet(QtThemeMode mode);
 };
-} // namespace grav_qt
-#endif // GRAVITY_MODULES_QT_INCLUDE_UI_QTTHEME_HPP_
+} // namespace bltzr_qt
+#endif // BLITZAR_MODULES_QT_INCLUDE_UI_QTTHEME_HPP_

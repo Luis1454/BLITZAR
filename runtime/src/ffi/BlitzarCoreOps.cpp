@@ -55,7 +55,7 @@ template <typename TPredicate> static bool pollUntil(std::uint32_t timeoutMs, TP
     return false;
 }
 
-namespace grav_ffi {
+namespace bltzr_ffi {
 blitzar_core_result_t BlitzarCore::runSteps(std::uint32_t steps, std::uint32_t timeoutMs)
 {
     clearError();
@@ -171,4 +171,4 @@ void BlitzarCore::clearError() const
 {
     setError("");
 }
-} // namespace grav_ffi
+} // namespace bltzr_ffi

@@ -111,7 +111,7 @@ __device__ Vector3 computeOctreeAccelerationStacklessCompact(
                 if (otherIndex == selfIndex) {
                     continue;
                 }
-                force += gravityAccelerationFromSource(
+                force += blitzarAccelerationFromSource(
                     selfPos, octreeLoadParticlePosition(state, otherIndex),
                     octreeLoadParticleMass(state, otherIndex), forceLaw);
             }
@@ -130,7 +130,7 @@ __device__ Vector3 computeOctreeAccelerationStacklessCompact(
         const bool acceptNode = !containsSelf && (size / criterionDistance) < forceLaw.theta;
 
         if (acceptNode) {
-            force += gravityAccelerationFromSource(
+            force += blitzarAccelerationFromSource(
                 selfPos, Vector3(node.comX, node.comY, node.comZ), node.mass, forceLaw);
             nodeIndex = nav.nextIndex;
             continue;

@@ -5,12 +5,12 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_ERRORBUFFER_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_CLIENT_ERRORBUFFER_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_CLIENT_ERRORBUFFER_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_CLIENT_ERRORBUFFER_HPP_
 #include <cstddef>
 #include <string_view>
 
-namespace grav_client {
+namespace bltzr_client {
 class ErrorBufferView final {
 public:
     ErrorBufferView(char* buffer, std::size_t bufferSize) noexcept;
@@ -25,5 +25,5 @@ private:
 };
 
 void writeErrorBuffer(char* buffer, std::size_t bufferSize, std::string_view message) noexcept;
-} // namespace grav_client
-#endif // GRAVITY_RUNTIME_INCLUDE_CLIENT_ERRORBUFFER_HPP_
+} // namespace bltzr_client
+#endif // BLITZAR_RUNTIME_INCLUDE_CLIENT_ERRORBUFFER_HPP_

@@ -7,8 +7,8 @@ set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-if(NOT DEFINED GRAVITY_ROOT_DIR)
-    get_filename_component(GRAVITY_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
+if(NOT DEFINED BLITZAR_ROOT_DIR)
+    get_filename_component(BLITZAR_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
 endif()
 # Broad architecture support (Maxwell to Lovelace) using -real to avoid PTX JIT version issues
 set(CMAKE_CUDA_ARCHITECTURES 75-real 80-real 86-real 89-real)
@@ -22,10 +22,10 @@ endif()
 string(REPLACE "-G" "" CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG}")
 string(REPLACE "-g" "" CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG}")
 
-gravity_populate_windows_toolchain_hints()
+BLITZAR_populate_windows_toolchain_hints()
 find_package(CUDAToolkit REQUIRED)
 
-set(GRAVITY_PROJECT_INCLUDE_DIRS
+set(BLITZAR_PROJECT_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/engine/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/runtime/include"
@@ -36,85 +36,85 @@ set(GRAVITY_PROJECT_INCLUDE_DIRS
 )
 
 if(WIN32)
-    set(GRAVITY_ENV_UTILS_SOURCES
-        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
-        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtilsWin.cpp"
+    set(BLITZAR_ENV_UTILS_SOURCES
+        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtilsWin.cpp"
     )
 else()
-    set(GRAVITY_ENV_UTILS_SOURCES
-        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
-        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtilsPosix.cpp"
+    set(BLITZAR_ENV_UTILS_SOURCES
+        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtilsPosix.cpp"
     )
 endif()
 
-set(GRAVITY_GRAPHICS_SOURCES
-    "${GRAVITY_ROOT_DIR}/engine/src/graphics/ViewMath.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/graphics/ColorPipeline.cpp"
+set(BLITZAR_GRAPHICS_SOURCES
+    "${BLITZAR_ROOT_DIR}/engine/src/graphics/ViewMath.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/graphics/ColorPipeline.cpp"
 )
 
-set(GRAVITY_SERVER_SOURCES
-    ${GRAVITY_ENV_UTILS_SOURCES}
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgs.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsCoreOptions.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsClientOptions.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsInitOptions.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsInitStateOptions.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsFluidOptions.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidationPhysics.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidationRender.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/DirectiveValueFormatter.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationServer.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/simulation_server/CoreHelpers.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/simulation_server/FormatAndTheta.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/simulation_server/CheckpointCodec.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/simulation_server/PersistenceIO.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/simulation_server/ParseBinXyz.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/simulation_server/ParseVtk.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/simulation_server/InitialStateGeneration.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/simulation_server/LifecycleControls.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/simulation_server/RuntimeSettersAndExportStart.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/simulation_server/ExportAndStats.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/simulation_server/LoadAndCheckpoint.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/simulation_server/RebuildSystem.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/simulation_server/SnapshotAndEnergy.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/simulation_server/TelemetryAndPendingOps.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/simulation_server/MainLoop.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/physics/ForceLawPolicy.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/physics/CudaMemoryPool.cu"
-    "${GRAVITY_ROOT_DIR}/engine/src/physics/cuda/ParticleSystem.cu"
+set(BLITZAR_SERVER_SOURCES
+    ${BLITZAR_ENV_UTILS_SOURCES}
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgs.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsCoreOptions.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsClientOptions.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsInitOptions.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsInitStateOptions.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsFluidOptions.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationPhysics.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationRender.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveValueFormatter.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/TextParse.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationServer.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/CoreHelpers.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/FormatAndTheta.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/CheckpointCodec.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/PersistenceIO.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/ParseBinXyz.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/ParseVtk.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/InitialStateGeneration.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/LifecycleControls.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/RuntimeSettersAndExportStart.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/ExportAndStats.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/LoadAndCheckpoint.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/RebuildSystem.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/SnapshotAndEnergy.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/TelemetryAndPendingOps.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/MainLoop.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/ForceLawPolicy.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/CudaMemoryPool.cu"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/cuda/ParticleSystem.cu"
 )
 
-set(GRAVITY_RUNTIME_PROTOCOL_SOURCES
-    "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodec.cpp"
-    "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParse.cpp"
-    "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseStatus.cpp"
-    "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseSnapshot.cpp"
-    "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecReadNumber.cpp"
-    "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerClient.cpp"
-    "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerProtocol.cpp"
+set(BLITZAR_RUNTIME_PROTOCOL_SOURCES
+    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodec.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParse.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseStatus.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseSnapshot.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecReadNumber.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerClient.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerProtocol.cpp"
 )
 
-set(GRAVITY_CORE_FFI_SOURCES
-    "${GRAVITY_ROOT_DIR}/runtime/src/ffi/BlitzarCore.cpp"
-    "${GRAVITY_ROOT_DIR}/runtime/src/ffi/BlitzarCoreOps.cpp"
-    "${GRAVITY_ROOT_DIR}/runtime/src/ffi/BlitzarCoreApi.cpp"
+set(BLITZAR_CORE_FFI_SOURCES
+    "${BLITZAR_ROOT_DIR}/runtime/src/ffi/BlitzarCore.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/ffi/BlitzarCoreOps.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/ffi/BlitzarCoreApi.cpp"
 )
 
-function(gravity_collect_existing_paths out_var)
+function(BLITZAR_collect_existing_paths out_var)
     set(_result "")
     foreach(_path IN LISTS ARGN)
         if(NOT "${_path}" STREQUAL "" AND EXISTS "${_path}")
@@ -125,19 +125,19 @@ function(gravity_collect_existing_paths out_var)
 endfunction()
 
 if(WIN32)
-    gravity_collect_existing_paths(
-        GRAVITY_WINDOWS_SYSTEM_INCLUDES
-        "${GRAVITY_MSVC_INCLUDE_DIR}"
-        "${GRAVITY_WINSDK_INCLUDE_UCRT}"
-        "${GRAVITY_WINSDK_INCLUDE_UM}"
-        "${GRAVITY_WINSDK_INCLUDE_SHARED}"
-        "${GRAVITY_WINSDK_INCLUDE_WINRT}"
-        "${GRAVITY_WINSDK_INCLUDE_CPPWINRT}"
+    BLITZAR_collect_existing_paths(
+        BLITZAR_WINDOWS_SYSTEM_INCLUDES
+        "${BLITZAR_MSVC_INCLUDE_DIR}"
+        "${BLITZAR_WINSDK_INCLUDE_UCRT}"
+        "${BLITZAR_WINSDK_INCLUDE_UM}"
+        "${BLITZAR_WINSDK_INCLUDE_SHARED}"
+        "${BLITZAR_WINSDK_INCLUDE_WINRT}"
+        "${BLITZAR_WINSDK_INCLUDE_CPPWINRT}"
     )
-    gravity_collect_existing_paths(
-        GRAVITY_WINDOWS_LINK_DIRS
-        "${GRAVITY_MSVC_LIB_DIR}"
-        "${GRAVITY_WINSDK_UCRT_LIB_DIR}"
-        "${GRAVITY_WINSDK_UM_LIB_DIR}"
+    BLITZAR_collect_existing_paths(
+        BLITZAR_WINDOWS_LINK_DIRS
+        "${BLITZAR_MSVC_LIB_DIR}"
+        "${BLITZAR_WINSDK_UCRT_LIB_DIR}"
+        "${BLITZAR_WINSDK_UM_LIB_DIR}"
     )
 endif()

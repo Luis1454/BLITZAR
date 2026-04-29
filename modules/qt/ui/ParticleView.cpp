@@ -18,7 +18,7 @@
 #include <array>
 #include <cmath>
 
-namespace grav_qt {
+namespace bltzr_qt {
 ParticleView::ParticleView(grav::ViewMode mode)
     : QWidget(nullptr),
       _mode(mode),
@@ -224,4 +224,4 @@ void ParticleView::paintEvent(PaintEventHandle event)
     painter.setBrush(Qt::NoBrush);
     painter.drawRect(rect().adjusted(0, 0, -1, -1));
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

@@ -5,8 +5,8 @@
  * @brief Public configuration interfaces and validation contracts for simulation setup.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
-#define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
+#define BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
 /*
  * Module: config
  * Responsibility: Define the persistent simulation and client configuration
@@ -78,6 +78,8 @@ struct SimulationConfig {
     float initDiskThickness = 0.0f;
     float initVelocityScale = 1.0f;
     float initCloudHalfExtent = 12.0f;
+    float initCubeHalfExtent = 12.0f;
+    float initSphereRadius = 12.0f;
     float initCloudSpeed = 0.0f;
     float initParticleMass = 0.01f;
     bool sphEnabled = false;
@@ -123,4 +125,4 @@ struct SimulationConfig {
      */
     bool save(const std::string& path) const;
 };
-#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_
+#endif // BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONCONFIG_HPP_

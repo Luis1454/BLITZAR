@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <cctype>
 
-namespace grav_config {
+namespace bltzr_config {
 std::string DirectiveValueFormatter::quote(const std::string& value)
 {
     if (value.empty()) {
@@ -33,4 +33,4 @@ std::string DirectiveValueFormatter::quote(const std::string& value)
     quoted.push_back('"');
     return quoted;
 }
-} // namespace grav_config
+} // namespace bltzr_config

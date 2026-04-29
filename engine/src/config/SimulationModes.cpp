@@ -32,7 +32,7 @@ std::string toLowerTrimmed(std::string_view value)
     return normalized;
 }
 
-namespace grav_modes {
+namespace bltzr_modes {
 const std::string_view kSolverPairwiseCuda = "pairwise_cuda";
 const std::string_view kSolverOctreeGpu = "octree_gpu";
 const std::string_view kSolverOctreeCpu = "octree_cpu";
@@ -99,4 +99,4 @@ bool isSupportedSolverIntegratorPair(std::string_view solver, std::string_view i
 {
     return !(solver == kSolverOctreeGpu && integrator == kIntegratorRk4);
 }
-} // namespace grav_modes
+} // namespace bltzr_modes

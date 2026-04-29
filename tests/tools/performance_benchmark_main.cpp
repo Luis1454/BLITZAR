@@ -17,6 +17,6 @@
  */
 int main(int argc, const char* const* argv)
 {
-    grav_test_perf::PerformanceBenchmarkTool tool;
+    bltzr_test_perf::PerformanceBenchmarkTool tool;
     return tool.run(argc, argv, std::cout, std::cerr);
 }

@@ -16,7 +16,7 @@
 #include <thread>
 #include <vector>
 
-namespace grav_test_server_checkpoint {
+namespace bltzr_test_server_checkpoint {
 static std::filesystem::path makeTempCheckpointPath(const char* stem)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -46,9 +46,9 @@ static std::vector<char> readFileBytes(const std::filesystem::path& path)
 TEST(PhysicsTest, TST_UNT_RUNT_009_CheckpointRoundTripRestoresRuntimeState)
 {
     const std::filesystem::path checkpointPath =
-        makeTempCheckpointPath("grav_checkpoint_roundtrip");
+        makeTempCheckpointPath("bltzr_checkpoint_roundtrip");
     const std::filesystem::path roundTripPath =
-        makeTempCheckpointPath("grav_checkpoint_roundtrip_reload");
+        makeTempCheckpointPath("bltzr_checkpoint_roundtrip_reload");
     SimulationServer source(24u, 0.02f);
     source.setSolverMode("octree_cpu");
     source.setIntegratorMode("euler");
@@ -91,7 +91,7 @@ TEST(PhysicsTest, TST_UNT_RUNT_009_CheckpointRoundTripRestoresRuntimeState)
 
 TEST(PhysicsTest, TST_UNT_RUNT_010_CheckpointRejectsInvalidMagic)
 {
-    const std::filesystem::path checkpointPath = makeTempCheckpointPath("grav_checkpoint_invalid");
+    const std::filesystem::path checkpointPath = makeTempCheckpointPath("bltzr_checkpoint_invalid");
     {
         std::ofstream out(checkpointPath, std::ios::binary | std::ios::trunc);
         out << "not_a_checkpoint";
@@ -109,7 +109,7 @@ TEST(PhysicsTest, TST_UNT_RUNT_010_CheckpointRejectsInvalidMagic)
 
 TEST(PhysicsTest, TST_UNT_RUNT_011_CheckpointRejectsUnsupportedVersion)
 {
-    const std::filesystem::path checkpointPath = makeTempCheckpointPath("grav_checkpoint_version");
+    const std::filesystem::path checkpointPath = makeTempCheckpointPath("bltzr_checkpoint_version");
     {
         std::ofstream out(checkpointPath, std::ios::binary | std::ios::trunc);
         ASSERT_TRUE(out.is_open());
@@ -133,4 +133,4 @@ TEST(PhysicsTest, TST_UNT_RUNT_011_CheckpointRejectsUnsupportedVersion)
     std::error_code ec;
     std::filesystem::remove(checkpointPath, ec);
 }
-} // namespace grav_test_server_checkpoint
+} // namespace bltzr_test_server_checkpoint

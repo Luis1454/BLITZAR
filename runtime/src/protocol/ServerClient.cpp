@@ -21,12 +21,12 @@
 /*
  * @brief Documents the as bytes operation contract.
  * @param text Input value used by this contract.
- * @return grav_socket::ConstBytes value produced by this contract.
+ * @return bltzr_socket::ConstBytes value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-static grav_socket::ConstBytes asBytes(std::string_view text)
+static bltzr_socket::ConstBytes asBytes(std::string_view text)
 {
-    return grav_socket::ConstBytes{reinterpret_cast<const std::byte*>(text.data()), text.size()};
+    return bltzr_socket::ConstBytes{reinterpret_cast<const std::byte*>(text.data()), text.size()};
 }
 
 /*
@@ -36,11 +36,11 @@ static grav_socket::ConstBytes asBytes(std::string_view text)
  * @return bool value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes bytes)
+static bool sendAll(bltzr_socket::Handle socketHandle, bltzr_socket::ConstBytes bytes)
 {
     std::size_t offset = 0;
     while (offset < bytes.size) {
-        const int sent = grav_socket::sendBytes(socketHandle, bytes.subview(offset));
+        const int sent = bltzr_socket::sendBytes(socketHandle, bytes.subview(offset));
         if (sent <= 0)
             return false;
         offset += static_cast<std::size_t>(sent);
@@ -56,7 +56,7 @@ static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes by
  */
 static int clampTimeoutMs(int timeoutMs)
 {
-    return grav_socket::clampTimeoutMs(timeoutMs);
+    return bltzr_socket::clampTimeoutMs(timeoutMs);
 }
 
 /*
@@ -89,7 +89,7 @@ ServerClient::ServerClient()
      * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
      * it.
      */
-    : _socket(grav_socket::invalidHandle()),
+    : _socket(bltzr_socket::invalidHandle()),
       _socketTimeoutMs(3000),
       _networkInitialized(false),
       _recvBuffer(),
@@ -119,21 +119,21 @@ bool ServerClient::connect(const std::string& host, std::uint16_t port)
 {
     try {
         disconnect();
-        if (!grav_socket::initializeSocketLayer()) {
+        if (!bltzr_socket::initializeSocketLayer()) {
             return false;
         }
         _networkInitialized = true;
-        const grav_socket::Handle socketHandle = grav_socket::createTcpSocket();
-        if (!grav_socket::isValid(socketHandle)) {
+        const bltzr_socket::Handle socketHandle = bltzr_socket::createTcpSocket();
+        if (!bltzr_socket::isValid(socketHandle)) {
             disconnect();
             return false;
         }
-        if (!grav_socket::connectIpv4(socketHandle, host, port, _socketTimeoutMs)) {
-            grav_socket::closeSocket(socketHandle);
+        if (!bltzr_socket::connectIpv4(socketHandle, host, port, _socketTimeoutMs)) {
+            bltzr_socket::closeSocket(socketHandle);
             disconnect();
             return false;
         }
-        grav_socket::setSocketTimeoutMs(socketHandle, _socketTimeoutMs);
+        bltzr_socket::setSocketTimeoutMs(socketHandle, _socketTimeoutMs);
         _socket = socketHandle;
         _recvBuffer.clear();
         return true;
@@ -160,7 +160,7 @@ void ServerClient::setSocketTimeoutMs(int timeoutMs)
 {
     _socketTimeoutMs = clampTimeoutMs(timeoutMs);
     if (isConnected()) {
-        grav_socket::setSocketTimeoutMs(_socket, _socketTimeoutMs);
+        bltzr_socket::setSocketTimeoutMs(_socket, _socketTimeoutMs);
     }
 }
 
@@ -195,23 +195,23 @@ void ServerClient::setAuthToken(std::string token)
 void ServerClient::disconnect()
 {
     try {
-        grav_socket::closeSocket(_socket);
-        _socket = grav_socket::invalidHandle();
+        bltzr_socket::closeSocket(_socket);
+        _socket = bltzr_socket::invalidHandle();
         _recvBuffer.clear();
         if (_networkInitialized) {
-            grav_socket::shutdownSocketLayer();
+            bltzr_socket::shutdownSocketLayer();
             _networkInitialized = false;
         }
     }
     catch (const std::exception& ex) {
         std::cerr << serverClientError("disconnect", ex.what()) << "\n";
-        _socket = grav_socket::invalidHandle();
+        _socket = bltzr_socket::invalidHandle();
         _recvBuffer.clear();
         _networkInitialized = false;
     }
     catch (...) {
         std::cerr << serverClientError("disconnect", "non-standard exception") << "\n";
-        _socket = grav_socket::invalidHandle();
+        _socket = bltzr_socket::invalidHandle();
         _recvBuffer.clear();
         _networkInitialized = false;
     }
@@ -225,7 +225,7 @@ void ServerClient::disconnect()
  */
 bool ServerClient::isConnected() const
 {
-    return grav_socket::isValid(_socket);
+    return bltzr_socket::isValid(_socket);
 }
 
 /*
@@ -256,15 +256,15 @@ std::string ServerClient::trim(const std::string& value)
 bool ServerClient::readLine(std::string& outLine)
 {
     try {
-        if (!grav_socket::isValid(_socket)) {
+        if (!bltzr_socket::isValid(_socket)) {
             return false;
         }
         std::size_t pos = _recvBuffer.find('\n');
         while (pos == std::string::npos) {
             std::array<char, 2048> chunk{};
-            const int received = grav_socket::recvBytes(
-                _socket, grav_socket::MutableBytes{reinterpret_cast<std::byte*>(chunk.data()),
-                                                   chunk.size()});
+            const int received = bltzr_socket::recvBytes(
+                _socket, bltzr_socket::MutableBytes{reinterpret_cast<std::byte*>(chunk.data()),
+                                                    chunk.size()});
             if (received <= 0)
                 return false;
             _recvBuffer.append(chunk.data(), static_cast<std::size_t>(received));
@@ -320,9 +320,9 @@ ServerClientResponse ServerClient::sendJson(const std::string& jsonLine)
             disconnect();
             return response;
         }
-        grav_protocol::ServerResponseEnvelope envelope{};
-        if (!grav_protocol::ServerJsonCodec::parseResponseEnvelope(response.raw, envelope,
-                                                                   response.error)) {
+        bltzr_protocol::ServerResponseEnvelope envelope{};
+        if (!bltzr_protocol::ServerJsonCodec::parseResponseEnvelope(response.raw, envelope,
+                                                                    response.error)) {
             response.error = serverClientError("sendJson", "invalid response");
             return response;
         }
@@ -354,10 +354,10 @@ ServerClientResponse ServerClient::sendJson(const std::string& jsonLine)
 ServerClientResponse ServerClient::sendCommand(const std::string& cmd,
                                                const std::string& fieldsJson)
 {
-    grav_protocol::ServerCommandRequest request{};
+    bltzr_protocol::ServerCommandRequest request{};
     request.cmd = cmd;
     request.token = _authToken;
-    return sendJson(grav_protocol::ServerJsonCodec::makeCommandRequest(request, fieldsJson));
+    return sendJson(bltzr_protocol::ServerJsonCodec::makeCommandRequest(request, fieldsJson));
 }
 
 /*
@@ -369,13 +369,13 @@ ServerClientResponse ServerClient::sendCommand(const std::string& cmd,
 ServerClientResponse ServerClient::getStatus(ServerClientStatus& outStatus)
 {
     try {
-        ServerClientResponse response = sendCommand(std::string(grav_protocol::Status));
+        ServerClientResponse response = sendCommand(std::string(bltzr_protocol::Status));
         if (!response.ok)
             return response;
-        grav_protocol::ServerStatusPayload parsed{};
+        bltzr_protocol::ServerStatusPayload parsed{};
         std::string parseError;
-        if (!grav_protocol::ServerJsonCodec::parseStatusResponse(response.raw, parsed,
-                                                                 parseError)) {
+        if (!bltzr_protocol::ServerJsonCodec::parseStatusResponse(response.raw, parsed,
+                                                                  parseError)) {
             response.ok = false;
             response.error = serverClientError("getStatus", parseError);
             return response;
@@ -444,15 +444,15 @@ ServerClientResponse ServerClient::getSnapshot(std::vector<RenderParticle>& outS
                                                std::uint32_t maxPoints, std::size_t* outSourceSize)
 {
     try {
-        maxPoints = grav_protocol::clampSnapshotPoints(maxPoints);
-        ServerClientResponse response = sendCommand(std::string(grav_protocol::GetSnapshot),
+        maxPoints = bltzr_protocol::clampSnapshotPoints(maxPoints);
+        ServerClientResponse response = sendCommand(std::string(bltzr_protocol::GetSnapshot),
                                                     "\"max_points\":" + std::to_string(maxPoints));
         if (!response.ok)
             return response;
-        grav_protocol::ServerSnapshotPayload parsed{};
+        bltzr_protocol::ServerSnapshotPayload parsed{};
         std::string parseError;
-        if (!grav_protocol::ServerJsonCodec::parseSnapshotResponse(response.raw, parsed,
-                                                                   parseError)) {
+        if (!bltzr_protocol::ServerJsonCodec::parseSnapshotResponse(response.raw, parsed,
+                                                                    parseError)) {
             response.ok = false;
             response.error = serverClientError("getSnapshot", parseError);
             return response;

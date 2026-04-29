@@ -15,10 +15,11 @@
 #include <string>
 #include <vector>
 
-namespace grav_module_cli {
+namespace bltzr_module_cli {
 class ModuleCliServerOpsLocal final {
 public:
-    static bool ensureConnected(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer)
+    static bool ensureConnected(ModuleState& state,
+                                const bltzr_client::ErrorBufferView& errorBuffer)
     {
         if (state.transport.isConnected()) {
             return true;
@@ -32,7 +33,7 @@ public:
     }
 
     static bool sendSimpleCommand(ModuleState& state, const std::string& cmd,
-                                  const grav_client::ErrorBufferView& errorBuffer)
+                                  const bltzr_client::ErrorBufferView& errorBuffer)
     {
         if (!ensureConnected(state, errorBuffer)) {
             return false;
@@ -50,7 +51,7 @@ public:
         return true;
     }
 
-    static bool commandStatus(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer)
+    static bool commandStatus(ModuleState& state, const bltzr_client::ErrorBufferView& errorBuffer)
     {
         if (!ensureConnected(state, errorBuffer)) {
             return false;
@@ -84,11 +85,11 @@ public:
     }
 
     static bool commandStep(ModuleState& state, const std::vector<std::string>& tokens,
-                            const grav_client::ErrorBufferView& errorBuffer)
+                            const bltzr_client::ErrorBufferView& errorBuffer)
     {
         int count = 1;
         if (tokens.size() >= 2u) {
-            if (!grav_text::parseNumber(tokens[1], count) || count < 1) {
+            if (!bltzr_text::parseNumber(tokens[1], count) || count < 1) {
                 errorBuffer.write("invalid step count");
                 return false;
             }
@@ -97,7 +98,7 @@ public:
             return false;
         }
         const ServerClientResponse response = state.transport.sendCommand(
-            std::string(grav_protocol::Step), "\"count\":" + std::to_string(count));
+            std::string(bltzr_protocol::Step), "\"count\":" + std::to_string(count));
         if (!response.ok) {
             const std::string message = response.error.empty() ? "step failed" : response.error;
             errorBuffer.write(message);
@@ -110,14 +111,14 @@ public:
     }
 
     static bool connect(ModuleState& state, const std::vector<std::string>& tokens,
-                        const grav_client::ErrorBufferView& errorBuffer)
+                        const bltzr_client::ErrorBufferView& errorBuffer)
     {
         if (tokens.size() < 3u) {
             errorBuffer.write("usage: connect <host> <port>");
             return false;
         }
         unsigned int parsedPort = 0u;
-        if (!grav_text::parseNumber(tokens[2], parsedPort) || parsedPort == 0u ||
+        if (!bltzr_text::parseNumber(tokens[2], parsedPort) || parsedPort == 0u ||
             parsedPort > 65535u) {
             errorBuffer.write("invalid server port");
             return false;
@@ -134,7 +135,7 @@ public:
         return true;
     }
 
-    static bool reconnect(ModuleState& state, const grav_client::ErrorBufferView& errorBuffer)
+    static bool reconnect(ModuleState& state, const bltzr_client::ErrorBufferView& errorBuffer)
     {
         state.transport.disconnect();
         if (!state.transport.connect(state.session.host, state.session.port)) {
@@ -148,32 +149,32 @@ public:
 };
 
 bool ModuleCliServerOps::commandStatus(ModuleState& state,
-                                       const grav_client::ErrorBufferView& errorBuffer)
+                                       const bltzr_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliServerOpsLocal::commandStatus(state, errorBuffer);
 }
 
 bool ModuleCliServerOps::commandStep(ModuleState& state, const std::vector<std::string>& tokens,
-                                     const grav_client::ErrorBufferView& errorBuffer)
+                                     const bltzr_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliServerOpsLocal::commandStep(state, tokens, errorBuffer);
 }
 
 bool ModuleCliServerOps::connect(ModuleState& state, const std::vector<std::string>& tokens,
-                                 const grav_client::ErrorBufferView& errorBuffer)
+                                 const bltzr_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliServerOpsLocal::connect(state, tokens, errorBuffer);
 }
 
 bool ModuleCliServerOps::reconnect(ModuleState& state,
-                                   const grav_client::ErrorBufferView& errorBuffer)
+                                   const bltzr_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliServerOpsLocal::reconnect(state, errorBuffer);
 }
 
 bool ModuleCliServerOps::sendSimpleCommand(ModuleState& state, const std::string& cmd,
-                                           const grav_client::ErrorBufferView& errorBuffer)
+                                           const bltzr_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliServerOpsLocal::sendSimpleCommand(state, cmd, errorBuffer);
 }
-} // namespace grav_module_cli
+} // namespace bltzr_module_cli

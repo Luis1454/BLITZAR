@@ -5,8 +5,8 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#ifndef GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_
-#define GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_
+#ifndef BLITZAR_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_
+#define BLITZAR_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_
 #include "server/SimulationServer.hpp"
 #include <array>
 #include <cstdint>
@@ -50,4 +50,4 @@ bool prepareTwoBodyScenario(ScenarioConfig& cfg, std::string& error);
 bool prepareGeneratedCalibrationScenario(const std::string& mode, ScenarioConfig& cfg,
                                          std::string& error);
 } // namespace testsupport
-#endif // GRAVITY_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_
+#endif // BLITZAR_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_

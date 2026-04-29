@@ -7,7 +7,7 @@
 
 #include "protocol/ServerJsonCodec.hpp"
 
-namespace grav_protocol {
+namespace bltzr_protocol {
 bool ServerJsonCodec::parseStatusResponse(std::string_view raw, ServerStatusPayload& out,
                                           std::string& error)
 {
@@ -61,4 +61,4 @@ bool ServerJsonCodec::parseStatusResponse(std::string_view raw, ServerStatusPayl
     error.clear();
     return true;
 }
-} // namespace grav_protocol
+} // namespace bltzr_protocol

@@ -8,7 +8,7 @@
 #include "protocol/ServerJsonCodec.hpp"
 #include <cctype>
 
-namespace grav_protocol {
+namespace bltzr_protocol {
 class SnapshotArrayParser {
 public:
     explicit SnapshotArrayParser(std::string_view raw) : m_raw(raw), m_cursor(0)
@@ -69,7 +69,7 @@ private:
         }
         if (m_cursor <= start)
             return false;
-        return grav_text::parseNumber(m_raw.substr(start, m_cursor - start), out);
+        return bltzr_text::parseNumber(m_raw.substr(start, m_cursor - start), out);
     }
 
     void skipSpaces()
@@ -130,4 +130,4 @@ bool ServerJsonCodec::parseSnapshotResponse(std::string_view raw, ServerSnapshot
     error.clear();
     return true;
 }
-} // namespace grav_protocol
+} // namespace bltzr_protocol

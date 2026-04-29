@@ -5,8 +5,8 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTRUNTIME_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTRUNTIME_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTRUNTIME_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTRUNTIME_HPP_
 #include "client/ClientServerBridge.hpp"
 #include "client/IClientRuntime.hpp"
 #include <atomic>
@@ -19,7 +19,7 @@
 #include <thread>
 #include <vector>
 
-namespace grav_client {
+namespace bltzr_client {
 class ClientRuntime final : public IClientRuntime {
 public:
     ClientRuntime(const std::string& configPath, const ClientTransportArgs& transport);
@@ -107,5 +107,5 @@ private:
     bool _hasSnapshotEver;
     bool _hasDeliveredSnapshot;
 };
-} // namespace grav_client
-#endif // GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTRUNTIME_HPP_
+} // namespace bltzr_client
+#endif // BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTRUNTIME_HPP_

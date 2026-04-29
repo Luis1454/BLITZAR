@@ -14,7 +14,7 @@
 #include <thread>
 #include <vector>
 
-namespace grav_test_server_protocol_replay {
+namespace bltzr_test_server_protocol_replay {
 static void waitForSteps(ServerClient& client, uint64_t targetSteps)
 {
     ServerClientStatus status{};
@@ -41,13 +41,13 @@ TEST(ServerProtocolTest, TST_INT_PROT_011_FixedSeedServerReplayIsDeterministic)
     ServerClient clientA;
     clientA.setSocketTimeoutMs(5000);
     ASSERT_TRUE(clientA.connect("127.0.0.1", serverA.port()));
-    ServerClientResponse responseA = clientA.sendCommand(std::string(grav_protocol::Pause));
+    ServerClientResponse responseA = clientA.sendCommand(std::string(bltzr_protocol::Pause));
     ASSERT_TRUE(responseA.ok) << responseA.error;
     waitForSteps(clientA, 0u);
     std::vector<RenderParticle> snapshotZeroA;
     responseA = clientA.getSnapshot(snapshotZeroA, 4096u);
     ASSERT_TRUE(responseA.ok) << responseA.error;
-    responseA = clientA.sendCommand(std::string(grav_protocol::Step), "\"count\":10");
+    responseA = clientA.sendCommand(std::string(bltzr_protocol::Step), "\"count\":10");
     ASSERT_TRUE(responseA.ok) << responseA.error;
     waitForSteps(clientA, 10u);
     std::vector<RenderParticle> snapshotA;
@@ -74,7 +74,7 @@ TEST(ServerProtocolTest, TST_INT_PROT_011_FixedSeedServerReplayIsDeterministic)
     clientB.setSocketTimeoutMs(5000);
     ASSERT_TRUE(clientB.connect("127.0.0.1", serverB.port()));
     ServerClientResponse responseB =
-        clientB.sendCommand(std::string(grav_protocol::Step), "\"count\":10");
+        clientB.sendCommand(std::string(bltzr_protocol::Step), "\"count\":10");
     ASSERT_TRUE(responseB.ok) << responseB.error;
     waitForSteps(clientB, 10u);
     std::vector<RenderParticle> snapshotB;
@@ -93,4 +93,4 @@ TEST(ServerProtocolTest, TST_INT_PROT_011_FixedSeedServerReplayIsDeterministic)
             << "Mismatch at particle " << i << " Z coordinate (drift)";
     }
 }
-} // namespace grav_test_server_protocol_replay
+} // namespace bltzr_test_server_protocol_replay

@@ -19,12 +19,16 @@ TEST(ConfigArgsTest, TST_UNT_CONF_024_LoadSupportsDirectiveSyntax)
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() /
-        ("gravity_config_directive_load_" + std::to_string(stamp) + ".ini");
+        ("BLITZAR_config_directive_load_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
         out << "simulation(particles=123, dt=0.05, solver=octree_cpu, integrator=rk4)\n";
         out << "performance(profile=interactive)\n";
+        out << "physics(max_acceleration=32, min_softening=0.0002, min_distance2=0.000000000001, "
+               "min_theta=0.04)\n";
+        out << "sph(enabled=true, smoothing_length=1.5, rest_density=2, gas_constant=5, "
+               "viscosity=0.12, max_acceleration=41, max_speed=130)\n";
         out << "client(zoom=6, luminosity=120, theme=dark, ui_fps=55, command_timeout_ms=110, "
                "status_timeout_ms=45, snapshot_timeout_ms=190, snapshot_queue=5, "
                "drop_policy=paced)\n";
@@ -39,10 +43,21 @@ TEST(ConfigArgsTest, TST_UNT_CONF_024_LoadSupportsDirectiveSyntax)
     EXPECT_EQ(loaded.solver, "octree_cpu");
     EXPECT_EQ(loaded.integrator, "rk4");
     EXPECT_EQ(loaded.performanceProfile, "interactive");
+    EXPECT_FLOAT_EQ(loaded.physicsMaxAcceleration, 32.0f);
+    EXPECT_FLOAT_EQ(loaded.physicsMinSoftening, 0.0002f);
+    EXPECT_FLOAT_EQ(loaded.physicsMinDistance2, 1.0e-12f);
+    EXPECT_FLOAT_EQ(loaded.physicsMinTheta, 0.04f);
+    EXPECT_TRUE(loaded.sphEnabled);
+    EXPECT_FLOAT_EQ(loaded.sphSmoothingLength, 1.5f);
+    EXPECT_FLOAT_EQ(loaded.sphRestDensity, 2.0f);
+    EXPECT_FLOAT_EQ(loaded.sphGasConstant, 5.0f);
+    EXPECT_FLOAT_EQ(loaded.sphViscosity, 0.12f);
+    EXPECT_FLOAT_EQ(loaded.sphMaxAcceleration, 41.0f);
+    EXPECT_FLOAT_EQ(loaded.sphMaxSpeed, 130.0f);
     EXPECT_FLOAT_EQ(loaded.substepTargetDt, 0.01f);
     EXPECT_EQ(loaded.maxSubsteps, 4u);
     EXPECT_EQ(loaded.snapshotPublishPeriodMs, 50u);
-    EXPECT_EQ(loaded.clientParticleCap, grav_protocol::kSnapshotDefaultPoints);
+    EXPECT_EQ(loaded.clientParticleCap, bltzr_protocol::kSnapshotDefaultPoints);
     EXPECT_EQ(loaded.uiFpsLimit, 55u);
     EXPECT_EQ(loaded.clientSnapshotQueueCapacity, 5u);
     EXPECT_EQ(loaded.clientSnapshotDropPolicy, "paced");
@@ -61,7 +76,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_027_DirectivePerformanceOverrideForcesCustomPr
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() /
-        ("gravity_config_directive_perf_override_" + std::to_string(stamp) + ".ini");
+        ("BLITZAR_config_directive_perf_override_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
@@ -94,7 +109,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_025_SaveWritesDirectiveSyntax)
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() /
-        ("gravity_config_directive_save_" + std::to_string(stamp) + ".ini");
+        ("BLITZAR_config_directive_save_" + std::to_string(stamp) + ".ini");
     ASSERT_TRUE(config.save(path.string()));
     std::ifstream in(path);
     ASSERT_TRUE(in.is_open());
@@ -123,7 +138,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_068_LoadDirectiveFallbackHandlesMalformedDirec
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() /
-        ("gravity_config_directive_invalid_" + std::to_string(stamp) + ".ini");
+        ("BLITZAR_config_directive_invalid_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
@@ -146,7 +161,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_069_LoadDirectiveWarnsUnknownDirectiveArgument
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() /
-        ("gravity_config_directive_unknown_arg_" + std::to_string(stamp) + ".ini");
+        ("BLITZAR_config_directive_unknown_arg_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
@@ -167,11 +182,11 @@ TEST(ConfigArgsTest, TST_UNT_CONF_070_SaveDirectiveKeepsBalancedProfileWithoutCu
 {
     SimulationConfig config = SimulationConfig::defaults();
     config.performanceProfile = "balanced";
-    grav_config::applyPerformanceProfile(config);
+    bltzr_config::applyPerformanceProfile(config);
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() /
-        ("gravity_config_directive_perf_balanced_" + std::to_string(stamp) + ".ini");
+        ("BLITZAR_config_directive_perf_balanced_" + std::to_string(stamp) + ".ini");
     ASSERT_TRUE(config.save(path.string()));
     std::ifstream in(path);
     ASSERT_TRUE(in.is_open());

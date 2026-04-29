@@ -5,15 +5,15 @@
  * @brief Platform abstraction interfaces for portable runtime services.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_PLATFORM_INTERNAL_SOCKETOPS_HPP_
-#define GRAVITY_ENGINE_INCLUDE_PLATFORM_INTERNAL_SOCKETOPS_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_PLATFORM_INTERNAL_SOCKETOPS_HPP_
+#define BLITZAR_ENGINE_INCLUDE_PLATFORM_INTERNAL_SOCKETOPS_HPP_
 #include "platform/SocketPlatform.hpp"
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <string>
 
-namespace grav_socket_detail {
+namespace bltzr_socket_detail {
 struct SocketAddressV4 {
     std::array<unsigned char, 4> addressBytes{0, 0, 0, 0};
     std::uint16_t port = 0u;
@@ -33,8 +33,8 @@ bool bindIpv4Native(std::intptr_t handle, const SocketAddressV4& address);
 bool listenSocketNative(std::intptr_t handle, int backlog);
 std::intptr_t acceptSocketNative(std::intptr_t handle);
 bool waitReadableNative(std::intptr_t handle, int timeoutMs);
-int recvBytesNative(std::intptr_t handle, grav_socket::MutableBytes buffer);
-int sendBytesNative(std::intptr_t handle, grav_socket::ConstBytes buffer);
+int recvBytesNative(std::intptr_t handle, bltzr_socket::MutableBytes buffer);
+int sendBytesNative(std::intptr_t handle, bltzr_socket::ConstBytes buffer);
 bool wouldBlockOrTimeoutLastErrorNative();
-} // namespace grav_socket_detail
-#endif // GRAVITY_ENGINE_INCLUDE_PLATFORM_INTERNAL_SOCKETOPS_HPP_
+} // namespace bltzr_socket_detail
+#endif // BLITZAR_ENGINE_INCLUDE_PLATFORM_INTERNAL_SOCKETOPS_HPP_

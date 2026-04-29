@@ -8,7 +8,7 @@
 #include "client/RustRuntimeBridgeState.hpp"
 #include <stdexcept>
 
-namespace grav_client {
+namespace bltzr_client {
 RustRuntimeBridgeState::RustRuntimeBridgeState() : _state(blitzar_runtime_bridge_create())
 {
     if (_state == nullptr) {
@@ -100,4 +100,4 @@ std::string RustRuntimeBridgeState::copyStringView(blitzar_runtime_string_view v
         return std::string();
     return std::string(reinterpret_cast<const char*>(view.data), view.len);
 }
-} // namespace grav_client
+} // namespace bltzr_client

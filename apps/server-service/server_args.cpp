@@ -15,7 +15,7 @@
 #include <iostream>
 #include <string>
 
-namespace grav_server_service {
+namespace bltzr_server_service {
 std::atomic<bool> g_stopRequested{false};
 
 void onSignal(int)
@@ -26,7 +26,7 @@ void onSignal(int)
 bool parsePort(std::string_view token, std::uint16_t& out)
 {
     unsigned int parsed = 0;
-    if (!grav_text::parseNumber(token, parsed) || parsed == 0 || parsed > 65535u) {
+    if (!bltzr_text::parseNumber(token, parsed) || parsed == 0 || parsed > 65535u) {
         return false;
     }
     out = static_cast<std::uint16_t>(parsed);
@@ -170,4 +170,4 @@ void resetStopRequested()
 {
     g_stopRequested.store(false);
 }
-} // namespace grav_server_service
+} // namespace bltzr_server_service

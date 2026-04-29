@@ -189,10 +189,11 @@ bool isSupportedCheckpointString(std::string_view solver, std::string_view integ
     std::string normalizedIntegrator;
     std::string normalizedProfile;
     std::string normalizedCriterion;
-    return grav_modes::normalizeSolver(std::string(solver), normalizedSolver) &&
-           grav_modes::normalizeIntegrator(std::string(integrator), normalizedIntegrator) &&
-           grav_config::normalizePerformanceProfile(std::string(profile), normalizedProfile) &&
-           grav_modes::normalizeOctreeOpeningCriterion(std::string(criterion), normalizedCriterion);
+    return bltzr_modes::normalizeSolver(std::string(solver), normalizedSolver) &&
+           bltzr_modes::normalizeIntegrator(std::string(integrator), normalizedIntegrator) &&
+           bltzr_config::normalizePerformanceProfile(std::string(profile), normalizedProfile) &&
+           bltzr_modes::normalizeOctreeOpeningCriterion(std::string(criterion),
+                                                        normalizedCriterion);
 }
 
 /*

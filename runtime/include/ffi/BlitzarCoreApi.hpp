@@ -5,8 +5,8 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_FFI_BLITZARCOREAPI_H_
-#define GRAVITY_RUNTIME_INCLUDE_FFI_BLITZARCOREAPI_H_
+#ifndef BLITZAR_RUNTIME_INCLUDE_FFI_BLITZARCOREAPI_H_
+#define BLITZAR_RUNTIME_INCLUDE_FFI_BLITZARCOREAPI_H_
 #include <stddef.h>
 #include <stdint.h>
 extern "C" {
@@ -97,4 +97,4 @@ blitzar_core_result_t blitzar_core_export_state(blitzar_core_t* core, const char
 size_t blitzar_core_get_last_error(const blitzar_core_t* core, char* error_buffer,
                                    size_t error_buffer_capacity);
 }
-#endif // GRAVITY_RUNTIME_INCLUDE_FFI_BLITZARCOREAPI_H_
+#endif // BLITZAR_RUNTIME_INCLUDE_FFI_BLITZARCOREAPI_H_

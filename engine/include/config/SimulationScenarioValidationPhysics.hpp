@@ -5,15 +5,15 @@
  * @brief Public configuration interfaces and validation contracts for simulation setup.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATIONPHYSICS_HPP_
-#define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATIONPHYSICS_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATIONPHYSICS_HPP_
+#define BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATIONPHYSICS_HPP_
 #include "config/SimulationConfig.hpp"
 #include "config/SimulationScenarioValidation.hpp"
 #include "server/SimulationInitConfig.hpp"
 #include <functional>
 #include <string>
 
-namespace grav_config {
+namespace bltzr_config {
 class SimulationScenarioValidationPhysics final {
 public:
     static void appendDiagnostics(
@@ -21,5 +21,5 @@ public:
         const std::function<void(ScenarioDiagnosticLevel, std::string, std::string, std::string)>&
             addDiagnostic);
 };
-} // namespace grav_config
-#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATIONPHYSICS_HPP_
+} // namespace bltzr_config
+#endif // BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONSCENARIOVALIDATIONPHYSICS_HPP_

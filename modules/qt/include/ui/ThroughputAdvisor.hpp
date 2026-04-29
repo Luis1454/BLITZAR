@@ -5,8 +5,8 @@
  * @brief Qt desktop user interface module for simulation control and visualization.
  */
 
-#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_THROUGHPUTADVISOR_HPP_
-#define GRAVITY_MODULES_QT_INCLUDE_UI_THROUGHPUTADVISOR_HPP_
+#ifndef BLITZAR_MODULES_QT_INCLUDE_UI_THROUGHPUTADVISOR_HPP_
+#define BLITZAR_MODULES_QT_INCLUDE_UI_THROUGHPUTADVISOR_HPP_
 #include <cstdint>
 #include <string>
 /*
@@ -17,7 +17,7 @@
  */
 struct SimulationConfig;
 
-namespace grav_qt {
+namespace bltzr_qt {
 enum class ThroughputAdvisorySeverity {
     None,
     Advisory,
@@ -37,5 +37,5 @@ class ThroughputAdvisor final {
 public:
     static ThroughputAdvisory evaluate(const SimulationConfig& config, std::uint32_t drawCap);
 };
-} // namespace grav_qt
-#endif // GRAVITY_MODULES_QT_INCLUDE_UI_THROUGHPUTADVISOR_HPP_
+} // namespace bltzr_qt
+#endif // BLITZAR_MODULES_QT_INCLUDE_UI_THROUGHPUTADVISOR_HPP_

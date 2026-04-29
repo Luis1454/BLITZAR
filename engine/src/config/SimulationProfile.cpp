@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <cctype>
 
-namespace grav_config {
+namespace bltzr_config {
 static std::string toLowerProfile(std::string value)
 {
     std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
@@ -112,4 +112,4 @@ void applySimulationProfile(SimulationConfig& config)
         config.sphEnabled = true;
     }
 }
-} // namespace grav_config
+} // namespace bltzr_config

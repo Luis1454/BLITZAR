@@ -1,12 +1,20 @@
-/*
- * @file modules/qt/ui/UiEnums.cpp
- * @brief Implementation of central UI enum converters.
+/**
+ * @file UiEnums.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
  */
 
 #include "ui/UiEnums.hpp"
 
-namespace grav_qt {
+namespace bltzr_qt {
 
+/**
+ * @brief Documents the solver to string operation contract.
+ * @param s Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ **/
 std::string to_string(Solver s)
 {
     switch (s) {
@@ -20,6 +28,12 @@ std::string to_string(Solver s)
     return {};
 }
 
+/**
+ * @brief Documents the integrator to string operation contract.
+ * @param i Input value used by this contract.
+ * @return std::string value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ **/
 std::string to_string(Integrator i)
 {
     switch (i) {
@@ -31,6 +45,11 @@ std::string to_string(Integrator i)
     return {};
 }
 
+/**
+ * @brief Documents the performance profile to string operation contract.
+ * @param p Input value used by this contract.
+ * @return std::string value produced by this contract.
+ **/
 std::string to_string(PerformanceProfile p)
 {
     switch (p) {
@@ -46,6 +65,11 @@ std::string to_string(PerformanceProfile p)
     return {};
 }
 
+/**
+ * @brief Documents the solver from string operation contract.
+ * @param s Input value used by this contract.
+ * @return Solver value produced by this contract.
+ **/
 Solver solver_from_string(const std::string& s)
 {
     if (s == "pairwise_cuda")
@@ -55,6 +79,11 @@ Solver solver_from_string(const std::string& s)
     return Solver::OctreeCpu;
 }
 
+/**
+ * @brief Documents the integrator from string operation contract.
+ * @param s Input value used by this contract.
+ * @return Integrator value produced by this contract.
+ */
 Integrator integrator_from_string(const std::string& s)
 {
     if (s == "rk4")
@@ -62,6 +91,11 @@ Integrator integrator_from_string(const std::string& s)
     return Integrator::Euler;
 }
 
+/**
+ * @brief Documents the performance profile from string operation contract.
+ * @param s Input value used by this contract.
+ * @return PerformanceProfile value produced by this contract.
+ **/
 PerformanceProfile performance_from_string(const std::string& s)
 {
     if (s == "balanced")
@@ -73,4 +107,4 @@ PerformanceProfile performance_from_string(const std::string& s)
     return PerformanceProfile::Interactive;
 }
 
-} // namespace grav_qt
+} // namespace bltzr_qt

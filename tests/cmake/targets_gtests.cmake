@@ -4,265 +4,268 @@
 # @brief Automated verification assets for BLITZAR quality gates.
 
 if(WIN32)
-    set(GRAVITY_TEST_SCOPED_ENV_VAR_SOURCE "${GRAVITY_ROOT_DIR}/tests/support/scoped_env_var_win.cpp")
-    set(GRAVITY_TEST_ENV_UTILS_SOURCES
-        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
-        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtilsWin.cpp"
+    set(BLITZAR_TEST_SCOPED_ENV_VAR_SOURCE "${BLITZAR_ROOT_DIR}/tests/support/scoped_env_var_win.cpp")
+    set(BLITZAR_TEST_ENV_UTILS_SOURCES
+        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtilsWin.cpp"
     )
 else()
-    set(GRAVITY_TEST_SCOPED_ENV_VAR_SOURCE "${GRAVITY_ROOT_DIR}/tests/support/scoped_env_var_posix.cpp")
-    set(GRAVITY_TEST_ENV_UTILS_SOURCES
-        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
-        "${GRAVITY_ROOT_DIR}/engine/src/config/EnvUtilsPosix.cpp"
+    set(BLITZAR_TEST_SCOPED_ENV_VAR_SOURCE "${BLITZAR_ROOT_DIR}/tests/support/scoped_env_var_posix.cpp")
+    set(BLITZAR_TEST_ENV_UTILS_SOURCES
+        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtilsPosix.cpp"
     )
 endif()
 
-if(GRAVITY_TEST_UNIT_CONFIG_SOURCES)
-    gravity_add_gtest(gravityConfigArgsGTests
+if(BLITZAR_TEST_UNIT_CONFIG_SOURCES)
+    BLITZAR_add_gtest(blitzarConfigArgsGTests
         LABELS unit
         SOURCES
-            ${GRAVITY_TEST_UNIT_CONFIG_SOURCES}
-            ${GRAVITY_TEST_ENV_UTILS_SOURCES}
+            ${BLITZAR_TEST_UNIT_CONFIG_SOURCES}
+            ${BLITZAR_TEST_ENV_UTILS_SOURCES}
             
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgs.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsCoreOptions.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsClientOptions.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsInitOptions.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsInitStateOptions.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsFluidOptions.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidationPhysics.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidationRender.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/DirectiveValueFormatter.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgs.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsCoreOptions.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsClientOptions.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsInitOptions.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsInitStateOptions.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsFluidOptions.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationPhysics.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationRender.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveValueFormatter.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/TextParse.cpp"
     )
 endif()
 
-if(GRAVITY_TEST_UNIT_PROTOCOL_SOURCES)
-    gravity_add_gtest(gravityProtocolCodecGTests
+if(BLITZAR_TEST_UNIT_PROTOCOL_SOURCES)
+    BLITZAR_add_gtest(blitzarProtocolCodecGTests
         LABELS unit
         SOURCES
-            ${GRAVITY_TEST_UNIT_PROTOCOL_SOURCES}
-            "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodec.cpp"
-            "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParse.cpp"
-            "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseStatus.cpp"
-            "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseSnapshot.cpp"
-            "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecReadNumber.cpp"
-            "${GRAVITY_ROOT_DIR}/runtime/src/protocol/ServerProtocol.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
+            ${BLITZAR_TEST_UNIT_PROTOCOL_SOURCES}
+            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodec.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParse.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseStatus.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseSnapshot.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecReadNumber.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerProtocol.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/TextParse.cpp"
     )
 endif()
 
-set(GRAVITY_TEST_UNIT_MODULE_SOURCES
-    ${GRAVITY_TEST_UNIT_MODULE_CLI_SOURCES}
-    ${GRAVITY_TEST_UNIT_CLIENT_HOST_SOURCES}
+set(BLITZAR_TEST_UNIT_MODULE_SOURCES
+    ${BLITZAR_TEST_UNIT_MODULE_CLI_SOURCES}
+    ${BLITZAR_TEST_UNIT_CLIENT_HOST_SOURCES}
 )
-if(GRAVITY_TEST_UNIT_MODULE_SOURCES)
-    gravity_add_gtest(gravityClientCliHostGTests
+if(BLITZAR_TEST_UNIT_MODULE_SOURCES)
+    BLITZAR_add_gtest(blitzarClientCliHostGTests
         LABELS unit
         SOURCES
-            ${GRAVITY_TEST_UNIT_MODULE_SOURCES}
-            "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_state.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_text.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_server_ops.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/cli/module_cli_commands.cpp"
-            ${GRAVITY_RUNTIME_COMMAND_SOURCES}
-            "${GRAVITY_ROOT_DIR}/apps/client-host/client_host_cli.cpp"
-            "${GRAVITY_ROOT_DIR}/apps/client-host/client_host_cli_args.cpp"
-            "${GRAVITY_ROOT_DIR}/apps/client-host/client_host_module_ops.cpp"
-            "${GRAVITY_ROOT_DIR}/apps/client-host/client_host_cli_text.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidationPhysics.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidationRender.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/DirectiveValueFormatter.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
-            "${GRAVITY_ROOT_DIR}/runtime/src/client/ErrorBuffer.cpp"
-            "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleApi.cpp"
-            "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleBoundary.cpp"
-            "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleHash.cpp"
-            "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleHandle.cpp"
-            "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleHandleLoad.cpp"
-            "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientModuleManifest.cpp"
-            "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientCommon.cpp"
-            "${GRAVITY_ROOT_DIR}/runtime/src/client/RustRuntimeBridgeState.cpp"
-            ${GRAVITY_TEST_SCOPED_ENV_VAR_SOURCE}
-            ${GRAVITY_ENV_UTILS_SOURCES}
-            ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
-            "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
+            ${BLITZAR_TEST_UNIT_MODULE_SOURCES}
+            "${BLITZAR_ROOT_DIR}/modules/cli/module_cli_state.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/cli/module_cli_text.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/cli/module_cli_server_ops.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/cli/module_cli_commands.cpp"
+            ${BLITZAR_RUNTIME_COMMAND_SOURCES}
+            "${BLITZAR_ROOT_DIR}/apps/client-host/client_host_cli.cpp"
+            "${BLITZAR_ROOT_DIR}/apps/client-host/client_host_cli_args.cpp"
+            "${BLITZAR_ROOT_DIR}/apps/client-host/client_host_module_ops.cpp"
+            "${BLITZAR_ROOT_DIR}/apps/client-host/client_host_cli_text.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationPhysics.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationRender.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveValueFormatter.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/ErrorBuffer.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientModuleApi.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientModuleBoundary.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientModuleHash.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientModuleHandle.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientModuleHandleLoad.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientModuleManifest.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientCommon.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/RustRuntimeBridgeState.cpp"
+            ${BLITZAR_TEST_SCOPED_ENV_VAR_SOURCE}
+            ${BLITZAR_ENV_UTILS_SOURCES}
+            ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
+            "${BLITZAR_ROOT_DIR}/engine/src/config/TextParse.cpp"
         LIBS
-            gravityRustRuntime
-            ${GRAVITY_TEST_PLATFORM_TARGET}
+            blitzarRustRuntime
+            ${BLITZAR_TEST_PLATFORM_TARGET}
     )
 endif()
-set(GRAVITY_TEST_BASE_REAL_SOURCES
-    "${GRAVITY_ROOT_DIR}/tests/support/server_harness.cpp"
-    "${GRAVITY_ROOT_DIR}/tests/support/server_harness_runtime.cpp"
-    "${GRAVITY_TEST_SCOPED_ENV_VAR_SOURCE}"
-    ${GRAVITY_TEST_ENV_UTILS_SOURCES}
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
-    ${GRAVITY_RUNTIME_PROTOCOL_SOURCES}
-    "${GRAVITY_ROOT_DIR}/engine/src/config/TextParse.cpp"
+set(BLITZAR_TEST_BASE_REAL_SOURCES
+    "${BLITZAR_ROOT_DIR}/tests/support/server_harness.cpp"
+    "${BLITZAR_ROOT_DIR}/tests/support/server_harness_runtime.cpp"
+    "${BLITZAR_TEST_SCOPED_ENV_VAR_SOURCE}"
+    ${BLITZAR_TEST_ENV_UTILS_SOURCES}
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
+    ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
+    "${BLITZAR_ROOT_DIR}/engine/src/config/TextParse.cpp"
 )
-set(GRAVITY_TEST_BASE_BRIDGE_SOURCES
-    "${GRAVITY_ROOT_DIR}/tests/support/poll_utils.cpp"
-    "${GRAVITY_ROOT_DIR}/runtime/src/client/RustRuntimeBridgeState.cpp"
-    "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientServerBridge.cpp"
-    ${GRAVITY_TEST_BASE_REAL_SOURCES}
+set(BLITZAR_TEST_BASE_BRIDGE_SOURCES
+    "${BLITZAR_ROOT_DIR}/tests/support/poll_utils.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/client/RustRuntimeBridgeState.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientServerBridge.cpp"
+    ${BLITZAR_TEST_BASE_REAL_SOURCES}
 )
-set(GRAVITY_TEST_BASE_RUNTIME_SOURCES
-    "${GRAVITY_ROOT_DIR}/tests/support/client_utils.cpp"
-    "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientRuntime.cpp"
-    "${GRAVITY_ROOT_DIR}/runtime/src/client/ClientCommon.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidationPhysics.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationScenarioValidationRender.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/DirectiveValueFormatter.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
-    "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
-    ${GRAVITY_TEST_BASE_BRIDGE_SOURCES}
+set(BLITZAR_TEST_BASE_RUNTIME_SOURCES
+    "${BLITZAR_ROOT_DIR}/tests/support/client_utils.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientRuntime.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientCommon.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationPhysics.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationRender.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveValueFormatter.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
+    ${BLITZAR_TEST_BASE_BRIDGE_SOURCES}
 )
-set(GRAVITY_TEST_BASE_QT_LOGIC_SOURCES
-    ${GRAVITY_TEST_BASE_RUNTIME_SOURCES}
-    "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowController.cpp"
-    "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowPresenter.cpp"
-    "${GRAVITY_ROOT_DIR}/modules/qt/ui/OctreeOverlay.cpp"
-    "${GRAVITY_ROOT_DIR}/modules/qt/ui/UiEnums.cpp"
-    "${GRAVITY_ROOT_DIR}/modules/qt/ui/ThroughputAdvisor.cpp"
-    "${GRAVITY_ROOT_DIR}/modules/qt/ui/WorkspaceLayoutStore.cpp"
+set(BLITZAR_TEST_BASE_QT_LOGIC_SOURCES
+    ${BLITZAR_TEST_BASE_RUNTIME_SOURCES}
+    "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowController.cpp"
+    "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowPresenter.cpp"
+    "${BLITZAR_ROOT_DIR}/modules/qt/ui/OctreeOverlay.cpp"
+    "${BLITZAR_ROOT_DIR}/modules/qt/ui/UiEnums.cpp"
+    "${BLITZAR_ROOT_DIR}/modules/qt/ui/ThroughputAdvisor.cpp"
+    "${BLITZAR_ROOT_DIR}/modules/qt/ui/WorkspaceLayoutStore.cpp"
 )
 
-if(GRAVITY_TEST_INT_PROTOCOL_SOURCES)
-    gravity_add_gtest(gravityServerProtocolGTests
+if(BLITZAR_TEST_INT_PROTOCOL_SOURCES)
+    BLITZAR_add_gtest(blitzarServerProtocolGTests
         LABELS integration integration_real
         TIMEOUT 30
         SERVER_LOCK
         SOURCES
-            ${GRAVITY_TEST_INT_PROTOCOL_SOURCES}
-            ${GRAVITY_TEST_BASE_REAL_SOURCES}
+            ${BLITZAR_TEST_INT_PROTOCOL_SOURCES}
+            ${BLITZAR_TEST_BASE_REAL_SOURCES}
         LIBS
-            ${GRAVITY_TEST_PLATFORM_TARGET}
+            ${BLITZAR_TEST_PLATFORM_TARGET}
     )
 endif()
 
-if(GRAVITY_TEST_INT_BRIDGE_SOURCES)
-    gravity_add_gtest(gravityClientServerBridgeGTests
+if(BLITZAR_TEST_INT_BRIDGE_SOURCES)
+    BLITZAR_add_gtest(blitzarClientServerBridgeGTests
         LABELS integration integration_real
         TIMEOUT 30
         SERVER_LOCK
         SOURCES
-            ${GRAVITY_TEST_INT_BRIDGE_SOURCES}
-            ${GRAVITY_TEST_BASE_BRIDGE_SOURCES}
+            ${BLITZAR_TEST_INT_BRIDGE_SOURCES}
+            ${BLITZAR_TEST_BASE_BRIDGE_SOURCES}
         LIBS
-            gravityRustRuntime
-            ${GRAVITY_TEST_PLATFORM_TARGET}
+            blitzarRustRuntime
+            ${BLITZAR_TEST_PLATFORM_TARGET}
     )
 endif()
 
-if(GRAVITY_TEST_INT_RUNTIME_SOURCES)
-    gravity_add_gtest(gravityClientRuntimeGTests
+if(BLITZAR_TEST_INT_RUNTIME_SOURCES)
+    BLITZAR_add_gtest(blitzarClientRuntimeGTests
         LABELS contract integration_real
         TIMEOUT 30
         SERVER_LOCK
         SOURCES
-            ${GRAVITY_TEST_INT_RUNTIME_SOURCES}
-            ${GRAVITY_TEST_BASE_RUNTIME_SOURCES}
+            ${BLITZAR_TEST_INT_RUNTIME_SOURCES}
+            ${BLITZAR_TEST_BASE_RUNTIME_SOURCES}
         LIBS
-            gravityRustRuntime
-            ${GRAVITY_TEST_PLATFORM_TARGET}
+            blitzarRustRuntime
+            ${BLITZAR_TEST_PLATFORM_TARGET}
     )
 endif()
 
-if(GRAVITY_TEST_UNIT_UI_SOURCES)
-    gravity_add_gtest(gravityQtUiLogicGTests
+if(BLITZAR_TEST_UNIT_UI_SOURCES)
+    BLITZAR_add_gtest(blitzarQtUiLogicGTests
         LABELS unit
         SOURCES
-            ${GRAVITY_TEST_UNIT_UI_SOURCES}
-            ${GRAVITY_TEST_BASE_QT_LOGIC_SOURCES}
+            ${BLITZAR_TEST_UNIT_UI_SOURCES}
+            ${BLITZAR_TEST_BASE_QT_LOGIC_SOURCES}
         LIBS
-            gravityRustRuntime
-            ${GRAVITY_TEST_PLATFORM_TARGET}
+            blitzarRustRuntime
+            ${BLITZAR_TEST_PLATFORM_TARGET}
     )
 endif()
 
-if(TARGET Qt6::Widgets AND GRAVITY_TEST_INT_UI_SOURCES)
-    gravity_add_gtest(gravityQtMainWindowGTests
+if(TARGET Qt6::Widgets AND BLITZAR_TEST_INT_UI_SOURCES)
+    BLITZAR_add_gtest(blitzarQtMainWindowGTests
         LABELS ui_integration integration_real
         TIMEOUT 45
         SERVER_LOCK
         SOURCES
-            ${GRAVITY_TEST_INT_UI_SOURCES}
-            ${GRAVITY_TEST_BASE_RUNTIME_SOURCES}
-            "${GRAVITY_ROOT_DIR}/tests/support/qt_test_utils.cpp"
-            "${GRAVITY_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/EnergyGraphWidget.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/EnergyGraphWidgetPaint.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowController.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindow.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowConfig.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowControls.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowFileActions.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowLayout.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowLayoutState.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowPresenter.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowTelemetry.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowWorkspacePersistence.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/MainWindowWorkspaceShell.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/MultiViewWidget.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/OctreeOverlay.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/OctreeOverlayPainter.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/ParticleView.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/ParticleViewColor.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/UiEnums.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/ThroughputAdvisor.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/QtTheme.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/QtViewMath.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/WorkspaceLayoutStore.cpp"
-            "${GRAVITY_ROOT_DIR}/modules/qt/ui/panels/RunControlPanel.cpp"
-            ${GRAVITY_GRAPHICS_SOURCES}
+            ${BLITZAR_TEST_INT_UI_SOURCES}
+            ${BLITZAR_TEST_BASE_RUNTIME_SOURCES}
+            "${BLITZAR_ROOT_DIR}/tests/support/qt_test_utils.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/EnergyGraphWidget.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/EnergyGraphWidgetPaint.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowController.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindow.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowConfig.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowControls.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowFileActions.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowLayout.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowLayoutState.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowPresenter.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowTelemetry.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowWorkspacePersistence.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowWorkspaceShell.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MultiViewWidget.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/OctreeOverlay.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/OctreeOverlayPainter.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/ParticleView.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/ParticleViewColor.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/UiEnums.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/ThroughputAdvisor.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/QtTheme.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/QtViewMath.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/WorkspaceLayoutStore.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/panels/PhysicsControlPanel.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/panels/RenderControlPanel.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/panels/RunControlPanel.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/panels/SceneSetupPanel.cpp"
+            ${BLITZAR_GRAPHICS_SOURCES}
         LIBS
-            gravityRustRuntime
+            blitzarRustRuntime
             Qt6::Widgets
-            ${GRAVITY_TEST_PLATFORM_TARGET}
+            ${BLITZAR_TEST_PLATFORM_TARGET}
     )
-    gravity_configure_qt_runtime_deploy(gravityQtMainWindowGTests)
+    BLITZAR_configure_qt_runtime_deploy(blitzarQtMainWindowGTests)
 endif()
 
-gravity_add_gtest(gravityGraphicsGTests
+BLITZAR_add_gtest(blitzarGraphicsGTests
     LABELS unit
     SOURCES
-        "${GRAVITY_ROOT_DIR}/tests/unit/graphics/TST_UNT_GRA_GraphicsTests.cpp"
-        ${GRAVITY_GRAPHICS_SOURCES}
+        "${BLITZAR_ROOT_DIR}/tests/unit/graphics/TST_UNT_GRA_GraphicsTests.cpp"
+        ${BLITZAR_GRAPHICS_SOURCES}
 )
 

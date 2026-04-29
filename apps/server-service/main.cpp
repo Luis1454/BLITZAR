@@ -20,7 +20,7 @@
 #include <thread>
 #include <vector>
 
-namespace grav_server_service {
+namespace bltzr_server_service {
 void applyConfigToServer(SimulationServer& server, const SimulationConfig& config)
 {
     const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(config, std::cerr);
@@ -38,7 +38,7 @@ void applyConfigToServer(SimulationServer& server, const SimulationConfig& confi
     server.setInitialStateConfig(initPlan.config);
     std::cout << "[server] " << initPlan.summary << "\n";
 }
-} // namespace grav_server_service
+} // namespace bltzr_server_service
 
 /*
  * @brief Documents the main operation contract.
@@ -53,9 +53,9 @@ int main(int argc, char** argv)
     args.reserve(static_cast<std::size_t>(std::max(0, argc)));
     for (int i = 0; i < argc; ++i)
         args.emplace_back(argv[i] ? argv[i] : "");
-    grav_server_service::resetStopRequested();
-    grav_server_service::DaemonOptions options{};
-    if (!grav_server_service::parseServerArgs(args, options, std::cerr)) {
+    bltzr_server_service::resetStopRequested();
+    bltzr_server_service::DaemonOptions options{};
+    if (!bltzr_server_service::parseServerArgs(args, options, std::cerr)) {
         return 2;
     }
     RuntimeArgs runtime;
@@ -64,24 +64,24 @@ int main(int argc, char** argv)
     SimulationConfig config = simulationServer.getRuntimeConfig();
     applyArgsToConfig(options.simArgs, config, runtime, std::cerr);
     if (runtime.hasArgumentError) {
-        grav_server_service::printServerHelp(
+        bltzr_server_service::printServerHelp(
             options.simArgs.empty() ? std::string_view("blitzar-server") : options.simArgs[0]);
         return 2;
     }
     if (options.showServerHelp || runtime.showHelp) {
-        grav_server_service::printServerHelp(
+        bltzr_server_service::printServerHelp(
             options.simArgs.empty() ? std::string_view("blitzar-server") : options.simArgs[0]);
         return 0;
     }
     if (runtime.saveConfig) {
         config.save(runtime.configPath);
     }
-    if (!grav_server_service::isLoopbackBindHost(options.host) && !options.allowRemoteBind) {
+    if (!bltzr_server_service::isLoopbackBindHost(options.host) && !options.allowRemoteBind) {
         std::cerr << "[server] refusing non-loopback bind host '" << options.host
                   << "' without --server-allow-remote\n";
         return 2;
     }
-    grav_server_service::applyConfigToServer(simulationServer, config);
+    bltzr_server_service::applyConfigToServer(simulationServer, config);
     simulationServer.start();
     if (options.startPaused) {
         simulationServer.setPaused(true);
@@ -93,12 +93,12 @@ int main(int argc, char** argv)
         simulationServer.stop();
         return 1;
     }
-    grav_server_service::installStopSignalHandlers();
+    bltzr_server_service::installStopSignalHandlers();
     std::cout << "[server] daemon running on " << options.host << ":" << options.port
               << " (json control over TCP, newline-delimited)\n";
     std::cout << "[server] example request: {\"cmd\":\"status\"}\n";
     auto lastLog = std::chrono::steady_clock::now();
-    while (!grav_server_service::stopRequested() && !daemon.shutdownRequested()) {
+    while (!bltzr_server_service::stopRequested() && !daemon.shutdownRequested()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         const auto now = std::chrono::steady_clock::now();
         if (std::chrono::duration_cast<std::chrono::seconds>(now - lastLog).count() >= 2) {

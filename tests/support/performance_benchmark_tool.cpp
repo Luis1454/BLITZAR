@@ -12,8 +12,8 @@
 #include <iomanip>
 #include <ostream>
 
-namespace grav_test_perf_tool {
-bool buildScenario(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& options,
+namespace bltzr_test_perf_tool {
+bool buildScenario(const bltzr_test_perf::PerformanceBenchmarkTool::ToolOptions& options,
                    testsupport::ScenarioConfig& cfg, std::string& error)
 {
     if (options.workload == "disk_orbit") {
@@ -34,7 +34,7 @@ bool buildScenario(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& 
     return true;
 }
 
-void writeMeasurement(const grav_test_perf::PerformanceBenchmarkTool::ToolOptions& options,
+void writeMeasurement(const bltzr_test_perf::PerformanceBenchmarkTool::ToolOptions& options,
                       const testsupport::ScenarioResult& result, const double wallSeconds,
                       std::ostream& out)
 {
@@ -57,9 +57,9 @@ void writeMeasurement(const grav_test_perf::PerformanceBenchmarkTool::ToolOption
     out << "server_fps_final=" << result.stats.serverFps << "\n";
     out << "energy_drift_pct=" << result.stats.energyDriftPct << "\n";
 }
-} // namespace grav_test_perf_tool
+} // namespace bltzr_test_perf_tool
 
-namespace grav_test_perf {
+namespace bltzr_test_perf {
 bool PerformanceBenchmarkTool::parseFloatValue(const std::string& text, float& out)
 {
     std::size_t consumed = 0u;
@@ -90,7 +90,7 @@ bool PerformanceBenchmarkTool::parseArgs(int argc, const char* const* argv, Tool
     for (int index = 1; index < argc; index += 1) {
         const std::string arg(argv[index]);
         if (arg == "--help") {
-            error = "usage: gravityPerformanceBenchmarkTool --workload <name> --solver <solver> "
+            error = "usage: blitzarPerformanceBenchmarkTool --workload <name> --solver <solver> "
                     "--integrator <integrator> --dt <seconds> --particle-count <n> --steps <n> "
                     "--seed <n>";
             return false;
@@ -156,7 +156,7 @@ int PerformanceBenchmarkTool::run(int argc, const char* const* argv, std::ostrea
         return error.rfind("usage:", 0) == 0 ? 0 : 1;
     }
     testsupport::ScenarioConfig cfg;
-    if (!grav_test_perf_tool::buildScenario(options, cfg, error)) {
+    if (!bltzr_test_perf_tool::buildScenario(options, cfg, error)) {
         err << error << "\n";
         return 1;
     }
@@ -167,7 +167,7 @@ int PerformanceBenchmarkTool::run(int argc, const char* const* argv, std::ostrea
         return 1;
     }
     const std::chrono::duration<double> elapsed = std::chrono::steady_clock::now() - start;
-    grav_test_perf_tool::writeMeasurement(options, result, elapsed.count(), out);
+    bltzr_test_perf_tool::writeMeasurement(options, result, elapsed.count(), out);
     return 0;
 }
-} // namespace grav_test_perf
+} // namespace bltzr_test_perf

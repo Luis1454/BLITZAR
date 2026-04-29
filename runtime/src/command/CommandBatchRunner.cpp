@@ -11,7 +11,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace grav_cmd {
+namespace bltzr_cmd {
 CommandResult CommandBatchRunner::runScriptFile(const std::string& path,
                                                 CommandExecutionContext& context)
 {
@@ -43,4 +43,4 @@ CommandResult CommandBatchRunner::runScriptFile(const std::string& path,
     }
     return CommandResult{true, {}};
 }
-} // namespace grav_cmd
+} // namespace bltzr_cmd

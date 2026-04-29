@@ -5,8 +5,8 @@
  * @brief Qt desktop user interface module for simulation control and visualization.
  */
 
-#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOW_HPP_
-#define GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOW_HPP_
+#ifndef BLITZAR_MODULES_QT_INCLUDE_UI_MAINWINDOW_HPP_
+#define BLITZAR_MODULES_QT_INCLUDE_UI_MAINWINDOW_HPP_
 /*
  * Module: ui
  * Responsibility: Define the top-level Qt workspace and its persistent widget
@@ -118,14 +118,14 @@ class QTimer;
  */
 class QWidget;
 
-namespace grav_qt {
+namespace bltzr_qt {
 class EnergyGraphWidget;
 class MultiViewWidget;
 
 class MainWindow : public QMainWindow {
 public:
     MainWindow(SimulationConfig config, std::string configPath,
-               std::unique_ptr<grav_client::IClientRuntime> runtime);
+               std::unique_ptr<bltzr_client::IClientRuntime> runtime);
     ~MainWindow() override;
 
 private:
@@ -164,7 +164,7 @@ private:
     void saveWorkspacePreset();
     void loadWorkspacePreset();
     void deleteWorkspacePreset();
-    QString buildValidationText(const grav_config::ScenarioValidationReport& report,
+    QString buildValidationText(const bltzr_config::ScenarioValidationReport& report,
                                 const ThroughputAdvisory& advisory) const;
     bool saveConfigToDisk();
     void showThroughputAdvisory(const ThroughputAdvisory& advisory);
@@ -172,7 +172,7 @@ private:
     void tick();
     SimulationConfig _config;
     std::string _configPath;
-    std::unique_ptr<grav_client::IClientRuntime> _runtime;
+    std::unique_ptr<bltzr_client::IClientRuntime> _runtime;
     QPointer<MultiViewWidget> _multiView;
     QPointer<EnergyGraphWidget> _energyGraph;
     QPointer<QLabel> _validationLabel;
@@ -238,5 +238,5 @@ private:
     bool _configDirty;
     std::chrono::steady_clock::time_point _lastUiTickAt;
 };
-} // namespace grav_qt
-#endif // GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOW_HPP_
+} // namespace bltzr_qt
+#endif // BLITZAR_MODULES_QT_INCLUDE_UI_MAINWINDOW_HPP_

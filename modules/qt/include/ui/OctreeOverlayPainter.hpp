@@ -5,8 +5,8 @@
  * @brief Qt desktop user interface module for simulation control and visualization.
  */
 
-#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_OCTREEOVERLAYPAINTER_HPP_
-#define GRAVITY_MODULES_QT_INCLUDE_UI_OCTREEOVERLAYPAINTER_HPP_
+#ifndef BLITZAR_MODULES_QT_INCLUDE_UI_OCTREEOVERLAYPAINTER_HPP_
+#define BLITZAR_MODULES_QT_INCLUDE_UI_OCTREEOVERLAYPAINTER_HPP_
 /*
  * Module: ui
  * Responsibility: Paint octree overlay cells on top of a particle viewport.
@@ -28,12 +28,12 @@ class QPainter;
  */
 class QRect;
 
-namespace grav_qt {
+namespace bltzr_qt {
 class OctreeOverlayPainter {
 public:
     static void paint(QPainter& painter, const QRect& viewport, grav::ViewMode mode,
                       const grav::CameraState& camera, const std::vector<OctreeOverlayNode>& nodes,
                       float zoom, int opacity);
 };
-} // namespace grav_qt
-#endif // GRAVITY_MODULES_QT_INCLUDE_UI_OCTREEOVERLAYPAINTER_HPP_
+} // namespace bltzr_qt
+#endif // BLITZAR_MODULES_QT_INCLUDE_UI_OCTREEOVERLAYPAINTER_HPP_

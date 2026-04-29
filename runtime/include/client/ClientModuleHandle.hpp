@@ -5,13 +5,13 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEHANDLE_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEHANDLE_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEHANDLE_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEHANDLE_HPP_
 #include <memory>
 #include <string>
 #include <string_view>
 
-namespace grav_module {
+namespace bltzr_module {
 class ClientModuleHandle {
 public:
     ClientModuleHandle();
@@ -32,5 +32,5 @@ private:
     struct Impl;
     std::unique_ptr<Impl> m_impl;
 };
-} // namespace grav_module
-#endif // GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEHANDLE_HPP_
+} // namespace bltzr_module
+#endif // BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEHANDLE_HPP_

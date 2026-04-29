@@ -61,9 +61,9 @@ public:
      * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
      * it.
      */
-    static bool create(const grav_module::ClientHostContextV1* context,
-                       const grav_module::ClientModuleStateSlot& outModuleState,
-                       const grav_client::ErrorBufferView& errorBuffer)
+    static bool create(const bltzr_module::ClientHostContextV1* context,
+                       const bltzr_module::ClientModuleStateSlot& outModuleState,
+                       const bltzr_client::ErrorBufferView& errorBuffer)
     {
         try {
             if (!outModuleState.isAvailable()) {
@@ -75,7 +75,7 @@ public:
                                     ? context->configPath
                                     : "simulation.ini";
             return outModuleState.assign(
-                grav_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
+                bltzr_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
         }
         catch (const std::exception& ex) {
             errorBuffer.write(ex.what());
@@ -94,7 +94,7 @@ public:
      * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
      * it.
      */
-    static void destroy(grav_module::ClientModuleOpaqueState moduleState)
+    static void destroy(bltzr_module::ClientModuleOpaqueState moduleState)
     {
         try {
             std::unique_ptr<EchoState> state(static_cast<EchoState*>(moduleState.rawPointer()));
@@ -115,8 +115,8 @@ public:
      * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
      * it.
      */
-    static bool start(grav_module::ClientModuleOpaqueState moduleState,
-                      const grav_client::ErrorBufferView& errorBuffer)
+    static bool start(bltzr_module::ClientModuleOpaqueState moduleState,
+                      const bltzr_client::ErrorBufferView& errorBuffer)
     {
         try {
             EchoState* state = static_cast<EchoState*>(moduleState.rawPointer());
@@ -147,8 +147,8 @@ public:
      * it.
      */
     static bool handleCommand(std::string_view commandLine,
-                              const grav_module::ClientModuleCommandControl& commandControl,
-                              const grav_client::ErrorBufferView& errorBuffer)
+                              const bltzr_module::ClientModuleCommandControl& commandControl,
+                              const bltzr_client::ErrorBufferView& errorBuffer)
     {
         try {
             commandControl.setContinue();
@@ -174,26 +174,26 @@ public:
     }
 };
 
-extern "C" GRAVITY_CLIENT_MODULE_EXPORT_ATTR const grav_module::ClientModuleExportsV1*
-gravity_client_module_v1()
+extern "C" BLITZAR_CLIENT_MODULE_EXPORT_ATTR const bltzr_module::ClientModuleExportsV1*
+BLITZAR_client_module_v1()
 {
-    static const grav_module::ClientModuleExportsV1 exports{
-        grav_module::kClientModuleApiVersionV1,
+    static const bltzr_module::ClientModuleExportsV1 exports{
+        bltzr_module::kClientModuleApiVersionV1,
         "echo",
-        [](const grav_module::ClientHostContextV1* context, void** outModuleState,
+        [](const bltzr_module::ClientHostContextV1* context, void** outModuleState,
            char* errorBuffer, std::size_t errorBufferSize) -> bool {
             return EchoModuleLocal::create(
-                context, grav_module::ClientModuleStateSlot(outModuleState),
-                grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
+                context, bltzr_module::ClientModuleStateSlot(outModuleState),
+                bltzr_client::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void* moduleState) {
             EchoModuleLocal::destroy(
-                grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
+                bltzr_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
         },
         [](void* moduleState, char* errorBuffer, std::size_t errorBufferSize) -> bool {
             return EchoModuleLocal::start(
-                grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState),
-                grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
+                bltzr_module::ClientModuleOpaqueState::fromRawPointer(moduleState),
+                bltzr_client::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void*) {
             try {
@@ -206,8 +206,8 @@ gravity_client_module_v1()
            std::size_t errorBufferSize) -> bool {
             return EchoModuleLocal::handleCommand(
                 commandLine != nullptr ? std::string_view(commandLine) : std::string_view(),
-                grav_module::ClientModuleCommandControl(outKeepRunning),
-                grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
+                bltzr_module::ClientModuleCommandControl(outKeepRunning),
+                bltzr_client::ErrorBufferView(errorBuffer, errorBufferSize));
         }};
     return &exports;
 }

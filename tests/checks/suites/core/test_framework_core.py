@@ -130,6 +130,7 @@ def test_result_reporter_handles_success(capsys) -> None:
 def test_check_catalog_exposes_expected_sequences() -> None:
     assert load_check_sequences()["all"] == ["ini", "mirror", "no_legacy", "quality", "test_catalog", "pr_policy", "repo"]
     assert "python_quality" in load_check_registry()
+    assert "cpp_api_docs" in load_check_registry()
 
 
 # @brief Documents the test command catalog includes expected dispatch entries operation contract.

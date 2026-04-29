@@ -5,15 +5,15 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDTYPES_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDTYPES_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDTYPES_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDTYPES_HPP_
 #include <cstddef>
 #include <cstdint>
 #include <string>
 #include <variant>
 #include <vector>
 
-namespace grav_cmd {
+namespace bltzr_cmd {
 enum class CommandId {
     Help,
     LoadConfig,
@@ -85,5 +85,5 @@ struct CommandResult final {
     bool ok = false;
     std::string message;
 };
-} // namespace grav_cmd
-#endif // GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDTYPES_HPP_
+} // namespace bltzr_cmd
+#endif // BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDTYPES_HPP_

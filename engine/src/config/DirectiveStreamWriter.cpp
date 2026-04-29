@@ -9,7 +9,7 @@
 #include "config/DirectiveValueFormatter.hpp"
 #include <ostream>
 
-namespace grav_config {
+namespace bltzr_config {
 DirectiveStreamWriter::DirectiveStreamWriter(std::ostream& out, std::string_view name)
     : _out(out), _hasField(false)
 {
@@ -65,4 +65,4 @@ void DirectiveStreamWriter::writeKey(std::string_view key)
     _out << key << "=";
     _hasField = true;
 }
-} // namespace grav_config
+} // namespace bltzr_config

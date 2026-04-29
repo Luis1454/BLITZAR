@@ -11,7 +11,7 @@
 #include <cmath>
 #include <sstream>
 
-namespace grav_qt {
+namespace bltzr_qt {
 class ThroughputAdvisorLocal final {
 public:
     static std::uint32_t estimateSubsteps(const SimulationConfig& config)
@@ -102,4 +102,4 @@ ThroughputAdvisory ThroughputAdvisor::evaluate(const SimulationConfig& config,
     advisory.statusBarText = advisory.summary + ". Try: " + advisory.action + ".";
     return advisory;
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

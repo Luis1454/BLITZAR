@@ -12,7 +12,7 @@
 #include <cstddef>
 #include <utility>
 
-namespace grav_qt {
+namespace bltzr_qt {
 MultiViewWidget::MultiViewWidget()
     : QWidget(nullptr),
       _xy(new ParticleView(grav::ViewMode::XY)),
@@ -194,4 +194,4 @@ void MultiViewWidget::rebuildOctreeOverlay()
     }
     _octreeOverlay = OctreeOverlay::build(_snapshot, _octreeOverlayDepth);
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

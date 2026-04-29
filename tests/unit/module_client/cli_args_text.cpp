@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-namespace grav_test_client_host_args_text {
+namespace bltzr_test_client_host_args_text {
 std::vector<char*> makeArgv(std::vector<std::string>& storage)
 {
     std::vector<char*> argv;
@@ -29,40 +29,40 @@ std::vector<char*> makeArgv(std::vector<std::string>& storage)
 
 TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_001_ParseArgsDefaultsAndVariants)
 {
-    grav_client_host::HostOptions options{};
+    bltzr_client_host::HostOptions options{};
     std::string error;
     {
         std::vector<std::string> raw = {"host"};
         std::vector<char*> argv = makeArgv(raw);
-        ASSERT_TRUE(grav_client_host::ClientHostCliArgs::parseArgs(static_cast<int>(argv.size()),
-                                                                   argv.data(), options, error));
+        ASSERT_TRUE(bltzr_client_host::ClientHostCliArgs::parseArgs(static_cast<int>(argv.size()),
+                                                                    argv.data(), options, error));
         EXPECT_EQ(options.configPath, "simulation.ini");
-        EXPECT_EQ(options.moduleSpecifier, "cli");
+        EXPECT_EQ(options.moduleSpecifier, "qt");
         EXPECT_FALSE(options.showHelp);
     }
     {
         std::vector<std::string> raw = {"host", "--config=my.ini", "--module",
                                         "qt",   "--validate-only", "--script=batch.dsl"};
         std::vector<char*> argv = makeArgv(raw);
-        ASSERT_TRUE(grav_client_host::ClientHostCliArgs::parseArgs(static_cast<int>(argv.size()),
-                                                                   argv.data(), options, error));
+        ASSERT_TRUE(bltzr_client_host::ClientHostCliArgs::parseArgs(static_cast<int>(argv.size()),
+                                                                    argv.data(), options, error));
         EXPECT_EQ(options.configPath, "my.ini");
         EXPECT_EQ(options.moduleSpecifier, "qt");
         EXPECT_TRUE(options.validateOnly);
         EXPECT_EQ(options.scriptPath, "batch.dsl");
-        EXPECT_FALSE(options.waitForModule);
+        EXPECT_FALSE(options.exitAfterModule);
     }
     {
-        std::vector<std::string> raw = {"host", "--module=qt", "--wait-for-module"};
+        std::vector<std::string> raw = {"host", "--module=qt", "--exit"};
         std::vector<char*> argv = makeArgv(raw);
-        ASSERT_TRUE(grav_client_host::ClientHostCliArgs::parseArgs(static_cast<int>(argv.size()),
-                                                                   argv.data(), options, error));
+        ASSERT_TRUE(bltzr_client_host::ClientHostCliArgs::parseArgs(static_cast<int>(argv.size()),
+                                                                    argv.data(), options, error));
         EXPECT_EQ(options.moduleSpecifier, "qt");
-        EXPECT_TRUE(options.waitForModule);
+        EXPECT_TRUE(options.exitAfterModule);
     }
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path = std::filesystem::temp_directory_path() /
-                                       ("gravity_validate_only_" + std::to_string(stamp) + ".ini");
+                                       ("BLITZAR_validate_only_" + std::to_string(stamp) + ".ini");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
@@ -70,12 +70,12 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_001_ParseArgsDefaultsAndVariants)
         out << "init_config_style=detailed\n";
         out << "init_mode=file\n";
     }
-    grav_client_host::HostOptions validateOnly{};
+    bltzr_client_host::HostOptions validateOnly{};
     validateOnly.configPath = path.string();
     validateOnly.validateOnly = true;
     std::ostringstream output;
     std::streambuf* previous = std::cout.rdbuf(output.rdbuf());
-    const int exitCode = grav_client_host::ClientHostCli::run(validateOnly, "blitzar-client");
+    const int exitCode = bltzr_client_host::ClientHostCli::run(validateOnly, "blitzar-client");
     std::cout.rdbuf(previous);
     EXPECT_EQ(exitCode, 3);
     EXPECT_NE(output.str().find("[preflight] blocked"), std::string::npos);
@@ -85,19 +85,19 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_001_ParseArgsDefaultsAndVariants)
 
 TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_002_ParseArgsRejectsUnknownArgument)
 {
-    grav_client_host::HostOptions options{};
+    bltzr_client_host::HostOptions options{};
     std::string error;
     std::vector<std::string> raw = {"host", "--bad-arg"};
     std::vector<char*> argv = makeArgv(raw);
-    ASSERT_FALSE(grav_client_host::ClientHostCliArgs::parseArgs(static_cast<int>(argv.size()),
-                                                                argv.data(), options, error));
+    ASSERT_FALSE(bltzr_client_host::ClientHostCliArgs::parseArgs(static_cast<int>(argv.size()),
+                                                                 argv.data(), options, error));
     EXPECT_NE(error.find("unknown argument"), std::string::npos);
 }
 
 TEST(ClientHostCliTextTest, TST_UNT_MODHOST_003_SplitTokensPreservesQuotedSegments)
 {
     const std::vector<std::string> tokens =
-        grav_client_host::ClientHostCliText::splitTokens("switch \"qt inproc\" 'cli mode'");
+        bltzr_client_host::ClientHostCliText::splitTokens("switch \"qt inproc\" 'cli mode'");
     ASSERT_EQ(tokens.size(), 3u);
     EXPECT_EQ(tokens[0], "switch");
     EXPECT_EQ(tokens[1], "qt inproc");
@@ -106,10 +106,10 @@ TEST(ClientHostCliTextTest, TST_UNT_MODHOST_003_SplitTokensPreservesQuotedSegmen
 
 TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_007_AliasResolutionReturnsExpectedModuleId)
 {
-    EXPECT_EQ(grav_client_host::ClientHostModuleOps::expectedModuleIdForSpecifier("qt"), "qt");
-    EXPECT_EQ(grav_client_host::ClientHostModuleOps::expectedModuleIdForSpecifier("CLI"), "cli");
+    EXPECT_EQ(bltzr_client_host::ClientHostModuleOps::expectedModuleIdForSpecifier("qt"), "qt");
+    EXPECT_EQ(bltzr_client_host::ClientHostModuleOps::expectedModuleIdForSpecifier("CLI"), "cli");
     EXPECT_TRUE(
-        grav_client_host::ClientHostModuleOps::expectedModuleIdForSpecifier("plugins/custom.dll")
+        bltzr_client_host::ClientHostModuleOps::expectedModuleIdForSpecifier("plugins/custom.dll")
             .empty());
 }
 
@@ -117,10 +117,10 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_008_HelpReflectsProfileReloadPolicy)
 {
     std::ostringstream buffer;
     std::streambuf* previous = std::cout.rdbuf(buffer.rdbuf());
-    grav_client_host::ClientHostCliArgs::printHelp("blitzar-client");
+    bltzr_client_host::ClientHostCliArgs::printHelp("blitzar-client");
     std::cout.rdbuf(previous);
     const std::string rendered = buffer.str();
-    if (grav_client_host::ClientHostCli::liveReloadEnabled()) {
+    if (bltzr_client_host::ClientHostCli::liveReloadEnabled()) {
         EXPECT_NE(rendered.find("reload\n"), std::string::npos);
         EXPECT_NE(rendered.find("switch <module_alias_or_path>\n"), std::string::npos);
     }
@@ -138,21 +138,21 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_011_BatchScriptRunsDeterministicHelp
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path = std::filesystem::temp_directory_path() /
-                                       ("gravity_batch_" + std::to_string(stamp) + ".dsl");
+                                       ("BLITZAR_batch_" + std::to_string(stamp) + ".dsl");
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
         out << "help\n";
     }
-    grav_client_host::HostOptions options{};
+    bltzr_client_host::HostOptions options{};
     options.scriptPath = path.string();
     std::ostringstream output;
     std::streambuf* previousOut = std::cout.rdbuf(output.rdbuf());
-    const int exitCode = grav_client_host::ClientHostCli::run(options, "blitzar-client");
+    const int exitCode = bltzr_client_host::ClientHostCli::run(options, "blitzar-client");
     std::cout.rdbuf(previousOut);
     EXPECT_EQ(exitCode, 0);
     EXPECT_NE(output.str().find("load_config"), std::string::npos);
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
-} // namespace grav_test_client_host_args_text
+} // namespace bltzr_test_client_host_args_text

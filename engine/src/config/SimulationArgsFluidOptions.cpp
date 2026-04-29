@@ -23,6 +23,6 @@ bool SimulationArgsFluidOptions::apply(const std::string& key, const std::string
                                        std::ostream& warnings)
 {
     static_cast<void>(runtime);
-    return grav_config::applyCliOption(grav_config::SimulationOptionGroup::Fluid, key, value,
-                                       config, warnings);
+    return bltzr_config::applyCliOption(bltzr_config::SimulationOptionGroup::Fluid, key, value,
+                                        config, warnings);
 }

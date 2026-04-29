@@ -5,8 +5,8 @@
  * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_GPU_HPP_
-#define GRAVITY_ENGINE_INCLUDE_PHYSICS_GPU_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_PHYSICS_GPU_HPP_
+#define BLITZAR_ENGINE_INCLUDE_PHYSICS_GPU_HPP_
 #include "physics/ParticleSystem.hpp"
 #include <vector>
 
@@ -15,4 +15,4 @@ void initializeParticles(std::vector<Particle>& particles);
 void destroyParticles(std::vector<Particle>& particles);
 void callUpdateParticles(std::vector<Particle>& particles, float deltaTime);
 } // namespace gpu
-#endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_GPU_HPP_
+#endif // BLITZAR_ENGINE_INCLUDE_PHYSICS_GPU_HPP_

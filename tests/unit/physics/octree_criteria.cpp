@@ -18,7 +18,7 @@
 #include <string>
 #include <vector>
 
-namespace grav_test_octree_criteria {
+namespace bltzr_test_octree_criteria {
 Vector3 pairwiseAcceleration(const std::vector<Particle>& particles, std::size_t selfIndex,
                              const ForceLawPolicy& policy)
 {
@@ -66,7 +66,7 @@ std::filesystem::path writeOctreeServerConfig()
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() /
-        ("gravity_octree_criteria_server_" + std::to_string(stamp) + ".ini");
+        ("BLITZAR_octree_criteria_server_" + std::to_string(stamp) + ".ini");
     SimulationConfig config = SimulationConfig::defaults();
     config.particleCount = 16u;
     config.dt = 0.005f;
@@ -86,11 +86,11 @@ std::filesystem::path writeOctreeServerConfig()
     EXPECT_TRUE(saved);
     return path;
 }
-} // namespace grav_test_octree_criteria
+} // namespace bltzr_test_octree_criteria
 
 TEST(PhysicsTest, TST_UNT_PHYS_019_BoundsCriterionIsMoreConservativeThanComCriterion)
 {
-    const std::vector<Particle> particles = grav_test_octree_criteria::buildCriterionScenario();
+    const std::vector<Particle> particles = bltzr_test_octree_criteria::buildCriterionScenario();
     Octree octree;
     octree.build(particles);
     const float theta = 0.9f;
@@ -101,19 +101,19 @@ TEST(PhysicsTest, TST_UNT_PHYS_019_BoundsCriterionIsMoreConservativeThanComCrite
     const ForceLawPolicy policy =
         resolveForceLawPolicy(theta, softening, minSoftening, minDistance2, minTheta);
     const Vector3 reference =
-        grav_test_octree_criteria::pairwiseAcceleration(particles, 0u, policy);
+        bltzr_test_octree_criteria::pairwiseAcceleration(particles, 0u, policy);
     const Vector3 comForce =
         octree.computeForceOn(particles[0], 0u, policy, OctreeOpeningCriterion::CenterOfMass);
     const Vector3 boundsForce =
         octree.computeForceOn(particles[0], 0u, policy, OctreeOpeningCriterion::Bounds);
-    const float comError = grav_test_octree_criteria::magnitude(reference - comForce);
-    const float boundsError = grav_test_octree_criteria::magnitude(reference - boundsForce);
+    const float comError = bltzr_test_octree_criteria::magnitude(reference - comForce);
+    const float boundsError = bltzr_test_octree_criteria::magnitude(reference - boundsForce);
     EXPECT_LE(boundsError, comError + 1.0e-6f);
 }
 
 TEST(PhysicsTest, TST_UNT_RUNT_006_ServerLogsOctreeCriterionAndAutoThetaMetrics)
 {
-    const std::filesystem::path path = grav_test_octree_criteria::writeOctreeServerConfig();
+    const std::filesystem::path path = bltzr_test_octree_criteria::writeOctreeServerConfig();
     SimulationServer server(path.string());
     server.setPaused(true);
     server.start();

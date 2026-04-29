@@ -163,6 +163,50 @@ bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t part
         }
         return outParticles.size() >= 2;
     }
+    if (mode == "cube_random") {
+        const float halfExtent = std::max(0.01f, config.cubeHalfExtent);
+        const float cloudSpeed = std::max(0.0f, config.cloudSpeed);
+        const float particleMass = std::max(1e-6f, config.particleMass);
+        std::uniform_real_distribution<float> posDist(-halfExtent, halfExtent);
+        std::uniform_real_distribution<float> velDist(-cloudSpeed, cloudSpeed);
+        addCentralBody();
+        while (outParticles.size() < count) {
+            Particle p;
+            p.setMass(particleMass);
+            p.setPosition(Vector3(centralPos.x + posDist(rng), centralPos.y + posDist(rng),
+                                  centralPos.z + posDist(rng)));
+            p.setVelocity(Vector3(centralVel.x + velDist(rng), centralVel.y + velDist(rng),
+                                  centralVel.z + velDist(rng)));
+            finalizeParticle(p);
+            outParticles.push_back(p);
+        }
+        return outParticles.size() >= 2;
+    }
+    if (mode == "sphere_random") {
+        const float radius = std::max(0.01f, config.sphereRadius);
+        const float cloudSpeed = std::max(0.0f, config.cloudSpeed);
+        const float particleMass = std::max(1e-6f, config.particleMass);
+        const float radius2 = radius * radius;
+        std::uniform_real_distribution<float> posDist(-radius, radius);
+        std::uniform_real_distribution<float> velDist(-cloudSpeed, cloudSpeed);
+        addCentralBody();
+        while (outParticles.size() < count) {
+            const float x = posDist(rng);
+            const float y = posDist(rng);
+            const float z = posDist(rng);
+            if (x * x + y * y + z * z > radius2) {
+                continue;
+            }
+            Particle p;
+            p.setMass(particleMass);
+            p.setPosition(Vector3(centralPos.x + x, centralPos.y + y, centralPos.z + z));
+            p.setVelocity(Vector3(centralVel.x + velDist(rng), centralVel.y + velDist(rng),
+                                  centralVel.z + velDist(rng)));
+            finalizeParticle(p);
+            outParticles.push_back(p);
+        }
+        return outParticles.size() >= 2;
+    }
     if (mode == "galaxy_collision") {
         const float size = std::max(0.1f, config.cloudHalfExtent);
         const float galaxySeparation = size * 1.5f;
@@ -288,8 +332,8 @@ bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t part
         const float enclosedFraction = std::clamp((r * r - radiusMin2) / radiusRange2, 0.0f, 1.0f);
         const float enclosedMass =
             std::max(1e-6f, effectiveCentralMass + effectiveDiskMass * enclosedFraction);
-        const float gravityAccel = enclosedMass / std::max(r * r, 1e-6f);
-        const float cappedAccel = std::min(gravityAccel, kSolverMaxAcceleration);
+        const float blitzarAccel = enclosedMass / std::max(r * r, 1e-6f);
+        const float cappedAccel = std::min(blitzarAccel, kSolverMaxAcceleration);
         const float orbitalSpeed = std::sqrt(cappedAccel * std::max(r, 1e-4f)) * velocityScale;
         Vector3 tangent(-std::sin(angle), std::cos(angle), 0.0f);
         tangent = tangent * orbitalSpeed;

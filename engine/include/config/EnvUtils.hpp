@@ -5,8 +5,8 @@
  * @brief Public configuration interfaces and validation contracts for simulation setup.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_ENVUTILS_HPP_
-#define GRAVITY_ENGINE_INCLUDE_CONFIG_ENVUTILS_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_CONFIG_ENVUTILS_HPP_
+#define BLITZAR_ENGINE_INCLUDE_CONFIG_ENVUTILS_HPP_
 #include "config/TextParse.hpp"
 #include <algorithm>
 #include <cctype>
@@ -15,7 +15,7 @@
 #include <string>
 #include <string_view>
 
-namespace grav_env {
+namespace bltzr_env {
 std::optional<std::string> get(std::string_view name);
 bool parseBool(std::string_view value, bool fallback);
 bool getBool(std::string_view name, bool fallback);
@@ -30,5 +30,5 @@ extern template bool getNumber<long long>(std::string_view name, long long& out)
 extern template bool getNumber<unsigned long long>(std::string_view name, unsigned long long& out);
 extern template bool getNumber<float>(std::string_view name, float& out);
 extern template bool getNumber<double>(std::string_view name, double& out);
-} // namespace grav_env
-#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_ENVUTILS_HPP_
+} // namespace bltzr_env
+#endif // BLITZAR_ENGINE_INCLUDE_CONFIG_ENVUTILS_HPP_

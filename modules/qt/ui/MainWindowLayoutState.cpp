@@ -3,8 +3,8 @@
  * @brief Helper definitions for MainWindow control initialization.
  */
 
-#include "ui/MainWindow.hpp"
 #include "ui/EnergyGraphWidget.hpp"
+#include "ui/MainWindow.hpp"
 #include "ui/MultiViewWidget.hpp"
 #include "ui/UiEnums.hpp"
 #include <QCheckBox>
@@ -18,11 +18,11 @@
 #include <QStringList>
 #include <algorithm>
 
-namespace grav_qt {
+namespace bltzr_qt {
 
 static const QStringList kSolverList = {QString::fromStdString(to_string(Solver::PairwiseCuda)),
-                                       QString::fromStdString(to_string(Solver::OctreeGpu)),
-                                       QString::fromStdString(to_string(Solver::OctreeCpu))};
+                                        QString::fromStdString(to_string(Solver::OctreeGpu)),
+                                        QString::fromStdString(to_string(Solver::OctreeCpu))};
 static const QStringList kIntegratorList = {QString::fromStdString(to_string(Integrator::Euler)),
                                             QString::fromStdString(to_string(Integrator::Rk4))};
 static const QStringList kPerformanceList = {
@@ -229,4 +229,4 @@ void MainWindow::initializeLabelsAndTooltips()
         _gpuMetricsLabel->setObjectName("runtimeSummaryValue");
 }
 
-} // namespace grav_qt
+} // namespace bltzr_qt

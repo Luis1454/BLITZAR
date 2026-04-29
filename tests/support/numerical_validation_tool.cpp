@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-namespace grav_test_numerics_tool {
+namespace bltzr_test_numerics_tool {
 struct ToolOptions {
     std::string preset;
     std::string solver;
@@ -42,16 +42,16 @@ void writeVector(std::ostream& out, const std::string& name, const std::array<fl
 {
     out << name << "=" << value[0] << "," << value[1] << "," << value[2] << "\n";
 }
-} // namespace grav_test_numerics_tool
+} // namespace bltzr_test_numerics_tool
 
-namespace grav_test_numerics {
-bool parseArgs(int argc, const char* const* argv, grav_test_numerics_tool::ToolOptions& out,
+namespace bltzr_test_numerics {
+bool parseArgs(int argc, const char* const* argv, bltzr_test_numerics_tool::ToolOptions& out,
                std::string& error)
 {
     for (int index = 1; index < argc; index += 1) {
         const std::string arg(argv[index]);
         if (arg == "--help") {
-            error = "usage: gravityNumericalValidationTool --preset <name> --solver <solver>";
+            error = "usage: blitzarNumericalValidationTool --preset <name> --solver <solver>";
             return false;
         }
         if (index + 1 >= argc) {
@@ -78,8 +78,8 @@ bool parseArgs(int argc, const char* const* argv, grav_test_numerics_tool::ToolO
     return true;
 }
 
-bool applyPreset(const grav_test_numerics_tool::ToolOptions& options,
-                 grav_test_numerics_tool::PresetConfig& out, std::string& error)
+bool applyPreset(const bltzr_test_numerics_tool::ToolOptions& options,
+                 bltzr_test_numerics_tool::PresetConfig& out, std::string& error)
 {
     testsupport::ScenarioConfig cfg;
     cfg.solver = options.solver;
@@ -180,13 +180,13 @@ bool applyPreset(const grav_test_numerics_tool::ToolOptions& options,
 int NumericalValidationTool::run(int argc, const char* const* argv, std::ostream& out,
                                  std::ostream& err) const
 {
-    grav_test_numerics_tool::ToolOptions options;
+    bltzr_test_numerics_tool::ToolOptions options;
     std::string error;
     if (!parseArgs(argc, argv, options, error)) {
         err << error << "\n";
         return error.rfind("usage:", 0) == 0 ? 0 : 1;
     }
-    grav_test_numerics_tool::PresetConfig preset;
+    bltzr_test_numerics_tool::PresetConfig preset;
     if (!applyPreset(options, preset, error)) {
         err << error << "\n";
         return 1;
@@ -214,11 +214,11 @@ int NumericalValidationTool::run(int argc, const char* const* argv, std::ostream
     out << "thermal_energy=" << result.stats.thermalEnergy << "\n";
     out << "radiated_energy=" << result.stats.radiatedEnergy << "\n";
     out << "center_of_mass_drift="
-        << grav_test_numerics_tool::centerOfMassDrift(result.initial, result.final) << "\n";
-    grav_test_numerics_tool::writeVector(out, "initial_center_of_mass",
-                                         testsupport::centerOfMassAll(result.initial));
-    grav_test_numerics_tool::writeVector(out, "final_center_of_mass",
-                                         testsupport::centerOfMassAll(result.final));
+        << bltzr_test_numerics_tool::centerOfMassDrift(result.initial, result.final) << "\n";
+    bltzr_test_numerics_tool::writeVector(out, "initial_center_of_mass",
+                                          testsupport::centerOfMassAll(result.initial));
+    bltzr_test_numerics_tool::writeVector(out, "final_center_of_mass",
+                                          testsupport::centerOfMassAll(result.final));
     if (options.preset == "disk_solver_parity" || result.final.size() <= 8u) {
         for (std::size_t index = 0; index < result.final.size(); index += 1u) {
             const RenderParticle& particle = result.final[index];
@@ -228,4 +228,4 @@ int NumericalValidationTool::run(int argc, const char* const* argv, std::ostream
     }
     return 0;
 }
-} // namespace grav_test_numerics
+} // namespace bltzr_test_numerics

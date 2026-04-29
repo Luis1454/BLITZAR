@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-namespace grav_qt {
+namespace bltzr_qt {
 static QFrame* makeSummaryCard(QWidget* parent, const QString& title, QLabel* content)
 {
     auto* card = new QFrame(parent);
@@ -102,14 +102,15 @@ void MainWindow::tick()
     }
     std::size_t snapshotSize = 0u;
     std::uint32_t consumedSnapshotLatencyMs = std::numeric_limits<std::uint32_t>::max();
-    std::optional<grav_client::ConsumedSnapshot> consumedSnapshot =
+    std::optional<bltzr_client::ConsumedSnapshot> consumedSnapshot =
         _runtime->consumeLatestSnapshot();
     const bool gotSnapshot = consumedSnapshot.has_value();
-    if (gotSnapshot)
+    if (gotSnapshot) {
         snapshotSize = consumedSnapshot->sourceSize;
-    consumedSnapshotLatencyMs = consumedSnapshot->latencyMs;
-    snapshot = std::move(consumedSnapshot->particles);
-    const grav_client::SnapshotPipelineState snapshotPipeline = _runtime->snapshotPipelineState();
+        consumedSnapshotLatencyMs = consumedSnapshot->latencyMs;
+        snapshot = std::move(consumedSnapshot->particles);
+    }
+    const bltzr_client::SnapshotPipelineState snapshotPipeline = _runtime->snapshotPipelineState();
     const std::string linkLabel = _runtime->linkStateLabel();
     const std::string ownerLabel = _runtime->serverOwnerLabel();
     const std::uint32_t statsAgeMs = _runtime->statsAgeMs();
@@ -158,4 +159,4 @@ void MainWindow::tick()
         lastConsoleTrace = now;
     }
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

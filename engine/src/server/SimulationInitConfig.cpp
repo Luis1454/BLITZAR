@@ -35,9 +35,10 @@ std::string toLowerInitConfig(std::string value)
  */
 static bool isSupportedInitMode(const std::string& value)
 {
-    return value == "disk_orbit" || value == "random_cloud" || value == "two_body" ||
-           value == "three_body" || value == "plummer_sphere" || value == "galaxy_collision" ||
-           value == "solar_system" || value == "sph_collapse" || value == "file";
+    return value == "disk_orbit" || value == "random_cloud" || value == "cube_random" ||
+           value == "sphere_random" || value == "two_body" || value == "three_body" ||
+           value == "plummer_sphere" || value == "galaxy_collision" || value == "solar_system" ||
+           value == "sph_collapse" || value == "file";
 }
 
 /*
@@ -167,6 +168,38 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config,
             init.centralVy = 0.0f;
             init.centralVz = 0.0f;
             init.cloudHalfExtent = size;
+            init.cubeHalfExtent = size;
+            init.sphereRadius = size;
+            init.cloudSpeed = 0.0f;
+            init.particleMass = std::max(1e-6f, 1.0f / static_cast<float>(std::max<std::uint32_t>(
+                                                           2u, config.particleCount)));
+        }
+        else if (resolvedMode == "cube_random") {
+            init.includeCentralBody = false;
+            init.centralMass = 1.0f;
+            init.centralX = 0.0f;
+            init.centralY = 0.0f;
+            init.centralZ = 0.0f;
+            init.centralVx = 0.0f;
+            init.centralVy = 0.0f;
+            init.centralVz = 0.0f;
+            init.cubeHalfExtent = size;
+            init.cloudHalfExtent = size;
+            init.cloudSpeed = 0.0f;
+            init.particleMass = std::max(1e-6f, 1.0f / static_cast<float>(std::max<std::uint32_t>(
+                                                           2u, config.particleCount)));
+        }
+        else if (resolvedMode == "sphere_random") {
+            init.includeCentralBody = false;
+            init.centralMass = 1.0f;
+            init.centralX = 0.0f;
+            init.centralY = 0.0f;
+            init.centralZ = 0.0f;
+            init.centralVx = 0.0f;
+            init.centralVy = 0.0f;
+            init.centralVz = 0.0f;
+            init.sphereRadius = size;
+            init.cloudHalfExtent = size;
             init.cloudSpeed = 0.0f;
             init.particleMass = std::max(1e-6f, 1.0f / static_cast<float>(std::max<std::uint32_t>(
                                                            2u, config.particleCount)));
@@ -232,6 +265,8 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config,
         init.diskThickness = config.initDiskThickness;
         init.velocityScale = config.initVelocityScale;
         init.cloudHalfExtent = config.initCloudHalfExtent;
+        init.cubeHalfExtent = config.initCubeHalfExtent;
+        init.sphereRadius = config.initSphereRadius;
         init.cloudSpeed = config.initCloudSpeed;
         init.particleMass = config.initParticleMass;
     }
