@@ -36,7 +36,7 @@ TEST(ScenarioValidationInitModesTest,
 }
 
 TEST(ScenarioValidationInitModesTest,
-     TST_UNT_CONF_068_DetailedCubeRandomValidatesGeneratedMassAndExtent)
+     TST_UNT_CONF_092_DetailedCubeRandomValidatesGeneratedMassAndExtent)
 {
     SimulationConfig config;
     config.initConfigStyle = "detailed";
@@ -52,7 +52,7 @@ TEST(ScenarioValidationInitModesTest,
 }
 
 TEST(ScenarioValidationInitModesTest,
-     TST_UNT_CONF_069_DetailedSphereRandomValidatesGeneratedMassAndRadius)
+     TST_UNT_CONF_093_DetailedSphereRandomValidatesGeneratedMassAndRadius)
 {
     SimulationConfig config;
     config.initConfigStyle = "detailed";

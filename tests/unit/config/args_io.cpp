@@ -214,7 +214,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_018_LoadSupportsRegistryAliases)
     std::filesystem::remove(path, ec);
 }
 
-TEST(ConfigArgsTest, TST_UNT_CONF_024_LoadSupportsCubeSphereInitFields)
+TEST(ConfigArgsTest, TST_UNT_CONF_091_LoadSupportsCubeSphereInitFields)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =

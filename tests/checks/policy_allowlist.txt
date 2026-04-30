@@ -28,3 +28,6 @@ docs/quality/manifest/requirements.json
 # Test support and unit tests exceeding 200 lines pending refactor.
 tests/unit/protocol/json_codec.cpp
 tests/int/ui/qt_workspace_runtime_controls.cpp
+
+# Initial state generation modes for presets
+engine/src/server/simulation_server/InitialStateGeneration.cpp

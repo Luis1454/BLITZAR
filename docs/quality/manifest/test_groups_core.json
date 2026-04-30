@@ -411,6 +411,26 @@
             "TST-UNT-CONF-088": {
                 "id": "ConfigInitPlanEdgesTest.TST_UNT_CONF_088_PresetPlummerSphereComputesParticleMassFromCount",
                 "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-089": {
+                "id": "ConfigInitPlanEdgesTest.TST_UNT_CONF_089_PresetCubeRandomUsesPresetSizeAsCubeExtent",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-090": {
+                "id": "ConfigInitPlanEdgesTest.TST_UNT_CONF_090_DetailedSphereRandomKeepsConfiguredRadius",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-091": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_091_LoadSupportsCubeSphereInitFields",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-092": {
+                "id": "ScenarioValidationInitModesTest.TST_UNT_CONF_092_DetailedCubeRandomValidatesGeneratedMassAndExtent",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-093": {
+                "id": "ScenarioValidationInitModesTest.TST_UNT_CONF_093_DetailedSphereRandomValidatesGeneratedMassAndRadius",
+                "req_ids": [ "REQ-CONF-002" ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_PROFILE": {
@@ -1011,6 +1031,12 @@
             },
             "TST-UIX-UI-020": {
                 "id": "QtWorkspaceRuntimeControlsTest.TST_UIX_UI_020_OctreeOverlayControlsUpdateWorkspaceView",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UIX-UI-021": {
+                "id": "QtWorkspaceRuntimeControlsTest.TST_UIX_UI_021_TickSurvivesMissingSnapshot",
                 "req_ids": [
                     "REQ-UI-001"
                 ]

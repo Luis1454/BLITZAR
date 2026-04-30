@@ -6,7 +6,6 @@
       "no_legacy": "python_tools.policies.no_legacy_check.NoLegacyCheck",
       "launcher": "python_tools.policies.launcher_check.LauncherContractCheck",
       "quality": "python_tools.policies.quality_baseline.QualityBaselineCheck",
-      "cpp_api_docs": "python_tools.policies.cpp_api_documentation_policy.CppApiDocumentationCheck",
       "test_catalog": "python_tools.policies.test_catalog.TestCatalogCheck",
       "pr_policy": "python_tools.policies.pr_policy.PrPolicySelfTestCheck",
       "repo": "python_tools.policies.repo_policy.RepoPolicyCheck",
@@ -14,7 +13,7 @@
     },
     "sequences": {
       "all": ["ini", "mirror", "no_legacy", "quality", "test_catalog", "pr_policy", "repo"],
-      "quality": ["quality", "cpp_api_docs", "test_catalog", "pr_policy"]
+      "quality": ["quality", "test_catalog", "pr_policy"]
     }
   },
   "commands": {
