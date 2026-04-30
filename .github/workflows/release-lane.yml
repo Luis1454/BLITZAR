@@ -210,49 +210,49 @@ jobs:
           python scripts/ci/release/package_source.py --repo-root . --dist-dir dist/source --tag "${{ env.RELEASE_TAG }}" --ref HEAD
 
       - name: Upload release bundle
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: release-bundle-${{ env.RELEASE_TAG }}
           path: dist/release-bundle/*.zip
           if-no-files-found: error
 
       - name: Upload desktop GUI installer
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: desktop-installer-${{ env.RELEASE_TAG }}
           path: dist/desktop-installer/*.exe
           if-no-files-found: error
 
       - name: Upload source archive
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: release-source-${{ env.RELEASE_TAG }}
           path: dist/source/*.zip
           if-no-files-found: error
 
       - name: Upload tool qualification manifest
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: tool-qualification-release-${{ env.RELEASE_TAG }}
           path: dist/tool-qualification/tool_manifest.json
           if-no-files-found: error
 
       - name: Upload release SBOM
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: release-sbom-${{ env.RELEASE_TAG }}
           path: dist/release-sbom/*.json
           if-no-files-found: error
 
       - name: Upload release evidence pack
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: release-evidence-${{ env.RELEASE_TAG }}
           path: dist/evidence-pack/*.zip
           if-no-files-found: error
 
       - name: Upload release quality index
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: release-quality-index-${{ env.RELEASE_TAG }}
           path: dist/release-quality-index/*.zip
@@ -260,7 +260,7 @@ jobs:
 
       - name: Upload logs
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: release-lane-logs-${{ github.run_number }}
           path: |
