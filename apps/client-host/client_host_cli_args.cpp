@@ -30,6 +30,10 @@ public:
                 outOptions.exitAfterModule = true;
                 continue;
             }
+            if (arg == "--wait-for-module") {
+                outOptions.waitForModule = true;
+                continue;
+            }
             if (arg == "--script" && i + 1 < argc) {
                 outOptions.scriptPath = argv[++i];
                 continue;
@@ -64,7 +68,7 @@ public:
     {
         std::cout << "Usage: " << programName
                   << " [--config PATH] [--module <alias|path>] [--script PATH] [--validate-only]"
-                     " [--exit]\n"
+                     " [--exit] [--wait-for-module]\n"
                   << "[client-host] commands:\n"
                   << "  help\n"
                   << "  modules\n"
@@ -76,7 +80,9 @@ public:
                   << "[client-host] --script runs deterministic batch commands and exits.\n"
                   << "[client-host] --validate-only runs scenario pre-flight checks and exits "
                      "without starting a module.\n"
-                  << "[client-host] --exit exits when module closes (default: wait for GUI).\n";
+                  << "[client-host] --exit exits when module closes (default: wait for GUI).\n"
+                  << "[client-host] --wait-for-module blocks until the module is ready before "
+                     "forwarding commands.\n";
         if (ClientHostCli::liveReloadEnabled()) {
             std::cout << "  reload\n"
                       << "  switch <module_alias_or_path>\n"
