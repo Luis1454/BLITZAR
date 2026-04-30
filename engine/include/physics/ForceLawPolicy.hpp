@@ -5,13 +5,13 @@
  * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_FORCELAWPOLICY_HPP_
-#define GRAVITY_ENGINE_INCLUDE_PHYSICS_FORCELAWPOLICY_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_PHYSICS_FORCELAWPOLICY_HPP_
+#define BLITZAR_ENGINE_INCLUDE_PHYSICS_FORCELAWPOLICY_HPP_
 
 /*
  * Module: physics
  * Responsibility: Normalize the canonical force-law clamps shared by all
- * gravity solvers.
+ * blitzar solvers.
  */
 /*
  * @brief Defines the force law policy type contract.
@@ -39,4 +39,4 @@ struct ForceLawPolicy {
  */
 ForceLawPolicy resolveForceLawPolicy(float theta, float softening, float minSoftening,
                                      float minDistance2, float minTheta);
-#endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_FORCELAWPOLICY_HPP_
+#endif // BLITZAR_ENGINE_INCLUDE_PHYSICS_FORCELAWPOLICY_HPP_

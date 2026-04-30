@@ -33,6 +33,6 @@ bool SimulationArgsInitStateOptions::apply(const std::string& key, const std::st
         }
         return true;
     }
-    return grav_config::applyCliOption(grav_config::SimulationOptionGroup::InitState, key, value,
-                                       config, warnings);
+    return bltzr_config::applyCliOption(bltzr_config::SimulationOptionGroup::InitState, key, value,
+                                        config, warnings);
 }

@@ -14,7 +14,7 @@
 
 #include <ostream>
 
-namespace grav_config {
+namespace bltzr_config {
 
 template <typename ValueType>
 static ValueType& memberAt(SimulationConfig& config, std::ptrdiff_t offset)
@@ -32,14 +32,14 @@ static void emitClamped(std::ostream& warnings, std::string_view source,
                         std::string_view optionName, std::uint32_t requested, std::uint32_t clamped)
 {
     warnings << source << ' ' << optionName << " clamped to supported range [2, "
-             << grav_protocol::kSnapshotMaxPoints << "]: " << requested << " -> " << clamped
+             << bltzr_protocol::kSnapshotMaxPoints << "]: " << requested << " -> " << clamped
              << "\n";
 }
 
 static std::uint32_t clampClientParticleCap(std::uint32_t requested)
 {
-    if (requested > grav_protocol::kSnapshotMaxPoints) {
-        return grav_protocol::kSnapshotMaxPoints;
+    if (requested > bltzr_protocol::kSnapshotMaxPoints) {
+        return bltzr_protocol::kSnapshotMaxPoints;
     }
     return requested < 2u ? 2u : requested;
 }
@@ -47,8 +47,8 @@ static std::uint32_t clampClientParticleCap(std::uint32_t requested)
 static void markCustomPerformanceProfile(const SimulationOptionEntry& entry,
                                          SimulationConfig& config)
 {
-    if (grav_config::isPerformanceManagedField(entry.iniName)) {
-        config.performanceProfile = std::string(grav_config::kPerformanceProfileCustom);
+    if (bltzr_config::isPerformanceManagedField(entry.iniName)) {
+        config.performanceProfile = std::string(bltzr_config::kPerformanceProfileCustom);
     }
 }
 
@@ -124,18 +124,18 @@ bool applyEntry(const SimulationOptionEntry& entry, const std::string& value,
         return true;
     case OptionKind::PerformanceProfile: {
         std::string canonical;
-        if (!grav_config::normalizePerformanceProfile(value, canonical)) {
+        if (!bltzr_config::normalizePerformanceProfile(value, canonical)) {
             warnings << source << " invalid " << optionName << ": " << value
                      << " (allowed: interactive|balanced|quality|custom)\n";
             return true;
         }
         memberAt<std::string>(config, entry.offset) = canonical;
-        grav_config::applyPerformanceProfile(config);
+        bltzr_config::applyPerformanceProfile(config);
         return true;
     }
     case OptionKind::Solver: {
         std::string canonical;
-        if (!grav_modes::normalizeSolver(value, canonical)) {
+        if (!bltzr_modes::normalizeSolver(value, canonical)) {
             warnings << source << " invalid " << optionName << ": " << value
                      << " (allowed: pairwise_cuda|octree_gpu|octree_cpu)\n";
             return true;
@@ -145,7 +145,7 @@ bool applyEntry(const SimulationOptionEntry& entry, const std::string& value,
     }
     case OptionKind::Integrator: {
         std::string canonical;
-        if (!grav_modes::normalizeIntegrator(value, canonical)) {
+        if (!bltzr_modes::normalizeIntegrator(value, canonical)) {
             warnings << source << " invalid " << optionName << ": " << value
                      << " (allowed: euler|rk4|leapfrog)\n";
             return true;
@@ -155,7 +155,7 @@ bool applyEntry(const SimulationOptionEntry& entry, const std::string& value,
     }
     case OptionKind::OctreeCriterion: {
         std::string canonical;
-        if (!grav_modes::normalizeOctreeOpeningCriterion(value, canonical)) {
+        if (!bltzr_modes::normalizeOctreeOpeningCriterion(value, canonical)) {
             warnings << source << " invalid " << optionName << ": " << value
                      << " (allowed: com|bounds)\n";
             return true;
@@ -229,4 +229,4 @@ bool applyEnvOption(const std::string& key, const std::string& value, Simulation
     return applyMatchingEntry(matchesEnv, key, value, config, warnings, "[env]");
 }
 
-} // namespace grav_config
+} // namespace bltzr_config

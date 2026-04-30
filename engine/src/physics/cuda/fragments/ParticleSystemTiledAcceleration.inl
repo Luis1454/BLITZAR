@@ -19,7 +19,8 @@
  * @return float value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-__device__ __forceinline__ float warp_reduce_sum(float val) {
+__device__ __forceinline__ float warp_reduce_sum(float val)
+{
     for (int offset = warpSize / 2; offset > 0; offset /= 2) {
         val += __shfl_down_sync(0xffffffff, val, offset);
     }
@@ -33,7 +34,8 @@ __device__ __forceinline__ float warp_reduce_sum(float val) {
  * @return Vector3 value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-__device__ __forceinline__ Vector3 warp_reduce_vec3(Vector3 val) {
+__device__ __forceinline__ Vector3 warp_reduce_vec3(Vector3 val)
+{
     val.x = warp_reduce_sum(val.x);
     val.y = warp_reduce_sum(val.y);
     val.z = warp_reduce_sum(val.z);
@@ -51,13 +53,10 @@ __device__ __forceinline__ Vector3 warp_reduce_vec3(Vector3 val) {
  * @return No return value.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-__global__ void computePairwiseAccelerationKernelTiled(
-    ParticleSoAView state,
-    Vector3Handle outAcceleration,
-    int numParticles,
-    ForceLawPolicy policy,
-    float maxAcceleration
-)
+__global__ void computePairwiseAccelerationKernelTiled(ParticleSoAView state,
+                                                       Vector3Handle outAcceleration,
+                                                       int numParticles, ForceLawPolicy policy,
+                                                       float maxAcceleration)
 {
     const int targetIdx = blockIdx.x * blockDim.x + threadIdx.x;
     if (targetIdx >= numParticles) {
@@ -81,10 +80,10 @@ __global__ void computePairwiseAccelerationKernelTiled(
         // Load a tile of particle data into shared memory
         // Each thread loads one particle from the tile, wrapping if necessary
         extern __shared__ char smemBuffer[];
-        float *smem_posX = (float*)(smemBuffer);
-        float *smem_posY = (float*)(smemBuffer + TILE_SIZE * sizeof(float));
-        float *smem_posZ = (float*)(smemBuffer + 2 * TILE_SIZE * sizeof(float));
-        float *smem_mass = (float*)(smemBuffer + 3 * TILE_SIZE * sizeof(float));
+        float* smem_posX = (float*)(smemBuffer);
+        float* smem_posY = (float*)(smemBuffer + TILE_SIZE * sizeof(float));
+        float* smem_posZ = (float*)(smemBuffer + 2 * TILE_SIZE * sizeof(float));
+        float* smem_mass = (float*)(smemBuffer + 3 * TILE_SIZE * sizeof(float));
 
         // All threads cooperatively load the tile
         for (int i = threadId; i < tileSize; i += blockDim.x) {
@@ -107,11 +106,7 @@ __global__ void computePairwiseAccelerationKernelTiled(
             const float sourceMass = smem_mass[i];
 
             // Compute pairwise force
-            totalForce += gravityAccelerationFromSource(
-                targetPos,
-                sourcePos,
-                sourceMass,
-                policy);
+            totalForce += blitzarAccelerationFromSource(targetPos, sourcePos, sourceMass, policy);
         }
     }
 
@@ -130,13 +125,11 @@ __global__ void computePairwiseAccelerationKernelTiled(
  * @return No return value.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-__global__ void computePairwiseAccelerationKernelWarpReduced(
-    ParticleSoAView state,
-    Vector3Handle outAcceleration,
-    int numParticles,
-    ForceLawPolicy policy,
-    float maxAcceleration
-)
+__global__ void computePairwiseAccelerationKernelWarpReduced(ParticleSoAView state,
+                                                             Vector3Handle outAcceleration,
+                                                             int numParticles,
+                                                             ForceLawPolicy policy,
+                                                             float maxAcceleration)
 {
     const int warpIdx = blockIdx.x * blockDim.x / warpSize + threadIdx.x / warpSize;
     const int laneIdx = threadIdx.x % warpSize;
@@ -156,11 +149,8 @@ __global__ void computePairwiseAccelerationKernelWarpReduced(
             if (srcBase != targetIdx) {
                 const Vector3 sourcePos = getSoAPosition(state, srcBase);
                 const float sourceMass = state.mass[srcBase];
-                laneForce += gravityAccelerationFromSource(
-                    targetPos,
-                    sourcePos,
-                    sourceMass,
-                    policy);
+                laneForce +=
+                    blitzarAccelerationFromSource(targetPos, sourcePos, sourceMass, policy);
             }
         }
 

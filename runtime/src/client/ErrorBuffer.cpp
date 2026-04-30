@@ -8,7 +8,7 @@
 #include "client/ErrorBuffer.hpp"
 #include <algorithm>
 
-namespace grav_client {
+namespace bltzr_client {
 ErrorBufferView::ErrorBufferView(char* buffer, std::size_t bufferSize) noexcept
     : m_buffer(buffer), m_bufferSize(bufferSize)
 {
@@ -43,4 +43,4 @@ void writeErrorBuffer(char* buffer, std::size_t bufferSize, std::string_view mes
     std::copy_n(message.data(), copySize, buffer);
     buffer[copySize] = '\0';
 }
-} // namespace grav_client
+} // namespace bltzr_client

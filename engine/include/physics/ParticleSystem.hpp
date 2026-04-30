@@ -5,8 +5,8 @@
  * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
-#define GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
+#define BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
 
 #include "physics/CudaMemoryPool.hpp"
 #include "physics/ForceLawPolicy.hpp"
@@ -675,4 +675,4 @@ private:
 };
 
 
-#endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
+#endif // BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_

@@ -62,7 +62,7 @@ def is_allowed_non_evidence_desktop_configure(rel: str, marker_text: str, comman
         rel == ".github/workflows/release-lane.yml"
         and marker_text == "cmake -S"
         and "-B build-desktop" in command
-        and "-DGRAVITY_PROFILE=dev" in command
+        and "-DBLITZAR_PROFILE=dev" in command
     )
 
 

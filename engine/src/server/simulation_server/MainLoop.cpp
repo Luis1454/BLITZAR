@@ -122,8 +122,8 @@ void SimulationServer::loop()
             }
             const bool sampleGpuStep =
                 _gpuTelemetryEnabled.load(std::memory_order_relaxed) &&
-                ((solverMode == grav_modes::kSolverPairwiseCuda ||
-                  solverMode == grav_modes::kSolverOctreeGpu)) &&
+                ((solverMode == bltzr_modes::kSolverPairwiseCuda ||
+                  solverMode == bltzr_modes::kSolverOctreeGpu)) &&
                 (((_steps.load(std::memory_order_relaxed) + 1u) % kGpuTelemetrySampleStride) == 0u);
             if (sampleGpuStep) {
                 _gpuKernelMs.store(0.0f, std::memory_order_relaxed);

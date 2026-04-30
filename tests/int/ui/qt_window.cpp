@@ -23,7 +23,7 @@
 #include <memory>
 #include <string>
 
-namespace grav_test_qt_window {
+namespace bltzr_test_qt_window {
 SimulationConfig makeUiConfig()
 {
     SimulationConfig config{};
@@ -43,9 +43,9 @@ TEST(QtMainWindowTest, TST_UIX_UI_001_ConstructsAndTicksWithRealRuntime)
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    auto runtime = std::make_unique<grav_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
-    grav_qt::MainWindow window(makeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::MainWindow window(makeUiConfig(), "simulation.ini", std::move(runtime));
     ASSERT_TRUE(testsupport::waitUntilUi(
         [&]() {
             const QString status = testsupport::findStatusLabelText(window);
@@ -62,9 +62,9 @@ TEST(QtMainWindowTest, TST_UIX_UI_002_ShowsReconnectingWhenServerStopsAndRecover
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
     const std::uint16_t fixedPort = server.port();
-    auto runtime = std::make_unique<grav_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
         "simulation.ini", testsupport::makeTransport(fixedPort, server.executablePath()));
-    grav_qt::MainWindow window(makeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::MainWindow window(makeUiConfig(), "simulation.ini", std::move(runtime));
     ASSERT_TRUE(testsupport::waitUntilUi(
         [&]() {
             return testsupport::findStatusLabelText(window).contains("Link: connected");
@@ -91,15 +91,15 @@ TEST(QtMainWindowTest, TST_UIX_UI_003_SavesConfigOnlyOnExplicitSaveAction)
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path configPath =
         std::filesystem::temp_directory_path() /
-        ("gravity_qt_explicit_save_" + std::to_string(stamp) + ".ini");
+        ("BLITZAR_qt_explicit_save_" + std::to_string(stamp) + ".ini");
     SimulationConfig initialConfig = makeUiConfig();
     ASSERT_TRUE(initialConfig.save(configPath.string()));
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    auto runtime = std::make_unique<grav_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
         configPath.string(), testsupport::makeTransport(server.port(), server.executablePath()));
-    grav_qt::MainWindow window(initialConfig, configPath.string(), std::move(runtime));
+    bltzr_qt::MainWindow window(initialConfig, configPath.string(), std::move(runtime));
     ASSERT_TRUE(testsupport::waitUntilUi(
         [&]() {
             return testsupport::findStatusLabelText(window).contains("Link: connected");
@@ -133,18 +133,18 @@ TEST(QtMainWindowTest, TST_UIX_UI_004_ShowsEffectiveClientCapWhenConfiguredCapEx
 {
     (void)testsupport::ensureQtApp();
     SimulationConfig config = makeUiConfig();
-    config.clientParticleCap = grav_protocol::kSnapshotMaxPoints + 5000u;
+    config.clientParticleCap = bltzr_protocol::kSnapshotMaxPoints + 5000u;
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    auto runtime = std::make_unique<grav_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
-    grav_qt::MainWindow window(config, "simulation.ini", std::move(runtime));
+    bltzr_qt::MainWindow window(config, "simulation.ini", std::move(runtime));
     ASSERT_TRUE(testsupport::waitUntilUi(
         [&]() {
             const QString status = testsupport::findStatusLabelText(window);
             return status.contains("Link: connected") &&
-                   status.contains(QString("/ %1").arg(grav_protocol::kSnapshotMaxPoints)) &&
+                   status.contains(QString("/ %1").arg(bltzr_protocol::kSnapshotMaxPoints)) &&
                    status.contains("Queue: ") && status.contains("Policy: latest-only");
         },
         std::chrono::milliseconds(5000)));
@@ -157,9 +157,9 @@ TEST(QtMainWindowTest, TST_UIX_UI_014_RealRuntimeProgressesAndSurfacesFreshOrSta
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    auto runtime = std::make_unique<grav_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
-    grav_qt::MainWindow window(makeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::MainWindow window(makeUiConfig(), "simulation.ini", std::move(runtime));
     window.show();
     ASSERT_TRUE(testsupport::waitUntilUi(
         [&]() {
@@ -167,7 +167,7 @@ TEST(QtMainWindowTest, TST_UIX_UI_014_RealRuntimeProgressesAndSurfacesFreshOrSta
         },
         std::chrono::milliseconds(5000)));
     QWidget* graphWidget = window.findChild<QWidget*>("energyGraphWidget");
-    auto* graph = dynamic_cast<grav_qt::EnergyGraphWidget*>(graphWidget);
+    auto* graph = dynamic_cast<bltzr_qt::EnergyGraphWidget*>(graphWidget);
     ASSERT_NE(graph, nullptr);
     const std::uint64_t initialSteps = testsupport::findSummaryUnsignedMetric(window, "Steps: ");
     const std::size_t initialSamples = graph->sampleCount();
@@ -189,7 +189,7 @@ TEST(QtMainWindowTest, TST_UIX_UI_014_RealRuntimeProgressesAndSurfacesFreshOrSta
         std::chrono::milliseconds(7000));
     if (!progressed) {
         const std::filesystem::path evidence =
-            testsupport::saveFailureEvidence(window, "gravity_qt_progression_failure");
+            testsupport::saveFailureEvidence(window, "BLITZAR_qt_progression_failure");
         ADD_FAILURE() << "runtime did not show real progression; evidence at " << evidence.string();
     }
     ASSERT_TRUE(progressed);
@@ -204,10 +204,10 @@ TEST(QtMainWindowTest, TST_UIX_UI_014_RealRuntimeProgressesAndSurfacesFreshOrSta
         std::chrono::milliseconds(7000));
     if (!staleAfterStop) {
         const std::filesystem::path evidence =
-            testsupport::saveFailureEvidence(window, "gravity_qt_stale_failure");
+            testsupport::saveFailureEvidence(window, "BLITZAR_qt_stale_failure");
         ADD_FAILURE() << "viewport did not surface stale/reconnecting state; evidence at "
                       << evidence.string();
     }
     EXPECT_TRUE(staleAfterStop);
 }
-} // namespace grav_test_qt_window
+} // namespace bltzr_test_qt_window

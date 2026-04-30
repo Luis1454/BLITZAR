@@ -17,7 +17,7 @@
 #include <filesystem>
 #include <iostream>
 
-namespace grav_client {
+namespace bltzr_client {
 const std::uint32_t kClientRemoteTimeoutMinMs = 10u;
 const std::uint32_t kClientRemoteTimeoutMaxMs = 60000u;
 const std::uint32_t kClientRemoteCommandTimeoutMsDefault = 80u;
@@ -27,12 +27,12 @@ typedef std::chrono::steady_clock Clock;
 constexpr auto kReconnectRetryIntervalMin = std::chrono::milliseconds(50);
 constexpr auto kReconnectRetryIntervalMax = std::chrono::milliseconds(1000);
 constexpr auto kErrorLogInterval = std::chrono::milliseconds(1500);
-const std::string_view kServerDefaultName = grav_platform::serverDefaultExecutableName();
+const std::string_view kServerDefaultName = bltzr_platform::serverDefaultExecutableName();
 
 bool parsePortValue(std::string_view raw, std::uint16_t& outPort)
 {
     unsigned int parsed = 0u;
-    if (!grav_text::parseNumber(raw, parsed) || parsed == 0u || parsed > 65535u) {
+    if (!bltzr_text::parseNumber(raw, parsed) || parsed == 0u || parsed > 65535u) {
         return false;
     }
     outPort = static_cast<std::uint16_t>(parsed);
@@ -253,7 +253,7 @@ void ClientServerBridge::stop()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     if (_runtimeState.serverLaunched() && _remoteClient.isConnected()) {
-        (void)_remoteClient.sendCommand(std::string(grav_protocol::Shutdown));
+        (void)_remoteClient.sendCommand(std::string(bltzr_protocol::Shutdown));
     }
     if (_runtimeState.isConnected()) {
         _remoteClient.disconnect();
@@ -265,26 +265,26 @@ void ClientServerBridge::stop()
 void ClientServerBridge::setPaused(bool paused)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    sendOrQueueRemote(std::string(paused ? grav_protocol::Pause : grav_protocol::Resume));
+    sendOrQueueRemote(std::string(paused ? bltzr_protocol::Pause : bltzr_protocol::Resume));
 }
 
 void ClientServerBridge::togglePaused()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    sendOrQueueRemote(std::string(grav_protocol::Toggle));
+    sendOrQueueRemote(std::string(bltzr_protocol::Toggle));
 }
 
 void ClientServerBridge::stepOnce()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    sendOrQueueRemote(std::string(grav_protocol::Step), "\"count\":1");
+    sendOrQueueRemote(std::string(bltzr_protocol::Step), "\"count\":1");
 }
 
 void ClientServerBridge::setParticleCount(std::uint32_t particleCount)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const std::uint32_t clamped = std::max<std::uint32_t>(2u, particleCount);
-    sendOrQueueRemote(std::string(grav_protocol::SetParticleCount),
+    sendOrQueueRemote(std::string(bltzr_protocol::SetParticleCount),
                       "\"value\":" + std::to_string(clamped));
 }
 
@@ -292,7 +292,7 @@ void ClientServerBridge::setDt(float dt)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const float clamped = std::max(1e-6f, dt);
-    sendOrQueueRemote(std::string(grav_protocol::SetDt), "\"value\":" + std::to_string(clamped));
+    sendOrQueueRemote(std::string(bltzr_protocol::SetDt), "\"value\":" + std::to_string(clamped));
 }
 
 void ClientServerBridge::scaleDt(float factor)
@@ -306,33 +306,33 @@ void ClientServerBridge::scaleDt(float factor)
 void ClientServerBridge::requestReset()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    sendOrQueueRemote(std::string(grav_protocol::Reset));
+    sendOrQueueRemote(std::string(bltzr_protocol::Reset));
 }
 
 void ClientServerBridge::requestRecover()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    sendOrQueueRemote(std::string(grav_protocol::Recover));
+    sendOrQueueRemote(std::string(bltzr_protocol::Recover));
 }
 
 void ClientServerBridge::setSolverMode(const std::string& mode)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    sendOrQueueRemote(std::string(grav_protocol::SetSolver),
+    sendOrQueueRemote(std::string(bltzr_protocol::SetSolver),
                       "\"value\":\"" + jsonEscape(mode) + "\"");
 }
 
 void ClientServerBridge::setIntegratorMode(const std::string& mode)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    sendOrQueueRemote(std::string(grav_protocol::SetIntegrator),
+    sendOrQueueRemote(std::string(bltzr_protocol::SetIntegrator),
                       "\"value\":\"" + jsonEscape(mode) + "\"");
 }
 
 void ClientServerBridge::setPerformanceProfile(const std::string& profile)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    sendOrQueueRemote(std::string(grav_protocol::SetPerformanceProfile),
+    sendOrQueueRemote(std::string(bltzr_protocol::SetPerformanceProfile),
                       "\"value\":\"" + jsonEscape(profile) + "\"");
 }
 
@@ -341,7 +341,7 @@ void ClientServerBridge::setOctreeParameters(float theta, float softening)
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const float safeTheta = std::max(0.0001f, theta);
     const float safeSoftening = std::max(0.000001f, softening);
-    sendOrQueueRemote(std::string(grav_protocol::SetOctree),
+    sendOrQueueRemote(std::string(bltzr_protocol::SetOctree),
                       "\"theta\":" + std::to_string(safeTheta) +
                           ",\"softening\":" + std::to_string(safeSoftening));
 }
@@ -349,7 +349,7 @@ void ClientServerBridge::setOctreeParameters(float theta, float softening)
 void ClientServerBridge::setSphEnabled(bool enabled)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    sendOrQueueRemote(std::string(grav_protocol::SetSph),
+    sendOrQueueRemote(std::string(bltzr_protocol::SetSph),
                       std::string("\"value\":") + (enabled ? "true" : "false"));
 }
 
@@ -361,7 +361,7 @@ void ClientServerBridge::setSphParameters(float smoothingLength, float restDensi
     const float safeRestDensity = std::max(0.000001f, restDensity);
     const float safeGasConstant = std::max(0.000001f, gasConstant);
     const float safeViscosity = std::max(0.0f, viscosity);
-    sendOrQueueRemote(std::string(grav_protocol::SetSphParams),
+    sendOrQueueRemote(std::string(bltzr_protocol::SetSphParams),
                       "\"h\":" + std::to_string(safeH) +
                           ",\"rest_density\":" + std::to_string(safeRestDensity) +
                           ",\"gas_constant\":" + std::to_string(safeGasConstant) +
@@ -373,7 +373,7 @@ void ClientServerBridge::setSubstepPolicy(float targetDt, std::uint32_t maxSubst
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const float safeTargetDt = std::max(0.0f, targetDt);
     const std::uint32_t safeMaxSubsteps = std::max<std::uint32_t>(1u, maxSubsteps);
-    sendOrQueueRemote(std::string(grav_protocol::SetSubsteps),
+    sendOrQueueRemote(std::string(bltzr_protocol::SetSubsteps),
                       "\"target_dt\":" + std::to_string(safeTargetDt) +
                           ",\"max_substeps\":" + std::to_string(safeMaxSubsteps));
 }
@@ -382,7 +382,7 @@ void ClientServerBridge::setSnapshotPublishPeriodMs(std::uint32_t periodMs)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const std::uint32_t safePeriodMs = std::max<std::uint32_t>(1u, periodMs);
-    sendOrQueueRemote(std::string(grav_protocol::SetSnapshotPublishCadence),
+    sendOrQueueRemote(std::string(bltzr_protocol::SetSnapshotPublishCadence),
                       "\"period_ms\":" + std::to_string(safePeriodMs));
 }
 
@@ -403,7 +403,7 @@ void ClientServerBridge::setEnergyMeasurementConfig(std::uint32_t everySteps,
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const std::uint32_t safeEvery = std::max<std::uint32_t>(1u, everySteps);
     const std::uint32_t safeSampleLimit = std::max<std::uint32_t>(2u, sampleLimit);
-    sendOrQueueRemote(std::string(grav_protocol::SetEnergyMeasure),
+    sendOrQueueRemote(std::string(bltzr_protocol::SetEnergyMeasure),
                       "\"every_steps\":" + std::to_string(safeEvery) +
                           ",\"sample_limit\":" + std::to_string(safeSampleLimit));
 }
@@ -411,7 +411,7 @@ void ClientServerBridge::setEnergyMeasurementConfig(std::uint32_t everySteps,
 void ClientServerBridge::setGpuTelemetryEnabled(bool enabled)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    sendOrQueueRemote(std::string(grav_protocol::SetGpuTelemetry),
+    sendOrQueueRemote(std::string(bltzr_protocol::SetGpuTelemetry),
                       std::string("\"value\":") + (enabled ? "true" : "false"));
 }
 
@@ -426,7 +426,7 @@ void ClientServerBridge::setInitialStateFile(const std::string& path, const std:
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     if (!path.empty()) {
-        sendOrQueueRemote(std::string(grav_protocol::Load),
+        sendOrQueueRemote(std::string(bltzr_protocol::Load),
                           "\"path\":\"" + jsonEscape(path) + "\",\"format\":\"" +
                               jsonEscape(format.empty() ? "auto" : format) + "\"");
     }
@@ -447,27 +447,27 @@ void ClientServerBridge::requestExportSnapshot(const std::string& outputPath,
         }
         fields += "\"format\":\"" + jsonEscape(effectiveFormat) + "\"";
     }
-    sendOrQueueRemote(std::string(grav_protocol::Export), fields);
+    sendOrQueueRemote(std::string(bltzr_protocol::Export), fields);
 }
 
 void ClientServerBridge::requestSaveCheckpoint(const std::string& outputPath)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    sendOrQueueRemote(std::string(grav_protocol::SaveCheckpoint),
+    sendOrQueueRemote(std::string(bltzr_protocol::SaveCheckpoint),
                       "\"path\":\"" + jsonEscape(outputPath) + "\"");
 }
 
 void ClientServerBridge::requestLoadCheckpoint(const std::string& inputPath)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    sendOrQueueRemote(std::string(grav_protocol::LoadCheckpoint),
+    sendOrQueueRemote(std::string(bltzr_protocol::LoadCheckpoint),
                       "\"path\":\"" + jsonEscape(inputPath) + "\"");
 }
 
 void ClientServerBridge::requestShutdown()
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    sendOrQueueRemote(std::string(grav_protocol::Shutdown));
+    sendOrQueueRemote(std::string(bltzr_protocol::Shutdown));
 }
 
 void ClientServerBridge::configureRemoteConnector(const std::string& host, std::uint16_t port,
@@ -542,8 +542,8 @@ void ClientServerBridge::setRemoteSnapshotCap(std::uint32_t maxPoints)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     _runtimeState.setRemoteSnapshotCap(maxPoints);
-    const std::uint32_t clamped = grav_protocol::clampSnapshotPoints(maxPoints);
-    (void)sendOrQueueRemote(std::string(grav_protocol::SetSnapshotTransferCap),
+    const std::uint32_t clamped = bltzr_protocol::clampSnapshotPoints(maxPoints);
+    (void)sendOrQueueRemote(std::string(bltzr_protocol::SetSnapshotTransferCap),
                             "\"max_points\":" + std::to_string(clamped));
 }
 
@@ -604,7 +604,7 @@ std::string_view ClientServerBridge::serverOwnerLabel() const
 
 std::string ClientServerBridge::jsonEscape(const std::string& value)
 {
-    return grav_protocol::ServerJsonCodec::escapeString(value);
+    return bltzr_protocol::ServerJsonCodec::escapeString(value);
 }
 
 SimulationStats ClientServerBridge::fromRemoteStatus(const ServerClientStatus& status)
@@ -773,7 +773,7 @@ void ClientServerBridge::tryAutoStartRemoteServer()
         effectiveArgs.push_back(_remoteAuthToken);
     }
     std::string launchError;
-    if (grav_platform::launchDetachedProcess(exe, effectiveArgs, launchError)) {
+    if (bltzr_platform::launchDetachedProcess(exe, effectiveArgs, launchError)) {
         _runtimeState.setServerLaunched(true);
         std::cout << "[client] auto-start server: " << exe << " (" << _remoteHost << ":"
                   << _remotePort << ")\n";
@@ -823,4 +823,4 @@ void ClientServerBridge::refreshRemoteStats()
     }
     _cachedStats = fromRemoteStatus(status);
 }
-} // namespace grav_client
+} // namespace bltzr_client

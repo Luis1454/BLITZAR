@@ -36,12 +36,13 @@ struct ThrustPoolAllocator {
      * @brief Documents the allocate operation contract.
      * @param numBytes Input value used by this contract.
      * @return char* value produced by this contract.
-     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
      */
     char* allocate(std::ptrdiff_t numBytes)
     {
         const std::size_t bytes = static_cast<std::size_t>(std::max<std::ptrdiff_t>(0, numBytes));
-        return static_cast<char*>(grav_x::CudaMemoryPool::allocate(bytes));
+        return static_cast<char*>(bltzr_x::CudaMemoryPool::allocate(bytes));
     }
 
     /*
@@ -49,11 +50,12 @@ struct ThrustPoolAllocator {
      * @param ptr Input value used by this contract.
      * @param size_t Input value used by this contract.
      * @return No return value.
-     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
      */
     void deallocate(char* ptr, std::size_t)
     {
-        grav_x::CudaMemoryPool::deallocate(ptr);
+        bltzr_x::CudaMemoryPool::deallocate(ptr);
     }
 };
 
@@ -83,7 +85,8 @@ struct OctreeAabbFromTuple {
      * @brief Documents the operator operation contract.
      * @param value Input value used by this contract.
      * @return OctreeAabb value produced by this contract.
-     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
      */
     __host__ __device__ OctreeAabb operator()(const thrust::tuple<float, float, float>& value) const
     {
@@ -112,7 +115,8 @@ struct OctreeAabbMerge {
      * @brief Documents the operator operation contract.
      * @param rhs Input value used by this contract.
      * @return OctreeAabb value produced by this contract.
-     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
      */
     __host__ __device__ OctreeAabb operator()(const OctreeAabb& lhs, const OctreeAabb& rhs) const
     {
@@ -376,9 +380,9 @@ __global__ void buildLinearOctreeParentNodesKernel8(OctreeNodeHandle nodes,
         node.children[octant] = childIndex;
         node.childMask |= static_cast<unsigned char>(1u << octant);
 
-    GpuOctreeNode childNode = nodes[childIndex];
-    childNode.parentIndex = nodeIndex;
-    nodes[childIndex] = childNode;
+        GpuOctreeNode childNode = nodes[childIndex];
+        childNode.parentIndex = nodeIndex;
+        nodes[childIndex] = childNode;
 
         const GpuOctreeNode child = nodes[childIndex];
         minX = fminf(minX, child.centerX - child.halfSize);
@@ -426,7 +430,8 @@ __global__ void buildLinearOctreeParentNodesKernel8(OctreeNodeHandle nodes,
  * @return No return value.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-__global__ void buildLinearOctreeNextLinksKernel(OctreeNodeHandle nodes, int nodeCount, int rootIndex)
+__global__ void buildLinearOctreeNextLinksKernel(OctreeNodeHandle nodes, int nodeCount,
+                                                 int rootIndex)
 {
     const int nodeIndex = blockIdx.x * blockDim.x + threadIdx.x;
     if (nodeIndex >= nodeCount || nodeIndex < 0) {
@@ -485,14 +490,9 @@ __global__ void buildLinearOctreeNextLinksKernel(OctreeNodeHandle nodes, int nod
  * @return No return value.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-__global__ void packLinearOctreeCompactKernel(
-    const GpuOctreeNode* nodes,
-    int nodeCount,
-    GpuOctreeNodeHotData* hot,
-    GpuOctreeNodeNavData* nav,
-    int* firstChild,
-    int* leafStarts,
-    int* leafCounts)
+__global__ void packLinearOctreeCompactKernel(const GpuOctreeNode* nodes, int nodeCount,
+                                              GpuOctreeNodeHotData* hot, GpuOctreeNodeNavData* nav,
+                                              int* firstChild, int* leafStarts, int* leafCounts)
 {
     const int nodeIndex = blockIdx.x * blockDim.x + threadIdx.x;
     if (nodeIndex < 0 || nodeIndex >= nodeCount) {
@@ -539,8 +539,8 @@ __global__ void packLinearOctreeCompactKernel(
 bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numParticles)
 {
     cudaStream_t stream = 0;
-    const bool hardAuditMode = parseBoolEnv("GRAVITY_LINEAR_OCTREE_AUDIT", false);
-    const bool profileFlashMode = parseBoolEnv("GRAVITY_OCTREE_PROFILE_FLASH", false);
+    const bool hardAuditMode = parseBoolEnv("BLITZAR_LINEAR_OCTREE_AUDIT", false);
+    const bool profileFlashMode = parseBoolEnv("BLITZAR_OCTREE_PROFILE_FLASH", false);
     const auto buildStartTime = std::chrono::high_resolution_clock::now();
     double sortByKeyMs = 0.0;
     if (numParticles <= 0) {
@@ -563,23 +563,14 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
     }
     const int leafShiftBits = 3 * (21 - leafDepth);
 
-    if (g_dOctreeLeafCapacity < static_cast<std::size_t>(numParticles)
-        || d_octreeMortonCapacity < static_cast<std::size_t>(numParticles)
-        || d_octreePrefixCapacity < static_cast<std::size_t>(numParticles)
-        || d_octreeLevelCapacity < static_cast<std::size_t>(numParticles)
-        || !g_dOctreeLeafIndices
-        || !d_octreeMortonKeys
-        || !d_octreePrefixesA
-        || !d_octreePrefixesB
-        || !d_octreeLevelIndicesA
-        || !d_octreeLevelIndicesB
-        || !d_octreeParentCounts
-        || !d_octreeParentOffsets
-        || !d_octreeNodeHot
-        || !d_octreeNodeNav
-        || !d_octreeFirstChild
-        || !d_octreeLeafStarts
-        || !d_octreeLeafCounts) {
+    if (g_dOctreeLeafCapacity < static_cast<std::size_t>(numParticles) ||
+        d_octreeMortonCapacity < static_cast<std::size_t>(numParticles) ||
+        d_octreePrefixCapacity < static_cast<std::size_t>(numParticles) ||
+        d_octreeLevelCapacity < static_cast<std::size_t>(numParticles) || !g_dOctreeLeafIndices ||
+        !d_octreeMortonKeys || !d_octreePrefixesA || !d_octreePrefixesB || !d_octreeLevelIndicesA ||
+        !d_octreeLevelIndicesB || !d_octreeParentCounts || !d_octreeParentOffsets ||
+        !d_octreeNodeHot || !d_octreeNodeNav || !d_octreeFirstChild || !d_octreeLeafStarts ||
+        !d_octreeLeafCounts) {
         fprintf(stderr,
                 "[cuda-critical] linear octree scratch is not preallocated for %d entries\n",
                 numParticles);
@@ -602,9 +593,8 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
     initAabb.maxX = -FLT_MAX;
     initAabb.maxY = -FLT_MAX;
     initAabb.maxZ = -FLT_MAX;
-    const OctreeAabb bbox =
-        thrust::transform_reduce(exec, zipBegin, zipEnd, OctreeAabbFromTuple{}, initAabb,
-                                 OctreeAabbMerge{});
+    const OctreeAabb bbox = thrust::transform_reduce(exec, zipBegin, zipEnd, OctreeAabbFromTuple{},
+                                                     initAabb, OctreeAabbMerge{});
 
     buildMortonCodesKernel<<<blocks, threads, 0, stream>>>(
         currentView, numParticles, bbox.minX, bbox.minY, bbox.minZ, bbox.maxX, bbox.maxY, bbox.maxZ,
@@ -637,7 +627,8 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
             return false;
         }
         const auto sortStopTime = std::chrono::high_resolution_clock::now();
-        sortByKeyMs = std::chrono::duration<double, std::milli>(sortStopTime - sortStartTime).count();
+        sortByKeyMs =
+            std::chrono::duration<double, std::milli>(sortStopTime - sortStartTime).count();
     }
 
     buildLeafPrefixesKernel<<<blocks, threads, 0, stream>>>(d_octreeMortonKeys, numParticles,
@@ -663,8 +654,7 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
     if (g_dOctreeNodeCapacity < static_cast<std::size_t>(requiredNodeCapacity) || !g_dOctreeNodes) {
         fprintf(stderr,
                 "[cuda-critical] linear octree node scratch is too small: need=%d cap=%zu\n",
-                requiredNodeCapacity,
-                g_dOctreeNodeCapacity);
+                requiredNodeCapacity, g_dOctreeNodeCapacity);
         return false;
     }
 
@@ -739,21 +729,15 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
 
     if (_gpuOctreeRootIndex >= 0) {
         GpuOctreeNode rootNode = {};
-        if (!checkCudaStatus(cudaMemcpyAsync(&rootNode,
-                                             g_dOctreeNodes + _gpuOctreeRootIndex,
-                                             sizeof(GpuOctreeNode),
-                                             cudaMemcpyDeviceToHost,
-                                             stream),
+        if (!checkCudaStatus(cudaMemcpyAsync(&rootNode, g_dOctreeNodes + _gpuOctreeRootIndex,
+                                             sizeof(GpuOctreeNode), cudaMemcpyDeviceToHost, stream),
                              "copy linear octree root node to host")) {
             return false;
         }
         rootNode.parentIndex = -1;
         rootNode.nextIndex = -1;
-        if (!checkCudaStatus(cudaMemcpyAsync(g_dOctreeNodes + _gpuOctreeRootIndex,
-                                             &rootNode,
-                                             sizeof(GpuOctreeNode),
-                                             cudaMemcpyHostToDevice,
-                                             stream),
+        if (!checkCudaStatus(cudaMemcpyAsync(g_dOctreeNodes + _gpuOctreeRootIndex, &rootNode,
+                                             sizeof(GpuOctreeNode), cudaMemcpyHostToDevice, stream),
                              "write linear octree root links")) {
             return false;
         }
@@ -767,13 +751,8 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
 
         const int packBlocks = (_gpuOctreeNodeCount + threads - 1) / threads;
         packLinearOctreeCompactKernel<<<packBlocks, threads, 0, stream>>>(
-            g_dOctreeNodes,
-            _gpuOctreeNodeCount,
-            d_octreeNodeHot,
-            d_octreeNodeNav,
-            d_octreeFirstChild,
-            d_octreeLeafStarts,
-            d_octreeLeafCounts);
+            g_dOctreeNodes, _gpuOctreeNodeCount, d_octreeNodeHot, d_octreeNodeNav,
+            d_octreeFirstChild, d_octreeLeafStarts, d_octreeLeafCounts);
         if (!checkCudaStatus(cudaGetLastError(), "packLinearOctreeCompact kernel launch")) {
             return false;
         }
@@ -795,9 +774,7 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
             std::chrono::duration<double, std::milli>(buildStopTime - buildStartTime).count();
         fprintf(stderr,
                 "[octree-profile] buildLinearOctree_ms=%.3f sort_ms=%.3f leaf_capacity=%d\n",
-                buildMs,
-                sortByKeyMs,
-                leafCapacity);
+                buildMs, sortByKeyMs, leafCapacity);
     }
 
     return _gpuOctreeRootIndex >= 0;

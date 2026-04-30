@@ -86,7 +86,7 @@ class ReleaseSbomPackager:
             "scope": "required",
             "hashes": [{"alg": "SHA-256", "content": digest}],
             "properties": [
-                {"name": "gravity:path", "value": rel},
-                {"name": "gravity:size-bytes", "value": str(path.stat().st_size)},
+                {"name": "blitzar:path", "value": rel},
+                {"name": "blitzar:size-bytes", "value": str(path.stat().st_size)},
             ],
         }

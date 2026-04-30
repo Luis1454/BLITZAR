@@ -8,7 +8,7 @@
 #include "command/CommandCatalog.hpp"
 #include <sstream>
 
-namespace grav_cmd {
+namespace bltzr_cmd {
 static CommandSpec makeSpec(CommandId id, std::string name, std::string help, bool deterministic,
                             std::vector<CommandArgumentSpec> arguments)
 {
@@ -105,4 +105,4 @@ std::string CommandCatalog::renderHelp()
     }
     return out.str();
 }
-} // namespace grav_cmd
+} // namespace bltzr_cmd

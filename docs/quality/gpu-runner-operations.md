@@ -25,7 +25,7 @@ Use the extracted `actions-runner` directory on the Windows host, then run:
 python scripts/ci/gpu/bootstrap_windows_runner.py `
   --repo Luis1454/BLITZAR `
   --runner-root C:\actions-runner `
-  --runner-name gravity-gpu-01 `
+  --runner-name blitzar-gpu-01 `
   --output dist/gpu-runner/bootstrap-plan.json `
   --emit-script dist/gpu-runner/bootstrap-runner.ps1
 ```

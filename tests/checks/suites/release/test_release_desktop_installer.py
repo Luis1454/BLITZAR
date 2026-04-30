@@ -33,9 +33,9 @@ def test_release_desktop_installer_builds_native_windows_installer(tmp_path: Pat
     monkeypatch.chdir(tmp_path)
     build_dir = tmp_path / "build"
     build_dir.mkdir()
-    for name in ("blitzar.exe", "blitzar-server.exe", "blitzar-client.exe", "gravityClientModuleQtInProc.dll"):
+    for name in ("blitzar.exe", "blitzar-server.exe", "blitzar-client.exe", "blitzarClientModuleQtInProc.dll"):
         (build_dir / name).write_text("binary\n", encoding="utf-8")
-    (build_dir / "gravityClientModuleQtInProc.dll.manifest").write_text("manifest\n", encoding="utf-8")
+    (build_dir / "blitzarClientModuleQtInProc.dll.manifest").write_text("manifest\n", encoding="utf-8")
     (build_dir / "Qt6Core.dll").write_text("qt\n", encoding="utf-8")
     (build_dir / "platforms").mkdir()
     (build_dir / "platforms" / "qwindows.dll").write_text("plugin\n", encoding="utf-8")

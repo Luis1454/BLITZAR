@@ -10,10 +10,10 @@
  * @param f Input value used by this contract.
  * @param f Input value used by this contract.
  * @param f Input value used by this contract.
- * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3:: value produced by this contract.
+ * @return BLITZAR_HD_HOST BLITZAR_HD_DEVICE Vector3:: value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3::Vector3() : x(0.0f), y(0.0f), z(0.0f)
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3::Vector3() : x(0.0f), y(0.0f), z(0.0f)
 {
 }
 
@@ -22,17 +22,18 @@ GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3::Vector3() : x(0.0f), y(0.0f), 
  * @param xValue Input value used by this contract.
  * @param yValue Input value used by this contract.
  * @param zValue Input value used by this contract.
- * @return GRAVITY_HD_HOST GRAVITY_HD_DEVICE Vector3:: value produced by this contract.
+ * @return BLITZAR_HD_HOST BLITZAR_HD_DEVICE Vector3:: value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-GRAVITY_HD_HOST GRAVITY_HD_DEVICE inline Vector3::Vector3(float xValue, float yValue, float zValue)
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3::Vector3(float xValue, float yValue, float zValue)
     /*
      * @brief Documents the x operation contract.
      * @param xValue Input value used by this contract.
      * @param yValue Input value used by this contract.
      * @param zValue Input value used by this contract.
      * @return : value produced by this contract.
-     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
      */
     : x(xValue), y(yValue), z(zValue)
 {

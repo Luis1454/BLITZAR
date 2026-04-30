@@ -69,7 +69,7 @@ jobs:
           python -m pytest -q tests/checks/suites
       - name: Configure standalone integration tests
         shell: pwsh
-        run: cmake -S tests -B build-integration -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_PROFILE=prod -DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON
+        run: cmake -S tests -B build-integration -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_PROFILE=prod -DBLITZAR_INTEGRATION_STRICT_WARNINGS=ON
       - name: Build standalone integration tests
         shell: pwsh
         run: cmake --build build-integration --parallel
@@ -156,7 +156,7 @@ jobs:
           python3 -m mypy tests/checks scripts/ci python_tools
           python3 -m pytest -q tests/checks/suites
       - name: Configure coverage build
-        run: cmake -S tests -B build-integration-cov -G Ninja -DCMAKE_BUILD_TYPE=Debug -DGRAVITY_PROFILE=prod -DGRAVITY_INTEGRATION_ENABLE_COVERAGE=ON -DGRAVITY_INTEGRATION_STRICT_WARNINGS=ON
+        run: cmake -S tests -B build-integration-cov -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBLITZAR_PROFILE=prod -DBLITZAR_INTEGRATION_ENABLE_COVERAGE=ON -DBLITZAR_INTEGRATION_STRICT_WARNINGS=ON
       - name: Build coverage target
         run: cmake --build build-integration-cov --parallel
       - name: Run integration tests for coverage
@@ -248,7 +248,7 @@ jobs:
           python -m pytest -q tests/checks/suites
       - name: Configure
         shell: pwsh
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_PROFILE=prod -DGRAVITY_STRICT_WARNINGS=ON
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_PROFILE=prod -DBLITZAR_STRICT_WARNINGS=ON
       - name: Build
         shell: pwsh
         run: cmake --build build --parallel
@@ -256,17 +256,17 @@ jobs:
         shell: pwsh
         run: |
           $server = Resolve-Path "build/myAppServer.exe"
-          cmake -E env "GRAVITY_SERVER_EXE=$server" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error -R "TST_INT_PROT_|TST_INT_RUNT_|TST_CNT_RUNT_"
+          cmake -E env "BLITZAR_SERVER_EXE=$server" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error -R "TST_INT_PROT_|TST_INT_RUNT_|TST_CNT_RUNT_"
       - name: Run numerical validation campaign
         shell: pwsh
         run: |
-          $tool = Resolve-Path "build/gravityNumericalValidationTool.exe"
+          $tool = Resolve-Path "build/blitzarNumericalValidationTool.exe"
           python scripts/ci/nightly/package_numerical_validation.py --root . --tool $tool --profile gpu-prod --dist-dir dist/numerical-validation
       - name: Run full tests
         shell: pwsh
         run: |
           $server = Resolve-Path "build/myAppServer.exe"
-          cmake -E env "GRAVITY_SERVER_EXE=$server" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error
+          cmake -E env "BLITZAR_SERVER_EXE=$server" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error
       - name: Upload numerical validation artifacts
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f

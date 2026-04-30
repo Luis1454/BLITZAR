@@ -15,8 +15,8 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-namespace grav_test_qt_workspace_overlay_controls {
-class IdleRuntime final : public grav_client::IClientRuntime {
+namespace bltzr_test_qt_workspace_overlay_controls {
+class IdleRuntime final : public bltzr_client::IClientRuntime {
 public:
     bool start() override
     {
@@ -155,7 +155,7 @@ public:
         return {};
     }
 
-    std::optional<grav_client::ConsumedSnapshot> consumeLatestSnapshot() override
+    std::optional<bltzr_client::ConsumedSnapshot> consumeLatestSnapshot() override
     {
         return std::nullopt;
     }
@@ -165,7 +165,7 @@ public:
         return false;
     }
 
-    grav_client::SnapshotPipelineState snapshotPipelineState() const override
+    bltzr_client::SnapshotPipelineState snapshotPipelineState() const override
     {
         return {};
     }
@@ -195,11 +195,11 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_020_OctreeOverlayControlsUpdateW
 {
     (void)testsupport::ensureQtApp();
     auto runtime = std::make_unique<IdleRuntime>();
-    grav_qt::MainWindow window(SimulationConfig{}, "simulation.ini", std::move(runtime));
+    bltzr_qt::MainWindow window(SimulationConfig{}, "simulation.ini", std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     auto* multiViewWidget =
-        dynamic_cast<grav_qt::MultiViewWidget*>(window.findChild<QWidget*>("multiViewWidget"));
+        dynamic_cast<bltzr_qt::MultiViewWidget*>(window.findChild<QWidget*>("multiViewWidget"));
     ASSERT_NE(multiViewWidget, nullptr);
     QCheckBox* overlayCheck = window.findChild<QCheckBox*>("octreeOverlayCheck");
     QSpinBox* depthSpin = window.findChild<QSpinBox*>("octreeOverlayDepthSpin");
@@ -215,4 +215,4 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_020_OctreeOverlayControlsUpdateW
     EXPECT_EQ(multiViewWidget->octreeOverlayDepth(), 4);
     EXPECT_EQ(multiViewWidget->octreeOverlayOpacity(), 144);
 }
-} // namespace grav_test_qt_workspace_overlay_controls
+} // namespace bltzr_test_qt_workspace_overlay_controls

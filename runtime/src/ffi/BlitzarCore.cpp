@@ -102,7 +102,7 @@ static void fillStatus(const SimulationStats& stats, blitzar_core_status_t& outS
     copyText(stats.faultReason, outStatus.fault_reason, BLITZAR_CORE_ERROR_CAPACITY);
 }
 
-namespace grav_ffi {
+namespace bltzr_ffi {
 BlitzarCore::BlitzarCore(const blitzar_core_config_t& config)
     : _server(std::max<std::uint32_t>(2u, normalizedConfig(config).particle_count),
               normalizedConfig(config).dt)
@@ -130,9 +130,9 @@ blitzar_core_result_t BlitzarCore::applyConfig(const blitzar_core_config_t& conf
     const blitzar_core_config_t normalized = normalizedConfig(config);
     std::string canonicalSolver;
     std::string canonicalIntegrator;
-    if (!grav_modes::normalizeSolver(normalized.solver_name, canonicalSolver) ||
-        !grav_modes::normalizeIntegrator(normalized.integrator_name, canonicalIntegrator) ||
-        !grav_modes::isSupportedSolverIntegratorPair(canonicalSolver, canonicalIntegrator)) {
+    if (!bltzr_modes::normalizeSolver(normalized.solver_name, canonicalSolver) ||
+        !bltzr_modes::normalizeIntegrator(normalized.integrator_name, canonicalIntegrator) ||
+        !bltzr_modes::isSupportedSolverIntegratorPair(canonicalSolver, canonicalIntegrator)) {
         setError("invalid solver/integrator pair");
         return BLITZAR_CORE_INVALID_ARGUMENT;
     }
@@ -175,4 +175,4 @@ blitzar_core_result_t BlitzarCore::getSnapshot(std::size_t maxPoints,
     }
     return BLITZAR_CORE_OK;
 }
-} // namespace grav_ffi
+} // namespace bltzr_ffi

@@ -14,7 +14,7 @@
 #include <system_error>
 #include <type_traits>
 
-namespace grav_text {
+namespace bltzr_text {
 std::string_view trimView(std::string_view value)
 {
     const auto begin = std::find_if_not(value.begin(), value.end(), [](unsigned char c) {
@@ -139,4 +139,4 @@ template bool parseNumber<long long>(std::string_view rawValue, long long& out);
 template bool parseNumber<unsigned long long>(std::string_view rawValue, unsigned long long& out);
 template bool parseNumber<float>(std::string_view rawValue, float& out);
 template bool parseNumber<double>(std::string_view rawValue, double& out);
-} // namespace grav_text
+} // namespace bltzr_text

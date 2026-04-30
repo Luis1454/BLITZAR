@@ -5,13 +5,13 @@
  * @brief Platform abstraction interfaces for portable runtime services.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_PLATFORM_SOCKETPLATFORM_HPP_
-#define GRAVITY_ENGINE_INCLUDE_PLATFORM_SOCKETPLATFORM_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_PLATFORM_SOCKETPLATFORM_HPP_
+#define BLITZAR_ENGINE_INCLUDE_PLATFORM_SOCKETPLATFORM_HPP_
 #include <cstddef>
 #include <cstdint>
 #include <string>
 
-namespace grav_socket {
+namespace bltzr_socket {
 typedef std::intptr_t Handle;
 
 struct MutableBytes {
@@ -46,5 +46,5 @@ bool waitReadable(Handle handle, int timeoutMs);
 int recvBytes(Handle handle, MutableBytes buffer);
 int sendBytes(Handle handle, ConstBytes buffer);
 bool wouldBlockOrTimeoutLastError();
-} // namespace grav_socket
-#endif // GRAVITY_ENGINE_INCLUDE_PLATFORM_SOCKETPLATFORM_HPP_
+} // namespace bltzr_socket
+#endif // BLITZAR_ENGINE_INCLUDE_PLATFORM_SOCKETPLATFORM_HPP_

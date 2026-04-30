@@ -5,8 +5,8 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#ifndef GRAVITY_TESTS_SUPPORT_SCOPED_ENV_VAR_HPP_
-#define GRAVITY_TESTS_SUPPORT_SCOPED_ENV_VAR_HPP_
+#ifndef BLITZAR_TESTS_SUPPORT_SCOPED_ENV_VAR_HPP_
+#define BLITZAR_TESTS_SUPPORT_SCOPED_ENV_VAR_HPP_
 #include <string>
 
 namespace testsupport {
@@ -26,4 +26,4 @@ private:
     bool _hadValue;
 };
 } // namespace testsupport
-#endif // GRAVITY_TESTS_SUPPORT_SCOPED_ENV_VAR_HPP_
+#endif // BLITZAR_TESTS_SUPPORT_SCOPED_ENV_VAR_HPP_

@@ -10,7 +10,7 @@
 #include <cstdio>
 #include <cuda_runtime.h>
 
-namespace grav_x {
+namespace bltzr_x {
 bool CudaMemoryPool::_initialized = false;
 bool CudaMemoryPool::_supported = false;
 void* CudaMemoryPool::_pool = nullptr;
@@ -104,4 +104,4 @@ bool CudaMemoryPool::isSupported()
         initialize();
     return _supported;
 }
-} // namespace grav_x
+} // namespace bltzr_x

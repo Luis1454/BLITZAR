@@ -4,10 +4,10 @@
 
 Targets:
 - Host: `blitzar-client`
-- Module: `gravityClientModuleCli` (server control/status)
-- Module: `gravityClientModuleEcho` (diagnostic echo module)
-- Module: `gravityClientModuleGuiProxy` (launch/stop external GUI clients)
-- Module: `gravityClientModuleQtInProc` (Qt client module using the server service)
+- Module: `blitzarClientModuleCli` (server control/status)
+- Module: `blitzarClientModuleEcho` (diagnostic echo module)
+- Module: `blitzarClientModuleGuiProxy` (launch/stop external GUI clients)
+- Module: `blitzarClientModuleQtInProc` (Qt client module using the server service)
 
 Profile posture:
 - `dev`: preferred profile for the module host; startup load plus live `reload` and `switch` are available.
@@ -23,14 +23,14 @@ Module loading is not best-effort anymore. Before `LoadLibrary` / `dlopen`, the 
 ## Build
 
 ```bash
-cmake --build build --target blitzar-client gravityClientModuleCli gravityClientModuleEcho gravityClientModuleGuiProxy gravityClientModuleQtInProc
+cmake --build build --target blitzar-client blitzarClientModuleCli blitzarClientModuleEcho blitzarClientModuleGuiProxy blitzarClientModuleQtInProc
 ```
 
 Each built module emits a sidecar manifest next to the dynamic library:
 
 ```text
-gravityClientModuleCli.dll
-gravityClientModuleCli.dll.manifest
+blitzarClientModuleCli.dll
+blitzarClientModuleCli.dll.manifest
 ```
 
 ## Run

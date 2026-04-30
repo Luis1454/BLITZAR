@@ -5,14 +5,14 @@
  * @brief Qt desktop user interface module for simulation control and visualization.
  */
 
-#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_WORKSPACELAYOUTSTORE_HPP_
-#define GRAVITY_MODULES_QT_INCLUDE_UI_WORKSPACELAYOUTSTORE_HPP_
+#ifndef BLITZAR_MODULES_QT_INCLUDE_UI_WORKSPACELAYOUTSTORE_HPP_
+#define BLITZAR_MODULES_QT_INCLUDE_UI_WORKSPACELAYOUTSTORE_HPP_
 
 #include <filesystem>
 #include <string>
 #include <vector>
 
-namespace grav_qt {
+namespace bltzr_qt {
 class WorkspaceLayoutStore final {
 public:
     explicit WorkspaceLayoutStore(std::string configPath);
@@ -28,6 +28,6 @@ private:
     static bool readValueLine(const std::string& line, const char* prefix, std::string& out);
     std::filesystem::path _layoutsRoot;
 };
-} // namespace grav_qt
+} // namespace bltzr_qt
 
-#endif // GRAVITY_MODULES_QT_INCLUDE_UI_WORKSPACELAYOUTSTORE_HPP_
+#endif // BLITZAR_MODULES_QT_INCLUDE_UI_WORKSPACELAYOUTSTORE_HPP_

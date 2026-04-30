@@ -10,7 +10,7 @@
 #include <iomanip>
 #include <sstream>
 
-namespace grav_protocol {
+namespace bltzr_protocol {
 class ServerJsonObjectWriter final {
 public:
     explicit ServerJsonObjectWriter(std::ostringstream& out) : _out(out), _hasField(false)
@@ -227,4 +227,4 @@ std::string ServerJsonCodec::makeSnapshotResponse(bool hasSnapshot,
     writer.finish();
     return out.str();
 }
-} // namespace grav_protocol
+} // namespace bltzr_protocol

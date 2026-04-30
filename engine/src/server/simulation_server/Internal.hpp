@@ -5,8 +5,8 @@
  * @brief Source artifact for the BLITZAR simulation project.
  */
 
-#ifndef GRAVITY_ENGINE_SRC_SERVER_SIMULATION_SERVER_INTERNAL_HPP_
-#define GRAVITY_ENGINE_SRC_SERVER_SIMULATION_SERVER_INTERNAL_HPP_
+#ifndef BLITZAR_ENGINE_SRC_SERVER_SIMULATION_SERVER_INTERNAL_HPP_
+#define BLITZAR_ENGINE_SRC_SERVER_SIMULATION_SERVER_INTERNAL_HPP_
 #include "config/EnvUtils.hpp"
 #include "config/SimulationModes.hpp"
 #include "config/SimulationPerformanceProfile.hpp"
@@ -602,4 +602,4 @@ bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t part
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
 void atomicAddFloat(std::atomic<float>& atom, float val);
-#endif // GRAVITY_ENGINE_SRC_SERVER_SIMULATION_SERVER_INTERNAL_HPP_
+#endif // BLITZAR_ENGINE_SRC_SERVER_SIMULATION_SERVER_INTERNAL_HPP_

@@ -135,10 +135,10 @@ void applyArgsToConfig(const std::vector<std::string_view>& args, SimulationConf
         warnings << "[args] unknown option: " << key << "\n";
     }
 
-    if (!grav_modes::isSupportedSolverIntegratorPair(config.solver, config.integrator)) {
+    if (!bltzr_modes::isSupportedSolverIntegratorPair(config.solver, config.integrator)) {
         runtime.hasArgumentError = true;
-        if (config.solver == grav_modes::kSolverOctreeGpu &&
-            config.integrator == grav_modes::kIntegratorRk4) {
+        if (config.solver == bltzr_modes::kSolverOctreeGpu &&
+            config.integrator == bltzr_modes::kIntegratorRk4) {
             warnings << "[args] unsupported solver/integrator combination: solver=octree_gpu does "
                         "not support rk4\n";
         }
@@ -147,10 +147,10 @@ void applyArgsToConfig(const std::vector<std::string_view>& args, SimulationConf
         }
     }
 
-    const grav_config::ScenarioValidationReport report =
-        grav_config::SimulationScenarioValidation::evaluate(config);
+    const bltzr_config::ScenarioValidationReport report =
+        bltzr_config::SimulationScenarioValidation::evaluate(config);
     if (report.errorCount != 0u || report.warningCount != 0u) {
-        warnings << grav_config::SimulationScenarioValidation::renderText(report) << "\n";
+        warnings << bltzr_config::SimulationScenarioValidation::renderText(report) << "\n";
         if (!report.validForRun) {
             runtime.hasArgumentError = true;
         }
@@ -170,15 +170,15 @@ void printUsage(std::ostream& out, std::string_view programName, bool headlessMo
     out << "Usage: " << programName << " [options]\n";
     out << "Common options:\n";
     out << "  --config <path>\n";
-    grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::Core);
-    grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::Client);
-    grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::InitState);
-    grav_config::printCliUsage(out, grav_config::SimulationOptionGroup::Fluid);
+    bltzr_config::printCliUsage(out, bltzr_config::SimulationOptionGroup::Core);
+    bltzr_config::printCliUsage(out, bltzr_config::SimulationOptionGroup::Client);
+    bltzr_config::printCliUsage(out, bltzr_config::SimulationOptionGroup::InitState);
+    bltzr_config::printCliUsage(out, bltzr_config::SimulationOptionGroup::Fluid);
     if (headlessMode) {
         out << "  --target-steps <n>\n";
         out << "  --export-on-exit <true|false>\n";
         out << "  --no-export-on-exit\n";
-        out << "  env: GRAVITY_AUTO_SOLVER_FALLBACK=1 to auto-switch pairwise->octree_gpu for huge "
+        out << "  env: BLITZAR_AUTO_SOLVER_FALLBACK=1 to auto-switch pairwise->octree_gpu for huge "
                "N\n";
     }
     out << "  --save-config\n";

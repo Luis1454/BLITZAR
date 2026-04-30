@@ -5,8 +5,8 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_
 #include "client/RustRuntimeBridgeState.hpp"
 #include "protocol/ServerClient.hpp"
 #include <chrono>
@@ -18,7 +18,7 @@
 #include <utility>
 #include <vector>
 
-namespace grav_client {
+namespace bltzr_client {
 extern const std::uint32_t kClientRemoteTimeoutMinMs;
 extern const std::uint32_t kClientRemoteTimeoutMaxMs;
 extern const std::uint32_t kClientRemoteCommandTimeoutMsDefault;
@@ -125,5 +125,5 @@ private:
     std::uint32_t _remoteSnapshotTimeoutMs;
     mutable std::recursive_mutex _mutex;
 };
-} // namespace grav_client
-#endif // GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_
+} // namespace bltzr_client
+#endif // BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_

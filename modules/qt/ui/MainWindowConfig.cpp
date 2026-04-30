@@ -18,7 +18,7 @@
 #include <iostream>
 #include <string>
 
-namespace grav_qt {
+namespace bltzr_qt {
 bool MainWindow::applyConfigToServer(bool requestReset)
 {
     captureUiIntoConfig();
@@ -152,7 +152,7 @@ bool MainWindow::saveConfigToDisk()
 
 bool MainWindow::refreshValidationReport(bool blockOnErrors)
 {
-    const grav_config::ScenarioValidationReport report = _controller.validate(_config);
+    const bltzr_config::ScenarioValidationReport report = _controller.validate(_config);
     const ThroughputAdvisory advisory = ThroughputAdvisor::evaluate(_config, _clientDrawCap);
     if (_validationLabel != nullptr) {
         _validationLabel->setText(buildValidationText(report, advisory));
@@ -163,10 +163,10 @@ bool MainWindow::refreshValidationReport(bool blockOnErrors)
     return !blockOnErrors || report.validForRun;
 }
 
-QString MainWindow::buildValidationText(const grav_config::ScenarioValidationReport& report,
+QString MainWindow::buildValidationText(const bltzr_config::ScenarioValidationReport& report,
                                         const ThroughputAdvisory& advisory) const
 {
-    std::string text = grav_config::SimulationScenarioValidation::renderText(report);
+    std::string text = bltzr_config::SimulationScenarioValidation::renderText(report);
     if (advisory.severity != ThroughputAdvisorySeverity::None) {
         text += "\n\n[" +
                 std::string(advisory.severity == ThroughputAdvisorySeverity::Warning
@@ -198,4 +198,4 @@ void MainWindow::update3DCameraFromSliders()
     const float roll = static_cast<float>(_rollSlider->value()) * pi / 180.0f;
     _multiView->set3DCameraAngles(yaw, pitch, roll);
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

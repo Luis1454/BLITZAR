@@ -43,12 +43,12 @@ static std::string trim(const std::string& input)
 /*
  * @brief Documents the as bytes operation contract.
  * @param text Input value used by this contract.
- * @return grav_socket::ConstBytes value produced by this contract.
+ * @return bltzr_socket::ConstBytes value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-static grav_socket::ConstBytes asBytes(std::string_view text)
+static bltzr_socket::ConstBytes asBytes(std::string_view text)
 {
-    return grav_socket::ConstBytes{reinterpret_cast<const std::byte*>(text.data()), text.size()};
+    return bltzr_socket::ConstBytes{reinterpret_cast<const std::byte*>(text.data()), text.size()};
 }
 
 /*
@@ -58,11 +58,11 @@ static grav_socket::ConstBytes asBytes(std::string_view text)
  * @return bool value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-static bool sendAll(grav_socket::Handle socketHandle, grav_socket::ConstBytes bytes)
+static bool sendAll(bltzr_socket::Handle socketHandle, bltzr_socket::ConstBytes bytes)
 {
     std::size_t offset = 0;
     while (offset < bytes.size) {
-        const int sent = grav_socket::sendBytes(socketHandle, bytes.subview(offset));
+        const int sent = bltzr_socket::sendBytes(socketHandle, bytes.subview(offset));
         if (sent <= 0)
             return false;
         offset += static_cast<std::size_t>(sent);
@@ -111,7 +111,7 @@ ServerDaemon::ServerDaemon(SimulationServer& server, std::string authToken)
       _running(false),
       _shutdownRequested(false),
       _acceptThread(),
-      _listenSocket(grav_socket::invalidHandle()),
+      _listenSocket(bltzr_socket::invalidHandle()),
       _bindAddress("127.0.0.1"),
       _authToken(std::move(authToken)),
       _port(0),
@@ -145,27 +145,27 @@ bool ServerDaemon::start(std::uint16_t port, const std::string& bindAddress)
         if (_running.load()) {
             return true;
         }
-        if (!grav_socket::initializeSocketLayer()) {
+        if (!bltzr_socket::initializeSocketLayer()) {
             std::cerr << "[ipc] failed to initialize socket layer\n";
             return false;
         }
         _networkInitialized = true;
-        const grav_socket::Handle listenSocket = grav_socket::createTcpSocket();
-        if (!grav_socket::isValid(listenSocket)) {
+        const bltzr_socket::Handle listenSocket = bltzr_socket::createTcpSocket();
+        if (!bltzr_socket::isValid(listenSocket)) {
             std::cerr << "[ipc] failed to create socket\n";
             stop();
             return false;
         }
-        grav_socket::setReuseAddress(listenSocket, true);
-        if (!grav_socket::bindIpv4(listenSocket, bindAddress, port)) {
+        bltzr_socket::setReuseAddress(listenSocket, true);
+        if (!bltzr_socket::bindIpv4(listenSocket, bindAddress, port)) {
             std::cerr << "[ipc] bind failed on " << bindAddress << ":" << port << "\n";
-            grav_socket::closeSocket(listenSocket);
+            bltzr_socket::closeSocket(listenSocket);
             stop();
             return false;
         }
-        if (!grav_socket::listenSocket(listenSocket, 8)) {
+        if (!bltzr_socket::listenSocket(listenSocket, 8)) {
             std::cerr << "[ipc] listen failed\n";
-            grav_socket::closeSocket(listenSocket);
+            bltzr_socket::closeSocket(listenSocket);
             stop();
             return false;
         }
@@ -202,13 +202,13 @@ void ServerDaemon::stop()
 {
     try {
         _running.store(false);
-        grav_socket::Handle listenSocket;
+        bltzr_socket::Handle listenSocket;
         {
             std::lock_guard<std::mutex> lock(_socketMutex);
             listenSocket = _listenSocket;
-            _listenSocket = grav_socket::invalidHandle();
+            _listenSocket = bltzr_socket::invalidHandle();
         }
-        grav_socket::closeSocket(listenSocket);
+        bltzr_socket::closeSocket(listenSocket);
         if (_acceptThread.joinable()) {
             _acceptThread.join();
         }
@@ -218,7 +218,7 @@ void ServerDaemon::stop()
             }
         _clientThreads.clear();
         if (_networkInitialized) {
-            grav_socket::shutdownSocketLayer();
+            bltzr_socket::shutdownSocketLayer();
             _networkInitialized = false;
         }
     }
@@ -229,11 +229,11 @@ void ServerDaemon::stop()
         std::cerr << serverDaemonError("stop", "non-standard exception") << "\n";
     }
     _running.store(false);
-    _listenSocket = grav_socket::invalidHandle();
+    _listenSocket = bltzr_socket::invalidHandle();
     _clientThreads.clear();
     if (_networkInitialized) {
         try {
-            grav_socket::shutdownSocketLayer();
+            bltzr_socket::shutdownSocketLayer();
         }
         catch (const std::exception& ex) {
             std::cerr << serverDaemonError("stop shutdownSocketLayer", ex.what()) << "\n";
@@ -278,22 +278,22 @@ void ServerDaemon::acceptLoop()
 {
     try {
         while (_running.load()) {
-            grav_socket::Handle listenSocket;
+            bltzr_socket::Handle listenSocket;
             {
                 std::lock_guard<std::mutex> lock(_socketMutex);
                 listenSocket = _listenSocket;
             }
-            if (!grav_socket::isValid(listenSocket)) {
+            if (!bltzr_socket::isValid(listenSocket)) {
                 break;
             }
-            if (!grav_socket::waitReadable(listenSocket, 200)) {
+            if (!bltzr_socket::waitReadable(listenSocket, 200)) {
                 continue;
             }
-            const grav_socket::Handle clientSocket = grav_socket::acceptSocket(listenSocket);
-            if (!grav_socket::isValid(clientSocket)) {
+            const bltzr_socket::Handle clientSocket = bltzr_socket::acceptSocket(listenSocket);
+            if (!bltzr_socket::isValid(clientSocket)) {
                 continue;
             }
-            grav_socket::setSocketTimeoutMs(clientSocket, 500);
+            bltzr_socket::setSocketTimeoutMs(clientSocket, 500);
             _clientThreads.emplace_back(&ServerDaemon::handleClient, this, clientSocket);
         }
     }
@@ -316,16 +316,16 @@ void ServerDaemon::acceptLoop()
 void ServerDaemon::handleClient(SocketHandle client)
 {
     try {
-        const grav_socket::Handle clientSocket = client;
+        const bltzr_socket::Handle clientSocket = client;
         std::string buffer;
         buffer.reserve(2048);
         std::array<char, 2048> chunk{};
         while (_running.load()) {
-            const int received = grav_socket::recvBytes(
-                clientSocket, grav_socket::MutableBytes{reinterpret_cast<std::byte*>(chunk.data()),
-                                                        chunk.size()});
+            const int received = bltzr_socket::recvBytes(
+                clientSocket, bltzr_socket::MutableBytes{reinterpret_cast<std::byte*>(chunk.data()),
+                                                         chunk.size()});
             if (received <= 0) {
-                if (received < 0 && grav_socket::wouldBlockOrTimeoutLastError() &&
+                if (received < 0 && bltzr_socket::wouldBlockOrTimeoutLastError() &&
                     _running.load()) {
                     continue;
                 }
@@ -344,25 +344,25 @@ void ServerDaemon::handleClient(SocketHandle client)
                 }
                 const std::string response = processRequest(request) + "\n";
                 if (!sendAll(clientSocket, asBytes(response))) {
-                    grav_socket::closeSocket(clientSocket);
+                    bltzr_socket::closeSocket(clientSocket);
                     return;
                 }
                 if (_shutdownRequested.load()) {
-                    grav_socket::closeSocket(clientSocket);
+                    bltzr_socket::closeSocket(clientSocket);
                     return;
                 }
                 newline = buffer.find('\n');
             }
         }
-        grav_socket::closeSocket(clientSocket);
+        bltzr_socket::closeSocket(clientSocket);
     }
     catch (const std::exception& ex) {
         std::cerr << serverDaemonError("handleClient", ex.what()) << "\n";
-        grav_socket::closeSocket(static_cast<grav_socket::Handle>(client));
+        bltzr_socket::closeSocket(static_cast<bltzr_socket::Handle>(client));
     }
     catch (...) {
         std::cerr << serverDaemonError("handleClient", "non-standard exception") << "\n";
-        grav_socket::closeSocket(static_cast<grav_socket::Handle>(client));
+        bltzr_socket::closeSocket(static_cast<bltzr_socket::Handle>(client));
     }
 }
 
@@ -375,281 +375,286 @@ void ServerDaemon::handleClient(SocketHandle client)
 std::string ServerDaemon::processRequest(const std::string& request)
 {
     try {
-        grav_protocol::ServerCommandRequest envelope{};
+        bltzr_protocol::ServerCommandRequest envelope{};
         std::string parseError;
-        if (!grav_protocol::ServerJsonCodec::parseCommandRequest(request, envelope, parseError)) {
-            return grav_protocol::ServerJsonCodec::makeErrorResponse("unknown", parseError);
+        if (!bltzr_protocol::ServerJsonCodec::parseCommandRequest(request, envelope, parseError)) {
+            return bltzr_protocol::ServerJsonCodec::makeErrorResponse("unknown", parseError);
         }
         if (!_authToken.empty() && envelope.token != _authToken) {
-            return grav_protocol::ServerJsonCodec::makeErrorResponse("auth", "unauthorized");
+            return bltzr_protocol::ServerJsonCodec::makeErrorResponse("auth", "unauthorized");
         }
         const std::string& cmd = envelope.cmd;
-        if (cmd == grav_protocol::Status)
-            return grav_protocol::ServerJsonCodec::makeStatusResponse(_server.getStats());
-        if (cmd == grav_protocol::GetSnapshot) {
-            std::uint32_t maxPoints = grav_protocol::kSnapshotDefaultPoints;
-            grav_protocol::ServerJsonCodec::readNumber(request, "max_points", maxPoints);
-            maxPoints = grav_protocol::clampSnapshotPoints(maxPoints);
+        if (cmd == bltzr_protocol::Status)
+            return bltzr_protocol::ServerJsonCodec::makeStatusResponse(_server.getStats());
+        if (cmd == bltzr_protocol::GetSnapshot) {
+            std::uint32_t maxPoints = bltzr_protocol::kSnapshotDefaultPoints;
+            bltzr_protocol::ServerJsonCodec::readNumber(request, "max_points", maxPoints);
+            maxPoints = bltzr_protocol::clampSnapshotPoints(maxPoints);
             std::vector<RenderParticle> snapshot;
             std::size_t sourceSize = 0u;
             const bool hasSnapshot = _server.copyLatestSnapshot(
                 snapshot, static_cast<std::size_t>(maxPoints), &sourceSize);
-            return grav_protocol::ServerJsonCodec::makeSnapshotResponse(hasSnapshot, snapshot,
-                                                                        sourceSize);
+            return bltzr_protocol::ServerJsonCodec::makeSnapshotResponse(hasSnapshot, snapshot,
+                                                                         sourceSize);
         }
-        if (cmd == grav_protocol::Pause) {
+        if (cmd == bltzr_protocol::Pause) {
             _server.setPaused(true);
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::Resume) {
+        if (cmd == bltzr_protocol::Resume) {
             _server.setPaused(false);
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::Toggle) {
+        if (cmd == bltzr_protocol::Toggle) {
             _server.togglePaused();
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::Reset) {
+        if (cmd == bltzr_protocol::Reset) {
             _server.requestReset();
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::Recover) {
+        if (cmd == bltzr_protocol::Recover) {
             _server.requestRecover();
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::Step) {
+        if (cmd == bltzr_protocol::Step) {
             int count = 1;
-            grav_protocol::ServerJsonCodec::readNumber(request, "count", count);
+            bltzr_protocol::ServerJsonCodec::readNumber(request, "count", count);
             if (count < 1)
                 count = 1;
             else if (count > 100000)
                 count = 100000;
             for (int i = 0; i < count; ++i)
                 _server.stepOnce();
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::SetDt) {
+        if (cmd == bltzr_protocol::SetDt) {
             double dt = 0.0;
-            if (!grav_protocol::ServerJsonCodec::readNumber(request, "value", dt) || dt <= 0.0) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "invalid dt value");
+            if (!bltzr_protocol::ServerJsonCodec::readNumber(request, "value", dt) || dt <= 0.0) {
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(cmd, "invalid dt value");
             }
             _server.setDt(static_cast<float>(dt));
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::SetSolver) {
+        if (cmd == bltzr_protocol::SetSolver) {
             std::string value;
-            if (!grav_protocol::ServerJsonCodec::readString(request, "value", value)) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd,
-                                                                         "missing solver value");
+            if (!bltzr_protocol::ServerJsonCodec::readString(request, "value", value)) {
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(cmd,
+                                                                          "missing solver value");
             }
             std::string canonical;
-            if (!grav_modes::normalizeSolver(value, canonical)) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd,
-                                                                         "invalid solver value");
+            if (!bltzr_modes::normalizeSolver(value, canonical)) {
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(cmd,
+                                                                          "invalid solver value");
             }
-            if (!grav_modes::isSupportedSolverIntegratorPair(canonical,
-                                                             _server.getStats().integratorName)) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(
+            if (!bltzr_modes::isSupportedSolverIntegratorPair(canonical,
+                                                              _server.getStats().integratorName)) {
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(
                     cmd, "unsupported solver/integrator combination: octree_gpu requires euler");
             }
             _server.setSolverMode(canonical);
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::SetIntegrator) {
+        if (cmd == bltzr_protocol::SetIntegrator) {
             std::string value;
-            if (!grav_protocol::ServerJsonCodec::readString(request, "value", value)) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(
+            if (!bltzr_protocol::ServerJsonCodec::readString(request, "value", value)) {
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(
                     cmd, "missing integrator value");
             }
             std::string canonical;
-            if (!grav_modes::normalizeIntegrator(value, canonical)) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(
+            if (!bltzr_modes::normalizeIntegrator(value, canonical)) {
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(
                     cmd, "invalid integrator value");
             }
-            if (!grav_modes::isSupportedSolverIntegratorPair(_server.getStats().solverName,
-                                                             canonical)) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(
+            if (!bltzr_modes::isSupportedSolverIntegratorPair(_server.getStats().solverName,
+                                                              canonical)) {
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(
                     cmd, "unsupported solver/integrator combination: octree_gpu requires euler");
             }
             _server.setIntegratorMode(canonical);
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::SetPerformanceProfile) {
+        if (cmd == bltzr_protocol::SetPerformanceProfile) {
             std::string value;
-            if (!grav_protocol::ServerJsonCodec::readString(request, "value", value)) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(
+            if (!bltzr_protocol::ServerJsonCodec::readString(request, "value", value)) {
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(
                     cmd, "missing performance profile");
             }
             _server.setPerformanceProfile(value);
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::SetParticleCount) {
+        if (cmd == bltzr_protocol::SetParticleCount) {
             std::uint64_t value = 0;
-            if (!grav_protocol::ServerJsonCodec::readNumber(request, "value", value) ||
+            if (!bltzr_protocol::ServerJsonCodec::readNumber(request, "value", value) ||
                 value < 2ull) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd,
-                                                                         "invalid particle count");
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(cmd,
+                                                                          "invalid particle count");
             }
             const std::uint64_t clamped = (value > 100000000ull) ? 100000000ull : value;
             _server.setParticleCount(static_cast<std::uint32_t>(clamped));
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::SetSph) {
+        if (cmd == bltzr_protocol::SetSph) {
             bool value = false;
-            if (!grav_protocol::ServerJsonCodec::readBool(request, "value", value)) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd,
-                                                                         "missing bool sph value");
+            if (!bltzr_protocol::ServerJsonCodec::readBool(request, "value", value)) {
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(cmd,
+                                                                          "missing bool sph value");
             }
             _server.setSphEnabled(value);
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::SetOctree) {
+        if (cmd == bltzr_protocol::SetOctree) {
             double theta = 0.0;
             double softening = 0.0;
-            if (!grav_protocol::ServerJsonCodec::readNumber(request, "theta", theta) ||
+            if (!bltzr_protocol::ServerJsonCodec::readNumber(request, "theta", theta) ||
                 theta <= 0.0) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "invalid theta");
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(cmd, "invalid theta");
             }
-            if (!grav_protocol::ServerJsonCodec::readNumber(request, "softening", softening) ||
+            if (!bltzr_protocol::ServerJsonCodec::readNumber(request, "softening", softening) ||
                 softening <= 0.0) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "invalid softening");
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(cmd, "invalid softening");
             }
             _server.setOctreeParameters(static_cast<float>(theta), static_cast<float>(softening));
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::SetSphParams) {
+        if (cmd == bltzr_protocol::SetSphParams) {
             double h = 0.0;
             double restDensity = 0.0;
             double gasConstant = 0.0;
             double viscosity = 0.0;
-            if (!grav_protocol::ServerJsonCodec::readNumber(request, "h", h) || h <= 0.0 ||
-                !grav_protocol::ServerJsonCodec::readNumber(request, "rest_density", restDensity) ||
+            if (!bltzr_protocol::ServerJsonCodec::readNumber(request, "h", h) || h <= 0.0 ||
+                !bltzr_protocol::ServerJsonCodec::readNumber(request, "rest_density",
+                                                             restDensity) ||
                 restDensity <= 0.0 ||
-                !grav_protocol::ServerJsonCodec::readNumber(request, "gas_constant", gasConstant) ||
+                !bltzr_protocol::ServerJsonCodec::readNumber(request, "gas_constant",
+                                                             gasConstant) ||
                 gasConstant <= 0.0 ||
-                !grav_protocol::ServerJsonCodec::readNumber(request, "viscosity", viscosity) ||
+                !bltzr_protocol::ServerJsonCodec::readNumber(request, "viscosity", viscosity) ||
                 viscosity < 0.0) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "invalid sph params");
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(cmd,
+                                                                          "invalid sph params");
             }
             _server.setSphParameters(static_cast<float>(h), static_cast<float>(restDensity),
                                      static_cast<float>(gasConstant),
                                      static_cast<float>(viscosity));
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::SetSubsteps) {
+        if (cmd == bltzr_protocol::SetSubsteps) {
             double targetDt = 0.0;
             std::uint32_t maxSubsteps = 0;
-            if (!grav_protocol::ServerJsonCodec::readNumber(request, "target_dt", targetDt) ||
+            if (!bltzr_protocol::ServerJsonCodec::readNumber(request, "target_dt", targetDt) ||
                 targetDt < 0.0 ||
-                !grav_protocol::ServerJsonCodec::readNumber(request, "max_substeps", maxSubsteps) ||
+                !bltzr_protocol::ServerJsonCodec::readNumber(request, "max_substeps",
+                                                             maxSubsteps) ||
                 maxSubsteps < 1u) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd,
-                                                                         "invalid substep policy");
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(cmd,
+                                                                          "invalid substep policy");
             }
             _server.setSubstepPolicy(static_cast<float>(targetDt), maxSubsteps);
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::SetEnergyMeasure) {
+        if (cmd == bltzr_protocol::SetEnergyMeasure) {
             std::uint32_t everySteps = 0;
             std::uint32_t sampleLimit = 0;
-            if (!grav_protocol::ServerJsonCodec::readNumber(request, "every_steps", everySteps) ||
+            if (!bltzr_protocol::ServerJsonCodec::readNumber(request, "every_steps", everySteps) ||
                 everySteps < 1u ||
-                !grav_protocol::ServerJsonCodec::readNumber(request, "sample_limit", sampleLimit) ||
+                !bltzr_protocol::ServerJsonCodec::readNumber(request, "sample_limit",
+                                                             sampleLimit) ||
                 sampleLimit < 2u) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(
                     cmd, "invalid energy measure config");
             }
             _server.setEnergyMeasurementConfig(everySteps, sampleLimit);
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::SetGpuTelemetry) {
+        if (cmd == bltzr_protocol::SetGpuTelemetry) {
             bool enabled = false;
-            if (!grav_protocol::ServerJsonCodec::readBool(request, "value", enabled)) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(
+            if (!bltzr_protocol::ServerJsonCodec::readBool(request, "value", enabled)) {
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(
                     cmd, "missing bool gpu telemetry value");
             }
             _server.setGpuTelemetryEnabled(enabled);
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::SetSnapshotPublishCadence) {
+        if (cmd == bltzr_protocol::SetSnapshotPublishCadence) {
             std::uint32_t periodMs = 0;
-            if (!grav_protocol::ServerJsonCodec::readNumber(request, "period_ms", periodMs) ||
+            if (!bltzr_protocol::ServerJsonCodec::readNumber(request, "period_ms", periodMs) ||
                 periodMs < 1u) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(
                     cmd, "invalid snapshot cadence");
             }
             _server.setSnapshotPublishPeriodMs(periodMs);
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::SetSnapshotTransferCap) {
+        if (cmd == bltzr_protocol::SetSnapshotTransferCap) {
             std::uint32_t maxPoints = 0;
-            if (!grav_protocol::ServerJsonCodec::readNumber(request, "max_points", maxPoints) ||
+            if (!bltzr_protocol::ServerJsonCodec::readNumber(request, "max_points", maxPoints) ||
                 maxPoints < 1u) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(
                     cmd, "invalid snapshot transfer cap");
             }
             _server.setSnapshotTransferCap(maxPoints);
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::Load) {
+        if (cmd == bltzr_protocol::Load) {
             std::string path;
-            if (!grav_protocol::ServerJsonCodec::readString(request, "path", path) ||
+            if (!bltzr_protocol::ServerJsonCodec::readString(request, "path", path) ||
                 path.empty()) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "missing path");
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(cmd, "missing path");
             }
             std::string format = "auto";
-            grav_protocol::ServerJsonCodec::readString(request, "format", format);
+            bltzr_protocol::ServerJsonCodec::readString(request, "format", format);
             _server.setInitialStateFile(path, format);
             _server.requestReset();
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::Export) {
+        if (cmd == bltzr_protocol::Export) {
             std::string path;
             std::string format;
-            grav_protocol::ServerJsonCodec::readString(request, "path", path);
-            if (!grav_protocol::ServerJsonCodec::readString(request, "format", format)) {
+            bltzr_protocol::ServerJsonCodec::readString(request, "path", path);
+            if (!bltzr_protocol::ServerJsonCodec::readString(request, "format", format)) {
                 format = "vtk";
             }
             _server.requestExportSnapshot(path, format);
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::SaveCheckpoint) {
+        if (cmd == bltzr_protocol::SaveCheckpoint) {
             std::string path;
-            if (!grav_protocol::ServerJsonCodec::readString(request, "path", path) ||
+            if (!bltzr_protocol::ServerJsonCodec::readString(request, "path", path) ||
                 path.empty()) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "missing path");
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(cmd, "missing path");
             }
             if (!_server.saveCheckpoint(path)) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(
                     cmd, "failed to save checkpoint");
             }
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::LoadCheckpoint) {
+        if (cmd == bltzr_protocol::LoadCheckpoint) {
             std::string path;
-            if (!grav_protocol::ServerJsonCodec::readString(request, "path", path) ||
+            if (!bltzr_protocol::ServerJsonCodec::readString(request, "path", path) ||
                 path.empty()) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "missing path");
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(cmd, "missing path");
             }
             std::string error;
             if (!_server.loadCheckpoint(path, &error)) {
-                return grav_protocol::ServerJsonCodec::makeErrorResponse(
+                return bltzr_protocol::ServerJsonCodec::makeErrorResponse(
                     cmd, error.empty() ? "failed to load checkpoint" : error);
             }
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        if (cmd == grav_protocol::Shutdown) {
+        if (cmd == bltzr_protocol::Shutdown) {
             _shutdownRequested.store(true);
-            return grav_protocol::ServerJsonCodec::makeOkResponse(cmd);
+            return bltzr_protocol::ServerJsonCodec::makeOkResponse(cmd);
         }
-        return grav_protocol::ServerJsonCodec::makeErrorResponse(cmd, "unknown command");
+        return bltzr_protocol::ServerJsonCodec::makeErrorResponse(cmd, "unknown command");
     }
     catch (const std::exception& ex) {
-        return grav_protocol::ServerJsonCodec::makeErrorResponse(
+        return bltzr_protocol::ServerJsonCodec::makeErrorResponse(
             "request", serverDaemonError("processRequest", ex.what()));
     }
     catch (...) {
-        return grav_protocol::ServerJsonCodec::makeErrorResponse(
+        return bltzr_protocol::ServerJsonCodec::makeErrorResponse(
             "request", serverDaemonError("processRequest", "non-standard exception"));
     }
 }

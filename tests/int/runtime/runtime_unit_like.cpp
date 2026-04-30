@@ -13,17 +13,17 @@
 #include <string>
 #include <vector>
 
-namespace grav_test_client_runtime_unit_like {
+namespace bltzr_test_client_runtime_unit_like {
 TEST(ClientRuntimeUnitLikeTest, TST_UNT_RUNT_016_RuntimeDefaultsRemainDeterministicBeforeStart)
 {
-    grav_client::ClientRuntime runtime(
+    bltzr_client::ClientRuntime runtime(
         "simulation.ini",
         testsupport::makeTransport(static_cast<std::uint16_t>(6553u), std::string()));
     EXPECT_EQ(runtime.linkStateLabel(), "reconnecting");
     EXPECT_EQ(runtime.serverOwnerLabel(), "external");
     EXPECT_EQ(runtime.statsAgeMs(), std::numeric_limits<std::uint32_t>::max());
     EXPECT_EQ(runtime.snapshotAgeMs(), std::numeric_limits<std::uint32_t>::max());
-    const grav_client::SnapshotPipelineState pipelineState = runtime.snapshotPipelineState();
+    const bltzr_client::SnapshotPipelineState pipelineState = runtime.snapshotPipelineState();
     EXPECT_EQ(pipelineState.queueDepth, 0u);
     EXPECT_GE(pipelineState.queueCapacity, 1u);
     EXPECT_EQ(pipelineState.droppedFrames, 0u);
@@ -33,7 +33,7 @@ TEST(ClientRuntimeUnitLikeTest, TST_UNT_RUNT_016_RuntimeDefaultsRemainDeterminis
 
 TEST(ClientRuntimeUnitLikeTest, TST_UNT_RUNT_017_RuntimeControlMethodsRemainBoundedWhenDisconnected)
 {
-    grav_client::ClientRuntime runtime(
+    bltzr_client::ClientRuntime runtime(
         "simulation.ini",
         testsupport::makeTransport(static_cast<std::uint16_t>(6553u), std::string()));
     const auto startedAt = std::chrono::steady_clock::now();
@@ -79,4 +79,4 @@ TEST(ClientRuntimeUnitLikeTest, TST_UNT_RUNT_017_RuntimeControlMethodsRemainBoun
     EXPECT_LE(elapsedMs.count(), 3000);
     runtime.stop();
 }
-} // namespace grav_test_client_runtime_unit_like
+} // namespace bltzr_test_client_runtime_unit_like

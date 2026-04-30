@@ -16,7 +16,7 @@
 #include <array>
 #include <cmath>
 
-namespace grav_qt {
+namespace bltzr_qt {
 static QColor colorForDepth(int depth, int opacity)
 {
     const int clampedOpacity = std::clamp(opacity, 0, 255);
@@ -125,4 +125,4 @@ void OctreeOverlayPainter::paint(QPainter& painter, const QRect& viewport, grav:
     }
     painter.restore();
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

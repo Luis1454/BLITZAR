@@ -10,6 +10,7 @@
 #include "ui/EnergyGraphWidget.hpp"
 #include "ui/MultiViewWidget.hpp"
 #include "ui/QtTheme.hpp"
+#include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
@@ -20,7 +21,6 @@
 #include <QSlider>
 #include <QSpinBox>
 #include <QStatusBar>
-#include <QStyleFactory>
 #include <QTimer>
 #include <algorithm>
 #include <cstdint>
@@ -28,9 +28,9 @@
 #include <stdexcept>
 #include <utility>
 
-namespace grav_qt {
+namespace bltzr_qt {
 MainWindow::MainWindow(SimulationConfig config, std::string configPath,
-                       std::unique_ptr<grav_client::IClientRuntime> runtime)
+                       std::unique_ptr<bltzr_client::IClientRuntime> runtime)
     : QMainWindow(nullptr),
       _config(std::move(config)),
       _configPath(std::move(configPath)),
@@ -91,17 +91,17 @@ MainWindow::MainWindow(SimulationConfig config, std::string configPath,
       _timer(new QTimer(this)),
       _workspaceLayouts(_configPath),
       _lastEnergyStep(std::numeric_limits<std::uint64_t>::max()),
-      _clientDrawCap(grav_client::resolveClientDrawCap(_config)),
+      _clientDrawCap(bltzr_client::resolveClientDrawCap(_config)),
       _uiTickFps(0.0f),
       _configDirty(false),
       _lastUiTickAt()
 {
     if (!_runtime) {
-        throw std::invalid_argument("grav_qt::MainWindow requires a valid client runtime");
+        throw std::invalid_argument("bltzr_qt::MainWindow requires a valid client runtime");
     }
+
     setWindowTitle("N-Body Qt Client");
     menuBar()->setNativeMenuBar(false);
-    setStyle(QStyleFactory::create("Fusion"));
     setDockNestingEnabled(true);
     setDockOptions(QMainWindow::AnimatedDocks | QMainWindow::AllowNestedDocks |
                    QMainWindow::AllowTabbedDocks);
@@ -118,22 +118,21 @@ MainWindow::MainWindow(SimulationConfig config, std::string configPath,
     markConfigDirty(false);
     applyViewSettings();
     update3DCameraFromSliders();
+
     _applyConnectorButton->setEnabled(true);
     _serverAutostartCheck->setEnabled(true);
     _serverHostEdit->setEnabled(true);
     _serverPortSpin->setEnabled(true);
     _serverBinEdit->setEnabled(true);
     connectControls();
+
     const std::uint32_t fps = std::max<std::uint32_t>(1u, _config.uiFpsLimit);
-    if (startupConfigValid && _runtime->start()) {
+    if (startupConfigValid && _runtime->start())
         _timer->start(std::max(1, static_cast<int>(1000 / fps)));
-    }
-    else if (!startupConfigValid) {
+    else if (!startupConfigValid)
         _statusLabel->setText(QString("preflight validation failed; fix config before starting"));
-    }
-    else {
+    else
         _statusLabel->setText(QString("server connection failed (service)"));
-    }
 }
 
 MainWindow::~MainWindow()
@@ -143,11 +142,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::applyTheme()
 {
-    const QtThemeMode mode = QtTheme::resolve(_config.uiTheme);
-    _config.uiTheme = QtTheme::toConfigValue(mode);
-    setPalette(QtTheme::buildPalette(mode));
+    const QtThemeMode mode = WorkspaceTheme::resolve(_config.uiTheme);
+    _config.uiTheme = WorkspaceTheme::toConfigValue(mode);
+    const QPalette palette = WorkspaceTheme::buildPalette(mode);
+    setPalette(palette);
+    QApplication::setPalette(palette);
     setAutoFillBackground(true);
-    setStyleSheet(QtTheme::buildMainWindowStyleSheet(mode));
 }
 
 void MainWindow::applyViewSettings()
@@ -158,8 +158,8 @@ void MainWindow::applyViewSettings()
                                  _octreeOverlayOpacitySpin->value());
     _multiView->setRenderSettings(_config.renderCullingEnabled, _config.renderLODEnabled,
                                   _config.renderLODNearDistance, _config.renderLODFarDistance);
-    _clientDrawCap = grav_client::resolveClientDrawCap(_config);
+    _clientDrawCap = bltzr_client::resolveClientDrawCap(_config);
     _multiView->setMaxDrawParticles(_clientDrawCap);
     _runtime->setRemoteSnapshotCap(_clientDrawCap);
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

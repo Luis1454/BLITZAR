@@ -16,7 +16,7 @@
 #include <string>
 #include <system_error>
 
-namespace grav_module {
+namespace bltzr_module {
 static bool hasRequiredExports(const ClientModuleExportsV1* exports)
 {
     return exports != nullptr && exports->apiVersion == kClientModuleApiVersionV1 &&
@@ -165,4 +165,4 @@ bool ClientModuleHandle::load(const std::string& modulePath, const std::string& 
     m_impl->path = effectivePath;
     return true;
 }
-} // namespace grav_module
+} // namespace bltzr_module

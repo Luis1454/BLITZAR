@@ -5,15 +5,15 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_RUSTRUNTIMEBRIDGESTATE_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_CLIENT_RUSTRUNTIMEBRIDGESTATE_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_CLIENT_RUSTRUNTIMEBRIDGESTATE_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_CLIENT_RUSTRUNTIMEBRIDGESTATE_HPP_
 #include "ffi/BlitzarRuntimeBridgeApi.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <string>
 #include <utility>
 
-namespace grav_client {
+namespace bltzr_client {
 class RustRuntimeBridgeState {
 public:
     RustRuntimeBridgeState();
@@ -38,5 +38,5 @@ private:
     static std::string copyStringView(blitzar_runtime_string_view view);
     blitzar_runtime_bridge_t* _state;
 };
-} // namespace grav_client
-#endif // GRAVITY_RUNTIME_INCLUDE_CLIENT_RUSTRUNTIMEBRIDGESTATE_HPP_
+} // namespace bltzr_client
+#endif // BLITZAR_RUNTIME_INCLUDE_CLIENT_RUSTRUNTIMEBRIDGESTATE_HPP_

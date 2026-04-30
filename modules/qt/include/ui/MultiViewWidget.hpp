@@ -5,8 +5,8 @@
  * @brief Qt desktop user interface module for simulation control and visualization.
  */
 
-#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_MULTIVIEWWIDGET_HPP_
-#define GRAVITY_MODULES_QT_INCLUDE_UI_MULTIVIEWWIDGET_HPP_
+#ifndef BLITZAR_MODULES_QT_INCLUDE_UI_MULTIVIEWWIDGET_HPP_
+#define BLITZAR_MODULES_QT_INCLUDE_UI_MULTIVIEWWIDGET_HPP_
 /*
  * Module: ui
  * Responsibility: Coordinate the four synchronized particle views shown in the Qt
@@ -19,7 +19,7 @@
 #include <cstddef>
 #include <vector>
 
-namespace grav_qt {
+namespace bltzr_qt {
 class MultiViewWidget : public QWidget {
 public:
     explicit MultiViewWidget();
@@ -51,5 +51,5 @@ private:
     int _octreeOverlayDepth;
     int _octreeOverlayOpacity;
 };
-} // namespace grav_qt
-#endif // GRAVITY_MODULES_QT_INCLUDE_UI_MULTIVIEWWIDGET_HPP_
+} // namespace bltzr_qt
+#endif // BLITZAR_MODULES_QT_INCLUDE_UI_MULTIVIEWWIDGET_HPP_

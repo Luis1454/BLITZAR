@@ -12,9 +12,9 @@
 #include <string_view>
 #include <utility>
 
-namespace grav_platform {
+namespace bltzr_platform {
 struct DynamicLibrary::Impl {
-    grav_platform_detail::NativeLibraryHandle handle = 0u;
+    bltzr_platform_detail::NativeLibraryHandle handle = 0u;
 };
 
 DynamicLibrary::DynamicLibrary() : _impl(std::make_unique<Impl>())
@@ -40,9 +40,9 @@ bool DynamicLibrary::open(const std::string& path, std::string& outError)
         if (!_impl)
             _impl = std::make_unique<Impl>();
         close();
-        if (!grav_platform_detail::openDynamicLibrary(path, _impl->handle, outError)) {
+        if (!bltzr_platform_detail::openDynamicLibrary(path, _impl->handle, outError)) {
             if (outError.empty()) {
-                outError = grav_platform_errors::kDynamicLibraryLoadFailed;
+                outError = bltzr_platform_errors::kDynamicLibraryLoadFailed;
             }
             return false;
         }
@@ -53,7 +53,7 @@ bool DynamicLibrary::open(const std::string& path, std::string& outError)
         return false;
     }
     catch (...) {
-        outError = grav_platform_errors::kUnknownException;
+        outError = bltzr_platform_errors::kUnknownException;
         return false;
     }
 }
@@ -61,20 +61,20 @@ bool DynamicLibrary::open(const std::string& path, std::string& outError)
 void DynamicLibrary::close()
 {
     if (_impl) {
-        grav_platform_detail::closeDynamicLibrary(_impl->handle);
+        bltzr_platform_detail::closeDynamicLibrary(_impl->handle);
     }
 }
 
 bool DynamicLibrary::isOpen() const
 {
-    return _impl && grav_platform_detail::isDynamicLibraryOpen(_impl->handle);
+    return _impl && bltzr_platform_detail::isDynamicLibraryOpen(_impl->handle);
 }
 
 bool DynamicLibrary::loadSymbolAddress(std::string_view name, std::uintptr_t& outSymbol,
                                        std::string& outError) const
 {
     if (name.empty() || !isOpen()) {
-        outError = grav_platform_errors::kInvalidLibraryHandleOrSymbol;
+        outError = bltzr_platform_errors::kInvalidLibraryHandleOrSymbol;
         outSymbol = 0u;
         return false;
     }
@@ -86,14 +86,14 @@ bool DynamicLibrary::loadRawSymbol(std::string_view name, std::uintptr_t& outSym
 {
     try {
         outSymbol = 0u;
-        if (!_impl || !grav_platform_detail::isDynamicLibraryOpen(_impl->handle) || name.empty()) {
-            outError = grav_platform_errors::kInvalidLibraryHandleOrSymbol;
+        if (!_impl || !bltzr_platform_detail::isDynamicLibraryOpen(_impl->handle) || name.empty()) {
+            outError = bltzr_platform_errors::kInvalidLibraryHandleOrSymbol;
             return false;
         }
-        if (!grav_platform_detail::loadDynamicSymbol(_impl->handle, name, outSymbol, outError)) {
+        if (!bltzr_platform_detail::loadDynamicSymbol(_impl->handle, name, outSymbol, outError)) {
             if (outError.empty()) {
                 outError =
-                    std::string(grav_platform_errors::kMissingSymbolPrefix) + std::string(name);
+                    std::string(bltzr_platform_errors::kMissingSymbolPrefix) + std::string(name);
             }
             return false;
         }
@@ -104,8 +104,8 @@ bool DynamicLibrary::loadRawSymbol(std::string_view name, std::uintptr_t& outSym
         return false;
     }
     catch (...) {
-        outError = grav_platform_errors::kUnknownException;
+        outError = bltzr_platform_errors::kUnknownException;
         return false;
     }
 }
-} // namespace grav_platform
+} // namespace bltzr_platform

@@ -5,8 +5,8 @@
  * @brief Qt desktop user interface module for simulation control and visualization.
  */
 
-#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOWCONTROLLER_HPP_
-#define GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOWCONTROLLER_HPP_
+#ifndef BLITZAR_MODULES_QT_INCLUDE_UI_MAINWINDOWCONTROLLER_HPP_
+#define BLITZAR_MODULES_QT_INCLUDE_UI_MAINWINDOWCONTROLLER_HPP_
 /*
  * Module: ui
  * Responsibility: Apply validated UI configuration changes to the client runtime.
@@ -22,9 +22,9 @@
  */
 struct SimulationConfig;
 
-namespace grav_qt {
+namespace bltzr_qt {
 struct MainWindowApplyConfigResult final {
-    grav_config::ScenarioValidationReport report;
+    bltzr_config::ScenarioValidationReport report;
     std::uint32_t clientDrawCap = 0u;
     bool applied = false;
 };
@@ -32,11 +32,11 @@ struct MainWindowApplyConfigResult final {
 class MainWindowController final {
 public:
     MainWindowApplyConfigResult applyConfig(const SimulationConfig& config,
-                                            grav_client::IClientRuntime& runtime,
+                                            bltzr_client::IClientRuntime& runtime,
                                             bool requestReset) const;
     std::uint32_t applyPerformanceProfile(const SimulationConfig& config,
-                                          grav_client::IClientRuntime& runtime) const;
-    grav_config::ScenarioValidationReport validate(const SimulationConfig& config) const;
+                                          bltzr_client::IClientRuntime& runtime) const;
+    bltzr_config::ScenarioValidationReport validate(const SimulationConfig& config) const;
 };
-} // namespace grav_qt
-#endif // GRAVITY_MODULES_QT_INCLUDE_UI_MAINWINDOWCONTROLLER_HPP_
+} // namespace bltzr_qt
+#endif // BLITZAR_MODULES_QT_INCLUDE_UI_MAINWINDOWCONTROLLER_HPP_

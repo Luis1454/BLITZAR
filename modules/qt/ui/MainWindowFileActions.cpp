@@ -18,7 +18,7 @@
 #include <limits>
 #include <string>
 
-namespace grav_qt {
+namespace bltzr_qt {
 std::string MainWindow::formatFromSelectedFilter(const QString& filter)
 {
     if (filter.startsWith("VTK ASCII")) {
@@ -72,9 +72,9 @@ void MainWindow::requestReconnectFromUi()
 void MainWindow::handleExportRequest()
 {
     const SimulationStats stats = _runtime->getCachedStats();
-    const std::string preferredFormat = grav_client::normalizeExportFormat(
+    const std::string preferredFormat = bltzr_client::normalizeExportFormat(
         _config.exportFormat.empty() ? std::string("vtk") : _config.exportFormat);
-    const QString startPath = QString::fromStdString(grav_client::buildSuggestedExportPath(
+    const QString startPath = QString::fromStdString(bltzr_client::buildSuggestedExportPath(
         _config.exportDirectory, preferredFormat, stats.steps));
     QString selectedFilter = "VTK ASCII (*.vtk)";
     if (preferredFormat == "vtk_binary")
@@ -92,20 +92,20 @@ void MainWindow::handleExportRequest()
         return;
     }
     std::string format =
-        grav_client::normalizeExportFormat(formatFromSelectedFilter(selectedFilter));
+        bltzr_client::normalizeExportFormat(formatFromSelectedFilter(selectedFilter));
     std::string path = pathChosen.toStdString();
     if (format.empty()) {
-        format = grav_client::normalizeExportFormat(grav_client::inferExportFormatFromPath(path));
+        format = bltzr_client::normalizeExportFormat(bltzr_client::inferExportFormatFromPath(path));
     }
     if (format.empty()) {
-        format = grav_client::normalizeExportFormat(_config.exportFormat);
+        format = bltzr_client::normalizeExportFormat(_config.exportFormat);
         if (format.empty()) {
             format = "vtk";
         }
     }
     std::filesystem::path outPath(path);
     if (outPath.extension().empty()) {
-        const std::string ext = grav_client::extensionForExportFormat(format);
+        const std::string ext = bltzr_client::extensionForExportFormat(format);
         if (!ext.empty()) {
             outPath += ext;
             path = outPath.string();
@@ -203,4 +203,4 @@ void MainWindow::resetSimulationFromUi()
     _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
     statusBar()->showMessage("Simulation reset requested", 3000);
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

@@ -5,12 +5,12 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEAPI_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEAPI_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEAPI_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEAPI_HPP_
 #include <cstddef>
 #include <cstdint>
 
-namespace grav_module {
+namespace bltzr_module {
 extern const std::uint32_t kClientModuleApiVersionV1;
 extern const char* kClientModuleEntryPoint;
 extern const char* kClientModuleProductName;
@@ -41,5 +41,5 @@ struct ClientModuleExportsV1 {
 };
 
 typedef const ClientModuleExportsV1* (*ClientModuleEntryPointFn)();
-} // namespace grav_module
-#endif // GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEAPI_HPP_
+} // namespace bltzr_module
+#endif // BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEAPI_HPP_

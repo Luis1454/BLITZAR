@@ -9,7 +9,7 @@
 
 #include "apps/client-host/client_host_cli_args.hpp"
 
-namespace grav_client_host {
+namespace bltzr_client_host {
 
 class ClientHostCliArgsLocal final {
 public:
@@ -26,8 +26,8 @@ public:
                 outOptions.validateOnly = true;
                 continue;
             }
-            if (arg == "--wait-for-module") {
-                outOptions.waitForModule = true;
+            if (arg == "--exit" || arg == "--exit-after-module") {
+                outOptions.exitAfterModule = true;
                 continue;
             }
             if (arg == "--script" && i + 1 < argc) {
@@ -64,19 +64,19 @@ public:
     {
         std::cout << "Usage: " << programName
                   << " [--config PATH] [--module <alias|path>] [--script PATH] [--validate-only]"
-                     " [--wait-for-module]\n"
+                     " [--exit]\n"
                   << "[client-host] commands:\n"
                   << "  help\n"
                   << "  modules\n"
                   << "  module\n"
                   << "  quit | exit\n"
                   << "  <any other line> -> forwarded to loaded module\n"
+                  << "[client-host] default module: qt (GUI)\n"
                   << "[client-host] aliases: cli, gui, echo, qt\n"
                   << "[client-host] --script runs deterministic batch commands and exits.\n"
                   << "[client-host] --validate-only runs scenario pre-flight checks and exits "
                      "without starting a module.\n"
-                  << "[client-host] --wait-for-module keeps GUI-style modules alive when no "
-                     "interactive stdin is attached.\n";
+                  << "[client-host] --exit exits when module closes (default: wait for GUI).\n";
         if (ClientHostCli::liveReloadEnabled()) {
             std::cout << "  reload\n"
                       << "  switch <module_alias_or_path>\n"
@@ -100,4 +100,4 @@ void ClientHostCliArgs::printHelp(std::string_view programName)
     ClientHostCliArgsLocal::printHelp(programName);
 }
 
-} // namespace grav_client_host
+} // namespace bltzr_client_host

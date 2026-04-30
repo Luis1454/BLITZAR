@@ -5,8 +5,8 @@
  * @brief Public configuration interfaces and validation contracts for simulation setup.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSPARSE_HPP_
-#define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSPARSE_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSPARSE_HPP_
+#define BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSPARSE_HPP_
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -88,4 +88,4 @@ public:
     static bool readValue(const std::vector<std::string_view>& args, std::size_t& index,
                           const std::string& inlined, std::string& outValue);
 };
-#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSPARSE_HPP_
+#endif // BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONARGSPARSE_HPP_

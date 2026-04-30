@@ -5,8 +5,8 @@
  * @brief Qt desktop user interface module for simulation control and visualization.
  */
 
-#ifndef GRAVITY_MODULES_QT_INCLUDE_UI_ENERGYGRAPHWIDGET_HPP_
-#define GRAVITY_MODULES_QT_INCLUDE_UI_ENERGYGRAPHWIDGET_HPP_
+#ifndef BLITZAR_MODULES_QT_INCLUDE_UI_ENERGYGRAPHWIDGET_HPP_
+#define BLITZAR_MODULES_QT_INCLUDE_UI_ENERGYGRAPHWIDGET_HPP_
 /*
  * Module: ui
  * Responsibility: Render the recent energy history exposed by the client runtime.
@@ -24,7 +24,7 @@
 class QPaintEvent;
 typedef QPaintEvent UiPaintEvent;
 
-namespace grav_qt {
+namespace bltzr_qt {
 class EnergyGraphWidget : public QWidget {
 public:
     explicit EnergyGraphWidget();
@@ -42,5 +42,5 @@ private:
     void paintEvent(PaintEventHandle event) override;
     std::vector<EnergyPoint> _history;
 };
-} // namespace grav_qt
-#endif // GRAVITY_MODULES_QT_INCLUDE_UI_ENERGYGRAPHWIDGET_HPP_
+} // namespace bltzr_qt
+#endif // BLITZAR_MODULES_QT_INCLUDE_UI_ENERGYGRAPHWIDGET_HPP_

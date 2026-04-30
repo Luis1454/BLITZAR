@@ -5,8 +5,8 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_ICLIENTRUNTIME_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_CLIENT_ICLIENTRUNTIME_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_CLIENT_ICLIENTRUNTIME_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_CLIENT_ICLIENTRUNTIME_HPP_
 /*
  * Module: client
  * Responsibility: Expose the deterministic runtime control and telemetry
@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-namespace grav_client {
+namespace bltzr_client {
 struct ConsumedSnapshot final {
     std::vector<RenderParticle> particles;
     std::size_t sourceSize = 0u;
@@ -83,5 +83,5 @@ public:
     virtual std::uint32_t statsAgeMs() const = 0;
     virtual std::uint32_t snapshotAgeMs() const = 0;
 };
-} // namespace grav_client
-#endif // GRAVITY_RUNTIME_INCLUDE_CLIENT_ICLIENTRUNTIME_HPP_
+} // namespace bltzr_client
+#endif // BLITZAR_RUNTIME_INCLUDE_CLIENT_ICLIENTRUNTIME_HPP_

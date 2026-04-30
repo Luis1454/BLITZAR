@@ -12,13 +12,13 @@
 #include <filesystem>
 
 namespace testsupport {
-namespace grav_test_physics_scenario {
+namespace bltzr_test_physics_scenario {
 std::filesystem::path twoBodyInputPath()
 {
     const std::filesystem::path sourceFile(__FILE__);
     return sourceFile.parent_path().parent_path() / "data" / "two_body_rest.xyz";
 }
-} // namespace grav_test_physics_scenario
+} // namespace bltzr_test_physics_scenario
 
 float distance(const RenderParticle& a, const RenderParticle& b)
 {
@@ -139,12 +139,12 @@ bool runScenario(const ScenarioConfig& cfg, ScenarioResult& out, std::string& er
 
 std::string getTwoBodyInputPath()
 {
-    return grav_test_physics_scenario::twoBodyInputPath().string();
+    return bltzr_test_physics_scenario::twoBodyInputPath().string();
 }
 
 bool prepareTwoBodyScenario(ScenarioConfig& cfg, std::string& error)
 {
-    const std::filesystem::path inputPath = grav_test_physics_scenario::twoBodyInputPath();
+    const std::filesystem::path inputPath = bltzr_test_physics_scenario::twoBodyInputPath();
     if (!std::filesystem::exists(inputPath)) {
         error = "Missing test data file: " + inputPath.string();
         return false;

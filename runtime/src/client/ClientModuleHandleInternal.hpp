@@ -5,8 +5,8 @@
  * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_SRC_CLIENT_CLIENTMODULEHANDLEINTERNAL_HPP_
-#define GRAVITY_RUNTIME_SRC_CLIENT_CLIENTMODULEHANDLEINTERNAL_HPP_
+#ifndef BLITZAR_RUNTIME_SRC_CLIENT_CLIENTMODULEHANDLEINTERNAL_HPP_
+#define BLITZAR_RUNTIME_SRC_CLIENT_CLIENTMODULEHANDLEINTERNAL_HPP_
 #include "client/ClientModuleApi.hpp"
 #include "client/ClientModuleBoundary.hpp"
 #include "client/ClientModuleHandle.hpp"
@@ -17,11 +17,11 @@
 #include <string>
 #include <string_view>
 
-namespace grav_module {
+namespace bltzr_module {
 constexpr std::size_t kErrorBufferSize = 1024u;
 
 struct ClientModuleHandle::Impl {
-    grav_platform::DynamicLibrary library{};
+    bltzr_platform::DynamicLibrary library{};
     const ClientModuleExportsV1* exports = nullptr;
     ClientModuleOpaqueState state{};
     std::string path;
@@ -29,5 +29,5 @@ struct ClientModuleHandle::Impl {
 
 std::string errorFromBuffer(const std::array<char, kErrorBufferSize>& buffer,
                             std::string_view fallback);
-} // namespace grav_module
-#endif // GRAVITY_RUNTIME_SRC_CLIENT_CLIENTMODULEHANDLEINTERNAL_HPP_
+} // namespace bltzr_module
+#endif // BLITZAR_RUNTIME_SRC_CLIENT_CLIENTMODULEHANDLEINTERNAL_HPP_

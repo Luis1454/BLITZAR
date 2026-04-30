@@ -53,7 +53,7 @@ UNNAMED_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s*\{")
 USING_ANY_RE = re.compile(r"(?m)^\s*using\b[^;]*;")
 INLINE_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+[A-Za-z0-9_]+::[A-Za-z0-9_:]+\s*\{")
 NAMESPACE_BLOCK_RE = re.compile(r"(?m)^\s*namespace\s+[A-Za-z0-9_]+\s*\{")
-GRAVITY_INTERNAL_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+gravity_internal_")
+BLITZAR_INTERNAL_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s+BLITZAR_internal_")
 PROD_ROOTS = ("apps/", "engine/", "runtime/", "modules/")
 GOTO_RE = re.compile(r"\bgoto\b")
 SETJMP_LONGJMP_RE = re.compile(r"\b(?:setjmp|longjmp)\b")
@@ -187,7 +187,7 @@ class RepoPolicyCheck(BaseCheck):
         for stale in sorted(allowlist - used_allowlist):
             result.add_warning(f"allowlist entry not needed anymore: {stale}")
 
-        check_evidence_workflow_commands(context.root, result, "cmake -S", "-DGRAVITY_PROFILE=prod", "evidence configure command must include -DGRAVITY_PROFILE=prod")
+        check_evidence_workflow_commands(context.root, result, "cmake -S", "-DBLITZAR_PROFILE=prod", "evidence configure command must include -DBLITZAR_PROFILE=prod")
         check_evidence_workflow_commands(context.root, result, "ctest ", "--no-tests=error", "CI ctest command must include --no-tests=error")
         check_legacy_ctest_selectors(context.root, result)
         check_workflow_action_pinning(context.root, result)
@@ -215,8 +215,8 @@ class RepoPolicyCheck(BaseCheck):
             result.add_error(f"{rel}: 'using' is forbidden in C++ sources")
         if INLINE_NAMESPACE_RE.search(content):
             result.add_error(f"{rel}: nested namespace declaration (A::B) is forbidden")
-        if GRAVITY_INTERNAL_NAMESPACE_RE.search(content):
-            result.add_error(f"{rel}: gravity_internal_* namespace is forbidden")
+        if BLITZAR_INTERNAL_NAMESPACE_RE.search(content):
+            result.add_error(f"{rel}: BLITZAR_internal_* namespace is forbidden")
         if is_prod_path(rel) and len(NAMESPACE_BLOCK_RE.findall(content)) > 1:
             result.add_error(f"{rel}: nested namespace blocks are forbidden in production paths")
         if PRAGMA_ONCE_RE.search(content):

@@ -5,8 +5,8 @@
  * @brief Source artifact for the BLITZAR simulation project.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONSERVER_HPP_
-#define GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONSERVER_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_SERVER_SIMULATIONSERVER_HPP_
+#define BLITZAR_ENGINE_INCLUDE_SERVER_SIMULATIONSERVER_HPP_
 /*
  * Module: server
  * Responsibility: Own the authoritative simulation runtime and publish
@@ -627,4 +627,4 @@ private:
     std::unique_ptr<SimulationCheckpointQueueState> _checkpointQueueState;
     static constexpr std::uint64_t kGpuTelemetrySampleStride = 8u;
 };
-#endif // GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONSERVER_HPP_
+#endif // BLITZAR_ENGINE_INCLUDE_SERVER_SIMULATIONSERVER_HPP_

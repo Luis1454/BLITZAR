@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-namespace grav_test_client_runtime_reload {
+namespace bltzr_test_client_runtime_reload {
 static std::filesystem::path writeTempXyz(const char* basename, const std::vector<float>& xs)
 {
     const std::filesystem::path path = std::filesystem::temp_directory_path() / basename;
@@ -37,10 +37,10 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_008_LoadResetInvalidatesClientSnapshotCache
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    grav_client::ClientRuntime runtime(
+    bltzr_client::ClientRuntime runtime(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
-    std::optional<grav_client::ConsumedSnapshot> consumedSnapshot;
+    std::optional<bltzr_client::ConsumedSnapshot> consumedSnapshot;
     ASSERT_TRUE(testsupport::waitUntil(
         [&]() {
             consumedSnapshot = runtime.consumeLatestSnapshot();
@@ -50,9 +50,9 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_008_LoadResetInvalidatesClientSnapshotCache
     ASSERT_TRUE(consumedSnapshot.has_value());
     ASSERT_GT(consumedSnapshot->sourceSize, 0u);
     const std::filesystem::path xyz3 =
-        writeTempXyz("grav_test_client_reload_3.xyz", {-2.0f, 0.0f, 2.0f});
+        writeTempXyz("bltzr_test_client_reload_3.xyz", {-2.0f, 0.0f, 2.0f});
     const std::filesystem::path xyz4 =
-        writeTempXyz("grav_test_client_reload_4.xyz", {-3.0f, -1.0f, 1.0f, 3.0f});
+        writeTempXyz("bltzr_test_client_reload_4.xyz", {-3.0f, -1.0f, 1.0f, 3.0f});
     runtime.setInitialStateFile(xyz3.string(), "xyz");
     EXPECT_FALSE(runtime.consumeLatestSnapshot().has_value());
     EXPECT_EQ(runtime.snapshotAgeMs(), std::numeric_limits<std::uint32_t>::max());
@@ -80,4 +80,4 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_008_LoadResetInvalidatesClientSnapshotCache
     ec.clear();
     std::filesystem::remove(xyz4, ec);
 }
-} // namespace grav_test_client_runtime_reload
+} // namespace bltzr_test_client_runtime_reload

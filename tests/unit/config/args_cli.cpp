@@ -14,7 +14,7 @@
 #include <string_view>
 #include <vector>
 
-namespace grav_test_config_args_cli {
+namespace bltzr_test_config_args_cli {
 std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage)
 {
     std::vector<std::string_view> args;
@@ -23,18 +23,18 @@ std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage
         args.emplace_back(item);
     return args;
 }
-} // namespace grav_test_config_args_cli
+} // namespace bltzr_test_config_args_cli
 
 TEST(ConfigArgsTest, TST_UNT_CONF_001_FindsConfigPathInline)
 {
     std::vector<std::string> args = {"app", "--config=custom.ini"};
-    EXPECT_EQ(findConfigPathArg(grav_test_config_args_cli::toArgViews(args)), "custom.ini");
+    EXPECT_EQ(findConfigPathArg(bltzr_test_config_args_cli::toArgViews(args)), "custom.ini");
 }
 
 TEST(ConfigArgsTest, TST_UNT_CONF_002_FindsConfigPathSeparated)
 {
     std::vector<std::string> args = {"app", "--config", "custom.ini"};
-    EXPECT_EQ(findConfigPathArg(grav_test_config_args_cli::toArgViews(args)), "custom.ini");
+    EXPECT_EQ(findConfigPathArg(bltzr_test_config_args_cli::toArgViews(args)), "custom.ini");
 }
 
 TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
@@ -69,7 +69,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
                                      "35",
                                      "--server-snapshot-timeout-ms",
                                      "180"};
-    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.particleCount, 2048u);
     EXPECT_FLOAT_EQ(config.dt, 0.02f);
     EXPECT_EQ(config.solver, "octree_gpu");
@@ -97,7 +97,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_004_RejectsInvalidArgumentsAndKeepsPreviousVal
     const bool initialSphEnabled = config.sphEnabled;
     std::vector<std::string> args = {"app",   "--particle-count", "nope", "--dt", "-1", "--sph",
                                      "maybe", "--unknown",        "value"};
-    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.particleCount, initialParticleCount);
     EXPECT_FLOAT_EQ(config.dt, initialDt);
     EXPECT_EQ(config.sphEnabled, initialSphEnabled);
@@ -117,7 +117,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_005_RejectsInvalidSolverAndIntegratorValues)
     const std::string initialIntegrator = config.integrator;
     std::vector<std::string> args = {"app", "--solver", "bad_solver", "--integrator",
                                      "bad_integrator"};
-    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.solver, initialSolver);
     EXPECT_EQ(config.integrator, initialIntegrator);
     EXPECT_TRUE(runtime.hasArgumentError);
@@ -128,7 +128,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_005_RejectsInvalidSolverAndIntegratorValues)
     warnings.str("");
     warnings.clear();
     args = {"app", "--solver", "octree_gpu", "--integrator", "rk4"};
-    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.solver, "octree_gpu");
     EXPECT_EQ(config.integrator, "rk4");
     EXPECT_TRUE(runtime.hasArgumentError);
@@ -147,7 +147,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_006_RejectsTrailingGarbageNumericArguments)
     std::vector<std::string> args = {"app",   "--particle-count", "2048abc", "--dt",
                                      "0.01x", "--octree-theta",   "1.4deg",  "--luminosity",
                                      "120%"};
-    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.particleCount, initialParticleCount);
     EXPECT_FLOAT_EQ(config.dt, initialDt);
     EXPECT_FLOAT_EQ(config.octreeTheta, initialTheta);
@@ -165,8 +165,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_014_ClampsClientParticleCapArgumentToProtocolM
     RuntimeArgs runtime;
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--client-particle-cap", "50000"};
-    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
-    EXPECT_EQ(config.clientParticleCap, grav_protocol::kSnapshotMaxPoints);
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(config.clientParticleCap, bltzr_protocol::kSnapshotMaxPoints);
     EXPECT_NE(warnings.str().find("--client-particle-cap clamped"), std::string::npos);
     EXPECT_FALSE(runtime.hasArgumentError);
 }
@@ -177,7 +177,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_019_CliAliasesApplyThroughSharedRegistry)
     RuntimeArgs runtime;
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--structure", "random_cloud", "--size", "24"};
-    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.presetStructure, "random_cloud");
     EXPECT_FLOAT_EQ(config.presetSize, 24.0f);
     EXPECT_TRUE(warnings.str().empty());
@@ -191,7 +191,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_022_CliAcceptsCalibrationSceneModes)
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--preset-structure", "three_body", "--init-mode",
                                      "plummer_sphere"};
-    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.presetStructure, "three_body");
     EXPECT_EQ(config.initMode, "plummer_sphere");
     EXPECT_FALSE(warnings.str().empty());
@@ -204,9 +204,9 @@ TEST(ConfigArgsTest, TST_UNT_CONF_026_CliPerformanceProfileAppliesInteractivePre
     RuntimeArgs runtime;
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--performance-profile", "interactive"};
-    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.performanceProfile, "interactive");
-    EXPECT_EQ(config.clientParticleCap, grav_protocol::kSnapshotDefaultPoints);
+    EXPECT_EQ(config.clientParticleCap, bltzr_protocol::kSnapshotDefaultPoints);
     EXPECT_EQ(config.snapshotPublishPeriodMs, 50u);
     EXPECT_EQ(config.energyMeasureEverySteps, 30u);
     EXPECT_EQ(config.energySampleLimit, 256u);
@@ -222,7 +222,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_036_CliPerformanceProfileAppliesBalancedAndQua
     RuntimeArgs runtime;
     std::stringstream warnings;
     std::vector<std::string> balancedArgs = {"app", "--performance-profile", "balanced"};
-    applyArgsToConfig(grav_test_config_args_cli::toArgViews(balancedArgs), balanced, runtime,
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(balancedArgs), balanced, runtime,
                       warnings);
     EXPECT_EQ(balanced.performanceProfile, "balanced");
     EXPECT_EQ(balanced.clientParticleCap, 8192u);
@@ -236,10 +236,10 @@ TEST(ConfigArgsTest, TST_UNT_CONF_036_CliPerformanceProfileAppliesBalancedAndQua
     warnings.str("");
     warnings.clear();
     std::vector<std::string> qualityArgs = {"app", "--performance-profile", "quality"};
-    applyArgsToConfig(grav_test_config_args_cli::toArgViews(qualityArgs), quality, runtime,
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(qualityArgs), quality, runtime,
                       warnings);
     EXPECT_EQ(quality.performanceProfile, "quality");
-    EXPECT_EQ(quality.clientParticleCap, grav_protocol::kSnapshotMaxPoints);
+    EXPECT_EQ(quality.clientParticleCap, bltzr_protocol::kSnapshotMaxPoints);
     EXPECT_EQ(quality.snapshotPublishPeriodMs, 16u);
     EXPECT_EQ(quality.energyMeasureEverySteps, 10u);
     EXPECT_EQ(quality.energySampleLimit, 5000u);
@@ -254,7 +254,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_033_CliRejectsInvalidSiPhysicsParameters)
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--physics-max-accel", "0", "--physics-min-softening",
                                      "0",   "--physics-min-dist2", "0"};
-    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     const std::string log = warnings.str();
     EXPECT_TRUE(runtime.hasArgumentError);
     EXPECT_NE(log.find("[preflight] blocked"), std::string::npos);
@@ -270,7 +270,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_071_CliExportOnExitRejectsInvalidExplicitBool)
     runtime.exportOnExit = false;
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--export-on-exit", "banana"};
-    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_FALSE(runtime.exportOnExit);
     EXPECT_NE(warnings.str().find("invalid bool for --export-on-exit"), std::string::npos);
 }
@@ -281,7 +281,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_072_CliExportOnExitParsesSeparatedBoolValue)
     RuntimeArgs runtime;
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--export-on-exit", "false"};
-    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_FALSE(runtime.exportOnExit);
     EXPECT_FALSE(runtime.hasArgumentError);
     EXPECT_TRUE(warnings.str().empty());
@@ -294,7 +294,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_073_CliExportOnExitDefaultsToTrueWithoutValue)
     runtime.exportOnExit = false;
     std::stringstream warnings;
     std::vector<std::string> args = {"app", "--export-on-exit", "--target-steps", "10"};
-    applyArgsToConfig(grav_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_TRUE(runtime.exportOnExit);
     EXPECT_EQ(runtime.targetSteps, 10);
     EXPECT_FALSE(runtime.hasArgumentError);

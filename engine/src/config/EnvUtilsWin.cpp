@@ -8,7 +8,7 @@
 #include "config/EnvUtilsWin.hpp"
 #include "config/EnvUtils.hpp"
 
-namespace grav_env {
+namespace bltzr_env {
 std::optional<std::string> get(std::string_view name)
 {
     const std::string key(name);
@@ -21,4 +21,4 @@ std::optional<std::string> get(std::string_view name)
     std::free(rawValue);
     return value;
 }
-} // namespace grav_env
+} // namespace bltzr_env

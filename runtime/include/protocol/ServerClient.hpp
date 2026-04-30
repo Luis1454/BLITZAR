@@ -5,8 +5,8 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERCLIENT_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERCLIENT_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_PROTOCOL_SERVERCLIENT_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_PROTOCOL_SERVERCLIENT_HPP_
 #include "protocol/ServerJsonCodec.hpp"
 #include <cstdint>
 #include <string>
@@ -199,4 +199,4 @@ private:
     std::string _recvBuffer;
     std::string _authToken;
 };
-#endif // GRAVITY_RUNTIME_INCLUDE_PROTOCOL_SERVERCLIENT_HPP_
+#endif // BLITZAR_RUNTIME_INCLUDE_PROTOCOL_SERVERCLIENT_HPP_

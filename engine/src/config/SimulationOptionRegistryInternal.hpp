@@ -5,15 +5,15 @@
  * @brief Configuration parsing, validation, and serialization implementation.
  */
 
-#ifndef GRAVITY_SIM_SIMULATIONOPTIONREGISTRYINTERNAL_HPP
-#define GRAVITY_SIM_SIMULATIONOPTIONREGISTRYINTERNAL_HPP
+#ifndef BLITZAR_SIM_SIMULATIONOPTIONREGISTRYINTERNAL_HPP
+#define BLITZAR_SIM_SIMULATIONOPTIONREGISTRYINTERNAL_HPP
 #include "config/SimulationArgsParse.hpp"
 #include "config/SimulationOptionRegistry.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <string_view>
 
-namespace grav_config {
+namespace bltzr_config {
 enum class OptionKind {
     Uint,
     Int,
@@ -54,5 +54,5 @@ bool matchesEnv(const SimulationOptionEntry& entry, const std::string& key);
 bool applyEntry(const SimulationOptionEntry& entry, const std::string& value,
                 SimulationConfig& config, std::ostream& warnings, std::string_view source,
                 std::string_view optionName);
-} // namespace grav_config
-#endif // GRAVITY_SIM_SIMULATIONOPTIONREGISTRYINTERNAL_HPP
+} // namespace bltzr_config
+#endif // BLITZAR_SIM_SIMULATIONOPTIONREGISTRYINTERNAL_HPP

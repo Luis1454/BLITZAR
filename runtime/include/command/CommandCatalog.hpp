@@ -5,13 +5,13 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDCATALOG_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDCATALOG_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDCATALOG_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDCATALOG_HPP_
 #include "command/CommandTypes.hpp"
 #include <string_view>
 #include <vector>
 
-namespace grav_cmd {
+namespace bltzr_cmd {
 class CommandCatalog final {
 public:
     static const CommandSpec* findByName(std::string_view name);
@@ -19,5 +19,5 @@ public:
     static const std::vector<CommandSpec>& all();
     static std::string renderHelp();
 };
-} // namespace grav_cmd
-#endif // GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDCATALOG_HPP_
+} // namespace bltzr_cmd
+#endif // BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDCATALOG_HPP_

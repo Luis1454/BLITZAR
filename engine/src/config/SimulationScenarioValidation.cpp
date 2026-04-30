@@ -17,7 +17,7 @@
 #include <sstream>
 #include <utility>
 
-namespace grav_config {
+namespace bltzr_config {
 class SimulationScenarioValidationLocal final {
 public:
     static ScenarioValidationReport evaluate(const SimulationConfig& config)
@@ -196,6 +196,16 @@ public:
                           "Cloud-based presets require a strictly positive spatial extent.",
                           "Set init_cloud_half_extent above 0.");
         }
+        if (plan.config.mode == "cube_random" && plan.config.cubeHalfExtent <= 0.0f) {
+            addDiagnostic(ScenarioDiagnosticLevel::Error, "init_cube_half_extent",
+                          "Cube random mode requires a strictly positive half extent.",
+                          "Set init_cube_half_extent above 0.");
+        }
+        if (plan.config.mode == "sphere_random" && plan.config.sphereRadius <= 0.0f) {
+            addDiagnostic(ScenarioDiagnosticLevel::Error, "init_sphere_radius",
+                          "Sphere random mode requires a strictly positive radius.",
+                          "Set init_sphere_radius above 0.");
+        }
         SimulationScenarioValidationPhysics::appendDiagnostics(config, plan.config, addDiagnostic);
         return report;
     }
@@ -210,4 +220,4 @@ std::string SimulationScenarioValidation::renderText(const ScenarioValidationRep
 {
     return SimulationScenarioValidationRender::render(report);
 }
-} // namespace grav_config
+} // namespace bltzr_config

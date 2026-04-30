@@ -5,8 +5,8 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_
 #include <atomic>
 #include <cstdint>
 #include <mutex>
@@ -118,4 +118,4 @@ private:
     std::mutex _socketMutex;
     std::vector<std::thread> _clientThreads;
 };
-#endif // GRAVITY_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_
+#endif // BLITZAR_RUNTIME_INCLUDE_SERVER_SERVERDAEMON_HPP_

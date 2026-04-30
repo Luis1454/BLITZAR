@@ -12,7 +12,7 @@
 #include "protocol/ServerProtocol.hpp"
 #include <algorithm>
 
-namespace grav_config {
+namespace bltzr_config {
 static bool matchesManagedPerformanceFields(const SimulationConfig& lhs,
                                             const SimulationConfig& rhs)
 {
@@ -44,7 +44,7 @@ static void writePerformance(std::ostream& out, const SimulationConfig& config)
     out << "performance(profile=" << effectiveProfile;
     if (emitCustomProfile) {
         out << ", draw_cap="
-            << std::min<std::uint32_t>(grav_protocol::kSnapshotMaxPoints,
+            << std::min<std::uint32_t>(bltzr_protocol::kSnapshotMaxPoints,
                                        std::max<std::uint32_t>(2u, config.clientParticleCap))
             << ", snapshot_ms=" << std::max<std::uint32_t>(1u, config.snapshotPublishPeriodMs)
             << ", energy_every=" << std::max<std::uint32_t>(1u, config.energyMeasureEverySteps)
@@ -167,6 +167,8 @@ static void writeCloud(std::ostream& out, const SimulationConfig& config)
 {
     DirectiveStreamWriter writer(out, "cloud");
     writer.writeFloat("half_extent", config.initCloudHalfExtent);
+    writer.writeFloat("cube_half_extent", config.initCubeHalfExtent);
+    writer.writeFloat("sphere_radius", config.initSphereRadius);
     writer.writeFloat("speed", config.initCloudSpeed);
     writer.writeFloat("particle_mass", config.initParticleMass);
     writer.finish();
@@ -217,4 +219,4 @@ void SimulationConfigDirective::write(std::ostream& out, const SimulationConfig&
     writeSph(out, config);
     writeRender(out, config);
 }
-} // namespace grav_config
+} // namespace bltzr_config

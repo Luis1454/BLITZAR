@@ -61,7 +61,7 @@ def build_release_lane_activities(profile: str) -> list[dict[str, str]]:
         {
             "name": "configure",
             "status": "pass",
-            "command": f"cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DGRAVITY_PROFILE={profile} -DGRAVITY_STRICT_WARNINGS=ON",
+            "command": f"cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_PROFILE={profile} -DBLITZAR_STRICT_WARNINGS=ON",
         },
         {"name": "build", "status": "pass", "command": "cmake --build build --parallel"},
         {

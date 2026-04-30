@@ -5,15 +5,15 @@
  * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_SRC_FFI_BLITZARCOREINTERNAL_HPP_
-#define GRAVITY_RUNTIME_SRC_FFI_BLITZARCOREINTERNAL_HPP_
+#ifndef BLITZAR_RUNTIME_SRC_FFI_BLITZARCOREINTERNAL_HPP_
+#define BLITZAR_RUNTIME_SRC_FFI_BLITZARCOREINTERNAL_HPP_
 #include "ffi/BlitzarCoreApi.hpp"
 #include "server/SimulationServer.hpp"
 #include <cstdint>
 #include <mutex>
 #include <string>
 
-namespace grav_ffi {
+namespace bltzr_ffi {
 class BlitzarCore final {
 public:
     explicit BlitzarCore(const blitzar_core_config_t& config);
@@ -42,7 +42,7 @@ private:
     mutable std::mutex _errorMutex;
     mutable std::string _lastError;
 };
-} // namespace grav_ffi
+} // namespace bltzr_ffi
 
 /*
  * @brief Defines the blitzar core type contract.
@@ -59,6 +59,6 @@ struct blitzar_core {
      * it.
      */
     explicit blitzar_core(const blitzar_core_config_t& config);
-    grav_ffi::BlitzarCore impl;
+    bltzr_ffi::BlitzarCore impl;
 };
-#endif // GRAVITY_RUNTIME_SRC_FFI_BLITZARCOREINTERNAL_HPP_
+#endif // BLITZAR_RUNTIME_SRC_FFI_BLITZARCOREINTERNAL_HPP_

@@ -15,13 +15,13 @@
 #include "modules/cli/module_cli_lifecycle.hpp"
 #include "modules/cli/module_cli_state.hpp"
 
-namespace grav_module_cli {
+namespace bltzr_module_cli {
 
 class ModuleCliLifecycleLocal final {
 public:
-    static bool create(const grav_module::ClientHostContextV1* hostContext,
-                       const grav_module::ClientModuleStateSlot& outModuleState,
-                       const grav_client::ErrorBufferView& errorBuffer)
+    static bool create(const bltzr_module::ClientHostContextV1* hostContext,
+                       const bltzr_module::ClientModuleStateSlot& outModuleState,
+                       const bltzr_client::ErrorBufferView& errorBuffer)
     {
         try {
             if (!outModuleState.isAvailable()) {
@@ -34,7 +34,7 @@ public:
             }
             state->session.config = SimulationConfig::loadOrCreate(state->session.configPath);
             return outModuleState.assign(
-                grav_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
+                bltzr_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
         }
         catch (const std::exception& ex) {
             errorBuffer.write(ex.what());
@@ -46,7 +46,7 @@ public:
         }
     }
 
-    static void destroy(grav_module::ClientModuleOpaqueState moduleState)
+    static void destroy(bltzr_module::ClientModuleOpaqueState moduleState)
     {
         try {
             ModuleState* state = static_cast<ModuleState*>(moduleState.rawPointer());
@@ -63,8 +63,8 @@ public:
         }
     }
 
-    static bool start(grav_module::ClientModuleOpaqueState moduleState,
-                      const grav_client::ErrorBufferView& errorBuffer)
+    static bool start(bltzr_module::ClientModuleOpaqueState moduleState,
+                      const bltzr_client::ErrorBufferView& errorBuffer)
     {
         try {
             ModuleState* state = static_cast<ModuleState*>(moduleState.rawPointer());
@@ -92,7 +92,7 @@ public:
         }
     }
 
-    static void stop(grav_module::ClientModuleOpaqueState moduleState)
+    static void stop(bltzr_module::ClientModuleOpaqueState moduleState)
     {
         try {
             ModuleState* state = static_cast<ModuleState*>(moduleState.rawPointer());
@@ -109,27 +109,27 @@ public:
     }
 };
 
-bool ModuleCliLifecycle::create(const grav_module::ClientHostContextV1* hostContext,
-                                const grav_module::ClientModuleStateSlot& outModuleState,
-                                const grav_client::ErrorBufferView& errorBuffer)
+bool ModuleCliLifecycle::create(const bltzr_module::ClientHostContextV1* hostContext,
+                                const bltzr_module::ClientModuleStateSlot& outModuleState,
+                                const bltzr_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliLifecycleLocal::create(hostContext, outModuleState, errorBuffer);
 }
 
-void ModuleCliLifecycle::destroy(grav_module::ClientModuleOpaqueState moduleState)
+void ModuleCliLifecycle::destroy(bltzr_module::ClientModuleOpaqueState moduleState)
 {
     ModuleCliLifecycleLocal::destroy(moduleState);
 }
 
-bool ModuleCliLifecycle::start(grav_module::ClientModuleOpaqueState moduleState,
-                               const grav_client::ErrorBufferView& errorBuffer)
+bool ModuleCliLifecycle::start(bltzr_module::ClientModuleOpaqueState moduleState,
+                               const bltzr_client::ErrorBufferView& errorBuffer)
 {
     return ModuleCliLifecycleLocal::start(moduleState, errorBuffer);
 }
 
-void ModuleCliLifecycle::stop(grav_module::ClientModuleOpaqueState moduleState)
+void ModuleCliLifecycle::stop(bltzr_module::ClientModuleOpaqueState moduleState)
 {
     ModuleCliLifecycleLocal::stop(moduleState);
 }
 
-} // namespace grav_module_cli
+} // namespace bltzr_module_cli

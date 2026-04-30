@@ -5,14 +5,14 @@
  * @brief Public configuration interfaces and validation contracts for simulation setup.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_DIRECTIVESTREAMWRITER_HPP_
-#define GRAVITY_ENGINE_INCLUDE_CONFIG_DIRECTIVESTREAMWRITER_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_CONFIG_DIRECTIVESTREAMWRITER_HPP_
+#define BLITZAR_ENGINE_INCLUDE_CONFIG_DIRECTIVESTREAMWRITER_HPP_
 #include <cstdint>
 #include <iosfwd>
 #include <string>
 #include <string_view>
 
-namespace grav_config {
+namespace bltzr_config {
 class DirectiveStreamWriter final {
 public:
     DirectiveStreamWriter(std::ostream& out, std::string_view name);
@@ -29,5 +29,5 @@ private:
     std::ostream& _out;
     bool _hasField;
 };
-} // namespace grav_config
-#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_DIRECTIVESTREAMWRITER_HPP_
+} // namespace bltzr_config
+#endif // BLITZAR_ENGINE_INCLUDE_CONFIG_DIRECTIVESTREAMWRITER_HPP_

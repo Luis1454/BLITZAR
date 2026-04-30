@@ -11,9 +11,9 @@
 #include <exception>
 #include <utility>
 
-namespace grav_platform {
+namespace bltzr_platform {
 struct ProcessHandle::Impl {
-    grav_platform_detail::NativeProcessHandle nativeHandle = 0u;
+    bltzr_platform_detail::NativeProcessHandle nativeHandle = 0u;
     std::int64_t pid = 0;
     std::string commandLine;
 };
@@ -43,11 +43,11 @@ bool ProcessHandle::launch(const std::string& executable, const std::vector<std:
             _impl = std::make_unique<Impl>();
         clear();
         _impl->commandLine = buildProcessCommandLine(executable, args);
-        if (!grav_platform_detail::launchProcess(executable, args, createNewConsole,
-                                                 _impl->nativeHandle, _impl->pid, outError)) {
+        if (!bltzr_platform_detail::launchProcess(executable, args, createNewConsole,
+                                                  _impl->nativeHandle, _impl->pid, outError)) {
             _impl->commandLine.clear();
             if (outError.empty()) {
-                outError = grav_platform_errors::kProcessLaunchFailed;
+                outError = bltzr_platform_errors::kProcessLaunchFailed;
             }
             return false;
         }
@@ -58,7 +58,7 @@ bool ProcessHandle::launch(const std::string& executable, const std::vector<std:
         return false;
     }
     catch (...) {
-        outError = grav_platform_errors::kUnknownException;
+        outError = bltzr_platform_errors::kUnknownException;
         return false;
     }
 }
@@ -72,10 +72,10 @@ bool ProcessHandle::terminate(std::uint32_t waitMs, std::string& outError)
         }
         if (!_impl)
             return true;
-        if (!grav_platform_detail::terminateProcess(_impl->nativeHandle, _impl->pid, waitMs,
-                                                    outError)) {
+        if (!bltzr_platform_detail::terminateProcess(_impl->nativeHandle, _impl->pid, waitMs,
+                                                     outError)) {
             if (outError.empty()) {
-                outError = grav_platform_errors::kProcessTerminateFailed;
+                outError = bltzr_platform_errors::kProcessTerminateFailed;
             }
             return false;
         }
@@ -87,14 +87,14 @@ bool ProcessHandle::terminate(std::uint32_t waitMs, std::string& outError)
         return false;
     }
     catch (...) {
-        outError = grav_platform_errors::kUnknownException;
+        outError = bltzr_platform_errors::kUnknownException;
         return false;
     }
 }
 
 bool ProcessHandle::isRunning() const
 {
-    return _impl && grav_platform_detail::isProcessRunning(_impl->nativeHandle, _impl->pid);
+    return _impl && bltzr_platform_detail::isProcessRunning(_impl->nativeHandle, _impl->pid);
 }
 
 void ProcessHandle::clear()
@@ -102,7 +102,7 @@ void ProcessHandle::clear()
     if (!_impl) {
         return;
     }
-    grav_platform_detail::clearProcessHandle(_impl->nativeHandle, _impl->pid);
+    bltzr_platform_detail::clearProcessHandle(_impl->nativeHandle, _impl->pid);
     _impl->commandLine.clear();
 }
 
@@ -110,7 +110,7 @@ std::string ProcessHandle::pidString() const
 {
     if (!_impl)
         return {};
-    return grav_platform_detail::formatProcessId(_impl->pid);
+    return bltzr_platform_detail::formatProcessId(_impl->pid);
 }
 
 const std::string& ProcessHandle::commandLine() const
@@ -125,9 +125,9 @@ bool launchDetachedProcess(const std::string& executable, const std::vector<std:
                            std::string& outError)
 {
     try {
-        if (!grav_platform_detail::launchDetachedProcess(executable, args, outError)) {
+        if (!bltzr_platform_detail::launchDetachedProcess(executable, args, outError)) {
             if (outError.empty()) {
-                outError = grav_platform_errors::kProcessLaunchFailed;
+                outError = bltzr_platform_errors::kProcessLaunchFailed;
             }
             return false;
         }
@@ -138,7 +138,7 @@ bool launchDetachedProcess(const std::string& executable, const std::vector<std:
         return false;
     }
     catch (...) {
-        outError = grav_platform_errors::kUnknownException;
+        outError = bltzr_platform_errors::kUnknownException;
         return false;
     }
 }
@@ -147,16 +147,16 @@ int runProcessBlocking(const std::string& executable, const std::vector<std::str
                        bool createNewConsole, std::string& outError)
 {
     try {
-        return grav_platform_detail::runProcessBlocking(executable, args, createNewConsole,
-                                                        outError);
+        return bltzr_platform_detail::runProcessBlocking(executable, args, createNewConsole,
+                                                         outError);
     }
     catch (const std::exception& ex) {
         outError = ex.what();
         return 1;
     }
     catch (...) {
-        outError = grav_platform_errors::kUnknownException;
+        outError = bltzr_platform_errors::kUnknownException;
         return 1;
     }
 }
-} // namespace grav_platform
+} // namespace bltzr_platform

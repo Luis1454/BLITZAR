@@ -5,8 +5,8 @@
  * @brief Public configuration interfaces and validation contracts for simulation setup.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_
-#define GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_
+#define BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_
 #include <iosfwd>
 #include <string>
 #include <string_view>
@@ -63,4 +63,4 @@ void applyArgsToConfig(const std::vector<std::string_view>& args, SimulationConf
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
 void printUsage(std::ostream& out, std::string_view programName, bool headlessMode);
-#endif // GRAVITY_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_
+#endif // BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONARGS_HPP_

@@ -19,7 +19,7 @@
 #include <cmath>
 #include <limits>
 
-namespace grav_qt {
+namespace bltzr_qt {
 static bool isDarkTheme(const QPalette& palette)
 {
     return palette.color(QPalette::Window).lightness() < 128;
@@ -310,4 +310,4 @@ void EnergyGraphWidgetPaint::paint(QWidget& widget, const std::vector<EnergyPoin
                QStringLiteral("Window %1 s").arg(QString::number(maxTime - minTime, 'f', 2)));
     p.setRenderHint(QPainter::Antialiasing, false);
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

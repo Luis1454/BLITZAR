@@ -5,8 +5,8 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#ifndef GRAVITY_TESTS_SUPPORT_SERVER_HARNESS_HPP_
-#define GRAVITY_TESTS_SUPPORT_SERVER_HARNESS_HPP_
+#ifndef BLITZAR_TESTS_SUPPORT_SERVER_HARNESS_HPP_
+#define BLITZAR_TESTS_SUPPORT_SERVER_HARNESS_HPP_
 #include "platform/PlatformProcess.hpp"
 #include <cstdint>
 #include <string>
@@ -103,9 +103,9 @@ private:
      * it.
      */
     bool waitUntilReady(std::string& outError) const;
-    grav_platform::ProcessHandle _process;
+    bltzr_platform::ProcessHandle _process;
     std::uint16_t _port = 0u;
     std::string _executable;
     std::string _authToken;
 };
-#endif // GRAVITY_TESTS_SUPPORT_SERVER_HARNESS_HPP_
+#endif // BLITZAR_TESTS_SUPPORT_SERVER_HARNESS_HPP_

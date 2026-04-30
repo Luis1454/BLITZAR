@@ -48,7 +48,7 @@ static std::filesystem::path writeStabilityConfig(float minSoftening, float minD
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
         std::filesystem::temp_directory_path() /
-        ("gravity_physics_stability_" + std::to_string(stamp) + ".ini");
+        ("BLITZAR_physics_stability_" + std::to_string(stamp) + ".ini");
     std::ofstream out(path, std::ios::trunc);
     out << "particle_count=2\n";
     out << "dt=0.001\n";

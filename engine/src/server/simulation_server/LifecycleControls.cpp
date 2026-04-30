@@ -64,7 +64,7 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
       _configuredSubstepTargetDt(0.01f),
       _configuredMaxSubsteps(4u),
       _snapshotPublishPeriodMs(50u),
-      _snapshotTransferCap(resolvePublishedSnapshotCap(grav_protocol::kSnapshotDefaultPoints)),
+      _snapshotTransferCap(resolvePublishedSnapshotCap(bltzr_protocol::kSnapshotDefaultPoints)),
       _lastAppliedSubstepTargetDt(0.0f),
       _lastAppliedSubstepDt(0.0f),
       _lastAppliedSubsteps(0u),
@@ -129,7 +129,7 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
     _runtimeConfigMirror.maxSubsteps = _configuredMaxSubsteps.load(std::memory_order_relaxed);
     _runtimeConfigMirror.snapshotPublishPeriodMs =
         _snapshotPublishPeriodMs.load(std::memory_order_relaxed);
-    _runtimeConfigMirror.clientParticleCap = grav_protocol::kSnapshotDefaultPoints;
+    _runtimeConfigMirror.clientParticleCap = bltzr_protocol::kSnapshotDefaultPoints;
     _runtimeConfigMirror.octreeTheta = _octreeTheta;
     _runtimeConfigMirror.octreeSoftening = _octreeSoftening;
     _runtimeConfigMirror.octreeOpeningCriterion = _octreeOpeningCriterion;
@@ -167,8 +167,8 @@ SimulationServer::SimulationServer(const std::string& configPath) : SimulationSe
     _configPath = configPath.empty() ? "simulation.ini" : configPath;
     SimulationConfig loaded = SimulationConfig::loadOrCreate(_configPath);
     // Apply simulation profile first, then performance profile
-    grav_config::applySimulationProfile(loaded);
-    grav_config::applyPerformanceProfile(loaded);
+    bltzr_config::applySimulationProfile(loaded);
+    bltzr_config::applyPerformanceProfile(loaded);
     const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(loaded, std::cerr);
     _runtimeConfigMirror = loaded;
     {
@@ -176,12 +176,12 @@ SimulationServer::SimulationServer(const std::string& configPath) : SimulationSe
         _particleCount = std::max<std::uint32_t>(2u, loaded.particleCount);
         std::string solverCanonical;
         std::string integratorCanonical;
-        _solverMode = grav_modes::normalizeSolver(loaded.solver, solverCanonical)
+        _solverMode = bltzr_modes::normalizeSolver(loaded.solver, solverCanonical)
                           ? solverCanonical
-                          : std::string(grav_modes::kSolverPairwiseCuda);
-        _integratorMode = grav_modes::normalizeIntegrator(loaded.integrator, integratorCanonical)
+                          : std::string(bltzr_modes::kSolverPairwiseCuda);
+        _integratorMode = bltzr_modes::normalizeIntegrator(loaded.integrator, integratorCanonical)
                               ? integratorCanonical
-                              : std::string(grav_modes::kIntegratorEuler);
+                              : std::string(bltzr_modes::kIntegratorEuler);
         _performanceProfile = loaded.performanceProfile;
         coerceConfigSolverIntegratorCompatibility(_solverMode, _integratorMode, "config");
         _octreeTheta = loaded.octreeTheta;

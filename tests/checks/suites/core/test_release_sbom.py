@@ -19,7 +19,7 @@ def test_release_sbom_packages_release_artifacts(tmp_path: Path) -> None:
     artifacts_dir = tmp_path / "dist" / "release-bundle"
     artifacts_dir.mkdir(parents=True, exist_ok=True)
     sample = artifacts_dir / "blitzar.exe"
-    sample.write_bytes(b"gravity")
+    sample.write_bytes(b"blitzar")
     readme = artifacts_dir / "README.md"
     readme.write_text("bundle\n", encoding="utf-8")
 

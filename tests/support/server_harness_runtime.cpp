@@ -17,7 +17,7 @@
 #include <string>
 #include <thread>
 
-namespace grav_test_server_runtime {
+namespace bltzr_test_server_runtime {
 std::string findServerExecutableInBuildDirectories(const std::filesystem::path& root,
                                                    const std::string& defaultName)
 {
@@ -44,7 +44,7 @@ std::string findServerExecutableInBuildDirectories(const std::filesystem::path& 
     }
     return {};
 }
-} // namespace grav_test_server_runtime
+} // namespace bltzr_test_server_runtime
 
 /*
  * @brief Documents the resolve server executable operation contract.
@@ -54,12 +54,12 @@ std::string findServerExecutableInBuildDirectories(const std::filesystem::path& 
  */
 std::string RealServerHarness::resolveServerExecutable()
 {
-    if (const std::optional<std::string> fromEnv = grav_env::get("GRAVITY_SERVER_EXE");
+    if (const std::optional<std::string> fromEnv = bltzr_env::get("BLITZAR_SERVER_EXE");
         fromEnv.has_value() && !fromEnv->empty()) {
         return *fromEnv;
     }
     std::error_code ec;
-    const std::string defaultName(grav_platform::serverDefaultExecutableName());
+    const std::string defaultName(bltzr_platform::serverDefaultExecutableName());
     const std::filesystem::path cwd = std::filesystem::current_path(ec);
     if (!ec) {
         const std::array<std::filesystem::path, 5u> candidates{
@@ -70,13 +70,13 @@ std::string RealServerHarness::resolveServerExecutable()
                 return candidate.string();
             }
         if (const std::string fromBuildDir =
-                grav_test_server_runtime::findServerExecutableInBuildDirectories(cwd, defaultName);
+                bltzr_test_server_runtime::findServerExecutableInBuildDirectories(cwd, defaultName);
             !fromBuildDir.empty()) {
             return fromBuildDir;
         }
         if (const std::string fromParentBuildDir =
-                grav_test_server_runtime::findServerExecutableInBuildDirectories(cwd.parent_path(),
-                                                                                 defaultName);
+                bltzr_test_server_runtime::findServerExecutableInBuildDirectories(cwd.parent_path(),
+                                                                                  defaultName);
             !fromParentBuildDir.empty()) {
             return fromParentBuildDir;
         }
@@ -94,18 +94,18 @@ bool RealServerHarness::isPortBindable(std::uint16_t port)
 {
     if (port == 0u)
         return false;
-    if (!grav_socket::initializeSocketLayer()) {
+    if (!bltzr_socket::initializeSocketLayer()) {
         return false;
     }
-    const grav_socket::Handle handle = grav_socket::createTcpSocket();
-    if (!grav_socket::isValid(handle)) {
-        grav_socket::shutdownSocketLayer();
+    const bltzr_socket::Handle handle = bltzr_socket::createTcpSocket();
+    if (!bltzr_socket::isValid(handle)) {
+        bltzr_socket::shutdownSocketLayer();
         return false;
     }
-    (void)grav_socket::setReuseAddress(handle, true);
-    const bool ok = grav_socket::bindIpv4(handle, "127.0.0.1", port);
-    grav_socket::closeSocket(handle);
-    grav_socket::shutdownSocketLayer();
+    (void)bltzr_socket::setReuseAddress(handle, true);
+    const bool ok = bltzr_socket::bindIpv4(handle, "127.0.0.1", port);
+    bltzr_socket::closeSocket(handle);
+    bltzr_socket::shutdownSocketLayer();
     return ok;
 }
 

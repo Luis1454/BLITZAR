@@ -96,8 +96,8 @@ def test_release_bundle_embeds_tool_manifest(tmp_path: Path, monkeypatch) -> Non
     build_dir.mkdir()
     (build_dir / "blitzar.exe").write_text("binary\n", encoding="utf-8")
     (build_dir / "blitzar-client.exe").write_text("client\n", encoding="utf-8")
-    (build_dir / "gravityClientModuleQtInProc.dll").write_text("qt-module\n", encoding="utf-8")
-    (build_dir / "gravityClientModuleQtInProc.dll.manifest").write_text("manifest\n", encoding="utf-8")
+    (build_dir / "blitzarClientModuleQtInProc.dll").write_text("qt-module\n", encoding="utf-8")
+    (build_dir / "blitzarClientModuleQtInProc.dll.manifest").write_text("manifest\n", encoding="utf-8")
     (build_dir / "Qt6Core.dll").write_text("qt\n", encoding="utf-8")
     (build_dir / "platforms").mkdir()
     (build_dir / "platforms" / "qwindows.dll").write_text("plugin\n", encoding="utf-8")
@@ -113,8 +113,8 @@ def test_release_bundle_embeds_tool_manifest(tmp_path: Path, monkeypatch) -> Non
         assert "tool_manifest.json" in names
         assert "blitzar.exe" in names
         assert "blitzar-client.exe" in names
-        assert "gravityClientModuleQtInProc.dll" in names
-        assert "gravityClientModuleQtInProc.dll.manifest" in names
+        assert "blitzarClientModuleQtInProc.dll" in names
+        assert "blitzarClientModuleQtInProc.dll.manifest" in names
         assert "Qt6Core.dll" in names
         assert "platforms/qwindows.dll" in names
         assert archive.name not in names
@@ -128,8 +128,8 @@ def test_release_bundle_smoke_validator_requires_qt_platform_plugin_for_qt_modul
     bundle_root = tmp_path / "bundle"
     bundle_root.mkdir()
     (bundle_root / "blitzar-client.exe").write_text("client\n", encoding="utf-8")
-    (bundle_root / "gravityClientModuleQtInProc.dll").write_text("qt-module\n", encoding="utf-8")
-    (bundle_root / "gravityClientModuleQtInProc.dll.manifest").write_text("manifest\n", encoding="utf-8")
+    (bundle_root / "blitzarClientModuleQtInProc.dll").write_text("qt-module\n", encoding="utf-8")
+    (bundle_root / "blitzarClientModuleQtInProc.dll.manifest").write_text("manifest\n", encoding="utf-8")
     (bundle_root / "Qt6Core.dll").write_text("qt\n", encoding="utf-8")
     (bundle_root / "simulation.ini").write_text("config\n", encoding="utf-8")
     (bundle_root / "README.md").write_text("readme\n", encoding="utf-8")

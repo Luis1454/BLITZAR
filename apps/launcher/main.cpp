@@ -221,7 +221,7 @@ int runChildBlocking(const std::string& resolvedExecutable,
 {
     std::string launchError;
     const int exitCode =
-        grav_platform::runProcessBlocking(resolvedExecutable, childArgs, false, launchError);
+        bltzr_platform::runProcessBlocking(resolvedExecutable, childArgs, false, launchError);
     if (!launchError.empty()) {
         std::cerr << "[launcher] failed to launch child process: "
                   << (launchError.empty() ? "unknown error" : launchError) << '\n';
@@ -256,7 +256,7 @@ int main(int argc, char** argv)
         childArgs.push_back(options.module);
     }
     const std::string childBasename = targetBasename(options.mode);
-    const std::string childExecutable = grav_platform::executableName(childBasename);
+    const std::string childExecutable = bltzr_platform::executableName(childBasename);
     const std::string resolvedExecutable = resolveExecutablePath(
         argc > 0 && argv != nullptr && argv[0] != nullptr ? argv[0] : "", childExecutable);
     return runChildBlocking(resolvedExecutable, childArgs);

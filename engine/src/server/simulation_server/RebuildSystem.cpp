@@ -80,26 +80,26 @@ void SimulationServer::rebuildSystem()
     }
     {
         std::string canonical;
-        if (grav_modes::normalizeSolver(solver, canonical)) {
+        if (bltzr_modes::normalizeSolver(solver, canonical)) {
             solver = canonical;
         }
         else {
-            solver.assign(grav_modes::kSolverPairwiseCuda);
+            solver.assign(bltzr_modes::kSolverPairwiseCuda);
             std::cerr
                 << "[server] invalid internal solver mode detected, resetting to pairwise_cuda\n";
         }
-        if (grav_modes::normalizeIntegrator(integrator, canonical)) {
+        if (bltzr_modes::normalizeIntegrator(integrator, canonical)) {
             integrator = canonical;
         }
         else {
-            integrator.assign(grav_modes::kIntegratorEuler);
+            integrator.assign(bltzr_modes::kIntegratorEuler);
             std::cerr << "[server] invalid internal integrator mode detected, resetting to euler\n";
         }
-        if (grav_modes::normalizeOctreeOpeningCriterion(openingCriterion, canonical)) {
+        if (bltzr_modes::normalizeOctreeOpeningCriterion(openingCriterion, canonical)) {
             openingCriterion = canonical;
         }
         else {
-            openingCriterion.assign(grav_modes::kOctreeCriterionCom);
+            openingCriterion.assign(bltzr_modes::kOctreeCriterionCom);
             std::cerr << "[server] invalid internal octree criterion detected, resetting to com\n";
         }
         coerceConfigSolverIntegratorCompatibility(solver, integrator, "rebuild");
@@ -146,7 +146,7 @@ void SimulationServer::rebuildSystem()
         else {
             std::cout << "[server] warning: pairwise_cuda with " << targetParticleCount
                       << " particles may look frozen; set solver=octree_gpu"
-                      << " or GRAVITY_AUTO_SOLVER_FALLBACK=1\n";
+                      << " or BLITZAR_AUTO_SOLVER_FALLBACK=1\n";
         }
     }
     coerceConfigSolverIntegratorCompatibility(effectiveSolver, integrator, "rebuild");

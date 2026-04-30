@@ -20,20 +20,20 @@
 #include <iostream>
 #include <sstream>
 
-namespace grav_client {
+namespace bltzr_client {
 static void applyEnvOverride(std::string_view name, SimulationConfig& config)
 {
-    const std::optional<std::string> value = grav_env::get(name);
+    const std::optional<std::string> value = bltzr_env::get(name);
     if (!value.has_value()) {
         return;
     }
-    (void)grav_config::applyEnvOption(std::string(name), *value, config, std::cerr);
+    (void)bltzr_config::applyEnvOption(std::string(name), *value, config, std::cerr);
 }
 
 static std::uint32_t clampClientDrawCap(std::uint32_t requested)
 {
-    if (requested > grav_protocol::kSnapshotMaxPoints)
-        return grav_protocol::kSnapshotMaxPoints;
+    if (requested > bltzr_protocol::kSnapshotMaxPoints)
+        return bltzr_protocol::kSnapshotMaxPoints;
     return requested < 2u ? 2u : requested;
 }
 
@@ -48,14 +48,14 @@ std::string toLower(std::string value)
 std::uint32_t resolveServerParticleCount(const SimulationConfig& config)
 {
     SimulationConfig effective = config;
-    applyEnvOverride("GRAVITY_SERVER_PARTICLES", effective);
+    applyEnvOverride("BLITZAR_SERVER_PARTICLES", effective);
     return std::max<std::uint32_t>(2u, effective.particleCount);
 }
 
 std::uint32_t resolveClientDrawCap(const SimulationConfig& config)
 {
     SimulationConfig effective = config;
-    applyEnvOverride("GRAVITY_CLIENT_DRAW_CAP", effective);
+    applyEnvOverride("BLITZAR_CLIENT_DRAW_CAP", effective);
     return clampClientDrawCap(effective.clientParticleCap);
 }
 
@@ -106,11 +106,11 @@ std::string buildSuggestedExportPath(const std::string& directory, std::string_v
     const std::string extension = extensionForExportFormat(normalizedFormat);
     const auto now = std::chrono::system_clock::now();
     const std::time_t nowTime = std::chrono::system_clock::to_time_t(now);
-    const std::tm tm = grav_platform::localTime(nowTime);
+    const std::tm tm = bltzr_platform::localTime(nowTime);
     std::ostringstream fileName;
     fileName << "sim_" << std::put_time(&tm, "%Y%m%d_%H%M%S") << "_s" << step << extension;
     const std::filesystem::path baseDir =
         directory.empty() ? std::filesystem::path("exports") : std::filesystem::path(directory);
     return (baseDir / fileName.str()).string();
 }
-} // namespace grav_client
+} // namespace bltzr_client

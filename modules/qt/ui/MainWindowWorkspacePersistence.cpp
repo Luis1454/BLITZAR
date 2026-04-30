@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-namespace grav_qt {
+namespace bltzr_qt {
 void MainWindow::saveWorkspacePreset()
 {
     bool accepted = false;
@@ -106,4 +106,4 @@ void MainWindow::restoreDefaultWorkspace()
                                  : QString("Failed to restore default workspace"),
                              3000);
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

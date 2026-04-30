@@ -13,19 +13,19 @@
 #include <system_error>
 #include <utility>
 
-namespace grav_client_host {
+namespace bltzr_client_host {
 class ClientHostModuleOpsLocal final {
 public:
     static std::vector<std::string> moduleFilenameCandidatesForAlias(const std::string& alias)
     {
         if (alias == "cli")
-            return grav_platform::sharedLibraryCandidates("gravityClientModuleCli");
+            return bltzr_platform::sharedLibraryCandidates("blitzarClientModuleCli");
         if (alias == "echo")
-            return grav_platform::sharedLibraryCandidates("gravityClientModuleEcho");
+            return bltzr_platform::sharedLibraryCandidates("blitzarClientModuleEcho");
         if (alias == "gui")
-            return grav_platform::sharedLibraryCandidates("gravityClientModuleGuiProxy");
+            return bltzr_platform::sharedLibraryCandidates("blitzarClientModuleGuiProxy");
         if (alias == "qt")
-            return grav_platform::sharedLibraryCandidates("gravityClientModuleQtInProc");
+            return bltzr_platform::sharedLibraryCandidates("blitzarClientModuleQtInProc");
         return {};
     }
 
@@ -87,11 +87,11 @@ public:
 
     static bool switchModule(const std::string& moduleSpecifier, const std::string& configPath,
                              const std::vector<std::filesystem::path>& searchRoots,
-                             grav_module::ClientModuleHandle& module)
+                             bltzr_module::ClientModuleHandle& module)
     {
         const std::string resolvedPath = resolveModuleSpecifier(moduleSpecifier, searchRoots);
         const std::string expectedModuleId = expectedModuleIdForSpecifier(moduleSpecifier);
-        grav_module::ClientModuleHandle replacement{};
+        bltzr_module::ClientModuleHandle replacement{};
         std::string switchError;
         if (!replacement.load(resolvedPath, configPath, expectedModuleId, switchError)) {
             std::cout << "[client-host] switch failed: " << switchError << "\n";
@@ -106,12 +106,12 @@ public:
     static bool reloadModule(const std::string& currentModuleSpecifier,
                              const std::string& configPath,
                              const std::vector<std::filesystem::path>& searchRoots,
-                             grav_module::ClientModuleHandle& module)
+                             bltzr_module::ClientModuleHandle& module)
     {
         const std::string resolvedPath =
             resolveModuleSpecifier(currentModuleSpecifier, searchRoots);
         const std::string expectedModuleId = expectedModuleIdForSpecifier(currentModuleSpecifier);
-        grav_module::ClientModuleHandle replacement{};
+        bltzr_module::ClientModuleHandle replacement{};
         std::string switchError;
         if (!replacement.load(resolvedPath, configPath, expectedModuleId, switchError)) {
             std::cout << "[client-host] reload failed: " << switchError << "\n";
@@ -145,7 +145,7 @@ std::string ClientHostModuleOps::expectedModuleIdForSpecifier(const std::string&
 bool ClientHostModuleOps::switchModule(const std::string& moduleSpecifier,
                                        const std::string& configPath,
                                        const std::vector<std::filesystem::path>& searchRoots,
-                                       grav_module::ClientModuleHandle& module)
+                                       bltzr_module::ClientModuleHandle& module)
 {
     return ClientHostModuleOpsLocal::switchModule(moduleSpecifier, configPath, searchRoots, module);
 }
@@ -153,9 +153,9 @@ bool ClientHostModuleOps::switchModule(const std::string& moduleSpecifier,
 bool ClientHostModuleOps::reloadModule(const std::string& currentModuleSpecifier,
                                        const std::string& configPath,
                                        const std::vector<std::filesystem::path>& searchRoots,
-                                       grav_module::ClientModuleHandle& module)
+                                       bltzr_module::ClientModuleHandle& module)
 {
     return ClientHostModuleOpsLocal::reloadModule(currentModuleSpecifier, configPath, searchRoots,
                                                   module);
 }
-} // namespace grav_client_host
+} // namespace bltzr_client_host

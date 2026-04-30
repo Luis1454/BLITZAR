@@ -11,7 +11,7 @@
 #include <cmath>
 #include <string>
 
-namespace grav_config {
+namespace bltzr_config {
 void SimulationScenarioValidationPhysics::appendDiagnostics(
     const SimulationConfig& config, const InitialStateConfig& resolvedInitConfig,
     const std::function<void(ScenarioDiagnosticLevel, std::string, std::string, std::string)>&
@@ -42,8 +42,8 @@ void SimulationScenarioValidationPhysics::appendDiagnostics(
     }
     if (config.solver == "octree_gpu" || config.solver == "octree_cpu") {
         std::string canonicalCriterion;
-        if (!grav_modes::normalizeOctreeOpeningCriterion(config.octreeOpeningCriterion,
-                                                         canonicalCriterion)) {
+        if (!bltzr_modes::normalizeOctreeOpeningCriterion(config.octreeOpeningCriterion,
+                                                          canonicalCriterion)) {
             addDiagnostic(ScenarioDiagnosticLevel::Error, "octree_opening_criterion",
                           "Octree opening criterion must be com or bounds.",
                           "Set octree_opening_criterion to com or bounds.");
@@ -100,7 +100,8 @@ void SimulationScenarioValidationPhysics::appendDiagnostics(
          std::fabs(resolvedInitConfig.centralVy), std::fabs(resolvedInitConfig.centralVz)});
     const float characteristicLength =
         std::max({config.octreeSoftening, config.presetSize, resolvedInitConfig.diskRadiusMax,
-                  resolvedInitConfig.cloudHalfExtent});
+                  resolvedInitConfig.cloudHalfExtent, resolvedInitConfig.cubeHalfExtent,
+                  resolvedInitConfig.sphereRadius});
     const float stepTravel = config.dt * maxConfiguredSpeed;
     if (stepTravel > 0.0f && config.octreeSoftening > 0.0f && stepTravel > config.octreeSoftening) {
         addDiagnostic(
@@ -115,4 +116,4 @@ void SimulationScenarioValidationPhysics::appendDiagnostics(
                       "Lower dt [s] or reduce the configured velocity scale [m/s] before running.");
     }
 }
-} // namespace grav_config
+} // namespace bltzr_config

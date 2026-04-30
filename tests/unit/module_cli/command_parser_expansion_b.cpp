@@ -9,11 +9,11 @@
 #include <gtest/gtest.h>
 #include <string>
 
-namespace grav_test_module_cli_command_parser_expansion_b {
+namespace bltzr_test_module_cli_command_parser_expansion_b {
 TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_052_ParseLineSupportsDoubleQuotedCheckpointPath)
 {
-    const grav_cmd::CommandParseResult parsed =
-        grav_cmd::CommandParser::parseLine("load_checkpoint \"checkpoints/final #1.chk\"", 1u);
+    const bltzr_cmd::CommandParseResult parsed =
+        bltzr_cmd::CommandParser::parseLine("load_checkpoint \"checkpoints/final #1.chk\"", 1u);
     ASSERT_TRUE(parsed.ok);
     ASSERT_EQ(parsed.requests.size(), 1u);
     ASSERT_EQ(parsed.requests.front().arguments.size(), 1u);
@@ -23,8 +23,8 @@ TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_052_ParseLineSupportsDoubleQuot
 
 TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_053_ParseScriptHandlesCrlfLineEndings)
 {
-    const grav_cmd::CommandParseResult parsed =
-        grav_cmd::CommandParser::parseScript("status\r\nhelp\r\n");
+    const bltzr_cmd::CommandParseResult parsed =
+        bltzr_cmd::CommandParser::parseScript("status\r\nhelp\r\n");
     ASSERT_TRUE(parsed.ok);
     ASSERT_EQ(parsed.requests.size(), 2u);
     EXPECT_EQ(parsed.requests[0].name, "status");
@@ -33,15 +33,15 @@ TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_053_ParseScriptHandlesCrlfLineE
 
 TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_054_ParseLineTreatsCommandNamesAsCaseSensitive)
 {
-    const grav_cmd::CommandParseResult parsed = grav_cmd::CommandParser::parseLine("Help", 3u);
+    const bltzr_cmd::CommandParseResult parsed = bltzr_cmd::CommandParser::parseLine("Help", 3u);
     ASSERT_FALSE(parsed.ok);
     EXPECT_EQ(parsed.error, "line 3: unknown command 'Help'");
 }
 
 TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_055_ParseLineAcceptsSetSolverModeToken)
 {
-    const grav_cmd::CommandParseResult parsed =
-        grav_cmd::CommandParser::parseLine("set_solver octree_gpu", 4u);
+    const bltzr_cmd::CommandParseResult parsed =
+        bltzr_cmd::CommandParser::parseLine("set_solver octree_gpu", 4u);
     ASSERT_TRUE(parsed.ok);
     ASSERT_EQ(parsed.requests.size(), 1u);
     ASSERT_EQ(parsed.requests.front().arguments.size(), 1u);
@@ -50,8 +50,8 @@ TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_055_ParseLineAcceptsSetSolverMo
 
 TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_056_ParseLineAcceptsSetProfileToken)
 {
-    const grav_cmd::CommandParseResult parsed =
-        grav_cmd::CommandParser::parseLine("set_profile stress", 5u);
+    const bltzr_cmd::CommandParseResult parsed =
+        bltzr_cmd::CommandParser::parseLine("set_profile stress", 5u);
     ASSERT_TRUE(parsed.ok);
     ASSERT_EQ(parsed.requests.size(), 1u);
     ASSERT_EQ(parsed.requests.front().arguments.size(), 1u);
@@ -60,8 +60,8 @@ TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_056_ParseLineAcceptsSetProfileT
 
 TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_057_ParseLineAcceptsZeroRunSteps)
 {
-    const grav_cmd::CommandParseResult parsed =
-        grav_cmd::CommandParser::parseLine("run_steps 0", 6u);
+    const bltzr_cmd::CommandParseResult parsed =
+        bltzr_cmd::CommandParser::parseLine("run_steps 0", 6u);
     ASSERT_TRUE(parsed.ok);
     ASSERT_EQ(parsed.requests.size(), 1u);
     ASSERT_EQ(parsed.requests.front().arguments.size(), 1u);
@@ -70,16 +70,16 @@ TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_057_ParseLineAcceptsZeroRunStep
 
 TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_058_ParseLineRejectsNegativeUnsignedValue)
 {
-    const grav_cmd::CommandParseResult parsed =
-        grav_cmd::CommandParser::parseLine("run_steps -1", 7u);
+    const bltzr_cmd::CommandParseResult parsed =
+        bltzr_cmd::CommandParser::parseLine("run_steps -1", 7u);
     ASSERT_FALSE(parsed.ok);
     EXPECT_EQ(parsed.error, "line 7: invalid integer '-1'");
 }
 
 TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_059_ParseLineAcceptsUnterminatedQuoteAsSingleToken)
 {
-    const grav_cmd::CommandParseResult parsed =
-        grav_cmd::CommandParser::parseLine("load_config \"configs/default.ini", 8u);
+    const bltzr_cmd::CommandParseResult parsed =
+        bltzr_cmd::CommandParser::parseLine("load_config \"configs/default.ini", 8u);
     ASSERT_TRUE(parsed.ok);
     ASSERT_EQ(parsed.requests.size(), 1u);
     ASSERT_EQ(parsed.requests.front().arguments.size(), 1u);
@@ -88,8 +88,8 @@ TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_059_ParseLineAcceptsUnterminate
 
 TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_060_ParseLineKeepsCommentMarkerInsideQuotes)
 {
-    const grav_cmd::CommandParseResult parsed =
-        grav_cmd::CommandParser::parseLine("export_snapshot \"frames/#001.vtk\" vtk", 9u);
+    const bltzr_cmd::CommandParseResult parsed =
+        bltzr_cmd::CommandParser::parseLine("export_snapshot \"frames/#001.vtk\" vtk", 9u);
     ASSERT_TRUE(parsed.ok);
     ASSERT_EQ(parsed.requests.size(), 1u);
     ASSERT_EQ(parsed.requests.front().arguments.size(), 2u);
@@ -99,8 +99,8 @@ TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_060_ParseLineKeepsCommentMarker
 
 TEST(CommandParserExpansionBTest, TST_UNT_MODCLI_061_ParseScriptAcceptsEmptyInput)
 {
-    const grav_cmd::CommandParseResult parsed = grav_cmd::CommandParser::parseScript("");
+    const bltzr_cmd::CommandParseResult parsed = bltzr_cmd::CommandParser::parseScript("");
     ASSERT_TRUE(parsed.ok);
     EXPECT_TRUE(parsed.requests.empty());
 }
-} // namespace grav_test_module_cli_command_parser_expansion_b
+} // namespace bltzr_test_module_cli_command_parser_expansion_b

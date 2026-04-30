@@ -8,7 +8,7 @@
 #include "SimulationOptionRegistryInternal.hpp"
 #include <ostream>
 
-namespace grav_config {
+namespace bltzr_config {
 void printCliUsage(std::ostream& out, SimulationOptionGroup group)
 {
     for (std::size_t index = 0; index < kSimulationOptionCount; ++index) {
@@ -22,4 +22,4 @@ void printCliUsage(std::ostream& out, SimulationOptionGroup group)
         }
     }
 }
-} // namespace grav_config
+} // namespace bltzr_config

@@ -8,7 +8,7 @@
 #include "platform/posix/DynamicLibraryPosix.hpp"
 #include <dlfcn.h>
 
-namespace grav_platform_detail {
+namespace bltzr_platform_detail {
 bool openDynamicLibrary(const std::string& path, NativeLibraryHandle& outHandle,
                         std::string& outError)
 {
@@ -57,4 +57,4 @@ bool loadDynamicSymbol(NativeLibraryHandle handle, std::string_view name,
     outSymbol = reinterpret_cast<NativeSymbolAddress>(raw);
     return true;
 }
-} // namespace grav_platform_detail
+} // namespace bltzr_platform_detail

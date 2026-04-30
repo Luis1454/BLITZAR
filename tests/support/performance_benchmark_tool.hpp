@@ -5,13 +5,13 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#ifndef GRAVITY_TESTS_SUPPORT_PERFORMANCE_BENCHMARK_TOOL_HPP_
-#define GRAVITY_TESTS_SUPPORT_PERFORMANCE_BENCHMARK_TOOL_HPP_
+#ifndef BLITZAR_TESTS_SUPPORT_PERFORMANCE_BENCHMARK_TOOL_HPP_
+#define BLITZAR_TESTS_SUPPORT_PERFORMANCE_BENCHMARK_TOOL_HPP_
 #include <cstdint>
 #include <iosfwd>
 #include <string>
 
-namespace grav_test_perf {
+namespace bltzr_test_perf {
 class PerformanceBenchmarkTool {
 public:
     struct ToolOptions {
@@ -31,5 +31,5 @@ private:
     static bool parseFloatValue(const std::string& text, float& out);
     static bool parseUintValue(const std::string& text, std::uint32_t& out);
 };
-} // namespace grav_test_perf
-#endif // GRAVITY_TESTS_SUPPORT_PERFORMANCE_BENCHMARK_TOOL_HPP_
+} // namespace bltzr_test_perf
+#endif // BLITZAR_TESTS_SUPPORT_PERFORMANCE_BENCHMARK_TOOL_HPP_

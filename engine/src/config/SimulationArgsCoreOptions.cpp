@@ -29,7 +29,7 @@ bool SimulationArgsCoreOptions::apply(const std::string& key, const std::string&
     }
     if (key == "--solver") {
         std::string canonical;
-        if (!grav_modes::normalizeSolver(value, canonical)) {
+        if (!bltzr_modes::normalizeSolver(value, canonical)) {
             runtime.hasArgumentError = true;
             warnings << "[args] invalid --solver: " << value
                      << " (allowed: pairwise_cuda|octree_gpu|octree_cpu)\n";
@@ -38,13 +38,13 @@ bool SimulationArgsCoreOptions::apply(const std::string& key, const std::string&
     }
     if (key == "--integrator") {
         std::string canonical;
-        if (!grav_modes::normalizeIntegrator(value, canonical)) {
+        if (!bltzr_modes::normalizeIntegrator(value, canonical)) {
             runtime.hasArgumentError = true;
             warnings << "[args] invalid --integrator: " << value
                      << " (allowed: euler|rk4|leapfrog)\n";
             return true;
         }
     }
-    return grav_config::applyCliOption(grav_config::SimulationOptionGroup::Core, key, value, config,
-                                       warnings);
+    return bltzr_config::applyCliOption(bltzr_config::SimulationOptionGroup::Core, key, value,
+                                        config, warnings);
 }

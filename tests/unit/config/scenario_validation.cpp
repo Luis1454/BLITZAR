@@ -10,10 +10,10 @@
 #include <gtest/gtest.h>
 #include <string>
 
-namespace grav_test_config_scenario_validation {
-static bool hasField(const grav_config::ScenarioValidationReport& report, const std::string& field)
+namespace bltzr_test_config_scenario_validation {
+static bool hasField(const bltzr_config::ScenarioValidationReport& report, const std::string& field)
 {
-    for (const grav_config::ScenarioDiagnostic& diagnostic : report.diagnostics)
+    for (const bltzr_config::ScenarioDiagnostic& diagnostic : report.diagnostics)
         if (diagnostic.field == field)
             return true;
     return false;
@@ -22,11 +22,11 @@ static bool hasField(const grav_config::ScenarioValidationReport& report, const 
 TEST(ScenarioValidationTest, TST_UNT_CONF_055_DefaultConfigurationIsRunnable)
 {
     const SimulationConfig config;
-    const grav_config::ScenarioValidationReport report =
-        grav_config::SimulationScenarioValidation::evaluate(config);
+    const bltzr_config::ScenarioValidationReport report =
+        bltzr_config::SimulationScenarioValidation::evaluate(config);
     EXPECT_TRUE(report.validForRun);
     EXPECT_EQ(report.errorCount, 0u);
-    const std::string rendered = grav_config::SimulationScenarioValidation::renderText(report);
+    const std::string rendered = bltzr_config::SimulationScenarioValidation::renderText(report);
     EXPECT_NE(rendered.find("[preflight] OK"), std::string::npos);
 }
 
@@ -40,8 +40,8 @@ TEST(ScenarioValidationTest, TST_UNT_CONF_056_InvalidCoreFieldsBlockRun)
     config.clientSnapshotDropPolicy = "unexpected";
     config.uiTheme = "neon";
     config.octreeSoftening = 0.0f;
-    const grav_config::ScenarioValidationReport report =
-        grav_config::SimulationScenarioValidation::evaluate(config);
+    const bltzr_config::ScenarioValidationReport report =
+        bltzr_config::SimulationScenarioValidation::evaluate(config);
     EXPECT_FALSE(report.validForRun);
     EXPECT_GT(report.errorCount, 0u);
     EXPECT_TRUE(hasField(report, "particle_count"));
@@ -62,8 +62,8 @@ TEST(ScenarioValidationTest, TST_UNT_CONF_057_WarningPathsRemainRunnable)
     config.clientSnapshotQueueCapacity = 32u;
     config.octreeSoftening = 1e-5f;
     config.physicsMinSoftening = 1e-3f;
-    const grav_config::ScenarioValidationReport report =
-        grav_config::SimulationScenarioValidation::evaluate(config);
+    const bltzr_config::ScenarioValidationReport report =
+        bltzr_config::SimulationScenarioValidation::evaluate(config);
     EXPECT_TRUE(report.validForRun);
     EXPECT_EQ(report.errorCount, 0u);
     EXPECT_GT(report.warningCount, 0u);
@@ -80,8 +80,8 @@ TEST(ScenarioValidationTest, TST_UNT_CONF_058_FileModeWithoutInputProducesError)
     config.initConfigStyle = "preset";
     config.presetStructure = "file";
     config.inputFile.clear();
-    const grav_config::ScenarioValidationReport report =
-        grav_config::SimulationScenarioValidation::evaluate(config);
+    const bltzr_config::ScenarioValidationReport report =
+        bltzr_config::SimulationScenarioValidation::evaluate(config);
     EXPECT_FALSE(report.validForRun);
     EXPECT_TRUE(hasField(report, "input_file"));
 }
@@ -94,8 +94,8 @@ TEST(ScenarioValidationTest, TST_UNT_CONF_059_DiskOrbitPresetChecksMassAndRadius
     config.initDiskMass = 0.0f;
     config.initDiskRadiusMin = 4.0f;
     config.initDiskRadiusMax = 3.0f;
-    const grav_config::ScenarioValidationReport report =
-        grav_config::SimulationScenarioValidation::evaluate(config);
+    const bltzr_config::ScenarioValidationReport report =
+        bltzr_config::SimulationScenarioValidation::evaluate(config);
     EXPECT_FALSE(report.validForRun);
     EXPECT_TRUE(hasField(report, "init_disk_mass"));
     EXPECT_TRUE(hasField(report, "init_disk_radius"));
@@ -110,8 +110,8 @@ TEST(ScenarioValidationTest, TST_UNT_CONF_060_SphValidationChecksParametersAndLo
     config.sphRestDensity = 0.0f;
     config.sphGasConstant = 0.0f;
     config.sphViscosity = -1.0f;
-    const grav_config::ScenarioValidationReport report =
-        grav_config::SimulationScenarioValidation::evaluate(config);
+    const bltzr_config::ScenarioValidationReport report =
+        bltzr_config::SimulationScenarioValidation::evaluate(config);
     EXPECT_FALSE(report.validForRun);
     EXPECT_TRUE(hasField(report, "sph"));
     EXPECT_TRUE(hasField(report, "sph_viscosity"));
@@ -125,8 +125,8 @@ TEST(ScenarioValidationTest, TST_UNT_CONF_061_OctreeSolverValidationChecksCriter
     config.octreeTheta = 0.0f;
     config.octreeThetaAutoMin = 0.0f;
     config.octreeThetaAutoMax = -1.0f;
-    const grav_config::ScenarioValidationReport report =
-        grav_config::SimulationScenarioValidation::evaluate(config);
+    const bltzr_config::ScenarioValidationReport report =
+        bltzr_config::SimulationScenarioValidation::evaluate(config);
     EXPECT_FALSE(report.validForRun);
     EXPECT_TRUE(hasField(report, "octree_opening_criterion"));
     EXPECT_TRUE(hasField(report, "octree_theta"));
@@ -139,11 +139,11 @@ TEST(ScenarioValidationTest, TST_UNT_CONF_062_RenderTextShowsBlockedSummaryAndAc
     SimulationConfig config;
     config.particleCount = 1u;
     config.dt = 0.0f;
-    const grav_config::ScenarioValidationReport report =
-        grav_config::SimulationScenarioValidation::evaluate(config);
-    const std::string rendered = grav_config::SimulationScenarioValidation::renderText(report);
+    const bltzr_config::ScenarioValidationReport report =
+        bltzr_config::SimulationScenarioValidation::evaluate(config);
+    const std::string rendered = bltzr_config::SimulationScenarioValidation::renderText(report);
     EXPECT_NE(rendered.find("[preflight] blocked"), std::string::npos);
     EXPECT_NE(rendered.find("error(s)"), std::string::npos);
     EXPECT_NE(rendered.find("Action:"), std::string::npos);
 }
-} // namespace grav_test_config_scenario_validation
+} // namespace bltzr_test_config_scenario_validation

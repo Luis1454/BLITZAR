@@ -25,9 +25,7 @@
  * @return int value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-__device__ int sphGridCellIndex(
-    float px, float py, float pz,
-    const SphGridParams &grid)
+__device__ int sphGridCellIndex(float px, float py, float pz, const SphGridParams& grid)
 {
     int cx = static_cast<int>(floorf((px - grid.originX) / grid.cellSize));
     int cy = static_cast<int>(floorf((py - grid.originY) / grid.cellSize));
@@ -48,12 +46,9 @@ __device__ int sphGridCellIndex(
  * @return No return value.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-__global__ void computeSphCellHashKernel(
-    ParticleSoAView particles,
-    IndexHandle outCellHash,
-    IndexHandle outParticleIndex,
-    int numParticles,
-    SphGridParams grid)
+__global__ void computeSphCellHashKernel(ParticleSoAView particles, IndexHandle outCellHash,
+                                         IndexHandle outParticleIndex, int numParticles,
+                                         SphGridParams grid)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
@@ -72,10 +67,7 @@ __global__ void computeSphCellHashKernel(
  * @return No return value.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-__global__ void resetCellBoundsKernel(
-    IndexHandle cellStart,
-    IndexHandle cellEnd,
-    int totalCells)
+__global__ void resetCellBoundsKernel(IndexHandle cellStart, IndexHandle cellEnd, int totalCells)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= totalCells) {
@@ -94,11 +86,8 @@ __global__ void resetCellBoundsKernel(
  * @return No return value.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-__global__ void findCellBoundsKernel(
-    IndexConstHandle sortedHash,
-    IndexHandle cellStart,
-    IndexHandle cellEnd,
-    int numParticles)
+__global__ void findCellBoundsKernel(IndexConstHandle sortedHash, IndexHandle cellStart,
+                                     IndexHandle cellEnd, int numParticles)
 {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= numParticles) {
@@ -125,8 +114,7 @@ __global__ void findCellBoundsKernel(
  * @return No return value.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-static void sortParticlesByHash(
-    int *cellHash, int *particleIndex, int numParticles)
+static void sortParticlesByHash(int* cellHash, int* particleIndex, int numParticles)
 {
     // Simple O(n log n) sort using index array.
     std::vector<int> order(static_cast<std::size_t>(numParticles));
@@ -137,15 +125,12 @@ static void sortParticlesByHash(
     std::vector<int> tempHash(static_cast<std::size_t>(numParticles));
     std::vector<int> tempIdx(static_cast<std::size_t>(numParticles));
     for (int i = 0; i < numParticles; ++i) {
-        tempHash[static_cast<std::size_t>(i)] =
-            cellHash[order[static_cast<std::size_t>(i)]];
-        tempIdx[static_cast<std::size_t>(i)] =
-            particleIndex[order[static_cast<std::size_t>(i)]];
+        tempHash[static_cast<std::size_t>(i)] = cellHash[order[static_cast<std::size_t>(i)]];
+        tempIdx[static_cast<std::size_t>(i)] = particleIndex[order[static_cast<std::size_t>(i)]];
     }
-    std::memcpy(cellHash, tempHash.data(),
-        static_cast<std::size_t>(numParticles) * sizeof(int));
+    std::memcpy(cellHash, tempHash.data(), static_cast<std::size_t>(numParticles) * sizeof(int));
     std::memcpy(particleIndex, tempIdx.data(),
-        static_cast<std::size_t>(numParticles) * sizeof(int));
+                static_cast<std::size_t>(numParticles) * sizeof(int));
 }
 
 /*
@@ -156,8 +141,7 @@ static void sortParticlesByHash(
  */
 bool ParticleSystem::buildSphGrid(int numParticles)
 {
-    if (numParticles <= 0 || !d_soaPosX || !d_sphCellHash ||
-            !d_sphSortedIndex) {
+    if (numParticles <= 0 || !d_soaPosX || !d_sphCellHash || !d_sphSortedIndex) {
         return false;
     }
 
@@ -170,18 +154,29 @@ bool ParticleSystem::buildSphGrid(int numParticles)
     float maxZ = minZ;
     for (int i = 1; i < numParticles; ++i) {
         const Vector3 p = _particles[static_cast<std::size_t>(i)].getPosition();
-        if (p.x < minX) { minX = p.x; }
-        if (p.y < minY) { minY = p.y; }
-        if (p.z < minZ) { minZ = p.z; }
-        if (p.x > maxX) { maxX = p.x; }
-        if (p.y > maxY) { maxY = p.y; }
-        if (p.z > maxZ) { maxZ = p.z; }
+        if (p.x < minX) {
+            minX = p.x;
+        }
+        if (p.y < minY) {
+            minY = p.y;
+        }
+        if (p.z < minZ) {
+            minZ = p.z;
+        }
+        if (p.x > maxX) {
+            maxX = p.x;
+        }
+        if (p.y > maxY) {
+            maxY = p.y;
+        }
+        if (p.z > maxZ) {
+            maxZ = p.z;
+        }
     }
     const float cellSize = std::max(0.01f, _sphSmoothingLength);
-    const float extent = std::max(
-        {maxX - minX, maxY - minY, maxZ - minZ, cellSize});
-    const int gridSize = std::min(256,
-        std::max(1, static_cast<int>(std::ceil(extent / cellSize)) + 2));
+    const float extent = std::max({maxX - minX, maxY - minY, maxZ - minZ, cellSize});
+    const int gridSize =
+        std::min(256, std::max(1, static_cast<int>(std::ceil(extent / cellSize)) + 2));
     const int totalCells = gridSize * gridSize * gridSize;
     _sphGridSize = gridSize;
     _sphGridTotalCells = totalCells;
@@ -195,18 +190,17 @@ bool ParticleSystem::buildSphGrid(int numParticles)
     grid.originZ = minZ - cellSize;
 
     // (Re)allocate cell start/end arrays.
-    const std::size_t cellBytes =
-        static_cast<std::size_t>(totalCells) * sizeof(int);
+    const std::size_t cellBytes = static_cast<std::size_t>(totalCells) * sizeof(int);
     if (d_sphCellStart) {
-        grav_x::CudaMemoryPool::deallocate(d_sphCellStart);
+        bltzr_x::CudaMemoryPool::deallocate(d_sphCellStart);
         d_sphCellStart = nullptr;
     }
     if (d_sphCellEnd) {
-        grav_x::CudaMemoryPool::deallocate(d_sphCellEnd);
+        bltzr_x::CudaMemoryPool::deallocate(d_sphCellEnd);
         d_sphCellEnd = nullptr;
     }
-    d_sphCellStart = static_cast<int*>(grav_x::CudaMemoryPool::allocate(cellBytes));
-    d_sphCellEnd = static_cast<int*>(grav_x::CudaMemoryPool::allocate(cellBytes));
+    d_sphCellStart = static_cast<int*>(bltzr_x::CudaMemoryPool::allocate(cellBytes));
+    d_sphCellEnd = static_cast<int*>(bltzr_x::CudaMemoryPool::allocate(cellBytes));
 
     if (!d_sphCellStart || !d_sphCellEnd) {
         return false;
@@ -214,50 +208,43 @@ bool ParticleSystem::buildSphGrid(int numParticles)
 
     // 1) Hash particles into cells on GPU.
     const int numBlocks =
-        (numParticles + Particle::kDefaultCudaBlockSize - 1)
-        / Particle::kDefaultCudaBlockSize;
+        (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
     computeSphCellHashKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-        getSoAView(false), d_sphCellHash, d_sphSortedIndex,
-        numParticles, grid);
-    if (!checkCudaStatus(cudaDeviceSynchronize(),
-            "sph hash kernel sync")) {
+        getSoAView(false), d_sphCellHash, d_sphSortedIndex, numParticles, grid);
+    if (!checkCudaStatus(cudaDeviceSynchronize(), "sph hash kernel sync")) {
         return false;
     }
 
     // 2) Download, sort on CPU, upload (avoids thrust).
-    const std::size_t pBytes =
-        static_cast<std::size_t>(numParticles) * sizeof(int);
-    if (!checkCudaStatus(cudaMemcpy(_hostCellHash.data(),
-            d_sphCellHash, pBytes, cudaMemcpyDeviceToHost),
+    const std::size_t pBytes = static_cast<std::size_t>(numParticles) * sizeof(int);
+    if (!checkCudaStatus(
+            cudaMemcpy(_hostCellHash.data(), d_sphCellHash, pBytes, cudaMemcpyDeviceToHost),
             "sph hash D2H")) {
         return false;
     }
-    if (!checkCudaStatus(cudaMemcpy(_hostSortedIndex.data(),
-            d_sphSortedIndex, pBytes, cudaMemcpyDeviceToHost),
+    if (!checkCudaStatus(
+            cudaMemcpy(_hostSortedIndex.data(), d_sphSortedIndex, pBytes, cudaMemcpyDeviceToHost),
             "sph idx D2H")) {
         return false;
     }
-    sortParticlesByHash(
-        _hostCellHash.data(), _hostSortedIndex.data(), numParticles);
-    if (!checkCudaStatus(cudaMemcpy(d_sphCellHash,
-            _hostCellHash.data(), pBytes, cudaMemcpyHostToDevice),
+    sortParticlesByHash(_hostCellHash.data(), _hostSortedIndex.data(), numParticles);
+    if (!checkCudaStatus(
+            cudaMemcpy(d_sphCellHash, _hostCellHash.data(), pBytes, cudaMemcpyHostToDevice),
             "sph hash H2D")) {
         return false;
     }
-    if (!checkCudaStatus(cudaMemcpy(d_sphSortedIndex,
-            _hostSortedIndex.data(), pBytes, cudaMemcpyHostToDevice),
+    if (!checkCudaStatus(
+            cudaMemcpy(d_sphSortedIndex, _hostSortedIndex.data(), pBytes, cudaMemcpyHostToDevice),
             "sph idx H2D")) {
         return false;
     }
 
     // 3) Reset and build cell boundaries on GPU.
     const int cellBlocks = (totalCells + 255) / 256;
-    resetCellBoundsKernel<<<cellBlocks, 256>>>(
-        d_sphCellStart, d_sphCellEnd, totalCells);
+    resetCellBoundsKernel<<<cellBlocks, 256>>>(d_sphCellStart, d_sphCellEnd, totalCells);
     findCellBoundsKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
         d_sphCellHash, d_sphCellStart, d_sphCellEnd, numParticles);
-    if (!checkCudaStatus(cudaDeviceSynchronize(),
-            "sph grid build sync")) {
+    if (!checkCudaStatus(cudaDeviceSynchronize(), "sph grid build sync")) {
         return false;
     }
     return true;

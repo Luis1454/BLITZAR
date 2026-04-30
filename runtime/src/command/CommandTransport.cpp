@@ -7,7 +7,7 @@
 
 #include "command/CommandTransport.hpp"
 
-namespace grav_cmd {
+namespace bltzr_cmd {
 ServerClientCommandTransport::ServerClientCommandTransport(int timeoutMs) : _client()
 {
     _client.setSocketTimeoutMs(timeoutMs);
@@ -38,4 +38,4 @@ ServerClientResponse ServerClientCommandTransport::getStatus(ServerClientStatus&
 {
     return _client.getStatus(outStatus);
 }
-} // namespace grav_cmd
+} // namespace bltzr_cmd

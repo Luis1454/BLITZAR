@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-namespace grav_test_server_harness {
+namespace bltzr_test_server_harness {
 constexpr std::array<std::uint16_t, 12u> kFallbackPorts{
     4545u, 4546u, 14545u, 14546u, 24545u, 24546u, 34545u, 34546u, 44545u, 44546u, 54545u, 54546u};
 
@@ -59,7 +59,7 @@ std::vector<std::uint16_t> buildPortCandidates(std::uint16_t preferredPort)
     }
     return ports;
 }
-} // namespace grav_test_server_harness
+} // namespace bltzr_test_server_harness
 
 /*
  * @brief Documents the ~real server harness operation contract.
@@ -94,12 +94,12 @@ bool RealServerHarness::start(std::string& outError, std::uint16_t preferredPort
         return false;
     }
     const std::vector<std::uint16_t> portCandidates =
-        grav_test_server_harness::buildPortCandidates(preferredPort);
+        bltzr_test_server_harness::buildPortCandidates(preferredPort);
     for (const std::uint16_t candidatePort : portCandidates)
         if (candidatePort == 0u || !isPortBindable(candidatePort)) {
             continue;
             _port = candidatePort;
-            const std::string inputFilePath = grav_test_server_harness::resolveInputFilePath();
+            const std::string inputFilePath = bltzr_test_server_harness::resolveInputFilePath();
             const std::vector<std::string> args{"--server-host",
                                                 "127.0.0.1",
                                                 "--server-port",
@@ -155,7 +155,7 @@ void RealServerHarness::stop()
         client.setSocketTimeoutMs(120);
         client.setAuthToken(_authToken);
         if (client.connect("127.0.0.1", _port)) {
-            (void)client.sendCommand(std::string(grav_protocol::Shutdown));
+            (void)client.sendCommand(std::string(bltzr_protocol::Shutdown));
             client.disconnect();
         }
     }

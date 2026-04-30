@@ -14,7 +14,7 @@
 #include <string>
 #include <utility>
 
-namespace grav_client {
+namespace bltzr_client {
 constexpr auto kIdleSleepInterval = std::chrono::milliseconds(2);
 constexpr auto kSnapshotPollInterval = std::chrono::milliseconds(16);
 constexpr auto kStatusPollInterval = std::chrono::milliseconds(120);
@@ -450,4 +450,4 @@ std::uint32_t ClientRuntime::ageMsSince(Clock::time_point at, bool valid)
         static_cast<std::uint64_t>(std::numeric_limits<std::uint32_t>::max()));
     return static_cast<std::uint32_t>(clamped);
 }
-} // namespace grav_client
+} // namespace bltzr_client

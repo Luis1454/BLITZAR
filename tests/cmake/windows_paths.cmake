@@ -3,9 +3,9 @@
 # @project BLITZAR
 # @brief Automated verification assets for BLITZAR quality gates.
 
-function(gravity_apply_test_paths target_name)
-    if(COMMAND gravity_apply_windows_paths)
-        gravity_apply_windows_paths(${target_name})
+function(BLITZAR_apply_test_paths target_name)
+    if(COMMAND BLITZAR_apply_windows_paths)
+        BLITZAR_apply_windows_paths(${target_name})
         return()
     endif()
     if(NOT WIN32)
@@ -16,12 +16,12 @@ function(gravity_apply_test_paths target_name)
 
     set(_incs "")
     foreach(_p IN ITEMS
-        "${GRAVITY_MSVC_INCLUDE_DIR}"
-        "${GRAVITY_WINSDK_INCLUDE_UCRT}"
-        "${GRAVITY_WINSDK_INCLUDE_UM}"
-        "${GRAVITY_WINSDK_INCLUDE_SHARED}"
-        "${GRAVITY_WINSDK_INCLUDE_WINRT}"
-        "${GRAVITY_WINSDK_INCLUDE_CPPWINRT}")
+        "${BLITZAR_MSVC_INCLUDE_DIR}"
+        "${BLITZAR_WINSDK_INCLUDE_UCRT}"
+        "${BLITZAR_WINSDK_INCLUDE_UM}"
+        "${BLITZAR_WINSDK_INCLUDE_SHARED}"
+        "${BLITZAR_WINSDK_INCLUDE_WINRT}"
+        "${BLITZAR_WINSDK_INCLUDE_CPPWINRT}")
         if(NOT "${_p}" STREQUAL "" AND EXISTS "${_p}")
             list(APPEND _incs "${_p}")
         endif()
@@ -52,9 +52,9 @@ function(gravity_apply_test_paths target_name)
 
     set(_libs "")
     foreach(_p IN ITEMS
-        "${GRAVITY_MSVC_LIB_DIR}"
-        "${GRAVITY_WINSDK_UCRT_LIB_DIR}"
-        "${GRAVITY_WINSDK_UM_LIB_DIR}")
+        "${BLITZAR_MSVC_LIB_DIR}"
+        "${BLITZAR_WINSDK_UCRT_LIB_DIR}"
+        "${BLITZAR_WINSDK_UM_LIB_DIR}")
         if(NOT "${_p}" STREQUAL "" AND EXISTS "${_p}")
             list(APPEND _libs "${_p}")
         endif()
@@ -84,21 +84,21 @@ function(gravity_apply_test_paths target_name)
     endif()
 endfunction()
 
-if(WIN32 AND NOT COMMAND gravity_apply_windows_paths)
-    set(_gravity_win_includes "")
+if(WIN32 AND NOT COMMAND BLITZAR_apply_windows_paths)
+    set(_BLITZAR_win_includes "")
     foreach(_p IN ITEMS
-        "${GRAVITY_MSVC_INCLUDE_DIR}"
-        "${GRAVITY_WINSDK_INCLUDE_UCRT}"
-        "${GRAVITY_WINSDK_INCLUDE_UM}"
-        "${GRAVITY_WINSDK_INCLUDE_SHARED}"
-        "${GRAVITY_WINSDK_INCLUDE_WINRT}"
-        "${GRAVITY_WINSDK_INCLUDE_CPPWINRT}")
+        "${BLITZAR_MSVC_INCLUDE_DIR}"
+        "${BLITZAR_WINSDK_INCLUDE_UCRT}"
+        "${BLITZAR_WINSDK_INCLUDE_UM}"
+        "${BLITZAR_WINSDK_INCLUDE_SHARED}"
+        "${BLITZAR_WINSDK_INCLUDE_WINRT}"
+        "${BLITZAR_WINSDK_INCLUDE_CPPWINRT}")
         if(NOT "${_p}" STREQUAL "" AND EXISTS "${_p}")
-            list(APPEND _gravity_win_includes "${_p}")
+            list(APPEND _BLITZAR_win_includes "${_p}")
         endif()
     endforeach()
-    if(_gravity_win_includes)
-        list(REMOVE_DUPLICATES _gravity_win_includes)
-        include_directories(SYSTEM ${_gravity_win_includes})
+    if(_BLITZAR_win_includes)
+        list(REMOVE_DUPLICATES _BLITZAR_win_includes)
+        include_directories(SYSTEM ${_BLITZAR_win_includes})
     endif()
 endif()

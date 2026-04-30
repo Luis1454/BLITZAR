@@ -14,8 +14,8 @@
 #include <string>
 #include <vector>
 
-namespace grav_test_qt_ui {
-class RecordingClientRuntime final : public grav_client::IClientRuntime {
+namespace bltzr_test_qt_ui {
+class RecordingClientRuntime final : public bltzr_client::IClientRuntime {
 public:
     bool start() override
     {
@@ -185,7 +185,7 @@ public:
         return {};
     }
 
-    std::optional<grav_client::ConsumedSnapshot> consumeLatestSnapshot() override
+    std::optional<bltzr_client::ConsumedSnapshot> consumeLatestSnapshot() override
     {
         return std::nullopt;
     }
@@ -195,7 +195,7 @@ public:
         return false;
     }
 
-    grav_client::SnapshotPipelineState snapshotPipelineState() const override
+    bltzr_client::SnapshotPipelineState snapshotPipelineState() const override
     {
         return {};
     }
@@ -274,8 +274,8 @@ TEST(QtUiLogicTest, TST_UNT_UI_002_ControllerAppliesRuntimeMappingsWithoutWidget
     config.exportFormat = "vtk";
     config.clientParticleCap = 1234u;
     RecordingClientRuntime runtime;
-    const grav_qt::MainWindowApplyConfigResult result =
-        grav_qt::MainWindowController().applyConfig(config, runtime, true);
+    const bltzr_qt::MainWindowApplyConfigResult result =
+        bltzr_qt::MainWindowController().applyConfig(config, runtime, true);
     ASSERT_TRUE(result.applied);
     EXPECT_TRUE(result.report.validForRun);
     EXPECT_TRUE(runtime.resetRequested);
@@ -293,12 +293,12 @@ TEST(QtUiLogicTest, TST_UNT_UI_003_ControllerRejectsInvalidConfigBeforeRuntimeMu
     SimulationConfig config{};
     config.clientSnapshotQueueCapacity = 0u;
     RecordingClientRuntime runtime;
-    const grav_qt::MainWindowApplyConfigResult result =
-        grav_qt::MainWindowController().applyConfig(config, runtime, true);
+    const bltzr_qt::MainWindowApplyConfigResult result =
+        bltzr_qt::MainWindowController().applyConfig(config, runtime, true);
     EXPECT_FALSE(result.applied);
     EXPECT_FALSE(result.report.validForRun);
     EXPECT_FALSE(runtime.resetRequested);
     EXPECT_EQ(runtime.configuredParticleCount, 0u);
     EXPECT_TRUE(runtime.solverMode.empty());
 }
-} // namespace grav_test_qt_ui
+} // namespace bltzr_test_qt_ui

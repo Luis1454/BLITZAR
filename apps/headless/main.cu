@@ -54,9 +54,9 @@ int main(int argc, char** argv)
     std::string integrator = config.integrator;
     const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(config, std::cerr);
     bool exportOnExit = runtime.exportOnExit;
-    constexpr bool kDevProfile = GRAVITY_PROFILE_IS_DEV != 0;
+    constexpr bool kDevProfile = BLITZAR_PROFILE_IS_DEV != 0;
     if (kDevProfile)
-        exportOnExit = grav_env::getBool("GRAVITY_EXPORT_ON_EXIT", runtime.exportOnExit);
+        exportOnExit = bltzr_env::getBool("BLITZAR_EXPORT_ON_EXIT", runtime.exportOnExit);
     std::cout << "[headless] start particles=" << particleCount << " targetSteps=" << targetSteps
               << " dt=" << dt << " solver=" << solver << " integrator=" << integrator
               << " sph=" << (config.sphEnabled ? "on" : "off") << " export=" << exportFormat

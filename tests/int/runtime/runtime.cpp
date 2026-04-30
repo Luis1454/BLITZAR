@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-namespace grav_test_client_runtime {
+namespace bltzr_test_client_runtime {
 static std::filesystem::path writeSnapshotPipelineConfig(const char* basename,
                                                          std::uint32_t queueCapacity,
                                                          const char* dropPolicy)
@@ -39,7 +39,7 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAn
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    grav_client::ClientRuntime runtime(
+    bltzr_client::ClientRuntime runtime(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
     ASSERT_TRUE(testsupport::waitUntil(
@@ -52,7 +52,7 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAn
     EXPECT_GT(stats.dt, 0.0f);
     EXPECT_FALSE(stats.solverName.empty());
     EXPECT_FALSE(stats.faulted);
-    std::optional<grav_client::ConsumedSnapshot> consumedSnapshot;
+    std::optional<bltzr_client::ConsumedSnapshot> consumedSnapshot;
     ASSERT_TRUE(testsupport::waitUntil(
         [&]() {
             consumedSnapshot = runtime.consumeLatestSnapshot();
@@ -77,8 +77,8 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_002_StartFailsWhenRemoteServerIsUnavailable
     ASSERT_TRUE(server.start(startError)) << startError;
     const std::uint16_t unavailablePort = server.port();
     server.stop();
-    grav_client::ClientRuntime runtime("simulation.ini",
-                                       testsupport::makeTransport(unavailablePort, ""));
+    bltzr_client::ClientRuntime runtime("simulation.ini",
+                                        testsupport::makeTransport(unavailablePort, ""));
     EXPECT_FALSE(runtime.start());
     EXPECT_EQ(runtime.linkStateLabel(), "reconnecting");
 }
@@ -89,7 +89,7 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_003_ReconnectsWhenRealServerRestarts)
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
     const std::uint16_t fixedPort = server.port();
-    grav_client::ClientRuntime runtime(
+    bltzr_client::ClientRuntime runtime(
         "simulation.ini", testsupport::makeTransport(fixedPort, server.executablePath()));
     ASSERT_TRUE(runtime.start());
     ASSERT_TRUE(testsupport::waitUntil(
@@ -119,7 +119,7 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeToRe
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    grav_client::ClientRuntime runtime(
+    bltzr_client::ClientRuntime runtime(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
     ASSERT_TRUE(testsupport::waitUntil(
@@ -155,23 +155,24 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_009_LatestOnlySnapshotQueueKeepsLatencyLowW
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
     const std::filesystem::path configPath =
-        writeSnapshotPipelineConfig("gravity_runtime_latest_only", 2u, "latest-only");
-    grav_client::ClientRuntime runtime(
+        writeSnapshotPipelineConfig("BLITZAR_runtime_latest_only", 2u, "latest-only");
+    bltzr_client::ClientRuntime runtime(
         configPath.string(), testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
     ASSERT_TRUE(testsupport::waitUntil(
         [&]() {
-            const grav_client::SnapshotPipelineState state = runtime.snapshotPipelineState();
+            const bltzr_client::SnapshotPipelineState state = runtime.snapshotPipelineState();
             return runtime.linkStateLabel() == "connected" && state.queueDepth == 2u &&
                    state.droppedFrames > 0u;
         },
         std::chrono::milliseconds(5000)));
-    const grav_client::SnapshotPipelineState state = runtime.snapshotPipelineState();
+    const bltzr_client::SnapshotPipelineState state = runtime.snapshotPipelineState();
     EXPECT_EQ(state.dropPolicy, "latest-only");
     EXPECT_EQ(state.queueCapacity, 2u);
     EXPECT_EQ(state.queueDepth, 2u);
     EXPECT_GT(state.droppedFrames, 0u);
-    std::optional<grav_client::ConsumedSnapshot> consumedSnapshot = runtime.consumeLatestSnapshot();
+    std::optional<bltzr_client::ConsumedSnapshot> consumedSnapshot =
+        runtime.consumeLatestSnapshot();
     ASSERT_TRUE(consumedSnapshot.has_value());
     EXPECT_LT(consumedSnapshot->latencyMs, 250u);
     runtime.stop();
@@ -186,26 +187,27 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_010_PacedSnapshotQueuePreservesBacklogAndRe
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
     const std::filesystem::path configPath =
-        writeSnapshotPipelineConfig("gravity_runtime_paced", 2u, "paced");
-    grav_client::ClientRuntime runtime(
+        writeSnapshotPipelineConfig("BLITZAR_runtime_paced", 2u, "paced");
+    bltzr_client::ClientRuntime runtime(
         configPath.string(), testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
     ASSERT_TRUE(testsupport::waitUntil(
         [&]() {
-            const grav_client::SnapshotPipelineState state = runtime.snapshotPipelineState();
+            const bltzr_client::SnapshotPipelineState state = runtime.snapshotPipelineState();
             return runtime.linkStateLabel() == "connected" && state.queueDepth == 2u &&
                    state.droppedFrames > 0u &&
                    state.latencyMs != std::numeric_limits<std::uint32_t>::max() &&
                    state.latencyMs >= 250u;
         },
         std::chrono::milliseconds(5000)));
-    const grav_client::SnapshotPipelineState state = runtime.snapshotPipelineState();
+    const bltzr_client::SnapshotPipelineState state = runtime.snapshotPipelineState();
     EXPECT_EQ(state.dropPolicy, "paced");
     EXPECT_EQ(state.queueCapacity, 2u);
     EXPECT_EQ(state.queueDepth, 2u);
     EXPECT_GT(state.droppedFrames, 0u);
     EXPECT_GE(state.latencyMs, 250u);
-    std::optional<grav_client::ConsumedSnapshot> consumedSnapshot = runtime.consumeLatestSnapshot();
+    std::optional<bltzr_client::ConsumedSnapshot> consumedSnapshot =
+        runtime.consumeLatestSnapshot();
     ASSERT_TRUE(consumedSnapshot.has_value());
     EXPECT_GE(consumedSnapshot->latencyMs, 250u);
     runtime.stop();
@@ -224,7 +226,7 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_011_BackendSnapshotPolicyReducesTransferFor
         "--init-config-style", "preset",       "--preset-structure",
         "random_cloud"};
     ASSERT_TRUE(server.start(startError, 0u, {}, serverArgs)) << startError;
-    grav_client::ClientRuntime runtime(
+    bltzr_client::ClientRuntime runtime(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
     ASSERT_TRUE(testsupport::waitUntil(
@@ -235,7 +237,7 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_011_BackendSnapshotPolicyReducesTransferFor
         },
         std::chrono::milliseconds(4000)));
     runtime.setRemoteSnapshotCap(4096u);
-    std::optional<grav_client::ConsumedSnapshot> consumedSnapshot;
+    std::optional<bltzr_client::ConsumedSnapshot> consumedSnapshot;
     ASSERT_TRUE(testsupport::waitUntil(
         [&]() {
             consumedSnapshot = runtime.consumeLatestSnapshot();
@@ -250,4 +252,4 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_011_BackendSnapshotPolicyReducesTransferFor
     runtime.stop();
     server.stop();
 }
-} // namespace grav_test_client_runtime
+} // namespace bltzr_test_client_runtime

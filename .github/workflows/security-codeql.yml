@@ -65,9 +65,9 @@ jobs:
           cmake -S tests -B build-codeql -G Ninja \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-            -DGRAVITY_PROFILE=prod \
-            -DGRAVITY_INTEGRATION_STRICT_WARNINGS=OFF \
-            -DGRAVITY_INTEGRATION_ENABLE_SANITIZERS=OFF
+            -DBLITZAR_PROFILE=prod \
+            -DBLITZAR_INTEGRATION_STRICT_WARNINGS=OFF \
+            -DBLITZAR_INTEGRATION_ENABLE_SANITIZERS=OFF
       - name: Build CodeQL targets
         if: ${{ matrix.build-mode == 'manual' }}
         run: cmake --build build-codeql --parallel

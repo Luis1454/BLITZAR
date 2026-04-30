@@ -14,7 +14,7 @@
 #include <thread>
 #include <vector>
 
-namespace grav_test_server_protocol_connect {
+namespace bltzr_test_server_protocol_connect {
 TEST(ServerProtocolTest, TST_INT_PROT_001_ServerClientParsesStatusAndSnapshotFromRealServer)
 {
     RealServerHarness server;
@@ -42,7 +42,7 @@ TEST(ServerProtocolTest, TST_INT_PROT_001_ServerClientParsesStatusAndSnapshotFro
         gotSnapshot = snapshotResponse.ok && !snapshot.empty();
         if (!gotSnapshot && !requestedStep && attempt >= 10) {
             const ServerClientResponse stepResponse =
-                client.sendCommand(std::string(grav_protocol::Step), "\"count\":1");
+                client.sendCommand(std::string(bltzr_protocol::Step), "\"count\":1");
             ASSERT_TRUE(stepResponse.ok) << stepResponse.error;
             requestedStep = true;
         }
@@ -106,4 +106,4 @@ TEST(ServerProtocolTest, TST_INT_PROT_003_ServerClientConnectTimeoutIsBounded)
     EXPECT_LE(elapsedMs.count(), 3000)
         << "connect timeout took too long: " << elapsedMs.count() << " ms";
 }
-} // namespace grav_test_server_protocol_connect
+} // namespace bltzr_test_server_protocol_connect

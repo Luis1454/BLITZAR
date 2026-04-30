@@ -128,7 +128,7 @@ def test_repo_policy_rejects_workflow_build_failure_masking_with_shell_fallback(
         "jobs:\n"
         "  ci:\n"
         "    steps:\n"
-        "      - run: cmake --build build-dev-mod --parallel --target gravityClientModuleQtInProc || echo \"skip\"\n",
+        "      - run: cmake --build build-dev-mod --parallel --target blitzarClientModuleQtInProc || echo \"skip\"\n",
     )
     ok, errors, _ = _run(tmp_path)
     assert not ok
@@ -145,7 +145,7 @@ def test_repo_policy_accepts_workflow_build_command_without_shell_fallback(tmp_p
         "jobs:\n"
         "  ci:\n"
         "    steps:\n"
-        "      - run: cmake --build build-dev-mod --parallel --target gravityClientModuleQtInProc\n",
+        "      - run: cmake --build build-dev-mod --parallel --target blitzarClientModuleQtInProc\n",
     )
     ok, errors, _ = _run(tmp_path)
     assert ok

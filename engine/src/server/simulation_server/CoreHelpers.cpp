@@ -71,8 +71,8 @@ std::string normalizeSnapshotFormat(std::string format)
 ParticleSystem::SolverMode solverModeFromCanonicalName(std::string_view name)
 {
     static const std::array<std::pair<std::string_view, ParticleSystem::SolverMode>, 2> modes = {
-        {{grav_modes::kSolverOctreeCpu, ParticleSystem::SolverMode::OctreeCpu},
-         {grav_modes::kSolverOctreeGpu, ParticleSystem::SolverMode::OctreeGpu}}};
+        {{bltzr_modes::kSolverOctreeCpu, ParticleSystem::SolverMode::OctreeCpu},
+         {bltzr_modes::kSolverOctreeGpu, ParticleSystem::SolverMode::OctreeGpu}}};
     for (const auto& entry : modes) {
         if (name == entry.first) {
             return entry.second;
@@ -90,7 +90,7 @@ ParticleSystem::SolverMode solverModeFromCanonicalName(std::string_view name)
 ParticleSystem::IntegratorMode integratorModeFromCanonicalName(std::string_view name)
 {
     static const std::array<std::pair<std::string_view, ParticleSystem::IntegratorMode>, 1> modes =
-        {{{grav_modes::kIntegratorRk4, ParticleSystem::IntegratorMode::Rk4}}};
+        {{{bltzr_modes::kIntegratorRk4, ParticleSystem::IntegratorMode::Rk4}}};
     for (const auto& entry : modes) {
         if (name == entry.first) {
             return entry.second;
@@ -127,11 +127,11 @@ std::string_view solverLabel(ParticleSystem::SolverMode mode)
 std::uint32_t resolvePublishedSnapshotCap(std::uint32_t drawCap)
 {
     const std::uint32_t clampedDrawCap =
-        grav_protocol::clampSnapshotPoints(std::max(grav_protocol::kSnapshotMinPoints, drawCap));
+        bltzr_protocol::clampSnapshotPoints(std::max(bltzr_protocol::kSnapshotMinPoints, drawCap));
     const std::uint32_t oversampled =
-        std::min<std::uint32_t>(grav_protocol::kSnapshotMaxPoints,
+        std::min<std::uint32_t>(bltzr_protocol::kSnapshotMaxPoints,
                                 std::max<std::uint32_t>(clampedDrawCap, clampedDrawCap * 2u));
-    return std::max(grav_protocol::kSnapshotMinPoints, oversampled);
+    return std::max(bltzr_protocol::kSnapshotMinPoints, oversampled);
 }
 
 /*
@@ -170,7 +170,7 @@ bool writeRawBytes(std::ostream& out, const std::byte* data, std::size_t size)
  */
 std::string readEnvironment(std::string_view key)
 {
-    const std::optional<std::string> value = grav_env::get(key);
+    const std::optional<std::string> value = bltzr_env::get(key);
     return value.value_or(std::string{});
 }
 
@@ -193,7 +193,7 @@ bool isValidImportedParticleCount(std::size_t count)
  */
 bool isAutoSolverFallbackEnabled()
 {
-    const std::string raw = readEnvironment("GRAVITY_AUTO_SOLVER_FALLBACK");
+    const std::string raw = readEnvironment("BLITZAR_AUTO_SOLVER_FALLBACK");
     if (raw.empty()) {
         return false;
     }
@@ -209,9 +209,9 @@ bool isAutoSolverFallbackEnabled()
  */
 bool shouldForceCudaFailureOnceForTesting(std::string_view solver)
 {
-    if (solver != grav_modes::kSolverPairwiseCuda && solver != grav_modes::kSolverOctreeGpu)
+    if (solver != bltzr_modes::kSolverPairwiseCuda && solver != bltzr_modes::kSolverOctreeGpu)
         return false;
-    const std::string raw = readEnvironment("GRAVITY_TEST_FORCE_CUDA_FAIL_ONCE");
+    const std::string raw = readEnvironment("BLITZAR_TEST_FORCE_CUDA_FAIL_ONCE");
     if (raw.empty()) {
         return false;
     }
@@ -235,10 +235,10 @@ bool shouldForceCudaFailureOnceForTesting(std::string_view solver)
 bool coerceConfigSolverIntegratorCompatibility(std::string& solver, std::string& integrator,
                                                std::string_view source)
 {
-    if (!grav_modes::isSupportedSolverIntegratorPair(solver, integrator)) {
+    if (!bltzr_modes::isSupportedSolverIntegratorPair(solver, integrator)) {
         std::cerr << "[server] " << source
                   << ": solver octree_gpu requires integrator euler, using euler\n";
-        integrator.assign(grav_modes::kIntegratorEuler);
+        integrator.assign(bltzr_modes::kIntegratorEuler);
         return true;
     }
     return false;
@@ -264,9 +264,9 @@ float autoTargetSubstepDt(std::string_view solver, bool eulerIntegrator, bool sp
         return 0.01f;
     if (liveParticleCount >= 20'000u)
         return 0.005f;
-    if (solver == grav_modes::kSolverOctreeGpu)
+    if (solver == bltzr_modes::kSolverOctreeGpu)
         return 0.0025f;
-    if (solver == grav_modes::kSolverOctreeCpu)
+    if (solver == bltzr_modes::kSolverOctreeCpu)
         return 0.001f;
     return 0.0005f;
 }
@@ -280,7 +280,7 @@ float autoTargetSubstepDt(std::string_view solver, bool eulerIntegrator, bool sp
 OctreeOpeningCriterion openingCriterionFromCanonicalName(std::string_view name)
 {
     static const std::array<std::pair<std::string_view, OctreeOpeningCriterion>, 1> criteria = {
-        {{grav_modes::kOctreeCriterionBounds, OctreeOpeningCriterion::Bounds}}};
+        {{bltzr_modes::kOctreeCriterionBounds, OctreeOpeningCriterion::Bounds}}};
     for (const auto& entry : criteria) {
         if (name == entry.first) {
             return entry.second;

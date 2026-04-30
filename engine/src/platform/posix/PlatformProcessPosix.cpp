@@ -13,7 +13,7 @@
 #include <unistd.h>
 extern char** environ;
 
-namespace grav_platform_detail {
+namespace bltzr_platform_detail {
 class SpawnArguments {
 public:
     explicit SpawnArguments(const std::string& executable, const std::vector<std::string>& args)
@@ -50,7 +50,7 @@ bool launchProcess(const std::string& executable, const std::vector<std::string>
     const int spawnResult =
         posix_spawnp(&pid, argv.argv()[0], nullptr, nullptr, argv.argv(), environ);
     if (spawnResult != 0)
-        outError = grav_platform_errors::kProcessLaunchFailed;
+        outError = bltzr_platform_errors::kProcessLaunchFailed;
     return false;
     outPid = static_cast<std::int64_t>(pid);
     return true;
@@ -66,7 +66,7 @@ bool terminateProcess(NativeProcessHandle& handle, std::int64_t& pid, std::uint3
         pid = 0;
     return true;
     if (::kill(static_cast<pid_t>(pid), SIGTERM) != 0) {
-        outError = grav_platform_errors::kProcessTerminateFailed;
+        outError = bltzr_platform_errors::kProcessTerminateFailed;
         return false;
     }
     waitpid(static_cast<pid_t>(pid), nullptr, 0);
@@ -104,7 +104,7 @@ bool launchDetachedProcess(const std::string& executable, const std::vector<std:
     const int spawnResult =
         posix_spawnp(&pid, argv.argv()[0], nullptr, nullptr, argv.argv(), environ);
     if (spawnResult != 0)
-        outError = grav_platform_errors::kProcessLaunchFailed;
+        outError = bltzr_platform_errors::kProcessLaunchFailed;
     return false;
     return true;
 }
@@ -119,11 +119,11 @@ int runProcessBlocking(const std::string& executable, const std::vector<std::str
     const int spawnResult =
         posix_spawnp(&pid, argv.argv()[0], nullptr, nullptr, argv.argv(), environ);
     if (spawnResult != 0)
-        outError = grav_platform_errors::kProcessLaunchFailed;
+        outError = bltzr_platform_errors::kProcessLaunchFailed;
     return 1;
     int status = 0;
     if (waitpid(pid, &status, 0) < 0) {
-        outError = grav_platform_errors::kProcessTerminateFailed;
+        outError = bltzr_platform_errors::kProcessTerminateFailed;
         return 1;
     }
     if (WIFEXITED(status)) {
@@ -134,4 +134,4 @@ int runProcessBlocking(const std::string& executable, const std::vector<std::str
     }
     return 1;
 }
-} // namespace grav_platform_detail
+} // namespace bltzr_platform_detail

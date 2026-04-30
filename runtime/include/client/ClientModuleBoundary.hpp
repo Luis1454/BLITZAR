@@ -5,13 +5,13 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEBOUNDARY_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEBOUNDARY_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEBOUNDARY_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEBOUNDARY_HPP_
 #include "client/ErrorBuffer.hpp"
 #include <cstddef>
 #include <cstdint>
 
-namespace grav_module {
+namespace bltzr_module {
 class ClientModuleOpaqueState final {
 public:
     ClientModuleOpaqueState() noexcept;
@@ -66,5 +66,5 @@ public:
 private:
     bool m_keepRunning;
 };
-} // namespace grav_module
-#endif // GRAVITY_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEBOUNDARY_HPP_
+} // namespace bltzr_module
+#endif // BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEBOUNDARY_HPP_

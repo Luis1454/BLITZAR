@@ -16,7 +16,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-namespace grav_socket_detail {
+namespace bltzr_socket_detail {
 typedef int NativeSocket;
 static constexpr NativeSocket kInvalidNativeSocket = -1;
 
@@ -170,13 +170,13 @@ bool waitReadableNative(std::intptr_t handle, int timeoutMs)
            0;
 }
 
-int recvBytesNative(std::intptr_t handle, grav_socket::MutableBytes buffer)
+int recvBytesNative(std::intptr_t handle, bltzr_socket::MutableBytes buffer)
 {
     return buffer.empty() ? 0
                           : static_cast<int>(::recv(toNative(handle), buffer.data, buffer.size, 0));
 }
 
-int sendBytesNative(std::intptr_t handle, grav_socket::ConstBytes buffer)
+int sendBytesNative(std::intptr_t handle, bltzr_socket::ConstBytes buffer)
 {
     return buffer.empty() ? 0
                           : static_cast<int>(::send(toNative(handle), buffer.data, buffer.size, 0));
@@ -186,4 +186,4 @@ bool wouldBlockOrTimeoutLastErrorNative()
 {
     return errno == EAGAIN || errno == EWOULDBLOCK;
 }
-} // namespace grav_socket_detail
+} // namespace bltzr_socket_detail

@@ -11,12 +11,14 @@
 #include "config/SimulationConfig.hpp"
 #include "config/TextParse.hpp"
 #include "ui/MainWindow.hpp"
+#include "ui/QtTheme.hpp"
 #include <QApplication>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QLibraryInfo>
 #include <QMetaObject>
+#include <QStyleFactory>
 #include <algorithm>
 #include <array>
 #include <atomic>
@@ -121,14 +123,15 @@ static std::vector<std::string> splitTokens(const std::string& line)
  */
 struct QtInProcState {
     std::string configPath = "simulation.ini";
-    grav_client::ClientTransportArgs transport{"127.0.0.1",
-                                               4545u,
-                                               false, // autostart off by default
-                                               {},
-                                               {},
-                                               grav_client::kClientRemoteCommandTimeoutMsDefault,
-                                               grav_client::kClientRemoteStatusTimeoutMsDefault,
-                                               grav_client::kClientRemoteSnapshotTimeoutMsDefault};
+    bltzr_client::ClientTransportArgs transport{
+        "127.0.0.1",
+        4545u,
+        true, // autostart on by default for GUI launches
+        {},
+        {},
+        bltzr_client::kClientRemoteCommandTimeoutMsDefault,
+        bltzr_client::kClientRemoteStatusTimeoutMsDefault,
+        bltzr_client::kClientRemoteSnapshotTimeoutMsDefault};
     std::thread uiThread;
     std::atomic<bool> running{false};
     std::atomic<bool> startupDone{false};
@@ -176,22 +179,34 @@ static void qtThreadMain(QtInProcState* state)
 {
     try {
         int argc = 1;
-        std::string appName = "gravityQtInProc";
+        std::string appName = "blitzarQtInProc";
         std::vector<char> appNameBuffer(appName.begin(), appName.end());
         appNameBuffer.push_back('\0');
         char* argv[] = {appNameBuffer.data(), nullptr};
         QApplication app(argc, argv);
         configureQtPluginPathFallback();
+        if (state->transport.serverExecutable.empty()) {
+            const QString appDir = QCoreApplication::applicationDirPath();
+            if (!appDir.isEmpty()) {
+                const QString serverCandidate = QDir(appDir).filePath("blitzar-server.exe");
+                if (QFileInfo::exists(serverCandidate)) {
+                    state->transport.serverExecutable = serverCandidate.toStdString();
+                }
+            }
+        }
         SimulationConfig config = SimulationConfig::loadOrCreate(state->configPath);
+        const bltzr_qt::QtThemeMode themeMode = bltzr_qt::WorkspaceTheme::resolve(config.uiTheme);
+        app.setStyle(QStyleFactory::create("Fusion"));
+        app.setPalette(bltzr_qt::WorkspaceTheme::buildPalette(themeMode));
         state->transport.remoteCommandTimeoutMs =
-            grav_client::clampClientRemoteTimeoutMs(config.clientRemoteCommandTimeoutMs);
+            bltzr_client::clampClientRemoteTimeoutMs(config.clientRemoteCommandTimeoutMs);
         state->transport.remoteStatusTimeoutMs =
-            grav_client::clampClientRemoteTimeoutMs(config.clientRemoteStatusTimeoutMs);
+            bltzr_client::clampClientRemoteTimeoutMs(config.clientRemoteStatusTimeoutMs);
         state->transport.remoteSnapshotTimeoutMs =
-            grav_client::clampClientRemoteTimeoutMs(config.clientRemoteSnapshotTimeoutMs);
+            bltzr_client::clampClientRemoteTimeoutMs(config.clientRemoteSnapshotTimeoutMs);
         auto runtime =
-            std::make_unique<grav_client::ClientRuntime>(state->configPath, state->transport);
-        grav_qt::MainWindow window(config, state->configPath, std::move(runtime));
+            std::make_unique<bltzr_client::ClientRuntime>(state->configPath, state->transport);
+        bltzr_qt::MainWindow window(config, state->configPath, std::move(runtime));
         window.show();
         state->running.store(true);
         {
@@ -223,7 +238,7 @@ static void qtThreadMain(QtInProcState* state)
  * @return bool value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-static bool startQtUi(QtInProcState& state, const grav_client::ErrorBufferView& errorBuffer)
+static bool startQtUi(QtInProcState& state, const bltzr_client::ErrorBufferView& errorBuffer)
 {
     if (state.uiThread.joinable() || state.running.load()) {
         return true;
@@ -265,7 +280,7 @@ static void stopQtUi(QtInProcState& state)
 {
     if (state.uiThread.joinable()) {
         QCoreApplication* app = QCoreApplication::instance();
-        if (app != nullptr) {
+        if (state.running.load() && app != nullptr) {
             QMetaObject::invokeMethod(app, "quit", Qt::QueuedConnection);
         }
         state.uiThread.join();
@@ -308,9 +323,9 @@ public:
      * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
      * it.
      */
-    static bool create(const grav_module::ClientHostContextV1* context,
-                       const grav_module::ClientModuleStateSlot& outModuleState,
-                       const grav_client::ErrorBufferView& errorBuffer)
+    static bool create(const bltzr_module::ClientHostContextV1* context,
+                       const bltzr_module::ClientModuleStateSlot& outModuleState,
+                       const bltzr_client::ErrorBufferView& errorBuffer)
     {
         try {
             if (!outModuleState.isAvailable()) {
@@ -322,7 +337,7 @@ public:
                 state->configPath = context->configPath;
             }
             return outModuleState.assign(
-                grav_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
+                bltzr_module::ClientModuleOpaqueState::fromRawPointer(state.release()));
         }
         catch (const std::exception& ex) {
             errorBuffer.write(ex.what());
@@ -342,8 +357,8 @@ public:
      * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
      * it.
      */
-    static QtInProcState* requireState(grav_module::ClientModuleOpaqueState moduleState,
-                                       const grav_client::ErrorBufferView& errorBuffer)
+    static QtInProcState* requireState(bltzr_module::ClientModuleOpaqueState moduleState,
+                                       const bltzr_client::ErrorBufferView& errorBuffer)
     {
         QtInProcState* state = static_cast<QtInProcState*>(moduleState.rawPointer());
         if (state == nullptr) {
@@ -359,14 +374,12 @@ public:
      * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
      * it.
      */
-    static void destroy(grav_module::ClientModuleOpaqueState moduleState)
+    static void destroy(bltzr_module::ClientModuleOpaqueState moduleState)
     {
         try {
             std::unique_ptr<QtInProcState> state(
                 static_cast<QtInProcState*>(moduleState.rawPointer()));
-            if (state != nullptr) {
-                stopQtUi(*state);
-            }
+            (void)state;
         }
         catch (const std::exception& ex) {
             std::cerr << "[module-qt] destroy error: " << ex.what() << "\n";
@@ -384,8 +397,8 @@ public:
      * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
      * it.
      */
-    static bool start(grav_module::ClientModuleOpaqueState moduleState,
-                      const grav_client::ErrorBufferView& errorBuffer)
+    static bool start(bltzr_module::ClientModuleOpaqueState moduleState,
+                      const bltzr_client::ErrorBufferView& errorBuffer)
     {
         try {
             QtInProcState* state = requireState(moduleState, errorBuffer);
@@ -410,7 +423,7 @@ public:
      * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
      * it.
      */
-    static void stop(grav_module::ClientModuleOpaqueState moduleState)
+    static void stop(bltzr_module::ClientModuleOpaqueState moduleState)
     {
         try {
             QtInProcState* state = static_cast<QtInProcState*>(moduleState.rawPointer());
@@ -427,38 +440,38 @@ public:
     }
 };
 
-extern "C" GRAVITY_CLIENT_MODULE_EXPORT_ATTR const grav_module::ClientModuleExportsV1*
-gravity_client_module_v1()
+extern "C" BLITZAR_CLIENT_MODULE_EXPORT_ATTR const bltzr_module::ClientModuleExportsV1*
+BLITZAR_client_module_v1()
 {
-    static const grav_module::ClientModuleExportsV1 exports{
-        grav_module::kClientModuleApiVersionV1,
+    static const bltzr_module::ClientModuleExportsV1 exports{
+        bltzr_module::kClientModuleApiVersionV1,
         "qt",
-        [](const grav_module::ClientHostContextV1* context, void** outModuleState,
+        [](const bltzr_module::ClientHostContextV1* context, void** outModuleState,
            char* errorBuffer, std::size_t errorBufferSize) -> bool {
             return QtModuleBoundary::create(
-                context, grav_module::ClientModuleStateSlot(outModuleState),
-                grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
+                context, bltzr_module::ClientModuleStateSlot(outModuleState),
+                bltzr_client::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void* moduleState) {
             QtModuleBoundary::destroy(
-                grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
+                bltzr_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
         },
         [](void* moduleState, char* errorBuffer, std::size_t errorBufferSize) -> bool {
             return QtModuleBoundary::start(
-                grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState),
-                grav_client::ErrorBufferView(errorBuffer, errorBufferSize));
+                bltzr_module::ClientModuleOpaqueState::fromRawPointer(moduleState),
+                bltzr_client::ErrorBufferView(errorBuffer, errorBufferSize));
         },
         [](void* moduleState) {
             QtModuleBoundary::stop(
-                grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
+                bltzr_module::ClientModuleOpaqueState::fromRawPointer(moduleState));
         },
         [](void* moduleState, const char* commandLine, bool* outKeepRunning, char* errorBuffer,
            std::size_t errorBufferSize) -> bool {
-            const grav_client::ErrorBufferView errorView(errorBuffer, errorBufferSize);
-            const grav_module::ClientModuleCommandControl commandControl(outKeepRunning);
+            const bltzr_client::ErrorBufferView errorView(errorBuffer, errorBufferSize);
+            const bltzr_module::ClientModuleCommandControl commandControl(outKeepRunning);
             try {
                 QtInProcState* state = QtModuleBoundary::requireState(
-                    grav_module::ClientModuleOpaqueState::fromRawPointer(moduleState), errorView);
+                    bltzr_module::ClientModuleOpaqueState::fromRawPointer(moduleState), errorView);
                 if (state == nullptr)
                     return false;
                 commandControl.setContinue();
@@ -495,6 +508,12 @@ gravity_client_module_v1()
                     while (!state->startupDone.load() || state->running.load()) {
                         std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     }
+                    if (!state->startupOk.load()) {
+                        const std::string err = state->startupError.empty() ? "qt ui startup failed"
+                                                                            : state->startupError;
+                        errorView.write(err);
+                        return false;
+                    }
                     commandControl.requestStop();
                     return true;
                 }
@@ -504,7 +523,7 @@ gravity_client_module_v1()
                         return false;
                     }
                     unsigned int parsedPort = 0u;
-                    if (!grav_text::parseNumber(tokens[2], parsedPort) || parsedPort == 0u ||
+                    if (!bltzr_text::parseNumber(tokens[2], parsedPort) || parsedPort == 0u ||
                         parsedPort > 65535u) {
                         errorView.write("invalid port");
                         return false;

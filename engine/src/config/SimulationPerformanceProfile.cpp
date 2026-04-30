@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <cctype>
 
-namespace grav_config {
+namespace bltzr_config {
 static std::string toLowerProfile(std::string_view raw)
 {
     std::string lowered(raw);
@@ -54,7 +54,7 @@ void applyPerformanceProfile(SimulationConfig& config)
         return;
     }
     if (canonical == kPerformanceProfileInteractive) {
-        config.clientParticleCap = grav_protocol::kSnapshotDefaultPoints;
+        config.clientParticleCap = bltzr_protocol::kSnapshotDefaultPoints;
         config.snapshotPublishPeriodMs = 50u;
         config.energyMeasureEverySteps = 30u;
         config.energySampleLimit = 256u;
@@ -71,7 +71,7 @@ void applyPerformanceProfile(SimulationConfig& config)
         config.maxSubsteps = 8u;
         return;
     }
-    config.clientParticleCap = grav_protocol::kSnapshotMaxPoints;
+    config.clientParticleCap = bltzr_protocol::kSnapshotMaxPoints;
     config.snapshotPublishPeriodMs = 16u;
     config.energyMeasureEverySteps = 10u;
     config.energySampleLimit = 5000u;
@@ -85,4 +85,4 @@ bool isPerformanceManagedField(std::string_view key)
            key == "snapshot_publish_period_ms" || key == "client_particle_cap" ||
            key == "energy_measure_every_steps" || key == "energy_sample_limit";
 }
-} // namespace grav_config
+} // namespace bltzr_config

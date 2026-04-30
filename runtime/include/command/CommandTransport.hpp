@@ -5,13 +5,13 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDTRANSPORT_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDTRANSPORT_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDTRANSPORT_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDTRANSPORT_HPP_
 #include "protocol/ServerClient.hpp"
 #include <cstdint>
 #include <string>
 
-namespace grav_cmd {
+namespace bltzr_cmd {
 class CommandTransport {
 public:
     virtual ~CommandTransport() = default;
@@ -36,5 +36,5 @@ public:
 private:
     ServerClient _client;
 };
-} // namespace grav_cmd
-#endif // GRAVITY_RUNTIME_INCLUDE_COMMAND_COMMANDTRANSPORT_HPP_
+} // namespace bltzr_cmd
+#endif // BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDTRANSPORT_HPP_

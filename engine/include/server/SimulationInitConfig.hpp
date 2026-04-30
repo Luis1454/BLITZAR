@@ -5,8 +5,8 @@
  * @brief Source artifact for the BLITZAR simulation project.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONINITCONFIG_HPP_
-#define GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONINITCONFIG_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_SERVER_SIMULATIONINITCONFIG_HPP_
+#define BLITZAR_ENGINE_INCLUDE_SERVER_SIMULATIONINITCONFIG_HPP_
 #include "types/SimulationTypes.hpp"
 #include <iosfwd>
 #include <string>
@@ -46,4 +46,4 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config,
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
 InitialStateConfig buildInitialStateConfig(const SimulationConfig& config);
-#endif // GRAVITY_ENGINE_INCLUDE_SERVER_SIMULATIONINITCONFIG_HPP_
+#endif // BLITZAR_ENGINE_INCLUDE_SERVER_SIMULATIONINITCONFIG_HPP_

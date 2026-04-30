@@ -8,7 +8,7 @@
 #include "config/SimulationScenarioValidationRender.hpp"
 #include <sstream>
 
-namespace grav_config {
+namespace bltzr_config {
 std::string SimulationScenarioValidationRender::render(const ScenarioValidationReport& report)
 {
     std::ostringstream out;
@@ -27,4 +27,4 @@ std::string SimulationScenarioValidationRender::render(const ScenarioValidationR
     }
     return out.str();
 }
-} // namespace grav_config
+} // namespace bltzr_config

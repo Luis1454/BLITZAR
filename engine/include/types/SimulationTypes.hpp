@@ -5,8 +5,8 @@
  * @brief Source artifact for the BLITZAR simulation project.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_TYPES_SIMULATIONTYPES_HPP_
-#define GRAVITY_ENGINE_INCLUDE_TYPES_SIMULATIONTYPES_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_TYPES_SIMULATIONTYPES_HPP_
+#define BLITZAR_ENGINE_INCLUDE_TYPES_SIMULATIONTYPES_HPP_
 #include <cstdint>
 #include <string>
 
@@ -54,6 +54,8 @@ struct InitialStateConfig {
     float diskThickness = 0.0f;
     float velocityScale = 1.0f;
     float cloudHalfExtent = 12.0f;
+    float cubeHalfExtent = 12.0f;
+    float sphereRadius = 12.0f;
     float cloudSpeed = 0.0f;
     float particleMass = 0.01f;
 };
@@ -104,4 +106,4 @@ struct SimulationStats {
     std::string exportLastPath;
     std::string exportLastMessage;
 };
-#endif // GRAVITY_ENGINE_INCLUDE_TYPES_SIMULATIONTYPES_HPP_
+#endif // BLITZAR_ENGINE_INCLUDE_TYPES_SIMULATIONTYPES_HPP_

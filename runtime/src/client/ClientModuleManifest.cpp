@@ -13,7 +13,7 @@
 #include <string>
 #include <string_view>
 
-namespace grav_module {
+namespace bltzr_module {
 class ClientModuleManifestLocal final {
 public:
     static bool isSupportedModuleId(std::string_view moduleId) noexcept
@@ -23,22 +23,22 @@ public:
 
     static bool parseLine(std::string_view line, std::string& outKey, std::string& outValue)
     {
-        const std::string_view trimmed = grav_text::trimView(line);
+        const std::string_view trimmed = bltzr_text::trimView(line);
         if (trimmed.empty() || trimmed.front() == '#') {
             return false;
         }
         const std::size_t separator = trimmed.find('=');
         if (separator == std::string_view::npos)
             return false;
-        outKey.assign(grav_text::trimView(trimmed.substr(0u, separator)));
-        outValue.assign(grav_text::trimView(trimmed.substr(separator + 1u)));
+        outKey.assign(bltzr_text::trimView(trimmed.substr(0u, separator)));
+        outValue.assign(bltzr_text::trimView(trimmed.substr(separator + 1u)));
         return !outKey.empty();
     }
 
     static bool readUnsigned(std::string_view rawValue, std::uint32_t& outValue)
     {
         unsigned int parsed = 0u;
-        if (!grav_text::parseNumber(rawValue, parsed)) {
+        if (!bltzr_text::parseNumber(rawValue, parsed)) {
             return false;
         }
         outValue = parsed;
@@ -184,4 +184,4 @@ std::uint32_t ClientModuleManifest::apiVersion() const noexcept
 {
     return m_apiVersion;
 }
-} // namespace grav_module
+} // namespace bltzr_module

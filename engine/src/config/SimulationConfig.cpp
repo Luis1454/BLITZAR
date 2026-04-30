@@ -18,7 +18,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-static_assert(grav_protocol::kSnapshotDefaultPoints == 4096u);
+static_assert(bltzr_protocol::kSnapshotDefaultPoints == 4096u);
 
 /*
  * @brief Documents the trim operation contract.
@@ -48,7 +48,7 @@ static std::string trim(const std::string& value)
 SimulationConfig SimulationConfig::defaults()
 {
     SimulationConfig config{};
-    grav_config::applyPerformanceProfile(config);
+    bltzr_config::applyPerformanceProfile(config);
     return config;
 }
 
@@ -72,7 +72,7 @@ SimulationConfig SimulationConfig::loadOrCreate(const std::string& path)
         if (stripped.empty() || stripped[0] == '#' || stripped[0] == ';') {
             continue;
         }
-        if (grav_config::SimulationConfigDirective::applyLine(stripped, config, std::cerr)) {
+        if (bltzr_config::SimulationConfigDirective::applyLine(stripped, config, std::cerr)) {
             continue;
         }
         const std::size_t eq = stripped.find('=');
@@ -82,19 +82,19 @@ SimulationConfig SimulationConfig::loadOrCreate(const std::string& path)
         }
         const std::string key = trim(stripped.substr(0, eq));
         const std::string value = trim(stripped.substr(eq + 1));
-        if (!grav_config::applyIniOption(key, value, config, std::cerr)) {
+        if (!bltzr_config::applyIniOption(key, value, config, std::cerr)) {
             std::cerr << "[config] unknown key ignored: " << key << "\n";
         }
     }
-    if (!grav_modes::isSupportedSolverIntegratorPair(config.solver, config.integrator)) {
-        config.integrator = std::string(grav_modes::kIntegratorEuler);
+    if (!bltzr_modes::isSupportedSolverIntegratorPair(config.solver, config.integrator)) {
+        config.integrator = std::string(bltzr_modes::kIntegratorEuler);
         std::cerr << "[config] unsupported solver/integrator combination: solver=octree_gpu "
                      "requires integrator=euler\n";
     }
-    const grav_config::ScenarioValidationReport report =
-        grav_config::SimulationScenarioValidation::evaluate(config);
+    const bltzr_config::ScenarioValidationReport report =
+        bltzr_config::SimulationScenarioValidation::evaluate(config);
     if (report.errorCount != 0u || report.warningCount != 0u) {
-        std::cerr << grav_config::SimulationScenarioValidation::renderText(report) << "\n";
+        std::cerr << bltzr_config::SimulationScenarioValidation::renderText(report) << "\n";
     }
     return config;
 }
@@ -116,6 +116,6 @@ bool SimulationConfig::save(const std::string& path) const
     if (!out.is_open()) {
         return false;
     }
-    grav_config::SimulationConfigDirective::write(out, *this);
+    bltzr_config::SimulationConfigDirective::write(out, *this);
     return true;
 }

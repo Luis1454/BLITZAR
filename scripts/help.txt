@@ -20,7 +20,7 @@ Targets:
 Useful vars:
   BUILD_DIR=<dir>        Build directory for app targets (default: build)
   BUILD_TYPE=<type>      CMake build type (default: Release)
-  BUILD_TESTS=ON|OFF     Toggle GRAVITY_BUILD_TESTS (default: ON)
+  BUILD_TESTS=ON|OFF     Toggle BLITZAR_BUILD_TESTS (default: ON)
   PROFILE=dev|prod       Build profile (default: dev)
   GENERATOR=<name>       CMake generator (default: Ninja)
   CUDA_ARCH=<arch>       CMAKE_CUDA_ARCHITECTURES (default: native)

@@ -10,7 +10,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
-namespace grav_socket_detail {
+namespace bltzr_socket_detail {
 typedef SOCKET NativeSocket;
 static constexpr NativeSocket kInvalidNativeSocket = INVALID_SOCKET;
 
@@ -168,14 +168,14 @@ bool waitReadableNative(std::intptr_t handle, int timeoutMs)
     return ::select(0, &readSet, nullptr, nullptr, &timeout) > 0;
 }
 
-int recvBytesNative(std::intptr_t handle, grav_socket::MutableBytes buffer)
+int recvBytesNative(std::intptr_t handle, bltzr_socket::MutableBytes buffer)
 {
     return buffer.empty() ? 0
                           : ::recv(toNative(handle), reinterpret_cast<char*>(buffer.data),
                                    static_cast<int>(buffer.size), 0);
 }
 
-int sendBytesNative(std::intptr_t handle, grav_socket::ConstBytes buffer)
+int sendBytesNative(std::intptr_t handle, bltzr_socket::ConstBytes buffer)
 {
     return buffer.empty() ? 0
                           : ::send(toNative(handle), reinterpret_cast<const char*>(buffer.data),
@@ -187,4 +187,4 @@ bool wouldBlockOrTimeoutLastErrorNative()
     const int lastError = WSAGetLastError();
     return lastError == WSAETIMEDOUT || lastError == WSAEWOULDBLOCK;
 }
-} // namespace grav_socket_detail
+} // namespace bltzr_socket_detail

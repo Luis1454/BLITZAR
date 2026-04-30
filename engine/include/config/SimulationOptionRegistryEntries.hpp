@@ -5,7 +5,7 @@
  * @brief Public configuration interfaces and validation contracts for simulation setup.
  */
 
-#ifndef GRAVITY_SIM_SIMULATIONOPTIONREGISTRYENTRIES_HPP
-#define GRAVITY_SIM_SIMULATIONOPTIONREGISTRYENTRIES_HPP
+#ifndef BLITZAR_SIM_SIMULATIONOPTIONREGISTRYENTRIES_HPP
+#define BLITZAR_SIM_SIMULATIONOPTIONREGISTRYENTRIES_HPP
 #include "config/SimulationOptionRegistry.hpp"
 #endif

@@ -21,7 +21,7 @@
 #include <QSpinBox>
 #include <QStatusBar>
 
-namespace grav_qt {
+namespace bltzr_qt {
 void MainWindow::buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPane,
                                      QWidget* validationPane)
 {
@@ -116,7 +116,7 @@ void MainWindow::buildMenus()
     darkThemeAction->setCheckable(true);
     themeGroup->addAction(lightThemeAction);
     themeGroup->addAction(darkThemeAction);
-    if (QtTheme::resolve(_config.uiTheme) == QtThemeMode::Dark) {
+    if (WorkspaceTheme::resolve(_config.uiTheme) == QtThemeMode::Dark) {
         darkThemeAction->setChecked(true);
     }
     else {
@@ -229,4 +229,4 @@ void MainWindow::buildMenus()
         }
     });
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

@@ -10,7 +10,7 @@
 #include <QSizePolicy>
 #include <algorithm>
 
-namespace grav_qt {
+namespace bltzr_qt {
 EnergyGraphWidget::EnergyGraphWidget() : QWidget(nullptr)
 {
     setMinimumHeight(128);
@@ -74,4 +74,4 @@ void EnergyGraphWidget::paintEvent(PaintEventHandle event)
 {
     EnergyGraphWidgetPaint::paint(*this, _history, event);
 }
-} // namespace grav_qt
+} // namespace bltzr_qt

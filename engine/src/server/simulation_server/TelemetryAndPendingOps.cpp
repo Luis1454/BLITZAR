@@ -35,8 +35,8 @@ void SimulationServer::maybeSampleGpuTelemetry(std::string_view solverMode,
     if (!_gpuTelemetryEnabled.load(std::memory_order_relaxed)) {
         return;
     }
-    if (solverMode != grav_modes::kSolverPairwiseCuda &&
-        solverMode != grav_modes::kSolverOctreeGpu) {
+    if (solverMode != bltzr_modes::kSolverPairwiseCuda &&
+        solverMode != bltzr_modes::kSolverOctreeGpu) {
         _gpuTelemetryAvailable.store(false, std::memory_order_relaxed);
         _gpuKernelMs.store(0.0f, std::memory_order_relaxed);
         _gpuCopyMs.store(0.0f, std::memory_order_relaxed);

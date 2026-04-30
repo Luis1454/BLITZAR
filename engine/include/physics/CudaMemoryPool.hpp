@@ -5,11 +5,11 @@
  * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
  */
 
-#ifndef GRAVITY_ENGINE_INCLUDE_PHYSICS_CUDAMEMORYPOOL_HPP_
-#define GRAVITY_ENGINE_INCLUDE_PHYSICS_CUDAMEMORYPOOL_HPP_
+#ifndef BLITZAR_ENGINE_INCLUDE_PHYSICS_CUDAMEMORYPOOL_HPP_
+#define BLITZAR_ENGINE_INCLUDE_PHYSICS_CUDAMEMORYPOOL_HPP_
 #include <cstddef>
 
-namespace grav_x {
+namespace bltzr_x {
 class CudaMemoryPool {
 public:
     static void initialize();
@@ -23,5 +23,5 @@ private:
     static bool _supported;
     static void* _pool;
 };
-} // namespace grav_x
-#endif // GRAVITY_ENGINE_INCLUDE_PHYSICS_CUDAMEMORYPOOL_HPP_
+} // namespace bltzr_x
+#endif // BLITZAR_ENGINE_INCLUDE_PHYSICS_CUDAMEMORYPOOL_HPP_

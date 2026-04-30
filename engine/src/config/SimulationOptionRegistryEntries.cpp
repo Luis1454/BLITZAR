@@ -11,11 +11,11 @@
 
 #include <cstddef>
 
-namespace grav_config {
+namespace bltzr_config {
 
 const SimulationOptionEntry kSimulationOptions[] = {
     {SimulationOptionGroup::Core, OptionKind::Uint, "--particle-count", "", "particle_count", "",
-     "GRAVITY_SERVER_PARTICLES", "  --particle-count <n>\n", "",
+     "BLITZAR_SERVER_PARTICLES", "  --particle-count <n>\n", "",
      offsetof(SimulationConfig, particleCount), 2.0, 0.0, true, false},
     {SimulationOptionGroup::Core, OptionKind::Float, "--dt", "", "dt", "", "", "  --dt <float>\n",
      "", offsetof(SimulationConfig, dt), 0.000001, 0.0, true, false},
@@ -61,7 +61,7 @@ const SimulationOptionEntry kSimulationOptions[] = {
      "octree_theta_auto_max", "", "", "  --octree-theta-auto-max <float>\n", "",
      offsetof(SimulationConfig, octreeThetaAutoMax), 0.01, 4.0, true, true},
     {SimulationOptionGroup::Core, OptionKind::ClientParticleCap, "--client-particle-cap", "",
-     "client_particle_cap", "", "GRAVITY_CLIENT_DRAW_CAP", "  --client-particle-cap <n>\n", "",
+     "client_particle_cap", "", "BLITZAR_CLIENT_DRAW_CAP", "  --client-particle-cap <n>\n", "",
      offsetof(SimulationConfig, clientParticleCap), 0.0, 0.0, false, false},
     {SimulationOptionGroup::Client, OptionKind::Float, "--zoom", "", "default_zoom", "", "",
      "  --zoom <float>\n", "", offsetof(SimulationConfig, defaultZoom), 0.01, 0.0, true, false},
@@ -107,8 +107,12 @@ const SimulationOptionEntry kSimulationOptions[] = {
      offsetof(SimulationConfig, initConfigStyle), 0.0, 0.0, false, false},
     {SimulationOptionGroup::Client, OptionKind::String, "--preset-structure", "--structure",
      "preset_structure", "", "",
-     "  --preset-structure <disk_orbit|random_cloud|two_body|three_body|plummer_sphere|file>\n",
-     "  --structure <disk_orbit|random_cloud|two_body|three_body|plummer_sphere|file> (alias)\n",
+     "  --preset-structure "
+     "<disk_orbit|random_cloud|cube_random|sphere_random|two_body|three_body|plummer_sphere|file>"
+     "\n",
+     "  --structure "
+     "<disk_orbit|random_cloud|cube_random|sphere_random|two_body|three_body|plummer_sphere|file> "
+     "(alias)\n",
      offsetof(SimulationConfig, presetStructure), 0.0, 0.0, false, false},
     {SimulationOptionGroup::Client, OptionKind::Float, "--preset-size", "--size", "preset_size", "",
      "", "  --preset-size <float>\n", "  --size <float> (alias)\n",
@@ -132,8 +136,10 @@ const SimulationOptionEntry kSimulationOptions[] = {
      "thermal_radiation_coeff", "", "", "  --thermal-radiation <float>\n", "",
      offsetof(SimulationConfig, thermalRadiationCoeff), 0.0, 0.0, true, false},
     {SimulationOptionGroup::InitState, OptionKind::String, "--init-mode", "", "init_mode", "", "",
-     "  --init-mode <disk_orbit|random_cloud|two_body|three_body|plummer_sphere|file>\n", "",
-     offsetof(SimulationConfig, initMode), 0.0, 0.0, false, false},
+     "  --init-mode "
+     "<disk_orbit|random_cloud|cube_random|sphere_random|two_body|three_body|plummer_sphere|file>"
+     "\n",
+     "", offsetof(SimulationConfig, initMode), 0.0, 0.0, false, false},
     {SimulationOptionGroup::InitState, OptionKind::Uint, "--init-seed", "", "init_seed", "", "",
      "  --init-seed <n>\n", "", offsetof(SimulationConfig, initSeed), 0.0, 0.0, false, false},
     {SimulationOptionGroup::InitState, OptionKind::Bool, "--init-include-central-body", "",
@@ -178,6 +184,12 @@ const SimulationOptionEntry kSimulationOptions[] = {
     {SimulationOptionGroup::InitState, OptionKind::Float, "--init-cloud-half-extent", "",
      "init_cloud_half_extent", "", "", "  --init-cloud-half-extent <float>\n", "",
      offsetof(SimulationConfig, initCloudHalfExtent), 0.000001, 0.0, true, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-cube-half-extent", "",
+     "init_cube_half_extent", "", "", "  --init-cube-half-extent <float>\n", "",
+     offsetof(SimulationConfig, initCubeHalfExtent), 0.000001, 0.0, true, false},
+    {SimulationOptionGroup::InitState, OptionKind::Float, "--init-sphere-radius", "",
+     "init_sphere_radius", "", "", "  --init-sphere-radius <float>\n", "",
+     offsetof(SimulationConfig, initSphereRadius), 0.000001, 0.0, true, false},
     {SimulationOptionGroup::InitState, OptionKind::Float, "--init-cloud-speed", "",
      "init_cloud_speed", "", "", "  --init-cloud-speed <float>\n", "",
      offsetof(SimulationConfig, initCloudSpeed), 0.0, 0.0, true, false},
@@ -242,4 +254,4 @@ const SimulationOptionEntry kSimulationOptions[] = {
 const std::size_t kSimulationOptionCount =
     sizeof(kSimulationOptions) / sizeof(kSimulationOptions[0]);
 
-} // namespace grav_config
+} // namespace bltzr_config

@@ -144,8 +144,8 @@ class ReleaseBundlePackager:
             "blitzar.exe",
             "blitzar-client.exe",
             "blitzar-server.exe",
-            "gravityClientModuleQtInProc.dll",
-            "gravityClientModuleQtInProc.dll.manifest",
+            "blitzarClientModuleQtInProc.dll",
+            "blitzarClientModuleQtInProc.dll.manifest",
         )
         missing = [name for name in required if not (dist_dir / name).exists()]
         if missing:
@@ -236,7 +236,7 @@ class ReleaseBundleSmokeValidator:
     # @return Value produced by this contract when applicable.
     # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _validate_module_manifests(bundle_root: Path) -> None:
-        for module_path in sorted(bundle_root.glob("gravityClientModule*.dll")):
+        for module_path in sorted(bundle_root.glob("blitzarClientModule*.dll")):
             manifest_path = bundle_root / f"{module_path.name}.manifest"
             if not manifest_path.exists():
                 raise RuntimeError(f"portable bundle missing module manifest for {module_path.name}")
@@ -247,7 +247,7 @@ class ReleaseBundleSmokeValidator:
     # @return Value produced by this contract when applicable.
     # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _validate_qt_runtime(bundle_root: Path) -> None:
-        has_qt_module = (bundle_root / "gravityClientModuleQtInProc.dll").exists()
+        has_qt_module = (bundle_root / "blitzarClientModuleQtInProc.dll").exists()
         has_qt_runtime = any((bundle_root / dll).exists() for dll in ("Qt6Core.dll", "Qt6Cored.dll"))
         if has_qt_module or has_qt_runtime:
             plugin_path = bundle_root / "platforms" / "qwindows.dll"

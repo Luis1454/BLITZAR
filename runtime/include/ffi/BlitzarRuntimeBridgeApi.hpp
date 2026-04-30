@@ -5,8 +5,8 @@
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */
 
-#ifndef GRAVITY_RUNTIME_INCLUDE_FFI_BLITZARRUNTIMEBRIDGEAPI_HPP_
-#define GRAVITY_RUNTIME_INCLUDE_FFI_BLITZARRUNTIMEBRIDGEAPI_HPP_
+#ifndef BLITZAR_RUNTIME_INCLUDE_FFI_BLITZARRUNTIMEBRIDGEAPI_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_FFI_BLITZARRUNTIMEBRIDGEAPI_HPP_
 #include <cstddef>
 #include <cstdint>
 extern "C" {
@@ -47,4 +47,4 @@ blitzar_runtime_bridge_link_state_label(const blitzar_runtime_bridge_t* state);
 blitzar_runtime_string_view
 blitzar_runtime_bridge_server_owner_label(const blitzar_runtime_bridge_t* state);
 }
-#endif // GRAVITY_RUNTIME_INCLUDE_FFI_BLITZARRUNTIMEBRIDGEAPI_HPP_
+#endif // BLITZAR_RUNTIME_INCLUDE_FFI_BLITZARRUNTIMEBRIDGEAPI_HPP_

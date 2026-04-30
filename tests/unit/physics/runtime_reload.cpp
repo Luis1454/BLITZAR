@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-namespace grav_test_server_reload {
+namespace bltzr_test_server_reload {
 static std::filesystem::path writeTempXyz(const char* basename, const std::vector<float>& xs)
 {
     const std::filesystem::path path = std::filesystem::temp_directory_path() / basename;
@@ -35,9 +35,9 @@ TEST(PhysicsTest, TST_UNT_RUNT_003_ServerReloadClearsPublishedSnapshotCache)
     std::vector<RenderParticle> snapshot;
     ASSERT_TRUE(testsupport::waitForPublishedSnapshot(server, snapshot, 4000));
     ASSERT_EQ(snapshot.size(), 24u);
-    const std::filesystem::path xyz3 = writeTempXyz("grav_test_reload_3.xyz", {-2.0f, 0.0f, 2.0f});
+    const std::filesystem::path xyz3 = writeTempXyz("bltzr_test_reload_3.xyz", {-2.0f, 0.0f, 2.0f});
     const std::filesystem::path xyz4 =
-        writeTempXyz("grav_test_reload_4.xyz", {-3.0f, -1.0f, 1.0f, 3.0f});
+        writeTempXyz("bltzr_test_reload_4.xyz", {-3.0f, -1.0f, 1.0f, 3.0f});
     server.setInitialStateFile(xyz3.string(), "xyz");
     EXPECT_FALSE(server.copyLatestSnapshot(snapshot));
     ASSERT_TRUE(testsupport::waitForPublishedSnapshot(server, snapshot, 4000));
@@ -54,4 +54,4 @@ TEST(PhysicsTest, TST_UNT_RUNT_003_ServerReloadClearsPublishedSnapshotCache)
     ec.clear();
     std::filesystem::remove(xyz4, ec);
 }
-} // namespace grav_test_server_reload
+} // namespace bltzr_test_server_reload

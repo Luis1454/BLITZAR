@@ -13,11 +13,11 @@
 #include <thread>
 #include <vector>
 
-namespace grav_test_substep_policy {
+namespace bltzr_test_substep_policy {
 static std::filesystem::path writeTempConfig()
 {
     const std::filesystem::path path =
-        std::filesystem::temp_directory_path() / "grav_substep_policy.ini";
+        std::filesystem::temp_directory_path() / "bltzr_substep_policy.ini";
     std::ofstream out(path, std::ios::trunc);
     out << "particle_count=32\n";
     out << "dt=0.01\n";
@@ -62,7 +62,7 @@ TEST(PhysicsTest, TST_UNT_RUNT_004_ServerAppliesConfiguredSubstepPolicy)
 TEST(PhysicsTest, TST_UNT_RUNT_005_ServerAppliesInteractivePerformancePreset)
 {
     const std::filesystem::path path =
-        std::filesystem::temp_directory_path() / "grav_interactive_perf.ini";
+        std::filesystem::temp_directory_path() / "bltzr_interactive_perf.ini";
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
@@ -90,4 +90,4 @@ TEST(PhysicsTest, TST_UNT_RUNT_005_ServerAppliesInteractivePerformancePreset)
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
-} // namespace grav_test_substep_policy
+} // namespace bltzr_test_substep_policy

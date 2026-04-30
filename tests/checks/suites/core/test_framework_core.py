@@ -132,6 +132,7 @@ def test_check_catalog_exposes_expected_sequences() -> None:
     assert "python_quality" in load_check_registry()
 
 
+
 # @brief Documents the test command catalog includes expected dispatch entries operation contract.
 # @param None This contract does not take explicit parameters.
 # @return Value produced by this contract when applicable.
