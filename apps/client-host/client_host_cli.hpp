@@ -18,6 +18,7 @@ struct HostOptions {
     bool showHelp = false;
     bool validateOnly = false;
     bool exitAfterModule = false; // Exit when module closes (default: wait for GUI modules)
+    bool waitForModule = false;   // Block until module is ready before forwarding commands
 };
 
 class ClientHostCli final {
