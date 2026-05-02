@@ -235,6 +235,21 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             modules/qt/ui/energyGraph/theme.cpp
             modules/qt/ui/energyGraph/layout.cpp
             modules/qt/ui/energyGraph/data.cpp
+            modules/qt/ui/mainWindow/presenter/formatters.cpp
+            modules/qt/ui/mainWindow/presenter/telemetryAggregator.cpp
+            modules/qt/ui/mainWindow/presenter/stateComputers.cpp
+            modules/qt/ui/mainWindow/shell/dockBuilder.cpp
+            modules/qt/ui/mainWindow/shell/menuBuilder.cpp
+            modules/qt/ui/mainWindow/shell/themeMenuHandler.cpp
+            modules/qt/ui/mainWindow/layout/comboInitializer.cpp
+            modules/qt/ui/mainWindow/layout/numericInitializer.cpp
+            modules/qt/ui/mainWindow/layout/propertyInitializer.cpp
+            modules/qt/ui/mainWindow/fileActions/fileDialogs.cpp
+            modules/qt/ui/mainWindow/fileActions/connectorManager.cpp
+            modules/qt/ui/mainWindow/fileActions/formatHelpers.cpp
+            modules/qt/ui/particleView/gimbalController.cpp
+            modules/qt/ui/particleView/particleRasterizer.cpp
+            modules/qt/ui/particleView/overlayRenderer.cpp
             modules/qt/ui/MainWindowController.cpp
             modules/qt/ui/MainWindow.cpp
             modules/qt/ui/MainWindowConfig.cpp
