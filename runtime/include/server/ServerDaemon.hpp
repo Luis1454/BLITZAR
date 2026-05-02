@@ -13,6 +13,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include "server/daemon/protocol/parser.hpp"
 /*
  * @brief Defines the simulation server type contract.
  * @param None This contract does not take explicit parameters.
@@ -81,6 +82,17 @@ public:
     bool shutdownRequested() const;
 
 private:
+    friend bool parseDaemonProtocolRequest(const ServerDaemon& daemon,
+                                           const std::string& request,
+                                           DaemonProtocolRequest& parsedRequest,
+                                           std::string& errorResponse);
+    friend std::string dispatchDaemonProtocolRequest(ServerDaemon& daemon,
+                                                     const DaemonProtocolRequest& parsedRequest);
+    friend std::string dispatchDaemonStateCommand(ServerDaemon& daemon,
+                                                 const DaemonProtocolRequest& parsedRequest);
+    friend std::string dispatchDaemonConfigCommand(ServerDaemon& daemon,
+                                                  const DaemonProtocolRequest& parsedRequest);
+
     typedef std::intptr_t SocketHandle;
     /*
      * @brief Documents the accept loop operation contract.

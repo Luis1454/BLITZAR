@@ -127,7 +127,13 @@ if(BLITZAR_BUILD_SERVER_DAEMON)
         apps/server-service/server_args.cpp
         runtime/src/server/daemon/daemon.cpp
         runtime/src/server/daemon/lifecycle.cpp
-        runtime/src/server/daemon/protocol.cpp
+        runtime/src/server/daemon/acceptance.cpp
+        runtime/src/server/daemon/handler.cpp
+        runtime/src/server/daemon/requestProcessor.cpp
+        runtime/src/server/daemon/protocol/parser.cpp
+        runtime/src/server/daemon/protocol/dispatcher.cpp
+        runtime/src/server/daemon/protocol/stateCommands.cpp
+        runtime/src/server/daemon/protocol/configCommands.cpp
         runtime/src/server/daemon/helpers.cpp
         ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
         ${BLITZAR_SERVER_SOURCES}
@@ -224,6 +230,9 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             ${BLITZAR_SERVER_SOURCES}
             modules/qt/ui/EnergyGraphWidget.cpp
             modules/qt/ui/EnergyGraphWidgetPaint.cpp
+            modules/qt/ui/energyGraph/theme.cpp
+            modules/qt/ui/energyGraph/layout.cpp
+            modules/qt/ui/energyGraph/data.cpp
             modules/qt/ui/MainWindowController.cpp
             modules/qt/ui/MainWindow.cpp
             modules/qt/ui/MainWindowConfig.cpp

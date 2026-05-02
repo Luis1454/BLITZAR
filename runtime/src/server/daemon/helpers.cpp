@@ -6,6 +6,7 @@
  */
 
 #include "server/ServerDaemon.hpp"
+#include "server/daemon/helpers.hpp"
 #include "platform/SocketPlatform.hpp"
 #include <algorithm>
 #include <cctype>
@@ -18,7 +19,7 @@
  * @return std::string value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-static std::string trim(const std::string& input)
+std::string daemonTrim(const std::string& input)
 {
     const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
         return std::isspace(c) != 0;
@@ -37,7 +38,7 @@ static std::string trim(const std::string& input)
  * @return bltzr_socket::ConstBytes value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-static bltzr_socket::ConstBytes asBytes(std::string_view text)
+bltzr_socket::ConstBytes daemonAsBytes(std::string_view text)
 {
     return bltzr_socket::ConstBytes{reinterpret_cast<const std::byte*>(text.data()), text.size()};
 }
@@ -49,7 +50,7 @@ static bltzr_socket::ConstBytes asBytes(std::string_view text)
  * @return bool value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-static bool sendAll(bltzr_socket::Handle socketHandle, bltzr_socket::ConstBytes bytes)
+bool daemonSendAll(bltzr_socket::Handle socketHandle, bltzr_socket::ConstBytes bytes)
 {
     std::size_t offset = 0;
     while (offset < bytes.size) {
@@ -68,7 +69,7 @@ static bool sendAll(bltzr_socket::Handle socketHandle, bltzr_socket::ConstBytes 
  * @return std::string value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-static std::string serverDaemonError(std::string_view operation, std::string_view detail)
+std::string daemonServerError(std::string_view operation, std::string_view detail)
 {
     return std::string("[ipc] ") + std::string(operation) + ": " + std::string(detail);
 }

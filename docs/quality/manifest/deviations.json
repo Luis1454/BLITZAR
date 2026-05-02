@@ -64,8 +64,7 @@
       "closure_criteria": "Extract module composition responsibilities into smaller units and delete the allowlist paths.",
       "paths": [
         "modules/proxy/module.cpp",
-        "modules/qt/module.cpp",
-        "modules/qt/ui/EnergyGraphWidgetPaint.cpp"
+        "modules/qt/module.cpp"
       ],
       "requirements": [
         "REQ-QUAL-001",

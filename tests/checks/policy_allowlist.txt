@@ -12,7 +12,6 @@ runtime/src/command/CommandExecutor.cpp
 # Client module composition files pending per-feature extraction.
 modules/proxy/module.cpp
 modules/qt/module.cpp
-modules/qt/ui/EnergyGraphWidgetPaint.cpp
 
 # CUDA fragment blocks retained while kernel-level decomposition is prepared.
 engine/src/physics/cuda/fragments/ParticleSystemPrelude.inl
