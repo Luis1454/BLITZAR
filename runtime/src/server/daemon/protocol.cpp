@@ -1,8 +1,8 @@
 /*
- * @file runtime/src/server/ServerDaemon.cpp
+ * @file runtime/src/server/daemon/protocol.cpp
  * @author Luis1454
  * @project BLITZAR
- * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
+ * @brief Protocol handling: socket acceptance and command processing.
  */
 
 #include "server/ServerDaemon.hpp"
@@ -11,267 +11,17 @@
 #include "protocol/ServerJsonCodec.hpp"
 #include "protocol/ServerProtocol.hpp"
 #include "server/SimulationServer.hpp"
-#include <algorithm>
 #include <array>
-#include <cctype>
-#include <cstddef>
-#include <cstdint>
 #include <iostream>
+#include <mutex>
 #include <string>
-#include <string_view>
-#include <utility>
+#include <thread>
+#include <vector>
 
 /*
- * @brief Documents the trim operation contract.
- * @param input Input value used by this contract.
- * @return std::string value produced by this contract.
- * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
- */
-static std::string trim(const std::string& input)
-{
-    const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
-        return std::isspace(c) != 0;
-    });
-    const auto end = std::find_if_not(input.rbegin(), input.rend(), [](unsigned char c) {
-                         return std::isspace(c) != 0;
-                     }).base();
-    if (begin >= end)
-        return {};
-    return std::string(begin, end);
-}
-
-/*
- * @brief Documents the as bytes operation contract.
- * @param text Input value used by this contract.
- * @return bltzr_socket::ConstBytes value produced by this contract.
- * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
- */
-static bltzr_socket::ConstBytes asBytes(std::string_view text)
-{
-    return bltzr_socket::ConstBytes{reinterpret_cast<const std::byte*>(text.data()), text.size()};
-}
-
-/*
- * @brief Documents the send all operation contract.
- * @param socketHandle Input value used by this contract.
- * @param bytes Input value used by this contract.
- * @return bool value produced by this contract.
- * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
- */
-static bool sendAll(bltzr_socket::Handle socketHandle, bltzr_socket::ConstBytes bytes)
-{
-    std::size_t offset = 0;
-    while (offset < bytes.size) {
-        const int sent = bltzr_socket::sendBytes(socketHandle, bytes.subview(offset));
-        if (sent <= 0)
-            return false;
-        offset += static_cast<std::size_t>(sent);
-    }
-    return true;
-}
-
-/*
- * @brief Documents the server daemon error operation contract.
- * @param operation Input value used by this contract.
- * @param detail Input value used by this contract.
- * @return std::string value produced by this contract.
- * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
- */
-static std::string serverDaemonError(std::string_view operation, std::string_view detail)
-{
-    return std::string("[ipc] ") + std::string(operation) + ": " + std::string(detail);
-}
-
-/*
- * @brief Documents the server daemon operation contract.
- * @param server Input value used by this contract.
- * @param authToken Input value used by this contract.
- * @return ServerDaemon:: value produced by this contract.
- * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
- */
-ServerDaemon::ServerDaemon(SimulationServer& server, std::string authToken)
-    /*
-     * @brief Documents the server operation contract.
-     * @param server Input value used by this contract.
-     * @param false Input value used by this contract.
-     * @param false Input value used by this contract.
-     * @param _acceptThread Input value used by this contract.
-     * @param invalidHandle Input value used by this contract.
-     * @param _bindAddress Input value used by this contract.
-     * @param authToken Input value used by this contract.
-     * @param _port Input value used by this contract.
-     * @param false Input value used by this contract.
-     * @param _socketMutex Input value used by this contract.
-     * @param _clientThreads Input value used by this contract.
-     * @return : value produced by this contract.
-     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
-     * it.
-     */
-    : _server(server),
-      _running(false),
-      _shutdownRequested(false),
-      _acceptThread(),
-      _listenSocket(bltzr_socket::invalidHandle()),
-      _bindAddress("127.0.0.1"),
-      _authToken(std::move(authToken)),
-      _port(0),
-      _networkInitialized(false),
-      _socketMutex(),
-      _clientThreads()
-{
-}
-
-/*
- * @brief Documents the ~server daemon operation contract.
+ * @brief Main accept loop: wait for clients and spawn handler threads.
  * @param None This contract does not take explicit parameters.
- * @return ServerDaemon:: value produced by this contract.
- * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
- */
-ServerDaemon::~ServerDaemon()
-{
-    stop();
-}
-
-/*
- * @brief Documents the start operation contract.
- * @param port Input value used by this contract.
- * @param bindAddress Input value used by this contract.
- * @return bool ServerDaemon:: value produced by this contract.
- * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
- */
-bool ServerDaemon::start(std::uint16_t port, const std::string& bindAddress)
-{
-    try {
-        if (_running.load()) {
-            return true;
-        }
-        if (!bltzr_socket::initializeSocketLayer()) {
-            std::cerr << "[ipc] failed to initialize socket layer\n";
-            return false;
-        }
-        _networkInitialized = true;
-        const bltzr_socket::Handle listenSocket = bltzr_socket::createTcpSocket();
-        if (!bltzr_socket::isValid(listenSocket)) {
-            std::cerr << "[ipc] failed to create socket\n";
-            stop();
-            return false;
-        }
-        bltzr_socket::setReuseAddress(listenSocket, true);
-        if (!bltzr_socket::bindIpv4(listenSocket, bindAddress, port)) {
-            std::cerr << "[ipc] bind failed on " << bindAddress << ":" << port << "\n";
-            bltzr_socket::closeSocket(listenSocket);
-            stop();
-            return false;
-        }
-        if (!bltzr_socket::listenSocket(listenSocket, 8)) {
-            std::cerr << "[ipc] listen failed\n";
-            bltzr_socket::closeSocket(listenSocket);
-            stop();
-            return false;
-        }
-        {
-            std::lock_guard<std::mutex> lock(_socketMutex);
-            _listenSocket = listenSocket;
-            _bindAddress = bindAddress;
-            _port = port;
-        }
-        _shutdownRequested.store(false);
-        _running.store(true);
-        _acceptThread = std::thread(&ServerDaemon::acceptLoop, this);
-        return true;
-    }
-    catch (const std::exception& ex) {
-        std::cerr << serverDaemonError("start", ex.what()) << "\n";
-        stop();
-        return false;
-    }
-    catch (...) {
-        std::cerr << serverDaemonError("start", "non-standard exception") << "\n";
-        stop();
-        return false;
-    }
-}
-
-/*
- * @brief Documents the stop operation contract.
- * @param None This contract does not take explicit parameters.
- * @return void ServerDaemon:: value produced by this contract.
- * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
- */
-void ServerDaemon::stop()
-{
-    try {
-        _running.store(false);
-        bltzr_socket::Handle listenSocket;
-        {
-            std::lock_guard<std::mutex> lock(_socketMutex);
-            listenSocket = _listenSocket;
-            _listenSocket = bltzr_socket::invalidHandle();
-        }
-        bltzr_socket::closeSocket(listenSocket);
-        if (_acceptThread.joinable()) {
-            _acceptThread.join();
-        }
-        for (std::thread& thread : _clientThreads)
-            if (thread.joinable()) {
-                thread.join();
-            }
-        _clientThreads.clear();
-        if (_networkInitialized) {
-            bltzr_socket::shutdownSocketLayer();
-            _networkInitialized = false;
-        }
-    }
-    catch (const std::exception& ex) {
-        std::cerr << serverDaemonError("stop", ex.what()) << "\n";
-    }
-    catch (...) {
-        std::cerr << serverDaemonError("stop", "non-standard exception") << "\n";
-    }
-    _running.store(false);
-    _listenSocket = bltzr_socket::invalidHandle();
-    _clientThreads.clear();
-    if (_networkInitialized) {
-        try {
-            bltzr_socket::shutdownSocketLayer();
-        }
-        catch (const std::exception& ex) {
-            std::cerr << serverDaemonError("stop shutdownSocketLayer", ex.what()) << "\n";
-        }
-        catch (...) {
-            std::cerr << serverDaemonError("stop shutdownSocketLayer", "non-standard exception")
-                      << "\n";
-        }
-        _networkInitialized = false;
-    }
-}
-
-/*
- * @brief Documents the is running operation contract.
- * @param None This contract does not take explicit parameters.
- * @return bool ServerDaemon:: value produced by this contract.
- * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
- */
-bool ServerDaemon::isRunning() const
-{
-    return _running.load();
-}
-
-/*
- * @brief Documents the shutdown requested operation contract.
- * @param None This contract does not take explicit parameters.
- * @return bool ServerDaemon:: value produced by this contract.
- * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
- */
-bool ServerDaemon::shutdownRequested() const
-{
-    return _shutdownRequested.load();
-}
-
-/*
- * @brief Documents the accept loop operation contract.
- * @param None This contract does not take explicit parameters.
- * @return void ServerDaemon:: value produced by this contract.
+ * @return No return value.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
 void ServerDaemon::acceptLoop()
@@ -298,19 +48,19 @@ void ServerDaemon::acceptLoop()
         }
     }
     catch (const std::exception& ex) {
-        std::cerr << serverDaemonError("acceptLoop", ex.what()) << "\n";
+        std::cerr << "[ipc] acceptLoop: " << ex.what() << "\n";
         _running.store(false);
     }
     catch (...) {
-        std::cerr << serverDaemonError("acceptLoop", "non-standard exception") << "\n";
+        std::cerr << "[ipc] acceptLoop: non-standard exception\n";
         _running.store(false);
     }
 }
 
 /*
- * @brief Documents the handle client operation contract.
+ * @brief Handle a single client connection: read requests and dispatch responses.
  * @param client Input value used by this contract.
- * @return void ServerDaemon:: value produced by this contract.
+ * @return No return value.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
 void ServerDaemon::handleClient(SocketHandle client)
@@ -320,6 +70,37 @@ void ServerDaemon::handleClient(SocketHandle client)
         std::string buffer;
         buffer.reserve(2048);
         std::array<char, 2048> chunk{};
+
+        // Forward declaration for helpers (they are static in helpers.cpp but we need conceptual access)
+        auto trim = [](const std::string& input) -> std::string {
+            const auto begin = std::find_if_not(input.begin(), input.end(), [](unsigned char c) {
+                return std::isspace(c) != 0;
+            });
+            const auto end = std::find_if_not(input.rbegin(), input.rend(), [](unsigned char c) {
+                                 return std::isspace(c) != 0;
+                             }).base();
+            if (begin >= end)
+                return {};
+            return std::string(begin, end);
+        };
+
+        auto asBytes = [](std::string_view text) -> bltzr_socket::ConstBytes {
+            return bltzr_socket::ConstBytes{reinterpret_cast<const std::byte*>(text.data()),
+                                            text.size()};
+        };
+
+        auto sendAll = [](bltzr_socket::Handle socketHandle,
+                          bltzr_socket::ConstBytes bytes) -> bool {
+            std::size_t offset = 0;
+            while (offset < bytes.size) {
+                const int sent = bltzr_socket::sendBytes(socketHandle, bytes.subview(offset));
+                if (sent <= 0)
+                    return false;
+                offset += static_cast<std::size_t>(sent);
+            }
+            return true;
+        };
+
         while (_running.load()) {
             const int received = bltzr_socket::recvBytes(
                 clientSocket, bltzr_socket::MutableBytes{reinterpret_cast<std::byte*>(chunk.data()),
@@ -357,19 +138,19 @@ void ServerDaemon::handleClient(SocketHandle client)
         bltzr_socket::closeSocket(clientSocket);
     }
     catch (const std::exception& ex) {
-        std::cerr << serverDaemonError("handleClient", ex.what()) << "\n";
+        std::cerr << "[ipc] handleClient: " << ex.what() << "\n";
         bltzr_socket::closeSocket(static_cast<bltzr_socket::Handle>(client));
     }
     catch (...) {
-        std::cerr << serverDaemonError("handleClient", "non-standard exception") << "\n";
+        std::cerr << "[ipc] handleClient: non-standard exception\n";
         bltzr_socket::closeSocket(static_cast<bltzr_socket::Handle>(client));
     }
 }
 
 /*
- * @brief Documents the process request operation contract.
+ * @brief Parse and dispatch a command request to the simulation server.
  * @param request Input value used by this contract.
- * @return std::string ServerDaemon:: value produced by this contract.
+ * @return std::string value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
 std::string ServerDaemon::processRequest(const std::string& request)
@@ -650,11 +431,12 @@ std::string ServerDaemon::processRequest(const std::string& request)
         return bltzr_protocol::ServerJsonCodec::makeErrorResponse(cmd, "unknown command");
     }
     catch (const std::exception& ex) {
-        return bltzr_protocol::ServerJsonCodec::makeErrorResponse(
-            "request", serverDaemonError("processRequest", ex.what()));
+        return bltzr_protocol::ServerJsonCodec::makeErrorResponse("request",
+                                                                   std::string("[ipc] processRequest: ") +
+                                                                       ex.what());
     }
     catch (...) {
         return bltzr_protocol::ServerJsonCodec::makeErrorResponse(
-            "request", serverDaemonError("processRequest", "non-standard exception"));
+            "request", "[ipc] processRequest: non-standard exception");
     }
 }

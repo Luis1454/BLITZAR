@@ -125,7 +125,10 @@ if(BLITZAR_BUILD_SERVER_DAEMON)
     add_executable(${SERVER_DAEMON_NAME}
         apps/server-service/main.cpp
         apps/server-service/server_args.cpp
-        runtime/src/server/ServerDaemon.cpp
+        runtime/src/server/daemon/daemon.cpp
+        runtime/src/server/daemon/lifecycle.cpp
+        runtime/src/server/daemon/protocol.cpp
+        runtime/src/server/daemon/helpers.cpp
         ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
         ${BLITZAR_SERVER_SOURCES}
     )
