@@ -3,7 +3,7 @@
 # Each active group must also exist in docs/quality/manifest/deviations.json.
 
 # Core server orchestration pending split by protocol/state/controls.
-runtime/src/server/ServerDaemon.cpp
+# COMPLETED: ServerDaemon.cpp decomposed into daemon/{daemon,lifecycle,protocol,helpers}.cpp
 runtime/src/protocol/ServerClient.cpp
 runtime/src/client/ClientServerBridge.cpp
 runtime/src/client/ClientRuntime.cpp
