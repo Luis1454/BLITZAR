@@ -8,6 +8,7 @@
 #include "ui/energyGraph/data.hpp"
 #include "ui/EnergyGraphWidget.hpp"
 #include <algorithm>
+#include <cmath>
 #include <limits>
 
 namespace bltzr_qt::energyGraph {

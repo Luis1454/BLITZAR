@@ -230,6 +230,8 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             ${BLITZAR_SERVER_SOURCES}
             modules/qt/ui/EnergyGraphWidget.cpp
             modules/qt/ui/EnergyGraphWidgetPaint.cpp
+            modules/qt/ui/energyGraph/renderer.cpp
+            modules/qt/ui/energyGraph/plotting.cpp
             modules/qt/ui/energyGraph/theme.cpp
             modules/qt/ui/energyGraph/layout.cpp
             modules/qt/ui/energyGraph/data.cpp

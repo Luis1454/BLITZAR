@@ -228,6 +228,8 @@ if(TARGET Qt6::Widgets AND BLITZAR_TEST_INT_UI_SOURCES)
             "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/EnergyGraphWidget.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/EnergyGraphWidgetPaint.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/energyGraph/renderer.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/energyGraph/plotting.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/energyGraph/theme.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/energyGraph/layout.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/energyGraph/data.cpp"
