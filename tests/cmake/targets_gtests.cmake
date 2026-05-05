@@ -251,6 +251,7 @@ if(TARGET Qt6::Widgets AND BLITZAR_TEST_INT_UI_SOURCES)
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowController.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindow.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowConfig.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/mainWindow/config/apply.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowControls.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowFileActions.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowLayout.cpp"

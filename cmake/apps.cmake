@@ -253,6 +253,7 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             modules/qt/ui/MainWindowController.cpp
             modules/qt/ui/MainWindow.cpp
             modules/qt/ui/MainWindowConfig.cpp
+            modules/qt/ui/mainWindow/config/apply.cpp
             modules/qt/ui/MainWindowControls.cpp
             modules/qt/ui/MainWindowFileActions.cpp
             modules/qt/ui/MainWindowLayout.cpp
