@@ -6,6 +6,7 @@
 #ifndef BLTZAR_QT_PARTICLEVIEW_PARTICLERASTERIZER_HPP
 #define BLTZAR_QT_PARTICLEVIEW_PARTICLERASTERIZER_HPP
 
+#include "types/SimulationTypes.hpp"
 #include <vector>
 
 class QImage;

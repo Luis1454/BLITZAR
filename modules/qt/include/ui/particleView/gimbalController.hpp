@@ -9,7 +9,7 @@
 class QMouseEvent;
 class ParticleView;
 
-namespace bltzr_qt {
+namespace grav {
 enum class GimbalAxis;
 }
 
@@ -48,7 +48,7 @@ public:
      * @param y Screen Y coordinate
      * @return Gimbal axis (X, Y, Z, or None)
      */
-    static bltzr_qt::GimbalAxis pickAxis(ParticleView* view, int x, int y);
+    static grav::GimbalAxis pickAxis(ParticleView* view, int x, int y);
 };
 
 }  // namespace bltzr_qt::particleView

@@ -1,58 +1,84 @@
 /*
- * @file modules/qt/ui/mainWindow/presenter/telemetryAggregator.cpp
+ * @file modules/qt/ui/mainWindow/presenter/stateComputers.cpp
  * @author Luis1454
  * @project BLITZAR
- * @brief Telemetry aggregation implementations.
+ * @brief State derivation implementations.
  */
 
-#include "ui/mainWindow/presenter/telemetryAggregator.hpp"
+#include "ui/mainWindow/presenter/stateComputers.hpp"
+#include <algorithm>
+#include <limits>
 #include <sstream>
 
 namespace bltzr_qt::mainWindow::presenter {
 
-std::string TelemetryAggregator::buildHeadline(const MainWindowPresentationInput& input)
+bool StateComputers::isStale(std::uint32_t ageMs)
 {
-    std::ostringstream ss;
-    ss << "t=" << input.stats.totalTime << "s step=" << input.stats.totalSteps;
-    return ss.str();
+    return (ageMs != std::numeric_limits<std::uint32_t>::max()) && (ageMs > 1000u);
 }
 
-std::string TelemetryAggregator::buildRuntimeSection(const MainWindowPresentationInput& input)
+bool StateComputers::hasAge(std::uint32_t ageMs)
 {
-    std::ostringstream ss;
-    ss << "Runtime: " << input.stats.serverFps << " fps";
-    return ss.str();
+    return ageMs != std::numeric_limits<std::uint32_t>::max();
 }
 
-std::string TelemetryAggregator::buildQueueSection(const MainWindowPresentationInput& input)
+std::string StateComputers::backendStateLabel(const MainWindowPresentationInput& input)
 {
-    std::ostringstream ss;
-    ss << "Queue depth: " << input.stats.queueDepth;
-    return ss.str();
+    if (input.stats.faulted) {
+        return "faulted";
+    }
+    if (input.stats.paused) {
+        return "paused";
+    }
+    return "running";
 }
 
-std::string TelemetryAggregator::buildEnergySection(const MainWindowPresentationInput& input)
+std::string StateComputers::viewportStateLabel(const MainWindowPresentationInput& input)
 {
-    std::ostringstream ss;
-    ss << "Energy: " << input.stats.totalEnergy;
-    return ss.str();
+    if (input.snapshotPipeline.queueDepth == 0u) {
+        return input.displayedParticles == 0u ? "empty" : "synced";
+    }
+    return "streaming";
 }
 
-std::string TelemetryAggregator::buildGpuSection(const MainWindowPresentationInput& input)
+std::string StateComputers::progressLabel(const MainWindowPresentationInput& input)
 {
-    std::ostringstream ss;
-    ss << "GPU mem: " << input.stats.gpuMemoryUsed << " / " << input.stats.gpuMemoryTotal;
-    return ss.str();
+    std::ostringstream stream;
+    if (input.clientDrawCap == 0u) {
+        stream << "0%";
+        return stream.str();
+    }
+
+    std::uint32_t percent = static_cast<std::uint32_t>((input.displayedParticles * 100u) / input.clientDrawCap);
+    if (percent > 100u) {
+        percent = 100u;
+    }
+    stream << percent << "%";
+    return stream.str();
 }
 
-std::string TelemetryAggregator::buildStatusSection(const MainWindowPresentationInput& input)
+std::string StateComputers::etaLabel(const MainWindowPresentationInput& input)
 {
-    return input.stats.paused ? "Status: PAUSED" : "Status: RUNNING";
+    if (input.simulationHorizonSeconds <= 0.0f || input.stats.totalTime >= input.simulationHorizonSeconds) {
+        return "complete";
+    }
+
+    std::ostringstream stream;
+    stream << (input.simulationHorizonSeconds - input.stats.totalTime) << "s";
+    return stream.str();
 }
 
-std::string TelemetryAggregator::buildTraceSection(const MainWindowPresentationInput& input)
+std::string StateComputers::exportStateLabel(const MainWindowPresentationInput& input)
 {
-    return "Trace: [ready]";
+    if (input.stats.exportActive) {
+        return input.stats.exportLastState.empty() ? "exporting" : input.stats.exportLastState;
+    }
+    return input.stats.exportLastState.empty() ? "idle" : input.stats.exportLastState;
+}
+
+float StateComputers::simulatedSecondsPerSecond(const MainWindowPresentationInput& input)
+{
+    return input.stats.dt * input.stats.serverFps;
 }
 
 }  // namespace bltzr_qt::mainWindow::presenter

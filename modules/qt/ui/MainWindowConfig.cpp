@@ -7,7 +7,6 @@
 
 #include "config/SimulationScenarioValidation.hpp"
 #include "ui/MainWindow.hpp"
-#include "ui/mainWindow/config/apply.hpp"
 #include "ui/MultiViewWidget.hpp"
 #include <QCheckBox>
 #include <QComboBox>
@@ -20,20 +19,6 @@
 #include <string>
 
 namespace bltzr_qt {
-bool MainWindow::applyConfigToServer(bool requestReset)
-{
-    return MainWindow_applyConfigToServer(this, requestReset);
-}
-
-void MainWindow::applyConfigToUi()
-{
-    MainWindow_applyConfigToUi(this);
-}
-
-void MainWindow::captureUiIntoConfig()
-{
-    MainWindow_captureUiIntoConfig(this);
-}
 
 void MainWindow::applyPerformanceProfileToRuntime()
 {

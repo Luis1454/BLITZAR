@@ -5,6 +5,7 @@
  * @brief Gimbal controller implementations.
  */
 
+#include "ui/QtViewMath.hpp"
 #include "ui/particleView/gimbalController.hpp"
 
 namespace bltzr_qt::particleView {
@@ -24,10 +25,12 @@ void GimbalController::handleMouseRelease(ParticleView* view, QMouseEvent* event
     // Stub: Mouse release handling delegated to ParticleView wrapper
 }
 
-GimbalAxis GimbalController::pickAxis(ParticleView* view, int x, int y)
+grav::GimbalAxis GimbalController::pickAxis(ParticleView* view, int x, int y)
 {
-    // Stub: Axis picking delegated to ParticleView wrapper
-    return GimbalAxis::None;
+    (void)view;
+    (void)x;
+    (void)y;
+    return grav::GimbalAxis::None;
 }
 
 }  // namespace bltzr_qt::particleView
