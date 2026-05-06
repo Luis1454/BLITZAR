@@ -161,6 +161,7 @@ set(BLITZAR_TEST_BASE_QT_LOGIC_SOURCES
     "${BLITZAR_ROOT_DIR}/modules/qt/ui/UiEnums.cpp"
     "${BLITZAR_ROOT_DIR}/modules/qt/ui/ThroughputAdvisor.cpp"
     "${BLITZAR_ROOT_DIR}/modules/qt/ui/WorkspaceLayoutStore.cpp"
+    "${BLITZAR_ROOT_DIR}/modules/qt/ui/ThemeLoader.cpp"
 )
 
 if(BLITZAR_TEST_INT_PROTOCOL_SOURCES)
@@ -213,6 +214,7 @@ if(BLITZAR_TEST_UNIT_UI_SOURCES)
         LIBS
             blitzarRustRuntime
             ${BLITZAR_TEST_PLATFORM_TARGET}
+            Qt6::Widgets
     )
 endif()
 

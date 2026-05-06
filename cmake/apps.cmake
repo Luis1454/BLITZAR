@@ -269,6 +269,7 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             modules/qt/ui/ParticleViewColor.cpp
             modules/qt/ui/UiEnums.cpp
             modules/qt/ui/ThroughputAdvisor.cpp
+            modules/qt/ui/ThemeLoader.cpp
             modules/qt/ui/QtTheme.cpp
             modules/qt/ui/QtViewMath.cpp
             modules/qt/ui/WorkspaceLayoutStore.cpp
