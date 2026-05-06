@@ -14,7 +14,12 @@
 #include <QJsonParseError>
 #include <QJsonValue>
 
+#include <cstdlib>
 #include <initializer_list>
+
+#ifndef BLITZAR_QT_THEME_DIR
+#define BLITZAR_QT_THEME_DIR ""
+#endif
 
 namespace bltzr_qt {
 
@@ -175,6 +180,20 @@ ThemeSpec ThemeLoader::builtinTheme(ThemeBase base)
         applyLightTheme(theme._palette);
     }
     return theme;
+}
+
+std::filesystem::path ThemeLoader::defaultThemePath(ThemeBase base)
+{
+    const std::filesystem::path themeDirectory = std::filesystem::path(BLITZAR_QT_THEME_DIR);
+    if (base == ThemeBase::Dark) {
+        return themeDirectory / "default-dark.json";
+    }
+    return themeDirectory / "default-light.json";
+}
+
+std::optional<ThemeSpec> ThemeLoader::loadDefaultTheme(ThemeBase base)
+{
+    return loadFromFile(defaultThemePath(base));
 }
 
 std::optional<ThemeSpec> ThemeLoader::loadFromFile(const std::filesystem::path& path)

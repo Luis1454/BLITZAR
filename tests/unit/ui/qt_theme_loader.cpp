@@ -103,4 +103,19 @@ TEST(QtUiLogicTest, TST_UNT_UI_009_ThemeLoaderRejectsCorruptedThemeFiles)
     std::filesystem::remove_all(badColor.parent_path(), ec);
 }
 
+TEST(QtUiLogicTest, TST_UNT_UI_010_ThemeLoaderUsesExplicitDefaultThemeFiles)
+{
+    const std::optional<bltzr_qt::ThemeSpec> lightTheme =
+        bltzr_qt::ThemeLoader::loadDefaultTheme(bltzr_qt::ThemeBase::Light);
+    ASSERT_TRUE(lightTheme.has_value());
+    EXPECT_EQ(lightTheme->name().toStdString(), "default-light");
+    EXPECT_EQ(lightTheme->base(), bltzr_qt::ThemeBase::Light);
+
+    const std::optional<bltzr_qt::ThemeSpec> darkTheme =
+        bltzr_qt::ThemeLoader::loadDefaultTheme(bltzr_qt::ThemeBase::Dark);
+    ASSERT_TRUE(darkTheme.has_value());
+    EXPECT_EQ(darkTheme->name().toStdString(), "default-dark");
+    EXPECT_EQ(darkTheme->base(), bltzr_qt::ThemeBase::Dark);
+}
+
 } // namespace bltzr_test_qt_ui

@@ -48,6 +48,9 @@ function(BLITZAR_add_client_module_manifest target_name module_id)
     )
 endfunction()
 
+set(BLITZAR_QT_THEME_DIR "${CMAKE_CURRENT_SOURCE_DIR}/modules/qt/res/themes")
+file(TO_CMAKE_PATH "${BLITZAR_QT_THEME_DIR}" BLITZAR_QT_THEME_DIR)
+
 include("${BLITZAR_ROOT_DIR}/cmake/qt_paths.cmake")
 
 set(BLITZAR_RUNTIME_COMMAND_SOURCES
@@ -284,6 +287,8 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             target_compile_definitions(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE BLITZAR_CLIENT_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
         endif()
         target_link_libraries(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE blitzarRustRuntime Qt6::Widgets)
+        target_compile_definitions(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE
+            BLITZAR_QT_THEME_DIR="${BLITZAR_QT_THEME_DIR}")
         BLITZAR_configure_qt_runtime_deploy(${CLIENT_MODULE_QT_INPROC_NAME})
         BLITZAR_add_client_module_manifest(${CLIENT_MODULE_QT_INPROC_NAME} qt)
     else()

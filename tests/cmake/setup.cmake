@@ -3,6 +3,9 @@
 # @project BLITZAR
 # @brief Automated verification assets for BLITZAR quality gates.
 
+set(BLITZAR_QT_THEME_DIR "${BLITZAR_ROOT_DIR}/modules/qt/res/themes")
+file(TO_CMAKE_PATH "${BLITZAR_QT_THEME_DIR}" BLITZAR_QT_THEME_DIR)
+
 if(NOT DEFINED BLITZAR_GRAPHICS_SOURCES)
     set(BLITZAR_GRAPHICS_SOURCES
         "${BLITZAR_ROOT_DIR}/engine/src/graphics/ViewMath.cpp"
@@ -230,6 +233,7 @@ function(BLITZAR_add_gtest target_name)
             BLITZAR_CLIENT_MODULE_EXPORT_ATTR=
             BLITZAR_HD_DEVICE=
             BLITZAR_HD_HOST=
+            BLITZAR_QT_THEME_DIR="${BLITZAR_QT_THEME_DIR}"
             $<$<STREQUAL:${BLITZAR_PROFILE},prod>:BLITZAR_PROFILE_PROD=1>
             $<$<NOT:$<STREQUAL:${BLITZAR_PROFILE},prod>>:BLITZAR_PROFILE_DEV=1>
             $<$<STREQUAL:${BLITZAR_PROFILE},prod>:BLITZAR_PROFILE_IS_PROD=1>

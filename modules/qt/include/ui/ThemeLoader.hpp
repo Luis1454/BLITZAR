@@ -40,6 +40,8 @@ private:
 class ThemeLoader final {
 public:
     static ThemeSpec builtinTheme(ThemeBase base);
+    static std::filesystem::path defaultThemePath(ThemeBase base);
+    static std::optional<ThemeSpec> loadDefaultTheme(ThemeBase base);
     static std::optional<ThemeSpec> loadFromFile(const std::filesystem::path& path);
     static std::optional<ThemeSpec> loadFromJson(const QByteArray& jsonBytes);
 };
