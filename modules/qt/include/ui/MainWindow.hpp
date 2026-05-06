@@ -122,6 +122,12 @@ namespace bltzr_qt {
 class EnergyGraphWidget;
 class MultiViewWidget;
 
+namespace mainWindow::layout {
+class ComboInitializer;
+class NumericInitializer;
+class PropertyInitializer;
+}
+
 class MainWindow : public QMainWindow {
 public:
     MainWindow(SimulationConfig config, std::string configPath,
@@ -129,6 +135,10 @@ public:
     ~MainWindow() override;
 
 private:
+    friend class bltzr_qt::mainWindow::layout::ComboInitializer;
+    friend class bltzr_qt::mainWindow::layout::NumericInitializer;
+    friend class bltzr_qt::mainWindow::layout::PropertyInitializer;
+
     static std::string formatFromSelectedFilter(const QString& filter);
     bool applyConfigToServer(bool requestReset);
     void applyConnectorSettings(bool reconnectNow);

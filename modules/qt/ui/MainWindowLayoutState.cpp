@@ -4,32 +4,38 @@
  */
 
 #include "ui/MainWindow.hpp"
+#include "ui/mainWindow/layout/comboInitializer.hpp"
+#include "ui/mainWindow/layout/numericInitializer.hpp"
+#include "ui/mainWindow/layout/propertyInitializer.hpp"
 
 namespace bltzr_qt {
 
 void MainWindow::initializeControlState()
 {
-    // TODO: Integrate layout modules for full implementation
+    initializeComboBoxes();
+    initializeObjectNames();
+    initializeSpinAndSliderValues();
+    initializeLabelsAndTooltips();
 }
 
 void MainWindow::initializeComboBoxes()
 {
-    // Delegated to layout subfolder modules
+    mainWindow::layout::ComboInitializer::initializeComboBoxes(this);
 }
 
 void MainWindow::initializeObjectNames()
 {
-    // Delegated to layout subfolder modules
+    mainWindow::layout::PropertyInitializer::initializeObjectNames(this);
 }
 
 void MainWindow::initializeSpinAndSliderValues()
 {
-    // Delegated to layout subfolder modules
+    mainWindow::layout::NumericInitializer::initializeSpinAndSliderValues(this);
 }
 
 void MainWindow::initializeLabelsAndTooltips()
 {
-    // Delegated to layout subfolder modules
+    mainWindow::layout::PropertyInitializer::initializeLabelsAndTooltips(this);
 }
 
 }  // namespace bltzr_qt
