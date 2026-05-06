@@ -1,0 +1,36 @@
+/*
+ * @file modules/qt/ui/particleView/gimbalController.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Gimbal controller implementations.
+ */
+
+#include "ui/QtViewMath.hpp"
+#include "ui/particleView/gimbalController.hpp"
+
+namespace bltzr_qt::particleView {
+
+void GimbalController::handleMousePress(ParticleView* view, QMouseEvent* event)
+{
+    // Stub: Mouse press handling delegated to ParticleView wrapper
+}
+
+void GimbalController::handleMouseMove(ParticleView* view, QMouseEvent* event)
+{
+    // Stub: Mouse move handling delegated to ParticleView wrapper
+}
+
+void GimbalController::handleMouseRelease(ParticleView* view, QMouseEvent* event)
+{
+    // Stub: Mouse release handling delegated to ParticleView wrapper
+}
+
+grav::GimbalAxis GimbalController::pickAxis(ParticleView* view, int x, int y)
+{
+    (void)view;
+    (void)x;
+    (void)y;
+    return grav::GimbalAxis::None;
+}
+
+}  // namespace bltzr_qt::particleView

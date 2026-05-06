@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "name": "default-light",
+  "base": "light",
+  "palette": {
+    "Window": "#edf2f7",
+    "WindowText": "#102a43",
+    "Base": "#ffffff",
+    "AlternateBase": "#f7f9fb",
+    "Text": "#102a43",
+    "Button": "#dce6f2",
+    "ButtonText": "#102a43",
+    "Mid": "#9ba0aa",
+    "Highlight": "#0f4c81",
+    "HighlightedText": "#f8fbff",
+    "ToolTipBase": "#ffffff",
+    "ToolTipText": "#102a43",
+    "PlaceholderText": "#7b8794"
+  },
+  "stylesheet": ""
+}

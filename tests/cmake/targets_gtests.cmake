@@ -161,6 +161,7 @@ set(BLITZAR_TEST_BASE_QT_LOGIC_SOURCES
     "${BLITZAR_ROOT_DIR}/modules/qt/ui/UiEnums.cpp"
     "${BLITZAR_ROOT_DIR}/modules/qt/ui/ThroughputAdvisor.cpp"
     "${BLITZAR_ROOT_DIR}/modules/qt/ui/WorkspaceLayoutStore.cpp"
+    "${BLITZAR_ROOT_DIR}/modules/qt/ui/ThemeLoader.cpp"
 )
 
 if(BLITZAR_TEST_INT_PROTOCOL_SOURCES)
@@ -213,6 +214,7 @@ if(BLITZAR_TEST_UNIT_UI_SOURCES)
         LIBS
             blitzarRustRuntime
             ${BLITZAR_TEST_PLATFORM_TARGET}
+            Qt6::Widgets
     )
 endif()
 
@@ -228,9 +230,30 @@ if(TARGET Qt6::Widgets AND BLITZAR_TEST_INT_UI_SOURCES)
             "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/EnergyGraphWidget.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/EnergyGraphWidgetPaint.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/energyGraph/renderer.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/energyGraph/plotting.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/energyGraph/theme.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/energyGraph/layout.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/energyGraph/data.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/mainWindow/presenter/formatters.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/mainWindow/presenter/telemetryAggregator.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/mainWindow/presenter/stateComputers.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/mainWindow/shell/dockBuilder.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/mainWindow/shell/menuBuilder.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/mainWindow/shell/themeMenuHandler.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/mainWindow/layout/comboInitializer.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/mainWindow/layout/numericInitializer.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/mainWindow/layout/propertyInitializer.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/mainWindow/fileActions/fileDialogs.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/mainWindow/fileActions/connectorManager.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/mainWindow/fileActions/formatHelpers.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/particleView/gimbalController.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/particleView/particleRasterizer.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/particleView/overlayRenderer.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowController.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindow.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowConfig.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/ui/mainWindow/config/apply.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowControls.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowFileActions.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowLayout.cpp"

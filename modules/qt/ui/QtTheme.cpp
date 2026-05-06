@@ -6,6 +6,7 @@
  */
 
 #include "ui/QtTheme.hpp"
+#include "ui/ThemeLoader.hpp"
 
 #include <QColor>
 
@@ -59,6 +60,12 @@ std::string WorkspaceTheme::toConfigValue(QtThemeMode mode)
 
 QPalette WorkspaceTheme::buildPalette(QtThemeMode mode)
 {
+    const bltzr_qt::ThemeBase themeBase = (mode == QtThemeMode::Dark) ? ThemeBase::Dark : ThemeBase::Light;
+    const std::optional<ThemeSpec> loadedTheme = ThemeLoader::loadDefaultTheme(themeBase);
+    if (loadedTheme.has_value()) {
+        return loadedTheme->palette();
+    }
+
     QPalette palette;
     if (mode == QtThemeMode::Dark) {
         applyDarkPalette(palette);

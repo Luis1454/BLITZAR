@@ -9,6 +9,8 @@
 #include "config/SimulationProfile.hpp"
 #include "ui/MainWindow.hpp"
 #include "ui/MultiViewWidget.hpp"
+#include <QLabel>
+#include <QLineEdit>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
@@ -19,6 +21,38 @@
 #include <QTimer>
 
 namespace bltzr_qt {
+
+void MainWindow::resetSimulationFromUi()
+{
+    if (_runtime != nullptr) {
+        _runtime->requestReset();
+    }
+    (void)applyConfigToServer(true);
+    if (_statusLabel != nullptr) {
+        _statusLabel->setText(QString("simulation reset"));
+    }
+}
+
+void MainWindow::applyConnectorSettings(bool reconnectNow)
+{
+    if (_runtime == nullptr || _serverHostEdit == nullptr || _serverPortSpin == nullptr ||
+        _serverAutostartCheck == nullptr || _serverBinEdit == nullptr) {
+        return;
+    }
+
+    const std::string host = _serverHostEdit->text().toStdString();
+    const std::uint16_t port = static_cast<std::uint16_t>(_serverPortSpin->value());
+    const bool autoStart = _serverAutostartCheck->isChecked();
+    const std::string executable = _serverBinEdit->text().toStdString();
+    _runtime->configureRemoteConnector(host, port, autoStart, executable);
+    if (reconnectNow) {
+        _runtime->requestReconnect();
+    }
+    if (_statusLabel != nullptr) {
+        _statusLabel->setText(QString("remote connector updated"));
+    }
+}
+
 void MainWindow::connectControls()
 {
     const auto applySphParams = [this]() {

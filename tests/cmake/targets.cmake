@@ -71,6 +71,7 @@ set(BLITZAR_TEST_UNIT_UI_SOURCES
     "${BLITZAR_ROOT_DIR}/tests/unit/ui/qt_octree_overlay.cpp"
     "${BLITZAR_ROOT_DIR}/tests/unit/ui/qt_throughput_advisor.cpp"
     "${BLITZAR_ROOT_DIR}/tests/unit/ui/qt_workspace_layout_store.cpp"
+    "${BLITZAR_ROOT_DIR}/tests/unit/ui/qt_theme_loader.cpp"
     "${BLITZAR_ROOT_DIR}/tests/unit/ui/TST_UNT_UI_UiEnums.cpp"
 )
 

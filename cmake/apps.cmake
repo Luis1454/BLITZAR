@@ -48,6 +48,9 @@ function(BLITZAR_add_client_module_manifest target_name module_id)
     )
 endfunction()
 
+set(BLITZAR_QT_THEME_DIR "${CMAKE_CURRENT_SOURCE_DIR}/modules/qt/res/themes")
+file(TO_CMAKE_PATH "${BLITZAR_QT_THEME_DIR}" BLITZAR_QT_THEME_DIR)
+
 include("${BLITZAR_ROOT_DIR}/cmake/qt_paths.cmake")
 
 set(BLITZAR_RUNTIME_COMMAND_SOURCES
@@ -125,7 +128,16 @@ if(BLITZAR_BUILD_SERVER_DAEMON)
     add_executable(${SERVER_DAEMON_NAME}
         apps/server-service/main.cpp
         apps/server-service/server_args.cpp
-        runtime/src/server/ServerDaemon.cpp
+        runtime/src/server/daemon/daemon.cpp
+        runtime/src/server/daemon/lifecycle.cpp
+        runtime/src/server/daemon/acceptance.cpp
+        runtime/src/server/daemon/handler.cpp
+        runtime/src/server/daemon/requestProcessor.cpp
+        runtime/src/server/daemon/protocol/parser.cpp
+        runtime/src/server/daemon/protocol/dispatcher.cpp
+        runtime/src/server/daemon/protocol/stateCommands.cpp
+        runtime/src/server/daemon/protocol/configCommands.cpp
+        runtime/src/server/daemon/helpers.cpp
         ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
         ${BLITZAR_SERVER_SOURCES}
     )
@@ -221,9 +233,30 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             ${BLITZAR_SERVER_SOURCES}
             modules/qt/ui/EnergyGraphWidget.cpp
             modules/qt/ui/EnergyGraphWidgetPaint.cpp
+            modules/qt/ui/energyGraph/renderer.cpp
+            modules/qt/ui/energyGraph/plotting.cpp
+            modules/qt/ui/energyGraph/theme.cpp
+            modules/qt/ui/energyGraph/layout.cpp
+            modules/qt/ui/energyGraph/data.cpp
+            modules/qt/ui/mainWindow/presenter/formatters.cpp
+            modules/qt/ui/mainWindow/presenter/telemetryAggregator.cpp
+            modules/qt/ui/mainWindow/presenter/stateComputers.cpp
+            modules/qt/ui/mainWindow/shell/dockBuilder.cpp
+            modules/qt/ui/mainWindow/shell/menuBuilder.cpp
+            modules/qt/ui/mainWindow/shell/themeMenuHandler.cpp
+            modules/qt/ui/mainWindow/layout/comboInitializer.cpp
+            modules/qt/ui/mainWindow/layout/numericInitializer.cpp
+            modules/qt/ui/mainWindow/layout/propertyInitializer.cpp
+            modules/qt/ui/mainWindow/fileActions/fileDialogs.cpp
+            modules/qt/ui/mainWindow/fileActions/connectorManager.cpp
+            modules/qt/ui/mainWindow/fileActions/formatHelpers.cpp
+            modules/qt/ui/particleView/gimbalController.cpp
+            modules/qt/ui/particleView/particleRasterizer.cpp
+            modules/qt/ui/particleView/overlayRenderer.cpp
             modules/qt/ui/MainWindowController.cpp
             modules/qt/ui/MainWindow.cpp
             modules/qt/ui/MainWindowConfig.cpp
+            modules/qt/ui/mainWindow/config/apply.cpp
             modules/qt/ui/MainWindowControls.cpp
             modules/qt/ui/MainWindowFileActions.cpp
             modules/qt/ui/MainWindowLayout.cpp
@@ -239,6 +272,7 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             modules/qt/ui/ParticleViewColor.cpp
             modules/qt/ui/UiEnums.cpp
             modules/qt/ui/ThroughputAdvisor.cpp
+            modules/qt/ui/ThemeLoader.cpp
             modules/qt/ui/QtTheme.cpp
             modules/qt/ui/QtViewMath.cpp
             modules/qt/ui/WorkspaceLayoutStore.cpp
@@ -253,6 +287,8 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             target_compile_definitions(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE BLITZAR_CLIENT_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
         endif()
         target_link_libraries(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE blitzarRustRuntime Qt6::Widgets)
+        target_compile_definitions(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE
+            BLITZAR_QT_THEME_DIR="${BLITZAR_QT_THEME_DIR}")
         BLITZAR_configure_qt_runtime_deploy(${CLIENT_MODULE_QT_INPROC_NAME})
         BLITZAR_add_client_module_manifest(${CLIENT_MODULE_QT_INPROC_NAME} qt)
     else()

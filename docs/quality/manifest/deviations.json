@@ -13,7 +13,6 @@
       "closure_criteria": "Split each file below the hard limit and remove the corresponding allowlist paths.",
       "paths": [
         "engine/src/server/SimulationServer.cpp",
-        "runtime/src/server/ServerDaemon.cpp",
         "runtime/src/protocol/ServerClient.cpp",
         "runtime/src/client/ClientServerBridge.cpp",
         "runtime/src/client/ClientRuntime.cpp",
@@ -65,8 +64,7 @@
       "closure_criteria": "Extract module composition responsibilities into smaller units and delete the allowlist paths.",
       "paths": [
         "modules/proxy/module.cpp",
-        "modules/qt/module.cpp",
-        "modules/qt/ui/EnergyGraphWidgetPaint.cpp"
+        "modules/qt/module.cpp"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -236,28 +234,6 @@
       "requirements": [
         "REQ-QUAL-001",
         "REQ-UI-001"
-      ],
-      "artifacts": [
-        "EVD_CHECK_MAIN",
-        "EVD_CHECK_POLICY_ALLOWLIST"
-      ]
-    },
-    "DEV-QUAL-011": {
-      "kind": "deviation",
-      "status": "open",
-      "scope": "repository-policy:file-size",
-      "owner": "project-maintainer",
-      "approver": "quality-review",
-      "introduced_on": "2026-04-29",
-      "review_by": "2026-06-30",
-      "rationale": "Initial state generation modes for presets have caused the factory file to exceed the strong alert threshold.",
-      "mitigation": "Keep this file isolated in the allowlist and plan a split of the initialization algorithms by type.",
-      "closure_criteria": "Split the factory implementations into smaller strategy classes below the hard limit and remove the allowlist path.",
-      "paths": [
-        "engine/src/server/simulation_server/InitialStateGeneration.cpp"
-      ],
-      "requirements": [
-        "REQ-QUAL-001"
       ],
       "artifacts": [
         "EVD_CHECK_MAIN",
