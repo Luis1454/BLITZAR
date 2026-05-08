@@ -106,12 +106,12 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 add_executable(${APP_NAME}
-    apps/launcher/main.cpp
+    apps/launcher/src/main.cpp
 )
 configure_BLITZAR_cpp_target(${APP_NAME})
 if(BLITZAR_BUILD_HEADLESS_BINARY)
     add_executable(${HEADLESS_NAME}
-        apps/headless/main.cu
+        apps/headless/src/main.cu
         ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
         ${BLITZAR_SERVER_SOURCES}
     )
@@ -123,8 +123,8 @@ endif()
 
 if(BLITZAR_BUILD_SERVER_DAEMON)
     add_executable(${SERVER_DAEMON_NAME}
-        apps/server-service/main.cpp
-        apps/server-service/server_args.cpp
+        apps/server-service/src/main.cpp
+        apps/server-service/src/Args.cpp
         runtime/src/server/ServerDaemon.cpp
         ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
         ${BLITZAR_SERVER_SOURCES}
@@ -136,11 +136,11 @@ if(BLITZAR_BUILD_WEB_GATEWAY)
 endif()
 if(BLITZAR_BUILD_CLIENT_HOST)
     add_executable(${CLIENT_HOST_NAME}
-        apps/client-host/main.cpp
-        apps/client-host/client_host_cli.cpp
-        apps/client-host/client_host_cli_args.cpp
-        apps/client-host/client_host_cli_text.cpp
-        apps/client-host/client_host_module_ops.cpp
+        apps/client-host/src/main.cpp
+        apps/client-host/src/Cli.cpp
+        apps/client-host/src/CliArgs.cpp
+        apps/client-host/src/CliText.cpp
+        apps/client-host/src/ModuleOps.cpp
         ${BLITZAR_RUNTIME_COMMAND_SOURCES}
         ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
         ${BLITZAR_COMMAND_CONFIG_SOURCES}

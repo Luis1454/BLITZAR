@@ -1,11 +1,11 @@
 /*
- * @file apps/client-host/main.cpp
+ * @file apps/client-host/src/main.cpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Application entry points and host executables for BLITZAR.
  */
 
-#include "apps/client-host/client_host_cli.hpp"
+#include "Cli.hpp"
 #include <exception>
 #include <iostream>
 #include <string>

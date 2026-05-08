@@ -27,6 +27,8 @@ find_package(CUDAToolkit REQUIRED)
 
 set(BLITZAR_PROJECT_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/apps/client-host/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/apps/server-service/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/engine/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/runtime/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/modules/qt/include"

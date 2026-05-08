@@ -5,10 +5,10 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "apps/client-host/client_host_cli.hpp"
-#include "apps/client-host/client_host_cli_args.hpp"
-#include "apps/client-host/client_host_cli_text.hpp"
-#include "apps/client-host/client_host_module_ops.hpp"
+#include "Cli.hpp"
+#include "CliArgs.hpp"
+#include "CliText.hpp"
+#include "ModuleOps.hpp"
 #include <chrono>
 #include <filesystem>
 #include <fstream>

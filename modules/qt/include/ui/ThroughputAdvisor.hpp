@@ -33,6 +33,15 @@ struct ThroughputAdvisory final {
     std::string statusBarText;
 };
 
+class ThroughputAdvisorLocal final {
+public:
+    static std::uint32_t estimateSubsteps(const SimulationConfig& config);
+    static float solverPenalty(const SimulationConfig& config, std::uint32_t substeps);
+    static float drawPenalty(const SimulationConfig& config, std::uint32_t drawCap);
+    static std::string suggestedAction(const SimulationConfig& config, std::uint32_t substeps,
+                                       std::uint32_t drawCap);
+};
+
 class ThroughputAdvisor final {
 public:
     static ThroughputAdvisory evaluate(const SimulationConfig& config, std::uint32_t drawCap);

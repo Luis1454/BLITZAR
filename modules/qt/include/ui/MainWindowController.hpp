@@ -29,6 +29,12 @@ struct MainWindowApplyConfigResult final {
     bool applied = false;
 };
 
+class MainWindowControllerLocal final {
+public:
+    static void applySharedConfig(const SimulationConfig& config,
+                                  bltzr_client::IClientRuntime& runtime);
+};
+
 class MainWindowController final {
 public:
     MainWindowApplyConfigResult applyConfig(const SimulationConfig& config,
