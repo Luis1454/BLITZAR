@@ -1,12 +1,12 @@
 /*
- * @file apps/client-host/client_host_cli.hpp
+ * @file apps/client-host/include/Cli.hpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Application entry points and host executables for BLITZAR.
  */
 
-#ifndef BLITZAR_APPS_MODULE_HOST_MODULE_HOST_CLI_HPP_
-#define BLITZAR_APPS_MODULE_HOST_MODULE_HOST_CLI_HPP_
+#ifndef BLITZAR_APPS_CLIENT_HOST_CLI_HPP_
+#define BLITZAR_APPS_CLIENT_HOST_CLI_HPP_
 #include <string>
 #include <string_view>
 
@@ -21,6 +21,12 @@ struct HostOptions {
     bool waitForModule = false;   // Block until module is ready before forwarding commands
 };
 
+class ClientHostCliLocal final {
+public:
+    static constexpr bool kLiveReloadEnabled = BLITZAR_PROFILE_IS_PROD == 0;
+    static int run(const HostOptions& options, std::string_view programName);
+};
+
 class ClientHostCli final {
 public:
     static bool parseArgs(int argc, char** argv, HostOptions& outOptions, std::string& outError);
@@ -29,4 +35,4 @@ public:
     [[nodiscard]] static bool liveReloadEnabled() noexcept;
 };
 } // namespace bltzr_client_host
-#endif // BLITZAR_APPS_MODULE_HOST_MODULE_HOST_CLI_HPP_
+#endif // BLITZAR_APPS_CLIENT_HOST_CLI_HPP_

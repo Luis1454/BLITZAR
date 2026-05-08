@@ -6,6 +6,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 include(cmake/win.cmake)
+include(cmake/dependencies.cmake)
 
 project(BLITZAR LANGUAGES CUDA CXX)
 

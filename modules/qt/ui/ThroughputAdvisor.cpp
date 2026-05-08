@@ -12,66 +12,64 @@
 #include <sstream>
 
 namespace bltzr_qt {
-class ThroughputAdvisorLocal final {
-public:
-    static std::uint32_t estimateSubsteps(const SimulationConfig& config)
-    {
-        if (config.substepTargetDt <= 0.0f || config.dt <= 0.0f)
-            return 1u;
-        const float raw = std::ceil(config.dt / config.substepTargetDt);
-        return std::max(1u, std::min(config.maxSubsteps, static_cast<std::uint32_t>(raw)));
-    }
+std::uint32_t ThroughputAdvisorLocal::estimateSubsteps(const SimulationConfig& config)
+{
+    if (config.substepTargetDt <= 0.0f || config.dt <= 0.0f)
+        return 1u;
+    const float raw = std::ceil(config.dt / config.substepTargetDt);
+    return std::max(1u, std::min(config.maxSubsteps, static_cast<std::uint32_t>(raw)));
+}
 
-    static float solverPenalty(const SimulationConfig& config, std::uint32_t substeps)
-    {
-        const float particles = static_cast<float>(std::max(2u, config.particleCount));
-        const float substepPenalty = static_cast<float>(std::max(1u, substeps));
-        if (config.solver == "pairwise_cuda") {
-            const float normalized = particles / 20000.0f;
-            return std::max(1.0f, normalized * normalized) * substepPenalty;
-        }
-        if (config.solver == "octree_cpu")
-            return std::max(1.0f, particles / 50000.0f) * substepPenalty * 1.5f;
-        return std::max(1.0f, particles / 200000.0f) * substepPenalty;
+float ThroughputAdvisorLocal::solverPenalty(const SimulationConfig& config, std::uint32_t substeps)
+{
+    const float particles = static_cast<float>(std::max(2u, config.particleCount));
+    const float substepPenalty = static_cast<float>(std::max(1u, substeps));
+    if (config.solver == "pairwise_cuda") {
+        const float normalized = particles / 20000.0f;
+        return std::max(1.0f, normalized * normalized) * substepPenalty;
     }
+    if (config.solver == "octree_cpu")
+        return std::max(1.0f, particles / 50000.0f) * substepPenalty * 1.5f;
+    return std::max(1.0f, particles / 200000.0f) * substepPenalty;
+}
 
-    static float drawPenalty(const SimulationConfig& config, std::uint32_t drawCap)
-    {
-        const std::uint32_t effectiveCap =
-            std::max<std::uint32_t>(2u, drawCap == 0u ? config.clientParticleCap : drawCap);
-        return std::max(1.0f, static_cast<float>(effectiveCap) / 50000.0f);
-    }
+float ThroughputAdvisorLocal::drawPenalty(const SimulationConfig& config, std::uint32_t drawCap)
+{
+    const std::uint32_t effectiveCap =
+        std::max<std::uint32_t>(2u, drawCap == 0u ? config.clientParticleCap : drawCap);
+    return std::max(1.0f, static_cast<float>(effectiveCap) / 50000.0f);
+}
 
-    static std::string suggestedAction(const SimulationConfig& config, std::uint32_t substeps,
-                                       std::uint32_t drawCap)
-    {
-        std::ostringstream out;
-        bool first = true;
-        const auto append = [&out, &first](const std::string& text) {
-            if (!first) {
-                out << "; ";
-            }
-            out << text;
-            first = false;
-        };
-        if (config.solver == "pairwise_cuda" && config.particleCount > 20000u) {
-            append("switch solver to octree_gpu");
+std::string ThroughputAdvisorLocal::suggestedAction(const SimulationConfig& config,
+                                                    std::uint32_t substeps,
+                                                    std::uint32_t drawCap)
+{
+    std::ostringstream out;
+    bool first = true;
+    const auto append = [&out, &first](const std::string& text) {
+        if (!first) {
+            out << "; ";
         }
-        if (substeps > 2u) {
-            append("reduce dt or relax substep_target_dt");
-        }
-        if (config.clientParticleCap > 20000u || drawCap >= 20000u) {
-            append("lower draw cap");
-        }
-        if (config.particleCount > 50000u) {
-            append("reduce particle_count or use a lighter preset");
-        }
-        if (first) {
-            append("use the balanced or interactive run profile");
-        }
-        return out.str();
+        out << text;
+        first = false;
+    };
+    if (config.solver == "pairwise_cuda" && config.particleCount > 20000u) {
+        append("switch solver to octree_gpu");
     }
-};
+    if (substeps > 2u) {
+        append("reduce dt or relax substep_target_dt");
+    }
+    if (config.clientParticleCap > 20000u || drawCap >= 20000u) {
+        append("lower draw cap");
+    }
+    if (config.particleCount > 50000u) {
+        append("reduce particle_count or use a lighter preset");
+    }
+    if (first) {
+        append("use the balanced or interactive run profile");
+    }
+    return out.str();
+}
 
 ThroughputAdvisory ThroughputAdvisor::evaluate(const SimulationConfig& config,
                                                std::uint32_t drawCap)

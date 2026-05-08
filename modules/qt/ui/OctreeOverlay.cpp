@@ -13,12 +13,6 @@
 #include <vector>
 
 namespace bltzr_qt {
-struct OverlayBounds final {
-    float centerX;
-    float centerY;
-    float centerZ;
-    float halfSize;
-};
 
 static constexpr std::size_t kMaxOverlayNodes = 4096u;
 

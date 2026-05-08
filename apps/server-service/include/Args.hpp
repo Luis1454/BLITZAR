@@ -1,12 +1,12 @@
 /*
- * @file apps/server-service/server_args.hpp
+ * @file apps/server-service/include/Args.hpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Application entry points and host executables for BLITZAR.
  */
 
-#ifndef BLITZAR_APPS_SERVER_SERVICE_SERVER_ARGS_HPP_
-#define BLITZAR_APPS_SERVER_SERVICE_SERVER_ARGS_HPP_
+#ifndef BLITZAR_APPS_SERVER_SERVICE_ARGS_HPP_
+#define BLITZAR_APPS_SERVER_SERVICE_ARGS_HPP_
 #include <cstdint>
 #include <ostream>
 #include <string>
@@ -32,4 +32,4 @@ void installStopSignalHandlers();
 bool stopRequested();
 void resetStopRequested();
 } // namespace bltzr_server_service
-#endif // BLITZAR_APPS_SERVER_SERVICE_SERVER_ARGS_HPP_
+#endif // BLITZAR_APPS_SERVER_SERVICE_ARGS_HPP_
