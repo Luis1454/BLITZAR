@@ -1,11 +1,11 @@
 /*
- * @file apps/server-service/server_args.cpp
+ * @file apps/server-service/src/Args.cpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Application entry points and host executables for BLITZAR.
  */
 
-#include "apps/server-service/server_args.hpp"
+#include "Args.hpp"
 #include "config/SimulationArgs.hpp"
 #include "config/TextParse.hpp"
 #include <algorithm>

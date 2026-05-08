@@ -1,0 +1,13 @@
+# Ignore local build artifacts and VCS
+build/
+CMakeCache.txt
+CMakeFiles/
+*.o
+*.so
+*.dll
+*.exe
+.git/
+.gitignore
+.vscode/
+*.log
+dist/

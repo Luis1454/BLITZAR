@@ -50,6 +50,23 @@ struct MainWindowPresentation final {
     std::string consoleTrace;
 };
 
+class MainWindowPresenterLocal final {
+public:
+    static bool hasAge(std::uint32_t ageMs);
+    static std::string ageLabel(std::uint32_t ageMs);
+    static std::string latencyLabel(const MainWindowPresentationInput& input);
+    static bool isStale(std::uint32_t ageMs);
+    static std::string fixedLabel(float value, int precision);
+    static std::string bytesLabel(std::uint64_t bytes);
+    static float simulatedSecondsPerSecond(const MainWindowPresentationInput& input);
+    static std::string backendStateLabel(const MainWindowPresentationInput& input,
+                                         bool staleStats, bool staleSnapshot);
+    static std::string viewportStateLabel(std::uint32_t snapshotAgeMs);
+    static std::string progressLabel(const MainWindowPresentationInput& input);
+    static std::string etaLabel(const MainWindowPresentationInput& input);
+    static std::string exportStateLabel(const MainWindowPresentationInput& input);
+};
+
 class MainWindowPresenter final {
 public:
     MainWindowPresentation present(const MainWindowPresentationInput& input) const;

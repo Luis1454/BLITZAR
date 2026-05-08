@@ -1,5 +1,5 @@
 /*
- * @file apps/client-host/client_host_cli.cpp
+ * @file apps/client-host/src/Cli.cpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Application entry points and host executables for BLITZAR.
@@ -10,10 +10,10 @@
 #include <string>
 #include <vector>
 
-#include "apps/client-host/client_host_cli.hpp"
-#include "apps/client-host/client_host_cli_args.hpp"
-#include "apps/client-host/client_host_cli_text.hpp"
-#include "apps/client-host/client_host_module_ops.hpp"
+#include "Cli.hpp"
+#include "CliArgs.hpp"
+#include "CliText.hpp"
+#include "ModuleOps.hpp"
 #include "client/ClientModuleHandle.hpp"
 #include "command/CommandBatchRunner.hpp"
 #include "command/CommandContext.hpp"

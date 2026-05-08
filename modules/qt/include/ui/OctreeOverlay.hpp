@@ -16,6 +16,13 @@
 #include <vector>
 
 namespace bltzr_qt {
+struct OverlayBounds final {
+    float centerX;
+    float centerY;
+    float centerZ;
+    float halfSize;
+};
+
 struct OctreeOverlayNode final {
     float centerX;
     float centerY;
