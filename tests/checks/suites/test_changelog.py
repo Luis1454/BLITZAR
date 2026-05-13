@@ -1,5 +1,5 @@
 # @file tests/checks/suites/test_changelog.py
-# @author BLITZAR Contributors
+# @author Luis1454
 # @project BLITZAR
 # @brief Automated verification assets for BLITZAR quality gates.
 

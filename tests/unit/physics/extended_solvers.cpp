@@ -1,6 +1,6 @@
 /*
  * @file tests/unit/physics/extended_solvers.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

@@ -1,6 +1,6 @@
 /*
  * @file apps/client-host/src/Cli.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Application entry points and host executables for BLITZAR.
  */

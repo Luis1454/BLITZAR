@@ -1,6 +1,6 @@
 /*
  * @file engine/include/platform/internal/DynamicLibraryOps.hpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Platform abstraction interfaces for portable runtime services.
  */

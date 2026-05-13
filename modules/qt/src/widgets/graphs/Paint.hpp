@@ -1,6 +1,6 @@
 /*
  * @file modules/qt/src/widgets/graphs/Paint.hpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Qt desktop user interface module for simulation control and visualization.
  */

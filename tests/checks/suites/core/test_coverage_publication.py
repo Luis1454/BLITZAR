@@ -1,5 +1,5 @@
 # @file tests/checks/suites/core/test_coverage_publication.py
-# @author BLITZAR Contributors
+# @author Luis1454
 # @project BLITZAR
 # @brief Automated verification assets for BLITZAR quality gates.
 
@@ -8,15 +8,15 @@ from __future__ import annotations
 from pathlib import Path
 
 
-# @brief Documents the test readme avoids owner specific coverage urls operation contract.
+# @brief Documents the test readme uses coverage data branch for badges and widget operation contract.
 # @param None This contract does not take explicit parameters.
 # @return Value produced by this contract when applicable.
 # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
-def test_readme_avoids_owner_specific_coverage_urls() -> None:
+def test_readme_uses_coverage_data_branch_for_badges_and_widget() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
-    assert "raw.githubusercontent.com" not in readme
-    assert "github.com/" not in readme
-    assert ".github.io/BLITZAR/coverage/" not in readme
+    assert "raw.githubusercontent.com/Luis1454/BLITZAR/coverage-data/coverage/widget.svg" in readme
+    assert "raw.githubusercontent.com%2FLuis1454%2FBLITZAR%2Fcoverage-data%2Fcoverage%2Flines.json" in readme
+    assert "luis1454.github.io/BLITZAR/coverage/" not in readme
 
 
 # @brief Documents the test nightly workflow publishes coverage data branch operation contract.

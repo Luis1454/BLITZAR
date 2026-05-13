@@ -1,6 +1,6 @@
 /*
  * @file tests/unit/ui/qt_mainwindow_controller.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

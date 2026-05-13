@@ -1,6 +1,6 @@
 /*
  * @file engine/src/config/EnvUtilsPosix.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Configuration parsing, validation, and serialization implementation.
  */

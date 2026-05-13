@@ -1,6 +1,6 @@
 /*
  * @file tests/support/server_harness.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

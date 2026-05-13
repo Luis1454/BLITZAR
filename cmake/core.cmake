@@ -1,5 +1,5 @@
 # @file cmake/core.cmake
-# @author BLITZAR Contributors
+# @author Luis1454
 # @project BLITZAR
 # @brief CMake build orchestration for BLITZAR targets and tooling.
 

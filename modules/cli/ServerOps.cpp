@@ -1,6 +1,6 @@
 /*
  * @file modules/cli/ServerOps.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Command-line client module for runtime control workflows.
  */

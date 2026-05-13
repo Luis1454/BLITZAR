@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # @file python_tools/ci/gpu_runner_bootstrap.py
-# @author BLITZAR Contributors
+# @author Luis1454
 # @project BLITZAR
 # @brief Python quality and automation support for BLITZAR governance.
 

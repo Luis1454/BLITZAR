@@ -1,6 +1,6 @@
 /*
  * @file engine/include/graphics/ColorPipeline.hpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Source artifact for the BLITZAR simulation project.
  */

@@ -1,6 +1,6 @@
 /*
  * @file engine/src/physics/ParticleHotData.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Cache-optimized particle data packing helpers for the physics hotpath.
  */

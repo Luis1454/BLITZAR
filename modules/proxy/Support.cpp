@@ -1,6 +1,6 @@
 /*
  * @file modules/proxy/Support.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Internal support helpers for the GUI proxy client module.
  */

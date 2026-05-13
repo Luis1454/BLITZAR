@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # @file scripts/ci/coverage/build_pr_delta_report.py
-# @author BLITZAR Contributors
+# @author Luis1454
 # @project BLITZAR
 # @brief Build, release, and CI helper automation for BLITZAR workflows.
 

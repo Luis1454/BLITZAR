@@ -1,6 +1,6 @@
 /*
  * @file modules/echo/Module.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Echo module used to validate client module loading behavior.
  */

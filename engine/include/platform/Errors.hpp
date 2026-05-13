@@ -1,6 +1,6 @@
 /*
  * @file engine/include/platform/Errors.hpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Platform abstraction interfaces for portable runtime services.
  */

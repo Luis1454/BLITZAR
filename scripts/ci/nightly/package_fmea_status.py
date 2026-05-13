@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # @file scripts/ci/nightly/package_fmea_status.py
-# @author BLITZAR Contributors
+# @author Luis1454
 # @project BLITZAR
 # @brief Build, release, and CI helper automation for BLITZAR workflows.
 

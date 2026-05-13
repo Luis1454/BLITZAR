@@ -1,6 +1,6 @@
 /*
  * @file engine/include/config/profile/Main.hpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Public configuration interfaces and validation contracts for simulation setup.
  */
