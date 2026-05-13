@@ -1,6 +1,6 @@
 /*
  * @file runtime/src/protocol/codec/parser/Number.hpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */

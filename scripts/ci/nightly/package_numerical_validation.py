@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # @file scripts/ci/nightly/package_numerical_validation.py
-# @author Luis1454
+# @author BLITZAR Contributors
 # @project BLITZAR
 # @brief Build, release, and CI helper automation for BLITZAR workflows.
 

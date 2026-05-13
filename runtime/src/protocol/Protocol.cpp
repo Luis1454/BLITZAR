@@ -1,6 +1,6 @@
 /*
  * @file runtime/src/protocol/Protocol.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
  */

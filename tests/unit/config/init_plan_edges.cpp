@@ -1,6 +1,6 @@
 /*
  * @file tests/unit/config/init_plan_edges.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

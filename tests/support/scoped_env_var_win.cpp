@@ -1,6 +1,6 @@
 /*
  * @file tests/support/scoped_env_var_win.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

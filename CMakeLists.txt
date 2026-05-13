@@ -1,5 +1,5 @@
 # @file CMakeLists.txt
-# @author Luis1454
+# @author BLITZAR Contributors
 # @project BLITZAR
 # @brief Source artifact for the BLITZAR simulation project.
 

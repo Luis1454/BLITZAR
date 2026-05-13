@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # @file python_tools/core/runner.py
-# @author Luis1454
+# @author BLITZAR Contributors
 # @project BLITZAR
 # @brief Python quality and automation support for BLITZAR governance.
 

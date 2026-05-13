@@ -1,6 +1,6 @@
 /*
  * @file tests/unit/ui/qt_octree_overlay.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

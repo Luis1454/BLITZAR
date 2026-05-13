@@ -1,6 +1,6 @@
 /*
  * @file tests/unit/config/scenario_validation_init_modes.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

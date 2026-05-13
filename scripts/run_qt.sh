@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # @file scripts/run_qt.sh
-# @author Luis1454
+# @author BLITZAR Contributors
 # @project BLITZAR
 # @brief Build, release, and CI helper automation for BLITZAR workflows.
 

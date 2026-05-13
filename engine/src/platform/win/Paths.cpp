@@ -1,6 +1,6 @@
 /*
  * @file engine/src/platform/win/Paths.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Platform abstraction implementation for portable runtime services.
  */

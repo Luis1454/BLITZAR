@@ -1,6 +1,6 @@
 /*
  * @file engine/include/physics/ParticleHotData.hpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Cache-optimized particle data for force computation hotpath.
  */
