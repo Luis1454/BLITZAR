@@ -1,2 +1,11 @@
 # IV&V ownership for mission-impacting paths.
 # Approval must come from a non-author reviewer and is enforced by the PR IV&V gate.
+
+docs/server-protocol.md @Luis1454
+docs/quality/numerical-validation.md @Luis1454
+engine/include/physics/ @Luis1454
+engine/src/physics/ @Luis1454
+runtime/ @Luis1454
+tests/int/protocol/ @Luis1454
+tests/int/runtime/ @Luis1454
+tests/unit/physics/ @Luis1454

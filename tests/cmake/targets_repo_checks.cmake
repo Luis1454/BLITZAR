@@ -1,5 +1,5 @@
 # @file tests/cmake/targets_repo_checks.cmake
-# @author BLITZAR Contributors
+# @author Luis1454
 # @project BLITZAR
 # @brief Automated verification assets for BLITZAR quality gates.
 

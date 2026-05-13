@@ -1,6 +1,6 @@
 /*
  * @file tests/unit/module_client/client_module_boundary.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

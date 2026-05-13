@@ -1,6 +1,6 @@
 /*
  * @file apps/client-host/include/CliText.hpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Application entry points and host executables for BLITZAR.
  */

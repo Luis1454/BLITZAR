@@ -1,6 +1,6 @@
 /*
  * @file modules/qt/src/window/core/Widgets.hpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Qt window widget ownership groups.
  */

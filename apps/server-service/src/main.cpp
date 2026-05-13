@@ -1,6 +1,6 @@
 /*
  * @file apps/server-service/src/main.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Application entry points and host executables for BLITZAR.
  */

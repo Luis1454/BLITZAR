@@ -1,6 +1,6 @@
 /*
  * @file runtime/src/client/runtime/BridgeState.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
  */

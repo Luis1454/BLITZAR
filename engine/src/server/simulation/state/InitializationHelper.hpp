@@ -1,6 +1,6 @@
 /*
  * @file engine/src/server/simulation/state/InitializationHelper.hpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Helper utilities for deterministic parallel particle generation.
  */

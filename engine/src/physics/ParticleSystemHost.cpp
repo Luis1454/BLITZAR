@@ -1,6 +1,6 @@
 /*
  * @file engine/src/physics/ParticleSystemHost.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief CPU fallback implementation for the particle system.
  */

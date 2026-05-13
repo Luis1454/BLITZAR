@@ -1,6 +1,6 @@
 /*
  * @file engine/include/physics/Octree.hpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
  */
