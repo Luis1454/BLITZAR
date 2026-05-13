@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/ClientRuntime.hpp"
+#include "client/runtime/Runtime.hpp"
 #include "tests/support/client_utils.hpp"
 #include "tests/support/poll_utils.hpp"
 #include "tests/support/server_harness.hpp"
@@ -32,12 +32,12 @@ static std::filesystem::path writeTempXyz(const char* basename, const std::vecto
     return path;
 }
 
-TEST(ClientRuntimeTest, TST_CNT_RUNT_008_LoadResetInvalidatesClientSnapshotCacheUntilReloaded)
+TEST(RuntimeTest, TST_CNT_RUNT_008_LoadResetInvalidatesClientSnapshotCacheUntilReloaded)
 {
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    bltzr_client::ClientRuntime runtime(
+    bltzr_client::Runtime runtime(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
     std::optional<bltzr_client::ConsumedSnapshot> consumedSnapshot;

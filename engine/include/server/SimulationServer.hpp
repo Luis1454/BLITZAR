@@ -12,7 +12,8 @@
  * Responsibility: Own the authoritative simulation runtime and publish
  * snapshots and telemetry.
  */
-#include "config/SimulationConfig.hpp"
+#include "config/core/Config.hpp"
+#include "Constants.hpp"
 #include "physics/ParticleSystem.hpp"
 #include "types/SimulationTypes.hpp"
 #include <atomic>
@@ -387,6 +388,45 @@ private:
      * it.
      */
     struct ExportQueueState;
+    struct ConfigState final {
+        explicit ConfigState(std::uint32_t particleCount)
+            : _particleCount(particleCount)
+        {
+        }
+
+        std::uint32_t _particleCount;
+        std::string _solverMode = "pairwise_cuda";
+        std::string _integratorMode = "euler";
+        std::string _performanceProfile = "interactive";
+        float _octreeTheta = 1.2f;
+        float _octreeSoftening = 2.5f;
+        std::string _octreeOpeningCriterion = "com";
+        float _octreeEffectiveTheta = 1.2f;
+        float _octreeThetaAutoMin = 0.4f;
+        float _octreeThetaAutoMax = 1.2f;
+        float _octreeDistributionScore = 0.0f;
+        bool _octreeThetaAutoTune = false;
+        bool _sphEnabled = false;
+        float _sphSmoothingLength = 1.25f;
+        float _sphRestDensity = 1.0f;
+        float _sphGasConstant = 4.0f;
+        float _sphViscosity = 0.08f;
+        float _physicsMaxAcceleration = kPhysicsMaxAccelerationDefault;
+        float _physicsMinSoftening = kPhysicsMinSofteningDefault;
+        float _physicsMinDistance2 = kPhysicsMinDistance2Default;
+        float _physicsMinTheta = kPhysicsMinTheta;
+        float _sphMaxAcceleration = kSphMaxAccelerationDefault;
+        float _sphMaxSpeed = kSphMaxSpeedDefault;
+        float _energyBaseline = 0.0f;
+        bool _hasEnergyBaseline = false;
+        std::string _exportDirectory = "exports";
+        std::string _exportFormatDefault = "vtk";
+        std::string _initialStatePath;
+        std::string _initialStateFormat = "auto";
+        std::string _configPath = "simulation.ini";
+        SimulationConfig _runtimeConfigMirror;
+        InitialStateConfig _initialStateConfig;
+    };
     /*
      * @brief Documents the loop operation contract.
      * @param None This contract does not take explicit parameters.
@@ -577,38 +617,7 @@ private:
     std::atomic<std::uint32_t> _lastAppliedSubsteps;
     std::atomic<bool> _faulted;
     std::atomic<std::uint64_t> _faultStep;
-    std::uint32_t _particleCount;
-    std::string _solverMode;
-    std::string _integratorMode;
-    std::string _performanceProfile;
-    float _octreeTheta;
-    float _octreeSoftening;
-    std::string _octreeOpeningCriterion;
-    float _octreeEffectiveTheta;
-    float _octreeThetaAutoMin;
-    float _octreeThetaAutoMax;
-    float _octreeDistributionScore;
-    bool _octreeThetaAutoTune;
-    bool _sphEnabled;
-    float _sphSmoothingLength;
-    float _sphRestDensity;
-    float _sphGasConstant;
-    float _sphViscosity;
-    float _physicsMaxAcceleration;
-    float _physicsMinSoftening;
-    float _physicsMinDistance2;
-    float _physicsMinTheta;
-    float _sphMaxAcceleration;
-    float _sphMaxSpeed;
-    float _energyBaseline;
-    bool _hasEnergyBaseline;
-    std::string _exportDirectory;
-    std::string _exportFormatDefault;
-    std::string _initialStatePath;
-    std::string _initialStateFormat;
-    std::string _configPath;
-    SimulationConfig _runtimeConfigMirror;
-    InitialStateConfig _initialStateConfig;
+    ConfigState _configState;
     std::thread _thread;
     mutable std::mutex _snapshotMutex;
     mutable std::mutex _commandMutex;

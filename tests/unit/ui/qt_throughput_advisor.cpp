@@ -5,8 +5,8 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "config/SimulationConfig.hpp"
-#include "ui/ThroughputAdvisor.hpp"
+#include "config/core/Config.hpp"
+#include "support/performance/Throughput.hpp"
 #include <gtest/gtest.h>
 
 namespace bltzr_test_qt_throughput_advisor {
@@ -19,9 +19,9 @@ TEST(QtUiLogicTest, TST_UNT_UI_006_ThroughputAdvisorWarnsOnHeavyPairwiseConfig)
     config.substepTargetDt = 0.01f;
     config.maxSubsteps = 6u;
     config.clientParticleCap = 100000u;
-    const bltzr_qt::ThroughputAdvisory advisory =
-        bltzr_qt::ThroughputAdvisor::evaluate(config, config.clientParticleCap);
-    EXPECT_EQ(advisory.severity, bltzr_qt::ThroughputAdvisorySeverity::Warning);
+    const bltzr_qt::Advisory advisory =
+        bltzr_qt::Throughput::evaluate(config, config.clientParticleCap);
+    EXPECT_EQ(advisory.severity, bltzr_qt::Severity::Warning);
     EXPECT_LT(advisory.estimatedStepsPerSecond, 1.0f);
     EXPECT_EQ(advisory.estimatedSubsteps, 6u);
     EXPECT_NE(advisory.summary.find("pairwise_cuda"), std::string::npos);
@@ -37,9 +37,9 @@ TEST(QtUiLogicTest, TST_UNT_UI_007_ThroughputAdvisorStaysQuietForInteractiveOctr
     config.substepTargetDt = 0.01f;
     config.maxSubsteps = 4u;
     config.clientParticleCap = 4096u;
-    const bltzr_qt::ThroughputAdvisory advisory =
-        bltzr_qt::ThroughputAdvisor::evaluate(config, config.clientParticleCap);
-    EXPECT_EQ(advisory.severity, bltzr_qt::ThroughputAdvisorySeverity::None);
+    const bltzr_qt::Advisory advisory =
+        bltzr_qt::Throughput::evaluate(config, config.clientParticleCap);
+    EXPECT_EQ(advisory.severity, bltzr_qt::Severity::None);
     EXPECT_TRUE(advisory.summary.empty());
     EXPECT_TRUE(advisory.action.empty());
 }

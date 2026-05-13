@@ -38,3 +38,68 @@ BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3::Vector3(float xValue, float yV
     : x(xValue), y(yValue), z(zValue)
 {
 }
+
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3 operator+(Vector3 a, Vector3 b)
+{
+    return Vector3{a.x + b.x, a.y + b.y, a.z + b.z};
+}
+
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3 operator-(Vector3 a, Vector3 b)
+{
+    return Vector3{a.x - b.x, a.y - b.y, a.z - b.z};
+}
+
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3 operator*(Vector3 a, float b)
+{
+    return Vector3{a.x * b, a.y * b, a.z * b};
+}
+
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3 operator/(Vector3 a, float b)
+{
+    return Vector3{a.x / b, a.y / b, a.z / b};
+}
+
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3 operator*(Vector3 a, Vector3 b)
+{
+    return Vector3{a.x * b.x, a.y * b.y, a.z * b.z};
+}
+
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3 operator/(Vector3 a, Vector3 b)
+{
+    return Vector3{a.x / b.x, a.y / b.y, a.z / b.z};
+}
+
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3& operator+=(Vector3& a, Vector3 b)
+{
+    a.x += b.x;
+    a.y += b.y;
+    a.z += b.z;
+    return a;
+}
+
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3& operator-=(Vector3& a, Vector3 b)
+{
+    a.x -= b.x;
+    a.y -= b.y;
+    a.z -= b.z;
+    return a;
+}
+
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline float dot(Vector3 a, Vector3 b)
+{
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline float Vector3::norm() const
+{
+    return sqrtf(x * x + y * y + z * z);
+}
+
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3 normalize(Vector3 v)
+{
+    const float n = v.norm();
+    if (n > 1e-12f) {
+        return v / n;
+    }
+    return Vector3{0.0f, 0.0f, 0.0f};
+}

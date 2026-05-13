@@ -5,14 +5,15 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "protocol/ServerClient.hpp"
-#include "protocol/ServerProtocol.hpp"
+#include "protocol/client/Client.hpp"
+#include "protocol/Protocol.hpp"
 #include "tests/support/scoped_env_var.hpp"
 #include "tests/support/server_harness.hpp"
 #include <chrono>
 #include <gtest/gtest.h>
 #include <string>
 #include <thread>
+#include "Constants.hpp"
 
 namespace bltzr_test_server_protocol_control {
 TEST(ServerProtocolTest, TST_INT_PROT_004_ServerAcceptsControlCommandsFromClient)
@@ -20,10 +21,10 @@ TEST(ServerProtocolTest, TST_INT_PROT_004_ServerAcceptsControlCommandsFromClient
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    ServerClient client;
+    bltzr_protocol::Client client;
     client.setSocketTimeoutMs(200);
     ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
-    ServerClientResponse response =
+    bltzr_protocol::Response response =
         client.sendCommand(std::string(bltzr_protocol::SetDt), "\"value\":0.02");
     ASSERT_TRUE(response.ok) << response.error;
     response =
@@ -33,9 +34,9 @@ TEST(ServerProtocolTest, TST_INT_PROT_004_ServerAcceptsControlCommandsFromClient
     ASSERT_TRUE(response.ok) << response.error;
     response = client.sendCommand(std::string(bltzr_protocol::Recover));
     ASSERT_TRUE(response.ok) << response.error;
-    ServerClientStatus status{};
+    bltzr_protocol::ClientStatus status{};
     ASSERT_TRUE(client.getStatus(status).ok);
-    EXPECT_NEAR(status.dt, 0.02f, 1e-6f);
+    EXPECT_NEAR(status.dt, kDefaultSimulationDt, 1e-6f);
     EXPECT_EQ(status.solver, "pairwise_cuda");
     EXPECT_FALSE(status.faulted);
     client.disconnect();
@@ -47,10 +48,10 @@ TEST(ServerProtocolTest, TST_INT_PROT_005_ServerRejectsInvalidSolverAndIntegrato
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    ServerClient client;
+    bltzr_protocol::Client client;
     client.setSocketTimeoutMs(200);
     ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
-    ServerClientResponse response =
+    bltzr_protocol::Response response =
         client.sendCommand(std::string(bltzr_protocol::SetSolver), "\"value\":\"not_a_solver\"");
     ASSERT_FALSE(response.ok);
     EXPECT_NE(response.error.find("invalid solver"), std::string::npos);
@@ -67,10 +68,10 @@ TEST(ServerProtocolTest, TST_INT_PROT_006_ServerRejectsUnsupportedIntegratorForO
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    ServerClient client;
+    bltzr_protocol::Client client;
     client.setSocketTimeoutMs(200);
     ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
-    ServerClientResponse response = client.sendCommand(std::string(bltzr_protocol::Pause));
+    bltzr_protocol::Response response = client.sendCommand(std::string(bltzr_protocol::Pause));
     ASSERT_TRUE(response.ok) << response.error;
     response =
         client.sendCommand(std::string(bltzr_protocol::SetSolver), "\"value\":\"octree_gpu\"");
@@ -78,7 +79,7 @@ TEST(ServerProtocolTest, TST_INT_PROT_006_ServerRejectsUnsupportedIntegratorForO
     response = client.sendCommand(std::string(bltzr_protocol::SetIntegrator), "\"value\":\"rk4\"");
     ASSERT_FALSE(response.ok);
     EXPECT_NE(response.error.find("unsupported solver/integrator combination"), std::string::npos);
-    ServerClientStatus status{};
+    bltzr_protocol::ClientStatus status{};
     ASSERT_TRUE(client.getStatus(status).ok);
     EXPECT_EQ(status.solver, "octree_gpu");
     EXPECT_EQ(status.integrator, "euler");
@@ -92,10 +93,10 @@ TEST(ServerProtocolTest, TST_INT_PROT_007_ServerFallsBackToCpuAfterForcedCudaFai
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    ServerClient client;
+    bltzr_protocol::Client client;
     client.setSocketTimeoutMs(200);
     ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
-    ServerClientResponse response =
+    bltzr_protocol::Response response =
         client.sendCommand(std::string(bltzr_protocol::SetSolver), "\"value\":\"octree_gpu\"");
     ASSERT_TRUE(response.ok) << response.error;
     response =
@@ -103,10 +104,10 @@ TEST(ServerProtocolTest, TST_INT_PROT_007_ServerFallsBackToCpuAfterForcedCudaFai
     ASSERT_TRUE(response.ok) << response.error;
     response = client.sendCommand(std::string(bltzr_protocol::Step), "\"count\":1");
     ASSERT_TRUE(response.ok) << response.error;
-    ServerClientStatus status{};
+    bltzr_protocol::ClientStatus status{};
     bool switchedToCpu = false;
     for (int attempt = 0; attempt < 60; ++attempt) {
-        const ServerClientResponse statusResponse = client.getStatus(status);
+        const bltzr_protocol::Response statusResponse = client.getStatus(status);
         ASSERT_TRUE(statusResponse.ok) << statusResponse.error;
         if (status.solver == "octree_cpu")
             switchedToCpu = true;
@@ -124,11 +125,11 @@ TEST(ServerProtocolTest, TST_INT_PROT_008_ServerRejectsRequestsWithoutConfigured
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError, 0u, "secret-token")) << startError;
-    ServerClient client;
+    bltzr_protocol::Client client;
     client.setSocketTimeoutMs(200);
     ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
-    ServerClientStatus status{};
-    ServerClientResponse response = client.getStatus(status);
+    bltzr_protocol::ClientStatus status{};
+    bltzr_protocol::Response response = client.getStatus(status);
     ASSERT_FALSE(response.ok);
     EXPECT_NE(response.error.find("unauthorized"), std::string::npos);
     client.disconnect();
@@ -146,13 +147,13 @@ TEST(ServerProtocolTest, TST_INT_PROT_010_ServerAcceptsGpuTelemetryToggle)
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    ServerClient client;
+    bltzr_protocol::Client client;
     client.setSocketTimeoutMs(200);
     ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
-    ServerClientResponse response =
+    bltzr_protocol::Response response =
         client.sendCommand(std::string(bltzr_protocol::SetGpuTelemetry), "\"value\":true");
     ASSERT_TRUE(response.ok) << response.error;
-    ServerClientStatus status{};
+    bltzr_protocol::ClientStatus status{};
     ASSERT_TRUE(client.getStatus(status).ok);
     EXPECT_TRUE(status.gpuTelemetryEnabled);
     response = client.sendCommand(std::string(bltzr_protocol::SetGpuTelemetry), "\"value\":false");

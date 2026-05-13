@@ -41,11 +41,12 @@ endif()
 
 set(BLITZAR_TEST_INCLUDE_DIRS
     "${BLITZAR_ROOT_DIR}"
+    "${BLITZAR_ROOT_DIR}/apps/client-host/include"
     "${BLITZAR_ROOT_DIR}/engine/include"
     "${BLITZAR_ROOT_DIR}/runtime/include"
     "${BLITZAR_ROOT_DIR}/engine/include/physics"
-    "${BLITZAR_ROOT_DIR}/modules/qt/include"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/cuda/fragments"
+    "${BLITZAR_ROOT_DIR}/modules/qt/src"
+    "${BLITZAR_ROOT_DIR}/engine/src/cuda"
 )
 
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/setup.cmake")

@@ -6,9 +6,10 @@
  */
 
 #include "Args.hpp"
-#include "config/SimulationArgs.hpp"
-#include "config/SimulationConfig.hpp"
-#include "server/ServerDaemon.hpp"
+#include "Constants.hpp"
+#include "config/args/Main.hpp"
+#include "config/core/Config.hpp"
+#include "server/core/Daemon.hpp"
 #include "server/SimulationInitConfig.hpp"
 #include "server/SimulationServer.hpp"
 #include <algorithm>
@@ -86,7 +87,7 @@ int main(int argc, char** argv)
     if (options.startPaused) {
         simulationServer.setPaused(true);
     }
-    ServerDaemon daemon(simulationServer, options.authToken);
+    Daemon daemon(simulationServer, options.authToken);
     if (!daemon.start(options.port, options.host)) {
         std::cerr << "[server] failed to start IPC server on " << options.host << ":"
                   << options.port << "\n";
@@ -99,7 +100,7 @@ int main(int argc, char** argv)
     std::cout << "[server] example request: {\"cmd\":\"status\"}\n";
     auto lastLog = std::chrono::steady_clock::now();
     while (!bltzr_server_service::stopRequested() && !daemon.shutdownRequested()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(std::chrono::milliseconds(kServicePollIntervalMs));
         const auto now = std::chrono::steady_clock::now();
         if (std::chrono::duration_cast<std::chrono::seconds>(now - lastLog).count() >= 2) {
             lastLog = now;

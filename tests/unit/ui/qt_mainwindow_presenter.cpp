@@ -5,15 +5,16 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "ui/MainWindowPresenter.hpp"
+#include "window/presentation/Presenter.hpp"
 #include <gtest/gtest.h>
 #include <limits>
 #include <string>
+#include "Constants.hpp"
 
 namespace bltzr_test_qt_ui {
 TEST(QtUiLogicTest, TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeState)
 {
-    bltzr_qt::MainWindowPresentationInput input;
+    bltzr_qt::PresentationInput input;
     input.stats = {};
     input.linkLabel = "connected";
     input.ownerLabel = "external";
@@ -64,8 +65,8 @@ TEST(QtUiLogicTest, TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeStat
     input.stats.exportLastState = "writing";
     input.stats.exportLastPath = "exports/demo.vtk";
     input.stats.exportLastMessage = "background export active";
-    const bltzr_qt::MainWindowPresentation presentation =
-        bltzr_qt::MainWindowPresenter().present(input);
+    const bltzr_qt::Presentation presentation =
+        bltzr_qt::Presenter().present(input);
     EXPECT_NE(presentation.headlineText.find("Backend: busy"), std::string::npos)
         << presentation.headlineText;
     EXPECT_NE(presentation.headlineText.find("Viewport: fresh (18ms old)"), std::string::npos);
@@ -100,7 +101,7 @@ TEST(QtUiLogicTest, TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeStat
 
 TEST(QtUiLogicTest, TST_UNT_UI_005_PresenterHighlightsStaleBackendAndKnownHorizonEta)
 {
-    bltzr_qt::MainWindowPresentationInput input;
+    bltzr_qt::PresentationInput input;
     input.stats = {};
     input.linkLabel = "connected";
     input.ownerLabel = "embedded";
@@ -116,7 +117,7 @@ TEST(QtUiLogicTest, TST_UNT_UI_005_PresenterHighlightsStaleBackendAndKnownHorizo
     input.stats.faultStep = 0u;
     input.stats.sphEnabled = false;
     input.stats.serverFps = 80.0f;
-    input.stats.dt = 0.02f;
+    input.stats.dt = kDefaultSimulationDt;
     input.stats.totalTime = 4.0f;
     input.stats.substeps = 0u;
     input.stats.substepDt = 0.0f;
@@ -134,8 +135,8 @@ TEST(QtUiLogicTest, TST_UNT_UI_005_PresenterHighlightsStaleBackendAndKnownHorizo
     input.stats.totalEnergy = 0.0f;
     input.stats.energyDriftPct = 0.0f;
     input.stats.energyEstimated = false;
-    const bltzr_qt::MainWindowPresentation presentation =
-        bltzr_qt::MainWindowPresenter().present(input);
+    const bltzr_qt::Presentation presentation =
+        bltzr_qt::Presenter().present(input);
     EXPECT_NE(presentation.headlineText.find("Backend: stalled"), std::string::npos)
         << presentation.headlineText;
     EXPECT_NE(presentation.headlineText.find("Viewport: stale (2600ms old)"), std::string::npos);
@@ -152,15 +153,15 @@ TEST(QtUiLogicTest, TST_UNT_UI_005_PresenterHighlightsStaleBackendAndKnownHorizo
 
 TEST(QtUiLogicTest, TST_UNT_UI_008_PresenterReportsGpuTelemetryWaitingState)
 {
-    bltzr_qt::MainWindowPresentationInput input;
+    bltzr_qt::PresentationInput input;
     input.stats = {};
     input.linkLabel = "connected";
     input.ownerLabel = "embedded";
     input.performanceProfile = "interactive";
     input.stats.gpuTelemetryEnabled = true;
     input.stats.gpuTelemetryAvailable = false;
-    const bltzr_qt::MainWindowPresentation presentation =
-        bltzr_qt::MainWindowPresenter().present(input);
+    const bltzr_qt::Presentation presentation =
+        bltzr_qt::Presenter().present(input);
     EXPECT_NE(presentation.gpuText.find("State: waiting"), std::string::npos)
         << presentation.gpuText;
     EXPECT_NE(presentation.gpuText.find("Sampling: every 8 steps"), std::string::npos);

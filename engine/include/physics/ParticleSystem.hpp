@@ -8,12 +8,9 @@
 #ifndef BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
 #define BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
 
-#include "physics/CudaMemoryPool.hpp"
 #include "physics/ForceLawPolicy.hpp"
 #include "physics/Octree.hpp"
 #include "physics/ParticleSoAView.hpp"
-
-#include <vector_types.h>
 
 /*
  * Module: physics
@@ -88,6 +85,105 @@ struct GpuMetricsPayload {
 enum GpuMetricsFlags : std::uint32_t {
     kGpuMetricsValid = 1u << 0,
     kGpuMetricsEstimated = 1u << 1
+};
+struct TreePmGridParams;
+
+struct GpuHalfVelocity {
+    float x;
+    float y;
+    float z;
+};
+
+struct ParticleSystemDeviceState final {
+    std::size_t _deviceParticleCapacity = 0u;
+    bool _cudaRuntimeAvailable = false;
+    bool _hostStateDirty = false;
+    bool _treePmMarkerPrinted = false;
+    int _sphGridSize = 0;
+    int _sphGridTotalCells = 0;
+    int _treePmGridSize = 0;
+    int _treePmTotalCells = 0;
+
+    float* d_soaPosX = nullptr;
+    float* d_soaPosY = nullptr;
+    float* d_soaPosZ = nullptr;
+    float* d_soaVelX = nullptr;
+    float* d_soaVelY = nullptr;
+    float* d_soaVelZ = nullptr;
+    float* d_soaPressX = nullptr;
+    float* d_soaPressY = nullptr;
+    float* d_soaPressZ = nullptr;
+    float* d_soaMass = nullptr;
+    float* d_soaTemp = nullptr;
+    float* d_soaDens = nullptr;
+    float* d_soaNextPosX = nullptr;
+    float* d_soaNextPosY = nullptr;
+    float* d_soaNextPosZ = nullptr;
+    float* d_soaNextVelX = nullptr;
+    float* d_soaNextVelY = nullptr;
+    float* d_soaNextVelZ = nullptr;
+    Particle* d_stage = nullptr;
+    Vector3* d_k1x = nullptr;
+    Vector3* d_k2x = nullptr;
+    Vector3* d_k3x = nullptr;
+    Vector3* d_k4x = nullptr;
+    Vector3* d_k1v = nullptr;
+    Vector3* d_k2v = nullptr;
+    Vector3* d_k3v = nullptr;
+    Vector3* d_k4v = nullptr;
+    GpuHalfVelocity* d_vHalf = nullptr;
+    bool _leapfrogPrimed = false;
+    float* d_sphDensity = nullptr;
+    float* d_sphPressure = nullptr;
+    int* d_sphCellHash = nullptr;
+    int* d_sphSortedIndex = nullptr;
+    int* d_sphCellStart = nullptr;
+    int* d_sphCellEnd = nullptr;
+    float* d_treePmDensity = nullptr;
+    float* d_treePmPotentialA = nullptr;
+    float* d_treePmPotentialB = nullptr;
+    float* d_treePmAccelX = nullptr;
+    float* d_treePmAccelY = nullptr;
+    float* d_treePmAccelZ = nullptr;
+    unsigned int* d_treePmCellMask = nullptr;
+    GpuOctreeNode* g_dOctreeNodes = nullptr;
+    int* g_dOctreeLeafIndices = nullptr;
+    unsigned long long* d_octreeMortonKeys = nullptr;
+    unsigned long long* d_octreePrefixesA = nullptr;
+    unsigned long long* d_octreePrefixesB = nullptr;
+    int* d_octreeLevelIndicesA = nullptr;
+    int* d_octreeLevelIndicesB = nullptr;
+    int* d_octreeParentCounts = nullptr;
+    int* d_octreeParentOffsets = nullptr;
+    GpuOctreeNodeHotData* d_octreeNodeHot = nullptr;
+    GpuOctreeNodeNavData* d_octreeNodeNav = nullptr;
+    int* d_octreeFirstChild = nullptr;
+    int* d_octreeLeafStarts = nullptr;
+    int* d_octreeLeafCounts = nullptr;
+    float* d_energyKineticBlocks = nullptr;
+    float* d_energyThermalBlocks = nullptr;
+    double* d_energyPotentialPartials = nullptr;
+
+    std::size_t g_dOctreeNodeCapacity = 0u;
+    std::size_t g_dOctreeLeafCapacity = 0u;
+    std::size_t d_octreeMortonCapacity = 0u;
+    std::size_t d_octreePrefixCapacity = 0u;
+    std::size_t d_octreeLevelCapacity = 0u;
+    std::size_t d_energyBlockCapacity = 0u;
+    std::size_t d_energySampleCapacity = 0u;
+    std::size_t d_treePmCapacity = 0u;
+    std::size_t d_treePmMaskWordCapacity = 0u;
+    std::size_t d_treePmNeighborParticleCapacity = 0u;
+    std::size_t d_treePmNeighborCellCapacity = 0u;
+    int _gpuOctreeRootIndex = -1;
+    int _gpuOctreeNodeCount = 0;
+    int _gpuOctreeLeafCount = 0;
+    GpuSystemMetrics* _mappedMetricsHost = nullptr;
+    GpuSystemMetrics* _mappedMetricsDevice = nullptr;
+    std::uint64_t _metricsStepId = 0u;
+    float _metricsSimTime = 0.0f;
+    std::uint32_t _metricsPublishCounter = 0u;
+    int _linearOctreeLeafCapacity = 0;
 };
 
 /*
@@ -483,7 +579,13 @@ private:
      * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
      * it.
      */
+    bool buildTreePmGrid(ParticleSoAView currentView, int numParticles,
+                         TreePmGridParams* outGrid, float* outCutoffSquared);
+    bool buildTreePmNeighborGrid(ParticleSoAView currentView, int numParticles,
+                                 const TreePmGridParams& grid);
     bool ensureLinearOctreeScratchCapacity(int numParticles);
+    bool ensureTreePmScratchCapacity(int gridCells);
+    bool ensureTreePmNeighborGridCapacity(int numParticles, int totalCells);
     /*
      * @brief Documents the ensure energy scratch capacity operation contract.
      * @param numParticles Input value used by this contract.
@@ -587,91 +689,11 @@ private:
     std::vector<Vector3> _octreeForces;
     std::vector<GpuOctreeNode> _octreeGpuNodes;
     std::vector<int> _octreeGpuLeafIndices;
-    std::size_t _deviceParticleCapacity;
-    bool _cudaRuntimeAvailable;
-    bool _hostStateDirty;
-    int _sphGridSize;
-    int _sphGridTotalCells;
-
-    // Device buffers (SoA layout)
-    float* d_soaPosX;
-    float* d_soaPosY;
-    float* d_soaPosZ;
-    float* d_soaVelX;
-    float* d_soaVelY;
-    float* d_soaVelZ;
-    float* d_soaPressX;
-    float* d_soaPressY;
-    float* d_soaPressZ;
-    float* d_soaMass;
-    float* d_soaTemp;
-    float* d_soaDens;
-
-    // Double buffering for update
-    float* d_soaNextPosX;
-    float* d_soaNextPosY;
-    float* d_soaNextPosZ;
-    float* d_soaNextVelX;
-    float* d_soaNextVelY;
-    float* d_soaNextVelZ;
-
-    // Stage buffer for RK4 or thermal sync
-    Particle* d_stage;
-
-    Vector3* d_k1x;
-    Vector3* d_k2x;
-    Vector3* d_k3x;
-    Vector3* d_k4x;
-    Vector3* d_k1v;
-    Vector3* d_k2v;
-    Vector3* d_k3v;
-    Vector3* d_k4v;
-    float3* d_vHalf;
-    bool _leapfrogPrimed;
-    float* d_sphDensity;
-    float* d_sphPressure;
-    int* d_sphCellHash;
-    int* d_sphSortedIndex;
-    int* d_sphCellStart;
-    int* d_sphCellEnd;
-    GpuOctreeNode* g_dOctreeNodes;
-    int* g_dOctreeLeafIndices;
-    unsigned long long* d_octreeMortonKeys;
-    unsigned long long* d_octreePrefixesA;
-    unsigned long long* d_octreePrefixesB;
-    int* d_octreeLevelIndicesA;
-    int* d_octreeLevelIndicesB;
-    int* d_octreeParentCounts;
-    int* d_octreeParentOffsets;
-    GpuOctreeNodeHotData* d_octreeNodeHot;
-    GpuOctreeNodeNavData* d_octreeNodeNav;
-    int* d_octreeFirstChild;
-    int* d_octreeLeafStarts;
-    int* d_octreeLeafCounts;
-    float* d_energyKineticBlocks;
-    float* d_energyThermalBlocks;
-    double* d_energyPotentialPartials;
+    ParticleSystemDeviceState _device;
 
     // Host shadows for SPH
     std::vector<int> _hostCellHash;
     std::vector<int> _hostSortedIndex;
-
-    // Octree capacity tracking
-    std::size_t g_dOctreeNodeCapacity;
-    std::size_t g_dOctreeLeafCapacity;
-    std::size_t d_octreeMortonCapacity;
-    std::size_t d_octreePrefixCapacity;
-    std::size_t d_octreeLevelCapacity;
-    std::size_t d_energyBlockCapacity;
-    std::size_t d_energySampleCapacity;
-    int _gpuOctreeRootIndex;
-    int _gpuOctreeNodeCount;
-    int _gpuOctreeLeafCount;
-    GpuSystemMetrics* _mappedMetricsHost;
-    GpuSystemMetrics* _mappedMetricsDevice;
-    std::uint64_t _metricsStepId;
-    float _metricsSimTime;
-    int _linearOctreeLeafCapacity;
 };
 
 

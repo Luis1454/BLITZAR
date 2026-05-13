@@ -5,6 +5,7 @@
  * @brief Source artifact for the BLITZAR simulation project.
  */
 
+#include "Constants.hpp"
 #include "graphics/ColorPipeline.hpp"
 #include <algorithm>
 #include <array>
@@ -69,11 +70,12 @@ static float updateAdaptiveParameter(float current, float observed, float floorV
 static std::array<std::uint8_t, kPressureBins> buildAlphaLut(int luminosity)
 {
     std::array<std::uint8_t, kPressureBins> lut{};
-    const int clampedLum = std::clamp(luminosity, 0, 255);
+    const int clampedLum = std::clamp(luminosity, kLuminosityMin, kLuminosityMax);
     for (int i = 0; i < kPressureBins; ++i) {
         const float pNorm = static_cast<float>(i) / static_cast<float>(kPressureBins - 1);
         const int alpha = static_cast<int>(clampedLum * (0.2f + 0.8f * pNorm));
-        lut[static_cast<std::size_t>(i)] = static_cast<std::uint8_t>(std::clamp(alpha, 6, 255));
+        lut[static_cast<std::size_t>(i)] =
+            static_cast<std::uint8_t>(std::clamp(alpha, 6, kLuminosityMax));
     }
     return lut;
 }
@@ -109,7 +111,8 @@ ColorRGBA particleRampColorFast(const RenderParticle& particle, float temperatur
 
 ColorRGBA heavyBodyColor(int luminosity)
 {
-    return ColorRGBA{255, 90, 90, static_cast<std::uint8_t>(std::clamp(luminosity, 0, 255))};
+    return ColorRGBA{255, 90, 90, static_cast<std::uint8_t>(
+                                  std::clamp(luminosity, kLuminosityMin, kLuminosityMax))};
 }
 
 bool isHeavyBody(const RenderParticle& particle)

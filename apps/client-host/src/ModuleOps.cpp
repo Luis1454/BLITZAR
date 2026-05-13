@@ -7,8 +7,9 @@
 
 #include "ModuleOps.hpp"
 #include "CliText.hpp"
-#include "client/ClientModuleHandle.hpp"
-#include "platform/PlatformPaths.hpp"
+#include "client/module/Handle.hpp"
+#include "platform/Paths.hpp"
+#include <algorithm>
 #include <iostream>
 #include <system_error>
 #include <utility>
@@ -23,8 +24,14 @@ std::vector<std::string> ClientHostModuleOpsLocal::moduleFilenameCandidatesForAl
         return bltzr_platform::sharedLibraryCandidates("blitzarClientModuleEcho");
     if (alias == "gui")
         return bltzr_platform::sharedLibraryCandidates("blitzarClientModuleGuiProxy");
-    if (alias == "qt")
-        return bltzr_platform::sharedLibraryCandidates("blitzarClientModuleQtInProc");
+    if (alias == "qt") {
+        std::vector<std::string> candidates =
+            bltzr_platform::sharedLibraryCandidates("blitzarClientModuleQtInProc");
+        std::vector<std::string> proxyCandidates =
+            bltzr_platform::sharedLibraryCandidates("blitzarClientModuleGuiProxy");
+        candidates.insert(candidates.end(), proxyCandidates.begin(), proxyCandidates.end());
+        return candidates;
+    }
     return {};
 }
 
@@ -86,14 +93,38 @@ std::string ClientHostModuleOpsLocal::expectedModuleIdForSpecifier(
     return moduleFilenameCandidatesForAlias(alias).empty() ? std::string() : alias;
 }
 
+std::string ClientHostModuleOpsLocal::expectedModuleIdForResolvedSpecifier(
+    const std::string& rawSpecifier, const std::string& resolvedPath)
+{
+    const std::string specifier = ClientHostCliText::trim(rawSpecifier);
+    if (specifier.empty() || ClientHostModuleOpsLocal::isExplicitPath(specifier)) {
+        return {};
+    }
+    const std::string alias = ClientHostCliText::toLower(specifier);
+    if (alias != "qt") {
+        return expectedModuleIdForSpecifier(specifier);
+    }
+    const std::filesystem::path path(resolvedPath);
+    const std::string filename = path.filename().string();
+    const std::vector<std::string> guiCandidates =
+        bltzr_platform::sharedLibraryCandidates("blitzarClientModuleGuiProxy");
+    if (std::find(guiCandidates.begin(), guiCandidates.end(), filename) != guiCandidates.end()) {
+        std::cout << "[client-host] Qt module absent; using GUI proxy module\n";
+        return "gui";
+    }
+    return "qt";
+}
+
 bool ClientHostModuleOpsLocal::switchModule(const std::string& moduleSpecifier,
                                              const std::string& configPath,
                                              const std::vector<std::filesystem::path>& searchRoots,
-                                             bltzr_module::ClientModuleHandle& module)
+                                             bltzr_module::Handle& module)
 {
     const std::string resolvedPath = resolveModuleSpecifier(moduleSpecifier, searchRoots);
-    const std::string expectedModuleId = expectedModuleIdForSpecifier(moduleSpecifier);
-    bltzr_module::ClientModuleHandle replacement{};
+    const std::string expectedModuleId =
+        ClientHostModuleOpsLocal::expectedModuleIdForResolvedSpecifier(moduleSpecifier,
+                                                                       resolvedPath);
+    bltzr_module::Handle replacement{};
     std::string switchError;
     if (!replacement.load(resolvedPath, configPath, expectedModuleId, switchError)) {
         std::cout << "[client-host] switch failed: " << switchError << "\n";
@@ -108,11 +139,13 @@ bool ClientHostModuleOpsLocal::switchModule(const std::string& moduleSpecifier,
 bool ClientHostModuleOpsLocal::reloadModule(const std::string& currentModuleSpecifier,
                                              const std::string& configPath,
                                              const std::vector<std::filesystem::path>& searchRoots,
-                                             bltzr_module::ClientModuleHandle& module)
+                                             bltzr_module::Handle& module)
 {
     const std::string resolvedPath = resolveModuleSpecifier(currentModuleSpecifier, searchRoots);
-    const std::string expectedModuleId = expectedModuleIdForSpecifier(currentModuleSpecifier);
-    bltzr_module::ClientModuleHandle replacement{};
+    const std::string expectedModuleId =
+        ClientHostModuleOpsLocal::expectedModuleIdForResolvedSpecifier(currentModuleSpecifier,
+                                                                       resolvedPath);
+    bltzr_module::Handle replacement{};
     std::string switchError;
     if (!replacement.load(resolvedPath, configPath, expectedModuleId, switchError)) {
         std::cout << "[client-host] reload failed: " << switchError << "\n";
@@ -142,10 +175,17 @@ std::string ClientHostModuleOps::expectedModuleIdForSpecifier(const std::string&
     return ClientHostModuleOpsLocal::expectedModuleIdForSpecifier(rawSpecifier);
 }
 
+std::string ClientHostModuleOps::expectedModuleIdForResolvedSpecifier(
+    const std::string& rawSpecifier, const std::string& resolvedPath)
+{
+    return ClientHostModuleOpsLocal::expectedModuleIdForResolvedSpecifier(rawSpecifier,
+                                                                         resolvedPath);
+}
+
 bool ClientHostModuleOps::switchModule(const std::string& moduleSpecifier,
                                        const std::string& configPath,
                                        const std::vector<std::filesystem::path>& searchRoots,
-                                       bltzr_module::ClientModuleHandle& module)
+                                       bltzr_module::Handle& module)
 {
     return ClientHostModuleOpsLocal::switchModule(moduleSpecifier, configPath, searchRoots, module);
 }
@@ -153,7 +193,7 @@ bool ClientHostModuleOps::switchModule(const std::string& moduleSpecifier,
 bool ClientHostModuleOps::reloadModule(const std::string& currentModuleSpecifier,
                                        const std::string& configPath,
                                        const std::vector<std::filesystem::path>& searchRoots,
-                                       bltzr_module::ClientModuleHandle& module)
+                                       bltzr_module::Handle& module)
 {
     return ClientHostModuleOpsLocal::reloadModule(currentModuleSpecifier, configPath, searchRoots,
                                                   module);

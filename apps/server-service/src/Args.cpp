@@ -6,8 +6,9 @@
  */
 
 #include "Args.hpp"
-#include "config/SimulationArgs.hpp"
-#include "config/TextParse.hpp"
+#include "Constants.hpp"
+#include "config/args/Main.hpp"
+#include "config/text/Parse.hpp"
 #include <algorithm>
 #include <atomic>
 #include <cctype>
@@ -26,7 +27,8 @@ void onSignal(int)
 bool parsePort(std::string_view token, std::uint16_t& out)
 {
     unsigned int parsed = 0;
-    if (!bltzr_text::parseNumber(token, parsed) || parsed == 0 || parsed > 65535u) {
+    if (!bltzr_text::parseNumber(token, parsed) || parsed < kNetworkPortMin ||
+        parsed > kNetworkPortMax) {
         return false;
     }
     out = static_cast<std::uint16_t>(parsed);
@@ -137,8 +139,10 @@ bool parseServerArgs(const std::vector<std::string_view>& rawArgs, DaemonOptions
 void printServerHelp(std::string_view programName)
 {
     std::cout << "Server daemon options:\n"
-              << "  --server-host <ipv4>     Bind address (default: 127.0.0.1)\n"
-              << "  --server-port <1..65535> TCP port (default: 4545)\n"
+              << "  --server-host <ipv4>     Bind address (default: " << kDefaultLoopbackHost
+              << ")\n"
+              << "  --server-port <" << kNetworkPortMin << ".." << kNetworkPortMax
+              << "> TCP port (default: " << kDefaultServerPort << ")\n"
               << "  --server-token <secret>  Optional auth token required on every request\n"
               << "  --server-allow-remote    Allow non-loopback bind host (explicit opt-in)\n"
               << "  --server-paused          Start simulation paused\n"

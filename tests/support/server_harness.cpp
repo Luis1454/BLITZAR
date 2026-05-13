@@ -6,8 +6,8 @@
  */
 
 #include "tests/support/server_harness.hpp"
-#include "protocol/ServerClient.hpp"
-#include "protocol/ServerProtocol.hpp"
+#include "protocol/client/Client.hpp"
+#include "protocol/Protocol.hpp"
 #include <array>
 #include <chrono>
 #include <filesystem>
@@ -151,7 +151,7 @@ bool RealServerHarness::start(std::string& outError, std::uint16_t preferredPort
 void RealServerHarness::stop()
 {
     if (_port != 0u) {
-        ServerClient client;
+        bltzr_protocol::Client client;
         client.setSocketTimeoutMs(120);
         client.setAuthToken(_authToken);
         if (client.connect("127.0.0.1", _port)) {

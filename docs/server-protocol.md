@@ -84,7 +84,7 @@ I/O commands:
   - saves a versioned binary checkpoint containing particles and restartable runtime state
 
 Reference:
-- Constants and clamp rules are defined in `runtime/include/protocol/ServerProtocol.hpp`.
+- Constants and clamp rules are defined in `runtime/include/protocol/Protocol.hpp`.
 - Rust encode/decode parity for the `server-json-v1` schema is exercised in `rust/blitzar-protocol/tests/protocol.rs`.
 
 Compatibility rules:

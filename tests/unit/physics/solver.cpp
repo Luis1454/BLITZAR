@@ -14,6 +14,7 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
+#include "Constants.hpp"
 
 namespace testsupport {
 static std::size_t countOccurrences(const std::string& text, const std::string& pattern)
@@ -140,8 +141,8 @@ TEST(PhysicsTest, TST_UNT_PHYS_009_SolverParityWithinTolerance)
                                    std::max(std::fabs(pairwiseEnergy), 1e-6f) * 100.0f;
     const float cpuParticleDelta = maxParticleDelta(pairwise.final, octreeCpu.final);
     const float gpuParticleDelta = maxParticleDelta(pairwise.final, octreeGpu.final);
-    EXPECT_LE(comCpuDelta, 0.02f);
-    EXPECT_LE(comGpuDelta, 0.02f);
+    EXPECT_LE(comCpuDelta, kDefaultSimulationDt);
+    EXPECT_LE(comGpuDelta, kDefaultSimulationDt);
     EXPECT_LE(std::fabs(octreeCpuAvgRadius - pairwiseAvgRadius), 0.05f);
     EXPECT_LE(std::fabs(octreeGpuAvgRadius - pairwiseAvgRadius), 0.05f);
     EXPECT_LE(cpuEnergyDiffPct, 0.25f);

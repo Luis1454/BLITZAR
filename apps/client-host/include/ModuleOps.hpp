@@ -7,7 +7,7 @@
 
 #ifndef BLITZAR_APPS_CLIENT_HOST_MODULEOPS_HPP_
 #define BLITZAR_APPS_CLIENT_HOST_MODULEOPS_HPP_
-#include "client/ClientModuleHandle.hpp"
+#include "client/module/Handle.hpp"
 #include <filesystem>
 #include <string>
 #include <string_view>
@@ -22,13 +22,15 @@ public:
     static std::string resolveModuleSpecifier(const std::string& rawSpecifier,
                                               const std::vector<std::filesystem::path>& searchRoots);
     static std::string expectedModuleIdForSpecifier(const std::string& rawSpecifier);
+    static std::string expectedModuleIdForResolvedSpecifier(const std::string& rawSpecifier,
+                                                            const std::string& resolvedPath);
     static bool switchModule(const std::string& moduleSpecifier, const std::string& configPath,
                              const std::vector<std::filesystem::path>& searchRoots,
-                             bltzr_module::ClientModuleHandle& module);
+                             bltzr_module::Handle& module);
     static bool reloadModule(const std::string& currentModuleSpecifier,
                              const std::string& configPath,
                              const std::vector<std::filesystem::path>& searchRoots,
-                             bltzr_module::ClientModuleHandle& module);
+                             bltzr_module::Handle& module);
 };
 
 class ClientHostModuleOps final {
@@ -38,13 +40,15 @@ public:
     resolveModuleSpecifier(const std::string& rawSpecifier,
                            const std::vector<std::filesystem::path>& searchRoots);
     static std::string expectedModuleIdForSpecifier(const std::string& rawSpecifier);
+    static std::string expectedModuleIdForResolvedSpecifier(const std::string& rawSpecifier,
+                                                            const std::string& resolvedPath);
     static bool switchModule(const std::string& moduleSpecifier, const std::string& configPath,
                              const std::vector<std::filesystem::path>& searchRoots,
-                             bltzr_module::ClientModuleHandle& module);
+                             bltzr_module::Handle& module);
     static bool reloadModule(const std::string& currentModuleSpecifier,
                              const std::string& configPath,
                              const std::vector<std::filesystem::path>& searchRoots,
-                             bltzr_module::ClientModuleHandle& module);
+                             bltzr_module::Handle& module);
 };
 } // namespace bltzr_client_host
 #endif // BLITZAR_APPS_CLIENT_HOST_MODULEOPS_HPP_

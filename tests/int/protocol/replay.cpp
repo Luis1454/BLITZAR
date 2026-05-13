@@ -5,8 +5,8 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "protocol/ServerClient.hpp"
-#include "protocol/ServerProtocol.hpp"
+#include "protocol/client/Client.hpp"
+#include "protocol/Protocol.hpp"
 #include "tests/support/server_harness.hpp"
 #include <chrono>
 #include <gtest/gtest.h>
@@ -15,11 +15,11 @@
 #include <vector>
 
 namespace bltzr_test_server_protocol_replay {
-static void waitForSteps(ServerClient& client, uint64_t targetSteps)
+static void waitForSteps(bltzr_protocol::Client& client, uint64_t targetSteps)
 {
-    ServerClientStatus status{};
+    bltzr_protocol::ClientStatus status{};
     for (int attempt = 0; attempt < 100; ++attempt) {
-        ServerClientResponse response = client.getStatus(status);
+        bltzr_protocol::Response response = client.getStatus(status);
         ASSERT_TRUE(response.ok) << response.error;
         if (status.steps >= targetSteps) {
             return;
@@ -38,10 +38,10 @@ TEST(ServerProtocolTest, TST_INT_PROT_011_FixedSeedServerReplayIsDeterministic)
     RealServerHarness serverA;
     std::string startErrorA;
     ASSERT_TRUE(serverA.start(startErrorA, 0u, "", args)) << startErrorA;
-    ServerClient clientA;
+    bltzr_protocol::Client clientA;
     clientA.setSocketTimeoutMs(5000);
     ASSERT_TRUE(clientA.connect("127.0.0.1", serverA.port()));
-    ServerClientResponse responseA = clientA.sendCommand(std::string(bltzr_protocol::Pause));
+    bltzr_protocol::Response responseA = clientA.sendCommand(std::string(bltzr_protocol::Pause));
     ASSERT_TRUE(responseA.ok) << responseA.error;
     waitForSteps(clientA, 0u);
     std::vector<RenderParticle> snapshotZeroA;
@@ -70,10 +70,10 @@ TEST(ServerProtocolTest, TST_INT_PROT_011_FixedSeedServerReplayIsDeterministic)
     RealServerHarness serverB;
     std::string startErrorB;
     ASSERT_TRUE(serverB.start(startErrorB, 0u, "", args)) << startErrorB;
-    ServerClient clientB;
+    bltzr_protocol::Client clientB;
     clientB.setSocketTimeoutMs(5000);
     ASSERT_TRUE(clientB.connect("127.0.0.1", serverB.port()));
-    ServerClientResponse responseB =
+    bltzr_protocol::Response responseB =
         clientB.sendCommand(std::string(bltzr_protocol::Step), "\"count\":10");
     ASSERT_TRUE(responseB.ok) << responseB.error;
     waitForSteps(clientB, 10u);

@@ -5,23 +5,24 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "protocol/ServerJsonCodec.hpp"
-#include "protocol/ServerProtocol.hpp"
+#include "protocol/codec/JsonCodec.hpp"
+#include "protocol/Protocol.hpp"
 #include <gtest/gtest.h>
 #include <string>
+#include "Constants.hpp"
 #include <vector>
 
 namespace bltzr_test_protocol_codec {
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_001_ParsesCommandEnvelopeWithEscapedToken)
 {
-    bltzr_protocol::ServerCommandRequest request{};
+    bltzr_protocol::CommandRequest request{};
     request.cmd = std::string(bltzr_protocol::SetSolver);
     request.token = "secret\"token";
     const std::string json =
-        bltzr_protocol::ServerJsonCodec::makeCommandRequest(request, "\"value\":\"octree_gpu\"");
-    bltzr_protocol::ServerCommandRequest parsed{};
+        bltzr_protocol::JsonCodec::makeRequest(request, "\"value\":\"octree_gpu\"");
+    bltzr_protocol::CommandRequest parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseCommandRequest(json, parsed, error)) << error;
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseRequest(json, parsed, error)) << error;
     EXPECT_EQ(parsed.cmd, bltzr_protocol::SetSolver);
     EXPECT_EQ(parsed.token, "secret\"token");
 }
@@ -30,7 +31,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
 {
     SimulationStats stats{};
     stats.steps = 42u;
-    stats.dt = 0.02f;
+    stats.dt = kDefaultSimulationDt;
     stats.totalTime = 1.25f;
     stats.paused = true;
     stats.faulted = true;
@@ -67,13 +68,13 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_002_ParsesTypedStatusPayload)
     stats.exportLastState = "writing";
     stats.exportLastPath = "exports/demo.vtk";
     stats.exportLastMessage = "background export active";
-    const std::string raw = bltzr_protocol::ServerJsonCodec::makeStatusResponse(stats);
-    bltzr_protocol::ServerStatusPayload parsed{};
+    const std::string raw = bltzr_protocol::JsonCodec::makeStatusResponse(stats);
+    bltzr_protocol::StatusPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     ASSERT_TRUE(parsed.envelope.ok);
     EXPECT_EQ(parsed.steps, 42u);
-    EXPECT_FLOAT_EQ(parsed.dt, 0.02f);
+    EXPECT_FLOAT_EQ(parsed.dt, kDefaultSimulationDt);
     EXPECT_FLOAT_EQ(parsed.totalTime, 1.25f);
     EXPECT_TRUE(parsed.paused);
     EXPECT_TRUE(parsed.faulted);
@@ -112,9 +113,9 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_003_RejectsMalformedSnapshotPayload)
     const std::string raw =
         "{\"ok\":true,\"cmd\":\"get_snapshot\",\"has_snapshot\":true,\"count\":1,"
         "\"particles\":[[1,2,3,4,5]]}";
-    bltzr_protocol::ServerSnapshotPayload parsed{};
+    bltzr_protocol::SnapshotPayload parsed{};
     std::string error;
-    EXPECT_FALSE(bltzr_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error));
+    EXPECT_FALSE(bltzr_protocol::JsonCodec::parseSnapshotResponse(raw, parsed, error));
     EXPECT_EQ(error, "invalid snapshot payload");
 }
 
@@ -124,10 +125,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_006_ParsesSnapshotSourceCountMetadata
     snapshot[0].x = 1.0f;
     snapshot[1].x = 2.0f;
     const std::string raw =
-        bltzr_protocol::ServerJsonCodec::makeSnapshotResponse(true, snapshot, 8u);
-    bltzr_protocol::ServerSnapshotPayload parsed{};
+        bltzr_protocol::JsonCodec::makeSnapshotResponse(true, snapshot, 8u);
+    bltzr_protocol::SnapshotPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error))
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseSnapshotResponse(raw, parsed, error))
         << error;
     ASSERT_TRUE(parsed.envelope.ok);
     EXPECT_TRUE(parsed.hasSnapshot);
@@ -137,11 +138,11 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_006_ParsesSnapshotSourceCountMetadata
 
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_004_ParsesErrorEnvelopeForControlCommand)
 {
-    const std::string raw = bltzr_protocol::ServerJsonCodec::makeErrorResponse(
+    const std::string raw = bltzr_protocol::JsonCodec::makeErrorResponse(
         bltzr_protocol::SetIntegrator, "invalid integrator value");
-    bltzr_protocol::ServerResponseEnvelope parsed{};
+    bltzr_protocol::ResponseEnvelope parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseResponseEnvelope(raw, parsed, error))
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseResponseEnvelope(raw, parsed, error))
         << error;
     EXPECT_FALSE(parsed.ok);
     EXPECT_EQ(parsed.cmd, bltzr_protocol::SetIntegrator);
@@ -167,10 +168,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_007_ParsesFloatPrecisionBoundaries)
     stats.totalTime = 0.00001f; // Very small value
     stats.serverFps = 144.5f;
     stats.steps = 1u;
-    const std::string raw = bltzr_protocol::ServerJsonCodec::makeStatusResponse(stats);
-    bltzr_protocol::ServerStatusPayload parsed{};
+    const std::string raw = bltzr_protocol::JsonCodec::makeStatusResponse(stats);
+    bltzr_protocol::StatusPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_TRUE(parsed.envelope.ok);
     EXPECT_FLOAT_EQ(parsed.dt, 1.23456789f);
     EXPECT_FLOAT_EQ(parsed.totalTime, 0.00001f);
@@ -184,10 +185,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_008_ParsesLargeNumericStatus)
     stats.particleCount = 1024u * 1024u;
     stats.gpuVramTotalBytes = 16u * 1024u * 1024u * 1024u;
     stats.totalTime = 1e6f;
-    const std::string raw = bltzr_protocol::ServerJsonCodec::makeStatusResponse(stats);
-    bltzr_protocol::ServerStatusPayload parsed{};
+    const std::string raw = bltzr_protocol::JsonCodec::makeStatusResponse(stats);
+    bltzr_protocol::StatusPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_EQ(parsed.steps, 999999999u);
     EXPECT_EQ(parsed.particleCount, 1024u * 1024u);
 }
@@ -200,10 +201,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_009_ParsesBoundaryNumericValues)
     stats.serverFps = 0.0f;
     stats.kineticEnergy = -0.0f;
     stats.substeps = 1u;
-    const std::string raw = bltzr_protocol::ServerJsonCodec::makeStatusResponse(stats);
-    bltzr_protocol::ServerStatusPayload parsed{};
+    const std::string raw = bltzr_protocol::JsonCodec::makeStatusResponse(stats);
+    bltzr_protocol::StatusPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_TRUE(parsed.envelope.ok);
 }
 
@@ -215,10 +216,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_010_ParsesExtremeEnergyStatus)
     stats.potentialEnergy = -1e10f;
     stats.thermalEnergy = 1e15f;
     stats.totalEnergy = 1e15f;
-    const std::string raw = bltzr_protocol::ServerJsonCodec::makeStatusResponse(stats);
-    bltzr_protocol::ServerStatusPayload parsed{};
+    const std::string raw = bltzr_protocol::JsonCodec::makeStatusResponse(stats);
+    bltzr_protocol::StatusPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_TRUE(parsed.envelope.ok);
 }
 
@@ -226,45 +227,45 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_010_ParsesExtremeEnergyStatus)
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_011_RejectsMalformedJsonMissingOkField)
 {
     const std::string raw = "{\"cmd\":\"set_solver\"}"; // Missing "ok" field
-    bltzr_protocol::ServerResponseEnvelope parsed{};
+    bltzr_protocol::ResponseEnvelope parsed{};
     std::string error;
-    EXPECT_FALSE(bltzr_protocol::ServerJsonCodec::parseResponseEnvelope(raw, parsed, error));
+    EXPECT_FALSE(bltzr_protocol::JsonCodec::parseResponseEnvelope(raw, parsed, error));
 }
 
 // TST_UNT_PROT_012: Rejects incomplete JSON
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_012_RejectsIncompleteJson)
 {
     const std::string raw = "{\"ok\":true,\"cmd\":\"get_status\""; // Incomplete
-    bltzr_protocol::ServerStatusPayload parsed{};
+    bltzr_protocol::StatusPayload parsed{};
     std::string error;
-    EXPECT_FALSE(bltzr_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error));
+    EXPECT_FALSE(bltzr_protocol::JsonCodec::parseStatusResponse(raw, parsed, error));
 }
 
 // TST_UNT_PROT_013: Rejects JSON with wrong field types
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_013_RejectsWrongFieldTypes)
 {
     const std::string raw = "{\"ok\":\"true\",\"cmd\":\"get_status\",\"steps\":\"not_a_number\"}";
-    bltzr_protocol::ServerStatusPayload parsed{};
+    bltzr_protocol::StatusPayload parsed{};
     std::string error;
-    EXPECT_FALSE(bltzr_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error));
+    EXPECT_FALSE(bltzr_protocol::JsonCodec::parseStatusResponse(raw, parsed, error));
 }
 
 // TST_UNT_PROT_014: Handles empty JSON object
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_014_RejectsEmptyJsonObject)
 {
     const std::string raw = "{}";
-    bltzr_protocol::ServerResponseEnvelope parsed{};
+    bltzr_protocol::ResponseEnvelope parsed{};
     std::string error;
-    EXPECT_FALSE(bltzr_protocol::ServerJsonCodec::parseResponseEnvelope(raw, parsed, error));
+    EXPECT_FALSE(bltzr_protocol::JsonCodec::parseResponseEnvelope(raw, parsed, error));
 }
 
 // TST_UNT_PROT_015: Rejects invalid JSON syntax
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_015_RejectsInvalidJsonSyntax)
 {
     const std::string raw = "{ok: true, cmd: 'get_status'}"; // Invalid: unquoted keys/values
-    bltzr_protocol::ServerResponseEnvelope parsed{};
+    bltzr_protocol::ResponseEnvelope parsed{};
     std::string error;
-    EXPECT_FALSE(bltzr_protocol::ServerJsonCodec::parseResponseEnvelope(raw, parsed, error));
+    EXPECT_FALSE(bltzr_protocol::JsonCodec::parseResponseEnvelope(raw, parsed, error));
 }
 
 // TST_UNT_PROT_016: Status with minimal field set
@@ -272,10 +273,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_016_ParsesMinimalStatusPayload)
 {
     SimulationStats minimal_stats{};
     minimal_stats.steps = 0u;
-    const std::string raw = bltzr_protocol::ServerJsonCodec::makeStatusResponse(minimal_stats);
-    bltzr_protocol::ServerStatusPayload parsed{};
+    const std::string raw = bltzr_protocol::JsonCodec::makeStatusResponse(minimal_stats);
+    bltzr_protocol::StatusPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_TRUE(parsed.envelope.ok);
 }
 
@@ -290,10 +291,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_017_ParsesAllBooleanFlagsTrue)
     stats.gpuTelemetryEnabled = true;
     stats.gpuTelemetryAvailable = true;
     stats.exportActive = true;
-    const std::string raw = bltzr_protocol::ServerJsonCodec::makeStatusResponse(stats);
-    bltzr_protocol::ServerStatusPayload parsed{};
+    const std::string raw = bltzr_protocol::JsonCodec::makeStatusResponse(stats);
+    bltzr_protocol::StatusPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_TRUE(parsed.paused);
     EXPECT_TRUE(parsed.faulted);
     EXPECT_TRUE(parsed.sphEnabled);
@@ -311,10 +312,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_018_ParsesAllBooleanFlagsFalse)
     stats.gpuTelemetryEnabled = false;
     stats.gpuTelemetryAvailable = false;
     stats.exportActive = false;
-    const std::string raw = bltzr_protocol::ServerJsonCodec::makeStatusResponse(stats);
-    bltzr_protocol::ServerStatusPayload parsed{};
+    const std::string raw = bltzr_protocol::JsonCodec::makeStatusResponse(stats);
+    bltzr_protocol::StatusPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_FALSE(parsed.paused);
     EXPECT_FALSE(parsed.faulted);
 }
@@ -326,10 +327,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_019_ParsesStatusWithSpecialCharsInStr
     stats.faultReason = "error\nwith\\special\"chars\rhere";
     stats.exportLastState = "idle\t\ttab";
     stats.exportLastMessage = "message with \"quotes\" and 'apostrophes'";
-    const std::string raw = bltzr_protocol::ServerJsonCodec::makeStatusResponse(stats);
-    bltzr_protocol::ServerStatusPayload parsed{};
+    const std::string raw = bltzr_protocol::JsonCodec::makeStatusResponse(stats);
+    bltzr_protocol::StatusPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_TRUE(parsed.envelope.ok);
 }
 
@@ -342,10 +343,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_020_ParsesStatusWithEmptyStrings)
     stats.solverName = "";
     stats.integratorName = "";
     stats.exportLastMessage = "";
-    const std::string raw = bltzr_protocol::ServerJsonCodec::makeStatusResponse(stats);
-    bltzr_protocol::ServerStatusPayload parsed{};
+    const std::string raw = bltzr_protocol::JsonCodec::makeStatusResponse(stats);
+    bltzr_protocol::StatusPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_TRUE(parsed.envelope.ok);
 }
 
@@ -360,10 +361,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_021_ParsesSnapshotWithSingleParticle)
     snapshot[0].pressureNorm = 0.1f;
     snapshot[0].temperature = 0.3f;
     const std::string raw =
-        bltzr_protocol::ServerJsonCodec::makeSnapshotResponse(true, snapshot, 1u);
-    bltzr_protocol::ServerSnapshotPayload parsed{};
+        bltzr_protocol::JsonCodec::makeSnapshotResponse(true, snapshot, 1u);
+    bltzr_protocol::SnapshotPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error))
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseSnapshotResponse(raw, parsed, error))
         << error;
     EXPECT_EQ(parsed.particles.size(), 1u);
     EXPECT_EQ(parsed.sourceSize, 1u);
@@ -379,10 +380,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_022_ParsesSnapshotWithManyParticles)
         snapshot[i].z = static_cast<float>(i + 2u);
     }
     const std::string raw =
-        bltzr_protocol::ServerJsonCodec::makeSnapshotResponse(true, snapshot, 1000u);
-    bltzr_protocol::ServerSnapshotPayload parsed{};
+        bltzr_protocol::JsonCodec::makeSnapshotResponse(true, snapshot, 1000u);
+    bltzr_protocol::SnapshotPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error))
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseSnapshotResponse(raw, parsed, error))
         << error;
     EXPECT_EQ(parsed.particles.size(), 1000u);
     EXPECT_EQ(parsed.sourceSize, 1000u);
@@ -393,10 +394,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_023_ParsesSnapshotUnavailable)
 {
     std::vector<RenderParticle> empty_snapshot;
     const std::string raw =
-        bltzr_protocol::ServerJsonCodec::makeSnapshotResponse(false, empty_snapshot, 0u);
-    bltzr_protocol::ServerSnapshotPayload parsed{};
+        bltzr_protocol::JsonCodec::makeSnapshotResponse(false, empty_snapshot, 0u);
+    bltzr_protocol::SnapshotPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error))
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseSnapshotResponse(raw, parsed, error))
         << error;
     EXPECT_FALSE(parsed.hasSnapshot);
     EXPECT_EQ(parsed.particles.size(), 0u);
@@ -416,10 +417,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_024_ParsesSnapshotBoundaryCoordinates
     snapshot[2].y = 1e6f;
     snapshot[2].z = -1e-6f;
     const std::string raw =
-        bltzr_protocol::ServerJsonCodec::makeSnapshotResponse(true, snapshot, 3u);
-    bltzr_protocol::ServerSnapshotPayload parsed{};
+        bltzr_protocol::JsonCodec::makeSnapshotResponse(true, snapshot, 3u);
+    bltzr_protocol::SnapshotPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error))
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseSnapshotResponse(raw, parsed, error))
         << error;
     ASSERT_EQ(parsed.particles.size(), 3u);
     EXPECT_FLOAT_EQ(parsed.particles[0].x, 0.0f);
@@ -433,36 +434,36 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_025_RejectsSnapshotArrayMismatch)
     const std::string raw =
         "{\"ok\":true,\"cmd\":\"get_snapshot\",\"has_snapshot\":true,\"count\":10,"
         "\"particles\":[[1,2,3,4,5,6,7]]}"; // Only 1 particle, but count says 10
-    bltzr_protocol::ServerSnapshotPayload parsed{};
+    bltzr_protocol::SnapshotPayload parsed{};
     std::string error;
-    EXPECT_FALSE(bltzr_protocol::ServerJsonCodec::parseSnapshotResponse(raw, parsed, error));
+    EXPECT_FALSE(bltzr_protocol::JsonCodec::parseSnapshotResponse(raw, parsed, error));
 }
 
 // TST_UNT_PROT_026: Command request round-trip with empty token
-TEST(ServerProtocolCodecTest, TST_UNT_PROT_026_CommandRequestWithEmptyToken)
+TEST(ServerProtocolCodecTest, TST_UNT_PROT_026_RequestWithEmptyToken)
 {
-    bltzr_protocol::ServerCommandRequest request{};
+    bltzr_protocol::CommandRequest request{};
     request.cmd = std::string(bltzr_protocol::SetSolver);
     request.token = "";
     const std::string json =
-        bltzr_protocol::ServerJsonCodec::makeCommandRequest(request, "\"value\":\"octree_gpu\"");
-    bltzr_protocol::ServerCommandRequest parsed{};
+        bltzr_protocol::JsonCodec::makeRequest(request, "\"value\":\"octree_gpu\"");
+    bltzr_protocol::CommandRequest parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseCommandRequest(json, parsed, error)) << error;
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseRequest(json, parsed, error)) << error;
     EXPECT_EQ(parsed.token, "");
 }
 
 // TST_UNT_PROT_027: Command request with very long token
-TEST(ServerProtocolCodecTest, TST_UNT_PROT_027_CommandRequestWithLongToken)
+TEST(ServerProtocolCodecTest, TST_UNT_PROT_027_RequestWithLongToken)
 {
-    bltzr_protocol::ServerCommandRequest request{};
+    bltzr_protocol::CommandRequest request{};
     request.cmd = std::string(bltzr_protocol::SetSolver);
     request.token = std::string(1000u, 'x');
     const std::string json =
-        bltzr_protocol::ServerJsonCodec::makeCommandRequest(request, "\"value\":\"octree_gpu\"");
-    bltzr_protocol::ServerCommandRequest parsed{};
+        bltzr_protocol::JsonCodec::makeRequest(request, "\"value\":\"octree_gpu\"");
+    bltzr_protocol::CommandRequest parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseCommandRequest(json, parsed, error)) << error;
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseRequest(json, parsed, error)) << error;
     EXPECT_EQ(parsed.token.size(), 1000u);
 }
 
@@ -471,10 +472,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_028_ErrorResponseWithDifferentCommand
 {
     const auto test_command = [](std::string_view cmd) {
         const std::string raw =
-            bltzr_protocol::ServerJsonCodec::makeErrorResponse(cmd, "test error");
-        bltzr_protocol::ServerResponseEnvelope parsed{};
+            bltzr_protocol::JsonCodec::makeErrorResponse(cmd, "test error");
+        bltzr_protocol::ResponseEnvelope parsed{};
         std::string error;
-        EXPECT_TRUE(bltzr_protocol::ServerJsonCodec::parseResponseEnvelope(raw, parsed, error))
+        EXPECT_TRUE(bltzr_protocol::JsonCodec::parseResponseEnvelope(raw, parsed, error))
             << error;
         EXPECT_FALSE(parsed.ok);
         EXPECT_EQ(parsed.cmd, cmd);
@@ -491,10 +492,10 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_029_StringEscapingRoundTrip)
 {
     SimulationStats stats{};
     stats.faultReason = "Complex: \\ \" \n \r \t special";
-    const std::string raw = bltzr_protocol::ServerJsonCodec::makeStatusResponse(stats);
-    bltzr_protocol::ServerStatusPayload parsed{};
+    const std::string raw = bltzr_protocol::JsonCodec::makeStatusResponse(stats);
+    bltzr_protocol::StatusPayload parsed{};
     std::string error;
-    ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseStatusResponse(raw, parsed, error)) << error;
+    ASSERT_TRUE(bltzr_protocol::JsonCodec::parseStatusResponse(raw, parsed, error)) << error;
     EXPECT_EQ(parsed.faultReason, "Complex: \\ \" \n \r \t special");
 }
 
@@ -502,20 +503,20 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_029_StringEscapingRoundTrip)
 TEST(ServerProtocolCodecTest, TST_UNT_PROT_030_ConsecutiveCommandResponseCycles)
 {
     for (int i = 0; i < 10; ++i) {
-        bltzr_protocol::ServerCommandRequest request{};
+        bltzr_protocol::CommandRequest request{};
         request.cmd = std::string(bltzr_protocol::SetSolver);
         request.token = "token_" + std::to_string(i);
-        const std::string json = bltzr_protocol::ServerJsonCodec::makeCommandRequest(
+        const std::string json = bltzr_protocol::JsonCodec::makeRequest(
             request, "\"value\":\"octree_gpu\"");
-        bltzr_protocol::ServerCommandRequest parsed{};
+        bltzr_protocol::CommandRequest parsed{};
         std::string error;
-        ASSERT_TRUE(bltzr_protocol::ServerJsonCodec::parseCommandRequest(json, parsed, error))
+        ASSERT_TRUE(bltzr_protocol::JsonCodec::parseRequest(json, parsed, error))
             << error;
         const std::string response =
-            bltzr_protocol::ServerJsonCodec::makeOkResponse(bltzr_protocol::SetSolver);
-        bltzr_protocol::ServerResponseEnvelope parsed_resp{};
+            bltzr_protocol::JsonCodec::makeOkResponse(bltzr_protocol::SetSolver);
+        bltzr_protocol::ResponseEnvelope parsed_resp{};
         ASSERT_TRUE(
-            bltzr_protocol::ServerJsonCodec::parseResponseEnvelope(response, parsed_resp, error))
+            bltzr_protocol::JsonCodec::parseResponseEnvelope(response, parsed_resp, error))
             << error;
         EXPECT_TRUE(parsed_resp.ok);
     }

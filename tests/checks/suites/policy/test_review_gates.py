@@ -272,7 +272,7 @@ Deviation: none
     # @return Value produced by this contract when applicable.
     # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def fetch_items(repo: str, number: int, suffix: str, token: str, result):  # noqa: ARG001
-        return [{"filename": "runtime/src/client/ClientRuntime.cpp"}] if suffix == "files" else [{"state": "APPROVED", "user": {"login": "reviewer"}}]
+        return [{"filename": "runtime/src/client/runtime/Runtime.cpp"}] if suffix == "files" else [{"state": "APPROVED", "user": {"login": "reviewer"}}]
 
     result = FakeIvvGateCheck(fetch_items).run(_event_context(tmp_path, _write_pr_event(tmp_path, body)))
     assert result.ok
@@ -333,7 +333,7 @@ Deviation: DEV-QUAL-001
 def test_traceability_gate_passes_for_critical_pr_with_ids_and_csv(tmp_path: Path) -> None:
     _write_requirements(tmp_path)
     event_path = _write_pr_event(tmp_path, "Requirements impacted:\n- REQ-PROT-001\n- REQ-RUN-001\n\n## Notes\nBody")
-    check = FakeTraceabilityGateCheck([{"filename": "runtime/src/client/ClientRuntime.cpp"}, {"filename": "docs/quality/traceability.csv"}])
+    check = FakeTraceabilityGateCheck([{"filename": "runtime/src/client/runtime/Runtime.cpp"}, {"filename": "docs/quality/traceability.csv"}])
     assert check.run(_event_context(tmp_path, event_path)).ok
 
 
@@ -344,12 +344,12 @@ def test_traceability_gate_passes_for_critical_pr_with_ids_and_csv(tmp_path: Pat
 def test_traceability_gate_fails_without_ids_or_csv_and_skips_non_critical_pr(tmp_path: Path) -> None:
     _write_requirements(tmp_path)
     event_path = _write_pr_event(tmp_path, "Requirements impacted:\n\n## Notes\nBody")
-    check = FakeTraceabilityGateCheck([{"filename": "runtime/src/client/ClientRuntime.cpp"}, {"filename": "docs/quality/traceability.csv"}])
+    check = FakeTraceabilityGateCheck([{"filename": "runtime/src/client/runtime/Runtime.cpp"}, {"filename": "docs/quality/traceability.csv"}])
     result = check.run(_event_context(tmp_path, event_path))
     assert any("Requirements impacted" in error for error in result.errors)
 
     event_path = _write_pr_event(tmp_path, "Requirements impacted:\n- REQ-PHYS-001")
-    result = FakeTraceabilityGateCheck([{"filename": "engine/src/physics/cuda/ParticleSystem.cu"}]).run(_event_context(tmp_path, event_path))
+    result = FakeTraceabilityGateCheck([{"filename": "engine/src/cuda/ParticleSystem.cu"}]).run(_event_context(tmp_path, event_path))
     assert any("traceability.csv" in error for error in result.errors)
 
     event_path = _write_pr_event(tmp_path, "Requirements impacted:\n- REQ-PROT-001")

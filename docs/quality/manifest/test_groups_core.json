@@ -590,6 +590,12 @@
                     "REQ-RUN-001",
                     "REQ-CONF-001"
                 ]
+            },
+            "TST-INT-RUNT-020": {
+                "id": "ClientBridgeTest.TST_INT_RUNT_020_AutostartKeepsRuntimeAliveUntilServerIsReady",
+                "req_ids": [
+                    "REQ-RUN-001"
+                ]
             }
         },
         "EVD_TEST_INT_RUNTIME_RUNTIME": {

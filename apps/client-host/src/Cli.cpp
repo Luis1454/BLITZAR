@@ -14,14 +14,14 @@
 #include "CliArgs.hpp"
 #include "CliText.hpp"
 #include "ModuleOps.hpp"
-#include "client/ClientModuleHandle.hpp"
-#include "command/CommandBatchRunner.hpp"
-#include "command/CommandContext.hpp"
-#include "config/SimulationConfig.hpp"
-#include "config/SimulationScenarioValidation.hpp"
+#include "client/module/Handle.hpp"
+#include "command/core/Context.hpp"
+#include "command/execution/BatchRunner.hpp"
+#include "config/core/Config.hpp"
+#include "config/validation/Scenario.hpp"
 
 namespace bltzr_client_host {
-class ClientHostCliLocal final {
+class ClientHostCliImpl final {
 public:
     static constexpr bool kLiveReloadEnabled = BLITZAR_PROFILE_IS_PROD == 0;
 
@@ -35,14 +35,14 @@ public:
             return report.validForRun ? 0 : 3;
         }
         if (!options.scriptPath.empty()) {
-            bltzr_cmd::ServerClientCommandTransport transport(150);
-            bltzr_cmd::CommandSessionState session{};
+            bltzr_cmd::ServerTransport transport(150);
+            bltzr_cmd::SessionState session{};
             session.configPath = options.configPath;
             session.config = SimulationConfig::loadOrCreate(options.configPath);
-            bltzr_cmd::CommandExecutionContext context{
-                transport, session, bltzr_cmd::CommandExecutionMode::Batch, std::cout};
-            const bltzr_cmd::CommandResult result =
-                bltzr_cmd::CommandBatchRunner::runScriptFile(options.scriptPath, context);
+            bltzr_cmd::ExecutionContext context{
+                transport, session, bltzr_cmd::ExecutionMode::Batch, std::cout};
+            const bltzr_cmd::Result result =
+                bltzr_cmd::runScriptFile(options.scriptPath, context);
             if (!result.ok) {
                 std::cerr << "[client-host] " << result.message << "\n";
                 return 4;
@@ -51,12 +51,13 @@ public:
         }
         const std::vector<std::filesystem::path> searchRoots =
             ClientHostModuleOps::buildSearchRoots(programName);
-        bltzr_module::ClientModuleHandle module{};
+        bltzr_module::Handle module{};
         std::string currentModuleSpecifier = options.moduleSpecifier;
         const std::string resolvedInitialModulePath =
             ClientHostModuleOps::resolveModuleSpecifier(options.moduleSpecifier, searchRoots);
         const std::string expectedInitialModuleId =
-            ClientHostModuleOps::expectedModuleIdForSpecifier(options.moduleSpecifier);
+            ClientHostModuleOps::expectedModuleIdForResolvedSpecifier(options.moduleSpecifier,
+                                                                      resolvedInitialModulePath);
         std::string loadError;
         if (!module.load(resolvedInitialModulePath, options.configPath, expectedInitialModuleId,
                          loadError)) {
@@ -66,7 +67,7 @@ public:
         }
         std::cout << "[client-host] loaded: " << module.moduleName() << " (" << module.loadedPath()
                   << ")\n";
-        ClientHostCliArgs::printHelp(programName);
+        printHelp(programName);
         bool keepRunning = true;
         std::string line;
         while (keepRunning) {
@@ -96,7 +97,7 @@ private:
     static bool handleLine(const std::string& line, std::string_view programName,
                            const HostOptions& options,
                            const std::vector<std::filesystem::path>& searchRoots,
-                           bltzr_module::ClientModuleHandle& module,
+                           bltzr_module::Handle& module,
                            std::string& currentModuleSpecifier, bool& keepRunning)
     {
         const std::string trimmed = ClientHostCliText::trim(line);
@@ -108,7 +109,7 @@ private:
             return false;
         }
         if (tokens[0] == "help") {
-            ClientHostCliArgs::printHelp(programName);
+            printHelp(programName);
             return false;
         }
         if (tokens[0] == "modules") {
@@ -176,7 +177,7 @@ private:
                   << "\n";
     }
 
-    static void printCurrentModule(const bltzr_module::ClientModuleHandle& module,
+    static void printCurrentModule(const bltzr_module::Handle& module,
                                    const std::string& currentModuleSpecifier)
     {
         std::cout << "[client-host] current module: " << module.moduleName() << " ("
@@ -190,22 +191,22 @@ private:
 
 bool ClientHostCli::parseArgs(int argc, char** argv, HostOptions& outOptions, std::string& outError)
 {
-    return ClientHostCliArgs::parseArgs(argc, argv, outOptions, outError);
+    return bltzr_client_host::parseArgs(argc, argv, outOptions, outError);
 }
 
 bool ClientHostCli::liveReloadEnabled() noexcept
 {
-    return ClientHostCliLocal::kLiveReloadEnabled;
+    return ClientHostCliImpl::kLiveReloadEnabled;
 }
 
 void ClientHostCli::printHelp(std::string_view programName)
 {
-    ClientHostCliArgs::printHelp(programName);
+    bltzr_client_host::printHelp(programName);
 }
 
 int ClientHostCli::run(const HostOptions& options, std::string_view programName)
 {
-    return ClientHostCliLocal::run(options, programName);
+    return ClientHostCliImpl::run(options, programName);
 }
 
 } // namespace bltzr_client_host
