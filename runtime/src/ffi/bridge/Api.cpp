@@ -1,6 +1,6 @@
 /*
  * @file runtime/src/ffi/bridge/Api.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief C++ fallback implementation of the client runtime bridge ABI.
  */

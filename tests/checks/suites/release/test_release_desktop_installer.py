@@ -1,5 +1,5 @@
 # @file tests/checks/suites/release/test_release_desktop_installer.py
-# @author Luis1454
+# @author BLITZAR Contributors
 # @project BLITZAR
 # @brief Automated verification assets for BLITZAR quality gates.
 

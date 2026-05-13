@@ -1,6 +1,6 @@
 /*
  * @file modules/cli/State.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Command-line client module for runtime control workflows.
  */

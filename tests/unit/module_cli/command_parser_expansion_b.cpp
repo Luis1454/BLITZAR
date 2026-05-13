@@ -1,6 +1,6 @@
 /*
  * @file tests/unit/module_cli/command_parser_expansion_b.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

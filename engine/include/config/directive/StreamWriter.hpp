@@ -1,6 +1,6 @@
 /*
  * @file engine/include/config/directive/StreamWriter.hpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Public configuration interfaces and validation contracts for simulation setup.
  */

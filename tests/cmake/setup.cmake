@@ -1,5 +1,5 @@
 # @file tests/cmake/setup.cmake
-# @author Luis1454
+# @author BLITZAR Contributors
 # @project BLITZAR
 # @brief Automated verification assets for BLITZAR quality gates.
 

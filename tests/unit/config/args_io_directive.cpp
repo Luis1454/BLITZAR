@@ -1,6 +1,6 @@
 /*
  * @file tests/unit/config/args_io_directive.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

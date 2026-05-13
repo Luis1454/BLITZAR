@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # @file scripts/ci/release/package_evidence.py
-# @author Luis1454
+# @author BLITZAR Contributors
 # @project BLITZAR
 # @brief Build, release, and CI helper automation for BLITZAR workflows.
 

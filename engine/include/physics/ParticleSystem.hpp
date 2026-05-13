@@ -1,6 +1,6 @@
 /*
  * @file engine/include/physics/ParticleSystem.hpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
  */

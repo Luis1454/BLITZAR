@@ -1,6 +1,6 @@
 /*
  * @file tests/int/ui/qt_workspace_runtime_controls.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

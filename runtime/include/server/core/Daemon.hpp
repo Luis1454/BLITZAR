@@ -1,6 +1,6 @@
 /*
  * @file runtime/include/server/core/Daemon.hpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */

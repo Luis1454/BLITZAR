@@ -1,6 +1,6 @@
 /*
  * @file engine/include/config/directive/Write.hpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Public configuration interfaces and validation contracts for simulation setup.
  */

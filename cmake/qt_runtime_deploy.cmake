@@ -1,5 +1,5 @@
 # @file cmake/qt_runtime_deploy.cmake
-# @author Luis1454
+# @author BLITZAR Contributors
 # @project BLITZAR
 # @brief CMake build orchestration for BLITZAR targets and tooling.
 
