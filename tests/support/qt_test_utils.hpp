@@ -48,20 +48,20 @@ class QPushButton;
 class QString;
 
 namespace bltzr_qt {
-class MainWindow;
+class Window;
 } // namespace bltzr_qt
 
 namespace testsupport {
 QApplication* ensureQtApp();
-QString findStatusLabelText(const bltzr_qt::MainWindow& window);
-std::filesystem::path saveFailureEvidence(bltzr_qt::MainWindow& window, const std::string& stem);
-std::uint64_t findSummaryUnsignedMetric(const bltzr_qt::MainWindow& window,
+QString findStatusLabelText(const bltzr_qt::Window& window);
+std::filesystem::path saveFailureEvidence(bltzr_qt::Window& window, const std::string& stem);
+std::uint64_t findSummaryUnsignedMetric(const bltzr_qt::Window& window,
                                         const std::string& label);
 std::string readAllFile(const std::filesystem::path& path);
-QComboBox* findSolverCombo(bltzr_qt::MainWindow& window);
-QComboBox* findComboByObjectName(bltzr_qt::MainWindow& window, const QString& objectName);
-QCheckBox* findCheckBoxByText(bltzr_qt::MainWindow& window, const QString& text);
-QPushButton* findButtonByText(bltzr_qt::MainWindow& window, const QString& text);
+QComboBox* findSolverCombo(bltzr_qt::Window& window);
+QComboBox* findComboByObjectName(bltzr_qt::Window& window, const QString& objectName);
+QCheckBox* findCheckBoxByText(bltzr_qt::Window& window, const QString& text);
+QPushButton* findButtonByText(bltzr_qt::Window& window, const QString& text);
 bool waitUntilUi(const std::function<bool()>& predicate, std::chrono::milliseconds timeout,
                  std::chrono::milliseconds pollInterval = std::chrono::milliseconds(10));
 } // namespace testsupport

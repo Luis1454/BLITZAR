@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/ClientRuntime.hpp"
+#include "client/runtime/Runtime.hpp"
 #include "tests/support/client_utils.hpp"
 #include <chrono>
 #include <gtest/gtest.h>
@@ -14,9 +14,9 @@
 #include <vector>
 
 namespace bltzr_test_client_runtime_unit_like {
-TEST(ClientRuntimeUnitLikeTest, TST_UNT_RUNT_016_RuntimeDefaultsRemainDeterministicBeforeStart)
+TEST(RuntimeUnitLikeTest, TST_UNT_RUNT_016_RuntimeDefaultsRemainDeterministicBeforeStart)
 {
-    bltzr_client::ClientRuntime runtime(
+    bltzr_client::Runtime runtime(
         "simulation.ini",
         testsupport::makeTransport(static_cast<std::uint16_t>(6553u), std::string()));
     EXPECT_EQ(runtime.linkStateLabel(), "reconnecting");
@@ -31,9 +31,9 @@ TEST(ClientRuntimeUnitLikeTest, TST_UNT_RUNT_016_RuntimeDefaultsRemainDeterminis
     EXPECT_EQ(pipelineState.latencyMs, std::numeric_limits<std::uint32_t>::max());
 }
 
-TEST(ClientRuntimeUnitLikeTest, TST_UNT_RUNT_017_RuntimeControlMethodsRemainBoundedWhenDisconnected)
+TEST(RuntimeUnitLikeTest, TST_UNT_RUNT_017_RuntimeControlMethodsRemainBoundedWhenDisconnected)
 {
-    bltzr_client::ClientRuntime runtime(
+    bltzr_client::Runtime runtime(
         "simulation.ini",
         testsupport::makeTransport(static_cast<std::uint16_t>(6553u), std::string()));
     const auto startedAt = std::chrono::steady_clock::now();

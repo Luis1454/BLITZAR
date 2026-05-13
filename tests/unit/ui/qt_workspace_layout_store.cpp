@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "ui/WorkspaceLayoutStore.hpp"
+#include "support/storage/LayoutStore.hpp"
 #include <chrono>
 #include <filesystem>
 #include <gtest/gtest.h>
@@ -18,7 +18,7 @@ TEST(QtUiLogicTest, TST_UNT_UI_004_WorkspaceLayoutStoreRoundTripsNamedPreset)
     const std::filesystem::path root =
         std::filesystem::temp_directory_path() / ("BLITZAR_qt_workspace_" + std::to_string(stamp));
     const std::filesystem::path configPath = root / "simulation.ini";
-    bltzr_qt::WorkspaceLayoutStore store(configPath.string());
+    bltzr_qt::LayoutStore store(configPath.string());
     const std::string savedState = "dock-state-bytes";
     const std::string savedGeometry = "dock-geometry-bytes";
     ASSERT_TRUE(store.savePreset("Mission Deck 01", savedState, savedGeometry));

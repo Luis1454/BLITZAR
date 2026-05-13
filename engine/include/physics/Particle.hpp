@@ -25,7 +25,7 @@
 class Particle {
 public:
     static constexpr float kDefaultMass = 0.01f;
-    static constexpr int kDefaultCudaBlockSize = 256;
+    static constexpr int kDefaultCudaBlockSize = 256;  // Tuned for occupancy on octree traversal (Oct 2024)
     /*
      * @brief Documents the particle operation contract.
      * @param None This contract does not take explicit parameters.
@@ -181,4 +181,6 @@ private:
     float _mass;
     float _temperature;
 };
+
+#include "physics/Particle.inl"
 #endif // BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLE_HPP_

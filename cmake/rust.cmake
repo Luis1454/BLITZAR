@@ -3,6 +3,7 @@
 # @project BLITZAR
 # @brief CMake build orchestration for BLITZAR targets and tooling.
 
+
 if(NOT BLITZAR_CARGO_EXECUTABLE)
     set(_BLITZAR_cargo_hints "")
     if(DEFINED ENV{CARGO_HOME})
@@ -12,11 +13,18 @@ if(NOT BLITZAR_CARGO_EXECUTABLE)
         list(APPEND _BLITZAR_cargo_hints "$ENV{USERPROFILE}/.cargo/bin")
     endif()
     if(_BLITZAR_cargo_hints)
-        find_program(BLITZAR_CARGO_EXECUTABLE NAMES cargo cargo.exe HINTS ${_BLITZAR_cargo_hints} NO_DEFAULT_PATH)
+        find_program(BLITZAR_CARGO_EXECUTABLE NAMES cargo cargo.exe HINTS ${_BLITZAR_cargo_hints} NO_DEFAULT_PATH QUIET)
     endif()
 endif()
 
-find_program(BLITZAR_CARGO_EXECUTABLE cargo REQUIRED)
+find_program(BLITZAR_CARGO_EXECUTABLE cargo QUIET)
+
+if(NOT BLITZAR_CARGO_EXECUTABLE)
+    message(STATUS "Cargo (rust) not found; Rust targets will be disabled")
+    set(BLITZAR_ENABLE_RUST OFF)
+else()
+    set(BLITZAR_ENABLE_RUST ON)
+endif()
 
 if(DEFINED BLITZAR_ROOT_DIR)
     set(BLITZAR_RUST_ROOT_DIR "${BLITZAR_ROOT_DIR}")
@@ -74,6 +82,7 @@ set(BLITZAR_RUST_RUNTIME_INPUTS
     "${BLITZAR_RUST_WORKSPACE_DIR}/blitzar-web-gateway/tests/http.rs"
 )
 
+if(BLITZAR_ENABLE_RUST)
 function(BLITZAR_ensure_rust_runtime_target)
     if(TARGET blitzarRustRuntime)
         return()
@@ -101,7 +110,13 @@ function(BLITZAR_ensure_rust_runtime_target)
     )
     add_dependencies(blitzarRustRuntime blitzarRustRuntimeBuild)
 endfunction()
+else()
+function(BLITZAR_ensure_rust_runtime_target)
+    message(STATUS "BLITZAR_ensure_rust_runtime_target: skipped (cargo not found)")
+endfunction()
+endif()
 
+if(BLITZAR_ENABLE_RUST)
 function(BLITZAR_ensure_rust_web_gateway_target)
     if(TARGET blitzar-web-gateway)
         return()
@@ -125,3 +140,8 @@ function(BLITZAR_ensure_rust_web_gateway_target)
     )
     add_custom_target(blitzar-web-gateway ALL DEPENDS "${BLITZAR_RUST_WEB_GATEWAY_OUTPUT}")
 endfunction()
+else()
+function(BLITZAR_ensure_rust_web_gateway_target)
+    message(STATUS "BLITZAR_ensure_rust_web_gateway_target: skipped (cargo not found)")
+endfunction()
+endif()

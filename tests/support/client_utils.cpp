@@ -8,10 +8,10 @@
 #include "tests/support/client_utils.hpp"
 
 namespace testsupport {
-bltzr_client::ClientTransportArgs makeTransport(std::uint16_t port,
-                                                const std::string& serverExecutable)
+bltzr_client::TransportArgs makeTransport(std::uint16_t port,
+                                            const std::string& serverExecutable)
 {
-    bltzr_client::ClientTransportArgs transport{};
+    bltzr_client::TransportArgs transport{};
     transport.remoteHost = "127.0.0.1";
     transport.remotePort = port;
     transport.remoteAutoStart = false;

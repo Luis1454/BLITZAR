@@ -6,14 +6,14 @@
 if(WIN32)
     set(BLITZAR_TEST_SCOPED_ENV_VAR_SOURCE "${BLITZAR_ROOT_DIR}/tests/support/scoped_env_var_win.cpp")
     set(BLITZAR_TEST_ENV_UTILS_SOURCES
-        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtilsWin.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Base.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Win.cpp"
     )
 else()
     set(BLITZAR_TEST_SCOPED_ENV_VAR_SOURCE "${BLITZAR_ROOT_DIR}/tests/support/scoped_env_var_posix.cpp")
     set(BLITZAR_TEST_ENV_UTILS_SOURCES
-        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtilsPosix.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Base.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Posix.cpp"
     )
 endif()
 
@@ -24,29 +24,29 @@ if(BLITZAR_TEST_UNIT_CONFIG_SOURCES)
             ${BLITZAR_TEST_UNIT_CONFIG_SOURCES}
             ${BLITZAR_TEST_ENV_UTILS_SOURCES}
             
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgs.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsCoreOptions.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsClientOptions.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsInitOptions.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsInitStateOptions.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsFluidOptions.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationPhysics.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationRender.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveValueFormatter.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/args/Main.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/args/Parse.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/args/CoreOptions.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/args/ClientOptions.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/args/InitOptions.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/args/InitStateOptions.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/args/FluidOptions.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Main.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Apply.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Entries.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/profile/Performance.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/profile/Main.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Scenario.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Physics.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Render.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Config.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Write.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/directive/StreamWriter.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/directive/ValueFormatter.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/core/Config.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/modes/Normalize.cpp"
             "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/TextParse.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/text/Parse.cpp"
     )
 endif()
 
@@ -55,13 +55,13 @@ if(BLITZAR_TEST_UNIT_PROTOCOL_SOURCES)
         LABELS unit
         SOURCES
             ${BLITZAR_TEST_UNIT_PROTOCOL_SOURCES}
-            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodec.cpp"
-            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParse.cpp"
-            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseStatus.cpp"
-            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseSnapshot.cpp"
-            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecReadNumber.cpp"
-            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerProtocol.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/TextParse.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/JsonCodec.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Parser.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Status.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Snapshot.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Number.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/protocol/Protocol.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/text/Parse.cpp"
     )
 endif()
 
@@ -74,46 +74,45 @@ if(BLITZAR_TEST_UNIT_MODULE_SOURCES)
         LABELS unit
         SOURCES
             ${BLITZAR_TEST_UNIT_MODULE_SOURCES}
-            "${BLITZAR_ROOT_DIR}/modules/cli/module_cli_state.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/cli/module_cli_text.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/cli/module_cli_server_ops.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/cli/module_cli_commands.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/cli/State.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/cli/Text.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/cli/ServerOps.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/cli/Commands.cpp"
             ${BLITZAR_RUNTIME_COMMAND_SOURCES}
             "${BLITZAR_ROOT_DIR}/apps/client-host/src/Cli.cpp"
             "${BLITZAR_ROOT_DIR}/apps/client-host/src/CliArgs.cpp"
             "${BLITZAR_ROOT_DIR}/apps/client-host/src/ModuleOps.cpp"
             "${BLITZAR_ROOT_DIR}/apps/client-host/src/CliText.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationPhysics.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationRender.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveValueFormatter.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/args/Parse.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Main.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Apply.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Entries.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/profile/Performance.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/profile/Main.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Scenario.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Physics.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Render.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Config.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Write.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/directive/StreamWriter.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/directive/ValueFormatter.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/core/Config.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/modes/Normalize.cpp"
             "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
-            "${BLITZAR_ROOT_DIR}/runtime/src/client/ErrorBuffer.cpp"
-            "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientModuleApi.cpp"
-            "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientModuleBoundary.cpp"
-            "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientModuleHash.cpp"
-            "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientModuleHandle.cpp"
-            "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientModuleHandleLoad.cpp"
-            "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientModuleManifest.cpp"
-            "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientCommon.cpp"
-            "${BLITZAR_ROOT_DIR}/runtime/src/client/RustRuntimeBridgeState.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/diagnostics/ErrorBuffer.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/module/Api.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/module/Boundary.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/module/Hash.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/module/Handle.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/module/Load.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/module/Manifest.cpp"
+            "${BLITZAR_ROOT_DIR}/runtime/src/client/common/ClientCommon.cpp"
             ${BLITZAR_TEST_SCOPED_ENV_VAR_SOURCE}
             ${BLITZAR_ENV_UTILS_SOURCES}
             ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
-            "${BLITZAR_ROOT_DIR}/engine/src/config/TextParse.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/src/config/text/Parse.cpp"
         LIBS
-            blitzarRustRuntime
+            ${BLITZAR_TEST_RUST_LIBS}
             ${BLITZAR_TEST_PLATFORM_TARGET}
     )
 endif()
@@ -122,45 +121,45 @@ set(BLITZAR_TEST_BASE_REAL_SOURCES
     "${BLITZAR_ROOT_DIR}/tests/support/server_harness_runtime.cpp"
     "${BLITZAR_TEST_SCOPED_ENV_VAR_SOURCE}"
     ${BLITZAR_TEST_ENV_UTILS_SOURCES}
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/args/Parse.cpp"
     ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
-    "${BLITZAR_ROOT_DIR}/engine/src/config/TextParse.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/text/Parse.cpp"
 )
 set(BLITZAR_TEST_BASE_BRIDGE_SOURCES
     "${BLITZAR_ROOT_DIR}/tests/support/poll_utils.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/client/RustRuntimeBridgeState.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientServerBridge.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/client/runtime/BridgeState.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/client/runtime/Bridge.cpp"
     ${BLITZAR_TEST_BASE_REAL_SOURCES}
 )
 set(BLITZAR_TEST_BASE_RUNTIME_SOURCES
     "${BLITZAR_ROOT_DIR}/tests/support/client_utils.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientRuntime.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/client/ClientCommon.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationPhysics.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationRender.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveValueFormatter.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/client/runtime/Runtime.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/client/common/ClientCommon.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Main.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Apply.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Entries.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/profile/Performance.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/profile/Main.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Scenario.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Physics.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Render.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Config.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Write.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/StreamWriter.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/ValueFormatter.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/core/Config.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/modes/Normalize.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
     ${BLITZAR_TEST_BASE_BRIDGE_SOURCES}
 )
 set(BLITZAR_TEST_BASE_QT_LOGIC_SOURCES
     ${BLITZAR_TEST_BASE_RUNTIME_SOURCES}
-    "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowController.cpp"
-    "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowPresenter.cpp"
-    "${BLITZAR_ROOT_DIR}/modules/qt/ui/OctreeOverlay.cpp"
-    "${BLITZAR_ROOT_DIR}/modules/qt/ui/UiEnums.cpp"
-    "${BLITZAR_ROOT_DIR}/modules/qt/ui/ThroughputAdvisor.cpp"
-    "${BLITZAR_ROOT_DIR}/modules/qt/ui/WorkspaceLayoutStore.cpp"
+    "${BLITZAR_ROOT_DIR}/modules/qt/src/window/control/Controller.cpp"
+    "${BLITZAR_ROOT_DIR}/modules/qt/src/window/presentation/Presenter.cpp"
+    "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/overlays/Octree.cpp"
+    "${BLITZAR_ROOT_DIR}/modules/qt/src/support/types/Enums.cpp"
+    "${BLITZAR_ROOT_DIR}/modules/qt/src/support/performance/Throughput.cpp"
+    "${BLITZAR_ROOT_DIR}/modules/qt/src/support/storage/LayoutStore.cpp"
 )
 
 if(BLITZAR_TEST_INT_PROTOCOL_SOURCES)
@@ -176,8 +175,8 @@ if(BLITZAR_TEST_INT_PROTOCOL_SOURCES)
     )
 endif()
 
-if(BLITZAR_TEST_INT_BRIDGE_SOURCES)
-    BLITZAR_add_gtest(blitzarClientServerBridgeGTests
+if(TARGET blitzarRustRuntime AND BLITZAR_TEST_INT_BRIDGE_SOURCES)
+    BLITZAR_add_gtest(blitzarBridgeGTests
         LABELS integration integration_real
         TIMEOUT 30
         SERVER_LOCK
@@ -185,13 +184,13 @@ if(BLITZAR_TEST_INT_BRIDGE_SOURCES)
             ${BLITZAR_TEST_INT_BRIDGE_SOURCES}
             ${BLITZAR_TEST_BASE_BRIDGE_SOURCES}
         LIBS
-            blitzarRustRuntime
+            ${BLITZAR_TEST_RUST_LIBS}
             ${BLITZAR_TEST_PLATFORM_TARGET}
     )
 endif()
 
-if(BLITZAR_TEST_INT_RUNTIME_SOURCES)
-    BLITZAR_add_gtest(blitzarClientRuntimeGTests
+if(TARGET blitzarRustRuntime AND BLITZAR_TEST_INT_RUNTIME_SOURCES)
+    BLITZAR_add_gtest(blitzarRuntimeGTests
         LABELS contract integration_real
         TIMEOUT 30
         SERVER_LOCK
@@ -199,24 +198,24 @@ if(BLITZAR_TEST_INT_RUNTIME_SOURCES)
             ${BLITZAR_TEST_INT_RUNTIME_SOURCES}
             ${BLITZAR_TEST_BASE_RUNTIME_SOURCES}
         LIBS
-            blitzarRustRuntime
+            ${BLITZAR_TEST_RUST_LIBS}
             ${BLITZAR_TEST_PLATFORM_TARGET}
     )
 endif()
 
-if(BLITZAR_TEST_UNIT_UI_SOURCES)
+if(TARGET blitzarRustRuntime AND BLITZAR_TEST_UNIT_UI_SOURCES)
     BLITZAR_add_gtest(blitzarQtUiLogicGTests
         LABELS unit
         SOURCES
             ${BLITZAR_TEST_UNIT_UI_SOURCES}
             ${BLITZAR_TEST_BASE_QT_LOGIC_SOURCES}
         LIBS
-            blitzarRustRuntime
+            ${BLITZAR_TEST_RUST_LIBS}
             ${BLITZAR_TEST_PLATFORM_TARGET}
     )
 endif()
 
-if(TARGET Qt6::Widgets AND BLITZAR_TEST_INT_UI_SOURCES)
+if(TARGET Qt6::Widgets AND TARGET blitzarRustRuntime AND BLITZAR_TEST_INT_UI_SOURCES)
     BLITZAR_add_gtest(blitzarQtMainWindowGTests
         LABELS ui_integration integration_real
         TIMEOUT 45
@@ -226,36 +225,37 @@ if(TARGET Qt6::Widgets AND BLITZAR_TEST_INT_UI_SOURCES)
             ${BLITZAR_TEST_BASE_RUNTIME_SOURCES}
             "${BLITZAR_ROOT_DIR}/tests/support/qt_test_utils.cpp"
             "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/EnergyGraphWidget.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/EnergyGraphWidgetPaint.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowController.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindow.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowConfig.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowControls.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowFileActions.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowLayout.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowLayoutState.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowPresenter.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowTelemetry.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowWorkspacePersistence.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MainWindowWorkspaceShell.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/MultiViewWidget.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/OctreeOverlay.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/OctreeOverlayPainter.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/ParticleView.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/ParticleViewColor.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/UiEnums.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/ThroughputAdvisor.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/QtTheme.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/QtViewMath.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/WorkspaceLayoutStore.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/panels/PhysicsControlPanel.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/panels/RenderControlPanel.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/panels/RunControlPanel.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/ui/panels/SceneSetupPanel.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/graphs/Graph.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/graphs/Paint.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/control/Controller.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/core/Window.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/core/Widgets.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/config/WindowConfig.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/control/Controls.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/actions/FileActions.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/layout/Layout.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/layout/State.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/presentation/Presenter.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/presentation/Telemetry.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/workspace/Persistence.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/workspace/Shell.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/viewport/MultiView.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/overlays/Octree.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/overlays/Painter.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/viewport/Particle.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/viewport/Color.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/support/types/Enums.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/support/performance/Throughput.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/support/theme/Theme.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/support/geometry/ViewMath.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/support/storage/LayoutStore.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/panels/control/Physics.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/panels/control/Render.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/panels/control/Run.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/panels/control/SceneSetup.cpp"
             ${BLITZAR_GRAPHICS_SOURCES}
         LIBS
-            blitzarRustRuntime
+            ${BLITZAR_TEST_RUST_LIBS}
             Qt6::Widgets
             ${BLITZAR_TEST_PLATFORM_TARGET}
     )
@@ -268,4 +268,3 @@ BLITZAR_add_gtest(blitzarGraphicsGTests
         "${BLITZAR_ROOT_DIR}/tests/unit/graphics/TST_UNT_GRA_GraphicsTests.cpp"
         ${BLITZAR_GRAPHICS_SOURCES}
 )
-

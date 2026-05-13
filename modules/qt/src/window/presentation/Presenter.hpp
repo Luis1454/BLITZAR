@@ -1,0 +1,58 @@
+/*
+ * @file modules/qt/src/window/presentation/Presenter.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
+
+#ifndef BLITZAR_MODULES_QT_SRC_WINDOW_PRESENTATION_PRESENTER_HPP_
+#define BLITZAR_MODULES_QT_SRC_WINDOW_PRESENTATION_PRESENTER_HPP_
+/*
+ * Module: qt
+ * Responsibility: Format runtime telemetry into user-facing status strings for the
+ * Qt workspace.
+ */
+#include "client/runtime/Interface.hpp"
+#include <cstddef>
+#include <cstdint>
+#include <string>
+/*
+ * @brief Defines the simulation stats type contract.
+ * @param None This contract does not take explicit parameters.
+ * @return Not applicable; this block documents a type contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+struct SimulationStats;
+
+namespace bltzr_qt {
+struct PresentationInput final {
+    SimulationStats stats;
+    bltzr_client::SnapshotPipelineState snapshotPipeline;
+    std::string linkLabel;
+    std::string ownerLabel;
+    std::string performanceProfile;
+    std::size_t displayedParticles = 0u;
+    std::uint32_t clientDrawCap = 0u;
+    std::uint32_t statsAgeMs = 0u;
+    std::uint32_t snapshotAgeMs = 0u;
+    std::uint32_t snapshotLatencyMs = 0u;
+    float uiTickFps = 0.0f;
+    float simulationHorizonSeconds = 0.0f;
+};
+
+struct Presentation final {
+    std::string headlineText;
+    std::string runtimeText;
+    std::string queueText;
+    std::string energyText;
+    std::string gpuText;
+    std::string statusText;
+    std::string consoleTrace;
+};
+
+class Presenter final {
+public:
+    Presentation present(const PresentationInput& input) const;
+};
+} // namespace bltzr_qt
+#endif // BLITZAR_MODULES_QT_SRC_WINDOW_PRESENTATION_PRESENTER_HPP_

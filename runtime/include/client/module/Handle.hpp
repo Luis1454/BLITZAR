@@ -1,0 +1,36 @@
+/*
+ * @file runtime/include/client/module/Handle.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
+ */
+
+#ifndef BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEHANDLE_HPP_
+#define BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEHANDLE_HPP_
+#include <memory>
+#include <string>
+#include <string_view>
+
+namespace bltzr_module {
+class Handle {
+public:
+    Handle();
+    ~Handle();
+    Handle(Handle&& other) noexcept;
+    Handle& operator=(Handle&& other) noexcept;
+    Handle(const Handle&) = delete;
+    Handle& operator=(const Handle&) = delete;
+    bool load(const std::string& modulePath, const std::string& configPath,
+              std::string_view expectedModuleId, std::string& outError);
+    void unload() noexcept;
+    [[nodiscard]] bool isLoaded() const noexcept;
+    [[nodiscard]] std::string_view moduleName() const noexcept;
+    [[nodiscard]] std::string_view loadedPath() const noexcept;
+    bool handleCommand(std::string_view commandLine, bool& outKeepRunning, std::string& outError);
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> m_impl;
+};
+} // namespace bltzr_module
+#endif // BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEHANDLE_HPP_

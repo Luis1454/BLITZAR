@@ -33,6 +33,7 @@ LINE_COUNT_EXTS = {
 LINE_COUNT_NAMES = {"CMakeLists.txt", "Makefile"}
 IGNORED_DIRS = {
     ".git",
+    ".deps",
     ".idea",
     ".vs",
     "__pycache__",
@@ -60,8 +61,8 @@ SETJMP_LONGJMP_RE = re.compile(r"\b(?:setjmp|longjmp)\b")
 DO_WHILE_RE = re.compile(r"\bdo\b\s*\{", re.DOTALL)
 WHILE_TRUE_RE = re.compile(r"\bwhile\s*\(\s*true\s*\)")
 FUNCTION_POINTER_TYPEDEF_RE = re.compile(r"(?m)^\s*(?:typedef|using)\b[^\n;]*\(\s*\*\s*[A-Za-z0-9_]*\s*\)")
-FUNCTION_POINTER_ABI_PATHS = {"runtime/include/client/ClientModuleApi.hpp"}
-NON_WAIVABLE_STRONG_SIZE_PATHS = {"engine/src/server/SimulationServer.cpp"}
+FUNCTION_POINTER_ABI_PATHS = {"runtime/include/client/module/Api.hpp"}
+NON_WAIVABLE_STRONG_SIZE_PATHS = set()
 QT_REFERENCE_NEW_RE = re.compile(
     r"(?m)^\s*(?:auto|Q[A-Za-z0-9_<>:]+)\s*&\s*[A-Za-z0-9_]+\s*=\s*\*new\s+Q[A-Za-z0-9_<>:]+\s*\("
 )

@@ -5,17 +5,18 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "command/CommandContext.hpp"
-#include "command/CommandExecutor.hpp"
-#include "command/CommandParser.hpp"
+#include "command/core/Context.hpp"
+#include "command/execution/Executor.hpp"
+#include "command/parsing/Parser.hpp"
 #include <gtest/gtest.h>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
+#include "Constants.hpp"
 
 namespace bltzr_test_module_cli_command_executor_flows {
-class FakeCommandTransport final : public bltzr_cmd::CommandTransport {
+class FakeTransport final : public bltzr_cmd::Transport {
 public:
     bool connect(const std::string& host, std::uint16_t port) override
     {
@@ -35,14 +36,14 @@ public:
         return connected;
     }
 
-    ServerClientResponse sendCommand(const std::string& cmd,
+    bltzr_protocol::Response sendCommand(const std::string& cmd,
                                      const std::string& fieldsJson = "") override
     {
         commandHistory.emplace_back(cmd, fieldsJson);
         return nextCommandResponse;
     }
 
-    ServerClientResponse getStatus(ServerClientStatus& outStatus) override
+    bltzr_protocol::Response getStatus(bltzr_protocol::ClientStatus& outStatus) override
     {
         statusCallCount += 1u;
         if (statusCallCount <= scriptedStatuses.size()) {
@@ -55,45 +56,45 @@ public:
     bool connected = false;
     bool disconnected = false;
     std::size_t statusCallCount = 0u;
-    ServerClientResponse nextCommandResponse{true, {}, {}};
-    ServerClientResponse nextStatusResponse{true, {}, {}};
+    bltzr_protocol::Response nextCommandResponse{true, {}, {}};
+    bltzr_protocol::Response nextStatusResponse{true, {}, {}};
     std::vector<std::pair<std::string, std::uint16_t>> connectHistory;
     std::vector<std::pair<std::string, std::string>> commandHistory;
-    std::vector<ServerClientStatus> scriptedStatuses;
+    std::vector<bltzr_protocol::ClientStatus> scriptedStatuses;
 };
 
-static bltzr_cmd::CommandRequest parseSingle(const std::string& line)
+static bltzr_cmd::Request parseSingle(const std::string& line)
 {
-    const bltzr_cmd::CommandParseResult parsed = bltzr_cmd::CommandParser::parseLine(line, 1u);
+    const bltzr_cmd::ParseResult parsed = bltzr_cmd::parseLine(line, 1u);
     EXPECT_TRUE(parsed.ok);
     EXPECT_EQ(parsed.requests.size(), 1u);
     return parsed.requests.front();
 }
 
-TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_013_HelpRendersCatalogAndReturnsSuccess)
+TEST(ExecutorFlowTest, TST_UNT_MODCLI_013_HelpRendersCatalogAndReturnsSuccess)
 {
-    FakeCommandTransport transport;
-    bltzr_cmd::CommandSessionState session;
+    FakeTransport transport;
+    bltzr_cmd::SessionState session;
     std::ostringstream output;
-    bltzr_cmd::CommandExecutionContext context{
-        transport, session, bltzr_cmd::CommandExecutionMode::Interactive, output};
-    const bltzr_cmd::CommandResult result =
-        bltzr_cmd::CommandExecutor::execute(parseSingle("help"), context);
+    bltzr_cmd::ExecutionContext context{
+        transport, session, bltzr_cmd::ExecutionMode::Interactive, output};
+    const bltzr_cmd::Result result =
+        bltzr_cmd::execute(parseSingle("help"), context);
     ASSERT_TRUE(result.ok);
     EXPECT_NE(output.str().find("commands:"), std::string::npos);
     EXPECT_NE(output.str().find("load_config"), std::string::npos);
     EXPECT_TRUE(transport.commandHistory.empty());
 }
 
-TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_014_ConnectionCommandsHandleSuccessAndFailure)
+TEST(ExecutorFlowTest, TST_UNT_MODCLI_014_ConnectionCommandsHandleSuccessAndFailure)
 {
-    FakeCommandTransport transport;
-    bltzr_cmd::CommandSessionState session;
+    FakeTransport transport;
+    bltzr_cmd::SessionState session;
     std::ostringstream output;
-    bltzr_cmd::CommandExecutionContext context{
-        transport, session, bltzr_cmd::CommandExecutionMode::Interactive, output};
-    const bltzr_cmd::CommandResult connectResult =
-        bltzr_cmd::CommandExecutor::execute(parseSingle("connect 192.168.1.10 5000"), context);
+    bltzr_cmd::ExecutionContext context{
+        transport, session, bltzr_cmd::ExecutionMode::Interactive, output};
+    const bltzr_cmd::Result connectResult =
+        bltzr_cmd::execute(parseSingle("connect 192.168.1.10 5000"), context);
     ASSERT_TRUE(connectResult.ok);
     EXPECT_EQ(connectResult.message, "connected");
     EXPECT_TRUE(transport.disconnected);
@@ -101,29 +102,29 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_014_ConnectionCommandsHandleSuccess
     EXPECT_EQ(transport.connectHistory[0].first, "192.168.1.10");
     EXPECT_EQ(transport.connectHistory[0].second, 5000u);
     transport.connectResult = false;
-    const bltzr_cmd::CommandResult reconnectResult =
-        bltzr_cmd::CommandExecutor::execute(parseSingle("reconnect"), context);
+    const bltzr_cmd::Result reconnectResult =
+        bltzr_cmd::execute(parseSingle("reconnect"), context);
     ASSERT_FALSE(reconnectResult.ok);
     EXPECT_EQ(reconnectResult.message, "reconnect failed");
 }
 
-TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_015_ControlCommandsMapToProtocol)
+TEST(ExecutorFlowTest, TST_UNT_MODCLI_015_ControlCommandsMapToProtocol)
 {
-    FakeCommandTransport transport;
+    FakeTransport transport;
     transport.connected = true;
-    bltzr_cmd::CommandSessionState session;
+    bltzr_cmd::SessionState session;
     std::ostringstream output;
-    bltzr_cmd::CommandExecutionContext context{transport, session,
-                                               bltzr_cmd::CommandExecutionMode::Batch, output};
-    ASSERT_TRUE(bltzr_cmd::CommandExecutor::execute(parseSingle("pause"), context).ok);
-    ASSERT_TRUE(bltzr_cmd::CommandExecutor::execute(parseSingle("resume"), context).ok);
-    ASSERT_TRUE(bltzr_cmd::CommandExecutor::execute(parseSingle("toggle"), context).ok);
-    ASSERT_TRUE(bltzr_cmd::CommandExecutor::execute(parseSingle("step"), context).ok);
-    ASSERT_TRUE(bltzr_cmd::CommandExecutor::execute(parseSingle("reset"), context).ok);
-    ASSERT_TRUE(bltzr_cmd::CommandExecutor::execute(parseSingle("recover"), context).ok);
-    ASSERT_TRUE(bltzr_cmd::CommandExecutor::execute(parseSingle("shutdown"), context).ok);
+    bltzr_cmd::ExecutionContext context{transport, session,
+                                               bltzr_cmd::ExecutionMode::Batch, output};
+    ASSERT_TRUE(bltzr_cmd::execute(parseSingle("pause"), context).ok);
+    ASSERT_TRUE(bltzr_cmd::execute(parseSingle("resume"), context).ok);
+    ASSERT_TRUE(bltzr_cmd::execute(parseSingle("toggle"), context).ok);
+    ASSERT_TRUE(bltzr_cmd::execute(parseSingle("step"), context).ok);
+    ASSERT_TRUE(bltzr_cmd::execute(parseSingle("reset"), context).ok);
+    ASSERT_TRUE(bltzr_cmd::execute(parseSingle("recover"), context).ok);
+    ASSERT_TRUE(bltzr_cmd::execute(parseSingle("shutdown"), context).ok);
     ASSERT_TRUE(
-        bltzr_cmd::CommandExecutor::execute(parseSingle("set_particle_count 42"), context).ok);
+        bltzr_cmd::execute(parseSingle("set_particle_count 42"), context).ok);
     ASSERT_EQ(transport.commandHistory.size(), 8u);
     EXPECT_EQ(transport.commandHistory[0].first, "pause");
     EXPECT_EQ(transport.commandHistory[1].first, "resume");
@@ -137,15 +138,15 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_015_ControlCommandsMapToProtocol)
     EXPECT_EQ(transport.commandHistory[7].second, "\"value\":42");
 }
 
-TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_016_StatusReportsStateAndHandlesStatusFailure)
+TEST(ExecutorFlowTest, TST_UNT_MODCLI_016_StatusReportsStateAndHandlesStatusFailure)
 {
-    FakeCommandTransport transport;
+    FakeTransport transport;
     transport.connected = true;
-    ServerClientStatus status{};
+    bltzr_protocol::ClientStatus status{};
     status.paused = false;
     status.faulted = false;
     status.steps = 12u;
-    status.dt = 0.02f;
+    status.dt = kDefaultSimulationDt;
     status.solver = "octree_gpu";
     status.integrator = "rk4";
     status.performanceProfile = "balanced";
@@ -153,68 +154,68 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_016_StatusReportsStateAndHandlesSta
     status.totalEnergy = 10.0f;
     status.energyDriftPct = 0.1f;
     transport.scriptedStatuses = {status};
-    bltzr_cmd::CommandSessionState session;
+    bltzr_cmd::SessionState session;
     std::ostringstream output;
-    bltzr_cmd::CommandExecutionContext context{
-        transport, session, bltzr_cmd::CommandExecutionMode::Interactive, output};
-    const bltzr_cmd::CommandResult okStatus =
-        bltzr_cmd::CommandExecutor::execute(parseSingle("status"), context);
+    bltzr_cmd::ExecutionContext context{
+        transport, session, bltzr_cmd::ExecutionMode::Interactive, output};
+    const bltzr_cmd::Result okStatus =
+        bltzr_cmd::execute(parseSingle("status"), context);
     ASSERT_TRUE(okStatus.ok);
     EXPECT_NE(output.str().find("RUNNING step=12"), std::string::npos);
-    transport.nextStatusResponse = ServerClientResponse{false, {}, {}};
-    const bltzr_cmd::CommandResult failedStatus =
-        bltzr_cmd::CommandExecutor::execute(parseSingle("status"), context);
+    transport.nextStatusResponse = bltzr_protocol::Response{false, {}, {}};
+    const bltzr_cmd::Result failedStatus =
+        bltzr_cmd::execute(parseSingle("status"), context);
     ASSERT_FALSE(failedStatus.ok);
     EXPECT_EQ(failedStatus.message, "status failed");
 }
 
-TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_017_RunUntilAndSendCheckedFailurePaths)
+TEST(ExecutorFlowTest, TST_UNT_MODCLI_017_RunUntilAndSendCheckedFailurePaths)
 {
-    FakeCommandTransport transport;
-    bltzr_cmd::CommandSessionState session;
+    FakeTransport transport;
+    bltzr_cmd::SessionState session;
     std::ostringstream output;
-    bltzr_cmd::CommandExecutionContext context{transport, session,
-                                               bltzr_cmd::CommandExecutionMode::Batch, output};
-    const bltzr_cmd::CommandResult negative =
-        bltzr_cmd::CommandExecutor::execute(parseSingle("run_until -1"), context);
+    bltzr_cmd::ExecutionContext context{transport, session,
+                                               bltzr_cmd::ExecutionMode::Batch, output};
+    const bltzr_cmd::Result negative =
+        bltzr_cmd::execute(parseSingle("run_until -1"), context);
     ASSERT_FALSE(negative.ok);
     EXPECT_EQ(negative.message, "run_until requires a non-negative simulation time");
     transport.connectResult = false;
     transport.connected = false;
-    const bltzr_cmd::CommandResult noConnect =
-        bltzr_cmd::CommandExecutor::execute(parseSingle("pause"), context);
+    const bltzr_cmd::Result noConnect =
+        bltzr_cmd::execute(parseSingle("pause"), context);
     ASSERT_FALSE(noConnect.ok);
     EXPECT_NE(noConnect.message.find("unable to connect to server"), std::string::npos);
     transport.connectResult = true;
     transport.connected = true;
-    transport.nextCommandResponse = ServerClientResponse{false, {}, {}};
-    const bltzr_cmd::CommandResult commandFailure =
-        bltzr_cmd::CommandExecutor::execute(parseSingle("resume"), context);
+    transport.nextCommandResponse = bltzr_protocol::Response{false, {}, {}};
+    const bltzr_cmd::Result commandFailure =
+        bltzr_cmd::execute(parseSingle("resume"), context);
     ASSERT_FALSE(commandFailure.ok);
     EXPECT_EQ(commandFailure.message, "server command failed");
 }
 
-TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_018_SetModeCommandsValidateAndMap)
+TEST(ExecutorFlowTest, TST_UNT_MODCLI_018_SetModeCommandsValidateAndMap)
 {
-    FakeCommandTransport transport;
+    FakeTransport transport;
     transport.connected = true;
-    bltzr_cmd::CommandSessionState session;
+    bltzr_cmd::SessionState session;
     std::ostringstream output;
-    bltzr_cmd::CommandExecutionContext context{
-        transport, session, bltzr_cmd::CommandExecutionMode::Interactive, output};
-    const bltzr_cmd::CommandResult badSolver =
-        bltzr_cmd::CommandExecutor::execute(parseSingle("set_solver impossible"), context);
+    bltzr_cmd::ExecutionContext context{
+        transport, session, bltzr_cmd::ExecutionMode::Interactive, output};
+    const bltzr_cmd::Result badSolver =
+        bltzr_cmd::execute(parseSingle("set_solver impossible"), context);
     ASSERT_FALSE(badSolver.ok);
     EXPECT_EQ(badSolver.message, "invalid solver value");
-    const bltzr_cmd::CommandResult badIntegrator =
-        bltzr_cmd::CommandExecutor::execute(parseSingle("set_integrator impossible"), context);
+    const bltzr_cmd::Result badIntegrator =
+        bltzr_cmd::execute(parseSingle("set_integrator impossible"), context);
     ASSERT_FALSE(badIntegrator.ok);
     EXPECT_EQ(badIntegrator.message, "invalid integrator value");
-    const bltzr_cmd::CommandResult solver =
-        bltzr_cmd::CommandExecutor::execute(parseSingle("set_solver octree_cpu"), context);
+    const bltzr_cmd::Result solver =
+        bltzr_cmd::execute(parseSingle("set_solver octree_cpu"), context);
     ASSERT_TRUE(solver.ok);
-    const bltzr_cmd::CommandResult integrator =
-        bltzr_cmd::CommandExecutor::execute(parseSingle("set_integrator rk4"), context);
+    const bltzr_cmd::Result integrator =
+        bltzr_cmd::execute(parseSingle("set_integrator rk4"), context);
     ASSERT_TRUE(integrator.ok);
     ASSERT_EQ(transport.commandHistory.size(), 2u);
     EXPECT_EQ(transport.commandHistory[0].first, "set_solver");
@@ -223,18 +224,18 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_018_SetModeCommandsValidateAndMap)
     EXPECT_EQ(transport.commandHistory[1].second, "\"value\":\"rk4\"");
 }
 
-TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_019_ExportSnapshotUsesDerivedAndExplicitFormats)
+TEST(ExecutorFlowTest, TST_UNT_MODCLI_019_ExportSnapshotUsesDerivedAndExplicitFormats)
 {
-    FakeCommandTransport transport;
+    FakeTransport transport;
     transport.connected = true;
-    bltzr_cmd::CommandSessionState session;
+    bltzr_cmd::SessionState session;
     std::ostringstream output;
-    bltzr_cmd::CommandExecutionContext context{
-        transport, session, bltzr_cmd::CommandExecutionMode::Interactive, output};
-    const bltzr_cmd::CommandResult derived = bltzr_cmd::CommandExecutor::execute(
+    bltzr_cmd::ExecutionContext context{
+        transport, session, bltzr_cmd::ExecutionMode::Interactive, output};
+    const bltzr_cmd::Result derived = bltzr_cmd::execute(
         parseSingle("export_snapshot outputs/frame.xyz"), context);
     ASSERT_TRUE(derived.ok);
-    const bltzr_cmd::CommandResult explicitFormat = bltzr_cmd::CommandExecutor::execute(
+    const bltzr_cmd::Result explicitFormat = bltzr_cmd::execute(
         parseSingle("export_snapshot outputs/frame.bin vtk_binary"), context);
     ASSERT_TRUE(explicitFormat.ok);
     ASSERT_EQ(transport.commandHistory.size(), 2u);
@@ -245,53 +246,53 @@ TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_019_ExportSnapshotUsesDerivedAndExp
               std::string::npos);
 }
 
-TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_037_RunUntilPropagatesStatusErrorDetails)
+TEST(ExecutorFlowTest, TST_UNT_MODCLI_037_RunUntilPropagatesStatusErrorDetails)
 {
-    FakeCommandTransport transport;
+    FakeTransport transport;
     transport.connected = true;
-    transport.nextStatusResponse = ServerClientResponse{false, {}, "status timeout"};
-    bltzr_cmd::CommandSessionState session;
+    transport.nextStatusResponse = bltzr_protocol::Response{false, {}, "status timeout"};
+    bltzr_cmd::SessionState session;
     std::ostringstream output;
-    bltzr_cmd::CommandExecutionContext context{transport, session,
-                                               bltzr_cmd::CommandExecutionMode::Batch, output};
-    const bltzr_cmd::CommandResult result =
-        bltzr_cmd::CommandExecutor::execute(parseSingle("run_until 5.0"), context);
+    bltzr_cmd::ExecutionContext context{transport, session,
+                                               bltzr_cmd::ExecutionMode::Batch, output};
+    const bltzr_cmd::Result result =
+        bltzr_cmd::execute(parseSingle("run_until 5.0"), context);
     ASSERT_FALSE(result.ok);
     EXPECT_EQ(result.message, "status timeout");
     ASSERT_FALSE(transport.commandHistory.empty());
     EXPECT_EQ(transport.commandHistory[0].first, "pause");
 }
 
-TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_038_SendCheckedReturnsServerErrorDetail)
+TEST(ExecutorFlowTest, TST_UNT_MODCLI_038_SendCheckedReturnsServerErrorDetail)
 {
-    FakeCommandTransport transport;
+    FakeTransport transport;
     transport.connected = true;
-    transport.nextCommandResponse = ServerClientResponse{false, {}, "permission denied"};
-    bltzr_cmd::CommandSessionState session;
+    transport.nextCommandResponse = bltzr_protocol::Response{false, {}, "permission denied"};
+    bltzr_cmd::SessionState session;
     std::ostringstream output;
-    bltzr_cmd::CommandExecutionContext context{
-        transport, session, bltzr_cmd::CommandExecutionMode::Interactive, output};
-    const bltzr_cmd::CommandResult result =
-        bltzr_cmd::CommandExecutor::execute(parseSingle("resume"), context);
+    bltzr_cmd::ExecutionContext context{
+        transport, session, bltzr_cmd::ExecutionMode::Interactive, output};
+    const bltzr_cmd::Result result =
+        bltzr_cmd::execute(parseSingle("resume"), context);
     ASSERT_FALSE(result.ok);
     EXPECT_EQ(result.message, "permission denied");
     ASSERT_EQ(transport.commandHistory.size(), 1u);
     EXPECT_EQ(transport.commandHistory[0].first, "resume");
 }
 
-TEST(CommandExecutorFlowTest, TST_UNT_MODCLI_039_RunUntilReturnsImmediatelyWhenTargetAlreadyReached)
+TEST(ExecutorFlowTest, TST_UNT_MODCLI_039_RunUntilReturnsImmediatelyWhenTargetAlreadyReached)
 {
-    FakeCommandTransport transport;
+    FakeTransport transport;
     transport.connected = true;
-    ServerClientStatus status{};
+    bltzr_protocol::ClientStatus status{};
     status.totalTime = 6.0f;
     transport.scriptedStatuses = {status};
-    bltzr_cmd::CommandSessionState session;
+    bltzr_cmd::SessionState session;
     std::ostringstream output;
-    bltzr_cmd::CommandExecutionContext context{transport, session,
-                                               bltzr_cmd::CommandExecutionMode::Batch, output};
-    const bltzr_cmd::CommandResult result =
-        bltzr_cmd::CommandExecutor::execute(parseSingle("run_until 5.0"), context);
+    bltzr_cmd::ExecutionContext context{transport, session,
+                                               bltzr_cmd::ExecutionMode::Batch, output};
+    const bltzr_cmd::Result result =
+        bltzr_cmd::execute(parseSingle("run_until 5.0"), context);
     ASSERT_TRUE(result.ok);
     ASSERT_FALSE(transport.commandHistory.empty());
     EXPECT_EQ(transport.commandHistory[0].first, "pause");

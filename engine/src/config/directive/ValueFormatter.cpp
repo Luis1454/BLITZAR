@@ -1,0 +1,36 @@
+/*
+ * @file engine/src/config/directive/ValueFormatter.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Configuration parsing, validation, and serialization implementation.
+ */
+
+#include "config/directive/ValueFormatter.hpp"
+#include <algorithm>
+#include <cctype>
+
+namespace bltzr_config {
+std::string quoteDirectiveValue(const std::string& value)
+{
+    if (value.empty()) {
+        return "\"\"";
+    }
+    const bool needsQuotes = std::any_of(value.begin(), value.end(), [](unsigned char c) {
+        return std::isspace(c) != 0 || c == ',' || c == '(' || c == ')' || c == '"' || c == '\'';
+    });
+    if (!needsQuotes) {
+        return value;
+    }
+    std::string quoted;
+    quoted.reserve(value.size() + 2u);
+    quoted.push_back('"');
+    for (char c : value) {
+        if (c == '"' || c == '\\') {
+            quoted.push_back('\\');
+        }
+        quoted.push_back(c);
+    }
+    quoted.push_back('"');
+    return quoted;
+}
+} // namespace bltzr_config

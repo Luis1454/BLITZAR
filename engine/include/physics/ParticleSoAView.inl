@@ -69,6 +69,9 @@ BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline void setSoAVelocity(ParticleSoAView vie
  */
 BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline void setSoAPressure(ParticleSoAView view, int i, Vector3 p)
 {
+    if (view.pressX == nullptr || view.pressY == nullptr || view.pressZ == nullptr) {
+        return;
+    }
     view.pressX[i] = p.x;
     view.pressY[i] = p.y;
     view.pressZ[i] = p.z;
@@ -83,5 +86,8 @@ BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline void setSoAPressure(ParticleSoAView vie
  */
 BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3 getSoAPressure(ParticleSoAView view, int i)
 {
+    if (view.pressX == nullptr || view.pressY == nullptr || view.pressZ == nullptr) {
+        return Vector3{0.0f, 0.0f, 0.0f};
+    }
     return Vector3{view.pressX[i], view.pressY[i], view.pressZ[i]};
 }

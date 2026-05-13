@@ -5,10 +5,10 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "config/EnvUtils.hpp"
-#include "platform/PlatformPaths.hpp"
-#include "platform/SocketPlatform.hpp"
-#include "protocol/ServerClient.hpp"
+#include "config/env/Base.hpp"
+#include "platform/Paths.hpp"
+#include "platform/Socket.hpp"
+#include "protocol/client/Client.hpp"
 #include "tests/support/server_harness.hpp"
 #include <array>
 #include <chrono>
@@ -117,7 +117,7 @@ bool RealServerHarness::isPortBindable(std::uint16_t port)
  */
 bool RealServerHarness::waitUntilReady(std::string& outError) const
 {
-    ServerClient client;
+    bltzr_protocol::Client client;
     client.setSocketTimeoutMs(120);
     client.setAuthToken(_authToken);
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
@@ -127,8 +127,8 @@ bool RealServerHarness::waitUntilReady(std::string& outError) const
             return false;
         }
         if (client.connect("127.0.0.1", _port)) {
-            ServerClientStatus status{};
-            const ServerClientResponse response = client.getStatus(status);
+            bltzr_protocol::ClientStatus status{};
+            const bltzr_protocol::Response response = client.getStatus(status);
             client.disconnect();
             if (response.ok)
                 return true;

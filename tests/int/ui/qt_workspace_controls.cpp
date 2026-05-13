@@ -5,10 +5,10 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/ClientRuntime.hpp"
+#include "client/runtime/Runtime.hpp"
 #include "tests/support/client_utils.hpp"
 #include "tests/support/qt_test_utils.hpp"
-#include "ui/MainWindow.hpp"
+#include "window/core/Window.hpp"
 #include <QAction>
 #include <QCheckBox>
 #include <QComboBox>
@@ -41,9 +41,9 @@ static SimulationConfig makeWorkspaceUiConfig()
 TEST(QtWorkspaceControlsTest, TST_UIX_UI_007_ProfilesAndCheckboxesRemainInteractiveWithoutServer)
 {
     (void)testsupport::ensureQtApp();
-    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::Runtime>(
         "simulation.ini", testsupport::makeTransport(1u, std::string()));
-    bltzr_qt::MainWindow window(makeWorkspaceUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::Window window(makeWorkspaceUiConfig(), "simulation.ini", std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     QComboBox* performanceCombo =
@@ -82,9 +82,9 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_008_SavePersistsProfilesSelectedFromWor
         ("BLITZAR_qt_profiles_" + std::to_string(stamp) + ".ini");
     SimulationConfig initialConfig = makeWorkspaceUiConfig();
     ASSERT_TRUE(initialConfig.save(configPath.string()));
-    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::Runtime>(
         configPath.string(), testsupport::makeTransport(1u, std::string()));
-    bltzr_qt::MainWindow window(initialConfig, configPath.string(), std::move(runtime));
+    bltzr_qt::Window window(initialConfig, configPath.string(), std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     QComboBox* performanceCombo =
@@ -119,9 +119,9 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_008_SavePersistsProfilesSelectedFromWor
 TEST(QtWorkspaceControlsTest, TST_UIX_UI_009_EnergyDockIsVisibleAndSidebarStaysCompact)
 {
     (void)testsupport::ensureQtApp();
-    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::Runtime>(
         "simulation.ini", testsupport::makeTransport(1u, std::string()));
-    bltzr_qt::MainWindow window(makeWorkspaceUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::Window window(makeWorkspaceUiConfig(), "simulation.ini", std::move(runtime));
     window.resize(1024, 768);
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
@@ -143,9 +143,9 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_015_ThemeTogglePersistsAcrossSaveAndRel
     SimulationConfig initialConfig = makeWorkspaceUiConfig();
     initialConfig.uiTheme = "dark";
     ASSERT_TRUE(initialConfig.save(configPath.string()));
-    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::Runtime>(
         configPath.string(), testsupport::makeTransport(1u, std::string()));
-    bltzr_qt::MainWindow window(initialConfig, configPath.string(), std::move(runtime));
+    bltzr_qt::Window window(initialConfig, configPath.string(), std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     QAction* lightAction = window.findChild<QAction*>("themeLightAction");
@@ -168,9 +168,9 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_015_ThemeTogglePersistsAcrossSaveAndRel
         std::chrono::milliseconds(2000)));
     const SimulationConfig reloaded = SimulationConfig::loadOrCreate(configPath.string());
     EXPECT_EQ(reloaded.uiTheme, "light");
-    auto secondRuntime = std::make_unique<bltzr_client::ClientRuntime>(
+    auto secondRuntime = std::make_unique<bltzr_client::Runtime>(
         configPath.string(), testsupport::makeTransport(1u, std::string()));
-    bltzr_qt::MainWindow secondWindow(reloaded, configPath.string(), std::move(secondRuntime));
+    bltzr_qt::Window secondWindow(reloaded, configPath.string(), std::move(secondRuntime));
     secondWindow.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     EXPECT_GT(secondWindow.palette().color(QPalette::Window).lightness(), 180);
@@ -187,9 +187,9 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_018_ShowsThroughputAdvisoryForHeavyConf
     config.substepTargetDt = 0.01f;
     config.maxSubsteps = 6u;
     config.clientParticleCap = 100000u;
-    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::Runtime>(
         "simulation.ini", testsupport::makeTransport(1u, std::string()));
-    bltzr_qt::MainWindow window(config, "simulation.ini", std::move(runtime));
+    bltzr_qt::Window window(config, "simulation.ini", std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     QLabel* validationLabel = window.findChild<QLabel*>("validationLabel");

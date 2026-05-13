@@ -1,0 +1,33 @@
+/*
+ * @file modules/qt/src/support/storage/LayoutStore.hpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Qt desktop user interface module for simulation control and visualization.
+ */
+
+#ifndef BLITZAR_MODULES_QT_SRC_SUPPORT_STORAGE_LAYOUTSTORE_HPP_
+#define BLITZAR_MODULES_QT_SRC_SUPPORT_STORAGE_LAYOUTSTORE_HPP_
+
+#include <filesystem>
+#include <string>
+#include <vector>
+
+namespace bltzr_qt {
+class LayoutStore final {
+public:
+    explicit LayoutStore(std::string configPath);
+    bool deletePreset(const std::string& name) const;
+    bool loadPreset(const std::string& name, std::string& state, std::string& geometry) const;
+    std::vector<std::string> listPresets() const;
+    bool savePreset(const std::string& name, const std::string& state,
+                    const std::string& geometry) const;
+
+private:
+    static std::string normalizeName(const std::string& name);
+    std::filesystem::path presetPath(const std::string& name) const;
+    static bool readValueLine(const std::string& line, const char* prefix, std::string& out);
+    std::filesystem::path _layoutsRoot;
+};
+} // namespace bltzr_qt
+
+#endif // BLITZAR_MODULES_QT_SRC_SUPPORT_STORAGE_LAYOUTSTORE_HPP_

@@ -6,8 +6,8 @@
  */
 
 #include "tests/support/qt_test_utils.hpp"
-#include "ui/EnergyGraphWidget.hpp"
-#include "ui/MainWindow.hpp"
+#include "widgets/graphs/Graph.hpp"
+#include "window/core/Window.hpp"
 #include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>
@@ -26,7 +26,7 @@
 #include <vector>
 
 namespace bltzr_test_qt_workspace_runtime_controls {
-class RecordingRuntime final : public bltzr_client::IClientRuntime {
+class RecordingRuntime final : public bltzr_client::Interface {
 public:
     bool start() override
     {
@@ -289,7 +289,7 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_010_RunButtonsAndConnectorForwar
     (void)testsupport::ensureQtApp();
     auto runtime = std::make_unique<RecordingRuntime>();
     RecordingRuntime* spy = runtime.get();
-    bltzr_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::Window window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     window.findChild<QLineEdit*>("serverHostEdit")->setText("10.0.0.4");
@@ -319,7 +319,7 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_011_RunAndSceneProfilesPropagate
     (void)testsupport::ensureQtApp();
     auto runtime = std::make_unique<RecordingRuntime>();
     RecordingRuntime* spy = runtime.get();
-    bltzr_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::Window window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     window.findChild<QComboBox*>("performanceProfileCombo")->setCurrentText("balanced");
@@ -353,7 +353,7 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_012_PhysicsAndRenderControlsPers
     ASSERT_TRUE(makeRuntimeUiConfig().save(configPath.string()));
     auto runtime = std::make_unique<RecordingRuntime>();
     RecordingRuntime* spy = runtime.get();
-    bltzr_qt::MainWindow window(makeRuntimeUiConfig(), configPath.string(), std::move(runtime));
+    bltzr_qt::Window window(makeRuntimeUiConfig(), configPath.string(), std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     window.findChild<QComboBox*>("solverCombo")->setCurrentText("octree_cpu");
@@ -405,11 +405,11 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_013_ResetClearsEnergyTimelineHis
 {
     (void)testsupport::ensureQtApp();
     auto runtime = std::make_unique<RecordingRuntime>();
-    bltzr_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::Window window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     QWidget* graphWidget = window.findChild<QWidget*>("energyGraphWidget");
-    auto* graph = dynamic_cast<bltzr_qt::EnergyGraphWidget*>(graphWidget);
+    auto* graph = dynamic_cast<bltzr_qt::Graph*>(graphWidget);
     ASSERT_NE(graph, nullptr);
     SimulationStats first{};
     first.steps = 10u;
@@ -434,7 +434,7 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_019_GpuTelemetryToggleForwardsTo
     (void)testsupport::ensureQtApp();
     auto runtime = std::make_unique<RecordingRuntime>();
     RecordingRuntime* spy = runtime.get();
-    bltzr_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::Window window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     QCheckBox* gpuTelemetryCheck = window.findChild<QCheckBox*>("gpuTelemetryCheck");
@@ -453,10 +453,10 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_021_TickSurvivesMissingSnapshot)
     (void)testsupport::ensureQtApp();
     auto runtime = std::make_unique<RecordingRuntime>();
     runtime->startSucceeded = true;
-    bltzr_qt::MainWindow window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::Window window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
     window.show();
     QWidget* graphWidget = window.findChild<QWidget*>("energyGraphWidget");
-    auto* graph = dynamic_cast<bltzr_qt::EnergyGraphWidget*>(graphWidget);
+    auto* graph = dynamic_cast<bltzr_qt::Graph*>(graphWidget);
     ASSERT_NE(graph, nullptr);
     ASSERT_TRUE(testsupport::waitUntilUi(
         [&]() {

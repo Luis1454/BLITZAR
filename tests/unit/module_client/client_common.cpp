@@ -5,9 +5,9 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/ClientCommon.hpp"
-#include "config/SimulationConfig.hpp"
-#include "protocol/ServerProtocol.hpp"
+#include "client/common/ClientCommon.hpp"
+#include "config/core/Config.hpp"
+#include "protocol/Protocol.hpp"
 #include "tests/support/scoped_env_var.hpp"
 #include <cctype>
 #include <filesystem>

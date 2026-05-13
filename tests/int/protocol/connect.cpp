@@ -5,8 +5,8 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "protocol/ServerClient.hpp"
-#include "protocol/ServerProtocol.hpp"
+#include "protocol/client/Client.hpp"
+#include "protocol/Protocol.hpp"
 #include "tests/support/server_harness.hpp"
 #include <chrono>
 #include <cmath>
@@ -15,16 +15,16 @@
 #include <vector>
 
 namespace bltzr_test_server_protocol_connect {
-TEST(ServerProtocolTest, TST_INT_PROT_001_ServerClientParsesStatusAndSnapshotFromRealServer)
+TEST(ServerProtocolTest, TST_INT_PROT_001_ClientParsesStatusAndSnapshotFromRealServer)
 {
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    ServerClient client;
+    bltzr_protocol::Client client;
     client.setSocketTimeoutMs(200);
     ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
-    ServerClientStatus status{};
-    const ServerClientResponse statusResponse = client.getStatus(status);
+    bltzr_protocol::ClientStatus status{};
+    const bltzr_protocol::Response statusResponse = client.getStatus(status);
     ASSERT_TRUE(statusResponse.ok) << statusResponse.error;
     EXPECT_GT(status.particleCount, 0u);
     EXPECT_GT(status.dt, 0.0f);
@@ -34,14 +34,14 @@ TEST(ServerProtocolTest, TST_INT_PROT_001_ServerClientParsesStatusAndSnapshotFro
     EXPECT_TRUE(status.faultReason.empty());
     EXPECT_TRUE(std::isfinite(status.totalEnergy));
     std::vector<RenderParticle> snapshot;
-    ServerClientResponse snapshotResponse{};
+    bltzr_protocol::Response snapshotResponse{};
     bool gotSnapshot = false;
     bool requestedStep = false;
     for (int attempt = 0; attempt < 200 && !gotSnapshot; ++attempt) {
         snapshotResponse = client.getSnapshot(snapshot, 128u);
         gotSnapshot = snapshotResponse.ok && !snapshot.empty();
         if (!gotSnapshot && !requestedStep && attempt >= 10) {
-            const ServerClientResponse stepResponse =
+            const bltzr_protocol::Response stepResponse =
                 client.sendCommand(std::string(bltzr_protocol::Step), "\"count\":1");
             ASSERT_TRUE(stepResponse.ok) << stepResponse.error;
             requestedStep = true;
@@ -59,26 +59,26 @@ TEST(ServerProtocolTest, TST_INT_PROT_001_ServerClientParsesStatusAndSnapshotFro
     server.stop();
 }
 
-TEST(ServerProtocolTest, TST_INT_PROT_002_ServerClientRecoversAfterRealServerRestartOnSamePort)
+TEST(ServerProtocolTest, TST_INT_PROT_002_ClientRecoversAfterRealServerRestartOnSamePort)
 {
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
     const std::uint16_t fixedPort = server.port();
-    ServerClient client;
+    bltzr_protocol::Client client;
     client.setSocketTimeoutMs(200);
     ASSERT_TRUE(client.connect("127.0.0.1", fixedPort));
-    ServerClientStatus status{};
+    bltzr_protocol::ClientStatus status{};
     ASSERT_TRUE(client.getStatus(status).ok);
     server.stop();
-    const ServerClientResponse afterStop = client.getStatus(status);
+    const bltzr_protocol::Response afterStop = client.getStatus(status);
     EXPECT_FALSE(afterStop.ok);
     EXPECT_NE(afterStop.error.find("[server-client] sendJson:"), std::string::npos)
         << afterStop.error;
     EXPECT_FALSE(client.isConnected());
     ASSERT_TRUE(server.start(startError, fixedPort)) << startError;
     ASSERT_TRUE(client.connect("127.0.0.1", fixedPort));
-    const ServerClientResponse afterRestart = client.getStatus(status);
+    const bltzr_protocol::Response afterRestart = client.getStatus(status);
     EXPECT_TRUE(afterRestart.ok) << afterRestart.error;
     EXPECT_TRUE(client.isConnected());
     client.disconnect();
@@ -86,17 +86,17 @@ TEST(ServerProtocolTest, TST_INT_PROT_002_ServerClientRecoversAfterRealServerRes
 }
 
 TEST(ServerProtocolTest,
-     TST_INT_PROT_009_ServerClientRejectsRequestsWithoutConnectionWithOperationContext)
+     TST_INT_PROT_009_ClientRejectsRequestsWithoutConnectionWithOperationContext)
 {
-    ServerClient client;
-    const ServerClientResponse response = client.sendJson("   ");
+    bltzr_protocol::Client client;
+    const bltzr_protocol::Response response = client.sendJson("   ");
     EXPECT_FALSE(response.ok);
     EXPECT_EQ(response.error, "[server-client] sendJson: not connected");
 }
 
-TEST(ServerProtocolTest, TST_INT_PROT_003_ServerClientConnectTimeoutIsBounded)
+TEST(ServerProtocolTest, TST_INT_PROT_003_ClientConnectTimeoutIsBounded)
 {
-    ServerClient client;
+    bltzr_protocol::Client client;
     client.setSocketTimeoutMs(120);
     const auto startedAt = std::chrono::steady_clock::now();
     const bool connected = client.connect("203.0.113.1", 65000u);

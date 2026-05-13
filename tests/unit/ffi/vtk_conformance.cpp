@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "ffi/BlitzarCoreApi.hpp"
+#include "ffi/core/Api.hpp"
 #include <array>
 #include <chrono>
 #include <filesystem>

@@ -5,17 +5,18 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/IClientRuntime.hpp"
-#include "config/SimulationConfig.hpp"
-#include "ui/MainWindowController.hpp"
+#include "client/runtime/Interface.hpp"
+#include "config/core/Config.hpp"
+#include "window/control/Controller.hpp"
 #include <cstdint>
 #include <gtest/gtest.h>
 #include <optional>
 #include <string>
 #include <vector>
+#include "Constants.hpp"
 
 namespace bltzr_test_qt_ui {
-class RecordingClientRuntime final : public bltzr_client::IClientRuntime {
+class RecordingRuntime final : public bltzr_client::Interface {
 public:
     bool start() override
     {
@@ -254,7 +255,7 @@ TEST(QtUiLogicTest, TST_UNT_UI_002_ControllerAppliesRuntimeMappingsWithoutWidget
 {
     SimulationConfig config{};
     config.particleCount = 2048u;
-    config.dt = 0.02f;
+    config.dt = kDefaultSimulationDt;
     config.solver = "octree_gpu";
     config.integrator = "rk4";
     config.performanceProfile = "balanced";
@@ -273,9 +274,9 @@ TEST(QtUiLogicTest, TST_UNT_UI_002_ControllerAppliesRuntimeMappingsWithoutWidget
     config.exportDirectory = "exports";
     config.exportFormat = "vtk";
     config.clientParticleCap = 1234u;
-    RecordingClientRuntime runtime;
-    const bltzr_qt::MainWindowApplyConfigResult result =
-        bltzr_qt::MainWindowController().applyConfig(config, runtime, true);
+    RecordingRuntime runtime;
+    const bltzr_qt::ApplyConfigResult result =
+        bltzr_qt::Controller().applyConfig(config, runtime, true);
     ASSERT_TRUE(result.applied);
     EXPECT_TRUE(result.report.validForRun);
     EXPECT_TRUE(runtime.resetRequested);
@@ -292,9 +293,9 @@ TEST(QtUiLogicTest, TST_UNT_UI_003_ControllerRejectsInvalidConfigBeforeRuntimeMu
 {
     SimulationConfig config{};
     config.clientSnapshotQueueCapacity = 0u;
-    RecordingClientRuntime runtime;
-    const bltzr_qt::MainWindowApplyConfigResult result =
-        bltzr_qt::MainWindowController().applyConfig(config, runtime, true);
+    RecordingRuntime runtime;
+    const bltzr_qt::ApplyConfigResult result =
+        bltzr_qt::Controller().applyConfig(config, runtime, true);
     EXPECT_FALSE(result.applied);
     EXPECT_FALSE(result.report.validForRun);
     EXPECT_FALSE(runtime.resetRequested);

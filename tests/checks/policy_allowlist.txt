@@ -3,22 +3,22 @@
 # Each active group must also exist in docs/quality/manifest/deviations.json.
 
 # Core server orchestration pending split by protocol/state/controls.
-runtime/src/server/ServerDaemon.cpp
-runtime/src/protocol/ServerClient.cpp
-runtime/src/client/ClientServerBridge.cpp
-runtime/src/client/ClientRuntime.cpp
-runtime/src/command/CommandExecutor.cpp
+runtime/src/server/core/Daemon.cpp
+runtime/src/protocol/client/Client.cpp
+runtime/src/client/runtime/Bridge.cpp
+runtime/src/client/runtime/Runtime.cpp
+runtime/src/command/execution/Executor.cpp
 
 # Client module composition files pending per-feature extraction.
-modules/proxy/module.cpp
-modules/qt/module.cpp
-modules/qt/ui/EnergyGraphWidgetPaint.cpp
+modules/proxy/Module.cpp
+modules/qt/Module.cpp
+modules/qt/src/widgets/graphs/Paint.cpp
 
 # CUDA fragment blocks retained while kernel-level decomposition is prepared.
-engine/src/physics/cuda/fragments/ParticleSystemPrelude.inl
-engine/src/physics/cuda/fragments/ParticleSystemUpdate.inl
-engine/src/physics/cuda/fragments/ParticleSystemBuffer.inl
-engine/src/physics/cuda/fragments/ParticleSystemLinearOctreeGpu.inl
+engine/src/cuda/fragments/system/Prelude.inl
+engine/src/cuda/fragments/integration/Update.inl
+engine/src/cuda/fragments/system/Buffer.inl
+engine/src/cuda/fragments/octree/LinearGpu.inl
 
 # Quality manifest catalog is temporarily kept as a single evidence index while split tooling is prepared.
 docs/quality/manifest/test_groups_core.json
@@ -30,4 +30,4 @@ tests/unit/protocol/json_codec.cpp
 tests/int/ui/qt_workspace_runtime_controls.cpp
 
 # Initial state generation modes for presets
-engine/src/server/simulation_server/InitialStateGeneration.cpp
+engine/src/server/simulation/state/Generation.cpp

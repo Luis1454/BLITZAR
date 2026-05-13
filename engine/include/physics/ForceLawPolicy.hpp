@@ -13,6 +13,7 @@
  * Responsibility: Normalize the canonical force-law clamps shared by all
  * blitzar solvers.
  */
+#include "Constants.hpp"
 /*
  * @brief Defines the force law policy type contract.
  * @param None This contract does not take explicit parameters.
@@ -20,11 +21,11 @@
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
 struct ForceLawPolicy {
-    float theta = 0.05f;
-    float softening = 1.0e-4f;
-    float minSoftening = 1.0e-4f;
-    float minDistance2 = 1.0e-12f;
-    float minTheta = 0.05f;
+    float theta = kPhysicsMinTheta;
+    float softening = kPhysicsMinSofteningDefault;
+    float minSoftening = kPhysicsMinSofteningDefault;
+    float minDistance2 = kPhysicsMinDistance2Default;
+    float minTheta = kPhysicsMinTheta;
 };
 
 /*

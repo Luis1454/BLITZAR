@@ -7,6 +7,7 @@
 
 #ifndef BLITZAR_APPS_SERVER_SERVICE_ARGS_HPP_
 #define BLITZAR_APPS_SERVER_SERVICE_ARGS_HPP_
+#include "Constants.hpp"
 #include <cstdint>
 #include <ostream>
 #include <string>
@@ -15,8 +16,8 @@
 
 namespace bltzr_server_service {
 struct DaemonOptions {
-    std::string host = "127.0.0.1";
-    std::uint16_t port = 4545;
+    std::string host = kDefaultLoopbackHost;
+    std::uint16_t port = kDefaultServerPort;
     std::string authToken;
     bool allowRemoteBind = false;
     bool startPaused = false;

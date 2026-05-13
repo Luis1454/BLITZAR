@@ -5,8 +5,8 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "config/SimulationConfig.hpp"
-#include "config/SimulationScenarioValidation.hpp"
+#include "config/core/Config.hpp"
+#include "config/validation/Scenario.hpp"
 #include <gtest/gtest.h>
 #include <string>
 

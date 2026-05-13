@@ -4,28 +4,29 @@
 # @brief CMake build orchestration for BLITZAR targets and tooling.
 
 set(BLITZAR_PLATFORM_SOURCES
-    engine/src/platform/PlatformErrors.cpp
-    engine/src/platform/common/DynamicLibraryCommon.cpp
-    engine/src/platform/common/PlatformProcessCommon.cpp
-    engine/src/platform/common/PlatformProcessCommonImpl.cpp
-    engine/src/platform/common/SocketPlatformCommon.cpp
+    engine/src/platform/Errors.cpp
+    engine/src/platform/common/DynamicLibrary.cpp
+    engine/src/platform/common/Process.cpp
+    engine/src/platform/common/ProcessImpl.cpp
+    engine/src/platform/common/Socket.cpp
 )
 if(WIN32)
     list(APPEND BLITZAR_PLATFORM_SOURCES
-        engine/src/platform/win/DynamicLibraryWin.cpp
-        engine/src/platform/win/PlatformPathsWin.cpp
-        engine/src/platform/win/PlatformProcessWin.cpp
-        engine/src/platform/win/SocketPlatformWin.cpp
+        engine/src/platform/win/DynamicLibrary.cpp
+        engine/src/platform/win/Paths.cpp
+        engine/src/platform/win/Process.cpp
+        engine/src/platform/win/Socket.cpp
     )
 else()
     list(APPEND BLITZAR_PLATFORM_SOURCES
-        engine/src/platform/posix/DynamicLibraryPosix.cpp
-        engine/src/platform/posix/PlatformPathsPosix.cpp
-        engine/src/platform/posix/PlatformProcessPosix.cpp
-        engine/src/platform/posix/SocketPlatformPosix.cpp
+        engine/src/platform/posix/DynamicLibrary.cpp
+        engine/src/platform/posix/Paths.cpp
+        engine/src/platform/posix/Process.cpp
+        engine/src/platform/posix/SocketOps.cpp
     )
 endif()
 add_library(blitzarPlatform STATIC ${BLITZAR_PLATFORM_SOURCES})
+set_target_properties(blitzarPlatform PROPERTIES POSITION_INDEPENDENT_CODE ON)
 configure_BLITZAR_cpp_target(blitzarPlatform)
 if(APPLE)
     target_compile_definitions(blitzarPlatform
@@ -51,47 +52,52 @@ endfunction()
 include("${BLITZAR_ROOT_DIR}/cmake/qt_paths.cmake")
 
 set(BLITZAR_RUNTIME_COMMAND_SOURCES
-    "${BLITZAR_ROOT_DIR}/runtime/src/command/CommandBatchRunner.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/command/CommandCatalog.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/command/CommandExecutor.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/command/CommandParser.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/command/CommandTransport.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/command/execution/BatchRunner.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/command/catalog/Catalog.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/command/execution/Executor.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/command/parsing/Parser.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/command/transport/Transport.cpp"
 )
 if(WIN32)
     set(BLITZAR_CLIENT_COMMON_SUPPORT_SOURCES
-        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtilsWin.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Base.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Win.cpp"
     )
 else()
     set(BLITZAR_CLIENT_COMMON_SUPPORT_SOURCES
-        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtilsPosix.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Base.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Posix.cpp"
     )
 endif()
 set(BLITZAR_COMMAND_CONFIG_SOURCES
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationPhysics.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationRender.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveValueFormatter.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/args/Parse.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Main.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Apply.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Entries.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/profile/Performance.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Scenario.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Physics.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Render.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Config.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Write.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/StreamWriter.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/ValueFormatter.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/core/Config.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/modes/Normalize.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/TextParse.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/text/Parse.cpp"
 )
 add_library(blitzarCoreFfi STATIC
     ${BLITZAR_CORE_FFI_SOURCES}
     ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
     ${BLITZAR_SERVER_SOURCES}
 )
-configure_BLITZAR_cuda_target(blitzarCoreFfi)
+set_target_properties(blitzarCoreFfi PROPERTIES POSITION_INDEPENDENT_CODE ON)
+if(BLITZAR_ENABLE_CUDA)
+    configure_BLITZAR_cuda_target(blitzarCoreFfi)
+else()
+    configure_BLITZAR_cpp_target(blitzarCoreFfi)
+endif()
 set_target_properties(blitzarCoreFfi PROPERTIES OUTPUT_NAME "blitzar-core-ffi")
 if(WIN32)
     target_link_libraries(blitzarPlatform
@@ -111,11 +117,16 @@ add_executable(${APP_NAME}
 configure_BLITZAR_cpp_target(${APP_NAME})
 if(BLITZAR_BUILD_HEADLESS_BINARY)
     add_executable(${HEADLESS_NAME}
-        apps/headless/src/main.cu
+        apps/headless/src/main.cpp
         ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
         ${BLITZAR_SERVER_SOURCES}
     )
-    configure_BLITZAR_cuda_target(${HEADLESS_NAME})
+    if(BLITZAR_ENABLE_CUDA)
+        configure_BLITZAR_cuda_target(${HEADLESS_NAME})
+    else()
+        configure_BLITZAR_cpp_target(${HEADLESS_NAME})
+    endif()
+    target_link_libraries(${HEADLESS_NAME} PRIVATE blitzarPlatform OpenMP::OpenMP_CXX)
     target_compile_options(${HEADLESS_NAME} PRIVATE
         $<$<COMPILE_LANGUAGE:CUDA>:-Xptxas=-v>
     )
@@ -125,11 +136,16 @@ if(BLITZAR_BUILD_SERVER_DAEMON)
     add_executable(${SERVER_DAEMON_NAME}
         apps/server-service/src/main.cpp
         apps/server-service/src/Args.cpp
-        runtime/src/server/ServerDaemon.cpp
+        runtime/src/server/core/Daemon.cpp
         ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
         ${BLITZAR_SERVER_SOURCES}
     )
-    configure_BLITZAR_cuda_target(${SERVER_DAEMON_NAME})
+    if(BLITZAR_ENABLE_CUDA)
+        configure_BLITZAR_cuda_target(${SERVER_DAEMON_NAME})
+    else()
+        configure_BLITZAR_cpp_target(${SERVER_DAEMON_NAME})
+    endif()
+    target_link_libraries(${SERVER_DAEMON_NAME} PRIVATE blitzarPlatform OpenMP::OpenMP_CXX)
 endif()
 if(BLITZAR_BUILD_WEB_GATEWAY)
     BLITZAR_ensure_rust_web_gateway_target()
@@ -144,33 +160,33 @@ if(BLITZAR_BUILD_CLIENT_HOST)
         ${BLITZAR_RUNTIME_COMMAND_SOURCES}
         ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
         ${BLITZAR_COMMAND_CONFIG_SOURCES}
-        runtime/src/client/ClientModuleBoundary.cpp
-        runtime/src/client/ClientModuleHash.cpp
-        runtime/src/client/ClientModuleHandle.cpp
-        runtime/src/client/ClientModuleHandleLoad.cpp
-        runtime/src/client/ClientModuleApi.cpp
-        runtime/src/client/ClientCommon.cpp
-        runtime/src/client/ClientModuleManifest.cpp
+        runtime/src/client/module/Boundary.cpp
+        runtime/src/client/module/Hash.cpp
+        runtime/src/client/module/Handle.cpp
+        runtime/src/client/module/Load.cpp
+        runtime/src/client/module/Api.cpp
+        runtime/src/client/common/ClientCommon.cpp
+        runtime/src/client/module/Manifest.cpp
         ${BLITZAR_CLIENT_COMMON_SUPPORT_SOURCES}
-        engine/src/config/TextParse.cpp
+        engine/src/config/text/Parse.cpp
     )
     configure_BLITZAR_cpp_target(${CLIENT_HOST_NAME})
 endif()
 
 if(BLITZAR_BUILD_CLIENT_MODULES)
     add_library(${CLIENT_MODULE_CLI_NAME} MODULE
-        modules/cli/module.cpp
-        modules/cli/module_cli_state.cpp
-        modules/cli/module_cli_text.cpp
-        modules/cli/module_cli_server_ops.cpp
-        modules/cli/module_cli_commands.cpp
-        modules/cli/module_cli_lifecycle.cpp
+        modules/cli/Module.cpp
+        modules/cli/State.cpp
+        modules/cli/Text.cpp
+        modules/cli/ServerOps.cpp
+        modules/cli/Commands.cpp
+        modules/cli/Lifecycle.cpp
         ${BLITZAR_RUNTIME_COMMAND_SOURCES}
         ${BLITZAR_COMMAND_CONFIG_SOURCES}
-        runtime/src/client/ErrorBuffer.cpp
-        runtime/src/client/ClientModuleBoundary.cpp
-        runtime/src/client/ClientModuleApi.cpp
-        runtime/src/client/ClientCommon.cpp
+        runtime/src/client/diagnostics/ErrorBuffer.cpp
+        runtime/src/client/module/Boundary.cpp
+        runtime/src/client/module/Api.cpp
+        runtime/src/client/common/ClientCommon.cpp
         ${BLITZAR_CLIENT_COMMON_SUPPORT_SOURCES}
         ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
     )
@@ -181,10 +197,10 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
     BLITZAR_add_client_module_manifest(${CLIENT_MODULE_CLI_NAME} cli)
 
     add_library(${CLIENT_MODULE_ECHO_NAME} MODULE
-        modules/echo/module.cpp
-        runtime/src/client/ErrorBuffer.cpp
-        runtime/src/client/ClientModuleBoundary.cpp
-        runtime/src/client/ClientModuleApi.cpp
+        modules/echo/Module.cpp
+        runtime/src/client/diagnostics/ErrorBuffer.cpp
+        runtime/src/client/module/Boundary.cpp
+        runtime/src/client/module/Api.cpp
     )
     configure_BLITZAR_cpp_target(${CLIENT_MODULE_ECHO_NAME})
     if(WIN32)
@@ -193,10 +209,11 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
     BLITZAR_add_client_module_manifest(${CLIENT_MODULE_ECHO_NAME} echo)
 
     add_library(${CLIENT_MODULE_GUI_PROXY_NAME} MODULE
-        modules/proxy/module.cpp
-        runtime/src/client/ErrorBuffer.cpp
-        runtime/src/client/ClientModuleBoundary.cpp
-        runtime/src/client/ClientModuleApi.cpp
+        modules/proxy/Module.cpp
+        modules/proxy/Support.cpp
+        runtime/src/client/diagnostics/ErrorBuffer.cpp
+        runtime/src/client/module/Boundary.cpp
+        runtime/src/client/module/Api.cpp
     )
     configure_BLITZAR_cpp_target(${CLIENT_MODULE_GUI_PROXY_NAME})
     if(WIN32)
@@ -209,50 +226,59 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
     if(TARGET Qt6::Widgets)
         BLITZAR_ensure_rust_runtime_target()
         add_library(${CLIENT_MODULE_QT_INPROC_NAME} MODULE
-            modules/qt/module.cpp
-            runtime/src/client/ErrorBuffer.cpp
-            runtime/src/client/ClientModuleBoundary.cpp
-            runtime/src/client/ClientModuleApi.cpp
-            runtime/src/client/ClientServerBridge.cpp
-            runtime/src/client/ClientCommon.cpp
-            runtime/src/client/ClientRuntime.cpp
-            runtime/src/client/RustRuntimeBridgeState.cpp
+            modules/qt/Module.cpp
+            runtime/src/client/diagnostics/ErrorBuffer.cpp
+            runtime/src/client/module/Boundary.cpp
+            runtime/src/client/module/Api.cpp
+            runtime/src/client/runtime/Bridge.cpp
+            runtime/src/client/common/ClientCommon.cpp
+            runtime/src/client/runtime/Runtime.cpp
+            runtime/src/client/runtime/BridgeState.cpp
+            runtime/src/ffi/bridge/Api.cpp
             ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
             ${BLITZAR_SERVER_SOURCES}
-            modules/qt/ui/EnergyGraphWidget.cpp
-            modules/qt/ui/EnergyGraphWidgetPaint.cpp
-            modules/qt/ui/MainWindowController.cpp
-            modules/qt/ui/MainWindow.cpp
-            modules/qt/ui/MainWindowConfig.cpp
-            modules/qt/ui/MainWindowControls.cpp
-            modules/qt/ui/MainWindowFileActions.cpp
-            modules/qt/ui/MainWindowLayout.cpp
-            modules/qt/ui/MainWindowLayoutState.cpp
-            modules/qt/ui/MainWindowPresenter.cpp
-            modules/qt/ui/MainWindowTelemetry.cpp
-            modules/qt/ui/MainWindowWorkspacePersistence.cpp
-            modules/qt/ui/MainWindowWorkspaceShell.cpp
-            modules/qt/ui/MultiViewWidget.cpp
-            modules/qt/ui/OctreeOverlay.cpp
-            modules/qt/ui/OctreeOverlayPainter.cpp
-            modules/qt/ui/ParticleView.cpp
-            modules/qt/ui/ParticleViewColor.cpp
-            modules/qt/ui/UiEnums.cpp
-            modules/qt/ui/ThroughputAdvisor.cpp
-            modules/qt/ui/QtTheme.cpp
-            modules/qt/ui/QtViewMath.cpp
-            modules/qt/ui/WorkspaceLayoutStore.cpp
-            modules/qt/ui/panels/PhysicsControlPanel.cpp
-            modules/qt/ui/panels/RenderControlPanel.cpp
-            modules/qt/ui/panels/RunControlPanel.cpp
-            modules/qt/ui/panels/SceneSetupPanel.cpp
+            modules/qt/src/widgets/graphs/Graph.cpp
+            modules/qt/src/widgets/graphs/Paint.cpp
+            modules/qt/src/window/control/Controller.cpp
+            modules/qt/src/window/core/Window.cpp
+            modules/qt/src/window/core/Widgets.cpp
+            modules/qt/src/window/config/WindowConfig.cpp
+            modules/qt/src/window/control/Controls.cpp
+            modules/qt/src/window/actions/FileActions.cpp
+            modules/qt/src/window/layout/Layout.cpp
+            modules/qt/src/window/layout/State.cpp
+            modules/qt/src/window/presentation/Presenter.cpp
+            modules/qt/src/window/presentation/Telemetry.cpp
+            modules/qt/src/window/workspace/Persistence.cpp
+            modules/qt/src/window/workspace/Shell.cpp
+            modules/qt/src/widgets/viewport/MultiView.cpp
+            modules/qt/src/widgets/overlays/Octree.cpp
+            modules/qt/src/widgets/overlays/Painter.cpp
+            modules/qt/src/widgets/viewport/Particle.cpp
+            modules/qt/src/widgets/viewport/Color.cpp
+            modules/qt/src/support/types/Enums.cpp
+            modules/qt/src/support/performance/Throughput.cpp
+            modules/qt/src/support/theme/Theme.cpp
+            modules/qt/src/support/geometry/ViewMath.cpp
+            modules/qt/src/support/storage/LayoutStore.cpp
+            modules/qt/src/panels/control/Physics.cpp
+            modules/qt/src/panels/control/Render.cpp
+            modules/qt/src/panels/control/Run.cpp
+            modules/qt/src/panels/control/SceneSetup.cpp
             ${BLITZAR_GRAPHICS_SOURCES}
         )
-        configure_BLITZAR_cuda_target(${CLIENT_MODULE_QT_INPROC_NAME})
+        if(BLITZAR_ENABLE_CUDA)
+            configure_BLITZAR_cuda_target(${CLIENT_MODULE_QT_INPROC_NAME})
+        else()
+            configure_BLITZAR_cpp_target(${CLIENT_MODULE_QT_INPROC_NAME})
+        endif()
         if(WIN32)
             target_compile_definitions(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE BLITZAR_CLIENT_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
         endif()
-        target_link_libraries(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE blitzarRustRuntime Qt6::Widgets)
+        target_link_libraries(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE Qt6::Widgets)
+        if(TARGET blitzarRustRuntime)
+            target_link_libraries(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE blitzarRustRuntime)
+        endif()
         BLITZAR_configure_qt_runtime_deploy(${CLIENT_MODULE_QT_INPROC_NAME})
         BLITZAR_add_client_module_manifest(${CLIENT_MODULE_QT_INPROC_NAME} qt)
     else()

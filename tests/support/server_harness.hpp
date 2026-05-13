@@ -7,7 +7,7 @@
 
 #ifndef BLITZAR_TESTS_SUPPORT_SERVER_HARNESS_HPP_
 #define BLITZAR_TESTS_SUPPORT_SERVER_HARNESS_HPP_
-#include "platform/PlatformProcess.hpp"
+#include "platform/Process.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>
