@@ -52,7 +52,7 @@ jobs:
           python-version: "${{ env.CI_PYTHON_VERSION }}"
       - name: Restore pip cache
         id: restore-pip-cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: ~\AppData\Local\pip\Cache
           key: windows-release-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
@@ -63,7 +63,7 @@ jobs:
         run: python -m pip install -r .github/ci/requirements-py312.txt
       - name: Save pip cache
         if: ${{ success() && steps.restore-pip-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: ~\AppData\Local\pip\Cache
           key: windows-release-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
@@ -92,7 +92,7 @@ jobs:
 
       - name: Restore Qt desktop cache
         id: restore-qt-cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: C:\Qt\${{ env.QT_VERSION }}\msvc2022_64
           key: windows-release-qt-${{ env.CI_CACHE_VERSION }}-${{ env.QT_VERSION }}-${{ env.QT_ARCH }}
@@ -118,7 +118,7 @@ jobs:
           python scripts/ci/release/package_tool_manifest.py --lane release-lane --profile prod --output dist/tool-qualification/tool_manifest.json
       - name: Restore release build cache
         id: restore-build-cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: |
             build
@@ -270,7 +270,7 @@ jobs:
           if-no-files-found: ignore
       - name: Save release build cache
         if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: |
             build
@@ -401,7 +401,7 @@ jobs:
           python-version: "${{ env.CI_PYTHON_VERSION }}"
       - name: Restore pip cache
         id: restore-pip-cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: ~\AppData\Local\pip\Cache
           key: windows-release-gpu-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
@@ -412,7 +412,7 @@ jobs:
         run: python -m pip install -r .github/ci/requirements-py312.txt
       - name: Save pip cache
         if: ${{ success() && steps.restore-pip-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: ~\AppData\Local\pip\Cache
           key: windows-release-gpu-pip-${{ env.CI_CACHE_VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
@@ -443,7 +443,7 @@ jobs:
           nvcc --version
       - name: Restore GPU release build cache
         id: restore-build-cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: |
             build
@@ -470,7 +470,7 @@ jobs:
           ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error
       - name: Save GPU release build cache
         if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: |
             build
