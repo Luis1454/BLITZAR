@@ -1,0 +1,34 @@
+/*
+ * @file engine/src/platform/posix/Paths.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Platform abstraction implementation for portable runtime services.
+ */
+
+#include "platform/Paths.hpp"
+#include <ctime>
+#include <string>
+
+namespace bltzr_platform {
+std::string executableName(std::string_view basename)
+{
+    return std::string(basename);
+}
+
+std::string_view serverDefaultExecutableName()
+{
+    return "blitzar-server";
+}
+
+std::vector<std::string> sharedLibraryCandidates(std::string_view stem)
+{
+    return {std::string("lib") + std::string(stem) + ".so"};
+}
+
+std::tm localTime(std::time_t nowTime)
+{
+    std::tm tm{};
+    localtime_r(&nowTime, &tm);
+    return tm;
+}
+} // namespace bltzr_platform

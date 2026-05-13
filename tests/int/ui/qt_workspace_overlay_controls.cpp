@@ -6,8 +6,8 @@
  */
 
 #include "tests/support/qt_test_utils.hpp"
-#include "ui/MainWindow.hpp"
-#include "ui/MultiViewWidget.hpp"
+#include "window/core/Window.hpp"
+#include "widgets/viewport/MultiView.hpp"
 #include <QCheckBox>
 #include <QCoreApplication>
 #include <QEventLoop>
@@ -16,7 +16,7 @@
 #include <memory>
 
 namespace bltzr_test_qt_workspace_overlay_controls {
-class IdleRuntime final : public bltzr_client::IClientRuntime {
+class IdleRuntime final : public bltzr_client::Interface {
 public:
     bool start() override
     {
@@ -195,11 +195,11 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_020_OctreeOverlayControlsUpdateW
 {
     (void)testsupport::ensureQtApp();
     auto runtime = std::make_unique<IdleRuntime>();
-    bltzr_qt::MainWindow window(SimulationConfig{}, "simulation.ini", std::move(runtime));
+    bltzr_qt::Window window(SimulationConfig{}, "simulation.ini", std::move(runtime));
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
     auto* multiViewWidget =
-        dynamic_cast<bltzr_qt::MultiViewWidget*>(window.findChild<QWidget*>("multiViewWidget"));
+        dynamic_cast<bltzr_qt::MultiView*>(window.findChild<QWidget*>("multiViewWidget"));
     ASSERT_NE(multiViewWidget, nullptr);
     QCheckBox* overlayCheck = window.findChild<QCheckBox*>("octreeOverlayCheck");
     QSpinBox* depthSpin = window.findChild<QSpinBox*>("octreeOverlayDepthSpin");

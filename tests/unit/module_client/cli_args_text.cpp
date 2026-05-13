@@ -34,7 +34,7 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_001_ParseArgsDefaultsAndVariants)
     {
         std::vector<std::string> raw = {"host"};
         std::vector<char*> argv = makeArgv(raw);
-        ASSERT_TRUE(bltzr_client_host::ClientHostCliArgs::parseArgs(static_cast<int>(argv.size()),
+        ASSERT_TRUE(bltzr_client_host::parseArgs(static_cast<int>(argv.size()),
                                                                     argv.data(), options, error));
         EXPECT_EQ(options.configPath, "simulation.ini");
         EXPECT_EQ(options.moduleSpecifier, "qt");
@@ -44,7 +44,7 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_001_ParseArgsDefaultsAndVariants)
         std::vector<std::string> raw = {"host", "--config=my.ini", "--module",
                                         "qt",   "--validate-only", "--script=batch.dsl"};
         std::vector<char*> argv = makeArgv(raw);
-        ASSERT_TRUE(bltzr_client_host::ClientHostCliArgs::parseArgs(static_cast<int>(argv.size()),
+        ASSERT_TRUE(bltzr_client_host::parseArgs(static_cast<int>(argv.size()),
                                                                     argv.data(), options, error));
         EXPECT_EQ(options.configPath, "my.ini");
         EXPECT_EQ(options.moduleSpecifier, "qt");
@@ -55,7 +55,7 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_001_ParseArgsDefaultsAndVariants)
     {
         std::vector<std::string> raw = {"host", "--module=qt", "--exit"};
         std::vector<char*> argv = makeArgv(raw);
-        ASSERT_TRUE(bltzr_client_host::ClientHostCliArgs::parseArgs(static_cast<int>(argv.size()),
+        ASSERT_TRUE(bltzr_client_host::parseArgs(static_cast<int>(argv.size()),
                                                                     argv.data(), options, error));
         EXPECT_EQ(options.moduleSpecifier, "qt");
         EXPECT_TRUE(options.exitAfterModule);
@@ -89,7 +89,7 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_002_ParseArgsRejectsUnknownArgument)
     std::string error;
     std::vector<std::string> raw = {"host", "--bad-arg"};
     std::vector<char*> argv = makeArgv(raw);
-    ASSERT_FALSE(bltzr_client_host::ClientHostCliArgs::parseArgs(static_cast<int>(argv.size()),
+    ASSERT_FALSE(bltzr_client_host::parseArgs(static_cast<int>(argv.size()),
                                                                  argv.data(), options, error));
     EXPECT_NE(error.find("unknown argument"), std::string::npos);
 }
@@ -117,7 +117,7 @@ TEST(ClientHostCliArgsTest, TST_UNT_MODHOST_008_HelpReflectsProfileReloadPolicy)
 {
     std::ostringstream buffer;
     std::streambuf* previous = std::cout.rdbuf(buffer.rdbuf());
-    bltzr_client_host::ClientHostCliArgs::printHelp("blitzar-client");
+    bltzr_client_host::printHelp("blitzar-client");
     std::cout.rdbuf(previous);
     const std::string rendered = buffer.str();
     if (bltzr_client_host::ClientHostCli::liveReloadEnabled()) {

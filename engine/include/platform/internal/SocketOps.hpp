@@ -7,7 +7,7 @@
 
 #ifndef BLITZAR_ENGINE_INCLUDE_PLATFORM_INTERNAL_SOCKETOPS_HPP_
 #define BLITZAR_ENGINE_INCLUDE_PLATFORM_INTERNAL_SOCKETOPS_HPP_
-#include "platform/SocketPlatform.hpp"
+#include "platform/Socket.hpp"
 #include <array>
 #include <cstddef>
 #include <cstdint>

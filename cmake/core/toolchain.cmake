@@ -23,7 +23,7 @@ string(REPLACE "-G" "" CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG}")
 string(REPLACE "-g" "" CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG}")
 
 BLITZAR_populate_windows_toolchain_hints()
-find_package(CUDAToolkit REQUIRED)
+find_package(CUDAToolkit QUIET)
 
 set(BLITZAR_PROJECT_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -31,21 +31,21 @@ set(BLITZAR_PROJECT_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/apps/server-service/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/engine/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/runtime/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/modules/qt/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/modules/qt/src"
     "${CMAKE_CURRENT_SOURCE_DIR}/engine/include/physics"
     "${CMAKE_CURRENT_SOURCE_DIR}/engine/include/graphics"
-    "${CMAKE_CURRENT_SOURCE_DIR}/engine/src/physics/cuda/fragments"
+    "${CMAKE_CURRENT_SOURCE_DIR}/engine/src/cuda"
 )
 
 if(WIN32)
     set(BLITZAR_ENV_UTILS_SOURCES
-        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtilsWin.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Base.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Win.cpp"
     )
 else()
     set(BLITZAR_ENV_UTILS_SOURCES
-        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtils.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/config/EnvUtilsPosix.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Base.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Posix.cpp"
     )
 endif()
 
@@ -54,66 +54,77 @@ set(BLITZAR_GRAPHICS_SOURCES
     "${BLITZAR_ROOT_DIR}/engine/src/graphics/ColorPipeline.cpp"
 )
 
-set(BLITZAR_SERVER_SOURCES
+set(BLITZAR_SERVER_COMMON_SOURCES
     ${BLITZAR_ENV_UTILS_SOURCES}
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgs.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsParse.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsCoreOptions.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsClientOptions.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsInitOptions.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsInitStateOptions.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationArgsFluidOptions.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistry.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryApply.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationOptionRegistryEntries.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationPerformanceProfile.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidation.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationPhysics.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationScenarioValidationRender.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationProfile.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirective.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfigDirectiveWrite.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveStreamWriter.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/DirectiveValueFormatter.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationConfig.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/SimulationModes.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/TextParse.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationServer.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/CoreHelpers.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/FormatAndTheta.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/CheckpointCodec.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/PersistenceIO.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/ParseBinXyz.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/ParseVtk.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/InitialStateGeneration.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/LifecycleControls.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/RuntimeSettersAndExportStart.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/ExportAndStats.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/LoadAndCheckpoint.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/RebuildSystem.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/SnapshotAndEnergy.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/TelemetryAndPendingOps.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation_server/MainLoop.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/args/Main.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/args/Parse.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/args/CoreOptions.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/args/ClientOptions.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/args/InitOptions.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/args/InitStateOptions.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/args/FluidOptions.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Main.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Apply.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Entries.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/profile/Performance.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Scenario.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Physics.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Render.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/profile/Main.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Config.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Write.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/StreamWriter.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/ValueFormatter.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/core/Config.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/modes/Normalize.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/config/text/Parse.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/core/Helpers.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/core/FormatAndTheta.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/persistence/Checkpoint.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/persistence/IO.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/parsing/BinXyz.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/parsing/Vtk.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/state/Generation.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/lifecycle/Controls.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/runtime/SettersAndExport.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/export/Stats.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/persistence/LoadAndCheckpoint.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/lifecycle/Rebuild.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/telemetry/SnapshotAndEnergy.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/telemetry/PendingOps.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/lifecycle/Loop.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/physics/ForceLawPolicy.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/CudaMemoryPool.cu"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/cuda/ParticleSystem.cu"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/ParticleHotData.cpp"
 )
 
+if(BLITZAR_ENABLE_CUDA)
+    set(BLITZAR_SERVER_SOURCES
+        ${BLITZAR_SERVER_COMMON_SOURCES}
+        "${BLITZAR_ROOT_DIR}/engine/src/cuda/MemoryPool.cu"
+        "${BLITZAR_ROOT_DIR}/engine/src/cuda/ParticleSystem.cu"
+    )
+else()
+    set(BLITZAR_SERVER_SOURCES
+        ${BLITZAR_SERVER_COMMON_SOURCES}
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/ParticleSystemHost.cpp"
+    )
+endif()
+
 set(BLITZAR_RUNTIME_PROTOCOL_SOURCES
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodec.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParse.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseStatus.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecParseSnapshot.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerJsonCodecReadNumber.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerClient.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/ServerProtocol.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/JsonCodec.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Parser.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Status.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Snapshot.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Number.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/client/Client.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/Protocol.cpp"
 )
 
 set(BLITZAR_CORE_FFI_SOURCES
-    "${BLITZAR_ROOT_DIR}/runtime/src/ffi/BlitzarCore.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/ffi/BlitzarCoreOps.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/ffi/BlitzarCoreApi.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/ffi/core/Core.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/ffi/core/Ops.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/ffi/core/Api.cpp"
 )
 
 function(BLITZAR_collect_existing_paths out_var)

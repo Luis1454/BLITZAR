@@ -1,0 +1,111 @@
+/*
+ * @file engine/src/platform/common/DynamicLibrary.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Platform abstraction implementation for portable runtime services.
+ */
+
+#include "platform/DynamicLibrary.hpp"
+#include "platform/Errors.hpp"
+#include "platform/internal/DynamicLibraryOps.hpp"
+#include <exception>
+#include <string_view>
+#include <utility>
+
+namespace bltzr_platform {
+struct DynamicLibrary::Impl {
+    bltzr_platform_detail::NativeLibraryHandle handle = 0u;
+};
+
+DynamicLibrary::DynamicLibrary() : _impl(std::make_unique<Impl>())
+{
+}
+
+DynamicLibrary::~DynamicLibrary() = default;
+
+DynamicLibrary::DynamicLibrary(DynamicLibrary&& other) noexcept : _impl(std::move(other._impl))
+{
+}
+
+DynamicLibrary& DynamicLibrary::operator=(DynamicLibrary&& other) noexcept
+{
+    if (this != &other)
+        _impl = std::move(other._impl);
+    return *this;
+}
+
+bool DynamicLibrary::open(const std::string& path, std::string& outError)
+{
+    try {
+        if (!_impl)
+            _impl = std::make_unique<Impl>();
+        close();
+        if (!bltzr_platform_detail::openDynamicLibrary(path, _impl->handle, outError)) {
+            if (outError.empty()) {
+                outError = bltzr_platform_errors::kDynamicLibraryLoadFailed;
+            }
+            return false;
+        }
+        return true;
+    }
+    catch (const std::exception& ex) {
+        outError = ex.what();
+        return false;
+    }
+    catch (...) {
+        outError = bltzr_platform_errors::kUnknownException;
+        return false;
+    }
+}
+
+void DynamicLibrary::close()
+{
+    if (_impl) {
+        bltzr_platform_detail::closeDynamicLibrary(_impl->handle);
+    }
+}
+
+bool DynamicLibrary::isOpen() const
+{
+    return _impl && bltzr_platform_detail::isDynamicLibraryOpen(_impl->handle);
+}
+
+bool DynamicLibrary::loadSymbolAddress(std::string_view name, std::uintptr_t& outSymbol,
+                                       std::string& outError) const
+{
+    if (name.empty() || !isOpen()) {
+        outError = bltzr_platform_errors::kInvalidLibraryHandleOrSymbol;
+        outSymbol = 0u;
+        return false;
+    }
+    return loadRawSymbol(name, outSymbol, outError);
+}
+
+bool DynamicLibrary::loadRawSymbol(std::string_view name, std::uintptr_t& outSymbol,
+                                   std::string& outError) const
+{
+    try {
+        outSymbol = 0u;
+        if (!_impl || !bltzr_platform_detail::isDynamicLibraryOpen(_impl->handle) || name.empty()) {
+            outError = bltzr_platform_errors::kInvalidLibraryHandleOrSymbol;
+            return false;
+        }
+        if (!bltzr_platform_detail::loadDynamicSymbol(_impl->handle, name, outSymbol, outError)) {
+            if (outError.empty()) {
+                outError =
+                    std::string(bltzr_platform_errors::kMissingSymbolPrefix) + std::string(name);
+            }
+            return false;
+        }
+        return true;
+    }
+    catch (const std::exception& ex) {
+        outError = ex.what();
+        return false;
+    }
+    catch (...) {
+        outError = bltzr_platform_errors::kUnknownException;
+        return false;
+    }
+}
+} // namespace bltzr_platform

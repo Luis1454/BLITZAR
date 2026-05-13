@@ -5,9 +5,9 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/ErrorBuffer.hpp"
-#include "modules/cli/module_cli_server_ops.hpp"
-#include "modules/cli/module_cli_state.hpp"
+#include "client/diagnostics/ErrorBuffer.hpp"
+#include "modules/cli/ServerOps.hpp"
+#include "modules/cli/State.hpp"
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
@@ -15,20 +15,20 @@
 namespace bltzr_test_module_cli_server_ops {
 TEST(ModuleCliServerOpsTest, TST_UNT_MODCLI_004_CommandStepRejectsInvalidCount)
 {
-    bltzr_module_cli::ModuleState state;
+    bltzr_module_cli::State state;
     char errorBuffer[128] = {};
     const std::vector<std::string> tokens = {"step", "0"};
-    EXPECT_FALSE(bltzr_module_cli::ModuleCliServerOps::commandStep(
+    EXPECT_FALSE(bltzr_module_cli::ServerOps::commandStep(
         state, tokens, bltzr_client::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
     EXPECT_EQ(std::string(errorBuffer), "invalid step count");
 }
 
 TEST(ModuleCliServerOpsTest, TST_UNT_MODCLI_005_ConnectRejectsInvalidPort)
 {
-    bltzr_module_cli::ModuleState state;
+    bltzr_module_cli::State state;
     char errorBuffer[128] = {};
     const std::vector<std::string> tokens = {"connect", "127.0.0.1", "70000"};
-    EXPECT_FALSE(bltzr_module_cli::ModuleCliServerOps::connect(
+    EXPECT_FALSE(bltzr_module_cli::ServerOps::connect(
         state, tokens, bltzr_client::ErrorBufferView(errorBuffer, sizeof(errorBuffer))));
     EXPECT_EQ(std::string(errorBuffer), "invalid server port");
 }

@@ -5,13 +5,13 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/ClientRuntime.hpp"
-#include "protocol/ServerProtocol.hpp"
+#include "client/runtime/Runtime.hpp"
+#include "protocol/Protocol.hpp"
 #include "tests/support/client_utils.hpp"
 #include "tests/support/qt_test_utils.hpp"
 #include "tests/support/server_harness.hpp"
-#include "ui/EnergyGraphWidget.hpp"
-#include "ui/MainWindow.hpp"
+#include "widgets/graphs/Graph.hpp"
+#include "window/core/Window.hpp"
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QEventLoop>
@@ -43,9 +43,9 @@ TEST(QtMainWindowTest, TST_UIX_UI_001_ConstructsAndTicksWithRealRuntime)
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::Runtime>(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
-    bltzr_qt::MainWindow window(makeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::Window window(makeUiConfig(), "simulation.ini", std::move(runtime));
     ASSERT_TRUE(testsupport::waitUntilUi(
         [&]() {
             const QString status = testsupport::findStatusLabelText(window);
@@ -62,9 +62,9 @@ TEST(QtMainWindowTest, TST_UIX_UI_002_ShowsReconnectingWhenServerStopsAndRecover
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
     const std::uint16_t fixedPort = server.port();
-    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::Runtime>(
         "simulation.ini", testsupport::makeTransport(fixedPort, server.executablePath()));
-    bltzr_qt::MainWindow window(makeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::Window window(makeUiConfig(), "simulation.ini", std::move(runtime));
     ASSERT_TRUE(testsupport::waitUntilUi(
         [&]() {
             return testsupport::findStatusLabelText(window).contains("Link: connected");
@@ -97,9 +97,9 @@ TEST(QtMainWindowTest, TST_UIX_UI_003_SavesConfigOnlyOnExplicitSaveAction)
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::Runtime>(
         configPath.string(), testsupport::makeTransport(server.port(), server.executablePath()));
-    bltzr_qt::MainWindow window(initialConfig, configPath.string(), std::move(runtime));
+    bltzr_qt::Window window(initialConfig, configPath.string(), std::move(runtime));
     ASSERT_TRUE(testsupport::waitUntilUi(
         [&]() {
             return testsupport::findStatusLabelText(window).contains("Link: connected");
@@ -137,9 +137,9 @@ TEST(QtMainWindowTest, TST_UIX_UI_004_ShowsEffectiveClientCapWhenConfiguredCapEx
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::Runtime>(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
-    bltzr_qt::MainWindow window(config, "simulation.ini", std::move(runtime));
+    bltzr_qt::Window window(config, "simulation.ini", std::move(runtime));
     ASSERT_TRUE(testsupport::waitUntilUi(
         [&]() {
             const QString status = testsupport::findStatusLabelText(window);
@@ -157,9 +157,9 @@ TEST(QtMainWindowTest, TST_UIX_UI_014_RealRuntimeProgressesAndSurfacesFreshOrSta
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::Runtime>(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
-    bltzr_qt::MainWindow window(makeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::Window window(makeUiConfig(), "simulation.ini", std::move(runtime));
     window.show();
     ASSERT_TRUE(testsupport::waitUntilUi(
         [&]() {
@@ -167,7 +167,7 @@ TEST(QtMainWindowTest, TST_UIX_UI_014_RealRuntimeProgressesAndSurfacesFreshOrSta
         },
         std::chrono::milliseconds(5000)));
     QWidget* graphWidget = window.findChild<QWidget*>("energyGraphWidget");
-    auto* graph = dynamic_cast<bltzr_qt::EnergyGraphWidget*>(graphWidget);
+    auto* graph = dynamic_cast<bltzr_qt::Graph*>(graphWidget);
     ASSERT_NE(graph, nullptr);
     const std::uint64_t initialSteps = testsupport::findSummaryUnsignedMetric(window, "Steps: ");
     const std::size_t initialSamples = graph->sampleCount();
@@ -199,7 +199,7 @@ TEST(QtMainWindowTest, TST_UIX_UI_014_RealRuntimeProgressesAndSurfacesFreshOrSta
             const QString status = testsupport::findStatusLabelText(window);
             return status.contains("Link: reconnecting") &&
                    (status.contains("Viewport: stale") ||
-                    status.contains("Viewport: awaiting snapshot"));
+                    status.contains("Viewport: waiting for first snapshot"));
         },
         std::chrono::milliseconds(7000));
     if (!staleAfterStop) {

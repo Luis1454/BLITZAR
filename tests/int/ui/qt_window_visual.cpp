@@ -5,11 +5,11 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/ClientRuntime.hpp"
+#include "client/runtime/Runtime.hpp"
 #include "tests/support/client_utils.hpp"
 #include "tests/support/qt_test_utils.hpp"
-#include "ui/EnergyGraphWidget.hpp"
-#include "ui/MainWindow.hpp"
+#include "widgets/graphs/Graph.hpp"
+#include "window/core/Window.hpp"
 #include <QCoreApplication>
 #include <QEventLoop>
 #include <QImage>
@@ -37,11 +37,11 @@ static SimulationConfig makeUiConfig()
 TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabels)
 {
     (void)testsupport::ensureQtApp();
-    const QStringList labels = bltzr_qt::EnergyGraphWidget::legendLabels();
-    EXPECT_EQ(bltzr_qt::EnergyGraphWidget::energyXAxisLabel().toStdString(), "Simulation time [s]");
-    EXPECT_EQ(bltzr_qt::EnergyGraphWidget::energyYAxisLabel().toStdString(), "Energy [J]");
-    EXPECT_EQ(bltzr_qt::EnergyGraphWidget::driftXAxisLabel().toStdString(), "Simulation time [s]");
-    EXPECT_EQ(bltzr_qt::EnergyGraphWidget::driftYAxisLabel().toStdString(), "Drift [%]");
+    const QStringList labels = bltzr_qt::Graph::legendLabels();
+    EXPECT_EQ(bltzr_qt::Graph::energyXAxisLabel().toStdString(), "Simulation time [s]");
+    EXPECT_EQ(bltzr_qt::Graph::energyYAxisLabel().toStdString(), "Energy [J]");
+    EXPECT_EQ(bltzr_qt::Graph::driftXAxisLabel().toStdString(), "Simulation time [s]");
+    EXPECT_EQ(bltzr_qt::Graph::driftYAxisLabel().toStdString(), "Drift [%]");
     ASSERT_EQ(labels.size(), 6);
     EXPECT_EQ(labels.at(0).toStdString(), "Kinetic [J]");
     EXPECT_EQ(labels.at(1).toStdString(), "Potential [J]");
@@ -49,7 +49,7 @@ TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabel
     EXPECT_EQ(labels.at(3).toStdString(), "Radiated [J]");
     EXPECT_EQ(labels.at(4).toStdString(), "Total [J]");
     EXPECT_EQ(labels.at(5).toStdString(), "Drift [%]");
-    bltzr_qt::EnergyGraphWidget widget;
+    bltzr_qt::Graph widget;
     widget.resize(900, 240);
     SimulationStats first{};
     first.kineticEnergy = 5.0f;
@@ -116,9 +116,9 @@ TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabel
     invalidConfig.initConfigStyle = "detailed";
     invalidConfig.initMode = "file";
     invalidConfig.inputFile.clear();
-    auto invalidRuntime = std::make_unique<bltzr_client::ClientRuntime>(
+    auto invalidRuntime = std::make_unique<bltzr_client::Runtime>(
         "simulation.ini", testsupport::makeTransport(1u, std::string()));
-    bltzr_qt::MainWindow invalidWindow(invalidConfig, "simulation.ini", std::move(invalidRuntime));
+    bltzr_qt::Window invalidWindow(invalidConfig, "simulation.ini", std::move(invalidRuntime));
     QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
     QString preflightText;
     QString statusText;
@@ -141,9 +141,9 @@ TEST(QtMainWindowTest, TST_UIX_UI_005_EnergyGraphUsesExplicitUnitsAndLegendLabel
 TEST(QtMainWindowTest, TST_UIX_UI_006_ResponsiveControlsAllowSubHdWindow)
 {
     (void)testsupport::ensureQtApp();
-    auto runtime = std::make_unique<bltzr_client::ClientRuntime>(
+    auto runtime = std::make_unique<bltzr_client::Runtime>(
         "simulation.ini", testsupport::makeTransport(1u, std::string()));
-    bltzr_qt::MainWindow window(makeUiConfig(), "simulation.ini", std::move(runtime));
+    bltzr_qt::Window window(makeUiConfig(), "simulation.ini", std::move(runtime));
     window.resize(1024, 768);
     window.show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);

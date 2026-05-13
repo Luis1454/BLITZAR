@@ -10,9 +10,7 @@
 #include "CliArgs.hpp"
 
 namespace bltzr_client_host {
-
-bool ClientHostCliArgsLocal::parseArgs(int argc, char** argv, HostOptions& outOptions,
-                                       std::string& outError)
+bool parseArgs(int argc, char** argv, HostOptions& outOptions, std::string& outError)
 {
     outOptions = HostOptions{};
     for (int i = 1; i < argc; ++i) {
@@ -63,7 +61,7 @@ bool ClientHostCliArgsLocal::parseArgs(int argc, char** argv, HostOptions& outOp
     return true;
 }
 
-void ClientHostCliArgsLocal::printHelp(std::string_view programName)
+void printHelp(std::string_view programName)
 {
     std::cout << "Usage: " << programName
               << " [--config PATH] [--module <alias|path>] [--script PATH] [--validate-only]"
@@ -74,7 +72,7 @@ void ClientHostCliArgsLocal::printHelp(std::string_view programName)
               << "  module\n"
               << "  quit | exit\n"
               << "  <any other line> -> forwarded to loaded module\n"
-              << "[client-host] default module: qt (GUI)\n"
+              << "[client-host] default module: qt (GUI; falls back to gui proxy if absent)\n"
               << "[client-host] aliases: cli, gui, echo, qt\n"
               << "[client-host] --script runs deterministic batch commands and exits.\n"
               << "[client-host] --validate-only runs scenario pre-flight checks and exits "
@@ -91,17 +89,6 @@ void ClientHostCliArgsLocal::printHelp(std::string_view programName)
         std::cout << "[client-host] prod profile: manifest-verified startup only; live reload "
                      "is disabled.\n";
     }
-}
-
-bool ClientHostCliArgs::parseArgs(int argc, char** argv, HostOptions& outOptions,
-                                  std::string& outError)
-{
-    return ClientHostCliArgsLocal::parseArgs(argc, argv, outOptions, outError);
-}
-
-void ClientHostCliArgs::printHelp(std::string_view programName)
-{
-    ClientHostCliArgsLocal::printHelp(programName);
 }
 
 } // namespace bltzr_client_host

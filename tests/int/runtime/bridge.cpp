@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/ClientServerBridge.hpp"
+#include "client/runtime/Bridge.hpp"
 #include "tests/support/poll_utils.hpp"
 #include "tests/support/server_harness.hpp"
 #include <chrono>
@@ -25,18 +25,18 @@ TEST(ClientBridgeTest, TST_INT_RUNT_001_ReconnectsAfterRealServerRestart)
     ASSERT_TRUE(server.start(startError)) << startError;
     const std::uint16_t fixedPort = server.port();
     ASSERT_NE(fixedPort, 0u);
-    bltzr_client::ClientServerBridge bridge("simulation.ini", "127.0.0.1", fixedPort, false,
+    bltzr_client::Bridge bridge("simulation.ini", "127.0.0.1", fixedPort, false,
                                             server.executablePath(), "", 80u, 40u, 120u);
     ASSERT_TRUE(bridge.start());
     SimulationStats stats{};
     ASSERT_TRUE(testsupport::waitUntil(
         [&]() {
             stats = bridge.getStats();
-            return bridge.linkState() == bltzr_client::ClientLinkState::Connected;
+            return bridge.linkState() == bltzr_client::LinkState::Connected;
         },
         std::chrono::milliseconds(4000)));
     bridge.stepOnce();
-    EXPECT_EQ(bridge.linkState(), bltzr_client::ClientLinkState::Connected);
+    EXPECT_EQ(bridge.linkState(), bltzr_client::LinkState::Connected);
     EXPECT_TRUE(testsupport::waitUntil(
         [&]() {
             stats = bridge.getStats();
@@ -54,18 +54,18 @@ TEST(ClientBridgeTest, TST_INT_RUNT_001_ReconnectsAfterRealServerRestart)
     EXPECT_TRUE(testsupport::waitUntil(
         [&]() {
             (void)bridge.getStats();
-            return bridge.linkState() == bltzr_client::ClientLinkState::Reconnecting;
+            return bridge.linkState() == bltzr_client::LinkState::Reconnecting;
         },
         std::chrono::milliseconds(4000)));
     ASSERT_TRUE(server.start(startError, fixedPort)) << startError;
     ASSERT_TRUE(testsupport::waitUntil(
         [&]() {
             stats = bridge.getStats();
-            return bridge.linkState() == bltzr_client::ClientLinkState::Connected;
+            return bridge.linkState() == bltzr_client::LinkState::Connected;
         },
         std::chrono::milliseconds(5000)));
     bridge.stepOnce();
-    EXPECT_EQ(bridge.linkState(), bltzr_client::ClientLinkState::Connected);
+    EXPECT_EQ(bridge.linkState(), bltzr_client::LinkState::Connected);
     bridge.stop();
     server.stop();
 }
@@ -77,7 +77,7 @@ TEST(ClientBridgeTest, TST_INT_RUNT_002_ServerAbsenceDoesNotCauseLongBlockingLoo
     ASSERT_TRUE(server.start(startError)) << startError;
     const std::uint16_t unusedPort = server.port();
     server.stop();
-    bltzr_client::ClientServerBridge bridge("simulation.ini", "127.0.0.1", unusedPort, false, "",
+    bltzr_client::Bridge bridge("simulation.ini", "127.0.0.1", unusedPort, false, "",
                                             "", 60u, 30u, 80u);
     EXPECT_FALSE(bridge.start());
     const auto startedAt = std::chrono::steady_clock::now();
@@ -88,7 +88,7 @@ TEST(ClientBridgeTest, TST_INT_RUNT_002_ServerAbsenceDoesNotCauseLongBlockingLoo
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
     const auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::steady_clock::now() - startedAt);
-    EXPECT_EQ(bridge.linkState(), bltzr_client::ClientLinkState::Reconnecting);
+    EXPECT_EQ(bridge.linkState(), bltzr_client::LinkState::Reconnecting);
     EXPECT_LE(elapsedMs.count(), 1500)
         << "poll loop took too long without server: " << elapsedMs.count() << " ms";
     bridge.stop();
@@ -96,14 +96,14 @@ TEST(ClientBridgeTest, TST_INT_RUNT_002_ServerAbsenceDoesNotCauseLongBlockingLoo
 
 TEST(ClientBridgeTest, TST_UNT_RUNT_012_ClampRemoteTimeoutRespectsBounds)
 {
-    EXPECT_EQ(bltzr_client::clampClientRemoteTimeoutMs(0u),
-              bltzr_client::kClientRemoteTimeoutMinMs);
-    EXPECT_EQ(bltzr_client::clampClientRemoteTimeoutMs(7u),
-              bltzr_client::kClientRemoteTimeoutMinMs);
+    EXPECT_EQ(bltzr_client::clampRemoteTimeoutMs(0u),
+              bltzr_client::kRemoteTimeoutMinMs);
+    EXPECT_EQ(bltzr_client::clampRemoteTimeoutMs(7u),
+              bltzr_client::kRemoteTimeoutMinMs);
     EXPECT_EQ(
-        bltzr_client::clampClientRemoteTimeoutMs(bltzr_client::kClientRemoteTimeoutMaxMs + 77u),
-        bltzr_client::kClientRemoteTimeoutMaxMs);
-    EXPECT_EQ(bltzr_client::clampClientRemoteTimeoutMs(1000u), 1000u);
+        bltzr_client::clampRemoteTimeoutMs(bltzr_client::kRemoteTimeoutMaxMs + 77u),
+        bltzr_client::kRemoteTimeoutMaxMs);
+    EXPECT_EQ(bltzr_client::clampRemoteTimeoutMs(1000u), 1000u);
 }
 
 TEST(ClientBridgeTest, TST_UNT_RUNT_013_SplitTransportArgsParsesKnownServerFlags)
@@ -119,9 +119,9 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_013_SplitTransportArgsParsesKnownServerFlags
                                                    "--config",
                                                    "simulation.ini"};
     std::vector<std::string_view> filtered;
-    bltzr_client::ClientTransportArgs transport;
+    bltzr_client::TransportArgs transport;
     std::ostringstream warnings;
-    ASSERT_TRUE(bltzr_client::splitClientTransportArgs(rawArgs, filtered, transport, warnings));
+    ASSERT_TRUE(bltzr_client::splitTransportArgs(rawArgs, filtered, transport, warnings));
     ASSERT_EQ(filtered.size(), 3u);
     EXPECT_EQ(filtered[0], "blitzar-client");
     EXPECT_EQ(filtered[1], "--config");
@@ -139,18 +139,18 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_014_SplitTransportArgsRejectsInvalidPortInpu
     {
         const std::vector<std::string_view> rawArgs = {"blitzar-client", "--server-port", "0"};
         std::vector<std::string_view> filtered;
-        bltzr_client::ClientTransportArgs transport;
+        bltzr_client::TransportArgs transport;
         std::ostringstream warnings;
         EXPECT_FALSE(
-            bltzr_client::splitClientTransportArgs(rawArgs, filtered, transport, warnings));
+            bltzr_client::splitTransportArgs(rawArgs, filtered, transport, warnings));
     }
     {
         const std::vector<std::string_view> rawArgs = {"blitzar-client", "--server-port"};
         std::vector<std::string_view> filtered;
-        bltzr_client::ClientTransportArgs transport;
+        bltzr_client::TransportArgs transport;
         std::ostringstream warnings;
         EXPECT_FALSE(
-            bltzr_client::splitClientTransportArgs(rawArgs, filtered, transport, warnings));
+            bltzr_client::splitTransportArgs(rawArgs, filtered, transport, warnings));
     }
 }
 
@@ -158,9 +158,9 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_018_SplitTransportArgsRejectsInvalidAutostar
 {
     const std::vector<std::string_view> rawArgs = {"blitzar-client", "--server-autostart=maybe"};
     std::vector<std::string_view> filtered;
-    bltzr_client::ClientTransportArgs transport;
+    bltzr_client::TransportArgs transport;
     std::ostringstream warnings;
-    EXPECT_FALSE(bltzr_client::splitClientTransportArgs(rawArgs, filtered, transport, warnings));
+    EXPECT_FALSE(bltzr_client::splitTransportArgs(rawArgs, filtered, transport, warnings));
     EXPECT_NE(warnings.str().find("invalid --server-autostart value"), std::string::npos);
 }
 
@@ -169,9 +169,9 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_019_SplitTransportArgsKeepsUnparsedAutostart
     const std::vector<std::string_view> rawArgs = {"blitzar-client", "--server-autostart", "maybe",
                                                    "--config", "simulation.ini"};
     std::vector<std::string_view> filtered;
-    bltzr_client::ClientTransportArgs transport;
+    bltzr_client::TransportArgs transport;
     std::ostringstream warnings;
-    ASSERT_TRUE(bltzr_client::splitClientTransportArgs(rawArgs, filtered, transport, warnings));
+    ASSERT_TRUE(bltzr_client::splitTransportArgs(rawArgs, filtered, transport, warnings));
     EXPECT_FALSE(transport.remoteAutoStart);
     ASSERT_EQ(filtered.size(), 4u);
     EXPECT_EQ(filtered[0], "blitzar-client");
@@ -180,9 +180,31 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_019_SplitTransportArgsKeepsUnparsedAutostart
     EXPECT_EQ(filtered[3], "simulation.ini");
 }
 
+TEST(ClientBridgeTest, TST_INT_RUNT_020_AutostartKeepsRuntimeAliveUntilServerIsReady)
+{
+    RealServerHarness server;
+    std::string startError;
+    ASSERT_TRUE(server.start(startError)) << startError;
+    const std::uint16_t port = server.port();
+    ASSERT_NE(port, 0u);
+    const std::string executablePath = server.executablePath();
+    server.stop();
+
+    bltzr_client::Bridge bridge("simulation.ini", "127.0.0.1", port, true, executablePath, "",
+                                            80u, 40u, 120u);
+    ASSERT_TRUE(bridge.start());
+    ASSERT_TRUE(testsupport::waitUntil(
+        [&]() {
+            return bridge.linkState() == bltzr_client::LinkState::Connected;
+        },
+        std::chrono::milliseconds(5000)));
+    EXPECT_EQ(bridge.linkStateLabel(), "connected");
+    bridge.stop();
+}
+
 TEST(ClientBridgeTest, TST_UNT_RUNT_015_DisconnectedBridgeOperationsRemainBounded)
 {
-    bltzr_client::ClientServerBridge bridge("simulation.ini", "127.0.0.1",
+    bltzr_client::Bridge bridge("simulation.ini", "127.0.0.1",
                                             static_cast<std::uint16_t>(6553u), false, "", "", 10u,
                                             10u, 10u);
     const auto startedAt = std::chrono::steady_clock::now();
@@ -220,7 +242,7 @@ TEST(ClientBridgeTest, TST_UNT_RUNT_015_DisconnectedBridgeOperationsRemainBounde
     EXPECT_FALSE(bridge.tryConsumeSnapshot(snapshot));
     const auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::steady_clock::now() - startedAt);
-    EXPECT_EQ(bridge.linkState(), bltzr_client::ClientLinkState::Reconnecting);
+    EXPECT_EQ(bridge.linkState(), bltzr_client::LinkState::Reconnecting);
     EXPECT_EQ(bridge.linkStateLabel(), "reconnecting");
     EXPECT_EQ(bridge.serverOwnerLabel(), "external");
     EXPECT_FALSE(bridge.launchedByClient());

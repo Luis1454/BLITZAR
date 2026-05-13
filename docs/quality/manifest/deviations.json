@@ -12,12 +12,11 @@
       "mitigation": "Keep entries isolated in the allowlist, review on every PR touching these files, and forbid new unrelated growth.",
       "closure_criteria": "Split each file below the hard limit and remove the corresponding allowlist paths.",
       "paths": [
-        "engine/src/server/SimulationServer.cpp",
-        "runtime/src/server/ServerDaemon.cpp",
-        "runtime/src/protocol/ServerClient.cpp",
-        "runtime/src/client/ClientServerBridge.cpp",
-        "runtime/src/client/ClientRuntime.cpp",
-        "runtime/src/command/CommandExecutor.cpp"
+        "runtime/src/server/core/Daemon.cpp",
+        "runtime/src/protocol/client/Client.cpp",
+        "runtime/src/client/runtime/Bridge.cpp",
+        "runtime/src/client/runtime/Runtime.cpp",
+        "runtime/src/command/execution/Executor.cpp"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -40,9 +39,9 @@
       "mitigation": "Constrain edits to kernel extraction work and keep fragment boundaries documented in review notes.",
       "closure_criteria": "Replace fragment bundles with smaller responsibility-focused units and remove the allowlist paths.",
       "paths": [
-        "engine/src/physics/cuda/fragments/ParticleSystemCore.inl",
-        "engine/src/physics/cuda/fragments/ParticleSystemPrelude.inl",
-        "engine/src/physics/cuda/fragments/ParticleSystemUpdate.inl"
+        "engine/src/cuda/fragments/system/Core.inl",
+        "engine/src/cuda/fragments/system/Prelude.inl",
+        "engine/src/cuda/fragments/integration/Update.inl"
       ],
       "requirements": [
         "REQ-QUAL-001"
@@ -64,9 +63,9 @@
       "mitigation": "Review changes for feature isolation and keep UI/module edits tied to decomposition work.",
       "closure_criteria": "Extract module composition responsibilities into smaller units and delete the allowlist paths.",
       "paths": [
-        "modules/proxy/module.cpp",
-        "modules/qt/module.cpp",
-        "modules/qt/ui/EnergyGraphWidgetPaint.cpp"
+        "modules/proxy/Module.cpp",
+        "modules/qt/Module.cpp",
+        "modules/qt/src/widgets/graphs/Paint.cpp"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -162,7 +161,7 @@
       "mitigation": "Keep this file isolated in the allowlist and review all changes for allocator and scratch-buffer correctness.",
       "closure_criteria": "Split the CUDA buffer fragment below the hard limit and remove the allowlist path.",
       "paths": [
-        "engine/src/physics/cuda/fragments/ParticleSystemBuffer.inl"
+        "engine/src/cuda/fragments/system/Buffer.inl"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -185,7 +184,7 @@
       "mitigation": "Keep this file isolated in the allowlist and review all changes for traversal correctness and memory layout stability.",
       "closure_criteria": "Split the linear octree GPU fragment below the hard limit and remove the allowlist path.",
       "paths": [
-        "engine/src/physics/cuda/fragments/ParticleSystemLinearOctreeGpu.inl"
+        "engine/src/cuda/fragments/octree/LinearGpu.inl"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -254,7 +253,7 @@
       "mitigation": "Keep this file isolated in the allowlist and plan a split of the initialization algorithms by type.",
       "closure_criteria": "Split the factory implementations into smaller strategy classes below the hard limit and remove the allowlist path.",
       "paths": [
-        "engine/src/server/simulation_server/InitialStateGeneration.cpp"
+        "engine/src/server/simulation/state/Generation.cpp"
       ],
       "requirements": [
         "REQ-QUAL-001"

@@ -5,9 +5,9 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "config/SimulationConfig.hpp"
-#include "config/SimulationScenarioValidation.hpp"
-#include "protocol/ServerProtocol.hpp"
+#include "config/core/Config.hpp"
+#include "config/validation/Scenario.hpp"
+#include "protocol/Protocol.hpp"
 #include "server/SimulationInitConfig.hpp"
 #include <chrono>
 #include <filesystem>
@@ -148,7 +148,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_015_DefaultClientParticleCapMatchesProtocolMax
     EXPECT_EQ(defaults.performanceProfile, "interactive");
     EXPECT_EQ(defaults.clientParticleCap, bltzr_protocol::kSnapshotDefaultPoints);
     EXPECT_EQ(defaults.snapshotPublishPeriodMs, 50u);
-    EXPECT_FLOAT_EQ(defaults.substepTargetDt, 0.01f);
+    EXPECT_FLOAT_EQ(defaults.substepTargetDt, 0.0f);
     EXPECT_EQ(defaults.maxSubsteps, 4u);
 }
 

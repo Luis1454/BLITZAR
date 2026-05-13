@@ -7,7 +7,7 @@
 
 #ifndef BLITZAR_ENGINE_INCLUDE_PLATFORM_DYNAMICLIBRARY_HPP_
 #define BLITZAR_ENGINE_INCLUDE_PLATFORM_DYNAMICLIBRARY_HPP_
-#include "platform/PlatformErrors.hpp"
+#include "platform/Errors.hpp"
 #include <cstdint>
 #include <memory>
 #include <string>

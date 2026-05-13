@@ -8,7 +8,7 @@ Every public header or split implementation fragment should start with a short r
 
 ```cpp
 /*
- * Module: ui
+ * Module: qt
  * Responsibility: Render the recent energy history exposed by the client runtime.
  */
 ```
@@ -29,7 +29,7 @@ Document each public type and public function with concise block comments using 
  * @return Not applicable; this block documents a type contract.
  * @note Keep ownership and runtime side effects explicit.
  */
-class EnergyGraphWidget : public QWidget {
+class Graph : public QWidget {
 public:
     /*
      * @brief Appends a telemetry sample to the visible energy history.
@@ -62,7 +62,7 @@ The repository quality gate enforces this format for public headers under:
 
 - `engine/include/`
 - `runtime/include/`
-- `modules/qt/include/ui/`
+- `modules/qt/src/`
 
 The same gate also checks file header blocks across the main C++ sources so missing documentation is surfaced early.
 
@@ -71,7 +71,7 @@ The same gate also checks file header blocks across the main C++ sources so miss
 Apply this format first to:
 - public headers under `engine/include/`
 - public headers under `runtime/include/`
-- Qt-facing headers under `modules/qt/include/ui/`
+- Qt-facing headers under `modules/qt/src/`
 - split CUDA/core fragments where a file-level responsibility header clarifies the partition
 
 ## Non-Goals

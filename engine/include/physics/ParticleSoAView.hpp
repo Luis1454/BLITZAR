@@ -16,18 +16,18 @@
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
 struct ParticleSoAView {
-    float* posX;
-    float* posY;
-    float* posZ;
-    float* velX;
-    float* velY;
-    float* velZ;
-    float* pressX;
-    float* pressY;
-    float* pressZ;
-    float* mass;
-    float* temp;
-    float* dens;
+    float* __restrict__ posX;
+    float* __restrict__ posY;
+    float* __restrict__ posZ;
+    float* __restrict__ velX;
+    float* __restrict__ velY;
+    float* __restrict__ velZ;
+    float* __restrict__ pressX;
+    float* __restrict__ pressY;
+    float* __restrict__ pressZ;
+    float* __restrict__ mass;
+    float* __restrict__ temp;
+    float* __restrict__ dens;
     int count;
     int _pad[3];
 };

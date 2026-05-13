@@ -9,6 +9,7 @@
 #define BLITZAR_ENGINE_INCLUDE_PHYSICS_OCTREE_HPP_
 
 #include "physics/ForceLawPolicy.hpp"
+#include "physics/ParticleHotData.hpp"
 #include "physics/Particle.hpp"
 #include "physics/Vector.hpp"
 #include <array>
@@ -118,6 +119,14 @@ public:
      */
     void build(const std::vector<Particle>& particles);
     /*
+     * @brief Documents the build operation contract.
+     * @param particles Input value used by this contract.
+     * @return No return value.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
+    void build(const std::vector<ParticleHotData>& particles);
+    /*
      * @brief Documents the compute force on operation contract.
      * @param particle Input value used by this contract.
      * @param selfIndex Input value used by this contract.
@@ -129,6 +138,19 @@ public:
      */
     Vector3 computeForceOn(const Particle& particle, std::size_t selfIndex,
                            const ForceLawPolicy& policy, OctreeOpeningCriterion criterion) const;
+    /*
+     * @brief Documents the compute force on operation contract.
+     * @param particles Input value used by this contract.
+     * @param selfIndex Input value used by this contract.
+     * @param policy Input value used by this contract.
+     * @param criterion Input value used by this contract.
+     * @return Vector3 value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
+    Vector3 computeForceOn(const std::vector<ParticleHotData>& particles, std::size_t selfIndex,
+                           const ForceLawPolicy& policy,
+                           OctreeOpeningCriterion criterion) const;
     /*
      * @brief Documents the get node count operation contract.
      * @param None This contract does not take explicit parameters.
@@ -189,6 +211,20 @@ private:
     int buildNodeRecursive(const std::vector<Particle>& particles, const std::vector<int>& indices,
                            const Vector3& center, float halfSize, int depth);
     /*
+     * @brief Documents the build node recursive operation contract.
+     * @param particles Input value used by this contract.
+     * @param indices Input value used by this contract.
+     * @param center Input value used by this contract.
+     * @param halfSize Input value used by this contract.
+     * @param depth Input value used by this contract.
+     * @return int value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
+    int buildNodeRecursive(const std::vector<ParticleHotData>& particles,
+                           const std::vector<int>& indices, const Vector3& center, float halfSize,
+                           int depth);
+    /*
      * @brief Documents the compute force recursive operation contract.
      * @param particles Input value used by this contract.
      * @param nodeIndex Input value used by this contract.
@@ -202,6 +238,22 @@ private:
      */
     Vector3 computeForceRecursive(const std::vector<Particle>& particles, int nodeIndex,
                                   const Particle& particle, std::size_t selfIndex,
+                                  const ForceLawPolicy& policy,
+                                  OctreeOpeningCriterion criterion) const;
+    /*
+     * @brief Documents the compute force recursive operation contract.
+     * @param particles Input value used by this contract.
+     * @param nodeIndex Input value used by this contract.
+     * @param particle Input value used by this contract.
+     * @param selfIndex Input value used by this contract.
+     * @param policy Input value used by this contract.
+     * @param criterion Input value used by this contract.
+     * @return Vector3 value produced by this contract.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
+     */
+    Vector3 computeForceRecursive(const std::vector<ParticleHotData>& particles, int nodeIndex,
+                                  const ParticleHotData& particle, std::size_t selfIndex,
                                   const ForceLawPolicy& policy,
                                   OctreeOpeningCriterion criterion) const;
     /*

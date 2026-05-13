@@ -10,6 +10,7 @@
 #include <chrono>
 #include <filesystem>
 #include <fstream>
+#include "Constants.hpp"
 #include <gtest/gtest.h>
 #include <string>
 #include <system_error>
@@ -49,7 +50,7 @@ TEST(PhysicsTest, TST_UNT_RUNT_009_CheckpointRoundTripRestoresRuntimeState)
         makeTempCheckpointPath("bltzr_checkpoint_roundtrip");
     const std::filesystem::path roundTripPath =
         makeTempCheckpointPath("bltzr_checkpoint_roundtrip_reload");
-    SimulationServer source(24u, 0.02f);
+    SimulationServer source(24u, kDefaultSimulationDt);
     source.setSolverMode("octree_cpu");
     source.setIntegratorMode("euler");
     source.setPerformanceProfile("balanced");

@@ -4,6 +4,8 @@ BasedOnStyle: LLVM
 IndentWidth: 4
 UseTab: Never
 ColumnLimit: 100
+
+# Strictness for safety
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortBlocksOnASingleLine: Never
 AllowShortEnumsOnASingleLine: false
@@ -12,18 +14,26 @@ AllowShortLambdasOnASingleLine: None
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AllowShortNamespacesOnASingleLine: false
+
+# Visual structure
 BreakBeforeBraces: Stroustrup
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 BreakConstructorInitializers: BeforeColon
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
+
+# Cleanliness
 EmptyLineBeforeAccessModifier: Always
 KeepEmptyLinesAtTheStartOfBlocks: false
-MaxEmptyLinesToKeep: 2
+MaxEmptyLinesToKeep: 1 # NASA preference: avoid too much vertical dead space
 SeparateDefinitionBlocks: Always
 Cpp11BracedListStyle: true
+
+# Alignment
 PointerAlignment: Left
-AccessModifierOffset: -4
+AccessModifierOffset: -4 # Aligns public/private with the class keyword
+
+# Spacing
 SpaceBeforeCtorInitializerColon: true
 SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatements
@@ -32,5 +42,6 @@ SpacesInContainerLiterals: true
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
+
 Standard: c++17
 ---

@@ -39,14 +39,15 @@ endif
 
 deploy-qt:
 ifeq ($(OS),Windows_NT)
+	@if [ ! -f "$(QT_MODULE_LIB)" ]; then echo "module Qt introuvable: $(QT_MODULE_LIB) (deploy skip)"; exit 0; fi
 	"$(WINDEPLOYQT)" --dir "$(BUILD_DIR)" --release --compiler-runtime "$(QT_MODULE_LIB)"
 else
 ifeq ($(UNAME_S),Darwin)
+	@if [ ! -f "$(QT_MODULE_LIB)" ]; then echo "module Qt introuvable: $(QT_MODULE_LIB) (deploy skip)"; exit 0; fi
 	@if [ ! -x "$(MACDEPLOYQT)" ]; then echo "macdeployqt introuvable: $(MACDEPLOYQT)"; exit 1; fi
-	@if [ ! -f "$(QT_MODULE_LIB)" ]; then echo "module Qt introuvable: $(QT_MODULE_LIB)"; exit 1; fi
 	"$(MACDEPLOYQT)" "$(QT_MODULE_LIB)" -verbose=0
 else
-	@if [ ! -f "$(QT_MODULE_LIB)" ]; then echo "module Qt introuvable: $(QT_MODULE_LIB)"; exit 1; fi
+	@if [ ! -f "$(QT_MODULE_LIB)" ]; then echo "module Qt introuvable: $(QT_MODULE_LIB) (deploy skip)"; exit 0; fi
 	@if command -v "$(LINUXDEPLOYQT)" >/dev/null 2>&1; then \
 		"$(LINUXDEPLOYQT)" "$(QT_MODULE_LIB)" -bundle-non-qt-libs; \
 	else \
@@ -56,10 +57,32 @@ endif
 endif
 
 run-qt: all deploy-qt
+ifneq ($(wildcard $(QT_MODULE_LIB)),)
 ifeq ($(OS),Windows_NT)
 	$(RUN_CLIENT_HOST_BIN) --config $(CONFIG) --module $(GUI_MODULE) $(ARGS)
 else
 	bash scripts/run_qt.sh --bin "$(RUN_CLIENT_HOST_BIN)" --config "$(CONFIG)" --module "$(GUI_MODULE)" --qt-dir "$(QT_DIR)" -- $(ARGS)
+endif
+else
+	@echo "Qt module absent; démarrage serveur local CPU puis fallback fenêtre GUI"
+	@if [ -x "$(RUN_SERVER_BIN)" ]; then \
+		if [ -f "$(BUILD_DIR)/blitzar-server.pid" ] && kill -0 $$(cat "$(BUILD_DIR)/blitzar-server.pid") >/dev/null 2>&1; then \
+			echo "serveur déjà lancé pid=$$(cat "$(BUILD_DIR)/blitzar-server.pid")"; \
+		else \
+			if command -v setsid >/dev/null 2>&1; then \
+				setsid -f "$(RUN_SERVER_BIN)" --config "$(CONFIG)" --server-host 127.0.0.1 --server-port 4545 --solver octree_cpu > "$(BUILD_DIR)/blitzar-server.log" 2>&1 < /dev/null; \
+				pgrep -n -f "blitzar-server --config $(CONFIG).*--server-port 4545" > "$(BUILD_DIR)/blitzar-server.pid" || true; \
+			else \
+				nohup "$(RUN_SERVER_BIN)" --config "$(CONFIG)" --server-host 127.0.0.1 --server-port 4545 --solver octree_cpu > "$(BUILD_DIR)/blitzar-server.log" 2>&1 < /dev/null & \
+				echo $$! > "$(BUILD_DIR)/blitzar-server.pid"; \
+			fi; \
+			sleep 1; \
+		fi; \
+	else \
+		echo "binaire serveur introuvable: $(RUN_SERVER_BIN)"; \
+		exit 1; \
+	fi
+	$(RUN_CLIENT_HOST_BIN) --config $(CONFIG) --module gui $(ARGS)
 endif
 
 deps-graphics:

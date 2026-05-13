@@ -5,8 +5,9 @@
  * @brief Application entry points and host executables for BLITZAR.
  */
 
-#include "platform/PlatformPaths.hpp"
-#include "platform/PlatformProcess.hpp"
+#include "Constants.hpp"
+#include "platform/Paths.hpp"
+#include "platform/Process.hpp"
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
@@ -54,7 +55,8 @@ void printUsage(const std::string_view programName)
               << "  --help      Show this help.\n"
               << "\nExamples:\n"
               << "  " << programName
-              << " --mode client --module qt -- --server-host 127.0.0.1 --server-port 4545\n"
+              << " --mode client --module qt -- --server-host " << kDefaultLoopbackHost
+              << " --server-port " << kDefaultServerPort << "\n"
               << "  " << programName << " --mode server -- --config simulation.ini\n"
               << "  " << programName
               << " --mode headless -- --particle-count 10000 --target-steps 1000\n";

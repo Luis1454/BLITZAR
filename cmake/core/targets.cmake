@@ -36,9 +36,10 @@ function(configure_BLITZAR_cpp_target target_name)
     target_compile_definitions(${target_name}
         PRIVATE
             $<$<BOOL:${WIN32}>:NOMINMAX>
+            BLITZAR_ENABLE_CUDA=$<IF:$<BOOL:${BLITZAR_ENABLE_CUDA}>,1,0>
             BLITZAR_CLIENT_MODULE_EXPORT_ATTR=
-            BLITZAR_HD_DEVICE=
-            BLITZAR_HD_HOST=
+            $<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:BLITZAR_HD_DEVICE=>
+            $<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:BLITZAR_HD_HOST=>
     )
     BLITZAR_apply_strict_warnings(${target_name})
     BLITZAR_apply_windows_paths(${target_name})

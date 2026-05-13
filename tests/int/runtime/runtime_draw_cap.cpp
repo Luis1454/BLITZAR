@@ -5,23 +5,23 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/ClientCommon.hpp"
-#include "config/SimulationConfig.hpp"
-#include "protocol/ServerProtocol.hpp"
+#include "client/common/ClientCommon.hpp"
+#include "config/core/Config.hpp"
+#include "protocol/Protocol.hpp"
 #include "tests/support/scoped_env_var.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <sstream>
 
 namespace bltzr_test_client_runtime {
-TEST(ClientRuntimeTest, TST_CNT_RUNT_005_ClampsConfiguredClientCapToProtocolMax)
+TEST(RuntimeTest, TST_CNT_RUNT_005_ClampsConfiguredClientCapToProtocolMax)
 {
     SimulationConfig config = SimulationConfig::defaults();
     config.clientParticleCap = bltzr_protocol::kSnapshotMaxPoints + 5000u;
     EXPECT_EQ(bltzr_client::resolveClientDrawCap(config), bltzr_protocol::kSnapshotMaxPoints);
 }
 
-TEST(ClientRuntimeTest, TST_CNT_RUNT_006_ClampsEnvironmentOverrideToProtocolMax)
+TEST(RuntimeTest, TST_CNT_RUNT_006_ClampsEnvironmentOverrideToProtocolMax)
 {
     SimulationConfig config = SimulationConfig::defaults();
     config.clientParticleCap = 4096u;
@@ -29,7 +29,7 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_006_ClampsEnvironmentOverrideToProtocolMax)
     EXPECT_EQ(bltzr_client::resolveClientDrawCap(config), bltzr_protocol::kSnapshotMaxPoints);
 }
 
-TEST(ClientRuntimeTest, TST_CNT_RUNT_007_InvalidEnvironmentOverrideFallsBackToConfigAndWarns)
+TEST(RuntimeTest, TST_CNT_RUNT_007_InvalidEnvironmentOverrideFallsBackToConfigAndWarns)
 {
     SimulationConfig config = SimulationConfig::defaults();
     config.clientParticleCap = 4096u;

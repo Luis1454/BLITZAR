@@ -5,7 +5,8 @@
  * @brief Application entry points and host executables for BLITZAR.
  */
 
-#include "config/EnvUtils.hpp"
+#include "Constants.hpp"
+#include "config/env/Base.hpp"
 #include "config/SimulationArgs.hpp"
 #include "config/SimulationConfig.hpp"
 #include "server/SimulationInitConfig.hpp"
@@ -100,7 +101,7 @@ int main(int argc, char** argv)
     if (exportOnExit) {
         server.setPaused(true);
         server.requestExportSnapshot("", exportFormat);
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(std::chrono::milliseconds(kServicePollIntervalMs));
     }
     server.stop();
     const auto end = std::chrono::steady_clock::now();

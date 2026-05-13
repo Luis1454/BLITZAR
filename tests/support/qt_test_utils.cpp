@@ -7,7 +7,7 @@
 
 #include "tests/support/qt_test_utils.hpp"
 #include "tests/support/poll_utils.hpp"
-#include "ui/MainWindow.hpp"
+#include "window/core/Window.hpp"
 #include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
@@ -49,7 +49,7 @@ QApplication* ensureQtApp()
     return &app;
 }
 
-QString findStatusLabelText(const bltzr_qt::MainWindow& window)
+QString findStatusLabelText(const bltzr_qt::Window& window)
 {
     const QList<QLabel*> labels = window.findChildren<QLabel*>();
     QStringList summaryLines;
@@ -60,7 +60,7 @@ QString findStatusLabelText(const bltzr_qt::MainWindow& window)
     return summaryLines.join("\n");
 }
 
-std::filesystem::path saveFailureEvidence(bltzr_qt::MainWindow& window, const std::string& stem)
+std::filesystem::path saveFailureEvidence(bltzr_qt::Window& window, const std::string& stem)
 {
     const std::filesystem::path basePath = std::filesystem::temp_directory_path() / stem;
     (void)window.grab().save(QString::fromStdString(basePath.string() + ".png"));
@@ -69,7 +69,7 @@ std::filesystem::path saveFailureEvidence(bltzr_qt::MainWindow& window, const st
     return basePath;
 }
 
-std::uint64_t findSummaryUnsignedMetric(const bltzr_qt::MainWindow& window,
+std::uint64_t findSummaryUnsignedMetric(const bltzr_qt::Window& window,
                                         const std::string& label)
 {
     const std::string status = findStatusLabelText(window).toStdString();
@@ -96,7 +96,7 @@ std::string readAllFile(const std::filesystem::path& path)
     return out.str();
 }
 
-QComboBox* findSolverCombo(bltzr_qt::MainWindow& window)
+QComboBox* findSolverCombo(bltzr_qt::Window& window)
 {
     const QList<QComboBox*> combos = window.findChildren<QComboBox*>();
     for (QComboBox* combo : combos)
@@ -107,7 +107,7 @@ QComboBox* findSolverCombo(bltzr_qt::MainWindow& window)
     return nullptr;
 }
 
-QComboBox* findComboByObjectName(bltzr_qt::MainWindow& window, const QString& objectName)
+QComboBox* findComboByObjectName(bltzr_qt::Window& window, const QString& objectName)
 {
     const QList<QComboBox*> combos = window.findChildren<QComboBox*>();
     for (QComboBox* combo : combos)
@@ -117,7 +117,7 @@ QComboBox* findComboByObjectName(bltzr_qt::MainWindow& window, const QString& ob
     return nullptr;
 }
 
-QCheckBox* findCheckBoxByText(bltzr_qt::MainWindow& window, const QString& text)
+QCheckBox* findCheckBoxByText(bltzr_qt::Window& window, const QString& text)
 {
     const QList<QCheckBox*> checks = window.findChildren<QCheckBox*>();
     for (QCheckBox* check : checks)
@@ -127,7 +127,7 @@ QCheckBox* findCheckBoxByText(bltzr_qt::MainWindow& window, const QString& text)
     return nullptr;
 }
 
-QPushButton* findButtonByText(bltzr_qt::MainWindow& window, const QString& text)
+QPushButton* findButtonByText(bltzr_qt::Window& window, const QString& text)
 {
     const QList<QPushButton*> buttons = window.findChildren<QPushButton*>();
     for (QPushButton* button : buttons)

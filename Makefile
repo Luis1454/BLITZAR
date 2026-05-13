@@ -30,6 +30,7 @@ MACDEPLOYQT ?= $(QT_DIR)/bin/macdeployqt
 LINUXDEPLOYQT ?= linuxdeployqt
 QT_PLUGIN_PATH ?= $(QT_DIR)/plugins
 QT_LIB_DIR ?= $(QT_DIR)/lib
+QT_LOCAL_PREFIX ?= $(CURDIR)/.deps/qt6-root/usr
 
 VCPKG_TRIPLET ?= x64-windows
 RUN_DOCTOR ?= 1
@@ -69,9 +70,9 @@ RUN_HEADLESS_BIN := $(BUILD_DIR)/$(HEADLESS_EXECUTABLE)
 RUN_SERVER_BIN := $(BUILD_DIR)/$(SERVER_EXECUTABLE)
 RUN_CLIENT_HOST_BIN := $(BUILD_DIR)/$(CLIENT_HOST_EXECUTABLE)
 ifeq ($(UNAME_S),Darwin)
-QT_MODULE_LIB := $(BUILD_DIR)/blitzarClientModuleQtInProc.dylib
+QT_MODULE_LIB := $(BUILD_DIR)/libblitzarClientModuleQtInProc.dylib
 else
-QT_MODULE_LIB := $(BUILD_DIR)/blitzarClientModuleQtInProc.so
+QT_MODULE_LIB := $(BUILD_DIR)/libblitzarClientModuleQtInProc.so
 endif
 endif
 
@@ -92,6 +93,15 @@ CMAKE_FLAGS = \
 	-DBLITZAR_BUILD_CLIENT_MODULES=ON \
 	-DBLITZAR_BUILD_TESTS=$(BUILD_TESTS) \
 	-DBLITZAR_PROFILE_LOGS=$(PROFILE_LOGS)
+
+ifneq ($(wildcard $(QT_LOCAL_PREFIX)/lib64/cmake/Qt6/Qt6Config.cmake),)
+CMAKE_FLAGS += \
+	-DCMAKE_PREFIX_PATH="$(QT_LOCAL_PREFIX);$(QT_LOCAL_PREFIX)/lib64/cmake" \
+	-DCMAKE_LIBRARY_PATH="$(QT_LOCAL_PREFIX)/lib64" \
+	-DCMAKE_INCLUDE_PATH="$(QT_LOCAL_PREFIX)/include" \
+	-DQt6_DIR="$(QT_LOCAL_PREFIX)/lib64/cmake/Qt6" \
+	-DQt6Widgets_DIR="$(QT_LOCAL_PREFIX)/lib64/cmake/Qt6Widgets"
+endif
 
 BUILD_CMD = cmake --build $(BUILD_DIR)
 ifneq ($(strip $(JOBS)),)

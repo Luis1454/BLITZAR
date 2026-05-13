@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/ClientRuntime.hpp"
+#include "client/runtime/Runtime.hpp"
 #include "tests/support/client_utils.hpp"
 #include "tests/support/poll_utils.hpp"
 #include "tests/support/server_harness.hpp"
@@ -34,12 +34,12 @@ static std::filesystem::path writeSnapshotPipelineConfig(const char* basename,
     return path;
 }
 
-TEST(ClientRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAndSnapshot)
+TEST(RuntimeTest, TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAndSnapshot)
 {
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    bltzr_client::ClientRuntime runtime(
+    bltzr_client::Runtime runtime(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
     ASSERT_TRUE(testsupport::waitUntil(
@@ -70,26 +70,26 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAn
     server.stop();
 }
 
-TEST(ClientRuntimeTest, TST_CNT_RUNT_002_StartFailsWhenRemoteServerIsUnavailable)
+TEST(RuntimeTest, TST_CNT_RUNT_002_StartFailsWhenRemoteServerIsUnavailable)
 {
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
     const std::uint16_t unavailablePort = server.port();
     server.stop();
-    bltzr_client::ClientRuntime runtime("simulation.ini",
+    bltzr_client::Runtime runtime("simulation.ini",
                                         testsupport::makeTransport(unavailablePort, ""));
     EXPECT_FALSE(runtime.start());
     EXPECT_EQ(runtime.linkStateLabel(), "reconnecting");
 }
 
-TEST(ClientRuntimeTest, TST_CNT_RUNT_003_ReconnectsWhenRealServerRestarts)
+TEST(RuntimeTest, TST_CNT_RUNT_003_ReconnectsWhenRealServerRestarts)
 {
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
     const std::uint16_t fixedPort = server.port();
-    bltzr_client::ClientRuntime runtime(
+    bltzr_client::Runtime runtime(
         "simulation.ini", testsupport::makeTransport(fixedPort, server.executablePath()));
     ASSERT_TRUE(runtime.start());
     ASSERT_TRUE(testsupport::waitUntil(
@@ -114,12 +114,12 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_003_ReconnectsWhenRealServerRestarts)
     server.stop();
 }
 
-TEST(ClientRuntimeTest, TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeToReachRealServer)
+TEST(RuntimeTest, TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeToReachRealServer)
 {
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
-    bltzr_client::ClientRuntime runtime(
+    bltzr_client::Runtime runtime(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
     ASSERT_TRUE(testsupport::waitUntil(
@@ -149,14 +149,14 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeToRe
     server.stop();
 }
 
-TEST(ClientRuntimeTest, TST_CNT_RUNT_009_LatestOnlySnapshotQueueKeepsLatencyLowWhileDroppingBacklog)
+TEST(RuntimeTest, TST_CNT_RUNT_009_LatestOnlySnapshotQueueKeepsLatencyLowWhileDroppingBacklog)
 {
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
     const std::filesystem::path configPath =
         writeSnapshotPipelineConfig("BLITZAR_runtime_latest_only", 2u, "latest-only");
-    bltzr_client::ClientRuntime runtime(
+    bltzr_client::Runtime runtime(
         configPath.string(), testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
     ASSERT_TRUE(testsupport::waitUntil(
@@ -181,14 +181,14 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_009_LatestOnlySnapshotQueueKeepsLatencyLowW
     std::filesystem::remove(configPath, ec);
 }
 
-TEST(ClientRuntimeTest, TST_CNT_RUNT_010_PacedSnapshotQueuePreservesBacklogAndReportsLatencyGrowth)
+TEST(RuntimeTest, TST_CNT_RUNT_010_PacedSnapshotQueuePreservesBacklogAndReportsLatencyGrowth)
 {
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;
     const std::filesystem::path configPath =
         writeSnapshotPipelineConfig("BLITZAR_runtime_paced", 2u, "paced");
-    bltzr_client::ClientRuntime runtime(
+    bltzr_client::Runtime runtime(
         configPath.string(), testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
     ASSERT_TRUE(testsupport::waitUntil(
@@ -216,7 +216,7 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_010_PacedSnapshotQueuePreservesBacklogAndRe
     std::filesystem::remove(configPath, ec);
 }
 
-TEST(ClientRuntimeTest, TST_CNT_RUNT_011_BackendSnapshotPolicyReducesTransferForLowDrawCap)
+TEST(RuntimeTest, TST_CNT_RUNT_011_BackendSnapshotPolicyReducesTransferForLowDrawCap)
 {
     RealServerHarness server;
     std::string startError;
@@ -226,7 +226,7 @@ TEST(ClientRuntimeTest, TST_CNT_RUNT_011_BackendSnapshotPolicyReducesTransferFor
         "--init-config-style", "preset",       "--preset-structure",
         "random_cloud"};
     ASSERT_TRUE(server.start(startError, 0u, {}, serverArgs)) << startError;
-    bltzr_client::ClientRuntime runtime(
+    bltzr_client::Runtime runtime(
         "simulation.ini", testsupport::makeTransport(server.port(), server.executablePath()));
     ASSERT_TRUE(runtime.start());
     ASSERT_TRUE(testsupport::waitUntil(

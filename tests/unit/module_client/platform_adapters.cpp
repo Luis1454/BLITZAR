@@ -6,8 +6,8 @@
  */
 
 #include "platform/DynamicLibrary.hpp"
-#include "platform/PlatformProcess.hpp"
-#include "platform/SocketPlatform.hpp"
+#include "platform/Process.hpp"
+#include "platform/Socket.hpp"
 #include <array>
 #include <cstddef>
 #include <cstdint>

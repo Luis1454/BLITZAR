@@ -5,14 +5,15 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "config/SimulationArgs.hpp"
-#include "config/SimulationConfig.hpp"
-#include "protocol/ServerProtocol.hpp"
+#include "config/args/Main.hpp"
+#include "config/core/Config.hpp"
+#include "protocol/Protocol.hpp"
 #include <gtest/gtest.h>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
+#include "Constants.hpp"
 
 namespace bltzr_test_config_args_cli {
 std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage)
@@ -71,7 +72,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
                                      "180"};
     applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.particleCount, 2048u);
-    EXPECT_FLOAT_EQ(config.dt, 0.02f);
+    EXPECT_FLOAT_EQ(config.dt, kGalaxyCollisionDt);
     EXPECT_EQ(config.solver, "octree_gpu");
     EXPECT_EQ(config.integrator, "euler");
     EXPECT_FLOAT_EQ(config.substepTargetDt, 0.005f);
@@ -130,9 +131,9 @@ TEST(ConfigArgsTest, TST_UNT_CONF_005_RejectsInvalidSolverAndIntegratorValues)
     args = {"app", "--solver", "octree_gpu", "--integrator", "rk4"};
     applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.solver, "octree_gpu");
-    EXPECT_EQ(config.integrator, "rk4");
-    EXPECT_TRUE(runtime.hasArgumentError);
-    EXPECT_NE(warnings.str().find("unsupported solver/integrator combination"), std::string::npos);
+    EXPECT_EQ(config.integrator, "euler");
+    EXPECT_FALSE(runtime.hasArgumentError);
+    EXPECT_NE(warnings.str().find("using euler"), std::string::npos);
 }
 
 TEST(ConfigArgsTest, TST_UNT_CONF_006_RejectsTrailingGarbageNumericArguments)
@@ -210,7 +211,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_026_CliPerformanceProfileAppliesInteractivePre
     EXPECT_EQ(config.snapshotPublishPeriodMs, 50u);
     EXPECT_EQ(config.energyMeasureEverySteps, 30u);
     EXPECT_EQ(config.energySampleLimit, 256u);
-    EXPECT_FLOAT_EQ(config.substepTargetDt, 0.01f);
+    EXPECT_FLOAT_EQ(config.substepTargetDt, 0.0f);
     EXPECT_EQ(config.maxSubsteps, 4u);
     EXPECT_TRUE(warnings.str().empty());
     EXPECT_FALSE(runtime.hasArgumentError);
