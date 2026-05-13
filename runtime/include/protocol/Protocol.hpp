@@ -1,6 +1,6 @@
 /*
  * @file runtime/include/protocol/Protocol.hpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Runtime public interfaces for protocol, command, client, and FFI boundaries.
  */

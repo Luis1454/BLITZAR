@@ -1,6 +1,6 @@
 /*
  * @file rust/blitzar-web-gateway/src/events.rs
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Rust protocol and gateway components for BLITZAR runtime integration.
  */

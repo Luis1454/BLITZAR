@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # @file scripts/ci/nightly/generate_coverage.sh
-# @author BLITZAR Contributors
+# @author Luis1454
 # @project BLITZAR
 # @brief Build, release, and CI helper automation for BLITZAR workflows.
 

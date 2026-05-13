@@ -1,6 +1,6 @@
 /*
  * @file tests/unit/protocol/json_codec_parse_edge_cases.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

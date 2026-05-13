@@ -1,6 +1,6 @@
 /*
  * @file tests/unit/graphics/TST_UNT_GRA_GraphicsTests.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

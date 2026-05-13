@@ -1,5 +1,5 @@
 # @file python_tools/ci/numerical_validation.py
-# @author BLITZAR Contributors
+# @author Luis1454
 # @project BLITZAR
 # @brief Python quality and automation support for BLITZAR governance.
 

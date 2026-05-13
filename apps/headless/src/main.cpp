@@ -1,6 +1,6 @@
 /*
  * @file apps/headless/src/main.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Headless simulation entry point.
  */

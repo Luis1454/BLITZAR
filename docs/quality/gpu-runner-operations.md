@@ -23,7 +23,7 @@ Use the extracted `actions-runner` directory on the Windows host, then run:
 
 ```powershell
 python scripts/ci/gpu/bootstrap_windows_runner.py `
-  --repo OWNER/BLITZAR `
+  --repo Luis1454/BLITZAR `
   --runner-root C:\actions-runner `
   --runner-name blitzar-gpu-01 `
   --output dist/gpu-runner/bootstrap-plan.json `

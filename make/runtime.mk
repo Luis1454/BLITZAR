@@ -1,5 +1,5 @@
 # @file make/runtime.mk
-# @author BLITZAR Contributors
+# @author Luis1454
 # @project BLITZAR
 # @brief Makefile fragments for local quality and runtime workflows.
 

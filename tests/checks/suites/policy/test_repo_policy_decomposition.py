@@ -1,5 +1,5 @@
 # @file tests/checks/suites/policy/test_repo_policy_decomposition.py
-# @author BLITZAR Contributors
+# @author Luis1454
 # @project BLITZAR
 # @brief Automated verification assets for BLITZAR quality gates.
 

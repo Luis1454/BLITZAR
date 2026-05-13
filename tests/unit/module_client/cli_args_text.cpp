@@ -1,6 +1,6 @@
 /*
  * @file tests/unit/module_client/cli_args_text.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

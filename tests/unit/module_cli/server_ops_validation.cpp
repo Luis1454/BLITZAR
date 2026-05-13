@@ -1,6 +1,6 @@
 /*
  * @file tests/unit/module_cli/server_ops_validation.cpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

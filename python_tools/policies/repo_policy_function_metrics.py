@@ -1,5 +1,5 @@
 # @file python_tools/policies/repo_policy_function_metrics.py
-# @author BLITZAR Contributors
+# @author Luis1454
 # @project BLITZAR
 # @brief Python quality and automation support for BLITZAR governance.
 

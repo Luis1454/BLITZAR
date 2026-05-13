@@ -1,6 +1,6 @@
 /*
  * @file runtime/src/client/module/Internal.hpp
- * @author BLITZAR Contributors
+ * @author Luis1454
  * @project BLITZAR
  * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
  */
