@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # @file tests/checks/suites/policy/test_repo_policy_headers.py
-# @author Luis1454
+# @author BLITZAR Contributors
 # @project BLITZAR
 # @brief Automated verification assets for BLITZAR quality gates.
 

@@ -1,6 +1,6 @@
 /*
  * @file modules/proxy/Module.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Proxy module used to validate runtime forwarding behavior.
  */

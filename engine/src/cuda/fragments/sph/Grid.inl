@@ -1,6 +1,6 @@
 /*
  * @file engine/src/cuda/fragments/sph/Grid.inl
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Physics and CUDA implementation for the deterministic simulation core.
  */

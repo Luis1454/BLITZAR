@@ -1,5 +1,5 @@
 # @file python_tools/policies/fmea_action_register.py
-# @author Luis1454
+# @author BLITZAR Contributors
 # @project BLITZAR
 # @brief Python quality and automation support for BLITZAR governance.
 

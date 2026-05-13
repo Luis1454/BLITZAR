@@ -1,6 +1,6 @@
 /*
  * @file engine/src/config/SimulationScenarioValidation.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Configuration parsing, validation, and serialization implementation.
  */

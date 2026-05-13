@@ -1,6 +1,6 @@
 /*
  * @file rust/blitzar-protocol/tests/protocol.rs
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Rust protocol and gateway components for BLITZAR runtime integration.
  */

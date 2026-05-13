@@ -1,6 +1,6 @@
 /*
  * @file rust/blitzar-protocol/src/framing.rs
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Rust protocol and gateway components for BLITZAR runtime integration.
  */

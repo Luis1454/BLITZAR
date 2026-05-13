@@ -1,5 +1,5 @@
 # @file scripts/deps_graphics.cmake
-# @author Luis1454
+# @author BLITZAR Contributors
 # @project BLITZAR
 # @brief Build, release, and CI helper automation for BLITZAR workflows.
 

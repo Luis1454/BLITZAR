@@ -1,6 +1,6 @@
 /*
  * @file engine/include/platform/Socket.hpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Platform abstraction interfaces for portable runtime services.
  */

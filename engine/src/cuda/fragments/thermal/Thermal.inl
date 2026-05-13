@@ -1,6 +1,6 @@
 /*
  * @file engine/src/cuda/fragments/thermal/Thermal.inl
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Physics and CUDA implementation for the deterministic simulation core.
  */

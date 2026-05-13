@@ -1,6 +1,6 @@
 /*
  * @file apps/launcher/src/main.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Application entry points and host executables for BLITZAR.
  */

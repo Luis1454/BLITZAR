@@ -1,6 +1,6 @@
 /*
  * @file tests/int/runtime/bridge.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Automated verification assets for BLITZAR quality gates.
  */

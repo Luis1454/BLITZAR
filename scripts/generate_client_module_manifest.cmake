@@ -1,5 +1,5 @@
 # @file scripts/generate_client_module_manifest.cmake
-# @author Luis1454
+# @author BLITZAR Contributors
 # @project BLITZAR
 # @brief Build, release, and CI helper automation for BLITZAR workflows.
 

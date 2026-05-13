@@ -1,6 +1,6 @@
 /*
  * @file engine/include/config/modes/Normalize.hpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Public configuration interfaces and validation contracts for simulation setup.
  */

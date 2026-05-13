@@ -1,5 +1,5 @@
 # @file tests/checks/suites/core/test_gpu_runner_ops.py
-# @author Luis1454
+# @author BLITZAR Contributors
 # @project BLITZAR
 # @brief Automated verification assets for BLITZAR quality gates.
 

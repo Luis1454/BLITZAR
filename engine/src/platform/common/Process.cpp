@@ -1,6 +1,6 @@
 /*
  * @file engine/src/platform/common/Process.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Platform abstraction implementation for portable runtime services.
  */

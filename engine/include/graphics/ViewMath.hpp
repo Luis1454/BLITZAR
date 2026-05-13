@@ -1,6 +1,6 @@
 /*
  * @file engine/include/graphics/ViewMath.hpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Source artifact for the BLITZAR simulation project.
  */

@@ -1,5 +1,5 @@
 # @file python_tools/ci/performance_benchmark.py
-# @author Luis1454
+# @author BLITZAR Contributors
 # @project BLITZAR
 # @brief Python quality and automation support for BLITZAR governance.
 

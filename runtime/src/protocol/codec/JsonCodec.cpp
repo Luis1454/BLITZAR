@@ -1,6 +1,6 @@
 /*
  * @file runtime/src/protocol/codec/JsonCodec.cpp
- * @author Luis1454
+ * @author BLITZAR Contributors
  * @project BLITZAR
  * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
  */
