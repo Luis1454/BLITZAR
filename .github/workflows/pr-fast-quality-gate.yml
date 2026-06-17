@@ -94,7 +94,7 @@ jobs:
             ~/.cache/vcpkg/archives
           key: ${{ steps.cache-meta.outputs.build-prefix }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/pr-fast-quality-gate.yml') }}
       - name: Upload tool qualification manifest
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: tool-qualification-pr-fast-${{ github.run_number }}
           path: dist/tool-qualification/tool_manifest.json
