@@ -39,7 +39,7 @@ jobs:
           echo "build-prefix=cmake-${{ env.CI_CACHE_VERSION }}-${{ runner.os }}-linux-clang-ninja-prod-tests" >> "$GITHUB_OUTPUT"
       - name: Restore pip cache
         id: restore-pip-cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: ~/.cache/pip
           key: ${{ steps.cache-meta.outputs.pip-prefix }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/pr-fast.yml', '.github/workflows/pr-fast-quality-gate.yml') }}
@@ -52,13 +52,13 @@ jobs:
           python -m pip install -r .github/ci/requirements-py312.txt
       - name: Save pip cache
         if: ${{ success() && steps.restore-pip-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: ~/.cache/pip
           key: ${{ steps.cache-meta.outputs.pip-prefix }}-${{ hashFiles('.github/ci/requirements-py312.txt', '.github/workflows/pr-fast.yml', '.github/workflows/pr-fast-quality-gate.yml') }}
       - name: Restore CMake and dependency cache
         id: restore-build-cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: |
             build-quality
@@ -87,7 +87,7 @@ jobs:
         run: make quality-test QUALITY_BUILD_DIR=build-quality
       - name: Save CMake and dependency cache
         if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: |
             build-quality

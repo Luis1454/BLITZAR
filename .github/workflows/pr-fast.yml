@@ -196,7 +196,7 @@ jobs:
       - name: Restore dev-module build cache
         id: restore-dev-module-cache
         if: ${{ steps.cuda.outputs.available == 'true' }}
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: build-dev-mod
           key: ${{ runner.os }}-dev-module-${{ env.CI_CACHE_VERSION }}-${{ matrix.os }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/pr-fast.yml') }}
@@ -232,7 +232,7 @@ jobs:
           fi
       - name: Save dev-module build cache
         if: ${{ success() && steps.cuda.outputs.available == 'true' && steps.restore-dev-module-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: build-dev-mod
           key: ${{ runner.os }}-dev-module-${{ env.CI_CACHE_VERSION }}-${{ matrix.os }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/pr-fast.yml') }}
