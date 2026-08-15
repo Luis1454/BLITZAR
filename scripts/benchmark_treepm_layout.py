@@ -11,7 +11,6 @@ import shutil
 import subprocess
 from pathlib import Path
 
-
 DONE_RE = re.compile(
     r"\[headless\] done particles=(?P<particles>\d+) steps=(?P<steps>\d+) "
     r"faulted=(?P<faulted>[01]).*?integrate_ms=(?P<integrate>\d+) "

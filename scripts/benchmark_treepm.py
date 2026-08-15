@@ -127,7 +127,7 @@ def force_metrics(reference: list[tuple[float, float, float]],
     squared_candidate = 0.0
     max_error = 0.0
     nonfinite = 0
-    for expected, actual in zip(reference, candidate):
+    for expected, actual in zip(reference, candidate, strict=True):
         if not all(math.isfinite(value) for value in (*expected, *actual)):
             nonfinite += 1
             continue

@@ -25,17 +25,16 @@
 #include <string_view>
 #include <vector>
 
-namespace blitzar_headless_main {
-bool containsHelp(const std::vector<std::string_view>& args)
+static bool containsHelp(const std::vector<std::string_view>& args)
 {
     return std::any_of(args.begin() + (args.empty() ? 0 : 1), args.end(), [](const auto value) {
         return value == "--help" || value == "-h";
     });
 }
 
-void printResolvedCase(const std::string& configPath, const SimulationConfig& config,
-                       const ResolvedInitialStatePlan& initPlan,
-                       const bltzr_config::ScenarioValidationReport& report)
+static void printResolvedCase(const std::string& configPath, const SimulationConfig& config,
+                              const ResolvedInitialStatePlan& initPlan,
+                              const bltzr_config::ScenarioValidationReport& report)
 {
     const std::filesystem::path absoluteConfig =
         std::filesystem::absolute(std::filesystem::path(configPath));
@@ -61,7 +60,7 @@ void printResolvedCase(const std::string& configPath, const SimulationConfig& co
     }
 }
 
-void resolveCasePaths(const std::filesystem::path& configPath, SimulationConfig& config)
+static void resolveCasePaths(const std::filesystem::path& configPath, SimulationConfig& config)
 {
     const std::filesystem::path caseDirectory = std::filesystem::absolute(configPath).parent_path();
     const auto resolve = [&caseDirectory](std::string& value) {
@@ -77,7 +76,7 @@ void resolveCasePaths(const std::filesystem::path& configPath, SimulationConfig&
     resolve(config.inputFile);
 }
 
-void resolveExportPath(const std::filesystem::path& configPath, std::string& exportPath)
+static void resolveExportPath(const std::filesystem::path& configPath, std::string& exportPath)
 {
     if (exportPath.empty()) {
         return;
@@ -89,8 +88,6 @@ void resolveExportPath(const std::filesystem::path& configPath, std::string& exp
                          .string();
     }
 }
-} // namespace blitzar_headless_main
-
 int main(int argc, char** argv)
 {
     std::vector<std::string_view> args;

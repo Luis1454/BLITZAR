@@ -16,7 +16,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from python_tools.analysis.structure_spectrum import analyze_snapshot, compare_structure
 
-
 DONE_RE = re.compile(r"\[headless\] done particles=(\d+) steps=(\d+) faulted=(\d+)")
 
 

@@ -10,7 +10,6 @@ import re
 import subprocess
 from pathlib import Path
 
-
 E2E_PATTERN = re.compile(
     r"\[cuda-e2e\] samples=(?P<samples>\d+) last_ms=(?P<last>[0-9.]+) "
     r"avg_ms=(?P<average>[0-9.]+)"

@@ -10,7 +10,6 @@ import re
 import subprocess
 from pathlib import Path
 
-
 CASES = [
     ("pairwise_cuda", "off"),
     ("octree_gpu", "off"),
@@ -119,7 +118,7 @@ def state_metrics(state: dict, softening: float) -> dict:
     kinetic = 0.0
     momentum = [0.0, 0.0, 0.0]
     center = [0.0, 0.0, 0.0]
-    for position, velocity, mass in zip(positions, velocities, masses):
+    for position, velocity, mass in zip(positions, velocities, masses, strict=True):
         kinetic += 0.5 * mass * sum(value * value for value in velocity)
         for axis in range(3):
             center[axis] += mass * position[axis]
@@ -149,11 +148,11 @@ def trajectory_error(reference: dict, candidate: dict) -> dict:
     max_position = 0.0
     max_velocity = 0.0
     count = len(reference["positions"])
-    for expected, actual in zip(reference["positions"], candidate["positions"]):
+    for expected, actual in zip(reference["positions"], candidate["positions"], strict=True):
         error = math.sqrt(sum((actual[i] - expected[i]) ** 2 for i in range(3)))
         position_squared += error * error
         max_position = max(max_position, error)
-    for expected, actual in zip(reference["velocities"], candidate["velocities"]):
+    for expected, actual in zip(reference["velocities"], candidate["velocities"], strict=True):
         error = math.sqrt(sum((actual[i] - expected[i]) ** 2 for i in range(3)))
         velocity_squared += error * error
         max_velocity = max(max_velocity, error)
