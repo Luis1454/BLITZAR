@@ -47,3 +47,6 @@ execution concern: `system`, `integration`, `octree`, `treepm`, `sph`, and
 4. Do not add compatibility copies in the old flat `physics` directory.
 5. Update the CMake source list and quality manifests in the same change as a
    move.
+
+The layout is covered by `REQ-PHYS-001` and `REQ-PHYS-002` in the quality
+traceability registry.
