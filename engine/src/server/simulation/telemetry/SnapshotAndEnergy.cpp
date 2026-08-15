@@ -10,8 +10,8 @@
 namespace blitzar_simulation_snapshot_energy {
 constexpr int kDensityGridSide = 24;
 constexpr std::size_t kDensityCellCount = static_cast<std::size_t>(kDensityGridSide) *
-                                           static_cast<std::size_t>(kDensityGridSide) *
-                                           static_cast<std::size_t>(kDensityGridSide);
+                                          static_cast<std::size_t>(kDensityGridSide) *
+                                          static_cast<std::size_t>(kDensityGridSide);
 
 struct DensityGrid {
     std::array<float, kDensityCellCount> mass{};
@@ -93,8 +93,8 @@ float densityNormAt(const DensityGrid& grid, const Vector3& position)
     for (int z = centerZ - 1; z <= centerZ + 1; ++z) {
         for (int y = centerY - 1; y <= centerY + 1; ++y) {
             for (int x = centerX - 1; x <= centerX + 1; ++x) {
-                if (x >= 0 && x < kDensityGridSide && y >= 0 && y < kDensityGridSide &&
-                    z >= 0 && z < kDensityGridSide) {
+                if (x >= 0 && x < kDensityGridSide && y >= 0 && y < kDensityGridSide && z >= 0 &&
+                    z < kDensityGridSide) {
                     localMass += grid.mass[densityIndex(x, y, z)];
                 }
             }
@@ -137,7 +137,9 @@ void SimulationServer::publishSnapshot()
         std::lock_guard<std::mutex> lock(_commandMutex);
         cosmologyEnabled = _configState._initialStateConfig.cosmology.enabled;
     }
-    const DensityGrid densityGrid = cosmologyEnabled ? buildDensityGrid(particles) : DensityGrid{};
+    const blitzar_simulation_snapshot_energy::DensityGrid densityGrid =
+        cosmologyEnabled ? blitzar_simulation_snapshot_energy::buildDensityGrid(particles)
+                         : blitzar_simulation_snapshot_energy::DensityGrid{};
     double totalMass = densityGrid.totalMass;
     if (!cosmologyEnabled) {
         for (const Particle& particle : particles) {
@@ -157,10 +159,14 @@ void SimulationServer::publishSnapshot()
     std::size_t outIndex = 0u;
     for (size_t i = 0; i < count && outIndex < publishedCount; i += stride) {
         _scratchSnapshot[outIndex] =
-            RenderParticle{particles[i].getPosition().x,      particles[i].getPosition().y,
-                           particles[i].getPosition().z,      particles[i].getMass(),
-                           particles[i].getPressure().norm(), particles[i].getTemperature(),
-                           densityNormAt(densityGrid, particles[i].getPosition())};
+            RenderParticle{particles[i].getPosition().x,
+                           particles[i].getPosition().y,
+                           particles[i].getPosition().z,
+                           particles[i].getMass(),
+                           particles[i].getPressure().norm(),
+                           particles[i].getTemperature(),
+                           blitzar_simulation_snapshot_energy::densityNormAt(
+                               densityGrid, particles[i].getPosition())};
         outIndex += 1u;
     }
     std::lock_guard<std::mutex> lock(_snapshotMutex);
@@ -202,9 +208,8 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
     if (n < 2)
         return values;
 
-    const std::size_t sampleLimit = static_cast<std::size_t>(
-        _energySampleLimit.load(std::memory_order_relaxed)
-    );
+    const std::size_t sampleLimit =
+        static_cast<std::size_t>(_energySampleLimit.load(std::memory_order_relaxed));
 
     const bool sampled = n > sampleLimit;
     const float specificHeat = _system ? std::max(1e-6f, _system->getThermalSpecificHeat()) : 1.0f;
@@ -223,9 +228,11 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
     std::vector<std::size_t> indices;
     if (!sampled) {
         indices.resize(n);
-        for (std::size_t i = 0; i < n; ++i) { indices[i] = i; }
-
-    } else {
+        for (std::size_t i = 0; i < n; ++i) {
+            indices[i] = i;
+        }
+    }
+    else {
         const std::size_t sampleCount = std::max<std::size_t>(64u, sampleLimit);
         const std::size_t stride = std::max<std::size_t>(1, n / sampleCount);
 
@@ -238,18 +245,16 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
         }
     }
 
-    const double kineticScale = sampled
-                                ? static_cast<double>(n) / static_cast<double>(indices.size())
-                                : 1.0;
+    const double kineticScale =
+        sampled ? static_cast<double>(n) / static_cast<double>(indices.size()) : 1.0;
 
     const double pairCountFull = static_cast<double>(n) * static_cast<double>(n - 1) * 0.5;
 
-    const double pairCountSample = static_cast<double>(indices.size()) *
-                                    static_cast<double>(indices.size() - 1) * 0.5;
+    const double pairCountSample =
+        static_cast<double>(indices.size()) * static_cast<double>(indices.size() - 1) * 0.5;
 
-    const double potentialScale = (sampled && pairCountSample > 0.0)
-                                ? (pairCountFull / pairCountSample)
-                                : 1.0;
+    const double potentialScale =
+        (sampled && pairCountSample > 0.0) ? (pairCountFull / pairCountSample) : 1.0;
 
     const float softening = std::max(energySoftening, energyMinSoftening);
 
@@ -317,7 +322,9 @@ void SimulationServer::maybeUpdateEnergy(std::uint64_t currentStep)
 {
     const std::uint32_t every = _energyMeasureEverySteps.load(std::memory_order_relaxed);
 
-    if (every == 0 || (currentStep % every) != 0) { return; }
+    if (every == 0 || (currentStep % every) != 0) {
+        return;
+    }
 
     const EnergyValues values = computeEnergyValues();
 
