@@ -125,8 +125,8 @@
                                                             ],
                                               "tests":  [
                                                             "^ClientBridgeTest\\.TST_INT_RUNT_00[1-2]_",
-                                                            "^ClientRuntimeTest\\.TST_CNT_RUNT_00[1-9]_",
-                                                            "^ClientRuntimeTest\\.TST_CNT_RUNT_010_",
+                                                            "^RuntimeTest\\.TST_CNT_RUNT_00[1-9]_",
+                                                            "^RuntimeTest\\.TST_CNT_RUNT_010_",
                                                             "^PhysicsTest\\.TST_UNT_RUNT_00[1-9]_",
                                                             "^PhysicsTest\\.TST_UNT_RUNT_010_",
                                                             "^PhysicsTest\\.TST_UNT_RUNT_011_",

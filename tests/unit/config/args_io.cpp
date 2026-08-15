@@ -153,7 +153,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_015_DefaultClientParticleCapMatchesProtocolMax
     EXPECT_EQ(defaults.maxSubsteps, 4u);
 }
 
-TEST(ConfigArgsTest, TST_UNT_CONF_076_LoadKeepsExplicitSolverWithoutImplicitSimulationProfile)
+TEST(ConfigArgsTest, TST_UNT_CONF_115_LoadKeepsExplicitSolverWithoutImplicitSimulationProfile)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path = std::filesystem::temp_directory_path() /

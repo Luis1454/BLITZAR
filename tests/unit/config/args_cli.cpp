@@ -308,7 +308,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_073_CliExportOnExitDefaultsToTrueWithoutValue)
     EXPECT_TRUE(warnings.str().empty());
 }
 
-TEST(ConfigArgsTest, TST_UNT_CONF_074_CliSelectsExplicitExecutionCommand)
+TEST(ConfigArgsTest, TST_UNT_CONF_113_CliSelectsExplicitExecutionCommand)
 {
     SimulationConfig config = SimulationConfig::defaults();
     RuntimeArgs runtime;
@@ -320,7 +320,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_074_CliSelectsExplicitExecutionCommand)
     EXPECT_TRUE(warnings.str().empty());
 }
 
-TEST(ConfigArgsTest, TST_UNT_CONF_075_CliRejectsConflictingExecutionCommands)
+TEST(ConfigArgsTest, TST_UNT_CONF_114_CliRejectsConflictingExecutionCommands)
 {
     SimulationConfig config = SimulationConfig::defaults();
     RuntimeArgs runtime;
@@ -332,7 +332,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_075_CliRejectsConflictingExecutionCommands)
     EXPECT_NE(warnings.str().find("only one execution command"), std::string::npos);
 }
 
-TEST(ConfigArgsTest, TST_UNT_CONF_077_CliAcceptsDeterministicExportPath)
+TEST(ConfigArgsTest, TST_UNT_CONF_116_CliAcceptsDeterministicExportPath)
 {
     SimulationConfig config = SimulationConfig::defaults();
     RuntimeArgs runtime;

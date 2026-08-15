@@ -11,7 +11,7 @@
 #include <sstream>
 #include <string>
 
-TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_084_PresetFileModeKeepsConfiguredInputAndAutoFormat)
+TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_117_PresetFileModeKeepsConfiguredInputAndAutoFormat)
 {
     SimulationConfig config = SimulationConfig::defaults();
     config.initConfigStyle = "preset";
