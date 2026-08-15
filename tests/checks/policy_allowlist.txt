@@ -10,7 +10,6 @@ runtime/src/client/runtime/Runtime.cpp
 runtime/src/command/execution/Executor.cpp
 
 # Client module composition files pending per-feature extraction.
-modules/proxy/Module.cpp
 modules/qt/Module.cpp
 modules/qt/src/widgets/graphs/Paint.cpp
 

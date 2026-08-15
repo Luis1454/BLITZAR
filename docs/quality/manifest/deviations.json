@@ -63,7 +63,6 @@
       "mitigation": "Review changes for feature isolation and keep UI/module edits tied to decomposition work.",
       "closure_criteria": "Extract module composition responsibilities into smaller units and delete the allowlist paths.",
       "paths": [
-        "modules/proxy/Module.cpp",
         "modules/qt/Module.cpp",
         "modules/qt/src/widgets/graphs/Paint.cpp"
       ],
