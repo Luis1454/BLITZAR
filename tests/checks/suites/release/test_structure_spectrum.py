@@ -48,4 +48,3 @@ def test_tst_unt_spectrum_002_growth_report_is_json_safe(tmp_path: Path) -> None
     growth = compare_structure(initial, final)
     assert growth["delta_rms_growth"] == 1.0
     json.dumps({"initial": initial, "growth": growth}, allow_nan=False)
-

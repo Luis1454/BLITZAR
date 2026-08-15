@@ -182,4 +182,3 @@ def compare_structure(initial: dict[str, object], final: dict[str, object]) -> d
             "final_delta_rms": final_rms,
             "final_peak_k": float(final["spectrum"]["peak_k"]),
             "final_peak_power": float(final["spectrum"]["peak_power"])}
-
