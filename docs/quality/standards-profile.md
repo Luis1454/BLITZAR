@@ -88,7 +88,7 @@ Build profiles:
   deterministic value-contract operations and are covered by the repository-policy tests.
 - Repository C++ sources must not use preprocessor conditionals outside header include guards; platform seams must be selected by the build graph, not `#if/#else` branches. CUDA/ISA feature seams are the narrow exception: only `BLITZAR_ENABLE_CUDA`, CUDA driver/NVRTC, `__CUDA_ARCH__`, `__CUDACC__`, and `__SSE__` directives are allowed.
 - Repository C++ sources must not define macros outside header include guards.
-- Strict analyzer lanes also enforce ignored-return-value coverage for internal status APIs through `clang-tidy` and targeted `[[nodiscard]]` annotations.
+- Strict analyzer lanes enforce memory and control-flow analysis plus ignored-return-value coverage for internal status APIs through `clang-tidy` and targeted `[[nodiscard]]` annotations. The opt-in padding heuristic is excluded for persistent configuration contracts; hot data layout is qualified separately.
 - Any requirement, tolerance, or toolchain update must update the quality artifacts in this directory in the same change.
 
 

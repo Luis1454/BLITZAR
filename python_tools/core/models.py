@@ -33,7 +33,7 @@ class CheckContext:
     title: str = ""
     body: str = ""
     clang_tidy_binary: str = "clang-tidy"
-    clang_tidy_checks: str = "-*,clang-analyzer-*,bugprone-unused-return-value"
+    clang_tidy_checks: str = "-*,clang-analyzer-*,bugprone-unused-return-value,-clang-analyzer-optin.performance.Padding"
     clang_tidy_jobs: int = 0
     clang_tidy_log_dir: Path | None = None
     clang_tidy_diff_base: str = ""

@@ -333,7 +333,7 @@ def test_clang_tidy_timeout_falls_back_to_light_checks(monkeypatch, tmp_path: Pa
     assert any("analyzer timed out after 1s" in warning for warning in result.warnings)
     tidy_calls = _tidy_calls(runner)
     assert len(tidy_calls) == 2
-    assert "-checks=-*,clang-analyzer-*,bugprone-unused-return-value" in tidy_calls[0]
+    assert "-checks=-*,clang-analyzer-*,bugprone-unused-return-value,-clang-analyzer-optin.performance.Padding" in tidy_calls[0]
     assert "-checks=-*,bugprone-unused-return-value" in tidy_calls[1]
 
 

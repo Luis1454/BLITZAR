@@ -24,7 +24,12 @@ This document defines minimum confidence controls for development and CI tools.
 
 ### Active Checks
 
-The CI analyzer profile is: `-*,clang-analyzer-*,bugprone-unused-return-value`.
+The CI analyzer profile is: `-*,clang-analyzer-*,bugprone-unused-return-value,-clang-analyzer-optin.performance.Padding`.
+
+`clang-analyzer-optin.performance.Padding` is explicitly excluded. `SimulationConfig` is a
+persistent boundary contract rather than a hot compute layout; reordering it for a small padding
+warning would create unnecessary ABI and serialization churn. Particle hot data remains subject to
+its dedicated memory-layout tests and profiling evidence.
 
 | Check group | Purpose |
 |---|---|
