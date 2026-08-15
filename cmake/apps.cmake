@@ -297,7 +297,7 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             target_compile_definitions(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE BLITZAR_CLIENT_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
         endif()
         target_link_libraries(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE Qt6::Widgets Qt6::OpenGL
-            Qt6::OpenGLWidgets)
+            Qt6::OpenGLWidgets OpenMP::OpenMP_CXX)
         if(TARGET blitzarRustRuntime)
             target_link_libraries(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE blitzarRustRuntime)
         endif()
