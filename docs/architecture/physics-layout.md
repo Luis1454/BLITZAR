@@ -49,4 +49,5 @@ execution concern: `system`, `integration`, `octree`, `treepm`, `sph`, and
    move.
 
 The layout is covered by `REQ-PHYS-001` and `REQ-PHYS-002` in the quality
-traceability registry.
+traceability registry. PRs changing these paths must declare the impacted
+requirement IDs in their traceability section.
