@@ -151,7 +151,7 @@ def test_run_parser_builds_clang_tidy_context_with_defaults() -> None:
     context = build_context(args)
     assert context.build_dir is not None
     assert context.build_dir.name == "build-quality"
-    assert context.clang_tidy_checks == "-*,clang-analyzer-*,bugprone-unused-return-value"
+    assert context.clang_tidy_checks == "-*,clang-analyzer-*,bugprone-unused-return-value,-clang-analyzer-optin.performance.Padding"
     assert context.clang_tidy_jobs == 0
     assert context.clang_tidy_log_dir is None
     assert context.clang_tidy_diff_base == ""

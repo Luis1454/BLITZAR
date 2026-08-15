@@ -7,6 +7,8 @@
 
 #include "Constants.hpp"
 #include "client/runtime/Bridge.hpp"
+#include "config/core/Config.hpp"
+#include "config/directive/Config.hpp"
 #include "config/text/Parse.hpp"
 #include "platform/Paths.hpp"
 #include "platform/Process.hpp"
@@ -17,6 +19,7 @@
 #include <cstddef>
 #include <filesystem>
 #include <iostream>
+#include <sstream>
 
 namespace bltzr_client {
 const std::uint32_t kRemoteTimeoutMinMs = kRuntimeRemoteTimeoutMinMs;
@@ -29,6 +32,59 @@ constexpr auto kReconnectRetryIntervalMin = std::chrono::milliseconds(50);
 constexpr auto kReconnectRetryIntervalMax = std::chrono::milliseconds(1000);
 constexpr auto kErrorLogInterval = std::chrono::milliseconds(1500);
 const std::string_view kServerDefaultName = bltzr_platform::serverDefaultExecutableName();
+
+static SimulationConfig makeInitialStateEnvelope(const InitialStateConfig& state)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    config.initConfigStyle = "detailed";
+    config.initMode = state.mode;
+    config.scene = state.scene;
+    config.initSeed = state.seed;
+    config.deterministicMode = state.deterministicMode;
+    config.velocityTemperature = state.velocityTemperature;
+    config.particleTemperature = state.particleTemperature;
+    config.thermalAmbientTemperature = state.thermalAmbientTemperature;
+    config.thermalSpecificHeat = state.thermalSpecificHeat;
+    config.thermalHeatingCoeff = state.thermalHeatingCoeff;
+    config.thermalRadiationCoeff = state.thermalRadiationCoeff;
+    config.initIncludeCentralBody = state.includeCentralBody;
+    config.initCentralMass = state.centralMass;
+    config.initCentralX = state.centralX;
+    config.initCentralY = state.centralY;
+    config.initCentralZ = state.centralZ;
+    config.initCentralVx = state.centralVx;
+    config.initCentralVy = state.centralVy;
+    config.initCentralVz = state.centralVz;
+    config.initDiskMass = state.diskMass;
+    config.initDiskRadiusMin = state.diskRadiusMin;
+    config.initDiskRadiusMax = state.diskRadiusMax;
+    config.initDiskThickness = state.diskThickness;
+    config.initVelocityScale = state.velocityScale;
+    config.initCloudHalfExtent = state.cloudHalfExtent;
+    config.initCubeHalfExtent = state.cubeHalfExtent;
+    config.initSphereRadius = state.sphereRadius;
+    config.initCloudSpeed = state.cloudSpeed;
+    config.initParticleMass = state.particleMass;
+    config.sceneOffsetX = state.sceneOffsetX;
+    config.sceneOffsetY = state.sceneOffsetY;
+    config.sceneOffsetZ = state.sceneOffsetZ;
+    config.sceneRotationX = state.sceneRotationX;
+    config.sceneRotationY = state.sceneRotationY;
+    config.sceneRotationZ = state.sceneRotationZ;
+    config.sceneCopyAxis = state.sceneCopyAxis;
+    config.sceneRotationCopies = state.sceneRotationCopies;
+    config.sceneMirrorX = state.sceneMirrorX;
+    config.sceneMirrorY = state.sceneMirrorY;
+    config.sceneMirrorZ = state.sceneMirrorZ;
+    return config;
+}
+
+static std::string serializeInitialStateConfig(const InitialStateConfig& state)
+{
+    std::ostringstream output;
+    bltzr_config::SimulationConfigDirective::write(output, makeInitialStateEnvelope(state));
+    return output.str();
+}
 
 bool parsePortValue(std::string_view raw, std::uint16_t& outPort)
 {
@@ -224,7 +280,6 @@ Bridge::Bridge(const std::string& configPath, std::string remoteHost,
       _remoteLaunchAttempted(false),
       _runtimeState(),
       _cachedStats{},
-      _warnedRemoteInitialConfig(false),
       _defaultExportFormat(),
       _lastReconnectAttempt(Clock::time_point::min()),
       _lastReconnectErrorLog(Clock::time_point::min()),
@@ -342,6 +397,60 @@ void Bridge::setPerformanceProfile(const std::string& profile)
                       "\"value\":\"" + jsonEscape(profile) + "\"");
 }
 
+void Bridge::setTreePmAssignment(const std::string& assignment)
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    sendOrQueueRemote(std::string(bltzr_protocol::SetTreePmAssignment),
+                      "\"value\":\"" + jsonEscape(assignment) + "\"");
+}
+
+void Bridge::setTreePmParameters(bool enabled, const std::string& model,
+                                 const std::string& layout,
+                                 const std::string& precision, const std::string& assignment,
+                                 bool localGrid, std::uint32_t gridSize,
+                                 std::uint32_t jacobiIterations, float cutoffFactor,
+                                 std::uint32_t maxLocalNeighbors, std::uint32_t particleLimit,
+                                 std::uint32_t denseCellThreshold, bool gravityOnlyBuffers)
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    sendOrQueueRemote(std::string(bltzr_protocol::SetTreePmParameters),
+                      std::string("\"enabled\":") + (enabled ? "true" : "false") +
+                          ",\"model\":\"" + jsonEscape(model) +
+                          "\",\"layout\":\"" + jsonEscape(layout) +
+                          "\",\"precision\":\"" + jsonEscape(precision) +
+                          "\",\"assignment\":\"" + jsonEscape(assignment) +
+                          "\",\"local_grid\":" + (localGrid ? "true" : "false") +
+                          ",\"grid_size\":" + std::to_string(std::clamp(gridSize, 16u, 256u)) +
+                          ",\"jacobi_iters\":" + std::to_string(std::min(jacobiIterations, 128u)) +
+                          ",\"cutoff_factor\":" + std::to_string(std::clamp(cutoffFactor, 0.0f, 8.0f)) +
+                          ",\"max_local_neighbors\":" +
+                              std::to_string(std::min(maxLocalNeighbors, 256u)) +
+                          ",\"particle_limit\":" +
+                              std::to_string(std::min(particleLimit, 100000000u)) +
+                          ",\"dense_cell_threshold\":" +
+                              std::to_string(std::clamp(denseCellThreshold, 1u, 4096u)) +
+                          ",\"gravity_only_buffers\":" +
+                              (gravityOnlyBuffers ? "true" : "false"));
+}
+
+void Bridge::setAdaptiveTimeSteps(bool enabled, std::uint32_t maxLevel, float eta)
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::uint32_t safeLevel = std::min<std::uint32_t>(12u, maxLevel);
+    const float safeEta = std::clamp(eta, 0.01f, 1.0f);
+    sendOrQueueRemote(std::string(bltzr_protocol::SetAdaptiveTimeSteps),
+                      std::string("\"enabled\":") + (enabled ? "true" : "false") +
+                          ",\"max_level\":" + std::to_string(safeLevel) +
+                          ",\"eta\":" + std::to_string(safeEta));
+}
+
+void Bridge::setAdaptiveTimeStepCostGuard(bool enabled)
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    sendOrQueueRemote(std::string(bltzr_protocol::SetAdaptiveTimeStepCostGuard),
+                      std::string("\"enabled\":") + (enabled ? "true" : "false"));
+}
+
 void Bridge::setOctreeParameters(float theta, float softening)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
@@ -395,12 +504,12 @@ void Bridge::setSnapshotPublishPeriodMs(std::uint32_t periodMs)
 void Bridge::setInitialStateConfig(const InitialStateConfig& config)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    static_cast<void>(config);
-    if (!_warnedRemoteInitialConfig) {
-        std::cout << "[client] server-owned initial state config templates remain controlled by "
-                     "the server API\n";
-        _warnedRemoteInitialConfig = true;
+    if (config.mode == "file") {
+        return;
     }
+    const std::string serialized = serializeInitialStateConfig(config);
+    sendOrQueueRemote(std::string(bltzr_protocol::SetInitialStateConfig),
+                      "\"config\":\"" + jsonEscape(serialized) + "\"");
 }
 
 void Bridge::setEnergyMeasurementConfig(std::uint32_t everySteps,
@@ -632,6 +741,7 @@ SimulationStats Bridge::fromRemoteStatus(const bltzr_protocol::ClientStatus& sta
     stats.maxSubsteps = status.maxSubsteps;
     stats.snapshotPublishPeriodMs = status.snapshotPublishPeriodMs;
     stats.particleCount = status.particleCount;
+    stats.totalMass = status.totalMass;
     stats.kineticEnergy = status.kineticEnergy;
     stats.potentialEnergy = status.potentialEnergy;
     stats.thermalEnergy = status.thermalEnergy;

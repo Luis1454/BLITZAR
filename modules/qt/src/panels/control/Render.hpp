@@ -9,6 +9,7 @@
 
 class QCheckBox;
 class QComboBox;
+class QProgressBar;
 class QPushButton;
 class QSlider;
 class QSpinBox;
@@ -19,7 +20,7 @@ QWidget* buildRenderPanel(QWidget* parent, QComboBox* view3dCombo, QSlider* zoom
                           QSlider* rollSlider, QCheckBox* cullingCheck, QCheckBox* lodCheck,
                           QCheckBox* octreeOverlayCheck, QSpinBox* octreeOverlayDepthSpin,
                           QSpinBox* octreeOverlayOpacitySpin, QCheckBox* gpuTelemetryCheck,
-                          QPushButton* exportButton);
+                          QPushButton* exportButton, QProgressBar* exportProgress);
 
 } // namespace bltzr_qt
 

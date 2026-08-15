@@ -99,7 +99,7 @@ void Window::applyTheme()
 
 void Window::applyViewSettings()
 {
-    _widgets.view.multiView->setZoom(static_cast<float>(_widgets.render.zoomSlider->value()) / kZoomSliderDivisor);
+    _widgets.view.multiView->setZoom(zoomFromSliderValue(_widgets.render.zoomSlider->value()));
     _widgets.view.multiView->setLuminosity(_widgets.render.luminositySlider->value());
     _widgets.view.multiView->setOctreeOverlay(_widgets.render.octreeOverlayCheck->isChecked(), _widgets.render.octreeOverlayDepthSpin->value(),
                                       _widgets.render.octreeOverlayOpacitySpin->value());

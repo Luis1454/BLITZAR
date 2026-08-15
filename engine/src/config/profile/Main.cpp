@@ -57,6 +57,7 @@ void applySimulationProfile(SimulationConfig& config)
         return;
     }
     config.simulationProfile = canonical;
+    config.scene.objects.clear();
     if (canonical == kSimulationProfileDiskOrbit) {
         config.particleCount = 10000u;
         config.dt = kDefaultSimulationDt;
@@ -100,8 +101,9 @@ void applySimulationProfile(SimulationConfig& config)
         config.dt = 0.0001f;
         config.solver = "pairwise_cuda";
         config.integrator = "rk4";
-        config.initMode = "disk_orbit"; // Placeholder until solar system generator
+        config.initMode = "solar_system";
         config.initConfigStyle = "preset";
+        config.presetStructure = "solar_system";
     }
     else if (canonical == kSimulationProfileSphCollapse) {
         config.particleCount = 20000u;
@@ -110,6 +112,7 @@ void applySimulationProfile(SimulationConfig& config)
         config.integrator = "euler";
         config.initMode = "random_cloud";
         config.initConfigStyle = "preset";
+        config.presetStructure = "sph_collapse";
         config.sphEnabled = true;
     }
 }

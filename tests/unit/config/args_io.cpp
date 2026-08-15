@@ -14,6 +14,7 @@
 #include <fstream>
 #include <gtest/gtest.h>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <string>
 
@@ -152,7 +153,46 @@ TEST(ConfigArgsTest, TST_UNT_CONF_015_DefaultClientParticleCapMatchesProtocolMax
     EXPECT_EQ(defaults.maxSubsteps, 4u);
 }
 
-TEST(ConfigArgsTest, TST_UNT_CONF_016_LoadClampsClientParticleCapToProtocolMax)
+TEST(ConfigArgsTest, TST_UNT_CONF_115_LoadKeepsExplicitSolverWithoutImplicitSimulationProfile)
+{
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path = std::filesystem::temp_directory_path() /
+                                       ("BLITZAR_config_explicit_solver_" + std::to_string(stamp) + ".ini");
+    {
+        std::ofstream out(path, std::ios::trunc);
+        ASSERT_TRUE(out.is_open());
+        out << "simulation(particle_count=64, dt=0.01, solver=octree_cpu, integrator=leapfrog)\n";
+    }
+    const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
+    EXPECT_TRUE(loaded.simulationProfile.empty());
+    EXPECT_EQ(loaded.solver, "octree_cpu");
+    EXPECT_EQ(loaded.integrator, "leapfrog");
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_111_StrictLoadRejectsMalformedIniWithoutCreatingFiles)
+{
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path = std::filesystem::temp_directory_path() /
+                                       ("BLITZAR_config_strict_" + std::to_string(stamp) + ".ini");
+    {
+        std::ofstream out(path, std::ios::trunc);
+        ASSERT_TRUE(out.is_open());
+        out << "particle_count=123abc\n";
+    }
+    SimulationConfig loaded{};
+    std::string error;
+    EXPECT_FALSE(SimulationConfig::loadStrict(path.string(), loaded, error));
+    EXPECT_NE(error.find("particle_count"), std::string::npos);
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+    const std::filesystem::path missing = path.string() + ".missing";
+    EXPECT_FALSE(SimulationConfig::loadStrict(missing.string(), loaded, error));
+    EXPECT_FALSE(std::filesystem::exists(missing));
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_016_LoadAcceptsMaximumClientParticleCap)
 {
     const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     const std::filesystem::path path =
@@ -161,14 +201,15 @@ TEST(ConfigArgsTest, TST_UNT_CONF_016_LoadClampsClientParticleCapToProtocolMax)
     {
         std::ofstream out(path, std::ios::trunc);
         ASSERT_TRUE(out.is_open());
-        out << "client_particle_cap=50000\n";
+        out << "client_particle_cap="
+            << std::numeric_limits<std::uint32_t>::max() << "\n";
     }
     std::stringstream err;
     std::streambuf* previous = std::cerr.rdbuf(err.rdbuf());
     const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
     std::cerr.rdbuf(previous);
     EXPECT_EQ(loaded.clientParticleCap, bltzr_protocol::kSnapshotMaxPoints);
-    EXPECT_NE(err.str().find("client_particle_cap clamped"), std::string::npos);
+    EXPECT_EQ(err.str().find("client_particle_cap clamped"), std::string::npos);
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }

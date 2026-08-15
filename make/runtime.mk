@@ -38,7 +38,7 @@ pre-run:
 endif
 
 deploy-qt:
-ifeq ($(OS),Windows_NT)
+ifeq ($(HOST_OS),Windows)
 	@if [ ! -f "$(QT_MODULE_LIB)" ]; then echo "module Qt introuvable: $(QT_MODULE_LIB) (deploy skip)"; exit 0; fi
 	"$(WINDEPLOYQT)" --dir "$(BUILD_DIR)" --release --compiler-runtime "$(QT_MODULE_LIB)"
 else
@@ -58,7 +58,7 @@ endif
 
 run-qt: all deploy-qt
 ifneq ($(wildcard $(QT_MODULE_LIB)),)
-ifeq ($(OS),Windows_NT)
+ifeq ($(HOST_OS),Windows)
 	$(RUN_CLIENT_HOST_BIN) --config $(CONFIG) --module $(GUI_MODULE) $(ARGS)
 else
 	bash scripts/run_qt.sh --bin "$(RUN_CLIENT_HOST_BIN)" --config "$(CONFIG)" --module "$(GUI_MODULE)" --qt-dir "$(QT_DIR)" -- $(ARGS)

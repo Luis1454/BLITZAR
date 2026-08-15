@@ -12,6 +12,7 @@
 #include <cctype>
 #include <filesystem>
 #include <gtest/gtest.h>
+#include <limits>
 #include <string>
 
 namespace bltzr_test_client_common {
@@ -35,14 +36,14 @@ static bool hasExpectedSuggestedName(const std::string& fileName, std::uint64_t 
                             expectedSuffix) == 0;
 }
 
-TEST(ClientCommonTest, TST_UNT_MODHOST_012_ResolveParticleAndDrawCapsClampToProtocolBounds)
+TEST(ClientCommonTest, TST_UNT_MODHOST_012_ResolveParticleAndDrawCapsRespectProtocolBounds)
 {
     SimulationConfig config;
     config.particleCount = 1u;
     config.clientParticleCap = 1u;
     EXPECT_EQ(bltzr_client::resolveServerParticleCount(config), 2u);
     EXPECT_EQ(bltzr_client::resolveClientDrawCap(config), 2u);
-    config.clientParticleCap = bltzr_protocol::kSnapshotMaxPoints + 999u;
+    config.clientParticleCap = std::numeric_limits<std::uint32_t>::max();
     EXPECT_EQ(bltzr_client::resolveClientDrawCap(config), bltzr_protocol::kSnapshotMaxPoints);
 }
 
@@ -94,7 +95,7 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_016_EnvironmentOverridesClampServerAndDra
     config.particleCount = 500u;
     config.clientParticleCap = 12u;
     EXPECT_EQ(bltzr_client::resolveServerParticleCount(config), 2u);
-    EXPECT_EQ(bltzr_client::resolveClientDrawCap(config), bltzr_protocol::kSnapshotMaxPoints);
+    EXPECT_EQ(bltzr_client::resolveClientDrawCap(config), 999999999u);
 }
 
 TEST(ClientCommonTest, TST_UNT_MODHOST_017_InvalidEnvironmentOverridesPreserveConfiguredValues)

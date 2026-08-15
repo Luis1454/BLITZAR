@@ -23,6 +23,23 @@ void SimulationServer::rebuildSystem()
     std::string integrator;
     std::string openingCriterion = "com";
     std::string performanceProfile = "interactive";
+    bool adaptiveTimeStepsEnabled = false;
+    std::uint32_t adaptiveTimeStepMaxLevel = 4u;
+    float adaptiveTimeStepEta = 0.25f;
+    bool adaptiveTimeStepCostGuard = true;
+    bool treePmEnabled = false;
+    std::string treePmModel = "auto";
+    std::string treePmLayout = "auto";
+    std::string treePmPrecision = "fp32";
+    std::string treePmAssignment = "cic";
+    bool treePmLocalGrid = true;
+    std::uint32_t treePmGridSize = 64u;
+    std::uint32_t treePmJacobiIterations = 12u;
+    float treePmCutoffFactor = 1.0f;
+    std::uint32_t treePmMaxLocalNeighbors = 64u;
+    std::uint32_t treePmParticleLimit = 0u;
+    std::uint32_t treePmDenseCellThreshold = 64u;
+    bool treePmGravityOnlyBuffers = true;
     float theta = 1.2f;
     float effectiveTheta = 1.2f;
     float softening = 2.5f;
@@ -31,6 +48,7 @@ void SimulationServer::rebuildSystem()
     float octreeDistributionScore = 0.0f;
     bool thetaAutoTune = false;
     bool sphEnabled = false;
+    bool deterministicMode = false;
     float sphSmoothingLength = 1.25f;
     float sphRestDensity = 1.0f;
     float sphGasConstant = 4.0f;
@@ -52,6 +70,23 @@ void SimulationServer::rebuildSystem()
         integrator = _configState._integratorMode;
         openingCriterion = _configState._octreeOpeningCriterion;
         performanceProfile = _configState._performanceProfile;
+        adaptiveTimeStepsEnabled = _configState._adaptiveTimeStepsEnabled;
+        adaptiveTimeStepMaxLevel = _configState._adaptiveTimeStepMaxLevel;
+        adaptiveTimeStepEta = _configState._adaptiveTimeStepEta;
+        adaptiveTimeStepCostGuard = _configState._runtimeConfigMirror.adaptiveTimeStepCostGuard;
+        treePmEnabled = _configState._runtimeConfigMirror.treePmEnabled;
+        treePmModel = _configState._runtimeConfigMirror.treePmModel;
+        treePmLayout = _configState._runtimeConfigMirror.treePmLayout;
+        treePmPrecision = _configState._runtimeConfigMirror.treePmPrecision;
+        treePmAssignment = _configState._runtimeConfigMirror.treePmAssignment;
+        treePmLocalGrid = _configState._runtimeConfigMirror.treePmLocalGrid;
+        treePmGridSize = _configState._runtimeConfigMirror.treePmGridSize;
+        treePmJacobiIterations = _configState._runtimeConfigMirror.treePmJacobiIterations;
+        treePmCutoffFactor = _configState._runtimeConfigMirror.treePmCutoffFactor;
+        treePmMaxLocalNeighbors = _configState._runtimeConfigMirror.treePmMaxLocalNeighbors;
+        treePmParticleLimit = _configState._runtimeConfigMirror.treePmParticleLimit;
+        treePmDenseCellThreshold = _configState._runtimeConfigMirror.treePmDenseCellThreshold;
+        treePmGravityOnlyBuffers = _configState._runtimeConfigMirror.treePmGravityOnlyBuffers;
         theta = _configState._octreeTheta;
         effectiveTheta = _configState._octreeEffectiveTheta;
         softening = _configState._octreeSoftening;
@@ -60,6 +95,7 @@ void SimulationServer::rebuildSystem()
         octreeDistributionScore = _configState._octreeDistributionScore;
         thetaAutoTune = _configState._octreeThetaAutoTune;
         sphEnabled = _configState._sphEnabled;
+        deterministicMode = _configState._deterministicMode;
         sphSmoothingLength = _configState._sphSmoothingLength;
         sphRestDensity = _configState._sphRestDensity;
         sphGasConstant = _configState._sphGasConstant;
@@ -126,6 +162,17 @@ void SimulationServer::rebuildSystem()
         std::vector<Particle>().swap(particles);
         hasGeneratedState = buildGeneratedState(particles, configuredParticleCount, initConfig);
     }
+    if (!checkpointStateCopy && !particles.empty()) {
+        const std::size_t beforeTransform = particles.size();
+        if (applyInitialStateTransform(particles, initConfig)) {
+            std::cout << "[server] scene transform particles=" << beforeTransform << " -> "
+                      << particles.size() << " copies=" << initConfig.sceneRotationCopies
+                      << " mirror=" << (initConfig.sceneMirrorX || initConfig.sceneMirrorY ||
+                                             initConfig.sceneMirrorZ ? "on" : "off")
+                      << " offset=" << initConfig.sceneOffsetX << ',' << initConfig.sceneOffsetY
+                      << ',' << initConfig.sceneOffsetZ << "\n";
+        }
+    }
     const bool hasInitialParticles = !particles.empty();
     const std::uint32_t targetParticleCount =
         hasInitialParticles
@@ -154,6 +201,11 @@ void SimulationServer::rebuildSystem()
         }
     }
     coerceConfigSolverIntegratorCompatibility(effectiveSolver, integrator, "rebuild");
+    const ParticleSystem::SolverMode effectiveSolverMode =
+        solverModeFromCanonicalName(effectiveSolver);
+    const bool enableCudaRuntime =
+        effectiveSolverMode == ParticleSystem::SolverMode::PairwiseCuda ||
+        effectiveSolverMode == ParticleSystem::SolverMode::OctreeGpu || sphEnabled;
     {
         std::lock_guard<std::mutex> lock(_commandMutex);
         _configState._solverMode = effectiveSolver;
@@ -172,7 +224,7 @@ void SimulationServer::rebuildSystem()
             }
             p.setTemperature(temp);
         }
-        _system = std::make_unique<ParticleSystem>(std::move(particles));
+        _system = std::make_unique<ParticleSystem>(std::move(particles), enableCudaRuntime);
     }
     else {
         _system = std::make_unique<ParticleSystem>(static_cast<int>(targetParticleCount), false);
@@ -206,16 +258,29 @@ void SimulationServer::rebuildSystem()
     _system->setOctreeTheta(effectiveTheta);
     _system->setOctreeSoftening(softening);
     _system->setOctreeOpeningCriterion(openingCriterionFromCanonicalName(openingCriterion));
-    _system->setSolverMode(solverModeFromCanonicalName(effectiveSolver));
+    _system->setSolverMode(effectiveSolverMode);
     _system->setIntegratorMode(integratorModeFromCanonicalName(integrator));
     _system->setSphEnabled(sphEnabled);
+    _system->setDeterministicMode(deterministicMode);
     _system->setSphParameters(sphSmoothingLength, sphRestDensity, sphGasConstant, sphViscosity);
     _system->setPhysicsStabilityConstants(physicsMaxAcceleration, physicsMinSoftening,
                                           physicsMinDistance2, physicsMinTheta);
     _system->setSphCaps(sphMaxAcceleration, sphMaxSpeed);
+    _system->setAdaptiveTimeStepParameters(adaptiveTimeStepsEnabled, adaptiveTimeStepMaxLevel,
+                                           adaptiveTimeStepEta);
+    _system->setAdaptiveTimeStepCostGuard(adaptiveTimeStepCostGuard);
+    _system->setTreePmParameters(
+        treePmEnabled, treePmModel, treePmLayout, treePmPrecision, treePmAssignment, treePmLocalGrid,
+        static_cast<int>(treePmGridSize), static_cast<int>(treePmJacobiIterations),
+        treePmCutoffFactor, static_cast<int>(treePmMaxLocalNeighbors),
+        static_cast<int>(treePmParticleLimit), static_cast<int>(treePmDenseCellThreshold),
+        treePmGravityOnlyBuffers);
     _system->setThermalParameters(initConfig.thermalAmbientTemperature,
                                   initConfig.thermalSpecificHeat, initConfig.thermalHeatingCoeff,
                                   initConfig.thermalRadiationCoeff);
+    _system->setCosmologyParameters(initConfig.cosmology);
+    std::cout << "[server] deterministic mode="
+              << (_system->isDeterministicMode() ? "on" : "off") << "\n";
     logEffectiveExecutionModes(
         effectiveSolver, integrator, performanceProfile, openingCriterion, theta, effectiveTheta,
         thetaAutoTune, thetaAutoMin, thetaAutoMax, octreeDistributionScore, softening,
@@ -233,7 +298,7 @@ void SimulationServer::rebuildSystem()
     }
     _steps.store(0, std::memory_order_relaxed);
     _serverFps.store(0.0f, std::memory_order_relaxed);
-    _stepRequests.store(0, std::memory_order_relaxed);
+    _totalMass.store(0.0f, std::memory_order_relaxed);
     _kineticEnergy.store(0.0f, std::memory_order_relaxed);
     _potentialEnergy.store(0.0f, std::memory_order_relaxed);
     _thermalEnergy.store(0.0f, std::memory_order_relaxed);

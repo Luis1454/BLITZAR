@@ -20,8 +20,8 @@ This repository is independent from any company stack but aligned for US space r
   - no dynamic reload in mission-critical runtime path;
   - client modules, if explicitly built under `prod`, must be startup-only, allowlisted, manifest-verified, and checksum-verified before loading;
   - strict PR quality gate must be green before merge.
-  - CI lanes must force `-DBLITZAR_PROFILE=prod` for qualification evidence.
-  - repository policy checks reject evidence workflow configure commands that omit `-DBLITZAR_PROFILE=prod`.
+  - CI lanes must use the root `release-prod` or tests `integration-*` preset for qualification evidence.
+  - repository policy checks reject evidence workflow configure commands that bypass the canonical presets.
   - evidence-grade environment assumptions are fixed by `docs/quality/production-baseline.md`.
 - `dev` profile (iteration path):
   - broader experimentation allowed;
@@ -29,10 +29,10 @@ This repository is independent from any company stack but aligned for US space r
   - local strict preflight must still execute pinned Cargo formatting and unit tests when Rust workspace crates are present;
   - results are not qualification evidence unless reproduced in `prod` profile constraints.
 
-Build switch:
+Build profiles:
 
-- `-DBLITZAR_PROFILE=prod` for qualification-oriented builds.
-- `-DBLITZAR_PROFILE=dev` for iteration builds.
+- `release-prod` and `integration-*` presets for qualification-oriented builds.
+- `linux-dev`, `windows-desktop`, and `dev-modules` presets for iteration builds.
 
 ## Mandatory Evidence Set
 
@@ -83,10 +83,12 @@ Build switch:
 - Repository policy keeps file-size thresholds as a decomposition signal (`<=200` target, strong alert `>300`) and supplements them with warnings for oversized functions, excessive function counts, and lightweight complexity signals rather than rewarding artificial wrapper splits.
 - Physics stability constants (max acceleration, softening floor, etc.) are exposed through `SimulationConfig` to allow deterministic tuning of solver boundaries without recompilation.
 - Configuration parsing and runtime diagnostics must expose explicit SI units for physical quantities unless a field name explicitly carries another unit such as `_ms` or `fps`.
-- Repository C++ headers must use strict include guards, not `#pragma once`.
-- Repository C++ sources must not use preprocessor conditionals outside header include guards; platform seams must be selected by the build graph, not `#if/#else` branches.
+- Repository C++ headers must use strict include guards, not `#pragma once`. Header definitions are
+  forbidden unless explicitly `inline` or `constexpr`; those exceptions are restricted to small,
+  deterministic value-contract operations and are covered by the repository-policy tests.
+- Repository C++ sources must not use preprocessor conditionals outside header include guards; platform seams must be selected by the build graph, not `#if/#else` branches. CUDA/ISA feature seams are the narrow exception: only `BLITZAR_ENABLE_CUDA`, CUDA driver/NVRTC, `__CUDA_ARCH__`, `__CUDACC__`, and `__SSE__` directives are allowed.
 - Repository C++ sources must not define macros outside header include guards.
-- Strict analyzer lanes also enforce ignored-return-value coverage for internal status APIs through `clang-tidy` and targeted `[[nodiscard]]` annotations.
+- Strict analyzer lanes enforce memory and control-flow analysis plus ignored-return-value coverage for internal status APIs through `clang-tidy` and targeted `[[nodiscard]]` annotations. The opt-in padding heuristic is excluded for persistent configuration contracts; hot data layout is qualified separately.
 - Any requirement, tolerance, or toolchain update must update the quality artifacts in this directory in the same change.
 
 

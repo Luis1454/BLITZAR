@@ -33,6 +33,7 @@ void applyConfigToServer(SimulationServer& server, const SimulationConfig& confi
     server.setSphEnabled(config.sphEnabled);
     server.setSphParameters(config.sphSmoothingLength, config.sphRestDensity, config.sphGasConstant,
                             config.sphViscosity);
+    server.setDeterministicMode(config.deterministicMode);
     server.setEnergyMeasurementConfig(config.energyMeasureEverySteps, config.energySampleLimit);
     server.setExportDefaults(config.exportDirectory, config.exportFormat);
     server.setInitialStateFile(initPlan.inputFile, initPlan.inputFormat);

@@ -9,16 +9,22 @@
 #include "tests/support/client_utils.hpp"
 #include "tests/support/qt_test_utils.hpp"
 #include "widgets/graphs/Graph.hpp"
+#include "widgets/viewport/Particle.hpp"
+#include "window/config/ConfigurationEditor.hpp"
 #include "window/core/Window.hpp"
 #include <QCoreApplication>
 #include <QEventLoop>
+#include <QGroupBox>
 #include <QImage>
 #include <QLabel>
 #include <QPainter>
 #include <QPalette>
+#include <QPushButton>
 #include <gtest/gtest.h>
+#include <array>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace bltzr_test_qt_window_visual {
 static SimulationConfig makeUiConfig()
@@ -150,5 +156,71 @@ TEST(QtMainWindowTest, TST_UIX_UI_006_ResponsiveControlsAllowSubHdWindow)
     EXPECT_LE(window.width(), 1100);
     EXPECT_LE(window.height(), 850);
     EXPECT_LE(window.minimumSizeHint().width(), 1100);
+}
+
+TEST(QtViewportTest, TST_UIX_UI_025_AllProjectionModesRenderTheSnapshot)
+{
+    (void)testsupport::ensureQtApp();
+    const std::vector<RenderParticle> snapshot = {
+        RenderParticle{2.0f, 1.0f, 0.5f, 1.0f, 0.0f, 0.0f},
+        RenderParticle{-2.0f, -1.0f, -0.5f, 1.0f, 0.0f, 0.0f},
+        RenderParticle{0.5f, -2.0f, 2.0f, 1.0f, 0.0f, 0.0f},
+    };
+    const std::array<grav::ViewMode, 4> modes = {grav::ViewMode::XY, grav::ViewMode::XZ,
+                                                  grav::ViewMode::YZ, grav::ViewMode::Perspective};
+    const grav::CameraState camera{0.0f, 0.0f, 0.0f};
+    for (const grav::ViewMode mode : modes) {
+        bltzr_qt::Particle widget(mode);
+        widget.resize(320, 240);
+        widget.setZoom(8.0f);
+        widget.setRenderSettings(true, false, 10.0f, 60.0f);
+        widget.setSnapshot(snapshot);
+        widget.show();
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
+        const QImage image = widget.grab().toImage().convertToFormat(QImage::Format_RGB32);
+        for (const RenderParticle& particle : snapshot) {
+            const grav::ProjectedPoint projected = grav::projectParticle(particle, mode, camera);
+            ASSERT_TRUE(projected.valid);
+            const int expectedX = static_cast<int>(160.0f + projected.x * 8.0f);
+            const int expectedY = static_cast<int>(120.0f - projected.y * 8.0f);
+            bool found = false;
+            for (int dy = -2; dy <= 2 && !found; ++dy) {
+                for (int dx = -2; dx <= 2; ++dx) {
+                    const int x = expectedX + dx;
+                    const int y = expectedY + dy;
+                    if (x < 0 || y < 0 || x >= image.width() || y >= image.height())
+                        continue;
+                    const QColor pixel = image.pixelColor(x, y);
+                    if (pixel.value() > 70 && pixel != QColor(10, 10, 16)) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            EXPECT_TRUE(found) << "missing projected particle in mode "
+                               << static_cast<int>(mode) << " at " << expectedX << ","
+                               << expectedY;
+        }
+        widget.hide();
+    }
+}
+
+TEST(QtConfigurationEditorTest, TST_UIX_UI_026_RoundTripsScientificAndPlummerValues)
+{
+    (void)testsupport::ensureQtApp();
+    SimulationConfig config = SimulationConfig::defaults();
+    config.presetStructure = "plummer_sphere";
+    config.initMode = "plummer_sphere";
+    config.physicsMinDistance2 = 1.0e-12f;
+    config.initCloudHalfExtent = 12.5f;
+    bltzr_qt::ConfigurationEditor editor(config);
+    const SimulationConfig result = editor.configuration();
+    EXPECT_EQ(result.presetStructure, "plummer_sphere");
+    EXPECT_EQ(result.initMode, "plummer_sphere");
+    EXPECT_FLOAT_EQ(result.physicsMinDistance2, 1.0e-12f);
+    EXPECT_FLOAT_EQ(result.initCloudHalfExtent, 12.5f);
+    EXPECT_EQ(editor.findChildren<QGroupBox*>().size(), 1);
+    EXPECT_TRUE(editor.findChildren<QPushButton*>("addConfigurationSectionButton").isEmpty());
+    EXPECT_TRUE(editor.findChildren<QPushButton*>("removeConfigurationSectionButton").isEmpty());
 }
 } // namespace bltzr_test_qt_window_visual

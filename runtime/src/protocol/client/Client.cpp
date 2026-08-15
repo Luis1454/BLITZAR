@@ -270,7 +270,7 @@ bool Client::readLine(std::string& outLine)
             if (received <= 0)
                 return false;
             _recvBuffer.append(chunk.data(), static_cast<std::size_t>(received));
-            if (_recvBuffer.size() > (512u * 1024u)) {
+            if (_recvBuffer.size() > bltzr_protocol::kMaxResponseLineBytes) {
                 return false;
             }
             pos = _recvBuffer.find('\n');
@@ -398,6 +398,7 @@ Response Client::getStatus(ClientStatus& outStatus)
         outStatus.maxSubsteps = parsed.maxSubsteps;
         outStatus.snapshotPublishPeriodMs = parsed.snapshotPublishPeriodMs;
         outStatus.particleCount = parsed.particleCount;
+        outStatus.totalMass = parsed.totalMass;
         outStatus.solver = parsed.solver;
         outStatus.integrator = parsed.integrator;
         outStatus.kineticEnergy = parsed.kineticEnergy;

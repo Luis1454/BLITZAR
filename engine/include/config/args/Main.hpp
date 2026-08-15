@@ -19,6 +19,13 @@
  */
 struct SimulationConfig;
 
+enum class RuntimeCommand {
+    Unspecified,
+    Inspect,
+    Validate,
+    Run
+};
+
 /*
  * @brief Defines the runtime args type contract.
  * @param None This contract does not take explicit parameters.
@@ -27,7 +34,9 @@ struct SimulationConfig;
  */
 struct RuntimeArgs {
     std::string configPath = "simulation.ini";
+    RuntimeCommand command = RuntimeCommand::Unspecified;
     int targetSteps = 1000;
+    std::string exportPath;
     bool exportOnExit = false;
     bool saveConfig = false;
     bool showHelp = false;

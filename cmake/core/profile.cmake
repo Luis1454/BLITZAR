@@ -4,6 +4,7 @@
 # @brief CMake build orchestration for BLITZAR targets and tooling.
 
 set(APP_NAME blitzar)
+set(DESKTOP_GUI_NAME blitzar-gui)
 set(HEADLESS_NAME blitzar-headless)
 set(SERVER_DAEMON_NAME blitzar-server)
 set(CLIENT_HOST_NAME blitzar-client)

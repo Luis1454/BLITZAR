@@ -9,6 +9,7 @@
 #include "config/profile/Performance.hpp"
 #include "config/profile/Main.hpp"
 #include "window/core/Window.hpp"
+#include "window/scene/SceneEditor.hpp"
 #include "widgets/viewport/MultiView.hpp"
 #include <QCheckBox>
 #include <QComboBox>
@@ -31,6 +32,49 @@ void Window::connectControls()
         _runtime->setSphParameters(_config.sphSmoothingLength, _config.sphRestDensity,
                                    _config.sphGasConstant, _config.sphViscosity);
         markConfigDirty();
+    };
+    const auto applyTreePmParams = [this]() {
+        _runtime->setTreePmParameters(
+            _config.treePmEnabled, _config.treePmModel, _config.treePmLayout, _config.treePmPrecision,
+            _config.treePmAssignment, _config.treePmLocalGrid, _config.treePmGridSize,
+            _config.treePmJacobiIterations, _config.treePmCutoffFactor,
+            _config.treePmMaxLocalNeighbors, _config.treePmParticleLimit,
+            _config.treePmDenseCellThreshold, _config.treePmGravityOnlyBuffers);
+        markConfigDirty();
+    };
+    const auto updateTreePmAvailability = [this]() {
+        const bool enabled = _widgets.physics.treePmEnabledCheck->isChecked();
+        for (QWidget* widget : {static_cast<QWidget*>(_widgets.physics.treePmPresetCombo),
+                                static_cast<QWidget*>(_widgets.physics.treePmModelCombo),
+                                static_cast<QWidget*>(_widgets.physics.treePmLayoutCombo),
+                                static_cast<QWidget*>(_widgets.physics.treePmPrecisionCombo),
+                                static_cast<QWidget*>(_widgets.physics.treePmAssignmentCombo),
+                                static_cast<QWidget*>(_widgets.physics.treePmLocalGridCheck),
+                                static_cast<QWidget*>(_widgets.physics.treePmGridSizeSpin),
+                                static_cast<QWidget*>(_widgets.physics.treePmJacobiIterationsSpin),
+                                static_cast<QWidget*>(_widgets.physics.treePmCutoffFactorSpin),
+                                static_cast<QWidget*>(_widgets.physics.treePmMaxLocalNeighborsSpin),
+                                static_cast<QWidget*>(_widgets.physics.treePmParticleLimitSpin),
+                                static_cast<QWidget*>(_widgets.physics.treePmDenseCellThresholdSpin),
+                                static_cast<QWidget*>(_widgets.physics.treePmGravityOnlyBuffersCheck)}) {
+            widget->setEnabled(enabled);
+        }
+        const bool localGridRelevant = enabled &&
+                                       _widgets.physics.treePmModelCombo->currentText() != "exact_tree";
+        _widgets.physics.treePmLocalGridCheck->setEnabled(localGridRelevant);
+    };
+    const auto updateIntegratorAvailability = [this]() {
+        const bool gpuOctree = _widgets.physics.solverCombo->currentText() == "octree_gpu";
+        if (gpuOctree && _widgets.physics.integratorCombo->currentText() == "rk4") {
+            _widgets.physics.integratorCombo->blockSignals(true);
+            _widgets.physics.integratorCombo->setCurrentText("euler");
+            _widgets.physics.integratorCombo->blockSignals(false);
+            _config.integrator = "euler";
+            _runtime->setIntegratorMode("euler");
+        }
+        _widgets.physics.integratorCombo->setToolTip(
+            gpuOctree ? "octree_gpu supports Euler and Leapfrog; RK4 is unavailable"
+                      : "Choose the time integration scheme");
     };
     connect(_widgets.run.pauseButton, &QPushButton::clicked, this, [this](bool checked) {
         _runtime->setPaused(checked);
@@ -63,6 +107,9 @@ void Window::connectControls()
         if (_config.presetStructure != "file") {
             _config.initMode = _config.presetStructure;
         }
+        _config.scene.objects.clear();
+        if (_sceneEditor != nullptr)
+            _sceneEditor->reload(_config);
         applyConfigToServer(true);
         markConfigDirty();
         statusBar()->showMessage(
@@ -110,8 +157,8 @@ void Window::connectControls()
         markConfigDirty();
     });
     connect(_widgets.render.zoomSlider, &QSlider::valueChanged, this, [this](int value) {
-        _config.defaultZoom = static_cast<float>(value) / kZoomSliderDivisor;
-        _widgets.view.multiView->setZoom(static_cast<float>(value) / kZoomSliderDivisor);
+        _config.defaultZoom = zoomFromSliderValue(value);
+        _widgets.view.multiView->setZoom(_config.defaultZoom);
         markConfigDirty();
     });
     connect(_widgets.render.luminositySlider, &QSlider::valueChanged, this, [this](int value) {
@@ -131,15 +178,141 @@ void Window::connectControls()
                                              _widgets.render.octreeOverlayDepthSpin->value(), value);
                 statusBar()->showMessage(QString("Octree overlay opacity: %1").arg(value), 2000);
             });
-    connect(_widgets.physics.solverCombo, &QComboBox::currentTextChanged, this, [this](const QString& solver) {
-        _config.solver = solver.toStdString();
-        _runtime->setSolverMode(_config.solver);
-        markConfigDirty();
-    });
+    connect(_widgets.physics.solverCombo, &QComboBox::currentTextChanged, this,
+            [this, updateIntegratorAvailability](const QString& solver) {
+                _config.solver = solver.toStdString();
+                _runtime->setSolverMode(_config.solver);
+                updateIntegratorAvailability();
+                markConfigDirty();
+            });
     connect(_widgets.physics.integratorCombo, &QComboBox::currentTextChanged, this,
             [this](const QString& integrator) {
                 _config.integrator = integrator.toStdString();
                 _runtime->setIntegratorMode(_config.integrator);
+                markConfigDirty();
+            });
+    connect(_widgets.physics.particleCountSpin, qOverload<int>(&QSpinBox::valueChanged), this,
+            [this](int value) {
+                _config.particleCount = static_cast<std::uint32_t>(value);
+                _runtime->setParticleCount(_config.particleCount);
+                markConfigDirty();
+            });
+    connect(_widgets.physics.treePmEnabledCheck, &QCheckBox::toggled, this,
+            [this, applyTreePmParams, updateTreePmAvailability](bool enabled) {
+                _config.treePmEnabled = enabled;
+                applyTreePmParams();
+                updateTreePmAvailability();
+            });
+    connect(_widgets.physics.treePmPresetCombo, &QComboBox::currentTextChanged, this,
+            [this](const QString& preset) {
+                _config.treePmPreset = preset.toStdString();
+                bltzr_config::applyTreePmPreset(_config);
+                applyConfigToUi();
+                (void)applyConfigToServer(true);
+                markConfigDirty();
+                statusBar()->showMessage(QString("TreePM preset applied: %1").arg(preset), 3000);
+            });
+    connect(_widgets.physics.treePmModelCombo, &QComboBox::currentTextChanged, this,
+            [this, applyTreePmParams, updateTreePmAvailability](const QString& model) {
+                _config.treePmModel = model.toStdString();
+                _config.treePmPreset = "custom";
+                applyTreePmParams();
+                updateTreePmAvailability();
+            });
+    connect(_widgets.physics.treePmLayoutCombo, &QComboBox::currentTextChanged, this,
+            [this, applyTreePmParams](const QString& layout) {
+                _config.treePmLayout = layout.toStdString();
+                _config.treePmPreset = "custom";
+                applyTreePmParams();
+            });
+    connect(_widgets.physics.treePmPrecisionCombo, &QComboBox::currentTextChanged, this,
+            [this, applyTreePmParams](const QString& precision) {
+                _config.treePmPrecision = precision.toStdString();
+                _config.treePmPreset = "custom";
+                applyTreePmParams();
+            });
+    connect(_widgets.physics.treePmAssignmentCombo, &QComboBox::currentTextChanged, this,
+            [this, applyTreePmParams](const QString& assignment) {
+                _config.treePmAssignment = assignment.toStdString();
+                _config.treePmPreset = "custom";
+                applyTreePmParams();
+            });
+    connect(_widgets.physics.treePmLocalGridCheck, &QCheckBox::toggled, this,
+            [this, applyTreePmParams](bool enabled) {
+                _config.treePmLocalGrid = enabled;
+                _config.treePmPreset = "custom";
+                applyTreePmParams();
+            });
+    connect(_widgets.physics.treePmGridSizeSpin, qOverload<int>(&QSpinBox::valueChanged), this,
+            [this, applyTreePmParams](int value) {
+                _config.treePmGridSize = static_cast<std::uint32_t>(value);
+                _config.treePmPreset = "custom";
+                applyTreePmParams();
+            });
+    connect(_widgets.physics.treePmJacobiIterationsSpin, qOverload<int>(&QSpinBox::valueChanged), this,
+            [this, applyTreePmParams](int value) {
+                _config.treePmJacobiIterations = static_cast<std::uint32_t>(value);
+                _config.treePmPreset = "custom";
+                applyTreePmParams();
+            });
+    connect(_widgets.physics.treePmCutoffFactorSpin,
+            qOverload<double>(&QDoubleSpinBox::valueChanged), this,
+            [this, applyTreePmParams](double value) {
+                _config.treePmCutoffFactor = static_cast<float>(value);
+                _config.treePmPreset = "custom";
+                applyTreePmParams();
+            });
+    connect(_widgets.physics.treePmMaxLocalNeighborsSpin, qOverload<int>(&QSpinBox::valueChanged), this,
+            [this, applyTreePmParams](int value) {
+                _config.treePmMaxLocalNeighbors = static_cast<std::uint32_t>(value);
+                _config.treePmPreset = "custom";
+                applyTreePmParams();
+            });
+    connect(_widgets.physics.treePmParticleLimitSpin, qOverload<int>(&QSpinBox::valueChanged), this,
+            [this, applyTreePmParams](int value) {
+                _config.treePmParticleLimit = static_cast<std::uint32_t>(value);
+                _config.treePmPreset = "custom";
+                applyTreePmParams();
+            });
+    connect(_widgets.physics.treePmDenseCellThresholdSpin, qOverload<int>(&QSpinBox::valueChanged), this,
+            [this, applyTreePmParams](int value) {
+                _config.treePmDenseCellThreshold = static_cast<std::uint32_t>(value);
+                _config.treePmPreset = "custom";
+                applyTreePmParams();
+            });
+    connect(_widgets.physics.treePmGravityOnlyBuffersCheck, &QCheckBox::toggled, this,
+            [this, applyTreePmParams](bool enabled) {
+                _config.treePmGravityOnlyBuffers = enabled;
+                _config.treePmPreset = "custom";
+                applyTreePmParams();
+            });
+    connect(_widgets.physics.adaptiveTimeStepsCheck, &QCheckBox::toggled, this,
+            [this](bool enabled) {
+                _config.adaptiveTimeStepsEnabled = enabled;
+                _runtime->setAdaptiveTimeSteps(
+                    enabled, _config.adaptiveTimeStepMaxLevel, _config.adaptiveTimeStepEta);
+                markConfigDirty();
+            });
+    connect(_widgets.physics.adaptiveMaxLevelSpin, qOverload<int>(&QSpinBox::valueChanged), this,
+            [this](int level) {
+                _config.adaptiveTimeStepMaxLevel = static_cast<std::uint32_t>(level);
+                _runtime->setAdaptiveTimeSteps(
+                    _config.adaptiveTimeStepsEnabled, _config.adaptiveTimeStepMaxLevel,
+                    _config.adaptiveTimeStepEta);
+                markConfigDirty();
+            });
+    connect(_widgets.physics.adaptiveEtaSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this,
+            [this](double eta) {
+                _config.adaptiveTimeStepEta = static_cast<float>(eta);
+                _runtime->setAdaptiveTimeSteps(
+                    _config.adaptiveTimeStepsEnabled, _config.adaptiveTimeStepMaxLevel,
+                    _config.adaptiveTimeStepEta);
+                markConfigDirty();
+            });
+    connect(_widgets.physics.adaptiveCostGuardCheck, &QCheckBox::toggled, this,
+            [this](bool enabled) {
+                _config.adaptiveTimeStepCostGuard = enabled;
+                _runtime->setAdaptiveTimeStepCostGuard(enabled);
                 markConfigDirty();
             });
     connect(_widgets.run.performanceCombo, &QComboBox::currentTextChanged, this,
@@ -192,5 +365,7 @@ void Window::connectControls()
     connect(_widgets.workspace.timer, &QTimer::timeout, this, [this]() {
         tick();
     });
+    updateTreePmAvailability();
+    updateIntegratorAvailability();
 }
 } // namespace bltzr_qt

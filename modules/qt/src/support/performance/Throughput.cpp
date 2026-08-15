@@ -59,8 +59,10 @@ std::string ThroughputLocal::suggestedAction(const SimulationConfig& config,
     if (substeps > 2u) {
         append("reduce dt or relax substep_target_dt");
     }
-    if (config.clientParticleCap > 20000u || drawCap >= 20000u) {
-        append("lower draw cap");
+    const std::uint32_t effectiveDrawCap =
+        std::max<std::uint32_t>(2u, drawCap == 0u ? config.clientParticleCap : drawCap);
+    if (effectiveDrawCap > 250000u) {
+        append("use the GPU renderer or reduce the display cap");
     }
     if (config.particleCount > 50000u) {
         append("reduce particle_count or use a lighter preset");

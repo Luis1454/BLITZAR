@@ -3,6 +3,7 @@
  * @brief Implementation of the extracted run/connector control panel.
  */
 #include "panels/control/Run.hpp"
+#include "panels/control/Disclosure.hpp"
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFormLayout>
@@ -32,10 +33,10 @@ QWidget* buildRunPanel(QWidget* parent, QComboBox* performanceCombo,
     runLayout->setContentsMargins(4, 4, 4, 4);
     runLayout->setSpacing(8);
 
-    auto* runBox = new QGroupBox("Run Control", runPage);
+    auto* runBox = new QGroupBox("Simulation", runPage);
     auto* runBoxLayout = new QVBoxLayout(runBox);
     auto* runForm = new QFormLayout();
-    runForm->addRow("performance", performanceCombo);
+    runForm->addRow("Performance profile", performanceCombo);
     auto* runActions = new QGridLayout();
     runActions->addWidget(pauseButton, 0, 0);
     runActions->addWidget(stepButton, 0, 1);
@@ -44,19 +45,19 @@ QWidget* buildRunPanel(QWidget* parent, QComboBox* performanceCombo,
     runBoxLayout->addLayout(runForm);
     runBoxLayout->addLayout(runActions);
 
-    auto* connectorBox = new QGroupBox("Connector", runPage);
+    auto* connectorBox = new QGroupBox("Connection", runPage);
     auto* connectorLayout = new QVBoxLayout(connectorBox);
     auto* connectorForm = new QFormLayout();
-    connectorForm->addRow("host", serverHostEdit);
-    connectorForm->addRow("port", serverPortSpin);
-    connectorForm->addRow("server bin", serverBinEdit);
+    connectorForm->addRow("Host", serverHostEdit);
+    connectorForm->addRow("Port", serverPortSpin);
+    connectorForm->addRow("Server executable", serverBinEdit);
     connectorLayout->addLayout(connectorForm);
     connectorLayout->addWidget(serverAutostartCheck);
     connectorLayout->addWidget(applyConnectorButton);
     connectorLayout->addStretch(1);
 
     runLayout->addWidget(runBox);
-    runLayout->addWidget(connectorBox);
+    runLayout->addWidget(buildDisclosure(runPage, "Connection settings", connectorBox));
     runLayout->addStretch(1);
     return runPage;
 }

@@ -163,4 +163,35 @@ TEST(ServerProtocolTest, TST_INT_PROT_010_ServerAcceptsGpuTelemetryToggle)
     client.disconnect();
     server.stop();
 }
+
+TEST(ServerProtocolTest, TST_INT_PROT_012_AcceptsTreePmAndAdaptiveRuntimeParameters)
+{
+    RealServerHarness server;
+    std::string startError;
+    const std::vector<std::string> serverArgs{
+        "--init-config-style", "detailed", "--init-mode", "random_cloud",
+        "--particle-count", "16", "--init-include-central-body", "false", "--solver",
+        "octree_cpu", "--deterministic", "true"};
+    ASSERT_TRUE(server.start(startError, 0u, {}, serverArgs)) << startError;
+    bltzr_protocol::Client client;
+    client.setSocketTimeoutMs(5000);
+    ASSERT_TRUE(client.connect("127.0.0.1", server.port()));
+    bltzr_protocol::Response response = client.sendCommand(
+        std::string(bltzr_protocol::SetTreePmParameters),
+        "\"enabled\":true,\"model\":\"hybrid\",\"precision\":\"fp64\","
+        "\"assignment\":\"pcs\",\"local_grid\":true,\"grid_size\":96,"
+        "\"jacobi_iters\":12,\"cutoff_factor\":1.0,\"max_local_neighbors\":64,"
+        "\"particle_limit\":0,\"dense_cell_threshold\":64,\"gravity_only_buffers\":true");
+    ASSERT_TRUE(response.ok) << response.error;
+    response = client.sendCommand(std::string(bltzr_protocol::SetAdaptiveTimeStepCostGuard),
+                                  "\"enabled\":false");
+    ASSERT_TRUE(response.ok) << response.error;
+    response = client.sendCommand(std::string(bltzr_protocol::SetAdaptiveTimeSteps),
+                                  "\"enabled\":true,\"max_level\":4,\"eta\":0.25");
+    ASSERT_TRUE(response.ok) << response.error;
+    response = client.sendCommand(std::string(bltzr_protocol::Pause));
+    ASSERT_TRUE(response.ok) << response.error;
+    client.disconnect();
+    server.stop();
+}
 } // namespace bltzr_test_server_protocol_control

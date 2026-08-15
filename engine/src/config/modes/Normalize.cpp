@@ -36,6 +36,7 @@ namespace bltzr_modes {
 const std::string_view kSolverPairwiseCuda = "pairwise_cuda";
 const std::string_view kSolverOctreeGpu = "octree_gpu";
 const std::string_view kSolverOctreeCpu = "octree_cpu";
+const std::string_view kSolverFmmCpu = "fmm_cpu";
 const std::string_view kIntegratorEuler = "euler";
 const std::string_view kIntegratorRk4 = "rk4";
 const std::string_view kIntegratorLeapfrog = "leapfrog";
@@ -56,6 +57,10 @@ bool normalizeSolver(std::string_view value, std::string& outCanonical)
     }
     if (normalized == "octree_cpu" || normalized == "octree-cpu" || normalized == "octree") {
         outCanonical.assign(kSolverOctreeCpu);
+        return true;
+    }
+    if (normalized == "fmm_cpu" || normalized == "fmm-cpu" || normalized == "fmm") {
+        outCanonical.assign(kSolverFmmCpu);
         return true;
     }
     return false;

@@ -25,7 +25,9 @@ bool applyInitStateOptions(const std::string& key, const std::string& value,
 {
     if (key == "--target-steps") {
         int parsedValue = runtime.targetSteps;
-        if (SimulationArgsParse::parseInt(value, parsedValue) && parsedValue > 0) {
+        // Zero is a valid batch request: it exports the generated initial state
+        // without advancing the simulation, which is required for diagnostics.
+        if (SimulationArgsParse::parseInt(value, parsedValue) && parsedValue >= 0) {
             runtime.targetSteps = parsedValue;
         }
         else {

@@ -125,26 +125,26 @@ jobs:
             ~\AppData\Local\vcpkg\archives
             C:\vcpkg\installed
             C:\vcpkg\packages
-          key: windows-release-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'simulation.ini', '.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
+          key: windows-release-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'cmake/**/*.cmake', 'simulation.ini', '.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
           restore-keys: |
             windows-release-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-
 
       - name: Configure
         shell: pwsh
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_PROFILE=prod -DBLITZAR_STRICT_WARNINGS=ON
+          cmake --preset release-prod
 
       - name: Build
         shell: pwsh
         run: |
-          cmake --build build --parallel
+          cmake --build --preset release-prod --parallel
 
       - name: Run integration-safe tests
         shell: pwsh
         run: |
-          ctest --test-dir build --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|5|6|7)_"
-          ctest --test-dir build --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_PROT_00(1|2|3|4|5|6)_|TST_UNT_MODCLI_00(6|7|8|9)_|TST_UNT_MODCLI_01(0|1|2)_"
-          ctest --test-dir build --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_PHYS_00(6|7|8|9)_|TST_UNT_PHYS_010_|TST_UNT_PHYS_01(4|5|6)_|TST_UNT_PHYS_021_"
+          ctest --preset release-prod --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|5|6|7)_"
+          ctest --preset release-prod --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_PROT_00(1|2|3|4|5|6)_|TST_UNT_MODCLI_00(6|7|8|9)_|TST_UNT_MODCLI_01(0|1|2)_"
+          ctest --preset release-prod --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_PHYS_00(6|7|8|9)_|TST_UNT_PHYS_010_|TST_UNT_PHYS_01(4|5|6)_|TST_UNT_PHYS_021_"
 
       - name: Package release artifacts
         run: |
@@ -158,12 +158,12 @@ jobs:
       - name: Configure desktop GUI build
         shell: pwsh
         run: |
-          cmake -S . -B build-desktop -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_PROFILE=dev -DBLITZAR_BUILD_TESTS=OFF -DCMAKE_PREFIX_PATH="${{ env.QT_DIR }}"
+          cmake --preset windows-desktop -DCMAKE_PREFIX_PATH="${{ env.QT_DIR }}"
 
       - name: Build desktop GUI targets
         shell: pwsh
         run: |
-          cmake --build build-desktop --target blitzar blitzar-server blitzar-client blitzarClientModuleQtInProc --parallel
+          cmake --build --preset windows-desktop --target blitzar blitzar-gui blitzar-server blitzar-client blitzarClientModuleQtInProc --parallel
 
       - name: Install NSIS
         shell: pwsh
@@ -277,7 +277,7 @@ jobs:
             ~\AppData\Local\vcpkg\archives
             C:\vcpkg\installed
             C:\vcpkg\packages
-          key: windows-release-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'simulation.ini', '.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
+          key: windows-release-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'cmake/**/*.cmake', 'simulation.ini', '.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
 
   publish-github-release:
     name: Publish GitHub Release (windows-2022 / python3.12)
@@ -450,24 +450,24 @@ jobs:
             ~\AppData\Local\vcpkg\archives
             C:\vcpkg\installed
             C:\vcpkg\packages
-          key: windows-release-gpu-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'simulation.ini', '.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
+          key: windows-release-gpu-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'cmake/**/*.cmake', 'simulation.ini', '.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
           restore-keys: |
             windows-release-gpu-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-
 
       - name: Configure
         shell: pwsh
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_PROFILE=prod -DBLITZAR_STRICT_WARNINGS=ON
+          cmake --preset release-prod
 
       - name: Build
         shell: pwsh
         run: |
-          cmake --build build --parallel
+          cmake --build --preset release-prod --parallel
 
       - name: Run full tests
         shell: pwsh
         run: |
-          ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error
+          ctest --preset release-prod --output-on-failure --timeout 300 --no-tests=error
       - name: Save GPU release build cache
         if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
@@ -477,7 +477,7 @@ jobs:
             ~\AppData\Local\vcpkg\archives
             C:\vcpkg\installed
             C:\vcpkg\packages
-          key: windows-release-gpu-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'simulation.ini', '.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
+          key: windows-release-gpu-build-${{ env.CI_CACHE_VERSION }}-msvc-cuda-prod-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'cmake/**/*.cmake', 'simulation.ini', '.github/ci/requirements-py312.txt', '.github/workflows/release-lane.yml') }}
 
   release-gpu-fallback:
     name: Release GPU Fallback (linux-ubuntu24.04)

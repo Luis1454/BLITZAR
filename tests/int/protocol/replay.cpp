@@ -31,9 +31,10 @@ static void waitForSteps(bltzr_protocol::Client& client, uint64_t targetSteps)
 
 TEST(ServerProtocolTest, TST_INT_PROT_011_FixedSeedServerReplayIsDeterministic)
 {
-    std::vector<std::string> args = {"--init-seed",      "424242", "--init-mode", "random_cloud",
-                                     "--particle-count", "2000",   "--solver",    "octree_cpu",
-                                     "--deterministic",  "true"};
+    std::vector<std::string> args = {"--init-config-style", "detailed", "--init-seed", "424242",
+                                     "--init-mode",        "random_cloud", "--particle-count", "128",
+                                     "--init-include-central-body", "false", "--solver", "octree_cpu",
+                                     "--deterministic",    "true"};
     // Run Server A
     RealServerHarness serverA;
     std::string startErrorA;
@@ -61,9 +62,10 @@ TEST(ServerProtocolTest, TST_INT_PROT_011_FixedSeedServerReplayIsDeterministic)
     bool particleMoved = false;
     for (size_t i = 0; i < snapshotA.size(); ++i) {
         if (snapshotZeroA[i].x != snapshotA[i].x || snapshotZeroA[i].y != snapshotA[i].y ||
-            snapshotZeroA[i].z != snapshotA[i].z)
+            snapshotZeroA[i].z != snapshotA[i].z) {
             particleMoved = true;
-        break;
+            break;
+        }
     }
     EXPECT_TRUE(particleMoved) << "Snapshot is stale: particles did not move after 10 steps";
     // Run Server B

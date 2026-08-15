@@ -115,11 +115,27 @@ add_executable(${APP_NAME}
     apps/launcher/src/main.cpp
 )
 configure_BLITZAR_cpp_target(${APP_NAME})
+
+if(BLITZAR_BUILD_CLIENT_HOST AND BLITZAR_BUILD_CLIENT_MODULES)
+    if(WIN32)
+        add_executable(${DESKTOP_GUI_NAME} WIN32
+            apps/desktop/src/Main.cpp
+            apps/desktop/src/WindowsMain.cpp
+        )
+    else()
+        add_executable(${DESKTOP_GUI_NAME}
+            apps/desktop/src/Main.cpp
+            apps/desktop/src/PosixMain.cpp
+        )
+    endif()
+    configure_BLITZAR_cpp_target(${DESKTOP_GUI_NAME})
+endif()
+
 if(BLITZAR_BUILD_HEADLESS_BINARY)
     add_executable(${HEADLESS_NAME}
         apps/headless/src/main.cpp
         ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
-        ${BLITZAR_SERVER_SOURCES}
+        ${BLITZAR_BATCH_SOURCES}
     )
     if(BLITZAR_ENABLE_CUDA)
         configure_BLITZAR_cuda_target(${HEADLESS_NAME})
@@ -223,7 +239,7 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
 
     BLITZAR_find_qt6_widgets()
 
-    if(TARGET Qt6::Widgets)
+    if(TARGET Qt6::Widgets AND TARGET Qt6::OpenGLWidgets)
         BLITZAR_ensure_rust_runtime_target()
         add_library(${CLIENT_MODULE_QT_INPROC_NAME} MODULE
             modules/qt/Module.cpp
@@ -239,10 +255,13 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             ${BLITZAR_SERVER_SOURCES}
             modules/qt/src/widgets/graphs/Graph.cpp
             modules/qt/src/widgets/graphs/Paint.cpp
+            modules/qt/src/widgets/graphs/SpectrumGraph.cpp
             modules/qt/src/window/control/Controller.cpp
             modules/qt/src/window/core/Window.cpp
             modules/qt/src/window/core/Widgets.cpp
             modules/qt/src/window/config/WindowConfig.cpp
+            modules/qt/src/window/config/ConfigurationEditor.cpp
+            modules/qt/src/window/scene/SceneEditor.cpp
             modules/qt/src/window/control/Controls.cpp
             modules/qt/src/window/actions/FileActions.cpp
             modules/qt/src/window/layout/Layout.cpp
@@ -252,6 +271,7 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             modules/qt/src/window/workspace/Persistence.cpp
             modules/qt/src/window/workspace/Shell.cpp
             modules/qt/src/widgets/viewport/MultiView.cpp
+            modules/qt/src/widgets/viewport/GpuView.cpp
             modules/qt/src/widgets/overlays/Octree.cpp
             modules/qt/src/widgets/overlays/Painter.cpp
             modules/qt/src/widgets/viewport/Particle.cpp
@@ -262,6 +282,7 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             modules/qt/src/support/geometry/ViewMath.cpp
             modules/qt/src/support/storage/LayoutStore.cpp
             modules/qt/src/panels/control/Physics.cpp
+            modules/qt/src/panels/control/Disclosure.cpp
             modules/qt/src/panels/control/Render.cpp
             modules/qt/src/panels/control/Run.cpp
             modules/qt/src/panels/control/SceneSetup.cpp
@@ -275,7 +296,8 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
         if(WIN32)
             target_compile_definitions(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE BLITZAR_CLIENT_MODULE_EXPORT_ATTR=__declspec\(dllexport\))
         endif()
-        target_link_libraries(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE Qt6::Widgets)
+        target_link_libraries(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE Qt6::Widgets Qt6::OpenGL
+            Qt6::OpenGLWidgets OpenMP::OpenMP_CXX)
         if(TARGET blitzarRustRuntime)
             target_link_libraries(${CLIENT_MODULE_QT_INPROC_NAME} PRIVATE blitzarRustRuntime)
         endif()

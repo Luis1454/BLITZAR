@@ -4,6 +4,7 @@
  */
 
 #include "panels/control/Render.hpp"
+#include "panels/control/Disclosure.hpp"
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFormLayout>
@@ -11,6 +12,7 @@
 #include <QGroupBox>
 #include <QLabel>
 #include <QPushButton>
+#include <QProgressBar>
 #include <QSlider>
 #include <QSpinBox>
 #include <QVBoxLayout>
@@ -23,31 +25,31 @@ QWidget* buildRenderPanel(QWidget* parent, QComboBox* view3dCombo, QSlider* zoom
                           QCheckBox* cullingCheck, QCheckBox* lodCheck,
                           QCheckBox* octreeOverlayCheck, QSpinBox* octreeOverlayDepthSpin,
                           QSpinBox* octreeOverlayOpacitySpin, QCheckBox* gpuTelemetryCheck,
-                          QPushButton* exportButton)
+                          QPushButton* exportButton, QProgressBar* exportProgress)
 {
     auto* page = new QWidget(parent);
     auto* layout = new QVBoxLayout(page);
     layout->setContentsMargins(4, 4, 4, 4);
     layout->setSpacing(8);
 
-    auto* cameraBox = new QGroupBox("View & Camera", page);
+    auto* cameraBox = new QGroupBox("Viewport", page);
     auto* cameraLayout = new QGridLayout(cameraBox);
-    cameraLayout->addWidget(new QLabel("zoom", page), 0, 0);
+    cameraLayout->addWidget(new QLabel("Zoom", page), 0, 0);
     cameraLayout->addWidget(zoomSlider, 0, 1);
-    cameraLayout->addWidget(new QLabel("luminosity", page), 0, 2);
+    cameraLayout->addWidget(new QLabel("Brightness", page), 0, 2);
     cameraLayout->addWidget(luminositySlider, 0, 3);
-    cameraLayout->addWidget(new QLabel("3D view", page), 1, 0);
+    cameraLayout->addWidget(new QLabel("View", page), 1, 0);
     cameraLayout->addWidget(view3dCombo, 1, 1);
-    cameraLayout->addWidget(new QLabel("yaw", page), 1, 2);
-    cameraLayout->addWidget(yawSlider, 1, 3);
-    cameraLayout->addWidget(new QLabel("pitch", page), 2, 0);
-    cameraLayout->addWidget(pitchSlider, 2, 1);
-    cameraLayout->addWidget(new QLabel("roll", page), 2, 2);
-    cameraLayout->addWidget(rollSlider, 2, 3);
-    cameraLayout->addWidget(cullingCheck, 3, 0);
-    cameraLayout->addWidget(lodCheck, 3, 1);
+    cameraLayout->addWidget(cullingCheck, 1, 2);
+    cameraLayout->addWidget(lodCheck, 1, 3);
 
-    auto* overlayBox = new QGroupBox("Octree Overlay", page);
+    auto* orientationPage = new QWidget(page);
+    auto* orientationLayout = new QFormLayout(orientationPage);
+    orientationLayout->addRow("Yaw", yawSlider);
+    orientationLayout->addRow("Pitch", pitchSlider);
+    orientationLayout->addRow("Roll", rollSlider);
+
+    auto* overlayBox = new QGroupBox("Octree overlay", page);
     auto* overlayLayout = new QFormLayout(overlayBox);
     overlayLayout->addRow(octreeOverlayCheck);
     overlayLayout->addRow("depth", octreeOverlayDepthSpin);
@@ -56,12 +58,12 @@ QWidget* buildRenderPanel(QWidget* parent, QComboBox* view3dCombo, QSlider* zoom
     auto* exportBox = new QGroupBox("Export", page);
     auto* exportLayout = new QVBoxLayout(exportBox);
     exportLayout->addWidget(exportButton);
-    exportLayout->addWidget(gpuTelemetryCheck);
-    exportLayout->addStretch(1);
-
+    exportLayout->addWidget(exportProgress);
     layout->addWidget(cameraBox);
-    layout->addWidget(overlayBox);
     layout->addWidget(exportBox);
+    layout->addWidget(buildDisclosure(page, "Camera orientation", orientationPage));
+    layout->addWidget(buildDisclosure(page, "Diagnostics overlay", overlayBox));
+    layout->addWidget(buildDisclosure(page, "GPU telemetry", gpuTelemetryCheck));
     layout->addStretch(1);
     return page;
 }

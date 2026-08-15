@@ -25,6 +25,11 @@ enum class OptionKind {
     Integrator,
     OctreeCriterion,
     ClientParticleCap,
+    TreePmModel,
+    TreePmLayout,
+    TreePmPrecision,
+    TreePmAssignment,
+    TreePmPreset,
     TimeoutTriple,
 };
 

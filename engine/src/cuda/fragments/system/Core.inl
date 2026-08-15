@@ -89,7 +89,7 @@ ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState)
         fprintf(stderr, "[sph] buffers allocation failed, SPH disabled\n");
         _sphEnabled = false;
     }
-    if (_solverMode != SolverMode::OctreeCpu &&
+    if (_solverMode != SolverMode::OctreeCpu && _solverMode != SolverMode::FmmCpu &&
         (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog)) {
         if (!allocateRk4Buffers(clampedParticles)) {
             throw std::runtime_error(
@@ -105,9 +105,14 @@ ParticleSystem::ParticleSystem(int numParticles, bool bootstrapInitialState)
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
 ParticleSystem::ParticleSystem(std::vector<Particle> initialParticles)
+    : ParticleSystem(std::move(initialParticles), true)
+{
+}
+
+ParticleSystem::ParticleSystem(std::vector<Particle> initialParticles, bool enableCudaRuntime)
 {
     const std::size_t particleCapacity = std::max<std::size_t>(2u, initialParticles.size());
-    initializeRuntimeState(particleCapacity);
+    initializeRuntimeState(particleCapacity, enableCudaRuntime);
     _particles = std::move(initialParticles);
     if (_particles.size() < particleCapacity)
         _particles.resize(particleCapacity);
@@ -135,7 +140,7 @@ ParticleSystem::ParticleSystem(std::vector<Particle> initialParticles)
         (!allocateSphBuffers(clampedParticles) || !allocateSphGridBuffers(clampedParticles))) {
         _sphEnabled = false;
     }
-    if (_solverMode != SolverMode::OctreeCpu &&
+    if (_solverMode != SolverMode::OctreeCpu && _solverMode != SolverMode::FmmCpu &&
         (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog)) {
         if (!allocateRk4Buffers(clampedParticles)) {
             throw std::runtime_error(
@@ -188,6 +193,11 @@ bool ParticleSystem::setParticles(std::vector<Particle> particles)
     if (particles.empty() || particles.size() != _device._deviceParticleCapacity)
         return false;
     _particles = std::move(particles);
+    _adaptiveTimeStepTick = 0u;
+    _adaptiveTimeStepQuantum = 0.0f;
+    _adaptiveTimeStepLevels.clear();
+    _adaptiveTimeStepLastForceTicks.clear();
+    _adaptiveTimeStepAccelerations.clear();
     _device._hostStateDirty = false;
     _device._leapfrogPrimed = false;
     if (_solverMode == SolverMode::OctreeGpu &&
@@ -255,6 +265,109 @@ void ParticleSystem::setOctreeSoftening(float softening)
         _octreeSoftening = softening;
 }
 
+void ParticleSystem::setTreePmParameters(bool enabled, const std::string& model,
+                                         const std::string& layout, const std::string& precision,
+                                         const std::string& assignment, bool localGrid,
+                                         int gridSize, int jacobiIterations, float cutoffFactor,
+                                         int maxLocalNeighbors, int particleLimit,
+                                         int denseCellThreshold, bool gravityOnlyBuffers)
+{
+    _treePmEnabled = enabled;
+    _treePmModel = model;
+    _treePmLayout = layout;
+    _treePmPrecision = precision == "fp64" ? "fp64" : "fp32";
+    _treePmAssignment = assignment == "tsc" || assignment == "pcs" ? assignment : "cic";
+    _treePmLocalGrid = localGrid;
+    _treePmGridSize = std::clamp(gridSize, 32, 128);
+    _treePmJacobiIterations = std::clamp(jacobiIterations, 4, 64);
+    _treePmCutoffFactor = std::clamp(cutoffFactor, 1.0f, 2.0f);
+    _treePmMaxLocalNeighbors = std::clamp(maxLocalNeighbors, 0, 256);
+    _treePmParticleLimit = std::max(particleLimit, 0);
+    _treePmDenseCellThreshold = std::max(denseCellThreshold, 1);
+    _treePmGravityOnlyBuffers = gravityOnlyBuffers;
+}
+
+void ParticleSystem::setAdaptiveTimeStepParameters(bool enabled, std::uint32_t maxLevel, float eta)
+{
+    const std::uint32_t safeLevel = std::min<std::uint32_t>(maxLevel, 12u);
+    const float safeEta = std::clamp(eta, 0.01f, 1.0f);
+    if (_adaptiveTimeStepsEnabled != enabled || _adaptiveTimeStepMaxLevel != safeLevel ||
+        std::abs(_adaptiveTimeStepEta - safeEta) > 1e-6f) {
+        _adaptiveTimeStepTick = 0u;
+        _adaptiveTimeStepQuantum = 0.0f;
+        _adaptiveTimeStepMarkerPrinted = false;
+        _adaptiveTimeStepLevels.clear();
+        _adaptiveTimeStepLastForceTicks.clear();
+        _adaptiveTimeStepAccelerations.clear();
+    }
+    _adaptiveTimeStepsEnabled = enabled;
+    _adaptiveTimeStepMaxLevel = safeLevel;
+    _adaptiveTimeStepEta = safeEta;
+}
+
+void ParticleSystem::setAdaptiveTimeStepCostGuard(bool enabled)
+{
+    if (_adaptiveTimeStepCostGuard != enabled) {
+        _adaptiveTimeStepMarkerPrinted = false;
+    }
+    _adaptiveTimeStepCostGuard = enabled;
+}
+
+void ParticleSystem::setLinearOctreeLeafCapacity(int capacity)
+{
+    _fmmLeafCapacity = std::clamp(capacity, 1, 1024);
+    _device._linearOctreeLeafCapacity = std::max(16, capacity);
+}
+
+void ParticleSystem::setCudaCachePreference(const std::string& preference)
+{
+    if (preference == "default" || preference == "l1" || preference == "shared") {
+        _cudaCachePreference = preference;
+    }
+}
+
+bool ParticleSystem::reconfigureRuntimeBuffers()
+{
+    if (!_device._cudaRuntimeAvailable) {
+        return true;
+    }
+
+    const std::size_t particleCapacity = std::max<std::size_t>(2u, _particles.size());
+    releaseParticleBuffers();
+    _device._deviceParticleCapacity = particleCapacity;
+    if (!allocateParticleBuffers(particleCapacity) || !seedDeviceState()) {
+        return false;
+    }
+    if (_solverMode == SolverMode::OctreeGpu &&
+        !treePmFastPathBypassesOctreeScratch(_integratorMode == IntegratorMode::Euler) &&
+        !ensureLinearOctreeScratchCapacity(static_cast<int>(particleCapacity))) {
+        return false;
+    }
+    if (_sphEnabled && (!allocateSphBuffers(static_cast<int>(particleCapacity)) ||
+                        !allocateSphGridBuffers(static_cast<int>(particleCapacity)))) {
+        return false;
+    }
+    if (_solverMode != SolverMode::OctreeCpu && _solverMode != SolverMode::FmmCpu &&
+        (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog) &&
+        !allocateRk4Buffers(static_cast<int>(particleCapacity))) {
+        return false;
+    }
+    if (!allocateMappedMetrics()) {
+        return false;
+    }
+    std::size_t baseAndIntegratorBytes = 0u;
+    std::size_t sphBytes = 0u;
+    std::size_t octreeBytes = 0u;
+    const std::size_t totalBytes = estimateMemoryUsage(
+        particleCapacity, _sphEnabled, _solverMode, _integratorMode, 65536u,
+        _device._linearOctreeLeafCapacity, &baseAndIntegratorBytes, &sphBytes, &octreeBytes);
+    fprintf(stdout, "[info] [memory] configured runtime plan\n%s\n",
+            formatMemoryBreakdown(baseAndIntegratorBytes, sphBytes, octreeBytes, totalBytes,
+                                  6656ull * 1024ull * 1024ull)
+                .c_str());
+    return true;
+}
+
 /*
  * @brief Documents the set sph enabled operation contract.
  * @param enabled Input value used by this contract.
@@ -275,6 +388,150 @@ void ParticleSystem::setSphEnabled(bool enabled)
 bool ParticleSystem::isSphEnabled() const
 {
     return _sphEnabled;
+}
+
+static float cosmologyHubbleRateCuda(const CosmologyConfig& config, float scaleFactor)
+{
+    const float a = std::max(scaleFactor, 1.0e-6f);
+    const float radiation = config.omegaRadiation / std::pow(a, 4.0f);
+    const float matter = config.omegaMatter / std::pow(a, 3.0f);
+    return std::max(0.0f, config.hubbleH0) *
+           std::sqrt(std::max(0.0f, radiation + matter + config.omegaLambda));
+}
+
+void ParticleSystem::setCosmologyParameters(const CosmologyConfig& config)
+{
+    _cosmology = config;
+    _cosmology.geometry = config.geometry == "cube" ? "cube" : "sphere";
+    _cosmology.boxHalfExtent = std::max(1.0e-6f, config.boxHalfExtent);
+    _cosmology.sphereRadius = std::max(1.0e-6f, config.sphereRadius);
+    _cosmology.hubbleH0 = std::max(0.0f, config.hubbleH0);
+    _cosmology.omegaMatter = std::max(0.0f, config.omegaMatter);
+    _cosmology.omegaLambda = std::max(0.0f, config.omegaLambda);
+    _cosmology.omegaRadiation = std::max(0.0f, config.omegaRadiation);
+    _cosmology.initialScaleFactor = std::max(config.initialScaleFactor, 1.0e-6f);
+    _cosmology.perturbationAmplitude = std::clamp(config.perturbationAmplitude, 0.0f, 1.0f);
+    _cosmology.peculiarVelocityScale = std::max(0.0f, config.peculiarVelocityScale);
+    _cosmologyScaleFactor = _cosmology.enabled ? _cosmology.initialScaleFactor : 1.0f;
+    _cosmologyTime = 0.0f;
+    _cosmologyMarkerPrinted = false;
+}
+
+float ParticleSystem::getCosmologyScaleFactor() const
+{
+    return _cosmologyScaleFactor;
+}
+
+bool ParticleSystem::prepareCosmologyStep(float deltaTime, float& scaleRatio, float& previousHubble,
+                                          float& nextHubble)
+{
+    if (!_cosmology.enabled || deltaTime <= 0.0f || _cosmology.hubbleH0 <= 0.0f) {
+        return false;
+    }
+    if (!_cosmologyMarkerPrinted) {
+        fprintf(stderr,
+                "[cosmology] enabled geometry=%s model=flat_friedmann operator_split a0=%.6g\n",
+                _cosmology.geometry.c_str(), _cosmology.initialScaleFactor);
+        _cosmologyMarkerPrinted = true;
+    }
+    const float previousScale = std::max(_cosmologyScaleFactor, 1.0e-6f);
+    previousHubble = cosmologyHubbleRateCuda(_cosmology, previousScale);
+    const float midpointScale =
+        std::max(previousScale + 0.5f * previousScale * previousHubble * deltaTime, 1.0e-6f);
+    const float midpointHubble = cosmologyHubbleRateCuda(_cosmology, midpointScale);
+    const float nextScale =
+        std::max(previousScale + midpointScale * midpointHubble * deltaTime, previousScale);
+    _cosmologyScaleFactor = nextScale;
+    _cosmologyTime += deltaTime;
+    nextHubble = cosmologyHubbleRateCuda(_cosmology, nextScale);
+    scaleRatio = nextScale / previousScale;
+    return scaleRatio > 1.0e-7f;
+}
+
+void ParticleSystem::applyCosmologyExpansionHost(float scaleRatio, float previousHubble,
+                                                 float nextHubble)
+{
+    (void)previousHubble;
+    (void)nextHubble;
+    const float inverseScaleRatio = 1.0f / std::max(scaleRatio, 1.0e-6f);
+    for (Particle& particle : _particles) {
+        const Vector3 position = particle.getPosition();
+        const Vector3 nextPosition = position * scaleRatio;
+        const Vector3 nextVelocity = particle.getVelocity() * inverseScaleRatio;
+        particle.setPosition(nextPosition);
+        particle.setVelocity(nextVelocity);
+    }
+}
+
+bool ParticleSystem::updateComovingCosmology(float deltaTime)
+{
+    if (_cosmology.geometry != "cube" || !_treePmEnabled || _treePmModel != "pm_only" ||
+        _sphEnabled) {
+        return false;
+    }
+    const float a0 = std::max(_cosmologyScaleFactor, 1.0e-6f);
+    const float h0 = cosmologyHubbleRateCuda(_cosmology, a0);
+    const float predictedMidpoint = std::max(a0 + 0.5f * a0 * h0 * deltaTime, 1.0e-6f);
+    const float a1 =
+        std::max(a0, a0 + predictedMidpoint *
+                              cosmologyHubbleRateCuda(_cosmology, predictedMidpoint) * deltaTime);
+    const float amid = 0.5f * (a0 + a1);
+    const auto driftIntegrand = [this](float a) {
+        return 1.0f / (a * a * a * std::max(cosmologyHubbleRateCuda(_cosmology, a), 1.0e-12f));
+    };
+    const float drift =
+        (a1 - a0) * (driftIntegrand(a0) + 4.0f * driftIntegrand(amid) + driftIntegrand(a1)) / 6.0f;
+    const float boxLength = 2.0f * _cosmology.boxHalfExtent;
+    if (a1 <= a0 || drift <= 0.0f || boxLength <= 0.0f) {
+        return false;
+    }
+    auto computePmField = [&](float scaleFactor, std::vector<Vector3>& acceleration) {
+        CpuTreePmParameters parameters;
+        parameters.model = "pm_only";
+        parameters.gridSize = _treePmGridSize;
+        parameters.assignment = "tsc";
+        parameters.periodic = true;
+        parameters.densityContrast = true;
+        parameters.boxLength = boxLength;
+        parameters.poissonCoefficient = 1.5f * _cosmology.hubbleH0 * _cosmology.hubbleH0 *
+                                        _cosmology.omegaMatter / std::max(scaleFactor, 1.0e-6f);
+        if (!_cpuTreePmWorkspace) {
+            _cpuTreePmWorkspace = std::make_unique<CpuTreePmWorkspace>();
+        }
+        return computeCpuTreePmForces(_particles, ForceLawPolicy{}, parameters,
+                                      *_cpuTreePmWorkspace, _octree, _octreeOpeningCriterion,
+                                      acceleration);
+    };
+    std::vector<Vector3> firstAcceleration(_particles.size(), Vector3());
+    _cpuTreePmWorkspace.reset();
+    if (!computePmField(amid, firstAcceleration)) {
+        return false;
+    }
+    for (std::size_t index = 0; index < _particles.size(); ++index) {
+        const Vector3 momentum =
+            _particles[index].getVelocity() + firstAcceleration[index] * (0.5f * deltaTime);
+        const Vector3 position = _particles[index].getPosition() + momentum * drift;
+        const auto wrap = [boxLength](float value) {
+            const float wrapped = std::fmod(value, boxLength);
+            return wrapped < 0.0f ? wrapped + boxLength : wrapped;
+        };
+        _particles[index].setVelocity(momentum);
+        _particles[index].setPosition(
+            Vector3(wrap(position.x), wrap(position.y), wrap(position.z)));
+    }
+    std::vector<Vector3> secondAcceleration(_particles.size(), Vector3());
+    _cpuTreePmWorkspace.reset();
+    if (!computePmField(a1, secondAcceleration)) {
+        return false;
+    }
+    for (std::size_t index = 0; index < _particles.size(); ++index) {
+        _particles[index].setVelocity(_particles[index].getVelocity() +
+                                      secondAcceleration[index] * (0.5f * deltaTime));
+        _particles[index].setPressure(secondAcceleration[index] * 100.0f);
+    }
+    _cosmologyScaleFactor = a1;
+    _cosmologyTime += deltaTime;
+    return true;
 }
 
 /*
@@ -396,7 +653,7 @@ void ParticleSystem::setIntegratorMode(IntegratorMode mode)
     if (_integratorMode == mode) {
         return;
     }
-    if (_solverMode != SolverMode::OctreeCpu &&
+    if (_solverMode != SolverMode::OctreeCpu && _solverMode != SolverMode::FmmCpu &&
         (mode == IntegratorMode::Rk4 || mode == IntegratorMode::Leapfrog) &&
         !allocateRk4Buffers(static_cast<int>(_particles.size()))) {
         throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");

@@ -8,6 +8,7 @@
 #include "config/core/Config.hpp"
 #include "config/profile/Performance.hpp"
 #include "protocol/Protocol.hpp"
+#include <algorithm>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -67,6 +68,36 @@ TEST(ConfigArgsTest, TST_UNT_CONF_024_LoadSupportsDirectiveSyntax)
     EXPECT_FLOAT_EQ(loaded.presetSize, 8.0f);
     EXPECT_FLOAT_EQ(loaded.thermalAmbientTemperature, 2.0f);
     EXPECT_FLOAT_EQ(loaded.thermalRadiationCoeff, 5.0f);
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_104_CosmologyDirectiveRoundTrips)
+{
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path =
+        std::filesystem::temp_directory_path() /
+        ("BLITZAR_config_cosmology_" + std::to_string(stamp) + ".ini");
+    {
+        std::ofstream out(path, std::ios::trunc);
+        ASSERT_TRUE(out.is_open());
+        out << "scene(style=detailed, preset=cosmology, mode=cosmology, file=\"\", format=auto)\n";
+        out << "cosmology(enabled=true, geometry=cube, box_half_extent=64, sphere_radius=32, "
+               "h0=0.07, omega_m=0.315, omega_lambda=0.68491, omega_radiation=0.00009, "
+               "initial_scale_factor=0.01, perturbation=0.02, peculiar_velocity=1.5)\n";
+    }
+    const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
+    EXPECT_TRUE(loaded.cosmologyEnabled);
+    EXPECT_EQ(loaded.cosmologyGeometry, "cube");
+    EXPECT_FLOAT_EQ(loaded.cosmologyBoxHalfExtent, 64.0f);
+    EXPECT_FLOAT_EQ(loaded.cosmologySphereRadius, 32.0f);
+    EXPECT_FLOAT_EQ(loaded.cosmologyHubbleH0, 0.07f);
+    EXPECT_FLOAT_EQ(loaded.cosmologyOmegaMatter, 0.315f);
+    EXPECT_FLOAT_EQ(loaded.cosmologyOmegaLambda, 0.68491f);
+    EXPECT_FLOAT_EQ(loaded.cosmologyOmegaRadiation, 0.00009f);
+    EXPECT_FLOAT_EQ(loaded.cosmologyInitialScaleFactor, 0.01f);
+    EXPECT_FLOAT_EQ(loaded.cosmologyPerturbationAmplitude, 0.02f);
+    EXPECT_FLOAT_EQ(loaded.cosmologyPeculiarVelocityScale, 1.5f);
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
@@ -194,6 +225,96 @@ TEST(ConfigArgsTest, TST_UNT_CONF_070_SaveDirectiveKeepsBalancedProfileWithoutCu
                               std::istreambuf_iterator<char>());
     EXPECT_NE(content.find("performance(profile=balanced)\n"), std::string::npos);
     EXPECT_EQ(content.find("performance(profile=balanced, draw_cap="), std::string::npos);
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_102_SceneParticleSystemObjectRoundTrips)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    SceneObjectConfig object;
+    object.id = "forest_emitter";
+    object.name = "Forest";
+    object.type = "point";
+    object.particleCount = 1u;
+    object.isAsset = true;
+    object.pivot = "custom";
+    object.pivotX = 2.0f;
+    object.pivotY = 3.0f;
+    object.pivotZ = 4.0f;
+    object.offsetX = 5.0f;
+    object.rotationZ = 45.0f;
+    object.axis = "z";
+    object.copies = 3u;
+    object.mirrorX = true;
+    object.properties = {"rotation", "mirror", "asset"};
+    config.scene.objects.push_back(object);
+    SceneObjectConfig system;
+    system.id = "forest_system";
+    system.name = "Forest System";
+    system.type = "particle_system";
+    system.distribution = "forest";
+    system.particleCount = 64u;
+    system.seed = 11u;
+    system.particleSize = 5.0f;
+    system.particleHeight = 12.0f;
+    system.particleMass = 0.001f;
+    system.emitterObjectId = "forest_emitter";
+    system.targetAssetId = "galaxy_template";
+    config.scene.objects.push_back(system);
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path = std::filesystem::temp_directory_path() /
+                                       ("BLITZAR_particle_modifier_" + std::to_string(stamp) +
+                                        ".ini");
+    ASSERT_TRUE(config.save(path.string()));
+    const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
+    EXPECT_EQ(loaded.scene.objects[0].id, "forest_emitter");
+    ASSERT_EQ(loaded.scene.objects.size(), 2u);
+    EXPECT_EQ(loaded.scene.objects[0].pivot, "custom");
+    EXPECT_FLOAT_EQ(loaded.scene.objects[0].pivotX, 2.0f);
+    EXPECT_FLOAT_EQ(loaded.scene.objects[0].offsetX, 5.0f);
+    EXPECT_FLOAT_EQ(loaded.scene.objects[0].rotationZ, 45.0f);
+    EXPECT_EQ(loaded.scene.objects[0].axis, "z");
+    EXPECT_EQ(loaded.scene.objects[0].copies, 3u);
+    EXPECT_TRUE(loaded.scene.objects[0].mirrorX);
+    EXPECT_NE(std::find(loaded.scene.objects[0].properties.begin(),
+                        loaded.scene.objects[0].properties.end(),
+                        "rotation"),
+              loaded.scene.objects[0].properties.end());
+    EXPECT_NE(std::find(loaded.scene.objects[0].properties.begin(),
+                        loaded.scene.objects[0].properties.end(),
+                        "mirror"),
+              loaded.scene.objects[0].properties.end());
+    EXPECT_NE(std::find(loaded.scene.objects[0].properties.begin(),
+                        loaded.scene.objects[0].properties.end(),
+                        "asset"),
+              loaded.scene.objects[0].properties.end());
+    const SceneObjectConfig& result = loaded.scene.objects[1];
+    EXPECT_EQ(result.type, "particle_system");
+    EXPECT_EQ(result.distribution, "forest");
+    EXPECT_EQ(result.particleCount, 64u);
+    EXPECT_EQ(result.seed, 11u);
+    EXPECT_FLOAT_EQ(result.particleHeight, 12.0f);
+    EXPECT_EQ(result.emitterObjectId, "forest_emitter");
+    EXPECT_EQ(result.targetAssetId, "galaxy_template");
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_103_LoadsSerializedSimulationProfile)
+{
+    const auto stamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    const std::filesystem::path path = std::filesystem::temp_directory_path() /
+                                       ("BLITZAR_simulation_profile_" + std::to_string(stamp) +
+                                        ".ini");
+    {
+        std::ofstream out(path, std::ios::trunc);
+        ASSERT_TRUE(out.is_open());
+        out << "simulation(particle_count=64, dt=0.01, solver=octree_cpu, integrator=euler, "
+                  "profile=plummer_sphere)\n";
+    }
+    const SimulationConfig loaded = SimulationConfig::loadOrCreate(path.string());
+    EXPECT_EQ(loaded.simulationProfile, "plummer_sphere");
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }

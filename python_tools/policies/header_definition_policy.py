@@ -10,6 +10,7 @@ import re
 
 CONTROL_STATEMENT_RE = re.compile(r"\b(if|for|while|switch|catch)\s*\(")
 TYPE_DECLARATION_RE = re.compile(r"^(?:class|struct|enum|union)\b")
+INLINE_DEFINITION_RE = re.compile(r"^(?:inline|constexpr)\b")
 
 
 # @brief Documents the find header function definition lines operation contract.
@@ -39,7 +40,11 @@ def find_header_function_definition_lines(content: str) -> list[int]:
         open_brace = combined.find("{")
         close_paren = combined.rfind(")")
         if open_brace != -1 and close_paren != -1 and open_brace > close_paren:
-            if ";" not in combined[:open_brace] and not CONTROL_STATEMENT_RE.search(combined):
+            if (
+                ";" not in combined[:open_brace]
+                and not CONTROL_STATEMENT_RE.search(combined)
+                and not INLINE_DEFINITION_RE.match(combined)
+            ):
                 matches.append(index + 1)
         index = cursor + 1 if cursor > index else index + 1
     return matches

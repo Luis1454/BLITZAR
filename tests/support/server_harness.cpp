@@ -95,47 +95,48 @@ bool RealServerHarness::start(std::string& outError, std::uint16_t preferredPort
     }
     const std::vector<std::uint16_t> portCandidates =
         bltzr_test_server_harness::buildPortCandidates(preferredPort);
-    for (const std::uint16_t candidatePort : portCandidates)
+    for (const std::uint16_t candidatePort : portCandidates) {
         if (candidatePort == 0u || !isPortBindable(candidatePort)) {
             continue;
-            _port = candidatePort;
-            const std::string inputFilePath = bltzr_test_server_harness::resolveInputFilePath();
-            const std::vector<std::string> args{"--server-host",
-                                                "127.0.0.1",
-                                                "--server-port",
-                                                std::to_string(_port),
-                                                "--server-paused",
-                                                "--particle-count",
-                                                "64",
-                                                "--dt",
-                                                "0.01",
-                                                "--solver",
-                                                "pairwise_cuda",
-                                                "--integrator",
-                                                "euler",
-                                                "--sph",
-                                                "false",
-                                                "--input-file",
-                                                inputFilePath,
-                                                "--input-format",
-                                                "xyz",
-                                                "--export-on-exit",
-                                                "false"};
-            std::vector<std::string> effectiveArgs = args;
-            effectiveArgs.insert(effectiveArgs.end(), extraArgs.begin(), extraArgs.end());
-            if (!_authToken.empty()) {
-                effectiveArgs.push_back("--server-token");
-                effectiveArgs.push_back(_authToken);
-            }
-            std::string launchError;
-            if (!_process.launch(_executable, effectiveArgs, false, launchError)) {
-                continue;
-            }
-            if (waitUntilReady(outError)) {
-                return true;
-            }
-            stop();
         }
+        _port = candidatePort;
+        const std::string inputFilePath = bltzr_test_server_harness::resolveInputFilePath();
+        const std::vector<std::string> args{"--server-host",
+                                            "127.0.0.1",
+                                            "--server-port",
+                                            std::to_string(_port),
+                                            "--server-paused",
+                                            "--particle-count",
+                                            "64",
+                                            "--dt",
+                                            "0.01",
+                                            "--solver",
+                                            "pairwise_cuda",
+                                            "--integrator",
+                                            "euler",
+                                            "--sph",
+                                            "false",
+                                            "--input-file",
+                                            inputFilePath,
+                                            "--input-format",
+                                            "xyz",
+                                            "--export-on-exit",
+                                            "false"};
+        std::vector<std::string> effectiveArgs = args;
+        effectiveArgs.insert(effectiveArgs.end(), extraArgs.begin(), extraArgs.end());
+        if (!_authToken.empty()) {
+            effectiveArgs.push_back("--server-token");
+            effectiveArgs.push_back(_authToken);
+        }
+        std::string launchError;
+        if (!_process.launch(_executable, effectiveArgs, false, launchError)) {
+            continue;
+        }
+        if (waitUntilReady(outError)) {
+            return true;
+        }
+        stop();
+    }
     if (outError.empty()) {
         outError = "failed to launch server daemon on any candidate port";
     }

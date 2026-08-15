@@ -21,16 +21,18 @@ constexpr std::size_t kPlanAEnergySampleLimit = 4096u;
 constexpr int kDefaultOctreeLeafCapacity = 256;
 constexpr int kPlanBOctreeLeafCapacity = 4096;
 
-static bool treePmFastPathBypassesOctreeScratch(bool eulerIntegrator)
-{
-    return parseBoolEnv("BLITZAR_TREEPM_ENABLED", false) &&
-           eulerIntegrator && parseBoolEnv("BLITZAR_TREEPM_LOCAL_GRID", true);
-}
+  bool ParticleSystem::treePmFastPathBypassesOctreeScratch(bool eulerIntegrator) const
+  {
+      const bool legacyLocalGrid = _treePmModel == "auto" || _treePmModel.empty();
+      const bool localGridModel = _treePmModel == "local_grid" || _treePmModel == "pm_only";
+      return _treePmEnabled && eulerIntegrator && (localGridModel ||
+                                                    (legacyLocalGrid && _treePmLocalGrid));
+  }
 
-static bool treePmUsesGravityOnlyBuffers(bool eulerIntegrator, bool sphEnabled)
+bool ParticleSystem::treePmUsesGravityOnlyBuffers(bool eulerIntegrator, bool sphEnabled) const
 {
     return !sphEnabled && treePmFastPathBypassesOctreeScratch(eulerIntegrator) &&
-           parseBoolEnv("BLITZAR_TREEPM_GRAVITY_ONLY_BUFFERS", true);
+           _treePmGravityOnlyBuffers;
 }
 
 /*
@@ -83,9 +85,10 @@ std::size_t ParticleSystem::estimateMemoryUsage(
     IntegratorMode integratorMode, std::size_t energySampleLimit, int octreeLeafCapacity,
     std::size_t* baseAndIntegratorBytes, std::size_t* sphBytes, std::size_t* octreeBytes) const
 {
-    const bool gravityOnlyBuffers = treePmUsesGravityOnlyBuffers(
-        integratorMode == IntegratorMode::Euler, sphEnabled);
-    const std::size_t soaFloatCount = gravityOnlyBuffers ? 13u : 18u;
+    const bool gravityOnlyBuffers =
+        treePmUsesGravityOnlyBuffers(integratorMode == IntegratorMode::Euler, sphEnabled);
+    // Acceleration is also the exported pressure vector; keep it available in every runtime plan.
+    const std::size_t soaFloatCount = gravityOnlyBuffers ? 16u : 18u;
     const std::size_t baseSoABytes = particleCount * sizeof(float) * soaFloatCount;
 
     std::size_t integratorBytes = 0u;
@@ -112,8 +115,8 @@ std::size_t ParticleSystem::estimateMemoryUsage(
 
         const int defaultLeafCapacity = kDefaultOctreeLeafCapacity;
         const int configuredLeafCapacity =
-            std::max(16, static_cast<int>(parseFloatEnv("BLITZAR_LINEAR_OCTREE_LEAF_CAPACITY",
-                                                        static_cast<float>(defaultLeafCapacity))));
+            std::max(16, _device._linearOctreeLeafCapacity > 0 ? _device._linearOctreeLeafCapacity
+                                                               : defaultLeafCapacity);
         const int leafCapacity =
             octreeLeafCapacity > 0 ? std::max(16, octreeLeafCapacity) : configuredLeafCapacity;
 
@@ -138,18 +141,19 @@ std::size_t ParticleSystem::estimateMemoryUsage(
         octreeBufferBytes += static_cast<std::size_t>(requiredNodeCapacity) * sizeof(int) * 3u;
     }
 
-    if (solverMode == SolverMode::OctreeGpu && parseBoolEnv("BLITZAR_TREEPM_ENABLED", false)) {
+    if (solverMode == SolverMode::OctreeGpu && _treePmEnabled && _treePmModel != "exact_tree") {
         const int defaultGridSize = 64;
-        const int gridSize = std::clamp(
-            static_cast<int>(parseFloatEnv("BLITZAR_TREEPM_GRID_SIZE",
-                                           static_cast<float>(defaultGridSize))),
-            32, 128);
+        const int requestedGridSize =
+            std::clamp(_treePmGridSize > 0 ? _treePmGridSize : defaultGridSize, 32, 128);
+        const int gridSize = requestedGridSize * 2;
         const std::size_t gridCells = static_cast<std::size_t>(gridSize) * gridSize * gridSize;
+        const std::size_t spectrumCells = static_cast<std::size_t>(gridSize) * gridSize *
+                                          static_cast<std::size_t>(gridSize / 2 + 1);
         const std::size_t maskWords = (gridCells + 31u) / 32u;
         octreeBufferBytes += gridCells * sizeof(float) * 6u;
+        octreeBufferBytes += spectrumCells * sizeof(float) * 2u * 4u;
         octreeBufferBytes += maskWords * sizeof(unsigned int);
-        if (treePmFastPath &&
-            static_cast<int>(parseFloatEnv("BLITZAR_TREEPM_MAX_LOCAL_NEIGHBORS", 64.0f)) > 0) {
+        if (treePmFastPath && _treePmMaxLocalNeighbors > 0) {
             octreeBufferBytes += particleCount * sizeof(int) * 2u;
             octreeBufferBytes += gridCells * sizeof(int) * 2u;
         }
@@ -209,9 +213,9 @@ std::string ParticleSystem::formatMemoryBreakdown(std::size_t baseAndIntegratorB
  * @return void ParticleSystem:: value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
+void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity, bool enableCudaRuntime)
 {
-    _device._cudaRuntimeAvailable = cudaRuntimeAvailable();
+    _device._cudaRuntimeAvailable = enableCudaRuntime && cudaRuntimeAvailable();
     if (_device._cudaRuntimeAvailable) {
         const cudaError_t mapHostStatus = cudaSetDeviceFlags(cudaDeviceMapHost);
         if (mapHostStatus != cudaSuccess && mapHostStatus != cudaErrorSetOnActiveProcess) {
@@ -221,6 +225,10 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
     }
     if (_device._cudaRuntimeAvailable) {
         bltzr_x::MemoryPool::initialize();
+        _device._cudaJit = std::make_unique<CudaJitRuntime>();
+        if (!_device._cudaJit->available()) {
+            _device._cudaJit.reset();
+        }
     }
     _solverMode = solverModeFromEnv();
     _integratorMode = integratorModeFromEnv();
@@ -246,6 +254,17 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
     _device._sphGridSize = 0;
     _device._sphGridTotalCells = 0;
     _device._treePmMarkerPrinted = false;
+    _device._treePmGraphCaptured[0] = false;
+    _device._treePmGraphCaptured[1] = false;
+    _device._treePmGraphMarkerPrinted = false;
+    _device._treePmGraphSlot = 0;
+    _device._treePmGraphExec[0] = nullptr;
+    _device._treePmGraphExec[1] = nullptr;
+    _device._treePmGraphStream = nullptr;
+    _device._cudaJitMarkerPrinted = false;
+    _device._cudaJitForceMarkerPrinted = false;
+    _device._cudaE2eTotalMs = 0.0;
+    _device._cudaE2eSamples = 0u;
     _device._treePmGridSize = 0;
     _device._treePmTotalCells = 0;
     _device._deviceParticleCapacity = particleCapacity;
@@ -285,12 +304,25 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
     _device.d_sphSortedIndex = nullptr;
     _device.d_sphCellStart = nullptr;
     _device.d_sphCellEnd = nullptr;
+    _device.d_treePmSortKeys = nullptr;
+    _device.d_treePmSortIndices = nullptr;
+    _device.d_treePmSortedCellHash = nullptr;
+    _device.d_treePmSortTempStorage = nullptr;
+    _device.d_treePmSortedPosX = nullptr;
+    _device.d_treePmSortedPosY = nullptr;
+    _device.d_treePmSortedPosZ = nullptr;
+    _device.d_treePmSortedMass = nullptr;
     _device.d_treePmDensity = nullptr;
     _device.d_treePmPotentialA = nullptr;
     _device.d_treePmPotentialB = nullptr;
     _device.d_treePmAccelX = nullptr;
     _device.d_treePmAccelY = nullptr;
     _device.d_treePmAccelZ = nullptr;
+    _device.d_treePmBoundsPartial = nullptr;
+    _device.d_treePmBounds = nullptr;
+    _device.d_adaptiveAcceleration = nullptr;
+    _device.d_adaptiveLevels = nullptr;
+    _device.d_adaptiveLastForceTicks = nullptr;
     _device.d_treePmCellMask = nullptr;
     _device.g_dOctreeNodes = nullptr;
     _device.g_dOctreeLeafIndices = nullptr;
@@ -318,6 +350,9 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
     _device.d_treePmMaskWordCapacity = 0;
     _device.d_treePmNeighborParticleCapacity = 0;
     _device.d_treePmNeighborCellCapacity = 0;
+    _device.d_treePmSortTempCapacity = 0;
+    _device.d_treePmSortedParticleCapacity = 0;
+    _device.d_adaptiveCapacity = 0;
     _device.d_energyBlockCapacity = 0;
     _device.d_energySampleCapacity = 0;
     _device._gpuOctreeRootIndex = -1;
@@ -328,9 +363,10 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
     _device._metricsStepId = 0u;
     _device._metricsSimTime = 0.0f;
     _device._metricsPublishCounter = 0u;
-    _device._linearOctreeLeafCapacity = std::max(
-        16, static_cast<int>(parseFloatEnv("BLITZAR_LINEAR_OCTREE_LEAF_CAPACITY",
-                                           static_cast<float>(kDefaultOctreeLeafCapacity))));
+    _device._linearOctreeLeafCapacity = kDefaultOctreeLeafCapacity;
+    if (!_device._cudaRuntimeAvailable) {
+        return;
+    }
 
     const bool strictMemoryMode = parseBoolEnv("BLITZAR_STRICT_MEMORY_MODE", false);
     std::size_t selectedEnergySampleLimit = kDefaultEnergySampleLimit;
@@ -349,8 +385,7 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
 
     const bool treePmFastPath =
         treePmFastPathBypassesOctreeScratch(_integratorMode == IntegratorMode::Euler);
-    if (_solverMode == SolverMode::OctreeGpu && !treePmFastPath &&
-        totalBytes > kVramBudgetBytes &&
+    if (_solverMode == SolverMode::OctreeGpu && !treePmFastPath && totalBytes > kVramBudgetBytes &&
         selectedOctreeLeafCapacity < kPlanBOctreeLeafCapacity) {
         selectedOctreeLeafCapacity = kPlanBOctreeLeafCapacity;
         _device._linearOctreeLeafCapacity = selectedOctreeLeafCapacity;
@@ -376,8 +411,8 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity)
                   << "\n";
     }
 
-    if (strictMemoryMode && totalBytes > kVramBudgetBytes &&
-        _solverMode == SolverMode::OctreeGpu && !treePmFastPath) {
+    if (strictMemoryMode && totalBytes > kVramBudgetBytes && _solverMode == SolverMode::OctreeGpu &&
+        !treePmFastPath) {
         selectedOctreeLeafCapacity = kPlanBOctreeLeafCapacity;
         totalBytes = estimateMemoryUsage(
             particleCapacity, _sphEnabled, _solverMode, _integratorMode, selectedEnergySampleLimit,
@@ -414,8 +449,8 @@ bool ParticleSystem::allocateParticleBuffers(std::size_t particleCapacity)
         return false;
     }
     const std::size_t bytesTotal = particleCapacity * sizeof(float);
-    const bool gravityOnlyBuffers = treePmUsesGravityOnlyBuffers(
-        _integratorMode == IntegratorMode::Euler, _sphEnabled);
+    const bool gravityOnlyBuffers =
+        treePmUsesGravityOnlyBuffers(_integratorMode == IntegratorMode::Euler, _sphEnabled);
     bool ok = true;
     ok &= ((_device.d_soaPosX = static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) !=
            nullptr);
@@ -431,35 +466,70 @@ bool ParticleSystem::allocateParticleBuffers(std::size_t particleCapacity)
            nullptr);
     ok &= ((_device.d_soaMass = static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) !=
            nullptr);
+    ok &= ((_device.d_soaPressX =
+                static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((_device.d_soaPressY =
+                static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((_device.d_soaPressZ =
+                static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) != nullptr);
     if (!gravityOnlyBuffers) {
-        ok &= ((_device.d_soaPressX =
-                    static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) != nullptr);
-        ok &= ((_device.d_soaPressY =
-                    static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) != nullptr);
-        ok &= ((_device.d_soaPressZ =
-                    static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) != nullptr);
         ok &= ((_device.d_soaTemp =
                     static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) != nullptr);
         ok &= ((_device.d_soaDens =
                     static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) != nullptr);
     }
-    ok &= ((_device.d_soaNextPosX = static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) !=
-           nullptr);
-    ok &= ((_device.d_soaNextPosY = static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) !=
-           nullptr);
-    ok &= ((_device.d_soaNextPosZ = static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) !=
-           nullptr);
-    ok &= ((_device.d_soaNextVelX = static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) !=
-           nullptr);
-    ok &= ((_device.d_soaNextVelY = static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) !=
-           nullptr);
-    ok &= ((_device.d_soaNextVelZ = static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) !=
-           nullptr);
+    ok &= ((_device.d_soaNextPosX =
+                static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((_device.d_soaNextPosY =
+                static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((_device.d_soaNextPosZ =
+                static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((_device.d_soaNextVelX =
+                static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((_device.d_soaNextVelY =
+                static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) != nullptr);
+    ok &= ((_device.d_soaNextVelZ =
+                static_cast<float*>(bltzr_x::MemoryPool::allocate(bytesTotal))) != nullptr);
 
     if (!ok) {
         releaseParticleBuffers();
         return false;
     }
+    return true;
+}
+
+bool ParticleSystem::ensureAdaptiveCudaScratchCapacity(int numParticles)
+{
+    if (!_device._cudaRuntimeAvailable || numParticles <= 0) {
+        return false;
+    }
+    const std::size_t count = static_cast<std::size_t>(numParticles);
+    if (_device.d_adaptiveCapacity >= count && _device.d_adaptiveAcceleration != nullptr &&
+        _device.d_adaptiveLevels != nullptr && _device.d_adaptiveLastForceTicks != nullptr) {
+        return true;
+    }
+
+    bltzr_x::MemoryPool::deallocate(_device.d_adaptiveAcceleration);
+    bltzr_x::MemoryPool::deallocate(_device.d_adaptiveLevels);
+    bltzr_x::MemoryPool::deallocate(_device.d_adaptiveLastForceTicks);
+    _device.d_adaptiveAcceleration = static_cast<Vector3*>(
+        bltzr_x::MemoryPool::allocate(count * sizeof(Vector3)));
+    _device.d_adaptiveLevels = static_cast<std::uint8_t*>(
+        bltzr_x::MemoryPool::allocate(count * sizeof(std::uint8_t)));
+    _device.d_adaptiveLastForceTicks = static_cast<std::uint64_t*>(
+        bltzr_x::MemoryPool::allocate(count * sizeof(std::uint64_t)));
+    if (_device.d_adaptiveAcceleration == nullptr || _device.d_adaptiveLevels == nullptr ||
+        _device.d_adaptiveLastForceTicks == nullptr) {
+        bltzr_x::MemoryPool::deallocate(_device.d_adaptiveAcceleration);
+        bltzr_x::MemoryPool::deallocate(_device.d_adaptiveLevels);
+        bltzr_x::MemoryPool::deallocate(_device.d_adaptiveLastForceTicks);
+        _device.d_adaptiveAcceleration = nullptr;
+        _device.d_adaptiveLevels = nullptr;
+        _device.d_adaptiveLastForceTicks = nullptr;
+        _device.d_adaptiveCapacity = 0u;
+        return false;
+    }
+    _device.d_adaptiveCapacity = count;
     return true;
 }
 
@@ -471,6 +541,7 @@ bool ParticleSystem::allocateParticleBuffers(std::size_t particleCapacity)
  */
 void ParticleSystem::releaseParticleBuffers()
 {
+    releaseTreePmGraph();
     releaseRk4Buffers();
     releaseSphBuffers();
     releaseSphGridBuffers();
@@ -499,6 +570,26 @@ void ParticleSystem::releaseParticleBuffers()
     _device.d_treePmAccelY = nullptr;
     bltzr_x::MemoryPool::deallocate(_device.d_treePmAccelZ);
     _device.d_treePmAccelZ = nullptr;
+    bltzr_x::MemoryPool::deallocate(_device.d_treePmBoundsPartial);
+    _device.d_treePmBoundsPartial = nullptr;
+    bltzr_x::MemoryPool::deallocate(_device.d_treePmBounds);
+    _device.d_treePmBounds = nullptr;
+    bltzr_x::MemoryPool::deallocate(_device.d_treePmRadialMassHistogram);
+    _device.d_treePmRadialMassHistogram = nullptr;
+    bltzr_x::MemoryPool::deallocate(_device.d_adaptiveAcceleration);
+    _device.d_adaptiveAcceleration = nullptr;
+    bltzr_x::MemoryPool::deallocate(_device.d_adaptiveLevels);
+    _device.d_adaptiveLevels = nullptr;
+    bltzr_x::MemoryPool::deallocate(_device.d_adaptiveLastForceTicks);
+    _device.d_adaptiveLastForceTicks = nullptr;
+    bltzr_x::MemoryPool::deallocate(_device.d_treePmSpectrum);
+    _device.d_treePmSpectrum = nullptr;
+    bltzr_x::MemoryPool::deallocate(_device.d_treePmSpectrumX);
+    _device.d_treePmSpectrumX = nullptr;
+    bltzr_x::MemoryPool::deallocate(_device.d_treePmSpectrumY);
+    _device.d_treePmSpectrumY = nullptr;
+    bltzr_x::MemoryPool::deallocate(_device.d_treePmSpectrumZ);
+    _device.d_treePmSpectrumZ = nullptr;
     bltzr_x::MemoryPool::deallocate(_device.d_treePmCellMask);
     _device.d_treePmCellMask = nullptr;
     _device.d_soaVelZ = nullptr;
@@ -605,9 +696,22 @@ void ParticleSystem::releaseParticleBuffers()
     _device.d_octreePrefixCapacity = 0;
     _device.d_octreeLevelCapacity = 0;
     _device.d_treePmCapacity = 0;
+    _device.d_treePmSpectrumCapacity = 0;
     _device.d_treePmMaskWordCapacity = 0;
+    _device.d_treePmBoundsBlockCapacity = 0;
     _device.d_treePmNeighborParticleCapacity = 0;
     _device.d_treePmNeighborCellCapacity = 0;
+    _device.d_adaptiveCapacity = 0;
+    if (_device._treePmFftPlan != 0) {
+        cufftDestroy(static_cast<cufftHandle>(_device._treePmFftPlan));
+        _device._treePmFftPlan = 0;
+    }
+    if (_device._treePmFftInversePlan != 0) {
+        cufftDestroy(static_cast<cufftHandle>(_device._treePmFftInversePlan));
+        _device._treePmFftInversePlan = 0;
+    }
+    _device._treePmFftPlanGridSize = 0;
+    _device._treePmFftActive = false;
     _device.d_energyBlockCapacity = 0;
     _device.d_energySampleCapacity = 0;
     _device._gpuOctreeRootIndex = -1;
@@ -702,8 +806,8 @@ bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
             bltzr_x::MemoryPool::deallocate(_device.g_dOctreeLeafIndices);
             _device.g_dOctreeLeafIndices = nullptr;
         }
-        _device.g_dOctreeLeafIndices = static_cast<int*>(bltzr_x::MemoryPool::allocate(
-            static_cast<std::size_t>(numParticles) * sizeof(int)));
+        _device.g_dOctreeLeafIndices = static_cast<int*>(
+            bltzr_x::MemoryPool::allocate(static_cast<std::size_t>(numParticles) * sizeof(int)));
         if (!_device.g_dOctreeLeafIndices) {
             _device.g_dOctreeLeafCapacity = 0;
             return false;
@@ -771,16 +875,16 @@ bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
             _device.d_octreeParentOffsets = nullptr;
         }
 
-        _device.d_octreeLevelIndicesA = static_cast<int*>(bltzr_x::MemoryPool::allocate(
-            static_cast<std::size_t>(numParticles) * sizeof(int)));
-        _device.d_octreeLevelIndicesB = static_cast<int*>(bltzr_x::MemoryPool::allocate(
-            static_cast<std::size_t>(numParticles) * sizeof(int)));
-        _device.d_octreeParentCounts = static_cast<int*>(bltzr_x::MemoryPool::allocate(
-            static_cast<std::size_t>(numParticles) * sizeof(int)));
-        _device.d_octreeParentOffsets = static_cast<int*>(bltzr_x::MemoryPool::allocate(
-            static_cast<std::size_t>(numParticles) * sizeof(int)));
-        if (!_device.d_octreeLevelIndicesA || !_device.d_octreeLevelIndicesB || !_device.d_octreeParentCounts ||
-            !_device.d_octreeParentOffsets) {
+        _device.d_octreeLevelIndicesA = static_cast<int*>(
+            bltzr_x::MemoryPool::allocate(static_cast<std::size_t>(numParticles) * sizeof(int)));
+        _device.d_octreeLevelIndicesB = static_cast<int*>(
+            bltzr_x::MemoryPool::allocate(static_cast<std::size_t>(numParticles) * sizeof(int)));
+        _device.d_octreeParentCounts = static_cast<int*>(
+            bltzr_x::MemoryPool::allocate(static_cast<std::size_t>(numParticles) * sizeof(int)));
+        _device.d_octreeParentOffsets = static_cast<int*>(
+            bltzr_x::MemoryPool::allocate(static_cast<std::size_t>(numParticles) * sizeof(int)));
+        if (!_device.d_octreeLevelIndicesA || !_device.d_octreeLevelIndicesB ||
+            !_device.d_octreeParentCounts || !_device.d_octreeParentOffsets) {
             if (_device.d_octreeLevelIndicesA) {
                 bltzr_x::MemoryPool::deallocate(_device.d_octreeLevelIndicesA);
                 _device.d_octreeLevelIndicesA = nullptr;
@@ -844,8 +948,9 @@ bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
         _device.d_octreeLeafCounts = static_cast<int*>(bltzr_x::MemoryPool::allocate(
             static_cast<std::size_t>(requiredNodeCapacity) * sizeof(int)));
 
-        if (!_device.g_dOctreeNodes || !_device.d_octreeNodeHot || !_device.d_octreeNodeNav || !_device.d_octreeFirstChild ||
-            !_device.d_octreeLeafStarts || !_device.d_octreeLeafCounts) {
+        if (!_device.g_dOctreeNodes || !_device.d_octreeNodeHot || !_device.d_octreeNodeNav ||
+            !_device.d_octreeFirstChild || !_device.d_octreeLeafStarts ||
+            !_device.d_octreeLeafCounts) {
             if (_device.g_dOctreeNodes) {
                 bltzr_x::MemoryPool::deallocate(_device.g_dOctreeNodes);
                 _device.g_dOctreeNodes = nullptr;
@@ -905,10 +1010,10 @@ bool ParticleSystem::ensureEnergyScratchCapacity(int numParticles, int sampleCou
             bltzr_x::MemoryPool::deallocate(_device.d_energyThermalBlocks);
             _device.d_energyThermalBlocks = nullptr;
         }
-        _device.d_energyKineticBlocks = static_cast<float*>(bltzr_x::MemoryPool::allocate(
-            static_cast<std::size_t>(blockCount) * sizeof(float)));
-        _device.d_energyThermalBlocks = static_cast<float*>(bltzr_x::MemoryPool::allocate(
-            static_cast<std::size_t>(blockCount) * sizeof(float)));
+        _device.d_energyKineticBlocks = static_cast<float*>(
+            bltzr_x::MemoryPool::allocate(static_cast<std::size_t>(blockCount) * sizeof(float)));
+        _device.d_energyThermalBlocks = static_cast<float*>(
+            bltzr_x::MemoryPool::allocate(static_cast<std::size_t>(blockCount) * sizeof(float)));
         if (!_device.d_energyKineticBlocks || !_device.d_energyThermalBlocks) {
             if (_device.d_energyKineticBlocks) {
                 bltzr_x::MemoryPool::deallocate(_device.d_energyKineticBlocks);
@@ -929,8 +1034,8 @@ bool ParticleSystem::ensureEnergyScratchCapacity(int numParticles, int sampleCou
             bltzr_x::MemoryPool::deallocate(_device.d_energyPotentialPartials);
             _device.d_energyPotentialPartials = nullptr;
         }
-        _device.d_energyPotentialPartials = static_cast<double*>(bltzr_x::MemoryPool::allocate(
-            static_cast<std::size_t>(sampleCount) * sizeof(double)));
+        _device.d_energyPotentialPartials = static_cast<double*>(
+            bltzr_x::MemoryPool::allocate(static_cast<std::size_t>(sampleCount) * sizeof(double)));
         if (!_device.d_energyPotentialPartials) {
             _device.d_energySampleCapacity = 0;
             return false;
@@ -976,7 +1081,8 @@ bool ParticleSystem::allocateRk4Buffers(int numParticles)
             bltzr_x::MemoryPool::allocate(numParticles * sizeof(GpuHalfVelocity)));
     }
 
-    if (!_device.d_stage || !_device.d_k1x || !_device.d_k2x || !_device.d_k3x || !_device.d_k4x || !_device.d_k1v || !_device.d_k2v || !_device.d_k3v || !_device.d_k4v ||
+    if (!_device.d_stage || !_device.d_k1x || !_device.d_k2x || !_device.d_k3x || !_device.d_k4x ||
+        !_device.d_k1v || !_device.d_k2v || !_device.d_k3v || !_device.d_k4v ||
         (_integratorMode == IntegratorMode::Leapfrog && !_device.d_vHalf)) {
         releaseRk4Buffers();
         return false;
@@ -1125,10 +1231,54 @@ void ParticleSystem::releaseSphGridBuffers()
         bltzr_x::MemoryPool::deallocate(_device.d_sphCellEnd);
         _device.d_sphCellEnd = nullptr;
     }
+    if (_device.d_treePmSortKeys) {
+        bltzr_x::MemoryPool::deallocate(_device.d_treePmSortKeys);
+        _device.d_treePmSortKeys = nullptr;
+    }
+    if (_device.d_treePmSortIndices) {
+        bltzr_x::MemoryPool::deallocate(_device.d_treePmSortIndices);
+        _device.d_treePmSortIndices = nullptr;
+    }
+    if (_device.d_treePmSortedCellHash) {
+        bltzr_x::MemoryPool::deallocate(_device.d_treePmSortedCellHash);
+        _device.d_treePmSortedCellHash = nullptr;
+    }
+    if (_device.d_treePmSortTempStorage) {
+        bltzr_x::MemoryPool::deallocate(_device.d_treePmSortTempStorage);
+        _device.d_treePmSortTempStorage = nullptr;
+    }
+    if (_device.d_treePmSortedPosX) {
+        bltzr_x::MemoryPool::deallocate(_device.d_treePmSortedPosX);
+        _device.d_treePmSortedPosX = nullptr;
+    }
+    if (_device.d_treePmSortedPosY) {
+        bltzr_x::MemoryPool::deallocate(_device.d_treePmSortedPosY);
+        _device.d_treePmSortedPosY = nullptr;
+    }
+    if (_device.d_treePmSortedPosZ) {
+        bltzr_x::MemoryPool::deallocate(_device.d_treePmSortedPosZ);
+        _device.d_treePmSortedPosZ = nullptr;
+    }
+    if (_device.d_treePmSortedMass) {
+        bltzr_x::MemoryPool::deallocate(_device.d_treePmSortedMass);
+        _device.d_treePmSortedMass = nullptr;
+    }
+    if (_device.d_treePmRadialMassHistogram) {
+        bltzr_x::MemoryPool::deallocate(_device.d_treePmRadialMassHistogram);
+        _device.d_treePmRadialMassHistogram = nullptr;
+    }
     _hostCellHash.clear();
     _hostSortedIndex.clear();
     _device.d_treePmNeighborParticleCapacity = 0;
     _device.d_treePmNeighborCellCapacity = 0;
+    _device.d_treePmSortTempCapacity = 0;
+    _device.d_treePmSortedParticleCapacity = 0;
+    _device._treePmLayoutModeInitialized = false;
+    _device._treePmLayoutMode = 0;
+    _device._treePmAutoLayoutResolved = false;
+    _device._treePmAutoGather = false;
+    _device._treePmAutoMorton = false;
+    _device._treePmAutoR80Ratio = 1.0f;
 }
 
 /*

@@ -7,6 +7,120 @@
   },
   "configurePresets": [
     {
+      "name": "_desktop-dev-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "BLITZAR_PROFILE": "dev",
+        "BLITZAR_STRICT_WARNINGS": "OFF",
+        "BLITZAR_BUILD_TESTS": "OFF",
+        "BLITZAR_BUILD_SERVER_DAEMON": "ON",
+        "BLITZAR_BUILD_HEADLESS_BINARY": "ON",
+        "BLITZAR_BUILD_CLIENT_HOST": "ON",
+        "BLITZAR_BUILD_CLIENT_MODULES": "ON",
+        "BLITZAR_BUILD_WEB_GATEWAY": "OFF"
+      }
+    },
+    {
+      "name": "_headless-prod-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BLITZAR_PROFILE": "prod",
+        "BLITZAR_STRICT_WARNINGS": "ON",
+        "BLITZAR_BUILD_TESTS": "OFF",
+        "BLITZAR_BUILD_SERVER_DAEMON": "ON",
+        "BLITZAR_BUILD_HEADLESS_BINARY": "ON",
+        "BLITZAR_BUILD_CLIENT_HOST": "OFF",
+        "BLITZAR_BUILD_CLIENT_MODULES": "OFF",
+        "BLITZAR_BUILD_WEB_GATEWAY": "OFF"
+      }
+    },
+    {
+      "name": "_tested-prod-base",
+      "hidden": true,
+      "inherits": "_headless-prod-base",
+      "cacheVariables": {
+        "BLITZAR_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "linux-dev",
+      "displayName": "Linux CPU Dev",
+      "description": "Reproducible developer build for CPU/headless work and optional Qt.",
+      "inherits": "_desktop-dev-base",
+      "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "linux-prod",
+      "displayName": "Linux CPU Prod",
+      "description": "Strict reproducible CPU/headless production build.",
+      "inherits": "_headless-prod-base",
+      "binaryDir": "${sourceDir}/build-prod"
+    },
+    {
+      "name": "macos-dev",
+      "displayName": "macOS CPU Dev",
+      "description": "Reproducible macOS developer build with optional Qt client modules.",
+      "inherits": "_desktop-dev-base",
+      "binaryDir": "${sourceDir}/build-macos"
+    },
+    {
+      "name": "macos-prod",
+      "displayName": "macOS CPU Prod",
+      "description": "Strict reproducible macOS CPU/headless production build.",
+      "inherits": "_headless-prod-base",
+      "binaryDir": "${sourceDir}/build-macos-prod"
+    },
+    {
+      "name": "docker-cpu",
+      "displayName": "Docker CPU Dev",
+      "description": "CPU Docker image build with C++ and Qt targets enabled.",
+      "inherits": "_desktop-dev-base",
+      "binaryDir": "${sourceDir}/build-docker"
+    },
+    {
+      "name": "windows-desktop",
+      "displayName": "Windows Desktop Dev",
+      "description": "MSVC/Ninja desktop package profile; provide CMAKE_PREFIX_PATH for Qt.",
+      "inherits": "_desktop-dev-base",
+      "binaryDir": "${sourceDir}/build-desktop"
+    },
+    {
+      "name": "release-prod",
+      "displayName": "Windows Release Prod",
+      "description": "Strict production release profile used by the release lane.",
+      "inherits": "_tested-prod-base",
+      "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "performance-prod",
+      "displayName": "Performance Prod",
+      "description": "Strict production profile for benchmark tooling.",
+      "inherits": "_tested-prod-base",
+      "binaryDir": "${sourceDir}/build-performance"
+    },
+    {
+      "name": "cuda-runtime",
+      "displayName": "CUDA Runtime",
+      "description": "CUDA container profile for headless/server runtime artifacts.",
+      "inherits": "_headless-prod-base",
+      "binaryDir": "${sourceDir}/build-cuda",
+      "cacheVariables": {
+        "BLITZAR_PROFILE": "dev",
+        "BLITZAR_STRICT_WARNINGS": "OFF"
+      }
+    },
+    {
+      "name": "dev-modules",
+      "displayName": "Dev Client Modules",
+      "description": "Developer client-host and module build used by the module CI lane.",
+      "inherits": "_desktop-dev-base",
+      "binaryDir": "${sourceDir}/build-dev-mod"
+    },
+    {
       "name": "msvc-dev",
       "displayName": "MSVC + Ninja (Dev)",
       "description": "Developer preset with MSVC host compiler through Ninja and RelWithDebInfo.",
@@ -35,6 +149,56 @@
   ],
   "buildPresets": [
     {
+      "name": "linux-dev",
+      "displayName": "Build Linux CPU Dev",
+      "configurePreset": "linux-dev"
+    },
+    {
+      "name": "linux-prod",
+      "displayName": "Build Linux CPU Prod",
+      "configurePreset": "linux-prod"
+    },
+    {
+      "name": "macos-dev",
+      "displayName": "Build macOS CPU Dev",
+      "configurePreset": "macos-dev"
+    },
+    {
+      "name": "macos-prod",
+      "displayName": "Build macOS CPU Prod",
+      "configurePreset": "macos-prod"
+    },
+    {
+      "name": "docker-cpu",
+      "displayName": "Build Docker CPU",
+      "configurePreset": "docker-cpu"
+    },
+    {
+      "name": "windows-desktop",
+      "displayName": "Build Windows Desktop",
+      "configurePreset": "windows-desktop"
+    },
+    {
+      "name": "release-prod",
+      "displayName": "Build Release Prod",
+      "configurePreset": "release-prod"
+    },
+    {
+      "name": "performance-prod",
+      "displayName": "Build Performance Prod",
+      "configurePreset": "performance-prod"
+    },
+    {
+      "name": "cuda-runtime",
+      "displayName": "Build CUDA Runtime",
+      "configurePreset": "cuda-runtime"
+    },
+    {
+      "name": "dev-modules",
+      "displayName": "Build Dev Client Modules",
+      "configurePreset": "dev-modules"
+    },
+    {
       "name": "build-dev",
       "displayName": "Build Dev",
       "configurePreset": "msvc-dev"
@@ -62,6 +226,14 @@
     }
   ],
   "testPresets": [
+    {
+      "name": "release-prod",
+      "displayName": "Test Release Prod",
+      "configurePreset": "release-prod",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
     {
       "name": "test-dev",
       "displayName": "CTest Dev",

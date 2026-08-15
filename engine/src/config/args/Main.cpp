@@ -12,6 +12,7 @@
 #include "config/args/Parse.hpp"
 #include "config/core/Config.hpp"
 #include "config/modes/Normalize.hpp"
+#include "config/profile/Main.hpp"
 #include "config/registry/Main.hpp"
 #include "config/validation/Scenario.hpp"
 
@@ -90,6 +91,28 @@ void applyArgsToConfig(const std::vector<std::string_view>& args, SimulationConf
             runtime.saveConfig = true;
             continue;
         }
+        if (key == "--export-path") {
+            std::string value;
+            if (!SimulationArgsParse::readValue(args, i, inlineValue, value)) {
+                runtime.hasArgumentError = true;
+                warnings << "[args] missing value for --export-path\n";
+            }
+            else {
+                runtime.exportPath = value;
+            }
+            continue;
+        }
+        if (key == "--inspect" || key == "--validate" || key == "--run") {
+            const RuntimeCommand command = key == "--inspect"   ? RuntimeCommand::Inspect
+                                           : key == "--validate" ? RuntimeCommand::Validate
+                                                                  : RuntimeCommand::Run;
+            if (runtime.command != RuntimeCommand::Unspecified && runtime.command != command) {
+                runtime.hasArgumentError = true;
+                warnings << "[args] only one execution command is allowed\n";
+            }
+            runtime.command = command;
+            continue;
+        }
         if (key == "--no-export-on-exit") {
             runtime.exportOnExit = false;
             continue;
@@ -122,6 +145,9 @@ void applyArgsToConfig(const std::vector<std::string_view>& args, SimulationConf
         }
 
         if (applyCoreOptions(key, value, config, runtime, warnings)) {
+            if (key == "--profile") {
+                bltzr_config::applySimulationProfile(config);
+            }
             continue;
         }
         if (applyClientOptions(key, value, config, warnings)) {
@@ -170,6 +196,12 @@ void printUsage(std::ostream& out, std::string_view programName, bool headlessMo
     out << "Usage: " << programName << " [options]\n";
     out << "Common options:\n";
     out << "  --config <path>\n";
+    if (headlessMode) {
+        out << "  --inspect                 load and print the resolved case; never run\n";
+        out << "  --validate                load, print, and validate the case; never run\n";
+        out << "  --run                     execute the case\n";
+        out << "  --export-path <path>      deterministic output path for --export-on-exit\n";
+    }
     bltzr_config::printCliUsage(out, bltzr_config::SimulationOptionGroup::Core);
     bltzr_config::printCliUsage(out, bltzr_config::SimulationOptionGroup::Client);
     bltzr_config::printCliUsage(out, bltzr_config::SimulationOptionGroup::InitState);

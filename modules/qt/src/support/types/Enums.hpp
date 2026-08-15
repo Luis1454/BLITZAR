@@ -12,11 +12,13 @@ namespace bltzr_qt {
 enum class Solver {
     PairwiseCuda,
     OctreeGpu,
-    OctreeCpu
+    OctreeCpu,
+    FmmCpu
 };
 enum class Integrator {
     Euler,
-    Rk4
+    Rk4,
+    Leapfrog
 };
 enum class PerformanceProfile {
     Interactive,

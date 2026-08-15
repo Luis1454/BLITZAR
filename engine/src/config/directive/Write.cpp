@@ -6,8 +6,8 @@
  */
 
 #include "config/directive/Write.hpp"
-#include "config/directive/StreamWriter.hpp"
 #include "config/core/Config.hpp"
+#include "config/directive/StreamWriter.hpp"
 #include "config/profile/Performance.hpp"
 #include "protocol/Protocol.hpp"
 #include <algorithm>
@@ -30,6 +30,9 @@ static void writeSimulation(std::ostream& out, const SimulationConfig& config)
     writer.writeFloat("dt", config.dt);
     writer.writeString("solver", config.solver);
     writer.writeString("integrator", config.integrator);
+    if (!config.simulationProfile.empty()) {
+        writer.writeString("profile", config.simulationProfile);
+    }
     writer.finish();
 }
 
@@ -55,6 +58,16 @@ static void writePerformance(std::ostream& out, const SimulationConfig& config)
     out << ")\n";
 }
 
+static void writeAdaptive(std::ostream& out, const SimulationConfig& config)
+{
+    DirectiveStreamWriter writer(out, "adaptive");
+    writer.writeBool("enabled", config.adaptiveTimeStepsEnabled);
+    writer.writeUint32("max_level", config.adaptiveTimeStepMaxLevel);
+    writer.writeFloat("eta", config.adaptiveTimeStepEta);
+    writer.writeBool("cost_guard", config.adaptiveTimeStepCostGuard);
+    writer.finish();
+}
+
 static void writeOctree(std::ostream& out, const SimulationConfig& config)
 {
     DirectiveStreamWriter writer(out, "octree");
@@ -64,6 +77,28 @@ static void writeOctree(std::ostream& out, const SimulationConfig& config)
     writer.writeBool("theta_auto", config.octreeThetaAutoTune);
     writer.writeFloat("theta_auto_min", config.octreeThetaAutoMin);
     writer.writeFloat("theta_auto_max", config.octreeThetaAutoMax);
+    writer.writeUint32("leaf_capacity", config.linearOctreeLeafCapacity);
+    writer.writeString("cache_preference", config.cudaCachePreference);
+    writer.finish();
+}
+
+static void writeTreePm(std::ostream& out, const SimulationConfig& config)
+{
+    DirectiveStreamWriter writer(out, "treepm");
+    writer.writeString("preset", config.treePmPreset);
+    writer.writeBool("enabled", config.treePmEnabled);
+    writer.writeString("model", config.treePmModel);
+    writer.writeString("layout", config.treePmLayout);
+    writer.writeString("precision", config.treePmPrecision);
+    writer.writeString("assignment", config.treePmAssignment);
+    writer.writeBool("local_grid", config.treePmLocalGrid);
+    writer.writeUint32("grid_size", config.treePmGridSize);
+    writer.writeUint32("jacobi_iters", config.treePmJacobiIterations);
+    writer.writeFloat("cutoff_factor", config.treePmCutoffFactor);
+    writer.writeUint32("max_local_neighbors", config.treePmMaxLocalNeighbors);
+    writer.writeUint32("particle_limit", config.treePmParticleLimit);
+    writer.writeUint32("dense_cell_threshold", config.treePmDenseCellThreshold);
+    writer.writeBool("gravity_only_buffers", config.treePmGravityOnlyBuffers);
     writer.finish();
 }
 
@@ -174,6 +209,105 @@ static void writeCloud(std::ostream& out, const SimulationConfig& config)
     writer.finish();
 }
 
+static void writeCosmology(std::ostream& out, const SimulationConfig& config)
+{
+    DirectiveStreamWriter writer(out, "cosmology");
+    writer.writeBool("enabled", config.cosmologyEnabled);
+    writer.writeString("mode", config.cosmologyMode);
+    writer.writeString("geometry", config.cosmologyGeometry);
+    writer.writeFloat("box_half_extent", config.cosmologyBoxHalfExtent);
+    writer.writeFloat("sphere_radius", config.cosmologySphereRadius);
+    writer.writeFloat("h0", config.cosmologyHubbleH0);
+    writer.writeFloat("omega_m", config.cosmologyOmegaMatter);
+    writer.writeFloat("omega_lambda", config.cosmologyOmegaLambda);
+    writer.writeFloat("omega_radiation", config.cosmologyOmegaRadiation);
+    writer.writeFloat("initial_scale_factor", config.cosmologyInitialScaleFactor);
+    writer.writeFloat("perturbation", config.cosmologyPerturbationAmplitude);
+    writer.writeFloat("peculiar_velocity", config.cosmologyPeculiarVelocityScale);
+    writer.writeString("mass_model", config.cosmologyMassModel);
+    writer.writeFloat("total_mass", config.cosmologyTotalMass);
+    writer.finish();
+}
+
+static void writeSceneObjects(std::ostream& out, const SimulationConfig& config)
+{
+    for (const SceneObjectConfig& object : config.scene.objects) {
+        DirectiveStreamWriter writer(out, "object");
+        writer.writeQuotedString("id", object.id);
+        writer.writeQuotedString("name", object.name);
+        writer.writeString("type", object.type);
+        writer.writeBool("enabled", object.enabled);
+        writer.writeBool("include_central_body", object.includeCentralBody);
+        writer.writeUint32("particle_count", object.particleCount);
+        writer.writeUint32("seed", object.seed);
+        writer.writeFloat("mass", object.mass);
+        writer.writeFloat("size", object.size);
+        writer.writeFloat("radius_min", object.radiusMin);
+        writer.writeFloat("radius_max", object.radiusMax);
+        writer.writeFloat("thickness", object.thickness);
+        writer.writeFloat("velocity_scale", object.velocityScale);
+        writer.writeFloat("speed", object.speed);
+        writer.writeFloat("particle_mass", object.particleMass);
+        writer.writeFloat("x", object.positionX);
+        writer.writeFloat("y", object.positionY);
+        writer.writeFloat("z", object.positionZ);
+        writer.writeFloat("vx", object.velocityX);
+        writer.writeFloat("vy", object.velocityY);
+        writer.writeFloat("vz", object.velocityZ);
+        writer.writeBool("asset", object.isAsset);
+        std::string properties;
+        for (std::size_t index = 0u; index < object.properties.size(); ++index) {
+            if (index != 0u)
+                properties += ',';
+            properties += object.properties[index];
+        }
+        writer.writeQuotedString("properties", properties);
+        writer.writeFloat("offset_x", object.offsetX);
+        writer.writeFloat("offset_y", object.offsetY);
+        writer.writeFloat("offset_z", object.offsetZ);
+        writer.writeFloat("rotation_x", object.rotationX);
+        writer.writeFloat("rotation_y", object.rotationY);
+        writer.writeFloat("rotation_z", object.rotationZ);
+        writer.writeString("copy_axis", object.axis);
+        writer.writeUint32("rotation_copies", object.copies);
+        writer.writeBool("mirror_x", object.mirrorX);
+        writer.writeBool("mirror_y", object.mirrorY);
+        writer.writeBool("mirror_z", object.mirrorZ);
+        writer.writeString("pivot", object.pivot);
+        writer.writeFloat("pivot_x", object.pivotX);
+        writer.writeFloat("pivot_y", object.pivotY);
+        writer.writeFloat("pivot_z", object.pivotZ);
+        if (!object.assetId.empty())
+            writer.writeQuotedString("asset_id", object.assetId);
+        if (object.type == "particle_system") {
+            writer.writeString("distribution", object.distribution);
+            writer.writeFloat("particle_size", object.particleSize);
+            writer.writeFloat("particle_height", object.particleHeight);
+            writer.writeFloat("particle_speed", object.particleSpeed);
+            writer.writeQuotedString("emitter_object_id", object.emitterObjectId);
+            writer.writeQuotedString("target_asset_id", object.targetAssetId);
+        }
+        writer.finish();
+    }
+}
+
+static void writeTransform(std::ostream& out, const SimulationConfig& config)
+{
+    DirectiveStreamWriter writer(out, "transform");
+    writer.writeFloat("offset_x", config.sceneOffsetX);
+    writer.writeFloat("offset_y", config.sceneOffsetY);
+    writer.writeFloat("offset_z", config.sceneOffsetZ);
+    writer.writeFloat("rotation_x", config.sceneRotationX);
+    writer.writeFloat("rotation_y", config.sceneRotationY);
+    writer.writeFloat("rotation_z", config.sceneRotationZ);
+    writer.writeString("copy_axis", config.sceneCopyAxis);
+    writer.writeUint32("rotation_copies", config.sceneRotationCopies);
+    writer.writeBool("mirror_x", config.sceneMirrorX);
+    writer.writeBool("mirror_y", config.sceneMirrorY);
+    writer.writeBool("mirror_z", config.sceneMirrorZ);
+    writer.finish();
+}
+
 static void writeSph(std::ostream& out, const SimulationConfig& config)
 {
     DirectiveStreamWriter writer(out, "sph");
@@ -205,17 +339,22 @@ void SimulationConfigDirective::write(std::ostream& out, const SimulationConfig&
     out << "# ==================================================\n\n";
     writeSimulation(out, config);
     writePerformance(out, config);
+    writeAdaptive(out, config);
     writeOctree(out, config);
+    writeTreePm(out, config);
     writePhysics(out, config);
     writeClient(out, config);
     writeExport(out, config);
     writeScene(out, config);
+    writeSceneObjects(out, config);
     writePreset(out, config);
     writeThermal(out, config);
     writeGeneration(out, config);
     writeCentralBody(out, config);
     writeDisk(out, config);
     writeCloud(out, config);
+    writeCosmology(out, config);
+    writeTransform(out, config);
     writeSph(out, config);
     writeRender(out, config);
 }

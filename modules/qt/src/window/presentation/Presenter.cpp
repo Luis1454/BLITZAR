@@ -15,7 +15,6 @@
 #include <sstream>
 
 namespace bltzr_qt {
-namespace {
 static bool hasAge(std::uint32_t ageMs)
     {
         return ageMs != std::numeric_limits<std::uint32_t>::max();
@@ -121,7 +120,6 @@ static std::string exportStateLabel(const PresentationInput& input)
         }
         return input.stats.exportLastState;
     }
-} // namespace
 
 Presentation Presenter::present(const PresentationInput& input) const
 {
@@ -170,6 +168,7 @@ Presentation Presenter::present(const PresentationInput& input) const
           << "\nExport failed: " << input.stats.exportFailedCount << "\nLast export: "
           << (input.stats.exportLastPath.empty() ? "n/a" : input.stats.exportLastPath)
           << "\nSteps: " << input.stats.steps << "\nParticles: " << input.stats.particleCount
+          << "\nTotal mass: " << input.stats.totalMass << " [simulation units]"
           << "\nDraw budget: " << input.displayedParticles << " / " << input.clientDrawCap
           << "\nStats age: " << ageLabel(input.statsAgeMs)
           << "\nSnapshot age: " << ageLabel(input.snapshotAgeMs)

@@ -154,6 +154,7 @@ TEST(ServerProtocolCodecParseEdgeTest,
     EXPECT_TRUE(payload.envelope.ok);
     EXPECT_EQ(payload.particles.size(), 2u);
     EXPECT_EQ(payload.sourceSize, 2u);
+    EXPECT_FLOAT_EQ(payload.particles[0].densityNorm, 0.0f);
     EXPECT_TRUE(error.empty());
 }
 

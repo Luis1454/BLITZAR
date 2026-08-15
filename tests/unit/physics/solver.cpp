@@ -203,7 +203,7 @@ TEST(PhysicsTest, TST_UNT_RUNT_002_ParticleSystemCtorKeepsExplicitInitialState)
     EXPECT_FLOAT_EQ(configuredParticles[1].getTemperature(), 2.0f);
 }
 
-TEST(PhysicsTest, TST_UNT_PHYS_010_DeterministicReplayIdentical)
+TEST(PhysicsTest, TST_UNT_PHYS_020_DeterministicReplayIdentical)
 {
     ScenarioConfig cfg = buildDiskOrbitScenario(64u, 0.005f, 20u, 77777u, "pairwise_cuda", "euler");
     setScenarioEnergySampling(cfg, 1u, 64u);

@@ -63,7 +63,6 @@
       "mitigation": "Review changes for feature isolation and keep UI/module edits tied to decomposition work.",
       "closure_criteria": "Extract module composition responsibilities into smaller units and delete the allowlist paths.",
       "paths": [
-        "modules/proxy/Module.cpp",
         "modules/qt/Module.cpp",
         "modules/qt/src/widgets/graphs/Paint.cpp"
       ],
@@ -261,6 +260,61 @@
       "artifacts": [
         "EVD_CHECK_MAIN",
         "EVD_CHECK_POLICY_ALLOWLIST"
+      ]
+    },
+    "DEV-QUAL-012": {
+      "kind": "deviation",
+      "status": "open",
+      "scope": "repository-policy:file-size",
+      "owner": "project-maintainer",
+      "approver": "quality-review",
+      "introduced_on": "2026-08-15",
+      "review_by": "2026-09-15",
+      "rationale": "The controlled baseline contains legacy source, test, CMake, and policy files that exceed the strong size threshold while responsibility-focused extraction is scheduled under issue #443.",
+      "mitigation": "Keep this list closed to the recorded baseline, reject any new over-threshold path, and require each extraction to remove its matching allowlist entry before unrelated feature work expands the file.",
+      "closure_criteria": "Split every path below the strong threshold, remove it from this register and the policy allowlist, and retain its deterministic qualification identifiers.",
+      "paths": [
+        "cmake/apps.cmake",
+        "docs/quality/manifest/deviations.json",
+        "engine/include/physics/ParticleSystem.hpp",
+        "engine/src/config/directive/Config.cpp",
+        "engine/src/config/directive/Write.cpp",
+        "engine/src/config/registry/Entries.cpp",
+        "engine/src/config/validation/Scenario.cpp",
+        "engine/src/cuda/fragments/system/Core.inl",
+        "engine/src/cuda/fragments/treepm/Gpu.inl",
+        "engine/src/cuda/JitRuntime.cu",
+        "engine/src/physics/ParticleSystemHost.cpp",
+        "engine/src/physics/TreePmCpu.cpp",
+        "engine/src/server/simulation/lifecycle/Rebuild.cpp",
+        "engine/src/server/simulation/runtime/SettersAndExport.cpp",
+        "engine/src/server/simulation/telemetry/SnapshotAndEnergy.cpp",
+        "engine/src/server/SimulationInitConfig.cpp",
+        "modules/qt/src/widgets/graphs/SpectrumGraph.cpp",
+        "modules/qt/src/widgets/viewport/GpuView.cpp",
+        "modules/qt/src/widgets/viewport/MultiView.cpp",
+        "modules/qt/src/window/config/ConfigurationEditor.cpp",
+        "modules/qt/src/window/config/WindowConfig.cpp",
+        "modules/qt/src/window/control/Controls.cpp",
+        "modules/qt/src/window/layout/State.cpp",
+        "modules/qt/src/window/scene/SceneEditor.cpp",
+        "python_tools/policies/repo_policy.py",
+        "scripts/analysis/ast_graph.py",
+        "tests/unit/config/args_cli.cpp",
+        "tests/unit/config/args_io.cpp",
+        "tests/unit/config/args_io_directive.cpp",
+        "tests/unit/ui/qt_mainwindow_controller.cpp"
+      ],
+      "requirements": [
+        "REQ-QUAL-001",
+        "REQ-COMP-002",
+        "REQ-PHYS-001",
+        "REQ-UI-001"
+      ],
+      "artifacts": [
+        "EVD_CHECK_MAIN",
+        "EVD_CHECK_POLICY_ALLOWLIST",
+        "EVD_QLT_DEVIATION_REGISTER"
       ]
     }
   }

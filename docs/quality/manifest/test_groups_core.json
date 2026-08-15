@@ -56,7 +56,7 @@
                 ]
             },
             "TST-UNT-CONF-014": {
-                "id": "ConfigArgsTest.TST_UNT_CONF_014_ClampsClientParticleCapArgumentToProtocolMax",
+                "id": "ConfigArgsTest.TST_UNT_CONF_014_AcceptsMaximumClientParticleCapArgument",
                 "req_ids": [
                     "REQ-CONF-001",
                     "REQ-CONF-002"
@@ -69,7 +69,7 @@
                 ]
             },
             "TST-UNT-CONF-016": {
-                "id": "ConfigArgsTest.TST_UNT_CONF_016_LoadClampsClientParticleCapToProtocolMax",
+                "id": "ConfigArgsTest.TST_UNT_CONF_016_LoadAcceptsMaximumClientParticleCap",
                 "req_ids": [
                     "REQ-CONF-001",
                     "REQ-CONF-002"
@@ -147,6 +147,54 @@
             },
             "TST-UNT-CONF-078": {
                 "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_078_RenderTextWarningModeOmitsActionWhenEmpty",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-084": {
+                "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_084_FmmRejectsTreePmComposition",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-100": {
+                "id": "AdaptiveTimeStepConfigTest.TST_UNT_CONF_100_CliSelectsDyadicHierarchy",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-094": {
+                "id": "TreePmConfigTest.TST_UNT_CONF_094_CliPresetSelectsHybridModel",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-095": {
+                "id": "TreePmConfigTest.TST_UNT_CONF_095_CliKeepsCustomPmLimits",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-096": {
+                "id": "TreePmConfigTest.TST_UNT_CONF_096_DirectiveAppliesPresetBeforeOverrides",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-097": {
+                "id": "TreePmConfigTest.TST_UNT_CONF_097_QualityPresetSelectsExactGpuTree",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-098": {
+                "id": "TreePmConfigTest.TST_UNT_CONF_098_CliAndDirectiveSelectFp64Precision",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-099": {
+                "id": "TreePmConfigTest.TST_UNT_CONF_099_CliAndDirectiveSelectAssignmentStencil",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-112": {
+                "id": "TreePmConfigTest.TST_UNT_CONF_112_CliAndDirectiveSelectParticleLayout",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-113": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_113_CliSelectsExplicitExecutionCommand",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-114": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_114_CliRejectsConflictingExecutionCommands",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-116": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_116_CliAcceptsDeterministicExportPath",
                 "req_ids": [ "REQ-CONF-001" ]
             }
         },
@@ -392,8 +440,8 @@
                 "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_083_PlummerSphereRequiresPositiveCloudExtent",
                 "req_ids": [ "REQ-CONF-002" ]
             },
-            "TST-UNT-CONF-084": {
-                "id": "ConfigInitPlanEdgesTest.TST_UNT_CONF_084_PresetFileModeKeepsConfiguredInputAndAutoFormat",
+            "TST-UNT-CONF-117": {
+                "id": "ConfigInitPlanEdgesTest.TST_UNT_CONF_117_PresetFileModeKeepsConfiguredInputAndAutoFormat",
                 "req_ids": [ "REQ-CONF-001" ]
             },
             "TST-UNT-CONF-085": {
@@ -431,34 +479,58 @@
             "TST-UNT-CONF-093": {
                 "id": "ScenarioValidationInitModesTest.TST_UNT_CONF_093_DetailedSphereRandomValidatesGeneratedMassAndRadius",
                 "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-101": {
+                "id": "AdaptiveTimeStepConfigTest.TST_UNT_CONF_101_DirectiveRoundTripsAdaptiveSettings",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-102": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_102_SceneParticleSystemObjectRoundTrips",
+                "req_ids": [ "REQ-CONF-001", "REQ-UI-001" ]
+            },
+            "TST-UNT-CONF-103": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_103_LoadsSerializedSimulationProfile",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-104": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_104_CosmologyDirectiveRoundTrips",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-111": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_111_StrictLoadRejectsMalformedIniWithoutCreatingFiles",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-115": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_115_LoadKeepsExplicitSolverWithoutImplicitSimulationProfile",
+                "req_ids": [ "REQ-CONF-001" ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_PROFILE": {
-            "TST-UNT-CONF-028": {
+            "TST-PHY-PRO-001": {
                 "id": "SimulationProfileTests.TST_PHY_PRO_001_DiskOrbitProfile",
                 "req_ids": [
                     "REQ-CONF-001"
                 ]
             },
-            "TST-UNT-CONF-029": {
+            "TST-PHY-PRO-002": {
                 "id": "SimulationProfileTests.TST_PHY_PRO_002_GalaxyCollisionProfile",
                 "req_ids": [
                     "REQ-CONF-001"
                 ]
             },
-            "TST-UNT-CONF-030": {
+            "TST-PHY-PRO-003": {
                 "id": "SimulationProfileTests.TST_PHY_PRO_003_SolarSystemProfile",
                 "req_ids": [
                     "REQ-CONF-001"
                 ]
             },
-            "TST-UNT-CONF-031": {
+            "TST-PHY-PRO-004": {
                 "id": "SimulationProfileTests.TST_PHY_PRO_004_InvalidProfile",
                 "req_ids": [
                     "REQ-CONF-002"
                 ]
             },
-            "TST-UNT-CONF-032": {
+            "TST-PHY-PRO-005": {
                 "id": "SimulationProfileTests.TST_PHY_PRO_005_BinaryStarProfile",
                 "req_ids": [
                     "REQ-CONF-001"
@@ -467,25 +539,25 @@
         },
         "EVD_TEST_INT_PROTOCOL_CONNECT": {
             "TST-INT-PROT-001": {
-                "id": "ServerProtocolTest.TST_INT_PROT_001_ServerClientParsesStatusAndSnapshotFromRealServer",
+                "id": "ServerProtocolTest.TST_INT_PROT_001_ClientParsesStatusAndSnapshotFromRealServer",
                 "req_ids": [
                     "REQ-PROT-001"
                 ]
             },
             "TST-INT-PROT-002": {
-                "id": "ServerProtocolTest.TST_INT_PROT_002_ServerClientRecoversAfterRealServerRestartOnSamePort",
+                "id": "ServerProtocolTest.TST_INT_PROT_002_ClientRecoversAfterRealServerRestartOnSamePort",
                 "req_ids": [
                     "REQ-PROT-001"
                 ]
             },
             "TST-INT-PROT-003": {
-                "id": "ServerProtocolTest.TST_INT_PROT_003_ServerClientConnectTimeoutIsBounded",
+                "id": "ServerProtocolTest.TST_INT_PROT_003_ClientConnectTimeoutIsBounded",
                 "req_ids": [
                     "REQ-PROT-001"
                 ]
             },
             "TST-INT-PROT-009": {
-                "id": "ServerProtocolTest.TST_INT_PROT_009_ServerClientRejectsRequestsWithoutConnectionWithOperationContext",
+                "id": "ServerProtocolTest.TST_INT_PROT_009_ClientRejectsRequestsWithoutConnectionWithOperationContext",
                 "req_ids": [
                     "REQ-PROT-001"
                 ]
@@ -526,6 +598,13 @@
                 "id": "ServerProtocolTest.TST_INT_PROT_010_ServerAcceptsGpuTelemetryToggle",
                 "req_ids": [
                     "REQ-PROT-002"
+                ]
+            },
+            "TST-INT-PROT-012": {
+                "id": "ServerProtocolTest.TST_INT_PROT_012_AcceptsTreePmAndAdaptiveRuntimeParameters",
+                "req_ids": [
+                    "REQ-PROT-002",
+                    "REQ-RUN-001"
                 ]
             }
         },
@@ -600,83 +679,83 @@
         },
         "EVD_TEST_INT_RUNTIME_RUNTIME": {
             "TST-CNT-RUNT-001": {
-                "id": "ClientRuntimeTest.TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAndSnapshot",
+                "id": "RuntimeTest.TST_CNT_RUNT_001_ConnectsToRealServerAndPublishesStatsAndSnapshot",
                 "req_ids": [
                     "REQ-RUN-001"
                 ]
             },
             "TST-CNT-RUNT-002": {
-                "id": "ClientRuntimeTest.TST_CNT_RUNT_002_StartFailsWhenRemoteServerIsUnavailable",
+                "id": "RuntimeTest.TST_CNT_RUNT_002_StartFailsWhenRemoteServerIsUnavailable",
                 "req_ids": [
                     "REQ-RUN-001"
                 ]
             },
             "TST-CNT-RUNT-003": {
-                "id": "ClientRuntimeTest.TST_CNT_RUNT_003_ReconnectsWhenRealServerRestarts",
+                "id": "RuntimeTest.TST_CNT_RUNT_003_ReconnectsWhenRealServerRestarts",
                 "req_ids": [
                     "REQ-RUN-001"
                 ]
             },
             "TST-CNT-RUNT-004": {
-                "id": "ClientRuntimeTest.TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeToReachRealServer",
+                "id": "RuntimeTest.TST_CNT_RUNT_004_ConnectorCanBeReconfiguredAtRuntimeToReachRealServer",
                 "req_ids": [
                     "REQ-RUN-001"
                 ]
             },
             "TST-CNT-RUNT-005": {
-                "id": "ClientRuntimeTest.TST_CNT_RUNT_005_ClampsConfiguredClientCapToProtocolMax",
+                "id": "RuntimeTest.TST_CNT_RUNT_005_AcceptsMaximumConfiguredClientCap",
                 "req_ids": [
                     "REQ-RUN-001",
                     "REQ-UI-001"
                 ]
             },
             "TST-CNT-RUNT-006": {
-                "id": "ClientRuntimeTest.TST_CNT_RUNT_006_ClampsEnvironmentOverrideToProtocolMax",
+                "id": "RuntimeTest.TST_CNT_RUNT_006_ClampsEnvironmentOverrideToProtocolMax",
                 "req_ids": [
                     "REQ-RUN-001",
                     "REQ-UI-001"
                 ]
             },
             "TST-CNT-RUNT-007": {
-                "id": "ClientRuntimeTest.TST_CNT_RUNT_007_InvalidEnvironmentOverrideFallsBackToConfigAndWarns",
+                "id": "RuntimeTest.TST_CNT_RUNT_007_InvalidEnvironmentOverrideFallsBackToConfigAndWarns",
                 "req_ids": [
                     "REQ-RUN-001",
                     "REQ-CONF-002"
                 ]
             },
             "TST-CNT-RUNT-008": {
-                "id": "ClientRuntimeTest.TST_CNT_RUNT_008_LoadResetInvalidatesClientSnapshotCacheUntilReloaded",
+                "id": "RuntimeTest.TST_CNT_RUNT_008_LoadResetInvalidatesClientSnapshotCacheUntilReloaded",
                 "req_ids": [
                     "REQ-RUN-001"
                 ]
             },
             "TST-CNT-RUNT-009": {
-                "id": "ClientRuntimeTest.TST_CNT_RUNT_009_LatestOnlySnapshotQueueKeepsLatencyLowWhileDroppingBacklog",
+                "id": "RuntimeTest.TST_CNT_RUNT_009_LatestOnlySnapshotQueueKeepsLatencyLowWhileDroppingBacklog",
                 "req_ids": [
                     "REQ-RUN-001"
                 ]
             },
             "TST-CNT-RUNT-010": {
-                "id": "ClientRuntimeTest.TST_CNT_RUNT_010_PacedSnapshotQueuePreservesBacklogAndReportsLatencyGrowth",
+                "id": "RuntimeTest.TST_CNT_RUNT_010_PacedSnapshotQueuePreservesBacklogAndReportsLatencyGrowth",
                 "req_ids": [
                     "REQ-RUN-001"
                 ]
             },
             "TST-CNT-RUNT-011": {
-                "id": "ClientRuntimeTest.TST_CNT_RUNT_011_BackendSnapshotPolicyReducesTransferForLowDrawCap",
+                "id": "RuntimeTest.TST_CNT_RUNT_011_BackendSnapshotPolicyReducesTransferForLowDrawCap",
                 "req_ids": [
                     "REQ-RUN-001",
                     "REQ-UI-001"
                 ]
             },
             "TST-UNT-RUNT-016": {
-                "id": "ClientRuntimeUnitLikeTest.TST_UNT_RUNT_016_RuntimeDefaultsRemainDeterministicBeforeStart",
+                "id": "RuntimeUnitLikeTest.TST_UNT_RUNT_016_RuntimeDefaultsRemainDeterministicBeforeStart",
                 "req_ids": [
                     "REQ-RUN-001"
                 ]
             },
             "TST-UNT-RUNT-017": {
-                "id": "ClientRuntimeUnitLikeTest.TST_UNT_RUNT_017_RuntimeControlMethodsRemainBoundedWhenDisconnected",
+                "id": "RuntimeUnitLikeTest.TST_UNT_RUNT_017_RuntimeControlMethodsRemainBoundedWhenDisconnected",
                 "req_ids": [
                     "REQ-RUN-001",
                     "REQ-PROT-001"
@@ -894,6 +973,28 @@
                 "req_ids": [
                     "REQ-PHYS-001"
                 ]
+            },
+            "TST-UNT-FMM-001": {
+                "id": "PhysicsTest.TST_UNT_FMM_001_OrderTwoCpuFmmMatchesPairwiseReference",
+                "req_ids": [
+                    "REQ-PHYS-001"
+                ]
+            },
+            "TST-UNT-FMM-002": {
+                "id": "PhysicsTest.TST_UNT_FMM_002_AdaptiveTreeQualifiesPlummerSphere",
+                "req_ids": [ "REQ-PHYS-001" ]
+            },
+            "TST-UNT-FMM-003": {
+                "id": "PhysicsTest.TST_UNT_FMM_003_AdaptiveTreeQualifiesGalaxyCollision",
+                "req_ids": [ "REQ-PHYS-001" ]
+            },
+            "TST-UNT-FMM-004": {
+                "id": "PhysicsTest.TST_UNT_FMM_004_AdaptiveTreeQualifiesPerturbedCosmology",
+                "req_ids": [ "REQ-PHYS-001" ]
+            },
+            "TST-UNT-FMM-005": {
+                "id": "PhysicsTest.TST_UNT_FMM_005_LeapfrogPreservesIsolatedInvariants",
+                "req_ids": [ "REQ-PHYS-001" ]
             }
         },
         "EVD_TEST_UNIT_PHYSICS_DETERMINISM": {
@@ -915,8 +1016,8 @@
                     "REQ-PHYS-001"
                 ]
             },
-            "TST-UNT-PHYS-013": {
-                "id": "PhysicsTest.TST_UNT_PHYS_010_DeterministicReplayIdentical",
+            "TST-UNT-PHYS-020": {
+                "id": "PhysicsTest.TST_UNT_PHYS_020_DeterministicReplayIdentical",
                 "req_ids": [
                     "REQ-PHYS-001"
                 ]
@@ -1043,6 +1144,41 @@
             },
             "TST-UIX-UI-021": {
                 "id": "QtWorkspaceRuntimeControlsTest.TST_UIX_UI_021_TickSurvivesMissingSnapshot",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UIX-UI-023": {
+                "id": "QtWorkspaceRuntimeControlsTest.TST_UIX_UI_023_AllSolverAndTreePmModesAreExposedAndApplied",
+                "req_ids": [
+                    "REQ-UI-001",
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UIX-UI-024": {
+                "id": "QtWorkspaceRuntimeControlsTest.TST_UIX_UI_024_ExportProgressReflectsRuntimeQueue",
+                "req_ids": [
+                    "REQ-UI-001",
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UIX-UI-025": {
+                "id": "QtViewportTest.TST_UIX_UI_025_AllProjectionModesRenderTheSnapshot",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UIX-UI-026": {
+                "id": "QtConfigurationEditorTest.TST_UIX_UI_026_RoundTripsScientificAndPlummerValues",
+                "req_ids": [
+                    "REQ-UI-001",
+                    "REQ-CONF-001"
+                ]
+            }
+        },
+        "EVD_TEST_INT_UI_QT_SCENE_EDITOR": {
+            "TST-UIX-UI-027": {
+                "id": "QtSceneEditorTest.TST_UIX_UI_027_AddsGranularObjectPropertiesIndependently",
                 "req_ids": [
                     "REQ-UI-001"
                 ]
@@ -1217,38 +1353,38 @@
                 ]
             },
             "TST-UNT-MODCLI-006": {
-                "id": "CommandParserTest.TST_UNT_MODCLI_006_ParsesQuotedPathsAndComments",
+                "id": "ParserTest.TST_UNT_MODCLI_006_ParsesQuotedPathsAndComments",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-007": {
-                "id": "CommandParserTest.TST_UNT_MODCLI_007_RejectsUnknownCommandWithLineNumber",
+                "id": "ParserTest.TST_UNT_MODCLI_007_RejectsUnknownCommandWithLineNumber",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-008": {
-                "id": "CommandParserTest.TST_UNT_MODCLI_008_RejectsWrongArityAndInvalidNumericValues",
+                "id": "ParserTest.TST_UNT_MODCLI_008_RejectsWrongArityAndInvalidNumericValues",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-009": {
-                "id": "CommandExecutorTest.TST_UNT_MODCLI_009_SetDtMapsToProtocolCommand",
+                "id": "ExecutorTest.TST_UNT_MODCLI_009_SetDtMapsToProtocolCommand",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-010": {
-                "id": "CommandExecutorTest.TST_UNT_MODCLI_010_RunStepsAndRunUntilUseDeterministicStepFlow",
+                "id": "ExecutorTest.TST_UNT_MODCLI_010_RunStepsAndRunUntilUseDeterministicStepFlow",
                 "req_ids": [
                     "REQ-MOD-001",
                     "REQ-RUN-001"
                 ]
             },
             "TST-UNT-MODCLI-011": {
-                "id": "CommandExecutorTest.TST_UNT_MODCLI_011_LoadConfigUpdatesSessionPathAndRejectsInvalidProfile",
+                "id": "ExecutorTest.TST_UNT_MODCLI_011_LoadConfigUpdatesSessionPathAndRejectsInvalidProfile",
                 "req_ids": [
                     "REQ-MOD-001",
                     "REQ-CONF-001",
@@ -1256,309 +1392,309 @@
                 ]
             },
             "TST-UNT-MODCLI-012": {
-                "id": "CommandExecutorTest.TST_UNT_MODCLI_012_CheckpointCommandsMapToProtocolCommands",
+                "id": "ExecutorTest.TST_UNT_MODCLI_012_CheckpointCommandsMapToProtocolCommands",
                 "req_ids": [
                     "REQ-MOD-001",
                     "REQ-RUN-001"
                 ]
             },
             "TST-UNT-MODCLI-013": {
-                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_013_HelpRendersCatalogAndReturnsSuccess",
+                "id": "ExecutorFlowTest.TST_UNT_MODCLI_013_HelpRendersCatalogAndReturnsSuccess",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-014": {
-                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_014_ConnectionCommandsHandleSuccessAndFailure",
+                "id": "ExecutorFlowTest.TST_UNT_MODCLI_014_ConnectionCommandsHandleSuccessAndFailure",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-015": {
-                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_015_ControlCommandsMapToProtocol",
+                "id": "ExecutorFlowTest.TST_UNT_MODCLI_015_ControlCommandsMapToProtocol",
                 "req_ids": [
                     "REQ-MOD-001",
                     "REQ-RUN-001"
                 ]
             },
             "TST-UNT-MODCLI-016": {
-                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_016_StatusReportsStateAndHandlesStatusFailure",
+                "id": "ExecutorFlowTest.TST_UNT_MODCLI_016_StatusReportsStateAndHandlesStatusFailure",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-017": {
-                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_017_RunUntilAndSendCheckedFailurePaths",
+                "id": "ExecutorFlowTest.TST_UNT_MODCLI_017_RunUntilAndSendCheckedFailurePaths",
                 "req_ids": [
                     "REQ-MOD-001",
                     "REQ-RUN-001"
                 ]
             },
             "TST-UNT-MODCLI-018": {
-                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_018_SetModeCommandsValidateAndMap",
+                "id": "ExecutorFlowTest.TST_UNT_MODCLI_018_SetModeCommandsValidateAndMap",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-019": {
-                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_019_ExportSnapshotUsesDerivedAndExplicitFormats",
+                "id": "ExecutorFlowTest.TST_UNT_MODCLI_019_ExportSnapshotUsesDerivedAndExplicitFormats",
                 "req_ids": [
                     "REQ-MOD-001",
                     "REQ-RUN-001"
                 ]
             },
             "TST-UNT-MODCLI-020": {
-                "id": "CommandBatchRunnerTest.TST_UNT_MODCLI_020_RunScriptFileReportsOpenError",
+                "id": "BatchRunnerTest.TST_UNT_MODCLI_020_RunScriptFileReportsOpenError",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-021": {
-                "id": "CommandBatchRunnerTest.TST_UNT_MODCLI_021_RunScriptFileReportsParserErrors",
+                "id": "BatchRunnerTest.TST_UNT_MODCLI_021_RunScriptFileReportsParserErrors",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-022": {
-                "id": "CommandBatchRunnerTest.TST_UNT_MODCLI_022_RunScriptFilePrefixesFailingLineNumber",
+                "id": "BatchRunnerTest.TST_UNT_MODCLI_022_RunScriptFilePrefixesFailingLineNumber",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-023": {
-                "id": "CommandBatchRunnerTest.TST_UNT_MODCLI_023_RunScriptFileSucceedsOnValidCommands",
+                "id": "BatchRunnerTest.TST_UNT_MODCLI_023_RunScriptFileSucceedsOnValidCommands",
                 "req_ids": [
                     "REQ-MOD-001",
                     "REQ-RUN-001"
                 ]
             },
             "TST-UNT-MODCLI-024": {
-                "id": "CommandCatalogTest.TST_UNT_MODCLI_024_AllSpecsRoundTripByNameAndId",
+                "id": "CatalogTest.TST_UNT_MODCLI_024_AllSpecsRoundTripByNameAndId",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-025": {
-                "id": "CommandCatalogTest.TST_UNT_MODCLI_025_RenderHelpFormatsRequiredAndOptionalArguments",
+                "id": "CatalogTest.TST_UNT_MODCLI_025_RenderHelpFormatsRequiredAndOptionalArguments",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-026": {
-                "id": "CommandCatalogTest.TST_UNT_MODCLI_026_FindByNameRejectsCaseAndWhitespaceVariants",
+                "id": "CatalogTest.TST_UNT_MODCLI_026_FindByNameRejectsCaseAndWhitespaceVariants",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-027": {
-                "id": "CommandCatalogTest.TST_UNT_MODCLI_027_CommandMetadataIsDeterministicAndDocumented",
+                "id": "CatalogTest.TST_UNT_MODCLI_027_CommandMetadataIsDeterministicAndDocumented",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-028": {
-                "id": "CommandParserTest.TST_UNT_MODCLI_028_ParseScriptKeepsTailLineWithoutTrailingNewline",
+                "id": "ParserTest.TST_UNT_MODCLI_028_ParseScriptKeepsTailLineWithoutTrailingNewline",
                 "req_ids": [
                     "REQ-MOD-001",
                     "REQ-RUN-001"
                 ]
             },
             "TST-UNT-MODCLI-029": {
-                "id": "CommandParserTest.TST_UNT_MODCLI_029_ParseLineKeepsHashInsideQuotedToken",
+                "id": "ParserTest.TST_UNT_MODCLI_029_ParseLineKeepsHashInsideQuotedToken",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-030": {
-                "id": "CommandParserTest.TST_UNT_MODCLI_030_ParseScriptStopsAtFirstInvalidLine",
+                "id": "ParserTest.TST_UNT_MODCLI_030_ParseScriptStopsAtFirstInvalidLine",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-031": {
-                "id": "CommandCatalogTest.TST_UNT_MODCLI_031_FindByIdRejectsUnknownIdentifier",
+                "id": "CatalogTest.TST_UNT_MODCLI_031_FindByIdRejectsUnknownIdentifier",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-032": {
-                "id": "CommandCatalogTest.TST_UNT_MODCLI_032_RenderHelpStartsWithStableHeaderAndFirstCommand",
+                "id": "CatalogTest.TST_UNT_MODCLI_032_RenderHelpStartsWithStableHeaderAndFirstCommand",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-033": {
-                "id": "CommandParserTest.TST_UNT_MODCLI_033_ParseLineAcceptsCommentOnlyAndWhitespace",
+                "id": "ParserTest.TST_UNT_MODCLI_033_ParseLineAcceptsCommentOnlyAndWhitespace",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-034": {
-                "id": "CommandParserTest.TST_UNT_MODCLI_034_ParseLineSupportsSingleQuotedTokens",
+                "id": "ParserTest.TST_UNT_MODCLI_034_ParseLineSupportsSingleQuotedTokens",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-035": {
-                "id": "CommandParserTest.TST_UNT_MODCLI_035_ParseLineRejectsIntegerWithTrailingGarbage",
+                "id": "ParserTest.TST_UNT_MODCLI_035_ParseLineRejectsIntegerWithTrailingGarbage",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-036": {
-                "id": "CommandParserTest.TST_UNT_MODCLI_036_ParseLineRejectsFloatWithTrailingGarbage",
+                "id": "ParserTest.TST_UNT_MODCLI_036_ParseLineRejectsFloatWithTrailingGarbage",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-037": {
-                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_037_RunUntilPropagatesStatusErrorDetails",
+                "id": "ExecutorFlowTest.TST_UNT_MODCLI_037_RunUntilPropagatesStatusErrorDetails",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-038": {
-                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_038_SendCheckedReturnsServerErrorDetail",
+                "id": "ExecutorFlowTest.TST_UNT_MODCLI_038_SendCheckedReturnsServerErrorDetail",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-039": {
-                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_039_RunUntilReturnsImmediatelyWhenTargetAlreadyReached",
+                "id": "ExecutorFlowTest.TST_UNT_MODCLI_039_RunUntilReturnsImmediatelyWhenTargetAlreadyReached",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-040": {
-                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_040_SetProfileValidAppliesConfigWithoutReset",
+                "id": "ExecutorFlowTest.TST_UNT_MODCLI_040_SetProfileValidAppliesConfigWithoutReset",
                 "req_ids": [
                     "REQ-MOD-001",
                     "REQ-CONF-001"
                 ]
             },
             "TST-UNT-MODCLI-041": {
-                "id": "CommandExecutorFlowTest.TST_UNT_MODCLI_041_ExportSnapshotWithoutExtensionUsesSessionDefaultFormat",
+                "id": "ExecutorFlowTest.TST_UNT_MODCLI_041_ExportSnapshotWithoutExtensionUsesSessionDefaultFormat",
                 "req_ids": [
                     "REQ-MOD-001",
                     "REQ-RUN-001"
                 ]
             },
             "TST-UNT-MODCLI-042": {
-                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_042_ParseLineTrimsLeadingAndTrailingWhitespace",
+                "id": "ParserExpansionATest.TST_UNT_MODCLI_042_ParseLineTrimsLeadingAndTrailingWhitespace",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-043": {
-                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_043_ParseLineAcceptsOptionalStepCountOmitted",
+                "id": "ParserExpansionATest.TST_UNT_MODCLI_043_ParseLineAcceptsOptionalStepCountOmitted",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-044": {
-                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_044_ParseLineRejectsTooManyArgumentsForStatus",
+                "id": "ParserExpansionATest.TST_UNT_MODCLI_044_ParseLineRejectsTooManyArgumentsForStatus",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-045": {
-                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_045_ParseLineRejectsInvalidPortToken",
+                "id": "ParserExpansionATest.TST_UNT_MODCLI_045_ParseLineRejectsInvalidPortToken",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-046": {
-                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_046_ParseLineParsesConnectPortAsUint",
+                "id": "ParserExpansionATest.TST_UNT_MODCLI_046_ParseLineParsesConnectPortAsUint",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-047": {
-                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_047_ParseLineAcceptsScientificFloatForSetDt",
+                "id": "ParserExpansionATest.TST_UNT_MODCLI_047_ParseLineAcceptsScientificFloatForSetDt",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-048": {
-                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_048_ParseLineRejectsMalformedFloatForSetDt",
+                "id": "ParserExpansionATest.TST_UNT_MODCLI_048_ParseLineRejectsMalformedFloatForSetDt",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-049": {
-                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_049_ParseLineAcceptsExportSnapshotWithoutFormat",
+                "id": "ParserExpansionATest.TST_UNT_MODCLI_049_ParseLineAcceptsExportSnapshotWithoutFormat",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-050": {
-                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_050_ParseLineRejectsExportSnapshotTooManyArguments",
+                "id": "ParserExpansionATest.TST_UNT_MODCLI_050_ParseLineRejectsExportSnapshotTooManyArguments",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-051": {
-                "id": "CommandParserExpansionATest.TST_UNT_MODCLI_051_ParseLineSupportsSingleQuotedCheckpointPath",
+                "id": "ParserExpansionATest.TST_UNT_MODCLI_051_ParseLineSupportsSingleQuotedCheckpointPath",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-052": {
-                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_052_ParseLineSupportsDoubleQuotedCheckpointPath",
+                "id": "ParserExpansionBTest.TST_UNT_MODCLI_052_ParseLineSupportsDoubleQuotedCheckpointPath",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-053": {
-                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_053_ParseScriptHandlesCrlfLineEndings",
+                "id": "ParserExpansionBTest.TST_UNT_MODCLI_053_ParseScriptHandlesCrlfLineEndings",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-054": {
-                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_054_ParseLineTreatsCommandNamesAsCaseSensitive",
+                "id": "ParserExpansionBTest.TST_UNT_MODCLI_054_ParseLineTreatsCommandNamesAsCaseSensitive",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-055": {
-                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_055_ParseLineAcceptsSetSolverModeToken",
+                "id": "ParserExpansionBTest.TST_UNT_MODCLI_055_ParseLineAcceptsSetSolverModeToken",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-056": {
-                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_056_ParseLineAcceptsSetProfileToken",
+                "id": "ParserExpansionBTest.TST_UNT_MODCLI_056_ParseLineAcceptsSetProfileToken",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-057": {
-                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_057_ParseLineAcceptsZeroRunSteps",
+                "id": "ParserExpansionBTest.TST_UNT_MODCLI_057_ParseLineAcceptsZeroRunSteps",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-058": {
-                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_058_ParseLineRejectsNegativeUnsignedValue",
+                "id": "ParserExpansionBTest.TST_UNT_MODCLI_058_ParseLineRejectsNegativeUnsignedValue",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-059": {
-                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_059_ParseLineAcceptsUnterminatedQuoteAsSingleToken",
+                "id": "ParserExpansionBTest.TST_UNT_MODCLI_059_ParseLineAcceptsUnterminatedQuoteAsSingleToken",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-060": {
-                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_060_ParseLineKeepsCommentMarkerInsideQuotes",
+                "id": "ParserExpansionBTest.TST_UNT_MODCLI_060_ParseLineKeepsCommentMarkerInsideQuotes",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
             },
             "TST-UNT-MODCLI-061": {
-                "id": "CommandParserExpansionBTest.TST_UNT_MODCLI_061_ParseScriptAcceptsEmptyInput",
+                "id": "ParserExpansionBTest.TST_UNT_MODCLI_061_ParseScriptAcceptsEmptyInput",
                 "req_ids": [
                     "REQ-MOD-001"
                 ]
@@ -1617,7 +1753,7 @@
                 ]
             },
             "TST-UNT-MODHOST-012": {
-                "id": "ClientCommonTest.TST_UNT_MODHOST_012_ResolveParticleAndDrawCapsClampToProtocolBounds",
+                "id": "ClientCommonTest.TST_UNT_MODHOST_012_ResolveParticleAndDrawCapsRespectProtocolBounds",
                 "req_ids": [
                     "REQ-MOD-002",
                     "REQ-PROT-001"
@@ -1898,13 +2034,13 @@
                 ]
             },
             "TST-UNT-PROT-026": {
-                "id": "ServerProtocolCodecTest.TST_UNT_PROT_026_CommandRequestWithEmptyToken",
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_026_RequestWithEmptyToken",
                 "req_ids": [
                     "REQ-PROT-002"
                 ]
             },
             "TST-UNT-PROT-027": {
-                "id": "ServerProtocolCodecTest.TST_UNT_PROT_027_CommandRequestWithLongToken",
+                "id": "ServerProtocolCodecTest.TST_UNT_PROT_027_RequestWithLongToken",
                 "req_ids": [
                     "REQ-PROT-002"
                 ]
@@ -2100,6 +2236,18 @@
                 "req_ids": [
                     "REQ-GRA-002"
                 ]
+            },
+            "TST-UNT-GRA-013": {
+                "id": "ViewMathTest.TST_UNT_GRA_013_CameraAnglesAffectAllProjectionModes",
+                "req_ids": [
+                    "REQ-GRA-002"
+                ]
+            },
+            "TST-UNT-GRA-014": {
+                "id": "ViewMathTest.TST_UNT_GRA_014_ZoomCompensationScalesOnlyOnDezoom",
+                "req_ids": [
+                    "REQ-GRA-002"
+                ]
             }
         },
         "EVD_TEST_UNIT_RELEASE_CHANGELOG": {
@@ -2174,14 +2322,14 @@
         },
         "EVD_TEST_UNIT_PROTOCOL_CODEC_PARSE": {
             "TST-UNT-PROT-031": {
-                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_031_ParseCommandRequestValid",
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_031_ParseRequestValid",
                 "req_ids": [
                     "REQ-PROT-001",
                     "REQ-PROT-002"
                 ]
             },
             "TST-UNT-PROT-032": {
-                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_032_ParseCommandRequestMissingCmd",
+                "id": "ServerProtocolCodecParseTest.TST_UNT_PROT_032_ParseRequestMissingCmd",
                 "req_ids": [
                     "REQ-PROT-001",
                     "REQ-PROT-002"
@@ -2279,20 +2427,20 @@
                 ]
             },
             "TST-UNT-PROT-046": {
-                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_046_ParseCommandRequestRejectsInvalidEnvelope",
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_046_ParseRequestRejectsInvalidEnvelope",
                 "req_ids": [
                     "REQ-PROT-002"
                 ]
             },
             "TST-UNT-PROT-047": {
-                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_047_ParseCommandRequestNormalizesWhitespaceAndCase",
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_047_ParseRequestNormalizesWhitespaceAndCase",
                 "req_ids": [
                     "REQ-PROT-001",
                     "REQ-PROT-002"
                 ]
             },
             "TST-UNT-PROT-048": {
-                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_048_ParseCommandRequestRejectsWhitespaceOnlyCommand",
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_048_ParseRequestRejectsWhitespaceOnlyCommand",
                 "req_ids": [
                     "REQ-PROT-002"
                 ]
@@ -2311,7 +2459,7 @@
                 ]
             },
             "TST-UNT-PROT-051": {
-                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_051_ParseCommandRequestRejectsMissingColonSyntax",
+                "id": "ServerProtocolCodecParseEdgeTest.TST_UNT_PROT_051_ParseRequestRejectsMissingColonSyntax",
                 "req_ids": [
                     "REQ-PROT-002"
                 ]

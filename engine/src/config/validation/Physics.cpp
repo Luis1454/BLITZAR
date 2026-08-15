@@ -12,10 +12,10 @@
 #include <string>
 
 namespace bltzr_config {
-void appendPhysicsDiagnostics(
-    const SimulationConfig& config, const InitialStateConfig& resolvedInitConfig,
-    const std::function<void(ScenarioDiagnosticLevel, std::string, std::string, std::string)>&
-        addDiagnostic)
+void appendPhysicsDiagnostics(const SimulationConfig& config,
+                              const InitialStateConfig& resolvedInitConfig,
+                              const std::function<void(ScenarioDiagnosticLevel, std::string,
+                                                       std::string, std::string)>& addDiagnostic)
 {
     if (!(config.physicsMaxAcceleration > 0.0f)) {
         addDiagnostic(ScenarioDiagnosticLevel::Error, "physics_max_acceleration",
@@ -73,6 +73,12 @@ void appendPhysicsDiagnostics(
                           "octree_theta_auto_min.",
                           "Raise octree_theta_auto_max or lower octree_theta_auto_min.");
         }
+    }
+    if (config.solver == "fmm_cpu" && config.treePmEnabled) {
+        addDiagnostic(
+            ScenarioDiagnosticLevel::Error, "fmm_treepm",
+            "The CPU FMM solver is an isolated-force method and does not combine with TreePM.",
+            "Disable TreePM before selecting solver=fmm_cpu.");
     }
     if (config.sphEnabled) {
         if (config.sphSmoothingLength <= 0.0f || config.sphRestDensity <= 0.0f ||

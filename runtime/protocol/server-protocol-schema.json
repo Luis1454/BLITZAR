@@ -38,12 +38,15 @@
     "resume": { "request": [], "response": "response_envelope" },
     "toggle": { "request": [], "response": "response_envelope" },
     "reset": { "request": [], "response": "response_envelope" },
+    "set_initial_state_config": { "request": ["config"], "response": "response_envelope" },
     "recover": { "request": [], "response": "response_envelope" },
     "step": { "request": ["count"], "response": "response_envelope" },
     "set_dt": { "request": ["value"], "response": "response_envelope" },
     "set_solver": { "request": ["value"], "response": "response_envelope" },
     "set_integrator": { "request": ["value"], "response": "response_envelope" },
     "set_performance_profile": { "request": ["value"], "response": "response_envelope" },
+    "set_treepm_assignment": { "request": ["value"], "response": "response_envelope" },
+    "set_adaptive_time_steps": { "request": ["enabled", "max_level", "eta"], "response": "response_envelope" },
     "set_particle_count": { "request": ["value"], "response": "response_envelope" },
     "set_sph": { "request": ["value"], "response": "response_envelope" },
     "set_octree": { "request": ["theta", "softening"], "response": "response_envelope" },
@@ -63,7 +66,7 @@
       "required": [
         "steps", "dt", "paused", "faulted", "fault_step", "fault_reason", "sph",
         "server_fps", "performance_profile", "substep_target_dt", "substep_dt",
-        "substeps", "max_substeps", "snapshot_publish_period_ms", "particles",
+        "substeps", "max_substeps", "snapshot_publish_period_ms", "particles", "total_mass",
         "solver", "integrator", "ekin", "epot", "eth", "erad", "etot",
         "drift_pct", "estimated"
       ],
@@ -77,7 +80,8 @@
     },
     "snapshot_payload": {
       "required": ["has_snapshot", "count", "particles"],
-      "particle_tuple": ["x", "y", "z", "mass", "pressureNorm", "temperature"]
+      "particle_tuple": ["x", "y", "z", "mass", "pressureNorm", "temperature", "densityNorm"],
+      "particle_tuple_compatibility": "Clients must accept the legacy six-value tuple; densityNorm defaults to 0 when omitted."
     }
   }
 }

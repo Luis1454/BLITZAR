@@ -30,6 +30,39 @@ def test_repo_policy_rejects_function_definition_in_header(tmp_path: Path) -> No
     assert any("function definitions in headers are forbidden" in error for error in errors)
 
 
+# @brief Documents the test repo policy accepts explicitly inline header definition operation contract.
+# @param tmp_path Input value used by this contract.
+# @return No return value.
+# @note Explicit inline definitions are limited to small data-contract accessors.
+def test_repo_policy_accepts_explicit_inline_function_definition_in_header(tmp_path: Path) -> None:
+    _write(
+        tmp_path / "runtime" / "include" / "protocol" / "inline.hpp",
+        "#ifndef RUNTIME_INCLUDE_PROTOCOL_INLINE_HPP_\n"
+        "#define RUNTIME_INCLUDE_PROTOCOL_INLINE_HPP_\n"
+        "\n"
+        "inline int value() { return 1; }\n"
+        "\n"
+        "#endif // RUNTIME_INCLUDE_PROTOCOL_INLINE_HPP_\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok
+    assert not errors
+
+
+# @brief Documents the test repo policy accepts bounded CUDA feature seam operation contract.
+# @param tmp_path Input value used by this contract.
+# @return No return value.
+# @note The feature gate must not permit platform-specific preprocessor branches.
+def test_repo_policy_accepts_cuda_feature_seam(tmp_path: Path) -> None:
+    _write(
+        tmp_path / "engine" / "src" / "config" / "cuda_feature.cpp",
+        "#if BLITZAR_ENABLE_CUDA\nint f() { return 1; }\n#else\nint f() { return 0; }\n#endif\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok
+    assert not errors
+
+
 # @brief Documents the test repo policy accepts declaration only header operation contract.
 # @param tmp_path Input value used by this contract.
 # @return Value produced by this contract when applicable.

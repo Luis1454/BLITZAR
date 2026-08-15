@@ -11,13 +11,14 @@
 #include "tests/support/scoped_env_var.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
+#include <limits>
 #include <sstream>
 
 namespace bltzr_test_client_runtime {
-TEST(RuntimeTest, TST_CNT_RUNT_005_ClampsConfiguredClientCapToProtocolMax)
+TEST(RuntimeTest, TST_CNT_RUNT_005_AcceptsMaximumConfiguredClientCap)
 {
     SimulationConfig config = SimulationConfig::defaults();
-    config.clientParticleCap = bltzr_protocol::kSnapshotMaxPoints + 5000u;
+    config.clientParticleCap = std::numeric_limits<std::uint32_t>::max();
     EXPECT_EQ(bltzr_client::resolveClientDrawCap(config), bltzr_protocol::kSnapshotMaxPoints);
 }
 
@@ -25,7 +26,7 @@ TEST(RuntimeTest, TST_CNT_RUNT_006_ClampsEnvironmentOverrideToProtocolMax)
 {
     SimulationConfig config = SimulationConfig::defaults();
     config.clientParticleCap = 4096u;
-    testsupport::ScopedEnvVar drawCapOverride("BLITZAR_CLIENT_DRAW_CAP", "50000");
+    testsupport::ScopedEnvVar drawCapOverride("BLITZAR_CLIENT_DRAW_CAP", "5000000");
     EXPECT_EQ(bltzr_client::resolveClientDrawCap(config), bltzr_protocol::kSnapshotMaxPoints);
 }
 

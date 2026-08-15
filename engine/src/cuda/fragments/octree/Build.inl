@@ -26,7 +26,8 @@ Octree::Node::Node()
      * @param f Input value used by this contract.
      * @param f Input value used by this contract.
      * @return : value produced by this contract.
-     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+     * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
+     * it.
      */
     : center(0.0f, 0.0f, 0.0f),
       halfSize(0.0f),
@@ -47,7 +48,10 @@ Octree::Node::Node()
  * @return Octree:: value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-Octree::Octree() : _nodes(), _particlesRef(std::nullopt), _root(-1) {}
+Octree::Octree() : _nodes(), _particlesRef(std::nullopt), _root(-1)
+{
+}
+
 /*
  * @brief Documents the ~octree operation contract.
  * @param None This contract does not take explicit parameters.
@@ -75,14 +79,21 @@ void Octree::clear()
  * @return std::size_t Octree:: value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-std::size_t Octree::getNodeCount() const { return _nodes.size(); }
+std::size_t Octree::getNodeCount() const
+{
+    return _nodes.size();
+}
+
 /*
  * @brief Documents the get root index operation contract.
  * @param None This contract does not take explicit parameters.
  * @return int Octree:: value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-int Octree::getRootIndex() const { return _root; }
+int Octree::getRootIndex() const
+{
+    return _root;
+}
 
 /*
  * @brief Documents the export gpu operation contract.
@@ -91,17 +102,18 @@ int Octree::getRootIndex() const { return _root; }
  * @return void Octree:: value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-void Octree::exportGpu(std::vector<GpuOctreeNode> &outNodes, std::vector<int> &outLeafIndices) const
+void Octree::exportGpu(std::vector<GpuOctreeNode>& outNodes, std::vector<int>& outLeafIndices) const
 {
     outNodes.clear();
     outLeafIndices.clear();
     outNodes.resize(_nodes.size());
     std::size_t totalLeafIndices = 0;
-    for (const Node &node : _nodes) totalLeafIndices += node.particleIndices.size();
+    for (const Node& node : _nodes)
+        totalLeafIndices += node.particleIndices.size();
     outLeafIndices.reserve(totalLeafIndices);
 
     for (size_t i = 0; i < _nodes.size(); ++i) {
-        const Node &src = _nodes[i];
+        const Node& src = _nodes[i];
         GpuOctreeNode dst{};
         dst.centerX = src.center.x;
         dst.centerY = src.center.y;
@@ -111,13 +123,15 @@ void Octree::exportGpu(std::vector<GpuOctreeNode> &outNodes, std::vector<int> &o
         dst.comX = src.centerOfMass.x;
         dst.comY = src.centerOfMass.y;
         dst.comZ = src.centerOfMass.z;
-        for (int c = 0; c < 8; ++c) dst.children[c] = src.children[c];
+        for (int c = 0; c < 8; ++c)
+            dst.children[c] = src.children[c];
         dst.childMask = src.childMask;
         dst.leafStart = static_cast<int>(outLeafIndices.size());
         dst.leafCount = static_cast<int>(src.particleIndices.size());
         dst.parentIndex = -1;
         dst.nextIndex = -1;
-        for (int leafIndex : src.particleIndices) outLeafIndices.push_back(leafIndex);
+        for (int leafIndex : src.particleIndices)
+            outLeafIndices.push_back(leafIndex);
         outNodes[i] = dst;
     }
 }
@@ -129,12 +143,15 @@ void Octree::exportGpu(std::vector<GpuOctreeNode> &outNodes, std::vector<int> &o
  * @return int Octree:: value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-int Octree::childIndexForPosition(const Vector3 &position, const Vector3 &center)
+int Octree::childIndexForPosition(const Vector3& position, const Vector3& center)
 {
     int child = 0;
-    if (position.x >= center.x) child |= 1;
-    if (position.y >= center.y) child |= 2;
-    if (position.z >= center.z) child |= 4;
+    if (position.x >= center.x)
+        child |= 1;
+    if (position.y >= center.y)
+        child |= 2;
+    if (position.z >= center.z)
+        child |= 4;
     return child;
 }
 
@@ -144,7 +161,10 @@ int Octree::childIndexForPosition(const Vector3 &position, const Vector3 &center
  * @return bool Octree:: value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-bool Octree::hasChildren(const Node &node) { return node.childMask != 0; }
+bool Octree::hasChildren(const Node& node)
+{
+    return node.childMask != 0;
+}
 
 /*
  * @brief Documents the build node recursive operation contract.
@@ -156,13 +176,10 @@ bool Octree::hasChildren(const Node &node) { return node.childMask != 0; }
  * @return int Octree:: value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-int Octree::buildNodeRecursive(
-    const std::vector<Particle> &particles,
-    const std::vector<int> &indices,
-    const Vector3 &center,
-    float halfSize,
-    int depth
-) {
+int Octree::buildNodeRecursive(const std::vector<Particle>& particles,
+                               const std::vector<int>& indices, const Vector3& center,
+                               float halfSize, int depth)
+{
     Node node;
     node.center = center;
     node.halfSize = halfSize;
@@ -170,7 +187,7 @@ int Octree::buildNodeRecursive(
     float totalMass = 0.0f;
     Vector3 weightedCenter(0.0f, 0.0f, 0.0f);
     for (size_t i = 0; i < indices.size(); ++i) {
-        const Particle &p = particles[indices[i]];
+        const Particle& p = particles[indices[i]];
         const float mass = p.getMass();
         totalMass += mass;
         weightedCenter += p.getPosition() * mass;
@@ -181,38 +198,42 @@ int Octree::buildNodeRecursive(
     const int nodeIndex = static_cast<int>(_nodes.size());
     _nodes.push_back(node);
     if (indices.size() <= kOctreeLeafCapacity || halfSize < 0.01f || depth > kOctreeMaxDepth) {
-        auto &leafIndices = _nodes[nodeIndex].particleIndices;
+        auto& leafIndices = _nodes[nodeIndex].particleIndices;
         leafIndices.resize(indices.size());
-        for (size_t i = 0; i < indices.size(); ++i) leafIndices[i] = indices[i];
+        for (size_t i = 0; i < indices.size(); ++i)
+            leafIndices[i] = indices[i];
         return nodeIndex;
     }
 
     std::array<std::vector<int>, 8> buckets;
-    for (int i = 0; i < 8; ++i) buckets[i].reserve(indices.size() / 4 + 1);
+    for (int i = 0; i < 8; ++i)
+        buckets[i].reserve(indices.size() / 4 + 1);
     int nonEmptyBuckets = 0;
     for (size_t i = 0; i < indices.size(); ++i) {
         const int particleIndex = indices[i];
         const int child = childIndexForPosition(particles[particleIndex].getPosition(), center);
-        if (buckets[child].empty()) ++nonEmptyBuckets;
+        if (buckets[child].empty())
+            ++nonEmptyBuckets;
         buckets[child].push_back(particleIndex);
     }
 
     if (nonEmptyBuckets <= 1) {
-        auto &leafIndices = _nodes[nodeIndex].particleIndices;
+        auto& leafIndices = _nodes[nodeIndex].particleIndices;
         leafIndices.resize(indices.size());
-        for (size_t i = 0; i < indices.size(); ++i) leafIndices[i] = indices[i];
+        for (size_t i = 0; i < indices.size(); ++i)
+            leafIndices[i] = indices[i];
         return nodeIndex;
     }
 
     const float childHalf = halfSize * 0.5f;
     for (int child = 0; child < 8; ++child) {
-        if (buckets[child].empty()) continue;
-        const Vector3 childCenter(
-            center.x + ((child & 1) ? childHalf : -childHalf),
-            center.y + ((child & 2) ? childHalf : -childHalf),
-            center.z + ((child & 4) ? childHalf : -childHalf)
-        );
-        _nodes[nodeIndex].children[child] = buildNodeRecursive(particles, buckets[child], childCenter, childHalf, depth + 1);
+        if (buckets[child].empty())
+            continue;
+        const Vector3 childCenter(center.x + ((child & 1) ? childHalf : -childHalf),
+                                  center.y + ((child & 2) ? childHalf : -childHalf),
+                                  center.z + ((child & 4) ? childHalf : -childHalf));
+        _nodes[nodeIndex].children[child] =
+            buildNodeRecursive(particles, buckets[child], childCenter, childHalf, depth + 1);
         _nodes[nodeIndex].childMask |= static_cast<unsigned char>(1u << child);
     }
     return nodeIndex;
@@ -224,11 +245,12 @@ int Octree::buildNodeRecursive(
  * @return void Octree:: value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-void Octree::build(const std::vector<Particle> &particles)
+void Octree::build(const std::vector<Particle>& particles)
 {
     clear();
     _particlesRef = std::cref(particles);
-    if (particles.empty()) return;
+    if (particles.empty())
+        return;
     _nodes.reserve(particles.size() * 2);
 
     Vector3 minPos = particles[0].getPosition();
@@ -243,7 +265,8 @@ void Octree::build(const std::vector<Particle> &particles)
         maxPos.z = std::max(maxPos.z, pos.z);
     }
 
-    const Vector3 center((minPos.x + maxPos.x) * 0.5f, (minPos.y + maxPos.y) * 0.5f, (minPos.z + maxPos.z) * 0.5f);
+    const Vector3 center((minPos.x + maxPos.x) * 0.5f, (minPos.y + maxPos.y) * 0.5f,
+                         (minPos.z + maxPos.z) * 0.5f);
     const float sizeX = maxPos.x - minPos.x;
     const float sizeY = maxPos.y - minPos.y;
     const float sizeZ = maxPos.z - minPos.z;

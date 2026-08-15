@@ -37,6 +37,17 @@ public:
     void setSolverMode(const std::string& mode) override;
     void setIntegratorMode(const std::string& mode) override;
     void setPerformanceProfile(const std::string& profile) override;
+    void setTreePmAssignment(const std::string& assignment) override;
+    void setTreePmParameters(bool enabled, const std::string& model,
+                             const std::string& layout,
+                             const std::string& precision, const std::string& assignment,
+                             bool localGrid, std::uint32_t gridSize,
+                             std::uint32_t jacobiIterations, float cutoffFactor,
+                             std::uint32_t maxLocalNeighbors, std::uint32_t particleLimit,
+                             std::uint32_t denseCellThreshold,
+                             bool gravityOnlyBuffers) override;
+    void setAdaptiveTimeSteps(bool enabled, std::uint32_t maxLevel, float eta) override;
+    void setAdaptiveTimeStepCostGuard(bool enabled) override;
     void setOctreeParameters(float theta, float softening) override;
     void setSphEnabled(bool enabled) override;
     void setSphParameters(float smoothingLength, float restDensity, float gasConstant,

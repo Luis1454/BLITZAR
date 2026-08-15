@@ -60,6 +60,7 @@
         "EVD_TEST_INT_RUNTIME_BRIDGE": "tests/int/runtime/bridge.cpp",
         "EVD_TEST_INT_RUNTIME_RUNTIME": "tests/int/runtime/runtime.cpp",
         "EVD_TEST_INT_UI_QT_WINDOW": "tests/int/ui/qt_window.cpp",
+        "EVD_TEST_INT_UI_QT_SCENE_EDITOR": "tests/int/ui/qt_scene_editor.cpp",
         "EVD_TEST_UNIT_UI_QT_LOGIC": "tests/unit/ui",
         "EVD_IFACE_SERVER_PROTOCOL": "runtime/include/protocol/Protocol.hpp",
         "EVD_IFACE_SERVER_PROTOCOL_SCHEMA_RUST": "rust/blitzar-protocol/src/schema.rs",
@@ -112,6 +113,9 @@
         "EVD_TEST_UNIT_RELEASE_CHANGELOG": "tests/checks/suites/test_changelog.py",
         "EVD_TEST_UNIT_RELEASE_PERFORMANCE": "tests/checks/suites/release/test_performance_benchmark.py",
         "EVD_TEST_UNIT_GRAPHICS_PIPELINE": "tests/unit/graphics/TST_UNT_GRA_GraphicsTests.cpp",
-        "EVD_TEST_UNIT_PROTOCOL_CODEC_PARSE": "tests/unit/protocol/json_codec_parse.cpp"
+        "EVD_TEST_UNIT_PROTOCOL_CODEC_PARSE": "tests/unit/protocol/json_codec_parse.cpp",
+        "EVD_SCRIPT_STRUCTURE_SPECTRUM": "scripts/analyze_structure.py",
+        "EVD_SCRIPT_STRUCTURE_CALIBRATION": "scripts/calibrate_structure.py",
+        "EVD_TEST_RELEASE_STRUCTURE_SPECTRUM": "tests/checks/suites/release/test_structure_spectrum.py"
     }
 }

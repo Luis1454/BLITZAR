@@ -6,6 +6,8 @@
 #ifndef BLITZAR_ENGINE_INCLUDE_CONSTANTS_HPP_
 #define BLITZAR_ENGINE_INCLUDE_CONSTANTS_HPP_
 
+#include <algorithm>
+#include <cmath>
 #include <cstdint>
 
 // Simulation time-step limits
@@ -60,13 +62,42 @@ inline constexpr int kQtStartupPollIntervalMs = 10;
 inline constexpr int kLuminosityMin = 0;
 inline constexpr int kLuminosityMax = 255;
 inline constexpr int kDefaultLuminosity = 100;
-inline constexpr int kZoomSliderMin = 1;
+inline constexpr int kZoomSliderMin = 0;
 inline constexpr int kZoomSliderMax = 400;
 inline constexpr float kDefaultZoom = 8.0f;
-inline constexpr float kViewportMinZoom = 0.1f;
+inline constexpr float kViewportMinZoom = 0.0f;
 inline constexpr float kRenderLODNearDistance = 10.0f;
 inline constexpr float kRenderLODFarDistance = 60.0f;
-inline constexpr float kZoomSliderDivisor = 10.0f;
+inline constexpr float kZoomLogMin = 1.0e-6f;
+inline constexpr float kZoomLogMax = 1.0e6f;
+inline constexpr float kZoomCompensationMax = 24.0f;
+
+inline float zoomCompensationLambda(float zoom)
+{
+    if (zoom <= kZoomLogMin)
+        return kZoomCompensationMax;
+    return std::clamp(kDefaultZoom / zoom, 1.0f, kZoomCompensationMax);
+}
+
+inline float zoomFromSliderValue(int value)
+{
+    const float normalized = static_cast<float>(std::clamp(value, kZoomSliderMin,
+                                                            kZoomSliderMax) -
+                                                 kZoomSliderMin) /
+                             static_cast<float>(kZoomSliderMax - kZoomSliderMin);
+    return kZoomLogMin * std::pow(kZoomLogMax / kZoomLogMin, normalized);
+}
+
+inline int zoomToSliderValue(float zoom)
+{
+    const float safeZoom = std::clamp(zoom, kZoomLogMin, kZoomLogMax);
+    const float normalized = std::log(safeZoom / kZoomLogMin) /
+                             std::log(kZoomLogMax / kZoomLogMin);
+    return std::clamp(static_cast<int>(std::lround(
+                           normalized * static_cast<float>(kZoomSliderMax - kZoomSliderMin))) +
+                          kZoomSliderMin,
+                      kZoomSliderMin, kZoomSliderMax);
+}
 inline constexpr int kOverlayOpacityDefault = 96;
 inline constexpr int kOverlayDepthDefault = 3;
 inline constexpr int kOverlayDepthMax = 8;

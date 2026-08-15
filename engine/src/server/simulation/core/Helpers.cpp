@@ -5,8 +5,8 @@
  * @brief Source artifact for the BLITZAR simulation project.
  */
 
-#include "engine/src/server/simulation/Internal.hpp"
 #include "Constants.hpp"
+#include "engine/src/server/simulation/Internal.hpp"
 
 /*
  * @brief Documents the to lower operation contract.
@@ -90,9 +90,10 @@ float clampSimulationDt(float dt)
  */
 ParticleSystem::SolverMode solverModeFromCanonicalName(std::string_view name)
 {
-    static const std::array<std::pair<std::string_view, ParticleSystem::SolverMode>, 2> modes = {
+    static const std::array<std::pair<std::string_view, ParticleSystem::SolverMode>, 3> modes = {
         {{bltzr_modes::kSolverOctreeCpu, ParticleSystem::SolverMode::OctreeCpu},
-         {bltzr_modes::kSolverOctreeGpu, ParticleSystem::SolverMode::OctreeGpu}}};
+         {bltzr_modes::kSolverOctreeGpu, ParticleSystem::SolverMode::OctreeGpu},
+         {bltzr_modes::kSolverFmmCpu, ParticleSystem::SolverMode::FmmCpu}}};
     for (const auto& entry : modes) {
         if (name == entry.first) {
             return entry.second;
@@ -132,6 +133,8 @@ std::string_view solverLabel(ParticleSystem::SolverMode mode)
         return "octree_cpu";
     case ParticleSystem::SolverMode::OctreeGpu:
         return "octree_gpu";
+    case ParticleSystem::SolverMode::FmmCpu:
+        return "fmm_cpu";
     case ParticleSystem::SolverMode::PairwiseCuda:
     default:
         return "pairwise_cuda";
@@ -148,9 +151,10 @@ std::uint32_t resolvePublishedSnapshotCap(std::uint32_t drawCap)
 {
     const std::uint32_t clampedDrawCap =
         bltzr_protocol::clampSnapshotPoints(std::max(bltzr_protocol::kSnapshotMinPoints, drawCap));
-    const std::uint32_t oversampled =
-        std::min<std::uint32_t>(bltzr_protocol::kSnapshotMaxPoints,
-                                std::max<std::uint32_t>(clampedDrawCap, clampedDrawCap * 2u));
+    const std::uint32_t doubled = clampedDrawCap > bltzr_protocol::kSnapshotMaxPoints / 2u
+                                      ? bltzr_protocol::kSnapshotMaxPoints
+                                      : clampedDrawCap * 2u;
+    const std::uint32_t oversampled = std::max(clampedDrawCap, doubled);
     return std::max(bltzr_protocol::kSnapshotMinPoints, oversampled);
 }
 

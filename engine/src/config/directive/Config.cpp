@@ -10,7 +10,9 @@
 #include "config/registry/Main.hpp"
 #include <algorithm>
 #include <cctype>
+#include <cstdlib>
 #include <string_view>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -102,15 +104,292 @@ static bool applyIniAlias(const std::pair<std::string, std::string>& arg, std::s
     return applyIniOption(std::string(iniKey), arg.second, config, warnings);
 }
 
+static bool parseSceneFloat(const std::string& raw, float& target)
+{
+    try {
+        std::size_t consumed = 0u;
+        const float value = std::stof(raw, &consumed);
+        if (consumed != raw.size())
+            return false;
+        target = value;
+        return true;
+    }
+    catch (const std::exception&) {
+        return false;
+    }
+}
+
+static bool parseSceneUint(const std::string& raw, std::uint32_t& target)
+{
+    try {
+        std::size_t consumed = 0u;
+        const unsigned long value = std::stoul(raw, &consumed);
+        if (consumed != raw.size() || value > 0xffffffffUL)
+            return false;
+        target = static_cast<std::uint32_t>(value);
+        return true;
+    }
+    catch (const std::exception&) {
+        return false;
+    }
+}
+
+static bool parseSceneBool(const std::string& raw, bool& target)
+{
+    std::string value = raw;
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
+    if (value == "true" || value == "1" || value == "on" || value == "yes") {
+        target = true;
+        return true;
+    }
+    if (value == "false" || value == "0" || value == "off" || value == "no") {
+        target = false;
+        return true;
+    }
+    return false;
+}
+
+static void addSceneObjectProperty(SceneObjectConfig& object, const std::string& property)
+{
+    if (property.empty() ||
+        std::find(object.properties.begin(), object.properties.end(), property) !=
+            object.properties.end())
+        return;
+    object.properties.push_back(property);
+}
+
+static void parseSceneObjectProperties(const std::string& raw, SceneObjectConfig& object)
+{
+    std::size_t begin = 0u;
+    while (begin <= raw.size()) {
+        const std::size_t end = raw.find(',', begin);
+        addSceneObjectProperty(object, raw.substr(begin, end == std::string::npos
+                                                           ? std::string::npos
+                                                           : end - begin));
+        if (end == std::string::npos)
+            break;
+        begin = end + 1u;
+    }
+}
+
+static bool applySceneObjectArg(const std::pair<std::string, std::string>& arg,
+                                SceneObjectConfig& object)
+{
+    const std::string& key = arg.first;
+    const std::string& value = arg.second;
+    if (key == "id") object.id = value;
+    else if (key == "name") object.name = value;
+    else if (key == "type") object.type = value;
+    else if (key == "enabled") return parseSceneBool(value, object.enabled);
+    else if (key == "include_central_body")
+        return parseSceneBool(value, object.includeCentralBody);
+    else if (key == "count" || key == "particle_count")
+        return parseSceneUint(value, object.particleCount);
+    else if (key == "seed") return parseSceneUint(value, object.seed);
+    else if (key == "mass") return parseSceneFloat(value, object.mass);
+    else if (key == "size") return parseSceneFloat(value, object.size);
+    else if (key == "radius_min") return parseSceneFloat(value, object.radiusMin);
+    else if (key == "radius_max") return parseSceneFloat(value, object.radiusMax);
+    else if (key == "thickness") return parseSceneFloat(value, object.thickness);
+    else if (key == "velocity_scale") return parseSceneFloat(value, object.velocityScale);
+    else if (key == "speed") return parseSceneFloat(value, object.speed);
+    else if (key == "particle_mass") return parseSceneFloat(value, object.particleMass);
+    else if (key == "x") return parseSceneFloat(value, object.positionX);
+    else if (key == "y") return parseSceneFloat(value, object.positionY);
+    else if (key == "z") return parseSceneFloat(value, object.positionZ);
+    else if (key == "vx") return parseSceneFloat(value, object.velocityX);
+    else if (key == "vy") return parseSceneFloat(value, object.velocityY);
+    else if (key == "vz") return parseSceneFloat(value, object.velocityZ);
+    else if (key == "asset") return parseSceneBool(value, object.isAsset);
+    else if (key == "asset_id") object.assetId = value;
+    else if (key == "property") addSceneObjectProperty(object, value);
+    else if (key == "properties") parseSceneObjectProperties(value, object);
+    else if (key == "offset_x") return parseSceneFloat(value, object.offsetX);
+    else if (key == "offset_y") return parseSceneFloat(value, object.offsetY);
+    else if (key == "offset_z") return parseSceneFloat(value, object.offsetZ);
+    else if (key == "rotation_x") return parseSceneFloat(value, object.rotationX);
+    else if (key == "rotation_y") return parseSceneFloat(value, object.rotationY);
+    else if (key == "rotation_z") return parseSceneFloat(value, object.rotationZ);
+    else if (key == "copy_axis" || key == "axis") object.axis = value;
+    else if (key == "rotation_copies" || key == "copies")
+        return parseSceneUint(value, object.copies);
+    else if (key == "mirror_x") return parseSceneBool(value, object.mirrorX);
+    else if (key == "mirror_y") return parseSceneBool(value, object.mirrorY);
+    else if (key == "mirror_z") return parseSceneBool(value, object.mirrorZ);
+    else if (key == "pivot") object.pivot = value;
+    else if (key == "pivot_x") return parseSceneFloat(value, object.pivotX);
+    else if (key == "pivot_y") return parseSceneFloat(value, object.pivotY);
+    else if (key == "pivot_z") return parseSceneFloat(value, object.pivotZ);
+    else if (key == "distribution") object.distribution = value;
+    else if (key == "particle_size") return parseSceneFloat(value, object.particleSize);
+    else if (key == "particle_height") return parseSceneFloat(value, object.particleHeight);
+    else if (key == "particle_speed") return parseSceneFloat(value, object.particleSpeed);
+    else if (key == "emitter_object_id") object.emitterObjectId = value;
+    else if (key == "target_asset_id" || key == "instance_object_id") object.targetAssetId = value;
+    else return false;
+    return true;
+}
+
+struct LegacySceneProperty {
+    std::string type = "transform";
+    bool enabled = true;
+    float offsetX = 0.0f;
+    float offsetY = 0.0f;
+    float offsetZ = 0.0f;
+    float rotationX = 0.0f;
+    float rotationY = 0.0f;
+    float rotationZ = 0.0f;
+    std::string axis = "z";
+    std::uint32_t copies = 1u;
+    bool mirrorX = false;
+    bool mirrorY = false;
+    bool mirrorZ = false;
+    std::string pivot = "world";
+    float pivotX = 0.0f;
+    float pivotY = 0.0f;
+    float pivotZ = 0.0f;
+    std::string distribution = "uniform_sphere";
+    std::uint32_t particleCount = 0u;
+    std::uint32_t seed = 42u;
+    float particleSize = 1.0f;
+    float particleHeight = 1.0f;
+    float particleMass = 0.001f;
+    float particleSpeed = 0.0f;
+    std::string emitterObjectId;
+    std::string instanceObjectId;
+};
+
+static bool applyLegacyPropertyArg(const std::pair<std::string, std::string>& arg,
+                                   LegacySceneProperty& property);
+
+static void applyLegacySceneProperty(const std::vector<std::pair<std::string, std::string>>& args,
+                                     SceneConfig& scene, std::ostream& warnings)
+{
+    if (scene.objects.empty()) {
+        warnings << "[config] property ignored because no scene object exists\n";
+        return;
+    }
+    LegacySceneProperty property;
+    for (const auto& arg : args) {
+        if (!applyLegacyPropertyArg(arg, property)) {
+            warnings << "[config] unknown or invalid property argument: " << arg.first << "\n";
+        }
+    }
+    SceneObjectConfig& object = scene.objects.back();
+    if (property.type == "particle_system") {
+        SceneObjectConfig system;
+        std::uint32_t systemSequence = 1u;
+        bool hasMatchingId = true;
+        while (hasMatchingId) {
+            system.id = object.id + "_system_" + std::to_string(systemSequence++);
+            hasMatchingId = std::any_of(scene.objects.begin(), scene.objects.end(),
+                                        [&system](const SceneObjectConfig& candidate) {
+                                            return candidate.id == system.id;
+                                        });
+        }
+        system.name = object.name + " Particle System";
+        system.type = "particle_system";
+        system.enabled = property.enabled;
+        system.particleCount = property.particleCount;
+        system.seed = property.seed;
+        system.particleMass = property.particleMass;
+        system.particleSize = property.particleSize;
+        system.particleHeight = property.particleHeight;
+        system.particleSpeed = property.particleSpeed;
+        system.distribution = property.distribution;
+        system.emitterObjectId = property.emitterObjectId.empty()
+                                     ? object.id
+                                     : property.emitterObjectId;
+        system.targetAssetId = property.instanceObjectId;
+        scene.objects.push_back(std::move(system));
+        return;
+    }
+    object.offsetX += property.offsetX;
+    object.offsetY += property.offsetY;
+    object.offsetZ += property.offsetZ;
+    object.rotationX += property.rotationX;
+    object.rotationY += property.rotationY;
+    object.rotationZ += property.rotationZ;
+    object.axis = property.axis;
+    object.copies = std::min<std::uint32_t>(256u,
+                                            object.copies *
+                                                std::max<std::uint32_t>(1u, property.copies));
+    object.mirrorX = object.mirrorX || property.mirrorX;
+    object.mirrorY = object.mirrorY || property.mirrorY;
+    object.mirrorZ = object.mirrorZ || property.mirrorZ;
+    if (property.pivot != "world") {
+        object.pivot = property.pivot;
+        object.pivotX = property.pivotX;
+        object.pivotY = property.pivotY;
+        object.pivotZ = property.pivotZ;
+    }
+}
+
+static bool applyLegacyPropertyArg(const std::pair<std::string, std::string>& arg,
+                                   LegacySceneProperty& property)
+{
+    const std::string& key = arg.first;
+    const std::string& value = arg.second;
+    if (key == "type") property.type = value;
+    else if (key == "enabled") return parseSceneBool(value, property.enabled);
+    else if (key == "offset_x") return parseSceneFloat(value, property.offsetX);
+    else if (key == "offset_y") return parseSceneFloat(value, property.offsetY);
+    else if (key == "offset_z") return parseSceneFloat(value, property.offsetZ);
+    else if (key == "rotation_x") return parseSceneFloat(value, property.rotationX);
+    else if (key == "rotation_y") return parseSceneFloat(value, property.rotationY);
+    else if (key == "rotation_z") return parseSceneFloat(value, property.rotationZ);
+    else if (key == "axis" || key == "copy_axis") property.axis = value;
+    else if (key == "copies" || key == "rotation_copies")
+        return parseSceneUint(value, property.copies);
+    else if (key == "mirror_x") return parseSceneBool(value, property.mirrorX);
+    else if (key == "mirror_y") return parseSceneBool(value, property.mirrorY);
+    else if (key == "mirror_z") return parseSceneBool(value, property.mirrorZ);
+    else if (key == "pivot") property.pivot = value;
+    else if (key == "pivot_x") return parseSceneFloat(value, property.pivotX);
+    else if (key == "pivot_y") return parseSceneFloat(value, property.pivotY);
+    else if (key == "pivot_z") return parseSceneFloat(value, property.pivotZ);
+    else if (key == "distribution") property.distribution = value;
+    else if (key == "particle_count") return parseSceneUint(value, property.particleCount);
+    else if (key == "seed") return parseSceneUint(value, property.seed);
+    else if (key == "particle_size" || key == "size")
+        return parseSceneFloat(value, property.particleSize);
+    else if (key == "particle_height" || key == "height")
+        return parseSceneFloat(value, property.particleHeight);
+    else if (key == "particle_mass") return parseSceneFloat(value, property.particleMass);
+    else if (key == "particle_speed") return parseSceneFloat(value, property.particleSpeed);
+    else if (key == "emitter_object_id") property.emitterObjectId = value;
+    else if (key == "instance_object_id") property.instanceObjectId = value;
+    else return false;
+    return true;
+}
+
 static bool applyDirectiveArgs(std::string_view directive,
                                const std::vector<std::pair<std::string, std::string>>& args,
                                SimulationConfig& config, std::ostream& warnings)
 {
+    if (directive == "object") {
+        SceneObjectConfig object;
+        for (const auto& arg : args) {
+            if (!applySceneObjectArg(arg, object)) {
+                warnings << "[config] unknown or invalid object argument: " << arg.first << "\n";
+            }
+        }
+        config.scene.objects.push_back(std::move(object));
+        return true;
+    }
+    if (directive == "modifier" || directive == "property") {
+        applyLegacySceneProperty(args, config.scene, warnings);
+        return true;
+    }
     for (const auto& arg : args) {
         bool handled = false;
         if (directive == "simulation") {
-            handled = applyIniAlias(arg, arg.first == "particles" ? "particle_count" : arg.first,
-                                    config, warnings);
+            const std::string iniKey = arg.first == "particles"    ? "particle_count"
+                                       : arg.first == "profile"    ? "simulation_profile"
+                                                                    : arg.first;
+            handled = applyIniAlias(arg, iniKey, config, warnings);
         }
         else if (directive == "performance") {
             const std::string iniKey = arg.first == "profile"        ? "performance_profile"
@@ -130,6 +409,14 @@ static bool applyDirectiveArgs(std::string_view directive,
                                         : (arg.first == "max" ? "max_substeps" : arg.first),
                                     config, warnings);
         }
+        else if (directive == "adaptive") {
+            const std::string iniKey = arg.first == "enabled"   ? "adaptive_time_steps"
+                                       : arg.first == "max_level" ? "adaptive_max_level"
+                                       : arg.first == "eta"       ? "adaptive_eta"
+                                       : arg.first == "cost_guard" ? "adaptive_cost_guard"
+                                                                   : arg.first;
+            handled = applyIniAlias(arg, iniKey, config, warnings);
+        }
         else if (directive == "octree") {
             const std::string iniKey = arg.first == "theta"            ? "octree_theta"
                                        : arg.first == "softening"      ? "octree_softening"
@@ -137,7 +424,29 @@ static bool applyDirectiveArgs(std::string_view directive,
                                        : arg.first == "theta_auto"     ? "octree_theta_auto_tune"
                                        : arg.first == "theta_auto_min" ? "octree_theta_auto_min"
                                        : arg.first == "theta_auto_max" ? "octree_theta_auto_max"
-                                                                       : arg.first;
+                                       : arg.first == "leaf_capacity"
+                                           ? "linear_octree_leaf_capacity"
+                                       : arg.first == "cache_preference" ? "cuda_cache_preference"
+                                                                         : arg.first;
+            handled = applyIniAlias(arg, iniKey, config, warnings);
+        }
+        else if (directive == "treepm") {
+            const std::string iniKey =
+                arg.first == "preset"                 ? "treepm_preset"
+                : arg.first == "enabled"              ? "treepm_enabled"
+                : arg.first == "model"                ? "treepm_model"
+                : arg.first == "layout"               ? "treepm_layout"
+                : arg.first == "precision"            ? "treepm_precision"
+                : arg.first == "assignment"           ? "treepm_assignment"
+                : arg.first == "local_grid"           ? "treepm_local_grid"
+                : arg.first == "grid_size"            ? "treepm_grid_size"
+                : arg.first == "jacobi_iters"         ? "treepm_jacobi_iterations"
+                : arg.first == "cutoff_factor"        ? "treepm_cutoff_factor"
+                : arg.first == "max_local_neighbors"  ? "treepm_max_local_neighbors"
+                : arg.first == "particle_limit"       ? "treepm_particle_limit"
+                : arg.first == "dense_cell_threshold" ? "treepm_dense_cell_threshold"
+                : arg.first == "gravity_only_buffers" ? "treepm_gravity_only_buffers"
+                                                      : arg.first;
             handled = applyIniAlias(arg, iniKey, config, warnings);
         }
         else if (directive == "physics") {
@@ -237,6 +546,42 @@ static bool applyDirectiveArgs(std::string_view directive,
                                        : arg.first == "speed"            ? "init_cloud_speed"
                                        : arg.first == "particle_mass"    ? "init_particle_mass"
                                                                          : arg.first;
+            handled = applyIniAlias(arg, iniKey, config, warnings);
+        }
+        else if (directive == "cosmology") {
+            const std::string iniKey = arg.first == "enabled" ? "cosmology_enabled"
+                                       : arg.first == "mode" ? "cosmology_mode"
+                                       : arg.first == "geometry" ? "cosmology_geometry"
+                                       : arg.first == "box_half_extent" ? "cosmology_box_half_extent"
+                                       : arg.first == "sphere_radius" ? "cosmology_sphere_radius"
+                                       : arg.first == "h0" ? "cosmology_h0"
+                                       : arg.first == "omega_m" ? "cosmology_omega_m"
+                                       : arg.first == "omega_lambda" ? "cosmology_omega_lambda"
+                                       : arg.first == "omega_radiation" ? "cosmology_omega_radiation"
+                                       : arg.first == "initial_scale_factor"
+                                           ? "cosmology_initial_scale_factor"
+                                       : arg.first == "perturbation" ? "cosmology_perturbation_amplitude"
+                                       : arg.first == "peculiar_velocity"
+                                           ? "cosmology_peculiar_velocity_scale"
+                                       : arg.first == "mass_model" ? "cosmology_mass_model"
+                                       : arg.first == "total_mass" ? "cosmology_total_mass"
+                                       : arg.first;
+            handled = applyIniAlias(arg, iniKey, config, warnings);
+        }
+        else if (directive == "transform") {
+            const std::string iniKey =
+                arg.first == "offset_x" ? "scene_offset_x"
+                : arg.first == "offset_y" ? "scene_offset_y"
+                : arg.first == "offset_z" ? "scene_offset_z"
+                : arg.first == "rotation_x" ? "scene_rotation_x"
+                : arg.first == "rotation_y" ? "scene_rotation_y"
+                : arg.first == "rotation_z" ? "scene_rotation_z"
+                : arg.first == "copy_axis" ? "scene_copy_axis"
+                : arg.first == "rotation_copies" ? "scene_rotation_copies"
+                : arg.first == "mirror_x" ? "scene_mirror_x"
+                : arg.first == "mirror_y" ? "scene_mirror_y"
+                : arg.first == "mirror_z" ? "scene_mirror_z"
+                : arg.first;
             handled = applyIniAlias(arg, iniKey, config, warnings);
         }
         else if (directive == "sph") {

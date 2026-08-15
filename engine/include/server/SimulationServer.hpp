@@ -193,6 +193,16 @@ public:
      * it.
      */
     void setPerformanceProfile(const std::string& profile);
+    void setTreePmAssignment(const std::string& assignment);
+    void setTreePmParameters(bool enabled, const std::string& model,
+                             const std::string& layout,
+                             const std::string& precision, const std::string& assignment,
+                             bool localGrid, std::uint32_t gridSize,
+                             std::uint32_t jacobiIterations, float cutoffFactor,
+                             std::uint32_t maxLocalNeighbors, std::uint32_t particleLimit,
+                             std::uint32_t denseCellThreshold, bool gravityOnlyBuffers);
+    void setAdaptiveTimeStepParameters(bool enabled, std::uint32_t maxLevel, float eta);
+    void setAdaptiveTimeStepCostGuard(bool enabled);
     /*
      * @brief Documents the set octree parameters operation contract.
      * @param theta Input value used by this contract.
@@ -222,6 +232,7 @@ public:
      */
     void setSphParameters(float smoothingLength, float restDensity, float gasConstant,
                           float viscosity);
+    void setDeterministicMode(bool enabled);
     /*
      * @brief Documents the set substep policy operation contract.
      * @param targetDt Input value used by this contract.
@@ -389,7 +400,7 @@ private:
      */
     struct ExportQueueState;
     struct ConfigState final {
-        explicit ConfigState(std::uint32_t particleCount)
+        inline explicit ConfigState(std::uint32_t particleCount)
             : _particleCount(particleCount)
         {
         }
@@ -398,6 +409,9 @@ private:
         std::string _solverMode = "pairwise_cuda";
         std::string _integratorMode = "euler";
         std::string _performanceProfile = "interactive";
+        bool _adaptiveTimeStepsEnabled = false;
+        std::uint32_t _adaptiveTimeStepMaxLevel = 4u;
+        float _adaptiveTimeStepEta = 0.25f;
         float _octreeTheta = 1.2f;
         float _octreeSoftening = 2.5f;
         std::string _octreeOpeningCriterion = "com";
@@ -407,6 +421,7 @@ private:
         float _octreeDistributionScore = 0.0f;
         bool _octreeThetaAutoTune = false;
         bool _sphEnabled = false;
+        bool _deterministicMode = false;
         float _sphSmoothingLength = 1.25f;
         float _sphRestDensity = 1.0f;
         float _sphGasConstant = 4.0f;
@@ -589,6 +604,7 @@ private:
     std::atomic<float> _totalTime;
     std::atomic<std::uint64_t> _steps;
     std::atomic<float> _serverFps;
+    std::atomic<float> _totalMass;
     std::atomic<float> _kineticEnergy;
     std::atomic<float> _potentialEnergy;
     std::atomic<float> _thermalEnergy;

@@ -7,6 +7,8 @@
 
 #include "protocol/codec/JsonCodec.hpp"
 #include <cctype>
+#include <cstdint>
+#include <limits>
 
 namespace bltzr_protocol {
 class SnapshotArrayParser {
@@ -42,7 +44,10 @@ public:
             if (!parseFloat(particle.x) || !consume(',') || !parseFloat(particle.y) ||
                 !consume(',') || !parseFloat(particle.z) || !consume(',') ||
                 !parseFloat(particle.mass) || !consume(',') || !parseFloat(particle.pressureNorm) ||
-                !consume(',') || !parseFloat(particle.temperature) || !consume(']')) {
+                !consume(',') || !parseFloat(particle.temperature)) {
+                return false;
+            }
+            if (!at(']') && (!consume(',') || !parseFloat(particle.densityNorm) || !consume(']'))) {
                 return false;
             }
             out.push_back(particle);
@@ -105,7 +110,7 @@ private:
 };
 
 bool JsonCodec::parseSnapshotResponse(std::string_view raw, SnapshotPayload& out,
-                                            std::string& error)
+                                      std::string& error)
 {
     SnapshotPayload parsed{};
     if (!parseResponseEnvelope(raw, parsed.envelope, error)) {
@@ -116,11 +121,22 @@ bool JsonCodec::parseSnapshotResponse(std::string_view raw, SnapshotPayload& out
         return true;
     }
     readBool(raw, "has_snapshot", parsed.hasSnapshot);
-    if (!JsonCodec::readNumber(raw, "source_count", parsed.sourceSize)) {
+    std::uint64_t declaredCount = 0u;
+    std::uint64_t sourceSize = 0u;
+    const bool hasDeclaredCount = JsonCodec::readNumber(raw, "count", declaredCount);
+    if (JsonCodec::readNumber(raw, "source_count", sourceSize) &&
+        sourceSize <= static_cast<std::uint64_t>(std::numeric_limits<std::size_t>::max())) {
+        parsed.sourceSize = static_cast<std::size_t>(sourceSize);
+    }
+    else {
         parsed.sourceSize = 0u;
     }
     if (!SnapshotArrayParser(raw).parse(parsed.particles)) {
         error = "invalid snapshot payload";
+        return false;
+    }
+    if (hasDeclaredCount && declaredCount != parsed.particles.size()) {
+        error = "snapshot count mismatch";
         return false;
     }
     if (parsed.sourceSize == 0u) {

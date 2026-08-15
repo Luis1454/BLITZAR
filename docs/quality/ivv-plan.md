@@ -13,6 +13,7 @@ Independent Verification and Validation (IV&V) in this repository is process-foc
 - Protocol, runtime recovery, and numerical threshold updates require independent reviewer approval.
 - CI evidence is necessary but not sufficient; reviewer sign-off is mandatory.
 - This repository enforces the non-author review requirement through `pr-fast` IV&V gate checks plus mission-impacting path ownership in `.github/CODEOWNERS`.
+- A repository-owner, single-maintainer PR may use the explicit solo waiver contract (`Solo maintainer waiver: true` with `DEV-SOLO-IVV` or `WVR-SOLO-IVV`) when a non-author reviewer is unavailable; the waiver is recorded in the PR checklist and remains auditable.
 
 ## Verification Stages
 

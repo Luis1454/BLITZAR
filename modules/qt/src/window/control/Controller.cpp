@@ -12,7 +12,6 @@
 #include <iostream>
 
 namespace bltzr_qt {
-namespace {
 void applySharedConfig(const SimulationConfig& config, bltzr_client::Interface& runtime)
 {
     runtime.setParticleCount(bltzr_client::resolveServerParticleCount(config));
@@ -20,6 +19,15 @@ void applySharedConfig(const SimulationConfig& config, bltzr_client::Interface& 
     runtime.setSolverMode(config.solver);
     runtime.setIntegratorMode(config.integrator);
     runtime.setPerformanceProfile(config.performanceProfile);
+    runtime.setTreePmParameters(
+        config.treePmEnabled, config.treePmModel, config.treePmLayout, config.treePmPrecision,
+        config.treePmAssignment, config.treePmLocalGrid, config.treePmGridSize,
+        config.treePmJacobiIterations, config.treePmCutoffFactor,
+        config.treePmMaxLocalNeighbors, config.treePmParticleLimit,
+        config.treePmDenseCellThreshold, config.treePmGravityOnlyBuffers);
+    runtime.setAdaptiveTimeSteps(config.adaptiveTimeStepsEnabled, config.adaptiveTimeStepMaxLevel,
+                                 config.adaptiveTimeStepEta);
+    runtime.setAdaptiveTimeStepCostGuard(config.adaptiveTimeStepCostGuard);
     runtime.setOctreeParameters(config.octreeTheta, config.octreeSoftening);
     runtime.setSphEnabled(config.sphEnabled);
     runtime.setSphParameters(config.sphSmoothingLength, config.sphRestDensity,
@@ -31,7 +39,6 @@ void applySharedConfig(const SimulationConfig& config, bltzr_client::Interface& 
     runtime.setExportDefaults(config.exportDirectory, config.exportFormat);
     runtime.setRemoteSnapshotCap(bltzr_client::resolveClientDrawCap(config));
 }
-} // namespace
 
 ApplyConfigResult Controller::applyConfig(const SimulationConfig& config,
                                                               bltzr_client::Interface& runtime,

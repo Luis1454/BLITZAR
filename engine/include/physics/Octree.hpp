@@ -9,8 +9,8 @@
 #define BLITZAR_ENGINE_INCLUDE_PHYSICS_OCTREE_HPP_
 
 #include "physics/ForceLawPolicy.hpp"
-#include "physics/ParticleHotData.hpp"
 #include "physics/Particle.hpp"
+#include "physics/ParticleHotData.hpp"
 #include "physics/Vector.hpp"
 #include <array>
 #include <cstddef>
@@ -137,7 +137,8 @@ public:
      * it.
      */
     Vector3 computeForceOn(const Particle& particle, std::size_t selfIndex,
-                           const ForceLawPolicy& policy, OctreeOpeningCriterion criterion) const;
+                           const ForceLawPolicy& policy, OctreeOpeningCriterion criterion,
+                           float cutoffSquared = 0.0f) const;
     /*
      * @brief Documents the compute force on operation contract.
      * @param particles Input value used by this contract.
@@ -149,8 +150,8 @@ public:
      * it.
      */
     Vector3 computeForceOn(const std::vector<ParticleHotData>& particles, std::size_t selfIndex,
-                           const ForceLawPolicy& policy,
-                           OctreeOpeningCriterion criterion) const;
+                           const ForceLawPolicy& policy, OctreeOpeningCriterion criterion,
+                           float cutoffSquared = 0.0f) const;
     /*
      * @brief Documents the get node count operation contract.
      * @param None This contract does not take explicit parameters.
@@ -239,7 +240,8 @@ private:
     Vector3 computeForceRecursive(const std::vector<Particle>& particles, int nodeIndex,
                                   const Particle& particle, std::size_t selfIndex,
                                   const ForceLawPolicy& policy,
-                                  OctreeOpeningCriterion criterion) const;
+                                  OctreeOpeningCriterion criterion,
+                                  float cutoffSquared) const;
     /*
      * @brief Documents the compute force recursive operation contract.
      * @param particles Input value used by this contract.
@@ -255,7 +257,8 @@ private:
     Vector3 computeForceRecursive(const std::vector<ParticleHotData>& particles, int nodeIndex,
                                   const ParticleHotData& particle, std::size_t selfIndex,
                                   const ForceLawPolicy& policy,
-                                  OctreeOpeningCriterion criterion) const;
+                                  OctreeOpeningCriterion criterion,
+                                  float cutoffSquared) const;
     /*
      * @brief Documents the child index for position operation contract.
      * @param position Input value used by this contract.
@@ -278,6 +281,5 @@ private:
     std::optional<std::reference_wrapper<const std::vector<Particle>>> _particlesRef;
     int _root;
 };
-
 
 #endif // BLITZAR_ENGINE_INCLUDE_PHYSICS_OCTREE_HPP_

@@ -22,6 +22,7 @@ from python_tools.ci.windows_installer import WindowsInstallerBuilder
 class ReleaseBundlePackager:
     _EXECUTABLES = (
         "blitzar.exe",
+        "blitzar-gui.exe",
         "blitzar-server.exe",
         "blitzar-headless.exe",
         "blitzar-client.exe",
@@ -142,6 +143,7 @@ class ReleaseBundlePackager:
     def _require_desktop_gui(dist_dir: Path) -> None:
         required = (
             "blitzar.exe",
+            "blitzar-gui.exe",
             "blitzar-client.exe",
             "blitzar-server.exe",
             "blitzarClientModuleQtInProc.dll",

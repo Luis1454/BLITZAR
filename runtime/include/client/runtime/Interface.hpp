@@ -51,6 +51,18 @@ public:
     virtual void setSolverMode(const std::string& mode) = 0;
     virtual void setIntegratorMode(const std::string& mode) = 0;
     virtual void setPerformanceProfile(const std::string& profile) = 0;
+    virtual void setTreePmAssignment(const std::string& assignment) = 0;
+    virtual void setTreePmParameters(bool enabled, const std::string& model,
+                                     const std::string& layout,
+                                     const std::string& precision,
+                                     const std::string& assignment, bool localGrid,
+                                     std::uint32_t gridSize, std::uint32_t jacobiIterations,
+                                     float cutoffFactor, std::uint32_t maxLocalNeighbors,
+                                     std::uint32_t particleLimit,
+                                     std::uint32_t denseCellThreshold,
+                                     bool gravityOnlyBuffers) = 0;
+    virtual void setAdaptiveTimeSteps(bool enabled, std::uint32_t maxLevel, float eta) = 0;
+    virtual void setAdaptiveTimeStepCostGuard(bool enabled) = 0;
     virtual void setOctreeParameters(float theta, float softening) = 0;
     virtual void setSphEnabled(bool enabled) = 0;
     virtual void setSphParameters(float smoothingLength, float restDensity, float gasConstant,

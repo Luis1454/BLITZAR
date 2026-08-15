@@ -10,6 +10,7 @@ import argparse
 import csv
 import json
 import re
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -53,10 +54,15 @@ def parse_summary(summary_path: Path) -> dict[str, float]:
 # @param name Input value used by this contract.
 # @return Value produced by this contract when applicable.
 # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
-def fetch_baseline_metric(repo: str, ref: str, name: str) -> float:
+def fetch_baseline_metric(repo: str, ref: str, name: str) -> float | None:
     url = f"https://raw.githubusercontent.com/{repo}/{ref}/coverage/{name}.json"
-    with urllib.request.urlopen(url, timeout=20) as response:
-        payload = json.loads(response.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(url, timeout=20) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            return None
+        raise
     message = str(payload.get("message", "")).strip().rstrip("%")
     try:
         return float(message)
@@ -106,7 +112,7 @@ def signed_delta(current: float, baseline: float) -> str:
 # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def build_markdown(
     current: dict[str, float],
-    baseline: dict[str, float],
+    baseline: dict[str, float] | None,
     residual: list[tuple[str, int, int, float]],
 ) -> str:
     lines: list[str] = []
@@ -114,9 +120,16 @@ def build_markdown(
     lines.append("")
     lines.append("| Metric | Baseline (%) | PR (%) | Delta (pp) |")
     lines.append("|---|---:|---:|---:|")
-    lines.append(f"| Lines | {baseline['lines']:.2f} | {current['lines']:.2f} | {signed_delta(current['lines'], baseline['lines'])} |")
-    lines.append(f"| Functions | {baseline['functions']:.2f} | {current['functions']:.2f} | {signed_delta(current['functions'], baseline['functions'])} |")
-    lines.append(f"| Branches | {baseline['branches']:.2f} | {current['branches']:.2f} | {signed_delta(current['branches'], baseline['branches'])} |")
+    if baseline is None:
+        lines.append(f"| Lines | unavailable | {current['lines']:.2f} | unavailable |")
+        lines.append(f"| Functions | unavailable | {current['functions']:.2f} | unavailable |")
+        lines.append(f"| Branches | unavailable | {current['branches']:.2f} | unavailable |")
+        lines.append("")
+        lines.append("Coverage baseline is unavailable; this report records current coverage without a delta.")
+    else:
+        lines.append(f"| Lines | {baseline['lines']:.2f} | {current['lines']:.2f} | {signed_delta(current['lines'], baseline['lines'])} |")
+        lines.append(f"| Functions | {baseline['functions']:.2f} | {current['functions']:.2f} | {signed_delta(current['functions'], baseline['functions'])} |")
+        lines.append(f"| Branches | {baseline['branches']:.2f} | {current['branches']:.2f} | {signed_delta(current['branches'], baseline['branches'])} |")
     lines.append("")
     lines.append("## Residual Missed-Branch Files")
     lines.append("")
@@ -142,11 +155,17 @@ def main() -> int:
     output_path = Path(args.output)
 
     current = parse_summary(summary_path)
-    baseline = {
+    baseline_values: dict[str, float | None] = {
         "lines": fetch_baseline_metric(args.repo, args.baseline_ref, "lines"),
         "functions": fetch_baseline_metric(args.repo, args.baseline_ref, "functions"),
         "branches": fetch_baseline_metric(args.repo, args.baseline_ref, "branches"),
     }
+    baseline: dict[str, float] | None = None
+    if all(value is not None for value in baseline_values.values()):
+        baseline = {}
+        for name, value in baseline_values.items():
+            if value is not None:
+                baseline[name] = value
     residual = parse_residual_files(csv_path)
 
     markdown = build_markdown(current, baseline, residual)

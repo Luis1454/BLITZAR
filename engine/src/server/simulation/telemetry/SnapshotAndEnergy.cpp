@@ -7,6 +7,104 @@
 
 #include "engine/src/server/simulation/Internal.hpp"
 
+namespace blitzar_simulation_snapshot_energy {
+constexpr int kDensityGridSide = 24;
+constexpr std::size_t kDensityCellCount = static_cast<std::size_t>(kDensityGridSide) *
+                                          static_cast<std::size_t>(kDensityGridSide) *
+                                          static_cast<std::size_t>(kDensityGridSide);
+
+struct DensityGrid {
+    std::array<float, kDensityCellCount> mass{};
+    double totalMass = 0.0;
+    float minX = 0.0f;
+    float minY = 0.0f;
+    float minZ = 0.0f;
+    float scaleX = 0.0f;
+    float scaleY = 0.0f;
+    float scaleZ = 0.0f;
+    float meanCellMass = 0.0f;
+    bool valid = false;
+};
+
+int densityCell(float value, float minimum, float scale)
+{
+    return std::clamp(static_cast<int>((value - minimum) * scale), 0, kDensityGridSide - 1);
+}
+
+std::size_t densityIndex(int x, int y, int z)
+{
+    return static_cast<std::size_t>(x + kDensityGridSide * (y + kDensityGridSide * z));
+}
+
+DensityGrid buildDensityGrid(const std::vector<Particle>& particles)
+{
+    DensityGrid grid;
+    if (particles.empty()) {
+        return grid;
+    }
+    grid.minX = std::numeric_limits<float>::max();
+    grid.minY = std::numeric_limits<float>::max();
+    grid.minZ = std::numeric_limits<float>::max();
+    float maxX = std::numeric_limits<float>::lowest();
+    float maxY = std::numeric_limits<float>::lowest();
+    float maxZ = std::numeric_limits<float>::lowest();
+    double totalMass = 0.0;
+    for (const Particle& particle : particles) {
+        const Vector3 position = particle.getPosition();
+        grid.minX = std::min(grid.minX, position.x);
+        grid.minY = std::min(grid.minY, position.y);
+        grid.minZ = std::min(grid.minZ, position.z);
+        maxX = std::max(maxX, position.x);
+        maxY = std::max(maxY, position.y);
+        maxZ = std::max(maxZ, position.z);
+        totalMass += std::max(0.0f, particle.getMass());
+    }
+    const float rangeX = maxX - grid.minX;
+    const float rangeY = maxY - grid.minY;
+    const float rangeZ = maxZ - grid.minZ;
+    if (totalMass <= 0.0f || rangeX <= 1.0e-6f || rangeY <= 1.0e-6f || rangeZ <= 1.0e-6f) {
+        return grid;
+    }
+    grid.scaleX = static_cast<float>(kDensityGridSide) / rangeX;
+    grid.scaleY = static_cast<float>(kDensityGridSide) / rangeY;
+    grid.scaleZ = static_cast<float>(kDensityGridSide) / rangeZ;
+    grid.totalMass = totalMass;
+    grid.meanCellMass = static_cast<float>(totalMass / static_cast<double>(kDensityCellCount));
+    for (const Particle& particle : particles) {
+        const Vector3 position = particle.getPosition();
+        const int x = densityCell(position.x, grid.minX, grid.scaleX);
+        const int y = densityCell(position.y, grid.minY, grid.scaleY);
+        const int z = densityCell(position.z, grid.minZ, grid.scaleZ);
+        grid.mass[densityIndex(x, y, z)] += std::max(0.0f, particle.getMass());
+    }
+    grid.valid = true;
+    return grid;
+}
+
+float densityNormAt(const DensityGrid& grid, const Vector3& position)
+{
+    if (!grid.valid || grid.meanCellMass <= 0.0f) {
+        return 0.0f;
+    }
+    const int centerX = densityCell(position.x, grid.minX, grid.scaleX);
+    const int centerY = densityCell(position.y, grid.minY, grid.scaleY);
+    const int centerZ = densityCell(position.z, grid.minZ, grid.scaleZ);
+    float localMass = 0.0f;
+    for (int z = centerZ - 1; z <= centerZ + 1; ++z) {
+        for (int y = centerY - 1; y <= centerY + 1; ++y) {
+            for (int x = centerX - 1; x <= centerX + 1; ++x) {
+                if (x >= 0 && x < kDensityGridSide && y >= 0 && y < kDensityGridSide && z >= 0 &&
+                    z < kDensityGridSide) {
+                    localMass += grid.mass[densityIndex(x, y, z)];
+                }
+            }
+        }
+    }
+    const float ratio = std::max(localMass / (27.0f * grid.meanCellMass), 1.0e-6f);
+    return std::clamp(0.5f + 0.2f * std::log2(ratio), 0.0f, 1.0f);
+}
+} // namespace blitzar_simulation_snapshot_energy
+
 /*
  * @brief Documents the publish snapshot operation contract.
  * @param None This contract does not take explicit parameters.
@@ -34,6 +132,21 @@ void SimulationServer::publishSnapshot()
     }
     const std::vector<Particle>& particles = _system->getParticles();
     const size_t count = particles.size();
+    bool cosmologyEnabled = false;
+    {
+        std::lock_guard<std::mutex> lock(_commandMutex);
+        cosmologyEnabled = _configState._initialStateConfig.cosmology.enabled;
+    }
+    const blitzar_simulation_snapshot_energy::DensityGrid densityGrid =
+        cosmologyEnabled ? blitzar_simulation_snapshot_energy::buildDensityGrid(particles)
+                         : blitzar_simulation_snapshot_energy::DensityGrid{};
+    double totalMass = densityGrid.totalMass;
+    if (!cosmologyEnabled) {
+        for (const Particle& particle : particles) {
+            totalMass += static_cast<double>(std::max(0.0f, particle.getMass()));
+        }
+    }
+    _totalMass.store(static_cast<float>(totalMass), std::memory_order_relaxed);
     const std::size_t publishCap =
         static_cast<std::size_t>(_snapshotTransferCap.load(std::memory_order_relaxed));
     const std::size_t publishedCount =
@@ -46,9 +159,14 @@ void SimulationServer::publishSnapshot()
     std::size_t outIndex = 0u;
     for (size_t i = 0; i < count && outIndex < publishedCount; i += stride) {
         _scratchSnapshot[outIndex] =
-            RenderParticle{particles[i].getPosition().x,      particles[i].getPosition().y,
-                           particles[i].getPosition().z,      particles[i].getMass(),
-                           particles[i].getPressure().norm(), particles[i].getTemperature()};
+            RenderParticle{particles[i].getPosition().x,
+                           particles[i].getPosition().y,
+                           particles[i].getPosition().z,
+                           particles[i].getMass(),
+                           particles[i].getPressure().norm(),
+                           particles[i].getTemperature(),
+                           blitzar_simulation_snapshot_energy::densityNormAt(
+                               densityGrid, particles[i].getPosition())};
         outIndex += 1u;
     }
     std::lock_guard<std::mutex> lock(_snapshotMutex);
@@ -90,9 +208,8 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
     if (n < 2)
         return values;
 
-    const std::size_t sampleLimit = static_cast<std::size_t>(
-        _energySampleLimit.load(std::memory_order_relaxed)
-    );
+    const std::size_t sampleLimit =
+        static_cast<std::size_t>(_energySampleLimit.load(std::memory_order_relaxed));
 
     const bool sampled = n > sampleLimit;
     const float specificHeat = _system ? std::max(1e-6f, _system->getThermalSpecificHeat()) : 1.0f;
@@ -111,9 +228,11 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
     std::vector<std::size_t> indices;
     if (!sampled) {
         indices.resize(n);
-        for (std::size_t i = 0; i < n; ++i) { indices[i] = i; }
-
-    } else {
+        for (std::size_t i = 0; i < n; ++i) {
+            indices[i] = i;
+        }
+    }
+    else {
         const std::size_t sampleCount = std::max<std::size_t>(64u, sampleLimit);
         const std::size_t stride = std::max<std::size_t>(1, n / sampleCount);
 
@@ -126,18 +245,16 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
         }
     }
 
-    const double kineticScale = sampled
-                                ? static_cast<double>(n) / static_cast<double>(indices.size())
-                                : 1.0;
+    const double kineticScale =
+        sampled ? static_cast<double>(n) / static_cast<double>(indices.size()) : 1.0;
 
     const double pairCountFull = static_cast<double>(n) * static_cast<double>(n - 1) * 0.5;
 
-    const double pairCountSample = static_cast<double>(indices.size()) *
-                                    static_cast<double>(indices.size() - 1) * 0.5;
+    const double pairCountSample =
+        static_cast<double>(indices.size()) * static_cast<double>(indices.size() - 1) * 0.5;
 
-    const double potentialScale = (sampled && pairCountSample > 0.0)
-                                ? (pairCountFull / pairCountSample)
-                                : 1.0;
+    const double potentialScale =
+        (sampled && pairCountSample > 0.0) ? (pairCountFull / pairCountSample) : 1.0;
 
     const float softening = std::max(energySoftening, energyMinSoftening);
 
@@ -205,7 +322,9 @@ void SimulationServer::maybeUpdateEnergy(std::uint64_t currentStep)
 {
     const std::uint32_t every = _energyMeasureEverySteps.load(std::memory_order_relaxed);
 
-    if (every == 0 || (currentStep % every) != 0) { return; }
+    if (every == 0 || (currentStep % every) != 0) {
+        return;
+    }
 
     const EnergyValues values = computeEnergyValues();
 

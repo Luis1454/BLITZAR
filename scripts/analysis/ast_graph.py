@@ -13,10 +13,9 @@ import argparse
 import csv
 import json
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable
-
 
 SOURCE_SUFFIXES = {".cpp", ".hpp", ".cu", ".inl"}
 SKIP_DIRS = {

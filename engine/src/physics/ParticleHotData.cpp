@@ -8,17 +8,21 @@
 #include "physics/ParticleHotData.hpp"
 #include "physics/Particle.hpp"
 
+#include <cstddef>
+
 #include <omp.h>
 
 void buildParticleHotData(const std::vector<Particle>& particles,
                           std::vector<ParticleHotData>& hotData)
 {
     hotData.resize(particles.size());
+    const std::ptrdiff_t particleTotal = static_cast<std::ptrdiff_t>(particles.size());
 #pragma omp parallel for schedule(static)
-    for (std::size_t i = 0; i < particles.size(); ++i) {
-        const Particle& particle = particles[i];
+    for (std::ptrdiff_t i = 0; i < particleTotal; ++i) {
+        const std::size_t particleIndex = static_cast<std::size_t>(i);
+        const Particle& particle = particles[particleIndex];
         const Vector3 position = particle.getPosition();
-        hotData[i] = ParticleHotData(position.x, position.y, position.z, particle.getMass());
+        hotData[particleIndex] = ParticleHotData(position.x, position.y, position.z, particle.getMass());
     }
 }
 

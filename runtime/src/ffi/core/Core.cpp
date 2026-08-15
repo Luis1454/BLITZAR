@@ -89,6 +89,7 @@ static void fillStatus(const SimulationStats& stats, blitzar_core_status_t& outS
     outStatus.max_substeps = stats.maxSubsteps;
     outStatus.snapshot_publish_period_ms = stats.snapshotPublishPeriodMs;
     outStatus.particle_count = stats.particleCount;
+    outStatus.total_mass = stats.totalMass;
     outStatus.kinetic_energy = stats.kineticEnergy;
     outStatus.potential_energy = stats.potentialEnergy;
     outStatus.thermal_energy = stats.thermalEnergy;
@@ -171,7 +172,8 @@ blitzar_core_result_t BlitzarCore::getSnapshot(std::size_t maxPoints,
                                                                  snapshot[index].z,
                                                                  snapshot[index].mass,
                                                                  snapshot[index].pressureNorm,
-                                                                 snapshot[index].temperature};
+                                                                 snapshot[index].temperature,
+                                                                 snapshot[index].densityNorm};
     }
     return BLITZAR_CORE_OK;
 }

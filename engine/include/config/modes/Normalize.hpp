@@ -15,6 +15,7 @@ namespace bltzr_modes {
 extern const std::string_view kSolverPairwiseCuda;
 extern const std::string_view kSolverOctreeGpu;
 extern const std::string_view kSolverOctreeCpu;
+extern const std::string_view kSolverFmmCpu;
 extern const std::string_view kIntegratorEuler;
 extern const std::string_view kIntegratorRk4;
 extern const std::string_view kIntegratorLeapfrog;

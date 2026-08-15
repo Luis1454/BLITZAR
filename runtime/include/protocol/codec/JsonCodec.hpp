@@ -44,6 +44,7 @@ struct StatusPayload {
     std::uint32_t maxSubsteps = 0;
     std::uint32_t snapshotPublishPeriodMs = 0;
     std::uint32_t particleCount = 0;
+    float totalMass = 0.0f;
     std::string solver;
     std::string integrator;
     float kineticEnergy = 0.0f;

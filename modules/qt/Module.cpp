@@ -22,6 +22,7 @@
 #include <QMetaObject>
 #include <QStyleFactory>
 #include <QString>
+#include <QSurfaceFormat>
 #include <algorithm>
 #include <array>
 #include <atomic>
@@ -32,6 +33,7 @@
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -204,6 +206,12 @@ static void qtThreadMain(QtInProcState* state)
         std::vector<char> appNameBuffer(appName.begin(), appName.end());
         appNameBuffer.push_back('\0');
         char* argv[] = {appNameBuffer.data(), nullptr};
+        QSurfaceFormat graphicsFormat;
+        graphicsFormat.setRenderableType(QSurfaceFormat::OpenGL);
+        graphicsFormat.setVersion(3, 3);
+        graphicsFormat.setProfile(QSurfaceFormat::CoreProfile);
+        graphicsFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+        QSurfaceFormat::setDefaultFormat(graphicsFormat);
         QApplication app(argc, argv);
         configureQtPluginPathFallback();
         if (state->transport.serverExecutable.empty()) {
@@ -221,7 +229,16 @@ static void qtThreadMain(QtInProcState* state)
                 }
             }
         }
-        SimulationConfig config = SimulationConfig::loadOrCreate(state->configPath);
+        SimulationConfig config{};
+        if (QFileInfo::exists(QString::fromStdString(state->configPath))) {
+            std::string configError;
+            if (!SimulationConfig::loadStrict(state->configPath, config, configError)) {
+                throw std::runtime_error("invalid INI configuration: " + configError);
+            }
+        }
+        else {
+            config = SimulationConfig::loadOrCreate(state->configPath);
+        }
         const bltzr_qt::ThemeMode themeMode = bltzr_qt::Theme::resolve(config.uiTheme);
         app.setStyle(QStyleFactory::create("Fusion"));
         app.setPalette(bltzr_qt::Theme::buildPalette(themeMode));

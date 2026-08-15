@@ -55,7 +55,7 @@ jobs:
             ~\AppData\Local\vcpkg\archives
             C:\vcpkg\installed
             C:\vcpkg\packages
-          key: windows-build-integration-${{ env.CI_CACHE_VERSION }}-msvc-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/nightly-full.yml') }}
+          key: windows-build-integration-${{ env.CI_CACHE_VERSION }}-msvc-prod-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'tests/CMakeLists.txt', 'tests/CMakePresets.json', 'tests/cmake/**/*.cmake', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/nightly-full.yml') }}
           restore-keys: |
             windows-build-integration-${{ env.CI_CACHE_VERSION }}-msvc-prod-
       - name: Run repository quality gate
@@ -69,13 +69,16 @@ jobs:
           python -m pytest -q tests/checks/suites
       - name: Configure standalone integration tests
         shell: pwsh
-        run: cmake -S tests -B build-integration -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_PROFILE=prod -DBLITZAR_INTEGRATION_STRICT_WARNINGS=ON
+        run: cmake --preset integration-safe
+        working-directory: tests
       - name: Build standalone integration tests
         shell: pwsh
-        run: cmake --build build-integration --parallel
+        run: cmake --build --preset integration-safe --parallel
+        working-directory: tests
       - name: Run integration-safe tests
         shell: pwsh
-        run: ctest --test-dir build-integration --output-on-failure --timeout 180 --no-tests=error --repeat until-fail:3 -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7)_"
+        run: ctest --preset integration-safe --output-on-failure --timeout 180 --no-tests=error --repeat until-fail:3 -R "TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7)_"
+        working-directory: tests
       - name: Package FMEA status snapshot
         shell: pwsh
         run: python scripts/ci/nightly/package_fmea_status.py --root . --dist-dir dist/fmea-status
@@ -105,7 +108,7 @@ jobs:
             ~\AppData\Local\vcpkg\archives
             C:\vcpkg\installed
             C:\vcpkg\packages
-          key: windows-build-integration-${{ env.CI_CACHE_VERSION }}-msvc-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/nightly-full.yml') }}
+          key: windows-build-integration-${{ env.CI_CACHE_VERSION }}-msvc-prod-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'tests/CMakeLists.txt', 'tests/CMakePresets.json', 'tests/cmake/**/*.cmake', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/nightly-full.yml') }}
   nightly-integration-coverage:
     name: Nightly Integration Coverage (linux-ubuntu24.04 / hosted-gnu / python3.12)
     runs-on: ubuntu-24.04
@@ -147,7 +150,7 @@ jobs:
           path: |
             build-integration-cov
             ~/.cache/vcpkg/archives
-          key: linux-build-coverage-${{ env.CI_CACHE_VERSION }}-gcc-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/nightly-full.yml') }}
+          key: linux-build-coverage-${{ env.CI_CACHE_VERSION }}-gcc-prod-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'tests/CMakeLists.txt', 'tests/CMakePresets.json', 'tests/cmake/**/*.cmake', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/nightly-full.yml') }}
           restore-keys: |
             linux-build-coverage-${{ env.CI_CACHE_VERSION }}-gcc-prod-
       - name: Run Python style/type checks
@@ -156,11 +159,14 @@ jobs:
           python3 -m mypy tests/checks scripts/ci python_tools
           python3 -m pytest -q tests/checks/suites
       - name: Configure coverage build
-        run: cmake -S tests -B build-integration-cov -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBLITZAR_PROFILE=prod -DBLITZAR_INTEGRATION_ENABLE_COVERAGE=ON -DBLITZAR_INTEGRATION_STRICT_WARNINGS=ON
+        run: cmake --preset integration-coverage
+        working-directory: tests
       - name: Build coverage target
-        run: cmake --build build-integration-cov --parallel
+        run: cmake --build --preset integration-coverage --parallel
+        working-directory: tests
       - name: Run integration tests for coverage
-        run: ctest --test-dir build-integration-cov --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_|TST_QLT_"
+        run: ctest --preset integration-coverage --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_|TST_QLT_"
+        working-directory: tests
       - {name: Generate coverage report, id: coverage, run: bash scripts/ci/nightly/generate_coverage.sh}
       - name: Build coverage dashboard payload
         if: ${{ github.ref == 'refs/heads/main' }}
@@ -206,7 +212,7 @@ jobs:
           path: |
             build-integration-cov
             ~/.cache/vcpkg/archives
-          key: linux-build-coverage-${{ env.CI_CACHE_VERSION }}-gcc-prod-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/nightly-full.yml') }}
+          key: linux-build-coverage-${{ env.CI_CACHE_VERSION }}-gcc-prod-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'tests/CMakeLists.txt', 'tests/CMakePresets.json', 'tests/cmake/**/*.cmake', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/nightly-full.yml') }}
   gpu-runner-readiness:
     name: GPU Runner Readiness
     uses: ./.github/workflows/gpu-runner-health.yml
@@ -248,15 +254,15 @@ jobs:
           python -m pytest -q tests/checks/suites
       - name: Configure
         shell: pwsh
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_PROFILE=prod -DBLITZAR_STRICT_WARNINGS=ON
+        run: cmake --preset release-prod
       - name: Build
         shell: pwsh
-        run: cmake --build build --parallel
+        run: cmake --build --preset release-prod --parallel
       - name: Run real server integration suites
         shell: pwsh
         run: |
-          $server = Resolve-Path "build/myAppServer.exe"
-          cmake -E env "BLITZAR_SERVER_EXE=$server" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error -R "TST_INT_PROT_|TST_INT_RUNT_|TST_CNT_RUNT_"
+          $server = Resolve-Path "build/blitzar-server.exe"
+          cmake -E env "BLITZAR_SERVER_EXE=$server" ctest --preset release-prod --output-on-failure --timeout 300 --no-tests=error -R "TST_INT_PROT_|TST_INT_RUNT_|TST_CNT_RUNT_"
       - name: Run numerical validation campaign
         shell: pwsh
         run: |
@@ -265,8 +271,8 @@ jobs:
       - name: Run full tests
         shell: pwsh
         run: |
-          $server = Resolve-Path "build/myAppServer.exe"
-          cmake -E env "BLITZAR_SERVER_EXE=$server" ctest --test-dir build --output-on-failure --timeout 300 --no-tests=error
+          $server = Resolve-Path "build/blitzar-server.exe"
+          cmake -E env "BLITZAR_SERVER_EXE=$server" ctest --preset release-prod --output-on-failure --timeout 300 --no-tests=error
       - name: Upload numerical validation artifacts
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f

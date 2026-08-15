@@ -2,7 +2,7 @@
 # @brief Windows Qt6 lookup helpers for local desktop builds.
 
 function(BLITZAR_register_qt6_widgets_from_root qt_root)
-    if(TARGET Qt6::Widgets)
+    if(TARGET Qt6::Widgets AND TARGET Qt6::OpenGLWidgets)
         return()
     endif()
 
@@ -15,7 +15,9 @@ function(BLITZAR_register_qt6_widgets_from_root qt_root)
     if(NOT EXISTS "${qt_root}/lib/cmake/Qt6Gui/Qt6GuiTargets.cmake")
         return()
     endif()
-    if(NOT EXISTS "${qt_root}/lib/cmake/Qt6Widgets/Qt6WidgetsTargets.cmake")
+    if(NOT EXISTS "${qt_root}/lib/cmake/Qt6Widgets/Qt6WidgetsTargets.cmake" OR
+       NOT EXISTS "${qt_root}/lib/cmake/Qt6OpenGL/Qt6OpenGLTargets.cmake" OR
+       NOT EXISTS "${qt_root}/lib/cmake/Qt6OpenGLWidgets/Qt6OpenGLWidgetsTargets.cmake")
         return()
     endif()
 
@@ -31,6 +33,8 @@ function(BLITZAR_register_qt6_widgets_from_root qt_root)
     include("${qt_root}/lib/cmake/Qt6Core/Qt6CoreTargets.cmake")
     include("${qt_root}/lib/cmake/Qt6Gui/Qt6GuiTargets.cmake")
     include("${qt_root}/lib/cmake/Qt6Widgets/Qt6WidgetsTargets.cmake")
+    include("${qt_root}/lib/cmake/Qt6OpenGL/Qt6OpenGLTargets.cmake")
+    include("${qt_root}/lib/cmake/Qt6OpenGLWidgets/Qt6OpenGLWidgetsTargets.cmake")
 
     if(TARGET Qt6::Platform)
         set_property(TARGET Qt6::Platform PROPERTY INTERFACE_COMPILE_FEATURES "")
@@ -41,12 +45,12 @@ function(BLITZAR_register_qt6_widgets_from_root qt_root)
 endfunction()
 
 function(BLITZAR_find_qt6_widgets)
-    if(TARGET Qt6::Widgets)
+    if(TARGET Qt6::Widgets AND TARGET Qt6::OpenGLWidgets)
         return()
     endif()
 
     if(NOT WIN32)
-        find_package(Qt6 QUIET COMPONENTS Widgets)
+        find_package(Qt6 QUIET COMPONENTS Widgets OpenGL OpenGLWidgets)
         return()
     endif()
 
@@ -66,10 +70,10 @@ function(BLITZAR_find_qt6_widgets)
 
     foreach(_qt_root IN LISTS _qt_candidate_roots)
         BLITZAR_register_qt6_widgets_from_root("${_qt_root}")
-        if(TARGET Qt6::Widgets)
+        if(TARGET Qt6::Widgets AND TARGET Qt6::OpenGLWidgets)
             return()
         endif()
     endforeach()
 
-    find_package(Qt6 QUIET COMPONENTS Widgets)
+    find_package(Qt6 QUIET COMPONENTS Widgets OpenGL OpenGLWidgets)
 endfunction()

@@ -15,6 +15,7 @@
 #include <QEventLoop>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QProgressBar>
 #include <QSlider>
 #include <QSpinBox>
 #include <chrono>
@@ -90,6 +91,46 @@ public:
     void setPerformanceProfile(const std::string& profile) override
     {
         performanceProfile = profile;
+    }
+
+    void setTreePmAssignment(const std::string& assignment) override
+    {
+        treePmAssignment = assignment;
+    }
+
+    void setTreePmParameters(bool enabled, const std::string& model,
+                             const std::string& layout,
+                             const std::string& precision, const std::string& assignment,
+                             bool localGrid, std::uint32_t gridSize,
+                             std::uint32_t jacobiIterations, float cutoffFactor,
+                             std::uint32_t maxLocalNeighbors, std::uint32_t particleLimit,
+                             std::uint32_t denseCellThreshold, bool gravityOnlyBuffers) override
+    {
+        treePmEnabled = enabled;
+        treePmModel = model;
+        treePmLayout = layout;
+        treePmPrecision = precision;
+        treePmAssignment = assignment;
+        treePmLocalGrid = localGrid;
+        treePmGridSize = gridSize;
+        treePmJacobiIterations = jacobiIterations;
+        treePmCutoffFactor = cutoffFactor;
+        treePmMaxLocalNeighbors = maxLocalNeighbors;
+        treePmParticleLimit = particleLimit;
+        treePmDenseCellThreshold = denseCellThreshold;
+        treePmGravityOnlyBuffers = gravityOnlyBuffers;
+    }
+
+    void setAdaptiveTimeSteps(bool enabled, std::uint32_t maxLevel, float eta) override
+    {
+        adaptiveTimeStepsEnabled = enabled;
+        adaptiveTimeStepMaxLevel = maxLevel;
+        adaptiveTimeStepEta = eta;
+    }
+
+    void setAdaptiveTimeStepCostGuard(bool enabled) override
+    {
+        adaptiveTimeStepCostGuard = enabled;
     }
 
     void setOctreeParameters(float theta, float softening) override
@@ -192,12 +233,12 @@ public:
 
     SimulationStats getCachedStats() const override
     {
-        return {};
+        return cachedStats;
     }
 
     SimulationStats getStats() const override
     {
-        return {};
+        return cachedStats;
     }
 
     std::optional<bltzr_client::ConsumedSnapshot> consumeLatestSnapshot() override
@@ -262,6 +303,23 @@ public:
     std::string solverMode;
     std::string integratorMode;
     std::string performanceProfile;
+    bool treePmEnabled = false;
+    std::string treePmModel;
+    std::string treePmLayout;
+    std::string treePmPrecision;
+    std::string treePmAssignment;
+    bool treePmLocalGrid = false;
+    std::uint32_t treePmGridSize = 0u;
+    std::uint32_t treePmJacobiIterations = 0u;
+    float treePmCutoffFactor = 0.0f;
+    std::uint32_t treePmMaxLocalNeighbors = 0u;
+    std::uint32_t treePmParticleLimit = 0u;
+    std::uint32_t treePmDenseCellThreshold = 0u;
+    bool treePmGravityOnlyBuffers = false;
+    bool adaptiveTimeStepsEnabled = false;
+    std::uint32_t adaptiveTimeStepMaxLevel = 0u;
+    float adaptiveTimeStepEta = 0.0f;
+    bool adaptiveTimeStepCostGuard = false;
     std::string exportDirectory;
     std::string exportFormat;
     std::string initialStateFile;
@@ -269,6 +327,7 @@ public:
     std::string connectorHost;
     std::string connectorServerExecutable;
     InitialStateConfig initialStateConfig;
+    SimulationStats cachedStats{};
 };
 
 static SimulationConfig makeRuntimeUiConfig()
@@ -399,6 +458,88 @@ TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_012_PhysicsAndRenderControlsPers
     EXPECT_FLOAT_EQ(spy->sphViscosity, 0.33f);
     std::error_code ec;
     std::filesystem::remove(configPath, ec);
+}
+
+TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_023_AllSolverAndTreePmModesAreExposedAndApplied)
+{
+    (void)testsupport::ensureQtApp();
+    auto runtime = std::make_unique<RecordingRuntime>();
+    RecordingRuntime* spy = runtime.get();
+    bltzr_qt::Window window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
+    window.show();
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+    QComboBox* solver = window.findChild<QComboBox*>("solverCombo");
+    QComboBox* model = window.findChild<QComboBox*>("treePmModelCombo");
+    QComboBox* layout = window.findChild<QComboBox*>("treePmLayoutCombo");
+    QComboBox* integrator = window.findChild<QComboBox*>("integratorCombo");
+    QComboBox* precision = window.findChild<QComboBox*>("treePmPrecisionCombo");
+    QComboBox* assignment = window.findChild<QComboBox*>("treePmAssignmentCombo");
+    QCheckBox* enabled = window.findChild<QCheckBox*>("treePmEnabledCheck");
+    QSpinBox* particleCount = window.findChild<QSpinBox*>("particleCountSpin");
+    ASSERT_NE(solver, nullptr);
+    ASSERT_NE(model, nullptr);
+    ASSERT_NE(layout, nullptr);
+    ASSERT_NE(integrator, nullptr);
+    ASSERT_NE(precision, nullptr);
+    ASSERT_NE(assignment, nullptr);
+    ASSERT_NE(enabled, nullptr);
+    ASSERT_NE(particleCount, nullptr);
+
+    for (const char* mode : {"pairwise_cuda", "octree_gpu", "octree_cpu"}) {
+        EXPECT_GE(solver->findText(mode), 0);
+    }
+    EXPECT_GE(integrator->findText("euler"), 0);
+    EXPECT_GE(integrator->findText("rk4"), 0);
+    EXPECT_GE(integrator->findText("leapfrog"), 0);
+    for (const char* mode : {"auto", "pm_only", "local_grid", "tree", "hybrid", "exact_tree"}) {
+        EXPECT_GE(model->findText(mode), 0);
+    }
+    EXPECT_GE(precision->findText("fp32"), 0);
+    EXPECT_GE(precision->findText("fp64"), 0);
+    for (const char* stencil : {"cic", "tsc", "pcs"}) {
+        EXPECT_GE(assignment->findText(stencil), 0);
+    }
+
+    enabled->setChecked(true);
+    integrator->setCurrentText("leapfrog");
+    particleCount->setValue(123456);
+    model->setCurrentText("hybrid");
+    layout->setCurrentText("gather_morton");
+    precision->setCurrentText("fp64");
+    assignment->setCurrentText("pcs");
+    window.findChild<QComboBox*>("treePmPresetCombo")->setCurrentText("custom");
+    window.findChild<QSpinBox*>("treePmGridSizeSpin")->setValue(96);
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    EXPECT_TRUE(spy->treePmEnabled);
+    EXPECT_EQ(spy->integratorMode, "leapfrog");
+    EXPECT_EQ(spy->configuredParticleCount, 123456u);
+    EXPECT_EQ(spy->treePmModel, "hybrid");
+    EXPECT_EQ(spy->treePmLayout, "gather_morton");
+    EXPECT_EQ(spy->treePmPrecision, "fp64");
+    EXPECT_EQ(spy->treePmAssignment, "pcs");
+    EXPECT_EQ(spy->treePmGridSize, 96u);
+}
+
+TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_024_ExportProgressReflectsRuntimeQueue)
+{
+    (void)testsupport::ensureQtApp();
+    auto runtime = std::make_unique<RecordingRuntime>();
+    RecordingRuntime* spy = runtime.get();
+    spy->cachedStats.exportActive = true;
+    spy->cachedStats.exportQueueDepth = 1u;
+    bltzr_qt::Window window(makeRuntimeUiConfig(), "simulation.ini", std::move(runtime));
+    window.show();
+    QProgressBar* progress = window.findChild<QProgressBar*>("exportProgressBar");
+    ASSERT_NE(progress, nullptr);
+    ASSERT_TRUE(testsupport::waitUntilUi(
+        [&]() { return progress->maximum() == 0; }, std::chrono::milliseconds(1000)));
+    spy->cachedStats.exportActive = false;
+    spy->cachedStats.exportQueueDepth = 0u;
+    spy->cachedStats.exportLastState = "completed";
+    ASSERT_TRUE(testsupport::waitUntilUi(
+        [&]() { return progress->maximum() == 100 && progress->value() == 100; },
+        std::chrono::milliseconds(1000)));
 }
 
 TEST(QtWorkspaceRuntimeControlsTest, TST_UIX_UI_013_ResetClearsEnergyTimelineHistory)

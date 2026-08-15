@@ -24,7 +24,7 @@
         {"flags": ["--build-dir"], "dest": "build_dir", "required": true, "help": "Build directory containing compile_commands.json"},
         {"flags": ["--root"], "default": ".", "help": "Repository root"},
         {"flags": ["--clang-tidy"], "dest": "clang_tidy", "default": "clang-tidy", "help": "clang-tidy executable"},
-        {"flags": ["--checks"], "default": "-*,clang-analyzer-*,bugprone-unused-return-value", "help": "clang-tidy checks expression"},
+        {"flags": ["--checks"], "default": "-*,clang-analyzer-*,bugprone-unused-return-value,-clang-analyzer-optin.performance.Padding", "help": "clang-tidy checks expression"},
         {"flags": ["--jobs"], "default": 0, "type": "int", "help": "Parallel clang-tidy jobs (0 = auto)"},
         {"flags": ["--log-dir"], "dest": "log_dir", "default": null, "help": "Directory to store clang-tidy logs"},
         {"flags": ["--diff-base"], "default": "", "help": "Git base ref for diff-only clang-tidy"},

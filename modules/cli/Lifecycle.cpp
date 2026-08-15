@@ -16,7 +16,6 @@
 #include "modules/cli/State.hpp"
 
 namespace bltzr_module_cli {
-namespace {
 
 bool createState(const bltzr_module::HostContextV1* hostContext,
                  const bltzr_module::StateSlot& outModuleState,
@@ -105,7 +104,6 @@ void stopState(bltzr_module::OpaqueState moduleState)
         std::cerr << "[module-cli] stop error: unknown\n";
     }
 }
-} // namespace
 
 bool Lifecycle::create(const bltzr_module::HostContextV1* hostContext,
                        const bltzr_module::StateSlot& outModuleState,

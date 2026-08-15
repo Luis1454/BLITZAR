@@ -5,7 +5,8 @@
  * @brief Helper utilities for deterministic parallel particle generation.
  */
 
-#pragma once
+#ifndef BLITZAR_ENGINE_SRC_SERVER_SIMULATION_STATE_INITIALIZATION_HELPER_HPP_
+#define BLITZAR_ENGINE_SRC_SERVER_SIMULATION_STATE_INITIALIZATION_HELPER_HPP_
 
 #include <cstddef>
 #include <cstdint>
@@ -19,20 +20,22 @@ struct RandomData {
     std::vector<float> valuesF;
     std::size_t elementSize;
 
-    RandomData() : elementSize(0) {}
+    inline RandomData() : elementSize(0) {}
 
-    void reserve(std::size_t numParticles, std::size_t valuesPerParticle) {
+    inline void reserve(std::size_t numParticles, std::size_t valuesPerParticle) {
         elementSize = valuesPerParticle;
         valuesF.reserve(numParticles * valuesPerParticle);
     }
 
-    void push(float v) { valuesF.push_back(v); }
+    inline void push(float v) { valuesF.push_back(v); }
 
-    float get(std::size_t particleIndex, std::size_t valueIndex) const {
+    inline float get(std::size_t particleIndex, std::size_t valueIndex) const {
         return valuesF[particleIndex * elementSize + valueIndex];
     }
 
-    std::size_t particleCount() const {
+    inline std::size_t particleCount() const {
         return elementSize > 0 ? valuesF.size() / elementSize : 0;
     }
 };
+
+#endif // BLITZAR_ENGINE_SRC_SERVER_SIMULATION_STATE_INITIALIZATION_HELPER_HPP_

@@ -21,7 +21,8 @@ def test_nsis_installer_does_not_use_executable_as_wizard_icon() -> None:
 
     assert "!define MUI_ICON" not in nsis_script
     assert "!define MUI_UNICON" not in nsis_script
-    assert "--wait-for-module" in nsis_script
+    assert "blitzar-gui.exe" in nsis_script
+    assert "--wait-for-module" not in nsis_script
 
 
 # @brief Documents the test release desktop installer builds native windows installer operation contract.
@@ -33,7 +34,7 @@ def test_release_desktop_installer_builds_native_windows_installer(tmp_path: Pat
     monkeypatch.chdir(tmp_path)
     build_dir = tmp_path / "build"
     build_dir.mkdir()
-    for name in ("blitzar.exe", "blitzar-server.exe", "blitzar-client.exe", "blitzarClientModuleQtInProc.dll"):
+    for name in ("blitzar.exe", "blitzar-gui.exe", "blitzar-server.exe", "blitzar-client.exe", "blitzarClientModuleQtInProc.dll"):
         (build_dir / name).write_text("binary\n", encoding="utf-8")
     (build_dir / "blitzarClientModuleQtInProc.dll.manifest").write_text("manifest\n", encoding="utf-8")
     (build_dir / "Qt6Core.dll").write_text("qt\n", encoding="utf-8")

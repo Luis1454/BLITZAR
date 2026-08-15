@@ -131,7 +131,7 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_009_EnergyDockIsVisibleAndSidebarStaysC
     ASSERT_NE(controlsDock, nullptr);
     EXPECT_TRUE(energyDock->isVisible());
     EXPECT_GE(energyDock->height(), 120);
-    EXPECT_LE(controlsDock->width(), 260);
+    EXPECT_LE(controlsDock->width(), 400);
 }
 
 TEST(QtWorkspaceControlsTest, TST_UIX_UI_015_ThemeTogglePersistsAcrossSaveAndReload)

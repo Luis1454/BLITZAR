@@ -13,10 +13,14 @@
  * workspace.
  */
 #include "widgets/overlays/Octree.hpp"
+#include "widgets/viewport/GpuView.hpp"
 #include "widgets/viewport/Particle.hpp"
 #include <QPointer>
+#include <QStackedWidget>
 #include <QWidget>
+#include <array>
 #include <cstddef>
+#include <string>
 #include <vector>
 
 namespace bltzr_qt {
@@ -26,6 +30,7 @@ public:
     void setSnapshot(std::vector<RenderParticle> snapshot);
     void setMaxDrawParticles(std::size_t maxDrawParticles);
     std::size_t displayedParticleCount() const;
+    std::string rendererStatusText() const;
     void setZoom(float zoom);
     void setLuminosity(int luminosity);
     void set3DMode(grav::ViewMode mode);
@@ -36,15 +41,18 @@ public:
     int octreeOverlayDepth() const;
     int octreeOverlayOpacity() const;
     std::size_t octreeOverlayNodeCount() const;
+    float zoomCompensation() const;
 
 private:
     void applyOctreeOverlay();
     void rebuildOctreeOverlay();
-    QPointer<Particle> _xy;
-    QPointer<Particle> _xz;
-    QPointer<Particle> _yz;
-    QPointer<Particle> _view3d;
+    void activateCpuBackend();
+    std::array<QPointer<Particle>, 4> _cpuViews;
+    std::array<QPointer<GpuView>, 4> _gpuViews;
+    std::array<QPointer<QStackedWidget>, 4> _viewStacks;
+    bool _gpuBackend;
     std::size_t _maxDrawParticles;
+    float _zoom;
     std::vector<RenderParticle> _snapshot;
     std::vector<OctreeNode> _octreeOverlay;
     bool _octreeOverlayEnabled;

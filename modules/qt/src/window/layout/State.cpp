@@ -4,28 +4,41 @@
  */
 
 #include "Constants.hpp"
-#include "widgets/graphs/Graph.hpp"
-#include "window/core/Window.hpp"
-#include "widgets/viewport/MultiView.hpp"
 #include "support/types/Enums.hpp"
+#include "widgets/graphs/Graph.hpp"
+#include "widgets/graphs/SpectrumGraph.hpp"
+#include "widgets/viewport/MultiView.hpp"
+#include "window/core/Window.hpp"
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QProgressBar>
 #include <QPushButton>
 #include <QSlider>
 #include <QSpinBox>
 #include <QStringList>
 #include <algorithm>
+#include <limits>
 
 namespace bltzr_qt {
 
 static const QStringList kSolverList = {QString::fromStdString(to_string(Solver::PairwiseCuda)),
                                         QString::fromStdString(to_string(Solver::OctreeGpu)),
-                                        QString::fromStdString(to_string(Solver::OctreeCpu))};
-static const QStringList kIntegratorList = {QString::fromStdString(to_string(Integrator::Euler)),
-                                            QString::fromStdString(to_string(Integrator::Rk4))};
+                                        QString::fromStdString(to_string(Solver::OctreeCpu)),
+                                        QString::fromStdString(to_string(Solver::FmmCpu))};
+static const QStringList kIntegratorList = {
+    QString::fromStdString(to_string(Integrator::Euler)),
+    QString::fromStdString(to_string(Integrator::Rk4)),
+    QString::fromStdString(to_string(Integrator::Leapfrog))};
+static const QStringList kTreePmPresetList = {
+    "custom", "pm_only", "local_grid_fast", "hybrid_balanced", "hybrid_quality", "tree_quality"};
+static const QStringList kTreePmModelList = {"auto", "pm_only", "local_grid",
+                                             "tree", "hybrid",  "exact_tree"};
+static const QStringList kTreePmLayoutList = {"auto", "linear", "gather_linear", "gather_morton"};
+static const QStringList kTreePmPrecisionList = {"fp32", "fp64"};
+static const QStringList kTreePmAssignmentList = {"cic", "tsc", "pcs"};
 static const QStringList kPerformanceList = {
     QString::fromStdString(to_string(PerformanceProfile::Interactive)),
     QString::fromStdString(to_string(PerformanceProfile::Balanced)),
@@ -33,8 +46,10 @@ static const QStringList kPerformanceList = {
     QString::fromStdString(to_string(PerformanceProfile::Custom))};
 static const QStringList kSimulationProfiles = {"disk_orbit",  "galaxy_collision", "plummer_sphere",
                                                 "binary_star", "solar_system",     "sph_collapse"};
-static const QStringList kPresets = {"disk_orbit", "galaxy_collision", "random_cloud", "two_body",
-                                     "three_body", "plummer_sphere",   "file"};
+static const QStringList kPresets = {
+    "disk_orbit",    "galaxy_collision", "cosmology",  "random_cloud",   "cube_random",
+    "sphere_random", "two_body",         "three_body", "plummer_sphere", "binary_star",
+    "solar_system",  "sph_collapse",     "file"};
 static const QStringList kView3dModes = {"perspective", "iso"};
 
 void Window::initializeControlState()
@@ -49,20 +64,42 @@ void Window::initializeComboBoxes()
 {
     _widgets.run.pauseButton->setCheckable(true);
     _widgets.physics.solverCombo->addItems(kSolverList);
-    _widgets.physics.solverCombo->setCurrentIndex(
-        std::max(0, _widgets.physics.solverCombo->findText(QString::fromStdString(_config.solver))));
+    _widgets.physics.solverCombo->setCurrentIndex(std::max(
+        0, _widgets.physics.solverCombo->findText(QString::fromStdString(_config.solver))));
     _widgets.physics.integratorCombo->addItems(kIntegratorList);
-    _widgets.physics.integratorCombo->setCurrentIndex(
-        std::max(0, _widgets.physics.integratorCombo->findText(QString::fromStdString(_config.integrator))));
+    _widgets.physics.integratorCombo->setCurrentIndex(std::max(
+        0, _widgets.physics.integratorCombo->findText(QString::fromStdString(_config.integrator))));
+    _widgets.physics.treePmPresetCombo->addItems(kTreePmPresetList);
+    _widgets.physics.treePmPresetCombo->setCurrentIndex(
+        std::max(0, _widgets.physics.treePmPresetCombo->findText(
+                        QString::fromStdString(_config.treePmPreset))));
+    _widgets.physics.treePmModelCombo->addItems(kTreePmModelList);
+    _widgets.physics.treePmModelCombo->setCurrentIndex(std::max(
+        0,
+        _widgets.physics.treePmModelCombo->findText(QString::fromStdString(_config.treePmModel))));
+    _widgets.physics.treePmLayoutCombo->addItems(kTreePmLayoutList);
+    _widgets.physics.treePmLayoutCombo->setCurrentIndex(
+        std::max(0, _widgets.physics.treePmLayoutCombo->findText(
+                        QString::fromStdString(_config.treePmLayout))));
+    _widgets.physics.treePmPrecisionCombo->addItems(kTreePmPrecisionList);
+    _widgets.physics.treePmPrecisionCombo->setCurrentIndex(
+        std::max(0, _widgets.physics.treePmPrecisionCombo->findText(
+                        QString::fromStdString(_config.treePmPrecision))));
+    _widgets.physics.treePmAssignmentCombo->addItems(kTreePmAssignmentList);
+    _widgets.physics.treePmAssignmentCombo->setCurrentIndex(
+        std::max(0, _widgets.physics.treePmAssignmentCombo->findText(
+                        QString::fromStdString(_config.treePmAssignment))));
     _widgets.run.performanceCombo->addItems(kPerformanceList);
-    _widgets.run.performanceCombo->setCurrentIndex(std::max(
-        0, _widgets.run.performanceCombo->findText(QString::fromStdString(_config.performanceProfile))));
+    _widgets.run.performanceCombo->setCurrentIndex(
+        std::max(0, _widgets.run.performanceCombo->findText(
+                        QString::fromStdString(_config.performanceProfile))));
     _widgets.scene.simulationProfileCombo->addItems(kSimulationProfiles);
-    _widgets.scene.simulationProfileCombo->setCurrentIndex(std::max(
-        0, _widgets.scene.simulationProfileCombo->findText(QString::fromStdString(_config.simulationProfile))));
+    _widgets.scene.simulationProfileCombo->setCurrentIndex(
+        std::max(0, _widgets.scene.simulationProfileCombo->findText(
+                        QString::fromStdString(_config.simulationProfile))));
     _widgets.scene.presetCombo->addItems(kPresets);
-    _widgets.scene.presetCombo->setCurrentIndex(
-        std::max(0, _widgets.scene.presetCombo->findText(QString::fromStdString(_config.presetStructure))));
+    _widgets.scene.presetCombo->setCurrentIndex(std::max(
+        0, _widgets.scene.presetCombo->findText(QString::fromStdString(_config.presetStructure))));
     _widgets.render.view3dCombo->addItems(kView3dModes);
 }
 
@@ -118,6 +155,46 @@ void Window::initializeObjectNames()
         _widgets.physics.solverCombo->setObjectName("solverCombo");
     if (_widgets.physics.integratorCombo)
         _widgets.physics.integratorCombo->setObjectName("integratorCombo");
+    if (_widgets.physics.particleCountSpin)
+        _widgets.physics.particleCountSpin->setObjectName("particleCountSpin");
+    if (_widgets.physics.treePmEnabledCheck)
+        _widgets.physics.treePmEnabledCheck->setObjectName("treePmEnabledCheck");
+    if (_widgets.physics.treePmPresetCombo)
+        _widgets.physics.treePmPresetCombo->setObjectName("treePmPresetCombo");
+    if (_widgets.physics.treePmModelCombo)
+        _widgets.physics.treePmModelCombo->setObjectName("treePmModelCombo");
+    if (_widgets.physics.treePmLayoutCombo)
+        _widgets.physics.treePmLayoutCombo->setObjectName("treePmLayoutCombo");
+    if (_widgets.physics.treePmPrecisionCombo)
+        _widgets.physics.treePmPrecisionCombo->setObjectName("treePmPrecisionCombo");
+    if (_widgets.physics.treePmAssignmentCombo)
+        _widgets.physics.treePmAssignmentCombo->setObjectName("treePmAssignmentCombo");
+    if (_widgets.physics.treePmLocalGridCheck)
+        _widgets.physics.treePmLocalGridCheck->setObjectName("treePmLocalGridCheck");
+    if (_widgets.physics.treePmGridSizeSpin)
+        _widgets.physics.treePmGridSizeSpin->setObjectName("treePmGridSizeSpin");
+    if (_widgets.physics.treePmJacobiIterationsSpin)
+        _widgets.physics.treePmJacobiIterationsSpin->setObjectName("treePmJacobiIterationsSpin");
+    if (_widgets.physics.treePmCutoffFactorSpin)
+        _widgets.physics.treePmCutoffFactorSpin->setObjectName("treePmCutoffFactorSpin");
+    if (_widgets.physics.treePmMaxLocalNeighborsSpin)
+        _widgets.physics.treePmMaxLocalNeighborsSpin->setObjectName("treePmMaxLocalNeighborsSpin");
+    if (_widgets.physics.treePmParticleLimitSpin)
+        _widgets.physics.treePmParticleLimitSpin->setObjectName("treePmParticleLimitSpin");
+    if (_widgets.physics.treePmDenseCellThresholdSpin)
+        _widgets.physics.treePmDenseCellThresholdSpin->setObjectName(
+            "treePmDenseCellThresholdSpin");
+    if (_widgets.physics.treePmGravityOnlyBuffersCheck)
+        _widgets.physics.treePmGravityOnlyBuffersCheck->setObjectName(
+            "treePmGravityOnlyBuffersCheck");
+    if (_widgets.physics.adaptiveTimeStepsCheck)
+        _widgets.physics.adaptiveTimeStepsCheck->setObjectName("adaptiveTimeStepsCheck");
+    if (_widgets.physics.adaptiveMaxLevelSpin)
+        _widgets.physics.adaptiveMaxLevelSpin->setObjectName("adaptiveMaxLevelSpin");
+    if (_widgets.physics.adaptiveEtaSpin)
+        _widgets.physics.adaptiveEtaSpin->setObjectName("adaptiveEtaSpin");
+    if (_widgets.physics.adaptiveCostGuardCheck)
+        _widgets.physics.adaptiveCostGuardCheck->setObjectName("adaptiveCostGuardCheck");
     if (_widgets.render.view3dCombo)
         _widgets.render.view3dCombo->setObjectName("view3dModeCombo");
     if (_widgets.physics.dtSpin)
@@ -146,6 +223,8 @@ void Window::initializeObjectNames()
         _widgets.render.rollSlider->setObjectName("rollSlider");
     if (_widgets.view.energyGraph)
         _widgets.view.energyGraph->setObjectName("energyGraphWidget");
+    if (_widgets.view.spectrumGraph)
+        _widgets.view.spectrumGraph->setObjectName("spectrumGraphWidget");
     if (_widgets.render.gpuTelemetryCheck)
         _widgets.render.gpuTelemetryCheck->setObjectName("gpuTelemetryCheck");
     if (_widgets.view.multiView)
@@ -154,11 +233,49 @@ void Window::initializeObjectNames()
 
 void Window::initializeSpinAndSliderValues()
 {
+    _widgets.physics.particleCountSpin->setRange(2, std::numeric_limits<int>::max());
+    _widgets.physics.particleCountSpin->setSingleStep(1000);
+    _widgets.physics.particleCountSpin->setValue(static_cast<int>(std::min<std::uint32_t>(
+        _config.particleCount, static_cast<std::uint32_t>(std::numeric_limits<int>::max()))));
     _widgets.physics.dtSpin->setDecimals(5);
     _widgets.physics.dtSpin->setRange(kUiSimulationDtMin, kMaxStableInteractiveDt);
     _widgets.physics.dtSpin->setSingleStep(0.001);
     _widgets.physics.dtSpin->setValue(
         std::clamp(_config.dt, kUiSimulationDtMin, kMaxStableInteractiveDt));
+    _widgets.physics.treePmEnabledCheck->setChecked(_config.treePmEnabled);
+    _widgets.physics.treePmLocalGridCheck->setChecked(_config.treePmLocalGrid);
+    _widgets.physics.treePmGridSizeSpin->setRange(16, 256);
+    _widgets.physics.treePmGridSizeSpin->setSingleStep(16);
+    _widgets.physics.treePmGridSizeSpin->setValue(
+        static_cast<int>(std::clamp(_config.treePmGridSize, 16u, 256u)));
+    _widgets.physics.treePmJacobiIterationsSpin->setRange(0, 128);
+    _widgets.physics.treePmJacobiIterationsSpin->setValue(
+        static_cast<int>(std::min(_config.treePmJacobiIterations, 128u)));
+    _widgets.physics.treePmCutoffFactorSpin->setDecimals(3);
+    _widgets.physics.treePmCutoffFactorSpin->setRange(0.0, 8.0);
+    _widgets.physics.treePmCutoffFactorSpin->setSingleStep(0.1);
+    _widgets.physics.treePmCutoffFactorSpin->setValue(
+        std::clamp(_config.treePmCutoffFactor, 0.0f, 8.0f));
+    _widgets.physics.treePmMaxLocalNeighborsSpin->setRange(0, 256);
+    _widgets.physics.treePmMaxLocalNeighborsSpin->setValue(
+        static_cast<int>(std::min(_config.treePmMaxLocalNeighbors, 256u)));
+    _widgets.physics.treePmParticleLimitSpin->setRange(0, 100000000);
+    _widgets.physics.treePmParticleLimitSpin->setValue(
+        static_cast<int>(std::min(_config.treePmParticleLimit, 100000000u)));
+    _widgets.physics.treePmDenseCellThresholdSpin->setRange(1, 4096);
+    _widgets.physics.treePmDenseCellThresholdSpin->setValue(
+        static_cast<int>(std::min(_config.treePmDenseCellThreshold, 4096u)));
+    _widgets.physics.treePmGravityOnlyBuffersCheck->setChecked(_config.treePmGravityOnlyBuffers);
+    _widgets.physics.adaptiveTimeStepsCheck->setChecked(_config.adaptiveTimeStepsEnabled);
+    _widgets.physics.adaptiveMaxLevelSpin->setRange(0, 12);
+    _widgets.physics.adaptiveMaxLevelSpin->setValue(
+        static_cast<int>(std::min<std::uint32_t>(12u, _config.adaptiveTimeStepMaxLevel)));
+    _widgets.physics.adaptiveEtaSpin->setDecimals(3);
+    _widgets.physics.adaptiveEtaSpin->setRange(0.01, 1.0);
+    _widgets.physics.adaptiveEtaSpin->setSingleStep(0.05);
+    _widgets.physics.adaptiveEtaSpin->setValue(
+        std::clamp(_config.adaptiveTimeStepEta, 0.01f, 1.0f));
+    _widgets.physics.adaptiveCostGuardCheck->setChecked(_config.adaptiveTimeStepCostGuard);
     _widgets.physics.thetaSpin->setDecimals(3);
     _widgets.physics.thetaSpin->setRange(kPhysicsMinTheta, kPhysicsMaxTheta);
     _widgets.physics.thetaSpin->setSingleStep(0.05);
@@ -188,12 +305,9 @@ void Window::initializeSpinAndSliderValues()
     _widgets.physics.sphViscositySpin->setDecimals(4);
     _widgets.physics.sphViscositySpin->setRange(kSphViscosityMin, kSphViscosityMax);
     _widgets.physics.sphViscositySpin->setSingleStep(0.01);
-    _widgets.physics.sphViscositySpin->setValue(
-        std::max(kSphViscosityMin, _config.sphViscosity));
+    _widgets.physics.sphViscositySpin->setValue(std::max(kSphViscosityMin, _config.sphViscosity));
     _widgets.render.zoomSlider->setRange(kZoomSliderMin, kZoomSliderMax);
-    _widgets.render.zoomSlider->setValue(static_cast<int>(std::clamp(
-        _config.defaultZoom * kZoomSliderDivisor, static_cast<float>(kZoomSliderMin),
-        static_cast<float>(kZoomSliderMax))));
+    _widgets.render.zoomSlider->setValue(zoomToSliderValue(_config.defaultZoom));
     _widgets.render.luminositySlider->setRange(kLuminosityMin, kLuminosityMax);
     _widgets.render.luminositySlider->setValue(
         std::clamp(_config.defaultLuminosity, kLuminosityMin, kLuminosityMax));
@@ -211,14 +325,18 @@ void Window::initializeSpinAndSliderValues()
 void Window::initializeLabelsAndTooltips()
 {
     _widgets.run.serverHostEdit->setText(kDefaultLoopbackHost);
+    _widgets.run.serverAutostartCheck->setChecked(true);
     _widgets.run.serverPortSpin->setRange(kNetworkPortMin, kNetworkPortMax);
     _widgets.run.serverPortSpin->setValue(kDefaultServerPort);
     _widgets.run.serverBinEdit->setPlaceholderText("blitzar-server(.exe)");
-    _widgets.run.serverBinEdit->setToolTip("Path to the server executable used when autostart is enabled");
+    _widgets.run.serverBinEdit->setToolTip(
+        "Path to the server executable used when autostart is enabled");
     _widgets.run.applyConnectorButton->setToolTip(
         "Apply host, port and server binary settings, then reconnect now");
-    for (QLabel* label : {_widgets.telemetry.validationLabel, _widgets.telemetry.statusLabel, _widgets.telemetry.runtimeMetricsLabel, _widgets.telemetry.queueMetricsLabel,
-                          _widgets.telemetry.energyMetricsLabel, _widgets.telemetry.gpuMetricsLabel}) {
+    for (QLabel* label :
+         {_widgets.telemetry.validationLabel, _widgets.telemetry.statusLabel,
+          _widgets.telemetry.runtimeMetricsLabel, _widgets.telemetry.queueMetricsLabel,
+          _widgets.telemetry.energyMetricsLabel, _widgets.telemetry.gpuMetricsLabel}) {
         if (label) {
             label->setWordWrap(true);
             label->setTextInteractionFlags(Qt::TextSelectableByMouse);
@@ -238,6 +356,12 @@ void Window::initializeLabelsAndTooltips()
         _widgets.telemetry.energyMetricsLabel->setObjectName("runtimeSummaryValue");
     if (_widgets.telemetry.gpuMetricsLabel)
         _widgets.telemetry.gpuMetricsLabel->setObjectName("runtimeSummaryValue");
+    if (_widgets.render.exportProgress) {
+        _widgets.render.exportProgress->setObjectName("exportProgressBar");
+        _widgets.render.exportProgress->setRange(0, 100);
+        _widgets.render.exportProgress->setValue(0);
+        _widgets.render.exportProgress->setFormat("Export idle");
+    }
 }
 
 } // namespace bltzr_qt

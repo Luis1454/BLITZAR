@@ -23,7 +23,8 @@ Module loading is not best-effort anymore. Before `LoadLibrary` / `dlopen`, the 
 ## Build
 
 ```bash
-cmake --build build --target blitzar-client blitzarClientModuleCli blitzarClientModuleEcho blitzarClientModuleGuiProxy blitzarClientModuleQtInProc
+cmake --preset linux-dev
+cmake --build --preset linux-dev --target blitzar-client blitzarClientModuleCli blitzarClientModuleEcho blitzarClientModuleGuiProxy blitzarClientModuleQtInProc
 ```
 
 Each built module emits a sidecar manifest next to the dynamic library:
@@ -128,13 +129,15 @@ blitzar-<tag>-windows-desktop-installer.exe
 ```
 
 The installer creates per-user Start Menu and desktop shortcuts and does not require administrator rights.
+The shortcuts target `blitzar-gui.exe`, a console-free desktop entry point. The command-line host
+`blitzar-client.exe` remains available for scripted and diagnostic workflows.
 
 On Windows, the Qt module build now runs `windeployqt` automatically when that tool is available. That copies the Qt DLLs and `platforms/qwindows.dll` next to `blitzar-client.exe`, which removes the common clean-machine launch failure.
 
 Manual fallback if needed:
 
 ```bash
-make deploy-qt BUILD_DIR=build-dev
+make deploy-qt BUILD_DIR=build-desktop
 ```
 
 Runtime commands for `qt` module:

@@ -33,6 +33,7 @@ Core commands:
     - `max_substeps` (`uint32`)
     - `snapshot_publish_period_ms` (`uint32`, milliseconds `[ms]`)
     - `particles` (`uint32`)
+    - `total_mass` (`float`, simulation mass units; conserved particle-mass sum)
     - `solver` (`string`)
     - `ekin`, `epot`, `eth`, `erad`, `etot` (`float`, joules `[J]`)
     - `drift_pct` (`float`, percent `[%]`)
@@ -46,11 +47,12 @@ Core commands:
       - `gpu_vram_total_bytes` (`uint64`, bytes)
 - `get_snapshot`
   - Fields:
-    - `max_points` (`uint32`, clamped to `[1,20000]`)
+    - `max_points` (`uint32`, clamped to `[1,4294967295]`; the physical particle count is independent)
   - Response payload:
     - `has_snapshot` (`bool`)
     - `count` (`uint32`)
-    - `particles`: array of `[x,y,z,mass,pressureNorm,temperature]` with `x/y/z` in `[m]`, `mass` in `[kg]`, and `temperature` in `[K]`
+    - `particles`: array of `[x,y,z,mass,pressureNorm,temperature,densityNorm]` with `x/y/z` in `[m]`, `mass` in `[kg]`, `temperature` in `[K]`, and `densityNorm` in `[0,1]`
+    - Legacy six-value particle tuples remain accepted; their `densityNorm` is `0`.
 
 Control commands:
 - `pause`, `resume`, `toggle`
@@ -68,10 +70,14 @@ Runtime config commands:
 - `set_sph` (`value:bool`)
 - `set_octree` (`theta:float` dimensionless, `softening:float` in `[m]`)
 - `set_sph_params` (`h` in `[m]`, `rest_density` in `[kg/m^3]`, `gas_constant` in solver units, `viscosity` in solver units)
+- `set_treepm_assignment` (`value` is `cic`, `tsc`, or `pcs`; applies on the next reset)
+- `set_adaptive_time_steps` (`enabled:bool`, `max_level:uint32` in `[0,12]`, `eta:float` in `[0.01,1.0]`)
 - `set_energy_measure` (`every_steps:uint32`, `sample_limit:uint32`)
 - `set_gpu_telemetry` (`value:bool`)
 
 I/O commands:
+- `set_initial_state_config` (`config:string`) replaces the generated initial-state scene and
+  object properties on the server; the following reset rebuilds the active particle state
 - `load` (`path:string`, `format:string=auto`) triggers reset on server
 - `load_checkpoint` (`path:string`)
   - loads a versioned binary checkpoint

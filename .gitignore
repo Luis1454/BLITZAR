@@ -9,7 +9,9 @@ compile_commands.json
 
 # Runtime outputs
 exports/
+outputs/
 coverage-dashboard/
+artifacts/
 dist/
 dist_py/
 *.log
