@@ -15,7 +15,7 @@ def _write_vtk(path: Path, positions: np.ndarray, masses: np.ndarray) -> None:
         stream.write("# vtk DataFile Version 3.0\nBLITZAR test\nASCII\nDATASET POLYDATA\n")
         stream.write(f"POINTS {len(positions)} float\n")
         for position in positions:
-            stream.write("%.8g %.8g %.8g\n" % tuple(position))
+            stream.write(f"{position[0]:.8g} {position[1]:.8g} {position[2]:.8g}\n")
         stream.write(f"VERTICES {len(positions)} {len(positions) * 2}\n")
         for index in range(len(positions)):
             stream.write(f"1 {index}\n")
