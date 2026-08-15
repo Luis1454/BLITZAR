@@ -85,9 +85,9 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
       _exportLastPath(),
       _exportLastMessage(),
       _system(nullptr),
-      _exportQueueState(new ExportQueueState()),
+      _exportQueueState(std::make_unique<ExportQueueState>()),
       _activeCheckpointState(nullptr),
-      _checkpointQueueState(new SimulationCheckpointQueueState())
+      _checkpointQueueState(std::make_unique<SimulationCheckpointQueueState>())
 {
     _configState._runtimeConfigMirror.particleCount = _configState._particleCount;
     _configState._runtimeConfigMirror.dt = std::max(1e-6f, initialDt);

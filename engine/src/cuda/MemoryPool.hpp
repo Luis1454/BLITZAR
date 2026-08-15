@@ -7,6 +7,9 @@
 
 #ifndef BLITZAR_ENGINE_SRC_CUDA_MEMORYPOOL_HPP_
 #define BLITZAR_ENGINE_SRC_CUDA_MEMORYPOOL_HPP_
+
+#include "physics/cuda/DeviceMemory.hpp"
+
 #include <cstddef>
 
 namespace bltzr_x {
@@ -16,6 +19,10 @@ public:
     static void destroy();
     static void* allocate(std::size_t size, void* stream = nullptr);
     static void deallocate(void* ptr, void* stream = nullptr);
+
+    template <typename T>
+    static void deallocate(blitzar_cuda_memory::DeviceBuffer<T>& buffer);
+
     static bool isSupported();
 
 private:
@@ -24,4 +31,7 @@ private:
     static void* _pool;
 };
 } // namespace bltzr_x
+
+#include "MemoryPool.inl"
+
 #endif // BLITZAR_ENGINE_SRC_CUDA_MEMORYPOOL_HPP_

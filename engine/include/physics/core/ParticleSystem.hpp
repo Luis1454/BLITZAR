@@ -10,6 +10,7 @@
 
 #include "config/Cosmology.hpp"
 #include "physics/cuda/CudaJit.hpp"
+#include "physics/cuda/DeviceMemory.hpp"
 #include "physics/core/ForceLawPolicy.hpp"
 #include "physics/core/ParticleSoAView.hpp"
 #include "physics/octree/Octree.hpp"
@@ -19,6 +20,7 @@
  * Responsibility: Own the particle-state buffers and advance the gravitational/SPH simulation.
  */
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -119,8 +121,8 @@ struct ParticleSystemDeviceState final {
     bool _treePmGraphCaptured[2] = {false, false};
     bool _treePmGraphMarkerPrinted = false;
     int _treePmGraphSlot = 0;
-    void* _treePmGraphExec[2] = {nullptr, nullptr};
-    void* _treePmGraphStream = nullptr;
+    blitzar_cuda_memory::OpaqueHandle<blitzar_cuda_memory::releaseGraphExec> _treePmGraphExec[2];
+    blitzar_cuda_memory::OpaqueHandle<blitzar_cuda_memory::releaseStream> _treePmGraphStream;
     bool _cudaJitMarkerPrinted = false;
     bool _cudaJitForceMarkerPrinted = false;
     double _cudaE2eTotalMs = 0.0;
@@ -131,83 +133,83 @@ struct ParticleSystemDeviceState final {
     int _treePmTotalCells = 0;
     std::unique_ptr<CudaJitRuntime> _cudaJit;
 
-    float* d_soaPosX = nullptr;
-    float* d_soaPosY = nullptr;
-    float* d_soaPosZ = nullptr;
-    float* d_soaVelX = nullptr;
-    float* d_soaVelY = nullptr;
-    float* d_soaVelZ = nullptr;
-    float* d_soaPressX = nullptr;
-    float* d_soaPressY = nullptr;
-    float* d_soaPressZ = nullptr;
-    float* d_soaMass = nullptr;
-    float* d_soaTemp = nullptr;
-    float* d_soaDens = nullptr;
-    float* d_soaNextPosX = nullptr;
-    float* d_soaNextPosY = nullptr;
-    float* d_soaNextPosZ = nullptr;
-    float* d_soaNextVelX = nullptr;
-    float* d_soaNextVelY = nullptr;
-    float* d_soaNextVelZ = nullptr;
-    Particle* d_stage = nullptr;
-    Vector3* d_k1x = nullptr;
-    Vector3* d_k2x = nullptr;
-    Vector3* d_k3x = nullptr;
-    Vector3* d_k4x = nullptr;
-    Vector3* d_k1v = nullptr;
-    Vector3* d_k2v = nullptr;
-    Vector3* d_k3v = nullptr;
-    Vector3* d_k4v = nullptr;
-    GpuHalfVelocity* d_vHalf = nullptr;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaPosX;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaPosY;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaPosZ;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaVelX;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaVelY;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaVelZ;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaPressX;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaPressY;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaPressZ;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaMass;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaTemp;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaDens;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaNextPosX;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaNextPosY;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaNextPosZ;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaNextVelX;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaNextVelY;
+    blitzar_cuda_memory::DeviceBuffer<float> d_soaNextVelZ;
+    blitzar_cuda_memory::DeviceBuffer<Particle> d_stage;
+    blitzar_cuda_memory::DeviceBuffer<Vector3> d_k1x;
+    blitzar_cuda_memory::DeviceBuffer<Vector3> d_k2x;
+    blitzar_cuda_memory::DeviceBuffer<Vector3> d_k3x;
+    blitzar_cuda_memory::DeviceBuffer<Vector3> d_k4x;
+    blitzar_cuda_memory::DeviceBuffer<Vector3> d_k1v;
+    blitzar_cuda_memory::DeviceBuffer<Vector3> d_k2v;
+    blitzar_cuda_memory::DeviceBuffer<Vector3> d_k3v;
+    blitzar_cuda_memory::DeviceBuffer<Vector3> d_k4v;
+    blitzar_cuda_memory::DeviceBuffer<GpuHalfVelocity> d_vHalf;
     bool _leapfrogPrimed = false;
-    float* d_sphDensity = nullptr;
-    float* d_sphPressure = nullptr;
-    int* d_sphCellHash = nullptr;
-    int* d_sphSortedIndex = nullptr;
-    int* d_sphCellStart = nullptr;
-    int* d_sphCellEnd = nullptr;
-    int* d_treePmSortKeys = nullptr;
-    int* d_treePmSortIndices = nullptr;
-    int* d_treePmSortedCellHash = nullptr;
-    void* d_treePmSortTempStorage = nullptr;
-    float* d_treePmSortedPosX = nullptr;
-    float* d_treePmSortedPosY = nullptr;
-    float* d_treePmSortedPosZ = nullptr;
-    float* d_treePmSortedMass = nullptr;
-    float* d_treePmDensity = nullptr;
-    float* d_treePmPotentialA = nullptr;
-    float* d_treePmPotentialB = nullptr;
-    float* d_treePmAccelX = nullptr;
-    float* d_treePmAccelY = nullptr;
-    float* d_treePmAccelZ = nullptr;
-    float* d_treePmBoundsPartial = nullptr;
-    float* d_treePmBounds = nullptr;
-    float* d_treePmRadialMassHistogram = nullptr;
-    Vector3* d_adaptiveAcceleration = nullptr;
-    std::uint8_t* d_adaptiveLevels = nullptr;
-    std::uint64_t* d_adaptiveLastForceTicks = nullptr;
-    void* d_treePmSpectrum = nullptr;
-    void* d_treePmSpectrumX = nullptr;
-    void* d_treePmSpectrumY = nullptr;
-    void* d_treePmSpectrumZ = nullptr;
-    unsigned int* d_treePmCellMask = nullptr;
-    GpuOctreeNode* g_dOctreeNodes = nullptr;
-    int* g_dOctreeLeafIndices = nullptr;
-    unsigned long long* d_octreeMortonKeys = nullptr;
-    unsigned long long* d_octreePrefixesA = nullptr;
-    unsigned long long* d_octreePrefixesB = nullptr;
-    int* d_octreeLevelIndicesA = nullptr;
-    int* d_octreeLevelIndicesB = nullptr;
-    int* d_octreeParentCounts = nullptr;
-    int* d_octreeParentOffsets = nullptr;
-    GpuOctreeNodeHotData* d_octreeNodeHot = nullptr;
-    GpuOctreeNodeNavData* d_octreeNodeNav = nullptr;
-    int* d_octreeFirstChild = nullptr;
-    int* d_octreeLeafStarts = nullptr;
-    int* d_octreeLeafCounts = nullptr;
-    float* d_energyKineticBlocks = nullptr;
-    float* d_energyThermalBlocks = nullptr;
-    double* d_energyPotentialPartials = nullptr;
+    blitzar_cuda_memory::DeviceBuffer<float> d_sphDensity;
+    blitzar_cuda_memory::DeviceBuffer<float> d_sphPressure;
+    blitzar_cuda_memory::DeviceBuffer<int> d_sphCellHash;
+    blitzar_cuda_memory::DeviceBuffer<int> d_sphSortedIndex;
+    blitzar_cuda_memory::DeviceBuffer<int> d_sphCellStart;
+    blitzar_cuda_memory::DeviceBuffer<int> d_sphCellEnd;
+    blitzar_cuda_memory::DeviceBuffer<int> d_treePmSortKeys;
+    blitzar_cuda_memory::DeviceBuffer<int> d_treePmSortIndices;
+    blitzar_cuda_memory::DeviceBuffer<int> d_treePmSortedCellHash;
+    blitzar_cuda_memory::DeviceBuffer<std::byte> d_treePmSortTempStorage;
+    blitzar_cuda_memory::DeviceBuffer<float> d_treePmSortedPosX;
+    blitzar_cuda_memory::DeviceBuffer<float> d_treePmSortedPosY;
+    blitzar_cuda_memory::DeviceBuffer<float> d_treePmSortedPosZ;
+    blitzar_cuda_memory::DeviceBuffer<float> d_treePmSortedMass;
+    blitzar_cuda_memory::DeviceBuffer<float> d_treePmDensity;
+    blitzar_cuda_memory::DeviceBuffer<float> d_treePmPotentialA;
+    blitzar_cuda_memory::DeviceBuffer<float> d_treePmPotentialB;
+    blitzar_cuda_memory::DeviceBuffer<float> d_treePmAccelX;
+    blitzar_cuda_memory::DeviceBuffer<float> d_treePmAccelY;
+    blitzar_cuda_memory::DeviceBuffer<float> d_treePmAccelZ;
+    blitzar_cuda_memory::DeviceBuffer<float> d_treePmBoundsPartial;
+    blitzar_cuda_memory::DeviceBuffer<float> d_treePmBounds;
+    blitzar_cuda_memory::DeviceBuffer<float> d_treePmRadialMassHistogram;
+    blitzar_cuda_memory::DeviceBuffer<Vector3> d_adaptiveAcceleration;
+    blitzar_cuda_memory::DeviceBuffer<std::uint8_t> d_adaptiveLevels;
+    blitzar_cuda_memory::DeviceBuffer<std::uint64_t> d_adaptiveLastForceTicks;
+    blitzar_cuda_memory::DeviceBuffer<std::byte> d_treePmSpectrum;
+    blitzar_cuda_memory::DeviceBuffer<std::byte> d_treePmSpectrumX;
+    blitzar_cuda_memory::DeviceBuffer<std::byte> d_treePmSpectrumY;
+    blitzar_cuda_memory::DeviceBuffer<std::byte> d_treePmSpectrumZ;
+    blitzar_cuda_memory::DeviceBuffer<unsigned int> d_treePmCellMask;
+    blitzar_cuda_memory::DeviceBuffer<GpuOctreeNode> g_dOctreeNodes;
+    blitzar_cuda_memory::DeviceBuffer<int> g_dOctreeLeafIndices;
+    blitzar_cuda_memory::DeviceBuffer<unsigned long long> d_octreeMortonKeys;
+    blitzar_cuda_memory::DeviceBuffer<unsigned long long> d_octreePrefixesA;
+    blitzar_cuda_memory::DeviceBuffer<unsigned long long> d_octreePrefixesB;
+    blitzar_cuda_memory::DeviceBuffer<int> d_octreeLevelIndicesA;
+    blitzar_cuda_memory::DeviceBuffer<int> d_octreeLevelIndicesB;
+    blitzar_cuda_memory::DeviceBuffer<int> d_octreeParentCounts;
+    blitzar_cuda_memory::DeviceBuffer<int> d_octreeParentOffsets;
+    blitzar_cuda_memory::DeviceBuffer<GpuOctreeNodeHotData> d_octreeNodeHot;
+    blitzar_cuda_memory::DeviceBuffer<GpuOctreeNodeNavData> d_octreeNodeNav;
+    blitzar_cuda_memory::DeviceBuffer<int> d_octreeFirstChild;
+    blitzar_cuda_memory::DeviceBuffer<int> d_octreeLeafStarts;
+    blitzar_cuda_memory::DeviceBuffer<int> d_octreeLeafCounts;
+    blitzar_cuda_memory::DeviceBuffer<float> d_energyKineticBlocks;
+    blitzar_cuda_memory::DeviceBuffer<float> d_energyThermalBlocks;
+    blitzar_cuda_memory::DeviceBuffer<double> d_energyPotentialPartials;
 
     std::size_t g_dOctreeNodeCapacity = 0u;
     std::size_t g_dOctreeLeafCapacity = 0u;
@@ -226,12 +228,12 @@ struct ParticleSystemDeviceState final {
     std::size_t d_treePmSortedParticleCapacity = 0u;
     std::size_t d_adaptiveCapacity = 0u;
     int _gpuOctreeRootIndex = -1;
-    int _treePmFftPlan = 0;
-    int _treePmFftInversePlan = 0;
+    blitzar_cuda_memory::FftPlanHandle _treePmFftPlan;
+    blitzar_cuda_memory::FftPlanHandle _treePmFftInversePlan;
     int _treePmFftPlanGridSize = 0;
     int _gpuOctreeNodeCount = 0;
     int _gpuOctreeLeafCount = 0;
-    GpuSystemMetrics* _mappedMetricsHost = nullptr;
+    blitzar_cuda_memory::MappedHostBuffer<GpuSystemMetrics> _mappedMetricsHost;
     GpuSystemMetrics* _mappedMetricsDevice = nullptr;
     std::uint64_t _metricsStepId = 0u;
     float _metricsSimTime = 0.0f;

@@ -702,14 +702,8 @@ void ParticleSystem::releaseParticleBuffers()
     _device.d_treePmNeighborParticleCapacity = 0;
     _device.d_treePmNeighborCellCapacity = 0;
     _device.d_adaptiveCapacity = 0;
-    if (_device._treePmFftPlan != 0) {
-        cufftDestroy(static_cast<cufftHandle>(_device._treePmFftPlan));
-        _device._treePmFftPlan = 0;
-    }
-    if (_device._treePmFftInversePlan != 0) {
-        cufftDestroy(static_cast<cufftHandle>(_device._treePmFftInversePlan));
-        _device._treePmFftInversePlan = 0;
-    }
+    _device._treePmFftPlan.reset();
+    _device._treePmFftInversePlan.reset();
     _device._treePmFftPlanGridSize = 0;
     _device._treePmFftActive = false;
     _device.d_energyBlockCapacity = 0;
@@ -745,7 +739,7 @@ bool ParticleSystem::allocateMappedMetrics()
     void* devicePtr = nullptr;
     status = cudaHostGetDevicePointer(&devicePtr, hostPtr, 0);
     if (!checkCudaStatus(status, "cudaHostGetDevicePointer(mapped metrics)")) {
-        cudaFreeHost(hostPtr);
+        _device._mappedMetricsHost.reset();
         _device._mappedMetricsHost = nullptr;
         return false;
     }
@@ -764,10 +758,7 @@ bool ParticleSystem::allocateMappedMetrics()
  */
 void ParticleSystem::releaseMappedMetrics()
 {
-    if (_device._mappedMetricsHost != nullptr) {
-        cudaFreeHost(_device._mappedMetricsHost);
-    }
-    _device._mappedMetricsHost = nullptr;
+    _device._mappedMetricsHost.reset();
     _device._mappedMetricsDevice = nullptr;
     _device._metricsStepId = 0u;
     _device._metricsSimTime = 0.0f;

@@ -11,22 +11,22 @@ bool ParticleSystem::captureTreePmGraph(int slot, ParticleSoAView currentView,
                                         float deltaTime, float maxAcceleration)
 {
     if (slot < 0 || slot > 1 || numParticles <= 0 || particleLimit <= 0 ||
-        !_device._treePmFftActive || _device._treePmFftPlan == 0 ||
-        _device._treePmFftInversePlan == 0) {
+        !_device._treePmFftActive || _device._treePmFftPlan.get() == 0 ||
+        _device._treePmFftInversePlan.get() == 0) {
         return false;
     }
     cudaGraph_t graph = nullptr;
     cudaGraphExec_t executable = nullptr;
-    cudaStream_t stream = static_cast<cudaStream_t>(_device._treePmGraphStream);
+    cudaStream_t stream = static_cast<cudaStream_t>(_device._treePmGraphStream.get());
     if (stream == nullptr &&
         cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking) == cudaSuccess) {
-        _device._treePmGraphStream = stream;
+        _device._treePmGraphStream = static_cast<void*>(stream);
     }
     if (stream == nullptr) {
         return false;
     }
-    const cufftHandle forwardPlan = static_cast<cufftHandle>(_device._treePmFftPlan);
-    const cufftHandle inversePlan = static_cast<cufftHandle>(_device._treePmFftInversePlan);
+    const cufftHandle forwardPlan = static_cast<cufftHandle>(_device._treePmFftPlan.get());
+    const cufftHandle inversePlan = static_cast<cufftHandle>(_device._treePmFftInversePlan.get());
     if (cufftSetStream(forwardPlan, stream) != CUFFT_SUCCESS ||
         cufftSetStream(inversePlan, stream) != CUFFT_SUCCESS) {
         cufftSetStream(forwardPlan, nullptr);
@@ -65,8 +65,9 @@ bool ParticleSystem::captureTreePmGraph(int slot, ParticleSoAView currentView,
         return abortCapture();
     }
 
-    if (cufftExecR2C(forwardPlan, reinterpret_cast<cufftReal*>(_device.d_treePmDensity),
-                     reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrum)) != CUFFT_SUCCESS) {
+        if (cufftExecR2C(forwardPlan, reinterpret_cast<cufftReal*>(_device.d_treePmDensity.get()),
+                         reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrum.get())) !=
+            CUFFT_SUCCESS) {
         return abortCapture();
     }
 
@@ -74,12 +75,14 @@ bool ParticleSystem::captureTreePmGraph(int slot, ParticleSoAView currentView,
     const int spectrumBlocks =
         (spectrumCells + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
     treepm::treePmApplyFftKernel<<<spectrumBlocks, Particle::kDefaultCudaBlockSize, 0, stream>>>(
-        reinterpret_cast<const cufftComplex*>(_device.d_treePmSpectrum),
-        reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrumX), grid,
+          reinterpret_cast<const cufftComplex*>(_device.d_treePmSpectrum.get()),
+          reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrumX.get()), grid,
         std::max(_octreeSoftening, _physicsMinSoftening));
     if (cudaGetLastError() != cudaSuccess ||
-        cufftExecC2R(inversePlan, reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrumX),
-                     reinterpret_cast<cufftReal*>(_device.d_treePmPotentialA)) != CUFFT_SUCCESS) {
+            cufftExecC2R(inversePlan,
+                         reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrumX.get()),
+                         reinterpret_cast<cufftReal*>(_device.d_treePmPotentialA.get())) !=
+            CUFFT_SUCCESS) {
         return abortCapture();
     }
 
@@ -114,36 +117,27 @@ bool ParticleSystem::captureTreePmGraph(int slot, ParticleSoAView currentView,
     cudaGraphDestroy(graph);
     cufftSetStream(forwardPlan, nullptr);
     cufftSetStream(inversePlan, nullptr);
-    if (_device._treePmGraphExec[slot] != nullptr) {
-        cudaGraphExecDestroy(static_cast<cudaGraphExec_t>(_device._treePmGraphExec[slot]));
-    }
-    _device._treePmGraphExec[slot] = executable;
+    _device._treePmGraphExec[slot] = static_cast<void*>(executable);
     _device._treePmGraphCaptured[slot] = true;
     return true;
 }
 bool ParticleSystem::launchTreePmGraph(int slot)
 {
     if (slot < 0 || slot > 1 || !_device._treePmGraphCaptured[slot] ||
-        _device._treePmGraphExec[slot] == nullptr) {
+        _device._treePmGraphExec[slot].get() == nullptr) {
         return false;
     }
     return checkCudaStatus(
-        cudaGraphLaunch(static_cast<cudaGraphExec_t>(_device._treePmGraphExec[slot]), nullptr),
+        cudaGraphLaunch(static_cast<cudaGraphExec_t>(_device._treePmGraphExec[slot].get()), nullptr),
         "cudaGraphLaunch(treepm)");
 }
 
 void ParticleSystem::releaseTreePmGraph()
 {
     for (int slot = 0; slot < 2; ++slot) {
-        if (_device._treePmGraphExec[slot] != nullptr) {
-            cudaGraphExecDestroy(static_cast<cudaGraphExec_t>(_device._treePmGraphExec[slot]));
-            _device._treePmGraphExec[slot] = nullptr;
-        }
+        _device._treePmGraphExec[slot].reset();
         _device._treePmGraphCaptured[slot] = false;
     }
-    if (_device._treePmGraphStream != nullptr) {
-        cudaStreamDestroy(static_cast<cudaStream_t>(_device._treePmGraphStream));
-        _device._treePmGraphStream = nullptr;
-    }
+    _device._treePmGraphStream.reset();
     _device._treePmGraphSlot = 0;
 }

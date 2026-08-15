@@ -110,7 +110,8 @@ void SimulationServer::rebuildSystem()
         inputFormat = _configState._initialStateFormat;
         initConfig = _configState._initialStateConfig;
         if (_activeCheckpointState) {
-            checkpointStateCopy.reset(new SimulationCheckpointState(*_activeCheckpointState));
+            checkpointStateCopy =
+                std::make_unique<SimulationCheckpointState>(*_activeCheckpointState);
         }
         configuredParticleCount = std::max<std::uint32_t>(2u, _configState._particleCount);
     }

@@ -8,15 +8,9 @@ bool ParticleSystem::buildTreePmFftField(const TreePmGridParams& grid)
 {
     _device._treePmFftActive = false;
     const int gridSize = grid.gridSize;
-    if (_device._treePmFftPlan == 0 || _device._treePmFftPlanGridSize != gridSize) {
-        if (_device._treePmFftPlan != 0) {
-            cufftDestroy(static_cast<cufftHandle>(_device._treePmFftPlan));
-            _device._treePmFftPlan = 0;
-        }
-        if (_device._treePmFftInversePlan != 0) {
-            cufftDestroy(static_cast<cufftHandle>(_device._treePmFftInversePlan));
-            _device._treePmFftInversePlan = 0;
-        }
+    if (_device._treePmFftPlan.get() == 0 || _device._treePmFftPlanGridSize != gridSize) {
+        _device._treePmFftPlan.reset();
+        _device._treePmFftInversePlan.reset();
         _device._treePmFftPlanGridSize = 0;
         cufftHandle plan = 0;
         if (!treepm::checkTreePmFftStatus(cufftPlan3d(&plan, gridSize, gridSize, gridSize, CUFFT_R2C),
@@ -29,17 +23,17 @@ bool ParticleSystem::buildTreePmFftField(const TreePmGridParams& grid)
                 cufftPlan3d(&inversePlan, gridSize, gridSize, gridSize, CUFFT_C2R),
                 "cufftPlan3d inverse")) {
             cufftDestroy(plan);
-            _device._treePmFftPlan = 0;
+            _device._treePmFftPlan.reset();
             return false;
         }
         _device._treePmFftInversePlan = static_cast<int>(inversePlan);
         _device._treePmFftPlanGridSize = gridSize;
     }
 
-    auto* density = reinterpret_cast<cufftReal*>(_device.d_treePmDensity);
-    auto* densitySpectrum = reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrum);
+    auto* density = reinterpret_cast<cufftReal*>(_device.d_treePmDensity.get());
+    auto* densitySpectrum = reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrum.get());
     if (!treepm::checkTreePmFftStatus(
-            cufftExecR2C(static_cast<cufftHandle>(_device._treePmFftPlan), density,
+            cufftExecR2C(static_cast<cufftHandle>(_device._treePmFftPlan.get()), density,
                          densitySpectrum),
             "cufftExecR2C")) {
         return false;
@@ -49,16 +43,17 @@ bool ParticleSystem::buildTreePmFftField(const TreePmGridParams& grid)
     const int spectrumBlocks =
         (spectrumCells + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
     treepm::treePmApplyFftKernel<<<spectrumBlocks, Particle::kDefaultCudaBlockSize>>>(
-        densitySpectrum, reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrumX), grid,
+        densitySpectrum, reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrumX.get()), grid,
         std::max(_octreeSoftening, _physicsMinSoftening));
     if (!checkCudaStatus(cudaGetLastError(), "treePmApplyFftKernel launch")) {
         return false;
     }
 
-    const cufftHandle inversePlan = static_cast<cufftHandle>(_device._treePmFftInversePlan);
+    const cufftHandle inversePlan = static_cast<cufftHandle>(_device._treePmFftInversePlan.get());
     if (!treepm::checkTreePmFftStatus(
-            cufftExecC2R(inversePlan, reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrumX),
-                         reinterpret_cast<cufftReal*>(_device.d_treePmPotentialA)),
+            cufftExecC2R(inversePlan,
+                         reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrumX.get()),
+                         reinterpret_cast<cufftReal*>(_device.d_treePmPotentialA.get())),
             "cufftExecC2R potential")) {
         return false;
     }

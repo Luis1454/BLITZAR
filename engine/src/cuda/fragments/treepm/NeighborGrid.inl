@@ -143,10 +143,12 @@ bool ParticleSystem::buildTreePmNeighborGrid(ParticleSoAView currentView, int nu
             "treepm CUB radix sort")) {
         return false;
     }
-    _device.d_sphCellHash = keys.Current();
-    _device.d_treePmSortKeys = keys.Alternate();
-    _device.d_sphSortedIndex = values.Current();
-    _device.d_treePmSortIndices = values.Alternate();
+    if (keys.Current() != _device.d_sphCellHash.get()) {
+        _device.d_sphCellHash.swap(_device.d_treePmSortKeys);
+    }
+    if (values.Current() != _device.d_sphSortedIndex.get()) {
+        _device.d_sphSortedIndex.swap(_device.d_treePmSortIndices);
+    }
 
     IndexConstHandle sortedHash = _device.d_sphCellHash;
     if (useMorton) {
