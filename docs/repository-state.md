@@ -48,6 +48,15 @@ or end-to-end cosmology validity.
 Known build debt: the local CUDA/MSVC build emits existing `xutility` warnings.
 This checkpoint does not claim the repository has a zero-warning build.
 
+## Current CI Recovery
+
+The consolidation PR has restored the Linux and Windows module builds. The
+macOS build, Python coverage prerequisites, test catalog, and traceability
+format are under active CI revalidation. The remaining policy failures are
+historical structural violations and require scoped module decompositions; they
+are not waived by this checkpoint. Independent IV&V approval remains an
+external merge requirement.
+
 ## Issue Disposition
 
 | Issue | Disposition | Rationale |
