@@ -51,3 +51,19 @@ execution concern: `system`, `integration`, `octree`, `treepm`, `sph`, and
 The layout is covered by `REQ-PHYS-001` and `REQ-PHYS-002` in the quality
 traceability registry. PRs changing these paths must declare the impacted
 requirement IDs in their traceability section.
+
+## Readability Rules
+
+Readable source is a maintenance requirement, not a cosmetic preference:
+
+- Keep one blank line between functions and between distinct execution phases.
+- Keep related declarations together, then separate setup, computation,
+  synchronization, and cleanup with blank lines.
+- Do not compress independent statements or responsibilities to reduce line
+  count.
+- Keep the aggregator short; implementation belongs in the responsibility-
+  specific fragment.
+
+The current exception is `GridBuild.inl`, which remains slightly above the
+line target because its construction path is one ordered operation. It must be
+split only at complete function boundaries in a follow-up change.
