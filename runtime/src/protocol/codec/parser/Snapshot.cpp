@@ -7,6 +7,8 @@
 
 #include "protocol/codec/JsonCodec.hpp"
 #include <cctype>
+#include <cstdint>
+#include <limits>
 
 namespace bltzr_protocol {
 class SnapshotArrayParser {
@@ -108,7 +110,7 @@ private:
 };
 
 bool JsonCodec::parseSnapshotResponse(std::string_view raw, SnapshotPayload& out,
-                                            std::string& error)
+                                      std::string& error)
 {
     SnapshotPayload parsed{};
     if (!parseResponseEnvelope(raw, parsed.envelope, error)) {
@@ -119,9 +121,14 @@ bool JsonCodec::parseSnapshotResponse(std::string_view raw, SnapshotPayload& out
         return true;
     }
     readBool(raw, "has_snapshot", parsed.hasSnapshot);
-    std::size_t declaredCount = 0u;
+    std::uint64_t declaredCount = 0u;
+    std::uint64_t sourceSize = 0u;
     const bool hasDeclaredCount = JsonCodec::readNumber(raw, "count", declaredCount);
-    if (!JsonCodec::readNumber(raw, "source_count", parsed.sourceSize)) {
+    if (JsonCodec::readNumber(raw, "source_count", sourceSize) &&
+        sourceSize <= static_cast<std::uint64_t>(std::numeric_limits<std::size_t>::max())) {
+        parsed.sourceSize = static_cast<std::size_t>(sourceSize);
+    }
+    else {
         parsed.sourceSize = 0u;
     }
     if (!SnapshotArrayParser(raw).parse(parsed.particles)) {

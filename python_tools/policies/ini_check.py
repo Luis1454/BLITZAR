@@ -41,6 +41,12 @@ PERFORMANCE_PRESETS: dict[str, dict[str, str]] = {
     },
 }
 
+SCENE_MODES = (
+    "disk_orbit", "galaxy", "galaxy_collision", "cosmology", "cosmology_comoving",
+    "random_cloud", "cube_random", "sphere_random", "two_body", "three_body",
+    "plummer_sphere", "binary_star", "solar_system", "sph_collapse", "file", "objects",
+)
+
 
 # @brief Defines the ini check type contract.
 # @param None This contract does not take explicit parameters.
@@ -259,8 +265,8 @@ class IniCheck(BaseCheck):
             ("export_format", ("vtk", "vtk_binary", "xyz", "bin")),
             ("input_format", ("auto", "vtk", "vtk_binary", "xyz", "bin")),
             ("init_config_style", ("preset", "detailed")),
-            ("preset_structure", ("disk_orbit", "random_cloud", "two_body", "three_body", "plummer_sphere", "file")),
-            ("init_mode", ("disk_orbit", "random_cloud", "two_body", "three_body", "plummer_sphere", "file")),
+            ("preset_structure", SCENE_MODES),
+            ("init_mode", SCENE_MODES),
             ("sph_enabled", ("true", "false")),
         )
         for key, options in enums:

@@ -125,16 +125,7 @@ set(BLITZAR_TEST_BASE_REAL_SOURCES
     ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
     "${BLITZAR_ROOT_DIR}/engine/src/config/text/Parse.cpp"
 )
-set(BLITZAR_TEST_BASE_BRIDGE_SOURCES
-    "${BLITZAR_ROOT_DIR}/tests/support/poll_utils.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/client/runtime/BridgeState.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/client/runtime/Bridge.cpp"
-    ${BLITZAR_TEST_BASE_REAL_SOURCES}
-)
-set(BLITZAR_TEST_BASE_RUNTIME_SOURCES
-    "${BLITZAR_ROOT_DIR}/tests/support/client_utils.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/client/runtime/Runtime.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/client/common/ClientCommon.cpp"
+set(BLITZAR_TEST_CONFIG_SOURCES
     "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Main.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Apply.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Entries.cpp"
@@ -150,6 +141,18 @@ set(BLITZAR_TEST_BASE_RUNTIME_SOURCES
     "${BLITZAR_ROOT_DIR}/engine/src/config/core/Config.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/config/modes/Normalize.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
+)
+set(BLITZAR_TEST_BASE_BRIDGE_SOURCES
+    "${BLITZAR_ROOT_DIR}/tests/support/poll_utils.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/client/runtime/BridgeState.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/client/runtime/Bridge.cpp"
+    ${BLITZAR_TEST_CONFIG_SOURCES}
+    ${BLITZAR_TEST_BASE_REAL_SOURCES}
+)
+set(BLITZAR_TEST_BASE_RUNTIME_SOURCES
+    "${BLITZAR_ROOT_DIR}/tests/support/client_utils.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/client/runtime/Runtime.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/client/common/ClientCommon.cpp"
     ${BLITZAR_TEST_BASE_BRIDGE_SOURCES}
 )
 set(BLITZAR_TEST_BASE_QT_LOGIC_SOURCES
