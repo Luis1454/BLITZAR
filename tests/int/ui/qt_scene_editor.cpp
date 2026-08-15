@@ -5,6 +5,7 @@
 
 #include "window/scene/SceneEditor.hpp"
 #include <QApplication>
+#include <QSysInfo>
 #include <QCoreApplication>
 #include <QDir>
 #include <QEventLoop>
@@ -20,7 +21,7 @@
 #include <gtest/gtest.h>
 
 namespace bltzr_test_qt_scene_editor {
-namespace {
+namespace blitzar_test_qt_scene_editor {
 SimulationConfig makeSceneEditorConfig()
 {
     SimulationConfig config{};
@@ -33,7 +34,7 @@ SimulationConfig makeSceneEditorConfig()
     return config;
 }
 
-} // namespace
+} // namespace blitzar_test_qt_scene_editor
 
 TEST(QtSceneEditorTest, TST_UIX_UI_027_AddsGranularObjectPropertiesIndependently)
 {
@@ -52,10 +53,8 @@ TEST(QtSceneEditorTest, TST_UIX_UI_027_AddsGranularObjectPropertiesIndependently
             break;
         }
     }
-#ifdef _WIN32
-    if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM"))
+    if (QSysInfo::productType() == "windows" && qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM"))
         qputenv("QT_QPA_PLATFORM", "windows");
-#endif
     QApplication application(argc, argv);
     bltzr_qt::SceneEditor editor(makeSceneEditorConfig());
     editor.setAttribute(Qt::WA_DontShowOnScreen);

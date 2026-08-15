@@ -12,7 +12,7 @@
 
 #include <limits>
 
-namespace {
+namespace blitzar_cuda_tree_pm_gpu {
 
 bool checkTreePmFftStatus(cufftResult status, const char* operation)
 {
@@ -973,7 +973,7 @@ __global__ void updateParticlesTreePmKernel(
     }
 }
 
-} // namespace
+} // namespace blitzar_cuda_tree_pm_gpu
 
 int ParticleSystem::treePmLayoutMode()
 {

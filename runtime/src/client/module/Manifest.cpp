@@ -14,7 +14,6 @@
 #include <string_view>
 
 namespace bltzr_module {
-namespace {
 bool isSupportedModuleId(std::string_view moduleId) noexcept
     {
         return moduleId == "cli" || moduleId == "echo" || moduleId == "gui" || moduleId == "qt";
@@ -58,7 +57,6 @@ bool isHexDigest(std::string_view rawValue) noexcept
         }
         return true;
     }
-} // namespace
 
 bool Manifest::load(std::string_view modulePath, Manifest& outManifest,
                                 std::string& outError)

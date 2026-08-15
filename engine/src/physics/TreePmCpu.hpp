@@ -44,8 +44,11 @@ struct CpuTreePmWorkspaceT final {
     std::vector<int> cellEnd;
 };
 
-using CpuTreePmWorkspace = CpuTreePmWorkspaceT<float>;
-using CpuTreePmFp64Workspace = CpuTreePmWorkspaceT<double>;
+struct CpuTreePmWorkspace final : CpuTreePmWorkspaceT<float> {
+};
+
+struct CpuTreePmFp64Workspace final : CpuTreePmWorkspaceT<double> {
+};
 
 struct CpuTreePmParameters final {
     std::string model;

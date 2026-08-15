@@ -12,7 +12,6 @@
 #include <iostream>
 
 namespace bltzr_qt {
-namespace {
 void applySharedConfig(const SimulationConfig& config, bltzr_client::Interface& runtime)
 {
     runtime.setParticleCount(bltzr_client::resolveServerParticleCount(config));
@@ -40,7 +39,6 @@ void applySharedConfig(const SimulationConfig& config, bltzr_client::Interface& 
     runtime.setExportDefaults(config.exportDirectory, config.exportFormat);
     runtime.setRemoteSnapshotCap(bltzr_client::resolveClientDrawCap(config));
 }
-} // namespace
 
 ApplyConfigResult Controller::applyConfig(const SimulationConfig& config,
                                                               bltzr_client::Interface& runtime,

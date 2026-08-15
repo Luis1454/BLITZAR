@@ -20,7 +20,6 @@
 #include <vector>
 
 namespace bltzr_qt {
-namespace {
 std::vector<RenderParticle> spatialSample(const std::vector<RenderParticle>& input,
                                           std::size_t cap)
 {
@@ -105,7 +104,6 @@ void centerRenderSnapshot(std::vector<RenderParticle>& snapshot)
         particle.z -= centerZ;
     }
 }
-} // namespace
 
 MultiView::MultiView()
     : QWidget(nullptr),

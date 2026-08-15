@@ -17,7 +17,6 @@
 #include <vector>
 
 namespace bltzr_module_cli {
-namespace {
 bool ensureConnected(State& state, const bltzr_client::ErrorBufferView& errorBuffer)
 {
     if (state.transport.isConnected()) {
@@ -145,7 +144,6 @@ bool reconnectToServer(State& state, const bltzr_client::ErrorBufferView& errorB
               << state.session.port << "\n";
     return true;
 }
-} // namespace
 
 bool ServerOps::commandStatus(State& state,
                               const bltzr_client::ErrorBufferView& errorBuffer)

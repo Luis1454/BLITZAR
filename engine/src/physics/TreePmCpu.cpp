@@ -14,10 +14,7 @@
 #include <string_view>
 #include <utility>
 
-namespace {
-template <typename Scalar>
-using Complex = std::complex<Scalar>;
-
+namespace blitzar_physics_tree_pm_cpu {
 template <typename Scalar>
 constexpr Scalar kTwoPi = static_cast<Scalar>(6.2831853071795864769);
 
@@ -74,7 +71,7 @@ Scalar sinc(Scalar value)
 }
 
 template <typename Scalar>
-void fft1d(std::vector<Complex<Scalar>>& values, int start, int stride, int size, bool inverse)
+void fft1d(std::vector<std::complex<Scalar>>& values, int start, int stride, int size, bool inverse)
 {
     for (int i = 1, j = 0; i < size; ++i) {
         int bit = size >> 1;
@@ -91,9 +88,9 @@ void fft1d(std::vector<Complex<Scalar>>& values, int start, int stride, int size
     for (int length = 2; length <= size; length <<= 1) {
         const Scalar angle = (inverse ? static_cast<Scalar>(1.0) : static_cast<Scalar>(-1.0)) *
                              kTwoPi<Scalar> / static_cast<Scalar>(length);
-        const Complex<Scalar> step(std::cos(angle), std::sin(angle));
+        const std::complex<Scalar> step(std::cos(angle), std::sin(angle));
         for (int offset = 0; offset < size; offset += length) {
-            Complex<Scalar> factor(static_cast<Scalar>(1.0), static_cast<Scalar>(0.0));
+            std::complex<Scalar> factor(static_cast<Scalar>(1.0), static_cast<Scalar>(0.0));
             const int halfLength = length >> 1;
             for (int i = 0; i < halfLength; ++i) {
                 const std::size_t evenIndex = static_cast<std::size_t>(start +
@@ -101,8 +98,8 @@ void fft1d(std::vector<Complex<Scalar>>& values, int start, int stride, int size
                 const std::size_t oddIndex = static_cast<std::size_t>(start +
                                                                         (offset + i + halfLength) *
                                                                         stride);
-                const Complex<Scalar> even = values[evenIndex];
-                const Complex<Scalar> odd = factor * values[oddIndex];
+                const std::complex<Scalar> even = values[evenIndex];
+                const std::complex<Scalar> odd = factor * values[oddIndex];
                 values[evenIndex] = even + odd;
                 values[oddIndex] = even - odd;
                 factor *= step;
@@ -112,7 +109,7 @@ void fft1d(std::vector<Complex<Scalar>>& values, int start, int stride, int size
 }
 
 template <typename Scalar>
-void fft3d(std::vector<Complex<Scalar>>& values, int size, bool inverse)
+void fft3d(std::vector<std::complex<Scalar>>& values, int size, bool inverse)
 {
 #pragma omp parallel for schedule(static)
     for (int z = 0; z < size; ++z) {
@@ -135,7 +132,7 @@ void fft3d(std::vector<Complex<Scalar>>& values, int size, bool inverse)
     if (inverse) {
         const Scalar inverseCells = static_cast<Scalar>(1.0) /
                                     static_cast<Scalar>(size * size * size);
-        for (Complex<Scalar>& value : values) {
+        for (std::complex<Scalar>& value : values) {
             value *= inverseCells;
         }
     }
@@ -336,10 +333,10 @@ void buildFftFields(const Grid<Scalar>& grid, Scalar shortRangeScale, Scalar poi
                     std::string_view assignment, CpuTreePmWorkspaceT<Scalar>& workspace)
 {
     const std::size_t cellCount = workspace.density.size();
-    std::vector<Complex<Scalar>>& spectrum = workspace.spectrum;
+    std::vector<std::complex<Scalar>>& spectrum = workspace.spectrum;
     spectrum.resize(cellCount);
     for (std::size_t i = 0; i < cellCount; ++i) {
-        spectrum[i] = Complex<Scalar>(workspace.density[i], static_cast<Scalar>(0.0));
+        spectrum[i] = std::complex<Scalar>(workspace.density[i], static_cast<Scalar>(0.0));
     }
     fft3d<Scalar>(spectrum, grid.size, false);
 
@@ -358,7 +355,7 @@ void buildFftFields(const Grid<Scalar>& grid, Scalar shortRangeScale, Scalar poi
                 const Scalar kSquared = kx * kx + ky * ky + kz * kz;
                 const std::size_t index = static_cast<std::size_t>(gridIndex(x, y, z, grid.size));
                  if (kSquared <= static_cast<Scalar>(1.0e-12)) {
-                    spectrum[index] = Complex<Scalar>();
+                    spectrum[index] = std::complex<Scalar>();
                     continue;
                 }
                 const Scalar green = poissonCoefficient *
@@ -687,7 +684,7 @@ bool computeCpuTreePmForcesTyped(const std::vector<Particle>& particles,
     return true;
 }
 
-} // namespace
+} // namespace blitzar_physics_tree_pm_cpu
 
 bool computeCpuTreePmForces(const std::vector<Particle>& particles,
                             const ForceLawPolicy& forceLaw,

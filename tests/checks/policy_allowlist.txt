@@ -30,3 +30,35 @@ tests/int/ui/qt_workspace_runtime_controls.cpp
 
 # Initial state generation modes for presets
 engine/src/server/simulation/state/Generation.cpp
+
+# DEV-QUAL-012: baseline files scheduled for responsibility-focused extraction in #443.
+cmake/apps.cmake
+docs/quality/manifest/deviations.json
+engine/include/physics/ParticleSystem.hpp
+engine/src/config/directive/Config.cpp
+engine/src/config/directive/Write.cpp
+engine/src/config/registry/Entries.cpp
+engine/src/config/validation/Scenario.cpp
+engine/src/cuda/fragments/system/Core.inl
+engine/src/cuda/fragments/treepm/Gpu.inl
+engine/src/cuda/JitRuntime.cu
+engine/src/physics/ParticleSystemHost.cpp
+engine/src/physics/TreePmCpu.cpp
+engine/src/server/simulation/lifecycle/Rebuild.cpp
+engine/src/server/simulation/runtime/SettersAndExport.cpp
+engine/src/server/simulation/telemetry/SnapshotAndEnergy.cpp
+engine/src/server/SimulationInitConfig.cpp
+modules/qt/src/widgets/graphs/SpectrumGraph.cpp
+modules/qt/src/widgets/viewport/GpuView.cpp
+modules/qt/src/widgets/viewport/MultiView.cpp
+modules/qt/src/window/config/ConfigurationEditor.cpp
+modules/qt/src/window/config/WindowConfig.cpp
+modules/qt/src/window/control/Controls.cpp
+modules/qt/src/window/layout/State.cpp
+modules/qt/src/window/scene/SceneEditor.cpp
+python_tools/policies/repo_policy.py
+scripts/analysis/ast_graph.py
+tests/unit/config/args_cli.cpp
+tests/unit/config/args_io.cpp
+tests/unit/config/args_io_directive.cpp
+tests/unit/ui/qt_mainwindow_controller.cpp

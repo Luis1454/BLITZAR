@@ -22,7 +22,6 @@
 #include <memory>
 
 namespace bltzr_qt {
-namespace {
 constexpr char kVertexShader[] = R"GLSL(
 #version 330 core
 layout(location = 0) in vec3 a_position;
@@ -130,7 +129,6 @@ int modeValue(grav::ViewMode mode)
 {
     return static_cast<int>(mode);
 }
-} // namespace
 
 GpuView::GpuView(grav::ViewMode mode)
     : QOpenGLWidget(nullptr),

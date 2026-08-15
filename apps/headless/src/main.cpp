@@ -25,7 +25,7 @@
 #include <string_view>
 #include <vector>
 
-namespace {
+namespace blitzar_headless_main {
 bool containsHelp(const std::vector<std::string_view>& args)
 {
     return std::any_of(args.begin() + (args.empty() ? 0 : 1), args.end(), [](const auto value) {
@@ -89,7 +89,7 @@ void resolveExportPath(const std::filesystem::path& configPath, std::string& exp
                          .string();
     }
 }
-} // namespace
+} // namespace blitzar_headless_main
 
 int main(int argc, char** argv)
 {

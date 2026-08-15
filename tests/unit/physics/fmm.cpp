@@ -10,7 +10,7 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-namespace {
+namespace blitzar_test_fmm {
 float nextUnit(std::uint32_t& state)
 {
     state = state * 1664525u + 1013904223u;
@@ -48,7 +48,7 @@ Vector3 pairwiseForce(const std::vector<Particle>& particles, std::size_t target
     }
     return acceleration;
 }
-} // namespace
+} // namespace blitzar_test_fmm
 
 TEST(PhysicsTest, TST_UNT_FMM_001_OrderTwoCpuFmmMatchesPairwiseReference)
 {

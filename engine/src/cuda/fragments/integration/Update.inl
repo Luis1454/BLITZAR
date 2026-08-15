@@ -949,8 +949,8 @@ bool ParticleSystem::update(float deltaTime)
                                   Particle::kDefaultCudaBlockSize;
             auto* halfVelocity = reinterpret_cast<float3*>(_device.d_vHalf);
 
-            if (!_device._leapfrogPrimed) {
-                if (treePmEnabled) {
+            bool treePmLeapfrogCompleted = false;
+            if (!_device._leapfrogPrimed && treePmEnabled) {
                     computeTreePmAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
                         currentView, _device.d_k1v, numParticles, _device.d_octreeNodeHot,
                         _device.d_octreeNodeNav, _device.d_octreeFirstChild,
@@ -1024,15 +1024,17 @@ bool ParticleSystem::update(float deltaTime)
                     std::swap(_device.d_soaVelX, _device.d_soaNextVelX);
                     std::swap(_device.d_soaVelY, _device.d_soaNextVelY);
                     std::swap(_device.d_soaVelZ, _device.d_soaNextVelZ);
-                    goto treepm_post_update;
-                }
+                treePmLeapfrogCompleted = true;
+            }
+            if (!treePmLeapfrogCompleted) {
+                if (!_device._leapfrogPrimed) {
                 primeHalfVelocityKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
                     currentView, halfVelocity, numParticles);
                 if (!checkCudaStatus(cudaGetLastError(), "primeHalfVelocityKernel launch")) {
                     return false;
                 }
                 _device._leapfrogPrimed = true;
-            }
+                }
 
             computeOctreeAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
                 currentView, _device.d_k1v, numParticles, _device.d_octreeNodeHot,
@@ -1098,6 +1100,7 @@ bool ParticleSystem::update(float deltaTime)
             std::swap(_device.d_soaVelX, _device.d_soaNextVelX);
             std::swap(_device.d_soaVelY, _device.d_soaNextVelY);
             std::swap(_device.d_soaVelZ, _device.d_soaNextVelZ);
+        }
         }
         else if (_integratorMode == IntegratorMode::Euler) {
             const auto forceStartTime = std::chrono::high_resolution_clock::now();
@@ -1195,8 +1198,6 @@ bool ParticleSystem::update(float deltaTime)
                 _device._treePmGraphSlot ^= 1;
             }
         }
-
-    treepm_post_update:
 
         float scaleRatio = 1.0f;
         float previousHubble = 0.0f;

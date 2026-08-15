@@ -17,7 +17,6 @@
 #include <string>
 
 namespace bltzr_module_cli {
-namespace {
 void printHelpImpl()
 {
     std::cout << "[module-cli] commands:\n"
@@ -66,7 +65,6 @@ bool handleCommandImpl(State& state, std::string_view commandLine,
         return false;
     }
 }
-} // namespace
 
 void Commands::printHelp()
 {

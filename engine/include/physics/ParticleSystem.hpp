@@ -461,12 +461,12 @@ public:
      */
     IntegratorMode getIntegratorMode() const;
 
-    void setDeterministicMode(bool enabled)
+    inline void setDeterministicMode(bool enabled)
     {
         _deterministicMode = enabled;
     }
 
-    bool isDeterministicMode() const
+    inline bool isDeterministicMode() const
     {
         return _deterministicMode;
     }

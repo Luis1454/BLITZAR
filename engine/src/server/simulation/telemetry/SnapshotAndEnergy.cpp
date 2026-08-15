@@ -7,7 +7,7 @@
 
 #include "engine/src/server/simulation/Internal.hpp"
 
-namespace {
+namespace blitzar_simulation_snapshot_energy {
 constexpr int kDensityGridSide = 24;
 constexpr std::size_t kDensityCellCount = static_cast<std::size_t>(kDensityGridSide) *
                                            static_cast<std::size_t>(kDensityGridSide) *
@@ -103,7 +103,7 @@ float densityNormAt(const DensityGrid& grid, const Vector3& position)
     const float ratio = std::max(localMass / (27.0f * grid.meanCellMass), 1.0e-6f);
     return std::clamp(0.5f + 0.2f * std::log2(ratio), 0.0f, 1.0f);
 }
-} // namespace
+} // namespace blitzar_simulation_snapshot_energy
 
 /*
  * @brief Documents the publish snapshot operation contract.

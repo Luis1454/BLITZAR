@@ -17,19 +17,17 @@
 #include <vector>
 
 namespace bltzr_qt {
-namespace {
 constexpr std::size_t kGridSize = 64u;
 constexpr std::size_t kSpectrumBins = 32u;
 constexpr std::size_t kHistoryColumns = 240u;
 constexpr std::chrono::milliseconds kAnalysisInterval(100);
-using Complex = std::complex<float>;
 
 std::size_t gridIndex(std::size_t x, std::size_t y, std::size_t z)
 {
     return (x * kGridSize + y) * kGridSize + z;
 }
 
-void fftLine(std::vector<Complex>& line)
+void fftLine(std::vector<std::complex<float>>& line)
 {
     const std::size_t size = line.size();
     for (std::size_t i = 1u, j = 0u; i < size; ++i) {
@@ -43,13 +41,13 @@ void fftLine(std::vector<Complex>& line)
     for (std::size_t length = 2u; length <= size; length <<= 1u) {
         const float angle = -2.0f * kPi /
                             static_cast<float>(length);
-        const Complex root(std::cos(angle), std::sin(angle));
+        const std::complex<float> root(std::cos(angle), std::sin(angle));
         for (std::size_t start = 0u; start < size; start += length) {
-            Complex factor(1.0f, 0.0f);
+            std::complex<float> factor(1.0f, 0.0f);
             const std::size_t half = length >> 1u;
             for (std::size_t offset = 0u; offset < half; ++offset) {
-                const Complex even = line[start + offset];
-                const Complex odd = factor * line[start + offset + half];
+                const std::complex<float> even = line[start + offset];
+                const std::complex<float> odd = factor * line[start + offset + half];
                 line[start + offset] = even + odd;
                 line[start + offset + half] = even - odd;
                 factor *= root;
@@ -58,9 +56,9 @@ void fftLine(std::vector<Complex>& line)
     }
 }
 
-void transformGrid(std::vector<Complex>& grid)
+void transformGrid(std::vector<std::complex<float>>& grid)
 {
-    std::vector<Complex> line(kGridSize);
+    std::vector<std::complex<float>> line(kGridSize);
     for (std::size_t x = 0u; x < kGridSize; ++x) {
         for (std::size_t y = 0u; y < kGridSize; ++y) {
             for (std::size_t z = 0u; z < kGridSize; ++z)
@@ -105,7 +103,6 @@ QColor spectrumColor(float normalized)
         static_cast<int>(stops[lower].green() + local * (stops[lower + 1u].green() - stops[lower].green())),
         static_cast<int>(stops[lower].blue() + local * (stops[lower + 1u].blue() - stops[lower].blue())));
 }
-} // namespace
 
 SpectrumGraph::SpectrumGraph()
     : QWidget(nullptr), _sampledParticleCount(0u), _deltaRms(0.0f), _hasAnalysisAt(false)
@@ -198,11 +195,11 @@ void SpectrumGraph::setSnapshot(const std::vector<RenderParticle>& snapshot,
         update();
         return;
     }
-    std::vector<Complex> transformed(density.size());
+    std::vector<std::complex<float>> transformed(density.size());
     float variance = 0.0f;
     for (std::size_t index = 0u; index < density.size(); ++index) {
         const float delta = density[index] / mean - 1.0f;
-        transformed[index] = Complex(delta, 0.0f);
+        transformed[index] = std::complex<float>(delta, 0.0f);
         variance += delta * delta;
     }
     _deltaRms = std::sqrt(variance / static_cast<float>(density.size()));

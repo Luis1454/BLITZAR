@@ -22,7 +22,7 @@ struct blitzar_runtime_bridge_t {
     std::string serverOwnerLabel = "external";
 };
 
-namespace {
+namespace blitzar_runtime_ffi_bridge_api {
 constexpr std::size_t kPendingCommandLimit = 128u;
 constexpr std::uint32_t kSnapshotCapMin = 1u;
 constexpr std::uint32_t kSnapshotCapMax = std::numeric_limits<std::uint32_t>::max();
@@ -34,7 +34,7 @@ blitzar_runtime_string_view stringView(const std::string& value)
         value.size(),
     };
 }
-} // namespace
+} // namespace blitzar_runtime_ffi_bridge_api
 
 extern "C" {
 blitzar_runtime_bridge_t* blitzar_runtime_bridge_create()

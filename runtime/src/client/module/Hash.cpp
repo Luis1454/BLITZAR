@@ -15,7 +15,6 @@
 #include <vector>
 
 namespace bltzr_module {
-namespace {
 const std::array<std::uint32_t, 64u> kRoundConstants{
     0x428a2f98u, 0x71374491u, 0xb5c0fbcfu, 0xe9b5dba5u, 0x3956c25bu, 0x59f111f1u, 0x923f82a4u,
     0xab1c5ed5u, 0xd807aa98u, 0x12835b01u, 0x243185beu, 0x550c7dc3u, 0x72be5d74u, 0x80deb1feu,
@@ -135,7 +134,6 @@ std::string digest(const std::vector<std::uint8_t>& input)
         output << std::setw(8) << value;
     return output.str();
 }
-} // namespace
 
 bool computeFileSha256Hex(std::string_view filePath, std::string& outHexDigest,
                           std::string& outError)

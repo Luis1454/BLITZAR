@@ -83,8 +83,10 @@ Build profiles:
 - Repository policy keeps file-size thresholds as a decomposition signal (`<=200` target, strong alert `>300`) and supplements them with warnings for oversized functions, excessive function counts, and lightweight complexity signals rather than rewarding artificial wrapper splits.
 - Physics stability constants (max acceleration, softening floor, etc.) are exposed through `SimulationConfig` to allow deterministic tuning of solver boundaries without recompilation.
 - Configuration parsing and runtime diagnostics must expose explicit SI units for physical quantities unless a field name explicitly carries another unit such as `_ms` or `fps`.
-- Repository C++ headers must use strict include guards, not `#pragma once`.
-- Repository C++ sources must not use preprocessor conditionals outside header include guards; platform seams must be selected by the build graph, not `#if/#else` branches.
+- Repository C++ headers must use strict include guards, not `#pragma once`. Header definitions are
+  forbidden unless explicitly `inline` or `constexpr`; those exceptions are restricted to small,
+  deterministic value-contract operations and are covered by the repository-policy tests.
+- Repository C++ sources must not use preprocessor conditionals outside header include guards; platform seams must be selected by the build graph, not `#if/#else` branches. CUDA/ISA feature seams are the narrow exception: only `BLITZAR_ENABLE_CUDA`, CUDA driver/NVRTC, `__CUDA_ARCH__`, `__CUDACC__`, and `__SSE__` directives are allowed.
 - Repository C++ sources must not define macros outside header include guards.
 - Strict analyzer lanes also enforce ignored-return-value coverage for internal status APIs through `clang-tidy` and targeted `[[nodiscard]]` annotations.
 - Any requirement, tolerance, or toolchain update must update the quality artifacts in this directory in the same change.

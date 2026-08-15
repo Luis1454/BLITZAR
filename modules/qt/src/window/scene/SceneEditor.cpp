@@ -28,7 +28,6 @@
 #include <limits>
 
 namespace bltzr_qt {
-namespace {
 QDoubleSpinBox* floatField(QFormLayout* form, const char* label, double value,
                            double minimum = -1.0e9, double maximum = 1.0e9)
 {
@@ -50,7 +49,6 @@ SceneObjectConfig defaultObject(int index)
     object.seed += static_cast<std::uint32_t>(index);
     return object;
 }
-} // namespace
 
 SceneEditor::SceneEditor(const SimulationConfig& config, QWidget* parent) : QWidget(parent)
 {

@@ -15,7 +15,6 @@
 #include <sstream>
 
 namespace bltzr_qt {
-namespace {
 static bool hasAge(std::uint32_t ageMs)
     {
         return ageMs != std::numeric_limits<std::uint32_t>::max();
@@ -121,7 +120,6 @@ static std::string exportStateLabel(const PresentationInput& input)
         }
         return input.stats.exportLastState;
     }
-} // namespace
 
 Presentation Presenter::present(const PresentationInput& input) const
 {

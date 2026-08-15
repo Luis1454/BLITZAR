@@ -27,7 +27,7 @@
 #include <utility>
 #include <vector>
 
-namespace {
+namespace blitzar_cuda_jit_runtime {
 
 bool jitEnabledFromEnvironment()
 {
@@ -263,7 +263,7 @@ double elapsedMs(cudaEvent_t begin, cudaEvent_t end)
     return static_cast<double>(milliseconds);
 }
 
-} // namespace
+} // namespace blitzar_cuda_jit_runtime
 
 struct CudaJitRuntime::Impl final {
 #if BLITZAR_HAS_CUDA_DRIVER

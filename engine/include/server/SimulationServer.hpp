@@ -400,7 +400,7 @@ private:
      */
     struct ExportQueueState;
     struct ConfigState final {
-        explicit ConfigState(std::uint32_t particleCount)
+        inline explicit ConfigState(std::uint32_t particleCount)
             : _particleCount(particleCount)
         {
         }

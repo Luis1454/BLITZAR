@@ -10,7 +10,7 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-namespace {
+namespace blitzar_test_fmm_quality {
 float randomUnit(std::uint32_t& state)
 {
     state = state * 1664525u + 1013904223u;
@@ -157,7 +157,7 @@ bool advanceLeapfrog(std::vector<Particle>& particles, const ForceLawPolicy& pol
                                      acceleration[index] * (0.5f * dt));
     return true;
 }
-} // namespace
+} // namespace blitzar_test_fmm_quality
 
 TEST(PhysicsTest, TST_UNT_FMM_002_AdaptiveTreeQualifiesPlummerSphere)
 {

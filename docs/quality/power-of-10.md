@@ -63,7 +63,9 @@ The profile is used in two modes:
    Automation status: `partial`
    Automated checks:
    - headers must use strict include guards instead of `#pragma once`
-   - C++ sources in the repository must not use preprocessor conditionals outside header include guards
+   - C++ sources in the repository must not use preprocessor conditionals outside header include guards,
+     except narrowly bounded CUDA/ISA feature seams (`BLITZAR_ENABLE_CUDA`, CUDA driver/NVRTC,
+     `__CUDA_ARCH__`, `__CUDACC__`, and `__SSE__`)
    - C++ sources in the repository must not define macros outside header include guards
    Policy note:
    - platform/compiler variability must be isolated with build-system source selection or explicit runtime adapters, not conditional compilation
@@ -94,7 +96,8 @@ Current automated `Power of 10` repository checks cover:
 - `do { ... } while (...)` forbidden in production C++ paths
 - `while (true)` forbidden in production C++ paths
 - `#pragma once` forbidden; headers must use strict include guards
-- preprocessor conditionals forbidden in repository C++ sources outside header include guards
+- preprocessor conditionals forbidden in repository C++ sources outside header include guards, except
+  the qualified CUDA/ISA hardware seams listed above
 - preprocessor macro definitions forbidden in repository C++ sources outside header include guards
 - function pointer typedefs forbidden outside explicit ABI boundary headers
 

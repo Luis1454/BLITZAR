@@ -9,7 +9,6 @@
 #include <numeric>
 
 namespace bltzr_fmm {
-namespace {
 struct CellReference final {
     int level;
     int index;
@@ -156,7 +155,6 @@ double factorialInteger(int value)
 {
     return value < 2 ? 1.0 : 2.0;
 }
-} // namespace
 
 void configure(FmmWorkspace& workspace, int leafCapacity, float theta)
 {

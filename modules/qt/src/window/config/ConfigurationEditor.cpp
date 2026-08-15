@@ -24,7 +24,6 @@
 #include <limits>
 
 namespace bltzr_qt {
-namespace {
 QWidget* addInt(QFormLayout* form, QHash<QString, QWidget*>& fields, const char* key, int value,
                 int minimum = 0, int maximum = INT_MAX)
 {
@@ -146,7 +145,6 @@ void readString(const QHash<QString, QWidget*>& fields, const char* key, std::st
     else if (auto* combo = qobject_cast<QComboBox*>(widget))
         target = combo->currentText().toStdString();
 }
-} // namespace
 
 ConfigurationEditor::ConfigurationEditor(const SimulationConfig& config, QWidget* parent)
     : QDialog(parent), _configuration(config)

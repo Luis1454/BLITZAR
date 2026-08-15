@@ -20,7 +20,7 @@
 #include <xmmintrin.h>
 #endif
 
-namespace {
+namespace blitzar_physics_particle_system_host {
 constexpr float kGravity = 1.0f;
 constexpr std::size_t kOctreeLeafCapacity = 16u;
 constexpr int kOctreeMaxDepth = 24;
@@ -124,7 +124,7 @@ Particle makeParticle(Vector3 position, Vector3 velocity)
     particle.setTemperature(0.0f);
     return particle;
 }
-} // namespace
+} // namespace blitzar_physics_particle_system_host
 
 Octree::Node::Node()
     : center(),

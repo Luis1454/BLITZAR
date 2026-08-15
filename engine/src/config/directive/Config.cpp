@@ -281,12 +281,14 @@ static void applyLegacySceneProperty(const std::vector<std::pair<std::string, st
     if (property.type == "particle_system") {
         SceneObjectConfig system;
         std::uint32_t systemSequence = 1u;
-        do {
+        bool hasMatchingId = true;
+        while (hasMatchingId) {
             system.id = object.id + "_system_" + std::to_string(systemSequence++);
-        } while (std::any_of(scene.objects.begin(), scene.objects.end(),
-                             [&system](const SceneObjectConfig& candidate) {
-                                 return candidate.id == system.id;
-                             }));
+            hasMatchingId = std::any_of(scene.objects.begin(), scene.objects.end(),
+                                        [&system](const SceneObjectConfig& candidate) {
+                                            return candidate.id == system.id;
+                                        });
+        }
         system.name = object.name + " Particle System";
         system.type = "particle_system";
         system.enabled = property.enabled;

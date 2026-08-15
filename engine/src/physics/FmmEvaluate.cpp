@@ -7,7 +7,6 @@
 #include <cmath>
 
 namespace bltzr_fmm {
-namespace {
 struct Interaction final {
     int targetLevel;
     int targetIndex;
@@ -143,7 +142,6 @@ bool finite(Vector3 value)
 {
     return std::isfinite(value.x) && std::isfinite(value.y) && std::isfinite(value.z);
 }
-} // namespace
 
 void evaluateInteractions(const std::vector<Particle>& particles, const ForceLawPolicy& policy,
                           FmmWorkspace& workspace, std::vector<Vector3>& accelerations)

@@ -16,6 +16,11 @@ from python_tools.policies.repo_policy_function_metrics import (
     IMPLEMENTATION_SCAN_EXTS,
     collect_function_decomposition_warnings,
 )
+from python_tools.policies.repo_policy_preprocessor import (
+    PREPROCESSOR_OPEN_RE,
+    has_unapproved_preprocessor_conditional,
+    is_allowed_hardware_directive,
+)
 from python_tools.policies.repo_policy_workflows import (
     check_evidence_workflow_commands,
     check_legacy_ctest_selectors,
@@ -41,6 +46,8 @@ IGNORED_DIRS = {
     ".ruff_cache",
     ".pytest_cache",
     "build",
+    "artifacts",
+    "dist",
     "exports",
     "site-packages",
 }
@@ -66,7 +73,6 @@ NON_WAIVABLE_STRONG_SIZE_PATHS: set[str] = set()
 QT_REFERENCE_NEW_RE = re.compile(
     r"(?m)^\s*(?:auto|Q[A-Za-z0-9_<>:]+)\s*&\s*[A-Za-z0-9_]+\s*=\s*\*new\s+Q[A-Za-z0-9_<>:]+\s*\("
 )
-PREPROCESSOR_CONDITIONAL_RE = re.compile(r"(?m)^\s*#(?:if|ifdef|ifndef|elif|else|endif)\b")
 PRAGMA_ONCE_RE = re.compile(r"(?m)^\s*#pragma\s+once\b")
 DEFINE_RE = re.compile(r"(?m)^\s*#define\s+([A-Z][A-Z0-9_]+)\b(?!\s*\()")
 NORMALIZED_DOCUMENTATION_RE = re.compile(
@@ -225,7 +231,7 @@ class RepoPolicyCheck(BaseCheck):
         if suffix in HEADER_EXTS:
             self._check_include_guard(rel, content, result)
         else:
-            if PREPROCESSOR_CONDITIONAL_RE.search(content):
+            if has_unapproved_preprocessor_conditional(content):
                 result.add_error(f"{rel}: preprocessor conditionals are forbidden in C/C++ sources")
             if DEFINE_RE.search(content):
                 result.add_error(f"{rel}: preprocessor macros are forbidden in C/C++ sources")
@@ -265,11 +271,20 @@ class RepoPolicyCheck(BaseCheck):
         if not last.startswith("#endif"):
             result.add_error(f"{rel}: header must end with #endif include guard")
 
-        conditional_positions = [index for index, line in non_empty[guard_start:] if PREPROCESSOR_CONDITIONAL_RE.match(line)]
-        if conditional_positions != [non_empty[guard_start][0], non_empty[-1][0]]:
+        conditional_positions = [
+            index
+            for index, line in non_empty[guard_start:]
+            if PREPROCESSOR_OPEN_RE.match(line) and not is_allowed_hardware_directive(line)
+        ]
+        if conditional_positions != [non_empty[guard_start][0]]:
             result.add_error(f"{rel}: header must not use preprocessor conditionals beyond the include guard")
 
-        define_positions = [(index, name) for index, line in non_empty[guard_start:] for name in DEFINE_RE.findall(line)]
+        define_positions = [
+            (index, name)
+            for index, line in non_empty[guard_start:]
+            if not is_allowed_hardware_directive(line)
+            for name in DEFINE_RE.findall(line)
+        ]
         if define_positions != [(non_empty[guard_start + 1][0], guard_name)]:
             result.add_error(f"{rel}: header must not define macros beyond the include guard")
 
