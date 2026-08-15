@@ -1,5 +1,5 @@
 /*
- * @file engine/include/physics/Octree.hpp
+ * @file engine/include/physics/octree/Octree.hpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
@@ -8,10 +8,10 @@
 #ifndef BLITZAR_ENGINE_INCLUDE_PHYSICS_OCTREE_HPP_
 #define BLITZAR_ENGINE_INCLUDE_PHYSICS_OCTREE_HPP_
 
-#include "physics/ForceLawPolicy.hpp"
-#include "physics/Particle.hpp"
-#include "physics/ParticleHotData.hpp"
-#include "physics/Vector.hpp"
+#include "physics/core/ForceLawPolicy.hpp"
+#include "physics/core/Particle.hpp"
+#include "physics/core/ParticleHotData.hpp"
+#include "physics/core/Vector.hpp"
 #include <array>
 #include <cstddef>
 #include <cstdint>

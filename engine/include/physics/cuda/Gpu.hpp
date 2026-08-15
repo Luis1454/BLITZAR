@@ -1,5 +1,5 @@
 /*
- * @file engine/include/physics/Gpu.hpp
+ * @file engine/include/physics/cuda/Gpu.hpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
@@ -7,7 +7,7 @@
 
 #ifndef BLITZAR_ENGINE_INCLUDE_PHYSICS_GPU_HPP_
 #define BLITZAR_ENGINE_INCLUDE_PHYSICS_GPU_HPP_
-#include "physics/ParticleSystem.hpp"
+#include "physics/core/ParticleSystem.hpp"
 #include <vector>
 
 namespace gpu {

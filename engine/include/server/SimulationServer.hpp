@@ -14,7 +14,7 @@
  */
 #include "config/core/Config.hpp"
 #include "Constants.hpp"
-#include "physics/ParticleSystem.hpp"
+#include "physics/core/ParticleSystem.hpp"
 #include "types/SimulationTypes.hpp"
 #include <atomic>
 #include <chrono>

@@ -1,5 +1,5 @@
 /*
- * @file engine/include/physics/ParticleSystem.hpp
+ * @file engine/include/physics/core/ParticleSystem.hpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
@@ -9,10 +9,10 @@
 #define BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
 
 #include "config/Cosmology.hpp"
-#include "physics/CudaJit.hpp"
-#include "physics/ForceLawPolicy.hpp"
-#include "physics/Octree.hpp"
-#include "physics/ParticleSoAView.hpp"
+#include "physics/cuda/CudaJit.hpp"
+#include "physics/core/ForceLawPolicy.hpp"
+#include "physics/core/ParticleSoAView.hpp"
+#include "physics/octree/Octree.hpp"
 
 /*
  * Module: physics

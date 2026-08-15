@@ -206,7 +206,7 @@
       "mitigation": "Keep this header isolated in the allowlist and review all interface changes for consistency with the implementation files.",
       "closure_criteria": "Split the physics interface header below the hard limit and remove the allowlist path.",
       "paths": [
-        "engine/include/physics/ParticleSystem.hpp"
+        "engine/include/physics/core/ParticleSystem.hpp"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -276,7 +276,7 @@
       "paths": [
         "cmake/apps.cmake",
         "docs/quality/manifest/deviations.json",
-        "engine/include/physics/ParticleSystem.hpp",
+        "engine/include/physics/core/ParticleSystem.hpp",
         "engine/src/config/directive/Config.cpp",
         "engine/src/config/directive/Write.cpp",
         "engine/src/config/registry/Entries.cpp",
@@ -284,8 +284,8 @@
         "engine/src/cuda/fragments/system/Core.inl",
         "engine/src/cuda/fragments/treepm/Gpu.inl",
         "engine/src/cuda/JitRuntime.cu",
-        "engine/src/physics/ParticleSystemHost.cpp",
-        "engine/src/physics/TreePmCpu.cpp",
+        "engine/src/physics/octree/ParticleSystemHost.cpp",
+        "engine/src/physics/treepm/TreePmCpu.cpp",
         "engine/src/server/simulation/lifecycle/Rebuild.cpp",
         "engine/src/server/simulation/runtime/SettersAndExport.cpp",
         "engine/src/server/simulation/telemetry/SnapshotAndEnergy.cpp",

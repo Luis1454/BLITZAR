@@ -3,7 +3,7 @@
  * @brief NVRTC specialization, cache, warm-up and CUDA Graph runtime.
  */
 
-#include "physics/CudaJit.hpp"
+#include "physics/cuda/CudaJit.hpp"
 
 #include <cuda_runtime_api.h>
 
@@ -331,21 +331,22 @@ static bool ensureDriverContext(CudaJitRuntime::Impl& impl)
         impl.nvrtcMinor = 0;
     }
 #endif
-    impl.sourceHash = fnv1a(kJitSource);
+    impl.sourceHash = blitzar_cuda_jit_runtime::fnv1a(blitzar_cuda_jit_runtime::kJitSource);
     return impl.computeMajor >= 5;
 }
 
 static std::string makeKey(const CudaJitRequest& request, const CudaJitRuntime::Impl& impl)
 {
     std::ostringstream material;
-    material << "blitzar-jit-v2|" << familyName(request.family) << "|cc=" << impl.computeMajor
+    material << "blitzar-jit-v2|" << blitzar_cuda_jit_runtime::familyName(request.family)
+             << "|cc=" << impl.computeMajor
              << '.' << impl.computeMinor << "|nvrtc=" << impl.nvrtcMajor << '.'
-             << impl.nvrtcMinor << "|source=" << hexKey(impl.sourceHash)
+             << impl.nvrtcMinor << "|source=" << blitzar_cuda_jit_runtime::hexKey(impl.sourceHash)
              << "|block=" << request.blockSize
              << "|tile=" << request.tileSize << "|assignment=" << request.assignment
              << "|softening-mode=" << request.softeningMode << "|softening=" << std::setprecision(9)
              << request.softening;
-    return hexKey(fnv1a(material.str()));
+    return blitzar_cuda_jit_runtime::hexKey(blitzar_cuda_jit_runtime::fnv1a(material.str()));
 }
 
 static std::filesystem::path defaultCacheDirectory()
@@ -401,7 +402,8 @@ static bool compilePtx(const CudaJitRequest& request, const CudaJitRuntime::Impl
     nvrtcProgram program = nullptr;
     const auto begin = std::chrono::steady_clock::now();
     nvrtcResult result =
-        nvrtcCreateProgram(&program, kJitSource, "blitzar_jit.cu", 0, nullptr, nullptr);
+        nvrtcCreateProgram(&program, blitzar_cuda_jit_runtime::kJitSource, "blitzar_jit.cu", 0,
+                           nullptr, nullptr);
     if (result == NVRTC_SUCCESS) {
         result = nvrtcCompileProgram(
             program, static_cast<int>(sizeof(options) / sizeof(options[0])), options);
@@ -523,7 +525,8 @@ static bool loadOrCompile(CudaJitRuntime::Impl& impl, const CudaJitRequest& requ
         return false;
     }
     const CUresult functionStatus =
-        cuModuleGetFunction(&entry.function, entry.module, functionName(request.family));
+        cuModuleGetFunction(&entry.function, entry.module,
+                            blitzar_cuda_jit_runtime::functionName(request.family));
     if (functionStatus != CUDA_SUCCESS) {
         reportDriverError("module function lookup", functionStatus);
         cuModuleUnload(entry.module);
@@ -572,7 +575,8 @@ static bool launchStatic(float* field, int totalCells, float scale, int blockSiz
                          unsigned int* divergenceCounter)
 {
     const int blocks = (totalCells + blockSize - 1) / blockSize;
-    staticTreePmNormalizeKernel<<<blocks, blockSize>>>(field, totalCells, scale, divergenceCounter);
+    blitzar_cuda_jit_runtime::staticTreePmNormalizeKernel<<<blocks, blockSize>>>(
+        field, totalCells, scale, divergenceCounter);
     return cudaGetLastError() == cudaSuccess;
 }
 
@@ -583,7 +587,7 @@ static bool launchStaticForce(float* posX, float* posY, float* posZ, float* mass
     const int blocks = (particleCount + blockSize - 1) / blockSize;
     constexpr std::size_t kTileSize = 128u;
     const std::size_t sharedBytes = kTileSize * 4u * sizeof(float);
-    staticForceTileKernel<<<blocks, blockSize, sharedBytes>>>(
+    blitzar_cuda_jit_runtime::staticForceTileKernel<<<blocks, blockSize, sharedBytes>>>(
         posX, posY, posZ, mass, output, particleCount, softening, minDistance2, maxAcceleration,
         divergenceCounter);
     return cudaGetLastError() == cudaSuccess;
@@ -609,7 +613,8 @@ static bool warmup(CudaJitRuntime::Impl& impl, float* field, int totalCells, flo
     }
     cudaEventRecord(end);
     cudaEventSynchronize(end);
-    metrics->staticMs = elapsedMs(begin, end) / static_cast<double>(repetitions);
+    metrics->staticMs = blitzar_cuda_jit_runtime::elapsedMs(begin, end) /
+                        static_cast<double>(repetitions);
 
     cudaMemset(impl.divergenceCounter, 0, sizeof(unsigned int));
     cudaEventRecord(begin);
@@ -622,7 +627,8 @@ static bool warmup(CudaJitRuntime::Impl& impl, float* field, int totalCells, flo
     }
     cudaEventRecord(end);
     cudaEventSynchronize(end);
-    metrics->jitMs = elapsedMs(begin, end) / static_cast<double>(repetitions);
+    metrics->jitMs = blitzar_cuda_jit_runtime::elapsedMs(begin, end) /
+                     static_cast<double>(repetitions);
     unsigned int divergentWarps = 0u;
     cudaMemcpy(&divergentWarps, impl.divergenceCounter, sizeof(divergentWarps),
                cudaMemcpyDeviceToHost);
@@ -663,7 +669,8 @@ static bool warmupForce(CudaJitRuntime::Impl& impl, float* posX, float* posY, fl
     }
     cudaEventRecord(end);
     cudaEventSynchronize(end);
-    metrics->staticMs = elapsedMs(begin, end) / static_cast<double>(repetitions);
+    metrics->staticMs = blitzar_cuda_jit_runtime::elapsedMs(begin, end) /
+                        static_cast<double>(repetitions);
 
     cudaMemset(impl.divergenceCounter, 0, sizeof(unsigned int));
     cudaEventRecord(begin);
@@ -677,7 +684,8 @@ static bool warmupForce(CudaJitRuntime::Impl& impl, float* posX, float* posY, fl
     }
     cudaEventRecord(end);
     cudaEventSynchronize(end);
-    metrics->jitMs = elapsedMs(begin, end) / static_cast<double>(repetitions);
+    metrics->jitMs = blitzar_cuda_jit_runtime::elapsedMs(begin, end) /
+                     static_cast<double>(repetitions);
     unsigned int divergentWarps = 0u;
     cudaMemcpy(&divergentWarps, impl.divergenceCounter, sizeof(divergentWarps),
                cudaMemcpyDeviceToHost);
@@ -740,7 +748,7 @@ static bool captureGraph(CudaJitRuntime::Impl& impl, float* fieldX, float* field
 CudaJitRuntime::CudaJitRuntime(std::string cacheDirectory) : _impl(std::make_unique<Impl>())
 {
 #if BLITZAR_HAS_CUDA_DRIVER
-    if (!jitEnabledFromEnvironment()) {
+    if (!blitzar_cuda_jit_runtime::jitEnabledFromEnvironment()) {
         return;
     }
     _impl->cacheDirectory = std::move(cacheDirectory);

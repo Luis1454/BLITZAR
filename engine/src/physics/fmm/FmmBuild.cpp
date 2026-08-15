@@ -1,5 +1,5 @@
 /*
- * @file engine/src/physics/FmmBuild.cpp
+ * @file engine/src/physics/fmm/FmmBuild.cpp
  * @brief Adaptive hierarchy and multipole construction for the CPU FMM solver.
  */
 

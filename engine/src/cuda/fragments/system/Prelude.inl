@@ -12,9 +12,9 @@
 
 #include "Constants.hpp"
 #include "config/env/Base.hpp"
-#include "physics/ForceLawPolicy.hpp"
-#include "physics/Octree.hpp"
-#include "physics/ParticleSystem.hpp"
+#include "physics/core/ForceLawPolicy.hpp"
+#include "physics/core/ParticleSystem.hpp"
+#include "physics/octree/Octree.hpp"
 #include <algorithm>
 #include <array>
 #include <cfloat>
@@ -70,7 +70,7 @@ struct TreePmGridParams {
 constexpr int kOctreeLeafCapacity = 32;
 constexpr int kOctreeMaxDepth = 16;
 
-#include "physics/ParticleSoAView.hpp"
+#include "physics/core/ParticleSoAView.hpp"
 
 typedef Particle* ParticleHandle;
 typedef const Particle* ParticleConstHandle;

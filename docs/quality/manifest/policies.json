@@ -18,8 +18,8 @@
         "engine/include/platform/internal/DynamicLibraryOps.hpp",
         "engine/include/platform/internal/ProcessOps.hpp",
         "engine/include/platform/internal/SocketOps.hpp",
-        "engine/include/physics/Gpu.hpp",
-        "engine/include/physics/Octree.hpp"
+        "engine/include/physics/cuda/Gpu.hpp",
+        "engine/include/physics/octree/Octree.hpp"
       ]
     },
     "test_ids": {

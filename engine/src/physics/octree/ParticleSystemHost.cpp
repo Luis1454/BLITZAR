@@ -1,14 +1,14 @@
 /*
- * @file engine/src/physics/ParticleSystemHost.cpp
+ * @file engine/src/physics/octree/ParticleSystemHost.cpp
  * @author Luis1454
  * @project BLITZAR
  * @brief CPU fallback implementation for the particle system.
  */
 
 #include "Constants.hpp"
-#include "FmmCpu.hpp"
-#include "TreePmCpu.hpp"
-#include "physics/ParticleSystem.hpp"
+#include "physics/core/ParticleSystem.hpp"
+#include "physics/fmm/FmmCpu.hpp"
+#include "physics/treepm/TreePmCpu.hpp"
 
 #include <algorithm>
 #include <cmath>

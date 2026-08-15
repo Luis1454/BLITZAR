@@ -10,8 +10,8 @@
  */
 
 #include "MemoryPool.hpp"
-#include "../physics/FmmCpu.hpp"
-#include "../physics/TreePmCpu.hpp"
+#include "physics/fmm/FmmCpu.hpp"
+#include "physics/treepm/TreePmCpu.hpp"
 
 // Fragment order encodes declaration dependencies; do not sort these includes.
 // clang-format off

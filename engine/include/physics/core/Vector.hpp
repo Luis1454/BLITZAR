@@ -1,5 +1,5 @@
 /*
- * @file engine/include/physics/Vector.hpp
+ * @file engine/include/physics/core/Vector.hpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
@@ -116,5 +116,5 @@ BLITZAR_HD_HOST BLITZAR_HD_DEVICE float dot(Vector3 a, Vector3 b);
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
 BLITZAR_HD_HOST BLITZAR_HD_DEVICE Vector3 normalize(Vector3 v);
-#include "physics/Vector.inl"
+#include "physics/core/Vector.inl"
 #endif // BLITZAR_ENGINE_INCLUDE_PHYSICS_VECTOR_HPP_

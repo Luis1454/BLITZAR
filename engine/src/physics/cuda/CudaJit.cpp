@@ -1,9 +1,9 @@
 /*
- * @file engine/src/physics/CudaJit.cpp
+ * @file engine/src/physics/cuda/CudaJit.cpp
  * @brief No-CUDA implementation of the runtime specialization contract.
  */
 
-#include "physics/CudaJit.hpp"
+#include "physics/cuda/CudaJit.hpp"
 
 struct CudaJitRuntime::Impl final {};
 

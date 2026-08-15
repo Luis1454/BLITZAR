@@ -32,7 +32,6 @@ set(BLITZAR_PROJECT_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/engine/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/runtime/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/modules/qt/src"
-    "${CMAKE_CURRENT_SOURCE_DIR}/engine/include/physics"
     "${CMAKE_CURRENT_SOURCE_DIR}/engine/include/graphics"
     "${CMAKE_CURRENT_SOURCE_DIR}/engine/src/cuda"
 )
@@ -87,12 +86,12 @@ set(BLITZAR_BATCH_COMMON_SOURCES
     "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/state/Generation.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/batch/Runner.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/ForceLawPolicy.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/ParticleHotData.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/TreePmCpu.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/FmmBuild.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/FmmEvaluate.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/FmmMetrics.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/core/ForceLawPolicy.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/core/ParticleHotData.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/treepm/TreePmCpu.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/fmm/FmmBuild.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/fmm/FmmEvaluate.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/fmm/FmmMetrics.cpp"
 )
 
 set(BLITZAR_SERVER_COMMON_SOURCES
@@ -123,13 +122,13 @@ if(BLITZAR_ENABLE_CUDA)
 else()
     set(BLITZAR_BATCH_SOURCES
         ${BLITZAR_BATCH_COMMON_SOURCES}
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/CudaJit.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/ParticleSystemHost.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/cuda/CudaJit.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/ParticleSystemHost.cpp"
     )
     set(BLITZAR_SERVER_SOURCES
         ${BLITZAR_SERVER_COMMON_SOURCES}
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/CudaJit.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/ParticleSystemHost.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/cuda/CudaJit.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/ParticleSystemHost.cpp"
     )
 endif()
 

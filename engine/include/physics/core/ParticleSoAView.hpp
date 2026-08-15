@@ -1,5 +1,5 @@
 /*
- * @file engine/include/physics/ParticleSoAView.hpp
+ * @file engine/include/physics/core/ParticleSoAView.hpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
@@ -7,7 +7,7 @@
 
 #ifndef BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLE_SOA_VIEW_HPP_
 #define BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLE_SOA_VIEW_HPP_
-#include "physics/Vector.hpp"
+#include "physics/core/Vector.hpp"
 
 /*
  * @brief Defines the particle so aview type contract.
@@ -83,5 +83,5 @@ BLITZAR_HD_HOST BLITZAR_HD_DEVICE void setSoAPressure(ParticleSoAView view, int 
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
 BLITZAR_HD_HOST BLITZAR_HD_DEVICE Vector3 getSoAPressure(ParticleSoAView view, int i);
-#include "physics/ParticleSoAView.inl"
+#include "physics/core/ParticleSoAView.inl"
 #endif // BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLE_SOA_VIEW_HPP_

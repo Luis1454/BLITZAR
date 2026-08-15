@@ -975,49 +975,53 @@ __global__ void updateParticlesTreePmKernel(
 
 } // namespace blitzar_cuda_tree_pm_gpu
 
+// The ParticleSystem member definitions below remain in the owning global namespace. A namespace
+// alias keeps every cross-namespace CUDA helper reference explicit without importing symbols.
+namespace treepm = blitzar_cuda_tree_pm_gpu;
+
 int ParticleSystem::treePmLayoutMode()
 {
     if (_device._treePmLayoutModeInitialized) {
-        if (_device._treePmLayoutMode != kTreePmLayoutAuto) {
+        if (_device._treePmLayoutMode != treepm::kTreePmLayoutAuto) {
             return _device._treePmLayoutMode;
         }
         return _device._treePmAutoLayoutResolved
                    ? (_device._treePmAutoGather
-                          ? (_device._treePmAutoMorton ? kTreePmLayoutGatherMorton
-                                                       : kTreePmLayoutGatherLinear)
-                          : kTreePmLayoutLinear)
-                   : kTreePmLayoutAuto;
+                          ? (_device._treePmAutoMorton ? treepm::kTreePmLayoutGatherMorton
+                                                       : treepm::kTreePmLayoutGatherLinear)
+                          : treepm::kTreePmLayoutLinear)
+                   : treepm::kTreePmLayoutAuto;
     }
 
     _device._treePmLayoutModeInitialized = true;
-    _device._treePmLayoutMode = kTreePmLayoutLegacy;
+    _device._treePmLayoutMode = treepm::kTreePmLayoutLegacy;
     const auto environmentLayout = bltzr_env::get("BLITZAR_TREEPM_LAYOUT");
     const std::string configured = environmentLayout.has_value() ? *environmentLayout : _treePmLayout;
     if (configured.empty()) {
         const bool legacyFlags = bltzr_env::get("BLITZAR_TREEPM_GATHER").has_value() ||
                                  bltzr_env::get("BLITZAR_TREEPM_MORTON").has_value();
-        _device._treePmLayoutMode = legacyFlags ? kTreePmLayoutLegacy : kTreePmLayoutAuto;
+        _device._treePmLayoutMode = legacyFlags ? treepm::kTreePmLayoutLegacy : treepm::kTreePmLayoutAuto;
         return _device._treePmLayoutMode;
     }
     if (configured == "auto") {
-        _device._treePmLayoutMode = kTreePmLayoutAuto;
-        return kTreePmLayoutAuto;
+        _device._treePmLayoutMode = treepm::kTreePmLayoutAuto;
+        return treepm::kTreePmLayoutAuto;
     }
     if (configured == "linear") {
-        _device._treePmLayoutMode = kTreePmLayoutLinear;
-        return kTreePmLayoutLinear;
+        _device._treePmLayoutMode = treepm::kTreePmLayoutLinear;
+        return treepm::kTreePmLayoutLinear;
     }
     if (configured == "gather_linear") {
-        _device._treePmLayoutMode = kTreePmLayoutGatherLinear;
-        return kTreePmLayoutGatherLinear;
+        _device._treePmLayoutMode = treepm::kTreePmLayoutGatherLinear;
+        return treepm::kTreePmLayoutGatherLinear;
     }
     if (configured == "gather_morton") {
-        _device._treePmLayoutMode = kTreePmLayoutGatherMorton;
-        return kTreePmLayoutGatherMorton;
+        _device._treePmLayoutMode = treepm::kTreePmLayoutGatherMorton;
+        return treepm::kTreePmLayoutGatherMorton;
     }
     fprintf(stderr, "[treepm] invalid layout=%s fallback=auto\n", configured.c_str());
-    _device._treePmLayoutMode = kTreePmLayoutAuto;
-    return kTreePmLayoutAuto;
+    _device._treePmLayoutMode = treepm::kTreePmLayoutAuto;
+    return treepm::kTreePmLayoutAuto;
 }
 
 __global__ void computeTreePmPmOnlyAccelerationKernel(ParticleSoAView state,
@@ -1030,7 +1034,7 @@ __global__ void computeTreePmPmOnlyAccelerationKernel(ParticleSoAView state,
 {
     const int particleIndex = blockIdx.x * blockDim.x + threadIdx.x;
     if (particleIndex < numParticles) {
-        outAcceleration[particleIndex] = treePmSampleAcceleration(
+        outAcceleration[particleIndex] = treepm::treePmSampleAcceleration(
             grid, octreeLoadParticlePosition(state, particleIndex), accelX, accelY, accelZ);
     }
 }
@@ -1038,13 +1042,13 @@ __global__ void computeTreePmPmOnlyAccelerationKernel(ParticleSoAView state,
 bool ParticleSystem::treePmGatherEnabled()
 {
     const int layout = treePmLayoutMode();
-    if (layout == kTreePmLayoutAuto) {
+    if (layout == treepm::kTreePmLayoutAuto) {
         return _device._treePmAutoLayoutResolved && _device._treePmAutoGather;
     }
-    if (layout == kTreePmLayoutGatherLinear || layout == kTreePmLayoutGatherMorton) {
+    if (layout == treepm::kTreePmLayoutGatherLinear || layout == treepm::kTreePmLayoutGatherMorton) {
         return true;
     }
-    if (layout == kTreePmLayoutLinear) {
+    if (layout == treepm::kTreePmLayoutLinear) {
         return false;
     }
     return parseBoolEnv("BLITZAR_TREEPM_GATHER", false);
@@ -1053,13 +1057,13 @@ bool ParticleSystem::treePmGatherEnabled()
 bool ParticleSystem::treePmMortonEnabled()
 {
     const int layout = treePmLayoutMode();
-    if (layout == kTreePmLayoutAuto) {
+    if (layout == treepm::kTreePmLayoutAuto) {
         return _device._treePmAutoLayoutResolved && _device._treePmAutoMorton;
     }
-    if (layout == kTreePmLayoutGatherMorton) {
+    if (layout == treepm::kTreePmLayoutGatherMorton) {
         return true;
     }
-    if (layout == kTreePmLayoutLinear || layout == kTreePmLayoutGatherLinear) {
+    if (layout == treepm::kTreePmLayoutLinear || layout == treepm::kTreePmLayoutGatherLinear) {
         return false;
     }
     return parseBoolEnv("BLITZAR_TREEPM_MORTON", false);
@@ -1071,8 +1075,8 @@ bool ParticleSystem::ensureTreePmBoundsCapacity(int numParticles)
         return false;
     }
     const std::size_t blockCount =
-        (static_cast<std::size_t>(numParticles) + kTreePmBoundsBlockSize - 1u) /
-        kTreePmBoundsBlockSize;
+        (static_cast<std::size_t>(numParticles) + treepm::kTreePmBoundsBlockSize - 1u) /
+        treepm::kTreePmBoundsBlockSize;
     if (_device.d_treePmBoundsBlockCapacity >= blockCount && _device.d_treePmBoundsPartial != nullptr &&
         _device.d_treePmBounds != nullptr) {
         return true;
@@ -1081,9 +1085,9 @@ bool ParticleSystem::ensureTreePmBoundsCapacity(int numParticles)
     bltzr_x::MemoryPool::deallocate(_device.d_treePmBoundsPartial);
     bltzr_x::MemoryPool::deallocate(_device.d_treePmBounds);
     _device.d_treePmBoundsPartial = static_cast<float*>(bltzr_x::MemoryPool::allocate(
-        blockCount * kTreePmBoundsFieldCount * sizeof(float)));
+        blockCount * treepm::kTreePmBoundsFieldCount * sizeof(float)));
     _device.d_treePmBounds = static_cast<float*>(
-        bltzr_x::MemoryPool::allocate(kTreePmBoundsFieldCount * sizeof(float)));
+        bltzr_x::MemoryPool::allocate(treepm::kTreePmBoundsFieldCount * sizeof(float)));
     if (_device.d_treePmBoundsPartial == nullptr || _device.d_treePmBounds == nullptr) {
         bltzr_x::MemoryPool::deallocate(_device.d_treePmBoundsPartial);
         bltzr_x::MemoryPool::deallocate(_device.d_treePmBounds);
@@ -1105,7 +1109,7 @@ bool ParticleSystem::ensureTreePmConcentrationCapacity()
         return true;
     }
     _device.d_treePmRadialMassHistogram = static_cast<float*>(
-        bltzr_x::MemoryPool::allocate(kTreePmConcentrationBinCount * sizeof(float)));
+        bltzr_x::MemoryPool::allocate(treepm::kTreePmConcentrationBinCount * sizeof(float)));
     return _device.d_treePmRadialMassHistogram != nullptr;
 }
 
@@ -1331,7 +1335,7 @@ bool ParticleSystem::buildTreePmNeighborGrid(ParticleSoAView currentView, int nu
     const int numBlocks =
         (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
     const bool useMorton = treePmMortonEnabled();
-    treePmBuildCellHashKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
+    treepm::treePmBuildCellHashKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
         currentView, numParticles, grid, _device.d_sphCellHash, _device.d_sphSortedIndex,
         useMorton ? 1 : 0);
     if (!checkCudaStatus(cudaGetLastError(), "treePmBuildCellHashKernel launch")) {
@@ -1355,7 +1359,7 @@ bool ParticleSystem::buildTreePmNeighborGrid(ParticleSoAView currentView, int nu
 
     IndexConstHandle sortedHash = _device.d_sphCellHash;
     if (useMorton) {
-        treePmBuildSortedCellHashKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
+        treepm::treePmBuildSortedCellHashKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
             currentView, _device.d_sphSortedIndex, _device.d_treePmSortedCellHash, numParticles,
             grid);
         if (!checkCudaStatus(cudaGetLastError(), "treePmBuildSortedCellHashKernel launch")) {
@@ -1365,7 +1369,7 @@ bool ParticleSystem::buildTreePmNeighborGrid(ParticleSoAView currentView, int nu
     }
 
     if (gatherParticles) {
-        treePmGatherSortedParticlesKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
+        treepm::treePmGatherSortedParticlesKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
             currentView, _device.d_sphSortedIndex, _device.d_treePmSortedPosX,
             _device.d_treePmSortedPosY, _device.d_treePmSortedPosZ, _device.d_treePmSortedMass,
             numParticles);
@@ -1376,12 +1380,12 @@ bool ParticleSystem::buildTreePmNeighborGrid(ParticleSoAView currentView, int nu
 
     const int cellBlocks =
         (grid.totalCells + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
-    treePmResetCellBoundsKernel<<<cellBlocks, Particle::kDefaultCudaBlockSize>>>(
+    treepm::treePmResetCellBoundsKernel<<<cellBlocks, Particle::kDefaultCudaBlockSize>>>(
         _device.d_sphCellStart, _device.d_sphCellEnd, grid.totalCells);
     if (!checkCudaStatus(cudaGetLastError(), "treePmResetCellBoundsKernel launch")) {
         return false;
     }
-    treePmFindCellBoundsKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
+    treepm::treePmFindCellBoundsKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
         sortedHash, _device.d_sphCellStart, _device.d_sphCellEnd, numParticles);
     if (!checkCudaStatus(cudaGetLastError(), "treePmFindCellBoundsKernel launch")) {
         return false;
@@ -1404,13 +1408,13 @@ bool ParticleSystem::buildTreePmFftField(const TreePmGridParams& grid)
         }
         _device._treePmFftPlanGridSize = 0;
         cufftHandle plan = 0;
-        if (!checkTreePmFftStatus(cufftPlan3d(&plan, gridSize, gridSize, gridSize, CUFFT_R2C),
+        if (!treepm::checkTreePmFftStatus(cufftPlan3d(&plan, gridSize, gridSize, gridSize, CUFFT_R2C),
                                   "cufftPlan3d")) {
             return false;
         }
         _device._treePmFftPlan = static_cast<int>(plan);
         cufftHandle inversePlan = 0;
-        if (!checkTreePmFftStatus(
+        if (!treepm::checkTreePmFftStatus(
                 cufftPlan3d(&inversePlan, gridSize, gridSize, gridSize, CUFFT_C2R),
                 "cufftPlan3d inverse")) {
             cufftDestroy(plan);
@@ -1423,7 +1427,7 @@ bool ParticleSystem::buildTreePmFftField(const TreePmGridParams& grid)
 
     auto* density = reinterpret_cast<cufftReal*>(_device.d_treePmDensity);
     auto* densitySpectrum = reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrum);
-    if (!checkTreePmFftStatus(
+    if (!treepm::checkTreePmFftStatus(
             cufftExecR2C(static_cast<cufftHandle>(_device._treePmFftPlan), density,
                          densitySpectrum),
             "cufftExecR2C")) {
@@ -1433,7 +1437,7 @@ bool ParticleSystem::buildTreePmFftField(const TreePmGridParams& grid)
     const int spectrumCells = gridSize * gridSize * (gridSize / 2 + 1);
     const int spectrumBlocks =
         (spectrumCells + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
-    treePmApplyFftKernel<<<spectrumBlocks, Particle::kDefaultCudaBlockSize>>>(
+    treepm::treePmApplyFftKernel<<<spectrumBlocks, Particle::kDefaultCudaBlockSize>>>(
         densitySpectrum, reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrumX), grid,
         std::max(_octreeSoftening, _physicsMinSoftening));
     if (!checkCudaStatus(cudaGetLastError(), "treePmApplyFftKernel launch")) {
@@ -1441,7 +1445,7 @@ bool ParticleSystem::buildTreePmFftField(const TreePmGridParams& grid)
     }
 
     const cufftHandle inversePlan = static_cast<cufftHandle>(_device._treePmFftInversePlan);
-    if (!checkTreePmFftStatus(
+    if (!treepm::checkTreePmFftStatus(
             cufftExecC2R(inversePlan, reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrumX),
                          reinterpret_cast<cufftReal*>(_device.d_treePmPotentialA)),
             "cufftExecC2R potential")) {
@@ -1450,9 +1454,9 @@ bool ParticleSystem::buildTreePmFftField(const TreePmGridParams& grid)
 
     const int fieldBlocks =
         (grid.totalCells + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
-    treePmNormalizeFftFieldKernel<<<fieldBlocks, Particle::kDefaultCudaBlockSize>>>(
+    treepm::treePmNormalizeFftFieldKernel<<<fieldBlocks, Particle::kDefaultCudaBlockSize>>>(
         _device.d_treePmPotentialA, grid.totalCells);
-    treePmPotentialGradientKernel<<<fieldBlocks, Particle::kDefaultCudaBlockSize>>>(
+    treepm::treePmPotentialGradientKernel<<<fieldBlocks, Particle::kDefaultCudaBlockSize>>>(
         _device.d_treePmPotentialA, _device.d_treePmAccelX, _device.d_treePmAccelY,
         _device.d_treePmAccelZ, grid);
     if (!checkCudaStatus(cudaGetLastError(), "treepm potential gradient launch")) {
@@ -1519,7 +1523,7 @@ bool ParticleSystem::captureTreePmGraph(int slot, ParticleSoAView currentView,
     }
     const int depositBlocks =
         (particleLimit + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
-    treePmDepositMassKernel<<<depositBlocks, Particle::kDefaultCudaBlockSize, 0, stream>>>(
+    treepm::treePmDepositMassKernel<<<depositBlocks, Particle::kDefaultCudaBlockSize, 0, stream>>>(
         currentView, numParticles, particleLimit, grid, _device.d_treePmDensity,
         _device.d_treePmCellMask);
     if (cudaGetLastError() != cudaSuccess) {
@@ -1534,7 +1538,7 @@ bool ParticleSystem::captureTreePmGraph(int slot, ParticleSoAView currentView,
     const int spectrumCells = grid.gridSize * grid.gridSize * (grid.gridSize / 2 + 1);
     const int spectrumBlocks =
         (spectrumCells + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
-    treePmApplyFftKernel<<<spectrumBlocks, Particle::kDefaultCudaBlockSize, 0, stream>>>(
+    treepm::treePmApplyFftKernel<<<spectrumBlocks, Particle::kDefaultCudaBlockSize, 0, stream>>>(
         reinterpret_cast<const cufftComplex*>(_device.d_treePmSpectrum),
         reinterpret_cast<cufftComplex*>(_device.d_treePmSpectrumX), grid,
         std::max(_octreeSoftening, _physicsMinSoftening));
@@ -1546,14 +1550,14 @@ bool ParticleSystem::captureTreePmGraph(int slot, ParticleSoAView currentView,
 
     const int fieldBlocks =
         (grid.totalCells + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
-    treePmNormalizeFftFieldKernel<<<fieldBlocks, Particle::kDefaultCudaBlockSize, 0, stream>>>(
+    treepm::treePmNormalizeFftFieldKernel<<<fieldBlocks, Particle::kDefaultCudaBlockSize, 0, stream>>>(
         _device.d_treePmPotentialA, grid.totalCells);
-    treePmPotentialGradientKernel<<<fieldBlocks, Particle::kDefaultCudaBlockSize, 0, stream>>>(
+    treepm::treePmPotentialGradientKernel<<<fieldBlocks, Particle::kDefaultCudaBlockSize, 0, stream>>>(
         _device.d_treePmPotentialA, _device.d_treePmAccelX, _device.d_treePmAccelY,
         _device.d_treePmAccelZ, grid);
     const int updateBlocks =
         (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
-    updateParticlesTreePmLocalGridKernel<<<updateBlocks, Particle::kDefaultCudaBlockSize, 0,
+    treepm::updateParticlesTreePmLocalGridKernel<<<updateBlocks, Particle::kDefaultCudaBlockSize, 0,
                                            stream>>>(
         currentView, nextView, numParticles, grid, nullptr, nullptr, nullptr, forceLaw, deltaTime,
         maxAcceleration, _device.d_treePmAccelX, _device.d_treePmAccelY, _device.d_treePmAccelZ,
@@ -1663,10 +1667,10 @@ bool ParticleSystem::buildTreePmGrid(ParticleSoAView currentView, int numParticl
                                   std::max(_cosmologyScaleFactor, 1.0e-6f);
         const int blocks = (numParticles + Particle::kDefaultCudaBlockSize - 1) /
                            Particle::kDefaultCudaBlockSize;
-        treePmDepositMassKernel<<<blocks, Particle::kDefaultCudaBlockSize>>>(
+        treepm::treePmDepositMassKernel<<<blocks, Particle::kDefaultCudaBlockSize>>>(
             currentView, numParticles, numParticles, grid, _device.d_treePmDensity,
             _device.d_treePmCellMask);
-        treePmBuildDensityContrastKernel<<<(totalCells + Particle::kDefaultCudaBlockSize - 1) /
+    treepm::treePmBuildDensityContrastKernel<<<(totalCells + Particle::kDefaultCudaBlockSize - 1) /
                                               Particle::kDefaultCudaBlockSize,
                                           Particle::kDefaultCudaBlockSize>>>(
             _device.d_treePmDensity, totalCells);
@@ -1685,18 +1689,18 @@ bool ParticleSystem::buildTreePmGrid(ParticleSoAView currentView, int numParticl
         return false;
     }
     const int boundsBlocks =
-        (numParticles + kTreePmBoundsBlockSize - 1) / kTreePmBoundsBlockSize;
-    treePmReduceBoundsKernel<<<boundsBlocks, kTreePmBoundsBlockSize>>>(
+        (numParticles + treepm::kTreePmBoundsBlockSize - 1) / treepm::kTreePmBoundsBlockSize;
+    treepm::treePmReduceBoundsKernel<<<boundsBlocks, treepm::kTreePmBoundsBlockSize>>>(
         currentView, numParticles, _device.d_treePmBoundsPartial);
     if (!checkCudaStatus(cudaGetLastError(), "treePmReduceBoundsKernel launch")) {
         return false;
     }
-    treePmFinalizeBoundsKernel<<<1, kTreePmBoundsBlockSize>>>(
+    treepm::treePmFinalizeBoundsKernel<<<1, treepm::kTreePmBoundsBlockSize>>>(
         _device.d_treePmBoundsPartial, boundsBlocks, _device.d_treePmBounds);
     if (!checkCudaStatus(cudaGetLastError(), "treePmFinalizeBoundsKernel launch")) {
         return false;
     }
-    float bounds[kTreePmBoundsFieldCount]{};
+    float bounds[treepm::kTreePmBoundsFieldCount]{};
     if (!checkCudaStatus(cudaMemcpy(bounds, _device.d_treePmBounds,
                                     sizeof(bounds), cudaMemcpyDeviceToHost),
                          "cudaMemcpy(treepm bounds)")) {
@@ -1711,19 +1715,19 @@ bool ParticleSystem::buildTreePmGrid(ParticleSoAView currentView, int numParticl
     const float totalMass = bounds[6];
     const Vector3 weightedCenter(bounds[7], bounds[8], bounds[9]);
 
-    if (treePmLayoutMode() == kTreePmLayoutAuto && !_device._treePmAutoLayoutResolved) {
+    if (treePmLayoutMode() == treepm::kTreePmLayoutAuto && !_device._treePmAutoLayoutResolved) {
         bool autoLayoutReady = false;
         if (ensureTreePmConcentrationCapacity()) {
             if (!checkCudaStatus(
                     cudaMemset(_device.d_treePmRadialMassHistogram, 0,
-                               kTreePmConcentrationBinCount * sizeof(float)),
+                               treepm::kTreePmConcentrationBinCount * sizeof(float)),
                     "cudaMemset(treepm concentration histogram)")) {
                 return false;
             }
             const int histogramBlocks =
                 (numParticles + Particle::kDefaultCudaBlockSize - 1) /
                 Particle::kDefaultCudaBlockSize;
-            treePmRadialMassHistogramKernel<<<histogramBlocks, Particle::kDefaultCudaBlockSize>>>(
+            treepm::treePmRadialMassHistogramKernel<<<histogramBlocks, Particle::kDefaultCudaBlockSize>>>(
                 currentView, numParticles, _device.d_treePmBounds,
                 _device.d_treePmRadialMassHistogram);
             if (!checkCudaStatus(cudaGetLastError(),
@@ -1732,7 +1736,7 @@ bool ParticleSystem::buildTreePmGrid(ParticleSoAView currentView, int numParticl
                                  "treePmRadialMassHistogramKernel sync")) {
                 return false;
             }
-            float histogram[kTreePmConcentrationBinCount]{};
+            float histogram[treepm::kTreePmConcentrationBinCount]{};
             if (!checkCudaStatus(
                     cudaMemcpy(histogram, _device.d_treePmRadialMassHistogram,
                                sizeof(histogram), cudaMemcpyDeviceToHost),
@@ -1742,8 +1746,8 @@ bool ParticleSystem::buildTreePmGrid(ParticleSoAView currentView, int numParticl
 
             const float targetMass = std::max(0.0f, 0.8f * totalMass);
             float cumulativeMass = 0.0f;
-            int r80Bin = kTreePmConcentrationBinCount - 1;
-            for (int bin = 0; bin < kTreePmConcentrationBinCount; ++bin) {
+            int r80Bin = treepm::kTreePmConcentrationBinCount - 1;
+            for (int bin = 0; bin < treepm::kTreePmConcentrationBinCount; ++bin) {
                 cumulativeMass += histogram[bin];
                 if (cumulativeMass >= targetMass) {
                     r80Bin = bin;
@@ -1751,7 +1755,7 @@ bool ParticleSystem::buildTreePmGrid(ParticleSoAView currentView, int numParticl
                 }
             }
             const float r80Ratio = static_cast<float>(r80Bin + 1) /
-                                   static_cast<float>(kTreePmConcentrationBinCount);
+                                   static_cast<float>(treepm::kTreePmConcentrationBinCount);
             const float threshold = std::clamp(
                 parseFloatEnv("BLITZAR_TREEPM_AUTO_R80_THRESHOLD", 0.35f), 0.05f, 0.95f);
             _device._treePmAutoR80Ratio = r80Ratio;
@@ -1852,7 +1856,7 @@ bool ParticleSystem::buildTreePmGrid(ParticleSoAView currentView, int numParticl
     const int particleLimit = numParticles;
     const int numBlocks =
         (particleLimit + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
-    treePmDepositMassKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
+    treepm::treePmDepositMassKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
         currentView, numParticles, particleLimit, grid, _device.d_treePmDensity,
         _device.d_treePmCellMask);
     if (!checkCudaStatus(cudaGetLastError(), "treePmDepositMassKernel launch")) {
@@ -1874,7 +1878,7 @@ bool ParticleSystem::buildTreePmGrid(ParticleSoAView currentView, int numParticl
     float* currentPotential = _device.d_treePmPotentialA;
     for (int iteration = 0; iteration < iterationCount; ++iteration) {
         for (int parity = 0; parity < 2; ++parity) {
-            treePmRedBlackStepKernel<<<gridBlocks, Particle::kDefaultCudaBlockSize>>>(
+            treepm::treePmRedBlackStepKernel<<<gridBlocks, Particle::kDefaultCudaBlockSize>>>(
                 currentPotential, _device.d_treePmDensity, grid, parity);
             if (!checkCudaStatus(cudaGetLastError(), "treePmRedBlackStepKernel launch")) {
                 return false;
@@ -1882,7 +1886,7 @@ bool ParticleSystem::buildTreePmGrid(ParticleSoAView currentView, int numParticl
         }
     }
 
-    treePmPotentialGradientKernel<<<gridBlocks, Particle::kDefaultCudaBlockSize>>>(
+    treepm::treePmPotentialGradientKernel<<<gridBlocks, Particle::kDefaultCudaBlockSize>>>(
         currentPotential, _device.d_treePmAccelX, _device.d_treePmAccelY, _device.d_treePmAccelZ,
         grid);
     if (!checkCudaStatus(cudaGetLastError(), "treePmPotentialGradientKernel launch")) {
