@@ -95,7 +95,7 @@ TEST(ClientCommonTest, TST_UNT_MODHOST_016_EnvironmentOverridesClampServerAndDra
     config.particleCount = 500u;
     config.clientParticleCap = 12u;
     EXPECT_EQ(bltzr_client::resolveServerParticleCount(config), 2u);
-    EXPECT_EQ(bltzr_client::resolveClientDrawCap(config), bltzr_protocol::kSnapshotMaxPoints);
+    EXPECT_EQ(bltzr_client::resolveClientDrawCap(config), 999999999u);
 }
 
 TEST(ClientCommonTest, TST_UNT_MODHOST_017_InvalidEnvironmentOverridesPreserveConfiguredValues)

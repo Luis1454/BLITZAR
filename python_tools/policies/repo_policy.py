@@ -62,7 +62,7 @@ DO_WHILE_RE = re.compile(r"\bdo\b\s*\{", re.DOTALL)
 WHILE_TRUE_RE = re.compile(r"\bwhile\s*\(\s*true\s*\)")
 FUNCTION_POINTER_TYPEDEF_RE = re.compile(r"(?m)^\s*(?:typedef|using)\b[^\n;]*\(\s*\*\s*[A-Za-z0-9_]*\s*\)")
 FUNCTION_POINTER_ABI_PATHS = {"runtime/include/client/module/Api.hpp"}
-NON_WAIVABLE_STRONG_SIZE_PATHS = set()
+NON_WAIVABLE_STRONG_SIZE_PATHS: set[str] = set()
 QT_REFERENCE_NEW_RE = re.compile(
     r"(?m)^\s*(?:auto|Q[A-Za-z0-9_<>:]+)\s*&\s*[A-Za-z0-9_]+\s*=\s*\*new\s+Q[A-Za-z0-9_<>:]+\s*\("
 )

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TypedDict
 
 import numpy as np
 
@@ -12,6 +13,26 @@ import numpy as np
 class Snapshot:
     positions: np.ndarray
     masses: np.ndarray
+
+
+class Spectrum(TypedDict):
+    k: list[float]
+    power: list[float]
+    peak_k: float
+    peak_power: float
+    nonzero_power: float
+
+
+class StructureAnalysis(TypedDict):
+    path: str
+    particle_count: int
+    grid_size: int
+    box_half_extent: float
+    assignment: str
+    window: str
+    density_mean: float
+    delta_rms: float
+    spectrum: Spectrum
 
 
 def _read_values(stream, count: int) -> np.ndarray:
@@ -44,6 +65,8 @@ def _load_ascii_vtk(path: Path) -> Snapshot:
             elif parts[0] == "VERTICES":
                 _read_values(stream, int(parts[1]) * 2)
             elif parts[0] == "SCALARS":
+                if positions is None:
+                    raise ValueError("VTK scalar data precedes points")
                 name = parts[1].lower()
                 components = int(parts[3]) if len(parts) > 3 else 1
                 stream.readline()
@@ -51,6 +74,8 @@ def _load_ascii_vtk(path: Path) -> Snapshot:
                 if name == "mass" and components == 1:
                     masses = payload
             elif parts[0] == "VECTORS":
+                if positions is None:
+                    raise ValueError("VTK vector data precedes points")
                 _read_values(stream, int(positions.shape[0]) * 3)
     if positions is None or positions.shape[0] < 2:
         raise ValueError(f"VTK snapshot has no usable points: {path}")
@@ -121,7 +146,7 @@ def _deposit_cic(positions: np.ndarray, masses: np.ndarray, grid_size: int,
     return grid.reshape((grid_size, grid_size, grid_size))
 
 
-def _radial_spectrum(delta: np.ndarray, box_half_extent: float, bins: int) -> dict[str, list[float]]:
+def _radial_spectrum(delta: np.ndarray, box_half_extent: float, bins: int) -> Spectrum:
     size = delta.shape[0]
     cell = 2.0 * box_half_extent / size
     transformed = np.fft.rfftn(delta)
@@ -145,7 +170,7 @@ def _radial_spectrum(delta: np.ndarray, box_half_extent: float, bins: int) -> di
 
 
 def analyze_snapshot(path: Path, grid_size: int = 64, box_half_extent: float | None = None,
-                     assignment: str = "cic", window: str = "hann", bins: int = 24) -> dict[str, object]:
+                     assignment: str = "cic", window: str = "hann", bins: int = 24) -> StructureAnalysis:
     snapshot = load_snapshot(path)
     extent = box_half_extent or float(np.max(np.abs(snapshot.positions)) * 1.001)
     extent = max(extent, 1.0e-12)
@@ -172,7 +197,7 @@ def analyze_snapshot(path: Path, grid_size: int = 64, box_half_extent: float | N
             "spectrum": spectrum}
 
 
-def compare_structure(initial: dict[str, object], final: dict[str, object]) -> dict[str, float]:
+def compare_structure(initial: StructureAnalysis, final: StructureAnalysis) -> dict[str, float]:
     initial_rms = max(float(initial["delta_rms"]), 1.0e-12)
     initial_power = max(float(initial["spectrum"]["nonzero_power"]), 1.0e-12)
     final_rms = float(final["delta_rms"])
