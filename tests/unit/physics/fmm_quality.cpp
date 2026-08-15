@@ -10,14 +10,13 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-namespace blitzar_test_fmm_quality {
-float randomUnit(std::uint32_t& state)
+static float randomUnit(std::uint32_t& state)
 {
     state = state * 1664525u + 1013904223u;
     return static_cast<float>(state >> 8u) / 16777215.0f;
 }
 
-Particle particle(Vector3 position)
+static Particle particle(Vector3 position)
 {
     Particle result;
     result.setPosition(position);
@@ -25,7 +24,7 @@ Particle particle(Vector3 position)
     return result;
 }
 
-std::vector<Particle> plummerParticles(std::size_t count)
+static std::vector<Particle> plummerParticles(std::size_t count)
 {
     std::uint32_t state = 712367u;
     std::vector<Particle> particles;
@@ -42,7 +41,7 @@ std::vector<Particle> plummerParticles(std::size_t count)
     return particles;
 }
 
-std::vector<Particle> collisionParticles(std::size_t count)
+static std::vector<Particle> collisionParticles(std::size_t count)
 {
     std::uint32_t state = 918273u;
     std::vector<Particle> particles;
@@ -59,7 +58,7 @@ std::vector<Particle> collisionParticles(std::size_t count)
     return particles;
 }
 
-std::vector<Particle> cosmologyParticles()
+static std::vector<Particle> cosmologyParticles()
 {
     std::vector<Particle> particles;
     constexpr int side = 6;
@@ -77,7 +76,7 @@ std::vector<Particle> cosmologyParticles()
     return particles;
 }
 
-std::vector<Particle> orbitParticles()
+static std::vector<Particle> orbitParticles()
 {
     std::vector<Particle> particles;
     constexpr int count = 64;
@@ -94,7 +93,8 @@ std::vector<Particle> orbitParticles()
     return particles;
 }
 
-std::vector<Vector3> pairwise(const std::vector<Particle>& particles, const ForceLawPolicy& policy)
+static std::vector<Vector3> pairwise(const std::vector<Particle>& particles,
+                                     const ForceLawPolicy& policy)
 {
     std::vector<Vector3> accelerations(particles.size());
     for (std::size_t target = 0; target < particles.size(); ++target) {
@@ -113,7 +113,7 @@ std::vector<Vector3> pairwise(const std::vector<Particle>& particles, const Forc
     return accelerations;
 }
 
-void expectQualified(const std::vector<Particle>& particles)
+static void expectQualified(const std::vector<Particle>& particles)
 {
     const ForceLawPolicy policy = resolveForceLawPolicy(0.5f, 0.05f, 1.0e-4f, 1.0e-12f, 0.05f);
     bltzr_fmm::FmmWorkspace workspace;
@@ -138,8 +138,8 @@ void expectQualified(const std::vector<Particle>& particles)
     EXPECT_LT(errors.relativeP99, 0.30);
 }
 
-bool advanceLeapfrog(std::vector<Particle>& particles, const ForceLawPolicy& policy,
-                     bltzr_fmm::FmmWorkspace& workspace, float dt)
+static bool advanceLeapfrog(std::vector<Particle>& particles, const ForceLawPolicy& policy,
+                            bltzr_fmm::FmmWorkspace& workspace, float dt)
 {
     std::vector<Vector3> acceleration;
     if (!bltzr_fmm::computeForces(particles, policy, workspace, acceleration))
@@ -157,8 +157,6 @@ bool advanceLeapfrog(std::vector<Particle>& particles, const ForceLawPolicy& pol
                                      acceleration[index] * (0.5f * dt));
     return true;
 }
-} // namespace blitzar_test_fmm_quality
-
 TEST(PhysicsTest, TST_UNT_FMM_002_AdaptiveTreeQualifiesPlummerSphere)
 {
     expectQualified(plummerParticles(192u));

@@ -10,14 +10,13 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-namespace blitzar_test_fmm {
-float nextUnit(std::uint32_t& state)
+static float nextUnit(std::uint32_t& state)
 {
     state = state * 1664525u + 1013904223u;
     return static_cast<float>(state >> 8u) / 16777215.0f;
 }
 
-std::vector<Particle> buildParticles()
+static std::vector<Particle> buildParticles()
 {
     std::uint32_t state = 24680u;
     std::vector<Particle> particles(512u);
@@ -30,8 +29,8 @@ std::vector<Particle> buildParticles()
     return particles;
 }
 
-Vector3 pairwiseForce(const std::vector<Particle>& particles, std::size_t target,
-                      const ForceLawPolicy& policy)
+static Vector3 pairwiseForce(const std::vector<Particle>& particles, std::size_t target,
+                             const ForceLawPolicy& policy)
 {
     Vector3 acceleration;
     const Vector3 position = particles[target].getPosition();
@@ -48,8 +47,6 @@ Vector3 pairwiseForce(const std::vector<Particle>& particles, std::size_t target
     }
     return acceleration;
 }
-} // namespace blitzar_test_fmm
-
 TEST(PhysicsTest, TST_UNT_FMM_001_OrderTwoCpuFmmMatchesPairwiseReference)
 {
     const std::vector<Particle> particles = buildParticles();

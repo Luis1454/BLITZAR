@@ -16,8 +16,7 @@
 #include <string_view>
 #include <vector>
 
-namespace blitzar_test_tree_pm {
-std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage)
+static std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage)
 {
     std::vector<std::string_view> args;
     args.reserve(storage.size());
@@ -26,8 +25,6 @@ std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage
     }
     return args;
 }
-} // namespace blitzar_test_tree_pm
-
 TEST(TreePmConfigTest, TST_UNT_CONF_094_CliPresetSelectsHybridModel)
 {
     SimulationConfig config = SimulationConfig::defaults();
