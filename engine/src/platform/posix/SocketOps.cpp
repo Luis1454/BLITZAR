@@ -1,7 +1,9 @@
 #include "platform/internal/SocketOps.hpp"
 #include <arpa/inet.h>
 #include <cerrno>
+#include <fcntl.h>
 #include <sys/socket.h>
+#include <sys/select.h>
 #include <cstring>
 #include <unistd.h>
 
@@ -89,11 +91,36 @@ bool parseIpv4Address(const std::string& host, SocketAddressV4& outAddress)
 
 bool connectIpv4Native(std::intptr_t handle, const SocketAddressV4& address, int timeoutMs)
 {
-    (void)timeoutMs;
+    const int socketHandle = static_cast<int>(handle);
     sockaddr_in nativeAddress = makeSockaddr(address);
-    return ::connect(static_cast<int>(handle),
-                     reinterpret_cast<const sockaddr*>(&nativeAddress),
-                     sizeof(nativeAddress)) == 0;
+    const int originalFlags = fcntl(socketHandle, F_GETFL, 0);
+    if (originalFlags < 0 || fcntl(socketHandle, F_SETFL, originalFlags | O_NONBLOCK) < 0) {
+        return false;
+    }
+    bool connected = ::connect(socketHandle, reinterpret_cast<const sockaddr*>(&nativeAddress),
+                               sizeof(nativeAddress)) == 0;
+    if (!connected && (errno == EINPROGRESS || errno == EWOULDBLOCK || errno == EALREADY)) {
+        fd_set writeSet;
+        fd_set errorSet;
+        FD_ZERO(&writeSet);
+        FD_ZERO(&errorSet);
+        FD_SET(socketHandle, &writeSet);
+        FD_SET(socketHandle, &errorSet);
+        timeval timeout{};
+        timeout.tv_sec = timeoutMs / 1000;
+        timeout.tv_usec = (timeoutMs % 1000) * 1000;
+        const int ready = select(socketHandle + 1, nullptr, &writeSet, &errorSet, &timeout);
+        if (ready > 0 && FD_ISSET(socketHandle, &writeSet) &&
+            !FD_ISSET(socketHandle, &errorSet)) {
+            int socketError = 0;
+            socklen_t socketErrorSize = sizeof(socketError);
+            connected = getsockopt(socketHandle, SOL_SOCKET, SO_ERROR, &socketError,
+                                   &socketErrorSize) == 0 &&
+                        socketError == 0;
+        }
+    }
+    const bool restored = fcntl(socketHandle, F_SETFL, originalFlags) == 0;
+    return connected && restored;
 }
 
 bool bindIpv4Native(std::intptr_t handle, const SocketAddressV4& address)

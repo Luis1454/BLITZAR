@@ -54,7 +54,7 @@ set(BLITZAR_GRAPHICS_SOURCES
     "${BLITZAR_ROOT_DIR}/engine/src/graphics/ColorPipeline.cpp"
 )
 
-set(BLITZAR_SERVER_COMMON_SOURCES
+set(BLITZAR_BATCH_COMMON_SOURCES
     ${BLITZAR_ENV_UTILS_SOURCES}
     "${BLITZAR_ROOT_DIR}/engine/src/config/args/Main.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/config/args/Parse.cpp"
@@ -85,6 +85,18 @@ set(BLITZAR_SERVER_COMMON_SOURCES
     "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/parsing/BinXyz.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/parsing/Vtk.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/state/Generation.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/batch/Runner.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/ForceLawPolicy.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/ParticleHotData.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/TreePmCpu.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/FmmBuild.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/FmmEvaluate.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/physics/FmmMetrics.cpp"
+)
+
+set(BLITZAR_SERVER_COMMON_SOURCES
+    ${BLITZAR_BATCH_COMMON_SOURCES}
     "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/lifecycle/Controls.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/runtime/SettersAndExport.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/export/Stats.cpp"
@@ -93,20 +105,30 @@ set(BLITZAR_SERVER_COMMON_SOURCES
     "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/telemetry/SnapshotAndEnergy.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/telemetry/PendingOps.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/lifecycle/Loop.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/ForceLawPolicy.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/ParticleHotData.cpp"
 )
 
 if(BLITZAR_ENABLE_CUDA)
+    set(BLITZAR_BATCH_SOURCES
+        ${BLITZAR_BATCH_COMMON_SOURCES}
+        "${BLITZAR_ROOT_DIR}/engine/src/cuda/MemoryPool.cu"
+        "${BLITZAR_ROOT_DIR}/engine/src/cuda/JitRuntime.cu"
+        "${BLITZAR_ROOT_DIR}/engine/src/cuda/ParticleSystem.cu"
+    )
     set(BLITZAR_SERVER_SOURCES
         ${BLITZAR_SERVER_COMMON_SOURCES}
         "${BLITZAR_ROOT_DIR}/engine/src/cuda/MemoryPool.cu"
+        "${BLITZAR_ROOT_DIR}/engine/src/cuda/JitRuntime.cu"
         "${BLITZAR_ROOT_DIR}/engine/src/cuda/ParticleSystem.cu"
     )
 else()
+    set(BLITZAR_BATCH_SOURCES
+        ${BLITZAR_BATCH_COMMON_SOURCES}
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/CudaJit.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/ParticleSystemHost.cpp"
+    )
     set(BLITZAR_SERVER_SOURCES
         ${BLITZAR_SERVER_COMMON_SOURCES}
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/CudaJit.cpp"
         "${BLITZAR_ROOT_DIR}/engine/src/physics/ParticleSystemHost.cpp"
     )
 endif()

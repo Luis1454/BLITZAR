@@ -42,7 +42,10 @@ public:
             if (!parseFloat(particle.x) || !consume(',') || !parseFloat(particle.y) ||
                 !consume(',') || !parseFloat(particle.z) || !consume(',') ||
                 !parseFloat(particle.mass) || !consume(',') || !parseFloat(particle.pressureNorm) ||
-                !consume(',') || !parseFloat(particle.temperature) || !consume(']')) {
+                !consume(',') || !parseFloat(particle.temperature)) {
+                return false;
+            }
+            if (!at(']') && (!consume(',') || !parseFloat(particle.densityNorm) || !consume(']'))) {
                 return false;
             }
             out.push_back(particle);
@@ -116,11 +119,17 @@ bool JsonCodec::parseSnapshotResponse(std::string_view raw, SnapshotPayload& out
         return true;
     }
     readBool(raw, "has_snapshot", parsed.hasSnapshot);
+    std::size_t declaredCount = 0u;
+    const bool hasDeclaredCount = JsonCodec::readNumber(raw, "count", declaredCount);
     if (!JsonCodec::readNumber(raw, "source_count", parsed.sourceSize)) {
         parsed.sourceSize = 0u;
     }
     if (!SnapshotArrayParser(raw).parse(parsed.particles)) {
         error = "invalid snapshot payload";
+        return false;
+    }
+    if (hasDeclaredCount && declaredCount != parsed.particles.size()) {
+        error = "snapshot count mismatch";
         return false;
     }
     if (parsed.sourceSize == 0u) {

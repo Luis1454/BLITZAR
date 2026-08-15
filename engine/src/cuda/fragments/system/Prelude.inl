@@ -10,17 +10,18 @@
  * Responsibility: Gather shared CUDA includes and prelude helpers for particle-system fragments.
  */
 
+#include "Constants.hpp"
 #include "config/env/Base.hpp"
 #include "physics/ForceLawPolicy.hpp"
 #include "physics/Octree.hpp"
 #include "physics/ParticleSystem.hpp"
-#include "Constants.hpp"
 #include <algorithm>
 #include <array>
 #include <cfloat>
 #include <cmath>
 #include <cstring>
 #include <cuda_runtime.h>
+#include <cufft.h>
 #include <numeric>
 #include <stdexcept>
 #include <stdio.h>
@@ -49,11 +50,21 @@ struct SphGridParams {
 struct TreePmGridParams {
     int gridSize;
     int totalCells;
+    int assignment;
+    int periodic;
     float cellSize;
     float invCellSize;
     float originX;
     float originY;
     float originZ;
+    float boundaryMass;
+    float boundaryCenterX;
+    float boundaryCenterY;
+    float boundaryCenterZ;
+    float boundarySoftening;
+    float shortRangeScale;
+    float densityScale;
+    float poissonCoefficient;
 };
 
 constexpr int kOctreeLeafCapacity = 32;
@@ -149,6 +160,9 @@ ParticleSystem::SolverMode solverModeFromEnv()
     if (*solver == "octree" || *solver == "octree_cpu") {
         return ParticleSystem::SolverMode::OctreeCpu;
     }
+    if (*solver == "fmm" || *solver == "fmm_cpu") {
+        return ParticleSystem::SolverMode::FmmCpu;
+    }
     if (*solver == "octree_gpu") {
         return ParticleSystem::SolverMode::OctreeGpu;
     }
@@ -242,10 +256,9 @@ BLITZAR_HD_HOST BLITZAR_HD_DEVICE float softenedDistanceSquared(Vector3 delta,
  * @return BLITZAR_HD_HOST BLITZAR_HD_DEVICE Vector3 value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3 blitzarAccelerationFromSource(Vector3 selfPosition,
-                                                                        Vector3 sourcePosition,
-                                                                        float sourceMass,
-                                                                        ForceLawPolicy policy)
+BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3
+blitzarAccelerationFromSource(Vector3 selfPosition, Vector3 sourcePosition, float sourceMass,
+                              ForceLawPolicy policy)
 {
     const Vector3 delta = sourcePosition - selfPosition;
     const float dist2 = softenedDistanceSquared(delta, policy);
@@ -260,7 +273,16 @@ BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3 blitzarAccelerationFromSource(V
 #endif
     const float invDist2 = invDist * invDist;
     const float invDist3 = invDist2 * invDist;
-    return delta * (sourceMass * invDist3);
+    float shortRangeWeight = 1.0f;
+    if (policy.treePmShortRangeScale > 0.0f) {
+        constexpr float kInverseSqrtPi = 0.5641895835477563f;
+        const float distance = 1.0f / invDist;
+        const float splitScale = policy.treePmShortRangeScale;
+        const float argument = 0.5f * distance / splitScale;
+        shortRangeWeight =
+            erfcf(argument) + distance * kInverseSqrtPi / splitScale * expf(-argument * argument);
+    }
+    return delta * (sourceMass * invDist3 * shortRangeWeight);
 }
 
 /*
@@ -273,9 +295,10 @@ BLITZAR_HD_HOST BLITZAR_HD_DEVICE inline Vector3 blitzarAccelerationFromSource(V
  * @return Vector3 value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-__host__ __device__ inline Vector3 computePairwiseAcceleration(ParticleSoAView state, int numParticles,
-                                                        int idx, ForceLawPolicy policy,
-                                                        float maxAcceleration)
+__host__ __device__ inline Vector3 computePairwiseAcceleration(ParticleSoAView state,
+                                                               int numParticles, int idx,
+                                                               ForceLawPolicy policy,
+                                                               float maxAcceleration)
 {
     const Vector3 selfPos = getSoAPosition(state, idx);
     const float softening2 = policy.softening * policy.softening;
@@ -512,6 +535,44 @@ __global__ void updateParticles(ParticleSoAView last, ParticleSoAView current, i
         current.temp[i] = last.temp[i];
         current.dens[i] = last.dens[i];
     }
+}
+
+__global__ void updateParticlesWithAcceleration(ParticleSoAView last, ParticleSoAView current,
+                                                const Vector3* acceleration, int numParticles,
+                                                float deltaTime)
+{
+    const int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= numParticles) {
+        return;
+    }
+    const Vector3 pos = getSoAPosition(last, i);
+    const Vector3 vel = getSoAVelocity(last, i);
+    const Vector3 force = acceleration[i];
+    const Vector3 nextVel = vel + force * deltaTime;
+    const Vector3 nextPos = pos + nextVel * deltaTime;
+    setSoAPressure(current, i, force * 100.0f);
+    setSoAVelocity(current, i, nextVel);
+    setSoAPosition(current, i, nextPos);
+    current.mass[i] = last.mass[i];
+    current.temp[i] = last.temp[i];
+    current.dens[i] = last.dens[i];
+}
+
+__global__ void applyCosmologyExpansionKernel(ParticleSoAView particles, int numParticles,
+                                              float scaleRatio, float previousHubble,
+                                              float nextHubble)
+{
+    (void)previousHubble;
+    (void)nextHubble;
+    const int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= numParticles) {
+        return;
+    }
+    const Vector3 position = getSoAPosition(particles, i);
+    const Vector3 nextPosition = position * scaleRatio;
+    const Vector3 nextVelocity = getSoAVelocity(particles, i) / max(scaleRatio, 1.0e-6f);
+    setSoAPosition(particles, i, nextPosition);
+    setSoAVelocity(particles, i, nextVelocity);
 }
 
 /*
@@ -866,6 +927,28 @@ __global__ void finalizeLeapfrogKickKernel(ParticleSoAView driftedState, const f
 
     vHalfOut[i] = make_float3(halfVel.x + acc.x * deltaTime, halfVel.y + acc.y * deltaTime,
                               halfVel.z + acc.z * deltaTime);
+}
+
+__global__ void cosmologyDriftKernel(ParticleSoAView state, const float3* momentumHalf,
+                                     float driftFactor, float boxLength, ParticleSoAView out,
+                                     int numParticles)
+{
+    const int index = blockIdx.x * blockDim.x + threadIdx.x;
+    if (index >= numParticles) {
+        return;
+    }
+    const float3 momentum = momentumHalf[index];
+    float x = fmodf(state.posX[index] + momentum.x * driftFactor, boxLength);
+    float y = fmodf(state.posY[index] + momentum.y * driftFactor, boxLength);
+    float z = fmodf(state.posZ[index] + momentum.z * driftFactor, boxLength);
+    x = x < 0.0f ? x + boxLength : x;
+    y = y < 0.0f ? y + boxLength : y;
+    z = z < 0.0f ? z + boxLength : z;
+    setSoAPosition(out, index, Vector3(x, y, z));
+    setSoAVelocity(out, index, Vector3(momentum.x, momentum.y, momentum.z));
+    out.mass[index] = state.mass[index];
+    out.temp[index] = state.temp[index];
+    out.dens[index] = state.dens[index];
 }
 
 /*

@@ -242,6 +242,22 @@ bool writeExportSnapshotFile(const AsyncExportJob& job)
             out << particle.getPressure().norm() << "\n";
         }
     }
+    out << "VECTORS acceleration float\n";
+    if (vtkBinary) {
+        for (const Particle& particle : job.particles) {
+            const Vector3 acceleration = particle.getPressure() * 0.01f;
+            writeBeF32(out, acceleration.x);
+            writeBeF32(out, acceleration.y);
+            writeBeF32(out, acceleration.z);
+        }
+        out << "\n";
+    }
+    else {
+        for (const Particle& particle : job.particles) {
+            const Vector3 acceleration = particle.getPressure() * 0.01f;
+            out << acceleration.x << " " << acceleration.y << " " << acceleration.z << "\n";
+        }
+    }
     out << "SCALARS temperature float 1\n";
     out << "LOOKUP_TABLE default\n";
     if (vtkBinary) {

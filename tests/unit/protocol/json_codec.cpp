@@ -360,6 +360,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_021_ParsesSnapshotWithSingleParticle)
     snapshot[0].mass = 4.0f;
     snapshot[0].pressureNorm = 0.1f;
     snapshot[0].temperature = 0.3f;
+    snapshot[0].densityNorm = 0.8f;
     const std::string raw =
         bltzr_protocol::JsonCodec::makeSnapshotResponse(true, snapshot, 1u);
     bltzr_protocol::SnapshotPayload parsed{};
@@ -368,6 +369,7 @@ TEST(ServerProtocolCodecTest, TST_UNT_PROT_021_ParsesSnapshotWithSingleParticle)
         << error;
     EXPECT_EQ(parsed.particles.size(), 1u);
     EXPECT_EQ(parsed.sourceSize, 1u);
+    EXPECT_FLOAT_EQ(parsed.particles[0].densityNorm, 0.8f);
 }
 
 // TST_UNT_PROT_022: Snapshot with many particles

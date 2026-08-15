@@ -5,6 +5,10 @@
 
 cmake_minimum_required(VERSION 3.24)
 
+if(POLICY CMP0141)
+    cmake_policy(SET CMP0141 NEW)
+endif()
+
 include(cmake/win.cmake)
 include(cmake/dependencies.cmake)
 
@@ -22,6 +26,16 @@ if(BLITZAR_NVCC_EXECUTABLE AND
 endif()
 
 project(BLITZAR LANGUAGES CXX)
+
+if(MSVC)
+    foreach(_blitzar_language IN ITEMS CXX CUDA)
+        set(_blitzar_flag_variable "CMAKE_${_blitzar_language}_FLAGS_RELWITHDEBINFO")
+        string(REPLACE "/Zi" "" _blitzar_relwithdebinfo_flags "${${_blitzar_flag_variable}}")
+        string(REPLACE "-Zi" "" _blitzar_relwithdebinfo_flags "${_blitzar_relwithdebinfo_flags}")
+        set(${_blitzar_flag_variable} "${_blitzar_relwithdebinfo_flags}"
+            CACHE STRING "${_blitzar_language} flags for RelWithDebInfo" FORCE)
+    endforeach()
+endif()
 
 # Find OpenMP for parallelization support
 find_package(OpenMP REQUIRED)
@@ -97,6 +111,8 @@ if(BLITZAR_BUILD_TESTS)
         "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/export_queue.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/extended_solvers.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/force_law_policy.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/fmm.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/fmm_quality.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/multibody.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/octree_criteria.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/octree_gpu_stability.cpp"

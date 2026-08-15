@@ -17,6 +17,7 @@ class QDockWidget;
 class QDoubleSpinBox;
 class QLabel;
 class QLineEdit;
+class QProgressBar;
 class QPushButton;
 class QSlider;
 class QSpinBox;
@@ -26,12 +27,14 @@ class QWidget;
 namespace bltzr_qt {
 class Graph;
 class MultiView;
+class SpectrumGraph;
 
 struct ViewWidgets final {
     explicit ViewWidgets(QWidget* parent);
 
     QPointer<MultiView> multiView;
     QPointer<Graph> energyGraph;
+    QPointer<SpectrumGraph> spectrumGraph;
 };
 
 struct TelemetryWidgets final {
@@ -81,8 +84,27 @@ struct PhysicsControls final {
     QPointer<QDoubleSpinBox> sphGasConstantSpin;
     QPointer<QDoubleSpinBox> sphViscositySpin;
     QPointer<QDoubleSpinBox> dtSpin;
+    QPointer<QSpinBox> particleCountSpin;
     QPointer<QComboBox> solverCombo;
     QPointer<QComboBox> integratorCombo;
+    QPointer<QCheckBox> treePmEnabledCheck;
+    QPointer<QComboBox> treePmPresetCombo;
+    QPointer<QComboBox> treePmModelCombo;
+    QPointer<QComboBox> treePmLayoutCombo;
+    QPointer<QComboBox> treePmPrecisionCombo;
+    QPointer<QComboBox> treePmAssignmentCombo;
+    QPointer<QCheckBox> treePmLocalGridCheck;
+    QPointer<QSpinBox> treePmGridSizeSpin;
+    QPointer<QSpinBox> treePmJacobiIterationsSpin;
+    QPointer<QDoubleSpinBox> treePmCutoffFactorSpin;
+    QPointer<QSpinBox> treePmMaxLocalNeighborsSpin;
+    QPointer<QSpinBox> treePmParticleLimitSpin;
+    QPointer<QSpinBox> treePmDenseCellThresholdSpin;
+    QPointer<QCheckBox> treePmGravityOnlyBuffersCheck;
+    QPointer<QCheckBox> adaptiveTimeStepsCheck;
+    QPointer<QSpinBox> adaptiveMaxLevelSpin;
+    QPointer<QDoubleSpinBox> adaptiveEtaSpin;
+    QPointer<QCheckBox> adaptiveCostGuardCheck;
     QPointer<QDoubleSpinBox> thetaSpin;
     QPointer<QDoubleSpinBox> softeningSpin;
 };
@@ -96,6 +118,7 @@ struct RenderControls final {
     QPointer<QSlider> yawSlider;
     QPointer<QSlider> pitchSlider;
     QPointer<QSlider> rollSlider;
+    QPointer<QProgressBar> exportProgress;
     QPointer<QCheckBox> cullingCheck;
     QPointer<QCheckBox> lodCheck;
     QPointer<QCheckBox> octreeOverlayCheck;
@@ -111,6 +134,7 @@ struct WorkspaceWidgets final {
     QPointer<QAction> gpuTelemetryAction;
     QPointer<QDockWidget> controlsDock;
     QPointer<QDockWidget> energyDock;
+    QPointer<QDockWidget> spectrumDock;
     QPointer<QDockWidget> telemetryDock;
     QPointer<QDockWidget> validationDock;
     QPointer<QTimer> timer;

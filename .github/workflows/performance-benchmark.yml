@@ -56,10 +56,10 @@ jobs:
           python -m pytest -q tests/checks/suites/release/test_performance_benchmark.py
       - name: Configure benchmark build
         shell: pwsh
-        run: cmake -S . -B build-performance -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_PROFILE=prod -DBLITZAR_STRICT_WARNINGS=ON
+        run: cmake --preset performance-prod
       - name: Build benchmark tool
         shell: pwsh
-        run: cmake --build build-performance --target blitzarPerformanceBenchmarkTool --parallel
+        run: cmake --build --preset performance-prod --target blitzarPerformanceBenchmarkTool --parallel
       - name: Run performance benchmark campaign
         shell: pwsh
         run: |

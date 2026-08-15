@@ -4,12 +4,12 @@ This artifact defines the evidence-grade baseline for qualification-oriented `pr
 
 ## Evidence-Grade Lanes
 
-| Lane | Runner / OS | Toolchain assumptions | Required flags | Evidence status |
+| Lane | Runner / OS | Toolchain assumptions | Canonical preset | Evidence status |
 |---|---|---|---|---|
-| `pr-fast` quality gate | `ubuntu-24.04` | hosted GNU toolchain plus `clang-tidy`, `cmake`, `ninja`, Python `3.12` tooling (`pytest`, `ruff`, `mypy`) | `-DBLITZAR_PROFILE=prod`, `-DBLITZAR_INTEGRATION_STRICT_WARNINGS=ON`, `-DBLITZAR_INTEGRATION_ENABLE_SANITIZERS=ON`, `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON` | primary deterministic merge evidence |
-| `nightly-full` standalone and coverage lanes | `windows-2022` plus `ubuntu-24.04` | hosted MSVC 2022 x64 and Ubuntu 24.04 GNU toolchains, `cmake`, `ninja`, Python `3.12`, coverage tooling on Linux | `-DBLITZAR_PROFILE=prod`, `-DBLITZAR_INTEGRATION_STRICT_WARNINGS=ON`, plus coverage or repeat-run flags as lane-specific extensions | extended deterministic evidence; not the merge gate |
-| `release-lane` package flow | `windows-2022` | MSVC 2022 x64 via `ilammy/msvc-dev-cmd`, `cmake`, `ninja`, Python `3.12`, CUDA Toolkit `12.4.1` | `-DBLITZAR_PROFILE=prod`, `-DBLITZAR_STRICT_WARNINGS=ON` | release candidate evidence and packaging baseline |
-| `release-gpu-full-tests` | self-hosted `windows/x64/cuda` | MSVC x64, `cmake`, `ninja`, Python tooling, NVIDIA runtime plus `nvcc`; readiness proven by `gpu-runner-health` | `-DBLITZAR_PROFILE=prod`, `-DBLITZAR_STRICT_WARNINGS=ON` | supplemental evidence only; never sole baseline |
+| `pr-fast` quality gate | `ubuntu-24.04` | hosted GNU toolchain plus `clang-tidy`, `cmake`, `ninja`, Python `3.12` tooling (`pytest`, `ruff`, `mypy`) | `tests/integration-coverage` | primary deterministic merge evidence |
+| `nightly-full` standalone and coverage lanes | `windows-2022` plus `ubuntu-24.04` | hosted MSVC 2022 x64 and Ubuntu 24.04 GNU toolchains, `cmake`, `ninja`, Python `3.12`, coverage tooling on Linux | `tests/integration-safe` and `tests/integration-coverage` | extended deterministic evidence; not the merge gate |
+| `release-lane` package flow | `windows-2022` | MSVC 2022 x64 via `ilammy/msvc-dev-cmd`, `cmake`, `ninja`, Python `3.12`, CUDA Toolkit `12.4.1` | root `release-prod` | release candidate evidence and packaging baseline |
+| `release-gpu-full-tests` | self-hosted `windows/x64/cuda` | MSVC x64, `cmake`, `ninja`, Python tooling, NVIDIA runtime plus `nvcc`; readiness proven by `gpu-runner-health` | root `release-prod` | supplemental evidence only; never sole baseline |
 
 ## Environment Rules
 
@@ -27,7 +27,7 @@ This artifact defines the evidence-grade baseline for qualification-oriented `pr
 
 - Repository quality gate: `make quality-local CONFIG=simulation.ini`
 - Python analysis: `make quality-python`
-- Strict integration lane: `make quality-strict CONFIG=simulation.ini QUALITY_BUILD_DIR=build-quality`
+- Strict integration lane: `make quality-strict CONFIG=simulation.ini QUALITY_PRESET=integration-quality`
 - Release lane packaging: `scripts/ci/release/package_source.py`, `scripts/ci/release/package_bundle.py`, and `scripts/ci/release/package_evidence.py`
 
 ## Change Control

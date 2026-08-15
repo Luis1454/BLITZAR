@@ -12,12 +12,15 @@
 #include <QCheckBox>
 #include <QFileDialog>
 #include <QLineEdit>
+#include <QMessageBox>
+#include <QProgressBar>
 #include <QSpinBox>
 #include <QStatusBar>
 #include <cstdint>
 #include <filesystem>
 #include <limits>
 #include <string>
+#include <utility>
 
 namespace bltzr_qt {
 std::string Window::formatFromSelectedFilter(const QString& filter)
@@ -117,6 +120,9 @@ void Window::handleExportRequest()
     if (outPath.has_parent_path()) {
         _config.exportDirectory = outPath.parent_path().string();
     }
+    _widgets.render.exportProgress->setRange(0, 0);
+    _widgets.render.exportProgress->setFormat("Export queued...");
+    statusBar()->showMessage(QString("Export queued: %1").arg(QString::fromStdString(path)), 5000);
     markConfigDirty();
 }
 
@@ -176,6 +182,7 @@ void Window::handleLoadInputRequest()
     _config.inputFormat = "auto";
     _config.presetStructure = "file";
     _config.initMode = "file";
+    _config.scene.objects.clear();
     (void)applyConfigToServer(true);
     markConfigDirty();
 }
@@ -188,13 +195,24 @@ void Window::handleLoadPresetRequest()
     if (path.isEmpty()) {
         return;
     }
-    _config = SimulationConfig::loadOrCreate(path.toStdString());
+    SimulationConfig candidate{};
+    std::string error;
+    if (!SimulationConfig::loadStrict(path.toStdString(), candidate, error)) {
+        QMessageBox::critical(this, "Invalid INI", QString::fromStdString(error));
+        statusBar()->showMessage("INI rejected; current configuration kept", 5000);
+        return;
+    }
+    _config = std::move(candidate);
     _configPath = path.toStdString();
     applyConfigToUi();
-    applyConfigToServer(true);
+    if (!applyConfigToServer(true)) {
+        statusBar()->showMessage("INI rejected by runtime validation; current simulation unchanged", 5000);
+        return;
+    }
     _widgets.view.energyGraph->clearHistory();
     _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
     markConfigDirty(false);
+    statusBar()->showMessage(QString("INI loaded: %1").arg(path), 5000);
 }
 
 void Window::resetSimulationFromUi()

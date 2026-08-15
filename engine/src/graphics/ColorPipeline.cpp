@@ -87,7 +87,9 @@ void updateAdaptiveScales(const std::vector<RenderParticle>& snapshot,
     float observedPressureMax = kPressureScaleFloor;
     for (const RenderParticle& particle : snapshot) {
         observedTempMax = std::max(observedTempMax, std::max(0.0f, particle.temperature));
-        observedPressureMax = std::max(observedPressureMax, std::max(0.0f, particle.pressureNorm));
+        observedPressureMax = std::max(observedPressureMax,
+                                       std::max(std::max(0.0f, particle.pressureNorm),
+                                                std::max(0.0f, particle.densityNorm)));
     }
     adaptiveTemperatureScale = updateAdaptiveParameter(adaptiveTemperatureScale, observedTempMax,
                                                        kTemperatureScaleFloor, 0.32f, 0.04f);
@@ -102,9 +104,16 @@ ColorRGBA particleRampColorFast(const RenderParticle& particle, float temperatur
     const std::array<std::uint8_t, kPressureBins> alphaLut = buildAlphaLut(luminosity);
     const int tIdx = quantizeToBin(particle.temperature,
                                    std::max(kTemperatureScaleFloor, temperatureScale), kTempBins);
-    const int pIdx = quantizeToBin(particle.pressureNorm,
+    const float densityOrPressure = std::max(particle.pressureNorm, particle.densityNorm);
+    const int pIdx = quantizeToBin(densityOrPressure,
                                    std::max(kPressureScaleFloor, pressureScale), kPressureBins);
-    const RgbColor c = temperatureLut[static_cast<std::size_t>(tIdx)];
+    RgbColor c = temperatureLut[static_cast<std::size_t>(tIdx)];
+    if (particle.densityNorm > 0.0f) {
+        const RgbColor lowDensity{35, 75, 190};
+        const RgbColor highDensity{255, 225, 105};
+        const RgbColor densityColor = blend(lowDensity, highDensity, particle.densityNorm);
+        c = blend(c, densityColor, 0.65f);
+    }
     const std::uint8_t alpha = alphaLut[static_cast<std::size_t>(pIdx)];
     return ColorRGBA{c.r, c.g, c.b, alpha};
 }

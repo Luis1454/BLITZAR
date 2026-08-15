@@ -16,8 +16,12 @@
 #include <QCoreApplication>
 #include <QEventLoop>
 #include <QPushButton>
+#include <QListWidget>
+#include <QDoubleSpinBox>
+#include <QSpinBox>
 #include <chrono>
 #include <cstdint>
+#include <limits>
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <memory>
@@ -52,6 +56,13 @@ TEST(QtMainWindowTest, TST_UIX_UI_001_ConstructsAndTicksWithRealRuntime)
             return status.contains("Link: connected") && status.contains("Owner: external");
         },
         std::chrono::milliseconds(5000)));
+    EXPECT_NE(window.findChild<QListWidget*>("sceneObjectList"), nullptr);
+    EXPECT_NE(window.findChild<QPushButton*>("sceneObjectPropertyButton"), nullptr);
+    EXPECT_NE(window.findChild<QPushButton*>("applySceneObjectsButton"), nullptr);
+    EXPECT_NE(window.findChild<QDoubleSpinBox*>("sceneObjectPositionX"), nullptr);
+    EXPECT_NE(window.findChild<QDoubleSpinBox*>("sceneObjectRotationZ"), nullptr);
+    EXPECT_NE(window.findChild<QSpinBox*>("sceneParticleSystemCount"), nullptr);
+    EXPECT_EQ(window.findChild<QPushButton*>("applyScenePropertiesButton"), nullptr);
     server.stop();
 }
 
@@ -133,7 +144,7 @@ TEST(QtMainWindowTest, TST_UIX_UI_004_ShowsEffectiveClientCapWhenConfiguredCapEx
 {
     (void)testsupport::ensureQtApp();
     SimulationConfig config = makeUiConfig();
-    config.clientParticleCap = bltzr_protocol::kSnapshotMaxPoints + 5000u;
+    config.clientParticleCap = std::numeric_limits<std::uint32_t>::max();
     RealServerHarness server;
     std::string startError;
     ASSERT_TRUE(server.start(startError)) << startError;

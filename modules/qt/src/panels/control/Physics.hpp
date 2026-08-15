@@ -7,16 +7,9 @@
 
 #include <QWidget>
 
-class QCheckBox;
-class QComboBox;
-class QDoubleSpinBox;
-
 namespace bltzr_qt {
-QWidget* buildPhysicsPanel(QWidget* parent, QComboBox* solverCombo, QComboBox* integratorCombo,
-                           QDoubleSpinBox* dtSpin, QDoubleSpinBox* thetaSpin,
-                           QDoubleSpinBox* softeningSpin, QCheckBox* sphCheck,
-                           QDoubleSpinBox* sphSmoothingSpin, QDoubleSpinBox* sphRestDensitySpin,
-                           QDoubleSpinBox* sphGasConstantSpin, QDoubleSpinBox* sphViscositySpin);
+struct PhysicsControls;
+QWidget* buildPhysicsPanel(QWidget* parent, PhysicsControls& controls);
 
 } // namespace bltzr_qt
 

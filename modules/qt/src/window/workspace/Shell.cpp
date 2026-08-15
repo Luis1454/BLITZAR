@@ -6,6 +6,7 @@
  */
 
 #include "widgets/graphs/Graph.hpp"
+#include "widgets/graphs/SpectrumGraph.hpp"
 #include "window/core/Window.hpp"
 #include "widgets/viewport/MultiView.hpp"
 #include "support/theme/Theme.hpp"
@@ -43,15 +44,22 @@ void Window::buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPane,
     _widgets.workspace.energyDock->setWidget(_widgets.view.energyGraph);
     _widgets.workspace.energyDock->setMinimumHeight(136);
     addDockWidget(Qt::BottomDockWidgetArea, _widgets.workspace.energyDock);
+    _widgets.workspace.spectrumDock = new QDockWidget("Structure FFT", this);
+    _widgets.workspace.spectrumDock->setObjectName("spectrumDock");
+    _widgets.workspace.spectrumDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    _widgets.workspace.spectrumDock->setWidget(_widgets.view.spectrumGraph);
+    _widgets.workspace.spectrumDock->setMinimumHeight(196);
+    addDockWidget(Qt::BottomDockWidgetArea, _widgets.workspace.spectrumDock);
     _widgets.workspace.validationDock = new QDockWidget("Validation", this);
     _widgets.workspace.validationDock->setObjectName("validationDock");
     _widgets.workspace.validationDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     _widgets.workspace.validationDock->setWidget(validationPane);
     addDockWidget(Qt::BottomDockWidgetArea, _widgets.workspace.validationDock);
     tabifyDockWidget(_widgets.workspace.telemetryDock, _widgets.workspace.validationDock);
+    tabifyDockWidget(_widgets.workspace.energyDock, _widgets.workspace.spectrumDock);
     resizeDocks({_widgets.workspace.controlsDock}, {236}, Qt::Horizontal);
     resizeDocks({_widgets.workspace.energyDock}, {148}, Qt::Vertical);
-    _widgets.workspace.energyDock->raise();
+    _widgets.workspace.spectrumDock->raise();
     _widgets.workspace.telemetryDock->hide();
     _widgets.workspace.validationDock->hide();
 }
@@ -64,7 +72,7 @@ void Window::buildMenus()
         [this]() {
             (void)saveConfigToDisk();
         });
-    fileMenu->addAction("Load Preset...", this, [this]() {
+    fileMenu->addAction("Load INI...", this, [this]() {
         handleLoadPresetRequest();
     });
     fileMenu->addAction("Load Checkpoint...", this, [this]() {
@@ -86,6 +94,11 @@ void Window::buildMenus()
             close();
         });
     auto* editMenu = menuBar()->addMenu("&Edit");
+    auto* editConfiguration = editMenu->addAction("Edit Loaded Configuration...", this, [this]() {
+        editLoadedConfiguration();
+    });
+    editConfiguration->setShortcut(QKeySequence("Ctrl+Shift+E"));
+    editMenu->addSeparator();
     editMenu->addAction("Validate Config", this, [this]() {
         (void)refreshValidationReport(false);
     });
@@ -95,6 +108,7 @@ void Window::buildMenus()
     auto* viewMenu = menuBar()->addMenu("&View");
     viewMenu->addAction(_widgets.workspace.controlsDock->toggleViewAction());
     viewMenu->addAction(_widgets.workspace.energyDock->toggleViewAction());
+    viewMenu->addAction(_widgets.workspace.spectrumDock->toggleViewAction());
     viewMenu->addAction(_widgets.workspace.telemetryDock->toggleViewAction());
     viewMenu->addAction(_widgets.workspace.validationDock->toggleViewAction());
     _widgets.workspace.octreeOverlayAction = viewMenu->addAction("Octree Overlay");
@@ -141,6 +155,10 @@ void Window::buildMenus()
     });
     windowMenu->addAction("Raise Energy", this, [this]() {
         _widgets.workspace.energyDock->raise();
+    });
+    windowMenu->addAction("Raise Structure FFT", this, [this]() {
+        _widgets.workspace.spectrumDock->show();
+        _widgets.workspace.spectrumDock->raise();
     });
     windowMenu->addAction("Raise Telemetry", this, [this]() {
         _widgets.workspace.telemetryDock->raise();

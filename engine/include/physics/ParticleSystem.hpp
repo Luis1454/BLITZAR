@@ -8,6 +8,8 @@
 #ifndef BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
 #define BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
 
+#include "config/Cosmology.hpp"
+#include "physics/CudaJit.hpp"
 #include "physics/ForceLawPolicy.hpp"
 #include "physics/Octree.hpp"
 #include "physics/ParticleSoAView.hpp"
@@ -18,8 +20,15 @@
  */
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
+
+template <typename Scalar> struct CpuTreePmWorkspaceT;
+
+namespace bltzr_fmm {
+class FmmWorkspace;
+}
 
 /*
  * @brief Defines the alignas type contract.
@@ -99,10 +108,27 @@ struct ParticleSystemDeviceState final {
     bool _cudaRuntimeAvailable = false;
     bool _hostStateDirty = false;
     bool _treePmMarkerPrinted = false;
+    bool _treePmLayoutModeInitialized = false;
+    int _treePmLayoutMode = 0;
+    bool _treePmAutoLayoutResolved = false;
+    bool _treePmAutoGather = false;
+    bool _treePmAutoMorton = false;
+    float _treePmAutoR80Ratio = 1.0f;
+    bool _treePmFftActive = false;
+    bool _treePmGraphCaptured[2] = {false, false};
+    bool _treePmGraphMarkerPrinted = false;
+    int _treePmGraphSlot = 0;
+    void* _treePmGraphExec[2] = {nullptr, nullptr};
+    void* _treePmGraphStream = nullptr;
+    bool _cudaJitMarkerPrinted = false;
+    bool _cudaJitForceMarkerPrinted = false;
+    double _cudaE2eTotalMs = 0.0;
+    std::uint64_t _cudaE2eSamples = 0u;
     int _sphGridSize = 0;
     int _sphGridTotalCells = 0;
     int _treePmGridSize = 0;
     int _treePmTotalCells = 0;
+    std::unique_ptr<CudaJitRuntime> _cudaJit;
 
     float* d_soaPosX = nullptr;
     float* d_soaPosY = nullptr;
@@ -139,12 +165,30 @@ struct ParticleSystemDeviceState final {
     int* d_sphSortedIndex = nullptr;
     int* d_sphCellStart = nullptr;
     int* d_sphCellEnd = nullptr;
+    int* d_treePmSortKeys = nullptr;
+    int* d_treePmSortIndices = nullptr;
+    int* d_treePmSortedCellHash = nullptr;
+    void* d_treePmSortTempStorage = nullptr;
+    float* d_treePmSortedPosX = nullptr;
+    float* d_treePmSortedPosY = nullptr;
+    float* d_treePmSortedPosZ = nullptr;
+    float* d_treePmSortedMass = nullptr;
     float* d_treePmDensity = nullptr;
     float* d_treePmPotentialA = nullptr;
     float* d_treePmPotentialB = nullptr;
     float* d_treePmAccelX = nullptr;
     float* d_treePmAccelY = nullptr;
     float* d_treePmAccelZ = nullptr;
+    float* d_treePmBoundsPartial = nullptr;
+    float* d_treePmBounds = nullptr;
+    float* d_treePmRadialMassHistogram = nullptr;
+    Vector3* d_adaptiveAcceleration = nullptr;
+    std::uint8_t* d_adaptiveLevels = nullptr;
+    std::uint64_t* d_adaptiveLastForceTicks = nullptr;
+    void* d_treePmSpectrum = nullptr;
+    void* d_treePmSpectrumX = nullptr;
+    void* d_treePmSpectrumY = nullptr;
+    void* d_treePmSpectrumZ = nullptr;
     unsigned int* d_treePmCellMask = nullptr;
     GpuOctreeNode* g_dOctreeNodes = nullptr;
     int* g_dOctreeLeafIndices = nullptr;
@@ -172,10 +216,18 @@ struct ParticleSystemDeviceState final {
     std::size_t d_energyBlockCapacity = 0u;
     std::size_t d_energySampleCapacity = 0u;
     std::size_t d_treePmCapacity = 0u;
+    std::size_t d_treePmSpectrumCapacity = 0u;
     std::size_t d_treePmMaskWordCapacity = 0u;
+    std::size_t d_treePmBoundsBlockCapacity = 0u;
     std::size_t d_treePmNeighborParticleCapacity = 0u;
     std::size_t d_treePmNeighborCellCapacity = 0u;
+    std::size_t d_treePmSortTempCapacity = 0u;
+    std::size_t d_treePmSortedParticleCapacity = 0u;
+    std::size_t d_adaptiveCapacity = 0u;
     int _gpuOctreeRootIndex = -1;
+    int _treePmFftPlan = 0;
+    int _treePmFftInversePlan = 0;
+    int _treePmFftPlanGridSize = 0;
     int _gpuOctreeNodeCount = 0;
     int _gpuOctreeLeafCount = 0;
     GpuSystemMetrics* _mappedMetricsHost = nullptr;
@@ -204,7 +256,8 @@ public:
     enum class SolverMode {
         PairwiseCuda,
         OctreeCpu,
-        OctreeGpu
+        OctreeGpu,
+        FmmCpu
     };
     /*
      * @brief Defines the integrator mode type contract.
@@ -228,6 +281,7 @@ public:
      * it.
      */
     explicit ParticleSystem(std::vector<Particle> initialParticles);
+    ParticleSystem(std::vector<Particle> initialParticles, bool enableCudaRuntime);
     /*
      * @brief Documents the ~particle system operation contract.
      * @param None This contract does not take explicit parameters.
@@ -285,6 +339,16 @@ public:
      * it.
      */
     void setOctreeSoftening(float softening);
+    void setTreePmParameters(bool enabled, const std::string& model, const std::string& layout,
+                             const std::string& precision, const std::string& assignment,
+                             bool localGrid, int gridSize, int jacobiIterations, float cutoffFactor,
+                             int maxLocalNeighbors, int particleLimit, int denseCellThreshold,
+                             bool gravityOnlyBuffers);
+    void setAdaptiveTimeStepParameters(bool enabled, std::uint32_t maxLevel, float eta);
+    void setAdaptiveTimeStepCostGuard(bool enabled);
+    void setLinearOctreeLeafCapacity(int capacity);
+    void setCudaCachePreference(const std::string& preference);
+    bool reconfigureRuntimeBuffers();
     /*
      * @brief Documents the set sph enabled operation contract.
      * @param enabled Input value used by this contract.
@@ -346,6 +410,8 @@ public:
      */
     void setThermalParameters(float ambientTemperature, float specificHeat, float heatingCoeff,
                               float radiationCoeff);
+    void setCosmologyParameters(const CosmologyConfig& config);
+    float getCosmologyScaleFactor() const;
     /*
      * @brief Documents the get cumulative radiated energy operation contract.
      * @param None This contract does not take explicit parameters.
@@ -394,6 +460,17 @@ public:
      * it.
      */
     IntegratorMode getIntegratorMode() const;
+
+    void setDeterministicMode(bool enabled)
+    {
+        _deterministicMode = enabled;
+    }
+
+    bool isDeterministicMode() const
+    {
+        return _deterministicMode;
+    }
+
     /*
      * @brief Documents the sync device state operation contract.
      * @param None This contract does not take explicit parameters.
@@ -475,7 +552,7 @@ private:
      * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
      * it.
      */
-    void initializeRuntimeState(std::size_t particleCapacity);
+    void initializeRuntimeState(std::size_t particleCapacity, bool enableCudaRuntime = true);
     /*
      * @brief Documents the build bootstrap state operation contract.
      * @param particleCount Input value used by this contract.
@@ -579,13 +656,25 @@ private:
      * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
      * it.
      */
-    bool buildTreePmGrid(ParticleSoAView currentView, int numParticles,
-                         TreePmGridParams* outGrid, float* outCutoffSquared);
+    bool buildTreePmGrid(ParticleSoAView currentView, int numParticles, TreePmGridParams* outGrid,
+                         float* outCutoffSquared);
+    bool buildTreePmFftField(const TreePmGridParams& grid);
     bool buildTreePmNeighborGrid(ParticleSoAView currentView, int numParticles,
                                  const TreePmGridParams& grid);
+    int treePmLayoutMode();
+    bool treePmGatherEnabled();
+    bool treePmMortonEnabled();
     bool ensureLinearOctreeScratchCapacity(int numParticles);
-    bool ensureTreePmScratchCapacity(int gridCells);
-    bool ensureTreePmNeighborGridCapacity(int numParticles, int totalCells);
+    bool ensureTreePmScratchCapacity(int gridCells, int gridSize);
+    bool ensureTreePmBoundsCapacity(int numParticles);
+    bool ensureTreePmConcentrationCapacity();
+    bool captureTreePmGraph(int slot, ParticleSoAView currentView, ParticleSoAView nextView,
+                            int numParticles, int particleLimit, const TreePmGridParams& grid,
+                            float cutoffSquared, ForceLawPolicy forceLaw, float deltaTime,
+                            float maxAcceleration);
+    bool launchTreePmGraph(int slot);
+    void releaseTreePmGraph();
+    bool ensureTreePmNeighborGridCapacity(int numParticles, int totalCells, bool gatherParticles);
     /*
      * @brief Documents the ensure energy scratch capacity operation contract.
      * @param numParticles Input value used by this contract.
@@ -662,10 +751,22 @@ private:
     static std::string formatMemoryBreakdown(std::size_t baseAndIntegratorBytes,
                                              std::size_t sphBytes, std::size_t octreeBytes,
                                              std::size_t totalBytes, std::size_t budgetBytes);
+    bool treePmFastPathBypassesOctreeScratch(bool eulerIntegrator) const;
+    bool treePmUsesGravityOnlyBuffers(bool eulerIntegrator, bool sphEnabled) const;
+    bool ensureAdaptiveCudaScratchCapacity(int numParticles);
+    bool computeHostAccelerations(std::vector<Vector3>& accelerations);
+    bool updateComovingCosmology(float deltaTime);
+    bool computeHostAccelerationsForIndices(const std::vector<int>& activeIndices,
+                                            std::vector<Vector3>& accelerations);
+    bool updateAdaptiveTimeSteps(float deltaTime);
+    bool prepareCosmologyStep(float deltaTime, float& scaleRatio, float& previousHubble,
+                              float& nextHubble);
+    void applyCosmologyExpansionHost(float scaleRatio, float previousHubble, float nextHubble);
 
     std::vector<Particle> _particles;
     SolverMode _solverMode;
     IntegratorMode _integratorMode;
+    bool _deterministicMode = false;
     float _octreeTheta;
     OctreeOpeningCriterion _octreeOpeningCriterion;
     float _octreeSoftening;
@@ -685,7 +786,37 @@ private:
     float _thermalHeatingCoeff;
     float _thermalRadiationCoeff;
     float _cumulativeRadiatedEnergy;
+    CosmologyConfig _cosmology;
+    float _cosmologyScaleFactor = 1.0f;
+    float _cosmologyTime = 0.0f;
+    bool _cosmologyMarkerPrinted = false;
+    bool _treePmEnabled = false;
+    std::string _treePmModel = "auto";
+    std::string _treePmLayout = "auto";
+    std::string _treePmPrecision = "fp32";
+    std::string _treePmAssignment = "cic";
+    bool _treePmLocalGrid = true;
+    int _treePmGridSize = 64;
+    int _treePmJacobiIterations = 12;
+    float _treePmCutoffFactor = 1.0f;
+    int _treePmMaxLocalNeighbors = 64;
+    int _treePmParticleLimit = 0;
+    int _treePmDenseCellThreshold = 64;
+    bool _treePmGravityOnlyBuffers = true;
+    std::string _cudaCachePreference = "l1";
+    bool _adaptiveTimeStepsEnabled = false;
+    std::uint32_t _adaptiveTimeStepMaxLevel = 4u;
+    float _adaptiveTimeStepEta = 0.25f;
+    bool _adaptiveTimeStepCostGuard = true;
+    std::uint64_t _adaptiveTimeStepTick = 0u;
+    float _adaptiveTimeStepQuantum = 0.0f;
+    bool _adaptiveTimeStepMarkerPrinted = false;
+    std::vector<std::uint8_t> _adaptiveTimeStepLevels;
+    std::vector<std::uint64_t> _adaptiveTimeStepLastForceTicks;
+    std::vector<Vector3> _adaptiveTimeStepAccelerations;
     Octree _octree;
+    std::unique_ptr<bltzr_fmm::FmmWorkspace> _fmmWorkspace;
+    int _fmmLeafCapacity = 32;
     std::vector<Vector3> _octreeForces;
     std::vector<GpuOctreeNode> _octreeGpuNodes;
     std::vector<int> _octreeGpuLeafIndices;
@@ -694,7 +825,8 @@ private:
     // Host shadows for SPH
     std::vector<int> _hostCellHash;
     std::vector<int> _hostSortedIndex;
+    std::unique_ptr<CpuTreePmWorkspaceT<float>> _cpuTreePmWorkspace;
+    std::unique_ptr<CpuTreePmWorkspaceT<double>> _cpuTreePmFp64Workspace;
 };
-
 
 #endif // BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_

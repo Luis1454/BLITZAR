@@ -66,11 +66,14 @@ jobs:
           sudo apt-get install -y ninja-build
           python3 -m pip install -r .github/ci/requirements-py312.txt
       - name: Configure coverage build
-        run: cmake -S tests -B build-integration-cov -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBLITZAR_PROFILE=prod -DBLITZAR_INTEGRATION_ENABLE_COVERAGE=ON -DBLITZAR_INTEGRATION_STRICT_WARNINGS=ON
+        run: cmake --preset integration-coverage
+        working-directory: tests
       - name: Build coverage target
-        run: cmake --build build-integration-cov --parallel
+        run: cmake --build --preset integration-coverage --parallel
+        working-directory: tests
       - name: Run integration tests for coverage
-        run: ctest --test-dir build-integration-cov --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_|TST_QLT_"
+        run: ctest --preset integration-coverage --output-on-failure --timeout 180 --no-tests=error -R "TST_UNT_|TST_QLT_"
+        working-directory: tests
       - {name: Generate coverage report, run: bash scripts/ci/nightly/generate_coverage.sh}
       - name: Build PR coverage delta report
         run: >-
@@ -199,24 +202,19 @@ jobs:
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
           path: build-dev-mod
-          key: ${{ runner.os }}-dev-module-${{ env.CI_CACHE_VERSION }}-${{ matrix.os }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/pr-fast.yml') }}
+          key: ${{ runner.os }}-dev-module-${{ env.CI_CACHE_VERSION }}-${{ matrix.os }}-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/pr-fast.yml') }}
           restore-keys: |
             ${{ runner.os }}-dev-module-${{ env.CI_CACHE_VERSION }}-${{ matrix.os }}-
       - name: Configure dev module build
         if: ${{ steps.cuda.outputs.available == 'true' }}
         shell: bash
-        run: |
-          cmake -S . -B build-dev-mod -G Ninja \
-            -DBLITZAR_PROFILE=dev \
-            -DBLITZAR_BUILD_CLIENT_MODULE_HOST=ON \
-            -DBLITZAR_BUILD_CLIENT_MODULES=ON \
-            -DBLITZAR_BUILD_TESTS=OFF
+        run: cmake --preset dev-modules
       - name: Build required module targets
         if: ${{ steps.cuda.outputs.available == 'true' }}
         shell: bash
         run: |
-          cmake --build build-dev-mod --parallel --target \
-            myAppClient \
+          cmake --build --preset dev-modules --parallel --target \
+            blitzar-client \
             blitzarClientModuleCli \
             blitzarClientModuleEcho \
             blitzarClientModuleGuiProxy
@@ -225,8 +223,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if cmake --build build-dev-mod --target help | grep -q "${{ matrix.qt_target }}"; then
-            cmake --build build-dev-mod --parallel --target ${{ matrix.qt_target }}
+          if cmake --build --preset dev-modules --target help | grep -q "${{ matrix.qt_target }}"; then
+            cmake --build --preset dev-modules --parallel --target ${{ matrix.qt_target }}
           else
             echo "Qt module target '${{ matrix.qt_target }}' is unavailable in this environment, skipping."
           fi
@@ -235,7 +233,7 @@ jobs:
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
           path: build-dev-mod
-          key: ${{ runner.os }}-dev-module-${{ env.CI_CACHE_VERSION }}-${{ matrix.os }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/pr-fast.yml') }}
+          key: ${{ runner.os }}-dev-module-${{ env.CI_CACHE_VERSION }}-${{ matrix.os }}-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/pr-fast.yml') }}
       - name: Skip dev module build when CUDA is unavailable
         if: ${{ steps.cuda.outputs.available != 'true' }}
         shell: bash

@@ -7,6 +7,8 @@
 
 #include "graphics/ColorPipeline.hpp"
 #include "graphics/ViewMath.hpp"
+#include "Constants.hpp"
+#include <cmath>
 #include <gtest/gtest.h>
 
 namespace grav {
@@ -111,6 +113,32 @@ TEST(ViewMathTest, TST_UNT_GRA_008_ComputeGimbalClampsBoundsAndPickAxis)
     EXPECT_EQ(pickGimbalAxis(large, large.handles[2]), GimbalAxis::Z);
     const Point2D farPoint{large.center.x + 200.0f, large.center.y + 200.0f};
     EXPECT_EQ(pickGimbalAxis(large, farPoint), GimbalAxis::None);
+}
+
+TEST(ViewMathTest, TST_UNT_GRA_013_CameraAnglesAffectAllProjectionModes)
+{
+    RenderParticle p;
+    p.x = 1.25f;
+    p.y = 2.5f;
+    p.z = 3.75f;
+    const CameraState identity{0.0f, 0.0f, 0.0f};
+    const CameraState rotated{0.31f, 0.27f, 0.19f};
+    for (const ViewMode mode : {ViewMode::XY, ViewMode::XZ, ViewMode::YZ,
+                                ViewMode::Perspective}) {
+        const ProjectedPoint before = projectParticle(p, mode, identity);
+        const ProjectedPoint after = projectParticle(p, mode, rotated);
+        ASSERT_TRUE(before.valid);
+        ASSERT_TRUE(after.valid);
+        EXPECT_GT(std::fabs(before.x - after.x) + std::fabs(before.y - after.y), 1e-3f);
+    }
+}
+
+TEST(ViewMathTest, TST_UNT_GRA_014_ZoomCompensationScalesOnlyOnDezoom)
+{
+    EXPECT_NEAR(zoomCompensationLambda(kDefaultZoom), 1.0f, 1e-5f);
+    EXPECT_NEAR(zoomCompensationLambda(kDefaultZoom * 0.25f), 4.0f, 1e-5f);
+    EXPECT_NEAR(zoomCompensationLambda(kDefaultZoom * 2.0f), 1.0f, 1e-5f);
+    EXPECT_NEAR(zoomCompensationLambda(0.0f), kZoomCompensationMax, 1e-5f);
 }
 
 TEST(ColorPipelineTest, TST_UNT_GRA_003_HeavyBodyDetect)

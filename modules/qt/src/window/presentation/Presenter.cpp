@@ -170,6 +170,7 @@ Presentation Presenter::present(const PresentationInput& input) const
           << "\nExport failed: " << input.stats.exportFailedCount << "\nLast export: "
           << (input.stats.exportLastPath.empty() ? "n/a" : input.stats.exportLastPath)
           << "\nSteps: " << input.stats.steps << "\nParticles: " << input.stats.particleCount
+          << "\nTotal mass: " << input.stats.totalMass << " [simulation units]"
           << "\nDraw budget: " << input.displayedParticles << " / " << input.clientDrawCap
           << "\nStats age: " << ageLabel(input.statsAgeMs)
           << "\nSnapshot age: " << ageLabel(input.snapshotAgeMs)

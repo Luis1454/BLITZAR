@@ -1,5 +1,7 @@
 # Ignore local build artifacts and VCS
 build/
+build-*/
+cmake-build-*/
 CMakeCache.txt
 CMakeFiles/
 *.o
@@ -11,3 +13,6 @@ CMakeFiles/
 .vscode/
 *.log
 dist/
+exports/
+.pytest_cache/
+.pytest-basetemp-checks/

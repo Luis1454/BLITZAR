@@ -153,7 +153,7 @@ __device__ Vector3 computeOctreeAccelerationStacklessCompact(
                         if (cutoffEnabled) {
                             const Vector3 diff(selfPos.x - sourcePos.x, selfPos.y - sourcePos.y,
                                                selfPos.z - sourcePos.z);
-                            if (softenedDistanceSquared(diff, forceLaw) > cutoffSquared) {
+                            if (dot(diff, diff) > cutoffSquared) {
                                 continue;
                             }
                         }
@@ -172,7 +172,7 @@ __device__ Vector3 computeOctreeAccelerationStacklessCompact(
                     if (cutoffEnabled) {
                         const Vector3 diff(selfPos.x - sourcePos.x, selfPos.y - sourcePos.y,
                                            selfPos.z - sourcePos.z);
-                        if (softenedDistanceSquared(diff, forceLaw) > cutoffSquared) {
+                        if (dot(diff, diff) > cutoffSquared) {
                             continue;
                         }
                     }

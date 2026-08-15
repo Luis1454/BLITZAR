@@ -40,10 +40,12 @@ make run
 Build and test:
 
 ```bash
-cmake -S . -B build -G Ninja
-cmake --build build
-ctest --test-dir build --output-on-failure
+make test
 ```
+
+`make test` selects the platform developer preset, builds the product, then configures,
+builds, and runs the deterministic `integration-safe` test preset. Use the CMake commands
+directly when selecting an explicit profile.
 
 Prod profile (deterministic critical path, dynamic client modules disabled):
 
@@ -71,9 +73,65 @@ make quality-strict
 
 `make quality-*` stays a thin wrapper around the canonical CMake/Python entrypoints used by the strict Linux gate.
 
+## Reproducible Development
+
+Docker is the recommended fallback when a local C++ toolchain is unavailable. The CPU image installs
+GCC, CMake and Ninja, compiles the headless runtime path, then exposes the headless binary as its
+runtime entry point. Integration tests remain available through the `integration-safe` CMake
+preset and CI quality lanes:
+
+```bash
+docker build -f Dockerfile.cpu -t blitzar-cpu:local .
+docker run --rm blitzar-cpu:local
+docker run --rm blitzar-cpu:local --validate --config /blitzar/simulation.ini
+docker run --rm -v "$(pwd)/outputs:/blitzar/outputs" blitzar-cpu:local \
+  --run --config /blitzar/simulation.ini --solver octree_cpu \
+  --target-steps 100 --deterministic true \
+  --export-on-exit true --export-path /blitzar/outputs/final.xyz
+```
+
+The default container command is `--inspect`: it loads and prints the resolved configuration without
+starting the solver. `--validate` performs the same load and refuses invalid cases. A calculation is
+only started by `--run`; `--export-path` makes the output name reproducible. The container validates compilation and headless execution. It does not replace native Windows
+validation of the console-free GUI, MSVC ABI, CUDA kernels or the NSIS installer.
+
+Headless workflow:
+
+```text
+case/simulation.ini -> --inspect -> --validate -> --run -> case/output/final.xyz
+```
+
+For a complete case directory with native or Docker execution, logs, provenance manifests, and output
+hashes, use [docs/case-workflow.md](docs/case-workflow.md) and `scripts/blitzar_case.py`.
+
+The headless executable reports the absolute configuration path, the selected simulation profile,
+the generated or file-backed initial state, the effective configuration, the solver, and the output
+path before calculating. Relative input and output paths are resolved from the configuration file
+directory.
+
+On Windows, use a Visual Studio Developer PowerShell with Qt6 and run:
+
+```powershell
+cmake --preset windows-desktop -DCMAKE_PREFIX_PATH="C:/Qt/6.8.2/msvc2022_64"
+cmake --build --preset windows-desktop --target blitzar-gui blitzar-client blitzar-server blitzarClientModuleQtInProc --parallel
+```
+
+On macOS, install Homebrew dependencies and use the dedicated CPU profile:
+
+```bash
+brew install cmake ninja libomp qt
+cmake --preset macos-dev -DCMAKE_PREFIX_PATH="$(brew --prefix libomp);$(brew --prefix qt)"
+cmake --build --preset macos-dev --target blitzar-gui blitzar-headless blitzar-server blitzar-client blitzarClientModuleQtInProc --parallel
+```
+
+The canonical explicit profiles are `linux-dev`, `macos-dev`, `linux-prod`,
+`macos-prod`, `windows-desktop`, `cuda-runtime`, and `release-prod`. Integration and quality profiles live in
+`tests/CMakePresets.json` and are invoked by `make test` or `make quality-strict`.
+
 ## Binaries
 
 - `blitzar`
+- `blitzar-gui`
 - `blitzar-server`
 - `blitzar-headless`
 - `blitzar-client`
@@ -84,7 +142,7 @@ In `PROFILE=prod`, `blitzar-client` and dynamic client modules are disabled by d
 
 The release lane packages a tracked source archive in `dist/source/` and a zipped Windows runtime bundle in `dist/release-bundle/`. The runtime bundle always includes the built BLITZAR executables plus `simulation.ini`, `README.md`, and `tool_manifest.json` when available. When a Windows build also contains client modules or Qt runtime files, the bundle now preserves the required adjacent `.dll`, `.dll.manifest`, and Qt plugin directories such as `platforms/qwindows.dll`.
 
-The same lane also publishes a separate desktop GUI installer executable named `blitzar-<tag>-windows-desktop-installer.exe`. This is a convenience `dev`-profile desktop package, not the qualification evidence artifact. Run it to install under `%LOCALAPPDATA%\Programs\BLITZAR` with Start Menu and desktop shortcuts. Those shortcuts launch the Qt module with `--wait-for-module`, so the host process stays alive until the GUI window exits.
+The same lane also publishes a separate desktop GUI installer executable named `blitzar-<tag>-windows-desktop-installer.exe`. This is a convenience `dev`-profile desktop package, not the qualification evidence artifact. Run it to install under `%LOCALAPPDATA%\Programs\BLITZAR` with Start Menu and desktop shortcuts. Those shortcuts launch the console-free `blitzar-gui.exe`, which starts the Qt workspace and keeps the host alive until the GUI window exits.
 
 On `v*` tags, or manual dispatch with a `v*` release tag, the lane publishes a GitHub Release with the source archive, executable bundle, SBOM, evidence pack, and release-quality index. It also extracts the generated runtime archive and smoke-validates the portable layout on a clean hosted Windows runner by executing the packaged help commands for each bundled executable.
 

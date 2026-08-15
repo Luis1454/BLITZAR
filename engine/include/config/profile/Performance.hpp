@@ -25,5 +25,11 @@ inline constexpr std::string_view kPerformanceProfileCustom = "custom";
 [[nodiscard]] bool normalizePerformanceProfile(std::string_view raw, std::string& outCanonical);
 void applyPerformanceProfile(SimulationConfig& config);
 [[nodiscard]] bool isPerformanceManagedField(std::string_view key);
+[[nodiscard]] bool normalizeTreePmModel(std::string_view raw, std::string& outCanonical);
+[[nodiscard]] bool normalizeTreePmLayout(std::string_view raw, std::string& outCanonical);
+[[nodiscard]] bool normalizeTreePmPrecision(std::string_view raw, std::string& outCanonical);
+[[nodiscard]] bool normalizeTreePmAssignment(std::string_view raw, std::string& outCanonical);
+[[nodiscard]] bool normalizeTreePmPreset(std::string_view raw, std::string& outCanonical);
+void applyTreePmPreset(SimulationConfig& config);
 } // namespace bltzr_config
 #endif // BLITZAR_ENGINE_INCLUDE_CONFIG_SIMULATIONPERFORMANCEPROFILE_HPP_

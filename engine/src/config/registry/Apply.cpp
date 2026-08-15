@@ -163,6 +163,60 @@ bool applyEntry(const SimulationOptionEntry& entry, const std::string& value,
         memberAt<std::string>(config, entry.offset) = canonical;
         return true;
     }
+    case OptionKind::TreePmModel: {
+        std::string canonical;
+        if (!bltzr_config::normalizeTreePmModel(value, canonical)) {
+            warnings << source << " invalid " << optionName
+                     << ": " << value
+                     << " (allowed: auto|local_grid|tree|exact_tree|hybrid|pm_only)\n";
+            return true;
+        }
+        memberAt<std::string>(config, entry.offset) = canonical;
+        return true;
+    }
+    case OptionKind::TreePmLayout: {
+        std::string canonical;
+        if (!bltzr_config::normalizeTreePmLayout(value, canonical)) {
+            warnings << source << " invalid " << optionName << ": " << value
+                     << " (allowed: auto|linear|gather_linear|gather_morton)\n";
+            return true;
+        }
+        memberAt<std::string>(config, entry.offset) = canonical;
+        return true;
+    }
+    case OptionKind::TreePmPrecision: {
+        std::string canonical;
+        if (!bltzr_config::normalizeTreePmPrecision(value, canonical)) {
+            warnings << source << " invalid " << optionName << ": " << value
+                     << " (allowed: fp32|fp64)\n";
+            return true;
+        }
+        memberAt<std::string>(config, entry.offset) = canonical;
+        return true;
+    }
+    case OptionKind::TreePmAssignment: {
+        std::string canonical;
+        if (!bltzr_config::normalizeTreePmAssignment(value, canonical)) {
+            warnings << source << " invalid " << optionName << ": " << value
+                     << " (allowed: cic|tsc|pcs)\n";
+            return true;
+        }
+        memberAt<std::string>(config, entry.offset) = canonical;
+        return true;
+    }
+    case OptionKind::TreePmPreset: {
+        std::string canonical;
+        if (!bltzr_config::normalizeTreePmPreset(value, canonical)) {
+            warnings << source << " invalid " << optionName
+                     << ": " << value
+                     << " (allowed: pm_only|local_grid_fast|hybrid_balanced|hybrid_quality|"
+                        "tree_quality|custom)\n";
+            return true;
+        }
+        memberAt<std::string>(config, entry.offset) = canonical;
+        bltzr_config::applyTreePmPreset(config);
+        return true;
+    }
     case OptionKind::ClientParticleCap: {
         std::uint32_t parsed = memberAt<std::uint32_t>(config, entry.offset);
         if (!SimulationArgsParse::parseUint(value, parsed) || parsed < 2u) {

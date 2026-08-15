@@ -8,12 +8,14 @@
 #include "client/common/ClientCommon.hpp"
 #include "widgets/graphs/Graph.hpp"
 #include "window/core/Window.hpp"
+#include "widgets/graphs/SpectrumGraph.hpp"
 #include "widgets/viewport/MultiView.hpp"
 #include <QComboBox>
 #include <QFrame>
 #include <QGridLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QProgressBar>
 #include <QVBoxLayout>
 #include <QWidget>
 #include <chrono>
@@ -116,12 +118,14 @@ void Window::tick()
     const std::uint32_t statsAgeMs = _runtime->statsAgeMs();
     const std::uint32_t snapshotAgeMs = _runtime->snapshotAgeMs();
     if (gotSnapshot) {
+        _widgets.view.spectrumGraph->setSnapshot(snapshot, stats.totalTime, stats.steps);
         _widgets.view.multiView->setSnapshot(std::move(snapshot));
     }
     const std::size_t displayedParticles = _widgets.view.multiView->displayedParticleCount();
     if (_lastEnergyStep != std::numeric_limits<std::uint64_t>::max() &&
         stats.steps < _lastEnergyStep) {
         _widgets.view.energyGraph->clearHistory();
+        _widgets.view.spectrumGraph->clearSpectrum();
         _lastEnergyStep = std::numeric_limits<std::uint64_t>::max();
     }
     if (stats.steps != _lastEnergyStep) {
@@ -144,9 +148,31 @@ void Window::tick()
     const Presentation presentation = _presenter.present(presentationInput);
     _widgets.telemetry.statusLabel->setText(QString::fromStdString(presentation.headlineText));
     _widgets.telemetry.runtimeMetricsLabel->setText(QString::fromStdString(presentation.runtimeText));
-    _widgets.telemetry.queueMetricsLabel->setText(QString::fromStdString(presentation.queueText));
+    _widgets.telemetry.queueMetricsLabel->setText(
+        QString::fromStdString(presentation.queueText + "\n" +
+                               _widgets.view.multiView->rendererStatusText()));
     _widgets.telemetry.energyMetricsLabel->setText(QString::fromStdString(presentation.energyText));
     _widgets.telemetry.gpuMetricsLabel->setText(QString::fromStdString(presentation.gpuText));
+    const bool exportPending = stats.exportActive || stats.exportQueueDepth > 0u;
+    if (exportPending) {
+        _widgets.render.exportProgress->setRange(0, 0);
+        _widgets.render.exportProgress->setFormat("Export in progress...");
+    }
+    else {
+        _widgets.render.exportProgress->setRange(0, 100);
+        if (stats.exportLastState == "completed") {
+            _widgets.render.exportProgress->setValue(100);
+            _widgets.render.exportProgress->setFormat("Export complete");
+        }
+        else if (stats.exportLastState == "failed") {
+            _widgets.render.exportProgress->setValue(0);
+            _widgets.render.exportProgress->setFormat("Export failed");
+        }
+        else {
+            _widgets.render.exportProgress->setValue(0);
+            _widgets.render.exportProgress->setFormat("Export idle");
+        }
+    }
     _widgets.run.pauseButton->blockSignals(true);
     _widgets.run.pauseButton->setChecked(stats.paused);
     _widgets.run.pauseButton->setText(stats.paused ? "Resume" : "Pause");

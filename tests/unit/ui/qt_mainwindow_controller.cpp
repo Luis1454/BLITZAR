@@ -80,6 +80,46 @@ public:
         performanceProfile = profile;
     }
 
+    void setTreePmAssignment(const std::string& assignment) override
+    {
+        treePmAssignment = assignment;
+    }
+
+    void setTreePmParameters(bool enabled, const std::string& model,
+                             const std::string& layout,
+                             const std::string& precision, const std::string& assignment,
+                             bool localGrid, std::uint32_t gridSize,
+                             std::uint32_t jacobiIterations, float cutoffFactor,
+                             std::uint32_t maxLocalNeighbors, std::uint32_t particleLimit,
+                             std::uint32_t denseCellThreshold, bool gravityOnlyBuffers) override
+    {
+        treePmEnabled = enabled;
+        treePmModel = model;
+        treePmLayout = layout;
+        treePmPrecision = precision;
+        treePmAssignment = assignment;
+        treePmLocalGrid = localGrid;
+        treePmGridSize = gridSize;
+        treePmJacobiIterations = jacobiIterations;
+        treePmCutoffFactor = cutoffFactor;
+        treePmMaxLocalNeighbors = maxLocalNeighbors;
+        treePmParticleLimit = particleLimit;
+        treePmDenseCellThreshold = denseCellThreshold;
+        treePmGravityOnlyBuffers = gravityOnlyBuffers;
+    }
+
+    void setAdaptiveTimeSteps(bool enabled, std::uint32_t maxLevel, float eta) override
+    {
+        adaptiveTimeStepsEnabled = enabled;
+        adaptiveTimeStepMaxLevel = maxLevel;
+        adaptiveTimeStepEta = eta;
+    }
+
+    void setAdaptiveTimeStepCostGuard(bool enabled) override
+    {
+        adaptiveTimeStepCostGuard = enabled;
+    }
+
     void setOctreeParameters(float theta, float softening) override
     {
         octreeTheta = theta;
@@ -242,6 +282,23 @@ public:
     std::string solverMode;
     std::string integratorMode;
     std::string performanceProfile;
+    bool treePmEnabled = false;
+    std::string treePmModel;
+    std::string treePmLayout;
+    std::string treePmPrecision;
+    std::string treePmAssignment;
+    bool treePmLocalGrid = false;
+    std::uint32_t treePmGridSize = 0u;
+    std::uint32_t treePmJacobiIterations = 0u;
+    float treePmCutoffFactor = 0.0f;
+    std::uint32_t treePmMaxLocalNeighbors = 0u;
+    std::uint32_t treePmParticleLimit = 0u;
+    std::uint32_t treePmDenseCellThreshold = 0u;
+    bool treePmGravityOnlyBuffers = false;
+    bool adaptiveTimeStepsEnabled = false;
+    std::uint32_t adaptiveTimeStepMaxLevel = 0u;
+    float adaptiveTimeStepEta = 0.0f;
+    bool adaptiveTimeStepCostGuard = false;
     std::string exportDirectory;
     std::string exportFormat;
     std::string initialStateFile;

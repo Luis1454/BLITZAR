@@ -1,0 +1,38 @@
+# @file Dockerfile.cpu
+# @project BLITZAR
+# @brief Reproducible CPU development and headless runtime image.
+
+FROM ubuntu:24.04 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /workspace
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    cmake \
+    ninja-build \
+    python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY . .
+
+RUN cmake --preset docker-cpu
+
+RUN cmake --build --preset docker-cpu --parallel 4 --target blitzar-headless
+
+FROM ubuntu:24.04 AS runtime
+
+ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /blitzar
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgomp1 \
+    libstdc++6 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /workspace/build-docker/blitzar-headless /blitzar/
+COPY --from=builder /workspace/simulation.ini /blitzar/
+
+ENTRYPOINT ["/blitzar/blitzar-headless"]
+CMD ["--inspect", "--config", "/blitzar/simulation.ini"]

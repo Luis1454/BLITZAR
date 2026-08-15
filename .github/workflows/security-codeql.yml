@@ -56,21 +56,17 @@ jobs:
           path: |
             build-codeql
             ~/.cache/vcpkg/archives
-          key: linux-codeql-build-${{ env.CI_CACHE_VERSION }}-${{ matrix.language }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/security-codeql.yml') }}
+          key: linux-codeql-build-${{ env.CI_CACHE_VERSION }}-${{ matrix.language }}-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'tests/CMakeLists.txt', 'tests/CMakePresets.json', 'tests/cmake/**/*.cmake', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/security-codeql.yml') }}
           restore-keys: |
             linux-codeql-build-${{ env.CI_CACHE_VERSION }}-${{ matrix.language }}-
       - name: Configure CodeQL build
         if: ${{ matrix.build-mode == 'manual' }}
-        run: |
-          cmake -S tests -B build-codeql -G Ninja \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-            -DBLITZAR_PROFILE=prod \
-            -DBLITZAR_INTEGRATION_STRICT_WARNINGS=OFF \
-            -DBLITZAR_INTEGRATION_ENABLE_SANITIZERS=OFF
+        run: cmake --preset integration-codeql
+        working-directory: tests
       - name: Build CodeQL targets
         if: ${{ matrix.build-mode == 'manual' }}
-        run: cmake --build build-codeql --parallel
+        run: cmake --build --preset integration-codeql --parallel
+        working-directory: tests
       - name: Analyze
         uses: github/codeql-action/analyze@38697555549f1db7851b81482ff19f1fa5c4fedc
         with:
@@ -82,4 +78,4 @@ jobs:
           path: |
             build-codeql
             ~/.cache/vcpkg/archives
-          key: linux-codeql-build-${{ env.CI_CACHE_VERSION }}-${{ matrix.language }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/security-codeql.yml') }}
+          key: linux-codeql-build-${{ env.CI_CACHE_VERSION }}-${{ matrix.language }}-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'tests/CMakeLists.txt', 'tests/CMakePresets.json', 'tests/cmake/**/*.cmake', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/security-codeql.yml') }}

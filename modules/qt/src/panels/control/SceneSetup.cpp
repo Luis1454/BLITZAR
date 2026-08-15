@@ -7,6 +7,8 @@
 #include <QComboBox>
 #include <QFormLayout>
 #include <QGroupBox>
+#include <QHBoxLayout>
+#include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
 
@@ -20,26 +22,21 @@ QWidget* buildSceneSetupPanel(QWidget* parent, QComboBox* simulationProfileCombo
     auto* page = new QWidget(parent);
     auto* layout = new QVBoxLayout(page);
     layout->setContentsMargins(4, 4, 4, 4);
-    layout->setSpacing(8);
+    layout->setSpacing(4);
 
-    auto* setupBox = new QGroupBox("Scene Setup", page);
-    auto* setupLayout = new QVBoxLayout(setupBox);
-    auto* setupForm = new QFormLayout();
-    setupForm->addRow("profile", simulationProfileCombo);
-    setupForm->addRow("preset", presetCombo);
-    setupLayout->addLayout(setupForm);
+    auto* setupBox = new QGroupBox("Case", page);
+    auto* setupLayout = new QHBoxLayout(setupBox);
+    setupLayout->setContentsMargins(6, 5, 6, 5);
+    setupLayout->addWidget(new QLabel("Profile", setupBox));
+    setupLayout->addWidget(simulationProfileCombo, 1);
+    setupLayout->addWidget(new QLabel("Preset", setupBox));
+    setupLayout->addWidget(presetCombo, 1);
     setupLayout->addWidget(applyPresetButton);
     setupLayout->addWidget(loadPresetButton);
     setupLayout->addWidget(loadInputButton);
-
-    auto* projectBox = new QGroupBox("Project", page);
-    auto* projectLayout = new QVBoxLayout(projectBox);
-    projectLayout->addWidget(saveConfigButton);
-    projectLayout->addStretch(1);
+    setupLayout->addWidget(saveConfigButton);
 
     layout->addWidget(setupBox);
-    layout->addWidget(projectBox);
-    layout->addStretch(1);
     return page;
 }
 

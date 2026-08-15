@@ -154,6 +154,39 @@ void Runtime::setPerformanceProfile(const std::string& profile)
     _bridge.setPerformanceProfile(profile);
 }
 
+void Runtime::setTreePmAssignment(const std::string& assignment)
+{
+    _bridge.setTreePmAssignment(assignment);
+    invalidateCachedSnapshot();
+}
+
+void Runtime::setTreePmParameters(bool enabled, const std::string& model,
+                                  const std::string& layout,
+                                  const std::string& precision,
+                                  const std::string& assignment, bool localGrid,
+                                  std::uint32_t gridSize, std::uint32_t jacobiIterations,
+                                  float cutoffFactor, std::uint32_t maxLocalNeighbors,
+                                  std::uint32_t particleLimit,
+                                  std::uint32_t denseCellThreshold,
+                                  bool gravityOnlyBuffers)
+{
+    _bridge.setTreePmParameters(enabled, model, layout, precision, assignment, localGrid, gridSize,
+                                jacobiIterations, cutoffFactor, maxLocalNeighbors, particleLimit,
+                                denseCellThreshold, gravityOnlyBuffers);
+    invalidateCachedSnapshot();
+}
+
+void Runtime::setAdaptiveTimeSteps(bool enabled, std::uint32_t maxLevel, float eta)
+{
+    _bridge.setAdaptiveTimeSteps(enabled, maxLevel, eta);
+    invalidateCachedSnapshot();
+}
+
+void Runtime::setAdaptiveTimeStepCostGuard(bool enabled)
+{
+    _bridge.setAdaptiveTimeStepCostGuard(enabled);
+}
+
 void Runtime::setOctreeParameters(float theta, float softening)
 {
     _bridge.setOctreeParameters(theta, softening);

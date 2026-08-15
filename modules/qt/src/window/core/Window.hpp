@@ -22,6 +22,7 @@
 #include "support/storage/LayoutStore.hpp"
 #include <QByteArray>
 #include <QMainWindow>
+#include <QPointer>
 #include <chrono>
 #include <cstdint>
 #include <memory>
@@ -40,7 +41,7 @@ public:
 
 private:
     static std::string formatFromSelectedFilter(const QString& filter);
-    bool applyConfigToServer(bool requestReset);
+    bool applyConfigToServer(bool requestReset, bool captureUi = true);
     void applyConnectorSettings(bool reconnectNow);
     void applyConfigToUi();
     void applyViewSettings();
@@ -60,6 +61,8 @@ private:
     void handleLoadCheckpointRequest();
     void handleLoadInputRequest();
     void handleLoadPresetRequest();
+    void editLoadedConfiguration();
+    bool applyEditedConfiguration(const SimulationConfig& candidate);
     void initializeControlState();
     // Helpers to keep initialization concise and testable
     void initializeComboBoxes();
@@ -83,6 +86,8 @@ private:
     SimulationConfig _config;
     std::string _configPath;
     std::unique_ptr<bltzr_client::Interface> _runtime;
+    QPointer<class ConfigurationEditor> _configurationEditor;
+    QPointer<class SceneEditor> _sceneEditor;
     Widgets _widgets;
     Controller _controller;
     Presenter _presenter;

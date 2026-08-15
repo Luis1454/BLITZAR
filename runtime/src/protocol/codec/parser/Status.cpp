@@ -35,6 +35,7 @@ bool JsonCodec::parseStatusResponse(std::string_view raw, StatusPayload& out,
     readNumber(raw, "max_substeps", parsed.maxSubsteps);
     readNumber(raw, "snapshot_publish_period_ms", parsed.snapshotPublishPeriodMs);
     readNumber(raw, "particles", parsed.particleCount);
+    readNumber(raw, "total_mass", parsed.totalMass);
     readString(raw, "solver", parsed.solver);
     readString(raw, "integrator", parsed.integrator);
     readNumber(raw, "ekin", parsed.kineticEnergy);

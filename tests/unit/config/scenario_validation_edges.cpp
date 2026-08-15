@@ -156,4 +156,15 @@ TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_083_PlummerSphereRequiresPositive
     EXPECT_FALSE(report.validForRun);
     EXPECT_TRUE(hasField(report, "init_cloud_half_extent"));
 }
+
+TEST(ScenarioValidationEdgesTest, TST_UNT_CONF_084_FmmRejectsTreePmComposition)
+{
+    SimulationConfig config;
+    config.solver = "fmm_cpu";
+    config.treePmEnabled = true;
+    const bltzr_config::ScenarioValidationReport report =
+        bltzr_config::SimulationScenarioValidation::evaluate(config);
+    EXPECT_FALSE(report.validForRun);
+    EXPECT_TRUE(hasField(report, "fmm_treepm"));
+}
 } // namespace bltzr_test_config_scenario_validation_edges

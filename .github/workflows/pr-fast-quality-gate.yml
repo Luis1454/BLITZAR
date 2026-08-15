@@ -63,7 +63,7 @@ jobs:
           path: |
             build-quality
             ~/.cache/vcpkg/archives
-          key: ${{ steps.cache-meta.outputs.build-prefix }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/pr-fast-quality-gate.yml') }}
+          key: ${{ steps.cache-meta.outputs.build-prefix }}-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'tests/CMakeLists.txt', 'tests/CMakePresets.json', 'tests/cmake/**/*.cmake', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/pr-fast-quality-gate.yml') }}
           restore-keys: |
             ${{ steps.cache-meta.outputs.build-prefix }}-
       - {name: Verify clang-tidy availability, run: clang-tidy --version}
@@ -74,17 +74,16 @@ jobs:
       - name: Run Python style/type checks
         run: make quality-python
       - name: Configure strict integration build
-        run: make quality-configure QUALITY_BUILD_DIR=build-quality
-      - {name: Build strict integration targets, run: make quality-build QUALITY_BUILD_DIR=build-quality}
+        run: make quality-configure
+      - {name: Build strict integration targets, run: make quality-build}
       - name: Run clang-tidy analyzer checks
         run: >-
           make quality-analyze
-          QUALITY_BUILD_DIR=build-quality
           QUALITY_TIDY_JOBS=0
           QUALITY_TIDY_DIFF_BASE=${{ inputs.diff-base }}
           QUALITY_TIDY_DIFF_TARGET=${{ inputs.diff-target }}
       - name: Run integration tests under sanitizers
-        run: make quality-test QUALITY_BUILD_DIR=build-quality
+        run: make quality-test
       - name: Save CMake and dependency cache
         if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
@@ -92,7 +91,7 @@ jobs:
           path: |
             build-quality
             ~/.cache/vcpkg/archives
-          key: ${{ steps.cache-meta.outputs.build-prefix }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'tests/CMakeLists.txt', 'tests/cmake/**/*.cmake', 'simulation.ini', '.github/workflows/pr-fast-quality-gate.yml') }}
+          key: ${{ steps.cache-meta.outputs.build-prefix }}-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'tests/CMakeLists.txt', 'tests/CMakePresets.json', 'tests/cmake/**/*.cmake', 'cmake/**/*.cmake', 'simulation.ini', '.github/workflows/pr-fast-quality-gate.yml') }}
       - name: Upload tool qualification manifest
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:

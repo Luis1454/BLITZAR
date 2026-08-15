@@ -39,9 +39,10 @@ bool terminateProcess(NativeProcessHandle& handle, std::int64_t& pid, std::uint3
                       std::string& outError)
 {
     outError.clear();
-    if (handle == 0u)
+    if (handle == 0u) {
         pid = 0;
-    return true;
+        return true;
+    }
     HANDLE processHandle = reinterpret_cast<HANDLE>(handle);
     if (!TerminateProcess(processHandle, 0)) {
         outError = bltzr_platform_errors::kProcessTerminateFailed;

@@ -8,6 +8,7 @@
 #include "ffi/bridge/Api.hpp"
 
 #include <algorithm>
+#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
@@ -24,7 +25,7 @@ struct blitzar_runtime_bridge_t {
 namespace {
 constexpr std::size_t kPendingCommandLimit = 128u;
 constexpr std::uint32_t kSnapshotCapMin = 1u;
-constexpr std::uint32_t kSnapshotCapMax = 1'000'000u;
+constexpr std::uint32_t kSnapshotCapMax = std::numeric_limits<std::uint32_t>::max();
 
 blitzar_runtime_string_view stringView(const std::string& value)
 {

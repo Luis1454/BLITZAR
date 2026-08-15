@@ -42,7 +42,15 @@ void ParticleSystem::syncDeviceState()
     std::vector<float> hostPosX(chunkCapacity);
     std::vector<float> hostPosY(chunkCapacity);
     std::vector<float> hostPosZ(chunkCapacity);
+    std::vector<float> hostVelX(chunkCapacity);
+    std::vector<float> hostVelY(chunkCapacity);
+    std::vector<float> hostVelZ(chunkCapacity);
+    std::vector<float> hostPressX(chunkCapacity);
+    std::vector<float> hostPressY(chunkCapacity);
+    std::vector<float> hostPressZ(chunkCapacity);
     std::vector<float> hostMass(chunkCapacity);
+    std::vector<float> hostTemp(chunkCapacity);
+    std::vector<float> hostDens(chunkCapacity);
 
     for (std::size_t offset = 0u; offset < _particles.size(); offset += chunkCapacity) {
         const std::size_t chunkCount = std::min(chunkCapacity, _particles.size() - offset);
@@ -56,7 +64,17 @@ void ParticleSystem::syncDeviceState()
             hostPosX[hostIndex] = p.x;
             hostPosY[hostIndex] = p.y;
             hostPosZ[hostIndex] = p.z;
+            const Vector3 v = _particles[particleIndex].getVelocity();
+            hostVelX[hostIndex] = v.x;
+            hostVelY[hostIndex] = v.y;
+            hostVelZ[hostIndex] = v.z;
+            const Vector3 pressure = _particles[particleIndex].getPressure();
+            hostPressX[hostIndex] = pressure.x;
+            hostPressY[hostIndex] = pressure.y;
+            hostPressZ[hostIndex] = pressure.z;
             hostMass[hostIndex] = _particles[particleIndex].getMass();
+            hostTemp[hostIndex] = _particles[particleIndex].getTemperature();
+            hostDens[hostIndex] = _particles[particleIndex].getDensity();
         }
 
         const std::size_t bytesFloats = chunkCount * sizeof(float);
@@ -72,9 +90,43 @@ void ParticleSystem::syncDeviceState()
                                         cudaMemcpyHostToDevice),
                              "memcpy(HtoD soa posZ)"))
             return;
+        if (!checkCudaStatus(cudaMemcpy(_device.d_soaVelX + offset, hostVelX.data(), bytesFloats,
+                                        cudaMemcpyHostToDevice),
+                             "memcpy(HtoD soa velX)"))
+            return;
+        if (!checkCudaStatus(cudaMemcpy(_device.d_soaVelY + offset, hostVelY.data(), bytesFloats,
+                                        cudaMemcpyHostToDevice),
+                             "memcpy(HtoD soa velY)"))
+            return;
+        if (!checkCudaStatus(cudaMemcpy(_device.d_soaVelZ + offset, hostVelZ.data(), bytesFloats,
+                                        cudaMemcpyHostToDevice),
+                             "memcpy(HtoD soa velZ)"))
+            return;
+        if (!checkCudaStatus(cudaMemcpy(_device.d_soaPressX + offset, hostPressX.data(), bytesFloats,
+                                        cudaMemcpyHostToDevice),
+                             "memcpy(HtoD soa pressureX)"))
+            return;
+        if (!checkCudaStatus(cudaMemcpy(_device.d_soaPressY + offset, hostPressY.data(), bytesFloats,
+                                        cudaMemcpyHostToDevice),
+                             "memcpy(HtoD soa pressureY)"))
+            return;
+        if (!checkCudaStatus(cudaMemcpy(_device.d_soaPressZ + offset, hostPressZ.data(), bytesFloats,
+                                        cudaMemcpyHostToDevice),
+                             "memcpy(HtoD soa pressureZ)"))
+            return;
         if (!checkCudaStatus(cudaMemcpy(_device.d_soaMass + offset, hostMass.data(), bytesFloats,
                                         cudaMemcpyHostToDevice),
                              "memcpy(HtoD soa mass)"))
+            return;
+        if (_device.d_soaTemp != nullptr &&
+            !checkCudaStatus(cudaMemcpy(_device.d_soaTemp + offset, hostTemp.data(), bytesFloats,
+                                        cudaMemcpyHostToDevice),
+                             "memcpy(HtoD soa temperature)"))
+            return;
+        if (_device.d_soaDens != nullptr &&
+            !checkCudaStatus(cudaMemcpy(_device.d_soaDens + offset, hostDens.data(), bytesFloats,
+                                        cudaMemcpyHostToDevice),
+                             "memcpy(HtoD soa density)"))
             return;
     }
 

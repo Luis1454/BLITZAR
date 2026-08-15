@@ -29,10 +29,21 @@ struct alignas(32) ParticleHotData {
     float y;
     float z;
     float mass;
+    float padding0;
+    float padding1;
+    float padding2;
+    float padding3;
 
-    ParticleHotData() : x(0.0f), y(0.0f), z(0.0f), mass(0.0f) {}
+    ParticleHotData()
+        : x(0.0f), y(0.0f), z(0.0f), mass(0.0f), padding0(0.0f), padding1(0.0f), padding2(0.0f),
+          padding3(0.0f)
+    {
+    }
 
-    ParticleHotData(float px, float py, float pz, float m) : x(px), y(py), z(pz), mass(m) {}
+    ParticleHotData(float px, float py, float pz, float m)
+        : x(px), y(py), z(pz), mass(m), padding0(0.0f), padding1(0.0f), padding2(0.0f), padding3(0.0f)
+    {
+    }
 
     Vector3 getPosition() const { return Vector3(x, y, z); }
     float getMass() const { return mass; }

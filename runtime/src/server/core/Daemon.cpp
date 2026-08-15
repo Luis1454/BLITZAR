@@ -6,10 +6,14 @@
  */
 
 #include "server/core/Daemon.hpp"
+#include "config/core/Config.hpp"
+#include "config/directive/Config.hpp"
 #include "config/modes/Normalize.hpp"
+#include "config/profile/Performance.hpp"
 #include "platform/Socket.hpp"
 #include "protocol/codec/JsonCodec.hpp"
 #include "protocol/Protocol.hpp"
+#include "server/SimulationInitConfig.hpp"
 #include "server/SimulationServer.hpp"
 #include <algorithm>
 #include <array>
@@ -17,6 +21,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -413,6 +418,38 @@ std::string Daemon::processRequest(const std::string& request)
             _server.requestReset();
             return bltzr_protocol::JsonCodec::makeOkResponse(cmd);
         }
+        if (cmd == bltzr_protocol::SetInitialStateConfig) {
+            std::string serialized;
+            if (!bltzr_protocol::JsonCodec::readString(request, "config", serialized) ||
+                serialized.empty()) {
+                return bltzr_protocol::JsonCodec::makeErrorResponse(
+                    cmd, "missing initial state configuration");
+            }
+            SimulationConfig config = SimulationConfig::defaults();
+            std::istringstream input(serialized);
+            std::ostringstream warnings;
+            std::string line;
+            while (std::getline(input, line)) {
+                const std::string directive = trim(line);
+                if (directive.empty() || directive.front() == '#') {
+                    continue;
+                }
+                if (!bltzr_config::SimulationConfigDirective::applyLine(
+                        directive, config, warnings)) {
+                    return bltzr_protocol::JsonCodec::makeErrorResponse(
+                        cmd, "invalid initial state configuration directive");
+                }
+            }
+            std::ostringstream resolutionLog;
+            const ResolvedInitialStatePlan plan =
+                resolveInitialStatePlan(config, resolutionLog);
+            if (plan.config.mode == "file") {
+                return bltzr_protocol::JsonCodec::makeErrorResponse(
+                    cmd, "file initial states must use load");
+            }
+            _server.setInitialStateConfig(plan.config);
+            return bltzr_protocol::JsonCodec::makeOkResponse(cmd);
+        }
         if (cmd == bltzr_protocol::Recover) {
             _server.requestRecover();
             return bltzr_protocol::JsonCodec::makeOkResponse(cmd);
@@ -450,7 +487,7 @@ std::string Daemon::processRequest(const std::string& request)
             if (!bltzr_modes::isSupportedSolverIntegratorPair(canonical,
                                                               _server.getStats().integratorName)) {
                 return bltzr_protocol::JsonCodec::makeErrorResponse(
-                    cmd, "unsupported solver/integrator combination: octree_gpu requires euler");
+                    cmd, "unsupported solver/integrator combination: octree_gpu does not support rk4");
             }
             _server.setSolverMode(canonical);
             return bltzr_protocol::JsonCodec::makeOkResponse(cmd);
@@ -469,7 +506,7 @@ std::string Daemon::processRequest(const std::string& request)
             if (!bltzr_modes::isSupportedSolverIntegratorPair(_server.getStats().solverName,
                                                               canonical)) {
                 return bltzr_protocol::JsonCodec::makeErrorResponse(
-                    cmd, "unsupported solver/integrator combination: octree_gpu requires euler");
+                    cmd, "unsupported solver/integrator combination: octree_gpu does not support rk4");
             }
             _server.setIntegratorMode(canonical);
             return bltzr_protocol::JsonCodec::makeOkResponse(cmd);
@@ -481,6 +518,91 @@ std::string Daemon::processRequest(const std::string& request)
                     cmd, "missing performance profile");
             }
             _server.setPerformanceProfile(value);
+            return bltzr_protocol::JsonCodec::makeOkResponse(cmd);
+        }
+        if (cmd == bltzr_protocol::SetTreePmAssignment) {
+            std::string value;
+            if (!bltzr_protocol::JsonCodec::readString(request, "value", value)) {
+                return bltzr_protocol::JsonCodec::makeErrorResponse(
+                    cmd, "missing TreePM assignment");
+            }
+            std::string canonical;
+            if (!bltzr_config::normalizeTreePmAssignment(value, canonical)) {
+                return bltzr_protocol::JsonCodec::makeErrorResponse(
+                    cmd, "invalid TreePM assignment; expected cic, tsc, or pcs");
+            }
+            _server.setTreePmAssignment(canonical);
+            return bltzr_protocol::JsonCodec::makeOkResponse(cmd);
+        }
+        if (cmd == bltzr_protocol::SetTreePmParameters) {
+            bool enabled = false;
+            bool localGrid = true;
+            bool gravityOnlyBuffers = true;
+            std::string model;
+            std::string layout;
+            std::string precision;
+            std::string assignment;
+            std::uint64_t gridSize = 0u;
+            std::uint64_t jacobiIterations = 0u;
+            std::uint64_t maxLocalNeighbors = 0u;
+            std::uint64_t particleLimit = 0u;
+            std::uint64_t denseCellThreshold = 0u;
+            double cutoffFactor = 0.0;
+            if (!bltzr_protocol::JsonCodec::readBool(request, "enabled", enabled) ||
+                !bltzr_protocol::JsonCodec::readString(request, "model", model) ||
+                !bltzr_protocol::JsonCodec::readString(request, "precision", precision) ||
+                !bltzr_protocol::JsonCodec::readString(request, "assignment", assignment) ||
+                !bltzr_protocol::JsonCodec::readBool(request, "local_grid", localGrid) ||
+                !bltzr_protocol::JsonCodec::readNumber(request, "grid_size", gridSize) ||
+                !bltzr_protocol::JsonCodec::readNumber(request, "jacobi_iters", jacobiIterations) ||
+                !bltzr_protocol::JsonCodec::readNumber(request, "cutoff_factor", cutoffFactor) ||
+                !bltzr_protocol::JsonCodec::readNumber(request, "max_local_neighbors",
+                                                        maxLocalNeighbors) ||
+                !bltzr_protocol::JsonCodec::readNumber(request, "particle_limit", particleLimit) ||
+                !bltzr_protocol::JsonCodec::readNumber(request, "dense_cell_threshold",
+                                                        denseCellThreshold) ||
+                !bltzr_protocol::JsonCodec::readBool(request, "gravity_only_buffers",
+                                                     gravityOnlyBuffers) ||
+                gridSize > 256u || jacobiIterations > 128u || maxLocalNeighbors > 256u ||
+                particleLimit > 100000000u || denseCellThreshold > 4096u ||
+                cutoffFactor < 0.0 || cutoffFactor > 8.0) {
+                return bltzr_protocol::JsonCodec::makeErrorResponse(
+                    cmd, "invalid TreePM parameters");
+            }
+            if (!bltzr_protocol::JsonCodec::readString(request, "layout", layout)) {
+                layout = "auto";
+            }
+            _server.setTreePmParameters(
+                enabled, model, layout, precision, assignment, localGrid,
+                static_cast<std::uint32_t>(gridSize),
+                static_cast<std::uint32_t>(jacobiIterations), static_cast<float>(cutoffFactor),
+                static_cast<std::uint32_t>(maxLocalNeighbors),
+                static_cast<std::uint32_t>(particleLimit),
+                static_cast<std::uint32_t>(denseCellThreshold), gravityOnlyBuffers);
+            return bltzr_protocol::JsonCodec::makeOkResponse(cmd);
+        }
+        if (cmd == bltzr_protocol::SetAdaptiveTimeSteps) {
+            bool enabled = false;
+            std::uint64_t maxLevel = 0u;
+            double eta = 0.0;
+            if (!bltzr_protocol::JsonCodec::readBool(request, "enabled", enabled) ||
+                !bltzr_protocol::JsonCodec::readNumber(request, "max_level", maxLevel) ||
+                maxLevel > 12u || !bltzr_protocol::JsonCodec::readNumber(request, "eta", eta) ||
+                eta < 0.01 || eta > 1.0) {
+                return bltzr_protocol::JsonCodec::makeErrorResponse(
+                    cmd, "invalid adaptive time-step parameters");
+            }
+            _server.setAdaptiveTimeStepParameters(enabled, static_cast<std::uint32_t>(maxLevel),
+                                                  static_cast<float>(eta));
+            return bltzr_protocol::JsonCodec::makeOkResponse(cmd);
+        }
+        if (cmd == bltzr_protocol::SetAdaptiveTimeStepCostGuard) {
+            bool enabled = true;
+            if (!bltzr_protocol::JsonCodec::readBool(request, "enabled", enabled)) {
+                return bltzr_protocol::JsonCodec::makeErrorResponse(
+                    cmd, "invalid adaptive cost guard value");
+            }
+            _server.setAdaptiveTimeStepCostGuard(enabled);
             return bltzr_protocol::JsonCodec::makeOkResponse(cmd);
         }
         if (cmd == bltzr_protocol::SetParticleCount) {

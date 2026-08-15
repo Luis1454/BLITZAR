@@ -73,6 +73,7 @@ def main() -> int:
 
     required = (
         "blitzar.exe",
+        "blitzar-gui.exe",
         "blitzar-client.exe",
         "blitzarClientModuleQtInProc.dll",
         "blitzarClientModuleQtInProc.dll.manifest",

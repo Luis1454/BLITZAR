@@ -1,0 +1,116 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "integration-safe",
+      "displayName": "Integration Safe",
+      "description": "Deterministic integration and repository checks without a live server.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/../build-integration",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BLITZAR_PROFILE": "prod",
+        "BLITZAR_INTEGRATION_STRICT_WARNINGS": "ON",
+        "BLITZAR_INTEGRATION_ENABLE_COVERAGE": "OFF",
+        "BLITZAR_INTEGRATION_ENABLE_SANITIZERS": "OFF"
+      }
+    },
+    {
+      "name": "integration-coverage",
+      "displayName": "Integration Coverage",
+      "description": "Debug integration build with deterministic coverage instrumentation.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/../build-integration-cov",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BLITZAR_PROFILE": "prod",
+        "BLITZAR_INTEGRATION_STRICT_WARNINGS": "ON",
+        "BLITZAR_INTEGRATION_ENABLE_COVERAGE": "ON",
+        "BLITZAR_INTEGRATION_ENABLE_SANITIZERS": "OFF"
+      }
+    },
+    {
+      "name": "integration-codeql",
+      "displayName": "Integration CodeQL",
+      "description": "RelWithDebInfo integration build with compile commands enabled.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/../build-codeql",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "BLITZAR_PROFILE": "prod",
+        "BLITZAR_INTEGRATION_STRICT_WARNINGS": "OFF",
+        "BLITZAR_INTEGRATION_ENABLE_COVERAGE": "OFF",
+        "BLITZAR_INTEGRATION_ENABLE_SANITIZERS": "OFF"
+      }
+    },
+    {
+      "name": "integration-quality",
+      "displayName": "Integration Quality",
+      "description": "Strict RelWithDebInfo integration build with sanitizers enabled.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/../build-quality",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "BLITZAR_PROFILE": "prod",
+        "BLITZAR_INTEGRATION_STRICT_WARNINGS": "ON",
+        "BLITZAR_INTEGRATION_ENABLE_COVERAGE": "OFF",
+        "BLITZAR_INTEGRATION_ENABLE_SANITIZERS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "integration-safe",
+      "displayName": "Build Integration Safe",
+      "configurePreset": "integration-safe"
+    },
+    {
+      "name": "integration-coverage",
+      "displayName": "Build Integration Coverage",
+      "configurePreset": "integration-coverage"
+    },
+    {
+      "name": "integration-codeql",
+      "displayName": "Build Integration CodeQL",
+      "configurePreset": "integration-codeql"
+    },
+    {
+      "name": "integration-quality",
+      "displayName": "Build Integration Quality",
+      "configurePreset": "integration-quality"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "integration-safe",
+      "displayName": "Test Integration Safe",
+      "configurePreset": "integration-safe",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "integration-coverage",
+      "displayName": "Test Integration Coverage",
+      "configurePreset": "integration-coverage",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "integration-quality",
+      "displayName": "Test Integration Quality",
+      "configurePreset": "integration-quality",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

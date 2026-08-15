@@ -43,6 +43,7 @@ typedef struct blitzar_render_particle {
     float mass;
     float pressure_norm;
     float temperature;
+    float density_norm;
 } blitzar_render_particle_t;
 
 typedef struct blitzar_core_snapshot {
@@ -64,6 +65,7 @@ typedef struct blitzar_core_status {
     uint32_t max_substeps;
     uint32_t snapshot_publish_period_ms;
     uint32_t particle_count;
+    float total_mass;
     float kinetic_energy;
     float potential_energy;
     float thermal_energy;

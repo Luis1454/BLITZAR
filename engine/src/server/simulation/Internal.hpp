@@ -598,6 +598,8 @@ bool parseSnapshotWithFallback(const std::string& inputPath, std::vector<Particl
  */
 bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t particleCount,
                          const InitialStateConfig& config);
+bool applyInitialStateTransform(std::vector<Particle>& particles,
+                                const InitialStateConfig& config);
 /*
  * @brief Documents the atomic add float operation contract.
  * @param atom Input value used by this contract.

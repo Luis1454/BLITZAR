@@ -20,8 +20,8 @@ This repository is independent from any company stack but aligned for US space r
   - no dynamic reload in mission-critical runtime path;
   - client modules, if explicitly built under `prod`, must be startup-only, allowlisted, manifest-verified, and checksum-verified before loading;
   - strict PR quality gate must be green before merge.
-  - CI lanes must force `-DBLITZAR_PROFILE=prod` for qualification evidence.
-  - repository policy checks reject evidence workflow configure commands that omit `-DBLITZAR_PROFILE=prod`.
+  - CI lanes must use the root `release-prod` or tests `integration-*` preset for qualification evidence.
+  - repository policy checks reject evidence workflow configure commands that bypass the canonical presets.
   - evidence-grade environment assumptions are fixed by `docs/quality/production-baseline.md`.
 - `dev` profile (iteration path):
   - broader experimentation allowed;
@@ -29,10 +29,10 @@ This repository is independent from any company stack but aligned for US space r
   - local strict preflight must still execute pinned Cargo formatting and unit tests when Rust workspace crates are present;
   - results are not qualification evidence unless reproduced in `prod` profile constraints.
 
-Build switch:
+Build profiles:
 
-- `-DBLITZAR_PROFILE=prod` for qualification-oriented builds.
-- `-DBLITZAR_PROFILE=dev` for iteration builds.
+- `release-prod` and `integration-*` presets for qualification-oriented builds.
+- `linux-dev`, `windows-desktop`, and `dev-modules` presets for iteration builds.
 
 ## Mandatory Evidence Set
 

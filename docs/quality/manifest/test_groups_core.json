@@ -148,6 +148,14 @@
             "TST-UNT-CONF-078": {
                 "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_078_RenderTextWarningModeOmitsActionWhenEmpty",
                 "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-084": {
+                "id": "ScenarioValidationEdgesTest.TST_UNT_CONF_084_FmmRejectsTreePmComposition",
+                "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-100": {
+                "id": "AdaptiveTimeStepConfigTest.TST_UNT_CONF_100_CliSelectsDyadicHierarchy",
+                "req_ids": [ "REQ-CONF-001" ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_ARGS_IO": {
@@ -431,6 +439,26 @@
             "TST-UNT-CONF-093": {
                 "id": "ScenarioValidationInitModesTest.TST_UNT_CONF_093_DetailedSphereRandomValidatesGeneratedMassAndRadius",
                 "req_ids": [ "REQ-CONF-002" ]
+            },
+            "TST-UNT-CONF-101": {
+                "id": "AdaptiveTimeStepConfigTest.TST_UNT_CONF_101_DirectiveRoundTripsAdaptiveSettings",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-102": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_102_SceneParticleSystemObjectRoundTrips",
+                "req_ids": [ "REQ-CONF-001", "REQ-UI-001" ]
+            },
+            "TST-UNT-CONF-103": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_103_LoadsSerializedSimulationProfile",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-104": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_104_CosmologyDirectiveRoundTrips",
+                "req_ids": [ "REQ-CONF-001" ]
+            },
+            "TST-UNT-CONF-111": {
+                "id": "ConfigArgsTest.TST_UNT_CONF_111_StrictLoadRejectsMalformedIniWithoutCreatingFiles",
+                "req_ids": [ "REQ-CONF-002" ]
             }
         },
         "EVD_TEST_UNIT_CONFIG_PROFILE": {
@@ -526,6 +554,13 @@
                 "id": "ServerProtocolTest.TST_INT_PROT_010_ServerAcceptsGpuTelemetryToggle",
                 "req_ids": [
                     "REQ-PROT-002"
+                ]
+            },
+            "TST-INT-PROT-012": {
+                "id": "ServerProtocolTest.TST_INT_PROT_012_AcceptsTreePmAndAdaptiveRuntimeParameters",
+                "req_ids": [
+                    "REQ-PROT-002",
+                    "REQ-RUN-001"
                 ]
             }
         },
@@ -894,6 +929,28 @@
                 "req_ids": [
                     "REQ-PHYS-001"
                 ]
+            },
+            "TST-UNT-FMM-001": {
+                "id": "PhysicsTest.TST_UNT_FMM_001_OrderTwoCpuFmmMatchesPairwiseReference",
+                "req_ids": [
+                    "REQ-PHYS-001"
+                ]
+            },
+            "TST-UNT-FMM-002": {
+                "id": "PhysicsTest.TST_UNT_FMM_002_AdaptiveTreeQualifiesPlummerSphere",
+                "req_ids": [ "REQ-PHYS-001" ]
+            },
+            "TST-UNT-FMM-003": {
+                "id": "PhysicsTest.TST_UNT_FMM_003_AdaptiveTreeQualifiesGalaxyCollision",
+                "req_ids": [ "REQ-PHYS-001" ]
+            },
+            "TST-UNT-FMM-004": {
+                "id": "PhysicsTest.TST_UNT_FMM_004_AdaptiveTreeQualifiesPerturbedCosmology",
+                "req_ids": [ "REQ-PHYS-001" ]
+            },
+            "TST-UNT-FMM-005": {
+                "id": "PhysicsTest.TST_UNT_FMM_005_LeapfrogPreservesIsolatedInvariants",
+                "req_ids": [ "REQ-PHYS-001" ]
             }
         },
         "EVD_TEST_UNIT_PHYSICS_DETERMINISM": {
@@ -1043,6 +1100,48 @@
             },
             "TST-UIX-UI-021": {
                 "id": "QtWorkspaceRuntimeControlsTest.TST_UIX_UI_021_TickSurvivesMissingSnapshot",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UIX-UI-022": {
+                "id": "QtWorkspaceRuntimeControlsTest.TST_UIX_UI_022_AllSolverAndTreePmModesAreExposedAndApplied",
+                "req_ids": [
+                    "REQ-UI-001",
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UIX-UI-023": {
+                "id": "QtWorkspaceRuntimeControlsTest.TST_UIX_UI_023_AllSolverAndTreePmModesAreExposedAndApplied",
+                "req_ids": [
+                    "REQ-UI-001",
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UIX-UI-024": {
+                "id": "QtWorkspaceRuntimeControlsTest.TST_UIX_UI_024_ExportProgressReflectsRuntimeQueue",
+                "req_ids": [
+                    "REQ-UI-001",
+                    "REQ-RUN-001"
+                ]
+            },
+            "TST-UIX-UI-025": {
+                "id": "QtViewportTest.TST_UIX_UI_025_AllProjectionModesRenderTheSnapshot",
+                "req_ids": [
+                    "REQ-UI-001"
+                ]
+            },
+            "TST-UIX-UI-026": {
+                "id": "QtConfigurationEditorTest.TST_UIX_UI_026_RoundTripsScientificAndPlummerValues",
+                "req_ids": [
+                    "REQ-UI-001",
+                    "REQ-CONF-001"
+                ]
+            }
+        },
+        "EVD_TEST_INT_UI_QT_SCENE_EDITOR": {
+            "TST-UIX-UI-027": {
+                "id": "QtSceneEditorTest.TST_UIX_UI_027_AddsGranularObjectPropertiesIndependently",
                 "req_ids": [
                     "REQ-UI-001"
                 ]
@@ -2097,6 +2196,18 @@
             },
             "TST-UNT-GRA-012": {
                 "id": "ColorPipelineTest.TST_UNT_GRA_012_UpdateAdaptiveScalesIgnoresNegativeObservations",
+                "req_ids": [
+                    "REQ-GRA-002"
+                ]
+            },
+            "TST-UNT-GRA-013": {
+                "id": "ViewMathTest.TST_UNT_GRA_013_CameraAnglesAffectAllProjectionModes",
+                "req_ids": [
+                    "REQ-GRA-002"
+                ]
+            },
+            "TST-UNT-GRA-014": {
+                "id": "ViewMathTest.TST_UNT_GRA_014_ZoomCompensationScalesOnlyOnDezoom",
                 "req_ids": [
                     "REQ-GRA-002"
                 ]

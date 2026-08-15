@@ -153,13 +153,15 @@ void Particle::paintEvent(PaintEventHandle event)
     const int heightPx = _framebuffer.height();
     const float centerX = width() * 0.5f;
     const float centerY = height() * 0.5f;
+    const int regularRadius = std::clamp(
+        static_cast<int>(std::ceil(zoomCompensationLambda(_zoom))) - 1, 0, 12);
     const QRgb heavyColor = heavyBodyColor(_luminosity);
     if (_snapshot.has_value()) {
         const std::vector<RenderParticle>& snapshot = _snapshot->get();
         updateAdaptiveScales(snapshot, _adaptiveTemperatureScale, _adaptivePressureScale);
         const float lodNear2 = _lodNearDistance * _lodNearDistance;
         const float lodFar2 = _lodFarDistance * _lodFarDistance;
-        for (const RenderParticle& particle : snapshot)
+        for (const RenderParticle& particle : snapshot) {
             if (_lodEnabled && _mode == grav::ViewMode::Perspective) {
                 const float dist2 =
                     particle.x * particle.x + particle.y * particle.y + particle.z * particle.z;
@@ -176,29 +178,41 @@ void Particle::paintEvent(PaintEventHandle event)
                         continue;
                     }
                 }
-                const grav::ProjectedPoint pp = grav::projectParticle(particle, _mode, _camera);
-                if (!pp.valid)
-                    continue;
-                const int x = static_cast<int>(centerX + pp.x * _zoom);
-                const int y = static_cast<int>(centerY - pp.y * _zoom);
-                if (_cullingEnabled) {
-                    if (x < 0 || x >= widthPx || y < 0 || y >= heightPx)
-                        continue;
-                }
-                else {
-                    if (x < -100 || x >= widthPx + 100 || y < -100 || y >= heightPx + 100)
-                        continue;
-                }
-                QRgb color = 0;
-                if (isHeavyBody(particle)) {
-                    color = heavyColor;
-                }
-                else {
-                    color = particleRampColorFast(particle, _adaptiveTemperatureScale,
-                                                  _adaptivePressureScale, _luminosity);
-                }
-                _framebuffer.setPixel(x, y, color);
             }
+
+            const grav::ProjectedPoint pp = grav::projectParticle(particle, _mode, _camera);
+            if (!pp.valid)
+                continue;
+            const int x = static_cast<int>(centerX + pp.x * _zoom);
+            const int y = static_cast<int>(centerY - pp.y * _zoom);
+            if (_cullingEnabled) {
+                if (x < 0 || x >= widthPx || y < 0 || y >= heightPx)
+                    continue;
+            }
+            else if (x < -100 || x >= widthPx + 100 || y < -100 || y >= heightPx + 100) {
+                continue;
+            }
+            QRgb color = 0;
+            if (isHeavyBody(particle)) {
+                color = heavyColor;
+            }
+            else {
+                color = particleRampColorFast(particle, _adaptiveTemperatureScale,
+                                              _adaptivePressureScale, _luminosity);
+            }
+            color = qRgba(qRed(color), qGreen(color), qBlue(color),
+                          _luminosity > 0 ? 255 : 0);
+            const int radius = isHeavyBody(particle) ? regularRadius + 1 : regularRadius;
+            for (int dy = -radius; dy <= radius; ++dy) {
+                for (int dx = -radius; dx <= radius; ++dx) {
+                    const int pixelX = x + dx;
+                    const int pixelY = y + dy;
+                    if (pixelX >= 0 && pixelX < widthPx && pixelY >= 0 && pixelY < heightPx) {
+                        _framebuffer.setPixel(pixelX, pixelY, color);
+                    }
+                }
+            }
+        }
     }
     QPainter painter(this);
     painter.drawImage(0, 0, _framebuffer);

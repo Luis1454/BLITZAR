@@ -7,6 +7,7 @@
 
 #include "window/core/Widgets.hpp"
 #include "widgets/graphs/Graph.hpp"
+#include "widgets/graphs/SpectrumGraph.hpp"
 #include "widgets/viewport/MultiView.hpp"
 #include <QCheckBox>
 #include <QComboBox>
@@ -14,6 +15,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QProgressBar>
 #include <QSlider>
 #include <QSpinBox>
 #include <QTimer>
@@ -21,7 +23,8 @@
 namespace bltzr_qt {
 ViewWidgets::ViewWidgets(QWidget*)
     : multiView(new MultiView()),
-      energyGraph(new Graph())
+      energyGraph(new Graph()),
+      spectrumGraph(new SpectrumGraph())
 {
 }
 
@@ -56,7 +59,7 @@ SceneControls::SceneControls(QWidget* parent)
       simulationProfileCombo(new QComboBox(parent)),
       presetCombo(new QComboBox(parent)),
       applyPresetButton(new QPushButton("Apply preset", parent)),
-      loadPresetButton(new QPushButton("Load preset file", parent))
+      loadPresetButton(new QPushButton("Load INI", parent))
 {
 }
 
@@ -67,8 +70,27 @@ PhysicsControls::PhysicsControls(QWidget* parent)
       sphGasConstantSpin(new QDoubleSpinBox(parent)),
       sphViscositySpin(new QDoubleSpinBox(parent)),
       dtSpin(new QDoubleSpinBox(parent)),
+      particleCountSpin(new QSpinBox(parent)),
       solverCombo(new QComboBox(parent)),
       integratorCombo(new QComboBox(parent)),
+      treePmEnabledCheck(new QCheckBox("Enable TreePM", parent)),
+      treePmPresetCombo(new QComboBox(parent)),
+      treePmModelCombo(new QComboBox(parent)),
+      treePmLayoutCombo(new QComboBox(parent)),
+      treePmPrecisionCombo(new QComboBox(parent)),
+      treePmAssignmentCombo(new QComboBox(parent)),
+      treePmLocalGridCheck(new QCheckBox("Local correction grid", parent)),
+      treePmGridSizeSpin(new QSpinBox(parent)),
+      treePmJacobiIterationsSpin(new QSpinBox(parent)),
+      treePmCutoffFactorSpin(new QDoubleSpinBox(parent)),
+      treePmMaxLocalNeighborsSpin(new QSpinBox(parent)),
+      treePmParticleLimitSpin(new QSpinBox(parent)),
+      treePmDenseCellThresholdSpin(new QSpinBox(parent)),
+      treePmGravityOnlyBuffersCheck(new QCheckBox("Gravity-only buffers", parent)),
+      adaptiveTimeStepsCheck(new QCheckBox("Adaptive per-body dt", parent)),
+      adaptiveMaxLevelSpin(new QSpinBox(parent)),
+      adaptiveEtaSpin(new QDoubleSpinBox(parent)),
+      adaptiveCostGuardCheck(new QCheckBox("Cost guard (recommended)", parent)),
       thetaSpin(new QDoubleSpinBox(parent)),
       softeningSpin(new QDoubleSpinBox(parent))
 {
@@ -81,6 +103,7 @@ RenderControls::RenderControls(QWidget* parent)
       yawSlider(new QSlider(Qt::Horizontal, parent)),
       pitchSlider(new QSlider(Qt::Horizontal, parent)),
       rollSlider(new QSlider(Qt::Horizontal, parent)),
+      exportProgress(new QProgressBar(parent)),
       cullingCheck(new QCheckBox("Culling", parent)),
       lodCheck(new QCheckBox("LOD", parent)),
       octreeOverlayCheck(new QCheckBox("Octree overlay", parent)),
@@ -95,6 +118,7 @@ WorkspaceWidgets::WorkspaceWidgets(QWidget* parent)
       gpuTelemetryAction(nullptr),
       controlsDock(nullptr),
       energyDock(nullptr),
+      spectrumDock(nullptr),
       telemetryDock(nullptr),
       validationDock(nullptr),
       timer(new QTimer(parent))

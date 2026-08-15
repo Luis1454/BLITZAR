@@ -8,21 +8,13 @@ HEADLESS_EXECUTABLE := blitzar-headless
 SERVER_EXECUTABLE := blitzar-server
 CLIENT_HOST_EXECUTABLE := blitzar-client
 
-BUILD_DIR ?= build
-BUILD_TYPE ?= Release
-BUILD_TESTS ?= ON
-PROFILE ?= dev
-GENERATOR ?= Ninja
-CUDA_ARCH ?= native
 JOBS ?=
-PROFILE_LOGS ?= OFF
 
-INT_BUILD_DIR ?= build-integration
-INT_BUILD_TYPE ?= Release
 INT_TEST_REGEX ?=
 INT_TEST_REGEX_NO_SERVER ?= ^(TST_UNT_CONF_|TST_INT_PROT_003_ServerClientConnectTimeoutIsBounded$$|TST_QLT_REPO_.*)
 INT_TIMEOUT ?= 180
 SERVER_EXE ?=
+INT_PRESET ?= integration-safe
 
 QT_DIR ?= C:/Qt/6.8.2/msvc2022_64
 WINDEPLOYQT ?= $(QT_DIR)/bin/windeployqt.exe
@@ -30,7 +22,6 @@ MACDEPLOYQT ?= $(QT_DIR)/bin/macdeployqt
 LINUXDEPLOYQT ?= linuxdeployqt
 QT_PLUGIN_PATH ?= $(QT_DIR)/plugins
 QT_LIB_DIR ?= $(QT_DIR)/lib
-QT_LOCAL_PREFIX ?= $(CURDIR)/.deps/qt6-root/usr
 
 VCPKG_TRIPLET ?= x64-windows
 RUN_DOCTOR ?= 1
@@ -39,26 +30,42 @@ CHECK ?= ini
 CHECK_BUILD_TARGETS ?= 0
 GUI_MODULE ?= qt
 ARGS ?=
-QUALITY_BUILD_DIR ?= build-quality
-QUALITY_BUILD_TYPE ?= RelWithDebInfo
-QUALITY_PROFILE ?= prod
+override QUALITY_BUILD_DIR := build-quality
 QUALITY_TIMEOUT ?= 180
 QUALITY_TIDY_JOBS ?= 0
 QUALITY_TIDY_DIFF_BASE ?=
 QUALITY_TIDY_DIFF_TARGET ?=
 QUALITY_TIDY_FILE_TIMEOUT_SEC ?= 0
 QUALITY_TIDY_TIMEOUT_FALLBACK_CHECKS ?=
+QUALITY_PRESET ?= integration-quality
+DOCKER ?= docker
+DOCKER_IMAGE ?= blitzar-cpu:local
+
+ifeq ($(OS),Windows_NT)
+HOST_OS := Windows
+else
+HOST_OS := $(shell uname -s 2>/dev/null || echo Unknown)
+endif
+
+ifeq ($(HOST_OS),Windows)
+DEFAULT_PRESET := windows-desktop
+DEFAULT_BUILD_DIR := build-desktop
+else ifeq ($(HOST_OS),Darwin)
+DEFAULT_PRESET := macos-dev
+DEFAULT_BUILD_DIR := build-macos
+else
+DEFAULT_PRESET := linux-dev
+DEFAULT_BUILD_DIR := build
+endif
+PRESET ?= $(DEFAULT_PRESET)
+BUILD_DIR ?= $(DEFAULT_BUILD_DIR)
 # Fast, integration-safe subset: keep Python checks authoritative in the workflow (ruff/mypy/pytest),
 # and keep CTest focused on deterministic C++/integration tests.
 QUALITY_TEST_REGEX ?= TST_UNT_CONF_|TST_QLT_REPO_00(1|2|3|4|6|7)_
 
-ifeq ($(OS),Windows_NT)
-UNAME_S := Windows
-else
-UNAME_S := $(shell uname -s 2>/dev/null || echo Unknown)
-endif
+UNAME_S := $(HOST_OS)
 
-ifeq ($(OS),Windows_NT)
+ifeq ($(HOST_OS),Windows)
 RUN_BIN := $(BUILD_DIR)/$(EXECUTABLE).exe
 RUN_HEADLESS_BIN := $(BUILD_DIR)/$(HEADLESS_EXECUTABLE).exe
 RUN_SERVER_BIN := $(BUILD_DIR)/$(SERVER_EXECUTABLE).exe
@@ -82,42 +89,13 @@ SERVER_EXE := $(abspath $(RUN_SERVER_BIN))
 endif
 endif
 
-CMAKE_FLAGS = \
-	-G "$(GENERATOR)" \
-	-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
-	-DCMAKE_CUDA_ARCHITECTURES=$(CUDA_ARCH) \
-	-DBLITZAR_PROFILE=$(PROFILE) \
-	-DBLITZAR_BUILD_SERVER_DAEMON=ON \
-	-DBLITZAR_BUILD_HEADLESS_BINARY=ON \
-	-DBLITZAR_BUILD_CLIENT_HOST=ON \
-	-DBLITZAR_BUILD_CLIENT_MODULES=ON \
-	-DBLITZAR_BUILD_TESTS=$(BUILD_TESTS) \
-	-DBLITZAR_PROFILE_LOGS=$(PROFILE_LOGS)
-
-ifneq ($(wildcard $(QT_LOCAL_PREFIX)/lib64/cmake/Qt6/Qt6Config.cmake),)
-CMAKE_FLAGS += \
-	-DCMAKE_PREFIX_PATH="$(QT_LOCAL_PREFIX);$(QT_LOCAL_PREFIX)/lib64/cmake" \
-	-DCMAKE_LIBRARY_PATH="$(QT_LOCAL_PREFIX)/lib64" \
-	-DCMAKE_INCLUDE_PATH="$(QT_LOCAL_PREFIX)/include" \
-	-DQt6_DIR="$(QT_LOCAL_PREFIX)/lib64/cmake/Qt6" \
-	-DQt6Widgets_DIR="$(QT_LOCAL_PREFIX)/lib64/cmake/Qt6Widgets"
-endif
-
-BUILD_CMD = cmake --build $(BUILD_DIR)
+BUILD_CMD = cmake --build --preset $(PRESET)
 ifneq ($(strip $(JOBS)),)
 BUILD_CMD += --parallel $(JOBS)
 else
 BUILD_CMD += --parallel
 endif
 
-INT_BUILD_CMD = cmake --build $(INT_BUILD_DIR)
-ifneq ($(strip $(JOBS)),)
-INT_BUILD_CMD += --parallel $(JOBS)
-else
-INT_BUILD_CMD += --parallel
-endif
-
-INT_CTEST_CMD = ctest --test-dir $(INT_BUILD_DIR) --output-on-failure --timeout $(INT_TIMEOUT)
 ifneq ($(strip $(SERVER_EXE)),)
 INT_CTEST_ENV = cmake -E env "BLITZAR_SERVER_EXE=$(SERVER_EXE)"
 endif
@@ -128,33 +106,33 @@ include make/runtime.mk
 all: configure build
 
 configure:
-	cmake -S . -B $(BUILD_DIR) $(CMAKE_FLAGS)
+	cmake --preset $(PRESET)
 
 build:
 	$(BUILD_CMD)
 
 test: all
-	ctest --test-dir $(BUILD_DIR) --output-on-failure
+	$(MAKE) test-int INT_PRESET=integration-safe
 
 build-dev:
-	$(MAKE) all BUILD_DIR=build-dev BUILD_TYPE=Debug BUILD_TESTS=ON PROFILE=dev
+	$(MAKE) all PRESET=linux-dev BUILD_DIR=build
 
 build-prod:
-	$(MAKE) all BUILD_DIR=build-prod BUILD_TYPE=Release BUILD_TESTS=ON PROFILE=prod
+	$(MAKE) all PRESET=linux-prod BUILD_DIR=build-prod
 
 build-run:
-	$(MAKE) all BUILD_DIR=build-run BUILD_TYPE=Release BUILD_TESTS=OFF
+	$(MAKE) all PRESET=linux-prod BUILD_DIR=build-prod
 
 build-ci:
-	$(MAKE) all BUILD_DIR=build-ci BUILD_TYPE=Release BUILD_TESTS=ON PROFILE=prod
+	$(MAKE) all PRESET=release-prod BUILD_DIR=build
 
 test-int: int-configure int-build int-run
 
 int-configure:
-	cmake -S tests -B $(INT_BUILD_DIR) -G "$(GENERATOR)" -DCMAKE_BUILD_TYPE=$(INT_BUILD_TYPE)
+	cmake --preset $(INT_PRESET) -S tests
 
 int-build:
-	$(INT_BUILD_CMD)
+	cd tests && cmake --build --preset $(INT_PRESET) --parallel
 
 int-run:
 ifeq ($(strip $(SERVER_EXE)),)
@@ -163,11 +141,21 @@ endif
 ifeq ($(strip $(INT_TEST_REGEX)),)
 ifeq ($(strip $(SERVER_EXE)),)
 	@echo "Running safe integration subset only (set SERVER_EXE to run all integration_real tests)"
-	$(INT_CTEST_CMD) -R "$(INT_TEST_REGEX_NO_SERVER)"
+	cd tests && ctest --preset $(INT_PRESET) --output-on-failure --timeout $(INT_TIMEOUT) --no-tests=error -R "$(INT_TEST_REGEX_NO_SERVER)"
 else
-	$(INT_CTEST_ENV) $(INT_CTEST_CMD)
+	cd tests && $(INT_CTEST_ENV) ctest --preset $(INT_PRESET) --output-on-failure --timeout $(INT_TIMEOUT) --no-tests=error
 endif
 else
-	$(INT_CTEST_ENV) $(INT_CTEST_CMD) -R "$(INT_TEST_REGEX)"
+	cd tests && $(INT_CTEST_ENV) ctest --preset $(INT_PRESET) --output-on-failure --timeout $(INT_TIMEOUT) --no-tests=error -R "$(INT_TEST_REGEX)"
 endif
-.PHONY: all configure build test build-dev build-prod build-run build-ci test-int int-configure int-build int-run
+
+docker-build-cpu:
+	$(DOCKER) build --file Dockerfile.cpu --tag $(DOCKER_IMAGE) .
+
+docker-run-headless: docker-build-cpu
+	$(DOCKER) run --rm $(DOCKER_IMAGE) --inspect --config /blitzar/simulation.ini
+
+docker-shell: docker-build-cpu
+	$(DOCKER) run --rm --interactive --tty --entrypoint /bin/bash $(DOCKER_IMAGE)
+
+.PHONY: all configure build test build-dev build-prod build-run build-ci test-int int-configure int-build int-run docker-build-cpu docker-run-headless docker-shell

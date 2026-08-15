@@ -64,6 +64,16 @@ public:
     void setSolverMode(const std::string& mode);
     void setIntegratorMode(const std::string& mode);
     void setPerformanceProfile(const std::string& profile);
+    void setTreePmAssignment(const std::string& assignment);
+    void setTreePmParameters(bool enabled, const std::string& model,
+                             const std::string& layout,
+                             const std::string& precision, const std::string& assignment,
+                             bool localGrid, std::uint32_t gridSize,
+                             std::uint32_t jacobiIterations, float cutoffFactor,
+                             std::uint32_t maxLocalNeighbors, std::uint32_t particleLimit,
+                             std::uint32_t denseCellThreshold, bool gravityOnlyBuffers);
+    void setAdaptiveTimeSteps(bool enabled, std::uint32_t maxLevel, float eta);
+    void setAdaptiveTimeStepCostGuard(bool enabled);
     void setOctreeParameters(float theta, float softening);
     void setSphEnabled(bool enabled);
     void setSphParameters(float smoothingLength, float restDensity, float gasConstant,
@@ -115,7 +125,6 @@ private:
     bool _remoteLaunchAttempted;
     BridgeState _runtimeState;
     SimulationStats _cachedStats;
-    bool _warnedRemoteInitialConfig;
     std::string _defaultExportFormat;
     std::chrono::steady_clock::time_point _lastReconnectAttempt;
     std::chrono::steady_clock::time_point _lastReconnectErrorLog;

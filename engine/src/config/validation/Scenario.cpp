@@ -59,6 +59,24 @@ public:
         const std::string presetMode = normalized(config.presetStructure);
         const std::string detailedMode = normalized(config.initMode);
         const std::string snapshotDropPolicy = normalized(config.clientSnapshotDropPolicy);
+        const std::string sceneCopyAxis = normalized(config.sceneCopyAxis);
+        if (!config.scene.objects.empty()) {
+            const std::size_t enabledObjects = static_cast<std::size_t>(std::count_if(
+                config.scene.objects.begin(), config.scene.objects.end(),
+                [](const SceneObjectConfig& object) { return object.enabled; }));
+            if (enabledObjects == 0u) {
+                addDiagnostic(ScenarioDiagnosticLevel::Error, "scene.objects",
+                              "The scene must contain at least one enabled object.",
+                              "Enable an object or add a new scene object.");
+            }
+            for (const SceneObjectConfig& object : config.scene.objects) {
+                if (object.enabled && object.particleCount == 0u) {
+                    addDiagnostic(ScenarioDiagnosticLevel::Error, "scene.objects.particle_count",
+                                  "Enabled scene objects must request at least one particle.",
+                                  "Set the object particle count to at least 1.");
+                }
+            }
+        }
         const bool requestedFileMode = (initStyle == "preset" && presetMode == "file") ||
                                        (initStyle != "preset" && detailedMode == "file");
         if (config.particleCount < 2u) {
@@ -96,6 +114,26 @@ public:
         if (config.maxSubsteps == 0u) {
             addDiagnostic(ScenarioDiagnosticLevel::Error, "max_substeps",
                           "Maximum substeps cannot be 0.", "Set max_substeps to at least 1.");
+        }
+        if (sceneCopyAxis != "x" && sceneCopyAxis != "y" && sceneCopyAxis != "z") {
+            addDiagnostic(ScenarioDiagnosticLevel::Error, "scene_copy_axis",
+                          "Scene rotation copy axis must be x, y, or z.",
+                          "Set scene_copy_axis to x, y, or z.");
+        }
+        if (config.sceneRotationCopies == 0u || config.sceneRotationCopies > 256u) {
+            addDiagnostic(ScenarioDiagnosticLevel::Error, "scene_rotation_copies",
+                          "Scene rotation copies must be between 1 and 256.",
+                          "Set scene_rotation_copies to a value in [1, 256].");
+        }
+        if (config.adaptiveTimeStepMaxLevel > 12u) {
+            addDiagnostic(ScenarioDiagnosticLevel::Error, "adaptive_max_level",
+                          "Adaptive time-step hierarchy is limited to 12 binary levels.",
+                          "Set adaptive_max_level between 0 and 12.");
+        }
+        if (!(config.adaptiveTimeStepEta >= 0.01f && config.adaptiveTimeStepEta <= 1.0f)) {
+            addDiagnostic(ScenarioDiagnosticLevel::Error, "adaptive_eta",
+                          "Adaptive time-step eta must be between 0.01 and 1.0.",
+                          "Set adaptive_eta to a value in [0.01, 1.0].");
         }
         if (config.clientSnapshotQueueCapacity == 0u) {
             addDiagnostic(ScenarioDiagnosticLevel::Error, "client_snapshot_queue_capacity",
@@ -206,6 +244,56 @@ public:
             addDiagnostic(ScenarioDiagnosticLevel::Error, "init_sphere_radius",
                           "Sphere random mode requires a strictly positive radius.",
                           "Set init_sphere_radius above 0.");
+        }
+        if (plan.config.mode == "cosmology") {
+            const std::string geometry = plan.config.cosmology.geometry;
+            if (geometry != "sphere" && geometry != "cube") {
+                addDiagnostic(ScenarioDiagnosticLevel::Error, "cosmology_geometry",
+                              "Cosmology geometry must be sphere or cube.",
+                              "Set cosmology geometry to sphere or cube.");
+            }
+            if (plan.config.cosmology.mode == "comoving" && geometry != "cube") {
+                addDiagnostic(ScenarioDiagnosticLevel::Error, "cosmology_comoving_geometry",
+                              "Comoving cosmology requires a periodic cube.",
+                              "Set cosmology geometry=cube or use mode=expanding_preview.");
+            }
+            if (plan.config.cosmology.mode == "comoving" &&
+                (config.treePmModel != "pm_only" || !config.treePmEnabled)) {
+                addDiagnostic(ScenarioDiagnosticLevel::Error, "cosmology_comoving_solver",
+                              "Comoving cosmology requires the periodic TreePM PM-only solver.",
+                              "Set treepm enabled=true and model=pm_only.");
+            }
+            if (plan.config.cosmology.mode == "comoving" && config.solver != "octree_cpu") {
+                addDiagnostic(ScenarioDiagnosticLevel::Error, "cosmology_comoving_backend",
+                              "The CUDA comoving PM path is not qualified for GUI execution.",
+                              "Use solver=octree_cpu until the CUDA qualification is complete.");
+            }
+            if (plan.config.cosmology.mode == "comoving" && config.sphEnabled) {
+                addDiagnostic(ScenarioDiagnosticLevel::Error, "cosmology_comoving_sph",
+                              "Comoving cosmology does not combine with SPH in this solver.",
+                              "Disable SPH for the PM-only cosmology mode.");
+            }
+            if (plan.config.cosmology.mode == "comoving" && config.integrator != "leapfrog") {
+                addDiagnostic(ScenarioDiagnosticLevel::Error, "cosmology_comoving_integrator",
+                              "Comoving cosmology requires the KDK leapfrog integrator.",
+                              "Set integrator=leapfrog.");
+            }
+            if (plan.config.cosmology.hubbleH0 <= 0.0f) {
+                addDiagnostic(ScenarioDiagnosticLevel::Error, "cosmology_h0",
+                              "Cosmology H0 must be strictly positive.",
+                              "Set cosmology h0 in simulation inverse-time units.");
+            }
+            if (plan.config.cosmology.initialScaleFactor <= 0.0f) {
+                addDiagnostic(ScenarioDiagnosticLevel::Error, "cosmology_initial_scale_factor",
+                              "Initial scale factor must be strictly positive.",
+                              "Use a positive starting scale factor; values above 1 continue an expanded model.");
+            }
+            if (plan.config.cosmology.boxHalfExtent <= 0.0f ||
+                plan.config.cosmology.sphereRadius <= 0.0f) {
+                addDiagnostic(ScenarioDiagnosticLevel::Error, "cosmology_extent",
+                              "Cosmology spatial extents must be strictly positive.",
+                              "Set both cosmology extents above 0.");
+            }
         }
         appendPhysicsDiagnostics(config, plan.config, addDiagnostic);
         return report;

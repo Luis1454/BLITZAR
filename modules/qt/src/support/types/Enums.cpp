@@ -24,6 +24,8 @@ std::string to_string(Solver s)
         return "octree_gpu";
     case Solver::OctreeCpu:
         return "octree_cpu";
+    case Solver::FmmCpu:
+        return "fmm_cpu";
     }
     return {};
 }
@@ -41,6 +43,8 @@ std::string to_string(Integrator i)
         return "euler";
     case Integrator::Rk4:
         return "rk4";
+    case Integrator::Leapfrog:
+        return "leapfrog";
     }
     return {};
 }
@@ -76,6 +80,8 @@ Solver solver_from_string(const std::string& s)
         return Solver::PairwiseCuda;
     if (s == "octree_gpu")
         return Solver::OctreeGpu;
+    if (s == "fmm_cpu")
+        return Solver::FmmCpu;
     return Solver::OctreeCpu;
 }
 
@@ -88,6 +94,8 @@ Integrator integrator_from_string(const std::string& s)
 {
     if (s == "rk4")
         return Integrator::Rk4;
+    if (s == "leapfrog")
+        return Integrator::Leapfrog;
     return Integrator::Euler;
 }
 

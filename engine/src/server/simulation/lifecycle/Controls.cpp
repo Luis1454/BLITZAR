@@ -36,20 +36,21 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
     : _running(false),
       _paused(false),
       _resetRequested(false),
-      _cudaContextDirty(false),
-      _stepRequests(0),
-      _dt(clampSimulationDt(initialDt)),
+       _cudaContextDirty(false),
+       _stepRequests(0),
+       _dt(clampSimulationDt(initialDt)),
+       _totalTime(0.0f),
       _steps(0),
       _serverFps(0.0f),
+      _totalMass(0.0f),
       _kineticEnergy(0.0f),
       _potentialEnergy(0.0f),
       _thermalEnergy(0.0f),
       _radiatedEnergy(0.0f),
-      _totalEnergy(0.0f),
-      _energyDriftPct(0.0f),
-      _energyEstimated(false),
-      _totalTime(0.0f),
-      _energyMeasureEverySteps(120),
+       _totalEnergy(0.0f),
+       _energyDriftPct(0.0f),
+       _energyEstimated(false),
+       _energyMeasureEverySteps(120),
       _energySampleLimit(256),
       _gpuTelemetryEnabled(false),
       _gpuTelemetryAvailable(false),
@@ -93,6 +94,11 @@ SimulationServer::SimulationServer(std::uint32_t particleCount, float initialDt)
     _configState._runtimeConfigMirror.solver = _configState._solverMode;
     _configState._runtimeConfigMirror.integrator = _configState._integratorMode;
     _configState._runtimeConfigMirror.performanceProfile = _configState._performanceProfile;
+    _configState._runtimeConfigMirror.adaptiveTimeStepsEnabled =
+        _configState._adaptiveTimeStepsEnabled;
+    _configState._runtimeConfigMirror.adaptiveTimeStepMaxLevel =
+        _configState._adaptiveTimeStepMaxLevel;
+    _configState._runtimeConfigMirror.adaptiveTimeStepEta = _configState._adaptiveTimeStepEta;
     _configState._runtimeConfigMirror.substepTargetDt =
         _configuredSubstepTargetDt.load(std::memory_order_relaxed);
     _configState._runtimeConfigMirror.maxSubsteps = _configuredMaxSubsteps.load(std::memory_order_relaxed);
@@ -152,6 +158,9 @@ SimulationServer::SimulationServer(const std::string& configPath) : SimulationSe
                               ? integratorCanonical
                               : std::string(bltzr_modes::kIntegratorEuler);
         _configState._performanceProfile = loaded.performanceProfile;
+        _configState._adaptiveTimeStepsEnabled = loaded.adaptiveTimeStepsEnabled;
+        _configState._adaptiveTimeStepMaxLevel = loaded.adaptiveTimeStepMaxLevel;
+        _configState._adaptiveTimeStepEta = loaded.adaptiveTimeStepEta;
         coerceConfigSolverIntegratorCompatibility(_configState._solverMode, _configState._integratorMode, "config");
         _configState._octreeTheta = loaded.octreeTheta;
         _configState._octreeSoftening = loaded.octreeSoftening;
@@ -161,6 +170,7 @@ SimulationServer::SimulationServer(const std::string& configPath) : SimulationSe
         _configState._octreeThetaAutoMax = loaded.octreeThetaAutoMax;
         _configState._octreeEffectiveTheta = loaded.octreeTheta;
         _configState._sphEnabled = loaded.sphEnabled;
+        _configState._deterministicMode = loaded.deterministicMode;
         _configState._sphSmoothingLength = loaded.sphSmoothingLength;
         _configState._sphRestDensity = loaded.sphRestDensity;
         _configState._sphGasConstant = loaded.sphGasConstant;
@@ -354,6 +364,12 @@ void SimulationServer::requestReset()
  */
 void SimulationServer::requestRecover()
 {
+    float configuredDt = kDefaultSimulationDt;
+    {
+        std::lock_guard<std::mutex> lock(_commandMutex);
+        configuredDt = _configState._runtimeConfigMirror.dt;
+    }
+    _dt.store(clampSimulationDt(configuredDt), std::memory_order_relaxed);
     requestReset();
 }
 

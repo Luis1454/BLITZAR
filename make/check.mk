@@ -22,15 +22,10 @@ quality-rust:
 	cargo test --manifest-path rust/Cargo.toml
 
 quality-configure:
-	cmake -S tests -B $(QUALITY_BUILD_DIR) -G "$(GENERATOR)" \
-		-DCMAKE_BUILD_TYPE=$(QUALITY_BUILD_TYPE) \
-		-DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-		-DBLITZAR_PROFILE=$(QUALITY_PROFILE) \
-		-DBLITZAR_INTEGRATION_STRICT_WARNINGS=ON \
-		-DBLITZAR_INTEGRATION_ENABLE_SANITIZERS=ON
+	cd tests && cmake --preset $(QUALITY_PRESET)
 
 quality-build:
-	cmake --build $(QUALITY_BUILD_DIR) --parallel
+	cd tests && cmake --build --preset $(QUALITY_PRESET) --parallel
 
 quality-analyze:
 	python tests/checks/run.py clang_tidy --root . --build-dir $(QUALITY_BUILD_DIR) \
@@ -46,8 +41,8 @@ quality-analyze-fast:
 		QUALITY_TIDY_TIMEOUT_FALLBACK_CHECKS=-*,bugprone-unused-return-value
 
 quality-test:
-	cmake -E env ASAN_OPTIONS=detect_leaks=0:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 \
-		ctest --test-dir $(QUALITY_BUILD_DIR) --output-on-failure --timeout $(QUALITY_TIMEOUT) --no-tests=error -R "$(QUALITY_TEST_REGEX)"
+	cd tests && cmake -E env ASAN_OPTIONS=detect_leaks=0:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 \
+		ctest --preset $(QUALITY_PRESET) --output-on-failure --timeout $(QUALITY_TIMEOUT) --no-tests=error -R "$(QUALITY_TEST_REGEX)"
 
 quality-strict: quality-local quality-python quality-rust quality-configure quality-build quality-analyze quality-test
 

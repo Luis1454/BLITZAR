@@ -10,7 +10,7 @@ This document defines minimum confidence controls for development and CI tools.
 
 | Tool | Role | Confidence Strategy |
 |---|---|---|
-| `cmake` + compiler toolchain | Build generation and compilation | pinned runner images in CI lanes (`ubuntu-24.04`, `windows-2022`), strict warning policy, `BLITZAR_PROFILE=prod` in evidence lanes |
+| `cmake` + compiler toolchain | Build generation and compilation | pinned runner images in CI lanes (`ubuntu-24.04`, `windows-2022`), strict warning policy, canonical `release-prod` and `integration-*` presets in evidence lanes |
 | `ctest` + `gtest` | test execution | deterministic fast subset in `pr-fast`, broader deterministic scope in `nightly-full`, release packaging validation in `release-lane` |
 | `clang-tidy` | static analyzer | analyzer checks with warnings-as-errors in strict PR lane |
 | `rustc` + `cargo` | host-side protocol/runtime crates, bridge-state FFI support, and optional web gateway adapter | pinned by `rust-toolchain.toml`, `Cargo.lock` committed, `cargo fmt --check` plus `cargo test` required in strict local preflight, not yet part of qualified `prod` evidence lanes |
@@ -57,12 +57,11 @@ This exclusion is permanent with the current CI architecture. Mitigating it woul
 - Reproducible check entrypoints:
   - `make quality-local CONFIG=simulation.ini`
   - `make quality-python`
-  - `make quality-analyze QUALITY_BUILD_DIR=<build>`
+  - `make quality-analyze QUALITY_PRESET=integration-quality`
   - `python scripts/ci/release/package_tool_manifest.py --lane <lane> --profile prod`
-- Build flags proving strict mode:
-  - `BLITZAR_STRICT_WARNINGS=ON`
-  - `BLITZAR_INTEGRATION_STRICT_WARNINGS=ON`
-  - `BLITZAR_PROFILE=prod`
+- Presets proving strict mode:
+  - root `release-prod`
+  - tests `integration-safe`, `integration-coverage`, and `integration-quality`
 - Rust workspace pinning:
   - `rust-toolchain.toml`
   - `rust/Cargo.lock`

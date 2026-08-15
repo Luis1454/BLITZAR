@@ -35,10 +35,12 @@ std::string toLowerInitConfig(std::string value)
  */
 static bool isSupportedInitMode(const std::string& value)
 {
-    return value == "disk_orbit" || value == "random_cloud" || value == "cube_random" ||
+    return value == "disk_orbit" || value == "cosmology" || value == "random_cloud" || value == "cube_random" ||
            value == "sphere_random" || value == "two_body" || value == "three_body" ||
-           value == "plummer_sphere" || value == "galaxy_collision" || value == "solar_system" ||
-           value == "sph_collapse" || value == "file";
+           value == "plummer_sphere" || value == "galaxy" || value == "galaxy_collision" ||
+           value == "binary_star" ||
+           value == "solar_system" || value == "sph_collapse" || value == "objects" ||
+           value == "file";
 }
 
 /*
@@ -115,9 +117,50 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config,
 {
     ResolvedInitialStatePlan plan;
     InitialStateConfig& init = plan.config;
+    init.scene = config.scene;
+    init.cosmology.enabled = config.cosmologyEnabled;
+    init.cosmology.mode = toLowerInitConfig(config.cosmologyMode);
+    if (init.cosmology.mode != "expanding_preview" && init.cosmology.mode != "comoving") {
+        init.cosmology.mode = "expanding_preview";
+        log << "[config] invalid cosmology mode; using expanding_preview\n";
+    }
+    init.cosmology.geometry = toLowerInitConfig(config.cosmologyGeometry);
+    init.cosmology.boxHalfExtent = std::max(0.000001f, config.cosmologyBoxHalfExtent);
+    init.cosmology.sphereRadius = std::max(0.000001f, config.cosmologySphereRadius);
+    init.cosmology.hubbleH0 = std::max(0.0f, config.cosmologyHubbleH0);
+    init.cosmology.omegaMatter = std::max(0.0f, config.cosmologyOmegaMatter);
+    init.cosmology.omegaLambda = std::max(0.0f, config.cosmologyOmegaLambda);
+    init.cosmology.omegaRadiation = std::max(0.0f, config.cosmologyOmegaRadiation);
+    init.cosmology.initialScaleFactor =
+        std::max(0.000001f, config.cosmologyInitialScaleFactor);
+    init.cosmology.perturbationAmplitude =
+        std::clamp(config.cosmologyPerturbationAmplitude, 0.0f, 1.0f);
+    init.cosmology.peculiarVelocityScale = std::max(0.0f, config.cosmologyPeculiarVelocityScale);
+    init.cosmology.massModel = toLowerInitConfig(config.cosmologyMassModel);
+    if (init.cosmology.massModel != "critical_density" &&
+        init.cosmology.massModel != "total_mass" && init.cosmology.massModel != "particle_mass") {
+        init.cosmology.massModel = "critical_density";
+        log << "[config] invalid cosmology mass_model; using critical_density\n";
+    }
+    init.cosmology.totalMass = std::max(0.0f, config.cosmologyTotalMass);
     init.seed = config.initSeed;
+    init.deterministicMode = config.deterministicMode;
     init.velocityTemperature = std::max(0.0f, config.velocityTemperature);
     init.particleTemperature = std::max(0.0f, config.particleTemperature);
+    init.sceneOffsetX = config.sceneOffsetX;
+    init.sceneOffsetY = config.sceneOffsetY;
+    init.sceneOffsetZ = config.sceneOffsetZ;
+    init.sceneRotationX = config.sceneRotationX;
+    init.sceneRotationY = config.sceneRotationY;
+    init.sceneRotationZ = config.sceneRotationZ;
+    init.sceneCopyAxis = toLowerInitConfig(config.sceneCopyAxis);
+    if (init.sceneCopyAxis != "x" && init.sceneCopyAxis != "y" && init.sceneCopyAxis != "z") {
+        init.sceneCopyAxis = "z";
+    }
+    init.sceneRotationCopies = std::clamp(config.sceneRotationCopies, 1u, 256u);
+    init.sceneMirrorX = config.sceneMirrorX;
+    init.sceneMirrorY = config.sceneMirrorY;
+    init.sceneMirrorZ = config.sceneMirrorZ;
     init.thermalAmbientTemperature = std::max(0.0f, config.thermalAmbientTemperature);
     init.thermalSpecificHeat = std::max(1e-6f, config.thermalSpecificHeat);
     init.thermalHeatingCoeff = std::max(0.0f, config.thermalHeatingCoeff);
@@ -131,6 +174,11 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config,
         normalizeInitField(config.initMode, "init_mode", "disk_orbit", log);
     const bool presetSelected = style == "preset";
     const std::string selector = presetSelected ? "preset_structure" : "init_mode";
+    if (!config.scene.objects.empty()) {
+        init.mode = "objects";
+        plan.summary = summarizePlan(style, "scene.objects", "objects", {}, "");
+        return plan;
+    }
     std::string resolvedMode = presetSelected ? preset : detailed;
     if (presetSelected && detailed != toLowerInitConfig(defaults.initMode) && detailed != preset) {
         log << "[config] init_mode=" << config.initMode
@@ -158,7 +206,16 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config,
     if (presetSelected) {
         init.mode = resolvedMode;
         const float size = std::max(0.1f, config.presetSize);
-        if (resolvedMode == "random_cloud") {
+        if (resolvedMode == "cosmology") {
+            init.cosmology.enabled = true;
+            init.includeCentralBody = false;
+            init.centralMass = 0.0f;
+            init.cloudHalfExtent = size;
+            init.cubeHalfExtent = size;
+            init.sphereRadius = size;
+            init.particleMass = std::max(1e-12f, config.initParticleMass);
+        }
+        else if (resolvedMode == "random_cloud") {
             init.includeCentralBody = false;
             init.centralMass = 1.0f;
             init.centralX = 0.0f;
@@ -218,11 +275,40 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config,
             init.velocityScale = 1.0f;
             init.particleMass = 1.0f;
         }
+        else if (resolvedMode == "binary_star") {
+            init.includeCentralBody = false;
+            init.centralMass = 0.0f;
+            init.cloudHalfExtent = size;
+            init.velocityScale = 1.0f;
+            init.particleMass = 1.0f;
+        }
         else if (resolvedMode == "plummer_sphere") {
             init.includeCentralBody = false;
             init.centralMass = 0.0f;
             init.cloudHalfExtent = size;
             init.velocityScale = 1.0f;
+            init.particleMass = std::max(1e-6f, 1.0f / static_cast<float>(std::max<std::uint32_t>(
+                                                           2u, config.particleCount)));
+        }
+        else if (resolvedMode == "galaxy" || resolvedMode == "galaxy_collision") {
+            init.includeCentralBody = false;
+            init.centralMass = 0.0f;
+            init.cloudHalfExtent = size;
+            init.velocityScale = 1.0f;
+            init.diskRadiusMin = std::max(0.05f, size * 0.1f);
+            init.diskRadiusMax = size;
+            init.diskMass = std::max(1e-6f, config.initDiskMass);
+            init.particleMass = std::max(1e-6f, config.initParticleMass);
+        }
+        else if (resolvedMode == "solar_system") {
+            init.includeCentralBody = true;
+            init.centralMass = std::max(1e-6f, config.initCentralMass);
+            init.velocityScale = std::max(0.0f, config.initVelocityScale);
+        }
+        else if (resolvedMode == "sph_collapse") {
+            init.includeCentralBody = false;
+            init.centralMass = 0.0f;
+            init.cloudHalfExtent = size;
             init.particleMass = std::max(1e-6f, 1.0f / static_cast<float>(std::max<std::uint32_t>(
                                                            2u, config.particleCount)));
         }
@@ -251,6 +337,9 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config,
     }
     else {
         init.mode = resolvedMode;
+        if (init.mode == "cosmology") {
+            init.cosmology.enabled = true;
+        }
         init.includeCentralBody = config.initIncludeCentralBody;
         init.centralMass = config.initCentralMass;
         init.centralX = config.initCentralX;
@@ -269,6 +358,10 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config,
         init.sphereRadius = config.initSphereRadius;
         init.cloudSpeed = config.initCloudSpeed;
         init.particleMass = config.initParticleMass;
+    }
+    if (init.mode == "cosmology") {
+        init.particleMass = resolveCosmologyParticleMass(
+            init.cosmology, init.particleMass, std::max<std::uint32_t>(2u, config.particleCount));
     }
     plan.summary = summarizePlan(style, selector, init.mode, plan.inputFile, plan.inputFormat);
     return plan;

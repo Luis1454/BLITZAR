@@ -71,6 +71,25 @@ public:
     {
     }
 
+    void setTreePmAssignment(const std::string&) override
+    {
+    }
+
+    void setTreePmParameters(bool, const std::string&, const std::string&, const std::string&,
+                             const std::string&,
+                             bool, std::uint32_t, std::uint32_t, float, std::uint32_t,
+                             std::uint32_t, std::uint32_t, bool) override
+    {
+    }
+
+    void setAdaptiveTimeSteps(bool, std::uint32_t, float) override
+    {
+    }
+
+    void setAdaptiveTimeStepCostGuard(bool) override
+    {
+    }
+
     void setOctreeParameters(float, float) override
     {
     }

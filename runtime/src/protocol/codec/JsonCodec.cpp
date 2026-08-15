@@ -145,7 +145,7 @@ std::string JsonCodec::makeErrorResponse(std::string_view cmd, std::string_view 
 std::string JsonCodec::makeStatusResponse(const SimulationStats& stats)
 {
     std::ostringstream out;
-    out << std::fixed << std::setprecision(6);
+    out << std::fixed << std::setprecision(9);
     ServerJsonObjectWriter writer(out);
     writer.writeBool("ok", true);
     writer.writeString("cmd", Status);
@@ -165,6 +165,7 @@ std::string JsonCodec::makeStatusResponse(const SimulationStats& stats)
     writer.writeNumber("max_substeps", stats.maxSubsteps);
     writer.writeNumber("snapshot_publish_period_ms", stats.snapshotPublishPeriodMs);
     writer.writeNumber("particles", stats.particleCount);
+    writer.writeNumber("total_mass", stats.totalMass);
     writer.writeString("solver", stats.solverName);
     writer.writeString("integrator", stats.integratorName);
     writer.writeNumber("ekin", stats.kineticEnergy);
@@ -197,6 +198,11 @@ std::string JsonCodec::makeSnapshotResponse(bool hasSnapshot,
 {
     std::ostringstream out;
     out << std::fixed << std::setprecision(6);
+    const auto formatParticleValue = [](float value) {
+        std::ostringstream valueStream;
+        valueStream << std::setprecision(9) << std::defaultfloat << value;
+        return valueStream.str();
+    };
     ServerJsonObjectWriter writer(out);
     writer.writeBool("ok", true);
     writer.writeString("cmd", GetSnapshot);
@@ -210,17 +216,19 @@ std::string JsonCodec::makeSnapshotResponse(bool hasSnapshot,
             writer.writeArraySeparator();
         }
         writer.writeRaw("[");
-        writer.writeRaw(std::to_string(particle.x));
+        writer.writeRaw(formatParticleValue(particle.x));
         writer.writeArraySeparator();
-        writer.writeRaw(std::to_string(particle.y));
+        writer.writeRaw(formatParticleValue(particle.y));
         writer.writeArraySeparator();
-        writer.writeRaw(std::to_string(particle.z));
+        writer.writeRaw(formatParticleValue(particle.z));
         writer.writeArraySeparator();
-        writer.writeRaw(std::to_string(particle.mass));
+        writer.writeRaw(formatParticleValue(particle.mass));
         writer.writeArraySeparator();
-        writer.writeRaw(std::to_string(particle.pressureNorm));
+        writer.writeRaw(formatParticleValue(particle.pressureNorm));
         writer.writeArraySeparator();
-        writer.writeRaw(std::to_string(particle.temperature));
+        writer.writeRaw(formatParticleValue(particle.temperature));
+        writer.writeArraySeparator();
+        writer.writeRaw(formatParticleValue(particle.densityNorm));
         writer.writeRaw("]");
     }
     writer.endArray();

@@ -103,6 +103,11 @@ bool SimulationServer::loadCheckpoint(const std::string& inputPath, std::string*
         _configState._runtimeConfigMirror.solver = loaded.config.solver;
         _configState._runtimeConfigMirror.integrator = loaded.config.integrator;
         _configState._runtimeConfigMirror.performanceProfile = loaded.config.performanceProfile;
+        _configState._runtimeConfigMirror.adaptiveTimeStepsEnabled =
+            loaded.config.adaptiveTimeStepsEnabled;
+        _configState._runtimeConfigMirror.adaptiveTimeStepMaxLevel =
+            loaded.config.adaptiveTimeStepMaxLevel;
+        _configState._runtimeConfigMirror.adaptiveTimeStepEta = loaded.config.adaptiveTimeStepEta;
         _configState._runtimeConfigMirror.substepTargetDt = loaded.config.substepTargetDt;
         _configState._runtimeConfigMirror.maxSubsteps = loaded.config.maxSubsteps;
         _configState._runtimeConfigMirror.snapshotPublishPeriodMs = loaded.config.snapshotPublishPeriodMs;
@@ -304,6 +309,7 @@ SimulationStats SimulationServer::getStats() const
                            _configuredMaxSubsteps.load(std::memory_order_relaxed),
                            _snapshotPublishPeriodMs.load(std::memory_order_relaxed),
                            particleCount,
+                           _totalMass.load(std::memory_order_relaxed),
                            _kineticEnergy.load(std::memory_order_relaxed),
                            _potentialEnergy.load(std::memory_order_relaxed),
                            _thermalEnergy.load(std::memory_order_relaxed),

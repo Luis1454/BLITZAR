@@ -9,6 +9,7 @@
 #include "config/core/Config.hpp"
 #include "protocol/Protocol.hpp"
 #include <gtest/gtest.h>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -62,6 +63,8 @@ TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
                                      "--export-on-exit=false",
                                      "--ui-fps",
                                      "75",
+                                     "--zoom",
+                                     "0",
                                      "--energy-every",
                                      "2",
                                      "--server-command-timeout-ms",
@@ -75,6 +78,7 @@ TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
     EXPECT_FLOAT_EQ(config.dt, kGalaxyCollisionDt);
     EXPECT_EQ(config.solver, "octree_gpu");
     EXPECT_EQ(config.integrator, "euler");
+    EXPECT_FLOAT_EQ(config.defaultZoom, 0.0f);
     EXPECT_FLOAT_EQ(config.substepTargetDt, 0.005f);
     EXPECT_EQ(config.maxSubsteps, 12u);
     EXPECT_TRUE(config.sphEnabled);
@@ -160,15 +164,17 @@ TEST(ConfigArgsTest, TST_UNT_CONF_006_RejectsTrailingGarbageNumericArguments)
     EXPECT_NE(log.find("invalid --luminosity"), std::string::npos);
 }
 
-TEST(ConfigArgsTest, TST_UNT_CONF_014_ClampsClientParticleCapArgumentToProtocolMax)
+TEST(ConfigArgsTest, TST_UNT_CONF_014_AcceptsMaximumClientParticleCapArgument)
 {
     SimulationConfig config = SimulationConfig::defaults();
     RuntimeArgs runtime;
     std::stringstream warnings;
-    std::vector<std::string> args = {"app", "--client-particle-cap", "50000"};
+    std::vector<std::string> args = {
+        "app", "--client-particle-cap",
+        std::to_string(std::numeric_limits<std::uint32_t>::max())};
     applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_EQ(config.clientParticleCap, bltzr_protocol::kSnapshotMaxPoints);
-    EXPECT_NE(warnings.str().find("--client-particle-cap clamped"), std::string::npos);
+    EXPECT_EQ(warnings.str().find("--client-particle-cap clamped"), std::string::npos);
     EXPECT_FALSE(runtime.hasArgumentError);
 }
 
@@ -298,6 +304,43 @@ TEST(ConfigArgsTest, TST_UNT_CONF_073_CliExportOnExitDefaultsToTrueWithoutValue)
     applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
     EXPECT_TRUE(runtime.exportOnExit);
     EXPECT_EQ(runtime.targetSteps, 10);
+    EXPECT_FALSE(runtime.hasArgumentError);
+    EXPECT_TRUE(warnings.str().empty());
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_074_CliSelectsExplicitExecutionCommand)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--validate"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(runtime.command, RuntimeCommand::Validate);
+    EXPECT_FALSE(runtime.hasArgumentError);
+    EXPECT_TRUE(warnings.str().empty());
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_075_CliRejectsConflictingExecutionCommands)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--inspect", "--run"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(runtime.command, RuntimeCommand::Run);
+    EXPECT_TRUE(runtime.hasArgumentError);
+    EXPECT_NE(warnings.str().find("only one execution command"), std::string::npos);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_077_CliAcceptsDeterministicExportPath)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--run", "--export-path", "outputs/final.xyz"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(runtime.command, RuntimeCommand::Run);
+    EXPECT_EQ(runtime.exportPath, "outputs/final.xyz");
     EXPECT_FALSE(runtime.hasArgumentError);
     EXPECT_TRUE(warnings.str().empty());
 }

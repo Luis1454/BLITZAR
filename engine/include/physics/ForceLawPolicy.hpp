@@ -26,6 +26,8 @@ struct ForceLawPolicy {
     float minSoftening = kPhysicsMinSofteningDefault;
     float minDistance2 = kPhysicsMinDistance2Default;
     float minTheta = kPhysicsMinTheta;
+    // Zero selects the ordinary force law. TreePM sets the Gaussian split scale.
+    float treePmShortRangeScale = 0.0f;
 };
 
 /*

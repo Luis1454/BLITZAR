@@ -33,6 +33,10 @@ function(configure_BLITZAR_cpp_target target_name)
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF
     )
+    if(MSVC)
+        # Keep debug symbols per object file to avoid shared-PDB contention in parallel builds.
+        set_property(TARGET ${target_name} PROPERTY MSVC_DEBUG_INFORMATION_FORMAT Embedded)
+    endif()
     target_compile_definitions(${target_name}
         PRIVATE
             $<$<BOOL:${WIN32}>:NOMINMAX>
@@ -69,8 +73,33 @@ function(configure_BLITZAR_cuda_target target_name)
             $<$<COMPILE_LANGUAGE:CUDA>:BLITZAR_HD_DEVICE=__device__>
     )
     target_link_libraries(${target_name} PRIVATE CUDA::cudart)
+    if(NOT TARGET CUDA::cufft)
+        message(FATAL_ERROR "CUDA FFT library (CUDA::cufft) is required for BLITZAR CUDA targets")
+    endif()
+    target_link_libraries(${target_name} PRIVATE CUDA::cufft)
+    if(TARGET CUDA::cuda_driver)
+        target_link_libraries(${target_name} PRIVATE CUDA::cuda_driver)
+        target_compile_definitions(${target_name} PRIVATE BLITZAR_HAS_CUDA_DRIVER=1)
+    else()
+        target_compile_definitions(${target_name} PRIVATE BLITZAR_HAS_CUDA_DRIVER=0)
+    endif()
+    if(TARGET CUDA::nvrtc)
+        target_link_libraries(${target_name} PRIVATE CUDA::nvrtc)
+        target_compile_definitions(${target_name} PRIVATE BLITZAR_HAS_NVRTC=1)
+    else()
+        target_compile_definitions(${target_name} PRIVATE BLITZAR_HAS_NVRTC=0)
+    endif()
+    if(MSVC AND CUDAToolkit_BIN_DIR)
+        # MSVC does not inherit CUDA's device-runtime directory from nvcc.
+        get_filename_component(_blitzar_cuda_root "${CUDAToolkit_BIN_DIR}" DIRECTORY)
+        set(_blitzar_cuda_library_dir "${_blitzar_cuda_root}/lib/x64")
+        if(EXISTS "${_blitzar_cuda_library_dir}/cudadevrt.lib")
+            target_link_directories(${target_name} PRIVATE "${_blitzar_cuda_library_dir}")
+        endif()
+    endif()
     if(MSVC)
         target_compile_options(${target_name} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/Zc:__cplusplus>)
+        target_compile_options(${target_name} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/openmp>)
         if(BLITZAR_SUPPRESS_KNOWN_CUDA_TOOLCHAIN_WARNINGS)
             target_compile_options(${target_name}
                 PRIVATE
@@ -80,6 +109,8 @@ function(configure_BLITZAR_cuda_target target_name)
                     $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=1394>
             )
         endif()
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(${target_name} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-fopenmp>)
     endif()
 endfunction()
 
@@ -116,31 +147,10 @@ function(BLITZAR_ensure_gtest)
     include(FetchContent)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
-    set(_BLITZAR_gtest_cmake_args "")
-    if(WIN32
-       AND CMAKE_GENERATOR MATCHES "Ninja"
-       AND CMAKE_VERSION VERSION_GREATER_EQUAL 4.2
-       AND CMAKE_VERSION VERSION_LESS 4.3)
-        list(APPEND _BLITZAR_gtest_cmake_args
-            "-DCMAKE_C_COMPILER_FORCED=ON"
-            "-DCMAKE_CXX_COMPILER_FORCED=ON"
-        )
-    endif()
-    if(_BLITZAR_gtest_cmake_args)
-        set_property(DIRECTORY PROPERTY EP_UPDATE_DISCONNECTED ON)
-        set(FETCHCONTENT_UPDATES_DISCONNECTED_GOOGLETEST ON)
-        set(FETCHCONTENT_QUIET OFF)
-        FetchContent_Declare(
-            googletest
-            URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-            CMAKE_ARGS ${_BLITZAR_gtest_cmake_args}
-        )
-    else()
-        FetchContent_Declare(
-            googletest
-            URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-        )
-    endif()
+    FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+    )
     FetchContent_MakeAvailable(googletest)
 
     if(WIN32 AND BLITZAR_WINDOWS_SYSTEM_INCLUDES)
