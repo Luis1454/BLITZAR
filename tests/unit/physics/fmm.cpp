@@ -3,8 +3,8 @@
  * @brief Deterministic qualification for the order-two CPU fast multipole solver.
  */
 
-#include "engine/src/physics/FmmCpu.hpp"
-#include "physics/ForceLawPolicy.hpp"
+#include "physics/fmm/FmmCpu.hpp"
+#include "physics/core/ForceLawPolicy.hpp"
 #include <cmath>
 #include <cstdint>
 #include <gtest/gtest.h>

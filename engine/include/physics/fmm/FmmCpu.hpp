@@ -1,13 +1,13 @@
 /*
- * @file engine/src/physics/FmmCpu.hpp
+ * @file engine/include/physics/fmm/FmmCpu.hpp
  * @brief Private order-two fast multipole solver contracts.
  */
 
 #ifndef BLITZAR_ENGINE_SRC_PHYSICS_FMMCPU_HPP_
 #define BLITZAR_ENGINE_SRC_PHYSICS_FMMCPU_HPP_
 
-#include "physics/ForceLawPolicy.hpp"
-#include "physics/Particle.hpp"
+#include "physics/core/ForceLawPolicy.hpp"
+#include "physics/core/Particle.hpp"
 #include <array>
 #include <cstdint>
 #include <vector>

@@ -1,15 +1,15 @@
 /*
- * @file engine/src/physics/TreePmCpu.hpp
+ * @file engine/include/physics/treepm/TreePmCpu.hpp
  * @brief Private CPU TreePM implementation contract.
  */
 
 #ifndef BLITZAR_ENGINE_SRC_PHYSICS_TREEPMCPU_HPP_
 #define BLITZAR_ENGINE_SRC_PHYSICS_TREEPMCPU_HPP_
 
-#include "physics/ForceLawPolicy.hpp"
-#include "physics/Octree.hpp"
-#include "physics/Particle.hpp"
-#include "physics/Vector.hpp"
+#include "physics/core/ForceLawPolicy.hpp"
+#include "physics/core/Particle.hpp"
+#include "physics/core/Vector.hpp"
+#include "physics/octree/Octree.hpp"
 
 #include <complex>
 #include <string>

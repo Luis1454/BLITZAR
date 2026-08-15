@@ -57,6 +57,27 @@ historical structural violations and require scoped module decompositions; they
 are not waived by this checkpoint. Independent IV&V approval remains an
 external merge requirement.
 
+## Physics Source Layout
+
+The physics implementation is organized by responsibility rather than by build
+backend alone:
+
+- `engine/include/physics/core/`: shared particle, vector, state, and force-law contracts.
+- `engine/include/physics/octree/`: octree data structure contract.
+- `engine/include/physics/treepm/`: CPU TreePM contract.
+- `engine/include/physics/fmm/`: CPU FMM contract.
+- `engine/include/physics/cuda/`: CUDA/JIT-facing contracts.
+- `engine/src/physics/core/`: shared host implementations.
+- `engine/src/physics/octree/`: host octree and particle-system fallback implementation.
+- `engine/src/physics/treepm/`: CPU TreePM implementation.
+- `engine/src/physics/fmm/`: FMM construction, evaluation, and metrics.
+- `engine/src/physics/cuda/`: host-side CUDA/JIT bridge implementation.
+- `engine/src/cuda/`: CUDA runtime, memory pool, kernels, and domain fragments.
+
+New solver code belongs in its solver directory. Cross-solver state and numerical
+contracts belong in `core`; CUDA fragments remain grouped by execution concern
+under `physics/cuda/fragments/`.
+
 ## Issue Disposition
 
 | Issue | Disposition | Rationale |

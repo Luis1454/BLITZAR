@@ -1,5 +1,5 @@
 /*
- * @file engine/src/physics/FmmEvaluate.cpp
+ * @file engine/src/physics/fmm/FmmEvaluate.cpp
  * @brief Adaptive M2L, L2L, L2P and P2P passes for the CPU FMM solver.
  */
 

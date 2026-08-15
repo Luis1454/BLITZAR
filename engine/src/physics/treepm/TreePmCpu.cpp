@@ -1,9 +1,9 @@
 /*
- * @file engine/src/physics/TreePmCpu.cpp
+ * @file engine/src/physics/treepm/TreePmCpu.cpp
  * @brief Deterministic CPU TreePM field construction and sampling.
  */
 
-#include "TreePmCpu.hpp"
+#include "physics/treepm/TreePmCpu.hpp"
 
 #include <algorithm>
 #include <cmath>

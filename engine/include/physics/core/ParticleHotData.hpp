@@ -1,5 +1,5 @@
 /*
- * @file engine/include/physics/ParticleHotData.hpp
+ * @file engine/include/physics/core/ParticleHotData.hpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Cache-optimized particle data for force computation hotpath.
@@ -8,7 +8,7 @@
 #ifndef BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLE_HOT_DATA_HPP_
 #define BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLE_HOT_DATA_HPP_
 
-#include "physics/Vector.hpp"
+#include "physics/core/Vector.hpp"
 #include <vector>
 
 /*

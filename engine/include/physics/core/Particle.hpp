@@ -1,5 +1,5 @@
 /*
- * @file engine/include/physics/Particle.hpp
+ * @file engine/include/physics/core/Particle.hpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Public physics interfaces and data contracts for deterministic simulation kernels.
@@ -13,7 +13,7 @@
  ** File description:
  ** test
  */
-#include "physics/Vector.hpp"
+#include "physics/core/Vector.hpp"
 #include <vector>
 
 /*
@@ -182,5 +182,5 @@ private:
     float _temperature;
 };
 
-#include "physics/Particle.inl"
+#include "physics/core/Particle.inl"
 #endif // BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLE_HPP_

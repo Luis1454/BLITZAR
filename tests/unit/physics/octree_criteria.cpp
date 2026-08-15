@@ -6,9 +6,9 @@
  */
 
 #include "config/core/Config.hpp"
-#include "physics/ForceLawPolicy.hpp"
-#include "physics/Octree.hpp"
-#include "physics/Particle.hpp"
+#include "physics/core/ForceLawPolicy.hpp"
+#include "physics/core/Particle.hpp"
+#include "physics/octree/Octree.hpp"
 #include "server/SimulationServer.hpp"
 #include "tests/support/physics_test_utils.hpp"
 #include <chrono>

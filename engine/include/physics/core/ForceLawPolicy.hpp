@@ -1,5 +1,5 @@
 /*
- * @file engine/include/physics/ForceLawPolicy.hpp
+ * @file engine/include/physics/core/ForceLawPolicy.hpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Public physics interfaces and data contracts for deterministic simulation kernels.

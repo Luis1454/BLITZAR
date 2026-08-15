@@ -1,5 +1,5 @@
 /*
- * @file engine/include/physics/ParticleSoAView.inl
+ * @file engine/include/physics/core/ParticleSoAView.inl
  * @author Luis1454
  * @project BLITZAR
  * @brief Public physics interfaces and data contracts for deterministic simulation kernels.

@@ -1,5 +1,5 @@
 /*
- * @file engine/include/physics/CudaJit.hpp
+ * @file engine/include/physics/cuda/CudaJit.hpp
  * @brief Runtime specialization contract for regular CUDA stages.
  */
 
@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include "physics/Vector.hpp"
+#include "physics/core/Vector.hpp"
 
 enum class CudaJitFamily : std::uint8_t {
     TreePmStencil = 0,

@@ -83,7 +83,7 @@ __device__ __forceinline__ Vector3 adaptiveComputeOctreeForce(
     ParticleSoAView state, int particleIndex, const AdaptiveGpuForceContext& context)
 {
     if (context.mode == 1) {
-        return treePmComputeLocalGridAcceleration(
+        return treepm::treePmComputeLocalGridAcceleration(
             state, particleIndex, context.grid, context.sortedIndex, context.cellStart,
             context.cellEnd, context.forceLaw, context.maxAcceleration, context.pmAccelX,
             context.pmAccelY, context.pmAccelZ, context.cellMask, context.cutoffSquared,
@@ -91,7 +91,7 @@ __device__ __forceinline__ Vector3 adaptiveComputeOctreeForce(
             context.sortedPosY, context.sortedPosZ, context.sortedMass);
     }
     if (context.mode == 2) {
-        return treePmComputeAcceleration(
+        return treepm::treePmComputeAcceleration(
             state, particleIndex, context.nodeHot, context.nodeNav, context.nodeFirstChild,
             context.leafStarts, context.leafCounts, context.rootIndex, context.leafIndices,
             context.forceLaw, context.maxAcceleration, context.openingCriterion,
@@ -99,7 +99,7 @@ __device__ __forceinline__ Vector3 adaptiveComputeOctreeForce(
             context.pmAccelZ);
     }
     if (context.mode == 3) {
-        return treePmComputeHybridAcceleration(
+        return treepm::treePmComputeHybridAcceleration(
             state, particleIndex, context.nodeHot, context.nodeNav, context.nodeFirstChild,
             context.leafStarts, context.leafCounts, context.rootIndex, context.leafIndices,
             context.forceLaw, context.maxAcceleration, context.openingCriterion,

@@ -1,12 +1,12 @@
 /*
- * @file engine/src/physics/FmmInternal.hpp
+ * @file engine/src/physics/fmm/FmmInternal.hpp
  * @brief Shared private helpers for the order-two FMM implementation.
  */
 
 #ifndef BLITZAR_ENGINE_SRC_PHYSICS_FMMINTERNAL_HPP_
 #define BLITZAR_ENGINE_SRC_PHYSICS_FMMINTERNAL_HPP_
 
-#include "FmmCpu.hpp"
+#include "physics/fmm/FmmCpu.hpp"
 #include <array>
 #include <cstdint>
 

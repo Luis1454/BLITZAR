@@ -1,11 +1,11 @@
 /*
- * @file engine/src/physics/ForceLawPolicy.cpp
+ * @file engine/src/physics/core/ForceLawPolicy.cpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Physics and CUDA implementation for the deterministic simulation core.
  */
 
-#include "physics/ForceLawPolicy.hpp"
+#include "physics/core/ForceLawPolicy.hpp"
 #include "Constants.hpp"
 #include <algorithm>
 

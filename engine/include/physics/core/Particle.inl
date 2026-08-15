@@ -1,5 +1,5 @@
 /*
- * @file engine/include/physics/Particle.inl
+ * @file engine/include/physics/core/Particle.inl
  * @author Luis1454
  * @project BLITZAR
  * @brief Inline host/device particle operations shared by CPU and CUDA builds.

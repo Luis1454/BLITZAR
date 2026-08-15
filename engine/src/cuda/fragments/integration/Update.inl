@@ -951,7 +951,7 @@ bool ParticleSystem::update(float deltaTime)
 
             bool treePmLeapfrogCompleted = false;
             if (!_device._leapfrogPrimed && treePmEnabled) {
-                    computeTreePmAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
+                    treepm::computeTreePmAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
                         currentView, _device.d_k1v, numParticles, _device.d_octreeNodeHot,
                         _device.d_octreeNodeNav, _device.d_octreeFirstChild,
                         _device.d_octreeLeafStarts, _device.d_octreeLeafCounts, rootIndex,
@@ -994,7 +994,7 @@ bool ParticleSystem::update(float deltaTime)
                         return false;
                     }
 
-                    computeTreePmAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
+                    treepm::computeTreePmAccelerationKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
                         currentView, _device.d_k2v, numParticles, _device.d_octreeNodeHot,
                         _device.d_octreeNodeNav, _device.d_octreeFirstChild,
                         _device.d_octreeLeafStarts, _device.d_octreeLeafCounts,
@@ -1111,7 +1111,7 @@ bool ParticleSystem::update(float deltaTime)
                     std::clamp(static_cast<int>(std::ceil(std::sqrt(treePmCutoffSquared) *
                                                           treePmGrid.invCellSize)),
                                1, 2);
-                updateParticlesTreePmHybridKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
+                treepm::updateParticlesTreePmHybridKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
                     currentView, nextView, numParticles, _device.d_octreeNodeHot,
                     _device.d_octreeNodeNav, _device.d_octreeFirstChild, _device.d_octreeLeafStarts,
                     _device.d_octreeLeafCounts, rootIndex, _device.g_dOctreeLeafIndices, forceLaw,
@@ -1135,7 +1135,7 @@ bool ParticleSystem::update(float deltaTime)
                     std::clamp(static_cast<int>(std::ceil(std::sqrt(treePmCutoffSquared) *
                                                           treePmGrid.invCellSize)),
                                1, 2);
-                updateParticlesTreePmLocalGridKernel<<<numBlocks,
+                treepm::updateParticlesTreePmLocalGridKernel<<<numBlocks,
                                                        Particle::kDefaultCudaBlockSize>>>(
                     currentView, nextView, numParticles, treePmGrid, _device.d_sphSortedIndex,
                     _device.d_sphCellStart, _device.d_sphCellEnd, forceLaw, deltaTime,
@@ -1152,7 +1152,7 @@ bool ParticleSystem::update(float deltaTime)
                 }
             }
             else if (treePmEnabled) {
-                updateParticlesTreePmKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
+                treepm::updateParticlesTreePmKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
                     currentView, nextView, numParticles, _device.d_octreeNodeHot,
                     _device.d_octreeNodeNav, _device.d_octreeFirstChild, _device.d_octreeLeafStarts,
                     _device.d_octreeLeafCounts, rootIndex, _device.g_dOctreeLeafIndices, forceLaw,

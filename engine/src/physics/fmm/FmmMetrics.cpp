@@ -1,9 +1,9 @@
 /*
- * @file engine/src/physics/FmmMetrics.cpp
+ * @file engine/src/physics/fmm/FmmMetrics.cpp
  * @brief Deterministic force-error metrics for FMM qualification.
  */
 
-#include "FmmCpu.hpp"
+#include "physics/fmm/FmmCpu.hpp"
 #include <algorithm>
 #include <cmath>
 

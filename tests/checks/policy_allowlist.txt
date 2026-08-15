@@ -34,7 +34,7 @@ engine/src/server/simulation/state/Generation.cpp
 # DEV-QUAL-012: baseline files scheduled for responsibility-focused extraction in #443.
 cmake/apps.cmake
 docs/quality/manifest/deviations.json
-engine/include/physics/ParticleSystem.hpp
+engine/include/physics/core/ParticleSystem.hpp
 engine/src/config/directive/Config.cpp
 engine/src/config/directive/Write.cpp
 engine/src/config/registry/Entries.cpp
@@ -42,8 +42,8 @@ engine/src/config/validation/Scenario.cpp
 engine/src/cuda/fragments/system/Core.inl
 engine/src/cuda/fragments/treepm/Gpu.inl
 engine/src/cuda/JitRuntime.cu
-engine/src/physics/ParticleSystemHost.cpp
-engine/src/physics/TreePmCpu.cpp
+engine/src/physics/octree/ParticleSystemHost.cpp
+engine/src/physics/treepm/TreePmCpu.cpp
 engine/src/server/simulation/lifecycle/Rebuild.cpp
 engine/src/server/simulation/runtime/SettersAndExport.cpp
 engine/src/server/simulation/telemetry/SnapshotAndEnergy.cpp
