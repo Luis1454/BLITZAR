@@ -150,7 +150,7 @@ bool SimulationServer::loadCheckpoint(const std::string& inputPath, std::string*
         _paused.store(loaded.paused, std::memory_order_relaxed);
         _configState._initialStatePath.clear();
         _configState._initialStateFormat = "checkpoint";
-        _activeCheckpointState.reset(new SimulationCheckpointState(loaded));
+        _activeCheckpointState = std::make_unique<SimulationCheckpointState>(loaded);
     }
     requestReset();
     return true;

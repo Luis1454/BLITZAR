@@ -109,12 +109,14 @@ set(BLITZAR_SERVER_COMMON_SOURCES
 if(BLITZAR_ENABLE_CUDA)
     set(BLITZAR_BATCH_SOURCES
         ${BLITZAR_BATCH_COMMON_SOURCES}
+        "${BLITZAR_ROOT_DIR}/engine/src/cuda/DeviceMemory.cu"
         "${BLITZAR_ROOT_DIR}/engine/src/cuda/MemoryPool.cu"
         "${BLITZAR_ROOT_DIR}/engine/src/cuda/JitRuntime.cu"
         "${BLITZAR_ROOT_DIR}/engine/src/cuda/ParticleSystem.cu"
     )
     set(BLITZAR_SERVER_SOURCES
         ${BLITZAR_SERVER_COMMON_SOURCES}
+        "${BLITZAR_ROOT_DIR}/engine/src/cuda/DeviceMemory.cu"
         "${BLITZAR_ROOT_DIR}/engine/src/cuda/MemoryPool.cu"
         "${BLITZAR_ROOT_DIR}/engine/src/cuda/JitRuntime.cu"
         "${BLITZAR_ROOT_DIR}/engine/src/cuda/ParticleSystem.cu"
@@ -122,11 +124,13 @@ if(BLITZAR_ENABLE_CUDA)
 else()
     set(BLITZAR_BATCH_SOURCES
         ${BLITZAR_BATCH_COMMON_SOURCES}
+        "${BLITZAR_ROOT_DIR}/engine/src/cuda/DeviceMemory.cpp"
         "${BLITZAR_ROOT_DIR}/engine/src/physics/cuda/CudaJit.cpp"
         "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/ParticleSystemHost.cpp"
     )
     set(BLITZAR_SERVER_SOURCES
         ${BLITZAR_SERVER_COMMON_SOURCES}
+        "${BLITZAR_ROOT_DIR}/engine/src/cuda/DeviceMemory.cpp"
         "${BLITZAR_ROOT_DIR}/engine/src/physics/cuda/CudaJit.cpp"
         "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/ParticleSystemHost.cpp"
     )

@@ -86,6 +86,10 @@ Build profiles:
 - Repository C++ headers must use strict include guards, not `#pragma once`. Header definitions are
   forbidden unless explicitly `inline` or `constexpr`; those exceptions are restricted to small,
   deterministic value-contract operations and are covered by the repository-policy tests.
+- Runtime ownership must use RAII: owning host, device, mapped-host, graph, stream, and FFT resources
+  are wrapped by move-only resource types backed by `std::unique_ptr` or an equivalent typed handle.
+  Raw pointers are permitted only as borrowed views at API or kernel boundaries and must not perform
+  destruction or allocation.
 - Repository C++ sources must not use preprocessor conditionals outside header include guards; platform seams must be selected by the build graph, not `#if/#else` branches. CUDA/ISA feature seams are the narrow exception: only `BLITZAR_ENABLE_CUDA`, CUDA driver/NVRTC, `__CUDA_ARCH__`, `__CUDACC__`, and `__SSE__` directives are allowed.
 - Repository C++ sources must not define macros outside header include guards.
 - Strict analyzer lanes enforce memory and control-flow analysis plus ignored-return-value coverage for internal status APIs through `clang-tidy` and targeted `[[nodiscard]]` annotations. The opt-in padding heuristic is excluded for persistent configuration contracts; hot data layout is qualified separately.

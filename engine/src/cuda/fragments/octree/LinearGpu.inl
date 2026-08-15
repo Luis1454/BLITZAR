@@ -670,14 +670,14 @@ bool ParticleSystem::buildLinearOctreeGpu(ParticleSoAView currentView, int numPa
         return false;
     }
 
-    thrust::device_ptr<unsigned long long> sortedKeys(_device.d_octreeMortonKeys);
-    thrust::device_ptr<int> sortedIndices(_device.g_dOctreeLeafIndices);
-    thrust::device_ptr<unsigned long long> prefixesA(_device.d_octreePrefixesA);
-    thrust::device_ptr<unsigned long long> prefixesB(_device.d_octreePrefixesB);
-    thrust::device_ptr<int> levelIndicesA(_device.d_octreeLevelIndicesA);
-    thrust::device_ptr<int> levelIndicesB(_device.d_octreeLevelIndicesB);
-    thrust::device_ptr<int> parentCounts(_device.d_octreeParentCounts);
-    thrust::device_ptr<int> parentOffsets(_device.d_octreeParentOffsets);
+    thrust::device_ptr<unsigned long long> sortedKeys(_device.d_octreeMortonKeys.get());
+    thrust::device_ptr<int> sortedIndices(_device.g_dOctreeLeafIndices.get());
+    thrust::device_ptr<unsigned long long> prefixesA(_device.d_octreePrefixesA.get());
+    thrust::device_ptr<unsigned long long> prefixesB(_device.d_octreePrefixesB.get());
+    thrust::device_ptr<int> levelIndicesA(_device.d_octreeLevelIndicesA.get());
+    thrust::device_ptr<int> levelIndicesB(_device.d_octreeLevelIndicesB.get());
+    thrust::device_ptr<int> parentCounts(_device.d_octreeParentCounts.get());
+    thrust::device_ptr<int> parentOffsets(_device.d_octreeParentOffsets.get());
 
     if (profileFlashMode) {
         if (!checkCudaStatus(cudaStreamSynchronize(stream), "linear octree pre-sort sync")) {

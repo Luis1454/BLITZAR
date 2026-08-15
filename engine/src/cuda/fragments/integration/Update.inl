@@ -671,7 +671,7 @@ bool ParticleSystem::update(float deltaTime)
                                                     Particle::kDefaultCudaBlockSize>>>(
                 currentView, _device.d_k1v, numParticles, grid, _device.d_treePmAccelX,
                 _device.d_treePmAccelY, _device.d_treePmAccelZ);
-            auto* momentumHalf = reinterpret_cast<float3*>(_device.d_vHalf);
+            auto* momentumHalf = reinterpret_cast<float3*>(_device.d_vHalf.get());
             applyKickHalfStepKernel<<<adaptiveNumBlocks, Particle::kDefaultCudaBlockSize>>>(
                 currentView, _device.d_k1v, deltaTime, momentumHalf, numParticles);
             cosmologyDriftKernel<<<adaptiveNumBlocks, Particle::kDefaultCudaBlockSize>>>(
@@ -837,10 +837,14 @@ bool ParticleSystem::update(float deltaTime)
                                std::ceil(std::sqrt(treePmCutoffSquared) * treePmGrid.invCellSize)),
                            1, 2);
             forceContext.maxLocalNeighbors = treePmMaxLocalNeighbors;
-            forceContext.sortedPosX = treePmGather ? _device.d_treePmSortedPosX : nullptr;
-            forceContext.sortedPosY = treePmGather ? _device.d_treePmSortedPosY : nullptr;
-            forceContext.sortedPosZ = treePmGather ? _device.d_treePmSortedPosZ : nullptr;
-            forceContext.sortedMass = treePmGather ? _device.d_treePmSortedMass : nullptr;
+            forceContext.sortedPosX =
+                treePmGather ? _device.d_treePmSortedPosX.get() : nullptr;
+            forceContext.sortedPosY =
+                treePmGather ? _device.d_treePmSortedPosY.get() : nullptr;
+            forceContext.sortedPosZ =
+                treePmGather ? _device.d_treePmSortedPosZ.get() : nullptr;
+            forceContext.sortedMass =
+                treePmGather ? _device.d_treePmSortedMass.get() : nullptr;
             forceContext.denseCellThreshold = std::max(_treePmDenseCellThreshold, 1);
 
             const bool resetSchedule = _adaptiveTimeStepTick == 0u ||
@@ -947,7 +951,7 @@ bool ParticleSystem::update(float deltaTime)
                 _octreeOpeningCriterion == OctreeOpeningCriterion::Bounds ? 1 : 0;
             const int numBlocks = (numParticles + Particle::kDefaultCudaBlockSize - 1) /
                                   Particle::kDefaultCudaBlockSize;
-            auto* halfVelocity = reinterpret_cast<float3*>(_device.d_vHalf);
+            auto* halfVelocity = reinterpret_cast<float3*>(_device.d_vHalf.get());
 
             bool treePmLeapfrogCompleted = false;
             if (!_device._leapfrogPrimed && treePmEnabled) {
@@ -1121,10 +1125,10 @@ bool ParticleSystem::update(float deltaTime)
                     _device.d_treePmAccelX, _device.d_treePmAccelY, _device.d_treePmAccelZ,
                     _device.d_treePmCellMask, treePmCutoffSquared, treePmCellRadius,
                     treePmMaxLocalNeighbors, std::max(_treePmDenseCellThreshold, 1),
-                    treePmGather ? _device.d_treePmSortedPosX : nullptr,
-                    treePmGather ? _device.d_treePmSortedPosY : nullptr,
-                    treePmGather ? _device.d_treePmSortedPosZ : nullptr,
-                    treePmGather ? _device.d_treePmSortedMass : nullptr);
+                    treePmGather ? _device.d_treePmSortedPosX.get() : nullptr,
+                    treePmGather ? _device.d_treePmSortedPosY.get() : nullptr,
+                    treePmGather ? _device.d_treePmSortedPosZ.get() : nullptr,
+                    treePmGather ? _device.d_treePmSortedMass.get() : nullptr);
                 if (!checkCudaStatus(cudaGetLastError(),
                                      "updateParticlesTreePmHybrid kernel launch")) {
                     return false;
@@ -1142,10 +1146,10 @@ bool ParticleSystem::update(float deltaTime)
                     _physicsMaxAcceleration, _device.d_treePmAccelX, _device.d_treePmAccelY,
                     _device.d_treePmAccelZ, _device.d_treePmCellMask, treePmCutoffSquared,
                     treePmCellRadius, treePmMaxLocalNeighbors,
-                    treePmGather ? _device.d_treePmSortedPosX : nullptr,
-                    treePmGather ? _device.d_treePmSortedPosY : nullptr,
-                    treePmGather ? _device.d_treePmSortedPosZ : nullptr,
-                    treePmGather ? _device.d_treePmSortedMass : nullptr);
+                    treePmGather ? _device.d_treePmSortedPosX.get() : nullptr,
+                    treePmGather ? _device.d_treePmSortedPosY.get() : nullptr,
+                    treePmGather ? _device.d_treePmSortedPosZ.get() : nullptr,
+                    treePmGather ? _device.d_treePmSortedMass.get() : nullptr);
                 if (!checkCudaStatus(cudaGetLastError(),
                                      "updateParticlesTreePmLocalGrid kernel launch")) {
                     return false;
@@ -1442,7 +1446,7 @@ bool ParticleSystem::update(float deltaTime)
         }
     }
     else if (_integratorMode == IntegratorMode::Leapfrog) {
-        auto* halfVelocity = reinterpret_cast<float3*>(_device.d_vHalf);
+        auto* halfVelocity = reinterpret_cast<float3*>(_device.d_vHalf.get());
         if (!_device._leapfrogPrimed) {
             primeHalfVelocityKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
                 currentView, halfVelocity, numParticles);
