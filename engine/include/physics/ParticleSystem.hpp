@@ -24,7 +24,8 @@
 #include <string>
 #include <vector>
 
-template <typename Scalar> struct CpuTreePmWorkspaceT;
+struct CpuTreePmWorkspace;
+struct CpuTreePmFp64Workspace;
 
 namespace bltzr_fmm {
 class FmmWorkspace;
@@ -825,8 +826,8 @@ private:
     // Host shadows for SPH
     std::vector<int> _hostCellHash;
     std::vector<int> _hostSortedIndex;
-    std::unique_ptr<CpuTreePmWorkspaceT<float>> _cpuTreePmWorkspace;
-    std::unique_ptr<CpuTreePmWorkspaceT<double>> _cpuTreePmFp64Workspace;
+    std::unique_ptr<CpuTreePmWorkspace> _cpuTreePmWorkspace;
+    std::unique_ptr<CpuTreePmFp64Workspace> _cpuTreePmFp64Workspace;
 };
 
 #endif // BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_

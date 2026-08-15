@@ -14,7 +14,7 @@ struct Interaction final {
     int sourceIndex;
 };
 
-bool isLeaf(const Cell& cell)
+static bool isLeaf(const Cell& cell)
 {
     return cell.children[0] < 0;
 }

@@ -177,8 +177,9 @@ void Octree::build(const std::vector<Particle>& particles)
     const float sizeX = maxPosition.x - minPosition.x;
     const float sizeY = maxPosition.y - minPosition.y;
     const float sizeZ = maxPosition.z - minPosition.z;
-    const float halfSize =
-        std::max(0.5f * std::max(sizeX, std::max(sizeY, sizeZ)), kOctreeMinHalfSize) + 0.001f;
+    const float halfSize = std::max(0.5f * std::max(sizeX, std::max(sizeY, sizeZ)),
+                                    blitzar_physics_particle_system_host::kOctreeMinHalfSize) +
+                           0.001f;
 
     std::vector<int> rootIndices(particles.size());
     std::iota(rootIndices.begin(), rootIndices.end(), 0);
@@ -210,8 +211,9 @@ void Octree::build(const std::vector<ParticleHotData>& particles)
     const float sizeX = maxPosition.x - minPosition.x;
     const float sizeY = maxPosition.y - minPosition.y;
     const float sizeZ = maxPosition.z - minPosition.z;
-    const float halfSize =
-        std::max(0.5f * std::max(sizeX, std::max(sizeY, sizeZ)), kOctreeMinHalfSize) + 0.001f;
+    const float halfSize = std::max(0.5f * std::max(sizeX, std::max(sizeY, sizeZ)),
+                                    blitzar_physics_particle_system_host::kOctreeMinHalfSize) +
+                           0.001f;
 
     std::vector<int> rootIndices(particles.size());
     std::iota(rootIndices.begin(), rootIndices.end(), 0);
@@ -306,8 +308,9 @@ int Octree::buildNodeRecursive(const std::vector<Particle>& particles,
 
     const int nodeIndex = static_cast<int>(_nodes.size());
     _nodes.push_back(node);
-    if (indices.size() <= kOctreeLeafCapacity || halfSize <= kOctreeMinHalfSize ||
-        depth >= kOctreeMaxDepth) {
+    if (indices.size() <= blitzar_physics_particle_system_host::kOctreeLeafCapacity ||
+        halfSize <= blitzar_physics_particle_system_host::kOctreeMinHalfSize ||
+        depth >= blitzar_physics_particle_system_host::kOctreeMaxDepth) {
         _nodes[nodeIndex].particleIndices = indices;
         return nodeIndex;
     }
@@ -364,8 +367,9 @@ int Octree::buildNodeRecursive(const std::vector<ParticleHotData>& particles,
 
     const int nodeIndex = static_cast<int>(_nodes.size());
     _nodes.push_back(node);
-    if (indices.size() <= kOctreeLeafCapacity || halfSize <= kOctreeMinHalfSize ||
-        depth >= kOctreeMaxDepth) {
+    if (indices.size() <= blitzar_physics_particle_system_host::kOctreeLeafCapacity ||
+        halfSize <= blitzar_physics_particle_system_host::kOctreeMinHalfSize ||
+        depth >= blitzar_physics_particle_system_host::kOctreeMaxDepth) {
         _nodes[nodeIndex].particleIndices = indices;
         return nodeIndex;
     }
@@ -449,8 +453,8 @@ Vector3 Octree::computeForceRecursive(const std::vector<Particle>& particles, in
                     if (delta.x * delta.x + delta.y * delta.y + delta.z * delta.z > cutoffSquared)
                         continue;
                 }
-                totalAcceleration += accelerationFromSource(particlePosition, other.getPosition(),
-                                                            other.getMass(), policy);
+                totalAcceleration += blitzar_physics_particle_system_host::accelerationFromSource(
+                    particlePosition, other.getPosition(), other.getMass(), policy);
             }
             continue;
         }
@@ -461,7 +465,8 @@ Vector3 Octree::computeForceRecursive(const std::vector<Particle>& particles, in
                                   std::fabs(particlePosition.z - node.center.z) <= node.halfSize;
 
         const Vector3 direction = node.centerOfMass - particlePosition;
-        const float distance2 = softenedDistanceSquared(direction, policy);
+        const float distance2 =
+            blitzar_physics_particle_system_host::softenedDistanceSquared(direction, policy);
         float criterionDistance = std::max(std::sqrt(distance2), 1.0e-6f);
 
         if (criterion == OctreeOpeningCriterion::Bounds) {
@@ -480,8 +485,8 @@ Vector3 Octree::computeForceRecursive(const std::vector<Particle>& particles, in
         const bool insideCutoff =
             cutoffSquared <= 0.0f || maxDx * maxDx + maxDy * maxDy + maxDz * maxDz <= cutoffSquared;
         if (insideCutoff && !containsSelf && (size / criterionDistance) < policy.theta) {
-            totalAcceleration +=
-                accelerationFromSource(particlePosition, node.centerOfMass, node.mass, policy);
+            totalAcceleration += blitzar_physics_particle_system_host::accelerationFromSource(
+                particlePosition, node.centerOfMass, node.mass, policy);
             continue;
         }
 
@@ -543,8 +548,8 @@ Vector3 Octree::computeForceRecursive(const std::vector<ParticleHotData>& partic
                     if (delta.x * delta.x + delta.y * delta.y + delta.z * delta.z > cutoffSquared)
                         continue;
                 }
-                totalAcceleration += accelerationFromSource(particlePosition, other.getPosition(),
-                                                            other.getMass(), policy);
+                totalAcceleration += blitzar_physics_particle_system_host::accelerationFromSource(
+                    particlePosition, other.getPosition(), other.getMass(), policy);
             }
             continue;
         }
@@ -555,7 +560,8 @@ Vector3 Octree::computeForceRecursive(const std::vector<ParticleHotData>& partic
                                   std::fabs(particlePosition.z - node.center.z) <= node.halfSize;
 
         const Vector3 direction = node.centerOfMass - particlePosition;
-        const float distance2 = softenedDistanceSquared(direction, policy);
+        const float distance2 =
+            blitzar_physics_particle_system_host::softenedDistanceSquared(direction, policy);
         float criterionDistance = std::max(std::sqrt(distance2), 1.0e-6f);
 
         if (criterion == OctreeOpeningCriterion::Bounds) {
@@ -574,8 +580,8 @@ Vector3 Octree::computeForceRecursive(const std::vector<ParticleHotData>& partic
         const bool insideCutoff =
             cutoffSquared <= 0.0f || maxDx * maxDx + maxDy * maxDy + maxDz * maxDz <= cutoffSquared;
         if (insideCutoff && !containsSelf && (size / criterionDistance) < policy.theta) {
-            totalAcceleration +=
-                accelerationFromSource(particlePosition, node.centerOfMass, node.mass, policy);
+            totalAcceleration += blitzar_physics_particle_system_host::accelerationFromSource(
+                particlePosition, node.centerOfMass, node.mass, policy);
             continue;
         }
 
@@ -657,7 +663,7 @@ bool ParticleSystem::update(float deltaTime)
 
     for (std::size_t i = 0; i < count; ++i) {
         Vector3 velocity = _particles[i].getVelocity() + accelerations[i] * deltaTime;
-        velocity = clampedVector(velocity, _sphMaxSpeed);
+        velocity = blitzar_physics_particle_system_host::clampedVector(velocity, _sphMaxSpeed);
         _particles[i].setVelocity(velocity);
         _particles[i].setPosition(_particles[i].getPosition() + velocity * deltaTime);
     }
@@ -684,10 +690,12 @@ bool ParticleSystem::updateComovingCosmology(float deltaTime)
         return false;
     }
     const float a0 = std::max(_cosmologyScaleFactor, 1.0e-6f);
-    const float a1 = advanceCosmologyScaleFactor(_cosmology, a0, deltaTime);
+    const float a1 = blitzar_physics_particle_system_host::advanceCosmologyScaleFactor(
+        _cosmology, a0, deltaTime);
     const float amid = 0.5f * (a0 + a1);
     const float firstKick = 0.5f * deltaTime;
-    const float drift = comovingDriftFactor(_cosmology, a0, a1);
+    const float drift =
+        blitzar_physics_particle_system_host::comovingDriftFactor(_cosmology, a0, a1);
     const float boxLength = 2.0f * _cosmology.boxHalfExtent;
     if (a1 <= a0 || drift <= 0.0f || boxLength <= 0.0f) {
         return false;
@@ -721,9 +729,10 @@ bool ParticleSystem::updateComovingCosmology(float deltaTime)
             _particles[index].getVelocity() + firstAcceleration[index] * firstKick;
         const Vector3 position = _particles[index].getPosition() + momentum * drift;
         _particles[index].setVelocity(momentum);
-        _particles[index].setPosition(Vector3(wrapComovingCoordinate(position.x, boxLength),
-                                              wrapComovingCoordinate(position.y, boxLength),
-                                              wrapComovingCoordinate(position.z, boxLength)));
+        _particles[index].setPosition(Vector3(
+            blitzar_physics_particle_system_host::wrapComovingCoordinate(position.x, boxLength),
+            blitzar_physics_particle_system_host::wrapComovingCoordinate(position.y, boxLength),
+            blitzar_physics_particle_system_host::wrapComovingCoordinate(position.z, boxLength)));
     }
 
     std::vector<Vector3> secondAcceleration(_particles.size(), Vector3());
@@ -770,8 +779,9 @@ bool ParticleSystem::computeHostAccelerations(std::vector<Vector3>& acceleration
         }
 #pragma omp parallel for schedule(static) if (!_deterministicMode)
         for (std::ptrdiff_t index = 0; index < particleTotal; ++index) {
-            accelerations[static_cast<std::size_t>(index)] = clampedVector(
-                accelerations[static_cast<std::size_t>(index)], _physicsMaxAcceleration);
+            accelerations[static_cast<std::size_t>(index)] =
+                blitzar_physics_particle_system_host::clampedVector(
+                    accelerations[static_cast<std::size_t>(index)], _physicsMaxAcceleration);
         }
         return true;
     }
@@ -833,8 +843,8 @@ bool ParticleSystem::computeHostAccelerations(std::vector<Vector3>& acceleration
             Vector3 acceleration;
             for (std::size_t j = 0; j < count; ++j) {
                 if (particleIndex != j)
-                    acceleration += accelerationFromSource(pi, hotParticles[j].getPosition(),
-                                                           hotParticles[j].getMass(), forceLaw);
+                    acceleration += blitzar_physics_particle_system_host::accelerationFromSource(
+                        pi, hotParticles[j].getPosition(), hotParticles[j].getMass(), forceLaw);
             }
             accelerations[particleIndex] = acceleration;
         }
@@ -852,7 +862,8 @@ bool ParticleSystem::computeHostAccelerations(std::vector<Vector3>& acceleration
 #pragma omp parallel for schedule(static) if (!_deterministicMode)
     for (std::ptrdiff_t i = 0; i < particleTotal; ++i) {
         accelerations[static_cast<std::size_t>(i)] =
-            clampedVector(accelerations[static_cast<std::size_t>(i)], _physicsMaxAcceleration);
+            blitzar_physics_particle_system_host::clampedVector(
+                accelerations[static_cast<std::size_t>(i)], _physicsMaxAcceleration);
     }
     return true;
 }
@@ -880,8 +891,10 @@ bool ParticleSystem::computeHostAccelerationsForIndices(const std::vector<int>& 
             return false;
         }
         for (const int activeIndex : activeIndices) {
-            accelerations[static_cast<std::size_t>(activeIndex)] = clampedVector(
-                allAccelerations[static_cast<std::size_t>(activeIndex)], _physicsMaxAcceleration);
+            accelerations[static_cast<std::size_t>(activeIndex)] =
+                blitzar_physics_particle_system_host::clampedVector(
+                    allAccelerations[static_cast<std::size_t>(activeIndex)],
+                    _physicsMaxAcceleration);
         }
         return true;
     }
@@ -928,12 +941,13 @@ bool ParticleSystem::computeHostAccelerationsForIndices(const std::vector<int>& 
             const Vector3 position = _particles[target].getPosition();
             for (std::size_t source = 0u; source < count; ++source) {
                 if (source != target) {
-                    acceleration +=
-                        accelerationFromSource(position, _particles[source].getPosition(),
-                                               _particles[source].getMass(), forceLaw);
+                    acceleration += blitzar_physics_particle_system_host::accelerationFromSource(
+                        position, _particles[source].getPosition(), _particles[source].getMass(),
+                        forceLaw);
                 }
             }
-            accelerations[target] = clampedVector(acceleration, _physicsMaxAcceleration);
+            accelerations[target] = blitzar_physics_particle_system_host::clampedVector(
+                acceleration, _physicsMaxAcceleration);
         }
         return true;
     }
@@ -950,12 +964,13 @@ bool ParticleSystem::computeHostAccelerationsForIndices(const std::vector<int>& 
             Vector3 acceleration;
             for (std::size_t source = 0u; source < count; ++source) {
                 if (source != target) {
-                    acceleration +=
-                        accelerationFromSource(position, hotParticles[source].getPosition(),
-                                               hotParticles[source].getMass(), forceLaw);
+                    acceleration += blitzar_physics_particle_system_host::accelerationFromSource(
+                        position, hotParticles[source].getPosition(),
+                        hotParticles[source].getMass(), forceLaw);
                 }
             }
-            accelerations[target] = clampedVector(acceleration, _physicsMaxAcceleration);
+            accelerations[target] = blitzar_physics_particle_system_host::clampedVector(
+                acceleration, _physicsMaxAcceleration);
         }
         return true;
     }
@@ -964,7 +979,7 @@ bool ParticleSystem::computeHostAccelerationsForIndices(const std::vector<int>& 
     for (std::ptrdiff_t i = 0; i < total; ++i) {
         const std::size_t target =
             static_cast<std::size_t>(activeIndices[static_cast<std::size_t>(i)]);
-        accelerations[target] = clampedVector(
+        accelerations[target] = blitzar_physics_particle_system_host::clampedVector(
             _octree.computeForceOn(hotParticles, target, forceLaw, _octreeOpeningCriterion),
             _physicsMaxAcceleration);
     }
@@ -986,8 +1001,10 @@ bool ParticleSystem::updateAdaptiveTimeSteps(float deltaTime)
         return false;
 
     auto chooseLevel = [&](Vector3 acceleration, Vector3 velocity) -> std::uint8_t {
-        const float accelerationMagnitude = std::sqrt(squaredLength(acceleration));
-        const float velocityMagnitude = std::sqrt(squaredLength(velocity));
+        const float accelerationMagnitude =
+            std::sqrt(blitzar_physics_particle_system_host::squaredLength(acceleration));
+        const float velocityMagnitude =
+            std::sqrt(blitzar_physics_particle_system_host::squaredLength(velocity));
         const float softening = std::max(_octreeSoftening, _physicsMinSoftening);
         const float accelerationDt =
             accelerationMagnitude > 1e-6f
@@ -1040,8 +1057,8 @@ bool ParticleSystem::updateAdaptiveTimeSteps(float deltaTime)
             const Vector3 acceleration = _adaptiveTimeStepAccelerations[i];
             _particles[i].setPosition(_particles[i].getPosition() + velocity * quantum +
                                       acceleration * (0.5f * quantum * quantum));
-            _particles[i].setVelocity(
-                clampedVector(velocity + acceleration * quantum, _sphMaxSpeed));
+            _particles[i].setVelocity(blitzar_physics_particle_system_host::clampedVector(
+                velocity + acceleration * quantum, _sphMaxSpeed));
         }
 
         const std::uint64_t targetTick = _adaptiveTimeStepTick + 1u;
@@ -1061,8 +1078,8 @@ bool ParticleSystem::updateAdaptiveTimeSteps(float deltaTime)
             const Vector3 correction = nextAccelerations[i] - _adaptiveTimeStepAccelerations[i];
             _particles[i].setPosition(_particles[i].getPosition() +
                                       correction * (0.5f * localDt * localDt));
-            _particles[i].setVelocity(
-                clampedVector(_particles[i].getVelocity() + correction * localDt, _sphMaxSpeed));
+            _particles[i].setVelocity(blitzar_physics_particle_system_host::clampedVector(
+                _particles[i].getVelocity() + correction * localDt, _sphMaxSpeed));
             _adaptiveTimeStepAccelerations[i] = nextAccelerations[i];
             _adaptiveTimeStepLastForceTicks[i] = targetTick;
             _adaptiveTimeStepLevels[i] =
@@ -1257,15 +1274,17 @@ bool ParticleSystem::prepareCosmologyStep(float deltaTime, float& scaleRatio, fl
         _cosmologyMarkerPrinted = true;
     }
     const float previousScale = std::max(_cosmologyScaleFactor, 1.0e-6f);
-    previousHubble = cosmologyHubbleRate(_cosmology, previousScale);
+    previousHubble =
+        blitzar_physics_particle_system_host::cosmologyHubbleRate(_cosmology, previousScale);
     const float midpointScale =
         std::max(previousScale + 0.5f * previousScale * previousHubble * deltaTime, 1.0e-6f);
-    const float midpointHubble = cosmologyHubbleRate(_cosmology, midpointScale);
+    const float midpointHubble =
+        blitzar_physics_particle_system_host::cosmologyHubbleRate(_cosmology, midpointScale);
     const float nextScale =
         std::max(previousScale + midpointScale * midpointHubble * deltaTime, previousScale);
     _cosmologyScaleFactor = nextScale;
     _cosmologyTime += deltaTime;
-    nextHubble = cosmologyHubbleRate(_cosmology, nextScale);
+    nextHubble = blitzar_physics_particle_system_host::cosmologyHubbleRate(_cosmology, nextScale);
     scaleRatio = nextScale / previousScale;
     return scaleRatio > 1.0e-7f;
 }
@@ -1403,7 +1422,8 @@ void ParticleSystem::buildBootstrapState(int particleCount)
         const float radius = 0.25f + 0.75f * fraction;
         const Vector3 position(std::cos(angle) * radius, std::sin(angle) * radius, 0.0f);
         const Vector3 velocity(-std::sin(angle) * 0.05f, std::cos(angle) * 0.05f, 0.0f);
-        _particles.push_back(makeParticle(position, velocity));
+        _particles.push_back(
+            blitzar_physics_particle_system_host::makeParticle(position, velocity));
     }
 }
 

@@ -28,7 +28,7 @@ Cell makeCell(int x, int y, int z, int level, int parent, int firstParticle, int
     return cell;
 }
 
-bool isLeaf(const Cell& cell)
+static bool isLeaf(const Cell& cell)
 {
     return cell.children[0] < 0;
 }

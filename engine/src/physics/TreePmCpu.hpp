@@ -17,8 +17,7 @@
 #include <utility>
 #include <vector>
 
-template <typename Scalar>
-struct CpuTreePmWorkspaceT final {
+template <typename Scalar> struct CpuTreePmWorkspaceT {
     int gridSize = 0;
     bool fieldValid = false;
     Scalar originX = static_cast<Scalar>(0.0);
@@ -44,11 +43,9 @@ struct CpuTreePmWorkspaceT final {
     std::vector<int> cellEnd;
 };
 
-struct CpuTreePmWorkspace final : CpuTreePmWorkspaceT<float> {
-};
+struct CpuTreePmWorkspace final : CpuTreePmWorkspaceT<float> {};
 
-struct CpuTreePmFp64Workspace final : CpuTreePmWorkspaceT<double> {
-};
+struct CpuTreePmFp64Workspace final : CpuTreePmWorkspaceT<double> {};
 
 struct CpuTreePmParameters final {
     std::string model;
@@ -65,19 +62,15 @@ struct CpuTreePmParameters final {
     float poissonCoefficient = 12.566370614359172f;
 };
 
-bool computeCpuTreePmForces(const std::vector<Particle>& particles,
-                            const ForceLawPolicy& forceLaw,
-                            const CpuTreePmParameters& parameters,
-                            CpuTreePmWorkspace& workspace,
-                            Octree& shortRangeTree,
-                            OctreeOpeningCriterion openingCriterion,
+bool computeCpuTreePmForces(const std::vector<Particle>& particles, const ForceLawPolicy& forceLaw,
+                            const CpuTreePmParameters& parameters, CpuTreePmWorkspace& workspace,
+                            Octree& shortRangeTree, OctreeOpeningCriterion openingCriterion,
                             std::vector<Vector3>& forces);
 
 bool computeCpuTreePmForcesFp64(const std::vector<Particle>& particles,
                                 const ForceLawPolicy& forceLaw,
                                 const CpuTreePmParameters& parameters,
-                                CpuTreePmFp64Workspace& workspace,
-                                Octree& shortRangeTree,
+                                CpuTreePmFp64Workspace& workspace, Octree& shortRangeTree,
                                 OctreeOpeningCriterion openingCriterion,
                                 std::vector<Vector3>& forces);
 
@@ -85,8 +78,7 @@ bool computeCpuTreePmForcesSelective(const std::vector<Particle>& particles,
                                      const std::vector<int>& activeIndices,
                                      const ForceLawPolicy& forceLaw,
                                      const CpuTreePmParameters& parameters,
-                                     CpuTreePmWorkspace& workspace,
-                                     Octree& shortRangeTree,
+                                     CpuTreePmWorkspace& workspace, Octree& shortRangeTree,
                                      OctreeOpeningCriterion openingCriterion,
                                      std::vector<Vector3>& forces);
 
@@ -94,13 +86,11 @@ bool computeCpuTreePmForcesSelectiveFp64(const std::vector<Particle>& particles,
                                          const std::vector<int>& activeIndices,
                                          const ForceLawPolicy& forceLaw,
                                          const CpuTreePmParameters& parameters,
-                                         CpuTreePmFp64Workspace& workspace,
-                                         Octree& shortRangeTree,
+                                         CpuTreePmFp64Workspace& workspace, Octree& shortRangeTree,
                                          OctreeOpeningCriterion openingCriterion,
                                          std::vector<Vector3>& forces);
 
 bool computeCpuFp64PairwiseForces(const std::vector<Particle>& particles,
-                                  const ForceLawPolicy& forceLaw,
-                                  std::vector<Vector3>& forces);
+                                  const ForceLawPolicy& forceLaw, std::vector<Vector3>& forces);
 
 #endif // BLITZAR_ENGINE_SRC_PHYSICS_TREEPMCPU_HPP_
