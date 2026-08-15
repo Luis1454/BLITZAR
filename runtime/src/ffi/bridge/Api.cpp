@@ -78,7 +78,8 @@ std::uint32_t blitzar_runtime_bridge_set_snapshot_cap(blitzar_runtime_bridge_t* 
 {
     if (state == nullptr)
         return 0u;
-    state->snapshotCap = std::clamp(requested, kSnapshotCapMin, kSnapshotCapMax);
+    state->snapshotCap = std::clamp(requested, blitzar_runtime_ffi_bridge_api::kSnapshotCapMin,
+                                    blitzar_runtime_ffi_bridge_api::kSnapshotCapMax);
     return state->snapshotCap;
 }
 
@@ -102,7 +103,7 @@ bool blitzar_runtime_bridge_queue_pending_command(blitzar_runtime_bridge_t* stat
     if (state == nullptr || cmdData == nullptr)
         return false;
     bool droppedOldest = false;
-    if (state->pendingCommands.size() >= kPendingCommandLimit) {
+    if (state->pendingCommands.size() >= blitzar_runtime_ffi_bridge_api::kPendingCommandLimit) {
         state->pendingCommands.erase(state->pendingCommands.begin());
         droppedOldest = true;
     }
@@ -125,13 +126,12 @@ bool blitzar_runtime_bridge_pending_command_view(const blitzar_runtime_bridge_t*
     if (state == nullptr || outView == nullptr || index >= state->pendingCommands.size())
         return false;
     const auto& command = state->pendingCommands[index];
-    outView->cmd = stringView(command.first);
-    outView->fields = stringView(command.second);
+    outView->cmd = blitzar_runtime_ffi_bridge_api::stringView(command.first);
+    outView->fields = blitzar_runtime_ffi_bridge_api::stringView(command.second);
     return true;
 }
 
-void blitzar_runtime_bridge_erase_pending_prefix(blitzar_runtime_bridge_t* state,
-                                                 std::size_t count)
+void blitzar_runtime_bridge_erase_pending_prefix(blitzar_runtime_bridge_t* state, std::size_t count)
 {
     if (state == nullptr || count == 0u)
         return;
@@ -145,13 +145,15 @@ blitzar_runtime_string_view
 blitzar_runtime_bridge_link_state_label(const blitzar_runtime_bridge_t* state)
 {
     static const std::string kReconnecting = "reconnecting";
-    return stringView(state == nullptr ? kReconnecting : state->linkStateLabel);
+    return blitzar_runtime_ffi_bridge_api::stringView(state == nullptr ? kReconnecting
+                                                                       : state->linkStateLabel);
 }
 
 blitzar_runtime_string_view
 blitzar_runtime_bridge_server_owner_label(const blitzar_runtime_bridge_t* state)
 {
     static const std::string kExternal = "external";
-    return stringView(state == nullptr ? kExternal : state->serverOwnerLabel);
+    return blitzar_runtime_ffi_bridge_api::stringView(state == nullptr ? kExternal
+                                                                       : state->serverOwnerLabel);
 }
 }
