@@ -282,7 +282,6 @@
         "engine/src/config/registry/Entries.cpp",
         "engine/src/config/validation/Scenario.cpp",
         "engine/src/cuda/fragments/system/Core.inl",
-        "engine/src/cuda/fragments/treepm/Gpu.inl",
         "engine/src/cuda/JitRuntime.cu",
         "engine/src/physics/octree/ParticleSystemHost.cpp",
         "engine/src/physics/treepm/TreePmCpu.cpp",
