@@ -29,7 +29,6 @@ tests/unit/protocol/json_codec.cpp
 tests/int/ui/qt_workspace_runtime_controls.cpp
 
 # Initial state generation modes for presets
-engine/src/server/simulation/state/Generation.cpp
 
 # DEV-QUAL-012: baseline files scheduled for responsibility-focused extraction in #443.
 cmake/apps.cmake
