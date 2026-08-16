@@ -75,6 +75,26 @@ def fetch_artifacts(repo: str, token: str) -> list[Artifact]:
         page += 1
 
 
+def delete_expired_artifacts(repo: str, token: str, artifacts: list[Artifact]) -> tuple[int, list[int]]:
+    deleted = 0
+    failures: list[int] = []
+    for artifact in artifacts:
+        if not artifact.expired:
+            continue
+        url = f"https://api.github.com/repos/{repo}/actions/artifacts/{artifact.artifact_id}"
+        request = Request(
+            url,
+            headers={"Accept": "application/vnd.github+json", "Authorization": f"Bearer {token}"},
+            method="DELETE",
+        )
+        try:
+            with urlopen(request, timeout=30):
+                deleted += 1
+        except Exception:
+            failures.append(artifact.artifact_id)
+    return deleted, failures
+
+
 def build_report(artifacts: list[Artifact], now: datetime) -> dict[str, Any]:
     classes: dict[str, dict[str, Any]] = {}
     stale_artifacts: list[dict[str, Any]] = []

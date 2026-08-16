@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from python_tools.ci.github_artifacts import build_report, fetch_artifacts
+from python_tools.ci.github_artifacts import build_report, delete_expired_artifacts, fetch_artifacts
 
 
 def parse_args() -> argparse.Namespace:
@@ -27,6 +27,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--token", default=os.getenv("GITHUB_TOKEN", ""), help="GitHub API token")
     parser.add_argument("--output", type=Path, help="optional JSON report path")
     parser.add_argument("--fail-on-stale", action="store_true", help="return 2 when stale artifacts exist")
+    parser.add_argument("--fail-on-expired", action="store_true", help="return 4 when expired artifacts exist")
+    parser.add_argument(
+        "--delete-expired",
+        action="store_true",
+        help="delete only artifacts already marked expired, then audit again",
+    )
     parser.add_argument(
         "--fail-on-unclassified",
         action="store_true",
@@ -40,7 +46,15 @@ def main() -> int:
     if not args.repo or not args.token:
         print("--repo and --token (or GITHUB_REPOSITORY/GITHUB_TOKEN) are required", file=sys.stderr)
         return 2
-    report: dict[str, Any] = build_report(fetch_artifacts(args.repo, args.token), datetime.now(UTC))
+    artifacts = fetch_artifacts(args.repo, args.token)
+    if args.delete_expired:
+        deleted, failures = delete_expired_artifacts(args.repo, args.token, artifacts)
+        print(f"expired cleanup: deleted={deleted} failed={len(failures)}")
+        if failures:
+            print(f"failed artifact ids: {','.join(str(item) for item in failures)}", file=sys.stderr)
+            return 4
+        artifacts = fetch_artifacts(args.repo, args.token)
+    report: dict[str, Any] = build_report(artifacts, datetime.now(UTC))
     serialized = json.dumps(report, indent=2) + "\n"
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -50,6 +64,8 @@ def main() -> int:
     stale = sum(int(item["stale"]) for item in report["classes"].values())
     if args.fail_on_unclassified and report["unclassified_artifacts"]:
         return 3
+    if args.fail_on_expired and report["expired_count"]:
+        return 4
     return 2 if args.fail_on_stale and stale else 0
 
 
