@@ -21,3 +21,4 @@ Use this workflow for any PR that changes runtime, physics, or protocol behavior
 
 - PRs that touch `runtime/`, `engine/src/physics/`, `engine/include/physics/`, or protocol integration paths must include requirement IDs.
 - The PR traceability gate also requires `docs/quality/traceability.csv` to be part of the change for those PRs.
+- Write the `Requirements impacted:` section as normal Markdown lines, not literal `\\n` escape sequences.
