@@ -5,7 +5,6 @@
 
 #include "window/scene/SceneEditor.hpp"
 #include <QApplication>
-#include <QSysInfo>
 #include <QCoreApplication>
 #include <QDir>
 #include <QEventLoop>
@@ -15,6 +14,7 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QSplitter>
+#include <QSysInfo>
 #include <QTabWidget>
 #include <algorithm>
 #include <filesystem>
@@ -56,7 +56,7 @@ TEST(QtSceneEditorTest, TST_UIX_UI_027_AddsGranularObjectPropertiesIndependently
     if (QSysInfo::productType() == "windows" && qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM"))
         qputenv("QT_QPA_PLATFORM", "windows");
     QApplication application(argc, argv);
-    bltzr_qt::SceneEditor editor(makeSceneEditorConfig());
+    bltzr_qt::SceneEditor editor(blitzar_test_qt_scene_editor::makeSceneEditorConfig());
     editor.setAttribute(Qt::WA_DontShowOnScreen);
     editor.resize(360, 800);
     editor.show();

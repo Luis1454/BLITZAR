@@ -265,6 +265,9 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             modules/qt/src/window/config/WindowConfig.cpp
             modules/qt/src/window/config/ConfigurationEditor.cpp
             modules/qt/src/window/scene/SceneEditor.cpp
+            modules/qt/src/window/scene/SceneEditorFields.cpp
+            modules/qt/src/window/scene/SceneEditorProperties.cpp
+            modules/qt/src/window/scene/SceneEditorState.cpp
             modules/qt/src/window/control/Controls.cpp
             modules/qt/src/window/actions/FileActions.cpp
             modules/qt/src/window/layout/Layout.cpp

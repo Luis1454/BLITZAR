@@ -240,6 +240,9 @@ if(TARGET Qt6::Widgets AND TARGET Qt6::OpenGLWidgets AND TARGET blitzarRustRunti
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/config/WindowConfig.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/config/ConfigurationEditor.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/scene/SceneEditor.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/scene/SceneEditorFields.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/scene/SceneEditorProperties.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/scene/SceneEditorState.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/control/Controls.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/actions/FileActions.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/layout/Layout.cpp"
@@ -282,6 +285,9 @@ if(TARGET Qt6::Widgets AND BLITZAR_BUILD_TESTS)
         SOURCES
             "${BLITZAR_ROOT_DIR}/tests/int/ui/qt_scene_editor.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/scene/SceneEditor.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/scene/SceneEditorFields.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/scene/SceneEditorProperties.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/scene/SceneEditorState.cpp"
         LIBS
             Qt6::Widgets
             ${BLITZAR_TEST_PLATFORM_TARGET}
