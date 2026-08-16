@@ -269,6 +269,7 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             modules/qt/src/window/actions/FileActions.cpp
             modules/qt/src/window/layout/Layout.cpp
             modules/qt/src/window/layout/State.cpp
+            modules/qt/src/window/layout/StateDefaults.cpp
             modules/qt/src/window/presentation/Presenter.cpp
             modules/qt/src/window/presentation/Telemetry.cpp
             modules/qt/src/window/workspace/Persistence.cpp
