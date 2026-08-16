@@ -18,6 +18,7 @@ if(TARGET Qt6::Widgets AND TARGET Qt6::OpenGLWidgets AND TARGET blitzarRustRunti
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/core/Window.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/core/Widgets.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/config/WindowConfig.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/config/WindowConfigUi.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/config/ConfigurationEditor.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/scene/SceneEditor.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/scene/SceneEditorFields.cpp"

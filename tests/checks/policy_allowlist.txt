@@ -45,7 +45,6 @@ engine/src/server/simulation/runtime/SettersAndExport.cpp
 engine/src/server/simulation/telemetry/SnapshotAndEnergy.cpp
 engine/src/server/SimulationInitConfig.cpp
 modules/qt/src/widgets/graphs/SpectrumGraph.cpp
-modules/qt/src/window/config/WindowConfig.cpp
 modules/qt/src/window/control/Controls.cpp
 python_tools/policies/repo_policy.py
 scripts/analysis/ast_graph.py
