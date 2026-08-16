@@ -27,6 +27,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--token", default=os.getenv("GITHUB_TOKEN", ""), help="GitHub API token")
     parser.add_argument("--output", type=Path, help="optional JSON report path")
     parser.add_argument("--fail-on-stale", action="store_true", help="return 2 when stale artifacts exist")
+    parser.add_argument(
+        "--fail-on-unclassified",
+        action="store_true",
+        help="return 3 when unclassified artifacts exist",
+    )
     return parser.parse_args()
 
 
@@ -43,6 +48,8 @@ def main() -> int:
     else:
         print(serialized, end="")
     stale = sum(int(item["stale"]) for item in report["classes"].values())
+    if args.fail_on_unclassified and report["unclassified_artifacts"]:
+        return 3
     return 2 if args.fail_on_stale and stale else 0
 
 
