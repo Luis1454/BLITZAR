@@ -4,7 +4,7 @@ Use this workflow for any PR that changes runtime, physics, or protocol behavior
 
 ## PR Body
 
-- Fill the `Requirements impacted` section in `.github/PULL_REQUEST_TEMPLATE.md`.
+- Fill the `Requirements impacted:` section in `.github/PULL_REQUEST_TEMPLATE.md`.
 - List one or more canonical IDs from `docs/quality/manifest/requirements.json`.
 - Use one bullet per ID, for example:
   - `REQ-PROT-001`
