@@ -54,7 +54,6 @@ modules/qt/src/widgets/viewport/MultiView.cpp
 modules/qt/src/window/config/WindowConfig.cpp
 modules/qt/src/window/control/Controls.cpp
 modules/qt/src/window/layout/State.cpp
-modules/qt/src/window/scene/SceneEditor.cpp
 python_tools/policies/repo_policy.py
 scripts/analysis/ast_graph.py
 tests/unit/config/args_cli.cpp

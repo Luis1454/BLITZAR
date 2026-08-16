@@ -83,7 +83,7 @@ under `physics/cuda/fragments/`.
 | Issue | Disposition | Rationale |
 | --- | --- | --- |
 | #424, #426-#431 | Close as outdated | Their planned `modules/qt/ui` and mirrored `include/ui` paths have been superseded by the current `modules/qt/src` layout. Their structural goals are restated against the active files by #440. |
-| #289 | Keep open | `Update.inl` is still substantially oversized. |
+| #289 | Closed as superseded | The obsolete `ParticleSystemUpdate.inl` path was replaced by the current CUDA timestep decomposition tracked by #467. |
 | #303 | Keep open | GPU octree exactness and performance evidence remains incomplete. |
 | #304 | Keep open | The checkpoint does not prove a formal VTK compatibility specification. |
 | #306, #307 | Keep open | Cross-platform Rust/tooling and artifact-cleanup acceptance criteria have not been requalified. |
