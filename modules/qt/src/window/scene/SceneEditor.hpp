@@ -46,9 +46,9 @@ private:
 
     SceneConfig _scene;
     int _currentIndex = -1;
-    QFormLayout* _generatorForm = nullptr;
-    QFormLayout* _transformForm = nullptr;
-    QFormLayout* _propertiesForm = nullptr;
+    QPointer<QFormLayout> _generatorForm;
+    QPointer<QFormLayout> _transformForm;
+    QPointer<QFormLayout> _propertiesForm;
     QPointer<QListWidget> _objects;
     QPointer<QLabel> _objectCountLabel;
     QPointer<QLabel> _selectionLabel;
@@ -101,8 +101,8 @@ private:
     QPointer<QDoubleSpinBox> _systemParticleHeight;
     QPointer<QDoubleSpinBox> _systemParticleMass;
     QPointer<QDoubleSpinBox> _systemParticleSpeed;
-    QFormLayout* _baseForm = nullptr;
-    QFormLayout* _pivotForm = nullptr;
+    QPointer<QFormLayout> _baseForm;
+    QPointer<QFormLayout> _pivotForm;
     QPointer<QGroupBox> _assetGroup;
     QPointer<QGroupBox> _offsetGroup;
     QPointer<QGroupBox> _rotationGroup;

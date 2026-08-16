@@ -136,7 +136,7 @@ SceneEditor::SceneEditor(const SimulationConfig& config, QWidget* parent) : QWid
     _inspectorTabs = new QTabWidget(inspectorPanel);
     _inspectorTabs->setObjectName("sceneObjectInspector");
     _inspectorTabs->setDocumentMode(true);
-    const auto addInspectorTab = [this](const QString& title, QFormLayout*& form) {
+    const auto addInspectorTab = [this](const QString& title, QPointer<QFormLayout>& form) {
         auto* scroll = new QScrollArea(_inspectorTabs);
         scroll->setWidgetResizable(true);
         scroll->setFrameShape(QFrame::NoFrame);

@@ -24,7 +24,8 @@
 #include <limits>
 
 namespace bltzr_qt {
-QWidget* addInt(QFormLayout* form, QHash<QString, QWidget*>& fields, const char* key, int value,
+QWidget* addInt(QFormLayout* form, QHash<QString, QPointer<QWidget>>& fields, const char* key,
+                int value,
                 int minimum = 0, int maximum = INT_MAX)
 {
     auto* editor = new QSpinBox(form->parentWidget());
@@ -36,7 +37,7 @@ QWidget* addInt(QFormLayout* form, QHash<QString, QWidget*>& fields, const char*
     return editor;
 }
 
-QWidget* addFloat(QFormLayout* form, QHash<QString, QWidget*>& fields, const char* key,
+QWidget* addFloat(QFormLayout* form, QHash<QString, QPointer<QWidget>>& fields, const char* key,
                   double value, double minimum = -1.0e12, double maximum = 1.0e12, int decimals = 6)
 {
     auto* editor = new QDoubleSpinBox(form->parentWidget());
@@ -50,7 +51,8 @@ QWidget* addFloat(QFormLayout* form, QHash<QString, QWidget*>& fields, const cha
     return editor;
 }
 
-QWidget* addBool(QFormLayout* form, QHash<QString, QWidget*>& fields, const char* key, bool value)
+QWidget* addBool(QFormLayout* form, QHash<QString, QPointer<QWidget>>& fields, const char* key,
+                 bool value)
 {
     auto* editor = new QCheckBox(form->parentWidget());
     editor->setObjectName(QString::fromUtf8(key));
@@ -60,7 +62,7 @@ QWidget* addBool(QFormLayout* form, QHash<QString, QWidget*>& fields, const char
     return editor;
 }
 
-QWidget* addText(QFormLayout* form, QHash<QString, QWidget*>& fields, const char* key,
+QWidget* addText(QFormLayout* form, QHash<QString, QPointer<QWidget>>& fields, const char* key,
                  const std::string& value)
 {
     auto* editor = new QLineEdit(QString::fromStdString(value), form->parentWidget());
@@ -70,7 +72,7 @@ QWidget* addText(QFormLayout* form, QHash<QString, QWidget*>& fields, const char
     return editor;
 }
 
-QWidget* addCombo(QFormLayout* form, QHash<QString, QWidget*>& fields, const char* key,
+QWidget* addCombo(QFormLayout* form, QHash<QString, QPointer<QWidget>>& fields, const char* key,
                   const std::string& value, const QStringList& choices)
 {
     auto* editor = new QComboBox(form->parentWidget());
@@ -83,9 +85,9 @@ QWidget* addCombo(QFormLayout* form, QHash<QString, QWidget*>& fields, const cha
     return editor;
 }
 
-QWidget* field(const QHash<QString, QWidget*>& fields, const char* key)
+QWidget* field(const QHash<QString, QPointer<QWidget>>& fields, const char* key)
 {
-    return fields.value(QString::fromUtf8(key), nullptr);
+    return fields.value(QString::fromUtf8(key)).data();
 }
 
 bool fieldIsActive(QWidget* editor)
@@ -99,7 +101,8 @@ bool fieldIsActive(QWidget* editor)
     return true;
 }
 
-void readInt(const QHash<QString, QWidget*>& fields, const char* key, std::uint32_t& target)
+void readInt(const QHash<QString, QPointer<QWidget>>& fields, const char* key,
+             std::uint32_t& target)
 {
     if (auto* widget = field(fields, key); fieldIsActive(widget)) {
         auto* editor = qobject_cast<QSpinBox*>(widget);
@@ -108,7 +111,7 @@ void readInt(const QHash<QString, QWidget*>& fields, const char* key, std::uint3
     }
 }
 
-void readInt(const QHash<QString, QWidget*>& fields, const char* key, int& target)
+void readInt(const QHash<QString, QPointer<QWidget>>& fields, const char* key, int& target)
 {
     if (auto* widget = field(fields, key); fieldIsActive(widget)) {
         auto* editor = qobject_cast<QSpinBox*>(widget);
@@ -117,7 +120,7 @@ void readInt(const QHash<QString, QWidget*>& fields, const char* key, int& targe
     }
 }
 
-void readFloat(const QHash<QString, QWidget*>& fields, const char* key, float& target)
+void readFloat(const QHash<QString, QPointer<QWidget>>& fields, const char* key, float& target)
 {
     if (auto* widget = field(fields, key); fieldIsActive(widget)) {
         auto* editor = qobject_cast<QDoubleSpinBox*>(widget);
@@ -126,7 +129,7 @@ void readFloat(const QHash<QString, QWidget*>& fields, const char* key, float& t
     }
 }
 
-void readBool(const QHash<QString, QWidget*>& fields, const char* key, bool& target)
+void readBool(const QHash<QString, QPointer<QWidget>>& fields, const char* key, bool& target)
 {
     if (auto* widget = field(fields, key); fieldIsActive(widget)) {
         auto* editor = qobject_cast<QCheckBox*>(widget);
@@ -135,7 +138,8 @@ void readBool(const QHash<QString, QWidget*>& fields, const char* key, bool& tar
     }
 }
 
-void readString(const QHash<QString, QWidget*>& fields, const char* key, std::string& target)
+void readString(const QHash<QString, QPointer<QWidget>>& fields, const char* key,
+                std::string& target)
 {
     auto* widget = field(fields, key);
     if (!fieldIsActive(widget))

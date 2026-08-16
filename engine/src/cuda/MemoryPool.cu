@@ -13,7 +13,6 @@
 namespace bltzr_x {
 bool MemoryPool::_initialized = false;
 bool MemoryPool::_supported = false;
-void* MemoryPool::_pool = nullptr;
 
 void MemoryPool::initialize()
 {
@@ -23,13 +22,11 @@ void MemoryPool::initialize()
     if (cudaGetDevice(&device) != cudaSuccess && cudaSetDevice(0) != cudaSuccess) {
         _initialized = true;
         _supported = false;
-        _pool = nullptr;
         return;
     }
     if (cudaGetDevice(&device) != cudaSuccess) {
         _initialized = true;
         _supported = false;
-        _pool = nullptr;
         return;
     }
     int supportsAsync = 0;
@@ -37,14 +34,12 @@ void MemoryPool::initialize()
         cudaSuccess) {
         _initialized = true;
         _supported = false;
-        _pool = nullptr;
         return;
     }
     if (supportsAsync) {
         cudaMemPool_t pool = nullptr;
         cudaError_t err = cudaDeviceGetDefaultMemPool(&pool, device);
         if (err == cudaSuccess && pool != nullptr) {
-            _pool = static_cast<void*>(pool);
             _supported = true;
             // Set release threshold to prevent excessive memory retention
             uint64_t threshold = 256 * 1024 * 1024;
@@ -52,12 +47,10 @@ void MemoryPool::initialize()
         }
         else {
             _supported = false;
-            _pool = nullptr;
         }
     }
     else {
         _supported = false;
-        _pool = nullptr;
     }
     _initialized = true;
 }
@@ -66,7 +59,6 @@ void MemoryPool::destroy()
 {
     _initialized = false;
     _supported = false;
-    _pool = nullptr;
 }
 
 void* MemoryPool::allocate(std::size_t size, void* stream)
