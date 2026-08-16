@@ -1514,7 +1514,7 @@ bool ParticleSystem::allocateMappedMetrics()
 void ParticleSystem::releaseMappedMetrics()
 {
     _device._mappedMetricsHost = nullptr;
-    _device._mappedMetricsDevice = nullptr;
+    _device._mappedMetricsDevice = 0u;
 }
 
 void ParticleSystem::publishMappedMetrics(float deltaTime)

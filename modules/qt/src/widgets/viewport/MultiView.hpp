@@ -26,7 +26,7 @@
 namespace bltzr_qt {
 class MultiView : public QWidget {
 public:
-    explicit MultiView();
+    explicit MultiView(QWidget* parent = nullptr);
     void setSnapshot(std::vector<RenderParticle> snapshot);
     void setMaxDrawParticles(std::size_t maxDrawParticles);
     std::size_t displayedParticleCount() const;

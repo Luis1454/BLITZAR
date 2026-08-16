@@ -30,11 +30,6 @@ private:
     QFormLayout* addTile(QVBoxLayout* stack, const QString& section, const QString& title,
                          const QString& description);
     void readValues(SimulationConfig& config) const;
-    void addSimulationTile(const SimulationConfig& config);
-    void addSceneTile(const SimulationConfig& config);
-    void addSceneTransformTile(const SimulationConfig& config);
-    void addBodyTiles(const SimulationConfig& config);
-    void addPhysicsTiles(const SimulationConfig& config);
     void addRuntimeTiles(const SimulationConfig& config);
 
     SimulationConfig _configuration;

@@ -15,7 +15,7 @@
 namespace bltzr_qt {
 class SpectrumGraph final : public QWidget {
 public:
-    explicit SpectrumGraph();
+    explicit SpectrumGraph(QWidget* parent = nullptr);
     void clearSpectrum();
     void setSnapshot(const std::vector<RenderParticle>& snapshot,
                      float simulationTime,

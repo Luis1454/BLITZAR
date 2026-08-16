@@ -21,10 +21,10 @@
 #include <QTimer>
 
 namespace bltzr_qt {
-ViewWidgets::ViewWidgets(QWidget*)
-    : multiView(new MultiView()),
-      energyGraph(new Graph()),
-      spectrumGraph(new SpectrumGraph())
+ViewWidgets::ViewWidgets(QWidget* parent)
+    : multiView(new MultiView(parent)),
+      energyGraph(new Graph(parent)),
+      spectrumGraph(new SpectrumGraph(parent))
 {
 }
 

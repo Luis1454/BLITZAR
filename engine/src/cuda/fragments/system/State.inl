@@ -216,7 +216,7 @@ void ParticleSystem::publishMappedMetrics(float deltaTime)
     if (!_device._cudaRuntimeAvailable) {
         return;
     }
-    if (_device._mappedMetricsDevice == nullptr || _device.d_soaPosX == nullptr || _particles.empty()) {
+    if (_device._mappedMetricsDevice == 0u || _device.d_soaPosX == nullptr || _particles.empty()) {
         return;
     }
 
@@ -238,7 +238,9 @@ void ParticleSystem::publishMappedMetrics(float deltaTime)
     }
 
     const ParticleSoAView currentView = getSoAView(false);
-    publishMetricsKernel<<<1, 1>>>(_device._mappedMetricsDevice, currentView,
+    publishMetricsKernel<<<1, 1>>>(reinterpret_cast<GpuSystemMetrics*>(
+                                       _device._mappedMetricsDevice),
+                                   currentView,
                                    static_cast<int>(_particles.size()), _device._metricsStepId,
                                    _device._metricsSimTime, deltaTime, vramUsedBytes, vramPeakBytes);
     checkCudaStatus(cudaGetLastError(), "publishMetricsKernel launch");

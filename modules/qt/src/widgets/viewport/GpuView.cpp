@@ -130,15 +130,15 @@ int modeValue(grav::ViewMode mode)
     return static_cast<int>(mode);
 }
 
-GpuView::GpuView(grav::ViewMode mode)
-    : QOpenGLWidget(nullptr),
+GpuView::GpuView(grav::ViewMode mode, QWidget* parent)
+    : QOpenGLWidget(parent),
       _mode(mode),
       _vertices(),
       _buffer(QOpenGLBuffer::VertexBuffer),
       _program(),
       _vao(),
       _unavailableCallback(),
-      _overlay(nullptr),
+      _overlay(std::nullopt),
       _overlayEnabled(false),
       _overlayOpacity(kOverlayOpacityDefault),
       _pendingUpload(false),
@@ -225,7 +225,7 @@ void GpuView::setRenderSettings(bool culling, bool lod, float nearDist, float fa
 
 void GpuView::setOctreeOverlay(const std::vector<OctreeNode>& overlay, bool enabled, int opacity)
 {
-    _overlay = &overlay;
+    _overlay = std::cref(overlay);
     _overlayEnabled = enabled;
     _overlayOpacity = std::clamp(opacity, kLuminosityMin, kLuminosityMax);
     update();
@@ -358,8 +358,9 @@ void GpuView::showEvent(QShowEvent* event)
 void GpuView::paintOverlay()
 {
     QPainter painter(this);
-    if (_overlayEnabled && _overlay != nullptr) {
-        paintOctreeOverlay(painter, rect(), _mode, _camera, *_overlay, _zoom, _overlayOpacity);
+    if (_overlayEnabled && _overlay.has_value()) {
+        paintOctreeOverlay(painter, rect(), _mode, _camera, _overlay->get(), _zoom,
+                           _overlayOpacity);
     }
     const GimbalOverlay gimbal = computeGimbal(rect(), _mode, _camera);
     painter.setRenderHint(QPainter::Antialiasing, true);
