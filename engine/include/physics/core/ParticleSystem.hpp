@@ -757,11 +757,16 @@ private:
     bool treePmFastPathBypassesOctreeScratch(bool eulerIntegrator) const;
     bool treePmUsesGravityOnlyBuffers(bool eulerIntegrator, bool sphEnabled) const;
     bool ensureAdaptiveCudaScratchCapacity(int numParticles);
+    bool applySphCorrection(float deltaTime, bool uploadHostState);
+    bool computeCpuAcceleration(const std::vector<Particle>& state,
+                                const ForceLawPolicy& forceLaw,
+                                std::vector<Vector3>& output);
     bool computeHostAccelerations(std::vector<Vector3>& accelerations);
     bool updateComovingCosmology(float deltaTime);
     bool computeHostAccelerationsForIndices(const std::vector<int>& activeIndices,
                                             std::vector<Vector3>& accelerations);
-    bool updateAdaptiveTimeSteps(float deltaTime);
+    bool updateAdaptiveTimeSteps(float deltaTime, const ForceLawPolicy& forceLaw,
+                                 bool thermalActive);
     bool prepareCosmologyStep(float deltaTime, float& scaleRatio, float& previousHubble,
                               float& nextHubble);
     void applyCosmologyExpansionHost(float scaleRatio, float previousHubble, float nextHubble);
