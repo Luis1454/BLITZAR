@@ -55,6 +55,10 @@ FORBIDDEN_MARKER_RE = re.compile(r"(?m)(#|//|/\*)\s*(TODO|FIXME|HACK)\b")
 HEADER_EXTS = {".hpp", ".h", ".hh", ".hxx"}
 TEXT_EXTS = LINE_COUNT_EXTS | {".json", ".toml", ".xml"}
 CPP_SCAN_EXTS = {".cpp", ".cc", ".cxx", ".c", ".cu", ".cuh", ".hpp", ".h", ".hh", ".hxx", ".inl"}
+BINARY_ARTIFACT_EXTS = {
+    ".a", ".bin", ".cubin", ".dylib", ".dll", ".exe", ".exp", ".fatbin", ".ilk", ".lib",
+    ".o", ".obj", ".pdb", ".ptx", ".so", ".tar", ".whl", ".zip",
+}
 GTEST_INCLUDE_RE = re.compile(r'#include\s*[<"]gtest/gtest\.h[>"]')
 GTEST_MACRO_RE = re.compile(r"\bTEST(?:_F)?\s*\(")
 UNNAMED_NAMESPACE_RE = re.compile(r"(?m)^\s*namespace\s*\{")
@@ -86,7 +90,6 @@ RAW_POINTER_MEMBER_ALLOWLIST = {
     "runtime/include/client/module/Boundary.hpp",
     "runtime/include/ffi/bridge/Api.hpp",
     "runtime/include/ffi/core/Api.hpp",
-    "runtime/src/client/module/Internal.hpp",
 }
 PRAGMA_ONCE_RE = re.compile(r"(?m)^\s*#pragma\s+once\b")
 DEFINE_RE = re.compile(r"(?m)^\s*#define\s+([A-Z][A-Z0-9_]+)\b(?!\s*\()")
@@ -181,6 +184,8 @@ class RepoPolicyCheck(BaseCheck):
 
             rel = path.relative_to(context.root).as_posix()
             suffix = path.suffix.lower()
+            if suffix in BINARY_ARTIFACT_EXTS:
+                result.add_error(f"{rel}: generated binary artifact must not be committed")
             content: str | None = None
             if suffix in FORBIDDEN_CPP_EXTS:
                 result.add_error(f"{rel}: forbidden C/C++ extension '{suffix}' (use .hpp/.cpp)")

@@ -14,6 +14,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -22,7 +23,7 @@ constexpr std::size_t kErrorBufferSize = 1024u;
 
 struct Handle::Impl {
     bltzr_platform::DynamicLibrary library{};
-    const ExportsV1* exports = nullptr;
+    std::optional<ExportsV1> exports;
     OpaqueState state{};
     std::string path;
 };
