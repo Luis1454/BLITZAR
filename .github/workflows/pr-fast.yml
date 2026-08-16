@@ -93,6 +93,7 @@ jobs:
             build-integration-cov/coverage.html
             build-integration-cov/coverage-summary.txt
             build-integration-cov/coverage-files.csv
+          retention-days: 7
             build-integration-cov/pr-coverage-delta.md
           if-no-files-found: error
 
