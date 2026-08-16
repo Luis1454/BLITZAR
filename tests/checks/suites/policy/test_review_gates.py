@@ -337,6 +337,17 @@ def test_traceability_gate_passes_for_critical_pr_with_ids_and_csv(tmp_path: Pat
     assert check.run(_event_context(tmp_path, event_path)).ok
 
 
+# @brief Documents the test traceability gate accepts a markdown section heading operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+def test_traceability_gate_accepts_markdown_section_heading(tmp_path: Path) -> None:
+    _write_requirements(tmp_path)
+    event_path = _write_pr_event(tmp_path, "## Requirements impacted:\n- REQ-PROT-001\n\n## Notes\nBody")
+    check = FakeTraceabilityGateCheck([{"filename": "runtime/src/client/runtime/Runtime.cpp"}, {"filename": "docs/quality/traceability.csv"}])
+    assert check.run(_event_context(tmp_path, event_path)).ok
+
+
 # @brief Documents the test traceability gate fails without ids or csv and skips non critical pr operation contract.
 # @param tmp_path Input value used by this contract.
 # @return Value produced by this contract when applicable.

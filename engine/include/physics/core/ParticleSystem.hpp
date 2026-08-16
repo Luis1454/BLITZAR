@@ -9,10 +9,10 @@
 #define BLITZAR_ENGINE_INCLUDE_PHYSICS_PARTICLESYSTEM_HPP_
 
 #include "config/Cosmology.hpp"
-#include "physics/cuda/CudaJit.hpp"
-#include "physics/cuda/DeviceMemory.hpp"
 #include "physics/core/ForceLawPolicy.hpp"
 #include "physics/core/ParticleSoAView.hpp"
+#include "physics/cuda/CudaJit.hpp"
+#include "physics/cuda/DeviceMemory.hpp"
 #include "physics/octree/Octree.hpp"
 
 /*
@@ -758,8 +758,7 @@ private:
     bool treePmUsesGravityOnlyBuffers(bool eulerIntegrator, bool sphEnabled) const;
     bool ensureAdaptiveCudaScratchCapacity(int numParticles);
     bool applySphCorrection(float deltaTime, bool uploadHostState);
-    bool computeCpuAcceleration(const std::vector<Particle>& state,
-                                const ForceLawPolicy& forceLaw,
+    bool computeCpuAcceleration(const std::vector<Particle>& state, const ForceLawPolicy& forceLaw,
                                 std::vector<Vector3>& output);
     bool computeHostAccelerations(std::vector<Vector3>& accelerations);
     bool updateComovingCosmology(float deltaTime);
@@ -768,9 +767,30 @@ private:
     bool updateAdaptiveTimeSteps(float deltaTime);
     bool updateAdaptiveTimeSteps(float deltaTime, const ForceLawPolicy& forceLaw,
                                  bool thermalActive);
+    bool updateCpuSolvers(float deltaTime, const ForceLawPolicy& forceLaw, bool thermalActive);
+    struct OctreeGpuUpdateContext;
+    bool updateOctreeGpu(float deltaTime, const ForceLawPolicy& forceLaw, bool thermalActive);
+    bool updateOctreeGpuRegular(float deltaTime, const ForceLawPolicy& forceLaw, bool thermalActive,
+                                OctreeGpuUpdateContext& context);
+    bool updateOctreeGpuAdaptive(float deltaTime, const ForceLawPolicy& forceLaw,
+                                 bool thermalActive, OctreeGpuUpdateContext& context);
+    bool updateOctreeGpuIntegrators(float deltaTime, const ForceLawPolicy& forceLaw,
+                                    bool thermalActive, OctreeGpuUpdateContext& context);
+    bool finalizeOctreeGpuUpdate(float deltaTime, bool thermalActive,
+                                 OctreeGpuUpdateContext& context);
+    bool updateCudaSolvers(float deltaTime, const ForceLawPolicy& forceLaw, bool thermalActive);
+    bool updateCudaAdaptive(float deltaTime, const ForceLawPolicy& forceLaw, bool thermalActive,
+                            ParticleSoAView currentView, ParticleSoAView nextView, int numParticles,
+                            int numBlocks);
+    bool updateCudaIntegrators(float deltaTime, const ForceLawPolicy& forceLaw, bool thermalActive,
+                               ParticleSoAView currentView, ParticleSoAView nextView,
+                               int numParticles, int numBlocks);
+    bool launchPairwiseAcceleration(ParticleSoAView view, Vector3* output, int numParticles,
+                                    const ForceLawPolicy& forceLaw);
     bool prepareCosmologyStep(float deltaTime, float& scaleRatio, float& previousHubble,
                               float& nextHubble);
     void applyCosmologyExpansionHost(float scaleRatio, float previousHubble, float nextHubble);
+    void applyHostCosmologyStep(float deltaTime);
 
     std::vector<Particle> _particles;
     SolverMode _solverMode;
