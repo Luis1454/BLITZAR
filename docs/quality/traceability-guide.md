@@ -15,8 +15,10 @@ Use this workflow for any PR that changes runtime, physics, or protocol behavior
 - Update `docs/quality/traceability.csv` when requirement behavior, surface ownership, or verification references change.
 - Keep the `requirement_id` column aligned with `docs/quality/manifest/requirements.json`.
 - Prefer updating existing rows instead of creating aliases or duplicate IDs.
+- When a CUDA fragment is split into a subdirectory, register that subdirectory in the owning requirement row.
 
 ## Review Rule
 
 - PRs that touch `runtime/`, `engine/src/physics/`, `engine/include/physics/`, or protocol integration paths must include requirement IDs.
 - The PR traceability gate also requires `docs/quality/traceability.csv` to be part of the change for those PRs.
+- Write the `Requirements impacted:` section as normal Markdown lines, not literal `\\n` escape sequences.

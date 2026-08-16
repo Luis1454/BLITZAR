@@ -14,7 +14,6 @@ modules/qt/src/widgets/graphs/Paint.cpp
 
 # CUDA fragment blocks retained while kernel-level decomposition is prepared.
 engine/src/cuda/fragments/system/Prelude.inl
-engine/src/cuda/fragments/system/Buffer.inl
 engine/src/cuda/fragments/octree/LinearGpu.inl
 
 # Quality manifest catalog is temporarily kept as a single evidence index while split tooling is prepared.
@@ -36,7 +35,6 @@ engine/src/config/directive/Write.cpp
 engine/src/config/registry/Entries.cpp
 engine/src/config/validation/Scenario.cpp
 engine/src/cuda/fragments/system/Core.inl
-engine/src/cuda/JitRuntime.cu
 engine/src/physics/octree/Octree.cpp
 engine/src/server/simulation/lifecycle/Rebuild.cpp
 engine/src/server/simulation/runtime/SettersAndExport.cpp
