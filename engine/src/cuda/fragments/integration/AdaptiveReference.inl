@@ -4,6 +4,10 @@
  * @brief CPU reference scheduler for dyadic individual time steps.
  */
 
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+
 /*
  * @brief Advances the CPU reference path with dyadic individual time steps.
  * @param deltaTime Outer integration interval.
