@@ -33,6 +33,7 @@ if(TARGET Qt6::Widgets AND TARGET Qt6::OpenGLWidgets AND TARGET blitzarRustRunti
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/workspace/Persistence.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/workspace/Shell.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/viewport/MultiView.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/viewport/RenderSnapshot.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/viewport/GpuView.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/viewport/GpuViewInput.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/viewport/ShaderSources.cpp"
