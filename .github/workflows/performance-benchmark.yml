@@ -72,6 +72,7 @@ jobs:
           name: performance-benchmark-${{ github.run_number }}
           path: dist/performance-benchmark
           if-no-files-found: error
+          retention-days: 14
 
   performance-benchmark-fallback:
     name: Performance Benchmark Fallback (linux-ubuntu24.04)

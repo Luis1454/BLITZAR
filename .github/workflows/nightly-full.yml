@@ -89,6 +89,7 @@ jobs:
           name: nightly-fmea-status-${{ github.run_number }}
           path: dist/fmea-status
           if-no-files-found: error
+          retention-days: 14
       - name: Upload test and build logs
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
@@ -99,6 +100,7 @@ jobs:
             build-integration/CMakeFiles/CMakeOutput.log
             build-integration/CMakeFiles/CMakeError.log
           if-no-files-found: ignore
+          retention-days: 14
       - name: Save integration build cache
         if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
@@ -204,6 +206,7 @@ jobs:
             build-integration-cov/coverage.html
             build-integration-cov/coverage-summary.txt
             build-integration-cov/coverage-files.csv
+          retention-days: 14
           if-no-files-found: error
       - name: Save coverage build cache
         if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
@@ -280,6 +283,7 @@ jobs:
           name: nightly-numerical-validation-${{ github.run_number }}
           path: dist/numerical-validation
           if-no-files-found: error
+          retention-days: 14
   nightly-gpu-fallback:
     name: Nightly GPU Fallback (linux-ubuntu24.04)
     needs: gpu-runner-readiness

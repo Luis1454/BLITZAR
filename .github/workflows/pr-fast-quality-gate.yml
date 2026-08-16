@@ -98,3 +98,4 @@ jobs:
           name: tool-qualification-pr-fast-${{ github.run_number }}
           path: dist/tool-qualification/tool_manifest.json
           if-no-files-found: error
+          retention-days: 7

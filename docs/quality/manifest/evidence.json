@@ -93,6 +93,8 @@
         "EVD_SCRIPT_NIGHTLY_FMEA_STATUS": "scripts/ci/nightly/package_fmea_status.py",
         "EVD_SCRIPT_NIGHTLY_NUMERICAL_VALIDATION": "scripts/ci/nightly/package_numerical_validation.py",
         "EVD_SCRIPT_NIGHTLY_PERFORMANCE_BENCHMARK": "scripts/ci/nightly/package_performance_benchmark.py",
+        "EVD_SCRIPT_GITHUB_ARTIFACT_AUDIT": "scripts/ci/audit_github_artifacts.py",
+        "EVD_SCRIPT_LOCAL_ARTIFACT_AUDIT": "scripts/ci/audit_local_artifacts.py",
         "EVD_TEST_UNIT_PROTOCOL_CODEC": "tests/unit/protocol/json_codec.cpp",
         "EVD_TEST_GPU_RUNNER_OPS": "tests/checks/suites/core/test_gpu_runner_ops.py",
         "EVD_RUST_TOOLCHAIN": "rust-toolchain.toml",

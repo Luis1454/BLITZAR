@@ -215,6 +215,7 @@ jobs:
           name: release-bundle-${{ env.RELEASE_TAG }}
           path: dist/release-bundle/*.zip
           if-no-files-found: error
+          retention-days: 30
 
       - name: Upload desktop GUI installer
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
@@ -222,6 +223,7 @@ jobs:
           name: desktop-installer-${{ env.RELEASE_TAG }}
           path: dist/desktop-installer/*.exe
           if-no-files-found: error
+          retention-days: 30
 
       - name: Upload source archive
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
@@ -229,6 +231,7 @@ jobs:
           name: release-source-${{ env.RELEASE_TAG }}
           path: dist/source/*.zip
           if-no-files-found: error
+          retention-days: 30
 
       - name: Upload tool qualification manifest
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
@@ -236,6 +239,7 @@ jobs:
           name: tool-qualification-release-${{ env.RELEASE_TAG }}
           path: dist/tool-qualification/tool_manifest.json
           if-no-files-found: error
+          retention-days: 30
 
       - name: Upload release SBOM
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
@@ -243,6 +247,7 @@ jobs:
           name: release-sbom-${{ env.RELEASE_TAG }}
           path: dist/release-sbom/*.json
           if-no-files-found: error
+          retention-days: 30
 
       - name: Upload release evidence pack
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
@@ -250,6 +255,7 @@ jobs:
           name: release-evidence-${{ env.RELEASE_TAG }}
           path: dist/evidence-pack/*.zip
           if-no-files-found: error
+          retention-days: 30
 
       - name: Upload release quality index
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
@@ -257,6 +263,7 @@ jobs:
           name: release-quality-index-${{ env.RELEASE_TAG }}
           path: dist/release-quality-index/*.zip
           if-no-files-found: error
+          retention-days: 30
 
       - name: Upload logs
         if: always()
@@ -268,6 +275,7 @@ jobs:
             build/CMakeFiles/CMakeOutput.log
             build/CMakeFiles/CMakeError.log
           if-no-files-found: ignore
+          retention-days: 14
       - name: Save release build cache
         if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7

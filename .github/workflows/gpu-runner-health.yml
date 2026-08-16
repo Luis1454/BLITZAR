@@ -96,6 +96,7 @@ jobs:
           name: gpu-runner-health-${{ github.run_number }}
           path: dist/gpu-runner-health/report.json
           if-no-files-found: error
+          retention-days: 7
       - name: Fail scheduled monitoring on unhealthy active inventory
         if: ${{ github.event_name != 'workflow_call' }}
         run: |
