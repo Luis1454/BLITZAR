@@ -8,7 +8,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from python_tools.ci.github_artifacts import Artifact, build_report, classify_artifact
+from python_tools.ci.github_artifacts import Artifact, build_report, classify_artifact, delete_expired_artifacts
 
 
 # @brief Documents the artifact class mapping contract.
@@ -55,6 +55,41 @@ def test_report_counts_stale_artifacts_without_side_effects() -> None:
             "created_at": (now - timedelta(days=100)).isoformat(),
             "expired": True,
         }
+    ]
+
+
+# @brief Documents that cleanup deletes only artifacts already marked expired.
+# @param monkeypatch Input fixture used to isolate the GitHub API call.
+# @return No return value.
+# @note Active artifacts must never be selected by the cleanup operation.
+def test_delete_expired_artifacts_does_not_delete_active_items(monkeypatch) -> None:
+    calls: list[str] = []
+
+    class Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+    def fake_urlopen(request, timeout):
+        calls.append(f"{request.method}:{request.full_url}:{timeout}")
+        return Response()
+
+    monkeypatch.setattr("python_tools.ci.github_artifacts.urlopen", fake_urlopen)
+    deleted, failures = delete_expired_artifacts(
+        "Luis1454/BLITZAR",
+        "token",
+        [
+            Artifact(10, "expired", 1, datetime.now(UTC), True),
+            Artifact(11, "active", 1, datetime.now(UTC), False),
+        ],
+    )
+
+    assert deleted == 1
+    assert failures == []
+    assert calls == [
+        "DELETE:https://api.github.com/repos/Luis1454/BLITZAR/actions/artifacts/10:30"
     ]
 
 
