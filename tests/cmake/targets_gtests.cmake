@@ -146,6 +146,9 @@ set(BLITZAR_TEST_BASE_BRIDGE_SOURCES
     "${BLITZAR_ROOT_DIR}/tests/support/poll_utils.cpp"
     "${BLITZAR_ROOT_DIR}/runtime/src/client/runtime/BridgeState.cpp"
     "${BLITZAR_ROOT_DIR}/runtime/src/client/runtime/Bridge.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/client/runtime/Commands.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/client/runtime/InitialState.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/src/client/runtime/RemoteSession.cpp"
     ${BLITZAR_TEST_CONFIG_SOURCES}
     ${BLITZAR_TEST_BASE_REAL_SOURCES}
 )

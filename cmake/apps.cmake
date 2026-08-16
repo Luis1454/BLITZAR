@@ -247,6 +247,9 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             runtime/src/client/module/Boundary.cpp
             runtime/src/client/module/Api.cpp
             runtime/src/client/runtime/Bridge.cpp
+            runtime/src/client/runtime/Commands.cpp
+            runtime/src/client/runtime/InitialState.cpp
+            runtime/src/client/runtime/RemoteSession.cpp
             runtime/src/client/common/ClientCommon.cpp
             runtime/src/client/runtime/Runtime.cpp
             runtime/src/client/runtime/BridgeState.cpp
