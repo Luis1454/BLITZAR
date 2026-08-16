@@ -8,6 +8,8 @@ BLITZAR has three different artifact authorities. They must not be treated as in
 | Nightly evidence | `nightly-*`, `release-lane-logs-*` | 14 days | CI diagnostics only |
 | GPU health | `gpu-runner-health-*` | 7 days | CI readiness diagnostics only |
 | Release staging | `release-*`, `desktop-installer-*` | 30 days | Temporary staging; GitHub Release assets are authoritative |
+| Release qualification | `tool-qualification-release-*` | 30 days | Temporary release qualification staging |
+| GitHub Pages | `github-pages` | Managed by GitHub | Pages deployment artifact; not an Actions retention class |
 
 Published GitHub Release assets are the distribution authority. Release workflow artifacts are
 temporary copies used to transfer and verify the bundle; they must not be presented as a second
