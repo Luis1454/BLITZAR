@@ -49,7 +49,6 @@ engine/src/server/simulation/runtime/SettersAndExport.cpp
 engine/src/server/simulation/telemetry/SnapshotAndEnergy.cpp
 engine/src/server/SimulationInitConfig.cpp
 modules/qt/src/widgets/graphs/SpectrumGraph.cpp
-modules/qt/src/widgets/viewport/GpuView.cpp
 modules/qt/src/widgets/viewport/MultiView.cpp
 modules/qt/src/window/config/WindowConfig.cpp
 modules/qt/src/window/control/Controls.cpp
