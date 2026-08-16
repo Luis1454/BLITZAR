@@ -42,6 +42,7 @@ def test_report_counts_stale_artifacts_without_side_effects() -> None:
     assert report["classes"]["nightly-evidence"]["stale"] == 0
     assert report["classes"]["release-staging"]["stale"] == 1
     assert report["classes"]["unclassified"]["stale"] == 0
+    assert report["stale_artifacts"][0]["id"] == 1
 
 
 # @brief Documents the workflow retention declaration contract.

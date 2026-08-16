@@ -72,6 +72,7 @@ def fetch_artifacts(repo: str, token: str) -> list[Artifact]:
 
 def build_report(artifacts: list[Artifact], now: datetime) -> dict[str, Any]:
     classes: dict[str, dict[str, Any]] = {}
+    stale_artifacts: list[dict[str, Any]] = []
     for artifact in artifacts:
         category = classify_artifact(artifact.name)
         entry = classes.setdefault(category, {"count": 0, "bytes": 0, "stale": 0, "oldest": None})
@@ -84,11 +85,21 @@ def build_report(artifacts: list[Artifact], now: datetime) -> dict[str, Any]:
         age_days = (now - artifact.created_at).total_seconds() / 86400.0
         if not artifact.expired and retention > 0 and age_days > retention:
             entry["stale"] = int(entry["stale"]) + 1
+            stale_artifacts.append(
+                {
+                    "id": artifact.artifact_id,
+                    "name": artifact.name,
+                    "category": category,
+                    "size": artifact.size,
+                    "created_at": artifact.created_at.isoformat(),
+                }
+            )
     return {
         "generated_at": now.isoformat(),
         "retention_days": RETENTION_DAYS,
         "total_count": len(artifacts),
         "total_bytes": sum(item.size for item in artifacts),
         "classes": classes,
+        "stale_artifacts": stale_artifacts,
     }
 
