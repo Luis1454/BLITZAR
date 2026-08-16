@@ -8,11 +8,10 @@
 #ifndef BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_
 #define BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_
 #include "Constants.hpp"
-#include "client/runtime/BridgeState.hpp"
-#include "protocol/client/Client.hpp"
-#include <chrono>
+#include "types/SimulationTypes.hpp"
 #include <cstdint>
 #include <iosfwd>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <string_view>
@@ -20,6 +19,7 @@
 #include <vector>
 
 namespace bltzr_client {
+class RemoteSession;
 extern const std::uint32_t kRemoteTimeoutMinMs;
 extern const std::uint32_t kRemoteTimeoutMaxMs;
 extern const std::uint32_t kRemoteCommandTimeoutMsDefault;
@@ -42,15 +42,18 @@ enum class LinkState {
     Reconnecting
 };
 bool splitTransportArgs(const std::vector<std::string_view>& rawArgs,
-                              std::vector<std::string_view>& filteredArgs,
-                              TransportArgs& transport, std::ostream& warnings);
+                        std::vector<std::string_view>& filteredArgs, TransportArgs& transport,
+                        std::ostream& warnings);
 
 class Bridge {
 public:
-    Bridge(const std::string& configPath, std::string remoteHost,
-                       std::uint16_t remotePort, bool remoteAutoStart, std::string serverExecutable,
-                       std::string remoteAuthToken, std::uint32_t remoteCommandTimeoutMs,
-                       std::uint32_t remoteStatusTimeoutMs, std::uint32_t remoteSnapshotTimeoutMs);
+    Bridge(const std::string& configPath, std::string remoteHost, std::uint16_t remotePort,
+           bool remoteAutoStart, std::string serverExecutable, std::string remoteAuthToken,
+           std::uint32_t remoteCommandTimeoutMs, std::uint32_t remoteStatusTimeoutMs,
+           std::uint32_t remoteSnapshotTimeoutMs);
+    ~Bridge();
+    Bridge(const Bridge&) = delete;
+    Bridge& operator=(const Bridge&) = delete;
     bool start();
     void stop();
     void setPaused(bool paused);
@@ -65,13 +68,12 @@ public:
     void setIntegratorMode(const std::string& mode);
     void setPerformanceProfile(const std::string& profile);
     void setTreePmAssignment(const std::string& assignment);
-    void setTreePmParameters(bool enabled, const std::string& model,
-                             const std::string& layout,
+    void setTreePmParameters(bool enabled, const std::string& model, const std::string& layout,
                              const std::string& precision, const std::string& assignment,
-                             bool localGrid, std::uint32_t gridSize,
-                             std::uint32_t jacobiIterations, float cutoffFactor,
-                             std::uint32_t maxLocalNeighbors, std::uint32_t particleLimit,
-                             std::uint32_t denseCellThreshold, bool gravityOnlyBuffers);
+                             bool localGrid, std::uint32_t gridSize, std::uint32_t jacobiIterations,
+                             float cutoffFactor, std::uint32_t maxLocalNeighbors,
+                             std::uint32_t particleLimit, std::uint32_t denseCellThreshold,
+                             bool gravityOnlyBuffers);
     void setAdaptiveTimeSteps(bool enabled, std::uint32_t maxLevel, float eta);
     void setAdaptiveTimeStepCostGuard(bool enabled);
     void setOctreeParameters(float theta, float softening);
@@ -104,35 +106,9 @@ public:
 
 private:
     static std::string jsonEscape(const std::string& value);
-    static SimulationStats fromRemoteStatus(const bltzr_protocol::ClientStatus& status);
-    bool sendRemoteNow(const std::string& cmd, const std::string& fields = "");
-    bool sendOrQueueRemote(const std::string& cmd, const std::string& fields = "");
-    bool ensureRemoteConnected(bool forceLog);
-    void markRemoteDisconnected(const std::string& context, const std::string& reason);
-    bool shouldAutoStartRemoteServer() const;
-    void tryAutoStartRemoteServer();
-    static bool isLoopbackHost(std::string_view host);
-    void queuePendingRemoteCommand(const std::string& cmd, const std::string& fields);
-    void flushPendingRemoteCommands();
-    void refreshRemoteStats();
-    std::string _configPath;
-    std::string _remoteHost;
-    std::uint16_t _remotePort;
-    bool _remoteAutoStart;
-    std::string _serverExecutable;
-    std::string _remoteAuthToken;
-    bltzr_protocol::Client _remoteClient;
-    bool _remoteLaunchAttempted;
-    BridgeState _runtimeState;
-    SimulationStats _cachedStats;
+    bool sendOrQueueRemote(const std::string& command, const std::string& fields = "");
+    std::unique_ptr<RemoteSession> _remote;
     std::string _defaultExportFormat;
-    std::chrono::steady_clock::time_point _lastReconnectAttempt;
-    std::chrono::steady_clock::time_point _lastReconnectErrorLog;
-    std::chrono::steady_clock::time_point _lastRemoteErrorLog;
-    std::chrono::milliseconds _reconnectRetryDelay;
-    std::uint32_t _remoteCommandTimeoutMs;
-    std::uint32_t _remoteStatusTimeoutMs;
-    std::uint32_t _remoteSnapshotTimeoutMs;
     mutable std::recursive_mutex _mutex;
 };
 } // namespace bltzr_client
