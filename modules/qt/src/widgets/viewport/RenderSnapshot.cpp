@@ -8,11 +8,10 @@
 #include <limits>
 
 namespace bltzr_qt {
-namespace {
-constexpr int kGridSide = 16;
-constexpr int kBinCount = kGridSide * kGridSide * kGridSide;
+static constexpr int kGridSide = 16;
+static constexpr int kBinCount = kGridSide * kGridSide * kGridSide;
 
-void centerSnapshot(std::vector<RenderParticle>& snapshot)
+static void centerSnapshot(std::vector<RenderParticle>& snapshot)
 {
     if (snapshot.empty()) {
         return;
@@ -43,7 +42,8 @@ void centerSnapshot(std::vector<RenderParticle>& snapshot)
     }
 }
 
-std::vector<RenderParticle> spatialSample(const std::vector<RenderParticle>& input, std::size_t cap)
+static std::vector<RenderParticle> spatialSample(const std::vector<RenderParticle>& input,
+                                                 std::size_t cap)
 {
     if (input.size() <= cap) {
         return input;
@@ -99,7 +99,6 @@ std::vector<RenderParticle> spatialSample(const std::vector<RenderParticle>& inp
     }
     return result;
 }
-} // namespace
 
 std::vector<RenderParticle> prepareRenderSnapshot(std::vector<RenderParticle> snapshot,
                                                   std::size_t cap)
