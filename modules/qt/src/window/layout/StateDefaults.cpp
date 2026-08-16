@@ -18,8 +18,6 @@
 
 namespace bltzr_qt {
 
-namespace {
-
 const QStringList kSolverList = {QString::fromStdString(to_string(Solver::PairwiseCuda)),
                                  QString::fromStdString(to_string(Solver::OctreeGpu)),
                                  QString::fromStdString(to_string(Solver::OctreeCpu)),
@@ -46,8 +44,6 @@ const QStringList kPresets = {"disk_orbit",    "galaxy_collision", "cosmology", 
                               "plummer_sphere", "binary_star",       "solar_system",   "sph_collapse",
                               "file"};
 const QStringList kView3dModes = {"perspective", "iso"};
-
-} // namespace
 
 void Window::initializeComboBoxes()
 {
