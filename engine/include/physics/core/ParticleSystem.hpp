@@ -765,6 +765,7 @@ private:
     bool updateComovingCosmology(float deltaTime);
     bool computeHostAccelerationsForIndices(const std::vector<int>& activeIndices,
                                             std::vector<Vector3>& accelerations);
+    bool updateAdaptiveTimeSteps(float deltaTime);
     bool updateAdaptiveTimeSteps(float deltaTime, const ForceLawPolicy& forceLaw,
                                  bool thermalActive);
     bool prepareCosmologyStep(float deltaTime, float& scaleRatio, float& previousHubble,
