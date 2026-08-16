@@ -5,112 +5,25 @@
  * @brief Qt desktop user interface module for simulation control and visualization.
  */
 
-#include "Constants.hpp"
 #include "widgets/viewport/MultiView.hpp"
-#include <QByteArray>
+#include "Constants.hpp"
+#include "widgets/viewport/RenderSnapshot.hpp"
 #include <QGridLayout>
 #include <QSizePolicy>
 #include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <iomanip>
-#include <limits>
 #include <sstream>
 #include <utility>
 #include <vector>
 
 namespace bltzr_qt {
-std::vector<RenderParticle> spatialSample(const std::vector<RenderParticle>& input,
-                                          std::size_t cap)
-{
-    if (input.size() <= cap) {
-        return input;
-    }
-    constexpr int kGridSide = 16;
-    constexpr int kBinCount = kGridSide * kGridSide * kGridSide;
-    float minX = std::numeric_limits<float>::max();
-    float minY = std::numeric_limits<float>::max();
-    float minZ = std::numeric_limits<float>::max();
-    float maxX = std::numeric_limits<float>::lowest();
-    float maxY = std::numeric_limits<float>::lowest();
-    float maxZ = std::numeric_limits<float>::lowest();
-    for (const RenderParticle& particle : input) {
-        minX = std::min(minX, particle.x);
-        minY = std::min(minY, particle.y);
-        minZ = std::min(minZ, particle.z);
-        maxX = std::max(maxX, particle.x);
-        maxY = std::max(maxY, particle.y);
-        maxZ = std::max(maxZ, particle.z);
-    }
-    const float scaleX = static_cast<float>(kGridSide) / std::max(1.0e-6f, maxX - minX);
-    const float scaleY = static_cast<float>(kGridSide) / std::max(1.0e-6f, maxY - minY);
-    const float scaleZ = static_cast<float>(kGridSide) / std::max(1.0e-6f, maxZ - minZ);
-    std::vector<int> bins(kBinCount, -1);
-    for (std::size_t index = 0u; index < input.size(); ++index) {
-        const RenderParticle& particle = input[index];
-        const int x = std::clamp(static_cast<int>((particle.x - minX) * scaleX), 0, kGridSide - 1);
-        const int y = std::clamp(static_cast<int>((particle.y - minY) * scaleY), 0, kGridSide - 1);
-        const int z = std::clamp(static_cast<int>((particle.z - minZ) * scaleZ), 0, kGridSide - 1);
-        const int bin = x + kGridSide * (y + kGridSide * z);
-        if (bins[static_cast<std::size_t>(bin)] < 0 ||
-            particle.mass > input[static_cast<std::size_t>(bins[static_cast<std::size_t>(bin)])].mass) {
-            bins[static_cast<std::size_t>(bin)] = static_cast<int>(index);
-        }
-    }
-    std::vector<RenderParticle> result;
-    result.reserve(cap);
-    std::vector<unsigned char> selected(input.size(), 0u);
-    for (const int index : bins) {
-        if (index < 0 || result.size() >= cap) {
-            continue;
-        }
-        result.push_back(input[static_cast<std::size_t>(index)]);
-        selected[static_cast<std::size_t>(index)] = 1u;
-    }
-    const std::size_t stride = std::max<std::size_t>(1u, (input.size() + cap - 1u) / cap);
-    for (std::size_t index = 0u; index < input.size() && result.size() < cap; index += stride) {
-        if (selected[index] == 0u) {
-            result.push_back(input[index]);
-        }
-    }
-    return result;
-}
-
-void centerRenderSnapshot(std::vector<RenderParticle>& snapshot)
-{
-    if (snapshot.empty()) {
-        return;
-    }
-    float minX = snapshot.front().x;
-    float minY = snapshot.front().y;
-    float minZ = snapshot.front().z;
-    float maxX = minX;
-    float maxY = minY;
-    float maxZ = minZ;
-    for (const RenderParticle& particle : snapshot) {
-        minX = std::min(minX, particle.x);
-        minY = std::min(minY, particle.y);
-        minZ = std::min(minZ, particle.z);
-        maxX = std::max(maxX, particle.x);
-        maxY = std::max(maxY, particle.y);
-        maxZ = std::max(maxZ, particle.z);
-    }
-    const float centerX = 0.5f * (minX + maxX);
-    const float centerY = 0.5f * (minY + maxY);
-    const float centerZ = 0.5f * (minZ + maxZ);
-    for (RenderParticle& particle : snapshot) {
-        particle.x -= centerX;
-        particle.y -= centerY;
-        particle.z -= centerZ;
-    }
-}
-
 MultiView::MultiView(QWidget* parent)
     : QWidget(parent),
       _cpuViews{},
       _gpuViews{},
-      _viewStacks{new QStackedWidget(this), new QStackedWidget(this),
-                  new QStackedWidget(this), new QStackedWidget(this)},
+      _viewStacks{new QStackedWidget(this), new QStackedWidget(this), new QStackedWidget(this),
+                  new QStackedWidget(this)},
       _gpuBackend(qgetenv("BLITZAR_RENDERER").compare("cpu", Qt::CaseInsensitive) != 0),
       _maxDrawParticles(50000u),
       _zoom(kDefaultZoom),
@@ -138,7 +51,9 @@ MultiView::MultiView(QWidget* parent)
         else {
             _viewStacks[index]->setCurrentWidget(_cpuViews[index]);
         }
-        _gpuViews[index]->setUnavailableCallback([this]() { activateCpuBackend(); });
+        _gpuViews[index]->setUnavailableCallback([this]() {
+            activateCpuBackend();
+        });
     }
     grid->addWidget(_viewStacks[0], 0, 0);
     grid->addWidget(_viewStacks[1], 0, 1);
@@ -149,10 +64,8 @@ MultiView::MultiView(QWidget* parent)
 
 void MultiView::setSnapshot(std::vector<RenderParticle> snapshot)
 {
-    const std::size_t cap = std::max<std::size_t>(2u, _maxDrawParticles);
     // Rendering uses a local frame; simulation and export coordinates remain untouched.
-    centerRenderSnapshot(snapshot);
-    _snapshot = spatialSample(snapshot, cap);
+    _snapshot = prepareRenderSnapshot(std::move(snapshot), _maxDrawParticles);
     rebuildOctreeOverlay();
     for (std::size_t index = 0; index < _cpuViews.size(); ++index) {
         _cpuViews[index]->setSnapshot(_snapshot);
@@ -207,11 +120,10 @@ std::string MultiView::rendererStatusText() const
                zoomStatus.str() + densityStatus;
     }
     std::ostringstream text;
-    text << "renderer=opengl ready=" << readyCount << "/4 points=" << points
-         << zoomStatus.str()
+    text << "renderer=opengl ready=" << readyCount << "/4 points=" << points << zoomStatus.str()
          << " submit_ms=" << std::fixed << std::setprecision(3)
-         << (frameMs / static_cast<float>(readyCount)) << " upload_ms="
-         << (uploadMs / static_cast<float>(readyCount)) << densityStatus;
+         << (frameMs / static_cast<float>(readyCount))
+         << " upload_ms=" << (uploadMs / static_cast<float>(readyCount)) << densityStatus;
     return text.str();
 }
 

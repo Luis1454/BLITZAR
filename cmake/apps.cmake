@@ -278,6 +278,7 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             modules/qt/src/window/workspace/Persistence.cpp
             modules/qt/src/window/workspace/Shell.cpp
             modules/qt/src/widgets/viewport/MultiView.cpp
+            modules/qt/src/widgets/viewport/RenderSnapshot.cpp
             modules/qt/src/widgets/viewport/GpuView.cpp
             modules/qt/src/widgets/viewport/GpuViewInput.cpp
             modules/qt/src/widgets/viewport/ShaderSources.cpp
