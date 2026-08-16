@@ -50,7 +50,6 @@ engine/src/server/SimulationInitConfig.cpp
 modules/qt/src/widgets/graphs/SpectrumGraph.cpp
 modules/qt/src/widgets/viewport/GpuView.cpp
 modules/qt/src/widgets/viewport/MultiView.cpp
-modules/qt/src/window/config/ConfigurationEditor.cpp
 modules/qt/src/window/config/WindowConfig.cpp
 modules/qt/src/window/control/Controls.cpp
 modules/qt/src/window/layout/State.cpp

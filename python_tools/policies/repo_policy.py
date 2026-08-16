@@ -73,6 +73,21 @@ NON_WAIVABLE_STRONG_SIZE_PATHS: set[str] = set()
 QT_REFERENCE_NEW_RE = re.compile(
     r"(?m)^\s*(?:auto|Q[A-Za-z0-9_<>:]+)\s*&\s*[A-Za-z0-9_]+\s*=\s*\*new\s+Q[A-Za-z0-9_<>:]+\s*\("
 )
+RAW_POINTER_MEMBER_RE = re.compile(
+    r"(?m)^\s*(?!static\b)(?!friend\b)(?!typedef\b)(?:const\s+)?"
+    r"[A-Za-z_][A-Za-z0-9_:<>]*(?:\s+[A-Za-z_][A-Za-z0-9_:<>]*)?\s*\*\s*"
+    r"[A-Za-z_][A-Za-z0-9_]*\s*(?:=\s*nullptr)?\s*;"
+)
+RAW_POINTER_MEMBER_ALLOWLIST = {
+    "engine/include/physics/core/ParticleSoAView.hpp",
+    "engine/include/platform/Socket.hpp",
+    "runtime/include/client/diagnostics/ErrorBuffer.hpp",
+    "runtime/include/client/module/Api.hpp",
+    "runtime/include/client/module/Boundary.hpp",
+    "runtime/include/ffi/bridge/Api.hpp",
+    "runtime/include/ffi/core/Api.hpp",
+    "runtime/src/client/module/Internal.hpp",
+}
 PRAGMA_ONCE_RE = re.compile(r"(?m)^\s*#pragma\s+once\b")
 DEFINE_RE = re.compile(r"(?m)^\s*#define\s+([A-Z][A-Z0-9_]+)\b(?!\s*\()")
 NORMALIZED_DOCUMENTATION_RE = re.compile(
@@ -240,6 +255,12 @@ class RepoPolicyCheck(BaseCheck):
                 result.add_error(error)
         if rel.startswith("modules/qt/") and QT_REFERENCE_NEW_RE.search(content):
             result.add_error(f"{rel}: Qt '*new + reference' ownership pattern is forbidden")
+        if suffix in HEADER_EXTS and rel not in RAW_POINTER_MEMBER_ALLOWLIST:
+            for match in RAW_POINTER_MEMBER_RE.finditer(content):
+                line_number = content.count("\n", 0, match.start()) + 1
+                result.add_error(
+                    f"{rel}:{line_number}: raw pointer data member requires RAII or an explicit borrowed boundary"
+                )
 
     # @brief Documents the check include guard operation contract.
     # @param rel Input value used by this contract.

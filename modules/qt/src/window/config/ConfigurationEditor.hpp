@@ -10,6 +10,7 @@
 #include <QDialog>
 #include <QGroupBox>
 #include <QHash>
+#include <QPointer>
 
 class QWidget;
 class QComboBox;
@@ -33,9 +34,9 @@ private:
     void addRuntimeTiles(const SimulationConfig& config);
 
     SimulationConfig _configuration;
-    QHash<QString, QWidget*> _fields;
-    QWidget* _content = nullptr;
-    QVBoxLayout* _stack = nullptr;
+    QHash<QString, QPointer<QWidget>> _fields;
+    QPointer<QWidget> _content;
+    QPointer<QVBoxLayout> _stack;
 };
 } // namespace bltzr_qt
 

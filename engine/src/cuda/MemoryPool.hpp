@@ -28,7 +28,6 @@ public:
 private:
     static bool _initialized;
     static bool _supported;
-    static void* _pool;
 };
 } // namespace bltzr_x
 
