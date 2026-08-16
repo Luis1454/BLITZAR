@@ -288,7 +288,6 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             modules/qt/src/panels/control/Disclosure.cpp
             modules/qt/src/panels/control/Render.cpp
             modules/qt/src/panels/control/Run.cpp
-            modules/qt/src/panels/control/SceneSetup.cpp
             ${BLITZAR_GRAPHICS_SOURCES}
         )
         if(BLITZAR_ENABLE_CUDA)

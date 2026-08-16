@@ -5,26 +5,26 @@
  * @brief Qt desktop user interface module for simulation control and visualization.
  */
 
-#include "window/core/Window.hpp"
-#include "window/config/ConfigurationEditor.hpp"
-#include "window/scene/SceneEditor.hpp"
 #include "panels/control/Physics.hpp"
 #include "panels/control/Render.hpp"
 #include "panels/control/Run.hpp"
-#include "panels/control/SceneSetup.hpp"
+#include "window/config/ConfigurationEditor.hpp"
+#include "window/core/Window.hpp"
+#include "window/scene/SceneEditor.hpp"
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QLabel>
 #include <QLineEdit>
-#include <QPushButton>
 #include <QProgressBar>
-#include <QStatusBar>
+#include <QPushButton>
 #include <QSizePolicy>
 #include <QSlider>
 #include <QSpinBox>
+#include <QStatusBar>
 #include <QTabWidget>
-#include <QWidget>
 #include <QVBoxLayout>
+#include <QWidget>
 
 namespace bltzr_qt {
 QTabWidget* Window::buildSidebarTabs()
@@ -37,22 +37,35 @@ QTabWidget* Window::buildSidebarTabs()
     sidebarTabs->setMaximumWidth(440);
     sidebarTabs->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     auto* runPage = new QWidget(sidebarTabs);
-    buildRunPanel(runPage, _widgets.run.performanceCombo, _widgets.run.pauseButton, _widgets.run.stepButton, _widgets.run.resetButton,
-                  _widgets.run.recoverButton, _widgets.run.serverHostEdit, _widgets.run.serverPortSpin, _widgets.run.serverBinEdit,
-                  _widgets.run.serverAutostartCheck, _widgets.run.applyConnectorButton);
+    buildRunPanel(runPage, _widgets.run.performanceCombo, _widgets.run.pauseButton,
+                  _widgets.run.stepButton, _widgets.run.resetButton, _widgets.run.recoverButton,
+                  _widgets.run.serverHostEdit, _widgets.run.serverPortSpin,
+                  _widgets.run.serverBinEdit, _widgets.run.serverAutostartCheck,
+                  _widgets.run.applyConnectorButton);
     auto* scenePage = new QWidget(sidebarTabs);
     auto* sceneLayout = new QVBoxLayout(scenePage);
-    auto* legacySceneSetup = buildSceneSetupPanel(
-        scenePage, _widgets.scene.simulationProfileCombo, _widgets.scene.presetCombo,
-        _widgets.scene.applyPresetButton, _widgets.scene.loadPresetButton,
-        _widgets.scene.loadInputButton, _widgets.scene.saveConfigButton);
-    sceneLayout->addWidget(legacySceneSetup);
+    auto* sceneToolbar = new QWidget(scenePage);
+    sceneToolbar->setObjectName("sceneActionsToolbar");
+    auto* sceneToolbarLayout = new QHBoxLayout(sceneToolbar);
+    sceneToolbarLayout->setContentsMargins(0, 0, 0, 0);
+    sceneToolbarLayout->setSpacing(4);
+    sceneToolbarLayout->addWidget(new QLabel("Profile", sceneToolbar));
+    sceneToolbarLayout->addWidget(_widgets.scene.simulationProfileCombo, 1);
+    sceneToolbarLayout->addWidget(new QLabel("Preset", sceneToolbar));
+    sceneToolbarLayout->addWidget(_widgets.scene.presetCombo, 1);
+    sceneToolbarLayout->addWidget(_widgets.scene.applyPresetButton);
+    sceneToolbarLayout->addWidget(_widgets.scene.loadPresetButton);
+    sceneToolbarLayout->addWidget(_widgets.scene.loadInputButton);
+    sceneToolbarLayout->addWidget(_widgets.scene.saveConfigButton);
+    sceneLayout->addWidget(sceneToolbar);
     _sceneEditor = new SceneEditor(_config, scenePage);
     sceneLayout->addWidget(_sceneEditor, 1);
     auto* physicsPage = buildPhysicsPanel(sidebarTabs, _widgets.physics);
     auto* renderPage = buildRenderPanel(
-        sidebarTabs, _widgets.render.view3dCombo, _widgets.render.zoomSlider, _widgets.render.luminositySlider, _widgets.render.yawSlider, _widgets.render.pitchSlider,
-        _widgets.render.rollSlider, _widgets.render.cullingCheck, _widgets.render.lodCheck, _widgets.render.octreeOverlayCheck, _widgets.render.octreeOverlayDepthSpin,
+        sidebarTabs, _widgets.render.view3dCombo, _widgets.render.zoomSlider,
+        _widgets.render.luminositySlider, _widgets.render.yawSlider, _widgets.render.pitchSlider,
+        _widgets.render.rollSlider, _widgets.render.cullingCheck, _widgets.render.lodCheck,
+        _widgets.render.octreeOverlayCheck, _widgets.render.octreeOverlayDepthSpin,
         _widgets.render.octreeOverlayOpacitySpin, _widgets.render.gpuTelemetryCheck,
         _widgets.scene.exportButton, _widgets.render.exportProgress);
     _configurationEditor = new ConfigurationEditor(_config, sidebarTabs);

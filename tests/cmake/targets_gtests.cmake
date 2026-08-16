@@ -263,7 +263,6 @@ if(TARGET Qt6::Widgets AND TARGET Qt6::OpenGLWidgets AND TARGET blitzarRustRunti
             "${BLITZAR_ROOT_DIR}/modules/qt/src/panels/control/Disclosure.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/panels/control/Render.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/panels/control/Run.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/qt/src/panels/control/SceneSetup.cpp"
             ${BLITZAR_GRAPHICS_SOURCES}
         LIBS
             ${BLITZAR_TEST_RUST_LIBS}

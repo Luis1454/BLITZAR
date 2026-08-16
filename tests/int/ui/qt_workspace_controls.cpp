@@ -50,11 +50,13 @@ TEST(QtWorkspaceControlsTest, TST_UIX_UI_007_ProfilesAndCheckboxesRemainInteract
         testsupport::findComboByObjectName(window, "performanceProfileCombo");
     QComboBox* profileCombo = testsupport::findComboByObjectName(window, "simulationProfileCombo");
     QComboBox* presetCombo = testsupport::findComboByObjectName(window, "scenePresetCombo");
+    QWidget* sceneToolbar = window.findChild<QWidget*>("sceneActionsToolbar");
     QCheckBox* sphCheck = testsupport::findCheckBoxByText(window, "SPH");
     QCheckBox* autostartCheck = testsupport::findCheckBoxByText(window, "autostart server");
     ASSERT_NE(performanceCombo, nullptr);
     ASSERT_NE(profileCombo, nullptr);
     ASSERT_NE(presetCombo, nullptr);
+    ASSERT_NE(sceneToolbar, nullptr);
     ASSERT_NE(sphCheck, nullptr);
     ASSERT_NE(autostartCheck, nullptr);
     EXPECT_GE(performanceCombo->findText("balanced"), 0);
