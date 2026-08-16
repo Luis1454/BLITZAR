@@ -14,7 +14,6 @@ modules/qt/src/widgets/graphs/Paint.cpp
 
 # CUDA fragment blocks retained while kernel-level decomposition is prepared.
 engine/src/cuda/fragments/system/Prelude.inl
-engine/src/cuda/fragments/integration/Update.inl
 engine/src/cuda/fragments/system/Buffer.inl
 engine/src/cuda/fragments/octree/LinearGpu.inl
 
@@ -31,7 +30,6 @@ tests/int/ui/qt_workspace_runtime_controls.cpp
 
 # DEV-QUAL-012: baseline files scheduled for responsibility-focused extraction in #443.
 cmake/apps.cmake
-docs/quality/manifest/deviations.json
 engine/include/physics/core/ParticleSystem.hpp
 engine/src/config/directive/Config.cpp
 engine/src/config/directive/Write.cpp

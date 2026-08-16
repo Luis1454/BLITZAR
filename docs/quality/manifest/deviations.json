@@ -39,8 +39,7 @@
       "closure_criteria": "Replace fragment bundles with smaller responsibility-focused units and remove the allowlist paths.",
       "paths": [
         "engine/src/cuda/fragments/system/Core.inl",
-        "engine/src/cuda/fragments/system/Prelude.inl",
-        "engine/src/cuda/fragments/integration/Update.inl"
+        "engine/src/cuda/fragments/system/Prelude.inl"
       ],
       "requirements": [
         "REQ-QUAL-001"
@@ -252,7 +251,6 @@
       "closure_criteria": "Split every path below the strong threshold, remove it from this register and the policy allowlist, and retain its deterministic qualification identifiers.",
       "paths": [
         "cmake/apps.cmake",
-        "docs/quality/manifest/deviations.json",
         "engine/include/physics/core/ParticleSystem.hpp",
         "engine/src/config/directive/Config.cpp",
         "engine/src/config/directive/Write.cpp",
