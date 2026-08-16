@@ -73,6 +73,8 @@ DO_WHILE_RE = re.compile(r"\bdo\b\s*\{", re.DOTALL)
 WHILE_TRUE_RE = re.compile(r"\bwhile\s*\(\s*true\s*\)")
 FUNCTION_POINTER_TYPEDEF_RE = re.compile(r"(?m)^\s*(?:typedef|using)\b[^\n;]*\(\s*\*\s*[A-Za-z0-9_]*\s*\)")
 FUNCTION_POINTER_ABI_PATHS = {"runtime/include/client/module/Api.hpp"}
+EXPORTS_POINTER_RE = re.compile(r"\b(?:const\s+)?(?:bltzr_module::)?ExportsV1\s*\*")
+EXPORTS_POINTER_ABI_PATH = "runtime/include/client/module/Api.hpp"
 NON_WAIVABLE_STRONG_SIZE_PATHS: set[str] = set()
 QT_REFERENCE_NEW_RE = re.compile(
     r"(?m)^\s*(?:auto|Q[A-Za-z0-9_<>:]+)\s*&\s*[A-Za-z0-9_]+\s*=\s*\*new\s+Q[A-Za-z0-9_<>:]+\s*\("
@@ -230,6 +232,7 @@ class RepoPolicyCheck(BaseCheck):
     # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_cpp_content(self, rel: str, content: str, result: CheckResult) -> None:
         suffix = Path(rel).suffix.lower()
+        self._check_exports_pointer_boundary(rel, content, result)
         if not rel.startswith("tests/"):
             if GTEST_INCLUDE_RE.search(content):
                 result.add_error(f"{rel}: gtest include found outside tests/")
@@ -266,6 +269,19 @@ class RepoPolicyCheck(BaseCheck):
                 result.add_error(
                     f"{rel}:{line_number}: raw pointer data member requires RAII or an explicit borrowed boundary"
                 )
+
+    @staticmethod
+    def _check_exports_pointer_boundary(rel: str, content: str, result: CheckResult) -> None:
+        if not EXPORTS_POINTER_RE.search(content):
+            return
+        if rel == EXPORTS_POINTER_ABI_PATH:
+            return
+        path = Path(rel)
+        if path.parts and path.parts[0] == "modules" and path.name == "Module.cpp":
+            return
+        result.add_error(
+            f"{rel}: ExportsV1 raw pointer is restricted to the module ABI declaration/export boundary"
+        )
 
     # @brief Documents the check include guard operation contract.
     # @param rel Input value used by this contract.

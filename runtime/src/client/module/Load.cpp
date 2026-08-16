@@ -41,7 +41,8 @@ static bool resolveExports(std::uintptr_t entryPointAddress,
         return false;
     }
     try {
-        const ExportsV1* exportedTable = entryPoint();
+        // The ABI returns a module-static table. Borrow it only long enough to copy it.
+        const auto exportedTable = entryPoint();
         if (exportedTable == nullptr) {
             outError = "entry point returned null exports";
             return false;

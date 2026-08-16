@@ -41,6 +41,8 @@ struct ExportsV1 {
     HandleCommandFn handleCommand;
 };
 
+// ABI contract: the returned table is immutable module-owned storage. The host must copy it
+// immediately and must never release or retain the returned address as an owning resource.
 typedef const ExportsV1* (*EntryPointFn)();
 } // namespace bltzr_module
 #endif // BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTMODULEAPI_HPP_
