@@ -247,6 +247,7 @@ if(TARGET Qt6::Widgets AND TARGET Qt6::OpenGLWidgets AND TARGET blitzarRustRunti
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/actions/FileActions.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/layout/Layout.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/layout/State.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/qt/src/window/layout/StateDefaults.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/presentation/Presenter.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/presentation/Telemetry.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/window/workspace/Persistence.cpp"
