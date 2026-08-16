@@ -13,10 +13,14 @@
 
 namespace blitzar_physics_tree_pm_cpu {
 
-#include "TreePmForce.inl"
+// The force fragment depends on the grid, assignment, and field helpers.
+// Keep this include order explicit across MSVC and Clang.
+// clang-format off
+#include "fragments/Math.inl"
 #include "fragments/Assignment.inl"
 #include "fragments/Field.inl"
-#include "fragments/Math.inl"
+#include "TreePmForce.inl"
+// clang-format on
 
 } // namespace blitzar_physics_tree_pm_cpu
 
