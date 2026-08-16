@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -39,12 +40,12 @@ blitzar_runtime_string_view stringView(const std::string& value)
 extern "C" {
 blitzar_runtime_bridge_t* blitzar_runtime_bridge_create()
 {
-    return new blitzar_runtime_bridge_t();
+    return std::make_unique<blitzar_runtime_bridge_t>().release();
 }
 
 void blitzar_runtime_bridge_destroy(blitzar_runtime_bridge_t* state)
 {
-    delete state;
+    std::unique_ptr<blitzar_runtime_bridge_t> owner(state);
 }
 
 void blitzar_runtime_bridge_set_connected(blitzar_runtime_bridge_t* state, bool connected)

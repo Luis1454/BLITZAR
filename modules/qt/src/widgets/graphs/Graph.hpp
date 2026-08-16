@@ -27,7 +27,7 @@ typedef QPaintEvent UiPaintEvent;
 namespace bltzr_qt {
 class Graph : public QWidget {
 public:
-    explicit Graph();
+    explicit Graph(QWidget* parent = nullptr);
     void clearHistory();
     void pushSample(const SimulationStats& stats);
     std::size_t sampleCount() const;

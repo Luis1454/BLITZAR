@@ -9,6 +9,11 @@
 #include <stdexcept>
 
 namespace bltzr_client {
+void BridgeState::Deleter::operator()(blitzar_runtime_bridge_t* state) const noexcept
+{
+    blitzar_runtime_bridge_destroy(state);
+}
+
 BridgeState::BridgeState() : _state(blitzar_runtime_bridge_create())
 {
     if (_state == nullptr) {
@@ -18,61 +23,60 @@ BridgeState::BridgeState() : _state(blitzar_runtime_bridge_create())
 
 BridgeState::~BridgeState()
 {
-    blitzar_runtime_bridge_destroy(_state);
 }
 
 void BridgeState::setConnected(bool connected)
 {
-    blitzar_runtime_bridge_set_connected(_state, connected);
+    blitzar_runtime_bridge_set_connected(_state.get(), connected);
 }
 
 bool BridgeState::isConnected() const
 {
-    return blitzar_runtime_bridge_is_connected(_state);
+    return blitzar_runtime_bridge_is_connected(_state.get());
 }
 
 void BridgeState::setServerLaunched(bool launched)
 {
-    blitzar_runtime_bridge_set_server_launched(_state, launched);
+    blitzar_runtime_bridge_set_server_launched(_state.get(), launched);
 }
 
 bool BridgeState::serverLaunched() const
 {
-    return blitzar_runtime_bridge_is_server_launched(_state);
+    return blitzar_runtime_bridge_is_server_launched(_state.get());
 }
 
 std::uint32_t BridgeState::setRemoteSnapshotCap(std::uint32_t requested)
 {
-    return blitzar_runtime_bridge_set_snapshot_cap(_state, requested);
+    return blitzar_runtime_bridge_set_snapshot_cap(_state.get(), requested);
 }
 
 std::uint32_t BridgeState::remoteSnapshotCap() const
 {
-    return blitzar_runtime_bridge_snapshot_cap(_state);
+    return blitzar_runtime_bridge_snapshot_cap(_state.get());
 }
 
 void BridgeState::clearPendingCommands()
 {
-    blitzar_runtime_bridge_clear_pending_commands(_state);
+    blitzar_runtime_bridge_clear_pending_commands(_state.get());
 }
 
 bool BridgeState::queuePendingCommand(const std::string& cmd, const std::string& fields)
 {
     return blitzar_runtime_bridge_queue_pending_command(
-        _state, reinterpret_cast<const std::uint8_t*>(cmd.data()), cmd.size(),
+        _state.get(), reinterpret_cast<const std::uint8_t*>(cmd.data()), cmd.size(),
         reinterpret_cast<const std::uint8_t*>(fields.data()), fields.size());
 }
 
 std::size_t BridgeState::pendingCommandCount() const
 {
-    return blitzar_runtime_bridge_pending_command_count(_state);
+    return blitzar_runtime_bridge_pending_command_count(_state.get());
 }
 
 std::pair<std::string, std::string>
 BridgeState::pendingCommandAt(std::size_t index) const
 {
     blitzar_runtime_pending_command_view view{};
-    if (!blitzar_runtime_bridge_pending_command_view(_state, index, &view)) {
+    if (!blitzar_runtime_bridge_pending_command_view(_state.get(), index, &view)) {
         return std::pair<std::string, std::string>();
     }
     return std::pair<std::string, std::string>(copyStringView(view.cmd),
@@ -81,17 +85,17 @@ BridgeState::pendingCommandAt(std::size_t index) const
 
 void BridgeState::erasePendingPrefix(std::size_t count)
 {
-    blitzar_runtime_bridge_erase_pending_prefix(_state, count);
+    blitzar_runtime_bridge_erase_pending_prefix(_state.get(), count);
 }
 
 std::string BridgeState::linkStateLabel() const
 {
-    return copyStringView(blitzar_runtime_bridge_link_state_label(_state));
+    return copyStringView(blitzar_runtime_bridge_link_state_label(_state.get()));
 }
 
 std::string BridgeState::serverOwnerLabel() const
 {
-    return copyStringView(blitzar_runtime_bridge_server_owner_label(_state));
+    return copyStringView(blitzar_runtime_bridge_server_owner_label(_state.get()));
 }
 
 std::string BridgeState::copyStringView(blitzar_runtime_string_view view)

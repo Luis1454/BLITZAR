@@ -41,7 +41,7 @@ typedef QPaintEvent UiPaintEvent;
 namespace bltzr_qt {
 class Particle : public QWidget {
 public:
-    explicit Particle(grav::ViewMode mode);
+    explicit Particle(grav::ViewMode mode, QWidget* parent = nullptr);
     void setSnapshot(const std::vector<RenderParticle>& snapshot);
     void setMode(grav::ViewMode mode);
     void setZoom(float zoom);

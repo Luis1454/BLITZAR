@@ -359,7 +359,7 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity, bool e
     _device._gpuOctreeNodeCount = 0;
     _device._gpuOctreeLeafCount = 0;
     _device._mappedMetricsHost = nullptr;
-    _device._mappedMetricsDevice = nullptr;
+    _device._mappedMetricsDevice = 0u;
     _device._metricsStepId = 0u;
     _device._metricsSimTime = 0.0f;
     _device._metricsPublishCounter = 0u;
@@ -743,7 +743,7 @@ bool ParticleSystem::allocateMappedMetrics()
         _device._mappedMetricsHost = nullptr;
         return false;
     }
-    _device._mappedMetricsDevice = static_cast<GpuSystemMetrics*>(devicePtr);
+    _device._mappedMetricsDevice = reinterpret_cast<std::uintptr_t>(devicePtr);
     _device._metricsStepId = 0u;
     _device._metricsSimTime = 0.0f;
     _device._metricsPublishCounter = 0u;
@@ -759,7 +759,7 @@ bool ParticleSystem::allocateMappedMetrics()
 void ParticleSystem::releaseMappedMetrics()
 {
     _device._mappedMetricsHost.reset();
-    _device._mappedMetricsDevice = nullptr;
+    _device._mappedMetricsDevice = 0u;
     _device._metricsStepId = 0u;
     _device._metricsSimTime = 0.0f;
     _device._metricsPublishCounter = 0u;

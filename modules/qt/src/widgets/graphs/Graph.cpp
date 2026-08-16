@@ -11,7 +11,7 @@
 #include <algorithm>
 
 namespace bltzr_qt {
-Graph::Graph() : QWidget(nullptr)
+Graph::Graph(QWidget* parent) : QWidget(parent)
 {
     setMinimumHeight(128);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);

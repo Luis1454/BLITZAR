@@ -11,6 +11,7 @@
 #include <chrono>
 #include <cstring>
 #include <filesystem>
+#include <memory>
 #include <thread>
 #include <vector>
 static constexpr std::uint32_t kDefaultTimeoutMs = 3000u;
@@ -165,16 +166,18 @@ blitzar_core_result_t BlitzarCore::getSnapshot(std::size_t maxPoints,
         return BLITZAR_CORE_NOT_READY;
     }
     outSnapshot.count = snapshot.size();
-    outSnapshot.particles = new blitzar_render_particle_t[outSnapshot.count];
+    std::unique_ptr<blitzar_render_particle_t[]> particles =
+        std::make_unique<blitzar_render_particle_t[]>(outSnapshot.count);
     for (std::size_t index = 0; index < outSnapshot.count; ++index) {
-        outSnapshot.particles[index] = blitzar_render_particle_t{snapshot[index].x,
-                                                                 snapshot[index].y,
-                                                                 snapshot[index].z,
-                                                                 snapshot[index].mass,
-                                                                 snapshot[index].pressureNorm,
-                                                                 snapshot[index].temperature,
-                                                                 snapshot[index].densityNorm};
+        particles[index] = blitzar_render_particle_t{snapshot[index].x,
+                                                     snapshot[index].y,
+                                                     snapshot[index].z,
+                                                     snapshot[index].mass,
+                                                     snapshot[index].pressureNorm,
+                                                     snapshot[index].temperature,
+                                                     snapshot[index].densityNorm};
     }
+    outSnapshot.particles = particles.release();
     return BLITZAR_CORE_OK;
 }
 } // namespace bltzr_ffi

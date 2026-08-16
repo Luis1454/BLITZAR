@@ -234,7 +234,7 @@ struct ParticleSystemDeviceState final {
     int _gpuOctreeNodeCount = 0;
     int _gpuOctreeLeafCount = 0;
     blitzar_cuda_memory::MappedHostBuffer<GpuSystemMetrics> _mappedMetricsHost;
-    GpuSystemMetrics* _mappedMetricsDevice = nullptr;
+    std::uintptr_t _mappedMetricsDevice = 0u;
     std::uint64_t _metricsStepId = 0u;
     float _metricsSimTime = 0.0f;
     std::uint32_t _metricsPublishCounter = 0u;

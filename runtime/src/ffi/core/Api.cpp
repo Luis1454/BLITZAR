@@ -9,6 +9,7 @@
 #include "Internal.hpp"
 #include <algorithm>
 #include <cstring>
+#include <memory>
 #include <new>
 
 namespace bltzr_ffi_internal {
@@ -66,13 +67,12 @@ blitzar_core_t* blitzar_core_create(const blitzar_core_config_t* config, char* e
         return nullptr;
     }
     try {
-        blitzar_core_t* core = new blitzar_core(*config);
+        std::unique_ptr<blitzar_core> core = std::make_unique<blitzar_core>(*config);
         if (core->impl.copyLastError(error_buffer, error_buffer_capacity) != 0u) {
-            delete core;
             return nullptr;
         }
         bltzr_ffi_internal::writeErrorMessage("", error_buffer, error_buffer_capacity);
-        return core;
+        return core.release();
     }
     catch (const std::bad_alloc&) {
         bltzr_ffi_internal::writeErrorMessage("allocation failed", error_buffer,
@@ -88,7 +88,7 @@ blitzar_core_t* blitzar_core_create(const blitzar_core_config_t* config, char* e
 
 void blitzar_core_destroy(blitzar_core_t* core)
 {
-    delete core;
+    std::unique_ptr<blitzar_core> owner(core);
 }
 
 blitzar_core_result_t blitzar_core_apply_config(blitzar_core_t* core,
@@ -144,7 +144,7 @@ void blitzar_core_free_snapshot(blitzar_core_snapshot_t* snapshot)
         return;
     }
 
-    delete[] snapshot->particles;
+    std::unique_ptr<blitzar_render_particle_t[]> owner(snapshot->particles);
 
     snapshot->particles = nullptr;
     snapshot->count = 0u;

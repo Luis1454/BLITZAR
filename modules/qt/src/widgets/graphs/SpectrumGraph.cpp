@@ -104,8 +104,8 @@ QColor spectrumColor(float normalized)
         static_cast<int>(stops[lower].blue() + local * (stops[lower + 1u].blue() - stops[lower].blue())));
 }
 
-SpectrumGraph::SpectrumGraph()
-    : QWidget(nullptr), _sampledParticleCount(0u), _deltaRms(0.0f), _hasAnalysisAt(false)
+SpectrumGraph::SpectrumGraph(QWidget* parent)
+    : QWidget(parent), _sampledParticleCount(0u), _deltaRms(0.0f), _hasAnalysisAt(false)
 {
     setObjectName("spectrumGraphWidget");
     setMinimumHeight(148);

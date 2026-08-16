@@ -10,6 +10,7 @@
 #include "ffi/bridge/Api.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -36,8 +37,12 @@ public:
     std::string serverOwnerLabel() const;
 
 private:
+    struct Deleter final {
+        void operator()(blitzar_runtime_bridge_t* state) const noexcept;
+    };
+
     static std::string copyStringView(blitzar_runtime_string_view view);
-    blitzar_runtime_bridge_t* _state;
+    std::unique_ptr<blitzar_runtime_bridge_t, Deleter> _state;
 };
 
 } // namespace bltzr_client

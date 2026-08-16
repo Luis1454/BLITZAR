@@ -105,14 +105,12 @@ void centerRenderSnapshot(std::vector<RenderParticle>& snapshot)
     }
 }
 
-MultiView::MultiView()
-    : QWidget(nullptr),
-      _cpuViews{new Particle(grav::ViewMode::XY), new Particle(grav::ViewMode::XZ),
-                new Particle(grav::ViewMode::YZ), new Particle(grav::ViewMode::Perspective)},
-      _gpuViews{new GpuView(grav::ViewMode::XY), new GpuView(grav::ViewMode::XZ),
-                new GpuView(grav::ViewMode::YZ), new GpuView(grav::ViewMode::Perspective)},
-      _viewStacks{new QStackedWidget(), new QStackedWidget(), new QStackedWidget(),
-                  new QStackedWidget()},
+MultiView::MultiView(QWidget* parent)
+    : QWidget(parent),
+      _cpuViews{},
+      _gpuViews{},
+      _viewStacks{new QStackedWidget(this), new QStackedWidget(this),
+                  new QStackedWidget(this), new QStackedWidget(this)},
       _gpuBackend(qgetenv("BLITZAR_RENDERER").compare("cpu", Qt::CaseInsensitive) != 0),
       _maxDrawParticles(50000u),
       _zoom(kDefaultZoom),
@@ -120,6 +118,14 @@ MultiView::MultiView()
       _octreeOverlayDepth(kOverlayDepthDefault),
       _octreeOverlayOpacity(kOverlayOpacityDefault)
 {
+    _cpuViews = {new Particle(grav::ViewMode::XY, _viewStacks[0]),
+                 new Particle(grav::ViewMode::XZ, _viewStacks[1]),
+                 new Particle(grav::ViewMode::YZ, _viewStacks[2]),
+                 new Particle(grav::ViewMode::Perspective, _viewStacks[3])};
+    _gpuViews = {new GpuView(grav::ViewMode::XY, _viewStacks[0]),
+                 new GpuView(grav::ViewMode::XZ, _viewStacks[1]),
+                 new GpuView(grav::ViewMode::YZ, _viewStacks[2]),
+                 new GpuView(grav::ViewMode::Perspective, _viewStacks[3])};
     auto* grid = new QGridLayout(this);
     grid->setSpacing(6);
     grid->setContentsMargins(0, 0, 0, 0);

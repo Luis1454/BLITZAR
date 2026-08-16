@@ -20,8 +20,8 @@
 #include <cmath>
 
 namespace bltzr_qt {
-Particle::Particle(grav::ViewMode mode)
-    : QWidget(nullptr),
+Particle::Particle(grav::ViewMode mode, QWidget* parent)
+    : QWidget(parent),
       _mode(mode),
       _snapshot(std::nullopt),
       _zoom(kDefaultZoom),

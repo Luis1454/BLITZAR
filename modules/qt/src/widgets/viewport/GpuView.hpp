@@ -16,6 +16,7 @@
 #include <QPointF>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 class QMouseEvent;
@@ -32,7 +33,7 @@ struct GpuViewMetrics {
 
 class GpuView final : public QOpenGLWidget {
 public:
-    explicit GpuView(grav::ViewMode mode);
+    explicit GpuView(grav::ViewMode mode, QWidget* parent = nullptr);
     ~GpuView() override;
 
     void setSnapshot(const std::vector<RenderParticle>& snapshot);
@@ -75,7 +76,7 @@ private:
     std::unique_ptr<QOpenGLShaderProgram> _program;
     QOpenGLVertexArrayObject _vao;
     std::function<void()> _unavailableCallback;
-    const std::vector<OctreeNode>* _overlay;
+    std::optional<std::reference_wrapper<const std::vector<OctreeNode>>> _overlay;
     bool _overlayEnabled;
     int _overlayOpacity;
     bool _pendingUpload;
