@@ -78,14 +78,30 @@ def fetch_artifacts(repo: str, token: str) -> list[Artifact]:
 def build_report(artifacts: list[Artifact], now: datetime) -> dict[str, Any]:
     classes: dict[str, dict[str, Any]] = {}
     stale_artifacts: list[dict[str, Any]] = []
+    unclassified_artifacts: list[dict[str, Any]] = []
     for artifact in artifacts:
         category = classify_artifact(artifact.name)
-        entry = classes.setdefault(category, {"count": 0, "bytes": 0, "stale": 0, "oldest": None})
+        entry = classes.setdefault(
+            category,
+            {"count": 0, "bytes": 0, "expired": 0, "stale": 0, "oldest": None},
+        )
         entry["count"] = int(entry["count"]) + 1
         entry["bytes"] = int(entry["bytes"]) + artifact.size
+        if artifact.expired:
+            entry["expired"] = int(entry["expired"]) + 1
         oldest = entry["oldest"]
         if oldest is None or artifact.created_at.isoformat() < str(oldest):
             entry["oldest"] = artifact.created_at.isoformat()
+        if category == "unclassified":
+            unclassified_artifacts.append(
+                {
+                    "id": artifact.artifact_id,
+                    "name": artifact.name,
+                    "size": artifact.size,
+                    "created_at": artifact.created_at.isoformat(),
+                    "expired": artifact.expired,
+                }
+            )
         retention = RETENTION_DAYS[category]
         age_days = (now - artifact.created_at).total_seconds() / 86400.0
         if not artifact.expired and retention > 0 and age_days > retention:
@@ -104,7 +120,9 @@ def build_report(artifacts: list[Artifact], now: datetime) -> dict[str, Any]:
         "retention_days": RETENTION_DAYS,
         "total_count": len(artifacts),
         "total_bytes": sum(item.size for item in artifacts),
+        "expired_count": sum(1 for item in artifacts if item.expired),
         "classes": classes,
         "stale_artifacts": stale_artifacts,
+        "unclassified_artifacts": unclassified_artifacts,
     }
 

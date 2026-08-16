@@ -16,12 +16,21 @@ temporary copies used to transfer and verify the bundle; they must not be presen
 release channel. Unclassified artifacts are a policy finding and require an explicit classification
 before a workflow is merged.
 
-The inventory command queries the live repository and reports counts, bytes, oldest artifact, and
-stale entries:
+The inventory command queries the live repository and reports counts, bytes, oldest artifact,
+expired records, stale entries, and unclassified names:
 
 ```text
-python scripts/ci/audit_github_artifacts.py --repo Luis1454/BLITZAR --token "$GITHUB_TOKEN"
+python scripts/ci/audit_github_artifacts.py \
+  --repo Luis1454/BLITZAR \
+  --token "$GITHUB_TOKEN" \
+  --fail-on-stale \
+  --fail-on-unclassified
 ```
+
+`--fail-on-stale` returns exit code `2`. `--fail-on-unclassified` returns exit code `3`.
+The latter is the mandatory policy gate for new artifact names. Expired records remain visible in
+the GitHub API and in the report, but are counted separately and are excluded from stale retention
+violations.
 
 The local inventory is read-only and reports generated trees, binary counts, sizes, and timestamps:
 

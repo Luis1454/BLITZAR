@@ -28,23 +28,34 @@ def test_artifact_prefixes_have_explicit_classes() -> None:
 
 # @brief Documents the stale artifact report contract.
 # @return No return value.
-# @note The report must expose stale counts without deleting remote state.
+# @note The report must expose stale and expired counts without deleting remote state.
 def test_report_counts_stale_artifacts_without_side_effects() -> None:
     now = datetime(2026, 8, 16, tzinfo=UTC)
     artifacts = [
         Artifact(1, "pr-coverage-delta-1", 100, now - timedelta(days=8), False),
         Artifact(2, "nightly-full-logs-2", 200, now - timedelta(days=10), False),
         Artifact(3, "release-bundle-v1", 300, now - timedelta(days=31), False),
-        Artifact(4, "unexpected-output", 400, now - timedelta(days=100), False),
+        Artifact(4, "unexpected-output", 400, now - timedelta(days=100), True),
     ]
     report = build_report(artifacts, now)
     assert report["total_count"] == 4
     assert report["total_bytes"] == 1000
+    assert report["expired_count"] == 1
     assert report["classes"]["pull-request"]["stale"] == 1
     assert report["classes"]["nightly-evidence"]["stale"] == 0
     assert report["classes"]["release-staging"]["stale"] == 1
     assert report["classes"]["unclassified"]["stale"] == 0
+    assert report["classes"]["unclassified"]["expired"] == 1
     assert report["stale_artifacts"][0]["id"] == 1
+    assert report["unclassified_artifacts"] == [
+        {
+            "id": 4,
+            "name": "unexpected-output",
+            "size": 400,
+            "created_at": (now - timedelta(days=100)).isoformat(),
+            "expired": True,
+        }
+    ]
 
 
 # @brief Documents the workflow retention declaration contract.
