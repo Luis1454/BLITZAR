@@ -96,72 +96,6 @@ bool ParticleSystem::update(float deltaTime)
     auto syncParticlesFromDevice = [&]() -> bool {
         return syncHostState();
     };
-    auto applySphCorrection = [&](bool uploadHostState) -> bool {
-        if (!_sphEnabled) {
-            return true;
-        }
-        if (!_device._cudaRuntimeAvailable) {
-            return true;
-        }
-        if (!_device.d_soaPosX || !_device.d_sphDensity || !_device.d_sphPressure) {
-            return false;
-        }
-        const int numParticles = static_cast<int>(_particles.size());
-        if (numParticles < 2) {
-            return true;
-        }
-        const int numBlocks =
-            (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
-
-        if (uploadHostState) {
-            syncDeviceState();
-        }
-
-        // Build spatial hash grid for neighbor lookup.
-        if (!buildSphGrid(numParticles)) {
-            return false;
-        }
-
-        SphGridParams grid;
-        grid.gridSize = _device._sphGridSize;
-        grid.totalCells = _device._sphGridTotalCells;
-        grid.cellSize = std::max(0.01f, _sphSmoothingLength);
-
-        ParticleSoAView currentView = getSoAView(false);
-        ParticleSoAView nextView = getSoAView(true);
-
-        computeSphDensityPressureGridKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-            currentView, _device.d_sphDensity, _device.d_sphPressure, numParticles,
-            _sphSmoothingLength, _sphRestDensity, _sphGasConstant, _device.d_sphCellHash,
-            _device.d_sphSortedIndex, _device.d_sphCellStart, _device.d_sphCellEnd, grid);
-        if (!checkCudaStatus(cudaGetLastError(), "computeSphDensityPressureGrid kernel launch")) {
-            return false;
-        }
-
-        constexpr float kSphCorrectionScale = 0.22f;
-        integrateSphGridKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-            currentView, nextView, _device.d_sphDensity, _device.d_sphPressure, numParticles,
-            _sphSmoothingLength, _sphViscosity, deltaTime, kSphCorrectionScale,
-            _device.d_sphCellHash, _device.d_sphSortedIndex, _device.d_sphCellStart,
-            _device.d_sphCellEnd, grid, _sphMaxAcceleration, _sphMaxSpeed);
-        if (!checkCudaStatus(cudaGetLastError(), "integrateSphGrid kernel launch")) {
-            return false;
-        }
-        if (!checkCudaStatus(cudaDeviceSynchronize(), "sph grid kernels sync")) {
-            return false;
-        }
-
-        std::swap(_device.d_soaPosX, _device.d_soaNextPosX);
-        std::swap(_device.d_soaPosY, _device.d_soaNextPosY);
-        std::swap(_device.d_soaPosZ, _device.d_soaNextPosZ);
-        std::swap(_device.d_soaVelX, _device.d_soaNextVelX);
-        std::swap(_device.d_soaVelY, _device.d_soaNextVelY);
-        std::swap(_device.d_soaVelZ, _device.d_soaNextVelZ);
-
-        _device._hostStateDirty = true;
-        return true;
-    };
-
     auto applyHostCosmology = [&]() {
         float scaleRatio = 1.0f;
         float previousHubble = 0.0f;
@@ -171,266 +105,11 @@ bool ParticleSystem::update(float deltaTime)
         }
     };
 
-    auto computeCpuAcceleration = [&](const std::vector<Particle>& state,
-                                      std::vector<Vector3>& output) -> bool {
-        if (_solverMode == SolverMode::FmmCpu) {
-            if (!_fmmWorkspace) {
-                _fmmWorkspace = std::make_unique<bltzr_fmm::FmmWorkspace>();
-            }
-            bltzr_fmm::configure(*_fmmWorkspace, _fmmLeafCapacity, _octreeTheta);
-            return bltzr_fmm::computeForces(state, forceLaw, *_fmmWorkspace, output);
-        }
-        const bool cpuFp64Reference =
-            _treePmEnabled && _treePmModel == "exact_tree" && _treePmPrecision == "fp64";
-        const bool cpuTreePm = _treePmEnabled && _treePmModel != "exact_tree";
-        if (cpuFp64Reference) {
-            if (!computeCpuFp64PairwiseForces(state, forceLaw, output)) {
-                return false;
-            }
-            if (!_device._treePmMarkerPrinted) {
-                fprintf(
-                    stderr,
-                    "[treepm] enabled solver=cpu_fp64_pairwise model=exact_tree precision=fp64\n");
-                _device._treePmMarkerPrinted = true;
-            }
-            return true;
-        }
-        else if (cpuTreePm) {
-            CpuTreePmParameters parameters;
-            parameters.model = _treePmModel;
-            parameters.localGrid = _treePmLocalGrid;
-            parameters.gridSize = _treePmGridSize;
-            parameters.cutoffFactor = _treePmCutoffFactor;
-            parameters.maxLocalNeighbors = _treePmMaxLocalNeighbors;
-            parameters.particleLimit = _treePmParticleLimit;
-            parameters.precision = _treePmPrecision;
-            parameters.assignment = _treePmAssignment;
-            bool computed = false;
-            if (_treePmPrecision == "fp64") {
-                if (!_cpuTreePmFp64Workspace) {
-                    _cpuTreePmFp64Workspace = std::make_unique<CpuTreePmFp64Workspace>();
-                }
-                computed = computeCpuTreePmForcesFp64(state, forceLaw, parameters,
-                                                      *_cpuTreePmFp64Workspace, _octree,
-                                                      _octreeOpeningCriterion, output);
-            }
-            else {
-                if (!_cpuTreePmWorkspace) {
-                    _cpuTreePmWorkspace = std::make_unique<CpuTreePmWorkspace>();
-                }
-                computed = computeCpuTreePmForces(state, forceLaw, parameters, *_cpuTreePmWorkspace,
-                                                  _octree, _octreeOpeningCriterion, output);
-            }
-            if (!computed) {
-                return false;
-            }
-            if (!_device._treePmMarkerPrinted) {
-                fprintf(stderr,
-                        "[treepm] enabled solver=cpu_fft_%s model=%s assignment=%s grid=%d "
-                        "local_grid=%d neighbors=%d\n",
-                        _treePmPrecision.c_str(), _treePmModel.c_str(), _treePmAssignment.c_str(),
-                        std::clamp(_treePmGridSize, 32, 128), _treePmLocalGrid ? 1 : 0,
-                        std::clamp(_treePmMaxLocalNeighbors, 0, 256));
-                _device._treePmMarkerPrinted = true;
-            }
-            return true;
-        }
-
-        _octree.build(state);
-        output.resize(state.size());
-#pragma omp parallel for schedule(static) if (!_deterministicMode)
-        for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(state.size()); ++i) {
-            output[static_cast<std::size_t>(i)] = _octree.computeForceOn(
-                state[static_cast<std::size_t>(i)], static_cast<std::size_t>(i), forceLaw,
-                _octreeOpeningCriterion);
-            output[static_cast<std::size_t>(i)] =
-                clampAcceleration(output[static_cast<std::size_t>(i)], _physicsMaxAcceleration);
-        }
-        return true;
-    };
-
     // The CUDA-native path below handles pairwise and octree GPU modes. Keep
     // this reference implementation only for the explicit CPU octree solver.
     if (_adaptiveTimeStepsEnabled && !_adaptiveTimeStepCostGuard &&
         (_solverMode == SolverMode::OctreeCpu || _solverMode == SolverMode::FmmCpu)) {
-        if (!syncParticlesFromDevice()) {
-            return false;
-        }
-        if (!_adaptiveTimeStepMarkerPrinted) {
-            fprintf(stderr,
-                    "[adaptive] backend=cpu_reference scheduler=dyadic max_level=%u eta=%.4f\n",
-                    _adaptiveTimeStepMaxLevel, _adaptiveTimeStepEta);
-            _adaptiveTimeStepMarkerPrinted = true;
-        }
-        const std::size_t count = _particles.size();
-        const std::uint32_t levelCount = std::min<std::uint32_t>(_adaptiveTimeStepMaxLevel, 12u);
-        const std::uint32_t sliceCount = 1u << levelCount;
-        const float quantum = deltaTime / static_cast<float>(sliceCount);
-        if (quantum <= 0.0f) {
-            return false;
-        }
-        const bool stateChanged = _adaptiveTimeStepLevels.size() != count ||
-                                  _adaptiveTimeStepAccelerations.size() != count ||
-                                  _adaptiveTimeStepLastForceTicks.size() != count ||
-                                  std::abs(_adaptiveTimeStepQuantum - quantum) > 1e-12f;
-        auto clampVelocityLocal = [&](Vector3 velocity) {
-            const float limit = _sphMaxSpeed;
-            const float magnitude = velocity.norm();
-            return limit > 0.0f && magnitude > limit ? velocity * (limit / magnitude) : velocity;
-        };
-        auto chooseLevel = [&](Vector3 acceleration, Vector3 velocity) -> std::uint8_t {
-            const float accelerationMagnitude = acceleration.norm();
-            const float velocityMagnitude = velocity.norm();
-            const float softening = std::max(_octreeSoftening, _physicsMinSoftening);
-            const float accelerationDt =
-                accelerationMagnitude > 1e-6f
-                    ? _adaptiveTimeStepEta * std::sqrt(softening / accelerationMagnitude)
-                    : deltaTime;
-            const float velocityDt = velocityMagnitude > 1e-6f
-                                         ? _adaptiveTimeStepEta * softening / velocityMagnitude
-                                         : deltaTime;
-            const float stableDt = std::min(deltaTime, std::min(accelerationDt, velocityDt));
-            std::uint8_t selected = static_cast<std::uint8_t>(levelCount);
-            for (std::uint32_t level = 0u; level <= levelCount; ++level) {
-                if (deltaTime / static_cast<float>(1u << level) <= stableDt) {
-                    selected = static_cast<std::uint8_t>(level);
-                    break;
-                }
-            }
-            return selected;
-        };
-
-        auto computeCpuAccelerationForIndices = [&](const std::vector<Particle>& state,
-                                                    const std::vector<int>& activeIndices,
-                                                    std::vector<Vector3>& output) -> bool {
-            if (activeIndices.empty()) {
-                return true;
-            }
-            const bool cpuFp64Reference =
-                _treePmEnabled && _treePmModel == "exact_tree" && _treePmPrecision == "fp64";
-            const bool cpuTreePm = _treePmEnabled && _treePmModel != "exact_tree";
-            if (cpuTreePm) {
-                CpuTreePmParameters parameters;
-                parameters.model = _treePmModel;
-                parameters.localGrid = _treePmLocalGrid;
-                parameters.gridSize = _treePmGridSize;
-                parameters.cutoffFactor = _treePmCutoffFactor;
-                parameters.maxLocalNeighbors = _treePmMaxLocalNeighbors;
-                parameters.particleLimit = _treePmParticleLimit;
-                parameters.precision = _treePmPrecision;
-                parameters.assignment = _treePmAssignment;
-                if (_treePmPrecision == "fp64") {
-                    if (!_cpuTreePmFp64Workspace) {
-                        _cpuTreePmFp64Workspace = std::make_unique<CpuTreePmFp64Workspace>();
-                    }
-                    return computeCpuTreePmForcesSelectiveFp64(
-                        state, activeIndices, forceLaw, parameters, *_cpuTreePmFp64Workspace,
-                        _octree, _octreeOpeningCriterion, output);
-                }
-                if (!_cpuTreePmWorkspace) {
-                    _cpuTreePmWorkspace = std::make_unique<CpuTreePmWorkspace>();
-                }
-                return computeCpuTreePmForcesSelective(state, activeIndices, forceLaw, parameters,
-                                                       *_cpuTreePmWorkspace, _octree,
-                                                       _octreeOpeningCriterion, output);
-            }
-
-            if (cpuFp64Reference) {
-#pragma omp parallel for schedule(static) if (!_deterministicMode)
-                for (std::ptrdiff_t active = 0;
-                     active < static_cast<std::ptrdiff_t>(activeIndices.size()); ++active) {
-                    const std::size_t target =
-                        static_cast<std::size_t>(activeIndices[static_cast<std::size_t>(active)]);
-                    const Vector3 position = state[target].getPosition();
-                    Vector3 acceleration;
-                    for (std::size_t source = 0u; source < state.size(); ++source) {
-                        if (source != target) {
-                            const Vector3 delta = state[source].getPosition() - position;
-                            const float distanceSquared = delta.x * delta.x + delta.y * delta.y +
-                                                          delta.z * delta.z +
-                                                          forceLaw.softening * forceLaw.softening;
-                            if (distanceSquared > forceLaw.minDistance2) {
-                                const float inverseDistance = 1.0f / std::sqrt(distanceSquared);
-                                const float scale = state[source].getMass() * inverseDistance *
-                                                    inverseDistance * inverseDistance;
-                                acceleration += delta * scale;
-                            }
-                        }
-                    }
-                    output[target] = clampAcceleration(acceleration, _physicsMaxAcceleration);
-                }
-                return true;
-            }
-
-            // The CUDA translation unit does not expose the host Octree force
-            // symbol. Keep the explicit CPU-octree reference path unchanged;
-            // TreePM and FP64 pairwise paths still use the selective kernels.
-            return computeCpuAcceleration(state, output);
-        };
-
-        // Rebuild the global representation once per outer step. The selective
-        // force path below is valid only while the nested micro-ticks share it.
-        std::vector<Vector3> refreshedAccelerations(count, Vector3());
-        if (!computeCpuAcceleration(_particles, refreshedAccelerations)) {
-            return false;
-        }
-        _adaptiveTimeStepAccelerations = std::move(refreshedAccelerations);
-        _adaptiveTimeStepQuantum = quantum;
-        _adaptiveTimeStepLevels.resize(count);
-        if (stateChanged || _adaptiveTimeStepTick == 0u) {
-            _adaptiveTimeStepLastForceTicks.assign(count, 0u);
-        }
-        for (std::size_t i = 0u; i < count; ++i) {
-            _adaptiveTimeStepLevels[i] =
-                chooseLevel(_adaptiveTimeStepAccelerations[i], _particles[i].getVelocity());
-        }
-
-        std::vector<Vector3> nextAccelerations(count, Vector3());
-        std::vector<int> activeIndices;
-        activeIndices.reserve(count);
-        for (std::uint32_t slice = 0u; slice < sliceCount; ++slice) {
-            for (std::size_t i = 0; i < count; ++i) {
-                const Vector3 velocity = _particles[i].getVelocity();
-                const Vector3 acceleration = _adaptiveTimeStepAccelerations[i];
-                _particles[i].setPosition(_particles[i].getPosition() + velocity * quantum +
-                                          acceleration * (0.5f * quantum * quantum));
-                _particles[i].setVelocity(clampVelocityLocal(velocity + acceleration * quantum));
-            }
-            activeIndices.clear();
-            const std::uint64_t targetTick = _adaptiveTimeStepTick + 1u;
-            for (std::size_t i = 0u; i < count; ++i) {
-                const std::uint32_t cadence = 1u << (levelCount - _adaptiveTimeStepLevels[i]);
-                if ((targetTick % cadence) == 0u) {
-                    activeIndices.push_back(static_cast<int>(i));
-                }
-            }
-            if (!computeCpuAccelerationForIndices(_particles, activeIndices, nextAccelerations)) {
-                return false;
-            }
-            for (const int activeIndex : activeIndices) {
-                const std::size_t i = static_cast<std::size_t>(activeIndex);
-                const float localDt =
-                    static_cast<float>(targetTick - _adaptiveTimeStepLastForceTicks[i]) * quantum;
-                const Vector3 correction = nextAccelerations[i] - _adaptiveTimeStepAccelerations[i];
-                _particles[i].setPosition(_particles[i].getPosition() +
-                                          correction * (0.5f * localDt * localDt));
-                _particles[i].setVelocity(
-                    clampVelocityLocal(_particles[i].getVelocity() + correction * localDt));
-                _adaptiveTimeStepAccelerations[i] = nextAccelerations[i];
-                _adaptiveTimeStepLastForceTicks[i] = targetTick;
-                _adaptiveTimeStepLevels[i] =
-                    chooseLevel(nextAccelerations[i], _particles[i].getVelocity());
-                _particles[i].setPressure(nextAccelerations[i] * 100.0f);
-            }
-            _adaptiveTimeStepTick = targetTick;
-        }
-        if (thermalActive) {
-            applyThermalModel(deltaTime);
-        }
-        applyHostCosmology();
-        syncDeviceState();
-        _device._hostStateDirty = false;
-        return true;
+        return updateAdaptiveTimeSteps(deltaTime, forceLaw, thermalActive);
     }
 
     if (_solverMode == SolverMode::OctreeCpu || _solverMode == SolverMode::FmmCpu) {
@@ -446,7 +125,7 @@ bool ParticleSystem::update(float deltaTime)
             return true;
         }
         if (_integratorMode == IntegratorMode::Euler) {
-            if (!computeCpuAcceleration(_particles, _octreeForces)) {
+            if (!computeCpuAcceleration(_particles, forceLaw, _octreeForces)) {
                 return false;
             }
             for (std::size_t i = 0; i < _particles.size(); ++i) {
@@ -460,7 +139,7 @@ bool ParticleSystem::update(float deltaTime)
                 _particles[i].setPosition(_particles[i].getPosition() +
                                           _particles[i].getVelocity() * deltaTime);
             }
-            if (!applySphCorrection(true)) {
+            if (!this->applySphCorrection(deltaTime, true)) {
                 return false;
             }
             if (_sphEnabled && !syncParticlesFromDevice()) {
@@ -479,7 +158,7 @@ bool ParticleSystem::update(float deltaTime)
             std::vector<Vector3> accEnd(n);
             std::vector<Particle> stage = _particles;
 
-            if (!computeCpuAcceleration(_particles, accStart)) {
+            if (!computeCpuAcceleration(_particles, forceLaw, accStart)) {
                 return false;
             }
 
@@ -491,7 +170,7 @@ bool ParticleSystem::update(float deltaTime)
                 stage[i].setPosition(_particles[i].getPosition() + velHalf * deltaTime);
             }
 
-            if (!computeCpuAcceleration(stage, accEnd)) {
+            if (!computeCpuAcceleration(stage, forceLaw, accEnd)) {
                 return false;
             }
 
@@ -504,7 +183,7 @@ bool ParticleSystem::update(float deltaTime)
                 _particles[i].setVelocity(nextVel);
                 _particles[i].setPressure(accEnd[i] * 100.0f);
             }
-            if (!applySphCorrection(true)) {
+            if (!this->applySphCorrection(deltaTime, true)) {
                 return false;
             }
             if (_sphEnabled && !syncParticlesFromDevice()) {
@@ -530,7 +209,7 @@ bool ParticleSystem::update(float deltaTime)
 
         auto computeOctreeAcceleration = [&](const std::vector<Particle>& state,
                                              std::vector<Vector3>& outAcc) {
-            if (!computeCpuAcceleration(state, outAcc)) {
+            if (!computeCpuAcceleration(state, forceLaw, outAcc)) {
                 outAcc.assign(state.size(), Vector3());
             }
         };
@@ -576,7 +255,7 @@ bool ParticleSystem::update(float deltaTime)
             _particles[i].setPosition(_particles[i].getPosition() + weightedPos * deltaTime);
             _particles[i].setPressure(weightedVel * 100.0f);
         }
-        if (!applySphCorrection(true)) {
+        if (!this->applySphCorrection(deltaTime, true)) {
             return false;
         }
         if (_sphEnabled && !syncParticlesFromDevice()) {
@@ -912,7 +591,7 @@ bool ParticleSystem::update(float deltaTime)
                     return false;
                 }
             }
-            if (!applySphCorrection(false)) {
+            if (!this->applySphCorrection(deltaTime, false)) {
                 return false;
             }
             if (thermalActive) {
@@ -1214,7 +893,7 @@ bool ParticleSystem::update(float deltaTime)
                 return false;
             }
         }
-        if (!applySphCorrection(false)) {
+        if (!this->applySphCorrection(deltaTime, false)) {
             return false;
         }
         _device._hostStateDirty = true;
@@ -1345,7 +1024,7 @@ bool ParticleSystem::update(float deltaTime)
         }
         _adaptiveTimeStepTick += sliceCount;
         _device._hostStateDirty = true;
-        if (!applySphCorrection(false)) {
+        if (!this->applySphCorrection(deltaTime, false)) {
             return false;
         }
         if (thermalActive) {
@@ -1544,7 +1223,7 @@ bool ParticleSystem::update(float deltaTime)
         }
     }
 
-    if (!applySphCorrection(false)) {
+    if (!this->applySphCorrection(deltaTime, false)) {
         return false;
     }
     _device._hostStateDirty = true;
