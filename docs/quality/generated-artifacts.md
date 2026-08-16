@@ -31,3 +31,12 @@ of truth and rebuilds its bundles from the tagged source revision.
 Keep at most the active build tree and the latest smoke-test bundle locally. Historical
 GUI snapshots, audit bundles, duplicate build trees, and test-run directories must be
 removed after their evidence has been recorded in CI artifacts.
+
+## Runtime Source Boundaries
+
+Runtime source files are not generated artifacts and must remain small enough to audit.
+The public `Bridge` facade owns the client-facing API only. Remote lifecycle, retry,
+autostart, snapshot, and status translation belong to the private `RemoteSession`
+component; command serialization belongs to `Commands` and initial-state translation
+belongs to `InitialState`. New transport or serialization behavior must be added to
+those focused components rather than expanding the facade again.
