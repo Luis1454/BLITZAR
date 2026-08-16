@@ -144,9 +144,10 @@ class TraceabilityGateCheck(BaseCheck):
             stripped = raw.strip()
             if stripped.startswith("## ") and capture:
                 break
-            if stripped.startswith("Requirements impacted:") or stripped.startswith("Requirements touched:"):
+            section = stripped.lstrip("#").strip()
+            if section.startswith("Requirements impacted:") or section.startswith("Requirements touched:"):
                 capture = True
-                remainder = stripped.split(":", 1)[1].strip()
+                remainder = section.split(":", 1)[1].strip()
                 if remainder:
                     lines.append(remainder)
                 continue
