@@ -138,6 +138,12 @@ else()
         "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/OctreeForce.cpp"
         "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Octree.cpp"
         "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/ParticleSystemHost.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/HostMath.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Forces.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Adaptive.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Cosmology.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Configuration.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Resources.cpp"
     )
     set(BLITZAR_SERVER_SOURCES
         ${BLITZAR_SERVER_COMMON_SOURCES}
@@ -146,6 +152,12 @@ else()
         "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/OctreeForce.cpp"
         "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Octree.cpp"
         "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/ParticleSystemHost.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/HostMath.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Forces.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Adaptive.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Cosmology.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Configuration.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Resources.cpp"
     )
 endif()
 
