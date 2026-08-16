@@ -12,7 +12,6 @@
       "mitigation": "Keep entries isolated in the allowlist, review on every PR touching these files, and forbid new unrelated growth.",
       "closure_criteria": "Split each file below the hard limit and remove the corresponding allowlist paths.",
       "paths": [
-        "runtime/src/server/core/Daemon.cpp",
         "runtime/src/protocol/client/Client.cpp",
         "runtime/src/client/runtime/RemoteSession.cpp",
         "runtime/src/client/runtime/Runtime.cpp",

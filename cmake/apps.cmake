@@ -153,6 +153,10 @@ if(BLITZAR_BUILD_SERVER_DAEMON)
         apps/server-service/src/main.cpp
         apps/server-service/src/Args.cpp
         runtime/src/server/core/Daemon.cpp
+        runtime/src/server/core/DaemonCommands.cpp
+        runtime/src/server/core/DaemonPhysics.cpp
+        runtime/src/server/core/DaemonPersistence.cpp
+        runtime/src/server/core/DaemonTransport.cpp
         ${BLITZAR_RUNTIME_PROTOCOL_SOURCES}
         ${BLITZAR_SERVER_SOURCES}
     )
