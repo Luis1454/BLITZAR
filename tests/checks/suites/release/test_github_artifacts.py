@@ -21,6 +21,8 @@ def test_artifact_prefixes_have_explicit_classes() -> None:
     assert classify_artifact("gpu-runner-health-1") == "gpu-health"
     assert classify_artifact("release-bundle-v1") == "release-staging"
     assert classify_artifact("desktop-installer-v1") == "release-staging"
+    assert classify_artifact("tool-qualification-release-v1") == "release-staging"
+    assert classify_artifact("github-pages") == "github-pages"
     assert classify_artifact("unexpected-output") == "unclassified"
 
 

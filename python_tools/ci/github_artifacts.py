@@ -17,6 +17,7 @@ RETENTION_DAYS = {
     "nightly-evidence": 14,
     "gpu-health": 7,
     "release-staging": 30,
+    "github-pages": 0,
     "unclassified": 0,
 }
 
@@ -39,6 +40,10 @@ def classify_artifact(name: str) -> str:
         return "gpu-health"
     if name.startswith(("release-", "desktop-installer-")):
         return "release-staging"
+    if name.startswith("tool-qualification-release-"):
+        return "release-staging"
+    if name == "github-pages":
+        return "github-pages"
     return "unclassified"
 
 
