@@ -19,6 +19,9 @@ namespace blitzar_physics_tree_pm_cpu {
 #include "fragments/Math.inl"
 #include "fragments/Assignment.inl"
 #include "fragments/Field.inl"
+#include "fragments/ShortRange.inl"
+#include "fragments/Preparation.inl"
+#include "fragments/Evaluation.inl"
 #include "TreePmForce.inl"
 // clang-format on
 
