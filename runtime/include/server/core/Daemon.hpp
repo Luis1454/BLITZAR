@@ -11,6 +11,7 @@
 #include <atomic>
 #include <cstdint>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <thread>
 #include <vector>
@@ -107,6 +108,18 @@ private:
      * it.
      */
     std::string processRequest(const std::string& request);
+    std::optional<std::string> processObservationCommand(const std::string& request,
+                                                         const std::string& command);
+    std::optional<std::string> processLifecycleCommand(const std::string& request,
+                                                       const std::string& command);
+    std::optional<std::string> processCoreConfigurationCommand(const std::string& request,
+                                                               const std::string& command);
+    std::optional<std::string> processTreePmCommand(const std::string& request,
+                                                    const std::string& command);
+    std::optional<std::string> processPhysicsCommand(const std::string& request,
+                                                     const std::string& command);
+    std::optional<std::string> processPersistenceCommand(const std::string& request,
+                                                         const std::string& command);
     SimulationServer& _server;
     std::atomic<bool> _running;
     std::atomic<bool> _shutdownRequested;
