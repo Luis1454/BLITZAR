@@ -17,11 +17,94 @@
 #include <system_error>
 
 namespace bltzr_module {
-static bool hasRequiredExports(const ExportsV1* exports)
+static bool hasRequiredExports(const ExportsV1& exports)
 {
-    return exports != nullptr && exports->apiVersion == kApiVersionV1 &&
-           exports->create != nullptr && exports->destroy != nullptr && exports->start != nullptr &&
-           exports->stop != nullptr && exports->handleCommand != nullptr;
+    return exports.apiVersion == kApiVersionV1 && exports.create != nullptr &&
+           exports.destroy != nullptr && exports.start != nullptr && exports.stop != nullptr &&
+           exports.handleCommand != nullptr;
+}
+
+static void clearFailedLoad(std::optional<ExportsV1>& exports,
+                            bltzr_platform::DynamicLibrary& library) noexcept
+{
+    exports.reset();
+    library.close();
+}
+
+static bool resolveExports(std::uintptr_t entryPointAddress,
+                           std::optional<ExportsV1>& exports,
+                           std::string& outError)
+{
+    auto entryPoint = reinterpret_cast<EntryPointFn>(entryPointAddress);
+    if (entryPoint == nullptr) {
+        outError = "module entry point resolved to null";
+        return false;
+    }
+    try {
+        const ExportsV1* exportedTable = entryPoint();
+        if (exportedTable == nullptr) {
+            outError = "entry point returned null exports";
+            return false;
+        }
+        exports = *exportedTable;
+        return true;
+    }
+    catch (const std::exception& ex) {
+        outError = std::string("module entry point threw: ") + ex.what();
+    }
+    catch (...) {
+        outError = "module entry point threw unknown exception";
+    }
+    return false;
+}
+
+static bool createModuleState(const ExportsV1& exports,
+                              const HostContextV1& context,
+                              CreateResult& result,
+                              std::array<char, kErrorBufferSize>& errorBuffer,
+                              std::string& outError)
+{
+    try {
+        if (!exports.create(&context, result.rawSlot(), errorBuffer.data(), errorBuffer.size())) {
+            outError = errorFromBuffer(errorBuffer, "module create failed");
+            return false;
+        }
+    }
+    catch (const std::exception& ex) {
+        outError = std::string("module create threw: ") + ex.what();
+        return false;
+    }
+    catch (...) {
+        outError = "module create threw unknown exception";
+        return false;
+    }
+    if (!result.hasValue()) {
+        outError = "module create returned null state";
+        return false;
+    }
+    return true;
+}
+
+static bool startModule(const ExportsV1& exports,
+                        const OpaqueState& state,
+                        std::array<char, kErrorBufferSize>& errorBuffer,
+                        std::string& outError)
+{
+    try {
+        if (!exports.start(state.rawPointer(), errorBuffer.data(), errorBuffer.size())) {
+            outError = errorFromBuffer(errorBuffer, "module start failed");
+            return false;
+        }
+    }
+    catch (const std::exception& ex) {
+        outError = std::string("module start threw: ") + ex.what();
+        return false;
+    }
+    catch (...) {
+        outError = "module start threw unknown exception";
+        return false;
+    }
+    return true;
 }
 
 bool Handle::load(const std::string& modulePath, const std::string& configPath,
@@ -31,7 +114,7 @@ bool Handle::load(const std::string& modulePath, const std::string& configPath,
         m_impl = std::make_unique<Impl>();
     unload();
     const auto destroyStateNoexcept = [this]() -> bool {
-        if (m_impl->exports == nullptr || !m_impl->state.hasValue()) {
+        if (!m_impl->exports.has_value() || !m_impl->state.hasValue()) {
             return true;
         }
         try {
@@ -71,94 +154,34 @@ bool Handle::load(const std::string& modulePath, const std::string& configPath,
         m_impl->library.close();
         return false;
     }
-    auto entryPoint = reinterpret_cast<EntryPointFn>(entryPointAddress);
-    if (entryPoint == nullptr) {
-        outError = "module entry point resolved to null";
+    if (!resolveExports(entryPointAddress, m_impl->exports, outError)) {
         m_impl->library.close();
         return false;
     }
-    try {
-        m_impl->exports = entryPoint();
-    }
-    catch (const std::exception& ex) {
-        outError = std::string("module entry point threw: ") + ex.what();
-        m_impl->library.close();
-        return false;
-    }
-    catch (...) {
-        outError = "module entry point threw unknown exception";
-        m_impl->library.close();
-        return false;
-    }
-    if (!hasRequiredExports(m_impl->exports)) {
-        outError = m_impl->exports == nullptr ? "entry point returned null exports"
-                                              : "module exports are incomplete";
-        if (m_impl->exports != nullptr && m_impl->exports->apiVersion != kApiVersionV1)
+    if (!hasRequiredExports(*m_impl->exports)) {
+        outError = "module exports are incomplete";
+        if (m_impl->exports->apiVersion != kApiVersionV1)
             outError = "unsupported module api version";
-        m_impl->exports = nullptr;
-        m_impl->library.close();
+        clearFailedLoad(m_impl->exports, m_impl->library);
         return false;
     }
     if (m_impl->exports->moduleName == nullptr ||
         manifest.moduleId() != m_impl->exports->moduleName) {
         outError = "module exports do not match manifest";
-        m_impl->exports = nullptr;
-        m_impl->library.close();
+        clearFailedLoad(m_impl->exports, m_impl->library);
         return false;
     }
     std::array<char, kErrorBufferSize> errorBuffer{};
     const HostContextV1 context{configPath.c_str(), effectivePath.c_str()};
     CreateResult createResult{};
-    try {
-        if (!m_impl->exports->create(&context, createResult.rawSlot(), errorBuffer.data(),
-                                     errorBuffer.size())) {
-            outError = errorFromBuffer(errorBuffer, "module create failed");
-            m_impl->exports = nullptr;
-            m_impl->library.close();
-            return false;
-        }
-    }
-    catch (const std::exception& ex) {
-        outError = std::string("module create threw: ") + ex.what();
-        m_impl->exports = nullptr;
-        m_impl->library.close();
-        return false;
-    }
-    catch (...) {
-        outError = "module create threw unknown exception";
-        m_impl->exports = nullptr;
-        m_impl->library.close();
-        return false;
-    }
-    if (!createResult.hasValue()) {
-        outError = "module create returned null state";
-        m_impl->exports = nullptr;
-        m_impl->library.close();
+    if (!createModuleState(*m_impl->exports, context, createResult, errorBuffer, outError)) {
+        clearFailedLoad(m_impl->exports, m_impl->library);
         return false;
     }
     m_impl->state = createResult.state();
-    try {
-        if (!m_impl->exports->start(m_impl->state.rawPointer(), errorBuffer.data(),
-                                    errorBuffer.size())) {
-            outError = errorFromBuffer(errorBuffer, "module start failed");
-            (void)destroyStateNoexcept();
-            m_impl->exports = nullptr;
-            m_impl->library.close();
-            return false;
-        }
-    }
-    catch (const std::exception& ex) {
-        outError = std::string("module start threw: ") + ex.what();
+    if (!startModule(*m_impl->exports, m_impl->state, errorBuffer, outError)) {
         (void)destroyStateNoexcept();
-        m_impl->exports = nullptr;
-        m_impl->library.close();
-        return false;
-    }
-    catch (...) {
-        outError = "module start threw unknown exception";
-        (void)destroyStateNoexcept();
-        m_impl->exports = nullptr;
-        m_impl->library.close();
+        clearFailedLoad(m_impl->exports, m_impl->library);
         return false;
     }
     outError.clear();

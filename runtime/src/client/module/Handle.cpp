@@ -41,7 +41,7 @@ void Handle::unload() noexcept
     if (!m_impl) {
         return;
     }
-    if (m_impl->exports != nullptr && m_impl->state.hasValue()) {
+    if (m_impl->exports.has_value() && m_impl->state.hasValue()) {
         try {
             m_impl->exports->stop(m_impl->state.rawPointer());
         }
@@ -61,7 +61,7 @@ void Handle::unload() noexcept
             std::cerr << "[client-host] module destroy threw unknown exception\n";
         }
     }
-    m_impl->exports = nullptr;
+    m_impl->exports.reset();
     m_impl->state.clear();
     m_impl->path.clear();
     m_impl->library.close();
@@ -69,12 +69,12 @@ void Handle::unload() noexcept
 
 bool Handle::isLoaded() const noexcept
 {
-    return m_impl && m_impl->exports != nullptr && m_impl->state.hasValue();
+    return m_impl && m_impl->exports.has_value() && m_impl->state.hasValue();
 }
 
 std::string_view Handle::moduleName() const noexcept
 {
-    if (!m_impl || m_impl->exports == nullptr || m_impl->exports->moduleName == nullptr)
+    if (!m_impl || !m_impl->exports.has_value() || m_impl->exports->moduleName == nullptr)
         return {};
     return m_impl->exports->moduleName;
 }
