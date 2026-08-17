@@ -5,8 +5,8 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "protocol/client/Client.hpp"
-#include "protocol/Protocol.hpp"
+#include "protocol/client/PtcClient.hpp"
+#include "protocol/PtcProtocol.hpp"
 #include "tests/support/server_harness.hpp"
 #include <chrono>
 #include <cmath>

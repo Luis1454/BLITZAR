@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/diagnostics/ErrorBuffer.hpp"
+#include "client/diagnostics/CliErrorBuffer.hpp"
 #include "modules/cli/ServerOps.hpp"
 #include "modules/cli/State.hpp"
 #include <gtest/gtest.h>

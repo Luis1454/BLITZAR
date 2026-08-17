@@ -30,7 +30,7 @@ def test_repo_policy_rejects_unqualified_raw_pointer_member(tmp_path: Path) -> N
 # @note Boundary and view contracts are intentionally non-owning.
 def test_repo_policy_accepts_explicit_borrowed_view_member(tmp_path: Path) -> None:
     _write(
-        tmp_path / "engine" / "physics" / "core" / "include" / "ParticleSoAView.hpp",
+        tmp_path / "engine" / "physics" / "core" / "include" / "PhyParticleSoAView.hpp",
         "#ifndef VIEW_HPP\n#define VIEW_HPP\nstruct View {\n    float* values;\n};\n#endif\n",
     )
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
@@ -44,8 +44,8 @@ def test_repo_policy_accepts_explicit_borrowed_view_member(tmp_path: Path) -> No
 # @note ABI table pointers must not escape the module boundary into runtime internals.
 def test_repo_policy_rejects_internal_exports_pointer(tmp_path: Path) -> None:
     _write(
-        tmp_path / "runtime" / "src" / "client" / "module" / "Load.cpp",
-        "#include \"client/module/Api.hpp\"\nvoid load() { const ExportsV1* table = nullptr; }\n",
+        tmp_path / "runtime" / "src" / "client" / "module" / "CliLoad.cpp",
+        "#include \"client/module/CliApi.hpp\"\nvoid load() { const ExportsV1* table = nullptr; }\n",
     )
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert not ok

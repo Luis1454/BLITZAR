@@ -11,7 +11,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/registry/Module.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/text/Module.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/validation/Module.cmake")
 
-set(BLITZAR_CONFIG_INCLUDE_DIR "${BLITZAR_ROOT_DIR}/engine/config/include")
+set(BLITZAR_CONFIG_INCLUDE_DIR "${BLITZAR_ROOT_DIR}/engine/config")
 set(BLITZAR_CONFIG_INCLUDE_DIRS
     ${BLITZAR_CONFIG_INCLUDE_DIR}
     ${BLITZAR_CONFIG_ARGS_INCLUDE_DIR}

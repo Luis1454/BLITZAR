@@ -5,8 +5,8 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "core/Config.hpp"
-#include "profile/Main.hpp"
+#include "config/core/CfgConfig.hpp"
+#include "config/profile/CfgMain.hpp"
 #include <gtest/gtest.h>
 
 TEST(SimulationProfileTest, TST_UNT_CONF_046_NormalizeDiskOrbitProfile)

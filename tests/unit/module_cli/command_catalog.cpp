@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "command/catalog/Catalog.hpp"
+#include "command/catalog/CmdCatalog.hpp"
 #include <gtest/gtest.h>
 #include <string>
 #include <type_traits>

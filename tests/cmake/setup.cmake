@@ -5,30 +5,30 @@
 
 if(NOT DEFINED BLITZAR_GRAPHICS_SOURCES)
     set(BLITZAR_GRAPHICS_SOURCES
-        "${BLITZAR_ROOT_DIR}/engine/graphics/src/ViewMath.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/graphics/src/ColorPipeline.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/graphics/GfxViewMath.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/graphics/GfxColorPipeline.cpp"
     )
 endif()
 
 if(NOT DEFINED BLITZAR_RUNTIME_PROTOCOL_SOURCES)
     set(BLITZAR_RUNTIME_PROTOCOL_SOURCES
-        "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/JsonCodec.cpp"
-        "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Parser.cpp"
-        "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Status.cpp"
-        "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Snapshot.cpp"
-        "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Number.cpp"
-        "${BLITZAR_ROOT_DIR}/runtime/src/protocol/client/Client.cpp"
-        "${BLITZAR_ROOT_DIR}/runtime/src/protocol/Protocol.cpp"
+        "${BLITZAR_ROOT_DIR}/runtime/protocol/codec/PtcJsonCodec.cpp"
+        "${BLITZAR_ROOT_DIR}/runtime/protocol/codec/parser/PtcParser.cpp"
+        "${BLITZAR_ROOT_DIR}/runtime/protocol/codec/parser/PtcStatus.cpp"
+        "${BLITZAR_ROOT_DIR}/runtime/protocol/codec/parser/PtcSnapshot.cpp"
+        "${BLITZAR_ROOT_DIR}/runtime/protocol/codec/parser/PtcNumber.cpp"
+        "${BLITZAR_ROOT_DIR}/runtime/protocol/client/PtcClient.cpp"
+        "${BLITZAR_ROOT_DIR}/runtime/protocol/PtcProtocol.cpp"
     )
 endif()
 
 if(NOT DEFINED BLITZAR_RUNTIME_COMMAND_SOURCES)
     set(BLITZAR_RUNTIME_COMMAND_SOURCES
-        "${BLITZAR_ROOT_DIR}/runtime/src/command/execution/BatchRunner.cpp"
-        "${BLITZAR_ROOT_DIR}/runtime/src/command/catalog/Catalog.cpp"
-        "${BLITZAR_ROOT_DIR}/runtime/src/command/execution/Executor.cpp"
-        "${BLITZAR_ROOT_DIR}/runtime/src/command/parsing/Parser.cpp"
-        "${BLITZAR_ROOT_DIR}/runtime/src/command/transport/Transport.cpp"
+        "${BLITZAR_ROOT_DIR}/runtime/command/execution/CmdBatchRunner.cpp"
+        "${BLITZAR_ROOT_DIR}/runtime/command/catalog/CmdCatalog.cpp"
+        "${BLITZAR_ROOT_DIR}/runtime/command/execution/CmdExecutor.cpp"
+        "${BLITZAR_ROOT_DIR}/runtime/command/parsing/CmdParser.cpp"
+        "${BLITZAR_ROOT_DIR}/runtime/command/transport/CmdTransport.cpp"
     )
 endif()
 
@@ -142,25 +142,25 @@ set(BLITZAR_TEST_PLATFORM_TARGET blitzarPlatform)
 if(NOT TARGET ${BLITZAR_TEST_PLATFORM_TARGET})
     set(BLITZAR_TEST_PLATFORM_TARGET blitzarIntegrationPlatform)
     set(_platform_sources
-        "${BLITZAR_ROOT_DIR}/engine/platform/src/Errors.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/platform/src/common/DynamicLibrary.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/platform/src/common/Process.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/platform/src/common/ProcessImpl.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/platform/src/common/Socket.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/platform/PltErrors.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/platform/common/PltDynamicLibrary.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/platform/common/PltProcess.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/platform/common/PltProcessImpl.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/platform/common/PltSocket.cpp"
     )
     if(WIN32)
         list(APPEND _platform_sources
-            "${BLITZAR_ROOT_DIR}/engine/platform/src/win/DynamicLibrary.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/platform/src/win/Paths.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/platform/src/win/Process.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/platform/src/win/Socket.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/win/PltDynamicLibrary.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/win/PltPaths.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/win/PltProcess.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/win/PltSocket.cpp"
         )
     else()
         list(APPEND _platform_sources
-            "${BLITZAR_ROOT_DIR}/engine/platform/src/posix/DynamicLibrary.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/platform/src/posix/Paths.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/platform/src/posix/Process.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/platform/src/posix/SocketOps.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/posix/PltDynamicLibrary.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/posix/PltPaths.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/posix/PltProcess.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/posix/PltSocketOps.cpp"
         )
     endif()
 

@@ -6,11 +6,11 @@
  */
 
 #include "modules/cli/Commands.hpp"
-#include "client/diagnostics/ErrorBuffer.hpp"
-#include "command/catalog/Catalog.hpp"
-#include "command/core/Context.hpp"
-#include "command/execution/Executor.hpp"
-#include "command/parsing/Parser.hpp"
+#include "client/diagnostics/CliErrorBuffer.hpp"
+#include "command/catalog/CmdCatalog.hpp"
+#include "command/core/CmdContext.hpp"
+#include "command/execution/CmdExecutor.hpp"
+#include "command/parsing/CmdParser.hpp"
 #include <cstddef>
 #include <exception>
 #include <iostream>

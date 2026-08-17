@@ -7,9 +7,9 @@
 
 #ifndef BLITZAR_MODULES_PROXY_SUPPORT_HPP_
 #define BLITZAR_MODULES_PROXY_SUPPORT_HPP_
-#include "Constants.hpp"
-#include "client/diagnostics/ErrorBuffer.hpp"
-#include "Process.hpp"
+#include "FndConstants.hpp"
+#include "client/diagnostics/CliErrorBuffer.hpp"
+#include "PltProcess.hpp"
 #include <cstdint>
 #include <string>
 #include <string_view>

@@ -6,8 +6,8 @@
  */
 
 #include "client/common/ClientCommon.hpp"
-#include "core/Config.hpp"
-#include "protocol/Protocol.hpp"
+#include "config/core/CfgConfig.hpp"
+#include "protocol/PtcProtocol.hpp"
 #include "tests/support/scoped_env_var.hpp"
 #include <cctype>
 #include <filesystem>

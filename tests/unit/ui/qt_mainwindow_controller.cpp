@@ -5,15 +5,15 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/runtime/Interface.hpp"
-#include "core/Config.hpp"
-#include "window/control/Controller.hpp"
+#include "client/runtime/CliInterface.hpp"
+#include "config/core/CfgConfig.hpp"
+#include "window/control/GuiController.hpp"
 #include <cstdint>
 #include <gtest/gtest.h>
 #include <optional>
 #include <string>
 #include <vector>
-#include "Constants.hpp"
+#include "FndConstants.hpp"
 
 namespace bltzr_test_qt_ui {
 class RecordingRuntime final : public bltzr_client::Interface {

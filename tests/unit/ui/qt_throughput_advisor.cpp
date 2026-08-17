@@ -5,8 +5,8 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "core/Config.hpp"
-#include "support/performance/Throughput.hpp"
+#include "config/core/CfgConfig.hpp"
+#include "src/support/performance/GuiThroughput.hpp"
 #include <gtest/gtest.h>
 
 namespace bltzr_test_qt_throughput_advisor {

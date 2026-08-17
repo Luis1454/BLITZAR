@@ -5,9 +5,9 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "command/execution/BatchRunner.hpp"
-#include "command/core/Context.hpp"
-#include "command/transport/Transport.hpp"
+#include "command/execution/CmdBatchRunner.hpp"
+#include "command/core/CmdContext.hpp"
+#include "command/transport/CmdTransport.hpp"
 #include <filesystem>
 #include <fstream>
 #include <gtest/gtest.h>

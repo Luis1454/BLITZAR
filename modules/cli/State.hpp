@@ -7,8 +7,8 @@
 
 #ifndef BLITZAR_MODULES_CLI_STATE_HPP_
 #define BLITZAR_MODULES_CLI_STATE_HPP_
-#include "command/core/Context.hpp"
-#include "command/transport/Transport.hpp"
+#include "command/core/CmdContext.hpp"
+#include "command/transport/CmdTransport.hpp"
 
 namespace bltzr_module_cli {
 struct State {

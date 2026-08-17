@@ -7,7 +7,7 @@
 
 #ifndef BLITZAR_APPS_CLIENT_HOST_MODULEOPS_HPP_
 #define BLITZAR_APPS_CLIENT_HOST_MODULEOPS_HPP_
-#include "client/module/Handle.hpp"
+#include "client/module/CliHandle.hpp"
 #include <filesystem>
 #include <string>
 #include <string_view>

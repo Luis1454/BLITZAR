@@ -130,7 +130,7 @@ if(BLITZAR_BUILD_TESTS)
         add_executable(blitzarPhysicsGTests
             tests/support/physics_scenario.cpp
             tests/support/physics_test_utils.cpp
-            runtime/src/protocol/Protocol.cpp
+            runtime/protocol/PtcProtocol.cpp
             ${BLITZAR_PHYSICS_TEST_SOURCES}
             ${BLITZAR_SERVER_SOURCES}
         )
@@ -173,7 +173,7 @@ if(BLITZAR_BUILD_TESTS)
         tests/support/numerical_validation_tool.cpp
         tests/support/physics_scenario.cpp
         tests/support/physics_test_utils.cpp
-        runtime/src/protocol/Protocol.cpp
+        runtime/protocol/PtcProtocol.cpp
         ${BLITZAR_SERVER_SOURCES}
     )
     if(BLITZAR_ENABLE_CUDA)
@@ -191,7 +191,7 @@ if(BLITZAR_BUILD_TESTS)
         tests/support/performance_benchmark_tool.cpp
         tests/support/physics_scenario.cpp
         tests/support/physics_test_utils.cpp
-        runtime/src/protocol/Protocol.cpp
+        runtime/protocol/PtcProtocol.cpp
         ${BLITZAR_SERVER_SOURCES}
     )
     if(BLITZAR_ENABLE_CUDA)

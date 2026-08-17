@@ -5,8 +5,8 @@
  * @brief Echo module used to validate client module loading behavior.
  */
 
-#include "client/module/Api.hpp"
-#include "client/module/Boundary.hpp"
+#include "client/module/CliApi.hpp"
+#include "client/module/CliBoundary.hpp"
 #include <algorithm>
 #include <cctype>
 #include <cstddef>

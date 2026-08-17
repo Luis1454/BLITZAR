@@ -7,8 +7,8 @@
 
 #ifndef BLITZAR_MODULES_CLI_LIFECYCLE_HPP_
 #define BLITZAR_MODULES_CLI_LIFECYCLE_HPP_
-#include "client/module/Api.hpp"
-#include "client/module/Boundary.hpp"
+#include "client/module/CliApi.hpp"
+#include "client/module/CliBoundary.hpp"
 
 namespace bltzr_module_cli {
 

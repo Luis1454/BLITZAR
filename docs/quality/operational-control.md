@@ -71,9 +71,9 @@ Operational rules:
 
 Priority review surfaces:
 
-- `engine/server/src`
-- `runtime/src/client`
-- `runtime/src/protocol`
+- `engine/server`
+- `runtime/client`
+- `runtime/protocol`
 - `modules/qt/src`
 - solver-specific physics paths
 

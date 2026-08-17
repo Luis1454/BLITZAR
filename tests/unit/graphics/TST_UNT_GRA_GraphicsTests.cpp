@@ -5,9 +5,9 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "ColorPipeline.hpp"
-#include "ViewMath.hpp"
-#include "Constants.hpp"
+#include "GfxColorPipeline.hpp"
+#include "graphics/GfxViewMath.hpp"
+#include "FndConstants.hpp"
 #include <cmath>
 #include <gtest/gtest.h>
 

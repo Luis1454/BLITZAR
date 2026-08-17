@@ -5,9 +5,9 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "DynamicLibrary.hpp"
-#include "Process.hpp"
-#include "Socket.hpp"
+#include "PltDynamicLibrary.hpp"
+#include "PltProcess.hpp"
+#include "PltSocket.hpp"
 #include <array>
 #include <cstddef>
 #include <cstdint>

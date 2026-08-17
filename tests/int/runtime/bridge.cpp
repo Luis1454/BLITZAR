@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/runtime/Bridge.hpp"
+#include "client/runtime/CliBridge.hpp"
 #include "tests/support/poll_utils.hpp"
 #include "tests/support/server_harness.hpp"
 #include <chrono>

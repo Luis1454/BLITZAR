@@ -157,7 +157,7 @@ On `v*` tags, or manual dispatch with a `v*` release tag, the lane publishes a G
 
 - `apps/`
 - `engine/<domain>/<module>/include`, `src`, `cuda`, `tests`, `Module.cmake`
-- `runtime/include/`, `runtime/src/`
+- `runtime/`, `runtime/`
 - `modules/`
 - `tests/unit`, `tests/int`: product verification
 - `tests/checks`, `python_tools`: repository quality tooling and CI gates

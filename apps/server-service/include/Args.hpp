@@ -7,7 +7,7 @@
 
 #ifndef BLITZAR_APPS_SERVER_SERVICE_ARGS_HPP_
 #define BLITZAR_APPS_SERVER_SERVICE_ARGS_HPP_
-#include "Constants.hpp"
+#include "FndConstants.hpp"
 #include <cstdint>
 #include <ostream>
 #include <string>

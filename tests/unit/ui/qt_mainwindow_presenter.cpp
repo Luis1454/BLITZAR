@@ -5,11 +5,11 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "window/presentation/Presenter.hpp"
+#include "window/presentation/GuiPresenter.hpp"
 #include <gtest/gtest.h>
 #include <limits>
 #include <string>
-#include "Constants.hpp"
+#include "FndConstants.hpp"
 
 namespace bltzr_test_qt_ui {
 TEST(QtUiLogicTest, TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeState)

@@ -17,6 +17,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/physics/thermal/Module.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/physics/treepm/Module.cmake")
 
 set(BLITZAR_ENGINE_INCLUDE_DIRS
+    ${BLITZAR_ROOT_DIR}/engine
     ${BLITZAR_CORE_INCLUDE_DIR}
     ${BLITZAR_TYPES_INCLUDE_DIR}
     ${BLITZAR_BATCH_INCLUDE_DIR}

@@ -10,8 +10,8 @@
 #include <iostream>
 #include <memory>
 
-#include "client/diagnostics/ErrorBuffer.hpp"
-#include "core/Config.hpp"
+#include "client/diagnostics/CliErrorBuffer.hpp"
+#include "config/core/CfgConfig.hpp"
 #include "modules/cli/Lifecycle.hpp"
 #include "modules/cli/State.hpp"
 

@@ -3,8 +3,8 @@
  * @brief Adaptive FMM qualification on deterministic astrophysical topologies.
  */
 
-#include "FmmCpu.hpp"
-#include "ForceLawPolicy.hpp"
+#include "physics/fmm/FmmCpu.hpp"
+#include "PhyForceLawPolicy.hpp"
 #include <cmath>
 #include <cstdint>
 #include <gtest/gtest.h>

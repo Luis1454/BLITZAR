@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "ParticleSystem.hpp"
+#include "PhyParticleSystem.hpp"
 #include <gtest/gtest.h>
 #include <vector>
 

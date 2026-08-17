@@ -23,9 +23,9 @@ def _valid_tree(root: Path) -> None:
         "engine/config/registry", "engine/config/text", "engine/config/validation",
     )
     for module in modules:
-        for directory in ("include", "src"):
-            (root / module / directory).mkdir(parents=True, exist_ok=True)
+        (root / module).mkdir(parents=True, exist_ok=True)
         (root / module / "Module.cmake").touch()
+        (root / module / "CfgTest.cpp").touch()
     (root / "engine/config/Module.cmake").touch()
     for relative in (
         "engine/physics/cuda/fragments",
@@ -33,7 +33,7 @@ def _valid_tree(root: Path) -> None:
         "engine/physics/sph/cuda/fragments",
         "engine/physics/thermal/cuda/fragments",
         "engine/physics/treepm/cuda/fragments",
-        "engine/physics/treepm/src/fragments",
+        "engine/physics/treepm/fragments",
     ):
         (root / relative).mkdir(parents=True, exist_ok=True)
     (root / "engine/physics/cuda/fragments/CudBuffer.inl").touch()
@@ -65,7 +65,17 @@ def test_rejects_generic_engine_filename(tmp_path: Path) -> None:
     (tmp_path / "engine/core/Core.cpp").touch()
     result = _run(tmp_path)
     assert not result.ok
-    assert any("generic engine filename" in error for error in result.errors)
+    assert any("generic production filename" in error for error in result.errors)
+
+
+def test_rejects_legacy_source_directory(tmp_path: Path) -> None:
+    _valid_tree(tmp_path)
+    legacy = tmp_path / "engine/core/src"
+    legacy.mkdir()
+    (legacy / "CfgLegacy.cpp").touch()
+    result = _run(tmp_path)
+    assert not result.ok
+    assert any("legacy source directory" in error for error in result.errors)
 
 
 def test_rejects_missing_manifest_source(tmp_path: Path) -> None:

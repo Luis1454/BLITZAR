@@ -44,7 +44,7 @@ set(BLITZAR_TEST_INCLUDE_DIRS
     "${BLITZAR_ROOT_DIR}"
     "${BLITZAR_ROOT_DIR}/apps/client-host/include"
     ${BLITZAR_ENGINE_INCLUDE_DIRS}
-    "${BLITZAR_ROOT_DIR}/runtime/include"
+    "${BLITZAR_ROOT_DIR}/runtime"
     "${BLITZAR_ROOT_DIR}/modules/qt/src"
 )
 

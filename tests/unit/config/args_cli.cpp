@@ -5,16 +5,16 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "args/Main.hpp"
-#include "core/Config.hpp"
-#include "protocol/Protocol.hpp"
+#include "config/args/CfgMain.hpp"
+#include "config/core/CfgConfig.hpp"
+#include "protocol/PtcProtocol.hpp"
 #include <gtest/gtest.h>
 #include <limits>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
-#include "Constants.hpp"
+#include "FndConstants.hpp"
 
 namespace bltzr_test_config_args_cli {
 std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage)

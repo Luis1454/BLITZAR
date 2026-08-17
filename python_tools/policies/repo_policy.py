@@ -72,9 +72,9 @@ SETJMP_LONGJMP_RE = re.compile(r"\b(?:setjmp|longjmp)\b")
 DO_WHILE_RE = re.compile(r"\bdo\b\s*\{", re.DOTALL)
 WHILE_TRUE_RE = re.compile(r"\bwhile\s*\(\s*true\s*\)")
 FUNCTION_POINTER_TYPEDEF_RE = re.compile(r"(?m)^\s*(?:typedef|using)\b[^\n;]*\(\s*\*\s*[A-Za-z0-9_]*\s*\)")
-FUNCTION_POINTER_ABI_PATHS = {"runtime/include/client/module/Api.hpp"}
+FUNCTION_POINTER_ABI_PATHS = {"runtime/client/module/CliApi.hpp"}
 EXPORTS_POINTER_RE = re.compile(r"\b(?:const\s+)?(?:bltzr_module::)?ExportsV1\s*\*")
-EXPORTS_POINTER_ABI_PATH = "runtime/include/client/module/Api.hpp"
+EXPORTS_POINTER_ABI_PATH = "runtime/client/module/CliApi.hpp"
 NON_WAIVABLE_STRONG_SIZE_PATHS: set[str] = set()
 QT_REFERENCE_NEW_RE = re.compile(
     r"(?m)^\s*(?:auto|Q[A-Za-z0-9_<>:]+)\s*&\s*[A-Za-z0-9_]+\s*=\s*\*new\s+Q[A-Za-z0-9_<>:]+\s*\("
@@ -85,13 +85,13 @@ RAW_POINTER_MEMBER_RE = re.compile(
     r"[A-Za-z_][A-Za-z0-9_]*\s*(?:=\s*nullptr)?\s*;"
 )
 RAW_POINTER_MEMBER_ALLOWLIST = {
-    "engine/physics/core/include/ParticleSoAView.hpp",
-    "engine/platform/include/Socket.hpp",
-    "runtime/include/client/diagnostics/ErrorBuffer.hpp",
-    "runtime/include/client/module/Api.hpp",
-    "runtime/include/client/module/Boundary.hpp",
-    "runtime/include/ffi/bridge/Api.hpp",
-    "runtime/include/ffi/core/Api.hpp",
+    "engine/physics/core/PhyParticleSoAView.hpp",
+    "engine/platform/PltSocket.hpp",
+    "runtime/client/diagnostics/CliErrorBuffer.hpp",
+    "runtime/client/module/CliApi.hpp",
+    "runtime/client/module/CliBoundary.hpp",
+    "runtime/ffi/bridge/FfiApi.hpp",
+    "runtime/ffi/core/FfiApi.hpp",
 }
 PRAGMA_ONCE_RE = re.compile(r"(?m)^\s*#pragma\s+once\b")
 DEFINE_RE = re.compile(r"(?m)^\s*#define\s+([A-Z][A-Z0-9_]+)\b(?!\s*\()")
@@ -278,7 +278,7 @@ class RepoPolicyCheck(BaseCheck):
         if rel == EXPORTS_POINTER_ABI_PATH:
             return
         path = Path(rel)
-        if path.parts and path.parts[0] == "modules" and path.name == "Module.cpp":
+        if path.parts and path.parts[0] == "modules" and path.name == "GuiModule.cpp":
             return
         result.add_error(
             f"{rel}: ExportsV1 raw pointer is restricted to the module ABI declaration/export boundary"

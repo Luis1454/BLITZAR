@@ -5,11 +5,11 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "protocol/codec/JsonCodec.hpp"
-#include "protocol/Protocol.hpp"
+#include "protocol/codec/PtcJsonCodec.hpp"
+#include "protocol/PtcProtocol.hpp"
 #include <gtest/gtest.h>
 #include <string>
-#include "Constants.hpp"
+#include "FndConstants.hpp"
 #include <vector>
 
 namespace bltzr_test_protocol_codec {

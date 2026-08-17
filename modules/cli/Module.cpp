@@ -5,8 +5,8 @@
  * @brief Command-line client module for runtime control workflows.
  */
 
-#include "client/module/Api.hpp"
-#include "client/module/Boundary.hpp"
+#include "client/module/CliApi.hpp"
+#include "client/module/CliBoundary.hpp"
 #include "modules/cli/Commands.hpp"
 #include "modules/cli/Lifecycle.hpp"
 #include "modules/cli/State.hpp"

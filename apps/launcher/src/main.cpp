@@ -5,9 +5,9 @@
  * @brief Application entry points and host executables for BLITZAR.
  */
 
-#include "Constants.hpp"
-#include "Paths.hpp"
-#include "Process.hpp"
+#include "FndConstants.hpp"
+#include "PltPaths.hpp"
+#include "PltProcess.hpp"
 #include <algorithm>
 #include <cctype>
 #include <filesystem>

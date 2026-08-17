@@ -16,11 +16,11 @@
  * Responsibility: Gather shared CUDA includes and prelude helpers for particle-system fragments.
  */
 
-#include "Constants.hpp"
-#include "env/Base.hpp"
-#include "ForceLawPolicy.hpp"
-#include "ParticleSystem.hpp"
-#include "Octree.hpp"
+#include "FndConstants.hpp"
+#include "config/env/CfgBase.hpp"
+#include "PhyForceLawPolicy.hpp"
+#include "PhyParticleSystem.hpp"
+#include "physics/octree/Octree.hpp"
 #include <algorithm>
 #include <array>
 #include <cfloat>
@@ -76,7 +76,7 @@ struct TreePmGridParams {
 constexpr int kOctreeLeafCapacity = 32;
 constexpr int kOctreeMaxDepth = 16;
 
-#include "ParticleSoAView.hpp"
+#include "PhyParticleSoAView.hpp"
 
 typedef Particle* ParticleHandle;
 typedef const Particle* ParticleConstHandle;

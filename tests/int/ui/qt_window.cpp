@@ -5,13 +5,13 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/runtime/Runtime.hpp"
-#include "protocol/Protocol.hpp"
+#include "client/runtime/CliRuntime.hpp"
+#include "protocol/PtcProtocol.hpp"
 #include "tests/support/client_utils.hpp"
 #include "tests/support/qt_test_utils.hpp"
 #include "tests/support/server_harness.hpp"
-#include "widgets/graphs/Graph.hpp"
-#include "window/core/Window.hpp"
+#include "src/widgets/graphs/GuiGraph.hpp"
+#include "window/core/GuiWindow.hpp"
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QEventLoop>

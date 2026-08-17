@@ -5,9 +5,9 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/module/Boundary.hpp"
-#include "client/module/Hash.hpp"
-#include "client/module/Manifest.hpp"
+#include "client/module/CliBoundary.hpp"
+#include "client/module/CliHash.hpp"
+#include "client/module/CliManifest.hpp"
 #include <filesystem>
 #include <fstream>
 #include <gtest/gtest.h>

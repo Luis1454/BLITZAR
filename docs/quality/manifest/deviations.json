@@ -12,10 +12,10 @@
       "mitigation": "Keep entries isolated in the allowlist, review on every PR touching these files, and forbid new unrelated growth.",
       "closure_criteria": "Split each file below the hard limit and remove the corresponding allowlist paths.",
       "paths": [
-        "runtime/src/protocol/client/Client.cpp",
-        "runtime/src/client/runtime/RemoteSession.cpp",
-        "runtime/src/client/runtime/Runtime.cpp",
-        "runtime/src/command/execution/Executor.cpp"
+        "runtime/protocol/client/PtcClient.cpp",
+        "runtime/client/runtime/CliRemoteSession.cpp",
+        "runtime/client/runtime/CliRuntime.cpp",
+        "runtime/command/execution/CmdExecutor.cpp"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -61,8 +61,8 @@
       "mitigation": "Review changes for feature isolation and keep UI/module edits tied to decomposition work.",
       "closure_criteria": "Extract module composition responsibilities into smaller units and delete the allowlist paths.",
       "paths": [
-        "modules/qt/Module.cpp",
-        "modules/qt/src/widgets/graphs/Paint.cpp"
+        "modules/qt/GuiModule.cpp",
+        "modules/qt/src/widgets/graphs/GuiPaint.cpp"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -204,7 +204,7 @@
       "mitigation": "Keep this header isolated in the allowlist and review all interface changes for consistency with the implementation files.",
       "closure_criteria": "Split the physics interface header below the hard limit and remove the allowlist path.",
       "paths": [
-        "engine/physics/core/include/ParticleSystem.hpp"
+        "engine/physics/core/PhyParticleSystem.hpp"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -251,17 +251,17 @@
       "closure_criteria": "Split every path below the strong threshold, remove it from this register and the policy allowlist, and retain its deterministic qualification identifiers.",
       "paths": [
         "cmake/apps.cmake",
-        "engine/physics/core/include/ParticleSystem.hpp",
-        "engine/config/directive/src/directive/Config.cpp",
-        "engine/config/directive/src/directive/Write.cpp",
+        "engine/physics/core/PhyParticleSystem.hpp",
+        "engine/config/directive/CfgConfig.cpp",
+        "engine/config/directive/CfgWrite.cpp",
         "engine/physics/cuda/fragments/system/CudCore.inl",
-        "engine/physics/cuda/src/JitRuntime.cu",
-        "engine/server/src/simulation/lifecycle/Rebuild.cpp",
-        "engine/server/src/simulation/telemetry/SnapshotAndEnergy.cpp",
-        "engine/server/src/SimulationInitConfig.cpp",
-        "modules/qt/src/widgets/graphs/SpectrumGraph.cpp",
-        "modules/qt/src/window/config/ConfigurationEditor.cpp",
-        "modules/qt/src/window/control/Controls.cpp",
+        "engine/physics/cuda/CudJitRuntime.cu",
+        "engine/server/simulation/lifecycle/SrvRebuild.cpp",
+        "engine/server/simulation/telemetry/SrvSnapshotAndEnergy.cpp",
+        "engine/server/SrvSimulationInitConfig.cpp",
+        "modules/qt/src/widgets/graphs/GuiSpectrumGraph.cpp",
+        "modules/qt/src/window/config/GuiConfigurationEditor.cpp",
+        "modules/qt/src/window/control/GuiControls.cpp",
         "python_tools/policies/repo_policy.py",
         "scripts/analysis/ast_graph.py",
         "tests/unit/config/args_cli.cpp",

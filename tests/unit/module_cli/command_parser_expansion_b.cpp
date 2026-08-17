@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "command/parsing/Parser.hpp"
+#include "command/parsing/CmdParser.hpp"
 #include <gtest/gtest.h>
 #include <string>
 

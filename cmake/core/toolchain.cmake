@@ -32,8 +32,8 @@ set(BLITZAR_PROJECT_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/apps/client-host/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/apps/server-service/include"
     ${BLITZAR_ENGINE_INCLUDE_DIRS}
-    "${CMAKE_CURRENT_SOURCE_DIR}/runtime/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/runtime/include/server"
+    "${CMAKE_CURRENT_SOURCE_DIR}/runtime"
+    "${CMAKE_CURRENT_SOURCE_DIR}/runtime/server"
     "${CMAKE_CURRENT_SOURCE_DIR}/modules/qt/src"
 )
 
@@ -74,19 +74,19 @@ else()
 endif()
 
 set(BLITZAR_RUNTIME_PROTOCOL_SOURCES
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/JsonCodec.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Parser.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Status.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Snapshot.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Number.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/client/Client.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/Protocol.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/protocol/codec/PtcJsonCodec.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/protocol/codec/parser/PtcParser.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/protocol/codec/parser/PtcStatus.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/protocol/codec/parser/PtcSnapshot.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/protocol/codec/parser/PtcNumber.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/protocol/client/PtcClient.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/protocol/PtcProtocol.cpp"
 )
 
 set(BLITZAR_CORE_FFI_SOURCES
-    "${BLITZAR_ROOT_DIR}/runtime/src/ffi/core/Core.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/ffi/core/Ops.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/ffi/core/Api.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/ffi/core/FfiCore.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/ffi/core/FfiOps.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/ffi/core/FfiApi.cpp"
 )
 
 function(BLITZAR_collect_existing_paths out_var)

@@ -5,11 +5,11 @@
  * @brief Command-line client module for runtime control workflows.
  */
 
-#include "Constants.hpp"
+#include "FndConstants.hpp"
 #include "modules/cli/ServerOps.hpp"
-#include "client/diagnostics/ErrorBuffer.hpp"
-#include "text/Parse.hpp"
-#include "protocol/Protocol.hpp"
+#include "client/diagnostics/CliErrorBuffer.hpp"
+#include "config/text/CfgParse.hpp"
+#include "protocol/PtcProtocol.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <iostream>

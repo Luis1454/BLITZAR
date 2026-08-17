@@ -8,12 +8,12 @@ technical words describe the next level only when they carry real meaning.
 ```text
 engine/
   <domain>/
-    <module>/
-      include/             public headers used by other modules, when present
-      src/                 private headers and host implementation, when present
-      cuda/                CUDA implementation for this module, when present
-        fragments/         included .inl source fragments
-      tests/               tests owned by this module
+      <module>/
+      <Responsibility>*.hpp  public and internal headers for the responsibility
+      <Responsibility>*.cpp  host implementation for the responsibility
+      cuda/                  CUDA implementation, when present
+        fragments/           included .inl source fragments
+      tests/                 tests owned by this module
       Module.cmake         module source and visibility manifest
 ```
 
@@ -34,20 +34,18 @@ an explicit aggregator directory rather than a dense implementation directory:
 
 ```text
 engine/config/                 # aggregator: Module.cmake and public facade headers only
-  args/                         # leaf responsibility
-    include/ src/ Module.cmake
+  args/                         # leaf responsibility and Module.cmake
   registry/
-    include/ src/ Module.cmake
+    Module.cmake
   validation/
     include/ src/ Module.cmake
 ```
 
 An aggregator owns composition and manifests, not `.cpp`, `.cu`, or `.inl`
-implementation files. Its children own their nearby `include/`, `src/`,
-optional `cuda/`, and `tests/` directories. A small number of direct public
-facade headers is allowed when they preserve a stable cross-module include.
-Child namespaces may remain below a child `include/` directory when required
-to preserve that public include contract; this is not a new generic layer.
+implementation files. Its children own their responsibility files directly,
+with optional `cuda/`, `fragments/`, and `tests/` directories. A small number
+of direct public facade headers is allowed when they preserve a stable
+cross-module include.
 
 The repository root keeps cross-module tests, release tooling, applications,
 and deployment assets. A module-local `tests/` directory is for tests that have
@@ -58,9 +56,9 @@ scientific qualification tests remain under the root `tests/` tree.
 
 - The first directory is the functional domain, not a build-system concept.
 - A module is the smallest independently understandable responsibility.
-- `include/` and `src/` are local to the leaf responsibility. An aggregator
-  may contain leaf directories, but must not become a second implementation
-  root. Do not add another generic `include/` or `src/` layer below a leaf.
+- Do not create generic `include/` or `src/` directories inside a responsibility.
+  The responsibility directory itself is the source boundary and contains its
+  headers and implementations together.
 - `cuda/` is used when a module owns CUDA code. It may contain `.cu`, `.cuh`,
   and `.hpp` files when they belong to the CUDA implementation.
 - `cuda/fragments/` is reserved for `.inl` files included by a parent
@@ -81,19 +79,32 @@ unambiguous outside its parent directory:
 
 | Prefix | Responsibility |
 | --- | --- |
+| `Bat` | batch execution |
 | `Cfg` | configuration implementation |
+| `Cli` | client runtime |
+| `Cmd` | command execution |
 | `Cud` | shared CUDA implementation |
+| `Ffi` | foreign-function interface |
+| `Fmm` | fast multipole method |
+| `Fnd` | foundational engine types |
+| `Gui` | Qt user interface |
+| `Gfx` | graphics support |
 | `Jit` | CUDA JIT specialization |
 | `Oct` | octree implementation |
+| `Phy` | shared physics |
+| `Plt` | platform abstraction |
+| `Ptc` | protocol |
 | `Sph` | SPH implementation |
 | `Srv` | simulation server implementation |
 | `Thm` | thermal implementation |
 | `Tpm` | TreePM implementation |
+| `Typ` | shared simulation types |
 
 Examples are `OctBuffer.inl`, `SphBuffer.inl`, and `TpmGridBuild.inl`.
-Primary class files keep the class name (`Octree.cpp`, `FmmCpu.hpp`); the
-prefix rule targets generic implementation names such as `Buffer`, `Build`,
-`Force`, `Grid`, `State`, and `Update`. New responsibility codes require
+Primary class files keep the class name when it already starts with the
+responsibility code (`Octree.cpp`, `FmmCpu.hpp`); otherwise every production
+file uses the code as a prefix. The prefix rule targets generic implementation
+names such as `Buffer`, `Build`, `Force`, `Grid`, `State`, and `Update`. New responsibility codes require
 an update to this table and to the automated architecture check.
 
 ## Visibility

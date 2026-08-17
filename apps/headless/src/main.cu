@@ -5,12 +5,12 @@
  * @brief Application entry points and host executables for BLITZAR.
  */
 
-#include "Constants.hpp"
-#include "env/Base.hpp"
+#include "FndConstants.hpp"
+#include "config/env/CfgBase.hpp"
 #include "SimulationArgs.hpp"
 #include "SimulationConfig.hpp"
-#include "SimulationInitConfig.hpp"
-#include "SimulationServer.hpp"
+#include "SrvSimulationInitConfig.hpp"
+#include "SrvSimulationServer.hpp"
 #include <chrono>
 #include <iostream>
 #include <string>

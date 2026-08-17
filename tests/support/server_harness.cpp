@@ -6,8 +6,8 @@
  */
 
 #include "tests/support/server_harness.hpp"
-#include "protocol/client/Client.hpp"
-#include "protocol/Protocol.hpp"
+#include "protocol/client/PtcClient.hpp"
+#include "protocol/PtcProtocol.hpp"
 #include <array>
 #include <chrono>
 #include <filesystem>

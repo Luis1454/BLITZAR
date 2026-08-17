@@ -116,7 +116,7 @@ def _context(
         clang_tidy_header_filter=header_filter,
         clang_tidy_file_timeout_sec=file_timeout_sec,
         clang_tidy_timeout_fallback_checks=timeout_fallback_checks,
-        paths=("runtime/src/server",),
+        paths=("runtime/server",),
     )
 
 
@@ -164,7 +164,7 @@ def test_clang_tidy_runs_only_changed_compile_entries(monkeypatch, tmp_path: Pat
     unchanged = _make_source(tmp_path, "unchanged")
     build_dir = tmp_path / "build-quality"
     _write_compile_db(build_dir, [changed, unchanged])
-    check, runner = _make_check(monkeypatch, _FakeRunner(diff_output="runtime/src/server/changed.cpp\n"))
+    check, runner = _make_check(monkeypatch, _FakeRunner(diff_output="runtime/server/changed.cpp\n"))
 
     result = check.run(_context(tmp_path, build_dir, diff_base="origin/main", diff_target="HEAD", header_filter="project"))
 
@@ -204,7 +204,7 @@ def test_clang_tidy_expands_scope_for_header_only_diffs(monkeypatch, tmp_path: P
     _make_source(tmp_path, "shared", ".hpp")
     build_dir = tmp_path / "build-quality"
     _write_compile_db(build_dir, [first, second])
-    check, runner = _make_check(monkeypatch, _FakeRunner(diff_output="runtime/src/server/shared.hpp\n"))
+    check, runner = _make_check(monkeypatch, _FakeRunner(diff_output="runtime/server/shared.hpp\n"))
 
     result = check.run(_context(tmp_path, build_dir, diff_base="origin/main"))
 

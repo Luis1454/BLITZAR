@@ -7,8 +7,8 @@
 
 #ifndef BLITZAR_MODULES_CLI_COMMANDS_HPP_
 #define BLITZAR_MODULES_CLI_COMMANDS_HPP_
-#include "client/module/Boundary.hpp"
-#include "client/diagnostics/ErrorBuffer.hpp"
+#include "client/module/CliBoundary.hpp"
+#include "client/diagnostics/CliErrorBuffer.hpp"
 #include "modules/cli/State.hpp"
 #include <string_view>
 

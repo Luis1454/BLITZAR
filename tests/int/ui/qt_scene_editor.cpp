@@ -3,7 +3,7 @@
  * @brief In-process, non-invasive GUI actions for scene object properties.
  */
 
-#include "window/scene/SceneEditor.hpp"
+#include "window/scene/GuiSceneEditor.hpp"
 #include <QApplication>
 #include <QCoreApplication>
 #include <QDir>

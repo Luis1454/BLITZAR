@@ -14,7 +14,7 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
-#include "Constants.hpp"
+#include "FndConstants.hpp"
 
 namespace testsupport {
 static std::size_t countOccurrences(const std::string& text, const std::string& pattern)

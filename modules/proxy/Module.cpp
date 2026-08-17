@@ -5,8 +5,8 @@
  * @brief Proxy module used to validate runtime forwarding behavior.
  */
 
-#include "client/module/Api.hpp"
-#include "client/module/Boundary.hpp"
+#include "client/module/CliApi.hpp"
+#include "client/module/CliBoundary.hpp"
 #include "modules/proxy/Support.hpp"
 #include <array>
 #include <chrono>
