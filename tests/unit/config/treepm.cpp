@@ -5,8 +5,8 @@
  * @brief Configuration coverage for selectable TreePM execution models.
  */
 
-#include "config/args/CfgMain.hpp"
-#include "config/core/CfgConfig.hpp"
+#include "config/args/parsing/CfgMain.hpp"
+#include "config/core/configuration/CfgConfig.hpp"
 
 #include <filesystem>
 #include <fstream>

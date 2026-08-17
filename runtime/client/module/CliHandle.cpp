@@ -6,7 +6,7 @@
  */
 
 #include "client/module/CliHandle.hpp"
-#include "Internal.hpp"
+#include "CliInternal.hpp"
 #include <array>
 #include <exception>
 #include <iostream>

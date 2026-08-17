@@ -10,7 +10,7 @@
 #include "client/module/CliApi.hpp"
 #include "client/module/CliBoundary.hpp"
 #include "client/module/CliHandle.hpp"
-#include "PltDynamicLibrary.hpp"
+#include "platform/dynamic_library/PltDynamicLibrary.hpp"
 #include <array>
 #include <cstddef>
 #include <cstdint>

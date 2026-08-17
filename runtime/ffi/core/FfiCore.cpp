@@ -5,8 +5,8 @@
  * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
  */
 
-#include "config/modes/CfgNormalize.hpp"
-#include "Internal.hpp"
+#include "config/modes/normalization/CfgNormalize.hpp"
+#include "FfiInternal.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cstring>

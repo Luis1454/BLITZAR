@@ -5,7 +5,7 @@
  * @brief Dispatch initial-state generation to focused model strategies.
  */
 
-#include "SrvGenerationContext.hpp"
+#include "server/simulation/state/SrvGenerationContext.hpp"
 
 #include <string>
 

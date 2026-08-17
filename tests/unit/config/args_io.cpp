@@ -5,8 +5,8 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "config/core/CfgConfig.hpp"
-#include "config/validation/CfgScenario.hpp"
+#include "config/core/configuration/CfgConfig.hpp"
+#include "config/validation/scenario/CfgScenario.hpp"
 #include "protocol/PtcProtocol.hpp"
 #include "SrvSimulationInitConfig.hpp"
 #include <chrono>

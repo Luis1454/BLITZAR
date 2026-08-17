@@ -5,7 +5,7 @@
  * @brief Source artifact for the BLITZAR simulation project.
  */
 
-#include "simulation/SrvInternal.hpp"
+#include "server/simulation/runtime/SrvInternal.hpp"
 
 /*
  * @brief Documents the loop operation contract.
@@ -238,7 +238,7 @@ void SimulationServer::loop()
                 _faultStep.store(_steps.load(std::memory_order_relaxed), std::memory_order_relaxed);
                 {
                     std::lock_guard<std::mutex> lock(_faultMutex);
-                    _faultReason = "cuda update failed (request recover/reset)";
+                    _faultReason = "cuda update failed (request recover\reset)";
                 }
                 std::cerr << "[server] update failed (CUDA error), simulation paused\n";
             }

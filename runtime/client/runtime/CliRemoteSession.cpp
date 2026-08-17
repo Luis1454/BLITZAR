@@ -6,9 +6,9 @@
  */
 
 #include "CliRemoteSession.hpp"
-#include "FndConstants.hpp"
-#include "PltPaths.hpp"
-#include "PltProcess.hpp"
+#include "core/constants/FndConstants.hpp"
+#include "platform/paths/PltPaths.hpp"
+#include "platform/process/PltProcess.hpp"
 #include "protocol/PtcProtocol.hpp"
 #include <algorithm>
 #include <filesystem>

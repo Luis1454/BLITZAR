@@ -5,9 +5,9 @@
  * @brief Primitive and compact initial-state distributions.
  */
 
-#include "SrvGenerationContext.hpp"
-#include "FndConstants.hpp"
-#include "simulation/state/SrvInitializationHelper.hpp"
+#include "server/simulation/state/SrvGenerationContext.hpp"
+#include "core/constants/FndConstants.hpp"
+#include "server/simulation/state/SrvInitializationHelper.hpp"
 
 #include <algorithm>
 #include <cmath>

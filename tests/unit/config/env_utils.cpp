@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "config/env/CfgBase.hpp"
+#include "config/env/platform/CfgBase.hpp"
 #include <gtest/gtest.h>
 
 TEST(EnvUtilsTest, TST_UNT_CONF_040_ParseBoolReturnsTrueForValidTrues)

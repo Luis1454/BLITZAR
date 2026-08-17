@@ -6,10 +6,10 @@
  */
 
 #include "client/common/ClientCommon.hpp"
-#include "config/env/CfgBase.hpp"
-#include "config/core/CfgConfig.hpp"
-#include "config/registry/CfgMain.hpp"
-#include "PltPaths.hpp"
+#include "config/env/platform/CfgBase.hpp"
+#include "config/core/configuration/CfgConfig.hpp"
+#include "config/registry/runtime/CfgMain.hpp"
+#include "platform/paths/PltPaths.hpp"
 #include "protocol/PtcProtocol.hpp"
 #include <algorithm>
 #include <cctype>

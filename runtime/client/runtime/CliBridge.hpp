@@ -7,8 +7,8 @@
 
 #ifndef BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_
 #define BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_
-#include "FndConstants.hpp"
-#include "TypSimulationTypes.hpp"
+#include "core/constants/FndConstants.hpp"
+#include "types/simulation/TypSimulationTypes.hpp"
 #include <cstdint>
 #include <iosfwd>
 #include <memory>

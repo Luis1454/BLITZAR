@@ -5,7 +5,7 @@
  * @brief Simulation command serialization and dispatch for the client facade.
  */
 
-#include "FndConstants.hpp"
+#include "core/constants/FndConstants.hpp"
 #include "client/runtime/CliBridge.hpp"
 #include "protocol/PtcProtocol.hpp"
 #include <algorithm>

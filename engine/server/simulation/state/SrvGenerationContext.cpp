@@ -5,7 +5,7 @@
  * @brief Shared particle initialization behavior.
  */
 
-#include "SrvGenerationContext.hpp"
+#include "server/simulation/state/SrvGenerationContext.hpp"
 
 #include <algorithm>
 #include <cmath>

@@ -5,7 +5,7 @@
  * @brief Simulation server runtime modes operations.
  */
 
-#include "simulation/SrvInternal.hpp"
+#include "server/simulation/runtime/SrvInternal.hpp"
 
 /*
  * @brief Documents the set solver mode operation contract.

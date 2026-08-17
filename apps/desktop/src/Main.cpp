@@ -6,8 +6,8 @@
  */
 
 #include "Main.hpp"
-#include "PltPaths.hpp"
-#include "PltProcess.hpp"
+#include "platform/paths/PltPaths.hpp"
+#include "platform/process/PltProcess.hpp"
 #include <filesystem>
 #include <string>
 #include <vector>

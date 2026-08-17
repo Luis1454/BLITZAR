@@ -6,9 +6,9 @@
  */
 
 #include "Args.hpp"
-#include "FndConstants.hpp"
-#include "config/args/CfgMain.hpp"
-#include "config/text/CfgParse.hpp"
+#include "core/constants/FndConstants.hpp"
+#include "config/args/parsing/CfgMain.hpp"
+#include "config/text/parsing/CfgParse.hpp"
 #include <algorithm>
 #include <atomic>
 #include <cctype>

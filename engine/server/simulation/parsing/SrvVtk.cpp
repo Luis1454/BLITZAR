@@ -5,7 +5,7 @@
  * @brief Source artifact for the BLITZAR simulation project.
  */
 
-#include "simulation/SrvInternal.hpp"
+#include "server/simulation/runtime/SrvInternal.hpp"
 
 /*
  * @brief Documents the parse vtk snapshot operation contract.

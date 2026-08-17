@@ -5,8 +5,8 @@
  * @brief Cosmological initial-state generation.
  */
 
-#include "SrvGenerationContext.hpp"
-#include "FndConstants.hpp"
+#include "server/simulation/state/SrvGenerationContext.hpp"
+#include "core/constants/FndConstants.hpp"
 
 #include <algorithm>
 #include <cmath>

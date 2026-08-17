@@ -3,7 +3,7 @@
     "mirror": {
       "pairs": {},
       "header_only": [
-        "engine/server/SrvSimulationInitConfig.hpp",
+        "engine/server/simulation/configuration/SrvSimulationInitConfig.hpp",
         "engine/config/env/CfgBase.hpp",
         "engine/platform/PltDynamicLibrary.hpp",
         "engine/platform/PltErrors.hpp",
@@ -19,7 +19,7 @@
         "engine/platform/internal/PltProcessOps.hpp",
         "engine/platform/internal/PltSocketOps.hpp",
         "engine/physics/cuda/CudGpu.hpp",
-        "engine/physics/octree/Octree.hpp"
+        "engine/physics/octree/model/Octree.hpp"
       ]
     },
     "test_ids": {

@@ -5,8 +5,8 @@
  * @brief Source artifact for the BLITZAR simulation project.
  */
 
-#include "FndConstants.hpp"
-#include "simulation/SrvInternal.hpp"
+#include "core/constants/FndConstants.hpp"
+#include "server/simulation/runtime/SrvInternal.hpp"
 
 /*
  * @brief Documents the to lower operation contract.

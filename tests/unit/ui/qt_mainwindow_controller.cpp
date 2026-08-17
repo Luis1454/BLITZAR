@@ -6,7 +6,7 @@
  */
 
 #include "client/runtime/CliInterface.hpp"
-#include "config/core/CfgConfig.hpp"
+#include "config/core/configuration/CfgConfig.hpp"
 #include "window/control/GuiController.hpp"
 #include <cstdint>
 #include <gtest/gtest.h>

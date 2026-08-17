@@ -6,7 +6,7 @@
  */
 
 #include "ffi/core/FfiApi.hpp"
-#include "Internal.hpp"
+#include "FfiInternal.hpp"
 #include <algorithm>
 #include <cstring>
 #include <memory>

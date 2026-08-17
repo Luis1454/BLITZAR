@@ -4,5 +4,5 @@
 set(BLITZAR_CONFIG_TEXT_INCLUDE_DIR "${BLITZAR_ROOT_DIR}/engine/config/text")
 set(BLITZAR_CONFIG_TEXT_SOURCE_DIR "${BLITZAR_ROOT_DIR}/engine/config/text")
 set(BLITZAR_CONFIG_TEXT_SOURCES
-    "${BLITZAR_CONFIG_TEXT_SOURCE_DIR}/CfgParse.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/text/parsing/CfgParse.cpp"
 )

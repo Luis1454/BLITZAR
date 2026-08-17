@@ -8,12 +8,12 @@
 #include "command/execution/CmdExecutor.hpp"
 #include "client/common/ClientCommon.hpp"
 #include "command/catalog/CmdCatalog.hpp"
-#include "config/modes/CfgNormalize.hpp"
-#include "config/profile/CfgPerformance.hpp"
-#include "config/validation/CfgScenario.hpp"
+#include "config/modes/normalization/CfgNormalize.hpp"
+#include "config/profile/profile/CfgPerformance.hpp"
+#include "config/validation/scenario/CfgScenario.hpp"
 #include "protocol/codec/PtcJsonCodec.hpp"
 #include "protocol/PtcProtocol.hpp"
-#include "SrvSimulationInitConfig.hpp"
+#include "server/simulation/configuration/SrvSimulationInitConfig.hpp"
 #include <ostream>
 
 namespace bltzr_cmd {

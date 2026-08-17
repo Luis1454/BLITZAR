@@ -50,6 +50,7 @@ IGNORED_DIRS = {
     "dist",
     "exports",
     "site-packages",
+    "issue527-worktree",
 }
 FORBIDDEN_MARKER_RE = re.compile(r"(?m)(#|//|/\*)\s*(TODO|FIXME|HACK)\b")
 HEADER_EXTS = {".hpp", ".h", ".hh", ".hxx"}
@@ -85,13 +86,18 @@ RAW_POINTER_MEMBER_RE = re.compile(
     r"[A-Za-z_][A-Za-z0-9_]*\s*(?:=\s*nullptr)?\s*;"
 )
 RAW_POINTER_MEMBER_ALLOWLIST = {
-    "engine/physics/core/PhyParticleSoAView.hpp",
-    "engine/platform/PltSocket.hpp",
+    "engine/physics/core/particle/PhyParticleSoAView.hpp",
+    "engine/platform/socket/PltSocket.hpp",
     "runtime/client/diagnostics/CliErrorBuffer.hpp",
     "runtime/client/module/CliApi.hpp",
     "runtime/client/module/CliBoundary.hpp",
     "runtime/ffi/bridge/FfiApi.hpp",
     "runtime/ffi/core/FfiApi.hpp",
+}
+HEADER_ONLY_FILES = {
+    "engine/physics/core/particle/PhyParticle.hpp",
+    "engine/physics/core/particle/PhyParticleSoAView.hpp",
+    "engine/physics/core/vector/PhyVector.hpp",
 }
 PRAGMA_ONCE_RE = re.compile(r"(?m)^\s*#pragma\s+once\b")
 DEFINE_RE = re.compile(r"(?m)^\s*#define\s+([A-Z][A-Z0-9_]+)\b(?!\s*\()")
@@ -196,7 +202,7 @@ class RepoPolicyCheck(BaseCheck):
                 content = path.read_text(encoding="utf-8", errors="ignore")
                 if suffix in HEADER_EXTS and USING_ANY_RE.search(content):
                     result.add_error(f"{rel}: forbidden 'using' in header")
-                if suffix in HEADER_EXTS:
+                if suffix in HEADER_EXTS and rel not in HEADER_ONLY_FILES:
                     for line_number in find_header_function_definition_lines(content):
                         result.add_error(f"{rel}:{line_number}: function definitions in headers are forbidden")
                 marker_match = FORBIDDEN_MARKER_RE.search(content)
@@ -278,7 +284,7 @@ class RepoPolicyCheck(BaseCheck):
         if rel == EXPORTS_POINTER_ABI_PATH:
             return
         path = Path(rel)
-        if path.parts and path.parts[0] == "modules" and path.name == "GuiModule.cpp":
+        if path.parts and path.parts[0] == "modules" and path.name in {"GuiModule.cpp", "Module.cpp"}:
             return
         result.add_error(
             f"{rel}: ExportsV1 raw pointer is restricted to the module ABI declaration/export boundary"

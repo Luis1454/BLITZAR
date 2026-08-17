@@ -5,7 +5,7 @@
  * @brief Atomic floating-point utility used by simulation telemetry.
  */
 
-#include "simulation/SrvInternal.hpp"
+#include "server/simulation/runtime/SrvInternal.hpp"
 
 void atomicAddFloat(std::atomic<float>& atom, float value)
 {

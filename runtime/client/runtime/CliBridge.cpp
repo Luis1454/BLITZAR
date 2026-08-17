@@ -6,10 +6,10 @@
  */
 
 #include "client/runtime/CliBridge.hpp"
-#include "FndConstants.hpp"
+#include "core/constants/FndConstants.hpp"
 #include "CliRemoteSession.hpp"
-#include "config/text/CfgParse.hpp"
-#include "PltPaths.hpp"
+#include "config/text/parsing/CfgParse.hpp"
+#include "platform/paths/PltPaths.hpp"
 #include "protocol/codec/PtcJsonCodec.hpp"
 #include <algorithm>
 #include <cctype>

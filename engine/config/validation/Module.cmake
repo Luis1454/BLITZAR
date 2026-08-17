@@ -4,11 +4,11 @@
 set(BLITZAR_CONFIG_VALIDATION_INCLUDE_DIR "${BLITZAR_ROOT_DIR}/engine/config/validation")
 set(BLITZAR_CONFIG_VALIDATION_SOURCE_DIR "${BLITZAR_ROOT_DIR}/engine/config/validation")
 set(BLITZAR_CONFIG_VALIDATION_SOURCES
-    "${BLITZAR_CONFIG_VALIDATION_SOURCE_DIR}/CfgPhysics.cpp"
-    "${BLITZAR_CONFIG_VALIDATION_SOURCE_DIR}/CfgRender.cpp"
-    "${BLITZAR_CONFIG_VALIDATION_SOURCE_DIR}/CfgScenario.cpp"
-    "${BLITZAR_CONFIG_VALIDATION_SOURCE_DIR}/CfgScenarioCosmology.cpp"
-    "${BLITZAR_CONFIG_VALIDATION_SOURCE_DIR}/CfgScenarioInitialState.cpp"
-    "${BLITZAR_CONFIG_VALIDATION_SOURCE_DIR}/CfgScenarioRuntime.cpp"
-    "${BLITZAR_CONFIG_VALIDATION_SOURCE_DIR}/CfgScenarioScene.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/validation/physics/CfgPhysics.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/validation/render/CfgRender.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/validation/scenario/CfgScenario.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/validation/scenario/CfgScenarioCosmology.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/validation/scenario/CfgScenarioInitialState.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/validation/scenario/CfgScenarioRuntime.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/validation/scenario/CfgScenarioScene.cpp"
 )

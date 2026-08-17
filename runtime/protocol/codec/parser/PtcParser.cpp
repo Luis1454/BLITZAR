@@ -71,7 +71,7 @@ bool JsonCodec::readString(std::string_view raw, std::string_view key, std::stri
             out = value;
             return true;
         }
-        if (current == '\\') {
+        if (current == '//') {
             if (cursor >= raw.size()) {
                 return false;
             }

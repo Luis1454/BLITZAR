@@ -3,6 +3,6 @@
 
 set(BLITZAR_GRAPHICS_INCLUDE_DIR "${BLITZAR_ROOT_DIR}/engine/graphics")
 set(BLITZAR_GRAPHICS_SOURCES
-    "${BLITZAR_ROOT_DIR}/engine/graphics/GfxViewMath.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/graphics/GfxColorPipeline.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/graphics/view/GfxViewMath.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/graphics/color/GfxColorPipeline.cpp"
 )

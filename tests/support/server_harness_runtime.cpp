@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "config/env/CfgBase.hpp"
+#include "config/env/platform/CfgBase.hpp"
 #include "PltPaths.hpp"
 #include "PltSocket.hpp"
 #include "protocol/client/PtcClient.hpp"

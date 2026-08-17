@@ -4,5 +4,5 @@
 set(BLITZAR_CONFIG_CORE_INCLUDE_DIR "${BLITZAR_ROOT_DIR}/engine/config/core")
 set(BLITZAR_CONFIG_CORE_SOURCE_DIR "${BLITZAR_ROOT_DIR}/engine/config/core")
 set(BLITZAR_CONFIG_CORE_SOURCES
-    "${BLITZAR_CONFIG_CORE_SOURCE_DIR}/CfgConfig.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/core/configuration/CfgConfig.cpp"
 )

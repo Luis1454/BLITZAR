@@ -7,10 +7,10 @@
 
 #ifndef BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDCONTEXT_HPP_
 #define BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDCONTEXT_HPP_
-#include "FndConstants.hpp"
+#include "core/constants/FndConstants.hpp"
 #include "command/transport/CmdTransport.hpp"
 #include "command/core/CmdTypes.hpp"
-#include "config/core/CfgConfig.hpp"
+#include "config/core/configuration/CfgConfig.hpp"
 #include <cstdint>
 #include <iosfwd>
 #include <string>

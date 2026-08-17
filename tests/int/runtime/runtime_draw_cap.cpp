@@ -6,7 +6,7 @@
  */
 
 #include "client/common/ClientCommon.hpp"
-#include "config/core/CfgConfig.hpp"
+#include "config/core/configuration/CfgConfig.hpp"
 #include "protocol/PtcProtocol.hpp"
 #include "tests/support/scoped_env_var.hpp"
 #include <gtest/gtest.h>

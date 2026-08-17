@@ -9,7 +9,7 @@
 #include "client/module/CliHandle.hpp"
 #include "client/module/CliHash.hpp"
 #include "client/module/CliManifest.hpp"
-#include "Internal.hpp"
+#include "CliInternal.hpp"
 #include <array>
 #include <exception>
 #include <filesystem>

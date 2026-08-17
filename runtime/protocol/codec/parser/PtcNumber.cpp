@@ -6,7 +6,7 @@
  */
 
 #include "PtcNumber.hpp"
-#include "config/text/CfgParse.hpp"
+#include "config/text/parsing/CfgParse.hpp"
 
 template <typename NumberType>
 /*

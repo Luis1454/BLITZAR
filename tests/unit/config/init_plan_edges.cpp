@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "config/core/CfgConfig.hpp"
+#include "config/core/configuration/CfgConfig.hpp"
 #include "SrvSimulationInitConfig.hpp"
 #include <gtest/gtest.h>
 #include <sstream>

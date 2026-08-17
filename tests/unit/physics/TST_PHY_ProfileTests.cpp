@@ -5,8 +5,8 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "config/core/CfgConfig.hpp"
-#include "config/profile/CfgMain.hpp"
+#include "config/core/configuration/CfgConfig.hpp"
+#include "config/profile/profile/CfgMain.hpp"
 #include <gtest/gtest.h>
 
 namespace bltzr_test {

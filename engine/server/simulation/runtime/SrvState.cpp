@@ -5,7 +5,7 @@
  * @brief Simulation server runtime state operations.
  */
 
-#include "simulation/SrvInternal.hpp"
+#include "server/simulation/runtime/SrvInternal.hpp"
 
 /*
  * @brief Documents the set initial state config operation contract.

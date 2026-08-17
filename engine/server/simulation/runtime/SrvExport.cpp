@@ -5,7 +5,7 @@
  * @brief Simulation server runtime export operations.
  */
 
-#include "simulation/SrvInternal.hpp"
+#include "server/simulation/runtime/SrvInternal.hpp"
 
 /*
  * @brief Documents the set export defaults operation contract.

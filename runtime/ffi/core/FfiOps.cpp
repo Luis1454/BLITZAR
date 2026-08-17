@@ -5,7 +5,7 @@
  * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
  */
 
-#include "Internal.hpp"
+#include "FfiInternal.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cstring>

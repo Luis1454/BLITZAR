@@ -17,8 +17,8 @@
 #include "client/module/CliHandle.hpp"
 #include "command/core/CmdContext.hpp"
 #include "command/execution/CmdBatchRunner.hpp"
-#include "config/core/CfgConfig.hpp"
-#include "config/validation/CfgScenario.hpp"
+#include "config/core/configuration/CfgConfig.hpp"
+#include "config/validation/scenario/CfgScenario.hpp"
 
 namespace bltzr_client_host {
 class ClientHostCliImpl final {

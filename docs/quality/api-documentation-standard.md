@@ -62,7 +62,7 @@ The repository quality gate enforces this format for public headers under:
 
 - `engine/core/`
 - `runtime/`
-- `modules/qt/src/`
+- `modules/qt/`
 
 The same gate also checks file header blocks across the main C++ sources so missing documentation is surfaced early.
 
@@ -71,7 +71,7 @@ The same gate also checks file header blocks across the main C++ sources so miss
 Apply this format first to:
 - public headers under `engine/core/`
 - public headers under `runtime/`
-- Qt-facing headers under `modules/qt/src/`
+- Qt-facing headers under `modules/qt/`
 - split CUDA/core fragments where a file-level responsibility header clarifies the partition
 
 ## Non-Goals

@@ -6,7 +6,7 @@
  */
 
 #include "protocol/client/PtcClient.hpp"
-#include "PltSocket.hpp"
+#include "platform/socket/PltSocket.hpp"
 #include "protocol/PtcProtocol.hpp"
 #include <algorithm>
 #include <array>

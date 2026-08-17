@@ -9,8 +9,8 @@ runtime/client/runtime/CliRuntime.cpp
 runtime/command/execution/CmdExecutor.cpp
 
 # Client module composition files pending per-feature extraction.
-modules/qt/GuiModule.cpp
-modules/qt/src/widgets/graphs/GuiPaint.cpp
+modules/qt/module/GuiModule.cpp
+modules/qt/widgets/graphs/GuiPaint.cpp
 
 # CUDA fragment blocks retained while kernel-level decomposition is prepared.
 
@@ -26,12 +26,12 @@ tests/int/ui/qt_workspace_runtime_controls.cpp
 # Initial state generation modes for presets
 
 # DEV-QUAL-012: baseline files scheduled for responsibility-focused extraction in #443.
-engine/physics/core/PhyParticleSystem.hpp
+engine/physics/core/particle/PhyParticleSystem.hpp
 engine/server/simulation/lifecycle/SrvRebuild.cpp
 engine/server/simulation/telemetry/SrvSnapshotAndEnergy.cpp
-engine/server/SrvSimulationInitConfig.cpp
-modules/qt/src/widgets/graphs/GuiSpectrumGraph.cpp
-modules/qt/src/window/control/GuiControls.cpp
+engine/server/simulation/configuration/SrvSimulationInitConfig.cpp
+modules/qt/widgets/graphs/GuiSpectrumGraph.cpp
+modules/qt/window/control/GuiControls.cpp
 python_tools/policies/repo_policy.py
 scripts/analysis/ast_graph.py
 tests/unit/config/args_cli.cpp

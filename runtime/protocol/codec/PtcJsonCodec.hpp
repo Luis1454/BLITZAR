@@ -7,8 +7,8 @@
 
 #ifndef BLITZAR_RUNTIME_INCLUDE_PROTOCOL_SERVERJSONCODEC_HPP_
 #define BLITZAR_RUNTIME_INCLUDE_PROTOCOL_SERVERJSONCODEC_HPP_
-#include "config/text/CfgParse.hpp"
-#include "TypSimulationTypes.hpp"
+#include "config/text/parsing/CfgParse.hpp"
+#include "types/simulation/TypSimulationTypes.hpp"
 #include <cstdint>
 #include <string>
 #include <string_view>

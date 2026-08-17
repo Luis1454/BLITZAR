@@ -5,14 +5,14 @@
 
 #include "core/Daemon.hpp"
 
-#include "config/core/CfgConfig.hpp"
-#include "config/directive/CfgConfig.hpp"
-#include "config/modes/CfgNormalize.hpp"
-#include "config/profile/CfgPerformance.hpp"
+#include "config/core/configuration/CfgConfig.hpp"
+#include "config/directive/parsing/CfgConfig.hpp"
+#include "config/modes/normalization/CfgNormalize.hpp"
+#include "config/profile/profile/CfgPerformance.hpp"
 #include "protocol/PtcProtocol.hpp"
 #include "protocol/codec/PtcJsonCodec.hpp"
-#include "SrvSimulationInitConfig.hpp"
-#include "SrvSimulationServer.hpp"
+#include "server/simulation/configuration/SrvSimulationInitConfig.hpp"
+#include "server/simulation/runtime/SrvSimulationServer.hpp"
 
 #include <algorithm>
 #include <cctype>

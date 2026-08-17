@@ -5,7 +5,7 @@
  * @brief Source artifact for the BLITZAR simulation project.
  */
 
-#include "simulation/SrvInternal.hpp"
+#include "server/simulation/runtime/SrvInternal.hpp"
 
 namespace blitzar_simulation_snapshot_energy {
 constexpr int kDensityGridSide = 24;

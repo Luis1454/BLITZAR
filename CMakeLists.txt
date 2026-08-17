@@ -42,6 +42,8 @@ find_package(OpenMP REQUIRED)
 
 # Detect CUDA toolkit optionally. If found, enable CUDA-aware targets.
 include(CheckLanguage)
+option(BLITZAR_ENABLE_CUDA "Build CUDA-enabled targets when a toolkit is available" ON)
+if(BLITZAR_ENABLE_CUDA)
 find_package(CUDAToolkit QUIET)
 option(BLITZAR_ALLOW_UNSUPPORTED_CUDA_HOST_COMPILER
     "Allow nvcc to use a host compiler newer than NVIDIA officially supports" OFF)
@@ -96,6 +98,10 @@ else()
     message(STATUS "CUDA toolkit not found; building without CUDA support")
     set(BLITZAR_ENABLE_CUDA OFF)
     set(BLITZAR_BUILD_TESTS OFF CACHE BOOL "Build deterministic physics regression tests" FORCE)
+endif()
+else()
+    message(STATUS "CUDA disabled by BLITZAR_ENABLE_CUDA=OFF")
+    set(BLITZAR_ENABLE_CUDA OFF CACHE BOOL "Build CUDA-enabled targets when a toolkit is available" FORCE)
 endif()
 
 include(cmake/targets.cmake)

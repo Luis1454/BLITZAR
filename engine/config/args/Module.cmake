@@ -4,14 +4,14 @@
 set(BLITZAR_CONFIG_ARGS_INCLUDE_DIR "${BLITZAR_ROOT_DIR}/engine/config/args")
 set(BLITZAR_CONFIG_ARGS_SOURCE_DIR "${BLITZAR_ROOT_DIR}/engine/config/args")
 set(BLITZAR_CONFIG_ARGS_SOURCES
-    "${BLITZAR_CONFIG_ARGS_SOURCE_DIR}/CfgMain.cpp"
-    "${BLITZAR_CONFIG_ARGS_SOURCE_DIR}/CfgParse.cpp"
-    "${BLITZAR_CONFIG_ARGS_SOURCE_DIR}/CfgCoreOptions.cpp"
-    "${BLITZAR_CONFIG_ARGS_SOURCE_DIR}/CfgClientOptions.cpp"
-    "${BLITZAR_CONFIG_ARGS_SOURCE_DIR}/CfgInitOptions.cpp"
-    "${BLITZAR_CONFIG_ARGS_SOURCE_DIR}/CfgInitStateOptions.cpp"
-    "${BLITZAR_CONFIG_ARGS_SOURCE_DIR}/CfgFluidOptions.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/args/parsing/CfgMain.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/args/parsing/CfgParse.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/args/options/CfgCoreOptions.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/args/options/CfgClientOptions.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/args/options/CfgInitOptions.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/args/options/CfgInitStateOptions.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/args/options/CfgFluidOptions.cpp"
 )
 set(BLITZAR_CONFIG_ARGS_COMMAND_SOURCES
-    "${BLITZAR_CONFIG_ARGS_SOURCE_DIR}/CfgParse.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/args/parsing/CfgParse.cpp"
 )

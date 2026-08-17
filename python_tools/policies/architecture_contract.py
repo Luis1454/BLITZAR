@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # @file python_tools/policies/architecture_contract.py
 # @project BLITZAR
-# @brief Machine-checkable repository layout and filename contract.
+# @brief Machine-checkable uniform responsibility layout contract.
 
 from __future__ import annotations
 
@@ -12,28 +12,28 @@ from python_tools.core.base_check import BaseCheck
 from python_tools.core.models import CheckContext, CheckResult
 
 CONFIG_CHILDREN = (
-    "args", "core", "directive", "env", "modes",
-    "profile", "registry", "text", "validation",
+    "args", "core", "directive", "env", "modes", "model", "profile",
+    "registry", "text", "validation",
 )
+
 LEAF_MODULES = (
     "engine/batch", "engine/core", "engine/graphics", "engine/platform",
-    "engine/server", "engine/types", "engine/physics/core",
-    "engine/physics/cuda", "engine/physics/fmm", "engine/physics/octree",
-    "engine/physics/sph", "engine/physics/thermal", "engine/physics/treepm",
+    "engine/types", "engine/server/simulation", "engine/physics/core",
+    "engine/physics/cuda", "engine/physics/fmm", "engine/physics/jit",
+    "engine/physics/octree", "engine/physics/sph", "engine/physics/thermal",
+    "engine/physics/treepm",
 ) + tuple(f"engine/config/{child}" for child in CONFIG_CHILDREN)
-FRAGMENT_ROOTS = (
-    "engine/physics/cuda/fragments",
-    "engine/physics/octree/cuda/fragments",
-    "engine/physics/sph/cuda/fragments",
-    "engine/physics/thermal/cuda/fragments",
-    "engine/physics/treepm/cuda/fragments",
-    "engine/physics/treepm/fragments",
-)
+
+AGGREGATORS = ("engine/config", "engine/physics", "engine/server")
+
 RESPONSIBILITY_PREFIXES = (
-    "Bat", "Cfg", "Cli", "Cmd", "Cud", "Ffi", "Fmm", "Fnd", "Gui",
-    "Gfx", "Jit", "Oct", "Phy", "Plt", "Ptc", "Srv", "Sph", "Thm",
-    "Tpm", "Typ",
+    "Bat", "Cfg", "Cli", "Cmd", "Cud", "Ffi", "Fmm", "Fnd", "Gfx",
+    "Gui", "Jit", "Oct", "Phy", "Plt", "Ptc", "Pxy", "Srv", "Sph",
+    "Thm", "Tpm", "Typ",
 )
+
+SOURCE_SUFFIXES = {".cpp", ".hpp", ".cu", ".cuh", ".inl"}
+FORBIDDEN_DIRECTORY_NAMES = {"src", "include", "private", "public", "api", "details", "fragments"}
 GENERIC_STEMS = {
     "Assignment", "Benchmark", "Bounds", "Buffer", "Build", "Cache", "Core",
     "Deposit", "Evaluation", "Execution", "Fft", "Field", "Force", "Grid",
@@ -49,9 +49,8 @@ class ArchitectureContractCheck(BaseCheck):
 
     def _execute(self, context: CheckContext, result: CheckResult) -> None:
         self._check_modules(context.root, result)
-        self._check_flat_layout(context.root, result)
-        self._check_config_aggregator(context.root, result)
-        self._check_fragment_names(context.root, result)
+        self._check_aggregators(context.root, result)
+        self._check_forbidden_directories(context.root, result)
         self._check_production_names(context.root, result)
         self._check_manifest_paths(context.root, result)
 
@@ -60,52 +59,65 @@ class ArchitectureContractCheck(BaseCheck):
             module = root / relative
             if not (module / "Module.cmake").is_file():
                 result.add_error(f"missing module manifest: {relative}/Module.cmake")
-            if not any(module.rglob(f"*{suffix}") for suffix in (".cpp", ".hpp", ".cu", ".cuh", ".inl")):
+                continue
+
+            sources = [
+                path for path in module.rglob("*")
+                if path.is_file() and path.suffix.lower() in SOURCE_SUFFIXES
+                and "tests" not in path.parts
+            ]
+            if not sources:
                 result.add_error(f"module has no production source: {relative}")
 
-    def _check_flat_layout(self, root: Path, result: CheckResult) -> None:
-        for relative in LEAF_MODULES:
-            module = root / relative
-            for legacy in (module / "include", module / "src"):
-                if legacy.is_dir() and any(path.is_file() for path in legacy.rglob("*")):
+            for path in sources:
+                parts = path.relative_to(module).parts
+                if len(parts) < 2:
                     result.add_error(
-                        f"legacy source directory is not allowed: {legacy.relative_to(root)}"
+                        f"production source must be under a responsibility directory: {path.relative_to(root)}"
                     )
+                if parts and parts[0] in FORBIDDEN_DIRECTORY_NAMES:
+                    result.add_error(f"generic source directory is not allowed: {path.relative_to(root)}")
 
-    def _check_config_aggregator(self, root: Path, result: CheckResult) -> None:
-        aggregator = root / "engine/config"
-        for child in CONFIG_CHILDREN:
-            if not (aggregator / child).is_dir():
-                result.add_error(f"config aggregator child missing: engine/config/{child}")
-        paths = aggregator.iterdir() if aggregator.is_dir() else ()
-        for path in paths:
-            if path.is_file() and path.suffix.lower() in {".cpp", ".cu", ".cuh", ".inl"}:
-                result.add_error(f"config aggregator contains implementation: {path.relative_to(root)}")
-
-    def _check_fragment_names(self, root: Path, result: CheckResult) -> None:
-        for relative in FRAGMENT_ROOTS:
-            directory = root / relative
-            if not directory.is_dir():
-                result.add_error(f"fragment root missing: {relative}")
+    def _check_aggregators(self, root: Path, result: CheckResult) -> None:
+        for relative in AGGREGATORS:
+            aggregator = root / relative
+            if not aggregator.is_dir():
+                result.add_error(f"missing domain aggregator: {relative}")
                 continue
-            for path in directory.rglob("*.inl"):
-                if not path.stem.startswith(RESPONSIBILITY_PREFIXES):
+            for path in aggregator.iterdir():
+                if path.is_file() and path.suffix.lower() in SOURCE_SUFFIXES:
+                    result.add_error(f"aggregator contains production source: {path.relative_to(root)}")
+
+        config = root / "engine/config"
+        for child in CONFIG_CHILDREN:
+            if not (config / child).is_dir():
+                result.add_error(f"config aggregator child missing: engine/config/{child}")
+
+    def _check_forbidden_directories(self, root: Path, result: CheckResult) -> None:
+        for base in (root / "engine", root / "modules"):
+            if not base.is_dir():
+                continue
+            for directory in base.rglob("*"):
+                if not directory.is_dir() or directory.name not in FORBIDDEN_DIRECTORY_NAMES:
+                    continue
+                if any(path.is_file() and path.suffix.lower() in SOURCE_SUFFIXES for path in directory.rglob("*")):
                     result.add_error(
-                        f"fragment lacks responsibility prefix ({','.join(RESPONSIBILITY_PREFIXES)}): "
-                        f"{path.relative_to(root)}"
+                        f"forbidden generic directory contains production source: {directory.relative_to(root)}"
                     )
 
     def _check_production_names(self, root: Path, result: CheckResult) -> None:
-        for base in (root / "engine", root / "runtime", root / "modules/qt"):
+        for base in (root / "engine", root / "runtime", root / "modules"):
             if not base.is_dir():
                 continue
             for path in base.rglob("*"):
-                if "tests" in path.parts:
-                    continue
-                if not path.is_file() or path.suffix.lower() not in {".cpp", ".hpp", ".cu", ".cuh", ".inl"}:
+                if "tests" in path.parts or not path.is_file() or path.suffix.lower() not in SOURCE_SUFFIXES:
                     continue
                 if path.stem in GENERIC_STEMS:
-                    result.add_error(f"generic production filename lacks responsibility prefix: {path.relative_to(root)}")
+                    result.add_error(
+                        f"generic production filename lacks responsibility prefix: {path.relative_to(root)}"
+                    )
+                elif path.name == "Module.cpp" and "module" in path.parts:
+                    continue
                 elif not path.stem.startswith(RESPONSIBILITY_PREFIXES):
                     result.add_error(
                         f"production filename lacks responsibility prefix ({','.join(RESPONSIBILITY_PREFIXES)}): "

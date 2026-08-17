@@ -7,7 +7,7 @@
 
 #include "client/module/CliManifest.hpp"
 #include "client/module/CliApi.hpp"
-#include "config/text/CfgParse.hpp"
+#include "config/text/parsing/CfgParse.hpp"
 #include <filesystem>
 #include <fstream>
 #include <string>

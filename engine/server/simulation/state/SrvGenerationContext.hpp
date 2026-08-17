@@ -8,7 +8,7 @@
 #ifndef BLITZAR_ENGINE_SRC_SERVER_SIMULATION_STATE_GENERATION_CONTEXT_HPP_
 #define BLITZAR_ENGINE_SRC_SERVER_SIMULATION_STATE_GENERATION_CONTEXT_HPP_
 
-#include "simulation/SrvInternal.hpp"
+#include "server/simulation/runtime/SrvInternal.hpp"
 
 #include <random>
 

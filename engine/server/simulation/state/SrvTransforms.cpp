@@ -5,8 +5,8 @@
  * @brief Initial-state rotation, mirror, copy, and offset transforms.
  */
 
-#include "simulation/SrvInternal.hpp"
-#include "FndConstants.hpp"
+#include "server/simulation/runtime/SrvInternal.hpp"
+#include "core/constants/FndConstants.hpp"
 
 #include <algorithm>
 #include <cmath>

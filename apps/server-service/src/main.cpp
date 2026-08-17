@@ -6,12 +6,12 @@
  */
 
 #include "Args.hpp"
-#include "FndConstants.hpp"
-#include "config/args/CfgMain.hpp"
-#include "config/core/CfgConfig.hpp"
-#include "core/Daemon.hpp"
-#include "SrvSimulationInitConfig.hpp"
-#include "SrvSimulationServer.hpp"
+#include "core/constants/FndConstants.hpp"
+#include "config/args/parsing/CfgMain.hpp"
+#include "config/core/configuration/CfgConfig.hpp"
+#include "server/core/SrvDaemon.hpp"
+#include "server/simulation/configuration/SrvSimulationInitConfig.hpp"
+#include "server/simulation/runtime/SrvSimulationServer.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cstdint>

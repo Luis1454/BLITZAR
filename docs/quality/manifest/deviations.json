@@ -38,8 +38,8 @@
       "mitigation": "Constrain edits to kernel extraction work and keep fragment boundaries documented in review notes.",
       "closure_criteria": "Replace fragment bundles with smaller responsibility-focused units and remove the allowlist paths.",
       "paths": [
-        "engine/physics/cuda/fragments/system/CudCore.inl",
-        "engine/physics/cuda/fragments/system/CudPrelude.inl"
+        "engine/physics/cuda/core/CudCore.inl",
+        "engine/physics/cuda/prelude/CudPrelude.inl"
       ],
       "requirements": [
         "REQ-QUAL-001"
@@ -61,8 +61,8 @@
       "mitigation": "Review changes for feature isolation and keep UI/module edits tied to decomposition work.",
       "closure_criteria": "Extract module composition responsibilities into smaller units and delete the allowlist paths.",
       "paths": [
-        "modules/qt/GuiModule.cpp",
-        "modules/qt/src/widgets/graphs/GuiPaint.cpp"
+        "modules/qt/module/GuiModule.cpp",
+        "modules/qt/widgets/graphs/GuiPaint.cpp"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -158,7 +158,7 @@
       "mitigation": "Keep this file isolated in the allowlist and review all changes for allocator and scratch-buffer correctness.",
       "closure_criteria": "Split the CUDA buffer fragment below the hard limit and remove the allowlist path.",
       "paths": [
-        "engine/physics/cuda/fragments/system/CudBuffer.inl"
+        "engine/physics/cuda/buffer/CudBuffer.inl"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -181,7 +181,7 @@
       "mitigation": "Keep this file isolated in the allowlist and review all changes for traversal correctness and memory layout stability.",
       "closure_criteria": "Split the linear octree GPU fragment below the hard limit and remove the allowlist path.",
       "paths": [
-        "engine/physics/octree/cuda/fragments/OctLinearGpu.inl"
+        "engine/physics/octree/cuda/linear/OctLinearGpu.inl"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -204,7 +204,7 @@
       "mitigation": "Keep this header isolated in the allowlist and review all interface changes for consistency with the implementation files.",
       "closure_criteria": "Split the physics interface header below the hard limit and remove the allowlist path.",
       "paths": [
-        "engine/physics/core/PhyParticleSystem.hpp"
+        "engine/physics/core/particle/PhyParticleSystem.hpp"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -251,17 +251,17 @@
       "closure_criteria": "Split every path below the strong threshold, remove it from this register and the policy allowlist, and retain its deterministic qualification identifiers.",
       "paths": [
         "cmake/apps.cmake",
-        "engine/physics/core/PhyParticleSystem.hpp",
+        "engine/physics/core/particle/PhyParticleSystem.hpp",
         "engine/config/directive/CfgConfig.cpp",
         "engine/config/directive/CfgWrite.cpp",
-        "engine/physics/cuda/fragments/system/CudCore.inl",
-        "engine/physics/cuda/CudJitRuntime.cu",
+        "engine/physics/cuda/core/CudCore.inl",
+        "engine/physics/jit/execution/CudJitRuntime.cu",
         "engine/server/simulation/lifecycle/SrvRebuild.cpp",
         "engine/server/simulation/telemetry/SrvSnapshotAndEnergy.cpp",
-        "engine/server/SrvSimulationInitConfig.cpp",
-        "modules/qt/src/widgets/graphs/GuiSpectrumGraph.cpp",
-        "modules/qt/src/window/config/GuiConfigurationEditor.cpp",
-        "modules/qt/src/window/control/GuiControls.cpp",
+        "engine/server/simulation/configuration/SrvSimulationInitConfig.cpp",
+        "modules/qt/widgets/graphs/GuiSpectrumGraph.cpp",
+        "modules/qt/window/config/GuiConfigurationEditor.cpp",
+        "modules/qt/window/control/GuiControls.cpp",
         "python_tools/policies/repo_policy.py",
         "scripts/analysis/ast_graph.py",
         "tests/unit/config/args_cli.cpp",

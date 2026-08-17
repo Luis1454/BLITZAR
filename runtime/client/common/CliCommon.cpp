@@ -6,10 +6,10 @@
  */
 
 #include "client/common/Common.hpp"
-#include "config/env/CfgBase.hpp"
+#include "config/env/platform/CfgBase.hpp"
 #include "SimulationConfig.hpp"
 #include "SimulationOptionRegistry.hpp"
-#include "PltPaths.hpp"
+#include "platform/paths/PltPaths.hpp"
 #include "protocol/PtcProtocol.hpp"
 #include <algorithm>
 #include <cctype>

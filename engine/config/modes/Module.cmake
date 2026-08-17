@@ -4,5 +4,5 @@
 set(BLITZAR_CONFIG_MODES_INCLUDE_DIR "${BLITZAR_ROOT_DIR}/engine/config/modes")
 set(BLITZAR_CONFIG_MODES_SOURCE_DIR "${BLITZAR_ROOT_DIR}/engine/config/modes")
 set(BLITZAR_CONFIG_MODES_SOURCES
-    "${BLITZAR_CONFIG_MODES_SOURCE_DIR}/CfgNormalize.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/modes/normalization/CfgNormalize.cpp"
 )

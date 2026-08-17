@@ -6,8 +6,8 @@
  */
 
 #include "client/runtime/CliBridge.hpp"
-#include "config/core/CfgConfig.hpp"
-#include "config/directive/CfgConfig.hpp"
+#include "config/core/configuration/CfgConfig.hpp"
+#include "config/directive/parsing/CfgConfig.hpp"
 #include "protocol/PtcProtocol.hpp"
 #include <sstream>
 

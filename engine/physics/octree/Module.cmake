@@ -5,15 +5,15 @@ set(BLITZAR_PHYSICS_OCTREE_INCLUDE_DIR "${BLITZAR_ROOT_DIR}/engine/physics/octre
 set(BLITZAR_PHYSICS_OCTREE_SOURCE_DIR "${BLITZAR_ROOT_DIR}/engine/physics/octree")
 
 set(BLITZAR_PHYSICS_OCTREE_SOURCES
-    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/OctreeForce.cpp"
-    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/Octree.cpp"
-    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/OctreeBuild.cpp"
-    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/OctreeTraversal.cpp"
-    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/OctParticleSystemHost.cpp"
-    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/OctHostMath.cpp"
-    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/OctForces.cpp"
-    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/OctAdaptive.cpp"
-    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/OctCosmology.cpp"
-    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/OctConfiguration.cpp"
-    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/OctResources.cpp"
+    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/force/OctreeForce.cpp"
+    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/model/Octree.cpp"
+    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/build/OctreeBuild.cpp"
+    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/traversal/OctreeTraversal.cpp"
+    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/runtime/OctParticleSystemHost.cpp"
+    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/math/OctHostMath.cpp"
+    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/force/OctForces.cpp"
+    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/adaptive/OctAdaptive.cpp"
+    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/model/OctCosmology.cpp"
+    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/configuration/OctConfiguration.cpp"
+    "${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}/resources/OctResources.cpp"
 )
