@@ -32,7 +32,6 @@ engine/src/config/directive/Config.cpp
 engine/src/config/directive/Write.cpp
 engine/src/config/registry/Entries.cpp
 engine/src/config/validation/Scenario.cpp
-engine/src/cuda/fragments/system/Core.inl
 engine/src/physics/octree/Octree.cpp
 engine/src/server/simulation/lifecycle/Rebuild.cpp
 engine/src/server/simulation/runtime/SettersAndExport.cpp
