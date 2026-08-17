@@ -5,7 +5,11 @@
 from pathlib import Path
 
 from python_tools.core.models import CheckContext
-from python_tools.policies.architecture_contract import ArchitectureContractCheck
+from python_tools.policies.architecture_contract import (
+    CUDA_RESPONSIBILITIES,
+    MODULE_RESPONSIBILITIES,
+    ArchitectureContractCheck,
+)
 
 
 def _run(root: Path):
@@ -13,21 +17,23 @@ def _run(root: Path):
 
 
 def _valid_tree(root: Path) -> None:
-    modules = (
-        "engine/batch", "engine/core", "engine/graphics", "engine/platform",
-        "engine/types", "engine/server/simulation", "engine/physics/core",
-        "engine/physics/cuda", "engine/physics/fmm", "engine/physics/jit",
-        "engine/physics/octree", "engine/physics/sph", "engine/physics/thermal",
-        "engine/physics/treepm", "engine/config/args", "engine/config/core",
-        "engine/config/directive", "engine/config/env", "engine/config/modes",
-        "engine/config/model", "engine/config/profile", "engine/config/registry",
-        "engine/config/text", "engine/config/validation",
-    )
-    for module in modules:
+    for module, responsibilities in MODULE_RESPONSIBILITIES.items():
         (root / module).mkdir(parents=True, exist_ok=True)
         (root / module / "Module.cmake").touch()
-        (root / module / "model" / "CfgTest.cpp").parent.mkdir(parents=True, exist_ok=True)
-        (root / module / "model" / "CfgTest.cpp").touch()
+        for responsibility in responsibilities:
+            production_roots: tuple[Path, ...] = (root / module / responsibility,)
+            if responsibility == "cuda" and module in CUDA_RESPONSIBILITIES:
+                production_roots = tuple(
+                    root / module / responsibility / child
+                    for child in CUDA_RESPONSIBILITIES[module]
+                )
+            for production_root in production_roots:
+                production = production_root / "CfgTest.cpp"
+                production.parent.mkdir(parents=True, exist_ok=True)
+                production.touch()
+        tests = root / module / "tests"
+        tests.mkdir(parents=True, exist_ok=True)
+        (tests / "test.cpp").touch()
     for aggregator in ("engine/config", "engine/physics", "engine/server"):
         (root / aggregator).mkdir(parents=True, exist_ok=True)
         (root / aggregator / "Module.cmake").touch()

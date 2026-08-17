@@ -17,11 +17,11 @@ from python_tools.core.models import CheckContext, CheckResult
 
 TRACEABILITY_PATHS = (
     "engine/physics/",
-    "engine/physics/cuda/",
+    "engine/physics/core/cuda/",
     "runtime/",
     "tests/int/protocol/",
     "tests/int/runtime/",
-    "tests/unit/physics/",
+    "engine/physics/octree/tests/",
 )
 REQUIREMENT_LINE_RE = re.compile(r"REQ-[A-Z]+-[0-9]{3}")
 TRACEABILITY_FILE = "docs/quality/traceability.csv"

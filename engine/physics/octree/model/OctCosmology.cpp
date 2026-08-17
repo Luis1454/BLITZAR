@@ -5,11 +5,11 @@
  * @brief Host-side cosmological integration for ParticleSystem.
  */
 
-#include "physics/octree/math/OctHostMath.hpp"
+#include "physics/octree/model/OctHostMath.hpp"
 #include "physics/octree/force/OctreeForce.hpp"
-#include "physics/octree/runtime/OctParticleSystemDeviceState.hpp"
+#include "physics/octree/model/OctParticleSystemDeviceState.hpp"
 #include "physics/core/particle/PhyParticleSystem.hpp"
-#include "physics/treepm/cpu/TpmCpu.hpp"
+#include "physics/treepm/model/TpmCpu.hpp"
 
 #include <algorithm>
 #include <cstdio>

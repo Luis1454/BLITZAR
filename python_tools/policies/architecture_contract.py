@@ -16,13 +16,52 @@ CONFIG_CHILDREN = (
     "registry", "text", "validation",
 )
 
-LEAF_MODULES = (
-    "engine/batch", "engine/core", "engine/graphics", "engine/platform",
-    "engine/types", "engine/server/simulation", "engine/physics/core",
-    "engine/physics/cuda", "engine/physics/fmm", "engine/physics/jit",
-    "engine/physics/octree", "engine/physics/sph", "engine/physics/thermal",
-    "engine/physics/treepm",
-) + tuple(f"engine/config/{child}" for child in CONFIG_CHILDREN)
+MODULE_RESPONSIBILITIES = {
+    "engine/physics/core": {"vector", "particle", "force", "cuda"},
+    "engine/physics/octree": {
+        "model", "build", "force", "traversal", "morton", "adaptive", "cuda",
+    },
+    "engine/physics/treepm": {
+        "model", "deposit", "fft", "field", "short_range", "layout", "graph", "cuda",
+    },
+    "engine/physics/fmm": {"model", "build", "evaluate", "metrics"},
+    "engine/physics/sph": {"model", "grid", "kernels"},
+    "engine/physics/thermal": {"model", "energy"},
+    "engine/physics/jit": {"cache", "compilation", "execution", "benchmark"},
+    "engine/server/simulation": {
+        "configuration", "initialization", "lifecycle", "parsing", "persistence",
+        "runtime", "state", "telemetry", "export",
+    },
+}
+
+MODULE_RESPONSIBILITIES.update({
+    "engine/batch": {"runner"},
+    "engine/core": {"constants"},
+    "engine/graphics": {"color", "types", "view"},
+    "engine/platform": {"dynamic_library", "errors", "paths", "process", "socket"},
+    "engine/types": {"simulation"},
+})
+
+CUDA_RESPONSIBILITIES = {
+    "engine/physics/core": {"buffer", "core", "integration", "prelude", "runtime"},
+    "engine/physics/octree": {"build", "force", "linear", "morton"},
+    "engine/physics/treepm": {"deposit", "fft", "field", "graph", "layout"},
+}
+
+MODULE_RESPONSIBILITIES.update({
+    "engine/config/args": {"options", "parsing"},
+    "engine/config/core": {"configuration"},
+    "engine/config/directive": {"parsing", "scene", "write"},
+    "engine/config/env": {"platform"},
+    "engine/config/modes": {"normalization"},
+    "engine/config/model": {"cosmology", "scene"},
+    "engine/config/profile": {"profile"},
+    "engine/config/registry": {"application", "entries", "runtime"},
+    "engine/config/text": {"parsing"},
+    "engine/config/validation": {"physics", "render", "scenario"},
+})
+
+LEAF_MODULES = tuple(MODULE_RESPONSIBILITIES)
 
 AGGREGATORS = ("engine/config", "engine/physics", "engine/server")
 
@@ -61,6 +100,46 @@ class ArchitectureContractCheck(BaseCheck):
                 result.add_error(f"missing module manifest: {relative}/Module.cmake")
                 continue
 
+            expected = MODULE_RESPONSIBILITIES[relative]
+            actual = {
+                path.name for path in module.iterdir()
+                if path.is_dir()
+                and path.name != "tests"
+                and any(candidate.is_file() for candidate in path.rglob("*"))
+            }
+            missing = expected - actual
+            unexpected = actual - expected
+            for responsibility in sorted(missing):
+                result.add_error(
+                    f"module responsibility missing: {relative}/{responsibility}"
+                )
+            for responsibility in sorted(unexpected):
+                result.add_error(
+                    f"module responsibility is not in contract: {relative}/{responsibility}"
+                )
+
+            backend_responsibilities = CUDA_RESPONSIBILITIES.get(relative)
+            if backend_responsibilities is not None:
+                cuda = module / "cuda"
+                actual_backend = {
+                    path.name for path in cuda.iterdir()
+                    if path.is_dir() and any(candidate.is_file() for candidate in path.rglob("*"))
+                } if cuda.is_dir() else set()
+                for responsibility in sorted(backend_responsibilities - actual_backend):
+                    result.add_error(
+                        f"CUDA responsibility missing: {relative}/cuda/{responsibility}"
+                    )
+                for responsibility in sorted(actual_backend - backend_responsibilities):
+                    result.add_error(
+                        f"CUDA responsibility is not in contract: {relative}/cuda/{responsibility}"
+                    )
+
+            tests = module / "tests"
+            if not tests.is_dir():
+                result.add_error(f"module tests directory missing: {relative}/tests")
+            elif not any(path.is_file() for path in tests.rglob("*")):
+                result.add_error(f"module tests directory is empty: {relative}/tests")
+
             sources = [
                 path for path in module.rglob("*")
                 if path.is_file() and path.suffix.lower() in SOURCE_SUFFIXES
@@ -77,6 +156,26 @@ class ArchitectureContractCheck(BaseCheck):
                     )
                 if parts and parts[0] in FORBIDDEN_DIRECTORY_NAMES:
                     result.add_error(f"generic source directory is not allowed: {path.relative_to(root)}")
+                if len(parts) > 2 and parts[0] != "cuda":
+                    result.add_error(
+                        f"production source is nested below a responsibility directory: "
+                        f"{path.relative_to(root)}"
+                    )
+                if len(parts) > 3 or (len(parts) == 3 and parts[0] != "cuda"):
+                    result.add_error(
+                        f"production source exceeds the allowed backend depth: "
+                        f"{path.relative_to(root)}"
+                    )
+
+            for path in tests.rglob("*") if tests.is_dir() else ():
+                if not path.is_file() or path.suffix.lower() not in {".cpp", ".cu", ".py"}:
+                    continue
+                if path.suffix.lower() in {".cpp", ".cu"} and not re.fullmatch(
+                    r"[a-z0-9]+(?:_[a-z0-9]+)*\.(?:cpp|cu)", path.name
+                ):
+                    result.add_error(
+                        f"module test filename must be snake_case: {path.relative_to(root)}"
+                    )
 
     def _check_aggregators(self, root: Path, result: CheckResult) -> None:
         for relative in AGGREGATORS:
@@ -100,10 +199,11 @@ class ArchitectureContractCheck(BaseCheck):
             for directory in base.rglob("*"):
                 if not directory.is_dir() or directory.name not in FORBIDDEN_DIRECTORY_NAMES:
                     continue
-                if any(path.is_file() and path.suffix.lower() in SOURCE_SUFFIXES for path in directory.rglob("*")):
-                    result.add_error(
-                        f"forbidden generic directory contains production source: {directory.relative_to(root)}"
-                    )
+                if not any(candidate.is_file() for candidate in directory.rglob("*")):
+                    continue
+                result.add_error(
+                    f"forbidden generic directory exists: {directory.relative_to(root)}"
+                )
 
     def _check_production_names(self, root: Path, result: CheckResult) -> None:
         for base in (root / "engine", root / "runtime", root / "modules"):

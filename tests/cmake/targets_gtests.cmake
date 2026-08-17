@@ -62,7 +62,7 @@ if(BLITZAR_TEST_UNIT_CONFIG_SOURCES)
             "${BLITZAR_ROOT_DIR}/engine/config/directive/write/CfgValueFormatter.cpp"
             "${BLITZAR_ROOT_DIR}/engine/config/core/configuration/CfgConfig.cpp"
             "${BLITZAR_ROOT_DIR}/engine/config/modes/normalization/CfgNormalize.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/server/simulation/runtime/SrvSimulationInitConfig.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/server/simulation/configuration/SrvSimulationInitConfig.cpp"
             "${BLITZAR_ROOT_DIR}/engine/config/text/parsing/CfgParse.cpp"
     )
 endif()
@@ -91,10 +91,10 @@ if(BLITZAR_TEST_UNIT_MODULE_SOURCES)
         LABELS unit
         SOURCES
             ${BLITZAR_TEST_UNIT_MODULE_SOURCES}
-            "${BLITZAR_ROOT_DIR}/modules/cli/State.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/cli/Text.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/cli/ServerOps.cpp"
-            "${BLITZAR_ROOT_DIR}/modules/cli/Commands.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/cli/state/CliState.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/cli/text/CliText.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/cli/server/CliServerOps.cpp"
+            "${BLITZAR_ROOT_DIR}/modules/cli/commands/CliCommands.cpp"
             ${BLITZAR_RUNTIME_COMMAND_SOURCES}
             "${BLITZAR_ROOT_DIR}/apps/client-host/src/Cli.cpp"
             "${BLITZAR_ROOT_DIR}/apps/client-host/src/CliArgs.cpp"
@@ -132,7 +132,7 @@ if(BLITZAR_TEST_UNIT_MODULE_SOURCES)
             "${BLITZAR_ROOT_DIR}/engine/config/directive/write/CfgValueFormatter.cpp"
             "${BLITZAR_ROOT_DIR}/engine/config/core/configuration/CfgConfig.cpp"
             "${BLITZAR_ROOT_DIR}/engine/config/modes/normalization/CfgNormalize.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/server/simulation/runtime/SrvSimulationInitConfig.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/server/simulation/configuration/SrvSimulationInitConfig.cpp"
             "${BLITZAR_ROOT_DIR}/runtime/client/diagnostics/CliErrorBuffer.cpp"
             "${BLITZAR_ROOT_DIR}/runtime/client/module/CliApi.cpp"
             "${BLITZAR_ROOT_DIR}/runtime/client/module/CliBoundary.cpp"
@@ -191,7 +191,7 @@ set(BLITZAR_TEST_CONFIG_SOURCES
     "${BLITZAR_ROOT_DIR}/engine/config/directive/write/CfgValueFormatter.cpp"
     "${BLITZAR_ROOT_DIR}/engine/config/core/configuration/CfgConfig.cpp"
     "${BLITZAR_ROOT_DIR}/engine/config/modes/normalization/CfgNormalize.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/server/simulation/runtime/SrvSimulationInitConfig.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/server/simulation/configuration/SrvSimulationInitConfig.cpp"
 )
 set(BLITZAR_TEST_BASE_BRIDGE_SOURCES
     "${BLITZAR_ROOT_DIR}/tests/support/poll_utils.cpp"
@@ -277,6 +277,6 @@ include("${CMAKE_CURRENT_LIST_DIR}/targets_qt_gtests.cmake")
 BLITZAR_add_gtest(blitzarGraphicsGTests
     LABELS unit
     SOURCES
-        "${BLITZAR_ROOT_DIR}/tests/unit/graphics/TST_UNT_GRA_GraphicsTests.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/graphics/tests/graphics.cpp"
         ${BLITZAR_GRAPHICS_SOURCES}
 )

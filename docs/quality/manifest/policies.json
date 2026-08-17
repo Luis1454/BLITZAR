@@ -18,7 +18,7 @@
         "engine/platform/internal/PltDynamicLibraryOps.hpp",
         "engine/platform/internal/PltProcessOps.hpp",
         "engine/platform/internal/PltSocketOps.hpp",
-        "engine/physics/cuda/CudGpu.hpp",
+        "engine/physics/core/cuda/core/CudGpu.hpp",
         "engine/physics/octree/model/Octree.hpp"
       ]
     },

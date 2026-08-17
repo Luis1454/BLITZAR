@@ -7,9 +7,9 @@
 
 #include "client/module/CliApi.hpp"
 #include "client/module/CliBoundary.hpp"
-#include "modules/cli/Commands.hpp"
-#include "modules/cli/Lifecycle.hpp"
-#include "modules/cli/State.hpp"
+#include "modules/cli/commands/CliCommands.hpp"
+#include "modules/cli/lifecycle/CliLifecycle.hpp"
+#include "modules/cli/state/CliState.hpp"
 #include <cstddef>
 #include <string_view>
 

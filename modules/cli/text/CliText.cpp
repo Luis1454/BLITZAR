@@ -5,7 +5,7 @@
  * @brief Command-line client module for runtime control workflows.
  */
 
-#include "modules/cli/Text.hpp"
+#include "modules/cli/text/CliText.hpp"
 #include <algorithm>
 #include <cctype>
 #include <sstream>

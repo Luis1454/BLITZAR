@@ -33,7 +33,7 @@ static std::vector<std::string> splitTokens(const std::string& line)
     bool inQuotes = false;
     char quoteChar = '\0';
     for (char c : line) {
-        if (!inQuotes && (c == '"' || c == '/'')) {
+        if (!inQuotes && (c == '"' || c == '\'')) {
             inQuotes = true;
             quoteChar = c;
             continue;
@@ -64,7 +64,7 @@ static std::string stripComment(const std::string& line)
     bool inQuotes = false;
     char quoteChar = '\0';
     for (char c : line) {
-        if (!inQuotes && (c == '"' || c == '/'')) {
+        if (!inQuotes && (c == '"' || c == '\'')) {
             inQuotes = true;
             quoteChar = c;
             output.push_back(c);

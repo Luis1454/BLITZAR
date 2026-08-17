@@ -305,7 +305,7 @@ Deviation: DEV-QUAL-001
     # @return Value produced by this contract when applicable.
     # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def critical_fetch(repo: str, number: int, suffix: str, token: str, result):  # noqa: ARG001
-        return [{"filename": "tests/unit/physics/orbit.cpp"}] if suffix == "files" else [{"state": "COMMENTED", "user": {"login": "reviewer"}}]
+        return [{"filename": "engine/physics/octree/tests/orbit.cpp"}] if suffix == "files" else [{"state": "COMMENTED", "user": {"login": "reviewer"}}]
 
     result = FakeIvvGateCheck(critical_fetch).run(_event_context(tmp_path, _write_pr_event(tmp_path, critical_body)))
     assert any("waiting for one GitHub APPROVED review" in error for error in result.errors)
@@ -360,7 +360,7 @@ def test_traceability_gate_fails_without_ids_or_csv_and_skips_non_critical_pr(tm
     assert any("Requirements impacted" in error for error in result.errors)
 
     event_path = _write_pr_event(tmp_path, "Requirements impacted:\n- REQ-PHYS-001")
-    result = FakeTraceabilityGateCheck([{"filename": "engine/physics/cuda/CudParticleSystem.cu"}]).run(_event_context(tmp_path, event_path))
+    result = FakeTraceabilityGateCheck([{"filename": "engine/physics/core/cuda/CudParticleSystem.cu"}]).run(_event_context(tmp_path, event_path))
     assert any("traceability.csv" in error for error in result.errors)
 
     event_path = _write_pr_event(tmp_path, "Requirements impacted:\n- REQ-PROT-001")

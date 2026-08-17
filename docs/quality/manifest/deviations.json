@@ -38,8 +38,8 @@
       "mitigation": "Constrain edits to kernel extraction work and keep fragment boundaries documented in review notes.",
       "closure_criteria": "Replace fragment bundles with smaller responsibility-focused units and remove the allowlist paths.",
       "paths": [
-        "engine/physics/cuda/core/CudCore.inl",
-        "engine/physics/cuda/prelude/CudPrelude.inl"
+        "engine/physics/core/cuda/core/CudCore.inl",
+        "engine/physics/core/cuda/prelude/CudPrelude.inl"
       ],
       "requirements": [
         "REQ-QUAL-001"
@@ -158,7 +158,7 @@
       "mitigation": "Keep this file isolated in the allowlist and review all changes for allocator and scratch-buffer correctness.",
       "closure_criteria": "Split the CUDA buffer fragment below the hard limit and remove the allowlist path.",
       "paths": [
-        "engine/physics/cuda/buffer/CudBuffer.inl"
+        "engine/physics/core/cuda/buffer/CudBuffer.inl"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -254,7 +254,7 @@
         "engine/physics/core/particle/PhyParticleSystem.hpp",
         "engine/config/directive/CfgConfig.cpp",
         "engine/config/directive/CfgWrite.cpp",
-        "engine/physics/cuda/core/CudCore.inl",
+        "engine/physics/core/cuda/core/CudCore.inl",
         "engine/physics/jit/execution/CudJitRuntime.cu",
         "engine/server/simulation/lifecycle/SrvRebuild.cpp",
         "engine/server/simulation/telemetry/SrvSnapshotAndEnergy.cpp",
@@ -264,9 +264,9 @@
         "modules/qt/window/control/GuiControls.cpp",
         "python_tools/policies/repo_policy.py",
         "scripts/analysis/ast_graph.py",
-        "tests/unit/config/args_cli.cpp",
-        "tests/unit/config/args_io.cpp",
-        "tests/unit/config/args_io_directive.cpp",
+        "engine/config/args/tests/args_cli.cpp",
+        "engine/config/core/tests/args_io.cpp",
+        "engine/config/directive/tests/args_io_directive.cpp",
         "tests/unit/ui/qt_mainwindow_controller.cpp"
       ],
       "requirements": [

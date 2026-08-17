@@ -142,25 +142,25 @@ set(BLITZAR_TEST_PLATFORM_TARGET blitzarPlatform)
 if(NOT TARGET ${BLITZAR_TEST_PLATFORM_TARGET})
     set(BLITZAR_TEST_PLATFORM_TARGET blitzarIntegrationPlatform)
     set(_platform_sources
-        "${BLITZAR_ROOT_DIR}/engine/platform/PltErrors.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/platform/common/PltDynamicLibrary.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/platform/common/PltProcess.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/platform/common/PltProcessImpl.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/platform/common/PltSocket.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/platform/errors/PltErrors.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/platform/dynamic_library/PltDynamicLibrary.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/platform/process/PltProcess.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/platform/process/PltProcessImpl.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/platform/socket/PltSocket.cpp"
     )
     if(WIN32)
         list(APPEND _platform_sources
-            "${BLITZAR_ROOT_DIR}/engine/platform/win/PltDynamicLibrary.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/platform/win/PltPaths.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/platform/win/PltProcess.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/platform/win/PltSocket.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/dynamic_library/PltDynamicLibraryWin.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/paths/PltPathsWin.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/process/PltProcessWin.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/socket/PltSocketWin.cpp"
         )
     else()
         list(APPEND _platform_sources
-            "${BLITZAR_ROOT_DIR}/engine/platform/posix/PltDynamicLibrary.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/platform/posix/PltPaths.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/platform/posix/PltProcess.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/platform/posix/PltSocketOps.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/dynamic_library/PltDynamicLibraryPosix.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/paths/PltPathsPosix.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/process/PltProcessPosix.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/platform/socket/PltSocketPosix.cpp"
         )
     endif()
 

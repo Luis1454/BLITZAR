@@ -5,7 +5,7 @@
  * @brief Source artifact for the BLITZAR simulation project.
  */
 
-#include "graphics/GfxViewMath.hpp"
+#include "graphics/view/GfxViewMath.hpp"
 #include <algorithm>
 #include <cmath>
 

@@ -5,7 +5,7 @@
  * @brief Command-line client module for runtime control workflows.
  */
 
-#include "modules/cli/State.hpp"
+#include "modules/cli/state/CliState.hpp"
 #include "config/core/configuration/CfgConfig.hpp"
 
 namespace bltzr_module_cli {

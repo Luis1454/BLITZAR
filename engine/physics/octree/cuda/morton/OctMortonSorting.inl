@@ -11,37 +11,7 @@
  */
 
 #include <cuda_runtime.h>
-
-// Expand 21-bit value by inserting 2 zeros between every bit
-/*
- * @brief Documents the expand bits21 operation contract.
- * @param v Input value used by this contract.
- * @return unsigned long long value produced by this contract.
- * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
- */
-__device__ __forceinline__ unsigned long long expandBits21(unsigned int v)
-{
-    v = (v | (v << 16)) & 0x030000FFu;
-    v = (v | (v << 8)) & 0x0300F00Fu;
-    v = (v | (v << 4)) & 0x030C30C3u;
-    v = (v | (v << 2)) & 0x09249249u;
-    return static_cast<unsigned long long>(v);
-}
-
-// Compute 63-bit Morton code from 3D coordinates (21 bits per axis)
-/*
- * @brief Documents the morton encode63 operation contract.
- * @param x Input value used by this contract.
- * @param y Input value used by this contract.
- * @param z Input value used by this contract.
- * @return unsigned long long value produced by this contract.
- * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
- */
-__device__ __forceinline__ unsigned long long mortonEncode63(unsigned int x, unsigned int y,
-                                                             unsigned int z)
-{
-    return (expandBits21(x) << 2) | (expandBits21(y) << 1) | expandBits21(z);
-}
+#include "physics/octree/morton/OctMortonCodes.inl"
 
 // Compute Morton code for each particle based on its position
 /*

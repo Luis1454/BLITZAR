@@ -7,7 +7,7 @@
 
 #ifndef BLITZAR_ENGINE_INCLUDE_GRAPHICS_VIEWMATH_HPP_
 #define BLITZAR_ENGINE_INCLUDE_GRAPHICS_VIEWMATH_HPP_
-#include "GfxGraphicsTypes.hpp"
+#include "graphics/types/GfxGraphicsTypes.hpp"
 #include "types/simulation/TypSimulationTypes.hpp"
 #include <array>
 

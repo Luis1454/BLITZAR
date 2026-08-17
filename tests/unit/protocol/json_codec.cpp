@@ -9,7 +9,7 @@
 #include "protocol/PtcProtocol.hpp"
 #include <gtest/gtest.h>
 #include <string>
-#include "FndConstants.hpp"
+#include "core/constants/FndConstants.hpp"
 #include <vector>
 
 namespace bltzr_test_protocol_codec {

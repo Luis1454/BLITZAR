@@ -11,7 +11,7 @@
  * Module: qt
  * Responsibility: Paint octree overlay cells on top of a particle viewport.
  */
-#include "graphics/GfxViewMath.hpp"
+#include "graphics/view/GfxViewMath.hpp"
 #include "widgets/overlays/GuiOctree.hpp"
 /*
  * @brief Defines the qpainter type contract.

@@ -6,7 +6,7 @@
  */
 
 #include "core/constants/FndConstants.hpp"
-#include "modules/cli/ServerOps.hpp"
+#include "modules/cli/server/CliServerOps.hpp"
 #include "client/diagnostics/CliErrorBuffer.hpp"
 #include "config/text/parsing/CfgParse.hpp"
 #include "protocol/PtcProtocol.hpp"

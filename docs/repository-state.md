@@ -66,7 +66,7 @@ backend alone:
 - `engine/physics/octree/`: octree data structure and host implementation.
 - `engine/physics/treepm/`: CPU TreePM contract and implementation.
 - `engine/physics/fmm/`: FMM construction, evaluation, and metrics.
-- `engine/physics/cuda/`: shared CUDA runtime and integration responsibilities.
+- `engine/physics/core/cuda/`: shared CUDA runtime and integration responsibilities.
 - `engine/physics/jit/`: explicit JIT compilation, caching, execution, and benchmark responsibilities.
 - `engine/physics/<method>/cuda/<responsibility>/`: method-specific CUDA responsibilities.
 - `engine/<domain>/<module>/Module.cmake`: explicit source and include manifest for each engine module.

@@ -6,8 +6,8 @@ set(BLITZAR_SERVER_SOURCE_DIR "${BLITZAR_ROOT_DIR}/engine/server")
 set(BLITZAR_SERVER_INIT_SOURCE "${BLITZAR_SERVER_SOURCE_DIR}/simulation/configuration/SrvSimulationInitConfig.cpp")
 
 set(BLITZAR_SERVER_MODULE_SOURCES
-    "${BLITZAR_SERVER_SOURCE_DIR}/simulation/core/SrvHelpers.cpp"
-    "${BLITZAR_SERVER_SOURCE_DIR}/simulation/core/SrvFormatAndTheta.cpp"
+    "${BLITZAR_SERVER_SOURCE_DIR}/simulation/runtime/SrvHelpers.cpp"
+    "${BLITZAR_SERVER_SOURCE_DIR}/simulation/runtime/SrvFormatAndTheta.cpp"
     "${BLITZAR_SERVER_SOURCE_DIR}/simulation/persistence/SrvCheckpoint.cpp"
     "${BLITZAR_SERVER_SOURCE_DIR}/simulation/persistence/SrvIO.cpp"
     "${BLITZAR_SERVER_SOURCE_DIR}/simulation/parsing/SrvBinXyz.cpp"

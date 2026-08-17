@@ -7,7 +7,7 @@
 
 #include "client/module/CliApi.hpp"
 #include "client/module/CliBoundary.hpp"
-#include "modules/proxy/Support.hpp"
+#include "modules/proxy/support/PxySupport.hpp"
 #include <array>
 #include <chrono>
 #include <cstddef>

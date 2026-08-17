@@ -78,7 +78,7 @@ Deviation: DEV-SOLO-IVV
     # @return Value produced by this contract when applicable.
     # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def fetch_items(repo: str, number: int, suffix: str, token: str, result):  # noqa: ARG001
-        return [{"filename": "tests/unit/physics/orbit.cpp"}] if suffix == "files" else []
+        return [{"filename": "engine/physics/octree/tests/orbit.cpp"}] if suffix == "files" else []
 
     result = FakeIvvGateCheck(fetch_items).run(_event_context(tmp_path, _write_pr_event(tmp_path, body, user="author")))
     assert any("solo maintainer waiver requires" in error for error in result.errors)

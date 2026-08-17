@@ -9,7 +9,7 @@
 #include <gtest/gtest.h>
 #include <limits>
 #include <string>
-#include "FndConstants.hpp"
+#include "core/constants/FndConstants.hpp"
 
 namespace bltzr_test_qt_ui {
 TEST(QtUiLogicTest, TST_UNT_UI_001_PresenterFormatsStatusAndTraceFromRuntimeState)

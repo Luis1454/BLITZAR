@@ -34,7 +34,7 @@ modules/qt/widgets/graphs/GuiSpectrumGraph.cpp
 modules/qt/window/control/GuiControls.cpp
 python_tools/policies/repo_policy.py
 scripts/analysis/ast_graph.py
-tests/unit/config/args_cli.cpp
-tests/unit/config/args_io.cpp
-tests/unit/config/args_io_directive.cpp
+engine/config/args/tests/args_cli.cpp
+engine/config/core/tests/args_io.cpp
+engine/config/directive/tests/args_io_directive.cpp
 tests/unit/ui/qt_mainwindow_controller.cpp

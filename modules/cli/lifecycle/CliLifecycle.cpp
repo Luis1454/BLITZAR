@@ -12,8 +12,8 @@
 
 #include "client/diagnostics/CliErrorBuffer.hpp"
 #include "config/core/configuration/CfgConfig.hpp"
-#include "modules/cli/Lifecycle.hpp"
-#include "modules/cli/State.hpp"
+#include "modules/cli/lifecycle/CliLifecycle.hpp"
+#include "modules/cli/state/CliState.hpp"
 
 namespace bltzr_module_cli {
 

@@ -5,7 +5,7 @@
 
 #include "widgets/viewport/GuiGpuView.hpp"
 #include "core/constants/FndConstants.hpp"
-#include "GfxColorPipeline.hpp"
+#include "graphics/color/GfxColorPipeline.hpp"
 #include "widgets/overlays/GuiPainter.hpp"
 #include "widgets/viewport/GuiShaderSources.hpp"
 #include <QOpenGLContext>

@@ -8,7 +8,7 @@
 #ifndef BLITZAR_MODULES_CLI_SERVEROPS_HPP_
 #define BLITZAR_MODULES_CLI_SERVEROPS_HPP_
 #include "client/diagnostics/CliErrorBuffer.hpp"
-#include "modules/cli/State.hpp"
+#include "modules/cli/state/CliState.hpp"
 #include <string>
 #include <vector>
 

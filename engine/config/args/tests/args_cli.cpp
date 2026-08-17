@@ -1,0 +1,346 @@
+/*
+ * @file engine/config/args/tests/args_cli.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
+
+#include "config/args/parsing/CfgMain.hpp"
+#include "config/core/configuration/CfgConfig.hpp"
+#include "protocol/PtcProtocol.hpp"
+#include <gtest/gtest.h>
+#include <limits>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <vector>
+#include "core/constants/FndConstants.hpp"
+
+namespace bltzr_test_config_args_cli {
+std::vector<std::string_view> toArgViews(const std::vector<std::string>& storage)
+{
+    std::vector<std::string_view> args;
+    args.reserve(storage.size());
+    for (const std::string& item : storage)
+        args.emplace_back(item);
+    return args;
+}
+} // namespace bltzr_test_config_args_cli
+
+TEST(ConfigArgsTest, TST_UNT_CONF_001_FindsConfigPathInline)
+{
+    std::vector<std::string> args = {"app", "--config=custom.ini"};
+    EXPECT_EQ(findConfigPathArg(bltzr_test_config_args_cli::toArgViews(args)), "custom.ini");
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_002_FindsConfigPathSeparated)
+{
+    std::vector<std::string> args = {"app", "--config", "custom.ini"};
+    EXPECT_EQ(findConfigPathArg(bltzr_test_config_args_cli::toArgViews(args)), "custom.ini");
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_003_AppliesValidArguments)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app",
+                                     "--particle-count",
+                                     "2048",
+                                     "--dt=0.02",
+                                     "--solver",
+                                     "octree_gpu",
+                                     "--integrator",
+                                     "euler",
+                                     "--substep-target-dt",
+                                     "0.005",
+                                     "--max-substeps",
+                                     "12",
+                                     "--sph",
+                                     "true",
+                                     "--target-steps",
+                                     "333",
+                                     "--export-on-exit=false",
+                                     "--ui-fps",
+                                     "75",
+                                     "--zoom",
+                                     "0",
+                                     "--energy-every",
+                                     "2",
+                                     "--server-command-timeout-ms",
+                                     "90",
+                                     "--server-status-timeout-ms",
+                                     "35",
+                                     "--server-snapshot-timeout-ms",
+                                     "180"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(config.particleCount, 2048u);
+    EXPECT_FLOAT_EQ(config.dt, kGalaxyCollisionDt);
+    EXPECT_EQ(config.solver, "octree_gpu");
+    EXPECT_EQ(config.integrator, "euler");
+    EXPECT_FLOAT_EQ(config.defaultZoom, 0.0f);
+    EXPECT_FLOAT_EQ(config.substepTargetDt, 0.005f);
+    EXPECT_EQ(config.maxSubsteps, 12u);
+    EXPECT_TRUE(config.sphEnabled);
+    EXPECT_EQ(config.uiFpsLimit, 75u);
+    EXPECT_EQ(config.energyMeasureEverySteps, 2u);
+    EXPECT_EQ(config.clientRemoteCommandTimeoutMs, 90u);
+    EXPECT_EQ(config.clientRemoteStatusTimeoutMs, 35u);
+    EXPECT_EQ(config.clientRemoteSnapshotTimeoutMs, 180u);
+    EXPECT_EQ(runtime.targetSteps, 333);
+    EXPECT_FALSE(runtime.exportOnExit);
+    EXPECT_TRUE(warnings.str().empty());
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_004_RejectsInvalidArgumentsAndKeepsPreviousValues)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    const std::uint32_t initialParticleCount = config.particleCount;
+    const float initialDt = config.dt;
+    const bool initialSphEnabled = config.sphEnabled;
+    std::vector<std::string> args = {"app",   "--particle-count", "nope", "--dt", "-1", "--sph",
+                                     "maybe", "--unknown",        "value"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(config.particleCount, initialParticleCount);
+    EXPECT_FLOAT_EQ(config.dt, initialDt);
+    EXPECT_EQ(config.sphEnabled, initialSphEnabled);
+    const std::string log = warnings.str();
+    EXPECT_NE(log.find("invalid --particle-count"), std::string::npos);
+    EXPECT_NE(log.find("invalid --dt"), std::string::npos);
+    EXPECT_NE(log.find("invalid --sph"), std::string::npos);
+    EXPECT_NE(log.find("unknown option"), std::string::npos);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_005_RejectsInvalidSolverAndIntegratorValues)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    const std::string initialSolver = config.solver;
+    const std::string initialIntegrator = config.integrator;
+    std::vector<std::string> args = {"app", "--solver", "bad_solver", "--integrator",
+                                     "bad_integrator"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(config.solver, initialSolver);
+    EXPECT_EQ(config.integrator, initialIntegrator);
+    EXPECT_TRUE(runtime.hasArgumentError);
+    const std::string log = warnings.str();
+    EXPECT_NE(log.find("invalid --solver"), std::string::npos);
+    EXPECT_NE(log.find("invalid --integrator"), std::string::npos);
+    runtime = RuntimeArgs{};
+    warnings.str("");
+    warnings.clear();
+    args = {"app", "--solver", "octree_gpu", "--integrator", "rk4"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(config.solver, "octree_gpu");
+    EXPECT_EQ(config.integrator, "euler");
+    EXPECT_FALSE(runtime.hasArgumentError);
+    EXPECT_NE(warnings.str().find("using euler"), std::string::npos);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_006_RejectsTrailingGarbageNumericArguments)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    const std::uint32_t initialParticleCount = config.particleCount;
+    const float initialDt = config.dt;
+    const float initialTheta = config.octreeTheta;
+    const int initialLuminosity = config.defaultLuminosity;
+    std::vector<std::string> args = {"app",   "--particle-count", "2048abc", "--dt",
+                                     "0.01x", "--octree-theta",   "1.4deg",  "--luminosity",
+                                     "120%"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(config.particleCount, initialParticleCount);
+    EXPECT_FLOAT_EQ(config.dt, initialDt);
+    EXPECT_FLOAT_EQ(config.octreeTheta, initialTheta);
+    EXPECT_EQ(config.defaultLuminosity, initialLuminosity);
+    const std::string log = warnings.str();
+    EXPECT_NE(log.find("invalid --particle-count"), std::string::npos);
+    EXPECT_NE(log.find("invalid --dt"), std::string::npos);
+    EXPECT_NE(log.find("invalid --octree-theta"), std::string::npos);
+    EXPECT_NE(log.find("invalid --luminosity"), std::string::npos);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_014_AcceptsMaximumClientParticleCapArgument)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {
+        "app", "--client-particle-cap",
+        std::to_string(std::numeric_limits<std::uint32_t>::max())};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(config.clientParticleCap, bltzr_protocol::kSnapshotMaxPoints);
+    EXPECT_EQ(warnings.str().find("--client-particle-cap clamped"), std::string::npos);
+    EXPECT_FALSE(runtime.hasArgumentError);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_019_CliAliasesApplyThroughSharedRegistry)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--structure", "random_cloud", "--size", "24"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(config.presetStructure, "random_cloud");
+    EXPECT_FLOAT_EQ(config.presetSize, 24.0f);
+    EXPECT_TRUE(warnings.str().empty());
+    EXPECT_FALSE(runtime.hasArgumentError);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_022_CliAcceptsCalibrationSceneModes)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--preset-structure", "three_body", "--init-mode",
+                                     "plummer_sphere"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(config.presetStructure, "three_body");
+    EXPECT_EQ(config.initMode, "plummer_sphere");
+    EXPECT_FALSE(warnings.str().empty());
+    EXPECT_FALSE(runtime.hasArgumentError);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_026_CliPerformanceProfileAppliesInteractivePreset)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--performance-profile", "interactive"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(config.performanceProfile, "interactive");
+    EXPECT_EQ(config.clientParticleCap, bltzr_protocol::kSnapshotDefaultPoints);
+    EXPECT_EQ(config.snapshotPublishPeriodMs, 50u);
+    EXPECT_EQ(config.energyMeasureEverySteps, 30u);
+    EXPECT_EQ(config.energySampleLimit, 256u);
+    EXPECT_FLOAT_EQ(config.substepTargetDt, 0.0f);
+    EXPECT_EQ(config.maxSubsteps, 4u);
+    EXPECT_TRUE(warnings.str().empty());
+    EXPECT_FALSE(runtime.hasArgumentError);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_036_CliPerformanceProfileAppliesBalancedAndQualityPresets)
+{
+    SimulationConfig balanced = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> balancedArgs = {"app", "--performance-profile", "balanced"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(balancedArgs), balanced, runtime,
+                      warnings);
+    EXPECT_EQ(balanced.performanceProfile, "balanced");
+    EXPECT_EQ(balanced.clientParticleCap, 8192u);
+    EXPECT_EQ(balanced.snapshotPublishPeriodMs, 33u);
+    EXPECT_EQ(balanced.energyMeasureEverySteps, 20u);
+    EXPECT_EQ(balanced.energySampleLimit, 1024u);
+    EXPECT_FLOAT_EQ(balanced.substepTargetDt, 0.005f);
+    EXPECT_EQ(balanced.maxSubsteps, 8u);
+    SimulationConfig quality = SimulationConfig::defaults();
+    runtime = RuntimeArgs{};
+    warnings.str("");
+    warnings.clear();
+    std::vector<std::string> qualityArgs = {"app", "--performance-profile", "quality"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(qualityArgs), quality, runtime,
+                      warnings);
+    EXPECT_EQ(quality.performanceProfile, "quality");
+    EXPECT_EQ(quality.clientParticleCap, bltzr_protocol::kSnapshotMaxPoints);
+    EXPECT_EQ(quality.snapshotPublishPeriodMs, 16u);
+    EXPECT_EQ(quality.energyMeasureEverySteps, 10u);
+    EXPECT_EQ(quality.energySampleLimit, 5000u);
+    EXPECT_FLOAT_EQ(quality.substepTargetDt, 0.0f);
+    EXPECT_EQ(quality.maxSubsteps, 32u);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_033_CliRejectsInvalidSiPhysicsParameters)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--physics-max-accel", "0", "--physics-min-softening",
+                                     "0",   "--physics-min-dist2", "0"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    const std::string log = warnings.str();
+    EXPECT_TRUE(runtime.hasArgumentError);
+    EXPECT_NE(log.find("[preflight] blocked"), std::string::npos);
+    EXPECT_NE(log.find("physics_max_acceleration [m/s^2]"), std::string::npos);
+    EXPECT_NE(log.find("physics_min_softening [m]"), std::string::npos);
+    EXPECT_NE(log.find("physics_min_distance2 [m^2]"), std::string::npos);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_071_CliExportOnExitRejectsInvalidExplicitBool)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    runtime.exportOnExit = false;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--export-on-exit", "banana"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_FALSE(runtime.exportOnExit);
+    EXPECT_NE(warnings.str().find("invalid bool for --export-on-exit"), std::string::npos);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_072_CliExportOnExitParsesSeparatedBoolValue)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--export-on-exit", "false"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_FALSE(runtime.exportOnExit);
+    EXPECT_FALSE(runtime.hasArgumentError);
+    EXPECT_TRUE(warnings.str().empty());
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_073_CliExportOnExitDefaultsToTrueWithoutValue)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    runtime.exportOnExit = false;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--export-on-exit", "--target-steps", "10"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_TRUE(runtime.exportOnExit);
+    EXPECT_EQ(runtime.targetSteps, 10);
+    EXPECT_FALSE(runtime.hasArgumentError);
+    EXPECT_TRUE(warnings.str().empty());
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_113_CliSelectsExplicitExecutionCommand)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--validate"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(runtime.command, RuntimeCommand::Validate);
+    EXPECT_FALSE(runtime.hasArgumentError);
+    EXPECT_TRUE(warnings.str().empty());
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_114_CliRejectsConflictingExecutionCommands)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--inspect", "--run"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(runtime.command, RuntimeCommand::Run);
+    EXPECT_TRUE(runtime.hasArgumentError);
+    EXPECT_NE(warnings.str().find("only one execution command"), std::string::npos);
+}
+
+TEST(ConfigArgsTest, TST_UNT_CONF_116_CliAcceptsDeterministicExportPath)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    RuntimeArgs runtime;
+    std::stringstream warnings;
+    std::vector<std::string> args = {"app", "--run", "--export-path", "outputs/final.xyz"};
+    applyArgsToConfig(bltzr_test_config_args_cli::toArgViews(args), config, runtime, warnings);
+    EXPECT_EQ(runtime.command, RuntimeCommand::Run);
+    EXPECT_EQ(runtime.exportPath, "outputs/final.xyz");
+    EXPECT_FALSE(runtime.hasArgumentError);
+    EXPECT_TRUE(warnings.str().empty());
+}

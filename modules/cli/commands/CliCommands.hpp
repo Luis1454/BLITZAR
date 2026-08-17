@@ -9,7 +9,7 @@
 #define BLITZAR_MODULES_CLI_COMMANDS_HPP_
 #include "client/module/CliBoundary.hpp"
 #include "client/diagnostics/CliErrorBuffer.hpp"
-#include "modules/cli/State.hpp"
+#include "modules/cli/state/CliState.hpp"
 #include <string_view>
 
 namespace bltzr_module_cli {

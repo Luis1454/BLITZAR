@@ -1,11 +1,11 @@
 /*
- * @file modules/proxy/support/ProxySupport.cpp
+ * @file modules/proxy/support/PxySupport.cpp
  * @author Luis1454
  * @project BLITZAR
  * @brief Internal support helpers for the GUI proxy client module.
  */
 
-#include "modules/proxy/Support.hpp"
+#include "modules/proxy/support/PxySupport.hpp"
 #include <algorithm>
 #include <array>
 #include <cctype>
@@ -35,7 +35,7 @@ std::vector<std::string> splitTokens(const std::string& line)
     bool inQuotes = false;
     char quoteChar = '\0';
     for (char c : line) {
-        if (!inQuotes && (c == '"' || c == '/'')) {
+        if (!inQuotes && (c == '"' || c == '\'')) {
             inQuotes = true;
             quoteChar = c;
             continue;

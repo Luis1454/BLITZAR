@@ -13,7 +13,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "FndConstants.hpp"
+#include "core/constants/FndConstants.hpp"
 
 namespace bltzr_test_module_cli_command_executor_flows {
 class FakeTransport final : public bltzr_cmd::Transport {

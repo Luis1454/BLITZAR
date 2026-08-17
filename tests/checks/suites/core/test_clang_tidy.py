@@ -127,7 +127,7 @@ def _context(
 # @return Value produced by this contract when applicable.
 # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def _make_source(root: Path, name: str, suffix: str = ".cpp") -> Path:
-    path = root / "runtime" / "src" / "server" / f"{name}{suffix}"
+    path = root / "runtime" / "server" / f"{name}{suffix}"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(f"int {name.replace('-', '_')}();\n", encoding="utf-8")
     return path

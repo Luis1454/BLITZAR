@@ -3,7 +3,7 @@
  * @brief Runtime daemon observation, lifecycle, and configuration commands.
  */
 
-#include "core/Daemon.hpp"
+#include "server/core/SrvDaemon.hpp"
 
 #include "config/core/configuration/CfgConfig.hpp"
 #include "config/directive/parsing/CfgConfig.hpp"

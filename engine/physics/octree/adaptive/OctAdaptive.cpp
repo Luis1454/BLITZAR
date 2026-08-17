@@ -5,9 +5,9 @@
  * @brief Individual dyadic adaptive time-step integration on the host.
  */
 
-#include "physics/octree/math/OctHostMath.hpp"
+#include "physics/octree/model/OctHostMath.hpp"
 #include "physics/octree/force/OctreeForce.hpp"
-#include "physics/octree/runtime/OctParticleSystemDeviceState.hpp"
+#include "physics/octree/model/OctParticleSystemDeviceState.hpp"
 #include "physics/core/particle/PhyParticleSystem.hpp"
 
 #include <algorithm>

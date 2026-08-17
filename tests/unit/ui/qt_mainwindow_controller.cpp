@@ -13,7 +13,7 @@
 #include <optional>
 #include <string>
 #include <vector>
-#include "FndConstants.hpp"
+#include "core/constants/FndConstants.hpp"
 
 namespace bltzr_test_qt_ui {
 class RecordingRuntime final : public bltzr_client::Interface {

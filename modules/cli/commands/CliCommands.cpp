@@ -5,7 +5,7 @@
  * @brief Command-line client module for runtime control workflows.
  */
 
-#include "modules/cli/Commands.hpp"
+#include "modules/cli/commands/CliCommands.hpp"
 #include "client/diagnostics/CliErrorBuffer.hpp"
 #include "command/catalog/CmdCatalog.hpp"
 #include "command/core/CmdContext.hpp"

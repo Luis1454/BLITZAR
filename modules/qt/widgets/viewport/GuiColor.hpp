@@ -11,7 +11,7 @@
  * Module: qt
  * Responsibility: Convert simulation attributes into Qt-friendly particle colors.
  */
-#include "GfxColorPipeline.hpp"
+#include "graphics/color/GfxColorPipeline.hpp"
 #include <QColor>
 #include <QtGlobal>
 #include <vector>

@@ -6,8 +6,8 @@
  */
 
 #include "config/env/platform/CfgBase.hpp"
-#include "PltPaths.hpp"
-#include "PltSocket.hpp"
+#include "platform/paths/PltPaths.hpp"
+#include "platform/socket/PltSocket.hpp"
 #include "protocol/client/PtcClient.hpp"
 #include "tests/support/server_harness.hpp"
 #include <array>

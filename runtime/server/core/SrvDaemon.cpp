@@ -3,7 +3,7 @@
  * @brief Runtime daemon transport lifecycle and command dispatch.
  */
 
-#include "core/Daemon.hpp"
+#include "server/core/SrvDaemon.hpp"
 
 #include "platform/socket/PltSocket.hpp"
 #include "protocol/PtcProtocol.hpp"

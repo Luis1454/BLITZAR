@@ -3,7 +3,7 @@
  * @brief Runtime daemon adaptive, gravity, fluid, and telemetry commands.
  */
 
-#include "core/Daemon.hpp"
+#include "server/core/SrvDaemon.hpp"
 
 #include "protocol/PtcProtocol.hpp"
 #include "protocol/codec/PtcJsonCodec.hpp"

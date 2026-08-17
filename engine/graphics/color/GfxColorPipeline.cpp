@@ -6,7 +6,7 @@
  */
 
 #include "core/constants/FndConstants.hpp"
-#include "GfxColorPipeline.hpp"
+#include "graphics/color/GfxColorPipeline.hpp"
 #include <algorithm>
 #include <array>
 #include <cstdint>

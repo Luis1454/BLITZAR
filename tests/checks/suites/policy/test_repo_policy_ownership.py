@@ -30,7 +30,7 @@ def test_repo_policy_rejects_unqualified_raw_pointer_member(tmp_path: Path) -> N
 # @note Boundary and view contracts are intentionally non-owning.
 def test_repo_policy_accepts_explicit_borrowed_view_member(tmp_path: Path) -> None:
     _write(
-        tmp_path / "engine" / "physics" / "core" / "include" / "PhyParticleSoAView.hpp",
+        tmp_path / "engine" / "physics" / "core" / "particle" / "PhyParticleSoAView.hpp",
         "#ifndef VIEW_HPP\n#define VIEW_HPP\nstruct View {\n    float* values;\n};\n#endif\n",
     )
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
@@ -58,7 +58,7 @@ def test_repo_policy_rejects_internal_exports_pointer(tmp_path: Path) -> None:
 # @note The C ABI declaration remains an intentional non-owning boundary.
 def test_repo_policy_accepts_exports_abi_pointer(tmp_path: Path) -> None:
     _write(
-        tmp_path / "runtime" / "include" / "client" / "module" / "Api.hpp",
+        tmp_path / "runtime" / "client" / "module" / "CliApi.hpp",
         "#ifndef API_HPP\n#define API_HPP\nstruct ExportsV1 {};\ntypedef const ExportsV1* (*EntryPointFn)();\n#endif\n",
     )
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")

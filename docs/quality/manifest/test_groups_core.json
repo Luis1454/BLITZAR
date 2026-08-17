@@ -1297,6 +1297,30 @@
                     "REQ-COMP-002",
                     "REQ-TEST-001"
                 ]
+            },
+            "TST-QLT-REPO-010": {
+                "id": "CoreTest.SimulationDefaultsAreOrdered",
+                "req_ids": [
+                    "REQ-QUAL-001"
+                ]
+            },
+            "TST-QLT-REPO-011": {
+                "id": "TypesTest.InitialStateDefaultsAreDeterministic",
+                "req_ids": [
+                    "REQ-QUAL-001"
+                ]
+            },
+            "TST-QLT-REPO-012": {
+                "id": "JitTest.DefaultRequestIsStable",
+                "req_ids": [
+                    "REQ-PHYS-001"
+                ]
+            },
+            "TST-QLT-REPO-013": {
+                "id": "JitTest.RuntimeReportsAStableAvailabilityState",
+                "req_ids": [
+                    "REQ-PHYS-001"
+                ]
             }
         },
         "EVD_CHECK_LAUNCHER": {
