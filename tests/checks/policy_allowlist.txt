@@ -28,7 +28,6 @@ tests/int/ui/qt_workspace_runtime_controls.cpp
 # DEV-QUAL-012: baseline files scheduled for responsibility-focused extraction in #443.
 cmake/apps.cmake
 engine/include/physics/core/ParticleSystem.hpp
-engine/src/config/validation/Scenario.cpp
 engine/src/physics/octree/Octree.cpp
 engine/src/server/simulation/lifecycle/Rebuild.cpp
 engine/src/server/simulation/runtime/SettersAndExport.cpp
