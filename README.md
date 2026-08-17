@@ -156,7 +156,7 @@ On `v*` tags, or manual dispatch with a `v*` release tag, the lane publishes a G
 ## Project Layout
 
 - `apps/`
-- `engine/include/`, `engine/src/`
+- `engine/<domain>/<module>/include`, `src`, `cuda`, `tests`, `Module.cmake`
 - `runtime/include/`, `runtime/src/`
 - `modules/`
 - `tests/unit`, `tests/int`: product verification
@@ -166,4 +166,4 @@ On `v*` tags, or manual dispatch with a `v*` release tag, the lane publishes a G
 
 `simulation.ini` is auto-created at first launch and now uses directive blocks such as `simulation(...)`, `performance(...)`, `scene(...)`, `thermal(...)`, and `client(...)`.
 
-Main options are available from the executable help output and mirrored by the option registry in `engine/src/config/SimulationOptionRegistryEntries.cpp`.
+Main options are available from the executable help output and mirrored by the option registry in `engine/config/SimulationOptionRegistryEntries.cpp`.

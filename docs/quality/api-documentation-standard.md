@@ -60,7 +60,7 @@ Use spacing to keep the code readable instead of dense:
 
 The repository quality gate enforces this format for public headers under:
 
-- `engine/include/`
+- `engine/core/include/`
 - `runtime/include/`
 - `modules/qt/src/`
 
@@ -69,7 +69,7 @@ The same gate also checks file header blocks across the main C++ sources so miss
 ## Scope
 
 Apply this format first to:
-- public headers under `engine/include/`
+- public headers under `engine/core/include/`
 - public headers under `runtime/include/`
 - Qt-facing headers under `modules/qt/src/`
 - split CUDA/core fragments where a file-level responsibility header clarifies the partition

@@ -221,10 +221,15 @@ class ProcessRunner:
 # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def collect_test_ids(root: Path, extra_test_ids: set[str], test_macro_re: Pattern[str] = TEST_MACRO_RE) -> set[str]:
     tests: set[str] = set(extra_test_ids)
-    for path in (root / "tests").rglob("*.cpp"):
-        text = path.read_text(encoding="utf-8", errors="ignore")
-        for suite, case in test_macro_re.findall(text):
-            tests.add(f"{suite}.{case}")
+    test_roots = [root / "tests"]
+    engine_root = root / "engine"
+    if engine_root.exists():
+        test_roots.extend(path for path in engine_root.rglob("tests") if path.is_dir())
+    for test_root in test_roots:
+        for path in test_root.rglob("*.cpp"):
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            for suite, case in test_macro_re.findall(text):
+                tests.add(f"{suite}.{case}")
     rust_root = root / "rust"
     if rust_root.exists():
         for path in rust_root.rglob("*.rs"):

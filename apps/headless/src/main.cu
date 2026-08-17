@@ -6,11 +6,11 @@
  */
 
 #include "Constants.hpp"
-#include "config/env/Base.hpp"
-#include "config/SimulationArgs.hpp"
-#include "config/SimulationConfig.hpp"
-#include "server/SimulationInitConfig.hpp"
-#include "server/SimulationServer.hpp"
+#include "env/Base.hpp"
+#include "SimulationArgs.hpp"
+#include "SimulationConfig.hpp"
+#include "SimulationInitConfig.hpp"
+#include "SimulationServer.hpp"
 #include <chrono>
 #include <iostream>
 #include <string>

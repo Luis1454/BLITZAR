@@ -13,7 +13,7 @@
  * contract used by UI
  * frontends.
  */
-#include "types/SimulationTypes.hpp"
+#include "SimulationTypes.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <optional>

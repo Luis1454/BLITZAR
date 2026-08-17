@@ -6,7 +6,7 @@
  */
 
 #include "client/common/ClientCommon.hpp"
-#include "config/core/Config.hpp"
+#include "core/Config.hpp"
 #include "protocol/Protocol.hpp"
 #include "tests/support/scoped_env_var.hpp"
 #include <cctype>

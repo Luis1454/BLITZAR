@@ -85,8 +85,8 @@ RAW_POINTER_MEMBER_RE = re.compile(
     r"[A-Za-z_][A-Za-z0-9_]*\s*(?:=\s*nullptr)?\s*;"
 )
 RAW_POINTER_MEMBER_ALLOWLIST = {
-    "engine/include/physics/core/ParticleSoAView.hpp",
-    "engine/include/platform/Socket.hpp",
+    "engine/physics/core/include/ParticleSoAView.hpp",
+    "engine/platform/include/Socket.hpp",
     "runtime/include/client/diagnostics/ErrorBuffer.hpp",
     "runtime/include/client/module/Api.hpp",
     "runtime/include/client/module/Boundary.hpp",
@@ -233,11 +233,12 @@ class RepoPolicyCheck(BaseCheck):
     def _check_cpp_content(self, rel: str, content: str, result: CheckResult) -> None:
         suffix = Path(rel).suffix.lower()
         self._check_exports_pointer_boundary(rel, content, result)
-        if not rel.startswith("tests/"):
+        is_module_test = "/tests/" in f"/{rel}"
+        if not (rel.startswith("tests/") or is_module_test):
             if GTEST_INCLUDE_RE.search(content):
-                result.add_error(f"{rel}: gtest include found outside tests/")
+                result.add_error(f"{rel}: gtest include found outside a tests/ directory")
             if GTEST_MACRO_RE.search(content):
-                result.add_error(f"{rel}: gtest TEST macro found outside tests/")
+                result.add_error(f"{rel}: gtest TEST macro found outside a tests/ directory")
         if UNNAMED_NAMESPACE_RE.search(content):
             detail = "unnamed namespace is forbidden in production paths" if is_prod_path(rel) else "unnamed namespace is forbidden"
             result.add_error(f"{rel}: {detail}")

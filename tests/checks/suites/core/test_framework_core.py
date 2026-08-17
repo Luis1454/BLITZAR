@@ -128,7 +128,7 @@ def test_result_reporter_handles_success(capsys) -> None:
 # @return Value produced by this contract when applicable.
 # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_check_catalog_exposes_expected_sequences() -> None:
-    assert load_check_sequences()["all"] == ["ini", "mirror", "no_legacy", "quality", "test_catalog", "pr_policy", "repo"]
+    assert load_check_sequences()["all"] == ["ini", "mirror", "no_legacy", "architecture", "quality", "test_catalog", "pr_policy", "repo"]
     assert "python_quality" in load_check_registry()
 
 

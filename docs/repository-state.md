@@ -62,17 +62,19 @@ external merge requirement.
 The physics implementation is organized by responsibility rather than by build
 backend alone:
 
-- `engine/include/physics/core/`: shared particle, vector, state, and force-law contracts.
-- `engine/include/physics/octree/`: octree data structure contract.
-- `engine/include/physics/treepm/`: CPU TreePM contract.
-- `engine/include/physics/fmm/`: CPU FMM contract.
-- `engine/include/physics/cuda/`: CUDA/JIT-facing contracts.
-- `engine/src/physics/core/`: shared host implementations.
-- `engine/src/physics/octree/`: host octree and particle-system fallback implementation.
-- `engine/src/physics/treepm/`: CPU TreePM implementation.
-- `engine/src/physics/fmm/`: FMM construction, evaluation, and metrics.
-- `engine/src/physics/cuda/`: host-side CUDA/JIT bridge implementation.
-- `engine/src/cuda/`: CUDA runtime, memory pool, kernels, and domain fragments.
+- `engine/physics/core/include/`: shared particle, vector, state, and force-law contracts.
+- `engine/physics/octree/include/`: octree data structure contract.
+- `engine/physics/treepm/include/`: CPU TreePM contract.
+- `engine/physics/fmm/include/`: CPU FMM contract.
+- `engine/physics/cuda/include/`: CUDA/JIT-facing contracts.
+- `engine/physics/core/src/`: shared host implementations.
+- `engine/physics/octree/src/`: host octree and particle-system fallback implementation.
+- `engine/physics/treepm/src/`: CPU TreePM implementation.
+- `engine/physics/fmm/src/`: FMM construction, evaluation, and metrics.
+- `engine/physics/cuda/src/`: host-side CUDA/JIT bridge implementation.
+- `engine/physics/cuda/fragments/`: shared CUDA system, integration, and JIT fragments.
+- `engine/physics/<method>/cuda/fragments/`: method-specific CUDA fragments.
+- `engine/<domain>/<module>/Module.cmake`: explicit source and include manifest for each engine module.
 
 New solver code belongs in its solver directory. Cross-solver state and numerical
 contracts belong in `core`; CUDA fragments remain grouped by execution concern

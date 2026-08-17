@@ -6,7 +6,7 @@
  */
 
 #include "modules/cli/State.hpp"
-#include "config/core/Config.hpp"
+#include "core/Config.hpp"
 
 namespace bltzr_module_cli {
 

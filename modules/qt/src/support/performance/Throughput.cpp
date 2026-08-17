@@ -6,7 +6,7 @@
  */
 
 #include "support/performance/Throughput.hpp"
-#include "config/core/Config.hpp"
+#include "core/Config.hpp"
 #include <algorithm>
 #include <cmath>
 #include <sstream>

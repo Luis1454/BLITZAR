@@ -6,10 +6,10 @@
  */
 
 #include "client/common/Common.hpp"
-#include "config/env/Base.hpp"
-#include "config/SimulationConfig.hpp"
-#include "config/SimulationOptionRegistry.hpp"
-#include "platform/Paths.hpp"
+#include "env/Base.hpp"
+#include "SimulationConfig.hpp"
+#include "SimulationOptionRegistry.hpp"
+#include "Paths.hpp"
 #include "protocol/Protocol.hpp"
 #include <algorithm>
 #include <cctype>

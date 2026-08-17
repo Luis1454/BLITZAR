@@ -30,7 +30,7 @@ def test_repo_policy_rejects_unqualified_raw_pointer_member(tmp_path: Path) -> N
 # @note Boundary and view contracts are intentionally non-owning.
 def test_repo_policy_accepts_explicit_borrowed_view_member(tmp_path: Path) -> None:
     _write(
-        tmp_path / "engine" / "include" / "physics" / "core" / "ParticleSoAView.hpp",
+        tmp_path / "engine" / "physics" / "core" / "include" / "ParticleSoAView.hpp",
         "#ifndef VIEW_HPP\n#define VIEW_HPP\nstruct View {\n    float* values;\n};\n#endif\n",
     )
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")

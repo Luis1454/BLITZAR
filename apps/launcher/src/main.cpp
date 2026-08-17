@@ -6,8 +6,8 @@
  */
 
 #include "Constants.hpp"
-#include "platform/Paths.hpp"
-#include "platform/Process.hpp"
+#include "Paths.hpp"
+#include "Process.hpp"
 #include <algorithm>
 #include <cctype>
 #include <filesystem>

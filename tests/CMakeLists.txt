@@ -6,6 +6,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 get_filename_component(BLITZAR_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
+include("${BLITZAR_ROOT_DIR}/engine/Module.cmake")
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     include("${BLITZAR_ROOT_DIR}/cmake/win.cmake")
@@ -42,10 +43,9 @@ endif()
 set(BLITZAR_TEST_INCLUDE_DIRS
     "${BLITZAR_ROOT_DIR}"
     "${BLITZAR_ROOT_DIR}/apps/client-host/include"
-    "${BLITZAR_ROOT_DIR}/engine/include"
+    ${BLITZAR_ENGINE_INCLUDE_DIRS}
     "${BLITZAR_ROOT_DIR}/runtime/include"
     "${BLITZAR_ROOT_DIR}/modules/qt/src"
-    "${BLITZAR_ROOT_DIR}/engine/src/cuda"
 )
 
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/setup.cmake")

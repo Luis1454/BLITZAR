@@ -6,7 +6,7 @@
 #ifndef BLITZAR_MODULES_QT_SRC_WINDOW_CONFIG_CONFIGURATIONEDITOR_HPP_
 #define BLITZAR_MODULES_QT_SRC_WINDOW_CONFIG_CONFIGURATIONEDITOR_HPP_
 
-#include "config/core/Config.hpp"
+#include "core/Config.hpp"
 #include <QDialog>
 #include <QGroupBox>
 #include <QHash>

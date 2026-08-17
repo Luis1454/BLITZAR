@@ -6,7 +6,7 @@
 #ifndef BLITZAR_MODULES_QT_SRC_WIDGETS_GRAPHS_SPECTRUMGRAPH_HPP_
 #define BLITZAR_MODULES_QT_SRC_WIDGETS_GRAPHS_SPECTRUMGRAPH_HPP_
 
-#include "types/SimulationTypes.hpp"
+#include "SimulationTypes.hpp"
 #include <QWidget>
 #include <chrono>
 #include <cstdint>

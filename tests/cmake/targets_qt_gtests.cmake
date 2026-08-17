@@ -10,7 +10,7 @@ if(TARGET Qt6::Widgets AND TARGET Qt6::OpenGLWidgets AND TARGET blitzarRustRunti
             ${BLITZAR_TEST_INT_UI_SOURCES}
             ${BLITZAR_TEST_BASE_RUNTIME_SOURCES}
             "${BLITZAR_ROOT_DIR}/tests/support/qt_test_utils.cpp"
-            "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
+            "${BLITZAR_ROOT_DIR}/engine/server/src/SimulationInitConfig.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/graphs/Graph.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/graphs/Paint.cpp"
             "${BLITZAR_ROOT_DIR}/modules/qt/src/widgets/graphs/SpectrumGraph.cpp"

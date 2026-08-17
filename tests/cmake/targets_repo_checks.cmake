@@ -61,7 +61,7 @@ set_tests_properties(TST_QLT_REPO_008_PyChecksUnit PROPERTIES LABELS "integratio
 BLITZAR_add_python_check(TST_QLT_REPO_009_PythonQualityGate check.py
     ARGS "python_quality" "--root" "${BLITZAR_ROOT_DIR}"
 )
-if(TARGET blitzar)
+if(TARGET blitzar AND TARGET blitzar-headless)
     BLITZAR_add_python_check(TST_QLT_REPO_005_GravityLauncherCheck check.py
         ARGS "launcher" "--build-dir" "${CMAKE_BINARY_DIR}"
     )

@@ -6,7 +6,7 @@
  */
 
 #include "window/presentation/Presenter.hpp"
-#include "types/SimulationTypes.hpp"
+#include "SimulationTypes.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cstdint>

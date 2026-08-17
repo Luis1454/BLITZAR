@@ -5,8 +5,8 @@
  * @brief Configuration coverage for selectable TreePM execution models.
  */
 
-#include "config/args/Main.hpp"
-#include "config/core/Config.hpp"
+#include "args/Main.hpp"
+#include "core/Config.hpp"
 
 #include <filesystem>
 #include <fstream>

@@ -8,8 +8,8 @@
 #include "client/runtime/Bridge.hpp"
 #include "Constants.hpp"
 #include "RemoteSession.hpp"
-#include "config/text/Parse.hpp"
-#include "platform/Paths.hpp"
+#include "text/Parse.hpp"
+#include "Paths.hpp"
 #include "protocol/codec/JsonCodec.hpp"
 #include <algorithm>
 #include <cctype>

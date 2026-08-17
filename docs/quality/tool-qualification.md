@@ -48,7 +48,7 @@ All other `clang-tidy` check families (`modernize-*`, `readability-*`, `performa
 CUDA device code (`.cu` files, `__global__`/`__device__` kernels) is structurally excluded from clang-tidy analysis:
 
 - **Compile database**: on the Linux CI runner (no CUDA toolkit), `ParticleSystem.cu` is not compiled and therefore absent from `compile_commands.json`.
-- **Path scope**: `DEFAULT_PATHS` in the Python runner covers `engine/src/config/`, `runtime/src/`, and `tests/` — not `engine/src/cuda/`.
+- **Path scope**: `DEFAULT_PATHS` in the Python runner covers module-local `engine/**/src/`, `engine/**/cuda/`, `runtime/src/`, and `tests/`.
 - **Language support**: clang-tidy cannot parse CUDA-specific syntax (`<<<...>>>`, `__shared__`, `__syncthreads()`) without `--cuda-gpu-arch` and a CUDA-aware compilation database.
 
 This exclusion is permanent with the current CI architecture. Mitigating it would require a self-hosted Linux runner with the CUDA toolkit installed and a dedicated analysis step using a CUDA-aware `compile_commands.json`. Until such a runner is operational, CUDA device code quality is verified through deterministic simulation tests (`TST_UNT_PHYS_*`, `TST_INT_PROT_011`) rather than static analysis.

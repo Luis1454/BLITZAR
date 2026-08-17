@@ -5,11 +5,11 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "config/core/Config.hpp"
-#include "physics/core/ForceLawPolicy.hpp"
-#include "physics/core/Particle.hpp"
-#include "physics/octree/Octree.hpp"
-#include "server/SimulationServer.hpp"
+#include "core/Config.hpp"
+#include "ForceLawPolicy.hpp"
+#include "Particle.hpp"
+#include "Octree.hpp"
+#include "SimulationServer.hpp"
 #include "tests/support/physics_test_utils.hpp"
 #include <chrono>
 #include <cmath>

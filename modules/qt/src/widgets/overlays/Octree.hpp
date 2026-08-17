@@ -12,7 +12,7 @@
  * Responsibility: Build a lightweight octree-cell overlay from the displayed
  * snapshot.
  */
-#include "types/SimulationTypes.hpp"
+#include "SimulationTypes.hpp"
 #include <vector>
 
 namespace bltzr_qt {

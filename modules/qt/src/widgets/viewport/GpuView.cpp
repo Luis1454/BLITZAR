@@ -5,7 +5,7 @@
 
 #include "widgets/viewport/GpuView.hpp"
 #include "Constants.hpp"
-#include "graphics/ColorPipeline.hpp"
+#include "ColorPipeline.hpp"
 #include "widgets/overlays/Painter.hpp"
 #include "widgets/viewport/ShaderSources.hpp"
 #include <QOpenGLContext>

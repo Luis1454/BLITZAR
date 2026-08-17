@@ -3,16 +3,16 @@
  * @brief Runtime daemon observation, lifecycle, and configuration commands.
  */
 
-#include "server/core/Daemon.hpp"
+#include "core/Daemon.hpp"
 
-#include "config/core/Config.hpp"
-#include "config/directive/Config.hpp"
-#include "config/modes/Normalize.hpp"
-#include "config/profile/Performance.hpp"
+#include "core/Config.hpp"
+#include "directive/Config.hpp"
+#include "modes/Normalize.hpp"
+#include "profile/Performance.hpp"
 #include "protocol/Protocol.hpp"
 #include "protocol/codec/JsonCodec.hpp"
-#include "server/SimulationInitConfig.hpp"
-#include "server/SimulationServer.hpp"
+#include "SimulationInitConfig.hpp"
+#include "SimulationServer.hpp"
 
 #include <algorithm>
 #include <cctype>

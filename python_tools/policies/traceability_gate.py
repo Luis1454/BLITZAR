@@ -16,9 +16,8 @@ from python_tools.core.base_check import BaseCheck
 from python_tools.core.models import CheckContext, CheckResult
 
 TRACEABILITY_PATHS = (
-    "engine/include/physics/",
-    "engine/src/physics/",
-    "engine/src/cuda/",
+    "engine/physics/",
+    "engine/physics/cuda/",
     "runtime/",
     "tests/int/protocol/",
     "tests/int/runtime/",

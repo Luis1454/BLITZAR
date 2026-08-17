@@ -6,7 +6,7 @@
  */
 
 #include "Number.hpp"
-#include "config/text/Parse.hpp"
+#include "text/Parse.hpp"
 
 template <typename NumberType>
 /*

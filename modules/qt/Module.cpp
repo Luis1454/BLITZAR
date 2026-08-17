@@ -9,9 +9,9 @@
 #include "client/module/Api.hpp"
 #include "client/module/Boundary.hpp"
 #include "client/runtime/Runtime.hpp"
-#include "config/core/Config.hpp"
-#include "config/text/Parse.hpp"
-#include "platform/Paths.hpp"
+#include "core/Config.hpp"
+#include "text/Parse.hpp"
+#include "Paths.hpp"
 #include "window/core/Window.hpp"
 #include "support/theme/Theme.hpp"
 #include <QApplication>

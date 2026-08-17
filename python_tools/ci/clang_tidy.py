@@ -22,7 +22,7 @@ DEFAULT_PATHS = (
     "tests/unit",
     "tests/int",
     "tests/support",
-    "engine/src/config",
+    "engine/config",
     "runtime/src/client",
     "runtime/src/protocol",
     "runtime/src/server",

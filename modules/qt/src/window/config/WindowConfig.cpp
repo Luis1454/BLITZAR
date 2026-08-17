@@ -5,7 +5,7 @@
  * @brief Qt desktop user interface module for configuration application and persistence.
  */
 
-#include "config/validation/Scenario.hpp"
+#include "validation/Scenario.hpp"
 #include "window/config/ConfigurationEditor.hpp"
 #include "window/core/Window.hpp"
 #include "widgets/viewport/MultiView.hpp"

@@ -8,7 +8,7 @@
 #include "Constants.hpp"
 #include "modules/cli/ServerOps.hpp"
 #include "client/diagnostics/ErrorBuffer.hpp"
-#include "config/text/Parse.hpp"
+#include "text/Parse.hpp"
 #include "protocol/Protocol.hpp"
 #include <cstddef>
 #include <cstdint>

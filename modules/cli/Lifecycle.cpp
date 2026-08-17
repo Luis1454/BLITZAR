@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "client/diagnostics/ErrorBuffer.hpp"
-#include "config/core/Config.hpp"
+#include "core/Config.hpp"
 #include "modules/cli/Lifecycle.hpp"
 #include "modules/cli/State.hpp"
 

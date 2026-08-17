@@ -6,10 +6,10 @@
  */
 
 #include "client/common/ClientCommon.hpp"
-#include "config/env/Base.hpp"
-#include "config/core/Config.hpp"
-#include "config/registry/Main.hpp"
-#include "platform/Paths.hpp"
+#include "env/Base.hpp"
+#include "core/Config.hpp"
+#include "registry/Main.hpp"
+#include "Paths.hpp"
 #include "protocol/Protocol.hpp"
 #include <algorithm>
 #include <cctype>

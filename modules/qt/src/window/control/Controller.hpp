@@ -12,7 +12,7 @@
  * Responsibility: Apply validated UI configuration changes to the client runtime.
  */
 #include "client/runtime/Interface.hpp"
-#include "config/validation/Scenario.hpp"
+#include "validation/Scenario.hpp"
 #include <cstdint>
 /*
  * @brief Defines the simulation config type contract.

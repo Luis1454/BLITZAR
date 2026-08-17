@@ -6,7 +6,7 @@
  */
 
 #include "protocol/client/Client.hpp"
-#include "platform/Socket.hpp"
+#include "Socket.hpp"
 #include "protocol/Protocol.hpp"
 #include <algorithm>
 #include <array>

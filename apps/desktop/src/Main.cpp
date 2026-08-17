@@ -6,8 +6,8 @@
  */
 
 #include "Main.hpp"
-#include "platform/Paths.hpp"
-#include "platform/Process.hpp"
+#include "Paths.hpp"
+#include "Process.hpp"
 #include <filesystem>
 #include <string>
 #include <vector>

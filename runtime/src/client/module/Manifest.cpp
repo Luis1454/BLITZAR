@@ -7,7 +7,7 @@
 
 #include "client/module/Manifest.hpp"
 #include "client/module/Api.hpp"
-#include "config/text/Parse.hpp"
+#include "text/Parse.hpp"
 #include <filesystem>
 #include <fstream>
 #include <string>

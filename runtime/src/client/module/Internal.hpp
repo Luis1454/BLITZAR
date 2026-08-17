@@ -10,7 +10,7 @@
 #include "client/module/Api.hpp"
 #include "client/module/Boundary.hpp"
 #include "client/module/Handle.hpp"
-#include "platform/DynamicLibrary.hpp"
+#include "DynamicLibrary.hpp"
 #include <array>
 #include <cstddef>
 #include <cstdint>

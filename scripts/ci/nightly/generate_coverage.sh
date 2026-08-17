@@ -9,7 +9,7 @@ set -euo pipefail
 gcovr \
   --root "${GITHUB_WORKSPACE}" \
   --object-directory build-integration-cov \
-  --filter "engine/src" \
+  --filter "engine" \
   --filter "runtime/src" \
   --exclude "build-integration-cov/_deps" \
   --exclude "tests/" \
@@ -20,7 +20,7 @@ gcovr \
 gcovr \
   --root "${GITHUB_WORKSPACE}" \
   --object-directory build-integration-cov \
-  --filter "engine/src" \
+  --filter "engine" \
   --filter "runtime/src" \
   --exclude "build-integration-cov/_deps" \
   --exclude "tests/" \
@@ -30,7 +30,7 @@ gcovr \
 gcovr \
   --root "${GITHUB_WORKSPACE}" \
   --object-directory build-integration-cov \
-  --filter "engine/src" \
+  --filter "engine" \
   --filter "runtime/src" \
   --exclude "build-integration-cov/_deps" \
   --exclude "tests/" \
