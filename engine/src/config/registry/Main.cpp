@@ -11,14 +11,17 @@
 namespace bltzr_config {
 void printCliUsage(std::ostream& out, SimulationOptionGroup group)
 {
-    for (std::size_t index = 0; index < kSimulationOptionCount; ++index) {
-        const SimulationOptionEntry& entry = kSimulationOptions[index];
-        if (entry.group != group || entry.usage.empty()) {
-            continue;
-        }
-        out << entry.usage;
-        if (!entry.aliasUsage.empty()) {
-            out << entry.aliasUsage;
+    for (std::size_t rangeIndex = 0; rangeIndex < kSimulationOptionRangeCount; ++rangeIndex) {
+        const SimulationOptionRange& range = kSimulationOptionRanges[rangeIndex];
+        for (std::size_t entryIndex = 0; entryIndex < range.count; ++entryIndex) {
+            const SimulationOptionEntry& entry = *(&range.first + entryIndex);
+            if (entry.group != group || entry.usage.empty()) {
+                continue;
+            }
+            out << entry.usage;
+            if (!entry.aliasUsage.empty()) {
+                out << entry.aliasUsage;
+            }
         }
     }
 }

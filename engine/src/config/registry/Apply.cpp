@@ -166,8 +166,7 @@ bool applyEntry(const SimulationOptionEntry& entry, const std::string& value,
     case OptionKind::TreePmModel: {
         std::string canonical;
         if (!bltzr_config::normalizeTreePmModel(value, canonical)) {
-            warnings << source << " invalid " << optionName
-                     << ": " << value
+            warnings << source << " invalid " << optionName << ": " << value
                      << " (allowed: auto|local_grid|tree|exact_tree|hybrid|pm_only)\n";
             return true;
         }
@@ -207,8 +206,7 @@ bool applyEntry(const SimulationOptionEntry& entry, const std::string& value,
     case OptionKind::TreePmPreset: {
         std::string canonical;
         if (!bltzr_config::normalizeTreePmPreset(value, canonical)) {
-            warnings << source << " invalid " << optionName
-                     << ": " << value
+            warnings << source << " invalid " << optionName << ": " << value
                      << " (allowed: pm_only|local_grid_fast|hybrid_balanced|hybrid_quality|"
                         "tree_quality|custom)\n";
             return true;
@@ -233,8 +231,8 @@ bool applyEntry(const SimulationOptionEntry& entry, const std::string& value,
     }
     case OptionKind::TimeoutTriple: {
         std::uint32_t parsed = config.clientRemoteCommandTimeoutMs;
-        if (!SimulationArgsParse::parseUint(value, parsed) ||
-            parsed < kRuntimeRemoteTimeoutMinMs || parsed > kRuntimeRemoteTimeoutMaxMs) {
+        if (!SimulationArgsParse::parseUint(value, parsed) || parsed < kRuntimeRemoteTimeoutMinMs ||
+            parsed > kRuntimeRemoteTimeoutMaxMs) {
             emitInvalid(warnings, source, optionName, value);
             return true;
         }
@@ -252,12 +250,15 @@ static bool applyMatchingEntry(Matcher matcher, const std::string& key, const st
                                SimulationConfig& config, std::ostream& warnings,
                                std::string_view source)
 {
-    for (std::size_t index = 0; index < kSimulationOptionCount; ++index) {
-        const SimulationOptionEntry& entry = kSimulationOptions[index];
-        if (!matcher(entry, key)) {
-            continue;
+    for (std::size_t rangeIndex = 0; rangeIndex < kSimulationOptionRangeCount; ++rangeIndex) {
+        const SimulationOptionRange& range = kSimulationOptionRanges[rangeIndex];
+        for (std::size_t entryIndex = 0; entryIndex < range.count; ++entryIndex) {
+            const SimulationOptionEntry& entry = *(&range.first + entryIndex);
+            if (!matcher(entry, key)) {
+                continue;
+            }
+            return applyEntry(entry, value, config, warnings, source, key);
         }
-        return applyEntry(entry, value, config, warnings, source, key);
     }
     return false;
 }
