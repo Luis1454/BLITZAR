@@ -15,6 +15,7 @@ on:
 env:
   CI_CACHE_VERSION: v1
   CI_PYTHON_VERSION: "3.12"
+  CMAKE_BUILD_PARALLEL_LEVEL: "2"
 
 jobs:
   space-quality-gate:
@@ -75,15 +76,17 @@ jobs:
         run: make quality-python
       - name: Configure strict integration build
         run: make quality-configure
-      - {name: Build strict integration targets, run: make quality-build}
+      - name: Build strict integration targets
+        run: timeout --signal=TERM --kill-after=60s 20m make quality-build
       - name: Run clang-tidy analyzer checks
         run: >-
+          timeout --signal=TERM --kill-after=60s 15m
           make quality-analyze
-          QUALITY_TIDY_JOBS=0
+          QUALITY_TIDY_JOBS=2
           QUALITY_TIDY_DIFF_BASE=${{ inputs.diff-base }}
           QUALITY_TIDY_DIFF_TARGET=${{ inputs.diff-target }}
       - name: Run integration tests under sanitizers
-        run: make quality-test
+        run: timeout --signal=TERM --kill-after=60s 8m make quality-test
       - name: Save CMake and dependency cache
         if: ${{ success() && steps.restore-build-cache.outputs.cache-hit != 'true' }}
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
