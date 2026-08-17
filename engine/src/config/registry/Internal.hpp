@@ -64,5 +64,11 @@ bool matchesEnv(const SimulationOptionEntry& entry, const std::string& key);
 bool applyEntry(const SimulationOptionEntry& entry, const std::string& value,
                 SimulationConfig& config, std::ostream& warnings, std::string_view source,
                 std::string_view optionName);
+bool applyScalarEntry(const SimulationOptionEntry& entry, const std::string& value,
+                      SimulationConfig& config, std::ostream& warnings, std::string_view source,
+                      std::string_view optionName);
+bool applyNormalizedEntry(const SimulationOptionEntry& entry, const std::string& value,
+                          SimulationConfig& config, std::ostream& warnings, std::string_view source,
+                          std::string_view optionName);
 } // namespace bltzr_config
 #endif // BLITZAR_SIM_SIMULATIONOPTIONREGISTRYINTERNAL_HPP

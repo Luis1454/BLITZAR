@@ -55,6 +55,8 @@ if(NOT DEFINED BLITZAR_SERVER_SOURCES)
         "${BLITZAR_ROOT_DIR}/engine/src/config/args/FluidOptions.cpp"
         "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Main.cpp"
         "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Apply.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/registry/ApplyScalar.cpp"
+        "${BLITZAR_ROOT_DIR}/engine/src/config/registry/ApplyNormalized.cpp"
         "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Entries.cpp"
         "${BLITZAR_ROOT_DIR}/engine/src/config/registry/EntriesCore.cpp"
         "${BLITZAR_ROOT_DIR}/engine/src/config/registry/EntriesClient.cpp"
