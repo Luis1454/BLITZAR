@@ -3,7 +3,7 @@
  * @brief Unit tests for UI enum converters.
  */
 
-#include "src/support/types/GuiEnums.hpp"
+#include "support/types/GuiEnums.hpp"
 #include <gtest/gtest.h>
 
 TEST(UiEnumsTest, SolverConverters)

@@ -7,7 +7,7 @@
 
 #include "tests/support/qt_test_utils.hpp"
 #include "window/core/GuiWindow.hpp"
-#include "src/widgets/viewport/GuiMultiView.hpp"
+#include "widgets/viewport/GuiMultiView.hpp"
 #include <QCheckBox>
 #include <QCoreApplication>
 #include <QEventLoop>

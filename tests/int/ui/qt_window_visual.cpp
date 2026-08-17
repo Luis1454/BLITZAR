@@ -8,8 +8,8 @@
 #include "client/runtime/CliRuntime.hpp"
 #include "tests/support/client_utils.hpp"
 #include "tests/support/qt_test_utils.hpp"
-#include "src/widgets/graphs/GuiGraph.hpp"
-#include "src/widgets/viewport/GuiParticle.hpp"
+#include "widgets/graphs/GuiGraph.hpp"
+#include "widgets/viewport/GuiParticle.hpp"
 #include "window/config/GuiConfigurationEditor.hpp"
 #include "window/core/GuiWindow.hpp"
 #include <QCoreApplication>

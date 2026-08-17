@@ -10,7 +10,7 @@
 #include "tests/support/client_utils.hpp"
 #include "tests/support/qt_test_utils.hpp"
 #include "tests/support/server_harness.hpp"
-#include "src/widgets/graphs/GuiGraph.hpp"
+#include "widgets/graphs/GuiGraph.hpp"
 #include "window/core/GuiWindow.hpp"
 #include <QComboBox>
 #include <QCoreApplication>

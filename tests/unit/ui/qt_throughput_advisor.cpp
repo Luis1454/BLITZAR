@@ -6,7 +6,7 @@
  */
 
 #include "config/core/configuration/CfgConfig.hpp"
-#include "src/support/performance/GuiThroughput.hpp"
+#include "support/performance/GuiThroughput.hpp"
 #include <gtest/gtest.h>
 
 namespace bltzr_test_qt_throughput_advisor {

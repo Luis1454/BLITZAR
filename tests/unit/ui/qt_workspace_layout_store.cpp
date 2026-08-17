@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "src/support/storage/GuiLayoutStore.hpp"
+#include "support/storage/GuiLayoutStore.hpp"
 #include <chrono>
 #include <filesystem>
 #include <gtest/gtest.h>
