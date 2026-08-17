@@ -197,6 +197,6 @@ bool ParticleSystem::updateAdaptiveTimeSteps(float deltaTime, const ForceLawPoli
         applyCosmologyExpansionHost(scaleRatio, previousHubble, nextHubble);
     }
     syncDeviceState();
-    _device._hostStateDirty = false;
+    _device->_hostStateDirty = false;
     return true;
 }

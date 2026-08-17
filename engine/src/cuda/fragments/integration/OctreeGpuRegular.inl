@@ -44,29 +44,29 @@ bool ParticleSystem::updateOctreeGpuRegular(float deltaTime, const ForceLawPolic
     if ((!treePmLocalGrid || treePmHybrid) && !buildLinearOctreeGpu(currentView, numParticles)) {
         return false;
     }
-    rootIndex = _device._gpuOctreeRootIndex;
+    rootIndex = _device->_gpuOctreeRootIndex;
     if (treePmEnabled) {
         if (!buildTreePmGrid(currentView, numParticles, &treePmGrid, &treePmCutoffSquared)) {
             return false;
         }
         treePmGather = treePmNeighborGrid && treePmGatherEnabled();
         treePmMorton = treePmNeighborGrid && treePmMortonEnabled();
-        if (!_device._treePmMarkerPrinted) {
+        if (!_device->_treePmMarkerPrinted) {
             fprintf(stderr,
                     "[treepm] enabled solver=%s precision=fp32 requested_precision=%s model=%s "
                     "assignment=%s grid=%d jacobi=%d local_grid=%d neighbors=%d "
                     "pm_particles=%d dense_threshold=%d cutoff2=%.6f cache=%s gather=%d "
                     "morton=%d\n",
-                    _device._treePmFftActive ? "fft" : "red_black", _treePmPrecision.c_str(),
+                    _device->_treePmFftActive ? "fft" : "red_black", _treePmPrecision.c_str(),
 
                     _treePmModel.c_str(), _treePmAssignment.c_str(), treePmGrid.gridSize,
                     _treePmJacobiIterations, treePmLocalGrid ? 1 : 0, treePmMaxLocalNeighbors,
                     numParticles, _treePmDenseCellThreshold, treePmCutoffSquared,
                     _cudaCachePreference.c_str(), treePmGather ? 1 : 0, treePmMorton ? 1 : 0);
-            _device._treePmMarkerPrinted = true;
+            _device->_treePmMarkerPrinted = true;
         }
-        if (treePmGraphRequested && !_device._treePmGraphCaptured[_device._treePmGraphSlot]) {
-            if (!captureTreePmGraph(_device._treePmGraphSlot, currentView, nextView, numParticles,
+        if (treePmGraphRequested && !_device->_treePmGraphCaptured[_device->_treePmGraphSlot]) {
+            if (!captureTreePmGraph(_device->_treePmGraphSlot, currentView, nextView, numParticles,
                                     _treePmParticleLimit <= 0
                                         ? numParticles
                                         : std::min(_treePmParticleLimit, numParticles),

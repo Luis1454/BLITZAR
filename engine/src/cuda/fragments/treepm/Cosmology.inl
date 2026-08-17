@@ -7,8 +7,8 @@
 bool ParticleSystem::buildTreePmGrid(ParticleSoAView currentView, int numParticles,
                                      TreePmGridParams* outGrid, float* outCutoffSquared)
 {
-    if (!_device._cudaRuntimeAvailable || !outGrid || !outCutoffSquared || numParticles <= 0 ||
-        !_device.d_soaPosX || !_device.d_soaPosY || !_device.d_soaPosZ) {
+    if (!_device->_cudaRuntimeAvailable || !outGrid || !outCutoffSquared || numParticles <= 0 ||
+        !_device->d_soaPosX || !_device->d_soaPosY || !_device->d_soaPosZ) {
         return false;
     }
     if (isComovingCosmology(_cosmology)) {
@@ -25,16 +25,16 @@ bool ParticleSystem::buildTreePmGrid(ParticleSoAView currentView, int numParticl
         if (totalMass <= 0.0f) {
             return false;
         }
-        if (!checkCudaStatus(cudaMemset(_device.d_treePmDensity, 0,
+        if (!checkCudaStatus(cudaMemset(_device->d_treePmDensity, 0,
                                         static_cast<std::size_t>(totalCells) * sizeof(float)),
                              "cudaMemset(cosmology density)") ||
-            !checkCudaStatus(cudaMemset(_device.d_treePmPotentialA, 0,
+            !checkCudaStatus(cudaMemset(_device->d_treePmPotentialA, 0,
                                         static_cast<std::size_t>(totalCells) * sizeof(float)),
                              "cudaMemset(cosmology potential)")) {
             return false;
         }
         const std::size_t maskWords = (static_cast<std::size_t>(totalCells) + 31u) / 32u;
-        if (!checkCudaStatus(cudaMemset(_device.d_treePmCellMask, 0,
+        if (!checkCudaStatus(cudaMemset(_device->d_treePmCellMask, 0,
                                         maskWords * sizeof(unsigned int)),
                              "cudaMemset(cosmology cell mask)")) {
             return false;
@@ -57,18 +57,18 @@ bool ParticleSystem::buildTreePmGrid(ParticleSoAView currentView, int numParticl
         const int blocks = (numParticles + Particle::kDefaultCudaBlockSize - 1) /
                            Particle::kDefaultCudaBlockSize;
         treepm::treePmDepositMassKernel<<<blocks, Particle::kDefaultCudaBlockSize>>>(
-            currentView, numParticles, numParticles, grid, _device.d_treePmDensity,
-            _device.d_treePmCellMask);
+            currentView, numParticles, numParticles, grid, _device->d_treePmDensity,
+            _device->d_treePmCellMask);
     treepm::treePmBuildDensityContrastKernel<<<(totalCells + Particle::kDefaultCudaBlockSize - 1) /
                                               Particle::kDefaultCudaBlockSize,
                                           Particle::kDefaultCudaBlockSize>>>(
-            _device.d_treePmDensity, totalCells);
+            _device->d_treePmDensity, totalCells);
         if (!checkCudaStatus(cudaGetLastError(), "cosmology TSC deposit launch") ||
             !buildTreePmFftField(grid)) {
             return false;
         }
-        _device._treePmGridSize = gridSize;
-        _device._treePmTotalCells = totalCells;
+        _device->_treePmGridSize = gridSize;
+        _device->_treePmTotalCells = totalCells;
         *outGrid = grid;
         *outCutoffSquared = 0.0f;
         return true;

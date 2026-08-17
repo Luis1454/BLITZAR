@@ -120,7 +120,7 @@ void ParticleSystem::setIntegratorMode(IntegratorMode mode)
         throw std::runtime_error("[integrator] failed to allocate required RK4/Leapfrog buffers");
     }
     _integratorMode = mode;
-    _device._leapfrogPrimed = false;
+    _device->_leapfrogPrimed = false;
 
     std::size_t baseAndIntegratorBytes = 0u;
     std::size_t sphBytes = 0u;

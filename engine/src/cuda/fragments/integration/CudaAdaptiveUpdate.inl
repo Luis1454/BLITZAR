@@ -26,13 +26,13 @@ bool ParticleSystem::updateCudaAdaptive(float deltaTime, const ForceLawPolicy& f
         const bool resetSchedule =
             _adaptiveTimeStepTick == 0u || std::abs(_adaptiveTimeStepQuantum - quantum) > 1.0e-12f;
         if (resetSchedule) {
-            if (!launchPairwiseAcceleration(currentView, _device.d_adaptiveAcceleration,
+            if (!launchPairwiseAcceleration(currentView, _device->d_adaptiveAcceleration,
                                             numParticles, forceLaw)) {
                 return false;
             }
             initializeAdaptiveScheduleKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-                currentView, _device.d_adaptiveAcceleration, _device.d_adaptiveLevels,
-                _device.d_adaptiveLastForceTicks, numParticles, static_cast<int>(levelCount),
+                currentView, _device->d_adaptiveAcceleration, _device->d_adaptiveLevels,
+                _device->d_adaptiveLastForceTicks, numParticles, static_cast<int>(levelCount),
                 _adaptiveTimeStepEta, std::max(_octreeSoftening, _physicsMinSoftening), deltaTime);
             if (!checkCudaStatus(cudaGetLastError(), "adaptive pairwise schedule launch")) {
                 return false;
@@ -44,27 +44,27 @@ bool ParticleSystem::updateCudaAdaptive(float deltaTime, const ForceLawPolicy& f
             const unsigned long long targetTick =
                 static_cast<unsigned long long>(_adaptiveTimeStepTick + slice + 1u);
             adaptiveDriftKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-                currentView, nextView, _device.d_adaptiveAcceleration, numParticles, quantum,
+                currentView, nextView, _device->d_adaptiveAcceleration, numParticles, quantum,
                 _sphMaxSpeed);
 
             if (!checkCudaStatus(cudaGetLastError(), "adaptive pairwise drift launch")) {
                 return false;
             }
             adaptivePairwiseCorrectKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-                nextView, _device.d_adaptiveAcceleration, _device.d_adaptiveLevels,
-                _device.d_adaptiveLastForceTicks, numParticles, forceLaw, _physicsMaxAcceleration,
+                nextView, _device->d_adaptiveAcceleration, _device->d_adaptiveLevels,
+                _device->d_adaptiveLastForceTicks, numParticles, forceLaw, _physicsMaxAcceleration,
                 quantum, static_cast<int>(levelCount), _adaptiveTimeStepEta,
                 std::max(_octreeSoftening, _physicsMinSoftening), deltaTime, targetTick,
                 _sphMaxSpeed);
             if (!checkCudaStatus(cudaGetLastError(), "adaptive pairwise correction launch")) {
                 return false;
             }
-            std::swap(_device.d_soaPosX, _device.d_soaNextPosX);
-            std::swap(_device.d_soaPosY, _device.d_soaNextPosY);
-            std::swap(_device.d_soaPosZ, _device.d_soaNextPosZ);
-            std::swap(_device.d_soaVelX, _device.d_soaNextVelX);
-            std::swap(_device.d_soaVelY, _device.d_soaNextVelY);
-            std::swap(_device.d_soaVelZ, _device.d_soaNextVelZ);
+            std::swap(_device->d_soaPosX, _device->d_soaNextPosX);
+            std::swap(_device->d_soaPosY, _device->d_soaNextPosY);
+            std::swap(_device->d_soaPosZ, _device->d_soaNextPosZ);
+            std::swap(_device->d_soaVelX, _device->d_soaNextVelX);
+            std::swap(_device->d_soaVelY, _device->d_soaNextVelY);
+            std::swap(_device->d_soaVelZ, _device->d_soaNextVelZ);
             currentView = getSoAView(false);
             nextView = getSoAView(true);
         }
@@ -72,7 +72,7 @@ bool ParticleSystem::updateCudaAdaptive(float deltaTime, const ForceLawPolicy& f
             return false;
         }
         _adaptiveTimeStepTick += sliceCount;
-        _device._hostStateDirty = true;
+        _device->_hostStateDirty = true;
         if (!this->applySphCorrection(deltaTime, false)) {
             return false;
         }

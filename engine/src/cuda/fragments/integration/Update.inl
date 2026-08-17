@@ -94,10 +94,10 @@ bool ParticleSystem::update(float deltaTime)
                               _physicsMinDistance2, _physicsMinTheta);
     const bool thermalActive = (_thermalHeatingCoeff > 0.0f || _thermalRadiationCoeff > 0.0f);
     const bool e2eProfileEnabled =
-        _device._cudaRuntimeAvailable && _solverMode != SolverMode::OctreeCpu &&
+        _device->_cudaRuntimeAvailable && _solverMode != SolverMode::OctreeCpu &&
         _solverMode != SolverMode::FmmCpu && parseBoolEnv("BLITZAR_CUDA_E2E_PROFILE", false);
-    CudaEndToEndProfiler e2eProfiler(e2eProfileEnabled, &_device._cudaE2eTotalMs,
-                                     &_device._cudaE2eSamples);
+    CudaEndToEndProfiler e2eProfiler(e2eProfileEnabled, &_device->_cudaE2eTotalMs,
+                                     &_device->_cudaE2eSamples);
 
     if (_adaptiveTimeStepsEnabled && _adaptiveTimeStepCostGuard &&
         !_adaptiveTimeStepMarkerPrinted) {

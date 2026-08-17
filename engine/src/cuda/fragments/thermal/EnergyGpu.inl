@@ -144,7 +144,7 @@ bool ParticleSystem::computeEnergyEstimateGpu(
     estimated = false;
 
     const int numParticles = static_cast<int>(_particles.size());
-    if (numParticles < 2 || !_device.d_soaPosX || !_device.d_soaVelX || !_device.d_soaMass) {
+    if (numParticles < 2 || !_device->d_soaPosX || !_device->d_soaVelX || !_device->d_soaMass) {
         return numParticles < 2;
     }
 
@@ -170,8 +170,8 @@ bool ParticleSystem::computeEnergyEstimateGpu(
         currentView,
         numParticles,
         specificHeat,
-        _device.d_energyKineticBlocks,
-        _device.d_energyThermalBlocks);
+        _device->d_energyKineticBlocks,
+        _device->d_energyThermalBlocks);
     if (!checkCudaStatus(cudaGetLastError(), "computeKineticThermalBlockSums kernel launch")) {
         return false;
     }
@@ -183,7 +183,7 @@ bool ParticleSystem::computeEnergyEstimateGpu(
         sampleStride,
         softening,
         minDistance2,
-        _device.d_energyPotentialPartials);
+        _device->d_energyPotentialPartials);
     if (!checkCudaStatus(cudaGetLastError(), "computeSamplePotentialPartials kernel launch")) {
         return false;
     }
@@ -192,19 +192,19 @@ bool ParticleSystem::computeEnergyEstimateGpu(
     std::vector<float> thermalBlocks(static_cast<std::size_t>(blockCount), 0.0f);
     std::vector<double> potentialPartials(static_cast<std::size_t>(sampleCount), 0.0);
 
-    if (!checkCudaStatus(cudaMemcpy(kineticBlocks.data(), _device.d_energyKineticBlocks,
+    if (!checkCudaStatus(cudaMemcpy(kineticBlocks.data(), _device->d_energyKineticBlocks,
                                     static_cast<std::size_t>(blockCount) * sizeof(float),
                                     cudaMemcpyDeviceToHost),
                          "memcpy(DtoH kinetic blocks)")) {
         return false;
     }
-    if (!checkCudaStatus(cudaMemcpy(thermalBlocks.data(), _device.d_energyThermalBlocks,
+    if (!checkCudaStatus(cudaMemcpy(thermalBlocks.data(), _device->d_energyThermalBlocks,
                                     static_cast<std::size_t>(blockCount) * sizeof(float),
                                     cudaMemcpyDeviceToHost),
                          "memcpy(DtoH thermal blocks)")) {
         return false;
     }
-    if (!checkCudaStatus(cudaMemcpy(potentialPartials.data(), _device.d_energyPotentialPartials,
+    if (!checkCudaStatus(cudaMemcpy(potentialPartials.data(), _device->d_energyPotentialPartials,
                                     static_cast<std::size_t>(sampleCount) * sizeof(double),
                                     cudaMemcpyDeviceToHost),
                          "memcpy(DtoH potential partials)")) {

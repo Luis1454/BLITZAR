@@ -21,7 +21,7 @@ bool ParticleSystem::updateCpuSolvers(float deltaTime, const ForceLawPolicy& for
             return false;
         }
         syncDeviceState();
-        _device._hostStateDirty = false;
+        _device->_hostStateDirty = false;
         return true;
     }
     if (_integratorMode == IntegratorMode::Euler) {

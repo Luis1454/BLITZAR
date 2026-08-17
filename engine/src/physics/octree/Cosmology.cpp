@@ -7,6 +7,7 @@
 
 #include "HostMath.hpp"
 #include "OctreeForce.hpp"
+#include "ParticleSystemDeviceState.hpp"
 #include "physics/core/ParticleSystem.hpp"
 #include "physics/treepm/TreePmCpu.hpp"
 
@@ -80,7 +81,7 @@ bool ParticleSystem::updateComovingCosmology(float deltaTime)
     }
     _cosmologyScaleFactor = a1;
     _cosmologyTime += deltaTime;
-    _device._hostStateDirty = false;
+    _device->_hostStateDirty = false;
     if (!_cosmologyMarkerPrinted) {
         fprintf(stderr,
                 "[cosmology] mode=comoving backend=cpu_pm assignment=tsc box=%.6g a0=%.6g\n",

@@ -121,7 +121,7 @@ std::size_t ParticleSystem::estimateMemoryUsage(
 
         const int defaultLeafCapacity = kDefaultOctreeLeafCapacity;
         const int configuredLeafCapacity =
-            std::max(16, _device._linearOctreeLeafCapacity > 0 ? _device._linearOctreeLeafCapacity
+            std::max(16, _device->_linearOctreeLeafCapacity > 0 ? _device->_linearOctreeLeafCapacity
                                                                : defaultLeafCapacity);
         const int leafCapacity =
             octreeLeafCapacity > 0 ? std::max(16, octreeLeafCapacity) : configuredLeafCapacity;

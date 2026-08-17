@@ -24,11 +24,11 @@ bool ParticleSystem::launchPairwiseAcceleration(ParticleSoAView view, Vector3* o
     jitRequest.softening = forceLaw.softening;
     CudaJitMetrics jitMetrics;
     const bool usedJit =
-        _device._cudaJit != nullptr &&
-        _device._cudaJit->launchForceTile(view.posX, view.posY, view.posZ, view.mass, output,
+        _device->_cudaJit != nullptr &&
+        _device->_cudaJit->launchForceTile(view.posX, view.posY, view.posZ, view.mass, output,
                                           numParticles, forceLaw.softening, forceLaw.minDistance2,
                                           _physicsMaxAcceleration, jitRequest, &jitMetrics);
-    if (_device._cudaJit != nullptr && !_device._cudaJitForceMarkerPrinted) {
+    if (_device->_cudaJit != nullptr && !_device->_cudaJitForceMarkerPrinted) {
         fprintf(stderr,
                 "[cuda-jit] family=force_tile backend=%s cache=%s accepted=%u registers=%u "
                 "shared_bytes=%u active_blocks_sm=%u occupancy=%.3f "
@@ -40,7 +40,7 @@ bool ParticleSystem::launchPairwiseAcceleration(ParticleSoAView view, Vector3* o
                 jitMetrics.staticSharedBytes, jitMetrics.activeBlocksPerSm, jitMetrics.occupancy,
                 jitMetrics.divergentWarpFraction, jitMetrics.staticMs, jitMetrics.jitMs,
                 jitMetrics.compileMs);
-        _device._cudaJitForceMarkerPrinted = true;
+        _device->_cudaJitForceMarkerPrinted = true;
     }
     if (usedJit) {
         return true;

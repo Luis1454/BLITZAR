@@ -7,6 +7,7 @@
 
 #include "HostMath.hpp"
 #include "OctreeForce.hpp"
+#include "ParticleSystemDeviceState.hpp"
 #include "physics/core/ParticleSystem.hpp"
 #include "physics/fmm/FmmCpu.hpp"
 #include "physics/treepm/TreePmCpu.hpp"
@@ -52,10 +53,10 @@ bool ParticleSystem::computeHostAccelerations(std::vector<Vector3>& acceleration
         if (!computeCpuFp64PairwiseForces(_particles, forceLaw, accelerations)) {
             return false;
         }
-        if (!_device._treePmMarkerPrinted) {
+        if (!_device->_treePmMarkerPrinted) {
             fprintf(stderr,
                     "[treepm] enabled solver=cpu_fp64_pairwise model=exact_tree precision=fp64\n");
-            _device._treePmMarkerPrinted = true;
+            _device->_treePmMarkerPrinted = true;
         }
     }
     else if (cpuTreePm) {
@@ -88,14 +89,14 @@ bool ParticleSystem::computeHostAccelerations(std::vector<Vector3>& acceleration
         if (!computed) {
             return false;
         }
-        if (!_device._treePmMarkerPrinted) {
+        if (!_device->_treePmMarkerPrinted) {
             fprintf(stderr,
                     "[treepm] enabled solver=cpu_fft_%s model=%s assignment=%s grid=%d "
                     "local_grid=%d neighbors=%d\n",
                     _treePmPrecision.c_str(), _treePmModel.c_str(), _treePmAssignment.c_str(),
                     std::clamp(_treePmGridSize, 32, 128), _treePmLocalGrid ? 1 : 0,
                     std::clamp(_treePmMaxLocalNeighbors, 0, 256));
-            _device._treePmMarkerPrinted = true;
+            _device->_treePmMarkerPrinted = true;
         }
     }
     else if (_solverMode == SolverMode::PairwiseCuda && count <= 4096u) {

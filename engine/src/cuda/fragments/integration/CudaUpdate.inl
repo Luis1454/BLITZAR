@@ -13,7 +13,7 @@
 bool ParticleSystem::updateCudaSolvers(float deltaTime, const ForceLawPolicy& forceLaw,
                                        bool thermalActive)
 {
-    if (!_device._cudaRuntimeAvailable || !_device.d_soaPosX) {
+    if (!_device->_cudaRuntimeAvailable || !_device->d_soaPosX) {
         return false;
     }
 

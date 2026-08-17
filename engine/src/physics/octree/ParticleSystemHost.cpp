@@ -6,6 +6,7 @@
  */
 
 #include "HostMath.hpp"
+#include "ParticleSystemDeviceState.hpp"
 #include "physics/core/ParticleSystem.hpp"
 #include "physics/fmm/FmmCpu.hpp"
 #include "physics/treepm/TreePmCpu.hpp"
@@ -74,6 +75,6 @@ bool ParticleSystem::update(float deltaTime)
         applyCosmologyExpansionHost(scaleRatio, previousHubble, nextHubble);
     }
     _cumulativeRadiatedEnergy += applyThermalModel(deltaTime);
-    _device._hostStateDirty = false;
+    _device->_hostStateDirty = false;
     return true;
 }

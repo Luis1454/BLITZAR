@@ -25,15 +25,15 @@ bool ParticleSystem::updateCudaIntegrators(float deltaTime, const ForceLawPolicy
     }
 
     if (_integratorMode == IntegratorMode::Rk4 || _integratorMode == IntegratorMode::Leapfrog) {
-        if (!_device.d_stage || !_device.d_k1x || !_device.d_k2x || !_device.d_k3x ||
-            !_device.d_k4x || !_device.d_k1v || !_device.d_k2v || !_device.d_k3v ||
-            !_device.d_k4v) {
+        if (!_device->d_stage || !_device->d_k1x || !_device->d_k2x || !_device->d_k3x ||
+            !_device->d_k4x || !_device->d_k1v || !_device->d_k2v || !_device->d_k3v ||
+            !_device->d_k4v) {
             if (!allocateRk4Buffers(numParticles)) {
                 fprintf(stderr, "[integrator] advanced integrator buffers missing\n");
                 return false;
             }
         }
-        if (_integratorMode == IntegratorMode::Leapfrog && !_device.d_vHalf) {
+        if (_integratorMode == IntegratorMode::Leapfrog && !_device->d_vHalf) {
             if (!allocateRk4Buffers(numParticles)) {
                 fprintf(stderr, "[integrator] leapfrog v_half buffer missing\n");
                 return false;
@@ -43,60 +43,60 @@ bool ParticleSystem::updateCudaIntegrators(float deltaTime, const ForceLawPolicy
 
     if (_integratorMode == IntegratorMode::Rk4) {
         extractVelocityKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-            currentView, _device.d_k1x, numParticles);
+            currentView, _device->d_k1x, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k1 launch")) {
             return false;
         }
-        if (!launchPairwiseAcceleration(currentView, _device.d_k1v, numParticles, forceLaw)) {
+        if (!launchPairwiseAcceleration(currentView, _device->d_k1v, numParticles, forceLaw)) {
             return false;
         }
 
         buildRk4StageKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-            currentView, _device.d_k1x, _device.d_k1v, 0.5f * deltaTime, nextView, numParticles);
+            currentView, _device->d_k1x, _device->d_k1v, 0.5f * deltaTime, nextView, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "buildStage k2 launch")) {
             return false;
         }
         extractVelocityKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-            nextView, _device.d_k2x, numParticles);
+            nextView, _device->d_k2x, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k2 launch")) {
             return false;
         }
-        if (!launchPairwiseAcceleration(nextView, _device.d_k2v, numParticles, forceLaw)) {
+        if (!launchPairwiseAcceleration(nextView, _device->d_k2v, numParticles, forceLaw)) {
             return false;
         }
 
         buildRk4StageKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-            currentView, _device.d_k2x, _device.d_k2v, 0.5f * deltaTime, nextView, numParticles);
+            currentView, _device->d_k2x, _device->d_k2v, 0.5f * deltaTime, nextView, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "buildStage k3 launch")) {
             return false;
         }
         extractVelocityKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
 
-            nextView, _device.d_k3x, numParticles);
+            nextView, _device->d_k3x, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k3 launch")) {
             return false;
         }
-        if (!launchPairwiseAcceleration(nextView, _device.d_k3v, numParticles, forceLaw)) {
+        if (!launchPairwiseAcceleration(nextView, _device->d_k3v, numParticles, forceLaw)) {
             return false;
         }
 
         buildRk4StageKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-            currentView, _device.d_k3x, _device.d_k3v, deltaTime, nextView, numParticles);
+            currentView, _device->d_k3x, _device->d_k3v, deltaTime, nextView, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "buildStage k4 launch")) {
             return false;
         }
         extractVelocityKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-            nextView, _device.d_k4x, numParticles);
+            nextView, _device->d_k4x, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "extractVelocity k4 launch")) {
             return false;
         }
-        if (!launchPairwiseAcceleration(nextView, _device.d_k4v, numParticles, forceLaw)) {
+        if (!launchPairwiseAcceleration(nextView, _device->d_k4v, numParticles, forceLaw)) {
             return false;
         }
 
         finalizeRk4Kernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-            currentView, _device.d_k1x, _device.d_k2x, _device.d_k3x, _device.d_k4x, _device.d_k1v,
-            _device.d_k2v, _device.d_k3v, _device.d_k4v, deltaTime, nextView, numParticles);
+            currentView, _device->d_k1x, _device->d_k2x, _device->d_k3x, _device->d_k4x, _device->d_k1v,
+            _device->d_k2v, _device->d_k3v, _device->d_k4v, deltaTime, nextView, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "finalizeRk4 launch")) {
             return false;
         }
@@ -105,22 +105,22 @@ bool ParticleSystem::updateCudaIntegrators(float deltaTime, const ForceLawPolicy
         }
     }
     else if (_integratorMode == IntegratorMode::Leapfrog) {
-        auto* halfVelocity = reinterpret_cast<float3*>(_device.d_vHalf.get());
-        if (!_device._leapfrogPrimed) {
+        auto* halfVelocity = reinterpret_cast<float3*>(_device->d_vHalf.get());
+        if (!_device->_leapfrogPrimed) {
             primeHalfVelocityKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
                 currentView, halfVelocity, numParticles);
             if (!checkCudaStatus(cudaGetLastError(), "pairwise primeHalfVelocityKernel launch")) {
                 return false;
             }
-            _device._leapfrogPrimed = true;
+            _device->_leapfrogPrimed = true;
         }
 
-        if (!launchPairwiseAcceleration(currentView, _device.d_k1v, numParticles, forceLaw)) {
+        if (!launchPairwiseAcceleration(currentView, _device->d_k1v, numParticles, forceLaw)) {
             return false;
         }
 
         applyKickHalfStepKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-            currentView, _device.d_k1v, deltaTime, halfVelocity, numParticles);
+            currentView, _device->d_k1v, deltaTime, halfVelocity, numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "pairwise applyKickHalfStepKernel launch")) {
             return false;
         }
@@ -134,22 +134,22 @@ bool ParticleSystem::updateCudaIntegrators(float deltaTime, const ForceLawPolicy
             return false;
         }
 
-        std::swap(_device.d_soaPosX, _device.d_soaNextPosX);
-        std::swap(_device.d_soaPosY, _device.d_soaNextPosY);
-        std::swap(_device.d_soaPosZ, _device.d_soaNextPosZ);
-        std::swap(_device.d_soaVelX, _device.d_soaNextVelX);
-        std::swap(_device.d_soaVelY, _device.d_soaNextVelY);
-        std::swap(_device.d_soaVelZ, _device.d_soaNextVelZ);
+        std::swap(_device->d_soaPosX, _device->d_soaNextPosX);
+        std::swap(_device->d_soaPosY, _device->d_soaNextPosY);
+        std::swap(_device->d_soaPosZ, _device->d_soaNextPosZ);
+        std::swap(_device->d_soaVelX, _device->d_soaNextVelX);
+        std::swap(_device->d_soaVelY, _device->d_soaNextVelY);
+        std::swap(_device->d_soaVelZ, _device->d_soaNextVelZ);
 
         currentView = getSoAView(false);
         nextView = getSoAView(true);
 
-        if (!launchPairwiseAcceleration(currentView, _device.d_k2v, numParticles, forceLaw)) {
+        if (!launchPairwiseAcceleration(currentView, _device->d_k2v, numParticles, forceLaw)) {
             return false;
         }
 
         finalizeLeapfrogKickKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-            currentView, halfVelocity, _device.d_k2v, deltaTime, nextView, halfVelocity,
+            currentView, halfVelocity, _device->d_k2v, deltaTime, nextView, halfVelocity,
             numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "pairwise finalizeLeapfrogKickKernel launch")) {
             return false;
@@ -159,17 +159,17 @@ bool ParticleSystem::updateCudaIntegrators(float deltaTime, const ForceLawPolicy
         }
     }
     else {
-        _device._leapfrogPrimed = false;
+        _device->_leapfrogPrimed = false;
         if (_solverMode == SolverMode::PairwiseCuda) {
-            if (!_device.d_k1v && !allocateRk4Buffers(numParticles)) {
+            if (!_device->d_k1v && !allocateRk4Buffers(numParticles)) {
                 fprintf(stderr, "[pairwise] acceleration scratch allocation failed\n");
                 return false;
             }
-            if (!launchPairwiseAcceleration(currentView, _device.d_k1v, numParticles, forceLaw)) {
+            if (!launchPairwiseAcceleration(currentView, _device->d_k1v, numParticles, forceLaw)) {
                 return false;
             }
             updateParticlesWithAcceleration<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-                currentView, nextView, _device.d_k1v, numParticles, deltaTime);
+                currentView, nextView, _device->d_k1v, numParticles, deltaTime);
         }
         else {
             updateParticles<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
@@ -185,12 +185,12 @@ bool ParticleSystem::updateCudaIntegrators(float deltaTime, const ForceLawPolicy
     }
 
     // Swap buffers
-    std::swap(_device.d_soaPosX, _device.d_soaNextPosX);
-    std::swap(_device.d_soaPosY, _device.d_soaNextPosY);
-    std::swap(_device.d_soaPosZ, _device.d_soaNextPosZ);
-    std::swap(_device.d_soaVelX, _device.d_soaNextVelX);
-    std::swap(_device.d_soaVelY, _device.d_soaNextVelY);
-    std::swap(_device.d_soaVelZ, _device.d_soaNextVelZ);
+    std::swap(_device->d_soaPosX, _device->d_soaNextPosX);
+    std::swap(_device->d_soaPosY, _device->d_soaNextPosY);
+    std::swap(_device->d_soaPosZ, _device->d_soaNextPosZ);
+    std::swap(_device->d_soaVelX, _device->d_soaNextVelX);
+    std::swap(_device->d_soaVelY, _device->d_soaNextVelY);
+    std::swap(_device->d_soaVelZ, _device->d_soaNextVelZ);
 
     float scaleRatio = 1.0f;
     float previousHubble = 0.0f;
@@ -207,7 +207,7 @@ bool ParticleSystem::updateCudaIntegrators(float deltaTime, const ForceLawPolicy
     if (!this->applySphCorrection(deltaTime, false)) {
         return false;
     }
-    _device._hostStateDirty = true;
+    _device->_hostStateDirty = true;
     if (thermalActive) {
         if (!syncHostState()) {
             return false;

@@ -6,6 +6,7 @@
  */
 
 #include "HostMath.hpp"
+#include "ParticleSystemDeviceState.hpp"
 #include "physics/core/ParticleSystem.hpp"
 
 #include <algorithm>
@@ -243,7 +244,7 @@ ParticleSystem::IntegratorMode ParticleSystem::getIntegratorMode() const
 
 void ParticleSystem::syncDeviceState()
 {
-    _device._hostStateDirty = false;
+    _device->_hostStateDirty = false;
 }
 
 bool ParticleSystem::syncHostState()
@@ -273,8 +274,8 @@ bool ParticleSystem::setParticles(std::vector<Particle> particles)
     _adaptiveTimeStepLevels.clear();
     _adaptiveTimeStepLastForceTicks.clear();
     _adaptiveTimeStepAccelerations.clear();
-    _device._deviceParticleCapacity = _particles.size();
-    _device._hostStateDirty = false;
+    _device->_deviceParticleCapacity = _particles.size();
+    _device->_hostStateDirty = false;
     return true;
 }
 

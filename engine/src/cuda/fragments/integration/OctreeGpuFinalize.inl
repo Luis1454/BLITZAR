@@ -30,7 +30,7 @@ bool ParticleSystem::finalizeOctreeGpuUpdate(float deltaTime, bool thermalActive
     if (!this->applySphCorrection(deltaTime, false)) {
         return false;
     }
-    _device._hostStateDirty = true;
+    _device->_hostStateDirty = true;
     if (thermalActive) {
         if (!syncHostState()) {
             return false;

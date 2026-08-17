@@ -56,7 +56,7 @@ bool ParticleSystem::updateOctreeGpu(float deltaTime, const ForceLawPolicy& forc
         fprintf(stderr, "[integrator] rk4 is not supported with octree_gpu\n");
         return false;
     }
-    if (!_device.d_soaPosX) {
+    if (!_device->d_soaPosX) {
         return false;
     }
     ParticleSoAView currentView = getSoAView(false);
@@ -70,15 +70,15 @@ bool ParticleSystem::updateOctreeGpu(float deltaTime, const ForceLawPolicy& forc
         if (numParticles < 2) {
             return false;
         }
-        if (!_device.d_k1v || !_device.d_k2v) {
+        if (!_device->d_k1v || !_device->d_k2v) {
             if (!allocateRk4Buffers(numParticles)) {
                 return false;
             }
         }
-        if (!_device.d_vHalf) {
-            _device.d_vHalf = static_cast<GpuHalfVelocity*>(bltzr_x::MemoryPool::allocate(
+        if (!_device->d_vHalf) {
+            _device->d_vHalf = static_cast<GpuHalfVelocity*>(bltzr_x::MemoryPool::allocate(
                 static_cast<std::size_t>(numParticles) * sizeof(GpuHalfVelocity)));
-            if (!_device.d_vHalf) {
+            if (!_device->d_vHalf) {
                 return false;
             }
         }
@@ -112,11 +112,11 @@ bool ParticleSystem::updateOctreeGpu(float deltaTime, const ForceLawPolicy& forc
         }
         computeTreePmPmOnlyAccelerationKernel<<<adaptiveNumBlocks,
                                                 Particle::kDefaultCudaBlockSize>>>(
-            currentView, _device.d_k1v, numParticles, grid, _device.d_treePmAccelX,
-            _device.d_treePmAccelY, _device.d_treePmAccelZ);
-        auto* momentumHalf = reinterpret_cast<float3*>(_device.d_vHalf.get());
+            currentView, _device->d_k1v, numParticles, grid, _device->d_treePmAccelX,
+            _device->d_treePmAccelY, _device->d_treePmAccelZ);
+        auto* momentumHalf = reinterpret_cast<float3*>(_device->d_vHalf.get());
         applyKickHalfStepKernel<<<adaptiveNumBlocks, Particle::kDefaultCudaBlockSize>>>(
-            currentView, _device.d_k1v, deltaTime, momentumHalf, numParticles);
+            currentView, _device->d_k1v, deltaTime, momentumHalf, numParticles);
         cosmologyDriftKernel<<<adaptiveNumBlocks, Particle::kDefaultCudaBlockSize>>>(
             currentView, momentumHalf, drift, 2.0f * _cosmology.boxHalfExtent, nextView,
             numParticles);
@@ -124,12 +124,12 @@ bool ParticleSystem::updateOctreeGpu(float deltaTime, const ForceLawPolicy& forc
             !checkCudaStatus(cudaDeviceSynchronize(), "cosmology first KDK sync")) {
             return false;
         }
-        std::swap(_device.d_soaPosX, _device.d_soaNextPosX);
-        std::swap(_device.d_soaPosY, _device.d_soaNextPosY);
-        std::swap(_device.d_soaPosZ, _device.d_soaNextPosZ);
-        std::swap(_device.d_soaVelX, _device.d_soaNextVelX);
-        std::swap(_device.d_soaVelY, _device.d_soaNextVelY);
-        std::swap(_device.d_soaVelZ, _device.d_soaNextVelZ);
+        std::swap(_device->d_soaPosX, _device->d_soaNextPosX);
+        std::swap(_device->d_soaPosY, _device->d_soaNextPosY);
+        std::swap(_device->d_soaPosZ, _device->d_soaNextPosZ);
+        std::swap(_device->d_soaVelX, _device->d_soaNextVelX);
+        std::swap(_device->d_soaVelY, _device->d_soaNextVelY);
+        std::swap(_device->d_soaVelZ, _device->d_soaNextVelZ);
         currentView = getSoAView(false);
         nextView = getSoAView(true);
         _cosmologyScaleFactor = a1;
@@ -138,23 +138,23 @@ bool ParticleSystem::updateOctreeGpu(float deltaTime, const ForceLawPolicy& forc
         }
         computeTreePmPmOnlyAccelerationKernel<<<adaptiveNumBlocks,
                                                 Particle::kDefaultCudaBlockSize>>>(
-            currentView, _device.d_k2v, numParticles, grid, _device.d_treePmAccelX,
-            _device.d_treePmAccelY, _device.d_treePmAccelZ);
+            currentView, _device->d_k2v, numParticles, grid, _device->d_treePmAccelX,
+            _device->d_treePmAccelY, _device->d_treePmAccelZ);
         finalizeLeapfrogKickKernel<<<adaptiveNumBlocks, Particle::kDefaultCudaBlockSize>>>(
-            currentView, momentumHalf, _device.d_k2v, deltaTime, nextView, momentumHalf,
+            currentView, momentumHalf, _device->d_k2v, deltaTime, nextView, momentumHalf,
             numParticles);
         if (!checkCudaStatus(cudaGetLastError(), "cosmology final KDK launch") ||
             !checkCudaStatus(cudaDeviceSynchronize(), "cosmology final KDK sync")) {
             return false;
         }
-        std::swap(_device.d_soaPosX, _device.d_soaNextPosX);
-        std::swap(_device.d_soaPosY, _device.d_soaNextPosY);
-        std::swap(_device.d_soaPosZ, _device.d_soaNextPosZ);
-        std::swap(_device.d_soaVelX, _device.d_soaNextVelX);
-        std::swap(_device.d_soaVelY, _device.d_soaNextVelY);
-        std::swap(_device.d_soaVelZ, _device.d_soaNextVelZ);
+        std::swap(_device->d_soaPosX, _device->d_soaNextPosX);
+        std::swap(_device->d_soaPosY, _device->d_soaNextPosY);
+        std::swap(_device->d_soaPosZ, _device->d_soaNextPosZ);
+        std::swap(_device->d_soaVelX, _device->d_soaNextVelX);
+        std::swap(_device->d_soaVelY, _device->d_soaNextVelY);
+        std::swap(_device->d_soaVelZ, _device->d_soaNextVelZ);
         _cosmologyTime += deltaTime;
-        _device._hostStateDirty = true;
+        _device->_hostStateDirty = true;
         if (!_cosmologyMarkerPrinted) {
             fprintf(stderr,
                     "[cosmology] mode=comoving backend=cuda_pm assignment=tsc box=%.6g a0=%.6g\n",
@@ -166,21 +166,21 @@ bool ParticleSystem::updateOctreeGpu(float deltaTime, const ForceLawPolicy& forc
         return true;
     }
 
-    if (treePmGraphRequested && _device._treePmGraphCaptured[_device._treePmGraphSlot]) {
-        if (!launchTreePmGraph(_device._treePmGraphSlot)) {
+    if (treePmGraphRequested && _device->_treePmGraphCaptured[_device->_treePmGraphSlot]) {
+        if (!launchTreePmGraph(_device->_treePmGraphSlot)) {
             return false;
         }
-        std::swap(_device.d_soaPosX, _device.d_soaNextPosX);
-        std::swap(_device.d_soaPosY, _device.d_soaNextPosY);
-        std::swap(_device.d_soaPosZ, _device.d_soaNextPosZ);
-        std::swap(_device.d_soaVelX, _device.d_soaNextVelX);
-        std::swap(_device.d_soaVelY, _device.d_soaNextVelY);
-        std::swap(_device.d_soaVelZ, _device.d_soaNextVelZ);
-        _device._treePmGraphSlot ^= 1;
-        _device._hostStateDirty = true;
-        if (!_device._treePmGraphMarkerPrinted) {
+        std::swap(_device->d_soaPosX, _device->d_soaNextPosX);
+        std::swap(_device->d_soaPosY, _device->d_soaNextPosY);
+        std::swap(_device->d_soaPosZ, _device->d_soaNextPosZ);
+        std::swap(_device->d_soaVelX, _device->d_soaNextVelX);
+        std::swap(_device->d_soaVelY, _device->d_soaNextVelY);
+        std::swap(_device->d_soaVelZ, _device->d_soaNextVelZ);
+        _device->_treePmGraphSlot ^= 1;
+        _device->_hostStateDirty = true;
+        if (!_device->_treePmGraphMarkerPrinted) {
             fprintf(stderr, "[treepm] cuda_graph=active model=pm_only static_mesh_pipeline=1\n");
-            _device._treePmGraphMarkerPrinted = true;
+            _device->_treePmGraphMarkerPrinted = true;
         }
         publishMappedMetrics(deltaTime);
         return true;

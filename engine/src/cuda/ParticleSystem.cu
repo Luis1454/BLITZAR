@@ -9,6 +9,7 @@
  * the shared cosmological expansion runtime.
  */
 
+#include "../physics/octree/ParticleSystemDeviceState.hpp"
 #include "MemoryPool.hpp"
 #include "physics/fmm/FmmCpu.hpp"
 #include "physics/treepm/TreePmCpu.hpp"

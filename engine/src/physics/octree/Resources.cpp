@@ -6,6 +6,7 @@
  */
 
 #include "HostMath.hpp"
+#include "ParticleSystemDeviceState.hpp"
 #include "physics/core/ParticleSystem.hpp"
 
 #include "Constants.hpp"
@@ -38,8 +39,8 @@ void ParticleSystem::initializeRuntimeState(std::size_t particleCapacity, bool e
     _thermalHeatingCoeff = 0.0f;
     _thermalRadiationCoeff = 0.0f;
     _cumulativeRadiatedEnergy = 0.0f;
-    _device = ParticleSystemDeviceState{};
-    _device._deviceParticleCapacity = particleCapacity;
+    _device = std::make_unique<ParticleSystemDeviceState>();
+    _device->_deviceParticleCapacity = particleCapacity;
 }
 
 void ParticleSystem::buildBootstrapState(int particleCount)
@@ -63,7 +64,7 @@ void ParticleSystem::buildBootstrapState(int particleCount)
 
 bool ParticleSystem::allocateParticleBuffers(std::size_t particleCapacity)
 {
-    _device._deviceParticleCapacity = particleCapacity;
+    _device->_deviceParticleCapacity = particleCapacity;
     return true;
 }
 
@@ -127,7 +128,7 @@ bool ParticleSystem::allocateSphGridBuffers(int)
 
 bool ParticleSystem::ensureLinearOctreeScratchCapacity(int numParticles)
 {
-    _device._linearOctreeLeafCapacity = std::max(0, numParticles);
+    _device->_linearOctreeLeafCapacity = std::max(0, numParticles);
     return true;
 }
 
@@ -148,14 +149,14 @@ bool ParticleSystem::allocateMappedMetrics()
 
 void ParticleSystem::releaseMappedMetrics()
 {
-    _device._mappedMetricsHost = nullptr;
-    _device._mappedMetricsDevice = 0u;
+    _device->_mappedMetricsHost = nullptr;
+    _device->_mappedMetricsDevice = 0u;
 }
 
 void ParticleSystem::publishMappedMetrics(float deltaTime)
 {
-    _device._metricsStepId += 1u;
-    _device._metricsSimTime += deltaTime;
+    _device->_metricsStepId += 1u;
+    _device->_metricsSimTime += deltaTime;
 }
 
 std::size_t
