@@ -123,7 +123,10 @@ set(BLITZAR_BATCH_COMMON_SOURCES
 set(BLITZAR_SERVER_COMMON_SOURCES
     ${BLITZAR_BATCH_COMMON_SOURCES}
     "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/lifecycle/Controls.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/runtime/SettersAndExport.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/runtime/Modes.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/runtime/Physics.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/runtime/State.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/runtime/Export.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/export/Stats.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/persistence/LoadAndCheckpoint.cpp"
     "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/lifecycle/Rebuild.cpp"
