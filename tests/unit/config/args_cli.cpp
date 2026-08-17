@@ -5,8 +5,8 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "config/args/Main.hpp"
-#include "config/core/Config.hpp"
+#include "args/Main.hpp"
+#include "core/Config.hpp"
 #include "protocol/Protocol.hpp"
 #include <gtest/gtest.h>
 #include <limits>

@@ -7,7 +7,7 @@
 
 #ifndef BLITZAR_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_
 #define BLITZAR_TESTS_SUPPORT_PHYSICS_SCENARIO_HPP_
-#include "server/SimulationServer.hpp"
+#include "SimulationServer.hpp"
 #include <array>
 #include <cstdint>
 #include <string>

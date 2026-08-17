@@ -6,8 +6,8 @@
  */
 
 #include "Constants.hpp"
-#include "config/profile/Performance.hpp"
-#include "config/profile/Main.hpp"
+#include "profile/Performance.hpp"
+#include "profile/Main.hpp"
 #include "window/core/Window.hpp"
 #include "window/scene/SceneEditor.hpp"
 #include "widgets/viewport/MultiView.hpp"

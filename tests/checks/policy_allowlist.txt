@@ -26,11 +26,10 @@ tests/int/ui/qt_workspace_runtime_controls.cpp
 # Initial state generation modes for presets
 
 # DEV-QUAL-012: baseline files scheduled for responsibility-focused extraction in #443.
-cmake/apps.cmake
-engine/include/physics/core/ParticleSystem.hpp
-engine/src/server/simulation/lifecycle/Rebuild.cpp
-engine/src/server/simulation/telemetry/SnapshotAndEnergy.cpp
-engine/src/server/SimulationInitConfig.cpp
+engine/physics/core/include/ParticleSystem.hpp
+engine/server/src/simulation/lifecycle/Rebuild.cpp
+engine/server/src/simulation/telemetry/SnapshotAndEnergy.cpp
+engine/server/src/SimulationInitConfig.cpp
 modules/qt/src/widgets/graphs/SpectrumGraph.cpp
 modules/qt/src/window/control/Controls.cpp
 python_tools/policies/repo_policy.py

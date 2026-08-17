@@ -8,7 +8,7 @@
 #ifndef BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_
 #define BLITZAR_RUNTIME_INCLUDE_CLIENT_CLIENTSERVERBRIDGE_HPP_
 #include "Constants.hpp"
-#include "types/SimulationTypes.hpp"
+#include "SimulationTypes.hpp"
 #include <cstdint>
 #include <iosfwd>
 #include <memory>

@@ -10,7 +10,7 @@
 #include "Constants.hpp"
 #include "command/transport/Transport.hpp"
 #include "command/core/Types.hpp"
-#include "config/core/Config.hpp"
+#include "core/Config.hpp"
 #include <cstdint>
 #include <iosfwd>
 #include <string>

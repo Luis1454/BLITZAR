@@ -17,8 +17,8 @@
 #include "client/module/Handle.hpp"
 #include "command/core/Context.hpp"
 #include "command/execution/BatchRunner.hpp"
-#include "config/core/Config.hpp"
-#include "config/validation/Scenario.hpp"
+#include "core/Config.hpp"
+#include "validation/Scenario.hpp"
 
 namespace bltzr_client_host {
 class ClientHostCliImpl final {

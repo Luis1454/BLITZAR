@@ -8,7 +8,7 @@
 #ifndef BLITZAR_RUNTIME_SRC_FFI_BLITZARCOREINTERNAL_HPP_
 #define BLITZAR_RUNTIME_SRC_FFI_BLITZARCOREINTERNAL_HPP_
 #include "ffi/core/Api.hpp"
-#include "server/SimulationServer.hpp"
+#include "SimulationServer.hpp"
 #include <cstdint>
 #include <mutex>
 #include <string>

@@ -9,11 +9,12 @@
       "test_catalog": "python_tools.policies.test_catalog.TestCatalogCheck",
       "pr_policy": "python_tools.policies.pr_policy.PrPolicySelfTestCheck",
       "repo": "python_tools.policies.repo_policy.RepoPolicyCheck",
+      "architecture": "python_tools.policies.architecture_contract.ArchitectureContractCheck",
       "python_quality": "python_tools.ci.python_quality_gate.PythonQualityGateCheck"
     },
     "sequences": {
-      "all": ["ini", "mirror", "no_legacy", "quality", "test_catalog", "pr_policy", "repo"],
-      "quality": ["quality", "test_catalog", "pr_policy"]
+      "all": ["ini", "mirror", "no_legacy", "architecture", "quality", "test_catalog", "pr_policy", "repo"],
+      "quality": ["architecture", "quality", "test_catalog", "pr_policy"]
     }
   },
   "commands": {

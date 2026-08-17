@@ -1,0 +1,51 @@
+# @file engine/Module.cmake
+# @brief Explicit manifest for the engine modules.
+
+include("${CMAKE_CURRENT_LIST_DIR}/core/Module.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/types/Module.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/batch/Module.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/config/Module.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/graphics/Module.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/platform/Module.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/server/Module.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/physics/core/Module.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/physics/cuda/Module.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/physics/fmm/Module.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/physics/octree/Module.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/physics/sph/Module.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/physics/thermal/Module.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/physics/treepm/Module.cmake")
+
+set(BLITZAR_ENGINE_INCLUDE_DIRS
+    ${BLITZAR_CORE_INCLUDE_DIR}
+    ${BLITZAR_TYPES_INCLUDE_DIR}
+    ${BLITZAR_BATCH_INCLUDE_DIR}
+    ${BLITZAR_CONFIG_INCLUDE_DIRS}
+    ${BLITZAR_GRAPHICS_INCLUDE_DIR}
+    ${BLITZAR_PLATFORM_INCLUDE_DIR}
+    ${BLITZAR_SERVER_INCLUDE_DIR}
+    ${BLITZAR_PHYSICS_CORE_INCLUDE_DIR}
+    ${BLITZAR_PHYSICS_CUDA_INCLUDE_DIR}
+    ${BLITZAR_PHYSICS_FMM_INCLUDE_DIR}
+    ${BLITZAR_PHYSICS_OCTREE_INCLUDE_DIR}
+    ${BLITZAR_PHYSICS_TREEPM_INCLUDE_DIR}
+    ${BLITZAR_PHYSICS_CUDA_SOURCE_DIR}
+    ${BLITZAR_SERVER_SOURCE_DIR}
+    ${BLITZAR_CONFIG_SOURCE_DIRS}
+    ${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}
+    ${BLITZAR_PHYSICS_FMM_SOURCE_DIR}
+    ${BLITZAR_PHYSICS_TREEPM_SOURCE_DIR}
+)
+
+set(BLITZAR_ENGINE_HOST_SOURCES
+    ${BLITZAR_BATCH_MODULE_SOURCES}
+    ${BLITZAR_CONFIG_SOURCES}
+    ${BLITZAR_SERVER_MODULE_SOURCES}
+    ${BLITZAR_PHYSICS_CORE_SOURCES}
+    ${BLITZAR_PHYSICS_TREEPM_SOURCES}
+    ${BLITZAR_PHYSICS_FMM_SOURCES}
+)
+
+set(BLITZAR_ENGINE_SERVER_RUNTIME_SOURCES
+    ${BLITZAR_SERVER_RUNTIME_SOURCES}
+)

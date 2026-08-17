@@ -25,163 +25,51 @@ string(REPLACE "-g" "" CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG}")
 BLITZAR_populate_windows_toolchain_hints()
 find_package(CUDAToolkit QUIET)
 
+include("${BLITZAR_ROOT_DIR}/engine/Module.cmake")
+
 set(BLITZAR_PROJECT_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/apps/client-host/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/apps/server-service/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/engine/include"
+    ${BLITZAR_ENGINE_INCLUDE_DIRS}
     "${CMAKE_CURRENT_SOURCE_DIR}/runtime/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/runtime/include/server"
     "${CMAKE_CURRENT_SOURCE_DIR}/modules/qt/src"
-    "${CMAKE_CURRENT_SOURCE_DIR}/engine/include/graphics"
-    "${CMAKE_CURRENT_SOURCE_DIR}/engine/src/cuda"
-)
-
-if(WIN32)
-    set(BLITZAR_ENV_UTILS_SOURCES
-        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Base.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Win.cpp"
-    )
-else()
-    set(BLITZAR_ENV_UTILS_SOURCES
-        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Base.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Posix.cpp"
-    )
-endif()
-
-set(BLITZAR_GRAPHICS_SOURCES
-    "${BLITZAR_ROOT_DIR}/engine/src/graphics/ViewMath.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/graphics/ColorPipeline.cpp"
 )
 
 set(BLITZAR_BATCH_COMMON_SOURCES
-    ${BLITZAR_ENV_UTILS_SOURCES}
-    "${BLITZAR_ROOT_DIR}/engine/src/config/args/Main.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/args/Parse.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/args/CoreOptions.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/args/ClientOptions.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/args/InitOptions.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/args/InitStateOptions.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/args/FluidOptions.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Main.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Apply.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/ApplyScalar.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/ApplyNormalized.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Entries.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/EntriesCore.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/EntriesClient.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/EntriesInitState.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/EntriesFluid.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/profile/Performance.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Scenario.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/ScenarioScene.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/ScenarioRuntime.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/ScenarioInitialState.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/ScenarioCosmology.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Physics.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Render.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/profile/Main.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Config.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Options.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Parser.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Scene.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/LegacyScene.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Write.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Core.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/InitialState.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/SceneWriter.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/StreamWriter.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/ValueFormatter.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/core/Config.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/modes/Normalize.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/text/Parse.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/core/Helpers.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/core/FormatAndTheta.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/persistence/Checkpoint.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/persistence/IO.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/parsing/BinXyz.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/parsing/Vtk.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/state/Generation.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/state/GenerationContext.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/state/PrimitiveModels.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/state/Plummer.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/state/Cosmology.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/state/Galaxy.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/state/Disk.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/state/Scene.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/state/Transforms.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/state/Atomic.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/batch/Runner.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/core/ForceLawPolicy.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/core/ParticleHotData.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/treepm/TreePmCpu.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/fmm/FmmBuild.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/fmm/FmmEvaluate.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/physics/fmm/FmmMetrics.cpp"
+    ${BLITZAR_BATCH_MODULE_SOURCES}
+    ${BLITZAR_CONFIG_SOURCES}
+    ${BLITZAR_SERVER_MODULE_SOURCES}
+    ${BLITZAR_PHYSICS_CORE_SOURCES}
+    ${BLITZAR_PHYSICS_TREEPM_SOURCES}
+    ${BLITZAR_PHYSICS_FMM_SOURCES}
 )
 
 set(BLITZAR_SERVER_COMMON_SOURCES
     ${BLITZAR_BATCH_COMMON_SOURCES}
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/lifecycle/Controls.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/runtime/Modes.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/runtime/Physics.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/runtime/State.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/runtime/Export.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/export/Stats.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/persistence/LoadAndCheckpoint.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/lifecycle/Rebuild.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/telemetry/SnapshotAndEnergy.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/telemetry/PendingOps.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/simulation/lifecycle/Loop.cpp"
+    ${BLITZAR_SERVER_RUNTIME_SOURCES}
 )
 
 if(BLITZAR_ENABLE_CUDA)
     set(BLITZAR_BATCH_SOURCES
         ${BLITZAR_BATCH_COMMON_SOURCES}
-        "${BLITZAR_ROOT_DIR}/engine/src/cuda/DeviceMemory.cu"
-        "${BLITZAR_ROOT_DIR}/engine/src/cuda/MemoryPool.cu"
-        "${BLITZAR_ROOT_DIR}/engine/src/cuda/JitRuntime.cu"
-        "${BLITZAR_ROOT_DIR}/engine/src/cuda/ParticleSystem.cu"
+        ${BLITZAR_PHYSICS_CUDA_DEVICE_SOURCES}
     )
     set(BLITZAR_SERVER_SOURCES
         ${BLITZAR_SERVER_COMMON_SOURCES}
-        "${BLITZAR_ROOT_DIR}/engine/src/cuda/DeviceMemory.cu"
-        "${BLITZAR_ROOT_DIR}/engine/src/cuda/MemoryPool.cu"
-        "${BLITZAR_ROOT_DIR}/engine/src/cuda/JitRuntime.cu"
-        "${BLITZAR_ROOT_DIR}/engine/src/cuda/ParticleSystem.cu"
+        ${BLITZAR_PHYSICS_CUDA_DEVICE_SOURCES}
     )
 else()
     set(BLITZAR_BATCH_SOURCES
         ${BLITZAR_BATCH_COMMON_SOURCES}
-        "${BLITZAR_ROOT_DIR}/engine/src/cuda/DeviceMemory.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/cuda/CudaJit.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/OctreeForce.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Octree.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/OctreeBuild.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/OctreeTraversal.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/ParticleSystemHost.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/HostMath.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Forces.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Adaptive.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Cosmology.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Configuration.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Resources.cpp"
+        ${BLITZAR_PHYSICS_CUDA_HOST_SOURCES}
+        ${BLITZAR_PHYSICS_OCTREE_SOURCES}
     )
     set(BLITZAR_SERVER_SOURCES
         ${BLITZAR_SERVER_COMMON_SOURCES}
-        "${BLITZAR_ROOT_DIR}/engine/src/cuda/DeviceMemory.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/cuda/CudaJit.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/OctreeForce.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Octree.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/OctreeBuild.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/OctreeTraversal.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/ParticleSystemHost.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/HostMath.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Forces.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Adaptive.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Cosmology.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Configuration.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/physics/octree/Resources.cpp"
+        ${BLITZAR_PHYSICS_CUDA_HOST_SOURCES}
+        ${BLITZAR_PHYSICS_OCTREE_SOURCES}
     )
 endif()
 

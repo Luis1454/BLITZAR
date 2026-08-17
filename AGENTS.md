@@ -64,13 +64,27 @@ C++ & CUDA Conventions (Strict PascalCase)
 
     Loi de Proximité (Strict Encapsulation):
 
-        Public API: ONLY headers imported by OTHER components go into the include/ directory.
+    Public API: Only headers imported by OTHER components go into the module-local include/ directory.
 
-        Private Logic: All other headers and implementations stay in src/.
+    Private Logic: All other headers and implementations stay in the module-local src/ directory.
+
+    Module Layout: A leaf production module is rooted at engine/<domain>/<module>/ and owns the
+    include/, src/, and/or cuda/ directories required by its implementation, plus tests/ when
+    applicable. A domain aggregator may contain only
+    child leaf modules, composition manifests, and stable public facade headers; it does not own
+    production implementations. Do not create another generic include/src layer below a leaf.
 
         No Parity Requirement: A header can have multiple .cpp helpers in src/ without needing dedicated internal headers for each.
 
-    Fragments: CUDA kernel fragments use .inl in a fragments/ sub-directory.
+    Fragments: CUDA source fragments use .inl in <module>/cuda/fragments/. A fragment may contain
+    host launch code, __global__ kernels, and __device__ helpers; the directory describes inclusion
+    mechanics, not a CUDA qualifier.
+
+    Responsibility Prefixes: Generic technical files and .inl fragments start with a three-letter
+    responsibility code. Current codes are Cfg (configuration), Cud (shared CUDA), Jit (CUDA JIT),
+    Oct (octree), Sph (SPH), Srv (simulation server), Thm (thermal), and Tpm (TreePM). Primary
+    class files keep their class name. The complete
+    contract is in docs/architecture/repository-layout.md and is enforced by the architecture gate.
 
     Namespaces: Single-level only (e.g., namespace bltzr_physics). No using namespace.
 

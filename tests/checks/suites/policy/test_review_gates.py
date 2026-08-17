@@ -360,7 +360,7 @@ def test_traceability_gate_fails_without_ids_or_csv_and_skips_non_critical_pr(tm
     assert any("Requirements impacted" in error for error in result.errors)
 
     event_path = _write_pr_event(tmp_path, "Requirements impacted:\n- REQ-PHYS-001")
-    result = FakeTraceabilityGateCheck([{"filename": "engine/src/cuda/ParticleSystem.cu"}]).run(_event_context(tmp_path, event_path))
+    result = FakeTraceabilityGateCheck([{"filename": "engine/physics/cuda/src/ParticleSystem.cu"}]).run(_event_context(tmp_path, event_path))
     assert any("traceability.csv" in error for error in result.errors)
 
     event_path = _write_pr_event(tmp_path, "Requirements impacted:\n- REQ-PROT-001")

@@ -8,12 +8,12 @@
 #include "command/execution/Executor.hpp"
 #include "client/common/ClientCommon.hpp"
 #include "command/catalog/Catalog.hpp"
-#include "config/modes/Normalize.hpp"
-#include "config/profile/Performance.hpp"
-#include "config/validation/Scenario.hpp"
+#include "modes/Normalize.hpp"
+#include "profile/Performance.hpp"
+#include "validation/Scenario.hpp"
 #include "protocol/codec/JsonCodec.hpp"
 #include "protocol/Protocol.hpp"
-#include "server/SimulationInitConfig.hpp"
+#include "SimulationInitConfig.hpp"
 #include <ostream>
 
 namespace bltzr_cmd {

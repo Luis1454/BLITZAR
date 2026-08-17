@@ -71,7 +71,7 @@ Operational rules:
 
 Priority review surfaces:
 
-- `engine/src/server`
+- `engine/server/src`
 - `runtime/src/client`
 - `runtime/src/protocol`
 - `modules/qt/src`

@@ -7,8 +7,8 @@
 
 #include "RemoteSession.hpp"
 #include "Constants.hpp"
-#include "platform/Paths.hpp"
-#include "platform/Process.hpp"
+#include "Paths.hpp"
+#include "Process.hpp"
 #include "protocol/Protocol.hpp"
 #include <algorithm>
 #include <filesystem>

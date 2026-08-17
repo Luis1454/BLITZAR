@@ -3,28 +3,6 @@
 # @project BLITZAR
 # @brief CMake build orchestration for BLITZAR targets and tooling.
 
-set(BLITZAR_PLATFORM_SOURCES
-    engine/src/platform/Errors.cpp
-    engine/src/platform/common/DynamicLibrary.cpp
-    engine/src/platform/common/Process.cpp
-    engine/src/platform/common/ProcessImpl.cpp
-    engine/src/platform/common/Socket.cpp
-)
-if(WIN32)
-    list(APPEND BLITZAR_PLATFORM_SOURCES
-        engine/src/platform/win/DynamicLibrary.cpp
-        engine/src/platform/win/Paths.cpp
-        engine/src/platform/win/Process.cpp
-        engine/src/platform/win/Socket.cpp
-    )
-else()
-    list(APPEND BLITZAR_PLATFORM_SOURCES
-        engine/src/platform/posix/DynamicLibrary.cpp
-        engine/src/platform/posix/Paths.cpp
-        engine/src/platform/posix/Process.cpp
-        engine/src/platform/posix/SocketOps.cpp
-    )
-endif()
 add_library(blitzarPlatform STATIC ${BLITZAR_PLATFORM_SOURCES})
 set_target_properties(blitzarPlatform PROPERTIES POSITION_INDEPENDENT_CODE ON)
 configure_BLITZAR_cpp_target(blitzarPlatform)
@@ -59,50 +37,13 @@ set(BLITZAR_RUNTIME_COMMAND_SOURCES
     "${BLITZAR_ROOT_DIR}/runtime/src/command/transport/Transport.cpp"
 )
 if(WIN32)
-    set(BLITZAR_CLIENT_COMMON_SUPPORT_SOURCES
-        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Base.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Win.cpp"
-    )
+    set(BLITZAR_CLIENT_COMMON_SUPPORT_SOURCES ${BLITZAR_CONFIG_ENV_SOURCE})
 else()
-    set(BLITZAR_CLIENT_COMMON_SUPPORT_SOURCES
-        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Base.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/config/env/Posix.cpp"
-    )
+    set(BLITZAR_CLIENT_COMMON_SUPPORT_SOURCES ${BLITZAR_CONFIG_ENV_SOURCE})
 endif()
 set(BLITZAR_COMMAND_CONFIG_SOURCES
-    "${BLITZAR_ROOT_DIR}/engine/src/config/args/Parse.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Main.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Apply.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/ApplyScalar.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/ApplyNormalized.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/Entries.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/EntriesCore.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/EntriesClient.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/EntriesInitState.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/registry/EntriesFluid.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/profile/Performance.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Scenario.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/ScenarioScene.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/ScenarioRuntime.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/ScenarioInitialState.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/ScenarioCosmology.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Physics.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/validation/Render.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Config.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Options.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Parser.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Scene.cpp"
-        "${BLITZAR_ROOT_DIR}/engine/src/config/directive/LegacyScene.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Write.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/Core.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/InitialState.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/SceneWriter.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/StreamWriter.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/directive/ValueFormatter.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/core/Config.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/modes/Normalize.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/server/SimulationInitConfig.cpp"
-    "${BLITZAR_ROOT_DIR}/engine/src/config/text/Parse.cpp"
+    ${BLITZAR_CONFIG_COMMAND_SOURCES}
+    ${BLITZAR_SERVER_INIT_SOURCE}
 )
 add_library(blitzarCoreFfi STATIC
     ${BLITZAR_CORE_FFI_SOURCES}
@@ -205,7 +146,7 @@ if(BLITZAR_BUILD_CLIENT_HOST)
         runtime/src/client/common/ClientCommon.cpp
         runtime/src/client/module/Manifest.cpp
         ${BLITZAR_CLIENT_COMMON_SUPPORT_SOURCES}
-        engine/src/config/text/Parse.cpp
+        engine/config/text/src/text/Parse.cpp
     )
     configure_BLITZAR_cpp_target(${CLIENT_HOST_NAME})
 endif()

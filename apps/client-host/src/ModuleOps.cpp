@@ -8,7 +8,7 @@
 #include "ModuleOps.hpp"
 #include "CliText.hpp"
 #include "client/module/Handle.hpp"
-#include "platform/Paths.hpp"
+#include "Paths.hpp"
 #include <algorithm>
 #include <iostream>
 #include <system_error>

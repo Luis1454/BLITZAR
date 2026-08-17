@@ -7,11 +7,11 @@
 
 #include "Args.hpp"
 #include "Constants.hpp"
-#include "config/args/Main.hpp"
-#include "config/core/Config.hpp"
-#include "server/core/Daemon.hpp"
-#include "server/SimulationInitConfig.hpp"
-#include "server/SimulationServer.hpp"
+#include "args/Main.hpp"
+#include "core/Config.hpp"
+#include "core/Daemon.hpp"
+#include "SimulationInitConfig.hpp"
+#include "SimulationServer.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cstdint>

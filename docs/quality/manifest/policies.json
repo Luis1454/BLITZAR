@@ -3,23 +3,23 @@
     "mirror": {
       "pairs": {},
       "header_only": [
-        "engine/include/server/SimulationInitConfig.hpp",
-        "engine/include/config/env/Base.hpp",
-        "engine/include/platform/DynamicLibrary.hpp",
-        "engine/include/platform/Errors.hpp",
-        "engine/include/platform/Paths.hpp",
-        "engine/include/platform/Process.hpp",
-        "engine/include/platform/Socket.hpp",
-        "engine/include/types/SimulationTypes.hpp",
+        "engine/server/include/SimulationInitConfig.hpp",
+        "engine/config/env/include/env/Base.hpp",
+        "engine/platform/include/DynamicLibrary.hpp",
+        "engine/platform/include/Errors.hpp",
+        "engine/platform/include/Paths.hpp",
+        "engine/platform/include/Process.hpp",
+        "engine/platform/include/Socket.hpp",
+        "engine/types/include/SimulationTypes.hpp",
         "runtime/include/client/diagnostics/ErrorBuffer.hpp",
         "runtime/include/client/module/Api.hpp",
         "runtime/include/client/runtime/Interface.hpp",
         "runtime/include/protocol/Protocol.hpp",
-        "engine/include/platform/internal/DynamicLibraryOps.hpp",
-        "engine/include/platform/internal/ProcessOps.hpp",
-        "engine/include/platform/internal/SocketOps.hpp",
-        "engine/include/physics/cuda/Gpu.hpp",
-        "engine/include/physics/octree/Octree.hpp"
+        "engine/platform/include/internal/DynamicLibraryOps.hpp",
+        "engine/platform/include/internal/ProcessOps.hpp",
+        "engine/platform/include/internal/SocketOps.hpp",
+        "engine/physics/cuda/include/Gpu.hpp",
+        "engine/physics/octree/include/Octree.hpp"
       ]
     },
     "test_ids": {

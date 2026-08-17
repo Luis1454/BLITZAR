@@ -5,7 +5,7 @@
  * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
  */
 
-#include "config/modes/Normalize.hpp"
+#include "modes/Normalize.hpp"
 #include "Internal.hpp"
 #include <algorithm>
 #include <chrono>

@@ -6,8 +6,8 @@
  */
 
 #include "client/runtime/Bridge.hpp"
-#include "config/core/Config.hpp"
-#include "config/directive/Config.hpp"
+#include "core/Config.hpp"
+#include "directive/Config.hpp"
 #include "protocol/Protocol.hpp"
 #include <sstream>
 

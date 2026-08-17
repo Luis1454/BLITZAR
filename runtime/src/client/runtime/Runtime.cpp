@@ -6,7 +6,7 @@
  */
 
 #include "client/runtime/Runtime.hpp"
-#include "config/core/Config.hpp"
+#include "core/Config.hpp"
 #include <algorithm>
 #include <cctype>
 #include <chrono>

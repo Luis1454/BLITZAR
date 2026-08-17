@@ -17,8 +17,8 @@ from python_tools.core.models import CheckContext, CheckResult
 CRITICAL_PATHS = (
     "docs/server-protocol.md",
     "docs/quality/numerical-validation.md",
-    "engine/include/physics/",
-    "engine/src/physics/",
+    "engine/physics/",
+    "engine/physics/cuda/",
     "runtime/",
     "tests/int/protocol/",
     "tests/int/runtime/",

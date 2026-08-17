@@ -7,8 +7,8 @@
 
 #include "Args.hpp"
 #include "Constants.hpp"
-#include "config/args/Main.hpp"
-#include "config/text/Parse.hpp"
+#include "args/Main.hpp"
+#include "text/Parse.hpp"
 #include <algorithm>
 #include <atomic>
 #include <cctype>

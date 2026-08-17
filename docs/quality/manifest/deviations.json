@@ -38,8 +38,8 @@
       "mitigation": "Constrain edits to kernel extraction work and keep fragment boundaries documented in review notes.",
       "closure_criteria": "Replace fragment bundles with smaller responsibility-focused units and remove the allowlist paths.",
       "paths": [
-        "engine/src/cuda/fragments/system/Core.inl",
-        "engine/src/cuda/fragments/system/Prelude.inl"
+        "engine/physics/cuda/fragments/system/CudCore.inl",
+        "engine/physics/cuda/fragments/system/CudPrelude.inl"
       ],
       "requirements": [
         "REQ-QUAL-001"
@@ -158,7 +158,7 @@
       "mitigation": "Keep this file isolated in the allowlist and review all changes for allocator and scratch-buffer correctness.",
       "closure_criteria": "Split the CUDA buffer fragment below the hard limit and remove the allowlist path.",
       "paths": [
-        "engine/src/cuda/fragments/system/Buffer.inl"
+        "engine/physics/cuda/fragments/system/CudBuffer.inl"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -181,7 +181,7 @@
       "mitigation": "Keep this file isolated in the allowlist and review all changes for traversal correctness and memory layout stability.",
       "closure_criteria": "Split the linear octree GPU fragment below the hard limit and remove the allowlist path.",
       "paths": [
-        "engine/src/cuda/fragments/octree/LinearGpu.inl"
+        "engine/physics/octree/cuda/fragments/OctLinearGpu.inl"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -204,7 +204,7 @@
       "mitigation": "Keep this header isolated in the allowlist and review all interface changes for consistency with the implementation files.",
       "closure_criteria": "Split the physics interface header below the hard limit and remove the allowlist path.",
       "paths": [
-        "engine/include/physics/core/ParticleSystem.hpp"
+        "engine/physics/core/include/ParticleSystem.hpp"
       ],
       "requirements": [
         "REQ-QUAL-001",
@@ -251,14 +251,14 @@
       "closure_criteria": "Split every path below the strong threshold, remove it from this register and the policy allowlist, and retain its deterministic qualification identifiers.",
       "paths": [
         "cmake/apps.cmake",
-        "engine/include/physics/core/ParticleSystem.hpp",
-        "engine/src/config/directive/Config.cpp",
-        "engine/src/config/directive/Write.cpp",
-        "engine/src/cuda/fragments/system/Core.inl",
-        "engine/src/cuda/JitRuntime.cu",
-        "engine/src/server/simulation/lifecycle/Rebuild.cpp",
-        "engine/src/server/simulation/telemetry/SnapshotAndEnergy.cpp",
-        "engine/src/server/SimulationInitConfig.cpp",
+        "engine/physics/core/include/ParticleSystem.hpp",
+        "engine/config/directive/src/directive/Config.cpp",
+        "engine/config/directive/src/directive/Write.cpp",
+        "engine/physics/cuda/fragments/system/CudCore.inl",
+        "engine/physics/cuda/src/JitRuntime.cu",
+        "engine/server/src/simulation/lifecycle/Rebuild.cpp",
+        "engine/server/src/simulation/telemetry/SnapshotAndEnergy.cpp",
+        "engine/server/src/SimulationInitConfig.cpp",
         "modules/qt/src/widgets/graphs/SpectrumGraph.cpp",
         "modules/qt/src/window/config/ConfigurationEditor.cpp",
         "modules/qt/src/window/control/Controls.cpp",

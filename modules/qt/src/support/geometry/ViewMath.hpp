@@ -12,7 +12,7 @@
  * Responsibility: Provide Qt-specific geometric helpers shared by particle and
  * energy widgets.
  */
-#include "graphics/ViewMath.hpp"
+#include "engine/graphics/include/ViewMath.hpp"
 #include <QPointF>
 #include <QRect>
 #include <QRectF>

@@ -13,8 +13,8 @@
  * state.
  */
 #include "client/runtime/Interface.hpp"
-#include "config/core/Config.hpp"
-#include "config/validation/Scenario.hpp"
+#include "core/Config.hpp"
+#include "validation/Scenario.hpp"
 #include "window/control/Controller.hpp"
 #include "window/core/Widgets.hpp"
 #include "window/presentation/Presenter.hpp"

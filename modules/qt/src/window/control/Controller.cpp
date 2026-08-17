@@ -7,8 +7,8 @@
 
 #include "window/control/Controller.hpp"
 #include "client/common/ClientCommon.hpp"
-#include "config/core/Config.hpp"
-#include "server/SimulationInitConfig.hpp"
+#include "core/Config.hpp"
+#include "SimulationInitConfig.hpp"
 #include <iostream>
 
 namespace bltzr_qt {

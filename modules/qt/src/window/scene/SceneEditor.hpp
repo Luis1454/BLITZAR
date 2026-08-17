@@ -6,7 +6,7 @@
 #ifndef BLITZAR_MODULES_QT_SRC_WINDOW_SCENE_SCENEEDITOR_HPP_
 #define BLITZAR_MODULES_QT_SRC_WINDOW_SCENE_SCENEEDITOR_HPP_
 
-#include "config/core/Config.hpp"
+#include "core/Config.hpp"
 #include <QPointer>
 #include <QWidget>
 

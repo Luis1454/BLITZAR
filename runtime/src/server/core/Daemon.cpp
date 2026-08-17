@@ -3,9 +3,9 @@
  * @brief Runtime daemon transport lifecycle and command dispatch.
  */
 
-#include "server/core/Daemon.hpp"
+#include "core/Daemon.hpp"
 
-#include "platform/Socket.hpp"
+#include "Socket.hpp"
 #include "protocol/Protocol.hpp"
 #include "protocol/codec/JsonCodec.hpp"
 

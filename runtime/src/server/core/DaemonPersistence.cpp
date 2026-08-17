@@ -3,11 +3,11 @@
  * @brief Runtime daemon load, export, and checkpoint commands.
  */
 
-#include "server/core/Daemon.hpp"
+#include "core/Daemon.hpp"
 
 #include "protocol/Protocol.hpp"
 #include "protocol/codec/JsonCodec.hpp"
-#include "server/SimulationServer.hpp"
+#include "SimulationServer.hpp"
 
 std::optional<std::string> Daemon::processPersistenceCommand(const std::string& request,
                                                              const std::string& command)

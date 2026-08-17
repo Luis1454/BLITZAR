@@ -3,9 +3,9 @@
  * @brief Runtime daemon socket acceptance and client transport.
  */
 
-#include "server/core/Daemon.hpp"
+#include "core/Daemon.hpp"
 
-#include "platform/Socket.hpp"
+#include "Socket.hpp"
 
 #include <algorithm>
 #include <array>

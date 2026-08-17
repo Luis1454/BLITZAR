@@ -9,7 +9,7 @@
 #define BLITZAR_MODULES_PROXY_SUPPORT_HPP_
 #include "Constants.hpp"
 #include "client/diagnostics/ErrorBuffer.hpp"
-#include "platform/Process.hpp"
+#include "Process.hpp"
 #include <cstdint>
 #include <string>
 #include <string_view>
