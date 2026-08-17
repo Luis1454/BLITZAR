@@ -7,6 +7,7 @@
 
 #include "HostMath.hpp"
 #include "OctreeForce.hpp"
+#include "ParticleSystemDeviceState.hpp"
 #include "physics/core/ParticleSystem.hpp"
 
 #include <algorithm>
@@ -127,6 +128,6 @@ bool ParticleSystem::updateAdaptiveTimeSteps(float deltaTime)
         applyCosmologyExpansionHost(scaleRatio, previousHubble, nextHubble);
     }
     _cumulativeRadiatedEnergy += applyThermalModel(deltaTime);
-    _device._hostStateDirty = false;
+    _device->_hostStateDirty = false;
     return true;
 }

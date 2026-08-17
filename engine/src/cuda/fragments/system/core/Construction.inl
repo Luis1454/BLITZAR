@@ -185,7 +185,7 @@ const std::vector<Particle>& ParticleSystem::getParticles() const
  */
 const GpuSystemMetrics* ParticleSystem::getMappedGpuMetrics() const
 {
-    return _device._mappedMetricsHost;
+    return _device->_mappedMetricsHost;
 }
 
 /*
@@ -196,7 +196,7 @@ const GpuSystemMetrics* ParticleSystem::getMappedGpuMetrics() const
  */
 bool ParticleSystem::setParticles(std::vector<Particle> particles)
 {
-    if (particles.empty() || particles.size() != _device._deviceParticleCapacity)
+    if (particles.empty() || particles.size() != _device->_deviceParticleCapacity)
         return false;
     _particles = std::move(particles);
     _adaptiveTimeStepTick = 0u;
@@ -204,8 +204,8 @@ bool ParticleSystem::setParticles(std::vector<Particle> particles)
     _adaptiveTimeStepLevels.clear();
     _adaptiveTimeStepLastForceTicks.clear();
     _adaptiveTimeStepAccelerations.clear();
-    _device._hostStateDirty = false;
-    _device._leapfrogPrimed = false;
+    _device->_hostStateDirty = false;
+    _device->_leapfrogPrimed = false;
     if (_solverMode == SolverMode::OctreeGpu &&
         !treePmFastPathBypassesOctreeScratch(_integratorMode == IntegratorMode::Euler)) {
         if (!ensureLinearOctreeScratchCapacity(static_cast<int>(_particles.size()))) {

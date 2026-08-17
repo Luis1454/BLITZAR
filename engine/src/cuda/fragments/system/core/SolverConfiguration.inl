@@ -103,7 +103,7 @@ void ParticleSystem::setAdaptiveTimeStepCostGuard(bool enabled)
 void ParticleSystem::setLinearOctreeLeafCapacity(int capacity)
 {
     _fmmLeafCapacity = std::clamp(capacity, 1, 1024);
-    _device._linearOctreeLeafCapacity = std::max(16, capacity);
+    _device->_linearOctreeLeafCapacity = std::max(16, capacity);
 }
 
 void ParticleSystem::setCudaCachePreference(const std::string& preference)
@@ -115,13 +115,13 @@ void ParticleSystem::setCudaCachePreference(const std::string& preference)
 
 bool ParticleSystem::reconfigureRuntimeBuffers()
 {
-    if (!_device._cudaRuntimeAvailable) {
+    if (!_device->_cudaRuntimeAvailable) {
         return true;
     }
 
     const std::size_t particleCapacity = std::max<std::size_t>(2u, _particles.size());
     releaseParticleBuffers();
-    _device._deviceParticleCapacity = particleCapacity;
+    _device->_deviceParticleCapacity = particleCapacity;
     if (!allocateParticleBuffers(particleCapacity) || !seedDeviceState()) {
         return false;
     }
@@ -147,7 +147,7 @@ bool ParticleSystem::reconfigureRuntimeBuffers()
     std::size_t octreeBytes = 0u;
     const std::size_t totalBytes = estimateMemoryUsage(
         particleCapacity, _sphEnabled, _solverMode, _integratorMode, 65536u,
-        _device._linearOctreeLeafCapacity, &baseAndIntegratorBytes, &sphBytes, &octreeBytes);
+        _device->_linearOctreeLeafCapacity, &baseAndIntegratorBytes, &sphBytes, &octreeBytes);
     fprintf(stdout, "[info] [memory] configured runtime plan\n%s\n",
             formatMemoryBreakdown(baseAndIntegratorBytes, sphBytes, octreeBytes, totalBytes,
                                   6656ull * 1024ull * 1024ull)

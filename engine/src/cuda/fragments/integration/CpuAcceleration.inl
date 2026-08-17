@@ -33,10 +33,10 @@ bool ParticleSystem::computeCpuAcceleration(const std::vector<Particle>& state,
         if (!computeCpuFp64PairwiseForces(state, forceLaw, output)) {
             return false;
         }
-        if (!_device._treePmMarkerPrinted) {
+        if (!_device->_treePmMarkerPrinted) {
             fprintf(stderr,
                     "[treepm] enabled solver=cpu_fp64_pairwise model=exact_tree precision=fp64\n");
-            _device._treePmMarkerPrinted = true;
+            _device->_treePmMarkerPrinted = true;
         }
         return true;
     }
@@ -70,14 +70,14 @@ bool ParticleSystem::computeCpuAcceleration(const std::vector<Particle>& state,
         if (!computed) {
             return false;
         }
-        if (!_device._treePmMarkerPrinted) {
+        if (!_device->_treePmMarkerPrinted) {
             fprintf(stderr,
                     "[treepm] enabled solver=cpu_fft_%s model=%s assignment=%s grid=%d "
                     "local_grid=%d neighbors=%d\n",
                     _treePmPrecision.c_str(), _treePmModel.c_str(), _treePmAssignment.c_str(),
                     std::clamp(_treePmGridSize, 32, 128), _treePmLocalGrid ? 1 : 0,
                     std::clamp(_treePmMaxLocalNeighbors, 0, 256));
-            _device._treePmMarkerPrinted = true;
+            _device->_treePmMarkerPrinted = true;
         }
         return true;
     }

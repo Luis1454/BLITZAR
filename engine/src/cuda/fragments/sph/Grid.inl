@@ -141,7 +141,7 @@ static void sortParticlesByHash(int* cellHash, int* particleIndex, int numPartic
  */
 bool ParticleSystem::buildSphGrid(int numParticles)
 {
-    if (numParticles <= 0 || !_device.d_soaPosX || !_device.d_sphCellHash || !_device.d_sphSortedIndex) {
+    if (numParticles <= 0 || !_device->d_soaPosX || !_device->d_sphCellHash || !_device->d_sphSortedIndex) {
         return false;
     }
 
@@ -178,8 +178,8 @@ bool ParticleSystem::buildSphGrid(int numParticles)
     const int gridSize =
         std::min(256, std::max(1, static_cast<int>(std::ceil(extent / cellSize)) + 2));
     const int totalCells = gridSize * gridSize * gridSize;
-    _device._sphGridSize = gridSize;
-    _device._sphGridTotalCells = totalCells;
+    _device->_sphGridSize = gridSize;
+    _device->_sphGridTotalCells = totalCells;
 
     SphGridParams grid;
     grid.gridSize = gridSize;
@@ -191,18 +191,18 @@ bool ParticleSystem::buildSphGrid(int numParticles)
 
     // (Re)allocate cell start/end arrays.
     const std::size_t cellBytes = static_cast<std::size_t>(totalCells) * sizeof(int);
-    if (_device.d_sphCellStart) {
-        bltzr_x::MemoryPool::deallocate(_device.d_sphCellStart);
-        _device.d_sphCellStart = nullptr;
+    if (_device->d_sphCellStart) {
+        bltzr_x::MemoryPool::deallocate(_device->d_sphCellStart);
+        _device->d_sphCellStart = nullptr;
     }
-    if (_device.d_sphCellEnd) {
-        bltzr_x::MemoryPool::deallocate(_device.d_sphCellEnd);
-        _device.d_sphCellEnd = nullptr;
+    if (_device->d_sphCellEnd) {
+        bltzr_x::MemoryPool::deallocate(_device->d_sphCellEnd);
+        _device->d_sphCellEnd = nullptr;
     }
-    _device.d_sphCellStart = static_cast<int*>(bltzr_x::MemoryPool::allocate(cellBytes));
-    _device.d_sphCellEnd = static_cast<int*>(bltzr_x::MemoryPool::allocate(cellBytes));
+    _device->d_sphCellStart = static_cast<int*>(bltzr_x::MemoryPool::allocate(cellBytes));
+    _device->d_sphCellEnd = static_cast<int*>(bltzr_x::MemoryPool::allocate(cellBytes));
 
-    if (!_device.d_sphCellStart || !_device.d_sphCellEnd) {
+    if (!_device->d_sphCellStart || !_device->d_sphCellEnd) {
         return false;
     }
 
@@ -210,7 +210,7 @@ bool ParticleSystem::buildSphGrid(int numParticles)
     const int numBlocks =
         (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
     computeSphCellHashKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-        getSoAView(false), _device.d_sphCellHash, _device.d_sphSortedIndex, numParticles, grid);
+        getSoAView(false), _device->d_sphCellHash, _device->d_sphSortedIndex, numParticles, grid);
     if (!checkCudaStatus(cudaDeviceSynchronize(), "sph hash kernel sync")) {
         return false;
     }
@@ -218,32 +218,32 @@ bool ParticleSystem::buildSphGrid(int numParticles)
     // 2) Download, sort on CPU, upload (avoids thrust).
     const std::size_t pBytes = static_cast<std::size_t>(numParticles) * sizeof(int);
     if (!checkCudaStatus(
-            cudaMemcpy(_hostCellHash.data(), _device.d_sphCellHash, pBytes, cudaMemcpyDeviceToHost),
+            cudaMemcpy(_hostCellHash.data(), _device->d_sphCellHash, pBytes, cudaMemcpyDeviceToHost),
             "sph hash D2H")) {
         return false;
     }
     if (!checkCudaStatus(
-            cudaMemcpy(_hostSortedIndex.data(), _device.d_sphSortedIndex, pBytes, cudaMemcpyDeviceToHost),
+            cudaMemcpy(_hostSortedIndex.data(), _device->d_sphSortedIndex, pBytes, cudaMemcpyDeviceToHost),
             "sph idx D2H")) {
         return false;
     }
     sortParticlesByHash(_hostCellHash.data(), _hostSortedIndex.data(), numParticles);
     if (!checkCudaStatus(
-            cudaMemcpy(_device.d_sphCellHash, _hostCellHash.data(), pBytes, cudaMemcpyHostToDevice),
+            cudaMemcpy(_device->d_sphCellHash, _hostCellHash.data(), pBytes, cudaMemcpyHostToDevice),
             "sph hash H2D")) {
         return false;
     }
     if (!checkCudaStatus(
-            cudaMemcpy(_device.d_sphSortedIndex, _hostSortedIndex.data(), pBytes, cudaMemcpyHostToDevice),
+            cudaMemcpy(_device->d_sphSortedIndex, _hostSortedIndex.data(), pBytes, cudaMemcpyHostToDevice),
             "sph idx H2D")) {
         return false;
     }
 
     // 3) Reset and build cell boundaries on GPU.
     const int cellBlocks = (totalCells + 255) / 256;
-    resetCellBoundsKernel<<<cellBlocks, 256>>>(_device.d_sphCellStart, _device.d_sphCellEnd, totalCells);
+    resetCellBoundsKernel<<<cellBlocks, 256>>>(_device->d_sphCellStart, _device->d_sphCellEnd, totalCells);
     findCellBoundsKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(
-        _device.d_sphCellHash, _device.d_sphCellStart, _device.d_sphCellEnd, numParticles);
+        _device->d_sphCellHash, _device->d_sphCellStart, _device->d_sphCellEnd, numParticles);
     if (!checkCudaStatus(cudaDeviceSynchronize(), "sph grid build sync")) {
         return false;
     }

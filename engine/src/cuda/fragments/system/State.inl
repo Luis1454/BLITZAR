@@ -18,7 +18,7 @@
  */
 void ParticleSystem::syncDeviceState()
 {
-    if (!_device._cudaRuntimeAvailable) {
+    if (!_device->_cudaRuntimeAvailable) {
         return;
     }
     if (_particles.empty())
@@ -28,7 +28,7 @@ void ParticleSystem::syncDeviceState()
     // Avoid an intermediate AoS->SoA pack kernel by creating host-side SoA buffers
     // and copying them directly to the device SoA arrays. This saves a global
     // kernel launch and reduces host->device memory traffic.
-    if (!_device.d_soaPosX) {
+    if (!_device->d_soaPosX) {
         if (!allocateParticleBuffers(static_cast<std::size_t>(numParticles)))
             return;
     }
@@ -78,60 +78,60 @@ void ParticleSystem::syncDeviceState()
         }
 
         const std::size_t bytesFloats = chunkCount * sizeof(float);
-        if (!checkCudaStatus(cudaMemcpy(_device.d_soaPosX + offset, hostPosX.data(), bytesFloats,
+        if (!checkCudaStatus(cudaMemcpy(_device->d_soaPosX + offset, hostPosX.data(), bytesFloats,
                                         cudaMemcpyHostToDevice),
                              "memcpy(HtoD soa posX)"))
             return;
-        if (!checkCudaStatus(cudaMemcpy(_device.d_soaPosY + offset, hostPosY.data(), bytesFloats,
+        if (!checkCudaStatus(cudaMemcpy(_device->d_soaPosY + offset, hostPosY.data(), bytesFloats,
                                         cudaMemcpyHostToDevice),
                              "memcpy(HtoD soa posY)"))
             return;
-        if (!checkCudaStatus(cudaMemcpy(_device.d_soaPosZ + offset, hostPosZ.data(), bytesFloats,
+        if (!checkCudaStatus(cudaMemcpy(_device->d_soaPosZ + offset, hostPosZ.data(), bytesFloats,
                                         cudaMemcpyHostToDevice),
                              "memcpy(HtoD soa posZ)"))
             return;
-        if (!checkCudaStatus(cudaMemcpy(_device.d_soaVelX + offset, hostVelX.data(), bytesFloats,
+        if (!checkCudaStatus(cudaMemcpy(_device->d_soaVelX + offset, hostVelX.data(), bytesFloats,
                                         cudaMemcpyHostToDevice),
                              "memcpy(HtoD soa velX)"))
             return;
-        if (!checkCudaStatus(cudaMemcpy(_device.d_soaVelY + offset, hostVelY.data(), bytesFloats,
+        if (!checkCudaStatus(cudaMemcpy(_device->d_soaVelY + offset, hostVelY.data(), bytesFloats,
                                         cudaMemcpyHostToDevice),
                              "memcpy(HtoD soa velY)"))
             return;
-        if (!checkCudaStatus(cudaMemcpy(_device.d_soaVelZ + offset, hostVelZ.data(), bytesFloats,
+        if (!checkCudaStatus(cudaMemcpy(_device->d_soaVelZ + offset, hostVelZ.data(), bytesFloats,
                                         cudaMemcpyHostToDevice),
                              "memcpy(HtoD soa velZ)"))
             return;
-        if (!checkCudaStatus(cudaMemcpy(_device.d_soaPressX + offset, hostPressX.data(), bytesFloats,
+        if (!checkCudaStatus(cudaMemcpy(_device->d_soaPressX + offset, hostPressX.data(), bytesFloats,
                                         cudaMemcpyHostToDevice),
                              "memcpy(HtoD soa pressureX)"))
             return;
-        if (!checkCudaStatus(cudaMemcpy(_device.d_soaPressY + offset, hostPressY.data(), bytesFloats,
+        if (!checkCudaStatus(cudaMemcpy(_device->d_soaPressY + offset, hostPressY.data(), bytesFloats,
                                         cudaMemcpyHostToDevice),
                              "memcpy(HtoD soa pressureY)"))
             return;
-        if (!checkCudaStatus(cudaMemcpy(_device.d_soaPressZ + offset, hostPressZ.data(), bytesFloats,
+        if (!checkCudaStatus(cudaMemcpy(_device->d_soaPressZ + offset, hostPressZ.data(), bytesFloats,
                                         cudaMemcpyHostToDevice),
                              "memcpy(HtoD soa pressureZ)"))
             return;
-        if (!checkCudaStatus(cudaMemcpy(_device.d_soaMass + offset, hostMass.data(), bytesFloats,
+        if (!checkCudaStatus(cudaMemcpy(_device->d_soaMass + offset, hostMass.data(), bytesFloats,
                                         cudaMemcpyHostToDevice),
                              "memcpy(HtoD soa mass)"))
             return;
-        if (_device.d_soaTemp != nullptr &&
-            !checkCudaStatus(cudaMemcpy(_device.d_soaTemp + offset, hostTemp.data(), bytesFloats,
+        if (_device->d_soaTemp != nullptr &&
+            !checkCudaStatus(cudaMemcpy(_device->d_soaTemp + offset, hostTemp.data(), bytesFloats,
                                         cudaMemcpyHostToDevice),
                              "memcpy(HtoD soa temperature)"))
             return;
-        if (_device.d_soaDens != nullptr &&
-            !checkCudaStatus(cudaMemcpy(_device.d_soaDens + offset, hostDens.data(), bytesFloats,
+        if (_device->d_soaDens != nullptr &&
+            !checkCudaStatus(cudaMemcpy(_device->d_soaDens + offset, hostDens.data(), bytesFloats,
                                         cudaMemcpyHostToDevice),
                              "memcpy(HtoD soa density)"))
             return;
     }
 
-    _device._hostStateDirty = false;
-    _device._leapfrogPrimed = false;
+    _device->_hostStateDirty = false;
+    _device->_leapfrogPrimed = false;
 }
 
 /*
@@ -142,15 +142,15 @@ void ParticleSystem::syncDeviceState()
  */
 bool ParticleSystem::syncHostState()
 {
-    if (!_device._cudaRuntimeAvailable) {
-        return !_device._hostStateDirty;
+    if (!_device->_cudaRuntimeAvailable) {
+        return !_device->_hostStateDirty;
     }
-    if (!_device._hostStateDirty)
+    if (!_device->_hostStateDirty)
         return true;
     const int numParticles = static_cast<int>(_particles.size());
     const std::size_t bytes = _particles.size() * sizeof(Particle);
 
-    if (!_device.d_stage) {
+    if (!_device->d_stage) {
         if (!allocateRk4Buffers(numParticles))
             return false;
     }
@@ -158,14 +158,14 @@ bool ParticleSystem::syncHostState()
     ParticleSoAView view = getSoAView(false);
     const int numBlocks =
         (numParticles + Particle::kDefaultCudaBlockSize - 1) / Particle::kDefaultCudaBlockSize;
-    unpackSoAKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(view, _device.d_stage, numParticles);
+    unpackSoAKernel<<<numBlocks, Particle::kDefaultCudaBlockSize>>>(view, _device->d_stage, numParticles);
     cudaDeviceSynchronize();
 
-    if (!checkCudaStatus(cudaMemcpy(_particles.data(), _device.d_stage, bytes, cudaMemcpyDeviceToHost),
+    if (!checkCudaStatus(cudaMemcpy(_particles.data(), _device->d_stage, bytes, cudaMemcpyDeviceToHost),
                          "memcpy(DtoH stage)"))
         return false;
 
-    _device._hostStateDirty = false;
+    _device->_hostStateDirty = false;
     return true;
 }
 
@@ -179,27 +179,27 @@ ParticleSoAView ParticleSystem::getSoAView(bool next) const
 {
     ParticleSoAView view;
     if (next) {
-        view.posX = _device.d_soaNextPosX;
-        view.posY = _device.d_soaNextPosY;
-        view.posZ = _device.d_soaNextPosZ;
-        view.velX = _device.d_soaNextVelX;
-        view.velY = _device.d_soaNextVelY;
-        view.velZ = _device.d_soaNextVelZ;
+        view.posX = _device->d_soaNextPosX;
+        view.posY = _device->d_soaNextPosY;
+        view.posZ = _device->d_soaNextPosZ;
+        view.velX = _device->d_soaNextVelX;
+        view.velY = _device->d_soaNextVelY;
+        view.velZ = _device->d_soaNextVelZ;
     }
     else {
-        view.posX = _device.d_soaPosX;
-        view.posY = _device.d_soaPosY;
-        view.posZ = _device.d_soaPosZ;
-        view.velX = _device.d_soaVelX;
-        view.velY = _device.d_soaVelY;
-        view.velZ = _device.d_soaVelZ;
+        view.posX = _device->d_soaPosX;
+        view.posY = _device->d_soaPosY;
+        view.posZ = _device->d_soaPosZ;
+        view.velX = _device->d_soaVelX;
+        view.velY = _device->d_soaVelY;
+        view.velZ = _device->d_soaVelZ;
     }
-    view.pressX = _device.d_soaPressX;
-    view.pressY = _device.d_soaPressY;
-    view.pressZ = _device.d_soaPressZ;
-    view.mass = _device.d_soaMass;
-    view.temp = _device.d_soaTemp;
-    view.dens = _device.d_soaDens;
+    view.pressX = _device->d_soaPressX;
+    view.pressY = _device->d_soaPressY;
+    view.pressZ = _device->d_soaPressZ;
+    view.mass = _device->d_soaMass;
+    view.temp = _device->d_soaTemp;
+    view.dens = _device->d_soaDens;
     view.count = static_cast<int>(_particles.size());
     return view;
 }
@@ -213,17 +213,17 @@ ParticleSoAView ParticleSystem::getSoAView(bool next) const
 void ParticleSystem::publishMappedMetrics(float deltaTime)
 {
     constexpr std::uint32_t kMetricsPublishStride = 8u;
-    if (!_device._cudaRuntimeAvailable) {
+    if (!_device->_cudaRuntimeAvailable) {
         return;
     }
-    if (_device._mappedMetricsDevice == 0u || _device.d_soaPosX == nullptr || _particles.empty()) {
+    if (_device->_mappedMetricsDevice == 0u || _device->d_soaPosX == nullptr || _particles.empty()) {
         return;
     }
 
-    _device._metricsStepId += 1u;
-    _device._metricsSimTime += deltaTime;
-    _device._metricsPublishCounter += 1u;
-    if ((_device._metricsPublishCounter % kMetricsPublishStride) != 0u) {
+    _device->_metricsStepId += 1u;
+    _device->_metricsSimTime += deltaTime;
+    _device->_metricsPublishCounter += 1u;
+    if ((_device->_metricsPublishCounter % kMetricsPublishStride) != 0u) {
         return;
     }
 
@@ -239,9 +239,9 @@ void ParticleSystem::publishMappedMetrics(float deltaTime)
 
     const ParticleSoAView currentView = getSoAView(false);
     publishMetricsKernel<<<1, 1>>>(reinterpret_cast<GpuSystemMetrics*>(
-                                       _device._mappedMetricsDevice),
+                                       _device->_mappedMetricsDevice),
                                    currentView,
-                                   static_cast<int>(_particles.size()), _device._metricsStepId,
-                                   _device._metricsSimTime, deltaTime, vramUsedBytes, vramPeakBytes);
+                                   static_cast<int>(_particles.size()), _device->_metricsStepId,
+                                   _device->_metricsSimTime, deltaTime, vramUsedBytes, vramPeakBytes);
     checkCudaStatus(cudaGetLastError(), "publishMetricsKernel launch");
 }

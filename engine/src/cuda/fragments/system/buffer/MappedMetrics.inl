@@ -6,7 +6,7 @@
 
 bool ParticleSystem::allocateMappedMetrics()
 {
-    if (!_device._cudaRuntimeAvailable) {
+    if (!_device->_cudaRuntimeAvailable) {
         return false;
     }
     releaseMappedMetrics();
@@ -18,19 +18,19 @@ bool ParticleSystem::allocateMappedMetrics()
     }
 
     std::memset(hostPtr, 0, sizeof(GpuSystemMetrics));
-    _device._mappedMetricsHost = static_cast<GpuSystemMetrics*>(hostPtr);
+    _device->_mappedMetricsHost = static_cast<GpuSystemMetrics*>(hostPtr);
 
     void* devicePtr = nullptr;
     status = cudaHostGetDevicePointer(&devicePtr, hostPtr, 0);
     if (!checkCudaStatus(status, "cudaHostGetDevicePointer(mapped metrics)")) {
-        _device._mappedMetricsHost.reset();
-        _device._mappedMetricsHost = nullptr;
+        _device->_mappedMetricsHost.reset();
+        _device->_mappedMetricsHost = nullptr;
         return false;
     }
-    _device._mappedMetricsDevice = reinterpret_cast<std::uintptr_t>(devicePtr);
-    _device._metricsStepId = 0u;
-    _device._metricsSimTime = 0.0f;
-    _device._metricsPublishCounter = 0u;
+    _device->_mappedMetricsDevice = reinterpret_cast<std::uintptr_t>(devicePtr);
+    _device->_metricsStepId = 0u;
+    _device->_metricsSimTime = 0.0f;
+    _device->_metricsPublishCounter = 0u;
     return true;
 }
 
@@ -42,11 +42,11 @@ bool ParticleSystem::allocateMappedMetrics()
  */
 void ParticleSystem::releaseMappedMetrics()
 {
-    _device._mappedMetricsHost.reset();
-    _device._mappedMetricsDevice = 0u;
-    _device._metricsStepId = 0u;
-    _device._metricsSimTime = 0.0f;
-    _device._metricsPublishCounter = 0u;
+    _device->_mappedMetricsHost.reset();
+    _device->_mappedMetricsDevice = 0u;
+    _device->_metricsStepId = 0u;
+    _device->_metricsSimTime = 0.0f;
+    _device->_metricsPublishCounter = 0u;
 }
 
 /*
