@@ -256,7 +256,6 @@
         "engine/src/config/directive/Write.cpp",
         "engine/src/cuda/fragments/system/Core.inl",
         "engine/src/cuda/JitRuntime.cu",
-        "engine/src/physics/octree/Octree.cpp",
         "engine/src/server/simulation/lifecycle/Rebuild.cpp",
         "engine/src/server/simulation/runtime/SettersAndExport.cpp",
         "engine/src/server/simulation/telemetry/SnapshotAndEnergy.cpp",
