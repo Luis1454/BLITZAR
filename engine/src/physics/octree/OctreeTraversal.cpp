@@ -11,6 +11,26 @@
 #include <algorithm>
 #include <cmath>
 
+Vector3 Octree::computeForceOn(const Particle& particle, std::size_t selfIndex,
+                               const ForceLawPolicy& policy, OctreeOpeningCriterion criterion,
+                               float cutoffSquared) const
+{
+    if (_root < 0 || !_particlesRef.has_value())
+        return Vector3();
+    return computeForceRecursive(_particlesRef->get(), _root, particle, selfIndex, policy,
+                                 criterion, cutoffSquared);
+}
+
+Vector3 Octree::computeForceOn(const std::vector<ParticleHotData>& particles, std::size_t selfIndex,
+                               const ForceLawPolicy& policy, OctreeOpeningCriterion criterion,
+                               float cutoffSquared) const
+{
+    if (_root < 0 || particles.empty() || selfIndex >= particles.size())
+        return Vector3();
+    return computeForceRecursive(particles, _root, particles[selfIndex], selfIndex, policy,
+                                 criterion, cutoffSquared);
+}
+
 Vector3 Octree::computeForceRecursive(const std::vector<Particle>& particles, int nodeIndex,
                                       const Particle& particle, std::size_t selfIndex,
                                       const ForceLawPolicy& policy,
