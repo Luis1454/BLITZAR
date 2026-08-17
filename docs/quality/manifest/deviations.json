@@ -254,7 +254,6 @@
         "engine/include/physics/core/ParticleSystem.hpp",
         "engine/src/config/directive/Config.cpp",
         "engine/src/config/directive/Write.cpp",
-        "engine/src/config/registry/Entries.cpp",
         "engine/src/config/validation/Scenario.cpp",
         "engine/src/cuda/fragments/system/Core.inl",
         "engine/src/cuda/JitRuntime.cu",

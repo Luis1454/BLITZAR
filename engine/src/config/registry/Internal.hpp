@@ -50,8 +50,13 @@ struct SimulationOptionEntry {
     bool hasMax;
 };
 
-extern const SimulationOptionEntry kSimulationOptions[];
-extern const std::size_t kSimulationOptionCount;
+struct SimulationOptionRange {
+    const SimulationOptionEntry& first;
+    std::size_t count;
+};
+
+extern const SimulationOptionRange kSimulationOptionRanges[];
+extern const std::size_t kSimulationOptionRangeCount;
 bool matchesCli(const SimulationOptionEntry& entry, const std::string& key,
                 SimulationOptionGroup group);
 bool matchesIni(const SimulationOptionEntry& entry, const std::string& key);
