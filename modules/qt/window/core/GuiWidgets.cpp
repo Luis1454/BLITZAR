@@ -21,14 +21,14 @@
 #include <QTimer>
 
 namespace bltzr_qt {
-ViewWidgets::ViewWidgets(QWidget* parent)
+ViewWidgets::ViewWidgets(QPointer<QWidget> parent)
     : multiView(new MultiView(parent)),
       energyGraph(new Graph(parent)),
       spectrumGraph(new SpectrumGraph(parent))
 {
 }
 
-TelemetryWidgets::TelemetryWidgets(QWidget* parent)
+TelemetryWidgets::TelemetryWidgets(QPointer<QWidget> parent)
     : validationLabel(new QLabel(parent)),
       statusLabel(new QLabel(parent)),
       runtimeMetricsLabel(new QLabel(parent)),
@@ -38,7 +38,7 @@ TelemetryWidgets::TelemetryWidgets(QWidget* parent)
 {
 }
 
-RunControls::RunControls(QWidget* parent)
+RunControls::RunControls(QPointer<QWidget> parent)
     : pauseButton(new QPushButton("Pause", parent)),
       stepButton(new QPushButton("Step", parent)),
       resetButton(new QPushButton("Reset", parent)),
@@ -52,7 +52,7 @@ RunControls::RunControls(QWidget* parent)
 {
 }
 
-SceneControls::SceneControls(QWidget* parent)
+SceneControls::SceneControls(QPointer<QWidget> parent)
     : exportButton(new QPushButton("Export", parent)),
       saveConfigButton(new QPushButton("Save config", parent)),
       loadInputButton(new QPushButton("Load input", parent)),
@@ -63,7 +63,7 @@ SceneControls::SceneControls(QWidget* parent)
 {
 }
 
-PhysicsControls::PhysicsControls(QWidget* parent)
+PhysicsControls::PhysicsControls(QPointer<QWidget> parent)
     : sphCheck(new QCheckBox("SPH", parent)),
       sphSmoothingSpin(new QDoubleSpinBox(parent)),
       sphRestDensitySpin(new QDoubleSpinBox(parent)),
@@ -96,7 +96,7 @@ PhysicsControls::PhysicsControls(QWidget* parent)
 {
 }
 
-RenderControls::RenderControls(QWidget* parent)
+RenderControls::RenderControls(QPointer<QWidget> parent)
     : zoomSlider(new QSlider(Qt::Horizontal, parent)),
       luminositySlider(new QSlider(Qt::Horizontal, parent)),
       view3dCombo(new QComboBox(parent)),
@@ -113,7 +113,7 @@ RenderControls::RenderControls(QWidget* parent)
 {
 }
 
-WorkspaceWidgets::WorkspaceWidgets(QWidget* parent)
+WorkspaceWidgets::WorkspaceWidgets(QPointer<QWidget> parent)
     : octreeOverlayAction(nullptr),
       gpuTelemetryAction(nullptr),
       controlsDock(nullptr),
@@ -125,7 +125,7 @@ WorkspaceWidgets::WorkspaceWidgets(QWidget* parent)
 {
 }
 
-Widgets::Widgets(QWidget* parent)
+Widgets::Widgets(QPointer<QWidget> parent)
     : view(parent),
       telemetry(parent),
       run(parent),

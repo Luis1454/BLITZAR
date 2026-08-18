@@ -26,9 +26,11 @@ RAW_POINTER_BOUNDARIES = (
 STRICT_RAW_POINTER_PATHS = (
     "modules/qt/window/config/",
     "modules/qt/window/control/",
+    "modules/qt/window/core/",
     "modules/qt/window/layout/",
     "modules/qt/window/presentation/",
     "modules/qt/window/scene/",
+    "modules/qt/window/workspace/",
 )
 
 

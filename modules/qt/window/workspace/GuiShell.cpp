@@ -73,7 +73,7 @@ void Window::buildWorkspaceDocks(QPointer<QTabWidget> sidebarTabs, QPointer<QWid
     _widgets.workspace.validationDock->hide();
 }
 
-void Window::buildFileMenu(QMenu* menu)
+void Window::buildFileMenu(QPointer<QMenu> menu)
 {
     menu->addAction("Save Config", QKeySequence::Save, this, [this]() {
         (void)saveConfigToDisk();
@@ -87,9 +87,9 @@ void Window::buildFileMenu(QMenu* menu)
     menu->addAction("Quit", QKeySequence::Quit, this, [this]() { close(); });
 }
 
-void Window::buildEditMenu(QMenu* menu)
+void Window::buildEditMenu(QPointer<QMenu> menu)
 {
-    auto* configuration = menu->addAction("Edit Loaded Configuration...", this, [this]() {
+    QPointer<QAction> configuration = menu->addAction("Edit Loaded Configuration...", this, [this]() {
         editLoadedConfiguration();
     });
     configuration->setShortcut(QKeySequence("Ctrl+Shift+E"));
@@ -98,14 +98,14 @@ void Window::buildEditMenu(QMenu* menu)
     menu->addAction("Reconnect", this, [this]() { requestReconnectFromUi(); });
 }
 
-void Window::buildThemeMenu(QMenu* menu)
+void Window::buildThemeMenu(QPointer<QMenu> menu)
 {
-    auto* group = new QActionGroup(menu);
+    QPointer<QActionGroup> group = new QActionGroup(menu);
     group->setExclusive(true);
-    auto* light = menu->addAction("Light");
+    QPointer<QAction> light = menu->addAction("Light");
     light->setObjectName("themeLightAction");
     light->setCheckable(true);
-    auto* dark = menu->addAction("Dark");
+    QPointer<QAction> dark = menu->addAction("Dark");
     dark->setObjectName("themeDarkAction");
     dark->setCheckable(true);
     group->addAction(light);
@@ -186,7 +186,7 @@ void Window::connectTelemetryControls()
             });
 }
 
-void Window::buildViewMenu(QMenu* menu)
+void Window::buildViewMenu(QPointer<QMenu> menu)
 {
     menu->addAction(_widgets.workspace.controlsDock->toggleViewAction());
     menu->addAction(_widgets.workspace.energyDock->toggleViewAction());
@@ -204,7 +204,7 @@ void Window::buildViewMenu(QMenu* menu)
     connectTelemetryControls();
 }
 
-void Window::buildSimulationMenu(QMenu* menu)
+void Window::buildSimulationMenu(QPointer<QMenu> menu)
 {
     menu->addAction("Pause / Resume", QKeySequence(Qt::Key_Space), this, [this]() {
         _widgets.run.pauseButton->click();
@@ -214,7 +214,7 @@ void Window::buildSimulationMenu(QMenu* menu)
     menu->addAction("Recover", this, [this]() { _widgets.run.recoverButton->click(); });
 }
 
-void Window::buildWindowMenu(QMenu* menu)
+void Window::buildWindowMenu(QPointer<QMenu> menu)
 {
     menu->addAction("Raise Controls", this, [this]() { _widgets.workspace.controlsDock->raise(); });
     menu->addAction("Raise Energy", this, [this]() { _widgets.workspace.energyDock->raise(); });
@@ -224,7 +224,7 @@ void Window::buildWindowMenu(QMenu* menu)
     });
     menu->addAction("Raise Telemetry", this, [this]() { _widgets.workspace.telemetryDock->raise(); });
     menu->addAction("Raise Validation", this, [this]() { _widgets.workspace.validationDock->raise(); });
-    auto* workspace = menu->addMenu("Workspace");
+    QPointer<QMenu> workspace = menu->addMenu("Workspace");
     workspace->addAction("Save Workspace...", this, [this]() { saveWorkspacePreset(); });
     workspace->addAction("Load Workspace...", this, [this]() { loadWorkspacePreset(); });
     workspace->addAction("Delete Workspace...", this, [this]() { deleteWorkspacePreset(); });
@@ -233,7 +233,7 @@ void Window::buildWindowMenu(QMenu* menu)
                          [this]() { restoreDefaultWorkspace(); });
 }
 
-void Window::buildHelpMenu(QMenu* menu)
+void Window::buildHelpMenu(QPointer<QMenu> menu)
 {
     menu->addAction("About Workspace", this, [this]() {
         _widgets.telemetry.statusLabel->setText("Workspace shell active");

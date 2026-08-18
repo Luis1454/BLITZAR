@@ -202,10 +202,11 @@ void ConfigurationEditor::reload(const SimulationConfig& config)
     _fields.clear();
     if (_stack == nullptr)
         return;
-    while (const std::unique_ptr<QLayoutItem> item(_stack->takeAt(0))) {
-        const QPointer<QWidget> widget = item->widget();
-        if (widget != nullptr)
-            delete widget;
+    for (;;) {
+        std::unique_ptr<QLayoutItem> item(_stack->takeAt(0));
+        if (item == nullptr)
+            break;
+        std::unique_ptr<QWidget> widget(item->widget());
     }
     buildTiles(config);
 }

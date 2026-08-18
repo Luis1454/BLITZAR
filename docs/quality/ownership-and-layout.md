@@ -6,9 +6,9 @@ Production C++ and CUDA code follows these rules:
 - Non-owning internal APIs use references or explicit view types.
 - Qt members that observe parent-owned objects use `QPointer<T>`.
 - Raw pointers are confined to ABI, process, OS, and Qt construction boundaries.
-- Internal scene and configuration editor code has a stricter contract: no raw pointer declaration
-  is permitted; Qt object references use `QPointer<T>` and transferred non-`QObject` ownership
-  uses RAII.
+- Internal Qt window code has a stricter contract: no raw pointer declaration is permitted in
+  scene, configuration, control, core, layout, presentation, or workspace code. Qt object
+  references use `QPointer<T>` and transferred non-`QObject` ownership uses RAII.
 - A boundary converts incoming text, arrays, and opaque state before entering business logic.
 - Local declarations are one per statement and initialized at the point of computation.
 - `const` is used whenever the value is not reassigned.

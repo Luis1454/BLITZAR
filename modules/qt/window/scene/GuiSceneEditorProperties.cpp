@@ -33,7 +33,7 @@ void SceneEditor::showPropertyMenu(int index, QPointer<QPushButton> anchor)
                                                    {"Asset", "asset"},
                                                    {"Particle system", "particle_system"}};
     for (const auto& entry : entries) {
-        const bool present = hasProperty(object, entry.second);
+        const bool present = hasProperty(object, entry.second.toStdString());
         QPointer<QAction> action = menu.addAction(
             QString(present ? "Remove %1" : "Add %1").arg(entry.first));
         connect(action, &QAction::triggered, this, [this, index, entry, present] {

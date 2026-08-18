@@ -232,6 +232,10 @@ if(BLITZAR_BUILD_CLIENT_MODULES)
             modules/qt/window/scene/GuiSceneEditorProperties.cpp
             modules/qt/window/scene/GuiSceneEditorState.cpp
             modules/qt/window/control/GuiControls.cpp
+            modules/qt/window/control/GuiControlsRun.cpp
+            modules/qt/window/control/GuiControlsScene.cpp
+            modules/qt/window/control/GuiControlsPhysics.cpp
+            modules/qt/window/control/GuiControlsRender.cpp
             modules/qt/window/actions/GuiFileActions.cpp
             modules/qt/window/layout/GuiLayout.cpp
             modules/qt/window/layout/GuiState.cpp

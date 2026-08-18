@@ -30,7 +30,7 @@ class MultiView;
 class SpectrumGraph;
 
 struct ViewWidgets final {
-    explicit ViewWidgets(QWidget* parent);
+    explicit ViewWidgets(QPointer<QWidget> parent);
 
     QPointer<MultiView> multiView;
     QPointer<Graph> energyGraph;
@@ -38,7 +38,7 @@ struct ViewWidgets final {
 };
 
 struct TelemetryWidgets final {
-    explicit TelemetryWidgets(QWidget* parent);
+    explicit TelemetryWidgets(QPointer<QWidget> parent);
 
     QPointer<QLabel> validationLabel;
     QPointer<QLabel> statusLabel;
@@ -49,7 +49,7 @@ struct TelemetryWidgets final {
 };
 
 struct RunControls final {
-    explicit RunControls(QWidget* parent);
+    explicit RunControls(QPointer<QWidget> parent);
 
     QPointer<QPushButton> pauseButton;
     QPointer<QPushButton> stepButton;
@@ -64,7 +64,7 @@ struct RunControls final {
 };
 
 struct SceneControls final {
-    explicit SceneControls(QWidget* parent);
+    explicit SceneControls(QPointer<QWidget> parent);
 
     QPointer<QPushButton> exportButton;
     QPointer<QPushButton> saveConfigButton;
@@ -76,7 +76,7 @@ struct SceneControls final {
 };
 
 struct PhysicsControls final {
-    explicit PhysicsControls(QWidget* parent);
+    explicit PhysicsControls(QPointer<QWidget> parent);
 
     QPointer<QCheckBox> sphCheck;
     QPointer<QDoubleSpinBox> sphSmoothingSpin;
@@ -110,7 +110,7 @@ struct PhysicsControls final {
 };
 
 struct RenderControls final {
-    explicit RenderControls(QWidget* parent);
+    explicit RenderControls(QPointer<QWidget> parent);
 
     QPointer<QSlider> zoomSlider;
     QPointer<QSlider> luminositySlider;
@@ -128,7 +128,7 @@ struct RenderControls final {
 };
 
 struct WorkspaceWidgets final {
-    explicit WorkspaceWidgets(QWidget* parent);
+    explicit WorkspaceWidgets(QPointer<QWidget> parent);
 
     QPointer<QAction> octreeOverlayAction;
     QPointer<QAction> gpuTelemetryAction;
@@ -141,7 +141,7 @@ struct WorkspaceWidgets final {
 };
 
 struct Widgets final {
-    explicit Widgets(QWidget* parent);
+    explicit Widgets(QPointer<QWidget> parent);
 
     ViewWidgets view;
     TelemetryWidgets telemetry;
