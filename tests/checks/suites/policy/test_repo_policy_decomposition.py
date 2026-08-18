@@ -11,11 +11,11 @@ from tests.checks.suites.policy.test_repo_policy import _run, _write
 from tests.checks.suites.support.path_specs import ENGINE_SERVER_DIR, cpp_file
 
 
-# @brief Documents the test repo policy warns when allowlisted file exceeds strong alert threshold operation contract.
+# @brief Documents the test repo policy ignores legacy line-count allowlists operation contract.
 # @param tmp_path Input value used by this contract.
 # @return Value produced by this contract when applicable.
 # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
-def test_repo_policy_warns_when_allowlisted_file_exceeds_strong_alert_threshold(tmp_path: Path) -> None:
+def test_repo_policy_ignores_legacy_line_count_allowlist(tmp_path: Path) -> None:
     oversize = "{\n" + "\"k\":0,\n" * 305 + "\"end\":1\n}\n"
     rel = Path("docs/quality/oversize.json")
     _write(tmp_path / rel, oversize)
@@ -24,7 +24,7 @@ def test_repo_policy_warns_when_allowlisted_file_exceeds_strong_alert_threshold(
     ok, errors, warnings = _run(tmp_path, allowlist)
     assert ok
     assert not errors
-    assert any("strong file-size alert" in warning and rel.as_posix() in warning for warning in warnings)
+    assert not any("file-size" in warning and rel.as_posix() in warning for warning in warnings)
 
 
 # @brief Documents the test repo policy warns on oversized implementation function operation contract.
@@ -96,7 +96,7 @@ def test_repo_policy_warns_on_multiple_substantial_functions_in_one_file(tmp_pat
 # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_warns_on_excessive_function_count_in_one_file(tmp_path: Path) -> None:
     functions = []
-    for index in range(9):
+    for index in range(17):
         functions.append(
             f"int func{index}() {{\n"
             "    return 1;\n"

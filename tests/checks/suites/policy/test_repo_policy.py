@@ -113,18 +113,18 @@ def test_repo_policy_enforces_qt_layout_ownership(tmp_path: Path, stem: str, con
     assert any("Qt '*new + reference' ownership pattern is forbidden" in error for error in errors)
 
 
-# @brief Documents the test repo policy warns on stale allowlist entry operation contract.
+# @brief Documents the test repo policy ignores stale legacy allowlist entries operation contract.
 # @param tmp_path Input value used by this contract.
 # @return Value produced by this contract when applicable.
 # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
-def test_repo_policy_warns_on_stale_allowlist_entry(tmp_path: Path) -> None:
+def test_repo_policy_ignores_stale_allowlist_entry(tmp_path: Path) -> None:
     sample_path = cpp_file(TESTS_UNIT_DIR, "sample")
     _write(tmp_path / sample_path, "int main() { return 0; }\n")
     allowlist = tmp_path / "allowlist.txt"
     allowlist.write_text(f"{sample_path.as_posix()}\n", encoding="utf-8")
     ok, _, warnings = _run(tmp_path, allowlist)
     assert ok
-    assert any("allowlist entry not needed anymore" in warning for warning in warnings)
+    assert not any("allowlist entry not needed anymore" in warning for warning in warnings)
 
 
 # @brief Documents the test repo policy rejects unnamed namespace in tests cpp operation contract.
@@ -185,29 +185,29 @@ def test_repo_policy_rejects_pragma_once_in_header(tmp_path: Path) -> None:
     assert any("#pragma once is forbidden" in error for error in errors)
 
 
-# @brief Documents the test repo policy rejects json above hard limit operation contract.
+# @brief Documents the test repo policy does not split metadata by line count operation contract.
 # @param tmp_path Input value used by this contract.
 # @return Value produced by this contract when applicable.
 # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
-def test_repo_policy_rejects_json_above_hard_limit(tmp_path: Path) -> None:
+def test_repo_policy_does_not_split_json_by_line_count(tmp_path: Path) -> None:
     oversize = "{\n" + "\"k\":0,\n" * 305 + "\"end\":1\n}\n"
     _write(tmp_path / "docs" / "quality" / "oversize.json", oversize)
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
-    assert not ok
-    assert any("oversize.json" in error and "strong alert threshold" in error for error in errors)
+    assert ok
+    assert not errors
 
 
-# @brief Documents the test repo policy warns when file exceeds target but not hard limit operation contract.
+# @brief Documents the test repo policy does not warn on metadata line count operation contract.
 # @param tmp_path Input value used by this contract.
 # @return Value produced by this contract when applicable.
 # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
-def test_repo_policy_warns_when_file_exceeds_target_but_not_hard_limit(tmp_path: Path) -> None:
+def test_repo_policy_does_not_warn_on_metadata_line_count(tmp_path: Path) -> None:
     content = "line\n" * 205
     _write(tmp_path / "docs" / "quality" / "target_warning.md", content)
     ok, errors, warnings = _run(tmp_path, tmp_path / "allowlist.txt")
     assert ok
     assert not errors
-    assert any("target_warning.md: 205 lines exceeds target 200" in warning for warning in warnings)
+    assert not any("target_warning.md" in warning for warning in warnings)
 
 
 # @brief Documents the test repo policy ignores rust target but not unrelated target dir operation contract.

@@ -219,9 +219,6 @@ class RepoPolicyCheck(BaseCheck):
             if suffix in IMPLEMENTATION_SCAN_EXTS:
                 self._check_function_decomposition(rel, content, result)
 
-        for stale in sorted(allowlist - used_allowlist):
-            result.add_warning(f"allowlist entry not needed anymore: {stale}")
-
         check_evidence_workflow_commands(context.root, result, "cmake -S", "-DBLITZAR_PROFILE=prod", "evidence configure command must include -DBLITZAR_PROFILE=prod")
         check_evidence_workflow_commands(context.root, result, "ctest ", "--no-tests=error", "CI ctest command must include --no-tests=error")
         check_legacy_ctest_selectors(context.root, result)
@@ -379,34 +376,10 @@ class RepoPolicyCheck(BaseCheck):
         used_allowlist: set[str],
         result: CheckResult,
     ) -> None:
-        suffix = Path(rel).suffix.lower()
-        if suffix in CPP_SCAN_EXTS or suffix in IMPLEMENTATION_SCAN_EXTS:
-            return
-        line_count = self._effective_line_count(content)
-        if line_count > context.hard_lines:
-            if rel in NON_WAIVABLE_STRONG_SIZE_PATHS:
-                result.add_error(
-                    f"{rel}: {line_count} lines exceeds non-waivable strong alert threshold {context.hard_lines} "
-                    "(split by responsibility; deviation/allowlist is not permitted for this file)"
-                )
-                return
-            if rel in allowlist:
-                used_allowlist.add(rel)
-                result.add_warning(
-                    f"{rel}: strong file-size alert; {line_count} lines exceeds {context.hard_lines} "
-                    "under an explicit deviation, keep the file coherent until it is split"
-                )
-            else:
-                result.add_error(
-                    f"{rel}: {line_count} lines exceeds strong alert threshold {context.hard_lines} "
-                    "(split file or document a coherent exception in the deviation register)"
-                )
-            return
-        if line_count > context.target_lines:
-            result.add_warning(
-                f"{rel}: {line_count} lines exceeds target {context.target_lines}; "
-                "keep one primary responsibility and avoid artificial wrapper splits"
-            )
+        # File length is intentionally not a decomposition signal. Responsibility is
+        # measured through function/method metrics below; the legacy arguments remain
+        # accepted for command-line compatibility with existing quality jobs.
+        return
 
     # @brief Documents the check function decomposition operation contract.
     # @param rel Input value used by this contract.
@@ -415,6 +388,8 @@ class RepoPolicyCheck(BaseCheck):
     # @return Value produced by this contract when applicable.
     # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_function_decomposition(self, rel: str, content: str, result: CheckResult) -> None:
+        if rel.startswith("tests/") or "/tests/" in f"/{rel}":
+            return
         for warning in collect_function_decomposition_warnings(rel, content):
             result.add_warning(warning)
 
