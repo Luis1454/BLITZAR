@@ -62,12 +62,10 @@ bool SimulationServer::saveCheckpoint(const std::string& outputPath)
  * @return bool SimulationServer:: value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-bool SimulationServer::loadCheckpoint(const std::string& inputPath, std::string* outError)
+bool SimulationServer::loadCheckpoint(const std::string& inputPath, std::string& outError)
 {
     if (inputPath.empty()) {
-        if (outError != nullptr) {
-            *outError = "missing checkpoint path";
-        }
+        outError = "missing checkpoint path";
         return false;
     }
     SimulationCheckpointState loaded{};
@@ -165,9 +163,7 @@ bool SimulationServer::loadCheckpoint(const std::string& inputPath, std::string*
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
-    if (outError != nullptr) {
-        *outError = "checkpoint rebuild did not publish the restored particle count";
-    }
+    outError = "checkpoint rebuild did not publish the restored particle count";
     return false;
 }
 

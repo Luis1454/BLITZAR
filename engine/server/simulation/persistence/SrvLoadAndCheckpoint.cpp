@@ -98,18 +98,14 @@ bool SimulationServer::loadInitialState(std::vector<Particle>& outParticles,
  * @return bool SimulationServer:: value produced by this contract.
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
-bool SimulationServer::captureCheckpointToFile(const std::string& outputPath, std::string* outError)
+bool SimulationServer::captureCheckpointToFile(const std::string& outputPath, std::string& outError)
 {
     if (!_system) {
-        if (outError != nullptr) {
-            *outError = "runtime is not ready";
-        }
+        outError = "runtime is not ready";
         return false;
     }
     if (!_system->syncHostState()) {
-        if (outError != nullptr) {
-            *outError = "could not synchronize host state";
-        }
+        outError = "could not synchronize host state";
         return false;
     }
     SimulationCheckpointState state{};

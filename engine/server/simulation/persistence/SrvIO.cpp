@@ -16,21 +16,17 @@
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
 bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState& outState,
-                        std::string* outError)
+                        std::string& outError)
 {
     std::ifstream in(inputPath, std::ios::binary);
     if (!in.is_open()) {
-        if (outError != nullptr) {
-            *outError = "could not open checkpoint input";
-        }
+        outError = "could not open checkpoint input";
         return false;
     }
     std::array<std::byte, sizeof(kCheckpointMagic)> magic{};
     if (!readRawBytes(in, magic.data(), magic.size()) ||
         std::memcmp(magic.data(), kCheckpointMagic, sizeof(kCheckpointMagic)) != 0) {
-        if (outError != nullptr) {
-            *outError = "invalid checkpoint magic";
-        }
+        outError = "invalid checkpoint magic";
         return false;
     }
     std::uint32_t version = 0u;
@@ -39,9 +35,7 @@ bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState&
     std::uint32_t count = 0u;
     if (!readLeU32(in, version) || version != kCheckpointVersion || !readLeU32(in, flags) ||
         !readLeU64(in, steps) || !readLeU32(in, count) || !isValidImportedParticleCount(count)) {
-        if (outError != nullptr) {
-            *outError = "unsupported checkpoint version";
-        }
+        outError = "unsupported checkpoint version";
         return false;
     }
     outState = SimulationCheckpointState{};
@@ -76,17 +70,13 @@ bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState&
         !readSizedString(in, outState.config.integrator, 32u) ||
         !readSizedString(in, outState.config.performanceProfile, 32u) ||
         !readSizedString(in, outState.config.octreeOpeningCriterion, 32u)) {
-        if (outError != nullptr) {
-            *outError = "checkpoint metadata is truncated";
-        }
+        outError = "checkpoint metadata is truncated";
         return false;
     }
     if (!isSupportedCheckpointString(outState.config.solver, outState.config.integrator,
                                      outState.config.performanceProfile,
                                      outState.config.octreeOpeningCriterion)) {
-        if (outError != nullptr) {
-            *outError = "checkpoint metadata is not supported by this build";
-        }
+        outError = "checkpoint metadata is not supported by this build";
         return false;
     }
     outState.particles.clear();
@@ -103,9 +93,7 @@ bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState&
         if (!readLeF32(in, px) || !readLeF32(in, py) || !readLeF32(in, pz) || !readLeF32(in, vx) ||
             !readLeF32(in, vy) || !readLeF32(in, vz) || !readLeF32(in, mass) ||
             !readLeF32(in, temperature)) {
-            if (outError != nullptr) {
-                *outError = "checkpoint particle payload is truncated";
-            }
+            outError = "checkpoint particle payload is truncated";
             return false;
         }
         Particle particle;

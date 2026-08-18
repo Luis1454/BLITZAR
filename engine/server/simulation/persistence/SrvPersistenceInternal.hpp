@@ -102,9 +102,9 @@ bool readSizedString(std::istream& in, std::string& outValue, std::size_t maxLen
 bool isSupportedCheckpointString(std::string_view solver, std::string_view integrator,
                                  std::string_view profile, std::string_view criterion);
 bool writeCheckpointFile(const std::string& outputPath, const SimulationCheckpointState& state,
-                         std::string* outError);
+                         std::string& outError);
 bool readCheckpointFile(const std::string& inputPath, SimulationCheckpointState& outState,
-                        std::string* outError);
+                        std::string& outError);
 bool writeExportSnapshotFile(const AsyncExportJob& job);
 bool parseBinarySnapshot(const std::string& inputPath, std::vector<Particle>& outParticles);
 bool parseXyzSnapshot(const std::string& inputPath, std::vector<Particle>& outParticles);

@@ -326,7 +326,7 @@ public:
      * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
      * it.
      */
-    bool loadCheckpoint(const std::string& inputPath, std::string* outError = nullptr);
+    bool loadCheckpoint(const std::string& inputPath, std::string& outError);
     /*
      * @brief Documents the try consume snapshot operation contract.
      * @param outSnapshot Input value used by this contract.
@@ -532,7 +532,7 @@ private:
      * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
      * it.
      */
-    bool captureCheckpointToFile(const std::string& outputPath, std::string* outError);
+    bool captureCheckpointToFile(const std::string& outputPath, std::string& outError);
     /*
      * @brief Documents the start export worker operation contract.
      * @param None This contract does not take explicit parameters.

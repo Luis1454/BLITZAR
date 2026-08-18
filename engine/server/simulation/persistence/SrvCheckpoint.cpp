@@ -205,7 +205,7 @@ bool isSupportedCheckpointString(std::string_view solver, std::string_view integ
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
 bool writeCheckpointFile(const std::string& outputPath, const SimulationCheckpointState& state,
-                         std::string* outError)
+                         std::string& outError)
 {
     std::filesystem::path outPath(outputPath);
     if (outPath.has_parent_path()) {
@@ -214,18 +214,14 @@ bool writeCheckpointFile(const std::string& outputPath, const SimulationCheckpoi
     }
     std::ofstream out(outputPath, std::ios::binary | std::ios::trunc);
     if (!out.is_open()) {
-        if (outError != nullptr) {
-            *outError = "could not open checkpoint output";
-        }
+        outError = "could not open checkpoint output";
         return false;
     }
     if (!isValidImportedParticleCount(state.particles.size()) ||
         !isSupportedCheckpointString(state.config.solver, state.config.integrator,
                                      state.config.performanceProfile,
                                      state.config.octreeOpeningCriterion)) {
-        if (outError != nullptr) {
-            *outError = "checkpoint state is not serializable";
-        }
+        outError = "checkpoint state is not serializable";
         return false;
     }
     const std::uint32_t flags =
@@ -236,9 +232,7 @@ bool writeCheckpointFile(const std::string& outputPath, const SimulationCheckpoi
         (state.gpuTelemetryEnabled ? kCheckpointFlagGpuTelemetryEnabled : 0u);
     if (!writeRawBytes(out, reinterpret_cast<const std::byte*>(kCheckpointMagic),
                        sizeof(kCheckpointMagic))) {
-        if (outError != nullptr) {
-            *outError = "could not write checkpoint header";
-        }
+        outError = "could not write checkpoint header";
         return false;
     }
     writeLeU32(out, kCheckpointVersion);
@@ -271,9 +265,7 @@ bool writeCheckpointFile(const std::string& outputPath, const SimulationCheckpoi
         !writeSizedString(out, state.config.integrator) ||
         !writeSizedString(out, state.config.performanceProfile) ||
         !writeSizedString(out, state.config.octreeOpeningCriterion)) {
-        if (outError != nullptr) {
-            *outError = "could not write checkpoint metadata strings";
-        }
+        outError = "could not write checkpoint metadata strings";
         return false;
     }
     for (const Particle& particle : state.particles) {
@@ -289,9 +281,7 @@ bool writeCheckpointFile(const std::string& outputPath, const SimulationCheckpoi
         writeLeF32(out, particle.getTemperature());
     }
     if (!out) {
-        if (outError != nullptr) {
-            *outError = "could not finish checkpoint write";
-        }
+        outError = "could not finish checkpoint write";
         return false;
     }
     return true;

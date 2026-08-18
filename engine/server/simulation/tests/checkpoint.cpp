@@ -70,7 +70,7 @@ TEST(PhysicsTest, TST_UNT_RUNT_009_CheckpointRoundTripRestoresRuntimeState)
     restored.setPaused(true);
     restored.start();
     std::string error;
-    ASSERT_TRUE(restored.loadCheckpoint(checkpointPath.string(), &error)) << error;
+    ASSERT_TRUE(restored.loadCheckpoint(checkpointPath.string(), error)) << error;
     std::vector<RenderParticle> restoredSnapshot;
     ASSERT_TRUE(testsupport::waitForPublishedSnapshot(restored, restoredSnapshot, 4000));
     const SimulationStats restoredStats = restored.getStats();
@@ -101,7 +101,7 @@ TEST(PhysicsTest, TST_UNT_RUNT_010_CheckpointRejectsInvalidMagic)
     server.setPaused(true);
     server.start();
     std::string error;
-    EXPECT_FALSE(server.loadCheckpoint(checkpointPath.string(), &error));
+    EXPECT_FALSE(server.loadCheckpoint(checkpointPath.string(), error));
     EXPECT_NE(error.find("magic"), std::string::npos);
     server.stop();
     std::error_code ec;
@@ -128,7 +128,7 @@ TEST(PhysicsTest, TST_UNT_RUNT_011_CheckpointRejectsUnsupportedVersion)
     server.setPaused(true);
     server.start();
     std::string error;
-    EXPECT_FALSE(server.loadCheckpoint(checkpointPath.string(), &error));
+    EXPECT_FALSE(server.loadCheckpoint(checkpointPath.string(), error));
     EXPECT_NE(error.find("version"), std::string::npos);
     server.stop();
     std::error_code ec;

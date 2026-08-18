@@ -138,7 +138,7 @@ void SimulationServer::processPendingCheckpointSave()
         return;
     }
     std::string error;
-    const bool ok = captureCheckpointToFile(request.outputPath, &error);
+    const bool ok = captureCheckpointToFile(request.outputPath, error);
     {
         std::lock_guard<std::mutex> lock(request.result->mutex);
         request.result->completed = true;
