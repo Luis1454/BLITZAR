@@ -5,15 +5,15 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "command/core/Context.hpp"
-#include "command/execution/Executor.hpp"
-#include "command/parsing/Parser.hpp"
+#include "command/core/CmdContext.hpp"
+#include "command/execution/CmdExecutor.hpp"
+#include "command/parsing/CmdParser.hpp"
 #include <gtest/gtest.h>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
-#include "Constants.hpp"
+#include "core/constants/FndConstants.hpp"
 
 namespace bltzr_test_module_cli_command_executor_flows {
 class FakeTransport final : public bltzr_cmd::Transport {

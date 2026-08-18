@@ -18,11 +18,11 @@ CRITICAL_PATHS = (
     "docs/server-protocol.md",
     "docs/quality/numerical-validation.md",
     "engine/physics/",
-    "engine/physics/cuda/",
+    "engine/physics/core/cuda/",
     "runtime/",
     "tests/int/protocol/",
     "tests/int/runtime/",
-    "tests/unit/physics/",
+    "engine/physics/octree/tests/",
 )
 DEVIATION_RE = re.compile(r"^(none|DEV-[A-Z0-9-]+|WVR-[A-Z0-9-]+)$", re.IGNORECASE)
 COMMON_CHECKLIST_MARKERS = (

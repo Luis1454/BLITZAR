@@ -1,4 +1,4 @@
-# @file scripts/rm_paths.cmake
+# @file scripts\rm_paths.cmake
 # @author Luis1454
 # @project BLITZAR
 # @brief Build, release, and CI helper automation for BLITZAR workflows.

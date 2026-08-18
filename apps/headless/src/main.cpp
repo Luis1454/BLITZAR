@@ -5,16 +5,16 @@
  * @brief Headless simulation entry point.
  */
 
-#include "args/Main.hpp"
-#include "Constants.hpp"
-#include "Runner.hpp"
-#include "core/Config.hpp"
-#include "directive/Config.hpp"
-#include "env/Base.hpp"
-#include "profile/Main.hpp"
-#include "profile/Performance.hpp"
-#include "validation/Scenario.hpp"
-#include "SimulationInitConfig.hpp"
+#include "config/args/parsing/CfgMain.hpp"
+#include "core/constants/FndConstants.hpp"
+#include "batch/runner/BatRunner.hpp"
+#include "config/core/configuration/CfgConfig.hpp"
+#include "config/directive/parsing/CfgConfig.hpp"
+#include "config/env/platform/CfgBase.hpp"
+#include "config/profile/profile/CfgMain.hpp"
+#include "config/profile/profile/CfgPerformance.hpp"
+#include "config/validation/scenario/CfgScenario.hpp"
+#include "server/simulation/configuration/SrvSimulationInitConfig.hpp"
 
 #include <algorithm>
 #include <chrono>

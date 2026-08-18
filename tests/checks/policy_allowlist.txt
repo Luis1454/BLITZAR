@@ -3,14 +3,14 @@
 # Each active group must also exist in docs/quality/manifest/deviations.json.
 
 # Core server orchestration still pending split by protocol/state/controls.
-runtime/src/protocol/client/Client.cpp
-runtime/src/client/runtime/RemoteSession.cpp
-runtime/src/client/runtime/Runtime.cpp
-runtime/src/command/execution/Executor.cpp
+runtime/protocol/client/PtcClient.cpp
+runtime/client/runtime/CliRemoteSession.cpp
+runtime/client/runtime/CliRuntime.cpp
+runtime/command/execution/CmdExecutor.cpp
 
 # Client module composition files pending per-feature extraction.
-modules/qt/Module.cpp
-modules/qt/src/widgets/graphs/Paint.cpp
+modules/qt/module/GuiModule.cpp
+modules/qt/widgets/graphs/GuiPaint.cpp
 
 # CUDA fragment blocks retained while kernel-level decomposition is prepared.
 
@@ -26,15 +26,15 @@ tests/int/ui/qt_workspace_runtime_controls.cpp
 # Initial state generation modes for presets
 
 # DEV-QUAL-012: baseline files scheduled for responsibility-focused extraction in #443.
-engine/physics/core/include/ParticleSystem.hpp
-engine/server/src/simulation/lifecycle/Rebuild.cpp
-engine/server/src/simulation/telemetry/SnapshotAndEnergy.cpp
-engine/server/src/SimulationInitConfig.cpp
-modules/qt/src/widgets/graphs/SpectrumGraph.cpp
-modules/qt/src/window/control/Controls.cpp
+engine/physics/core/particle/PhyParticleSystem.hpp
+engine/server/simulation/lifecycle/SrvRebuild.cpp
+engine/server/simulation/telemetry/SrvSnapshotAndEnergy.cpp
+engine/server/simulation/configuration/SrvSimulationInitConfig.cpp
+modules/qt/widgets/graphs/GuiSpectrumGraph.cpp
+modules/qt/window/control/GuiControls.cpp
 python_tools/policies/repo_policy.py
 scripts/analysis/ast_graph.py
-tests/unit/config/args_cli.cpp
-tests/unit/config/args_io.cpp
-tests/unit/config/args_io_directive.cpp
+engine/config/args/tests/args_cli.cpp
+engine/config/core/tests/args_io.cpp
+engine/config/directive/tests/args_io_directive.cpp
 tests/unit/ui/qt_mainwindow_controller.cpp

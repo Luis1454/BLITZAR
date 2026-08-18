@@ -70,7 +70,7 @@ def test_repo_policy_rejects_function_pointer_typedef_outside_abi_boundary(tmp_p
 # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_accepts_function_pointer_typedef_in_explicit_abi_boundary(tmp_path: Path) -> None:
     _write(
-        tmp_path / "runtime" / "include" / "client" / "module" / "Api.hpp",
+        tmp_path / "runtime" / "client" / "module" / "CliApi.hpp",
         "#ifndef BLITZAR_RUNTIME_INCLUDE_CLIENT_MODULE_API_HPP_\n"
         "#define BLITZAR_RUNTIME_INCLUDE_CLIENT_MODULE_API_HPP_\n"
         "typedef int (*AllowedFn)();\n"

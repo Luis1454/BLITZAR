@@ -7,7 +7,7 @@
 
 #ifndef BLITZAR_TESTS_SUPPORT_CLIENT_UTILS_HPP_
 #define BLITZAR_TESTS_SUPPORT_CLIENT_UTILS_HPP_
-#include "client/runtime/Bridge.hpp"
+#include "client/runtime/CliBridge.hpp"
 #include <cstdint>
 #include <string>
 

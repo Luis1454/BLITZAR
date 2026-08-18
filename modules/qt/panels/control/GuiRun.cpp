@@ -1,0 +1,65 @@
+/*
+ * @file modules/qt/panels/control/GuiRun.cpp
+ * @brief Implementation of the extracted run/connector control panel.
+ */
+#include "panels/control/GuiRun.hpp"
+#include "panels/control/GuiDisclosure.hpp"
+#include <QCheckBox>
+#include <QComboBox>
+#include <QFormLayout>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QVBoxLayout>
+
+namespace bltzr_qt {
+
+QWidget* buildRunPanel(QWidget* parent, QComboBox* performanceCombo,
+                       QPushButton* pauseButton, QPushButton* stepButton,
+                       QPushButton* resetButton, QPushButton* recoverButton,
+                       QLineEdit* serverHostEdit, QSpinBox* serverPortSpin,
+                       QLineEdit* serverBinEdit, QCheckBox* serverAutostartCheck,
+                       QPushButton* applyConnectorButton)
+{
+    QWidget* runPage = parent;
+    QLayout* existing = runPage->layout();
+    QVBoxLayout* runLayout = existing ? qobject_cast<QVBoxLayout*>(existing) : nullptr;
+    if (!runLayout)
+        runLayout = new QVBoxLayout(runPage);
+    runLayout->setContentsMargins(4, 4, 4, 4);
+    runLayout->setSpacing(8);
+
+    auto* runBox = new QGroupBox("Simulation", runPage);
+    auto* runBoxLayout = new QVBoxLayout(runBox);
+    auto* runForm = new QFormLayout();
+    runForm->addRow("Performance profile", performanceCombo);
+    auto* runActions = new QGridLayout();
+    runActions->addWidget(pauseButton, 0, 0);
+    runActions->addWidget(stepButton, 0, 1);
+    runActions->addWidget(resetButton, 1, 0);
+    runActions->addWidget(recoverButton, 1, 1);
+    runBoxLayout->addLayout(runForm);
+    runBoxLayout->addLayout(runActions);
+
+    auto* connectorBox = new QGroupBox("Connection", runPage);
+    auto* connectorLayout = new QVBoxLayout(connectorBox);
+    auto* connectorForm = new QFormLayout();
+    connectorForm->addRow("Host", serverHostEdit);
+    connectorForm->addRow("Port", serverPortSpin);
+    connectorForm->addRow("Server executable", serverBinEdit);
+    connectorLayout->addLayout(connectorForm);
+    connectorLayout->addWidget(serverAutostartCheck);
+    connectorLayout->addWidget(applyConnectorButton);
+    connectorLayout->addStretch(1);
+
+    runLayout->addWidget(runBox);
+    runLayout->addWidget(buildDisclosure(runPage, "Connection settings", connectorBox));
+    runLayout->addStretch(1);
+    return runPage;
+}
+
+} // namespace bltzr_qt

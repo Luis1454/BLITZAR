@@ -11,7 +11,9 @@ if(NOT DEFINED BLITZAR_ROOT_DIR)
     get_filename_component(BLITZAR_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
 endif()
 # Broad architecture support (Maxwell to Lovelace) using -real to avoid PTX JIT version issues
-set(CMAKE_CUDA_ARCHITECTURES 75-real 80-real 86-real 89-real)
+set(BLITZAR_CUDA_ARCHITECTURES "75-real;80-real;86-real;89-real" CACHE STRING
+    "CUDA architectures emitted by BLITZAR targets; use one local GPU architecture for low-memory development builds")
+set(CMAKE_CUDA_ARCHITECTURES "${BLITZAR_CUDA_ARCHITECTURES}")
 set(CMAKE_CUDA_SEPARABLE_COMPILATION OFF)
 
 # Ensure no device debug which causes PTX JIT version issues
@@ -32,9 +34,9 @@ set(BLITZAR_PROJECT_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/apps/client-host/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/apps/server-service/include"
     ${BLITZAR_ENGINE_INCLUDE_DIRS}
-    "${CMAKE_CURRENT_SOURCE_DIR}/runtime/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/runtime/include/server"
-    "${CMAKE_CURRENT_SOURCE_DIR}/modules/qt/src"
+    "${CMAKE_CURRENT_SOURCE_DIR}/runtime"
+    "${CMAKE_CURRENT_SOURCE_DIR}/runtime/server"
+    "${CMAKE_CURRENT_SOURCE_DIR}/modules/qt"
 )
 
 set(BLITZAR_BATCH_COMMON_SOURCES
@@ -44,6 +46,7 @@ set(BLITZAR_BATCH_COMMON_SOURCES
     ${BLITZAR_PHYSICS_CORE_SOURCES}
     ${BLITZAR_PHYSICS_TREEPM_SOURCES}
     ${BLITZAR_PHYSICS_FMM_SOURCES}
+    ${BLITZAR_PHYSICS_JIT_HOST_SOURCES}
 )
 
 set(BLITZAR_SERVER_COMMON_SOURCES
@@ -55,38 +58,42 @@ if(BLITZAR_ENABLE_CUDA)
     set(BLITZAR_BATCH_SOURCES
         ${BLITZAR_BATCH_COMMON_SOURCES}
         ${BLITZAR_PHYSICS_CUDA_DEVICE_SOURCES}
+        ${BLITZAR_PHYSICS_JIT_DEVICE_SOURCES}
     )
     set(BLITZAR_SERVER_SOURCES
         ${BLITZAR_SERVER_COMMON_SOURCES}
         ${BLITZAR_PHYSICS_CUDA_DEVICE_SOURCES}
+        ${BLITZAR_PHYSICS_JIT_DEVICE_SOURCES}
     )
 else()
     set(BLITZAR_BATCH_SOURCES
         ${BLITZAR_BATCH_COMMON_SOURCES}
         ${BLITZAR_PHYSICS_CUDA_HOST_SOURCES}
+        ${BLITZAR_PHYSICS_JIT_HOST_SOURCES}
         ${BLITZAR_PHYSICS_OCTREE_SOURCES}
     )
     set(BLITZAR_SERVER_SOURCES
         ${BLITZAR_SERVER_COMMON_SOURCES}
         ${BLITZAR_PHYSICS_CUDA_HOST_SOURCES}
+        ${BLITZAR_PHYSICS_JIT_HOST_SOURCES}
         ${BLITZAR_PHYSICS_OCTREE_SOURCES}
     )
 endif()
 
 set(BLITZAR_RUNTIME_PROTOCOL_SOURCES
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/JsonCodec.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Parser.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Status.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Snapshot.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/codec/parser/Number.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/client/Client.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/protocol/Protocol.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/protocol/codec/PtcJsonCodec.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/protocol/codec/parser/PtcParser.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/protocol/codec/parser/PtcStatus.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/protocol/codec/parser/PtcSnapshot.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/protocol/codec/parser/PtcNumber.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/protocol/client/PtcClient.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/protocol/PtcProtocol.cpp"
 )
 
 set(BLITZAR_CORE_FFI_SOURCES
-    "${BLITZAR_ROOT_DIR}/runtime/src/ffi/core/Core.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/ffi/core/Ops.cpp"
-    "${BLITZAR_ROOT_DIR}/runtime/src/ffi/core/Api.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/ffi/core/FfiCore.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/ffi/core/FfiOps.cpp"
+    "${BLITZAR_ROOT_DIR}/runtime/ffi/core/FfiApi.cpp"
 )
 
 function(BLITZAR_collect_existing_paths out_var)

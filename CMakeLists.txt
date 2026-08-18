@@ -42,6 +42,8 @@ find_package(OpenMP REQUIRED)
 
 # Detect CUDA toolkit optionally. If found, enable CUDA-aware targets.
 include(CheckLanguage)
+option(BLITZAR_ENABLE_CUDA "Build CUDA-enabled targets when a toolkit is available" ON)
+if(BLITZAR_ENABLE_CUDA)
 find_package(CUDAToolkit QUIET)
 option(BLITZAR_ALLOW_UNSUPPORTED_CUDA_HOST_COMPILER
     "Allow nvcc to use a host compiler newer than NVIDIA officially supports" OFF)
@@ -97,6 +99,10 @@ else()
     set(BLITZAR_ENABLE_CUDA OFF)
     set(BLITZAR_BUILD_TESTS OFF CACHE BOOL "Build deterministic physics regression tests" FORCE)
 endif()
+else()
+    message(STATUS "CUDA disabled by BLITZAR_ENABLE_CUDA=OFF")
+    set(BLITZAR_ENABLE_CUDA OFF CACHE BOOL "Build CUDA-enabled targets when a toolkit is available" FORCE)
+endif()
 
 include(cmake/targets.cmake)
 
@@ -106,21 +112,26 @@ if(BLITZAR_BUILD_TESTS)
     include(GoogleTest)
 
     set(BLITZAR_PHYSICS_TEST_SOURCES
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/TST_PHY_ProfileTests.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/checkpoint.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/export_queue.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/extended_solvers.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/physics/octree/tests/profile.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/server/simulation/tests/checkpoint.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/server/simulation/tests/export_queue.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/physics/octree/tests/extended_solvers.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/engine/physics/core/tests/force_law_policy.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/core/tests/constants.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/types/tests/simulation_types.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/engine/physics/fmm/tests/fmm.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/engine/physics/fmm/tests/fmm_quality.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/multibody.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/octree_criteria.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/octree_gpu_stability.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/orbit.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/reentrancy.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/runtime_reload.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/solver.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/physics/substep_policy.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/physics/octree/tests/multibody.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/physics/octree/tests/octree_criteria.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/physics/octree/tests/octree_gpu_stability.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/physics/octree/tests/orbit.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/physics/octree/tests/reentrancy.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/server/simulation/tests/runtime_reload.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/physics/octree/tests/solver.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/physics/octree/tests/substep_policy.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/physics/sph/tests/sph_stability.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/physics/thermal/tests/radiation_exchange.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/physics/jit/tests/jit_contract.cpp"
     )
     set(BLITZAR_CORE_API_TEST_SOURCES
         "${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/ffi/core_api.cpp"
@@ -130,7 +141,7 @@ if(BLITZAR_BUILD_TESTS)
         add_executable(blitzarPhysicsGTests
             tests/support/physics_scenario.cpp
             tests/support/physics_test_utils.cpp
-            runtime/src/protocol/Protocol.cpp
+            runtime/protocol/PtcProtocol.cpp
             ${BLITZAR_PHYSICS_TEST_SOURCES}
             ${BLITZAR_SERVER_SOURCES}
         )
@@ -173,7 +184,7 @@ if(BLITZAR_BUILD_TESTS)
         tests/support/numerical_validation_tool.cpp
         tests/support/physics_scenario.cpp
         tests/support/physics_test_utils.cpp
-        runtime/src/protocol/Protocol.cpp
+        runtime/protocol/PtcProtocol.cpp
         ${BLITZAR_SERVER_SOURCES}
     )
     if(BLITZAR_ENABLE_CUDA)
@@ -191,7 +202,7 @@ if(BLITZAR_BUILD_TESTS)
         tests/support/performance_benchmark_tool.cpp
         tests/support/physics_scenario.cpp
         tests/support/physics_test_utils.cpp
-        runtime/src/protocol/Protocol.cpp
+        runtime/protocol/PtcProtocol.cpp
         ${BLITZAR_SERVER_SOURCES}
     )
     if(BLITZAR_ENABLE_CUDA)

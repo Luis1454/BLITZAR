@@ -62,29 +62,24 @@ external merge requirement.
 The physics implementation is organized by responsibility rather than by build
 backend alone:
 
-- `engine/physics/core/include/`: shared particle, vector, state, and force-law contracts.
-- `engine/physics/octree/include/`: octree data structure contract.
-- `engine/physics/treepm/include/`: CPU TreePM contract.
-- `engine/physics/fmm/include/`: CPU FMM contract.
-- `engine/physics/cuda/include/`: CUDA/JIT-facing contracts.
-- `engine/physics/core/src/`: shared host implementations.
-- `engine/physics/octree/src/`: host octree and particle-system fallback implementation.
-- `engine/physics/treepm/src/`: CPU TreePM implementation.
-- `engine/physics/fmm/src/`: FMM construction, evaluation, and metrics.
-- `engine/physics/cuda/src/`: host-side CUDA/JIT bridge implementation.
-- `engine/physics/cuda/fragments/`: shared CUDA system, integration, and JIT fragments.
-- `engine/physics/<method>/cuda/fragments/`: method-specific CUDA fragments.
+- `engine/physics/core/`: shared particle, vector, state, and force-law contracts.
+- `engine/physics/octree/`: octree data structure and host implementation.
+- `engine/physics/treepm/`: CPU TreePM contract and implementation.
+- `engine/physics/fmm/`: FMM construction, evaluation, and metrics.
+- `engine/physics/core/cuda/`: shared CUDA runtime and integration responsibilities.
+- `engine/physics/jit/`: explicit JIT compilation, caching, execution, and benchmark responsibilities.
+- `engine/physics/<method>/cuda/<responsibility>/`: method-specific CUDA responsibilities.
 - `engine/<domain>/<module>/Module.cmake`: explicit source and include manifest for each engine module.
 
 New solver code belongs in its solver directory. Cross-solver state and numerical
-contracts belong in `core`; CUDA fragments remain grouped by execution concern
-under `physics/cuda/fragments/`.
+contracts belong in `core`; CUDA fragments remain directly in their owning
+responsibility directory.
 
 ## Issue Disposition
 
 | Issue | Disposition | Rationale |
 | --- | --- | --- |
-| #424, #426-#431 | Close as outdated | Their planned `modules/qt/ui` and mirrored `include/ui` paths have been superseded by the current `modules/qt/src` layout. Their structural goals are restated against the active files by #440. |
+| #424, #426-#431 | Close as outdated | Their planned UI trees are superseded by the responsibility-oriented `modules/qt/` layout. |
 | #289 | Closed as superseded | The obsolete `ParticleSystemUpdate.inl` path was replaced by the current CUDA timestep decomposition tracked by #467. |
 | #303 | Keep open | GPU octree exactness and performance evidence remains incomplete. |
 | #304 | Keep open | The checkpoint does not prove a formal VTK compatibility specification. |

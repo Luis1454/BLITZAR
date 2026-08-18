@@ -58,5 +58,8 @@ This document defines acceptance-oriented numerical checks for astrophysics simu
 ## Calibration Scenes
 
 - `two_body`: equal-mass circular orbit reference. Expected behavior: bounded separation, negligible center-of-mass drift, and near-zero energy drift under `rk4`.
-- `three_body`: equal-mass figure-eight reference. Expected behavior: finite trajectories, center of mass remaining near the origin, and no unbounded escape over the deterministic validation window.
+- `three_body`: equal-mass figure-eight reference. The qualification uses `octree_cpu`, `rk4`,
+  softening `0.01`, `dt=0.001`, and `600` steps for `0.6` simulated time. Expected behavior:
+  finite trajectories, center of mass remaining near the origin, and no unbounded escape over
+  the deterministic validation window.
 - `plummer_sphere`: isotropic self-gravitating cluster. Expected behavior: finite particle coordinates, compact cluster radius envelope, and bounded center-of-mass drift without thermal or radiative side effects.

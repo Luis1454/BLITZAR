@@ -349,11 +349,13 @@ def test_repo_policy_ignores_venv_directory_and_cache_artifacts(tmp_path: Path) 
     _write(tmp_path / ".pytest_cache" / "v" / ".gitkeep", "")
     _write(tmp_path / ".ruff_cache" / "ruff.db", "")
     _write(tmp_path / ".mypy_cache" / "json.data", "")
+    _write(tmp_path / "issue527-worktree" / "tests" / "oversized.cpp", "int oversized() { return 0; }\n")
     _write(tmp_path / "engine" / "src" / "good.cpp", "int main() { return 0; }\n")
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert ok
     assert not errors
     assert not any(".venv" in error or ".tox" in error or "site-packages" in error for error in errors)
+    assert not any("issue527-worktree" in error for error in errors)
 
 
 # @brief Documents the test repo policy explicitly ignores rust target path not naked target operation contract.

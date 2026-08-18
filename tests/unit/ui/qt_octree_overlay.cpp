@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "widgets/overlays/Octree.hpp"
+#include "widgets/overlays/GuiOctree.hpp"
 #include <gtest/gtest.h>
 #include <vector>
 

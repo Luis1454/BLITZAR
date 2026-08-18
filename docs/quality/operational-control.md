@@ -71,10 +71,10 @@ Operational rules:
 
 Priority review surfaces:
 
-- `engine/server/src`
-- `runtime/src/client`
-- `runtime/src/protocol`
-- `modules/qt/src`
+- `engine/server`
+- `runtime/client`
+- `runtime/protocol`
+- `modules/qt`
 - solver-specific physics paths
 
 Coverage is considered healthy only when paired with deterministic regression suites for the same subsystem.

@@ -5,15 +5,15 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "protocol/client/Client.hpp"
-#include "protocol/Protocol.hpp"
+#include "protocol/client/PtcClient.hpp"
+#include "protocol/PtcProtocol.hpp"
 #include "tests/support/scoped_env_var.hpp"
 #include "tests/support/server_harness.hpp"
 #include <chrono>
 #include <gtest/gtest.h>
 #include <string>
 #include <thread>
-#include "Constants.hpp"
+#include "core/constants/FndConstants.hpp"
 
 namespace bltzr_test_server_protocol_control {
 TEST(ServerProtocolTest, TST_INT_PROT_004_ServerAcceptsControlCommandsFromClient)
@@ -76,6 +76,14 @@ TEST(ServerProtocolTest, TST_INT_PROT_006_ServerRejectsUnsupportedIntegratorForO
     response =
         client.sendCommand(std::string(bltzr_protocol::SetSolver), "\"value\":\"octree_gpu\"");
     ASSERT_TRUE(response.ok) << response.error;
+    bltzr_protocol::ClientStatus solverStatus{};
+    ASSERT_TRUE(client.getStatus(solverStatus).ok);
+    if (solverStatus.solver != "octree_gpu") {
+        client.disconnect();
+        server.stop();
+        GTEST_SKIP() << "octree_gpu unavailable in this CPU build (actual solver="
+                     << solverStatus.solver << ")";
+    }
     response = client.sendCommand(std::string(bltzr_protocol::SetIntegrator), "\"value\":\"rk4\"");
     ASSERT_FALSE(response.ok);
     EXPECT_NE(response.error.find("unsupported solver/integrator combination"), std::string::npos);

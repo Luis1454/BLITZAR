@@ -23,9 +23,9 @@ DEFAULT_PATHS = (
     "tests/int",
     "tests/support",
     "engine/config",
-    "runtime/src/client",
-    "runtime/src/protocol",
-    "runtime/src/server",
+    "runtime/client",
+    "runtime/protocol",
+    "runtime/server",
 )
 HEADER_LIKE_SUFFIXES = (".h", ".hh", ".hpp", ".hxx", ".inl")
 WINDOWS_LLVM_CLANG_TIDY_CANDIDATES = [

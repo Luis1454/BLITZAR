@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "protocol/codec/JsonCodec.hpp"
+#include "protocol/codec/PtcJsonCodec.hpp"
 #include <gtest/gtest.h>
 
 TEST(ServerProtocolCodecParseTest, TST_UNT_PROT_031_ParseRequestValid)

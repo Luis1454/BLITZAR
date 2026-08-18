@@ -10,19 +10,19 @@
 # Issue: Closes #287
 
 set(BLITZAR_TEST_UNIT_CONFIG_SOURCES
-    "${BLITZAR_ROOT_DIR}/tests/unit/config/args_cli.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/config/args_cli_usage.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/config/args_io.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/config/args_io_directive.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/config/args_io_validation.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/config/args_octree.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/config/treepm.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/config/env_utils.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/config/init_plan_edges.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/config/scenario_validation.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/config/scenario_validation_edges.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/config/scenario_validation_init_modes.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/config/simulation_profile.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/args/tests/args_cli.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/text/tests/args_cli_usage.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/core/tests/args_io.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/directive/tests/args_io_directive.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/registry/tests/args_io_validation.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/args/tests/args_octree.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/physics/treepm/tests/treepm_config.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/env/tests/env_utils.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/modes/tests/init_plan_edges.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/validation/tests/scenario_validation.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/validation/tests/scenario_validation_edges.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/model/tests/scenario_validation_init_modes.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/config/profile/tests/simulation_profile.cpp"
 )
 
 set(BLITZAR_TEST_UNIT_PROTOCOL_SOURCES
@@ -32,7 +32,7 @@ set(BLITZAR_TEST_UNIT_PROTOCOL_SOURCES
 )
 
 set(BLITZAR_TEST_UNIT_MODULE_CLI_SOURCES
-    "${BLITZAR_ROOT_DIR}/tests/unit/module_cli/command_batch_runner.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/batch/tests/command_batch_runner.cpp"
     "${BLITZAR_ROOT_DIR}/tests/unit/module_cli/command_catalog.cpp"
     "${BLITZAR_ROOT_DIR}/tests/unit/module_cli/command_executor.cpp"
     "${BLITZAR_ROOT_DIR}/tests/unit/module_cli/command_executor_flows.cpp"
@@ -48,24 +48,29 @@ set(BLITZAR_TEST_UNIT_CLIENT_HOST_SOURCES
     "${BLITZAR_ROOT_DIR}/tests/unit/module_client/client_common.cpp"
     "${BLITZAR_ROOT_DIR}/tests/unit/module_client/cli_args_text.cpp"
     "${BLITZAR_ROOT_DIR}/tests/unit/module_client/client_module_boundary.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/module_client/platform_adapters.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/platform/tests/platform_adapters.cpp"
 )
 
 set(BLITZAR_TEST_UNIT_PHYSICS_SOURCES
-    "${BLITZAR_ROOT_DIR}/tests/unit/physics/TST_PHY_ProfileTests.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/physics/checkpoint.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/physics/export_queue.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/physics/extended_solvers.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/physics/octree/tests/profile.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/server/simulation/tests/checkpoint.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/server/simulation/tests/export_queue.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/physics/octree/tests/extended_solvers.cpp"
     "${BLITZAR_ROOT_DIR}/engine/physics/core/tests/force_law_policy.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/core/tests/constants.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/types/tests/simulation_types.cpp"
     "${BLITZAR_ROOT_DIR}/engine/physics/fmm/tests/fmm.cpp"
     "${BLITZAR_ROOT_DIR}/engine/physics/fmm/tests/fmm_quality.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/physics/multibody.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/physics/octree_criteria.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/physics/orbit.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/physics/reentrancy.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/physics/runtime_reload.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/physics/solver.cpp"
-    "${BLITZAR_ROOT_DIR}/tests/unit/physics/substep_policy.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/physics/octree/tests/multibody.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/physics/octree/tests/octree_criteria.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/physics/octree/tests/orbit.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/physics/octree/tests/reentrancy.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/server/simulation/tests/runtime_reload.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/physics/octree/tests/solver.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/physics/octree/tests/substep_policy.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/physics/sph/tests/sph_stability.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/physics/thermal/tests/radiation_exchange.cpp"
+    "${BLITZAR_ROOT_DIR}/engine/physics/jit/tests/jit_contract.cpp"
 )
 
 set(BLITZAR_TEST_UNIT_UI_SOURCES

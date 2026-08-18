@@ -10,7 +10,7 @@ gcovr \
   --root "${GITHUB_WORKSPACE}" \
   --object-directory build-integration-cov \
   --filter "engine" \
-  --filter "runtime/src" \
+  --filter "runtime" \
   --exclude "build-integration-cov/_deps" \
   --exclude "tests/" \
   --xml-pretty \
@@ -21,7 +21,7 @@ gcovr \
   --root "${GITHUB_WORKSPACE}" \
   --object-directory build-integration-cov \
   --filter "engine" \
-  --filter "runtime/src" \
+  --filter "runtime" \
   --exclude "build-integration-cov/_deps" \
   --exclude "tests/" \
   --csv \
@@ -31,7 +31,7 @@ gcovr \
   --root "${GITHUB_WORKSPACE}" \
   --object-directory build-integration-cov \
   --filter "engine" \
-  --filter "runtime/src" \
+  --filter "runtime" \
   --exclude "build-integration-cov/_deps" \
   --exclude "tests/" \
   --print-summary | tee build-integration-cov/coverage-summary.txt

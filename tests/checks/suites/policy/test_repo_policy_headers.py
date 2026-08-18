@@ -92,7 +92,7 @@ def test_repo_policy_accepts_declaration_only_header(tmp_path: Path) -> None:
 def test_repo_policy_accepts_documented_header_before_include_guard(tmp_path: Path) -> None:
     _write(
         tmp_path / "runtime" / "include" / "protocol" / "documented.hpp",
-        "// File: runtime/include/protocol/documented.hpp\n"
+        "// File: runtime/protocol/documented.hpp\n"
         "// Purpose: Documents the protocol test header surface.\n"
         "#ifndef RUNTIME_INCLUDE_PROTOCOL_DOCUMENTED_HPP_\n"
         "#define RUNTIME_INCLUDE_PROTOCOL_DOCUMENTED_HPP_\n"

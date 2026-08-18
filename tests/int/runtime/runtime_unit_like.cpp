@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/runtime/Runtime.hpp"
+#include "client/runtime/CliRuntime.hpp"
 #include "tests/support/client_utils.hpp"
 #include <chrono>
 #include <gtest/gtest.h>

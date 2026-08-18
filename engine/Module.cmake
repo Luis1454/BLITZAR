@@ -8,15 +8,10 @@ include("${CMAKE_CURRENT_LIST_DIR}/config/Module.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/graphics/Module.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/platform/Module.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/server/Module.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/physics/core/Module.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/physics/cuda/Module.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/physics/fmm/Module.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/physics/octree/Module.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/physics/sph/Module.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/physics/thermal/Module.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/physics/treepm/Module.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/physics/Module.cmake")
 
 set(BLITZAR_ENGINE_INCLUDE_DIRS
+    ${BLITZAR_ROOT_DIR}/engine
     ${BLITZAR_CORE_INCLUDE_DIR}
     ${BLITZAR_TYPES_INCLUDE_DIR}
     ${BLITZAR_BATCH_INCLUDE_DIR}
@@ -26,10 +21,11 @@ set(BLITZAR_ENGINE_INCLUDE_DIRS
     ${BLITZAR_SERVER_INCLUDE_DIR}
     ${BLITZAR_PHYSICS_CORE_INCLUDE_DIR}
     ${BLITZAR_PHYSICS_CUDA_INCLUDE_DIR}
+    ${BLITZAR_PHYSICS_JIT_INCLUDE_DIR}
     ${BLITZAR_PHYSICS_FMM_INCLUDE_DIR}
     ${BLITZAR_PHYSICS_OCTREE_INCLUDE_DIR}
     ${BLITZAR_PHYSICS_TREEPM_INCLUDE_DIR}
-    ${BLITZAR_PHYSICS_CUDA_SOURCE_DIR}
+    ${BLITZAR_PHYSICS_JIT_SOURCE_DIR}
     ${BLITZAR_SERVER_SOURCE_DIR}
     ${BLITZAR_CONFIG_SOURCE_DIRS}
     ${BLITZAR_PHYSICS_OCTREE_SOURCE_DIR}

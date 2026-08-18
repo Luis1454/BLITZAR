@@ -5,7 +5,7 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "ForceLawPolicy.hpp"
+#include "physics/core/force/PhyForceLawPolicy.hpp"
 #include <gtest/gtest.h>
 
 TEST(PhysicsTest, TST_UNT_PHYS_021_ForceLawPolicyClampsConfiguredThresholds)

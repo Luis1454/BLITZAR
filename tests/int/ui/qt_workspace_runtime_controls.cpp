@@ -6,8 +6,8 @@
  */
 
 #include "tests/support/qt_test_utils.hpp"
-#include "widgets/graphs/Graph.hpp"
-#include "window/core/Window.hpp"
+#include "widgets/graphs/GuiGraph.hpp"
+#include "window/core/GuiWindow.hpp"
 #include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>

@@ -5,10 +5,10 @@
  * @brief Automated verification assets for BLITZAR quality gates.
  */
 
-#include "client/runtime/Runtime.hpp"
+#include "client/runtime/CliRuntime.hpp"
 #include "tests/support/client_utils.hpp"
 #include "tests/support/qt_test_utils.hpp"
-#include "window/core/Window.hpp"
+#include "window/core/GuiWindow.hpp"
 #include <QAction>
 #include <QCheckBox>
 #include <QComboBox>

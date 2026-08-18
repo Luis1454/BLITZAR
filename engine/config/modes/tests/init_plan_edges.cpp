@@ -1,0 +1,121 @@
+/*
+ * @file engine/config/modes/tests/init_plan_edges.cpp
+ * @author Luis1454
+ * @project BLITZAR
+ * @brief Automated verification assets for BLITZAR quality gates.
+ */
+
+#include "config/core/configuration/CfgConfig.hpp"
+#include "server/simulation/configuration/SrvSimulationInitConfig.hpp"
+#include <gtest/gtest.h>
+#include <sstream>
+#include <string>
+
+TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_117_PresetFileModeKeepsConfiguredInputAndAutoFormat)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    config.initConfigStyle = "preset";
+    config.presetStructure = "file";
+    config.inputFile = "tests/data/two_body_rest.xyz";
+    config.inputFormat.clear();
+    std::stringstream log;
+    const ResolvedInitialStatePlan plan = resolveInitialStatePlan(config, log);
+    EXPECT_EQ(plan.config.mode, "file");
+    EXPECT_EQ(plan.inputFile, "tests/data/two_body_rest.xyz");
+    EXPECT_EQ(plan.inputFormat, "auto");
+    EXPECT_NE(plan.summary.find("source=file"), std::string::npos);
+}
+
+TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_085_PresetFileModeKeepsExplicitInputFormat)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    config.initConfigStyle = "preset";
+    config.presetStructure = "file";
+    config.inputFile = "tests/data/two_body_rest.xyz";
+    config.inputFormat = "xyz";
+    std::stringstream log;
+    const ResolvedInitialStatePlan plan = resolveInitialStatePlan(config, log);
+    EXPECT_EQ(plan.config.mode, "file");
+    EXPECT_EQ(plan.inputFormat, "xyz");
+    EXPECT_NE(plan.summary.find("input_format=xyz"), std::string::npos);
+}
+
+TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_086_PresetRandomCloudClampsMassForSingleParticle)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    config.initConfigStyle = "preset";
+    config.presetStructure = "random_cloud";
+    config.particleCount = 1u;
+    config.presetSize = 4.0f;
+    std::stringstream log;
+    const ResolvedInitialStatePlan plan = resolveInitialStatePlan(config, log);
+    EXPECT_EQ(plan.config.mode, "random_cloud");
+    EXPECT_FALSE(plan.config.includeCentralBody);
+    EXPECT_FLOAT_EQ(plan.config.cloudHalfExtent, 4.0f);
+    EXPECT_FLOAT_EQ(plan.config.particleMass, 0.5f);
+}
+
+TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_087_PresetTwoBodyResolvesGeneratedOrbitDefaults)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    config.initConfigStyle = "preset";
+    config.presetStructure = "two_body";
+    config.presetSize = 6.0f;
+    std::stringstream log;
+    const ResolvedInitialStatePlan plan = resolveInitialStatePlan(config, log);
+    EXPECT_EQ(plan.config.mode, "two_body");
+    EXPECT_FALSE(plan.config.includeCentralBody);
+    EXPECT_FLOAT_EQ(plan.config.centralMass, 0.0f);
+    EXPECT_FLOAT_EQ(plan.config.cloudHalfExtent, 6.0f);
+    EXPECT_FLOAT_EQ(plan.config.velocityScale, 1.0f);
+    EXPECT_FLOAT_EQ(plan.config.particleMass, 1.0f);
+    EXPECT_NE(plan.summary.find("source=generated"), std::string::npos);
+}
+
+TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_088_PresetPlummerSphereComputesParticleMassFromCount)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    config.initConfigStyle = "preset";
+    config.presetStructure = "plummer_sphere";
+    config.particleCount = 10u;
+    config.presetSize = 9.0f;
+    std::stringstream log;
+    const ResolvedInitialStatePlan plan = resolveInitialStatePlan(config, log);
+    EXPECT_EQ(plan.config.mode, "plummer_sphere");
+    EXPECT_FALSE(plan.config.includeCentralBody);
+    EXPECT_FLOAT_EQ(plan.config.centralMass, 0.0f);
+    EXPECT_FLOAT_EQ(plan.config.cloudHalfExtent, 9.0f);
+    EXPECT_FLOAT_EQ(plan.config.velocityScale, 1.0f);
+    EXPECT_FLOAT_EQ(plan.config.particleMass, 0.1f);
+}
+
+TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_089_PresetCubeRandomUsesPresetSizeAsCubeExtent)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    config.initConfigStyle = "preset";
+    config.presetStructure = "cube_random";
+    config.particleCount = 8u;
+    config.presetSize = 5.0f;
+    std::stringstream log;
+    const ResolvedInitialStatePlan plan = resolveInitialStatePlan(config, log);
+    EXPECT_EQ(plan.config.mode, "cube_random");
+    EXPECT_FALSE(plan.config.includeCentralBody);
+    EXPECT_FLOAT_EQ(plan.config.cubeHalfExtent, 5.0f);
+    EXPECT_FLOAT_EQ(plan.config.particleMass, 0.125f);
+}
+
+TEST(ConfigInitPlanEdgesTest, TST_UNT_CONF_090_DetailedSphereRandomKeepsConfiguredRadius)
+{
+    SimulationConfig config = SimulationConfig::defaults();
+    config.initConfigStyle = "detailed";
+    config.initMode = "sphere_random";
+    config.initSphereRadius = 7.5f;
+    config.initCloudSpeed = 0.6f;
+    config.initParticleMass = 0.02f;
+    std::stringstream log;
+    const ResolvedInitialStatePlan plan = resolveInitialStatePlan(config, log);
+    EXPECT_EQ(plan.config.mode, "sphere_random");
+    EXPECT_FLOAT_EQ(plan.config.sphereRadius, 7.5f);
+    EXPECT_FLOAT_EQ(plan.config.cloudSpeed, 0.6f);
+    EXPECT_FLOAT_EQ(plan.config.particleMass, 0.02f);
+}

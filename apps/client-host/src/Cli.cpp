@@ -14,11 +14,11 @@
 #include "CliArgs.hpp"
 #include "CliText.hpp"
 #include "ModuleOps.hpp"
-#include "client/module/Handle.hpp"
-#include "command/core/Context.hpp"
-#include "command/execution/BatchRunner.hpp"
-#include "core/Config.hpp"
-#include "validation/Scenario.hpp"
+#include "client/module/CliHandle.hpp"
+#include "command/core/CmdContext.hpp"
+#include "command/execution/CmdBatchRunner.hpp"
+#include "config/core/configuration/CfgConfig.hpp"
+#include "config/validation/scenario/CfgScenario.hpp"
 
 namespace bltzr_client_host {
 class ClientHostCliImpl final {

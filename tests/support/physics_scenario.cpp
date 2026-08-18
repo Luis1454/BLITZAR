@@ -184,8 +184,9 @@ bool prepareGeneratedCalibrationScenario(const std::string& mode, ScenarioConfig
     if (mode == "three_body") {
         cfg.particleCount = 3u;
         cfg.integrator = "rk4";
-        cfg.dt = 0.0015f;
-        cfg.steps = 400u;
+        cfg.dt = 0.001f;
+        cfg.steps = 600u;
+        cfg.octreeSoftening = 0.01f;
         cfg.initState.cloudHalfExtent = 1.8f;
         cfg.initState.particleMass = 1.0f;
         cfg.initState.velocityScale = 1.0f;
