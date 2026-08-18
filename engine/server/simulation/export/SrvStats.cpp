@@ -157,7 +157,7 @@ bool SimulationServer::loadCheckpoint(const std::string& inputPath, std::string&
         std::chrono::steady_clock::now() + std::chrono::seconds(5);
     std::vector<RenderParticle> rebuiltSnapshot;
     while (std::chrono::steady_clock::now() < rebuildDeadline) {
-        if (copyLatestSnapshot(rebuiltSnapshot, 0u, nullptr) &&
+        if (copyLatestSnapshot(rebuiltSnapshot) &&
             rebuiltSnapshot.size() == expectedParticleCount) {
             return true;
         }
@@ -241,19 +241,18 @@ bool SimulationServer::tryConsumeSnapshot(std::vector<RenderParticle>& outSnapsh
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
 bool SimulationServer::copyLatestSnapshot(std::vector<RenderParticle>& outSnapshot,
-                                          std::size_t maxPoints, std::size_t* outSourceSize) const
+                                          std::size_t maxPoints,
+                                          std::optional<std::reference_wrapper<std::size_t>> outSourceSize) const
 {
     std::lock_guard<std::mutex> lock(_snapshotMutex);
     if (_publishedSnapshot.empty()) {
         outSnapshot.clear();
-        if (outSourceSize != nullptr) {
-            *outSourceSize = 0u;
-        }
+        if (outSourceSize.has_value())
+            outSourceSize->get() = 0u;
         return false;
     }
-    if (outSourceSize != nullptr) {
-        *outSourceSize = _publishedSnapshot.size();
-    }
+    if (outSourceSize.has_value())
+        outSourceSize->get() = _publishedSnapshot.size();
     if (maxPoints == 0 || _publishedSnapshot.size() <= maxPoints) {
         outSnapshot = _publishedSnapshot;
         return true;

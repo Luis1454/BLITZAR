@@ -444,7 +444,8 @@ Response Client::getStatus(ClientStatus& outStatus)
  * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
  */
 Response Client::getSnapshot(std::vector<RenderParticle>& outSnapshot,
-                                               std::uint32_t maxPoints, std::size_t* outSourceSize)
+                                               std::uint32_t maxPoints,
+                                               std::optional<std::reference_wrapper<std::size_t>> outSourceSize)
 {
     try {
         maxPoints = bltzr_protocol::clampSnapshotPoints(maxPoints);
@@ -460,9 +461,8 @@ Response Client::getSnapshot(std::vector<RenderParticle>& outSnapshot,
             response.error = serverClientError("getSnapshot", parseError);
             return response;
         }
-        if (outSourceSize != nullptr) {
-            *outSourceSize = parsed.sourceSize;
-        }
+        if (outSourceSize.has_value())
+            outSourceSize->get() = parsed.sourceSize;
         outSnapshot = std::move(parsed.particles);
         return response;
     }

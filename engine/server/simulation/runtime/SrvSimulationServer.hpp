@@ -20,10 +20,12 @@
 #include <chrono>
 #include <cstdint>
 #include <deque>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
+#include <optional>
 #include <vector>
 /*
  * @brief Defines the simulation checkpoint state type contract.
@@ -344,8 +346,9 @@ public:
      * @note Keep side effects explicit and preserve deterministic behavior where callers depend on
      * it.
      */
-    bool copyLatestSnapshot(std::vector<RenderParticle>& outSnapshot, std::size_t maxPoints = 0,
-                            std::size_t* outSourceSize = nullptr) const;
+    bool copyLatestSnapshot(
+        std::vector<RenderParticle>& outSnapshot, std::size_t maxPoints = 0,
+        std::optional<std::reference_wrapper<std::size_t>> outSourceSize = std::nullopt) const;
     /*
      * @brief Documents the get stats operation contract.
      * @param None This contract does not take explicit parameters.

@@ -413,7 +413,7 @@ void Runtime::pollOnce(bool pollSnapshot, bool pollStats)
     std::size_t snapshotSourceSize = 0u;
     bool gotSnapshot = false;
     if (pollSnapshot) {
-        gotSnapshot = _bridge.tryConsumeSnapshot(snapshot, &snapshotSourceSize);
+        gotSnapshot = _bridge.tryConsumeSnapshot(snapshot, std::ref(snapshotSourceSize));
     }
     SimulationStats stats{};
     if (pollStats) {

@@ -13,6 +13,8 @@
 #include "protocol/client/PtcClient.hpp"
 #include <chrono>
 #include <cstdint>
+#include <functional>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -31,7 +33,9 @@ public:
     bool sendOrQueue(const std::string& command, const std::string& fields = "");
     bool configure(const std::string& host, std::uint16_t port, bool autoStart,
                    const std::string& serverExecutable);
-    bool tryConsumeSnapshot(std::vector<RenderParticle>& outSnapshot, std::size_t* outSourceSize);
+    bool tryConsumeSnapshot(
+        std::vector<RenderParticle>& outSnapshot,
+        std::optional<std::reference_wrapper<std::size_t>> outSourceSize);
     SimulationStats getStats();
     void setSnapshotCap(std::uint32_t maxPoints);
     void requestReconnect();

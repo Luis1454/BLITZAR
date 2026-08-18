@@ -9,6 +9,8 @@
 #define BLITZAR_RUNTIME_INCLUDE_PROTOCOL_SERVERCLIENT_HPP_
 #include "protocol/codec/PtcJsonCodec.hpp"
 #include <cstdint>
+#include <functional>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -176,7 +178,8 @@ public:
      */
     Response getSnapshot(std::vector<RenderParticle>& outSnapshot,
                                      std::uint32_t maxPoints = 4096u,
-                                     std::size_t* outSourceSize = nullptr);
+                                     std::optional<std::reference_wrapper<std::size_t>> outSourceSize =
+                                         std::nullopt);
 
 private:
     typedef std::intptr_t SocketHandle;

@@ -209,7 +209,7 @@ void Bridge::configureRemoteConnector(const std::string& host, std::uint16_t por
 }
 
 bool Bridge::tryConsumeSnapshot(std::vector<RenderParticle>& outSnapshot,
-                                std::size_t* outSourceSize)
+                                std::optional<std::reference_wrapper<std::size_t>> outSourceSize)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     return _remote->tryConsumeSnapshot(outSnapshot, outSourceSize);

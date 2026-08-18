@@ -45,7 +45,8 @@ std::optional<std::string> Daemon::processObservationCommand(const std::string& 
         std::vector<RenderParticle> snapshot;
         std::size_t sourceSize = 0u;
         const bool hasSnapshot =
-            _server.copyLatestSnapshot(snapshot, static_cast<std::size_t>(maxPoints), &sourceSize);
+            _server.copyLatestSnapshot(snapshot, static_cast<std::size_t>(maxPoints),
+                                       std::ref(sourceSize));
         return bltzr_protocol::JsonCodec::makeSnapshotResponse(hasSnapshot, snapshot, sourceSize);
     }
     return std::nullopt;

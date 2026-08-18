@@ -147,7 +147,7 @@ bool RemoteSession::configure(const std::string& host, std::uint16_t port, bool 
 }
 
 bool RemoteSession::tryConsumeSnapshot(std::vector<RenderParticle>& outSnapshot,
-                                       std::size_t* outSourceSize)
+                                       std::optional<std::reference_wrapper<std::size_t>> outSourceSize)
 {
     if (!ensureConnected(false)) {
         return false;
@@ -156,7 +156,7 @@ bool RemoteSession::tryConsumeSnapshot(std::vector<RenderParticle>& outSnapshot,
     std::size_t sourceSize = 0u;
     SocketTimeoutScope timeoutScope(_client, static_cast<int>(_snapshotTimeoutMs));
     const bltzr_protocol::Response response =
-        _client.getSnapshot(remoteSnapshot, _state.remoteSnapshotCap(), &sourceSize);
+        _client.getSnapshot(remoteSnapshot, _state.remoteSnapshotCap(), std::ref(sourceSize));
     if (!response.ok) {
         if (isTransportFailure(response.error)) {
             markDisconnected("get_snapshot", response.error);
@@ -173,9 +173,8 @@ bool RemoteSession::tryConsumeSnapshot(std::vector<RenderParticle>& outSnapshot,
     if (remoteSnapshot.empty()) {
         return false;
     }
-    if (outSourceSize != nullptr) {
-        *outSourceSize = sourceSize;
-    }
+    if (outSourceSize.has_value())
+        outSourceSize->get() = sourceSize;
     outSnapshot = std::move(remoteSnapshot);
     return true;
 }

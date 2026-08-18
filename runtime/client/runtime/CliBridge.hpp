@@ -10,11 +10,13 @@
 #include "core/constants/FndConstants.hpp"
 #include "types/simulation/TypSimulationTypes.hpp"
 #include <cstdint>
+#include <functional>
 #include <iosfwd>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <string_view>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -94,7 +96,8 @@ public:
     void configureRemoteConnector(const std::string& host, std::uint16_t port, bool autoStart,
                                   const std::string& serverExecutable);
     bool tryConsumeSnapshot(std::vector<RenderParticle>& outSnapshot,
-                            std::size_t* outSourceSize = nullptr);
+                            std::optional<std::reference_wrapper<std::size_t>> outSourceSize =
+                                std::nullopt);
     SimulationStats getStats();
     void setRemoteSnapshotCap(std::uint32_t maxPoints);
     void requestReconnect();
