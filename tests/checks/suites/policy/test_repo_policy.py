@@ -73,6 +73,16 @@ def _run(root: Path, allowlist: Path) -> tuple[bool, list[str], list[str]]:
             "#ifdef _WIN32\nint f() { return 1; }\n#endif\n",
             "preprocessor conditionals are forbidden in C/C++ sources",
         ),
+        (
+            cpp_file(ENGINE_CONFIG_DIR, "bad_multiple_declarations"),
+            "int build() { int first = 1, second = 2; return first + second; }\n",
+            "one local declaration per statement is required",
+        ),
+        (
+            cpp_file(ENGINE_CONFIG_DIR, "bad_raw_owner"),
+            "int build() { Widget* widget = new Widget(); return widget != nullptr; }\n",
+            "owning raw pointer must use std::unique_ptr",
+        ),
     ],
 )
 # @brief Documents the test repo policy rejects cpp patterns operation contract.

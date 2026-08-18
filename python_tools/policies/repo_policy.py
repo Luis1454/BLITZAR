@@ -29,6 +29,7 @@ from python_tools.policies.repo_policy_workflows import (
     check_workflow_failure_masking,
     check_workflow_pip_manifest_usage,
 )
+from python_tools.policies.human_layout_policy import check_human_layout
 
 FORBIDDEN_CPP_EXTS = {".h", ".hh", ".hxx", ".c", ".cc", ".cxx"}
 LINE_COUNT_EXTS = {
@@ -235,6 +236,8 @@ class RepoPolicyCheck(BaseCheck):
     # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
     def _check_cpp_content(self, rel: str, content: str, result: CheckResult) -> None:
         suffix = Path(rel).suffix.lower()
+        for error in check_human_layout(rel, content):
+            result.add_error(error)
         self._check_exports_pointer_boundary(rel, content, result)
         is_module_test = "/tests/" in f"/{rel}"
         if not (rel.startswith("tests/") or is_module_test):

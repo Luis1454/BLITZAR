@@ -106,18 +106,9 @@ static std::string summarizePlan(const std::string& style, const std::string& se
     return out.str();
 }
 
-/*
- * @brief Documents the resolve initial state plan operation contract.
- * @param config Input value used by this contract.
- * @param log Input value used by this contract.
- * @return ResolvedInitialStatePlan value produced by this contract.
- * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
- */
-ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config, std::ostream& log)
+static void configureCosmology(InitialStateConfig& init, const SimulationConfig& config,
+                               std::ostream& log)
 {
-    ResolvedInitialStatePlan plan;
-    InitialStateConfig& init = plan.config;
-    init.scene = config.scene;
     init.cosmology.enabled = config.cosmologyEnabled;
     init.cosmology.mode = toLowerInitConfig(config.cosmologyMode);
     if (init.cosmology.mode != "expanding_preview" && init.cosmology.mode != "comoving") {
@@ -143,6 +134,11 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config,
         log << "[config] invalid cosmology mass_model; using critical_density\n";
     }
     init.cosmology.totalMass = std::max(0.0f, config.cosmologyTotalMass);
+}
+
+static void configureSharedInit(InitialStateConfig& init, const SimulationConfig& config)
+{
+    init.scene = config.scene;
     init.seed = config.initSeed;
     init.deterministicMode = config.deterministicMode;
     init.velocityTemperature = std::max(0.0f, config.velocityTemperature);
@@ -165,6 +161,172 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config,
     init.thermalSpecificHeat = std::max(1e-6f, config.thermalSpecificHeat);
     init.thermalHeatingCoeff = std::max(0.0f, config.thermalHeatingCoeff);
     init.thermalRadiationCoeff = std::max(0.0f, config.thermalRadiationCoeff);
+}
+
+static float defaultCloudParticleMass(const SimulationConfig& config)
+{
+    const std::uint32_t count = std::max<std::uint32_t>(2u, config.particleCount);
+    return std::max(1e-6f, 1.0f / static_cast<float>(count));
+}
+
+static void clearGeneratedCentralBody(InitialStateConfig& init)
+{
+    init.includeCentralBody = false;
+    init.centralMass = 1.0f;
+    init.centralX = 0.0f;
+    init.centralY = 0.0f;
+    init.centralZ = 0.0f;
+    init.centralVx = 0.0f;
+    init.centralVy = 0.0f;
+    init.centralVz = 0.0f;
+}
+
+static void configurePresetMode(InitialStateConfig& init, const SimulationConfig& config,
+                                const std::string& mode, float size)
+{
+    init.mode = mode;
+    if (mode == "cosmology") {
+        init.cosmology.enabled = true;
+        init.includeCentralBody = false;
+        init.centralMass = 0.0f;
+        init.cloudHalfExtent = size;
+        init.cubeHalfExtent = size;
+        init.sphereRadius = size;
+        init.particleMass = std::max(1e-12f, config.initParticleMass);
+        return;
+    }
+    if (mode == "random_cloud" || mode == "cube_random" || mode == "sphere_random") {
+        clearGeneratedCentralBody(init);
+        init.cloudHalfExtent = size;
+        init.cloudSpeed = 0.0f;
+        init.particleMass = defaultCloudParticleMass(config);
+        if (mode == "random_cloud") {
+            init.cubeHalfExtent = size;
+            init.sphereRadius = size;
+        }
+        if (mode == "cube_random") {
+            init.cubeHalfExtent = size;
+        }
+        if (mode == "sphere_random") {
+            init.sphereRadius = size;
+        }
+        return;
+    }
+    if (mode == "two_body" || mode == "three_body" || mode == "binary_star") {
+        init.includeCentralBody = false;
+        init.centralMass = 0.0f;
+        init.cloudHalfExtent = size;
+        init.velocityScale = 1.0f;
+        init.particleMass = 1.0f;
+        return;
+    }
+    if (mode == "plummer_sphere") {
+        init.includeCentralBody = false;
+        init.centralMass = 0.0f;
+        init.cloudHalfExtent = size;
+        init.velocityScale = 1.0f;
+        init.particleMass = defaultCloudParticleMass(config);
+        return;
+    }
+    if (mode == "galaxy" || mode == "galaxy_collision") {
+        init.includeCentralBody = false;
+        init.centralMass = 0.0f;
+        init.cloudHalfExtent = size;
+        init.velocityScale = 1.0f;
+        init.diskRadiusMin = std::max(0.05f, size * 0.1f);
+        init.diskRadiusMax = size;
+        init.diskMass = std::max(1e-6f, config.initDiskMass);
+        init.particleMass = std::max(1e-6f, config.initParticleMass);
+        return;
+    }
+    if (mode == "solar_system") {
+        init.includeCentralBody = true;
+        init.centralMass = std::max(1e-6f, config.initCentralMass);
+        init.velocityScale = std::max(0.0f, config.initVelocityScale);
+        return;
+    }
+    if (mode == "sph_collapse") {
+        init.includeCentralBody = false;
+        init.centralMass = 0.0f;
+        init.cloudHalfExtent = size;
+        init.particleMass = defaultCloudParticleMass(config);
+        return;
+    }
+    if (mode == "file") {
+        return;
+    }
+    init.mode = "disk_orbit";
+    init.includeCentralBody = true;
+    init.centralMass = 1.0f;
+    init.diskMass = 0.75f;
+    init.diskRadiusMin = std::max(0.05f, size * 0.15f);
+    init.diskRadiusMax = std::max(init.diskRadiusMin + 0.01f, size);
+    init.diskThickness = size * 0.01f;
+    init.velocityScale = 1.0f;
+    const std::uint32_t diskCount =
+        std::max<std::uint32_t>(1u, std::max<std::uint32_t>(2u, config.particleCount) - 1u);
+    init.particleMass = std::max(1e-6f, init.diskMass / static_cast<float>(diskCount));
+}
+
+static void configureDetailedMode(InitialStateConfig& init, const SimulationConfig& config,
+                                  const std::string& mode)
+{
+    init.mode = mode;
+    if (mode == "cosmology") {
+        init.cosmology.enabled = true;
+    }
+    init.includeCentralBody = config.initIncludeCentralBody;
+    init.centralMass = config.initCentralMass;
+    init.centralX = config.initCentralX;
+    init.centralY = config.initCentralY;
+    init.centralZ = config.initCentralZ;
+    init.centralVx = config.initCentralVx;
+    init.centralVy = config.initCentralVy;
+    init.centralVz = config.initCentralVz;
+    init.diskMass = config.initDiskMass;
+    init.diskRadiusMin = config.initDiskRadiusMin;
+    init.diskRadiusMax = config.initDiskRadiusMax;
+    init.diskThickness = config.initDiskThickness;
+    init.velocityScale = config.initVelocityScale;
+    init.cloudHalfExtent = config.initCloudHalfExtent;
+    init.cubeHalfExtent = config.initCubeHalfExtent;
+    init.sphereRadius = config.initSphereRadius;
+    init.cloudSpeed = config.initCloudSpeed;
+    init.particleMass = config.initParticleMass;
+}
+
+static std::string resolveInputPlan(ResolvedInitialStatePlan& plan, const SimulationConfig& config,
+                                    const std::string& selector, std::string resolvedMode,
+                                    std::ostream& log)
+{
+    if (resolvedMode == "file") {
+        if (!hasConfiguredInputFile(config.inputFile)) {
+            log << "[config] " << selector
+                << "=file requires non-empty input_file, falling back to disk_orbit\n";
+            return "disk_orbit";
+        }
+        plan.inputFile = config.inputFile;
+        plan.inputFormat = config.inputFormat.empty() ? "auto" : config.inputFormat;
+    }
+    else if (hasConfiguredInputFile(config.inputFile)) {
+        log << "[config] input_file ignored because resolved init mode is " << resolvedMode << "\n";
+    }
+    return resolvedMode;
+}
+
+/*
+ * @brief Documents the resolve initial state plan operation contract.
+ * @param config Input value used by this contract.
+ * @param log Input value used by this contract.
+ * @return ResolvedInitialStatePlan value produced by this contract.
+ * @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+ */
+ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config, std::ostream& log)
+{
+    ResolvedInitialStatePlan plan;
+    InitialStateConfig& init = plan.config;
+    configureCosmology(init, config, log);
+    configureSharedInit(init, config);
     const SimulationConfig defaults = SimulationConfig::defaults();
     const std::string style =
         normalizeInitField(config.initConfigStyle, "init_config_style", "preset", log);
@@ -189,175 +351,13 @@ ResolvedInitialStatePlan resolveInitialStatePlan(const SimulationConfig& config,
         log << "[config] preset_structure=" << config.presetStructure
             << " ignored because init_config_style=detailed selects init_mode\n";
     }
-    if (resolvedMode == "file") {
-        if (!hasConfiguredInputFile(config.inputFile)) {
-            log << "[config] " << selector
-                << "=file requires non-empty input_file, falling back to disk_orbit\n";
-            resolvedMode = "disk_orbit";
-        }
-        else {
-            plan.inputFile = config.inputFile;
-            plan.inputFormat = config.inputFormat.empty() ? "auto" : config.inputFormat;
-        }
-    }
-    else if (hasConfiguredInputFile(config.inputFile)) {
-        log << "[config] input_file ignored because resolved init mode is " << resolvedMode << "\n";
-    }
+    resolvedMode = resolveInputPlan(plan, config, selector, resolvedMode, log);
     if (presetSelected) {
-        init.mode = resolvedMode;
         const float size = std::max(0.1f, config.presetSize);
-        if (resolvedMode == "cosmology") {
-            init.cosmology.enabled = true;
-            init.includeCentralBody = false;
-            init.centralMass = 0.0f;
-            init.cloudHalfExtent = size;
-            init.cubeHalfExtent = size;
-            init.sphereRadius = size;
-            init.particleMass = std::max(1e-12f, config.initParticleMass);
-        }
-        else if (resolvedMode == "random_cloud") {
-            init.includeCentralBody = false;
-            init.centralMass = 1.0f;
-            init.centralX = 0.0f;
-            init.centralY = 0.0f;
-            init.centralZ = 0.0f;
-            init.centralVx = 0.0f;
-            init.centralVy = 0.0f;
-            init.centralVz = 0.0f;
-            init.cloudHalfExtent = size;
-            init.cubeHalfExtent = size;
-            init.sphereRadius = size;
-            init.cloudSpeed = 0.0f;
-            init.particleMass = std::max(1e-6f, 1.0f / static_cast<float>(std::max<std::uint32_t>(
-                                                           2u, config.particleCount)));
-        }
-        else if (resolvedMode == "cube_random") {
-            init.includeCentralBody = false;
-            init.centralMass = 1.0f;
-            init.centralX = 0.0f;
-            init.centralY = 0.0f;
-            init.centralZ = 0.0f;
-            init.centralVx = 0.0f;
-            init.centralVy = 0.0f;
-            init.centralVz = 0.0f;
-            init.cubeHalfExtent = size;
-            init.cloudHalfExtent = size;
-            init.cloudSpeed = 0.0f;
-            init.particleMass = std::max(1e-6f, 1.0f / static_cast<float>(std::max<std::uint32_t>(
-                                                           2u, config.particleCount)));
-        }
-        else if (resolvedMode == "sphere_random") {
-            init.includeCentralBody = false;
-            init.centralMass = 1.0f;
-            init.centralX = 0.0f;
-            init.centralY = 0.0f;
-            init.centralZ = 0.0f;
-            init.centralVx = 0.0f;
-            init.centralVy = 0.0f;
-            init.centralVz = 0.0f;
-            init.sphereRadius = size;
-            init.cloudHalfExtent = size;
-            init.cloudSpeed = 0.0f;
-            init.particleMass = std::max(1e-6f, 1.0f / static_cast<float>(std::max<std::uint32_t>(
-                                                           2u, config.particleCount)));
-        }
-        else if (resolvedMode == "two_body") {
-            init.includeCentralBody = false;
-            init.centralMass = 0.0f;
-            init.cloudHalfExtent = size;
-            init.velocityScale = 1.0f;
-            init.particleMass = 1.0f;
-        }
-        else if (resolvedMode == "three_body") {
-            init.includeCentralBody = false;
-            init.centralMass = 0.0f;
-            init.cloudHalfExtent = size;
-            init.velocityScale = 1.0f;
-            init.particleMass = 1.0f;
-        }
-        else if (resolvedMode == "binary_star") {
-            init.includeCentralBody = false;
-            init.centralMass = 0.0f;
-            init.cloudHalfExtent = size;
-            init.velocityScale = 1.0f;
-            init.particleMass = 1.0f;
-        }
-        else if (resolvedMode == "plummer_sphere") {
-            init.includeCentralBody = false;
-            init.centralMass = 0.0f;
-            init.cloudHalfExtent = size;
-            init.velocityScale = 1.0f;
-            init.particleMass = std::max(1e-6f, 1.0f / static_cast<float>(std::max<std::uint32_t>(
-                                                           2u, config.particleCount)));
-        }
-        else if (resolvedMode == "galaxy" || resolvedMode == "galaxy_collision") {
-            init.includeCentralBody = false;
-            init.centralMass = 0.0f;
-            init.cloudHalfExtent = size;
-            init.velocityScale = 1.0f;
-            init.diskRadiusMin = std::max(0.05f, size * 0.1f);
-            init.diskRadiusMax = size;
-            init.diskMass = std::max(1e-6f, config.initDiskMass);
-            init.particleMass = std::max(1e-6f, config.initParticleMass);
-        }
-        else if (resolvedMode == "solar_system") {
-            init.includeCentralBody = true;
-            init.centralMass = std::max(1e-6f, config.initCentralMass);
-            init.velocityScale = std::max(0.0f, config.initVelocityScale);
-        }
-        else if (resolvedMode == "sph_collapse") {
-            init.includeCentralBody = false;
-            init.centralMass = 0.0f;
-            init.cloudHalfExtent = size;
-            init.particleMass = std::max(1e-6f, 1.0f / static_cast<float>(std::max<std::uint32_t>(
-                                                           2u, config.particleCount)));
-        }
-        else if (resolvedMode == "file") {
-            init.mode = "file";
-        }
-        else {
-            init.mode = "disk_orbit";
-            init.includeCentralBody = true;
-            init.centralMass = 1.0f;
-            init.centralX = 0.0f;
-            init.centralY = 0.0f;
-            init.centralZ = 0.0f;
-            init.centralVx = 0.0f;
-            init.centralVy = 0.0f;
-            init.centralVz = 0.0f;
-            init.diskMass = 0.75f;
-            init.diskRadiusMin = std::max(0.05f, size * 0.15f);
-            init.diskRadiusMax = std::max(init.diskRadiusMin + 0.01f, size);
-            init.diskThickness = size * 0.01f;
-            init.velocityScale = 1.0f;
-            const std::uint32_t diskCount =
-                std::max<std::uint32_t>(1u, std::max<std::uint32_t>(2u, config.particleCount) - 1u);
-            init.particleMass = std::max(1e-6f, init.diskMass / static_cast<float>(diskCount));
-        }
+        configurePresetMode(init, config, resolvedMode, size);
     }
     else {
-        init.mode = resolvedMode;
-        if (init.mode == "cosmology") {
-            init.cosmology.enabled = true;
-        }
-        init.includeCentralBody = config.initIncludeCentralBody;
-        init.centralMass = config.initCentralMass;
-        init.centralX = config.initCentralX;
-        init.centralY = config.initCentralY;
-        init.centralZ = config.initCentralZ;
-        init.centralVx = config.initCentralVx;
-        init.centralVy = config.initCentralVy;
-        init.centralVz = config.initCentralVz;
-        init.diskMass = config.initDiskMass;
-        init.diskRadiusMin = config.initDiskRadiusMin;
-        init.diskRadiusMax = config.initDiskRadiusMax;
-        init.diskThickness = config.initDiskThickness;
-        init.velocityScale = config.initVelocityScale;
-        init.cloudHalfExtent = config.initCloudHalfExtent;
-        init.cubeHalfExtent = config.initCubeHalfExtent;
-        init.sphereRadius = config.initSphereRadius;
-        init.cloudSpeed = config.initCloudSpeed;
-        init.particleMass = config.initParticleMass;
+        configureDetailedMode(init, config, resolvedMode);
     }
     if (init.mode == "cosmology") {
         init.particleMass = resolveCosmologyParticleMass(
