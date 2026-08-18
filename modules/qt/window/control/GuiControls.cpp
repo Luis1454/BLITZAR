@@ -44,19 +44,20 @@ void Window::connectControls()
     };
     const auto updateTreePmAvailability = [this]() {
         const bool enabled = _widgets.physics.treePmEnabledCheck->isChecked();
-        for (QWidget* widget : {static_cast<QWidget*>(_widgets.physics.treePmPresetCombo),
-                                static_cast<QWidget*>(_widgets.physics.treePmModelCombo),
-                                static_cast<QWidget*>(_widgets.physics.treePmLayoutCombo),
-                                static_cast<QWidget*>(_widgets.physics.treePmPrecisionCombo),
-                                static_cast<QWidget*>(_widgets.physics.treePmAssignmentCombo),
-                                static_cast<QWidget*>(_widgets.physics.treePmLocalGridCheck),
-                                static_cast<QWidget*>(_widgets.physics.treePmGridSizeSpin),
-                                static_cast<QWidget*>(_widgets.physics.treePmJacobiIterationsSpin),
-                                static_cast<QWidget*>(_widgets.physics.treePmCutoffFactorSpin),
-                                static_cast<QWidget*>(_widgets.physics.treePmMaxLocalNeighborsSpin),
-                                static_cast<QWidget*>(_widgets.physics.treePmParticleLimitSpin),
-                                static_cast<QWidget*>(_widgets.physics.treePmDenseCellThresholdSpin),
-                                static_cast<QWidget*>(_widgets.physics.treePmGravityOnlyBuffersCheck)}) {
+        for (const QPointer<QWidget>& widget : {
+                 QPointer<QWidget>(_widgets.physics.treePmPresetCombo),
+                 QPointer<QWidget>(_widgets.physics.treePmModelCombo),
+                 QPointer<QWidget>(_widgets.physics.treePmLayoutCombo),
+                 QPointer<QWidget>(_widgets.physics.treePmPrecisionCombo),
+                 QPointer<QWidget>(_widgets.physics.treePmAssignmentCombo),
+                 QPointer<QWidget>(_widgets.physics.treePmLocalGridCheck),
+                 QPointer<QWidget>(_widgets.physics.treePmGridSizeSpin),
+                 QPointer<QWidget>(_widgets.physics.treePmJacobiIterationsSpin),
+                 QPointer<QWidget>(_widgets.physics.treePmCutoffFactorSpin),
+                 QPointer<QWidget>(_widgets.physics.treePmMaxLocalNeighborsSpin),
+                 QPointer<QWidget>(_widgets.physics.treePmParticleLimitSpin),
+                 QPointer<QWidget>(_widgets.physics.treePmDenseCellThresholdSpin),
+                 QPointer<QWidget>(_widgets.physics.treePmGravityOnlyBuffersCheck)}) {
             widget->setEnabled(enabled);
         }
         const bool localGridRelevant = enabled &&
