@@ -47,6 +47,19 @@ def test_repo_policy_warns_on_oversized_implementation_function(tmp_path: Path) 
     assert any("function-size warning" in warning and "large_function.cpp:1" in warning for warning in warnings)
 
 
+# @brief Documents the test repo policy ignores raw C++ file line count for decomposition operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+def test_repo_policy_does_not_split_cpp_by_file_line_count(tmp_path: Path) -> None:
+    content = "int smallFunction() { return 1; }\n" * 305
+    _write(tmp_path / cpp_file(ENGINE_SERVER_DIR, "long_but_structural"), content)
+    ok, errors, warnings = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert ok
+    assert not errors
+    assert not any("long_but_structural.cpp" in warning and "file-size" in warning for warning in warnings)
+
+
 # @brief Documents the test repo policy warns on multiple substantial functions in one file operation contract.
 # @param tmp_path Input value used by this contract.
 # @return Value produced by this contract when applicable.

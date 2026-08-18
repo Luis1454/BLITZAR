@@ -260,6 +260,7 @@ class RepoPolicyCheck(BaseCheck):
             result.add_error(f"{rel}: #pragma once is forbidden; use include guards")
         if suffix in HEADER_EXTS:
             self._check_include_guard(rel, content, result)
+            self._check_empty_header(rel, content, result)
         else:
             if has_unapproved_preprocessor_conditional(content):
                 result.add_error(f"{rel}: preprocessor conditionals are forbidden in C/C++ sources")
@@ -276,6 +277,21 @@ class RepoPolicyCheck(BaseCheck):
                 result.add_error(
                     f"{rel}:{line_number}: raw pointer data member requires RAII or an explicit borrowed boundary"
                 )
+
+    @staticmethod
+    def _check_empty_header(rel: str, content: str, result: CheckResult) -> None:
+        without_comments = re.sub(r"/\*.*?\*/", "", content, flags=re.DOTALL)
+        without_comments = re.sub(r"//.*", "", without_comments)
+        meaningful_lines = []
+        for raw_line in without_comments.splitlines():
+            stripped = raw_line.strip()
+            if not stripped or stripped.startswith("#ifndef ") or stripped.startswith("#define "):
+                continue
+            if stripped.startswith("#endif"):
+                continue
+            meaningful_lines.append(stripped)
+        if not meaningful_lines:
+            result.add_error(f"{rel}: empty production header has no declaration or include; remove mirror header")
 
     @staticmethod
     def _check_exports_pointer_boundary(rel: str, content: str, result: CheckResult) -> None:
@@ -345,7 +361,7 @@ class RepoPolicyCheck(BaseCheck):
     def _is_leading_header_comment(stripped: str) -> bool:
         return stripped.startswith(("//", "/*", "*"))
 
-    # @brief Documents the check line count operation contract.
+    # @brief Documents the check artifact size operation contract.
     # @param rel Input value used by this contract.
     # @param content Input value used by this contract.
     # @param context Input value used by this contract.
@@ -363,6 +379,9 @@ class RepoPolicyCheck(BaseCheck):
         used_allowlist: set[str],
         result: CheckResult,
     ) -> None:
+        suffix = Path(rel).suffix.lower()
+        if suffix in CPP_SCAN_EXTS or suffix in IMPLEMENTATION_SCAN_EXTS:
+            return
         line_count = self._effective_line_count(content)
         if line_count > context.hard_lines:
             if rel in NON_WAIVABLE_STRONG_SIZE_PATHS:
