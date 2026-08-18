@@ -21,15 +21,15 @@ class QVBoxLayout;
 namespace bltzr_qt {
 class ConfigurationEditor final : public QDialog {
 public:
-    explicit ConfigurationEditor(const SimulationConfig& config, QWidget* parent = nullptr);
+    explicit ConfigurationEditor(const SimulationConfig& config, QPointer<QWidget> parent = nullptr);
 
     SimulationConfig configuration() const;
     void reload(const SimulationConfig& config);
 
 private:
     void buildTiles(const SimulationConfig& config);
-    QFormLayout* addTile(QVBoxLayout* stack, const QString& section, const QString& title,
-                         const QString& description);
+    QPointer<QFormLayout> addTile(QPointer<QVBoxLayout> stack, const QString& section,
+                                   const QString& title, const QString& description);
     void readValues(SimulationConfig& config) const;
     void addRuntimeTiles(const SimulationConfig& config);
 

@@ -77,3 +77,14 @@ def test_human_layout_rejects_scene_raw_pointer_declaration() -> None:
         "void build(QWidget* widget) {}\n",
     )
     assert any("raw pointer declaration is forbidden" in error for error in errors)
+
+
+# @brief Documents the strict no-raw-pointer contract for the configuration editor.
+# @return None.
+# @note Qt casts remain isolated at the Qt boundary and are stored in QPointer values.
+def test_human_layout_rejects_configuration_raw_pointer_declaration() -> None:
+    errors = check_human_layout(
+        "modules/qt/window/config/BadConfiguration.cpp",
+        "void build(QWidget* widget) {}\n",
+    )
+    assert any("raw pointer declaration is forbidden" in error for error in errors)

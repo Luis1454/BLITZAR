@@ -23,7 +23,10 @@ RAW_POINTER_BOUNDARIES = (
     "runtime/client/module/CliBoundary.hpp",
 )
 
-STRICT_RAW_POINTER_PATHS = ("modules/qt/window/scene/",)
+STRICT_RAW_POINTER_PATHS = (
+    "modules/qt/window/config/",
+    "modules/qt/window/scene/",
+)
 
 
 def is_pointer_boundary(relative: str) -> bool:
