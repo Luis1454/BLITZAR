@@ -107,30 +107,31 @@ static ParseResult parseTokens(const std::vector<std::string>& tokens,
         result.ok = true;
         return result;
     }
-    const Spec* spec = Catalog::findByName(tokens.front());
-    if (spec == nullptr) {
+    const auto spec = Catalog::findByName(tokens.front());
+    if (!spec.has_value()) {
         result.error =
             "line " + std::to_string(lineNumber) + ": unknown command '" + tokens.front() + "'";
         return result;
     }
+    const Spec& command = spec->get();
     std::size_t required = 0u;
-    for (const ArgumentSpec& argument : spec->arguments)
+    for (const ArgumentSpec& argument : command.arguments)
         if (!argument.optional) {
             required += 1u;
         }
     const std::size_t provided = tokens.size() - 1u;
-    if (provided < required || provided > spec->arguments.size()) {
+    if (provided < required || provided > command.arguments.size()) {
         result.error =
-            "line " + std::to_string(lineNumber) + ": wrong arity for '" + spec->name + "'";
+            "line " + std::to_string(lineNumber) + ": wrong arity for '" + command.name + "'";
         return result;
     }
     Request request{};
-    request.id = spec->id;
-    request.name = spec->name;
+    request.id = command.id;
+    request.name = command.name;
     request.lineNumber = lineNumber;
     for (std::size_t index = 0u; index < provided; ++index) {
         const std::string& token = tokens[index + 1u];
-        const ArgumentSpec& argument = spec->arguments[index];
+        const ArgumentSpec& argument = command.arguments[index];
         if (argument.kind == ArgumentKind::Uint ||
             argument.kind == ArgumentKind::Port) {
             std::uint64_t value = 0u;

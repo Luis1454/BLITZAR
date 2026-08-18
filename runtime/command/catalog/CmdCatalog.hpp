@@ -8,14 +8,16 @@
 #ifndef BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDCATALOG_HPP_
 #define BLITZAR_RUNTIME_INCLUDE_COMMAND_COMMANDCATALOG_HPP_
 #include "command/core/CmdTypes.hpp"
+#include <functional>
+#include <optional>
 #include <string_view>
 #include <vector>
 
 namespace bltzr_cmd {
 class Catalog final {
 public:
-    static const Spec* findByName(std::string_view name);
-    static const Spec* findById(Id id);
+    static std::optional<std::reference_wrapper<const Spec>> findByName(std::string_view name);
+    static std::optional<std::reference_wrapper<const Spec>> findById(Id id);
     static const std::vector<Spec>& all();
     static std::string renderHelp();
 };

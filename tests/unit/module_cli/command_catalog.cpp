@@ -16,12 +16,12 @@ TEST(CatalogTest, TST_UNT_MODCLI_024_AllSpecsRoundTripByNameAndId)
     const std::vector<bltzr_cmd::Spec>& specs = bltzr_cmd::Catalog::all();
     ASSERT_FALSE(specs.empty());
     for (const bltzr_cmd::Spec& spec : specs) {
-        const bltzr_cmd::Spec* byName = bltzr_cmd::Catalog::findByName(spec.name);
-        const bltzr_cmd::Spec* byId = bltzr_cmd::Catalog::findById(spec.id);
-        ASSERT_NE(byName, nullptr);
-        ASSERT_NE(byId, nullptr);
-        EXPECT_EQ(byName->id, spec.id);
-        EXPECT_EQ(byId->name, spec.name);
+        const auto byName = bltzr_cmd::Catalog::findByName(spec.name);
+        const auto byId = bltzr_cmd::Catalog::findById(spec.id);
+        ASSERT_TRUE(byName.has_value());
+        ASSERT_TRUE(byId.has_value());
+        EXPECT_EQ(byName->get().id, spec.id);
+        EXPECT_EQ(byId->get().name, spec.name);
     }
 }
 
@@ -36,9 +36,9 @@ TEST(CatalogTest, TST_UNT_MODCLI_025_RenderHelpFormatsRequiredAndOptionalArgumen
 
 TEST(CatalogTest, TST_UNT_MODCLI_026_FindByNameRejectsCaseAndWhitespaceVariants)
 {
-    EXPECT_EQ(bltzr_cmd::Catalog::findByName("HELP"), nullptr);
-    EXPECT_EQ(bltzr_cmd::Catalog::findByName(" help"), nullptr);
-    EXPECT_EQ(bltzr_cmd::Catalog::findByName("status "), nullptr);
+    EXPECT_FALSE(bltzr_cmd::Catalog::findByName("HELP").has_value());
+    EXPECT_FALSE(bltzr_cmd::Catalog::findByName(" help").has_value());
+    EXPECT_FALSE(bltzr_cmd::Catalog::findByName("status ").has_value());
 }
 
 TEST(CatalogTest, TST_UNT_MODCLI_027_CommandMetadataIsDeterministicAndDocumented)
@@ -57,8 +57,8 @@ TEST(CatalogTest, TST_UNT_MODCLI_031_FindByIdRejectsUnknownIdentifier)
     typedef std::underlying_type<bltzr_cmd::Id>::type IdBase;
     const bltzr_cmd::Id unknownId =
         static_cast<bltzr_cmd::Id>(static_cast<IdBase>(specs.size()));
-    const bltzr_cmd::Spec* unknown = bltzr_cmd::Catalog::findById(unknownId);
-    EXPECT_EQ(unknown, nullptr);
+    const auto unknown = bltzr_cmd::Catalog::findById(unknownId);
+    EXPECT_FALSE(unknown.has_value());
 }
 
 TEST(CatalogTest, TST_UNT_MODCLI_032_RenderHelpStartsWithStableHeaderAndFirstCommand)

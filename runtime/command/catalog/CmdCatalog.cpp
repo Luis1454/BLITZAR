@@ -71,30 +71,34 @@ const std::vector<Spec>& Catalog::all()
                  {{"count", ArgumentKind::Uint, false, {}}}),
         makeSpec(Id::RunUntil, "run_until", "run deterministically until simulated time",
                  true, {{"seconds", ArgumentKind::Float, false, {}}})};
+
     return specs;
 }
 
-const Spec* Catalog::findByName(std::string_view name)
+std::optional<std::reference_wrapper<const Spec>> Catalog::findByName(std::string_view name)
 {
     for (const Spec& spec : all()) {
         if (spec.name == name)
-            return &spec;
+            return std::cref(spec);
     }
-    return nullptr;
+
+    return std::nullopt;
 }
 
-const Spec* Catalog::findById(Id id)
+std::optional<std::reference_wrapper<const Spec>> Catalog::findById(Id id)
 {
     for (const Spec& spec : all()) {
         if (spec.id == id)
-            return &spec;
+            return std::cref(spec);
     }
-    return nullptr;
+
+    return std::nullopt;
 }
 
 std::string Catalog::renderHelp()
 {
     std::ostringstream out;
+
     out << "commands:\n";
     for (const Spec& spec : all()) {
         out << "  " << spec.name;
@@ -103,6 +107,7 @@ std::string Catalog::renderHelp()
                 << (argument.optional ? "]" : ">");
         out << " : " << spec.help << "\n";
     }
+
     return out.str();
 }
 } // namespace bltzr_cmd
