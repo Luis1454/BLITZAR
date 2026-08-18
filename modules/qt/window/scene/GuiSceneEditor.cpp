@@ -33,7 +33,7 @@ SceneObjectConfig defaultObject(int index)
     return object;
 }
 
-SceneEditor::SceneEditor(const SimulationConfig& config, QWidget* parent) : QWidget(parent)
+SceneEditor::SceneEditor(const SimulationConfig& config, QPointer<QWidget> parent) : QWidget(parent)
 {
     buildLayout();
     connectObjectControls();
@@ -42,12 +42,12 @@ SceneEditor::SceneEditor(const SimulationConfig& config, QWidget* parent) : QWid
 
 void SceneEditor::buildLayout()
 {
-    auto* root = new QVBoxLayout(this);
+    QPointer<QVBoxLayout> root = new QVBoxLayout(this);
     root->setContentsMargins(6, 6, 6, 6);
     root->setSpacing(6);
 
-    auto* header = new QHBoxLayout();
-    auto* title = new QLabel("Scene objects", this);
+    QPointer<QHBoxLayout> header = new QHBoxLayout();
+    QPointer<QLabel> title = new QLabel("Scene objects", this);
     title->setStyleSheet("font-weight: 700; font-size: 15px;");
     header->addWidget(title);
     _selectionLabel = new QLabel(this);
@@ -60,7 +60,7 @@ void SceneEditor::buildLayout()
     header->addWidget(_apply, 0);
     root->addLayout(header);
 
-    auto* split = new QSplitter(Qt::Vertical, this);
+    QPointer<QSplitter> split = new QSplitter(Qt::Vertical, this);
     split->setObjectName("sceneObjectEditorSplitter");
     split->setChildrenCollapsible(false);
 
@@ -73,14 +73,14 @@ void SceneEditor::buildLayout()
     root->addWidget(split, 1);
 }
 
-void SceneEditor::buildObjectPanel(QSplitter* split)
+void SceneEditor::buildObjectPanel(QPointer<QSplitter> split)
 {
-    auto* objectPanel = new QGroupBox("Objects", split);
-    auto* objectLayout = new QVBoxLayout(objectPanel);
+    QPointer<QGroupBox> objectPanel = new QGroupBox("Objects", split);
+    QPointer<QVBoxLayout> objectLayout = new QVBoxLayout(objectPanel);
     objectLayout->setContentsMargins(6, 6, 6, 6);
     objectLayout->setSpacing(4);
 
-    auto* objectHeader = new QHBoxLayout();
+    QPointer<QHBoxLayout> objectHeader = new QHBoxLayout();
     _objectCountLabel = new QLabel(objectPanel);
     _objectCountLabel->setObjectName("sceneObjectCountLabel");
     _objectCountLabel->setStyleSheet("color: #687080;");
@@ -96,7 +96,7 @@ void SceneEditor::buildObjectPanel(QSplitter* split)
     _objects->setSelectionMode(QAbstractItemView::SingleSelection);
     objectLayout->addWidget(_objects, 1);
 
-    auto* buttons = new QHBoxLayout();
+    QPointer<QHBoxLayout> buttons = new QHBoxLayout();
     _addObject = new QPushButton("Add", objectPanel);
     _addObject->setObjectName("sceneAddObjectButton");
     _addObject->setToolTip("Add a new scene object");
@@ -113,21 +113,21 @@ void SceneEditor::buildObjectPanel(QSplitter* split)
     split->addWidget(objectPanel);
 }
 
-void SceneEditor::buildInspectorPanel(QSplitter* split)
+void SceneEditor::buildInspectorPanel(QPointer<QSplitter> split)
 {
-    auto* inspectorPanel = new QGroupBox("Object editor", split);
-    auto* inspectorLayout = new QVBoxLayout(inspectorPanel);
+    QPointer<QGroupBox> inspectorPanel = new QGroupBox("Object editor", split);
+    QPointer<QVBoxLayout> inspectorLayout = new QVBoxLayout(inspectorPanel);
     inspectorLayout->setContentsMargins(6, 6, 6, 6);
 
-    auto* inspectorHeader = new QHBoxLayout();
-    auto* inspectorTitle = new QLabel("Object inspector", inspectorPanel);
+    QPointer<QHBoxLayout> inspectorHeader = new QHBoxLayout();
+    QPointer<QLabel> inspectorTitle = new QLabel("Object inspector", inspectorPanel);
     inspectorTitle->setObjectName("sceneObjectInspectorTitle");
     inspectorTitle->setStyleSheet("font-weight: 700; font-size: 14px;");
     inspectorHeader->addWidget(inspectorTitle);
-    auto* inspectorSelection = new QLabel(inspectorPanel);
-    inspectorSelection->setObjectName("sceneObjectInspectorSelection");
-    inspectorSelection->setStyleSheet("font-weight: 600; color: #687080;");
-    inspectorHeader->addWidget(inspectorSelection, 1);
+    _inspectorSelection = new QLabel(inspectorPanel);
+    _inspectorSelection->setObjectName("sceneObjectInspectorSelection");
+    _inspectorSelection->setStyleSheet("font-weight: 600; color: #687080;");
+    inspectorHeader->addWidget(_inspectorSelection, 1);
     _propertyButton = new QPushButton("+ Add property", inspectorPanel);
     _propertyButton->setObjectName("sceneObjectPropertyButton");
     _propertyButton->setAccessibleName("Add object property");
@@ -143,10 +143,10 @@ void SceneEditor::buildInspectorPanel(QSplitter* split)
     _inspectorTabs->setObjectName("sceneObjectInspector");
     _inspectorTabs->setDocumentMode(true);
     const auto addInspectorTab = [this](const QString& title, QPointer<QFormLayout>& form) {
-        auto* scroll = new QScrollArea(_inspectorTabs);
+        QPointer<QScrollArea> scroll = new QScrollArea(_inspectorTabs);
         scroll->setWidgetResizable(true);
         scroll->setFrameShape(QFrame::NoFrame);
-        auto* formWidget = new QWidget(scroll);
+        QPointer<QWidget> formWidget = new QWidget(scroll);
         form = new QFormLayout(formWidget);
         form->setContentsMargins(2, 4, 8, 4);
         form->setVerticalSpacing(7);
@@ -230,10 +230,10 @@ void SceneEditor::connectGeneratorControls()
     connect(_seed, qOverload<int>(&QSpinBox::valueChanged), this, [this](int) {
         commitCurrent();
     });
-    QDoubleSpinBox* fields[] = {_mass.data(),      _size.data(),        _radiusMin.data(),
-                                _radiusMax.data(), _thickness.data(),   _velocityScale.data(),
-                                _speed.data(),     _particleMass.data()};
-    for (QDoubleSpinBox* field : fields)
+    const QPointer<QDoubleSpinBox> fields[] = {_mass,      _size,        _radiusMin,
+                                               _radiusMax, _thickness,   _velocityScale,
+                                               _speed,     _particleMass};
+    for (const QPointer<QDoubleSpinBox>& field : fields)
         connect(field, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double) {
             commitCurrent();
         });
@@ -244,31 +244,31 @@ void SceneEditor::connectGeneratorControls()
 
 void SceneEditor::connectTransformControls()
 {
-    QDoubleSpinBox* objectFields[] = {_positionX.data(),
-                                      _positionY.data(),
-                                      _positionZ.data(),
-                                      _velocityX.data(),
-                                      _velocityY.data(),
-                                      _velocityZ.data(),
-                                      _offsetX.data(),
-                                      _offsetY.data(),
-                                      _offsetZ.data(),
-                                      _rotationX.data(),
-                                      _rotationY.data(),
-                                      _rotationZ.data(),
-                                      _pivotX.data(),
-                                      _pivotY.data(),
-                                      _pivotZ.data(),
-                                      _systemParticleSize.data(),
-                                      _systemParticleHeight.data(),
-                                      _systemParticleMass.data(),
-                                      _systemParticleSpeed.data()};
-    for (QDoubleSpinBox* field : objectFields)
+    const QPointer<QDoubleSpinBox> objectFields[] = {_positionX,
+                                                      _positionY,
+                                                      _positionZ,
+                                                      _velocityX,
+                                                      _velocityY,
+                                                      _velocityZ,
+                                                      _offsetX,
+                                                      _offsetY,
+                                                      _offsetZ,
+                                                      _rotationX,
+                                                      _rotationY,
+                                                      _rotationZ,
+                                                      _pivotX,
+                                                      _pivotY,
+                                                      _pivotZ,
+                                                      _systemParticleSize,
+                                                      _systemParticleHeight,
+                                                      _systemParticleMass,
+                                                      _systemParticleSpeed};
+    for (const QPointer<QDoubleSpinBox>& field : objectFields)
         connect(field, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double) {
             commitCurrent();
         });
-    QCheckBox* mirrorFields[] = {_mirrorX.data(), _mirrorY.data(), _mirrorZ.data()};
-    for (QCheckBox* field : mirrorFields)
+    const QPointer<QCheckBox> mirrorFields[] = {_mirrorX, _mirrorY, _mirrorZ};
+    for (const QPointer<QCheckBox>& field : mirrorFields)
         connect(field, &QCheckBox::toggled, this, [this](bool) {
             commitCurrent();
         });
@@ -314,7 +314,7 @@ void SceneEditor::applyToConfig(SimulationConfig& config)
     config.scene = sceneConfiguration();
 }
 
-QPushButton* SceneEditor::applyButton() const
+QPointer<QPushButton> SceneEditor::applyButton() const
 {
     return _apply;
 }

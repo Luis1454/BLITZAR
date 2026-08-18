@@ -19,25 +19,25 @@ bool SceneEditor::hasProperty(const SceneObjectConfig& object, const std::string
            object.properties.end();
 }
 
-void SceneEditor::showPropertyMenu(int index, QPushButton* anchor)
+void SceneEditor::showPropertyMenu(int index, QPointer<QPushButton> anchor)
 {
     if (index < 0 || index >= static_cast<int>(_scene.objects.size()))
         return;
     QMenu menu(this);
     const SceneObjectConfig& object = _scene.objects[static_cast<std::size_t>(index)];
-    const std::pair<const char*, const char*> entries[] = {{"Offset", "offset"},
-                                                           {"Rotation", "rotation"},
-                                                           {"Copies", "copies"},
-                                                           {"Mirror", "mirror"},
-                                                           {"Pivot", "pivot"},
-                                                           {"Asset", "asset"},
-                                                           {"Particle system", "particle_system"}};
+    const std::pair<QString, QString> entries[] = {{"Offset", "offset"},
+                                                   {"Rotation", "rotation"},
+                                                   {"Copies", "copies"},
+                                                   {"Mirror", "mirror"},
+                                                   {"Pivot", "pivot"},
+                                                   {"Asset", "asset"},
+                                                   {"Particle system", "particle_system"}};
     for (const auto& entry : entries) {
         const bool present = hasProperty(object, entry.second);
-        QAction* action = menu.addAction(
-            QString(present ? "Remove %1" : "Add %1").arg(QString::fromUtf8(entry.first)));
+        QPointer<QAction> action = menu.addAction(
+            QString(present ? "Remove %1" : "Add %1").arg(entry.first));
         connect(action, &QAction::triggered, this, [this, index, entry, present] {
-            addObjectProperty(index, entry.second, !present);
+            addObjectProperty(index, entry.second.toStdString(), !present);
         });
     }
     menu.exec(anchor->mapToGlobal(QPoint(0, anchor->height())));

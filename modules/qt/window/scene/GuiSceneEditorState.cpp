@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <climits>
 #include <limits>
+#include <memory>
 
 namespace bltzr_qt {
 SceneObjectConfig SceneEditor::legacyObject(const SimulationConfig& config) const
@@ -137,52 +138,18 @@ void SceneEditor::loadCurrent()
     _type->setEnabled(true);
     if (_propertyButton != nullptr)
         _propertyButton->setEnabled(true);
-    QWidget* fields[] = {_name.data(),
-                         _type.data(),
-                         _enabled.data(),
-                         _includeCentralBody.data(),
-                         _particleCount.data(),
-                         _seed.data(),
-                         _mass.data(),
-                         _size.data(),
-                         _radiusMin.data(),
-                         _radiusMax.data(),
-                         _thickness.data(),
-                         _velocityScale.data(),
-                         _speed.data(),
-                         _particleMass.data(),
-                         _asset.data(),
-                         _positionX.data(),
-                         _positionY.data(),
-                         _positionZ.data(),
-                         _velocityX.data(),
-                         _velocityY.data(),
-                         _velocityZ.data(),
-                         _offsetX.data(),
-                         _offsetY.data(),
-                         _offsetZ.data(),
-                         _rotationX.data(),
-                         _rotationY.data(),
-                         _rotationZ.data(),
-                         _copyAxis.data(),
-                         _rotationCopies.data(),
-                         _mirrorX.data(),
-                         _mirrorY.data(),
-                         _mirrorZ.data(),
-                         _pivot.data(),
-                         _pivotX.data(),
-                         _pivotY.data(),
-                         _pivotZ.data(),
-                         _emitterObject.data(),
-                         _targetAsset.data(),
-                         _distribution.data(),
-                         _systemParticleCount.data(),
-                         _systemSeed.data(),
-                         _systemParticleSize.data(),
-                         _systemParticleHeight.data(),
-                         _systemParticleMass.data(),
-                         _systemParticleSpeed.data()};
-    for (QWidget* field : fields)
+    const QPointer<QWidget> fields[] = {_name, _type, _enabled, _includeCentralBody,
+                                        _particleCount, _seed, _mass, _size, _radiusMin,
+                                        _radiusMax, _thickness, _velocityScale, _speed,
+                                        _particleMass, _asset, _positionX, _positionY, _positionZ,
+                                        _velocityX, _velocityY, _velocityZ, _offsetX, _offsetY,
+                                        _offsetZ, _rotationX, _rotationY, _rotationZ, _copyAxis,
+                                        _rotationCopies, _mirrorX, _mirrorY, _mirrorZ, _pivot,
+                                        _pivotX, _pivotY, _pivotZ, _emitterObject, _targetAsset,
+                                        _distribution, _systemParticleCount, _systemSeed,
+                                        _systemParticleSize, _systemParticleHeight,
+                                        _systemParticleMass, _systemParticleSpeed};
+    for (const QPointer<QWidget>& field : fields)
         field->blockSignals(true);
     const SceneObjectConfig& object = _scene.objects[static_cast<std::size_t>(_currentIndex)];
     if (_selectionLabel != nullptr)
@@ -193,8 +160,8 @@ void SceneEditor::loadCurrent()
                                     .arg(object.particleCount)
                                     .arg(object.enabled ? "enabled" : "disabled"));
     }
-    if (auto* inspectorSelection = findChild<QLabel*>("sceneObjectInspectorSelection"))
-        inspectorSelection->setText(QString::fromStdString(object.name));
+    if (_inspectorSelection != nullptr)
+        _inspectorSelection->setText(QString::fromStdString(object.name));
     _name->setText(QString::fromStdString(object.name));
     _type->setCurrentText(QString::fromStdString(object.type));
     _enabled->setChecked(object.enabled);
@@ -246,7 +213,7 @@ void SceneEditor::loadCurrent()
     _systemParticleHeight->setValue(object.particleHeight);
     _systemParticleMass->setValue(object.particleMass);
     _systemParticleSpeed->setValue(object.particleSpeed);
-    for (QWidget* field : fields)
+    for (const QPointer<QWidget>& field : fields)
         field->blockSignals(false);
     updateFieldVisibility();
 }
@@ -261,7 +228,7 @@ void SceneEditor::rebuildList()
                                        .arg(_scene.objects.size() == 1u ? "" : "s"));
     for (std::size_t index = 0u; index < _scene.objects.size(); ++index) {
         const SceneObjectConfig& object = _scene.objects[index];
-        auto* item = new QListWidgetItem(_objects);
+        auto item = std::make_unique<QListWidgetItem>();
         item->setSizeHint(QSize(0, 34));
         item->setText(QString::fromStdString(object.name));
         item->setToolTip(QString("%1 | %2 particles%3")
@@ -270,6 +237,7 @@ void SceneEditor::rebuildList()
                              .arg(object.properties.empty()
                                       ? QString()
                                       : QString(" | %1 properties").arg(object.properties.size())));
+        _objects->addItem(item.release());
     }
     _objects->blockSignals(false);
 }

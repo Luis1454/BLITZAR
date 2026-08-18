@@ -16,10 +16,11 @@
 #include <limits>
 
 namespace bltzr_qt {
-static QDoubleSpinBox* floatField(QFormLayout* form, const char* label, double value,
-                                  double minimum = -1.0e9, double maximum = 1.0e9)
+static QPointer<QDoubleSpinBox> floatField(QPointer<QFormLayout> form, const QString& label,
+                                           double value, double minimum = -1.0e9,
+                                           double maximum = 1.0e9)
 {
-    auto* field = new QDoubleSpinBox(form->parentWidget());
+    QPointer<QDoubleSpinBox> field = new QDoubleSpinBox(form->parentWidget());
     field->setObjectName(label);
     field->setDecimals(4);
     field->setRange(minimum, maximum);
@@ -31,7 +32,7 @@ static QDoubleSpinBox* floatField(QFormLayout* form, const char* label, double v
 
 void SceneEditor::addObjectFields()
 {
-    QWidget* generatorParent = _generatorForm->parentWidget();
+    QPointer<QWidget> generatorParent = _generatorForm->parentWidget();
     _generatorForm->setVerticalSpacing(5);
     _name = new QLineEdit(generatorParent);
     _generatorForm->addRow("Name", _name);
@@ -59,7 +60,7 @@ void SceneEditor::addObjectFields()
     _particleMass = floatField(_generatorForm, "Particle mass", 0.01, 0.000001, 1.0e15);
 
     _assetGroup = new QGroupBox("Asset property", _propertiesForm->parentWidget());
-    auto* assetForm = new QFormLayout(_assetGroup);
+    QPointer<QFormLayout> assetForm = new QFormLayout(_assetGroup);
     _asset = new QCheckBox(_assetGroup);
     _asset->setObjectName("sceneObjectAssetCheck");
     assetForm->addRow("Publish as asset", _asset);
@@ -71,7 +72,7 @@ void SceneEditor::addObjectFields()
     _propertiesHint->setStyleSheet("color: #687080; padding: 8px;");
     _propertiesForm->addRow(_propertiesHint);
 
-    auto* base = new QGroupBox("Position and velocity", _transformForm->parentWidget());
+    QPointer<QGroupBox> base = new QGroupBox("Position and velocity", _transformForm->parentWidget());
     _baseForm = new QFormLayout(base);
     _positionX = floatField(_baseForm, "Position X", 0.0);
     _positionY = floatField(_baseForm, "Position Y", 0.0);
@@ -89,7 +90,7 @@ void SceneEditor::addObjectFields()
 
     _offsetGroup = new QGroupBox("Offset property", _transformForm->parentWidget());
     _offsetGroup->setObjectName("sceneObjectOffsetProperty");
-    auto* offsetForm = new QFormLayout(_offsetGroup);
+    QPointer<QFormLayout> offsetForm = new QFormLayout(_offsetGroup);
     _offsetX = floatField(offsetForm, "Offset X", 0.0);
     _offsetY = floatField(offsetForm, "Offset Y", 0.0);
     _offsetZ = floatField(offsetForm, "Offset Z", 0.0);
@@ -97,7 +98,7 @@ void SceneEditor::addObjectFields()
 
     _rotationGroup = new QGroupBox("Rotation property", _transformForm->parentWidget());
     _rotationGroup->setObjectName("sceneObjectRotationProperty");
-    auto* rotationForm = new QFormLayout(_rotationGroup);
+    QPointer<QFormLayout> rotationForm = new QFormLayout(_rotationGroup);
     _rotationX = floatField(rotationForm, "Rotation X", 0.0);
     _rotationY = floatField(rotationForm, "Rotation Y", 0.0);
     _rotationZ = floatField(rotationForm, "Rotation Z", 0.0);
@@ -111,7 +112,7 @@ void SceneEditor::addObjectFields()
 
     _copiesGroup = new QGroupBox("Copies property", _transformForm->parentWidget());
     _copiesGroup->setObjectName("sceneObjectCopiesProperty");
-    auto* copiesForm = new QFormLayout(_copiesGroup);
+    QPointer<QFormLayout> copiesForm = new QFormLayout(_copiesGroup);
     _copyAxis = new QComboBox(_copiesGroup);
     _copyAxis->addItems({"x", "y", "z"});
     _rotationCopies = new QSpinBox(_copiesGroup);
@@ -122,7 +123,7 @@ void SceneEditor::addObjectFields()
 
     _mirrorGroup = new QGroupBox("Mirror property", _transformForm->parentWidget());
     _mirrorGroup->setObjectName("sceneObjectMirrorProperty");
-    auto* mirrorForm = new QFormLayout(_mirrorGroup);
+    QPointer<QFormLayout> mirrorForm = new QFormLayout(_mirrorGroup);
     _mirrorX = new QCheckBox(_mirrorGroup);
     _mirrorY = new QCheckBox(_mirrorGroup);
     _mirrorZ = new QCheckBox(_mirrorGroup);
@@ -145,7 +146,7 @@ void SceneEditor::addObjectFields()
     _particleSystemGroup =
         new QGroupBox("Particle system properties", _propertiesForm->parentWidget());
     _particleSystemGroup->setObjectName("sceneObjectParticleSystemProperty");
-    auto* systemForm = new QFormLayout(_particleSystemGroup);
+    QPointer<QFormLayout> systemForm = new QFormLayout(_particleSystemGroup);
     _emitterObject = new QComboBox(_particleSystemGroup);
     _targetAsset = new QComboBox(_particleSystemGroup);
     _distribution = new QComboBox(_particleSystemGroup);
@@ -171,45 +172,49 @@ void SceneEditor::addObjectFields()
 
 void SceneEditor::updateFieldVisibility()
 {
-    const SceneObjectConfig* object = nullptr;
-    if (_currentIndex >= 0 && _currentIndex < static_cast<int>(_scene.objects.size()))
-        object = &_scene.objects[static_cast<std::size_t>(_currentIndex)];
-    const bool particleSystem = object != nullptr && (object->type == "particle_system" ||
-                                                      hasProperty(*object, "particle_system"));
+    const bool hasObject = _currentIndex >= 0 &&
+                           _currentIndex < static_cast<int>(_scene.objects.size());
+    const std::size_t objectIndex = hasObject ? static_cast<std::size_t>(_currentIndex) : 0u;
+    const bool particleSystem = hasObject &&
+                                (_scene.objects[objectIndex].type == "particle_system" ||
+                                 hasProperty(_scene.objects[objectIndex], "particle_system"));
     const bool generator = !particleSystem;
-    QWidget* fields[] = {_includeCentralBody, _particleCount, _seed,      _mass,          _size,
-                         _radiusMin,          _radiusMax,     _thickness, _velocityScale, _speed,
-                         _particleMass};
-    for (QWidget* field : fields) {
+    const QPointer<QWidget> fields[] = {_includeCentralBody, _particleCount, _seed, _mass, _size,
+                                        _radiusMin, _radiusMax, _thickness, _velocityScale, _speed,
+                                        _particleMass};
+    for (const QPointer<QWidget>& field : fields) {
         if (field == nullptr)
             continue;
-        if (QWidget* label = _generatorForm->labelForField(field))
+        const QPointer<QWidget> label = _generatorForm->labelForField(field);
+        if (label != nullptr)
             label->setVisible(generator);
         field->setVisible(generator);
     }
-    const bool asset = object != nullptr && hasProperty(*object, "asset");
+    const bool asset = hasObject && hasProperty(_scene.objects[objectIndex], "asset");
     if (_propertiesHint != nullptr)
         _propertiesHint->setVisible(!asset && !particleSystem);
     if (_assetGroup != nullptr)
         _assetGroup->setVisible(asset);
     if (_offsetGroup != nullptr)
-        _offsetGroup->setVisible(object != nullptr && hasProperty(*object, "offset"));
+        _offsetGroup->setVisible(hasObject && hasProperty(_scene.objects[objectIndex], "offset"));
     if (_rotationGroup != nullptr)
-        _rotationGroup->setVisible(object != nullptr && hasProperty(*object, "rotation"));
+        _rotationGroup->setVisible(hasObject && hasProperty(_scene.objects[objectIndex], "rotation"));
     if (_copiesGroup != nullptr)
-        _copiesGroup->setVisible(object != nullptr && hasProperty(*object, "copies"));
+        _copiesGroup->setVisible(hasObject && hasProperty(_scene.objects[objectIndex], "copies"));
     if (_mirrorGroup != nullptr)
-        _mirrorGroup->setVisible(object != nullptr && hasProperty(*object, "mirror"));
+        _mirrorGroup->setVisible(hasObject && hasProperty(_scene.objects[objectIndex], "mirror"));
     if (_pivotGroup != nullptr)
-        _pivotGroup->setVisible(object != nullptr && hasProperty(*object, "pivot"));
+        _pivotGroup->setVisible(hasObject && hasProperty(_scene.objects[objectIndex], "pivot"));
     if (_particleSystemGroup != nullptr)
         _particleSystemGroup->setVisible(particleSystem);
     const bool customPivot = _pivotGroup != nullptr && _pivotGroup->isVisible() &&
                              _pivot != nullptr && _pivot->currentText() == "custom";
-    for (QWidget* field : {_pivotX.data(), _pivotY.data(), _pivotZ.data()}) {
+    for (const QPointer<QWidget>& field : {QPointer<QWidget>(_pivotX), QPointer<QWidget>(_pivotY),
+                                           QPointer<QWidget>(_pivotZ)}) {
         if (field == nullptr)
             continue;
-        if (QWidget* label = _pivotForm->labelForField(field))
+        const QPointer<QWidget> label = _pivotForm->labelForField(field);
+        if (label != nullptr)
             label->setVisible(customPivot);
         field->setVisible(customPivot);
     }

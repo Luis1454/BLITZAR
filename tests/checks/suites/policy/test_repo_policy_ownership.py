@@ -8,6 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from tests.checks.suites.policy.test_repo_policy import _run, _write
+from python_tools.policies.human_layout_policy import check_human_layout
 
 
 # @brief Documents the raw pointer member rejection contract.
@@ -64,3 +65,15 @@ def test_repo_policy_accepts_exports_abi_pointer(tmp_path: Path) -> None:
     ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
     assert ok
     assert not errors
+
+
+# @brief Documents the strict no-raw-pointer contract for the scene editor.
+# @param tmp_path Input value used by this contract.
+# @return None.
+# @note Qt construction boundaries outside this module remain separately classified.
+def test_human_layout_rejects_scene_raw_pointer_declaration() -> None:
+    errors = check_human_layout(
+        "modules/qt/window/scene/BadScene.cpp",
+        "void build(QWidget* widget) {}\n",
+    )
+    assert any("raw pointer declaration is forbidden" in error for error in errors)

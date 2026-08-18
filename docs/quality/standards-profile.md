@@ -81,6 +81,7 @@ Build profiles:
 - Production C++ paths (`apps/`, `engine/`, `runtime/`, `modules/`) must not use unnamed namespaces.
 - Production C++ paths must also satisfy the automated subset of the `Power of 10` profile (`goto`, `setjmp`/`longjmp`, `do-while`, open-ended `while(true)`, non-structural object-like macros, and non-ABI function-pointer typedefs are forbidden).
 - Repository policy does not use mechanical line thresholds to split C++/CUDA/Python files. It measures implementation function/method length, implementation-function count, and lightweight branching complexity. Line thresholds remain informational for documentation, configuration, and build metadata.
+- Ownership and human-layout checks are enforced by `python_tools/policies/human_layout_policy.py`; raw ownership is blocked outside documented ABI/Qt boundaries, and `scripts/analysis/refactor_map.py` provides the review evidence for pointer and dead-code candidates.
 - Physics stability constants (max acceleration, softening floor, etc.) are exposed through `SimulationConfig` to allow deterministic tuning of solver boundaries without recompilation.
 - Configuration parsing and runtime diagnostics must expose explicit SI units for physical quantities unless a field name explicitly carries another unit such as `_ms` or `fps`.
 - Repository C++ headers must use strict include guards, not `#pragma once`. Header definitions are

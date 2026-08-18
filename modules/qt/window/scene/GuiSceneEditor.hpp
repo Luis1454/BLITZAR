@@ -26,18 +26,18 @@ class QSplitter;
 namespace bltzr_qt {
 class SceneEditor final : public QWidget {
 public:
-    explicit SceneEditor(const SimulationConfig& config, QWidget* parent = nullptr);
+    explicit SceneEditor(const SimulationConfig& config, QPointer<QWidget> parent = nullptr);
 
     SceneConfig sceneConfiguration();
     void applyToConfig(SimulationConfig& config);
     void reload(const SimulationConfig& config);
     bool addObjectProperty(int index, const std::string& property, bool enabled);
-    QPushButton* applyButton() const;
+    QPointer<QPushButton> applyButton() const;
 
 private:
     void buildLayout();
-    void buildObjectPanel(QSplitter* split);
-    void buildInspectorPanel(QSplitter* split);
+    void buildObjectPanel(QPointer<QSplitter> split);
+    void buildInspectorPanel(QPointer<QSplitter> split);
     void connectObjectControls();
     void connectCollectionControls();
     void connectGeneratorControls();
@@ -47,7 +47,7 @@ private:
     void loadCurrent();
     void rebuildList();
     void rebuildReferences();
-    void showPropertyMenu(int index, QPushButton* anchor);
+    void showPropertyMenu(int index, QPointer<QPushButton> anchor);
     bool hasProperty(const SceneObjectConfig& object, const std::string& property) const;
     void updateFieldVisibility();
     SceneObjectConfig legacyObject(const SimulationConfig& config) const;
@@ -61,6 +61,7 @@ private:
     QPointer<QListWidget> _objects;
     QPointer<QLabel> _objectCountLabel;
     QPointer<QLabel> _selectionLabel;
+    QPointer<QLabel> _inspectorSelection;
     QPointer<QLabel> _inspectorMeta;
     QPointer<QLabel> _propertiesHint;
     QPointer<QTabWidget> _inspectorTabs;
