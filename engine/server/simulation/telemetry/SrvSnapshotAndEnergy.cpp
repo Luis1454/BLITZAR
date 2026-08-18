@@ -26,6 +26,20 @@ struct DensityGrid {
     bool valid = false;
 };
 
+struct EnergyComputation {
+    float kinetic = 0.0f;
+    float potential = 0.0f;
+    float thermal = 0.0f;
+    bool estimated = false;
+};
+
+struct EnergySelection {
+    std::vector<std::size_t> indices;
+    double kineticScale = 1.0;
+    double potentialScale = 1.0;
+    bool sampled = false;
+};
+
 int densityCell(float value, float minimum, float scale)
 {
     return std::clamp(static_cast<int>((value - minimum) * scale), 0, kDensityGridSide - 1);
@@ -102,6 +116,98 @@ float densityNormAt(const DensityGrid& grid, const Vector3& position)
     }
     const float ratio = std::max(localMass / (27.0f * grid.meanCellMass), 1.0e-6f);
     return std::clamp(0.5f + 0.2f * std::log2(ratio), 0.0f, 1.0f);
+}
+
+EnergySelection selectEnergyIndices(std::size_t particleCount, std::size_t sampleLimit)
+{
+    EnergySelection selection;
+    selection.sampled = particleCount > sampleLimit;
+    if (!selection.sampled) {
+        selection.indices.resize(particleCount);
+        for (std::size_t index = 0; index < particleCount; ++index) {
+            selection.indices[index] = index;
+        }
+        return selection;
+    }
+    const std::size_t sampleCount = std::max<std::size_t>(64u, sampleLimit);
+    const std::size_t stride = std::max<std::size_t>(1u, particleCount / sampleCount);
+    for (std::size_t index = 0; index < particleCount; index += stride) {
+        selection.indices.push_back(index);
+        if (selection.indices.size() >= sampleCount) {
+            break;
+        }
+    }
+    const double fullPairs = static_cast<double>(particleCount) *
+                             static_cast<double>(particleCount - 1u) * 0.5;
+    const double samplePairs = static_cast<double>(selection.indices.size()) *
+                               static_cast<double>(selection.indices.size() - 1u) * 0.5;
+    selection.kineticScale = static_cast<double>(particleCount) /
+                             static_cast<double>(selection.indices.size());
+    selection.potentialScale = samplePairs > 0.0 ? fullPairs / samplePairs : 1.0;
+    return selection;
+}
+
+std::pair<double, double> sumKineticAndThermal(const std::vector<Particle>& particles,
+                                               const EnergySelection& selection,
+                                               float specificHeat)
+{
+    double kinetic = 0.0;
+    double thermal = 0.0;
+    for (const std::size_t index : selection.indices) {
+        const Particle& particle = particles[index];
+        const Vector3 velocity = particle.getVelocity();
+        const double speedSquared = static_cast<double>(velocity.x * velocity.x +
+                                                         velocity.y * velocity.y +
+                                                         velocity.z * velocity.z);
+        kinetic += 0.5 * static_cast<double>(particle.getMass()) * speedSquared;
+        thermal += static_cast<double>(particle.getMass()) * static_cast<double>(specificHeat) *
+                   static_cast<double>(std::max(0.0f, particle.getTemperature()));
+    }
+    return {kinetic * selection.kineticScale, thermal * selection.kineticScale};
+}
+
+double sumPotential(const std::vector<Particle>& particles, const EnergySelection& selection,
+                    float softening, float minimumDistanceSquared)
+{
+    double potential = 0.0;
+    const float softeningSquared = softening * softening;
+    for (std::size_t first = 0; first < selection.indices.size(); ++first) {
+        const Particle& particle = particles[selection.indices[first]];
+        const Vector3 position = particle.getPosition();
+        for (std::size_t second = first + 1u; second < selection.indices.size(); ++second) {
+            const Particle& other = particles[selection.indices[second]];
+            const Vector3 otherPosition = other.getPosition();
+            const float dx = position.x - otherPosition.x;
+            const float dy = position.y - otherPosition.y;
+            const float dz = position.z - otherPosition.z;
+            const float distanceSquared = dx * dx + dy * dy + dz * dz + softeningSquared;
+            if (distanceSquared <= minimumDistanceSquared) {
+                continue;
+            }
+            const float distance = std::sqrt(distanceSquared);
+            if (distance <= 1.0e-6f) {
+                continue;
+            }
+            potential -= static_cast<double>(particle.getMass()) *
+                         static_cast<double>(other.getMass()) / static_cast<double>(distance);
+        }
+    }
+    return potential * selection.potentialScale;
+}
+
+EnergyComputation computeEnergy(const std::vector<Particle>& particles, std::size_t sampleLimit,
+                                float specificHeat, float softening,
+                                float minimumDistanceSquared)
+{
+    const EnergySelection selection = selectEnergyIndices(particles.size(), sampleLimit);
+    const auto [kinetic, thermal] = sumKineticAndThermal(particles, selection, specificHeat);
+    EnergyComputation result;
+    result.kinetic = static_cast<float>(kinetic);
+    result.thermal = static_cast<float>(thermal);
+    result.potential = static_cast<float>(
+        sumPotential(particles, selection, softening, minimumDistanceSquared));
+    result.estimated = selection.sampled;
+    return result;
 }
 } // namespace blitzar_simulation_snapshot_energy
 
@@ -208,10 +314,6 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
     if (n < 2)
         return values;
 
-    const std::size_t sampleLimit =
-        static_cast<std::size_t>(_energySampleLimit.load(std::memory_order_relaxed));
-
-    const bool sampled = n > sampleLimit;
     const float specificHeat = _system ? std::max(1e-6f, _system->getThermalSpecificHeat()) : 1.0f;
 
     float energySoftening = 0.0f;
@@ -225,89 +327,19 @@ SimulationServer::EnergyValues SimulationServer::computeEnergyValues()
         energyMinDistance2 = _configState._physicsMinDistance2;
     }
 
-    std::vector<std::size_t> indices;
-    if (!sampled) {
-        indices.resize(n);
-        for (std::size_t i = 0; i < n; ++i) {
-            indices[i] = i;
-        }
-    }
-    else {
-        const std::size_t sampleCount = std::max<std::size_t>(64u, sampleLimit);
-        const std::size_t stride = std::max<std::size_t>(1, n / sampleCount);
-
-        for (std::size_t i = 0; i < n; i += stride) {
-            indices.push_back(i);
-
-            if (indices.size() >= sampleCount) {
-                break;
-            }
-        }
-    }
-
-    const double kineticScale =
-        sampled ? static_cast<double>(n) / static_cast<double>(indices.size()) : 1.0;
-
-    const double pairCountFull = static_cast<double>(n) * static_cast<double>(n - 1) * 0.5;
-
-    const double pairCountSample =
-        static_cast<double>(indices.size()) * static_cast<double>(indices.size() - 1) * 0.5;
-
-    const double potentialScale =
-        (sampled && pairCountSample > 0.0) ? (pairCountFull / pairCountSample) : 1.0;
-
     const float softening = std::max(energySoftening, energyMinSoftening);
-
-    double kinetic = 0.0;
-    double thermal = 0.0;
-
-    for (std::size_t idx : indices) {
-        const Particle& p = particles[idx];
-        const Vector3 v = p.getVelocity();
-        const double speed2 = static_cast<double>(v.x * v.x + v.y * v.y + v.z * v.z);
-        kinetic += 0.5 * static_cast<double>(p.getMass()) * speed2;
-        thermal += static_cast<double>(p.getMass()) * static_cast<double>(specificHeat) *
-                   static_cast<double>(std::max(0.0f, p.getTemperature()));
-    }
-
-    kinetic *= kineticScale;
-    thermal *= kineticScale;
-    double potential = 0.0;
-
-    for (std::size_t a = 0; a < indices.size(); ++a) {
-        const Particle& p = particles[indices[a]];
-        const Vector3 pp = p.getPosition();
-
-        for (std::size_t b = a + 1; b < indices.size(); ++b) {
-            const Particle& q = particles[indices[b]];
-            const Vector3 qq = q.getPosition();
-            const float dx = pp.x - qq.x;
-            const float dy = pp.y - qq.y;
-            const float dz = pp.z - qq.z;
-            const float dist2 = dx * dx + dy * dy + dz * dz + softening * softening;
-
-            if (dist2 <= energyMinDistance2)
-                continue;
-
-            const float dist = std::sqrt(dist2);
-
-            if (dist <= 1e-6f)
-                continue;
-
-            potential -= static_cast<double>(p.getMass()) * static_cast<double>(q.getMass()) /
-                         static_cast<double>(dist);
-        }
-    }
-
-    potential *= potentialScale;
-
-    values.kinetic = static_cast<float>(kinetic);
-    values.potential = static_cast<float>(potential);
-    values.thermal = static_cast<float>(thermal);
+    const std::size_t sampleLimit =
+        static_cast<std::size_t>(_energySampleLimit.load(std::memory_order_relaxed));
+    const blitzar_simulation_snapshot_energy::EnergyComputation computed =
+        blitzar_simulation_snapshot_energy::computeEnergy(
+            particles, sampleLimit, specificHeat, softening, energyMinDistance2);
+    values.kinetic = computed.kinetic;
+    values.potential = computed.potential;
+    values.thermal = computed.thermal;
 
     values.radiated = _system ? _system->getCumulativeRadiatedEnergy() : 0.0f;
     values.total = values.kinetic + values.potential + values.thermal + values.radiated;
-    values.estimated = sampled;
+    values.estimated = computed.estimated;
 
     return values;
 }
