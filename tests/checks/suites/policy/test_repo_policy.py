@@ -157,6 +157,23 @@ def test_repo_policy_accepts_header_include_guard(tmp_path: Path) -> None:
     assert not errors
 
 
+# @brief Documents the test repo policy rejects an empty mirror header operation contract.
+# @param tmp_path Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+def test_repo_policy_rejects_empty_production_header(tmp_path: Path) -> None:
+    _write(
+        tmp_path / "runtime" / "client" / "module" / "Mirror.hpp",
+        "#ifndef BLITZAR_RUNTIME_CLIENT_MODULE_MIRROR_HPP_\n"
+        "#define BLITZAR_RUNTIME_CLIENT_MODULE_MIRROR_HPP_\n"
+        "// API is declared by the owning class header.\n"
+        "#endif // BLITZAR_RUNTIME_CLIENT_MODULE_MIRROR_HPP_\n",
+    )
+    ok, errors, _ = _run(tmp_path, tmp_path / "allowlist.txt")
+    assert not ok
+    assert any("empty production header" in error for error in errors)
+
+
 # @brief Documents the test repo policy rejects pragma once in header operation contract.
 # @param tmp_path Input value used by this contract.
 # @return Value produced by this contract when applicable.

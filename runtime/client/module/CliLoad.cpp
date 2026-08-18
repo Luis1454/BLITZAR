@@ -5,7 +5,6 @@
  * @brief Runtime implementation for protocol, command, client, and FFI boundaries.
  */
 
-#include "CliLoad.hpp"
 #include "client/module/CliHandle.hpp"
 #include "client/module/CliHash.hpp"
 #include "client/module/CliManifest.hpp"

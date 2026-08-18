@@ -39,8 +39,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--build-dir", default="", help="Build directory")
     parser.add_argument("--check-build-targets", action="store_true", help="Validate generated targets")
     parser.add_argument("--with-launcher", action="store_true", help="Include launcher contract in all checks")
-    parser.add_argument("--target-lines", type=int, default=200, help="Target file size limit")
-    parser.add_argument("--hard-lines", type=int, default=300, help="Hard file size limit")
+    parser.add_argument("--target-lines", type=int, default=200, help="Target size for documentation/config/build metadata")
+    parser.add_argument("--hard-lines", type=int, default=300, help="Hard size for documentation/config/build metadata")
     parser.add_argument(
         "--allowlist",
         default="tests/checks/policy_allowlist.txt",

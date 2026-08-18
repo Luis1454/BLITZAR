@@ -5,9 +5,10 @@
 
 from __future__ import annotations
 
+import ast
 import re
 
-IMPLEMENTATION_SCAN_EXTS = {".cpp", ".cc", ".cxx", ".cu", ".inl"}
+IMPLEMENTATION_SCAN_EXTS = {".cpp", ".cc", ".cxx", ".cu", ".inl", ".py"}
 FUNCTION_TARGET_LINES = 80
 FUNCTION_ALERT_LINES = 140
 SUBSTANTIAL_FUNCTION_LINES = 40
@@ -38,7 +39,7 @@ NORMALIZED_DOCUMENTATION_RE = re.compile(
 # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def collect_function_decomposition_warnings(rel: str, content: str) -> list[str]:
     warnings: list[str] = []
-    functions = _collect_function_metrics(content)
+    functions = _collect_function_metrics(content) if not rel.endswith(".py") else _collect_python_function_metrics(content)
     substantial = [metric for metric in functions if metric["lines"] >= SUBSTANTIAL_FUNCTION_LINES]
     if len(functions) > FILE_FUNCTION_TARGET:
         level = "strong function-count alert" if len(functions) > FILE_FUNCTION_ALERT else "function-count warning"
@@ -69,6 +70,34 @@ def collect_function_decomposition_warnings(rel: str, content: str) -> list[str]
         )
 
     return warnings
+
+
+# @brief Documents the collect Python function metrics operation contract.
+# @param content Input value used by this contract.
+# @return Value produced by this contract when applicable.
+# @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
+def _collect_python_function_metrics(content: str) -> list[dict[str, int]]:
+    try:
+        tree = ast.parse(content)
+    except SyntaxError:
+        return []
+
+    metrics: list[dict[str, int]] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) or node.end_lineno is None:
+            continue
+        complexity = 1
+        for child in ast.walk(node):
+            if isinstance(child, (ast.If, ast.For, ast.AsyncFor, ast.While, ast.Try, ast.ExceptHandler, ast.Match)):
+                complexity += 1
+            elif isinstance(child, ast.BoolOp):
+                complexity += max(1, len(child.values) - 1)
+        metrics.append({
+            "start_line": node.lineno,
+            "lines": node.end_lineno - node.lineno + 1,
+            "complexity": complexity,
+        })
+    return metrics
 
 
 # @brief Documents the collect function metrics operation contract.
