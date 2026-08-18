@@ -59,11 +59,11 @@ private:
     void buildThemeMenu(QMenu* menu);
     void connectOverlayControls();
     void connectTelemetryControls();
-    void buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPane,
-                             QWidget* validationPane);
-    QWidget* buildTelemetryPane();
-    QTabWidget* buildSidebarTabs();
-    QWidget* buildValidationPane();
+    void buildWorkspaceDocks(QPointer<QTabWidget> sidebarTabs, QPointer<QWidget> summaryPane,
+                             QPointer<QWidget> validationPane);
+    QPointer<QWidget> buildTelemetryPane();
+    QPointer<QTabWidget> buildSidebarTabs();
+    QPointer<QWidget> buildValidationPane();
     void configureRemoteConnectorFromUi();
     void connectControls();
     void handleExportRequest();

@@ -14,6 +14,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QProgressBar>
@@ -27,26 +28,26 @@
 #include <QWidget>
 
 namespace bltzr_qt {
-QTabWidget* Window::buildSidebarTabs()
+QPointer<QTabWidget> Window::buildSidebarTabs()
 {
-    auto* sidebarTabs = new QTabWidget(this);
+    QPointer<QTabWidget> sidebarTabs = new QTabWidget(this);
     sidebarTabs->setObjectName("workspaceSidebarTabs");
     sidebarTabs->setTabPosition(QTabWidget::West);
     sidebarTabs->setDocumentMode(true);
     sidebarTabs->setMinimumWidth(320);
     sidebarTabs->setMaximumWidth(440);
     sidebarTabs->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-    auto* runPage = new QWidget(sidebarTabs);
+    QPointer<QWidget> runPage = new QWidget(sidebarTabs);
     buildRunPanel(runPage, _widgets.run.performanceCombo, _widgets.run.pauseButton,
                   _widgets.run.stepButton, _widgets.run.resetButton, _widgets.run.recoverButton,
                   _widgets.run.serverHostEdit, _widgets.run.serverPortSpin,
                   _widgets.run.serverBinEdit, _widgets.run.serverAutostartCheck,
                   _widgets.run.applyConnectorButton);
-    auto* scenePage = new QWidget(sidebarTabs);
-    auto* sceneLayout = new QVBoxLayout(scenePage);
-    auto* sceneToolbar = new QWidget(scenePage);
+    QPointer<QWidget> scenePage = new QWidget(sidebarTabs);
+    QPointer<QVBoxLayout> sceneLayout = new QVBoxLayout(scenePage);
+    QPointer<QWidget> sceneToolbar = new QWidget(scenePage);
     sceneToolbar->setObjectName("sceneActionsToolbar");
-    auto* sceneToolbarLayout = new QHBoxLayout(sceneToolbar);
+    QPointer<QHBoxLayout> sceneToolbarLayout = new QHBoxLayout(sceneToolbar);
     sceneToolbarLayout->setContentsMargins(0, 0, 0, 0);
     sceneToolbarLayout->setSpacing(4);
     sceneToolbarLayout->addWidget(new QLabel("Profile", sceneToolbar));
@@ -60,8 +61,8 @@ QTabWidget* Window::buildSidebarTabs()
     sceneLayout->addWidget(sceneToolbar);
     _sceneEditor = new SceneEditor(_config, scenePage);
     sceneLayout->addWidget(_sceneEditor, 1);
-    auto* physicsPage = buildPhysicsPanel(sidebarTabs, _widgets.physics);
-    auto* renderPage = buildRenderPanel(
+    QPointer<QWidget> physicsPage = buildPhysicsPanel(sidebarTabs, _widgets.physics);
+    QPointer<QWidget> renderPage = buildRenderPanel(
         sidebarTabs, _widgets.render.view3dCombo, _widgets.render.zoomSlider,
         _widgets.render.luminositySlider, _widgets.render.yawSlider, _widgets.render.pitchSlider,
         _widgets.render.rollSlider, _widgets.render.cullingCheck, _widgets.render.lodCheck,

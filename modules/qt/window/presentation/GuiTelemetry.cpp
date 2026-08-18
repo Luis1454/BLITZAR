@@ -27,14 +27,15 @@
 #include <vector>
 
 namespace bltzr_qt {
-static QFrame* makeSummaryCard(QWidget* parent, const QString& title, QLabel* content)
+static QPointer<QFrame> makeSummaryCard(QPointer<QWidget> parent, const QString& title,
+                                        QPointer<QLabel> content)
 {
-    auto* card = new QFrame(parent);
+    QPointer<QFrame> card = new QFrame(parent);
     card->setObjectName("runtimeCard");
-    auto* layout = new QVBoxLayout(card);
+    QPointer<QVBoxLayout> layout = new QVBoxLayout(card);
     layout->setContentsMargins(10, 8, 10, 8);
     layout->setSpacing(4);
-    auto* titleLabel = new QLabel(title, card);
+    QPointer<QLabel> titleLabel = new QLabel(title, card);
     titleLabel->setObjectName("runtimeCardTitle");
     layout->addWidget(titleLabel);
     layout->addWidget(content);
@@ -42,11 +43,11 @@ static QFrame* makeSummaryCard(QWidget* parent, const QString& title, QLabel* co
     return card;
 }
 
-QWidget* Window::buildTelemetryPane()
+QPointer<QWidget> Window::buildTelemetryPane()
 {
-    auto* summaryPane = new QWidget(this);
+    QPointer<QWidget> summaryPane = new QWidget(this);
     summaryPane->setObjectName("telemetrySummaryPane");
-    auto* summaryLayout = new QGridLayout(summaryPane);
+    QPointer<QGridLayout> summaryLayout = new QGridLayout(summaryPane);
     summaryLayout->setContentsMargins(8, 8, 8, 8);
     summaryLayout->setHorizontalSpacing(8);
     summaryLayout->setVerticalSpacing(8);
@@ -58,10 +59,10 @@ QWidget* Window::buildTelemetryPane()
     return summaryPane;
 }
 
-QWidget* Window::buildValidationPane()
+QPointer<QWidget> Window::buildValidationPane()
 {
-    auto* validationPane = new QWidget(this);
-    auto* validationLayout = new QVBoxLayout(validationPane);
+    QPointer<QWidget> validationPane = new QWidget(this);
+    QPointer<QVBoxLayout> validationLayout = new QVBoxLayout(validationPane);
     validationLayout->setContentsMargins(8, 8, 8, 8);
     validationLayout->setSpacing(4);
     validationLayout->addWidget(_widgets.telemetry.validationLabel);

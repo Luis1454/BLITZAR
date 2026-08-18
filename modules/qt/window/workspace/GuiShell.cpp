@@ -23,8 +23,8 @@
 #include <QStatusBar>
 
 namespace bltzr_qt {
-void Window::buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPane,
-                                 QWidget* validationPane)
+void Window::buildWorkspaceDocks(QPointer<QTabWidget> sidebarTabs, QPointer<QWidget> summaryPane,
+                                 QPointer<QWidget> validationPane)
 {
     _widgets.workspace.controlsDock = new QDockWidget("Controls", this);
     _widgets.workspace.controlsDock->setObjectName("controlsDock");

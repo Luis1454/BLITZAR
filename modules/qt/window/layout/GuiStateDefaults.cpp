@@ -90,9 +90,12 @@ void Window::initializeLabelsAndTooltips()
     _widgets.run.serverBinEdit->setPlaceholderText("blitzar-server(.exe)");
     _widgets.run.serverBinEdit->setToolTip("Path to the server executable used when autostart is enabled");
     _widgets.run.applyConnectorButton->setToolTip("Apply host, port and server binary settings, then reconnect now");
-    for (QLabel* label : {_widgets.telemetry.validationLabel, _widgets.telemetry.statusLabel,
-                          _widgets.telemetry.runtimeMetricsLabel, _widgets.telemetry.queueMetricsLabel,
-                          _widgets.telemetry.energyMetricsLabel, _widgets.telemetry.gpuMetricsLabel}) {
+    for (const QPointer<QLabel>& label : {QPointer<QLabel>(_widgets.telemetry.validationLabel),
+                                          QPointer<QLabel>(_widgets.telemetry.statusLabel),
+                                          QPointer<QLabel>(_widgets.telemetry.runtimeMetricsLabel),
+                                          QPointer<QLabel>(_widgets.telemetry.queueMetricsLabel),
+                                          QPointer<QLabel>(_widgets.telemetry.energyMetricsLabel),
+                                          QPointer<QLabel>(_widgets.telemetry.gpuMetricsLabel)}) {
         if (label) {
             label->setWordWrap(true);
             label->setTextInteractionFlags(Qt::TextSelectableByMouse);
@@ -102,9 +105,11 @@ void Window::initializeLabelsAndTooltips()
         _widgets.telemetry.validationLabel->setObjectName("validationLabel");
         _widgets.telemetry.validationLabel->setContentsMargins(6, 4, 6, 4);
     }
-    for (QLabel* label : {_widgets.telemetry.statusLabel, _widgets.telemetry.runtimeMetricsLabel,
-                          _widgets.telemetry.queueMetricsLabel, _widgets.telemetry.energyMetricsLabel,
-                          _widgets.telemetry.gpuMetricsLabel}) {
+    for (const QPointer<QLabel>& label : {QPointer<QLabel>(_widgets.telemetry.statusLabel),
+                                          QPointer<QLabel>(_widgets.telemetry.runtimeMetricsLabel),
+                                          QPointer<QLabel>(_widgets.telemetry.queueMetricsLabel),
+                                          QPointer<QLabel>(_widgets.telemetry.energyMetricsLabel),
+                                          QPointer<QLabel>(_widgets.telemetry.gpuMetricsLabel)}) {
         if (label)
             label->setObjectName("runtimeSummaryValue");
     }
