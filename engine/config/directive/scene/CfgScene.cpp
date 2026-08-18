@@ -84,104 +84,186 @@ static void addProperties(const std::string& raw, SceneObjectConfig& object)
     }
 }
 
-bool applySceneObjectArg(const DirectiveArgument& arg, SceneObjectConfig& object)
+enum class SceneArgResult { unhandled, applied, invalid };
+
+static SceneArgResult applySceneIdentityArg(const std::string& key, const std::string& value,
+                                            SceneObjectConfig& object)
 {
-    const std::string& key = arg.first;
-    const std::string& value = arg.second;
     if (key == "id")
         object.id = value;
     else if (key == "name")
         object.name = value;
     else if (key == "type")
         object.type = value;
-    else if (key == "enabled")
-        return parseSceneBool(value, object.enabled);
-    else if (key == "include_central_body")
-        return parseSceneBool(value, object.includeCentralBody);
-    else if (key == "count" || key == "particle_count")
-        return parseSceneUint(value, object.particleCount);
-    else if (key == "seed")
-        return parseSceneUint(value, object.seed);
-    else if (key == "mass")
-        return parseSceneFloat(value, object.mass);
-    else if (key == "size")
-        return parseSceneFloat(value, object.size);
-    else if (key == "radius_min")
-        return parseSceneFloat(value, object.radiusMin);
-    else if (key == "radius_max")
-        return parseSceneFloat(value, object.radiusMax);
-    else if (key == "thickness")
-        return parseSceneFloat(value, object.thickness);
-    else if (key == "velocity_scale")
-        return parseSceneFloat(value, object.velocityScale);
-    else if (key == "speed")
-        return parseSceneFloat(value, object.speed);
-    else if (key == "particle_mass")
-        return parseSceneFloat(value, object.particleMass);
-    else if (key == "x")
-        return parseSceneFloat(value, object.positionX);
-    else if (key == "y")
-        return parseSceneFloat(value, object.positionY);
-    else if (key == "z")
-        return parseSceneFloat(value, object.positionZ);
-    else if (key == "vx")
-        return parseSceneFloat(value, object.velocityX);
-    else if (key == "vy")
-        return parseSceneFloat(value, object.velocityY);
-    else if (key == "vz")
-        return parseSceneFloat(value, object.velocityZ);
-    else if (key == "asset")
-        return parseSceneBool(value, object.isAsset);
     else if (key == "asset_id")
         object.assetId = value;
-    else if (key == "property")
-        addProperty(object, value);
-    else if (key == "properties")
-        addProperties(value, object);
-    else if (key == "offset_x")
-        return parseSceneFloat(value, object.offsetX);
-    else if (key == "offset_y")
-        return parseSceneFloat(value, object.offsetY);
-    else if (key == "offset_z")
-        return parseSceneFloat(value, object.offsetZ);
-    else if (key == "rotation_x")
-        return parseSceneFloat(value, object.rotationX);
-    else if (key == "rotation_y")
-        return parseSceneFloat(value, object.rotationY);
-    else if (key == "rotation_z")
-        return parseSceneFloat(value, object.rotationZ);
-    else if (key == "copy_axis" || key == "axis")
-        object.axis = value;
-    else if (key == "rotation_copies" || key == "copies")
-        return parseSceneUint(value, object.copies);
-    else if (key == "mirror_x")
-        return parseSceneBool(value, object.mirrorX);
-    else if (key == "mirror_y")
-        return parseSceneBool(value, object.mirrorY);
-    else if (key == "mirror_z")
-        return parseSceneBool(value, object.mirrorZ);
-    else if (key == "pivot")
-        object.pivot = value;
-    else if (key == "pivot_x")
-        return parseSceneFloat(value, object.pivotX);
-    else if (key == "pivot_y")
-        return parseSceneFloat(value, object.pivotY);
-    else if (key == "pivot_z")
-        return parseSceneFloat(value, object.pivotZ);
-    else if (key == "distribution")
-        object.distribution = value;
-    else if (key == "particle_size")
-        return parseSceneFloat(value, object.particleSize);
-    else if (key == "particle_height")
-        return parseSceneFloat(value, object.particleHeight);
-    else if (key == "particle_speed")
-        return parseSceneFloat(value, object.particleSpeed);
     else if (key == "emitter_object_id")
         object.emitterObjectId = value;
     else if (key == "target_asset_id" || key == "instance_object_id")
         object.targetAssetId = value;
     else
-        return false;
-    return true;
+        return SceneArgResult::unhandled;
+    return SceneArgResult::applied;
+}
+
+static SceneArgResult applySceneScalarArg(const std::string& key, const std::string& value,
+                                          SceneObjectConfig& object)
+{
+    if (key == "enabled")
+        return parseSceneBool(value, object.enabled) ? SceneArgResult::applied
+                                                     : SceneArgResult::invalid;
+    if (key == "include_central_body")
+        return parseSceneBool(value, object.includeCentralBody) ? SceneArgResult::applied
+                                                                 : SceneArgResult::invalid;
+    if (key == "count" || key == "particle_count")
+        return parseSceneUint(value, object.particleCount) ? SceneArgResult::applied
+                                                           : SceneArgResult::invalid;
+    if (key == "seed")
+        return parseSceneUint(value, object.seed) ? SceneArgResult::applied
+                                                  : SceneArgResult::invalid;
+    if (key == "mass")
+        return parseSceneFloat(value, object.mass) ? SceneArgResult::applied
+                                                   : SceneArgResult::invalid;
+    if (key == "size")
+        return parseSceneFloat(value, object.size) ? SceneArgResult::applied
+                                                   : SceneArgResult::invalid;
+    if (key == "radius_min")
+        return parseSceneFloat(value, object.radiusMin) ? SceneArgResult::applied
+                                                        : SceneArgResult::invalid;
+    if (key == "radius_max")
+        return parseSceneFloat(value, object.radiusMax) ? SceneArgResult::applied
+                                                        : SceneArgResult::invalid;
+    if (key == "thickness")
+        return parseSceneFloat(value, object.thickness) ? SceneArgResult::applied
+                                                        : SceneArgResult::invalid;
+    if (key == "velocity_scale")
+        return parseSceneFloat(value, object.velocityScale) ? SceneArgResult::applied
+                                                            : SceneArgResult::invalid;
+    if (key == "speed")
+        return parseSceneFloat(value, object.speed) ? SceneArgResult::applied
+                                                    : SceneArgResult::invalid;
+    if (key == "particle_mass")
+        return parseSceneFloat(value, object.particleMass) ? SceneArgResult::applied
+                                                           : SceneArgResult::invalid;
+    return SceneArgResult::unhandled;
+}
+
+static SceneArgResult applySceneVectorArg(const std::string& key, const std::string& value,
+                                          SceneObjectConfig& object)
+{
+    if (key == "x")
+        return parseSceneFloat(value, object.positionX) ? SceneArgResult::applied
+                                                        : SceneArgResult::invalid;
+    if (key == "y")
+        return parseSceneFloat(value, object.positionY) ? SceneArgResult::applied
+                                                        : SceneArgResult::invalid;
+    if (key == "z")
+        return parseSceneFloat(value, object.positionZ) ? SceneArgResult::applied
+                                                        : SceneArgResult::invalid;
+    if (key == "vx")
+        return parseSceneFloat(value, object.velocityX) ? SceneArgResult::applied
+                                                        : SceneArgResult::invalid;
+    if (key == "vy")
+        return parseSceneFloat(value, object.velocityY) ? SceneArgResult::applied
+                                                        : SceneArgResult::invalid;
+    if (key == "vz")
+        return parseSceneFloat(value, object.velocityZ) ? SceneArgResult::applied
+                                                        : SceneArgResult::invalid;
+    if (key == "offset_x")
+        return parseSceneFloat(value, object.offsetX) ? SceneArgResult::applied
+                                                      : SceneArgResult::invalid;
+    if (key == "offset_y")
+        return parseSceneFloat(value, object.offsetY) ? SceneArgResult::applied
+                                                      : SceneArgResult::invalid;
+    if (key == "offset_z")
+        return parseSceneFloat(value, object.offsetZ) ? SceneArgResult::applied
+                                                      : SceneArgResult::invalid;
+    return SceneArgResult::unhandled;
+}
+
+static SceneArgResult applySceneTransformArg(const std::string& key, const std::string& value,
+                                             SceneObjectConfig& object)
+{
+    if (key == "rotation_x")
+        return parseSceneFloat(value, object.rotationX) ? SceneArgResult::applied
+                                                        : SceneArgResult::invalid;
+    if (key == "rotation_y")
+        return parseSceneFloat(value, object.rotationY) ? SceneArgResult::applied
+                                                        : SceneArgResult::invalid;
+    if (key == "rotation_z")
+        return parseSceneFloat(value, object.rotationZ) ? SceneArgResult::applied
+                                                        : SceneArgResult::invalid;
+    if (key == "copy_axis" || key == "axis")
+        object.axis = value;
+    else if (key == "rotation_copies" || key == "copies")
+        return parseSceneUint(value, object.copies) ? SceneArgResult::applied
+                                                    : SceneArgResult::invalid;
+    else if (key == "mirror_x")
+        return parseSceneBool(value, object.mirrorX) ? SceneArgResult::applied
+                                                     : SceneArgResult::invalid;
+    else if (key == "mirror_y")
+        return parseSceneBool(value, object.mirrorY) ? SceneArgResult::applied
+                                                     : SceneArgResult::invalid;
+    else if (key == "mirror_z")
+        return parseSceneBool(value, object.mirrorZ) ? SceneArgResult::applied
+                                                     : SceneArgResult::invalid;
+    else if (key == "pivot")
+        object.pivot = value;
+    else if (key == "pivot_x")
+        return parseSceneFloat(value, object.pivotX) ? SceneArgResult::applied
+                                                     : SceneArgResult::invalid;
+    else if (key == "pivot_y")
+        return parseSceneFloat(value, object.pivotY) ? SceneArgResult::applied
+                                                     : SceneArgResult::invalid;
+    else if (key == "pivot_z")
+        return parseSceneFloat(value, object.pivotZ) ? SceneArgResult::applied
+                                                     : SceneArgResult::invalid;
+    else
+        return SceneArgResult::unhandled;
+    return SceneArgResult::applied;
+}
+
+static SceneArgResult applySceneParticleArg(const std::string& key, const std::string& value,
+                                            SceneObjectConfig& object)
+{
+    if (key == "property")
+        addProperty(object, value);
+    else if (key == "properties")
+        addProperties(value, object);
+    else if (key == "asset")
+        return parseSceneBool(value, object.isAsset) ? SceneArgResult::applied
+                                                     : SceneArgResult::invalid;
+    else if (key == "distribution")
+        object.distribution = value;
+    else if (key == "particle_size")
+        return parseSceneFloat(value, object.particleSize) ? SceneArgResult::applied
+                                                           : SceneArgResult::invalid;
+    else if (key == "particle_height")
+        return parseSceneFloat(value, object.particleHeight) ? SceneArgResult::applied
+                                                             : SceneArgResult::invalid;
+    else if (key == "particle_speed")
+        return parseSceneFloat(value, object.particleSpeed) ? SceneArgResult::applied
+                                                            : SceneArgResult::invalid;
+    else
+        return SceneArgResult::unhandled;
+    return SceneArgResult::applied;
+}
+
+bool applySceneObjectArg(const DirectiveArgument& arg, SceneObjectConfig& object)
+{
+    const std::string& key = arg.first;
+    const std::string& value = arg.second;
+    const SceneArgResult results[] = {applySceneIdentityArg(key, value, object),
+                                      applySceneScalarArg(key, value, object),
+                                      applySceneVectorArg(key, value, object),
+                                      applySceneTransformArg(key, value, object),
+                                      applySceneParticleArg(key, value, object)};
+    for (const SceneArgResult result : results) {
+        if (result == SceneArgResult::applied)
+            return true;
+        if (result == SceneArgResult::invalid)
+            return false;
+    }
+    return false;
 }
 } // namespace bltzr_config
