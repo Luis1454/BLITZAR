@@ -21,6 +21,7 @@ class QFormLayout;
 class QGroupBox;
 class QLabel;
 class QTabWidget;
+class QSplitter;
 
 namespace bltzr_qt {
 class SceneEditor final : public QWidget {
@@ -34,6 +35,14 @@ public:
     QPushButton* applyButton() const;
 
 private:
+    void buildLayout();
+    void buildObjectPanel(QSplitter* split);
+    void buildInspectorPanel(QSplitter* split);
+    void connectObjectControls();
+    void connectCollectionControls();
+    void connectGeneratorControls();
+    void connectTransformControls();
+    void connectParticleSystemControls();
     void commitCurrent();
     void loadCurrent();
     void rebuildList();
@@ -110,6 +119,9 @@ private:
     QPointer<QGroupBox> _mirrorGroup;
     QPointer<QGroupBox> _pivotGroup;
     QPointer<QPushButton> _propertyButton;
+    QPointer<QPushButton> _addObject;
+    QPointer<QPushButton> _duplicateObject;
+    QPointer<QPushButton> _removeObject;
     QPointer<QPushButton> _apply;
 };
 } // namespace bltzr_qt

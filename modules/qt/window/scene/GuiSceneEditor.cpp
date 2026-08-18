@@ -35,6 +35,13 @@ SceneObjectConfig defaultObject(int index)
 
 SceneEditor::SceneEditor(const SimulationConfig& config, QWidget* parent) : QWidget(parent)
 {
+    buildLayout();
+    connectObjectControls();
+    reload(config);
+}
+
+void SceneEditor::buildLayout()
+{
     auto* root = new QVBoxLayout(this);
     root->setContentsMargins(6, 6, 6, 6);
     root->setSpacing(6);
@@ -57,10 +64,22 @@ SceneEditor::SceneEditor(const SimulationConfig& config, QWidget* parent) : QWid
     split->setObjectName("sceneObjectEditorSplitter");
     split->setChildrenCollapsible(false);
 
+    buildObjectPanel(split);
+
+    buildInspectorPanel(split);
+    split->setStretchFactor(0, 0);
+    split->setStretchFactor(1, 1);
+    split->setSizes({145, 620});
+    root->addWidget(split, 1);
+}
+
+void SceneEditor::buildObjectPanel(QSplitter* split)
+{
     auto* objectPanel = new QGroupBox("Objects", split);
     auto* objectLayout = new QVBoxLayout(objectPanel);
     objectLayout->setContentsMargins(6, 6, 6, 6);
     objectLayout->setSpacing(4);
+
     auto* objectHeader = new QHBoxLayout();
     _objectCountLabel = new QLabel(objectPanel);
     _objectCountLabel->setObjectName("sceneObjectCountLabel");
@@ -68,6 +87,7 @@ SceneEditor::SceneEditor(const SimulationConfig& config, QWidget* parent) : QWid
     objectHeader->addWidget(_objectCountLabel);
     objectHeader->addStretch(1);
     objectLayout->addLayout(objectHeader);
+
     _objects = new QListWidget(objectPanel);
     _objects->setObjectName("sceneObjectList");
     _objects->setMinimumHeight(100);
@@ -75,25 +95,30 @@ SceneEditor::SceneEditor(const SimulationConfig& config, QWidget* parent) : QWid
     _objects->setUniformItemSizes(true);
     _objects->setSelectionMode(QAbstractItemView::SingleSelection);
     objectLayout->addWidget(_objects, 1);
+
     auto* buttons = new QHBoxLayout();
-    auto* add = new QPushButton("Add", objectPanel);
-    add->setObjectName("sceneAddObjectButton");
-    add->setToolTip("Add a new scene object");
-    auto* duplicate = new QPushButton("Duplicate", objectPanel);
-    duplicate->setObjectName("sceneDuplicateObjectButton");
-    duplicate->setToolTip("Duplicate the selected object");
-    auto* remove = new QPushButton("Remove", objectPanel);
-    remove->setObjectName("sceneRemoveObjectButton");
-    remove->setToolTip("Remove the selected object");
-    buttons->addWidget(add);
-    buttons->addWidget(duplicate);
-    buttons->addWidget(remove);
+    _addObject = new QPushButton("Add", objectPanel);
+    _addObject->setObjectName("sceneAddObjectButton");
+    _addObject->setToolTip("Add a new scene object");
+    _duplicateObject = new QPushButton("Duplicate", objectPanel);
+    _duplicateObject->setObjectName("sceneDuplicateObjectButton");
+    _duplicateObject->setToolTip("Duplicate the selected object");
+    _removeObject = new QPushButton("Remove", objectPanel);
+    _removeObject->setObjectName("sceneRemoveObjectButton");
+    _removeObject->setToolTip("Remove the selected object");
+    buttons->addWidget(_addObject);
+    buttons->addWidget(_duplicateObject);
+    buttons->addWidget(_removeObject);
     objectLayout->addLayout(buttons);
     split->addWidget(objectPanel);
+}
 
+void SceneEditor::buildInspectorPanel(QSplitter* split)
+{
     auto* inspectorPanel = new QGroupBox("Object editor", split);
     auto* inspectorLayout = new QVBoxLayout(inspectorPanel);
     inspectorLayout->setContentsMargins(6, 6, 6, 6);
+
     auto* inspectorHeader = new QHBoxLayout();
     auto* inspectorTitle = new QLabel("Object inspector", inspectorPanel);
     inspectorTitle->setObjectName("sceneObjectInspectorTitle");
@@ -109,13 +134,11 @@ SceneEditor::SceneEditor(const SimulationConfig& config, QWidget* parent) : QWid
     _propertyButton->setToolTip("Add an independent property to the selected object");
     inspectorHeader->addWidget(_propertyButton, 0);
     inspectorLayout->addLayout(inspectorHeader);
+
     _inspectorMeta = new QLabel(inspectorPanel);
     _inspectorMeta->setObjectName("sceneObjectInspectorMeta");
     _inspectorMeta->setStyleSheet("color: #687080; padding-bottom: 3px;");
     inspectorLayout->addWidget(_inspectorMeta);
-    connect(_propertyButton, &QPushButton::clicked, this, [this] {
-        showPropertyMenu(_currentIndex, _propertyButton);
-    });
     _inspectorTabs = new QTabWidget(inspectorPanel);
     _inspectorTabs->setObjectName("sceneObjectInspector");
     _inspectorTabs->setDocumentMode(true);
@@ -137,23 +160,33 @@ SceneEditor::SceneEditor(const SimulationConfig& config, QWidget* parent) : QWid
     addObjectFields();
     inspectorLayout->addWidget(_inspectorTabs, 1);
     split->addWidget(inspectorPanel);
-    split->setStretchFactor(0, 0);
-    split->setStretchFactor(1, 1);
-    split->setSizes({145, 620});
-    root->addWidget(split, 1);
+}
 
+void SceneEditor::connectObjectControls()
+{
+    connectCollectionControls();
+    connectGeneratorControls();
+    connectTransformControls();
+    connectParticleSystemControls();
+}
+
+void SceneEditor::connectCollectionControls()
+{
+    connect(_propertyButton, &QPushButton::clicked, this, [this] {
+        showPropertyMenu(_currentIndex, _propertyButton);
+    });
     connect(_objects, &QListWidget::currentRowChanged, this, [this](int row) {
         commitCurrent();
         _currentIndex = row;
         loadCurrent();
     });
-    connect(add, &QPushButton::clicked, this, [this] {
+    connect(_addObject, &QPushButton::clicked, this, [this] {
         commitCurrent();
         _scene.objects.push_back(defaultObject(static_cast<int>(_scene.objects.size())));
         rebuildList();
         _objects->setCurrentRow(static_cast<int>(_scene.objects.size()) - 1);
     });
-    connect(duplicate, &QPushButton::clicked, this, [this] {
+    connect(_duplicateObject, &QPushButton::clicked, this, [this] {
         commitCurrent();
         if (_currentIndex < 0 || _currentIndex >= static_cast<int>(_scene.objects.size()))
             return;
@@ -165,7 +198,7 @@ SceneEditor::SceneEditor(const SimulationConfig& config, QWidget* parent) : QWid
         rebuildList();
         _objects->setCurrentRow(static_cast<int>(_scene.objects.size()) - 1);
     });
-    connect(remove, &QPushButton::clicked, this, [this] {
+    connect(_removeObject, &QPushButton::clicked, this, [this] {
         commitCurrent();
         if (_currentIndex < 0 || _currentIndex >= static_cast<int>(_scene.objects.size()))
             return;
@@ -173,6 +206,10 @@ SceneEditor::SceneEditor(const SimulationConfig& config, QWidget* parent) : QWid
         rebuildList();
         _objects->setCurrentRow(std::min(_currentIndex, _objects->count() - 1));
     });
+}
+
+void SceneEditor::connectGeneratorControls()
+{
     const auto commit = [this] {
         commitCurrent();
     };
@@ -203,6 +240,10 @@ SceneEditor::SceneEditor(const SimulationConfig& config, QWidget* parent) : QWid
     connect(_asset, &QCheckBox::toggled, this, [this](bool) {
         commitCurrent();
     });
+}
+
+void SceneEditor::connectTransformControls()
+{
     QDoubleSpinBox* objectFields[] = {_positionX.data(),
                                       _positionY.data(),
                                       _positionZ.data(),
@@ -241,6 +282,10 @@ SceneEditor::SceneEditor(const SimulationConfig& config, QWidget* parent) : QWid
     connect(_rotationCopies, qOverload<int>(&QSpinBox::valueChanged), this, [this](int) {
         commitCurrent();
     });
+}
+
+void SceneEditor::connectParticleSystemControls()
+{
     connect(_emitterObject, &QComboBox::currentTextChanged, this, [this](const QString&) {
         commitCurrent();
     });
@@ -256,7 +301,6 @@ SceneEditor::SceneEditor(const SimulationConfig& config, QWidget* parent) : QWid
     connect(_systemSeed, qOverload<int>(&QSpinBox::valueChanged), this, [this](int) {
         commitCurrent();
     });
-    reload(config);
 }
 
 SceneConfig SceneEditor::sceneConfiguration()
