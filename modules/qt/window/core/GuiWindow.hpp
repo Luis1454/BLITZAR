@@ -29,6 +29,7 @@
 #include <string>
 
 class QString;
+class QMenu;
 class QTabWidget;
 class QWidget;
 
@@ -49,6 +50,15 @@ private:
     void captureUiIntoConfig();
     void applyPerformanceProfileToRuntime();
     void buildMenus();
+    void buildFileMenu(QMenu* menu);
+    void buildEditMenu(QMenu* menu);
+    void buildViewMenu(QMenu* menu);
+    void buildSimulationMenu(QMenu* menu);
+    void buildWindowMenu(QMenu* menu);
+    void buildHelpMenu(QMenu* menu);
+    void buildThemeMenu(QMenu* menu);
+    void connectOverlayControls();
+    void connectTelemetryControls();
     void buildWorkspaceDocks(QTabWidget* sidebarTabs, QWidget* summaryPane,
                              QWidget* validationPane);
     QWidget* buildTelemetryPane();
