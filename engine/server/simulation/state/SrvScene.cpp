@@ -10,6 +10,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
+#include <optional>
 #include <random>
 
 static std::string sceneObjectMode(const SceneObjectConfig& object)
@@ -92,17 +94,18 @@ static Vector3 randomDiskPoint(std::mt19937& rng, float radius)
     return Vector3(std::cos(angle) * distance, std::sin(angle) * distance, 0.0f);
 }
 
-static const SceneObjectConfig* findSceneObject(const SceneConfig& scene, std::string_view id)
+static std::optional<std::reference_wrapper<const SceneObjectConfig>> findSceneObject(
+    const SceneConfig& scene, std::string_view id)
 {
     if (id.empty()) {
-        return nullptr;
+        return std::nullopt;
     }
     for (const SceneObjectConfig& object : scene.objects) {
         if (object.id == id) {
-            return &object;
+            return std::cref(object);
         }
     }
-    return nullptr;
+    return std::nullopt;
 }
 
 static bool buildSceneObjectBase(std::vector<Particle>& particles,
@@ -131,26 +134,26 @@ static bool appendReferencedObjectSystem(std::vector<Particle>& particles,
                                          const SceneConfig& scene,
                                          const InitialStateConfig& config)
 {
-    const SceneObjectConfig* emitter = findSceneObject(scene, property.emitterObjectId);
-    const SceneObjectConfig* instance = findSceneObject(scene, property.targetAssetId);
-    if (emitter == nullptr || instance == nullptr || property.particleCount == 0u) {
+    const auto emitter = findSceneObject(scene, property.emitterObjectId);
+    const auto instance = findSceneObject(scene, property.targetAssetId);
+    if (!emitter.has_value() || !instance.has_value() || property.particleCount == 0u) {
         return false;
     }
 
     std::vector<Particle> emitterParticles;
-    if (!buildSceneObjectBase(emitterParticles, *emitter, config) || emitterParticles.empty()) {
+    if (!buildSceneObjectBase(emitterParticles, emitter->get(), config) || emitterParticles.empty()) {
         return false;
     }
     particles.reserve(particles.size() + static_cast<std::size_t>(property.particleCount) *
                       static_cast<std::size_t>(std::max<std::uint32_t>(2u,
-                                                                        instance->particleCount)));
+                                                                        instance->get().particleCount)));
     for (std::uint32_t index = 0u; index < property.particleCount; ++index) {
         const std::uint64_t scaledIndex =
             static_cast<std::uint64_t>(index) * emitterParticles.size();
         const std::size_t emitterIndex = static_cast<std::size_t>(
             (scaledIndex / property.particleCount) % emitterParticles.size());
         const Particle& emitterParticle = emitterParticles[emitterIndex];
-        SceneObjectConfig instanceObject = *instance;
+        SceneObjectConfig instanceObject = instance->get();
         const Vector3 center = emitterParticle.getPosition();
         const Vector3 centerVelocity = emitterParticle.getVelocity();
         instanceObject.positionX = center.x;
@@ -255,9 +258,9 @@ bool buildGeneratedState(std::vector<Particle>& outParticles, std::uint32_t part
         }
         if (toLower(object.type) == "particle_system") {
             std::vector<Particle> source;
-            const SceneObjectConfig* emitter = findSceneObject(config.scene, object.emitterObjectId);
-            if (emitter != nullptr) {
-                (void)buildSceneObjectBase(source, *emitter, config);
+            const auto emitter = findSceneObject(config.scene, object.emitterObjectId);
+            if (emitter.has_value()) {
+                (void)buildSceneObjectBase(source, emitter->get(), config);
             }
             if (source.empty()) {
                 Particle anchor;
