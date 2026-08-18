@@ -2,8 +2,8 @@
 
 This report is diagnostic. Potential dead files require reference, registration, export, and test review before deletion.
 
-- Production source files: 467
-- Implementation functions: 1841
+- Production source files: 471
+- Implementation functions: 1869
 
 ## Modules
 
@@ -20,24 +20,24 @@ This report is diagnostic. Potential dead files require reference, registration,
 | `engine/graphics` | 6 | 31 | 19 |
 | `engine/physics` | 144 | 503 | 925 |
 | `engine/platform` | 22 | 113 | 11 |
-| `engine/server` | 42 | 174 | 125 |
+| `engine/server` | 42 | 181 | 111 |
 | `engine/types` | 2 | 1 | 0 |
 | `modules/cli` | 11 | 27 | 17 |
 | `modules/echo` | 1 | 6 | 10 |
 | `modules/proxy` | 3 | 22 | 18 |
-| `modules/qt` | 67 | 275 | 385 |
-| `runtime/client` | 28 | 229 | 44 |
+| `modules/qt` | 71 | 296 | 202 |
+| `runtime/client` | 28 | 229 | 40 |
 | `runtime/command` | 12 | 37 | 7 |
 | `runtime/ffi` | 7 | 50 | 97 |
-| `runtime/protocol` | 11 | 44 | 2 |
+| `runtime/protocol` | 11 | 44 | 0 |
 | `runtime/server` | 6 | 21 | 6 |
 
 ## Pointer Classification
 
 - `ABI or process boundary`: 67
-- `Qt boundary`: 385
-- `borrowed or ownership candidate`: 1184
-- `borrowed text`: 53
+- `Qt boundary`: 202
+- `borrowed or ownership candidate`: 1165
+- `borrowed text`: 52
 
 ## Potential Dead Files
 
@@ -82,6 +82,10 @@ No file in this section is deleted automatically.
 - `modules/qt/window/config/GuiWindowConfigUi.cpp`
 - `modules/qt/window/control/GuiController.cpp`
 - `modules/qt/window/control/GuiControls.cpp`
+- `modules/qt/window/control/GuiControlsPhysics.cpp`
+- `modules/qt/window/control/GuiControlsRender.cpp`
+- `modules/qt/window/control/GuiControlsRun.cpp`
+- `modules/qt/window/control/GuiControlsScene.cpp`
 - `modules/qt/window/core/GuiWidgets.cpp`
 - `modules/qt/window/core/GuiWindow.cpp`
 - `modules/qt/window/layout/GuiLayout.cpp`
