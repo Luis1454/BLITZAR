@@ -107,25 +107,26 @@ static bool startModule(const ExportsV1& exports,
     return true;
 }
 
+bool Handle::destroyStateNoexcept() noexcept
+{
+    if (!m_impl->exports.has_value() || !m_impl->state.hasValue())
+        return true;
+    try {
+        m_impl->exports->destroy(m_impl->state.rawPointer());
+    }
+    catch (...) {
+        return false;
+    }
+    m_impl->state.clear();
+    return true;
+}
+
 bool Handle::load(const std::string& modulePath, const std::string& configPath,
                               std::string_view expectedModuleId, std::string& outError)
 {
     if (!m_impl)
         m_impl = std::make_unique<Impl>();
     unload();
-    const auto destroyStateNoexcept = [this]() -> bool {
-        if (!m_impl->exports.has_value() || !m_impl->state.hasValue()) {
-            return true;
-        }
-        try {
-            m_impl->exports->destroy(m_impl->state.rawPointer());
-        }
-        catch (...) {
-            return false;
-        }
-        m_impl->state.clear();
-        return true;
-    };
     std::error_code ec;
     const std::filesystem::path requested(modulePath);
     const std::filesystem::path normalized =

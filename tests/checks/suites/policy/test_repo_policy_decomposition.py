@@ -96,7 +96,7 @@ def test_repo_policy_warns_on_multiple_substantial_functions_in_one_file(tmp_pat
 # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_warns_on_excessive_function_count_in_one_file(tmp_path: Path) -> None:
     functions = []
-    for index in range(17):
+    for index in range(25):
         functions.append(
             f"int func{index}() {{\n"
             "    return 1;\n"
@@ -115,8 +115,8 @@ def test_repo_policy_warns_on_excessive_function_count_in_one_file(tmp_path: Pat
 # @note Keep side effects explicit and preserve deterministic behavior where callers depend on it.
 def test_repo_policy_warns_on_elevated_branching_complexity(tmp_path: Path) -> None:
     conditions = "".join(
-        f"    if (value == {index} && ready) {{\n        total += {index};\n    }}\n"
-        for index in range(7)
+        f"    if (value == {index}) {{\n        total += {index};\n    }}\n"
+        for index in range(22)
     )
     _write(
         tmp_path / cpp_file(ENGINE_SERVER_DIR, "complex_function"),

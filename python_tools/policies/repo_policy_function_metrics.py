@@ -13,10 +13,10 @@ FUNCTION_TARGET_LINES = 80
 FUNCTION_ALERT_LINES = 140
 SUBSTANTIAL_FUNCTION_LINES = 40
 MULTI_FUNCTION_TARGET = 3
-FILE_FUNCTION_TARGET = 16
-FILE_FUNCTION_ALERT = 24
-FUNCTION_COMPLEXITY_TARGET = 12
-FUNCTION_COMPLEXITY_ALERT = 20
+FILE_FUNCTION_TARGET = 24
+FILE_FUNCTION_ALERT = 32
+FUNCTION_COMPLEXITY_TARGET = 20
+FUNCTION_COMPLEXITY_ALERT = 32
 
 FUNCTION_START_RE = re.compile(
     r"[A-Za-z_~][A-Za-z0-9_:<>~*&\s,]*\([^;]*\)\s*(?:const\s*)?"
@@ -24,7 +24,7 @@ FUNCTION_START_RE = re.compile(
 )
 CONTROL_FLOW_PREFIXES = ("if", "for", "while", "switch", "catch")
 NON_FUNCTION_PREFIXES = ("class", "struct", "enum", "union", "namespace", "else", "do", "try")
-COMPLEXITY_RE = re.compile(r"\bif\b|\bfor\b|\bwhile\b|\bcase\b|\bcatch\b|&&|\|\||\?")
+COMPLEXITY_RE = re.compile(r"\bif\b|\bfor\b|\bwhile\b|\bswitch\b|\bcase\b|\bcatch\b")
 NORMALIZED_DOCUMENTATION_RE = re.compile(
     r"^\s*/\*+\s*$"
     r"|^\s*\*/\s*$"

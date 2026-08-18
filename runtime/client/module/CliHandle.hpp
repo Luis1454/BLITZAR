@@ -30,6 +30,7 @@ public:
 
 private:
     struct Impl;
+    bool destroyStateNoexcept() noexcept;
     std::unique_ptr<Impl> m_impl;
 };
 } // namespace bltzr_module

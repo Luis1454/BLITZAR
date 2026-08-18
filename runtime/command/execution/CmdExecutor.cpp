@@ -15,6 +15,7 @@
 #include "protocol/PtcProtocol.hpp"
 #include "server/simulation/configuration/SrvSimulationInitConfig.hpp"
 #include <ostream>
+#include <optional>
 
 namespace bltzr_cmd {
 static std::string argString(const Request& request, std::size_t index)
@@ -62,12 +63,8 @@ static Result sendChecked(ExecutionContext& context, const std::string& cmd,
     return makeSuccess();
 }
 
-static Result applyConfig(ExecutionContext& context, bool requestReset)
+static Result applyCoreConfig(ExecutionContext& context)
 {
-    const bltzr_config::ScenarioValidationReport report =
-        bltzr_config::SimulationScenarioValidation::evaluate(context.session.config);
-    if (!report.validForRun)
-        return makeFailure(bltzr_config::SimulationScenarioValidation::renderText(report));
     Result result = sendChecked(
         context, std::string(bltzr_protocol::SetParticleCount),
         "\"value\":" +
@@ -98,10 +95,15 @@ static Result applyConfig(ExecutionContext& context, bool requestReset)
                              "\"");
     if (!result.ok)
         return result;
-    result =
-        sendChecked(context, std::string(bltzr_protocol::SetOctree),
-                    "\"theta\":" + std::to_string(context.session.config.octreeTheta) +
-                        ",\"softening\":" + std::to_string(context.session.config.octreeSoftening));
+    return makeSuccess();
+}
+
+static Result applyPhysicsConfig(ExecutionContext& context)
+{
+    Result result = sendChecked(
+        context, std::string(bltzr_protocol::SetOctree),
+        "\"theta\":" + std::to_string(context.session.config.octreeTheta) +
+            ",\"softening\":" + std::to_string(context.session.config.octreeSoftening));
     if (!result.ok)
         return result;
     result = sendChecked(context, std::string(bltzr_protocol::SetSph),
@@ -128,14 +130,18 @@ static Result applyConfig(ExecutionContext& context, bool requestReset)
                              std::to_string(context.session.config.snapshotPublishPeriodMs));
     if (!result.ok)
         return result;
-    result = sendChecked(
+    return makeSuccess();
+}
+
+static Result applyInitialStateConfig(ExecutionContext& context, bool requestReset)
+{
+    Result result = sendChecked(
         context, std::string(bltzr_protocol::SetEnergyMeasure),
         "\"every_steps\":" + std::to_string(context.session.config.energyMeasureEverySteps) +
             ",\"sample_limit\":" + std::to_string(context.session.config.energySampleLimit));
     if (!result.ok)
         return result;
-    const ResolvedInitialStatePlan initPlan =
-        resolveInitialStatePlan(context.session.config, context.output);
+    const ResolvedInitialStatePlan initPlan = resolveInitialStatePlan(context.session.config, context.output);
     if (!initPlan.inputFile.empty()) {
         result = sendChecked(context, std::string(bltzr_protocol::Load),
                              "\"path\":\"" +
@@ -151,8 +157,26 @@ static Result applyConfig(ExecutionContext& context, bool requestReset)
         result = sendChecked(context, std::string(bltzr_protocol::Reset));
     if (!result.ok)
         return result;
-    context.output << "[command] initial-state templates remain server-owned over the remote API\n";
     return makeSuccess("config applied");
+}
+
+static Result applyConfig(ExecutionContext& context, bool requestReset)
+{
+    const bltzr_config::ScenarioValidationReport report =
+        bltzr_config::SimulationScenarioValidation::evaluate(context.session.config);
+    if (!report.validForRun)
+        return makeFailure(bltzr_config::SimulationScenarioValidation::renderText(report));
+    Result result = applyCoreConfig(context);
+    if (!result.ok)
+        return result;
+    result = applyPhysicsConfig(context);
+    if (!result.ok)
+        return result;
+    result = applyInitialStateConfig(context, requestReset);
+    if (!result.ok)
+        return result;
+    context.output << "[command] initial-state templates remain server-owned over the remote API\n";
+    return result;
 }
 
 static Result renderStatus(ExecutionContext& context)
@@ -205,12 +229,9 @@ static Result runUntil(ExecutionContext& context, double targetTime)
     }
 }
 
-Result execute(const Request& request, ExecutionContext& context)
+static std::optional<Result> executeSessionCommand(const Request& request,
+                                                    ExecutionContext& context)
 {
-    if (request.id == Id::Help) {
-        context.output << Catalog::renderHelp();
-        return makeSuccess();
-    }
     if (request.id == Id::LoadConfig) {
         context.session.configPath = argString(request, 0u);
         context.session.config = SimulationConfig::loadOrCreate(context.session.configPath);
@@ -232,6 +253,12 @@ Result execute(const Request& request, ExecutionContext& context)
     }
     if (request.id == Id::Status)
         return renderStatus(context);
+    return std::nullopt;
+}
+
+static std::optional<Result> executeControlCommand(const Request& request,
+                                                    ExecutionContext& context)
+{
     if (request.id == Id::Pause)
         return sendChecked(context, std::string(bltzr_protocol::Pause));
     if (request.id == Id::Resume)
@@ -248,6 +275,14 @@ Result execute(const Request& request, ExecutionContext& context)
         return sendChecked(context, std::string(bltzr_protocol::Recover));
     if (request.id == Id::Shutdown)
         return sendChecked(context, std::string(bltzr_protocol::Shutdown));
+    if (request.id == Id::RunSteps)
+        return runSteps(context, argUint(request, 0u));
+    return std::nullopt;
+}
+
+static std::optional<Result> executeConfigurationCommand(const Request& request,
+                                                         ExecutionContext& context)
+{
     if (request.id == Id::SetDt) {
         context.session.config.dt = static_cast<float>(argFloat(request, 0u));
         return sendChecked(context, std::string(bltzr_protocol::SetDt),
@@ -287,6 +322,12 @@ Result execute(const Request& request, ExecutionContext& context)
         return sendChecked(context, std::string(bltzr_protocol::SetParticleCount),
                            "\"value\":" + std::to_string(context.session.config.particleCount));
     }
+    return std::nullopt;
+}
+
+static std::optional<Result> executePersistenceCommand(const Request& request,
+                                                       ExecutionContext& context)
+{
     if (request.id == Id::ExportSnapshot) {
         const std::string path = argString(request, 0u);
         const std::string format = request.arguments.size() >= 2u
@@ -309,9 +350,24 @@ Result execute(const Request& request, ExecutionContext& context)
         return sendChecked(
             context, std::string(bltzr_protocol::LoadCheckpoint),
             "\"path\":\"" + bltzr_protocol::JsonCodec::escapeString(argString(request, 0u)) +
-                "\"");
-    if (request.id == Id::RunSteps)
-        return runSteps(context, argUint(request, 0u));
+                 "\"");
+    return std::nullopt;
+}
+
+Result execute(const Request& request, ExecutionContext& context)
+{
+    if (request.id == Id::Help) {
+        context.output << Catalog::renderHelp();
+        return makeSuccess();
+    }
+    if (const auto result = executeSessionCommand(request, context); result.has_value())
+        return *result;
+    if (const auto result = executeControlCommand(request, context); result.has_value())
+        return *result;
+    if (const auto result = executeConfigurationCommand(request, context); result.has_value())
+        return *result;
+    if (const auto result = executePersistenceCommand(request, context); result.has_value())
+        return *result;
     return runUntil(context, argFloat(request, 0u));
 }
 } // namespace bltzr_cmd

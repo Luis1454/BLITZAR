@@ -7,19 +7,49 @@
 
 #include "widgets/graphs/GuiPaint.hpp"
 #include "widgets/graphs/GuiGraph.hpp"
-#include <QPaintEvent>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPalette>
 #include <QPen>
-#include <QRectF>
-#include <QStringView>
+#include <QStringList>
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <limits>
 
 namespace bltzr_qt {
+struct GraphPaintColors {
+    QColor background;
+    QColor border;
+    QColor grid;
+    QColor label;
+    QColor kinetic;
+    QColor potential;
+    QColor thermal;
+    QColor radiated;
+    QColor total;
+    QColor drift;
+};
+
+struct GraphPaintLayout {
+    QRectF outer;
+    QRectF header;
+    QRectF legend;
+    QRectF energy;
+    QRectF drift;
+    qreal headerLineHeight = 0.0;
+    qreal legendRowHeight = 0.0;
+};
+
+struct GraphPaintBounds {
+    std::size_t start = 0u;
+    float minEnergy = 0.0f;
+    float maxEnergy = 1.0f;
+    float maxAbsDrift = 0.01f;
+    float minTime = 0.0f;
+    float maxTime = 1.0f;
+};
+
 static bool isDarkTheme(const QPalette& palette)
 {
     return palette.color(QPalette::Window).lightness() < 128;
@@ -30,283 +60,329 @@ static QColor panelCurveColor(const QColor& darkColor, const QColor& lightColor,
     return darkTheme ? darkColor : lightColor;
 }
 
-void paintGraph(QWidget& widget, const std::vector<EnergyPoint>& history, UiPaintEvent* event)
+static GraphPaintColors resolveColors(const QPalette& palette)
 {
-    (void)event;
-    QPainter p(&widget);
-    const QPalette widgetPalette = widget.palette();
-    const bool darkTheme = isDarkTheme(widgetPalette);
-    const QColor background = widgetPalette.color(QPalette::Window);
-    const QColor border = widgetPalette.color(QPalette::Mid);
-    const QColor labelColor = widgetPalette.color(QPalette::WindowText);
-    QColor gridColor = border;
-    gridColor.setAlpha(darkTheme ? 190 : 120);
-    const QColor kineticColor =
-        panelCurveColor(QColor(92, 255, 140), QColor(0, 122, 52), darkTheme);
-    const QColor potentialColor =
-        panelCurveColor(QColor(255, 120, 108), QColor(180, 45, 35), darkTheme);
-    const QColor thermalColor =
-        panelCurveColor(QColor(255, 170, 90), QColor(176, 99, 10), darkTheme);
-    const QColor radiatedColor =
-        panelCurveColor(QColor(180, 120, 255), QColor(108, 52, 188), darkTheme);
-    const QColor totalColor =
-        panelCurveColor(QColor(120, 200, 255), QColor(0, 102, 170), darkTheme);
-    const QColor driftColor =
-        panelCurveColor(QColor(255, 230, 120), QColor(168, 132, 0), darkTheme);
-    p.fillRect(widget.rect(), background);
-    p.setPen(border);
-    p.drawRect(widget.rect().adjusted(0, 0, -1, -1));
-    const QRectF outerRect = widget.rect().adjusted(12, 10, -12, -10);
-    const QFontMetricsF metrics = p.fontMetrics();
-    const QStringList shortLabels = {QStringLiteral("Kin"),   QStringLiteral("Pot"),
-                                     QStringLiteral("Therm"), QStringLiteral("Rad"),
-                                     QStringLiteral("Total"), QStringLiteral("Drift")};
-    const qreal headerLineHeight = metrics.height() + 2.0;
-    const qreal headerHeight = headerLineHeight * 2.0 + 8.0;
-    const qreal legendInset = 2.0;
-    const qreal legendGapX = 10.0;
-    const qreal legendLineWidth = 12.0;
-    const qreal legendTextGap = 4.0;
-    const qreal legendRowHeight = metrics.height() + 4.0;
-    const qreal legendAvailableWidth =
-        std::max<qreal>(120.0, outerRect.width() - legendInset * 2.0);
+    const bool darkTheme = isDarkTheme(palette);
+    GraphPaintColors colors;
+    colors.background = palette.color(QPalette::Window);
+    colors.border = palette.color(QPalette::Mid);
+    colors.grid = colors.border;
+    colors.grid.setAlpha(darkTheme ? 190 : 120);
+    colors.label = palette.color(QPalette::WindowText);
+    colors.kinetic = panelCurveColor(QColor(92, 255, 140), QColor(0, 122, 52), darkTheme);
+    colors.potential = panelCurveColor(QColor(255, 120, 108), QColor(180, 45, 35), darkTheme);
+    colors.thermal = panelCurveColor(QColor(255, 170, 90), QColor(176, 99, 10), darkTheme);
+    colors.radiated = panelCurveColor(QColor(180, 120, 255), QColor(108, 52, 188), darkTheme);
+    colors.total = panelCurveColor(QColor(120, 200, 255), QColor(0, 102, 170), darkTheme);
+    colors.drift = panelCurveColor(QColor(255, 230, 120), QColor(168, 132, 0), darkTheme);
+    return colors;
+}
+
+static GraphPaintLayout createLayout(const QRect& widgetRect, const QFontMetricsF& metrics,
+                                     const QStringList& labels)
+{
+    GraphPaintLayout layout;
+    layout.outer = widgetRect.adjusted(12, 10, -12, -10);
+    layout.headerLineHeight = metrics.height() + 2.0;
+    const qreal headerHeight = layout.headerLineHeight * 2.0 + 8.0;
+    constexpr qreal legendInset = 2.0;
+    constexpr qreal legendGapX = 10.0;
+    constexpr qreal legendLineWidth = 12.0;
+    constexpr qreal legendTextGap = 4.0;
+    layout.legendRowHeight = metrics.height() + 4.0;
+    const qreal availableWidth = std::max<qreal>(120.0, layout.outer.width() - legendInset * 2.0);
     int legendRows = 1;
-    qreal legendRowWidth = 0.0;
-    for (const QString& label : shortLabels) {
-        const qreal entryWidth =
-            legendLineWidth + legendTextGap + metrics.horizontalAdvance(label) + legendGapX;
-        if (legendRowWidth > 0.0 && legendRowWidth + entryWidth > legendAvailableWidth) {
-            legendRows += 1;
-            legendRowWidth = 0.0;
+    qreal rowWidth = 0.0;
+    for (const QString& label : labels) {
+        const qreal entryWidth = legendLineWidth + legendTextGap + metrics.horizontalAdvance(label) +
+                                 legendGapX;
+        if (rowWidth > 0.0 && rowWidth + entryWidth > availableWidth) {
+            ++legendRows;
+            rowWidth = 0.0;
         }
-        legendRowWidth += entryWidth;
+        rowWidth += entryWidth;
     }
-    const qreal legendHeight = legendRows * legendRowHeight + 2.0;
-    const QRectF plotRect(
-        outerRect.left() + 40.0, outerRect.top() + headerHeight + legendHeight,
-        std::max<qreal>(120.0, outerRect.width() - 48.0),
-        std::max<qreal>(64.0, outerRect.height() - headerHeight - legendHeight - 18.0));
-    const qreal splitY = plotRect.top() + plotRect.height() * 0.68;
-    const QRectF energyRect(plotRect.left(), plotRect.top(), plotRect.width(),
-                            splitY - plotRect.top() - 6.0);
-    const QRectF driftRect(plotRect.left(), splitY + 6.0, plotRect.width(),
-                           plotRect.bottom() - (splitY + 6.0));
-    const QRectF headerRect(outerRect.left(), outerRect.top(), outerRect.width(), headerHeight);
-    const QRectF legendRect(outerRect.left(), outerRect.top() + headerHeight, outerRect.width(),
-                            legendHeight);
-    p.setPen(gridColor);
-    p.drawLine(QPointF(plotRect.left(), splitY), QPointF(plotRect.right(), splitY));
-    p.drawRect(energyRect);
-    p.drawRect(driftRect);
-    const auto formatMetric = [](float value, const QString& suffix) {
-        return QString::number(value, std::fabs(value) >= 1000.0f ? 'g' : 'f',
-                               std::fabs(value) >= 100.0f ? 1 : 2) +
-               suffix;
-    };
-    const auto drawAxisLabels = [&]() {
-        p.setPen(labelColor);
-        p.drawText(QRectF(energyRect.left() + 6.0, energyRect.top() + 2.0, 120.0, 14.0),
-                   Qt::AlignLeft | Qt::AlignVCenter, Graph::energyYAxisLabel());
-        p.drawText(QRectF(driftRect.left() + 6.0, driftRect.top() + 2.0, 100.0, 14.0),
-                   Qt::AlignLeft | Qt::AlignVCenter, Graph::driftYAxisLabel());
-    };
-    const auto drawLegend = [&]() {
-        const std::array<QColor, 6> colors = {kineticColor,  potentialColor, thermalColor,
-                                              radiatedColor, totalColor,     driftColor};
-        qreal x = legendRect.left() + legendInset;
-        qreal y = legendRect.top() + metrics.ascent();
-        for (int i = 0; i < shortLabels.size() && i < static_cast<int>(colors.size()); ++i) {
-            const QString& label = shortLabels.at(i);
-            const qreal entryWidth =
-                legendLineWidth + legendTextGap + metrics.horizontalAdvance(label) + legendGapX;
-            if (x > legendRect.left() + legendInset &&
-                x + entryWidth > legendRect.right() - legendInset) {
-                x = legendRect.left() + legendInset;
-                y += legendRowHeight;
-            }
-            p.setPen(QPen(colors.at(i), 2.0));
-            p.drawLine(QPointF(x, y - metrics.ascent() * 0.35),
-                       QPointF(x + legendLineWidth, y - metrics.ascent() * 0.35));
-            p.setPen(labelColor);
-            p.drawText(QPointF(x + legendLineWidth + legendTextGap, y), label);
-            x += entryWidth;
-        }
-    };
-    const auto drawHeader = [&]() {
-        p.setPen(labelColor);
-        p.drawText(
-            QRectF(headerRect.left(), headerRect.top(), headerRect.width(), headerLineHeight),
-            Qt::AlignLeft | Qt::AlignVCenter, QStringLiteral("Energy timeline"));
-        if (history.empty()) {
-            p.drawText(QRectF(headerRect.left(), headerRect.top() + headerLineHeight,
-                              headerRect.width(), headerLineHeight),
-                       Qt::AlignLeft | Qt::AlignVCenter, QStringLiteral("Waiting for telemetry"));
-            return;
-        }
-        const EnergyPoint& latest = history.back();
-        const QString summary = QStringLiteral("Total %1    Drift %2    Time %3    Samples %4")
-                                    .arg(formatMetric(latest.total, QStringLiteral(" J")))
-                                    .arg(formatMetric(latest.drift, QStringLiteral("%")))
-                                    .arg(formatMetric(latest.time, QStringLiteral(" s")))
-                                    .arg(history.size());
-        p.drawText(QRectF(headerRect.left(), headerRect.top() + headerLineHeight,
-                          headerRect.width(), headerLineHeight),
-                   Qt::AlignLeft | Qt::AlignVCenter, summary);
-    };
-    drawHeader();
-    drawAxisLabels();
-    drawLegend();
-    if (history.size() < 2) {
-        p.setPen(labelColor);
-        p.drawText(energyRect, Qt::AlignCenter, QStringLiteral("Waiting for energy telemetry"));
+    const qreal legendHeight = legendRows * layout.legendRowHeight + 2.0;
+    const QRectF plot(
+        layout.outer.left() + 40.0, layout.outer.top() + headerHeight + legendHeight,
+        std::max<qreal>(120.0, layout.outer.width() - 48.0),
+        std::max<qreal>(64.0, layout.outer.height() - headerHeight - legendHeight - 18.0));
+    const qreal splitY = plot.top() + plot.height() * 0.68;
+    layout.energy = QRectF(plot.left(), plot.top(), plot.width(), splitY - plot.top() - 6.0);
+    layout.drift = QRectF(plot.left(), splitY + 6.0, plot.width(), plot.bottom() - splitY - 6.0);
+    layout.header = QRectF(layout.outer.left(), layout.outer.top(), layout.outer.width(), headerHeight);
+    layout.legend = QRectF(layout.outer.left(), layout.outer.top() + headerHeight,
+                           layout.outer.width(), legendHeight);
+    return layout;
+}
+
+static QString formatMetric(float value, const QString& suffix)
+{
+    return QString::number(value, std::fabs(value) >= 1000.0f ? 'g' : 'f',
+                            std::fabs(value) >= 100.0f ? 1 : 2) + suffix;
+}
+
+static void drawFrame(QPainter& painter, const QRect& widgetRect, const GraphPaintLayout& layout,
+                      const GraphPaintColors& colors)
+{
+    painter.fillRect(widgetRect, colors.background);
+    painter.setPen(colors.border);
+    painter.drawRect(widgetRect.adjusted(0, 0, -1, -1));
+    painter.setPen(colors.grid);
+    painter.drawLine(QPointF(layout.energy.left(), layout.energy.bottom() + 6.0),
+                     QPointF(layout.energy.right(), layout.energy.bottom() + 6.0));
+    painter.drawRect(layout.energy);
+    painter.drawRect(layout.drift);
+}
+
+static void drawHeader(QPainter& painter, const GraphPaintLayout& layout,
+                       const GraphPaintColors& colors, const std::vector<EnergyPoint>& history)
+{
+    painter.setPen(colors.label);
+    painter.drawText(QRectF(layout.header.left(), layout.header.top(), layout.header.width(),
+                            layout.headerLineHeight),
+                     Qt::AlignLeft | Qt::AlignVCenter, QStringLiteral("Energy timeline"));
+    const QRectF summaryRect(layout.header.left(), layout.header.top() + layout.headerLineHeight,
+                             layout.header.width(), layout.headerLineHeight);
+    if (history.empty()) {
+        painter.drawText(summaryRect, Qt::AlignLeft | Qt::AlignVCenter,
+                         QStringLiteral("Waiting for telemetry"));
         return;
     }
-    constexpr std::size_t visibleSampleLimit = 160u;
-    constexpr float visibleTimeSpanSec = 12.0f;
-    std::size_t visibleStart =
-        (history.size() > visibleSampleLimit) ? (history.size() - visibleSampleLimit) : 0u;
     const EnergyPoint& latest = history.back();
-    for (std::size_t i = history.size(); i > 0u; --i) {
-        const std::size_t index = i - 1u;
-        if (latest.time - history[index].time > visibleTimeSpanSec && index >= visibleStart) {
-            visibleStart = index + 1u;
+    const QString summary = QStringLiteral("Total %1    Drift %2    Time %3    Samples %4")
+                                .arg(formatMetric(latest.total, QStringLiteral(" J")))
+                                .arg(formatMetric(latest.drift, QStringLiteral("%")))
+                                .arg(formatMetric(latest.time, QStringLiteral(" s")))
+                                .arg(history.size());
+    painter.drawText(summaryRect, Qt::AlignLeft | Qt::AlignVCenter, summary);
+}
+
+static void drawAxisLabels(QPainter& painter, const GraphPaintLayout& layout,
+                           const GraphPaintColors& colors)
+{
+    painter.setPen(colors.label);
+    painter.drawText(QRectF(layout.energy.left() + 6.0, layout.energy.top() + 2.0, 120.0, 14.0),
+                     Qt::AlignLeft | Qt::AlignVCenter, Graph::energyYAxisLabel());
+    painter.drawText(QRectF(layout.drift.left() + 6.0, layout.drift.top() + 2.0, 100.0, 14.0),
+                     Qt::AlignLeft | Qt::AlignVCenter, Graph::driftYAxisLabel());
+}
+
+static void drawLegend(QPainter& painter, const GraphPaintLayout& layout,
+                       const GraphPaintColors& colors, const QStringList& labels,
+                       const QFontMetricsF& metrics)
+{
+    constexpr qreal inset = 2.0;
+    constexpr qreal gapX = 10.0;
+    constexpr qreal lineWidth = 12.0;
+    constexpr qreal textGap = 4.0;
+    const std::array<QColor, 6> curveColors = {colors.kinetic, colors.potential, colors.thermal,
+                                                colors.radiated, colors.total, colors.drift};
+    qreal x = layout.legend.left() + inset;
+    qreal y = layout.legend.top() + metrics.ascent();
+    for (int index = 0; index < labels.size() && index < static_cast<int>(curveColors.size());
+         ++index) {
+        const QString& label = labels.at(index);
+        const qreal entryWidth = lineWidth + textGap + metrics.horizontalAdvance(label) + gapX;
+        if (x > layout.legend.left() + inset &&
+            x + entryWidth > layout.legend.right() - inset) {
+            x = layout.legend.left() + inset;
+            y += layout.legendRowHeight;
+        }
+        painter.setPen(QPen(curveColors.at(index), 2.0));
+        painter.drawLine(QPointF(x, y - metrics.ascent() * 0.35),
+                         QPointF(x + lineWidth, y - metrics.ascent() * 0.35));
+        painter.setPen(colors.label);
+        painter.drawText(QPointF(x + lineWidth + textGap, y), label);
+        x += entryWidth;
+    }
+}
+
+static std::size_t visibleStart(const std::vector<EnergyPoint>& history)
+{
+    constexpr std::size_t sampleLimit = 160u;
+    constexpr float timeSpanSec = 12.0f;
+    std::size_t start = history.size() > sampleLimit ? history.size() - sampleLimit : 0u;
+    const float latestTime = history.back().time;
+    for (std::size_t index = history.size(); index > 0u; --index) {
+        const std::size_t candidate = index - 1u;
+        if (latestTime - history[candidate].time > timeSpanSec && candidate >= start) {
+            start = candidate + 1u;
             break;
         }
     }
-    if (history.size() - visibleStart < 2u) {
-        visibleStart = history.size() >= 2u ? (history.size() - 2u) : 0u;
+    return history.size() - start < 2u ? history.size() - 2u : start;
+}
+
+static GraphPaintBounds calculateBounds(const std::vector<EnergyPoint>& history)
+{
+    GraphPaintBounds bounds;
+    bounds.start = visibleStart(history);
+    bounds.minEnergy = std::numeric_limits<float>::infinity();
+    bounds.maxEnergy = -std::numeric_limits<float>::infinity();
+    bounds.minTime = std::numeric_limits<float>::infinity();
+    bounds.maxTime = -std::numeric_limits<float>::infinity();
+    for (std::size_t index = bounds.start; index < history.size(); ++index) {
+        const EnergyPoint& sample = history[index];
+        bounds.minEnergy = std::min(
+            bounds.minEnergy, std::min(std::min(sample.kinetic, sample.potential),
+                                       std::min(sample.thermal, std::min(sample.radiated, sample.total))));
+        bounds.maxEnergy = std::max(
+            bounds.maxEnergy, std::max(std::max(sample.kinetic, sample.potential),
+                                       std::max(sample.thermal, std::max(sample.radiated, sample.total))));
+        bounds.maxAbsDrift = std::max(bounds.maxAbsDrift, std::fabs(sample.drift));
+        bounds.minTime = std::min(bounds.minTime, sample.time);
+        bounds.maxTime = std::max(bounds.maxTime, sample.time);
     }
-    float minEnergy = std::numeric_limits<float>::infinity();
-    float maxEnergy = -std::numeric_limits<float>::infinity();
-    float maxAbsDrift = 0.01f;
-    float minTime = std::numeric_limits<float>::infinity();
-    float maxTime = -std::numeric_limits<float>::infinity();
-    for (std::size_t i = visibleStart; i < history.size(); ++i) {
-        const EnergyPoint& sample = history[i];
-        minEnergy = std::min(
-            minEnergy, std::min(std::min(sample.kinetic, sample.potential),
-                                std::min(sample.thermal, std::min(sample.radiated, sample.total))));
-        maxEnergy = std::max(
-            maxEnergy, std::max(std::max(sample.kinetic, sample.potential),
-                                std::max(sample.thermal, std::max(sample.radiated, sample.total))));
-        maxAbsDrift = std::max(maxAbsDrift, std::fabs(sample.drift));
-        minTime = std::min(minTime, sample.time);
-        maxTime = std::max(maxTime, sample.time);
+    if (bounds.maxEnergy <= bounds.minEnergy + 1e-9f)
+        bounds.maxEnergy = bounds.minEnergy + 1.0f;
+    if (bounds.maxTime <= bounds.minTime + 1e-6f)
+        bounds.maxTime = bounds.minTime + 1.0f;
+    return bounds;
+}
+
+template <typename ValueAccessor>
+static QPainterPath buildPath(const std::vector<EnergyPoint>& history, const QRectF& targetRect,
+                              const GraphPaintBounds& bounds, ValueAccessor valueAccessor,
+                              float valueMin, float valueMax, bool centered)
+{
+    QPainterPath path;
+    for (std::size_t index = bounds.start; index < history.size(); ++index) {
+        const EnergyPoint& sample = history[index];
+        const qreal timeNorm = static_cast<qreal>((sample.time - bounds.minTime) /
+                                                  (bounds.maxTime - bounds.minTime));
+        const qreal x = targetRect.left() + targetRect.width() * std::clamp(timeNorm, 0.0, 1.0);
+        const float value = valueAccessor(sample);
+        const float normalized = centered ? value / valueMax : (value - valueMin) / (valueMax - valueMin);
+        const qreal y = targetRect.top() + targetRect.height() *
+                        (1.0 - (centered ? normalized * 0.5f + 0.5f : normalized));
+        if (index == bounds.start)
+            path.moveTo(x, y);
+        else
+            path.lineTo(x, y);
     }
-    if (maxEnergy <= minEnergy + 1e-9f)
-        maxEnergy = minEnergy + 1.0f;
-    if (maxTime <= minTime + 1e-6f)
-        maxTime = minTime + 1.0f;
-    const auto buildPath = [&](auto valueAccessor, const QRectF& targetRect, float vMin, float vMax,
-                               bool centered) {
-        QPainterPath path;
-        for (std::size_t i = visibleStart; i < history.size(); ++i) {
-            const qreal timeNorm =
-                static_cast<qreal>((history[i].time - minTime) / (maxTime - minTime));
-            const qreal x = targetRect.left() + targetRect.width() * std::clamp(timeNorm, 0.0, 1.0);
-            const float value = valueAccessor(history[i]);
-            qreal y = 0.0;
-            if (centered) {
-                const float norm = value / vMax;
-                y = targetRect.top() + targetRect.height() * (1.0 - (norm * 0.5f + 0.5f));
-            }
-            else {
-                const float norm = (value - vMin) / (vMax - vMin);
-                y = targetRect.top() + targetRect.height() * (1.0 - norm);
-            }
-            if (i == visibleStart) {
-                path.moveTo(x, y);
-            }
-            else {
-                path.lineTo(x, y);
-            }
-        }
-        return path;
+    return path;
+}
+
+static QColor faded(QColor color)
+{
+    color.setAlpha(185);
+    return color;
+}
+
+static void drawEnergyCurves(QPainter& painter, const GraphPaintLayout& layout,
+                             const GraphPaintColors& colors,
+                             const std::vector<EnergyPoint>& history,
+                             const GraphPaintBounds& bounds)
+{
+    const auto drawCurve = [&](const QColor& color, qreal width, auto accessor) {
+        painter.setPen(QPen(color, width));
+        painter.drawPath(buildPath(history, layout.energy, bounds, accessor, bounds.minEnergy,
+                                   bounds.maxEnergy, false));
     };
-    p.setRenderHint(QPainter::Antialiasing, true);
-    const auto faded = [](QColor color) {
-        color.setAlpha(185);
-        return color;
-    };
-    p.setPen(QPen(faded(kineticColor), 1.2));
-    p.drawPath(buildPath(
-        [](const EnergyPoint& point) {
-            return point.kinetic;
-        },
-        energyRect, minEnergy, maxEnergy, false));
-    p.setPen(QPen(faded(potentialColor), 1.2));
-    p.drawPath(buildPath(
-        [](const EnergyPoint& point) {
-            return point.potential;
-        },
-        energyRect, minEnergy, maxEnergy, false));
-    p.setPen(QPen(totalColor, 2.1));
-    p.drawPath(buildPath(
-        [](const EnergyPoint& point) {
-            return point.total;
-        },
-        energyRect, minEnergy, maxEnergy, false));
-    p.setPen(QPen(faded(thermalColor), 1.0));
-    p.drawPath(buildPath(
-        [](const EnergyPoint& point) {
-            return point.thermal;
-        },
-        energyRect, minEnergy, maxEnergy, false));
-    p.setPen(QPen(faded(radiatedColor), 1.0));
-    p.drawPath(buildPath(
-        [](const EnergyPoint& point) {
-            return point.radiated;
-        },
-        energyRect, minEnergy, maxEnergy, false));
-    p.setPen(gridColor);
-    if (minEnergy < 0.0f && maxEnergy > 0.0f) {
-        const qreal zeroNorm = static_cast<qreal>((0.0f - minEnergy) / (maxEnergy - minEnergy));
-        const qreal zeroY = energyRect.top() + energyRect.height() * (1.0 - zeroNorm);
-        p.drawLine(QPointF(energyRect.left(), zeroY), QPointF(energyRect.right(), zeroY));
+    drawCurve(faded(colors.kinetic), 1.2, [](const EnergyPoint& point) { return point.kinetic; });
+    drawCurve(faded(colors.potential), 1.2,
+              [](const EnergyPoint& point) { return point.potential; });
+    drawCurve(colors.total, 2.1, [](const EnergyPoint& point) { return point.total; });
+    drawCurve(faded(colors.thermal), 1.0, [](const EnergyPoint& point) { return point.thermal; });
+    drawCurve(faded(colors.radiated), 1.0,
+              [](const EnergyPoint& point) { return point.radiated; });
+    if (bounds.minEnergy < 0.0f && bounds.maxEnergy > 0.0f) {
+        const qreal zeroNorm = static_cast<qreal>((0.0f - bounds.minEnergy) /
+                                                  (bounds.maxEnergy - bounds.minEnergy));
+        const qreal zeroY = layout.energy.top() + layout.energy.height() * (1.0 - zeroNorm);
+        painter.setPen(colors.grid);
+        painter.drawLine(QPointF(layout.energy.left(), zeroY),
+                         QPointF(layout.energy.right(), zeroY));
     }
-    p.drawLine(QPointF(driftRect.left(), driftRect.center().y()),
-               QPointF(driftRect.right(), driftRect.center().y()));
-    p.setPen(QPen(driftColor, 1.8));
-    p.drawPath(buildPath(
-        [](const EnergyPoint& point) {
-            return point.drift;
-        },
-        driftRect, -maxAbsDrift, maxAbsDrift, true));
-    const qreal latestTimeNorm = static_cast<qreal>((latest.time - minTime) / (maxTime - minTime));
-    const qreal latestEnergyY =
-        energyRect.top() +
-        energyRect.height() * (1.0 - ((latest.total - minEnergy) / (maxEnergy - minEnergy)));
-    const qreal latestDriftY =
-        driftRect.top() + driftRect.height() * (1.0 - ((latest.drift / maxAbsDrift) * 0.5f + 0.5f));
-    const qreal latestX =
-        energyRect.left() + energyRect.width() * std::clamp(latestTimeNorm, 0.0, 1.0);
-    p.setPen(Qt::NoPen);
-    p.setBrush(totalColor);
-    p.drawEllipse(QPointF(latestX, latestEnergyY), 3.0, 3.0);
-    p.setBrush(driftColor);
-    p.drawEllipse(QPointF(latestX, latestDriftY), 3.0, 3.0);
-    p.setPen(labelColor);
-    p.drawText(QRectF(outerRect.left(), energyRect.top() - 2.0, 36.0, 14.0),
-               Qt::AlignRight | Qt::AlignTop, QString::number(maxEnergy, 'g', 4));
-    p.drawText(QRectF(outerRect.left(), energyRect.bottom() - 12.0, 36.0, 14.0),
-               Qt::AlignRight | Qt::AlignBottom, QString::number(minEnergy, 'g', 4));
-    p.drawText(QRectF(outerRect.left(), driftRect.top() - 2.0, 36.0, 14.0),
-               Qt::AlignRight | Qt::AlignTop, QString::number(maxAbsDrift, 'f', 2));
-    p.drawText(QRectF(outerRect.left(), driftRect.bottom() - 12.0, 36.0, 14.0),
-               Qt::AlignRight | Qt::AlignBottom, QString::number(-maxAbsDrift, 'f', 2));
-    p.drawText(QRectF(driftRect.left(), driftRect.bottom() + 4.0, 100.0, 14.0),
-               Qt::AlignLeft | Qt::AlignVCenter, QString("%1 s").arg(minTime, 0, 'f', 2));
-    p.drawText(QRectF(driftRect.right() - 100.0, driftRect.bottom() + 4.0, 100.0, 14.0),
-               Qt::AlignRight | Qt::AlignVCenter, QString("%1 s").arg(maxTime, 0, 'f', 2));
-    p.drawText(QRectF(energyRect.right() - 180.0, energyRect.top() + 2.0, 176.0, 14.0),
-               Qt::AlignRight | Qt::AlignVCenter,
-               QStringLiteral("Current %1").arg(formatMetric(latest.total, QStringLiteral(" J"))));
-    p.drawText(QRectF(driftRect.right() - 180.0, driftRect.top() + 2.0, 176.0, 14.0),
-               Qt::AlignRight | Qt::AlignVCenter,
-               QStringLiteral("Current %1").arg(formatMetric(latest.drift, QStringLiteral("%"))));
-    p.drawText(QRectF(driftRect.left(), driftRect.top() + 2.0, 180.0, 14.0),
-               Qt::AlignLeft | Qt::AlignVCenter,
-               QStringLiteral("Window %1 s").arg(QString::number(maxTime - minTime, 'f', 2)));
-    p.setRenderHint(QPainter::Antialiasing, false);
+}
+
+static void drawDriftCurve(QPainter& painter, const GraphPaintLayout& layout,
+                           const GraphPaintColors& colors,
+                           const std::vector<EnergyPoint>& history,
+                           const GraphPaintBounds& bounds)
+{
+    painter.setPen(colors.grid);
+    painter.drawLine(QPointF(layout.drift.left(), layout.drift.center().y()),
+                     QPointF(layout.drift.right(), layout.drift.center().y()));
+    painter.setPen(QPen(colors.drift, 1.8));
+    painter.drawPath(buildPath(history, layout.drift, bounds,
+                               [](const EnergyPoint& point) { return point.drift; },
+                               -bounds.maxAbsDrift, bounds.maxAbsDrift, true));
+}
+
+static void drawCurrentMarkers(QPainter& painter, const GraphPaintLayout& layout,
+                               const GraphPaintColors& colors, const EnergyPoint& latest,
+                               const GraphPaintBounds& bounds)
+{
+    const qreal timeNorm = static_cast<qreal>((latest.time - bounds.minTime) /
+                                              (bounds.maxTime - bounds.minTime));
+    const qreal x = layout.energy.left() + layout.energy.width() * std::clamp(timeNorm, 0.0, 1.0);
+    const qreal energyNorm = static_cast<qreal>((latest.total - bounds.minEnergy) /
+                                                (bounds.maxEnergy - bounds.minEnergy));
+    const qreal energyY = layout.energy.top() + layout.energy.height() * (1.0 - energyNorm);
+    const qreal driftNorm = (latest.drift / bounds.maxAbsDrift) * 0.5 + 0.5;
+    const qreal driftY = layout.drift.top() + layout.drift.height() * (1.0 - driftNorm);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(colors.total);
+    painter.drawEllipse(QPointF(x, energyY), 3.0, 3.0);
+    painter.setBrush(colors.drift);
+    painter.drawEllipse(QPointF(x, driftY), 3.0, 3.0);
+}
+
+static void drawScaleLabels(QPainter& painter, const GraphPaintLayout& layout,
+                            const GraphPaintColors& colors, const GraphPaintBounds& bounds,
+                            const EnergyPoint& latest)
+{
+    painter.setPen(colors.label);
+    painter.drawText(QRectF(layout.outer.left(), layout.energy.top() - 2.0, 36.0, 14.0),
+                     Qt::AlignRight | Qt::AlignTop, QString::number(bounds.maxEnergy, 'g', 4));
+    painter.drawText(QRectF(layout.outer.left(), layout.energy.bottom() - 12.0, 36.0, 14.0),
+                     Qt::AlignRight | Qt::AlignBottom, QString::number(bounds.minEnergy, 'g', 4));
+    painter.drawText(QRectF(layout.outer.left(), layout.drift.top() - 2.0, 36.0, 14.0),
+                     Qt::AlignRight | Qt::AlignTop, QString::number(bounds.maxAbsDrift, 'f', 2));
+    painter.drawText(QRectF(layout.outer.left(), layout.drift.bottom() - 12.0, 36.0, 14.0),
+                     Qt::AlignRight | Qt::AlignBottom, QString::number(-bounds.maxAbsDrift, 'f', 2));
+    painter.drawText(QRectF(layout.drift.left(), layout.drift.bottom() + 4.0, 100.0, 14.0),
+                     Qt::AlignLeft | Qt::AlignVCenter, QString("%1 s").arg(bounds.minTime, 0, 'f', 2));
+    painter.drawText(QRectF(layout.drift.right() - 100.0, layout.drift.bottom() + 4.0, 100.0, 14.0),
+                     Qt::AlignRight | Qt::AlignVCenter, QString("%1 s").arg(bounds.maxTime, 0, 'f', 2));
+    painter.drawText(QRectF(layout.energy.right() - 180.0, layout.energy.top() + 2.0, 176.0, 14.0),
+                     Qt::AlignRight | Qt::AlignVCenter,
+                     QStringLiteral("Current %1").arg(formatMetric(latest.total, QStringLiteral(" J"))));
+    painter.drawText(QRectF(layout.drift.right() - 180.0, layout.drift.top() + 2.0, 176.0, 14.0),
+                     Qt::AlignRight | Qt::AlignVCenter,
+                     QStringLiteral("Current %1").arg(formatMetric(latest.drift, QStringLiteral("%"))));
+    painter.drawText(QRectF(layout.drift.left(), layout.drift.top() + 2.0, 180.0, 14.0),
+                     Qt::AlignLeft | Qt::AlignVCenter,
+                     QStringLiteral("Window %1 s").arg(QString::number(bounds.maxTime - bounds.minTime,
+                                                                         'f', 2)));
+}
+
+void paintGraph(QWidget& widget, const std::vector<EnergyPoint>& history, UiPaintEvent* event)
+{
+    (void)event;
+    QPainter painter(&widget);
+    const GraphPaintColors colors = resolveColors(widget.palette());
+    const QFontMetricsF metrics = painter.fontMetrics();
+    const QStringList labels = {QStringLiteral("Kin"), QStringLiteral("Pot"), QStringLiteral("Therm"),
+                                QStringLiteral("Rad"), QStringLiteral("Total"), QStringLiteral("Drift")};
+    const GraphPaintLayout layout = createLayout(widget.rect(), metrics, labels);
+    drawFrame(painter, widget.rect(), layout, colors);
+    drawHeader(painter, layout, colors, history);
+    drawAxisLabels(painter, layout, colors);
+    drawLegend(painter, layout, colors, labels, metrics);
+    if (history.size() < 2u) {
+        painter.setPen(colors.label);
+        painter.drawText(layout.energy, Qt::AlignCenter, QStringLiteral("Waiting for energy telemetry"));
+        return;
+    }
+    const GraphPaintBounds bounds = calculateBounds(history);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    drawEnergyCurves(painter, layout, colors, history, bounds);
+    drawDriftCurve(painter, layout, colors, history, bounds);
+    drawCurrentMarkers(painter, layout, colors, history.back(), bounds);
+    drawScaleLabels(painter, layout, colors, bounds, history.back());
+    painter.setRenderHint(QPainter::Antialiasing, false);
 }
 } // namespace bltzr_qt

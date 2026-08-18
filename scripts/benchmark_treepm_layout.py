@@ -48,7 +48,7 @@ def hardware_snapshot() -> list[str] | None:
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]
 
 
-def run_case(args: argparse.Namespace, morphology: str, particles: int, layout: str) -> dict:
+def layout_environment(layout: str) -> dict[str, str]:
     environment = os.environ.copy()
     environment.pop("BLITZAR_TREEPM_LAYOUT", None)
     environment.pop("BLITZAR_TREEPM_GATHER", None)
@@ -57,7 +57,11 @@ def run_case(args: argparse.Namespace, morphology: str, particles: int, layout: 
         environment["BLITZAR_TREEPM_LAYOUT"] = "auto"
     else:
         environment["BLITZAR_TREEPM_LAYOUT"] = layout
-    command = [
+    return environment
+
+
+def build_command(args: argparse.Namespace, morphology: str, particles: int) -> list[str]:
+    return [
         str(args.binary),
         "--run",
         "--config",
@@ -86,7 +90,10 @@ def run_case(args: argparse.Namespace, morphology: str, particles: int, layout: 
         "local_grid",
         "--no-export-on-exit",
     ]
-    before = hardware_snapshot()
+
+
+def execute_case(command: list[str], args: argparse.Namespace,
+                 environment: dict[str, str]) -> tuple[str, subprocess.CompletedProcess[str] | None, bool]:
     try:
         completed = subprocess.run(
             command,
@@ -102,6 +109,14 @@ def run_case(args: argparse.Namespace, morphology: str, particles: int, layout: 
         transcript = (error.stdout or "") + (error.stderr or "")
         completed = None
         timeout = True
+    return transcript, completed, timeout
+
+
+def run_case(args: argparse.Namespace, morphology: str, particles: int, layout: str) -> dict:
+    environment = layout_environment(layout)
+    command = build_command(args, morphology, particles)
+    before = hardware_snapshot()
+    transcript, completed, timeout = execute_case(command, args, environment)
     after = hardware_snapshot()
     done = DONE_RE.search(transcript)
     marker = TREEPM_RE.search(transcript)
