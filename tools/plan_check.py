@@ -9,6 +9,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "plan" / "manifest.json"
+QUALITY = ROOT / "plan" / "quality.json"
 
 
 def fail(message: str) -> None:
@@ -21,6 +22,8 @@ def main() -> None:
         fail("PLAN.md is missing")
     if not MANIFEST.is_file():
         fail("plan/manifest.json is missing")
+    if not QUALITY.is_file():
+        fail("plan/quality.json is missing")
 
     try:
         data = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -68,6 +71,17 @@ def main() -> None:
         for reference in forbidden:
             if str(reference).lower() in text:
                 fail(f"{path.relative_to(ROOT)} contains forbidden reference: {reference}")
+
+    try:
+        quality = json.loads(QUALITY.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        fail(f"quality manifest is not valid JSON: {error}")
+    tests = quality.get("tests")
+    test_ids = [test.get("id") for test in tests] if isinstance(tests, list) else []
+    if not tests or any(not test_id for test_id in test_ids):
+        fail("quality manifest needs named tests with IDs")
+    if len(test_ids) != len(set(test_ids)):
+        fail("quality test IDs must be unique")
 
     print(f"plan-check: frozen plan {data['plan_version']} is valid")
 

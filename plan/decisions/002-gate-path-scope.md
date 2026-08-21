@@ -1,6 +1,6 @@
 # Decision 002: Scope Clean-Room Path Checks
 
-Status: accepted  
+Status: accepted
 Plan version: 1.0.1
 
 ## Decision
