@@ -25,6 +25,12 @@
       "phase": "P1"
     },
     {
+      "id": "TST-P1-002",
+      "name": "numerical-conservation-and-repeatability",
+      "command": "blitzar_numerical_test",
+      "phase": "P1"
+    },
+    {
       "id": "TST-P2-001",
       "name": "c-example",
       "command": "blitzar_c_example",

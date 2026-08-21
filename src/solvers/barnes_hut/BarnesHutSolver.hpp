@@ -2,11 +2,14 @@
 #define BLITZAR_SOLVERS_BARNES_HUT_BARNES_HUT_SOLVER_HPP
 
 #include "core/Solver.hpp"
+#include "core/Execution.hpp"
 #include "physics/GravityLaw.hpp"
 #include "trees/Octree.hpp"
 
+#include <blitzar/blitzar.h>
+
 #include <cstddef>
-#include <vector>
+#include <span>
 
 namespace blitzar_barnes_hut {
 
@@ -20,17 +23,22 @@ struct BarnesHutSettings final {
     [[nodiscard]] bool IsValid() const noexcept;
 };
 
-class BarnesHutSolver final : public blitzar_core::Solver {
+class BarnesHutSolver final {
 public:
     BarnesHutSolver(
         blitzar_physics::GravityParameters gravity,
         BarnesHutSettings settings);
 
-    [[nodiscard]] blitzar_core::SolverKind Kind() const noexcept override;
+    [[nodiscard]] blitzar_core::SolverKind Kind() const noexcept;
     [[nodiscard]] blitzar_status Compute(
         blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces,
-        const blitzar_core::ExecutionSettings& settings) noexcept override;
+        const blitzar_core::ExecutionSettings& settings) noexcept;
+    [[nodiscard]] blitzar_status Compute(
+        blitzar_core::ParticleStateView particles,
+        blitzar_core::ForceView forces,
+        const blitzar_core::ExecutionSettings& settings,
+        std::span<std::size_t> traversal_stack) noexcept;
 
 private:
     [[nodiscard]] static bool IsValidState(
@@ -41,12 +49,12 @@ private:
     [[nodiscard]] blitzar_status Accumulate(
         std::size_t target,
         blitzar_core::ParticleStateView particles,
-        blitzar_core::ForceView forces) noexcept;
+        std::span<std::size_t> stack,
+        blitzar_core::Vector3& acceleration) noexcept;
 
     BarnesHutSettings settings_;
     blitzar_physics::GravityLaw gravity_;
     blitzar_trees::Octree tree_;
-    std::vector<int> stack_;
 };
 
 }  // namespace blitzar_barnes_hut

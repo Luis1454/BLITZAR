@@ -8,7 +8,10 @@ namespace blitzar_trees {
 
 bool Octree::Cell::IsLeaf() const noexcept
 {
-    return children[0] < 0;
+    return std::all_of(
+        children.begin(), children.end(), [](const std::size_t child) {
+            return child == Cell::InvalidIndex;
+        });
 }
 
 Octree::Octree(
@@ -58,16 +61,16 @@ Octree::Cell Octree::MakeCell(
     cell.begin = begin;
     cell.count = count;
     cell.depth = depth;
-    cell.children.fill(-1);
+    cell.children.fill(Cell::InvalidIndex);
     return cell;
 }
 
-int Octree::Octant(
+std::size_t Octree::Octant(
     const Cell& cell, blitzar_core::Vector3 position) noexcept
 {
-    return (position.x >= cell.center.x ? 1 : 0) |
-           (position.y >= cell.center.y ? 2 : 0) |
-           (position.z >= cell.center.z ? 4 : 0);
+    return (position.x >= cell.center.x ? std::size_t{1} : std::size_t{0}) |
+           (position.y >= cell.center.y ? std::size_t{2} : std::size_t{0}) |
+           (position.z >= cell.center.z ? std::size_t{4} : std::size_t{0});
 }
 
 bool Octree::Contains(
@@ -97,7 +100,7 @@ void Octree::Partition(
     }
     for (std::size_t offset = 0; offset < cell.count; ++offset) {
         const std::size_t particle = indices_[cell.begin + offset];
-        const int octant = Octant(
+        const std::size_t octant = Octant(
             cell, {particles.x[particle], particles.y[particle], particles.z[particle]});
         scratch_[write[octant]++] = particle;
     }
@@ -123,11 +126,11 @@ void Octree::CalculateProperties(
                 cell.center_of_mass.z += mass * particles.z[particle];
             }
         } else {
-            for (const int child : cell.children) {
-                if (child < 0) {
+            for (const std::size_t child : cell.children) {
+                if (child == Cell::InvalidIndex) {
                     continue;
                 }
-                const Cell& child_cell = cells_[static_cast<std::size_t>(child)];
+                const Cell& child_cell = cells_[child];
                 cell.mass += child_cell.mass;
                 cell.center_of_mass.x +=
                     child_cell.mass * child_cell.center_of_mass.x;
@@ -187,13 +190,20 @@ blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
         if (cell.count <= leaf_capacity_ || cell.depth >= max_depth_) {
             continue;
         }
-        if (cells_.size() + 8 > max_cells_) {
+        std::array<std::size_t, 8> counts{};
+        Partition(cell, particles, counts);
+        std::size_t child_count = 0;
+        for (const std::size_t count : counts) {
+            if (count > 0) {
+                ++child_count;
+            }
+        }
+        if (cells_.size() > max_cells_ ||
+            child_count > max_cells_ - cells_.size()) {
             cells_.clear();
             particle_count_ = 0;
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
-        std::array<std::size_t, 8> counts{};
-        Partition(cell, particles, counts);
         const blitzar_core::Scalar child_half_extent = 0.5 * cell.half_extent;
         for (std::size_t octant = 0; octant < counts.size(); ++octant) {
             if (counts[octant] == 0) {
@@ -207,7 +217,7 @@ blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
             for (std::size_t previous = 0; previous < octant; ++previous) {
                 begin += counts[previous];
             }
-            const int child = static_cast<int>(cells_.size());
+            const std::size_t child = cells_.size();
             cells_.push_back(MakeCell(
                 child_center,
                 child_half_extent,
@@ -266,14 +276,22 @@ std::size_t Octree::RefitCount() const noexcept
     return refit_count_;
 }
 
-const Octree::Cell& Octree::CellAt(std::size_t index) const noexcept
+std::span<const Octree::Cell> Octree::CellAt(std::size_t index) const noexcept
 {
-    return cells_[index];
+    if (index >= cells_.size()) {
+        return {};
+    }
+    return std::span<const Cell>(cells_).subspan(index, 1);
 }
 
-std::size_t Octree::ParticleIndex(std::size_t index) const noexcept
+bool Octree::ParticleIndex(
+    std::size_t index, std::size_t& particle) const noexcept
 {
-    return indices_[index];
+    if (index >= particle_count_) {
+        return false;
+    }
+    particle = indices_[index];
+    return particle < particle_count_;
 }
 
 }  // namespace blitzar_trees

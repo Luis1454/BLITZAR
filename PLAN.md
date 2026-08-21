@@ -1,7 +1,7 @@
 # BLITZAR Clean-Room Plan
 
 Status: **FROZEN**  
-Plan version: **1.0.1**
+Plan version: **1.0.2**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements

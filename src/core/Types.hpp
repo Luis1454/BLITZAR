@@ -2,6 +2,7 @@
 #define BLITZAR_CORE_TYPES_HPP
 
 #include <cstddef>
+#include <span>
 
 namespace blitzar_core {
 
@@ -15,65 +16,68 @@ struct Vector3 final {
 
 struct ParticleView final {
     std::size_t count{};
-    const Scalar* x{};
-    const Scalar* y{};
-    const Scalar* z{};
+    std::span<const Scalar> x{};
+    std::span<const Scalar> y{};
+    std::span<const Scalar> z{};
 };
 
 struct ParticleStateView final {
     std::size_t count{};
-    const Scalar* x{};
-    const Scalar* y{};
-    const Scalar* z{};
-    const Scalar* velocity_x{};
-    const Scalar* velocity_y{};
-    const Scalar* velocity_z{};
-    const Scalar* mass{};
+    std::span<const Scalar> x{};
+    std::span<const Scalar> y{};
+    std::span<const Scalar> z{};
+    std::span<const Scalar> velocity_x{};
+    std::span<const Scalar> velocity_y{};
+    std::span<const Scalar> velocity_z{};
+    std::span<const Scalar> mass{};
 };
 
 struct MutableParticleView final {
     std::size_t count{};
-    Scalar* x{};
-    Scalar* y{};
-    Scalar* z{};
-    Scalar* velocity_x{};
-    Scalar* velocity_y{};
-    Scalar* velocity_z{};
+    std::span<Scalar> x{};
+    std::span<Scalar> y{};
+    std::span<Scalar> z{};
+    std::span<Scalar> velocity_x{};
+    std::span<Scalar> velocity_y{};
+    std::span<Scalar> velocity_z{};
 };
 
 struct ForceView final {
     std::size_t count{};
-    Scalar* x{};
-    Scalar* y{};
-    Scalar* z{};
+    std::span<Scalar> x{};
+    std::span<Scalar> y{};
+    std::span<Scalar> z{};
 };
 
 [[nodiscard]] inline bool IsValid(ParticleView view) noexcept
 {
-    return view.count == 0 || (view.x != nullptr && view.y != nullptr &&
-                               view.z != nullptr);
+    return view.count == view.x.size() && view.count == view.y.size() &&
+           view.count == view.z.size();
 }
 
 [[nodiscard]] inline bool IsValid(ForceView view) noexcept
 {
-    return view.count == 0 || (view.x != nullptr && view.y != nullptr &&
-                               view.z != nullptr);
+    return view.count == view.x.size() && view.count == view.y.size() &&
+           view.count == view.z.size();
 }
 
 [[nodiscard]] inline bool IsValid(ParticleStateView view) noexcept
 {
-    return view.count == 0 ||
-           (view.x != nullptr && view.y != nullptr && view.z != nullptr &&
-            view.velocity_x != nullptr && view.velocity_y != nullptr &&
-            view.velocity_z != nullptr && view.mass != nullptr);
+    return view.count == view.x.size() && view.count == view.y.size() &&
+           view.count == view.z.size() &&
+           view.count == view.velocity_x.size() &&
+           view.count == view.velocity_y.size() &&
+           view.count == view.velocity_z.size() &&
+           view.count == view.mass.size();
 }
 
 [[nodiscard]] inline bool IsValid(MutableParticleView view) noexcept
 {
-    return view.count == 0 ||
-           (view.x != nullptr && view.y != nullptr && view.z != nullptr &&
-            view.velocity_x != nullptr && view.velocity_y != nullptr &&
-            view.velocity_z != nullptr);
+    return view.count == view.x.size() && view.count == view.y.size() &&
+           view.count == view.z.size() &&
+           view.count == view.velocity_x.size() &&
+           view.count == view.velocity_y.size() &&
+           view.count == view.velocity_z.size();
 }
 
 }  // namespace blitzar_core

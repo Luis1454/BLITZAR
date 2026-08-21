@@ -1,17 +1,93 @@
 #include <blitzar/blitzar.h>
 
-#include <assert.h>
+#include "Check.hpp"
+#include <stdint.h>
 
 int main(void)
 {
     blitzar_context* context = NULL;
-    assert(blitzar_context_create(&context) == BLITZAR_STATUS_OK);
-    assert(context != NULL);
-    assert(blitzar_context_status(context) == BLITZAR_STATUS_OK);
-    assert(blitzar_context_status(NULL) == BLITZAR_STATUS_INVALID_ARGUMENT);
-    assert(blitzar_context_create(NULL) == BLITZAR_STATUS_INVALID_ARGUMENT);
-    assert(blitzar_status_message(BLITZAR_STATUS_OK)[0] == 'o');
-    assert(blitzar_status_message(BLITZAR_STATUS_SINGULARITY)[0] == 'g');
+    BLITZAR_CHECK(blitzar_context_create(&context) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(context != NULL);
+    BLITZAR_CHECK(blitzar_context_status(context) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_context_status(NULL) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(blitzar_context_create(NULL) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(blitzar_status_message(BLITZAR_STATUS_OK)[0] == 'o');
+    BLITZAR_CHECK(blitzar_status_message(BLITZAR_STATUS_SINGULARITY)[0] == 'g');
+    BLITZAR_CHECK(blitzar_status_message(BLITZAR_STATUS_UNSUPPORTED)[0] == 'u');
+
+    blitzar_simulation* simulation = NULL;
+    BLITZAR_CHECK(blitzar_simulation_create(context, 2, &simulation) ==
+           BLITZAR_STATUS_OK);
+    int64_t particle_count = 0;
+    BLITZAR_CHECK(blitzar_simulation_particle_count(simulation, &particle_count) ==
+           BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(particle_count == 2);
+    BLITZAR_CHECK(blitzar_simulation_set_solver(
+               simulation, BLITZAR_SOLVER_DIRECT) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_simulation_set_solver(
+               simulation, BLITZAR_SOLVER_FMM) == BLITZAR_STATUS_UNSUPPORTED);
+    BLITZAR_CHECK(blitzar_simulation_set_integrator(
+               simulation, BLITZAR_INTEGRATOR_LEAPFROG_KDK) ==
+           BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_simulation_set_gravity(simulation, 1.0, 0.0) ==
+           BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_simulation_set_units(simulation, 2.0, 3.0, 4.0) ==
+           BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_simulation_set_seed(simulation, UINT64_C(42)) ==
+           BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_simulation_set_timestep(simulation, 0.5) ==
+           BLITZAR_STATUS_OK);
+
+    const double position_x[] = {0.0, 1.0};
+    const double position_y[] = {0.0, 0.0};
+    const double position_z[] = {0.0, 0.0};
+    const double velocity_x[] = {0.0, 0.0};
+    const double velocity_y[] = {0.0, 0.0};
+    const double velocity_z[] = {0.0, 0.0};
+    const double mass[] = {1.0, 1.0};
+    BLITZAR_CHECK(blitzar_simulation_set_particles(
+               simulation,
+               2,
+               position_x,
+               position_y,
+               position_z,
+               velocity_x,
+               velocity_y,
+               velocity_z,
+               mass) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_simulation_step(simulation) == BLITZAR_STATUS_OK);
+
+    double output_x[2] = {0.0, 0.0};
+    double output_y[2] = {0.0, 0.0};
+    double output_z[2] = {0.0, 0.0};
+    double output_velocity_x[2] = {0.0, 0.0};
+    double output_velocity_y[2] = {0.0, 0.0};
+    double output_velocity_z[2] = {0.0, 0.0};
+    double output_mass[2] = {0.0, 0.0};
+    BLITZAR_CHECK(blitzar_simulation_get_state(
+               simulation,
+               2,
+               output_x,
+               output_y,
+               output_z,
+               output_velocity_x,
+               output_velocity_y,
+               output_velocity_z,
+               output_mass) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(output_x[0] != 0.0);
+    BLITZAR_CHECK(output_x[1] != 1.0);
+    BLITZAR_CHECK(output_mass[0] == 1.0);
+    BLITZAR_CHECK(blitzar_simulation_get_state(
+               simulation,
+               1,
+               output_x,
+               output_y,
+               output_z,
+               output_velocity_x,
+               output_velocity_y,
+               output_velocity_z,
+               output_mass) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    blitzar_simulation_destroy(simulation);
     blitzar_context_destroy(context);
     return 0;
 }

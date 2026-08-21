@@ -7,6 +7,8 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
+#include <span>
 #include <vector>
 
 namespace blitzar_trees {
@@ -14,6 +16,9 @@ namespace blitzar_trees {
 class Octree final {
 public:
     struct Cell final {
+        static constexpr std::size_t InvalidIndex =
+            std::numeric_limits<std::size_t>::max();
+
         blitzar_core::Vector3 center{};
         blitzar_core::Vector3 center_of_mass{};
         blitzar_core::Scalar half_extent{};
@@ -21,7 +26,7 @@ public:
         std::size_t begin{};
         std::size_t count{};
         std::size_t depth{};
-        std::array<int, 8> children{};
+        std::array<std::size_t, 8> children{};
 
         [[nodiscard]] bool IsLeaf() const noexcept;
     };
@@ -40,8 +45,9 @@ public:
     [[nodiscard]] std::size_t ParticleCount() const noexcept;
     [[nodiscard]] std::size_t BuildCount() const noexcept;
     [[nodiscard]] std::size_t RefitCount() const noexcept;
-    [[nodiscard]] const Cell& CellAt(std::size_t index) const noexcept;
-    [[nodiscard]] std::size_t ParticleIndex(std::size_t index) const noexcept;
+    [[nodiscard]] std::span<const Cell> CellAt(std::size_t index) const noexcept;
+    [[nodiscard]] bool ParticleIndex(
+        std::size_t index, std::size_t& particle) const noexcept;
 
 private:
     [[nodiscard]] static bool IsValidInput(
@@ -52,7 +58,7 @@ private:
         std::size_t begin,
         std::size_t count,
         std::size_t depth) const noexcept;
-    [[nodiscard]] static int Octant(
+    [[nodiscard]] static std::size_t Octant(
         const Cell& cell, blitzar_core::Vector3 position) noexcept;
     [[nodiscard]] static bool Contains(
         const Cell& cell, blitzar_core::Vector3 position) noexcept;

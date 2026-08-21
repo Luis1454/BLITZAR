@@ -18,6 +18,8 @@ namespace blitzar_core {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     case BLITZAR_STATUS_SINGULARITY:
         return BLITZAR_STATUS_SINGULARITY;
+    case BLITZAR_STATUS_UNSUPPORTED:
+        return BLITZAR_STATUS_UNSUPPORTED;
     default:
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }

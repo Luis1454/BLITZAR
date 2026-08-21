@@ -4,16 +4,17 @@
 #include "particles/ParticleBuffer.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 
-#include <cassert>
+#include "Check.hpp"
 #include <cmath>
 #include <cstdint>
 #include <limits>
+#include <utility>
 
 namespace {
 
-class FailOnSecondSolver final : public blitzar_core::Solver {
+class FailOnSecondSolver final {
 public:
-    [[nodiscard]] blitzar_core::SolverKind Kind() const noexcept override
+    [[nodiscard]] blitzar_core::SolverKind Kind() const noexcept
     {
         return blitzar_core::SolverKind::Direct;
     }
@@ -21,7 +22,7 @@ public:
     [[nodiscard]] blitzar_status Compute(
         blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces,
-        const blitzar_core::ExecutionSettings& settings) noexcept override
+        const blitzar_core::ExecutionSettings& settings) noexcept
     {
         if (!blitzar_core::IsValid(particles) ||
             !blitzar_core::IsValid(forces) || particles.count != forces.count ||
@@ -44,50 +45,171 @@ private:
     std::size_t calls_{};
 };
 
+class NonFiniteSolver final {
+public:
+    [[nodiscard]] blitzar_core::SolverKind Kind() const noexcept
+    {
+        return blitzar_core::SolverKind::Direct;
+    }
+
+    [[nodiscard]] blitzar_status Compute(
+        blitzar_core::ParticleStateView particles,
+        blitzar_core::ForceView forces,
+        const blitzar_core::ExecutionSettings& settings) noexcept
+    {
+        if (!blitzar_core::IsValid(particles) ||
+            !blitzar_core::IsValid(forces) || particles.count != forces.count ||
+            !settings.IsValid()) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+        for (std::size_t index = 0; index < forces.count; ++index) {
+            forces.x[index] = std::numeric_limits<double>::infinity();
+            forces.y[index] = 0.0;
+            forces.z[index] = 0.0;
+        }
+        return BLITZAR_STATUS_OK;
+    }
+};
+
 }  // namespace
 
 int main()
 {
+    {
+        blitzar_particles::ParticleBuffer source(1);
+        blitzar_particles::ParticleBuffer moved(std::move(source));
+        BLITZAR_CHECK(source.Count() == 0);
+        BLITZAR_CHECK(source.IsValid());
+        BLITZAR_CHECK(moved.Count() == 1);
+        BLITZAR_CHECK(moved.IsValid());
+        BLITZAR_CHECK(source.SetPosition(0, {1.0, 0.0, 0.0}) ==
+               BLITZAR_STATUS_INVALID_ARGUMENT);
+
+        blitzar_particles::ParticleBuffer assigned(0);
+        assigned = std::move(moved);
+        BLITZAR_CHECK(moved.Count() == 0);
+        BLITZAR_CHECK(moved.IsValid());
+        BLITZAR_CHECK(assigned.Count() == 1);
+        BLITZAR_CHECK(assigned.IsValid());
+
+        blitzar_particles::AccelerationBuffer acceleration_source(1);
+        blitzar_particles::AccelerationBuffer acceleration_moved(
+            std::move(acceleration_source));
+        BLITZAR_CHECK(acceleration_source.Count() == 0);
+        BLITZAR_CHECK(acceleration_source.IsValid());
+        BLITZAR_CHECK(acceleration_moved.IsValid());
+
+        blitzar_integration::LeapfrogWorkspace workspace_source(1);
+        blitzar_integration::LeapfrogWorkspace workspace_moved(
+            std::move(workspace_source));
+        BLITZAR_CHECK(workspace_source.Count() == 0);
+        BLITZAR_CHECK(workspace_source.IsValid());
+        BLITZAR_CHECK(workspace_moved.IsValid());
+    }
+
     blitzar_particles::ParticleBuffer particles(2);
     blitzar_particles::AccelerationBuffer accelerations(2);
-    assert(particles.IsValid());
-    assert(particles.Count() == accelerations.Count());
-    assert(reinterpret_cast<std::uintptr_t>(particles.State().x) % 64U == 0U);
+    BLITZAR_CHECK(particles.IsValid());
+    BLITZAR_CHECK(particles.Count() == accelerations.Count());
+    BLITZAR_CHECK(reinterpret_cast<std::uintptr_t>(particles.State().x.data()) % 64U == 0U);
 
-    assert(particles.SetPosition(0, {0.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
-    assert(particles.SetPosition(1, {1.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
-    assert(particles.SetMass(0, 1.0) == BLITZAR_STATUS_OK);
-    assert(particles.SetMass(1, 1.0) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(particles.SetPosition(0, {0.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(particles.SetPosition(1, {1.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(particles.SetMass(0, 1.0) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(particles.SetMass(1, 1.0) == BLITZAR_STATUS_OK);
 
     const blitzar_core::ExecutionSettings settings{};
     const blitzar_physics::GravityParameters gravity{1.0, 0.0};
+
+    {
+        blitzar_particles::ParticleBuffer singular_particles(3);
+        blitzar_particles::AccelerationBuffer singular_accelerations(3);
+        BLITZAR_CHECK(singular_particles.SetPosition(0, {0.0, 0.0, 0.0}) ==
+               BLITZAR_STATUS_OK);
+        BLITZAR_CHECK(singular_particles.SetPosition(1, {1.0, 0.0, 0.0}) ==
+               BLITZAR_STATUS_OK);
+        BLITZAR_CHECK(singular_particles.SetPosition(2, {1.0, 0.0, 0.0}) ==
+               BLITZAR_STATUS_OK);
+        for (std::size_t index = 0; index < 3; ++index) {
+            BLITZAR_CHECK(singular_particles.SetMass(index, 1.0) ==
+                   BLITZAR_STATUS_OK);
+        }
+        const blitzar_core::ForceView force = singular_accelerations.View();
+        for (std::size_t index = 0; index < 3; ++index) {
+            force.x[index] = 7.0;
+            force.y[index] = 8.0;
+            force.z[index] = 9.0;
+        }
+        blitzar_direct::DirectSolver singular_solver(gravity);
+        BLITZAR_CHECK(singular_solver.Compute(
+                   singular_particles.State(), force, settings) ==
+               BLITZAR_STATUS_SINGULARITY);
+        for (std::size_t index = 0; index < 3; ++index) {
+            BLITZAR_CHECK(force.x[index] == 7.0);
+            BLITZAR_CHECK(force.y[index] == 8.0);
+            BLITZAR_CHECK(force.z[index] == 9.0);
+        }
+    }
+
+    {
+        blitzar_particles::ParticleBuffer large_particles(4);
+        blitzar_particles::AccelerationBuffer large_accelerations(4);
+        const blitzar_core::Vector3 positions[] = {
+            {0.0, 0.0, 0.0},
+            {1.0, 0.0, 0.0},
+            {1.2, 0.0, 0.0},
+            {1.4, 0.0, 0.0}};
+        for (std::size_t index = 0; index < 4; ++index) {
+            BLITZAR_CHECK(large_particles.SetPosition(index, positions[index]) ==
+                   BLITZAR_STATUS_OK);
+            BLITZAR_CHECK(large_particles.SetMass(
+                       index, std::numeric_limits<double>::max()) ==
+                   BLITZAR_STATUS_OK);
+        }
+        const blitzar_core::ForceView force = large_accelerations.View();
+        for (std::size_t index = 0; index < 4; ++index) {
+            force.x[index] = -11.0;
+            force.y[index] = -12.0;
+            force.z[index] = -13.0;
+        }
+        blitzar_direct::DirectSolver large_solver(gravity);
+        BLITZAR_CHECK(large_solver.Compute(
+                   large_particles.State(), force, settings) ==
+               BLITZAR_STATUS_INVALID_ARGUMENT);
+        for (std::size_t index = 0; index < 4; ++index) {
+            BLITZAR_CHECK(force.x[index] == -11.0);
+            BLITZAR_CHECK(force.y[index] == -12.0);
+            BLITZAR_CHECK(force.z[index] == -13.0);
+        }
+    }
+
     blitzar_direct::DirectSolver solver(gravity);
-    assert(solver.Compute(particles.State(), accelerations.View(), settings) ==
+    BLITZAR_CHECK(solver.Compute(particles.State(), accelerations.View(), settings) ==
            BLITZAR_STATUS_OK);
     const blitzar_core::ForceView force = accelerations.View();
-    assert(std::abs(force.x[0] - 1.0) < 1.0e-12);
-    assert(std::abs(force.x[1] + 1.0) < 1.0e-12);
-    assert(std::abs(force.y[0]) < 1.0e-12);
-    assert(std::abs(force.z[1]) < 1.0e-12);
+    BLITZAR_CHECK(std::abs(force.x[0] - 1.0) < 1.0e-12);
+    BLITZAR_CHECK(std::abs(force.x[1] + 1.0) < 1.0e-12);
+    BLITZAR_CHECK(std::abs(force.y[0]) < 1.0e-12);
+    BLITZAR_CHECK(std::abs(force.z[1]) < 1.0e-12);
 
-    assert(particles.SetPosition(1, {0.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
-    assert(solver.Compute(particles.State(), accelerations.View(), settings) ==
+    BLITZAR_CHECK(particles.SetPosition(1, {0.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(solver.Compute(particles.State(), accelerations.View(), settings) ==
            BLITZAR_STATUS_SINGULARITY);
-    assert(particles.SetPosition(1, {1.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
-    assert(particles.SetMass(1, std::numeric_limits<double>::quiet_NaN()) ==
+    BLITZAR_CHECK(particles.SetPosition(1, {1.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(particles.SetMass(1, std::numeric_limits<double>::quiet_NaN()) ==
            BLITZAR_STATUS_INVALID_ARGUMENT);
-    assert(solver.Compute(particles.State(), accelerations.View(), settings) ==
+    BLITZAR_CHECK(solver.Compute(particles.State(), accelerations.View(), settings) ==
            BLITZAR_STATUS_OK);
-    assert(particles.SetMass(1, 1.0) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(particles.SetMass(1, 1.0) == BLITZAR_STATUS_OK);
 
     blitzar_particles::ParticleBuffer free_particle(1);
     blitzar_particles::AccelerationBuffer free_acceleration(1);
     blitzar_integration::LeapfrogWorkspace free_workspace(1);
-    assert(free_particle.SetVelocity(0, {2.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
-    assert(free_particle.SetPosition(1, {0.0, 0.0, 0.0}) ==
+    BLITZAR_CHECK(free_particle.SetVelocity(0, {2.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(free_particle.SetPosition(1, {0.0, 0.0, 0.0}) ==
            BLITZAR_STATUS_INVALID_ARGUMENT);
     const blitzar_integration::LeapfrogKdk integrator{};
-    assert(integrator.Advance(
+    BLITZAR_CHECK(integrator.Advance(
                free_particle,
                free_acceleration,
                free_workspace,
@@ -95,9 +217,9 @@ int main()
                0.5,
                settings) == BLITZAR_STATUS_OK);
     const blitzar_core::ParticleStateView state = free_particle.State();
-    assert(std::abs(state.x[0] - 1.0) < 1.0e-12);
-    assert(std::abs(state.velocity_x[0] - 2.0) < 1.0e-12);
-    assert(integrator.Advance(
+    BLITZAR_CHECK(std::abs(state.x[0] - 1.0) < 1.0e-12);
+    BLITZAR_CHECK(std::abs(state.velocity_x[0] - 2.0) < 1.0e-12);
+    BLITZAR_CHECK(integrator.Advance(
                free_particle,
                free_acceleration,
                free_workspace,
@@ -108,10 +230,10 @@ int main()
     blitzar_particles::ParticleBuffer rollback_particle(1);
     blitzar_particles::AccelerationBuffer rollback_acceleration(1);
     blitzar_integration::LeapfrogWorkspace rollback_workspace(1);
-    assert(rollback_particle.SetVelocity(0, {1.0, 0.0, 0.0}) ==
+    BLITZAR_CHECK(rollback_particle.SetVelocity(0, {1.0, 0.0, 0.0}) ==
            BLITZAR_STATUS_OK);
     FailOnSecondSolver failing_solver{};
-    assert(integrator.Advance(
+    BLITZAR_CHECK(integrator.Advance(
                rollback_particle,
                rollback_acceleration,
                rollback_workspace,
@@ -119,7 +241,25 @@ int main()
                0.5,
                settings) == BLITZAR_STATUS_INTERNAL_ERROR);
     const blitzar_core::ParticleStateView restored = rollback_particle.State();
-    assert(std::abs(restored.x[0]) < 1.0e-12);
-    assert(std::abs(restored.velocity_x[0] - 1.0) < 1.0e-12);
+    BLITZAR_CHECK(std::abs(restored.x[0]) < 1.0e-12);
+    BLITZAR_CHECK(std::abs(restored.velocity_x[0] - 1.0) < 1.0e-12);
+
+    blitzar_particles::ParticleBuffer non_finite_particle(1);
+    blitzar_particles::AccelerationBuffer non_finite_acceleration(1);
+    blitzar_integration::LeapfrogWorkspace non_finite_workspace(1);
+    NonFiniteSolver non_finite_solver{};
+    BLITZAR_CHECK(non_finite_particle.SetVelocity(0, {1.0, 0.0, 0.0}) ==
+           BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(integrator.Advance(
+               non_finite_particle,
+               non_finite_acceleration,
+               non_finite_workspace,
+               non_finite_solver,
+               0.5,
+               settings) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    const blitzar_core::ParticleStateView finite_state =
+        non_finite_particle.State();
+    BLITZAR_CHECK(finite_state.x[0] == 0.0);
+    BLITZAR_CHECK(finite_state.velocity_x[0] == 1.0);
     return 0;
 }

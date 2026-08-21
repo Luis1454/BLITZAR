@@ -3,15 +3,18 @@
 #include "core/Status.hpp"
 #include "core/Solver.hpp"
 #include "core/Units.hpp"
+#include "physics/GravityLaw.hpp"
 
-#include <cassert>
+#include "Check.hpp"
+#include <cmath>
+#include <span>
 #include <utility>
 
 namespace {
 
-class ProbeSolver final : public blitzar_core::Solver {
+class ProbeSolver final {
 public:
-    [[nodiscard]] blitzar_core::SolverKind Kind() const noexcept override
+    [[nodiscard]] blitzar_core::SolverKind Kind() const noexcept
     {
         return blitzar_core::SolverKind::Direct;
     }
@@ -19,7 +22,7 @@ public:
     [[nodiscard]] blitzar_status Compute(
         blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces,
-        const blitzar_core::ExecutionSettings& settings) noexcept override
+        const blitzar_core::ExecutionSettings& settings) noexcept
     {
         if (!blitzar_core::IsValid(particles) ||
             !blitzar_core::IsValid(forces) || particles.count != forces.count ||
@@ -35,19 +38,30 @@ public:
 int main()
 {
     const blitzar_core::ExecutionSettings settings{};
-    assert(settings.IsValid());
-    assert(blitzar_core::ToPublicStatus(999) == BLITZAR_STATUS_INTERNAL_ERROR);
+    BLITZAR_CHECK(settings.IsValid());
+    BLITZAR_CHECK(blitzar_core::ToPublicStatus(999) == BLITZAR_STATUS_INTERNAL_ERROR);
+    BLITZAR_CHECK(
+        blitzar_core::ToPublicStatus(BLITZAR_STATUS_UNSUPPORTED) ==
+        BLITZAR_STATUS_UNSUPPORTED);
 
     blitzar_core::UnitSystem units{};
-    assert(units.IsValid());
+    BLITZAR_CHECK(units.IsValid());
     units.length_scale = 0.0;
-    assert(!units.IsValid());
+    BLITZAR_CHECK(!units.IsValid());
+
+    const blitzar_physics::GravityParameters scaled_gravity{
+        1.0, 0.0, {2.0, 3.0, 4.0}};
+    BLITZAR_CHECK(scaled_gravity.IsValid());
+    BLITZAR_CHECK(std::abs(scaled_gravity.EffectiveConstant() - 6.0) < 1.0e-12);
+    const blitzar_physics::GravityLaw scaled_law(scaled_gravity);
+    BLITZAR_CHECK(
+        std::abs(scaled_law.PairFactor(1.0, 1.0) - 6.0) < 1.0e-12);
 
     blitzar_core::SnapshotHeader snapshot{};
     snapshot.particle_count = 4;
-    assert(snapshot.IsCompatible());
+    BLITZAR_CHECK(snapshot.IsCompatible());
     snapshot.magic = 0;
-    assert(!snapshot.IsCompatible());
+    BLITZAR_CHECK(!snapshot.IsCompatible());
 
     ProbeSolver solver{};
     blitzar_core::Scalar x[1]{};
@@ -61,14 +75,32 @@ int main()
     blitzar_core::Scalar fy[1]{};
     blitzar_core::Scalar fz[1]{};
     const blitzar_core::ParticleStateView particles{
-        1, x, y, z, vx, vy, vz, mass};
-    const blitzar_core::ForceView forces{1, fx, fy, fz};
-    assert(solver.Kind() == blitzar_core::SolverKind::Direct);
-    assert(solver.Compute(particles, forces, settings) == BLITZAR_STATUS_OK);
+        1,
+        std::span<const blitzar_core::Scalar>(x),
+        std::span<const blitzar_core::Scalar>(y),
+        std::span<const blitzar_core::Scalar>(z),
+        std::span<const blitzar_core::Scalar>(vx),
+        std::span<const blitzar_core::Scalar>(vy),
+        std::span<const blitzar_core::Scalar>(vz),
+        std::span<const blitzar_core::Scalar>(mass)};
+    const blitzar_core::ForceView forces{
+        1,
+        std::span<blitzar_core::Scalar>(fx),
+        std::span<blitzar_core::Scalar>(fy),
+        std::span<blitzar_core::Scalar>(fz)};
+    BLITZAR_CHECK(solver.Kind() == blitzar_core::SolverKind::Direct);
+    BLITZAR_CHECK(solver.Compute(particles, forces, settings) == BLITZAR_STATUS_OK);
 
     const blitzar_core::ParticleStateView invalid{
-        1, nullptr, y, z, vx, vy, vz, mass};
-    assert(solver.Compute(invalid, forces, settings) ==
+        1,
+        {},
+        std::span<const blitzar_core::Scalar>(y),
+        std::span<const blitzar_core::Scalar>(z),
+        std::span<const blitzar_core::Scalar>(vx),
+        std::span<const blitzar_core::Scalar>(vy),
+        std::span<const blitzar_core::Scalar>(vz),
+        std::span<const blitzar_core::Scalar>(mass)};
+    BLITZAR_CHECK(solver.Compute(invalid, forces, settings) ==
            BLITZAR_STATUS_INVALID_ARGUMENT);
     return 0;
 }

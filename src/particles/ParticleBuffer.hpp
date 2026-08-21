@@ -1,24 +1,26 @@
 #ifndef BLITZAR_PARTICLES_PARTICLE_BUFFER_HPP
 #define BLITZAR_PARTICLES_PARTICLE_BUFFER_HPP
 
-#include "ParticleArray.hpp"
+#include "ParticleArena.hpp"
 
 #include <blitzar/blitzar.h>
 
 #include <cstddef>
+#include <memory>
 
 namespace blitzar_particles {
 
 class ParticleBuffer final {
 public:
     explicit ParticleBuffer(std::size_t count);
+    explicit ParticleBuffer(std::shared_ptr<ParticleArena> arena);
     ~ParticleBuffer() = default;
 
     ParticleBuffer(const ParticleBuffer&) = delete;
     ParticleBuffer& operator=(const ParticleBuffer&) = delete;
 
-    ParticleBuffer(ParticleBuffer&&) noexcept = default;
-    ParticleBuffer& operator=(ParticleBuffer&&) noexcept = default;
+    ParticleBuffer(ParticleBuffer&& other) noexcept;
+    ParticleBuffer& operator=(ParticleBuffer&& other) noexcept;
 
     [[nodiscard]] std::size_t Count() const noexcept;
     [[nodiscard]] bool IsValid() const noexcept;
@@ -34,34 +36,28 @@ public:
 
 private:
     std::size_t count_;
-    ParticleArray position_x_;
-    ParticleArray position_y_;
-    ParticleArray position_z_;
-    ParticleArray velocity_x_;
-    ParticleArray velocity_y_;
-    ParticleArray velocity_z_;
-    ParticleArray mass_;
+    std::shared_ptr<ParticleArena> arena_;
 };
 
 class AccelerationBuffer final {
 public:
     explicit AccelerationBuffer(std::size_t count);
+    explicit AccelerationBuffer(std::shared_ptr<ParticleArena> arena);
     ~AccelerationBuffer() = default;
 
     AccelerationBuffer(const AccelerationBuffer&) = delete;
     AccelerationBuffer& operator=(const AccelerationBuffer&) = delete;
 
-    AccelerationBuffer(AccelerationBuffer&&) noexcept = default;
-    AccelerationBuffer& operator=(AccelerationBuffer&&) noexcept = default;
+    AccelerationBuffer(AccelerationBuffer&& other) noexcept;
+    AccelerationBuffer& operator=(AccelerationBuffer&& other) noexcept;
 
     [[nodiscard]] std::size_t Count() const noexcept;
+    [[nodiscard]] bool IsValid() const noexcept;
     [[nodiscard]] blitzar_core::ForceView View() noexcept;
 
 private:
     std::size_t count_;
-    ParticleArray x_;
-    ParticleArray y_;
-    ParticleArray z_;
+    std::shared_ptr<ParticleArena> arena_;
 };
 
 }  // namespace blitzar_particles

@@ -2,26 +2,30 @@
 #define BLITZAR_INTEGRATION_LEAPFROG_WORKSPACE_HPP
 
 #include "core/Types.hpp"
-#include "particles/ParticleArray.hpp"
+#include "particles/ParticleArena.hpp"
 
 #include <blitzar/blitzar.h>
 
 #include <cstddef>
+#include <memory>
 
 namespace blitzar_integration {
 
 class LeapfrogWorkspace final {
 public:
     explicit LeapfrogWorkspace(std::size_t count);
+    explicit LeapfrogWorkspace(
+        std::shared_ptr<blitzar_particles::ParticleArena> arena);
     ~LeapfrogWorkspace() = default;
 
     LeapfrogWorkspace(const LeapfrogWorkspace&) = delete;
     LeapfrogWorkspace& operator=(const LeapfrogWorkspace&) = delete;
 
-    LeapfrogWorkspace(LeapfrogWorkspace&&) noexcept = default;
-    LeapfrogWorkspace& operator=(LeapfrogWorkspace&&) noexcept = default;
+    LeapfrogWorkspace(LeapfrogWorkspace&& other) noexcept;
+    LeapfrogWorkspace& operator=(LeapfrogWorkspace&& other) noexcept;
 
     [[nodiscard]] std::size_t Count() const noexcept;
+    [[nodiscard]] bool IsValid() const noexcept;
     [[nodiscard]] blitzar_status Capture(
         blitzar_core::MutableParticleView state) noexcept;
     [[nodiscard]] blitzar_status Restore(
@@ -29,12 +33,7 @@ public:
 
 private:
     std::size_t count_;
-    blitzar_particles::ParticleArray position_x_;
-    blitzar_particles::ParticleArray position_y_;
-    blitzar_particles::ParticleArray position_z_;
-    blitzar_particles::ParticleArray velocity_x_;
-    blitzar_particles::ParticleArray velocity_y_;
-    blitzar_particles::ParticleArray velocity_z_;
+    std::shared_ptr<blitzar_particles::ParticleArena> arena_;
 };
 
 }  // namespace blitzar_integration

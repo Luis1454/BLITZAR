@@ -2,6 +2,7 @@
 #define BLITZAR_PHYSICS_GRAVITY_LAW_HPP
 
 #include "core/Types.hpp"
+#include "core/Units.hpp"
 
 namespace blitzar_physics {
 
@@ -14,8 +15,11 @@ enum class PairStatus : unsigned char {
 struct GravityParameters final {
     blitzar_core::Scalar gravitational_constant{1.0};
     blitzar_core::Scalar softening{0.0};
+    blitzar_core::UnitSystem units{};
 
     [[nodiscard]] bool IsValid() const noexcept;
+    [[nodiscard]] blitzar_core::Scalar EffectiveConstant() const noexcept;
+    [[nodiscard]] blitzar_core::Scalar EffectiveSoftening() const noexcept;
 };
 
 class GravityLaw final {
@@ -35,6 +39,8 @@ public:
 
 private:
     GravityParameters parameters_;
+    blitzar_core::Scalar effective_constant_;
+    blitzar_core::Scalar effective_softening_;
 };
 
 }  // namespace blitzar_physics

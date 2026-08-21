@@ -1,5 +1,5 @@
 {
-  "plan_version": "1.0.1",
+  "plan_version": "1.0.2",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -13,14 +13,16 @@
     "src/physics",
     "src/integration",
     "src/trees",
-    "src/grid",
     "src/solvers",
-    "src/cuda_runtime",
-    "src/io",
     "src/sdk",
     "apps/blitzar",
     "tests",
     "examples"
+  ],
+  "deferred_roots": [
+    "src/grid",
+    "src/cuda_runtime",
+    "src/io"
   ],
   "phases": [
     {"id": "P0", "name": "contracts-and-build", "depends_on": []},

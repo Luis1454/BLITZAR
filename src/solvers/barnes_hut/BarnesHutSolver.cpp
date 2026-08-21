@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <new>
+#include <stdexcept>
 
 namespace blitzar_barnes_hut {
 
@@ -23,7 +25,6 @@ BarnesHutSolver::BarnesHutSolver(
           settings.leaf_capacity,
           settings.max_depth)
 {
-    stack_.reserve(settings.max_cells);
 }
 
 blitzar_core::SolverKind BarnesHutSolver::Kind() const noexcept
@@ -63,28 +64,36 @@ bool BarnesHutSolver::Contains(
 blitzar_status BarnesHutSolver::Accumulate(
     std::size_t target,
     blitzar_core::ParticleStateView particles,
-    blitzar_core::ForceView forces) noexcept
+    std::span<std::size_t> stack,
+    blitzar_core::Vector3& acceleration) noexcept
 {
-    stack_.clear();
-    stack_.push_back(0);
+    if (stack.empty()) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
+    std::size_t stack_size = 1;
+    stack[0] = 0;
     const blitzar_core::Vector3 target_position{
         particles.x[target], particles.y[target], particles.z[target]};
-    blitzar_core::Scalar acceleration_x = 0.0;
-    blitzar_core::Scalar acceleration_y = 0.0;
-    blitzar_core::Scalar acceleration_z = 0.0;
+    acceleration = {};
 
-    while (!stack_.empty()) {
-        const int cell_index = stack_.back();
-        stack_.pop_back();
-        const blitzar_trees::Octree::Cell& cell =
-            tree_.CellAt(static_cast<std::size_t>(cell_index));
+    while (stack_size > 0) {
+        const std::size_t cell_index = stack[--stack_size];
+        const std::span<const blitzar_trees::Octree::Cell> cell_view =
+            tree_.CellAt(cell_index);
+        if (cell_view.empty()) {
+            return BLITZAR_STATUS_INTERNAL_ERROR;
+        }
+        const blitzar_trees::Octree::Cell& cell = cell_view.front();
         if (cell.mass == 0.0) {
             continue;
         }
         const bool contains_target = Contains(cell, target_position);
         if (cell.IsLeaf()) {
             for (std::size_t offset = 0; offset < cell.count; ++offset) {
-                const std::size_t source = tree_.ParticleIndex(cell.begin + offset);
+                std::size_t source = 0;
+                if (!tree_.ParticleIndex(cell.begin + offset, source)) {
+                    return BLITZAR_STATUS_INTERNAL_ERROR;
+                }
                 if (source == target || particles.mass[source] == 0.0) {
                     continue;
                 }
@@ -104,16 +113,19 @@ blitzar_status BarnesHutSolver::Accumulate(
                 if (!std::isfinite(factor)) {
                     return BLITZAR_STATUS_INVALID_ARGUMENT;
                 }
-                acceleration_x += factor * dx;
-                acceleration_y += factor * dy;
-                acceleration_z += factor * dz;
+                acceleration.x += factor * dx;
+                acceleration.y += factor * dy;
+                acceleration.z += factor * dz;
             }
             continue;
         }
 
-        const blitzar_core::Scalar dx = cell.center_of_mass.x - target_position.x;
-        const blitzar_core::Scalar dy = cell.center_of_mass.y - target_position.y;
-        const blitzar_core::Scalar dz = cell.center_of_mass.z - target_position.z;
+        const blitzar_core::Scalar dx =
+            cell.center_of_mass.x - target_position.x;
+        const blitzar_core::Scalar dy =
+            cell.center_of_mass.y - target_position.y;
+        const blitzar_core::Scalar dz =
+            cell.center_of_mass.z - target_position.z;
         const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
         const blitzar_core::Scalar distance = std::sqrt(distance_squared);
         const blitzar_core::Scalar cell_width = 2.0 * cell.half_extent;
@@ -131,20 +143,26 @@ blitzar_status BarnesHutSolver::Accumulate(
             if (!std::isfinite(factor)) {
                 return BLITZAR_STATUS_INVALID_ARGUMENT;
             }
-            acceleration_x += factor * dx;
-            acceleration_y += factor * dy;
-            acceleration_z += factor * dz;
+            acceleration.x += factor * dx;
+            acceleration.y += factor * dy;
+            acceleration.z += factor * dz;
             continue;
         }
-        for (auto child = cell.children.rbegin(); child != cell.children.rend(); ++child) {
-            if (*child >= 0) {
-                stack_.push_back(*child);
+        for (auto child = cell.children.rbegin();
+             child != cell.children.rend();
+             ++child) {
+            if (*child != blitzar_trees::Octree::Cell::InvalidIndex) {
+                if (stack_size == stack.size()) {
+                    return BLITZAR_STATUS_INTERNAL_ERROR;
+                }
+                stack[stack_size++] = *child;
             }
         }
     }
-    forces.x[target] = acceleration_x;
-    forces.y[target] = acceleration_y;
-    forces.z[target] = acceleration_z;
+    if (!std::isfinite(acceleration.x) || !std::isfinite(acceleration.y) ||
+        !std::isfinite(acceleration.z)) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
     return BLITZAR_STATUS_OK;
 }
 
@@ -153,10 +171,34 @@ blitzar_status BarnesHutSolver::Compute(
     blitzar_core::ForceView forces,
     const blitzar_core::ExecutionSettings& settings) noexcept
 {
+    if (!settings_.IsValid()) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    try {
+        std::vector<std::size_t> traversal_storage(settings_.max_cells);
+        return Compute(
+            particles,
+            forces,
+            settings,
+            std::span<std::size_t>(traversal_storage));
+    } catch (const std::length_error&) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    } catch (const std::bad_alloc&) {
+        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+    }
+}
+
+blitzar_status BarnesHutSolver::Compute(
+    blitzar_core::ParticleStateView particles,
+    blitzar_core::ForceView forces,
+    const blitzar_core::ExecutionSettings& settings,
+    std::span<std::size_t> traversal_stack) noexcept
+{
     if (!settings_.IsValid() || !gravity_.IsValid() ||
         !settings.IsValid() || particles.count != forces.count ||
         particles.count > settings_.max_particles || !IsValidState(particles) ||
-        !blitzar_core::IsValid(forces)) {
+        !blitzar_core::IsValid(forces) ||
+        traversal_stack.size() < settings_.max_cells) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     if (!tree_.Refit(particles)) {
@@ -165,11 +207,25 @@ blitzar_status BarnesHutSolver::Compute(
             return build_status;
         }
     }
+    // Validate every target before committing any force output.
     for (std::size_t target = 0; target < particles.count; ++target) {
-        const blitzar_status status = Accumulate(target, particles, forces);
+        blitzar_core::Vector3 acceleration{};
+        const blitzar_status status =
+            Accumulate(target, particles, traversal_stack, acceleration);
         if (status != BLITZAR_STATUS_OK) {
             return status;
         }
+    }
+    for (std::size_t target = 0; target < particles.count; ++target) {
+        blitzar_core::Vector3 acceleration{};
+        const blitzar_status status =
+            Accumulate(target, particles, traversal_stack, acceleration);
+        if (status != BLITZAR_STATUS_OK) {
+            return status;
+        }
+        forces.x[target] = acceleration.x;
+        forces.y[target] = acceleration.y;
+        forces.z[target] = acceleration.z;
     }
     return BLITZAR_STATUS_OK;
 }

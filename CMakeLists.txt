@@ -3,11 +3,17 @@ cmake_minimum_required(VERSION 3.25)
 project(BLITZAR VERSION 1.0.0 LANGUAGES C CXX)
 
 include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 
 option(BLITZAR_BUILD_TESTS "Build BLITZAR tests" ON)
 option(BLITZAR_BUILD_CLI "Build the BLITZAR command-line application" ON)
 option(BLITZAR_BUILD_EXAMPLES "Build SDK consumption examples" ON)
 option(BLITZAR_BUILD_SHARED "Build BLITZAR as a shared library" OFF)
+option(BLITZAR_ENABLE_SANITIZERS "Enable AddressSanitizer and UBSan" OFF)
+
+if(BLITZAR_ENABLE_SANITIZERS AND MSVC)
+    message(FATAL_ERROR "BLITZAR_ENABLE_SANITIZERS requires a Clang/GNU toolchain")
+endif()
 
 if(BLITZAR_BUILD_SHARED AND BLITZAR_BUILD_TESTS)
     message(FATAL_ERROR
@@ -24,19 +30,22 @@ endfunction()
 
 if(BLITZAR_BUILD_SHARED)
     add_library(blitzar SHARED)
-    target_compile_definitions(blitzar PRIVATE BLITZAR_SHARED BLITZAR_BUILDING)
+    target_compile_definitions(blitzar
+        PRIVATE BLITZAR_BUILDING
+        PUBLIC BLITZAR_SHARED
+    )
 else()
     add_library(blitzar STATIC)
 endif()
 
 target_sources(blitzar PRIVATE
-    src/integration/LeapfrogKdk.cpp
     src/integration/LeapfrogWorkspace.cpp
-    src/particles/ParticleArray.cpp
+    src/particles/ParticleArena.cpp
     src/particles/ParticleBuffer.cpp
     src/physics/GravityLaw.cpp
     src/sdk/Api.cpp
-    src/sdk/Context.cpp
+    src/sdk/CppApi.cpp
+    src/sdk/Simulation.cpp
     src/solvers/barnes_hut/BarnesHutSolver.cpp
     src/solvers/direct/DirectSolver.cpp
     src/trees/Octree.cpp
@@ -53,10 +62,23 @@ target_include_directories(blitzar
 
 blitzar_enable_warnings(blitzar)
 
+if(BLITZAR_ENABLE_SANITIZERS)
+    target_compile_options(blitzar PUBLIC
+        -fsanitize=address,undefined
+        -fno-omit-frame-pointer
+    )
+    target_link_options(blitzar PUBLIC -fsanitize=address,undefined)
+endif()
+
+set(BLITZAR_INSTALL_CMAKEDIR
+    ${CMAKE_INSTALL_LIBDIR}/cmake/BLITZAR)
+
 install(TARGETS blitzar
+    EXPORT BLITZARTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 install(FILES
     include/blitzar/blitzar.h
@@ -64,9 +86,29 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/blitzar
 )
 
+configure_package_config_file(
+    cmake/BLITZARConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/BLITZARConfig.cmake
+    INSTALL_DESTINATION ${BLITZAR_INSTALL_CMAKEDIR}
+)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/BLITZARConfigVersion.cmake
+    COMPATIBILITY SameMajorVersion
+)
+install(EXPORT BLITZARTargets
+    FILE BLITZARTargets.cmake
+    NAMESPACE BLITZAR::
+    DESTINATION ${BLITZAR_INSTALL_CMAKEDIR}
+)
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/BLITZARConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/BLITZARConfigVersion.cmake
+    DESTINATION ${BLITZAR_INSTALL_CMAKEDIR}
+)
+
 if(BLITZAR_BUILD_CLI)
     add_executable(blitzar_cli
-        apps/blitzar/main.cpp
+        apps/blitzar/Main.cpp
     )
     target_link_libraries(blitzar_cli PRIVATE blitzar)
     target_compile_features(blitzar_cli PRIVATE cxx_std_20)
@@ -131,11 +173,20 @@ if(BLITZAR_BUILD_TESTS)
     target_include_directories(blitzar_hierarchy_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     blitzar_enable_warnings(blitzar_hierarchy_test)
 
+    add_executable(blitzar_numerical_test
+        tests/Numerical.cpp
+    )
+    target_link_libraries(blitzar_numerical_test PRIVATE blitzar)
+    target_compile_features(blitzar_numerical_test PRIVATE cxx_std_20)
+    target_include_directories(blitzar_numerical_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    blitzar_enable_warnings(blitzar_numerical_test)
+
     add_test(NAME TST-P0-001 COMMAND blitzar_lifecycle_test)
     add_test(NAME TST-P0-002 COMMAND blitzar_c_api_test)
     add_test(NAME TST-P0-003 COMMAND blitzar_contract_test)
     add_test(NAME TST-P1-001 COMMAND blitzar_dynamics_test)
     add_test(NAME TST-P3-001 COMMAND blitzar_hierarchy_test)
+    add_test(NAME TST-P1-002 COMMAND blitzar_numerical_test)
 endif()
 
 if(BLITZAR_BUILD_TESTS)
