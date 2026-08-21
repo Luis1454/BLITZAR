@@ -1,0 +1,45 @@
+{
+  "plan_version": "1.0.0",
+  "status": "frozen",
+  "product": "deterministic particle simulation SDK",
+  "source_of_truth": [
+    "PLAN.md",
+    "plan/manifest.json"
+  ],
+  "roots": [
+    "include/blitzar",
+    "src/core",
+    "src/particles",
+    "src/physics",
+    "src/integration",
+    "src/trees",
+    "src/grid",
+    "src/solvers",
+    "src/cuda_runtime",
+    "src/io",
+    "src/sdk",
+    "apps/blitzar",
+    "tests",
+    "examples"
+  ],
+  "phases": [
+    {"id": "P0", "name": "contracts-and-build", "depends_on": []},
+    {"id": "P1", "name": "particle-core-and-direct-reference", "depends_on": ["P0"]},
+    {"id": "P2", "name": "public-sdk-and-cli", "depends_on": ["P1"]},
+    {"id": "P3", "name": "trees-and-hierarchical-solvers", "depends_on": ["P1"]},
+    {"id": "P4", "name": "cuda-runtime-and-gpu-solvers", "depends_on": ["P3"]},
+    {"id": "P5", "name": "grid-pm-and-treepm", "depends_on": ["P3", "P4"]},
+    {"id": "P6", "name": "persistence-and-qualification", "depends_on": ["P2", "P5"]}
+  ],
+  "forbidden_references": [
+    "BLITZAR/",
+    "BLITZAR-restored/",
+    "old repo",
+    "legacy source",
+    "git history"
+  ],
+  "change_protocol": {
+    "commit_prefix": "plan-change:",
+    "decision_directory": "plan/decisions"
+  }
+}

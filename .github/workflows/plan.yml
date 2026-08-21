@@ -1,0 +1,45 @@
+name: Plan Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate frozen plan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate plan manifest
+        run: python tools/plan_check.py
+
+      - name: Reject unapproved plan edits
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          changed=$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}")
+          if grep -Eq '^(PLAN\.md|plan/manifest\.json)$' <<< "$changed"; then
+            messages=$(git log --format=%s "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}")
+            if ! grep -q '^plan-change:' <<< "$messages"; then
+              echo "Plan files changed without a plan-change commit."
+              exit 1
+            fi
+            if ! grep -Eq '^plan/decisions/[^/]+\.md$' <<< "$changed"; then
+              echo "Plan changes require a decision record under plan/decisions/."
+              exit 1
+            fi
+          fi
