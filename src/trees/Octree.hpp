@@ -7,6 +7,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <span>
 #include <vector>
@@ -67,6 +68,14 @@ private:
         blitzar_core::ParticleStateView particles,
         std::array<std::size_t, 8>& counts) noexcept;
     void CalculateProperties(blitzar_core::ParticleStateView particles) noexcept;
+    void ParallelMortonSort(
+        blitzar_core::ParticleStateView particles,
+        blitzar_core::Vector3 minimum,
+        blitzar_core::Vector3 maximum) noexcept;
+    [[nodiscard]] static std::uint64_t MortonKey(
+        blitzar_core::Vector3 position,
+        blitzar_core::Vector3 minimum,
+        blitzar_core::Vector3 maximum) noexcept;
 
     std::size_t max_particles_;
     std::size_t max_cells_;
@@ -77,6 +86,7 @@ private:
     std::size_t refit_count_;
     std::vector<std::size_t> indices_;
     std::vector<std::size_t> scratch_;
+    std::vector<std::uint64_t> morton_keys_;
     std::vector<Cell> cells_;
 };
 

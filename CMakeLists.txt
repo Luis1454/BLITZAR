@@ -10,6 +10,7 @@ option(BLITZAR_BUILD_CLI "Build the BLITZAR command-line application" ON)
 option(BLITZAR_BUILD_EXAMPLES "Build SDK consumption examples" ON)
 option(BLITZAR_BUILD_SHARED "Build BLITZAR as a shared library" OFF)
 option(BLITZAR_ENABLE_SANITIZERS "Enable AddressSanitizer and UBSan" OFF)
+option(BLITZAR_ENABLE_OPENMP "Enable CPU OpenMP parallelism" ON)
 
 if(BLITZAR_ENABLE_SANITIZERS AND MSVC)
     message(FATAL_ERROR "BLITZAR_ENABLE_SANITIZERS requires a Clang/GNU toolchain")
@@ -18,6 +19,10 @@ endif()
 if(BLITZAR_BUILD_SHARED AND BLITZAR_BUILD_TESTS)
     message(FATAL_ERROR
         "BLITZAR_BUILD_TESTS targets internal symbols; use the static build for them")
+endif()
+
+if(BLITZAR_ENABLE_OPENMP)
+    find_package(OpenMP REQUIRED COMPONENTS CXX)
 endif()
 
 function(blitzar_enable_warnings target)
@@ -47,6 +52,7 @@ target_sources(blitzar PRIVATE
     src/sdk/CppApi.cpp
     src/sdk/Simulation.cpp
     src/solvers/barnes_hut/BarnesHutSolver.cpp
+    src/solvers/barnes_hut/ThreadWorkspace.cpp
     src/solvers/direct/DirectSolver.cpp
     src/trees/Octree.cpp
 )
@@ -61,6 +67,10 @@ target_include_directories(blitzar
 )
 
 blitzar_enable_warnings(blitzar)
+
+if(BLITZAR_ENABLE_OPENMP)
+    target_link_libraries(blitzar PUBLIC OpenMP::OpenMP_CXX)
+endif()
 
 if(BLITZAR_ENABLE_SANITIZERS)
     target_compile_options(blitzar PUBLIC

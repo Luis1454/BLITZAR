@@ -7,6 +7,7 @@
 #include "integration/LeapfrogKdk.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
+#include "solvers/barnes_hut/ThreadWorkspace.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 
 #include <blitzar/blitzar.h>
@@ -17,7 +18,6 @@
 #include <memory>
 #include <span>
 #include <variant>
-#include <vector>
 
 namespace blitzar_sdk {
 
@@ -85,7 +85,7 @@ private:
     blitzar_integration::LeapfrogWorkspace workspace_;
     blitzar_physics::GravityParameters gravity_;
     blitzar_barnes_hut::BarnesHutSettings barnes_hut_;
-    std::vector<std::size_t> traversal_storage_;
+    blitzar_barnes_hut::ThreadWorkspace traversal_workspace_;
     blitzar_solver_kind solver_kind_;
     blitzar_integrator_kind integrator_kind_;
     blitzar_core::Scalar timestep_;

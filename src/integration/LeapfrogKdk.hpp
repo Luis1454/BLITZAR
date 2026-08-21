@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <concepts>
+#include <cstdint>
 #include <span>
 
 namespace blitzar_integration {
@@ -56,20 +57,20 @@ namespace detail {
     return restore_status == BLITZAR_STATUS_OK ? status : restore_status;
 }
 
-template <typename Solver>
+template <typename Solver, typename Workspace>
 [[nodiscard]] inline blitzar_status ComputeSolver(
     Solver& solver,
     blitzar_core::ParticleStateView particles,
     blitzar_core::ForceView force,
     const blitzar_core::ExecutionSettings& settings,
-    std::span<std::size_t> workspace) noexcept
+    Workspace& workspace) noexcept
 {
     if constexpr (requires(
                       Solver& candidate,
                       blitzar_core::ParticleStateView candidate_particles,
                       blitzar_core::ForceView candidate_force,
                       const blitzar_core::ExecutionSettings& candidate_settings,
-                      std::span<std::size_t> candidate_workspace) {
+                      Workspace& candidate_workspace) {
                       candidate.Compute(
                           candidate_particles,
                           candidate_force,
@@ -93,8 +94,28 @@ public:
         LeapfrogWorkspace& workspace,
         Solver& solver,
         blitzar_core::Scalar timestep,
+        const blitzar_core::ExecutionSettings& settings) const noexcept
+    {
+        std::span<std::size_t> solver_workspace{};
+        return Advance(
+            particles,
+            accelerations,
+            workspace,
+            solver,
+            timestep,
+            settings,
+            solver_workspace);
+    }
+
+    template <typename Solver, typename SolverWorkspace>
+    [[nodiscard]] blitzar_status Advance(
+        blitzar_particles::ParticleBuffer& particles,
+        blitzar_particles::AccelerationBuffer& accelerations,
+        LeapfrogWorkspace& workspace,
+        Solver& solver,
+        blitzar_core::Scalar timestep,
         const blitzar_core::ExecutionSettings& settings,
-        std::span<std::size_t> solver_workspace = {}) const noexcept
+        SolverWorkspace& solver_workspace) const noexcept
     {
         if (!particles.IsValid() || !accelerations.IsValid() ||
             !workspace.IsValid() || particles.Count() != accelerations.Count() ||
@@ -120,7 +141,13 @@ public:
         }
 
         const blitzar_core::Scalar half_step = 0.5 * timestep;
-        for (std::size_t index = 0; index < particles.Count(); ++index) {
+#if defined(_OPENMP)
+#pragma omp parallel for simd schedule(static)
+#endif
+        for (std::int64_t raw_index = 0;
+             raw_index < static_cast<std::int64_t>(particles.Count());
+             ++raw_index) {
+            const std::size_t index = static_cast<std::size_t>(raw_index);
             mutable_state.velocity_x[index] += half_step * force.x[index];
             mutable_state.velocity_y[index] += half_step * force.y[index];
             mutable_state.velocity_z[index] += half_step * force.z[index];
@@ -146,7 +173,13 @@ public:
                 mutable_state,
                 BLITZAR_STATUS_INVALID_ARGUMENT);
         }
-        for (std::size_t index = 0; index < particles.Count(); ++index) {
+#if defined(_OPENMP)
+#pragma omp parallel for simd schedule(static)
+#endif
+        for (std::int64_t raw_index = 0;
+             raw_index < static_cast<std::int64_t>(particles.Count());
+             ++raw_index) {
+            const std::size_t index = static_cast<std::size_t>(raw_index);
             mutable_state.velocity_x[index] += half_step * force.x[index];
             mutable_state.velocity_y[index] += half_step * force.y[index];
             mutable_state.velocity_z[index] += half_step * force.z[index];

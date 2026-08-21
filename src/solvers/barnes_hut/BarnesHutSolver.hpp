@@ -4,6 +4,7 @@
 #include "core/Solver.hpp"
 #include "core/Execution.hpp"
 #include "physics/GravityLaw.hpp"
+#include "solvers/barnes_hut/ThreadWorkspace.hpp"
 #include "trees/Octree.hpp"
 
 #include <blitzar/blitzar.h>
@@ -38,7 +39,7 @@ public:
         blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces,
         const blitzar_core::ExecutionSettings& settings,
-        std::span<std::size_t> traversal_stack) noexcept;
+        ThreadWorkspace& workspace) noexcept;
 
 private:
     [[nodiscard]] static bool IsValidState(

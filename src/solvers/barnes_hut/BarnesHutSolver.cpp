@@ -1,7 +1,9 @@
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
+#include <cstdint>
 #include <new>
 #include <stdexcept>
 
@@ -175,12 +177,13 @@ blitzar_status BarnesHutSolver::Compute(
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     try {
-        std::vector<std::size_t> traversal_storage(settings_.max_cells);
+        ThreadWorkspace traversal_workspace(
+            settings_.max_cells, settings_.max_depth);
         return Compute(
             particles,
             forces,
             settings,
-            std::span<std::size_t>(traversal_storage));
+            traversal_workspace);
     } catch (const std::length_error&) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     } catch (const std::bad_alloc&) {
@@ -192,13 +195,14 @@ blitzar_status BarnesHutSolver::Compute(
     blitzar_core::ParticleStateView particles,
     blitzar_core::ForceView forces,
     const blitzar_core::ExecutionSettings& settings,
-    std::span<std::size_t> traversal_stack) noexcept
+    ThreadWorkspace& workspace) noexcept
 {
     if (!settings_.IsValid() || !gravity_.IsValid() ||
         !settings.IsValid() || particles.count != forces.count ||
         particles.count > settings_.max_particles || !IsValidState(particles) ||
         !blitzar_core::IsValid(forces) ||
-        traversal_stack.size() < settings_.max_cells) {
+        workspace.MaxCells() < settings_.max_cells ||
+        workspace.MaxDepth() < settings_.max_depth) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     if (!tree_.Refit(particles)) {
@@ -207,27 +211,69 @@ blitzar_status BarnesHutSolver::Compute(
             return build_status;
         }
     }
-    // Validate every target before committing any force output.
-    for (std::size_t target = 0; target < particles.count; ++target) {
+    std::atomic<blitzar_status> computation_status{BLITZAR_STATUS_OK};
+
+#if defined(_OPENMP)
+#pragma omp parallel for schedule(static)
+#endif
+    for (std::int64_t target_index = 0;
+         target_index < static_cast<std::int64_t>(particles.count);
+         ++target_index) {
+        const std::size_t target = static_cast<std::size_t>(target_index);
+        if (computation_status.load(std::memory_order_relaxed) !=
+            BLITZAR_STATUS_OK) {
+            continue;
+        }
         blitzar_core::Vector3 acceleration{};
-        const blitzar_status status =
+        std::span<std::size_t> traversal_stack =
+            workspace.Stack(ThreadWorkspace::CurrentThread());
+        const blitzar_status target_status =
             Accumulate(target, particles, traversal_stack, acceleration);
-        if (status != BLITZAR_STATUS_OK) {
-            return status;
+        if (target_status != BLITZAR_STATUS_OK) {
+            blitzar_status expected = BLITZAR_STATUS_OK;
+            computation_status.compare_exchange_strong(
+                expected,
+                target_status,
+                std::memory_order_relaxed,
+                std::memory_order_relaxed);
         }
     }
-    for (std::size_t target = 0; target < particles.count; ++target) {
+
+    if (computation_status.load(std::memory_order_relaxed) !=
+        BLITZAR_STATUS_OK) {
+        return computation_status.load(std::memory_order_relaxed);
+    }
+
+#if defined(_OPENMP)
+#pragma omp parallel for schedule(static)
+#endif
+    for (std::int64_t target_index = 0;
+         target_index < static_cast<std::int64_t>(particles.count);
+         ++target_index) {
+        const std::size_t target = static_cast<std::size_t>(target_index);
+        if (computation_status.load(std::memory_order_relaxed) !=
+            BLITZAR_STATUS_OK) {
+            continue;
+        }
         blitzar_core::Vector3 acceleration{};
-        const blitzar_status status =
+        std::span<std::size_t> traversal_stack =
+            workspace.Stack(ThreadWorkspace::CurrentThread());
+        const blitzar_status target_status =
             Accumulate(target, particles, traversal_stack, acceleration);
-        if (status != BLITZAR_STATUS_OK) {
-            return status;
+        if (target_status != BLITZAR_STATUS_OK) {
+            blitzar_status expected = BLITZAR_STATUS_OK;
+            computation_status.compare_exchange_strong(
+                expected,
+                target_status,
+                std::memory_order_relaxed,
+                std::memory_order_relaxed);
+            continue;
         }
         forces.x[target] = acceleration.x;
         forces.y[target] = acceleration.y;
         forces.z[target] = acceleration.z;
     }
-    return BLITZAR_STATUS_OK;
+    return computation_status.load(std::memory_order_relaxed);
 }
 
 }  // namespace blitzar_barnes_hut

@@ -1,6 +1,7 @@
 #include "core/Execution.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
+#include "solvers/barnes_hut/ThreadWorkspace.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 #include "trees/Octree.hpp"
 #include "Check.hpp"
@@ -45,6 +46,16 @@ int main()
     BLITZAR_CHECK(tree_solver.Compute(
                tree_particles.State(), tree_acceleration.View(), execution) ==
            BLITZAR_STATUS_OK);
+    blitzar_barnes_hut::ThreadWorkspace thread_workspace(
+        settings.max_cells, settings.max_depth);
+    BLITZAR_CHECK(thread_workspace.ThreadCount() > 0);
+    BLITZAR_CHECK(thread_workspace.StackCapacity() > 0);
+    BLITZAR_CHECK(thread_workspace.StackCapacity() <= settings.max_cells);
+    BLITZAR_CHECK(tree_solver.Compute(
+               tree_particles.State(),
+               tree_acceleration.View(),
+               execution,
+               thread_workspace) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(tree_solver.Kind() == blitzar_core::SolverKind::BarnesHut);
 
     const blitzar_core::ForceView direct_force = direct_acceleration.View();

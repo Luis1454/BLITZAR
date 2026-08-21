@@ -34,7 +34,7 @@ Simulation::Simulation(std::size_t particle_count)
           DefaultMaxCells(particle_count),
           8,
           32},
-      traversal_storage_(barnes_hut_.max_cells),
+      traversal_workspace_(barnes_hut_.max_cells, barnes_hut_.max_depth),
       solver_kind_(BLITZAR_SOLVER_DIRECT),
       integrator_kind_(BLITZAR_INTEGRATOR_LEAPFROG_KDK),
       timestep_(1.0),
@@ -173,9 +173,10 @@ blitzar_status Simulation::SetBarnesHut(
     if (!candidate_settings.IsValid() || max_particles < particle_count_) {
         return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
     }
-    std::vector<std::size_t> candidate_workspace;
+    blitzar_barnes_hut::ThreadWorkspace candidate_workspace(0, 0);
     try {
-        candidate_workspace.resize(candidate_settings.max_cells);
+        candidate_workspace = blitzar_barnes_hut::ThreadWorkspace(
+            candidate_settings.max_cells, candidate_settings.max_depth);
     } catch (const std::length_error&) {
         return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
     } catch (const std::bad_alloc&) {
@@ -191,7 +192,7 @@ blitzar_status Simulation::SetBarnesHut(
         }
         solver_ = std::move(candidate_solver);
     }
-    traversal_storage_ = std::move(candidate_workspace);
+    traversal_workspace_ = std::move(candidate_workspace);
     barnes_hut_ = candidate_settings;
     return Remember(BLITZAR_STATUS_OK);
 }
@@ -298,7 +299,7 @@ blitzar_status Simulation::Step() noexcept
                 solver,
                 timestep_,
                 execution_settings_,
-                std::span<std::size_t>(traversal_storage_));
+                traversal_workspace_);
         },
         solver_);
     return Remember(status);
