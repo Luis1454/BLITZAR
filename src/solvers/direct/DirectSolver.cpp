@@ -37,7 +37,7 @@ blitzar_core::SolverKind DirectSolver::Kind() const noexcept
 blitzar_status DirectSolver::Compute(
     blitzar_core::ParticleStateView particles,
     blitzar_core::ForceView forces,
-    const blitzar_core::ExecutionSettings& settings) const noexcept
+    const blitzar_core::ExecutionSettings& settings) noexcept
 {
     if (!blitzar_core::IsValid(particles) || !blitzar_core::IsValid(forces) ||
         particles.count != forces.count || !settings.IsValid() ||

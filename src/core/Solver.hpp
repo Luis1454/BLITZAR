@@ -27,7 +27,7 @@ public:
     [[nodiscard]] virtual blitzar_status Compute(
         ParticleStateView particles,
         ForceView forces,
-        const ExecutionSettings& settings) const noexcept = 0;
+        const ExecutionSettings& settings) noexcept = 0;
 };
 
 }  // namespace blitzar_core

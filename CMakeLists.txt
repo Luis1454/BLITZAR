@@ -23,7 +23,9 @@ add_library(blitzar STATIC
     src/physics/GravityLaw.cpp
     src/sdk/Api.cpp
     src/sdk/Context.cpp
+    src/solvers/barnes_hut/BarnesHutSolver.cpp
     src/solvers/direct/DirectSolver.cpp
+    src/trees/Octree.cpp
 )
 
 target_compile_features(blitzar PUBLIC cxx_std_20)
@@ -105,10 +107,19 @@ if(BLITZAR_BUILD_TESTS)
     target_include_directories(blitzar_dynamics_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     blitzar_enable_warnings(blitzar_dynamics_test)
 
+    add_executable(blitzar_hierarchy_test
+        tests/Hierarchy.cpp
+    )
+    target_link_libraries(blitzar_hierarchy_test PRIVATE blitzar)
+    target_compile_features(blitzar_hierarchy_test PRIVATE cxx_std_20)
+    target_include_directories(blitzar_hierarchy_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    blitzar_enable_warnings(blitzar_hierarchy_test)
+
     add_test(NAME TST-P0-001-cpp-lifecycle COMMAND blitzar_lifecycle_test)
     add_test(NAME TST-P0-002-c-api-lifecycle COMMAND blitzar_c_api_test)
     add_test(NAME TST-P0-003-core-contracts COMMAND blitzar_contract_test)
     add_test(NAME TST-P1-001-dynamics COMMAND blitzar_dynamics_test)
+    add_test(NAME TST-P3-001-hierarchy-reference COMMAND blitzar_hierarchy_test)
 endif()
 
 if(BLITZAR_BUILD_TESTS)

@@ -24,7 +24,7 @@ int main()
 
     const blitzar_core::ExecutionSettings settings{};
     const blitzar_physics::GravityParameters gravity{1.0, 0.0};
-    const blitzar_direct::DirectSolver solver(gravity);
+    blitzar_direct::DirectSolver solver(gravity);
     assert(solver.Compute(particles.State(), accelerations.View(), settings) ==
            BLITZAR_STATUS_OK);
     const blitzar_core::ForceView force = accelerations.View();

@@ -12,7 +12,7 @@ public:
     [[nodiscard]] blitzar_status Advance(
         blitzar_particles::ParticleBuffer& particles,
         blitzar_particles::AccelerationBuffer& accelerations,
-        const blitzar_core::Solver& solver,
+        blitzar_core::Solver& solver,
         blitzar_core::Scalar timestep,
         const blitzar_core::ExecutionSettings& settings) const noexcept;
 };

@@ -14,7 +14,7 @@ public:
     [[nodiscard]] blitzar_status Compute(
         blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces,
-        const blitzar_core::ExecutionSettings& settings) const noexcept override;
+        const blitzar_core::ExecutionSettings& settings) noexcept override;
 
 private:
     blitzar_physics::GravityLaw gravity_;

@@ -41,6 +41,12 @@
       "name": "cli",
       "command": "blitzar_cli",
       "phase": "P2"
+    },
+    {
+      "id": "TST-P3-001",
+      "name": "hierarchy-reference",
+      "command": "blitzar_hierarchy_test",
+      "phase": "P3"
     }
   ]
 }
