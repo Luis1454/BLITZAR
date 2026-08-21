@@ -5,6 +5,8 @@ project(BLITZAR VERSION 1.0.0 LANGUAGES C CXX)
 include(GNUInstallDirs)
 
 option(BLITZAR_BUILD_TESTS "Build BLITZAR tests" ON)
+option(BLITZAR_BUILD_CLI "Build the BLITZAR command-line application" ON)
+option(BLITZAR_BUILD_EXAMPLES "Build SDK consumption examples" ON)
 
 function(blitzar_enable_warnings target)
     if(MSVC)
@@ -44,6 +46,32 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/blitzar
 )
 
+if(BLITZAR_BUILD_CLI)
+    add_executable(blitzar_cli
+        apps/blitzar/main.cpp
+    )
+    target_link_libraries(blitzar_cli PRIVATE blitzar)
+    target_compile_features(blitzar_cli PRIVATE cxx_std_20)
+    blitzar_enable_warnings(blitzar_cli)
+    install(TARGETS blitzar_cli RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
+
+if(BLITZAR_BUILD_EXAMPLES)
+    add_executable(blitzar_c_example
+        examples/CExample.c
+    )
+    target_link_libraries(blitzar_c_example PRIVATE blitzar)
+    set_property(TARGET blitzar_c_example PROPERTY LINKER_LANGUAGE CXX)
+    blitzar_enable_warnings(blitzar_c_example)
+
+    add_executable(blitzar_cpp_example
+        examples/CppExample.cpp
+    )
+    target_link_libraries(blitzar_cpp_example PRIVATE blitzar)
+    target_compile_features(blitzar_cpp_example PRIVATE cxx_std_20)
+    blitzar_enable_warnings(blitzar_cpp_example)
+endif()
+
 if(BLITZAR_BUILD_TESTS)
     enable_testing()
 
@@ -81,4 +109,14 @@ if(BLITZAR_BUILD_TESTS)
     add_test(NAME TST-P0-002-c-api-lifecycle COMMAND blitzar_c_api_test)
     add_test(NAME TST-P0-003-core-contracts COMMAND blitzar_contract_test)
     add_test(NAME TST-P1-001-dynamics COMMAND blitzar_dynamics_test)
+endif()
+
+if(BLITZAR_BUILD_TESTS)
+    if(BLITZAR_BUILD_EXAMPLES)
+        add_test(NAME TST-P2-001-c-example COMMAND blitzar_c_example)
+        add_test(NAME TST-P2-002-cpp-example COMMAND blitzar_cpp_example)
+    endif()
+    if(BLITZAR_BUILD_CLI)
+        add_test(NAME TST-P2-003-cli COMMAND blitzar_cli)
+    endif()
 endif()

@@ -23,6 +23,24 @@
       "name": "dynamics",
       "command": "blitzar_dynamics_test",
       "phase": "P1"
+    },
+    {
+      "id": "TST-P2-001",
+      "name": "c-example",
+      "command": "blitzar_c_example",
+      "phase": "P2"
+    },
+    {
+      "id": "TST-P2-002",
+      "name": "cpp-example",
+      "command": "blitzar_cpp_example",
+      "phase": "P2"
+    },
+    {
+      "id": "TST-P2-003",
+      "name": "cli",
+      "command": "blitzar_cli",
+      "phase": "P2"
     }
   ]
 }
