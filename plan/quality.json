@@ -11,6 +11,12 @@
       "name": "c-api-lifecycle",
       "command": "blitzar_c_api_test",
       "phase": "P0"
+    },
+    {
+      "id": "TST-P0-003",
+      "name": "core-contracts",
+      "command": "blitzar_contract_test",
+      "phase": "P0"
     }
   ]
 }

@@ -56,6 +56,15 @@ if(BLITZAR_BUILD_TESTS)
     set_property(TARGET blitzar_c_api_test PROPERTY LINKER_LANGUAGE CXX)
     blitzar_enable_warnings(blitzar_c_api_test)
 
+    add_executable(blitzar_contract_test
+        tests/Contracts.cpp
+    )
+    target_link_libraries(blitzar_contract_test PRIVATE blitzar)
+    target_compile_features(blitzar_contract_test PRIVATE cxx_std_20)
+    target_include_directories(blitzar_contract_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    blitzar_enable_warnings(blitzar_contract_test)
+
     add_test(NAME TST-P0-001-cpp-lifecycle COMMAND blitzar_lifecycle_test)
     add_test(NAME TST-P0-002-c-api-lifecycle COMMAND blitzar_c_api_test)
+    add_test(NAME TST-P0-003-core-contracts COMMAND blitzar_contract_test)
 endif()
