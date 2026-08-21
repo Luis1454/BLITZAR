@@ -1,5 +1,5 @@
 {
-  "plan_version": "1.0.0",
+  "plan_version": "1.0.1",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -32,11 +32,11 @@
     {"id": "P6", "name": "persistence-and-qualification", "depends_on": ["P2", "P5"]}
   ],
   "forbidden_references": [
-    "BLITZAR/",
-    "BLITZAR-restored/",
-    "old repo",
-    "legacy source",
-    "git history"
+    "old-source-root/",
+    "legacy-source-root/",
+    "old-repository-path/",
+    "legacy-source-file",
+    "historical-implementation"
   ],
   "change_protocol": {
     "commit_prefix": "plan-change:",

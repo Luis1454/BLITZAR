@@ -1,0 +1,16 @@
+{
+  "tests": [
+    {
+      "id": "TST-P0-001",
+      "name": "cpp-lifecycle",
+      "command": "blitzar_lifecycle_test",
+      "phase": "P0"
+    },
+    {
+      "id": "TST-P0-002",
+      "name": "c-api-lifecycle",
+      "command": "blitzar_c_api_test",
+      "phase": "P0"
+    }
+  ]
+}
