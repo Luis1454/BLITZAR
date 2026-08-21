@@ -25,7 +25,7 @@ public:
     [[nodiscard]] virtual SolverKind Kind() const noexcept = 0;
 
     [[nodiscard]] virtual blitzar_status Compute(
-        ParticleView particles,
+        ParticleStateView particles,
         ForceView forces,
         const ExecutionSettings& settings) const noexcept = 0;
 };

@@ -17,6 +17,12 @@
       "name": "core-contracts",
       "command": "blitzar_contract_test",
       "phase": "P0"
+    },
+    {
+      "id": "TST-P1-001",
+      "name": "dynamics",
+      "command": "blitzar_dynamics_test",
+      "phase": "P1"
     }
   ]
 }

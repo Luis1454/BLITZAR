@@ -16,7 +16,7 @@ public:
     }
 
     [[nodiscard]] blitzar_status Compute(
-        blitzar_core::ParticleView particles,
+        blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces,
         const blitzar_core::ExecutionSettings& settings) const noexcept override
     {
@@ -51,15 +51,21 @@ int main()
     blitzar_core::Scalar x[1]{};
     blitzar_core::Scalar y[1]{};
     blitzar_core::Scalar z[1]{};
+    blitzar_core::Scalar vx[1]{};
+    blitzar_core::Scalar vy[1]{};
+    blitzar_core::Scalar vz[1]{};
+    blitzar_core::Scalar mass[1]{1.0};
     blitzar_core::Scalar fx[1]{};
     blitzar_core::Scalar fy[1]{};
     blitzar_core::Scalar fz[1]{};
-    const blitzar_core::ParticleView particles{1, x, y, z};
+    const blitzar_core::ParticleStateView particles{
+        1, x, y, z, vx, vy, vz, mass};
     const blitzar_core::ForceView forces{1, fx, fy, fz};
     assert(solver.Kind() == blitzar_core::SolverKind::Direct);
     assert(solver.Compute(particles, forces, settings) == BLITZAR_STATUS_OK);
 
-    const blitzar_core::ParticleView invalid{1, nullptr, y, z};
+    const blitzar_core::ParticleStateView invalid{
+        1, nullptr, y, z, vx, vy, vz, mass};
     assert(solver.Compute(invalid, forces, settings) ==
            BLITZAR_STATUS_INVALID_ARGUMENT);
     return 0;
