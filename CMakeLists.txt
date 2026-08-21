@@ -7,6 +7,12 @@ include(GNUInstallDirs)
 option(BLITZAR_BUILD_TESTS "Build BLITZAR tests" ON)
 option(BLITZAR_BUILD_CLI "Build the BLITZAR command-line application" ON)
 option(BLITZAR_BUILD_EXAMPLES "Build SDK consumption examples" ON)
+option(BLITZAR_BUILD_SHARED "Build BLITZAR as a shared library" OFF)
+
+if(BLITZAR_BUILD_SHARED AND BLITZAR_BUILD_TESTS)
+    message(FATAL_ERROR
+        "BLITZAR_BUILD_TESTS targets internal symbols; use the static build for them")
+endif()
 
 function(blitzar_enable_warnings target)
     if(MSVC)
@@ -16,8 +22,16 @@ function(blitzar_enable_warnings target)
     endif()
 endfunction()
 
-add_library(blitzar STATIC
+if(BLITZAR_BUILD_SHARED)
+    add_library(blitzar SHARED)
+    target_compile_definitions(blitzar PRIVATE BLITZAR_SHARED BLITZAR_BUILDING)
+else()
+    add_library(blitzar STATIC)
+endif()
+
+target_sources(blitzar PRIVATE
     src/integration/LeapfrogKdk.cpp
+    src/integration/LeapfrogWorkspace.cpp
     src/particles/ParticleArray.cpp
     src/particles/ParticleBuffer.cpp
     src/physics/GravityLaw.cpp
@@ -41,6 +55,8 @@ blitzar_enable_warnings(blitzar)
 
 install(TARGETS blitzar
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 install(FILES
     include/blitzar/blitzar.h
@@ -115,19 +131,19 @@ if(BLITZAR_BUILD_TESTS)
     target_include_directories(blitzar_hierarchy_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     blitzar_enable_warnings(blitzar_hierarchy_test)
 
-    add_test(NAME TST-P0-001-cpp-lifecycle COMMAND blitzar_lifecycle_test)
-    add_test(NAME TST-P0-002-c-api-lifecycle COMMAND blitzar_c_api_test)
-    add_test(NAME TST-P0-003-core-contracts COMMAND blitzar_contract_test)
-    add_test(NAME TST-P1-001-dynamics COMMAND blitzar_dynamics_test)
-    add_test(NAME TST-P3-001-hierarchy-reference COMMAND blitzar_hierarchy_test)
+    add_test(NAME TST-P0-001 COMMAND blitzar_lifecycle_test)
+    add_test(NAME TST-P0-002 COMMAND blitzar_c_api_test)
+    add_test(NAME TST-P0-003 COMMAND blitzar_contract_test)
+    add_test(NAME TST-P1-001 COMMAND blitzar_dynamics_test)
+    add_test(NAME TST-P3-001 COMMAND blitzar_hierarchy_test)
 endif()
 
 if(BLITZAR_BUILD_TESTS)
     if(BLITZAR_BUILD_EXAMPLES)
-        add_test(NAME TST-P2-001-c-example COMMAND blitzar_c_example)
-        add_test(NAME TST-P2-002-cpp-example COMMAND blitzar_cpp_example)
+        add_test(NAME TST-P2-001 COMMAND blitzar_c_example)
+        add_test(NAME TST-P2-002 COMMAND blitzar_cpp_example)
     endif()
     if(BLITZAR_BUILD_CLI)
-        add_test(NAME TST-P2-003-cli COMMAND blitzar_cli)
+        add_test(NAME TST-P2-003 COMMAND blitzar_cli)
     endif()
 endif()

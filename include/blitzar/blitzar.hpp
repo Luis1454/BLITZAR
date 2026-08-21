@@ -10,10 +10,12 @@ namespace blitzar {
 enum class Status : int {
     Ok = BLITZAR_STATUS_OK,
     InvalidArgument = BLITZAR_STATUS_INVALID_ARGUMENT,
-    AllocationFailure = BLITZAR_STATUS_ALLOCATION_FAILURE
+    AllocationFailure = BLITZAR_STATUS_ALLOCATION_FAILURE,
+    InternalError = BLITZAR_STATUS_INTERNAL_ERROR,
+    Singularity = BLITZAR_STATUS_SINGULARITY
 };
 
-class Context final {
+class BLITZAR_API Context final {
 public:
     Context() noexcept;
     ~Context() noexcept;

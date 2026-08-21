@@ -22,7 +22,9 @@ typedef struct blitzar_context blitzar_context;
 typedef enum blitzar_status {
     BLITZAR_STATUS_OK = 0,
     BLITZAR_STATUS_INVALID_ARGUMENT = 1,
-    BLITZAR_STATUS_ALLOCATION_FAILURE = 2
+    BLITZAR_STATUS_ALLOCATION_FAILURE = 2,
+    BLITZAR_STATUS_INTERNAL_ERROR = 3,
+    BLITZAR_STATUS_SINGULARITY = 4
 } blitzar_status;
 
 BLITZAR_API blitzar_status blitzar_context_create(

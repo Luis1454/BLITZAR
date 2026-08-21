@@ -3,6 +3,8 @@
 
 #include "ParticleArray.hpp"
 
+#include <blitzar/blitzar.h>
+
 #include <cstddef>
 
 namespace blitzar_particles {
@@ -23,9 +25,12 @@ public:
     [[nodiscard]] blitzar_core::ParticleStateView State() const noexcept;
     [[nodiscard]] blitzar_core::MutableParticleView MutableView() noexcept;
 
-    void SetPosition(std::size_t index, blitzar_core::Vector3 position) noexcept;
-    void SetVelocity(std::size_t index, blitzar_core::Vector3 velocity) noexcept;
-    void SetMass(std::size_t index, blitzar_core::Scalar mass) noexcept;
+    [[nodiscard]] blitzar_status SetPosition(
+        std::size_t index, blitzar_core::Vector3 position) noexcept;
+    [[nodiscard]] blitzar_status SetVelocity(
+        std::size_t index, blitzar_core::Vector3 velocity) noexcept;
+    [[nodiscard]] blitzar_status SetMass(
+        std::size_t index, blitzar_core::Scalar mass) noexcept;
 
 private:
     std::size_t count_;

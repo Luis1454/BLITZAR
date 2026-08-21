@@ -1,5 +1,7 @@
 #include "particles/ParticleBuffer.hpp"
 
+#include <cmath>
+
 namespace blitzar_particles {
 
 ParticleBuffer::ParticleBuffer(std::size_t count)
@@ -41,34 +43,40 @@ blitzar_core::MutableParticleView ParticleBuffer::MutableView() noexcept
             velocity_x_.Data(), velocity_y_.Data(), velocity_z_.Data()};
 }
 
-void ParticleBuffer::SetPosition(
+blitzar_status ParticleBuffer::SetPosition(
     std::size_t index, blitzar_core::Vector3 position) noexcept
 {
-    if (index >= count_) {
-        return;
+    if (index >= count_ || !std::isfinite(position.x) ||
+        !std::isfinite(position.y) || !std::isfinite(position.z)) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     position_x_.Data()[index] = position.x;
     position_y_.Data()[index] = position.y;
     position_z_.Data()[index] = position.z;
+    return BLITZAR_STATUS_OK;
 }
 
-void ParticleBuffer::SetVelocity(
+blitzar_status ParticleBuffer::SetVelocity(
     std::size_t index, blitzar_core::Vector3 velocity) noexcept
 {
-    if (index >= count_) {
-        return;
+    if (index >= count_ || !std::isfinite(velocity.x) ||
+        !std::isfinite(velocity.y) || !std::isfinite(velocity.z)) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     velocity_x_.Data()[index] = velocity.x;
     velocity_y_.Data()[index] = velocity.y;
     velocity_z_.Data()[index] = velocity.z;
+    return BLITZAR_STATUS_OK;
 }
 
-void ParticleBuffer::SetMass(std::size_t index, blitzar_core::Scalar mass) noexcept
+blitzar_status ParticleBuffer::SetMass(
+    std::size_t index, blitzar_core::Scalar mass) noexcept
 {
-    if (index >= count_) {
-        return;
+    if (index >= count_ || !std::isfinite(mass) || mass < 0.0) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     mass_.Data()[index] = mass;
+    return BLITZAR_STATUS_OK;
 }
 
 AccelerationBuffer::AccelerationBuffer(std::size_t count)

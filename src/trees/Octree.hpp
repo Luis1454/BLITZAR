@@ -34,8 +34,12 @@ public:
 
     [[nodiscard]] blitzar_status Build(
         blitzar_core::ParticleStateView particles) noexcept;
+    [[nodiscard]] bool Refit(
+        blitzar_core::ParticleStateView particles) noexcept;
     [[nodiscard]] std::size_t CellCount() const noexcept;
     [[nodiscard]] std::size_t ParticleCount() const noexcept;
+    [[nodiscard]] std::size_t BuildCount() const noexcept;
+    [[nodiscard]] std::size_t RefitCount() const noexcept;
     [[nodiscard]] const Cell& CellAt(std::size_t index) const noexcept;
     [[nodiscard]] std::size_t ParticleIndex(std::size_t index) const noexcept;
 
@@ -50,6 +54,8 @@ private:
         std::size_t depth) const noexcept;
     [[nodiscard]] static int Octant(
         const Cell& cell, blitzar_core::Vector3 position) noexcept;
+    [[nodiscard]] static bool Contains(
+        const Cell& cell, blitzar_core::Vector3 position) noexcept;
     void Partition(
         const Cell& cell,
         blitzar_core::ParticleStateView particles,
@@ -61,6 +67,8 @@ private:
     std::size_t leaf_capacity_;
     std::size_t max_depth_;
     std::size_t particle_count_;
+    std::size_t build_count_;
+    std::size_t refit_count_;
     std::vector<std::size_t> indices_;
     std::vector<std::size_t> scratch_;
     std::vector<Cell> cells_;

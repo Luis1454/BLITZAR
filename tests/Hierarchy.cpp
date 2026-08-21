@@ -2,6 +2,7 @@
 #include "particles/ParticleBuffer.hpp"
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
 #include "solvers/direct/DirectSolver.hpp"
+#include "trees/Octree.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -16,10 +17,14 @@ int main()
         {-1.0, 1.0, 1.0},
         {1.0, 1.0, -1.0}};
     for (std::size_t index = 0; index < 4; ++index) {
-        direct_particles.SetPosition(index, positions[index]);
-        tree_particles.SetPosition(index, positions[index]);
-        direct_particles.SetMass(index, 1.0 + static_cast<double>(index));
-        tree_particles.SetMass(index, 1.0 + static_cast<double>(index));
+        assert(direct_particles.SetPosition(index, positions[index]) ==
+               BLITZAR_STATUS_OK);
+        assert(tree_particles.SetPosition(index, positions[index]) ==
+               BLITZAR_STATUS_OK);
+        assert(direct_particles.SetMass(index, 1.0 + static_cast<double>(index)) ==
+               BLITZAR_STATUS_OK);
+        assert(tree_particles.SetMass(index, 1.0 + static_cast<double>(index)) ==
+               BLITZAR_STATUS_OK);
     }
 
     const blitzar_core::ExecutionSettings execution{};
@@ -54,10 +59,14 @@ int main()
     blitzar_particles::ParticleBuffer clustered_tree(8);
     for (std::size_t index = 0; index < 4; ++index) {
         const double offset = 0.1 * static_cast<double>(index);
-        clustered_direct.SetPosition(index, {-5.0 + offset, -5.0, -5.0});
-        clustered_tree.SetPosition(index, {-5.0 + offset, -5.0, -5.0});
-        clustered_direct.SetPosition(index + 4, {5.0 + offset, 5.0, 5.0});
-        clustered_tree.SetPosition(index + 4, {5.0 + offset, 5.0, 5.0});
+        assert(clustered_direct.SetPosition(
+                   index, {-5.0 + offset, -5.0, -5.0}) == BLITZAR_STATUS_OK);
+        assert(clustered_tree.SetPosition(
+                   index, {-5.0 + offset, -5.0, -5.0}) == BLITZAR_STATUS_OK);
+        assert(clustered_direct.SetPosition(
+                   index + 4, {5.0 + offset, 5.0, 5.0}) == BLITZAR_STATUS_OK);
+        assert(clustered_tree.SetPosition(
+                   index + 4, {5.0 + offset, 5.0, 5.0}) == BLITZAR_STATUS_OK);
     }
     blitzar_barnes_hut::BarnesHutSettings clustered_settings{};
     clustered_settings.opening_angle = 0.5;
@@ -90,5 +99,15 @@ int main()
                    exact_cluster_force.z[index] - approximate_cluster_force.z[index]) <
                0.05);
     }
+
+    blitzar_trees::Octree tree(8, 256, 1, 8);
+    assert(tree.Build(clustered_tree.State()) == BLITZAR_STATUS_OK);
+    assert(tree.BuildCount() == 1);
+    assert(tree.RefitCount() == 0);
+    assert(clustered_tree.SetPosition(0, {-4.95, -5.0, -5.0}) ==
+           BLITZAR_STATUS_OK);
+    assert(tree.Refit(clustered_tree.State()));
+    assert(tree.BuildCount() == 1);
+    assert(tree.RefitCount() == 1);
     return 0;
 }

@@ -92,8 +92,12 @@ blitzar_status BarnesHutSolver::Accumulate(
                 const blitzar_core::Scalar dy = particles.y[source] - target_position.y;
                 const blitzar_core::Scalar dz = particles.z[source] - target_position.z;
                 const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
-                if (!gravity_.IsValidPair(particles.mass[source], distance_squared)) {
-                    return BLITZAR_STATUS_INVALID_ARGUMENT;
+                const blitzar_physics::PairStatus pair_status =
+                    gravity_.ValidatePair(particles.mass[source], distance_squared);
+                if (pair_status != blitzar_physics::PairStatus::Valid) {
+                    return pair_status == blitzar_physics::PairStatus::Singularity
+                               ? BLITZAR_STATUS_SINGULARITY
+                               : BLITZAR_STATUS_INVALID_ARGUMENT;
                 }
                 const blitzar_core::Scalar factor =
                     gravity_.PairFactor(particles.mass[source], distance_squared);
@@ -112,10 +116,15 @@ blitzar_status BarnesHutSolver::Accumulate(
         const blitzar_core::Scalar dz = cell.center_of_mass.z - target_position.z;
         const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
         const blitzar_core::Scalar distance = std::sqrt(distance_squared);
+        const blitzar_core::Scalar cell_width = 2.0 * cell.half_extent;
         if (!contains_target && distance > 0.0 &&
-            cell.half_extent / distance < settings_.opening_angle) {
-            if (!gravity_.IsValidPair(cell.mass, distance_squared)) {
-                return BLITZAR_STATUS_INVALID_ARGUMENT;
+            cell_width / distance < settings_.opening_angle) {
+            const blitzar_physics::PairStatus pair_status =
+                gravity_.ValidatePair(cell.mass, distance_squared);
+            if (pair_status != blitzar_physics::PairStatus::Valid) {
+                return pair_status == blitzar_physics::PairStatus::Singularity
+                           ? BLITZAR_STATUS_SINGULARITY
+                           : BLITZAR_STATUS_INVALID_ARGUMENT;
             }
             const blitzar_core::Scalar factor =
                 gravity_.PairFactor(cell.mass, distance_squared);
@@ -150,9 +159,11 @@ blitzar_status BarnesHutSolver::Compute(
         !blitzar_core::IsValid(forces)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    const blitzar_status build_status = tree_.Build(particles);
-    if (build_status != BLITZAR_STATUS_OK) {
-        return build_status;
+    if (!tree_.Refit(particles)) {
+        const blitzar_status build_status = tree_.Build(particles);
+        if (build_status != BLITZAR_STATUS_OK) {
+            return build_status;
+        }
     }
     for (std::size_t target = 0; target < particles.count; ++target) {
         const blitzar_status status = Accumulate(target, particles, forces);

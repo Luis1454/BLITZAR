@@ -57,8 +57,12 @@ blitzar_status DirectSolver::Compute(
             const blitzar_core::Scalar dy = particles.y[source] - particles.y[target];
             const blitzar_core::Scalar dz = particles.z[source] - particles.z[target];
             const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
-            if (!gravity_.IsValidPair(particles.mass[source], distance_squared)) {
-                return BLITZAR_STATUS_INVALID_ARGUMENT;
+            const blitzar_physics::PairStatus pair_status =
+                gravity_.ValidatePair(particles.mass[source], distance_squared);
+            if (pair_status != blitzar_physics::PairStatus::Valid) {
+                return pair_status == blitzar_physics::PairStatus::Singularity
+                           ? BLITZAR_STATUS_SINGULARITY
+                           : BLITZAR_STATUS_INVALID_ARGUMENT;
             }
             const blitzar_core::Scalar factor =
                 gravity_.PairFactor(particles.mass[source], distance_squared);

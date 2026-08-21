@@ -11,6 +11,7 @@ int main(void)
     assert(blitzar_context_status(NULL) == BLITZAR_STATUS_INVALID_ARGUMENT);
     assert(blitzar_context_create(NULL) == BLITZAR_STATUS_INVALID_ARGUMENT);
     assert(blitzar_status_message(BLITZAR_STATUS_OK)[0] == 'o');
+    assert(blitzar_status_message(BLITZAR_STATUS_SINGULARITY)[0] == 'g');
     blitzar_context_destroy(context);
     return 0;
 }

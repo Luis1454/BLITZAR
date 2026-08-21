@@ -21,17 +21,30 @@ bool GravityLaw::IsValid() const noexcept
     return parameters_.IsValid();
 }
 
-bool GravityLaw::IsValidPair(
+PairStatus GravityLaw::ValidatePair(
     blitzar_core::Scalar source_mass,
     blitzar_core::Scalar squared_distance) const noexcept
 {
     if (!IsValid() || !std::isfinite(source_mass) || source_mass < 0.0 ||
         !std::isfinite(squared_distance) || squared_distance < 0.0) {
-        return false;
+        return PairStatus::Invalid;
     }
     const blitzar_core::Scalar softened_distance =
         squared_distance + parameters_.softening * parameters_.softening;
-    return std::isfinite(softened_distance) && softened_distance > 0.0;
+    if (!std::isfinite(softened_distance)) {
+        return PairStatus::Invalid;
+    }
+    if (softened_distance == 0.0) {
+        return PairStatus::Singularity;
+    }
+    return PairStatus::Valid;
+}
+
+bool GravityLaw::IsValidPair(
+    blitzar_core::Scalar source_mass,
+    blitzar_core::Scalar squared_distance) const noexcept
+{
+    return ValidatePair(source_mass, squared_distance) == PairStatus::Valid;
 }
 
 blitzar_core::Scalar GravityLaw::PairFactor(

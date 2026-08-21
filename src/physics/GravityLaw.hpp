@@ -5,6 +5,12 @@
 
 namespace blitzar_physics {
 
+enum class PairStatus : unsigned char {
+    Valid = 0,
+    Invalid = 1,
+    Singularity = 2
+};
+
 struct GravityParameters final {
     blitzar_core::Scalar gravitational_constant{1.0};
     blitzar_core::Scalar softening{0.0};
@@ -17,6 +23,9 @@ public:
     explicit GravityLaw(GravityParameters parameters) noexcept;
 
     [[nodiscard]] bool IsValid() const noexcept;
+    [[nodiscard]] PairStatus ValidatePair(
+        blitzar_core::Scalar source_mass,
+        blitzar_core::Scalar squared_distance) const noexcept;
     [[nodiscard]] bool IsValidPair(
         blitzar_core::Scalar source_mass,
         blitzar_core::Scalar squared_distance) const noexcept;

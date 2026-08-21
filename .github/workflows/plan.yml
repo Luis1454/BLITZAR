@@ -43,3 +43,34 @@ jobs:
               exit 1
             fi
           fi
+
+  build:
+    name: Build and test static target
+    runs-on: windows-latest
+    needs: validate
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure static build
+        run: cmake -S . -B build -G Ninja -DBLITZAR_BUILD_TESTS=ON -DBLITZAR_BUILD_CLI=ON -DBLITZAR_BUILD_EXAMPLES=ON
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure -C Release
+
+  shared-public:
+    name: Build shared public consumers
+    runs-on: windows-latest
+    needs: validate
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure shared build
+        run: cmake -S . -B build-shared -G Ninja -DBLITZAR_BUILD_SHARED=ON -DBLITZAR_BUILD_TESTS=OFF -DBLITZAR_BUILD_CLI=ON -DBLITZAR_BUILD_EXAMPLES=ON
+
+      - name: Build shared library and consumers
+        run: cmake --build build-shared --config Release

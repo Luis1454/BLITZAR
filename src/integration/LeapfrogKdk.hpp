@@ -3,6 +3,7 @@
 
 #include "core/Execution.hpp"
 #include "core/Solver.hpp"
+#include "integration/LeapfrogWorkspace.hpp"
 #include "particles/ParticleBuffer.hpp"
 
 namespace blitzar_integration {
@@ -12,6 +13,7 @@ public:
     [[nodiscard]] blitzar_status Advance(
         blitzar_particles::ParticleBuffer& particles,
         blitzar_particles::AccelerationBuffer& accelerations,
+        LeapfrogWorkspace& workspace,
         blitzar_core::Solver& solver,
         blitzar_core::Scalar timestep,
         const blitzar_core::ExecutionSettings& settings) const noexcept;

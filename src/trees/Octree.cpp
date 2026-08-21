@@ -21,6 +21,8 @@ Octree::Octree(
       leaf_capacity_(leaf_capacity),
       max_depth_(max_depth),
       particle_count_(0),
+      build_count_(0),
+      refit_count_(0),
       indices_(max_particles),
       scratch_(max_particles)
 {
@@ -66,6 +68,14 @@ int Octree::Octant(
     return (position.x >= cell.center.x ? 1 : 0) |
            (position.y >= cell.center.y ? 2 : 0) |
            (position.z >= cell.center.z ? 4 : 0);
+}
+
+bool Octree::Contains(
+    const Cell& cell, blitzar_core::Vector3 position) noexcept
+{
+    return std::abs(position.x - cell.center.x) <= cell.half_extent &&
+           std::abs(position.y - cell.center.y) <= cell.half_extent &&
+           std::abs(position.z - cell.center.z) <= cell.half_extent;
 }
 
 void Octree::Partition(
@@ -208,7 +218,32 @@ blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
         }
     }
     CalculateProperties(particles);
+    ++build_count_;
     return BLITZAR_STATUS_OK;
+}
+
+bool Octree::Refit(blitzar_core::ParticleStateView particles) noexcept
+{
+    if (particle_count_ == 0 || particles.count != particle_count_ ||
+        !IsValidInput(particles)) {
+        return false;
+    }
+    for (const Cell& cell : cells_) {
+        if (!cell.IsLeaf()) {
+            continue;
+        }
+        for (std::size_t offset = 0; offset < cell.count; ++offset) {
+            const std::size_t particle = indices_[cell.begin + offset];
+            const blitzar_core::Vector3 position{
+                particles.x[particle], particles.y[particle], particles.z[particle]};
+            if (!Contains(cell, position)) {
+                return false;
+            }
+        }
+    }
+    CalculateProperties(particles);
+    ++refit_count_;
+    return true;
 }
 
 std::size_t Octree::CellCount() const noexcept
@@ -219,6 +254,16 @@ std::size_t Octree::CellCount() const noexcept
 std::size_t Octree::ParticleCount() const noexcept
 {
     return particle_count_;
+}
+
+std::size_t Octree::BuildCount() const noexcept
+{
+    return build_count_;
+}
+
+std::size_t Octree::RefitCount() const noexcept
+{
+    return refit_count_;
 }
 
 const Octree::Cell& Octree::CellAt(std::size_t index) const noexcept

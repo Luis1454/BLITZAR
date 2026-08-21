@@ -45,6 +45,10 @@ extern "C" const char* blitzar_status_message(blitzar_status status)
         return "invalid argument";
     case BLITZAR_STATUS_ALLOCATION_FAILURE:
         return "allocation failure";
+    case BLITZAR_STATUS_INTERNAL_ERROR:
+        return "internal error";
+    case BLITZAR_STATUS_SINGULARITY:
+        return "gravitational singularity";
     default:
         return "unknown status";
     }

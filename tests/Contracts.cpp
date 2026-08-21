@@ -1,5 +1,6 @@
 #include "core/Execution.hpp"
 #include "core/Snapshot.hpp"
+#include "core/Status.hpp"
 #include "core/Solver.hpp"
 #include "core/Units.hpp"
 
@@ -35,6 +36,7 @@ int main()
 {
     const blitzar_core::ExecutionSettings settings{};
     assert(settings.IsValid());
+    assert(blitzar_core::ToPublicStatus(999) == BLITZAR_STATUS_INTERNAL_ERROR);
 
     blitzar_core::UnitSystem units{};
     assert(units.IsValid());
