@@ -17,6 +17,9 @@ public:
     explicit GravityLaw(GravityParameters parameters) noexcept;
 
     [[nodiscard]] bool IsValid() const noexcept;
+    [[nodiscard]] bool IsValidPair(
+        blitzar_core::Scalar source_mass,
+        blitzar_core::Scalar squared_distance) const noexcept;
     [[nodiscard]] blitzar_core::Scalar PairFactor(
         blitzar_core::Scalar source_mass,
         blitzar_core::Scalar squared_distance) const noexcept;

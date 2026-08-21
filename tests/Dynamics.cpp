@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 
 int main()
 {
@@ -31,6 +32,15 @@ int main()
     assert(std::abs(force.x[1] + 1.0) < 1.0e-12);
     assert(std::abs(force.y[0]) < 1.0e-12);
     assert(std::abs(force.z[1]) < 1.0e-12);
+
+    particles.SetPosition(1, {0.0, 0.0, 0.0});
+    assert(solver.Compute(particles.State(), accelerations.View(), settings) ==
+           BLITZAR_STATUS_INVALID_ARGUMENT);
+    particles.SetPosition(1, {1.0, 0.0, 0.0});
+    particles.SetMass(1, std::numeric_limits<double>::quiet_NaN());
+    assert(solver.Compute(particles.State(), accelerations.View(), settings) ==
+           BLITZAR_STATUS_INVALID_ARGUMENT);
+    particles.SetMass(1, 1.0);
 
     blitzar_particles::ParticleBuffer free_particle(1);
     blitzar_particles::AccelerationBuffer free_acceleration(1);
