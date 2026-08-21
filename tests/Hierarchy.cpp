@@ -49,5 +49,46 @@ int main()
         assert(std::abs(direct_force.y[index] - tree_force.y[index]) < 1.0e-12);
         assert(std::abs(direct_force.z[index] - tree_force.z[index]) < 1.0e-12);
     }
+
+    blitzar_particles::ParticleBuffer clustered_direct(8);
+    blitzar_particles::ParticleBuffer clustered_tree(8);
+    for (std::size_t index = 0; index < 4; ++index) {
+        const double offset = 0.1 * static_cast<double>(index);
+        clustered_direct.SetPosition(index, {-5.0 + offset, -5.0, -5.0});
+        clustered_tree.SetPosition(index, {-5.0 + offset, -5.0, -5.0});
+        clustered_direct.SetPosition(index + 4, {5.0 + offset, 5.0, 5.0});
+        clustered_tree.SetPosition(index + 4, {5.0 + offset, 5.0, 5.0});
+    }
+    blitzar_barnes_hut::BarnesHutSettings clustered_settings{};
+    clustered_settings.opening_angle = 0.5;
+    clustered_settings.max_particles = 8;
+    clustered_settings.max_cells = 256;
+    clustered_settings.leaf_capacity = 1;
+    clustered_settings.max_depth = 8;
+    blitzar_barnes_hut::BarnesHutSolver clustered_solver(
+        gravity, clustered_settings);
+    blitzar_particles::AccelerationBuffer clustered_direct_force(8);
+    blitzar_particles::AccelerationBuffer clustered_tree_force(8);
+    assert(direct_solver.Compute(
+               clustered_direct.State(), clustered_direct_force.View(), execution) ==
+           BLITZAR_STATUS_OK);
+    assert(clustered_solver.Compute(
+               clustered_tree.State(), clustered_tree_force.View(), execution) ==
+           BLITZAR_STATUS_OK);
+    const blitzar_core::ForceView exact_cluster_force =
+        clustered_direct_force.View();
+    const blitzar_core::ForceView approximate_cluster_force =
+        clustered_tree_force.View();
+    for (std::size_t index = 0; index < 8; ++index) {
+        assert(std::abs(
+                   exact_cluster_force.x[index] - approximate_cluster_force.x[index]) <
+               0.05);
+        assert(std::abs(
+                   exact_cluster_force.y[index] - approximate_cluster_force.y[index]) <
+               0.05);
+        assert(std::abs(
+                   exact_cluster_force.z[index] - approximate_cluster_force.z[index]) <
+               0.05);
+    }
     return 0;
 }
