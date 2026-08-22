@@ -44,6 +44,11 @@ public:
     [[nodiscard]] int Rank() const noexcept;
     [[nodiscard]] int Size() const noexcept;
     [[nodiscard]] blitzar_status Status() const noexcept;
+    [[nodiscard]] blitzar_status SynchronizeStatus(
+        blitzar_status local_status,
+        const char* operation,
+        const char* phase,
+        blitzar_status& global_status) const noexcept;
 
     [[nodiscard]] blitzar_status ReduceBounds(
         std::span<blitzar_core::Scalar> minimum,
@@ -56,6 +61,9 @@ public:
         GhostExchange& exchange) const noexcept;
     [[nodiscard]] blitzar_status CompleteGhostExchange(
         GhostExchange& exchange, PacketBuffer& ghosts) const noexcept;
+    [[nodiscard]] bool IsGhostExchangeActive(
+        const GhostExchange& exchange) const noexcept;
+    void AbortGhostExchange(GhostExchange& exchange) const noexcept;
 
     [[nodiscard]] blitzar_status AllToAllCounts(
         std::span<const int> send_counts,

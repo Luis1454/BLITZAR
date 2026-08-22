@@ -69,9 +69,22 @@ blitzar_status DomainDecomposition::Initialize(
     split_keys_.clear();
     rank_ = context.Rank();
     size_ = context.Size();
-    if (!context.IsUsable() || size_ <= 0 || !blitzar_core::IsValid(global_state)) {
-        return context.IsUsable() ? BLITZAR_STATUS_INVALID_ARGUMENT
-                                  : context.Status();
+    if (!context.IsUsable()) {
+        return context.Status();
+    }
+    const bool input_valid =
+        size_ > 0 && blitzar_core::IsValid(global_state);
+    blitzar_status global_input_status = BLITZAR_STATUS_INTERNAL_ERROR;
+    const blitzar_status synchronization_status = context.SynchronizeStatus(
+        input_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
+        "DomainDecomposition",
+        "initialize-preflight",
+        global_input_status);
+    if (synchronization_status != BLITZAR_STATUS_OK ||
+        global_input_status != BLITZAR_STATUS_OK) {
+        return synchronization_status != BLITZAR_STATUS_OK
+                   ? synchronization_status
+                   : global_input_status;
     }
 
     DomainBounds bounds = BoundsOf(global_state);

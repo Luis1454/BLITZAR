@@ -1,5 +1,7 @@
 #include "integration/LeapfrogKdk.hpp"
+#include "parallel/DomainDecomposition.hpp"
 #include "parallel/MpiContext.hpp"
+#include "parallel/MpiExchange.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "sdk/Simulation.hpp"
 #include "solvers/direct/DirectSolver.hpp"
@@ -10,6 +12,7 @@
 #include <cmath>
 #include <cstddef>
 #include <limits>
+#include <span>
 
 namespace {
 
@@ -272,6 +275,63 @@ struct StateArrays final {
     return retry;
 }
 
+[[nodiscard]] bool RunErrorSynchronizationCase(
+    blitzar_parallel::MpiContext& context) noexcept
+{
+    blitzar_status global_status = BLITZAR_STATUS_OK;
+    const blitzar_status local_status = context.Rank() == 0
+                                            ? BLITZAR_STATUS_INTERNAL_ERROR
+                                            : BLITZAR_STATUS_OK;
+    if (context.SynchronizeStatus(
+            local_status,
+            "MpiTest",
+            "injected-failure",
+            global_status) != BLITZAR_STATUS_OK ||
+        global_status != BLITZAR_STATUS_INTERNAL_ERROR) {
+        return false;
+    }
+
+    blitzar_particles::ParticleBuffer particles(1);
+    if (particles.SetPosition(0, {0.0, 0.0, 0.0}) != BLITZAR_STATUS_OK ||
+        particles.SetMass(0, 1.0) != BLITZAR_STATUS_OK) {
+        return false;
+    }
+    blitzar_parallel::DomainDecomposition domain;
+    if (domain.Initialize(particles.State(), context) != BLITZAR_STATUS_OK) {
+        return false;
+    }
+    blitzar_parallel::MpiExchange exchange(context, domain);
+    const std::array<std::uint64_t, 1> ids{0};
+    blitzar_core::ParticleStateView invalid_state{};
+    invalid_state.count = 1;
+    invalid_state.source_count = 1;
+    const blitzar_core::ParticleStateView local_state =
+        context.Rank() == 0 ? invalid_state
+                             : particles.State();
+    const std::span<const std::uint64_t> local_ids =
+        context.Rank() == 0 ? std::span<const std::uint64_t>{}
+                             : std::span<const std::uint64_t>(ids);
+
+    blitzar_parallel::MpiContext::GhostExchange ghost_exchange;
+    if (exchange.BeginGhosts(local_state, local_ids, ghost_exchange) !=
+            BLITZAR_STATUS_INVALID_ARGUMENT ||
+        context.IsGhostExchangeActive(ghost_exchange)) {
+        return false;
+    }
+
+    blitzar_parallel::PacketBuffer ghosts;
+    if (exchange.CompleteGhosts(ghost_exchange, ghosts) !=
+            BLITZAR_STATUS_INVALID_ARGUMENT ||
+        ghosts.Size() != 0) {
+        return false;
+    }
+
+    blitzar_parallel::PacketBuffer received;
+    return exchange.Migrate(local_state, local_ids, received) ==
+               BLITZAR_STATUS_INVALID_ARGUMENT &&
+           received.Size() == 0;
+}
+
 }  // namespace
 
 int main(int argc, char** argv)
@@ -286,7 +346,9 @@ int main(int argc, char** argv)
         0.01,
         migration_case ? 1 : 2);
     const bool rollback_case = RunRollbackCase();
-    const bool local_ok = valid_world && local_case && rollback_case;
+    const bool error_synchronization_case = RunErrorSynchronizationCase(context);
+    const bool local_ok =
+        valid_world && local_case && rollback_case && error_synchronization_case;
 
     int local_failure = local_ok ? 0 : 1;
     int global_failure = 0;
