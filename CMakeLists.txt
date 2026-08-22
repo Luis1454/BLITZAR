@@ -26,6 +26,7 @@ endif()
 if(BLITZAR_ENABLE_OPENMP)
     find_package(OpenMP REQUIRED COMPONENTS CXX)
 endif()
+find_package(Threads REQUIRED)
 
 function(blitzar_enable_warnings target)
     if(MSVC)
@@ -199,6 +200,7 @@ if(BLITZAR_BUILD_TESTS)
         tests/Lifecycle.cpp
     )
     target_link_libraries(blitzar_lifecycle_test PRIVATE blitzar)
+    target_link_libraries(blitzar_lifecycle_test PRIVATE Threads::Threads)
     target_compile_features(blitzar_lifecycle_test PRIVATE cxx_std_20)
     blitzar_enable_warnings(blitzar_lifecycle_test)
 

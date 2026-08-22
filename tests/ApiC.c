@@ -18,6 +18,8 @@ int main(void)
     blitzar_simulation* simulation = NULL;
     BLITZAR_CHECK(blitzar_simulation_create(context, 2, &simulation) ==
            BLITZAR_STATUS_OK);
+    blitzar_context_destroy(context);
+    context = NULL;
     int64_t particle_count = 0;
     BLITZAR_CHECK(blitzar_simulation_particle_count(simulation, &particle_count) ==
            BLITZAR_STATUS_OK);
@@ -152,6 +154,5 @@ int main(void)
                output_velocity_z,
                output_mass) == BLITZAR_STATUS_INVALID_ARGUMENT);
     blitzar_simulation_destroy(simulation);
-    blitzar_context_destroy(context);
     return 0;
 }

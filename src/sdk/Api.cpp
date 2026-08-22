@@ -1,6 +1,7 @@
 #include <blitzar/blitzar.h>
 #include "sdk/Simulation.hpp"
 
+#include <atomic>
 #include <cstdint>
 #include <limits>
 #include <new>
@@ -18,9 +19,39 @@ struct blitzar_simulation final {
     }
 
     blitzar_sdk::Simulation implementation;
+    mutable std::atomic_flag call_active = ATOMIC_FLAG_INIT;
 };
 
 namespace {
+
+class SimulationCallGuard final {
+public:
+    explicit SimulationCallGuard(const blitzar_simulation& simulation) noexcept
+        : simulation_(simulation),
+          acquired_(!simulation_.call_active.test_and_set(
+              std::memory_order_acquire))
+    {
+    }
+
+    ~SimulationCallGuard() noexcept
+    {
+        if (acquired_) {
+            simulation_.call_active.clear(std::memory_order_release);
+        }
+    }
+
+    SimulationCallGuard(const SimulationCallGuard&) = delete;
+    SimulationCallGuard& operator=(const SimulationCallGuard&) = delete;
+
+    [[nodiscard]] bool Acquired() const noexcept
+    {
+        return acquired_;
+    }
+
+private:
+    const blitzar_simulation& simulation_;
+    bool acquired_;
+};
 
 [[nodiscard]] bool TryConvertCount(
     int64_t value, std::size_t& converted) noexcept
@@ -134,6 +165,10 @@ extern "C" blitzar_status blitzar_simulation_status(
     if (!IsValidSimulation(simulation)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+    const SimulationCallGuard guard(*simulation);
+    if (!guard.Acquired()) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
     return simulation->implementation.LastStatus();
 }
 
@@ -143,6 +178,10 @@ extern "C" blitzar_status blitzar_simulation_backend(
 {
     if (!IsValidSimulation(simulation) || backend == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    const SimulationCallGuard guard(*simulation);
+    if (!guard.Acquired()) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
     }
     *backend = simulation->implementation.LastBackend();
     return BLITZAR_STATUS_OK;
@@ -156,6 +195,10 @@ extern "C" blitzar_status blitzar_simulation_particle_count(
         particle_count == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+    const SimulationCallGuard guard(*simulation);
+    if (!guard.Acquired()) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
     *particle_count = static_cast<int64_t>(simulation->implementation.ParticleCount());
     return BLITZAR_STATUS_OK;
 }
@@ -167,6 +210,10 @@ extern "C" blitzar_status blitzar_simulation_set_solver(
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+    const SimulationCallGuard guard(*simulation);
+    if (!guard.Acquired()) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
     return simulation->implementation.SetSolver(solver);
 }
 
@@ -176,6 +223,10 @@ extern "C" blitzar_status blitzar_simulation_set_integrator(
 {
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    const SimulationCallGuard guard(*simulation);
+    if (!guard.Acquired()) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
     }
     return simulation->implementation.SetIntegrator(integrator);
 }
@@ -188,6 +239,10 @@ extern "C" blitzar_status blitzar_simulation_set_gravity(
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+    const SimulationCallGuard guard(*simulation);
+    if (!guard.Acquired()) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
     return simulation->implementation.SetGravity(gravitational_constant, softening);
 }
 
@@ -199,6 +254,10 @@ extern "C" blitzar_status blitzar_simulation_set_units(
 {
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    const SimulationCallGuard guard(*simulation);
+    if (!guard.Acquired()) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
     }
     return simulation->implementation.SetUnits(
         {length_scale, mass_scale, time_scale});
@@ -214,6 +273,10 @@ extern "C" blitzar_status blitzar_simulation_set_barnes_hut(
 {
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    const SimulationCallGuard guard(*simulation);
+    if (!guard.Acquired()) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
     }
     std::size_t converted_max_particles = 0;
     std::size_t converted_max_cells = 0;
@@ -240,6 +303,10 @@ extern "C" blitzar_status blitzar_simulation_set_timestep(
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+    const SimulationCallGuard guard(*simulation);
+    if (!guard.Acquired()) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
     return simulation->implementation.SetTimestep(timestep);
 }
 
@@ -249,6 +316,10 @@ extern "C" blitzar_status blitzar_simulation_set_seed(
 {
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    const SimulationCallGuard guard(*simulation);
+    if (!guard.Acquired()) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
     }
     return simulation->implementation.SetSeed(seed);
 }
@@ -266,6 +337,10 @@ extern "C" blitzar_status blitzar_simulation_set_particles(
 {
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    const SimulationCallGuard guard(*simulation);
+    if (!guard.Acquired()) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
     }
     std::size_t converted_count = 0;
     if (!TryConvertCount(particle_count, converted_count)) {
@@ -301,6 +376,10 @@ extern "C" blitzar_status blitzar_simulation_get_state(
     if (!IsValidSimulation(simulation)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+    const SimulationCallGuard guard(*simulation);
+    if (!guard.Acquired()) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
     std::size_t converted_capacity = 0;
     if (!TryConvertCount(capacity, converted_capacity)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -326,6 +405,10 @@ extern "C" blitzar_status blitzar_simulation_step(
 {
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    const SimulationCallGuard guard(*simulation);
+    if (!guard.Acquired()) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
     }
     return simulation->implementation.Step();
 }

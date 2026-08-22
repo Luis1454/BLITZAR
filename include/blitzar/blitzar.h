@@ -22,6 +22,15 @@ extern "C" {
 typedef struct blitzar_context blitzar_context;
 typedef struct blitzar_simulation blitzar_simulation;
 
+/*
+ * A context is a creation capability, not a borrowed simulation owner.
+ * A successful simulation creation copies the required runtime ownership, so
+ * the context may be destroyed immediately afterwards. Operations on one
+ * live simulation are non-reentrant: a concurrent call is rejected with
+ * BLITZAR_STATUS_INTERNAL_ERROR. Destruction of a context or simulation must
+ * not race with another operation on the same handle.
+ */
+
 typedef int32_t blitzar_status;
 
 #define BLITZAR_STATUS_OK ((blitzar_status)0)

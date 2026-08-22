@@ -3,6 +3,7 @@
 
 #include <blitzar/blitzar.h>
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -62,6 +63,9 @@ private:
 
 class BLITZAR_API Simulation final {
 public:
+    // The context is only required during construction; it may then be
+    // destroyed independently. Calls on one live object are guarded by the C
+    // ABI and concurrent reentrant calls return Status::InternalError.
     explicit Simulation(Context& context, std::int64_t particle_count) noexcept;
     ~Simulation() noexcept;
 
@@ -120,7 +124,7 @@ private:
     [[nodiscard]] Status Update(blitzar_status status) noexcept;
 
     std::unique_ptr<Impl> impl_;
-    Status status_;
+    std::atomic<Status> status_;
     std::int64_t particle_count_;
 };
 

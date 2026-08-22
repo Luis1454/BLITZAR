@@ -1,7 +1,9 @@
 #include <blitzar/blitzar.hpp>
 
 #include <array>
+#include <atomic>
 #include "Check.hpp"
+#include <thread>
 #include <utility>
 
 int main()
@@ -107,6 +109,27 @@ int main()
     BLITZAR_CHECK(output_velocity_z == expected_velocity_z);
     BLITZAR_CHECK(output_mass == expected_mass);
     BLITZAR_CHECK(simulation.step() == blitzar::Status::Ok);
+
+    std::atomic<bool> start{false};
+    std::array<blitzar::Status, 4> concurrent_status{};
+    std::array<std::thread, 4> workers;
+    for (std::size_t index = 0; index < workers.size(); ++index) {
+        workers[index] = std::thread([&simulation, &start, &concurrent_status, index]() {
+            while (!start.load(std::memory_order_acquire)) {
+                std::this_thread::yield();
+            }
+            concurrent_status[index] = simulation.set_seed(index + 100U);
+        });
+    }
+    start.store(true, std::memory_order_release);
+    for (std::thread& worker : workers) {
+        worker.join();
+    }
+    for (const blitzar::Status status : concurrent_status) {
+        BLITZAR_CHECK(status == blitzar::Status::Ok ||
+                      status == blitzar::Status::InternalError);
+    }
+    BLITZAR_CHECK(simulation.valid());
 
     blitzar::Simulation moved_simulation(std::move(simulation));
     BLITZAR_CHECK(!simulation.valid());

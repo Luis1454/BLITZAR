@@ -94,10 +94,11 @@ Simulation::Simulation(Context& context, std::int64_t particle_count) noexcept
 Simulation::~Simulation() noexcept = default;
 
 Simulation::Simulation(Simulation&& other) noexcept
-    : impl_(std::move(other.impl_)), status_(other.status_),
+    : impl_(std::move(other.impl_)),
+      status_(other.status_.load(std::memory_order_relaxed)),
       particle_count_(other.particle_count_)
 {
-    other.status_ = Status::InvalidArgument;
+    other.status_.store(Status::InvalidArgument, std::memory_order_relaxed);
     other.particle_count_ = 0;
 }
 
@@ -105,9 +106,11 @@ Simulation& Simulation::operator=(Simulation&& other) noexcept
 {
     if (this != &other) {
         impl_ = std::move(other.impl_);
-        status_ = other.status_;
+        status_.store(
+            other.status_.load(std::memory_order_relaxed),
+            std::memory_order_relaxed);
         particle_count_ = other.particle_count_;
-        other.status_ = Status::InvalidArgument;
+        other.status_.store(Status::InvalidArgument, std::memory_order_relaxed);
         other.particle_count_ = 0;
     }
     return *this;
@@ -115,13 +118,12 @@ Simulation& Simulation::operator=(Simulation&& other) noexcept
 
 bool Simulation::valid() const noexcept
 {
-    return impl_ != nullptr && impl_->handle != nullptr &&
-           status_ == Status::Ok;
+    return impl_ != nullptr && impl_->handle != nullptr;
 }
 
 Status Simulation::status() const noexcept
 {
-    return status_;
+    return status_.load(std::memory_order_relaxed);
 }
 
 std::int64_t Simulation::particle_count() const noexcept
@@ -142,8 +144,8 @@ BackendKind Simulation::backend() const noexcept
 
 Status Simulation::Update(blitzar_status status) noexcept
 {
-    status_ = static_cast<Status>(status);
-    return status_;
+    status_.store(static_cast<Status>(status), std::memory_order_relaxed);
+    return status_.load(std::memory_order_relaxed);
 }
 
 Status Simulation::set_solver(SolverKind solver) noexcept
