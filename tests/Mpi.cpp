@@ -2,6 +2,7 @@
 #include "parallel/DomainDecomposition.hpp"
 #include "parallel/MpiContext.hpp"
 #include "parallel/MpiExchange.hpp"
+#include "parallel/MpiTypes.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "sdk/Simulation.hpp"
 #include "solvers/direct/DirectSolver.hpp"
@@ -9,6 +10,7 @@
 #include "Check.hpp"
 
 #include <array>
+#include <bit>
 #include <cmath>
 #include <cstddef>
 #include <limits>
@@ -626,12 +628,88 @@ struct StateArrays final {
         return false;
     }
 
+    const std::array<blitzar_parallel::ParticlePacket, 0> empty_packets{};
+    if (context.AllToAllPackets(
+            empty_packets,
+            invalid_counts,
+            invalid_counts,
+            std::span<blitzar_parallel::ParticlePacket>{},
+            invalid_counts,
+            invalid_counts) != BLITZAR_STATUS_INVALID_ARGUMENT) {
+        return false;
+    }
+
     const std::array<double, 2> invalid_minimum{};
     const std::array<double, 3> invalid_maximum{};
     std::array<double, 2> minimum = invalid_minimum;
     std::array<double, 3> maximum = invalid_maximum;
     return context.ReduceBounds(minimum, maximum) ==
            BLITZAR_STATUS_INVALID_ARGUMENT;
+}
+
+[[nodiscard]] bool RunWireCodecCase() noexcept
+{
+    const blitzar_parallel::ParticlePacket source{
+        0x0102030405060708ULL,
+        1.0,
+        -2.5,
+        3.75,
+        -4.5,
+        5.25,
+        -6.75,
+        7.5};
+    blitzar_parallel::ParticleWire wire{};
+    if (!blitzar_parallel::ParticleWireCodec::Encode(source, wire)) {
+        return false;
+    }
+    const std::array<unsigned int, 8> expected_id_bytes{
+        0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01};
+    for (std::size_t index = 0; index < expected_id_bytes.size(); ++index) {
+        if (wire[index] !=
+            static_cast<std::byte>(expected_id_bytes[index])) {
+            return false;
+        }
+    }
+    const std::array<unsigned int, 8> expected_one_bytes{
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f};
+    for (std::size_t index = 0; index < expected_one_bytes.size(); ++index) {
+        if (wire[8 + index] !=
+            static_cast<std::byte>(expected_one_bytes[index])) {
+            return false;
+        }
+    }
+
+    blitzar_parallel::ParticlePacket decoded{};
+    if (!blitzar_parallel::ParticleWireCodec::Decode(wire, decoded) ||
+        decoded.id != source.id) {
+        return false;
+    }
+    const std::array<double, 7> source_scalars{
+        source.x,
+        source.y,
+        source.z,
+        source.velocity_x,
+        source.velocity_y,
+        source.velocity_z,
+        source.mass};
+    const std::array<double, 7> decoded_scalars{
+        decoded.x,
+        decoded.y,
+        decoded.z,
+        decoded.velocity_x,
+        decoded.velocity_y,
+        decoded.velocity_z,
+        decoded.mass};
+    for (std::size_t index = 0; index < source_scalars.size(); ++index) {
+        if (std::bit_cast<std::uint64_t>(source_scalars[index]) !=
+            std::bit_cast<std::uint64_t>(decoded_scalars[index])) {
+            return false;
+        }
+    }
+
+    std::array<std::byte, blitzar_parallel::ParticleWireBytes - 1> short_wire{};
+    return !blitzar_parallel::ParticleWireCodec::Encode(source, short_wire) &&
+           !blitzar_parallel::ParticleWireCodec::Decode(short_wire, decoded);
 }
 
 }  // namespace
@@ -653,10 +731,11 @@ int RunTests(int argc, char** argv)
     const bool nested_context_case = RunNestedContextCase(context);
     const bool collective_validation_case =
         RunCollectiveValidationCase(context);
+    const bool wire_codec_case = RunWireCodecCase();
     const bool local_ok =
         valid_world && local_case && rollback_case && boundary_case &&
         error_synchronization_case && nested_context_case &&
-        collective_validation_case;
+        collective_validation_case && wire_codec_case;
 
     int local_failure = local_ok ? 0 : 1;
     int global_failure = 0;

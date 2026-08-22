@@ -3,6 +3,8 @@
 
 #include "core/Types.hpp"
 
+#include <array>
+#include <cstddef>
 #include <cstdint>
 #include <span>
 #include <type_traits>
@@ -23,6 +25,25 @@ struct ParticlePacket final {
 
 static_assert(std::is_trivially_copyable_v<ParticlePacket>);
 static_assert(std::is_standard_layout_v<ParticlePacket>);
+
+inline constexpr std::size_t ParticleWireBytes = 64;
+using ParticleWire = std::array<std::byte, ParticleWireBytes>;
+
+class ParticleWireCodec final {
+public:
+    [[nodiscard]] static bool Encode(
+        const ParticlePacket& packet,
+        std::span<std::byte> output) noexcept;
+    [[nodiscard]] static bool Decode(
+        std::span<const std::byte> input,
+        ParticlePacket& packet) noexcept;
+    [[nodiscard]] static bool Encode(
+        std::span<const ParticlePacket> packets,
+        std::span<std::byte> output) noexcept;
+    [[nodiscard]] static bool Decode(
+        std::span<const std::byte> input,
+        std::span<ParticlePacket> packets) noexcept;
+};
 
 class PacketBuffer final {
 public:

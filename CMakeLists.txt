@@ -76,6 +76,7 @@ target_sources(blitzar PRIVATE
     src/parallel/MpiExchange.cpp
     src/parallel/MpiPacketTransport.cpp
     src/parallel/MpiSession.cpp
+    src/parallel/MpiTypes.cpp
     src/sdk/Api.cpp
     src/sdk/CppApi.cpp
     src/sdk/Simulation.cpp
