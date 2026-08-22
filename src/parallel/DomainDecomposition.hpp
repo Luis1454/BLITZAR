@@ -30,6 +30,9 @@ public:
     [[nodiscard]] int Size() const noexcept;
     [[nodiscard]] DomainBounds GlobalBounds() const noexcept;
     [[nodiscard]] DomainBounds LocalBounds() const noexcept;
+    [[nodiscard]] bool Contains(blitzar_core::Vector3 position) const noexcept;
+    [[nodiscard]] blitzar_status ValidateState(
+        blitzar_core::ParticleStateView state) const noexcept;
     [[nodiscard]] int Owner(blitzar_core::Vector3 position) const noexcept;
     [[nodiscard]] int Owner(
         blitzar_core::Vector3 position,

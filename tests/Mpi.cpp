@@ -38,7 +38,7 @@ struct StateArrays final {
         state.x[index] = -3.5 + value;
         state.y[index] = (index % 2 == 0 ? -1.0 : 1.0) + 0.1 * value;
         state.z[index] = (index % 3 == 0 ? 1.0 : -1.0) - 0.05 * value;
-        state.velocity_x[index] = 0.02 * value;
+        state.velocity_x[index] = 0.02 * (3.5 - value);
         state.velocity_y[index] = -0.01 * value;
         state.velocity_z[index] = 0.015 * value;
         state.mass[index] = 1.0 + 0.25 * static_cast<double>(index % 3);
@@ -50,11 +50,171 @@ struct StateArrays final {
 {
     StateArrays state = InitialState();
     for (std::size_t index = 0; index < ParticleCount; ++index) {
-        state.velocity_x[index] = index % 2 == 0 ? 500.0 : -500.0;
+        state.velocity_x[index] = index % 2 == 0 ? 50.0 : -50.0;
         state.velocity_y[index] = 0.0;
         state.velocity_z[index] = 0.0;
     }
     return state;
+}
+
+[[nodiscard]] bool CheckIncludedBoundaryPoints(
+    const blitzar_parallel::DomainDecomposition& domain,
+    std::span<const blitzar_core::Vector3> points,
+    int rank_count,
+    std::uint64_t& particle_id) noexcept
+{
+    for (const blitzar_core::Vector3 position : points) {
+        const int owner = domain.Owner(position, particle_id++);
+        if (!domain.Contains(position) || owner < 0 || owner >= rank_count) {
+            return false;
+        }
+    }
+    return true;
+}
+
+[[nodiscard]] bool CheckExcludedBoundaryPoints(
+    const blitzar_parallel::DomainDecomposition& domain,
+    std::span<const blitzar_core::Vector3> points) noexcept
+{
+    for (const blitzar_core::Vector3 position : points) {
+        if (domain.Contains(position) || domain.Owner(position) != -1) {
+            return false;
+        }
+    }
+    return true;
+}
+
+[[nodiscard]] std::array<blitzar_core::Vector3, 8> MakeCorners(
+    blitzar_parallel::DomainBounds bounds) noexcept
+{
+    std::array<blitzar_core::Vector3, 8> corners{};
+    std::size_t corner_index = 0;
+    for (const int x_side : {-1, 1}) {
+        for (const int y_side : {-1, 1}) {
+            for (const int z_side : {-1, 1}) {
+                corners[corner_index++] = {
+                    x_side < 0 ? bounds.minimum.x : bounds.maximum.x,
+                    y_side < 0 ? bounds.minimum.y : bounds.maximum.y,
+                    z_side < 0 ? bounds.minimum.z : bounds.maximum.z};
+            }
+        }
+    }
+    return corners;
+}
+
+[[nodiscard]] std::array<blitzar_core::Vector3, 6> MakeOutsideFaces(
+    blitzar_parallel::DomainBounds bounds,
+    blitzar_core::Vector3 middle) noexcept
+{
+    const double negative_infinity = -std::numeric_limits<double>::infinity();
+    const double positive_infinity = std::numeric_limits<double>::infinity();
+    return {
+        blitzar_core::Vector3{
+            std::nextafter(bounds.minimum.x, negative_infinity),
+            middle.y,
+            middle.z},
+        blitzar_core::Vector3{
+            std::nextafter(bounds.maximum.x, positive_infinity),
+            middle.y,
+            middle.z},
+        blitzar_core::Vector3{
+            middle.x,
+            std::nextafter(bounds.minimum.y, negative_infinity),
+            middle.z},
+        blitzar_core::Vector3{
+            middle.x,
+            std::nextafter(bounds.maximum.y, positive_infinity),
+            middle.z},
+        blitzar_core::Vector3{
+            middle.x,
+            middle.y,
+            std::nextafter(bounds.minimum.z, negative_infinity)},
+        blitzar_core::Vector3{
+            middle.x,
+            middle.y,
+            std::nextafter(bounds.maximum.z, positive_infinity)}};
+}
+
+[[nodiscard]] std::array<blitzar_core::Vector3, 8> MakeOutsideCorners(
+    blitzar_parallel::DomainBounds bounds) noexcept
+{
+    const double negative_infinity = -std::numeric_limits<double>::infinity();
+    const double positive_infinity = std::numeric_limits<double>::infinity();
+    std::array<blitzar_core::Vector3, 8> corners{};
+    std::size_t corner_index = 0;
+    for (const int x_side : {-1, 1}) {
+        for (const int y_side : {-1, 1}) {
+            for (const int z_side : {-1, 1}) {
+                corners[corner_index++] = {
+                    x_side < 0
+                        ? std::nextafter(bounds.minimum.x, negative_infinity)
+                        : std::nextafter(bounds.maximum.x, positive_infinity),
+                    y_side < 0
+                        ? std::nextafter(bounds.minimum.y, negative_infinity)
+                        : std::nextafter(bounds.maximum.y, positive_infinity),
+                    z_side < 0
+                        ? std::nextafter(bounds.minimum.z, negative_infinity)
+                        : std::nextafter(bounds.maximum.z, positive_infinity)};
+            }
+        }
+    }
+    return corners;
+}
+
+[[nodiscard]] bool RunBoundaryOwnershipCase(
+    blitzar_parallel::MpiContext& context) noexcept
+{
+    const StateArrays initial = InitialState();
+    blitzar_particles::ParticleBuffer particles(ParticleCount);
+    for (std::size_t index = 0; index < ParticleCount; ++index) {
+        if (particles.SetPosition(
+                index, {initial.x[index], initial.y[index], initial.z[index]}) !=
+                BLITZAR_STATUS_OK ||
+            particles.SetMass(index, initial.mass[index]) != BLITZAR_STATUS_OK) {
+            return false;
+        }
+    }
+
+    blitzar_parallel::DomainDecomposition domain;
+    if (domain.Initialize(particles.State(), context) != BLITZAR_STATUS_OK) {
+        return false;
+    }
+    const blitzar_parallel::DomainBounds bounds = domain.GlobalBounds();
+    if (!bounds.IsValid()) {
+        return false;
+    }
+    const blitzar_core::Vector3 middle{
+        (bounds.minimum.x + bounds.maximum.x) * 0.5,
+        (bounds.minimum.y + bounds.maximum.y) * 0.5,
+        (bounds.minimum.z + bounds.maximum.z) * 0.5};
+
+    const std::array<blitzar_core::Vector3, 6> faces{
+        blitzar_core::Vector3{bounds.minimum.x, middle.y, middle.z},
+        blitzar_core::Vector3{bounds.maximum.x, middle.y, middle.z},
+        blitzar_core::Vector3{middle.x, bounds.minimum.y, middle.z},
+        blitzar_core::Vector3{middle.x, bounds.maximum.y, middle.z},
+        blitzar_core::Vector3{middle.x, middle.y, bounds.minimum.z},
+        blitzar_core::Vector3{middle.x, middle.y, bounds.maximum.z}};
+    std::uint64_t particle_id = 0;
+    if (!CheckIncludedBoundaryPoints(domain, faces, context.Size(), particle_id)) {
+        return false;
+    }
+
+    const std::array<blitzar_core::Vector3, 8> corners = MakeCorners(bounds);
+    if (!CheckIncludedBoundaryPoints(
+            domain, corners, context.Size(), particle_id)) {
+        return false;
+    }
+
+    const std::array<blitzar_core::Vector3, 6> outside_faces =
+        MakeOutsideFaces(bounds, middle);
+    if (!CheckExcludedBoundaryPoints(domain, outside_faces)) {
+        return false;
+    }
+
+    const std::array<blitzar_core::Vector3, 8> outside_corners =
+        MakeOutsideCorners(bounds);
+    return CheckExcludedBoundaryPoints(domain, outside_corners);
 }
 
 [[nodiscard]] bool Configure(
@@ -416,6 +576,21 @@ struct StateArrays final {
         return false;
     }
 
+    blitzar_particles::ParticleBuffer escaped(1);
+    const blitzar_parallel::DomainBounds bounds = domain.GlobalBounds();
+    const double escaped_x = context.Rank() == 0
+                                 ? std::nextafter(
+                                       bounds.maximum.x,
+                                       std::numeric_limits<double>::infinity())
+                                 : bounds.maximum.x;
+    if (escaped.SetPosition(0, {escaped_x, 0.0, 0.0}) !=
+            BLITZAR_STATUS_OK ||
+        exchange.Migrate(escaped.State(), ids, received) !=
+            BLITZAR_STATUS_INVALID_ARGUMENT ||
+        received.Size() != 0) {
+        return false;
+    }
+
     blitzar_parallel::DomainDecomposition uninitialized_domain;
     blitzar_parallel::MpiExchange uninitialized_exchange(
         context, uninitialized_domain);
@@ -440,9 +615,11 @@ int main(int argc, char** argv)
         0.01,
         migration_case ? 1 : 2);
     const bool rollback_case = RunRollbackCase();
+    const bool boundary_case = RunBoundaryOwnershipCase(context);
     const bool error_synchronization_case = RunErrorSynchronizationCase(context);
     const bool local_ok =
-        valid_world && local_case && rollback_case && error_synchronization_case;
+        valid_world && local_case && rollback_case && boundary_case &&
+        error_synchronization_case;
 
     int local_failure = local_ok ? 0 : 1;
     int global_failure = 0;

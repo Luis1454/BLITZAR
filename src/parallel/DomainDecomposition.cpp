@@ -148,6 +148,7 @@ blitzar_status DomainDecomposition::Initialize(
             {keys[order[boundary]], static_cast<std::uint64_t>(order[boundary])};
     }
 
+    initialized_ = true;
     local_bounds_ = {};
     for (std::size_t index = 0; index < global_state.SourceCount(); ++index) {
         if (Owner(
@@ -161,7 +162,6 @@ blitzar_status DomainDecomposition::Initialize(
     if (!local_bounds_.IsValid()) {
         local_bounds_ = global_bounds_;
     }
-    initialized_ = true;
     return BLITZAR_STATUS_OK;
 }
 
@@ -190,6 +190,32 @@ DomainBounds DomainDecomposition::LocalBounds() const noexcept
     return local_bounds_;
 }
 
+bool DomainDecomposition::Contains(blitzar_core::Vector3 position) const noexcept
+{
+    return initialized_ && global_bounds_.IsValid() &&
+           IsFinitePosition(position) &&
+           position.x >= global_bounds_.minimum.x &&
+           position.x <= global_bounds_.maximum.x &&
+           position.y >= global_bounds_.minimum.y &&
+           position.y <= global_bounds_.maximum.y &&
+           position.z >= global_bounds_.minimum.z &&
+           position.z <= global_bounds_.maximum.z;
+}
+
+blitzar_status DomainDecomposition::ValidateState(
+    blitzar_core::ParticleStateView state) const noexcept
+{
+    if (!initialized_ || !blitzar_core::IsValid(state)) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    for (std::size_t index = 0; index < state.count; ++index) {
+        if (!Contains({state.x[index], state.y[index], state.z[index]})) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+    }
+    return BLITZAR_STATUS_OK;
+}
+
 int DomainDecomposition::Owner(blitzar_core::Vector3 position) const noexcept
 {
     return Owner(position, std::numeric_limits<std::uint64_t>::max());
@@ -198,7 +224,7 @@ int DomainDecomposition::Owner(blitzar_core::Vector3 position) const noexcept
 int DomainDecomposition::Owner(
     blitzar_core::Vector3 position, std::uint64_t particle_id) const noexcept
 {
-    if (!initialized_) {
+    if (!Contains(position)) {
         return -1;
     }
     if (size_ <= 1) {

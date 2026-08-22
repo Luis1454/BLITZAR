@@ -134,6 +134,12 @@ blitzar_status MpiExchange::Migrate(
         return status;
     }
     status = SynchronizeStatus(
+        decomposition_.ValidateState(local_state),
+        "migrate-domain-state");
+    if (status != BLITZAR_STATUS_OK) {
+        return status;
+    }
+    status = SynchronizeStatus(
         PackLocal(local_state, local_ids, local_packets),
         "migrate-pack");
     if (status != BLITZAR_STATUS_OK) {
@@ -176,7 +182,7 @@ blitzar_status MpiExchange::Migrate(
             const int owner = decomposition_.Owner(
                 {packet.x, packet.y, packet.z}, packet.id);
             if (owner < 0 || owner >= size) {
-                preparation_status = BLITZAR_STATUS_INTERNAL_ERROR;
+                preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
                 break;
             }
             int& count = send_counts[static_cast<std::size_t>(owner)];
