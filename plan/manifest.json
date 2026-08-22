@@ -1,5 +1,5 @@
 {
-  "plan_version": "1.0.2",
+  "plan_version": "1.0.3",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -13,7 +13,9 @@
     "src/physics",
     "src/integration",
     "src/trees",
+    "src/gpu",
     "src/solvers",
+    "src/solvers/gpu",
     "src/sdk",
     "apps/blitzar",
     "tests",
@@ -21,7 +23,6 @@
   ],
   "deferred_roots": [
     "src/grid",
-    "src/cuda_runtime",
     "src/io"
   ],
   "phases": [
@@ -29,7 +30,7 @@
     {"id": "P1", "name": "particle-core-and-direct-reference", "depends_on": ["P0"]},
     {"id": "P2", "name": "public-sdk-and-cli", "depends_on": ["P1"]},
     {"id": "P3", "name": "trees-and-hierarchical-solvers", "depends_on": ["P1"]},
-    {"id": "P4", "name": "cuda-runtime-and-gpu-solvers", "depends_on": ["P3"]},
+    {"id": "P4", "name": "hip-runtime-and-gpu-solvers", "depends_on": ["P3"]},
     {"id": "P5", "name": "grid-pm-and-treepm", "depends_on": ["P3", "P4"]},
     {"id": "P6", "name": "persistence-and-qualification", "depends_on": ["P2", "P5"]}
   ],

@@ -1,7 +1,7 @@
 # BLITZAR Clean-Room Plan
 
 Status: **FROZEN**  
-Plan version: **1.0.2**
+Plan version: **1.0.3**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -30,9 +30,11 @@ src/particles/                   Aligned SoA particle storage and invariants
 src/physics/                     Force laws, units, softening, validation
 src/integration/                 Time integration and timestep policy
 src/trees/                       Morton ordering, octree, multipoles
+src/gpu/                         HIP context, pinned staging, and streams
 src/grid/                        3D grids and mass deposition
-src/solvers/direct/              O(N^2) CPU reference and CUDA acceleration
-src/solvers/barnes_hut/          O(N log N) CPU and CUDA
+src/solvers/direct/              O(N^2) CPU reference and HIP acceleration
+src/solvers/barnes_hut/          O(N log N) CPU and HIP
+src/solvers/gpu/                 HIP kernel launch contracts and implementations
 src/solvers/fmm/                 FMM CPU and CUDA
 src/solvers/pm/                  Particle-Mesh CPU and CUDA
 src/solvers/treepm/              TreePM composition and dispatch
@@ -82,11 +84,13 @@ Implement Morton ordering, octree construction, multipoles, and Barnes-Hut.
 Then implement FMM behind the same solver contract. Compare both against the
 direct CPU oracle for force, energy, conservation, and deterministic ordering.
 
-### P4: CUDA Runtime and GPU Solvers
+### P4: HIP Runtime and GPU Solvers
 
-Add explicit CUDA ownership types for allocations, streams, and events. Port
-the direct solver first, then hierarchical solvers. Host and device state are
-separate ownership domains; no aggregate GPU god struct is permitted.
+Add an optional HIP runtime context with explicit ownership for device buffers,
+pinned host staging, streams, and synchronization. Port the direct solver first,
+then Barnes-Hut through flat octree views. HIP headers remain confined to `.hip`
+implementations; the C++ SDK receives no GPU type. If HIP or a device is absent,
+the selected OpenMP CPU solver remains the execution path.
 
 ### P5: Grid, PM, and TreePM
 
@@ -98,7 +102,15 @@ implementation. CPU behavior is qualified before CUDA dispatch is enabled.
 
 Add versioned binary snapshots and the optional HDF5 adapter. Validate corrupt,
 truncated, incompatible, and endian-swapped inputs. Add performance baselines,
-long-run determinism checks, and CPU/CUDA parity reports.
+long-run determinism checks, and CPU/GPU parity reports.
+
+### Sprint 6: Optional HIP Acceleration
+
+The HIP backend is detected in `AUTO` mode and can be forced with
+`BLITZAR_HIP_MODE=ON`. CPU-only builds must not require ROCm, HIP headers, or a
+GPU. The acceptance contract compares HIP Direct and Barnes-Hut forces with the
+CPU reference when a device is available, while the same test validates the
+unsupported/fallback path otherwise.
 
 ## Non-Goals for the Initial Rewrite
 

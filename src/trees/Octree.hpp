@@ -46,6 +46,8 @@ public:
     [[nodiscard]] std::size_t ParticleCount() const noexcept;
     [[nodiscard]] std::size_t BuildCount() const noexcept;
     [[nodiscard]] std::size_t RefitCount() const noexcept;
+    [[nodiscard]] std::span<const Cell> Cells() const noexcept;
+    [[nodiscard]] std::span<const std::size_t> Indices() const noexcept;
     [[nodiscard]] std::span<const Cell> CellAt(std::size_t index) const noexcept;
     [[nodiscard]] bool ParticleIndex(
         std::size_t index, std::size_t& particle) const noexcept;

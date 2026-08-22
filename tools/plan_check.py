@@ -18,7 +18,16 @@ TEST_PATTERN = re.compile(
     r"add_test\s*\(\s*NAME\s+([^\s\)]+)\s+COMMAND\s+([^\s\)]+)",
     re.MULTILINE,
 )
-SOURCE_SUFFIXES = {".c", ".cpp", ".cu", ".cuh", ".h", ".hpp", ".inl"}
+SOURCE_SUFFIXES = {
+    ".c",
+    ".cpp",
+    ".cu",
+    ".cuh",
+    ".hip",
+    ".h",
+    ".hpp",
+    ".inl",
+}
 PUBLIC_HEADER_NAMES = {"blitzar.h", "blitzar.hpp"}
 
 
@@ -188,9 +197,16 @@ def validate_naming() -> None:
         names[key] = path
         if path.name in PUBLIC_HEADER_NAMES:
             continue
-        if path.suffix.lower() in {".cpp", ".cu", ".cuh", ".hpp", ".inl"}:
+        if path.suffix.lower() in {
+            ".cpp",
+            ".cu",
+            ".cuh",
+            ".hip",
+            ".hpp",
+            ".inl",
+        }:
             if re.fullmatch(
-                r"[A-Z][A-Za-z0-9]*\.(cpp|cu|cuh|hpp|inl)", path.name
+                r"[A-Z][A-Za-z0-9]*\.(cpp|cu|cuh|hip|hpp|inl)", path.name
             ) is None:
                 fail(f"non-PascalCase C++/CUDA filename: {path.relative_to(ROOT)}")
         elif path.suffix.lower() in {".c", ".h"}:

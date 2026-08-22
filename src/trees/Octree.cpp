@@ -418,6 +418,19 @@ std::size_t Octree::RefitCount() const noexcept
     return refit_count_;
 }
 
+std::span<const Octree::Cell> Octree::Cells() const noexcept
+{
+    return std::span<const Cell>(cells_);
+}
+
+std::span<const std::size_t> Octree::Indices() const noexcept
+{
+    if (particle_count_ == 0) {
+        return {};
+    }
+    return std::span<const std::size_t>(indices_).first(particle_count_);
+}
+
 std::span<const Octree::Cell> Octree::CellAt(std::size_t index) const noexcept
 {
     if (index >= cells_.size()) {

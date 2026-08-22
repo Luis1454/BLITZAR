@@ -4,6 +4,7 @@ project(BLITZAR VERSION 1.0.0 LANGUAGES C CXX)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
+include(cmake/HIP.cmake)
 
 option(BLITZAR_BUILD_TESTS "Build BLITZAR tests" ON)
 option(BLITZAR_BUILD_CLI "Build the BLITZAR command-line application" ON)
@@ -57,6 +58,19 @@ target_sources(blitzar PRIVATE
     src/trees/Octree.cpp
 )
 
+if(BLITZAR_HIP_ENABLED)
+    target_sources(blitzar PRIVATE
+        src/gpu/HipBuffers.hip
+        src/gpu/HipContext.hip
+        src/solvers/gpu/DirectKernel.hip
+        src/solvers/gpu/BarnesHutKernel.hip
+    )
+else()
+    target_sources(blitzar PRIVATE
+        src/gpu/HipContextStub.cpp
+    )
+endif()
+
 target_compile_features(blitzar PUBLIC cxx_std_20)
 target_include_directories(blitzar
     PUBLIC
@@ -67,6 +81,7 @@ target_include_directories(blitzar
 )
 
 blitzar_enable_warnings(blitzar)
+blitzar_enable_hip(blitzar)
 
 if(BLITZAR_ENABLE_OPENMP)
     target_link_libraries(blitzar PUBLIC OpenMP::OpenMP_CXX)
@@ -191,12 +206,21 @@ if(BLITZAR_BUILD_TESTS)
     target_include_directories(blitzar_numerical_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     blitzar_enable_warnings(blitzar_numerical_test)
 
+    add_executable(blitzar_hip_test
+        tests/Hip.cpp
+    )
+    target_link_libraries(blitzar_hip_test PRIVATE blitzar)
+    target_compile_features(blitzar_hip_test PRIVATE cxx_std_20)
+    target_include_directories(blitzar_hip_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    blitzar_enable_warnings(blitzar_hip_test)
+
     add_test(NAME TST-P0-001 COMMAND blitzar_lifecycle_test)
     add_test(NAME TST-P0-002 COMMAND blitzar_c_api_test)
     add_test(NAME TST-P0-003 COMMAND blitzar_contract_test)
     add_test(NAME TST-P1-001 COMMAND blitzar_dynamics_test)
     add_test(NAME TST-P3-001 COMMAND blitzar_hierarchy_test)
     add_test(NAME TST-P1-002 COMMAND blitzar_numerical_test)
+    add_test(NAME TST-P4-001 COMMAND blitzar_hip_test)
 endif()
 
 if(BLITZAR_BUILD_TESTS)

@@ -4,6 +4,7 @@
 #include "core/Execution.hpp"
 #include "core/Snapshot.hpp"
 #include "core/Solver.hpp"
+#include "gpu/HipContext.hpp"
 #include "integration/LeapfrogKdk.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
@@ -79,6 +80,7 @@ private:
     [[nodiscard]] blitzar_status Remember(blitzar_status status) const noexcept;
 
     std::size_t particle_count_;
+    blitzar_gpu::HipContext hip_context_;
     std::shared_ptr<blitzar_particles::ParticleArena> arena_;
     blitzar_particles::ParticleBuffer particles_;
     blitzar_particles::AccelerationBuffer accelerations_;

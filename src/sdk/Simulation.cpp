@@ -5,9 +5,88 @@
 #include <limits>
 #include <new>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 namespace blitzar_sdk {
+
+namespace {
+
+template <typename Solver>
+class SolverDispatcher final {
+public:
+    SolverDispatcher(
+        blitzar_gpu::HipContext& hip,
+        Solver& cpu,
+        blitzar_physics::GravityParameters gravity,
+        blitzar_barnes_hut::BarnesHutSettings barnes_hut) noexcept
+        : hip_(hip),
+          cpu_(cpu),
+          gravity_(gravity),
+          barnes_hut_(barnes_hut)
+    {
+    }
+
+    [[nodiscard]] blitzar_status Compute(
+        blitzar_core::ParticleStateView particles,
+        blitzar_core::ForceView forces,
+        const blitzar_core::ExecutionSettings& settings) noexcept
+    {
+        if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
+            const blitzar_status gpu_status =
+                hip_.ComputeDirect(particles, forces, gravity_);
+            if (gpu_status == BLITZAR_STATUS_OK) {
+                return BLITZAR_STATUS_OK;
+            }
+        } else {
+            const blitzar_status gpu_status = hip_.ComputeBarnesHut(
+                particles,
+                forces,
+                settings,
+                gravity_,
+                barnes_hut_);
+            if (gpu_status == BLITZAR_STATUS_OK) {
+                return BLITZAR_STATUS_OK;
+            }
+        }
+        return cpu_.Compute(particles, forces, settings);
+    }
+
+    [[nodiscard]] blitzar_status Compute(
+        blitzar_core::ParticleStateView particles,
+        blitzar_core::ForceView forces,
+        const blitzar_core::ExecutionSettings& settings,
+        blitzar_barnes_hut::ThreadWorkspace& workspace) noexcept
+    {
+        if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
+            const blitzar_status gpu_status =
+                hip_.ComputeDirect(particles, forces, gravity_);
+            if (gpu_status == BLITZAR_STATUS_OK) {
+                return BLITZAR_STATUS_OK;
+            }
+            return cpu_.Compute(particles, forces, settings);
+        } else {
+            const blitzar_status gpu_status = hip_.ComputeBarnesHut(
+                particles,
+                forces,
+                settings,
+                gravity_,
+                barnes_hut_);
+            if (gpu_status == BLITZAR_STATUS_OK) {
+                return BLITZAR_STATUS_OK;
+            }
+            return cpu_.Compute(particles, forces, settings, workspace);
+        }
+    }
+
+private:
+    blitzar_gpu::HipContext& hip_;
+    Solver& cpu_;
+    blitzar_physics::GravityParameters gravity_;
+    blitzar_barnes_hut::BarnesHutSettings barnes_hut_;
+};
+
+}  // namespace
 
 std::size_t Simulation::DefaultMaxCells(std::size_t particle_count) noexcept
 {
@@ -23,6 +102,7 @@ std::size_t Simulation::DefaultMaxCells(std::size_t particle_count) noexcept
 
 Simulation::Simulation(std::size_t particle_count)
     : particle_count_(particle_count),
+      hip_context_(),
       arena_(std::make_shared<blitzar_particles::ParticleArena>(particle_count)),
       particles_(arena_),
       accelerations_(arena_),
@@ -292,11 +372,13 @@ blitzar_status Simulation::Step() noexcept
     }
     const blitzar_status status = std::visit(
         [this](auto& solver) {
+            SolverDispatcher dispatcher(
+                hip_context_, solver, gravity_, barnes_hut_);
             return integrator_.Advance(
                 particles_,
                 accelerations_,
                 workspace_,
-                solver,
+                dispatcher,
                 timestep_,
                 execution_settings_,
                 traversal_workspace_);
