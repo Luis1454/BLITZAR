@@ -300,4 +300,10 @@ if(BLITZAR_BUILD_TESTS)
     if(BLITZAR_BUILD_CLI)
         add_test(NAME TST-P2-003 COMMAND blitzar_cli)
     endif()
+    add_test(
+        NAME TST-P2-004
+        COMMAND cmake
+            -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR}
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/PackageConsumer.cmake
+    )
 endif()

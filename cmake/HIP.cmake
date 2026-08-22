@@ -23,6 +23,8 @@ set(BLITZAR_HIP_NATIVE_CUDA OFF CACHE INTERNAL
     "Whether NVIDIA uses CUDA without HIP headers" FORCE)
 set(BLITZAR_HIP_LINK_TARGETS "" CACHE INTERNAL
     "HIP runtime targets linked by BLITZAR" FORCE)
+set(BLITZAR_HIP_PACKAGE "" CACHE INTERNAL
+    "HIP package name required by installed exports" FORCE)
 
 if(NOT _blitzar_hip_mode STREQUAL "OFF")
     set(_blitzar_hip_hints)
@@ -96,6 +98,9 @@ if(NOT _blitzar_hip_mode STREQUAL "OFF")
                     find_package(hip CONFIG QUIET HINTS ${_blitzar_hip_hints})
                     if(hip_FOUND)
                         set(_blitzar_hip_native_cuda OFF)
+                        set(BLITZAR_HIP_PACKAGE "hip" CACHE INTERNAL
+                            "HIP package name required by installed exports"
+                            FORCE)
                     endif()
                 endif()
 
@@ -159,8 +164,16 @@ if(NOT _blitzar_hip_mode STREQUAL "OFF")
             if(CMAKE_HIP_COMPILER)
                 enable_language(HIP)
                 find_package(hip CONFIG QUIET HINTS ${_blitzar_hip_hints})
-                if(NOT hip_FOUND)
+                if(hip_FOUND)
+                    set(BLITZAR_HIP_PACKAGE "hip" CACHE INTERNAL
+                        "HIP package name required by installed exports" FORCE)
+                else()
                     find_package(HIP CONFIG QUIET HINTS ${_blitzar_hip_hints})
+                    if(HIP_FOUND)
+                        set(BLITZAR_HIP_PACKAGE "HIP" CACHE INTERNAL
+                            "HIP package name required by installed exports"
+                            FORCE)
+                    endif()
                 endif()
                 set(BLITZAR_HIP_ENABLED ON CACHE INTERNAL
                     "Whether the optional HIP backend is enabled" FORCE)
