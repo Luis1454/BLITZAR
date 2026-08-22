@@ -29,6 +29,23 @@ namespace {
                : BLITZAR_STATUS_INTERNAL_ERROR;
 }
 
+[[nodiscard]] blitzar_status FaultStatus(HipFault fault) noexcept
+{
+    switch (fault) {
+    case HipFault::None:
+        return BLITZAR_STATUS_OK;
+    case HipFault::AllocationFailure:
+        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+    case HipFault::LaunchFailure:
+    case HipFault::SynchronizationFailure:
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    case HipFault::NonFiniteResult:
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    default:
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
+}
+
 [[nodiscard]] bool SameSettings(
     const blitzar_barnes_hut::BarnesHutSettings& left,
     const blitzar_barnes_hut::BarnesHutSettings& right) noexcept
@@ -47,6 +64,7 @@ struct HipContext::Impl final {
     std::unique_ptr<blitzar_trees::Octree> tree;
     blitzar_barnes_hut::BarnesHutSettings tree_settings{};
     bool tree_ready{};
+    HipFault fault{HipFault::None};
 
     [[nodiscard]] blitzar_status EnsureBuffers(
         std::size_t particle_count,
@@ -335,6 +353,7 @@ HipContext::HipContext() noexcept
         impl_ = std::make_unique<Impl>();
     } catch (const std::bad_alloc&) {
         impl_.reset();
+        status_ = BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
 }
 
@@ -351,7 +370,15 @@ bool HipContext::IsCompiled() const noexcept
 
 bool HipContext::IsAvailable() const noexcept
 {
-    return impl_ != nullptr && impl_->buffers.IsAvailable();
+    return status_ == BLITZAR_STATUS_OK && impl_ != nullptr &&
+           impl_->buffers.IsAvailable();
+}
+
+void HipContext::SetFaultForTesting(HipFault fault) noexcept
+{
+    if (impl_ != nullptr) {
+        impl_->fault = fault;
+    }
 }
 
 blitzar_status HipContext::ComputeDirect(
@@ -376,6 +403,15 @@ blitzar_status HipContext::ComputeDirectRange(
     std::size_t source_end,
     bool accumulate) noexcept
 {
+    if (status_ != BLITZAR_STATUS_OK) {
+        return status_;
+    }
+    if (impl_ != nullptr) {
+        const blitzar_status fault_status = FaultStatus(impl_->fault);
+        if (fault_status != BLITZAR_STATUS_OK) {
+            return fault_status;
+        }
+    }
     if (impl_ == nullptr || !impl_->buffers.IsAvailable()) {
         return BLITZAR_STATUS_UNSUPPORTED;
     }
@@ -409,6 +445,15 @@ blitzar_status HipContext::ComputeBarnesHut(
     blitzar_physics::GravityParameters gravity,
     blitzar_barnes_hut::BarnesHutSettings settings) noexcept
 {
+    if (status_ != BLITZAR_STATUS_OK) {
+        return status_;
+    }
+    if (impl_ != nullptr) {
+        const blitzar_status fault_status = FaultStatus(impl_->fault);
+        if (fault_status != BLITZAR_STATUS_OK) {
+            return fault_status;
+        }
+    }
     if (impl_ == nullptr || !impl_->buffers.IsAvailable()) {
         return BLITZAR_STATUS_UNSUPPORTED;
     }

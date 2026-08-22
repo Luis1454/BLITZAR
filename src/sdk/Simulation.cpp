@@ -3,6 +3,7 @@
 #include "particles/ParticleArena.hpp"
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <cstdint>
 #include <limits>
@@ -23,11 +24,13 @@ public:
         blitzar_gpu::HipContext& hip,
         Solver& cpu,
         blitzar_physics::GravityParameters gravity,
-        blitzar_barnes_hut::BarnesHutSettings barnes_hut) noexcept
+        blitzar_barnes_hut::BarnesHutSettings barnes_hut,
+        std::atomic<blitzar_backend_kind>& backend) noexcept
         : hip_(hip),
           cpu_(cpu),
           gravity_(gravity),
-          barnes_hut_(barnes_hut)
+          barnes_hut_(barnes_hut),
+          backend_(backend)
     {
     }
 
@@ -37,12 +40,17 @@ public:
         const blitzar_core::ExecutionSettings& settings) noexcept
     {
         if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
+            backend_.store(BLITZAR_BACKEND_HIP, std::memory_order_relaxed);
             const blitzar_status gpu_status =
                 hip_.ComputeDirect(particles, forces, gravity_);
             if (gpu_status == BLITZAR_STATUS_OK) {
                 return BLITZAR_STATUS_OK;
             }
+            if (gpu_status != BLITZAR_STATUS_UNSUPPORTED) {
+                return gpu_status;
+            }
         } else {
+            backend_.store(BLITZAR_BACKEND_HIP, std::memory_order_relaxed);
             const blitzar_status gpu_status = hip_.ComputeBarnesHut(
                 particles,
                 forces,
@@ -52,7 +60,11 @@ public:
             if (gpu_status == BLITZAR_STATUS_OK) {
                 return BLITZAR_STATUS_OK;
             }
+            if (gpu_status != BLITZAR_STATUS_UNSUPPORTED) {
+                return gpu_status;
+            }
         }
+        backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
         return cpu_.Compute(particles, forces, settings);
     }
 
@@ -63,13 +75,19 @@ public:
         blitzar_barnes_hut::ThreadWorkspace& workspace) noexcept
     {
         if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
+            backend_.store(BLITZAR_BACKEND_HIP, std::memory_order_relaxed);
             const blitzar_status gpu_status =
                 hip_.ComputeDirect(particles, forces, gravity_);
             if (gpu_status == BLITZAR_STATUS_OK) {
                 return BLITZAR_STATUS_OK;
             }
+            if (gpu_status != BLITZAR_STATUS_UNSUPPORTED) {
+                return gpu_status;
+            }
+            backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
             return cpu_.Compute(particles, forces, settings);
         } else {
+            backend_.store(BLITZAR_BACKEND_HIP, std::memory_order_relaxed);
             const blitzar_status gpu_status = hip_.ComputeBarnesHut(
                 particles,
                 forces,
@@ -79,6 +97,10 @@ public:
             if (gpu_status == BLITZAR_STATUS_OK) {
                 return BLITZAR_STATUS_OK;
             }
+            if (gpu_status != BLITZAR_STATUS_UNSUPPORTED) {
+                return gpu_status;
+            }
+            backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
             return cpu_.Compute(particles, forces, settings, workspace);
         }
     }
@@ -92,6 +114,7 @@ public:
         bool accumulate) noexcept
     {
         if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
+            backend_.store(BLITZAR_BACKEND_HIP, std::memory_order_relaxed);
             const blitzar_status gpu_status = hip_.ComputeDirectRange(
                 particles,
                 forces,
@@ -102,6 +125,10 @@ public:
             if (gpu_status == BLITZAR_STATUS_OK) {
                 return BLITZAR_STATUS_OK;
             }
+            if (gpu_status != BLITZAR_STATUS_UNSUPPORTED) {
+                return gpu_status;
+            }
+            backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
             return cpu_.ComputeRange(
                 particles,
                 forces,
@@ -119,6 +146,7 @@ private:
     Solver& cpu_;
     blitzar_physics::GravityParameters gravity_;
     blitzar_barnes_hut::BarnesHutSettings barnes_hut_;
+    std::atomic<blitzar_backend_kind>& backend_;
 };
 
 [[nodiscard]] blitzar_core::ParticleStateView MakeArenaState(
@@ -624,8 +652,9 @@ public:
         blitzar_particles::ParticleArena& arena,
         std::span<const std::uint64_t> ids,
         blitzar_parallel::PacketBuffer& ghosts,
-        std::size_t& source_count) noexcept
-        : base_(hip, cpu, gravity, barnes_hut),
+        std::size_t& source_count,
+        std::atomic<blitzar_backend_kind>& backend) noexcept
+        : base_(hip, cpu, gravity, barnes_hut, backend),
           exchange_(exchange),
           arena_(arena),
           ids_(ids),
@@ -783,6 +812,7 @@ Simulation::Simulation(std::size_t particle_count)
       execution_settings_{},
       snapshot_header_{},
       last_status_(mpi_context_.Status()),
+      last_backend_(BLITZAR_BACKEND_CPU),
       solver_(std::in_place_type<blitzar_direct::DirectSolver>, gravity_),
       integrator_{},
       particle_ids_(particle_count),
@@ -799,6 +829,16 @@ Simulation::Simulation(std::size_t particle_count)
 blitzar_status Simulation::LastStatus() const noexcept
 {
     return last_status_.load(std::memory_order_relaxed);
+}
+
+blitzar_backend_kind Simulation::LastBackend() const noexcept
+{
+    return last_backend_.load(std::memory_order_relaxed);
+}
+
+void Simulation::SetHipFaultForTesting(blitzar_gpu::HipFault fault) noexcept
+{
+    hip_context_.SetFaultForTesting(fault);
 }
 
 std::size_t Simulation::ParticleCount() const noexcept
@@ -1238,7 +1278,8 @@ blitzar_status Simulation::Step() noexcept
                     *arena_,
                     std::span<const std::uint64_t>(particle_ids_),
                     exchange_buffer_,
-                    source_particle_count_);
+                    source_particle_count_,
+                    last_backend_);
                 auto rollback = [&dispatcher, &transaction]() noexcept {
                     dispatcher.Abort();
                     transaction.Abort();
@@ -1312,7 +1353,7 @@ blitzar_status Simulation::Step() noexcept
                 return advance_status;
             }
             SolverDispatcher dispatcher(
-                hip_context_, solver, gravity_, barnes_hut_);
+                hip_context_, solver, gravity_, barnes_hut_, last_backend_);
             return integrator_.Advance(
                 particles_,
                 accelerations_,

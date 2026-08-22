@@ -129,6 +129,17 @@ std::int64_t Simulation::particle_count() const noexcept
     return particle_count_;
 }
 
+BackendKind Simulation::backend() const noexcept
+{
+    blitzar_backend_kind backend = BLITZAR_BACKEND_CPU;
+    if (blitzar_simulation_backend(
+            impl_ == nullptr ? nullptr : impl_->handle.get(),
+            &backend) != BLITZAR_STATUS_OK) {
+        return BackendKind::Cpu;
+    }
+    return static_cast<BackendKind>(backend);
+}
+
 Status Simulation::Update(blitzar_status status) noexcept
 {
     status_ = static_cast<Status>(status);

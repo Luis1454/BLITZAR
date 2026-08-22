@@ -137,6 +137,17 @@ extern "C" blitzar_status blitzar_simulation_status(
     return simulation->implementation.LastStatus();
 }
 
+extern "C" blitzar_status blitzar_simulation_backend(
+    const blitzar_simulation* simulation,
+    blitzar_backend_kind* backend)
+{
+    if (!IsValidSimulation(simulation) || backend == nullptr) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    *backend = simulation->implementation.LastBackend();
+    return BLITZAR_STATUS_OK;
+}
+
 extern "C" blitzar_status blitzar_simulation_particle_count(
     const blitzar_simulation* simulation,
     int64_t* particle_count)

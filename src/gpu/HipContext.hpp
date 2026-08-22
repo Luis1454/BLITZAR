@@ -9,9 +9,18 @@
 #include <blitzar/blitzar.h>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 
 namespace blitzar_gpu {
+
+enum class HipFault : std::uint8_t {
+    None,
+    AllocationFailure,
+    LaunchFailure,
+    SynchronizationFailure,
+    NonFiniteResult,
+};
 
 class HipContext final {
 public:
@@ -26,6 +35,7 @@ public:
 
     [[nodiscard]] bool IsCompiled() const noexcept;
     [[nodiscard]] bool IsAvailable() const noexcept;
+    void SetFaultForTesting(HipFault fault) noexcept;
 
     [[nodiscard]] blitzar_status ComputeDirect(
         blitzar_core::ParticleStateView particles,
@@ -50,6 +60,7 @@ private:
     struct Impl;
 
     std::unique_ptr<Impl> impl_;
+    blitzar_status status_{BLITZAR_STATUS_OK};
 };
 
 }  // namespace blitzar_gpu

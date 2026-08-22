@@ -39,6 +39,11 @@ typedef int32_t blitzar_solver_kind;
 #define BLITZAR_SOLVER_PM ((blitzar_solver_kind)3)
 #define BLITZAR_SOLVER_TREEPM ((blitzar_solver_kind)4)
 
+typedef int32_t blitzar_backend_kind;
+
+#define BLITZAR_BACKEND_CPU ((blitzar_backend_kind)0)
+#define BLITZAR_BACKEND_HIP ((blitzar_backend_kind)1)
+
 typedef int32_t blitzar_integrator_kind;
 
 #define BLITZAR_INTEGRATOR_LEAPFROG_KDK ((blitzar_integrator_kind)0)
@@ -62,6 +67,10 @@ BLITZAR_API void blitzar_simulation_destroy(blitzar_simulation* simulation);
 
 BLITZAR_API blitzar_status blitzar_simulation_status(
     const blitzar_simulation* simulation);
+
+BLITZAR_API blitzar_status blitzar_simulation_backend(
+    const blitzar_simulation* simulation,
+    blitzar_backend_kind* backend);
 
 BLITZAR_API blitzar_status blitzar_simulation_particle_count(
     const blitzar_simulation* simulation,

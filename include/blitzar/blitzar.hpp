@@ -28,6 +28,11 @@ enum class SolverKind : std::int32_t {
     TreePm = BLITZAR_SOLVER_TREEPM
 };
 
+enum class BackendKind : std::int32_t {
+    Cpu = BLITZAR_BACKEND_CPU,
+    Hip = BLITZAR_BACKEND_HIP
+};
+
 enum class IntegratorKind : std::int32_t {
     LeapfrogKdk = BLITZAR_INTEGRATOR_LEAPFROG_KDK
 };
@@ -69,6 +74,7 @@ public:
     [[nodiscard]] bool valid() const noexcept;
     [[nodiscard]] Status status() const noexcept;
     [[nodiscard]] std::int64_t particle_count() const noexcept;
+    [[nodiscard]] BackendKind backend() const noexcept;
 
     [[nodiscard]] Status set_solver(SolverKind solver) noexcept;
     [[nodiscard]] Status set_integrator(IntegratorKind integrator) noexcept;

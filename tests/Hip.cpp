@@ -1,10 +1,90 @@
 #include "gpu/HipContext.hpp"
 #include "particles/ParticleBuffer.hpp"
+#include "sdk/Simulation.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 
 #include "Check.hpp"
 
+#include <array>
 #include <cmath>
+#include <utility>
+
+namespace {
+
+constexpr std::size_t TestParticleCount = 4;
+
+struct TestState final {
+    std::array<double, TestParticleCount> x{-1.0, 1.0, -1.0, 1.0};
+    std::array<double, TestParticleCount> y{-1.0, -1.0, 1.0, 1.0};
+    std::array<double, TestParticleCount> z{-1.0, 1.0, 1.0, -1.0};
+    std::array<double, TestParticleCount> velocity_x{};
+    std::array<double, TestParticleCount> velocity_y{};
+    std::array<double, TestParticleCount> velocity_z{};
+    std::array<double, TestParticleCount> mass{1.0, 2.0, 3.0, 4.0};
+};
+
+[[nodiscard]] bool Configure(
+    blitzar_sdk::Simulation& simulation, const TestState& state) noexcept
+{
+    return simulation.SetGravity(1.0, 0.1) == BLITZAR_STATUS_OK &&
+           simulation.SetTimestep(0.01) == BLITZAR_STATUS_OK &&
+           simulation.SetParticles(
+               state.x,
+               state.y,
+               state.z,
+               state.velocity_x,
+               state.velocity_y,
+               state.velocity_z,
+               state.mass) == BLITZAR_STATUS_OK;
+}
+
+[[nodiscard]] bool RunDispatcherErrorCase() noexcept
+{
+    const TestState state{};
+    blitzar_gpu::HipContext probe;
+    blitzar_sdk::Simulation simulation(TestParticleCount);
+    if (!Configure(simulation, state) || simulation.Step() != BLITZAR_STATUS_OK) {
+        return false;
+    }
+    const blitzar_backend_kind expected_backend = probe.IsAvailable()
+                                                       ? BLITZAR_BACKEND_HIP
+                                                       : BLITZAR_BACKEND_CPU;
+    if (simulation.LastBackend() != expected_backend) {
+        return false;
+    }
+
+    const std::array<std::pair<blitzar_gpu::HipFault, blitzar_status>, 4>
+        faults{{
+            {blitzar_gpu::HipFault::AllocationFailure,
+             BLITZAR_STATUS_ALLOCATION_FAILURE},
+            {blitzar_gpu::HipFault::LaunchFailure, BLITZAR_STATUS_INTERNAL_ERROR},
+            {blitzar_gpu::HipFault::SynchronizationFailure,
+             BLITZAR_STATUS_INTERNAL_ERROR},
+            {blitzar_gpu::HipFault::NonFiniteResult,
+             BLITZAR_STATUS_INVALID_ARGUMENT}}};
+    for (const auto& [fault, expected_status] : faults) {
+        simulation.SetHipFaultForTesting(fault);
+        if (simulation.Step() != expected_status ||
+            simulation.LastBackend() != BLITZAR_BACKEND_HIP) {
+            return false;
+        }
+        simulation.SetHipFaultForTesting(blitzar_gpu::HipFault::None);
+    }
+
+    blitzar_sdk::Simulation unsupported(TestParticleCount);
+    if (!Configure(unsupported, state) ||
+        unsupported.SetSolver(BLITZAR_SOLVER_BARNES_HUT) !=
+            BLITZAR_STATUS_OK ||
+        unsupported.SetBarnesHut(0.5, TestParticleCount, 128, 1, 37) !=
+            BLITZAR_STATUS_OK ||
+        unsupported.Step() != BLITZAR_STATUS_OK ||
+        unsupported.LastBackend() != BLITZAR_BACKEND_CPU) {
+        return false;
+    }
+    return true;
+}
+
+}  // namespace
 
 int main()
 {
@@ -70,5 +150,6 @@ int main()
         BLITZAR_CHECK(std::abs(cpu_view.y[index] - tree_view.y[index]) < 1.0e-5);
         BLITZAR_CHECK(std::abs(cpu_view.z[index] - tree_view.z[index]) < 1.0e-5);
     }
+    BLITZAR_CHECK(RunDispatcherErrorCase());
     return 0;
 }

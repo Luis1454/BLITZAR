@@ -22,6 +22,12 @@ int main(void)
     BLITZAR_CHECK(blitzar_simulation_particle_count(simulation, &particle_count) ==
            BLITZAR_STATUS_OK);
     BLITZAR_CHECK(particle_count == 2);
+    blitzar_backend_kind backend = BLITZAR_BACKEND_HIP;
+    BLITZAR_CHECK(blitzar_simulation_backend(simulation, &backend) ==
+                  BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(backend == BLITZAR_BACKEND_CPU);
+    BLITZAR_CHECK(blitzar_simulation_backend(simulation, NULL) ==
+                  BLITZAR_STATUS_INVALID_ARGUMENT);
     BLITZAR_CHECK(blitzar_simulation_set_solver(
                simulation, BLITZAR_SOLVER_DIRECT) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(blitzar_simulation_set_solver(
@@ -56,6 +62,8 @@ int main(void)
                velocity_z,
                mass) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(blitzar_simulation_step(simulation) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_simulation_backend(simulation, &backend) ==
+                  BLITZAR_STATUS_OK);
 
     double output_x[2] = {0.0, 0.0};
     double output_y[2] = {0.0, 0.0};

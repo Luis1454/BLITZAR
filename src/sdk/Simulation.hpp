@@ -31,6 +31,7 @@ public:
     explicit Simulation(std::size_t particle_count);
 
     [[nodiscard]] blitzar_status LastStatus() const noexcept;
+    [[nodiscard]] blitzar_backend_kind LastBackend() const noexcept;
     [[nodiscard]] std::size_t ParticleCount() const noexcept;
 
     [[nodiscard]] blitzar_status SetSolver(
@@ -68,6 +69,7 @@ public:
         std::span<blitzar_core::Scalar> velocity_z,
         std::span<blitzar_core::Scalar> mass) const noexcept;
     [[nodiscard]] blitzar_status Step() noexcept;
+    void SetHipFaultForTesting(blitzar_gpu::HipFault fault) noexcept;
 
 private:
     using SolverVariant = std::variant<
@@ -102,6 +104,7 @@ private:
     blitzar_core::ExecutionSettings execution_settings_;
     blitzar_core::SnapshotHeader snapshot_header_;
     mutable std::atomic<blitzar_status> last_status_;
+    mutable std::atomic<blitzar_backend_kind> last_backend_;
     SolverVariant solver_;
     blitzar_integration::LeapfrogKdk integrator_;
     std::vector<std::uint64_t> particle_ids_;
