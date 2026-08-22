@@ -1,7 +1,7 @@
 # BLITZAR Clean-Room Plan
 
 Status: **FROZEN**  
-Plan version: **1.0.3**
+Plan version: **1.0.4**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -111,6 +111,15 @@ The HIP backend is detected in `AUTO` mode and can be forced with
 GPU. The acceptance contract compares HIP Direct and Barnes-Hut forces with the
 CPU reference when a device is available, while the same test validates the
 unsupported/fallback path otherwise.
+
+### Sprint 6.1: Native NVIDIA CUDA Compatibility
+
+When `HIP_PLATFORM=nvidia` is explicit, CMake may use the CUDA language and
+`nvcc` without requiring `hipcc` or HIP headers. `src/gpu/HipCompat.hpp`
+provides only the runtime calls used by the kernels; the kernels remain single
+`.hip` sources and the compatibility layer stays internal. AMD continues to
+use the ROCm HIP path, while an unselected or unavailable backend keeps the
+CPU fallback.
 
 ## Non-Goals for the Initial Rewrite
 

@@ -1,5 +1,5 @@
 {
-  "plan_version": "1.0.3",
+  "plan_version": "1.0.4",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
