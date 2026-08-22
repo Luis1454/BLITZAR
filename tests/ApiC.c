@@ -92,6 +92,36 @@ int main(void)
     BLITZAR_CHECK(blitzar_simulation_set_particles(
                       simulation,
                       2,
+                      NULL,
+                      position_y,
+                      position_z,
+                      velocity_x,
+                      velocity_y,
+                      velocity_z,
+                      mass) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(blitzar_simulation_set_particles(
+                      simulation,
+                      1,
+                      position_x,
+                      position_y,
+                      position_z,
+                      velocity_x,
+                      velocity_y,
+                      velocity_z,
+                      mass) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(blitzar_simulation_set_particles(
+                      simulation,
+                      INT64_MAX,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(blitzar_simulation_set_particles(
+                      simulation,
+                      2,
                       replacement_x,
                       position_y,
                       position_z,

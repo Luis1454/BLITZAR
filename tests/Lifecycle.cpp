@@ -74,6 +74,15 @@ int main()
     const auto expected_mass = output_mass;
     const std::array<double, 2> replacement_x{100.0, 101.0};
     const std::array<double, 2> replacement_mass{1.0, -1.0};
+    const std::array<double, 1> short_position_x{100.0};
+    BLITZAR_CHECK(simulation.set_particles(
+                      short_position_x,
+                      position_y,
+                      position_z,
+                      velocity_x,
+                      velocity_y,
+                      velocity_z,
+                      mass) == blitzar::Status::InvalidArgument);
     BLITZAR_CHECK(simulation.set_particles(
                       replacement_x,
                       position_y,
@@ -97,6 +106,7 @@ int main()
     BLITZAR_CHECK(output_velocity_y == expected_velocity_y);
     BLITZAR_CHECK(output_velocity_z == expected_velocity_z);
     BLITZAR_CHECK(output_mass == expected_mass);
+    BLITZAR_CHECK(simulation.step() == blitzar::Status::Ok);
 
     blitzar::Simulation moved_simulation(std::move(simulation));
     BLITZAR_CHECK(!simulation.valid());

@@ -203,14 +203,20 @@ struct ParticleInputStage final {
     std::span<const blitzar_core::Scalar> mass,
     ParticleInputStage& stage) noexcept
 {
+    const std::size_t count = position_x.size();
+    if (position_y.size() != count || position_z.size() != count ||
+        velocity_x.size() != count || velocity_y.size() != count ||
+        velocity_z.size() != count || mass.size() != count) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
     try {
-        stage.position_x.resize(position_x.size());
-        stage.position_y.resize(position_y.size());
-        stage.position_z.resize(position_z.size());
-        stage.velocity_x.resize(velocity_x.size());
-        stage.velocity_y.resize(velocity_y.size());
-        stage.velocity_z.resize(velocity_z.size());
-        stage.mass.resize(mass.size());
+        stage.position_x.resize(count);
+        stage.position_y.resize(count);
+        stage.position_z.resize(count);
+        stage.velocity_x.resize(count);
+        stage.velocity_y.resize(count);
+        stage.velocity_z.resize(count);
+        stage.mass.resize(count);
     } catch (const std::length_error&) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     } catch (const std::bad_alloc&) {
@@ -235,6 +241,80 @@ struct ParticleInputStage final {
         stage.velocity_z[index] = velocity_z[index];
         stage.mass[index] = mass[index];
     }
+    return BLITZAR_STATUS_OK;
+}
+
+[[nodiscard]] blitzar_status CommitStagedParticles(
+    const ParticleInputStage& stage,
+    std::span<const std::size_t> local_indices,
+    blitzar_particles::ParticleArena& arena,
+    blitzar_particles::ParticleBuffer& particles,
+    blitzar_particles::AccelerationBuffer& accelerations,
+    blitzar_integration::LeapfrogWorkspace& workspace,
+    std::span<std::uint64_t> ids,
+    blitzar_parallel::DomainDecomposition& domain,
+    blitzar_parallel::DomainDecomposition&& candidate_domain,
+    std::size_t& local_particle_count,
+    std::size_t& source_particle_count,
+    blitzar_parallel::PacketBuffer& exchange,
+    bool& particles_ready) noexcept
+{
+    const blitzar_core::ParticleStateView staged_state = stage.State();
+    if (!blitzar_core::IsValid(staged_state) ||
+        !candidate_domain.IsInitialized() || !arena.IsValid() ||
+        !particles.IsValid() || !accelerations.IsValid() ||
+        !workspace.IsValid() || local_indices.size() > arena.Count() ||
+        local_indices.size() > ids.size()) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    for (const std::size_t global_index : local_indices) {
+        if (global_index >= staged_state.count) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+    }
+
+    const std::size_t previous_particle_count = particles.Count();
+    const std::size_t previous_acceleration_count = accelerations.Count();
+    const std::size_t previous_workspace_count = workspace.Count();
+    const std::size_t local_count = local_indices.size();
+    if (particles.SetCount(local_count) != BLITZAR_STATUS_OK) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
+    if (accelerations.SetCount(local_count) != BLITZAR_STATUS_OK) {
+        (void)particles.SetCount(previous_particle_count);
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
+    if (workspace.SetCount(local_count) != BLITZAR_STATUS_OK) {
+        (void)particles.SetCount(previous_particle_count);
+        (void)accelerations.SetCount(previous_acceleration_count);
+        (void)workspace.SetCount(previous_workspace_count);
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
+
+    const auto local_position_x = arena.PositionX();
+    const auto local_position_y = arena.PositionY();
+    const auto local_position_z = arena.PositionZ();
+    const auto local_velocity_x = arena.VelocityX();
+    const auto local_velocity_y = arena.VelocityY();
+    const auto local_velocity_z = arena.VelocityZ();
+    const auto local_mass = arena.Mass();
+    for (std::size_t local = 0; local < local_count; ++local) {
+        const std::size_t global = local_indices[local];
+        local_position_x[local] = stage.position_x[global];
+        local_position_y[local] = stage.position_y[global];
+        local_position_z[local] = stage.position_z[global];
+        local_velocity_x[local] = stage.velocity_x[global];
+        local_velocity_y[local] = stage.velocity_y[global];
+        local_velocity_z[local] = stage.velocity_z[global];
+        local_mass[local] = stage.mass[global];
+        ids[local] = static_cast<std::uint64_t>(global);
+    }
+
+    domain = std::move(candidate_domain);
+    local_particle_count = local_count;
+    source_particle_count = local_count;
+    exchange.Clear();
+    particles_ready = true;
     return BLITZAR_STATUS_OK;
 }
 
@@ -1064,7 +1144,7 @@ blitzar_status Simulation::SetParticles(
     const blitzar_status capacity_status =
         local_count <= arena_->Count() && local_count <= particle_ids_.size()
             ? BLITZAR_STATUS_OK
-            : BLITZAR_STATUS_INTERNAL_ERROR;
+            : BLITZAR_STATUS_INVALID_ARGUMENT;
     const blitzar_status synchronized_capacity_status =
         SynchronizeSimulationStatus(
             mpi_context_, capacity_status, "set-particles-capacity");
@@ -1072,59 +1152,21 @@ blitzar_status Simulation::SetParticles(
         return Remember(synchronized_capacity_status);
     }
 
-    const std::size_t previous_particle_count = particles_.Count();
-    const std::size_t previous_acceleration_count = accelerations_.Count();
-    const std::size_t previous_workspace_count = workspace_.Count();
-    blitzar_status commit_status = BLITZAR_STATUS_OK;
-    if (particles_.SetCount(local_count) != BLITZAR_STATUS_OK) {
-        commit_status = BLITZAR_STATUS_INTERNAL_ERROR;
-    }
-    if (commit_status == BLITZAR_STATUS_OK &&
-        accelerations_.SetCount(local_count) != BLITZAR_STATUS_OK) {
-        commit_status = BLITZAR_STATUS_INTERNAL_ERROR;
-    }
-    if (commit_status == BLITZAR_STATUS_OK &&
-        workspace_.SetCount(local_count) != BLITZAR_STATUS_OK) {
-        commit_status = BLITZAR_STATUS_INTERNAL_ERROR;
-    }
-    if (commit_status != BLITZAR_STATUS_OK) {
-        (void)particles_.SetCount(previous_particle_count);
-        (void)accelerations_.SetCount(previous_acceleration_count);
-        (void)workspace_.SetCount(previous_workspace_count);
-    }
-    commit_status = SynchronizeSimulationStatus(
-        mpi_context_, commit_status, "set-particles-commit");
-    if (commit_status != BLITZAR_STATUS_OK) {
-        (void)particles_.SetCount(previous_particle_count);
-        (void)accelerations_.SetCount(previous_acceleration_count);
-        (void)workspace_.SetCount(previous_workspace_count);
-        return Remember(commit_status);
-    }
-
-    const auto local_position_x = arena_->PositionX();
-    const auto local_position_y = arena_->PositionY();
-    const auto local_position_z = arena_->PositionZ();
-    const auto local_velocity_x = arena_->VelocityX();
-    const auto local_velocity_y = arena_->VelocityY();
-    const auto local_velocity_z = arena_->VelocityZ();
-    const auto local_mass = arena_->Mass();
-    for (std::size_t local = 0; local < local_count; ++local) {
-        const std::size_t global = local_indices[local];
-        local_position_x[local] = stage.position_x[global];
-        local_position_y[local] = stage.position_y[global];
-        local_position_z[local] = stage.position_z[global];
-        local_velocity_x[local] = stage.velocity_x[global];
-        local_velocity_y[local] = stage.velocity_y[global];
-        local_velocity_z[local] = stage.velocity_z[global];
-        local_mass[local] = stage.mass[global];
-        particle_ids_[local] = static_cast<std::uint64_t>(global);
-    }
-    domain_ = std::move(candidate_domain);
-    local_particle_count_ = local_count;
-    source_particle_count_ = local_particle_count_;
-    exchange_buffer_.Clear();
-    particles_ready_ = true;
-    return Remember(BLITZAR_STATUS_OK);
+    const blitzar_status commit_status = CommitStagedParticles(
+        stage,
+        local_indices,
+        *arena_,
+        particles_,
+        accelerations_,
+        workspace_,
+        std::span<std::uint64_t>(particle_ids_),
+        domain_,
+        std::move(candidate_domain),
+        local_particle_count_,
+        source_particle_count_,
+        exchange_buffer_,
+        particles_ready_);
+    return Remember(commit_status);
 }
 
 blitzar_status Simulation::GetState(
