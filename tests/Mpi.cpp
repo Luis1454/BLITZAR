@@ -165,6 +165,49 @@ struct StateArrays final {
                             reference.velocity_z[index]) < 1.0e-5 &&
                    distributed.mass[index] == reference.mass[index];
     }
+
+    StateArrays rejected = initial;
+    rejected.x[0] += 100.0;
+    rejected.mass[0] = -1.0;
+    local_ok = local_ok &&
+               simulation.SetParticles(
+                   rejected.x,
+                   rejected.y,
+                   rejected.z,
+                   rejected.velocity_x,
+                   rejected.velocity_y,
+                   rejected.velocity_z,
+                   rejected.mass) == BLITZAR_STATUS_INVALID_ARGUMENT;
+
+    StateArrays after_rejected{};
+    const blitzar_status rejected_state_status = simulation.GetState(
+        after_rejected.x,
+        after_rejected.y,
+        after_rejected.z,
+        after_rejected.velocity_x,
+        after_rejected.velocity_y,
+        after_rejected.velocity_z,
+        after_rejected.mass);
+    local_ok = local_ok && rejected_state_status == BLITZAR_STATUS_OK;
+    for (std::size_t index = 0; index < ParticleCount; ++index) {
+        local_ok = local_ok &&
+                   std::abs(after_rejected.x[index] - reference.x[index]) <
+                       1.0e-5 &&
+                   std::abs(after_rejected.y[index] - reference.y[index]) <
+                       1.0e-5 &&
+                   std::abs(after_rejected.z[index] - reference.z[index]) <
+                       1.0e-5 &&
+                   std::abs(after_rejected.velocity_x[index] -
+                            reference.velocity_x[index]) <
+                       1.0e-5 &&
+                   std::abs(after_rejected.velocity_y[index] -
+                            reference.velocity_y[index]) <
+                       1.0e-5 &&
+                   std::abs(after_rejected.velocity_z[index] -
+                            reference.velocity_z[index]) <
+                       1.0e-5 &&
+                   after_rejected.mass[index] == reference.mass[index];
+    }
     return local_ok;
 }
 

@@ -140,6 +140,75 @@ private:
         source_count};
 }
 
+struct ParticleInputStage final {
+    std::vector<blitzar_core::Scalar> position_x;
+    std::vector<blitzar_core::Scalar> position_y;
+    std::vector<blitzar_core::Scalar> position_z;
+    std::vector<blitzar_core::Scalar> velocity_x;
+    std::vector<blitzar_core::Scalar> velocity_y;
+    std::vector<blitzar_core::Scalar> velocity_z;
+    std::vector<blitzar_core::Scalar> mass;
+
+    [[nodiscard]] blitzar_core::ParticleStateView State() const noexcept
+    {
+        return {
+            position_x.size(),
+            std::span<const blitzar_core::Scalar>(position_x),
+            std::span<const blitzar_core::Scalar>(position_y),
+            std::span<const blitzar_core::Scalar>(position_z),
+            std::span<const blitzar_core::Scalar>(velocity_x),
+            std::span<const blitzar_core::Scalar>(velocity_y),
+            std::span<const blitzar_core::Scalar>(velocity_z),
+            std::span<const blitzar_core::Scalar>(mass),
+            position_x.size()};
+    }
+};
+
+[[nodiscard]] blitzar_status StageParticleInput(
+    std::span<const blitzar_core::Scalar> position_x,
+    std::span<const blitzar_core::Scalar> position_y,
+    std::span<const blitzar_core::Scalar> position_z,
+    std::span<const blitzar_core::Scalar> velocity_x,
+    std::span<const blitzar_core::Scalar> velocity_y,
+    std::span<const blitzar_core::Scalar> velocity_z,
+    std::span<const blitzar_core::Scalar> mass,
+    ParticleInputStage& stage) noexcept
+{
+    try {
+        stage.position_x.resize(position_x.size());
+        stage.position_y.resize(position_y.size());
+        stage.position_z.resize(position_z.size());
+        stage.velocity_x.resize(velocity_x.size());
+        stage.velocity_y.resize(velocity_y.size());
+        stage.velocity_z.resize(velocity_z.size());
+        stage.mass.resize(mass.size());
+    } catch (const std::length_error&) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    } catch (const std::bad_alloc&) {
+        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+    }
+
+    for (std::size_t index = 0; index < position_x.size(); ++index) {
+        if (!std::isfinite(position_x[index]) ||
+            !std::isfinite(position_y[index]) ||
+            !std::isfinite(position_z[index]) ||
+            !std::isfinite(velocity_x[index]) ||
+            !std::isfinite(velocity_y[index]) ||
+            !std::isfinite(velocity_z[index]) || !std::isfinite(mass[index]) ||
+            mass[index] < 0.0) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+        stage.position_x[index] = position_x[index];
+        stage.position_y[index] = position_y[index];
+        stage.position_z[index] = position_z[index];
+        stage.velocity_x[index] = velocity_x[index];
+        stage.velocity_y[index] = velocity_y[index];
+        stage.velocity_z[index] = velocity_z[index];
+        stage.mass[index] = mass[index];
+    }
+    return BLITZAR_STATUS_OK;
+}
+
 [[nodiscard]] blitzar_status AppendGhosts(
     blitzar_parallel::PacketBuffer& ghosts,
     blitzar_particles::ParticleArena& arena,
@@ -578,71 +647,78 @@ blitzar_status Simulation::SetParticles(
         velocity_z.size() != particle_count_ || mass.size() != particle_count_) {
         return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
     }
-    if (particles_.SetCount(particle_count_) != BLITZAR_STATUS_OK ||
-        accelerations_.SetCount(particle_count_) != BLITZAR_STATUS_OK ||
-        workspace_.SetCount(particle_count_) != BLITZAR_STATUS_OK) {
-        return Remember(BLITZAR_STATUS_INTERNAL_ERROR);
+
+    ParticleInputStage stage;
+    const blitzar_status stage_status = StageParticleInput(
+        position_x,
+        position_y,
+        position_z,
+        velocity_x,
+        velocity_y,
+        velocity_z,
+        mass,
+        stage);
+    if (stage_status != BLITZAR_STATUS_OK) {
+        return Remember(stage_status);
     }
-    for (std::size_t index = 0; index < particle_count_; ++index) {
-        if (!std::isfinite(position_x[index]) ||
-            !std::isfinite(position_y[index]) ||
-            !std::isfinite(position_z[index]) ||
-            !std::isfinite(velocity_x[index]) ||
-            !std::isfinite(velocity_y[index]) ||
-            !std::isfinite(velocity_z[index]) || !std::isfinite(mass[index]) ||
-            mass[index] < 0.0) {
-            return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
-        }
-    }
-    for (std::size_t index = 0; index < particle_count_; ++index) {
-        if (particles_.SetPosition(
-                index, {position_x[index], position_y[index], position_z[index]}) !=
-                BLITZAR_STATUS_OK ||
-            particles_.SetVelocity(
-                index,
-                {velocity_x[index], velocity_y[index], velocity_z[index]}) !=
-                BLITZAR_STATUS_OK ||
-            particles_.SetMass(index, mass[index]) != BLITZAR_STATUS_OK) {
-            return Remember(BLITZAR_STATUS_INTERNAL_ERROR);
-        }
-        particle_ids_[index] = static_cast<std::uint64_t>(index);
-    }
+
+    blitzar_parallel::DomainDecomposition candidate_domain;
     const blitzar_status domain_status =
-        domain_.Initialize(particles_.State(), mpi_context_);
+        candidate_domain.Initialize(stage.State(), mpi_context_);
     if (domain_status != BLITZAR_STATUS_OK) {
         return Remember(domain_status);
     }
     std::vector<std::size_t> local_indices;
     const blitzar_status index_status =
-        domain_.LocalIndices(particles_.State(), local_indices);
+        candidate_domain.LocalIndices(stage.State(), local_indices);
     if (index_status != BLITZAR_STATUS_OK) {
         return Remember(index_status);
     }
-    const auto local_position_x = particles_.MutableView().x;
-    const auto local_position_y = particles_.MutableView().y;
-    const auto local_position_z = particles_.MutableView().z;
-    const auto local_velocity_x = particles_.MutableView().velocity_x;
-    const auto local_velocity_y = particles_.MutableView().velocity_y;
-    const auto local_velocity_z = particles_.MutableView().velocity_z;
-    const auto local_mass = arena_->Mass();
-    for (std::size_t local = 0; local < local_indices.size(); ++local) {
-        const std::size_t global = local_indices[local];
-        local_position_x[local] = position_x[global];
-        local_position_y[local] = position_y[global];
-        local_position_z[local] = position_z[global];
-        local_velocity_x[local] = velocity_x[global];
-        local_velocity_y[local] = velocity_y[global];
-        local_velocity_z[local] = velocity_z[global];
-        local_mass[local] = mass[global];
-        particle_ids_[local] = static_cast<std::uint64_t>(global);
-    }
-    if (particles_.SetCount(local_indices.size()) != BLITZAR_STATUS_OK ||
-        accelerations_.SetCount(local_indices.size()) != BLITZAR_STATUS_OK ||
-        workspace_.SetCount(local_indices.size()) != BLITZAR_STATUS_OK) {
+
+    const std::size_t local_count = local_indices.size();
+    if (local_count > arena_->Count() || local_count > particle_ids_.size()) {
         return Remember(BLITZAR_STATUS_INTERNAL_ERROR);
     }
-    local_particle_count_ = local_indices.size();
+
+    const std::size_t previous_particle_count = particles_.Count();
+    const std::size_t previous_acceleration_count = accelerations_.Count();
+    const std::size_t previous_workspace_count = workspace_.Count();
+    if (particles_.SetCount(local_count) != BLITZAR_STATUS_OK) {
+        return Remember(BLITZAR_STATUS_INTERNAL_ERROR);
+    }
+    if (accelerations_.SetCount(local_count) != BLITZAR_STATUS_OK) {
+        (void)particles_.SetCount(previous_particle_count);
+        return Remember(BLITZAR_STATUS_INTERNAL_ERROR);
+    }
+    if (workspace_.SetCount(local_count) != BLITZAR_STATUS_OK) {
+        (void)particles_.SetCount(previous_particle_count);
+        (void)accelerations_.SetCount(previous_acceleration_count);
+        (void)workspace_.SetCount(previous_workspace_count);
+        return Remember(BLITZAR_STATUS_INTERNAL_ERROR);
+    }
+
+    const auto local_position_x = arena_->PositionX();
+    const auto local_position_y = arena_->PositionY();
+    const auto local_position_z = arena_->PositionZ();
+    const auto local_velocity_x = arena_->VelocityX();
+    const auto local_velocity_y = arena_->VelocityY();
+    const auto local_velocity_z = arena_->VelocityZ();
+    const auto local_mass = arena_->Mass();
+    for (std::size_t local = 0; local < local_count; ++local) {
+        const std::size_t global = local_indices[local];
+        local_position_x[local] = stage.position_x[global];
+        local_position_y[local] = stage.position_y[global];
+        local_position_z[local] = stage.position_z[global];
+        local_velocity_x[local] = stage.velocity_x[global];
+        local_velocity_y[local] = stage.velocity_y[global];
+        local_velocity_z[local] = stage.velocity_z[global];
+        local_mass[local] = stage.mass[global];
+        particle_ids_[local] = static_cast<std::uint64_t>(global);
+    }
+    domain_ = std::move(candidate_domain);
+    local_particle_count_ = local_count;
     source_particle_count_ = local_particle_count_;
+    exchange_buffer_.Clear();
     particles_ready_ = true;
     return Remember(BLITZAR_STATUS_OK);
 }

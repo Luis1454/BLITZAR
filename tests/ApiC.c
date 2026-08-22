@@ -77,6 +77,32 @@ int main(void)
     BLITZAR_CHECK(output_x[0] != 0.0);
     BLITZAR_CHECK(output_x[1] != 1.0);
     BLITZAR_CHECK(output_mass[0] == 1.0);
+    const double expected_x0 = output_x[0];
+    const double expected_x1 = output_x[1];
+    const double replacement_x[] = {100.0, 101.0};
+    const double replacement_mass[] = {1.0, -1.0};
+    BLITZAR_CHECK(blitzar_simulation_set_particles(
+                      simulation,
+                      2,
+                      replacement_x,
+                      position_y,
+                      position_z,
+                      velocity_x,
+                      velocity_y,
+                      velocity_z,
+                      replacement_mass) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(blitzar_simulation_get_state(
+                      simulation,
+                      2,
+                      output_x,
+                      output_y,
+                      output_z,
+                      output_velocity_x,
+                      output_velocity_y,
+                      output_velocity_z,
+                      output_mass) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(output_x[0] == expected_x0);
+    BLITZAR_CHECK(output_x[1] == expected_x1);
     BLITZAR_CHECK(blitzar_simulation_get_state(
                simulation,
                1,

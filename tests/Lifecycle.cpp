@@ -65,6 +65,39 @@ int main()
     BLITZAR_CHECK(output_x[0] != 0.0);
     BLITZAR_CHECK(output_mass[0] == 1.0);
 
+    const auto expected_x = output_x;
+    const auto expected_y = output_y;
+    const auto expected_z = output_z;
+    const auto expected_velocity_x = output_velocity_x;
+    const auto expected_velocity_y = output_velocity_y;
+    const auto expected_velocity_z = output_velocity_z;
+    const auto expected_mass = output_mass;
+    const std::array<double, 2> replacement_x{100.0, 101.0};
+    const std::array<double, 2> replacement_mass{1.0, -1.0};
+    BLITZAR_CHECK(simulation.set_particles(
+                      replacement_x,
+                      position_y,
+                      position_z,
+                      velocity_x,
+                      velocity_y,
+                      velocity_z,
+                      replacement_mass) == blitzar::Status::InvalidArgument);
+    BLITZAR_CHECK(simulation.get_state(
+                      output_x,
+                      output_y,
+                      output_z,
+                      output_velocity_x,
+                      output_velocity_y,
+                      output_velocity_z,
+                      output_mass) == blitzar::Status::Ok);
+    BLITZAR_CHECK(output_x == expected_x);
+    BLITZAR_CHECK(output_y == expected_y);
+    BLITZAR_CHECK(output_z == expected_z);
+    BLITZAR_CHECK(output_velocity_x == expected_velocity_x);
+    BLITZAR_CHECK(output_velocity_y == expected_velocity_y);
+    BLITZAR_CHECK(output_velocity_z == expected_velocity_z);
+    BLITZAR_CHECK(output_mass == expected_mass);
+
     blitzar::Simulation moved_simulation(std::move(simulation));
     BLITZAR_CHECK(!simulation.valid());
     BLITZAR_CHECK(moved_simulation.valid());
