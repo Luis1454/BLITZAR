@@ -29,7 +29,8 @@ __global__ void DirectKernel(
     double* force_x,
     double* force_y,
     double* force_z,
-    std::size_t count,
+    std::size_t target_count,
+    std::size_t source_count,
     double gravitational_constant,
     double softening,
     int* error)
@@ -54,10 +55,10 @@ __global__ void DirectKernel(
     double acceleration_z = 0.0;
     const double softening_squared = softening * softening;
 
-    for (std::size_t tile_begin = 0; tile_begin < count;
+    for (std::size_t tile_begin = 0; tile_begin < source_count;
          tile_begin += BlockSize) {
         const std::size_t source = tile_begin + threadIdx.x;
-        if (source < count) {
+        if (source < source_count) {
             tile_x[threadIdx.x] = position_x[source];
             tile_y[threadIdx.x] = position_y[source];
             tile_z[threadIdx.x] = position_z[source];
@@ -70,7 +71,7 @@ __global__ void DirectKernel(
         }
         __syncthreads();
 
-        if (target < count) {
+        if (target < target_count) {
             const double target_x = position_x[target];
             const double target_y = position_y[target];
             const double target_z = position_z[target];
@@ -83,7 +84,7 @@ __global__ void DirectKernel(
 #pragma unroll 4
             for (unsigned int offset = 0; offset < BlockSize; ++offset) {
                 const std::size_t source_index = tile_begin + offset;
-                if (source_index >= count) {
+                if (source_index >= source_count) {
                     continue;
                 }
                 const double source_x = tile_x[offset];
@@ -129,7 +130,7 @@ __global__ void DirectKernel(
         __syncthreads();
     }
 
-    if (target < count &&
+    if (target < target_count &&
         (!isfinite(acceleration_x) || !isfinite(acceleration_y) ||
          !isfinite(acceleration_z))) {
         local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -141,7 +142,7 @@ __global__ void DirectKernel(
     if (threadIdx.x == 0 && block_error != 0) {
         RecordError(error, block_error);
     }
-    if (target < count && local_error == 0) {
+    if (target < target_count && local_error == 0) {
         force_x[target] = acceleration_x;
         force_y[target] = acceleration_y;
         force_z[target] = acceleration_z;
@@ -152,14 +153,17 @@ __global__ void DirectKernel(
 
 blitzar_status LaunchDirect(
     DeviceParticleAddresses addresses,
-    std::size_t count,
+    std::size_t target_count,
+    std::size_t source_count,
     double gravitational_constant,
     double softening,
     std::uintptr_t error_address,
     std::uintptr_t stream) noexcept
 {
-    if (count == 0 || error_address == 0 || stream == 0) {
-        return count == 0 ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT;
+    if (target_count == 0 || source_count == 0 || error_address == 0 ||
+        stream == 0) {
+        return target_count == 0 ? BLITZAR_STATUS_OK
+                                 : BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     if (addresses.position_x == 0 || addresses.position_y == 0 ||
         addresses.position_z == 0 || addresses.mass == 0 ||
@@ -167,11 +171,12 @@ blitzar_status LaunchDirect(
         addresses.force_z == 0) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    if (count > std::numeric_limits<std::size_t>::max() - (BlockSize - 1)) {
+    if (target_count >
+        std::numeric_limits<std::size_t>::max() - (BlockSize - 1)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     const std::size_t block_count =
-        (count + BlockSize - 1) / BlockSize;
+        (target_count + BlockSize - 1) / BlockSize;
     if (block_count > std::numeric_limits<unsigned int>::max()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
@@ -188,7 +193,8 @@ blitzar_status LaunchDirect(
         reinterpret_cast<double*>(addresses.force_x),
         reinterpret_cast<double*>(addresses.force_y),
         reinterpret_cast<double*>(addresses.force_z),
-        count,
+        target_count,
+        source_count,
         gravitational_constant,
         softening,
         reinterpret_cast<int*>(error_address));

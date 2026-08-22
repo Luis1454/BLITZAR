@@ -14,10 +14,6 @@ namespace blitzar_trees {
 namespace {
 
 constexpr std::size_t ParallelMortonThreshold = 1'000'000;
-constexpr int MortonBits = 21;
-constexpr std::uint32_t MortonMaximum =
-    (std::uint32_t{1} << MortonBits) - std::uint32_t{1};
-
 }  // namespace
 
 bool Octree::Cell::IsLeaf() const noexcept
@@ -52,7 +48,7 @@ bool Octree::IsValidInput(blitzar_core::ParticleStateView particles) noexcept
     if (!blitzar_core::IsValid(particles)) {
         return false;
     }
-    for (std::size_t index = 0; index < particles.count; ++index) {
+    for (std::size_t index = 0; index < particles.SourceCount(); ++index) {
         if (!std::isfinite(particles.x[index]) ||
             !std::isfinite(particles.y[index]) ||
             !std::isfinite(particles.z[index]) ||
@@ -165,42 +161,12 @@ void Octree::CalculateProperties(
     }
 }
 
-std::uint64_t Octree::MortonKey(
-    blitzar_core::Vector3 position,
-    blitzar_core::Vector3 minimum,
-    blitzar_core::Vector3 maximum) noexcept
-{
-    const auto Quantize = [](const blitzar_core::Scalar value,
-                             const blitzar_core::Scalar lower,
-                             const blitzar_core::Scalar upper) noexcept {
-        if (upper <= lower) {
-            return std::uint32_t{0};
-        }
-        const blitzar_core::Scalar normalized = std::clamp(
-            (value - lower) / (upper - lower),
-            blitzar_core::Scalar{0.0},
-            blitzar_core::Scalar{1.0});
-        return static_cast<std::uint32_t>(normalized * MortonMaximum);
-    };
-
-    const std::uint32_t x = Quantize(position.x, minimum.x, maximum.x);
-    const std::uint32_t y = Quantize(position.y, minimum.y, maximum.y);
-    const std::uint32_t z = Quantize(position.z, minimum.z, maximum.z);
-    std::uint64_t key = 0;
-    for (int bit = 0; bit < MortonBits; ++bit) {
-        key |= static_cast<std::uint64_t>((x >> bit) & 1U) << (3 * bit);
-        key |= static_cast<std::uint64_t>((y >> bit) & 1U) << (3 * bit + 1);
-        key |= static_cast<std::uint64_t>((z >> bit) & 1U) << (3 * bit + 2);
-    }
-    return key;
-}
-
 void Octree::ParallelMortonSort(
     blitzar_core::ParticleStateView particles,
     blitzar_core::Vector3 minimum,
     blitzar_core::Vector3 maximum) noexcept
 {
-    if (particles.count <= ParallelMortonThreshold) {
+    if (particles.SourceCount() <= ParallelMortonThreshold) {
         return;
     }
 
@@ -209,14 +175,14 @@ void Octree::ParallelMortonSort(
     const std::size_t thread_count =
         available_threads > 0
             ? std::min(
-                  static_cast<std::size_t>(available_threads), particles.count)
+                  static_cast<std::size_t>(available_threads), particles.SourceCount())
             : std::size_t{1};
 #else
     constexpr std::size_t thread_count = 1;
 #endif
     const std::size_t chunk_size =
-        particles.count / thread_count +
-        (particles.count % thread_count == 0 ? 0 : 1);
+        particles.SourceCount() / thread_count +
+        (particles.SourceCount() % thread_count == 0 ? 0 : 1);
 
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
@@ -226,11 +192,11 @@ void Octree::ParallelMortonSort(
          ++raw_chunk) {
         const std::size_t chunk = static_cast<std::size_t>(raw_chunk);
         const std::size_t begin = chunk * chunk_size;
-        if (begin >= particles.count) {
+        if (begin >= particles.SourceCount()) {
             continue;
         }
         const std::size_t end =
-            begin + std::min(chunk_size, particles.count - begin);
+            begin + std::min(chunk_size, particles.SourceCount() - begin);
         for (std::size_t index = begin; index < end; ++index) {
             morton_keys_[index] = MortonKey(
                 {particles.x[index], particles.y[index], particles.z[index]},
@@ -246,12 +212,12 @@ void Octree::ParallelMortonSort(
             });
     }
 
-    for (std::size_t width = chunk_size; width < particles.count;) {
-        const std::size_t pair_width = width > particles.count - width
-                                           ? particles.count
+    for (std::size_t width = chunk_size; width < particles.SourceCount();) {
+        const std::size_t pair_width = width > particles.SourceCount() - width
+                                           ? particles.SourceCount()
                                            : width + width;
         const std::size_t pair_count =
-            1 + (particles.count - 1) / pair_width;
+            1 + (particles.SourceCount() - 1) / pair_width;
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
 #endif
@@ -261,9 +227,9 @@ void Octree::ParallelMortonSort(
             const std::size_t pair = static_cast<std::size_t>(raw_pair);
             const std::size_t begin = pair * pair_width;
             const std::size_t middle =
-                begin + std::min(width, particles.count - begin);
+                begin + std::min(width, particles.SourceCount() - begin);
             const std::size_t end =
-                begin + std::min(pair_width, particles.count - begin);
+                begin + std::min(pair_width, particles.SourceCount() - begin);
             std::merge(
                 indices_.begin() + static_cast<std::ptrdiff_t>(begin),
                 indices_.begin() + static_cast<std::ptrdiff_t>(middle),
@@ -279,12 +245,12 @@ void Octree::ParallelMortonSort(
 #pragma omp parallel for schedule(static)
 #endif
         for (std::int64_t raw_index = 0;
-             raw_index < static_cast<std::int64_t>(particles.count);
+             raw_index < static_cast<std::int64_t>(particles.SourceCount());
              ++raw_index) {
             const std::size_t index = static_cast<std::size_t>(raw_index);
             indices_[index] = scratch_[index];
         }
-        if (width > particles.count / 2) {
+        if (width > particles.SourceCount() / 2) {
             break;
         }
         width += width;
@@ -295,19 +261,19 @@ blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
 {
     cells_.clear();
     particle_count_ = 0;
-    if (particles.count > max_particles_ || leaf_capacity_ == 0 ||
+    if (particles.SourceCount() > max_particles_ || leaf_capacity_ == 0 ||
         max_cells_ == 0 || !IsValidInput(particles)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    if (particles.count == 0) {
+    if (particles.SourceCount() == 0) {
         return BLITZAR_STATUS_OK;
     }
-    particle_count_ = particles.count;
+    particle_count_ = particles.SourceCount();
 
     blitzar_core::Vector3 minimum{
         particles.x[0], particles.y[0], particles.z[0]};
     blitzar_core::Vector3 maximum = minimum;
-    for (std::size_t index = 0; index < particles.count; ++index) {
+    for (std::size_t index = 0; index < particles.SourceCount(); ++index) {
         minimum.x = std::min(minimum.x, particles.x[index]);
         minimum.y = std::min(minimum.y, particles.y[index]);
         minimum.z = std::min(minimum.z, particles.z[index]);
@@ -325,7 +291,7 @@ blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
         0.5 * (minimum.x + maximum.x),
         0.5 * (minimum.y + maximum.y),
         0.5 * (minimum.z + maximum.z)};
-    cells_.push_back(MakeCell(center, half_extent, 0, particles.count, 0));
+    cells_.push_back(MakeCell(center, half_extent, 0, particles.SourceCount(), 0));
 
     for (std::size_t index = 0; index < cells_.size(); ++index) {
         const Cell cell = cells_[index];
@@ -376,7 +342,7 @@ blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
 
 bool Octree::Refit(blitzar_core::ParticleStateView particles) noexcept
 {
-    if (particle_count_ == 0 || particles.count != particle_count_ ||
+    if (particle_count_ == 0 || particles.SourceCount() != particle_count_ ||
         !IsValidInput(particles)) {
         return false;
     }

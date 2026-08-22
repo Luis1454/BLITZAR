@@ -23,6 +23,7 @@ public:
     ParticleBuffer& operator=(ParticleBuffer&& other) noexcept;
 
     [[nodiscard]] std::size_t Count() const noexcept;
+    [[nodiscard]] blitzar_status SetCount(std::size_t count) noexcept;
     [[nodiscard]] bool IsValid() const noexcept;
     [[nodiscard]] blitzar_core::ParticleStateView State() const noexcept;
     [[nodiscard]] blitzar_core::MutableParticleView MutableView() noexcept;
@@ -52,6 +53,7 @@ public:
     AccelerationBuffer& operator=(AccelerationBuffer&& other) noexcept;
 
     [[nodiscard]] std::size_t Count() const noexcept;
+    [[nodiscard]] blitzar_status SetCount(std::size_t count) noexcept;
     [[nodiscard]] bool IsValid() const noexcept;
     [[nodiscard]] blitzar_core::ForceView View() noexcept;
 

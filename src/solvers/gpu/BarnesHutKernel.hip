@@ -61,7 +61,8 @@ __global__ void BarnesHutKernel(
     double* force_x,
     double* force_y,
     double* force_z,
-    std::size_t particle_count,
+    std::size_t target_count,
+    std::size_t source_count,
     const GpuCell* cells,
     std::size_t cell_count,
     const std::uint64_t* indices,
@@ -86,7 +87,7 @@ __global__ void BarnesHutKernel(
     std::uint64_t traversal_stack[MaxTraversalStack];
     int stack_size = 0;
 
-    if (target < particle_count) {
+    if (target < target_count) {
         const double target_x = position_x[target];
         const double target_y = position_y[target];
         const double target_z = position_z[target];
@@ -107,8 +108,8 @@ __global__ void BarnesHutKernel(
             }
             const GpuCell& cell = cells[cell_index];
             if (!isfinite(cell.mass) || cell.mass < 0.0 ||
-                cell.begin > particle_count ||
-                cell.count > particle_count - cell.begin) {
+                cell.begin > source_count ||
+                cell.count > source_count - cell.begin) {
                 local_error = BLITZAR_STATUS_INTERNAL_ERROR;
                 break;
             }
@@ -120,7 +121,7 @@ __global__ void BarnesHutKernel(
             if (IsLeaf(cell)) {
                 for (std::uint64_t offset = 0; offset < cell.count; ++offset) {
                     const std::uint64_t source = indices[cell.begin + offset];
-                    if (source >= particle_count) {
+                    if (source >= source_count) {
                         local_error = BLITZAR_STATUS_INTERNAL_ERROR;
                         break;
                     }
@@ -212,7 +213,7 @@ __global__ void BarnesHutKernel(
         }
     }
 
-    if (target < particle_count &&
+    if (target < target_count &&
         (!isfinite(acceleration_x) || !isfinite(acceleration_y) ||
          !isfinite(acceleration_z))) {
         local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -228,7 +229,7 @@ __global__ void BarnesHutKernel(
     if (threadIdx.x == 0 && block_error != 0) {
         RecordError(error, block_error);
     }
-    if (target < particle_count && local_error == 0) {
+    if (target < target_count && local_error == 0) {
         force_x[target] = acceleration_x;
         force_y[target] = acceleration_y;
         force_z[target] = acceleration_z;
@@ -239,7 +240,8 @@ __global__ void BarnesHutKernel(
 
 blitzar_status LaunchBarnesHut(
     DeviceParticleAddresses addresses,
-    std::size_t particle_count,
+    std::size_t target_count,
+    std::size_t source_count,
     std::uintptr_t cells,
     std::size_t cell_count,
     std::uintptr_t indices,
@@ -250,7 +252,7 @@ blitzar_status LaunchBarnesHut(
     std::uintptr_t error_address,
     std::uintptr_t stream) noexcept
 {
-    if (particle_count == 0) {
+    if (target_count == 0) {
         return BLITZAR_STATUS_OK;
     }
     if (cells == 0 || indices == 0 || cell_count == 0 || error_address == 0 ||
@@ -266,12 +268,12 @@ blitzar_status LaunchBarnesHut(
     if (max_depth > 36) {
         return BLITZAR_STATUS_UNSUPPORTED;
     }
-    if (particle_count >
+    if (target_count >
         std::numeric_limits<std::size_t>::max() - (BlockSize - 1)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     const std::size_t block_count =
-        (particle_count + BlockSize - 1) / BlockSize;
+        (target_count + BlockSize - 1) / BlockSize;
     if (block_count > std::numeric_limits<unsigned int>::max()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
@@ -288,7 +290,8 @@ blitzar_status LaunchBarnesHut(
         reinterpret_cast<double*>(addresses.force_x),
         reinterpret_cast<double*>(addresses.force_y),
         reinterpret_cast<double*>(addresses.force_z),
-        particle_count,
+        target_count,
+        source_count,
         reinterpret_cast<const GpuCell*>(cells),
         cell_count,
         reinterpret_cast<const std::uint64_t*>(indices),

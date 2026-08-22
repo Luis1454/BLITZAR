@@ -30,6 +30,12 @@ struct ParticleStateView final {
     std::span<const Scalar> velocity_y{};
     std::span<const Scalar> velocity_z{};
     std::span<const Scalar> mass{};
+    std::size_t source_count{};
+
+    [[nodiscard]] std::size_t SourceCount() const noexcept
+    {
+        return source_count == 0 ? count : source_count;
+    }
 };
 
 struct MutableParticleView final {
@@ -63,12 +69,13 @@ struct ForceView final {
 
 [[nodiscard]] inline bool IsValid(ParticleStateView view) noexcept
 {
-    return view.count == view.x.size() && view.count == view.y.size() &&
-           view.count == view.z.size() &&
-           view.count == view.velocity_x.size() &&
-           view.count == view.velocity_y.size() &&
-           view.count == view.velocity_z.size() &&
-           view.count == view.mass.size();
+    const std::size_t source_count = view.SourceCount();
+    return view.count <= source_count && source_count == view.x.size() &&
+           source_count == view.y.size() && source_count == view.z.size() &&
+           source_count == view.velocity_x.size() &&
+           source_count == view.velocity_y.size() &&
+           source_count == view.velocity_z.size() &&
+           source_count == view.mass.size();
 }
 
 [[nodiscard]] inline bool IsValid(MutableParticleView view) noexcept

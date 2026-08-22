@@ -1,5 +1,5 @@
 {
-  "plan_version": "1.0.4",
+  "plan_version": "1.0.5",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -14,6 +14,7 @@
     "src/integration",
     "src/trees",
     "src/gpu",
+    "src/parallel",
     "src/solvers",
     "src/solvers/gpu",
     "src/sdk",
@@ -32,7 +33,8 @@
     {"id": "P3", "name": "trees-and-hierarchical-solvers", "depends_on": ["P1"]},
     {"id": "P4", "name": "hip-runtime-and-gpu-solvers", "depends_on": ["P3"]},
     {"id": "P5", "name": "grid-pm-and-treepm", "depends_on": ["P3", "P4"]},
-    {"id": "P6", "name": "persistence-and-qualification", "depends_on": ["P2", "P5"]}
+    {"id": "P6", "name": "persistence-and-qualification", "depends_on": ["P2", "P5"]},
+    {"id": "P7", "name": "mpi-domain-decomposition", "depends_on": ["P3", "P4", "P6"]}
   ],
   "forbidden_references": [
     "old-source-root/",

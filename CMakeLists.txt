@@ -5,6 +5,7 @@ project(BLITZAR VERSION 1.0.0 LANGUAGES C CXX)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(cmake/HIP.cmake)
+include(cmake/MPI.cmake)
 
 option(BLITZAR_BUILD_TESTS "Build BLITZAR tests" ON)
 option(BLITZAR_BUILD_CLI "Build the BLITZAR command-line application" ON)
@@ -68,6 +69,9 @@ target_sources(blitzar PRIVATE
     src/particles/ParticleArena.cpp
     src/particles/ParticleBuffer.cpp
     src/physics/GravityLaw.cpp
+    src/parallel/DomainDecomposition.cpp
+    src/parallel/MpiContext.cpp
+    src/parallel/MpiExchange.cpp
     src/sdk/Api.cpp
     src/sdk/CppApi.cpp
     src/sdk/Simulation.cpp
@@ -107,6 +111,7 @@ target_include_directories(blitzar
 
 blitzar_enable_warnings(blitzar)
 blitzar_enable_hip(blitzar)
+blitzar_enable_mpi(blitzar)
 
 if(BLITZAR_ENABLE_OPENMP)
     target_link_libraries(blitzar PUBLIC OpenMP::OpenMP_CXX)
@@ -239,6 +244,18 @@ if(BLITZAR_BUILD_TESTS)
     target_include_directories(blitzar_hip_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     blitzar_enable_warnings(blitzar_hip_test)
 
+    if(BLITZAR_MPI_ENABLED)
+        add_executable(blitzar_mpi_test
+            tests/Mpi.cpp
+        )
+        target_link_libraries(blitzar_mpi_test PRIVATE blitzar)
+        target_compile_features(blitzar_mpi_test PRIVATE cxx_std_20)
+        target_include_directories(blitzar_mpi_test PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/src)
+        blitzar_enable_warnings(blitzar_mpi_test)
+        blitzar_enable_mpi(blitzar_mpi_test)
+    endif()
+
     add_test(NAME TST-P0-001 COMMAND blitzar_lifecycle_test)
     add_test(NAME TST-P0-002 COMMAND blitzar_c_api_test)
     add_test(NAME TST-P0-003 COMMAND blitzar_contract_test)
@@ -246,6 +263,20 @@ if(BLITZAR_BUILD_TESTS)
     add_test(NAME TST-P3-001 COMMAND blitzar_hierarchy_test)
     add_test(NAME TST-P1-002 COMMAND blitzar_numerical_test)
     add_test(NAME TST-P4-001 COMMAND blitzar_hip_test)
+    if(BLITZAR_MPI_ENABLED)
+        add_test(
+            NAME TST-P7-001
+            COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2
+                ${MPIEXEC_PREFLAGS} $<TARGET_FILE:blitzar_mpi_test>
+                ${MPIEXEC_POSTFLAGS}
+        )
+        add_test(
+            NAME TST-P7-002
+            COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 4
+                ${MPIEXEC_PREFLAGS} $<TARGET_FILE:blitzar_mpi_test>
+                ${MPIEXEC_POSTFLAGS}
+        )
+    endif()
 endif()
 
 if(BLITZAR_BUILD_TESTS)

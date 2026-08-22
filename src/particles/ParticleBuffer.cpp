@@ -43,10 +43,19 @@ std::size_t ParticleBuffer::Count() const noexcept
     return count_;
 }
 
+blitzar_status ParticleBuffer::SetCount(std::size_t count) noexcept
+{
+    if (arena_ == nullptr || count > arena_->Count()) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    count_ = count;
+    return BLITZAR_STATUS_OK;
+}
+
 bool ParticleBuffer::IsValid() const noexcept
 {
     return (arena_ == nullptr && count_ == 0) ||
-           (arena_ != nullptr && count_ == arena_->Count() && arena_->IsValid());
+           (arena_ != nullptr && count_ <= arena_->Count() && arena_->IsValid());
 }
 
 blitzar_core::ParticleStateView ParticleBuffer::State() const noexcept
@@ -54,9 +63,15 @@ blitzar_core::ParticleStateView ParticleBuffer::State() const noexcept
     if (arena_ == nullptr) {
         return {};
     }
-    return {count_, arena_->PositionX(), arena_->PositionY(), arena_->PositionZ(),
-            arena_->VelocityX(), arena_->VelocityY(), arena_->VelocityZ(),
-            arena_->Mass()};
+    return {
+        count_,
+        arena_->PositionX().first(count_),
+        arena_->PositionY().first(count_),
+        arena_->PositionZ().first(count_),
+        arena_->VelocityX().first(count_),
+        arena_->VelocityY().first(count_),
+        arena_->VelocityZ().first(count_),
+        arena_->Mass().first(count_)};
 }
 
 blitzar_core::MutableParticleView ParticleBuffer::MutableView() noexcept
@@ -64,8 +79,14 @@ blitzar_core::MutableParticleView ParticleBuffer::MutableView() noexcept
     if (arena_ == nullptr) {
         return {};
     }
-    return {count_, arena_->PositionX(), arena_->PositionY(), arena_->PositionZ(),
-            arena_->VelocityX(), arena_->VelocityY(), arena_->VelocityZ()};
+    return {
+        count_,
+        arena_->PositionX().first(count_),
+        arena_->PositionY().first(count_),
+        arena_->PositionZ().first(count_),
+        arena_->VelocityX().first(count_),
+        arena_->VelocityY().first(count_),
+        arena_->VelocityZ().first(count_)};
 }
 
 blitzar_status ParticleBuffer::SetPosition(
@@ -145,10 +166,19 @@ std::size_t AccelerationBuffer::Count() const noexcept
     return count_;
 }
 
+blitzar_status AccelerationBuffer::SetCount(std::size_t count) noexcept
+{
+    if (arena_ == nullptr || count > arena_->Count()) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    count_ = count;
+    return BLITZAR_STATUS_OK;
+}
+
 bool AccelerationBuffer::IsValid() const noexcept
 {
     return (arena_ == nullptr && count_ == 0) ||
-           (arena_ != nullptr && count_ == arena_->Count() && arena_->IsValid());
+           (arena_ != nullptr && count_ <= arena_->Count() && arena_->IsValid());
 }
 
 blitzar_core::ForceView AccelerationBuffer::View() noexcept
@@ -156,8 +186,11 @@ blitzar_core::ForceView AccelerationBuffer::View() noexcept
     if (arena_ == nullptr) {
         return {};
     }
-    return {count_, arena_->AccelerationX(), arena_->AccelerationY(),
-            arena_->AccelerationZ()};
+    return {
+        count_,
+        arena_->AccelerationX().first(count_),
+        arena_->AccelerationY().first(count_),
+        arena_->AccelerationZ().first(count_)};
 }
 
 }  // namespace blitzar_particles

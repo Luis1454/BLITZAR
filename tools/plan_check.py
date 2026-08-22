@@ -15,7 +15,7 @@ CMESSAGE = ROOT / "CMakeLists.txt"
 
 TEST_ID_PATTERN = re.compile(r"^TST-[A-Z0-9]+(?:-[A-Z0-9]+)+$")
 TEST_PATTERN = re.compile(
-    r"add_test\s*\(\s*NAME\s+([^\s\)]+)\s+COMMAND\s+([^\s\)]+)",
+    r"add_test\s*\(\s*NAME\s+([^\s\)]+)\s+COMMAND\s+([^\)]*)\)",
     re.MULTILINE,
 )
 SOURCE_SUFFIXES = {
@@ -158,7 +158,25 @@ def validate_quality_tests(phase_ids: set[str]) -> None:
         ids.add(test_id)
         commands[test_id] = command
 
-    cmake_tests = dict(TEST_PATTERN.findall(CMESSAGE.read_text(encoding="utf-8")))
+    def normalize_cmake_command(command: str) -> str:
+        normalized = command
+        normalized = normalized.replace("${MPIEXEC_EXECUTABLE}", "mpiexec")
+        normalized = normalized.replace("${MPIEXEC_NUMPROC_FLAG}", "-np")
+        normalized = normalized.replace("${MPIEXEC_PREFLAGS}", "")
+        normalized = normalized.replace("${MPIEXEC_POSTFLAGS}", "")
+        normalized = re.sub(
+            r"\$<TARGET_FILE:([^>]+)>",
+            r"\1",
+            normalized,
+        )
+        return " ".join(normalized.split())
+
+    cmake_tests = {
+        test_id: normalize_cmake_command(command)
+        for test_id, command in TEST_PATTERN.findall(
+            CMESSAGE.read_text(encoding="utf-8")
+        )
+    }
     if set(cmake_tests) != ids:
         missing = sorted(ids - set(cmake_tests))
         extra = sorted(set(cmake_tests) - ids)

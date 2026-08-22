@@ -40,7 +40,7 @@ bool BarnesHutSolver::IsValidState(
     if (!blitzar_core::IsValid(particles)) {
         return false;
     }
-    for (std::size_t index = 0; index < particles.count; ++index) {
+    for (std::size_t index = 0; index < particles.SourceCount(); ++index) {
         if (!std::isfinite(particles.x[index]) ||
             !std::isfinite(particles.y[index]) ||
             !std::isfinite(particles.z[index]) ||
@@ -199,7 +199,7 @@ blitzar_status BarnesHutSolver::Compute(
 {
     if (!settings_.IsValid() || !gravity_.IsValid() ||
         !settings.IsValid() || particles.count != forces.count ||
-        particles.count > settings_.max_particles || !IsValidState(particles) ||
+        particles.SourceCount() > settings_.max_particles || !IsValidState(particles) ||
         !blitzar_core::IsValid(forces) ||
         workspace.MaxCells() < settings_.max_cells ||
         workspace.MaxDepth() < settings_.max_depth) {

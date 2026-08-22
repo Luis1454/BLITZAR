@@ -16,7 +16,7 @@ struct Acceleration final {
 
 [[nodiscard]] bool IsValidState(blitzar_core::ParticleStateView particles) noexcept
 {
-    for (std::size_t index = 0; index < particles.count; ++index) {
+    for (std::size_t index = 0; index < particles.SourceCount(); ++index) {
         if (!std::isfinite(particles.x[index]) ||
             !std::isfinite(particles.y[index]) ||
             !std::isfinite(particles.z[index]) ||
@@ -37,7 +37,7 @@ struct Acceleration final {
     Acceleration& acceleration) noexcept
 {
     acceleration = {};
-    for (std::size_t source = 0; source < particles.count; ++source) {
+    for (std::size_t source = 0; source < particles.SourceCount(); ++source) {
         if (source == target || particles.mass[source] == 0.0) {
             continue;
         }
@@ -81,7 +81,7 @@ struct Acceleration final {
 #if defined(_OPENMP)
 #pragma omp simd reduction(+ : acceleration_x, acceleration_y, acceleration_z)
 #endif
-    for (std::size_t source = 0; source < particles.count; ++source) {
+    for (std::size_t source = 0; source < particles.SourceCount(); ++source) {
         if (source == target || particles.mass[source] == 0.0) {
             continue;
         }

@@ -41,10 +41,19 @@ std::size_t LeapfrogWorkspace::Count() const noexcept
     return count_;
 }
 
+blitzar_status LeapfrogWorkspace::SetCount(std::size_t count) noexcept
+{
+    if (arena_ == nullptr || count > arena_->Count()) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    count_ = count;
+    return BLITZAR_STATUS_OK;
+}
+
 bool LeapfrogWorkspace::IsValid() const noexcept
 {
     return (arena_ == nullptr && count_ == 0) ||
-           (arena_ != nullptr && count_ == arena_->Count() && arena_->IsValid());
+           (arena_ != nullptr && count_ <= arena_->Count() && arena_->IsValid());
 }
 
 blitzar_status LeapfrogWorkspace::Capture(

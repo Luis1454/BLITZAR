@@ -1,7 +1,7 @@
 # BLITZAR Clean-Room Plan
 
 Status: **FROZEN**  
-Plan version: **1.0.4**
+Plan version: **1.0.5**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -17,9 +17,9 @@ backend. The public product has three layers:
 3. A standalone CLI in `apps/blitzar` using the same SDK as external users.
 
 The simulation core owns particle state, integration, spatial data structures,
-solvers, optional grids, and snapshot I/O. Networking, GUI code, plugin
-loading, and distributed execution are adapters, not core requirements for
-version 1.0.
+solvers, optional grids, and snapshot I/O. Networking, GUI code, and plugin
+loading remain adapters; optional distributed execution is isolated under
+`src/parallel` and must preserve the single-rank contract.
 
 ## Repository Shape
 
@@ -31,6 +31,7 @@ src/physics/                     Force laws, units, softening, validation
 src/integration/                 Time integration and timestep policy
 src/trees/                       Morton ordering, octree, multipoles
 src/gpu/                         HIP context, pinned staging, and streams
+src/parallel/                    MPI context, domain ownership, and exchange
 src/grid/                        3D grids and mass deposition
 src/solvers/direct/              O(N^2) CPU reference and HIP acceleration
 src/solvers/barnes_hut/          O(N log N) CPU and HIP
@@ -120,6 +121,24 @@ provides only the runtime calls used by the kernels; the kernels remain single
 `.hip` sources and the compatibility layer stays internal. AMD continues to
 use the ROCm HIP path, while an unselected or unavailable backend keeps the
 CPU fallback.
+
+### Sprint 7: Optional MPI Domain Decomposition
+
+When `BLITZAR_MPI_MODE=ON` and MPI CXX is available, the internal parallel
+adapter initializes MPI with `MPI_THREAD_MULTIPLE`, partitions global particle
+IDs by deterministic Morton-key slices, and keeps MPI types out of the public
+SDK. `AUTO` and `OFF` preserve the single-rank Sprint 6.1 path.
+
+Each rank owns a mutable logical prefix in the fixed-capacity particle arena.
+At each completed KDK step, ownership migration uses a contiguous
+`ParticlePacket` packing buffer and `MPI_Alltoallv`. Before each force
+evaluation, non-blocking
+`MPI_Isend`/`MPI_Irecv` exchanges all remote packets required for exact
+long-range gravity; this conservative halo is intentional because a truncated
+boundary halo would change the gravitational result. `GetState` gathers packets
+by stable global ID. The acceptance tests `TST-P7-001` and `TST-P7-002` run the
+same deterministic case with two and four ranks and compare it to the direct
+single-rank reference within `1e-5`.
 
 ## Non-Goals for the Initial Rewrite
 

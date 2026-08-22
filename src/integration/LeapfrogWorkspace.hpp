@@ -25,6 +25,7 @@ public:
     LeapfrogWorkspace& operator=(LeapfrogWorkspace&& other) noexcept;
 
     [[nodiscard]] std::size_t Count() const noexcept;
+    [[nodiscard]] blitzar_status SetCount(std::size_t count) noexcept;
     [[nodiscard]] bool IsValid() const noexcept;
     [[nodiscard]] blitzar_status Capture(
         blitzar_core::MutableParticleView state) noexcept;

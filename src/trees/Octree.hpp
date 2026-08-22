@@ -2,6 +2,7 @@
 #define BLITZAR_TREES_OCTREE_HPP
 
 #include "core/Types.hpp"
+#include "trees/Morton.hpp"
 
 #include <blitzar/blitzar.h>
 
@@ -74,11 +75,6 @@ private:
         blitzar_core::ParticleStateView particles,
         blitzar_core::Vector3 minimum,
         blitzar_core::Vector3 maximum) noexcept;
-    [[nodiscard]] static std::uint64_t MortonKey(
-        blitzar_core::Vector3 position,
-        blitzar_core::Vector3 minimum,
-        blitzar_core::Vector3 maximum) noexcept;
-
     std::size_t max_particles_;
     std::size_t max_cells_;
     std::size_t leaf_capacity_;

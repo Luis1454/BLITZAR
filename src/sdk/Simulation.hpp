@@ -6,6 +6,9 @@
 #include "core/Solver.hpp"
 #include "gpu/HipContext.hpp"
 #include "integration/LeapfrogKdk.hpp"
+#include "parallel/DomainDecomposition.hpp"
+#include "parallel/MpiExchange.hpp"
+#include "parallel/MpiTypes.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
 #include "solvers/barnes_hut/ThreadWorkspace.hpp"
@@ -19,6 +22,7 @@
 #include <memory>
 #include <span>
 #include <variant>
+#include <vector>
 
 namespace blitzar_sdk {
 
@@ -80,6 +84,9 @@ private:
     [[nodiscard]] blitzar_status Remember(blitzar_status status) const noexcept;
 
     std::size_t particle_count_;
+    blitzar_parallel::MpiContext mpi_context_;
+    blitzar_parallel::DomainDecomposition domain_;
+    blitzar_parallel::MpiExchange mpi_exchange_;
     blitzar_gpu::HipContext hip_context_;
     std::shared_ptr<blitzar_particles::ParticleArena> arena_;
     blitzar_particles::ParticleBuffer particles_;
@@ -97,6 +104,10 @@ private:
     mutable std::atomic<blitzar_status> last_status_;
     SolverVariant solver_;
     blitzar_integration::LeapfrogKdk integrator_;
+    std::vector<std::uint64_t> particle_ids_;
+    std::size_t local_particle_count_;
+    std::size_t source_particle_count_;
+    blitzar_parallel::PacketBuffer exchange_buffer_;
 };
 
 }  // namespace blitzar_sdk

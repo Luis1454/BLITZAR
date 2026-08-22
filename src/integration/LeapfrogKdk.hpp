@@ -104,7 +104,8 @@ public:
             solver,
             timestep,
             settings,
-            solver_workspace);
+            solver_workspace,
+            particles.State());
     }
 
     template <typename Solver, typename SolverWorkspace>
@@ -117,11 +118,35 @@ public:
         const blitzar_core::ExecutionSettings& settings,
         SolverWorkspace& solver_workspace) const noexcept
     {
+        return Advance(
+            particles,
+            accelerations,
+            workspace,
+            solver,
+            timestep,
+            settings,
+            solver_workspace,
+            particles.State());
+    }
+
+    template <typename Solver, typename SolverWorkspace>
+    [[nodiscard]] blitzar_status Advance(
+        blitzar_particles::ParticleBuffer& particles,
+        blitzar_particles::AccelerationBuffer& accelerations,
+        LeapfrogWorkspace& workspace,
+        Solver& solver,
+        blitzar_core::Scalar timestep,
+        const blitzar_core::ExecutionSettings& settings,
+        SolverWorkspace& solver_workspace,
+        blitzar_core::ParticleStateView solver_particles) const noexcept
+    {
         if (!particles.IsValid() || !accelerations.IsValid() ||
             !workspace.IsValid() || particles.Count() != accelerations.Count() ||
             particles.Count() != workspace.Count() || !std::isfinite(timestep) ||
             timestep <= 0.0 || !settings.IsValid() ||
-            !detail::IsFiniteState(particles.State())) {
+            !detail::IsFiniteState(particles.State()) ||
+            solver_particles.count != particles.Count() ||
+            !detail::IsFiniteState(solver_particles)) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
@@ -132,7 +157,7 @@ public:
         }
         blitzar_core::ForceView force = accelerations.View();
         status = detail::ComputeSolver(
-            solver, particles.State(), force, settings, solver_workspace);
+            solver, solver_particles, force, settings, solver_workspace);
         if (status != BLITZAR_STATUS_OK) {
             return status;
         }
@@ -163,7 +188,7 @@ public:
         }
 
         status = detail::ComputeSolver(
-            solver, particles.State(), force, settings, solver_workspace);
+            solver, solver_particles, force, settings, solver_workspace);
         if (status != BLITZAR_STATUS_OK) {
             return detail::RestoreOr(workspace, mutable_state, status);
         }

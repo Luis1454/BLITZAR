@@ -131,7 +131,8 @@ struct HipContext::Impl final {
         blitzar_core::ForceView forces,
         blitzar_physics::GravityParameters gravity) noexcept
     {
-        const blitzar_status buffer_status = EnsureBuffers(particles.count, 0);
+        const blitzar_status buffer_status =
+            EnsureBuffers(particles.SourceCount(), 0);
         if (buffer_status != BLITZAR_STATUS_OK) {
             return buffer_status;
         }
@@ -159,6 +160,7 @@ struct HipContext::Impl final {
         status = blitzar_gpu_detail::LaunchDirect(
             addresses,
             particles.count,
+            particles.SourceCount(),
             gravity.EffectiveConstant(),
             gravity.EffectiveSoftening(),
             buffers.DeviceError(),
@@ -223,7 +225,7 @@ struct HipContext::Impl final {
         tree_ready = true;
         const std::span<const blitzar_trees::Octree::Cell> cells = tree->Cells();
         const std::span<const std::size_t> indices = tree->Indices();
-        status = EnsureBuffers(particles.count, cells.size());
+        status = EnsureBuffers(particles.SourceCount(), cells.size());
         if (status != BLITZAR_STATUS_OK) {
             return status;
         }
@@ -293,6 +295,7 @@ struct HipContext::Impl final {
         status = blitzar_gpu_detail::LaunchBarnesHut(
             addresses,
             particles.count,
+            particles.SourceCount(),
             buffers.DeviceCells(),
             cells.size(),
             buffers.DeviceIndices(),
@@ -383,7 +386,7 @@ blitzar_status HipContext::ComputeBarnesHut(
     if (!blitzar_core::IsValid(particles) || !blitzar_core::IsValid(forces) ||
         particles.count != forces.count || !execution.IsValid() ||
         !gravity.IsValid() || !settings.IsValid() ||
-        particles.count > settings.max_particles) {
+        particles.SourceCount() > settings.max_particles) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     if (particles.count == 0) {

@@ -34,7 +34,8 @@ struct GpuCell final {
 
 [[nodiscard]] blitzar_status LaunchDirect(
     DeviceParticleAddresses addresses,
-    std::size_t count,
+    std::size_t target_count,
+    std::size_t source_count,
     double gravitational_constant,
     double softening,
     std::uintptr_t error_address,
@@ -42,7 +43,8 @@ struct GpuCell final {
 
 [[nodiscard]] blitzar_status LaunchBarnesHut(
     DeviceParticleAddresses addresses,
-    std::size_t particle_count,
+    std::size_t target_count,
+    std::size_t source_count,
     std::uintptr_t cells,
     std::size_t cell_count,
     std::uintptr_t indices,

@@ -59,6 +59,18 @@
       "name": "hip-acceleration-and-fallback",
       "command": "blitzar_hip_test",
       "phase": "P4"
+    },
+    {
+      "id": "TST-P7-001",
+      "name": "mpi-two-rank-domain-parity",
+      "command": "mpiexec -np 2 blitzar_mpi_test",
+      "phase": "P7"
+    },
+    {
+      "id": "TST-P7-002",
+      "name": "mpi-four-rank-domain-parity",
+      "command": "mpiexec -np 4 blitzar_mpi_test",
+      "phase": "P7"
     }
   ]
 }
