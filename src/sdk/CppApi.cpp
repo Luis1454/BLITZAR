@@ -39,7 +39,7 @@ Context::Context() noexcept
     blitzar_context* context = nullptr;
     const blitzar_status status = blitzar_context_create(&context);
     impl_->handle.reset(context);
-    status_ = static_cast<Status>(status);
+    status_ = FromCStatus(status);
 }
 
 Context::~Context() noexcept = default;
@@ -88,7 +88,7 @@ Simulation::Simulation(Context& context, std::int64_t particle_count) noexcept
     const blitzar_status status = blitzar_simulation_create(
         context.impl_->handle.get(), particle_count, &simulation);
     impl_->handle.reset(simulation);
-    status_ = static_cast<Status>(status);
+    status_ = FromCStatus(status);
 }
 
 Simulation::~Simulation() noexcept = default;
@@ -144,7 +144,7 @@ BackendKind Simulation::backend() const noexcept
 
 Status Simulation::Update(blitzar_status status) noexcept
 {
-    status_.store(static_cast<Status>(status), std::memory_order_relaxed);
+    status_.store(FromCStatus(status), std::memory_order_relaxed);
     return status_.load(std::memory_order_relaxed);
 }
 

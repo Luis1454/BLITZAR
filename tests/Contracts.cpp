@@ -1,3 +1,5 @@
+#include <blitzar/blitzar.hpp>
+
 #include "core/Execution.hpp"
 #include "core/Snapshot.hpp"
 #include "core/Status.hpp"
@@ -39,6 +41,20 @@ int main()
 {
     const blitzar_core::ExecutionSettings settings{};
     BLITZAR_CHECK(settings.IsValid());
+    BLITZAR_CHECK(blitzar::FromCStatus(BLITZAR_STATUS_OK) ==
+                  blitzar::Status::Ok);
+    BLITZAR_CHECK(blitzar::FromCStatus(BLITZAR_STATUS_INVALID_ARGUMENT) ==
+                  blitzar::Status::InvalidArgument);
+    BLITZAR_CHECK(blitzar::FromCStatus(BLITZAR_STATUS_ALLOCATION_FAILURE) ==
+                  blitzar::Status::AllocationFailure);
+    BLITZAR_CHECK(blitzar::FromCStatus(BLITZAR_STATUS_INTERNAL_ERROR) ==
+                  blitzar::Status::InternalError);
+    BLITZAR_CHECK(blitzar::FromCStatus(BLITZAR_STATUS_SINGULARITY) ==
+                  blitzar::Status::Singularity);
+    BLITZAR_CHECK(blitzar::FromCStatus(BLITZAR_STATUS_UNSUPPORTED) ==
+                  blitzar::Status::Unsupported);
+    BLITZAR_CHECK(blitzar::FromCStatus(static_cast<blitzar_status>(999)) ==
+                  blitzar::Status::InternalError);
     BLITZAR_CHECK(blitzar_core::ToPublicStatus(999) == BLITZAR_STATUS_INTERNAL_ERROR);
     BLITZAR_CHECK(
         blitzar_core::ToPublicStatus(BLITZAR_STATUS_UNSUPPORTED) ==
