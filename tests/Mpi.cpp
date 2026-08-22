@@ -13,6 +13,11 @@
 #include <cstddef>
 #include <limits>
 #include <span>
+#include <string_view>
+
+#if defined(BLITZAR_HAS_MPI)
+#include <mpi.h>
+#endif
 
 namespace {
 
@@ -601,15 +606,43 @@ struct StateArrays final {
            uninitialized_received.Size() == 0;
 }
 
+[[nodiscard]] bool RunNestedContextCase(
+    const blitzar_parallel::MpiContext& outer) noexcept
+{
+    blitzar_parallel::MpiContext nested;
+    return nested.IsUsable() && nested.Rank() == outer.Rank() &&
+           nested.Size() == outer.Size();
+}
+
+[[nodiscard]] bool RunCollectiveValidationCase(
+    const blitzar_parallel::MpiContext& context) noexcept
+{
+    const std::array<int, 1> invalid_counts{0};
+    std::array<int, 1> invalid_receive{};
+    if (context.AllToAllCounts(invalid_counts, invalid_receive) !=
+            BLITZAR_STATUS_INVALID_ARGUMENT ||
+        context.AllGatherCounts(0, invalid_receive) !=
+            BLITZAR_STATUS_INVALID_ARGUMENT) {
+        return false;
+    }
+
+    const std::array<double, 2> invalid_minimum{};
+    const std::array<double, 3> invalid_maximum{};
+    std::array<double, 2> minimum = invalid_minimum;
+    std::array<double, 3> maximum = invalid_maximum;
+    return context.ReduceBounds(minimum, maximum) ==
+           BLITZAR_STATUS_INVALID_ARGUMENT;
+}
+
 }  // namespace
 
-int main(int argc, char** argv)
+int RunTests(int argc, char** argv)
 {
-    (void)argv;
     blitzar_parallel::MpiContext context;
     const bool valid_world =
         context.IsUsable() && (context.Size() == 2 || context.Size() == 4);
-    const bool migration_case = argc > 1;
+    const std::string_view mode = argc > 1 ? argv[1] : std::string_view{};
+    const bool migration_case = mode == "migration";
     const bool local_case = RunCase(
         migration_case ? MigrationState() : InitialState(),
         0.01,
@@ -617,9 +650,13 @@ int main(int argc, char** argv)
     const bool rollback_case = RunRollbackCase();
     const bool boundary_case = RunBoundaryOwnershipCase(context);
     const bool error_synchronization_case = RunErrorSynchronizationCase(context);
+    const bool nested_context_case = RunNestedContextCase(context);
+    const bool collective_validation_case =
+        RunCollectiveValidationCase(context);
     const bool local_ok =
         valid_world && local_case && rollback_case && boundary_case &&
-        error_synchronization_case;
+        error_synchronization_case && nested_context_case &&
+        collective_validation_case;
 
     int local_failure = local_ok ? 0 : 1;
     int global_failure = 0;
@@ -627,4 +664,44 @@ int main(int argc, char** argv)
         context.ReduceMax(local_failure, global_failure) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(global_failure == 0);
     return 0;
+}
+
+int main(int argc, char** argv)
+{
+#if defined(BLITZAR_HAS_MPI)
+    const std::string_view mode = argc > 1 ? argv[1] : std::string_view{};
+    const bool internal_owner = mode == "internal";
+    int external_owner = 0;
+    if (!internal_owner) {
+        int initialized = 0;
+        if (MPI_Initialized(&initialized) != MPI_SUCCESS) {
+            return 1;
+        }
+        if (initialized == 0) {
+            int provided = MPI_THREAD_SINGLE;
+            if (MPI_Init_thread(
+                    nullptr,
+                    nullptr,
+                    MPI_THREAD_MULTIPLE,
+                    &provided) != MPI_SUCCESS ||
+                provided < MPI_THREAD_MULTIPLE) {
+                return 1;
+            }
+            external_owner = 1;
+        }
+    }
+#endif
+
+    const int result = RunTests(argc, argv);
+
+#if defined(BLITZAR_HAS_MPI)
+    if (external_owner != 0) {
+        int finalized = 0;
+        if (MPI_Finalized(&finalized) != MPI_SUCCESS || finalized != 0 ||
+            MPI_Finalize() != MPI_SUCCESS) {
+            return 1;
+        }
+    }
+#endif
+    return result;
 }

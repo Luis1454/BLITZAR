@@ -1,6 +1,7 @@
 #ifndef BLITZAR_PARALLEL_MPI_CONTEXT_HPP
 #define BLITZAR_PARALLEL_MPI_CONTEXT_HPP
 
+#include "parallel/MpiGhostExchange.hpp"
 #include "parallel/MpiTypes.hpp"
 
 #include <blitzar/blitzar.h>
@@ -14,22 +15,7 @@ namespace blitzar_parallel {
 
 class MpiContext final {
 public:
-    class GhostExchange final {
-    public:
-        GhostExchange() noexcept;
-        ~GhostExchange() noexcept;
-
-        GhostExchange(const GhostExchange&) = delete;
-        GhostExchange& operator=(const GhostExchange&) = delete;
-        GhostExchange(GhostExchange&& other) noexcept;
-        GhostExchange& operator=(GhostExchange&& other) noexcept;
-
-    private:
-        friend class MpiContext;
-        struct Impl;
-
-        std::unique_ptr<Impl> impl_;
-    };
+    using GhostExchange = MpiGhostExchange;
 
     MpiContext() noexcept;
     ~MpiContext() noexcept;
@@ -87,8 +73,6 @@ private:
     struct Impl;
 
     std::unique_ptr<Impl> impl_;
-    int rank_{0};
-    int size_{1};
     blitzar_status status_{BLITZAR_STATUS_OK};
 };
 

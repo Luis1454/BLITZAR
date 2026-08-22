@@ -69,9 +69,13 @@ target_sources(blitzar PRIVATE
     src/particles/ParticleArena.cpp
     src/particles/ParticleBuffer.cpp
     src/physics/GravityLaw.cpp
+    src/parallel/MpiCollectives.cpp
     src/parallel/DomainDecomposition.cpp
+    src/parallel/MpiGhostTransport.cpp
     src/parallel/MpiContext.cpp
     src/parallel/MpiExchange.cpp
+    src/parallel/MpiPacketTransport.cpp
+    src/parallel/MpiSession.cpp
     src/sdk/Api.cpp
     src/sdk/CppApi.cpp
     src/sdk/Simulation.cpp
