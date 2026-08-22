@@ -7,6 +7,8 @@
 
 #include <blitzar/blitzar.h>
 
+#include <cstddef>
+
 namespace blitzar_direct {
 
 class DirectSolver final {
@@ -18,6 +20,13 @@ public:
         blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces,
         const blitzar_core::ExecutionSettings& settings) noexcept;
+    [[nodiscard]] blitzar_status ComputeRange(
+        blitzar_core::ParticleStateView particles,
+        blitzar_core::ForceView forces,
+        const blitzar_core::ExecutionSettings& settings,
+        std::size_t source_begin,
+        std::size_t source_end,
+        bool accumulate) noexcept;
 
 private:
     blitzar_physics::GravityLaw gravity_;

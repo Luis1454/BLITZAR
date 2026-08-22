@@ -276,6 +276,12 @@ if(BLITZAR_BUILD_TESTS)
                 ${MPIEXEC_PREFLAGS} $<TARGET_FILE:blitzar_mpi_test>
                 ${MPIEXEC_POSTFLAGS}
         )
+        add_test(
+            NAME TST-P8-001
+            COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2
+                ${MPIEXEC_PREFLAGS} $<TARGET_FILE:blitzar_mpi_test> migration
+                ${MPIEXEC_POSTFLAGS}
+        )
     endif()
 endif()
 

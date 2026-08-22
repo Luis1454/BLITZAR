@@ -14,6 +14,21 @@ namespace blitzar_integration {
 
 namespace detail {
 
+struct DriftTransition final {
+    blitzar_status status{BLITZAR_STATUS_OK};
+    bool state_replaced{false};
+};
+
+struct NoopDriftHook final {
+    [[nodiscard]] DriftTransition operator()(
+        blitzar_particles::ParticleBuffer&,
+        blitzar_particles::AccelerationBuffer&,
+        LeapfrogWorkspace&) const noexcept
+    {
+        return {};
+    }
+};
+
 [[nodiscard]] inline bool IsFiniteState(
     blitzar_core::ParticleStateView state) noexcept
 {
@@ -140,6 +155,31 @@ public:
         SolverWorkspace& solver_workspace,
         blitzar_core::ParticleStateView solver_particles) const noexcept
     {
+        detail::NoopDriftHook drift_hook;
+        return Advance(
+            particles,
+            accelerations,
+            workspace,
+            solver,
+            timestep,
+            settings,
+            solver_workspace,
+            solver_particles,
+            drift_hook);
+    }
+
+    template <typename Solver, typename SolverWorkspace, typename DriftHook>
+    [[nodiscard]] blitzar_status Advance(
+        blitzar_particles::ParticleBuffer& particles,
+        blitzar_particles::AccelerationBuffer& accelerations,
+        LeapfrogWorkspace& workspace,
+        Solver& solver,
+        blitzar_core::Scalar timestep,
+        const blitzar_core::ExecutionSettings& settings,
+        SolverWorkspace& solver_workspace,
+        blitzar_core::ParticleStateView solver_particles,
+        DriftHook& drift_hook) const noexcept
+    {
         if (!particles.IsValid() || !accelerations.IsValid() ||
             !workspace.IsValid() || particles.Count() != accelerations.Count() ||
             particles.Count() != workspace.Count() || !std::isfinite(timestep) ||
@@ -186,6 +226,27 @@ public:
                 mutable_state,
                 BLITZAR_STATUS_INVALID_ARGUMENT);
         }
+
+        const detail::DriftTransition transition =
+            drift_hook(particles, accelerations, workspace);
+        if (transition.status != BLITZAR_STATUS_OK) {
+            return detail::RestoreOr(
+                workspace,
+                mutable_state,
+                transition.status);
+        }
+        if (transition.state_replaced) {
+            if (workspace.SetCount(particles.Count()) != BLITZAR_STATUS_OK) {
+                return BLITZAR_STATUS_INTERNAL_ERROR;
+            }
+            mutable_state = particles.MutableView();
+            if (workspace.Capture(mutable_state) != BLITZAR_STATUS_OK) {
+                return BLITZAR_STATUS_INTERNAL_ERROR;
+            }
+            solver_particles = particles.State();
+        }
+        mutable_state = particles.MutableView();
+        force = accelerations.View();
 
         status = detail::ComputeSolver(
             solver, solver_particles, force, settings, solver_workspace);

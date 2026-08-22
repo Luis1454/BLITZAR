@@ -31,6 +31,17 @@ blitzar_status HipContext::ComputeDirect(
     return BLITZAR_STATUS_UNSUPPORTED;
 }
 
+blitzar_status HipContext::ComputeDirectRange(
+    blitzar_core::ParticleStateView,
+    blitzar_core::ForceView,
+    blitzar_physics::GravityParameters,
+    std::size_t,
+    std::size_t,
+    bool) noexcept
+{
+    return BLITZAR_STATUS_UNSUPPORTED;
+}
+
 blitzar_status HipContext::ComputeBarnesHut(
     blitzar_core::ParticleStateView,
     blitzar_core::ForceView,

@@ -22,6 +22,14 @@ public:
         std::span<const std::uint64_t> local_ids,
         PacketBuffer& ghosts) const noexcept;
 
+    [[nodiscard]] blitzar_status BeginGhosts(
+        blitzar_core::ParticleStateView local_state,
+        std::span<const std::uint64_t> local_ids,
+        MpiContext::GhostExchange& exchange) const noexcept;
+    [[nodiscard]] blitzar_status CompleteGhosts(
+        MpiContext::GhostExchange& exchange,
+        PacketBuffer& ghosts) const noexcept;
+
     [[nodiscard]] blitzar_status Migrate(
         blitzar_core::ParticleStateView local_state,
         std::span<const std::uint64_t> local_ids,

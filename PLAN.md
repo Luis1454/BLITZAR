@@ -1,7 +1,7 @@
 # BLITZAR Clean-Room Plan
 
 Status: **FROZEN**  
-Plan version: **1.0.5**
+Plan version: **1.0.6**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -139,6 +139,22 @@ boundary halo would change the gravitational result. `GetState` gathers packets
 by stable global ID. The acceptance tests `TST-P7-001` and `TST-P7-002` run the
 same deterministic case with two and four ranks and compare it to the direct
 single-rank reference within `1e-5`.
+
+### Sprint 7.1: MPI Boundary and KDK Overlap
+
+`MpiContext` is the only module that knows MPI types and collectives. Its
+opaque asynchronous exchange handle lets `MpiExchange` retain only packet
+packing and ownership layout. The single-rank fallback uses the same context
+contract without compiling MPI headers in the decomposition or exchange code.
+
+Each KDK force phase starts the non-blocking halo exchange before computing the
+local contribution. The Direct solver computes local-source forces first and
+adds the remote-source contribution after completion; Barnes-Hut performs its
+local tree work while the exchange is pending, then rebuilds the complete tree
+for the final force. Ownership migration is committed immediately after Drift
+through a KDK transition hook, and the workspace checkpoint is recaptured for
+the new local prefix before the second force evaluation. `TST-P8-001` forces
+inter-rank movement and compares the result with the direct single-rank oracle.
 
 ## Non-Goals for the Initial Rewrite
 

@@ -9,10 +9,6 @@
 #include <numeric>
 #include <new>
 
-#if defined(BLITZAR_HAS_MPI)
-#include <mpi.h>
-#endif
-
 namespace blitzar_parallel {
 
 namespace {
@@ -87,24 +83,12 @@ blitzar_status DomainDecomposition::Initialize(
     std::array<blitzar_core::Scalar, 3> maximum{
         bounds.maximum.x, bounds.maximum.y, bounds.maximum.z};
 
-#if defined(BLITZAR_HAS_MPI)
-    if (MPI_Allreduce(
-            MPI_IN_PLACE,
-            minimum.data(),
-            3,
-            MPI_DOUBLE,
-            MPI_MIN,
-            context.Communicator()) != MPI_SUCCESS ||
-        MPI_Allreduce(
-            MPI_IN_PLACE,
-            maximum.data(),
-            3,
-            MPI_DOUBLE,
-            MPI_MAX,
-            context.Communicator()) != MPI_SUCCESS) {
-        return BLITZAR_STATUS_INTERNAL_ERROR;
+    const blitzar_status reduction_status = context.ReduceBounds(
+        minimum,
+        maximum);
+    if (reduction_status != BLITZAR_STATUS_OK) {
+        return reduction_status;
     }
-#endif
 
     global_bounds_ = {
         {minimum[0], minimum[1], minimum[2]},

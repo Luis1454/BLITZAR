@@ -31,6 +31,13 @@ public:
         blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces,
         blitzar_physics::GravityParameters gravity) noexcept;
+    [[nodiscard]] blitzar_status ComputeDirectRange(
+        blitzar_core::ParticleStateView particles,
+        blitzar_core::ForceView forces,
+        blitzar_physics::GravityParameters gravity,
+        std::size_t source_begin,
+        std::size_t source_end,
+        bool accumulate) noexcept;
 
     [[nodiscard]] blitzar_status ComputeBarnesHut(
         blitzar_core::ParticleStateView particles,

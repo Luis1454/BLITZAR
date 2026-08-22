@@ -1,7 +1,7 @@
 # Decision 006: Optional MPI Domain Decomposition
 
 Status: accepted
-Plan version: 1.0.5
+Plan version: 1.0.6
 
 ## Decision
 

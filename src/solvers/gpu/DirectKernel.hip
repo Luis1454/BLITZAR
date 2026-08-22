@@ -30,9 +30,11 @@ __global__ void DirectKernel(
     double* force_y,
     double* force_z,
     std::size_t target_count,
-    std::size_t source_count,
+    std::size_t source_begin,
+    std::size_t source_end,
     double gravitational_constant,
     double softening,
+    bool accumulate,
     int* error)
 {
     extern __shared__ double tile[];
@@ -55,10 +57,10 @@ __global__ void DirectKernel(
     double acceleration_z = 0.0;
     const double softening_squared = softening * softening;
 
-    for (std::size_t tile_begin = 0; tile_begin < source_count;
+    for (std::size_t tile_begin = source_begin; tile_begin < source_end;
          tile_begin += BlockSize) {
         const std::size_t source = tile_begin + threadIdx.x;
-        if (source < source_count) {
+        if (source < source_end) {
             tile_x[threadIdx.x] = position_x[source];
             tile_y[threadIdx.x] = position_y[source];
             tile_z[threadIdx.x] = position_z[source];
@@ -84,7 +86,7 @@ __global__ void DirectKernel(
 #pragma unroll 4
             for (unsigned int offset = 0; offset < BlockSize; ++offset) {
                 const std::size_t source_index = tile_begin + offset;
-                if (source_index >= source_count) {
+                if (source_index >= source_end) {
                     continue;
                 }
                 const double source_x = tile_x[offset];
@@ -143,9 +145,15 @@ __global__ void DirectKernel(
         RecordError(error, block_error);
     }
     if (target < target_count && local_error == 0) {
-        force_x[target] = acceleration_x;
-        force_y[target] = acceleration_y;
-        force_z[target] = acceleration_z;
+        if (accumulate) {
+            force_x[target] += acceleration_x;
+            force_y[target] += acceleration_y;
+            force_z[target] += acceleration_z;
+        } else {
+            force_x[target] = acceleration_x;
+            force_y[target] = acceleration_y;
+            force_z[target] = acceleration_z;
+        }
     }
 }
 
@@ -154,16 +162,20 @@ __global__ void DirectKernel(
 blitzar_status LaunchDirect(
     DeviceParticleAddresses addresses,
     std::size_t target_count,
-    std::size_t source_count,
+    std::size_t source_begin,
+    std::size_t source_end,
     double gravitational_constant,
     double softening,
+    bool accumulate,
     std::uintptr_t error_address,
     std::uintptr_t stream) noexcept
 {
-    if (target_count == 0 || source_count == 0 || error_address == 0 ||
-        stream == 0) {
+    if (target_count == 0 || error_address == 0 || stream == 0) {
         return target_count == 0 ? BLITZAR_STATUS_OK
                                  : BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    if (source_begin > source_end) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     if (addresses.position_x == 0 || addresses.position_y == 0 ||
         addresses.position_z == 0 || addresses.mass == 0 ||
@@ -194,9 +206,11 @@ blitzar_status LaunchDirect(
         reinterpret_cast<double*>(addresses.force_y),
         reinterpret_cast<double*>(addresses.force_z),
         target_count,
-        source_count,
+        source_begin,
+        source_end,
         gravitational_constant,
         softening,
+        accumulate,
         reinterpret_cast<int*>(error_address));
     return hipGetLastError() == hipSuccess
                ? BLITZAR_STATUS_OK

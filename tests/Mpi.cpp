@@ -6,8 +6,6 @@
 
 #include "Check.hpp"
 
-#include <mpi.h>
-
 #include <array>
 #include <cmath>
 #include <cstddef>
@@ -44,13 +42,25 @@ struct StateArrays final {
     return state;
 }
 
+[[nodiscard]] StateArrays MigrationState() noexcept
+{
+    StateArrays state = InitialState();
+    for (std::size_t index = 0; index < ParticleCount; ++index) {
+        state.velocity_x[index] = index % 2 == 0 ? 500.0 : -500.0;
+        state.velocity_y[index] = 0.0;
+        state.velocity_z[index] = 0.0;
+    }
+    return state;
+}
+
 [[nodiscard]] bool Configure(
     blitzar_sdk::Simulation& simulation,
-    const StateArrays& state) noexcept
+    const StateArrays& state,
+    double timestep) noexcept
 {
     return simulation.SetSolver(BLITZAR_SOLVER_DIRECT) == BLITZAR_STATUS_OK &&
            simulation.SetGravity(1.0, 0.1) == BLITZAR_STATUS_OK &&
-           simulation.SetTimestep(0.01) == BLITZAR_STATUS_OK &&
+           simulation.SetTimestep(timestep) == BLITZAR_STATUS_OK &&
            simulation.SetParticles(
                state.x,
                state.y,
@@ -63,7 +73,9 @@ struct StateArrays final {
 
 [[nodiscard]] bool BuildReference(
     const StateArrays& initial,
-    StateArrays& result) noexcept
+    StateArrays& result,
+    double timestep,
+    int step_count) noexcept
 {
     blitzar_particles::ParticleBuffer particles(ParticleCount);
     blitzar_particles::AccelerationBuffer accelerations(ParticleCount);
@@ -86,13 +98,13 @@ struct StateArrays final {
     blitzar_direct::DirectSolver solver(gravity);
     const blitzar_core::ExecutionSettings execution{};
     const blitzar_integration::LeapfrogKdk integrator{};
-    for (int step = 0; step < 2; ++step) {
+    for (int step = 0; step < step_count; ++step) {
         if (integrator.Advance(
                 particles,
                 accelerations,
                 workspace,
                 solver,
-                0.01,
+                timestep,
                 execution) != BLITZAR_STATUS_OK) {
             return false;
         }
@@ -110,62 +122,71 @@ struct StateArrays final {
     return true;
 }
 
-}  // namespace
-
-int main()
+[[nodiscard]] bool RunCase(
+    const StateArrays& initial,
+    double timestep,
+    int step_count) noexcept
 {
-    blitzar_parallel::MpiContext context;
-    bool local_ok = context.IsUsable() && (context.Size() == 2 || context.Size() == 4);
-    const StateArrays initial = InitialState();
     StateArrays reference{};
-    const bool reference_ok = BuildReference(initial, reference);
-    local_ok = local_ok && reference_ok;
+    bool local_ok = BuildReference(
+        initial,
+        reference,
+        timestep,
+        step_count);
 
     blitzar_sdk::Simulation simulation(ParticleCount);
-    const bool configuration_ok = Configure(simulation, initial);
+    const bool configuration_ok = Configure(simulation, initial, timestep);
     local_ok = local_ok && configuration_ok;
-    for (int step = 0; step < 2 && local_ok; ++step) {
+    for (int step = 0; step < step_count; ++step) {
         const blitzar_status step_status = simulation.Step();
-        local_ok = step_status == BLITZAR_STATUS_OK;
+        local_ok = local_ok && step_status == BLITZAR_STATUS_OK;
     }
 
     StateArrays distributed{};
-    if (local_ok) {
-        local_ok = simulation.GetState(
-                       distributed.x,
-                       distributed.y,
-                       distributed.z,
-                       distributed.velocity_x,
-                       distributed.velocity_y,
-                       distributed.velocity_z,
-                       distributed.mass) == BLITZAR_STATUS_OK;
+    const blitzar_status state_status = simulation.GetState(
+        distributed.x,
+        distributed.y,
+        distributed.z,
+        distributed.velocity_x,
+        distributed.velocity_y,
+        distributed.velocity_z,
+        distributed.mass);
+    local_ok = local_ok && state_status == BLITZAR_STATUS_OK;
+    for (std::size_t index = 0; index < ParticleCount; ++index) {
+        local_ok = local_ok &&
+                   std::abs(distributed.x[index] - reference.x[index]) < 1.0e-5 &&
+                   std::abs(distributed.y[index] - reference.y[index]) < 1.0e-5 &&
+                   std::abs(distributed.z[index] - reference.z[index]) < 1.0e-5 &&
+                   std::abs(distributed.velocity_x[index] -
+                            reference.velocity_x[index]) < 1.0e-5 &&
+                   std::abs(distributed.velocity_y[index] -
+                            reference.velocity_y[index]) < 1.0e-5 &&
+                   std::abs(distributed.velocity_z[index] -
+                            reference.velocity_z[index]) < 1.0e-5 &&
+                   distributed.mass[index] == reference.mass[index];
     }
-    if (local_ok) {
-        for (std::size_t index = 0; index < ParticleCount; ++index) {
-            local_ok = local_ok &&
-                       std::abs(distributed.x[index] - reference.x[index]) < 1.0e-5 &&
-                       std::abs(distributed.y[index] - reference.y[index]) < 1.0e-5 &&
-                       std::abs(distributed.z[index] - reference.z[index]) < 1.0e-5 &&
-                       std::abs(distributed.velocity_x[index] -
-                                reference.velocity_x[index]) < 1.0e-5 &&
-                       std::abs(distributed.velocity_y[index] -
-                                reference.velocity_y[index]) < 1.0e-5 &&
-                       std::abs(distributed.velocity_z[index] -
-                                reference.velocity_z[index]) < 1.0e-5 &&
-                       distributed.mass[index] == reference.mass[index];
-        }
-    }
+    return local_ok;
+}
+
+}  // namespace
+
+int main(int argc, char** argv)
+{
+    (void)argv;
+    blitzar_parallel::MpiContext context;
+    const bool valid_world =
+        context.IsUsable() && (context.Size() == 2 || context.Size() == 4);
+    const bool migration_case = argc > 1;
+    const bool local_case = RunCase(
+        migration_case ? MigrationState() : InitialState(),
+        0.01,
+        migration_case ? 1 : 2);
+    const bool local_ok = valid_world && local_case;
 
     int local_failure = local_ok ? 0 : 1;
     int global_failure = 0;
     BLITZAR_CHECK(
-        MPI_Allreduce(
-            &local_failure,
-            &global_failure,
-            1,
-            MPI_INT,
-            MPI_MAX,
-            context.Communicator()) == MPI_SUCCESS);
+        context.ReduceMax(local_failure, global_failure) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(global_failure == 0);
     return 0;
 }

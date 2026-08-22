@@ -34,10 +34,12 @@ struct Acceleration final {
     const blitzar_physics::GravityLaw& gravity,
     std::size_t target,
     blitzar_core::ParticleStateView particles,
+    std::size_t source_begin,
+    std::size_t source_end,
     Acceleration& acceleration) noexcept
 {
     acceleration = {};
-    for (std::size_t source = 0; source < particles.SourceCount(); ++source) {
+    for (std::size_t source = source_begin; source < source_end; ++source) {
         if (source == target || particles.mass[source] == 0.0) {
             continue;
         }
@@ -73,6 +75,8 @@ struct Acceleration final {
     const blitzar_physics::GravityLaw& gravity,
     std::size_t target,
     blitzar_core::ParticleStateView particles,
+    std::size_t source_begin,
+    std::size_t source_end,
     Acceleration& acceleration) noexcept
 {
     blitzar_core::Scalar acceleration_x = 0.0;
@@ -81,7 +85,7 @@ struct Acceleration final {
 #if defined(_OPENMP)
 #pragma omp simd reduction(+ : acceleration_x, acceleration_y, acceleration_z)
 #endif
-    for (std::size_t source = 0; source < particles.SourceCount(); ++source) {
+    for (std::size_t source = source_begin; source < source_end; ++source) {
         if (source == target || particles.mass[source] == 0.0) {
             continue;
         }
@@ -120,9 +124,27 @@ blitzar_status DirectSolver::Compute(
     blitzar_core::ForceView forces,
     const blitzar_core::ExecutionSettings& settings) noexcept
 {
+    return ComputeRange(
+        particles,
+        forces,
+        settings,
+        0,
+        particles.SourceCount(),
+        false);
+}
+
+blitzar_status DirectSolver::ComputeRange(
+    blitzar_core::ParticleStateView particles,
+    blitzar_core::ForceView forces,
+    const blitzar_core::ExecutionSettings& settings,
+    std::size_t source_begin,
+    std::size_t source_end,
+    bool accumulate) noexcept
+{
     if (!blitzar_core::IsValid(particles) || !blitzar_core::IsValid(forces) ||
         particles.count != forces.count || !settings.IsValid() ||
-        !gravity_.IsValid() || !IsValidState(particles)) {
+        !gravity_.IsValid() || !IsValidState(particles) ||
+        source_begin > source_end || source_end > particles.SourceCount()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
@@ -140,7 +162,12 @@ blitzar_status DirectSolver::Compute(
         Acceleration acceleration{};
         const blitzar_status target_status =
             ValidateAndCalculateTarget(
-                gravity_, target, particles, acceleration);
+                gravity_,
+                target,
+                particles,
+                source_begin,
+                source_end,
+                acceleration);
         if (target_status != BLITZAR_STATUS_OK) {
             blitzar_status expected = BLITZAR_STATUS_OK;
             status.compare_exchange_strong(
@@ -166,7 +193,13 @@ blitzar_status DirectSolver::Compute(
         const std::size_t target = static_cast<std::size_t>(target_index);
         Acceleration acceleration{};
         const blitzar_status target_status =
-            CalculateTarget(gravity_, target, particles, acceleration);
+            CalculateTarget(
+                gravity_,
+                target,
+                particles,
+                source_begin,
+                source_end,
+                acceleration);
         if (target_status != BLITZAR_STATUS_OK) {
             blitzar_status expected = BLITZAR_STATUS_OK;
             status.compare_exchange_strong(
@@ -176,9 +209,15 @@ blitzar_status DirectSolver::Compute(
                 std::memory_order_relaxed);
             continue;
         }
-        forces.x[target] = acceleration.x;
-        forces.y[target] = acceleration.y;
-        forces.z[target] = acceleration.z;
+        if (accumulate) {
+            forces.x[target] += acceleration.x;
+            forces.y[target] += acceleration.y;
+            forces.z[target] += acceleration.z;
+        } else {
+            forces.x[target] = acceleration.x;
+            forces.y[target] = acceleration.y;
+            forces.z[target] = acceleration.z;
+        }
     }
     return status.load(std::memory_order_relaxed);
 }
