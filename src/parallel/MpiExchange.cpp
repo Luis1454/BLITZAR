@@ -83,6 +83,13 @@ blitzar_status MpiExchange::CompleteGhosts(
     return status;
 }
 
+void MpiExchange::AbortGhosts(
+    MpiContext::GhostExchange& exchange, PacketBuffer& ghosts) const noexcept
+{
+    context_.AbortGhostExchange(exchange);
+    ghosts.Clear();
+}
+
 blitzar_status MpiExchange::SynchronizeStatus(
     blitzar_status local_status, const char* phase) const noexcept
 {
@@ -120,6 +127,13 @@ blitzar_status MpiExchange::Migrate(
     received.Clear();
     PacketBuffer local_packets;
     blitzar_status status = SynchronizeStatus(
+        decomposition_.IsInitialized() ? BLITZAR_STATUS_OK
+                                        : BLITZAR_STATUS_INVALID_ARGUMENT,
+        "migrate-domain");
+    if (status != BLITZAR_STATUS_OK) {
+        return status;
+    }
+    status = SynchronizeStatus(
         PackLocal(local_state, local_ids, local_packets),
         "migrate-pack");
     if (status != BLITZAR_STATUS_OK) {

@@ -198,7 +198,10 @@ int DomainDecomposition::Owner(blitzar_core::Vector3 position) const noexcept
 int DomainDecomposition::Owner(
     blitzar_core::Vector3 position, std::uint64_t particle_id) const noexcept
 {
-    if (!initialized_ || size_ <= 1) {
+    if (!initialized_) {
+        return -1;
+    }
+    if (size_ <= 1) {
         return 0;
     }
     const std::uint64_t key = blitzar_trees::MortonKey(

@@ -228,22 +228,32 @@ struct StateArrays final {
     initial.mass.fill(1.0);
 
     blitzar_sdk::Simulation simulation(ParticleCount);
-    const bool configured =
-        simulation.SetSolver(BLITZAR_SOLVER_DIRECT) == BLITZAR_STATUS_OK &&
+    blitzar_sdk::Simulation expected(ParticleCount);
+    const auto configure = [&initial](blitzar_sdk::Simulation& candidate) {
+        return Configure(candidate, initial, 0.5) &&
+               candidate.SetGravity(
+                   std::numeric_limits<double>::denorm_min(),
+                   0.1) == BLITZAR_STATUS_OK;
+    };
+    if (!configure(simulation) || !configure(expected) ||
+        simulation.Step() != BLITZAR_STATUS_OK ||
+        expected.Step() != BLITZAR_STATUS_OK) {
+        return false;
+    }
+
+    StateArrays before_failure{};
+    if (simulation.GetState(
+            before_failure.x,
+            before_failure.y,
+            before_failure.z,
+            before_failure.velocity_x,
+            before_failure.velocity_y,
+            before_failure.velocity_z,
+            before_failure.mass) != BLITZAR_STATUS_OK ||
         simulation.SetGravity(
             std::numeric_limits<double>::denorm_min(),
-            0.0) == BLITZAR_STATUS_OK &&
-        simulation.SetTimestep(1.0) == BLITZAR_STATUS_OK &&
-        simulation.SetParticles(
-            initial.x,
-            initial.y,
-            initial.z,
-            initial.velocity_x,
-            initial.velocity_y,
-            initial.velocity_z,
-            initial.mass) == BLITZAR_STATUS_OK;
-    const blitzar_status rollback_status = simulation.Step();
-    if (!configured || rollback_status != BLITZAR_STATUS_SINGULARITY) {
+            0.0) != BLITZAR_STATUS_OK ||
+        simulation.Step() != BLITZAR_STATUS_SINGULARITY) {
         return false;
     }
 
@@ -259,20 +269,69 @@ struct StateArrays final {
         return false;
     }
     for (std::size_t index = 0; index < ParticleCount; ++index) {
-        if (restored.x[index] != initial.x[index] ||
-            restored.y[index] != initial.y[index] ||
-            restored.z[index] != initial.z[index] ||
-            restored.velocity_x[index] != initial.velocity_x[index] ||
-            restored.velocity_y[index] != initial.velocity_y[index] ||
-            restored.velocity_z[index] != initial.velocity_z[index] ||
-            restored.mass[index] != initial.mass[index]) {
+        if (std::abs(restored.x[index] - before_failure.x[index]) > 1.0e-12 ||
+            std::abs(restored.y[index] - before_failure.y[index]) > 1.0e-12 ||
+            std::abs(restored.z[index] - before_failure.z[index]) > 1.0e-12 ||
+            std::abs(restored.velocity_x[index] -
+                     before_failure.velocity_x[index]) > 1.0e-12 ||
+            std::abs(restored.velocity_y[index] -
+                     before_failure.velocity_y[index]) > 1.0e-12 ||
+            std::abs(restored.velocity_z[index] -
+                     before_failure.velocity_z[index]) > 1.0e-12 ||
+            restored.mass[index] != before_failure.mass[index]) {
             return false;
         }
     }
 
-    const bool retry = simulation.SetGravity(1.0, 0.1) == BLITZAR_STATUS_OK &&
-                       simulation.Step() == BLITZAR_STATUS_OK;
-    return retry;
+    if (simulation.SetGravity(
+            std::numeric_limits<double>::denorm_min(),
+            0.1) != BLITZAR_STATUS_OK ||
+        expected.SetGravity(
+            std::numeric_limits<double>::denorm_min(),
+            0.1) != BLITZAR_STATUS_OK ||
+        simulation.Step() != BLITZAR_STATUS_OK ||
+        expected.Step() != BLITZAR_STATUS_OK) {
+        return false;
+    }
+
+    StateArrays actual_retry{};
+    StateArrays expected_retry{};
+    if (simulation.GetState(
+            actual_retry.x,
+            actual_retry.y,
+            actual_retry.z,
+            actual_retry.velocity_x,
+            actual_retry.velocity_y,
+            actual_retry.velocity_z,
+            actual_retry.mass) != BLITZAR_STATUS_OK ||
+        expected.GetState(
+            expected_retry.x,
+            expected_retry.y,
+            expected_retry.z,
+            expected_retry.velocity_x,
+            expected_retry.velocity_y,
+            expected_retry.velocity_z,
+            expected_retry.mass) != BLITZAR_STATUS_OK) {
+        return false;
+    }
+    for (std::size_t index = 0; index < ParticleCount; ++index) {
+        if (std::abs(actual_retry.x[index] - expected_retry.x[index]) >
+                1.0e-12 ||
+            std::abs(actual_retry.y[index] - expected_retry.y[index]) >
+                1.0e-12 ||
+            std::abs(actual_retry.z[index] - expected_retry.z[index]) >
+                1.0e-12 ||
+            std::abs(actual_retry.velocity_x[index] -
+                     expected_retry.velocity_x[index]) > 1.0e-12 ||
+            std::abs(actual_retry.velocity_y[index] -
+                     expected_retry.velocity_y[index]) > 1.0e-12 ||
+            std::abs(actual_retry.velocity_z[index] -
+                     expected_retry.velocity_z[index]) > 1.0e-12 ||
+            actual_retry.mass[index] != expected_retry.mass[index]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 [[nodiscard]] bool RunErrorSynchronizationCase(
@@ -302,6 +361,30 @@ struct StateArrays final {
     }
     blitzar_parallel::MpiExchange exchange(context, domain);
     const std::array<std::uint64_t, 1> ids{0};
+
+    blitzar_parallel::MpiContext::GhostExchange pre_completion_exchange;
+    if (exchange.BeginGhosts(
+            particles.State(), ids, pre_completion_exchange) !=
+        BLITZAR_STATUS_OK) {
+        return false;
+    }
+    if (context.Rank() == 0) {
+        context.AbortGhostExchange(pre_completion_exchange);
+    }
+    blitzar_parallel::PacketBuffer aborted_ghosts;
+    aborted_ghosts.Resize(1);
+    if (exchange.CompleteGhosts(
+            pre_completion_exchange, aborted_ghosts) !=
+            BLITZAR_STATUS_INVALID_ARGUMENT ||
+        aborted_ghosts.Size() != 0) {
+        return false;
+    }
+    blitzar_parallel::PacketBuffer recovered_ghosts;
+    if (exchange.ExchangeGhosts(particles.State(), ids, recovered_ghosts) !=
+        BLITZAR_STATUS_OK) {
+        return false;
+    }
+
     blitzar_core::ParticleStateView invalid_state{};
     invalid_state.count = 1;
     invalid_state.source_count = 1;
@@ -327,9 +410,20 @@ struct StateArrays final {
     }
 
     blitzar_parallel::PacketBuffer received;
-    return exchange.Migrate(local_state, local_ids, received) ==
+    if (exchange.Migrate(local_state, local_ids, received) !=
+            BLITZAR_STATUS_INVALID_ARGUMENT ||
+        received.Size() != 0) {
+        return false;
+    }
+
+    blitzar_parallel::DomainDecomposition uninitialized_domain;
+    blitzar_parallel::MpiExchange uninitialized_exchange(
+        context, uninitialized_domain);
+    blitzar_parallel::PacketBuffer uninitialized_received;
+    return uninitialized_exchange.Migrate(
+               particles.State(), ids, uninitialized_received) ==
                BLITZAR_STATUS_INVALID_ARGUMENT &&
-           received.Size() == 0;
+           uninitialized_received.Size() == 0;
 }
 
 }  // namespace

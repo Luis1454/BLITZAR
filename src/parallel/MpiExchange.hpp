@@ -29,6 +29,8 @@ public:
     [[nodiscard]] blitzar_status CompleteGhosts(
         MpiContext::GhostExchange& exchange,
         PacketBuffer& ghosts) const noexcept;
+    void AbortGhosts(
+        MpiContext::GhostExchange& exchange, PacketBuffer& ghosts) const noexcept;
     [[nodiscard]] blitzar_status SynchronizeStatus(
         blitzar_status local_status, const char* phase) const noexcept;
 
