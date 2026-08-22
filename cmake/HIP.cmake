@@ -17,6 +17,8 @@ endif()
 
 set(BLITZAR_HIP_ENABLED OFF CACHE INTERNAL
     "Whether the optional HIP backend is enabled" FORCE)
+set(BLITZAR_HIP_LANGUAGE "" CACHE INTERNAL
+    "CMake language used to compile the HIP backend" FORCE)
 set(BLITZAR_HIP_LINK_TARGETS "" CACHE INTERNAL
     "HIP runtime targets linked by BLITZAR" FORCE)
 
@@ -35,45 +37,138 @@ if(NOT _blitzar_hip_mode STREQUAL "OFF")
         PATH_SUFFIXES bin)
 
     if(BLITZAR_HIP_COMPILER)
-        if(NOT DEFINED CMAKE_HIP_COMPILER)
-            set(CMAKE_HIP_COMPILER "${BLITZAR_HIP_COMPILER}"
-                CACHE FILEPATH "HIP compiler used by BLITZAR")
-        endif()
-        if(DEFINED ENV{HIP_PLATFORM} AND NOT DEFINED CMAKE_HIP_PLATFORM)
-            set(CMAKE_HIP_PLATFORM "$ENV{HIP_PLATFORM}" CACHE STRING
-                "HIP platform selected by the environment")
-        endif()
-        set(CMAKE_HIP_STANDARD 20 CACHE STRING "HIP language standard")
-        set(CMAKE_HIP_STANDARD_REQUIRED ON)
-        set(CMAKE_HIP_EXTENSIONS OFF)
-        include(CheckLanguage)
-        check_language(HIP)
-        if(CMAKE_HIP_COMPILER)
-            enable_language(HIP)
-
-            find_package(hip CONFIG QUIET HINTS ${_blitzar_hip_hints})
-            if(NOT hip_FOUND)
-                find_package(HIP CONFIG QUIET HINTS ${_blitzar_hip_hints})
-            endif()
-
-            set(BLITZAR_HIP_ENABLED ON CACHE INTERNAL
-                "Whether the optional HIP backend is enabled" FORCE)
-            if(TARGET hip::host)
-                list(APPEND BLITZAR_HIP_LINK_TARGETS hip::host)
-            endif()
-            if(TARGET hip::device)
-                list(APPEND BLITZAR_HIP_LINK_TARGETS hip::device)
-            elseif(TARGET hip-lang::device)
-                list(APPEND BLITZAR_HIP_LINK_TARGETS hip-lang::device)
-            endif()
-            set(BLITZAR_HIP_LINK_TARGETS "${BLITZAR_HIP_LINK_TARGETS}"
-                CACHE INTERNAL "HIP runtime targets linked by BLITZAR" FORCE)
-            message(STATUS "BLITZAR HIP backend enabled with ${CMAKE_HIP_COMPILER}")
-        elseif(_blitzar_hip_mode STREQUAL "ON")
-            message(FATAL_ERROR
-                "BLITZAR_HIP_MODE=ON could not configure a HIP compiler")
+        if(DEFINED CMAKE_HIP_PLATFORM)
+            set(_blitzar_hip_platform "${CMAKE_HIP_PLATFORM}")
+        elseif(DEFINED ENV{HIP_PLATFORM})
+            set(_blitzar_hip_platform "$ENV{HIP_PLATFORM}")
         else()
-            message(STATUS "HIP compiler is unavailable; using the CPU backend")
+            find_program(_blitzar_hipconfig
+                NAMES hipconfig
+                HINTS ${_blitzar_hip_hints}
+                PATH_SUFFIXES bin)
+            if(_blitzar_hipconfig)
+                execute_process(
+                    COMMAND "${_blitzar_hipconfig}" --platform
+                    OUTPUT_VARIABLE _blitzar_hip_platform
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                    ERROR_QUIET)
+            endif()
+        endif()
+        string(TOLOWER "${_blitzar_hip_platform}" _blitzar_hip_platform)
+        if(NOT _blitzar_hip_platform STREQUAL "amd" AND
+           NOT _blitzar_hip_platform STREQUAL "nvidia")
+            message(FATAL_ERROR
+                "HIP_PLATFORM must be amd or nvidia when HIP is enabled")
+        endif()
+        set(CMAKE_HIP_PLATFORM "${_blitzar_hip_platform}" CACHE STRING
+            "HIP platform selected by BLITZAR" FORCE)
+
+        include(CheckLanguage)
+
+        if(_blitzar_hip_platform STREQUAL "nvidia")
+            # CMake rejects hipcc as a HIP compiler.  On NVIDIA, compile HIP
+            # sources as CUDA and keep HIP as the source/runtime API.
+            if(DEFINED CMAKE_HIP_COMPILER AND
+               CMAKE_HIP_COMPILER MATCHES "hipcc")
+                unset(CMAKE_HIP_COMPILER CACHE)
+            endif()
+            find_program(_blitzar_cuda_compiler
+                NAMES nvcc
+                HINTS $ENV{CUDA_PATH} $ENV{CUDA_HOME}
+                PATH_SUFFIXES bin)
+            if(_blitzar_cuda_compiler)
+                set(CMAKE_CUDA_COMPILER "${_blitzar_cuda_compiler}"
+                    CACHE FILEPATH "CUDA compiler used for NVIDIA HIP")
+                if(DEFINED CMAKE_HIP_ARCHITECTURES AND
+                   NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+                    set(CMAKE_CUDA_ARCHITECTURES "${CMAKE_HIP_ARCHITECTURES}"
+                        CACHE STRING "CUDA architectures used for HIP")
+                endif()
+                set(CMAKE_CUDA_STANDARD 20 CACHE STRING
+                    "CUDA language standard used for HIP")
+                set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+                set(CMAKE_CUDA_EXTENSIONS OFF)
+                check_language(CUDA)
+                if(CMAKE_CUDA_COMPILER)
+                    enable_language(CUDA)
+                    find_package(CUDAToolkit REQUIRED)
+                    find_package(hip CONFIG QUIET HINTS ${_blitzar_hip_hints})
+                    set(BLITZAR_HIP_ENABLED ON CACHE INTERNAL
+                        "Whether the optional HIP backend is enabled" FORCE)
+                    set(BLITZAR_HIP_LANGUAGE "CUDA" CACHE INTERNAL
+                        "CMake language used to compile the HIP backend" FORCE)
+                    if(TARGET CUDA::cudart)
+                        list(APPEND BLITZAR_HIP_LINK_TARGETS CUDA::cudart)
+                    endif()
+                    if(TARGET hip::host)
+                        list(APPEND BLITZAR_HIP_LINK_TARGETS hip::host)
+                    endif()
+                    set(BLITZAR_HIP_LINK_TARGETS
+                        "${BLITZAR_HIP_LINK_TARGETS}" CACHE INTERNAL
+                        "HIP runtime targets linked by BLITZAR" FORCE)
+                    message(STATUS
+                        "BLITZAR HIP backend enabled with HIP headers and "
+                        "${CMAKE_CUDA_COMPILER}")
+                elseif(_blitzar_hip_mode STREQUAL "ON")
+                    message(FATAL_ERROR
+                        "BLITZAR_HIP_MODE=ON could not configure nvcc")
+                else()
+                    message(STATUS "nvcc is unavailable; using the CPU backend")
+                endif()
+            elseif(_blitzar_hip_mode STREQUAL "ON")
+                message(FATAL_ERROR
+                    "BLITZAR_HIP_MODE=ON requires nvcc for HIP_PLATFORM=nvidia")
+            else()
+                message(STATUS "nvcc is unavailable; using the CPU backend")
+            endif()
+        else()
+            if(NOT DEFINED CMAKE_HIP_COMPILER)
+                find_program(_blitzar_hip_clang
+                    NAMES clang++ clang++-17
+                    HINTS $ENV{HIP_PATH}/bin $ENV{ROCM_PATH}/llvm/bin)
+                if(_blitzar_hip_clang)
+                    set(CMAKE_HIP_COMPILER "${_blitzar_hip_clang}"
+                        CACHE FILEPATH "HIP compiler used by BLITZAR")
+                endif()
+            endif()
+            if(DEFINED CMAKE_HIP_COMPILER AND
+               CMAKE_HIP_COMPILER MATCHES "hipcc")
+                unset(CMAKE_HIP_COMPILER CACHE)
+            endif()
+            set(CMAKE_HIP_STANDARD 20 CACHE STRING "HIP language standard")
+            set(CMAKE_HIP_STANDARD_REQUIRED ON)
+            set(CMAKE_HIP_EXTENSIONS OFF)
+            include(CheckLanguage)
+            check_language(HIP)
+            if(CMAKE_HIP_COMPILER)
+                enable_language(HIP)
+                find_package(hip CONFIG QUIET HINTS ${_blitzar_hip_hints})
+                if(NOT hip_FOUND)
+                    find_package(HIP CONFIG QUIET HINTS ${_blitzar_hip_hints})
+                endif()
+                set(BLITZAR_HIP_ENABLED ON CACHE INTERNAL
+                    "Whether the optional HIP backend is enabled" FORCE)
+                set(BLITZAR_HIP_LANGUAGE "HIP" CACHE INTERNAL
+                    "CMake language used to compile the HIP backend" FORCE)
+                if(TARGET hip::host)
+                    list(APPEND BLITZAR_HIP_LINK_TARGETS hip::host)
+                endif()
+                if(TARGET hip::device)
+                    list(APPEND BLITZAR_HIP_LINK_TARGETS hip::device)
+                elseif(TARGET hip-lang::device)
+                    list(APPEND BLITZAR_HIP_LINK_TARGETS hip-lang::device)
+                endif()
+                set(BLITZAR_HIP_LINK_TARGETS
+                    "${BLITZAR_HIP_LINK_TARGETS}" CACHE INTERNAL
+                    "HIP runtime targets linked by BLITZAR" FORCE)
+                message(STATUS
+                    "BLITZAR HIP backend enabled with ${CMAKE_HIP_COMPILER}")
+            elseif(_blitzar_hip_mode STREQUAL "ON")
+                message(FATAL_ERROR
+                    "BLITZAR_HIP_MODE=ON could not configure a HIP compiler")
+            else()
+                message(STATUS "HIP compiler is unavailable; using the CPU backend")
+            endif()
         endif()
     elseif(_blitzar_hip_mode STREQUAL "ON")
         message(FATAL_ERROR
@@ -88,6 +183,15 @@ function(blitzar_enable_hip target)
         return()
     endif()
     target_compile_definitions(${target} PRIVATE BLITZAR_HAS_HIP=1)
+    if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
+        target_compile_definitions(${target} PRIVATE
+            __HIP_PLATFORM_NVCC__
+            __HIP_PLATFORM_NVIDIA__
+        )
+    endif()
+    if(hip_INCLUDE_DIRS)
+        target_include_directories(${target} SYSTEM PRIVATE ${hip_INCLUDE_DIRS})
+    endif()
     if(BLITZAR_HIP_LINK_TARGETS)
         target_link_libraries(${target} PUBLIC ${BLITZAR_HIP_LINK_TARGETS})
     endif()

@@ -28,9 +28,28 @@ endif()
 
 function(blitzar_enable_warnings target)
     if(MSVC)
-        target_compile_options(${target} PRIVATE /W4 /WX)
+        target_compile_options(${target} PRIVATE
+            "$<$<COMPILE_LANGUAGE:C>:/W4>"
+            "$<$<COMPILE_LANGUAGE:C>:/WX>"
+            "$<$<COMPILE_LANGUAGE:CXX>:/W4>"
+            "$<$<COMPILE_LANGUAGE:CXX>:/WX>"
+            "$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/W4>"
+            "$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/WX>"
+        )
     else()
-        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+        target_compile_options(${target} PRIVATE
+            "$<$<COMPILE_LANGUAGE:C>:-Wall>"
+            "$<$<COMPILE_LANGUAGE:C>:-Wextra>"
+            "$<$<COMPILE_LANGUAGE:C>:-Wpedantic>"
+            "$<$<COMPILE_LANGUAGE:C>:-Werror>"
+            "$<$<COMPILE_LANGUAGE:CXX>:-Wall>"
+            "$<$<COMPILE_LANGUAGE:CXX>:-Wextra>"
+            "$<$<COMPILE_LANGUAGE:CXX>:-Wpedantic>"
+            "$<$<COMPILE_LANGUAGE:CXX>:-Werror>"
+            "$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Wall>"
+            "$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Wextra>"
+            "$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Werror>"
+        )
     endif()
 endfunction()
 
@@ -59,12 +78,18 @@ target_sources(blitzar PRIVATE
 )
 
 if(BLITZAR_HIP_ENABLED)
-    target_sources(blitzar PRIVATE
+    set(BLITZAR_HIP_SOURCES
         src/gpu/HipBuffers.hip
         src/gpu/HipContext.hip
         src/solvers/gpu/DirectKernel.hip
         src/solvers/gpu/BarnesHutKernel.hip
     )
+    if(BLITZAR_HIP_LANGUAGE STREQUAL "CUDA")
+        set_source_files_properties(${BLITZAR_HIP_SOURCES} PROPERTIES
+            LANGUAGE CUDA
+        )
+    endif()
+    target_sources(blitzar PRIVATE ${BLITZAR_HIP_SOURCES})
 else()
     target_sources(blitzar PRIVATE
         src/gpu/HipContextStub.cpp

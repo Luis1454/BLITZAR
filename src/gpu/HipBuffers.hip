@@ -44,7 +44,7 @@ public:
     void Release() noexcept
     {
         if (data_ != nullptr) {
-            hipHostFree(data_);
+            (void)hipHostFree(data_);
             data_ = nullptr;
         }
         bytes_ = 0;
@@ -89,7 +89,7 @@ public:
     void Release() noexcept
     {
         if (data_ != nullptr) {
-            hipFree(data_);
+            (void)hipFree(data_);
             data_ = nullptr;
         }
         bytes_ = 0;
@@ -136,8 +136,8 @@ struct HipBuffers::Impl final {
     ~Impl()
     {
         if (stream != nullptr) {
-            hipStreamSynchronize(stream);
-            hipStreamDestroy(stream);
+            (void)hipStreamSynchronize(stream);
+            (void)hipStreamDestroy(stream);
             stream = nullptr;
         }
     }

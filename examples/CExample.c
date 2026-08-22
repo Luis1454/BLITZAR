@@ -1,5 +1,7 @@
 #include <blitzar/blitzar.h>
 
+#include <stddef.h>
+
 int main(void)
 {
     blitzar_context* context = NULL;
