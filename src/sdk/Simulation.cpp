@@ -266,9 +266,20 @@ struct ParticleInputStage final {
         }
     }
     const std::size_t count = packets.Size();
-    if (particles.SetCount(count) != BLITZAR_STATUS_OK ||
-        accelerations.SetCount(count) != BLITZAR_STATUS_OK ||
-        workspace.SetCount(count) != BLITZAR_STATUS_OK) {
+    const std::size_t previous_particle_count = particles.Count();
+    const std::size_t previous_acceleration_count = accelerations.Count();
+    const std::size_t previous_workspace_count = workspace.Count();
+    if (particles.SetCount(count) != BLITZAR_STATUS_OK) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
+    if (accelerations.SetCount(count) != BLITZAR_STATUS_OK) {
+        (void)particles.SetCount(previous_particle_count);
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
+    if (workspace.SetCount(count) != BLITZAR_STATUS_OK) {
+        (void)particles.SetCount(previous_particle_count);
+        (void)accelerations.SetCount(previous_acceleration_count);
+        (void)workspace.SetCount(previous_workspace_count);
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
     const auto position_x = arena.PositionX();
@@ -290,6 +301,60 @@ struct ParticleInputStage final {
         ids[index] = packet.id;
     }
     local_count = count;
+    return BLITZAR_STATUS_OK;
+}
+
+[[nodiscard]] blitzar_status CaptureLocalPackets(
+    blitzar_core::ParticleStateView state,
+    std::span<const std::uint64_t> ids,
+    blitzar_parallel::PacketBuffer& snapshot) noexcept
+{
+    if (!blitzar_core::IsValid(state) || ids.size() != state.count) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    try {
+        snapshot.Resize(state.count);
+    } catch (const std::length_error&) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    } catch (const std::bad_alloc&) {
+        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+    }
+    return blitzar_parallel::ParticlePacker::Pack(
+               state, ids, snapshot.View())
+               ? BLITZAR_STATUS_OK
+               : BLITZAR_STATUS_INVALID_ARGUMENT;
+}
+
+[[nodiscard]] blitzar_status RestoreLocalPackets(
+    const blitzar_parallel::PacketBuffer& snapshot,
+    blitzar_particles::ParticleArena& arena,
+    blitzar_particles::ParticleBuffer& particles,
+    std::span<std::uint64_t> ids) noexcept
+{
+    if (snapshot.Size() > arena.Count() || snapshot.Size() > ids.size()) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
+    if (particles.SetCount(snapshot.Size()) != BLITZAR_STATUS_OK) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
+    const auto position_x = arena.PositionX();
+    const auto position_y = arena.PositionY();
+    const auto position_z = arena.PositionZ();
+    const auto velocity_x = arena.VelocityX();
+    const auto velocity_y = arena.VelocityY();
+    const auto velocity_z = arena.VelocityZ();
+    const auto mass = arena.Mass();
+    for (std::size_t index = 0; index < snapshot.Size(); ++index) {
+        const blitzar_parallel::ParticlePacket& packet = snapshot.View()[index];
+        position_x[index] = packet.x;
+        position_y[index] = packet.y;
+        position_z[index] = packet.z;
+        velocity_x[index] = packet.velocity_x;
+        velocity_y[index] = packet.velocity_y;
+        velocity_z[index] = packet.velocity_z;
+        mass[index] = packet.mass;
+        ids[index] = packet.id;
+    }
     return BLITZAR_STATUS_OK;
 }
 
@@ -458,7 +523,8 @@ Simulation::Simulation(std::size_t particle_count)
       particle_ids_(particle_count),
       local_particle_count_(particle_count),
       source_particle_count_(particle_count),
-      exchange_buffer_{}
+      exchange_buffer_{},
+      rollback_buffer_{}
 {
     snapshot_header_.particle_count = particle_count_;
 }
@@ -802,6 +868,47 @@ blitzar_status Simulation::Step() noexcept
     blitzar_status status = std::visit(
         [this](auto& solver) {
             if (mpi_context_.IsDistributed()) {
+                const std::size_t rollback_particle_count = particles_.Count();
+                const std::size_t rollback_acceleration_count =
+                    accelerations_.Count();
+                const std::size_t rollback_workspace_count = workspace_.Count();
+                if (rollback_particle_count > particle_ids_.size()) {
+                    return BLITZAR_STATUS_INTERNAL_ERROR;
+                }
+                rollback_buffer_.Clear();
+                const blitzar_status snapshot_status = CaptureLocalPackets(
+                    particles_.State(),
+                    std::span<const std::uint64_t>(particle_ids_)
+                        .first(rollback_particle_count),
+                    rollback_buffer_);
+                if (snapshot_status != BLITZAR_STATUS_OK) {
+                    rollback_buffer_.Clear();
+                    return snapshot_status;
+                }
+                bool rollback_snapshot_active = true;
+                auto rollback = [this,
+                                 &rollback_snapshot_active,
+                                 rollback_particle_count,
+                                 rollback_acceleration_count,
+                                 rollback_workspace_count]() noexcept {
+                    if (!rollback_snapshot_active) {
+                        return;
+                    }
+                    (void)RestoreLocalPackets(
+                        rollback_buffer_,
+                        *arena_,
+                        particles_,
+                        std::span<std::uint64_t>(particle_ids_));
+                    (void)particles_.SetCount(rollback_particle_count);
+                    (void)accelerations_.SetCount(rollback_acceleration_count);
+                    (void)workspace_.SetCount(rollback_workspace_count);
+                    (void)workspace_.Capture(particles_.MutableView());
+                    local_particle_count_ = rollback_particle_count;
+                    source_particle_count_ = rollback_particle_count;
+                    exchange_buffer_.Clear();
+                    rollback_buffer_.Clear();
+                    rollback_snapshot_active = false;
+                };
                 DistributedSolverDispatcher dispatcher(
                     hip_context_,
                     solver,
@@ -813,11 +920,14 @@ blitzar_status Simulation::Step() noexcept
                     exchange_buffer_,
                     source_particle_count_);
                 auto migrate_after_drift =
-                    [this](
+                    [this, rollback_particle_count](
                         blitzar_particles::ParticleBuffer& current_particles,
                         blitzar_particles::AccelerationBuffer& current_accelerations,
                         blitzar_integration::LeapfrogWorkspace& current_workspace)
                     -> blitzar_integration::detail::DriftTransition {
+                    if (current_particles.Count() != rollback_particle_count) {
+                        return {BLITZAR_STATUS_INTERNAL_ERROR, false};
+                    }
                     blitzar_parallel::PacketBuffer migrated;
                     blitzar_status migration_status = mpi_exchange_.Migrate(
                         current_particles.State(),
@@ -842,7 +952,7 @@ blitzar_status Simulation::Step() noexcept
                     source_particle_count_ = local_particle_count_;
                     return {BLITZAR_STATUS_OK, true};
                 };
-                return integrator_.Advance(
+                const blitzar_status advance_status = integrator_.Advance(
                     particles_,
                     accelerations_,
                     workspace_,
@@ -851,7 +961,15 @@ blitzar_status Simulation::Step() noexcept
                     execution_settings_,
                     traversal_workspace_,
                     particles_.State(),
-                    migrate_after_drift);
+                    migrate_after_drift,
+                    rollback);
+                if (advance_status != BLITZAR_STATUS_OK) {
+                    rollback();
+                } else {
+                    rollback_snapshot_active = false;
+                    rollback_buffer_.Clear();
+                }
+                return advance_status;
             }
             SolverDispatcher dispatcher(
                 hip_context_, solver, gravity_, barnes_hut_);

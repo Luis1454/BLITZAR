@@ -108,6 +108,7 @@ private:
     std::size_t local_particle_count_;
     std::size_t source_particle_count_;
     blitzar_parallel::PacketBuffer exchange_buffer_;
+    blitzar_parallel::PacketBuffer rollback_buffer_;
 };
 
 }  // namespace blitzar_sdk

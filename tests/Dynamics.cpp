@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstdint>
 #include <limits>
+#include <span>
 #include <utility>
 
 namespace {
@@ -243,6 +244,52 @@ int main()
     const blitzar_core::ParticleStateView restored = rollback_particle.State();
     BLITZAR_CHECK(std::abs(restored.x[0]) < 1.0e-12);
     BLITZAR_CHECK(std::abs(restored.velocity_x[0] - 1.0) < 1.0e-12);
+
+    blitzar_particles::ParticleBuffer external_rollback_particle(1);
+    blitzar_particles::AccelerationBuffer external_rollback_acceleration(1);
+    blitzar_integration::LeapfrogWorkspace external_rollback_workspace(1);
+    BLITZAR_CHECK(external_rollback_particle.SetVelocity(0, {1.0, 0.0, 0.0}) ==
+           BLITZAR_STATUS_OK);
+    bool drift_mutated_state = false;
+    std::size_t rollback_calls = 0;
+    auto mutating_drift = [&drift_mutated_state](
+                              blitzar_particles::ParticleBuffer& current_particles,
+                              blitzar_particles::AccelerationBuffer&,
+                              blitzar_integration::LeapfrogWorkspace&)
+        -> blitzar_integration::detail::DriftTransition {
+        drift_mutated_state = true;
+        const blitzar_status status = current_particles.SetCount(0);
+        return {status, status == BLITZAR_STATUS_OK};
+    };
+    auto restore_external_state = [&]() noexcept {
+        ++rollback_calls;
+        drift_mutated_state = false;
+        (void)external_rollback_particle.SetCount(1);
+        (void)external_rollback_acceleration.SetCount(1);
+        (void)external_rollback_workspace.SetCount(1);
+    };
+    FailOnSecondSolver external_failing_solver{};
+    std::span<std::size_t> external_solver_workspace{};
+    BLITZAR_CHECK(integrator.Advance(
+               external_rollback_particle,
+               external_rollback_acceleration,
+               external_rollback_workspace,
+               external_failing_solver,
+               0.5,
+               settings,
+               external_solver_workspace,
+               external_rollback_particle.State(),
+               mutating_drift,
+               restore_external_state) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(rollback_calls == 1);
+    BLITZAR_CHECK(!drift_mutated_state);
+    BLITZAR_CHECK(external_rollback_particle.Count() == 1);
+    BLITZAR_CHECK(external_rollback_acceleration.Count() == 1);
+    BLITZAR_CHECK(external_rollback_workspace.Count() == 1);
+    const blitzar_core::ParticleStateView externally_restored =
+        external_rollback_particle.State();
+    BLITZAR_CHECK(std::abs(externally_restored.x[0]) < 1.0e-12);
+    BLITZAR_CHECK(std::abs(externally_restored.velocity_x[0] - 1.0) < 1.0e-12);
 
     blitzar_particles::ParticleBuffer non_finite_particle(1);
     blitzar_particles::AccelerationBuffer non_finite_acceleration(1);

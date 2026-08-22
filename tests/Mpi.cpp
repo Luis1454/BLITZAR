@@ -9,6 +9,7 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 
 namespace {
 
@@ -211,6 +212,66 @@ struct StateArrays final {
     return local_ok;
 }
 
+[[nodiscard]] bool RunRollbackCase() noexcept
+{
+    StateArrays initial{};
+    initial.x = {0.0, 1.0, 10.0, 11.0, 20.0, 21.0, 30.0, 31.0};
+    initial.velocity_x.fill(0.0);
+    for (std::size_t index = 1; index < ParticleCount; index += 2) {
+        initial.velocity_x[index] = -1.0;
+    }
+    initial.velocity_y.fill(0.0);
+    initial.velocity_z.fill(0.0);
+    initial.mass.fill(1.0);
+
+    blitzar_sdk::Simulation simulation(ParticleCount);
+    const bool configured =
+        simulation.SetSolver(BLITZAR_SOLVER_DIRECT) == BLITZAR_STATUS_OK &&
+        simulation.SetGravity(
+            std::numeric_limits<double>::denorm_min(),
+            0.0) == BLITZAR_STATUS_OK &&
+        simulation.SetTimestep(1.0) == BLITZAR_STATUS_OK &&
+        simulation.SetParticles(
+            initial.x,
+            initial.y,
+            initial.z,
+            initial.velocity_x,
+            initial.velocity_y,
+            initial.velocity_z,
+            initial.mass) == BLITZAR_STATUS_OK;
+    const blitzar_status rollback_status = simulation.Step();
+    if (!configured || rollback_status != BLITZAR_STATUS_SINGULARITY) {
+        return false;
+    }
+
+    StateArrays restored{};
+    if (simulation.GetState(
+            restored.x,
+            restored.y,
+            restored.z,
+            restored.velocity_x,
+            restored.velocity_y,
+            restored.velocity_z,
+            restored.mass) != BLITZAR_STATUS_OK) {
+        return false;
+    }
+    for (std::size_t index = 0; index < ParticleCount; ++index) {
+        if (restored.x[index] != initial.x[index] ||
+            restored.y[index] != initial.y[index] ||
+            restored.z[index] != initial.z[index] ||
+            restored.velocity_x[index] != initial.velocity_x[index] ||
+            restored.velocity_y[index] != initial.velocity_y[index] ||
+            restored.velocity_z[index] != initial.velocity_z[index] ||
+            restored.mass[index] != initial.mass[index]) {
+            return false;
+        }
+    }
+
+    const bool retry = simulation.SetGravity(1.0, 0.1) == BLITZAR_STATUS_OK &&
+                       simulation.Step() == BLITZAR_STATUS_OK;
+    return retry;
+}
+
 }  // namespace
 
 int main(int argc, char** argv)
@@ -224,7 +285,8 @@ int main(int argc, char** argv)
         migration_case ? MigrationState() : InitialState(),
         0.01,
         migration_case ? 1 : 2);
-    const bool local_ok = valid_world && local_case;
+    const bool rollback_case = RunRollbackCase();
+    const bool local_ok = valid_world && local_case && rollback_case;
 
     int local_failure = local_ok ? 0 : 1;
     int global_failure = 0;

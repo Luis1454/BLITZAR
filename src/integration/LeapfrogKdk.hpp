@@ -29,6 +29,12 @@ struct NoopDriftHook final {
     }
 };
 
+struct NoopRollbackHook final {
+    void operator()() const noexcept
+    {
+    }
+};
+
 [[nodiscard]] inline bool IsFiniteState(
     blitzar_core::ParticleStateView state) noexcept
 {
@@ -70,6 +76,17 @@ struct NoopDriftHook final {
 {
     const blitzar_status restore_status = workspace.Restore(state);
     return restore_status == BLITZAR_STATUS_OK ? status : restore_status;
+}
+
+template <typename RollbackHook>
+[[nodiscard]] inline blitzar_status RestoreWithRollback(
+    RollbackHook& rollback_hook,
+    blitzar_particles::ParticleBuffer& particles,
+    LeapfrogWorkspace& workspace,
+    blitzar_status status) noexcept
+{
+    rollback_hook();
+    return RestoreOr(workspace, particles.MutableView(), status);
 }
 
 template <typename Solver, typename Workspace>
@@ -180,6 +197,35 @@ public:
         blitzar_core::ParticleStateView solver_particles,
         DriftHook& drift_hook) const noexcept
     {
+        detail::NoopRollbackHook rollback_hook;
+        return Advance(
+            particles,
+            accelerations,
+            workspace,
+            solver,
+            timestep,
+            settings,
+            solver_workspace,
+            solver_particles,
+            drift_hook,
+            rollback_hook);
+    }
+
+    template <typename Solver, typename SolverWorkspace,
+              typename DriftHook, typename RollbackHook>
+
+    [[nodiscard]] blitzar_status Advance(
+        blitzar_particles::ParticleBuffer& particles,
+        blitzar_particles::AccelerationBuffer& accelerations,
+        LeapfrogWorkspace& workspace,
+        Solver& solver,
+        blitzar_core::Scalar timestep,
+        const blitzar_core::ExecutionSettings& settings,
+        SolverWorkspace& solver_workspace,
+        blitzar_core::ParticleStateView solver_particles,
+        DriftHook& drift_hook,
+        RollbackHook& rollback_hook) const noexcept
+    {
         if (!particles.IsValid() || !accelerations.IsValid() ||
             !workspace.IsValid() || particles.Count() != accelerations.Count() ||
             particles.Count() != workspace.Count() || !std::isfinite(timestep) ||
@@ -199,13 +245,19 @@ public:
         status = detail::ComputeSolver(
             solver, solver_particles, force, settings, solver_workspace);
         if (status != BLITZAR_STATUS_OK) {
-            return status;
+            return detail::RestoreWithRollback(
+                rollback_hook, particles, workspace, status);
         }
         if (!detail::IsFiniteForce(force)) {
-            return BLITZAR_STATUS_INVALID_ARGUMENT;
+            return detail::RestoreWithRollback(
+                rollback_hook,
+                particles,
+                workspace,
+                BLITZAR_STATUS_INVALID_ARGUMENT);
         }
 
         const blitzar_core::Scalar half_step = 0.5 * timestep;
+
 #if defined(_OPENMP)
 #pragma omp parallel for simd schedule(static)
 #endif
@@ -221,27 +273,36 @@ public:
             mutable_state.z[index] += timestep * mutable_state.velocity_z[index];
         }
         if (!detail::IsFiniteState(particles.State())) {
-            return detail::RestoreOr(
+            return detail::RestoreWithRollback(
+                rollback_hook,
+                particles,
                 workspace,
-                mutable_state,
                 BLITZAR_STATUS_INVALID_ARGUMENT);
         }
 
         const detail::DriftTransition transition =
             drift_hook(particles, accelerations, workspace);
         if (transition.status != BLITZAR_STATUS_OK) {
-            return detail::RestoreOr(
-                workspace,
-                mutable_state,
-                transition.status);
+            return detail::RestoreWithRollback(
+                rollback_hook, particles, workspace, transition.status);
         }
         if (transition.state_replaced) {
+            const std::size_t checkpoint_count = workspace.Count();
             if (workspace.SetCount(particles.Count()) != BLITZAR_STATUS_OK) {
-                return BLITZAR_STATUS_INTERNAL_ERROR;
+                return detail::RestoreWithRollback(
+                    rollback_hook,
+                    particles,
+                    workspace,
+                    BLITZAR_STATUS_INTERNAL_ERROR);
             }
             mutable_state = particles.MutableView();
             if (workspace.Capture(mutable_state) != BLITZAR_STATUS_OK) {
-                return BLITZAR_STATUS_INTERNAL_ERROR;
+                (void)workspace.SetCount(checkpoint_count);
+                return detail::RestoreWithRollback(
+                    rollback_hook,
+                    particles,
+                    workspace,
+                    BLITZAR_STATUS_INTERNAL_ERROR);
             }
             solver_particles = particles.State();
         }
@@ -251,12 +312,14 @@ public:
         status = detail::ComputeSolver(
             solver, solver_particles, force, settings, solver_workspace);
         if (status != BLITZAR_STATUS_OK) {
-            return detail::RestoreOr(workspace, mutable_state, status);
+            return detail::RestoreWithRollback(
+                rollback_hook, particles, workspace, status);
         }
         if (!detail::IsFiniteForce(force)) {
-            return detail::RestoreOr(
+            return detail::RestoreWithRollback(
+                rollback_hook,
+                particles,
                 workspace,
-                mutable_state,
                 BLITZAR_STATUS_INVALID_ARGUMENT);
         }
 #if defined(_OPENMP)
@@ -271,9 +334,10 @@ public:
             mutable_state.velocity_z[index] += half_step * force.z[index];
         }
         if (!detail::IsFiniteState(particles.State())) {
-            return detail::RestoreOr(
+            return detail::RestoreWithRollback(
+                rollback_hook,
+                particles,
                 workspace,
-                mutable_state,
                 BLITZAR_STATUS_INVALID_ARGUMENT);
         }
         return BLITZAR_STATUS_OK;
