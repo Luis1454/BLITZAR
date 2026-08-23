@@ -2,6 +2,7 @@
 #define BLITZAR_GPU_HIP_CONTEXT_HPP
 
 #include "core/Execution.hpp"
+#include "core/Solver.hpp"
 #include "core/Types.hpp"
 #include "physics/GravityLaw.hpp"
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
@@ -40,7 +41,7 @@ public:
         blitzar_core::ForceView forces, blitzar_physics::GravityParameters gravity) noexcept;
     [[nodiscard]] blitzar_status ComputeDirectRange(blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces, blitzar_physics::GravityParameters gravity,
-        std::size_t source_begin, std::size_t source_end, bool accumulate) noexcept;
+        blitzar_core::ForceRange range) noexcept;
 
     [[nodiscard]] blitzar_status ComputeBarnesHut(blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& execution,

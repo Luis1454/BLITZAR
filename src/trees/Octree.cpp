@@ -47,16 +47,15 @@ bool Octree::IsValidInput(blitzar_core::ParticleStateView particles) noexcept
     return true;
 }
 
-Octree::Cell Octree::MakeCell(blitzar_core::Vector3 center, blitzar_core::Scalar half_extent,
-    std::size_t begin, std::size_t count, std::size_t depth) const noexcept
+Octree::Cell Octree::MakeCell(CellPlacement placement) const noexcept
 {
     Cell cell{};
 
-    cell.center = center;
-    cell.half_extent = half_extent;
-    cell.begin = begin;
-    cell.count = count;
-    cell.depth = depth;
+    cell.center = placement.center;
+    cell.half_extent = placement.half_extent;
+    cell.begin = placement.begin;
+    cell.count = placement.count;
+    cell.depth = placement.depth;
     cell.children.fill(Cell::InvalidIndex);
 
     return cell;
@@ -277,7 +276,7 @@ blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
     const blitzar_core::Vector3 center{0.5 * (minimum.x + maximum.x), 0.5 * (minimum.y + maximum.y),
         0.5 * (minimum.z + maximum.z)};
 
-    cells_.push_back(MakeCell(center, half_extent, 0, particles.SourceCount(), 0));
+    cells_.push_back(MakeCell({center, half_extent, 0, particles.SourceCount(), 0}));
 
     for (std::size_t index = 0; index < cells_.size(); ++index) {
         const Cell cell = cells_[index];
@@ -323,8 +322,8 @@ blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
 
             const std::size_t child = cells_.size();
 
-            cells_.push_back(
-                MakeCell(child_center, child_half_extent, begin, counts[octant], cell.depth + 1));
+            cells_.push_back(MakeCell(
+                {child_center, child_half_extent, begin, counts[octant], cell.depth + 1}));
             cells_[index].children[octant] = child;
         }
     }

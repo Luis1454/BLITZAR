@@ -37,11 +37,14 @@ public:
     [[nodiscard]] blitzar_status SetGravity(
         blitzar_core::Scalar gravitational_constant, blitzar_core::Scalar softening) noexcept;
     [[nodiscard]] blitzar_status SetUnits(blitzar_core::UnitSystem units) noexcept;
+    [[nodiscard]] blitzar_status SetBarnesHut(
+        blitzar_barnes_hut::BarnesHutSettings settings) noexcept;
     [[nodiscard]] blitzar_status SetBarnesHut(blitzar_core::Scalar opening_angle,
         std::size_t max_particles, std::size_t max_cells, std::size_t leaf_capacity,
         std::size_t max_depth) noexcept;
     [[nodiscard]] blitzar_status SetTimestep(blitzar_core::Scalar timestep) noexcept;
     [[nodiscard]] blitzar_status SetSeed(std::uint64_t seed) noexcept;
+    [[nodiscard]] blitzar_status SetParticles(blitzar_core::ParticleStateView input) noexcept;
     [[nodiscard]] blitzar_status SetParticles(std::span<const blitzar_core::Scalar> position_x,
         std::span<const blitzar_core::Scalar> position_y,
         std::span<const blitzar_core::Scalar> position_z,
@@ -49,6 +52,7 @@ public:
         std::span<const blitzar_core::Scalar> velocity_y,
         std::span<const blitzar_core::Scalar> velocity_z,
         std::span<const blitzar_core::Scalar> mass) noexcept;
+    [[nodiscard]] blitzar_status GetState(blitzar_core::ParticleOutputView output) const noexcept;
     [[nodiscard]] blitzar_status GetState(std::span<blitzar_core::Scalar> position_x,
         std::span<blitzar_core::Scalar> position_y, std::span<blitzar_core::Scalar> position_z,
         std::span<blitzar_core::Scalar> velocity_x, std::span<blitzar_core::Scalar> velocity_y,
@@ -61,10 +65,10 @@ private:
     using SolverVariant =
         std::variant<blitzar_direct::DirectSolver, blitzar_barnes_hut::BarnesHutSolver>;
 
+    struct SolverCreationRequest;
+
     [[nodiscard]] static std::size_t DefaultMaxCells(std::size_t particle_count) noexcept;
-    [[nodiscard]] static blitzar_status CreateSolver(blitzar_solver_kind solver_kind,
-        blitzar_physics::GravityParameters gravity,
-        blitzar_barnes_hut::BarnesHutSettings barnes_hut, std::size_t staging_capacity,
+    [[nodiscard]] static blitzar_status CreateSolver(const SolverCreationRequest& request,
         SolverVariant& solver) noexcept;
     [[nodiscard]] blitzar_status Remember(blitzar_status status) const noexcept;
 

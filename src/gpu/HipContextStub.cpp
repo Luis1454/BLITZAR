@@ -91,8 +91,7 @@ blitzar_status HipContext::ComputeDirect(blitzar_core::ParticleStateView, blitza
 }
 
 blitzar_status HipContext::ComputeDirectRange(blitzar_core::ParticleStateView,
-    blitzar_core::ForceView, blitzar_physics::GravityParameters, std::size_t, std::size_t,
-    bool) noexcept
+    blitzar_core::ForceView, blitzar_physics::GravityParameters, blitzar_core::ForceRange) noexcept
 {
     if (status_ != BLITZAR_STATUS_OK) {
         return status_;

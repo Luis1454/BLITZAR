@@ -48,6 +48,17 @@ struct MutableParticleView final {
     std::span<Scalar> velocity_z{};
 };
 
+struct ParticleOutputView final {
+    std::size_t count{};
+    std::span<Scalar> x{};
+    std::span<Scalar> y{};
+    std::span<Scalar> z{};
+    std::span<Scalar> velocity_x{};
+    std::span<Scalar> velocity_y{};
+    std::span<Scalar> velocity_z{};
+    std::span<Scalar> mass{};
+};
+
 struct ForceView final {
     std::size_t count{};
     std::span<Scalar> x{};
@@ -82,6 +93,14 @@ struct ForceView final {
     return view.count == view.x.size() && view.count == view.y.size() &&
            view.count == view.z.size() && view.count == view.velocity_x.size() &&
            view.count == view.velocity_y.size() && view.count == view.velocity_z.size();
+}
+
+[[nodiscard]] inline bool IsValid(ParticleOutputView view) noexcept
+{
+    return view.count == view.x.size() && view.count == view.y.size() &&
+           view.count == view.z.size() && view.count == view.velocity_x.size() &&
+           view.count == view.velocity_y.size() && view.count == view.velocity_z.size() &&
+           view.count == view.mass.size();
 }
 
 } // namespace blitzar_core

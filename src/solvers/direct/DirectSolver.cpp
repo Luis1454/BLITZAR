@@ -10,6 +10,14 @@ namespace blitzar_direct {
 
 namespace {
 
+struct ForceTargetRequest final {
+    const blitzar_physics::GravityLaw& gravity;
+    std::size_t target{};
+    blitzar_core::ParticleStateView particles;
+    blitzar_core::ForceRange range;
+    blitzar_core::Vector3& acceleration;
+};
+
 [[nodiscard]] bool IsValidState(blitzar_core::ParticleStateView particles) noexcept
 {
     for (std::size_t index = 0; index < particles.SourceCount(); ++index) {
@@ -25,25 +33,27 @@ namespace {
     return true;
 }
 
-[[nodiscard]] blitzar_status CalculateTarget(const blitzar_physics::GravityLaw& gravity,
-    std::size_t target, blitzar_core::ParticleStateView particles, std::size_t source_begin,
-    std::size_t source_end, blitzar_core::Vector3& acceleration) noexcept
+[[nodiscard]] blitzar_status CalculateTarget(const ForceTargetRequest& request) noexcept
 {
     blitzar_core::Scalar acceleration_x = 0.0;
     blitzar_core::Scalar acceleration_y = 0.0;
     blitzar_core::Scalar acceleration_z = 0.0;
 
-    for (std::size_t source = source_begin; source < source_end; ++source) {
-        if (source == target || particles.mass[source] == 0.0) {
+    for (std::size_t source = request.range.source_begin; source < request.range.source_end;
+         ++source) {
+        if (source == request.target || request.particles.mass[source] == 0.0) {
             continue;
         }
 
-        const blitzar_core::Scalar dx = particles.x[source] - particles.x[target];
-        const blitzar_core::Scalar dy = particles.y[source] - particles.y[target];
-        const blitzar_core::Scalar dz = particles.z[source] - particles.z[target];
+        const blitzar_core::Scalar dx =
+            request.particles.x[source] - request.particles.x[request.target];
+        const blitzar_core::Scalar dy =
+            request.particles.y[source] - request.particles.y[request.target];
+        const blitzar_core::Scalar dz =
+            request.particles.z[source] - request.particles.z[request.target];
         const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
         const blitzar_physics::PairStatus pair_status =
-            gravity.ValidatePair(particles.mass[source], distance_squared);
+            request.gravity.ValidatePair(request.particles.mass[source], distance_squared);
 
         if (pair_status != blitzar_physics::PairStatus::Valid) {
             return pair_status == blitzar_physics::PairStatus::Singularity
@@ -52,7 +62,7 @@ namespace {
         }
 
         const blitzar_core::Scalar factor =
-            gravity.PairFactor(particles.mass[source], distance_squared);
+            request.gravity.PairFactor(request.particles.mass[source], distance_squared);
 
         if (!std::isfinite(factor)) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -63,10 +73,10 @@ namespace {
         acceleration_z += factor * dz;
     }
 
-    acceleration = {acceleration_x, acceleration_y, acceleration_z};
+    request.acceleration = {acceleration_x, acceleration_y, acceleration_z};
 
-    if (!std::isfinite(acceleration.x) || !std::isfinite(acceleration.y) ||
-        !std::isfinite(acceleration.z)) {
+    if (!std::isfinite(request.acceleration.x) || !std::isfinite(request.acceleration.y) ||
+        !std::isfinite(request.acceleration.z)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
@@ -109,17 +119,16 @@ blitzar_core::SolverKind DirectSolver::Kind() const noexcept
 blitzar_status DirectSolver::Compute(blitzar_core::ParticleStateView particles,
     blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings) noexcept
 {
-    return ComputeRange(particles, forces, settings, 0, particles.SourceCount(), false);
+    return ComputeRange(particles, forces, settings, {0, particles.SourceCount(), false});
 }
 
 blitzar_status DirectSolver::ComputeRange(blitzar_core::ParticleStateView particles,
     blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-    std::size_t source_begin, std::size_t source_end, bool accumulate) noexcept
+    blitzar_core::ForceRange range) noexcept
 {
     if (!blitzar_core::IsValid(particles) || !blitzar_core::IsValid(forces) ||
         particles.count != forces.count || !settings.IsValid() || !gravity_.IsValid() ||
-        !IsValidState(particles) || source_begin > source_end ||
-        source_end > particles.SourceCount()) {
+        !IsValidState(particles) || !range.IsValid(particles.SourceCount())) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
@@ -139,8 +148,8 @@ blitzar_status DirectSolver::ComputeRange(blitzar_core::ParticleStateView partic
         }
 
         const std::size_t target = static_cast<std::size_t>(target_index);
-        const blitzar_status target_status = CalculateTarget(
-            gravity_, target, particles, source_begin, source_end, staging_[target]);
+        const ForceTargetRequest request{gravity_, target, particles, range, staging_[target]};
+        const blitzar_status target_status = CalculateTarget(request);
 
         if (target_status != BLITZAR_STATUS_OK) {
             blitzar_status expected = BLITZAR_STATUS_OK;
@@ -161,7 +170,7 @@ blitzar_status DirectSolver::ComputeRange(blitzar_core::ParticleStateView partic
         const std::size_t target = static_cast<std::size_t>(target_index);
         const blitzar_core::Vector3& acceleration = staging_[target];
 
-        if (accumulate) {
+        if (range.accumulate) {
             forces.x[target] += acceleration.x;
             forces.y[target] += acceleration.y;
             forces.z[target] += acceleration.z;

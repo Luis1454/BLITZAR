@@ -46,9 +46,16 @@ public:
     [[nodiscard]] bool ParticleIndex(std::size_t index, std::size_t& particle) const noexcept;
 
 private:
+    struct CellPlacement final {
+        blitzar_core::Vector3 center{};
+        blitzar_core::Scalar half_extent{};
+        std::size_t begin{};
+        std::size_t count{};
+        std::size_t depth{};
+    };
+
     [[nodiscard]] static bool IsValidInput(blitzar_core::ParticleStateView particles) noexcept;
-    [[nodiscard]] Cell MakeCell(blitzar_core::Vector3 center, blitzar_core::Scalar half_extent,
-        std::size_t begin, std::size_t count, std::size_t depth) const noexcept;
+    [[nodiscard]] Cell MakeCell(CellPlacement placement) const noexcept;
     [[nodiscard]] static std::size_t Octant(
         const Cell& cell, blitzar_core::Vector3 position) noexcept;
     [[nodiscard]] static bool Contains(const Cell& cell, blitzar_core::Vector3 position) noexcept;

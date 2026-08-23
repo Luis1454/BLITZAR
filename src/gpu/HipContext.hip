@@ -152,7 +152,7 @@ struct HipContext::Impl final {
 
     [[nodiscard]] blitzar_status ComputeDirect(blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces, blitzar_physics::GravityParameters gravity,
-        std::size_t source_begin, std::size_t source_end, bool accumulate) noexcept
+        blitzar_core::ForceRange range) noexcept
     {
         const blitzar_status buffer_status = EnsureBuffers(particles.SourceCount(), 0);
 
@@ -176,8 +176,9 @@ struct HipContext::Impl final {
             buffers.DeviceParticle(1), buffers.DeviceParticle(2), buffers.DeviceParticle(3),
             buffers.DeviceForce(0), buffers.DeviceForce(1), buffers.DeviceForce(2)};
 
-        status = blitzar_gpu_detail::LaunchDirect(addresses, particles.count, source_begin,
-            source_end, gravity.EffectiveConstant(), gravity.EffectiveSoftening(), accumulate,
+        status = blitzar_gpu_detail::LaunchDirect(addresses, particles.count, range.source_begin,
+            range.source_end, gravity.EffectiveConstant(), gravity.EffectiveSoftening(),
+            range.accumulate,
             buffers.DeviceError(), buffers.Stream());
 
         if (status != BLITZAR_STATUS_OK) {
@@ -368,12 +369,12 @@ void HipContext::SetFaultForTesting(HipFault fault) noexcept
 blitzar_status HipContext::ComputeDirect(blitzar_core::ParticleStateView particles,
     blitzar_core::ForceView forces, blitzar_physics::GravityParameters gravity) noexcept
 {
-    return ComputeDirectRange(particles, forces, gravity, 0, particles.SourceCount(), false);
+    return ComputeDirectRange(particles, forces, gravity, {0, particles.SourceCount(), false});
 }
 
 blitzar_status HipContext::ComputeDirectRange(blitzar_core::ParticleStateView particles,
     blitzar_core::ForceView forces, blitzar_physics::GravityParameters gravity,
-    std::size_t source_begin, std::size_t source_end, bool accumulate) noexcept
+    blitzar_core::ForceRange range) noexcept
 {
     if (status_ != BLITZAR_STATUS_OK) {
         return status_;
@@ -389,16 +390,15 @@ blitzar_status HipContext::ComputeDirectRange(blitzar_core::ParticleStateView pa
         return BLITZAR_STATUS_UNSUPPORTED;
     }
     if (!blitzar_core::IsValid(particles) || !blitzar_core::IsValid(forces) ||
-        particles.count != forces.count || !gravity.IsValid() || source_begin > source_end ||
-        source_end > particles.SourceCount()) {
+        particles.count != forces.count || !gravity.IsValid() ||
+        !range.IsValid(particles.SourceCount())) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     if (particles.count == 0) {
         return BLITZAR_STATUS_OK;
     }
     try {
-        return impl_->ComputeDirect(
-            particles, forces, gravity, source_begin, source_end, accumulate);
+        return impl_->ComputeDirect(particles, forces, gravity, range);
     }
     catch (const std::bad_alloc&) {
         return BLITZAR_STATUS_ALLOCATION_FAILURE;

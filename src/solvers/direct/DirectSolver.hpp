@@ -23,7 +23,7 @@ public:
         blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings) noexcept;
     [[nodiscard]] blitzar_status ComputeRange(blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-        std::size_t source_begin, std::size_t source_end, bool accumulate) noexcept;
+        blitzar_core::ForceRange range) noexcept;
 
 private:
     blitzar_physics::GravityLaw gravity_;
