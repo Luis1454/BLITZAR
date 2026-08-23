@@ -18,7 +18,6 @@
 #include <blitzar/blitzar.h>
 #include <cstddef>
 #include <cstdint>
-#include <span>
 #include <variant>
 #include <vector>
 
@@ -39,25 +38,10 @@ public:
     [[nodiscard]] blitzar_status SetUnits(blitzar_core::UnitSystem units) noexcept;
     [[nodiscard]] blitzar_status SetBarnesHut(
         blitzar_barnes_hut::BarnesHutSettings settings) noexcept;
-    [[nodiscard]] blitzar_status SetBarnesHut(blitzar_core::Scalar opening_angle,
-        std::size_t max_particles, std::size_t max_cells, std::size_t leaf_capacity,
-        std::size_t max_depth) noexcept;
     [[nodiscard]] blitzar_status SetTimestep(blitzar_core::Scalar timestep) noexcept;
     [[nodiscard]] blitzar_status SetSeed(std::uint64_t seed) noexcept;
     [[nodiscard]] blitzar_status SetParticles(blitzar_core::ParticleStateView input) noexcept;
-    [[nodiscard]] blitzar_status SetParticles(std::span<const blitzar_core::Scalar> position_x,
-        std::span<const blitzar_core::Scalar> position_y,
-        std::span<const blitzar_core::Scalar> position_z,
-        std::span<const blitzar_core::Scalar> velocity_x,
-        std::span<const blitzar_core::Scalar> velocity_y,
-        std::span<const blitzar_core::Scalar> velocity_z,
-        std::span<const blitzar_core::Scalar> mass) noexcept;
     [[nodiscard]] blitzar_status GetState(blitzar_core::ParticleOutputView output) const noexcept;
-    [[nodiscard]] blitzar_status GetState(std::span<blitzar_core::Scalar> position_x,
-        std::span<blitzar_core::Scalar> position_y, std::span<blitzar_core::Scalar> position_z,
-        std::span<blitzar_core::Scalar> velocity_x, std::span<blitzar_core::Scalar> velocity_y,
-        std::span<blitzar_core::Scalar> velocity_z,
-        std::span<blitzar_core::Scalar> mass) const noexcept;
     [[nodiscard]] blitzar_status Step() noexcept;
     void SetHipFaultForTesting(blitzar_gpu::HipFault fault) noexcept;
 
@@ -70,7 +54,26 @@ private:
     [[nodiscard]] static std::size_t DefaultMaxCells(std::size_t particle_count) noexcept;
     [[nodiscard]] static blitzar_status CreateSolver(const SolverCreationRequest& request,
         SolverVariant& solver) noexcept;
+    [[nodiscard]] blitzar_status RebuildSolver(
+        const blitzar_physics::GravityParameters& gravity,
+        const blitzar_barnes_hut::BarnesHutSettings& barnes_hut,
+        SolverVariant& solver) noexcept;
     [[nodiscard]] blitzar_status Remember(blitzar_status status) const noexcept;
+
+    template <typename Solver>
+    [[nodiscard]] blitzar_status StepWithSolver(Solver& solver) noexcept;
+
+    template <typename Solver>
+    [[nodiscard]] blitzar_status StepDistributed(Solver& solver) noexcept;
+
+    template <typename Solver>
+    [[nodiscard]] blitzar_status StepLocal(Solver& solver) noexcept;
+
+    [[nodiscard]] blitzar_integration_kdk::DriftTransition MigrateAfterDrift(
+        std::size_t rollback_particle_count,
+        blitzar_particles::ParticleBuffer& particles,
+        blitzar_particles::AccelerationBuffer& accelerations,
+        blitzar_integration::LeapfrogWorkspace& workspace) noexcept;
 
     std::size_t particle_count_;
     blitzar_parallel::MpiContext mpi_context_;

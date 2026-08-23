@@ -125,8 +125,9 @@ int main()
     BLITZAR_CHECK(simulation.SetSolver(BLITZAR_SOLVER_DIRECT) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(simulation.SetGravity(1.0, 0.1) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(simulation.SetTimestep(0.01) == BLITZAR_STATUS_OK);
-    BLITZAR_CHECK(simulation.SetParticles(position_x, position_y, position_z, velocity_x,
-                      velocity_y, velocity_z, mass) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(simulation.SetParticles({position_x.size(), position_x, position_y, position_z,
+                      velocity_x, velocity_y, velocity_z, mass, position_x.size()}) ==
+                  BLITZAR_STATUS_OK);
 
     BLITZAR_CHECK(simulation.Step() == BLITZAR_STATUS_OK);
 

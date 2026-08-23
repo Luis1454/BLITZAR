@@ -79,13 +79,6 @@
       "decision": "Keep the move-only C++ facade adapters together; they are thin ownership-preserving calls into the C ABI."
     },
     {
-      "path": "src/sdk/Simulation.cpp",
-      "signals": ["branching", "function_count", "function_length"],
-      "issue": 558,
-      "status": "accepted",
-      "decision": "Composition-root review accepted after extraction of SrvState, SrvTransaction, and SrvDispatch; no mechanical split remains."
-    },
-    {
       "path": "src/sdk/Simulation.hpp",
       "signals": ["include_dependencies"],
       "issue": 558,
@@ -105,6 +98,13 @@
       "issue": 558,
       "status": "accepted",
       "decision": "Keep state staging and commit validation together; they publish the same arena ownership transition."
+    },
+    {
+      "path": "src/sdk/SrvParticles.cpp",
+      "signals": ["branching"],
+      "issue": 577,
+      "status": "accepted",
+      "decision": "Keep particle input commit and output gather together because both define the SDK to arena state boundary."
     },
     {
       "path": "src/sdk/SrvTransaction.cpp",

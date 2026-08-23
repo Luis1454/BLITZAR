@@ -1,4 +1,5 @@
 #include "Check.hpp"
+#include "Views.hpp"
 #include "integration/LeapfrogKdk.hpp"
 #include "parallel/DomainDecomposition.hpp"
 #include "parallel/MpiContext.hpp"
@@ -224,15 +225,14 @@ struct StateArrays final {
     double timestep, blitzar_solver_kind solver_kind = BLITZAR_SOLVER_DIRECT) noexcept
 {
     if (solver_kind == BLITZAR_SOLVER_BARNES_HUT &&
-        simulation.SetBarnesHut(0.0, ParticleCount, 128, 1, 32) != BLITZAR_STATUS_OK) {
+        simulation.SetBarnesHut({0.0, ParticleCount, 128, 1, 32}) != BLITZAR_STATUS_OK) {
         return false;
     }
 
     return simulation.SetSolver(solver_kind) == BLITZAR_STATUS_OK &&
            simulation.SetGravity(1.0, 0.1) == BLITZAR_STATUS_OK &&
            simulation.SetTimestep(timestep) == BLITZAR_STATUS_OK &&
-           simulation.SetParticles(state.x, state.y, state.z, state.velocity_x, state.velocity_y,
-               state.velocity_z, state.mass) == BLITZAR_STATUS_OK;
+           simulation.SetParticles(blitzar_tests::MakeStateView(state)) == BLITZAR_STATUS_OK;
 }
 
 [[nodiscard]] bool BuildReference(
@@ -307,8 +307,7 @@ struct StateArrays final {
 
     StateArrays distributed{};
     const blitzar_status state_status =
-        simulation.GetState(distributed.x, distributed.y, distributed.z, distributed.velocity_x,
-            distributed.velocity_y, distributed.velocity_z, distributed.mass);
+        simulation.GetState(blitzar_tests::MakeOutputView(distributed));
 
     local_ok = local_ok && state_status == BLITZAR_STATUS_OK;
 
@@ -326,14 +325,13 @@ struct StateArrays final {
 
     rejected.x[0] += 100.0;
     rejected.mass[0] = -1.0;
-    local_ok = local_ok && simulation.SetParticles(rejected.x, rejected.y, rejected.z,
-                               rejected.velocity_x, rejected.velocity_y, rejected.velocity_z,
-                               rejected.mass) == BLITZAR_STATUS_INVALID_ARGUMENT;
+    local_ok = local_ok &&
+               simulation.SetParticles(blitzar_tests::MakeStateView(rejected)) ==
+                   BLITZAR_STATUS_INVALID_ARGUMENT;
 
     StateArrays after_rejected{};
-    const blitzar_status rejected_state_status = simulation.GetState(after_rejected.x,
-        after_rejected.y, after_rejected.z, after_rejected.velocity_x, after_rejected.velocity_y,
-        after_rejected.velocity_z, after_rejected.mass);
+    const blitzar_status rejected_state_status =
+        simulation.GetState(blitzar_tests::MakeOutputView(after_rejected));
 
     local_ok = local_ok && rejected_state_status == BLITZAR_STATUS_OK;
 
@@ -382,9 +380,8 @@ struct StateArrays final {
 
     StateArrays before_failure{};
 
-    if (simulation.GetState(before_failure.x, before_failure.y, before_failure.z,
-            before_failure.velocity_x, before_failure.velocity_y, before_failure.velocity_z,
-            before_failure.mass) != BLITZAR_STATUS_OK ||
+    if (simulation.GetState(blitzar_tests::MakeOutputView(before_failure)) !=
+            BLITZAR_STATUS_OK ||
         simulation.SetGravity(std::numeric_limits<double>::denorm_min(), 0.0) !=
             BLITZAR_STATUS_OK ||
         simulation.Step() != BLITZAR_STATUS_SINGULARITY) {
@@ -393,8 +390,7 @@ struct StateArrays final {
 
     StateArrays restored{};
 
-    if (simulation.GetState(restored.x, restored.y, restored.z, restored.velocity_x,
-            restored.velocity_y, restored.velocity_z, restored.mass) != BLITZAR_STATUS_OK) {
+    if (simulation.GetState(blitzar_tests::MakeOutputView(restored)) != BLITZAR_STATUS_OK) {
         return false;
     }
 
@@ -420,12 +416,8 @@ struct StateArrays final {
     StateArrays actual_retry{};
     StateArrays expected_retry{};
 
-    if (simulation.GetState(actual_retry.x, actual_retry.y, actual_retry.z, actual_retry.velocity_x,
-            actual_retry.velocity_y, actual_retry.velocity_z,
-            actual_retry.mass) != BLITZAR_STATUS_OK ||
-        expected.GetState(expected_retry.x, expected_retry.y, expected_retry.z,
-            expected_retry.velocity_x, expected_retry.velocity_y, expected_retry.velocity_z,
-            expected_retry.mass) != BLITZAR_STATUS_OK) {
+    if (simulation.GetState(blitzar_tests::MakeOutputView(actual_retry)) != BLITZAR_STATUS_OK ||
+        expected.GetState(blitzar_tests::MakeOutputView(expected_retry)) != BLITZAR_STATUS_OK) {
         return false;
     }
 
@@ -460,16 +452,14 @@ struct StateArrays final {
 
     StateArrays before{};
 
-    if (simulation.GetState(before.x, before.y, before.z, before.velocity_x, before.velocity_y,
-            before.velocity_z, before.mass) != BLITZAR_STATUS_OK ||
+    if (simulation.GetState(blitzar_tests::MakeOutputView(before)) != BLITZAR_STATUS_OK ||
         simulation.Step() != BLITZAR_STATUS_INVALID_ARGUMENT) {
         return false;
     }
 
     StateArrays after{};
 
-    if (simulation.GetState(after.x, after.y, after.z, after.velocity_x, after.velocity_y,
-            after.velocity_z, after.mass) != BLITZAR_STATUS_OK) {
+    if (simulation.GetState(blitzar_tests::MakeOutputView(after)) != BLITZAR_STATUS_OK) {
         return false;
     }
 

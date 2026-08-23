@@ -1,4 +1,5 @@
 #include "Check.hpp"
+#include "Views.hpp"
 #include "gpu/HipContext.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "sdk/Simulation.hpp"
@@ -27,8 +28,7 @@ struct TestState final {
 {
     return simulation.SetGravity(1.0, 0.1) == BLITZAR_STATUS_OK &&
            simulation.SetTimestep(0.01) == BLITZAR_STATUS_OK &&
-           simulation.SetParticles(state.x, state.y, state.z, state.velocity_x, state.velocity_y,
-               state.velocity_z, state.mass) == BLITZAR_STATUS_OK;
+           simulation.SetParticles(blitzar_tests::MakeStateView(state)) == BLITZAR_STATUS_OK;
 }
 
 [[nodiscard]] bool RunDispatcherErrorCase() noexcept
@@ -69,7 +69,8 @@ struct TestState final {
 
     if (!Configure(unsupported, state) ||
         unsupported.SetSolver(BLITZAR_SOLVER_BARNES_HUT) != BLITZAR_STATUS_OK ||
-        unsupported.SetBarnesHut(0.5, TestParticleCount, 128, 1, 37) != BLITZAR_STATUS_OK ||
+        unsupported.SetBarnesHut({0.5, TestParticleCount, 128, 1, 37}) != BLITZAR_STATUS_OK ||
+
         unsupported.Step() != BLITZAR_STATUS_OK ||
         unsupported.LastBackend() != BLITZAR_BACKEND_CPU) {
         return false;

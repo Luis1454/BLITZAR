@@ -4,11 +4,5 @@
   {"path": "include/blitzar/blitzar.h", "name": "blitzar_simulation_get_state", "issue": 573},
   {"path": "src/sdk/Api.cpp", "name": "blitzar_simulation_set_barnes_hut", "issue": 573},
   {"path": "src/sdk/Api.cpp", "name": "blitzar_simulation_set_particles", "issue": 573},
-  {"path": "src/sdk/Api.cpp", "name": "blitzar_simulation_get_state", "issue": 573},
-  {"path": "src/sdk/Simulation.cpp", "name": "Simulation::SetBarnesHut", "issue": 573},
-  {"path": "src/sdk/Simulation.cpp", "name": "Simulation::SetParticles", "issue": 573},
-  {"path": "src/sdk/Simulation.cpp", "name": "Simulation::GetState", "issue": 573},
-  {"path": "src/sdk/Simulation.hpp", "name": "SetBarnesHut", "issue": 573},
-  {"path": "src/sdk/Simulation.hpp", "name": "SetParticles", "issue": 573},
-  {"path": "src/sdk/Simulation.hpp", "name": "GetState", "issue": 573}
+  {"path": "src/sdk/Api.cpp", "name": "blitzar_simulation_get_state", "issue": 573}
 ]

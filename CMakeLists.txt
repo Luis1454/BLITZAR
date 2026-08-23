@@ -93,7 +93,10 @@ target_sources(blitzar PRIVATE
     src/sdk/Api.cpp
     src/sdk/CppApi.cpp
     src/sdk/Simulation.cpp
+    src/sdk/SrvConfig.cpp
+    src/sdk/SrvParticles.cpp
     src/sdk/SrvState.cpp
+    src/sdk/SrvStep.cpp
     src/sdk/SrvTransaction.cpp
     src/solvers/barnes_hut/BarnesHutSolver.cpp
     src/solvers/barnes_hut/ThreadWorkspace.cpp

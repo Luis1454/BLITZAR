@@ -93,16 +93,10 @@ if(NOT _blitzar_hip_mode STREQUAL "OFF")
                 enable_language(CUDA)
                 find_package(CUDAToolkit REQUIRED)
 
+                # NVIDIA sources are compiled as CUDA and use HipCompat.hpp.
+                # Linking hip::host here imports the AMD platform definitions
+                # from some HIP packages and makes nvcc see both platforms.
                 set(_blitzar_hip_native_cuda ON)
-                if(BLITZAR_HIP_COMPILER)
-                    find_package(hip CONFIG QUIET HINTS ${_blitzar_hip_hints})
-                    if(hip_FOUND)
-                        set(_blitzar_hip_native_cuda OFF)
-                        set(BLITZAR_HIP_PACKAGE "hip" CACHE INTERNAL
-                            "HIP package name required by installed exports"
-                            FORCE)
-                    endif()
-                endif()
 
                 set(BLITZAR_HIP_ENABLED ON CACHE INTERNAL
                     "Whether the optional HIP backend is enabled" FORCE)
