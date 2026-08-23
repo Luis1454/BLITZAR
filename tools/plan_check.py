@@ -103,6 +103,77 @@ def validate_roots(data: dict) -> None:
             fail(f"deferred root is materialized; promote it to roots: {root}")
 
 
+def _manifest_paths(data: dict) -> list[pathlib.PurePosixPath]:
+    return [
+        normalize_manifest_path(root, "roots")
+        for root in data.get("roots", [])
+    ] + [
+        normalize_manifest_path(root, "deferred_roots")
+        for root in data.get("deferred_roots", [])
+    ]
+
+
+def _is_path_covered(
+    path: pathlib.PurePosixPath,
+    declared_paths: list[pathlib.PurePosixPath],
+) -> bool:
+    return any(
+        path == declared or declared in path.parents
+        for declared in declared_paths
+    )
+
+
+def validate_repository_layout(data: dict) -> None:
+    declared_paths = _manifest_paths(data)
+    plan_text = (ROOT / "PLAN.md").read_text(encoding="utf-8")
+    shape_match = re.search(
+        r"## Repository Shape\s+```text\n(?P<shape>.*?)\n```",
+        plan_text,
+        re.DOTALL,
+    )
+    if shape_match is None:
+        fail("PLAN.md repository shape block is missing")
+
+    shape_paths = {
+        pathlib.PurePosixPath(match.group(1).rstrip("/"))
+        for match in re.finditer(
+            r"^((?:include|src|apps)(?:/[^\s/]+)*|tests|examples)/?\s{2,}",
+            shape_match.group("shape"),
+            re.MULTILINE,
+        )
+    }
+    for path in shape_paths:
+        if not _is_path_covered(path, declared_paths):
+            fail(f"repository shape path is not covered by manifest: {path}")
+
+    deferred_paths = [
+        normalize_manifest_path(root, "deferred_roots")
+        for root in data.get("deferred_roots", [])
+    ]
+    for path in deferred_paths:
+        if path not in shape_paths:
+            fail(f"deferred root is missing from PLAN.md repository shape: {path}")
+
+    cmake_text = CMESSAGE.read_text(encoding="utf-8")
+    for match in re.finditer(
+        r"\b(src/[A-Za-z0-9_/-]+\.(?:c|cpp|cu|hip|h|hpp))\b", cmake_text
+    ):
+        source_path = pathlib.PurePosixPath(match.group(1))
+        if not _is_path_covered(source_path.parent, declared_paths):
+            fail(f"CMake source is not covered by manifest roots: {source_path}")
+
+    for parent_name in ("src", "include", "apps", "tests", "examples"):
+        parent = ROOT / parent_name
+        if not parent.is_dir():
+            continue
+        for child in parent.iterdir():
+            if not child.is_dir():
+                continue
+            path = pathlib.PurePosixPath(child.relative_to(ROOT).as_posix())
+            if not _is_path_covered(path, declared_paths):
+                fail(f"materialized production root is not declared: {path}")
+
+
 def validate_phases(data: dict) -> set[str]:
     phases = data.get("phases")
     if not isinstance(phases, list) or not phases:
@@ -357,6 +428,7 @@ def main(argv: list[str] | None = None) -> None:
         fail("plan_version is required")
     validate_release_identity(manifest)
     validate_roots(manifest)
+    validate_repository_layout(manifest)
     phase_ids = validate_phases(manifest)
     validate_forbidden_references(manifest)
     validate_quality_tests(phase_ids)

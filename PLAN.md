@@ -31,7 +31,7 @@ src/particles/                   Aligned SoA particle storage and invariants
 src/physics/                     Force laws, units, softening, validation
 src/integration/                 Time integration and timestep policy
 src/trees/                       Morton ordering, octree, multipoles
-src/gpu/                         HIP context, pinned staging, and streams
+src/gpu/                         HIP/CUDA runtime, pinned staging, streams, and launch policy
 src/parallel/                    MPI context, domain ownership, and exchange
 src/grid/                        3D grids and mass deposition
 src/solvers/direct/              O(N^2) CPU reference and HIP acceleration
@@ -40,7 +40,6 @@ src/solvers/gpu/                 HIP kernel launch contracts and implementations
 src/solvers/fmm/                 FMM CPU and CUDA
 src/solvers/pm/                  Particle-Mesh CPU and CUDA
 src/solvers/treepm/              TreePM composition and dispatch
-src/cuda_runtime/                CUDA ownership, streams, and launch policy
 src/io/                          Binary snapshots and optional HDF5 adapter
 src/sdk/                         Internal implementation of the public SDK
 apps/blitzar/                    CLI executable; never library production code
@@ -49,6 +48,12 @@ examples/                        Minimal C and C++ SDK consumers
 plan/                            Frozen roadmap and machine-readable invariants
 tools/                           Repository policy checks only
 ```
+
+`src/grid`, `src/io`, `src/solvers/fmm`, `src/solvers/pm`, and
+`src/solvers/treepm` are planned but not materialized roots. They remain in
+the deferred-root set until their production ownership and tests exist. The
+GPU runtime and native CUDA compatibility are intentionally owned by
+`src/gpu`; no parallel CUDA runtime root exists.
 
 Each production module owns its headers, implementations, and responsibility
 subdirectories. There are no generic `utils`, `common`, `misc`, `private`, or

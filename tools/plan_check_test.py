@@ -21,7 +21,12 @@ class PlanCheckTests(unittest.TestCase):
         (self.root / "plan").mkdir()
         (self.root / "cmake").mkdir()
         (self.root / "PLAN.md").write_text(
-            "Product/API version: **1.0.0**\nPlan version: **1.0.6**\n",
+            "Product/API version: **1.0.0**\n"
+            "Plan version: **1.0.6**\n\n"
+            "## Repository Shape\n\n"
+            "```text\n"
+            "src/                Fixture root\n"
+            "```\n",
             encoding="utf-8",
         )
         (self.root / "src" / "Valid.cpp").write_text(
@@ -115,6 +120,20 @@ class PlanCheckTests(unittest.TestCase):
         result = self.run_checker()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("deferred root is materialized", result.stderr)
+
+    def test_rejects_uncovered_repository_shape_path(self) -> None:
+        known = self.root / "src" / "known"
+        known.mkdir()
+        (known / "Owned.cpp").write_text("int owned = 0;\n", encoding="utf-8")
+        self.write_manifest(["src/known"])
+        plan_path = self.root / "PLAN.md"
+        plan_path.write_text(
+            plan_path.read_text(encoding="utf-8").replace("src/", "src/cuda_runtime/"),
+            encoding="utf-8",
+        )
+        result = self.run_checker()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("repository shape path is not covered", result.stderr)
 
     def test_rejects_noncontiguous_phase_ids(self) -> None:
         manifest_path = self.root / "plan" / "manifest.json"

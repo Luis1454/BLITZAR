@@ -25,7 +25,10 @@
   ],
   "deferred_roots": [
     "src/grid",
-    "src/io"
+    "src/io",
+    "src/solvers/fmm",
+    "src/solvers/pm",
+    "src/solvers/treepm"
   ],
   "phases": [
     {"id": "P0", "name": "contracts-and-build", "depends_on": []},
