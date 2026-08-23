@@ -121,6 +121,7 @@ public:
             output.size() < state.count) {
             return false;
         }
+
         for (std::size_t index = 0; index < state.count; ++index) {
             output[index] = ParticlePacket{ids[index], state.x[index], state.y[index],
                 state.z[index], state.velocity_x[index], state.velocity_y[index],

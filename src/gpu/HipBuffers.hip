@@ -52,6 +52,7 @@ public:
     {
         if (data_ != nullptr) {
             (void)hipHostFree(data_);
+
             data_ = nullptr;
         }
 
@@ -102,6 +103,7 @@ public:
     {
         if (data_ != nullptr) {
             (void)hipFree(data_);
+
             data_ = nullptr;
         }
 
@@ -152,6 +154,7 @@ struct HipBuffers::Impl final {
         if (stream != nullptr) {
             (void)hipStreamSynchronize(stream);
             (void)hipStreamDestroy(stream);
+
             stream = nullptr;
         }
     }

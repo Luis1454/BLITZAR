@@ -144,6 +144,7 @@ blitzar_status MpiCollectives::SynchronizeStatus(blitzar_status local_status, co
     if (MPI_Allreduce(&local_severity, &global_severity, 1, MPI_INT, MPI_MAX,
             session_.Native().communicator) != MPI_SUCCESS) {
         global_status = BLITZAR_STATUS_INTERNAL_ERROR;
+
         LogSynchronizedStatus(
             {session_.Rank(), operation, phase, normalized_status, global_status});
 
@@ -151,6 +152,7 @@ blitzar_status MpiCollectives::SynchronizeStatus(blitzar_status local_status, co
     }
 
     global_status = StatusFromSeverity(global_severity);
+
     LogSynchronizedStatus(
         {session_.Rank(), operation, phase, normalized_status, global_status});
 
@@ -159,6 +161,7 @@ blitzar_status MpiCollectives::SynchronizeStatus(blitzar_status local_status, co
 
     (void)operation;
     (void)phase;
+
     global_status = BLITZAR_STATUS_INTERNAL_ERROR;
 
     return BLITZAR_STATUS_INTERNAL_ERROR;
@@ -217,6 +220,7 @@ blitzar_status MpiCollectives::ReduceMax(int local_value, int& global_value) con
                ? BLITZAR_STATUS_OK
                : BLITZAR_STATUS_INTERNAL_ERROR;
 #else
+
     return BLITZAR_STATUS_INTERNAL_ERROR;
 #endif
 }

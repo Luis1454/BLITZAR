@@ -30,8 +30,8 @@ struct MpiGhostExchange::Impl final {
 
 namespace {
 
-constexpr int GhostCountTag = 7101;
-constexpr int GhostDataTag = 7102;
+[[maybe_unused]] constexpr int GhostCountTag = 7101;
+[[maybe_unused]] constexpr int GhostDataTag = 7102;
 
 #if defined(BLITZAR_HAS_MPI)
 
@@ -93,6 +93,7 @@ void CancelRequests(std::vector<MPI_Request>& requests) noexcept
     }
 
     (void)WaitRequests(requests);
+
     requests.clear();
 }
 
@@ -104,6 +105,7 @@ void MpiGhostTransport::ClearExchange(MpiGhostExchange::Impl& state) noexcept
 {
     state.active = false;
 #if defined(BLITZAR_HAS_MPI)
+
     state.local_wire.clear();
     state.receive_wire.clear();
     state.requests.clear();
@@ -166,6 +168,7 @@ blitzar_status MpiGhostTransport::Prepare(
     if (exchange.impl_ != nullptr && exchange.impl_->active) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     try {
         if (exchange.impl_ == nullptr) {
             exchange.impl_ = std::make_unique<MpiGhostExchange::Impl>();
@@ -206,6 +209,7 @@ blitzar_status MpiGhostTransport::Prepare(
         }
 
         state.packet_capacity = packet_capacity;
+
         state.local_wire.reserve(wire_size);
         state.receive_wire.reserve(wire_size);
         state.receive_counts.resize(peer_count);
@@ -424,6 +428,7 @@ blitzar_status MpiGhostTransport::Complete(
 
             const std::size_t receive_count =
                 static_cast<std::size_t>(state.receive_counts[static_cast<std::size_t>(peer)]);
+
             const std::size_t peer_requests =
                 ChunkCount(receive_count) + ChunkCount(state.local_wire.size() / ParticleWireBytes);
 
@@ -435,6 +440,7 @@ blitzar_status MpiGhostTransport::Complete(
 
             request_count += peer_requests;
         }
+
         if (request_count > static_cast<std::size_t>(INT_MAX)) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }

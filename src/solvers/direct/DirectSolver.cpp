@@ -47,10 +47,13 @@ struct ForceTargetRequest final {
 
         const blitzar_core::Scalar dx =
             request.particles.x[source] - request.particles.x[request.target];
+
         const blitzar_core::Scalar dy =
             request.particles.y[source] - request.particles.y[request.target];
+
         const blitzar_core::Scalar dz =
             request.particles.z[source] - request.particles.z[request.target];
+
         const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
         const blitzar_physics::PairStatus pair_status =
             request.gravity.ValidatePair(request.particles.mass[source], distance_squared);
@@ -158,6 +161,7 @@ blitzar_status DirectSolver::ComputeRange(blitzar_core::ParticleStateView partic
                 expected, target_status, std::memory_order_relaxed, std::memory_order_relaxed);
         }
     }
+
     if (status.load(std::memory_order_relaxed) != BLITZAR_STATUS_OK) {
         return status.load(std::memory_order_relaxed);
     }
@@ -165,6 +169,7 @@ blitzar_status DirectSolver::ComputeRange(blitzar_core::ParticleStateView partic
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
 #endif
+
     for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(particles.count);
          ++target_index) {
         const std::size_t target = static_cast<std::size_t>(target_index);

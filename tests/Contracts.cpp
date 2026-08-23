@@ -42,14 +42,18 @@ int main()
     BLITZAR_CHECK(blitzar::FromCStatus(BLITZAR_STATUS_OK) == blitzar::Status::Ok);
     BLITZAR_CHECK(
         blitzar::FromCStatus(BLITZAR_STATUS_INVALID_ARGUMENT) == blitzar::Status::InvalidArgument);
+
     BLITZAR_CHECK(blitzar::FromCStatus(BLITZAR_STATUS_ALLOCATION_FAILURE) ==
                   blitzar::Status::AllocationFailure);
+
     BLITZAR_CHECK(
         blitzar::FromCStatus(BLITZAR_STATUS_INTERNAL_ERROR) == blitzar::Status::InternalError);
+
     BLITZAR_CHECK(blitzar::FromCStatus(BLITZAR_STATUS_SINGULARITY) == blitzar::Status::Singularity);
     BLITZAR_CHECK(blitzar::FromCStatus(BLITZAR_STATUS_UNSUPPORTED) == blitzar::Status::Unsupported);
     BLITZAR_CHECK(
         blitzar::FromCStatus(static_cast<blitzar_status>(999)) == blitzar::Status::InternalError);
+
     BLITZAR_CHECK(blitzar_core::ToPublicStatus(999) == BLITZAR_STATUS_INTERNAL_ERROR);
     BLITZAR_CHECK(
         blitzar_core::ToPublicStatus(BLITZAR_STATUS_UNSUPPORTED) == BLITZAR_STATUS_UNSUPPORTED);
@@ -96,6 +100,7 @@ int main()
         std::span<const blitzar_core::Scalar>(y), std::span<const blitzar_core::Scalar>(z),
         std::span<const blitzar_core::Scalar>(vx), std::span<const blitzar_core::Scalar>(vy),
         std::span<const blitzar_core::Scalar>(vz), std::span<const blitzar_core::Scalar>(mass)};
+
     const blitzar_core::ForceView forces{1, std::span<blitzar_core::Scalar>(fx),
         std::span<blitzar_core::Scalar>(fy), std::span<blitzar_core::Scalar>(fz)};
 

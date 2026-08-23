@@ -196,6 +196,7 @@ struct StateArrays final {
         blitzar_core::Vector3{middle.x, bounds.maximum.y, middle.z},
         blitzar_core::Vector3{middle.x, middle.y, bounds.minimum.z},
         blitzar_core::Vector3{middle.x, middle.y, bounds.maximum.z}};
+
     std::uint64_t particle_id = 0;
 
     if (!CheckIncludedBoundaryPoints(domain, faces, context.Size(), particle_id)) {
@@ -267,6 +268,7 @@ struct StateArrays final {
         blitzar_integration_kdk::AdvanceState state{
             particles, accelerations, workspace, solver, timestep, execution, solver_workspace,
             particles.State()};
+
         if (integrator.Advance(state) != BLITZAR_STATUS_OK) {
             return false;
         }
@@ -354,6 +356,7 @@ struct StateArrays final {
     StateArrays initial{};
 
     initial.x = {0.0, 1.0, 10.0, 11.0, 20.0, 21.0, 30.0, 31.0};
+
     initial.velocity_x.fill(0.0);
 
     for (std::size_t index = 1; index < ParticleCount; index += 2) {
@@ -543,6 +546,7 @@ struct StateArrays final {
 
     const blitzar_status aborted_completion_status =
         exchange.CompleteGhosts(pre_completion_exchange, aborted_ghosts);
+
     const blitzar_status expected_aborted_completion =
         context.IsDistributed() ? BLITZAR_STATUS_INVALID_ARGUMENT : BLITZAR_STATUS_OK;
 
@@ -565,6 +569,7 @@ struct StateArrays final {
 
     const blitzar_core::ParticleStateView local_state =
         context.Rank() == 0 ? invalid_state : particles.State();
+
     const std::span<const std::uint64_t> local_ids = context.Rank() == 0
                                                          ? std::span<const std::uint64_t>{}
                                                          : std::span<const std::uint64_t>(ids);
@@ -583,6 +588,7 @@ struct StateArrays final {
     blitzar_parallel::PacketBuffer ghosts;
     const blitzar_status invalid_ghost_completion_status =
         exchange.CompleteGhosts(ghost_exchange, ghosts);
+
     const blitzar_status expected_invalid_ghost_completion =
         context.IsDistributed() ? BLITZAR_STATUS_INVALID_ARGUMENT : BLITZAR_STATUS_OK;
 
@@ -617,6 +623,7 @@ struct StateArrays final {
 
     blitzar_parallel::MpiExchange uninitialized_exchange(
         context, uninitialized_domain, packet_capacity);
+
     blitzar_parallel::PacketBuffer uninitialized_received;
 
     return uninitialized_exchange.Migrate(particles.State(), ids, uninitialized_received) ==
@@ -671,8 +678,10 @@ struct StateArrays final {
 
     const std::span<const int> layout =
         std::span<const int>(counts).first(static_cast<std::size_t>(context.Size()));
+
     const std::span<const int> offsets =
         std::span<const int>(displacements).first(static_cast<std::size_t>(context.Size()));
+
     const std::span<blitzar_parallel::ParticlePacket> empty_packets{};
 
     const blitzar_parallel::AllToAllPacketRequest request{
@@ -727,6 +736,7 @@ struct StateArrays final {
 
     const std::array<double, 7> source_scalars{source.x, source.y, source.z, source.velocity_x,
         source.velocity_y, source.velocity_z, source.mass};
+
     const std::array<double, 7> decoded_scalars{decoded.x, decoded.y, decoded.z, decoded.velocity_x,
         decoded.velocity_y, decoded.velocity_z, decoded.mass};
 
@@ -757,9 +767,11 @@ int RunTests(int argc, char** argv)
     const bool valid_world =
         context.IsUsable() &&
         (single_rank_case ? context.Size() == 1 : (context.Size() == 2 || context.Size() == 4));
+
     const bool local_case =
         RunCase(migration_case ? MigrationState() : InitialState(), 0.01, migration_case ? 1 : 2,
             barnes_hut_case ? BLITZAR_SOLVER_BARNES_HUT : BLITZAR_SOLVER_DIRECT);
+
     const bool rollback_case = RunRollbackCase();
     const bool boundary_case = RunBoundaryOwnershipCase(context);
     const bool error_synchronization_case = RunErrorSynchronizationCase(context);

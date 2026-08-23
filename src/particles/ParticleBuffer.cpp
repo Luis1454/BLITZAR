@@ -27,6 +27,7 @@ ParticleBuffer::ParticleBuffer(ParticleBuffer&& other) noexcept
       count_(other.count_)
 {
     other.borrowed_arena_.reset();
+
     other.count_ = 0;
 }
 
@@ -36,7 +37,9 @@ ParticleBuffer& ParticleBuffer::operator=(ParticleBuffer&& other) noexcept
         owned_arena_ = std::move(other.owned_arena_);
         borrowed_arena_ = other.borrowed_arena_;
         count_ = other.count_;
+
         other.borrowed_arena_.reset();
+
         other.count_ = 0;
     }
     return *this;
@@ -168,6 +171,7 @@ AccelerationBuffer::AccelerationBuffer(AccelerationBuffer&& other) noexcept
       count_(other.count_)
 {
     other.borrowed_arena_.reset();
+
     other.count_ = 0;
 }
 
@@ -177,7 +181,9 @@ AccelerationBuffer& AccelerationBuffer::operator=(AccelerationBuffer&& other) no
         owned_arena_ = std::move(other.owned_arena_);
         borrowed_arena_ = other.borrowed_arena_;
         count_ = other.count_;
+
         other.borrowed_arena_.reset();
+
         other.count_ = 0;
     }
     return *this;

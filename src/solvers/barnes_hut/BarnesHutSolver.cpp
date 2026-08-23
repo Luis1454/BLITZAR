@@ -33,6 +33,7 @@ bool BarnesHutSolver::IsValidState(blitzar_core::ParticleStateView particles) no
     if (!blitzar_core::IsValid(particles)) {
         return false;
     }
+
     for (std::size_t index = 0; index < particles.SourceCount(); ++index) {
         if (!std::isfinite(particles.x[index]) || !std::isfinite(particles.y[index]) ||
             !std::isfinite(particles.z[index]) || !std::isfinite(particles.velocity_x[index]) ||
@@ -155,6 +156,7 @@ blitzar_status BarnesHutSolver::Accumulate(std::size_t target,
 
             continue;
         }
+
         for (auto child = cell.children.rbegin(); child != cell.children.rend(); ++child) {
             if (*child != blitzar_trees::Octree::Cell::InvalidIndex) {
                 if (stack_size == stack.size()) {
@@ -165,6 +167,7 @@ blitzar_status BarnesHutSolver::Accumulate(std::size_t target,
             }
         }
     }
+
     if (!std::isfinite(acceleration.x) || !std::isfinite(acceleration.y) ||
         !std::isfinite(acceleration.z)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -235,6 +238,7 @@ blitzar_status BarnesHutSolver::Compute(blitzar_core::ParticleStateView particle
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
 #endif
+
     for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(particles.count);
          ++target_index) {
         const std::size_t target = static_cast<std::size_t>(target_index);

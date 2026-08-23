@@ -127,6 +127,7 @@ int main()
     BLITZAR_CHECK(simulation.SetTimestep(0.01) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(simulation.SetParticles(position_x, position_y, position_z, velocity_x,
                       velocity_y, velocity_z, mass) == BLITZAR_STATUS_OK);
+
     BLITZAR_CHECK(simulation.Step() == BLITZAR_STATUS_OK);
 
     AllocationCount.store(0, std::memory_order_relaxed);

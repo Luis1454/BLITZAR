@@ -237,6 +237,21 @@ if(BLITZAR_BUILD_TESTS)
     target_include_directories(blitzar_contract_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     blitzar_enable_warnings(blitzar_contract_test)
 
+    add_executable(blitzar_bounded_contract_test
+        tests/Bounded.cpp
+    )
+    target_link_libraries(blitzar_bounded_contract_test PRIVATE blitzar)
+    target_compile_features(blitzar_bounded_contract_test PRIVATE cxx_std_20)
+    target_include_directories(blitzar_bounded_contract_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    blitzar_enable_warnings(blitzar_bounded_contract_test)
+
+    add_executable(blitzar_abi_test
+        tests/Abi.c
+    )
+    target_link_libraries(blitzar_abi_test PRIVATE blitzar)
+    set_property(TARGET blitzar_abi_test PROPERTY LINKER_LANGUAGE CXX)
+    blitzar_enable_warnings(blitzar_abi_test)
+
     add_executable(blitzar_dynamics_test
         tests/Dynamics.cpp
     )
@@ -293,6 +308,8 @@ if(BLITZAR_BUILD_TESTS)
     add_test(NAME TST-P0-001 COMMAND blitzar_lifecycle_test)
     add_test(NAME TST-P0-002 COMMAND blitzar_c_api_test)
     add_test(NAME TST-P0-003 COMMAND blitzar_contract_test)
+    add_test(NAME TST-P0-004 COMMAND blitzar_bounded_contract_test)
+    add_test(NAME TST-P0-005 COMMAND blitzar_abi_test)
     add_test(NAME TST-P1-001 COMMAND blitzar_dynamics_test)
     add_test(NAME TST-P1-003 COMMAND blitzar_allocation_test)
     add_test(NAME TST-P3-001 COMMAND blitzar_hierarchy_test)

@@ -42,6 +42,7 @@ blitzar_status SrvStageParticleInput(
     if (!blitzar_core::IsValid(input)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     try {
         stage.position_x.resize(count);
         stage.position_y.resize(count);
@@ -89,6 +90,7 @@ blitzar_status SrvCommitStagedParticles(SrvParticleCommitRequest& request) noexc
         request.local_indices.size() > request.ids.size()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     for (const std::size_t global_index : request.local_indices) {
         if (global_index >= staged_state.count) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -140,7 +142,9 @@ blitzar_status SrvCommitStagedParticles(SrvParticleCommitRequest& request) noexc
     request.domain = std::move(request.candidate_domain);
     request.local_particle_count = local_count;
     request.source_particle_count = local_count;
+
     request.exchange.Clear();
+
     request.particles_ready = true;
 
     return BLITZAR_STATUS_OK;
@@ -202,6 +206,7 @@ blitzar_status SrvStoreLocalPackets(SrvPacketStoreRequest& request) noexcept
         request.packets.Size() > request.ids.size()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     for (const blitzar_parallel::ParticlePacket& packet : request.packets.View()) {
         if (packet.id >= request.particle_count || !std::isfinite(packet.x) ||
             !std::isfinite(packet.y) || !std::isfinite(packet.z) ||
@@ -348,6 +353,7 @@ blitzar_status SrvCaptureForceState(
     if (!snapshot.ResizeBounded(force.count)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     for (std::size_t index = 0; index < force.count; ++index) {
         snapshot.View()[index] = {
             0, force.x[index], force.y[index], force.z[index], 0.0, 0.0, 0.0, 0.0};
@@ -362,6 +368,7 @@ blitzar_status SrvRestoreForceState(
     if (!blitzar_core::IsValid(force) || snapshot.Size() != force.count) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     for (std::size_t index = 0; index < force.count; ++index) {
         const blitzar_parallel::ParticlePacket& packet = snapshot.View()[index];
 

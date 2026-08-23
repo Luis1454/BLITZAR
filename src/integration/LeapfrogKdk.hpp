@@ -35,6 +35,7 @@ struct NoopRollbackHook final {
     if (!blitzar_core::IsValid(state)) {
         return false;
     }
+
     for (std::size_t index = 0; index < state.count; ++index) {
         if (!std::isfinite(state.x[index]) || !std::isfinite(state.y[index]) ||
             !std::isfinite(state.z[index]) || !std::isfinite(state.velocity_x[index]) ||
@@ -52,6 +53,7 @@ struct NoopRollbackHook final {
     if (!blitzar_core::IsValid(force)) {
         return false;
     }
+
     for (std::size_t index = 0; index < force.count; ++index) {
         if (!std::isfinite(force.x[index]) || !std::isfinite(force.y[index]) ||
             !std::isfinite(force.z[index])) {
@@ -176,6 +178,7 @@ public:
 
         blitzar_integration_kdk::SolverComputeRequest compute_request{
             state.solver, state.solver_particles, force, state.settings, state.solver_workspace};
+
         status = blitzar_integration_kdk::ComputeSolver(compute_request);
 
         if (status != BLITZAR_STATUS_OK) {
@@ -205,6 +208,7 @@ public:
             mutable_state.y[index] += state.timestep * mutable_state.velocity_y[index];
             mutable_state.z[index] += state.timestep * mutable_state.velocity_z[index];
         }
+
         if (!blitzar_integration_kdk::IsFiniteState(state.particles.State())) {
             return blitzar_integration_kdk::RestoreWithRollback(
                 request.hooks.rollback, state.particles, state.workspace,
@@ -242,8 +246,10 @@ public:
 
         mutable_state = state.particles.MutableView();
         force = state.accelerations.View();
+
         const blitzar_integration_kdk::SolverComputeRequest second_compute_request{
             state.solver, state.solver_particles, force, state.settings, state.solver_workspace};
+
         status = blitzar_integration_kdk::ComputeSolver(second_compute_request);
 
         if (status != BLITZAR_STATUS_OK) {
@@ -258,6 +264,7 @@ public:
 #if defined(_OPENMP)
 #pragma omp parallel for simd schedule(static)
 #endif
+
         for (std::int64_t raw_index = 0;
              raw_index < static_cast<std::int64_t>(state.particles.Count()); ++raw_index) {
             const std::size_t index = static_cast<std::size_t>(raw_index);
@@ -266,6 +273,7 @@ public:
             mutable_state.velocity_y[index] += half_step * force.y[index];
             mutable_state.velocity_z[index] += half_step * force.z[index];
         }
+
         if (!blitzar_integration_kdk::IsFiniteState(state.particles.State())) {
             return blitzar_integration_kdk::RestoreWithRollback(
                 request.hooks.rollback, state.particles, state.workspace,

@@ -20,6 +20,7 @@ int main()
         BLITZAR_CHECK(tree_particles.SetPosition(index, positions[index]) == BLITZAR_STATUS_OK);
         BLITZAR_CHECK(
             direct_particles.SetMass(index, 1.0 + static_cast<double>(index)) == BLITZAR_STATUS_OK);
+
         BLITZAR_CHECK(
             tree_particles.SetMass(index, 1.0 + static_cast<double>(index)) == BLITZAR_STATUS_OK);
     }
@@ -44,6 +45,7 @@ int main()
 
     BLITZAR_CHECK(direct_solver.Compute(direct_particles.State(), direct_acceleration.View(),
                       execution) == BLITZAR_STATUS_OK);
+
     BLITZAR_CHECK(tree_solver.Compute(tree_particles.State(), tree_acceleration.View(),
                       execution) == BLITZAR_STATUS_OK);
 
@@ -54,6 +56,7 @@ int main()
     BLITZAR_CHECK(thread_workspace.StackCapacity() <= settings.max_cells);
     BLITZAR_CHECK(tree_solver.Compute(tree_particles.State(), tree_acceleration.View(), execution,
                       thread_workspace) == BLITZAR_STATUS_OK);
+
     BLITZAR_CHECK(tree_solver.Kind() == blitzar_core::SolverKind::BarnesHut);
 
     const blitzar_core::ForceView direct_force = direct_acceleration.View();
@@ -81,6 +84,7 @@ int main()
 
     BLITZAR_CHECK(direct_solver.Compute(zero_direct.State(), zero_direct_force.View(), execution) ==
                   BLITZAR_STATUS_OK);
+
     BLITZAR_CHECK(zero_solver.Compute(zero_tree.State(), zero_tree_force.View(), execution) ==
                   BLITZAR_STATUS_OK);
 
@@ -96,6 +100,7 @@ int main()
     for (std::size_t index = 0; index < 4; ++index) {
         BLITZAR_CHECK(
             sparse_particles.SetPosition(index, sparse_positions[index]) == BLITZAR_STATUS_OK);
+
         BLITZAR_CHECK(sparse_particles.SetMass(index, 1.0) == BLITZAR_STATUS_OK);
     }
 
@@ -163,10 +168,13 @@ int main()
 
         BLITZAR_CHECK(
             clustered_direct.SetPosition(index, {-5.0 + offset, -5.0, -5.0}) == BLITZAR_STATUS_OK);
+
         BLITZAR_CHECK(
             clustered_tree.SetPosition(index, {-5.0 + offset, -5.0, -5.0}) == BLITZAR_STATUS_OK);
+
         BLITZAR_CHECK(
             clustered_direct.SetPosition(index + 4, {5.0 + offset, 5.0, 5.0}) == BLITZAR_STATUS_OK);
+
         BLITZAR_CHECK(
             clustered_tree.SetPosition(index + 4, {5.0 + offset, 5.0, 5.0}) == BLITZAR_STATUS_OK);
     }
@@ -185,6 +193,7 @@ int main()
 
     BLITZAR_CHECK(direct_solver.Compute(clustered_direct.State(), clustered_direct_force.View(),
                       execution) == BLITZAR_STATUS_OK);
+
     BLITZAR_CHECK(clustered_solver.Compute(clustered_tree.State(), clustered_tree_force.View(),
                       execution) == BLITZAR_STATUS_OK);
 
@@ -194,8 +203,10 @@ int main()
     for (std::size_t index = 0; index < 8; ++index) {
         BLITZAR_CHECK(
             std::abs(exact_cluster_force.x[index] - approximate_cluster_force.x[index]) < 0.05);
+
         BLITZAR_CHECK(
             std::abs(exact_cluster_force.y[index] - approximate_cluster_force.y[index]) < 0.05);
+
         BLITZAR_CHECK(
             std::abs(exact_cluster_force.z[index] - approximate_cluster_force.z[index]) < 0.05);
     }

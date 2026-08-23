@@ -46,6 +46,7 @@ ParticleArena::ParticleArena(std::size_t count) : count_(count), stride_(Aligned
     if (scalar_offset > storage.size() || payload > storage.size() - scalar_offset) {
         throw std::length_error("particle arena alignment overflow");
     }
+
     for (std::size_t index = 0; index < FieldCount; ++index) {
         fields_[index] = storage.subspan(scalar_offset + index * stride_, count_);
     }

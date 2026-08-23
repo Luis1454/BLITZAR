@@ -181,8 +181,11 @@ struct HipContext::Impl final {
         const blitzar_gpu_detail::DirectLaunchRequest launch_request{
             addresses, particles.count,
             range,
+
             {gravity.EffectiveConstant(), gravity.EffectiveSoftening()},
+
             {buffers.DeviceError(), buffers.Stream()}};
+
         status = blitzar_gpu_detail::LaunchDirect(launch_request);
 
         if (status != BLITZAR_STATUS_OK) {
@@ -194,6 +197,7 @@ struct HipContext::Impl final {
                 {reinterpret_cast<void*>(buffers.HostError()),
                     reinterpret_cast<const void*>(buffers.DeviceError()), sizeof(int),
                     hipMemcpyDeviceToHost, reinterpret_cast<hipStream_t>(buffers.Stream())}) !=
+
             hipSuccess) {
             buffers.Disable();
 
@@ -302,6 +306,7 @@ struct HipContext::Impl final {
                     reinterpret_cast<const void*>(buffers.HostCells()),
                     cells.size() * sizeof(blitzar_gpu_detail::GpuCell), hipMemcpyHostToDevice,
                     reinterpret_cast<hipStream_t>(buffers.Stream())}) != hipSuccess ||
+
             BlitzarHipMemcpyAsync(
                 {reinterpret_cast<void*>(buffers.DeviceIndices()),
                     reinterpret_cast<const void*>(buffers.HostIndices()),
@@ -323,10 +328,15 @@ struct HipContext::Impl final {
             particles.count,
             particles.SourceCount(),
             settings.opening_angle,
+
             {buffers.DeviceCells(), cells.size(), buffers.DeviceIndices()},
+
             {gravity.EffectiveConstant(), gravity.EffectiveSoftening()},
+
             settings.max_depth,
+
             {buffers.DeviceError(), buffers.Stream()}};
+
         status = blitzar_gpu_detail::LaunchBarnesHut(launch_request);
 
         if (status != BLITZAR_STATUS_OK) {
@@ -338,6 +348,7 @@ struct HipContext::Impl final {
                 {reinterpret_cast<void*>(buffers.HostError()),
                     reinterpret_cast<const void*>(buffers.DeviceError()), sizeof(int),
                     hipMemcpyDeviceToHost, reinterpret_cast<hipStream_t>(buffers.Stream())}) !=
+
             hipSuccess) {
             buffers.Disable();
 
@@ -357,6 +368,7 @@ HipContext::HipContext() noexcept
     }
     catch (const std::bad_alloc&) {
         impl_.reset();
+
         status_ = BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
 }
@@ -415,6 +427,7 @@ blitzar_status HipContext::ComputeDirectRange(blitzar_core::ParticleStateView pa
     if (particles.count == 0) {
         return BLITZAR_STATUS_OK;
     }
+
     try {
         return impl_->ComputeDirect(particles, forces, gravity, range);
     }
@@ -455,6 +468,7 @@ blitzar_status HipContext::ComputeBarnesHut(const BarnesHutComputeRequest& reque
     if (particles.count == 0) {
         return BLITZAR_STATUS_OK;
     }
+
     try {
         return impl_->ComputeBarnesHut(request);
     }

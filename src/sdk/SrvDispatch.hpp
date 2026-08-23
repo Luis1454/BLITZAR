@@ -186,6 +186,7 @@ private:
         const bool ids_valid = ids_.size() >= local_state.count;
         const std::span<const std::uint64_t> local_ids =
             ids_valid ? ids_.first(local_state.count) : std::span<const std::uint64_t>{};
+
         const blitzar_status begin_status = exchange_.BeginGhosts(local_state, local_ids, halo_);
 
         if (begin_status != BLITZAR_STATUS_OK) {
@@ -220,6 +221,7 @@ private:
 
         const blitzar_status append_status =
             SrvAppendGhosts(ghosts_, arena_, local_state.count, source_count_);
+
         const blitzar_status synchronized_append_status =
             exchange_.SynchronizeStatus(append_status, "force-append");
 
@@ -229,6 +231,7 @@ private:
 
         const blitzar_core::ParticleStateView full_state =
             SrvMakeArenaState(arena_, local_state.count, source_count_);
+
         blitzar_status remote_status = BLITZAR_STATUS_OK;
 
         if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {

@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "reviews": [
+    {
+      "path": "src/gpu/HipBuffers.hip",
+      "signals": ["branching", "function_count"],
+      "issue": 575,
+      "status": "accepted",
+      "decision": "Keep the CUDA resource adapter together; the signals cover allocation and stream lifecycle coordination."
+    },
+    {
+      "path": "src/gpu/HipContext.hip",
+      "signals": ["branching", "function_count", "function_length"],
+      "issue": 575,
+      "status": "accepted",
+      "decision": "Keep host/device fallback orchestration in the HIP boundary; kernel launch contracts are now separate records."
+    },
+    {
+      "path": "src/integration/LeapfrogKdk.hpp",
+      "signals": ["branching", "function_length"],
+      "issue": 575,
+      "status": "accepted",
+      "decision": "Keep KDK transaction ordering in one integration contract; the branches are rollback and finite-state gates."
+    },
+    {
+      "path": "src/parallel/DomainDecomposition.cpp",
+      "signals": ["branching", "function_count", "function_length"],
+      "issue": 575,
+      "status": "accepted",
+      "decision": "Keep Morton partitioning and ownership validation together because they share the decomposition invariant."
+    },
+    {
+      "path": "src/parallel/MpiContext.cpp",
+      "signals": ["function_count"],
+      "issue": 575,
+      "status": "accepted",
+      "decision": "Keep MPI capability and collective adapters behind one opaque context boundary."
+    },
+    {
+      "path": "src/parallel/MpiExchange.cpp",
+      "signals": ["branching", "function_length"],
+      "issue": 575,
+      "status": "accepted",
+      "decision": "Keep packet migration and gather validation together; the long paths are bounded transport state machines."
+    },
+    {
+      "path": "src/parallel/MpiGhostTransport.cpp",
+      "signals": ["allocation", "branching", "function_count", "function_length"],
+      "issue": 575,
+      "status": "accepted",
+      "decision": "Keep non-blocking halo packing and completion in one responsibility; buffers are prepared before execution."
+    },
+    {
+      "path": "src/parallel/MpiPacketTransport.cpp",
+      "signals": ["branching", "function_length"],
+      "issue": 575,
+      "status": "accepted",
+      "decision": "Keep wire-format validation and MPI packet transfer together because both protect the same packet contract."
+    },
+    {
+      "path": "src/particles/ParticleBuffer.cpp",
+      "signals": ["function_count"],
+      "issue": 575,
+      "status": "accepted",
+      "decision": "Keep the two bounded buffer facades together; their shared ownership and span contract are intentionally symmetric."
+    },
+    {
+      "path": "src/sdk/Api.cpp",
+      "signals": ["function_count"],
+      "issue": 575,
+      "status": "accepted",
+      "decision": "Keep the C ABI translation layer together; exported V1 shims and V2 validation are one ABI boundary."
+    },
+    {
+      "path": "src/sdk/CppApi.cpp",
+      "signals": ["function_count"],
+      "issue": 575,
+      "status": "accepted",
+      "decision": "Keep the move-only C++ facade adapters together; they are thin ownership-preserving calls into the C ABI."
+    },
+    {
+      "path": "src/sdk/Simulation.cpp",
+      "signals": ["branching", "function_count", "function_length"],
+      "issue": 558,
+      "status": "accepted",
+      "decision": "Composition-root review accepted after extraction of SrvState, SrvTransaction, and SrvDispatch; no mechanical split remains."
+    },
+    {
+      "path": "src/sdk/Simulation.hpp",
+      "signals": ["include_dependencies"],
+      "issue": 558,
+      "status": "accepted",
+      "decision": "The facade owns solver and runtime composition, so its dependency set is intentional and remains private to the SDK."
+    },
+    {
+      "path": "src/sdk/SrvDispatch.hpp",
+      "signals": ["branching"],
+      "issue": 558,
+      "status": "accepted",
+      "decision": "Keep CPU, HIP fallback, and distributed dispatch policy in the dispatch responsibility."
+    },
+    {
+      "path": "src/sdk/SrvState.cpp",
+      "signals": ["branching"],
+      "issue": 558,
+      "status": "accepted",
+      "decision": "Keep state staging and commit validation together; they publish the same arena ownership transition."
+    },
+    {
+      "path": "src/sdk/SrvTransaction.cpp",
+      "signals": ["branching"],
+      "issue": 558,
+      "status": "accepted",
+      "decision": "Keep transaction phase transitions and rollback snapshots together as one lifecycle boundary."
+    },
+    {
+      "path": "src/solvers/barnes_hut/BarnesHutSolver.cpp",
+      "signals": ["branching", "function_length"],
+      "issue": 575,
+      "status": "accepted",
+      "decision": "Keep tree construction and force traversal together; the long path is the solver algorithm, not a mixed service object."
+    },
+    {
+      "path": "src/solvers/direct/DirectSolver.cpp",
+      "signals": ["branching"],
+      "issue": 575,
+      "status": "accepted",
+      "decision": "Keep reference-force validation and bounded staging together because they define the ground-truth solver contract."
+    },
+    {
+      "path": "src/solvers/gpu/BarnesHutKernel.hip",
+      "signals": ["branching", "function_length"],
+      "issue": 576,
+      "status": "accepted",
+      "decision": "Keep the device traversal in one kernel source; launch parameters are isolated in a bounded request record."
+    },
+    {
+      "path": "src/solvers/gpu/DirectKernel.hip",
+      "signals": ["branching", "function_length"],
+      "issue": 576,
+      "status": "accepted",
+      "decision": "Keep tiled direct accumulation in one kernel source; the host launch contract is now a single validated request."
+    },
+    {
+      "path": "src/trees/Octree.cpp",
+      "signals": ["branching", "function_count", "function_length"],
+      "issue": 575,
+      "status": "accepted",
+      "decision": "Keep octree build, validation, and traversal support together because they share cell/index ownership invariants."
+    }
+  ]
+}

@@ -29,12 +29,14 @@ int main()
 
     if (simulation.set_particles({position_x, position_y, position_z, velocity_x, velocity_y,
             velocity_z, mass}) != blitzar::Status::Ok ||
+
         simulation.set_timestep(0.5) != blitzar::Status::Ok ||
         simulation.step() != blitzar::Status::Ok) {
         return 1;
     }
 
     std::array<double, 2> output_x{};
+
     std::array<double, 2> output_y{};
     std::array<double, 2> output_z{};
     std::array<double, 2> output_velocity_x{};

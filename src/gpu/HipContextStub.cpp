@@ -46,6 +46,7 @@ HipContext::HipContext() noexcept
     }
     catch (const std::bad_alloc&) {
         impl_.reset();
+
         status_ = BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
 }

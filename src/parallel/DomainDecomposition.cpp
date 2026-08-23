@@ -37,6 +37,7 @@ DomainBounds DomainDecomposition::BoundsOf(blitzar_core::ParticleStateView state
     for (std::size_t index = 0; index < state.SourceCount(); ++index) {
         (void)Extend(bounds, {state.x[index], state.y[index], state.z[index]});
     }
+
     if (!bounds.IsValid()) {
         bounds = {};
     }
@@ -64,7 +65,9 @@ blitzar_status DomainDecomposition::Initialize(
     blitzar_core::ParticleStateView global_state, const MpiContext& context) noexcept
 {
     initialized_ = false;
+
     split_keys_.clear();
+
     rank_ = context.Rank();
     size_ = context.Size();
 
@@ -91,6 +94,7 @@ blitzar_status DomainDecomposition::Initialize(
 
     std::array<blitzar_core::Scalar, 3> minimum{
         bounds.minimum.x, bounds.minimum.y, bounds.minimum.z};
+
     std::array<blitzar_core::Scalar, 3> maximum{
         bounds.maximum.x, bounds.maximum.y, bounds.maximum.z};
 
@@ -116,10 +120,12 @@ blitzar_status DomainDecomposition::Initialize(
     catch (const std::bad_alloc&) {
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
+
     for (std::size_t index = 0; index < global_state.SourceCount(); ++index) {
         keys[index] = blitzar_trees::MortonKey(
             {global_state.x[index], global_state.y[index], global_state.z[index]},
             global_bounds_.minimum, global_bounds_.maximum);
+
         order[index] = index;
     }
 
@@ -133,6 +139,7 @@ blitzar_status DomainDecomposition::Initialize(
     catch (const std::bad_alloc&) {
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
+
     for (int destination = 1; destination < size_; ++destination) {
         if (order.empty()) {
             split_keys_[static_cast<std::size_t>(destination - 1)] = {};
@@ -158,6 +165,7 @@ blitzar_status DomainDecomposition::Initialize(
                 {global_state.x[index], global_state.y[index], global_state.z[index]});
         }
     }
+
     if (!local_bounds_.IsValid()) {
         local_bounds_ = global_bounds_;
     }
@@ -204,6 +212,7 @@ blitzar_status DomainDecomposition::ValidateState(
     if (!initialized_ || !blitzar_core::IsValid(state)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     for (std::size_t index = 0; index < state.count; ++index) {
         if (!Contains({state.x[index], state.y[index], state.z[index]})) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -230,6 +239,7 @@ int DomainDecomposition::Owner(
 
     const std::uint64_t key =
         blitzar_trees::MortonKey(position, global_bounds_.minimum, global_bounds_.maximum);
+
     const SplitKey candidate{key, particle_id};
     const auto boundary = std::upper_bound(split_keys_.begin(), split_keys_.end(), candidate,
         [](const SplitKey& left, const SplitKey& right) {
@@ -248,6 +258,7 @@ blitzar_status DomainDecomposition::LocalIndices(
     if (!initialized_ || !blitzar_core::IsValid(global_state)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     try {
         indices.reserve(global_state.SourceCount() / static_cast<std::size_t>(size_) + 1);
 

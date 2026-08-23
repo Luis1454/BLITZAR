@@ -50,6 +50,9 @@ class PlanCheckTests(unittest.TestCase):
             encoding="utf-8",
         )
         self.write_manifest()
+        (self.root / "plan" / "architecture_reviews.json").write_text(
+            json.dumps({"schema_version": 1, "reviews": []}), encoding="utf-8"
+        )
         self.write_quality()
 
     def tearDown(self) -> None:
@@ -77,6 +80,28 @@ class PlanCheckTests(unittest.TestCase):
                     "id": "TST-P0-001",
                     "name": "fixture",
                     "command": "fixture_test",
+                    "phase": "P0",
+                }
+            ],
+            "architecture": {
+                "report_schema": 1,
+                "command": "python -B tools/architecture_report.py --root . --check",
+                "review_registry": "plan/architecture_reviews.json",
+                "line_count_policy": "informational",
+                "thresholds": {
+                    "max_parameters": 4,
+                    "max_function_lines": 80,
+                    "max_functions_per_file": 12,
+                    "max_branch_points": 12,
+                    "max_allocation_sites": 8,
+                    "max_internal_includes": 12,
+                },
+            },
+            "checks": [
+                {
+                    "id": "CHK-P0-001",
+                    "name": "fixture-check",
+                    "command": "python -B tools/plan_check_test.py",
                     "phase": "P0",
                 }
             ],

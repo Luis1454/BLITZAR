@@ -14,9 +14,11 @@ SrvStepTransaction::SrvStepTransaction(SrvTransactionState state) noexcept
 blitzar_status SrvStepTransaction::Prepare() noexcept
 {
     phase_ = Phase::Aborted;
+
     arena_snapshot_.Clear();
     force_snapshot_.Clear();
     exchange_snapshot_.Clear();
+
     local_count_before_ = particles_.Count();
     source_count_before_ = source_count_;
     acceleration_count_before_ = accelerations_.Count();
@@ -33,6 +35,7 @@ blitzar_status SrvStepTransaction::Prepare() noexcept
 
     SrvArenaCaptureRequest arena_request{
         arena_, local_count_before_, source_count_before_, ids_, arena_snapshot_};
+
     blitzar_status status = SrvCaptureArenaState(arena_request);
 
     if (status != BLITZAR_STATUS_OK) {
@@ -80,6 +83,7 @@ void SrvStepTransaction::Commit() noexcept
 {
     if (phase_ == Phase::Complete) {
         ResetSnapshots();
+
         phase_ = Phase::Committed;
     }
 }
@@ -92,6 +96,7 @@ void SrvStepTransaction::Abort() noexcept
 
     SrvArenaRestoreRequest arena_request{arena_snapshot_, arena_, particles_, ids_,
         local_count_before_, source_count_before_};
+
     (void)SrvRestoreArenaState(arena_request);
 
     (void)accelerations_.SetCount(acceleration_count_before_);
@@ -105,6 +110,7 @@ void SrvStepTransaction::Abort() noexcept
     (void)SrvCopyPacketBuffer(exchange_snapshot_, exchange_);
 
     ResetSnapshots();
+
     phase_ = Phase::Aborted;
 }
 

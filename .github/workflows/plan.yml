@@ -30,6 +30,19 @@ jobs:
       - name: Self-test plan gate failures
         run: python tools/plan_check_test.py
 
+      - name: Validate bounded callable contracts
+        run: python tools/argument_gate.py --root .
+
+      - name: Self-test bounded callable gate
+        run: python tools/argument_gate_test.py
+
+      - name: Self-test architecture report
+        run: python tools/architecture_report_test.py
+
+      - name: Validate architecture responsibilities
+        shell: bash
+        run: python tools/architecture_report.py --root . --check --output "$RUNNER_TEMP/architecture-report.json"
+
       - name: Check statement grouping format
         run: python tools/format_blocks.py --check
 
@@ -88,6 +101,8 @@ jobs:
     env:
       ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+      CC: clang
+      CXX: clang++
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

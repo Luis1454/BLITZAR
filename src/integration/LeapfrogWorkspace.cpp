@@ -20,6 +20,7 @@ LeapfrogWorkspace::LeapfrogWorkspace(LeapfrogWorkspace&& other) noexcept
       count_(other.count_)
 {
     other.borrowed_arena_.reset();
+
     other.count_ = 0;
 }
 
@@ -29,7 +30,9 @@ LeapfrogWorkspace& LeapfrogWorkspace::operator=(LeapfrogWorkspace&& other) noexc
         owned_arena_ = std::move(other.owned_arena_);
         borrowed_arena_ = other.borrowed_arena_;
         count_ = other.count_;
+
         other.borrowed_arena_.reset();
+
         other.count_ = 0;
     }
     return *this;

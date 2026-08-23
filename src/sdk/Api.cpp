@@ -265,6 +265,7 @@ extern "C" blitzar_status blitzar_simulation_create(
     if (!TryConvertCount(particle_count, converted_count)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     try {
         *simulation = new blitzar_simulation(converted_count);
     }

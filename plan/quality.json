@@ -20,6 +20,18 @@
       "phase": "P0"
     },
     {
+      "id": "TST-P0-004",
+      "name": "bounded-views-and-request-contracts",
+      "command": "blitzar_bounded_contract_test",
+      "phase": "P0"
+    },
+    {
+      "id": "TST-P0-005",
+      "name": "abi-v1-v2-consumer",
+      "command": "blitzar_abi_test",
+      "phase": "P0"
+    },
+    {
       "id": "TST-P1-001",
       "name": "dynamics",
       "command": "blitzar_dynamics_test",
@@ -114,6 +126,58 @@
       "name": "installed-cmake-package-consumer",
       "command": "cmake -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/PackageConsumer.cmake",
       "phase": "P2"
+    }
+  ],
+  "architecture": {
+    "report_schema": 1,
+    "command": "python -B tools/architecture_report.py --root . --check",
+    "review_registry": "plan/architecture_reviews.json",
+    "line_count_policy": "informational",
+    "thresholds": {
+      "max_parameters": 4,
+      "max_function_lines": 80,
+      "max_functions_per_file": 12,
+      "max_branch_points": 12,
+      "max_allocation_sites": 8,
+      "max_internal_includes": 12
+    }
+  },
+  "checks": [
+    {
+      "id": "CHK-P0-001",
+      "name": "plan-check",
+      "command": "python tools/plan_check.py",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-002",
+      "name": "plan-check-fixtures",
+      "command": "python tools/plan_check_test.py",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-003",
+      "name": "bounded-callable-gate",
+      "command": "python tools/argument_gate.py --root .",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-004",
+      "name": "bounded-callable-fixtures",
+      "command": "python tools/argument_gate_test.py",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-005",
+      "name": "architecture-report-fixtures",
+      "command": "python tools/architecture_report_test.py",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-006",
+      "name": "architecture-report",
+      "command": "python tools/architecture_report.py --root . --check",
+      "phase": "P0"
     }
   ]
 }

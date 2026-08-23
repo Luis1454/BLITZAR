@@ -111,9 +111,11 @@ int main()
     blitzar_integration_kdk::AdvanceState first_state_request{
         first_particles, first_accelerations, first_workspace, solver, timestep, settings,
         solver_workspace, first_particles.State()};
+
     blitzar_integration_kdk::AdvanceState second_state_request{
         second_particles, second_accelerations, second_workspace, solver, timestep, settings,
         solver_workspace, second_particles.State()};
+
     const double initial_energy =
         Energy(first_particles.State(), gravitational_constant, softening);
 
@@ -131,6 +133,7 @@ int main()
     BLITZAR_CHECK(std::abs(momentum.z) < 1.0e-12);
     BLITZAR_CHECK(
         std::abs(Energy(first_state, gravitational_constant, softening) - initial_energy) < 1.0e-8);
+
     BLITZAR_CHECK(SameState(first_state, second_state));
 
     blitzar_particles::ParticleBuffer limit_particles(1);
@@ -143,6 +146,7 @@ int main()
 
     BLITZAR_CHECK(
         limit_particles.SetMass(0, std::numeric_limits<double>::max()) == BLITZAR_STATUS_OK);
+
     BLITZAR_CHECK(integrator.Advance(limit_state) == BLITZAR_STATUS_INVALID_ARGUMENT);
 
     return 0;

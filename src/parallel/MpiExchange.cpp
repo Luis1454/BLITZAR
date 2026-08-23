@@ -337,6 +337,7 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
     const AllToAllPacketRequest packet_request{
         workspace_.ordered_packets.View(), send_counts, send_displacements, received.View(),
         receive_counts, receive_displacements};
+
     status = context_.AllToAllPackets(packet_request);
     status = SynchronizeStatus(status, "migrate-packets");
 
@@ -393,6 +394,7 @@ blitzar_status MpiExchange::Gather(blitzar_core::ParticleStateView local_state,
     }
 
     std::fill(counts.begin(), counts.end(), 0);
+
     status = SynchronizeStatus(preparation_status, "gather-count-prepare");
 
     if (status != BLITZAR_STATUS_OK) {
@@ -409,6 +411,7 @@ blitzar_status MpiExchange::Gather(blitzar_core::ParticleStateView local_state,
     std::size_t total = 0;
 
     preparation_status = BLITZAR_STATUS_OK;
+
     std::fill(displacements.begin(), displacements.end(), 0);
 
     if (preparation_status == BLITZAR_STATUS_OK) {
@@ -442,6 +445,7 @@ blitzar_status MpiExchange::Gather(blitzar_core::ParticleStateView local_state,
 
     status = context_.AllGatherPackets(
         workspace_.local_packets.View(), gathered.View(), counts, displacements);
+
     status = SynchronizeStatus(status, "gather-packets");
 
     if (status != BLITZAR_STATUS_OK) {

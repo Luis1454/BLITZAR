@@ -32,7 +32,7 @@ private:
     static void AbortExchange(MpiGhostExchange::Impl& state) noexcept;
 
     const MpiSession& session_;
-    const MpiCollectives& collectives_;
+    [[maybe_unused]] const MpiCollectives& collectives_;
 };
 
 } // namespace blitzar_parallel

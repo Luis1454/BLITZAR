@@ -79,14 +79,18 @@ __global__ void BarnesHutKernel(BarnesHutDeviceRequest request)
     double* force_x = request.force_x;
     double* force_y = request.force_y;
     double* force_z = request.force_z;
+
     const std::size_t target_count = request.target_count;
     const std::size_t source_count = request.source_count;
+
     const GpuCell* cells = request.cells;
+
     const std::size_t cell_count = request.cell_count;
     const std::uint64_t* indices = request.indices;
     const double opening_angle = request.opening_angle;
     const double gravitational_constant = request.gravitational_constant;
     const double softening = request.softening;
+
     int* error = request.error;
 
     __shared__ int block_error;
@@ -238,6 +242,7 @@ __global__ void BarnesHutKernel(BarnesHutDeviceRequest request)
 
                 continue;
             }
+
             for (int child = 7; child >= 0; --child) {
                 const std::uint64_t child_index = cell.children[child];
 
@@ -286,12 +291,16 @@ __global__ void BarnesHutKernel(BarnesHutDeviceRequest request)
 blitzar_status LaunchBarnesHut(const BarnesHutLaunchRequest& request) noexcept
 {
     const DeviceParticleAddresses& addresses = request.addresses;
+
     const std::size_t target_count = request.target_count;
     const std::size_t source_count = request.source_count;
     const double opening_angle = request.opening_angle;
+
     const TreeAddresses& tree = request.tree;
     const KernelPhysics& physics = request.physics;
+
     const std::size_t max_depth = request.max_depth;
+
     const KernelRuntime& runtime = request.runtime;
 
     if (target_count == 0) {

@@ -32,6 +32,7 @@ int main()
     BLITZAR_CHECK(simulation.set_solver(blitzar::SolverKind::Fmm) == blitzar::Status::Unsupported);
     BLITZAR_CHECK(
         simulation.set_integrator(blitzar::IntegratorKind::LeapfrogKdk) == blitzar::Status::Ok);
+
     BLITZAR_CHECK(simulation.set_gravity(1.0, 0.0) == blitzar::Status::Ok);
     BLITZAR_CHECK(simulation.set_units(2.0, 3.0, 4.0) == blitzar::Status::Ok);
     BLITZAR_CHECK(simulation.set_timestep(0.5) == blitzar::Status::Ok);
@@ -47,6 +48,7 @@ int main()
 
     BLITZAR_CHECK(simulation.set_particles({position_x, position_y, position_z, velocity_x,
                       velocity_y, velocity_z, mass}) == blitzar::Status::Ok);
+
     BLITZAR_CHECK(simulation.step() == blitzar::Status::Ok);
 
     std::array<double, 2> output_x{};
@@ -59,6 +61,7 @@ int main()
 
     BLITZAR_CHECK(simulation.get_state({output_x, output_y, output_z, output_velocity_x,
                       output_velocity_y, output_velocity_z, output_mass}) == blitzar::Status::Ok);
+
     BLITZAR_CHECK(output_x[0] != 0.0);
     BLITZAR_CHECK(output_mass[0] == 1.0);
 
@@ -75,11 +78,14 @@ int main()
 
     BLITZAR_CHECK(simulation.set_particles({short_position_x, position_y, position_z, velocity_x,
                       velocity_y, velocity_z, mass}) == blitzar::Status::InvalidArgument);
+
     BLITZAR_CHECK(
         simulation.set_particles({replacement_x, position_y, position_z, velocity_x, velocity_y,
             velocity_z, replacement_mass}) == blitzar::Status::InvalidArgument);
+
     BLITZAR_CHECK(simulation.get_state({output_x, output_y, output_z, output_velocity_x,
                       output_velocity_y, output_velocity_z, output_mass}) == blitzar::Status::Ok);
+
     BLITZAR_CHECK(output_x == expected_x);
     BLITZAR_CHECK(output_y == expected_y);
     BLITZAR_CHECK(output_z == expected_z);

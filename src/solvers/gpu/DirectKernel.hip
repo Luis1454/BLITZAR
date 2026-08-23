@@ -47,19 +47,23 @@ __global__ void DirectKernel(DirectDeviceRequest request)
     double* force_x = request.force_x;
     double* force_y = request.force_y;
     double* force_z = request.force_z;
+
     const std::size_t target_count = request.target_count;
     const std::size_t source_begin = request.source_begin;
     const std::size_t source_end = request.source_end;
     const double gravitational_constant = request.gravitational_constant;
     const double softening = request.softening;
     const bool accumulate = request.accumulate;
+
     int* error = request.error;
 
     extern __shared__ double tile[];
+
     double* tile_x = tile;
     double* tile_y = tile_x + BlockSize;
     double* tile_z = tile_y + BlockSize;
     double* tile_mass = tile_z + BlockSize;
+
     __shared__ int block_error;
 
     if (threadIdx.x == 0) {
@@ -104,6 +108,7 @@ __global__ void DirectKernel(DirectDeviceRequest request)
                 local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
             }
 #pragma unroll 4
+
             for (unsigned int offset = 0; offset < BlockSize; ++offset) {
                 const std::size_t source_index = tile_begin + offset;
 
@@ -193,8 +198,10 @@ __global__ void DirectKernel(DirectDeviceRequest request)
 blitzar_status LaunchDirect(const DirectLaunchRequest& request) noexcept
 {
     const DeviceParticleAddresses& addresses = request.addresses;
+
     const std::size_t target_count = request.target_count;
     const blitzar_core::ForceRange& range = request.range;
+
     const KernelPhysics& physics = request.physics;
     const KernelRuntime& runtime = request.runtime;
 

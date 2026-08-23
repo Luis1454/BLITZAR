@@ -21,12 +21,14 @@ int main(void)
     BLITZAR_CHECK(blitzar_simulation_create(context, 2, &simulation) == BLITZAR_STATUS_OK);
 
     blitzar_context_destroy(context);
+
     context = NULL;
 
     int64_t particle_count = 0;
 
     BLITZAR_CHECK(
         blitzar_simulation_particle_count(simulation, &particle_count) == BLITZAR_STATUS_OK);
+
     BLITZAR_CHECK(particle_count == 2);
 
     blitzar_backend_kind backend = BLITZAR_BACKEND_HIP;
@@ -36,10 +38,13 @@ int main(void)
     BLITZAR_CHECK(blitzar_simulation_backend(simulation, NULL) == BLITZAR_STATUS_INVALID_ARGUMENT);
     BLITZAR_CHECK(
         blitzar_simulation_set_solver(simulation, BLITZAR_SOLVER_DIRECT) == BLITZAR_STATUS_OK);
+
     BLITZAR_CHECK(blitzar_simulation_set_solver(simulation, BLITZAR_SOLVER_FMM) ==
                   BLITZAR_STATUS_UNSUPPORTED);
+
     BLITZAR_CHECK(blitzar_simulation_set_integrator(simulation, BLITZAR_INTEGRATOR_LEAPFROG_KDK) ==
                   BLITZAR_STATUS_OK);
+
     BLITZAR_CHECK(blitzar_simulation_set_gravity(simulation, 1.0, 0.0) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(blitzar_simulation_set_units(simulation, 2.0, 3.0, 4.0) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(blitzar_simulation_set_seed(simulation, UINT64_C(42)) == BLITZAR_STATUS_OK);
@@ -66,12 +71,15 @@ int main(void)
 
     BLITZAR_CHECK(
         blitzar_simulation_set_barnes_hut_v2(simulation, &barnes_hut_v2) == BLITZAR_STATUS_OK);
+
     barnes_hut_v2.abi_version = 1;
+
     BLITZAR_CHECK(blitzar_simulation_set_barnes_hut_v2(simulation, &barnes_hut_v2) ==
                   BLITZAR_STATUS_INVALID_ARGUMENT);
 
     BLITZAR_CHECK(blitzar_simulation_set_particles(simulation, 2, position_x, position_y,
                       position_z, velocity_x, velocity_y, velocity_z, mass) == BLITZAR_STATUS_OK);
+
     BLITZAR_CHECK(blitzar_simulation_step(simulation) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(blitzar_simulation_backend(simulation, &backend) == BLITZAR_STATUS_OK);
 
@@ -88,13 +96,16 @@ int main(void)
         output_z, output_velocity_x, output_velocity_y, output_velocity_z, output_mass};
 
     BLITZAR_CHECK(blitzar_simulation_get_state_v2(simulation, &output_v2) == BLITZAR_STATUS_OK);
+
     output_v2.struct_size = (uint32_t)(sizeof(blitzar_particle_output_v2) - 1U);
+
     BLITZAR_CHECK(blitzar_simulation_get_state_v2(simulation, &output_v2) ==
                   BLITZAR_STATUS_INVALID_ARGUMENT);
 
     BLITZAR_CHECK(
         blitzar_simulation_get_state(simulation, 2, output_x, output_y, output_z, output_velocity_x,
             output_velocity_y, output_velocity_z, output_mass) == BLITZAR_STATUS_OK);
+
     BLITZAR_CHECK(output_x[0] != 0.0);
     BLITZAR_CHECK(output_x[1] != 1.0);
     BLITZAR_CHECK(output_mass[0] == 1.0);
@@ -106,17 +117,22 @@ int main(void)
 
     BLITZAR_CHECK(blitzar_simulation_set_particles(simulation, 2, NULL, position_y, position_z,
                       velocity_x, velocity_y, velocity_z, mass) == BLITZAR_STATUS_INVALID_ARGUMENT);
+
     BLITZAR_CHECK(
         blitzar_simulation_set_particles(simulation, 1, position_x, position_y, position_z,
             velocity_x, velocity_y, velocity_z, mass) == BLITZAR_STATUS_INVALID_ARGUMENT);
+
     BLITZAR_CHECK(blitzar_simulation_set_particles(simulation, INT64_MAX, NULL, NULL, NULL, NULL,
                       NULL, NULL, NULL) == BLITZAR_STATUS_INVALID_ARGUMENT);
+
     BLITZAR_CHECK(blitzar_simulation_set_particles(simulation, 2, replacement_x, position_y,
                       position_z, velocity_x, velocity_y, velocity_z,
                       replacement_mass) == BLITZAR_STATUS_INVALID_ARGUMENT);
+
     BLITZAR_CHECK(
         blitzar_simulation_get_state(simulation, 2, output_x, output_y, output_z, output_velocity_x,
             output_velocity_y, output_velocity_z, output_mass) == BLITZAR_STATUS_OK);
+
     BLITZAR_CHECK(output_x[0] == expected_x0);
     BLITZAR_CHECK(output_x[1] == expected_x1);
     BLITZAR_CHECK(

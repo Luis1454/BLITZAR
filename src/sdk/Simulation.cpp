@@ -182,8 +182,10 @@ blitzar_status Simulation::SetGravity(
 
     SolverVariant candidate_solver(
         std::in_place_type<blitzar_direct::DirectSolver>, candidate_parameters);
+
     const SolverCreationRequest request{
         solver_kind_, candidate_parameters, barnes_hut_, particle_count_};
+
     const blitzar_status status = CreateSolver(request, candidate_solver);
 
     if (status != BLITZAR_STATUS_OK) {
@@ -211,8 +213,10 @@ blitzar_status Simulation::SetUnits(blitzar_core::UnitSystem units) noexcept
 
     SolverVariant candidate_solver(
         std::in_place_type<blitzar_direct::DirectSolver>, candidate_parameters);
+
     const SolverCreationRequest request{
         solver_kind_, candidate_parameters, barnes_hut_, particle_count_};
+
     const blitzar_status status = CreateSolver(request, candidate_solver);
 
     if (status != BLITZAR_STATUS_OK) {
@@ -252,10 +256,12 @@ blitzar_status Simulation::SetBarnesHut(
     catch (const std::bad_alloc&) {
         return Remember(BLITZAR_STATUS_ALLOCATION_FAILURE);
     }
+
     if (solver_kind_ == BLITZAR_SOLVER_BARNES_HUT) {
         SolverVariant candidate_solver(std::in_place_type<blitzar_direct::DirectSolver>, gravity_);
         const SolverCreationRequest request{
             solver_kind_, gravity_, candidate_settings, particle_count_};
+
         const blitzar_status status = CreateSolver(request, candidate_solver);
 
         if (status != BLITZAR_STATUS_OK) {
@@ -350,6 +356,7 @@ blitzar_status Simulation::SetParticles(blitzar_core::ParticleStateView input) n
         local_count <= arena_.Count() && local_count <= particle_ids_.size()
             ? BLITZAR_STATUS_OK
             : BLITZAR_STATUS_INVALID_ARGUMENT;
+
     const blitzar_status synchronized_capacity_status =
         SynchronizeSimulationStatus(mpi_context_, capacity_status, "set-particles-capacity");
 
@@ -360,6 +367,7 @@ blitzar_status Simulation::SetParticles(blitzar_core::ParticleStateView input) n
     SrvParticleCommitRequest commit_request{stage, local_indices_, arena_, particles_, accelerations_,
         workspace_, std::span<std::uint64_t>(particle_ids_), domain_, std::move(candidate_domain),
         local_particle_count_, source_particle_count_, exchange_buffer_, particles_ready_};
+
     const blitzar_status commit_status = SrvCommitStagedParticles(commit_request);
 
     return Remember(commit_status);
@@ -378,6 +386,7 @@ blitzar_status Simulation::GetState(blitzar_core::ParticleOutputView output) con
 {
     const bool output_valid = particles_ready_ && output.count >= particle_count_ &&
                               blitzar_core::IsValid(output);
+
     const blitzar_status output_status = SynchronizeSimulationStatus(mpi_context_,
         output_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT, "get-state-preflight");
 
@@ -388,6 +397,7 @@ blitzar_status Simulation::GetState(blitzar_core::ParticleOutputView output) con
     const bool local_state_valid = particles_.Count() == local_particle_count_ &&
                                    local_particle_count_ <= particle_ids_.size() &&
                                    blitzar_core::IsValid(particles_.State());
+
     const blitzar_status state_status = SynchronizeSimulationStatus(mpi_context_,
         local_state_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR, "get-state-state");
 
@@ -438,6 +448,7 @@ blitzar_status Simulation::GetState(blitzar_core::ParticleOutputView output) con
         output.velocity_z[packet.id] = packet.velocity_z;
         output.mass[packet.id] = packet.mass;
     }
+
     if (std::find(seen_.begin(), seen_.end(), 0) != seen_.end()) {
         return Remember(BLITZAR_STATUS_INTERNAL_ERROR);
     }
@@ -450,6 +461,7 @@ blitzar_status Simulation::Step() noexcept
     const bool step_ready = particles_ready_ &&
                             integrator_kind_ == BLITZAR_INTEGRATOR_LEAPFROG_KDK &&
                             std::isfinite(timestep_) && timestep_ > 0.0;
+
     const blitzar_status preflight_status = SynchronizeSimulationStatus(mpi_context_,
         step_ready ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT, "step-preflight");
 
@@ -470,6 +482,7 @@ blitzar_status Simulation::Step() noexcept
                     rollback_particle_count == rollback_workspace_count &&
                     rollback_particle_count <= source_particle_count_ &&
                     source_particle_count_ <= arena_.Count();
+
                 const blitzar_status state_status = SynchronizeSimulationStatus(mpi_context_,
                     rollback_state_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR,
                     "step-state");
@@ -483,6 +496,7 @@ blitzar_status Simulation::Step() noexcept
                     std::span<std::uint64_t>(particle_ids_), local_particle_count_,
                     source_particle_count_, exchange_buffer_, rollback_arena_buffer_,
                     rollback_force_buffer_, rollback_exchange_buffer_};
+
                 SrvStepTransaction transaction(transaction_state);
                 blitzar_status prepare_status = transaction.Prepare();
 
@@ -503,11 +517,13 @@ blitzar_status Simulation::Step() noexcept
                     {hip_context_, solver, gravity_, barnes_hut_, last_backend_}, mpi_exchange_,
                     arena_, std::span<const std::uint64_t>(particle_ids_), exchange_buffer_,
                     mpi_exchange_.PersistentGhostExchange(), source_particle_count_};
+
                 Dispatcher dispatcher(dispatcher_state);
                 auto rollback = [&dispatcher, &transaction]() noexcept {
                     dispatcher.Abort();
                     transaction.Abort();
                 };
+
                 auto migrate_after_drift =
                     [this, rollback_particle_count](
                         blitzar_particles::ParticleBuffer& current_particles,
@@ -520,39 +536,52 @@ blitzar_status Simulation::Step() noexcept
                         current_workspace.Count() == rollback_particle_count &&
                         local_particle_count_ == rollback_particle_count &&
                         rollback_particle_count <= particle_ids_.size();
+
                     blitzar_status migration_status = SynchronizeSimulationStatus(mpi_context_,
                         migration_state_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR,
                         "migrate-preflight");
+
                     if (migration_status != BLITZAR_STATUS_OK) {
                         return {migration_status, false};
                     }
+
                     migration_status = mpi_exchange_.Migrate(current_particles.State(),
                         std::span<const std::uint64_t>(particle_ids_).first(local_particle_count_),
                         migration_buffer_);
+
                     if (migration_status != BLITZAR_STATUS_OK) {
                         return {migration_status, false};
                     }
+
                     SrvPacketStoreRequest migration_request{
                         migration_buffer_, arena_, current_particles, current_accelerations,
                         current_workspace, std::span<std::uint64_t>(particle_ids_), particle_count_,
                         local_particle_count_};
+
                     migration_status = SrvStoreLocalPackets(migration_request);
                     migration_status = SynchronizeSimulationStatus(
                         mpi_context_, migration_status, "migrate-commit");
+
                     if (migration_status != BLITZAR_STATUS_OK) {
                         return {migration_status, false};
                     }
+
                     source_particle_count_ = local_particle_count_;
+
                     return {BLITZAR_STATUS_OK, true};
                 };
+
                 blitzar_integration_kdk::AdvanceState<Dispatcher,
                     blitzar_barnes_hut::ThreadWorkspace>
                     advance_state{particles_, accelerations_, workspace_, dispatcher, timestep_,
                         execution_settings_, traversal_workspace_, particles_.State()};
+
                 blitzar_integration_kdk::AdvanceHooks advance_hooks{
                     migrate_after_drift, rollback};
+
                 blitzar_integration_kdk::AdvanceRequest advance_request{
                     advance_state, advance_hooks};
+
                 const blitzar_status advance_status = integrator_.Advance(advance_request);
 
                 if (advance_status != BLITZAR_STATUS_OK) {
@@ -571,6 +600,7 @@ blitzar_status Simulation::Step() noexcept
             Dispatcher dispatcher(
                 SrvSolverDispatchContext<SolverType>{
                     hip_context_, solver, gravity_, barnes_hut_, last_backend_});
+
             blitzar_integration_kdk::AdvanceState<Dispatcher,
                 blitzar_barnes_hut::ThreadWorkspace>
                 advance_state{particles_, accelerations_, workspace_, dispatcher, timestep_,

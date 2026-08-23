@@ -57,6 +57,7 @@ MpiSession::MpiSession() noexcept
     }
 
     ++SessionReferences;
+
     impl_->registered = true;
 
     if (provided < MPI_THREAD_MULTIPLE) {

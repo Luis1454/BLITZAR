@@ -42,6 +42,7 @@ Context::Context() noexcept : impl_(nullptr), status_(Status::InvalidArgument)
     const blitzar_status status = blitzar_context_create(&context);
 
     impl_->handle.reset(context);
+
     status_ = FromCStatus(status);
 }
 
@@ -78,6 +79,7 @@ Simulation::Simulation(Context& context, std::int64_t particle_count) noexcept
     if (!context.valid()) {
         return;
     }
+
     try {
         impl_ = std::make_unique<Impl>();
     }
@@ -93,6 +95,7 @@ Simulation::Simulation(Context& context, std::int64_t particle_count) noexcept
         blitzar_simulation_create(context.impl_->handle.get(), particle_count, &simulation);
 
     impl_->handle.reset(simulation);
+
     status_ = FromCStatus(status);
 }
 
@@ -103,6 +106,7 @@ Simulation::Simulation(Simulation&& other) noexcept
       particle_count_(other.particle_count_)
 {
     other.status_.store(Status::InvalidArgument, std::memory_order_relaxed);
+
     other.particle_count_ = 0;
 }
 
@@ -110,9 +114,13 @@ Simulation& Simulation::operator=(Simulation&& other) noexcept
 {
     if (this != &other) {
         impl_ = std::move(other.impl_);
+
         status_.store(other.status_.load(std::memory_order_relaxed), std::memory_order_relaxed);
+
         particle_count_ = other.particle_count_;
+
         other.status_.store(Status::InvalidArgument, std::memory_order_relaxed);
+
         other.particle_count_ = 0;
     }
     return *this;

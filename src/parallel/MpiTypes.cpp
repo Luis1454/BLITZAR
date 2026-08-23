@@ -102,6 +102,7 @@ bool ParticleWireCodec::Encode(
         packets.size() > output.size() / ParticleWireBytes) {
         return false;
     }
+
     for (std::size_t index = 0; index < packets.size(); ++index) {
         if (!Encode(packets[index], output.subspan(index * ParticleWireBytes, ParticleWireBytes))) {
             return false;
@@ -118,6 +119,7 @@ bool ParticleWireCodec::Decode(
         packets.size() > input.size() / ParticleWireBytes) {
         return false;
     }
+
     for (std::size_t index = 0; index < packets.size(); ++index) {
         if (!Decode(input.subspan(index * ParticleWireBytes, ParticleWireBytes), packets[index])) {
             return false;

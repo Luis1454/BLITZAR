@@ -16,6 +16,7 @@ QUALITY = ROOT / "plan" / "quality.json"
 CMESSAGE = ROOT / "CMakeLists.txt"
 
 TEST_ID_PATTERN = re.compile(r"^TST-[A-Z0-9]+(?:-[A-Z0-9]+)+$")
+CHECK_ID_PATTERN = re.compile(r"^CHK-[A-Z0-9]+(?:-[A-Z0-9]+)+$")
 TEST_PATTERN = re.compile(
     r"add_test\s*\(\s*NAME\s+([^\s\)]+)\s+COMMAND\s+([^\)]*)\)",
     re.MULTILINE,
@@ -373,6 +374,75 @@ def validate_quality_tests(phase_ids: set[str]) -> None:
                 f"CTest command mismatch for {test_id}: "
                 f"manifest={command}, CMake={cmake_tests[test_id]}"
             )
+
+    architecture = quality.get("architecture")
+    if not isinstance(architecture, dict):
+        fail("quality manifest needs an architecture report contract")
+    if architecture.get("report_schema") != 1:
+        fail("architecture report schema must be 1")
+    if architecture.get("line_count_policy") != "informational":
+        fail("architecture line_count_policy must remain informational")
+    command = architecture.get("command")
+    if (
+        not isinstance(command, str)
+        or "tools/architecture_report.py" not in command
+        or "--check" not in command
+    ):
+        fail("architecture report command must run architecture_report.py with --check")
+
+    registry = architecture.get("review_registry")
+    registry_path = normalize_manifest_path(registry, "architecture.review_registry")
+    if not ROOT.joinpath(*registry_path.parts).is_file():
+        fail(f"architecture review registry is missing: {registry_path}")
+
+    thresholds = architecture.get("thresholds")
+    required_thresholds = {
+        "max_parameters",
+        "max_function_lines",
+        "max_functions_per_file",
+        "max_branch_points",
+        "max_allocation_sites",
+        "max_internal_includes",
+    }
+    if not isinstance(thresholds, dict) or set(thresholds) != required_thresholds:
+        fail("architecture thresholds are incomplete")
+    if thresholds.get("max_parameters") != 4:
+        fail("architecture max_parameters must remain 4")
+    if any(
+        not isinstance(thresholds[name], int) or thresholds[name] <= 0
+        for name in required_thresholds
+    ):
+        fail("architecture thresholds must be positive integers")
+
+    checks = quality.get("checks")
+    if not isinstance(checks, list) or not checks:
+        fail("quality manifest needs executable quality checks")
+    check_ids: set[str] = set()
+    check_commands: set[str] = set()
+    for check in checks:
+        if not isinstance(check, dict):
+            fail("every quality check must be an object")
+        check_id = check.get("id")
+        check_name = check.get("name")
+        check_command = check.get("command")
+        if (
+            not isinstance(check_id, str)
+            or not CHECK_ID_PATTERN.fullmatch(check_id)
+            or check_id in check_ids
+        ):
+            fail(f"invalid or duplicate quality check ID: {check_id}")
+        if not isinstance(check_name, str) or not check_name:
+            fail(f"quality check {check_id} needs a name")
+        if (
+            not isinstance(check_command, str)
+            or not check_command
+            or check_command in check_commands
+        ):
+            fail(f"quality check {check_id} needs a unique command")
+        if check.get("phase") not in phase_ids:
+            fail(f"quality check {check_id} references unknown phase")
+        check_ids.add(check_id)
+        check_commands.add(check_command)
 
 
 def validate_naming() -> None:
