@@ -58,9 +58,11 @@ __global__ void BarnesHutKernel(const double* position_x, const double* position
     double gravitational_constant, double softening, int* error)
 {
     __shared__ int block_error;
+
     if (threadIdx.x == 0) {
         block_error = 0;
     }
+
     __syncthreads();
 
     const std::size_t target = static_cast<std::size_t>(blockIdx.x) * BlockSize + threadIdx.x;
@@ -225,14 +227,18 @@ __global__ void BarnesHutKernel(const double* position_x, const double* position
         (!isfinite(acceleration_x) || !isfinite(acceleration_y) || !isfinite(acceleration_z))) {
         local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const int warp_error = BroadcastWarpError(local_error);
+
     if (warp_error > local_error) {
         local_error = warp_error;
     }
     if (local_error != 0) {
         RecordError(&block_error, local_error);
     }
+
     __syncthreads();
+
     if (threadIdx.x == 0 && block_error != 0) {
         RecordError(error, block_error);
     }
@@ -267,10 +273,13 @@ blitzar_status LaunchBarnesHut(DeviceParticleAddresses addresses, std::size_t ta
     if (target_count > std::numeric_limits<std::size_t>::max() - (BlockSize - 1)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const std::size_t block_count = (target_count + BlockSize - 1) / BlockSize;
+
     if (block_count > std::numeric_limits<unsigned int>::max()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     hipLaunchKernelGGL(BarnesHutKernel, dim3(static_cast<unsigned int>(block_count)),
         dim3(BlockSize), 0, reinterpret_cast<hipStream_t>(stream),
         reinterpret_cast<const double*>(addresses.position_x),
@@ -282,6 +291,7 @@ blitzar_status LaunchBarnesHut(DeviceParticleAddresses addresses, std::size_t ta
         reinterpret_cast<const GpuCell*>(cells), cell_count,
         reinterpret_cast<const std::uint64_t*>(indices), opening_angle, gravitational_constant,
         softening, reinterpret_cast<int*>(error_address));
+
     return hipGetLastError() == hipSuccess ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR;
 }
 

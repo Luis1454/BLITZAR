@@ -127,20 +127,26 @@ struct HipContext::Impl final {
     {
         const hipError_t synchronization =
             hipStreamSynchronize(reinterpret_cast<hipStream_t>(buffers.Stream()));
+
         if (synchronization != hipSuccess) {
             buffers.Disable();
 
             return HipStatus(synchronization);
         }
+
         const int device_status = *reinterpret_cast<const int*>(buffers.HostError());
+
         if (device_status != 0) {
             return static_cast<blitzar_status>(device_status);
         }
+
         const std::array<std::span<double>, 3> destination{forces.x, forces.y, forces.z};
+
         for (std::size_t index = 0; index < destination.size(); ++index) {
             std::copy_n(reinterpret_cast<const double*>(buffers.HostForce(index)), particle_count,
                 destination[index].begin());
         }
+
         return BLITZAR_STATUS_OK;
     }
 
@@ -149,10 +155,13 @@ struct HipContext::Impl final {
         std::size_t source_begin, std::size_t source_end, bool accumulate) noexcept
     {
         const blitzar_status buffer_status = EnsureBuffers(particles.SourceCount(), 0);
+
         if (buffer_status != BLITZAR_STATUS_OK) {
             return buffer_status;
         }
+
         blitzar_status status = UploadState(particles);
+
         if (status != BLITZAR_STATUS_OK) {
             return status;
         }
@@ -162,12 +171,15 @@ struct HipContext::Impl final {
 
             return BLITZAR_STATUS_INTERNAL_ERROR;
         }
+
         const blitzar_gpu_detail::DeviceParticleAddresses addresses{buffers.DeviceParticle(0),
             buffers.DeviceParticle(1), buffers.DeviceParticle(2), buffers.DeviceParticle(3),
             buffers.DeviceForce(0), buffers.DeviceForce(1), buffers.DeviceForce(2)};
+
         status = blitzar_gpu_detail::LaunchDirect(addresses, particles.count, source_begin,
             source_end, gravity.EffectiveConstant(), gravity.EffectiveSoftening(), accumulate,
             buffers.DeviceError(), buffers.Stream());
+
         if (status != BLITZAR_STATUS_OK) {
             buffers.Disable();
 
@@ -181,7 +193,9 @@ struct HipContext::Impl final {
 
             return BLITZAR_STATUS_INTERNAL_ERROR;
         }
+
         status = QueueForceDownloads(particles.count);
+
         return status == BLITZAR_STATUS_OK ? Finish(particles.count, forces) : status;
     }
 
@@ -212,7 +226,9 @@ struct HipContext::Impl final {
         blitzar_barnes_hut::BarnesHutSettings settings) noexcept
     {
         (void)execution;
+
         blitzar_status status = EnsureTree(settings);
+
         if (status != BLITZAR_STATUS_OK) {
             return status;
         }
@@ -223,14 +239,20 @@ struct HipContext::Impl final {
                 return status;
             }
         }
+
         tree_ready = true;
+
         const std::span<const blitzar_trees::Octree::Cell> cells = tree->Cells();
         const std::span<const std::size_t> indices = tree->Indices();
+
         status = EnsureBuffers(particles.SourceCount(), cells.size());
+
         if (status != BLITZAR_STATUS_OK) {
             return status;
         }
+
         auto* host_cell_data = reinterpret_cast<blitzar_gpu_detail::GpuCell*>(buffers.HostCells());
+
         for (std::size_t index = 0; index < cells.size(); ++index) {
             const blitzar_trees::Octree::Cell& source = cells[index];
 
@@ -253,11 +275,15 @@ struct HipContext::Impl final {
                         : static_cast<std::uint64_t>(source.children[child]);
             }
         }
+
         auto* host_index_data = reinterpret_cast<std::uint64_t*>(buffers.HostIndices());
+
         for (std::size_t index = 0; index < indices.size(); ++index) {
             host_index_data[index] = static_cast<std::uint64_t>(indices[index]);
         }
+
         status = UploadState(particles);
+
         if (status != BLITZAR_STATUS_OK) {
             return status;
         }
@@ -275,13 +301,16 @@ struct HipContext::Impl final {
 
             return BLITZAR_STATUS_INTERNAL_ERROR;
         }
+
         const blitzar_gpu_detail::DeviceParticleAddresses addresses{buffers.DeviceParticle(0),
             buffers.DeviceParticle(1), buffers.DeviceParticle(2), buffers.DeviceParticle(3),
             buffers.DeviceForce(0), buffers.DeviceForce(1), buffers.DeviceForce(2)};
+
         status = blitzar_gpu_detail::LaunchBarnesHut(addresses, particles.count,
             particles.SourceCount(), buffers.DeviceCells(), cells.size(), buffers.DeviceIndices(),
             settings.opening_angle, gravity.EffectiveConstant(), gravity.EffectiveSoftening(),
             settings.max_depth, buffers.DeviceError(), buffers.Stream());
+
         if (status != BLITZAR_STATUS_OK) {
             buffers.Disable();
 
@@ -295,7 +324,9 @@ struct HipContext::Impl final {
 
             return BLITZAR_STATUS_INTERNAL_ERROR;
         }
+
         status = QueueForceDownloads(particles.count);
+
         return status == BLITZAR_STATUS_OK ? Finish(particles.count, forces) : status;
     }
 };

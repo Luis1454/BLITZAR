@@ -46,14 +46,17 @@ PairStatus GravityLaw::ValidatePair(
         !std::isfinite(squared_distance) || squared_distance < 0.0) {
         return PairStatus::Invalid;
     }
+
     const blitzar_core::Scalar softened_distance =
         squared_distance + effective_softening_ * effective_softening_;
+
     if (!std::isfinite(softened_distance)) {
         return PairStatus::Invalid;
     }
     if (softened_distance == 0.0) {
         return PairStatus::Singularity;
     }
+
     return PairStatus::Valid;
 }
 
@@ -68,6 +71,7 @@ blitzar_core::Scalar GravityLaw::PairFactor(
 {
     const blitzar_core::Scalar softened_distance =
         squared_distance + effective_softening_ * effective_softening_;
+
     return effective_constant_ * source_mass / (softened_distance * std::sqrt(softened_distance));
 }
 

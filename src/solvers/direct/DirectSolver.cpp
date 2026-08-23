@@ -32,6 +32,7 @@ namespace {
     blitzar_core::Scalar acceleration_x = 0.0;
     blitzar_core::Scalar acceleration_y = 0.0;
     blitzar_core::Scalar acceleration_z = 0.0;
+
     for (std::size_t source = source_begin; source < source_end; ++source) {
         if (source == target || particles.mass[source] == 0.0) {
             continue;
@@ -61,11 +62,14 @@ namespace {
         acceleration_y += factor * dy;
         acceleration_z += factor * dz;
     }
+
     acceleration = {acceleration_x, acceleration_y, acceleration_z};
+
     if (!std::isfinite(acceleration.x) || !std::isfinite(acceleration.y) ||
         !std::isfinite(acceleration.z)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     return BLITZAR_STATUS_OK;
 }
 
@@ -127,6 +131,7 @@ blitzar_status DirectSolver::ComputeRange(blitzar_core::ParticleStateView partic
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
 #endif
+
     for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(particles.count);
          ++target_index) {
         if (status.load(std::memory_order_relaxed) != BLITZAR_STATUS_OK) {
@@ -167,6 +172,7 @@ blitzar_status DirectSolver::ComputeRange(blitzar_core::ParticleStateView partic
             forces.z[target] = acceleration.z;
         }
     }
+
     return status.load(std::memory_order_relaxed);
 }
 

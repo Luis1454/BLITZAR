@@ -86,6 +86,7 @@ blitzar_status HipContext::ComputeDirect(blitzar_core::ParticleStateView, blitza
             return fault_status;
         }
     }
+
     return BLITZAR_STATUS_UNSUPPORTED;
 }
 
@@ -103,6 +104,7 @@ blitzar_status HipContext::ComputeDirectRange(blitzar_core::ParticleStateView,
             return fault_status;
         }
     }
+
     return BLITZAR_STATUS_UNSUPPORTED;
 }
 
@@ -120,6 +122,7 @@ blitzar_status HipContext::ComputeBarnesHut(blitzar_core::ParticleStateView,
             return fault_status;
         }
     }
+
     return BLITZAR_STATUS_UNSUPPORTED;
 }
 

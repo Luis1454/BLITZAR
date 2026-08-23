@@ -132,6 +132,16 @@ def looks_like_function_signature(text: str) -> bool:
     return "(" in stripped and ")" in stripped
 
 
+def looks_like_function_start(text: str) -> bool:
+    stripped = text.strip()
+    if not stripped or ";" in stripped or "=" in stripped:
+        return False
+    if CONTROL_RE.match(stripped) or TYPE_SCOPE_RE.match(stripped):
+        return False
+    prefix = stripped.split("(", 1)[0]
+    return "(" in stripped and (re.search(r"\s", prefix) is not None or "::" in prefix)
+
+
 def looks_like_declaration(text: str) -> bool:
     return bool(DECLARATION_RE.match(text.strip()))
 
@@ -243,7 +253,7 @@ def format_lines(lines: list[str]) -> list[str]:
 
         state = current_scope_state(scopes)
         starts_closing = code.lstrip().startswith("}")
-        pending_continuation = pending_kind == "control" and pending_parens > 0
+        pending_continuation = pending_kind in {"control", "function"} and pending_parens > 0
         if (
             state is not None
             and state.active_category is None
@@ -292,12 +302,13 @@ def format_lines(lines: list[str]) -> list[str]:
         if events:
             continue
 
-        if pending_kind == "control" and pending_parens > 0:
+        if pending_kind in {"control", "function"} and pending_parens > 0:
             pending_parens += code.count("(") - code.count(")")
             if pending_parens > 0:
                 continue
-            pending_kind = None
             pending_parens = 0
+            if pending_kind == "control":
+                pending_kind = None
             continue
 
         stripped = code.strip()
@@ -308,6 +319,9 @@ def format_lines(lines: list[str]) -> list[str]:
             pending_kind = "type"
             pending_parens = 0
         elif looks_like_function_signature(stripped):
+            pending_kind = "function"
+            pending_parens = code.count("(") - code.count(")")
+        elif current_scope_state(scopes) is None and looks_like_function_start(stripped):
             pending_kind = "function"
             pending_parens = code.count("(") - code.count(")")
         elif pending_kind == "function" and stripped.startswith(("const", "noexcept", "requires")):

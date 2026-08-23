@@ -107,13 +107,17 @@ blitzar_status ParticleBuffer::SetPosition(
         !std::isfinite(position.y) || !std::isfinite(position.z)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     ParticleArena& arena = Arena();
+
     const auto x = arena.PositionX();
     const auto y = arena.PositionY();
     const auto z = arena.PositionZ();
+
     x[index] = position.x;
     y[index] = position.y;
     z[index] = position.z;
+
     return BLITZAR_STATUS_OK;
 }
 
@@ -124,13 +128,17 @@ blitzar_status ParticleBuffer::SetVelocity(
         !std::isfinite(velocity.y) || !std::isfinite(velocity.z)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     ParticleArena& arena = Arena();
+
     const auto x = arena.VelocityX();
     const auto y = arena.VelocityY();
     const auto z = arena.VelocityZ();
+
     x[index] = velocity.x;
     y[index] = velocity.y;
     z[index] = velocity.z;
+
     return BLITZAR_STATUS_OK;
 }
 

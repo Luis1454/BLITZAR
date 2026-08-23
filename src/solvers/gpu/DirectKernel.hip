@@ -36,6 +36,7 @@ __global__ void DirectKernel(const double* position_x, const double* position_y,
     if (threadIdx.x == 0) {
         block_error = 0;
     }
+
     __syncthreads();
 
     const std::size_t target = static_cast<std::size_t>(blockIdx.x) * BlockSize + threadIdx.x;
@@ -138,7 +139,9 @@ __global__ void DirectKernel(const double* position_x, const double* position_y,
     if (local_error != 0) {
         RecordError(&block_error, local_error);
     }
+
     __syncthreads();
+
     if (threadIdx.x == 0 && block_error != 0) {
         RecordError(error, block_error);
     }
@@ -176,10 +179,13 @@ blitzar_status LaunchDirect(DeviceParticleAddresses addresses, std::size_t targe
     if (target_count > std::numeric_limits<std::size_t>::max() - (BlockSize - 1)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const std::size_t block_count = (target_count + BlockSize - 1) / BlockSize;
+
     if (block_count > std::numeric_limits<unsigned int>::max()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     hipLaunchKernelGGL(DirectKernel, dim3(static_cast<unsigned int>(block_count)), dim3(BlockSize),
         4 * BlockSize * sizeof(double), reinterpret_cast<hipStream_t>(stream),
         reinterpret_cast<const double*>(addresses.position_x),
@@ -189,6 +195,7 @@ blitzar_status LaunchDirect(DeviceParticleAddresses addresses, std::size_t targe
         reinterpret_cast<double*>(addresses.force_x), reinterpret_cast<double*>(addresses.force_y),
         reinterpret_cast<double*>(addresses.force_z), target_count, source_begin, source_end,
         gravitational_constant, softening, accumulate, reinterpret_cast<int*>(error_address));
+
     return hipGetLastError() == hipSuccess ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR;
 }
 

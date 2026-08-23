@@ -117,6 +117,7 @@ public:
                 state.z[index], state.velocity_x[index], state.velocity_y[index],
                 state.velocity_z[index], state.mass[index]};
         }
+
         return true;
     }
 };

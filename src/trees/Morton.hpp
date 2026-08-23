@@ -29,7 +29,6 @@ inline constexpr std::uint32_t MortonMaximum = (std::uint32_t{1} << MortonBits) 
     const std::uint32_t x = Quantize(position.x, minimum.x, maximum.x);
     const std::uint32_t y = Quantize(position.y, minimum.y, maximum.y);
     const std::uint32_t z = Quantize(position.z, minimum.z, maximum.z);
-
     std::uint64_t key = 0;
 
     for (int bit = 0; bit < MortonBits; ++bit) {
@@ -37,6 +36,7 @@ inline constexpr std::uint32_t MortonMaximum = (std::uint32_t{1} << MortonBits) 
         key |= static_cast<std::uint64_t>((y >> bit) & 1U) << (3 * bit + 1);
         key |= static_cast<std::uint64_t>((z >> bit) & 1U) << (3 * bit + 2);
     }
+
     return key;
 }
 

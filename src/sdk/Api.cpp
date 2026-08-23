@@ -163,8 +163,11 @@ extern "C" blitzar_status blitzar_simulation_create(
     if (context == nullptr || context->status != BLITZAR_STATUS_OK || simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     *simulation = nullptr;
+
     std::size_t converted_count = 0;
+
     if (!TryConvertCount(particle_count, converted_count)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
@@ -177,6 +180,7 @@ extern "C" blitzar_status blitzar_simulation_create(
     catch (const std::bad_alloc&) {
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
+
     return BLITZAR_STATUS_OK;
 }
 
@@ -206,11 +210,15 @@ extern "C" blitzar_status blitzar_simulation_backend(
     if (!IsValidSimulation(simulation) || backend == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const SimulationCallGuard guard(*simulation);
+
     if (!guard.Acquired()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     *backend = simulation->implementation.LastBackend();
+
     return BLITZAR_STATUS_OK;
 }
 
@@ -220,11 +228,15 @@ extern "C" blitzar_status blitzar_simulation_particle_count(
     if (!IsValidSimulation(simulation) || particle_count == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const SimulationCallGuard guard(*simulation);
+
     if (!guard.Acquired()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     *particle_count = static_cast<int64_t>(simulation->implementation.ParticleCount());
+
     return BLITZAR_STATUS_OK;
 }
 
@@ -234,10 +246,13 @@ extern "C" blitzar_status blitzar_simulation_set_solver(
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const SimulationCallGuard guard(*simulation);
+
     if (!guard.Acquired()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     return simulation->implementation.SetSolver(solver);
 }
 
@@ -247,10 +262,13 @@ extern "C" blitzar_status blitzar_simulation_set_integrator(
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const SimulationCallGuard guard(*simulation);
+
     if (!guard.Acquired()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     return simulation->implementation.SetIntegrator(integrator);
 }
 
@@ -260,10 +278,13 @@ extern "C" blitzar_status blitzar_simulation_set_gravity(
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const SimulationCallGuard guard(*simulation);
+
     if (!guard.Acquired()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     return simulation->implementation.SetGravity(gravitational_constant, softening);
 }
 
@@ -273,10 +294,13 @@ extern "C" blitzar_status blitzar_simulation_set_units(
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const SimulationCallGuard guard(*simulation);
+
     if (!guard.Acquired()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     return simulation->implementation.SetUnits({length_scale, mass_scale, time_scale});
 }
 
@@ -287,20 +311,25 @@ extern "C" blitzar_status blitzar_simulation_set_barnes_hut(blitzar_simulation* 
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const SimulationCallGuard guard(*simulation);
+
     if (!guard.Acquired()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     std::size_t converted_max_particles = 0;
     std::size_t converted_max_cells = 0;
     std::size_t converted_leaf_capacity = 0;
     std::size_t converted_max_depth = 0;
+
     if (!TryConvertCount(max_particles, converted_max_particles) ||
         !TryConvertCount(max_cells, converted_max_cells) ||
         !TryConvertCount(leaf_capacity, converted_leaf_capacity) ||
         !TryConvertCount(max_depth, converted_max_depth)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     return simulation->implementation.SetBarnesHut(opening_angle, converted_max_particles,
         converted_max_cells, converted_leaf_capacity, converted_max_depth);
 }
@@ -311,10 +340,13 @@ extern "C" blitzar_status blitzar_simulation_set_timestep(
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const SimulationCallGuard guard(*simulation);
+
     if (!guard.Acquired()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     return simulation->implementation.SetTimestep(timestep);
 }
 
@@ -341,11 +373,15 @@ extern "C" blitzar_status blitzar_simulation_set_particles(blitzar_simulation* s
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const SimulationCallGuard guard(*simulation);
+
     if (!guard.Acquired()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     std::size_t converted_count = 0;
+
     if (!TryConvertCount(particle_count, converted_count)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
@@ -355,6 +391,7 @@ extern "C" blitzar_status blitzar_simulation_set_particles(blitzar_simulation* s
             mass == nullptr)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     return simulation->implementation.SetParticles(MakeSpan(position_x, converted_count),
         MakeSpan(position_y, converted_count), MakeSpan(position_z, converted_count),
         MakeSpan(velocity_x, converted_count), MakeSpan(velocity_y, converted_count),
@@ -368,11 +405,15 @@ extern "C" blitzar_status blitzar_simulation_get_state(const blitzar_simulation*
     if (!IsValidSimulation(simulation)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const SimulationCallGuard guard(*simulation);
+
     if (!guard.Acquired()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     std::size_t converted_capacity = 0;
+
     if (!TryConvertCount(capacity, converted_capacity)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
@@ -382,6 +423,7 @@ extern "C" blitzar_status blitzar_simulation_get_state(const blitzar_simulation*
             mass == nullptr)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     return simulation->implementation.GetState(MakeSpan(position_x, converted_capacity),
         MakeSpan(position_y, converted_capacity), MakeSpan(position_z, converted_capacity),
         MakeSpan(velocity_x, converted_capacity), MakeSpan(velocity_y, converted_capacity),

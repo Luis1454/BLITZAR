@@ -66,6 +66,7 @@ struct NoopRollbackHook final {
     blitzar_core::MutableParticleView state, blitzar_status status) noexcept
 {
     const blitzar_status restore_status = workspace.Restore(state);
+
     return restore_status == BLITZAR_STATUS_OK ? status : restore_status;
 }
 
@@ -75,6 +76,7 @@ template <typename RollbackHook>
     blitzar_status status) noexcept
 {
     rollback_hook();
+
     return RestoreOr(workspace, particles.MutableView(), status);
 }
 
@@ -110,6 +112,7 @@ public:
         const blitzar_core::ExecutionSettings& settings) const noexcept
     {
         std::span<std::size_t> solver_workspace{};
+
         return Advance(particles, accelerations, workspace, solver, timestep, settings,
             solver_workspace, particles.State());
     }
@@ -133,6 +136,7 @@ public:
         blitzar_core::ParticleStateView solver_particles) const noexcept
     {
         blitzar_integration_kdk::NoopDriftHook drift_hook;
+
         return Advance(particles, accelerations, workspace, solver, timestep, settings,
             solver_workspace, solver_particles, drift_hook);
     }
@@ -145,6 +149,7 @@ public:
         blitzar_core::ParticleStateView solver_particles, DriftHook& drift_hook) const noexcept
     {
         blitzar_integration_kdk::NoopRollbackHook rollback_hook;
+
         return Advance(particles, accelerations, workspace, solver, timestep, settings,
             solver_workspace, solver_particles, drift_hook, rollback_hook);
     }
@@ -169,12 +174,16 @@ public:
 
         blitzar_core::MutableParticleView mutable_state = particles.MutableView();
         blitzar_status status = workspace.Capture(mutable_state);
+
         if (status != BLITZAR_STATUS_OK) {
             return status;
         }
+
         blitzar_core::ForceView force = accelerations.View();
+
         status = blitzar_integration_kdk::ComputeSolver(
             solver, solver_particles, force, settings, solver_workspace);
+
         if (status != BLITZAR_STATUS_OK) {
             return blitzar_integration_kdk::RestoreWithRollback(
                 rollback_hook, particles, workspace, status);
@@ -189,6 +198,7 @@ public:
 #if defined(_OPENMP)
 #pragma omp parallel for simd schedule(static)
 #endif
+
         for (std::int64_t raw_index = 0; raw_index < static_cast<std::int64_t>(particles.Count());
              ++raw_index) {
             const std::size_t index = static_cast<std::size_t>(raw_index);
@@ -207,6 +217,7 @@ public:
 
         const blitzar_integration_kdk::DriftTransition transition =
             drift_hook(particles, accelerations, workspace);
+
         if (transition.status != BLITZAR_STATUS_OK) {
             return blitzar_integration_kdk::RestoreWithRollback(
                 rollback_hook, particles, workspace, transition.status);
@@ -230,11 +241,12 @@ public:
 
             solver_particles = particles.State();
         }
+
         mutable_state = particles.MutableView();
         force = accelerations.View();
-
         status = blitzar_integration_kdk::ComputeSolver(
             solver, solver_particles, force, settings, solver_workspace);
+
         if (status != BLITZAR_STATUS_OK) {
             return blitzar_integration_kdk::RestoreWithRollback(
                 rollback_hook, particles, workspace, status);
@@ -258,6 +270,7 @@ public:
             return blitzar_integration_kdk::RestoreWithRollback(
                 rollback_hook, particles, workspace, BLITZAR_STATUS_INVALID_ARGUMENT);
         }
+
         return BLITZAR_STATUS_OK;
     }
 };

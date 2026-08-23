@@ -80,6 +80,7 @@ struct StateArrays final {
             return false;
         }
     }
+
     return true;
 }
 
@@ -91,6 +92,7 @@ struct StateArrays final {
             return false;
         }
     }
+
     return true;
 }
 
@@ -99,6 +101,7 @@ struct StateArrays final {
 {
     std::array<blitzar_core::Vector3, 8> corners{};
     std::size_t corner_index = 0;
+
     for (const int x_side : {-1, 1}) {
         for (const int y_side : {-1, 1}) {
             for (const int z_side : {-1, 1}) {
@@ -108,6 +111,7 @@ struct StateArrays final {
             }
         }
     }
+
     return corners;
 }
 
@@ -116,6 +120,7 @@ struct StateArrays final {
 {
     const double negative_infinity = -std::numeric_limits<double>::infinity();
     const double positive_infinity = std::numeric_limits<double>::infinity();
+
     return {blitzar_core::Vector3{
                 std::nextafter(bounds.minimum.x, negative_infinity), middle.y, middle.z},
         blitzar_core::Vector3{
@@ -137,6 +142,7 @@ struct StateArrays final {
     const double positive_infinity = std::numeric_limits<double>::infinity();
     std::array<blitzar_core::Vector3, 8> corners{};
     std::size_t corner_index = 0;
+
     for (const int x_side : {-1, 1}) {
         for (const int y_side : {-1, 1}) {
             for (const int z_side : {-1, 1}) {
@@ -150,6 +156,7 @@ struct StateArrays final {
             }
         }
     }
+
     return corners;
 }
 
@@ -219,6 +226,7 @@ struct StateArrays final {
         simulation.SetBarnesHut(0.0, ParticleCount, 128, 1, 32) != BLITZAR_STATUS_OK) {
         return false;
     }
+
     return simulation.SetSolver(solver_kind) == BLITZAR_STATUS_OK &&
            simulation.SetGravity(1.0, 0.1) == BLITZAR_STATUS_OK &&
            simulation.SetTimestep(timestep) == BLITZAR_STATUS_OK &&
@@ -232,6 +240,7 @@ struct StateArrays final {
     blitzar_particles::ParticleBuffer particles(ParticleCount);
     blitzar_particles::AccelerationBuffer accelerations(ParticleCount);
     blitzar_integration::LeapfrogWorkspace workspace(ParticleCount);
+
     for (std::size_t index = 0; index < ParticleCount; ++index) {
         if (particles.SetPosition(index, {initial.x[index], initial.y[index], initial.z[index]}) !=
 
@@ -242,20 +251,26 @@ struct StateArrays final {
             return false;
         }
     }
+
     const blitzar_physics::GravityParameters gravity{1.0, 0.1};
     blitzar_direct::DirectSolver solver(gravity);
+
     if (solver.Prepare(ParticleCount) != BLITZAR_STATUS_OK) {
         return false;
     }
+
     const blitzar_core::ExecutionSettings execution{};
     const blitzar_integration::LeapfrogKdk integrator{};
+
     for (int step = 0; step < step_count; ++step) {
         if (integrator.Advance(particles, accelerations, workspace, solver, timestep, execution) !=
             BLITZAR_STATUS_OK) {
             return false;
         }
     }
+
     const blitzar_core::ParticleStateView state = particles.State();
+
     for (std::size_t index = 0; index < ParticleCount; ++index) {
         result.x[index] = state.x[index];
         result.y[index] = state.y[index];
@@ -265,6 +280,7 @@ struct StateArrays final {
         result.velocity_z[index] = state.velocity_z[index];
         result.mass[index] = state.mass[index];
     }
+
     return true;
 }
 
@@ -273,10 +289,11 @@ struct StateArrays final {
 {
     StateArrays reference{};
     bool local_ok = BuildReference(initial, reference, timestep, step_count);
-
     blitzar_sdk::Simulation simulation(ParticleCount);
     const bool configuration_ok = Configure(simulation, initial, timestep, solver_kind);
+
     local_ok = local_ok && configuration_ok;
+
     for (int step = 0; step < step_count; ++step) {
         const blitzar_status step_status = simulation.Step();
 
@@ -287,7 +304,9 @@ struct StateArrays final {
     const blitzar_status state_status =
         simulation.GetState(distributed.x, distributed.y, distributed.z, distributed.velocity_x,
             distributed.velocity_y, distributed.velocity_z, distributed.mass);
+
     local_ok = local_ok && state_status == BLITZAR_STATUS_OK;
+
     for (std::size_t index = 0; index < ParticleCount; ++index) {
         local_ok = local_ok && std::abs(distributed.x[index] - reference.x[index]) < 1.0e-5 &&
                    std::abs(distributed.y[index] - reference.y[index]) < 1.0e-5 &&
@@ -299,6 +318,7 @@ struct StateArrays final {
     }
 
     StateArrays rejected = initial;
+
     rejected.x[0] += 100.0;
     rejected.mass[0] = -1.0;
     local_ok = local_ok && simulation.SetParticles(rejected.x, rejected.y, rejected.z,
@@ -309,7 +329,9 @@ struct StateArrays final {
     const blitzar_status rejected_state_status = simulation.GetState(after_rejected.x,
         after_rejected.y, after_rejected.z, after_rejected.velocity_x, after_rejected.velocity_y,
         after_rejected.velocity_z, after_rejected.mass);
+
     local_ok = local_ok && rejected_state_status == BLITZAR_STATUS_OK;
+
     for (std::size_t index = 0; index < ParticleCount; ++index) {
         local_ok =
             local_ok && std::abs(after_rejected.x[index] - reference.x[index]) < 1.0e-5 &&
@@ -320,6 +342,7 @@ struct StateArrays final {
             std::abs(after_rejected.velocity_z[index] - reference.velocity_z[index]) < 1.0e-5 &&
             after_rejected.mass[index] == reference.mass[index];
     }
+
     return local_ok;
 }
 

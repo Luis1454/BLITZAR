@@ -61,10 +61,14 @@ blitzar_status BarnesHutSolver::Accumulate(std::size_t target,
     if (stack.empty()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     std::size_t stack_size = 1;
+
     stack[0] = 0;
+
     const blitzar_core::Vector3 target_position{
         particles.x[target], particles.y[target], particles.z[target]};
+
     acceleration = {};
 
     while (stack_size > 0) {
@@ -165,6 +169,7 @@ blitzar_status BarnesHutSolver::Accumulate(std::size_t target,
         !std::isfinite(acceleration.z)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     return BLITZAR_STATUS_OK;
 }
 
@@ -174,6 +179,7 @@ blitzar_status BarnesHutSolver::Compute(blitzar_core::ParticleStateView particle
     if (!settings_.IsValid()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     return Compute(particles, forces, settings, workspace_);
 }
 
@@ -194,11 +200,13 @@ blitzar_status BarnesHutSolver::Compute(blitzar_core::ParticleStateView particle
             return build_status;
         }
     }
+
     std::atomic<blitzar_status> computation_status{BLITZAR_STATUS_OK};
 
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
 #endif
+
     for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(particles.count);
          ++target_index) {
         const std::size_t target = static_cast<std::size_t>(target_index);
@@ -253,6 +261,7 @@ blitzar_status BarnesHutSolver::Compute(blitzar_core::ParticleStateView particle
         forces.y[target] = acceleration.y;
         forces.z[target] = acceleration.z;
     }
+
     return computation_status.load(std::memory_order_relaxed);
 }
 

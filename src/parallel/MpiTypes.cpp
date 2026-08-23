@@ -57,9 +57,11 @@ template <typename T>
 
         return true;
     }
+
     (void)input;
     (void)offset;
     (void)value;
+
     return false;
 }
 
@@ -105,6 +107,7 @@ bool ParticleWireCodec::Encode(
             return false;
         }
     }
+
     return true;
 }
 
@@ -120,6 +123,7 @@ bool ParticleWireCodec::Decode(
             return false;
         }
     }
+
     return true;
 }
 

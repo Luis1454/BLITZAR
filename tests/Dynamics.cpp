@@ -27,7 +27,9 @@ public:
             particles.count != forces.count || !settings.IsValid()) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
+
         ++calls_;
+
         if (calls_ == 2) {
             return BLITZAR_STATUS_INTERNAL_ERROR;
         }
@@ -36,6 +38,7 @@ public:
             forces.y[index] = 0.0;
             forces.z[index] = 0.0;
         }
+
         return BLITZAR_STATUS_OK;
     }
 
@@ -62,6 +65,7 @@ public:
             forces.y[index] = 0.0;
             forces.z[index] = 0.0;
         }
+
         return BLITZAR_STATUS_OK;
     }
 };

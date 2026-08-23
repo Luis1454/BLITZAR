@@ -27,11 +27,13 @@ std::size_t ThreadWorkspace::CalculateStackCapacity(
     if (max_cells == 0) {
         return 0;
     }
+
     constexpr std::size_t ChildrenPerCell = 8;
     const std::size_t maximum = std::numeric_limits<std::size_t>::max();
     const std::size_t depth_capacity = max_depth > (maximum - 1) / (ChildrenPerCell - 1)
                                            ? maximum
                                            : 1 + max_depth * (ChildrenPerCell - 1);
+
     return std::min(max_cells, depth_capacity);
 }
 

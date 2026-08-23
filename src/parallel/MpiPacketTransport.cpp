@@ -32,6 +32,7 @@ namespace {
             return false;
         }
     }
+
     return true;
 }
 
@@ -43,6 +44,7 @@ namespace {
     blitzar_status global_status = BLITZAR_STATUS_INTERNAL_ERROR;
     const blitzar_status synchronization_status =
         collectives.SynchronizeStatus(local_status, "MpiPacketTransport", phase, global_status);
+
     return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status : global_status;
 }
 
@@ -84,6 +86,7 @@ namespace {
             return true;
         }
     }
+
     return false;
 }
 
@@ -163,6 +166,7 @@ blitzar_status MpiPacketTransport::AllToAllCounts(
 {
     bool layout_valid = send_counts.size() == static_cast<std::size_t>(session_.Size()) &&
                         receive_counts.size() == static_cast<std::size_t>(session_.Size());
+
     if (layout_valid) {
         for (const int count : send_counts) {
             if (count < 0) {
@@ -185,14 +189,17 @@ blitzar_status MpiPacketTransport::AllToAllCounts(
         return BLITZAR_STATUS_OK;
     }
 #if defined(BLITZAR_HAS_MPI)
+
     blitzar_status global_layout_status = BLITZAR_STATUS_INTERNAL_ERROR;
     const blitzar_status synchronization_status = collectives_.SynchronizeStatus(
         layout_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT, "MpiPacketTransport",
         "alltoall-count-layout", global_layout_status);
+
     if (synchronization_status != BLITZAR_STATUS_OK || global_layout_status != BLITZAR_STATUS_OK) {
         return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status
                                                            : global_layout_status;
     }
+
     return MPI_Alltoall(send_counts.data(), 1, MPI_INT, receive_counts.data(), 1, MPI_INT,
                session_.Native().communicator) == MPI_SUCCESS
                ? BLITZAR_STATUS_OK
@@ -214,6 +221,7 @@ blitzar_status MpiPacketTransport::AllToAllPackets(std::span<const ParticlePacke
         receive_displacements.size() == static_cast<std::size_t>(session_.Size()) &&
         ValidateLayout(send_counts, send_displacements, send_packets.size()) &&
         ValidateLayout(receive_counts, receive_displacements, receive_packets.size());
+
     if (!session_.IsUsable()) {
         return session_.Status();
     }
@@ -229,22 +237,26 @@ blitzar_status MpiPacketTransport::AllToAllPackets(std::span<const ParticlePacke
         return BLITZAR_STATUS_OK;
     }
 #if defined(BLITZAR_HAS_MPI)
+
     const bool capacity_valid =
         send_packets.size() <= packet_capacity_ && receive_packets.size() <= packet_capacity_;
     blitzar_status preparation_status =
         layout_valid && capacity_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT;
     std::size_t packets_per_peer = 0;
+
     if (preparation_status == BLITZAR_STATUS_OK &&
         !ComputeRoundPacketLimit(session_.Size(), packets_per_peer)) {
         preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
     const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
+
     if (send_progress_.size() != peer_count || receive_progress_.size() != peer_count ||
         send_bytes_.size() != peer_count || receive_bytes_.size() != peer_count ||
         send_offsets_.size() != peer_count || receive_offsets_.size() != peer_count) {
         preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     std::vector<std::size_t>& send_progress = send_progress_;
     std::vector<std::size_t>& receive_progress = receive_progress_;
     std::vector<int>& send_bytes = send_bytes_;
@@ -259,8 +271,10 @@ blitzar_status MpiPacketTransport::AllToAllPackets(std::span<const ParticlePacke
     std::fill(receive_bytes.begin(), receive_bytes.end(), 0);
     std::fill(send_offsets.begin(), send_offsets.end(), 0);
     std::fill(receive_offsets.begin(), receive_offsets.end(), 0);
+
     blitzar_status status =
         SynchronizePreparation(collectives_, preparation_status, "alltoall-packet-prepare");
+
     if (status != BLITZAR_STATUS_OK) {
         return status;
     }
@@ -385,6 +399,7 @@ blitzar_status MpiPacketTransport::AllToAllPackets(std::span<const ParticlePacke
         }
     }
 #else
+
     return BLITZAR_STATUS_INTERNAL_ERROR;
 #endif
 }
@@ -394,6 +409,7 @@ blitzar_status MpiPacketTransport::AllGatherCounts(
 {
     const bool layout_valid =
         local_count >= 0 && counts.size() == static_cast<std::size_t>(session_.Size());
+
     if (!session_.IsUsable()) {
         return session_.Status();
     }
@@ -407,14 +423,17 @@ blitzar_status MpiPacketTransport::AllGatherCounts(
         return BLITZAR_STATUS_OK;
     }
 #if defined(BLITZAR_HAS_MPI)
+
     blitzar_status global_layout_status = BLITZAR_STATUS_INTERNAL_ERROR;
     const blitzar_status synchronization_status = collectives_.SynchronizeStatus(
         layout_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT, "MpiPacketTransport",
         "allgather-count-layout", global_layout_status);
+
     if (synchronization_status != BLITZAR_STATUS_OK || global_layout_status != BLITZAR_STATUS_OK) {
         return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status
                                                            : global_layout_status;
     }
+
     return MPI_Allgather(&local_count, 1, MPI_INT, counts.data(), 1, MPI_INT,
                session_.Native().communicator) == MPI_SUCCESS
                ? BLITZAR_STATUS_OK
@@ -435,6 +454,7 @@ blitzar_status MpiPacketTransport::AllGatherPackets(std::span<const ParticlePack
         layout_valid &&
         local_packets.size() ==
             static_cast<std::size_t>(counts[static_cast<std::size_t>(session_.Rank())]);
+
     if (!session_.IsUsable()) {
         return session_.Status();
     }
@@ -449,22 +469,26 @@ blitzar_status MpiPacketTransport::AllGatherPackets(std::span<const ParticlePack
         return BLITZAR_STATUS_OK;
     }
 #if defined(BLITZAR_HAS_MPI)
+
     const bool capacity_valid =
         local_packets.size() <= packet_capacity_ && gathered_packets.size() <= packet_capacity_;
     blitzar_status preparation_status = layout_valid && local_count_valid && capacity_valid
                                             ? BLITZAR_STATUS_OK
                                             : BLITZAR_STATUS_INVALID_ARGUMENT;
     std::size_t packets_per_peer = 0;
+
     if (preparation_status == BLITZAR_STATUS_OK &&
         !ComputeRoundPacketLimit(session_.Size(), packets_per_peer)) {
         preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
     const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
+
     if (send_progress_.size() != peer_count || receive_bytes_.size() != peer_count ||
         receive_offsets_.size() != peer_count) {
         preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     std::vector<std::size_t>& progress = send_progress_;
     std::vector<int>& receive_bytes = receive_bytes_;
     std::vector<int>& receive_offsets = receive_offsets_;
@@ -473,8 +497,10 @@ blitzar_status MpiPacketTransport::AllGatherPackets(std::span<const ParticlePack
     std::fill(progress.begin(), progress.end(), 0);
     std::fill(receive_bytes.begin(), receive_bytes.end(), 0);
     std::fill(receive_offsets.begin(), receive_offsets.end(), 0);
+
     blitzar_status status =
         SynchronizePreparation(collectives_, preparation_status, "allgather-packet-prepare");
+
     if (status != BLITZAR_STATUS_OK) {
         return status;
     }
@@ -576,6 +602,7 @@ blitzar_status MpiPacketTransport::AllGatherPackets(std::span<const ParticlePack
         }
     }
 #else
+
     return BLITZAR_STATUS_INTERNAL_ERROR;
 #endif
 }

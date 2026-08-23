@@ -46,6 +46,7 @@ double Energy(
     blitzar_core::ParticleStateView state, double gravitational_constant, double softening) noexcept
 {
     double kinetic = 0.0;
+
     for (std::size_t index = 0; index < state.count; ++index) {
         const double speed_squared = state.velocity_x[index] * state.velocity_x[index] +
                                      state.velocity_y[index] * state.velocity_y[index] +
@@ -53,12 +54,14 @@ double Energy(
 
         kinetic += 0.5 * state.mass[index] * speed_squared;
     }
+
     const double dx = state.x[1] - state.x[0];
     const double dy = state.y[1] - state.y[0];
     const double dz = state.z[1] - state.z[0];
     const double softened_distance = std::sqrt(dx * dx + dy * dy + dz * dz + softening * softening);
     const double potential =
         -gravitational_constant * state.mass[0] * state.mass[1] / softened_distance;
+
     return kinetic + potential;
 }
 
@@ -75,6 +78,7 @@ bool SameState(
             return false;
         }
     }
+
     return true;
 }
 

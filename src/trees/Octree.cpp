@@ -51,12 +51,14 @@ Octree::Cell Octree::MakeCell(blitzar_core::Vector3 center, blitzar_core::Scalar
     std::size_t begin, std::size_t count, std::size_t depth) const noexcept
 {
     Cell cell{};
+
     cell.center = center;
     cell.half_extent = half_extent;
     cell.begin = begin;
     cell.count = count;
     cell.depth = depth;
     cell.children.fill(Cell::InvalidIndex);
+
     return cell;
 }
 
@@ -78,6 +80,7 @@ void Octree::Partition(const Cell& cell, blitzar_core::ParticleStateView particl
     std::array<std::size_t, 8>& counts) noexcept
 {
     counts.fill(0);
+
     for (std::size_t offset = 0; offset < cell.count; ++offset) {
         const std::size_t particle = indices_[cell.begin + offset];
 
@@ -86,7 +89,9 @@ void Octree::Partition(const Cell& cell, blitzar_core::ParticleStateView particl
     }
 
     std::array<std::size_t, 8> write{};
+
     write[0] = cell.begin;
+
     for (std::size_t octant = 1; octant < write.size(); ++octant) {
         write[octant] = write[octant - 1] + counts[octant - 1];
     }
@@ -152,6 +157,7 @@ void Octree::ParallelMortonSort(blitzar_core::ParticleStateView particles,
     }
 
 #if defined(_OPENMP)
+
     const int available_threads = omp_get_max_threads();
     const std::size_t thread_count =
         available_threads > 0
@@ -166,6 +172,7 @@ void Octree::ParallelMortonSort(blitzar_core::ParticleStateView particles,
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
 #endif
+
     for (std::int64_t raw_chunk = 0; raw_chunk < static_cast<std::int64_t>(thread_count);
          ++raw_chunk) {
         const std::size_t chunk = static_cast<std::size_t>(raw_chunk);

@@ -69,10 +69,13 @@ blitzar_status MpiContext::PrepareCapacity(
     if (impl_ == nullptr) {
         return status_;
     }
+
     const blitzar_status packet_status = impl_->packets.Prepare(packet_capacity);
+
     if (packet_status != BLITZAR_STATUS_OK) {
         return packet_status;
     }
+
     return impl_->ghosts.Prepare(exchange, packet_capacity);
 }
 
@@ -84,6 +87,7 @@ blitzar_status MpiContext::SynchronizeStatus(blitzar_status local_status, const 
 
         return status_;
     }
+
     return impl_->collectives.SynchronizeStatus(local_status, operation, phase, global_status);
 }
 
@@ -93,6 +97,7 @@ blitzar_status MpiContext::ReduceBounds(
     if (impl_ == nullptr) {
         return status_;
     }
+
     return impl_->collectives.ReduceBounds(minimum, maximum);
 }
 
@@ -111,6 +116,7 @@ blitzar_status MpiContext::BeginGhostExchange(
     if (impl_ == nullptr) {
         return status_;
     }
+
     return impl_->ghosts.Begin(local, exchange);
 }
 
@@ -122,6 +128,7 @@ blitzar_status MpiContext::CompleteGhostExchange(
 
         return status_;
     }
+
     return impl_->ghosts.Complete(exchange, ghosts);
 }
 
@@ -143,6 +150,7 @@ blitzar_status MpiContext::AllToAllCounts(
     if (impl_ == nullptr) {
         return status_;
     }
+
     return impl_->packets.AllToAllCounts(send_counts, receive_counts);
 }
 
@@ -154,6 +162,7 @@ blitzar_status MpiContext::AllToAllPackets(std::span<const ParticlePacket> send_
     if (impl_ == nullptr) {
         return status_;
     }
+
     return impl_->packets.AllToAllPackets(send_packets, send_counts, send_displacements,
         receive_packets, receive_counts, receive_displacements);
 }
@@ -174,6 +183,7 @@ blitzar_status MpiContext::AllGatherPackets(std::span<const ParticlePacket> loca
     if (impl_ == nullptr) {
         return status_;
     }
+
     return impl_->packets.AllGatherPackets(local_packets, gathered_packets, counts, displacements);
 }
 

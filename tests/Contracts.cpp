@@ -27,6 +27,7 @@ public:
             particles.count != forces.count || !settings.IsValid()) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
+
         return BLITZAR_STATUS_OK;
     }
 };

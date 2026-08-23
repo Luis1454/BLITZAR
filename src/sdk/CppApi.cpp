@@ -208,6 +208,7 @@ Status Simulation::set_particles(std::span<const double> position_x,
         !FitsCount(position_x.size())) {
         return Update(BLITZAR_STATUS_INVALID_ARGUMENT);
     }
+
     return Update(blitzar_simulation_set_particles(impl_ == nullptr ? nullptr : impl_->handle.get(),
         static_cast<std::int64_t>(position_x.size()), position_x.data(), position_y.data(),
         position_z.data(), velocity_x.data(), velocity_y.data(), velocity_z.data(), mass.data()));
@@ -223,6 +224,7 @@ Status Simulation::get_state(std::span<double> position_x, std::span<double> pos
         !FitsCount(position_x.size())) {
         return Update(BLITZAR_STATUS_INVALID_ARGUMENT);
     }
+
     return Update(blitzar_simulation_get_state(impl_ == nullptr ? nullptr : impl_->handle.get(),
         static_cast<std::int64_t>(position_x.size()), position_x.data(), position_y.data(),
         position_z.data(), velocity_x.data(), velocity_y.data(), velocity_z.data(), mass.data()));
