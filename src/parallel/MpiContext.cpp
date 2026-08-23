@@ -31,6 +31,7 @@ MpiContext::MpiContext() noexcept
         status_ = BLITZAR_STATUS_ALLOCATION_FAILURE;
         return;
     }
+
     status_ = impl_->session.Status();
 }
 
@@ -98,6 +99,7 @@ blitzar_status MpiContext::ReduceMax(int local_value, int& global_value) const n
     if (impl_ == nullptr) {
         return status_;
     }
+
     return impl_->collectives.ReduceMax(local_value, global_value);
 }
 
@@ -158,6 +160,7 @@ blitzar_status MpiContext::AllGatherCounts(int local_count, std::span<int> count
     if (impl_ == nullptr) {
         return status_;
     }
+
     return impl_->packets.AllGatherCounts(local_count, counts);
 }
 

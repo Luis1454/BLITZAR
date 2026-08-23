@@ -159,6 +159,7 @@ blitzar_status MpiCollectives::ReduceMax(int local_value, int& global_value) con
         return BLITZAR_STATUS_OK;
     }
 #if defined(BLITZAR_HAS_MPI)
+
     return MPI_Allreduce(&local_value, &global_value, 1, MPI_INT, MPI_MAX,
                session_.Native().communicator) == MPI_SUCCESS
                ? BLITZAR_STATUS_OK

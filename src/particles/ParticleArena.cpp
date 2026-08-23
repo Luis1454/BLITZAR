@@ -14,22 +14,27 @@ std::size_t ParticleArena::AlignedCount(std::size_t count)
 {
     const std::size_t remainder = count % ScalarsPerAlignment;
     const std::size_t padding = remainder == 0 ? 0 : ScalarsPerAlignment - remainder;
+
     if (count > std::numeric_limits<std::size_t>::max() - padding) {
         throw std::length_error("particle arena is too large");
     }
+
     return count + padding;
 }
 
 ParticleArena::ParticleArena(std::size_t count) : count_(count), stride_(AlignedCount(count))
 {
     const std::size_t maximum = std::numeric_limits<std::size_t>::max();
+
     if (stride_ > maximum / FieldCount ||
         stride_ * FieldCount > maximum - (ScalarsPerAlignment - 1)) {
         throw std::length_error("particle arena is too large");
     }
+
     if (count_ == 0) {
         return;
     }
+
     storage_.resize(stride_ * FieldCount + (ScalarsPerAlignment - 1));
 
     const std::span<blitzar_core::Scalar> storage(storage_);
@@ -37,6 +42,7 @@ ParticleArena::ParticleArena(std::size_t count) : count_(count), stride_(Aligned
     const std::size_t byte_offset = (Alignment - (address % Alignment)) % Alignment;
     const std::size_t scalar_offset = byte_offset / sizeof(blitzar_core::Scalar);
     const std::size_t payload = stride_ * FieldCount;
+
     if (scalar_offset > storage.size() || payload > storage.size() - scalar_offset) {
         throw std::length_error("particle arena alignment overflow");
     }

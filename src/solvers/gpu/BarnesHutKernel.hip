@@ -39,6 +39,7 @@ __device__ bool IsLeaf(const GpuCell& cell) noexcept
             return false;
         }
     }
+
     return true;
 }
 
@@ -114,6 +115,7 @@ __global__ void BarnesHutKernel(const double* position_x, const double* position
                     if (!isfinite(source_x) || !isfinite(source_y) || !isfinite(source_z) ||
                         !isfinite(source_mass) || source_mass < 0.0) {
                         local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
+
                         break;
                     }
                     if (source == target || source_mass == 0.0) {

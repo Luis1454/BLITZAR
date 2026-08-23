@@ -72,6 +72,7 @@ struct HipContext::Impl final {
     {
         const std::array<std::span<const double>, 4> source{
             particles.x, particles.y, particles.z, particles.mass};
+
         for (std::size_t index = 0; index < source.size(); ++index) {
             std::copy(source[index].begin(), source[index].end(),
                 reinterpret_cast<double*>(buffers.HostParticle(index)));
@@ -85,12 +86,14 @@ struct HipContext::Impl final {
                 return HipStatus(error);
             }
         }
+
         return BLITZAR_STATUS_OK;
     }
 
     [[nodiscard]] blitzar_status QueueForceDownloads(std::size_t particle_count) noexcept
     {
         const std::size_t bytes = particle_count * sizeof(double);
+
         for (std::size_t index = 0; index < 3; ++index) {
             const hipError_t error =
                 hipMemcpyAsync(reinterpret_cast<void*>(buffers.HostForce(index)),
@@ -101,6 +104,7 @@ struct HipContext::Impl final {
                 return HipStatus(error);
             }
         }
+
         return BLITZAR_STATUS_OK;
     }
 
@@ -179,6 +183,7 @@ struct HipContext::Impl final {
             tree_settings = settings;
             tree_ready = false;
         }
+
         return BLITZAR_STATUS_OK;
     }
 

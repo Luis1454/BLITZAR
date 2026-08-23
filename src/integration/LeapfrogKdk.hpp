@@ -43,6 +43,7 @@ struct NoopRollbackHook final {
             return false;
         }
     }
+
     return true;
 }
 
@@ -57,6 +58,7 @@ struct NoopRollbackHook final {
             return false;
         }
     }
+
     return true;
 }
 

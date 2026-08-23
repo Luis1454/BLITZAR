@@ -83,6 +83,7 @@ __global__ void DirectKernel(const double* position_x, const double* position_y,
                 if (!isfinite(source_x) || !isfinite(source_y) || !isfinite(source_z) ||
                     !isfinite(source_mass) || source_mass < 0.0) {
                     local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
+
                     continue;
                 }
                 if (source_index == target || source_mass == 0.0) {

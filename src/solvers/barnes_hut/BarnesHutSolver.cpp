@@ -42,6 +42,7 @@ bool BarnesHutSolver::IsValidState(blitzar_core::ParticleStateView particles) no
             return false;
         }
     }
+
     return true;
 }
 

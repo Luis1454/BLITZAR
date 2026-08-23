@@ -43,6 +43,7 @@ bool Octree::IsValidInput(blitzar_core::ParticleStateView particles) noexcept
             return false;
         }
     }
+
     return true;
 }
 
@@ -222,17 +223,21 @@ blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
 {
     cells_.clear();
     particle_count_ = 0;
+
     if (particles.SourceCount() > max_particles_ || leaf_capacity_ == 0 || max_cells_ == 0 ||
         !IsValidInput(particles)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     if (particles.SourceCount() == 0) {
         return BLITZAR_STATUS_OK;
     }
+
     particle_count_ = particles.SourceCount();
 
     blitzar_core::Vector3 minimum{particles.x[0], particles.y[0], particles.z[0]};
     blitzar_core::Vector3 maximum = minimum;
+
     for (std::size_t index = 0; index < particles.SourceCount(); ++index) {
         minimum.x = std::min(minimum.x, particles.x[index]);
         minimum.y = std::min(minimum.y, particles.y[index]);
@@ -242,13 +247,16 @@ blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
         maximum.z = std::max(maximum.z, particles.z[index]);
         indices_[index] = index;
     }
+
     ParallelMortonSort(particles, minimum, maximum);
+
     const blitzar_core::Scalar span =
         std::max({maximum.x - minimum.x, maximum.y - minimum.y, maximum.z - minimum.z});
     const blitzar_core::Scalar half_extent =
         std::max(0.5 * span, std::numeric_limits<blitzar_core::Scalar>::epsilon());
     const blitzar_core::Vector3 center{0.5 * (minimum.x + maximum.x), 0.5 * (minimum.y + maximum.y),
         0.5 * (minimum.z + maximum.z)};
+
     cells_.push_back(MakeCell(center, half_extent, 0, particles.SourceCount(), 0));
 
     for (std::size_t index = 0; index < cells_.size(); ++index) {
@@ -288,8 +296,10 @@ blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
             cells_[index].children[octant] = child;
         }
     }
+
     CalculateProperties(particles);
     ++build_count_;
+
     return BLITZAR_STATUS_OK;
 }
 
@@ -299,6 +309,7 @@ bool Octree::Refit(blitzar_core::ParticleStateView particles) noexcept
         !IsValidInput(particles)) {
         return false;
     }
+
     for (const Cell& cell : cells_) {
         if (!cell.IsLeaf()) {
             continue;
@@ -312,8 +323,10 @@ bool Octree::Refit(blitzar_core::ParticleStateView particles) noexcept
             }
         }
     }
+
     CalculateProperties(particles);
     ++refit_count_;
+
     return true;
 }
 
@@ -347,6 +360,7 @@ std::span<const std::size_t> Octree::Indices() const noexcept
     if (particle_count_ == 0) {
         return {};
     }
+
     return std::span<const std::size_t>(indices_).first(particle_count_);
 }
 
@@ -355,6 +369,7 @@ std::span<const Octree::Cell> Octree::CellAt(std::size_t index) const noexcept
     if (index >= cells_.size()) {
         return {};
     }
+
     return std::span<const Cell>(cells_).subspan(index, 1);
 }
 
@@ -363,7 +378,9 @@ bool Octree::ParticleIndex(std::size_t index, std::size_t& particle) const noexc
     if (index >= particle_count_) {
         return false;
     }
+
     particle = indices_[index];
+
     return particle < particle_count_;
 }
 

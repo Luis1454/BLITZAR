@@ -36,6 +36,7 @@ public:
 int main()
 {
     const blitzar_core::ExecutionSettings settings{};
+
     BLITZAR_CHECK(settings.IsValid());
     BLITZAR_CHECK(blitzar::FromCStatus(BLITZAR_STATUS_OK) == blitzar::Status::Ok);
     BLITZAR_CHECK(
@@ -53,20 +54,30 @@ int main()
         blitzar_core::ToPublicStatus(BLITZAR_STATUS_UNSUPPORTED) == BLITZAR_STATUS_UNSUPPORTED);
 
     blitzar_core::UnitSystem units{};
+
     BLITZAR_CHECK(units.IsValid());
+
     units.length_scale = 0.0;
+
     BLITZAR_CHECK(!units.IsValid());
 
     const blitzar_physics::GravityParameters scaled_gravity{1.0, 0.0, {2.0, 3.0, 4.0}};
+
     BLITZAR_CHECK(scaled_gravity.IsValid());
     BLITZAR_CHECK(std::abs(scaled_gravity.EffectiveConstant() - 6.0) < 1.0e-12);
+
     const blitzar_physics::GravityLaw scaled_law(scaled_gravity);
+
     BLITZAR_CHECK(std::abs(scaled_law.PairFactor(1.0, 1.0) - 6.0) < 1.0e-12);
 
     blitzar_core::SnapshotHeader snapshot{};
+
     snapshot.particle_count = 4;
+
     BLITZAR_CHECK(snapshot.IsCompatible());
+
     snapshot.magic = 0;
+
     BLITZAR_CHECK(!snapshot.IsCompatible());
 
     ProbeSolver solver{};
@@ -86,6 +97,7 @@ int main()
         std::span<const blitzar_core::Scalar>(vz), std::span<const blitzar_core::Scalar>(mass)};
     const blitzar_core::ForceView forces{1, std::span<blitzar_core::Scalar>(fx),
         std::span<blitzar_core::Scalar>(fy), std::span<blitzar_core::Scalar>(fz)};
+
     BLITZAR_CHECK(solver.Kind() == blitzar_core::SolverKind::Direct);
     BLITZAR_CHECK(solver.Compute(particles, forces, settings) == BLITZAR_STATUS_OK);
 
@@ -93,6 +105,8 @@ int main()
         std::span<const blitzar_core::Scalar>(z), std::span<const blitzar_core::Scalar>(vx),
         std::span<const blitzar_core::Scalar>(vy), std::span<const blitzar_core::Scalar>(vz),
         std::span<const blitzar_core::Scalar>(mass)};
+
     BLITZAR_CHECK(solver.Compute(invalid, forces, settings) == BLITZAR_STATUS_INVALID_ARGUMENT);
+
     return 0;
 }

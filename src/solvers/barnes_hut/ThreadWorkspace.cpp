@@ -14,6 +14,7 @@ std::size_t ThreadWorkspace::DetectThreadCount() noexcept
 {
 #if defined(_OPENMP)
     const int available_threads = omp_get_max_threads();
+
     return available_threads > 0 ? static_cast<std::size_t>(available_threads) : std::size_t{1};
 #else
     return 1;
@@ -71,6 +72,7 @@ std::span<std::size_t> ThreadWorkspace::Stack(std::size_t thread_index) noexcept
     if (thread_index >= thread_count_ || stack_capacity_ == 0) {
         return {};
     }
+
     return std::span<std::size_t>(storage_).subspan(
         thread_index * stack_capacity_, stack_capacity_);
 }
@@ -79,6 +81,7 @@ std::size_t ThreadWorkspace::CurrentThread() noexcept
 {
 #if defined(_OPENMP)
     const int thread_index = omp_get_thread_num();
+
     return thread_index >= 0 ? static_cast<std::size_t>(thread_index) : 0;
 #else
     return 0;

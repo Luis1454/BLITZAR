@@ -40,6 +40,7 @@ struct StateArrays final {
 [[nodiscard]] StateArrays InitialState() noexcept
 {
     StateArrays state{};
+
     for (std::size_t index = 0; index < ParticleCount; ++index) {
         const double value = static_cast<double>(index);
         state.x[index] = -3.5 + value;
@@ -50,17 +51,20 @@ struct StateArrays final {
         state.velocity_z[index] = 0.015 * value;
         state.mass[index] = 1.0 + 0.25 * static_cast<double>(index % 3);
     }
+
     return state;
 }
 
 [[nodiscard]] StateArrays MigrationState() noexcept
 {
     StateArrays state = InitialState();
+
     for (std::size_t index = 0; index < ParticleCount; ++index) {
         state.velocity_x[index] = index % 2 == 0 ? 50.0 : -50.0;
         state.velocity_y[index] = 0.0;
         state.velocity_z[index] = 0.0;
     }
+
     return state;
 }
 
@@ -151,6 +155,7 @@ struct StateArrays final {
 {
     const StateArrays initial = InitialState();
     blitzar_particles::ParticleBuffer particles(ParticleCount);
+
     for (std::size_t index = 0; index < ParticleCount; ++index) {
         if (particles.SetPosition(index, {initial.x[index], initial.y[index], initial.z[index]}) !=
                 BLITZAR_STATUS_OK ||
@@ -160,13 +165,17 @@ struct StateArrays final {
     }
 
     blitzar_parallel::DomainDecomposition domain;
+
     if (domain.Initialize(particles.State(), context) != BLITZAR_STATUS_OK) {
         return false;
     }
+
     const blitzar_parallel::DomainBounds bounds = domain.GlobalBounds();
+
     if (!bounds.IsValid()) {
         return false;
     }
+
     const blitzar_core::Vector3 middle{(bounds.minimum.x + bounds.maximum.x) * 0.5,
         (bounds.minimum.y + bounds.maximum.y) * 0.5, (bounds.minimum.z + bounds.maximum.z) * 0.5};
 
@@ -178,21 +187,25 @@ struct StateArrays final {
         blitzar_core::Vector3{middle.x, middle.y, bounds.minimum.z},
         blitzar_core::Vector3{middle.x, middle.y, bounds.maximum.z}};
     std::uint64_t particle_id = 0;
+
     if (!CheckIncludedBoundaryPoints(domain, faces, context.Size(), particle_id)) {
         return false;
     }
 
     const std::array<blitzar_core::Vector3, 8> corners = MakeCorners(bounds);
+
     if (!CheckIncludedBoundaryPoints(domain, corners, context.Size(), particle_id)) {
         return false;
     }
 
     const std::array<blitzar_core::Vector3, 6> outside_faces = MakeOutsideFaces(bounds, middle);
+
     if (!CheckExcludedBoundaryPoints(domain, outside_faces)) {
         return false;
     }
 
     const std::array<blitzar_core::Vector3, 8> outside_corners = MakeOutsideCorners(bounds);
+
     return CheckExcludedBoundaryPoints(domain, outside_corners);
 }
 
@@ -308,11 +321,14 @@ struct StateArrays final {
 [[nodiscard]] bool RunRollbackCase() noexcept
 {
     StateArrays initial{};
+
     initial.x = {0.0, 1.0, 10.0, 11.0, 20.0, 21.0, 30.0, 31.0};
     initial.velocity_x.fill(0.0);
+
     for (std::size_t index = 1; index < ParticleCount; index += 2) {
         initial.velocity_x[index] = -1.0;
     }
+
     initial.velocity_y.fill(0.0);
     initial.velocity_z.fill(0.0);
     initial.mass.fill(1.0);
@@ -324,12 +340,14 @@ struct StateArrays final {
                candidate.SetGravity(std::numeric_limits<double>::denorm_min(), 0.1) ==
                    BLITZAR_STATUS_OK;
     };
+
     if (!configure(simulation) || !configure(expected) || simulation.Step() != BLITZAR_STATUS_OK ||
         expected.Step() != BLITZAR_STATUS_OK) {
         return false;
     }
 
     StateArrays before_failure{};
+
     if (simulation.GetState(before_failure.x, before_failure.y, before_failure.z,
             before_failure.velocity_x, before_failure.velocity_y, before_failure.velocity_z,
             before_failure.mass) != BLITZAR_STATUS_OK ||
@@ -340,10 +358,12 @@ struct StateArrays final {
     }
 
     StateArrays restored{};
+
     if (simulation.GetState(restored.x, restored.y, restored.z, restored.velocity_x,
             restored.velocity_y, restored.velocity_z, restored.mass) != BLITZAR_STATUS_OK) {
         return false;
     }
+
     for (std::size_t index = 0; index < ParticleCount; ++index) {
         if (std::abs(restored.x[index] - before_failure.x[index]) > 1.0e-12 ||
             std::abs(restored.y[index] - before_failure.y[index]) > 1.0e-12 ||
@@ -365,6 +385,7 @@ struct StateArrays final {
 
     StateArrays actual_retry{};
     StateArrays expected_retry{};
+
     if (simulation.GetState(actual_retry.x, actual_retry.y, actual_retry.z, actual_retry.velocity_x,
             actual_retry.velocity_y, actual_retry.velocity_z,
             actual_retry.mass) != BLITZAR_STATUS_OK ||
@@ -373,6 +394,7 @@ struct StateArrays final {
             expected_retry.mass) != BLITZAR_STATUS_OK) {
         return false;
     }
+
     for (std::size_t index = 0; index < ParticleCount; ++index) {
         if (std::abs(actual_retry.x[index] - expected_retry.x[index]) > 1.0e-12 ||
             std::abs(actual_retry.y[index] - expected_retry.y[index]) > 1.0e-12 ||
@@ -384,22 +406,26 @@ struct StateArrays final {
             return false;
         }
     }
+
     return true;
 }
 
 [[nodiscard]] bool RunOutOfDomainCase() noexcept
 {
     StateArrays initial = InitialState();
+
     initial.velocity_x.fill(1000.0);
     initial.velocity_y.fill(0.0);
     initial.velocity_z.fill(0.0);
 
     blitzar_sdk::Simulation simulation(ParticleCount);
+
     if (!Configure(simulation, initial, 1.0)) {
         return false;
     }
 
     StateArrays before{};
+
     if (simulation.GetState(before.x, before.y, before.z, before.velocity_x, before.velocity_y,
             before.velocity_z, before.mass) != BLITZAR_STATUS_OK ||
         simulation.Step() != BLITZAR_STATUS_INVALID_ARGUMENT) {
@@ -407,10 +433,12 @@ struct StateArrays final {
     }
 
     StateArrays after{};
+
     if (simulation.GetState(after.x, after.y, after.z, after.velocity_x, after.velocity_y,
             after.velocity_z, after.mass) != BLITZAR_STATUS_OK) {
         return false;
     }
+
     for (std::size_t index = 0; index < ParticleCount; ++index) {
         if (after.x[index] != before.x[index] || after.y[index] != before.y[index] ||
             after.z[index] != before.z[index] ||
@@ -421,6 +449,7 @@ struct StateArrays final {
             return false;
         }
     }
+
     return true;
 }
 
@@ -429,6 +458,7 @@ struct StateArrays final {
     blitzar_status global_status = BLITZAR_STATUS_OK;
     const blitzar_status local_status =
         context.Rank() == 0 ? BLITZAR_STATUS_INTERNAL_ERROR : BLITZAR_STATUS_OK;
+
     if (context.SynchronizeStatus(local_status, "MpiTest", "injected-failure", global_status) !=
             BLITZAR_STATUS_OK ||
         global_status != BLITZAR_STATUS_INTERNAL_ERROR) {
@@ -436,21 +466,25 @@ struct StateArrays final {
     }
 
     blitzar_particles::ParticleBuffer particles(1);
+
     if (particles.SetPosition(0, {0.0, 0.0, 0.0}) != BLITZAR_STATUS_OK ||
+
         particles.SetMass(0, 1.0) != BLITZAR_STATUS_OK) {
         return false;
     }
     blitzar_parallel::DomainDecomposition domain;
+
     if (domain.Initialize(particles.State(), context) != BLITZAR_STATUS_OK) {
         return false;
     }
+
     const std::size_t packet_capacity = static_cast<std::size_t>(context.Size());
     blitzar_parallel::MpiExchange exchange(context, domain, packet_capacity);
     const std::array<std::uint64_t, 1> ids{0};
-
     blitzar_parallel::MpiContext::GhostExchange unprepared_exchange;
     const blitzar_status expected_unprepared_begin =
         context.IsDistributed() ? BLITZAR_STATUS_INVALID_ARGUMENT : BLITZAR_STATUS_OK;
+
     if (exchange.BeginGhosts(particles.State(), ids, unprepared_exchange) !=
             expected_unprepared_begin ||
         context.IsGhostExchangeActive(unprepared_exchange)) {
@@ -458,6 +492,7 @@ struct StateArrays final {
     }
 
     blitzar_parallel::MpiContext::GhostExchange pre_completion_exchange;
+
     if (context.PrepareCapacity(packet_capacity, pre_completion_exchange) != BLITZAR_STATUS_OK) {
         return false;
     }
@@ -465,28 +500,38 @@ struct StateArrays final {
         BLITZAR_STATUS_OK) {
         return false;
     }
+
     if (context.IsDistributed() && context.Rank() == 0) {
         context.AbortGhostExchange(pre_completion_exchange);
     }
+
     blitzar_parallel::PacketBuffer aborted_ghosts;
+
     aborted_ghosts.Reserve(1);
     aborted_ghosts.Resize(1);
+
     const blitzar_status aborted_completion_status =
         exchange.CompleteGhosts(pre_completion_exchange, aborted_ghosts);
     const blitzar_status expected_aborted_completion =
         context.IsDistributed() ? BLITZAR_STATUS_INVALID_ARGUMENT : BLITZAR_STATUS_OK;
+
     if (aborted_completion_status != expected_aborted_completion || aborted_ghosts.Size() != 0) {
         return false;
     }
+
     blitzar_parallel::PacketBuffer recovered_ghosts;
+
     recovered_ghosts.Reserve(static_cast<std::size_t>(context.Size()));
+
     if (exchange.ExchangeGhosts(particles.State(), ids, recovered_ghosts) != BLITZAR_STATUS_OK) {
         return false;
     }
 
     blitzar_core::ParticleStateView invalid_state{};
+
     invalid_state.count = 1;
     invalid_state.source_count = 1;
+
     const blitzar_core::ParticleStateView local_state =
         context.Rank() == 0 ? invalid_state : particles.State();
     const std::span<const std::uint64_t> local_ids = context.Rank() == 0
@@ -494,6 +539,7 @@ struct StateArrays final {
                                                          : std::span<const std::uint64_t>(ids);
 
     blitzar_parallel::MpiContext::GhostExchange ghost_exchange;
+
     if (context.PrepareCapacity(packet_capacity, ghost_exchange) != BLITZAR_STATUS_OK) {
         return false;
     }
@@ -508,13 +554,16 @@ struct StateArrays final {
         exchange.CompleteGhosts(ghost_exchange, ghosts);
     const blitzar_status expected_invalid_ghost_completion =
         context.IsDistributed() ? BLITZAR_STATUS_INVALID_ARGUMENT : BLITZAR_STATUS_OK;
+
     if (invalid_ghost_completion_status != expected_invalid_ghost_completion ||
         ghosts.Size() != 0) {
         return false;
     }
 
     blitzar_parallel::PacketBuffer received;
+
     received.Reserve(1);
+
     if (exchange.Migrate(local_state, local_ids, received) != BLITZAR_STATUS_INVALID_ARGUMENT ||
         received.Size() != 0) {
         return false;
@@ -525,16 +574,20 @@ struct StateArrays final {
     const double escaped_x = context.Rank() == 0 ? std::nextafter(bounds.maximum.x,
                                                        std::numeric_limits<double>::infinity())
                                                  : bounds.maximum.x;
+
     if (escaped.SetPosition(0, {escaped_x, 0.0, 0.0}) != BLITZAR_STATUS_OK ||
+
         exchange.Migrate(escaped.State(), ids, received) != BLITZAR_STATUS_INVALID_ARGUMENT ||
         received.Size() != 0) {
         return false;
     }
 
     blitzar_parallel::DomainDecomposition uninitialized_domain;
+
     blitzar_parallel::MpiExchange uninitialized_exchange(
         context, uninitialized_domain, packet_capacity);
     blitzar_parallel::PacketBuffer uninitialized_received;
+
     return uninitialized_exchange.Migrate(particles.State(), ids, uninitialized_received) ==
                BLITZAR_STATUS_INVALID_ARGUMENT &&
            uninitialized_received.Size() == 0;
@@ -543,6 +596,7 @@ struct StateArrays final {
 [[nodiscard]] bool RunNestedContextCase(const blitzar_parallel::MpiContext& outer) noexcept
 {
     blitzar_parallel::MpiContext nested;
+
     return nested.IsUsable() && nested.Rank() == outer.Rank() && nested.Size() == outer.Size();
 }
 
@@ -552,22 +606,27 @@ struct StateArrays final {
     std::array<int, 1> invalid_receive{};
     const blitzar_status expected_zero_layout =
         context.IsDistributed() ? BLITZAR_STATUS_INVALID_ARGUMENT : BLITZAR_STATUS_OK;
+
     if (context.AllToAllCounts(invalid_counts, invalid_receive) != expected_zero_layout ||
         context.AllGatherCounts(0, invalid_receive) != expected_zero_layout) {
         return false;
     }
 
     const std::array<blitzar_parallel::ParticlePacket, 0> empty_packets{};
+
     if (context.AllToAllPackets(empty_packets, invalid_counts, invalid_counts,
             std::span<blitzar_parallel::ParticlePacket>{}, invalid_counts,
+
             invalid_counts) != expected_zero_layout) {
         return false;
     }
 
     const std::array<double, 2> invalid_minimum{};
+
     const std::array<double, 3> invalid_maximum{};
     std::array<double, 2> minimum = invalid_minimum;
     std::array<double, 3> maximum = invalid_maximum;
+
     return context.ReduceBounds(minimum, maximum) == BLITZAR_STATUS_INVALID_ARGUMENT;
 }
 
@@ -575,12 +634,15 @@ struct StateArrays final {
 {
     std::array<int, 4> counts{};
     std::array<int, 4> displacements{};
+
     counts.fill(std::numeric_limits<int>::max());
+
     const std::span<const int> layout =
         std::span<const int>(counts).first(static_cast<std::size_t>(context.Size()));
     const std::span<const int> offsets =
         std::span<const int>(displacements).first(static_cast<std::size_t>(context.Size()));
     const std::span<blitzar_parallel::ParticlePacket> empty_packets{};
+
     return context.AllToAllPackets(empty_packets, layout, offsets, empty_packets, layout,
                offsets) == BLITZAR_STATUS_INVALID_ARGUMENT;
 }
@@ -588,26 +650,35 @@ struct StateArrays final {
 [[nodiscard]] bool RunWireCodecCase() noexcept
 {
     blitzar_parallel::PacketBuffer bounded_packets;
+
     bounded_packets.Reserve(2);
+
     if (!bounded_packets.ResizeBounded(2) || bounded_packets.ResizeBounded(3) ||
         bounded_packets.Size() != 2) {
         return false;
     }
+
     const blitzar_parallel::ParticlePacket source{
         0x0102030405060708ULL, 1.0, -2.5, 3.75, -4.5, 5.25, -6.75, 7.5};
+
     blitzar_parallel::ParticleWire wire{};
+
     if (!blitzar_parallel::ParticleWireCodec::Encode(source, wire)) {
         return false;
     }
+
     const std::array<unsigned int, 8> expected_id_bytes{
         0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01};
+
     for (std::size_t index = 0; index < expected_id_bytes.size(); ++index) {
         if (wire[index] != static_cast<std::byte>(expected_id_bytes[index])) {
             return false;
         }
     }
+
     const std::array<unsigned int, 8> expected_one_bytes{
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f};
+
     for (std::size_t index = 0; index < expected_one_bytes.size(); ++index) {
         if (wire[8 + index] != static_cast<std::byte>(expected_one_bytes[index])) {
             return false;
@@ -615,13 +686,16 @@ struct StateArrays final {
     }
 
     blitzar_parallel::ParticlePacket decoded{};
+
     if (!blitzar_parallel::ParticleWireCodec::Decode(wire, decoded) || decoded.id != source.id) {
         return false;
     }
+
     const std::array<double, 7> source_scalars{source.x, source.y, source.z, source.velocity_x,
         source.velocity_y, source.velocity_z, source.mass};
     const std::array<double, 7> decoded_scalars{decoded.x, decoded.y, decoded.z, decoded.velocity_x,
         decoded.velocity_y, decoded.velocity_z, decoded.mass};
+
     for (std::size_t index = 0; index < source_scalars.size(); ++index) {
         if (std::bit_cast<std::uint64_t>(source_scalars[index]) !=
             std::bit_cast<std::uint64_t>(decoded_scalars[index])) {
@@ -630,6 +704,7 @@ struct StateArrays final {
     }
 
     std::array<std::byte, blitzar_parallel::ParticleWireBytes - 1> short_wire{};
+
     return !blitzar_parallel::ParticleWireCodec::Encode(source, short_wire) &&
            !blitzar_parallel::ParticleWireCodec::Decode(short_wire, decoded);
 }
@@ -676,8 +751,10 @@ int RunTests(int argc, char** argv)
 
     int local_failure = local_ok ? 0 : 1;
     int global_failure = 0;
+
     BLITZAR_CHECK(context.ReduceMax(local_failure, global_failure) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(global_failure == 0);
+
     return 0;
 }
 
@@ -687,6 +764,7 @@ int main(int argc, char** argv)
     const std::string_view mode = argc > 1 ? argv[1] : std::string_view{};
     const bool internal_owner = mode == "internal";
     int external_owner = 0;
+
     if (!internal_owner) {
         int initialized = 0;
         if (MPI_Initialized(&initialized) != MPI_SUCCESS) {
@@ -706,6 +784,7 @@ int main(int argc, char** argv)
     const int result = RunTests(argc, argv);
 
 #if defined(BLITZAR_HAS_MPI)
+
     if (external_owner != 0) {
         int finalized = 0;
         if (MPI_Finalized(&finalized) != MPI_SUCCESS || finalized != 0 ||
@@ -714,5 +793,6 @@ int main(int argc, char** argv)
         }
     }
 #endif
+
     return result;
 }

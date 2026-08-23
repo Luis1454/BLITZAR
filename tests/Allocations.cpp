@@ -120,8 +120,8 @@ int main()
     std::array<double, ParticleCount> velocity_y{0.0, 0.0};
     std::array<double, ParticleCount> velocity_z{0.0, 0.0};
     std::array<double, ParticleCount> mass{1.0, 1.0};
-
     blitzar_sdk::Simulation simulation(ParticleCount);
+
     BLITZAR_CHECK(simulation.SetSolver(BLITZAR_SOLVER_DIRECT) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(simulation.SetGravity(1.0, 0.1) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(simulation.SetTimestep(0.01) == BLITZAR_STATUS_OK);
@@ -131,12 +131,15 @@ int main()
 
     AllocationCount.store(0, std::memory_order_relaxed);
     Counting.store(true, std::memory_order_release);
+
     const blitzar_status first_step = simulation.Step();
     const blitzar_status second_step = simulation.Step();
+
     Counting.store(false, std::memory_order_release);
 
     BLITZAR_CHECK(first_step == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(second_step == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(AllocationCount.load(std::memory_order_relaxed) == 0);
+
     return 0;
 }

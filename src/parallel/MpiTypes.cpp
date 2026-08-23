@@ -23,10 +23,12 @@ void WriteU64(std::uint64_t value, std::span<std::byte> output, std::size_t offs
 [[nodiscard]] std::uint64_t ReadU64(std::span<const std::byte> input, std::size_t offset) noexcept
 {
     std::uint64_t value = 0;
+
     for (std::size_t byte = 0; byte < sizeof(value); ++byte) {
         value |= static_cast<std::uint64_t>(std::to_integer<unsigned int>(input[offset + byte]))
                  << (byte * 8U);
     }
+
     return value;
 }
 
@@ -37,9 +39,11 @@ template <typename T>
         WriteU64(std::bit_cast<std::uint64_t>(value), output, offset);
         return true;
     }
+
     (void)value;
     (void)output;
     (void)offset;
+
     return false;
 }
 
@@ -64,7 +68,9 @@ bool ParticleWireCodec::Encode(const ParticlePacket& packet, std::span<std::byte
     if (output.size() != ParticleWireBytes || !IsWireScalar<blitzar_core::Scalar>()) {
         return false;
     }
+
     WriteU64(packet.id, output, 0);
+
     return WriteScalar(packet.x, output, 8) && WriteScalar(packet.y, output, 16) &&
            WriteScalar(packet.z, output, 24) && WriteScalar(packet.velocity_x, output, 32) &&
            WriteScalar(packet.velocity_y, output, 40) &&
@@ -76,7 +82,9 @@ bool ParticleWireCodec::Decode(std::span<const std::byte> input, ParticlePacket&
     if (input.size() != ParticleWireBytes || !IsWireScalar<blitzar_core::Scalar>()) {
         return false;
     }
+
     packet.id = ReadU64(input, 0);
+
     return ReadScalar(input, 8, packet.x) && ReadScalar(input, 16, packet.y) &&
            ReadScalar(input, 24, packet.z) && ReadScalar(input, 32, packet.velocity_x) &&
            ReadScalar(input, 40, packet.velocity_y) && ReadScalar(input, 48, packet.velocity_z) &&

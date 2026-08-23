@@ -10,6 +10,7 @@ ParticleBuffer::ParticleBuffer(std::size_t count)
     : owned_arena_(std::make_unique<ParticleArena>(count)), borrowed_arena_(), count_(count)
 {
     const auto mass = owned_arena_->Mass();
+
     std::fill(mass.begin(), mass.end(), 1.0);
 }
 
@@ -17,6 +18,7 @@ ParticleBuffer::ParticleBuffer(ParticleArena& arena)
     : owned_arena_(), borrowed_arena_(std::ref(arena)), count_(arena.Count())
 {
     const auto mass = arena.Mass();
+
     std::fill(mass.begin(), mass.end(), 1.0);
 }
 
@@ -60,7 +62,9 @@ blitzar_status ParticleBuffer::SetCount(std::size_t count) noexcept
     if (!HasArena() || count > Arena().Count()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     count_ = count;
+
     return BLITZAR_STATUS_OK;
 }
 
@@ -74,7 +78,9 @@ blitzar_core::ParticleStateView ParticleBuffer::State() const noexcept
     if (!HasArena()) {
         return {};
     }
+
     ParticleArena& arena = Arena();
+
     return {count_, arena.PositionX().first(count_), arena.PositionY().first(count_),
         arena.PositionZ().first(count_), arena.VelocityX().first(count_),
         arena.VelocityY().first(count_), arena.VelocityZ().first(count_),
@@ -86,7 +92,9 @@ blitzar_core::MutableParticleView ParticleBuffer::MutableView() noexcept
     if (!HasArena()) {
         return {};
     }
+
     ParticleArena& arena = Arena();
+
     return {count_, arena.PositionX().first(count_), arena.PositionY().first(count_),
         arena.PositionZ().first(count_), arena.VelocityX().first(count_),
         arena.VelocityY().first(count_), arena.VelocityZ().first(count_)};
@@ -131,7 +139,9 @@ blitzar_status ParticleBuffer::SetMass(std::size_t index, blitzar_core::Scalar m
     if (!HasArena() || index >= count_ || !std::isfinite(mass) || mass < 0.0) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     Arena().Mass()[index] = mass;
+
     return BLITZAR_STATUS_OK;
 }
 
@@ -185,7 +195,9 @@ blitzar_status AccelerationBuffer::SetCount(std::size_t count) noexcept
     if (!HasArena() || count > Arena().Count()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     count_ = count;
+
     return BLITZAR_STATUS_OK;
 }
 
@@ -199,7 +211,9 @@ blitzar_core::ForceView AccelerationBuffer::View() noexcept
     if (!HasArena()) {
         return {};
     }
+
     ParticleArena& arena = Arena();
+
     return {count_, arena.AccelerationX().first(count_), arena.AccelerationY().first(count_),
         arena.AccelerationZ().first(count_)};
 }

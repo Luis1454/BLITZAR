@@ -492,6 +492,7 @@ public:
         source_count_before_ = source_count_;
         acceleration_count_before_ = accelerations_.Count();
         workspace_count_before_ = workspace_.Count();
+
         if (!arena_.IsValid() || !particles_.IsValid() || !accelerations_.IsValid() ||
             !workspace_.IsValid() || local_count_before_ != local_count_ ||
             local_count_before_ != acceleration_count_before_ ||
@@ -503,21 +504,28 @@ public:
 
         blitzar_status status = CaptureArenaState(
             arena_, local_count_before_, source_count_before_, ids_, arena_snapshot_);
+
         if (status != BLITZAR_STATUS_OK) {
             ResetSnapshots();
             return status;
         }
+
         status = CaptureForceState(accelerations_.View(), force_snapshot_);
+
         if (status != BLITZAR_STATUS_OK) {
             ResetSnapshots();
             return status;
         }
+
         status = CopyPacketBuffer(exchange_, exchange_snapshot_);
+
         if (status != BLITZAR_STATUS_OK) {
             ResetSnapshots();
             return status;
         }
+
         phase_ = Phase::Prepared;
+
         return BLITZAR_STATUS_OK;
     }
 
@@ -548,6 +556,7 @@ public:
         if (phase_ == Phase::Committed || phase_ == Phase::Aborted) {
             return;
         }
+
         (void)RestoreArenaState(
             arena_snapshot_, arena_, particles_, ids_, local_count_before_, source_count_before_);
         (void)accelerations_.SetCount(acceleration_count_before_);
@@ -702,10 +711,13 @@ std::size_t Simulation::DefaultMaxCells(std::size_t particle_count) noexcept
     if (particle_count == 0) {
         return 1;
     }
+
     const std::size_t maximum = std::numeric_limits<std::size_t>::max();
+
     if (particle_count > (maximum - 1) / 8) {
         return 0;
     }
+
     return particle_count * 8 + 1;
 }
 
@@ -797,6 +809,7 @@ blitzar_status Simulation::CreateSolver(blitzar_solver_kind solver_kind,
 blitzar_status Simulation::Remember(blitzar_status status) const noexcept
 {
     last_status_.store(status, std::memory_order_relaxed);
+
     return status;
 }
 
@@ -805,11 +818,14 @@ blitzar_status Simulation::SetSolver(blitzar_solver_kind solver) noexcept
     SolverVariant candidate(std::in_place_type<blitzar_direct::DirectSolver>, gravity_);
     const blitzar_status status =
         CreateSolver(solver, gravity_, barnes_hut_, particle_count_, candidate);
+
     if (status != BLITZAR_STATUS_OK) {
         return Remember(status);
     }
+
     solver_kind_ = solver;
     solver_ = std::move(candidate);
+
     return Remember(BLITZAR_STATUS_OK);
 }
 
@@ -818,7 +834,9 @@ blitzar_status Simulation::SetIntegrator(blitzar_integrator_kind integrator) noe
     if (integrator != BLITZAR_INTEGRATOR_LEAPFROG_KDK) {
         return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
     }
+
     integrator_kind_ = integrator;
+
     return Remember(BLITZAR_STATUS_OK);
 }
 
@@ -847,20 +865,26 @@ blitzar_status Simulation::SetUnits(blitzar_core::UnitSystem units) noexcept
     if (!units.IsValid()) {
         return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
     }
+
     const blitzar_physics::GravityParameters candidate_parameters{
         gravity_.gravitational_constant, gravity_.softening, units};
+
     if (!candidate_parameters.IsValid()) {
         return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
     }
+
     SolverVariant candidate_solver(
         std::in_place_type<blitzar_direct::DirectSolver>, candidate_parameters);
     const blitzar_status status = CreateSolver(
         solver_kind_, candidate_parameters, barnes_hut_, particle_count_, candidate_solver);
+
     if (status != BLITZAR_STATUS_OK) {
         return Remember(status);
     }
+
     gravity_ = candidate_parameters;
     solver_ = std::move(candidate_solver);
+
     return Remember(BLITZAR_STATUS_OK);
 }
 
@@ -903,13 +927,16 @@ blitzar_status Simulation::SetTimestep(blitzar_core::Scalar timestep) noexcept
     if (!std::isfinite(timestep) || timestep <= 0.0) {
         return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
     }
+
     timestep_ = timestep;
+
     return Remember(BLITZAR_STATUS_OK);
 }
 
 blitzar_status Simulation::SetSeed(std::uint64_t seed) noexcept
 {
     execution_settings_.seed = seed;
+
     return Remember(BLITZAR_STATUS_OK);
 }
 
@@ -1050,9 +1077,11 @@ blitzar_status Simulation::Step() noexcept
                             std::isfinite(timestep_) && timestep_ > 0.0;
     const blitzar_status preflight_status = SynchronizeSimulationStatus(mpi_context_,
         step_ready ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT, "step-preflight");
+
     if (preflight_status != BLITZAR_STATUS_OK) {
         return Remember(preflight_status);
     }
+
     blitzar_status status = std::visit(
         [this](auto& solver) {
             if (mpi_context_.IsDistributed()) {
@@ -1140,11 +1169,14 @@ blitzar_status Simulation::Step() noexcept
                 }
                 return advance_status;
             }
+
             SolverDispatcher dispatcher(hip_context_, solver, gravity_, barnes_hut_, last_backend_);
+
             return integrator_.Advance(particles_, accelerations_, workspace_, dispatcher,
                 timestep_, execution_settings_, traversal_workspace_);
         },
         solver_);
+
     return Remember(status);
 }
 

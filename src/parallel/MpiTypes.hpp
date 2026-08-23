@@ -68,7 +68,9 @@ public:
         if (size > packets_.capacity()) {
             return false;
         }
+
         packets_.resize(size);
+
         return true;
     }
 

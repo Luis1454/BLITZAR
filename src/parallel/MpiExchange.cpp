@@ -16,7 +16,9 @@ namespace {
     if (value > static_cast<std::size_t>(INT_MAX)) {
         return false;
     }
+
     result = static_cast<int>(value);
+
     return true;
 }
 
@@ -244,6 +246,7 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
         if (count < 0 || receive_total > std::numeric_limits<std::size_t>::max() -
                                              static_cast<std::size_t>(count)) {
             preparation_status = BLITZAR_STATUS_INTERNAL_ERROR;
+
             break;
         }
         receive_total += static_cast<std::size_t>(count);
@@ -260,6 +263,7 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
             if (!ToCount(send_offsets[index], send_displacements[index]) ||
                 !ToCount(receive_offsets[index], receive_displacements[index])) {
                 preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+
                 break;
             }
         }
@@ -336,6 +340,7 @@ blitzar_status MpiExchange::Gather(blitzar_core::ParticleStateView local_state,
                 total > std::numeric_limits<std::size_t>::max() -
                             static_cast<std::size_t>(counts[index])) {
                 preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+
                 break;
             }
             total += static_cast<std::size_t>(counts[index]);

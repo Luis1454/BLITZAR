@@ -70,6 +70,7 @@ struct ForceView final {
 [[nodiscard]] inline bool IsValid(ParticleStateView view) noexcept
 {
     const std::size_t source_count = view.SourceCount();
+
     return view.count <= source_count && source_count == view.x.size() &&
            source_count == view.y.size() && source_count == view.z.size() &&
            source_count == view.velocity_x.size() && source_count == view.velocity_y.size() &&

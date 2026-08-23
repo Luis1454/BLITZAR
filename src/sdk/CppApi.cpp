@@ -35,8 +35,11 @@ Context::Context() noexcept : impl_(nullptr), status_(Status::InvalidArgument)
         status_ = Status::AllocationFailure;
         return;
     }
+
     blitzar_context* context = nullptr;
+
     const blitzar_status status = blitzar_context_create(&context);
+
     impl_->handle.reset(context);
     status_ = FromCStatus(status);
 }
@@ -81,9 +84,12 @@ Simulation::Simulation(Context& context, std::int64_t particle_count) noexcept
         status_ = Status::AllocationFailure;
         return;
     }
+
     blitzar_simulation* simulation = nullptr;
+
     const blitzar_status status =
         blitzar_simulation_create(context.impl_->handle.get(), particle_count, &simulation);
+
     impl_->handle.reset(simulation);
     status_ = FromCStatus(status);
 }
@@ -128,16 +134,19 @@ std::int64_t Simulation::particle_count() const noexcept
 BackendKind Simulation::backend() const noexcept
 {
     blitzar_backend_kind backend = BLITZAR_BACKEND_CPU;
+
     if (blitzar_simulation_backend(impl_ == nullptr ? nullptr : impl_->handle.get(), &backend) !=
         BLITZAR_STATUS_OK) {
         return BackendKind::Cpu;
     }
+
     return static_cast<BackendKind>(backend);
 }
 
 Status Simulation::Update(blitzar_status status) noexcept
 {
     status_.store(FromCStatus(status), std::memory_order_relaxed);
+
     return status_.load(std::memory_order_relaxed);
 }
 

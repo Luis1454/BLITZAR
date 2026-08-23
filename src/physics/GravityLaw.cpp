@@ -17,6 +17,7 @@ blitzar_core::Scalar GravityParameters::EffectiveConstant() const noexcept
     const blitzar_core::Scalar time_squared = units.time_scale * units.time_scale;
     const blitzar_core::Scalar length_cubed =
         units.length_scale * units.length_scale * units.length_scale;
+
     return gravitational_constant * units.mass_scale * time_squared / length_cubed;
 }
 

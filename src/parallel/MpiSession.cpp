@@ -28,14 +28,17 @@ MpiSession::MpiSession() noexcept
     }
 
 #if defined(BLITZAR_HAS_MPI)
+
     std::lock_guard lock(SessionMutex);
     int initialized = 0;
+
     if (MPI_Initialized(&initialized) != MPI_SUCCESS) {
         status_ = BLITZAR_STATUS_INTERNAL_ERROR;
         return;
     }
 
     int provided = MPI_THREAD_SINGLE;
+
     if (initialized == 0) {
         if (MPI_Init_thread(nullptr, nullptr, MPI_THREAD_MULTIPLE, &provided) != MPI_SUCCESS) {
             status_ = BLITZAR_STATUS_INTERNAL_ERROR;
@@ -47,6 +50,7 @@ MpiSession::MpiSession() noexcept
         status_ = BLITZAR_STATUS_INTERNAL_ERROR;
         return;
     }
+
     ++SessionReferences;
     impl_->registered = true;
 
@@ -68,19 +72,25 @@ MpiSession::~MpiSession() noexcept
     if (impl_ == nullptr) {
         return;
     }
+
     std::lock_guard lock(SessionMutex);
+
     if (!impl_->registered || SessionReferences == 0) {
         return;
     }
+
     --SessionReferences;
+
     if (SessionReferences != 0 || !InitializedByBlitzar) {
         return;
     }
 
     int finalized = 0;
+
     if (MPI_Finalized(&finalized) == MPI_SUCCESS && finalized == 0) {
         MPI_Finalize();
     }
+
     InitializedByBlitzar = false;
 #endif
 }

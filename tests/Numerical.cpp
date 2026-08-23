@@ -20,6 +20,7 @@ bool Initialize(blitzar_particles::ParticleBuffer& particles) noexcept
 {
     const double softening = 0.05;
     const double circular_speed = std::sqrt(0.5 / std::pow(1.0 + softening * softening, 1.5));
+
     return particles.SetPosition(0, {-0.5, 0.0, 0.0}) == BLITZAR_STATUS_OK &&
            particles.SetPosition(1, {0.5, 0.0, 0.0}) == BLITZAR_STATUS_OK &&
            particles.SetVelocity(0, {0.0, circular_speed, 0.0}) == BLITZAR_STATUS_OK &&
@@ -31,11 +32,13 @@ bool Initialize(blitzar_particles::ParticleBuffer& particles) noexcept
 Vector Momentum(blitzar_core::ParticleStateView state) noexcept
 {
     Vector momentum{};
+
     for (std::size_t index = 0; index < state.count; ++index) {
         momentum.x += state.mass[index] * state.velocity_x[index];
         momentum.y += state.mass[index] * state.velocity_y[index];
         momentum.z += state.mass[index] * state.velocity_z[index];
     }
+
     return momentum;
 }
 
@@ -82,9 +85,9 @@ int main()
     constexpr double softening = 0.05;
     constexpr double timestep = 0.001;
     constexpr std::size_t steps = 4096;
-
     blitzar_particles::ParticleBuffer first_particles(2);
     blitzar_particles::ParticleBuffer second_particles(2);
+
     BLITZAR_CHECK(Initialize(first_particles));
     BLITZAR_CHECK(Initialize(second_particles));
 
@@ -93,7 +96,9 @@ int main()
     blitzar_integration::LeapfrogWorkspace first_workspace(2);
     blitzar_integration::LeapfrogWorkspace second_workspace(2);
     blitzar_direct::DirectSolver solver({gravitational_constant, softening});
+
     BLITZAR_CHECK(solver.Prepare(2) == BLITZAR_STATUS_OK);
+
     const blitzar_core::ExecutionSettings settings{};
     const blitzar_integration::LeapfrogKdk integrator{};
     const double initial_energy =
@@ -109,6 +114,7 @@ int main()
     const blitzar_core::ParticleStateView first_state = first_particles.State();
     const blitzar_core::ParticleStateView second_state = second_particles.State();
     const Vector momentum = Momentum(first_state);
+
     BLITZAR_CHECK(std::abs(momentum.x) < 1.0e-12);
     BLITZAR_CHECK(std::abs(momentum.y) < 1.0e-12);
     BLITZAR_CHECK(std::abs(momentum.z) < 1.0e-12);
@@ -119,10 +125,12 @@ int main()
     blitzar_particles::ParticleBuffer limit_particles(1);
     blitzar_particles::AccelerationBuffer limit_accelerations(1);
     blitzar_integration::LeapfrogWorkspace limit_workspace(1);
+
     BLITZAR_CHECK(
         limit_particles.SetMass(0, std::numeric_limits<double>::max()) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(
         integrator.Advance(limit_particles, limit_accelerations, limit_workspace, solver,
             std::numeric_limits<double>::infinity(), settings) == BLITZAR_STATUS_INVALID_ARGUMENT);
+
     return 0;
 }

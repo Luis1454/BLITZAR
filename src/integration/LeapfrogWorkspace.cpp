@@ -55,7 +55,9 @@ blitzar_status LeapfrogWorkspace::SetCount(std::size_t count) noexcept
     if (!HasArena() || count > Arena().Count()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     count_ = count;
+
     return BLITZAR_STATUS_OK;
 }
 
@@ -72,13 +74,16 @@ blitzar_status LeapfrogWorkspace::Capture(blitzar_core::MutableParticleView stat
     if (!HasArena()) {
         return BLITZAR_STATUS_OK;
     }
+
     blitzar_particles::ParticleArena& arena = Arena();
+
     const auto position_x = arena.WorkspacePositionX();
     const auto position_y = arena.WorkspacePositionY();
     const auto position_z = arena.WorkspacePositionZ();
     const auto velocity_x = arena.WorkspaceVelocityX();
     const auto velocity_y = arena.WorkspaceVelocityY();
     const auto velocity_z = arena.WorkspaceVelocityZ();
+
     for (std::size_t index = 0; index < count_; ++index) {
         position_x[index] = state.x[index];
         position_y[index] = state.y[index];
@@ -87,6 +92,7 @@ blitzar_status LeapfrogWorkspace::Capture(blitzar_core::MutableParticleView stat
         velocity_y[index] = state.velocity_y[index];
         velocity_z[index] = state.velocity_z[index];
     }
+
     return BLITZAR_STATUS_OK;
 }
 
@@ -98,13 +104,16 @@ blitzar_status LeapfrogWorkspace::Restore(blitzar_core::MutableParticleView stat
     if (!HasArena()) {
         return BLITZAR_STATUS_OK;
     }
+
     blitzar_particles::ParticleArena& arena = Arena();
+
     const auto position_x = arena.WorkspacePositionX();
     const auto position_y = arena.WorkspacePositionY();
     const auto position_z = arena.WorkspacePositionZ();
     const auto velocity_x = arena.WorkspaceVelocityX();
     const auto velocity_y = arena.WorkspaceVelocityY();
     const auto velocity_z = arena.WorkspaceVelocityZ();
+
     for (std::size_t index = 0; index < count_; ++index) {
         state.x[index] = position_x[index];
         state.y[index] = position_y[index];
@@ -113,6 +122,7 @@ blitzar_status LeapfrogWorkspace::Restore(blitzar_core::MutableParticleView stat
         state.velocity_y[index] = velocity_y[index];
         state.velocity_z[index] = velocity_z[index];
     }
+
     return BLITZAR_STATUS_OK;
 }
 

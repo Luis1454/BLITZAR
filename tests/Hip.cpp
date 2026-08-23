@@ -36,11 +36,14 @@ struct TestState final {
     const TestState state{};
     blitzar_gpu::HipContext probe;
     blitzar_sdk::Simulation simulation(TestParticleCount);
+
     if (!Configure(simulation, state) || simulation.Step() != BLITZAR_STATUS_OK) {
         return false;
     }
+
     const blitzar_backend_kind expected_backend =
         probe.IsAvailable() ? BLITZAR_BACKEND_HIP : BLITZAR_BACKEND_CPU;
+
     if (simulation.LastBackend() != expected_backend) {
         return false;
     }
@@ -50,6 +53,7 @@ struct TestState final {
             {blitzar_gpu::HipFault::LaunchFailure, BLITZAR_STATUS_INTERNAL_ERROR},
             {blitzar_gpu::HipFault::SynchronizationFailure, BLITZAR_STATUS_INTERNAL_ERROR},
             {blitzar_gpu::HipFault::NonFiniteResult, BLITZAR_STATUS_INVALID_ARGUMENT}}};
+
     for (const auto& [fault, expected_status] : faults) {
         simulation.SetHipFaultForTesting(fault);
         if (simulation.Step() != expected_status ||
@@ -60,6 +64,7 @@ struct TestState final {
     }
 
     blitzar_sdk::Simulation unsupported(TestParticleCount);
+
     if (!Configure(unsupported, state) ||
         unsupported.SetSolver(BLITZAR_SOLVER_BARNES_HUT) != BLITZAR_STATUS_OK ||
         unsupported.SetBarnesHut(0.5, TestParticleCount, 128, 1, 37) != BLITZAR_STATUS_OK ||
@@ -67,6 +72,7 @@ struct TestState final {
         unsupported.LastBackend() != BLITZAR_BACKEND_CPU) {
         return false;
     }
+
     return true;
 }
 
@@ -77,6 +83,7 @@ int main()
     blitzar_particles::ParticleBuffer particles(4);
     const blitzar_core::Vector3 positions[] = {
         {-1.0, -1.0, -1.0}, {1.0, -1.0, 1.0}, {-1.0, 1.0, 1.0}, {1.0, 1.0, -1.0}};
+
     for (std::size_t index = 0; index < particles.Count(); ++index) {
         BLITZAR_CHECK(particles.SetPosition(index, positions[index]) == BLITZAR_STATUS_OK);
         BLITZAR_CHECK(
@@ -88,11 +95,13 @@ int main()
     blitzar_particles::AccelerationBuffer cpu_forces(4);
     blitzar_particles::AccelerationBuffer gpu_forces(4);
     blitzar_direct::DirectSolver cpu_solver(gravity);
+
     BLITZAR_CHECK(cpu_solver.Prepare(4) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(
         cpu_solver.Compute(particles.State(), cpu_forces.View(), execution) == BLITZAR_STATUS_OK);
 
     blitzar_gpu::HipContext context;
+
     if (!context.IsAvailable()) {
         std::fprintf(stdout, "BLITZAR GPU qualification skipped: no compatible device is "
                              "visible; CPU fallback is being tested\n");
@@ -104,8 +113,10 @@ int main()
     BLITZAR_CHECK(context.IsCompiled());
     BLITZAR_CHECK(
         context.ComputeDirect(particles.State(), gpu_forces.View(), gravity) == BLITZAR_STATUS_OK);
+
     const blitzar_core::ForceView cpu_view = cpu_forces.View();
     const blitzar_core::ForceView gpu_view = gpu_forces.View();
+
     for (std::size_t index = 0; index < particles.Count(); ++index) {
         BLITZAR_CHECK(std::abs(cpu_view.x[index] - gpu_view.x[index]) < 1.0e-5);
         BLITZAR_CHECK(std::abs(cpu_view.y[index] - gpu_view.y[index]) < 1.0e-5);
@@ -113,19 +124,25 @@ int main()
     }
 
     blitzar_barnes_hut::BarnesHutSettings settings{};
+
     settings.opening_angle = 0.0;
     settings.max_particles = 4;
     settings.max_cells = 128;
     settings.leaf_capacity = 1;
     settings.max_depth = 8;
+
     BLITZAR_CHECK(context.ComputeBarnesHut(particles.State(), gpu_forces.View(), execution, gravity,
                       settings) == BLITZAR_STATUS_OK);
+
     const blitzar_core::ForceView tree_view = gpu_forces.View();
+
     for (std::size_t index = 0; index < particles.Count(); ++index) {
         BLITZAR_CHECK(std::abs(cpu_view.x[index] - tree_view.x[index]) < 1.0e-5);
         BLITZAR_CHECK(std::abs(cpu_view.y[index] - tree_view.y[index]) < 1.0e-5);
         BLITZAR_CHECK(std::abs(cpu_view.z[index] - tree_view.z[index]) < 1.0e-5);
     }
+
     BLITZAR_CHECK(RunDispatcherErrorCase());
+
     return 0;
 }

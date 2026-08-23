@@ -21,6 +21,7 @@ namespace {
             return false;
         }
     }
+
     return true;
 }
 
@@ -87,6 +88,7 @@ blitzar_status DirectSolver::Prepare(std::size_t staging_capacity) noexcept
     catch (const std::bad_alloc&) {
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
+
     return BLITZAR_STATUS_OK;
 }
 

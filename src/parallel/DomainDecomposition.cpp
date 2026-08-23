@@ -33,12 +33,14 @@ DomainBounds DomainDecomposition::BoundsOf(blitzar_core::ParticleStateView state
 {
     DomainBounds bounds{{PositiveInfinity, PositiveInfinity, PositiveInfinity},
         {-PositiveInfinity, -PositiveInfinity, -PositiveInfinity}};
+
     for (std::size_t index = 0; index < state.SourceCount(); ++index) {
         (void)Extend(bounds, {state.x[index], state.y[index], state.z[index]});
     }
     if (!bounds.IsValid()) {
         bounds = {};
     }
+
     return bounds;
 }
 
@@ -47,12 +49,14 @@ bool DomainDecomposition::Extend(DomainBounds& bounds, blitzar_core::Vector3 pos
     if (!IsFinitePosition(position)) {
         return false;
     }
+
     bounds.minimum.x = std::min(bounds.minimum.x, position.x);
     bounds.minimum.y = std::min(bounds.minimum.y, position.y);
     bounds.minimum.z = std::min(bounds.minimum.z, position.z);
     bounds.maximum.x = std::max(bounds.maximum.x, position.x);
     bounds.maximum.y = std::max(bounds.maximum.y, position.y);
     bounds.maximum.z = std::max(bounds.maximum.z, position.z);
+
     return true;
 }
 

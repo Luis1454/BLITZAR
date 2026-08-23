@@ -51,7 +51,9 @@ namespace {
     if (packets > static_cast<std::size_t>(INT_MAX) / ParticleWireBytes) {
         return false;
     }
+
     bytes = static_cast<int>(packets * ParticleWireBytes);
+
     return true;
 }
 
@@ -60,12 +62,17 @@ namespace {
     if (peer_count <= 0 || ParticleWireBytes == 0) {
         return false;
     }
+
     const std::size_t peers = static_cast<std::size_t>(peer_count);
+
     if (peers > std::numeric_limits<std::size_t>::max() / ParticleWireBytes) {
         return false;
     }
+
     const std::size_t bytes_per_round_packet = peers * ParticleWireBytes;
+
     packets_per_peer = static_cast<std::size_t>(INT_MAX) / bytes_per_round_packet;
+
     return packets_per_peer != 0;
 }
 
@@ -88,7 +95,9 @@ template <typename Value>
     if (size > values.capacity()) {
         return false;
     }
+
     values.resize(size);
+
     return true;
 }
 
@@ -104,6 +113,7 @@ blitzar_status MpiPacketTransport::Prepare(std::size_t packet_capacity) noexcept
 {
     const std::size_t peer_count =
         session_.Size() > 0 ? static_cast<std::size_t>(session_.Size()) : 0;
+
     try {
         packet_capacity_ = packet_capacity;
         send_progress_.assign(peer_count, 0);
@@ -136,6 +146,7 @@ blitzar_status MpiPacketTransport::Prepare(std::size_t packet_capacity) noexcept
     catch (const std::bad_alloc&) {
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
+
     return BLITZAR_STATUS_OK;
 }
 
@@ -271,6 +282,7 @@ blitzar_status MpiPacketTransport::AllToAllPackets(std::span<const ParticlePacke
                 send_total > std::numeric_limits<std::size_t>::max() - send_chunk ||
                 receive_total > std::numeric_limits<std::size_t>::max() - receive_chunk) {
                 preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+
                 break;
             }
             send_total += send_chunk;
@@ -302,6 +314,7 @@ blitzar_status MpiPacketTransport::AllToAllPackets(std::span<const ParticlePacke
                             .subspan(static_cast<std::size_t>(send_offsets[index]),
                                 static_cast<std::size_t>(send_bytes[index])))) {
                     preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+
                     break;
                 }
             }
@@ -330,6 +343,7 @@ blitzar_status MpiPacketTransport::AllToAllPackets(std::span<const ParticlePacke
                             static_cast<std::size_t>(receive_bytes[index])),
                     receive_packets.subspan(target_offset, chunk))) {
                 decode_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+
                 break;
             }
         }
@@ -454,6 +468,7 @@ blitzar_status MpiPacketTransport::AllGatherPackets(std::span<const ParticlePack
                 !ToWireBytes(chunk, receive_bytes[index]) ||
                 receive_total > std::numeric_limits<std::size_t>::max() - chunk) {
                 preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+
                 break;
             }
             receive_total += chunk;
@@ -505,6 +520,7 @@ blitzar_status MpiPacketTransport::AllGatherPackets(std::span<const ParticlePack
                     gathered_packets.subspan(
                         static_cast<std::size_t>(displacements[index]) + progress[index], chunk))) {
                 decode_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+
                 break;
             }
         }

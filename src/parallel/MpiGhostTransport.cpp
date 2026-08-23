@@ -40,7 +40,9 @@ constexpr int GhostDataTag = 7102;
     if (packets > static_cast<std::size_t>(INT_MAX) / ParticleWireBytes) {
         return false;
     }
+
     bytes = static_cast<int>(packets * ParticleWireBytes);
+
     return true;
 }
 
@@ -49,7 +51,9 @@ constexpr int GhostDataTag = 7102;
     if (packets > std::numeric_limits<std::size_t>::max() / ParticleWireBytes) {
         return false;
     }
+
     bytes = packets * ParticleWireBytes;
+
     return true;
 }
 
@@ -61,6 +65,7 @@ constexpr int GhostDataTag = 7102;
 [[nodiscard]] std::size_t ChunkCount(std::size_t packets) noexcept
 {
     const std::size_t chunk_packets = PointChunkPackets();
+
     return packets == 0 ? 0 : 1 + (packets - 1) / chunk_packets;
 }
 
@@ -72,6 +77,7 @@ constexpr int GhostDataTag = 7102;
     if (requests.size() > static_cast<std::size_t>(INT_MAX)) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     return MPI_Waitall(static_cast<int>(requests.size()), requests.data(), MPI_STATUSES_IGNORE) ==
                    MPI_SUCCESS
                ? BLITZAR_STATUS_OK
@@ -85,6 +91,7 @@ void CancelRequests(std::vector<MPI_Request>& requests) noexcept
             (void)MPI_Cancel(&request);
         }
     }
+
     (void)WaitRequests(requests);
     requests.clear();
 }
@@ -118,6 +125,7 @@ void MpiGhostTransport::AbortExchange(MpiGhostExchange::Impl& state) noexcept
         }
     }
 #endif
+
     ClearExchange(state);
 }
 
@@ -330,6 +338,7 @@ blitzar_status MpiGhostTransport::Complete(
         if (count < 0 ||
             total > std::numeric_limits<std::size_t>::max() - static_cast<std::size_t>(count)) {
             count_status = BLITZAR_STATUS_INTERNAL_ERROR;
+
             break;
         }
         state.offsets[static_cast<std::size_t>(peer)] = total;
@@ -455,6 +464,7 @@ blitzar_status MpiGhostTransport::Complete(
                         state.offsets[peer_index] * ParticleWireBytes, count * ParticleWireBytes),
                 ghosts.View().subspan(state.offsets[peer_index], count))) {
             decode_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+
             break;
         }
     }
@@ -475,7 +485,9 @@ bool MpiGhostTransport::IsActive(const MpiGhostExchange& exchange) const noexcep
 #if defined(BLITZAR_HAS_MPI)
     return exchange.impl_ != nullptr && exchange.impl_->active;
 #else
+
     (void)exchange;
+
     return false;
 #endif
 }
@@ -486,6 +498,7 @@ void MpiGhostTransport::Abort(MpiGhostExchange& exchange) const noexcept
         return;
     }
 #if defined(BLITZAR_HAS_MPI)
+
     AbortExchange(*exchange.impl_);
 #else
     exchange.impl_.reset();

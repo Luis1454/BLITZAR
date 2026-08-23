@@ -30,6 +30,9 @@ jobs:
       - name: Self-test plan gate failures
         run: python tools/plan_check_test.py
 
+      - name: Check statement grouping format
+        run: python tools/format_blocks.py --check
+
       - name: Reject unapproved plan edits
         if: github.event_name == 'pull_request'
         shell: bash

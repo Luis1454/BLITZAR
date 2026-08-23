@@ -63,7 +63,9 @@ private:
                          static_cast<std::uint64_t>(std::numeric_limits<std::size_t>::max())) {
         return false;
     }
+
     converted = static_cast<std::size_t>(value);
+
     return true;
 }
 
@@ -87,12 +89,14 @@ extern "C" blitzar_status blitzar_context_create(blitzar_context** context)
     }
 
     *context = nullptr;
+
     try {
         *context = new blitzar_context{BLITZAR_STATUS_OK};
     }
     catch (const std::bad_alloc&) {
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
+
     return BLITZAR_STATUS_OK;
 }
 
@@ -116,6 +120,7 @@ extern "C" blitzar_status blitzar_context_status(const blitzar_context* context)
     if (context == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     return context->status;
 }
 
@@ -172,10 +177,13 @@ extern "C" blitzar_status blitzar_simulation_status(const blitzar_simulation* si
     if (!IsValidSimulation(simulation)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const SimulationCallGuard guard(*simulation);
+
     if (!guard.Acquired()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     return simulation->implementation.LastStatus();
 }
 
@@ -302,10 +310,13 @@ extern "C" blitzar_status blitzar_simulation_set_seed(blitzar_simulation* simula
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const SimulationCallGuard guard(*simulation);
+
     if (!guard.Acquired()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     return simulation->implementation.SetSeed(seed);
 }
 
@@ -369,9 +380,12 @@ extern "C" blitzar_status blitzar_simulation_step(blitzar_simulation* simulation
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+
     const SimulationCallGuard guard(*simulation);
+
     if (!guard.Acquired()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
     return simulation->implementation.Step();
 }

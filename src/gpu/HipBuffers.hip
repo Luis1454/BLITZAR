@@ -33,14 +33,18 @@ public:
         if (bytes == bytes_) {
             return true;
         }
+
         Release();
+
         if (bytes == 0) {
             return true;
         }
         if (hipHostMalloc(&data_, bytes, hipHostMallocDefault) != hipSuccess) {
             return false;
         }
+
         bytes_ = bytes;
+
         return true;
     }
 
@@ -50,6 +54,7 @@ public:
             (void)hipHostFree(data_);
             data_ = nullptr;
         }
+
         bytes_ = 0;
     }
 
@@ -78,14 +83,18 @@ public:
         if (bytes == bytes_) {
             return true;
         }
+
         Release();
+
         if (bytes == 0) {
             return true;
         }
         if (hipMalloc(&data_, bytes) != hipSuccess) {
             return false;
         }
+
         bytes_ = bytes;
+
         return true;
     }
 
@@ -95,6 +104,7 @@ public:
             (void)hipFree(data_);
             data_ = nullptr;
         }
+
         bytes_ = 0;
     }
 
@@ -127,11 +137,13 @@ struct HipBuffers::Impl final {
     Impl() noexcept
     {
         int device_count = 0;
+
         if (hipGetDeviceCount(&device_count) != hipSuccess || device_count <= 0 ||
             hipSetDevice(0) != hipSuccess ||
             hipStreamCreateWithFlags(&stream, hipStreamNonBlocking) != hipSuccess) {
             return;
         }
+
         available = true;
     }
 
@@ -147,14 +159,17 @@ struct HipBuffers::Impl final {
     [[nodiscard]] bool Ensure(std::size_t particle_count, std::size_t cell_count) noexcept
     {
         const std::size_t maximum = std::numeric_limits<std::size_t>::max();
+
         if (particle_count > maximum / sizeof(double) ||
             cell_count > maximum / sizeof(blitzar_gpu_detail::GpuCell) ||
             particle_count > maximum / sizeof(std::uint64_t)) {
             return false;
         }
+
         const std::size_t scalar_bytes = particle_count * sizeof(double);
         const std::size_t cell_bytes = cell_count * sizeof(blitzar_gpu_detail::GpuCell);
         const std::size_t index_bytes = particle_count * sizeof(std::uint64_t);
+
         for (PinnedAllocation& buffer : host_particles) {
             if (!buffer.Resize(scalar_bytes)) {
                 return false;
@@ -175,6 +190,7 @@ struct HipBuffers::Impl final {
                 return false;
             }
         }
+
         return host_error.Resize(sizeof(int)) && device_error.Resize(sizeof(int)) &&
                host_cells.Resize(cell_bytes) && device_cells.Resize(cell_bytes) &&
                host_indices.Resize(index_bytes) && device_indices.Resize(index_bytes);
