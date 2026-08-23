@@ -14,7 +14,11 @@ namespace blitzar_direct {
 
 class DirectSolver final {
 public:
-    explicit DirectSolver(blitzar_physics::GravityParameters parameters) noexcept;
+    explicit DirectSolver(
+        blitzar_physics::GravityParameters parameters,
+        std::size_t staging_capacity = 0);
+
+    [[nodiscard]] blitzar_status Prepare(std::size_t staging_capacity) noexcept;
 
     [[nodiscard]] blitzar_core::SolverKind Kind() const noexcept;
     [[nodiscard]] blitzar_status Compute(

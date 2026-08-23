@@ -96,6 +96,18 @@ namespace {
 
 #endif
 
+template <typename Value>
+[[nodiscard]] bool ResizeWithinCapacity(
+    std::vector<Value>& values,
+    std::size_t size) noexcept
+{
+    if (size > values.capacity()) {
+        return false;
+    }
+    values.resize(size);
+    return true;
+}
+
 }  // namespace
 
 MpiPacketTransport::MpiPacketTransport(
@@ -103,6 +115,48 @@ MpiPacketTransport::MpiPacketTransport(
     const MpiCollectives& collectives) noexcept
     : session_(session), collectives_(collectives)
 {
+}
+
+blitzar_status MpiPacketTransport::Prepare(
+    std::size_t packet_capacity) noexcept
+{
+    const std::size_t peer_count =
+        session_.Size() > 0 ? static_cast<std::size_t>(session_.Size()) : 0;
+    try {
+        packet_capacity_ = packet_capacity;
+        send_progress_.assign(peer_count, 0);
+        receive_progress_.assign(peer_count, 0);
+        send_bytes_.assign(peer_count, 0);
+        receive_bytes_.assign(peer_count, 0);
+        send_offsets_.assign(peer_count, 0);
+        receive_offsets_.assign(peer_count, 0);
+#if defined(BLITZAR_HAS_MPI)
+        std::size_t packets_per_peer = 0;
+        if (!ComputeRoundPacketLimit(session_.Size(), packets_per_peer)) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+        const std::size_t peers = peer_count;
+        if (peers != 0 && packets_per_peer >
+                              std::numeric_limits<std::size_t>::max() / peers) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+        const std::size_t round_capacity = std::min(
+            packet_capacity,
+            packets_per_peer * peers);
+        if (round_capacity > std::numeric_limits<std::size_t>::max() /
+                                 ParticleWireBytes) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+        const std::size_t wire_capacity = round_capacity * ParticleWireBytes;
+        send_wire_.reserve(wire_capacity);
+        receive_wire_.reserve(wire_capacity);
+#endif
+    } catch (const std::length_error&) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    } catch (const std::bad_alloc&) {
+        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+    }
+    return BLITZAR_STATUS_OK;
 }
 
 blitzar_status MpiPacketTransport::AllToAllCounts(
@@ -188,7 +242,10 @@ blitzar_status MpiPacketTransport::AllToAllPackets(
         return BLITZAR_STATUS_OK;
     }
 #if defined(BLITZAR_HAS_MPI)
-    blitzar_status preparation_status = layout_valid
+    const bool capacity_valid =
+        send_packets.size() <= packet_capacity_ &&
+        receive_packets.size() <= packet_capacity_;
+    blitzar_status preparation_status = layout_valid && capacity_valid
                                             ? BLITZAR_STATUS_OK
                                             : BLITZAR_STATUS_INVALID_ARGUMENT;
     std::size_t packets_per_peer = 0;
@@ -198,26 +255,28 @@ blitzar_status MpiPacketTransport::AllToAllPackets(
     }
 
     const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
-    std::vector<std::size_t> send_progress;
-    std::vector<std::size_t> receive_progress;
-    std::vector<int> send_bytes;
-    std::vector<int> receive_bytes;
-    std::vector<int> send_offsets;
-    std::vector<int> receive_offsets;
-    std::vector<std::byte> send_wire;
-    std::vector<std::byte> receive_wire;
-    try {
-        send_progress.assign(peer_count, 0);
-        receive_progress.assign(peer_count, 0);
-        send_bytes.assign(peer_count, 0);
-        receive_bytes.assign(peer_count, 0);
-        send_offsets.assign(peer_count, 0);
-        receive_offsets.assign(peer_count, 0);
-    } catch (const std::length_error&) {
+    if (send_progress_.size() != peer_count ||
+        receive_progress_.size() != peer_count ||
+        send_bytes_.size() != peer_count ||
+        receive_bytes_.size() != peer_count ||
+        send_offsets_.size() != peer_count ||
+        receive_offsets_.size() != peer_count) {
         preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-    } catch (const std::bad_alloc&) {
-        preparation_status = BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
+    std::vector<std::size_t>& send_progress = send_progress_;
+    std::vector<std::size_t>& receive_progress = receive_progress_;
+    std::vector<int>& send_bytes = send_bytes_;
+    std::vector<int>& receive_bytes = receive_bytes_;
+    std::vector<int>& send_offsets = send_offsets_;
+    std::vector<int>& receive_offsets = receive_offsets_;
+    std::vector<std::byte>& send_wire = send_wire_;
+    std::vector<std::byte>& receive_wire = receive_wire_;
+    std::fill(send_progress.begin(), send_progress.end(), 0);
+    std::fill(receive_progress.begin(), receive_progress.end(), 0);
+    std::fill(send_bytes.begin(), send_bytes.end(), 0);
+    std::fill(receive_bytes.begin(), receive_bytes.end(), 0);
+    std::fill(send_offsets.begin(), send_offsets.end(), 0);
+    std::fill(receive_offsets.begin(), receive_offsets.end(), 0);
     blitzar_status status = SynchronizePreparation(
         collectives_, preparation_status, "alltoall-packet-prepare");
     if (status != BLITZAR_STATUS_OK) {
@@ -275,33 +334,31 @@ blitzar_status MpiPacketTransport::AllToAllPackets(
              !ToWireBytes(receive_total, receive_total_bytes))) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
-        try {
-            if (preparation_status == BLITZAR_STATUS_OK) {
-                send_wire.resize(static_cast<std::size_t>(send_total_bytes));
-                receive_wire.resize(
-                    static_cast<std::size_t>(receive_total_bytes));
-                for (std::size_t index = 0; index < peer_count; ++index) {
-                    const std::size_t chunk = static_cast<std::size_t>(
-                        send_bytes[index] / ParticleWireBytes);
-                    const std::size_t source_offset =
-                        static_cast<std::size_t>(send_displacements[index]) +
-                        send_progress[index];
-                    if (!ParticleWireCodec::Encode(
-                            send_packets.subspan(source_offset, chunk),
-                            std::span<std::byte>(
-                                send_wire.data(), send_wire.size())
-                                .subspan(
-                                    static_cast<std::size_t>(send_offsets[index]),
-                                    static_cast<std::size_t>(send_bytes[index])))) {
-                        preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-                        break;
-                    }
+        if (preparation_status == BLITZAR_STATUS_OK) {
+            if (!ResizeWithinCapacity(
+                    send_wire, static_cast<std::size_t>(send_total_bytes)) ||
+                !ResizeWithinCapacity(
+                    receive_wire, static_cast<std::size_t>(receive_total_bytes))) {
+                preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+            }
+        }
+        if (preparation_status == BLITZAR_STATUS_OK) {
+            for (std::size_t index = 0; index < peer_count; ++index) {
+                const std::size_t chunk = static_cast<std::size_t>(
+                    send_bytes[index] / ParticleWireBytes);
+                const std::size_t source_offset =
+                    static_cast<std::size_t>(send_displacements[index]) +
+                    send_progress[index];
+                if (!ParticleWireCodec::Encode(
+                        send_packets.subspan(source_offset, chunk),
+                        std::span<std::byte>(send_wire.data(), send_wire.size())
+                            .subspan(
+                                static_cast<std::size_t>(send_offsets[index]),
+                                static_cast<std::size_t>(send_bytes[index])))) {
+                    preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+                    break;
                 }
             }
-        } catch (const std::length_error&) {
-            preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-        } catch (const std::bad_alloc&) {
-            preparation_status = BLITZAR_STATUS_ALLOCATION_FAILURE;
         }
         status = SynchronizePreparation(
             collectives_, preparation_status, "alltoall-packet-round-prepare");
@@ -429,9 +486,13 @@ blitzar_status MpiPacketTransport::AllGatherPackets(
         return BLITZAR_STATUS_OK;
     }
 #if defined(BLITZAR_HAS_MPI)
+    const bool capacity_valid =
+        local_packets.size() <= packet_capacity_ &&
+        gathered_packets.size() <= packet_capacity_;
     blitzar_status preparation_status =
-        layout_valid && local_count_valid ? BLITZAR_STATUS_OK
-                                          : BLITZAR_STATUS_INVALID_ARGUMENT;
+        layout_valid && local_count_valid && capacity_valid
+            ? BLITZAR_STATUS_OK
+            : BLITZAR_STATUS_INVALID_ARGUMENT;
     std::size_t packets_per_peer = 0;
     if (preparation_status == BLITZAR_STATUS_OK &&
         !ComputeRoundPacketLimit(session_.Size(), packets_per_peer)) {
@@ -439,20 +500,19 @@ blitzar_status MpiPacketTransport::AllGatherPackets(
     }
 
     const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
-    std::vector<std::size_t> progress;
-    std::vector<int> receive_bytes;
-    std::vector<int> receive_offsets;
-    std::vector<std::byte> send_wire;
-    std::vector<std::byte> receive_wire;
-    try {
-        progress.assign(peer_count, 0);
-        receive_bytes.assign(peer_count, 0);
-        receive_offsets.assign(peer_count, 0);
-    } catch (const std::length_error&) {
+    if (send_progress_.size() != peer_count ||
+        receive_bytes_.size() != peer_count ||
+        receive_offsets_.size() != peer_count) {
         preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-    } catch (const std::bad_alloc&) {
-        preparation_status = BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
+    std::vector<std::size_t>& progress = send_progress_;
+    std::vector<int>& receive_bytes = receive_bytes_;
+    std::vector<int>& receive_offsets = receive_offsets_;
+    std::vector<std::byte>& send_wire = send_wire_;
+    std::vector<std::byte>& receive_wire = receive_wire_;
+    std::fill(progress.begin(), progress.end(), 0);
+    std::fill(receive_bytes.begin(), receive_bytes.end(), 0);
+    std::fill(receive_offsets.begin(), receive_offsets.end(), 0);
     blitzar_status status = SynchronizePreparation(
         collectives_, preparation_status, "allgather-packet-prepare");
     if (status != BLITZAR_STATUS_OK) {
@@ -498,22 +558,19 @@ blitzar_status MpiPacketTransport::AllGatherPackets(
              !ToWireBytes(receive_total, receive_total_bytes))) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
-        try {
-            if (preparation_status == BLITZAR_STATUS_OK) {
-                send_wire.resize(static_cast<std::size_t>(local_bytes));
-                receive_wire.resize(
-                    static_cast<std::size_t>(receive_total_bytes));
-                if (!ParticleWireCodec::Encode(
-                        local_packets.subspan(progress[local_index], local_chunk),
-                        std::span<std::byte>(
-                            send_wire.data(), send_wire.size()))) {
-                    preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-                }
+        if (preparation_status == BLITZAR_STATUS_OK) {
+            if (!ResizeWithinCapacity(
+                    send_wire, static_cast<std::size_t>(local_bytes)) ||
+                !ResizeWithinCapacity(
+                    receive_wire, static_cast<std::size_t>(receive_total_bytes))) {
+                preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
             }
-        } catch (const std::length_error&) {
+        }
+        if (preparation_status == BLITZAR_STATUS_OK &&
+            !ParticleWireCodec::Encode(
+                local_packets.subspan(progress[local_index], local_chunk),
+                std::span<std::byte>(send_wire.data(), send_wire.size()))) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-        } catch (const std::bad_alloc&) {
-            preparation_status = BLITZAR_STATUS_ALLOCATION_FAILURE;
         }
         status = SynchronizePreparation(
             collectives_,

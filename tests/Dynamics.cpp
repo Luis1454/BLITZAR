@@ -167,6 +167,7 @@ int main()
             force.z[index] = 9.0;
         }
         blitzar_direct::DirectSolver singular_solver(gravity);
+        BLITZAR_CHECK(singular_solver.Prepare(3) == BLITZAR_STATUS_OK);
         BLITZAR_CHECK(singular_solver.Compute(
                    singular_particles.State(), force, settings) ==
                BLITZAR_STATUS_SINGULARITY);
@@ -199,6 +200,7 @@ int main()
             force.z[index] = -13.0;
         }
         blitzar_direct::DirectSolver large_solver(gravity);
+        BLITZAR_CHECK(large_solver.Prepare(4) == BLITZAR_STATUS_OK);
         BLITZAR_CHECK(large_solver.Compute(
                    large_particles.State(), force, settings) ==
                BLITZAR_STATUS_INVALID_ARGUMENT);
@@ -210,6 +212,25 @@ int main()
     }
 
     blitzar_direct::DirectSolver solver(gravity);
+    BLITZAR_CHECK(solver.Prepare(2) == BLITZAR_STATUS_OK);
+    blitzar_direct::DirectSolver undersized_solver(gravity);
+    BLITZAR_CHECK(undersized_solver.Prepare(1) == BLITZAR_STATUS_OK);
+    const blitzar_core::ForceView untouched_force = accelerations.View();
+    untouched_force.x[0] = 17.0;
+    untouched_force.y[0] = 18.0;
+    untouched_force.z[0] = 19.0;
+    untouched_force.x[1] = 20.0;
+    untouched_force.y[1] = 21.0;
+    untouched_force.z[1] = 22.0;
+    BLITZAR_CHECK(undersized_solver.Compute(
+                      particles.State(), untouched_force, settings) ==
+                  BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(untouched_force.x[0] == 17.0);
+    BLITZAR_CHECK(untouched_force.y[0] == 18.0);
+    BLITZAR_CHECK(untouched_force.z[0] == 19.0);
+    BLITZAR_CHECK(untouched_force.x[1] == 20.0);
+    BLITZAR_CHECK(untouched_force.y[1] == 21.0);
+    BLITZAR_CHECK(untouched_force.z[1] == 22.0);
     BLITZAR_CHECK(solver.Compute(particles.State(), accelerations.View(), settings) ==
            BLITZAR_STATUS_OK);
     const blitzar_core::ForceView force = accelerations.View();

@@ -62,6 +62,21 @@ blitzar_status MpiContext::Status() const noexcept
     return status_;
 }
 
+blitzar_status MpiContext::PrepareCapacity(
+    std::size_t packet_capacity,
+    GhostExchange& exchange) const noexcept
+{
+    if (impl_ == nullptr) {
+        return status_;
+    }
+    const blitzar_status packet_status =
+        impl_->packets.Prepare(packet_capacity);
+    if (packet_status != BLITZAR_STATUS_OK) {
+        return packet_status;
+    }
+    return impl_->ghosts.Prepare(exchange, packet_capacity);
+}
+
 blitzar_status MpiContext::SynchronizeStatus(
     blitzar_status local_status,
     const char* operation,

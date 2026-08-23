@@ -7,6 +7,7 @@
 
 #include <blitzar/blitzar.h>
 
+#include <cstddef>
 #include <span>
 
 namespace blitzar_parallel {
@@ -16,6 +17,10 @@ public:
     MpiGhostTransport(
         const MpiSession& session,
         const MpiCollectives& collectives) noexcept;
+
+    [[nodiscard]] blitzar_status Prepare(
+        MpiGhostExchange& exchange,
+        std::size_t packet_capacity) const noexcept;
 
     [[nodiscard]] blitzar_status Begin(
         std::span<const ParticlePacket> local,

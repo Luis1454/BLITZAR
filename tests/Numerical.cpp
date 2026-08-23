@@ -104,6 +104,7 @@ int main()
     blitzar_integration::LeapfrogWorkspace first_workspace(2);
     blitzar_integration::LeapfrogWorkspace second_workspace(2);
     blitzar_direct::DirectSolver solver({gravitational_constant, softening});
+    BLITZAR_CHECK(solver.Prepare(2) == BLITZAR_STATUS_OK);
     const blitzar_core::ExecutionSettings settings{};
     const blitzar_integration::LeapfrogKdk integrator{};
     const double initial_energy = Energy(

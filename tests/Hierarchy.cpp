@@ -31,6 +31,7 @@ int main()
     const blitzar_core::ExecutionSettings execution{};
     const blitzar_physics::GravityParameters gravity{1.0, 0.0};
     blitzar_direct::DirectSolver direct_solver(gravity);
+    BLITZAR_CHECK(direct_solver.Prepare(8) == BLITZAR_STATUS_OK);
     blitzar_barnes_hut::BarnesHutSettings settings{};
     settings.opening_angle = 0.0;
     settings.max_particles = 4;

@@ -57,9 +57,28 @@ public:
         packets_.clear();
     }
 
+    void Reserve(std::size_t capacity)
+    {
+        packets_.reserve(capacity);
+    }
+
     void Resize(std::size_t size)
     {
         packets_.resize(size);
+    }
+
+    [[nodiscard]] bool ResizeBounded(std::size_t size) noexcept
+    {
+        if (size > packets_.capacity()) {
+            return false;
+        }
+        packets_.resize(size);
+        return true;
+    }
+
+    [[nodiscard]] std::size_t Capacity() const noexcept
+    {
+        return packets_.capacity();
     }
 
     [[nodiscard]] ParticlePacket* Data() noexcept

@@ -32,6 +32,12 @@
       "phase": "P1"
     },
     {
+      "id": "TST-P1-003",
+      "name": "steady-state-step-allocation-free",
+      "command": "blitzar_allocation_test",
+      "phase": "P1"
+    },
+    {
       "id": "TST-P2-001",
       "name": "c-example",
       "command": "blitzar_c_example",

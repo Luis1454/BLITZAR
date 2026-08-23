@@ -56,6 +56,7 @@ private:
     BarnesHutSettings settings_;
     blitzar_physics::GravityLaw gravity_;
     blitzar_trees::Octree tree_;
+    ThreadWorkspace workspace_;
 };
 
 }  // namespace blitzar_barnes_hut

@@ -25,7 +25,8 @@ BarnesHutSolver::BarnesHutSolver(
           settings.max_particles,
           settings.max_cells,
           settings.leaf_capacity,
-          settings.max_depth)
+          settings.max_depth),
+      workspace_(settings.max_cells, settings.max_depth)
 {
 }
 
@@ -176,19 +177,7 @@ blitzar_status BarnesHutSolver::Compute(
     if (!settings_.IsValid()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    try {
-        ThreadWorkspace traversal_workspace(
-            settings_.max_cells, settings_.max_depth);
-        return Compute(
-            particles,
-            forces,
-            settings,
-            traversal_workspace);
-    } catch (const std::length_error&) {
-        return BLITZAR_STATUS_INVALID_ARGUMENT;
-    } catch (const std::bad_alloc&) {
-        return BLITZAR_STATUS_ALLOCATION_FAILURE;
-    }
+    return Compute(particles, forces, settings, workspace_);
 }
 
 blitzar_status BarnesHutSolver::Compute(

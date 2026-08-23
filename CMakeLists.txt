@@ -243,6 +243,15 @@ if(BLITZAR_BUILD_TESTS)
     target_include_directories(blitzar_dynamics_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     blitzar_enable_warnings(blitzar_dynamics_test)
 
+    add_executable(blitzar_allocation_test
+        tests/Allocations.cpp
+    )
+    target_link_libraries(blitzar_allocation_test PRIVATE blitzar)
+    target_compile_features(blitzar_allocation_test PRIVATE cxx_std_20)
+    target_include_directories(blitzar_allocation_test PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    blitzar_enable_warnings(blitzar_allocation_test)
+
     add_executable(blitzar_hierarchy_test
         tests/Hierarchy.cpp
     )
@@ -283,6 +292,7 @@ if(BLITZAR_BUILD_TESTS)
     add_test(NAME TST-P0-002 COMMAND blitzar_c_api_test)
     add_test(NAME TST-P0-003 COMMAND blitzar_contract_test)
     add_test(NAME TST-P1-001 COMMAND blitzar_dynamics_test)
+    add_test(NAME TST-P1-003 COMMAND blitzar_allocation_test)
     add_test(NAME TST-P3-001 COMMAND blitzar_hierarchy_test)
     add_test(NAME TST-P1-002 COMMAND blitzar_numerical_test)
     add_test(NAME TST-P4-001 COMMAND blitzar_hip_test)

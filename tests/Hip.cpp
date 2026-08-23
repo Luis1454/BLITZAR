@@ -109,6 +109,7 @@ int main()
     blitzar_particles::AccelerationBuffer cpu_forces(4);
     blitzar_particles::AccelerationBuffer gpu_forces(4);
     blitzar_direct::DirectSolver cpu_solver(gravity);
+    BLITZAR_CHECK(cpu_solver.Prepare(4) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(cpu_solver.Compute(
                       particles.State(), cpu_forces.View(), execution) ==
                   BLITZAR_STATUS_OK);

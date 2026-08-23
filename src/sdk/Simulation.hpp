@@ -81,6 +81,7 @@ private:
         blitzar_solver_kind solver_kind,
         blitzar_physics::GravityParameters gravity,
         blitzar_barnes_hut::BarnesHutSettings barnes_hut,
+        std::size_t staging_capacity,
         SolverVariant& solver) noexcept;
     [[nodiscard]] blitzar_status Remember(blitzar_status status) const noexcept;
 
@@ -113,6 +114,10 @@ private:
     blitzar_parallel::PacketBuffer rollback_arena_buffer_;
     blitzar_parallel::PacketBuffer rollback_force_buffer_;
     blitzar_parallel::PacketBuffer rollback_exchange_buffer_;
+    blitzar_parallel::PacketBuffer migration_buffer_;
+    mutable blitzar_parallel::PacketBuffer gathered_buffer_;
+    std::vector<std::size_t> local_indices_;
+    mutable std::vector<unsigned char> seen_;
 };
 
 }  // namespace blitzar_sdk

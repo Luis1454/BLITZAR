@@ -274,6 +274,9 @@ struct StateArrays final {
     }
     const blitzar_physics::GravityParameters gravity{1.0, 0.1};
     blitzar_direct::DirectSolver solver(gravity);
+    if (solver.Prepare(ParticleCount) != BLITZAR_STATUS_OK) {
+        return false;
+    }
     const blitzar_core::ExecutionSettings execution{};
     const blitzar_integration::LeapfrogKdk integrator{};
     for (int step = 0; step < step_count; ++step) {
@@ -585,10 +588,30 @@ struct StateArrays final {
     if (domain.Initialize(particles.State(), context) != BLITZAR_STATUS_OK) {
         return false;
     }
-    blitzar_parallel::MpiExchange exchange(context, domain);
+    const std::size_t packet_capacity = static_cast<std::size_t>(context.Size());
+    blitzar_parallel::MpiExchange exchange(
+        context,
+        domain,
+        packet_capacity);
     const std::array<std::uint64_t, 1> ids{0};
 
+    blitzar_parallel::MpiContext::GhostExchange unprepared_exchange;
+    const blitzar_status expected_unprepared_begin =
+        context.IsDistributed() ? BLITZAR_STATUS_INVALID_ARGUMENT
+                                : BLITZAR_STATUS_OK;
+    if (exchange.BeginGhosts(
+            particles.State(),
+            ids,
+            unprepared_exchange) != expected_unprepared_begin ||
+        context.IsGhostExchangeActive(unprepared_exchange)) {
+        return false;
+    }
+
     blitzar_parallel::MpiContext::GhostExchange pre_completion_exchange;
+    if (context.PrepareCapacity(packet_capacity, pre_completion_exchange) !=
+        BLITZAR_STATUS_OK) {
+        return false;
+    }
     if (exchange.BeginGhosts(
             particles.State(), ids, pre_completion_exchange) !=
         BLITZAR_STATUS_OK) {
@@ -598,6 +621,7 @@ struct StateArrays final {
         context.AbortGhostExchange(pre_completion_exchange);
     }
     blitzar_parallel::PacketBuffer aborted_ghosts;
+    aborted_ghosts.Reserve(1);
     aborted_ghosts.Resize(1);
     const blitzar_status aborted_completion_status = exchange.CompleteGhosts(
         pre_completion_exchange, aborted_ghosts);
@@ -609,6 +633,7 @@ struct StateArrays final {
         return false;
     }
     blitzar_parallel::PacketBuffer recovered_ghosts;
+    recovered_ghosts.Reserve(static_cast<std::size_t>(context.Size()));
     if (exchange.ExchangeGhosts(particles.State(), ids, recovered_ghosts) !=
         BLITZAR_STATUS_OK) {
         return false;
@@ -625,6 +650,10 @@ struct StateArrays final {
                              : std::span<const std::uint64_t>(ids);
 
     blitzar_parallel::MpiContext::GhostExchange ghost_exchange;
+    if (context.PrepareCapacity(packet_capacity, ghost_exchange) !=
+        BLITZAR_STATUS_OK) {
+        return false;
+    }
     if (exchange.BeginGhosts(local_state, local_ids, ghost_exchange) !=
             BLITZAR_STATUS_INVALID_ARGUMENT ||
         context.IsGhostExchangeActive(ghost_exchange)) {
@@ -644,6 +673,7 @@ struct StateArrays final {
     }
 
     blitzar_parallel::PacketBuffer received;
+    received.Reserve(1);
     if (exchange.Migrate(local_state, local_ids, received) !=
             BLITZAR_STATUS_INVALID_ARGUMENT ||
         received.Size() != 0) {
@@ -667,7 +697,9 @@ struct StateArrays final {
 
     blitzar_parallel::DomainDecomposition uninitialized_domain;
     blitzar_parallel::MpiExchange uninitialized_exchange(
-        context, uninitialized_domain);
+        context,
+        uninitialized_domain,
+        packet_capacity);
     blitzar_parallel::PacketBuffer uninitialized_received;
     return uninitialized_exchange.Migrate(
                particles.State(), ids, uninitialized_received) ==
@@ -739,6 +771,12 @@ struct StateArrays final {
 
 [[nodiscard]] bool RunWireCodecCase() noexcept
 {
+    blitzar_parallel::PacketBuffer bounded_packets;
+    bounded_packets.Reserve(2);
+    if (!bounded_packets.ResizeBounded(2) ||
+        bounded_packets.ResizeBounded(3) || bounded_packets.Size() != 2) {
+        return false;
+    }
     const blitzar_parallel::ParticlePacket source{
         0x0102030405060708ULL,
         1.0,

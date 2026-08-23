@@ -30,6 +30,9 @@ public:
     [[nodiscard]] int Rank() const noexcept;
     [[nodiscard]] int Size() const noexcept;
     [[nodiscard]] blitzar_status Status() const noexcept;
+    [[nodiscard]] blitzar_status PrepareCapacity(
+        std::size_t packet_capacity,
+        GhostExchange& exchange) const noexcept;
     [[nodiscard]] blitzar_status SynchronizeStatus(
         blitzar_status local_status,
         const char* operation,

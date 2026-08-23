@@ -71,9 +71,28 @@ namespace {
 
 }  // namespace
 
-DirectSolver::DirectSolver(blitzar_physics::GravityParameters parameters) noexcept
-    : gravity_(parameters)
+DirectSolver::DirectSolver(
+    blitzar_physics::GravityParameters parameters,
+    std::size_t staging_capacity)
+    : gravity_(parameters), staging_{}
 {
+    if (staging_capacity != 0) {
+        staging_.resize(staging_capacity);
+    }
+}
+
+blitzar_status DirectSolver::Prepare(std::size_t staging_capacity) noexcept
+{
+    try {
+        if (staging_.size() < staging_capacity) {
+            staging_.resize(staging_capacity);
+        }
+    } catch (const std::length_error&) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    } catch (const std::bad_alloc&) {
+        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+    }
+    return BLITZAR_STATUS_OK;
 }
 
 blitzar_core::SolverKind DirectSolver::Kind() const noexcept
@@ -110,14 +129,8 @@ blitzar_status DirectSolver::ComputeRange(
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    try {
-        if (staging_.size() < particles.count) {
-            staging_.resize(particles.count);
-        }
-    } catch (const std::length_error&) {
+    if (staging_.size() < particles.count) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
-    } catch (const std::bad_alloc&) {
-        return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
 
     std::atomic<blitzar_status> status{BLITZAR_STATUS_OK};
