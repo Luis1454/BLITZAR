@@ -10,9 +10,7 @@
 #include <cstdint>
 #include <span>
 
-namespace blitzar_integration {
-
-namespace detail {
+namespace blitzar_integration_kdk {
 
 struct DriftTransition final {
     blitzar_status status{BLITZAR_STATUS_OK};
@@ -23,7 +21,7 @@ struct NoopDriftHook final {
     [[nodiscard]] DriftTransition operator()(
         blitzar_particles::ParticleBuffer&,
         blitzar_particles::AccelerationBuffer&,
-        LeapfrogWorkspace&) const noexcept
+        blitzar_integration::LeapfrogWorkspace&) const noexcept
     {
         return {};
     }
@@ -70,7 +68,7 @@ struct NoopRollbackHook final {
 }
 
 [[nodiscard]] inline blitzar_status RestoreOr(
-    LeapfrogWorkspace& workspace,
+    blitzar_integration::LeapfrogWorkspace& workspace,
     blitzar_core::MutableParticleView state,
     blitzar_status status) noexcept
 {
@@ -82,7 +80,7 @@ template <typename RollbackHook>
 [[nodiscard]] inline blitzar_status RestoreWithRollback(
     RollbackHook& rollback_hook,
     blitzar_particles::ParticleBuffer& particles,
-    LeapfrogWorkspace& workspace,
+    blitzar_integration::LeapfrogWorkspace& workspace,
     blitzar_status status) noexcept
 {
     rollback_hook();
@@ -115,7 +113,9 @@ template <typename Solver, typename Workspace>
     }
 }
 
-}  // namespace detail
+}  // namespace blitzar_integration_kdk
+
+namespace blitzar_integration {
 
 class LeapfrogKdk final {
 public:
@@ -172,7 +172,7 @@ public:
         SolverWorkspace& solver_workspace,
         blitzar_core::ParticleStateView solver_particles) const noexcept
     {
-        detail::NoopDriftHook drift_hook;
+        blitzar_integration_kdk::NoopDriftHook drift_hook;
         return Advance(
             particles,
             accelerations,
@@ -197,7 +197,7 @@ public:
         blitzar_core::ParticleStateView solver_particles,
         DriftHook& drift_hook) const noexcept
     {
-        detail::NoopRollbackHook rollback_hook;
+        blitzar_integration_kdk::NoopRollbackHook rollback_hook;
         return Advance(
             particles,
             accelerations,
@@ -230,9 +230,9 @@ public:
             !workspace.IsValid() || particles.Count() != accelerations.Count() ||
             particles.Count() != workspace.Count() || !std::isfinite(timestep) ||
             timestep <= 0.0 || !settings.IsValid() ||
-            !detail::IsFiniteState(particles.State()) ||
+            !blitzar_integration_kdk::IsFiniteState(particles.State()) ||
             solver_particles.count != particles.Count() ||
-            !detail::IsFiniteState(solver_particles)) {
+            !blitzar_integration_kdk::IsFiniteState(solver_particles)) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
@@ -242,14 +242,14 @@ public:
             return status;
         }
         blitzar_core::ForceView force = accelerations.View();
-        status = detail::ComputeSolver(
+        status = blitzar_integration_kdk::ComputeSolver(
             solver, solver_particles, force, settings, solver_workspace);
         if (status != BLITZAR_STATUS_OK) {
-            return detail::RestoreWithRollback(
+            return blitzar_integration_kdk::RestoreWithRollback(
                 rollback_hook, particles, workspace, status);
         }
-        if (!detail::IsFiniteForce(force)) {
-            return detail::RestoreWithRollback(
+        if (!blitzar_integration_kdk::IsFiniteForce(force)) {
+            return blitzar_integration_kdk::RestoreWithRollback(
                 rollback_hook,
                 particles,
                 workspace,
@@ -272,24 +272,24 @@ public:
             mutable_state.y[index] += timestep * mutable_state.velocity_y[index];
             mutable_state.z[index] += timestep * mutable_state.velocity_z[index];
         }
-        if (!detail::IsFiniteState(particles.State())) {
-            return detail::RestoreWithRollback(
+        if (!blitzar_integration_kdk::IsFiniteState(particles.State())) {
+            return blitzar_integration_kdk::RestoreWithRollback(
                 rollback_hook,
                 particles,
                 workspace,
                 BLITZAR_STATUS_INVALID_ARGUMENT);
         }
 
-        const detail::DriftTransition transition =
+        const blitzar_integration_kdk::DriftTransition transition =
             drift_hook(particles, accelerations, workspace);
         if (transition.status != BLITZAR_STATUS_OK) {
-            return detail::RestoreWithRollback(
+            return blitzar_integration_kdk::RestoreWithRollback(
                 rollback_hook, particles, workspace, transition.status);
         }
         if (transition.state_replaced) {
             const std::size_t checkpoint_count = workspace.Count();
             if (workspace.SetCount(particles.Count()) != BLITZAR_STATUS_OK) {
-                return detail::RestoreWithRollback(
+                return blitzar_integration_kdk::RestoreWithRollback(
                     rollback_hook,
                     particles,
                     workspace,
@@ -298,7 +298,7 @@ public:
             mutable_state = particles.MutableView();
             if (workspace.Capture(mutable_state) != BLITZAR_STATUS_OK) {
                 (void)workspace.SetCount(checkpoint_count);
-                return detail::RestoreWithRollback(
+                return blitzar_integration_kdk::RestoreWithRollback(
                     rollback_hook,
                     particles,
                     workspace,
@@ -309,14 +309,14 @@ public:
         mutable_state = particles.MutableView();
         force = accelerations.View();
 
-        status = detail::ComputeSolver(
+        status = blitzar_integration_kdk::ComputeSolver(
             solver, solver_particles, force, settings, solver_workspace);
         if (status != BLITZAR_STATUS_OK) {
-            return detail::RestoreWithRollback(
+            return blitzar_integration_kdk::RestoreWithRollback(
                 rollback_hook, particles, workspace, status);
         }
-        if (!detail::IsFiniteForce(force)) {
-            return detail::RestoreWithRollback(
+        if (!blitzar_integration_kdk::IsFiniteForce(force)) {
+            return blitzar_integration_kdk::RestoreWithRollback(
                 rollback_hook,
                 particles,
                 workspace,
@@ -333,8 +333,8 @@ public:
             mutable_state.velocity_y[index] += half_step * force.y[index];
             mutable_state.velocity_z[index] += half_step * force.z[index];
         }
-        if (!detail::IsFiniteState(particles.State())) {
-            return detail::RestoreWithRollback(
+        if (!blitzar_integration_kdk::IsFiniteState(particles.State())) {
+            return blitzar_integration_kdk::RestoreWithRollback(
                 rollback_hook,
                 particles,
                 workspace,

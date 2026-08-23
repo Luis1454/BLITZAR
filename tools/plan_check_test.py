@@ -152,6 +152,15 @@ class PlanCheckTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("forbidden reference", result.stderr)
 
+    def test_rejects_generic_detail_namespace(self) -> None:
+        (self.root / "src" / "Valid.cpp").write_text(
+            "namespace blitzar { namespace detail {} }\n",
+            encoding="utf-8",
+        )
+        result = self.run_checker()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("generic nested detail namespace", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

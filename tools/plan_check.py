@@ -38,6 +38,11 @@ INFORMATIONAL_ARCHITECTURE_RULES = (
     "include dependencies",
     "responsibility boundaries",
 )
+GENERIC_DETAIL_PATTERN = re.compile(
+    r"\bnamespace\s+detail\b|"
+    r"\bnamespace\s+[A-Za-z_]\w*\s*::\s*detail\b|"
+    r"::\s*detail\s*::"
+)
 
 
 def fail(message: str) -> None:
@@ -133,6 +138,28 @@ def validate_forbidden_references(data: dict) -> None:
                     fail(
                         f"{path.relative_to(ROOT)} contains forbidden reference: {reference}"
                     )
+
+
+def validate_namespace_boundaries() -> None:
+    code_roots = [
+        ROOT / "src",
+        ROOT / "include",
+        ROOT / "apps",
+        ROOT / "tests",
+        ROOT / "examples",
+    ]
+    for directory in code_roots:
+        if not directory.is_dir():
+            continue
+        for path in directory.rglob("*"):
+            if not path.is_file() or path.suffix.lower() not in SOURCE_SUFFIXES:
+                continue
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            if GENERIC_DETAIL_PATTERN.search(text):
+                fail(
+                    f"generic nested detail namespace in "
+                    f"{path.relative_to(ROOT)}"
+                )
 
 
 def validate_quality_tests(phase_ids: set[str]) -> None:
@@ -285,6 +312,7 @@ def main(argv: list[str] | None = None) -> None:
     phase_ids = validate_phases(manifest)
     validate_forbidden_references(manifest)
     validate_quality_tests(phase_ids)
+    validate_namespace_boundaries()
     validate_naming()
     print(
         f"plan-check: frozen plan {manifest['plan_version']} is valid; "

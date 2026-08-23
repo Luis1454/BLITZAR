@@ -1331,7 +1331,7 @@ blitzar_status Simulation::Step() noexcept
                         blitzar_particles::ParticleBuffer& current_particles,
                         blitzar_particles::AccelerationBuffer& current_accelerations,
                         blitzar_integration::LeapfrogWorkspace& current_workspace)
-                    -> blitzar_integration::detail::DriftTransition {
+                    -> blitzar_integration_kdk::DriftTransition {
                     const bool migration_state_valid =
                         current_particles.Count() == rollback_particle_count &&
                         current_accelerations.Count() ==

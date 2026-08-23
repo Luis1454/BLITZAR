@@ -256,7 +256,7 @@ int main()
                               blitzar_particles::ParticleBuffer& current_particles,
                               blitzar_particles::AccelerationBuffer&,
                               blitzar_integration::LeapfrogWorkspace&)
-        -> blitzar_integration::detail::DriftTransition {
+        -> blitzar_integration_kdk::DriftTransition {
         drift_mutated_state = true;
         const blitzar_status status = current_particles.SetCount(0);
         return {status, status == BLITZAR_STATUS_OK};
