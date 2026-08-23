@@ -97,6 +97,8 @@ jobs:
           CC=clang CXX=clang++ cmake -S . -B build-sanitizers -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
             -DBLITZAR_ENABLE_SANITIZERS=ON \
+            -DBLITZAR_HIP_MODE=OFF \
+            -DBLITZAR_MPI_MODE=OFF \
             -DBLITZAR_BUILD_TESTS=ON \
             -DBLITZAR_BUILD_CLI=ON \
             -DBLITZAR_BUILD_EXAMPLES=ON
@@ -126,6 +128,8 @@ jobs:
           CC=clang CXX=clang++ cmake -S . -B build-analysis -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DBLITZAR_HIP_MODE=OFF \
+            -DBLITZAR_MPI_MODE=OFF \
             -DBLITZAR_BUILD_TESTS=OFF \
             -DBLITZAR_BUILD_CLI=ON \
             -DBLITZAR_BUILD_EXAMPLES=ON
@@ -138,3 +142,259 @@ jobs:
             --checks='-*,clang-analyzer-*' \
             --warnings-as-errors='*' \
             "${sources[@]}"
+
+  cpu-only:
+    name: Linux CPU-only contract
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Record capability
+        shell: bash
+        run: |
+          {
+            echo "## Capability record"
+            echo "- toolchain: $(c++ --version | head -n 1)"
+            echo "- backend: CPU"
+            echo "- device: none required"
+            echo "- rank count: 1"
+            echo "- skip reason: none"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Configure CPU-only build
+        shell: bash
+        run: |
+          cmake -S . -B build-cpu -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBLITZAR_HIP_MODE=OFF \
+            -DBLITZAR_MPI_MODE=OFF \
+            -DBLITZAR_ENABLE_OPENMP=OFF \
+            -DBLITZAR_BUILD_TESTS=ON \
+            -DBLITZAR_BUILD_CLI=ON \
+            -DBLITZAR_BUILD_EXAMPLES=ON
+
+      - name: Build CPU-only target
+        run: cmake --build build-cpu --parallel
+
+      - name: Run CPU-only tests
+        run: ctest --test-dir build-cpu --exclude-regex '^TST-P2-004$' --output-on-failure
+
+  package-consumer:
+    name: Install-prefix package consumer
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Record capability
+        shell: bash
+        run: |
+          {
+            echo "## Capability record"
+            echo "- toolchain: $(c++ --version | head -n 1)"
+            echo "- backend: CPU-only package"
+            echo "- device: none required"
+            echo "- rank count: 1"
+            echo "- skip reason: none"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Configure package build
+        shell: bash
+        run: |
+          cmake -S . -B build-package -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBLITZAR_HIP_MODE=OFF \
+            -DBLITZAR_MPI_MODE=OFF \
+            -DBLITZAR_ENABLE_OPENMP=OFF \
+            -DBLITZAR_BUILD_TESTS=OFF \
+            -DBLITZAR_BUILD_CLI=OFF \
+            -DBLITZAR_BUILD_EXAMPLES=OFF
+
+      - name: Build package target
+        run: cmake --build build-package --parallel
+
+      - name: Configure and build external consumer
+        shell: bash
+        run: cmake -DBLITZAR_BUILD_DIR="$PWD/build-package" -P tests/PackageConsumer.cmake
+
+  mpi-ranks:
+    name: MPI two and four rank qualification
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install MPI toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes libopenmpi-dev openmpi-bin ninja-build
+
+      - name: Record capability
+        shell: bash
+        run: |
+          {
+            echo "## Capability record"
+            echo "- toolchain: $(mpicxx --version | head -n 1)"
+            echo "- backend: MPI + CPU"
+            echo "- device: hosted CPU runner"
+            echo "- rank count: 2 and 4"
+            echo "- topology: one runner, multi-rank only; multi-node qualification is not claimed"
+            echo "- skip reason: none"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Configure MPI build
+        shell: bash
+        run: |
+          cmake -S . -B build-mpi -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBLITZAR_HIP_MODE=OFF \
+            -DBLITZAR_MPI_MODE=ON \
+            -DBLITZAR_BUILD_TESTS=ON \
+            -DBLITZAR_BUILD_CLI=OFF \
+            -DBLITZAR_BUILD_EXAMPLES=OFF
+
+      - name: Build MPI target
+        run: cmake --build build-mpi --parallel
+
+      - name: Run two and four rank tests with timeout
+        shell: bash
+        env:
+          OMPI_ALLOW_RUN_AS_ROOT: "1"
+          OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
+          OMPI_MCA_rmaps_base_oversubscribe: "1"
+        run: |
+          timeout --foreground 240s ctest --test-dir build-mpi \
+            --output-on-failure \
+            -R '^(TST-P7-001|TST-P7-002|TST-P8-001)$'
+
+  native-cuda:
+    name: Native CUDA compile and optional device test
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Probe CUDA capability
+        id: probe
+        shell: bash
+        run: |
+          nvcc_path="$(command -v nvcc || true)"
+          device_name=""
+          if [[ -n "$nvcc_path" ]]; then
+            echo "compile=true" >> "$GITHUB_OUTPUT"
+            if command -v nvidia-smi >/dev/null 2>&1; then
+              device_name="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -n 1 || true)"
+            fi
+          else
+            echo "compile=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [[ -n "$device_name" ]]; then
+            echo "device=true" >> "$GITHUB_OUTPUT"
+            skip_reason="none"
+          elif [[ -n "$nvcc_path" ]]; then
+            echo "device=false" >> "$GITHUB_OUTPUT"
+            skip_reason="CUDA compiler available, but no NVIDIA device is exposed"
+          else
+            echo "device=false" >> "$GITHUB_OUTPUT"
+            skip_reason="nvcc unavailable on this runner"
+          fi
+          {
+            echo "## Capability record"
+            echo "- toolchain: ${nvcc_path:-unavailable}"
+            echo "- backend: native CUDA through HIP compatibility"
+            echo "- device: ${device_name:-unavailable}"
+            echo "- rank count: 1"
+            echo "- skip reason: ${skip_reason}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Configure native CUDA build
+        if: steps.probe.outputs.compile == 'true'
+        shell: bash
+        run: |
+          cmake -S . -B build-cuda -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_HIP_PLATFORM=nvidia \
+            -DBLITZAR_HIP_MODE=ON \
+            -DBLITZAR_MPI_MODE=OFF \
+            -DBLITZAR_ENABLE_OPENMP=OFF \
+            -DBLITZAR_BUILD_TESTS=ON \
+            -DBLITZAR_BUILD_CLI=OFF \
+            -DBLITZAR_BUILD_EXAMPLES=OFF
+
+      - name: Compile native CUDA target
+        if: steps.probe.outputs.compile == 'true'
+        run: cmake --build build-cuda --parallel
+
+      - name: Run CUDA device qualification
+        if: steps.probe.outputs.device == 'true'
+        run: timeout --foreground 180s ctest --test-dir build-cuda -R '^TST-P4-001$' --output-on-failure
+
+  hip:
+    name: HIP compile and optional device test
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Probe HIP capability
+        id: probe
+        shell: bash
+        run: |
+          hipcc_path="$(command -v hipcc || true)"
+          device_name=""
+          if [[ -n "$hipcc_path" ]]; then
+            if command -v rocm-smi >/dev/null 2>&1; then
+              device_name="$(rocm-smi --showproductname 2>/dev/null | head -n 1 || true)"
+            elif command -v rocminfo >/dev/null 2>&1 && rocminfo 2>/dev/null | grep -Eq 'gfx[0-9]+'; then
+              device_name="AMD GPU exposed by rocminfo"
+            fi
+            echo "compile=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "compile=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [[ -n "$device_name" ]]; then
+            echo "device=true" >> "$GITHUB_OUTPUT"
+            skip_reason="none"
+          elif [[ -n "$hipcc_path" ]]; then
+            echo "device=false" >> "$GITHUB_OUTPUT"
+            skip_reason="HIP compiler available, but no AMD device is exposed"
+          else
+            echo "device=false" >> "$GITHUB_OUTPUT"
+            skip_reason="hipcc unavailable on this runner"
+          fi
+          {
+            echo "## Capability record"
+            echo "- toolchain: ${hipcc_path:-unavailable}"
+            echo "- backend: HIP"
+            echo "- device: ${device_name:-unavailable}"
+            echo "- rank count: 1"
+            echo "- skip reason: ${skip_reason}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Configure HIP build
+        if: steps.probe.outputs.compile == 'true'
+        shell: bash
+        run: |
+          cmake -S . -B build-hip -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_HIP_PLATFORM=amd \
+            -DBLITZAR_HIP_MODE=ON \
+            -DBLITZAR_MPI_MODE=OFF \
+            -DBLITZAR_ENABLE_OPENMP=OFF \
+            -DBLITZAR_BUILD_TESTS=ON \
+            -DBLITZAR_BUILD_CLI=OFF \
+            -DBLITZAR_BUILD_EXAMPLES=OFF
+
+      - name: Compile HIP target
+        if: steps.probe.outputs.compile == 'true'
+        run: cmake --build build-hip --parallel
+
+      - name: Run HIP device qualification
+        if: steps.probe.outputs.device == 'true'
+        run: timeout --foreground 180s ctest --test-dir build-hip -R '^TST-P4-001$' --output-on-failure
