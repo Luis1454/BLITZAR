@@ -1,9 +1,8 @@
 #ifndef BLITZAR_GPU_HIP_COMPAT_HPP
 #define BLITZAR_GPU_HIP_COMPAT_HPP
 
-#include <cuda_runtime.h>
-
 #include <cstddef>
+#include <cuda_runtime.h>
 
 using hipError_t = cudaError_t;
 using hipStream_t = cudaStream_t;
@@ -15,10 +14,7 @@ constexpr cudaMemcpyKind hipMemcpyHostToDevice = cudaMemcpyHostToDevice;
 constexpr cudaMemcpyKind hipMemcpyDeviceToHost = cudaMemcpyDeviceToHost;
 constexpr unsigned int hipStreamNonBlocking = cudaStreamNonBlocking;
 
-inline hipError_t hipHostMalloc(
-    void** pointer,
-    std::size_t bytes,
-    unsigned int flags) noexcept
+inline hipError_t hipHostMalloc(void** pointer, std::size_t bytes, unsigned int flags) noexcept
 {
     return cudaHostAlloc(pointer, bytes, flags);
 }
@@ -48,9 +44,7 @@ inline hipError_t hipSetDevice(int device) noexcept
     return cudaSetDevice(device);
 }
 
-inline hipError_t hipStreamCreateWithFlags(
-    hipStream_t* stream,
-    unsigned int flags) noexcept
+inline hipError_t hipStreamCreateWithFlags(hipStream_t* stream, unsigned int flags) noexcept
 {
     return cudaStreamCreateWithFlags(stream, flags);
 }
@@ -65,21 +59,14 @@ inline hipError_t hipStreamDestroy(hipStream_t stream) noexcept
     return cudaStreamDestroy(stream);
 }
 
-inline hipError_t hipMemcpyAsync(
-    void* destination,
-    const void* source,
-    std::size_t bytes,
-    cudaMemcpyKind kind,
-    hipStream_t stream) noexcept
+inline hipError_t hipMemcpyAsync(void* destination, const void* source, std::size_t bytes,
+    cudaMemcpyKind kind, hipStream_t stream) noexcept
 {
     return cudaMemcpyAsync(destination, source, bytes, kind, stream);
 }
 
 inline hipError_t hipMemsetAsync(
-    void* destination,
-    int value,
-    std::size_t bytes,
-    hipStream_t stream) noexcept
+    void* destination, int value, std::size_t bytes, hipStream_t stream) noexcept
 {
     return cudaMemsetAsync(destination, value, bytes, stream);
 }

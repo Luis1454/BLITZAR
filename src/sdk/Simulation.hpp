@@ -14,9 +14,8 @@
 #include "solvers/barnes_hut/ThreadWorkspace.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 
-#include <blitzar/blitzar.h>
-
 #include <atomic>
+#include <blitzar/blitzar.h>
 #include <cstddef>
 #include <cstdint>
 #include <span>
@@ -33,55 +32,39 @@ public:
     [[nodiscard]] blitzar_backend_kind LastBackend() const noexcept;
     [[nodiscard]] std::size_t ParticleCount() const noexcept;
 
-    [[nodiscard]] blitzar_status SetSolver(
-        blitzar_solver_kind solver) noexcept;
-    [[nodiscard]] blitzar_status SetIntegrator(
-        blitzar_integrator_kind integrator) noexcept;
+    [[nodiscard]] blitzar_status SetSolver(blitzar_solver_kind solver) noexcept;
+    [[nodiscard]] blitzar_status SetIntegrator(blitzar_integrator_kind integrator) noexcept;
     [[nodiscard]] blitzar_status SetGravity(
-        blitzar_core::Scalar gravitational_constant,
-        blitzar_core::Scalar softening) noexcept;
-    [[nodiscard]] blitzar_status SetUnits(
-        blitzar_core::UnitSystem units) noexcept;
-    [[nodiscard]] blitzar_status SetBarnesHut(
-        blitzar_core::Scalar opening_angle,
-        std::size_t max_particles,
-        std::size_t max_cells,
-        std::size_t leaf_capacity,
+        blitzar_core::Scalar gravitational_constant, blitzar_core::Scalar softening) noexcept;
+    [[nodiscard]] blitzar_status SetUnits(blitzar_core::UnitSystem units) noexcept;
+    [[nodiscard]] blitzar_status SetBarnesHut(blitzar_core::Scalar opening_angle,
+        std::size_t max_particles, std::size_t max_cells, std::size_t leaf_capacity,
         std::size_t max_depth) noexcept;
-    [[nodiscard]] blitzar_status SetTimestep(
-        blitzar_core::Scalar timestep) noexcept;
+    [[nodiscard]] blitzar_status SetTimestep(blitzar_core::Scalar timestep) noexcept;
     [[nodiscard]] blitzar_status SetSeed(std::uint64_t seed) noexcept;
-    [[nodiscard]] blitzar_status SetParticles(
-        std::span<const blitzar_core::Scalar> position_x,
+    [[nodiscard]] blitzar_status SetParticles(std::span<const blitzar_core::Scalar> position_x,
         std::span<const blitzar_core::Scalar> position_y,
         std::span<const blitzar_core::Scalar> position_z,
         std::span<const blitzar_core::Scalar> velocity_x,
         std::span<const blitzar_core::Scalar> velocity_y,
         std::span<const blitzar_core::Scalar> velocity_z,
         std::span<const blitzar_core::Scalar> mass) noexcept;
-    [[nodiscard]] blitzar_status GetState(
-        std::span<blitzar_core::Scalar> position_x,
-        std::span<blitzar_core::Scalar> position_y,
-        std::span<blitzar_core::Scalar> position_z,
-        std::span<blitzar_core::Scalar> velocity_x,
-        std::span<blitzar_core::Scalar> velocity_y,
+    [[nodiscard]] blitzar_status GetState(std::span<blitzar_core::Scalar> position_x,
+        std::span<blitzar_core::Scalar> position_y, std::span<blitzar_core::Scalar> position_z,
+        std::span<blitzar_core::Scalar> velocity_x, std::span<blitzar_core::Scalar> velocity_y,
         std::span<blitzar_core::Scalar> velocity_z,
         std::span<blitzar_core::Scalar> mass) const noexcept;
     [[nodiscard]] blitzar_status Step() noexcept;
     void SetHipFaultForTesting(blitzar_gpu::HipFault fault) noexcept;
 
 private:
-    using SolverVariant = std::variant<
-        blitzar_direct::DirectSolver,
-        blitzar_barnes_hut::BarnesHutSolver>;
+    using SolverVariant =
+        std::variant<blitzar_direct::DirectSolver, blitzar_barnes_hut::BarnesHutSolver>;
 
-    [[nodiscard]] static std::size_t DefaultMaxCells(
-        std::size_t particle_count) noexcept;
-    [[nodiscard]] static blitzar_status CreateSolver(
-        blitzar_solver_kind solver_kind,
+    [[nodiscard]] static std::size_t DefaultMaxCells(std::size_t particle_count) noexcept;
+    [[nodiscard]] static blitzar_status CreateSolver(blitzar_solver_kind solver_kind,
         blitzar_physics::GravityParameters gravity,
-        blitzar_barnes_hut::BarnesHutSettings barnes_hut,
-        std::size_t staging_capacity,
+        blitzar_barnes_hut::BarnesHutSettings barnes_hut, std::size_t staging_capacity,
         SolverVariant& solver) noexcept;
     [[nodiscard]] blitzar_status Remember(blitzar_status status) const noexcept;
 
@@ -120,6 +103,6 @@ private:
     mutable std::vector<unsigned char> seen_;
 };
 
-}  // namespace blitzar_sdk
+} // namespace blitzar_sdk
 
 #endif

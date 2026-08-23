@@ -62,8 +62,7 @@ private:
 
     static constexpr std::size_t Alignment = 64;
     static constexpr std::size_t FieldCount = 16;
-    static constexpr std::size_t ScalarsPerAlignment =
-        Alignment / sizeof(blitzar_core::Scalar);
+    static constexpr std::size_t ScalarsPerAlignment = Alignment / sizeof(blitzar_core::Scalar);
 
     [[nodiscard]] static std::size_t AlignedCount(std::size_t count);
     [[nodiscard]] std::span<blitzar_core::Scalar> Mutable(Field field) noexcept;
@@ -74,6 +73,6 @@ private:
     std::array<std::span<blitzar_core::Scalar>, FieldCount> fields_{};
 };
 
-}  // namespace blitzar_particles
+} // namespace blitzar_particles
 
 #endif

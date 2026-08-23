@@ -2,7 +2,6 @@
 #define BLITZAR_PARALLEL_MPI_SESSION_HPP
 
 #include <blitzar/blitzar.h>
-
 #include <memory>
 
 namespace blitzar_parallel {
@@ -42,6 +41,6 @@ private:
     blitzar_status status_{BLITZAR_STATUS_OK};
 };
 
-}  // namespace blitzar_parallel
+} // namespace blitzar_parallel
 
 #endif

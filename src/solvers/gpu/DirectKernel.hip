@@ -21,21 +21,10 @@ __device__ void RecordError(int* error, int status) noexcept
     atomicMax(error, status);
 }
 
-__global__ void DirectKernel(
-    const double* position_x,
-    const double* position_y,
-    const double* position_z,
-    const double* mass,
-    double* force_x,
-    double* force_y,
-    double* force_z,
-    std::size_t target_count,
-    std::size_t source_begin,
-    std::size_t source_end,
-    double gravitational_constant,
-    double softening,
-    bool accumulate,
-    int* error)
+__global__ void DirectKernel(const double* position_x, const double* position_y,
+    const double* position_z, const double* mass, double* force_x, double* force_y, double* force_z,
+    std::size_t target_count, std::size_t source_begin, std::size_t source_end,
+    double gravitational_constant, double softening, bool accumulate, int* error)
 {
     extern __shared__ double tile[];
     double* tile_x = tile;
@@ -49,23 +38,22 @@ __global__ void DirectKernel(
     }
     __syncthreads();
 
-    const std::size_t target =
-        static_cast<std::size_t>(blockIdx.x) * BlockSize + threadIdx.x;
+    const std::size_t target = static_cast<std::size_t>(blockIdx.x) * BlockSize + threadIdx.x;
     int local_error = 0;
     double acceleration_x = 0.0;
     double acceleration_y = 0.0;
     double acceleration_z = 0.0;
     const double softening_squared = softening * softening;
 
-    for (std::size_t tile_begin = source_begin; tile_begin < source_end;
-         tile_begin += BlockSize) {
+    for (std::size_t tile_begin = source_begin; tile_begin < source_end; tile_begin += BlockSize) {
         const std::size_t source = tile_begin + threadIdx.x;
         if (source < source_end) {
             tile_x[threadIdx.x] = position_x[source];
             tile_y[threadIdx.x] = position_y[source];
             tile_z[threadIdx.x] = position_z[source];
             tile_mass[threadIdx.x] = mass[source];
-        } else {
+        }
+        else {
             tile_x[threadIdx.x] = 0.0;
             tile_y[threadIdx.x] = 0.0;
             tile_z[threadIdx.x] = 0.0;
@@ -78,9 +66,8 @@ __global__ void DirectKernel(
             const double target_y = position_y[target];
             const double target_z = position_z[target];
             const double target_mass = mass[target];
-            if (!isfinite(target_x) || !isfinite(target_y) ||
-                !isfinite(target_z) || !isfinite(target_mass) ||
-                target_mass < 0.0) {
+            if (!isfinite(target_x) || !isfinite(target_y) || !isfinite(target_z) ||
+                !isfinite(target_mass) || target_mass < 0.0) {
                 local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
             }
 #pragma unroll 4
@@ -93,9 +80,8 @@ __global__ void DirectKernel(
                 const double source_y = tile_y[offset];
                 const double source_z = tile_z[offset];
                 const double source_mass = tile_mass[offset];
-                if (!isfinite(source_x) || !isfinite(source_y) ||
-                    !isfinite(source_z) || !isfinite(source_mass) ||
-                    source_mass < 0.0) {
+                if (!isfinite(source_x) || !isfinite(source_y) || !isfinite(source_z) ||
+                    !isfinite(source_mass) || source_mass < 0.0) {
                     local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
                     continue;
                 }
@@ -106,10 +92,8 @@ __global__ void DirectKernel(
                 const double dy = source_y - target_y;
                 const double dz = source_z - target_z;
                 const double distance_squared = dx * dx + dy * dy + dz * dz;
-                const double softened_distance =
-                    distance_squared + softening_squared;
-                if (!isfinite(distance_squared) ||
-                    !isfinite(softened_distance)) {
+                const double softened_distance = distance_squared + softening_squared;
+                if (!isfinite(distance_squared) || !isfinite(softened_distance)) {
                     local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
                     continue;
                 }
@@ -118,8 +102,7 @@ __global__ void DirectKernel(
                     continue;
                 }
                 const double factor = gravitational_constant * source_mass /
-                                      (softened_distance *
-                                       sqrt(softened_distance));
+                                      (softened_distance * sqrt(softened_distance));
                 if (!isfinite(factor)) {
                     local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
                     continue;
@@ -133,8 +116,7 @@ __global__ void DirectKernel(
     }
 
     if (target < target_count &&
-        (!isfinite(acceleration_x) || !isfinite(acceleration_y) ||
-         !isfinite(acceleration_z))) {
+        (!isfinite(acceleration_x) || !isfinite(acceleration_y) || !isfinite(acceleration_z))) {
         local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     if (local_error != 0) {
@@ -149,7 +131,8 @@ __global__ void DirectKernel(
             force_x[target] += acceleration_x;
             force_y[target] += acceleration_y;
             force_z[target] += acceleration_z;
-        } else {
+        }
+        else {
             force_x[target] = acceleration_x;
             force_y[target] = acceleration_y;
             force_z[target] = acceleration_z;
@@ -157,64 +140,40 @@ __global__ void DirectKernel(
     }
 }
 
-}  // namespace
+} // namespace
 
-blitzar_status LaunchDirect(
-    DeviceParticleAddresses addresses,
-    std::size_t target_count,
-    std::size_t source_begin,
-    std::size_t source_end,
-    double gravitational_constant,
-    double softening,
-    bool accumulate,
-    std::uintptr_t error_address,
-    std::uintptr_t stream) noexcept
+blitzar_status LaunchDirect(DeviceParticleAddresses addresses, std::size_t target_count,
+    std::size_t source_begin, std::size_t source_end, double gravitational_constant,
+    double softening, bool accumulate, std::uintptr_t error_address, std::uintptr_t stream) noexcept
 {
     if (target_count == 0 || error_address == 0 || stream == 0) {
-        return target_count == 0 ? BLITZAR_STATUS_OK
-                                 : BLITZAR_STATUS_INVALID_ARGUMENT;
+        return target_count == 0 ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     if (source_begin > source_end) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    if (addresses.position_x == 0 || addresses.position_y == 0 ||
-        addresses.position_z == 0 || addresses.mass == 0 ||
-        addresses.force_x == 0 || addresses.force_y == 0 ||
+    if (addresses.position_x == 0 || addresses.position_y == 0 || addresses.position_z == 0 ||
+        addresses.mass == 0 || addresses.force_x == 0 || addresses.force_y == 0 ||
         addresses.force_z == 0) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    if (target_count >
-        std::numeric_limits<std::size_t>::max() - (BlockSize - 1)) {
+    if (target_count > std::numeric_limits<std::size_t>::max() - (BlockSize - 1)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    const std::size_t block_count =
-        (target_count + BlockSize - 1) / BlockSize;
+    const std::size_t block_count = (target_count + BlockSize - 1) / BlockSize;
     if (block_count > std::numeric_limits<unsigned int>::max()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    hipLaunchKernelGGL(
-        DirectKernel,
-        dim3(static_cast<unsigned int>(block_count)),
-        dim3(BlockSize),
-        4 * BlockSize * sizeof(double),
-        reinterpret_cast<hipStream_t>(stream),
+    hipLaunchKernelGGL(DirectKernel, dim3(static_cast<unsigned int>(block_count)), dim3(BlockSize),
+        4 * BlockSize * sizeof(double), reinterpret_cast<hipStream_t>(stream),
         reinterpret_cast<const double*>(addresses.position_x),
         reinterpret_cast<const double*>(addresses.position_y),
         reinterpret_cast<const double*>(addresses.position_z),
         reinterpret_cast<const double*>(addresses.mass),
-        reinterpret_cast<double*>(addresses.force_x),
-        reinterpret_cast<double*>(addresses.force_y),
-        reinterpret_cast<double*>(addresses.force_z),
-        target_count,
-        source_begin,
-        source_end,
-        gravitational_constant,
-        softening,
-        accumulate,
-        reinterpret_cast<int*>(error_address));
-    return hipGetLastError() == hipSuccess
-               ? BLITZAR_STATUS_OK
-               : BLITZAR_STATUS_INTERNAL_ERROR;
+        reinterpret_cast<double*>(addresses.force_x), reinterpret_cast<double*>(addresses.force_y),
+        reinterpret_cast<double*>(addresses.force_z), target_count, source_begin, source_end,
+        gravitational_constant, softening, accumulate, reinterpret_cast<int*>(error_address));
+    return hipGetLastError() == hipSuccess ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR;
 }
 
-}  // namespace blitzar_gpu_detail
+} // namespace blitzar_gpu_detail

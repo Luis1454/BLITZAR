@@ -32,17 +32,13 @@ using ParticleWire = std::array<std::byte, ParticleWireBytes>;
 class ParticleWireCodec final {
 public:
     [[nodiscard]] static bool Encode(
-        const ParticlePacket& packet,
-        std::span<std::byte> output) noexcept;
+        const ParticlePacket& packet, std::span<std::byte> output) noexcept;
     [[nodiscard]] static bool Decode(
-        std::span<const std::byte> input,
-        ParticlePacket& packet) noexcept;
+        std::span<const std::byte> input, ParticlePacket& packet) noexcept;
     [[nodiscard]] static bool Encode(
-        std::span<const ParticlePacket> packets,
-        std::span<std::byte> output) noexcept;
+        std::span<const ParticlePacket> packets, std::span<std::byte> output) noexcept;
     [[nodiscard]] static bool Decode(
-        std::span<const std::byte> input,
-        std::span<ParticlePacket> packets) noexcept;
+        std::span<const std::byte> input, std::span<ParticlePacket> packets) noexcept;
 };
 
 class PacketBuffer final {
@@ -107,30 +103,22 @@ private:
 
 class ParticlePacker final {
 public:
-    [[nodiscard]] static bool Pack(
-        blitzar_core::ParticleStateView state,
-        std::span<const std::uint64_t> ids,
-        std::span<ParticlePacket> output) noexcept
+    [[nodiscard]] static bool Pack(blitzar_core::ParticleStateView state,
+        std::span<const std::uint64_t> ids, std::span<ParticlePacket> output) noexcept
     {
         if (!blitzar_core::IsValid(state) || ids.size() != state.count ||
             output.size() < state.count) {
             return false;
         }
         for (std::size_t index = 0; index < state.count; ++index) {
-            output[index] = ParticlePacket{
-                ids[index],
-                state.x[index],
-                state.y[index],
-                state.z[index],
-                state.velocity_x[index],
-                state.velocity_y[index],
-                state.velocity_z[index],
-                state.mass[index]};
+            output[index] = ParticlePacket{ids[index], state.x[index], state.y[index],
+                state.z[index], state.velocity_x[index], state.velocity_y[index],
+                state.velocity_z[index], state.mass[index]};
         }
         return true;
     }
 };
 
-}  // namespace blitzar_parallel
+} // namespace blitzar_parallel
 
 #endif

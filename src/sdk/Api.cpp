@@ -1,7 +1,7 @@
-#include <blitzar/blitzar.h>
 #include "sdk/Simulation.hpp"
 
 #include <atomic>
+#include <blitzar/blitzar.h>
 #include <cstdint>
 #include <limits>
 #include <new>
@@ -21,10 +21,7 @@ struct blitzar_context {
 };
 
 struct blitzar_simulation final {
-    explicit blitzar_simulation(std::size_t particle_count)
-        : implementation(particle_count)
-    {
-    }
+    explicit blitzar_simulation(std::size_t particle_count) : implementation(particle_count) {}
 
     blitzar_sdk::Simulation implementation;
     mutable std::atomic_flag call_active = ATOMIC_FLAG_INIT;
@@ -36,8 +33,7 @@ class SimulationCallGuard final {
 public:
     explicit SimulationCallGuard(const blitzar_simulation& simulation) noexcept
         : simulation_(simulation),
-          acquired_(!simulation_.call_active.test_and_set(
-              std::memory_order_acquire))
+          acquired_(!simulation_.call_active.test_and_set(std::memory_order_acquire))
     {
     }
 
@@ -61,35 +57,30 @@ private:
     bool acquired_;
 };
 
-[[nodiscard]] bool TryConvertCount(
-    int64_t value, std::size_t& converted) noexcept
+[[nodiscard]] bool TryConvertCount(int64_t value, std::size_t& converted) noexcept
 {
     if (value < 0 || static_cast<std::uint64_t>(value) >
-                          static_cast<std::uint64_t>(
-                              std::numeric_limits<std::size_t>::max())) {
+                         static_cast<std::uint64_t>(std::numeric_limits<std::size_t>::max())) {
         return false;
     }
     converted = static_cast<std::size_t>(value);
     return true;
 }
 
-[[nodiscard]] bool IsValidSimulation(
-    const blitzar_simulation* simulation) noexcept
+[[nodiscard]] bool IsValidSimulation(const blitzar_simulation* simulation) noexcept
 {
     return simulation != nullptr;
 }
 
 template <typename Scalar>
-[[nodiscard]] std::span<Scalar> MakeSpan(
-    Scalar* data, std::size_t count) noexcept
+[[nodiscard]] std::span<Scalar> MakeSpan(Scalar* data, std::size_t count) noexcept
 {
     return count == 0 ? std::span<Scalar>{} : std::span<Scalar>(data, count);
 }
 
-}  // namespace
+} // namespace
 
-extern "C" blitzar_status blitzar_context_create(
-    blitzar_context** context)
+extern "C" blitzar_status blitzar_context_create(blitzar_context** context)
 {
     if (context == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -98,7 +89,8 @@ extern "C" blitzar_status blitzar_context_create(
     *context = nullptr;
     try {
         *context = new blitzar_context{BLITZAR_STATUS_OK};
-    } catch (const std::bad_alloc&) {
+    }
+    catch (const std::bad_alloc&) {
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
     return BLITZAR_STATUS_OK;
@@ -119,8 +111,7 @@ extern "C" void blitzar_context_destroy(blitzar_context* context)
     delete context;
 }
 
-extern "C" blitzar_status blitzar_context_status(
-    const blitzar_context* context)
+extern "C" blitzar_status blitzar_context_status(const blitzar_context* context)
 {
     if (context == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -149,12 +140,9 @@ extern "C" const char* blitzar_status_message(blitzar_status status)
 }
 
 extern "C" blitzar_status blitzar_simulation_create(
-    blitzar_context* context,
-    int64_t particle_count,
-    blitzar_simulation** simulation)
+    blitzar_context* context, int64_t particle_count, blitzar_simulation** simulation)
 {
-    if (context == nullptr || context->status != BLITZAR_STATUS_OK ||
-        simulation == nullptr) {
+    if (context == nullptr || context->status != BLITZAR_STATUS_OK || simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     *simulation = nullptr;
@@ -164,9 +152,11 @@ extern "C" blitzar_status blitzar_simulation_create(
     }
     try {
         *simulation = new blitzar_simulation(converted_count);
-    } catch (const std::length_error&) {
+    }
+    catch (const std::length_error&) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
-    } catch (const std::bad_alloc&) {
+    }
+    catch (const std::bad_alloc&) {
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
     return BLITZAR_STATUS_OK;
@@ -177,8 +167,7 @@ extern "C" void blitzar_simulation_destroy(blitzar_simulation* simulation)
     delete simulation;
 }
 
-extern "C" blitzar_status blitzar_simulation_status(
-    const blitzar_simulation* simulation)
+extern "C" blitzar_status blitzar_simulation_status(const blitzar_simulation* simulation)
 {
     if (!IsValidSimulation(simulation)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -191,8 +180,7 @@ extern "C" blitzar_status blitzar_simulation_status(
 }
 
 extern "C" blitzar_status blitzar_simulation_backend(
-    const blitzar_simulation* simulation,
-    blitzar_backend_kind* backend)
+    const blitzar_simulation* simulation, blitzar_backend_kind* backend)
 {
     if (!IsValidSimulation(simulation) || backend == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -206,11 +194,9 @@ extern "C" blitzar_status blitzar_simulation_backend(
 }
 
 extern "C" blitzar_status blitzar_simulation_particle_count(
-    const blitzar_simulation* simulation,
-    int64_t* particle_count)
+    const blitzar_simulation* simulation, int64_t* particle_count)
 {
-    if (!IsValidSimulation(simulation) ||
-        particle_count == nullptr) {
+    if (!IsValidSimulation(simulation) || particle_count == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     const SimulationCallGuard guard(*simulation);
@@ -222,8 +208,7 @@ extern "C" blitzar_status blitzar_simulation_particle_count(
 }
 
 extern "C" blitzar_status blitzar_simulation_set_solver(
-    blitzar_simulation* simulation,
-    blitzar_solver_kind solver)
+    blitzar_simulation* simulation, blitzar_solver_kind solver)
 {
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -236,8 +221,7 @@ extern "C" blitzar_status blitzar_simulation_set_solver(
 }
 
 extern "C" blitzar_status blitzar_simulation_set_integrator(
-    blitzar_simulation* simulation,
-    blitzar_integrator_kind integrator)
+    blitzar_simulation* simulation, blitzar_integrator_kind integrator)
 {
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -250,9 +234,7 @@ extern "C" blitzar_status blitzar_simulation_set_integrator(
 }
 
 extern "C" blitzar_status blitzar_simulation_set_gravity(
-    blitzar_simulation* simulation,
-    double gravitational_constant,
-    double softening)
+    blitzar_simulation* simulation, double gravitational_constant, double softening)
 {
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -265,10 +247,7 @@ extern "C" blitzar_status blitzar_simulation_set_gravity(
 }
 
 extern "C" blitzar_status blitzar_simulation_set_units(
-    blitzar_simulation* simulation,
-    double length_scale,
-    double mass_scale,
-    double time_scale)
+    blitzar_simulation* simulation, double length_scale, double mass_scale, double time_scale)
 {
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -277,16 +256,11 @@ extern "C" blitzar_status blitzar_simulation_set_units(
     if (!guard.Acquired()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
-    return simulation->implementation.SetUnits(
-        {length_scale, mass_scale, time_scale});
+    return simulation->implementation.SetUnits({length_scale, mass_scale, time_scale});
 }
 
-extern "C" blitzar_status blitzar_simulation_set_barnes_hut(
-    blitzar_simulation* simulation,
-    double opening_angle,
-    int64_t max_particles,
-    int64_t max_cells,
-    int64_t leaf_capacity,
+extern "C" blitzar_status blitzar_simulation_set_barnes_hut(blitzar_simulation* simulation,
+    double opening_angle, int64_t max_particles, int64_t max_cells, int64_t leaf_capacity,
     int64_t max_depth)
 {
     if (simulation == nullptr) {
@@ -306,17 +280,12 @@ extern "C" blitzar_status blitzar_simulation_set_barnes_hut(
         !TryConvertCount(max_depth, converted_max_depth)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    return simulation->implementation.SetBarnesHut(
-        opening_angle,
-        converted_max_particles,
-        converted_max_cells,
-        converted_leaf_capacity,
-        converted_max_depth);
+    return simulation->implementation.SetBarnesHut(opening_angle, converted_max_particles,
+        converted_max_cells, converted_leaf_capacity, converted_max_depth);
 }
 
 extern "C" blitzar_status blitzar_simulation_set_timestep(
-    blitzar_simulation* simulation,
-    double timestep)
+    blitzar_simulation* simulation, double timestep)
 {
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -328,9 +297,7 @@ extern "C" blitzar_status blitzar_simulation_set_timestep(
     return simulation->implementation.SetTimestep(timestep);
 }
 
-extern "C" blitzar_status blitzar_simulation_set_seed(
-    blitzar_simulation* simulation,
-    uint64_t seed)
+extern "C" blitzar_status blitzar_simulation_set_seed(blitzar_simulation* simulation, uint64_t seed)
 {
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -342,16 +309,10 @@ extern "C" blitzar_status blitzar_simulation_set_seed(
     return simulation->implementation.SetSeed(seed);
 }
 
-extern "C" blitzar_status blitzar_simulation_set_particles(
-    blitzar_simulation* simulation,
-    int64_t particle_count,
-    const double* position_x,
-    const double* position_y,
-    const double* position_z,
-    const double* velocity_x,
-    const double* velocity_y,
-    const double* velocity_z,
-    const double* mass)
+extern "C" blitzar_status blitzar_simulation_set_particles(blitzar_simulation* simulation,
+    int64_t particle_count, const double* position_x, const double* position_y,
+    const double* position_z, const double* velocity_x, const double* velocity_y,
+    const double* velocity_z, const double* mass)
 {
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -365,31 +326,20 @@ extern "C" blitzar_status blitzar_simulation_set_particles(
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     if (converted_count > 0 &&
-        (position_x == nullptr || position_y == nullptr ||
-         position_z == nullptr || velocity_x == nullptr ||
-         velocity_y == nullptr || velocity_z == nullptr || mass == nullptr)) {
+        (position_x == nullptr || position_y == nullptr || position_z == nullptr ||
+            velocity_x == nullptr || velocity_y == nullptr || velocity_z == nullptr ||
+            mass == nullptr)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    return simulation->implementation.SetParticles(
-        MakeSpan(position_x, converted_count),
-        MakeSpan(position_y, converted_count),
-        MakeSpan(position_z, converted_count),
-        MakeSpan(velocity_x, converted_count),
-        MakeSpan(velocity_y, converted_count),
-        MakeSpan(velocity_z, converted_count),
-        MakeSpan(mass, converted_count));
+    return simulation->implementation.SetParticles(MakeSpan(position_x, converted_count),
+        MakeSpan(position_y, converted_count), MakeSpan(position_z, converted_count),
+        MakeSpan(velocity_x, converted_count), MakeSpan(velocity_y, converted_count),
+        MakeSpan(velocity_z, converted_count), MakeSpan(mass, converted_count));
 }
 
-extern "C" blitzar_status blitzar_simulation_get_state(
-    const blitzar_simulation* simulation,
-    int64_t capacity,
-    double* position_x,
-    double* position_y,
-    double* position_z,
-    double* velocity_x,
-    double* velocity_y,
-    double* velocity_z,
-    double* mass)
+extern "C" blitzar_status blitzar_simulation_get_state(const blitzar_simulation* simulation,
+    int64_t capacity, double* position_x, double* position_y, double* position_z,
+    double* velocity_x, double* velocity_y, double* velocity_z, double* mass)
 {
     if (!IsValidSimulation(simulation)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -403,23 +353,18 @@ extern "C" blitzar_status blitzar_simulation_get_state(
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     if (converted_capacity > 0 &&
-        (position_x == nullptr || position_y == nullptr ||
-         position_z == nullptr || velocity_x == nullptr ||
-         velocity_y == nullptr || velocity_z == nullptr || mass == nullptr)) {
+        (position_x == nullptr || position_y == nullptr || position_z == nullptr ||
+            velocity_x == nullptr || velocity_y == nullptr || velocity_z == nullptr ||
+            mass == nullptr)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    return simulation->implementation.GetState(
-        MakeSpan(position_x, converted_capacity),
-        MakeSpan(position_y, converted_capacity),
-        MakeSpan(position_z, converted_capacity),
-        MakeSpan(velocity_x, converted_capacity),
-        MakeSpan(velocity_y, converted_capacity),
-        MakeSpan(velocity_z, converted_capacity),
-        MakeSpan(mass, converted_capacity));
+    return simulation->implementation.GetState(MakeSpan(position_x, converted_capacity),
+        MakeSpan(position_y, converted_capacity), MakeSpan(position_z, converted_capacity),
+        MakeSpan(velocity_x, converted_capacity), MakeSpan(velocity_y, converted_capacity),
+        MakeSpan(velocity_z, converted_capacity), MakeSpan(mass, converted_capacity));
 }
 
-extern "C" blitzar_status blitzar_simulation_step(
-    blitzar_simulation* simulation)
+extern "C" blitzar_status blitzar_simulation_step(blitzar_simulation* simulation)
 {
     if (simulation == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;

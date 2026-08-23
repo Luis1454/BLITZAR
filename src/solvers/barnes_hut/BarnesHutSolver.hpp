@@ -1,14 +1,13 @@
 #ifndef BLITZAR_SOLVERS_BARNES_HUT_BARNES_HUT_SOLVER_HPP
 #define BLITZAR_SOLVERS_BARNES_HUT_BARNES_HUT_SOLVER_HPP
 
-#include "core/Solver.hpp"
 #include "core/Execution.hpp"
+#include "core/Solver.hpp"
 #include "physics/GravityLaw.hpp"
 #include "solvers/barnes_hut/ThreadWorkspace.hpp"
 #include "trees/Octree.hpp"
 
 #include <blitzar/blitzar.h>
-
 #include <cstddef>
 #include <span>
 
@@ -26,31 +25,21 @@ struct BarnesHutSettings final {
 
 class BarnesHutSolver final {
 public:
-    BarnesHutSolver(
-        blitzar_physics::GravityParameters gravity,
-        BarnesHutSettings settings);
+    BarnesHutSolver(blitzar_physics::GravityParameters gravity, BarnesHutSettings settings);
 
     [[nodiscard]] blitzar_core::SolverKind Kind() const noexcept;
-    [[nodiscard]] blitzar_status Compute(
-        blitzar_core::ParticleStateView particles,
-        blitzar_core::ForceView forces,
-        const blitzar_core::ExecutionSettings& settings) noexcept;
-    [[nodiscard]] blitzar_status Compute(
-        blitzar_core::ParticleStateView particles,
-        blitzar_core::ForceView forces,
-        const blitzar_core::ExecutionSettings& settings,
+    [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView particles,
+        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings) noexcept;
+    [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView particles,
+        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
         ThreadWorkspace& workspace) noexcept;
 
 private:
-    [[nodiscard]] static bool IsValidState(
-        blitzar_core::ParticleStateView particles) noexcept;
+    [[nodiscard]] static bool IsValidState(blitzar_core::ParticleStateView particles) noexcept;
     [[nodiscard]] static bool Contains(
-        const blitzar_trees::Octree::Cell& cell,
-        blitzar_core::Vector3 position) noexcept;
-    [[nodiscard]] blitzar_status Accumulate(
-        std::size_t target,
-        blitzar_core::ParticleStateView particles,
-        std::span<std::size_t> stack,
+        const blitzar_trees::Octree::Cell& cell, blitzar_core::Vector3 position) noexcept;
+    [[nodiscard]] blitzar_status Accumulate(std::size_t target,
+        blitzar_core::ParticleStateView particles, std::span<std::size_t> stack,
         blitzar_core::Vector3& acceleration) noexcept;
 
     BarnesHutSettings settings_;
@@ -59,6 +48,6 @@ private:
     ThreadWorkspace workspace_;
 };
 
-}  // namespace blitzar_barnes_hut
+} // namespace blitzar_barnes_hut
 
 #endif

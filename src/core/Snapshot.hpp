@@ -9,9 +9,7 @@ namespace blitzar_core {
 
 inline constexpr std::uint32_t SnapshotMagic = 0x425A5253U;
 
-enum class SnapshotVersion : std::uint16_t {
-    V1 = 1
-};
+enum class SnapshotVersion : std::uint16_t { V1 = 1 };
 
 struct SnapshotHeader final {
     std::uint32_t magic{SnapshotMagic};
@@ -26,6 +24,6 @@ struct SnapshotHeader final {
     }
 };
 
-}  // namespace blitzar_core
+} // namespace blitzar_core
 
 #endif

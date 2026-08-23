@@ -15,13 +15,14 @@ bool InitializedByBlitzar = false;
 
 #endif
 
-}  // namespace
+} // namespace
 
 MpiSession::MpiSession() noexcept
 {
     try {
         impl_ = std::make_unique<Impl>();
-    } catch (const std::bad_alloc&) {
+    }
+    catch (const std::bad_alloc&) {
         status_ = BLITZAR_STATUS_ALLOCATION_FAILURE;
         return;
     }
@@ -36,13 +37,13 @@ MpiSession::MpiSession() noexcept
 
     int provided = MPI_THREAD_SINGLE;
     if (initialized == 0) {
-        if (MPI_Init_thread(nullptr, nullptr, MPI_THREAD_MULTIPLE, &provided) !=
-            MPI_SUCCESS) {
+        if (MPI_Init_thread(nullptr, nullptr, MPI_THREAD_MULTIPLE, &provided) != MPI_SUCCESS) {
             status_ = BLITZAR_STATUS_INTERNAL_ERROR;
             return;
         }
         InitializedByBlitzar = true;
-    } else if (MPI_Query_thread(&provided) != MPI_SUCCESS) {
+    }
+    else if (MPI_Query_thread(&provided) != MPI_SUCCESS) {
         status_ = BLITZAR_STATUS_INTERNAL_ERROR;
         return;
     }
@@ -114,4 +115,4 @@ const MpiSession::Impl& MpiSession::Native() const noexcept
     return *impl_;
 }
 
-}  // namespace blitzar_parallel
+} // namespace blitzar_parallel

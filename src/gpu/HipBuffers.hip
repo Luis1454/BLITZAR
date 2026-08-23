@@ -1,5 +1,4 @@
 #include "gpu/HipBuffers.hpp"
-
 #include "solvers/gpu/HipKernel.hpp"
 
 #if defined(BLITZAR_HIP_NATIVE_CUDA)
@@ -109,7 +108,7 @@ private:
     std::size_t bytes_{};
 };
 
-}  // namespace
+} // namespace
 
 struct HipBuffers::Impl final {
     hipStream_t stream{};
@@ -128,10 +127,9 @@ struct HipBuffers::Impl final {
     Impl() noexcept
     {
         int device_count = 0;
-        if (hipGetDeviceCount(&device_count) != hipSuccess ||
-            device_count <= 0 || hipSetDevice(0) != hipSuccess ||
-            hipStreamCreateWithFlags(&stream, hipStreamNonBlocking) !=
-                hipSuccess) {
+        if (hipGetDeviceCount(&device_count) != hipSuccess || device_count <= 0 ||
+            hipSetDevice(0) != hipSuccess ||
+            hipStreamCreateWithFlags(&stream, hipStreamNonBlocking) != hipSuccess) {
             return;
         }
         available = true;
@@ -146,9 +144,7 @@ struct HipBuffers::Impl final {
         }
     }
 
-    [[nodiscard]] bool Ensure(
-        std::size_t particle_count,
-        std::size_t cell_count) noexcept
+    [[nodiscard]] bool Ensure(std::size_t particle_count, std::size_t cell_count) noexcept
     {
         const std::size_t maximum = std::numeric_limits<std::size_t>::max();
         if (particle_count > maximum / sizeof(double) ||
@@ -157,8 +153,7 @@ struct HipBuffers::Impl final {
             return false;
         }
         const std::size_t scalar_bytes = particle_count * sizeof(double);
-        const std::size_t cell_bytes =
-            cell_count * sizeof(blitzar_gpu_detail::GpuCell);
+        const std::size_t cell_bytes = cell_count * sizeof(blitzar_gpu_detail::GpuCell);
         const std::size_t index_bytes = particle_count * sizeof(std::uint64_t);
         for (PinnedAllocation& buffer : host_particles) {
             if (!buffer.Resize(scalar_bytes)) {
@@ -180,12 +175,9 @@ struct HipBuffers::Impl final {
                 return false;
             }
         }
-        return host_error.Resize(sizeof(int)) &&
-               device_error.Resize(sizeof(int)) &&
-               host_cells.Resize(cell_bytes) &&
-               device_cells.Resize(cell_bytes) &&
-               host_indices.Resize(index_bytes) &&
-               device_indices.Resize(index_bytes);
+        return host_error.Resize(sizeof(int)) && device_error.Resize(sizeof(int)) &&
+               host_cells.Resize(cell_bytes) && device_cells.Resize(cell_bytes) &&
+               host_indices.Resize(index_bytes) && device_indices.Resize(index_bytes);
     }
 };
 
@@ -193,7 +185,8 @@ HipBuffers::HipBuffers() noexcept
 {
     try {
         impl_ = std::make_unique<Impl>();
-    } catch (const std::bad_alloc&) {
+    }
+    catch (const std::bad_alloc&) {
         impl_.reset();
     }
 }
@@ -216,19 +209,14 @@ void HipBuffers::Disable() noexcept
     }
 }
 
-bool HipBuffers::Ensure(
-    std::size_t particle_count,
-    std::size_t cell_count) noexcept
+bool HipBuffers::Ensure(std::size_t particle_count, std::size_t cell_count) noexcept
 {
-    return impl_ != nullptr && impl_->available &&
-           impl_->Ensure(particle_count, cell_count);
+    return impl_ != nullptr && impl_->available && impl_->Ensure(particle_count, cell_count);
 }
 
 std::uintptr_t HipBuffers::Stream() const noexcept
 {
-    return impl_ == nullptr
-               ? 0
-               : reinterpret_cast<std::uintptr_t>(impl_->stream);
+    return impl_ == nullptr ? 0 : reinterpret_cast<std::uintptr_t>(impl_->stream);
 }
 
 std::uintptr_t HipBuffers::HostParticle(std::size_t index) const noexcept
@@ -289,4 +277,4 @@ std::uintptr_t HipBuffers::DeviceIndices() const noexcept
     return impl_ == nullptr ? 0 : impl_->device_indices.Address();
 }
 
-}  // namespace blitzar_gpu
+} // namespace blitzar_gpu

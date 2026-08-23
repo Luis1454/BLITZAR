@@ -25,6 +25,6 @@ private:
     std::unique_ptr<Impl> impl_;
 };
 
-}  // namespace blitzar_parallel
+} // namespace blitzar_parallel
 
 #endif

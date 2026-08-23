@@ -6,21 +6,18 @@ namespace blitzar_physics {
 
 bool GravityParameters::IsValid() const noexcept
 {
-    return std::isfinite(gravitational_constant) &&
-           gravitational_constant > 0.0 && std::isfinite(softening) &&
-           softening >= 0.0 && units.IsValid() &&
+    return std::isfinite(gravitational_constant) && gravitational_constant > 0.0 &&
+           std::isfinite(softening) && softening >= 0.0 && units.IsValid() &&
            std::isfinite(EffectiveConstant()) && EffectiveConstant() > 0.0 &&
            std::isfinite(EffectiveSoftening()) && EffectiveSoftening() >= 0.0;
 }
 
 blitzar_core::Scalar GravityParameters::EffectiveConstant() const noexcept
 {
-    const blitzar_core::Scalar time_squared =
-        units.time_scale * units.time_scale;
+    const blitzar_core::Scalar time_squared = units.time_scale * units.time_scale;
     const blitzar_core::Scalar length_cubed =
         units.length_scale * units.length_scale * units.length_scale;
-    return gravitational_constant * units.mass_scale * time_squared /
-           length_cubed;
+    return gravitational_constant * units.mass_scale * time_squared / length_cubed;
 }
 
 blitzar_core::Scalar GravityParameters::EffectiveSoftening() const noexcept
@@ -29,8 +26,7 @@ blitzar_core::Scalar GravityParameters::EffectiveSoftening() const noexcept
 }
 
 GravityLaw::GravityLaw(GravityParameters parameters) noexcept
-    : parameters_(parameters),
-      effective_constant_(parameters.EffectiveConstant()),
+    : parameters_(parameters), effective_constant_(parameters.EffectiveConstant()),
       effective_softening_(parameters.EffectiveSoftening())
 {
 }
@@ -43,8 +39,7 @@ bool GravityLaw::IsValid() const noexcept
 }
 
 PairStatus GravityLaw::ValidatePair(
-    blitzar_core::Scalar source_mass,
-    blitzar_core::Scalar squared_distance) const noexcept
+    blitzar_core::Scalar source_mass, blitzar_core::Scalar squared_distance) const noexcept
 {
     if (!IsValid() || !std::isfinite(source_mass) || source_mass < 0.0 ||
         !std::isfinite(squared_distance) || squared_distance < 0.0) {
@@ -62,20 +57,17 @@ PairStatus GravityLaw::ValidatePair(
 }
 
 bool GravityLaw::IsValidPair(
-    blitzar_core::Scalar source_mass,
-    blitzar_core::Scalar squared_distance) const noexcept
+    blitzar_core::Scalar source_mass, blitzar_core::Scalar squared_distance) const noexcept
 {
     return ValidatePair(source_mass, squared_distance) == PairStatus::Valid;
 }
 
 blitzar_core::Scalar GravityLaw::PairFactor(
-    blitzar_core::Scalar source_mass,
-    blitzar_core::Scalar squared_distance) const noexcept
+    blitzar_core::Scalar source_mass, blitzar_core::Scalar squared_distance) const noexcept
 {
     const blitzar_core::Scalar softened_distance =
         squared_distance + effective_softening_ * effective_softening_;
-    return effective_constant_ * source_mass /
-           (softened_distance * std::sqrt(softened_distance));
+    return effective_constant_ * source_mass / (softened_distance * std::sqrt(softened_distance));
 }
 
-}  // namespace blitzar_physics
+} // namespace blitzar_physics

@@ -7,7 +7,6 @@
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
 
 #include <blitzar/blitzar.h>
-
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -37,22 +36,14 @@ public:
     [[nodiscard]] bool IsAvailable() const noexcept;
     void SetFaultForTesting(HipFault fault) noexcept;
 
-    [[nodiscard]] blitzar_status ComputeDirect(
-        blitzar_core::ParticleStateView particles,
-        blitzar_core::ForceView forces,
-        blitzar_physics::GravityParameters gravity) noexcept;
-    [[nodiscard]] blitzar_status ComputeDirectRange(
-        blitzar_core::ParticleStateView particles,
-        blitzar_core::ForceView forces,
-        blitzar_physics::GravityParameters gravity,
-        std::size_t source_begin,
-        std::size_t source_end,
-        bool accumulate) noexcept;
+    [[nodiscard]] blitzar_status ComputeDirect(blitzar_core::ParticleStateView particles,
+        blitzar_core::ForceView forces, blitzar_physics::GravityParameters gravity) noexcept;
+    [[nodiscard]] blitzar_status ComputeDirectRange(blitzar_core::ParticleStateView particles,
+        blitzar_core::ForceView forces, blitzar_physics::GravityParameters gravity,
+        std::size_t source_begin, std::size_t source_end, bool accumulate) noexcept;
 
-    [[nodiscard]] blitzar_status ComputeBarnesHut(
-        blitzar_core::ParticleStateView particles,
-        blitzar_core::ForceView forces,
-        const blitzar_core::ExecutionSettings& execution,
+    [[nodiscard]] blitzar_status ComputeBarnesHut(blitzar_core::ParticleStateView particles,
+        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& execution,
         blitzar_physics::GravityParameters gravity,
         blitzar_barnes_hut::BarnesHutSettings settings) noexcept;
 
@@ -63,6 +54,6 @@ private:
     blitzar_status status_{BLITZAR_STATUS_OK};
 };
 
-}  // namespace blitzar_gpu
+} // namespace blitzar_gpu
 
 #endif

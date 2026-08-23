@@ -1,6 +1,5 @@
-#include "sdk/Simulation.hpp"
-
 #include "Check.hpp"
+#include "sdk/Simulation.hpp"
 
 #include <array>
 #include <atomic>
@@ -17,9 +16,7 @@ namespace {
 std::atomic<bool> Counting{false};
 std::atomic<std::size_t> AllocationCount{0};
 
-void* Allocate(
-    std::size_t size,
-    std::size_t alignment = alignof(std::max_align_t))
+void* Allocate(std::size_t size, std::size_t alignment = alignof(std::max_align_t))
 {
     const std::size_t actual_size = size == 0 ? 1 : size;
     void* result = nullptr;
@@ -28,7 +25,8 @@ void* Allocate(
 #else
     if (alignment <= alignof(std::max_align_t)) {
         result = std::malloc(actual_size);
-    } else if (posix_memalign(&result, alignment, actual_size) != 0) {
+    }
+    else if (posix_memalign(&result, alignment, actual_size) != 0) {
         result = nullptr;
     }
 #endif
@@ -50,7 +48,7 @@ void Release(void* pointer) noexcept
 #endif
 }
 
-}  // namespace
+} // namespace
 
 void* operator new(std::size_t size)
 {
@@ -102,18 +100,12 @@ void operator delete[](void* pointer, std::align_val_t) noexcept
     Release(pointer);
 }
 
-void operator delete(
-    void* pointer,
-    std::size_t,
-    std::align_val_t) noexcept
+void operator delete(void* pointer, std::size_t, std::align_val_t) noexcept
 {
     Release(pointer);
 }
 
-void operator delete[](
-    void* pointer,
-    std::size_t,
-    std::align_val_t) noexcept
+void operator delete[](void* pointer, std::size_t, std::align_val_t) noexcept
 {
     Release(pointer);
 }
@@ -130,18 +122,11 @@ int main()
     std::array<double, ParticleCount> mass{1.0, 1.0};
 
     blitzar_sdk::Simulation simulation(ParticleCount);
-    BLITZAR_CHECK(simulation.SetSolver(BLITZAR_SOLVER_DIRECT) ==
-                  BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(simulation.SetSolver(BLITZAR_SOLVER_DIRECT) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(simulation.SetGravity(1.0, 0.1) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(simulation.SetTimestep(0.01) == BLITZAR_STATUS_OK);
-    BLITZAR_CHECK(simulation.SetParticles(
-                      position_x,
-                      position_y,
-                      position_z,
-                      velocity_x,
-                      velocity_y,
-                      velocity_z,
-                      mass) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(simulation.SetParticles(position_x, position_y, position_z, velocity_x,
+                      velocity_y, velocity_z, mass) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(simulation.Step() == BLITZAR_STATUS_OK);
 
     AllocationCount.store(0, std::memory_order_relaxed);

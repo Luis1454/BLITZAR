@@ -5,30 +5,25 @@
 namespace blitzar_integration {
 
 LeapfrogWorkspace::LeapfrogWorkspace(std::size_t count)
-    : owned_arena_(
-          std::make_unique<blitzar_particles::ParticleArena>(count)),
-      borrowed_arena_(),
+    : owned_arena_(std::make_unique<blitzar_particles::ParticleArena>(count)), borrowed_arena_(),
       count_(count)
 {
 }
 
-LeapfrogWorkspace::LeapfrogWorkspace(
-    blitzar_particles::ParticleArena& arena)
+LeapfrogWorkspace::LeapfrogWorkspace(blitzar_particles::ParticleArena& arena)
     : owned_arena_(), borrowed_arena_(std::ref(arena)), count_(arena.Count())
 {
 }
 
 LeapfrogWorkspace::LeapfrogWorkspace(LeapfrogWorkspace&& other) noexcept
-    : owned_arena_(std::move(other.owned_arena_)),
-      borrowed_arena_(other.borrowed_arena_),
+    : owned_arena_(std::move(other.owned_arena_)), borrowed_arena_(other.borrowed_arena_),
       count_(other.count_)
 {
     other.borrowed_arena_.reset();
     other.count_ = 0;
 }
 
-LeapfrogWorkspace& LeapfrogWorkspace::operator=(
-    LeapfrogWorkspace&& other) noexcept
+LeapfrogWorkspace& LeapfrogWorkspace::operator=(LeapfrogWorkspace&& other) noexcept
 {
     if (this != &other) {
         owned_arena_ = std::move(other.owned_arena_);
@@ -66,12 +61,10 @@ blitzar_status LeapfrogWorkspace::SetCount(std::size_t count) noexcept
 
 bool LeapfrogWorkspace::IsValid() const noexcept
 {
-    return !HasArena() ? count_ == 0
-                       : count_ <= Arena().Count() && Arena().IsValid();
+    return !HasArena() ? count_ == 0 : count_ <= Arena().Count() && Arena().IsValid();
 }
 
-blitzar_status LeapfrogWorkspace::Capture(
-    blitzar_core::MutableParticleView state) noexcept
+blitzar_status LeapfrogWorkspace::Capture(blitzar_core::MutableParticleView state) noexcept
 {
     if (state.count != count_ || !blitzar_core::IsValid(state)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -97,8 +90,7 @@ blitzar_status LeapfrogWorkspace::Capture(
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_status LeapfrogWorkspace::Restore(
-    blitzar_core::MutableParticleView state) noexcept
+blitzar_status LeapfrogWorkspace::Restore(blitzar_core::MutableParticleView state) noexcept
 {
     if (state.count != count_ || !blitzar_core::IsValid(state)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -124,4 +116,4 @@ blitzar_status LeapfrogWorkspace::Restore(
     return BLITZAR_STATUS_OK;
 }
 
-}  // namespace blitzar_integration
+} // namespace blitzar_integration

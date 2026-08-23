@@ -2,7 +2,6 @@
 #define BLITZAR_SOLVERS_GPU_HIP_KERNEL_HPP
 
 #include <blitzar/blitzar.h>
-
 #include <cstddef>
 #include <cstdint>
 
@@ -32,31 +31,17 @@ struct GpuCell final {
     std::uint64_t children[8]{};
 };
 
-[[nodiscard]] blitzar_status LaunchDirect(
-    DeviceParticleAddresses addresses,
-    std::size_t target_count,
-    std::size_t source_begin,
-    std::size_t source_end,
-    double gravitational_constant,
-    double softening,
-    bool accumulate,
-    std::uintptr_t error_address,
+[[nodiscard]] blitzar_status LaunchDirect(DeviceParticleAddresses addresses,
+    std::size_t target_count, std::size_t source_begin, std::size_t source_end,
+    double gravitational_constant, double softening, bool accumulate, std::uintptr_t error_address,
     std::uintptr_t stream) noexcept;
 
-[[nodiscard]] blitzar_status LaunchBarnesHut(
-    DeviceParticleAddresses addresses,
-    std::size_t target_count,
-    std::size_t source_count,
-    std::uintptr_t cells,
-    std::size_t cell_count,
-    std::uintptr_t indices,
-    double opening_angle,
-    double gravitational_constant,
-    double softening,
-    std::size_t max_depth,
-    std::uintptr_t error_address,
-    std::uintptr_t stream) noexcept;
+[[nodiscard]] blitzar_status LaunchBarnesHut(DeviceParticleAddresses addresses,
+    std::size_t target_count, std::size_t source_count, std::uintptr_t cells,
+    std::size_t cell_count, std::uintptr_t indices, double opening_angle,
+    double gravitational_constant, double softening, std::size_t max_depth,
+    std::uintptr_t error_address, std::uintptr_t stream) noexcept;
 
-}  // namespace blitzar_gpu_detail
+} // namespace blitzar_gpu_detail
 
 #endif

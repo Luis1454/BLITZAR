@@ -6,17 +6,15 @@
 #include "parallel/MpiContext.hpp"
 #include "parallel/MpiTypes.hpp"
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <span>
 #include <vector>
 
 namespace blitzar_parallel {
 
 struct MpiExchangeWorkspace final {
-    MpiExchangeWorkspace(
-        std::size_t packet_capacity,
-        std::size_t peer_count);
+    MpiExchangeWorkspace(std::size_t packet_capacity, std::size_t peer_count);
 
     std::size_t packet_capacity{};
     PacketBuffer local_packets;
@@ -34,9 +32,7 @@ struct MpiExchangeWorkspace final {
 
 class MpiExchange final {
 public:
-    MpiExchange(
-        const MpiContext& context,
-        const DomainDecomposition& decomposition,
+    MpiExchange(const MpiContext& context, const DomainDecomposition& decomposition,
         std::size_t packet_capacity = 0);
 
     [[nodiscard]] blitzar_status CapacityStatus() const noexcept
@@ -44,35 +40,25 @@ public:
         return capacity_status_;
     }
 
-    [[nodiscard]] MpiContext::GhostExchange& PersistentGhostExchange()
-        const noexcept;
+    [[nodiscard]] MpiContext::GhostExchange& PersistentGhostExchange() const noexcept;
 
-    [[nodiscard]] blitzar_status ExchangeGhosts(
-        blitzar_core::ParticleStateView local_state,
-        std::span<const std::uint64_t> local_ids,
-        PacketBuffer& ghosts) const noexcept;
+    [[nodiscard]] blitzar_status ExchangeGhosts(blitzar_core::ParticleStateView local_state,
+        std::span<const std::uint64_t> local_ids, PacketBuffer& ghosts) const noexcept;
 
-    [[nodiscard]] blitzar_status BeginGhosts(
-        blitzar_core::ParticleStateView local_state,
+    [[nodiscard]] blitzar_status BeginGhosts(blitzar_core::ParticleStateView local_state,
         std::span<const std::uint64_t> local_ids,
         MpiContext::GhostExchange& exchange) const noexcept;
     [[nodiscard]] blitzar_status CompleteGhosts(
-        MpiContext::GhostExchange& exchange,
-        PacketBuffer& ghosts) const noexcept;
-    void AbortGhosts(
         MpiContext::GhostExchange& exchange, PacketBuffer& ghosts) const noexcept;
+    void AbortGhosts(MpiContext::GhostExchange& exchange, PacketBuffer& ghosts) const noexcept;
     [[nodiscard]] blitzar_status SynchronizeStatus(
         blitzar_status local_status, const char* phase) const noexcept;
 
-    [[nodiscard]] blitzar_status Migrate(
-        blitzar_core::ParticleStateView local_state,
-        std::span<const std::uint64_t> local_ids,
-        PacketBuffer& received) const noexcept;
+    [[nodiscard]] blitzar_status Migrate(blitzar_core::ParticleStateView local_state,
+        std::span<const std::uint64_t> local_ids, PacketBuffer& received) const noexcept;
 
-    [[nodiscard]] blitzar_status Gather(
-        blitzar_core::ParticleStateView local_state,
-        std::span<const std::uint64_t> local_ids,
-        PacketBuffer& gathered) const noexcept;
+    [[nodiscard]] blitzar_status Gather(blitzar_core::ParticleStateView local_state,
+        std::span<const std::uint64_t> local_ids, PacketBuffer& gathered) const noexcept;
 
 private:
     const MpiContext& context_;
@@ -82,6 +68,6 @@ private:
     blitzar_status capacity_status_{BLITZAR_STATUS_OK};
 };
 
-}  // namespace blitzar_parallel
+} // namespace blitzar_parallel
 
 #endif

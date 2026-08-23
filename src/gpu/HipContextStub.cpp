@@ -28,13 +28,14 @@ namespace {
     }
 }
 
-}  // namespace
+} // namespace
 
 HipContext::HipContext() noexcept
 {
     try {
         impl_ = std::make_unique<Impl>();
-    } catch (const std::bad_alloc&) {
+    }
+    catch (const std::bad_alloc&) {
         impl_.reset();
         status_ = BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
@@ -63,9 +64,7 @@ void HipContext::SetFaultForTesting(HipFault fault) noexcept
     }
 }
 
-blitzar_status HipContext::ComputeDirect(
-    blitzar_core::ParticleStateView,
-    blitzar_core::ForceView,
+blitzar_status HipContext::ComputeDirect(blitzar_core::ParticleStateView, blitzar_core::ForceView,
     blitzar_physics::GravityParameters) noexcept
 {
     if (status_ != BLITZAR_STATUS_OK) {
@@ -80,12 +79,8 @@ blitzar_status HipContext::ComputeDirect(
     return BLITZAR_STATUS_UNSUPPORTED;
 }
 
-blitzar_status HipContext::ComputeDirectRange(
-    blitzar_core::ParticleStateView,
-    blitzar_core::ForceView,
-    blitzar_physics::GravityParameters,
-    std::size_t,
-    std::size_t,
+blitzar_status HipContext::ComputeDirectRange(blitzar_core::ParticleStateView,
+    blitzar_core::ForceView, blitzar_physics::GravityParameters, std::size_t, std::size_t,
     bool) noexcept
 {
     if (status_ != BLITZAR_STATUS_OK) {
@@ -100,12 +95,9 @@ blitzar_status HipContext::ComputeDirectRange(
     return BLITZAR_STATUS_UNSUPPORTED;
 }
 
-blitzar_status HipContext::ComputeBarnesHut(
-    blitzar_core::ParticleStateView,
-    blitzar_core::ForceView,
-    const blitzar_core::ExecutionSettings&,
-    blitzar_physics::GravityParameters,
-    blitzar_barnes_hut::BarnesHutSettings) noexcept
+blitzar_status HipContext::ComputeBarnesHut(blitzar_core::ParticleStateView,
+    blitzar_core::ForceView, const blitzar_core::ExecutionSettings&,
+    blitzar_physics::GravityParameters, blitzar_barnes_hut::BarnesHutSettings) noexcept
 {
     if (status_ != BLITZAR_STATUS_OK) {
         return status_;
@@ -119,4 +111,4 @@ blitzar_status HipContext::ComputeBarnesHut(
     return BLITZAR_STATUS_UNSUPPORTED;
 }
 
-}  // namespace blitzar_gpu
+} // namespace blitzar_gpu

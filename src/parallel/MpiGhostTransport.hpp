@@ -6,7 +6,6 @@
 #include "parallel/MpiTypes.hpp"
 
 #include <blitzar/blitzar.h>
-
 #include <cstddef>
 #include <span>
 
@@ -14,21 +13,16 @@ namespace blitzar_parallel {
 
 class MpiGhostTransport final {
 public:
-    MpiGhostTransport(
-        const MpiSession& session,
-        const MpiCollectives& collectives) noexcept;
+    MpiGhostTransport(const MpiSession& session, const MpiCollectives& collectives) noexcept;
 
     [[nodiscard]] blitzar_status Prepare(
-        MpiGhostExchange& exchange,
-        std::size_t packet_capacity) const noexcept;
+        MpiGhostExchange& exchange, std::size_t packet_capacity) const noexcept;
 
     [[nodiscard]] blitzar_status Begin(
-        std::span<const ParticlePacket> local,
-        MpiGhostExchange& exchange) const noexcept;
+        std::span<const ParticlePacket> local, MpiGhostExchange& exchange) const noexcept;
     [[nodiscard]] blitzar_status Complete(
         MpiGhostExchange& exchange, PacketBuffer& ghosts) const noexcept;
-    [[nodiscard]] bool IsActive(
-        const MpiGhostExchange& exchange) const noexcept;
+    [[nodiscard]] bool IsActive(const MpiGhostExchange& exchange) const noexcept;
     void Abort(MpiGhostExchange& exchange) const noexcept;
 
 private:
@@ -41,6 +35,6 @@ private:
     const MpiCollectives& collectives_;
 };
 
-}  // namespace blitzar_parallel
+} // namespace blitzar_parallel
 
 #endif

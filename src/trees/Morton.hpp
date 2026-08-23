@@ -9,26 +9,19 @@
 namespace blitzar_trees {
 
 inline constexpr int MortonBits = 21;
-inline constexpr std::uint32_t MortonMaximum =
-    (std::uint32_t{1} << MortonBits) - std::uint32_t{1};
+inline constexpr std::uint32_t MortonMaximum = (std::uint32_t{1} << MortonBits) - std::uint32_t{1};
 
-[[nodiscard]] inline std::uint64_t MortonKey(
-    blitzar_core::Vector3 position,
-    blitzar_core::Vector3 minimum,
-    blitzar_core::Vector3 maximum) noexcept
+[[nodiscard]] inline std::uint64_t MortonKey(blitzar_core::Vector3 position,
+    blitzar_core::Vector3 minimum, blitzar_core::Vector3 maximum) noexcept
 {
-    const auto Quantize = [](const blitzar_core::Scalar value,
-                             const blitzar_core::Scalar lower,
-                             const blitzar_core::Scalar upper) noexcept {
-
+    const auto Quantize = [](const blitzar_core::Scalar value, const blitzar_core::Scalar lower,
+                              const blitzar_core::Scalar upper) noexcept {
         if (upper <= lower) {
             return std::uint32_t{0};
         }
 
-        const blitzar_core::Scalar normalized = std::clamp(
-            (value - lower) / (upper - lower),
-            blitzar_core::Scalar{0.0},
-            blitzar_core::Scalar{1.0});
+        const blitzar_core::Scalar normalized = std::clamp((value - lower) / (upper - lower),
+            blitzar_core::Scalar{0.0}, blitzar_core::Scalar{1.0});
 
         return static_cast<std::uint32_t>(normalized * MortonMaximum);
     };
@@ -47,6 +40,6 @@ inline constexpr std::uint32_t MortonMaximum =
     return key;
 }
 
-}  // namespace blitzar_trees
+} // namespace blitzar_trees
 
 #endif

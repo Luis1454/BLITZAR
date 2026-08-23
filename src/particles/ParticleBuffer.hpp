@@ -4,7 +4,6 @@
 #include "ParticleArena.hpp"
 
 #include <blitzar/blitzar.h>
-
 #include <cstddef>
 #include <functional>
 #include <memory>
@@ -34,8 +33,7 @@ public:
         std::size_t index, blitzar_core::Vector3 position) noexcept;
     [[nodiscard]] blitzar_status SetVelocity(
         std::size_t index, blitzar_core::Vector3 velocity) noexcept;
-    [[nodiscard]] blitzar_status SetMass(
-        std::size_t index, blitzar_core::Scalar mass) noexcept;
+    [[nodiscard]] blitzar_status SetMass(std::size_t index, blitzar_core::Scalar mass) noexcept;
 
 private:
     [[nodiscard]] bool HasArena() const noexcept;
@@ -72,6 +70,6 @@ private:
     std::size_t count_;
 };
 
-}  // namespace blitzar_particles
+} // namespace blitzar_particles
 
 #endif

@@ -6,11 +6,7 @@
 
 namespace blitzar_physics {
 
-enum class PairStatus : unsigned char {
-    Valid = 0,
-    Invalid = 1,
-    Singularity = 2
-};
+enum class PairStatus : unsigned char { Valid = 0, Invalid = 1, Singularity = 2 };
 
 struct GravityParameters final {
     blitzar_core::Scalar gravitational_constant{1.0};
@@ -28,14 +24,11 @@ public:
 
     [[nodiscard]] bool IsValid() const noexcept;
     [[nodiscard]] PairStatus ValidatePair(
-        blitzar_core::Scalar source_mass,
-        blitzar_core::Scalar squared_distance) const noexcept;
+        blitzar_core::Scalar source_mass, blitzar_core::Scalar squared_distance) const noexcept;
     [[nodiscard]] bool IsValidPair(
-        blitzar_core::Scalar source_mass,
-        blitzar_core::Scalar squared_distance) const noexcept;
+        blitzar_core::Scalar source_mass, blitzar_core::Scalar squared_distance) const noexcept;
     [[nodiscard]] blitzar_core::Scalar PairFactor(
-        blitzar_core::Scalar source_mass,
-        blitzar_core::Scalar squared_distance) const noexcept;
+        blitzar_core::Scalar source_mass, blitzar_core::Scalar squared_distance) const noexcept;
 
 private:
     GravityParameters parameters_;
@@ -43,6 +36,6 @@ private:
     blitzar_core::Scalar effective_softening_;
 };
 
-}  // namespace blitzar_physics
+} // namespace blitzar_physics
 
 #endif

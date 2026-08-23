@@ -72,21 +72,17 @@ struct ForceView final {
     const std::size_t source_count = view.SourceCount();
     return view.count <= source_count && source_count == view.x.size() &&
            source_count == view.y.size() && source_count == view.z.size() &&
-           source_count == view.velocity_x.size() &&
-           source_count == view.velocity_y.size() &&
-           source_count == view.velocity_z.size() &&
-           source_count == view.mass.size();
+           source_count == view.velocity_x.size() && source_count == view.velocity_y.size() &&
+           source_count == view.velocity_z.size() && source_count == view.mass.size();
 }
 
 [[nodiscard]] inline bool IsValid(MutableParticleView view) noexcept
 {
     return view.count == view.x.size() && view.count == view.y.size() &&
-           view.count == view.z.size() &&
-           view.count == view.velocity_x.size() &&
-           view.count == view.velocity_y.size() &&
-           view.count == view.velocity_z.size();
+           view.count == view.z.size() && view.count == view.velocity_x.size() &&
+           view.count == view.velocity_y.size() && view.count == view.velocity_z.size();
 }
 
-}  // namespace blitzar_core
+} // namespace blitzar_core
 
 #endif

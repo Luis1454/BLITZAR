@@ -5,9 +5,7 @@
 
 namespace blitzar_core {
 
-enum class ExecutionMode : std::uint8_t {
-    Deterministic = 0
-};
+enum class ExecutionMode : std::uint8_t { Deterministic = 0 };
 
 struct ExecutionSettings final {
     std::uint64_t seed{};
@@ -19,6 +17,6 @@ struct ExecutionSettings final {
     }
 };
 
-}  // namespace blitzar_core
+} // namespace blitzar_core
 
 #endif

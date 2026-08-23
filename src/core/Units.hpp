@@ -14,8 +14,8 @@ struct UnitSystem final {
 
     [[nodiscard]] bool IsValid() const noexcept
     {
-        return IsPositiveFinite(length_scale) &&
-               IsPositiveFinite(mass_scale) && IsPositiveFinite(time_scale);
+        return IsPositiveFinite(length_scale) && IsPositiveFinite(mass_scale) &&
+               IsPositiveFinite(time_scale);
     }
 
 private:
@@ -25,6 +25,6 @@ private:
     }
 };
 
-}  // namespace blitzar_core
+} // namespace blitzar_core
 
 #endif

@@ -25,6 +25,6 @@ namespace blitzar_core {
     }
 }
 
-}  // namespace blitzar_core
+} // namespace blitzar_core
 
 #endif

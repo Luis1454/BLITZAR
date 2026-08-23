@@ -16,6 +16,6 @@ struct MpiSession::Impl final {
 #endif
 };
 
-}  // namespace blitzar_parallel
+} // namespace blitzar_parallel
 
 #endif

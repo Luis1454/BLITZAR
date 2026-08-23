@@ -7,9 +7,7 @@
 namespace blitzar_particles {
 
 ParticleBuffer::ParticleBuffer(std::size_t count)
-    : owned_arena_(std::make_unique<ParticleArena>(count)),
-      borrowed_arena_(),
-      count_(count)
+    : owned_arena_(std::make_unique<ParticleArena>(count)), borrowed_arena_(), count_(count)
 {
     const auto mass = owned_arena_->Mass();
     std::fill(mass.begin(), mass.end(), 1.0);
@@ -23,8 +21,7 @@ ParticleBuffer::ParticleBuffer(ParticleArena& arena)
 }
 
 ParticleBuffer::ParticleBuffer(ParticleBuffer&& other) noexcept
-    : owned_arena_(std::move(other.owned_arena_)),
-      borrowed_arena_(other.borrowed_arena_),
+    : owned_arena_(std::move(other.owned_arena_)), borrowed_arena_(other.borrowed_arena_),
       count_(other.count_)
 {
     other.borrowed_arena_.reset();
@@ -69,8 +66,7 @@ blitzar_status ParticleBuffer::SetCount(std::size_t count) noexcept
 
 bool ParticleBuffer::IsValid() const noexcept
 {
-    return !HasArena() ? count_ == 0
-                       : count_ <= Arena().Count() && Arena().IsValid();
+    return !HasArena() ? count_ == 0 : count_ <= Arena().Count() && Arena().IsValid();
 }
 
 blitzar_core::ParticleStateView ParticleBuffer::State() const noexcept
@@ -79,14 +75,9 @@ blitzar_core::ParticleStateView ParticleBuffer::State() const noexcept
         return {};
     }
     ParticleArena& arena = Arena();
-    return {
-        count_,
-        arena.PositionX().first(count_),
-        arena.PositionY().first(count_),
-        arena.PositionZ().first(count_),
-        arena.VelocityX().first(count_),
-        arena.VelocityY().first(count_),
-        arena.VelocityZ().first(count_),
+    return {count_, arena.PositionX().first(count_), arena.PositionY().first(count_),
+        arena.PositionZ().first(count_), arena.VelocityX().first(count_),
+        arena.VelocityY().first(count_), arena.VelocityZ().first(count_),
         arena.Mass().first(count_)};
 }
 
@@ -96,14 +87,9 @@ blitzar_core::MutableParticleView ParticleBuffer::MutableView() noexcept
         return {};
     }
     ParticleArena& arena = Arena();
-    return {
-        count_,
-        arena.PositionX().first(count_),
-        arena.PositionY().first(count_),
-        arena.PositionZ().first(count_),
-        arena.VelocityX().first(count_),
-        arena.VelocityY().first(count_),
-        arena.VelocityZ().first(count_)};
+    return {count_, arena.PositionX().first(count_), arena.PositionY().first(count_),
+        arena.PositionZ().first(count_), arena.VelocityX().first(count_),
+        arena.VelocityY().first(count_), arena.VelocityZ().first(count_)};
 }
 
 blitzar_status ParticleBuffer::SetPosition(
@@ -140,8 +126,7 @@ blitzar_status ParticleBuffer::SetVelocity(
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_status ParticleBuffer::SetMass(
-    std::size_t index, blitzar_core::Scalar mass) noexcept
+blitzar_status ParticleBuffer::SetMass(std::size_t index, blitzar_core::Scalar mass) noexcept
 {
     if (!HasArena() || index >= count_ || !std::isfinite(mass) || mass < 0.0) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -151,9 +136,7 @@ blitzar_status ParticleBuffer::SetMass(
 }
 
 AccelerationBuffer::AccelerationBuffer(std::size_t count)
-    : owned_arena_(std::make_unique<ParticleArena>(count)),
-      borrowed_arena_(),
-      count_(count)
+    : owned_arena_(std::make_unique<ParticleArena>(count)), borrowed_arena_(), count_(count)
 {
 }
 
@@ -163,16 +146,14 @@ AccelerationBuffer::AccelerationBuffer(ParticleArena& arena)
 }
 
 AccelerationBuffer::AccelerationBuffer(AccelerationBuffer&& other) noexcept
-    : owned_arena_(std::move(other.owned_arena_)),
-      borrowed_arena_(other.borrowed_arena_),
+    : owned_arena_(std::move(other.owned_arena_)), borrowed_arena_(other.borrowed_arena_),
       count_(other.count_)
 {
     other.borrowed_arena_.reset();
     other.count_ = 0;
 }
 
-AccelerationBuffer& AccelerationBuffer::operator=(
-    AccelerationBuffer&& other) noexcept
+AccelerationBuffer& AccelerationBuffer::operator=(AccelerationBuffer&& other) noexcept
 {
     if (this != &other) {
         owned_arena_ = std::move(other.owned_arena_);
@@ -210,8 +191,7 @@ blitzar_status AccelerationBuffer::SetCount(std::size_t count) noexcept
 
 bool AccelerationBuffer::IsValid() const noexcept
 {
-    return !HasArena() ? count_ == 0
-                       : count_ <= Arena().Count() && Arena().IsValid();
+    return !HasArena() ? count_ == 0 : count_ <= Arena().Count() && Arena().IsValid();
 }
 
 blitzar_core::ForceView AccelerationBuffer::View() noexcept
@@ -220,11 +200,8 @@ blitzar_core::ForceView AccelerationBuffer::View() noexcept
         return {};
     }
     ParticleArena& arena = Arena();
-    return {
-        count_,
-        arena.AccelerationX().first(count_),
-        arena.AccelerationY().first(count_),
+    return {count_, arena.AccelerationX().first(count_), arena.AccelerationY().first(count_),
         arena.AccelerationZ().first(count_)};
 }
 
-}  // namespace blitzar_particles
+} // namespace blitzar_particles

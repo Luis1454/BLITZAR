@@ -17,46 +17,33 @@ namespace blitzar_sdk {
 
 namespace {
 
-template <typename Solver>
-class SolverDispatcher final {
+template <typename Solver> class SolverDispatcher final {
 public:
-    SolverDispatcher(
-        blitzar_gpu::HipContext& hip,
-        Solver& cpu,
+    SolverDispatcher(blitzar_gpu::HipContext& hip, Solver& cpu,
         blitzar_physics::GravityParameters gravity,
         blitzar_barnes_hut::BarnesHutSettings barnes_hut,
         std::atomic<blitzar_backend_kind>& backend) noexcept
-        : hip_(hip),
-          cpu_(cpu),
-          gravity_(gravity),
-          barnes_hut_(barnes_hut),
-          backend_(backend)
+        : hip_(hip), cpu_(cpu), gravity_(gravity), barnes_hut_(barnes_hut), backend_(backend)
     {
     }
 
-    [[nodiscard]] blitzar_status Compute(
-        blitzar_core::ParticleStateView particles,
-        blitzar_core::ForceView forces,
-        const blitzar_core::ExecutionSettings& settings) noexcept
+    [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView particles,
+        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings) noexcept
     {
         if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
             backend_.store(BLITZAR_BACKEND_HIP, std::memory_order_relaxed);
-            const blitzar_status gpu_status =
-                hip_.ComputeDirect(particles, forces, gravity_);
+            const blitzar_status gpu_status = hip_.ComputeDirect(particles, forces, gravity_);
             if (gpu_status == BLITZAR_STATUS_OK) {
                 return BLITZAR_STATUS_OK;
             }
             if (gpu_status != BLITZAR_STATUS_UNSUPPORTED) {
                 return gpu_status;
             }
-        } else {
+        }
+        else {
             backend_.store(BLITZAR_BACKEND_HIP, std::memory_order_relaxed);
-            const blitzar_status gpu_status = hip_.ComputeBarnesHut(
-                particles,
-                forces,
-                settings,
-                gravity_,
-                barnes_hut_);
+            const blitzar_status gpu_status =
+                hip_.ComputeBarnesHut(particles, forces, settings, gravity_, barnes_hut_);
             if (gpu_status == BLITZAR_STATUS_OK) {
                 return BLITZAR_STATUS_OK;
             }
@@ -68,16 +55,13 @@ public:
         return cpu_.Compute(particles, forces, settings);
     }
 
-    [[nodiscard]] blitzar_status Compute(
-        blitzar_core::ParticleStateView particles,
-        blitzar_core::ForceView forces,
-        const blitzar_core::ExecutionSettings& settings,
+    [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView particles,
+        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
         blitzar_barnes_hut::ThreadWorkspace& workspace) noexcept
     {
         if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
             backend_.store(BLITZAR_BACKEND_HIP, std::memory_order_relaxed);
-            const blitzar_status gpu_status =
-                hip_.ComputeDirect(particles, forces, gravity_);
+            const blitzar_status gpu_status = hip_.ComputeDirect(particles, forces, gravity_);
             if (gpu_status == BLITZAR_STATUS_OK) {
                 return BLITZAR_STATUS_OK;
             }
@@ -86,14 +70,11 @@ public:
             }
             backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
             return cpu_.Compute(particles, forces, settings);
-        } else {
+        }
+        else {
             backend_.store(BLITZAR_BACKEND_HIP, std::memory_order_relaxed);
-            const blitzar_status gpu_status = hip_.ComputeBarnesHut(
-                particles,
-                forces,
-                settings,
-                gravity_,
-                barnes_hut_);
+            const blitzar_status gpu_status =
+                hip_.ComputeBarnesHut(particles, forces, settings, gravity_, barnes_hut_);
             if (gpu_status == BLITZAR_STATUS_OK) {
                 return BLITZAR_STATUS_OK;
             }
@@ -105,23 +86,14 @@ public:
         }
     }
 
-    [[nodiscard]] blitzar_status ComputeRange(
-        blitzar_core::ParticleStateView particles,
-        blitzar_core::ForceView forces,
-        const blitzar_core::ExecutionSettings& settings,
-        std::size_t source_begin,
-        std::size_t source_end,
-        bool accumulate) noexcept
+    [[nodiscard]] blitzar_status ComputeRange(blitzar_core::ParticleStateView particles,
+        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
+        std::size_t source_begin, std::size_t source_end, bool accumulate) noexcept
     {
         if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
             backend_.store(BLITZAR_BACKEND_HIP, std::memory_order_relaxed);
             const blitzar_status gpu_status = hip_.ComputeDirectRange(
-                particles,
-                forces,
-                gravity_,
-                source_begin,
-                source_end,
-                accumulate);
+                particles, forces, gravity_, source_begin, source_end, accumulate);
             if (gpu_status == BLITZAR_STATUS_OK) {
                 return BLITZAR_STATUS_OK;
             }
@@ -130,13 +102,9 @@ public:
             }
             backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
             return cpu_.ComputeRange(
-                particles,
-                forces,
-                settings,
-                source_begin,
-                source_end,
-                accumulate);
-        } else {
+                particles, forces, settings, source_begin, source_end, accumulate);
+        }
+        else {
             return BLITZAR_STATUS_UNSUPPORTED;
         }
     }
@@ -150,23 +118,16 @@ private:
 };
 
 [[nodiscard]] blitzar_core::ParticleStateView MakeArenaState(
-    blitzar_particles::ParticleArena& arena,
-    std::size_t target_count,
+    blitzar_particles::ParticleArena& arena, std::size_t target_count,
     std::size_t source_count) noexcept
 {
     if (source_count > arena.Count() || target_count > source_count) {
         return {};
     }
-    return {
-        target_count,
-        arena.PositionX().first(source_count),
-        arena.PositionY().first(source_count),
-        arena.PositionZ().first(source_count),
-        arena.VelocityX().first(source_count),
-        arena.VelocityY().first(source_count),
-        arena.VelocityZ().first(source_count),
-        arena.Mass().first(source_count),
-        source_count};
+    return {target_count, arena.PositionX().first(source_count),
+        arena.PositionY().first(source_count), arena.PositionZ().first(source_count),
+        arena.VelocityX().first(source_count), arena.VelocityY().first(source_count),
+        arena.VelocityZ().first(source_count), arena.Mass().first(source_count), source_count};
 }
 
 struct ParticleInputStage final {
@@ -180,33 +141,27 @@ struct ParticleInputStage final {
 
     [[nodiscard]] blitzar_core::ParticleStateView State() const noexcept
     {
-        return {
-            position_x.size(),
-            std::span<const blitzar_core::Scalar>(position_x),
+        return {position_x.size(), std::span<const blitzar_core::Scalar>(position_x),
             std::span<const blitzar_core::Scalar>(position_y),
             std::span<const blitzar_core::Scalar>(position_z),
             std::span<const blitzar_core::Scalar>(velocity_x),
             std::span<const blitzar_core::Scalar>(velocity_y),
             std::span<const blitzar_core::Scalar>(velocity_z),
-            std::span<const blitzar_core::Scalar>(mass),
-            position_x.size()};
+            std::span<const blitzar_core::Scalar>(mass), position_x.size()};
     }
 };
 
-[[nodiscard]] blitzar_status StageParticleInput(
-    std::span<const blitzar_core::Scalar> position_x,
+[[nodiscard]] blitzar_status StageParticleInput(std::span<const blitzar_core::Scalar> position_x,
     std::span<const blitzar_core::Scalar> position_y,
     std::span<const blitzar_core::Scalar> position_z,
     std::span<const blitzar_core::Scalar> velocity_x,
     std::span<const blitzar_core::Scalar> velocity_y,
-    std::span<const blitzar_core::Scalar> velocity_z,
-    std::span<const blitzar_core::Scalar> mass,
+    std::span<const blitzar_core::Scalar> velocity_z, std::span<const blitzar_core::Scalar> mass,
     ParticleInputStage& stage) noexcept
 {
     const std::size_t count = position_x.size();
-    if (position_y.size() != count || position_z.size() != count ||
-        velocity_x.size() != count || velocity_y.size() != count ||
-        velocity_z.size() != count || mass.size() != count) {
+    if (position_y.size() != count || position_z.size() != count || velocity_x.size() != count ||
+        velocity_y.size() != count || velocity_z.size() != count || mass.size() != count) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     try {
@@ -217,20 +172,19 @@ struct ParticleInputStage final {
         stage.velocity_y.resize(count);
         stage.velocity_z.resize(count);
         stage.mass.resize(count);
-    } catch (const std::length_error&) {
+    }
+    catch (const std::length_error&) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
-    } catch (const std::bad_alloc&) {
+    }
+    catch (const std::bad_alloc&) {
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
 
     for (std::size_t index = 0; index < position_x.size(); ++index) {
-        if (!std::isfinite(position_x[index]) ||
-            !std::isfinite(position_y[index]) ||
-            !std::isfinite(position_z[index]) ||
-            !std::isfinite(velocity_x[index]) ||
-            !std::isfinite(velocity_y[index]) ||
-            !std::isfinite(velocity_z[index]) || !std::isfinite(mass[index]) ||
-            mass[index] < 0.0) {
+        if (!std::isfinite(position_x[index]) || !std::isfinite(position_y[index]) ||
+            !std::isfinite(position_z[index]) || !std::isfinite(velocity_x[index]) ||
+            !std::isfinite(velocity_y[index]) || !std::isfinite(velocity_z[index]) ||
+            !std::isfinite(mass[index]) || mass[index] < 0.0) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
         stage.position_x[index] = position_x[index];
@@ -244,25 +198,19 @@ struct ParticleInputStage final {
     return BLITZAR_STATUS_OK;
 }
 
-[[nodiscard]] blitzar_status CommitStagedParticles(
-    const ParticleInputStage& stage,
-    std::span<const std::size_t> local_indices,
-    blitzar_particles::ParticleArena& arena,
+[[nodiscard]] blitzar_status CommitStagedParticles(const ParticleInputStage& stage,
+    std::span<const std::size_t> local_indices, blitzar_particles::ParticleArena& arena,
     blitzar_particles::ParticleBuffer& particles,
     blitzar_particles::AccelerationBuffer& accelerations,
-    blitzar_integration::LeapfrogWorkspace& workspace,
-    std::span<std::uint64_t> ids,
+    blitzar_integration::LeapfrogWorkspace& workspace, std::span<std::uint64_t> ids,
     blitzar_parallel::DomainDecomposition& domain,
-    blitzar_parallel::DomainDecomposition&& candidate_domain,
-    std::size_t& local_particle_count,
-    std::size_t& source_particle_count,
-    blitzar_parallel::PacketBuffer& exchange,
+    blitzar_parallel::DomainDecomposition&& candidate_domain, std::size_t& local_particle_count,
+    std::size_t& source_particle_count, blitzar_parallel::PacketBuffer& exchange,
     bool& particles_ready) noexcept
 {
     const blitzar_core::ParticleStateView staged_state = stage.State();
-    if (!blitzar_core::IsValid(staged_state) ||
-        !candidate_domain.IsInitialized() || !arena.IsValid() ||
-        !particles.IsValid() || !accelerations.IsValid() ||
+    if (!blitzar_core::IsValid(staged_state) || !candidate_domain.IsInitialized() ||
+        !arena.IsValid() || !particles.IsValid() || !accelerations.IsValid() ||
         !workspace.IsValid() || local_indices.size() > arena.Count() ||
         local_indices.size() > ids.size()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -319,32 +267,23 @@ struct ParticleInputStage final {
 }
 
 [[nodiscard]] blitzar_status SynchronizeSimulationStatus(
-    const blitzar_parallel::MpiContext& context,
-    blitzar_status local_status,
+    const blitzar_parallel::MpiContext& context, blitzar_status local_status,
     const char* phase) noexcept
 {
     if (!context.IsDistributed()) {
         return local_status;
     }
     blitzar_status global_status = BLITZAR_STATUS_INTERNAL_ERROR;
-    const blitzar_status synchronization_status = context.SynchronizeStatus(
-        local_status,
-        "Simulation",
-        phase,
-        global_status);
-    return synchronization_status == BLITZAR_STATUS_OK
-               ? global_status
-               : synchronization_status;
+    const blitzar_status synchronization_status =
+        context.SynchronizeStatus(local_status, "Simulation", phase, global_status);
+    return synchronization_status == BLITZAR_STATUS_OK ? global_status : synchronization_status;
 }
 
-[[nodiscard]] blitzar_status AppendGhosts(
-    blitzar_parallel::PacketBuffer& ghosts,
-    blitzar_particles::ParticleArena& arena,
-    std::size_t local_count,
+[[nodiscard]] blitzar_status AppendGhosts(blitzar_parallel::PacketBuffer& ghosts,
+    blitzar_particles::ParticleArena& arena, std::size_t local_count,
     std::size_t& source_count) noexcept
 {
-    if (local_count > arena.Count() ||
-        ghosts.Size() > arena.Count() - local_count) {
+    if (local_count > arena.Count() || ghosts.Size() > arena.Count() - local_count) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     const std::size_t total = local_count + ghosts.Size();
@@ -370,25 +309,19 @@ struct ParticleInputStage final {
     return BLITZAR_STATUS_OK;
 }
 
-[[nodiscard]] blitzar_status StoreLocalPackets(
-    blitzar_parallel::PacketBuffer& packets,
-    blitzar_particles::ParticleArena& arena,
-    blitzar_particles::ParticleBuffer& particles,
+[[nodiscard]] blitzar_status StoreLocalPackets(blitzar_parallel::PacketBuffer& packets,
+    blitzar_particles::ParticleArena& arena, blitzar_particles::ParticleBuffer& particles,
     blitzar_particles::AccelerationBuffer& accelerations,
-    blitzar_integration::LeapfrogWorkspace& workspace,
-    std::span<std::uint64_t> ids,
-    std::size_t particle_count,
-    std::size_t& local_count) noexcept
+    blitzar_integration::LeapfrogWorkspace& workspace, std::span<std::uint64_t> ids,
+    std::size_t particle_count, std::size_t& local_count) noexcept
 {
     if (packets.Size() > arena.Count() || packets.Size() > ids.size()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     for (const blitzar_parallel::ParticlePacket& packet : packets.View()) {
-        if (packet.id >= particle_count || !std::isfinite(packet.x) ||
-            !std::isfinite(packet.y) || !std::isfinite(packet.z) ||
-            !std::isfinite(packet.velocity_x) ||
-            !std::isfinite(packet.velocity_y) ||
-            !std::isfinite(packet.velocity_z) ||
+        if (packet.id >= particle_count || !std::isfinite(packet.x) || !std::isfinite(packet.y) ||
+            !std::isfinite(packet.z) || !std::isfinite(packet.velocity_x) ||
+            !std::isfinite(packet.velocity_y) || !std::isfinite(packet.velocity_z) ||
             !std::isfinite(packet.mass) || packet.mass < 0.0) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
@@ -433,8 +366,7 @@ struct ParticleInputStage final {
 }
 
 [[nodiscard]] blitzar_status CopyPacketBuffer(
-    const blitzar_parallel::PacketBuffer& source,
-    blitzar_parallel::PacketBuffer& target) noexcept
+    const blitzar_parallel::PacketBuffer& source, blitzar_parallel::PacketBuffer& target) noexcept
 {
     if (!target.ResizeBounded(source.Size())) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -443,15 +375,11 @@ struct ParticleInputStage final {
     return BLITZAR_STATUS_OK;
 }
 
-[[nodiscard]] blitzar_status CaptureArenaState(
-    blitzar_particles::ParticleArena& arena,
-    std::size_t local_count,
-    std::size_t source_count,
-    std::span<const std::uint64_t> ids,
+[[nodiscard]] blitzar_status CaptureArenaState(blitzar_particles::ParticleArena& arena,
+    std::size_t local_count, std::size_t source_count, std::span<const std::uint64_t> ids,
     blitzar_parallel::PacketBuffer& snapshot) noexcept
 {
-    if (local_count > source_count || source_count > arena.Count() ||
-        local_count > ids.size()) {
+    if (local_count > source_count || source_count > arena.Count() || local_count > ids.size()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     if (!snapshot.ResizeBounded(source_count)) {
@@ -465,26 +393,16 @@ struct ParticleInputStage final {
     const auto velocity_z = arena.VelocityZ();
     const auto mass = arena.Mass();
     for (std::size_t index = 0; index < source_count; ++index) {
-        snapshot.View()[index] = {
-            index < local_count ? ids[index] : 0,
-            position_x[index],
-            position_y[index],
-            position_z[index],
-            velocity_x[index],
-            velocity_y[index],
-            velocity_z[index],
-            mass[index]};
+        snapshot.View()[index] = {index < local_count ? ids[index] : 0, position_x[index],
+            position_y[index], position_z[index], velocity_x[index], velocity_y[index],
+            velocity_z[index], mass[index]};
     }
     return BLITZAR_STATUS_OK;
 }
 
-[[nodiscard]] blitzar_status RestoreArenaState(
-    const blitzar_parallel::PacketBuffer& snapshot,
-    blitzar_particles::ParticleArena& arena,
-    blitzar_particles::ParticleBuffer& particles,
-    std::span<std::uint64_t> ids,
-    std::size_t local_count,
-    std::size_t source_count) noexcept
+[[nodiscard]] blitzar_status RestoreArenaState(const blitzar_parallel::PacketBuffer& snapshot,
+    blitzar_particles::ParticleArena& arena, blitzar_particles::ParticleBuffer& particles,
+    std::span<std::uint64_t> ids, std::size_t local_count, std::size_t source_count) noexcept
 {
     if (snapshot.Size() != source_count || local_count > source_count ||
         source_count > arena.Count() || local_count > ids.size()) {
@@ -517,8 +435,7 @@ struct ParticleInputStage final {
 }
 
 [[nodiscard]] blitzar_status CaptureForceState(
-    blitzar_core::ForceView force,
-    blitzar_parallel::PacketBuffer& snapshot) noexcept
+    blitzar_core::ForceView force, blitzar_parallel::PacketBuffer& snapshot) noexcept
 {
     if (!blitzar_core::IsValid(force)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -528,21 +445,13 @@ struct ParticleInputStage final {
     }
     for (std::size_t index = 0; index < force.count; ++index) {
         snapshot.View()[index] = {
-            0,
-            force.x[index],
-            force.y[index],
-            force.z[index],
-            0.0,
-            0.0,
-            0.0,
-            0.0};
+            0, force.x[index], force.y[index], force.z[index], 0.0, 0.0, 0.0, 0.0};
     }
     return BLITZAR_STATUS_OK;
 }
 
 [[nodiscard]] blitzar_status RestoreForceState(
-    const blitzar_parallel::PacketBuffer& snapshot,
-    blitzar_core::ForceView force) noexcept
+    const blitzar_parallel::PacketBuffer& snapshot, blitzar_core::ForceView force) noexcept
 {
     if (!blitzar_core::IsValid(force) || snapshot.Size() != force.count) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
@@ -558,28 +467,17 @@ struct ParticleInputStage final {
 
 class DistributedStepTransaction final {
 public:
-    DistributedStepTransaction(
-        blitzar_particles::ParticleArena& arena,
+    DistributedStepTransaction(blitzar_particles::ParticleArena& arena,
         blitzar_particles::ParticleBuffer& particles,
         blitzar_particles::AccelerationBuffer& accelerations,
-        blitzar_integration::LeapfrogWorkspace& workspace,
-        std::span<std::uint64_t> ids,
-        std::size_t& local_count,
-        std::size_t& source_count,
-        blitzar_parallel::PacketBuffer& exchange,
-        blitzar_parallel::PacketBuffer& arena_snapshot,
+        blitzar_integration::LeapfrogWorkspace& workspace, std::span<std::uint64_t> ids,
+        std::size_t& local_count, std::size_t& source_count,
+        blitzar_parallel::PacketBuffer& exchange, blitzar_parallel::PacketBuffer& arena_snapshot,
         blitzar_parallel::PacketBuffer& force_snapshot,
         blitzar_parallel::PacketBuffer& exchange_snapshot) noexcept
-        : arena_(arena),
-          particles_(particles),
-          accelerations_(accelerations),
-          workspace_(workspace),
-          ids_(ids),
-          local_count_(local_count),
-          source_count_(source_count),
-          exchange_(exchange),
-          arena_snapshot_(arena_snapshot),
-          force_snapshot_(force_snapshot),
+        : arena_(arena), particles_(particles), accelerations_(accelerations),
+          workspace_(workspace), ids_(ids), local_count_(local_count), source_count_(source_count),
+          exchange_(exchange), arena_snapshot_(arena_snapshot), force_snapshot_(force_snapshot),
           exchange_snapshot_(exchange_snapshot)
     {
     }
@@ -594,23 +492,17 @@ public:
         source_count_before_ = source_count_;
         acceleration_count_before_ = accelerations_.Count();
         workspace_count_before_ = workspace_.Count();
-        if (!arena_.IsValid() || !particles_.IsValid() ||
-            !accelerations_.IsValid() || !workspace_.IsValid() ||
-            local_count_before_ != local_count_ ||
+        if (!arena_.IsValid() || !particles_.IsValid() || !accelerations_.IsValid() ||
+            !workspace_.IsValid() || local_count_before_ != local_count_ ||
             local_count_before_ != acceleration_count_before_ ||
             local_count_before_ != workspace_count_before_ ||
-            local_count_before_ > source_count_before_ ||
-            source_count_before_ > arena_.Count() ||
+            local_count_before_ > source_count_before_ || source_count_before_ > arena_.Count() ||
             local_count_before_ > ids_.size()) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
         blitzar_status status = CaptureArenaState(
-            arena_,
-            local_count_before_,
-            source_count_before_,
-            ids_,
-            arena_snapshot_);
+            arena_, local_count_before_, source_count_before_, ids_, arena_snapshot_);
         if (status != BLITZAR_STATUS_OK) {
             ResetSnapshots();
             return status;
@@ -657,12 +549,7 @@ public:
             return;
         }
         (void)RestoreArenaState(
-            arena_snapshot_,
-            arena_,
-            particles_,
-            ids_,
-            local_count_before_,
-            source_count_before_);
+            arena_snapshot_, arena_, particles_, ids_, local_count_before_, source_count_before_);
         (void)accelerations_.SetCount(acceleration_count_before_);
         (void)workspace_.SetCount(workspace_count_before_);
         (void)RestoreForceState(force_snapshot_, accelerations_.View());
@@ -708,43 +595,27 @@ private:
     Phase phase_{Phase::Aborted};
 };
 
-template <typename Solver>
-class DistributedSolverDispatcher final {
+template <typename Solver> class DistributedSolverDispatcher final {
 public:
-    DistributedSolverDispatcher(
-        blitzar_gpu::HipContext& hip,
-        Solver& cpu,
+    DistributedSolverDispatcher(blitzar_gpu::HipContext& hip, Solver& cpu,
         blitzar_physics::GravityParameters gravity,
-        blitzar_barnes_hut::BarnesHutSettings barnes_hut,
-        blitzar_parallel::MpiExchange& exchange,
-        blitzar_particles::ParticleArena& arena,
-        std::span<const std::uint64_t> ids,
-        blitzar_parallel::PacketBuffer& ghosts,
-        blitzar_parallel::MpiContext::GhostExchange& halo,
-        std::size_t& source_count,
-        std::atomic<blitzar_backend_kind>& backend) noexcept
-        : base_(hip, cpu, gravity, barnes_hut, backend),
-          exchange_(exchange),
-          arena_(arena),
-          ids_(ids),
-          ghosts_(ghosts),
-          halo_(halo),
-          source_count_(source_count)
+        blitzar_barnes_hut::BarnesHutSettings barnes_hut, blitzar_parallel::MpiExchange& exchange,
+        blitzar_particles::ParticleArena& arena, std::span<const std::uint64_t> ids,
+        blitzar_parallel::PacketBuffer& ghosts, blitzar_parallel::MpiContext::GhostExchange& halo,
+        std::size_t& source_count, std::atomic<blitzar_backend_kind>& backend) noexcept
+        : base_(hip, cpu, gravity, barnes_hut, backend), exchange_(exchange), arena_(arena),
+          ids_(ids), ghosts_(ghosts), halo_(halo), source_count_(source_count)
     {
     }
 
-    [[nodiscard]] blitzar_status Compute(
-        blitzar_core::ParticleStateView local_state,
-        blitzar_core::ForceView forces,
-        const blitzar_core::ExecutionSettings& settings) noexcept
+    [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView local_state,
+        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings) noexcept
     {
         return ComputeWithOverlap(local_state, forces, settings, nullptr);
     }
 
-    [[nodiscard]] blitzar_status Compute(
-        blitzar_core::ParticleStateView local_state,
-        blitzar_core::ForceView forces,
-        const blitzar_core::ExecutionSettings& settings,
+    [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView local_state,
+        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
         blitzar_barnes_hut::ThreadWorkspace& workspace) noexcept
     {
         return ComputeWithOverlap(local_state, forces, settings, &workspace);
@@ -756,45 +627,31 @@ public:
     }
 
 private:
-    [[nodiscard]] blitzar_status ComputeWithOverlap(
-        blitzar_core::ParticleStateView local_state,
-        blitzar_core::ForceView forces,
-        const blitzar_core::ExecutionSettings& settings,
+    [[nodiscard]] blitzar_status ComputeWithOverlap(blitzar_core::ParticleStateView local_state,
+        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
         blitzar_barnes_hut::ThreadWorkspace* workspace) noexcept
     {
         const bool ids_valid = ids_.size() >= local_state.count;
-        const std::span<const std::uint64_t> local_ids = ids_valid
-                                                              ? ids_.first(local_state.count)
-                                                              : std::span<const std::uint64_t>{};
-        const blitzar_status begin_status = exchange_.BeginGhosts(
-            local_state,
-            local_ids,
-            halo_);
+        const std::span<const std::uint64_t> local_ids =
+            ids_valid ? ids_.first(local_state.count) : std::span<const std::uint64_t>{};
+        const blitzar_status begin_status = exchange_.BeginGhosts(local_state, local_ids, halo_);
         if (begin_status != BLITZAR_STATUS_OK) {
             return begin_status;
         }
 
         blitzar_status local_status = BLITZAR_STATUS_OK;
         if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
-            local_status = base_.ComputeRange(
-                local_state,
-                forces,
-                settings,
-                0,
-                local_state.count,
-                false);
-        } else if (workspace != nullptr) {
-            local_status = base_.Compute(
-                local_state,
-                forces,
-                settings,
-                *workspace);
-        } else {
+            local_status =
+                base_.ComputeRange(local_state, forces, settings, 0, local_state.count, false);
+        }
+        else if (workspace != nullptr) {
+            local_status = base_.Compute(local_state, forces, settings, *workspace);
+        }
+        else {
             local_status = base_.Compute(local_state, forces, settings);
         }
 
-        const blitzar_status complete_status =
-            exchange_.CompleteGhosts(halo_, ghosts_);
+        const blitzar_status complete_status = exchange_.CompleteGhosts(halo_, ghosts_);
         if (complete_status != BLITZAR_STATUS_OK) {
             return complete_status;
         }
@@ -811,24 +668,19 @@ private:
             return synchronized_append_status;
         }
 
-        const blitzar_core::ParticleStateView full_state = MakeArenaState(
-            arena_,
-            local_state.count,
-            source_count_);
+        const blitzar_core::ParticleStateView full_state =
+            MakeArenaState(arena_, local_state.count, source_count_);
         blitzar_status remote_status = BLITZAR_STATUS_OK;
         if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
             if (source_count_ != local_state.count) {
                 remote_status = base_.ComputeRange(
-                    full_state,
-                    forces,
-                    settings,
-                    local_state.count,
-                    source_count_,
-                    true);
+                    full_state, forces, settings, local_state.count, source_count_, true);
             }
-        } else if (workspace != nullptr) {
+        }
+        else if (workspace != nullptr) {
             remote_status = base_.Compute(full_state, forces, settings, *workspace);
-        } else {
+        }
+        else {
             remote_status = base_.Compute(full_state, forces, settings);
         }
         return exchange_.SynchronizeStatus(remote_status, "force-remote");
@@ -843,7 +695,7 @@ private:
     std::size_t& source_count_;
 };
 
-}  // namespace
+} // namespace
 
 std::size_t Simulation::DefaultMaxCells(std::size_t particle_count) noexcept
 {
@@ -858,47 +710,20 @@ std::size_t Simulation::DefaultMaxCells(std::size_t particle_count) noexcept
 }
 
 Simulation::Simulation(std::size_t particle_count)
-    : particle_count_(particle_count),
-      mpi_context_(),
-      domain_(),
-      mpi_exchange_(mpi_context_, domain_, particle_count),
-      hip_context_(),
-      arena_(particle_count),
-      particles_(arena_),
-      accelerations_(arena_),
-      workspace_(arena_),
-      gravity_{},
+    : particle_count_(particle_count), mpi_context_(), domain_(),
+      mpi_exchange_(mpi_context_, domain_, particle_count), hip_context_(), arena_(particle_count),
+      particles_(arena_), accelerations_(arena_), workspace_(arena_), gravity_{},
       barnes_hut_{
-          0.5,
-          particle_count == 0 ? 1 : particle_count,
-          DefaultMaxCells(particle_count),
-          8,
-          32},
+          0.5, particle_count == 0 ? 1 : particle_count, DefaultMaxCells(particle_count), 8, 32},
       traversal_workspace_(barnes_hut_.max_cells, barnes_hut_.max_depth),
-      solver_kind_(BLITZAR_SOLVER_DIRECT),
-      integrator_kind_(BLITZAR_INTEGRATOR_LEAPFROG_KDK),
-      timestep_(1.0),
-      particles_ready_(false),
-      execution_settings_{},
-      snapshot_header_{},
-      last_status_(mpi_context_.Status()),
-      last_backend_(BLITZAR_BACKEND_CPU),
-      solver_(
-          std::in_place_type<blitzar_direct::DirectSolver>,
-          gravity_,
-          particle_count),
-      integrator_{},
-      particle_ids_(particle_count),
-      local_particle_count_(particle_count),
-      source_particle_count_(particle_count),
-      exchange_buffer_{},
-      rollback_arena_buffer_{},
-      rollback_force_buffer_{},
-      rollback_exchange_buffer_{},
-      migration_buffer_{},
-      gathered_buffer_{},
-      local_indices_{},
-      seen_{}
+      solver_kind_(BLITZAR_SOLVER_DIRECT), integrator_kind_(BLITZAR_INTEGRATOR_LEAPFROG_KDK),
+      timestep_(1.0), particles_ready_(false), execution_settings_{}, snapshot_header_{},
+      last_status_(mpi_context_.Status()), last_backend_(BLITZAR_BACKEND_CPU),
+      solver_(std::in_place_type<blitzar_direct::DirectSolver>, gravity_, particle_count),
+      integrator_{}, particle_ids_(particle_count), local_particle_count_(particle_count),
+      source_particle_count_(particle_count), exchange_buffer_{}, rollback_arena_buffer_{},
+      rollback_force_buffer_{}, rollback_exchange_buffer_{}, migration_buffer_{},
+      gathered_buffer_{}, local_indices_{}, seen_{}
 {
     const blitzar_status capacity_status = mpi_exchange_.CapacityStatus();
     if (capacity_status == BLITZAR_STATUS_ALLOCATION_FAILURE) {
@@ -938,25 +763,20 @@ std::size_t Simulation::ParticleCount() const noexcept
     return particle_count_;
 }
 
-blitzar_status Simulation::CreateSolver(
-    blitzar_solver_kind solver_kind,
-    blitzar_physics::GravityParameters gravity,
-    blitzar_barnes_hut::BarnesHutSettings barnes_hut,
-    std::size_t staging_capacity,
-    SolverVariant& solver) noexcept
+blitzar_status Simulation::CreateSolver(blitzar_solver_kind solver_kind,
+    blitzar_physics::GravityParameters gravity, blitzar_barnes_hut::BarnesHutSettings barnes_hut,
+    std::size_t staging_capacity, SolverVariant& solver) noexcept
 {
     try {
         switch (solver_kind) {
         case BLITZAR_SOLVER_DIRECT:
-            solver.emplace<blitzar_direct::DirectSolver>(
-                gravity, staging_capacity);
+            solver.emplace<blitzar_direct::DirectSolver>(gravity, staging_capacity);
             return BLITZAR_STATUS_OK;
         case BLITZAR_SOLVER_BARNES_HUT:
             if (!barnes_hut.IsValid()) {
                 return BLITZAR_STATUS_INVALID_ARGUMENT;
             }
-            solver.emplace<blitzar_barnes_hut::BarnesHutSolver>(
-                gravity, barnes_hut);
+            solver.emplace<blitzar_barnes_hut::BarnesHutSolver>(gravity, barnes_hut);
             return BLITZAR_STATUS_OK;
         case BLITZAR_SOLVER_FMM:
         case BLITZAR_SOLVER_PM:
@@ -965,9 +785,11 @@ blitzar_status Simulation::CreateSolver(
         default:
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
-    } catch (const std::length_error&) {
+    }
+    catch (const std::length_error&) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
-    } catch (const std::bad_alloc&) {
+    }
+    catch (const std::bad_alloc&) {
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
 }
@@ -982,12 +804,7 @@ blitzar_status Simulation::SetSolver(blitzar_solver_kind solver) noexcept
 {
     SolverVariant candidate(std::in_place_type<blitzar_direct::DirectSolver>, gravity_);
     const blitzar_status status =
-        CreateSolver(
-            solver,
-            gravity_,
-            barnes_hut_,
-            particle_count_,
-            candidate);
+        CreateSolver(solver, gravity_, barnes_hut_, particle_count_, candidate);
     if (status != BLITZAR_STATUS_OK) {
         return Remember(status);
     }
@@ -1006,8 +823,7 @@ blitzar_status Simulation::SetIntegrator(blitzar_integrator_kind integrator) noe
 }
 
 blitzar_status Simulation::SetGravity(
-    blitzar_core::Scalar gravitational_constant,
-    blitzar_core::Scalar softening) noexcept
+    blitzar_core::Scalar gravitational_constant, blitzar_core::Scalar softening) noexcept
 {
     const blitzar_physics::GravityParameters candidate_parameters{
         gravitational_constant, softening, gravity_.units};
@@ -1017,11 +833,7 @@ blitzar_status Simulation::SetGravity(
     SolverVariant candidate_solver(
         std::in_place_type<blitzar_direct::DirectSolver>, candidate_parameters);
     const blitzar_status status = CreateSolver(
-        solver_kind_,
-        candidate_parameters,
-        barnes_hut_,
-        particle_count_,
-        candidate_solver);
+        solver_kind_, candidate_parameters, barnes_hut_, particle_count_, candidate_solver);
     if (status != BLITZAR_STATUS_OK) {
         return Remember(status);
     }
@@ -1043,11 +855,7 @@ blitzar_status Simulation::SetUnits(blitzar_core::UnitSystem units) noexcept
     SolverVariant candidate_solver(
         std::in_place_type<blitzar_direct::DirectSolver>, candidate_parameters);
     const blitzar_status status = CreateSolver(
-        solver_kind_,
-        candidate_parameters,
-        barnes_hut_,
-        particle_count_,
-        candidate_solver);
+        solver_kind_, candidate_parameters, barnes_hut_, particle_count_, candidate_solver);
     if (status != BLITZAR_STATUS_OK) {
         return Remember(status);
     }
@@ -1056,11 +864,8 @@ blitzar_status Simulation::SetUnits(blitzar_core::UnitSystem units) noexcept
     return Remember(BLITZAR_STATUS_OK);
 }
 
-blitzar_status Simulation::SetBarnesHut(
-    blitzar_core::Scalar opening_angle,
-    std::size_t max_particles,
-    std::size_t max_cells,
-    std::size_t leaf_capacity,
+blitzar_status Simulation::SetBarnesHut(blitzar_core::Scalar opening_angle,
+    std::size_t max_particles, std::size_t max_cells, std::size_t leaf_capacity,
     std::size_t max_depth) noexcept
 {
     const blitzar_barnes_hut::BarnesHutSettings candidate_settings{
@@ -1072,20 +877,17 @@ blitzar_status Simulation::SetBarnesHut(
     try {
         candidate_workspace = blitzar_barnes_hut::ThreadWorkspace(
             candidate_settings.max_cells, candidate_settings.max_depth);
-    } catch (const std::length_error&) {
+    }
+    catch (const std::length_error&) {
         return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
-    } catch (const std::bad_alloc&) {
+    }
+    catch (const std::bad_alloc&) {
         return Remember(BLITZAR_STATUS_ALLOCATION_FAILURE);
     }
     if (solver_kind_ == BLITZAR_SOLVER_BARNES_HUT) {
-        SolverVariant candidate_solver(
-            std::in_place_type<blitzar_direct::DirectSolver>, gravity_);
+        SolverVariant candidate_solver(std::in_place_type<blitzar_direct::DirectSolver>, gravity_);
         const blitzar_status status = CreateSolver(
-            solver_kind_,
-            gravity_,
-            candidate_settings,
-            particle_count_,
-            candidate_solver);
+            solver_kind_, gravity_, candidate_settings, particle_count_, candidate_solver);
         if (status != BLITZAR_STATUS_OK) {
             return Remember(status);
         }
@@ -1111,8 +913,7 @@ blitzar_status Simulation::SetSeed(std::uint64_t seed) noexcept
     return Remember(BLITZAR_STATUS_OK);
 }
 
-blitzar_status Simulation::SetParticles(
-    std::span<const blitzar_core::Scalar> position_x,
+blitzar_status Simulation::SetParticles(std::span<const blitzar_core::Scalar> position_x,
     std::span<const blitzar_core::Scalar> position_y,
     std::span<const blitzar_core::Scalar> position_z,
     std::span<const blitzar_core::Scalar> velocity_x,
@@ -1124,14 +925,11 @@ blitzar_status Simulation::SetParticles(
         return Remember(mpi_context_.Status());
     }
     const bool input_sizes_valid =
-        position_x.size() == particle_count_ &&
-        position_y.size() == particle_count_ &&
-        position_z.size() == particle_count_ &&
-        velocity_x.size() == particle_count_ &&
-        velocity_y.size() == particle_count_ &&
-        velocity_z.size() == particle_count_ && mass.size() == particle_count_;
-    blitzar_status input_status = SynchronizeSimulationStatus(
-        mpi_context_,
+        position_x.size() == particle_count_ && position_y.size() == particle_count_ &&
+        position_z.size() == particle_count_ && velocity_x.size() == particle_count_ &&
+        velocity_y.size() == particle_count_ && velocity_z.size() == particle_count_ &&
+        mass.size() == particle_count_;
+    blitzar_status input_status = SynchronizeSimulationStatus(mpi_context_,
         input_sizes_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
         "set-particles-input");
     if (input_status != BLITZAR_STATUS_OK) {
@@ -1140,33 +938,22 @@ blitzar_status Simulation::SetParticles(
 
     ParticleInputStage stage;
     input_status = StageParticleInput(
-        position_x,
-        position_y,
-        position_z,
-        velocity_x,
-        velocity_y,
-        velocity_z,
-        mass,
-        stage);
-    input_status = SynchronizeSimulationStatus(
-        mpi_context_, input_status, "set-particles-stage");
+        position_x, position_y, position_z, velocity_x, velocity_y, velocity_z, mass, stage);
+    input_status = SynchronizeSimulationStatus(mpi_context_, input_status, "set-particles-stage");
     if (input_status != BLITZAR_STATUS_OK) {
         return Remember(input_status);
     }
 
     blitzar_parallel::DomainDecomposition candidate_domain;
-    blitzar_status domain_status =
-        candidate_domain.Initialize(stage.State(), mpi_context_);
-    domain_status = SynchronizeSimulationStatus(
-        mpi_context_, domain_status, "set-particles-domain");
+    blitzar_status domain_status = candidate_domain.Initialize(stage.State(), mpi_context_);
+    domain_status =
+        SynchronizeSimulationStatus(mpi_context_, domain_status, "set-particles-domain");
     if (domain_status != BLITZAR_STATUS_OK) {
         return Remember(domain_status);
     }
     local_indices_.clear();
-    blitzar_status index_status =
-        candidate_domain.LocalIndices(stage.State(), local_indices_);
-    index_status = SynchronizeSimulationStatus(
-        mpi_context_, index_status, "set-particles-indices");
+    blitzar_status index_status = candidate_domain.LocalIndices(stage.State(), local_indices_);
+    index_status = SynchronizeSimulationStatus(mpi_context_, index_status, "set-particles-indices");
     if (index_status != BLITZAR_STATUS_OK) {
         return Remember(index_status);
     }
@@ -1177,60 +964,38 @@ blitzar_status Simulation::SetParticles(
             ? BLITZAR_STATUS_OK
             : BLITZAR_STATUS_INVALID_ARGUMENT;
     const blitzar_status synchronized_capacity_status =
-        SynchronizeSimulationStatus(
-            mpi_context_, capacity_status, "set-particles-capacity");
+        SynchronizeSimulationStatus(mpi_context_, capacity_status, "set-particles-capacity");
     if (synchronized_capacity_status != BLITZAR_STATUS_OK) {
         return Remember(synchronized_capacity_status);
     }
 
-    const blitzar_status commit_status = CommitStagedParticles(
-        stage,
-        local_indices_,
-        arena_,
-        particles_,
-        accelerations_,
-        workspace_,
-        std::span<std::uint64_t>(particle_ids_),
-        domain_,
-        std::move(candidate_domain),
-        local_particle_count_,
-        source_particle_count_,
-        exchange_buffer_,
-        particles_ready_);
+    const blitzar_status commit_status =
+        CommitStagedParticles(stage, local_indices_, arena_, particles_, accelerations_, workspace_,
+            std::span<std::uint64_t>(particle_ids_), domain_, std::move(candidate_domain),
+            local_particle_count_, source_particle_count_, exchange_buffer_, particles_ready_);
     return Remember(commit_status);
 }
 
-blitzar_status Simulation::GetState(
-    std::span<blitzar_core::Scalar> position_x,
-    std::span<blitzar_core::Scalar> position_y,
-    std::span<blitzar_core::Scalar> position_z,
-    std::span<blitzar_core::Scalar> velocity_x,
-    std::span<blitzar_core::Scalar> velocity_y,
-    std::span<blitzar_core::Scalar> velocity_z,
-    std::span<blitzar_core::Scalar> mass) const noexcept
+blitzar_status Simulation::GetState(std::span<blitzar_core::Scalar> position_x,
+    std::span<blitzar_core::Scalar> position_y, std::span<blitzar_core::Scalar> position_z,
+    std::span<blitzar_core::Scalar> velocity_x, std::span<blitzar_core::Scalar> velocity_y,
+    std::span<blitzar_core::Scalar> velocity_z, std::span<blitzar_core::Scalar> mass) const noexcept
 {
     const bool output_valid =
         particles_ready_ && position_x.size() >= particle_count_ &&
-        position_y.size() >= particle_count_ &&
-        position_z.size() >= particle_count_ &&
-        velocity_x.size() >= particle_count_ &&
-        velocity_y.size() >= particle_count_ &&
+        position_y.size() >= particle_count_ && position_z.size() >= particle_count_ &&
+        velocity_x.size() >= particle_count_ && velocity_y.size() >= particle_count_ &&
         velocity_z.size() >= particle_count_ && mass.size() >= particle_count_;
-    const blitzar_status output_status = SynchronizeSimulationStatus(
-        mpi_context_,
-        output_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
-        "get-state-preflight");
+    const blitzar_status output_status = SynchronizeSimulationStatus(mpi_context_,
+        output_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT, "get-state-preflight");
     if (output_status != BLITZAR_STATUS_OK) {
         return Remember(output_status);
     }
-    const bool local_state_valid =
-        particles_.Count() == local_particle_count_ &&
-        local_particle_count_ <= particle_ids_.size() &&
-        blitzar_core::IsValid(particles_.State());
-    const blitzar_status state_status = SynchronizeSimulationStatus(
-        mpi_context_,
-        local_state_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR,
-        "get-state-state");
+    const bool local_state_valid = particles_.Count() == local_particle_count_ &&
+                                   local_particle_count_ <= particle_ids_.size() &&
+                                   blitzar_core::IsValid(particles_.State());
+    const blitzar_status state_status = SynchronizeSimulationStatus(mpi_context_,
+        local_state_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR, "get-state-state");
     if (state_status != BLITZAR_STATUS_OK) {
         return Remember(state_status);
     }
@@ -1246,25 +1011,21 @@ blitzar_status Simulation::GetState(
         return Remember(BLITZAR_STATUS_OK);
     }
 
-    const blitzar_status gather_status = mpi_exchange_.Gather(
-        particles_.State(),
+    const blitzar_status gather_status = mpi_exchange_.Gather(particles_.State(),
         std::span<const std::uint64_t>(particle_ids_).first(local_particle_count_),
         gathered_buffer_);
     if (gather_status != BLITZAR_STATUS_OK) {
         return Remember(gather_status);
     }
-    if (gathered_buffer_.Size() != particle_count_ ||
-        seen_.size() != particle_count_) {
+    if (gathered_buffer_.Size() != particle_count_ || seen_.size() != particle_count_) {
         return Remember(BLITZAR_STATUS_INTERNAL_ERROR);
     }
     std::fill(seen_.begin(), seen_.end(), 0);
     for (const blitzar_parallel::ParticlePacket& packet : gathered_buffer_.View()) {
-        if (packet.id >= particle_count_ || seen_[packet.id] != 0 ||
-            !std::isfinite(packet.x) || !std::isfinite(packet.y) ||
-            !std::isfinite(packet.z) || !std::isfinite(packet.velocity_x) ||
-            !std::isfinite(packet.velocity_y) ||
-            !std::isfinite(packet.velocity_z) || !std::isfinite(packet.mass) ||
-            packet.mass < 0.0) {
+        if (packet.id >= particle_count_ || seen_[packet.id] != 0 || !std::isfinite(packet.x) ||
+            !std::isfinite(packet.y) || !std::isfinite(packet.z) ||
+            !std::isfinite(packet.velocity_x) || !std::isfinite(packet.velocity_y) ||
+            !std::isfinite(packet.velocity_z) || !std::isfinite(packet.mass) || packet.mass < 0.0) {
             return Remember(BLITZAR_STATUS_INTERNAL_ERROR);
         }
         seen_[packet.id] = 1;
@@ -1284,13 +1045,11 @@ blitzar_status Simulation::GetState(
 
 blitzar_status Simulation::Step() noexcept
 {
-    const bool step_ready =
-        particles_ready_ && integrator_kind_ == BLITZAR_INTEGRATOR_LEAPFROG_KDK &&
-        std::isfinite(timestep_) && timestep_ > 0.0;
-    const blitzar_status preflight_status = SynchronizeSimulationStatus(
-        mpi_context_,
-        step_ready ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
-        "step-preflight");
+    const bool step_ready = particles_ready_ &&
+                            integrator_kind_ == BLITZAR_INTEGRATOR_LEAPFROG_KDK &&
+                            std::isfinite(timestep_) && timestep_ > 0.0;
+    const blitzar_status preflight_status = SynchronizeSimulationStatus(mpi_context_,
+        step_ready ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT, "step-preflight");
     if (preflight_status != BLITZAR_STATUS_OK) {
         return Remember(preflight_status);
     }
@@ -1298,8 +1057,7 @@ blitzar_status Simulation::Step() noexcept
         [this](auto& solver) {
             if (mpi_context_.IsDistributed()) {
                 const std::size_t rollback_particle_count = particles_.Count();
-                const std::size_t rollback_acceleration_count =
-                    accelerations_.Count();
+                const std::size_t rollback_acceleration_count = accelerations_.Count();
                 const std::size_t rollback_workspace_count = workspace_.Count();
                 const bool rollback_state_valid =
                     rollback_particle_count == local_particle_count_ &&
@@ -1308,47 +1066,28 @@ blitzar_status Simulation::Step() noexcept
                     rollback_particle_count == rollback_workspace_count &&
                     rollback_particle_count <= source_particle_count_ &&
                     source_particle_count_ <= arena_.Count();
-                const blitzar_status state_status =
-                    SynchronizeSimulationStatus(
-                        mpi_context_,
-                        rollback_state_valid ? BLITZAR_STATUS_OK
-                                              : BLITZAR_STATUS_INTERNAL_ERROR,
-                        "step-state");
+                const blitzar_status state_status = SynchronizeSimulationStatus(mpi_context_,
+                    rollback_state_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR,
+                    "step-state");
                 if (state_status != BLITZAR_STATUS_OK) {
                     return state_status;
                 }
-                DistributedStepTransaction transaction(
-                    arena_,
-                    particles_,
-                    accelerations_,
-                    workspace_,
-                    std::span<std::uint64_t>(particle_ids_),
-                    local_particle_count_,
-                    source_particle_count_,
-                    exchange_buffer_,
-                    rollback_arena_buffer_,
-                    rollback_force_buffer_,
-                    rollback_exchange_buffer_);
+                DistributedStepTransaction transaction(arena_, particles_, accelerations_,
+                    workspace_, std::span<std::uint64_t>(particle_ids_), local_particle_count_,
+                    source_particle_count_, exchange_buffer_, rollback_arena_buffer_,
+                    rollback_force_buffer_, rollback_exchange_buffer_);
                 blitzar_status prepare_status = transaction.Prepare();
-                prepare_status = SynchronizeSimulationStatus(
-                    mpi_context_, prepare_status, "step-prepare");
+                prepare_status =
+                    SynchronizeSimulationStatus(mpi_context_, prepare_status, "step-prepare");
                 if (prepare_status != BLITZAR_STATUS_OK) {
                     transaction.Abort();
                     return prepare_status;
                 }
                 transaction.Begin();
-                DistributedSolverDispatcher dispatcher(
-                    hip_context_,
-                    solver,
-                    gravity_,
-                    barnes_hut_,
-                    mpi_exchange_,
-                    arena_,
-                    std::span<const std::uint64_t>(particle_ids_),
-                    exchange_buffer_,
-                    mpi_exchange_.PersistentGhostExchange(),
-                    source_particle_count_,
-                    last_backend_);
+                DistributedSolverDispatcher dispatcher(hip_context_, solver, gravity_, barnes_hut_,
+                    mpi_exchange_, arena_, std::span<const std::uint64_t>(particle_ids_),
+                    exchange_buffer_, mpi_exchange_.PersistentGhostExchange(),
+                    source_particle_count_, last_backend_);
                 auto rollback = [&dispatcher, &transaction]() noexcept {
                     dispatcher.Abort();
                     transaction.Abort();
@@ -1361,37 +1100,25 @@ blitzar_status Simulation::Step() noexcept
                     -> blitzar_integration_kdk::DriftTransition {
                     const bool migration_state_valid =
                         current_particles.Count() == rollback_particle_count &&
-                        current_accelerations.Count() ==
-                            rollback_particle_count &&
+                        current_accelerations.Count() == rollback_particle_count &&
                         current_workspace.Count() == rollback_particle_count &&
                         local_particle_count_ == rollback_particle_count &&
                         rollback_particle_count <= particle_ids_.size();
-                    blitzar_status migration_status =
-                        SynchronizeSimulationStatus(
-                            mpi_context_,
-                            migration_state_valid
-                                ? BLITZAR_STATUS_OK
-                                : BLITZAR_STATUS_INTERNAL_ERROR,
-                            "migrate-preflight");
+                    blitzar_status migration_status = SynchronizeSimulationStatus(mpi_context_,
+                        migration_state_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR,
+                        "migrate-preflight");
                     if (migration_status != BLITZAR_STATUS_OK) {
                         return {migration_status, false};
                     }
-                    migration_status = mpi_exchange_.Migrate(
-                        current_particles.State(),
-                        std::span<const std::uint64_t>(particle_ids_)
-                            .first(local_particle_count_),
+                    migration_status = mpi_exchange_.Migrate(current_particles.State(),
+                        std::span<const std::uint64_t>(particle_ids_).first(local_particle_count_),
                         migration_buffer_);
                     if (migration_status != BLITZAR_STATUS_OK) {
                         return {migration_status, false};
                     }
-                    migration_status = StoreLocalPackets(
-                        migration_buffer_,
-                        arena_,
-                        current_particles,
-                        current_accelerations,
-                        current_workspace,
-                        std::span<std::uint64_t>(particle_ids_),
-                        particle_count_,
+                    migration_status = StoreLocalPackets(migration_buffer_, arena_,
+                        current_particles, current_accelerations, current_workspace,
+                        std::span<std::uint64_t>(particle_ids_), particle_count_,
                         local_particle_count_);
                     migration_status = SynchronizeSimulationStatus(
                         mpi_context_, migration_status, "migrate-commit");
@@ -1401,38 +1128,24 @@ blitzar_status Simulation::Step() noexcept
                     source_particle_count_ = local_particle_count_;
                     return {BLITZAR_STATUS_OK, true};
                 };
-                const blitzar_status advance_status = integrator_.Advance(
-                    particles_,
-                    accelerations_,
-                    workspace_,
-                    dispatcher,
-                    timestep_,
-                    execution_settings_,
-                    traversal_workspace_,
-                    particles_.State(),
-                    migrate_after_drift,
-                    rollback);
+                const blitzar_status advance_status = integrator_.Advance(particles_,
+                    accelerations_, workspace_, dispatcher, timestep_, execution_settings_,
+                    traversal_workspace_, particles_.State(), migrate_after_drift, rollback);
                 if (advance_status != BLITZAR_STATUS_OK) {
                     rollback();
-                } else {
+                }
+                else {
                     transaction.Complete();
                     transaction.Commit();
                 }
                 return advance_status;
             }
-            SolverDispatcher dispatcher(
-                hip_context_, solver, gravity_, barnes_hut_, last_backend_);
-            return integrator_.Advance(
-                particles_,
-                accelerations_,
-                workspace_,
-                dispatcher,
-                timestep_,
-                execution_settings_,
-                traversal_workspace_);
+            SolverDispatcher dispatcher(hip_context_, solver, gravity_, barnes_hut_, last_backend_);
+            return integrator_.Advance(particles_, accelerations_, workspace_, dispatcher,
+                timestep_, execution_settings_, traversal_workspace_);
         },
         solver_);
     return Remember(status);
 }
 
-}  // namespace blitzar_sdk
+} // namespace blitzar_sdk

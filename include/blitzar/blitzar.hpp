@@ -1,9 +1,8 @@
 #ifndef BLITZAR_BLITZAR_HPP
 #define BLITZAR_BLITZAR_HPP
 
-#include <blitzar/blitzar.h>
-
 #include <atomic>
+#include <blitzar/blitzar.h>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -59,14 +58,9 @@ enum class SolverKind : std::int32_t {
     TreePm = BLITZAR_SOLVER_TREEPM
 };
 
-enum class BackendKind : std::int32_t {
-    Cpu = BLITZAR_BACKEND_CPU,
-    Hip = BLITZAR_BACKEND_HIP
-};
+enum class BackendKind : std::int32_t { Cpu = BLITZAR_BACKEND_CPU, Hip = BLITZAR_BACKEND_HIP };
 
-enum class IntegratorKind : std::int32_t {
-    LeapfrogKdk = BLITZAR_INTEGRATOR_LEAPFROG_KDK
-};
+enum class IntegratorKind : std::int32_t { LeapfrogKdk = BLITZAR_INTEGRATOR_LEAPFROG_KDK };
 
 class BLITZAR_API Context final {
 public:
@@ -112,34 +106,20 @@ public:
 
     [[nodiscard]] Status set_solver(SolverKind solver) noexcept;
     [[nodiscard]] Status set_integrator(IntegratorKind integrator) noexcept;
-    [[nodiscard]] Status set_gravity(
-        double gravitational_constant, double softening) noexcept;
+    [[nodiscard]] Status set_gravity(double gravitational_constant, double softening) noexcept;
     [[nodiscard]] Status set_units(
         double length_scale, double mass_scale, double time_scale) noexcept;
-    [[nodiscard]] Status set_barnes_hut(
-        double opening_angle,
-        std::int64_t max_particles,
-        std::int64_t max_cells,
-        std::int64_t leaf_capacity,
-        std::int64_t max_depth) noexcept;
+    [[nodiscard]] Status set_barnes_hut(double opening_angle, std::int64_t max_particles,
+        std::int64_t max_cells, std::int64_t leaf_capacity, std::int64_t max_depth) noexcept;
     [[nodiscard]] Status set_timestep(double timestep) noexcept;
     [[nodiscard]] Status set_seed(std::uint64_t seed) noexcept;
-    [[nodiscard]] Status set_particles(
-        std::span<const double> position_x,
-        std::span<const double> position_y,
-        std::span<const double> position_z,
-        std::span<const double> velocity_x,
-        std::span<const double> velocity_y,
-        std::span<const double> velocity_z,
-        std::span<const double> mass) noexcept;
-    [[nodiscard]] Status get_state(
-        std::span<double> position_x,
-        std::span<double> position_y,
-        std::span<double> position_z,
-        std::span<double> velocity_x,
-        std::span<double> velocity_y,
-        std::span<double> velocity_z,
-        std::span<double> mass) noexcept;
+    [[nodiscard]] Status set_particles(std::span<const double> position_x,
+        std::span<const double> position_y, std::span<const double> position_z,
+        std::span<const double> velocity_x, std::span<const double> velocity_y,
+        std::span<const double> velocity_z, std::span<const double> mass) noexcept;
+    [[nodiscard]] Status get_state(std::span<double> position_x, std::span<double> position_y,
+        std::span<double> position_z, std::span<double> velocity_x, std::span<double> velocity_y,
+        std::span<double> velocity_z, std::span<double> mass) noexcept;
     [[nodiscard]] Status step() noexcept;
 
 private:
@@ -147,8 +127,7 @@ private:
 
     [[nodiscard]] static bool FitsCount(std::size_t count) noexcept
     {
-        return count <= static_cast<std::size_t>(
-                             std::numeric_limits<std::int64_t>::max());
+        return count <= static_cast<std::size_t>(std::numeric_limits<std::int64_t>::max());
     }
 
     [[nodiscard]] Status Update(blitzar_status status) noexcept;
@@ -158,6 +137,6 @@ private:
     std::int64_t particle_count_;
 };
 
-}  // namespace blitzar
+} // namespace blitzar
 
 #endif

@@ -22,8 +22,7 @@ public:
     DomainDecomposition() noexcept = default;
 
     [[nodiscard]] blitzar_status Initialize(
-        blitzar_core::ParticleStateView global_state,
-        const MpiContext& context) noexcept;
+        blitzar_core::ParticleStateView global_state, const MpiContext& context) noexcept;
 
     [[nodiscard]] bool IsInitialized() const noexcept;
     [[nodiscard]] int Rank() const noexcept;
@@ -35,11 +34,9 @@ public:
         blitzar_core::ParticleStateView state) const noexcept;
     [[nodiscard]] int Owner(blitzar_core::Vector3 position) const noexcept;
     [[nodiscard]] int Owner(
-        blitzar_core::Vector3 position,
-        std::uint64_t particle_id) const noexcept;
+        blitzar_core::Vector3 position, std::uint64_t particle_id) const noexcept;
 
-    [[nodiscard]] blitzar_status LocalIndices(
-        blitzar_core::ParticleStateView global_state,
+    [[nodiscard]] blitzar_status LocalIndices(blitzar_core::ParticleStateView global_state,
         std::vector<std::size_t>& indices) const noexcept;
 
 private:
@@ -48,10 +45,8 @@ private:
         std::uint64_t particle_id{};
     };
 
-    [[nodiscard]] static DomainBounds BoundsOf(
-        blitzar_core::ParticleStateView state) noexcept;
-    [[nodiscard]] static bool Extend(
-        DomainBounds& bounds, blitzar_core::Vector3 position) noexcept;
+    [[nodiscard]] static DomainBounds BoundsOf(blitzar_core::ParticleStateView state) noexcept;
+    [[nodiscard]] static bool Extend(DomainBounds& bounds, blitzar_core::Vector3 position) noexcept;
 
     int rank_{0};
     int size_{1};
@@ -61,6 +56,6 @@ private:
     std::vector<SplitKey> split_keys_;
 };
 
-}  // namespace blitzar_parallel
+} // namespace blitzar_parallel
 
 #endif

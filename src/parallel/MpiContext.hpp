@@ -5,7 +5,6 @@
 #include "parallel/MpiTypes.hpp"
 
 #include <blitzar/blitzar.h>
-
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -31,45 +30,31 @@ public:
     [[nodiscard]] int Size() const noexcept;
     [[nodiscard]] blitzar_status Status() const noexcept;
     [[nodiscard]] blitzar_status PrepareCapacity(
-        std::size_t packet_capacity,
-        GhostExchange& exchange) const noexcept;
-    [[nodiscard]] blitzar_status SynchronizeStatus(
-        blitzar_status local_status,
-        const char* operation,
-        const char* phase,
-        blitzar_status& global_status) const noexcept;
+        std::size_t packet_capacity, GhostExchange& exchange) const noexcept;
+    [[nodiscard]] blitzar_status SynchronizeStatus(blitzar_status local_status,
+        const char* operation, const char* phase, blitzar_status& global_status) const noexcept;
 
-    [[nodiscard]] blitzar_status ReduceBounds(
-        std::span<blitzar_core::Scalar> minimum,
+    [[nodiscard]] blitzar_status ReduceBounds(std::span<blitzar_core::Scalar> minimum,
         std::span<blitzar_core::Scalar> maximum) const noexcept;
-    [[nodiscard]] blitzar_status ReduceMax(
-        int local_value, int& global_value) const noexcept;
+    [[nodiscard]] blitzar_status ReduceMax(int local_value, int& global_value) const noexcept;
 
     [[nodiscard]] blitzar_status BeginGhostExchange(
-        std::span<const ParticlePacket> local,
-        GhostExchange& exchange) const noexcept;
+        std::span<const ParticlePacket> local, GhostExchange& exchange) const noexcept;
     [[nodiscard]] blitzar_status CompleteGhostExchange(
         GhostExchange& exchange, PacketBuffer& ghosts) const noexcept;
-    [[nodiscard]] bool IsGhostExchangeActive(
-        const GhostExchange& exchange) const noexcept;
+    [[nodiscard]] bool IsGhostExchangeActive(const GhostExchange& exchange) const noexcept;
     void AbortGhostExchange(GhostExchange& exchange) const noexcept;
 
     [[nodiscard]] blitzar_status AllToAllCounts(
-        std::span<const int> send_counts,
-        std::span<int> receive_counts) const noexcept;
-    [[nodiscard]] blitzar_status AllToAllPackets(
-        std::span<const ParticlePacket> send_packets,
-        std::span<const int> send_counts,
-        std::span<const int> send_displacements,
-        std::span<ParticlePacket> receive_packets,
-        std::span<const int> receive_counts,
+        std::span<const int> send_counts, std::span<int> receive_counts) const noexcept;
+    [[nodiscard]] blitzar_status AllToAllPackets(std::span<const ParticlePacket> send_packets,
+        std::span<const int> send_counts, std::span<const int> send_displacements,
+        std::span<ParticlePacket> receive_packets, std::span<const int> receive_counts,
         std::span<const int> receive_displacements) const noexcept;
     [[nodiscard]] blitzar_status AllGatherCounts(
         int local_count, std::span<int> counts) const noexcept;
-    [[nodiscard]] blitzar_status AllGatherPackets(
-        std::span<const ParticlePacket> local_packets,
-        std::span<ParticlePacket> gathered_packets,
-        std::span<const int> counts,
+    [[nodiscard]] blitzar_status AllGatherPackets(std::span<const ParticlePacket> local_packets,
+        std::span<ParticlePacket> gathered_packets, std::span<const int> counts,
         std::span<const int> displacements) const noexcept;
 
 private:
@@ -79,6 +64,6 @@ private:
     blitzar_status status_{BLITZAR_STATUS_OK};
 };
 
-}  // namespace blitzar_parallel
+} // namespace blitzar_parallel
 
 #endif
