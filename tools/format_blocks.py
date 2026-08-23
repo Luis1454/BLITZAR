@@ -43,6 +43,7 @@ ASSIGNMENT_RE = re.compile(r"(?<![=!<>])(?:\+=|-=|\*=|/=|%=|&=|\|=|\^=|<<=|>>=|=
 CALL_RE = re.compile(
     r"^(?:[A-Za-z_]\w*(?:(?:::|\.|->)[A-Za-z_]\w*)*)\s*\("
 )
+LAMBDA_CAPTURE_RE = re.compile(r"^\[[^\]]*\]")
 QUALIFIER_RE = r"(?:(?:const|constexpr|static|thread_local|volatile|mutable|inline|extern|register)\s+)*"
 TYPE_RE = (
     r"(?:"
@@ -198,6 +199,17 @@ def looks_like_lambda_signature(text: str) -> bool:
     ))
 
 
+def looks_like_lambda_assignment_start(text: str) -> bool:
+    stripped = text.strip()
+    if ";" in stripped or not stripped.endswith("="):
+        return False
+    return looks_like_declaration(stripped[:-1].rstrip())
+
+
+def looks_like_lambda_capture(text: str) -> bool:
+    return LAMBDA_CAPTURE_RE.match(text.strip()) is not None
+
+
 def looks_like_declaration(text: str) -> bool:
     return bool(DECLARATION_RE.match(text.strip()))
 
@@ -246,6 +258,12 @@ def opening_kind(
     stripped = prefix.strip()
     if pending_kind in {"control", "function"}:
         return pending_kind
+    if pending_kind == "lambda":
+        return "function"
+    if pending_kind == "lambda_candidate" and looks_like_lambda_capture(stripped):
+        return "function"
+    if pending_kind == "lambda_candidate" and not stripped:
+        return "initializer"
     if re.search(r"\b(?:else|catch)\b", stripped):
         return "control"
     if pending_kind is not None and not stripped:
@@ -374,7 +392,7 @@ def format_lines(lines: list[str]) -> list[str]:
         state = current_scope_state(scopes)
         starts_closing = code.lstrip().startswith("}")
         standalone_opening = code.strip() == "{" and parenthesis_depth == 0
-        pending_continuation = pending_kind in {"control", "function"} and pending_parens > 0
+        pending_continuation = pending_kind in {"control", "function", "lambda"} and pending_parens > 0
         if (
             state is not None
             and state.active_category is None
@@ -458,7 +476,7 @@ def format_lines(lines: list[str]) -> list[str]:
             parenthesis_depth = max(parenthesis_depth, 0)
             continue
 
-        if pending_kind in {"control", "function"} and pending_parens > 0:
+        if pending_kind in {"control", "function", "lambda"} and pending_parens > 0:
             pending_parens += code.count("(") - code.count(")")
             if pending_parens > 0:
                 parenthesis_depth += code.count("(") - code.count(")")
@@ -480,8 +498,15 @@ def format_lines(lines: list[str]) -> list[str]:
         elif TYPE_SCOPE_RE.match(stripped):
             pending_kind = "type"
             pending_parens = 0
+        elif pending_kind == "lambda_candidate":
+            if looks_like_lambda_capture(stripped):
+                pending_kind = "lambda"
+                pending_parens = code.count("(") - code.count(")")
+            else:
+                pending_kind = None
+                pending_parens = 0
         elif looks_like_lambda_signature(stripped):
-            pending_kind = "function"
+            pending_kind = "lambda"
             pending_parens = code.count("(") - code.count(")")
         elif looks_like_function_signature(stripped):
             pending_kind = "function"
@@ -489,10 +514,15 @@ def format_lines(lines: list[str]) -> list[str]:
         elif current_scope_state(scopes) is None and looks_like_function_start(stripped):
             pending_kind = "function"
             pending_parens = code.count("(") - code.count(")")
-        elif pending_kind == "function" and stripped.startswith(("const", "noexcept", "requires")):
+        elif pending_kind in {"function", "lambda"} and stripped.startswith(
+            ("const", "mutable", "noexcept", "->", "requires")
+        ):
             parenthesis_depth += code.count("(") - code.count(")")
             parenthesis_depth = max(parenthesis_depth, 0)
             continue
+        elif looks_like_lambda_assignment_start(stripped):
+            pending_kind = "lambda_candidate"
+            pending_parens = 0
         else:
             pending_kind = None
             pending_control_category = None
