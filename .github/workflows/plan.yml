@@ -27,6 +27,9 @@ jobs:
       - name: Validate plan manifest
         run: python tools/plan_check.py
 
+      - name: Self-test plan gate failures
+        run: python tools/plan_check_test.py
+
       - name: Reject unapproved plan edits
         if: github.event_name == 'pull_request'
         shell: bash

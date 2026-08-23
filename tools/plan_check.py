@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import pathlib
 import re
 import sys
 
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
+DEFAULT_ROOT = pathlib.Path(__file__).resolve().parents[1]
+ROOT = DEFAULT_ROOT
 MANIFEST = ROOT / "plan" / "manifest.json"
 QUALITY = ROOT / "plan" / "quality.json"
 CMESSAGE = ROOT / "CMakeLists.txt"
@@ -29,6 +31,13 @@ SOURCE_SUFFIXES = {
     ".inl",
 }
 PUBLIC_HEADER_NAMES = {"blitzar.h", "blitzar.hpp"}
+INFORMATIONAL_ARCHITECTURE_RULES = (
+    "function length and count",
+    "branching complexity",
+    "allocation behavior",
+    "include dependencies",
+    "responsibility boundaries",
+)
 
 
 def fail(message: str) -> None:
@@ -49,8 +58,10 @@ def load_json(path: pathlib.Path, label: str) -> dict:
 def normalize_manifest_path(value: object, label: str) -> pathlib.PurePosixPath:
     if not isinstance(value, str) or not value:
         fail(f"{label} must contain non-empty relative paths")
+    if any(part in {"", ".", ".."} for part in value.split("/")):
+        fail(f"{label} contains unsafe path: {value}")
     path = pathlib.PurePosixPath(value)
-    if path.is_absolute() or "" in path.parts or ".." in path.parts:
+    if path.is_absolute():
         fail(f"{label} contains unsafe path: {value}")
     if "\\" in value:
         fail(f"{label} must use forward slashes: {value}")
@@ -126,6 +137,11 @@ def validate_forbidden_references(data: dict) -> None:
 
 def validate_quality_tests(phase_ids: set[str]) -> None:
     quality = load_json(QUALITY, "quality manifest")
+    if quality.get("evidence_policy") != "registration-only":
+        fail(
+            "quality manifest evidence_policy must be 'registration-only'; "
+            "runtime execution is validated separately"
+        )
     tests = quality.get("tests")
     if not isinstance(tests, list) or not tests:
         fail("quality manifest needs named tests with IDs")
@@ -232,7 +248,25 @@ def validate_naming() -> None:
                 fail(f"non-PascalCase C filename: {path.relative_to(ROOT)}")
 
 
-def main() -> None:
+def configure_root(root: pathlib.Path) -> None:
+    global ROOT, MANIFEST, QUALITY, CMESSAGE
+    ROOT = root.resolve()
+    MANIFEST = ROOT / "plan" / "manifest.json"
+    QUALITY = ROOT / "plan" / "quality.json"
+    CMESSAGE = ROOT / "CMakeLists.txt"
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--root",
+        type=pathlib.Path,
+        default=DEFAULT_ROOT,
+        help="repository root to validate",
+    )
+    args = parser.parse_args(argv)
+    configure_root(args.root)
+
     if not (ROOT / "PLAN.md").is_file():
         fail("PLAN.md is missing")
     if not MANIFEST.is_file():
@@ -252,7 +286,14 @@ def main() -> None:
     validate_forbidden_references(manifest)
     validate_quality_tests(phase_ids)
     validate_naming()
-    print(f"plan-check: frozen plan {manifest['plan_version']} is valid")
+    print(
+        f"plan-check: frozen plan {manifest['plan_version']} is valid; "
+        "CTest entries are registered only, runtime evidence is not claimed"
+    )
+    print(
+        "plan-check: informational architecture rules: "
+        + ", ".join(INFORMATIONAL_ARCHITECTURE_RULES)
+    )
 
 
 if __name__ == "__main__":

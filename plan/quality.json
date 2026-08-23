@@ -1,4 +1,5 @@
 {
+  "evidence_policy": "registration-only",
   "tests": [
     {
       "id": "TST-P0-001",
