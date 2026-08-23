@@ -24,6 +24,7 @@ SOURCE_SUFFIXES = {
 }
 
 CONTROL_RE = re.compile(r"^(?:if|for|while|switch|catch|else|try|do)\b")
+CONTROL_KEYWORD_RE = re.compile(r"^(if|for|while|switch|catch|else|try|do)\b")
 TYPE_SCOPE_RE = re.compile(
     r"^(?:(?:template\s*<[^{};]*>\s*)?)(?:namespace|class|struct|enum|union)\b"
 )
@@ -32,6 +33,16 @@ RAW_LITERAL_RE = re.compile(r'R"([^\s()\\]{0,16})\(')
 MACRO_RE = re.compile(r"^[A-Z_][A-Z0-9_]*\s*\(")
 EXIT_RE = re.compile(r"^(?:return|throw|break|continue|co_return|goto)\b")
 LABEL_RE = re.compile(r"^(?:case\b.*:|default\s*:)")
+NAMED_CAST_RE = re.compile(r"^(?:static|dynamic|reinterpret|const)_cast\s*<")
+C_STYLE_CAST_RE = re.compile(
+    r"^\(\s*(?:void|bool|char(?:8_t|16_t|32_t)?|wchar_t|short|int|long|float|double|"
+    r"unsigned|signed|const\b|volatile\b|[A-Z]\w*(?:::\w+)*|"
+    r"[a-z_]\w*::[A-Za-z_]\w*)[^)]*\)"
+)
+ASSIGNMENT_RE = re.compile(r"(?<![=!<>])(?:\+=|-=|\*=|/=|%=|&=|\|=|\^=|<<=|>>=|=(?!=))")
+CALL_RE = re.compile(
+    r"^(?:[A-Za-z_]\w*(?:(?:::|\.|->)[A-Za-z_]\w*)*)\s*\("
+)
 QUALIFIER_RE = r"(?:(?:const|constexpr|static|thread_local|volatile|mutable|inline|extern|register)\s+)*"
 TYPE_RE = (
     r"(?:"
@@ -58,6 +69,7 @@ class FunctionState:
     last_category: str | None = None
     active_category: str | None = None
     last_line_index: int | None = None
+    force_separator: bool = False
 
 
 def source_files(root: Path) -> list[Path]:
@@ -190,18 +202,41 @@ def looks_like_declaration(text: str) -> bool:
     return bool(DECLARATION_RE.match(text.strip()))
 
 
-def classify_statement(text: str) -> str:
+def control_category(text: str) -> str | None:
     stripped = text.strip()
-    if CONTROL_RE.match(stripped):
-        return "control"
+    stripped = re.sub(r"^(?:}\s*)+", "", stripped)
+    match = CONTROL_KEYWORD_RE.match(stripped)
+    if match is None:
+        return None
+    keyword = match.group(1)
+    if keyword == "else":
+        return "if"
+    if keyword == "catch":
+        return "try"
+    return keyword
+
+
+def classify_statement(text: str, previous_category: str | None = None) -> str:
+    stripped = text.strip()
+    control = control_category(stripped)
+    if control is not None:
+        if control == "while" and previous_category == "do":
+            return "do"
+        return control
     if LABEL_RE.match(stripped):
         return "label"
     if MACRO_RE.match(stripped) or stripped.startswith("static_assert"):
         return "assertion"
     if EXIT_RE.match(stripped):
         return "exit"
+    if NAMED_CAST_RE.match(stripped) or C_STYLE_CAST_RE.match(stripped):
+        return "cast"
     if looks_like_declaration(stripped) or stripped.startswith(("using ", "typedef ")):
         return "declaration"
+    if CALL_RE.match(stripped):
+        return "call"
+    if ASSIGNMENT_RE.search(stripped):
+        return "assignment"
     return "expression"
 
 
@@ -244,25 +279,33 @@ def add_separator(
     insert_before: set[int],
     remove_lines: set[int],
 ) -> None:
+    force_separator = state.force_separator
     if state.last_category is not None and state.last_line_index is not None:
         between = range(state.last_line_index + 1, line_index)
         blank_lines = [position for position in between if not lines[position].strip()]
         only_blank_lines = len(blank_lines) == line_index - state.last_line_index - 1
         if only_blank_lines:
-            if state.last_category != category:
+            if state.last_category != category or force_separator:
                 remove_lines.update(blank_lines)
                 insert_before.add(line_index)
             elif len(blank_lines) > 1:
                 remove_lines.update(blank_lines[1:])
-        elif state.last_category != category:
+        elif state.last_category != category or force_separator:
             previous = line_index - 1
             while previous > state.last_line_index and not lines[previous].strip():
                 previous -= 1
             if previous >= 0 and lines[previous].strip():
                 insert_before.add(line_index)
     state.last_category = category
-    state.active_category = None if category in {"control", "label", "scope"} else category
+    state.active_category = (
+        None
+        if category in {
+            "control", "if", "for", "while", "switch", "try", "do", "label", "scope"
+        }
+        else category
+    )
     state.last_line_index = line_index
+    state.force_separator = False
 
 
 def remove_continuation_blanks(lines: list[str]) -> list[str]:
@@ -309,6 +352,7 @@ def format_lines(lines: list[str]) -> list[str]:
     scopes: list[Scope] = []
     insert_before: set[int] = set()
     pending_kind: str | None = None
+    pending_control_category: str | None = None
     in_block_comment = False
     raw_delimiter: str | None = None
     in_directive = False
@@ -340,7 +384,7 @@ def format_lines(lines: list[str]) -> list[str]:
         ):
             add_separator(
                 state,
-                classify_statement(code),
+                classify_statement(code, state.last_category),
                 line_index,
                 lines,
                 insert_before,
@@ -360,9 +404,14 @@ def format_lines(lines: list[str]) -> list[str]:
                 if kind == "control":
                     state = current_scope_state(scopes)
                     if state is not None:
+                        category = (
+                            control_category(code[:position])
+                            or pending_control_category
+                            or "control"
+                        )
                         add_separator(
                             state,
-                            "control",
+                            category,
                             line_index,
                             lines,
                             insert_before,
@@ -382,6 +431,7 @@ def format_lines(lines: list[str]) -> list[str]:
                 state = FunctionState() if kind in {"function", "control", "compound"} else None
                 scopes.append(Scope(kind, state))
                 pending_kind = None
+                pending_control_category = None
                 pending_parens = 0
                 continue
 
@@ -398,6 +448,9 @@ def format_lines(lines: list[str]) -> list[str]:
         state = current_scope_state(scopes)
         if state is not None and state.active_category is not None:
             if code.rstrip().endswith(";"):
+                state.force_separator = (
+                    state.last_line_index is not None and line_index > state.last_line_index
+                )
                 state.active_category = None
 
         if events:
@@ -412,8 +465,9 @@ def format_lines(lines: list[str]) -> list[str]:
                 parenthesis_depth = max(parenthesis_depth, 0)
                 continue
             pending_parens = 0
-            if pending_kind == "control":
+            if pending_kind == "control" and code.rstrip().endswith(";"):
                 pending_kind = None
+                pending_control_category = None
             parenthesis_depth += code.count("(") - code.count(")")
             parenthesis_depth = max(parenthesis_depth, 0)
             continue
@@ -421,6 +475,7 @@ def format_lines(lines: list[str]) -> list[str]:
         stripped = code.strip()
         if CONTROL_RE.match(stripped):
             pending_kind = "control"
+            pending_control_category = control_category(stripped)
             pending_parens = code.count("(") - code.count(")")
         elif TYPE_SCOPE_RE.match(stripped):
             pending_kind = "type"
@@ -440,6 +495,7 @@ def format_lines(lines: list[str]) -> list[str]:
             continue
         else:
             pending_kind = None
+            pending_control_category = None
             pending_parens = 0
 
         parenthesis_depth += code.count("(") - code.count(")")
