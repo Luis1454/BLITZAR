@@ -2,11 +2,6 @@
   {"path": "include/blitzar/blitzar.h", "name": "blitzar_simulation_set_barnes_hut", "issue": 573},
   {"path": "include/blitzar/blitzar.h", "name": "blitzar_simulation_set_particles", "issue": 573},
   {"path": "include/blitzar/blitzar.h", "name": "blitzar_simulation_get_state", "issue": 573},
-  {"path": "src/gpu/HipCompat.hpp", "name": "hipMemcpyAsync", "issue": 576},
-  {"path": "src/gpu/HipContext.hip", "name": "ComputeBarnesHut", "issue": 576},
-  {"path": "src/gpu/HipContext.hip", "name": "HipContext::ComputeBarnesHut", "issue": 576},
-  {"path": "src/gpu/HipContext.hpp", "name": "ComputeBarnesHut", "issue": 576},
-  {"path": "src/gpu/HipContextStub.cpp", "name": "HipContext::ComputeBarnesHut", "issue": 576},
   {"path": "src/sdk/Api.cpp", "name": "blitzar_simulation_set_barnes_hut", "issue": 573},
   {"path": "src/sdk/Api.cpp", "name": "blitzar_simulation_set_particles", "issue": 573},
   {"path": "src/sdk/Api.cpp", "name": "blitzar_simulation_get_state", "issue": 573},
@@ -15,11 +10,5 @@
   {"path": "src/sdk/Simulation.cpp", "name": "Simulation::GetState", "issue": 573},
   {"path": "src/sdk/Simulation.hpp", "name": "SetBarnesHut", "issue": 573},
   {"path": "src/sdk/Simulation.hpp", "name": "SetParticles", "issue": 573},
-  {"path": "src/sdk/Simulation.hpp", "name": "GetState", "issue": 573},
-  {"path": "src/solvers/gpu/BarnesHutKernel.hip", "name": "BarnesHutKernel", "issue": 576},
-  {"path": "src/solvers/gpu/BarnesHutKernel.hip", "name": "LaunchBarnesHut", "issue": 576},
-  {"path": "src/solvers/gpu/DirectKernel.hip", "name": "DirectKernel", "issue": 576},
-  {"path": "src/solvers/gpu/DirectKernel.hip", "name": "LaunchDirect", "issue": 576},
-  {"path": "src/solvers/gpu/HipKernel.hpp", "name": "LaunchDirect", "issue": 576},
-  {"path": "src/solvers/gpu/HipKernel.hpp", "name": "LaunchBarnesHut", "issue": 576}
+  {"path": "src/sdk/Simulation.hpp", "name": "GetState", "issue": 573}
 ]

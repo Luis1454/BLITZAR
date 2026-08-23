@@ -1,6 +1,8 @@
 #ifndef BLITZAR_SOLVERS_GPU_HIP_KERNEL_HPP
 #define BLITZAR_SOLVERS_GPU_HIP_KERNEL_HPP
 
+#include "core/Solver.hpp"
+
 #include <blitzar/blitzar.h>
 #include <cstddef>
 #include <cstdint>
@@ -31,16 +33,44 @@ struct GpuCell final {
     std::uint64_t children[8]{};
 };
 
-[[nodiscard]] blitzar_status LaunchDirect(DeviceParticleAddresses addresses,
-    std::size_t target_count, std::size_t source_begin, std::size_t source_end,
-    double gravitational_constant, double softening, bool accumulate, std::uintptr_t error_address,
-    std::uintptr_t stream) noexcept;
+struct KernelRuntime final {
+    std::uintptr_t error_address{};
+    std::uintptr_t stream{};
+};
 
-[[nodiscard]] blitzar_status LaunchBarnesHut(DeviceParticleAddresses addresses,
-    std::size_t target_count, std::size_t source_count, std::uintptr_t cells,
-    std::size_t cell_count, std::uintptr_t indices, double opening_angle,
-    double gravitational_constant, double softening, std::size_t max_depth,
-    std::uintptr_t error_address, std::uintptr_t stream) noexcept;
+struct KernelPhysics final {
+    double gravitational_constant{};
+    double softening{};
+};
+
+struct TreeAddresses final {
+    std::uintptr_t cells{};
+    std::size_t cell_count{};
+    std::uintptr_t indices{};
+};
+
+struct DirectLaunchRequest final {
+    DeviceParticleAddresses addresses;
+    std::size_t target_count{};
+    blitzar_core::ForceRange range;
+    KernelPhysics physics;
+    KernelRuntime runtime;
+};
+
+struct BarnesHutLaunchRequest final {
+    DeviceParticleAddresses addresses;
+    std::size_t target_count{};
+    std::size_t source_count{};
+    double opening_angle{};
+    TreeAddresses tree;
+    KernelPhysics physics;
+    std::size_t max_depth{};
+    KernelRuntime runtime;
+};
+
+[[nodiscard]] blitzar_status LaunchDirect(const DirectLaunchRequest& request) noexcept;
+
+[[nodiscard]] blitzar_status LaunchBarnesHut(const BarnesHutLaunchRequest& request) noexcept;
 
 } // namespace blitzar_gpu_detail
 

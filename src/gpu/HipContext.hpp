@@ -22,6 +22,14 @@ enum class HipFault : std::uint8_t {
     NonFiniteResult,
 };
 
+struct BarnesHutComputeRequest final {
+    blitzar_core::ParticleStateView particles;
+    blitzar_core::ForceView forces;
+    const blitzar_core::ExecutionSettings& execution;
+    blitzar_physics::GravityParameters gravity;
+    blitzar_barnes_hut::BarnesHutSettings settings;
+};
+
 class HipContext final {
 public:
     HipContext() noexcept;
@@ -43,10 +51,8 @@ public:
         blitzar_core::ForceView forces, blitzar_physics::GravityParameters gravity,
         blitzar_core::ForceRange range) noexcept;
 
-    [[nodiscard]] blitzar_status ComputeBarnesHut(blitzar_core::ParticleStateView particles,
-        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& execution,
-        blitzar_physics::GravityParameters gravity,
-        blitzar_barnes_hut::BarnesHutSettings settings) noexcept;
+    [[nodiscard]] blitzar_status ComputeBarnesHut(
+        const BarnesHutComputeRequest& request) noexcept;
 
 private:
     struct Impl;

@@ -18,6 +18,25 @@ constexpr unsigned int BlockSize = 128;
 constexpr int MaxTraversalStack = 256;
 constexpr std::uint64_t InvalidCell = std::numeric_limits<std::uint64_t>::max();
 
+struct BarnesHutDeviceRequest final {
+    const double* position_x;
+    const double* position_y;
+    const double* position_z;
+    const double* mass;
+    double* force_x;
+    double* force_y;
+    double* force_z;
+    std::size_t target_count;
+    std::size_t source_count;
+    const GpuCell* cells;
+    std::size_t cell_count;
+    const std::uint64_t* indices;
+    double opening_angle;
+    double gravitational_constant;
+    double softening;
+    int* error;
+};
+
 __device__ void RecordError(int* error, int status) noexcept
 {
     atomicMax(error, status);
@@ -51,12 +70,25 @@ __device__ bool Contains(
            fabs(position_z - cell.center_z) <= cell.half_extent;
 }
 
-__global__ void BarnesHutKernel(const double* position_x, const double* position_y,
-    const double* position_z, const double* mass, double* force_x, double* force_y, double* force_z,
-    std::size_t target_count, std::size_t source_count, const GpuCell* cells,
-    std::size_t cell_count, const std::uint64_t* indices, double opening_angle,
-    double gravitational_constant, double softening, int* error)
+__global__ void BarnesHutKernel(BarnesHutDeviceRequest request)
 {
+    const double* position_x = request.position_x;
+    const double* position_y = request.position_y;
+    const double* position_z = request.position_z;
+    const double* mass = request.mass;
+    double* force_x = request.force_x;
+    double* force_y = request.force_y;
+    double* force_z = request.force_z;
+    const std::size_t target_count = request.target_count;
+    const std::size_t source_count = request.source_count;
+    const GpuCell* cells = request.cells;
+    const std::size_t cell_count = request.cell_count;
+    const std::uint64_t* indices = request.indices;
+    const double opening_angle = request.opening_angle;
+    const double gravitational_constant = request.gravitational_constant;
+    const double softening = request.softening;
+    int* error = request.error;
+
     __shared__ int block_error;
 
     if (threadIdx.x == 0) {
@@ -251,15 +283,22 @@ __global__ void BarnesHutKernel(const double* position_x, const double* position
 
 } // namespace
 
-blitzar_status LaunchBarnesHut(DeviceParticleAddresses addresses, std::size_t target_count,
-    std::size_t source_count, std::uintptr_t cells, std::size_t cell_count, std::uintptr_t indices,
-    double opening_angle, double gravitational_constant, double softening, std::size_t max_depth,
-    std::uintptr_t error_address, std::uintptr_t stream) noexcept
+blitzar_status LaunchBarnesHut(const BarnesHutLaunchRequest& request) noexcept
 {
+    const DeviceParticleAddresses& addresses = request.addresses;
+    const std::size_t target_count = request.target_count;
+    const std::size_t source_count = request.source_count;
+    const double opening_angle = request.opening_angle;
+    const TreeAddresses& tree = request.tree;
+    const KernelPhysics& physics = request.physics;
+    const std::size_t max_depth = request.max_depth;
+    const KernelRuntime& runtime = request.runtime;
+
     if (target_count == 0) {
         return BLITZAR_STATUS_OK;
     }
-    if (cells == 0 || indices == 0 || cell_count == 0 || error_address == 0 || stream == 0) {
+    if (tree.cells == 0 || tree.indices == 0 || tree.cell_count == 0 ||
+        runtime.error_address == 0 || runtime.stream == 0) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     if (addresses.position_x == 0 || addresses.position_y == 0 || addresses.position_z == 0 ||
@@ -280,17 +319,20 @@ blitzar_status LaunchBarnesHut(DeviceParticleAddresses addresses, std::size_t ta
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    hipLaunchKernelGGL(BarnesHutKernel, dim3(static_cast<unsigned int>(block_count)),
-        dim3(BlockSize), 0, reinterpret_cast<hipStream_t>(stream),
+    const BarnesHutDeviceRequest kernel_request{
         reinterpret_cast<const double*>(addresses.position_x),
         reinterpret_cast<const double*>(addresses.position_y),
         reinterpret_cast<const double*>(addresses.position_z),
         reinterpret_cast<const double*>(addresses.mass),
         reinterpret_cast<double*>(addresses.force_x), reinterpret_cast<double*>(addresses.force_y),
         reinterpret_cast<double*>(addresses.force_z), target_count, source_count,
-        reinterpret_cast<const GpuCell*>(cells), cell_count,
-        reinterpret_cast<const std::uint64_t*>(indices), opening_angle, gravitational_constant,
-        softening, reinterpret_cast<int*>(error_address));
+        reinterpret_cast<const GpuCell*>(tree.cells), tree.cell_count,
+        reinterpret_cast<const std::uint64_t*>(tree.indices), opening_angle,
+        physics.gravitational_constant, physics.softening,
+        reinterpret_cast<int*>(runtime.error_address)};
+
+    hipLaunchKernelGGL(BarnesHutKernel, dim3(static_cast<unsigned int>(block_count)),
+        dim3(BlockSize), 0, reinterpret_cast<hipStream_t>(runtime.stream), kernel_request);
 
     return hipGetLastError() == hipSuccess ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR;
 }

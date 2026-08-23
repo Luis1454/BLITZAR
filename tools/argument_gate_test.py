@@ -1,3 +1,4 @@
+import json
 import pathlib
 import unittest
 
@@ -36,9 +37,15 @@ class ArgumentGateTests(unittest.TestCase):
 
     def test_repository_exceptions_are_structured(self):
         root = pathlib.Path(__file__).resolve().parents[1]
-        text = (root / "plan" / "parameter_exceptions.json").read_text(encoding="utf-8")
-        self.assertIn('"issue": 573', text)
-        self.assertIn('"issue": 574', text)
+        path = root / "plan" / "parameter_exceptions.json"
+        entries = json.loads(path.read_text(encoding="utf-8"))
+
+        self.assertTrue(entries)
+        self.assertEqual({entry["issue"] for entry in entries}, {573})
+        self.assertEqual(
+            len(entries),
+            len({(entry["path"], entry["name"]) for entry in entries}),
+        )
 
 
 if __name__ == "__main__":

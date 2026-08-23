@@ -53,7 +53,7 @@ public:
             backend_.store(BLITZAR_BACKEND_HIP, std::memory_order_relaxed);
 
             const blitzar_status gpu_status =
-                hip_.ComputeBarnesHut(particles, forces, settings, gravity_, barnes_hut_);
+                hip_.ComputeBarnesHut({particles, forces, settings, gravity_, barnes_hut_});
 
             if (gpu_status == BLITZAR_STATUS_OK) {
                 return BLITZAR_STATUS_OK;
@@ -92,7 +92,7 @@ public:
             backend_.store(BLITZAR_BACKEND_HIP, std::memory_order_relaxed);
 
             const blitzar_status gpu_status =
-                hip_.ComputeBarnesHut(particles, forces, settings, gravity_, barnes_hut_);
+                hip_.ComputeBarnesHut({particles, forces, settings, gravity_, barnes_hut_});
 
             if (gpu_status == BLITZAR_STATUS_OK) {
                 return BLITZAR_STATUS_OK;

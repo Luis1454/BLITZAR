@@ -107,9 +107,7 @@ blitzar_status HipContext::ComputeDirectRange(blitzar_core::ParticleStateView,
     return BLITZAR_STATUS_UNSUPPORTED;
 }
 
-blitzar_status HipContext::ComputeBarnesHut(blitzar_core::ParticleStateView,
-    blitzar_core::ForceView, const blitzar_core::ExecutionSettings&,
-    blitzar_physics::GravityParameters, blitzar_barnes_hut::BarnesHutSettings) noexcept
+blitzar_status HipContext::ComputeBarnesHut(const BarnesHutComputeRequest&) noexcept
 {
     if (status_ != BLITZAR_STATUS_OK) {
         return status_;

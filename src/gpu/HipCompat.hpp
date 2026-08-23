@@ -59,10 +59,18 @@ inline hipError_t hipStreamDestroy(hipStream_t stream) noexcept
     return cudaStreamDestroy(stream);
 }
 
-inline hipError_t hipMemcpyAsync(void* destination, const void* source, std::size_t bytes,
-    cudaMemcpyKind kind, hipStream_t stream) noexcept
+struct HipMemcpyRequest final {
+    void* destination;
+    const void* source;
+    std::size_t bytes;
+    cudaMemcpyKind kind;
+    hipStream_t stream;
+};
+
+inline hipError_t BlitzarHipMemcpyAsync(const HipMemcpyRequest& request) noexcept
 {
-    return cudaMemcpyAsync(destination, source, bytes, kind, stream);
+    return cudaMemcpyAsync(
+        request.destination, request.source, request.bytes, request.kind, request.stream);
 }
 
 inline hipError_t hipMemsetAsync(
