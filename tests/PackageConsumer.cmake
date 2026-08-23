@@ -2,6 +2,13 @@ if(NOT DEFINED BLITZAR_BUILD_DIR OR NOT IS_DIRECTORY "${BLITZAR_BUILD_DIR}")
     message(FATAL_ERROR "BLITZAR_BUILD_DIR must name a configured build directory")
 endif()
 
+set(manifest_file "${CMAKE_CURRENT_LIST_DIR}/../plan/manifest.json")
+file(READ "${manifest_file}" manifest_json)
+string(JSON expected_product_version
+    GET "${manifest_json}" product_version)
+string(JSON expected_plan_version
+    GET "${manifest_json}" plan_version)
+
 set(test_root "${BLITZAR_BUILD_DIR}/package-consumer")
 set(install_prefix "${test_root}/install")
 set(source_dir "${test_root}/source")
@@ -20,15 +27,28 @@ if(NOT install_result EQUAL 0)
         "BLITZAR install failed:\n${install_output}\n${install_error}")
 endif()
 
-file(WRITE "${source_dir}/CMakeLists.txt" [=[
+set(consumer_cmake [=[
 cmake_minimum_required(VERSION 3.25)
 project(BLITZARPackageConsumer LANGUAGES CXX)
 
 find_package(BLITZAR CONFIG REQUIRED)
 
+if(NOT DEFINED BLITZAR_VERSION OR
+   NOT BLITZAR_VERSION STREQUAL "@EXPECTED_PRODUCT_VERSION@")
+    message(FATAL_ERROR "installed BLITZAR product version is incorrect")
+endif()
+if(NOT DEFINED BLITZAR_PLAN_VERSION OR
+   NOT BLITZAR_PLAN_VERSION STREQUAL "@EXPECTED_PLAN_VERSION@")
+    message(FATAL_ERROR "installed BLITZAR plan version is incorrect")
+endif()
+
 add_executable(package_consumer main.cpp)
 target_link_libraries(package_consumer PRIVATE BLITZAR::blitzar)
 ]=])
+set(EXPECTED_PRODUCT_VERSION "${expected_product_version}")
+set(EXPECTED_PLAN_VERSION "${expected_plan_version}")
+string(CONFIGURE "${consumer_cmake}" consumer_cmake @ONLY)
+file(WRITE "${source_dir}/CMakeLists.txt" "${consumer_cmake}")
 
 file(WRITE "${source_dir}/main.cpp" [=[
 #include <blitzar/blitzar.hpp>

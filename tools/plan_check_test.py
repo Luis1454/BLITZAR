@@ -19,12 +19,29 @@ class PlanCheckTests(unittest.TestCase):
         self.root = Path(self.temp_dir.name)
         (self.root / "src").mkdir()
         (self.root / "plan").mkdir()
-        (self.root / "PLAN.md").write_text("# Fixture\n", encoding="utf-8")
+        (self.root / "cmake").mkdir()
+        (self.root / "PLAN.md").write_text(
+            "Product/API version: **1.0.0**\nPlan version: **1.0.6**\n",
+            encoding="utf-8",
+        )
         (self.root / "src" / "Valid.cpp").write_text(
             "int valid_value = 0;\n", encoding="utf-8"
         )
         (self.root / "CMakeLists.txt").write_text(
+            "file(READ \"${CMAKE_CURRENT_SOURCE_DIR}/plan/manifest.json\" "
+            "BLITZAR_PLAN_MANIFEST)\n"
+            "string(JSON BLITZAR_PRODUCT_VERSION GET "
+            "\"${BLITZAR_PLAN_MANIFEST}\" product_version)\n"
+            "string(JSON BLITZAR_PLAN_VERSION GET "
+            "\"${BLITZAR_PLAN_MANIFEST}\" plan_version)\n"
+            "project(BLITZAR VERSION ${BLITZAR_PRODUCT_VERSION})\n"
             "add_test(NAME TST-P0-001 COMMAND fixture_test)\n",
+            encoding="utf-8",
+        )
+        (self.root / "cmake" / "BLITZARConfig.cmake.in").write_text(
+            'set(BLITZAR_VERSION "@PROJECT_VERSION@")\n'
+            'set(BLITZAR_PRODUCT_VERSION "@PROJECT_VERSION@")\n'
+            'set(BLITZAR_PLAN_VERSION "@BLITZAR_PLAN_VERSION@")\n',
             encoding="utf-8",
         )
         self.write_manifest()
@@ -35,7 +52,8 @@ class PlanCheckTests(unittest.TestCase):
 
     def write_manifest(self, roots: list[str] | None = None) -> None:
         manifest = {
-            "plan_version": "test",
+            "product_version": "1.0.0",
+            "plan_version": "1.0.6",
             "status": "frozen",
             "roots": roots if roots is not None else ["src"],
             "deferred_roots": [],
@@ -125,9 +143,10 @@ class PlanCheckTests(unittest.TestCase):
         self.assertIn("invalid or duplicate quality test ID", result.stderr)
 
     def test_rejects_ctest_mismatch(self) -> None:
-        (self.root / "CMakeLists.txt").write_text(
-            "add_test(NAME TST-P0-002 COMMAND fixture_test)\n",
-            encoding="utf-8",
+        cmake_path = self.root / "CMakeLists.txt"
+        cmake = cmake_path.read_text(encoding="utf-8")
+        cmake_path.write_text(
+            cmake.replace("TST-P0-001", "TST-P0-002"), encoding="utf-8"
         )
         result = self.run_checker()
         self.assertNotEqual(result.returncode, 0)

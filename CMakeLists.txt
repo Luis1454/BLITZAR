@@ -1,6 +1,18 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(BLITZAR VERSION 1.0.0 LANGUAGES C CXX)
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/plan/manifest.json" BLITZAR_PLAN_MANIFEST)
+string(JSON BLITZAR_PRODUCT_VERSION
+    GET "${BLITZAR_PLAN_MANIFEST}" product_version)
+string(JSON BLITZAR_PLAN_VERSION
+    GET "${BLITZAR_PLAN_MANIFEST}" plan_version)
+if(NOT BLITZAR_PRODUCT_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+$")
+    message(FATAL_ERROR "plan/manifest.json product_version must be semantic version")
+endif()
+if(NOT BLITZAR_PLAN_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+$")
+    message(FATAL_ERROR "plan/manifest.json plan_version must be semantic version")
+endif()
+
+project(BLITZAR VERSION ${BLITZAR_PRODUCT_VERSION} LANGUAGES C CXX)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -107,6 +119,10 @@ else()
 endif()
 
 target_compile_features(blitzar PUBLIC cxx_std_20)
+target_compile_definitions(blitzar PRIVATE
+    BLITZAR_BUILD_PRODUCT_VERSION="${PROJECT_VERSION}"
+    BLITZAR_BUILD_PLAN_VERSION="${BLITZAR_PLAN_VERSION}"
+)
 target_include_directories(blitzar
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

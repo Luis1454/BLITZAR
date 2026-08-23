@@ -8,6 +8,14 @@
 #include <span>
 #include <stdexcept>
 
+#ifndef BLITZAR_BUILD_PRODUCT_VERSION
+#error "BLITZAR_BUILD_PRODUCT_VERSION must be supplied by CMake"
+#endif
+
+#ifndef BLITZAR_BUILD_PLAN_VERSION
+#error "BLITZAR_BUILD_PLAN_VERSION must be supplied by CMake"
+#endif
+
 struct blitzar_context {
     blitzar_status status;
 };
@@ -94,6 +102,16 @@ extern "C" blitzar_status blitzar_context_create(
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
     return BLITZAR_STATUS_OK;
+}
+
+extern "C" const char* blitzar_version(void)
+{
+    return BLITZAR_BUILD_PRODUCT_VERSION;
+}
+
+extern "C" const char* blitzar_plan_version(void)
+{
+    return BLITZAR_BUILD_PLAN_VERSION;
 }
 
 extern "C" void blitzar_context_destroy(blitzar_context* context)

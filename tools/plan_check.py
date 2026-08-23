@@ -31,6 +31,7 @@ SOURCE_SUFFIXES = {
     ".inl",
 }
 PUBLIC_HEADER_NAMES = {"blitzar.h", "blitzar.hpp"}
+SEMVER_PATTERN = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
 INFORMATIONAL_ARCHITECTURE_RULES = (
     "function length and count",
     "branching complexity",
@@ -138,6 +139,52 @@ def validate_forbidden_references(data: dict) -> None:
                     fail(
                         f"{path.relative_to(ROOT)} contains forbidden reference: {reference}"
                     )
+
+
+def validate_release_identity(data: dict) -> None:
+    product_version = data.get("product_version")
+    plan_version = data.get("plan_version")
+    if not isinstance(product_version, str) or not SEMVER_PATTERN.fullmatch(
+        product_version
+    ):
+        fail("manifest product_version must be a semantic version")
+    if not isinstance(plan_version, str) or not SEMVER_PATTERN.fullmatch(
+        plan_version
+    ):
+        fail("manifest plan_version must be a semantic version")
+
+    plan_text = (ROOT / "PLAN.md").read_text(encoding="utf-8")
+    if not re.search(
+        rf"Product/API version:\s*\*\*{re.escape(product_version)}\*\*",
+        plan_text,
+    ):
+        fail("PLAN.md product/API version does not match the manifest")
+    if not re.search(
+        rf"Plan version:\s*\*\*{re.escape(plan_version)}\*\*", plan_text
+    ):
+        fail("PLAN.md plan version does not match the manifest")
+
+    cmake_text = CMESSAGE.read_text(encoding="utf-8")
+    required_cmake_patterns = (
+        r"file\(READ\s+\"\$\{CMAKE_CURRENT_SOURCE_DIR\}/plan/manifest\.json\"",
+        r"string\(JSON\s+BLITZAR_PRODUCT_VERSION[\s\S]*?product_version\)",
+        r"string\(JSON\s+BLITZAR_PLAN_VERSION[\s\S]*?plan_version\)",
+        r"project\(BLITZAR\s+VERSION\s+\$\{BLITZAR_PRODUCT_VERSION\}",
+    )
+    if any(not re.search(pattern, cmake_text) for pattern in required_cmake_patterns):
+        fail("CMake must derive product and plan versions from plan/manifest.json")
+
+    config_path = ROOT / "cmake" / "BLITZARConfig.cmake.in"
+    if not config_path.is_file():
+        fail("cmake/BLITZARConfig.cmake.in is missing")
+    config_text = config_path.read_text(encoding="utf-8")
+    required_config_values = (
+        'set(BLITZAR_VERSION "@PROJECT_VERSION@")',
+        'set(BLITZAR_PRODUCT_VERSION "@PROJECT_VERSION@")',
+        'set(BLITZAR_PLAN_VERSION "@BLITZAR_PLAN_VERSION@")',
+    )
+    if any(value not in config_text for value in required_config_values):
+        fail("installed package config must expose product and plan versions")
 
 
 def validate_namespace_boundaries() -> None:
@@ -308,6 +355,7 @@ def main(argv: list[str] | None = None) -> None:
         fail("manifest status must remain 'frozen'")
     if not manifest.get("plan_version"):
         fail("plan_version is required")
+    validate_release_identity(manifest)
     validate_roots(manifest)
     phase_ids = validate_phases(manifest)
     validate_forbidden_references(manifest)

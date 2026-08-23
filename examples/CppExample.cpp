@@ -4,6 +4,10 @@
 
 int main()
 {
+    if (blitzar::version()[0] == '\0' || blitzar::plan_version()[0] == '\0') {
+        return 1;
+    }
+
     blitzar::Context context{};
     if (!context.valid()) {
         return 1;

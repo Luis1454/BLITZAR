@@ -57,6 +57,11 @@ typedef int32_t blitzar_integrator_kind;
 
 #define BLITZAR_INTEGRATOR_LEAPFROG_KDK ((blitzar_integrator_kind)0)
 
+/* Product/API semantic version and the frozen implementation plan revision. */
+BLITZAR_API const char* blitzar_version(void);
+
+BLITZAR_API const char* blitzar_plan_version(void);
+
 BLITZAR_API blitzar_status blitzar_context_create(
     blitzar_context** context);
 

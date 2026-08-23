@@ -4,6 +4,10 @@
 
 int main(void)
 {
+    if (blitzar_version()[0] == '\0' || blitzar_plan_version()[0] == '\0') {
+        return 1;
+    }
+
     blitzar_context* context = NULL;
     const blitzar_status status = blitzar_context_create(&context);
     if (status != BLITZAR_STATUS_OK) {

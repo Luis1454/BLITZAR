@@ -12,6 +12,16 @@
 
 namespace blitzar {
 
+[[nodiscard]] inline const char* version() noexcept
+{
+    return blitzar_version();
+}
+
+[[nodiscard]] inline const char* plan_version() noexcept
+{
+    return blitzar_plan_version();
+}
+
 enum class Status : std::int32_t {
     Ok = BLITZAR_STATUS_OK,
     InvalidArgument = BLITZAR_STATUS_INVALID_ARGUMENT,
