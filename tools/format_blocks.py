@@ -24,7 +24,11 @@ SOURCE_SUFFIXES = {
 }
 
 CONTROL_RE = re.compile(r"^(?:if|for|while|switch|catch|else|try|do)\b")
-TYPE_SCOPE_RE = re.compile(r"^(?:namespace|class|struct|enum|union)\b")
+TYPE_SCOPE_RE = re.compile(
+    r"^(?:(?:template\s*<[^{};]*>\s*)?)(?:namespace|class|struct|enum|union)\b"
+)
+EXTERN_SCOPE_RE = re.compile(r'^extern\s+"[^\"]+"(?:\s|$)')
+RAW_LITERAL_RE = re.compile(r'R"([^\s()\\]{0,16})\(')
 MACRO_RE = re.compile(r"^[A-Z_][A-Z0-9_]*\s*\(")
 EXIT_RE = re.compile(r"^(?:return|throw|break|continue|co_return|goto)\b")
 LABEL_RE = re.compile(r"^(?:case\b.*:|default\s*:)")
@@ -67,11 +71,25 @@ def source_files(root: Path) -> list[Path]:
     return sorted(files)
 
 
-def mask_code(line: str, in_block_comment: bool) -> tuple[str, bool]:
+def mask_code(
+    line: str, in_block_comment: bool, raw_delimiter: str | None
+) -> tuple[str, bool, str | None]:
     """Return a same-length view with comments and literals replaced by spaces."""
     masked = list(line)
     index = 0
     while index < len(line):
+        if raw_delimiter is not None:
+            terminator = ")" + raw_delimiter + '"'
+            end = line.find(terminator, index)
+            stop = len(line) if end < 0 else end + len(terminator)
+            for position in range(index, stop):
+                masked[position] = " "
+            index = stop
+            if end < 0:
+                return "".join(masked), in_block_comment, raw_delimiter
+            raw_delimiter = None
+            continue
+
         if in_block_comment:
             end = line.find("*/", index)
             stop = len(line) if end < 0 else end + 2
@@ -95,6 +113,19 @@ def mask_code(line: str, in_block_comment: bool) -> tuple[str, bool]:
             in_block_comment = end < 0
             continue
 
+        raw_match = RAW_LITERAL_RE.match(line, index)
+        if raw_match is not None:
+            raw_delimiter = raw_match.group(1)
+            terminator = ")" + raw_delimiter + '"'
+            end = line.find(terminator, raw_match.end())
+            stop = len(line) if end < 0 else end + len(terminator)
+            for position in range(index, stop):
+                masked[position] = " "
+            index = stop
+            if end >= 0:
+                raw_delimiter = None
+            continue
+
         if line[index] in {"\"", "'"}:
             quote = line[index]
             masked[index] = " "
@@ -112,7 +143,7 @@ def mask_code(line: str, in_block_comment: bool) -> tuple[str, bool]:
 
         index += 1
 
-    return "".join(masked), in_block_comment
+    return "".join(masked), in_block_comment, raw_delimiter
 
 
 def is_preprocessor(line: str, in_directive: bool) -> tuple[bool, bool]:
@@ -142,6 +173,19 @@ def looks_like_function_start(text: str) -> bool:
     return "(" in stripped and (re.search(r"\s", prefix) is not None or "::" in prefix)
 
 
+def looks_like_lambda_signature(text: str) -> bool:
+    stripped = text.strip()
+    if "=" not in stripped or ";" in stripped:
+        return False
+    capture = re.search(r"\[[^\]]*\]", stripped)
+    if capture is None or not stripped[: capture.start()].rstrip().endswith("="):
+        return False
+    suffix = stripped[capture.end() :].strip()
+    return not suffix or suffix.startswith((
+        "(", "mutable", "const", "noexcept", "->", "requires", "{"
+    ))
+
+
 def looks_like_declaration(text: str) -> bool:
     return bool(DECLARATION_RE.match(text.strip()))
 
@@ -165,16 +209,20 @@ def opening_kind(
     prefix: str, pending_kind: str | None, pending_parens: int, scopes: list[Scope]
 ) -> str:
     stripped = prefix.strip()
-    if pending_kind == "control" and (pending_parens > 0 or not stripped):
-        return "control"
+    if pending_kind in {"control", "function"}:
+        return pending_kind
     if re.search(r"\b(?:else|catch)\b", stripped):
         return "control"
     if pending_kind is not None and not stripped:
         return pending_kind
     if CONTROL_RE.match(stripped):
         return "control"
+    if stripped == "extern" or EXTERN_SCOPE_RE.match(stripped):
+        return "type"
     if TYPE_SCOPE_RE.match(stripped):
         return "type"
+    if looks_like_lambda_signature(stripped):
+        return "function"
     if looks_like_function_signature(stripped):
         return "function"
     if not stripped and any(scope.kind == "function" for scope in scopes):
@@ -201,16 +249,19 @@ def add_separator(
         blank_lines = [position for position in between if not lines[position].strip()]
         only_blank_lines = len(blank_lines) == line_index - state.last_line_index - 1
         if only_blank_lines:
-            remove_lines.update(blank_lines)
             if state.last_category != category:
+                remove_lines.update(blank_lines)
                 insert_before.add(line_index)
+            elif len(blank_lines) > 1:
+                remove_lines.update(blank_lines[1:])
         elif state.last_category != category:
             previous = line_index - 1
-            previous_text = lines[previous].strip() if previous >= 0 else ""
-            if previous_text and not previous_text.startswith(("//", "/*", "*")):
+            while previous > state.last_line_index and not lines[previous].strip():
+                previous -= 1
+            if previous >= 0 and lines[previous].strip():
                 insert_before.add(line_index)
     state.last_category = category
-    state.active_category = None if category in {"control", "label"} else category
+    state.active_category = None if category in {"control", "label", "scope"} else category
     state.last_line_index = line_index
 
 
@@ -219,16 +270,37 @@ def remove_continuation_blanks(lines: list[str]) -> list[str]:
     result: list[str] = []
     paren_depth = 0
     in_block_comment = False
+    raw_delimiter: str | None = None
     in_directive = False
     for line in lines:
         preprocessor, in_directive = is_preprocessor(line, in_directive)
-        code, in_block_comment = mask_code(line, in_block_comment)
-        if not line.strip() and paren_depth > 0 and not preprocessor:
+        code, in_block_comment, raw_delimiter = mask_code(
+            line, in_block_comment, raw_delimiter
+        )
+        if not line.strip() and paren_depth > 0 and not preprocessor and raw_delimiter is None:
             continue
         result.append(line)
         if not preprocessor:
             paren_depth += code.count("(") - code.count(")")
             paren_depth = max(paren_depth, 0)
+    return result
+
+
+def collapse_blank_runs(lines: list[str]) -> list[str]:
+    """Keep at most one blank line without changing comments or raw literals."""
+    result: list[str] = []
+    in_block_comment = False
+    raw_delimiter: str | None = None
+    previous_blank = False
+    for line in lines:
+        code, in_block_comment, raw_delimiter = mask_code(
+            line, in_block_comment, raw_delimiter
+        )
+        blank = not line.strip() and not in_block_comment and raw_delimiter is None
+        if blank and previous_blank:
+            continue
+        result.append(line)
+        previous_blank = blank
     return result
 
 
@@ -238,8 +310,10 @@ def format_lines(lines: list[str]) -> list[str]:
     insert_before: set[int] = set()
     pending_kind: str | None = None
     in_block_comment = False
+    raw_delimiter: str | None = None
     in_directive = False
     pending_parens = 0
+    parenthesis_depth = 0
     remove_lines: set[int] = set()
 
     for line_index, line in enumerate(lines):
@@ -247,17 +321,21 @@ def format_lines(lines: list[str]) -> list[str]:
         if preprocessor:
             continue
 
-        code, in_block_comment = mask_code(line, in_block_comment)
+        code, in_block_comment, raw_delimiter = mask_code(
+            line, in_block_comment, raw_delimiter
+        )
         if not code.strip():
             continue
 
         state = current_scope_state(scopes)
         starts_closing = code.lstrip().startswith("}")
+        standalone_opening = code.strip() == "{" and parenthesis_depth == 0
         pending_continuation = pending_kind in {"control", "function"} and pending_parens > 0
         if (
             state is not None
             and state.active_category is None
             and not starts_closing
+            and not standalone_opening
             and not pending_continuation
         ):
             add_separator(
@@ -272,13 +350,30 @@ def format_lines(lines: list[str]) -> list[str]:
         events = [(position, character) for position, character in enumerate(code) if character in "{}"]
         for position, character in events:
             if character == "{":
-                kind = opening_kind(code[:position], pending_kind, pending_parens, scopes)
+                inside_initializer = bool(scopes) and scopes[-1].kind == "initializer"
+                kind = (
+                    "initializer"
+                    if code[:position].strip() == ""
+                    and (parenthesis_depth > 0 or inside_initializer)
+                    else opening_kind(code[:position], pending_kind, pending_parens, scopes)
+                )
                 if kind == "control":
                     state = current_scope_state(scopes)
                     if state is not None:
                         add_separator(
                             state,
                             "control",
+                            line_index,
+                            lines,
+                            insert_before,
+                            remove_lines,
+                        )
+                elif kind == "compound":
+                    state = current_scope_state(scopes)
+                    if state is not None:
+                        add_separator(
+                            state,
+                            "scope",
                             line_index,
                             lines,
                             insert_before,
@@ -293,6 +388,12 @@ def format_lines(lines: list[str]) -> list[str]:
             if not scopes:
                 continue
             popped = scopes.pop()
+            if popped.kind == "compound":
+                state = current_scope_state(scopes)
+                if state is not None:
+                    state.last_category = "scope"
+                    state.active_category = None
+                    state.last_line_index = line_index
 
         state = current_scope_state(scopes)
         if state is not None and state.active_category is not None:
@@ -300,15 +401,21 @@ def format_lines(lines: list[str]) -> list[str]:
                 state.active_category = None
 
         if events:
+            parenthesis_depth += code.count("(") - code.count(")")
+            parenthesis_depth = max(parenthesis_depth, 0)
             continue
 
         if pending_kind in {"control", "function"} and pending_parens > 0:
             pending_parens += code.count("(") - code.count(")")
             if pending_parens > 0:
+                parenthesis_depth += code.count("(") - code.count(")")
+                parenthesis_depth = max(parenthesis_depth, 0)
                 continue
             pending_parens = 0
             if pending_kind == "control":
                 pending_kind = None
+            parenthesis_depth += code.count("(") - code.count(")")
+            parenthesis_depth = max(parenthesis_depth, 0)
             continue
 
         stripped = code.strip()
@@ -318,6 +425,9 @@ def format_lines(lines: list[str]) -> list[str]:
         elif TYPE_SCOPE_RE.match(stripped):
             pending_kind = "type"
             pending_parens = 0
+        elif looks_like_lambda_signature(stripped):
+            pending_kind = "function"
+            pending_parens = code.count("(") - code.count(")")
         elif looks_like_function_signature(stripped):
             pending_kind = "function"
             pending_parens = code.count("(") - code.count(")")
@@ -325,10 +435,15 @@ def format_lines(lines: list[str]) -> list[str]:
             pending_kind = "function"
             pending_parens = code.count("(") - code.count(")")
         elif pending_kind == "function" and stripped.startswith(("const", "noexcept", "requires")):
+            parenthesis_depth += code.count("(") - code.count(")")
+            parenthesis_depth = max(parenthesis_depth, 0)
             continue
         else:
             pending_kind = None
             pending_parens = 0
+
+        parenthesis_depth += code.count("(") - code.count(")")
+        parenthesis_depth = max(parenthesis_depth, 0)
 
     result: list[str] = []
     for line_index, line in enumerate(lines):
@@ -337,7 +452,7 @@ def format_lines(lines: list[str]) -> list[str]:
         if line_index in insert_before and result and result[-1].strip():
             result.append("")
         result.append(line)
-    return result
+    return collapse_blank_runs(result)
 
 
 def read_lines(path: Path) -> tuple[list[str], str, bool]:
@@ -353,6 +468,13 @@ def write_lines(path: Path, lines: list[str], newline: str, trailing_newline: bo
         text += newline
     with path.open("w", encoding="utf-8", newline="") as stream:
         stream.write(text)
+
+
+def display_path(path: Path, root: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
 
 
 def main() -> int:
@@ -380,7 +502,7 @@ def main() -> int:
 
     if changed and arguments.check:
         for path in changed:
-            print(path.relative_to(root))
+            print(display_path(path, root))
         return 1
     if changed and arguments.write:
         print(f"formatted={len(changed)}")
