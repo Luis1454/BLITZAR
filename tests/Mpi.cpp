@@ -13,6 +13,7 @@
 #include <bit>
 #include <cmath>
 #include <cstddef>
+#include <cstdio>
 #include <limits>
 #include <span>
 #include <string_view>
@@ -227,9 +228,15 @@ struct StateArrays final {
 [[nodiscard]] bool Configure(
     blitzar_sdk::Simulation& simulation,
     const StateArrays& state,
-    double timestep) noexcept
+    double timestep,
+    blitzar_solver_kind solver_kind = BLITZAR_SOLVER_DIRECT) noexcept
 {
-    return simulation.SetSolver(BLITZAR_SOLVER_DIRECT) == BLITZAR_STATUS_OK &&
+    if (solver_kind == BLITZAR_SOLVER_BARNES_HUT &&
+        simulation.SetBarnesHut(
+            0.0, ParticleCount, 128, 1, 32) != BLITZAR_STATUS_OK) {
+        return false;
+    }
+    return simulation.SetSolver(solver_kind) == BLITZAR_STATUS_OK &&
            simulation.SetGravity(1.0, 0.1) == BLITZAR_STATUS_OK &&
            simulation.SetTimestep(timestep) == BLITZAR_STATUS_OK &&
            simulation.SetParticles(
@@ -296,7 +303,8 @@ struct StateArrays final {
 [[nodiscard]] bool RunCase(
     const StateArrays& initial,
     double timestep,
-    int step_count) noexcept
+    int step_count,
+    blitzar_solver_kind solver_kind = BLITZAR_SOLVER_DIRECT) noexcept
 {
     StateArrays reference{};
     bool local_ok = BuildReference(
@@ -306,7 +314,8 @@ struct StateArrays final {
         step_count);
 
     blitzar_sdk::Simulation simulation(ParticleCount);
-    const bool configuration_ok = Configure(simulation, initial, timestep);
+    const bool configuration_ok = Configure(
+        simulation, initial, timestep, solver_kind);
     local_ok = local_ok && configuration_ok;
     for (int step = 0; step < step_count; ++step) {
         const blitzar_status step_status = simulation.Step();
@@ -501,6 +510,56 @@ struct StateArrays final {
     return true;
 }
 
+[[nodiscard]] bool RunOutOfDomainCase() noexcept
+{
+    StateArrays initial = InitialState();
+    initial.velocity_x.fill(1000.0);
+    initial.velocity_y.fill(0.0);
+    initial.velocity_z.fill(0.0);
+
+    blitzar_sdk::Simulation simulation(ParticleCount);
+    if (!Configure(simulation, initial, 1.0)) {
+        return false;
+    }
+
+    StateArrays before{};
+    if (simulation.GetState(
+            before.x,
+            before.y,
+            before.z,
+            before.velocity_x,
+            before.velocity_y,
+            before.velocity_z,
+            before.mass) != BLITZAR_STATUS_OK ||
+        simulation.Step() != BLITZAR_STATUS_INVALID_ARGUMENT) {
+        return false;
+    }
+
+    StateArrays after{};
+    if (simulation.GetState(
+            after.x,
+            after.y,
+            after.z,
+            after.velocity_x,
+            after.velocity_y,
+            after.velocity_z,
+            after.mass) != BLITZAR_STATUS_OK) {
+        return false;
+    }
+    for (std::size_t index = 0; index < ParticleCount; ++index) {
+        if (after.x[index] != before.x[index] ||
+            after.y[index] != before.y[index] ||
+            after.z[index] != before.z[index] ||
+            after.velocity_x[index] != before.velocity_x[index] ||
+            after.velocity_y[index] != before.velocity_y[index] ||
+            after.velocity_z[index] != before.velocity_z[index] ||
+            after.mass[index] != before.mass[index]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 [[nodiscard]] bool RunErrorSynchronizationCase(
     blitzar_parallel::MpiContext& context) noexcept
 {
@@ -535,14 +594,17 @@ struct StateArrays final {
         BLITZAR_STATUS_OK) {
         return false;
     }
-    if (context.Rank() == 0) {
+    if (context.IsDistributed() && context.Rank() == 0) {
         context.AbortGhostExchange(pre_completion_exchange);
     }
     blitzar_parallel::PacketBuffer aborted_ghosts;
     aborted_ghosts.Resize(1);
-    if (exchange.CompleteGhosts(
-            pre_completion_exchange, aborted_ghosts) !=
-            BLITZAR_STATUS_INVALID_ARGUMENT ||
+    const blitzar_status aborted_completion_status = exchange.CompleteGhosts(
+        pre_completion_exchange, aborted_ghosts);
+    const blitzar_status expected_aborted_completion =
+        context.IsDistributed() ? BLITZAR_STATUS_INVALID_ARGUMENT
+                                : BLITZAR_STATUS_OK;
+    if (aborted_completion_status != expected_aborted_completion ||
         aborted_ghosts.Size() != 0) {
         return false;
     }
@@ -570,8 +632,13 @@ struct StateArrays final {
     }
 
     blitzar_parallel::PacketBuffer ghosts;
-    if (exchange.CompleteGhosts(ghost_exchange, ghosts) !=
-            BLITZAR_STATUS_INVALID_ARGUMENT ||
+    const blitzar_status invalid_ghost_completion_status =
+        exchange.CompleteGhosts(ghost_exchange, ghosts);
+    const blitzar_status expected_invalid_ghost_completion =
+        context.IsDistributed() ? BLITZAR_STATUS_INVALID_ARGUMENT
+                                : BLITZAR_STATUS_OK;
+    if (invalid_ghost_completion_status !=
+            expected_invalid_ghost_completion ||
         ghosts.Size() != 0) {
         return false;
     }
@@ -621,10 +688,12 @@ struct StateArrays final {
 {
     const std::array<int, 1> invalid_counts{0};
     std::array<int, 1> invalid_receive{};
+    const blitzar_status expected_zero_layout =
+        context.IsDistributed() ? BLITZAR_STATUS_INVALID_ARGUMENT
+                                : BLITZAR_STATUS_OK;
     if (context.AllToAllCounts(invalid_counts, invalid_receive) !=
-            BLITZAR_STATUS_INVALID_ARGUMENT ||
-        context.AllGatherCounts(0, invalid_receive) !=
-            BLITZAR_STATUS_INVALID_ARGUMENT) {
+            expected_zero_layout ||
+        context.AllGatherCounts(0, invalid_receive) != expected_zero_layout) {
         return false;
     }
 
@@ -635,7 +704,7 @@ struct StateArrays final {
             invalid_counts,
             std::span<blitzar_parallel::ParticlePacket>{},
             invalid_counts,
-            invalid_counts) != BLITZAR_STATUS_INVALID_ARGUMENT) {
+            invalid_counts) != expected_zero_layout) {
         return false;
     }
 
@@ -645,6 +714,27 @@ struct StateArrays final {
     std::array<double, 3> maximum = invalid_maximum;
     return context.ReduceBounds(minimum, maximum) ==
            BLITZAR_STATUS_INVALID_ARGUMENT;
+}
+
+[[nodiscard]] bool RunLargeCountValidationCase(
+    const blitzar_parallel::MpiContext& context) noexcept
+{
+    std::array<int, 4> counts{};
+    std::array<int, 4> displacements{};
+    counts.fill(std::numeric_limits<int>::max());
+    const std::span<const int> layout =
+        std::span<const int>(counts).first(static_cast<std::size_t>(context.Size()));
+    const std::span<const int> offsets =
+        std::span<const int>(displacements).first(
+            static_cast<std::size_t>(context.Size()));
+    const std::span<blitzar_parallel::ParticlePacket> empty_packets{};
+    return context.AllToAllPackets(
+               empty_packets,
+               layout,
+               offsets,
+               empty_packets,
+               layout,
+               offsets) == BLITZAR_STATUS_INVALID_ARGUMENT;
 }
 
 [[nodiscard]] bool RunWireCodecCase() noexcept
@@ -717,25 +807,58 @@ struct StateArrays final {
 int RunTests(int argc, char** argv)
 {
     blitzar_parallel::MpiContext context;
-    const bool valid_world =
-        context.IsUsable() && (context.Size() == 2 || context.Size() == 4);
     const std::string_view mode = argc > 1 ? argv[1] : std::string_view{};
-    const bool migration_case = mode == "migration";
+    const bool single_rank_case = mode == "single";
+    const bool migration_case =
+        mode == "migration" || mode == "barnes-hut-migration";
+    const bool barnes_hut_case = mode == "barnes-hut-migration";
+    const bool out_of_domain_case = mode == "out-of-domain";
+    const bool large_count_case = mode == "large-count";
+    const bool valid_world =
+        context.IsUsable() &&
+        (single_rank_case ? context.Size() == 1
+                          : (context.Size() == 2 || context.Size() == 4));
     const bool local_case = RunCase(
         migration_case ? MigrationState() : InitialState(),
         0.01,
-        migration_case ? 1 : 2);
+        migration_case ? 1 : 2,
+        barnes_hut_case ? BLITZAR_SOLVER_BARNES_HUT : BLITZAR_SOLVER_DIRECT);
     const bool rollback_case = RunRollbackCase();
     const bool boundary_case = RunBoundaryOwnershipCase(context);
     const bool error_synchronization_case = RunErrorSynchronizationCase(context);
     const bool nested_context_case = RunNestedContextCase(context);
     const bool collective_validation_case =
         RunCollectiveValidationCase(context);
+    const bool out_of_domain_result =
+        !out_of_domain_case || RunOutOfDomainCase();
+    const bool large_count_result =
+        !large_count_case || RunLargeCountValidationCase(context);
     const bool wire_codec_case = RunWireCodecCase();
     const bool local_ok =
         valid_world && local_case && rollback_case && boundary_case &&
         error_synchronization_case && nested_context_case &&
-        collective_validation_case && wire_codec_case;
+        collective_validation_case && out_of_domain_result &&
+        large_count_result && wire_codec_case;
+
+    if (!local_ok) {
+        std::fprintf(
+            stderr,
+            "MPI test failure rank=%d size=%d valid_world=%d local=%d "
+            "rollback=%d boundary=%d error_sync=%d nested=%d collective=%d "
+            "out_of_domain=%d large_count=%d wire=%d\n",
+            context.Rank(),
+            context.Size(),
+            valid_world,
+            local_case,
+            rollback_case,
+            boundary_case,
+            error_synchronization_case,
+            nested_context_case,
+            collective_validation_case,
+            out_of_domain_result,
+            large_count_result,
+            wire_codec_case);
+    }
 
     int local_failure = local_ok ? 0 : 1;
     int global_failure = 0;

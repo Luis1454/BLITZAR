@@ -289,6 +289,37 @@ if(BLITZAR_BUILD_TESTS)
                 ${MPIEXEC_PREFLAGS} $<TARGET_FILE:blitzar_mpi_test> migration
                 ${MPIEXEC_POSTFLAGS}
         )
+        add_test(
+            NAME TST-P7-003
+            COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 1
+                ${MPIEXEC_PREFLAGS} $<TARGET_FILE:blitzar_mpi_test> single
+                ${MPIEXEC_POSTFLAGS}
+        )
+        add_test(
+            NAME TST-P7-004
+            COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2
+                ${MPIEXEC_PREFLAGS}
+                $<TARGET_FILE:blitzar_mpi_test> barnes-hut-migration
+                ${MPIEXEC_POSTFLAGS}
+        )
+        add_test(
+            NAME TST-P7-005
+            COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2
+                ${MPIEXEC_PREFLAGS} $<TARGET_FILE:blitzar_mpi_test> large-count
+                ${MPIEXEC_POSTFLAGS}
+        )
+        add_test(
+            NAME TST-P8-002
+            COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2
+                ${MPIEXEC_PREFLAGS}
+                $<TARGET_FILE:blitzar_mpi_test> out-of-domain
+                ${MPIEXEC_POSTFLAGS}
+        )
+        set_tests_properties(
+            TST-P7-001 TST-P7-002 TST-P7-003 TST-P7-004 TST-P7-005
+            TST-P8-001 TST-P8-002
+            PROPERTIES TIMEOUT 120
+        )
     endif()
 endif()
 

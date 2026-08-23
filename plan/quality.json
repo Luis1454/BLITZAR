@@ -80,6 +80,30 @@
       "phase": "P8"
     },
     {
+      "id": "TST-P7-003",
+      "name": "mpi-one-rank-failure-completion",
+      "command": "mpiexec -np 1 blitzar_mpi_test single",
+      "phase": "P7"
+    },
+    {
+      "id": "TST-P7-004",
+      "name": "mpi-barnes-hut-migration-parity",
+      "command": "mpiexec -np 2 blitzar_mpi_test barnes-hut-migration",
+      "phase": "P7"
+    },
+    {
+      "id": "TST-P7-005",
+      "name": "mpi-large-count-rejection",
+      "command": "mpiexec -np 2 blitzar_mpi_test large-count",
+      "phase": "P7"
+    },
+    {
+      "id": "TST-P8-002",
+      "name": "mpi-out-of-domain-rollback",
+      "command": "mpiexec -np 2 blitzar_mpi_test out-of-domain",
+      "phase": "P8"
+    },
+    {
       "id": "TST-P2-004",
       "name": "installed-cmake-package-consumer",
       "command": "cmake -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/PackageConsumer.cmake",

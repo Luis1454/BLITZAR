@@ -272,7 +272,7 @@ jobs:
         run: |
           timeout --foreground 240s ctest --test-dir build-mpi \
             --output-on-failure \
-            -R '^(TST-P7-001|TST-P7-002|TST-P8-001)$'
+            -R '^(TST-P7-001|TST-P7-002|TST-P7-003|TST-P7-004|TST-P7-005|TST-P8-001|TST-P8-002)$'
 
   native-cuda:
     name: Native CUDA compile and optional device test

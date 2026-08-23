@@ -7,6 +7,7 @@
 
 #include <array>
 #include <cmath>
+#include <cstdio>
 #include <utility>
 
 namespace {
@@ -114,6 +115,10 @@ int main()
 
     blitzar_gpu::HipContext context;
     if (!context.IsAvailable()) {
+        std::fprintf(
+            stdout,
+            "BLITZAR GPU qualification skipped: no compatible device is "
+            "visible; CPU fallback is being tested\n");
         BLITZAR_CHECK(context.ComputeDirect(
                           particles.State(), gpu_forces.View(), gravity) ==
                       BLITZAR_STATUS_UNSUPPORTED);
