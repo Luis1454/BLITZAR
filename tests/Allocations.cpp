@@ -1,5 +1,6 @@
 #include "AllocationMonitor.hpp"
 #include "Check.hpp"
+#include "parallel/MpiContext.hpp"
 #include "sdk/Simulation.hpp"
 
 #include <array>
@@ -52,14 +53,33 @@ struct StateArrays final {
     return first_step == BLITZAR_STATUS_OK && second_step == BLITZAR_STATUS_OK && allocations == 0;
 }
 
+[[nodiscard]] bool RunSequentialContextCase() noexcept
+{
+    {
+        blitzar_parallel::MpiContext first;
+
+        if (!first.IsUsable()) {
+            return false;
+        }
+    }
+
+    blitzar_parallel::MpiContext second;
+
+    return second.IsUsable();
+}
+
 } // namespace
 
 int main()
 {
-    blitzar_sdk::Simulation simulation(ParticleCount);
+    {
+        blitzar_sdk::Simulation simulation(ParticleCount);
 
-    BLITZAR_CHECK(RunCase(simulation, BLITZAR_SOLVER_DIRECT));
-    BLITZAR_CHECK(RunCase(simulation, BLITZAR_SOLVER_BARNES_HUT));
+        BLITZAR_CHECK(RunCase(simulation, BLITZAR_SOLVER_DIRECT));
+        BLITZAR_CHECK(RunCase(simulation, BLITZAR_SOLVER_BARNES_HUT));
+    }
+
+    BLITZAR_CHECK(RunSequentialContextCase());
 
     return 0;
 }

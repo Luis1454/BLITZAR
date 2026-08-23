@@ -37,6 +37,13 @@
       "decision": "Keep MPI capability and collective adapters behind one opaque context boundary."
     },
     {
+      "path": "src/parallel/MpiSession.cpp",
+      "signals": ["branching"],
+      "issue": 545,
+      "status": "accepted",
+      "decision": "Keep process-level MPI ownership and shutdown policy together; the branches guard initialization, external ownership, and process-exit finalization."
+    },
+    {
       "path": "src/parallel/MpiExchange.cpp",
       "signals": ["branching", "function_length"],
       "issue": 575,

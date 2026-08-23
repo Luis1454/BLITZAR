@@ -1,5 +1,6 @@
 #include "parallel/MpiSessionNative.hpp"
 
+#include <cstdlib>
 #include <mutex>
 #include <new>
 
@@ -12,6 +13,27 @@ namespace {
 std::mutex SessionMutex;
 std::size_t SessionReferences = 0;
 bool InitializedByBlitzar = false;
+bool FinalizerRegistered = false;
+
+void FinalizeAtExit() noexcept
+{
+    std::lock_guard lock(SessionMutex);
+
+    if (!InitializedByBlitzar) {
+        return;
+    }
+
+    int initialized = 0;
+    int finalized = 0;
+
+    if (MPI_Initialized(&initialized) == MPI_SUCCESS && initialized != 0 &&
+        MPI_Finalized(&finalized) == MPI_SUCCESS && finalized == 0) {
+        (void)MPI_Finalize();
+    }
+
+    SessionReferences = 0;
+    InitializedByBlitzar = false;
+}
 
 #endif
 
@@ -39,6 +61,14 @@ MpiSession::MpiSession() noexcept
         return;
     }
 
+    int finalized = 0;
+
+    if (initialized != 0 && (MPI_Finalized(&finalized) != MPI_SUCCESS || finalized != 0)) {
+        status_ = BLITZAR_STATUS_INTERNAL_ERROR;
+
+        return;
+    }
+
     int provided = MPI_THREAD_SINGLE;
 
     if (initialized == 0) {
@@ -49,6 +79,17 @@ MpiSession::MpiSession() noexcept
         }
 
         InitializedByBlitzar = true;
+
+        if (!FinalizerRegistered && std::atexit(FinalizeAtExit) != 0) {
+            (void)MPI_Finalize();
+
+            InitializedByBlitzar = false;
+            status_ = BLITZAR_STATUS_INTERNAL_ERROR;
+
+            return;
+        }
+
+        FinalizerRegistered = true;
     }
     else if (MPI_Query_thread(&provided) != MPI_SUCCESS) {
         status_ = BLITZAR_STATUS_INTERNAL_ERROR;
@@ -86,18 +127,6 @@ MpiSession::~MpiSession() noexcept
     }
 
     --SessionReferences;
-
-    if (SessionReferences != 0 || !InitializedByBlitzar) {
-        return;
-    }
-
-    int finalized = 0;
-
-    if (MPI_Finalized(&finalized) == MPI_SUCCESS && finalized == 0) {
-        MPI_Finalize();
-    }
-
-    InitializedByBlitzar = false;
 #endif
 }
 
