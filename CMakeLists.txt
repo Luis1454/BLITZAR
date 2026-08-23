@@ -264,6 +264,7 @@ if(BLITZAR_BUILD_TESTS)
     blitzar_enable_warnings(blitzar_dynamics_test)
 
     add_executable(blitzar_allocation_test
+        tests/AllocationMonitor.cpp
         tests/Allocations.cpp
     )
     target_link_libraries(blitzar_allocation_test PRIVATE blitzar)
@@ -298,6 +299,7 @@ if(BLITZAR_BUILD_TESTS)
 
     if(BLITZAR_MPI_ENABLED)
         add_executable(blitzar_mpi_test
+            tests/AllocationMonitor.cpp
             tests/Mpi.cpp
         )
         target_link_libraries(blitzar_mpi_test PRIVATE blitzar)

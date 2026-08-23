@@ -1,3 +1,4 @@
+#include "AllocationMonitor.hpp"
 #include "Check.hpp"
 #include "Views.hpp"
 #include "integration/LeapfrogKdk.hpp"
@@ -347,6 +348,35 @@ struct StateArrays final {
     }
 
     return local_ok;
+}
+
+[[nodiscard]] bool RunAllocationCase() noexcept
+{
+    const StateArrays initial = InitialState();
+    const std::array<blitzar_solver_kind, 2> solvers{
+        BLITZAR_SOLVER_DIRECT, BLITZAR_SOLVER_BARNES_HUT};
+
+    for (const blitzar_solver_kind solver_kind : solvers) {
+        blitzar_sdk::Simulation simulation(ParticleCount);
+
+        if (!Configure(simulation, initial, 0.01, solver_kind) ||
+            simulation.Step() != BLITZAR_STATUS_OK) {
+            return false;
+        }
+
+        blitzar_tests::BeginAllocationCounting();
+
+        const blitzar_status first_step = simulation.Step();
+        const blitzar_status second_step = simulation.Step();
+        const std::size_t allocations = blitzar_tests::EndAllocationCounting();
+
+        if (first_step != BLITZAR_STATUS_OK || second_step != BLITZAR_STATUS_OK ||
+            allocations != 0) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 [[nodiscard]] bool RunRollbackCase() noexcept
@@ -762,6 +792,8 @@ int RunTests(int argc, char** argv)
         RunCase(migration_case ? MigrationState() : InitialState(), 0.01, migration_case ? 1 : 2,
             barnes_hut_case ? BLITZAR_SOLVER_BARNES_HUT : BLITZAR_SOLVER_DIRECT);
 
+    const bool allocation_case = RunAllocationCase();
+
     const bool rollback_case = RunRollbackCase();
     const bool boundary_case = RunBoundaryOwnershipCase(context);
     const bool error_synchronization_case = RunErrorSynchronizationCase(context);
@@ -770,19 +802,19 @@ int RunTests(int argc, char** argv)
     const bool out_of_domain_result = !out_of_domain_case || RunOutOfDomainCase();
     const bool large_count_result = !large_count_case || RunLargeCountValidationCase(context);
     const bool wire_codec_case = RunWireCodecCase();
-    const bool local_ok = valid_world && local_case && rollback_case && boundary_case &&
-                          error_synchronization_case && nested_context_case &&
+    const bool local_ok = valid_world && local_case && allocation_case && rollback_case &&
+                          boundary_case && error_synchronization_case && nested_context_case &&
                           collective_validation_case && out_of_domain_result &&
                           large_count_result && wire_codec_case;
 
     if (!local_ok) {
         std::fprintf(stderr,
             "MPI test failure rank=%d size=%d valid_world=%d local=%d "
-            "rollback=%d boundary=%d error_sync=%d nested=%d collective=%d "
+            "allocation=%d rollback=%d boundary=%d error_sync=%d nested=%d collective=%d "
             "out_of_domain=%d large_count=%d wire=%d\n",
-            context.Rank(), context.Size(), valid_world, local_case, rollback_case, boundary_case,
-            error_synchronization_case, nested_context_case, collective_validation_case,
-            out_of_domain_result, large_count_result, wire_codec_case);
+            context.Rank(), context.Size(), valid_world, local_case, allocation_case, rollback_case,
+            boundary_case, error_synchronization_case, nested_context_case,
+            collective_validation_case, out_of_domain_result, large_count_result, wire_codec_case);
     }
 
     int local_failure = local_ok ? 0 : 1;

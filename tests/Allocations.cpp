@@ -1,118 +1,15 @@
+#include "AllocationMonitor.hpp"
 #include "Check.hpp"
 #include "sdk/Simulation.hpp"
 
 #include <array>
-#include <atomic>
 #include <cstddef>
-#include <cstdlib>
-#include <new>
-
-#if defined(_WIN32)
-#include <malloc.h>
-#endif
 
 namespace {
 
-std::atomic<bool> Counting{false};
-std::atomic<std::size_t> AllocationCount{0};
+constexpr std::size_t ParticleCount = 2;
 
-void* Allocate(std::size_t size, std::size_t alignment = alignof(std::max_align_t))
-{
-    const std::size_t actual_size = size == 0 ? 1 : size;
-    void* result = nullptr;
-#if defined(_WIN32)
-    result = _aligned_malloc(actual_size, alignment);
-#else
-    if (alignment <= alignof(std::max_align_t)) {
-        result = std::malloc(actual_size);
-    }
-    else if (posix_memalign(&result, alignment, actual_size) != 0) {
-        result = nullptr;
-    }
-#endif
-    if (result == nullptr) {
-        throw std::bad_alloc();
-    }
-    if (Counting.load(std::memory_order_relaxed)) {
-        AllocationCount.fetch_add(1, std::memory_order_relaxed);
-    }
-    return result;
-}
-
-void Release(void* pointer) noexcept
-{
-#if defined(_WIN32)
-    _aligned_free(pointer);
-#else
-    std::free(pointer);
-#endif
-}
-
-} // namespace
-
-void* operator new(std::size_t size)
-{
-    return Allocate(size);
-}
-
-void* operator new[](std::size_t size)
-{
-    return Allocate(size);
-}
-
-void* operator new(std::size_t size, std::align_val_t alignment)
-{
-    return Allocate(size, static_cast<std::size_t>(alignment));
-}
-
-void* operator new[](std::size_t size, std::align_val_t alignment)
-{
-    return Allocate(size, static_cast<std::size_t>(alignment));
-}
-
-void operator delete(void* pointer) noexcept
-{
-    Release(pointer);
-}
-
-void operator delete[](void* pointer) noexcept
-{
-    Release(pointer);
-}
-
-void operator delete(void* pointer, std::size_t) noexcept
-{
-    Release(pointer);
-}
-
-void operator delete[](void* pointer, std::size_t) noexcept
-{
-    Release(pointer);
-}
-
-void operator delete(void* pointer, std::align_val_t) noexcept
-{
-    Release(pointer);
-}
-
-void operator delete[](void* pointer, std::align_val_t) noexcept
-{
-    Release(pointer);
-}
-
-void operator delete(void* pointer, std::size_t, std::align_val_t) noexcept
-{
-    Release(pointer);
-}
-
-void operator delete[](void* pointer, std::size_t, std::align_val_t) noexcept
-{
-    Release(pointer);
-}
-
-int main()
-{
-    constexpr std::size_t ParticleCount = 2;
+struct StateArrays final {
     std::array<double, ParticleCount> position_x{0.0, 1.0};
     std::array<double, ParticleCount> position_y{0.0, 0.0};
     std::array<double, ParticleCount> position_z{0.0, 0.0};
@@ -120,28 +17,49 @@ int main()
     std::array<double, ParticleCount> velocity_y{0.0, 0.0};
     std::array<double, ParticleCount> velocity_z{0.0, 0.0};
     std::array<double, ParticleCount> mass{1.0, 1.0};
-    blitzar_sdk::Simulation simulation(ParticleCount);
+};
 
-    BLITZAR_CHECK(simulation.SetSolver(BLITZAR_SOLVER_DIRECT) == BLITZAR_STATUS_OK);
-    BLITZAR_CHECK(simulation.SetGravity(1.0, 0.1) == BLITZAR_STATUS_OK);
-    BLITZAR_CHECK(simulation.SetTimestep(0.01) == BLITZAR_STATUS_OK);
-    BLITZAR_CHECK(simulation.SetParticles({position_x.size(), position_x, position_y, position_z,
-                      velocity_x, velocity_y, velocity_z, mass, position_x.size()}) ==
-                  BLITZAR_STATUS_OK);
+[[nodiscard]] bool Configure(blitzar_sdk::Simulation& simulation, const StateArrays& state,
+    blitzar_solver_kind solver) noexcept
+{
+    if (solver == BLITZAR_SOLVER_BARNES_HUT &&
+        simulation.SetBarnesHut({0.0, ParticleCount, 128, 1, 32}) != BLITZAR_STATUS_OK) {
+        return false;
+    }
 
-    BLITZAR_CHECK(simulation.Step() == BLITZAR_STATUS_OK);
+    return simulation.SetSolver(solver) == BLITZAR_STATUS_OK &&
+           simulation.SetGravity(1.0, 0.1) == BLITZAR_STATUS_OK &&
+           simulation.SetTimestep(0.01) == BLITZAR_STATUS_OK &&
+           simulation.SetParticles({state.position_x.size(), state.position_x, state.position_y,
+               state.position_z, state.velocity_x, state.velocity_y, state.velocity_z, state.mass,
+               state.position_x.size()}) == BLITZAR_STATUS_OK;
+}
 
-    AllocationCount.store(0, std::memory_order_relaxed);
-    Counting.store(true, std::memory_order_release);
+[[nodiscard]] bool RunCase(blitzar_sdk::Simulation& simulation, blitzar_solver_kind solver) noexcept
+{
+    const StateArrays state{};
+
+    if (!Configure(simulation, state, solver) || simulation.Step() != BLITZAR_STATUS_OK) {
+        return false;
+    }
+
+    blitzar_tests::BeginAllocationCounting();
 
     const blitzar_status first_step = simulation.Step();
     const blitzar_status second_step = simulation.Step();
+    const std::size_t allocations = blitzar_tests::EndAllocationCounting();
 
-    Counting.store(false, std::memory_order_release);
+    return first_step == BLITZAR_STATUS_OK && second_step == BLITZAR_STATUS_OK && allocations == 0;
+}
 
-    BLITZAR_CHECK(first_step == BLITZAR_STATUS_OK);
-    BLITZAR_CHECK(second_step == BLITZAR_STATUS_OK);
-    BLITZAR_CHECK(AllocationCount.load(std::memory_order_relaxed) == 0);
+} // namespace
+
+int main()
+{
+    blitzar_sdk::Simulation simulation(ParticleCount);
+
+    BLITZAR_CHECK(RunCase(simulation, BLITZAR_SOLVER_DIRECT));
+    BLITZAR_CHECK(RunCase(simulation, BLITZAR_SOLVER_BARNES_HUT));
 
     return 0;
 }
