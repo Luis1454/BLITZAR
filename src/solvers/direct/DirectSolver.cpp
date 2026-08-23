@@ -3,16 +3,12 @@
 #include <atomic>
 #include <cmath>
 #include <cstdint>
+#include <new>
+#include <stdexcept>
 
 namespace blitzar_direct {
 
 namespace {
-
-struct Acceleration final {
-    blitzar_core::Scalar x{};
-    blitzar_core::Scalar y{};
-    blitzar_core::Scalar z{};
-};
 
 [[nodiscard]] bool IsValidState(blitzar_core::ParticleStateView particles) noexcept
 {
@@ -30,15 +26,17 @@ struct Acceleration final {
     return true;
 }
 
-[[nodiscard]] blitzar_status ValidateAndCalculateTarget(
+[[nodiscard]] blitzar_status CalculateTarget(
     const blitzar_physics::GravityLaw& gravity,
     std::size_t target,
     blitzar_core::ParticleStateView particles,
     std::size_t source_begin,
     std::size_t source_end,
-    Acceleration& acceleration) noexcept
+    blitzar_core::Vector3& acceleration) noexcept
 {
-    acceleration = {};
+    blitzar_core::Scalar acceleration_x = 0.0;
+    blitzar_core::Scalar acceleration_y = 0.0;
+    blitzar_core::Scalar acceleration_z = 0.0;
     for (std::size_t source = source_begin; source < source_end; ++source) {
         if (source == target || particles.mass[source] == 0.0) {
             continue;
@@ -59,42 +57,6 @@ struct Acceleration final {
         if (!std::isfinite(factor)) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
-        acceleration.x += factor * dx;
-        acceleration.y += factor * dy;
-        acceleration.z += factor * dz;
-    }
-    if (!std::isfinite(acceleration.x) ||
-        !std::isfinite(acceleration.y) ||
-        !std::isfinite(acceleration.z)) {
-        return BLITZAR_STATUS_INVALID_ARGUMENT;
-    }
-    return BLITZAR_STATUS_OK;
-}
-
-[[nodiscard]] blitzar_status CalculateTarget(
-    const blitzar_physics::GravityLaw& gravity,
-    std::size_t target,
-    blitzar_core::ParticleStateView particles,
-    std::size_t source_begin,
-    std::size_t source_end,
-    Acceleration& acceleration) noexcept
-{
-    blitzar_core::Scalar acceleration_x = 0.0;
-    blitzar_core::Scalar acceleration_y = 0.0;
-    blitzar_core::Scalar acceleration_z = 0.0;
-#if defined(_OPENMP)
-#pragma omp simd reduction(+ : acceleration_x, acceleration_y, acceleration_z)
-#endif
-    for (std::size_t source = source_begin; source < source_end; ++source) {
-        if (source == target || particles.mass[source] == 0.0) {
-            continue;
-        }
-        const blitzar_core::Scalar dx = particles.x[source] - particles.x[target];
-        const blitzar_core::Scalar dy = particles.y[source] - particles.y[target];
-        const blitzar_core::Scalar dz = particles.z[source] - particles.z[target];
-        const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
-        const blitzar_core::Scalar factor =
-            gravity.PairFactor(particles.mass[source], distance_squared);
         acceleration_x += factor * dx;
         acceleration_y += factor * dy;
         acceleration_z += factor * dz;
@@ -148,6 +110,16 @@ blitzar_status DirectSolver::ComputeRange(
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
+    try {
+        if (staging_.size() < particles.count) {
+            staging_.resize(particles.count);
+        }
+    } catch (const std::length_error&) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    } catch (const std::bad_alloc&) {
+        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+    }
+
     std::atomic<blitzar_status> status{BLITZAR_STATUS_OK};
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
@@ -159,15 +131,14 @@ blitzar_status DirectSolver::ComputeRange(
             continue;
         }
         const std::size_t target = static_cast<std::size_t>(target_index);
-        Acceleration acceleration{};
         const blitzar_status target_status =
-            ValidateAndCalculateTarget(
+            CalculateTarget(
                 gravity_,
                 target,
                 particles,
                 source_begin,
                 source_end,
-                acceleration);
+                staging_[target]);
         if (target_status != BLITZAR_STATUS_OK) {
             blitzar_status expected = BLITZAR_STATUS_OK;
             status.compare_exchange_strong(
@@ -187,28 +158,8 @@ blitzar_status DirectSolver::ComputeRange(
     for (std::int64_t target_index = 0;
          target_index < static_cast<std::int64_t>(particles.count);
          ++target_index) {
-        if (status.load(std::memory_order_relaxed) != BLITZAR_STATUS_OK) {
-            continue;
-        }
         const std::size_t target = static_cast<std::size_t>(target_index);
-        Acceleration acceleration{};
-        const blitzar_status target_status =
-            CalculateTarget(
-                gravity_,
-                target,
-                particles,
-                source_begin,
-                source_end,
-                acceleration);
-        if (target_status != BLITZAR_STATUS_OK) {
-            blitzar_status expected = BLITZAR_STATUS_OK;
-            status.compare_exchange_strong(
-                expected,
-                target_status,
-                std::memory_order_relaxed,
-                std::memory_order_relaxed);
-            continue;
-        }
+        const blitzar_core::Vector3& acceleration = staging_[target];
         if (accumulate) {
             forces.x[target] += acceleration.x;
             forces.y[target] += acceleration.y;

@@ -8,6 +8,7 @@
 #include <blitzar/blitzar.h>
 
 #include <cstddef>
+#include <vector>
 
 namespace blitzar_direct {
 
@@ -30,6 +31,7 @@ public:
 
 private:
     blitzar_physics::GravityLaw gravity_;
+    std::vector<blitzar_core::Vector3> staging_;
 };
 
 }  // namespace blitzar_direct
