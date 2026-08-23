@@ -26,6 +26,15 @@ struct ParticlePacket final {
 static_assert(std::is_trivially_copyable_v<ParticlePacket>);
 static_assert(std::is_standard_layout_v<ParticlePacket>);
 
+struct AllToAllPacketRequest final {
+    std::span<const ParticlePacket> send_packets;
+    std::span<const int> send_counts;
+    std::span<const int> send_displacements;
+    std::span<ParticlePacket> receive_packets;
+    std::span<const int> receive_counts;
+    std::span<const int> receive_displacements;
+};
+
 inline constexpr std::size_t ParticleWireBytes = 64;
 using ParticleWire = std::array<std::byte, ParticleWireBytes>;
 

@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <limits>
+#include <span>
 
 namespace {
 
@@ -106,14 +107,19 @@ int main()
 
     const blitzar_core::ExecutionSettings settings{};
     const blitzar_integration::LeapfrogKdk integrator{};
+    std::span<std::size_t> solver_workspace{};
+    blitzar_integration_kdk::AdvanceState first_state_request{
+        first_particles, first_accelerations, first_workspace, solver, timestep, settings,
+        solver_workspace, first_particles.State()};
+    blitzar_integration_kdk::AdvanceState second_state_request{
+        second_particles, second_accelerations, second_workspace, solver, timestep, settings,
+        solver_workspace, second_particles.State()};
     const double initial_energy =
         Energy(first_particles.State(), gravitational_constant, softening);
 
     for (std::size_t step = 0; step < steps; ++step) {
-        BLITZAR_CHECK(integrator.Advance(first_particles, first_accelerations, first_workspace,
-                          solver, timestep, settings) == BLITZAR_STATUS_OK);
-        BLITZAR_CHECK(integrator.Advance(second_particles, second_accelerations, second_workspace,
-                          solver, timestep, settings) == BLITZAR_STATUS_OK);
+        BLITZAR_CHECK(integrator.Advance(first_state_request) == BLITZAR_STATUS_OK);
+        BLITZAR_CHECK(integrator.Advance(second_state_request) == BLITZAR_STATUS_OK);
     }
 
     const blitzar_core::ParticleStateView first_state = first_particles.State();
@@ -130,12 +136,14 @@ int main()
     blitzar_particles::ParticleBuffer limit_particles(1);
     blitzar_particles::AccelerationBuffer limit_accelerations(1);
     blitzar_integration::LeapfrogWorkspace limit_workspace(1);
+    blitzar_integration_kdk::AdvanceState limit_state{
+        limit_particles, limit_accelerations, limit_workspace, solver,
+        std::numeric_limits<double>::infinity(), settings, solver_workspace,
+        limit_particles.State()};
 
     BLITZAR_CHECK(
         limit_particles.SetMass(0, std::numeric_limits<double>::max()) == BLITZAR_STATUS_OK);
-    BLITZAR_CHECK(
-        integrator.Advance(limit_particles, limit_accelerations, limit_workspace, solver,
-            std::numeric_limits<double>::infinity(), settings) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(integrator.Advance(limit_state) == BLITZAR_STATUS_INVALID_ARGUMENT);
 
     return 0;
 }

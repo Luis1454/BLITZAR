@@ -209,11 +209,16 @@ blitzar_status MpiPacketTransport::AllToAllCounts(
 #endif
 }
 
-blitzar_status MpiPacketTransport::AllToAllPackets(std::span<const ParticlePacket> send_packets,
-    std::span<const int> send_counts, std::span<const int> send_displacements,
-    std::span<ParticlePacket> receive_packets, std::span<const int> receive_counts,
-    std::span<const int> receive_displacements) const noexcept
+blitzar_status MpiPacketTransport::AllToAllPackets(
+    const AllToAllPacketRequest& request) const noexcept
 {
+    const std::span<const ParticlePacket> send_packets = request.send_packets;
+    const std::span<const int> send_counts = request.send_counts;
+    const std::span<const int> send_displacements = request.send_displacements;
+    const std::span<ParticlePacket> receive_packets = request.receive_packets;
+    const std::span<const int> receive_counts = request.receive_counts;
+    const std::span<const int> receive_displacements = request.receive_displacements;
+
     const bool layout_valid =
         send_counts.size() == static_cast<std::size_t>(session_.Size()) &&
         send_displacements.size() == static_cast<std::size_t>(session_.Size()) &&

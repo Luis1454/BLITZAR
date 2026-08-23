@@ -261,10 +261,13 @@ struct StateArrays final {
 
     const blitzar_core::ExecutionSettings execution{};
     const blitzar_integration::LeapfrogKdk integrator{};
+    std::span<std::size_t> solver_workspace{};
 
     for (int step = 0; step < step_count; ++step) {
-        if (integrator.Advance(particles, accelerations, workspace, solver, timestep, execution) !=
-            BLITZAR_STATUS_OK) {
+        blitzar_integration_kdk::AdvanceState state{
+            particles, accelerations, workspace, solver, timestep, execution, solver_workspace,
+            particles.State()};
+        if (integrator.Advance(state) != BLITZAR_STATUS_OK) {
             return false;
         }
     }
@@ -642,10 +645,11 @@ struct StateArrays final {
 
     const std::array<blitzar_parallel::ParticlePacket, 0> empty_packets{};
 
-    if (context.AllToAllPackets(empty_packets, invalid_counts, invalid_counts,
-            std::span<blitzar_parallel::ParticlePacket>{}, invalid_counts,
+    const blitzar_parallel::AllToAllPacketRequest invalid_request{
+        empty_packets, invalid_counts, invalid_counts,
+        std::span<blitzar_parallel::ParticlePacket>{}, invalid_counts, invalid_counts};
 
-            invalid_counts) != expected_zero_layout) {
+    if (context.AllToAllPackets(invalid_request) != expected_zero_layout) {
         return false;
     }
 
@@ -671,8 +675,10 @@ struct StateArrays final {
         std::span<const int>(displacements).first(static_cast<std::size_t>(context.Size()));
     const std::span<blitzar_parallel::ParticlePacket> empty_packets{};
 
-    return context.AllToAllPackets(empty_packets, layout, offsets, empty_packets, layout,
-               offsets) == BLITZAR_STATUS_INVALID_ARGUMENT;
+    const blitzar_parallel::AllToAllPacketRequest request{
+        empty_packets, layout, offsets, empty_packets, layout, offsets};
+
+    return context.AllToAllPackets(request) == BLITZAR_STATUS_INVALID_ARGUMENT;
 }
 
 [[nodiscard]] bool RunWireCodecCase() noexcept

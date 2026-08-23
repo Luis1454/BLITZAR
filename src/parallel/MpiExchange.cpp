@@ -334,8 +334,10 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
         return status;
     }
 
-    status = context_.AllToAllPackets(workspace_.ordered_packets.View(), send_counts,
-        send_displacements, received.View(), receive_counts, receive_displacements);
+    const AllToAllPacketRequest packet_request{
+        workspace_.ordered_packets.View(), send_counts, send_displacements, received.View(),
+        receive_counts, receive_displacements};
+    status = context_.AllToAllPackets(packet_request);
     status = SynchronizeStatus(status, "migrate-packets");
 
     if (status != BLITZAR_STATUS_OK) {

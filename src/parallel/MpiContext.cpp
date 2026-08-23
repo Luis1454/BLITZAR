@@ -154,17 +154,13 @@ blitzar_status MpiContext::AllToAllCounts(
     return impl_->packets.AllToAllCounts(send_counts, receive_counts);
 }
 
-blitzar_status MpiContext::AllToAllPackets(std::span<const ParticlePacket> send_packets,
-    std::span<const int> send_counts, std::span<const int> send_displacements,
-    std::span<ParticlePacket> receive_packets, std::span<const int> receive_counts,
-    std::span<const int> receive_displacements) const noexcept
+blitzar_status MpiContext::AllToAllPackets(const AllToAllPacketRequest& request) const noexcept
 {
     if (impl_ == nullptr) {
         return status_;
     }
 
-    return impl_->packets.AllToAllPackets(send_packets, send_counts, send_displacements,
-        receive_packets, receive_counts, receive_displacements);
+    return impl_->packets.AllToAllPackets(request);
 }
 
 blitzar_status MpiContext::AllGatherCounts(int local_count, std::span<int> counts) const noexcept

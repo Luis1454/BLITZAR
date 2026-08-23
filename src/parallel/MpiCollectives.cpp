@@ -92,18 +92,27 @@ namespace {
     }
 }
 
-void LogSynchronizedStatus(int rank, const char* operation, const char* phase,
-    blitzar_status local_status, blitzar_status global_status) noexcept
+struct StatusLogRequest final {
+    int rank;
+    const char* operation;
+    const char* phase;
+    blitzar_status local_status;
+    blitzar_status global_status;
+};
+
+void LogSynchronizedStatus(const StatusLogRequest& request) noexcept
 {
-    if (global_status == BLITZAR_STATUS_OK) {
+    if (request.global_status == BLITZAR_STATUS_OK) {
         return;
     }
 
     std::fprintf(stderr,
         "BLITZAR MPI rank=%d operation=%s phase=%s local_status=%d "
         "global_status=%d\n",
-        rank, operation == nullptr ? "unknown" : operation, phase == nullptr ? "unknown" : phase,
-        static_cast<int>(NormalizeStatus(local_status)), static_cast<int>(global_status));
+        request.rank, request.operation == nullptr ? "unknown" : request.operation,
+        request.phase == nullptr ? "unknown" : request.phase,
+        static_cast<int>(NormalizeStatus(request.local_status)),
+        static_cast<int>(request.global_status));
 }
 
 #endif
@@ -135,13 +144,15 @@ blitzar_status MpiCollectives::SynchronizeStatus(blitzar_status local_status, co
     if (MPI_Allreduce(&local_severity, &global_severity, 1, MPI_INT, MPI_MAX,
             session_.Native().communicator) != MPI_SUCCESS) {
         global_status = BLITZAR_STATUS_INTERNAL_ERROR;
-        LogSynchronizedStatus(session_.Rank(), operation, phase, normalized_status, global_status);
+        LogSynchronizedStatus(
+            {session_.Rank(), operation, phase, normalized_status, global_status});
 
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
 
     global_status = StatusFromSeverity(global_severity);
-    LogSynchronizedStatus(session_.Rank(), operation, phase, normalized_status, global_status);
+    LogSynchronizedStatus(
+        {session_.Rank(), operation, phase, normalized_status, global_status});
 
     return BLITZAR_STATUS_OK;
 #else
