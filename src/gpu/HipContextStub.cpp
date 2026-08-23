@@ -15,15 +15,24 @@ namespace {
 {
     switch (fault) {
     case HipFault::None:
+
         return BLITZAR_STATUS_OK;
+
     case HipFault::AllocationFailure:
+
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
+
     case HipFault::LaunchFailure:
     case HipFault::SynchronizationFailure:
+
         return BLITZAR_STATUS_INTERNAL_ERROR;
+
     case HipFault::NonFiniteResult:
+
         return BLITZAR_STATUS_INVALID_ARGUMENT;
+
     default:
+
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
 }
@@ -72,6 +81,7 @@ blitzar_status HipContext::ComputeDirect(blitzar_core::ParticleStateView, blitza
     }
     if (impl_ != nullptr) {
         const blitzar_status fault_status = FaultStatus(impl_->fault);
+
         if (fault_status != BLITZAR_STATUS_OK) {
             return fault_status;
         }
@@ -88,6 +98,7 @@ blitzar_status HipContext::ComputeDirectRange(blitzar_core::ParticleStateView,
     }
     if (impl_ != nullptr) {
         const blitzar_status fault_status = FaultStatus(impl_->fault);
+
         if (fault_status != BLITZAR_STATUS_OK) {
             return fault_status;
         }
@@ -104,6 +115,7 @@ blitzar_status HipContext::ComputeBarnesHut(blitzar_core::ParticleStateView,
     }
     if (impl_ != nullptr) {
         const blitzar_status fault_status = FaultStatus(impl_->fault);
+
         if (fault_status != BLITZAR_STATUS_OK) {
             return fault_status;
         }

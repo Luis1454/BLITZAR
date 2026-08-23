@@ -7,7 +7,9 @@ int main()
 
     if (!context.valid()) {
         const auto status = static_cast<blitzar_status>(context.status());
+
         std::cerr << "BLITZAR context error: " << blitzar_status_message(status) << '\n';
+
         return 1;
     }
 

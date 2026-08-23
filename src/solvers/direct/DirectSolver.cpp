@@ -36,22 +36,27 @@ namespace {
         if (source == target || particles.mass[source] == 0.0) {
             continue;
         }
+
         const blitzar_core::Scalar dx = particles.x[source] - particles.x[target];
         const blitzar_core::Scalar dy = particles.y[source] - particles.y[target];
         const blitzar_core::Scalar dz = particles.z[source] - particles.z[target];
         const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
         const blitzar_physics::PairStatus pair_status =
             gravity.ValidatePair(particles.mass[source], distance_squared);
+
         if (pair_status != blitzar_physics::PairStatus::Valid) {
             return pair_status == blitzar_physics::PairStatus::Singularity
                        ? BLITZAR_STATUS_SINGULARITY
                        : BLITZAR_STATUS_INVALID_ARGUMENT;
         }
+
         const blitzar_core::Scalar factor =
             gravity.PairFactor(particles.mass[source], distance_squared);
+
         if (!std::isfinite(factor)) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
+
         acceleration_x += factor * dx;
         acceleration_y += factor * dy;
         acceleration_z += factor * dz;
@@ -127,11 +132,14 @@ blitzar_status DirectSolver::ComputeRange(blitzar_core::ParticleStateView partic
         if (status.load(std::memory_order_relaxed) != BLITZAR_STATUS_OK) {
             continue;
         }
+
         const std::size_t target = static_cast<std::size_t>(target_index);
         const blitzar_status target_status = CalculateTarget(
             gravity_, target, particles, source_begin, source_end, staging_[target]);
+
         if (target_status != BLITZAR_STATUS_OK) {
             blitzar_status expected = BLITZAR_STATUS_OK;
+
             status.compare_exchange_strong(
                 expected, target_status, std::memory_order_relaxed, std::memory_order_relaxed);
         }
@@ -147,6 +155,7 @@ blitzar_status DirectSolver::ComputeRange(blitzar_core::ParticleStateView partic
          ++target_index) {
         const std::size_t target = static_cast<std::size_t>(target_index);
         const blitzar_core::Vector3& acceleration = staging_[target];
+
         if (accumulate) {
             forces.x[target] += acceleration.x;
             forces.y[target] += acceleration.y;

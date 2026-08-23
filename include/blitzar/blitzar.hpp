@@ -34,18 +34,31 @@ enum class Status : std::int32_t {
 {
     switch (status) {
     case BLITZAR_STATUS_OK:
+
         return Status::Ok;
+
     case BLITZAR_STATUS_INVALID_ARGUMENT:
+
         return Status::InvalidArgument;
+
     case BLITZAR_STATUS_ALLOCATION_FAILURE:
+
         return Status::AllocationFailure;
+
     case BLITZAR_STATUS_INTERNAL_ERROR:
+
         return Status::InternalError;
+
     case BLITZAR_STATUS_SINGULARITY:
+
         return Status::Singularity;
+
     case BLITZAR_STATUS_UNSUPPORTED:
+
         return Status::Unsupported;
+
     default:
+
         return Status::InternalError;
     }
 }

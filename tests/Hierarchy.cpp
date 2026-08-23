@@ -160,6 +160,7 @@ int main()
 
     for (std::size_t index = 0; index < 4; ++index) {
         const double offset = 0.1 * static_cast<double>(index);
+
         BLITZAR_CHECK(
             clustered_direct.SetPosition(index, {-5.0 + offset, -5.0, -5.0}) == BLITZAR_STATUS_OK);
         BLITZAR_CHECK(

@@ -73,6 +73,7 @@ int main()
     {
         blitzar_particles::ParticleBuffer source(1);
         blitzar_particles::ParticleBuffer moved(std::move(source));
+
         BLITZAR_CHECK(source.Count() == 0);
         BLITZAR_CHECK(source.IsValid());
         BLITZAR_CHECK(moved.Count() == 1);
@@ -80,7 +81,9 @@ int main()
         BLITZAR_CHECK(source.SetPosition(0, {1.0, 0.0, 0.0}) == BLITZAR_STATUS_INVALID_ARGUMENT);
 
         blitzar_particles::ParticleBuffer assigned(0);
+
         assigned = std::move(moved);
+
         BLITZAR_CHECK(moved.Count() == 0);
         BLITZAR_CHECK(moved.IsValid());
         BLITZAR_CHECK(assigned.Count() == 1);
@@ -88,12 +91,14 @@ int main()
 
         blitzar_particles::AccelerationBuffer acceleration_source(1);
         blitzar_particles::AccelerationBuffer acceleration_moved(std::move(acceleration_source));
+
         BLITZAR_CHECK(acceleration_source.Count() == 0);
         BLITZAR_CHECK(acceleration_source.IsValid());
         BLITZAR_CHECK(acceleration_moved.IsValid());
 
         blitzar_integration::LeapfrogWorkspace workspace_source(1);
         blitzar_integration::LeapfrogWorkspace workspace_moved(std::move(workspace_source));
+
         BLITZAR_CHECK(workspace_source.Count() == 0);
         BLITZAR_CHECK(workspace_source.IsValid());
         BLITZAR_CHECK(workspace_moved.IsValid());
@@ -104,6 +109,7 @@ int main()
         blitzar_particles::ParticleBuffer particles(arena);
         blitzar_particles::AccelerationBuffer accelerations(arena);
         blitzar_integration::LeapfrogWorkspace workspace(arena);
+
         BLITZAR_CHECK(arena.IsValid());
         BLITZAR_CHECK(particles.IsValid());
         BLITZAR_CHECK(accelerations.IsValid());
@@ -112,6 +118,7 @@ int main()
         blitzar_particles::ParticleBuffer moved_particles(std::move(particles));
         blitzar_particles::AccelerationBuffer moved_accelerations(std::move(accelerations));
         blitzar_integration::LeapfrogWorkspace moved_workspace(std::move(workspace));
+
         BLITZAR_CHECK(particles.Count() == 0);
         BLITZAR_CHECK(accelerations.Count() == 0);
         BLITZAR_CHECK(workspace.Count() == 0);
@@ -139,22 +146,29 @@ int main()
     {
         blitzar_particles::ParticleBuffer singular_particles(3);
         blitzar_particles::AccelerationBuffer singular_accelerations(3);
+
         BLITZAR_CHECK(singular_particles.SetPosition(0, {0.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
         BLITZAR_CHECK(singular_particles.SetPosition(1, {1.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
         BLITZAR_CHECK(singular_particles.SetPosition(2, {1.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
+
         for (std::size_t index = 0; index < 3; ++index) {
             BLITZAR_CHECK(singular_particles.SetMass(index, 1.0) == BLITZAR_STATUS_OK);
         }
+
         const blitzar_core::ForceView force = singular_accelerations.View();
+
         for (std::size_t index = 0; index < 3; ++index) {
             force.x[index] = 7.0;
             force.y[index] = 8.0;
             force.z[index] = 9.0;
         }
+
         blitzar_direct::DirectSolver singular_solver(gravity);
+
         BLITZAR_CHECK(singular_solver.Prepare(3) == BLITZAR_STATUS_OK);
         BLITZAR_CHECK(singular_solver.Compute(singular_particles.State(), force, settings) ==
                       BLITZAR_STATUS_SINGULARITY);
+
         for (std::size_t index = 0; index < 3; ++index) {
             BLITZAR_CHECK(force.x[index] == 7.0);
             BLITZAR_CHECK(force.y[index] == 8.0);
@@ -167,22 +181,28 @@ int main()
         blitzar_particles::AccelerationBuffer large_accelerations(4);
         const blitzar_core::Vector3 positions[] = {
             {0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.2, 0.0, 0.0}, {1.4, 0.0, 0.0}};
+
         for (std::size_t index = 0; index < 4; ++index) {
             BLITZAR_CHECK(
                 large_particles.SetPosition(index, positions[index]) == BLITZAR_STATUS_OK);
             BLITZAR_CHECK(large_particles.SetMass(index, std::numeric_limits<double>::max()) ==
                           BLITZAR_STATUS_OK);
         }
+
         const blitzar_core::ForceView force = large_accelerations.View();
+
         for (std::size_t index = 0; index < 4; ++index) {
             force.x[index] = -11.0;
             force.y[index] = -12.0;
             force.z[index] = -13.0;
         }
+
         blitzar_direct::DirectSolver large_solver(gravity);
+
         BLITZAR_CHECK(large_solver.Prepare(4) == BLITZAR_STATUS_OK);
         BLITZAR_CHECK(large_solver.Compute(large_particles.State(), force, settings) ==
                       BLITZAR_STATUS_INVALID_ARGUMENT);
+
         for (std::size_t index = 0; index < 4; ++index) {
             BLITZAR_CHECK(force.x[index] == -11.0);
             BLITZAR_CHECK(force.y[index] == -12.0);

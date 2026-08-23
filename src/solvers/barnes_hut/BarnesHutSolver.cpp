@@ -70,43 +70,55 @@ blitzar_status BarnesHutSolver::Accumulate(std::size_t target,
     while (stack_size > 0) {
         const std::size_t cell_index = stack[--stack_size];
         const std::span<const blitzar_trees::Octree::Cell> cell_view = tree_.CellAt(cell_index);
+
         if (cell_view.empty()) {
             return BLITZAR_STATUS_INTERNAL_ERROR;
         }
+
         const blitzar_trees::Octree::Cell& cell = cell_view.front();
+
         if (cell.mass == 0.0) {
             continue;
         }
+
         const bool contains_target = Contains(cell, target_position);
+
         if (cell.IsLeaf()) {
             for (std::size_t offset = 0; offset < cell.count; ++offset) {
                 std::size_t source = 0;
+
                 if (!tree_.ParticleIndex(cell.begin + offset, source)) {
                     return BLITZAR_STATUS_INTERNAL_ERROR;
                 }
                 if (source == target || particles.mass[source] == 0.0) {
                     continue;
                 }
+
                 const blitzar_core::Scalar dx = particles.x[source] - target_position.x;
                 const blitzar_core::Scalar dy = particles.y[source] - target_position.y;
                 const blitzar_core::Scalar dz = particles.z[source] - target_position.z;
                 const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
                 const blitzar_physics::PairStatus pair_status =
                     gravity_.ValidatePair(particles.mass[source], distance_squared);
+
                 if (pair_status != blitzar_physics::PairStatus::Valid) {
                     return pair_status == blitzar_physics::PairStatus::Singularity
                                ? BLITZAR_STATUS_SINGULARITY
                                : BLITZAR_STATUS_INVALID_ARGUMENT;
                 }
+
                 const blitzar_core::Scalar factor =
                     gravity_.PairFactor(particles.mass[source], distance_squared);
+
                 if (!std::isfinite(factor)) {
                     return BLITZAR_STATUS_INVALID_ARGUMENT;
                 }
+
                 acceleration.x += factor * dx;
                 acceleration.y += factor * dy;
                 acceleration.z += factor * dz;
             }
+
             continue;
         }
 
@@ -116,21 +128,27 @@ blitzar_status BarnesHutSolver::Accumulate(std::size_t target,
         const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
         const blitzar_core::Scalar distance = std::sqrt(distance_squared);
         const blitzar_core::Scalar cell_width = 2.0 * cell.half_extent;
+
         if (!contains_target && distance > 0.0 && cell_width / distance < settings_.opening_angle) {
             const blitzar_physics::PairStatus pair_status =
                 gravity_.ValidatePair(cell.mass, distance_squared);
+
             if (pair_status != blitzar_physics::PairStatus::Valid) {
                 return pair_status == blitzar_physics::PairStatus::Singularity
                            ? BLITZAR_STATUS_SINGULARITY
                            : BLITZAR_STATUS_INVALID_ARGUMENT;
             }
+
             const blitzar_core::Scalar factor = gravity_.PairFactor(cell.mass, distance_squared);
+
             if (!std::isfinite(factor)) {
                 return BLITZAR_STATUS_INVALID_ARGUMENT;
             }
+
             acceleration.x += factor * dx;
             acceleration.y += factor * dy;
             acceleration.z += factor * dz;
+
             continue;
         }
         for (auto child = cell.children.rbegin(); child != cell.children.rend(); ++child) {
@@ -138,6 +156,7 @@ blitzar_status BarnesHutSolver::Accumulate(std::size_t target,
                 if (stack_size == stack.size()) {
                     return BLITZAR_STATUS_INTERNAL_ERROR;
                 }
+
                 stack[stack_size++] = *child;
             }
         }
@@ -170,6 +189,7 @@ blitzar_status BarnesHutSolver::Compute(blitzar_core::ParticleStateView particle
     }
     if (!tree_.Refit(particles)) {
         const blitzar_status build_status = tree_.Build(particles);
+
         if (build_status != BLITZAR_STATUS_OK) {
             return build_status;
         }
@@ -182,15 +202,19 @@ blitzar_status BarnesHutSolver::Compute(blitzar_core::ParticleStateView particle
     for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(particles.count);
          ++target_index) {
         const std::size_t target = static_cast<std::size_t>(target_index);
+
         if (computation_status.load(std::memory_order_relaxed) != BLITZAR_STATUS_OK) {
             continue;
         }
+
         blitzar_core::Vector3 acceleration{};
         std::span<std::size_t> traversal_stack = workspace.Stack(ThreadWorkspace::CurrentThread());
         const blitzar_status target_status =
             Accumulate(target, particles, traversal_stack, acceleration);
+
         if (target_status != BLITZAR_STATUS_OK) {
             blitzar_status expected = BLITZAR_STATUS_OK;
+
             computation_status.compare_exchange_strong(
                 expected, target_status, std::memory_order_relaxed, std::memory_order_relaxed);
         }
@@ -206,19 +230,25 @@ blitzar_status BarnesHutSolver::Compute(blitzar_core::ParticleStateView particle
     for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(particles.count);
          ++target_index) {
         const std::size_t target = static_cast<std::size_t>(target_index);
+
         if (computation_status.load(std::memory_order_relaxed) != BLITZAR_STATUS_OK) {
             continue;
         }
+
         blitzar_core::Vector3 acceleration{};
         std::span<std::size_t> traversal_stack = workspace.Stack(ThreadWorkspace::CurrentThread());
         const blitzar_status target_status =
             Accumulate(target, particles, traversal_stack, acceleration);
+
         if (target_status != BLITZAR_STATUS_OK) {
             blitzar_status expected = BLITZAR_STATUS_OK;
+
             computation_status.compare_exchange_strong(
                 expected, target_status, std::memory_order_relaxed, std::memory_order_relaxed);
+
             continue;
         }
+
         forces.x[target] = acceleration.x;
         forces.y[target] = acceleration.y;
         forces.z[target] = acceleration.z;

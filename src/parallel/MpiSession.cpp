@@ -24,6 +24,7 @@ MpiSession::MpiSession() noexcept
     }
     catch (const std::bad_alloc&) {
         status_ = BLITZAR_STATUS_ALLOCATION_FAILURE;
+
         return;
     }
 
@@ -34,6 +35,7 @@ MpiSession::MpiSession() noexcept
 
     if (MPI_Initialized(&initialized) != MPI_SUCCESS) {
         status_ = BLITZAR_STATUS_INTERNAL_ERROR;
+
         return;
     }
 
@@ -42,12 +44,15 @@ MpiSession::MpiSession() noexcept
     if (initialized == 0) {
         if (MPI_Init_thread(nullptr, nullptr, MPI_THREAD_MULTIPLE, &provided) != MPI_SUCCESS) {
             status_ = BLITZAR_STATUS_INTERNAL_ERROR;
+
             return;
         }
+
         InitializedByBlitzar = true;
     }
     else if (MPI_Query_thread(&provided) != MPI_SUCCESS) {
         status_ = BLITZAR_STATUS_INTERNAL_ERROR;
+
         return;
     }
 

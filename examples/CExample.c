@@ -19,6 +19,7 @@ int main(void)
 
     if (blitzar_simulation_create(context, 2, &simulation) != BLITZAR_STATUS_OK) {
         blitzar_context_destroy(context);
+
         return 1;
     }
 
@@ -36,6 +37,7 @@ int main(void)
         blitzar_simulation_step(simulation) != BLITZAR_STATUS_OK) {
         blitzar_simulation_destroy(simulation);
         blitzar_context_destroy(context);
+
         return 1;
     }
 
@@ -51,6 +53,7 @@ int main(void)
             output_velocity_y, output_velocity_z, output_mass) != BLITZAR_STATUS_OK) {
         blitzar_simulation_destroy(simulation);
         blitzar_context_destroy(context);
+
         return 1;
     }
 

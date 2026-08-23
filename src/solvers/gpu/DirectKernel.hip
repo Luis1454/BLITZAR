@@ -47,6 +47,7 @@ __global__ void DirectKernel(const double* position_x, const double* position_y,
 
     for (std::size_t tile_begin = source_begin; tile_begin < source_end; tile_begin += BlockSize) {
         const std::size_t source = tile_begin + threadIdx.x;
+
         if (source < source_end) {
             tile_x[threadIdx.x] = position_x[source];
             tile_y[threadIdx.x] = position_y[source];
@@ -59,6 +60,7 @@ __global__ void DirectKernel(const double* position_x, const double* position_y,
             tile_z[threadIdx.x] = 0.0;
             tile_mass[threadIdx.x] = 0.0;
         }
+
         __syncthreads();
 
         if (target < target_count) {
@@ -66,6 +68,7 @@ __global__ void DirectKernel(const double* position_x, const double* position_y,
             const double target_y = position_y[target];
             const double target_z = position_z[target];
             const double target_mass = mass[target];
+
             if (!isfinite(target_x) || !isfinite(target_y) || !isfinite(target_z) ||
                 !isfinite(target_mass) || target_mass < 0.0) {
                 local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -73,13 +76,16 @@ __global__ void DirectKernel(const double* position_x, const double* position_y,
 #pragma unroll 4
             for (unsigned int offset = 0; offset < BlockSize; ++offset) {
                 const std::size_t source_index = tile_begin + offset;
+
                 if (source_index >= source_end) {
                     continue;
                 }
+
                 const double source_x = tile_x[offset];
                 const double source_y = tile_y[offset];
                 const double source_z = tile_z[offset];
                 const double source_mass = tile_mass[offset];
+
                 if (!isfinite(source_x) || !isfinite(source_y) || !isfinite(source_z) ||
                     !isfinite(source_mass) || source_mass < 0.0) {
                     local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -89,30 +95,39 @@ __global__ void DirectKernel(const double* position_x, const double* position_y,
                 if (source_index == target || source_mass == 0.0) {
                     continue;
                 }
+
                 const double dx = source_x - target_x;
                 const double dy = source_y - target_y;
                 const double dz = source_z - target_z;
                 const double distance_squared = dx * dx + dy * dy + dz * dz;
                 const double softened_distance = distance_squared + softening_squared;
+
                 if (!isfinite(distance_squared) || !isfinite(softened_distance)) {
                     local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
+
                     continue;
                 }
                 if (softened_distance == 0.0) {
                     local_error = BLITZAR_STATUS_SINGULARITY;
+
                     continue;
                 }
+
                 const double factor = gravitational_constant * source_mass /
                                       (softened_distance * sqrt(softened_distance));
+
                 if (!isfinite(factor)) {
                     local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
+
                     continue;
                 }
+
                 acceleration_x += factor * dx;
                 acceleration_y += factor * dy;
                 acceleration_z += factor * dz;
             }
         }
+
         __syncthreads();
     }
 

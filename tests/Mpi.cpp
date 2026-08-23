@@ -43,6 +43,7 @@ struct StateArrays final {
 
     for (std::size_t index = 0; index < ParticleCount; ++index) {
         const double value = static_cast<double>(index);
+
         state.x[index] = -3.5 + value;
         state.y[index] = (index % 2 == 0 ? -1.0 : 1.0) + 0.1 * value;
         state.z[index] = (index % 3 == 0 ? 1.0 : -1.0) - 0.05 * value;
@@ -74,6 +75,7 @@ struct StateArrays final {
 {
     for (const blitzar_core::Vector3 position : points) {
         const int owner = domain.Owner(position, particle_id++);
+
         if (!domain.Contains(position) || owner < 0 || owner >= rank_count) {
             return false;
         }
@@ -158,6 +160,7 @@ struct StateArrays final {
 
     for (std::size_t index = 0; index < ParticleCount; ++index) {
         if (particles.SetPosition(index, {initial.x[index], initial.y[index], initial.z[index]}) !=
+
                 BLITZAR_STATUS_OK ||
             particles.SetMass(index, initial.mass[index]) != BLITZAR_STATUS_OK) {
             return false;
@@ -231,6 +234,7 @@ struct StateArrays final {
     blitzar_integration::LeapfrogWorkspace workspace(ParticleCount);
     for (std::size_t index = 0; index < ParticleCount; ++index) {
         if (particles.SetPosition(index, {initial.x[index], initial.y[index], initial.z[index]}) !=
+
                 BLITZAR_STATUS_OK ||
             particles.SetVelocity(index, {initial.velocity_x[index], initial.velocity_y[index],
                                              initial.velocity_z[index]}) != BLITZAR_STATUS_OK ||
@@ -275,6 +279,7 @@ struct StateArrays final {
     local_ok = local_ok && configuration_ok;
     for (int step = 0; step < step_count; ++step) {
         const blitzar_status step_status = simulation.Step();
+
         local_ok = local_ok && step_status == BLITZAR_STATUS_OK;
     }
 
@@ -767,15 +772,18 @@ int main(int argc, char** argv)
 
     if (!internal_owner) {
         int initialized = 0;
+
         if (MPI_Initialized(&initialized) != MPI_SUCCESS) {
             return 1;
         }
         if (initialized == 0) {
             int provided = MPI_THREAD_SINGLE;
+
             if (MPI_Init_thread(nullptr, nullptr, MPI_THREAD_MULTIPLE, &provided) != MPI_SUCCESS ||
                 provided < MPI_THREAD_MULTIPLE) {
                 return 1;
             }
+
             external_owner = 1;
         }
     }
@@ -787,6 +795,7 @@ int main(int argc, char** argv)
 
     if (external_owner != 0) {
         int finalized = 0;
+
         if (MPI_Finalized(&finalized) != MPI_SUCCESS || finalized != 0 ||
             MPI_Finalize() != MPI_SUCCESS) {
             return 1;

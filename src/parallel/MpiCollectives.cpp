@@ -21,8 +21,11 @@ namespace {
     case BLITZAR_STATUS_INTERNAL_ERROR:
     case BLITZAR_STATUS_SINGULARITY:
     case BLITZAR_STATUS_UNSUPPORTED:
+
         return status;
+
     default:
+
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
 }
@@ -33,17 +36,28 @@ namespace {
 {
     switch (NormalizeStatus(status)) {
     case BLITZAR_STATUS_OK:
+
         return 0;
+
     case BLITZAR_STATUS_UNSUPPORTED:
+
         return 1;
+
     case BLITZAR_STATUS_INVALID_ARGUMENT:
+
         return 2;
+
     case BLITZAR_STATUS_SINGULARITY:
+
         return 3;
+
     case BLITZAR_STATUS_ALLOCATION_FAILURE:
+
         return 4;
+
     case BLITZAR_STATUS_INTERNAL_ERROR:
     default:
+
         return 5;
     }
 }
@@ -52,17 +66,28 @@ namespace {
 {
     switch (severity) {
     case 0:
+
         return BLITZAR_STATUS_OK;
+
     case 1:
+
         return BLITZAR_STATUS_UNSUPPORTED;
+
     case 2:
+
         return BLITZAR_STATUS_INVALID_ARGUMENT;
+
     case 3:
+
         return BLITZAR_STATUS_SINGULARITY;
+
     case 4:
+
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
+
     case 5:
     default:
+
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
 }
@@ -92,10 +117,12 @@ blitzar_status MpiCollectives::SynchronizeStatus(blitzar_status local_status, co
     const blitzar_status normalized_status = NormalizeStatus(local_status);
     if (!session_.IsUsable()) {
         global_status = session_.Status();
+
         return session_.Status();
     }
     if (!session_.IsDistributed()) {
         global_status = normalized_status;
+
         return BLITZAR_STATUS_OK;
     }
 #if defined(BLITZAR_HAS_MPI)
@@ -105,6 +132,7 @@ blitzar_status MpiCollectives::SynchronizeStatus(blitzar_status local_status, co
             session_.Native().communicator) != MPI_SUCCESS) {
         global_status = BLITZAR_STATUS_INTERNAL_ERROR;
         LogSynchronizedStatus(session_.Rank(), operation, phase, normalized_status, global_status);
+
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
     global_status = StatusFromSeverity(global_severity);
@@ -156,6 +184,7 @@ blitzar_status MpiCollectives::ReduceMax(int local_value, int& global_value) con
     }
     if (!session_.IsDistributed()) {
         global_value = local_value;
+
         return BLITZAR_STATUS_OK;
     }
 #if defined(BLITZAR_HAS_MPI)

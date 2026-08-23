@@ -33,6 +33,7 @@ Context::Context() noexcept : impl_(nullptr), status_(Status::InvalidArgument)
     }
     catch (const std::bad_alloc&) {
         status_ = Status::AllocationFailure;
+
         return;
     }
 
@@ -82,6 +83,7 @@ Simulation::Simulation(Context& context, std::int64_t particle_count) noexcept
     }
     catch (const std::bad_alloc&) {
         status_ = Status::AllocationFailure;
+
         return;
     }
 

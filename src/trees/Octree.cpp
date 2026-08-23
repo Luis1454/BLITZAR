@@ -80,6 +80,7 @@ void Octree::Partition(const Cell& cell, blitzar_core::ParticleStateView particl
     counts.fill(0);
     for (std::size_t offset = 0; offset < cell.count; ++offset) {
         const std::size_t particle = indices_[cell.begin + offset];
+
         ++counts[Octant(
             cell, {particles.x[particle], particles.y[particle], particles.z[particle]})];
     }
@@ -93,6 +94,7 @@ void Octree::Partition(const Cell& cell, blitzar_core::ParticleStateView particl
         const std::size_t particle = indices_[cell.begin + offset];
         const std::size_t octant =
             Octant(cell, {particles.x[particle], particles.y[particle], particles.z[particle]});
+
         scratch_[write[octant]++] = particle;
     }
     for (std::size_t offset = 0; offset < cell.count; ++offset) {
@@ -106,10 +108,12 @@ void Octree::CalculateProperties(blitzar_core::ParticleStateView particles) noex
         Cell& cell = cells_[index];
         cell.mass = 0.0;
         cell.center_of_mass = {};
+
         if (cell.IsLeaf()) {
             for (std::size_t offset = 0; offset < cell.count; ++offset) {
                 const std::size_t particle = indices_[cell.begin + offset];
                 const blitzar_core::Scalar mass = particles.mass[particle];
+
                 cell.mass += mass;
                 cell.center_of_mass.x += mass * particles.x[particle];
                 cell.center_of_mass.y += mass * particles.y[particle];
@@ -121,6 +125,7 @@ void Octree::CalculateProperties(blitzar_core::ParticleStateView particles) noex
                 if (child == Cell::InvalidIndex) {
                     continue;
                 }
+
                 const Cell& child_cell = cells_[child];
                 cell.mass += child_cell.mass;
                 cell.center_of_mass.x += child_cell.mass * child_cell.center_of_mass.x;
@@ -165,14 +170,18 @@ void Octree::ParallelMortonSort(blitzar_core::ParticleStateView particles,
          ++raw_chunk) {
         const std::size_t chunk = static_cast<std::size_t>(raw_chunk);
         const std::size_t begin = chunk * chunk_size;
+
         if (begin >= particles.SourceCount()) {
             continue;
         }
+
         const std::size_t end = begin + std::min(chunk_size, particles.SourceCount() - begin);
+
         for (std::size_t index = begin; index < end; ++index) {
             morton_keys_[index] = MortonKey(
                 {particles.x[index], particles.y[index], particles.z[index]}, minimum, maximum);
         }
+
         std::sort(indices_.begin() + static_cast<std::ptrdiff_t>(begin),
             indices_.begin() + static_cast<std::ptrdiff_t>(end),
             [this](const std::size_t lhs, const std::size_t rhs) noexcept {
@@ -188,12 +197,14 @@ void Octree::ParallelMortonSort(blitzar_core::ParticleStateView particles,
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
 #endif
+
         for (std::int64_t raw_pair = 0; raw_pair < static_cast<std::int64_t>(pair_count);
              ++raw_pair) {
             const std::size_t pair = static_cast<std::size_t>(raw_pair);
             const std::size_t begin = pair * pair_width;
             const std::size_t middle = begin + std::min(width, particles.SourceCount() - begin);
             const std::size_t end = begin + std::min(pair_width, particles.SourceCount() - begin);
+
             std::merge(indices_.begin() + static_cast<std::ptrdiff_t>(begin),
                 indices_.begin() + static_cast<std::ptrdiff_t>(middle),
                 indices_.begin() + static_cast<std::ptrdiff_t>(middle),
@@ -210,11 +221,13 @@ void Octree::ParallelMortonSort(blitzar_core::ParticleStateView particles,
         for (std::int64_t raw_index = 0;
              raw_index < static_cast<std::int64_t>(particles.SourceCount()); ++raw_index) {
             const std::size_t index = static_cast<std::size_t>(raw_index);
+
             indices_[index] = scratch_[index];
         }
         if (width > particles.SourceCount() / 2) {
             break;
         }
+
         width += width;
     }
 }
@@ -261,12 +274,17 @@ blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
 
     for (std::size_t index = 0; index < cells_.size(); ++index) {
         const Cell cell = cells_[index];
+
         if (cell.count <= leaf_capacity_ || cell.depth >= max_depth_) {
             continue;
         }
+
         std::array<std::size_t, 8> counts{};
+
         Partition(cell, particles, counts);
+
         std::size_t child_count = 0;
+
         for (const std::size_t count : counts) {
             if (count > 0) {
                 ++child_count;
@@ -275,22 +293,29 @@ blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
         if (cells_.size() > max_cells_ || child_count > max_cells_ - cells_.size()) {
             cells_.clear();
             particle_count_ = 0;
+
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
+
         const blitzar_core::Scalar child_half_extent = 0.5 * cell.half_extent;
+
         for (std::size_t octant = 0; octant < counts.size(); ++octant) {
             if (counts[octant] == 0) {
                 continue;
             }
+
             const blitzar_core::Vector3 child_center{
                 cell.center.x + ((octant & 1U) != 0U ? child_half_extent : -child_half_extent),
                 cell.center.y + ((octant & 2U) != 0U ? child_half_extent : -child_half_extent),
                 cell.center.z + ((octant & 4U) != 0U ? child_half_extent : -child_half_extent)};
             std::size_t begin = cell.begin;
+
             for (std::size_t previous = 0; previous < octant; ++previous) {
                 begin += counts[previous];
             }
+
             const std::size_t child = cells_.size();
+
             cells_.push_back(
                 MakeCell(child_center, child_half_extent, begin, counts[octant], cell.depth + 1));
             cells_[index].children[octant] = child;
@@ -318,6 +343,7 @@ bool Octree::Refit(blitzar_core::ParticleStateView particles) noexcept
             const std::size_t particle = indices_[cell.begin + offset];
             const blitzar_core::Vector3 position{
                 particles.x[particle], particles.y[particle], particles.z[particle]};
+
             if (!Contains(cell, position)) {
                 return false;
             }

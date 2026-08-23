@@ -50,6 +50,7 @@ double Energy(
         const double speed_squared = state.velocity_x[index] * state.velocity_x[index] +
                                      state.velocity_y[index] * state.velocity_y[index] +
                                      state.velocity_z[index] * state.velocity_z[index];
+
         kinetic += 0.5 * state.mass[index] * speed_squared;
     }
     const double dx = state.x[1] - state.x[0];

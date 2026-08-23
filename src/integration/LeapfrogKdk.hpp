@@ -192,6 +192,7 @@ public:
         for (std::int64_t raw_index = 0; raw_index < static_cast<std::int64_t>(particles.Count());
              ++raw_index) {
             const std::size_t index = static_cast<std::size_t>(raw_index);
+
             mutable_state.velocity_x[index] += half_step * force.x[index];
             mutable_state.velocity_y[index] += half_step * force.y[index];
             mutable_state.velocity_z[index] += half_step * force.z[index];
@@ -212,16 +213,21 @@ public:
         }
         if (transition.state_replaced) {
             const std::size_t checkpoint_count = workspace.Count();
+
             if (workspace.SetCount(particles.Count()) != BLITZAR_STATUS_OK) {
                 return blitzar_integration_kdk::RestoreWithRollback(
                     rollback_hook, particles, workspace, BLITZAR_STATUS_INTERNAL_ERROR);
             }
+
             mutable_state = particles.MutableView();
+
             if (workspace.Capture(mutable_state) != BLITZAR_STATUS_OK) {
                 (void)workspace.SetCount(checkpoint_count);
+
                 return blitzar_integration_kdk::RestoreWithRollback(
                     rollback_hook, particles, workspace, BLITZAR_STATUS_INTERNAL_ERROR);
             }
+
             solver_particles = particles.State();
         }
         mutable_state = particles.MutableView();
@@ -243,6 +249,7 @@ public:
         for (std::int64_t raw_index = 0; raw_index < static_cast<std::int64_t>(particles.Count());
              ++raw_index) {
             const std::size_t index = static_cast<std::size_t>(raw_index);
+
             mutable_state.velocity_x[index] += half_step * force.x[index];
             mutable_state.velocity_y[index] += half_step * force.y[index];
             mutable_state.velocity_z[index] += half_step * force.z[index];

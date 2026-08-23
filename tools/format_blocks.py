@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Insert blank lines between statement categories in C++ function bodies."""
+"""Insert blank lines between statement categories in nested C++ statement scopes."""
 
 from __future__ import annotations
 
@@ -46,6 +46,7 @@ DECLARATION_RE = re.compile(
 @dataclass
 class Scope:
     kind: str
+    state: FunctionState | None = None
 
 
 @dataclass
@@ -171,12 +172,10 @@ def opening_kind(
     return "initializer"
 
 
-def direct_function_state(
-    scopes: list[Scope], functions: list[FunctionState]
-) -> FunctionState | None:
-    if not functions or not scopes or scopes[-1].kind != "function":
+def current_scope_state(scopes: list[Scope]) -> FunctionState | None:
+    if not scopes:
         return None
-    return functions[-1]
+    return scopes[-1].state
 
 
 def add_separator(
@@ -226,7 +225,6 @@ def remove_continuation_blanks(lines: list[str]) -> list[str]:
 def format_lines(lines: list[str]) -> list[str]:
     lines = remove_continuation_blanks(lines)
     scopes: list[Scope] = []
-    functions: list[FunctionState] = []
     insert_before: set[int] = set()
     pending_kind: str | None = None
     in_block_comment = False
@@ -243,7 +241,7 @@ def format_lines(lines: list[str]) -> list[str]:
         if not code.strip():
             continue
 
-        state = direct_function_state(scopes, functions)
+        state = current_scope_state(scopes)
         starts_closing = code.lstrip().startswith("}")
         pending_continuation = pending_kind == "control" and pending_parens > 0
         if (
@@ -266,7 +264,7 @@ def format_lines(lines: list[str]) -> list[str]:
             if character == "{":
                 kind = opening_kind(code[:position], pending_kind, pending_parens, scopes)
                 if kind == "control":
-                    state = direct_function_state(scopes, functions)
+                    state = current_scope_state(scopes)
                     if state is not None:
                         add_separator(
                             state,
@@ -276,9 +274,8 @@ def format_lines(lines: list[str]) -> list[str]:
                             insert_before,
                             remove_lines,
                         )
-                scopes.append(Scope(kind))
-                if kind == "function":
-                    functions.append(FunctionState())
+                state = FunctionState() if kind in {"function", "control", "compound"} else None
+                scopes.append(Scope(kind, state))
                 pending_kind = None
                 pending_parens = 0
                 continue
@@ -286,10 +283,8 @@ def format_lines(lines: list[str]) -> list[str]:
             if not scopes:
                 continue
             popped = scopes.pop()
-            if popped.kind == "function" and functions:
-                functions.pop()
 
-        state = direct_function_state(scopes, functions)
+        state = current_scope_state(scopes)
         if state is not None and state.active_category is not None:
             if code.rstrip().endswith(";"):
                 state.active_category = None

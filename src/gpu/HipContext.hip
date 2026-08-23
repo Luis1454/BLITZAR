@@ -31,15 +31,24 @@ namespace {
 {
     switch (fault) {
     case HipFault::None:
+
         return BLITZAR_STATUS_OK;
+
     case HipFault::AllocationFailure:
+
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
+
     case HipFault::LaunchFailure:
     case HipFault::SynchronizationFailure:
+
         return BLITZAR_STATUS_INTERNAL_ERROR;
+
     case HipFault::NonFiniteResult:
+
         return BLITZAR_STATUS_INVALID_ARGUMENT;
+
     default:
+
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
 }
@@ -76,13 +85,16 @@ struct HipContext::Impl final {
         for (std::size_t index = 0; index < source.size(); ++index) {
             std::copy(source[index].begin(), source[index].end(),
                 reinterpret_cast<double*>(buffers.HostParticle(index)));
+
             const hipError_t error =
                 hipMemcpyAsync(reinterpret_cast<void*>(buffers.DeviceParticle(index)),
                     reinterpret_cast<const void*>(buffers.HostParticle(index)),
                     source[index].size_bytes(), hipMemcpyHostToDevice,
                     reinterpret_cast<hipStream_t>(buffers.Stream()));
+
             if (error != hipSuccess) {
                 buffers.Disable();
+
                 return HipStatus(error);
             }
         }
@@ -99,8 +111,10 @@ struct HipContext::Impl final {
                 hipMemcpyAsync(reinterpret_cast<void*>(buffers.HostForce(index)),
                     reinterpret_cast<const void*>(buffers.DeviceForce(index)), bytes,
                     hipMemcpyDeviceToHost, reinterpret_cast<hipStream_t>(buffers.Stream()));
+
             if (error != hipSuccess) {
                 buffers.Disable();
+
                 return HipStatus(error);
             }
         }
@@ -115,6 +129,7 @@ struct HipContext::Impl final {
             hipStreamSynchronize(reinterpret_cast<hipStream_t>(buffers.Stream()));
         if (synchronization != hipSuccess) {
             buffers.Disable();
+
             return HipStatus(synchronization);
         }
         const int device_status = *reinterpret_cast<const int*>(buffers.HostError());
@@ -144,6 +159,7 @@ struct HipContext::Impl final {
         if (hipMemsetAsync(reinterpret_cast<void*>(buffers.DeviceError()), 0, sizeof(int),
                 reinterpret_cast<hipStream_t>(buffers.Stream())) != hipSuccess) {
             buffers.Disable();
+
             return BLITZAR_STATUS_INTERNAL_ERROR;
         }
         const blitzar_gpu_detail::DeviceParticleAddresses addresses{buffers.DeviceParticle(0),
@@ -154,6 +170,7 @@ struct HipContext::Impl final {
             buffers.DeviceError(), buffers.Stream());
         if (status != BLITZAR_STATUS_OK) {
             buffers.Disable();
+
             return status;
         }
         if (hipMemcpyAsync(reinterpret_cast<void*>(buffers.HostError()),
@@ -161,6 +178,7 @@ struct HipContext::Impl final {
                 hipMemcpyDeviceToHost,
                 reinterpret_cast<hipStream_t>(buffers.Stream())) != hipSuccess) {
             buffers.Disable();
+
             return BLITZAR_STATUS_INTERNAL_ERROR;
         }
         status = QueueForceDownloads(particles.count);
@@ -180,6 +198,7 @@ struct HipContext::Impl final {
             catch (const std::length_error&) {
                 return BLITZAR_STATUS_INVALID_ARGUMENT;
             }
+
             tree_settings = settings;
             tree_ready = false;
         }
@@ -199,6 +218,7 @@ struct HipContext::Impl final {
         }
         if (!tree->Refit(particles)) {
             status = tree->Build(particles);
+
             if (status != BLITZAR_STATUS_OK) {
                 return status;
             }
@@ -213,6 +233,7 @@ struct HipContext::Impl final {
         auto* host_cell_data = reinterpret_cast<blitzar_gpu_detail::GpuCell*>(buffers.HostCells());
         for (std::size_t index = 0; index < cells.size(); ++index) {
             const blitzar_trees::Octree::Cell& source = cells[index];
+
             blitzar_gpu_detail::GpuCell& destination = host_cell_data[index];
             destination.center_x = source.center.x;
             destination.center_y = source.center.y;
@@ -224,6 +245,7 @@ struct HipContext::Impl final {
             destination.mass = source.mass;
             destination.begin = static_cast<std::uint64_t>(source.begin);
             destination.count = static_cast<std::uint64_t>(source.count);
+
             for (std::size_t child = 0; child < source.children.size(); ++child) {
                 destination.children[child] =
                     source.children[child] == blitzar_trees::Octree::Cell::InvalidIndex
@@ -250,6 +272,7 @@ struct HipContext::Impl final {
             hipMemsetAsync(reinterpret_cast<void*>(buffers.DeviceError()), 0, sizeof(int),
                 reinterpret_cast<hipStream_t>(buffers.Stream())) != hipSuccess) {
             buffers.Disable();
+
             return BLITZAR_STATUS_INTERNAL_ERROR;
         }
         const blitzar_gpu_detail::DeviceParticleAddresses addresses{buffers.DeviceParticle(0),
@@ -261,6 +284,7 @@ struct HipContext::Impl final {
             settings.max_depth, buffers.DeviceError(), buffers.Stream());
         if (status != BLITZAR_STATUS_OK) {
             buffers.Disable();
+
             return status;
         }
         if (hipMemcpyAsync(reinterpret_cast<void*>(buffers.HostError()),
@@ -268,6 +292,7 @@ struct HipContext::Impl final {
                 hipMemcpyDeviceToHost,
                 reinterpret_cast<hipStream_t>(buffers.Stream())) != hipSuccess) {
             buffers.Disable();
+
             return BLITZAR_STATUS_INTERNAL_ERROR;
         }
         status = QueueForceDownloads(particles.count);
@@ -324,6 +349,7 @@ blitzar_status HipContext::ComputeDirectRange(blitzar_core::ParticleStateView pa
     }
     if (impl_ != nullptr) {
         const blitzar_status fault_status = FaultStatus(impl_->fault);
+
         if (fault_status != BLITZAR_STATUS_OK) {
             return fault_status;
         }
@@ -361,6 +387,7 @@ blitzar_status HipContext::ComputeBarnesHut(blitzar_core::ParticleStateView part
     }
     if (impl_ != nullptr) {
         const blitzar_status fault_status = FaultStatus(impl_->fault);
+
         if (fault_status != BLITZAR_STATUS_OK) {
             return fault_status;
         }

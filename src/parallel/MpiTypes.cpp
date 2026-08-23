@@ -37,6 +37,7 @@ template <typename T>
 {
     if constexpr (IsWireScalar<T>()) {
         WriteU64(std::bit_cast<std::uint64_t>(value), output, offset);
+
         return true;
     }
 
@@ -53,6 +54,7 @@ template <typename T>
 {
     if constexpr (IsWireScalar<T>()) {
         value = std::bit_cast<T>(ReadU64(input, offset));
+
         return true;
     }
     (void)input;

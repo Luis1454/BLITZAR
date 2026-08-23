@@ -77,6 +77,7 @@ __global__ void BarnesHutKernel(const double* position_x, const double* position
         const double target_y = position_y[target];
         const double target_z = position_z[target];
         const double target_mass = mass[target];
+
         if (!isfinite(target_x) || !isfinite(target_y) || !isfinite(target_z) ||
             !isfinite(target_mass) || target_mass < 0.0) {
             local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -87,31 +88,42 @@ __global__ void BarnesHutKernel(const double* position_x, const double* position
 
         while (stack_size > 0 && local_error == 0) {
             const std::uint64_t cell_index = traversal_stack[--stack_size];
+
             if (cell_index >= cell_count) {
                 local_error = BLITZAR_STATUS_INTERNAL_ERROR;
+
                 break;
             }
+
             const GpuCell& cell = cells[cell_index];
+
             if (!isfinite(cell.mass) || cell.mass < 0.0 || cell.begin > source_count ||
                 cell.count > source_count - cell.begin) {
                 local_error = BLITZAR_STATUS_INTERNAL_ERROR;
+
                 break;
             }
             if (cell.mass == 0.0) {
                 continue;
             }
+
             const bool contains_target = Contains(cell, target_x, target_y, target_z);
+
             if (IsLeaf(cell)) {
                 for (std::uint64_t offset = 0; offset < cell.count; ++offset) {
                     const std::uint64_t source = indices[cell.begin + offset];
+
                     if (source >= source_count) {
                         local_error = BLITZAR_STATUS_INTERNAL_ERROR;
+
                         break;
                     }
+
                     const double source_mass = mass[source];
                     const double source_x = position_x[source];
                     const double source_y = position_y[source];
                     const double source_z = position_z[source];
+
                     if (!isfinite(source_x) || !isfinite(source_y) || !isfinite(source_z) ||
                         !isfinite(source_mass) || source_mass < 0.0) {
                         local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -121,29 +133,38 @@ __global__ void BarnesHutKernel(const double* position_x, const double* position
                     if (source == target || source_mass == 0.0) {
                         continue;
                     }
+
                     const double dx = source_x - target_x;
                     const double dy = source_y - target_y;
                     const double dz = source_z - target_z;
                     const double distance_squared = dx * dx + dy * dy + dz * dz;
                     const double softened_distance = distance_squared + softening_squared;
+
                     if (!isfinite(distance_squared) || !isfinite(softened_distance)) {
                         local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
+
                         break;
                     }
                     if (softened_distance == 0.0) {
                         local_error = BLITZAR_STATUS_SINGULARITY;
+
                         break;
                     }
+
                     const double factor = gravitational_constant * source_mass /
                                           (softened_distance * sqrt(softened_distance));
+
                     if (!isfinite(factor)) {
                         local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
+
                         break;
                     }
+
                     acceleration_x += factor * dx;
                     acceleration_y += factor * dy;
                     acceleration_z += factor * dz;
                 }
+
                 continue;
             }
 
@@ -153,36 +174,48 @@ __global__ void BarnesHutKernel(const double* position_x, const double* position
             const double distance_squared = dx * dx + dy * dy + dz * dz;
             const double distance = sqrt(distance_squared);
             const double cell_width = 2.0 * cell.half_extent;
+
             if (!contains_target && distance > 0.0 && cell_width / distance < opening_angle) {
                 const double softened_distance = distance_squared + softening_squared;
+
                 if (!isfinite(distance_squared) || !isfinite(softened_distance)) {
                     local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
+
                     break;
                 }
                 if (softened_distance == 0.0) {
                     local_error = BLITZAR_STATUS_SINGULARITY;
+
                     break;
                 }
+
                 const double factor = gravitational_constant * cell.mass /
                                       (softened_distance * sqrt(softened_distance));
+
                 if (!isfinite(factor)) {
                     local_error = BLITZAR_STATUS_INVALID_ARGUMENT;
+
                     break;
                 }
+
                 acceleration_x += factor * dx;
                 acceleration_y += factor * dy;
                 acceleration_z += factor * dz;
+
                 continue;
             }
             for (int child = 7; child >= 0; --child) {
                 const std::uint64_t child_index = cell.children[child];
+
                 if (child_index == InvalidCell) {
                     continue;
                 }
                 if (stack_size >= MaxTraversalStack) {
                     local_error = BLITZAR_STATUS_INTERNAL_ERROR;
+
                     break;
                 }
+
                 traversal_stack[stack_size++] = child_index;
             }
         }

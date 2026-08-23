@@ -29,6 +29,7 @@ MpiContext::MpiContext() noexcept
     }
     catch (const std::bad_alloc&) {
         status_ = BLITZAR_STATUS_ALLOCATION_FAILURE;
+
         return;
     }
 
@@ -80,6 +81,7 @@ blitzar_status MpiContext::SynchronizeStatus(blitzar_status local_status, const 
 {
     if (impl_ == nullptr) {
         global_status = status_;
+
         return status_;
     }
     return impl_->collectives.SynchronizeStatus(local_status, operation, phase, global_status);
@@ -117,6 +119,7 @@ blitzar_status MpiContext::CompleteGhostExchange(
 {
     if (impl_ == nullptr) {
         ghosts.Clear();
+
         return status_;
     }
     return impl_->ghosts.Complete(exchange, ghosts);

@@ -127,10 +127,13 @@ blitzar_status DomainDecomposition::Initialize(
     for (int destination = 1; destination < size_; ++destination) {
         if (order.empty()) {
             split_keys_[static_cast<std::size_t>(destination - 1)] = {};
+
             continue;
         }
+
         const std::size_t boundary = std::min(order.size() - 1,
             static_cast<std::size_t>(destination) * order.size() / static_cast<std::size_t>(size_));
+
         split_keys_[static_cast<std::size_t>(destination - 1)] = {
             keys[order[boundary]], static_cast<std::uint64_t>(order[boundary])};
     }
@@ -139,6 +142,7 @@ blitzar_status DomainDecomposition::Initialize(
     local_bounds_ = {};
     for (std::size_t index = 0; index < global_state.SourceCount(); ++index) {
         if (Owner({global_state.x[index], global_state.y[index], global_state.z[index]},
+
                 static_cast<std::uint64_t>(index)) == rank_) {
             (void)Extend(local_bounds_,
                 {global_state.x[index], global_state.y[index], global_state.z[index]});
@@ -231,8 +235,10 @@ blitzar_status DomainDecomposition::LocalIndices(
     }
     try {
         indices.reserve(global_state.SourceCount() / static_cast<std::size_t>(size_) + 1);
+
         for (std::size_t index = 0; index < global_state.SourceCount(); ++index) {
             if (Owner({global_state.x[index], global_state.y[index], global_state.z[index]},
+
                     static_cast<std::uint64_t>(index)) == rank_) {
                 indices.push_back(index);
             }
@@ -240,6 +246,7 @@ blitzar_status DomainDecomposition::LocalIndices(
     }
     catch (const std::bad_alloc&) {
         indices.clear();
+
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
     return BLITZAR_STATUS_OK;

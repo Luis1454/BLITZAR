@@ -56,10 +56,12 @@ struct TestState final {
 
     for (const auto& [fault, expected_status] : faults) {
         simulation.SetHipFaultForTesting(fault);
+
         if (simulation.Step() != expected_status ||
             simulation.LastBackend() != BLITZAR_BACKEND_HIP) {
             return false;
         }
+
         simulation.SetHipFaultForTesting(blitzar_gpu::HipFault::None);
     }
 
@@ -105,8 +107,10 @@ int main()
     if (!context.IsAvailable()) {
         std::fprintf(stdout, "BLITZAR GPU qualification skipped: no compatible device is "
                              "visible; CPU fallback is being tested\n");
+
         BLITZAR_CHECK(context.ComputeDirect(particles.State(), gpu_forces.View(), gravity) ==
                       BLITZAR_STATUS_UNSUPPORTED);
+
         return 0;
     }
 
