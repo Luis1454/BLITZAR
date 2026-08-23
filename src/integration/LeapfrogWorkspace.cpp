@@ -1,27 +1,29 @@
 #include "integration/LeapfrogWorkspace.hpp"
 
-#include <stdexcept>
 #include <utility>
 
 namespace blitzar_integration {
 
 LeapfrogWorkspace::LeapfrogWorkspace(std::size_t count)
-    : LeapfrogWorkspace(std::make_shared<blitzar_particles::ParticleArena>(count))
+    : owned_arena_(
+          std::make_unique<blitzar_particles::ParticleArena>(count)),
+      borrowed_arena_(),
+      count_(count)
 {
 }
 
 LeapfrogWorkspace::LeapfrogWorkspace(
-    std::shared_ptr<blitzar_particles::ParticleArena> arena)
-    : count_(arena == nullptr ? 0 : arena->Count()), arena_(std::move(arena))
+    blitzar_particles::ParticleArena& arena)
+    : owned_arena_(), borrowed_arena_(std::ref(arena)), count_(arena.Count())
 {
-    if (arena_ == nullptr) {
-        throw std::invalid_argument("particle arena is required");
-    }
 }
 
 LeapfrogWorkspace::LeapfrogWorkspace(LeapfrogWorkspace&& other) noexcept
-    : count_(other.count_), arena_(std::move(other.arena_))
+    : owned_arena_(std::move(other.owned_arena_)),
+      borrowed_arena_(other.borrowed_arena_),
+      count_(other.count_)
 {
+    other.borrowed_arena_.reset();
     other.count_ = 0;
 }
 
@@ -29,11 +31,23 @@ LeapfrogWorkspace& LeapfrogWorkspace::operator=(
     LeapfrogWorkspace&& other) noexcept
 {
     if (this != &other) {
+        owned_arena_ = std::move(other.owned_arena_);
+        borrowed_arena_ = other.borrowed_arena_;
         count_ = other.count_;
-        arena_ = std::move(other.arena_);
+        other.borrowed_arena_.reset();
         other.count_ = 0;
     }
     return *this;
+}
+
+bool LeapfrogWorkspace::HasArena() const noexcept
+{
+    return owned_arena_ != nullptr || borrowed_arena_.has_value();
+}
+
+blitzar_particles::ParticleArena& LeapfrogWorkspace::Arena() const noexcept
+{
+    return owned_arena_ != nullptr ? *owned_arena_ : borrowed_arena_->get();
 }
 
 std::size_t LeapfrogWorkspace::Count() const noexcept
@@ -43,7 +57,7 @@ std::size_t LeapfrogWorkspace::Count() const noexcept
 
 blitzar_status LeapfrogWorkspace::SetCount(std::size_t count) noexcept
 {
-    if (arena_ == nullptr || count > arena_->Count()) {
+    if (!HasArena() || count > Arena().Count()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     count_ = count;
@@ -52,8 +66,8 @@ blitzar_status LeapfrogWorkspace::SetCount(std::size_t count) noexcept
 
 bool LeapfrogWorkspace::IsValid() const noexcept
 {
-    return (arena_ == nullptr && count_ == 0) ||
-           (arena_ != nullptr && count_ <= arena_->Count() && arena_->IsValid());
+    return !HasArena() ? count_ == 0
+                       : count_ <= Arena().Count() && Arena().IsValid();
 }
 
 blitzar_status LeapfrogWorkspace::Capture(
@@ -62,15 +76,16 @@ blitzar_status LeapfrogWorkspace::Capture(
     if (state.count != count_ || !blitzar_core::IsValid(state)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    if (arena_ == nullptr) {
+    if (!HasArena()) {
         return BLITZAR_STATUS_OK;
     }
-    const auto position_x = arena_->WorkspacePositionX();
-    const auto position_y = arena_->WorkspacePositionY();
-    const auto position_z = arena_->WorkspacePositionZ();
-    const auto velocity_x = arena_->WorkspaceVelocityX();
-    const auto velocity_y = arena_->WorkspaceVelocityY();
-    const auto velocity_z = arena_->WorkspaceVelocityZ();
+    blitzar_particles::ParticleArena& arena = Arena();
+    const auto position_x = arena.WorkspacePositionX();
+    const auto position_y = arena.WorkspacePositionY();
+    const auto position_z = arena.WorkspacePositionZ();
+    const auto velocity_x = arena.WorkspaceVelocityX();
+    const auto velocity_y = arena.WorkspaceVelocityY();
+    const auto velocity_z = arena.WorkspaceVelocityZ();
     for (std::size_t index = 0; index < count_; ++index) {
         position_x[index] = state.x[index];
         position_y[index] = state.y[index];
@@ -88,15 +103,16 @@ blitzar_status LeapfrogWorkspace::Restore(
     if (state.count != count_ || !blitzar_core::IsValid(state)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    if (arena_ == nullptr) {
+    if (!HasArena()) {
         return BLITZAR_STATUS_OK;
     }
-    const auto position_x = arena_->WorkspacePositionX();
-    const auto position_y = arena_->WorkspacePositionY();
-    const auto position_z = arena_->WorkspacePositionZ();
-    const auto velocity_x = arena_->WorkspaceVelocityX();
-    const auto velocity_y = arena_->WorkspaceVelocityY();
-    const auto velocity_z = arena_->WorkspaceVelocityZ();
+    blitzar_particles::ParticleArena& arena = Arena();
+    const auto position_x = arena.WorkspacePositionX();
+    const auto position_y = arena.WorkspacePositionY();
+    const auto position_z = arena.WorkspacePositionZ();
+    const auto velocity_x = arena.WorkspaceVelocityX();
+    const auto velocity_y = arena.WorkspaceVelocityY();
+    const auto velocity_z = arena.WorkspaceVelocityZ();
     for (std::size_t index = 0; index < count_; ++index) {
         state.x[index] = position_x[index];
         state.y[index] = position_y[index];

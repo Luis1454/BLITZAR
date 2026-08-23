@@ -873,7 +873,7 @@ Simulation::Simulation(std::size_t particle_count)
       domain_(),
       mpi_exchange_(mpi_context_, domain_),
       hip_context_(),
-      arena_(std::make_shared<blitzar_particles::ParticleArena>(particle_count)),
+      arena_(particle_count),
       particles_(arena_),
       accelerations_(arena_),
       workspace_(arena_),
@@ -1142,7 +1142,7 @@ blitzar_status Simulation::SetParticles(
 
     const std::size_t local_count = local_indices.size();
     const blitzar_status capacity_status =
-        local_count <= arena_->Count() && local_count <= particle_ids_.size()
+        local_count <= arena_.Count() && local_count <= particle_ids_.size()
             ? BLITZAR_STATUS_OK
             : BLITZAR_STATUS_INVALID_ARGUMENT;
     const blitzar_status synchronized_capacity_status =
@@ -1155,7 +1155,7 @@ blitzar_status Simulation::SetParticles(
     const blitzar_status commit_status = CommitStagedParticles(
         stage,
         local_indices,
-        *arena_,
+        arena_,
         particles_,
         accelerations_,
         workspace_,
@@ -1281,7 +1281,7 @@ blitzar_status Simulation::Step() noexcept
                     rollback_particle_count == rollback_acceleration_count &&
                     rollback_particle_count == rollback_workspace_count &&
                     rollback_particle_count <= source_particle_count_ &&
-                    source_particle_count_ <= arena_->Count();
+                    source_particle_count_ <= arena_.Count();
                 const blitzar_status state_status =
                     SynchronizeSimulationStatus(
                         mpi_context_,
@@ -1292,7 +1292,7 @@ blitzar_status Simulation::Step() noexcept
                     return state_status;
                 }
                 DistributedStepTransaction transaction(
-                    *arena_,
+                    arena_,
                     particles_,
                     accelerations_,
                     workspace_,
@@ -1317,7 +1317,7 @@ blitzar_status Simulation::Step() noexcept
                     gravity_,
                     barnes_hut_,
                     mpi_exchange_,
-                    *arena_,
+                    arena_,
                     std::span<const std::uint64_t>(particle_ids_),
                     exchange_buffer_,
                     source_particle_count_,
@@ -1360,7 +1360,7 @@ blitzar_status Simulation::Step() noexcept
                     }
                     migration_status = StoreLocalPackets(
                         migrated,
-                        *arena_,
+                        arena_,
                         current_particles,
                         current_accelerations,
                         current_workspace,

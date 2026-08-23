@@ -19,7 +19,6 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
-#include <memory>
 #include <span>
 #include <variant>
 #include <vector>
@@ -90,7 +89,7 @@ private:
     blitzar_parallel::DomainDecomposition domain_;
     blitzar_parallel::MpiExchange mpi_exchange_;
     blitzar_gpu::HipContext hip_context_;
-    std::shared_ptr<blitzar_particles::ParticleArena> arena_;
+    blitzar_particles::ParticleArena arena_;
     blitzar_particles::ParticleBuffer particles_;
     blitzar_particles::AccelerationBuffer accelerations_;
     blitzar_integration::LeapfrogWorkspace workspace_;

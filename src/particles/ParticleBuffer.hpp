@@ -6,14 +6,16 @@
 #include <blitzar/blitzar.h>
 
 #include <cstddef>
+#include <functional>
 #include <memory>
+#include <optional>
 
 namespace blitzar_particles {
 
 class ParticleBuffer final {
 public:
     explicit ParticleBuffer(std::size_t count);
-    explicit ParticleBuffer(std::shared_ptr<ParticleArena> arena);
+    explicit ParticleBuffer(ParticleArena& arena);
     ~ParticleBuffer() = default;
 
     ParticleBuffer(const ParticleBuffer&) = delete;
@@ -36,14 +38,18 @@ public:
         std::size_t index, blitzar_core::Scalar mass) noexcept;
 
 private:
+    [[nodiscard]] bool HasArena() const noexcept;
+    [[nodiscard]] ParticleArena& Arena() const noexcept;
+
+    std::unique_ptr<ParticleArena> owned_arena_;
+    std::optional<std::reference_wrapper<ParticleArena>> borrowed_arena_;
     std::size_t count_;
-    std::shared_ptr<ParticleArena> arena_;
 };
 
 class AccelerationBuffer final {
 public:
     explicit AccelerationBuffer(std::size_t count);
-    explicit AccelerationBuffer(std::shared_ptr<ParticleArena> arena);
+    explicit AccelerationBuffer(ParticleArena& arena);
     ~AccelerationBuffer() = default;
 
     AccelerationBuffer(const AccelerationBuffer&) = delete;
@@ -58,8 +64,12 @@ public:
     [[nodiscard]] blitzar_core::ForceView View() noexcept;
 
 private:
+    [[nodiscard]] bool HasArena() const noexcept;
+    [[nodiscard]] ParticleArena& Arena() const noexcept;
+
+    std::unique_ptr<ParticleArena> owned_arena_;
+    std::optional<std::reference_wrapper<ParticleArena>> borrowed_arena_;
     std::size_t count_;
-    std::shared_ptr<ParticleArena> arena_;
 };
 
 }  // namespace blitzar_particles

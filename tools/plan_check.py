@@ -44,6 +44,9 @@ GENERIC_DETAIL_PATTERN = re.compile(
     r"\bnamespace\s+[A-Za-z_]\w*\s*::\s*detail\b|"
     r"::\s*detail\s*::"
 )
+SHARED_PARTICLE_ARENA_PATTERN = re.compile(
+    r"\bstd::shared_ptr\s*<\s*(?:[A-Za-z_]\w*::)*ParticleArena\s*>"
+)
 
 
 def fail(message: str) -> None:
@@ -280,6 +283,28 @@ def validate_namespace_boundaries() -> None:
                 )
 
 
+def validate_arena_ownership() -> None:
+    code_roots = [
+        ROOT / "src",
+        ROOT / "include",
+        ROOT / "apps",
+        ROOT / "tests",
+        ROOT / "examples",
+    ]
+    for directory in code_roots:
+        if not directory.is_dir():
+            continue
+        for path in directory.rglob("*"):
+            if not path.is_file() or path.suffix.lower() not in SOURCE_SUFFIXES:
+                continue
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            if SHARED_PARTICLE_ARENA_PATTERN.search(text):
+                fail(
+                    f"shared ParticleArena ownership in "
+                    f"{path.relative_to(ROOT)}"
+                )
+
+
 def validate_quality_tests(phase_ids: set[str]) -> None:
     quality = load_json(QUALITY, "quality manifest")
     if quality.get("evidence_policy") != "registration-only":
@@ -433,6 +458,7 @@ def main(argv: list[str] | None = None) -> None:
     validate_forbidden_references(manifest)
     validate_quality_tests(phase_ids)
     validate_namespace_boundaries()
+    validate_arena_ownership()
     validate_naming()
     print(
         f"plan-check: frozen plan {manifest['plan_version']} is valid; "

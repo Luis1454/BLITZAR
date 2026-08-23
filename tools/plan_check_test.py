@@ -199,6 +199,14 @@ class PlanCheckTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("generic nested detail namespace", result.stderr)
 
+    def test_rejects_shared_particle_arena(self) -> None:
+        (self.root / "src" / "Valid.cpp").write_text(
+            "std::shared_ptr<ParticleArena> arena;\n", encoding="utf-8"
+        )
+        result = self.run_checker()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("shared ParticleArena ownership", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

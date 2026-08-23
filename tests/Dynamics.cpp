@@ -108,6 +108,31 @@ int main()
         BLITZAR_CHECK(workspace_moved.IsValid());
     }
 
+    {
+        blitzar_particles::ParticleArena arena(2);
+        blitzar_particles::ParticleBuffer particles(arena);
+        blitzar_particles::AccelerationBuffer accelerations(arena);
+        blitzar_integration::LeapfrogWorkspace workspace(arena);
+        BLITZAR_CHECK(arena.IsValid());
+        BLITZAR_CHECK(particles.IsValid());
+        BLITZAR_CHECK(accelerations.IsValid());
+        BLITZAR_CHECK(workspace.IsValid());
+
+        blitzar_particles::ParticleBuffer moved_particles(
+            std::move(particles));
+        blitzar_particles::AccelerationBuffer moved_accelerations(
+            std::move(accelerations));
+        blitzar_integration::LeapfrogWorkspace moved_workspace(
+            std::move(workspace));
+        BLITZAR_CHECK(particles.Count() == 0);
+        BLITZAR_CHECK(accelerations.Count() == 0);
+        BLITZAR_CHECK(workspace.Count() == 0);
+        BLITZAR_CHECK(moved_particles.IsValid());
+        BLITZAR_CHECK(moved_accelerations.IsValid());
+        BLITZAR_CHECK(moved_workspace.IsValid());
+        BLITZAR_CHECK(arena.IsValid());
+    }
+
     blitzar_particles::ParticleBuffer particles(2);
     blitzar_particles::AccelerationBuffer accelerations(2);
     BLITZAR_CHECK(particles.IsValid());

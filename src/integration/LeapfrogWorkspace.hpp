@@ -7,15 +7,16 @@
 #include <blitzar/blitzar.h>
 
 #include <cstddef>
+#include <functional>
 #include <memory>
+#include <optional>
 
 namespace blitzar_integration {
 
 class LeapfrogWorkspace final {
 public:
     explicit LeapfrogWorkspace(std::size_t count);
-    explicit LeapfrogWorkspace(
-        std::shared_ptr<blitzar_particles::ParticleArena> arena);
+    explicit LeapfrogWorkspace(blitzar_particles::ParticleArena& arena);
     ~LeapfrogWorkspace() = default;
 
     LeapfrogWorkspace(const LeapfrogWorkspace&) = delete;
@@ -33,8 +34,14 @@ public:
         blitzar_core::MutableParticleView state) noexcept;
 
 private:
+    [[nodiscard]] bool HasArena() const noexcept;
+    [[nodiscard]] blitzar_particles::ParticleArena& Arena() const noexcept;
+
+    std::unique_ptr<blitzar_particles::ParticleArena> owned_arena_;
+    std::optional<
+        std::reference_wrapper<blitzar_particles::ParticleArena>>
+        borrowed_arena_;
     std::size_t count_;
-    std::shared_ptr<blitzar_particles::ParticleArena> arena_;
 };
 
 }  // namespace blitzar_integration
