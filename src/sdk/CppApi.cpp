@@ -177,12 +177,14 @@ Status Simulation::set_units(double length_scale, double mass_scale, double time
         impl_ == nullptr ? nullptr : impl_->handle.get(), length_scale, mass_scale, time_scale));
 }
 
-Status Simulation::set_barnes_hut(double opening_angle, std::int64_t max_particles,
-    std::int64_t max_cells, std::int64_t leaf_capacity, std::int64_t max_depth) noexcept
+Status Simulation::set_barnes_hut(BarnesHutSettings settings) noexcept
 {
-    return Update(
-        blitzar_simulation_set_barnes_hut(impl_ == nullptr ? nullptr : impl_->handle.get(),
-            opening_angle, max_particles, max_cells, leaf_capacity, max_depth));
+    const blitzar_barnes_hut_config_v2 config{sizeof(config), BLITZAR_ABI_VERSION_V2,
+        settings.opening_angle, settings.max_particles, settings.max_cells, settings.leaf_capacity,
+        settings.max_depth};
+
+    return Update(blitzar_simulation_set_barnes_hut_v2(
+        impl_ == nullptr ? nullptr : impl_->handle.get(), &config));
 }
 
 Status Simulation::set_timestep(double timestep) noexcept
@@ -197,37 +199,34 @@ Status Simulation::set_seed(std::uint64_t seed) noexcept
         blitzar_simulation_set_seed(impl_ == nullptr ? nullptr : impl_->handle.get(), seed));
 }
 
-Status Simulation::set_particles(std::span<const double> position_x,
-    std::span<const double> position_y, std::span<const double> position_z,
-    std::span<const double> velocity_x, std::span<const double> velocity_y,
-    std::span<const double> velocity_z, std::span<const double> mass) noexcept
+Status Simulation::set_particles(ParticleInput input) noexcept
 {
-    if (position_x.size() != position_y.size() || position_x.size() != position_z.size() ||
-        position_x.size() != velocity_x.size() || position_x.size() != velocity_y.size() ||
-        position_x.size() != velocity_z.size() || position_x.size() != mass.size() ||
-        !FitsCount(position_x.size())) {
+    if (!input.IsSized() || !FitsCount(input.position_x.size())) {
         return Update(BLITZAR_STATUS_INVALID_ARGUMENT);
     }
 
-    return Update(blitzar_simulation_set_particles(impl_ == nullptr ? nullptr : impl_->handle.get(),
-        static_cast<std::int64_t>(position_x.size()), position_x.data(), position_y.data(),
-        position_z.data(), velocity_x.data(), velocity_y.data(), velocity_z.data(), mass.data()));
+    const blitzar_particle_input_v2 view{sizeof(view), BLITZAR_ABI_VERSION_V2,
+        static_cast<std::int64_t>(input.position_x.size()), input.position_x.data(),
+        input.position_y.data(), input.position_z.data(), input.velocity_x.data(),
+        input.velocity_y.data(), input.velocity_z.data(), input.mass.data()};
+
+    return Update(blitzar_simulation_set_particles_v2(
+        impl_ == nullptr ? nullptr : impl_->handle.get(), &view));
 }
 
-Status Simulation::get_state(std::span<double> position_x, std::span<double> position_y,
-    std::span<double> position_z, std::span<double> velocity_x, std::span<double> velocity_y,
-    std::span<double> velocity_z, std::span<double> mass) noexcept
+Status Simulation::get_state(ParticleOutput output) noexcept
 {
-    if (position_x.size() != position_y.size() || position_x.size() != position_z.size() ||
-        position_x.size() != velocity_x.size() || position_x.size() != velocity_y.size() ||
-        position_x.size() != velocity_z.size() || position_x.size() != mass.size() ||
-        !FitsCount(position_x.size())) {
+    if (!output.IsSized() || !FitsCount(output.position_x.size())) {
         return Update(BLITZAR_STATUS_INVALID_ARGUMENT);
     }
 
-    return Update(blitzar_simulation_get_state(impl_ == nullptr ? nullptr : impl_->handle.get(),
-        static_cast<std::int64_t>(position_x.size()), position_x.data(), position_y.data(),
-        position_z.data(), velocity_x.data(), velocity_y.data(), velocity_z.data(), mass.data()));
+    const blitzar_particle_output_v2 view{sizeof(view), BLITZAR_ABI_VERSION_V2,
+        static_cast<std::int64_t>(output.position_x.size()), output.position_x.data(),
+        output.position_y.data(), output.position_z.data(), output.velocity_x.data(),
+        output.velocity_y.data(), output.velocity_z.data(), output.mass.data()};
+
+    return Update(blitzar_simulation_get_state_v2(
+        impl_ == nullptr ? nullptr : impl_->handle.get(), &view));
 }
 
 Status Simulation::step() noexcept

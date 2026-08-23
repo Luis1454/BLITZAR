@@ -45,8 +45,8 @@ int main()
     const std::array<double, 2> velocity_z{0.0, 0.0};
     const std::array<double, 2> mass{1.0, 1.0};
 
-    BLITZAR_CHECK(simulation.set_particles(position_x, position_y, position_z, velocity_x,
-                      velocity_y, velocity_z, mass) == blitzar::Status::Ok);
+    BLITZAR_CHECK(simulation.set_particles({position_x, position_y, position_z, velocity_x,
+                      velocity_y, velocity_z, mass}) == blitzar::Status::Ok);
     BLITZAR_CHECK(simulation.step() == blitzar::Status::Ok);
 
     std::array<double, 2> output_x{};
@@ -57,8 +57,8 @@ int main()
     std::array<double, 2> output_velocity_z{};
     std::array<double, 2> output_mass{};
 
-    BLITZAR_CHECK(simulation.get_state(output_x, output_y, output_z, output_velocity_x,
-                      output_velocity_y, output_velocity_z, output_mass) == blitzar::Status::Ok);
+    BLITZAR_CHECK(simulation.get_state({output_x, output_y, output_z, output_velocity_x,
+                      output_velocity_y, output_velocity_z, output_mass}) == blitzar::Status::Ok);
     BLITZAR_CHECK(output_x[0] != 0.0);
     BLITZAR_CHECK(output_mass[0] == 1.0);
 
@@ -73,13 +73,13 @@ int main()
     const std::array<double, 2> replacement_mass{1.0, -1.0};
     const std::array<double, 1> short_position_x{100.0};
 
-    BLITZAR_CHECK(simulation.set_particles(short_position_x, position_y, position_z, velocity_x,
-                      velocity_y, velocity_z, mass) == blitzar::Status::InvalidArgument);
+    BLITZAR_CHECK(simulation.set_particles({short_position_x, position_y, position_z, velocity_x,
+                      velocity_y, velocity_z, mass}) == blitzar::Status::InvalidArgument);
     BLITZAR_CHECK(
-        simulation.set_particles(replacement_x, position_y, position_z, velocity_x, velocity_y,
-            velocity_z, replacement_mass) == blitzar::Status::InvalidArgument);
-    BLITZAR_CHECK(simulation.get_state(output_x, output_y, output_z, output_velocity_x,
-                      output_velocity_y, output_velocity_z, output_mass) == blitzar::Status::Ok);
+        simulation.set_particles({replacement_x, position_y, position_z, velocity_x, velocity_y,
+            velocity_z, replacement_mass}) == blitzar::Status::InvalidArgument);
+    BLITZAR_CHECK(simulation.get_state({output_x, output_y, output_z, output_velocity_x,
+                      output_velocity_y, output_velocity_z, output_mass}) == blitzar::Status::Ok);
     BLITZAR_CHECK(output_x == expected_x);
     BLITZAR_CHECK(output_y == expected_y);
     BLITZAR_CHECK(output_z == expected_z);

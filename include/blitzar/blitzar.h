@@ -57,6 +57,45 @@ typedef int32_t blitzar_integrator_kind;
 
 #define BLITZAR_INTEGRATOR_LEAPFROG_KDK ((blitzar_integrator_kind)0)
 
+#define BLITZAR_ABI_VERSION_V2 ((uint32_t)2)
+
+/* Versioned non-owning views used by the bounded V2 entry points. */
+typedef struct blitzar_particle_input_v2 {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    int64_t particle_count;
+    const double* position_x;
+    const double* position_y;
+    const double* position_z;
+    const double* velocity_x;
+    const double* velocity_y;
+    const double* velocity_z;
+    const double* mass;
+} blitzar_particle_input_v2;
+
+typedef struct blitzar_particle_output_v2 {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    int64_t capacity;
+    double* position_x;
+    double* position_y;
+    double* position_z;
+    double* velocity_x;
+    double* velocity_y;
+    double* velocity_z;
+    double* mass;
+} blitzar_particle_output_v2;
+
+typedef struct blitzar_barnes_hut_config_v2 {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    double opening_angle;
+    int64_t max_particles;
+    int64_t max_cells;
+    int64_t leaf_capacity;
+    int64_t max_depth;
+} blitzar_barnes_hut_config_v2;
+
 /* Product/API semantic version and the frozen implementation plan revision. */
 BLITZAR_API const char* blitzar_version(void);
 
@@ -113,6 +152,15 @@ BLITZAR_API blitzar_status blitzar_simulation_set_particles(blitzar_simulation* 
 BLITZAR_API blitzar_status blitzar_simulation_get_state(const blitzar_simulation* simulation,
     int64_t capacity, double* position_x, double* position_y, double* position_z,
     double* velocity_x, double* velocity_y, double* velocity_z, double* mass);
+
+BLITZAR_API blitzar_status blitzar_simulation_set_barnes_hut_v2(
+    blitzar_simulation* simulation, const blitzar_barnes_hut_config_v2* config);
+
+BLITZAR_API blitzar_status blitzar_simulation_set_particles_v2(
+    blitzar_simulation* simulation, const blitzar_particle_input_v2* input);
+
+BLITZAR_API blitzar_status blitzar_simulation_get_state_v2(
+    const blitzar_simulation* simulation, const blitzar_particle_output_v2* output);
 
 BLITZAR_API blitzar_status blitzar_simulation_step(blitzar_simulation* simulation);
 

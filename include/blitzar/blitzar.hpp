@@ -75,6 +75,50 @@ enum class BackendKind : std::int32_t { Cpu = BLITZAR_BACKEND_CPU, Hip = BLITZAR
 
 enum class IntegratorKind : std::int32_t { LeapfrogKdk = BLITZAR_INTEGRATOR_LEAPFROG_KDK };
 
+struct BarnesHutSettings final {
+    double opening_angle{0.5};
+    std::int64_t max_particles{};
+    std::int64_t max_cells{};
+    std::int64_t leaf_capacity{8};
+    std::int64_t max_depth{32};
+};
+
+struct ParticleInput final {
+    std::span<const double> position_x{};
+    std::span<const double> position_y{};
+    std::span<const double> position_z{};
+    std::span<const double> velocity_x{};
+    std::span<const double> velocity_y{};
+    std::span<const double> velocity_z{};
+    std::span<const double> mass{};
+
+    [[nodiscard]] bool IsSized() const noexcept
+    {
+        return position_x.size() == position_y.size() && position_x.size() == position_z.size() &&
+               position_x.size() == velocity_x.size() &&
+               position_x.size() == velocity_y.size() &&
+               position_x.size() == velocity_z.size() && position_x.size() == mass.size();
+    }
+};
+
+struct ParticleOutput final {
+    std::span<double> position_x{};
+    std::span<double> position_y{};
+    std::span<double> position_z{};
+    std::span<double> velocity_x{};
+    std::span<double> velocity_y{};
+    std::span<double> velocity_z{};
+    std::span<double> mass{};
+
+    [[nodiscard]] bool IsSized() const noexcept
+    {
+        return position_x.size() == position_y.size() && position_x.size() == position_z.size() &&
+               position_x.size() == velocity_x.size() &&
+               position_x.size() == velocity_y.size() &&
+               position_x.size() == velocity_z.size() && position_x.size() == mass.size();
+    }
+};
+
 class BLITZAR_API Context final {
 public:
     Context() noexcept;
@@ -122,17 +166,11 @@ public:
     [[nodiscard]] Status set_gravity(double gravitational_constant, double softening) noexcept;
     [[nodiscard]] Status set_units(
         double length_scale, double mass_scale, double time_scale) noexcept;
-    [[nodiscard]] Status set_barnes_hut(double opening_angle, std::int64_t max_particles,
-        std::int64_t max_cells, std::int64_t leaf_capacity, std::int64_t max_depth) noexcept;
+    [[nodiscard]] Status set_barnes_hut(BarnesHutSettings settings) noexcept;
     [[nodiscard]] Status set_timestep(double timestep) noexcept;
     [[nodiscard]] Status set_seed(std::uint64_t seed) noexcept;
-    [[nodiscard]] Status set_particles(std::span<const double> position_x,
-        std::span<const double> position_y, std::span<const double> position_z,
-        std::span<const double> velocity_x, std::span<const double> velocity_y,
-        std::span<const double> velocity_z, std::span<const double> mass) noexcept;
-    [[nodiscard]] Status get_state(std::span<double> position_x, std::span<double> position_y,
-        std::span<double> position_z, std::span<double> velocity_x, std::span<double> velocity_y,
-        std::span<double> velocity_z, std::span<double> mass) noexcept;
+    [[nodiscard]] Status set_particles(ParticleInput input) noexcept;
+    [[nodiscard]] Status get_state(ParticleOutput output) noexcept;
     [[nodiscard]] Status step() noexcept;
 
 private:
