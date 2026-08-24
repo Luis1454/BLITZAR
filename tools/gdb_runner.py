@@ -23,7 +23,7 @@ def build_command(executable: Path, arguments: list[str]) -> list[str]:
         "-ex",
         "run",
         "-ex",
-        "bt full",
+        "python exit_code = gdb.parse_and_eval('$_exitcode'); gdb.execute('bt full') if int(exit_code) != 0 else None",
         "--args",
         str(executable),
         *arguments,
