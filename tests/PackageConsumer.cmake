@@ -16,9 +16,42 @@ set(consumer_build_dir "${test_root}/build")
 file(REMOVE_RECURSE "${test_root}")
 file(MAKE_DIRECTORY "${source_dir}")
 
+set(package_config "Release")
+set(cache_file "${BLITZAR_BUILD_DIR}/CMakeCache.txt")
+if(EXISTS "${cache_file}")
+    file(STRINGS "${cache_file}" build_type_entry
+        REGEX "^CMAKE_BUILD_TYPE:STRING=" LIMIT_COUNT 1)
+    if(build_type_entry)
+        string(REGEX REPLACE "^CMAKE_BUILD_TYPE:STRING=" ""
+            package_config "${build_type_entry}")
+    endif()
+endif()
+if(package_config STREQUAL "")
+    set(package_config "Release")
+endif()
+
+set(consumer_generator "")
+set(generator_entry "")
+file(STRINGS "${cache_file}" generator_entry
+    REGEX "^CMAKE_GENERATOR:INTERNAL=" LIMIT_COUNT 1)
+if(generator_entry)
+    string(REGEX REPLACE "^CMAKE_GENERATOR:INTERNAL=" ""
+        consumer_generator "${generator_entry}")
+endif()
+
+set(consumer_compiler "")
+set(compiler_entry "")
+file(STRINGS "${cache_file}" compiler_entry
+    REGEX "^CMAKE_CXX_COMPILER:(FILEPATH|STRING)=" LIMIT_COUNT 1)
+if(compiler_entry)
+    string(REGEX REPLACE "^CMAKE_CXX_COMPILER:(FILEPATH|STRING)=" ""
+        consumer_compiler "${compiler_entry}")
+endif()
+
 execute_process(
     COMMAND "${CMAKE_COMMAND}" --install "${BLITZAR_BUILD_DIR}"
         --prefix "${install_prefix}"
+        --config "${package_config}"
     RESULT_VARIABLE install_result
     OUTPUT_VARIABLE install_output
     ERROR_VARIABLE install_error)
@@ -60,10 +93,20 @@ int main()
 }
 ]=])
 
+set(consumer_configure_command
+    "${CMAKE_COMMAND}" -S "${source_dir}" -B "${consumer_build_dir}"
+    "-DCMAKE_PREFIX_PATH=${install_prefix}"
+    "-DCMAKE_BUILD_TYPE=${package_config}")
+if(NOT consumer_generator STREQUAL "")
+    list(APPEND consumer_configure_command -G "${consumer_generator}")
+endif()
+if(NOT consumer_compiler STREQUAL "")
+    list(APPEND consumer_configure_command
+        "-DCMAKE_CXX_COMPILER=${consumer_compiler}")
+endif()
+
 execute_process(
-    COMMAND "${CMAKE_COMMAND}" -S "${source_dir}" -B "${consumer_build_dir}"
-        "-DCMAKE_PREFIX_PATH=${install_prefix}"
-        -DCMAKE_BUILD_TYPE=Release
+    COMMAND ${consumer_configure_command}
     RESULT_VARIABLE configure_result
     OUTPUT_VARIABLE configure_output
     ERROR_VARIABLE configure_error)
@@ -75,6 +118,7 @@ endif()
 
 execute_process(
     COMMAND "${CMAKE_COMMAND}" --build "${consumer_build_dir}"
+        --config "${package_config}"
     RESULT_VARIABLE build_result
     OUTPUT_VARIABLE build_output
     ERROR_VARIABLE build_error)

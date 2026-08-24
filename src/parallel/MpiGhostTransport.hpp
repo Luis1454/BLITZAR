@@ -36,7 +36,7 @@ private:
 
     const MpiSession& session_;
     [[maybe_unused]] const MpiCollectives& collectives_;
-    const MpiPacketTransport& packets_;
+    [[maybe_unused]] const MpiPacketTransport& packets_;
 };
 
 } // namespace blitzar_parallel
