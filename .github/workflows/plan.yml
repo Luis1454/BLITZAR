@@ -46,6 +46,9 @@ jobs:
       - name: Check statement grouping format
         run: python tools/format_blocks.py --check
 
+      - name: Self-test statement grouping format
+        run: python tools/format_blocks_test.py
+
       - name: Reject unapproved plan edits
         if: github.event_name == 'pull_request'
         shell: bash

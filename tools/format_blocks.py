@@ -541,11 +541,24 @@ def format_lines(lines: list[str]) -> list[str]:
     return collapse_blank_runs(result)
 
 
-def read_lines(path: Path) -> tuple[list[str], str, bool]:
+def detect_newline(text: str) -> tuple[str, bool]:
+    crlf_count = text.count("\r\n")
+    bare_lf_count = text.count("\n") - crlf_count
+    bare_cr_count = text.count("\r") - crlf_count
+    newline_kinds = sum(
+        count > 0 for count in (crlf_count, bare_lf_count, bare_cr_count)
+    )
+    mixed = bare_cr_count > 0 or newline_kinds > 1
+    if crlf_count >= bare_lf_count and crlf_count > 0:
+        return "\r\n", mixed
+    return "\n", mixed
+
+
+def read_lines(path: Path) -> tuple[list[str], str, bool, bool]:
     with path.open("r", encoding="utf-8", newline="") as stream:
         text = stream.read()
-    newline = "\r\n" if "\r\n" in text else "\n"
-    return text.splitlines(), newline, text.endswith(("\n", "\r"))
+    newline, mixed = detect_newline(text)
+    return text.splitlines(), newline, text.endswith(("\n", "\r")), mixed
 
 
 def write_lines(path: Path, lines: list[str], newline: str, trailing_newline: bool) -> None:
@@ -578,9 +591,10 @@ def main() -> int:
     for path in paths:
         if not path.is_absolute():
             path = root / path
-        lines, newline, trailing_newline = read_lines(path)
+        lines, newline, trailing_newline, mixed_newlines = read_lines(path)
         formatted = format_lines(lines)
-        if formatted == lines:
+        needs_formatting = formatted != lines
+        if not needs_formatting and not mixed_newlines:
             continue
         changed.append(path)
         if arguments.write:
@@ -588,7 +602,9 @@ def main() -> int:
 
     if changed and arguments.check:
         for path in changed:
-            print(display_path(path, root))
+            _, _, _, mixed_newlines = read_lines(path)
+            reason = "mixed line endings" if mixed_newlines else "statement grouping"
+            print(f"{display_path(path, root)}: {reason}")
         return 1
     if changed and arguments.write:
         print(f"formatted={len(changed)}")
