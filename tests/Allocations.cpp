@@ -20,6 +20,12 @@ struct StateArrays final {
     std::array<double, ParticleCount> mass{1.0, 1.0};
 };
 
+[[nodiscard]] blitzar_core::ParticleOutputView MakeOutputView(StateArrays& state) noexcept
+{
+    return {state.position_x.size(), state.position_x, state.position_y, state.position_z,
+        state.velocity_x, state.velocity_y, state.velocity_z, state.mass};
+}
+
 [[nodiscard]] bool Configure(blitzar_sdk::Simulation& simulation, const StateArrays& state,
     blitzar_solver_kind solver) noexcept
 {
@@ -41,6 +47,13 @@ struct StateArrays final {
     const StateArrays state{};
 
     if (!Configure(simulation, state, solver)) {
+        return false;
+    }
+
+    StateArrays warmup{};
+
+    if (simulation.Step() != BLITZAR_STATUS_OK ||
+        simulation.GetState(MakeOutputView(warmup)) != BLITZAR_STATUS_OK) {
         return false;
     }
 

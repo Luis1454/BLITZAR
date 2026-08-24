@@ -105,6 +105,26 @@ template <typename Value>
     return true;
 }
 
+template <typename Value>
+[[nodiscard]] blitzar_status EnsureCapacity(std::vector<Value>& values, std::size_t capacity) noexcept
+{
+    if (capacity <= values.capacity()) {
+        return BLITZAR_STATUS_OK;
+    }
+
+    try {
+        values.reserve(capacity);
+    }
+    catch (const std::length_error&) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    catch (const std::bad_alloc&) {
+        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+    }
+
+    return BLITZAR_STATUS_OK;
+}
+
 } // namespace
 
 MpiPacketTransport::MpiPacketTransport(
@@ -146,19 +166,11 @@ blitzar_status MpiPacketTransport::Prepare(std::size_t packet_capacity) noexcept
         }
 
         const std::size_t round_capacity = std::min(packet_capacity, packets_per_peer * peers);
-        const std::size_t receive_packets_per_peer = std::min(packet_capacity, packets_per_peer);
-
-        if (peers != 0 && receive_packets_per_peer >
-                std::numeric_limits<std::size_t>::max() / peers) {
-            return BLITZAR_STATUS_INVALID_ARGUMENT;
-        }
-
-        const std::size_t receive_round_capacity = receive_packets_per_peer * peers;
         int send_wire_bytes = 0;
         int receive_wire_bytes = 0;
 
         if (!ToWireBytes(round_capacity, send_wire_bytes) ||
-            !ToWireBytes(receive_round_capacity, receive_wire_bytes)) {
+            !ToWireBytes(packet_capacity, receive_wire_bytes)) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
@@ -354,10 +366,23 @@ blitzar_status MpiPacketTransport::AllToAllPackets(
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
         if (preparation_status == BLITZAR_STATUS_OK) {
-            if (!ResizeWithinCapacity(send_wire, static_cast<std::size_t>(send_total_bytes)) ||
+            const blitzar_status send_capacity_status =
+                EnsureCapacity(send_wire, static_cast<std::size_t>(send_total_bytes));
+
+            const blitzar_status receive_capacity_status =
+                EnsureCapacity(receive_wire, static_cast<std::size_t>(receive_total_bytes));
+
+            if (send_capacity_status != BLITZAR_STATUS_OK ||
+                receive_capacity_status != BLITZAR_STATUS_OK ||
+                !ResizeWithinCapacity(send_wire, static_cast<std::size_t>(send_total_bytes)) ||
                 !ResizeWithinCapacity(
                     receive_wire, static_cast<std::size_t>(receive_total_bytes))) {
                 preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+
+                if (send_capacity_status == BLITZAR_STATUS_ALLOCATION_FAILURE ||
+                    receive_capacity_status == BLITZAR_STATUS_ALLOCATION_FAILURE) {
+                    preparation_status = BLITZAR_STATUS_ALLOCATION_FAILURE;
+                }
             }
         }
         if (preparation_status == BLITZAR_STATUS_OK) {
@@ -578,9 +603,24 @@ blitzar_status MpiPacketTransport::AllGatherPackets(std::span<const ParticlePack
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
         if (preparation_status == BLITZAR_STATUS_OK) {
-            if (!ResizeWithinCapacity(send_wire, static_cast<std::size_t>(local_bytes)) ||
-                !ResizeWithinCapacity(
-                    receive_wire, static_cast<std::size_t>(receive_total_bytes))) {
+            const blitzar_status send_capacity_status =
+                EnsureCapacity(send_wire, static_cast<std::size_t>(local_bytes));
+
+            const blitzar_status receive_capacity_status =
+                EnsureCapacity(receive_wire, static_cast<std::size_t>(receive_total_bytes));
+
+            if (send_capacity_status != BLITZAR_STATUS_OK ||
+                receive_capacity_status != BLITZAR_STATUS_OK) {
+                preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+
+                if (send_capacity_status == BLITZAR_STATUS_ALLOCATION_FAILURE ||
+                    receive_capacity_status == BLITZAR_STATUS_ALLOCATION_FAILURE) {
+                    preparation_status = BLITZAR_STATUS_ALLOCATION_FAILURE;
+                }
+            }
+            else if (!ResizeWithinCapacity(send_wire, static_cast<std::size_t>(local_bytes)) ||
+                     !ResizeWithinCapacity(
+                         receive_wire, static_cast<std::size_t>(receive_total_bytes))) {
                 preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
             }
         }

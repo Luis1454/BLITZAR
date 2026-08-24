@@ -163,10 +163,7 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
         return {migration_status, false};
     }
 
-    migration_status = migration_buffer_.Size() <= arena_.Count() &&
-                               migration_buffer_.Size() <= particle_ids_.size()
-                           ? BLITZAR_STATUS_OK
-                           : BLITZAR_STATUS_INVALID_ARGUMENT;
+    migration_status = EnsureLocalCapacity(migration_buffer_.Size());
 
     migration_status = SynchronizeSimulationStatus(
         mpi_context_, migration_status, "migrate-capacity");

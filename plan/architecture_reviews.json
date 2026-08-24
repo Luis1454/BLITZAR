@@ -66,10 +66,10 @@
     },
     {
       "path": "src/parallel/MpiPacketTransport.cpp",
-      "signals": ["branching", "function_length"],
+      "signals": ["branching", "function_count", "function_length"],
       "issue": 553,
       "status": "accepted",
-      "decision": "Keep wire-format validation and MPI packet transfer together because both protect the same packet contract."
+      "decision": "Keep wire-format validation, dynamic capacity growth, and MPI packet transfer together because they protect one bounded packet contract."
     },
     {
       "path": "src/particles/ParticleBuffer.cpp",

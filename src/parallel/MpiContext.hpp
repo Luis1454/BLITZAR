@@ -16,6 +16,11 @@ class MpiContext final {
 public:
     using GhostExchange = MpiGhostExchange;
 
+    struct GhostCapacity final {
+        std::size_t send{};
+        std::size_t receive{};
+    };
+
     MpiContext() noexcept;
     ~MpiContext() noexcept;
 
@@ -30,8 +35,9 @@ public:
     [[nodiscard]] int Size() const noexcept;
     [[nodiscard]] blitzar_status Status() const noexcept;
     [[nodiscard]] blitzar_status PrepareCapacity(
-        std::size_t packet_capacity, GhostExchange& exchange,
-        std::size_t ghost_capacity = 0) const noexcept;
+        std::size_t packet_capacity, GhostExchange& exchange) const noexcept;
+    [[nodiscard]] blitzar_status PrepareCapacity(std::size_t packet_capacity,
+        GhostExchange& exchange, GhostCapacity ghost_capacity) const noexcept;
     [[nodiscard]] blitzar_status SynchronizeStatus(blitzar_status local_status,
         const char* operation, const char* phase, blitzar_status& global_status) const noexcept;
 
