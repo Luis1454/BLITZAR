@@ -100,6 +100,9 @@ jobs:
       - name: Build shared library and consumers
         run: cmake --build build-shared --config Release
 
+      - name: Qualify installed shared package consumer
+        run: cmake "-DBLITZAR_BUILD_DIR=$env:GITHUB_WORKSPACE/build-shared" -P tests/PackageConsumer.cmake
+
   sanitizers:
     name: Linux Clang sanitizers
     runs-on: ubuntu-latest
@@ -336,6 +339,14 @@ jobs:
       - name: Build MPI target
         run: cmake --build build-mpi --parallel
 
+      - name: Qualify installed MPI package consumer
+        shell: bash
+        env:
+          OMPI_ALLOW_RUN_AS_ROOT: "1"
+          OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
+          OMPI_MCA_rmaps_base_oversubscribe: "1"
+        run: cmake -DBLITZAR_BUILD_DIR="$PWD/build-mpi" -P tests/PackageConsumer.cmake
+
       - name: Run two and four rank tests with timeout
         shell: bash
         env:
@@ -406,6 +417,11 @@ jobs:
         if: steps.probe.outputs.compile == 'true'
         run: cmake --build build-cuda --parallel
 
+      - name: Qualify installed native CUDA package consumer
+        if: steps.probe.outputs.compile == 'true'
+        shell: bash
+        run: cmake -DBLITZAR_BUILD_DIR="$PWD/build-cuda" -P tests/PackageConsumer.cmake
+
       - name: Run CUDA device qualification
         if: steps.probe.outputs.device == 'true'
         run: timeout --foreground 180s ctest --test-dir build-cuda -R '^TST-P4-001$' --output-on-failure
@@ -470,6 +486,11 @@ jobs:
       - name: Compile HIP target
         if: steps.probe.outputs.compile == 'true'
         run: cmake --build build-hip --parallel
+
+      - name: Qualify installed HIP package consumer
+        if: steps.probe.outputs.compile == 'true'
+        shell: bash
+        run: cmake -DBLITZAR_BUILD_DIR="$PWD/build-hip" -P tests/PackageConsumer.cmake
 
       - name: Run HIP device qualification
         if: steps.probe.outputs.device == 'true'

@@ -48,6 +48,20 @@ if(compiler_entry)
         consumer_compiler "${compiler_entry}")
 endif()
 
+set(consumer_multi_config FALSE)
+set(configuration_types_entry "")
+file(STRINGS "${cache_file}" configuration_types_entry
+    REGEX "^CMAKE_CONFIGURATION_TYPES:(INTERNAL|STRING)=" LIMIT_COUNT 1)
+if(configuration_types_entry)
+    set(consumer_multi_config TRUE)
+endif()
+
+set(example_c "${CMAKE_CURRENT_LIST_DIR}/../examples/CExample.c")
+set(example_cpp "${CMAKE_CURRENT_LIST_DIR}/../examples/CppExample.cpp")
+if(NOT EXISTS "${example_c}" OR NOT EXISTS "${example_cpp}")
+    message(FATAL_ERROR "public SDK examples are missing")
+endif()
+
 execute_process(
     COMMAND "${CMAKE_COMMAND}" --install "${BLITZAR_BUILD_DIR}"
         --prefix "${install_prefix}"
@@ -62,7 +76,7 @@ endif()
 
 set(consumer_cmake [=[
 cmake_minimum_required(VERSION 3.25)
-project(BLITZARPackageConsumer LANGUAGES CXX)
+project(BLITZARPackageConsumer LANGUAGES C CXX)
 
 find_package(BLITZAR CONFIG REQUIRED)
 
@@ -75,23 +89,19 @@ if(NOT DEFINED BLITZAR_PLAN_VERSION OR
     message(FATAL_ERROR "installed BLITZAR plan version is incorrect")
 endif()
 
-add_executable(package_consumer main.cpp)
-target_link_libraries(package_consumer PRIVATE BLITZAR::blitzar)
+add_executable(package_c_consumer "@EXAMPLE_C@")
+set_property(TARGET package_c_consumer PROPERTY LINKER_LANGUAGE CXX)
+target_link_libraries(package_c_consumer PRIVATE BLITZAR::blitzar)
+
+add_executable(package_cpp_consumer "@EXAMPLE_CPP@")
+target_link_libraries(package_cpp_consumer PRIVATE BLITZAR::blitzar)
 ]=])
 set(EXPECTED_PRODUCT_VERSION "${expected_product_version}")
 set(EXPECTED_PLAN_VERSION "${expected_plan_version}")
+set(EXAMPLE_C "${example_c}")
+set(EXAMPLE_CPP "${example_cpp}")
 string(CONFIGURE "${consumer_cmake}" consumer_cmake @ONLY)
 file(WRITE "${source_dir}/CMakeLists.txt" "${consumer_cmake}")
-
-file(WRITE "${source_dir}/main.cpp" [=[
-#include <blitzar/blitzar.hpp>
-
-int main()
-{
-    blitzar::Context context;
-    return context.valid() ? 0 : 1;
-}
-]=])
 
 set(consumer_configure_command
     "${CMAKE_COMMAND}" -S "${source_dir}" -B "${consumer_build_dir}"
@@ -127,3 +137,40 @@ if(NOT build_result EQUAL 0)
         "BLITZAR package consumer build failed:\n"
         "${build_output}\n${build_error}")
 endif()
+
+set(path_separator ":")
+if(WIN32)
+    set(path_separator ";")
+endif()
+set(runtime_path
+    "${install_prefix}/bin${path_separator}${install_prefix}/lib${path_separator}$ENV{PATH}")
+set(consumer_executable_dir "${consumer_build_dir}")
+if(consumer_multi_config)
+    set(consumer_executable_dir "${consumer_build_dir}/${package_config}")
+endif()
+if(WIN32)
+    set(executable_suffix ".exe")
+else()
+    set(executable_suffix "")
+endif()
+
+set(run_environment "${CMAKE_COMMAND}" -E env "PATH=${runtime_path}")
+if(NOT WIN32)
+    list(APPEND run_environment
+        "LD_LIBRARY_PATH=${install_prefix}/lib${path_separator}$ENV{LD_LIBRARY_PATH}")
+endif()
+
+foreach(consumer_executable IN ITEMS
+        "${consumer_executable_dir}/package_c_consumer${executable_suffix}"
+        "${consumer_executable_dir}/package_cpp_consumer${executable_suffix}")
+    execute_process(
+        COMMAND ${run_environment} "${consumer_executable}"
+        RESULT_VARIABLE run_result
+        OUTPUT_VARIABLE run_output
+        ERROR_VARIABLE run_error)
+    if(NOT run_result EQUAL 0)
+        message(FATAL_ERROR
+            "BLITZAR package consumer execution failed for ${consumer_executable}:\n"
+            "${run_output}\n${run_error}")
+    endif()
+endforeach()
