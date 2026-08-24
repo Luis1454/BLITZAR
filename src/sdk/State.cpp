@@ -96,12 +96,9 @@ blitzar_status StoreGhosts(
         }
     }
 
-    const blitzar_status reserve_status = source.Reserve(ghosts.Size());
-
-    if (reserve_status != BLITZAR_STATUS_OK ||
+    if (ghosts.Size() > source.Capacity() ||
         source.SetCount(ghosts.Size()) != BLITZAR_STATUS_OK) {
-        return reserve_status == BLITZAR_STATUS_OK ? BLITZAR_STATUS_INVALID_ARGUMENT
-                                                    : reserve_status;
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
     const auto position_x = source.PositionX();

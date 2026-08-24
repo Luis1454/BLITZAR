@@ -66,7 +66,7 @@
     },
     {
       "path": "src/parallel/MpiPacketTransport.cpp",
-      "signals": ["branching", "function_count", "function_length"],
+      "signals": ["branching", "function_length"],
       "issue": 553,
       "status": "accepted",
       "decision": "Keep wire-format validation and MPI packet transfer together because both protect the same packet contract."
@@ -115,7 +115,7 @@
     },
     {
       "path": "src/sdk/Step.cpp",
-      "signals": ["branching", "function_length"],
+      "signals": ["function_length"],
       "issue": 553,
       "status": "accepted",
       "decision": "Keep distributed step transaction, migration, and post-migration solver preparation together; they form one atomic KDK state transition."

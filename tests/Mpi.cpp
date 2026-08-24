@@ -371,14 +371,15 @@ struct StateArrays final {
     return local_ok;
 }
 
-[[nodiscard]] bool RunAllocationCase() noexcept
+[[nodiscard]] bool RunAllocationCase(const blitzar_parallel::MpiContext& context) noexcept
 {
-    const StateArrays initial = InitialState();
+    const StateArrays initial = context.IsDistributed() ? MigrationState() : InitialState();
     const std::array<blitzar_solver_kind, 2> solvers{
         BLITZAR_SOLVER_DIRECT, BLITZAR_SOLVER_BARNES_HUT};
 
     for (const blitzar_solver_kind solver_kind : solvers) {
         blitzar_sdk::Simulation simulation(ParticleCount);
+        StateArrays output{};
 
         if (!Configure(simulation, initial, 0.01, solver_kind) ||
             simulation.Step() != BLITZAR_STATUS_OK) {
@@ -388,10 +389,12 @@ struct StateArrays final {
         blitzar_tests::BeginAllocationCounting();
 
         const blitzar_status first_step = simulation.Step();
-        const blitzar_status second_step = simulation.Step();
+        const blitzar_status state_status =
+            simulation.GetState(blitzar_tests::MakeOutputView(output));
+
         const std::size_t allocations = blitzar_tests::EndAllocationCounting();
 
-        if (first_step != BLITZAR_STATUS_OK || second_step != BLITZAR_STATUS_OK ||
+        if (first_step != BLITZAR_STATUS_OK || state_status != BLITZAR_STATUS_OK ||
             allocations != 0) {
             return false;
         }
@@ -845,7 +848,7 @@ int RunTests(int argc, char** argv)
         RunCase(migration_case ? MigrationState() : InitialState(), 0.01, migration_case ? 1 : 2,
             barnes_hut_case ? BLITZAR_SOLVER_BARNES_HUT : BLITZAR_SOLVER_DIRECT);
 
-    const bool allocation_case = RunAllocationCase();
+    const bool allocation_case = RunAllocationCase(context);
 
     const bool rollback_case = RunRollbackCase();
     const bool boundary_case = RunBoundaryOwnershipCase(context);

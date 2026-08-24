@@ -40,7 +40,7 @@ struct StateArrays final {
 {
     const StateArrays state{};
 
-    if (!Configure(simulation, state, solver) || simulation.Step() != BLITZAR_STATUS_OK) {
+    if (!Configure(simulation, state, solver)) {
         return false;
     }
 

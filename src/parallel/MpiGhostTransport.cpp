@@ -100,6 +100,18 @@ template <typename Value>
     return true;
 }
 
+template <typename Value>
+[[nodiscard]] bool ResizeWithinCapacity(std::vector<Value>& values, std::size_t size) noexcept
+{
+    if (size > values.capacity()) {
+        return false;
+    }
+
+    values.resize(size);
+
+    return true;
+}
+
 [[nodiscard]] blitzar_status WaitRequests(std::vector<MPI_Request>& requests) noexcept
 {
     if (requests.empty()) {
@@ -238,8 +250,14 @@ blitzar_status MpiGhostTransport::Prepare(MpiGhostExchange& exchange,
         }
 
         const std::size_t request_capacity = chunks * remote_peer_count;
+        std::size_t local_wire_capacity = 0;
+        std::size_t receive_wire_capacity = 0;
 
         if (request_capacity > static_cast<std::size_t>(INT_MAX)) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+        if (!ToWireSize(send_capacity, local_wire_capacity) ||
+            !ToWireSize(receive_capacity, receive_wire_capacity)) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
@@ -255,6 +273,11 @@ blitzar_status MpiGhostTransport::Prepare(MpiGhostExchange& exchange,
         state.send_requests.reserve(request_capacity);
         state.receive_statuses.reserve(request_capacity);
         state.receive_chunks.reserve(request_capacity);
+
+        if (!EnsureCapacity(state.local_wire, local_wire_capacity) ||
+            !EnsureCapacity(state.receive_wire, receive_wire_capacity)) {
+            return BLITZAR_STATUS_ALLOCATION_FAILURE;
+        }
 
         state.local_wire.clear();
         state.receive_wire.clear();
@@ -323,12 +346,10 @@ blitzar_status MpiGhostTransport::Begin(
     if (preparation_status == BLITZAR_STATUS_OK) {
         MpiGhostExchange::Impl& state = *state_pointer;
 
-        if (!EnsureCapacity(state.local_wire, local_bytes)) {
+        if (!ResizeWithinCapacity(state.local_wire, local_bytes)) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
         else {
-            state.local_wire.resize(local_bytes);
-
             if (!ParticleWireCodec::Encode(local,
                     std::span<std::byte>(state.local_wire.data(), state.local_wire.size()))) {
                 preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -425,24 +446,19 @@ blitzar_status MpiGhostTransport::Begin(
     if (preparation_status == BLITZAR_STATUS_OK &&
         (receive_request_count > static_cast<std::size_t>(INT_MAX) ||
             send_request_count > static_cast<std::size_t>(INT_MAX) ||
-            !ToWireSize(receive_slots, receive_wire_size))) {
+            receive_slots > state.receive_capacity || !ToWireSize(receive_slots, receive_wire_size))) {
         preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
     if (preparation_status == BLITZAR_STATUS_OK &&
-        (!EnsureCapacity(state.receive_wire, receive_wire_size) ||
-            !EnsureCapacity(state.receive_requests, receive_request_count) ||
-            !EnsureCapacity(state.send_requests, send_request_count) ||
-            !EnsureCapacity(state.receive_statuses, receive_request_count) ||
-            !EnsureCapacity(state.receive_chunks, receive_request_count))) {
+        (!ResizeWithinCapacity(state.receive_wire, receive_wire_size) ||
+            !ResizeWithinCapacity(state.receive_requests, receive_request_count) ||
+            !ResizeWithinCapacity(state.send_requests, send_request_count) ||
+            !ResizeWithinCapacity(state.receive_statuses, receive_request_count) ||
+            !ResizeWithinCapacity(state.receive_chunks, receive_request_count))) {
         preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     if (preparation_status == BLITZAR_STATUS_OK) {
-        state.receive_wire.resize(receive_wire_size);
-        state.receive_requests.clear();
-        state.send_requests.clear();
-        state.receive_statuses.resize(receive_request_count);
-        state.receive_chunks.clear();
         std::fill(state.receive_counts.begin(), state.receive_counts.end(), 0);
         std::fill(state.offsets.begin(), state.offsets.end(), 0);
     }
@@ -459,6 +475,9 @@ blitzar_status MpiGhostTransport::Begin(
     }
 
     state.active = true;
+
+    std::size_t receive_request_index = 0;
+    std::size_t send_request_index = 0;
 
     for (int peer = 0; peer < session_.Size(); ++peer) {
         if (peer == session_.Rank()) {
@@ -481,17 +500,26 @@ blitzar_status MpiGhostTransport::Begin(
                 return BLITZAR_STATUS_INVALID_ARGUMENT;
             }
 
-            state.receive_chunks.push_back({peer_index, packet_offset});
-            state.receive_requests.push_back(MPI_REQUEST_NULL);
-
-            if (MPI_Irecv(state.receive_wire.data() +
-                              (state.wire_offsets[peer_index] + packet_offset) * ParticleWireBytes,
-                    bytes, MPI_BYTE, peer, GhostDataTag, session_.Native().communicator,
-                    &state.receive_requests.back()) != MPI_SUCCESS) {
+            if (receive_request_index >= state.receive_chunks.size() ||
+                receive_request_index >= state.receive_requests.size()) {
                 AbortExchange(state);
 
                 return BLITZAR_STATUS_INTERNAL_ERROR;
             }
+
+            state.receive_chunks[receive_request_index] = {peer_index, packet_offset};
+            state.receive_requests[receive_request_index] = MPI_REQUEST_NULL;
+
+            if (MPI_Irecv(state.receive_wire.data() +
+                              (state.wire_offsets[peer_index] + packet_offset) * ParticleWireBytes,
+                    bytes, MPI_BYTE, peer, GhostDataTag, session_.Native().communicator,
+                    &state.receive_requests[receive_request_index]) != MPI_SUCCESS) {
+                AbortExchange(state);
+
+                return BLITZAR_STATUS_INTERNAL_ERROR;
+            }
+
+            ++receive_request_index;
 
             packet_offset += chunk;
         }
@@ -509,20 +537,35 @@ blitzar_status MpiGhostTransport::Begin(
                 return BLITZAR_STATUS_INVALID_ARGUMENT;
             }
 
-            state.send_requests.push_back(MPI_REQUEST_NULL);
-
-            const std::byte* local_data = state.local_wire.data() +
-                                          packet_offset * ParticleWireBytes;
-
-            if (MPI_Isend(local_data, local_bytes_count, MPI_BYTE, peer, GhostDataTag,
-                    session_.Native().communicator, &state.send_requests.back()) != MPI_SUCCESS) {
+            if (send_request_index >= state.send_requests.size()) {
                 AbortExchange(state);
 
                 return BLITZAR_STATUS_INTERNAL_ERROR;
             }
 
+            state.send_requests[send_request_index] = MPI_REQUEST_NULL;
+
+            const std::byte* local_data = state.local_wire.data() +
+                                          packet_offset * ParticleWireBytes;
+
+            if (MPI_Isend(local_data, local_bytes_count, MPI_BYTE, peer, GhostDataTag,
+                    session_.Native().communicator, &state.send_requests[send_request_index]) !=
+                MPI_SUCCESS) {
+                AbortExchange(state);
+
+                return BLITZAR_STATUS_INTERNAL_ERROR;
+            }
+
+            ++send_request_index;
+
             packet_offset += chunk;
         }
+    }
+
+    if (receive_request_index != receive_request_count || send_request_index != send_request_count) {
+        AbortExchange(state);
+
+        return BLITZAR_STATUS_INTERNAL_ERROR;
     }
 
     return BLITZAR_STATUS_OK;
@@ -646,7 +689,7 @@ blitzar_status MpiGhostTransport::Complete(
     blitzar_status preparation_status = BLITZAR_STATUS_OK;
 
     if (preparation_status == BLITZAR_STATUS_OK) {
-        if (!ghosts.EnsureCapacity(total) || !ghosts.ResizeBounded(total)) {
+        if (!ghosts.ResizeBounded(total)) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
     }

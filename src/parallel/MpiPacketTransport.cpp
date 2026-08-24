@@ -105,26 +105,6 @@ template <typename Value>
     return true;
 }
 
-template <typename Value>
-[[nodiscard]] bool EnsureCapacity(std::vector<Value>& values, std::size_t capacity) noexcept
-{
-    if (capacity <= values.capacity()) {
-        return true;
-    }
-
-    try {
-        values.reserve(capacity);
-    }
-    catch (const std::length_error&) {
-        return false;
-    }
-    catch (const std::bad_alloc&) {
-        return false;
-    }
-
-    return true;
-}
-
 } // namespace
 
 MpiPacketTransport::MpiPacketTransport(
@@ -146,7 +126,11 @@ blitzar_status MpiPacketTransport::Prepare(std::size_t packet_capacity) noexcept
         send_offsets_.assign(peer_count, 0);
         receive_offsets_.assign(peer_count, 0);
 
+#if !defined(BLITZAR_HAS_MPI)
+
         (void)packet_capacity;
+#endif
+
 #if defined(BLITZAR_HAS_MPI)
 
         std::size_t packets_per_peer = 0;
@@ -162,14 +146,24 @@ blitzar_status MpiPacketTransport::Prepare(std::size_t packet_capacity) noexcept
         }
 
         const std::size_t round_capacity = std::min(packet_capacity, packets_per_peer * peers);
+        const std::size_t receive_packets_per_peer = std::min(packet_capacity, packets_per_peer);
 
-        if (round_capacity > std::numeric_limits<std::size_t>::max() / ParticleWireBytes) {
+        if (peers != 0 && receive_packets_per_peer >
+                std::numeric_limits<std::size_t>::max() / peers) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
-        const std::size_t wire_capacity = round_capacity * ParticleWireBytes;
+        const std::size_t receive_round_capacity = receive_packets_per_peer * peers;
+        int send_wire_bytes = 0;
+        int receive_wire_bytes = 0;
 
-        (void)wire_capacity;
+        if (!ToWireBytes(round_capacity, send_wire_bytes) ||
+            !ToWireBytes(receive_round_capacity, receive_wire_bytes)) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+
+        send_wire_.reserve(static_cast<std::size_t>(send_wire_bytes));
+        receive_wire_.reserve(static_cast<std::size_t>(receive_wire_bytes));
 #endif
     }
     catch (const std::length_error&) {
@@ -360,9 +354,7 @@ blitzar_status MpiPacketTransport::AllToAllPackets(
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
         if (preparation_status == BLITZAR_STATUS_OK) {
-            if (!EnsureCapacity(send_wire, static_cast<std::size_t>(send_total_bytes)) ||
-                !EnsureCapacity(receive_wire, static_cast<std::size_t>(receive_total_bytes)) ||
-                !ResizeWithinCapacity(send_wire, static_cast<std::size_t>(send_total_bytes)) ||
+            if (!ResizeWithinCapacity(send_wire, static_cast<std::size_t>(send_total_bytes)) ||
                 !ResizeWithinCapacity(
                     receive_wire, static_cast<std::size_t>(receive_total_bytes))) {
                 preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -586,9 +578,7 @@ blitzar_status MpiPacketTransport::AllGatherPackets(std::span<const ParticlePack
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
         if (preparation_status == BLITZAR_STATUS_OK) {
-            if (!EnsureCapacity(send_wire, static_cast<std::size_t>(local_bytes)) ||
-                !EnsureCapacity(receive_wire, static_cast<std::size_t>(receive_total_bytes)) ||
-                !ResizeWithinCapacity(send_wire, static_cast<std::size_t>(local_bytes)) ||
+            if (!ResizeWithinCapacity(send_wire, static_cast<std::size_t>(local_bytes)) ||
                 !ResizeWithinCapacity(
                     receive_wire, static_cast<std::size_t>(receive_total_bytes))) {
                 preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;

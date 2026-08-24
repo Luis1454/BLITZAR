@@ -181,18 +181,6 @@ blitzar_status Simulation::GetState(blitzar_core::ParticleOutputView output) con
         return Remember(gather_status);
     }
 
-    try {
-        if (seen_.size() < particle_count_) {
-            seen_.resize(particle_count_);
-        }
-    }
-    catch (const std::length_error&) {
-        return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
-    }
-    catch (const std::bad_alloc&) {
-        return Remember(BLITZAR_STATUS_ALLOCATION_FAILURE);
-    }
-
     if (gathered_buffer_.Size() != particle_count_ || seen_.size() != particle_count_) {
         return Remember(BLITZAR_STATUS_INTERNAL_ERROR);
     }

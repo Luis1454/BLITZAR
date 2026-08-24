@@ -163,22 +163,10 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
         return {migration_status, false};
     }
 
-    migration_status = migration_buffer_.Size() <= particle_count_
-                           ? arena_.Reserve(migration_buffer_.Size())
+    migration_status = migration_buffer_.Size() <= arena_.Count() &&
+                               migration_buffer_.Size() <= particle_ids_.size()
+                           ? BLITZAR_STATUS_OK
                            : BLITZAR_STATUS_INVALID_ARGUMENT;
-
-    if (migration_status == BLITZAR_STATUS_OK &&
-        particle_ids_.size() < migration_buffer_.Size()) {
-        try {
-            particle_ids_.resize(migration_buffer_.Size());
-        }
-        catch (const std::length_error&) {
-            migration_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-        }
-        catch (const std::bad_alloc&) {
-            migration_status = BLITZAR_STATUS_ALLOCATION_FAILURE;
-        }
-    }
 
     migration_status = SynchronizeSimulationStatus(
         mpi_context_, migration_status, "migrate-capacity");
