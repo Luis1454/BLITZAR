@@ -11,12 +11,15 @@
 
 namespace blitzar_parallel {
 
+class MpiPacketTransport;
+
 class MpiGhostTransport final {
 public:
-    MpiGhostTransport(const MpiSession& session, const MpiCollectives& collectives) noexcept;
+    MpiGhostTransport(const MpiSession& session, const MpiCollectives& collectives,
+        const MpiPacketTransport& packets) noexcept;
 
-    [[nodiscard]] blitzar_status Prepare(
-        MpiGhostExchange& exchange, std::size_t packet_capacity) const noexcept;
+    [[nodiscard]] blitzar_status Prepare(MpiGhostExchange& exchange,
+        std::size_t send_capacity, std::size_t receive_capacity) const noexcept;
 
     [[nodiscard]] blitzar_status Begin(
         std::span<const ParticlePacket> local, MpiGhostExchange& exchange) const noexcept;
@@ -33,6 +36,7 @@ private:
 
     const MpiSession& session_;
     [[maybe_unused]] const MpiCollectives& collectives_;
+    const MpiPacketTransport& packets_;
 };
 
 } // namespace blitzar_parallel

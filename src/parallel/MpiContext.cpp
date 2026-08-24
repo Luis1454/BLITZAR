@@ -17,7 +17,7 @@ struct MpiContext::Impl final {
 
     Impl() noexcept
         : session(), collectives(session), packets(session, collectives),
-          ghosts(session, collectives)
+          ghosts(session, collectives, packets)
     {
     }
 };
@@ -76,8 +76,11 @@ blitzar_status MpiContext::PrepareCapacity(
         return packet_status;
     }
 
+    const std::size_t effective_ghost_capacity =
+        ghost_capacity == 0 ? packet_capacity : ghost_capacity;
+
     return impl_->ghosts.Prepare(
-        exchange, ghost_capacity == 0 ? packet_capacity : ghost_capacity);
+        exchange, effective_ghost_capacity, effective_ghost_capacity);
 }
 
 blitzar_status MpiContext::SynchronizeStatus(blitzar_status local_status, const char* operation,

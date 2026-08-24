@@ -575,6 +575,9 @@ struct StateArrays final {
         BLITZAR_STATUS_OK) {
         return false;
     }
+    if (context.IsDistributed() && !context.IsGhostExchangeActive(pre_completion_exchange)) {
+        return false;
+    }
 
     if (context.IsDistributed() && context.Rank() == 0) {
         context.AbortGhostExchange(pre_completion_exchange);
@@ -599,7 +602,8 @@ struct StateArrays final {
 
     recovered_ghosts.Reserve(static_cast<std::size_t>(context.Size()));
 
-    if (exchange.ExchangeGhosts(particles.State(), ids, recovered_ghosts) != BLITZAR_STATUS_OK) {
+    if (exchange.ExchangeGhosts(particles.State(), ids, recovered_ghosts) != BLITZAR_STATUS_OK ||
+        recovered_ghosts.Size() != static_cast<std::size_t>(context.Size() - 1)) {
         return false;
     }
 

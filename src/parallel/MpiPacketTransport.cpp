@@ -145,6 +145,8 @@ blitzar_status MpiPacketTransport::Prepare(std::size_t packet_capacity) noexcept
         receive_bytes_.assign(peer_count, 0);
         send_offsets_.assign(peer_count, 0);
         receive_offsets_.assign(peer_count, 0);
+
+        (void)packet_capacity;
 #if defined(BLITZAR_HAS_MPI)
 
         std::size_t packets_per_peer = 0;
