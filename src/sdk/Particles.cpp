@@ -181,32 +181,33 @@ blitzar_status Simulation::GetState(blitzar_core::ParticleOutputView output) con
         return Remember(gather_status);
     }
 
-    if (gathered_buffer_.Size() != particle_count_ || seen_.size() != particle_count_) {
+    if (gathered_buffer_.Size() != particle_count_) {
         return Remember(BLITZAR_STATUS_INTERNAL_ERROR);
     }
 
-    std::fill(seen_.begin(), seen_.end(), 0);
+    const std::span<blitzar_parallel::ParticlePacket> packets = gathered_buffer_.View();
 
-    for (const blitzar_parallel::ParticlePacket& packet : gathered_buffer_.View()) {
-        if (packet.id >= particle_count_ || seen_[packet.id] != 0 || !std::isfinite(packet.x) ||
+    std::sort(packets.begin(), packets.end(), [](const auto& left, const auto& right) {
+        return left.id < right.id;
+    });
+
+    for (std::size_t index = 0; index < packets.size(); ++index) {
+        const blitzar_parallel::ParticlePacket& packet = packets[index];
+
+        if (packet.id != index || !std::isfinite(packet.x) ||
             !std::isfinite(packet.y) || !std::isfinite(packet.z) ||
             !std::isfinite(packet.velocity_x) || !std::isfinite(packet.velocity_y) ||
             !std::isfinite(packet.velocity_z) || !std::isfinite(packet.mass) || packet.mass < 0.0) {
             return Remember(BLITZAR_STATUS_INTERNAL_ERROR);
         }
 
-        seen_[packet.id] = 1;
-        output.x[packet.id] = packet.x;
-        output.y[packet.id] = packet.y;
-        output.z[packet.id] = packet.z;
-        output.velocity_x[packet.id] = packet.velocity_x;
-        output.velocity_y[packet.id] = packet.velocity_y;
-        output.velocity_z[packet.id] = packet.velocity_z;
-        output.mass[packet.id] = packet.mass;
-    }
-
-    if (std::find(seen_.begin(), seen_.end(), 0) != seen_.end()) {
-        return Remember(BLITZAR_STATUS_INTERNAL_ERROR);
+        output.x[index] = packet.x;
+        output.y[index] = packet.y;
+        output.z[index] = packet.z;
+        output.velocity_x[index] = packet.velocity_x;
+        output.velocity_y[index] = packet.velocity_y;
+        output.velocity_z[index] = packet.velocity_z;
+        output.mass[index] = packet.mass;
     }
 
     return Remember(BLITZAR_STATUS_OK);

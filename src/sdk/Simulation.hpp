@@ -54,6 +54,8 @@ private:
 
     [[nodiscard]] static std::size_t LocalCapacity(
         std::size_t particle_count, int rank_count) noexcept;
+    [[nodiscard]] static std::size_t RemoteCapacity(
+        std::size_t particle_count, int rank_count) noexcept;
     [[nodiscard]] static std::size_t DefaultMaxCells(std::size_t particle_count) noexcept;
     [[nodiscard]] static blitzar_status CreateSolver(const SolverCreationRequest& request,
         SolverVariant& solver) noexcept;
@@ -61,6 +63,7 @@ private:
         const blitzar_physics::GravityParameters& gravity,
         const blitzar_barnes_hut::BarnesHutSettings& barnes_hut,
         SolverVariant& solver) noexcept;
+    [[nodiscard]] blitzar_status EnsureLocalCapacity(std::size_t capacity) noexcept;
     [[nodiscard]] blitzar_status Remember(blitzar_status status) const noexcept;
 
     template <typename Solver>
@@ -109,7 +112,6 @@ private:
     blitzar_parallel::PacketBuffer rollback_exchange_buffer_;
     blitzar_parallel::PacketBuffer migration_buffer_;
     mutable blitzar_parallel::PacketBuffer gathered_buffer_;
-    mutable std::vector<unsigned char> seen_;
 };
 
 } // namespace blitzar_sdk

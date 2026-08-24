@@ -28,7 +28,8 @@ namespace {
     if (!blitzar_core::IsValid(local_state) || local_ids.size() != local_state.count) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    if (!packets.ResizeBounded(local_state.count)) {
+    if (!packets.EnsureCapacity(local_state.count) ||
+        !packets.ResizeBounded(local_state.count)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
@@ -55,7 +56,10 @@ MpiExchange::MpiExchange(const MpiContext& context, const DomainDecomposition& d
     : context_(context), decomposition_(decomposition),
       state_(packet_capacity, static_cast<std::size_t>(context.Size()))
 {
-    capacity_status_ = context_.PrepareCapacity(packet_capacity, ghost_exchange_, ghost_capacity);
+    const MpiContext::GhostCapacity capacities{
+        packet_capacity, ghost_capacity == 0 ? packet_capacity : ghost_capacity};
+
+    capacity_status_ = context_.PrepareCapacity(packet_capacity, ghost_exchange_, capacities);
 }
 
 MpiContext::GhostExchange& MpiExchange::PersistentGhostExchange() const noexcept
@@ -258,7 +262,8 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
     }
 
     if (preparation_status == BLITZAR_STATUS_OK) {
-        if (!state_.ordered_packets.ResizeBounded(send_total)) {
+        if (!state_.ordered_packets.EnsureCapacity(send_total) ||
+            !state_.ordered_packets.ResizeBounded(send_total)) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
@@ -310,7 +315,8 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
     }
 
     if (preparation_status == BLITZAR_STATUS_OK) {
-        if (!received.ResizeBounded(receive_total)) {
+        if (!received.EnsureCapacity(receive_total) ||
+            !received.ResizeBounded(receive_total)) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
     }
@@ -367,7 +373,8 @@ blitzar_status MpiExchange::Gather(blitzar_core::ParticleStateView local_state,
         return status;
     }
     if (!context_.IsDistributed()) {
-        if (!gathered.ResizeBounded(state_.local_packets.Size())) {
+        if (!gathered.EnsureCapacity(state_.local_packets.Size()) ||
+            !gathered.ResizeBounded(state_.local_packets.Size())) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
@@ -431,7 +438,7 @@ blitzar_status MpiExchange::Gather(blitzar_core::ParticleStateView local_state,
         }
     }
     if (preparation_status == BLITZAR_STATUS_OK) {
-        if (!gathered.ResizeBounded(total)) {
+        if (!gathered.EnsureCapacity(total) || !gathered.ResizeBounded(total)) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
     }

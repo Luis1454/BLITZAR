@@ -64,7 +64,13 @@ blitzar_status MpiContext::Status() const noexcept
 }
 
 blitzar_status MpiContext::PrepareCapacity(
-    std::size_t packet_capacity, GhostExchange& exchange, std::size_t ghost_capacity) const noexcept
+    std::size_t packet_capacity, GhostExchange& exchange) const noexcept
+{
+    return PrepareCapacity(packet_capacity, exchange, GhostCapacity{0, 0});
+}
+
+blitzar_status MpiContext::PrepareCapacity(
+    std::size_t packet_capacity, GhostExchange& exchange, GhostCapacity ghost_capacity) const noexcept
 {
     if (impl_ == nullptr) {
         return status_;
@@ -76,11 +82,13 @@ blitzar_status MpiContext::PrepareCapacity(
         return packet_status;
     }
 
-    const std::size_t effective_ghost_capacity =
-        ghost_capacity == 0 ? packet_capacity : ghost_capacity;
+    const std::size_t send_capacity =
+        ghost_capacity.send == 0 ? packet_capacity : ghost_capacity.send;
 
-    return impl_->ghosts.Prepare(
-        exchange, effective_ghost_capacity, effective_ghost_capacity);
+    const std::size_t receive_capacity =
+        ghost_capacity.receive == 0 ? packet_capacity : ghost_capacity.receive;
+
+    return impl_->ghosts.Prepare(exchange, send_capacity, receive_capacity);
 }
 
 blitzar_status MpiContext::SynchronizeStatus(blitzar_status local_status, const char* operation,

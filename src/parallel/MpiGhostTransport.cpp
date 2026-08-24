@@ -286,10 +286,11 @@ blitzar_status MpiGhostTransport::Prepare(MpiGhostExchange& exchange,
         state.receive_statuses.reserve(request_capacity);
         state.receive_chunks.reserve(request_capacity);
 
-        if (!EnsureCapacity(state.local_wire, local_wire_capacity) ||
-            !EnsureCapacity(state.receive_wire, receive_wire_capacity)) {
+        if (!EnsureCapacity(state.local_wire, local_wire_capacity)) {
             return BLITZAR_STATUS_ALLOCATION_FAILURE;
         }
+
+        (void)receive_wire_capacity;
 
         state.local_wire.clear();
         state.receive_wire.clear();
@@ -340,8 +341,7 @@ blitzar_status MpiGhostTransport::Begin(
         const MpiGhostExchange::Impl& state = *state_pointer;
         const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
 
-        if (state.active || local.size() > state.send_capacity ||
-            local.size() > static_cast<std::size_t>(INT_MAX) ||
+        if (state.active || local.size() > static_cast<std::size_t>(INT_MAX) ||
             state.peer_counts.size() != peer_count ||
             state.peer_capacities.size() != peer_count ||
             state.wire_offsets.size() != peer_count ||
@@ -358,7 +358,8 @@ blitzar_status MpiGhostTransport::Begin(
     if (preparation_status == BLITZAR_STATUS_OK) {
         MpiGhostExchange::Impl& state = *state_pointer;
 
-        if (!ResizeWithinCapacity(state.local_wire, local_bytes)) {
+        if (!EnsureCapacity(state.local_wire, local_bytes) ||
+            !ResizeWithinCapacity(state.local_wire, local_bytes)) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
         else {
@@ -416,8 +417,7 @@ blitzar_status MpiGhostTransport::Begin(
          ++peer) {
         const int peer_count_value = state.peer_counts[peer];
 
-        if (peer_count_value < 0 ||
-            static_cast<std::size_t>(peer_count_value) > state.send_capacity) {
+        if (peer_count_value < 0) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
 
             break;
@@ -458,12 +458,17 @@ blitzar_status MpiGhostTransport::Begin(
     if (preparation_status == BLITZAR_STATUS_OK &&
         (receive_request_count > static_cast<std::size_t>(INT_MAX) ||
             send_request_count > static_cast<std::size_t>(INT_MAX) ||
-            receive_slots > state.receive_capacity || !ToWireSize(receive_slots, receive_wire_size))) {
+            !ToWireSize(receive_slots, receive_wire_size))) {
         preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
     if (preparation_status == BLITZAR_STATUS_OK &&
-        (!ResizeWithinCapacity(state.receive_wire, receive_wire_size) ||
+        (!EnsureCapacity(state.receive_wire, receive_wire_size) ||
+            !ResizeWithinCapacity(state.receive_wire, receive_wire_size) ||
+            !EnsureCapacity(state.receive_requests, receive_request_count) ||
+            !EnsureCapacity(state.send_requests, send_request_count) ||
+            !EnsureCapacity(state.receive_statuses, receive_request_count) ||
+            !EnsureCapacity(state.receive_chunks, receive_request_count) ||
             !ResizeWithinCapacity(state.receive_requests, receive_request_count) ||
             !ResizeWithinCapacity(state.send_requests, send_request_count) ||
             !ResizeWithinCapacity(state.receive_statuses, receive_request_count) ||
@@ -661,7 +666,7 @@ blitzar_status MpiGhostTransport::Complete(
 
         if (packet_count > state.peer_capacities[chunk.peer_index] ||
             peer_count > state.peer_capacities[chunk.peer_index] - packet_count) {
-            count_status = BLITZAR_STATUS_INTERNAL_ERROR;
+                count_status = BLITZAR_STATUS_INTERNAL_ERROR;
 
             break;
         }
@@ -674,9 +679,8 @@ blitzar_status MpiGhostTransport::Complete(
             const std::size_t peer_index = static_cast<std::size_t>(peer);
             const std::size_t count = state.receive_counts[peer_index];
 
-            if (count > state.receive_capacity ||
-                total > state.receive_capacity - count) {
-                count_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+            if (total > std::numeric_limits<std::size_t>::max() - count) {
+                count_status = BLITZAR_STATUS_INTERNAL_ERROR;
 
                 break;
             }
@@ -701,7 +705,7 @@ blitzar_status MpiGhostTransport::Complete(
     blitzar_status preparation_status = BLITZAR_STATUS_OK;
 
     if (preparation_status == BLITZAR_STATUS_OK) {
-        if (!ghosts.ResizeBounded(total)) {
+        if (!ghosts.EnsureCapacity(total) || !ghosts.ResizeBounded(total)) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
     }

@@ -96,9 +96,15 @@ blitzar_status StoreGhosts(
         }
     }
 
-    if (ghosts.Size() > source.Capacity() ||
-        source.SetCount(ghosts.Size()) != BLITZAR_STATUS_OK) {
-        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    if (ghosts.Size() > source.Capacity()) {
+        const blitzar_status reserve_status = source.Reserve(ghosts.Size());
+
+        if (reserve_status != BLITZAR_STATUS_OK) {
+            return reserve_status;
+        }
+    }
+    if (source.SetCount(ghosts.Size()) != BLITZAR_STATUS_OK) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
     }
 
     const auto position_x = source.PositionX();
