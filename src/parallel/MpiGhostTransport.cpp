@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <limits>
 #include <new>
+#include <utility>
 #include <vector>
 
 #if defined(BLITZAR_HAS_MPI)
@@ -200,16 +201,27 @@ MpiGhostExchange::MpiGhostExchange() noexcept = default;
 
 MpiGhostExchange::~MpiGhostExchange() noexcept
 {
-#if defined(BLITZAR_HAS_MPI)
-    if (impl_ != nullptr && impl_->active) {
+    if (impl_ != nullptr) {
         MpiGhostTransport::AbortExchange(*impl_);
     }
-#endif
 }
 
 MpiGhostExchange::MpiGhostExchange(MpiGhostExchange&& other) noexcept = default;
 
-MpiGhostExchange& MpiGhostExchange::operator=(MpiGhostExchange&& other) noexcept = default;
+MpiGhostExchange& MpiGhostExchange::operator=(MpiGhostExchange&& other) noexcept
+{
+    if (this == &other) {
+        return *this;
+    }
+
+    if (impl_ != nullptr) {
+        MpiGhostTransport::AbortExchange(*impl_);
+    }
+
+    impl_ = std::move(other.impl_);
+
+    return *this;
+}
 
 MpiGhostTransport::MpiGhostTransport(const MpiSession& session,
     const MpiCollectives& collectives, const MpiPacketTransport& packets) noexcept

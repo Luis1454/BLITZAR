@@ -18,6 +18,7 @@
 #include <limits>
 #include <span>
 #include <string_view>
+#include <utility>
 
 #if defined(BLITZAR_HAS_MPI)
 #include <mpi.h>
@@ -607,6 +608,43 @@ struct StateArrays final {
 
     if (exchange.ExchangeGhosts(particles.State(), ids, recovered_ghosts) != BLITZAR_STATUS_OK ||
         recovered_ghosts.Size() != static_cast<std::size_t>(context.Size() - 1)) {
+        return false;
+    }
+
+    blitzar_parallel::MpiContext::GhostExchange active_exchange;
+    blitzar_parallel::MpiContext::GhostExchange replacement_exchange;
+
+    if (context.PrepareCapacity(packet_capacity, active_exchange) != BLITZAR_STATUS_OK ||
+        context.PrepareCapacity(packet_capacity, replacement_exchange) != BLITZAR_STATUS_OK ||
+        exchange.BeginGhosts(particles.State(), ids, active_exchange) != BLITZAR_STATUS_OK) {
+        return false;
+    }
+
+    active_exchange = std::move(replacement_exchange);
+
+    if (context.IsGhostExchangeActive(active_exchange) ||
+        context.IsGhostExchangeActive(replacement_exchange)) {
+        return false;
+    }
+
+    blitzar_parallel::PacketBuffer moved_ghosts;
+    const blitzar_status moved_completion_status =
+        exchange.CompleteGhosts(active_exchange, moved_ghosts);
+
+    const blitzar_status expected_moved_completion =
+        context.IsDistributed() ? BLITZAR_STATUS_INVALID_ARGUMENT : BLITZAR_STATUS_OK;
+
+    if (moved_completion_status != expected_moved_completion || moved_ghosts.Size() != 0) {
+        return false;
+    }
+
+    blitzar_parallel::PacketBuffer recovered_after_move;
+
+    recovered_after_move.Reserve(static_cast<std::size_t>(context.Size()));
+
+    if (exchange.ExchangeGhosts(particles.State(), ids, recovered_after_move) !=
+            BLITZAR_STATUS_OK ||
+        recovered_after_move.Size() != static_cast<std::size_t>(context.Size() - 1)) {
         return false;
     }
 
