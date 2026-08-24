@@ -91,6 +91,7 @@ endif()
 execute_process(
     COMMAND "${CMAKE_COMMAND}" --build "${consumer_build_dir}"
         --config "${package_config}"
+        --verbose
     RESULT_VARIABLE build_result
     OUTPUT_VARIABLE build_output
     ERROR_VARIABLE build_error)
