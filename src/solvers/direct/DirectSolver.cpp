@@ -18,6 +18,14 @@ struct ForceTargetRequest final {
     blitzar_core::Vector3& acceleration;
 };
 
+struct RemoteForceTargetRequest final {
+    const blitzar_physics::GravityLaw& gravity;
+    blitzar_core::ParticleStateView targets;
+    blitzar_core::ParticleStateView sources;
+    std::size_t target{};
+    blitzar_core::Vector3& acceleration;
+};
+
 [[nodiscard]] bool IsValidState(blitzar_core::ParticleStateView particles) noexcept
 {
     for (std::size_t index = 0; index < particles.SourceCount(); ++index) {
@@ -84,6 +92,57 @@ struct ForceTargetRequest final {
     }
 
     return BLITZAR_STATUS_OK;
+}
+
+[[nodiscard]] blitzar_status CalculateRemoteTarget(
+    const RemoteForceTargetRequest& request) noexcept
+{
+    blitzar_core::Scalar acceleration_x = 0.0;
+    blitzar_core::Scalar acceleration_y = 0.0;
+    blitzar_core::Scalar acceleration_z = 0.0;
+
+    for (std::size_t source = 0; source < request.sources.SourceCount(); ++source) {
+        if (request.sources.mass[source] == 0.0) {
+            continue;
+        }
+
+        const blitzar_core::Scalar dx =
+            request.sources.x[source] - request.targets.x[request.target];
+
+        const blitzar_core::Scalar dy =
+            request.sources.y[source] - request.targets.y[request.target];
+
+        const blitzar_core::Scalar dz =
+            request.sources.z[source] - request.targets.z[request.target];
+
+        const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
+        const blitzar_physics::PairStatus pair_status =
+            request.gravity.ValidatePair(request.sources.mass[source], distance_squared);
+
+        if (pair_status != blitzar_physics::PairStatus::Valid) {
+            return pair_status == blitzar_physics::PairStatus::Singularity
+                       ? BLITZAR_STATUS_SINGULARITY
+                       : BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+
+        const blitzar_core::Scalar factor =
+            request.gravity.PairFactor(request.sources.mass[source], distance_squared);
+
+        if (!std::isfinite(factor)) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+
+        acceleration_x += factor * dx;
+        acceleration_y += factor * dy;
+        acceleration_z += factor * dz;
+    }
+
+    request.acceleration = {acceleration_x, acceleration_y, acceleration_z};
+
+    return std::isfinite(acceleration_x) && std::isfinite(acceleration_y) &&
+                   std::isfinite(acceleration_z)
+               ? BLITZAR_STATUS_OK
+               : BLITZAR_STATUS_INVALID_ARGUMENT;
 }
 
 } // namespace
@@ -188,6 +247,67 @@ blitzar_status DirectSolver::ComputeRange(blitzar_core::ParticleStateView partic
     }
 
     return status.load(std::memory_order_relaxed);
+}
+
+blitzar_status DirectSolver::ComputeRemote(blitzar_core::ParticleStateView targets,
+    blitzar_core::ParticleStateView sources, blitzar_core::ForceView forces,
+    const blitzar_core::ExecutionSettings& settings) noexcept
+{
+    if (!blitzar_core::IsValid(targets) || !blitzar_core::IsValid(sources) ||
+        !blitzar_core::IsValid(forces) || targets.count != forces.count ||
+        !settings.IsValid() || !gravity_.IsValid() || !IsValidState(targets) ||
+        !IsValidState(sources)) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    if (staging_.size() < targets.count) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    std::atomic<blitzar_status> status{BLITZAR_STATUS_OK};
+
+#if defined(_OPENMP)
+#pragma omp parallel for schedule(static)
+#endif
+
+    for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(targets.count);
+         ++target_index) {
+        if (status.load(std::memory_order_relaxed) != BLITZAR_STATUS_OK) {
+            continue;
+        }
+
+        const std::size_t target = static_cast<std::size_t>(target_index);
+        const RemoteForceTargetRequest request{
+            gravity_, targets, sources, target, staging_[target]};
+
+        const blitzar_status target_status = CalculateRemoteTarget(request);
+
+        if (target_status != BLITZAR_STATUS_OK) {
+            blitzar_status expected = BLITZAR_STATUS_OK;
+
+            status.compare_exchange_strong(
+                expected, target_status, std::memory_order_relaxed, std::memory_order_relaxed);
+        }
+    }
+
+    if (status.load(std::memory_order_relaxed) != BLITZAR_STATUS_OK) {
+        return status.load(std::memory_order_relaxed);
+    }
+
+#if defined(_OPENMP)
+#pragma omp parallel for schedule(static)
+#endif
+
+    for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(targets.count);
+         ++target_index) {
+        const std::size_t target = static_cast<std::size_t>(target_index);
+
+        forces.x[target] += staging_[target].x;
+        forces.y[target] += staging_[target].y;
+        forces.z[target] += staging_[target].z;
+    }
+
+    return BLITZAR_STATUS_OK;
 }
 
 } // namespace blitzar_direct

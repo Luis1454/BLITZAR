@@ -30,6 +30,13 @@
       "decision": "Keep Morton partitioning and ownership validation together because they share the decomposition invariant."
     },
     {
+      "path": "src/parallel/MpiCollectives.cpp",
+      "signals": ["branching"],
+      "issue": 553,
+      "status": "accepted",
+      "decision": "Keep scalar and status collective validation together; the branches protect one opaque MPI contract for root distribution and bounded exchanges."
+    },
+    {
       "path": "src/parallel/MpiContext.cpp",
       "signals": ["function_count"],
       "issue": 575,
@@ -59,8 +66,8 @@
     },
     {
       "path": "src/parallel/MpiPacketTransport.cpp",
-      "signals": ["branching", "function_length"],
-      "issue": 575,
+      "signals": ["branching", "function_count", "function_length"],
+      "issue": 553,
       "status": "accepted",
       "decision": "Keep wire-format validation and MPI packet transfer together because both protect the same packet contract."
     },
@@ -107,22 +114,22 @@
       "decision": "Keep state staging and commit validation together; they publish the same arena ownership transition."
     },
     {
+      "path": "src/sdk/SrvStep.cpp",
+      "signals": ["branching", "function_length"],
+      "issue": 553,
+      "status": "accepted",
+      "decision": "Keep distributed step transaction, migration, and post-migration solver preparation together; they form one atomic KDK state transition."
+    },
+    {
       "path": "src/sdk/SrvParticles.cpp",
-      "signals": ["branching"],
-      "issue": 577,
+      "signals": ["branching", "function_length"],
+      "issue": 553,
       "status": "accepted",
       "decision": "Keep particle input commit and output gather together because both define the SDK to arena state boundary."
     },
     {
-      "path": "src/sdk/SrvTransaction.cpp",
-      "signals": ["branching"],
-      "issue": 558,
-      "status": "accepted",
-      "decision": "Keep transaction phase transitions and rollback snapshots together as one lifecycle boundary."
-    },
-    {
       "path": "src/solvers/barnes_hut/BarnesHutSolver.cpp",
-      "signals": ["branching", "function_length"],
+      "signals": ["branching", "function_count", "function_length"],
       "issue": 575,
       "status": "accepted",
       "decision": "Keep tree construction and force traversal together; the long path is the solver algorithm, not a mixed service object."

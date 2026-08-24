@@ -5,6 +5,7 @@
 #include "parallel/MpiSession.hpp"
 
 #include <blitzar/blitzar.h>
+#include <cstdint>
 #include <span>
 
 namespace blitzar_parallel {
@@ -18,6 +19,10 @@ public:
     [[nodiscard]] blitzar_status ReduceBounds(std::span<blitzar_core::Scalar> minimum,
         std::span<blitzar_core::Scalar> maximum) const noexcept;
     [[nodiscard]] blitzar_status ReduceMax(int local_value, int& global_value) const noexcept;
+    [[nodiscard]] blitzar_status Broadcast(
+        std::span<blitzar_core::Scalar> values, int root) const noexcept;
+    [[nodiscard]] blitzar_status Broadcast(
+        std::span<std::uint64_t> values, int root) const noexcept;
 
 private:
     const MpiSession& session_;

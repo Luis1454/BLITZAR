@@ -81,6 +81,7 @@ target_sources(blitzar PRIVATE
     src/integration/LeapfrogWorkspace.cpp
     src/particles/ParticleArena.cpp
     src/particles/ParticleBuffer.cpp
+    src/particles/SourceBuffer.cpp
     src/physics/GravityLaw.cpp
     src/parallel/MpiCollectives.cpp
     src/parallel/DomainDecomposition.cpp

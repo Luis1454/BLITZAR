@@ -6,7 +6,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <new>
 #include <span>
+#include <stdexcept>
 #include <utility>
 
 namespace blitzar_sdk {
@@ -17,7 +19,13 @@ blitzar_status Simulation::SetParticles(blitzar_core::ParticleStateView input) n
         return Remember(mpi_context_.Status());
     }
 
-    const bool input_sizes_valid = input.count == particle_count_ && blitzar_core::IsValid(input);
+    const bool root = mpi_context_.Rank() == 0;
+    const bool input_sizes_valid = root
+                                       ? input.count == particle_count_ && blitzar_core::IsValid(input)
+                                       : (input.count == 0 && blitzar_core::IsValid(input)) ||
+                                             (input.count == particle_count_ &&
+                                                 blitzar_core::IsValid(input));
+
     blitzar_status input_status = SynchronizeSimulationStatus(mpi_context_,
         input_sizes_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
         "set-particles-input");
@@ -28,7 +36,7 @@ blitzar_status Simulation::SetParticles(blitzar_core::ParticleStateView input) n
 
     SrvParticleInputStage stage;
 
-    input_status = SrvStageParticleInput(input, stage);
+    input_status = root ? SrvStageParticleInput(input, stage) : BLITZAR_STATUS_OK;
     input_status = SynchronizeSimulationStatus(mpi_context_, input_status, "set-particles-stage");
 
     if (input_status != BLITZAR_STATUS_OK) {
@@ -45,36 +53,87 @@ blitzar_status Simulation::SetParticles(blitzar_core::ParticleStateView input) n
         return Remember(domain_status);
     }
 
-    local_indices_.clear();
+    const std::size_t local_capacity = LocalCapacity(particle_count_, mpi_context_.Size());
+    const std::size_t distribution_capacity = root ? particle_count_ : local_capacity;
+    blitzar_parallel::PacketBuffer distributed_packets;
+    blitzar_status distribution_status = BLITZAR_STATUS_OK;
 
-    blitzar_status index_status = candidate_domain.LocalIndices(stage.State(), local_indices_);
+    try {
+        if (!distributed_packets.EnsureCapacity(local_capacity)) {
+            distribution_status = BLITZAR_STATUS_ALLOCATION_FAILURE;
+        }
 
-    index_status = SynchronizeSimulationStatus(mpi_context_, index_status, "set-particles-indices");
+        blitzar_parallel::MpiContext distribution_context;
 
-    if (index_status != BLITZAR_STATUS_OK) {
-        return Remember(index_status);
+        distribution_status = distribution_status == BLITZAR_STATUS_OK
+                                  ? distribution_context.Status()
+                                  : distribution_status;
+
+        distribution_status = SynchronizeSimulationStatus(
+            mpi_context_, distribution_status, "set-particles-distribution-context");
+
+        if (distribution_status == BLITZAR_STATUS_OK) {
+            blitzar_parallel::MpiExchange distribution_exchange(
+                distribution_context, candidate_domain, distribution_capacity);
+
+            std::vector<std::uint64_t> root_ids;
+
+            if (root) {
+                root_ids.resize(particle_count_);
+
+                for (std::size_t index = 0; index < particle_count_; ++index) {
+                    root_ids[index] = static_cast<std::uint64_t>(index);
+                }
+            }
+
+            const std::span<const std::uint64_t> ids = root
+                                                            ? std::span<const std::uint64_t>(root_ids)
+                                                            : std::span<const std::uint64_t>{};
+
+            distribution_status = distribution_exchange.Migrate(
+                stage.State(), ids, distributed_packets);
+        }
+    }
+    catch (const std::length_error&) {
+        distribution_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    catch (const std::bad_alloc&) {
+        distribution_status = BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
 
-    const std::size_t local_count = local_indices_.size();
-    const blitzar_status capacity_status =
-        local_count <= arena_.Count() && local_count <= particle_ids_.size()
-            ? BLITZAR_STATUS_OK
-            : BLITZAR_STATUS_INVALID_ARGUMENT;
+    distribution_status = SynchronizeSimulationStatus(
+        mpi_context_, distribution_status, "set-particles-distribution");
 
-    const blitzar_status synchronized_capacity_status =
-        SynchronizeSimulationStatus(mpi_context_, capacity_status, "set-particles-capacity");
-
-    if (synchronized_capacity_status != BLITZAR_STATUS_OK) {
-        return Remember(synchronized_capacity_status);
+    if (distribution_status != BLITZAR_STATUS_OK) {
+        return Remember(distribution_status);
     }
 
-    SrvParticleCommitRequest commit_request{stage, local_indices_, arena_, particles_, accelerations_,
-        workspace_, std::span<std::uint64_t>(particle_ids_), domain_, std::move(candidate_domain),
-        local_particle_count_, source_particle_count_, exchange_buffer_, particles_ready_};
+    if (distributed_packets.Size() > arena_.Count() ||
+        distributed_packets.Size() > particle_ids_.size()) {
+        return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
+    }
 
-    const blitzar_status commit_status = SrvCommitStagedParticles(commit_request);
+    SrvPacketStoreRequest store_request{distributed_packets, arena_, particles_, accelerations_,
+        workspace_, std::span<std::uint64_t>(particle_ids_), particle_count_,
+        local_particle_count_};
 
-    return Remember(commit_status);
+    blitzar_status store_status = SrvStoreLocalPackets(store_request);
+
+    store_status = SynchronizeSimulationStatus(mpi_context_, store_status, "set-particles-store");
+
+    if (store_status != BLITZAR_STATUS_OK) {
+        return Remember(store_status);
+    }
+
+    domain_ = std::move(candidate_domain);
+
+    (void)source_.SetCount(0);
+
+    exchange_buffer_.Clear();
+
+    particles_ready_ = true;
+
+    return Remember(BLITZAR_STATUS_OK);
 }
 
 blitzar_status Simulation::GetState(blitzar_core::ParticleOutputView output) const noexcept
@@ -120,6 +179,18 @@ blitzar_status Simulation::GetState(blitzar_core::ParticleOutputView output) con
 
     if (gather_status != BLITZAR_STATUS_OK) {
         return Remember(gather_status);
+    }
+
+    try {
+        if (seen_.size() < particle_count_) {
+            seen_.resize(particle_count_);
+        }
+    }
+    catch (const std::length_error&) {
+        return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
+    }
+    catch (const std::bad_alloc&) {
+        return Remember(BLITZAR_STATUS_ALLOCATION_FAILURE);
     }
 
     if (gathered_buffer_.Size() != particle_count_ || seen_.size() != particle_count_) {

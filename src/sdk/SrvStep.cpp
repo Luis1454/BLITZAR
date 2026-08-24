@@ -7,7 +7,9 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <new>
 #include <span>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 
@@ -51,8 +53,7 @@ blitzar_status Simulation::StepDistributed(Solver& solver) noexcept
         rollback_particle_count <= particle_ids_.size() &&
         rollback_particle_count == rollback_acceleration_count &&
         rollback_particle_count == rollback_workspace_count &&
-        rollback_particle_count <= source_particle_count_ &&
-        source_particle_count_ <= arena_.Count();
+        rollback_particle_count <= arena_.Count();
 
     const blitzar_status state_status = SynchronizeSimulationStatus(mpi_context_,
         rollback_state_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR, "step-state");
@@ -63,7 +64,7 @@ blitzar_status Simulation::StepDistributed(Solver& solver) noexcept
 
     SrvTransactionState transaction_state{
         arena_, particles_, accelerations_, workspace_,
-        std::span<std::uint64_t>(particle_ids_), local_particle_count_, source_particle_count_,
+        particle_ids_, local_particle_count_,
         exchange_buffer_, rollback_arena_buffer_, rollback_force_buffer_, rollback_exchange_buffer_};
 
     SrvStepTransaction transaction(transaction_state);
@@ -83,8 +84,8 @@ blitzar_status Simulation::StepDistributed(Solver& solver) noexcept
     using Dispatcher = SrvDistributedDispatcher<SolverType>;
     typename Dispatcher::State dispatcher_state{
         {hip_context_, solver, gravity_, barnes_hut_, last_backend_}, mpi_exchange_,
-        arena_, std::span<const std::uint64_t>(particle_ids_), exchange_buffer_,
-        mpi_exchange_.PersistentGhostExchange(), source_particle_count_};
+        source_, particle_ids_, exchange_buffer_,
+        mpi_exchange_.PersistentGhostExchange()};
 
     Dispatcher dispatcher(dispatcher_state);
     auto rollback = [&dispatcher, &transaction]() noexcept {
@@ -93,12 +94,25 @@ blitzar_status Simulation::StepDistributed(Solver& solver) noexcept
     };
 
     auto migrate_after_drift =
-        [this, rollback_particle_count](blitzar_particles::ParticleBuffer& current_particles,
+        [this, &solver, rollback_particle_count](
+            blitzar_particles::ParticleBuffer& current_particles,
             blitzar_particles::AccelerationBuffer& current_accelerations,
             blitzar_integration::LeapfrogWorkspace& current_workspace)
         -> blitzar_integration_kdk::DriftTransition {
-        return MigrateAfterDrift(
+        const blitzar_integration_kdk::DriftTransition transition = MigrateAfterDrift(
             rollback_particle_count, current_particles, current_accelerations, current_workspace);
+
+        if (transition.status != BLITZAR_STATUS_OK) {
+            return transition;
+        }
+
+        const blitzar_status solver_status = solver.Prepare(current_particles.Count());
+        const blitzar_status synchronized_solver_status = SynchronizeSimulationStatus(
+            mpi_context_, solver_status, "migrate-solver-capacity");
+
+        return synchronized_solver_status == BLITZAR_STATUS_OK
+                   ? transition
+                   : blitzar_integration_kdk::DriftTransition{synchronized_solver_status, false};
     };
 
     blitzar_integration_kdk::AdvanceState<Dispatcher,
@@ -151,6 +165,30 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
         return {migration_status, false};
     }
 
+    migration_status = migration_buffer_.Size() <= particle_count_
+                           ? arena_.Reserve(migration_buffer_.Size())
+                           : BLITZAR_STATUS_INVALID_ARGUMENT;
+
+    if (migration_status == BLITZAR_STATUS_OK &&
+        particle_ids_.size() < migration_buffer_.Size()) {
+        try {
+            particle_ids_.resize(migration_buffer_.Size());
+        }
+        catch (const std::length_error&) {
+            migration_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+        catch (const std::bad_alloc&) {
+            migration_status = BLITZAR_STATUS_ALLOCATION_FAILURE;
+        }
+    }
+
+    migration_status = SynchronizeSimulationStatus(
+        mpi_context_, migration_status, "migrate-capacity");
+
+    if (migration_status != BLITZAR_STATUS_OK) {
+        return {migration_status, false};
+    }
+
     SrvPacketStoreRequest migration_request{
         migration_buffer_, arena_, current_particles, current_accelerations, current_workspace,
         std::span<std::uint64_t>(particle_ids_), particle_count_, local_particle_count_};
@@ -163,7 +201,7 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
         return {migration_status, false};
     }
 
-    source_particle_count_ = local_particle_count_;
+    (void)source_.SetCount(0);
 
     return {BLITZAR_STATUS_OK, true};
 }

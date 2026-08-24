@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.8**
+Plan version: **1.0.9**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -135,16 +135,33 @@ adapter initializes MPI with `MPI_THREAD_MULTIPLE`, partitions global particle
 IDs by deterministic Morton-key slices, and keeps MPI types out of the public
 SDK. `AUTO` and `OFF` preserve the single-rank Sprint 6.1 path.
 
-Each rank owns a mutable logical prefix in the fixed-capacity particle arena.
-At each completed KDK step, ownership migration uses a contiguous
-`ParticlePacket` packing buffer and `MPI_Alltoallv`. Before each force
-evaluation, non-blocking
+The full input state is accepted and staged only by rank zero. Other ranks may
+pass an empty view; they receive their deterministic Morton slice through a
+bounded packet exchange and own only their local arena prefix. At each
+completed KDK step, ownership migration uses a contiguous `ParticlePacket`
+packing buffer and `MPI_Alltoallv`. Before each force evaluation, non-blocking
 `MPI_Isend`/`MPI_Irecv` exchanges all remote packets required for exact
 long-range gravity; this conservative halo is intentional because a truncated
 boundary halo would change the gravitational result. `GetState` gathers packets
 by stable global ID. The acceptance tests `TST-P7-001` and `TST-P7-002` run the
 same deterministic case with two and four ranks and compare it to the direct
 single-rank reference within `1e-5`.
+
+### Sprint 7.2: Distributed Input Ownership and Bounded State
+
+Persistent MPI state is rank-local. `SetParticles` keeps the root-only input
+stage and temporary distribution exchange alive only for the initialization
+transaction; non-root ranks never allocate or fill a global `ParticleArena`.
+Ghosts are stored in a separate source-only SoA and packet/wire buffers grow
+only when an observed halo or gather requires them. The Barnes-Hut primary tree
+uses the local rank capacity, while the remote tree is lazy and reserved only
+for a distributed force evaluation. The MPI test reports peak RSS per rank
+with particle count and rank count so memory can be compared across `P=1`,
+`P=2`, and `P=4` runs.
+
+The root-only input contract, two/four-rank parity, Barnes-Hut migration, and
+rollback behavior are covered by `TST-P7-001`, `TST-P7-002`, and
+`TST-P7-004`.
 
 ### Sprint 7.1: MPI Boundary and KDK Overlap
 

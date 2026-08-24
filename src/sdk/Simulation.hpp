@@ -10,6 +10,7 @@
 #include "parallel/MpiExchange.hpp"
 #include "parallel/MpiTypes.hpp"
 #include "particles/ParticleBuffer.hpp"
+#include "particles/SourceBuffer.hpp"
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
 #include "solvers/barnes_hut/ThreadWorkspace.hpp"
 #include "solvers/direct/DirectSolver.hpp"
@@ -51,6 +52,8 @@ private:
 
     struct SolverCreationRequest;
 
+    [[nodiscard]] static std::size_t LocalCapacity(
+        std::size_t particle_count, int rank_count) noexcept;
     [[nodiscard]] static std::size_t DefaultMaxCells(std::size_t particle_count) noexcept;
     [[nodiscard]] static blitzar_status CreateSolver(const SolverCreationRequest& request,
         SolverVariant& solver) noexcept;
@@ -84,6 +87,7 @@ private:
     blitzar_particles::ParticleBuffer particles_;
     blitzar_particles::AccelerationBuffer accelerations_;
     blitzar_integration::LeapfrogWorkspace workspace_;
+    blitzar_particles::SourceBuffer source_;
     blitzar_physics::GravityParameters gravity_;
     blitzar_barnes_hut::BarnesHutSettings barnes_hut_;
     blitzar_barnes_hut::ThreadWorkspace traversal_workspace_;
@@ -99,14 +103,12 @@ private:
     blitzar_integration::LeapfrogKdk integrator_;
     std::vector<std::uint64_t> particle_ids_;
     std::size_t local_particle_count_;
-    std::size_t source_particle_count_;
     blitzar_parallel::PacketBuffer exchange_buffer_;
     blitzar_parallel::PacketBuffer rollback_arena_buffer_;
     blitzar_parallel::PacketBuffer rollback_force_buffer_;
     blitzar_parallel::PacketBuffer rollback_exchange_buffer_;
     blitzar_parallel::PacketBuffer migration_buffer_;
     mutable blitzar_parallel::PacketBuffer gathered_buffer_;
-    std::vector<std::size_t> local_indices_;
     mutable std::vector<unsigned char> seen_;
 };
 

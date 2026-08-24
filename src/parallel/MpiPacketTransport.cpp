@@ -105,6 +105,26 @@ template <typename Value>
     return true;
 }
 
+template <typename Value>
+[[nodiscard]] bool EnsureCapacity(std::vector<Value>& values, std::size_t capacity) noexcept
+{
+    if (capacity <= values.capacity()) {
+        return true;
+    }
+
+    try {
+        values.reserve(capacity);
+    }
+    catch (const std::length_error&) {
+        return false;
+    }
+    catch (const std::bad_alloc&) {
+        return false;
+    }
+
+    return true;
+}
+
 } // namespace
 
 MpiPacketTransport::MpiPacketTransport(
@@ -119,8 +139,6 @@ blitzar_status MpiPacketTransport::Prepare(std::size_t packet_capacity) noexcept
         session_.Size() > 0 ? static_cast<std::size_t>(session_.Size()) : 0;
 
     try {
-        packet_capacity_ = packet_capacity;
-
         send_progress_.assign(peer_count, 0);
         receive_progress_.assign(peer_count, 0);
         send_bytes_.assign(peer_count, 0);
@@ -149,8 +167,7 @@ blitzar_status MpiPacketTransport::Prepare(std::size_t packet_capacity) noexcept
 
         const std::size_t wire_capacity = round_capacity * ParticleWireBytes;
 
-        send_wire_.reserve(wire_capacity);
-        receive_wire_.reserve(wire_capacity);
+        (void)wire_capacity;
 #endif
     }
     catch (const std::length_error&) {
@@ -246,11 +263,8 @@ blitzar_status MpiPacketTransport::AllToAllPackets(
     }
 #if defined(BLITZAR_HAS_MPI)
 
-    const bool capacity_valid =
-        send_packets.size() <= packet_capacity_ && receive_packets.size() <= packet_capacity_;
-
     blitzar_status preparation_status =
-        layout_valid && capacity_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT;
+        layout_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT;
 
     std::size_t packets_per_peer = 0;
 
@@ -344,7 +358,9 @@ blitzar_status MpiPacketTransport::AllToAllPackets(
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
         if (preparation_status == BLITZAR_STATUS_OK) {
-            if (!ResizeWithinCapacity(send_wire, static_cast<std::size_t>(send_total_bytes)) ||
+            if (!EnsureCapacity(send_wire, static_cast<std::size_t>(send_total_bytes)) ||
+                !EnsureCapacity(receive_wire, static_cast<std::size_t>(receive_total_bytes)) ||
+                !ResizeWithinCapacity(send_wire, static_cast<std::size_t>(send_total_bytes)) ||
                 !ResizeWithinCapacity(
                     receive_wire, static_cast<std::size_t>(receive_total_bytes))) {
                 preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -489,10 +505,7 @@ blitzar_status MpiPacketTransport::AllGatherPackets(std::span<const ParticlePack
     }
 #if defined(BLITZAR_HAS_MPI)
 
-    const bool capacity_valid =
-        local_packets.size() <= packet_capacity_ && gathered_packets.size() <= packet_capacity_;
-
-    blitzar_status preparation_status = layout_valid && local_count_valid && capacity_valid
+    blitzar_status preparation_status = layout_valid && local_count_valid
                                             ? BLITZAR_STATUS_OK
                                             : BLITZAR_STATUS_INVALID_ARGUMENT;
 
@@ -571,7 +584,9 @@ blitzar_status MpiPacketTransport::AllGatherPackets(std::span<const ParticlePack
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
         if (preparation_status == BLITZAR_STATUS_OK) {
-            if (!ResizeWithinCapacity(send_wire, static_cast<std::size_t>(local_bytes)) ||
+            if (!EnsureCapacity(send_wire, static_cast<std::size_t>(local_bytes)) ||
+                !EnsureCapacity(receive_wire, static_cast<std::size_t>(receive_total_bytes)) ||
+                !ResizeWithinCapacity(send_wire, static_cast<std::size_t>(local_bytes)) ||
                 !ResizeWithinCapacity(
                     receive_wire, static_cast<std::size_t>(receive_total_bytes))) {
                 preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;

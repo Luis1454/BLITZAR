@@ -69,6 +69,26 @@ namespace {
     return packets == 0 ? 0 : 1 + (packets - 1) / chunk_packets;
 }
 
+template <typename Value>
+[[nodiscard]] bool EnsureCapacity(std::vector<Value>& values, std::size_t capacity) noexcept
+{
+    if (capacity <= values.capacity()) {
+        return true;
+    }
+
+    try {
+        values.reserve(capacity);
+    }
+    catch (const std::length_error&) {
+        return false;
+    }
+    catch (const std::bad_alloc&) {
+        return false;
+    }
+
+    return true;
+}
+
 [[nodiscard]] blitzar_status WaitRequests(std::vector<MPI_Request>& requests) noexcept
 {
     if (requests.empty()) {
@@ -210,11 +230,13 @@ blitzar_status MpiGhostTransport::Prepare(
 
         state.packet_capacity = packet_capacity;
 
-        state.local_wire.reserve(wire_size);
-        state.receive_wire.reserve(wire_size);
+        (void)wire_size;
+
         state.receive_counts.resize(peer_count);
         state.offsets.resize(peer_count);
-        state.requests.reserve(request_capacity);
+
+        (void)request_capacity;
+
         state.local_wire.clear();
         state.receive_wire.clear();
         state.requests.clear();
@@ -275,7 +297,7 @@ blitzar_status MpiGhostTransport::Begin(
     if (preparation_status == BLITZAR_STATUS_OK) {
         MpiGhostExchange::Impl& state = *state_pointer;
 
-        if (local_bytes > state.local_wire.capacity()) {
+        if (!EnsureCapacity(state.local_wire, local_bytes)) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
         else {
@@ -444,7 +466,8 @@ blitzar_status MpiGhostTransport::Complete(
         if (request_count > static_cast<std::size_t>(INT_MAX)) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
-        if (total > exchange.impl_->packet_capacity || request_count > state.requests.capacity()) {
+        if (total > exchange.impl_->packet_capacity ||
+            !EnsureCapacity(state.requests, request_count)) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
     }
@@ -455,7 +478,9 @@ blitzar_status MpiGhostTransport::Complete(
         preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     if (preparation_status == BLITZAR_STATUS_OK) {
-        if (!ghosts.ResizeBounded(total) || receive_wire_size > state.receive_wire.capacity()) {
+        if (!ghosts.EnsureCapacity(total) ||
+            !ghosts.ResizeBounded(total) ||
+            !EnsureCapacity(state.receive_wire, receive_wire_size)) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
         else {

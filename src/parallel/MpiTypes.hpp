@@ -6,7 +6,9 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <new>
 #include <span>
+#include <stdexcept>
 #include <type_traits>
 #include <vector>
 
@@ -65,6 +67,25 @@ public:
     void Reserve(std::size_t capacity)
     {
         packets_.reserve(capacity);
+    }
+
+    [[nodiscard]] bool EnsureCapacity(std::size_t capacity) noexcept
+    {
+        if (capacity <= packets_.capacity()) {
+            return true;
+        }
+
+        try {
+            packets_.reserve(capacity);
+        }
+        catch (const std::length_error&) {
+            return false;
+        }
+        catch (const std::bad_alloc&) {
+            return false;
+        }
+
+        return true;
     }
 
     void Resize(std::size_t size)

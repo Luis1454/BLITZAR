@@ -15,6 +15,7 @@
 #include <cstdint>
 #include <span>
 #include <type_traits>
+#include <vector>
 
 namespace blitzar_sdk {
 
@@ -133,6 +134,47 @@ public:
         }
     }
 
+    [[nodiscard]] blitzar_status ComputeRemote(blitzar_core::ParticleStateView targets,
+        blitzar_core::ParticleStateView sources, blitzar_core::ForceView forces,
+        const blitzar_core::ExecutionSettings& settings) noexcept
+    {
+        if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
+            backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
+
+            return cpu_.ComputeRemote(targets, sources, forces, settings);
+        }
+        else {
+            return BLITZAR_STATUS_UNSUPPORTED;
+        }
+    }
+
+    [[nodiscard]] blitzar_status ComputeSplit(
+        const blitzar_barnes_hut::BarnesHutSplitRequest& request) noexcept
+    {
+        if constexpr (std::is_same_v<Solver, blitzar_barnes_hut::BarnesHutSolver>) {
+            backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
+
+            return cpu_.ComputeSplit(request);
+        }
+        else {
+            return BLITZAR_STATUS_UNSUPPORTED;
+        }
+    }
+
+    [[nodiscard]] blitzar_status ComputeSplit(
+        const blitzar_barnes_hut::BarnesHutSplitRequest& request,
+        blitzar_barnes_hut::ThreadWorkspace& workspace) noexcept
+    {
+        if constexpr (std::is_same_v<Solver, blitzar_barnes_hut::BarnesHutSolver>) {
+            backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
+
+            return cpu_.ComputeSplit(request, workspace);
+        }
+        else {
+            return BLITZAR_STATUS_UNSUPPORTED;
+        }
+    }
+
 private:
     blitzar_gpu::HipContext& hip_;
     Solver& cpu_;
@@ -146,16 +188,15 @@ public:
     struct State final {
         SrvSolverDispatchContext<Solver> solver;
         blitzar_parallel::MpiExchange& exchange;
-        blitzar_particles::ParticleArena& arena;
-        std::span<const std::uint64_t> ids;
+        blitzar_particles::SourceBuffer& sources;
+        std::vector<std::uint64_t>& ids;
         blitzar_parallel::PacketBuffer& ghosts;
         blitzar_parallel::MpiContext::GhostExchange& halo;
-        std::size_t& source_count;
     };
 
     explicit SrvDistributedDispatcher(State state) noexcept
-        : base_(state.solver), exchange_(state.exchange), arena_(state.arena), ids_(state.ids),
-          ghosts_(state.ghosts), halo_(state.halo), source_count_(state.source_count)
+        : base_(state.solver), exchange_(state.exchange), sources_(state.sources), ids_(state.ids),
+          ghosts_(state.ghosts), halo_(state.halo)
     {
     }
 
@@ -176,6 +217,8 @@ public:
     void Abort() noexcept
     {
         exchange_.AbortGhosts(halo_, ghosts_);
+
+        (void)sources_.SetCount(0);
     }
 
 private:
@@ -185,7 +228,8 @@ private:
     {
         const bool ids_valid = ids_.size() >= local_state.count;
         const std::span<const std::uint64_t> local_ids =
-            ids_valid ? ids_.first(local_state.count) : std::span<const std::uint64_t>{};
+            ids_valid ? std::span<const std::uint64_t>(ids_).first(local_state.count)
+                      : std::span<const std::uint64_t>{};
 
         const blitzar_status begin_status = exchange_.BeginGhosts(local_state, local_ids, halo_);
 
@@ -219,44 +263,46 @@ private:
             return synchronized_local_status;
         }
 
-        const blitzar_status append_status =
-            SrvAppendGhosts(ghosts_, arena_, local_state.count, source_count_);
+        const blitzar_status append_status = SrvStoreGhosts(ghosts_, sources_);
 
         const blitzar_status synchronized_append_status =
-            exchange_.SynchronizeStatus(append_status, "force-append");
+            exchange_.SynchronizeStatus(append_status, "force-store");
 
         if (synchronized_append_status != BLITZAR_STATUS_OK) {
             return synchronized_append_status;
         }
 
-        const blitzar_core::ParticleStateView full_state =
-            SrvMakeArenaState(arena_, local_state.count, source_count_);
+        const blitzar_core::ParticleStateView remote_state = sources_.State();
 
         blitzar_status remote_status = BLITZAR_STATUS_OK;
 
         if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
-            if (source_count_ != local_state.count) {
-                remote_status = base_.ComputeRange(
-                    full_state, forces, settings, {local_state.count, source_count_, true});
-            }
+            remote_status = base_.ComputeRemote(local_state, remote_state, forces, settings);
         }
         else if (!workspace.empty()) {
-            remote_status = base_.Compute(full_state, forces, settings, workspace.front());
+            remote_status = base_.ComputeSplit(
+                {local_state, remote_state, forces, settings}, workspace.front());
         }
         else {
-            remote_status = base_.Compute(full_state, forces, settings);
+            remote_status = base_.ComputeSplit({local_state, remote_state, forces, settings});
         }
 
-        return exchange_.SynchronizeStatus(remote_status, "force-remote");
+        const blitzar_status synchronized_remote_status =
+            exchange_.SynchronizeStatus(remote_status, "force-remote");
+
+        if (synchronized_remote_status == BLITZAR_STATUS_OK) {
+            (void)sources_.SetCount(0);
+        }
+
+        return synchronized_remote_status;
     }
 
     SrvSolverDispatcher<Solver> base_;
     blitzar_parallel::MpiExchange& exchange_;
-    blitzar_particles::ParticleArena& arena_;
-    std::span<const std::uint64_t> ids_;
+    blitzar_particles::SourceBuffer& sources_;
+    std::vector<std::uint64_t>& ids_;
     blitzar_parallel::PacketBuffer& ghosts_;
     blitzar_parallel::MpiContext::GhostExchange& halo_;
-    std::size_t& source_count_;
 };
 
 } // namespace blitzar_sdk

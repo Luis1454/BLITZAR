@@ -24,6 +24,9 @@ public:
     [[nodiscard]] blitzar_status ComputeRange(blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
         blitzar_core::ForceRange range) noexcept;
+    [[nodiscard]] blitzar_status ComputeRemote(blitzar_core::ParticleStateView targets,
+        blitzar_core::ParticleStateView sources, blitzar_core::ForceView forces,
+        const blitzar_core::ExecutionSettings& settings) noexcept;
 
 private:
     blitzar_physics::GravityLaw gravity_;

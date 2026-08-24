@@ -1,5 +1,5 @@
-#ifndef BLITZAR_PARTICLES_PARTICLE_ARENA_HPP
-#define BLITZAR_PARTICLES_PARTICLE_ARENA_HPP
+#ifndef BLITZAR_PARTICLES_SOURCE_BUFFER_HPP
+#define BLITZAR_PARTICLES_SOURCE_BUFFER_HPP
 
 #include "core/Types.hpp"
 
@@ -11,19 +11,22 @@
 
 namespace blitzar_particles {
 
-class ParticleArena final {
+class SourceBuffer final {
 public:
-    explicit ParticleArena(std::size_t count);
-    ~ParticleArena() = default;
+    explicit SourceBuffer(std::size_t capacity = 0);
+    ~SourceBuffer() = default;
 
-    ParticleArena(const ParticleArena&) = delete;
-    ParticleArena& operator=(const ParticleArena&) = delete;
-    ParticleArena(ParticleArena&&) = delete;
-    ParticleArena& operator=(ParticleArena&&) = delete;
+    SourceBuffer(const SourceBuffer&) = delete;
+    SourceBuffer& operator=(const SourceBuffer&) = delete;
+    SourceBuffer(SourceBuffer&&) = delete;
+    SourceBuffer& operator=(SourceBuffer&&) = delete;
 
     [[nodiscard]] std::size_t Count() const noexcept;
+    [[nodiscard]] std::size_t Capacity() const noexcept;
     [[nodiscard]] blitzar_status Reserve(std::size_t capacity) noexcept;
+    [[nodiscard]] blitzar_status SetCount(std::size_t count) noexcept;
     [[nodiscard]] bool IsValid() const noexcept;
+    [[nodiscard]] blitzar_core::ParticleStateView State() const noexcept;
 
     [[nodiscard]] std::span<blitzar_core::Scalar> PositionX() noexcept;
     [[nodiscard]] std::span<blitzar_core::Scalar> PositionY() noexcept;
@@ -32,15 +35,6 @@ public:
     [[nodiscard]] std::span<blitzar_core::Scalar> VelocityY() noexcept;
     [[nodiscard]] std::span<blitzar_core::Scalar> VelocityZ() noexcept;
     [[nodiscard]] std::span<blitzar_core::Scalar> Mass() noexcept;
-    [[nodiscard]] std::span<blitzar_core::Scalar> AccelerationX() noexcept;
-    [[nodiscard]] std::span<blitzar_core::Scalar> AccelerationY() noexcept;
-    [[nodiscard]] std::span<blitzar_core::Scalar> AccelerationZ() noexcept;
-    [[nodiscard]] std::span<blitzar_core::Scalar> WorkspacePositionX() noexcept;
-    [[nodiscard]] std::span<blitzar_core::Scalar> WorkspacePositionY() noexcept;
-    [[nodiscard]] std::span<blitzar_core::Scalar> WorkspacePositionZ() noexcept;
-    [[nodiscard]] std::span<blitzar_core::Scalar> WorkspaceVelocityX() noexcept;
-    [[nodiscard]] std::span<blitzar_core::Scalar> WorkspaceVelocityY() noexcept;
-    [[nodiscard]] std::span<blitzar_core::Scalar> WorkspaceVelocityZ() noexcept;
 
 private:
     enum class Field : std::size_t {
@@ -51,26 +45,18 @@ private:
         VelocityY,
         VelocityZ,
         Mass,
-        AccelerationX,
-        AccelerationY,
-        AccelerationZ,
-        WorkspacePositionX,
-        WorkspacePositionY,
-        WorkspacePositionZ,
-        WorkspaceVelocityX,
-        WorkspaceVelocityY,
-        WorkspaceVelocityZ,
     };
 
     static constexpr std::size_t Alignment = 64;
-    static constexpr std::size_t FieldCount = 16;
+    static constexpr std::size_t FieldCount = 7;
     static constexpr std::size_t ScalarsPerAlignment = Alignment / sizeof(blitzar_core::Scalar);
 
     [[nodiscard]] static std::size_t AlignedCount(std::size_t count);
     [[nodiscard]] std::span<blitzar_core::Scalar> Mutable(Field field) noexcept;
 
-    std::size_t count_;
-    std::size_t stride_;
+    std::size_t count_{0};
+    std::size_t capacity_{0};
+    std::size_t stride_{0};
     std::vector<blitzar_core::Scalar> storage_;
     std::array<std::span<blitzar_core::Scalar>, FieldCount> fields_{};
 };

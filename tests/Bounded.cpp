@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <span>
 #include <type_traits>
+#include <vector>
 
 static_assert(std::is_aggregate_v<blitzar_core::ParticleView>);
 static_assert(std::is_aggregate_v<blitzar_core::ParticleStateView>);
@@ -38,7 +39,6 @@ static_assert(std::is_aggregate_v<
               blitzar_integration_kdk::AdvanceState<DirectSolver, SolverWorkspace>>);
 static_assert(std::is_aggregate_v<blitzar_integration_kdk::AdvanceHooks<
               blitzar_integration_kdk::NoopDriftHook, blitzar_integration_kdk::NoopRollbackHook>>);
-static_assert(std::is_aggregate_v<blitzar_sdk::SrvParticleCommitRequest>);
 static_assert(std::is_aggregate_v<blitzar_sdk::SrvPacketStoreRequest>);
 static_assert(std::is_aggregate_v<blitzar_sdk::SrvArenaCaptureRequest>);
 static_assert(std::is_aggregate_v<blitzar_sdk::SrvArenaRestoreRequest>);
@@ -119,34 +119,25 @@ int main()
     blitzar_particles::ParticleBuffer particle_buffer(arena);
     blitzar_particles::AccelerationBuffer acceleration_buffer(arena);
     blitzar_integration::LeapfrogWorkspace workspace(arena);
-    blitzar_parallel::DomainDecomposition domain;
     blitzar_parallel::PacketBuffer exchange;
     std::array<std::uint64_t, 0> ids{};
-    std::array<std::size_t, 0> local_indices{};
     std::size_t local_count = 0;
-    std::size_t source_count = 0;
-    bool particles_ready = false;
     blitzar_sdk::SrvParticleInputStage stage{};
-
-    const blitzar_sdk::SrvParticleCommitRequest commit_request{stage, local_indices, arena,
-        particle_buffer, acceleration_buffer, workspace, ids, domain, domain, local_count,
-        source_count, exchange, particles_ready};
 
     const blitzar_sdk::SrvPacketStoreRequest store_request{exchange, arena, particle_buffer,
         acceleration_buffer, workspace, ids, 0, local_count};
 
-    const blitzar_sdk::SrvArenaCaptureRequest capture_request{arena, 0, 0, ids, exchange};
-    const blitzar_sdk::SrvArenaRestoreRequest restore_request{
-        exchange, arena, particle_buffer, ids, 0, 0};
+    const blitzar_sdk::SrvArenaCaptureRequest capture_request{arena, 0, ids, exchange};
+    const blitzar_sdk::SrvArenaRestoreRequest restore_request{exchange, arena, particle_buffer, ids, 0};
+    std::vector<std::uint64_t> transaction_ids;
 
     const blitzar_sdk::SrvTransactionState transaction_state{arena, particle_buffer,
-        acceleration_buffer, workspace, ids, local_count, source_count, exchange, exchange,
-        exchange, exchange};
+        acceleration_buffer, workspace, transaction_ids,
+        local_count, exchange, exchange, exchange, exchange};
 
-    BLITZAR_CHECK(commit_request.local_indices.empty());
     BLITZAR_CHECK(store_request.particle_count == 0);
     BLITZAR_CHECK(capture_request.local_count == 0);
-    BLITZAR_CHECK(restore_request.source_count == 0);
+    BLITZAR_CHECK(restore_request.local_count == 0);
     BLITZAR_CHECK(&transaction_state.exchange == &exchange);
 
     const blitzar_core::ParticleStateView empty_stage = stage.State();

@@ -81,13 +81,13 @@
     },
     {
       "id": "TST-P7-001",
-      "name": "mpi-two-rank-domain-parity",
+      "name": "mpi-two-rank-root-distribution-parity",
       "command": "mpiexec -np 2 blitzar_mpi_test",
       "phase": "P7"
     },
     {
       "id": "TST-P7-002",
-      "name": "mpi-four-rank-domain-parity",
+      "name": "mpi-four-rank-root-distribution-parity",
       "command": "mpiexec -np 4 blitzar_mpi_test",
       "phase": "P7"
     },

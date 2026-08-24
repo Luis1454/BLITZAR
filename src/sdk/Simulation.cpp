@@ -7,19 +7,22 @@ namespace blitzar_sdk {
 
 Simulation::Simulation(std::size_t particle_count)
     : particle_count_(particle_count), mpi_context_(), domain_(),
-      mpi_exchange_(mpi_context_, domain_, particle_count), hip_context_(), arena_(particle_count),
-      particles_(arena_), accelerations_(arena_), workspace_(arena_), gravity_{},
+      mpi_exchange_(mpi_context_, domain_, LocalCapacity(particle_count, mpi_context_.Size()),
+          particle_count),
+      hip_context_(), arena_(LocalCapacity(particle_count, mpi_context_.Size())),
+      particles_(arena_), accelerations_(arena_), workspace_(arena_), source_{}, gravity_{},
       barnes_hut_{
           0.5, particle_count == 0 ? 1 : particle_count, DefaultMaxCells(particle_count), 8, 32},
       traversal_workspace_(barnes_hut_.max_cells, barnes_hut_.max_depth),
       solver_kind_(BLITZAR_SOLVER_DIRECT), integrator_kind_(BLITZAR_INTEGRATOR_LEAPFROG_KDK),
       timestep_(1.0), particles_ready_(false), execution_settings_{}, snapshot_header_{},
       last_status_(mpi_context_.Status()), last_backend_(BLITZAR_BACKEND_CPU),
-      solver_(std::in_place_type<blitzar_direct::DirectSolver>, gravity_, particle_count),
-      integrator_{}, particle_ids_(particle_count), local_particle_count_(particle_count),
-      source_particle_count_(particle_count), exchange_buffer_{}, rollback_arena_buffer_{},
+      solver_(std::in_place_type<blitzar_direct::DirectSolver>, gravity_,
+          LocalCapacity(particle_count, mpi_context_.Size())),
+      integrator_{}, particle_ids_(LocalCapacity(particle_count, mpi_context_.Size())),
+      local_particle_count_(0), exchange_buffer_{}, rollback_arena_buffer_{},
       rollback_force_buffer_{}, rollback_exchange_buffer_{}, migration_buffer_{},
-      gathered_buffer_{}, local_indices_{}, seen_{}
+      gathered_buffer_{}, seen_{}
 {
     const blitzar_status capacity_status = mpi_exchange_.CapacityStatus();
 
@@ -31,15 +34,29 @@ Simulation::Simulation(std::size_t particle_count)
         throw std::length_error("simulation capacity preparation failed");
     }
 
-    exchange_buffer_.Reserve(particle_count_);
-    rollback_arena_buffer_.Reserve(particle_count_);
-    rollback_force_buffer_.Reserve(particle_count_);
-    rollback_exchange_buffer_.Reserve(particle_count_);
-    migration_buffer_.Reserve(particle_count_);
-    gathered_buffer_.Reserve(particle_count_);
-    local_indices_.reserve(particle_count_);
-    seen_.resize(particle_count_);
+    const std::size_t local_capacity = LocalCapacity(particle_count_, mpi_context_.Size());
+
+    if (particles_.SetCount(0) != BLITZAR_STATUS_OK ||
+        accelerations_.SetCount(0) != BLITZAR_STATUS_OK ||
+        workspace_.SetCount(0) != BLITZAR_STATUS_OK) {
+        throw std::length_error("simulation local capacity initialization failed");
+    }
+
+    rollback_arena_buffer_.Reserve(local_capacity);
+    rollback_force_buffer_.Reserve(local_capacity);
+    migration_buffer_.Reserve(local_capacity);
     snapshot_header_.particle_count = particle_count_;
+}
+
+std::size_t Simulation::LocalCapacity(std::size_t particle_count, int rank_count) noexcept
+{
+    if (rank_count <= 1 || particle_count == 0) {
+        return particle_count;
+    }
+
+    const std::size_t peers = static_cast<std::size_t>(rank_count);
+
+    return particle_count / peers + (particle_count % peers == 0 ? 0 : 1);
 }
 
 blitzar_status Simulation::LastStatus() const noexcept

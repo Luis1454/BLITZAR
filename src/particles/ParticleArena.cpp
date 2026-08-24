@@ -3,7 +3,9 @@
 #include <algorithm>
 #include <cstdint>
 #include <limits>
+#include <new>
 #include <stdexcept>
+#include <utility>
 
 namespace blitzar_particles {
 
@@ -55,6 +57,73 @@ ParticleArena::ParticleArena(std::size_t count) : count_(count), stride_(Aligned
 std::size_t ParticleArena::Count() const noexcept
 {
     return count_;
+}
+
+blitzar_status ParticleArena::Reserve(std::size_t capacity) noexcept
+{
+    if (capacity <= count_) {
+        return BLITZAR_STATUS_OK;
+    }
+
+    const std::size_t new_stride = [&]() {
+        try {
+            return AlignedCount(capacity);
+        }
+        catch (const std::length_error&) {
+            return std::size_t{0};
+        }
+    }();
+
+    if (new_stride == 0) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    const std::size_t maximum = std::numeric_limits<std::size_t>::max();
+
+    if (new_stride > maximum / FieldCount ||
+        new_stride * FieldCount > maximum - (ScalarsPerAlignment - 1)) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    std::vector<blitzar_core::Scalar> candidate;
+    std::array<std::span<blitzar_core::Scalar>, FieldCount> candidate_fields{};
+
+    try {
+        candidate.resize(new_stride * FieldCount + (ScalarsPerAlignment - 1));
+
+        const std::span<blitzar_core::Scalar> candidate_storage(candidate);
+        const std::uintptr_t address = reinterpret_cast<std::uintptr_t>(candidate.data());
+        const std::size_t byte_offset = (Alignment - (address % Alignment)) % Alignment;
+        const std::size_t scalar_offset = byte_offset / sizeof(blitzar_core::Scalar);
+        const std::size_t payload = new_stride * FieldCount;
+
+        if (scalar_offset > candidate_storage.size() ||
+            payload > candidate_storage.size() - scalar_offset) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+
+        for (std::size_t index = 0; index < FieldCount; ++index) {
+            candidate_fields[index] =
+                candidate_storage.subspan(scalar_offset + index * new_stride, capacity);
+        }
+    }
+    catch (const std::length_error&) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    catch (const std::bad_alloc&) {
+        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+    }
+
+    for (std::size_t index = 0; index < FieldCount; ++index) {
+        std::copy(fields_[index].begin(), fields_[index].end(), candidate_fields[index].begin());
+    }
+
+    storage_ = std::move(candidate);
+    fields_ = candidate_fields;
+    stride_ = new_stride;
+    count_ = capacity;
+
+    return BLITZAR_STATUS_OK;
 }
 
 bool ParticleArena::IsValid() const noexcept

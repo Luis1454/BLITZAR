@@ -64,7 +64,7 @@ blitzar_status MpiContext::Status() const noexcept
 }
 
 blitzar_status MpiContext::PrepareCapacity(
-    std::size_t packet_capacity, GhostExchange& exchange) const noexcept
+    std::size_t packet_capacity, GhostExchange& exchange, std::size_t ghost_capacity) const noexcept
 {
     if (impl_ == nullptr) {
         return status_;
@@ -76,7 +76,8 @@ blitzar_status MpiContext::PrepareCapacity(
         return packet_status;
     }
 
-    return impl_->ghosts.Prepare(exchange, packet_capacity);
+    return impl_->ghosts.Prepare(
+        exchange, ghost_capacity == 0 ? packet_capacity : ghost_capacity);
 }
 
 blitzar_status MpiContext::SynchronizeStatus(blitzar_status local_status, const char* operation,
@@ -108,6 +109,25 @@ blitzar_status MpiContext::ReduceMax(int local_value, int& global_value) const n
     }
 
     return impl_->collectives.ReduceMax(local_value, global_value);
+}
+
+blitzar_status MpiContext::Broadcast(
+    std::span<blitzar_core::Scalar> values, int root) const noexcept
+{
+    if (impl_ == nullptr) {
+        return status_;
+    }
+
+    return impl_->collectives.Broadcast(values, root);
+}
+
+blitzar_status MpiContext::Broadcast(std::span<std::uint64_t> values, int root) const noexcept
+{
+    if (impl_ == nullptr) {
+        return status_;
+    }
+
+    return impl_->collectives.Broadcast(values, root);
 }
 
 blitzar_status MpiContext::BeginGhostExchange(

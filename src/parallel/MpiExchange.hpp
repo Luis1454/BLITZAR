@@ -33,7 +33,7 @@ struct MpiExchangeWorkspace final {
 class MpiExchange final {
 public:
     MpiExchange(const MpiContext& context, const DomainDecomposition& decomposition,
-        std::size_t packet_capacity = 0);
+        std::size_t packet_capacity = 0, std::size_t ghost_capacity = 0);
 
     [[nodiscard]] blitzar_status CapacityStatus() const noexcept
     {

@@ -23,6 +23,10 @@
 #include <mpi.h>
 #endif
 
+#if defined(__linux__)
+#include <sys/resource.h>
+#endif
+
 namespace {
 
 constexpr std::size_t ParticleCount = 8;
@@ -230,10 +234,24 @@ struct StateArrays final {
         return false;
     }
 
+    blitzar_core::ParticleStateView input = blitzar_tests::MakeStateView(state);
+
+#if defined(BLITZAR_HAS_MPI)
+    int rank = 0;
+
+    if (MPI_Comm_rank(MPI_COMM_WORLD, &rank) != MPI_SUCCESS) {
+        return false;
+    }
+
+    if (rank != 0) {
+        input = {};
+    }
+#endif
+
     return simulation.SetSolver(solver_kind) == BLITZAR_STATUS_OK &&
            simulation.SetGravity(1.0, 0.1) == BLITZAR_STATUS_OK &&
            simulation.SetTimestep(timestep) == BLITZAR_STATUS_OK &&
-           simulation.SetParticles(blitzar_tests::MakeStateView(state)) == BLITZAR_STATUS_OK;
+           simulation.SetParticles(input) == BLITZAR_STATUS_OK;
 }
 
 [[nodiscard]] bool BuildReference(
@@ -313,13 +331,16 @@ struct StateArrays final {
     local_ok = local_ok && state_status == BLITZAR_STATUS_OK;
 
     for (std::size_t index = 0; index < ParticleCount; ++index) {
-        local_ok = local_ok && std::abs(distributed.x[index] - reference.x[index]) < 1.0e-5 &&
-                   std::abs(distributed.y[index] - reference.y[index]) < 1.0e-5 &&
-                   std::abs(distributed.z[index] - reference.z[index]) < 1.0e-5 &&
-                   std::abs(distributed.velocity_x[index] - reference.velocity_x[index]) < 1.0e-5 &&
-                   std::abs(distributed.velocity_y[index] - reference.velocity_y[index]) < 1.0e-5 &&
-                   std::abs(distributed.velocity_z[index] - reference.velocity_z[index]) < 1.0e-5 &&
-                   distributed.mass[index] == reference.mass[index];
+        const bool state_matches =
+            std::abs(distributed.x[index] - reference.x[index]) < 1.0e-5 &&
+            std::abs(distributed.y[index] - reference.y[index]) < 1.0e-5 &&
+            std::abs(distributed.z[index] - reference.z[index]) < 1.0e-5 &&
+            std::abs(distributed.velocity_x[index] - reference.velocity_x[index]) < 1.0e-5 &&
+            std::abs(distributed.velocity_y[index] - reference.velocity_y[index]) < 1.0e-5 &&
+            std::abs(distributed.velocity_z[index] - reference.velocity_z[index]) < 1.0e-5 &&
+            distributed.mass[index] == reference.mass[index];
+
+        local_ok = local_ok && state_matches;
     }
 
     StateArrays rejected = initial;
@@ -773,6 +794,34 @@ struct StateArrays final {
            !blitzar_parallel::ParticleWireCodec::Decode(short_wire, decoded);
 }
 
+[[nodiscard]] std::uint64_t PeakResidentBytes() noexcept
+{
+#if defined(__linux__)
+    struct rusage usage {
+    };
+
+    if (getrusage(RUSAGE_SELF, &usage) != 0 || usage.ru_maxrss < 0) {
+        return 0;
+    }
+
+    return static_cast<std::uint64_t>(usage.ru_maxrss) * 1024;
+#else
+    return 0;
+#endif
+}
+
+void ReportPeakResidentMemory(
+    const blitzar_parallel::MpiContext& context, std::size_t particle_count) noexcept
+{
+    const std::uint64_t bytes = PeakResidentBytes();
+
+    if (bytes != 0) {
+        std::fprintf(stderr, "BLITZAR MPI memory rank=%d particles=%zu ranks=%d peak_rss_bytes=%llu\n",
+            context.Rank(), particle_count, context.Size(),
+            static_cast<unsigned long long>(bytes));
+    }
+}
+
 } // namespace
 
 int RunTests(int argc, char** argv)
@@ -806,6 +855,8 @@ int RunTests(int argc, char** argv)
                           boundary_case && error_synchronization_case && nested_context_case &&
                           collective_validation_case && out_of_domain_result &&
                           large_count_result && wire_codec_case;
+
+    ReportPeakResidentMemory(context, ParticleCount);
 
     if (!local_ok) {
         std::fprintf(stderr,

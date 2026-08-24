@@ -75,7 +75,12 @@ blitzar_status DomainDecomposition::Initialize(
         return context.Status();
     }
 
-    const bool input_valid = size_ > 0 && blitzar_core::IsValid(global_state);
+    const bool root = rank_ == 0;
+    const bool input_valid = size_ > 0 &&
+                             (root ? blitzar_core::IsValid(global_state)
+                                   : global_state.SourceCount() == 0 ||
+                                         blitzar_core::IsValid(global_state));
+
     blitzar_status global_input_status = BLITZAR_STATUS_INTERNAL_ERROR;
     const blitzar_status synchronization_status =
         context.SynchronizeStatus(input_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
@@ -106,52 +111,96 @@ blitzar_status DomainDecomposition::Initialize(
 
     global_bounds_ = {{minimum[0], minimum[1], minimum[2]}, {maximum[0], maximum[1], maximum[2]}};
 
-    if (global_state.SourceCount() == 0) {
+    int global_has_particles = 0;
+    const blitzar_status particle_presence_status = context.ReduceMax(
+        root && global_state.SourceCount() != 0 ? 1 : 0, global_has_particles);
+
+    if (particle_presence_status != BLITZAR_STATUS_OK) {
+        return particle_presence_status;
+    }
+
+    if (global_has_particles == 0) {
         global_bounds_ = {};
     }
 
+    blitzar_status allocation_status = BLITZAR_STATUS_OK;
+    std::vector<std::uint64_t> split_values;
+    std::vector<std::uint64_t> split_ids;
     std::vector<std::uint64_t> keys;
     std::vector<std::size_t> order;
 
     try {
-        keys.resize(global_state.SourceCount());
-        order.resize(global_state.SourceCount());
-    }
-    catch (const std::bad_alloc&) {
-        return BLITZAR_STATUS_ALLOCATION_FAILURE;
-    }
-
-    for (std::size_t index = 0; index < global_state.SourceCount(); ++index) {
-        keys[index] = blitzar_trees::MortonKey(
-            {global_state.x[index], global_state.y[index], global_state.z[index]},
-            global_bounds_.minimum, global_bounds_.maximum);
-
-        order[index] = index;
-    }
-
-    std::sort(order.begin(), order.end(), [&keys](const auto left, const auto right) {
-        return keys[left] < keys[right] || (keys[left] == keys[right] && left < right);
-    });
-
-    try {
         split_keys_.resize(size_ > 1 ? static_cast<std::size_t>(size_ - 1) : 0);
+        split_values.resize(split_keys_.size());
+        split_ids.resize(split_keys_.size());
+
+        if (root) {
+            keys.resize(global_state.SourceCount());
+            order.resize(global_state.SourceCount());
+        }
+    }
+    catch (const std::length_error&) {
+        allocation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     catch (const std::bad_alloc&) {
-        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+        allocation_status = BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
 
-    for (int destination = 1; destination < size_; ++destination) {
-        if (order.empty()) {
-            split_keys_[static_cast<std::size_t>(destination - 1)] = {};
+    const blitzar_status allocation_sync = context.SynchronizeStatus(
+        allocation_status, "DomainDecomposition", "initialize-allocation", allocation_status);
 
-            continue;
+    if (allocation_sync != BLITZAR_STATUS_OK || allocation_status != BLITZAR_STATUS_OK) {
+        return allocation_sync != BLITZAR_STATUS_OK ? allocation_sync : allocation_status;
+    }
+
+    if (root) {
+        for (std::size_t index = 0; index < global_state.SourceCount(); ++index) {
+            keys[index] = blitzar_trees::MortonKey(
+                {global_state.x[index], global_state.y[index], global_state.z[index]},
+                global_bounds_.minimum, global_bounds_.maximum);
+
+            order[index] = index;
         }
 
-        const std::size_t boundary = std::min(order.size() - 1,
-            static_cast<std::size_t>(destination) * order.size() / static_cast<std::size_t>(size_));
+        std::sort(order.begin(), order.end(), [&keys](const auto left, const auto right) {
+            return keys[left] < keys[right] || (keys[left] == keys[right] && left < right);
+        });
 
-        split_keys_[static_cast<std::size_t>(destination - 1)] = {
-            keys[order[boundary]], static_cast<std::uint64_t>(order[boundary])};
+        for (int destination = 1; destination < size_; ++destination) {
+            if (order.empty()) {
+                split_keys_[static_cast<std::size_t>(destination - 1)] = {};
+
+                continue;
+            }
+
+            const std::size_t boundary = std::min(order.size() - 1,
+                static_cast<std::size_t>(destination) * order.size() /
+                    static_cast<std::size_t>(size_));
+
+            split_keys_[static_cast<std::size_t>(destination - 1)] = {
+                keys[order[boundary]], static_cast<std::uint64_t>(order[boundary])};
+        }
+    }
+
+    for (std::size_t index = 0; index < split_keys_.size(); ++index) {
+        split_values[index] = split_keys_[index].key;
+        split_ids[index] = split_keys_[index].particle_id;
+    }
+
+    const blitzar_status split_status = context.Broadcast(split_values, 0);
+
+    if (split_status != BLITZAR_STATUS_OK) {
+        return split_status;
+    }
+
+    const blitzar_status id_status = context.Broadcast(split_ids, 0);
+
+    if (id_status != BLITZAR_STATUS_OK) {
+        return id_status;
+    }
+
+    for (std::size_t index = 0; index < split_keys_.size(); ++index) {
+        split_keys_[index] = {split_values[index], split_ids[index]};
     }
 
     initialized_ = true;

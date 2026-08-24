@@ -30,7 +30,6 @@ public:
 private:
     const MpiSession& session_;
     [[maybe_unused]] const MpiCollectives& collectives_;
-    std::size_t packet_capacity_{0};
     mutable std::vector<std::size_t> send_progress_;
     mutable std::vector<std::size_t> receive_progress_;
     mutable std::vector<int> send_bytes_;
