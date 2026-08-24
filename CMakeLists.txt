@@ -366,9 +366,16 @@ if(BLITZAR_BUILD_TESTS)
                 $<TARGET_FILE:blitzar_mpi_test> out-of-domain
                 ${MPIEXEC_POSTFLAGS}
         )
+        add_test(
+            NAME TST-P8-003
+            COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2
+                ${MPIEXEC_PREFLAGS}
+                $<TARGET_FILE:blitzar_mpi_test> overlap
+                ${MPIEXEC_POSTFLAGS}
+        )
         set_tests_properties(
             TST-P7-001 TST-P7-002 TST-P7-003 TST-P7-004 TST-P7-005
-            TST-P8-001 TST-P8-002
+            TST-P8-001 TST-P8-002 TST-P8-003
             PROPERTIES TIMEOUT 120
         )
     endif()

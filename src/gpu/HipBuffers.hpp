@@ -20,11 +20,14 @@ public:
 
     [[nodiscard]] bool IsAvailable() const noexcept;
     void Disable() noexcept;
-    [[nodiscard]] bool Ensure(std::size_t particle_count, std::size_t cell_count) noexcept;
+    [[nodiscard]] bool Ensure(
+        std::size_t target_count, std::size_t source_count, std::size_t cell_count) noexcept;
 
     [[nodiscard]] std::uintptr_t Stream() const noexcept;
     [[nodiscard]] std::uintptr_t HostParticle(std::size_t index) const noexcept;
     [[nodiscard]] std::uintptr_t DeviceParticle(std::size_t index) const noexcept;
+    [[nodiscard]] std::uintptr_t HostSource(std::size_t index) const noexcept;
+    [[nodiscard]] std::uintptr_t DeviceSource(std::size_t index) const noexcept;
     [[nodiscard]] std::uintptr_t HostForce(std::size_t index) const noexcept;
     [[nodiscard]] std::uintptr_t DeviceForce(std::size_t index) const noexcept;
     [[nodiscard]] std::uintptr_t HostError() const noexcept;

@@ -101,10 +101,10 @@
     },
     {
       "path": "src/sdk/Dispatch.hpp",
-      "signals": ["branching"],
-      "issue": 558,
+      "signals": ["branching", "function_count", "function_length"],
+      "issue": 556,
       "status": "accepted",
-      "decision": "Keep CPU, HIP fallback, and distributed dispatch policy in the dispatch responsibility."
+      "decision": "Keep CPU, HIP fallback, distributed dispatch, and fixed-size overlap qualification in the dispatch responsibility; the added timeline state does not own transport or solver resources."
     },
     {
       "path": "src/sdk/State.cpp",

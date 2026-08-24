@@ -17,6 +17,10 @@ struct DeviceParticleAddresses final {
     std::uintptr_t force_x{};
     std::uintptr_t force_y{};
     std::uintptr_t force_z{};
+    std::uintptr_t source_position_x{};
+    std::uintptr_t source_position_y{};
+    std::uintptr_t source_position_z{};
+    std::uintptr_t source_mass{};
 };
 
 struct GpuCell final {
@@ -55,6 +59,7 @@ struct DirectLaunchRequest final {
     blitzar_core::ForceRange range;
     KernelPhysics physics;
     KernelRuntime runtime;
+    std::size_t source_global_begin{};
 };
 
 struct BarnesHutLaunchRequest final {

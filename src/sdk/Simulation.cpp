@@ -123,6 +123,18 @@ void Simulation::SetHipFaultForTesting(blitzar_gpu::HipFault fault) noexcept
     hip_context_.SetFaultForTesting(fault);
 }
 
+void Simulation::SetMpiOverlapForTesting(blitzar_parallel::MpiOverlapMode mode) noexcept
+{
+    overlap_mode_ = mode;
+
+    overlap_trace_.Reset(mode);
+}
+
+const blitzar_parallel::MpiOverlapTrace& Simulation::LastMpiOverlapTrace() const noexcept
+{
+    return overlap_trace_;
+}
+
 std::size_t Simulation::ParticleCount() const noexcept
 {
     return particle_count_;

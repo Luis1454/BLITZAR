@@ -8,6 +8,7 @@
 #include "integration/LeapfrogKdk.hpp"
 #include "parallel/DomainDecomposition.hpp"
 #include "parallel/MpiExchange.hpp"
+#include "parallel/MpiTrace.hpp"
 #include "parallel/MpiTypes.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "particles/SourceBuffer.hpp"
@@ -45,6 +46,8 @@ public:
     [[nodiscard]] blitzar_status GetState(blitzar_core::ParticleOutputView output) const noexcept;
     [[nodiscard]] blitzar_status Step() noexcept;
     void SetHipFaultForTesting(blitzar_gpu::HipFault fault) noexcept;
+    void SetMpiOverlapForTesting(blitzar_parallel::MpiOverlapMode mode) noexcept;
+    [[nodiscard]] const blitzar_parallel::MpiOverlapTrace& LastMpiOverlapTrace() const noexcept;
 
 private:
     using SolverVariant =
@@ -100,6 +103,9 @@ private:
     bool particles_ready_;
     blitzar_core::ExecutionSettings execution_settings_;
     blitzar_core::SnapshotHeader snapshot_header_;
+    blitzar_parallel::MpiOverlapMode overlap_mode_{
+        blitzar_parallel::MpiOverlapMode::Overlapped};
+    blitzar_parallel::MpiOverlapTrace overlap_trace_{};
     mutable std::atomic<blitzar_status> last_status_;
     mutable std::atomic<blitzar_backend_kind> last_backend_;
     SolverVariant solver_;
