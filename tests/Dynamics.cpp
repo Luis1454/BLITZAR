@@ -146,6 +146,20 @@ int main()
     BLITZAR_CHECK(particles.SetMass(0, 1.0) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(particles.SetMass(1, 1.0) == BLITZAR_STATUS_OK);
 
+    BLITZAR_CHECK(
+        particles.SetPosition(2, {0.0, 0.0, 0.0}) == BLITZAR_STATUS_INVALID_ARGUMENT);
+
+    BLITZAR_CHECK(
+        particles.SetVelocity(2, {0.0, 0.0, 0.0}) == BLITZAR_STATUS_INVALID_ARGUMENT);
+
+    BLITZAR_CHECK(particles.SetMass(2, 1.0) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(particles.SetVelocity(
+                      0, {std::numeric_limits<double>::infinity(), 0.0, 0.0}) ==
+                  BLITZAR_STATUS_INVALID_ARGUMENT);
+
+    BLITZAR_CHECK(
+        particles.SetMass(0, -1.0) == BLITZAR_STATUS_INVALID_ARGUMENT);
+
     const blitzar_core::ExecutionSettings settings{};
     const blitzar_physics::GravityParameters gravity{1.0, 0.0};
 
