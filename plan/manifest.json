@@ -1,6 +1,6 @@
 {
   "product_version": "1.0.0",
-  "plan_version": "1.0.10",
+  "plan_version": "1.0.11",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -17,6 +17,7 @@
     "src/gpu",
     "src/parallel",
     "src/solvers",
+    "src/solvers/fmm",
     "src/solvers/gpu",
     "src/sdk",
     "apps/blitzar",
@@ -26,7 +27,6 @@
   "deferred_roots": [
     "src/grid",
     "src/io",
-    "src/solvers/fmm",
     "src/solvers/pm",
     "src/solvers/treepm"
   ],

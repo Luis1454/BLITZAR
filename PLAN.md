@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.10**
+Plan version: **1.0.11**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -49,9 +49,11 @@ plan/                            Frozen roadmap and machine-readable invariants
 tools/                           Repository policy checks only
 ```
 
-`src/grid`, `src/io`, `src/solvers/fmm`, `src/solvers/pm`, and
-`src/solvers/treepm` are planned but not materialized roots. They remain in
-the deferred-root set until their production ownership and tests exist. The
+`src/grid`, `src/io`, `src/solvers/pm`, and `src/solvers/treepm` are planned
+but not materialized roots. They remain in the deferred-root set until their
+production ownership and tests exist. The CPU FMM root is materialized in P3
+with deterministic order-2 multipole qualification; GPU FMM remains outside
+the current backend scope. The
 GPU runtime and native CUDA compatibility are intentionally owned by
 `src/gpu`; no parallel CUDA runtime root exists.
 
