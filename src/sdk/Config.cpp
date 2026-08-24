@@ -171,10 +171,10 @@ blitzar_status Simulation::SetBarnesHut(
         return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
     }
 
-    blitzar_barnes_hut::ThreadWorkspace candidate_workspace(0, 0);
+    blitzar_barnes_hut::ThreadStackPool candidate_stack_pool(0, 0);
 
     try {
-        candidate_workspace = blitzar_barnes_hut::ThreadWorkspace(
+        candidate_stack_pool = blitzar_barnes_hut::ThreadStackPool(
             candidate_settings.max_cells, candidate_settings.max_depth);
     }
     catch (const std::length_error&) {
@@ -195,7 +195,7 @@ blitzar_status Simulation::SetBarnesHut(
         solver_ = std::move(candidate_solver);
     }
 
-    traversal_workspace_ = std::move(candidate_workspace);
+    traversal_stacks_ = std::move(candidate_stack_pool);
     barnes_hut_ = candidate_settings;
 
     return Remember(BLITZAR_STATUS_OK);

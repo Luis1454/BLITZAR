@@ -35,12 +35,12 @@ public:
     [[nodiscard]] std::span<blitzar_core::Scalar> AccelerationX() noexcept;
     [[nodiscard]] std::span<blitzar_core::Scalar> AccelerationY() noexcept;
     [[nodiscard]] std::span<blitzar_core::Scalar> AccelerationZ() noexcept;
-    [[nodiscard]] std::span<blitzar_core::Scalar> WorkspacePositionX() noexcept;
-    [[nodiscard]] std::span<blitzar_core::Scalar> WorkspacePositionY() noexcept;
-    [[nodiscard]] std::span<blitzar_core::Scalar> WorkspacePositionZ() noexcept;
-    [[nodiscard]] std::span<blitzar_core::Scalar> WorkspaceVelocityX() noexcept;
-    [[nodiscard]] std::span<blitzar_core::Scalar> WorkspaceVelocityY() noexcept;
-    [[nodiscard]] std::span<blitzar_core::Scalar> WorkspaceVelocityZ() noexcept;
+    [[nodiscard]] std::span<blitzar_core::Scalar> CheckpointPositionX() noexcept;
+    [[nodiscard]] std::span<blitzar_core::Scalar> CheckpointPositionY() noexcept;
+    [[nodiscard]] std::span<blitzar_core::Scalar> CheckpointPositionZ() noexcept;
+    [[nodiscard]] std::span<blitzar_core::Scalar> CheckpointVelocityX() noexcept;
+    [[nodiscard]] std::span<blitzar_core::Scalar> CheckpointVelocityY() noexcept;
+    [[nodiscard]] std::span<blitzar_core::Scalar> CheckpointVelocityZ() noexcept;
 
 private:
     enum class Field : std::size_t {
@@ -54,12 +54,12 @@ private:
         AccelerationX,
         AccelerationY,
         AccelerationZ,
-        WorkspacePositionX,
-        WorkspacePositionY,
-        WorkspacePositionZ,
-        WorkspaceVelocityX,
-        WorkspaceVelocityY,
-        WorkspaceVelocityZ,
+        CheckpointPositionX,
+        CheckpointPositionY,
+        CheckpointPositionZ,
+        CheckpointVelocityX,
+        CheckpointVelocityY,
+        CheckpointVelocityZ,
     };
 
     static constexpr std::size_t Alignment = 64;

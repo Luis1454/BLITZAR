@@ -259,7 +259,7 @@ struct StateArrays final {
 {
     blitzar_particles::ParticleBuffer particles(ParticleCount);
     blitzar_particles::AccelerationBuffer accelerations(ParticleCount);
-    blitzar_integration::LeapfrogWorkspace workspace(ParticleCount);
+    blitzar_integration::KdkCheckpoint checkpoint(ParticleCount);
 
     for (std::size_t index = 0; index < ParticleCount; ++index) {
         if (particles.SetPosition(index, {initial.x[index], initial.y[index], initial.z[index]}) !=
@@ -281,11 +281,11 @@ struct StateArrays final {
 
     const blitzar_core::ExecutionSettings execution{};
     const blitzar_integration::LeapfrogKdk integrator{};
-    std::span<std::size_t> solver_workspace{};
+    std::span<std::size_t> solver_scratch{};
 
     for (int step = 0; step < step_count; ++step) {
         blitzar_integration_kdk::AdvanceState state{
-            particles, accelerations, workspace, solver, timestep, execution, solver_workspace,
+            particles, accelerations, checkpoint, solver, timestep, execution, solver_scratch,
             particles.State()};
 
         if (integrator.Advance(state) != BLITZAR_STATUS_OK) {

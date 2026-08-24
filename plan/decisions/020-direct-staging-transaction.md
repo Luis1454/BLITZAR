@@ -19,5 +19,5 @@ target has succeeded.
   evaluations and particle reads.
 - The staging vector grows only when a solver sees a larger target count and
   is reused by subsequent calls on that solver instance.
-- A preallocated execution workspace remains the follow-up boundary for the
+- A preallocated execution scratch state remains the follow-up boundary for the
   no-allocation hot-path work in issue #555.

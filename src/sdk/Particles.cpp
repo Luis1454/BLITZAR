@@ -1,6 +1,6 @@
 #include "sdk/Simulation.hpp"
 
-#include "sdk/SrvState.hpp"
+#include "sdk/State.hpp"
 
 #include "particles/ParticleArena.hpp"
 
@@ -34,9 +34,9 @@ blitzar_status Simulation::SetParticles(blitzar_core::ParticleStateView input) n
         return Remember(input_status);
     }
 
-    SrvParticleInputStage stage;
+    ParticleInputStage stage;
 
-    input_status = root ? SrvStageParticleInput(input, stage) : BLITZAR_STATUS_OK;
+    input_status = root ? StageParticleInput(input, stage) : BLITZAR_STATUS_OK;
     input_status = SynchronizeSimulationStatus(mpi_context_, input_status, "set-particles-stage");
 
     if (input_status != BLITZAR_STATUS_OK) {
@@ -113,11 +113,11 @@ blitzar_status Simulation::SetParticles(blitzar_core::ParticleStateView input) n
         return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
     }
 
-    SrvPacketStoreRequest store_request{distributed_packets, arena_, particles_, accelerations_,
-        workspace_, std::span<std::uint64_t>(particle_ids_), particle_count_,
+    PacketStoreRequest store_request{distributed_packets, arena_, particles_, accelerations_,
+        checkpoint_, std::span<std::uint64_t>(particle_ids_), particle_count_,
         local_particle_count_};
 
-    blitzar_status store_status = SrvStoreLocalPackets(store_request);
+    blitzar_status store_status = StoreLocalPackets(store_request);
 
     store_status = SynchronizeSimulationStatus(mpi_context_, store_status, "set-particles-store");
 

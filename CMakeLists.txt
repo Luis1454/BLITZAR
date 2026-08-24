@@ -78,7 +78,7 @@ else()
 endif()
 
 target_sources(blitzar PRIVATE
-    src/integration/LeapfrogWorkspace.cpp
+    src/integration/KdkCheckpoint.cpp
     src/particles/ParticleArena.cpp
     src/particles/ParticleBuffer.cpp
     src/particles/SourceBuffer.cpp
@@ -94,13 +94,13 @@ target_sources(blitzar PRIVATE
     src/sdk/Api.cpp
     src/sdk/CppApi.cpp
     src/sdk/Simulation.cpp
-    src/sdk/SrvConfig.cpp
-    src/sdk/SrvParticles.cpp
-    src/sdk/SrvState.cpp
-    src/sdk/SrvStep.cpp
-    src/sdk/SrvTransaction.cpp
+    src/sdk/Config.cpp
+    src/sdk/Particles.cpp
+    src/sdk/State.cpp
+    src/sdk/Step.cpp
+    src/sdk/Transaction.cpp
     src/solvers/barnes_hut/BarnesHutSolver.cpp
-    src/solvers/barnes_hut/ThreadWorkspace.cpp
+    src/solvers/barnes_hut/ThreadStackPool.cpp
     src/solvers/direct/DirectSolver.cpp
     src/trees/Octree.cpp
 )

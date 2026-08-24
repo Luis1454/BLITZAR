@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.9**
+Plan version: **1.0.10**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -175,7 +175,7 @@ local contribution. The Direct solver computes local-source forces first and
 adds the remote-source contribution after completion; Barnes-Hut performs its
 local tree work while the exchange is pending, then rebuilds the complete tree
 for the final force. Ownership migration is committed immediately after Drift
-through a KDK transition hook, and the workspace checkpoint is recaptured for
+through a KDK transition hook, and the KDK checkpoint is recaptured for
 the new local prefix before the second force evaluation. `TST-P8-001` forces
 inter-rank movement and compares the result with the direct single-rank oracle.
 

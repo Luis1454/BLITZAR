@@ -1,13 +1,13 @@
-#ifndef BLITZAR_SDK_SRV_DISPATCH_HPP
-#define BLITZAR_SDK_SRV_DISPATCH_HPP
+#ifndef BLITZAR_SDK_DISPATCH_HPP
+#define BLITZAR_SDK_DISPATCH_HPP
 
 #include "core/Execution.hpp"
 #include "core/Solver.hpp"
 #include "gpu/HipContext.hpp"
 #include "parallel/MpiExchange.hpp"
-#include "sdk/SrvState.hpp"
+#include "sdk/State.hpp"
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
-#include "solvers/barnes_hut/ThreadWorkspace.hpp"
+#include "solvers/barnes_hut/ThreadStackPool.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 
 #include <atomic>
@@ -19,7 +19,7 @@
 
 namespace blitzar_sdk {
 
-template <typename Solver> struct SrvSolverDispatchContext final {
+template <typename Solver> struct SolverDispatchContext final {
     blitzar_gpu::HipContext& hip;
     Solver& cpu;
     blitzar_physics::GravityParameters gravity;
@@ -27,9 +27,9 @@ template <typename Solver> struct SrvSolverDispatchContext final {
     std::atomic<blitzar_backend_kind>& backend;
 };
 
-template <typename Solver> class SrvSolverDispatcher final {
+template <typename Solver> class SolverDispatcher final {
 public:
-    explicit SrvSolverDispatcher(SrvSolverDispatchContext<Solver> context) noexcept
+    explicit SolverDispatcher(SolverDispatchContext<Solver> context) noexcept
         : hip_(context.hip), cpu_(context.cpu), gravity_(context.gravity),
           barnes_hut_(context.barnes_hut), backend_(context.backend)
     {
@@ -71,7 +71,7 @@ public:
 
     [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-        blitzar_barnes_hut::ThreadWorkspace& workspace) noexcept
+        blitzar_barnes_hut::ThreadStackPool& stack_pool) noexcept
     {
         if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
             backend_.store(BLITZAR_BACKEND_HIP, std::memory_order_relaxed);
@@ -104,7 +104,7 @@ public:
 
             backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
 
-            return cpu_.Compute(particles, forces, settings, workspace);
+            return cpu_.Compute(particles, forces, settings, stack_pool);
         }
     }
 
@@ -163,12 +163,12 @@ public:
 
     [[nodiscard]] blitzar_status ComputeSplit(
         const blitzar_barnes_hut::BarnesHutSplitRequest& request,
-        blitzar_barnes_hut::ThreadWorkspace& workspace) noexcept
+        blitzar_barnes_hut::ThreadStackPool& stack_pool) noexcept
     {
         if constexpr (std::is_same_v<Solver, blitzar_barnes_hut::BarnesHutSolver>) {
             backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
 
-            return cpu_.ComputeSplit(request, workspace);
+            return cpu_.ComputeSplit(request, stack_pool);
         }
         else {
             return BLITZAR_STATUS_UNSUPPORTED;
@@ -183,10 +183,10 @@ private:
     std::atomic<blitzar_backend_kind>& backend_;
 };
 
-template <typename Solver> class SrvDistributedDispatcher final {
+template <typename Solver> class DistributedDispatcher final {
 public:
     struct State final {
-        SrvSolverDispatchContext<Solver> solver;
+        SolverDispatchContext<Solver> solver;
         blitzar_parallel::MpiExchange& exchange;
         blitzar_particles::SourceBuffer& sources;
         std::vector<std::uint64_t>& ids;
@@ -194,7 +194,7 @@ public:
         blitzar_parallel::MpiContext::GhostExchange& halo;
     };
 
-    explicit SrvDistributedDispatcher(State state) noexcept
+    explicit DistributedDispatcher(State state) noexcept
         : base_(state.solver), exchange_(state.exchange), sources_(state.sources), ids_(state.ids),
           ghosts_(state.ghosts), halo_(state.halo)
     {
@@ -208,10 +208,10 @@ public:
 
     [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView local_state,
         blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-        blitzar_barnes_hut::ThreadWorkspace& workspace) noexcept
+        blitzar_barnes_hut::ThreadStackPool& stack_pool) noexcept
     {
         return ComputeWithOverlap(local_state, forces, settings,
-            std::span<blitzar_barnes_hut::ThreadWorkspace>(&workspace, 1));
+            std::span<blitzar_barnes_hut::ThreadStackPool>(&stack_pool, 1));
     }
 
     void Abort() noexcept
@@ -224,7 +224,7 @@ public:
 private:
     [[nodiscard]] blitzar_status ComputeWithOverlap(blitzar_core::ParticleStateView local_state,
         blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-        std::span<blitzar_barnes_hut::ThreadWorkspace> workspace) noexcept
+        std::span<blitzar_barnes_hut::ThreadStackPool> stack_pool) noexcept
     {
         const bool ids_valid = ids_.size() >= local_state.count;
         const std::span<const std::uint64_t> local_ids =
@@ -243,8 +243,8 @@ private:
             local_status = base_.ComputeRange(
                 local_state, forces, settings, {0, local_state.count, false});
         }
-        else if (!workspace.empty()) {
-            local_status = base_.Compute(local_state, forces, settings, workspace.front());
+        else if (!stack_pool.empty()) {
+            local_status = base_.Compute(local_state, forces, settings, stack_pool.front());
         }
         else {
             local_status = base_.Compute(local_state, forces, settings);
@@ -263,7 +263,7 @@ private:
             return synchronized_local_status;
         }
 
-        const blitzar_status append_status = SrvStoreGhosts(ghosts_, sources_);
+            const blitzar_status append_status = StoreGhosts(ghosts_, sources_);
 
         const blitzar_status synchronized_append_status =
             exchange_.SynchronizeStatus(append_status, "force-store");
@@ -279,9 +279,9 @@ private:
         if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
             remote_status = base_.ComputeRemote(local_state, remote_state, forces, settings);
         }
-        else if (!workspace.empty()) {
+        else if (!stack_pool.empty()) {
             remote_status = base_.ComputeSplit(
-                {local_state, remote_state, forces, settings}, workspace.front());
+                {local_state, remote_state, forces, settings}, stack_pool.front());
         }
         else {
             remote_status = base_.ComputeSplit({local_state, remote_state, forces, settings});
@@ -297,7 +297,7 @@ private:
         return synchronized_remote_status;
     }
 
-    SrvSolverDispatcher<Solver> base_;
+    SolverDispatcher<Solver> base_;
     blitzar_parallel::MpiExchange& exchange_;
     blitzar_particles::SourceBuffer& sources_;
     std::vector<std::uint64_t>& ids_;

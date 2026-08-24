@@ -1,7 +1,7 @@
-#ifndef BLITZAR_SDK_SRV_STATE_HPP
-#define BLITZAR_SDK_SRV_STATE_HPP
+#ifndef BLITZAR_SDK_STATE_HPP
+#define BLITZAR_SDK_STATE_HPP
 
-#include "integration/LeapfrogWorkspace.hpp"
+#include "integration/KdkCheckpoint.hpp"
 #include "parallel/DomainDecomposition.hpp"
 #include "parallel/MpiContext.hpp"
 #include "parallel/MpiTypes.hpp"
@@ -17,7 +17,7 @@
 
 namespace blitzar_sdk {
 
-struct SrvParticleInputStage final {
+struct ParticleInputStage final {
     std::vector<blitzar_core::Scalar> position_x;
     std::vector<blitzar_core::Scalar> position_y;
     std::vector<blitzar_core::Scalar> position_z;
@@ -29,25 +29,25 @@ struct SrvParticleInputStage final {
     [[nodiscard]] blitzar_core::ParticleStateView State() const noexcept;
 };
 
-struct SrvPacketStoreRequest final {
+struct PacketStoreRequest final {
     blitzar_parallel::PacketBuffer& packets;
     blitzar_particles::ParticleArena& arena;
     blitzar_particles::ParticleBuffer& particles;
     blitzar_particles::AccelerationBuffer& accelerations;
-    blitzar_integration::LeapfrogWorkspace& workspace;
+    blitzar_integration::KdkCheckpoint& checkpoint;
     std::span<std::uint64_t> ids;
     std::size_t particle_count;
     std::size_t& local_count;
 };
 
-struct SrvArenaCaptureRequest final {
+struct ArenaCaptureRequest final {
     blitzar_particles::ParticleArena& arena;
     std::size_t local_count;
     std::span<const std::uint64_t> ids;
     blitzar_parallel::PacketBuffer& snapshot;
 };
 
-struct SrvArenaRestoreRequest final {
+struct ArenaRestoreRequest final {
     const blitzar_parallel::PacketBuffer& snapshot;
     blitzar_particles::ParticleArena& arena;
     blitzar_particles::ParticleBuffer& particles;
@@ -55,29 +55,29 @@ struct SrvArenaRestoreRequest final {
     std::size_t local_count;
 };
 
-[[nodiscard]] blitzar_status SrvStageParticleInput(
-    blitzar_core::ParticleStateView input, SrvParticleInputStage& stage) noexcept;
+[[nodiscard]] blitzar_status StageParticleInput(
+    blitzar_core::ParticleStateView input, ParticleInputStage& stage) noexcept;
 
 [[nodiscard]] blitzar_status SynchronizeSimulationStatus(
     const blitzar_parallel::MpiContext& context, blitzar_status local_status,
     const char* phase) noexcept;
 
-[[nodiscard]] blitzar_status SrvStoreGhosts(
+[[nodiscard]] blitzar_status StoreGhosts(
     blitzar_parallel::PacketBuffer& ghosts, blitzar_particles::SourceBuffer& source) noexcept;
 
-[[nodiscard]] blitzar_status SrvStoreLocalPackets(SrvPacketStoreRequest& request) noexcept;
+[[nodiscard]] blitzar_status StoreLocalPackets(PacketStoreRequest& request) noexcept;
 
-[[nodiscard]] blitzar_status SrvCopyPacketBuffer(
+[[nodiscard]] blitzar_status CopyPacketBuffer(
     const blitzar_parallel::PacketBuffer& source, blitzar_parallel::PacketBuffer& target) noexcept;
 
-[[nodiscard]] blitzar_status SrvCaptureArenaState(SrvArenaCaptureRequest& request) noexcept;
+[[nodiscard]] blitzar_status CaptureArenaState(ArenaCaptureRequest& request) noexcept;
 
-[[nodiscard]] blitzar_status SrvRestoreArenaState(SrvArenaRestoreRequest& request) noexcept;
+[[nodiscard]] blitzar_status RestoreArenaState(ArenaRestoreRequest& request) noexcept;
 
-[[nodiscard]] blitzar_status SrvCaptureForceState(
+[[nodiscard]] blitzar_status CaptureForceState(
     blitzar_core::ForceView force, blitzar_parallel::PacketBuffer& snapshot) noexcept;
 
-[[nodiscard]] blitzar_status SrvRestoreForceState(
+[[nodiscard]] blitzar_status RestoreForceState(
     const blitzar_parallel::PacketBuffer& snapshot, blitzar_core::ForceView force) noexcept;
 
 } // namespace blitzar_sdk

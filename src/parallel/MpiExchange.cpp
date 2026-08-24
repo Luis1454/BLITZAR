@@ -40,7 +40,7 @@ namespace {
 
 } // namespace
 
-MpiExchangeWorkspace::MpiExchangeWorkspace(std::size_t packet_capacity, std::size_t peer_count)
+ExchangeState::ExchangeState(std::size_t packet_capacity, std::size_t peer_count)
     : packet_capacity(packet_capacity), local_packets(), ordered_packets(),
       send_counts(peer_count, 0), receive_counts(peer_count, 0), send_displacements(peer_count, 0),
       receive_displacements(peer_count, 0), gather_counts(peer_count, 0),
@@ -54,7 +54,7 @@ MpiExchangeWorkspace::MpiExchangeWorkspace(std::size_t packet_capacity, std::siz
 MpiExchange::MpiExchange(const MpiContext& context, const DomainDecomposition& decomposition,
     std::size_t packet_capacity, std::size_t ghost_capacity)
     : context_(context), decomposition_(decomposition),
-      workspace_(packet_capacity, static_cast<std::size_t>(context.Size()))
+      state_(packet_capacity, static_cast<std::size_t>(context.Size()))
 {
     capacity_status_ = context_.PrepareCapacity(packet_capacity, ghost_exchange_, ghost_capacity);
 }
@@ -73,7 +73,7 @@ blitzar_status MpiExchange::BeginGhosts(blitzar_core::ParticleStateView local_st
         return status;
     }
 
-    const blitzar_status pack_status = PackLocal(local_state, local_ids, workspace_.local_packets);
+    const blitzar_status pack_status = PackLocal(local_state, local_ids, state_.local_packets);
 
     status = SynchronizeStatus(pack_status, "ghost-pack");
 
@@ -81,7 +81,7 @@ blitzar_status MpiExchange::BeginGhosts(blitzar_core::ParticleStateView local_st
         return status;
     }
 
-    status = context_.BeginGhostExchange(workspace_.local_packets.View(), exchange);
+    status = context_.BeginGhostExchange(state_.local_packets.View(), exchange);
     status = SynchronizeStatus(status, "ghost-begin");
 
     if (status != BLITZAR_STATUS_OK) {
@@ -173,18 +173,18 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
     }
 
     status = SynchronizeStatus(
-        PackLocal(local_state, local_ids, workspace_.local_packets), "migrate-pack");
+        PackLocal(local_state, local_ids, state_.local_packets), "migrate-pack");
 
     if (status != BLITZAR_STATUS_OK) {
         return status;
     }
     if (!context_.IsDistributed()) {
-        if (!received.EnsureCapacity(workspace_.local_packets.Size()) ||
-            !received.ResizeBounded(workspace_.local_packets.Size())) {
+        if (!received.EnsureCapacity(state_.local_packets.Size()) ||
+            !received.ResizeBounded(state_.local_packets.Size())) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
-        std::copy(workspace_.local_packets.View().begin(), workspace_.local_packets.View().end(),
+        std::copy(state_.local_packets.View().begin(), state_.local_packets.View().end(),
             received.View().begin());
 
         return BLITZAR_STATUS_OK;
@@ -192,23 +192,23 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
 
     const int size = context_.Size();
 
-    if (workspace_.send_counts.size() != static_cast<std::size_t>(size) ||
-        workspace_.receive_counts.size() != static_cast<std::size_t>(size) ||
-        workspace_.send_offsets.size() != static_cast<std::size_t>(size) ||
-        workspace_.receive_offsets.size() != static_cast<std::size_t>(size) ||
-        workspace_.send_displacements.size() != static_cast<std::size_t>(size) ||
-        workspace_.receive_displacements.size() != static_cast<std::size_t>(size) ||
-        workspace_.write_offsets.size() != static_cast<std::size_t>(size)) {
+    if (state_.send_counts.size() != static_cast<std::size_t>(size) ||
+        state_.receive_counts.size() != static_cast<std::size_t>(size) ||
+        state_.send_offsets.size() != static_cast<std::size_t>(size) ||
+        state_.receive_offsets.size() != static_cast<std::size_t>(size) ||
+        state_.send_displacements.size() != static_cast<std::size_t>(size) ||
+        state_.receive_displacements.size() != static_cast<std::size_t>(size) ||
+        state_.write_offsets.size() != static_cast<std::size_t>(size)) {
         return SynchronizeStatus(BLITZAR_STATUS_INVALID_ARGUMENT, "migrate-capacity");
     }
 
-    std::vector<int>& send_counts = workspace_.send_counts;
-    std::vector<int>& receive_counts = workspace_.receive_counts;
-    std::vector<std::size_t>& send_offsets = workspace_.send_offsets;
-    std::vector<std::size_t>& receive_offsets = workspace_.receive_offsets;
-    std::vector<int>& send_displacements = workspace_.send_displacements;
-    std::vector<int>& receive_displacements = workspace_.receive_displacements;
-    std::vector<std::size_t>& write_offsets = workspace_.write_offsets;
+    std::vector<int>& send_counts = state_.send_counts;
+    std::vector<int>& receive_counts = state_.receive_counts;
+    std::vector<std::size_t>& send_offsets = state_.send_offsets;
+    std::vector<std::size_t>& receive_offsets = state_.receive_offsets;
+    std::vector<int>& send_displacements = state_.send_displacements;
+    std::vector<int>& receive_displacements = state_.receive_displacements;
+    std::vector<std::size_t>& write_offsets = state_.write_offsets;
 
     blitzar_status preparation_status = BLITZAR_STATUS_OK;
 
@@ -218,7 +218,7 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
     std::fill(receive_offsets.begin(), receive_offsets.end(), 0);
 
     if (preparation_status == BLITZAR_STATUS_OK) {
-        for (const ParticlePacket& packet : workspace_.local_packets.View()) {
+        for (const ParticlePacket& packet : state_.local_packets.View()) {
             const int owner = decomposition_.Owner({packet.x, packet.y, packet.z}, packet.id);
 
             if (owner < 0 || owner >= size) {
@@ -260,18 +260,18 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
     }
 
     if (preparation_status == BLITZAR_STATUS_OK) {
-        if (!workspace_.ordered_packets.EnsureCapacity(send_total) ||
-            !workspace_.ordered_packets.ResizeBounded(send_total)) {
+        if (!state_.ordered_packets.EnsureCapacity(send_total) ||
+            !state_.ordered_packets.ResizeBounded(send_total)) {
             preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
         std::copy(send_offsets.begin(), send_offsets.end(), write_offsets.begin());
     }
     if (preparation_status == BLITZAR_STATUS_OK) {
-        for (const ParticlePacket& packet : workspace_.local_packets.View()) {
+        for (const ParticlePacket& packet : state_.local_packets.View()) {
             const int owner = decomposition_.Owner({packet.x, packet.y, packet.z}, packet.id);
 
-            workspace_.ordered_packets.View()[write_offsets[static_cast<std::size_t>(owner)]++] =
+            state_.ordered_packets.View()[write_offsets[static_cast<std::size_t>(owner)]++] =
                 packet;
         }
     }
@@ -339,7 +339,7 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
     }
 
     const AllToAllPacketRequest packet_request{
-        workspace_.ordered_packets.View(), send_counts, send_displacements, received.View(),
+        state_.ordered_packets.View(), send_counts, send_displacements, received.View(),
         receive_counts, receive_displacements};
 
     status = context_.AllToAllPackets(packet_request);
@@ -364,18 +364,18 @@ blitzar_status MpiExchange::Gather(blitzar_core::ParticleStateView local_state,
     }
 
     status = SynchronizeStatus(
-        PackLocal(local_state, local_ids, workspace_.local_packets), "gather-pack");
+        PackLocal(local_state, local_ids, state_.local_packets), "gather-pack");
 
     if (status != BLITZAR_STATUS_OK) {
         return status;
     }
     if (!context_.IsDistributed()) {
-        if (!gathered.EnsureCapacity(workspace_.local_packets.Size()) ||
-            !gathered.ResizeBounded(workspace_.local_packets.Size())) {
+        if (!gathered.EnsureCapacity(state_.local_packets.Size()) ||
+            !gathered.ResizeBounded(state_.local_packets.Size())) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
-        std::copy(workspace_.local_packets.View().begin(), workspace_.local_packets.View().end(),
+        std::copy(state_.local_packets.View().begin(), state_.local_packets.View().end(),
             gathered.View().begin());
 
         return BLITZAR_STATUS_OK;
@@ -384,17 +384,17 @@ blitzar_status MpiExchange::Gather(blitzar_core::ParticleStateView local_state,
     const int size = context_.Size();
     int local_count = 0;
 
-    if (workspace_.gather_counts.size() != static_cast<std::size_t>(size) ||
-        workspace_.gather_displacements.size() != static_cast<std::size_t>(size)) {
+    if (state_.gather_counts.size() != static_cast<std::size_t>(size) ||
+        state_.gather_displacements.size() != static_cast<std::size_t>(size)) {
         return SynchronizeStatus(BLITZAR_STATUS_INVALID_ARGUMENT, "gather-capacity");
     }
 
-    std::vector<int>& counts = workspace_.gather_counts;
-    std::vector<int>& displacements = workspace_.gather_displacements;
+    std::vector<int>& counts = state_.gather_counts;
+    std::vector<int>& displacements = state_.gather_displacements;
 
     blitzar_status preparation_status = BLITZAR_STATUS_OK;
 
-    if (!ToCount(workspace_.local_packets.Size(), local_count)) {
+    if (!ToCount(state_.local_packets.Size(), local_count)) {
         preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
@@ -449,7 +449,7 @@ blitzar_status MpiExchange::Gather(blitzar_core::ParticleStateView local_state,
     }
 
     status = context_.AllGatherPackets(
-        workspace_.local_packets.View(), gathered.View(), counts, displacements);
+        state_.local_packets.View(), gathered.View(), counts, displacements);
 
     status = SynchronizeStatus(status, "gather-packets");
 

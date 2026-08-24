@@ -44,7 +44,7 @@ struct BarnesHutSolver::TreeComputeRequest final {
     blitzar_core::ParticleStateView sources;
     blitzar_core::ForceView forces;
     blitzar_core::ExecutionSettings settings;
-    ThreadWorkspace& workspace;
+    ThreadStackPool& stack_pool;
     bool accumulate{false};
     bool skip_self{false};
 };
@@ -65,7 +65,7 @@ BarnesHutSolver::BarnesHutSolver(blitzar_physics::GravityParameters gravity,
       tree_(std::make_unique<blitzar_trees::Octree>(local_particle_capacity_, local_cell_capacity_,
           settings.leaf_capacity, settings.max_depth)),
       remote_tree_{},
-      workspace_(settings.max_cells, settings.max_depth), staging_(local_particle_capacity_)
+      stack_pool_(settings.max_cells, settings.max_depth), staging_(local_particle_capacity_)
 {
 }
 
@@ -235,12 +235,12 @@ blitzar_status BarnesHutSolver::Compute(blitzar_core::ParticleStateView particle
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    return Compute(particles, forces, settings, workspace_);
+    return Compute(particles, forces, settings, stack_pool_);
 }
 
 blitzar_status BarnesHutSolver::Compute(blitzar_core::ParticleStateView particles,
     blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-    ThreadWorkspace& workspace) noexcept
+    ThreadStackPool& stack_pool) noexcept
 {
     const blitzar_status prepare_status = Prepare(particles.count);
 
@@ -249,18 +249,18 @@ blitzar_status BarnesHutSolver::Compute(blitzar_core::ParticleStateView particle
     }
 
     const blitzar_status status =
-        ComputeTree({*tree_, particles, particles, forces, settings, workspace, false, true});
+        ComputeTree({*tree_, particles, particles, forces, settings, stack_pool, false, true});
 
     return status == BLITZAR_STATUS_OK ? CommitStagedForces(forces) : status;
 }
 
 blitzar_status BarnesHutSolver::ComputeSplit(const BarnesHutSplitRequest& request) noexcept
 {
-    return ComputeSplit(request, workspace_);
+    return ComputeSplit(request, stack_pool_);
 }
 
 blitzar_status BarnesHutSolver::ComputeSplit(
-    const BarnesHutSplitRequest& request, ThreadWorkspace& workspace) noexcept
+    const BarnesHutSplitRequest& request, ThreadStackPool& stack_pool) noexcept
 {
     const blitzar_status prepare_status = Prepare(request.local.count);
 
@@ -270,7 +270,7 @@ blitzar_status BarnesHutSolver::ComputeSplit(
 
     if (!settings_.IsValid() || request.remote.SourceCount() == 0) {
         const blitzar_status status = ComputeTree({*tree_, request.local, request.local,
-            request.forces, request.settings, workspace, false, true});
+            request.forces, request.settings, stack_pool, false, true});
 
         return status == BLITZAR_STATUS_OK ? CommitStagedForces(request.forces) : status;
     }
@@ -289,14 +289,14 @@ blitzar_status BarnesHutSolver::ComputeSplit(
     }
 
     const blitzar_status local_status = ComputeTree({*tree_, request.local, request.local,
-        request.forces, request.settings, workspace, false, true});
+        request.forces, request.settings, stack_pool, false, true});
 
     if (local_status != BLITZAR_STATUS_OK) {
         return local_status;
     }
 
     const blitzar_status remote_status = ComputeTree({*remote_tree_, request.local, request.remote,
-        request.forces, request.settings, workspace, true, false});
+        request.forces, request.settings, stack_pool, true, false});
 
     return remote_status == BLITZAR_STATUS_OK ? CommitStagedForces(request.forces) : remote_status;
 }
@@ -309,8 +309,8 @@ blitzar_status BarnesHutSolver::ComputeTree(const TreeComputeRequest& request) n
             (&request.tree == tree_.get() ? local_particle_capacity_ : settings_.max_particles) ||
         !IsValidState(request.targets) || !IsValidState(request.sources) ||
         !blitzar_core::IsValid(request.forces) ||
-        request.workspace.MaxCells() < settings_.max_cells ||
-        request.workspace.MaxDepth() < settings_.max_depth ||
+        request.stack_pool.MaxCells() < settings_.max_cells ||
+        request.stack_pool.MaxDepth() < settings_.max_depth ||
         staging_.size() < request.targets.count) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
@@ -346,7 +346,7 @@ blitzar_status BarnesHutSolver::ComputeTree(const TreeComputeRequest& request) n
         const std::size_t target = static_cast<std::size_t>(target_index);
         blitzar_core::Vector3 acceleration{};
         const AccumulationRequest accumulation{request.tree, request.targets, request.sources,
-            target, request.workspace.Stack(ThreadWorkspace::CurrentThread()), acceleration,
+            target, request.stack_pool.Stack(ThreadStackPool::CurrentThread()), acceleration,
             request.skip_self};
 
         const blitzar_status target_status = Accumulate(accumulation);

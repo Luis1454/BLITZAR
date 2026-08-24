@@ -10,10 +10,10 @@ Simulation::Simulation(std::size_t particle_count)
       mpi_exchange_(mpi_context_, domain_, LocalCapacity(particle_count, mpi_context_.Size()),
           particle_count),
       hip_context_(), arena_(LocalCapacity(particle_count, mpi_context_.Size())),
-      particles_(arena_), accelerations_(arena_), workspace_(arena_), source_{}, gravity_{},
+      particles_(arena_), accelerations_(arena_), checkpoint_(arena_), source_{}, gravity_{},
       barnes_hut_{
           0.5, particle_count == 0 ? 1 : particle_count, DefaultMaxCells(particle_count), 8, 32},
-      traversal_workspace_(barnes_hut_.max_cells, barnes_hut_.max_depth),
+      traversal_stacks_(barnes_hut_.max_cells, barnes_hut_.max_depth),
       solver_kind_(BLITZAR_SOLVER_DIRECT), integrator_kind_(BLITZAR_INTEGRATOR_LEAPFROG_KDK),
       timestep_(1.0), particles_ready_(false), execution_settings_{}, snapshot_header_{},
       last_status_(mpi_context_.Status()), last_backend_(BLITZAR_BACKEND_CPU),
@@ -38,7 +38,7 @@ Simulation::Simulation(std::size_t particle_count)
 
     if (particles_.SetCount(0) != BLITZAR_STATUS_OK ||
         accelerations_.SetCount(0) != BLITZAR_STATUS_OK ||
-        workspace_.SetCount(0) != BLITZAR_STATUS_OK) {
+        checkpoint_.SetCount(0) != BLITZAR_STATUS_OK) {
         throw std::length_error("simulation local capacity initialization failed");
     }
 

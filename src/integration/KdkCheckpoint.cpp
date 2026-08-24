@@ -1,21 +1,21 @@
-#include "integration/LeapfrogWorkspace.hpp"
+#include "integration/KdkCheckpoint.hpp"
 
 #include <utility>
 
 namespace blitzar_integration {
 
-LeapfrogWorkspace::LeapfrogWorkspace(std::size_t count)
+KdkCheckpoint::KdkCheckpoint(std::size_t count)
     : owned_arena_(std::make_unique<blitzar_particles::ParticleArena>(count)), borrowed_arena_(),
       count_(count)
 {
 }
 
-LeapfrogWorkspace::LeapfrogWorkspace(blitzar_particles::ParticleArena& arena)
+KdkCheckpoint::KdkCheckpoint(blitzar_particles::ParticleArena& arena)
     : owned_arena_(), borrowed_arena_(std::ref(arena)), count_(arena.Count())
 {
 }
 
-LeapfrogWorkspace::LeapfrogWorkspace(LeapfrogWorkspace&& other) noexcept
+KdkCheckpoint::KdkCheckpoint(KdkCheckpoint&& other) noexcept
     : owned_arena_(std::move(other.owned_arena_)), borrowed_arena_(other.borrowed_arena_),
       count_(other.count_)
 {
@@ -24,7 +24,7 @@ LeapfrogWorkspace::LeapfrogWorkspace(LeapfrogWorkspace&& other) noexcept
     other.count_ = 0;
 }
 
-LeapfrogWorkspace& LeapfrogWorkspace::operator=(LeapfrogWorkspace&& other) noexcept
+KdkCheckpoint& KdkCheckpoint::operator=(KdkCheckpoint&& other) noexcept
 {
     if (this != &other) {
         owned_arena_ = std::move(other.owned_arena_);
@@ -38,22 +38,22 @@ LeapfrogWorkspace& LeapfrogWorkspace::operator=(LeapfrogWorkspace&& other) noexc
     return *this;
 }
 
-bool LeapfrogWorkspace::HasArena() const noexcept
+bool KdkCheckpoint::HasArena() const noexcept
 {
     return owned_arena_ != nullptr || borrowed_arena_.has_value();
 }
 
-blitzar_particles::ParticleArena& LeapfrogWorkspace::Arena() const noexcept
+blitzar_particles::ParticleArena& KdkCheckpoint::Arena() const noexcept
 {
     return owned_arena_ != nullptr ? *owned_arena_ : borrowed_arena_->get();
 }
 
-std::size_t LeapfrogWorkspace::Count() const noexcept
+std::size_t KdkCheckpoint::Count() const noexcept
 {
     return count_;
 }
 
-blitzar_status LeapfrogWorkspace::SetCount(std::size_t count) noexcept
+blitzar_status KdkCheckpoint::SetCount(std::size_t count) noexcept
 {
     if (!HasArena() || count > Arena().Count()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -64,12 +64,12 @@ blitzar_status LeapfrogWorkspace::SetCount(std::size_t count) noexcept
     return BLITZAR_STATUS_OK;
 }
 
-bool LeapfrogWorkspace::IsValid() const noexcept
+bool KdkCheckpoint::IsValid() const noexcept
 {
     return !HasArena() ? count_ == 0 : count_ <= Arena().Count() && Arena().IsValid();
 }
 
-blitzar_status LeapfrogWorkspace::Capture(blitzar_core::MutableParticleView state) noexcept
+blitzar_status KdkCheckpoint::Capture(blitzar_core::MutableParticleView state) noexcept
 {
     if (state.count != count_ || !blitzar_core::IsValid(state)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -80,12 +80,12 @@ blitzar_status LeapfrogWorkspace::Capture(blitzar_core::MutableParticleView stat
 
     blitzar_particles::ParticleArena& arena = Arena();
 
-    const auto position_x = arena.WorkspacePositionX();
-    const auto position_y = arena.WorkspacePositionY();
-    const auto position_z = arena.WorkspacePositionZ();
-    const auto velocity_x = arena.WorkspaceVelocityX();
-    const auto velocity_y = arena.WorkspaceVelocityY();
-    const auto velocity_z = arena.WorkspaceVelocityZ();
+    const auto position_x = arena.CheckpointPositionX();
+    const auto position_y = arena.CheckpointPositionY();
+    const auto position_z = arena.CheckpointPositionZ();
+    const auto velocity_x = arena.CheckpointVelocityX();
+    const auto velocity_y = arena.CheckpointVelocityY();
+    const auto velocity_z = arena.CheckpointVelocityZ();
 
     for (std::size_t index = 0; index < count_; ++index) {
         position_x[index] = state.x[index];
@@ -99,7 +99,7 @@ blitzar_status LeapfrogWorkspace::Capture(blitzar_core::MutableParticleView stat
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_status LeapfrogWorkspace::Restore(blitzar_core::MutableParticleView state) noexcept
+blitzar_status KdkCheckpoint::Restore(blitzar_core::MutableParticleView state) noexcept
 {
     if (state.count != count_ || !blitzar_core::IsValid(state)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -110,12 +110,12 @@ blitzar_status LeapfrogWorkspace::Restore(blitzar_core::MutableParticleView stat
 
     blitzar_particles::ParticleArena& arena = Arena();
 
-    const auto position_x = arena.WorkspacePositionX();
-    const auto position_y = arena.WorkspacePositionY();
-    const auto position_z = arena.WorkspacePositionZ();
-    const auto velocity_x = arena.WorkspaceVelocityX();
-    const auto velocity_y = arena.WorkspaceVelocityY();
-    const auto velocity_z = arena.WorkspaceVelocityZ();
+    const auto position_x = arena.CheckpointPositionX();
+    const auto position_y = arena.CheckpointPositionY();
+    const auto position_z = arena.CheckpointPositionZ();
+    const auto velocity_x = arena.CheckpointVelocityX();
+    const auto velocity_y = arena.CheckpointVelocityY();
+    const auto velocity_z = arena.CheckpointVelocityZ();
 
     for (std::size_t index = 0; index < count_; ++index) {
         state.x[index] = position_x[index];

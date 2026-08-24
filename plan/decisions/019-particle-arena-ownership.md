@@ -6,7 +6,7 @@ Plan version: 1.0.6
 ## Decision
 
 `blitzar_sdk::Simulation` owns one `ParticleArena` by value. The particle,
-acceleration, and KDK workspace objects receive non-owning references to that
+acceleration, and KDK checkpoint objects receive non-owning references to that
 arena and never extend its lifetime.
 
 The standalone size-based constructors used by focused unit tests retain

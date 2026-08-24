@@ -1,4 +1,4 @@
-#include "sdk/SrvState.hpp"
+#include "sdk/State.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -9,7 +9,7 @@
 
 namespace blitzar_sdk {
 
-blitzar_core::ParticleStateView SrvParticleInputStage::State() const noexcept
+blitzar_core::ParticleStateView ParticleInputStage::State() const noexcept
 {
     return {position_x.size(), std::span<const blitzar_core::Scalar>(position_x),
         std::span<const blitzar_core::Scalar>(position_y),
@@ -20,8 +20,8 @@ blitzar_core::ParticleStateView SrvParticleInputStage::State() const noexcept
         std::span<const blitzar_core::Scalar>(mass), position_x.size()};
 }
 
-blitzar_status SrvStageParticleInput(
-    blitzar_core::ParticleStateView input, SrvParticleInputStage& stage) noexcept
+blitzar_status StageParticleInput(
+    blitzar_core::ParticleStateView input, ParticleInputStage& stage) noexcept
 {
     const std::size_t count = input.count;
 
@@ -80,7 +80,7 @@ blitzar_status SynchronizeSimulationStatus(
     return synchronization_status == BLITZAR_STATUS_OK ? global_status : synchronization_status;
 }
 
-blitzar_status SrvStoreGhosts(
+blitzar_status StoreGhosts(
     blitzar_parallel::PacketBuffer& ghosts, blitzar_particles::SourceBuffer& source) noexcept
 {
     if (!source.IsValid()) {
@@ -130,7 +130,7 @@ blitzar_status SrvStoreGhosts(
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_status SrvStoreLocalPackets(SrvPacketStoreRequest& request) noexcept
+blitzar_status StoreLocalPackets(PacketStoreRequest& request) noexcept
 {
     if (request.packets.Size() > request.arena.Count() ||
         request.packets.Size() > request.ids.size()) {
@@ -150,7 +150,7 @@ blitzar_status SrvStoreLocalPackets(SrvPacketStoreRequest& request) noexcept
     const std::size_t count = request.packets.Size();
     const std::size_t previous_particle_count = request.particles.Count();
     const std::size_t previous_acceleration_count = request.accelerations.Count();
-    const std::size_t previous_workspace_count = request.workspace.Count();
+    const std::size_t previous_checkpoint_count = request.checkpoint.Count();
 
     if (request.particles.SetCount(count) != BLITZAR_STATUS_OK) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
@@ -160,10 +160,10 @@ blitzar_status SrvStoreLocalPackets(SrvPacketStoreRequest& request) noexcept
 
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
-    if (request.workspace.SetCount(count) != BLITZAR_STATUS_OK) {
+    if (request.checkpoint.SetCount(count) != BLITZAR_STATUS_OK) {
         (void)request.particles.SetCount(previous_particle_count);
         (void)request.accelerations.SetCount(previous_acceleration_count);
-        (void)request.workspace.SetCount(previous_workspace_count);
+        (void)request.checkpoint.SetCount(previous_checkpoint_count);
 
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
@@ -194,7 +194,7 @@ blitzar_status SrvStoreLocalPackets(SrvPacketStoreRequest& request) noexcept
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_status SrvCopyPacketBuffer(
+blitzar_status CopyPacketBuffer(
     const blitzar_parallel::PacketBuffer& source, blitzar_parallel::PacketBuffer& target) noexcept
 {
     if (!target.ResizeBounded(source.Size())) {
@@ -206,7 +206,7 @@ blitzar_status SrvCopyPacketBuffer(
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_status SrvCaptureArenaState(SrvArenaCaptureRequest& request) noexcept
+blitzar_status CaptureArenaState(ArenaCaptureRequest& request) noexcept
 {
     if (request.local_count > request.arena.Count() || request.local_count > request.ids.size()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -232,7 +232,7 @@ blitzar_status SrvCaptureArenaState(SrvArenaCaptureRequest& request) noexcept
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_status SrvRestoreArenaState(SrvArenaRestoreRequest& request) noexcept
+blitzar_status RestoreArenaState(ArenaRestoreRequest& request) noexcept
 {
     if (request.snapshot.Size() != request.local_count ||
         request.local_count > request.arena.Count() ||
@@ -268,7 +268,7 @@ blitzar_status SrvRestoreArenaState(SrvArenaRestoreRequest& request) noexcept
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_status SrvCaptureForceState(
+blitzar_status CaptureForceState(
     blitzar_core::ForceView force, blitzar_parallel::PacketBuffer& snapshot) noexcept
 {
     if (!blitzar_core::IsValid(force)) {
@@ -286,7 +286,7 @@ blitzar_status SrvCaptureForceState(
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_status SrvRestoreForceState(
+blitzar_status RestoreForceState(
     const blitzar_parallel::PacketBuffer& snapshot, blitzar_core::ForceView force) noexcept
 {
     if (!blitzar_core::IsValid(force) || snapshot.Size() != force.count) {

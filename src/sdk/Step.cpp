@@ -1,8 +1,8 @@
 #include "sdk/Simulation.hpp"
 
-#include "sdk/SrvDispatch.hpp"
-#include "sdk/SrvState.hpp"
-#include "sdk/SrvTransaction.hpp"
+#include "sdk/Dispatch.hpp"
+#include "sdk/State.hpp"
+#include "sdk/Transaction.hpp"
 
 #include <cmath>
 #include <cstddef>
@@ -29,15 +29,14 @@ template <typename Solver>
 blitzar_status Simulation::StepLocal(Solver& solver) noexcept
 {
     using SolverType = std::remove_reference_t<decltype(solver)>;
-    using Dispatcher = SrvSolverDispatcher<SolverType>;
+    using Dispatcher = SolverDispatcher<SolverType>;
 
     Dispatcher dispatcher(
-        SrvSolverDispatchContext<SolverType>{hip_context_, solver, gravity_, barnes_hut_, last_backend_});
+        SolverDispatchContext<SolverType>{hip_context_, solver, gravity_, barnes_hut_, last_backend_});
 
-    blitzar_integration_kdk::AdvanceState<Dispatcher,
-        blitzar_barnes_hut::ThreadWorkspace>
-        advance_state{particles_, accelerations_, workspace_, dispatcher, timestep_,
-            execution_settings_, traversal_workspace_, particles_.State()};
+    blitzar_integration_kdk::AdvanceState<Dispatcher, blitzar_barnes_hut::ThreadStackPool>
+        advance_state{particles_, accelerations_, checkpoint_, dispatcher, timestep_,
+            execution_settings_, traversal_stacks_, particles_.State()};
 
     return integrator_.Advance(advance_state);
 }
@@ -47,12 +46,12 @@ blitzar_status Simulation::StepDistributed(Solver& solver) noexcept
 {
     const std::size_t rollback_particle_count = particles_.Count();
     const std::size_t rollback_acceleration_count = accelerations_.Count();
-    const std::size_t rollback_workspace_count = workspace_.Count();
+    const std::size_t rollback_checkpoint_count = checkpoint_.Count();
     const bool rollback_state_valid =
         rollback_particle_count == local_particle_count_ &&
         rollback_particle_count <= particle_ids_.size() &&
         rollback_particle_count == rollback_acceleration_count &&
-        rollback_particle_count == rollback_workspace_count &&
+        rollback_particle_count == rollback_checkpoint_count &&
         rollback_particle_count <= arena_.Count();
 
     const blitzar_status state_status = SynchronizeSimulationStatus(mpi_context_,
@@ -62,12 +61,12 @@ blitzar_status Simulation::StepDistributed(Solver& solver) noexcept
         return state_status;
     }
 
-    SrvTransactionState transaction_state{
-        arena_, particles_, accelerations_, workspace_,
+    TransactionState transaction_state{
+        arena_, particles_, accelerations_, checkpoint_,
         particle_ids_, local_particle_count_,
         exchange_buffer_, rollback_arena_buffer_, rollback_force_buffer_, rollback_exchange_buffer_};
 
-    SrvStepTransaction transaction(transaction_state);
+    StepTransaction transaction(transaction_state);
     blitzar_status prepare_status = transaction.Prepare();
 
     prepare_status = SynchronizeSimulationStatus(mpi_context_, prepare_status, "step-prepare");
@@ -81,7 +80,7 @@ blitzar_status Simulation::StepDistributed(Solver& solver) noexcept
     transaction.Begin();
 
     using SolverType = std::remove_reference_t<decltype(solver)>;
-    using Dispatcher = SrvDistributedDispatcher<SolverType>;
+    using Dispatcher = DistributedDispatcher<SolverType>;
     typename Dispatcher::State dispatcher_state{
         {hip_context_, solver, gravity_, barnes_hut_, last_backend_}, mpi_exchange_,
         source_, particle_ids_, exchange_buffer_,
@@ -97,10 +96,10 @@ blitzar_status Simulation::StepDistributed(Solver& solver) noexcept
         [this, &solver, rollback_particle_count](
             blitzar_particles::ParticleBuffer& current_particles,
             blitzar_particles::AccelerationBuffer& current_accelerations,
-            blitzar_integration::LeapfrogWorkspace& current_workspace)
+            blitzar_integration::KdkCheckpoint& current_checkpoint)
         -> blitzar_integration_kdk::DriftTransition {
         const blitzar_integration_kdk::DriftTransition transition = MigrateAfterDrift(
-            rollback_particle_count, current_particles, current_accelerations, current_workspace);
+            rollback_particle_count, current_particles, current_accelerations, current_checkpoint);
 
         if (transition.status != BLITZAR_STATUS_OK) {
             return transition;
@@ -115,10 +114,9 @@ blitzar_status Simulation::StepDistributed(Solver& solver) noexcept
                    : blitzar_integration_kdk::DriftTransition{synchronized_solver_status, false};
     };
 
-    blitzar_integration_kdk::AdvanceState<Dispatcher,
-        blitzar_barnes_hut::ThreadWorkspace>
-        advance_state{particles_, accelerations_, workspace_, dispatcher, timestep_,
-            execution_settings_, traversal_workspace_, particles_.State()};
+    blitzar_integration_kdk::AdvanceState<Dispatcher, blitzar_barnes_hut::ThreadStackPool>
+        advance_state{particles_, accelerations_, checkpoint_, dispatcher, timestep_,
+            execution_settings_, traversal_stacks_, particles_.State()};
 
     blitzar_integration_kdk::AdvanceHooks advance_hooks{migrate_after_drift, rollback};
 
@@ -140,12 +138,12 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
     std::size_t rollback_particle_count,
     blitzar_particles::ParticleBuffer& current_particles,
     blitzar_particles::AccelerationBuffer& current_accelerations,
-    blitzar_integration::LeapfrogWorkspace& current_workspace) noexcept
+    blitzar_integration::KdkCheckpoint& current_checkpoint) noexcept
 {
     const bool migration_state_valid =
         current_particles.Count() == rollback_particle_count &&
         current_accelerations.Count() == rollback_particle_count &&
-        current_workspace.Count() == rollback_particle_count &&
+        current_checkpoint.Count() == rollback_particle_count &&
         local_particle_count_ == rollback_particle_count &&
         rollback_particle_count <= particle_ids_.size();
 
@@ -189,11 +187,11 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
         return {migration_status, false};
     }
 
-    SrvPacketStoreRequest migration_request{
-        migration_buffer_, arena_, current_particles, current_accelerations, current_workspace,
+    PacketStoreRequest migration_request{
+        migration_buffer_, arena_, current_particles, current_accelerations, current_checkpoint,
         std::span<std::uint64_t>(particle_ids_), particle_count_, local_particle_count_};
 
-    migration_status = SrvStoreLocalPackets(migration_request);
+    migration_status = StoreLocalPackets(migration_request);
     migration_status = SynchronizeSimulationStatus(
         mpi_context_, migration_status, "migrate-commit");
 

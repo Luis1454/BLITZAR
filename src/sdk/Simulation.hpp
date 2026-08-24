@@ -12,7 +12,7 @@
 #include "particles/ParticleBuffer.hpp"
 #include "particles/SourceBuffer.hpp"
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
-#include "solvers/barnes_hut/ThreadWorkspace.hpp"
+#include "solvers/barnes_hut/ThreadStackPool.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 
 #include <atomic>
@@ -76,7 +76,7 @@ private:
         std::size_t rollback_particle_count,
         blitzar_particles::ParticleBuffer& particles,
         blitzar_particles::AccelerationBuffer& accelerations,
-        blitzar_integration::LeapfrogWorkspace& workspace) noexcept;
+        blitzar_integration::KdkCheckpoint& checkpoint) noexcept;
 
     std::size_t particle_count_;
     blitzar_parallel::MpiContext mpi_context_;
@@ -86,11 +86,11 @@ private:
     blitzar_particles::ParticleArena arena_;
     blitzar_particles::ParticleBuffer particles_;
     blitzar_particles::AccelerationBuffer accelerations_;
-    blitzar_integration::LeapfrogWorkspace workspace_;
+    blitzar_integration::KdkCheckpoint checkpoint_;
     blitzar_particles::SourceBuffer source_;
     blitzar_physics::GravityParameters gravity_;
     blitzar_barnes_hut::BarnesHutSettings barnes_hut_;
-    blitzar_barnes_hut::ThreadWorkspace traversal_workspace_;
+    blitzar_barnes_hut::ThreadStackPool traversal_stacks_;
     blitzar_solver_kind solver_kind_;
     blitzar_integrator_kind integrator_kind_;
     blitzar_core::Scalar timestep_;

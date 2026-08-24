@@ -1,4 +1,4 @@
-#include "solvers/barnes_hut/ThreadWorkspace.hpp"
+#include "solvers/barnes_hut/ThreadStackPool.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -10,7 +10,7 @@
 
 namespace blitzar_barnes_hut {
 
-std::size_t ThreadWorkspace::DetectThreadCount() noexcept
+std::size_t ThreadStackPool::DetectThreadCount() noexcept
 {
 #if defined(_OPENMP)
     const int available_threads = omp_get_max_threads();
@@ -21,7 +21,7 @@ std::size_t ThreadWorkspace::DetectThreadCount() noexcept
 #endif
 }
 
-std::size_t ThreadWorkspace::CalculateStackCapacity(
+std::size_t ThreadStackPool::CalculateStackCapacity(
     std::size_t max_cells, std::size_t max_depth) noexcept
 {
     if (max_cells == 0) {
@@ -37,39 +37,39 @@ std::size_t ThreadWorkspace::CalculateStackCapacity(
     return std::min(max_cells, depth_capacity);
 }
 
-ThreadWorkspace::ThreadWorkspace(std::size_t max_cells, std::size_t max_depth)
+ThreadStackPool::ThreadStackPool(std::size_t max_cells, std::size_t max_depth)
     : max_cells_(max_cells), max_depth_(max_depth),
       stack_capacity_(CalculateStackCapacity(max_cells, max_depth)),
       thread_count_(DetectThreadCount()), storage_{}
 {
     if (stack_capacity_ != 0 &&
         thread_count_ > std::numeric_limits<std::size_t>::max() / stack_capacity_) {
-        throw std::length_error("Barnes-Hut workspace is too large");
+        throw std::length_error("Barnes-Hut thread stack pool is too large");
     }
     storage_.resize(thread_count_ * stack_capacity_);
 }
 
-std::size_t ThreadWorkspace::MaxCells() const noexcept
+std::size_t ThreadStackPool::MaxCells() const noexcept
 {
     return max_cells_;
 }
 
-std::size_t ThreadWorkspace::MaxDepth() const noexcept
+std::size_t ThreadStackPool::MaxDepth() const noexcept
 {
     return max_depth_;
 }
 
-std::size_t ThreadWorkspace::StackCapacity() const noexcept
+std::size_t ThreadStackPool::StackCapacity() const noexcept
 {
     return stack_capacity_;
 }
 
-std::size_t ThreadWorkspace::ThreadCount() const noexcept
+std::size_t ThreadStackPool::ThreadCount() const noexcept
 {
     return thread_count_;
 }
 
-std::span<std::size_t> ThreadWorkspace::Stack(std::size_t thread_index) noexcept
+std::span<std::size_t> ThreadStackPool::Stack(std::size_t thread_index) noexcept
 {
     if (thread_index >= thread_count_ || stack_capacity_ == 0) {
         return {};
@@ -79,7 +79,7 @@ std::span<std::size_t> ThreadWorkspace::Stack(std::size_t thread_index) noexcept
         thread_index * stack_capacity_, stack_capacity_);
 }
 
-std::size_t ThreadWorkspace::CurrentThread() noexcept
+std::size_t ThreadStackPool::CurrentThread() noexcept
 {
 #if defined(_OPENMP)
     const int thread_index = omp_get_thread_num();

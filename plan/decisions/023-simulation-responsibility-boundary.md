@@ -2,23 +2,25 @@
 
 Status: accepted
 Issue: #577
-Plan version: 1.0.7
+Plan version: 1.0.10
 
 ## Context
 
 `src/sdk/Simulation.cpp` mixed construction, solver configuration, particle state
 transfer, and local/distributed KDK execution. The previous extraction of
-`SrvState`, `SrvTransaction`, and `SrvDispatch` did not remove the remaining
-responsibility overlap.
+The first internal extraction used redundant server-oriented prefixes for SDK
+implementation files and helper types. Those names leaked an obsolete server
+boundary into the clean-room SDK and obscured the responsibility owned by the
+`src/sdk` module.
 
 ## Decision
 
 Keep `Simulation` as the composition root and distribute its implementation by
 behavior:
 
-- `SrvConfig.cpp` owns solver and runtime configuration mutators.
-- `SrvParticles.cpp` owns particle input commit and state output gathering.
-- `SrvStep.cpp` owns KDK dispatch, distributed transaction, and migration.
+- `Config.cpp` owns solver and runtime configuration mutators.
+- `Particles.cpp` owns particle input commit and state output gathering.
+- `Step.cpp` owns KDK dispatch, distributed transaction, and migration.
 - `Simulation.cpp` owns construction, narrow state accessors, and status storage.
 
 The internal API accepts cohesive view/configuration records instead of

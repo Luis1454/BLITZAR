@@ -2,7 +2,7 @@
 #define BLITZAR_INTEGRATION_LEAPFROG_KDK_HPP
 
 #include "core/Execution.hpp"
-#include "integration/LeapfrogWorkspace.hpp"
+#include "integration/KdkCheckpoint.hpp"
 #include "particles/ParticleBuffer.hpp"
 
 #include <cmath>
@@ -20,7 +20,7 @@ struct DriftTransition final {
 struct NoopDriftHook final {
     [[nodiscard]] DriftTransition operator()(blitzar_particles::ParticleBuffer&,
         blitzar_particles::AccelerationBuffer&,
-        blitzar_integration::LeapfrogWorkspace&) const noexcept
+        blitzar_integration::KdkCheckpoint&) const noexcept
     {
         return {};
     }
@@ -64,59 +64,59 @@ struct NoopRollbackHook final {
     return true;
 }
 
-[[nodiscard]] inline blitzar_status RestoreOr(blitzar_integration::LeapfrogWorkspace& workspace,
+[[nodiscard]] inline blitzar_status RestoreOr(blitzar_integration::KdkCheckpoint& checkpoint,
     blitzar_core::MutableParticleView state, blitzar_status status) noexcept
 {
-    const blitzar_status restore_status = workspace.Restore(state);
+    const blitzar_status restore_status = checkpoint.Restore(state);
 
     return restore_status == BLITZAR_STATUS_OK ? status : restore_status;
 }
 
 template <typename RollbackHook>
 [[nodiscard]] inline blitzar_status RestoreWithRollback(RollbackHook& rollback_hook,
-    blitzar_particles::ParticleBuffer& particles, blitzar_integration::LeapfrogWorkspace& workspace,
+    blitzar_particles::ParticleBuffer& particles, blitzar_integration::KdkCheckpoint& checkpoint,
     blitzar_status status) noexcept
 {
     rollback_hook();
 
-    return RestoreOr(workspace, particles.MutableView(), status);
+    return RestoreOr(checkpoint, particles.MutableView(), status);
 }
 
-template <typename Solver, typename Workspace> struct SolverComputeRequest final {
+template <typename Solver, typename Scratch> struct SolverComputeRequest final {
     Solver& solver;
     blitzar_core::ParticleStateView particles;
     blitzar_core::ForceView force;
     const blitzar_core::ExecutionSettings& settings;
-    Workspace& workspace;
+    Scratch& scratch;
 };
 
-template <typename Solver, typename Workspace>
+template <typename Solver, typename Scratch>
 [[nodiscard]] inline blitzar_status ComputeSolver(
-    const SolverComputeRequest<Solver, Workspace>& request) noexcept
+    const SolverComputeRequest<Solver, Scratch>& request) noexcept
 {
     if constexpr (requires(Solver& candidate, blitzar_core::ParticleStateView candidate_particles,
                       blitzar_core::ForceView candidate_force,
                       const blitzar_core::ExecutionSettings& candidate_settings,
-                      Workspace& candidate_workspace) {
+                      Scratch& candidate_scratch) {
                       candidate.Compute(candidate_particles, candidate_force, candidate_settings,
-                          candidate_workspace);
+                          candidate_scratch);
                   }) {
         return request.solver.Compute(
-            request.particles, request.force, request.settings, request.workspace);
+            request.particles, request.force, request.settings, request.scratch);
     }
     else {
         return request.solver.Compute(request.particles, request.force, request.settings);
     }
 }
 
-template <typename Solver, typename SolverWorkspace> struct AdvanceState final {
+template <typename Solver, typename SolverScratch> struct AdvanceState final {
     blitzar_particles::ParticleBuffer& particles;
     blitzar_particles::AccelerationBuffer& accelerations;
-    blitzar_integration::LeapfrogWorkspace& workspace;
+    blitzar_integration::KdkCheckpoint& checkpoint;
     Solver& solver;
     blitzar_core::Scalar timestep{};
     const blitzar_core::ExecutionSettings& settings;
-    SolverWorkspace& solver_workspace;
+    SolverScratch& solver_scratch;
     blitzar_core::ParticleStateView solver_particles;
 };
 
@@ -125,9 +125,9 @@ template <typename DriftHook, typename RollbackHook> struct AdvanceHooks final {
     RollbackHook& rollback;
 };
 
-template <typename Solver, typename SolverWorkspace, typename DriftHook, typename RollbackHook>
+template <typename Solver, typename SolverScratch, typename DriftHook, typename RollbackHook>
 struct AdvanceRequest final {
-    AdvanceState<Solver, SolverWorkspace>& state;
+    AdvanceState<Solver, SolverScratch>& state;
     AdvanceHooks<DriftHook, RollbackHook>& hooks;
 };
 
@@ -137,9 +137,9 @@ namespace blitzar_integration {
 
 class LeapfrogKdk final {
 public:
-    template <typename Solver, typename SolverWorkspace>
+    template <typename Solver, typename SolverScratch>
     [[nodiscard]] blitzar_status Advance(
-        blitzar_integration_kdk::AdvanceState<Solver, SolverWorkspace>& state) const noexcept
+        blitzar_integration_kdk::AdvanceState<Solver, SolverScratch>& state) const noexcept
     {
         blitzar_integration_kdk::NoopDriftHook drift_hook;
         blitzar_integration_kdk::NoopRollbackHook rollback_hook;
@@ -149,17 +149,17 @@ public:
         return Advance(request);
     }
 
-    template <typename Solver, typename SolverWorkspace, typename DriftHook, typename RollbackHook>
+    template <typename Solver, typename SolverScratch, typename DriftHook, typename RollbackHook>
     [[nodiscard]] blitzar_status Advance(
-        blitzar_integration_kdk::AdvanceRequest<Solver, SolverWorkspace, DriftHook, RollbackHook>&
+        blitzar_integration_kdk::AdvanceRequest<Solver, SolverScratch, DriftHook, RollbackHook>&
             request) const noexcept
     {
         auto& state = request.state;
 
         if (!state.particles.IsValid() || !state.accelerations.IsValid() ||
-            !state.workspace.IsValid() ||
+            !state.checkpoint.IsValid() ||
             state.particles.Count() != state.accelerations.Count() ||
-            state.particles.Count() != state.workspace.Count() || !std::isfinite(state.timestep) ||
+            state.particles.Count() != state.checkpoint.Count() || !std::isfinite(state.timestep) ||
             state.timestep <= 0.0 || !state.settings.IsValid() ||
             !blitzar_integration_kdk::IsFiniteState(state.particles.State()) ||
             state.solver_particles.count != state.particles.Count() ||
@@ -168,7 +168,7 @@ public:
         }
 
         blitzar_core::MutableParticleView mutable_state = state.particles.MutableView();
-        blitzar_status status = state.workspace.Capture(mutable_state);
+        blitzar_status status = state.checkpoint.Capture(mutable_state);
 
         if (status != BLITZAR_STATUS_OK) {
             return status;
@@ -177,17 +177,17 @@ public:
         blitzar_core::ForceView force = state.accelerations.View();
 
         blitzar_integration_kdk::SolverComputeRequest compute_request{
-            state.solver, state.solver_particles, force, state.settings, state.solver_workspace};
+            state.solver, state.solver_particles, force, state.settings, state.solver_scratch};
 
         status = blitzar_integration_kdk::ComputeSolver(compute_request);
 
         if (status != BLITZAR_STATUS_OK) {
             return blitzar_integration_kdk::RestoreWithRollback(
-                request.hooks.rollback, state.particles, state.workspace, status);
+                request.hooks.rollback, state.particles, state.checkpoint, status);
         }
         if (!blitzar_integration_kdk::IsFiniteForce(force)) {
             return blitzar_integration_kdk::RestoreWithRollback(
-                request.hooks.rollback, state.particles, state.workspace,
+                request.hooks.rollback, state.particles, state.checkpoint,
                 BLITZAR_STATUS_INVALID_ARGUMENT);
         }
 
@@ -211,33 +211,33 @@ public:
 
         if (!blitzar_integration_kdk::IsFiniteState(state.particles.State())) {
             return blitzar_integration_kdk::RestoreWithRollback(
-                request.hooks.rollback, state.particles, state.workspace,
+                request.hooks.rollback, state.particles, state.checkpoint,
                 BLITZAR_STATUS_INVALID_ARGUMENT);
         }
 
         const blitzar_integration_kdk::DriftTransition transition =
-            request.hooks.drift(state.particles, state.accelerations, state.workspace);
+            request.hooks.drift(state.particles, state.accelerations, state.checkpoint);
 
         if (transition.status != BLITZAR_STATUS_OK) {
             return blitzar_integration_kdk::RestoreWithRollback(
-                request.hooks.rollback, state.particles, state.workspace, transition.status);
+                request.hooks.rollback, state.particles, state.checkpoint, transition.status);
         }
         if (transition.state_replaced) {
-            const std::size_t checkpoint_count = state.workspace.Count();
+            const std::size_t checkpoint_count = state.checkpoint.Count();
 
-            if (state.workspace.SetCount(state.particles.Count()) != BLITZAR_STATUS_OK) {
+            if (state.checkpoint.SetCount(state.particles.Count()) != BLITZAR_STATUS_OK) {
                 return blitzar_integration_kdk::RestoreWithRollback(
-                    request.hooks.rollback, state.particles, state.workspace,
+                    request.hooks.rollback, state.particles, state.checkpoint,
                     BLITZAR_STATUS_INTERNAL_ERROR);
             }
 
             mutable_state = state.particles.MutableView();
 
-            if (state.workspace.Capture(mutable_state) != BLITZAR_STATUS_OK) {
-                (void)state.workspace.SetCount(checkpoint_count);
+            if (state.checkpoint.Capture(mutable_state) != BLITZAR_STATUS_OK) {
+                (void)state.checkpoint.SetCount(checkpoint_count);
 
                 return blitzar_integration_kdk::RestoreWithRollback(
-                    request.hooks.rollback, state.particles, state.workspace,
+                    request.hooks.rollback, state.particles, state.checkpoint,
                     BLITZAR_STATUS_INTERNAL_ERROR);
             }
 
@@ -248,17 +248,17 @@ public:
         force = state.accelerations.View();
 
         const blitzar_integration_kdk::SolverComputeRequest second_compute_request{
-            state.solver, state.solver_particles, force, state.settings, state.solver_workspace};
+            state.solver, state.solver_particles, force, state.settings, state.solver_scratch};
 
         status = blitzar_integration_kdk::ComputeSolver(second_compute_request);
 
         if (status != BLITZAR_STATUS_OK) {
             return blitzar_integration_kdk::RestoreWithRollback(
-                request.hooks.rollback, state.particles, state.workspace, status);
+                request.hooks.rollback, state.particles, state.checkpoint, status);
         }
         if (!blitzar_integration_kdk::IsFiniteForce(force)) {
             return blitzar_integration_kdk::RestoreWithRollback(
-                request.hooks.rollback, state.particles, state.workspace,
+                request.hooks.rollback, state.particles, state.checkpoint,
                 BLITZAR_STATUS_INVALID_ARGUMENT);
         }
 #if defined(_OPENMP)
@@ -276,7 +276,7 @@ public:
 
         if (!blitzar_integration_kdk::IsFiniteState(state.particles.State())) {
             return blitzar_integration_kdk::RestoreWithRollback(
-                request.hooks.rollback, state.particles, state.workspace,
+                request.hooks.rollback, state.particles, state.checkpoint,
                 BLITZAR_STATUS_INVALID_ARGUMENT);
         }
 

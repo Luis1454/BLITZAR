@@ -100,28 +100,28 @@
       "decision": "The facade owns solver and runtime composition, so its dependency set is intentional and remains private to the SDK."
     },
     {
-      "path": "src/sdk/SrvDispatch.hpp",
+      "path": "src/sdk/Dispatch.hpp",
       "signals": ["branching"],
       "issue": 558,
       "status": "accepted",
       "decision": "Keep CPU, HIP fallback, and distributed dispatch policy in the dispatch responsibility."
     },
     {
-      "path": "src/sdk/SrvState.cpp",
+      "path": "src/sdk/State.cpp",
       "signals": ["branching"],
       "issue": 558,
       "status": "accepted",
       "decision": "Keep state staging and commit validation together; they publish the same arena ownership transition."
     },
     {
-      "path": "src/sdk/SrvStep.cpp",
+      "path": "src/sdk/Step.cpp",
       "signals": ["branching", "function_length"],
       "issue": 553,
       "status": "accepted",
       "decision": "Keep distributed step transaction, migration, and post-migration solver preparation together; they form one atomic KDK state transition."
     },
     {
-      "path": "src/sdk/SrvParticles.cpp",
+      "path": "src/sdk/Particles.cpp",
       "signals": ["branching", "function_length"],
       "issue": 553,
       "status": "accepted",

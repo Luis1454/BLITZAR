@@ -4,9 +4,9 @@
 #include "gpu/HipContext.hpp"
 #include "integration/LeapfrogKdk.hpp"
 #include "parallel/MpiTypes.hpp"
-#include "sdk/SrvDispatch.hpp"
-#include "sdk/SrvState.hpp"
-#include "sdk/SrvTransaction.hpp"
+#include "sdk/Dispatch.hpp"
+#include "sdk/State.hpp"
+#include "sdk/Transaction.hpp"
 #include "solvers/gpu/HipKernel.hpp"
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
 #include "solvers/direct/DirectSolver.hpp"
@@ -31,18 +31,18 @@ static_assert(std::is_aggregate_v<blitzar_gpu_detail::DirectLaunchRequest>);
 static_assert(std::is_aggregate_v<blitzar_gpu_detail::BarnesHutLaunchRequest>);
 
 using DirectSolver = blitzar_direct::DirectSolver;
-using SolverWorkspace = blitzar_barnes_hut::ThreadWorkspace;
+using SolverScratch = blitzar_barnes_hut::ThreadStackPool;
 
 static_assert(std::is_aggregate_v<
-              blitzar_integration_kdk::SolverComputeRequest<DirectSolver, SolverWorkspace>>);
+              blitzar_integration_kdk::SolverComputeRequest<DirectSolver, SolverScratch>>);
 static_assert(std::is_aggregate_v<
-              blitzar_integration_kdk::AdvanceState<DirectSolver, SolverWorkspace>>);
+              blitzar_integration_kdk::AdvanceState<DirectSolver, SolverScratch>>);
 static_assert(std::is_aggregate_v<blitzar_integration_kdk::AdvanceHooks<
               blitzar_integration_kdk::NoopDriftHook, blitzar_integration_kdk::NoopRollbackHook>>);
-static_assert(std::is_aggregate_v<blitzar_sdk::SrvPacketStoreRequest>);
-static_assert(std::is_aggregate_v<blitzar_sdk::SrvArenaCaptureRequest>);
-static_assert(std::is_aggregate_v<blitzar_sdk::SrvArenaRestoreRequest>);
-static_assert(std::is_aggregate_v<blitzar_sdk::SrvTransactionState>);
+static_assert(std::is_aggregate_v<blitzar_sdk::PacketStoreRequest>);
+static_assert(std::is_aggregate_v<blitzar_sdk::ArenaCaptureRequest>);
+static_assert(std::is_aggregate_v<blitzar_sdk::ArenaRestoreRequest>);
+static_assert(std::is_aggregate_v<blitzar_sdk::TransactionState>);
 
 int main()
 {
@@ -118,21 +118,21 @@ int main()
     blitzar_particles::ParticleArena arena(0);
     blitzar_particles::ParticleBuffer particle_buffer(arena);
     blitzar_particles::AccelerationBuffer acceleration_buffer(arena);
-    blitzar_integration::LeapfrogWorkspace workspace(arena);
+    blitzar_integration::KdkCheckpoint checkpoint(arena);
     blitzar_parallel::PacketBuffer exchange;
     std::array<std::uint64_t, 0> ids{};
     std::size_t local_count = 0;
-    blitzar_sdk::SrvParticleInputStage stage{};
+    blitzar_sdk::ParticleInputStage stage{};
 
-    const blitzar_sdk::SrvPacketStoreRequest store_request{exchange, arena, particle_buffer,
-        acceleration_buffer, workspace, ids, 0, local_count};
+    const blitzar_sdk::PacketStoreRequest store_request{exchange, arena, particle_buffer,
+        acceleration_buffer, checkpoint, ids, 0, local_count};
 
-    const blitzar_sdk::SrvArenaCaptureRequest capture_request{arena, 0, ids, exchange};
-    const blitzar_sdk::SrvArenaRestoreRequest restore_request{exchange, arena, particle_buffer, ids, 0};
+    const blitzar_sdk::ArenaCaptureRequest capture_request{arena, 0, ids, exchange};
+    const blitzar_sdk::ArenaRestoreRequest restore_request{exchange, arena, particle_buffer, ids, 0};
     std::vector<std::uint64_t> transaction_ids;
 
-    const blitzar_sdk::SrvTransactionState transaction_state{arena, particle_buffer,
-        acceleration_buffer, workspace, transaction_ids,
+    const blitzar_sdk::TransactionState transaction_state{arena, particle_buffer,
+        acceleration_buffer, checkpoint, transaction_ids,
         local_count, exchange, exchange, exchange, exchange};
 
     BLITZAR_CHECK(store_request.particle_count == 0);
@@ -145,12 +145,12 @@ int main()
     BLITZAR_CHECK(blitzar_core::IsValid(empty_stage));
 
     DirectSolver direct(gravity, 0);
-    SolverWorkspace solver_workspace(0, 0);
+    SolverScratch solver_scratch(0, 0);
     blitzar_integration_kdk::SolverComputeRequest compute_request{
-        direct, state, force, execution, solver_workspace};
+        direct, state, force, execution, solver_scratch};
 
-    blitzar_integration_kdk::AdvanceState<DirectSolver, SolverWorkspace> advance_state{
-        particle_buffer, acceleration_buffer, workspace, direct, 1.0, execution, solver_workspace,
+    blitzar_integration_kdk::AdvanceState<DirectSolver, SolverScratch> advance_state{
+        particle_buffer, acceleration_buffer, checkpoint, direct, 1.0, execution, solver_scratch,
         particle_buffer.State()};
 
     blitzar_integration_kdk::NoopDriftHook drift_hook;

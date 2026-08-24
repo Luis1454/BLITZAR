@@ -2,7 +2,7 @@
 #include "core/Execution.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
-#include "solvers/barnes_hut/ThreadWorkspace.hpp"
+#include "solvers/barnes_hut/ThreadStackPool.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 #include "trees/Octree.hpp"
 
@@ -49,13 +49,14 @@ int main()
     BLITZAR_CHECK(tree_solver.Compute(tree_particles.State(), tree_acceleration.View(),
                       execution) == BLITZAR_STATUS_OK);
 
-    blitzar_barnes_hut::ThreadWorkspace thread_workspace(settings.max_cells, settings.max_depth);
+    blitzar_barnes_hut::ThreadStackPool thread_stack_pool(
+        settings.max_cells, settings.max_depth);
 
-    BLITZAR_CHECK(thread_workspace.ThreadCount() > 0);
-    BLITZAR_CHECK(thread_workspace.StackCapacity() > 0);
-    BLITZAR_CHECK(thread_workspace.StackCapacity() <= settings.max_cells);
+    BLITZAR_CHECK(thread_stack_pool.ThreadCount() > 0);
+    BLITZAR_CHECK(thread_stack_pool.StackCapacity() > 0);
+    BLITZAR_CHECK(thread_stack_pool.StackCapacity() <= settings.max_cells);
     BLITZAR_CHECK(tree_solver.Compute(tree_particles.State(), tree_acceleration.View(), execution,
-                      thread_workspace) == BLITZAR_STATUS_OK);
+                      thread_stack_pool) == BLITZAR_STATUS_OK);
 
     BLITZAR_CHECK(tree_solver.Kind() == blitzar_core::SolverKind::BarnesHut);
 

@@ -1,17 +1,17 @@
-#include "sdk/SrvTransaction.hpp"
+#include "sdk/Transaction.hpp"
 
 namespace blitzar_sdk {
 
-SrvStepTransaction::SrvStepTransaction(SrvTransactionState state) noexcept
+StepTransaction::StepTransaction(TransactionState state) noexcept
     : arena_(state.arena), particles_(state.particles), accelerations_(state.accelerations),
-      workspace_(state.workspace), ids_(state.ids), local_count_(state.local_count),
+      checkpoint_(state.checkpoint), ids_(state.ids), local_count_(state.local_count),
       exchange_(state.exchange), arena_snapshot_(state.arena_snapshot),
       force_snapshot_(state.force_snapshot),
       exchange_snapshot_(state.exchange_snapshot)
 {
 }
 
-blitzar_status SrvStepTransaction::Prepare() noexcept
+blitzar_status StepTransaction::Prepare() noexcept
 {
     phase_ = Phase::Aborted;
 
@@ -21,20 +21,20 @@ blitzar_status SrvStepTransaction::Prepare() noexcept
 
     local_count_before_ = particles_.Count();
     acceleration_count_before_ = accelerations_.Count();
-    workspace_count_before_ = workspace_.Count();
+    checkpoint_count_before_ = checkpoint_.Count();
 
     if (!arena_.IsValid() || !particles_.IsValid() || !accelerations_.IsValid() ||
-        !workspace_.IsValid() || local_count_before_ != local_count_ ||
+        !checkpoint_.IsValid() || local_count_before_ != local_count_ ||
         local_count_before_ != acceleration_count_before_ ||
-        local_count_before_ != workspace_count_before_ ||
+        local_count_before_ != checkpoint_count_before_ ||
         local_count_before_ > arena_.Count() || local_count_before_ > ids_.size()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    SrvArenaCaptureRequest arena_request{
+    ArenaCaptureRequest arena_request{
         arena_, local_count_before_, std::span<const std::uint64_t>(ids_), arena_snapshot_};
 
-    blitzar_status status = SrvCaptureArenaState(arena_request);
+    blitzar_status status = CaptureArenaState(arena_request);
 
     if (status != BLITZAR_STATUS_OK) {
         ResetSnapshots();
@@ -42,7 +42,7 @@ blitzar_status SrvStepTransaction::Prepare() noexcept
         return status;
     }
 
-    status = SrvCaptureForceState(accelerations_.View(), force_snapshot_);
+    status = CaptureForceState(accelerations_.View(), force_snapshot_);
 
     if (status != BLITZAR_STATUS_OK) {
         ResetSnapshots();
@@ -50,7 +50,7 @@ blitzar_status SrvStepTransaction::Prepare() noexcept
         return status;
     }
 
-    status = SrvCopyPacketBuffer(exchange_, exchange_snapshot_);
+    status = CopyPacketBuffer(exchange_, exchange_snapshot_);
 
     if (status != BLITZAR_STATUS_OK) {
         ResetSnapshots();
@@ -63,21 +63,21 @@ blitzar_status SrvStepTransaction::Prepare() noexcept
     return BLITZAR_STATUS_OK;
 }
 
-void SrvStepTransaction::Begin() noexcept
+void StepTransaction::Begin() noexcept
 {
     if (phase_ == Phase::Prepared) {
         phase_ = Phase::InFlight;
     }
 }
 
-void SrvStepTransaction::Complete() noexcept
+void StepTransaction::Complete() noexcept
 {
     if (phase_ == Phase::InFlight) {
         phase_ = Phase::Complete;
     }
 }
 
-void SrvStepTransaction::Commit() noexcept
+void StepTransaction::Commit() noexcept
 {
     if (phase_ == Phase::Complete) {
         ResetSnapshots();
@@ -86,32 +86,32 @@ void SrvStepTransaction::Commit() noexcept
     }
 }
 
-void SrvStepTransaction::Abort() noexcept
+void StepTransaction::Abort() noexcept
 {
     if (phase_ == Phase::Committed || phase_ == Phase::Aborted) {
         return;
     }
 
-    SrvArenaRestoreRequest arena_request{
+    ArenaRestoreRequest arena_request{
         arena_snapshot_, arena_, particles_, std::span<std::uint64_t>(ids_), local_count_before_};
 
-    (void)SrvRestoreArenaState(arena_request);
+    (void)RestoreArenaState(arena_request);
 
     (void)accelerations_.SetCount(acceleration_count_before_);
-    (void)workspace_.SetCount(workspace_count_before_);
-    (void)SrvRestoreForceState(force_snapshot_, accelerations_.View());
+    (void)checkpoint_.SetCount(checkpoint_count_before_);
+    (void)RestoreForceState(force_snapshot_, accelerations_.View());
 
     local_count_ = local_count_before_;
 
-    (void)workspace_.Capture(particles_.MutableView());
-    (void)SrvCopyPacketBuffer(exchange_snapshot_, exchange_);
+    (void)checkpoint_.Capture(particles_.MutableView());
+    (void)CopyPacketBuffer(exchange_snapshot_, exchange_);
 
     ResetSnapshots();
 
     phase_ = Phase::Aborted;
 }
 
-void SrvStepTransaction::ResetSnapshots() noexcept
+void StepTransaction::ResetSnapshots() noexcept
 {
     arena_snapshot_.Clear();
     force_snapshot_.Clear();

@@ -1,18 +1,18 @@
-#ifndef BLITZAR_SDK_SRV_TRANSACTION_HPP
-#define BLITZAR_SDK_SRV_TRANSACTION_HPP
+#ifndef BLITZAR_SDK_TRANSACTION_HPP
+#define BLITZAR_SDK_TRANSACTION_HPP
 
-#include "sdk/SrvState.hpp"
+#include "sdk/State.hpp"
 
 #include <cstdint>
 #include <vector>
 
 namespace blitzar_sdk {
 
-struct SrvTransactionState final {
+struct TransactionState final {
     blitzar_particles::ParticleArena& arena;
     blitzar_particles::ParticleBuffer& particles;
     blitzar_particles::AccelerationBuffer& accelerations;
-    blitzar_integration::LeapfrogWorkspace& workspace;
+    blitzar_integration::KdkCheckpoint& checkpoint;
     std::vector<std::uint64_t>& ids;
     std::size_t& local_count;
     blitzar_parallel::PacketBuffer& exchange;
@@ -21,9 +21,9 @@ struct SrvTransactionState final {
     blitzar_parallel::PacketBuffer& exchange_snapshot;
 };
 
-class SrvStepTransaction final {
+class StepTransaction final {
 public:
-    explicit SrvStepTransaction(SrvTransactionState state) noexcept;
+    explicit StepTransaction(TransactionState state) noexcept;
 
     [[nodiscard]] blitzar_status Prepare() noexcept;
     void Begin() noexcept;
@@ -45,7 +45,7 @@ private:
     blitzar_particles::ParticleArena& arena_;
     blitzar_particles::ParticleBuffer& particles_;
     blitzar_particles::AccelerationBuffer& accelerations_;
-    blitzar_integration::LeapfrogWorkspace& workspace_;
+    blitzar_integration::KdkCheckpoint& checkpoint_;
     std::vector<std::uint64_t>& ids_;
     std::size_t& local_count_;
     blitzar_parallel::PacketBuffer& exchange_;
@@ -54,7 +54,7 @@ private:
     blitzar_parallel::PacketBuffer& exchange_snapshot_;
     std::size_t local_count_before_{0};
     std::size_t acceleration_count_before_{0};
-    std::size_t workspace_count_before_{0};
+    std::size_t checkpoint_count_before_{0};
     Phase phase_{Phase::Aborted};
 };
 

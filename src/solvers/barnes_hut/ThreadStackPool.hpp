@@ -1,5 +1,5 @@
-#ifndef BLITZAR_SOLVERS_BARNES_HUT_THREAD_WORKSPACE_HPP
-#define BLITZAR_SOLVERS_BARNES_HUT_THREAD_WORKSPACE_HPP
+#ifndef BLITZAR_SOLVERS_BARNES_HUT_THREAD_STACK_POOL_HPP
+#define BLITZAR_SOLVERS_BARNES_HUT_THREAD_STACK_POOL_HPP
 
 #include <cstddef>
 #include <span>
@@ -7,15 +7,15 @@
 
 namespace blitzar_barnes_hut {
 
-class ThreadWorkspace final {
+class ThreadStackPool final {
 public:
-    ThreadWorkspace(std::size_t max_cells, std::size_t max_depth);
+    ThreadStackPool(std::size_t max_cells, std::size_t max_depth);
 
-    ThreadWorkspace(const ThreadWorkspace&) = delete;
-    ThreadWorkspace& operator=(const ThreadWorkspace&) = delete;
-    ThreadWorkspace(ThreadWorkspace&&) noexcept = default;
-    ThreadWorkspace& operator=(ThreadWorkspace&&) noexcept = default;
-    ~ThreadWorkspace() = default;
+    ThreadStackPool(const ThreadStackPool&) = delete;
+    ThreadStackPool& operator=(const ThreadStackPool&) = delete;
+    ThreadStackPool(ThreadStackPool&&) noexcept = default;
+    ThreadStackPool& operator=(ThreadStackPool&&) noexcept = default;
+    ~ThreadStackPool() = default;
 
     [[nodiscard]] std::size_t MaxCells() const noexcept;
     [[nodiscard]] std::size_t MaxDepth() const noexcept;

@@ -1,5 +1,5 @@
-#ifndef BLITZAR_INTEGRATION_LEAPFROG_WORKSPACE_HPP
-#define BLITZAR_INTEGRATION_LEAPFROG_WORKSPACE_HPP
+#ifndef BLITZAR_INTEGRATION_KDK_CHECKPOINT_HPP
+#define BLITZAR_INTEGRATION_KDK_CHECKPOINT_HPP
 
 #include "core/Types.hpp"
 #include "particles/ParticleArena.hpp"
@@ -12,17 +12,17 @@
 
 namespace blitzar_integration {
 
-class LeapfrogWorkspace final {
+class KdkCheckpoint final {
 public:
-    explicit LeapfrogWorkspace(std::size_t count);
-    explicit LeapfrogWorkspace(blitzar_particles::ParticleArena& arena);
-    ~LeapfrogWorkspace() = default;
+    explicit KdkCheckpoint(std::size_t count);
+    explicit KdkCheckpoint(blitzar_particles::ParticleArena& arena);
+    ~KdkCheckpoint() = default;
 
-    LeapfrogWorkspace(const LeapfrogWorkspace&) = delete;
-    LeapfrogWorkspace& operator=(const LeapfrogWorkspace&) = delete;
+    KdkCheckpoint(const KdkCheckpoint&) = delete;
+    KdkCheckpoint& operator=(const KdkCheckpoint&) = delete;
 
-    LeapfrogWorkspace(LeapfrogWorkspace&& other) noexcept;
-    LeapfrogWorkspace& operator=(LeapfrogWorkspace&& other) noexcept;
+    KdkCheckpoint(KdkCheckpoint&& other) noexcept;
+    KdkCheckpoint& operator=(KdkCheckpoint&& other) noexcept;
 
     [[nodiscard]] std::size_t Count() const noexcept;
     [[nodiscard]] blitzar_status SetCount(std::size_t count) noexcept;

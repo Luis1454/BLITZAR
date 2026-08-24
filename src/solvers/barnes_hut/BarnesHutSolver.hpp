@@ -4,7 +4,7 @@
 #include "core/Execution.hpp"
 #include "core/Solver.hpp"
 #include "physics/GravityLaw.hpp"
-#include "solvers/barnes_hut/ThreadWorkspace.hpp"
+#include "solvers/barnes_hut/ThreadStackPool.hpp"
 #include "trees/Octree.hpp"
 
 #include <blitzar/blitzar.h>
@@ -43,10 +43,10 @@ public:
         blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings) noexcept;
     [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-        ThreadWorkspace& workspace) noexcept;
+        ThreadStackPool& stack_pool) noexcept;
     [[nodiscard]] blitzar_status ComputeSplit(const BarnesHutSplitRequest& request) noexcept;
     [[nodiscard]] blitzar_status ComputeSplit(
-        const BarnesHutSplitRequest& request, ThreadWorkspace& workspace) noexcept;
+        const BarnesHutSplitRequest& request, ThreadStackPool& stack_pool) noexcept;
 
 private:
     struct AccumulationRequest;
@@ -66,7 +66,7 @@ private:
     std::size_t local_cell_capacity_;
     std::unique_ptr<blitzar_trees::Octree> tree_;
     std::unique_ptr<blitzar_trees::Octree> remote_tree_;
-    ThreadWorkspace workspace_;
+    ThreadStackPool stack_pool_;
     std::vector<blitzar_core::Vector3> staging_;
 };
 

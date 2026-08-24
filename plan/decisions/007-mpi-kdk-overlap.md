@@ -21,7 +21,7 @@ are not additive by source range in the current tree contract.
 After Drift, a KDK transition hook migrates packets with `MPI_Alltoallv` before
 the second force evaluation. The hook validates the received packets, updates
 the local logical prefix and IDs, and reports a replaced state. The integrator
-then recaptures its workspace at the new ownership boundary so a second-force
+then recaptures its KDK checkpoint at the new ownership boundary so a second-force
 failure cannot apply a partial kick to the new local state.
 
 ## Consequences

@@ -13,8 +13,8 @@
 
 namespace blitzar_parallel {
 
-struct MpiExchangeWorkspace final {
-    MpiExchangeWorkspace(std::size_t packet_capacity, std::size_t peer_count);
+struct ExchangeState final {
+    ExchangeState(std::size_t packet_capacity, std::size_t peer_count);
 
     std::size_t packet_capacity{};
     PacketBuffer local_packets;
@@ -63,7 +63,7 @@ public:
 private:
     const MpiContext& context_;
     const DomainDecomposition& decomposition_;
-    mutable MpiExchangeWorkspace workspace_;
+    mutable ExchangeState state_;
     mutable MpiContext::GhostExchange ghost_exchange_;
     blitzar_status capacity_status_{BLITZAR_STATUS_OK};
 };
