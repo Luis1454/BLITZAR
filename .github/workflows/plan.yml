@@ -49,6 +49,9 @@ jobs:
       - name: Self-test statement grouping format
         run: python tools/format_blocks_test.py
 
+      - name: Self-test GDB runner command
+        run: python tools/gdb_runner_test.py
+
       - name: Reject unapproved plan edits
         if: github.event_name == 'pull_request'
         shell: bash
@@ -132,6 +135,55 @@ jobs:
 
       - name: Run sanitizer tests
         run: ctest --test-dir build-sanitizers --output-on-failure
+
+  gdb-debug:
+    name: Linux GDB debug qualification
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install GDB toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes gdb ninja-build
+
+      - name: Record capability
+        shell: bash
+        run: |
+          {
+            echo "## Capability record"
+            echo "- toolchain: $(gdb --version | head -n 1)"
+            echo "- backend: CPU Debug"
+            echo "- debugger: GDB batch mode"
+            echo "- device: none required"
+            echo "- skip reason: none"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Configure GDB build
+        shell: bash
+        run: |
+          cmake -S . -B build-gdb -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBLITZAR_HIP_MODE=OFF \
+            -DBLITZAR_MPI_MODE=OFF \
+            -DBLITZAR_ENABLE_OPENMP=OFF \
+            -DBLITZAR_ENABLE_SANITIZERS=OFF \
+            -DBLITZAR_BUILD_TESTS=ON \
+            -DBLITZAR_BUILD_CLI=OFF \
+            -DBLITZAR_BUILD_EXAMPLES=OFF
+
+      - name: Build GDB probes
+        run: cmake --build build-gdb --target blitzar_numerical_test blitzar_allocation_test --parallel
+
+      - name: Run numerical test under GDB
+        shell: bash
+        run: timeout --foreground 120s python tools/gdb_runner.py build-gdb/blitzar_numerical_test
+
+      - name: Run allocation test under GDB
+        shell: bash
+        run: timeout --foreground 120s python tools/gdb_runner.py build-gdb/blitzar_allocation_test
 
   static-analysis:
     name: Clang static analysis
