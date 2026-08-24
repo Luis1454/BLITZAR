@@ -19,6 +19,7 @@ file(MAKE_DIRECTORY "${source_dir}")
 execute_process(
     COMMAND "${CMAKE_COMMAND}" --install "${BLITZAR_BUILD_DIR}"
         --prefix "${install_prefix}"
+        --config Release
     RESULT_VARIABLE install_result
     OUTPUT_VARIABLE install_output
     ERROR_VARIABLE install_error)
@@ -75,6 +76,7 @@ endif()
 
 execute_process(
     COMMAND "${CMAKE_COMMAND}" --build "${consumer_build_dir}"
+        --config Release
     RESULT_VARIABLE build_result
     OUTPUT_VARIABLE build_output
     ERROR_VARIABLE build_error)
