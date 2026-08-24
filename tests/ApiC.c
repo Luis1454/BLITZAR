@@ -39,8 +39,8 @@ int main(void)
     BLITZAR_CHECK(
         blitzar_simulation_set_solver(simulation, BLITZAR_SOLVER_DIRECT) == BLITZAR_STATUS_OK);
 
-    BLITZAR_CHECK(blitzar_simulation_set_solver(simulation, BLITZAR_SOLVER_FMM) ==
-                  BLITZAR_STATUS_UNSUPPORTED);
+    BLITZAR_CHECK(
+        blitzar_simulation_set_solver(simulation, BLITZAR_SOLVER_FMM) == BLITZAR_STATUS_OK);
 
     BLITZAR_CHECK(blitzar_simulation_set_integrator(simulation, BLITZAR_INTEGRATOR_LEAPFROG_KDK) ==
                   BLITZAR_STATUS_OK);

@@ -161,6 +161,13 @@
       "issue": 575,
       "status": "accepted",
       "decision": "Keep octree build, validation, and traversal support together because they share cell/index ownership invariants."
+    },
+    {
+      "path": "src/solvers/fmm/FmmSolver.cpp",
+      "signals": ["branching", "function_count", "function_length"],
+      "issue": 540,
+      "status": "accepted",
+      "decision": "Keep multipole construction, deterministic traversal, transactional staging, and refit capacity management together because they form one bounded FMM solver contract."
     }
   ]
 }

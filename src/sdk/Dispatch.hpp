@@ -10,6 +10,7 @@
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
 #include "solvers/barnes_hut/ThreadStackPool.hpp"
 #include "solvers/direct/DirectSolver.hpp"
+#include "solvers/fmm/FmmSolver.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -52,7 +53,7 @@ public:
                 return gpu_status;
             }
         }
-        else {
+        else if constexpr (std::is_same_v<Solver, blitzar_barnes_hut::BarnesHutSolver>) {
             backend_.store(BLITZAR_BACKEND_HIP, std::memory_order_relaxed);
 
             const blitzar_status gpu_status =
@@ -64,6 +65,11 @@ public:
             if (gpu_status != BLITZAR_STATUS_UNSUPPORTED) {
                 return gpu_status;
             }
+        }
+        else {
+            backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
+
+            return cpu_.Compute(particles, forces, settings);
         }
 
         backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
@@ -91,7 +97,7 @@ public:
 
             return cpu_.Compute(particles, forces, settings);
         }
-        else {
+        else if constexpr (std::is_same_v<Solver, blitzar_barnes_hut::BarnesHutSolver>) {
             backend_.store(BLITZAR_BACKEND_HIP, std::memory_order_relaxed);
 
             const blitzar_status gpu_status =
@@ -107,6 +113,11 @@ public:
             backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
 
             return cpu_.Compute(particles, forces, settings, stack_pool);
+        }
+        else {
+            backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
+
+            return cpu_.Compute(particles, forces, settings);
         }
     }
 
@@ -153,7 +164,8 @@ public:
     [[nodiscard]] blitzar_status ComputeSplit(
         const blitzar_barnes_hut::BarnesHutSplitRequest& request) noexcept
     {
-        if constexpr (std::is_same_v<Solver, blitzar_barnes_hut::BarnesHutSolver>) {
+        if constexpr (std::is_same_v<Solver, blitzar_barnes_hut::BarnesHutSolver> ||
+                      std::is_same_v<Solver, blitzar_fmm::FmmSolver>) {
             backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
 
             return cpu_.ComputeSplit(request);
@@ -167,7 +179,8 @@ public:
         const blitzar_barnes_hut::BarnesHutSplitRequest& request,
         blitzar_barnes_hut::ThreadStackPool& stack_pool) noexcept
     {
-        if constexpr (std::is_same_v<Solver, blitzar_barnes_hut::BarnesHutSolver>) {
+        if constexpr (std::is_same_v<Solver, blitzar_barnes_hut::BarnesHutSolver> ||
+                      std::is_same_v<Solver, blitzar_fmm::FmmSolver>) {
             backend_.store(BLITZAR_BACKEND_CPU, std::memory_order_relaxed);
 
             return cpu_.ComputeSplit(request, stack_pool);
@@ -251,6 +264,9 @@ private:
     {
         if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
             return base_.ComputeRange(local_state, forces, settings, {0, local_state.count, false});
+        }
+        else if constexpr (std::is_same_v<Solver, blitzar_fmm::FmmSolver>) {
+            return base_.Compute(local_state, forces, settings);
         }
         else if (!stack_pool.empty()) {
             return base_.Compute(local_state, forces, settings, stack_pool.front());

@@ -29,7 +29,7 @@ int main()
 
     BLITZAR_CHECK(simulation.valid());
     BLITZAR_CHECK(simulation.set_solver(blitzar::SolverKind::Direct) == blitzar::Status::Ok);
-    BLITZAR_CHECK(simulation.set_solver(blitzar::SolverKind::Fmm) == blitzar::Status::Unsupported);
+    BLITZAR_CHECK(simulation.set_solver(blitzar::SolverKind::Fmm) == blitzar::Status::Ok);
     BLITZAR_CHECK(
         simulation.set_integrator(blitzar::IntegratorKind::LeapfrogKdk) == blitzar::Status::Ok);
 
