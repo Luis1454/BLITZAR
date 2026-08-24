@@ -15,6 +15,7 @@
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
 #include "solvers/barnes_hut/ThreadStackPool.hpp"
 #include "solvers/direct/DirectSolver.hpp"
+#include "solvers/fmm/FmmSolver.hpp"
 
 #include <atomic>
 #include <blitzar/blitzar.h>
@@ -51,7 +52,8 @@ public:
 
 private:
     using SolverVariant =
-        std::variant<blitzar_direct::DirectSolver, blitzar_barnes_hut::BarnesHutSolver>;
+        std::variant<blitzar_direct::DirectSolver, blitzar_barnes_hut::BarnesHutSolver,
+            blitzar_fmm::FmmSolver>;
 
     struct SolverCreationRequest;
 

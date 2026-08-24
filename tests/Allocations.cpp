@@ -90,6 +90,7 @@ int main()
 
         BLITZAR_CHECK(RunCase(simulation, BLITZAR_SOLVER_DIRECT));
         BLITZAR_CHECK(RunCase(simulation, BLITZAR_SOLVER_BARNES_HUT));
+        BLITZAR_CHECK(RunCase(simulation, BLITZAR_SOLVER_FMM));
     }
 
     BLITZAR_CHECK(RunSequentialContextCase());

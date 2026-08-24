@@ -53,6 +53,16 @@ blitzar_status Simulation::CreateSolver(
             return BLITZAR_STATUS_OK;
 
         case BLITZAR_SOLVER_FMM:
+
+            if (!request.barnes_hut.IsValid()) {
+                return BLITZAR_STATUS_INVALID_ARGUMENT;
+            }
+
+            solver.emplace<blitzar_fmm::FmmSolver>(
+                request.gravity, request.barnes_hut, request.staging_capacity);
+
+            return BLITZAR_STATUS_OK;
+
         case BLITZAR_SOLVER_PM:
         case BLITZAR_SOLVER_TREEPM:
 
@@ -184,7 +194,7 @@ blitzar_status Simulation::SetBarnesHut(
         return Remember(BLITZAR_STATUS_ALLOCATION_FAILURE);
     }
 
-    if (solver_kind_ == BLITZAR_SOLVER_BARNES_HUT) {
+    if (solver_kind_ == BLITZAR_SOLVER_BARNES_HUT || solver_kind_ == BLITZAR_SOLVER_FMM) {
         SolverVariant candidate_solver(std::in_place_type<blitzar_direct::DirectSolver>, gravity_);
         const blitzar_status status = RebuildSolver(gravity_, candidate_settings, candidate_solver);
 

@@ -102,6 +102,7 @@ target_sources(blitzar PRIVATE
     src/solvers/barnes_hut/BarnesHutSolver.cpp
     src/solvers/barnes_hut/ThreadStackPool.cpp
     src/solvers/direct/DirectSolver.cpp
+    src/solvers/fmm/FmmSolver.cpp
     src/trees/Octree.cpp
 )
 
@@ -282,6 +283,15 @@ if(BLITZAR_BUILD_TESTS)
     target_include_directories(blitzar_hierarchy_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     blitzar_enable_warnings(blitzar_hierarchy_test)
 
+    add_executable(blitzar_fmm_test
+        tests/AllocationMonitor.cpp
+        tests/Fmm.cpp
+    )
+    target_link_libraries(blitzar_fmm_test PRIVATE blitzar)
+    target_compile_features(blitzar_fmm_test PRIVATE cxx_std_20)
+    target_include_directories(blitzar_fmm_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    blitzar_enable_warnings(blitzar_fmm_test)
+
     add_executable(blitzar_numerical_test
         tests/Numerical.cpp
     )
@@ -319,6 +329,7 @@ if(BLITZAR_BUILD_TESTS)
     add_test(NAME TST-P1-001 COMMAND blitzar_dynamics_test)
     add_test(NAME TST-P1-003 COMMAND blitzar_allocation_test)
     add_test(NAME TST-P3-001 COMMAND blitzar_hierarchy_test)
+    add_test(NAME TST-P3-002 COMMAND blitzar_fmm_test)
     add_test(NAME TST-P1-002 COMMAND blitzar_numerical_test)
     add_test(NAME TST-P4-001 COMMAND blitzar_hip_test)
     if(BLITZAR_MPI_ENABLED)
