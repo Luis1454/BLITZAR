@@ -26,6 +26,7 @@ struct MpiGhostExchange::Impl final {
     bool active{false};
     std::size_t send_capacity{0};
     std::size_t receive_capacity{0};
+    MpiGhostExchange::TransferStats transfer{};
 #if defined(BLITZAR_HAS_MPI)
     std::vector<std::byte> local_wire;
     std::vector<std::byte> receive_wire;
@@ -195,6 +196,8 @@ void MpiGhostTransport::AbortExchange(MpiGhostExchange::Impl& state) noexcept
 #endif
 
     ClearExchange(state);
+
+    state.transfer = {};
 }
 
 MpiGhostExchange::MpiGhostExchange() noexcept = default;
@@ -221,6 +224,11 @@ MpiGhostExchange& MpiGhostExchange::operator=(MpiGhostExchange&& other) noexcept
     impl_ = std::move(other.impl_);
 
     return *this;
+}
+
+MpiGhostExchange::TransferStats MpiGhostExchange::Transfer() const noexcept
+{
+    return impl_ == nullptr ? TransferStats{} : impl_->transfer;
 }
 
 MpiGhostTransport::MpiGhostTransport(const MpiSession& session,
@@ -251,6 +259,7 @@ blitzar_status MpiGhostTransport::Prepare(MpiGhostExchange& exchange,
         }
 
         MpiGhostExchange::Impl& state = *exchange.impl_;
+        state.transfer = {};
 
         const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
         const std::size_t remote_peer_count = peer_count > 0 ? peer_count - 1 : 0;
@@ -403,6 +412,7 @@ blitzar_status MpiGhostTransport::Begin(
     std::size_t receive_request_count = 0;
     std::size_t send_request_count = 0;
     std::size_t receive_wire_size = 0;
+    std::size_t send_wire_size = 0;
 
     preparation_status = BLITZAR_STATUS_OK;
 
@@ -462,6 +472,14 @@ blitzar_status MpiGhostTransport::Begin(
         preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
+    if (preparation_status == BLITZAR_STATUS_OK && remote_peer_count != 0 &&
+        local_bytes > std::numeric_limits<std::size_t>::max() / remote_peer_count) {
+        preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    else if (preparation_status == BLITZAR_STATUS_OK) {
+        send_wire_size = local_bytes * remote_peer_count;
+    }
+
     if (preparation_status == BLITZAR_STATUS_OK &&
         (!EnsureCapacity(state.receive_wire, receive_wire_size) ||
             !ResizeWithinCapacity(state.receive_wire, receive_wire_size) ||
@@ -491,6 +509,7 @@ blitzar_status MpiGhostTransport::Begin(
                    : global_capacity_status;
     }
 
+    state.transfer = {send_wire_size, receive_wire_size};
     state.active = true;
 
     std::size_t receive_request_index = 0;

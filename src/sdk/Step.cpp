@@ -83,8 +83,8 @@ blitzar_status Simulation::StepDistributed(Solver& solver) noexcept
     using Dispatcher = DistributedDispatcher<SolverType>;
     typename Dispatcher::State dispatcher_state{
         {hip_context_, solver, gravity_, barnes_hut_, last_backend_}, mpi_exchange_,
-        source_, particle_ids_, exchange_buffer_,
-        mpi_exchange_.PersistentGhostExchange()};
+        source_, particle_ids_, exchange_buffer_, mpi_exchange_.PersistentGhostExchange(),
+        overlap_mode_, overlap_trace_};
 
     Dispatcher dispatcher(dispatcher_state);
     auto rollback = [&dispatcher, &transaction]() noexcept {

@@ -24,9 +24,14 @@ struct DirectDeviceRequest final {
     double* force_x;
     double* force_y;
     double* force_z;
+    const double* source_position_x;
+    const double* source_position_y;
+    const double* source_position_z;
+    const double* source_mass;
     std::size_t target_count;
     std::size_t source_begin;
     std::size_t source_end;
+    std::size_t source_global_begin;
     double gravitational_constant;
     double softening;
     bool accumulate;
@@ -47,10 +52,15 @@ __global__ void DirectKernel(DirectDeviceRequest request)
     double* force_x = request.force_x;
     double* force_y = request.force_y;
     double* force_z = request.force_z;
+    const double* source_position_x = request.source_position_x;
+    const double* source_position_y = request.source_position_y;
+    const double* source_position_z = request.source_position_z;
+    const double* source_mass = request.source_mass;
 
     const std::size_t target_count = request.target_count;
     const std::size_t source_begin = request.source_begin;
     const std::size_t source_end = request.source_end;
+    const std::size_t source_global_begin = request.source_global_begin;
     const double gravitational_constant = request.gravitational_constant;
     const double softening = request.softening;
     const bool accumulate = request.accumulate;
@@ -83,10 +93,10 @@ __global__ void DirectKernel(DirectDeviceRequest request)
         const std::size_t source = tile_begin + threadIdx.x;
 
         if (source < source_end) {
-            tile_x[threadIdx.x] = position_x[source];
-            tile_y[threadIdx.x] = position_y[source];
-            tile_z[threadIdx.x] = position_z[source];
-            tile_mass[threadIdx.x] = mass[source];
+            tile_x[threadIdx.x] = source_position_x[source];
+            tile_y[threadIdx.x] = source_position_y[source];
+            tile_z[threadIdx.x] = source_position_z[source];
+            tile_mass[threadIdx.x] = source_mass[source];
         }
         else {
             tile_x[threadIdx.x] = 0.0;
@@ -111,6 +121,7 @@ __global__ void DirectKernel(DirectDeviceRequest request)
 
             for (unsigned int offset = 0; offset < BlockSize; ++offset) {
                 const std::size_t source_index = tile_begin + offset;
+                const std::size_t global_source_index = source_global_begin + source_index;
 
                 if (source_index >= source_end) {
                     continue;
@@ -127,7 +138,7 @@ __global__ void DirectKernel(DirectDeviceRequest request)
 
                     continue;
                 }
-                if (source_index == target || source_mass == 0.0) {
+                if (global_source_index == target || source_mass == 0.0) {
                     continue;
                 }
 
@@ -216,6 +227,11 @@ blitzar_status LaunchDirect(const DirectLaunchRequest& request) noexcept
         addresses.force_z == 0) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+    if (range.source_begin != range.source_end &&
+        (addresses.source_position_x == 0 || addresses.source_position_y == 0 ||
+            addresses.source_position_z == 0 || addresses.source_mass == 0)) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
     if (target_count > std::numeric_limits<std::size_t>::max() - (BlockSize - 1)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
@@ -232,9 +248,13 @@ blitzar_status LaunchDirect(const DirectLaunchRequest& request) noexcept
         reinterpret_cast<const double*>(addresses.position_z),
         reinterpret_cast<const double*>(addresses.mass),
         reinterpret_cast<double*>(addresses.force_x), reinterpret_cast<double*>(addresses.force_y),
-        reinterpret_cast<double*>(addresses.force_z), target_count, range.source_begin,
-        range.source_end, physics.gravitational_constant, physics.softening, range.accumulate,
-        reinterpret_cast<int*>(runtime.error_address)};
+        reinterpret_cast<double*>(addresses.force_z),
+        reinterpret_cast<const double*>(addresses.source_position_x),
+        reinterpret_cast<const double*>(addresses.source_position_y),
+        reinterpret_cast<const double*>(addresses.source_position_z),
+        reinterpret_cast<const double*>(addresses.source_mass), target_count, range.source_begin,
+        range.source_end, request.source_global_begin, physics.gravitational_constant,
+        physics.softening, range.accumulate, reinterpret_cast<int*>(runtime.error_address)};
 
     hipLaunchKernelGGL(DirectKernel, dim3(static_cast<unsigned int>(block_count)), dim3(BlockSize),
         4 * BlockSize * sizeof(double), reinterpret_cast<hipStream_t>(runtime.stream),

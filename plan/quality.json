@@ -122,6 +122,12 @@
       "phase": "P8"
     },
     {
+      "id": "TST-P8-003",
+      "name": "mpi-overlap-timeline-volume-speedup-parity",
+      "command": "mpiexec -np 2 blitzar_mpi_test overlap",
+      "phase": "P8"
+    },
+    {
       "id": "TST-P2-004",
       "name": "installed-cmake-package-consumer",
       "command": "cmake -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/PackageConsumer.cmake",

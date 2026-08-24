@@ -72,14 +72,16 @@ struct HipContext::Impl final {
     bool tree_ready{};
     HipFault fault{HipFault::None};
 
-    [[nodiscard]] blitzar_status EnsureBuffers(
-        std::size_t particle_count, std::size_t cell_count) noexcept
+    [[nodiscard]] blitzar_status EnsureBuffers(std::size_t target_count,
+        std::size_t source_count, std::size_t cell_count) noexcept
     {
-        return buffers.Ensure(particle_count, cell_count) ? BLITZAR_STATUS_OK
-                                                          : BLITZAR_STATUS_ALLOCATION_FAILURE;
+        return buffers.Ensure(target_count, source_count, cell_count)
+                   ? BLITZAR_STATUS_OK
+                   : BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
 
-    [[nodiscard]] blitzar_status UploadState(blitzar_core::ParticleStateView particles) noexcept
+    [[nodiscard]] blitzar_status UploadFullState(
+        blitzar_core::ParticleStateView particles) noexcept
     {
         const std::array<std::span<const double>, 4> source{
             particles.x, particles.y, particles.z, particles.mass};
@@ -91,6 +93,87 @@ struct HipContext::Impl final {
             const hipError_t error = BlitzarHipMemcpyAsync(
                 {reinterpret_cast<void*>(buffers.DeviceParticle(index)),
                     reinterpret_cast<const void*>(buffers.HostParticle(index)),
+                    source[index].size_bytes(), hipMemcpyHostToDevice,
+                    reinterpret_cast<hipStream_t>(buffers.Stream())});
+
+            if (error != hipSuccess) {
+                buffers.Disable();
+
+                return HipStatus(error);
+            }
+        }
+
+        return BLITZAR_STATUS_OK;
+    }
+
+    [[nodiscard]] blitzar_status UploadTargetState(
+        blitzar_core::ParticleStateView particles) noexcept
+    {
+        const std::array<std::span<const double>, 4> source{
+            particles.x.first(particles.count), particles.y.first(particles.count),
+            particles.z.first(particles.count), particles.mass.first(particles.count)};
+
+        for (std::size_t index = 0; index < source.size(); ++index) {
+            std::copy(source[index].begin(), source[index].end(),
+                reinterpret_cast<double*>(buffers.HostParticle(index)));
+
+            const hipError_t error = BlitzarHipMemcpyAsync(
+                {reinterpret_cast<void*>(buffers.DeviceParticle(index)),
+                    reinterpret_cast<const void*>(buffers.HostParticle(index)),
+                    source[index].size_bytes(), hipMemcpyHostToDevice,
+                    reinterpret_cast<hipStream_t>(buffers.Stream())});
+
+            if (error != hipSuccess) {
+                buffers.Disable();
+
+                return HipStatus(error);
+            }
+        }
+
+        return BLITZAR_STATUS_OK;
+    }
+
+    [[nodiscard]] blitzar_status UploadSourceState(blitzar_core::ParticleStateView particles,
+        blitzar_core::ForceRange range) noexcept
+    {
+        const std::size_t source_count = range.source_end - range.source_begin;
+        const std::array<std::span<const double>, 4> source{
+            particles.x.subspan(range.source_begin, source_count),
+            particles.y.subspan(range.source_begin, source_count),
+            particles.z.subspan(range.source_begin, source_count),
+            particles.mass.subspan(range.source_begin, source_count)};
+
+        for (std::size_t index = 0; index < source.size(); ++index) {
+            std::copy(source[index].begin(), source[index].end(),
+                reinterpret_cast<double*>(buffers.HostSource(index)));
+
+            const hipError_t error = BlitzarHipMemcpyAsync(
+                {reinterpret_cast<void*>(buffers.DeviceSource(index)),
+                    reinterpret_cast<const void*>(buffers.HostSource(index)),
+                    source[index].size_bytes(), hipMemcpyHostToDevice,
+                    reinterpret_cast<hipStream_t>(buffers.Stream())});
+
+            if (error != hipSuccess) {
+                buffers.Disable();
+
+                return HipStatus(error);
+            }
+        }
+
+        return BLITZAR_STATUS_OK;
+    }
+
+    [[nodiscard]] blitzar_status UploadForces(blitzar_core::ForceView forces) noexcept
+    {
+        const std::array<std::span<const double>, 3> source{forces.x, forces.y, forces.z};
+
+        for (std::size_t index = 0; index < source.size(); ++index) {
+            std::copy(source[index].begin(), source[index].end(),
+                reinterpret_cast<double*>(buffers.HostForce(index)));
+
+            const hipError_t error = BlitzarHipMemcpyAsync(
+                {reinterpret_cast<void*>(buffers.DeviceForce(index)),
+                    reinterpret_cast<const void*>(buffers.HostForce(index)),
                     source[index].size_bytes(), hipMemcpyHostToDevice,
                     reinterpret_cast<hipStream_t>(buffers.Stream())});
 
@@ -156,13 +239,26 @@ struct HipContext::Impl final {
         blitzar_core::ForceView forces, blitzar_physics::GravityParameters gravity,
         blitzar_core::ForceRange range) noexcept
     {
-        const blitzar_status buffer_status = EnsureBuffers(particles.SourceCount(), 0);
+        const std::size_t source_count = range.source_end - range.source_begin;
+        const bool source_alias_target = range.source_begin == 0 &&
+                                         source_count == particles.count &&
+                                         particles.SourceCount() == particles.count;
+
+        const blitzar_status buffer_status =
+            EnsureBuffers(particles.count, source_alias_target ? 0 : source_count, 0);
 
         if (buffer_status != BLITZAR_STATUS_OK) {
             return buffer_status;
         }
 
-        blitzar_status status = UploadState(particles);
+        blitzar_status status = UploadTargetState(particles);
+
+        if (status == BLITZAR_STATUS_OK && !source_alias_target && source_count != 0) {
+            status = UploadSourceState(particles, range);
+        }
+        if (status == BLITZAR_STATUS_OK && range.accumulate) {
+            status = UploadForces(forces);
+        }
 
         if (status != BLITZAR_STATUS_OK) {
             return status;
@@ -176,15 +272,18 @@ struct HipContext::Impl final {
 
         const blitzar_gpu_detail::DeviceParticleAddresses addresses{buffers.DeviceParticle(0),
             buffers.DeviceParticle(1), buffers.DeviceParticle(2), buffers.DeviceParticle(3),
-            buffers.DeviceForce(0), buffers.DeviceForce(1), buffers.DeviceForce(2)};
+            buffers.DeviceForce(0), buffers.DeviceForce(1), buffers.DeviceForce(2),
+            source_alias_target ? buffers.DeviceParticle(0) : buffers.DeviceSource(0),
+            source_alias_target ? buffers.DeviceParticle(1) : buffers.DeviceSource(1),
+            source_alias_target ? buffers.DeviceParticle(2) : buffers.DeviceSource(2),
+            source_alias_target ? buffers.DeviceParticle(3) : buffers.DeviceSource(3)};
 
         const blitzar_gpu_detail::DirectLaunchRequest launch_request{
-            addresses, particles.count,
-            range,
+            addresses, particles.count, {0, source_count, range.accumulate},
 
             {gravity.EffectiveConstant(), gravity.EffectiveSoftening()},
 
-            {buffers.DeviceError(), buffers.Stream()}};
+            {buffers.DeviceError(), buffers.Stream()}, range.source_begin};
 
         status = blitzar_gpu_detail::LaunchDirect(launch_request);
 
@@ -259,7 +358,7 @@ struct HipContext::Impl final {
         const std::span<const blitzar_trees::Octree::Cell> cells = tree->Cells();
         const std::span<const std::size_t> indices = tree->Indices();
 
-        status = EnsureBuffers(particles.SourceCount(), cells.size());
+        status = EnsureBuffers(particles.SourceCount(), 0, cells.size());
 
         if (status != BLITZAR_STATUS_OK) {
             return status;
@@ -296,7 +395,7 @@ struct HipContext::Impl final {
             host_index_data[index] = static_cast<std::uint64_t>(indices[index]);
         }
 
-        status = UploadState(particles);
+        status = UploadFullState(particles);
 
         if (status != BLITZAR_STATUS_OK) {
             return status;

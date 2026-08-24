@@ -30,7 +30,7 @@ public:
 
     [[nodiscard]] bool Resize(std::size_t bytes) noexcept
     {
-        if (bytes == bytes_) {
+        if (bytes <= bytes_) {
             return true;
         }
 
@@ -81,7 +81,7 @@ public:
 
     [[nodiscard]] bool Resize(std::size_t bytes) noexcept
     {
-        if (bytes == bytes_) {
+        if (bytes <= bytes_) {
             return true;
         }
 
@@ -127,6 +127,8 @@ struct HipBuffers::Impl final {
     bool available{};
     std::array<PinnedAllocation, 4> host_particles;
     std::array<DeviceAllocation, 4> device_particles;
+    std::array<PinnedAllocation, 4> host_sources;
+    std::array<DeviceAllocation, 4> device_sources;
     std::array<PinnedAllocation, 3> host_forces;
     std::array<DeviceAllocation, 3> device_forces;
     PinnedAllocation host_error;
@@ -159,37 +161,49 @@ struct HipBuffers::Impl final {
         }
     }
 
-    [[nodiscard]] bool Ensure(std::size_t particle_count, std::size_t cell_count) noexcept
+    [[nodiscard]] bool Ensure(
+        std::size_t target_count, std::size_t source_count, std::size_t cell_count) noexcept
     {
         const std::size_t maximum = std::numeric_limits<std::size_t>::max();
 
-        if (particle_count > maximum / sizeof(double) ||
+        if (target_count > maximum / sizeof(double) || source_count > maximum / sizeof(double) ||
             cell_count > maximum / sizeof(blitzar_gpu_detail::GpuCell) ||
-            particle_count > maximum / sizeof(std::uint64_t)) {
+            target_count > maximum / sizeof(std::uint64_t)) {
             return false;
         }
 
-        const std::size_t scalar_bytes = particle_count * sizeof(double);
+        const std::size_t target_scalar_bytes = target_count * sizeof(double);
+        const std::size_t source_scalar_bytes = source_count * sizeof(double);
         const std::size_t cell_bytes = cell_count * sizeof(blitzar_gpu_detail::GpuCell);
-        const std::size_t index_bytes = particle_count * sizeof(std::uint64_t);
+        const std::size_t index_bytes = target_count * sizeof(std::uint64_t);
 
         for (PinnedAllocation& buffer : host_particles) {
-            if (!buffer.Resize(scalar_bytes)) {
+            if (!buffer.Resize(target_scalar_bytes)) {
                 return false;
             }
         }
         for (DeviceAllocation& buffer : device_particles) {
-            if (!buffer.Resize(scalar_bytes)) {
+            if (!buffer.Resize(target_scalar_bytes)) {
+                return false;
+            }
+        }
+        for (PinnedAllocation& buffer : host_sources) {
+            if (!buffer.Resize(source_scalar_bytes)) {
+                return false;
+            }
+        }
+        for (DeviceAllocation& buffer : device_sources) {
+            if (!buffer.Resize(source_scalar_bytes)) {
                 return false;
             }
         }
         for (PinnedAllocation& buffer : host_forces) {
-            if (!buffer.Resize(scalar_bytes)) {
+            if (!buffer.Resize(target_scalar_bytes)) {
                 return false;
             }
         }
         for (DeviceAllocation& buffer : device_forces) {
-            if (!buffer.Resize(scalar_bytes)) {
+            if (!buffer.Resize(target_scalar_bytes)) {
                 return false;
             }
         }
@@ -228,9 +242,11 @@ void HipBuffers::Disable() noexcept
     }
 }
 
-bool HipBuffers::Ensure(std::size_t particle_count, std::size_t cell_count) noexcept
+bool HipBuffers::Ensure(
+    std::size_t target_count, std::size_t source_count, std::size_t cell_count) noexcept
 {
-    return impl_ != nullptr && impl_->available && impl_->Ensure(particle_count, cell_count);
+    return impl_ != nullptr && impl_->available &&
+           impl_->Ensure(target_count, source_count, cell_count);
 }
 
 std::uintptr_t HipBuffers::Stream() const noexcept
@@ -250,6 +266,20 @@ std::uintptr_t HipBuffers::DeviceParticle(std::size_t index) const noexcept
     return impl_ == nullptr || index >= impl_->device_particles.size()
                ? 0
                : impl_->device_particles[index].Address();
+}
+
+std::uintptr_t HipBuffers::HostSource(std::size_t index) const noexcept
+{
+    return impl_ == nullptr || index >= impl_->host_sources.size()
+               ? 0
+               : impl_->host_sources[index].Address();
+}
+
+std::uintptr_t HipBuffers::DeviceSource(std::size_t index) const noexcept
+{
+    return impl_ == nullptr || index >= impl_->device_sources.size()
+               ? 0
+               : impl_->device_sources[index].Address();
 }
 
 std::uintptr_t HipBuffers::HostForce(std::size_t index) const noexcept

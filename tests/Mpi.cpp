@@ -373,6 +373,84 @@ struct StateArrays final {
     return local_ok;
 }
 
+[[nodiscard]] bool StatesMatch(const StateArrays& left, const StateArrays& right) noexcept
+{
+    for (std::size_t index = 0; index < ParticleCount; ++index) {
+        if (std::abs(left.x[index] - right.x[index]) >= 1.0e-10 ||
+            std::abs(left.y[index] - right.y[index]) >= 1.0e-10 ||
+            std::abs(left.z[index] - right.z[index]) >= 1.0e-10 ||
+            std::abs(left.velocity_x[index] - right.velocity_x[index]) >= 1.0e-10 ||
+            std::abs(left.velocity_y[index] - right.velocity_y[index]) >= 1.0e-10 ||
+            std::abs(left.velocity_z[index] - right.velocity_z[index]) >= 1.0e-10 ||
+            left.mass[index] != right.mass[index]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+[[nodiscard]] bool RunOverlapCase(blitzar_parallel::MpiContext& context) noexcept
+{
+    const StateArrays initial = InitialState();
+    blitzar_sdk::Simulation overlapped(ParticleCount);
+    blitzar_sdk::Simulation serialized(ParticleCount);
+
+    if (!Configure(overlapped, initial, 0.01) || !Configure(serialized, initial, 0.01)) {
+        return false;
+    }
+
+    overlapped.SetMpiOverlapForTesting(blitzar_parallel::MpiOverlapMode::Overlapped);
+    serialized.SetMpiOverlapForTesting(blitzar_parallel::MpiOverlapMode::Serialized);
+
+    if (overlapped.Step() != BLITZAR_STATUS_OK || serialized.Step() != BLITZAR_STATUS_OK) {
+        return false;
+    }
+
+    StateArrays overlapped_state{};
+    StateArrays serialized_state{};
+
+    if (overlapped.GetState(blitzar_tests::MakeOutputView(overlapped_state)) !=
+            BLITZAR_STATUS_OK ||
+        serialized.GetState(blitzar_tests::MakeOutputView(serialized_state)) !=
+            BLITZAR_STATUS_OK) {
+        return false;
+    }
+
+    const blitzar_parallel::MpiOverlapTrace& overlap_trace =
+        overlapped.LastMpiOverlapTrace();
+
+    const blitzar_parallel::MpiOverlapTrace& serialized_trace =
+        serialized.LastMpiOverlapTrace();
+
+    const bool parity = StatesMatch(overlapped_state, serialized_state);
+    const bool volume_match = overlap_trace.local_packets == serialized_trace.local_packets &&
+                              overlap_trace.ghost_packets == serialized_trace.ghost_packets &&
+                              overlap_trace.send_bytes == serialized_trace.send_bytes &&
+                              overlap_trace.receive_bytes == serialized_trace.receive_bytes;
+
+    const bool timeline_valid = overlap_trace.status == BLITZAR_STATUS_OK &&
+                                serialized_trace.status == BLITZAR_STATUS_OK &&
+                                overlap_trace.HasOverlap() && !serialized_trace.HasOverlap() &&
+                                overlap_trace.total_ns > 0 && serialized_trace.total_ns > 0;
+
+    const double speedup = static_cast<double>(serialized_trace.total_ns) /
+                           static_cast<double>(overlap_trace.total_ns);
+
+    if (context.Rank() == 0) {
+        std::fprintf(stdout,
+            "BLITZAR MPI overlap ranks=%d local_packets=%zu ghost_packets=%zu "
+            "send_bytes=%zu receive_bytes=%zu serialized_ns=%llu overlapped_ns=%llu "
+            "speedup=%.6f parity=%d\n",
+            context.Size(), overlap_trace.local_packets, overlap_trace.ghost_packets,
+            overlap_trace.send_bytes, overlap_trace.receive_bytes,
+            static_cast<unsigned long long>(serialized_trace.total_ns),
+            static_cast<unsigned long long>(overlap_trace.total_ns), speedup, parity ? 1 : 0);
+    }
+
+    return parity && volume_match && timeline_valid;
+}
+
 [[nodiscard]] bool RunAllocationCase() noexcept
 {
     const StateArrays initial = InitialState();
@@ -888,6 +966,7 @@ int RunTests(int argc, char** argv)
     const bool barnes_hut_case = mode == "barnes-hut-migration";
     const bool out_of_domain_case = mode == "out-of-domain";
     const bool large_count_case = mode == "large-count";
+    const bool overlap_case = mode == "overlap";
     const bool valid_world =
         context.IsUsable() &&
         (single_rank_case ? context.Size() == 1 : (context.Size() == 2 || context.Size() == 4));
@@ -905,11 +984,12 @@ int RunTests(int argc, char** argv)
     const bool collective_validation_case = RunCollectiveValidationCase(context);
     const bool out_of_domain_result = !out_of_domain_case || RunOutOfDomainCase();
     const bool large_count_result = !large_count_case || RunLargeCountValidationCase(context);
+    const bool overlap_result = !overlap_case || RunOverlapCase(context);
     const bool wire_codec_case = RunWireCodecCase();
     const bool local_ok = valid_world && local_case && allocation_case && rollback_case &&
                           boundary_case && error_synchronization_case && nested_context_case &&
                           collective_validation_case && out_of_domain_result &&
-                          large_count_result && wire_codec_case;
+                          large_count_result && overlap_result && wire_codec_case;
 
     ReportPeakResidentMemory(context, ParticleCount);
 
@@ -917,10 +997,11 @@ int RunTests(int argc, char** argv)
         std::fprintf(stderr,
             "MPI test failure rank=%d size=%d valid_world=%d local=%d "
             "allocation=%d rollback=%d boundary=%d error_sync=%d nested=%d collective=%d "
-            "out_of_domain=%d large_count=%d wire=%d\n",
+            "out_of_domain=%d large_count=%d overlap=%d wire=%d\n",
             context.Rank(), context.Size(), valid_world, local_case, allocation_case, rollback_case,
             boundary_case, error_synchronization_case, nested_context_case,
-            collective_validation_case, out_of_domain_result, large_count_result, wire_codec_case);
+            collective_validation_case, out_of_domain_result, large_count_result, overlap_result,
+            wire_codec_case);
     }
 
     int local_failure = local_ok ? 0 : 1;
