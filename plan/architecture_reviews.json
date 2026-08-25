@@ -23,13 +23,6 @@
       "decision": "Keep KDK transaction ordering in one integration contract; the branches are rollback and finite-state gates."
     },
     {
-      "path": "src/parallel/DomainDecomposition.cpp",
-      "signals": ["branching", "function_count", "function_length"],
-      "issue": 575,
-      "status": "accepted",
-      "decision": "Keep Morton partitioning and ownership validation together because they share the decomposition invariant."
-    },
-    {
       "path": "src/parallel/MpiCollectives.cpp",
       "signals": ["branching"],
       "issue": 553,
@@ -37,60 +30,32 @@
       "decision": "Keep scalar and status collective validation together; the branches protect one opaque MPI contract for root distribution and bounded exchanges."
     },
     {
-      "path": "src/parallel/MpiContext.cpp",
-      "signals": ["function_count"],
-      "issue": 575,
-      "status": "accepted",
-      "decision": "Keep MPI capability and collective adapters behind one opaque context boundary."
-    },
-    {
-      "path": "src/parallel/MpiSession.cpp",
+      "path": "src/parallel/MpiSessionInit.cpp",
       "signals": ["branching"],
-      "issue": 545,
+      "issue": 596,
       "status": "accepted",
       "decision": "Keep process-level MPI ownership and shutdown policy together; the branches guard initialization, external ownership, and process-exit finalization."
     },
     {
-      "path": "src/parallel/MpiExchange.cpp",
-      "signals": ["branching", "function_length"],
-      "issue": 575,
+      "path": "src/parallel/MpiGhostStorage.cpp",
+      "signals": ["allocation"],
+      "issue": 596,
       "status": "accepted",
-      "decision": "Keep packet migration and gather validation together; the long paths are bounded transport state machines."
+      "decision": "Allocations are restricted to PrepareStorage, before Begin/Complete execution; request, wire, and status capacities are then bounded and reused."
     },
     {
-      "path": "src/parallel/MpiGhostTransport.cpp",
-      "signals": ["allocation", "branching", "function_count", "function_length"],
-      "issue": 575,
+      "path": "src/sdk/ApiConfig.cpp",
+      "signals": ["parameter_count"],
+      "issue": 596,
       "status": "accepted",
-      "decision": "Keep non-blocking halo packing and completion in one responsibility; buffers are prepared before execution."
+      "decision": "The legacy C ABI fixes the exported Barnes-Hut setter at six parameters; internal conversion and application helpers stay within the four-parameter rule."
     },
     {
-      "path": "src/parallel/MpiPacketTransport.cpp",
-      "signals": ["branching", "function_count", "function_length"],
-      "issue": 553,
+      "path": "src/sdk/ApiParticles.cpp",
+      "signals": ["parameter_count"],
+      "issue": 596,
       "status": "accepted",
-      "decision": "Keep wire-format validation, dynamic capacity growth, and MPI packet transfer together because they protect one bounded packet contract."
-    },
-    {
-      "path": "src/particles/ParticleBuffer.cpp",
-      "signals": ["function_count"],
-      "issue": 575,
-      "status": "accepted",
-      "decision": "Keep the two bounded buffer facades together; their shared ownership and span contract are intentionally symmetric."
-    },
-    {
-      "path": "src/sdk/Api.cpp",
-      "signals": ["function_count"],
-      "issue": 575,
-      "status": "accepted",
-      "decision": "Keep the C ABI translation layer together; exported V1 shims and V2 validation are one ABI boundary."
-    },
-    {
-      "path": "src/sdk/CppApi.cpp",
-      "signals": ["function_count"],
-      "issue": 575,
-      "status": "accepted",
-      "decision": "Keep the move-only C++ facade adapters together; they are thin ownership-preserving calls into the C ABI."
+      "decision": "The legacy C ABI fixes the V1 particle setters/getters at nine parameters; V2 uses opaque view records and internal helpers stay within the four-parameter rule."
     },
     {
       "path": "src/sdk/Simulation.hpp",
@@ -107,25 +72,11 @@
       "decision": "Keep CPU, HIP fallback, distributed dispatch, and fixed-size overlap qualification in the dispatch responsibility; the added timeline state does not own transport or solver resources."
     },
     {
-      "path": "src/sdk/State.cpp",
-      "signals": ["branching"],
-      "issue": 558,
-      "status": "accepted",
-      "decision": "Keep state staging and commit validation together; they publish the same arena ownership transition."
-    },
-    {
       "path": "src/sdk/Step.cpp",
       "signals": ["function_length"],
       "issue": 553,
       "status": "accepted",
       "decision": "Keep distributed step transaction, migration, and post-migration solver preparation together; they form one atomic KDK state transition."
-    },
-    {
-      "path": "src/sdk/Particles.cpp",
-      "signals": ["branching", "function_length"],
-      "issue": 553,
-      "status": "accepted",
-      "decision": "Keep particle input commit and output gather together because both define the SDK to arena state boundary."
     },
     {
       "path": "src/solvers/barnes_hut/BarnesHutSolver.cpp",
