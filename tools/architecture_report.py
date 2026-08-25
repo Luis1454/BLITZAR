@@ -188,6 +188,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--output", type=pathlib.Path)
     parser.add_argument("--check", action="store_true")
+    parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--all", action="store_true", help="qualify every repository profile")
     arguments = parser.parse_args(argv)
     root = arguments.root.resolve()
@@ -227,7 +228,8 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, ValueError, json.JSONDecodeError, KeyError, TypeError) as error:
         print(f"architecture-report: {error}", file=sys.stderr)
         return 1
-    write_report(report, arguments.output)
+    if not arguments.quiet:
+        write_report(report, arguments.output)
     print(
         f"architecture-report: {len(report['files'])} files, "
         f"{len(report['review_required_paths'])} responsibility reviews required",

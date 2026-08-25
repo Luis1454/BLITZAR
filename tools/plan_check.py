@@ -9,6 +9,7 @@ import re
 import sys
 
 from naming_gate import validate as validate_naming_contract
+from architecture_sources import configured_paths, load_source_completeness
 
 
 DEFAULT_ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -367,10 +368,15 @@ def validate_quality_tests(phase_ids: set[str]) -> None:
         )
         return " ".join(normalized.split())
 
+    configured_cmake = load_source_completeness(ROOT)
+    cmake_text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in configured_paths(ROOT, configured_cmake["cmake_files"])
+    )
     cmake_tests = {
         test_id: normalize_cmake_command(command)
         for test_id, command in TEST_PATTERN.findall(
-            CMESSAGE.read_text(encoding="utf-8")
+            cmake_text
         )
     }
     if set(cmake_tests) != ids:

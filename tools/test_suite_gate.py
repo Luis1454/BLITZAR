@@ -10,6 +10,7 @@ import sys
 
 from architecture_metrics import scan_file_functions
 from argument_gate import strip_comments_and_literals
+from architecture_sources import configured_paths, load_source_completeness
 
 
 TEST_SOURCE_SUFFIXES = {".c", ".cc", ".cpp", ".cu", ".hip", ".h", ".hpp", ".inl"}
@@ -39,7 +40,11 @@ def quality_tests(root: pathlib.Path) -> dict[str, dict[str, object]]:
 
 
 def cmake_test_ids(root: pathlib.Path) -> set[str]:
-    source = (root / "CMakeLists.txt").read_text(encoding="utf-8")
+    configured = load_source_completeness(root)
+    source = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in configured_paths(root, configured["cmake_files"])
+    )
     return set(TEST_ID_PATTERN.findall(source))
 
 

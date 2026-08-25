@@ -6,15 +6,15 @@ set(BLITZAR_PLAN_VERSION "@BLITZAR_PLAN_VERSION@")
 
 include(CMakeFindDependencyMacro)
 
-if(@BLITZAR_ENABLE_OPENMP@)
+if("@BLITZAR_ENABLE_OPENMP@" STREQUAL "ON")
     find_dependency(OpenMP COMPONENTS CXX)
 endif()
 
-if(@BLITZAR_MPI_ENABLED@)
+if("@BLITZAR_MPI_ENABLED@" STREQUAL "ON")
     find_dependency(MPI COMPONENTS CXX)
 endif()
 
-if(@BLITZAR_HIP_ENABLED@)
+if("@BLITZAR_HIP_ENABLED@" STREQUAL "ON")
     if("@BLITZAR_HIP_LANGUAGE@" STREQUAL "CUDA")
         find_dependency(CUDAToolkit)
     endif()
