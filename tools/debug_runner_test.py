@@ -1,7 +1,14 @@
+from contextlib import redirect_stderr
+from io import StringIO
 import unittest
 from pathlib import Path
 
-from debug_runner import build_command, select_backend
+from debug_runner import (
+    build_command,
+    evaluate_exit_code,
+    parse_lldb_exit_status,
+    select_backend,
+)
 
 
 class DebugRunnerTests(unittest.TestCase):
@@ -47,6 +54,21 @@ class DebugRunnerTests(unittest.TestCase):
             select_backend("auto", "Darwin", {"lldb": "/usr/bin/lldb"}),
             ("lldb", "/usr/bin/lldb"),
         )
+
+    def test_expected_exit_code_turns_matching_probe_into_success(self) -> None:
+        executable = Path("build") / "status_probe"
+
+        self.assertEqual(evaluate_exit_code(7, 7, executable), 0)
+        errors = StringIO()
+        with redirect_stderr(errors):
+            self.assertEqual(evaluate_exit_code(0, 7, executable), 1)
+        self.assertIn("expected exit code 7", errors.getvalue())
+
+    def test_extracts_lldb_target_exit_status(self) -> None:
+        output = "Process 42 exited with status = 7 (0x00000007)"
+
+        self.assertEqual(parse_lldb_exit_status(output), 7)
+        self.assertIsNone(parse_lldb_exit_status("Process 42 stopped"))
 
 
 if __name__ == "__main__":

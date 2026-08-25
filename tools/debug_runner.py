@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -13,6 +14,7 @@ from pathlib import Path
 
 
 BACKENDS = ("gdb", "cdb", "lldb")
+LLDB_EXIT_STATUS_PATTERN = re.compile(r"Process \d+ exited with status = (-?\d+)")
 
 
 def candidate_backends(system_name: str) -> tuple[str, ...]:
@@ -136,10 +138,53 @@ def build_command(
     return builder(debugger, executable, arguments)
 
 
+def evaluate_exit_code(
+    actual: int, expected: int | None, executable: Path
+) -> int:
+    if expected is None:
+        return actual
+    if actual == expected:
+        return 0
+
+    print(
+        f"debug_runner: expected exit code {expected} from {executable}, got {actual}",
+        file=sys.stderr,
+    )
+    return 1
+
+
+def parse_lldb_exit_status(output: str) -> int | None:
+    matches = LLDB_EXIT_STATUS_PATTERN.findall(output)
+    if not matches:
+        return None
+    return int(matches[-1])
+
+
+def run_debugger(command: list[str], backend: str, timeout: float) -> int:
+    if backend != "lldb":
+        return subprocess.run(command, check=False, timeout=timeout).returncode
+
+    result = subprocess.run(
+        command,
+        check=False,
+        timeout=timeout,
+        capture_output=True,
+        text=True,
+    )
+    sys.stdout.write(result.stdout)
+    sys.stderr.write(result.stderr)
+
+    target_status = parse_lldb_exit_status(result.stdout + result.stderr)
+    if target_status is not None:
+        return target_status
+    return result.returncode
+
+
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", choices=("auto", *BACKENDS), default="auto")
     parser.add_argument("--timeout", type=float, default=120.0)
+    parser.add_argument("--expected-exit-code", type=int)
     parser.add_argument("--capability", action="store_true")
     parser.add_argument("executable", type=Path, nargs="?")
     parser.add_argument("arguments", nargs=argparse.REMAINDER)
@@ -179,7 +224,7 @@ def main() -> int:
     print(f"debug_runner: backend={backend} debugger={debugger}", file=sys.stderr)
 
     try:
-        result = subprocess.run(command, check=False, timeout=parsed.timeout)
+        result_code = run_debugger(command, backend, parsed.timeout)
     except subprocess.TimeoutExpired:
         print(
             f"debug_runner: timeout after {parsed.timeout:g}s: {parsed.executable}",
@@ -190,7 +235,9 @@ def main() -> int:
         print(f"debug_runner: failed to start debugger: {error}", file=sys.stderr)
         return 2
 
-    return result.returncode
+    return evaluate_exit_code(
+        result_code, parsed.expected_exit_code, parsed.executable
+    )
 
 
 if __name__ == "__main__":
