@@ -77,6 +77,12 @@ jobs:
       - name: Self-test MPI native boundary
         run: python tools/mpi_boundary_gate_test.py
 
+      - name: Validate pointer ownership boundary
+        run: python tools/pointer_ownership_gate.py --root . --check
+
+      - name: Self-test pointer ownership boundary
+        run: python tools/pointer_ownership_gate_test.py
+
       - name: Self-test cross-platform debug runner command
         run: python tools/debug_runner_test.py
 

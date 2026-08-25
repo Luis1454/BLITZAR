@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <memory>
 #include <span>
+#include <string_view>
 
 namespace blitzar_parallel {
 
@@ -39,7 +40,8 @@ public:
     [[nodiscard]] blitzar_status PrepareCapacity(std::size_t packet_capacity,
         GhostExchange& exchange, GhostCapacity ghost_capacity) const noexcept;
     [[nodiscard]] blitzar_status SynchronizeStatus(blitzar_status local_status,
-        const char* operation, const char* phase, blitzar_status& global_status) const noexcept;
+        std::string_view operation, std::string_view phase,
+        blitzar_status& global_status) const noexcept;
 
     [[nodiscard]] blitzar_status ReduceBounds(std::span<blitzar_core::Scalar> minimum,
         std::span<blitzar_core::Scalar> maximum) const noexcept;

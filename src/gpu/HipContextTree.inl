@@ -49,7 +49,8 @@ blitzar_status HipContext::Impl::PrepareTree(blitzar_core::ParticleStateView par
 blitzar_status HipContext::Impl::UploadTree(std::span<const blitzar_trees::Octree::Cell> cells,
     std::span<const std::size_t> indices) noexcept
 {
-    auto* host_cell_data = reinterpret_cast<blitzar_gpu_detail::GpuCell*>(buffers.HostCells());
+    const std::span<blitzar_gpu_detail::GpuCell> host_cell_data(
+        reinterpret_cast<blitzar_gpu_detail::GpuCell*>(buffers.HostCells()), cells.size());
 
     for (std::size_t index = 0; index < cells.size(); ++index) {
         const blitzar_trees::Octree::Cell& source = cells[index];
@@ -75,7 +76,8 @@ blitzar_status HipContext::Impl::UploadTree(std::span<const blitzar_trees::Octre
         }
     }
 
-    auto* host_index_data = reinterpret_cast<std::uint64_t*>(buffers.HostIndices());
+    const std::span<std::uint64_t> host_index_data(
+        reinterpret_cast<std::uint64_t*>(buffers.HostIndices()), indices.size());
 
     for (std::size_t index = 0; index < indices.size(); ++index) {
         host_index_data[index] = static_cast<std::uint64_t>(indices[index]);

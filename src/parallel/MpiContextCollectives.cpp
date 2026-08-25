@@ -2,8 +2,9 @@
 
 namespace blitzar_parallel {
 
-blitzar_status MpiContext::SynchronizeStatus(blitzar_status local_status, const char* operation,
-    const char* phase, blitzar_status& global_status) const noexcept
+blitzar_status MpiContext::SynchronizeStatus(blitzar_status local_status,
+    std::string_view operation, std::string_view phase,
+    blitzar_status& global_status) const noexcept
 {
     if (impl_ == nullptr) {
         global_status = status_;

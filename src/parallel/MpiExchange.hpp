@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <span>
+#include <string_view>
 #include <vector>
 
 namespace blitzar_parallel {
@@ -52,7 +53,7 @@ public:
         MpiContext::GhostExchange& exchange, PacketBuffer& ghosts) const noexcept;
     void AbortGhosts(MpiContext::GhostExchange& exchange, PacketBuffer& ghosts) const noexcept;
     [[nodiscard]] blitzar_status SynchronizeStatus(
-        blitzar_status local_status, const char* phase) const noexcept;
+        blitzar_status local_status, std::string_view phase) const noexcept;
 
     [[nodiscard]] blitzar_status Migrate(blitzar_core::ParticleStateView local_state,
         std::span<const std::uint64_t> local_ids, PacketBuffer& received) const noexcept;
