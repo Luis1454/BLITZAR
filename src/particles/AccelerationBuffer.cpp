@@ -1,4 +1,4 @@
-#include "particles/ParticleBuffer.hpp"
+#include "particles/AccelerationBuffer.hpp"
 
 #include <utility>
 

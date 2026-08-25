@@ -8,6 +8,7 @@
 #include "parallel/DomainDecomposition.hpp"
 #include "parallel/MpiExchange.hpp"
 #include "parallel/MpiTrace.hpp"
+#include "particles/AccelerationBuffer.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "particles/SourceBuffer.hpp"
 #include "sdk/SolverVariant.hpp"

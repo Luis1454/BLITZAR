@@ -1,4 +1,5 @@
 #include "parallel/MpiStatus.hpp"
+#include "particles/AccelerationBuffer.hpp"
 #include "sdk/PacketStoreRequest.hpp"
 #include "sdk/Simulation.hpp"
 

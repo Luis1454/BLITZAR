@@ -1,5 +1,6 @@
 #include "Check.hpp"
 #include "core/Execution.hpp"
+#include "particles/AccelerationBuffer.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
 #include "solvers/barnes_hut/ThreadStackPool.hpp"

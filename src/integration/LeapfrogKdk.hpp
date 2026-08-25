@@ -3,6 +3,7 @@
 
 #include "core/Execution.hpp"
 #include "integration/KdkCheckpoint.hpp"
+#include "particles/AccelerationBuffer.hpp"
 #include "particles/ParticleBuffer.hpp"
 
 #include <cmath>

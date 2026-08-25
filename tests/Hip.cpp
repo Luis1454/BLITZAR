@@ -1,6 +1,7 @@
 #include "Check.hpp"
 #include "Views.hpp"
 #include "gpu/HipContext.hpp"
+#include "particles/AccelerationBuffer.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "sdk/Simulation.hpp"
 #include "solvers/direct/DirectSolver.hpp"
