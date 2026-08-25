@@ -18,7 +18,7 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
                                        local_particle_count_ == rollback_particle_count &&
                                        rollback_particle_count <= particle_ids_.size();
 
-    blitzar_status migration_status = blitzar_parallel::SynchronizeStatus(mpi_context_,
+    blitzar_status migration_status = blitzar_parallel::SynchronizeStatus(runtime_.Mpi(),
         migration_state_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR,
         "migrate-preflight");
 
@@ -26,7 +26,7 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
         return {migration_status, false};
     }
 
-    migration_status = mpi_exchange_.Migrate(current_particles.State(),
+    migration_status = runtime_.Exchange().Migrate(current_particles.State(),
         std::span<const std::uint64_t>(particle_ids_).first(local_particle_count_),
         migration_buffer_);
 
@@ -36,19 +36,19 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
 
     migration_status = EnsureLocalCapacity(migration_buffer_.Size());
     migration_status =
-        blitzar_parallel::SynchronizeStatus(mpi_context_, migration_status, "migrate-capacity");
+        blitzar_parallel::SynchronizeStatus(runtime_.Mpi(), migration_status, "migrate-capacity");
 
     if (migration_status != BLITZAR_STATUS_OK) {
         return {migration_status, false};
     }
 
-    PacketStoreRequest migration_request{migration_buffer_, arena_, current_particles,
-        current_accelerations, current_checkpoint, std::span<std::uint64_t>(particle_ids_),
-        particle_count_, local_particle_count_};
+    PacketStoreRequest migration_request{migration_buffer_, particle_storage_.Arena(),
+        current_particles, current_accelerations, current_checkpoint,
+        std::span<std::uint64_t>(particle_ids_), particle_count_, local_particle_count_};
 
     migration_status = StoreLocalPackets(migration_request);
     migration_status =
-        blitzar_parallel::SynchronizeStatus(mpi_context_, migration_status, "migrate-commit");
+        blitzar_parallel::SynchronizeStatus(runtime_.Mpi(), migration_status, "migrate-commit");
 
     if (migration_status != BLITZAR_STATUS_OK) {
         return {migration_status, false};

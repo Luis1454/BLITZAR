@@ -16,7 +16,7 @@ namespace blitzar_sdk {
 
 template <typename Solver> class DistributedDispatcher final {
 public:
-    struct State final {
+    struct DispatchContext final {
         SolverDispatchContext<Solver> solver;
         blitzar_parallel::MpiExchange& exchange;
         blitzar_particles::SourceBuffer& sources;
@@ -27,7 +27,7 @@ public:
         blitzar_parallel::MpiOverlapTrace& overlap_trace;
     };
 
-    explicit DistributedDispatcher(State state) noexcept
+    explicit DistributedDispatcher(DispatchContext state) noexcept
         : base_(state.solver), exchange_(state.exchange), sources_(state.sources), ids_(state.ids),
           ghosts_(state.ghosts), halo_(state.halo), overlap_mode_(state.overlap_mode),
           overlap_trace_(state.overlap_trace)

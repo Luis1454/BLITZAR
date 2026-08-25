@@ -135,6 +135,8 @@ target_sources(blitzar PRIVATE
     src/sdk/CppSimulationConfig.cpp
     src/sdk/CppSimulationData.cpp
     src/sdk/Simulation.cpp
+    src/sdk/SimulationRuntime.cpp
+    src/sdk/ParticleStorage.cpp
     src/sdk/Config.cpp
     src/sdk/ParticleSet.cpp
     src/sdk/ParticleGet.cpp

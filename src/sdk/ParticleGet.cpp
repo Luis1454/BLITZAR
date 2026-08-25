@@ -25,7 +25,7 @@ bool Simulation::ValidateOutput(blitzar_core::ParticleOutputView output) const n
 
 blitzar_status Simulation::CopyLocalState(blitzar_core::ParticleOutputView output) const noexcept
 {
-    const blitzar_core::ParticleStateView state = particles_.State();
+    const blitzar_core::ParticleStateView state = particle_storage_.Particles().State();
 
     std::copy_n(state.x.begin(), particle_count_, output.x.begin());
     std::copy_n(state.y.begin(), particle_count_, output.y.begin());
@@ -40,9 +40,10 @@ blitzar_status Simulation::CopyLocalState(blitzar_core::ParticleOutputView outpu
 
 blitzar_status Simulation::GatherState(blitzar_core::ParticleOutputView output) const noexcept
 {
-    const blitzar_status gather_status = mpi_exchange_.Gather(particles_.State(),
-        std::span<const std::uint64_t>(particle_ids_).first(local_particle_count_),
-        gathered_buffer_);
+    const blitzar_status gather_status =
+        runtime_.Exchange().Gather(particle_storage_.Particles().State(),
+            std::span<const std::uint64_t>(particle_ids_).first(local_particle_count_),
+            gathered_buffer_);
 
     if (gather_status != BLITZAR_STATUS_OK || gathered_buffer_.Size() != particle_count_) {
         return gather_status == BLITZAR_STATUS_OK ? BLITZAR_STATUS_INTERNAL_ERROR : gather_status;
@@ -74,7 +75,7 @@ blitzar_status Simulation::GatherState(blitzar_core::ParticleOutputView output) 
 
 blitzar_status Simulation::GetState(blitzar_core::ParticleOutputView output) const noexcept
 {
-    blitzar_status status = blitzar_parallel::SynchronizeStatus(mpi_context_,
+    blitzar_status status = blitzar_parallel::SynchronizeStatus(runtime_.Mpi(),
         ValidateOutput(output) ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
         "get-state-preflight");
 
@@ -82,18 +83,18 @@ blitzar_status Simulation::GetState(blitzar_core::ParticleOutputView output) con
         return Remember(status);
     }
 
-    const bool local_state_valid = particles_.Count() == local_particle_count_ &&
+    const bool local_state_valid = particle_storage_.Particles().Count() == local_particle_count_ &&
                                    local_particle_count_ <= particle_ids_.size() &&
-                                   blitzar_core::IsValid(particles_.State());
+                                   blitzar_core::IsValid(particle_storage_.Particles().State());
 
-    status = blitzar_parallel::SynchronizeStatus(mpi_context_,
+    status = blitzar_parallel::SynchronizeStatus(runtime_.Mpi(),
         local_state_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR, "get-state-state");
 
     if (status != BLITZAR_STATUS_OK) {
         return Remember(status);
     }
 
-    status = mpi_context_.IsDistributed() ? GatherState(output) : CopyLocalState(output);
+    status = runtime_.Mpi().IsDistributed() ? GatherState(output) : CopyLocalState(output);
 
     return Remember(status);
 }

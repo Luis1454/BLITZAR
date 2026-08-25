@@ -3,14 +3,12 @@
 
 #include "core/Execution.hpp"
 #include "core/Snapshot.hpp"
-#include "gpu/HipContext.hpp"
 #include "integration/LeapfrogKdk.hpp"
 #include "parallel/DomainDecomposition.hpp"
-#include "parallel/MpiExchange.hpp"
 #include "parallel/MpiTrace.hpp"
-#include "particles/AccelerationBuffer.hpp"
-#include "particles/ParticleBuffer.hpp"
 #include "particles/SourceBuffer.hpp"
+#include "sdk/ParticleStorage.hpp"
+#include "sdk/SimulationRuntime.hpp"
 #include "sdk/SolverVariant.hpp"
 #include "solvers/barnes_hut/ThreadStackPool.hpp"
 
@@ -88,14 +86,8 @@ private:
         blitzar_integration::KdkCheckpoint& checkpoint) noexcept;
 
     std::size_t particle_count_;
-    blitzar_parallel::MpiContext mpi_context_;
-    blitzar_parallel::DomainDecomposition domain_;
-    blitzar_parallel::MpiExchange mpi_exchange_;
-    blitzar_gpu::HipContext hip_context_;
-    blitzar_particles::ParticleArena arena_;
-    blitzar_particles::ParticleBuffer particles_;
-    blitzar_particles::AccelerationBuffer accelerations_;
-    blitzar_integration::KdkCheckpoint checkpoint_;
+    SimulationRuntime runtime_;
+    ParticleStorage particle_storage_;
     blitzar_particles::SourceBuffer source_;
     blitzar_physics::GravityParameters gravity_;
     blitzar_barnes_hut::BarnesHutSettings barnes_hut_;

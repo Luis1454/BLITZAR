@@ -14,10 +14,11 @@ namespace blitzar_sdk {
 
 template <typename Solver> blitzar_status Simulation::StepDistributed(Solver& solver) noexcept
 {
-    const std::size_t rollback_particle_count = particles_.Count();
-    TransactionState transaction_state{arena_, particles_, accelerations_, checkpoint_,
-        particle_ids_, local_particle_count_, exchange_buffer_, rollback_arena_buffer_,
-        rollback_force_buffer_, rollback_exchange_buffer_};
+    const std::size_t rollback_particle_count = particle_storage_.Particles().Count();
+    TransactionState transaction_state{particle_storage_.Arena(), particle_storage_.Particles(),
+        particle_storage_.Accelerations(), particle_storage_.Checkpoint(), particle_ids_,
+        local_particle_count_, exchange_buffer_, rollback_arena_buffer_, rollback_force_buffer_,
+        rollback_exchange_buffer_};
 
     StepTransaction transaction(transaction_state);
 
@@ -33,12 +34,12 @@ template <typename Solver> blitzar_status Simulation::StepDistributed(Solver& so
 
     using SolverType = std::remove_reference_t<decltype(solver)>;
     using Dispatcher = DistributedDispatcher<SolverType>;
-    typename Dispatcher::State dispatcher_state{
-        {hip_context_, solver, gravity_, barnes_hut_, last_backend_}, mpi_exchange_, source_,
-        particle_ids_, exchange_buffer_, mpi_exchange_.PersistentGhostExchange(), overlap_mode_,
-        overlap_trace_};
+    typename Dispatcher::DispatchContext dispatcher_context{
+        {runtime_.Hip(), solver, gravity_, barnes_hut_, last_backend_}, runtime_.Exchange(),
+        source_, particle_ids_, exchange_buffer_, runtime_.Exchange().PersistentGhostExchange(),
+        overlap_mode_, overlap_trace_};
 
-    Dispatcher dispatcher(dispatcher_state);
+    Dispatcher dispatcher(dispatcher_context);
     auto rollback = [&dispatcher, &transaction]() noexcept {
         dispatcher.Abort();
         transaction.Abort();
@@ -58,7 +59,7 @@ template <typename Solver> blitzar_status Simulation::StepDistributed(Solver& so
 
         const blitzar_status solver_status = solver.Prepare(current_particles.Count());
         const blitzar_status synchronized_solver_status = blitzar_parallel::SynchronizeStatus(
-            mpi_context_, solver_status, "migrate-solver-capacity");
+            runtime_.Mpi(), solver_status, "migrate-solver-capacity");
 
         return synchronized_solver_status == BLITZAR_STATUS_OK
                    ? transition
@@ -66,8 +67,9 @@ template <typename Solver> blitzar_status Simulation::StepDistributed(Solver& so
     };
 
     blitzar_integration_kdk::AdvanceState<Dispatcher, blitzar_barnes_hut::ThreadStackPool>
-        advance_state{particles_, accelerations_, checkpoint_, dispatcher, timestep_,
-            execution_settings_, traversal_stacks_, particles_.State()};
+        advance_state{particle_storage_.Particles(), particle_storage_.Accelerations(),
+            particle_storage_.Checkpoint(), dispatcher, timestep_, execution_settings_,
+            traversal_stacks_, particle_storage_.Particles().State()};
 
     blitzar_integration_kdk::AdvanceHooks advance_hooks{migrate_after_drift, rollback};
     blitzar_integration_kdk::AdvanceRequest advance_request{advance_state, advance_hooks};
