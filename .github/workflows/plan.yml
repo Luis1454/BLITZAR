@@ -178,7 +178,7 @@ jobs:
             -DBLITZAR_BUILD_EXAMPLES=OFF
 
       - name: Build debugger probes
-        run: cmake --build build-debug --target blitzar_numerical_test blitzar_allocation_test --parallel
+        run: cmake --build build-debug --target blitzar_numerical_test blitzar_allocation_test blitzar_debug_status_probe --parallel
 
       - name: Run numerical test under debugger
         shell: bash
@@ -187,6 +187,10 @@ jobs:
       - name: Run allocation test under debugger
         shell: bash
         run: python tools/debug_runner.py --backend gdb --timeout 120 build-debug/blitzar_allocation_test
+
+      - name: Verify non-zero child status under debugger
+        shell: bash
+        run: python tools/debug_runner.py --backend gdb --expected-exit-code 7 --timeout 120 build-debug/blitzar_debug_status_probe
 
   windows-debug:
     name: Windows CDB debug qualification
@@ -239,13 +243,64 @@ jobs:
             -DBLITZAR_BUILD_EXAMPLES=OFF
 
       - name: Build debugger probes
-        run: cmake --build build-debug --target blitzar_numerical_test blitzar_allocation_test --parallel
+        run: cmake --build build-debug --target blitzar_numerical_test blitzar_allocation_test blitzar_debug_status_probe --parallel
 
       - name: Run numerical test under debugger
         run: python tools/debug_runner.py --backend cdb --timeout 120 build-debug/blitzar_numerical_test.exe
 
       - name: Run allocation test under debugger
         run: python tools/debug_runner.py --backend cdb --timeout 120 build-debug/blitzar_allocation_test.exe
+
+      - name: Verify non-zero child status under debugger
+        run: python tools/debug_runner.py --backend cdb --expected-exit-code 7 --timeout 120 build-debug/blitzar_debug_status_probe.exe
+
+  macos-debug:
+    name: macOS LLDB debug qualification
+    runs-on: macos-15-intel
+    needs: validate
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Record debugger capability
+        shell: bash
+        run: |
+          capability="$(python3 tools/debug_runner.py --backend lldb --capability)"
+          {
+            echo "## Capability record"
+            while IFS= read -r line; do echo "- $line"; done <<< "$capability"
+            echo "- backend: CPU Debug"
+            echo "- device: none required"
+            echo "- skip reason: none"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Configure debugger build
+        shell: bash
+        run: |
+          cmake -S . -B build-debug \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBLITZAR_HIP_MODE=OFF \
+            -DBLITZAR_MPI_MODE=OFF \
+            -DBLITZAR_ENABLE_OPENMP=OFF \
+            -DBLITZAR_ENABLE_SANITIZERS=OFF \
+            -DBLITZAR_BUILD_TESTS=ON \
+            -DBLITZAR_BUILD_CLI=OFF \
+            -DBLITZAR_BUILD_EXAMPLES=OFF
+
+      - name: Build debugger probes
+        run: cmake --build build-debug --target blitzar_numerical_test blitzar_allocation_test blitzar_debug_status_probe --parallel
+
+      - name: Run numerical test under debugger
+        shell: bash
+        run: python3 tools/debug_runner.py --backend lldb --timeout 120 build-debug/blitzar_numerical_test
+
+      - name: Run allocation test under debugger
+        shell: bash
+        run: python3 tools/debug_runner.py --backend lldb --timeout 120 build-debug/blitzar_allocation_test
+
+      - name: Verify non-zero child status under debugger
+        shell: bash
+        run: python3 tools/debug_runner.py --backend lldb --expected-exit-code 7 --timeout 120 build-debug/blitzar_debug_status_probe
 
   static-analysis:
     name: Clang static analysis

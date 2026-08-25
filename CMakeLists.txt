@@ -300,6 +300,13 @@ if(BLITZAR_BUILD_TESTS)
     target_include_directories(blitzar_numerical_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     blitzar_enable_warnings(blitzar_numerical_test)
 
+    add_executable(blitzar_debug_status_probe
+        tests/DebugStatus.cpp
+    )
+    target_link_libraries(blitzar_debug_status_probe PRIVATE blitzar)
+    target_compile_features(blitzar_debug_status_probe PRIVATE cxx_std_20)
+    blitzar_enable_warnings(blitzar_debug_status_probe)
+
     add_executable(blitzar_hip_test
         tests/Hip.cpp
     )

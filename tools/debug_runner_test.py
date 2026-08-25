@@ -1,7 +1,9 @@
+from contextlib import redirect_stderr
+from io import StringIO
 import unittest
 from pathlib import Path
 
-from debug_runner import build_command, select_backend
+from debug_runner import build_command, evaluate_exit_code, select_backend
 
 
 class DebugRunnerTests(unittest.TestCase):
@@ -47,6 +49,15 @@ class DebugRunnerTests(unittest.TestCase):
             select_backend("auto", "Darwin", {"lldb": "/usr/bin/lldb"}),
             ("lldb", "/usr/bin/lldb"),
         )
+
+    def test_expected_exit_code_turns_matching_probe_into_success(self) -> None:
+        executable = Path("build") / "status_probe"
+
+        self.assertEqual(evaluate_exit_code(7, 7, executable), 0)
+        errors = StringIO()
+        with redirect_stderr(errors):
+            self.assertEqual(evaluate_exit_code(0, 7, executable), 1)
+        self.assertIn("expected exit code 7", errors.getvalue())
 
 
 if __name__ == "__main__":

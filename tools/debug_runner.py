@@ -136,10 +136,26 @@ def build_command(
     return builder(debugger, executable, arguments)
 
 
+def evaluate_exit_code(
+    actual: int, expected: int | None, executable: Path
+) -> int:
+    if expected is None:
+        return actual
+    if actual == expected:
+        return 0
+
+    print(
+        f"debug_runner: expected exit code {expected} from {executable}, got {actual}",
+        file=sys.stderr,
+    )
+    return 1
+
+
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", choices=("auto", *BACKENDS), default="auto")
     parser.add_argument("--timeout", type=float, default=120.0)
+    parser.add_argument("--expected-exit-code", type=int)
     parser.add_argument("--capability", action="store_true")
     parser.add_argument("executable", type=Path, nargs="?")
     parser.add_argument("arguments", nargs=argparse.REMAINDER)
@@ -190,7 +206,9 @@ def main() -> int:
         print(f"debug_runner: failed to start debugger: {error}", file=sys.stderr)
         return 2
 
-    return result.returncode
+    return evaluate_exit_code(
+        result.returncode, parsed.expected_exit_code, parsed.executable
+    )
 
 
 if __name__ == "__main__":
