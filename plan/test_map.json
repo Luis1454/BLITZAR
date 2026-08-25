@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "policy": "one manifest id, one CTest registration, one executable entrypoint",
+  "cases": [
+    {
+      "id": "TST-P0-001",
+      "entrypoint": "tests/Lifecycle.cpp",
+      "responsibility": "tests/Lifecycle.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "C++ lifecycle and cleanup"
+    },
+    {
+      "id": "TST-P0-002",
+      "entrypoint": "tests/ApiC.c",
+      "responsibility": "tests/ApiC.c",
+      "mode": "",
+      "ranks": 1,
+      "contract": "C ABI lifecycle and invalid input"
+    },
+    {
+      "id": "TST-P0-003",
+      "entrypoint": "tests/Contracts.cpp",
+      "responsibility": "tests/Contracts.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "public and internal value contracts"
+    },
+    {
+      "id": "TST-P0-004",
+      "entrypoint": "tests/Bounded.cpp",
+      "responsibility": "tests/Bounded.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "bounded views and request validation"
+    },
+    {
+      "id": "TST-P0-005",
+      "entrypoint": "tests/Abi.c",
+      "responsibility": "tests/Abi.c",
+      "mode": "",
+      "ranks": 1,
+      "contract": "ABI v1 and v2 consumer compatibility"
+    },
+    {
+      "id": "TST-P1-001",
+      "entrypoint": "tests/Dynamics.cpp",
+      "responsibility": "tests/Dynamics.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "deterministic dynamics behavior"
+    },
+    {
+      "id": "TST-P1-002",
+      "entrypoint": "tests/Numerical.cpp",
+      "responsibility": "tests/Numerical.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "conservation and repeatability"
+    },
+    {
+      "id": "TST-P1-003",
+      "entrypoint": "tests/Allocations.cpp",
+      "responsibility": "tests/Allocations.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "steady-state allocation-free execution"
+    },
+    {
+      "id": "TST-P2-001",
+      "entrypoint": "examples/CExample.c",
+      "responsibility": "examples/CExample.c",
+      "mode": "",
+      "ranks": 1,
+      "contract": "C SDK example"
+    },
+    {
+      "id": "TST-P2-002",
+      "entrypoint": "examples/CppExample.cpp",
+      "responsibility": "examples/CppExample.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "C++ SDK example"
+    },
+    {
+      "id": "TST-P2-003",
+      "entrypoint": "apps/blitzar/Main.cpp",
+      "responsibility": "apps/blitzar/Main.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "CLI executable"
+    },
+    {
+      "id": "TST-P2-004",
+      "entrypoint": "tests/PackageConsumer.cmake",
+      "responsibility": "tests/PackageConsumer.cmake",
+      "mode": "",
+      "ranks": 1,
+      "contract": "installed CMake package consumer"
+    },
+    {
+      "id": "TST-P2-005",
+      "entrypoint": "examples/CV2Example.c",
+      "responsibility": "examples/CV2Example.c",
+      "mode": "",
+      "ranks": 1,
+      "contract": "C ABI v2 example"
+    },
+    {
+      "id": "TST-P3-001",
+      "entrypoint": "tests/Hierarchy.cpp",
+      "responsibility": "tests/Hierarchy.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "hierarchy reference behavior"
+    },
+    {
+      "id": "TST-P3-002",
+      "entrypoint": "tests/Fmm.cpp",
+      "responsibility": "tests/Fmm.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "FMM reference and capacity"
+    },
+    {
+      "id": "TST-P4-001",
+      "entrypoint": "tests/Hip.cpp",
+      "responsibility": "tests/Hip.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "HIP acceleration and fallback"
+    },
+    {
+      "id": "TST-P7-001",
+      "entrypoint": "tests/Mpi.cpp",
+      "responsibility": "tests/MpiFixture.cpp",
+      "mode": "",
+      "ranks": 2,
+      "contract": "MPI two-rank distribution parity"
+    },
+    {
+      "id": "TST-P7-002",
+      "entrypoint": "tests/Mpi.cpp",
+      "responsibility": "tests/MpiFixture.cpp",
+      "mode": "",
+      "ranks": 4,
+      "contract": "MPI four-rank distribution parity"
+    },
+    {
+      "id": "TST-P8-001",
+      "entrypoint": "tests/Mpi.cpp",
+      "responsibility": "tests/MpiFixture.cpp",
+      "mode": "migration",
+      "ranks": 2,
+      "contract": "in-step migration parity"
+    },
+    {
+      "id": "TST-P7-003",
+      "entrypoint": "tests/Mpi.cpp",
+      "responsibility": "tests/MpiFixture.cpp",
+      "mode": "single",
+      "ranks": 1,
+      "contract": "one-rank failure completion"
+    },
+    {
+      "id": "TST-P7-004",
+      "entrypoint": "tests/Mpi.cpp",
+      "responsibility": "tests/MpiFixture.cpp",
+      "mode": "barnes-hut-migration",
+      "ranks": 2,
+      "contract": "Barnes-Hut migration parity"
+    },
+    {
+      "id": "TST-P7-005",
+      "entrypoint": "tests/Mpi.cpp",
+      "responsibility": "tests/MpiValidationTest.cpp",
+      "mode": "large-count",
+      "ranks": 2,
+      "contract": "large-count rejection"
+    },
+    {
+      "id": "TST-P8-002",
+      "entrypoint": "tests/Mpi.cpp",
+      "responsibility": "tests/MpiDomain.cpp",
+      "mode": "out-of-domain",
+      "ranks": 2,
+      "contract": "out-of-domain rollback"
+    },
+    {
+      "id": "TST-P8-003",
+      "entrypoint": "tests/Mpi.cpp",
+      "responsibility": "tests/MpiOverlapTest.cpp",
+      "mode": "overlap",
+      "ranks": 2,
+      "contract": "overlap timeline, volume, speedup, and parity"
+    }
+  ]
+}

@@ -65,13 +65,6 @@
       "decision": "The lifecycle fixture intentionally exercises construction, mutation, failure, and cleanup in sequence; the signal is accepted as a test-harness responsibility review."
     },
     {
-      "path": "tests/Mpi.cpp",
-      "signals": ["branching", "function_count", "function_length"],
-      "issue": 599,
-      "status": "accepted",
-      "decision": "MPI qualification is kept in one process-aware harness so rank setup, scenario selection, parity, migration, rollback, and overlap modes share one communication contract; all three signals remain tracked."
-    },
-    {
       "path": "tools/architecture_report.py",
       "signals": ["parameter_count"],
       "issue": 599,
