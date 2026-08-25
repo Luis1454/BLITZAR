@@ -103,9 +103,14 @@ target_sources(blitzar PRIVATE
     src/sdk/CppApi.cpp
     src/sdk/Simulation.cpp
     src/sdk/Config.cpp
-    src/sdk/Particles.cpp
-    src/sdk/State.cpp
+    src/sdk/ParticleSet.cpp
+    src/sdk/ParticleGet.cpp
+    src/sdk/Input.cpp
+    src/sdk/Packets.cpp
+    src/sdk/Snapshots.cpp
     src/sdk/Step.cpp
+    src/sdk/StepPrepare.cpp
+    src/sdk/StepMigration.cpp
     src/sdk/Transaction.cpp
     src/solvers/barnes_hut/BarnesHutSolver.cpp
     src/solvers/barnes_hut/Tree.cpp
