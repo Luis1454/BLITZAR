@@ -86,6 +86,8 @@ target_sources(blitzar PRIVATE
     src/parallel/MpiCollectives.cpp
     src/parallel/DomainDecomposition.cpp
     src/parallel/MpiGhostTransport.cpp
+    src/parallel/MpiGhostBegin.cpp
+    src/parallel/MpiGhostComplete.cpp
     src/parallel/MpiGather.cpp
     src/parallel/MpiContext.cpp
     src/parallel/MpiExchange.cpp
