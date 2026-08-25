@@ -147,6 +147,12 @@
       "category": "c_abi_consumer",
       "ownership": "borrowed_abi",
       "reason": "C API lifecycle test consumes opaque handles from the public ABI."
+    },
+    {
+      "path": "tests/Capabilities.c",
+      "category": "c_abi_consumer",
+      "ownership": "borrowed_abi",
+      "reason": "Capability and unsupported-feature test consumes opaque handles from the public ABI."
     }
   ],
   "allocation_allowlist": ["src/sdk/Api.cpp"]
