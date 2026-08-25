@@ -1,12 +1,7 @@
 #include "parallel/MpiCollectives.hpp"
-#include "parallel/MpiSessionNative.hpp"
 
 #include <climits>
 #include <cstddef>
-
-#if defined(BLITZAR_HAS_MPI)
-#include <mpi.h>
-#endif
 
 namespace blitzar_parallel {
 
@@ -51,7 +46,6 @@ blitzar_status MpiCollectives::Broadcast(std::span<std::uint64_t> values, int ro
 blitzar_status MpiCollectives::BroadcastScalars(
     std::span<blitzar_core::Scalar> values, int root, bool layout_valid) const noexcept
 {
-#if defined(BLITZAR_HAS_MPI)
     blitzar_status global_layout_status = BLITZAR_STATUS_INTERNAL_ERROR;
     const blitzar_status synchronization_status =
         SynchronizeStatus(layout_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
@@ -62,24 +56,12 @@ blitzar_status MpiCollectives::BroadcastScalars(
                                                            : global_layout_status;
     }
 
-    return MPI_Bcast(values.data(), static_cast<int>(values.size()), MPI_DOUBLE, root,
-               session_.Native().communicator) == MPI_SUCCESS
-               ? BLITZAR_STATUS_OK
-               : BLITZAR_STATUS_INTERNAL_ERROR;
-#else
-
-    (void)values;
-    (void)root;
-    (void)layout_valid;
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
+    return session_.Native().BroadcastScalars(values, root);
 }
 
 blitzar_status MpiCollectives::BroadcastIds(
     std::span<std::uint64_t> values, int root, bool layout_valid) const noexcept
 {
-#if defined(BLITZAR_HAS_MPI)
     blitzar_status global_layout_status = BLITZAR_STATUS_INTERNAL_ERROR;
     const blitzar_status synchronization_status =
         SynchronizeStatus(layout_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
@@ -90,18 +72,7 @@ blitzar_status MpiCollectives::BroadcastIds(
                                                            : global_layout_status;
     }
 
-    return MPI_Bcast(values.data(), static_cast<int>(values.size()), MPI_UINT64_T, root,
-               session_.Native().communicator) == MPI_SUCCESS
-               ? BLITZAR_STATUS_OK
-               : BLITZAR_STATUS_INTERNAL_ERROR;
-#else
-
-    (void)values;
-    (void)root;
-    (void)layout_valid;
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
+    return session_.Native().BroadcastIds(values, root);
 }
 
 } // namespace blitzar_parallel

@@ -20,6 +20,10 @@ destruction when MPI is still live.
 All four components keep MPI headers and handles in implementation files. The
 facade preserves the existing span and packet contracts, so domain decomposition
 and solver orchestration do not depend on MPI types or lifecycle details.
+The production native boundary is registered as the `MpiNative*.cpp` units and
+the `MpiNativeState.hpp` fragment in `plan/quality.json`; the MPI test harness
+is the only registered native test unit. `tools/mpi_boundary_gate.py` rejects
+MPI headers, handles, and build symbols outside those units.
 
 ## Consequences
 

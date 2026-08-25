@@ -117,8 +117,11 @@ target_sources(blitzar PRIVATE
     src/parallel/MpiPacketCounts.cpp
     src/parallel/MpiPacketAllToAll.cpp
     src/parallel/MpiPacketAllGather.cpp
+    src/parallel/MpiNative.cpp
+    src/parallel/MpiNativeCollectives.cpp
+    src/parallel/MpiNativePackets.cpp
+    src/parallel/MpiNativeGhost.cpp
     src/parallel/MpiSession.cpp
-    src/parallel/MpiSessionInit.cpp
     src/parallel/MpiTypes.cpp
     src/sdk/Api.cpp
     src/sdk/ApiSupport.cpp

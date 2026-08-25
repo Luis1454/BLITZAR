@@ -25,6 +25,10 @@ Do not inspect, copy, translate, or use the old BLITZAR repository as context.
   headers are forbidden at that boundary. ABI pointer and V1 parameter
   exceptions must be registered in `plan/public_boundary.json` or
   `plan/parameter_exceptions.json`.
+- Native MPI headers, handles, and preprocessor symbols are confined to the
+  registered units in `plan/quality.json`. `MpiContext`, domain decomposition,
+  packet contracts, and ghost state consume only non-MPI descriptors; new MPI
+  calls require an update to the native-boundary gate and its evidence.
 - Keep one-level namespaces and never use `using namespace`.
 - Do not add `utils`, `common`, `misc`, `private`, or `details` catch-alls.
 - Do not split files mechanically by line count. Review responsibility,

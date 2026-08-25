@@ -1,48 +1,30 @@
 #include "parallel/MpiGhostState.hpp"
 
-#include "parallel/MpiGhostProtocol.hpp"
 #include "parallel/MpiGhostTransport.hpp"
 
 #include <utility>
-
-#if defined(BLITZAR_HAS_MPI)
-#include <mpi.h>
-#endif
 
 namespace blitzar_parallel {
 
 void MpiGhostTransport::ClearExchange(MpiGhostExchange::Impl& state) noexcept
 {
     state.active = false;
-#if defined(BLITZAR_HAS_MPI)
 
     state.local_wire.clear();
     state.receive_wire.clear();
-    state.receive_requests.clear();
-    state.send_requests.clear();
-    state.receive_statuses.clear();
+    state.receive_byte_counts.clear();
     state.receive_chunks.clear();
-#endif
+
+    if (state.native != nullptr) {
+        state.native->Reset();
+    }
 }
 
 void MpiGhostTransport::AbortExchange(MpiGhostExchange::Impl& state) noexcept
 {
-#if defined(BLITZAR_HAS_MPI)
-    if (state.active) {
-        int initialized = 0;
-        int finalized = 0;
-
-        if (MPI_Initialized(&initialized) == MPI_SUCCESS && initialized != 0 &&
-            MPI_Finalized(&finalized) == MPI_SUCCESS && finalized == 0) {
-            MpiGhostProtocol::CancelRequests(state.receive_requests);
-            MpiGhostProtocol::CancelRequests(state.send_requests);
-        }
-        else {
-            state.receive_requests.clear();
-            state.send_requests.clear();
-        }
+    if (state.active && state.native != nullptr) {
+        state.native->Cancel();
     }
-#endif
 
     ClearExchange(state);
 

@@ -1,14 +1,9 @@
 #include "parallel/MpiPacketProtocol.hpp"
 #include "parallel/MpiPacketTransport.hpp"
-#include "parallel/MpiSessionNative.hpp"
 
 #include <algorithm>
 #include <cstddef>
 #include <limits>
-
-#if defined(BLITZAR_HAS_MPI)
-#include <mpi.h>
-#endif
 
 namespace blitzar_parallel {
 
@@ -45,18 +40,10 @@ blitzar_status MpiPacketTransport::AllGatherPackets(std::span<const ParticlePack
 
         return BLITZAR_STATUS_OK;
     }
-#if defined(BLITZAR_HAS_MPI)
 
     return RunAllGather(request);
-#else
-
-    (void)request;
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
 }
 
-#if defined(BLITZAR_HAS_MPI)
 blitzar_status MpiPacketTransport::RunAllGather(const AllGatherRequest& request) const noexcept
 {
     std::size_t packets_per_peer = 0;
@@ -94,9 +81,13 @@ blitzar_status MpiPacketTransport::RunAllGather(const AllGatherRequest& request)
             return status;
         }
 
-        if (MPI_Allgatherv(send_wire_.data(), layout.send_total_bytes, MPI_BYTE,
-                receive_wire_.data(), receive_bytes_.data(), receive_offsets_.data(), MPI_BYTE,
-                session_.Native().communicator) != MPI_SUCCESS) {
+        const NativeByteAllGatherRequest native_request{
+            std::span<const std::byte>(send_wire_.data(), send_wire_.size()),
+            layout.send_total_bytes,
+            std::span<std::byte>(receive_wire_.data(), receive_wire_.size()), receive_bytes_,
+            receive_offsets_};
+
+        if (session_.Native().AllGatherBytes(native_request) != BLITZAR_STATUS_OK) {
             return BLITZAR_STATUS_INTERNAL_ERROR;
         }
 
@@ -114,7 +105,6 @@ blitzar_status MpiPacketTransport::RunAllGather(const AllGatherRequest& request)
         }
     }
 }
-#endif
 
 blitzar_status MpiPacketTransport::PrepareAllGather(
     const AllGatherRequest& request, std::size_t& packets_per_peer) const noexcept

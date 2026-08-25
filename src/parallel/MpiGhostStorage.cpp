@@ -6,13 +6,13 @@
 #include <climits>
 #include <cstddef>
 #include <limits>
+#include <memory>
 
 namespace blitzar_parallel {
 
 blitzar_status MpiGhostTransport::PrepareStorage(MpiGhostExchange::Impl& state,
     std::size_t send_capacity, std::size_t receive_capacity) const noexcept
 {
-#if defined(BLITZAR_HAS_MPI)
     const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
     const std::size_t remote_peer_count = peer_count - 1;
     const std::size_t chunks = std::max(MpiGhostProtocol::ChunkCount(send_capacity),
@@ -40,35 +40,36 @@ blitzar_status MpiGhostTransport::PrepareStorage(MpiGhostExchange::Impl& state,
     state.peer_capacities.resize(peer_count);
     state.wire_offsets.resize(peer_count);
     state.receive_counts.resize(peer_count);
+    state.receive_byte_counts.reserve(request_capacity);
     state.offsets.resize(peer_count);
-    state.receive_requests.reserve(request_capacity);
-    state.send_requests.reserve(request_capacity);
-    state.receive_statuses.reserve(request_capacity);
     state.receive_chunks.reserve(request_capacity);
 
     if (!MpiGhostProtocol::EnsureCapacity(state.local_wire, local_wire_capacity) ||
         !MpiGhostProtocol::EnsureCapacity(state.receive_wire, receive_wire_capacity)) {
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
+    if (state.native == nullptr) {
+        state.native = std::make_unique<MpiNativeGhost>();
+    }
+    if (state.native == nullptr) {
+        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+    }
+
+    const blitzar_status native_status =
+        session_.Native().ReserveGhost(*state.native, request_capacity, request_capacity);
+
+    if (native_status != BLITZAR_STATUS_OK) {
+        return native_status;
+    }
 
     state.local_wire.clear();
     state.receive_wire.clear();
-    state.receive_requests.clear();
-    state.send_requests.clear();
-    state.receive_statuses.clear();
+    state.receive_byte_counts.clear();
     state.receive_chunks.clear();
     std::fill(state.receive_counts.begin(), state.receive_counts.end(), 0);
     std::fill(state.offsets.begin(), state.offsets.end(), 0);
 
     return BLITZAR_STATUS_OK;
-#else
-
-    (void)state;
-    (void)send_capacity;
-    (void)receive_capacity;
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
 }
 
 } // namespace blitzar_parallel

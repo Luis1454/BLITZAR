@@ -1,26 +1,25 @@
-#include "parallel/MpiSessionNative.hpp"
+#include "parallel/MpiNative.hpp"
+
+#include "parallel/MpiNativeState.hpp"
 
 #include <cstdlib>
 #include <mutex>
+#include <new>
 
 #if defined(BLITZAR_HAS_MPI)
-#include <mpi.h>
-#endif
 
 namespace blitzar_parallel {
 
-#if defined(BLITZAR_HAS_MPI)
-
 namespace {
 
-std::mutex SessionMutex;
-std::size_t SessionReferences = 0;
+std::mutex RuntimeMutex;
+std::size_t RuntimeReferences = 0;
 bool InitializedByBlitzar = false;
 bool FinalizerRegistered = false;
 
 void FinalizeAtExit() noexcept
 {
-    std::lock_guard lock(SessionMutex);
+    std::lock_guard lock(RuntimeMutex);
 
     if (!InitializedByBlitzar) {
         return;
@@ -34,7 +33,7 @@ void FinalizeAtExit() noexcept
         (void)MPI_Finalize();
     }
 
-    SessionReferences = 0;
+    RuntimeReferences = 0;
     InitializedByBlitzar = false;
 }
 
@@ -77,25 +76,60 @@ void FinalizeAtExit() noexcept
 
 } // namespace
 
-void MpiSession::ReleaseMpi() noexcept
-{
-    std::lock_guard lock(SessionMutex);
-
-    if (SessionReferences != 0) {
-        --SessionReferences;
-    }
-}
-
 #else
 
-void MpiSession::ReleaseMpi() noexcept {}
+namespace blitzar_parallel {
 
 #endif
 
-blitzar_status MpiSession::InitializeMpi() noexcept
+MpiNative::MpiNative() noexcept
+{
+    try {
+        impl_ = std::make_unique<Impl>();
+    }
+    catch (const std::bad_alloc&) {
+        status_ = BLITZAR_STATUS_ALLOCATION_FAILURE;
+
+        return;
+    }
+
+    status_ = Initialize();
+}
+
+MpiNative::~MpiNative() noexcept
+{
+    Release();
+}
+
+bool MpiNative::IsUsable() const noexcept
+{
+    return impl_ != nullptr && status_ == BLITZAR_STATUS_OK;
+}
+
+bool MpiNative::IsDistributed() const noexcept
+{
+    return IsUsable() && size_ > 1;
+}
+
+int MpiNative::Rank() const noexcept
+{
+    return rank_;
+}
+
+int MpiNative::Size() const noexcept
+{
+    return size_;
+}
+
+blitzar_status MpiNative::Status() const noexcept
+{
+    return status_;
+}
+
+blitzar_status MpiNative::Initialize() noexcept
 {
 #if defined(BLITZAR_HAS_MPI)
-    std::lock_guard lock(SessionMutex);
+    std::lock_guard lock(RuntimeMutex);
     int initialized = 0;
 
     if (MPI_Initialized(&initialized) != MPI_SUCCESS ||
@@ -110,23 +144,10 @@ blitzar_status MpiSession::InitializeMpi() noexcept
         return runtime_status;
     }
 
-    ++SessionReferences;
+    ++RuntimeReferences;
 
     impl_->registered = true;
-    status_ = provided < MPI_THREAD_MULTIPLE ? BLITZAR_STATUS_UNSUPPORTED : BLITZAR_STATUS_OK;
 
-    const blitzar_status communicator_status = ReadCommunicator();
-
-    return communicator_status == BLITZAR_STATUS_OK ? status_ : communicator_status;
-#else
-
-    return BLITZAR_STATUS_OK;
-#endif
-}
-
-blitzar_status MpiSession::ReadCommunicator() noexcept
-{
-#if defined(BLITZAR_HAS_MPI)
     if (MPI_Comm_rank(impl_->communicator, &rank_) != MPI_SUCCESS ||
         MPI_Comm_size(impl_->communicator, &size_) != MPI_SUCCESS || size_ <= 0) {
         rank_ = 0;
@@ -134,9 +155,28 @@ blitzar_status MpiSession::ReadCommunicator() noexcept
 
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
-#endif
 
+    return provided < MPI_THREAD_MULTIPLE ? BLITZAR_STATUS_UNSUPPORTED : BLITZAR_STATUS_OK;
+#else
     return BLITZAR_STATUS_OK;
+#endif
+}
+
+void MpiNative::Release() noexcept
+{
+#if defined(BLITZAR_HAS_MPI)
+    if (impl_ == nullptr || !impl_->registered) {
+        return;
+    }
+
+    std::lock_guard lock(RuntimeMutex);
+
+    if (RuntimeReferences != 0) {
+        --RuntimeReferences;
+    }
+
+    impl_->registered = false;
+#endif
 }
 
 } // namespace blitzar_parallel

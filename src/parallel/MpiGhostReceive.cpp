@@ -1,36 +1,29 @@
 #include "parallel/MpiGhostProtocol.hpp"
 #include "parallel/MpiGhostState.hpp"
 #include "parallel/MpiGhostTransport.hpp"
-#include "parallel/MpiSessionNative.hpp"
 
 #include <algorithm>
 #include <cstddef>
 #include <limits>
-
-#if defined(BLITZAR_HAS_MPI)
-#include <mpi.h>
-#endif
 
 namespace blitzar_parallel {
 
 blitzar_status MpiGhostTransport::CountReceived(
     MpiGhostExchange::Impl& state, std::size_t& total) const noexcept
 {
-#if defined(BLITZAR_HAS_MPI)
     total = 0;
 
     std::fill(state.receive_counts.begin(), state.receive_counts.end(), 0);
 
     for (std::size_t request = 0; request < state.receive_chunks.size(); ++request) {
-        int bytes = 0;
+        const std::size_t bytes = state.receive_byte_counts[request];
 
-        if (MPI_Get_count(&state.receive_statuses[request], MPI_BYTE, &bytes) != MPI_SUCCESS ||
-            bytes < 0 || bytes % static_cast<int>(ParticleWireBytes) != 0) {
+        if (bytes % ParticleWireBytes != 0) {
             return BLITZAR_STATUS_INTERNAL_ERROR;
         }
 
         const MpiGhostExchange::Impl::ReceiveChunk chunk = state.receive_chunks[request];
-        const std::size_t packet_count = static_cast<std::size_t>(bytes) / ParticleWireBytes;
+        const std::size_t packet_count = bytes / ParticleWireBytes;
 
         std::size_t& peer_count = state.receive_counts[chunk.peer_index];
 
@@ -55,13 +48,6 @@ blitzar_status MpiGhostTransport::CountReceived(
     }
 
     return BLITZAR_STATUS_OK;
-#else
-
-    (void)state;
-    (void)total;
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
 }
 
 blitzar_status MpiGhostTransport::PrepareGhostBuffer(
@@ -75,17 +61,15 @@ blitzar_status MpiGhostTransport::PrepareGhostBuffer(
 blitzar_status MpiGhostTransport::DecodeReceived(
     MpiGhostExchange::Impl& state, PacketBuffer& ghosts) const noexcept
 {
-#if defined(BLITZAR_HAS_MPI)
     for (std::size_t request = 0; request < state.receive_chunks.size(); ++request) {
-        int bytes = 0;
+        const std::size_t bytes = state.receive_byte_counts[request];
 
-        if (MPI_Get_count(&state.receive_statuses[request], MPI_BYTE, &bytes) != MPI_SUCCESS ||
-            bytes < 0 || bytes % static_cast<int>(ParticleWireBytes) != 0) {
+        if (bytes % ParticleWireBytes != 0) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
         const MpiGhostExchange::Impl::ReceiveChunk chunk = state.receive_chunks[request];
-        const std::size_t packet_count = static_cast<std::size_t>(bytes) / ParticleWireBytes;
+        const std::size_t packet_count = bytes / ParticleWireBytes;
 
         if (packet_count == 0) {
             continue;
@@ -107,13 +91,6 @@ blitzar_status MpiGhostTransport::DecodeReceived(
     }
 
     return BLITZAR_STATUS_OK;
-#else
-
-    (void)state;
-    (void)ghosts;
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
 }
 
 } // namespace blitzar_parallel
