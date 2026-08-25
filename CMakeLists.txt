@@ -84,7 +84,9 @@ target_sources(blitzar PRIVATE
     src/particles/SourceBuffer.cpp
     src/physics/GravityLaw.cpp
     src/parallel/MpiCollectives.cpp
+    src/parallel/Bounds.cpp
     src/parallel/DomainDecomposition.cpp
+    src/parallel/Partition.cpp
     src/parallel/MpiGhostTransport.cpp
     src/parallel/MpiGhostBegin.cpp
     src/parallel/MpiGhostComplete.cpp

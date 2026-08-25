@@ -1,108 +1,42 @@
 #include "parallel/DomainDecomposition.hpp"
 
-#include "trees/Morton.hpp"
-
-#include <algorithm>
 #include <array>
-#include <cmath>
 #include <limits>
-#include <new>
-#include <numeric>
 
 namespace blitzar_parallel {
 
-namespace {
-
-constexpr blitzar_core::Scalar PositiveInfinity =
-    std::numeric_limits<blitzar_core::Scalar>::infinity();
-
-[[nodiscard]] bool IsFinitePosition(blitzar_core::Vector3 position) noexcept
+blitzar_status DomainDecomposition::ValidateInput(
+    blitzar_core::ParticleStateView state, const MpiContext& context) const noexcept
 {
-    return std::isfinite(position.x) && std::isfinite(position.y) && std::isfinite(position.z);
+    const bool root = context.Rank() == 0;
+    const bool valid = context.Size() > 0 &&
+                       (root ? blitzar_core::IsValid(state)
+                             : state.SourceCount() == 0 || blitzar_core::IsValid(state));
+    blitzar_status global_status = BLITZAR_STATUS_INTERNAL_ERROR;
+    const blitzar_status synchronization_status = context.SynchronizeStatus(
+        valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT, "DomainDecomposition",
+        "initialize-preflight", global_status);
+
+    if (synchronization_status != BLITZAR_STATUS_OK) {
+        return synchronization_status;
+    }
+
+    return global_status;
 }
 
-} // namespace
-
-bool DomainBounds::IsValid() const noexcept
+blitzar_status DomainDecomposition::InitializeBounds(
+    blitzar_core::ParticleStateView state, const MpiContext& context) noexcept
 {
-    return IsFinitePosition(minimum) && IsFinitePosition(maximum) && minimum.x <= maximum.x &&
-           minimum.y <= maximum.y && minimum.z <= maximum.z;
-}
+    DomainBounds bounds = DomainBounds::From(state);
 
-DomainBounds DomainDecomposition::BoundsOf(blitzar_core::ParticleStateView state) noexcept
-{
-    DomainBounds bounds{{PositiveInfinity, PositiveInfinity, PositiveInfinity},
-        {-PositiveInfinity, -PositiveInfinity, -PositiveInfinity}};
-
-    for (std::size_t index = 0; index < state.SourceCount(); ++index) {
-        (void)Extend(bounds, {state.x[index], state.y[index], state.z[index]});
-    }
-
-    if (!bounds.IsValid()) {
-        bounds = {};
-    }
-
-    return bounds;
-}
-
-bool DomainDecomposition::Extend(DomainBounds& bounds, blitzar_core::Vector3 position) noexcept
-{
-    if (!IsFinitePosition(position)) {
-        return false;
-    }
-
-    bounds.minimum.x = std::min(bounds.minimum.x, position.x);
-    bounds.minimum.y = std::min(bounds.minimum.y, position.y);
-    bounds.minimum.z = std::min(bounds.minimum.z, position.z);
-    bounds.maximum.x = std::max(bounds.maximum.x, position.x);
-    bounds.maximum.y = std::max(bounds.maximum.y, position.y);
-    bounds.maximum.z = std::max(bounds.maximum.z, position.z);
-
-    return true;
-}
-
-blitzar_status DomainDecomposition::Initialize(
-    blitzar_core::ParticleStateView global_state, const MpiContext& context) noexcept
-{
-    initialized_ = false;
-
-    split_keys_.clear();
-
-    rank_ = context.Rank();
-    size_ = context.Size();
-
-    if (!context.IsUsable()) {
-        return context.Status();
-    }
-
-    const bool root = rank_ == 0;
-    const bool input_valid = size_ > 0 &&
-                             (root ? blitzar_core::IsValid(global_state)
-                                   : global_state.SourceCount() == 0 ||
-                                         blitzar_core::IsValid(global_state));
-
-    blitzar_status global_input_status = BLITZAR_STATUS_INTERNAL_ERROR;
-    const blitzar_status synchronization_status =
-        context.SynchronizeStatus(input_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
-            "DomainDecomposition", "initialize-preflight", global_input_status);
-
-    if (synchronization_status != BLITZAR_STATUS_OK || global_input_status != BLITZAR_STATUS_OK) {
-        return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status
-                                                           : global_input_status;
-    }
-
-    DomainBounds bounds = BoundsOf(global_state);
-
-    if (global_state.SourceCount() == 0) {
+    if (state.SourceCount() == 0) {
         bounds = {};
     }
 
     std::array<blitzar_core::Scalar, 3> minimum{
         bounds.minimum.x, bounds.minimum.y, bounds.minimum.z};
-
     std::array<blitzar_core::Scalar, 3> maximum{
         bounds.maximum.x, bounds.maximum.y, bounds.maximum.z};
-
     const blitzar_status reduction_status = context.ReduceBounds(minimum, maximum);
 
     if (reduction_status != BLITZAR_STATUS_OK) {
@@ -112,112 +46,71 @@ blitzar_status DomainDecomposition::Initialize(
     global_bounds_ = {{minimum[0], minimum[1], minimum[2]}, {maximum[0], maximum[1], maximum[2]}};
 
     int global_has_particles = 0;
-    const blitzar_status particle_presence_status = context.ReduceMax(
-        root && global_state.SourceCount() != 0 ? 1 : 0, global_has_particles);
+    const blitzar_status presence_status = context.ReduceMax(
+        context.Rank() == 0 && state.SourceCount() != 0 ? 1 : 0, global_has_particles);
 
-    if (particle_presence_status != BLITZAR_STATUS_OK) {
-        return particle_presence_status;
+    if (presence_status != BLITZAR_STATUS_OK) {
+        return presence_status;
     }
 
     if (global_has_particles == 0) {
         global_bounds_ = {};
     }
 
-    blitzar_status allocation_status = BLITZAR_STATUS_OK;
-    std::vector<std::uint64_t> split_values;
-    std::vector<std::uint64_t> split_ids;
-    std::vector<std::uint64_t> keys;
-    std::vector<std::size_t> order;
+    return BLITZAR_STATUS_OK;
+}
 
-    try {
-        split_keys_.resize(size_ > 1 ? static_cast<std::size_t>(size_ - 1) : 0);
-        split_values.resize(split_keys_.size());
-        split_ids.resize(split_keys_.size());
-
-        if (root) {
-            keys.resize(global_state.SourceCount());
-            order.resize(global_state.SourceCount());
-        }
-    }
-    catch (const std::length_error&) {
-        allocation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-    }
-    catch (const std::bad_alloc&) {
-        allocation_status = BLITZAR_STATUS_ALLOCATION_FAILURE;
-    }
-
-    const blitzar_status allocation_sync = context.SynchronizeStatus(
-        allocation_status, "DomainDecomposition", "initialize-allocation", allocation_status);
-
-    if (allocation_sync != BLITZAR_STATUS_OK || allocation_status != BLITZAR_STATUS_OK) {
-        return allocation_sync != BLITZAR_STATUS_OK ? allocation_sync : allocation_status;
-    }
-
-    if (root) {
-        for (std::size_t index = 0; index < global_state.SourceCount(); ++index) {
-            keys[index] = blitzar_trees::MortonKey(
-                {global_state.x[index], global_state.y[index], global_state.z[index]},
-                global_bounds_.minimum, global_bounds_.maximum);
-
-            order[index] = index;
-        }
-
-        std::sort(order.begin(), order.end(), [&keys](const auto left, const auto right) {
-            return keys[left] < keys[right] || (keys[left] == keys[right] && left < right);
-        });
-
-        for (int destination = 1; destination < size_; ++destination) {
-            if (order.empty()) {
-                split_keys_[static_cast<std::size_t>(destination - 1)] = {};
-
-                continue;
-            }
-
-            const std::size_t boundary = std::min(order.size() - 1,
-                static_cast<std::size_t>(destination) * order.size() /
-                    static_cast<std::size_t>(size_));
-
-            split_keys_[static_cast<std::size_t>(destination - 1)] = {
-                keys[order[boundary]], static_cast<std::uint64_t>(order[boundary])};
-        }
-    }
-
-    for (std::size_t index = 0; index < split_keys_.size(); ++index) {
-        split_values[index] = split_keys_[index].key;
-        split_ids[index] = split_keys_[index].particle_id;
-    }
-
-    const blitzar_status split_status = context.Broadcast(split_values, 0);
-
-    if (split_status != BLITZAR_STATUS_OK) {
-        return split_status;
-    }
-
-    const blitzar_status id_status = context.Broadcast(split_ids, 0);
-
-    if (id_status != BLITZAR_STATUS_OK) {
-        return id_status;
-    }
-
-    for (std::size_t index = 0; index < split_keys_.size(); ++index) {
-        split_keys_[index] = {split_values[index], split_ids[index]};
-    }
-
-    initialized_ = true;
+void DomainDecomposition::UpdateLocalBounds(blitzar_core::ParticleStateView state) noexcept
+{
     local_bounds_ = {};
 
-    for (std::size_t index = 0; index < global_state.SourceCount(); ++index) {
-        if (Owner({global_state.x[index], global_state.y[index], global_state.z[index]},
+    for (std::size_t index = 0; index < state.SourceCount(); ++index) {
+        const blitzar_core::Vector3 position{state.x[index], state.y[index], state.z[index]};
 
-                static_cast<std::uint64_t>(index)) == rank_) {
-            (void)Extend(local_bounds_,
-                {global_state.x[index], global_state.y[index], global_state.z[index]});
+        if (Owner(position, static_cast<std::uint64_t>(index)) == rank_) {
+            (void)local_bounds_.Include(position);
         }
     }
 
     if (!local_bounds_.IsValid()) {
         local_bounds_ = global_bounds_;
     }
+}
+
+blitzar_status DomainDecomposition::Initialize(
+    blitzar_core::ParticleStateView global_state, const MpiContext& context) noexcept
+{
+    initialized_ = false;
+    rank_ = context.Rank();
+    size_ = context.Size();
+    global_bounds_ = {};
+    local_bounds_ = {};
+
+    if (!context.IsUsable()) {
+        return context.Status();
+    }
+
+    const blitzar_status input_status = ValidateInput(global_state, context);
+
+    if (input_status != BLITZAR_STATUS_OK) {
+        return input_status;
+    }
+
+    const blitzar_status bounds_status = InitializeBounds(global_state, context);
+
+    if (bounds_status != BLITZAR_STATUS_OK) {
+        return bounds_status;
+    }
+
+    const blitzar_status partition_status =
+        partition_.Initialize(global_state, global_bounds_, context);
+
+    if (partition_status != BLITZAR_STATUS_OK) {
+        return partition_status;
+    }
+
+    initialized_ = true;
+    UpdateLocalBounds(global_state);
 
     return BLITZAR_STATUS_OK;
 }
@@ -249,10 +142,7 @@ DomainBounds DomainDecomposition::LocalBounds() const noexcept
 
 bool DomainDecomposition::Contains(blitzar_core::Vector3 position) const noexcept
 {
-    return initialized_ && global_bounds_.IsValid() && IsFinitePosition(position) &&
-           position.x >= global_bounds_.minimum.x && position.x <= global_bounds_.maximum.x &&
-           position.y >= global_bounds_.minimum.y && position.y <= global_bounds_.maximum.y &&
-           position.z >= global_bounds_.minimum.z && position.z <= global_bounds_.maximum.z;
+    return initialized_ && global_bounds_.Contains(position);
 }
 
 blitzar_status DomainDecomposition::ValidateState(
@@ -282,21 +172,7 @@ int DomainDecomposition::Owner(
     if (!Contains(position)) {
         return -1;
     }
-    if (size_ <= 1) {
-        return 0;
-    }
-
-    const std::uint64_t key =
-        blitzar_trees::MortonKey(position, global_bounds_.minimum, global_bounds_.maximum);
-
-    const SplitKey candidate{key, particle_id};
-    const auto boundary = std::upper_bound(split_keys_.begin(), split_keys_.end(), candidate,
-        [](const SplitKey& left, const SplitKey& right) {
-            return left.key < right.key ||
-                   (left.key == right.key && left.particle_id < right.particle_id);
-        });
-
-    return static_cast<int>(boundary - split_keys_.begin());
+    return partition_.Owner(position, particle_id, global_bounds_);
 }
 
 blitzar_status DomainDecomposition::LocalIndices(
