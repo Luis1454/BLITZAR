@@ -57,6 +57,8 @@ public:
 private:
     struct Impl;
 
+    [[nodiscard]] blitzar_status CheckRuntime() const noexcept;
+
     std::unique_ptr<Impl> impl_;
     blitzar_status status_{BLITZAR_STATUS_OK};
 };
