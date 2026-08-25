@@ -87,7 +87,7 @@ blitzar_status Simulation::RebuildSolver(
     SolverVariant& solver) noexcept
 {
     const SolverCreationRequest request{
-        solver_kind_, gravity, barnes_hut, LocalCapacity(particle_count_, mpi_context_.Size())};
+        solver_kind_, gravity, barnes_hut, particle_count_};
 
     return CreateSolver(request, solver);
 }
@@ -96,7 +96,7 @@ blitzar_status Simulation::SetSolver(blitzar_solver_kind solver) noexcept
 {
     SolverVariant candidate(std::in_place_type<blitzar_direct::DirectSolver>, gravity_);
     const SolverCreationRequest request{
-        solver, gravity_, barnes_hut_, LocalCapacity(particle_count_, mpi_context_.Size())};
+        solver, gravity_, barnes_hut_, particle_count_};
 
     const blitzar_status status = CreateSolver(request, candidate);
 

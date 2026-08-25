@@ -7,11 +7,10 @@ namespace blitzar_sdk {
 
 Simulation::Simulation(std::size_t particle_count)
     : particle_count_(particle_count), mpi_context_(), domain_(),
-      mpi_exchange_(mpi_context_, domain_, LocalCapacity(particle_count, mpi_context_.Size()),
-          RemoteCapacity(particle_count, mpi_context_.Size())),
-      hip_context_(), arena_(LocalCapacity(particle_count, mpi_context_.Size())),
+      mpi_exchange_(mpi_context_, domain_, particle_count, particle_count), hip_context_(),
+      arena_(particle_count),
       particles_(arena_), accelerations_(arena_), checkpoint_(arena_),
-      source_(RemoteCapacity(particle_count, mpi_context_.Size())),
+      source_(particle_count),
       gravity_{},
       barnes_hut_{
           0.5, particle_count == 0 ? 1 : particle_count, DefaultMaxCells(particle_count), 8, 32},
@@ -19,9 +18,8 @@ Simulation::Simulation(std::size_t particle_count)
       solver_kind_(BLITZAR_SOLVER_DIRECT), integrator_kind_(BLITZAR_INTEGRATOR_LEAPFROG_KDK),
       timestep_(1.0), particles_ready_(false), execution_settings_{}, snapshot_header_{},
       last_status_(mpi_context_.Status()), last_backend_(BLITZAR_BACKEND_CPU),
-      solver_(std::in_place_type<blitzar_direct::DirectSolver>, gravity_,
-          LocalCapacity(particle_count, mpi_context_.Size())),
-      integrator_{}, particle_ids_(LocalCapacity(particle_count, mpi_context_.Size())),
+      solver_(std::in_place_type<blitzar_direct::DirectSolver>, gravity_, particle_count),
+      integrator_{}, particle_ids_(particle_count),
       local_particle_count_(0), exchange_buffer_{}, rollback_arena_buffer_{},
       rollback_force_buffer_{}, rollback_exchange_buffer_{}, migration_buffer_{},
       gathered_buffer_{}
@@ -42,14 +40,11 @@ Simulation::Simulation(std::size_t particle_count)
         throw std::length_error("simulation local capacity initialization failed");
     }
 
-    const std::size_t local_capacity = LocalCapacity(particle_count_, mpi_context_.Size());
-    const std::size_t remote_capacity = RemoteCapacity(particle_count_, mpi_context_.Size());
-
-    rollback_arena_buffer_.Reserve(local_capacity);
-    rollback_force_buffer_.Reserve(local_capacity);
-    exchange_buffer_.Reserve(remote_capacity);
-    rollback_exchange_buffer_.Reserve(remote_capacity);
-    migration_buffer_.Reserve(local_capacity);
+    rollback_arena_buffer_.Reserve(particle_count_);
+    rollback_force_buffer_.Reserve(particle_count_);
+    exchange_buffer_.Reserve(particle_count_);
+    rollback_exchange_buffer_.Reserve(particle_count_);
+    migration_buffer_.Reserve(particle_count_);
     snapshot_header_.particle_count = particle_count_;
 }
 

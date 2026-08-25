@@ -28,96 +28,117 @@ blitzar_status MpiGhostTransport::Begin(
         return BLITZAR_STATUS_OK;
     }
 #if defined(BLITZAR_HAS_MPI)
-
-    MpiGhostExchange::Impl* state_pointer = exchange.impl_.get();
-
-    blitzar_status preparation_status =
-        state_pointer == nullptr ? BLITZAR_STATUS_INVALID_ARGUMENT : BLITZAR_STATUS_OK;
-
-    if (state_pointer != nullptr && preparation_status == BLITZAR_STATUS_OK) {
-        const MpiGhostExchange::Impl& state = *state_pointer;
-        const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
-
-        if (state.active || local.size() > static_cast<std::size_t>(INT_MAX) ||
-            state.peer_counts.size() != peer_count ||
-            state.peer_capacities.size() != peer_count ||
-            state.wire_offsets.size() != peer_count ||
-            state.receive_counts.size() != peer_count || state.offsets.size() != peer_count) {
-            preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-        }
+    if (exchange.impl_ == nullptr) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
+    MpiGhostExchange::Impl& state = *exchange.impl_;
     std::size_t local_bytes = 0;
 
-    if (preparation_status == BLITZAR_STATUS_OK &&
+    blitzar_status preparation_status = PrepareLocal(local, state, local_bytes);
+    blitzar_status global_status = BLITZAR_STATUS_INTERNAL_ERROR;
+    blitzar_status synchronization_status = collectives_.SynchronizeStatus(
+        preparation_status, "MpiGhostTransport", "ghost-begin-prepare", global_status);
+
+    if (synchronization_status != BLITZAR_STATUS_OK || global_status != BLITZAR_STATUS_OK) {
+        return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status : global_status;
+    }
+
+    const blitzar_status peer_count_status = GatherPeerCounts(local.size(), state);
+
+    if (peer_count_status != BLITZAR_STATUS_OK) {
+        return peer_count_status;
+    }
+
+    BeginLayout layout{};
+    preparation_status = PrepareLayout(local.size(), local_bytes, state, layout);
+    global_status = BLITZAR_STATUS_INTERNAL_ERROR;
+    synchronization_status = collectives_.SynchronizeStatus(
+        preparation_status, "MpiGhostTransport", "ghost-capacity-prepare", global_status);
+
+    if (synchronization_status != BLITZAR_STATUS_OK || global_status != BLITZAR_STATUS_OK) {
+        return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status : global_status;
+    }
+
+    return PostRequests(local, state, layout);
+#else
+
+    (void)local;
+    (void)exchange;
+
+    return BLITZAR_STATUS_INTERNAL_ERROR;
+#endif
+}
+
+blitzar_status MpiGhostTransport::PrepareLocal(
+    std::span<const ParticlePacket> local, MpiGhostExchange::Impl& state,
+    std::size_t& local_bytes) const noexcept
+{
+    const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
+
+    if (state.active || local.size() > static_cast<std::size_t>(INT_MAX) ||
+        state.peer_counts.size() != peer_count || state.peer_capacities.size() != peer_count ||
+        state.wire_offsets.size() != peer_count || state.receive_counts.size() != peer_count ||
+        state.offsets.size() != peer_count) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    if (local.size() > state.send_capacity ||
         !MpiGhostProtocol::ToWireSize(local.size(), local_bytes)) {
-        preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    if (preparation_status == BLITZAR_STATUS_OK) {
-        MpiGhostExchange::Impl& state = *state_pointer;
-
-        if (!MpiGhostProtocol::EnsureCapacity(state.local_wire, local_bytes) ||
-            !MpiGhostProtocol::ResizeWithinCapacity(state.local_wire, local_bytes)) {
-            preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-        }
-        else if (!ParticleWireCodec::Encode(local,
-                     std::span<std::byte>(state.local_wire.data(), state.local_wire.size()))) {
-            preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-        }
+    if (!MpiGhostProtocol::ResizeWithinCapacity(state.local_wire, local_bytes)) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    if (!ParticleWireCodec::Encode(local,
+            std::span<std::byte>(state.local_wire.data(), state.local_wire.size()))) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    blitzar_status global_preparation_status = BLITZAR_STATUS_INTERNAL_ERROR;
-    const blitzar_status synchronization_status = collectives_.SynchronizeStatus(
-        preparation_status, "MpiGhostTransport", "ghost-begin-prepare", global_preparation_status);
+    return BLITZAR_STATUS_OK;
+}
 
-    if (synchronization_status != BLITZAR_STATUS_OK ||
-        global_preparation_status != BLITZAR_STATUS_OK) {
-        return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status
-                                                           : global_preparation_status;
-    }
-
-    MpiGhostExchange::Impl& state = *state_pointer;
-
+blitzar_status MpiGhostTransport::GatherPeerCounts(
+    std::size_t local_size, MpiGhostExchange::Impl& state) const noexcept
+{
     const blitzar_status peer_count_status =
-        packets_.AllGatherCounts(static_cast<int>(local.size()), state.peer_counts);
+        packets_.AllGatherCounts(static_cast<int>(local_size), state.peer_counts);
+    blitzar_status global_status = BLITZAR_STATUS_INTERNAL_ERROR;
+    const blitzar_status synchronization_status = collectives_.SynchronizeStatus(
+        peer_count_status, "MpiGhostTransport", "ghost-capacity", global_status);
 
-    blitzar_status global_peer_count_status = BLITZAR_STATUS_INTERNAL_ERROR;
-    const blitzar_status peer_count_synchronization_status = collectives_.SynchronizeStatus(
-        peer_count_status, "MpiGhostTransport", "ghost-capacity", global_peer_count_status);
+    return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status : global_status;
+}
 
-    if (peer_count_synchronization_status != BLITZAR_STATUS_OK ||
-        global_peer_count_status != BLITZAR_STATUS_OK) {
-        return peer_count_synchronization_status != BLITZAR_STATUS_OK
-                   ? peer_count_synchronization_status
-                   : global_peer_count_status;
-    }
+blitzar_status MpiGhostTransport::PrepareLayout(std::size_t local_size, std::size_t local_bytes,
+    MpiGhostExchange::Impl& state, BeginLayout& layout) const noexcept
+{
+    const blitzar_status layout_status = PreparePeerLayout(local_size, local_bytes, state, layout);
 
+    return layout_status == BLITZAR_STATUS_OK ? PrepareRoundStorage(state, layout) : layout_status;
+}
+
+blitzar_status MpiGhostTransport::PreparePeerLayout(std::size_t local_size,
+    std::size_t local_bytes, MpiGhostExchange::Impl& state, BeginLayout& layout) const noexcept
+{
     const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
     const std::size_t remote_peer_count = peer_count - 1;
-    const std::size_t chunk_packets = MpiGhostProtocol::PointChunkPackets();
-    std::size_t receive_slots = 0;
-    std::size_t receive_request_count = 0;
-    std::size_t send_request_count = 0;
-    std::size_t receive_wire_size = 0;
-    std::size_t send_wire_size = 0;
 
-    preparation_status = BLITZAR_STATUS_OK;
+    layout.chunk_packets = MpiGhostProtocol::PointChunkPackets();
+
+    if (layout.chunk_packets == 0) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    std::size_t receive_slots = 0;
 
     std::fill(state.peer_capacities.begin(), state.peer_capacities.end(), 0);
     std::fill(state.wire_offsets.begin(), state.wire_offsets.end(), 0);
 
-    if (chunk_packets == 0) {
-        preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-    }
-
-    for (std::size_t peer = 0; preparation_status == BLITZAR_STATUS_OK && peer < peer_count;
-         ++peer) {
+    for (std::size_t peer = 0; peer < peer_count; ++peer) {
         const int peer_count_value = state.peer_counts[peer];
 
         if (peer_count_value < 0) {
-            preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-
-            break;
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
         state.peer_capacities[peer] = static_cast<std::size_t>(peer_count_value);
@@ -127,84 +148,95 @@ blitzar_status MpiGhostTransport::Begin(
         }
 
         state.wire_offsets[peer] = receive_slots;
+        const std::size_t peer_chunks =
+            MpiGhostProtocol::ChunkCount(state.peer_capacities[peer]);
 
         if (receive_slots > std::numeric_limits<std::size_t>::max() -
                                 state.peer_capacities[peer] ||
-            receive_request_count >
-                std::numeric_limits<std::size_t>::max() -
-                    MpiGhostProtocol::ChunkCount(state.peer_capacities[peer])) {
-            preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-
-            break;
+            layout.receive_request_count >
+                std::numeric_limits<std::size_t>::max() - peer_chunks) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
         receive_slots += state.peer_capacities[peer];
-        receive_request_count += MpiGhostProtocol::ChunkCount(state.peer_capacities[peer]);
+        layout.receive_request_count += peer_chunks;
     }
 
-    if (preparation_status == BLITZAR_STATUS_OK && remote_peer_count != 0 &&
-        MpiGhostProtocol::ChunkCount(local.size()) >
-            std::numeric_limits<std::size_t>::max() / remote_peer_count) {
-        preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-    }
-    else if (preparation_status == BLITZAR_STATUS_OK) {
-        send_request_count = MpiGhostProtocol::ChunkCount(local.size()) * remote_peer_count;
+    const std::size_t local_chunks = MpiGhostProtocol::ChunkCount(local_size);
+
+    if (remote_peer_count != 0 &&
+        local_chunks > std::numeric_limits<std::size_t>::max() / remote_peer_count) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    if (preparation_status == BLITZAR_STATUS_OK &&
-        (receive_request_count > static_cast<std::size_t>(INT_MAX) ||
-            send_request_count > static_cast<std::size_t>(INT_MAX) ||
-            !MpiGhostProtocol::ToWireSize(receive_slots, receive_wire_size))) {
-        preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-    }
+    layout.send_request_count = local_chunks * remote_peer_count;
 
-    if (preparation_status == BLITZAR_STATUS_OK && remote_peer_count != 0 &&
+    if (layout.receive_request_count > static_cast<std::size_t>(INT_MAX) ||
+        layout.send_request_count > static_cast<std::size_t>(INT_MAX) ||
+        !MpiGhostProtocol::ToWireSize(receive_slots, layout.receive_wire_size)) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    if (remote_peer_count != 0 &&
         local_bytes > std::numeric_limits<std::size_t>::max() / remote_peer_count) {
-        preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-    }
-    else if (preparation_status == BLITZAR_STATUS_OK) {
-        send_wire_size = local_bytes * remote_peer_count;
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    if (preparation_status == BLITZAR_STATUS_OK &&
-        (!MpiGhostProtocol::EnsureCapacity(state.receive_wire, receive_wire_size) ||
-            !MpiGhostProtocol::ResizeWithinCapacity(state.receive_wire, receive_wire_size) ||
-            !MpiGhostProtocol::EnsureCapacity(
-                state.receive_requests, receive_request_count) ||
-            !MpiGhostProtocol::EnsureCapacity(state.send_requests, send_request_count) ||
-            !MpiGhostProtocol::EnsureCapacity(
-                state.receive_statuses, receive_request_count) ||
-            !MpiGhostProtocol::EnsureCapacity(state.receive_chunks, receive_request_count) ||
-            !MpiGhostProtocol::ResizeWithinCapacity(
-                state.receive_requests, receive_request_count) ||
-            !MpiGhostProtocol::ResizeWithinCapacity(state.send_requests, send_request_count) ||
-            !MpiGhostProtocol::ResizeWithinCapacity(
-                state.receive_statuses, receive_request_count) ||
-            !MpiGhostProtocol::ResizeWithinCapacity(
-                state.receive_chunks, receive_request_count))) {
-        preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-    }
-    if (preparation_status == BLITZAR_STATUS_OK) {
-        std::fill(state.receive_counts.begin(), state.receive_counts.end(), 0);
-        std::fill(state.offsets.begin(), state.offsets.end(), 0);
-    }
+    layout.send_wire_size = local_bytes * remote_peer_count;
 
-    blitzar_status global_capacity_status = BLITZAR_STATUS_INTERNAL_ERROR;
-    const blitzar_status capacity_synchronization_status = collectives_.SynchronizeStatus(
-        preparation_status, "MpiGhostTransport", "ghost-capacity-prepare", global_capacity_status);
+    return BLITZAR_STATUS_OK;
+}
 
-    if (capacity_synchronization_status != BLITZAR_STATUS_OK ||
-        global_capacity_status != BLITZAR_STATUS_OK) {
-        return capacity_synchronization_status != BLITZAR_STATUS_OK
-                   ? capacity_synchronization_status
-                   : global_capacity_status;
+blitzar_status MpiGhostTransport::PrepareRoundStorage(
+    MpiGhostExchange::Impl& state, const BeginLayout& layout) const noexcept
+{
+    if (!MpiGhostProtocol::ResizeWithinCapacity(state.receive_wire, layout.receive_wire_size) ||
+        !MpiGhostProtocol::ResizeWithinCapacity(
+            state.receive_requests, layout.receive_request_count) ||
+        !MpiGhostProtocol::ResizeWithinCapacity(state.send_requests, layout.send_request_count) ||
+        !MpiGhostProtocol::ResizeWithinCapacity(
+            state.receive_statuses, layout.receive_request_count) ||
+        !MpiGhostProtocol::ResizeWithinCapacity(
+            state.receive_chunks, layout.receive_request_count) ||
+        layout.receive_wire_size > state.receive_capacity * ParticleWireBytes ||
+        layout.receive_request_count > state.receive_requests.capacity() ||
+        layout.send_request_count > state.send_requests.capacity()) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    state.transfer = {send_wire_size, receive_wire_size};
+    std::fill(state.receive_counts.begin(), state.receive_counts.end(), 0);
+    std::fill(state.offsets.begin(), state.offsets.end(), 0);
+
+    return BLITZAR_STATUS_OK;
+}
+
+blitzar_status MpiGhostTransport::PostRequests(std::span<const ParticlePacket> local,
+    MpiGhostExchange::Impl& state, const BeginLayout& layout) const noexcept
+{
+    state.transfer = {layout.send_wire_size, layout.receive_wire_size};
     state.active = true;
 
-    std::size_t receive_request_index = 0;
-    std::size_t send_request_index = 0;
+    blitzar_status status = PostReceiveRequests(state, layout);
+
+    if (status != BLITZAR_STATUS_OK) {
+        AbortExchange(state);
+
+        return status;
+    }
+
+    status = PostSendRequests(local, state, layout);
+
+    if (status != BLITZAR_STATUS_OK) {
+        AbortExchange(state);
+    }
+
+    return status;
+}
+
+blitzar_status MpiGhostTransport::PostReceiveRequests(
+    MpiGhostExchange::Impl& state, const BeginLayout& layout) const noexcept
+{
+#if defined(BLITZAR_HAS_MPI)
+    std::size_t request_index = 0;
 
     for (int peer = 0; peer < session_.Size(); ++peer) {
         if (peer == session_.Rank()) {
@@ -212,96 +244,90 @@ blitzar_status MpiGhostTransport::Begin(
         }
 
         const std::size_t peer_index = static_cast<std::size_t>(peer);
-
         std::size_t packet_offset = 0;
 
         while (packet_offset < state.peer_capacities[peer_index]) {
             const std::size_t chunk = std::min(
-                state.peer_capacities[peer_index] - packet_offset, chunk_packets);
-
+                state.peer_capacities[peer_index] - packet_offset, layout.chunk_packets);
             int bytes = 0;
 
-            if (!MpiGhostProtocol::ToWireBytes(chunk, bytes)) {
-                AbortExchange(state);
-
+            if (!MpiGhostProtocol::ToWireBytes(chunk, bytes) ||
+                request_index >= state.receive_chunks.size() ||
+                request_index >= state.receive_requests.size()) {
                 return BLITZAR_STATUS_INVALID_ARGUMENT;
             }
 
-            if (receive_request_index >= state.receive_chunks.size() ||
-                receive_request_index >= state.receive_requests.size()) {
-                AbortExchange(state);
-
-                return BLITZAR_STATUS_INTERNAL_ERROR;
-            }
-
-            state.receive_chunks[receive_request_index] = {peer_index, packet_offset};
-            state.receive_requests[receive_request_index] = MPI_REQUEST_NULL;
+            state.receive_chunks[request_index] = {peer_index, packet_offset};
+            state.receive_requests[request_index] = MPI_REQUEST_NULL;
 
             if (MPI_Irecv(state.receive_wire.data() +
                               (state.wire_offsets[peer_index] + packet_offset) * ParticleWireBytes,
                     bytes, MPI_BYTE, peer, MpiGhostProtocol::DataTag,
                     session_.Native().communicator,
-                    &state.receive_requests[receive_request_index]) != MPI_SUCCESS) {
-                AbortExchange(state);
-
+                    &state.receive_requests[request_index]) != MPI_SUCCESS) {
                 return BLITZAR_STATUS_INTERNAL_ERROR;
             }
 
-            ++receive_request_index;
-
+            ++request_index;
             packet_offset += chunk;
         }
+    }
 
-        packet_offset = 0;
+    return request_index == layout.receive_request_count ? BLITZAR_STATUS_OK
+                                                          : BLITZAR_STATUS_INTERNAL_ERROR;
+#else
+
+    (void)state;
+    (void)layout;
+
+    return BLITZAR_STATUS_INTERNAL_ERROR;
+#endif
+}
+
+blitzar_status MpiGhostTransport::PostSendRequests(std::span<const ParticlePacket> local,
+    MpiGhostExchange::Impl& state, const BeginLayout& layout) const noexcept
+{
+#if defined(BLITZAR_HAS_MPI)
+    std::size_t request_index = 0;
+
+    for (int peer = 0; peer < session_.Size(); ++peer) {
+        if (peer == session_.Rank()) {
+            continue;
+        }
+
+        std::size_t packet_offset = 0;
 
         while (packet_offset < local.size()) {
-            const std::size_t chunk = std::min(local.size() - packet_offset, chunk_packets);
+            const std::size_t chunk = std::min(local.size() - packet_offset, layout.chunk_packets);
+            int bytes = 0;
 
-            int local_bytes_count = 0;
-
-            if (!MpiGhostProtocol::ToWireBytes(chunk, local_bytes_count)) {
-                AbortExchange(state);
-
+            if (!MpiGhostProtocol::ToWireBytes(chunk, bytes) ||
+                request_index >= state.send_requests.size()) {
                 return BLITZAR_STATUS_INVALID_ARGUMENT;
             }
 
-            if (send_request_index >= state.send_requests.size()) {
-                AbortExchange(state);
-
-                return BLITZAR_STATUS_INTERNAL_ERROR;
-            }
-
-            state.send_requests[send_request_index] = MPI_REQUEST_NULL;
-
+            state.send_requests[request_index] = MPI_REQUEST_NULL;
             const std::byte* local_data = state.local_wire.data() +
                                           packet_offset * ParticleWireBytes;
 
-            if (MPI_Isend(local_data, local_bytes_count, MPI_BYTE, peer, MpiGhostProtocol::DataTag,
-                    session_.Native().communicator, &state.send_requests[send_request_index]) !=
+            if (MPI_Isend(local_data, bytes, MPI_BYTE, peer, MpiGhostProtocol::DataTag,
+                    session_.Native().communicator, &state.send_requests[request_index]) !=
                 MPI_SUCCESS) {
-                AbortExchange(state);
-
                 return BLITZAR_STATUS_INTERNAL_ERROR;
             }
 
-            ++send_request_index;
-
+            ++request_index;
             packet_offset += chunk;
         }
     }
 
-    if (receive_request_index != receive_request_count ||
-        send_request_index != send_request_count) {
-        AbortExchange(state);
-
-        return BLITZAR_STATUS_INTERNAL_ERROR;
-    }
-
-    return BLITZAR_STATUS_OK;
+    return request_index == layout.send_request_count ? BLITZAR_STATUS_OK
+                                                       : BLITZAR_STATUS_INTERNAL_ERROR;
 #else
 
     (void)local;
-    (void)exchange;
+    (void)state;
+    (void)layout;
 
     return BLITZAR_STATUS_INTERNAL_ERROR;
 #endif
