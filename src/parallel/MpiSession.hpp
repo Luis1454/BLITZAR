@@ -33,6 +33,9 @@ private:
 
     struct Impl;
 
+    [[nodiscard]] blitzar_status InitializeMpi() noexcept;
+    void ReleaseMpi() noexcept;
+    [[nodiscard]] blitzar_status ReadCommunicator() noexcept;
     [[nodiscard]] const Impl& Native() const noexcept;
 
     std::unique_ptr<Impl> impl_;

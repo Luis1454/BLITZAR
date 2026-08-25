@@ -46,6 +46,10 @@ private:
 
     [[nodiscard]] static bool ValidateAllToAllRequest(
         const AllToAllPacketRequest& request, std::size_t peer_count) noexcept;
+    [[nodiscard]] blitzar_status ExecuteAllToAllCounts(bool layout_valid,
+        std::span<const int> send_counts, std::span<int> receive_counts) const noexcept;
+    [[nodiscard]] blitzar_status ExecuteAllGatherCounts(bool layout_valid,
+        int local_count, std::span<int> counts) const noexcept;
     [[nodiscard]] blitzar_status RunAllToAll(
         const AllToAllPacketRequest& request) const noexcept;
     [[nodiscard]] blitzar_status PrepareAllToAll(

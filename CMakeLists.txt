@@ -84,6 +84,7 @@ target_sources(blitzar PRIVATE
     src/particles/SourceBuffer.cpp
     src/physics/GravityLaw.cpp
     src/parallel/MpiCollectives.cpp
+    src/parallel/MpiBroadcast.cpp
     src/parallel/Bounds.cpp
     src/parallel/DomainDecomposition.cpp
     src/parallel/Partition.cpp
@@ -103,9 +104,12 @@ target_sources(blitzar PRIVATE
     src/parallel/MpiExchange.cpp
     src/parallel/MpiMigration.cpp
     src/parallel/MpiPacketTransport.cpp
+    src/parallel/MpiPacketPrepare.cpp
+    src/parallel/MpiPacketCounts.cpp
     src/parallel/MpiPacketAllToAll.cpp
     src/parallel/MpiPacketAllGather.cpp
     src/parallel/MpiSession.cpp
+    src/parallel/MpiSessionInit.cpp
     src/parallel/MpiTypes.cpp
     src/sdk/Api.cpp
     src/sdk/CppApi.cpp

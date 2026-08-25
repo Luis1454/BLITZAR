@@ -2,7 +2,6 @@
 
 #include "parallel/MpiSessionNative.hpp"
 
-#include <climits>
 #include <cstdio>
 
 #if defined(BLITZAR_HAS_MPI)
@@ -217,76 +216,6 @@ blitzar_status MpiCollectives::ReduceMax(int local_value, int& global_value) con
 #if defined(BLITZAR_HAS_MPI)
 
     return MPI_Allreduce(&local_value, &global_value, 1, MPI_INT, MPI_MAX,
-               session_.Native().communicator) == MPI_SUCCESS
-               ? BLITZAR_STATUS_OK
-               : BLITZAR_STATUS_INTERNAL_ERROR;
-#else
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
-}
-
-blitzar_status MpiCollectives::Broadcast(
-    std::span<blitzar_core::Scalar> values, int root) const noexcept
-{
-    const bool layout_valid = root >= 0 && root < session_.Size() &&
-                              values.size() <= static_cast<std::size_t>(INT_MAX);
-
-    if (!session_.IsUsable()) {
-        return session_.Status();
-    }
-    if (!session_.IsDistributed()) {
-        return layout_valid && root == 0 ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT;
-    }
-#if defined(BLITZAR_HAS_MPI)
-
-    blitzar_status global_layout_status = BLITZAR_STATUS_INTERNAL_ERROR;
-    const blitzar_status synchronization_status = SynchronizeStatus(
-        layout_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
-        "MpiCollectives", "broadcast-scalar-layout", global_layout_status);
-
-    if (synchronization_status != BLITZAR_STATUS_OK ||
-        global_layout_status != BLITZAR_STATUS_OK) {
-        return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status
-                                                           : global_layout_status;
-    }
-
-    return MPI_Bcast(values.data(), static_cast<int>(values.size()), MPI_DOUBLE, root,
-               session_.Native().communicator) == MPI_SUCCESS
-               ? BLITZAR_STATUS_OK
-               : BLITZAR_STATUS_INTERNAL_ERROR;
-#else
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
-}
-
-blitzar_status MpiCollectives::Broadcast(
-    std::span<std::uint64_t> values, int root) const noexcept
-{
-    const bool layout_valid = root >= 0 && root < session_.Size() &&
-                              values.size() <= static_cast<std::size_t>(INT_MAX);
-
-    if (!session_.IsUsable()) {
-        return session_.Status();
-    }
-    if (!session_.IsDistributed()) {
-        return layout_valid && root == 0 ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT;
-    }
-#if defined(BLITZAR_HAS_MPI)
-
-    blitzar_status global_layout_status = BLITZAR_STATUS_INTERNAL_ERROR;
-    const blitzar_status synchronization_status = SynchronizeStatus(
-        layout_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
-        "MpiCollectives", "broadcast-u64-layout", global_layout_status);
-
-    if (synchronization_status != BLITZAR_STATUS_OK ||
-        global_layout_status != BLITZAR_STATUS_OK) {
-        return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status
-                                                           : global_layout_status;
-    }
-
-    return MPI_Bcast(values.data(), static_cast<int>(values.size()), MPI_UINT64_T, root,
                session_.Native().communicator) == MPI_SUCCESS
                ? BLITZAR_STATUS_OK
                : BLITZAR_STATUS_INTERNAL_ERROR;
