@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "lifecycle_values": [
+    "active",
+    "superseded",
+    "historical"
+  ],
+  "decisions": [
+    {"path": "plan/decisions/001-initial-freeze.md", "lifecycle": "active"},
+    {"path": "plan/decisions/002-gate-path-scope.md", "lifecycle": "active"},
+    {"path": "plan/decisions/003-quality-root-scope.md", "lifecycle": "active"},
+    {"path": "plan/decisions/004-hip-optional-backend.md", "lifecycle": "active"},
+    {"path": "plan/decisions/005-native-cuda-compatibility.md", "lifecycle": "active"},
+    {"path": "plan/decisions/006-mpi-domain-decomposition.md", "lifecycle": "active"},
+    {"path": "plan/decisions/007-mpi-kdk-overlap.md", "lifecycle": "active"},
+    {"path": "plan/decisions/008-mpi-context-boundaries.md", "lifecycle": "active"},
+    {"path": "plan/decisions/009-mpi-packet-wire-format.md", "lifecycle": "active"},
+    {"path": "plan/decisions/010-context-ownership-thread-safety.md", "lifecycle": "active"},
+    {"path": "plan/decisions/011-public-status-normalization.md", "lifecycle": "active"},
+    {"path": "plan/decisions/012-installed-package-dependencies.md", "lifecycle": "active"},
+    {"path": "plan/decisions/013-capability-gated-ci.md", "lifecycle": "active"},
+    {"path": "plan/decisions/014-plan-gate-scope.md", "lifecycle": "active"},
+    {"path": "plan/decisions/015-validation-gaps-and-waivers.md", "lifecycle": "active"},
+    {"path": "plan/decisions/016-kdk-namespace-boundary.md", "lifecycle": "active"},
+    {"path": "plan/decisions/017-version-identity.md", "lifecycle": "active"},
+    {"path": "plan/decisions/018-repository-root-ownership.md", "lifecycle": "active"},
+    {"path": "plan/decisions/019-particle-arena-ownership.md", "lifecycle": "active"},
+    {"path": "plan/decisions/020-direct-staging-transaction.md", "lifecycle": "active"},
+    {"path": "plan/decisions/021-bounded-hot-path-capacity.md", "lifecycle": "active"},
+    {"path": "plan/decisions/022-bounded-architecture-qualification.md", "lifecycle": "active"},
+    {
+      "path": "plan/decisions/023-simulation-responsibility-boundary.md",
+      "lifecycle": "active",
+      "notes": "Implementation mapping is Config.cpp, ParticleSet.cpp, ParticleGet.cpp, Step.cpp, and Simulation.cpp."
+    },
+    {"path": "plan/decisions/024-mpi-process-lifetime.md", "lifecycle": "active"},
+    {"path": "plan/decisions/025-distributed-input-ownership.md", "lifecycle": "active"},
+    {"path": "plan/decisions/026-mpi-overlap-qualification.md", "lifecycle": "active"},
+    {"path": "plan/decisions/027-fmm-multipole-contract.md", "lifecycle": "active"},
+    {"path": "plan/decisions/028-hierarchical-acceptance-criterion.md", "lifecycle": "active"},
+    {"path": "plan/decisions/029-repository-realignment-contract.md", "lifecycle": "active"}
+  ]
+}

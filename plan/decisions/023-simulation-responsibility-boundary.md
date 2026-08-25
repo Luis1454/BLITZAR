@@ -7,8 +7,9 @@ Plan version: 1.0.10
 ## Context
 
 `src/sdk/Simulation.cpp` mixed construction, solver configuration, particle state
-transfer, and local/distributed KDK execution. The previous extraction of
-The first internal extraction used redundant server-oriented prefixes for SDK
+transfer, and local/distributed KDK execution. The implementation is now
+distributed across behavior-owned files without recreating a server boundary.
+The earlier extraction used redundant server-oriented prefixes for SDK
 implementation files and helper types. Those names leaked an obsolete server
 boundary into the clean-room SDK and obscured the responsibility owned by the
 `src/sdk` module.
@@ -19,7 +20,8 @@ Keep `Simulation` as the composition root and distribute its implementation by
 behavior:
 
 - `Config.cpp` owns solver and runtime configuration mutators.
-- `Particles.cpp` owns particle input commit and state output gathering.
+- `ParticleSet.cpp` and `ParticleGet.cpp` own particle input commit and state
+  output gathering.
 - `Step.cpp` owns KDK dispatch, distributed transaction, and migration.
 - `Simulation.cpp` owns construction, narrow state accessors, and status storage.
 
