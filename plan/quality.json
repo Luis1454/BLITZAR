@@ -250,6 +250,10 @@
         {
           "path": "src/parallel/MpiNativeState.hpp",
           "reason": "MpiNative opaque state fragment"
+        },
+        {
+          "path": "tests/MpiCases.hpp",
+          "reason": "MPI test-case facade and StateArrays value contract"
         }
       ],
       "standalone_implementation_exceptions": [
@@ -281,7 +285,7 @@
       "src/parallel/MpiNativePackets.cpp",
       "src/parallel/MpiNativeState.hpp"
     ],
-    "test_native_units": ["tests/Mpi.cpp"],
+    "test_native_units": ["tests/Mpi.cpp", "tests/MpiFixture.cpp"],
     "scan_roots": ["src", "tests"],
     "suffixes": [".c", ".cc", ".cpp", ".cu", ".h", ".hip", ".hpp", ".inl"]
   },
@@ -386,6 +390,18 @@
       "id": "CHK-P0-017",
       "name": "pointer-ownership-boundary-fixtures",
       "command": "python tools/pointer_ownership_gate_test.py",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-018",
+      "name": "test-suite-responsibility-gate",
+      "command": "python tools/test_suite_gate.py --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-019",
+      "name": "test-suite-responsibility-fixtures",
+      "command": "python tools/test_suite_gate_test.py",
       "phase": "P0"
     }
   ]

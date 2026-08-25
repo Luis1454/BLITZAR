@@ -391,7 +391,16 @@ if(BLITZAR_BUILD_TESTS)
     if(BLITZAR_MPI_ENABLED)
         add_executable(blitzar_mpi_test
             tests/AllocationMonitor.cpp
+            tests/MpiAllocationTest.cpp
             tests/Mpi.cpp
+            tests/MpiDomain.cpp
+            tests/MpiExchangeTest.cpp
+            tests/MpiFixture.cpp
+            tests/MpiInvalidTest.cpp
+            tests/MpiOverlapTest.cpp
+            tests/MpiRollbackTest.cpp
+            tests/MpiValidationTest.cpp
+            tests/MpiWireTest.cpp
         )
         target_link_libraries(blitzar_mpi_test PRIVATE blitzar)
         target_compile_features(blitzar_mpi_test PRIVATE cxx_std_20)
