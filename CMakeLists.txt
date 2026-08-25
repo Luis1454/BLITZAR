@@ -259,6 +259,13 @@ if(BLITZAR_BUILD_EXAMPLES)
     set_property(TARGET blitzar_c_example PROPERTY LINKER_LANGUAGE CXX)
     blitzar_enable_warnings(blitzar_c_example)
 
+    add_executable(blitzar_c_v2_example
+        examples/CV2Example.c
+    )
+    target_link_libraries(blitzar_c_v2_example PRIVATE blitzar)
+    set_property(TARGET blitzar_c_v2_example PROPERTY LINKER_LANGUAGE CXX)
+    blitzar_enable_warnings(blitzar_c_v2_example)
+
     add_executable(blitzar_cpp_example
         examples/CppExample.cpp
     )
@@ -269,6 +276,15 @@ endif()
 
 if(BLITZAR_BUILD_TESTS)
     enable_testing()
+
+    add_library(blitzar_public_header_compile OBJECT
+        tests/PublicC.c
+        tests/PublicCpp.cpp
+    )
+    target_include_directories(blitzar_public_header_compile PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_compile_features(blitzar_public_header_compile PRIVATE cxx_std_20)
+    blitzar_enable_warnings(blitzar_public_header_compile)
 
     add_executable(blitzar_lifecycle_test
         tests/Lifecycle.cpp
@@ -454,6 +470,7 @@ if(BLITZAR_BUILD_TESTS)
     if(BLITZAR_BUILD_EXAMPLES)
         add_test(NAME TST-P2-001 COMMAND blitzar_c_example)
         add_test(NAME TST-P2-002 COMMAND blitzar_cpp_example)
+        add_test(NAME TST-P2-005 COMMAND blitzar_c_v2_example)
     endif()
     if(BLITZAR_BUILD_CLI)
         add_test(NAME TST-P2-003 COMMAND blitzar_cli)

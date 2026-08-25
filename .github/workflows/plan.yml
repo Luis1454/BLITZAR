@@ -65,6 +65,12 @@ jobs:
       - name: Self-test statement grouping format
         run: python tools/format_blocks_test.py
 
+      - name: Validate public API boundary
+        run: python tools/public_api_gate.py --root . --check
+
+      - name: Self-test public API boundary
+        run: python tools/public_api_gate_test.py
+
       - name: Self-test cross-platform debug runner command
         run: python tools/debug_runner_test.py
 

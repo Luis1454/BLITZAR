@@ -20,6 +20,11 @@ Do not inspect, copy, translate, or use the old BLITZAR repository as context.
 - Do not create god structs. Separate storage, policy, execution context, and
   reporting when their lifetimes or responsibilities differ.
 - Keep the C ABI opaque and stable; put C++ ergonomics in the wrapper.
+- Public headers may include only registered standard-library headers and the
+  public C ABI header. MPI, HIP, CUDA, `src/`, and internal implementation
+  headers are forbidden at that boundary. ABI pointer and V1 parameter
+  exceptions must be registered in `plan/public_boundary.json` or
+  `plan/parameter_exceptions.json`.
 - Keep one-level namespaces and never use `using namespace`.
 - Do not add `utils`, `common`, `misc`, `private`, or `details` catch-alls.
 - Do not split files mechanically by line count. Review responsibility,
