@@ -138,6 +138,12 @@
       "name": "installed-cmake-package-consumer",
       "command": "cmake -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/PackageConsumer.cmake",
       "phase": "P2"
+    },
+    {
+      "id": "TST-P2-005",
+      "name": "c-abi-v2-consumer",
+      "command": "blitzar_c_v2_example",
+      "phase": "P2"
     }
   ],
   "architecture": {
@@ -326,6 +332,24 @@
       "id": "CHK-P0-010",
       "name": "clang-format-and-encoding-fixtures",
       "command": "python tools/clang_format_gate_test.py",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-011",
+      "name": "public-api-boundary",
+      "command": "python tools/public_api_gate.py --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-012",
+      "name": "public-api-boundary-fixtures",
+      "command": "python tools/public_api_gate_test.py",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-013",
+      "name": "public-header-compile",
+      "command": "cmake --build build --target blitzar_public_header_compile",
       "phase": "P0"
     }
   ]

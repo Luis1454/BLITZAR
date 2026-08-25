@@ -8,15 +8,16 @@
 #include <limits>
 #include <memory>
 #include <span>
+#include <string_view>
 
 namespace blitzar {
 
-[[nodiscard]] inline const char* version() noexcept
+[[nodiscard]] inline std::string_view version() noexcept
 {
     return blitzar_version();
 }
 
-[[nodiscard]] inline const char* plan_version() noexcept
+[[nodiscard]] inline std::string_view plan_version() noexcept
 {
     return blitzar_plan_version();
 }

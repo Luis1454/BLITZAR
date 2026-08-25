@@ -57,8 +57,9 @@ if(configuration_types_entry)
 endif()
 
 set(example_c "${CMAKE_CURRENT_LIST_DIR}/../examples/CExample.c")
+set(example_v2 "${CMAKE_CURRENT_LIST_DIR}/../examples/CV2Example.c")
 set(example_cpp "${CMAKE_CURRENT_LIST_DIR}/../examples/CppExample.cpp")
-if(NOT EXISTS "${example_c}" OR NOT EXISTS "${example_cpp}")
+if(NOT EXISTS "${example_c}" OR NOT EXISTS "${example_v2}" OR NOT EXISTS "${example_cpp}")
     message(FATAL_ERROR "public SDK examples are missing")
 endif()
 
@@ -93,12 +94,17 @@ add_executable(package_c_consumer "@EXAMPLE_C@")
 set_property(TARGET package_c_consumer PROPERTY LINKER_LANGUAGE CXX)
 target_link_libraries(package_c_consumer PRIVATE BLITZAR::blitzar)
 
+add_executable(package_c_v2_consumer "@EXAMPLE_V2@")
+set_property(TARGET package_c_v2_consumer PROPERTY LINKER_LANGUAGE CXX)
+target_link_libraries(package_c_v2_consumer PRIVATE BLITZAR::blitzar)
+
 add_executable(package_cpp_consumer "@EXAMPLE_CPP@")
 target_link_libraries(package_cpp_consumer PRIVATE BLITZAR::blitzar)
 ]=])
 set(EXPECTED_PRODUCT_VERSION "${expected_product_version}")
 set(EXPECTED_PLAN_VERSION "${expected_plan_version}")
 set(EXAMPLE_C "${example_c}")
+set(EXAMPLE_V2 "${example_v2}")
 set(EXAMPLE_CPP "${example_cpp}")
 string(CONFIGURE "${consumer_cmake}" consumer_cmake @ONLY)
 file(WRITE "${source_dir}/CMakeLists.txt" "${consumer_cmake}")
@@ -166,6 +172,7 @@ endif()
 
 foreach(consumer_executable IN ITEMS
         "${consumer_executable_dir}/package_c_consumer${executable_suffix}"
+        "${consumer_executable_dir}/package_c_v2_consumer${executable_suffix}"
         "${consumer_executable_dir}/package_cpp_consumer${executable_suffix}")
     execute_process(
         COMMAND ${run_environment} "${consumer_executable}"

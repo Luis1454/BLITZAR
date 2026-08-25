@@ -1,0 +1,41 @@
+{
+  "public_headers": {
+    "include/blitzar/blitzar.h": {
+      "allowed_includes": ["stdint.h"],
+      "raw_pointer_policy": "c_abi",
+      "opaque_handle_declarations": [
+        "typedef struct blitzar_context blitzar_context;",
+        "typedef struct blitzar_simulation blitzar_simulation;"
+      ],
+      "fixed_width_forbidden_types": ["size_t", "ptrdiff_t", "long", "short", "bool"]
+    },
+    "include/blitzar/blitzar.hpp": {
+      "allowed_includes": [
+        "atomic",
+        "blitzar/blitzar.h",
+        "cstddef",
+        "cstdint",
+        "limits",
+        "memory",
+        "span",
+        "string_view"
+      ],
+      "raw_pointer_policy": "forbidden"
+    }
+  },
+  "forbidden_public_tokens": ["MPI_", "hip", "cuda", "src/"],
+  "internal_cpp_facade_exceptions": [
+    {
+      "path": "src/sdk/CppState.hpp",
+      "include": "blitzar/blitzar.hpp",
+      "reason": "defines the private C++ facade PImpl"
+    }
+  ],
+  "raw_pointer_exceptions": [
+    {
+      "path": "include/blitzar/blitzar.h",
+      "reason": "stable C ABI handles and non-owning SoA views"
+    }
+  ],
+  "contract_version": 1
+}

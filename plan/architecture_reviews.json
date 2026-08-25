@@ -98,6 +98,13 @@
       "issue": 600,
       "status": "accepted",
       "decision": "The naming report materializes separate collision, exception, length, and type-mapping result lists so CI can distinguish each contract failure; the allocation signal is limited to report construction."
+    },
+    {
+      "path": "tools/public_api_gate.py",
+      "signals": ["branching"],
+      "issue": 602,
+      "status": "accepted",
+      "decision": "The public boundary gate keeps include, pointer, fixed-width ABI, internal-facade, and parameter-exception checks in one diagnostic boundary so a public contract violation reports its owning rule and source line."
     }
   ]
 }
