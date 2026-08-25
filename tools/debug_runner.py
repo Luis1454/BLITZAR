@@ -93,7 +93,6 @@ def build_cdb_command(
 ) -> list[str]:
     return [
         debugger,
-        "-nologo",
         "-g",
         "-G",
         "-c",
