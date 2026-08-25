@@ -89,7 +89,12 @@ target_sources(blitzar PRIVATE
     src/parallel/Partition.cpp
     src/parallel/MpiGhostTransport.cpp
     src/parallel/MpiGhostBegin.cpp
+    src/parallel/MpiGhostLayout.cpp
+    src/parallel/MpiGhostPost.cpp
     src/parallel/MpiGhostComplete.cpp
+    src/parallel/MpiGhostReceive.cpp
+    src/parallel/MpiGhostStorage.cpp
+    src/parallel/MpiGhostState.cpp
     src/parallel/MpiGather.cpp
     src/parallel/MpiGatherLocal.cpp
     src/parallel/MpiGatherPlan.cpp

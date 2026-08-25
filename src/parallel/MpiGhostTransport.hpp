@@ -31,6 +31,7 @@ public:
 private:
     struct BeginLayout final {
         std::size_t chunk_packets{};
+        std::size_t receive_slots{};
         std::size_t receive_request_count{};
         std::size_t send_request_count{};
         std::size_t receive_wire_size{};
@@ -46,6 +47,12 @@ private:
         MpiGhostExchange::Impl& state, BeginLayout& layout) const noexcept;
     [[nodiscard]] blitzar_status PreparePeerLayout(std::size_t local_size, std::size_t local_bytes,
         MpiGhostExchange::Impl& state, BeginLayout& layout) const noexcept;
+    [[nodiscard]] bool PreparePeerCapacity(
+        std::size_t peer, MpiGhostExchange::Impl& state, BeginLayout& layout) const noexcept;
+    [[nodiscard]] blitzar_status PrepareLocalLayout(
+        std::size_t local_size, std::size_t remote_peer_count, BeginLayout& layout) const noexcept;
+    [[nodiscard]] blitzar_status PrepareWireLayout(
+        std::size_t local_bytes, std::size_t remote_peer_count, BeginLayout& layout) const noexcept;
     [[nodiscard]] blitzar_status PrepareRoundStorage(
         MpiGhostExchange::Impl& state, const BeginLayout& layout) const noexcept;
     [[nodiscard]] blitzar_status PostRequests(
@@ -58,6 +65,8 @@ private:
         const BeginLayout& layout) const noexcept;
     [[nodiscard]] blitzar_status WaitGhostRequests(
         MpiGhostExchange::Impl& state) const noexcept;
+    [[nodiscard]] blitzar_status CompleteActive(
+        MpiGhostExchange::Impl& state, PacketBuffer& ghosts) const noexcept;
     [[nodiscard]] blitzar_status CountReceived(
         MpiGhostExchange::Impl& state, std::size_t& total) const noexcept;
     [[nodiscard]] blitzar_status PrepareGhostBuffer(
