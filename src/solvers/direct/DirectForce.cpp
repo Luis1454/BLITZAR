@@ -37,10 +37,13 @@ blitzar_status DirectSolver::CalculateTarget(const ForceTargetRequest& request) 
 
         const blitzar_core::Scalar dx =
             request.particles.x[source] - request.particles.x[request.target];
+
         const blitzar_core::Scalar dy =
             request.particles.y[source] - request.particles.y[request.target];
+
         const blitzar_core::Scalar dz =
             request.particles.z[source] - request.particles.z[request.target];
+
         const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
         const blitzar_physics::PairStatus pair_status =
             request.gravity.ValidatePair(request.particles.mass[source], distance_squared);
@@ -85,10 +88,13 @@ blitzar_status DirectSolver::CalculateRemoteTarget(
 
         const blitzar_core::Scalar dx =
             request.sources.x[source] - request.targets.x[request.target];
+
         const blitzar_core::Scalar dy =
             request.sources.y[source] - request.targets.y[request.target];
+
         const blitzar_core::Scalar dz =
             request.sources.z[source] - request.targets.z[request.target];
+
         const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
         const blitzar_physics::PairStatus pair_status =
             request.gravity.ValidatePair(request.sources.mass[source], distance_squared);

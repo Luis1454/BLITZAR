@@ -46,6 +46,7 @@ Octree::Cell Octree::MakeCell(CellPlacement placement) const noexcept
     cell.begin = placement.begin;
     cell.count = placement.count;
     cell.depth = placement.depth;
+
     cell.children.fill(Cell::InvalidIndex);
 
     return cell;

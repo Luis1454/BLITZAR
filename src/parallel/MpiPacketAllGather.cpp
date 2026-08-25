@@ -72,6 +72,7 @@ blitzar_status MpiPacketTransport::RunAllGather(
     for (;;) {
         const int local_more = MpiPacketProtocol::HasRemaining(
             request.counts, send_progress_) ? 1 : 0;
+
         int global_more = 0;
 
         if (collectives_.ReduceMax(local_more, global_more) != BLITZAR_STATUS_OK) {
@@ -82,6 +83,7 @@ blitzar_status MpiPacketTransport::RunAllGather(
         }
 
         PacketRoundLayout layout{};
+
         status = PrepareAllGatherRound(request, packets_per_peer, layout);
 
         if (status == BLITZAR_STATUS_OK) {
@@ -147,14 +149,17 @@ blitzar_status MpiPacketTransport::PrepareAllGatherRound(const AllGatherRequest&
 {
     layout = {};
     layout.local_index = static_cast<std::size_t>(session_.Rank());
+
     const std::size_t local_remaining =
         static_cast<std::size_t>(request.counts[layout.local_index]) -
         send_progress_[layout.local_index];
+
     layout.local_chunk = std::min(local_remaining, packets_per_peer);
 
     for (std::size_t index = 0; index < receive_bytes_.size(); ++index) {
         const std::size_t remaining =
             static_cast<std::size_t>(request.counts[index]) - send_progress_[index];
+
         const std::size_t chunk = std::min(remaining, packets_per_peer);
 
         if (!MpiPacketProtocol::ToWireBytes(layout.receive_total, receive_offsets_[index]) ||

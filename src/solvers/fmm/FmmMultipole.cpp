@@ -99,11 +99,15 @@ blitzar_status FmmSolver::MergeChildMultipoles(
         }
 
         const blitzar_trees::Octree::Cell& child_cell = cells[child];
+
         const Multipole& child_multipole = multipoles[child];
+
         const blitzar_core::Scalar dx =
             child_cell.center_of_mass.x - cell.center_of_mass.x;
+
         const blitzar_core::Scalar dy =
             child_cell.center_of_mass.y - cell.center_of_mass.y;
+
         const blitzar_core::Scalar dz =
             child_cell.center_of_mass.z - cell.center_of_mass.z;
 
@@ -132,6 +136,7 @@ blitzar_status FmmSolver::BuildMultipoles(const blitzar_trees::Octree& tree,
 
     for (std::size_t index = cells.size(); index-- > 0;) {
         const blitzar_trees::Octree::Cell& cell = cells[index];
+
         Multipole& multipole = multipoles[index];
         multipole = {};
         multipole.mass = cell.mass;
@@ -177,11 +182,13 @@ blitzar_status FmmSolver::EvaluateMultipole(const Multipole& multipole,
             multipole.yz * displacement.z,
         multipole.xz * displacement.x + multipole.yz * displacement.y +
             multipole.zz * displacement.z};
+
     const blitzar_core::Scalar trace = multipole.xx + multipole.yy + multipole.zz;
     const blitzar_core::Scalar contraction =
         displacement.x * moment_times_displacement.x +
         displacement.y * moment_times_displacement.y +
         displacement.z * moment_times_displacement.z;
+
     const blitzar_core::Scalar constant = parameters_.EffectiveConstant();
 
     acceleration.x += constant *
@@ -189,11 +196,13 @@ blitzar_status FmmSolver::EvaluateMultipole(const Multipole& multipole,
             3.0 * moment_times_displacement.x * inverse_fifth -
             1.5 * displacement.x * trace * inverse_fifth +
             7.5 * displacement.x * contraction * inverse_seventh);
+
     acceleration.y += constant *
         (multipole.mass * displacement.y * inverse_cubed -
             3.0 * moment_times_displacement.y * inverse_fifth -
             1.5 * displacement.y * trace * inverse_fifth +
             7.5 * displacement.y * contraction * inverse_seventh);
+
     acceleration.z += constant *
         (multipole.mass * displacement.z * inverse_cubed -
             3.0 * moment_times_displacement.z * inverse_fifth -

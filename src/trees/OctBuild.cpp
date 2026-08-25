@@ -26,6 +26,7 @@ blitzar_status Octree::Partition(const Cell& cell, blitzar_core::ParticleStateVi
     }
 
     std::array<std::size_t, 8> write{};
+
     write[0] = cell.begin;
 
     for (std::size_t octant = 1; octant < write.size(); ++octant) {
@@ -71,6 +72,7 @@ blitzar_status Octree::AppendChildren(std::size_t parent_index, const Cell& cell
             cell.center.x + ((octant & 1U) != 0U ? child_half_extent : -child_half_extent),
             cell.center.y + ((octant & 2U) != 0U ? child_half_extent : -child_half_extent),
             cell.center.z + ((octant & 4U) != 0U ? child_half_extent : -child_half_extent)};
+
         std::size_t begin = cell.begin;
 
         for (std::size_t previous = 0; previous < octant; ++previous) {
@@ -78,8 +80,10 @@ blitzar_status Octree::AppendChildren(std::size_t parent_index, const Cell& cell
         }
 
         const std::size_t child = cells_.size();
+
         cells_.push_back(
             MakeCell({child_center, child_half_extent, begin, counts[octant], cell.depth + 1}));
+
         cells_[parent_index].children[octant] = child;
     }
 
@@ -131,8 +135,10 @@ blitzar_status Octree::BuildCells(blitzar_core::ParticleStateView particles,
 {
     const blitzar_core::Scalar span =
         std::max({maximum.x - minimum.x, maximum.y - minimum.y, maximum.z - minimum.z});
+
     const blitzar_core::Scalar half_extent =
         std::max(0.5 * span, std::numeric_limits<blitzar_core::Scalar>::epsilon());
+
     const blitzar_core::Vector3 center{0.5 * (minimum.x + maximum.x),
         0.5 * (minimum.y + maximum.y), 0.5 * (minimum.z + maximum.z)};
 
@@ -160,6 +166,7 @@ blitzar_status Octree::BuildCells(blitzar_core::ParticleStateView particles,
 blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
 {
     cells_.clear();
+
     particle_count_ = 0;
 
     blitzar_core::Vector3 minimum{};
@@ -174,6 +181,7 @@ blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
 
     if (build_status != BLITZAR_STATUS_OK) {
         cells_.clear();
+
         particle_count_ = 0;
 
         return build_status;

@@ -130,6 +130,7 @@ blitzar_status MpiExchange::OrderMigrationPackets() const noexcept
         const std::size_t index = static_cast<std::size_t>(peer);
 
         state_.send_offsets[index] = send_total;
+
         const std::size_t count = static_cast<std::size_t>(state_.send_counts[index]);
 
         if (send_total > std::numeric_limits<std::size_t>::max() - count) {
@@ -147,6 +148,7 @@ blitzar_status MpiExchange::OrderMigrationPackets() const noexcept
 
     for (const ParticlePacket& packet : state_.local_packets.View()) {
         const int owner = decomposition_.Owner({packet.x, packet.y, packet.z}, packet.id);
+
         state_.ordered_packets.View()[state_.write_offsets[static_cast<std::size_t>(owner)]++] =
             packet;
     }
@@ -194,6 +196,7 @@ blitzar_status MpiExchange::ExchangeMigrationPackets(PacketBuffer& received) con
     const AllToAllPacketRequest request{
         state_.ordered_packets.View(), state_.send_counts, state_.send_displacements,
         received.View(), state_.receive_counts, state_.receive_displacements};
+
     const blitzar_status status = context_.AllToAllPackets(request);
     const blitzar_status synchronized_status = SynchronizeStatus(status, "migrate-packets");
 

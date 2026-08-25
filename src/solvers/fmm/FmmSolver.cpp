@@ -127,6 +127,7 @@ blitzar_status FmmSolver::EnsureLocalCapacity(std::size_t particle_capacity) noe
     try {
         candidate_tree = std::make_unique<blitzar_trees::Octree>(particle_capacity, cell_capacity,
             settings_.leaf_capacity, settings_.max_depth);
+
         candidate_multipoles.reserve(cell_capacity);
         candidate_staging.resize(particle_capacity);
     }

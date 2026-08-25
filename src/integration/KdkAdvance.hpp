@@ -39,9 +39,11 @@ template <typename Solver, typename SolverScratch, typename DriftHook, typename 
     AdvanceRequest<Solver, SolverScratch, DriftHook, RollbackHook>& request) noexcept
 {
     auto& state = request.state;
+
     const blitzar_core::ForceView force = state.accelerations.View();
     const SolverComputeRequest<Solver, SolverScratch> compute_request{
         state.solver, state.solver_particles, force, state.settings, state.solver_scratch};
+
     const blitzar_status status = ComputeSolver(compute_request);
 
     if (status != BLITZAR_STATUS_OK) {
@@ -63,6 +65,7 @@ void KickAndDrift(AdvanceState<Solver, SolverScratch>& state,
 #if defined(_OPENMP)
 #pragma omp parallel for simd schedule(static)
 #endif
+
     for (std::int64_t raw_index = 0;
          raw_index < static_cast<std::int64_t>(state.particles.Count()); ++raw_index) {
         const std::size_t index = static_cast<std::size_t>(raw_index);
@@ -81,6 +84,7 @@ template <typename Solver, typename SolverScratch, typename DriftHook, typename 
     AdvanceRequest<Solver, SolverScratch, DriftHook, RollbackHook>& request) noexcept
 {
     auto& state = request.state;
+
     const DriftTransition transition =
         request.hooks.drift(state.particles, state.accelerations, state.checkpoint);
 
@@ -117,6 +121,7 @@ void Kick(AdvanceState<Solver, SolverScratch>& state, blitzar_core::ForceView fo
 #if defined(_OPENMP)
 #pragma omp parallel for simd schedule(static)
 #endif
+
     for (std::int64_t raw_index = 0;
          raw_index < static_cast<std::int64_t>(state.particles.Count()); ++raw_index) {
         const std::size_t index = static_cast<std::size_t>(raw_index);
@@ -167,6 +172,7 @@ blitzar_status LeapfrogKdk::Advance(
     }
 
     const blitzar_core::Scalar half_step = 0.5 * state.timestep;
+
     blitzar_integration_kdk::KickAndDrift(state, state.accelerations.View(), half_step);
 
     if (!blitzar_integration_kdk::IsFiniteState(state.particles.State())) {

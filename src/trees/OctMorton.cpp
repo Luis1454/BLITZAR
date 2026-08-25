@@ -25,6 +25,7 @@ std::size_t Octree::SortMortonChunks(blitzar_core::ParticleStateView particles,
                                              particles.SourceCount())
                                          : std::size_t{1};
 #else
+
     constexpr std::size_t thread_count = 1;
 #endif
     const std::size_t chunk_size = particles.SourceCount() / thread_count +
@@ -33,6 +34,7 @@ std::size_t Octree::SortMortonChunks(blitzar_core::ParticleStateView particles,
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
 #endif
+
     for (std::int64_t raw_chunk = 0; raw_chunk < static_cast<std::int64_t>(thread_count);
          ++raw_chunk) {
         const std::size_t chunk = static_cast<std::size_t>(raw_chunk);
@@ -68,6 +70,7 @@ void Octree::CopyMortonScratch(std::size_t particle_count) noexcept
     for (std::int64_t raw_index = 0; raw_index < static_cast<std::int64_t>(particle_count);
          ++raw_index) {
         const std::size_t index = static_cast<std::size_t>(raw_index);
+
         indices_[index] = scratch_[index];
     }
 }
@@ -76,11 +79,13 @@ void Octree::MergeMortonWidth(std::size_t particle_count, std::size_t width) noe
 {
     const std::size_t pair_width =
         width > particle_count - width ? particle_count : width + width;
+
     const std::size_t pair_count = 1 + (particle_count - 1) / pair_width;
 
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
 #endif
+
     for (std::int64_t raw_pair = 0; raw_pair < static_cast<std::int64_t>(pair_count);
          ++raw_pair) {
         const std::size_t pair = static_cast<std::size_t>(raw_pair);
@@ -123,6 +128,7 @@ void Octree::ParallelMortonSort(blitzar_core::ParticleStateView particles,
     }
 
     const std::size_t chunk_size = SortMortonChunks(particles, minimum, maximum);
+
     MergeMortonChunks(particles.SourceCount(), chunk_size);
 }
 

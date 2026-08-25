@@ -42,6 +42,7 @@ void Partition::BuildRootKeys(
         keys_[index] = blitzar_trees::MortonKey(
             {state.x[index], state.y[index], state.z[index]}, global_bounds.minimum,
             global_bounds.maximum);
+
         order_[index] = index;
     }
 
@@ -57,12 +58,14 @@ void Partition::BuildRootSplits() noexcept
 
         if (order_.empty()) {
             split_keys_[split_index] = {};
+
             continue;
         }
 
         const std::size_t boundary = std::min(order_.size() - 1,
             static_cast<std::size_t>(destination) * order_.size() /
                 static_cast<std::size_t>(size_));
+
         split_keys_[split_index] = {
             keys_[order_[boundary]], static_cast<std::uint64_t>(order_[boundary])};
     }
@@ -98,6 +101,7 @@ blitzar_status Partition::Initialize(blitzar_core::ParticleStateView state,
     DomainBounds global_bounds, const MpiContext& context) noexcept
 {
     size_ = context.Size();
+
     split_keys_.clear();
 
     const blitzar_status allocation_status = AllocateBuffers(state.SourceCount(), context);
@@ -129,6 +133,7 @@ int Partition::Owner(blitzar_core::Vector3 position, std::uint64_t particle_id,
     const SplitKey candidate{blitzar_trees::MortonKey(
                                  position, global_bounds.minimum, global_bounds.maximum),
         particle_id};
+
     const auto boundary = std::upper_bound(split_keys_.begin(), split_keys_.end(), candidate,
         [](const SplitKey& left, const SplitKey& right) {
             return left.key < right.key ||

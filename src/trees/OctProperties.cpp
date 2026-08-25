@@ -24,6 +24,7 @@ blitzar_status Octree::CalculateLeafProperties(
         }
 
         const blitzar_core::Scalar mass = particles.mass[particle];
+
         cell.mass += mass;
         cell.center_of_mass.x += mass * particles.x[particle];
         cell.center_of_mass.y += mass * particles.y[particle];
@@ -80,6 +81,7 @@ blitzar_status Octree::CalculateProperties(blitzar_core::ParticleStateView parti
 {
     for (std::size_t index = cells_.size(); index-- > 0;) {
         Cell& cell = cells_[index];
+
         const blitzar_status accumulation_status = cell.IsLeaf()
                                                        ? CalculateLeafProperties(cell, particles)
                                                        : CalculateInternalProperties(cell);

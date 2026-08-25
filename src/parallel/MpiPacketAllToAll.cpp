@@ -75,6 +75,7 @@ blitzar_status MpiPacketTransport::RunAllToAll(
                                            request.receive_counts, receive_progress_)
                                    ? 1
                                    : 0;
+
         int global_more = 0;
 
         if (collectives_.ReduceMax(local_more, global_more) != BLITZAR_STATUS_OK) {
@@ -85,6 +86,7 @@ blitzar_status MpiPacketTransport::RunAllToAll(
         }
 
         PacketRoundLayout layout{};
+
         status = PrepareAllToAllRound(request, packets_per_peer, layout);
 
         if (status == BLITZAR_STATUS_OK) {
@@ -115,6 +117,7 @@ blitzar_status MpiPacketTransport::RunAllToAll(
         for (std::size_t index = 0; index < send_progress_.size(); ++index) {
             send_progress_[index] +=
                 static_cast<std::size_t>(send_bytes_[index] / ParticleWireBytes);
+
             receive_progress_[index] +=
                 static_cast<std::size_t>(receive_bytes_[index] / ParticleWireBytes);
         }
@@ -159,8 +162,10 @@ blitzar_status MpiPacketTransport::PrepareAllToAllRound(const AllToAllPacketRequ
     for (std::size_t index = 0; index < send_progress_.size(); ++index) {
         const std::size_t send_remaining =
             static_cast<std::size_t>(request.send_counts[index]) - send_progress_[index];
+
         const std::size_t receive_remaining =
             static_cast<std::size_t>(request.receive_counts[index]) - receive_progress_[index];
+
         const std::size_t send_chunk = std::min(send_remaining, packets_per_peer);
         const std::size_t receive_chunk = std::min(receive_remaining, packets_per_peer);
 
@@ -195,6 +200,7 @@ blitzar_status MpiPacketTransport::EncodeAllToAll(
     for (std::size_t index = 0; index < send_progress_.size(); ++index) {
         const std::size_t chunk =
             static_cast<std::size_t>(send_bytes_[index] / ParticleWireBytes);
+
         const std::size_t source_offset =
             static_cast<std::size_t>(request.send_displacements[index]) + send_progress_[index];
 
@@ -215,6 +221,7 @@ blitzar_status MpiPacketTransport::DecodeAllToAll(
     for (std::size_t index = 0; index < receive_progress_.size(); ++index) {
         const std::size_t chunk =
             static_cast<std::size_t>(receive_bytes_[index] / ParticleWireBytes);
+
         const std::size_t target_offset = static_cast<std::size_t>(
                                                request.receive_displacements[index]) +
                                            receive_progress_[index];

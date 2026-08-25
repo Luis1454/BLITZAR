@@ -31,6 +31,7 @@ blitzar_status DirectSolver::ComputeRangeStaged(
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
 #endif
+
     for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(particles.count);
          ++target_index) {
         if (status.load(std::memory_order_relaxed) != BLITZAR_STATUS_OK) {
@@ -43,6 +44,7 @@ blitzar_status DirectSolver::ComputeRangeStaged(
 
         if (target_status != BLITZAR_STATUS_OK) {
             blitzar_status expected = BLITZAR_STATUS_OK;
+
             status.compare_exchange_strong(
                 expected, target_status, std::memory_order_relaxed, std::memory_order_relaxed);
         }
@@ -61,6 +63,7 @@ blitzar_status DirectSolver::CommitRange(
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
 #endif
+
     for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(forces.count);
          ++target_index) {
         const std::size_t target = static_cast<std::size_t>(target_index);
@@ -88,6 +91,7 @@ blitzar_status DirectSolver::ComputeRemoteStaged(blitzar_core::ParticleStateView
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
 #endif
+
     for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(targets.count);
          ++target_index) {
         if (status.load(std::memory_order_relaxed) != BLITZAR_STATUS_OK) {
@@ -97,10 +101,12 @@ blitzar_status DirectSolver::ComputeRemoteStaged(blitzar_core::ParticleStateView
         const std::size_t target = static_cast<std::size_t>(target_index);
         const RemoteForceTargetRequest request{
             gravity_, targets, sources, target, staging_[target]};
+
         const blitzar_status target_status = CalculateRemoteTarget(request);
 
         if (target_status != BLITZAR_STATUS_OK) {
             blitzar_status expected = BLITZAR_STATUS_OK;
+
             status.compare_exchange_strong(
                 expected, target_status, std::memory_order_relaxed, std::memory_order_relaxed);
         }
@@ -118,9 +124,11 @@ blitzar_status DirectSolver::CommitRemote(blitzar_core::ForceView forces) noexce
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
 #endif
+
     for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(forces.count);
          ++target_index) {
         const std::size_t target = static_cast<std::size_t>(target_index);
+
         forces.x[target] += staging_[target].x;
         forces.y[target] += staging_[target].y;
         forces.z[target] += staging_[target].z;

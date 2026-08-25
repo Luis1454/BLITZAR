@@ -92,6 +92,7 @@ blitzar_status BarnesHutSolver::AccumulateMultipole(const AccumulationRequest& r
     bool& consumed) const noexcept
 {
     consumed = false;
+
     const blitzar_core::Scalar dx = cell.center_of_mass.x - target_position.x;
     const blitzar_core::Scalar dy = cell.center_of_mass.y - target_position.y;
     const blitzar_core::Scalar dz = cell.center_of_mass.z - target_position.z;
@@ -152,10 +153,13 @@ blitzar_status BarnesHutSolver::Accumulate(const AccumulationRequest& request) n
     }
 
     std::size_t stack_size = 1;
+
     request.stack[0] = 0;
+
     const blitzar_core::Vector3 target_position{
         request.targets.x[request.target], request.targets.y[request.target],
         request.targets.z[request.target]};
+
     request.acceleration = {};
 
     while (stack_size > 0) {
@@ -246,6 +250,7 @@ blitzar_status BarnesHutSolver::ComputeTargets(const TreeComputeRequest& request
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(static)
 #endif
+
     for (std::int64_t target_index = 0;
          target_index < static_cast<std::int64_t>(request.targets.count); ++target_index) {
         if (computation_status.load(std::memory_order_relaxed) != BLITZAR_STATUS_OK) {
@@ -257,12 +262,15 @@ blitzar_status BarnesHutSolver::ComputeTargets(const TreeComputeRequest& request
         const AccumulationRequest accumulation{request.tree, request.targets, request.sources,
             target, request.stack_pool.Stack(ThreadStackPool::CurrentThread()), acceleration,
             request.skip_self};
+
         const blitzar_status target_status = Accumulate(accumulation);
 
         if (target_status != BLITZAR_STATUS_OK) {
             blitzar_status expected = BLITZAR_STATUS_OK;
+
             computation_status.compare_exchange_strong(
                 expected, target_status, std::memory_order_relaxed, std::memory_order_relaxed);
+
             continue;
         }
 

@@ -158,6 +158,7 @@ blitzar_status BarnesHutSolver::EnsureLocalCapacity(std::size_t particle_capacit
     try {
         candidate_tree = std::make_unique<blitzar_trees::Octree>(particle_capacity, cell_capacity,
             settings_.leaf_capacity, settings_.max_depth);
+
         candidate_staging.resize(particle_capacity);
     }
     catch (const std::length_error&) {
