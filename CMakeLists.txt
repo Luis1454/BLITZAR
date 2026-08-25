@@ -108,6 +108,7 @@ target_sources(blitzar PRIVATE
     src/sdk/Step.cpp
     src/sdk/Transaction.cpp
     src/solvers/barnes_hut/BarnesHutSolver.cpp
+    src/solvers/barnes_hut/Tree.cpp
     src/solvers/barnes_hut/ThreadStackPool.cpp
     src/solvers/direct/DirectSolver.cpp
     src/solvers/fmm/FmmSolver.cpp
