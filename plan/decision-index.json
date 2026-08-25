@@ -38,6 +38,7 @@
     {"path": "plan/decisions/026-mpi-overlap-qualification.md", "lifecycle": "active"},
     {"path": "plan/decisions/027-fmm-multipole-contract.md", "lifecycle": "active"},
     {"path": "plan/decisions/028-hierarchical-acceptance-criterion.md", "lifecycle": "active"},
-    {"path": "plan/decisions/029-repository-realignment-contract.md", "lifecycle": "active"}
+    {"path": "plan/decisions/029-repository-realignment-contract.md", "lifecycle": "active"},
+    {"path": "plan/decisions/030-build-workspace-contract.md", "lifecycle": "active"}
   ]
 }

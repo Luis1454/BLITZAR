@@ -1,13 +1,14 @@
 {
   "product_version": "1.0.0",
-  "plan_version": "1.0.12",
+  "plan_version": "1.0.13",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
     "PLAN.md",
     "plan/manifest.json",
     "plan/quality.json",
-    "plan/decision-index.json"
+    "plan/decision-index.json",
+    "plan/workspace.json"
   ],
   "roots": [
     "include/blitzar",

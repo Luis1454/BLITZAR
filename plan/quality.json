@@ -192,7 +192,18 @@
       }
     },
     "source_completeness": {
-      "cmake_files": ["CMakeLists.txt"],
+      "cmake_files": [
+        "CMakeLists.txt",
+        "cmake/BLITZARConfig.cmake.in",
+        "cmake/HIP.cmake",
+        "cmake/Library.cmake",
+        "cmake/MPI.cmake",
+        "cmake/Package.cmake",
+        "cmake/Targets.cmake",
+        "cmake/TestRegistration.cmake",
+        "cmake/TestTargets.cmake",
+        "cmake/Tests.cmake"
+      ],
       "source_roots": ["src", "apps", "examples", "tests"],
       "suffixes": [".c", ".cc", ".cpp", ".cu", ".hip"]
     },
@@ -323,7 +334,7 @@
     {
       "id": "CHK-P0-006",
       "name": "architecture-report",
-      "command": "python tools/architecture_report.py --root . --all --check",
+      "command": "python tools/architecture_report.py --root . --all --check --quiet",
       "phase": "P0"
     },
     {
@@ -366,7 +377,8 @@
       "id": "CHK-P0-013",
       "name": "public-header-compile",
       "command": "cmake --build build --target blitzar_public_header_compile",
-      "phase": "P0"
+      "phase": "P0",
+      "group": "build"
     },
     {
       "id": "CHK-P0-014",
@@ -402,6 +414,42 @@
       "id": "CHK-P0-019",
       "name": "test-suite-responsibility-fixtures",
       "command": "python tools/test_suite_gate_test.py",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-020",
+      "name": "workspace-hygiene",
+      "command": "python tools/workspace_gate.py --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-021",
+      "name": "workspace-hygiene-fixtures",
+      "command": "python tools/workspace_gate_test.py",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-022",
+      "name": "manifest-quality-gate-fixtures",
+      "command": "python tools/quality_gate_test.py",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-023",
+      "name": "statement-grouping-gate",
+      "command": "python tools/format_blocks.py --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-024",
+      "name": "statement-grouping-fixtures",
+      "command": "python tools/format_blocks_test.py",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-025",
+      "name": "debug-runner-fixtures",
+      "command": "python tools/debug_runner_test.py",
       "phase": "P0"
     }
   ]
