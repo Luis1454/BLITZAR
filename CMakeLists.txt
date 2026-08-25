@@ -91,6 +91,9 @@ target_sources(blitzar PRIVATE
     src/parallel/MpiGhostBegin.cpp
     src/parallel/MpiGhostComplete.cpp
     src/parallel/MpiGather.cpp
+    src/parallel/MpiGatherLocal.cpp
+    src/parallel/MpiGatherPlan.cpp
+    src/parallel/MpiGatherData.cpp
     src/parallel/MpiContext.cpp
     src/parallel/MpiExchange.cpp
     src/parallel/MpiMigration.cpp
