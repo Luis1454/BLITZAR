@@ -141,8 +141,8 @@
     }
   ],
   "architecture": {
-    "report_schema": 1,
-    "command": "python -B tools/architecture_report.py --root . --check",
+    "report_schema": 2,
+    "command": "python -B tools/architecture_report.py --root . --all --check",
     "review_registry": "plan/architecture_reviews.json",
     "line_count_policy": "informational",
     "thresholds": {
@@ -152,6 +152,43 @@
       "max_branch_points": 12,
       "max_allocation_sites": 8,
       "max_internal_includes": 12
+    },
+    "profiles": {
+      "production": {
+        "roots": ["include", "src", "apps"],
+        "suffixes": [".c", ".cc", ".cpp", ".cu", ".cuh", ".h", ".hip", ".hpp", ".inl"]
+      },
+      "tests": {
+        "roots": ["tests"],
+        "suffixes": [".c", ".cc", ".cpp", ".cu", ".cuh", ".cmake", ".h", ".hip", ".hpp", ".inl"]
+      },
+      "examples": {
+        "roots": ["examples"],
+        "suffixes": [".c", ".cc", ".cpp", ".cu", ".cuh", ".h", ".hip", ".hpp", ".inl"]
+      },
+      "tools": {
+        "roots": ["tools"],
+        "suffixes": [".py"],
+        "thresholds": {
+          "max_functions_per_file": 20,
+          "max_allocation_sites": 40
+        }
+      },
+      "build-metadata": {
+        "paths": ["CMakeLists.txt", ".clang-format", ".gitignore"],
+        "roots": ["cmake", ".github"],
+        "suffixes": [".cmake", ".in", ".yml", ".yaml"]
+      },
+      "documentation": {
+        "paths": ["PLAN.md", "AGENTS.md"],
+        "roots": ["plan"],
+        "suffixes": [".json", ".md"]
+      }
+    },
+    "source_completeness": {
+      "cmake_files": ["CMakeLists.txt"],
+      "source_roots": ["src", "apps", "examples", "tests"],
+      "suffixes": [".c", ".cc", ".cpp", ".cu", ".hip"]
     }
   },
   "checks": [
@@ -188,7 +225,7 @@
     {
       "id": "CHK-P0-006",
       "name": "architecture-report",
-      "command": "python tools/architecture_report.py --root . --check",
+      "command": "python tools/architecture_report.py --root . --all --check",
       "phase": "P0"
     }
   ]

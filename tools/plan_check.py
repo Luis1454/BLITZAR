@@ -40,6 +40,14 @@ INFORMATIONAL_ARCHITECTURE_RULES = (
     "include dependencies",
     "responsibility boundaries",
 )
+ARCHITECTURE_PROFILES = {
+    "production",
+    "tests",
+    "examples",
+    "tools",
+    "build-metadata",
+    "documentation",
+}
 GENERIC_DETAIL_PATTERN = re.compile(
     r"\bnamespace\s+detail\b|"
     r"\bnamespace\s+[A-Za-z_]\w*\s*::\s*detail\b|"
@@ -378,8 +386,9 @@ def validate_quality_tests(phase_ids: set[str]) -> None:
     architecture = quality.get("architecture")
     if not isinstance(architecture, dict):
         fail("quality manifest needs an architecture report contract")
-    if architecture.get("report_schema") != 1:
-        fail("architecture report schema must be 1")
+    report_schema = architecture.get("report_schema")
+    if report_schema not in {1, 2}:
+        fail("architecture report schema must be 1 or 2")
     if architecture.get("line_count_policy") != "informational":
         fail("architecture line_count_policy must remain informational")
     command = architecture.get("command")
@@ -389,6 +398,36 @@ def validate_quality_tests(phase_ids: set[str]) -> None:
         or "--check" not in command
     ):
         fail("architecture report command must run architecture_report.py with --check")
+    if report_schema == 2 and "--all" not in command:
+        fail("architecture report schema 2 must qualify all repository profiles")
+
+    if report_schema == 2:
+        profiles = architecture.get("profiles")
+        if not isinstance(profiles, dict) or set(profiles) != ARCHITECTURE_PROFILES:
+            fail("architecture profiles must cover the complete repository")
+        for profile_name, profile in profiles.items():
+            if not isinstance(profile, dict):
+                fail(f"architecture profile {profile_name} must be an object")
+            roots = profile.get("roots", [])
+            paths = profile.get("paths", [])
+            suffixes = profile.get("suffixes", [])
+            if (
+                not isinstance(roots, list)
+                or not isinstance(paths, list)
+                or not isinstance(suffixes, list)
+                or not roots and not paths
+                or not all(isinstance(item, str) and item for item in roots + paths + suffixes)
+            ):
+                fail(f"architecture profile {profile_name} has invalid paths or suffixes")
+        source_completeness = architecture.get("source_completeness")
+        if not isinstance(source_completeness, dict):
+            fail("architecture source_completeness contract is missing")
+        for key in ("cmake_files", "source_roots", "suffixes"):
+            value = source_completeness.get(key)
+            if not isinstance(value, list) or not value or not all(
+                isinstance(item, str) and item for item in value
+            ):
+                fail(f"architecture source_completeness.{key} is invalid")
 
     registry = architecture.get("review_registry")
     registry_path = normalize_manifest_path(registry, "architecture.review_registry")

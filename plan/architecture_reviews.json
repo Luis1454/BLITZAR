@@ -7,6 +7,90 @@
       "issue": 596,
       "status": "accepted",
       "decision": "Allocations are restricted to PrepareStorage, before Begin/Complete execution; request, wire, and status capacities are then bounded and reused."
+    },
+    {
+      "path": "CMakeLists.txt",
+      "signals": ["include_dependencies"],
+      "issue": 599,
+      "status": "accepted",
+      "decision": "The top-level build file is the intentional composition root for the library, optional backends, examples, and tests; its dependency count is tracked without splitting target ownership into opaque fragments."
+    },
+    {
+      "path": "tests/ApiC.c",
+      "signals": ["function_length"],
+      "issue": 599,
+      "status": "accepted",
+      "decision": "The C ABI fixture keeps one end-to-end lifecycle scenario so ABI ordering and cleanup remain visible; its length is registered for review rather than hidden from the repository report."
+    },
+    {
+      "path": "tests/Bounded.cpp",
+      "signals": ["function_length"],
+      "issue": 599,
+      "status": "accepted",
+      "decision": "The bounded-view fixture validates related invalid-input cases in one contract scenario; its length is tracked and remains outside production code."
+    },
+    {
+      "path": "tests/Contracts.cpp",
+      "signals": ["function_length"],
+      "issue": 599,
+      "status": "accepted",
+      "decision": "The contract fixture groups the public and internal invariant checks needed to detect drift across the SDK boundary; the review signal remains explicit."
+    },
+    {
+      "path": "tests/Dynamics.cpp",
+      "signals": ["function_length"],
+      "issue": 599,
+      "status": "accepted",
+      "decision": "The dynamics fixture keeps deterministic physical cases together so shared setup and comparison rules cannot diverge; the signal is registered for later focused decomposition."
+    },
+    {
+      "path": "tests/Hierarchy.cpp",
+      "signals": ["function_length"],
+      "issue": 599,
+      "status": "accepted",
+      "decision": "The hierarchy fixture compares tree construction and solver behavior in one deterministic scenario; its test-only function length is visible and reviewed."
+    },
+    {
+      "path": "tests/Lifecycle.cpp",
+      "signals": ["function_length"],
+      "issue": 599,
+      "status": "accepted",
+      "decision": "The lifecycle fixture intentionally exercises construction, mutation, failure, and cleanup in sequence; the signal is accepted as a test-harness responsibility review."
+    },
+    {
+      "path": "tests/Mpi.cpp",
+      "signals": ["branching", "function_count", "function_length"],
+      "issue": 599,
+      "status": "accepted",
+      "decision": "MPI qualification is kept in one process-aware harness so rank setup, scenario selection, parity, migration, rollback, and overlap modes share one communication contract; all three signals remain tracked."
+    },
+    {
+      "path": "tools/architecture_report.py",
+      "signals": ["parameter_count"],
+      "issue": 599,
+      "status": "accepted",
+      "decision": "The architecture gate keeps one five-argument file-analysis boundary so profile thresholds and exception handling are applied consistently; the signal is registered and does not waive production thresholds."
+    },
+    {
+      "path": "tools/argument_gate.py",
+      "signals": ["branching"],
+      "issue": 599,
+      "status": "accepted",
+      "decision": "The callable scanner handles C++ lexical edge cases and explicit exceptions in one validator; its branching is tool-local and remains covered by its fixture suite."
+    },
+    {
+      "path": "tools/format_blocks.py",
+      "signals": ["branching", "function_count", "function_length", "parameter_count"],
+      "issue": 599,
+      "status": "accepted",
+      "decision": "The formatter implements the repository's scope-sensitive grouping grammar and recursive statement handling; the current complexity is exposed for a later tool decomposition instead of ignored."
+    },
+    {
+      "path": "tools/plan_check.py",
+      "signals": ["branching", "function_length"],
+      "issue": 599,
+      "status": "accepted",
+      "decision": "The frozen-plan gate validates mutually dependent manifest, roots, phase, CTest, naming, and forbidden-reference contracts; its signal is registered while the gate remains a single policy boundary."
     }
   ]
 }
