@@ -115,6 +115,10 @@ target_sources(blitzar PRIVATE
     src/solvers/fmm/FmmMultipole.cpp
     src/solvers/fmm/FmmTraverse.cpp
     src/trees/Octree.cpp
+    src/trees/OctAccess.cpp
+    src/trees/OctBuild.cpp
+    src/trees/OctMorton.cpp
+    src/trees/OctProperties.cpp
 )
 
 if(BLITZAR_HIP_ENABLED)

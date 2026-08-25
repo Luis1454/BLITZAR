@@ -59,11 +59,29 @@ private:
     [[nodiscard]] static std::size_t Octant(
         const Cell& cell, blitzar_core::Vector3 position) noexcept;
     [[nodiscard]] static bool Contains(const Cell& cell, blitzar_core::Vector3 position) noexcept;
-    void Partition(const Cell& cell, blitzar_core::ParticleStateView particles,
-        std::array<std::size_t, 8>& counts) noexcept;
-    void CalculateProperties(blitzar_core::ParticleStateView particles) noexcept;
+    [[nodiscard]] blitzar_status Partition(const Cell& cell,
+        blitzar_core::ParticleStateView particles, std::array<std::size_t, 8>& counts) noexcept;
+    [[nodiscard]] blitzar_status CalculateProperties(
+        blitzar_core::ParticleStateView particles) noexcept;
+    [[nodiscard]] blitzar_status CalculateLeafProperties(
+        Cell& cell, blitzar_core::ParticleStateView particles) noexcept;
+    [[nodiscard]] blitzar_status CalculateInternalProperties(Cell& cell) noexcept;
+    [[nodiscard]] static blitzar_status FinalizeProperties(Cell& cell) noexcept;
+    [[nodiscard]] blitzar_status PrepareBuild(blitzar_core::ParticleStateView particles,
+        blitzar_core::Vector3& minimum, blitzar_core::Vector3& maximum) noexcept;
+    [[nodiscard]] blitzar_status BuildCells(blitzar_core::ParticleStateView particles,
+        blitzar_core::Vector3 minimum, blitzar_core::Vector3 maximum) noexcept;
+    [[nodiscard]] blitzar_status ExpandCell(std::size_t parent_index, const Cell& cell,
+        blitzar_core::ParticleStateView particles, std::array<std::size_t, 8>& counts) noexcept;
+    [[nodiscard]] blitzar_status AppendChildren(std::size_t parent_index, const Cell& cell,
+        const std::array<std::size_t, 8>& counts) noexcept;
     void ParallelMortonSort(blitzar_core::ParticleStateView particles,
         blitzar_core::Vector3 minimum, blitzar_core::Vector3 maximum) noexcept;
+    [[nodiscard]] std::size_t SortMortonChunks(blitzar_core::ParticleStateView particles,
+        blitzar_core::Vector3 minimum, blitzar_core::Vector3 maximum) noexcept;
+    void MergeMortonChunks(std::size_t particle_count, std::size_t chunk_size) noexcept;
+    void MergeMortonWidth(std::size_t particle_count, std::size_t width) noexcept;
+    void CopyMortonScratch(std::size_t particle_count) noexcept;
     std::size_t max_particles_;
     std::size_t max_cells_;
     std::size_t leaf_capacity_;
