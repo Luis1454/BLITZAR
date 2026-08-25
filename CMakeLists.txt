@@ -112,6 +112,8 @@ target_sources(blitzar PRIVATE
     src/solvers/barnes_hut/ThreadStackPool.cpp
     src/solvers/direct/DirectSolver.cpp
     src/solvers/fmm/FmmSolver.cpp
+    src/solvers/fmm/FmmMultipole.cpp
+    src/solvers/fmm/FmmTraverse.cpp
     src/trees/Octree.cpp
 )
 
