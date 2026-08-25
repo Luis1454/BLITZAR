@@ -18,6 +18,35 @@ extern "C" const char* blitzar_plan_version(void)
     return BLITZAR_BUILD_PLAN_VERSION;
 }
 
+extern "C" blitzar_status blitzar_get_capabilities_v2(blitzar_capabilities_v2* capabilities)
+{
+    if (capabilities == nullptr || !blitzar_sdk_api::HasV2Header(capabilities->struct_size,
+                                       capabilities->abi_version, sizeof(*capabilities))) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    const std::uint32_t struct_size = capabilities->struct_size;
+    const std::uint32_t abi_version = capabilities->abi_version;
+    blitzar_compiled_backend_mask compiled_backends = BLITZAR_BACKEND_MASK_CPU;
+
+#if defined(BLITZAR_COMPILED_HIP)
+
+    compiled_backends |= BLITZAR_BACKEND_MASK_HIP;
+#endif
+#if defined(BLITZAR_COMPILED_MPI)
+    compiled_backends |= BLITZAR_BACKEND_MASK_MPI;
+#endif
+
+    *capabilities = {struct_size, abi_version,
+        BLITZAR_SOLVER_MASK_DIRECT | BLITZAR_SOLVER_MASK_BARNES_HUT | BLITZAR_SOLVER_MASK_FMM,
+        BLITZAR_SOLVER_MASK_PM | BLITZAR_SOLVER_MASK_TREEPM,
+        BLITZAR_FEATURE_GRID | BLITZAR_FEATURE_SNAPSHOT_PERSISTENCE | BLITZAR_FEATURE_HDF5 |
+            BLITZAR_FEATURE_GPU_FMM | BLITZAR_FEATURE_MULTI_NODE_QUALIFICATION,
+        compiled_backends};
+
+    return BLITZAR_STATUS_OK;
+}
+
 extern "C" blitzar_status blitzar_context_status(const blitzar_context* context)
 {
     if (context == nullptr) {

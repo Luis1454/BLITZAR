@@ -22,6 +22,17 @@ namespace blitzar {
     return blitzar_plan_version();
 }
 
+using CapabilityReport = blitzar_capabilities_v2;
+
+[[nodiscard]] inline CapabilityReport capabilities() noexcept
+{
+    CapabilityReport report{sizeof(CapabilityReport), BLITZAR_ABI_VERSION_V2, 0, 0, 0, 0};
+
+    (void)blitzar_get_capabilities_v2(&report);
+
+    return report;
+}
+
 enum class Status : std::int32_t {
     Ok = BLITZAR_STATUS_OK,
     InvalidArgument = BLITZAR_STATUS_INVALID_ARGUMENT,

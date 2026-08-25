@@ -211,7 +211,10 @@ function(blitzar_enable_hip target)
     if(NOT BLITZAR_HIP_ENABLED)
         return()
     endif()
-    target_compile_definitions(${target} PRIVATE BLITZAR_HAS_HIP=1)
+    target_compile_definitions(${target} PRIVATE
+        BLITZAR_HAS_HIP=1
+        BLITZAR_COMPILED_HIP=1
+    )
     if(CMAKE_HIP_PLATFORM STREQUAL "nvidia")
         target_compile_definitions(${target} PRIVATE
             __HIP_PLATFORM_NVCC__

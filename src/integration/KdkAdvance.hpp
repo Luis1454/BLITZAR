@@ -61,7 +61,7 @@ void KickAndDrift(AdvanceState<Solver, SolverScratch>& state, blitzar_core::Forc
     blitzar_core::MutableParticleView mutable_state = state.particles.MutableView();
 
 #if defined(_OPENMP)
-#pragma omp parallel for simd schedule(static)
+#pragma omp parallel for schedule(static)
 #endif
 
     for (std::int64_t raw_index = 0; raw_index < static_cast<std::int64_t>(state.particles.Count());
@@ -117,7 +117,7 @@ void Kick(AdvanceState<Solver, SolverScratch>& state, blitzar_core::ForceView fo
     blitzar_core::MutableParticleView mutable_state = state.particles.MutableView();
 
 #if defined(_OPENMP)
-#pragma omp parallel for simd schedule(static)
+#pragma omp parallel for schedule(static)
 #endif
 
     for (std::int64_t raw_index = 0; raw_index < static_cast<std::int64_t>(state.particles.Count());
