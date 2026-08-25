@@ -3,7 +3,12 @@ from io import StringIO
 import unittest
 from pathlib import Path
 
-from debug_runner import build_command, evaluate_exit_code, select_backend
+from debug_runner import (
+    build_command,
+    evaluate_exit_code,
+    parse_lldb_exit_status,
+    select_backend,
+)
 
 
 class DebugRunnerTests(unittest.TestCase):
@@ -58,6 +63,12 @@ class DebugRunnerTests(unittest.TestCase):
         with redirect_stderr(errors):
             self.assertEqual(evaluate_exit_code(0, 7, executable), 1)
         self.assertIn("expected exit code 7", errors.getvalue())
+
+    def test_extracts_lldb_target_exit_status(self) -> None:
+        output = "Process 42 exited with status = 7 (0x00000007)"
+
+        self.assertEqual(parse_lldb_exit_status(output), 7)
+        self.assertIsNone(parse_lldb_exit_status("Process 42 stopped"))
 
 
 if __name__ == "__main__":

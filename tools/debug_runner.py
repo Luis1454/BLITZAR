@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -13,6 +14,7 @@ from pathlib import Path
 
 
 BACKENDS = ("gdb", "cdb", "lldb")
+LLDB_EXIT_STATUS_PATTERN = re.compile(r"Process \d+ exited with status = (-?\d+)")
 
 
 def candidate_backends(system_name: str) -> tuple[str, ...]:
@@ -151,6 +153,33 @@ def evaluate_exit_code(
     return 1
 
 
+def parse_lldb_exit_status(output: str) -> int | None:
+    matches = LLDB_EXIT_STATUS_PATTERN.findall(output)
+    if not matches:
+        return None
+    return int(matches[-1])
+
+
+def run_debugger(command: list[str], backend: str, timeout: float) -> int:
+    if backend != "lldb":
+        return subprocess.run(command, check=False, timeout=timeout).returncode
+
+    result = subprocess.run(
+        command,
+        check=False,
+        timeout=timeout,
+        capture_output=True,
+        text=True,
+    )
+    sys.stdout.write(result.stdout)
+    sys.stderr.write(result.stderr)
+
+    target_status = parse_lldb_exit_status(result.stdout + result.stderr)
+    if target_status is not None:
+        return target_status
+    return result.returncode
+
+
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", choices=("auto", *BACKENDS), default="auto")
@@ -195,7 +224,7 @@ def main() -> int:
     print(f"debug_runner: backend={backend} debugger={debugger}", file=sys.stderr)
 
     try:
-        result = subprocess.run(command, check=False, timeout=parsed.timeout)
+        result_code = run_debugger(command, backend, parsed.timeout)
     except subprocess.TimeoutExpired:
         print(
             f"debug_runner: timeout after {parsed.timeout:g}s: {parsed.executable}",
@@ -207,7 +236,7 @@ def main() -> int:
         return 2
 
     return evaluate_exit_code(
-        result.returncode, parsed.expected_exit_code, parsed.executable
+        result_code, parsed.expected_exit_code, parsed.executable
     )
 
 
