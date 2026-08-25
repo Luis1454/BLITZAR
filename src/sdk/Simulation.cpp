@@ -40,6 +40,7 @@ Simulation::Simulation(std::size_t particle_count)
     exchange_buffer_.Reserve(particle_count_);
     rollback_exchange_buffer_.Reserve(particle_count_);
     migration_buffer_.Reserve(particle_count_);
+    gathered_buffer_.Reserve(particle_count_);
     snapshot_header_.particle_count = particle_count_;
 }
 

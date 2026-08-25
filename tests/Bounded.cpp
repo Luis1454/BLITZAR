@@ -118,6 +118,17 @@ int main()
     BLITZAR_CHECK(packet_request.send_packets.size() == 2);
     BLITZAR_CHECK(packet_request.receive_counts[0] == 2);
 
+    blitzar_particles::SourceBuffer source(1);
+    blitzar_parallel::PacketBuffer ghosts;
+
+    ghosts.Reserve(2);
+
+    BLITZAR_CHECK(ghosts.ResizeBounded(2));
+    BLITZAR_CHECK(blitzar_sdk::StoreGhosts(ghosts, source) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(source.Count() == 0);
+    BLITZAR_CHECK(source.Capacity() == 1);
+    BLITZAR_CHECK(ghosts.Size() == 2);
+
     blitzar_particles::ParticleArena arena(0);
     blitzar_particles::ParticleBuffer particle_buffer(arena);
     blitzar_particles::AccelerationBuffer acceleration_buffer(arena);

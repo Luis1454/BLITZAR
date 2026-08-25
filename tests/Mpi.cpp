@@ -414,6 +414,24 @@ struct StateArrays final {
         return false;
     }
 
+    blitzar_tests::BeginAllocationCounting();
+
+    const blitzar_status overlapped_status = overlapped.Step();
+    const blitzar_status serialized_status = serialized.Step();
+    const blitzar_status overlapped_state_status =
+        overlapped.GetState(blitzar_tests::MakeOutputView(overlapped_state));
+
+    const blitzar_status serialized_state_status =
+        serialized.GetState(blitzar_tests::MakeOutputView(serialized_state));
+
+    const std::size_t allocations = blitzar_tests::EndAllocationCounting();
+
+    if (overlapped_status != BLITZAR_STATUS_OK || serialized_status != BLITZAR_STATUS_OK ||
+        overlapped_state_status != BLITZAR_STATUS_OK ||
+        serialized_state_status != BLITZAR_STATUS_OK || allocations != 0) {
+        return false;
+    }
+
     const blitzar_parallel::MpiOverlapTrace& overlap_trace = overlapped.LastMpiOverlapTrace();
 
     const blitzar_parallel::MpiOverlapTrace& serialized_trace = serialized.LastMpiOverlapTrace();
@@ -449,8 +467,8 @@ struct StateArrays final {
 [[nodiscard]] bool RunAllocationCase() noexcept
 {
     const StateArrays initial = InitialState();
-    const std::array<blitzar_solver_kind, 2> solvers{
-        BLITZAR_SOLVER_DIRECT, BLITZAR_SOLVER_BARNES_HUT};
+    const std::array<blitzar_solver_kind, 3> solvers{
+        BLITZAR_SOLVER_DIRECT, BLITZAR_SOLVER_BARNES_HUT, BLITZAR_SOLVER_FMM};
 
     for (const blitzar_solver_kind solver_kind : solvers) {
         blitzar_sdk::Simulation simulation(ParticleCount);
@@ -487,6 +505,34 @@ struct StateArrays final {
     return true;
 }
 
+[[nodiscard]] bool RunMigrationAllocationCase() noexcept
+{
+    const StateArrays initial = MigrationState();
+    blitzar_sdk::Simulation simulation(ParticleCount);
+
+    if (!Configure(simulation, initial, 0.01)) {
+        return false;
+    }
+
+    StateArrays warmup{};
+
+    if (simulation.Step() != BLITZAR_STATUS_OK ||
+        simulation.GetState(blitzar_tests::MakeOutputView(warmup)) != BLITZAR_STATUS_OK) {
+        return false;
+    }
+
+    StateArrays output{};
+
+    blitzar_tests::BeginAllocationCounting();
+
+    const blitzar_status step_status = simulation.Step();
+    const blitzar_status state_status = simulation.GetState(blitzar_tests::MakeOutputView(output));
+    const std::size_t allocations = blitzar_tests::EndAllocationCounting();
+
+    return step_status == BLITZAR_STATUS_OK && state_status == BLITZAR_STATUS_OK &&
+           allocations == 0;
+}
+
 [[nodiscard]] bool RunRollbackCase() noexcept
 {
     StateArrays initial{};
@@ -520,8 +566,16 @@ struct StateArrays final {
 
     if (simulation.GetState(blitzar_tests::MakeOutputView(before_failure)) != BLITZAR_STATUS_OK ||
         simulation.SetGravity(std::numeric_limits<double>::denorm_min(), 0.0) !=
-            BLITZAR_STATUS_OK ||
-        simulation.Step() != BLITZAR_STATUS_SINGULARITY) {
+            BLITZAR_STATUS_OK) {
+        return false;
+    }
+
+    blitzar_tests::BeginAllocationCounting();
+
+    const blitzar_status failure_status = simulation.Step();
+    const std::size_t failure_allocations = blitzar_tests::EndAllocationCounting();
+
+    if (failure_status != BLITZAR_STATUS_SINGULARITY || failure_allocations != 0) {
         return false;
     }
 
@@ -968,7 +1022,7 @@ int RunTests(int argc, char** argv)
         RunCase(migration_case ? MigrationState() : InitialState(), 0.01, migration_case ? 1 : 2,
             barnes_hut_case ? BLITZAR_SOLVER_BARNES_HUT : BLITZAR_SOLVER_DIRECT);
 
-    const bool allocation_case = RunAllocationCase();
+    const bool allocation_case = RunAllocationCase() && RunMigrationAllocationCase();
 
     const bool rollback_case = RunRollbackCase();
     const bool boundary_case = RunBoundaryOwnershipCase(context);
