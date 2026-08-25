@@ -58,6 +58,7 @@ blitzar_status MpiPacketTransport::AllGatherPackets(
 #endif
 }
 
+#if defined(BLITZAR_HAS_MPI)
 blitzar_status MpiPacketTransport::RunAllGather(
     const AllGatherRequest& request) const noexcept
 {
@@ -114,6 +115,7 @@ blitzar_status MpiPacketTransport::RunAllGather(
         }
     }
 }
+#endif
 
 blitzar_status MpiPacketTransport::PrepareAllGather(
     const AllGatherRequest& request, std::size_t& packets_per_peer) const noexcept

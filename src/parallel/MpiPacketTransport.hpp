@@ -50,8 +50,10 @@ private:
         std::span<const int> send_counts, std::span<int> receive_counts) const noexcept;
     [[nodiscard]] blitzar_status ExecuteAllGatherCounts(bool layout_valid,
         int local_count, std::span<int> counts) const noexcept;
+#if defined(BLITZAR_HAS_MPI)
     [[nodiscard]] blitzar_status RunAllToAll(
         const AllToAllPacketRequest& request) const noexcept;
+#endif
     [[nodiscard]] blitzar_status PrepareAllToAll(
         const AllToAllPacketRequest& request, std::size_t& packets_per_peer) const noexcept;
     [[nodiscard]] blitzar_status PrepareAllToAllRound(const AllToAllPacketRequest& request,
@@ -62,8 +64,10 @@ private:
         const AllToAllPacketRequest& request) const noexcept;
     [[nodiscard]] static bool ValidateAllGatherRequest(
         const AllGatherRequest& request, std::size_t peer_count, int rank) noexcept;
+#if defined(BLITZAR_HAS_MPI)
     [[nodiscard]] blitzar_status RunAllGather(
         const AllGatherRequest& request) const noexcept;
+#endif
     [[nodiscard]] blitzar_status PrepareAllGather(
         const AllGatherRequest& request, std::size_t& packets_per_peer) const noexcept;
     [[nodiscard]] blitzar_status PrepareAllGatherRound(const AllGatherRequest& request,

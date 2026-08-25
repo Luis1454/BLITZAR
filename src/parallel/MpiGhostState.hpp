@@ -19,11 +19,18 @@ struct MpiGhostExchange::Impl final {
         std::size_t packet_offset{};
     };
 
+#if defined(BLITZAR_HAS_MPI)
+    using Request = MPI_Request;
+    using Status = MPI_Status;
+#else
+    struct Request final {};
+    struct Status final {};
+#endif
+
     bool active{false};
     std::size_t send_capacity{0};
     std::size_t receive_capacity{0};
     MpiGhostExchange::TransferStats transfer{};
-#if defined(BLITZAR_HAS_MPI)
     std::vector<std::byte> local_wire;
     std::vector<std::byte> receive_wire;
     std::vector<int> peer_counts;
@@ -31,11 +38,10 @@ struct MpiGhostExchange::Impl final {
     std::vector<std::size_t> wire_offsets;
     std::vector<std::size_t> receive_counts;
     std::vector<std::size_t> offsets;
-    std::vector<MPI_Request> receive_requests;
-    std::vector<MPI_Request> send_requests;
-    std::vector<MPI_Status> receive_statuses;
+    std::vector<Request> receive_requests;
+    std::vector<Request> send_requests;
+    std::vector<Status> receive_statuses;
     std::vector<ReceiveChunk> receive_chunks;
-#endif
 };
 
 } // namespace blitzar_parallel

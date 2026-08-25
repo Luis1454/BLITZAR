@@ -57,6 +57,7 @@ blitzar_status MpiPacketTransport::AllToAllPackets(
 #endif
 }
 
+#if defined(BLITZAR_HAS_MPI)
 blitzar_status MpiPacketTransport::RunAllToAll(
     const AllToAllPacketRequest& request) const noexcept
 {
@@ -119,6 +120,7 @@ blitzar_status MpiPacketTransport::RunAllToAll(
         }
     }
 }
+#endif
 
 blitzar_status MpiPacketTransport::PrepareAllToAll(
     const AllToAllPacketRequest& request, std::size_t& packets_per_peer) const noexcept
