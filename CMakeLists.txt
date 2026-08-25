@@ -110,6 +110,7 @@ target_sources(blitzar PRIVATE
     src/parallel/MpiContextCollectives.cpp
     src/parallel/MpiContextGhost.cpp
     src/parallel/MpiContextPackets.cpp
+    src/parallel/MpiStatus.cpp
     src/parallel/MpiExchange.cpp
     src/parallel/MpiMigration.cpp
     src/parallel/MpiPacketTransport.cpp
@@ -137,7 +138,7 @@ target_sources(blitzar PRIVATE
     src/sdk/Config.cpp
     src/sdk/ParticleSet.cpp
     src/sdk/ParticleGet.cpp
-    src/sdk/Input.cpp
+    src/sdk/ParticleInputStage.cpp
     src/sdk/Packets.cpp
     src/sdk/Snapshots.cpp
     src/sdk/Step.cpp

@@ -1,5 +1,6 @@
+#include "parallel/MpiStatus.hpp"
+#include "sdk/PacketStoreRequest.hpp"
 #include "sdk/Simulation.hpp"
-#include "sdk/State.hpp"
 
 #include <span>
 
@@ -16,7 +17,7 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
                                        local_particle_count_ == rollback_particle_count &&
                                        rollback_particle_count <= particle_ids_.size();
 
-    blitzar_status migration_status = SynchronizeSimulationStatus(mpi_context_,
+    blitzar_status migration_status = blitzar_parallel::SynchronizeStatus(mpi_context_,
         migration_state_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR,
         "migrate-preflight");
 
@@ -34,7 +35,7 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
 
     migration_status = EnsureLocalCapacity(migration_buffer_.Size());
     migration_status =
-        SynchronizeSimulationStatus(mpi_context_, migration_status, "migrate-capacity");
+        blitzar_parallel::SynchronizeStatus(mpi_context_, migration_status, "migrate-capacity");
 
     if (migration_status != BLITZAR_STATUS_OK) {
         return {migration_status, false};
@@ -46,7 +47,7 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
 
     migration_status = StoreLocalPackets(migration_request);
     migration_status =
-        SynchronizeSimulationStatus(mpi_context_, migration_status, "migrate-commit");
+        blitzar_parallel::SynchronizeStatus(mpi_context_, migration_status, "migrate-commit");
 
     if (migration_status != BLITZAR_STATUS_OK) {
         return {migration_status, false};

@@ -1,5 +1,5 @@
+#include "parallel/MpiStatus.hpp"
 #include "sdk/Simulation.hpp"
-#include "sdk/State.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -74,7 +74,7 @@ blitzar_status Simulation::GatherState(blitzar_core::ParticleOutputView output) 
 
 blitzar_status Simulation::GetState(blitzar_core::ParticleOutputView output) const noexcept
 {
-    blitzar_status status = SynchronizeSimulationStatus(mpi_context_,
+    blitzar_status status = blitzar_parallel::SynchronizeStatus(mpi_context_,
         ValidateOutput(output) ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
         "get-state-preflight");
 
@@ -86,7 +86,7 @@ blitzar_status Simulation::GetState(blitzar_core::ParticleOutputView output) con
                                    local_particle_count_ <= particle_ids_.size() &&
                                    blitzar_core::IsValid(particles_.State());
 
-    status = SynchronizeSimulationStatus(mpi_context_,
+    status = blitzar_parallel::SynchronizeStatus(mpi_context_,
         local_state_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR, "get-state-state");
 
     if (status != BLITZAR_STATUS_OK) {

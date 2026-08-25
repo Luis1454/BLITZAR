@@ -1,5 +1,5 @@
+#include "parallel/MpiStatus.hpp"
 #include "sdk/Simulation.hpp"
-#include "sdk/State.hpp"
 #include "sdk/StepDistributed.hpp"
 #include "sdk/StepLocal.hpp"
 
@@ -24,7 +24,7 @@ blitzar_status Simulation::Step() noexcept
                             integrator_kind_ == BLITZAR_INTEGRATOR_LEAPFROG_KDK &&
                             std::isfinite(timestep_) && timestep_ > 0.0;
 
-    const blitzar_status preflight_status = SynchronizeSimulationStatus(mpi_context_,
+    const blitzar_status preflight_status = blitzar_parallel::SynchronizeStatus(mpi_context_,
         step_ready ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT, "step-preflight");
 
     if (preflight_status != BLITZAR_STATUS_OK) {
