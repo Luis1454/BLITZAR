@@ -81,29 +81,80 @@ target_sources(blitzar PRIVATE
     src/integration/KdkCheckpoint.cpp
     src/particles/ParticleArena.cpp
     src/particles/ParticleBuffer.cpp
+    src/particles/AccelerationBuffer.cpp
+    src/particles/ParticleAccess.cpp
     src/particles/SourceBuffer.cpp
     src/physics/GravityLaw.cpp
     src/parallel/MpiCollectives.cpp
+    src/parallel/MpiBroadcast.cpp
+    src/parallel/Bounds.cpp
     src/parallel/DomainDecomposition.cpp
+    src/parallel/DomainInit.cpp
+    src/parallel/DomainQuery.cpp
+    src/parallel/DomainValidate.cpp
+    src/parallel/Partition.cpp
     src/parallel/MpiGhostTransport.cpp
+    src/parallel/MpiGhostBegin.cpp
+    src/parallel/MpiGhostLayout.cpp
+    src/parallel/MpiGhostPost.cpp
+    src/parallel/MpiGhostComplete.cpp
+    src/parallel/MpiGhostReceive.cpp
+    src/parallel/MpiGhostStorage.cpp
+    src/parallel/MpiGhostState.cpp
+    src/parallel/MpiGather.cpp
+    src/parallel/MpiGatherLocal.cpp
+    src/parallel/MpiGatherPlan.cpp
+    src/parallel/MpiGatherData.cpp
     src/parallel/MpiContext.cpp
+    src/parallel/MpiContextCapacity.cpp
+    src/parallel/MpiContextCollectives.cpp
+    src/parallel/MpiContextGhost.cpp
+    src/parallel/MpiContextPackets.cpp
     src/parallel/MpiExchange.cpp
+    src/parallel/MpiMigration.cpp
     src/parallel/MpiPacketTransport.cpp
+    src/parallel/MpiPacketPrepare.cpp
+    src/parallel/MpiPacketCounts.cpp
+    src/parallel/MpiPacketAllToAll.cpp
+    src/parallel/MpiPacketAllGather.cpp
     src/parallel/MpiSession.cpp
+    src/parallel/MpiSessionInit.cpp
     src/parallel/MpiTypes.cpp
     src/sdk/Api.cpp
-    src/sdk/CppApi.cpp
+    src/sdk/ApiSupport.cpp
+    src/sdk/ApiInfo.cpp
+    src/sdk/ApiConfig.cpp
+    src/sdk/ApiParticles.cpp
+    src/sdk/ApiStep.cpp
+    src/sdk/CppContext.cpp
+    src/sdk/CppSimulation.cpp
+    src/sdk/CppSimulationConfig.cpp
+    src/sdk/CppSimulationData.cpp
     src/sdk/Simulation.cpp
     src/sdk/Config.cpp
-    src/sdk/Particles.cpp
-    src/sdk/State.cpp
+    src/sdk/ParticleSet.cpp
+    src/sdk/ParticleGet.cpp
+    src/sdk/Input.cpp
+    src/sdk/Packets.cpp
+    src/sdk/Snapshots.cpp
     src/sdk/Step.cpp
+    src/sdk/StepPrepare.cpp
+    src/sdk/StepMigration.cpp
     src/sdk/Transaction.cpp
     src/solvers/barnes_hut/BarnesHutSolver.cpp
+    src/solvers/barnes_hut/Tree.cpp
     src/solvers/barnes_hut/ThreadStackPool.cpp
     src/solvers/direct/DirectSolver.cpp
+    src/solvers/direct/DirectCompute.cpp
+    src/solvers/direct/DirectForce.cpp
     src/solvers/fmm/FmmSolver.cpp
+    src/solvers/fmm/FmmMultipole.cpp
+    src/solvers/fmm/FmmTraverse.cpp
     src/trees/Octree.cpp
+    src/trees/OctAccess.cpp
+    src/trees/OctBuild.cpp
+    src/trees/OctMorton.cpp
+    src/trees/OctProperties.cpp
 )
 
 if(BLITZAR_HIP_ENABLED)

@@ -2,20 +2,14 @@
 #define BLITZAR_PARALLEL_DOMAIN_DECOMPOSITION_HPP
 
 #include "core/Types.hpp"
+#include "parallel/Bounds.hpp"
 #include "parallel/MpiContext.hpp"
+#include "parallel/Partition.hpp"
 
 #include <cstdint>
-#include <span>
 #include <vector>
 
 namespace blitzar_parallel {
-
-struct DomainBounds final {
-    blitzar_core::Vector3 minimum{};
-    blitzar_core::Vector3 maximum{};
-
-    [[nodiscard]] bool IsValid() const noexcept;
-};
 
 class DomainDecomposition final {
 public:
@@ -40,20 +34,18 @@ public:
         std::vector<std::size_t>& indices) const noexcept;
 
 private:
-    struct SplitKey final {
-        std::uint64_t key{};
-        std::uint64_t particle_id{};
-    };
-
-    [[nodiscard]] static DomainBounds BoundsOf(blitzar_core::ParticleStateView state) noexcept;
-    [[nodiscard]] static bool Extend(DomainBounds& bounds, blitzar_core::Vector3 position) noexcept;
+    [[nodiscard]] blitzar_status ValidateInput(
+        blitzar_core::ParticleStateView state, const MpiContext& context) const noexcept;
+    [[nodiscard]] blitzar_status InitializeBounds(
+        blitzar_core::ParticleStateView state, const MpiContext& context) noexcept;
+    void UpdateLocalBounds(blitzar_core::ParticleStateView state) noexcept;
 
     int rank_{0};
     int size_{1};
     bool initialized_{false};
     DomainBounds global_bounds_{};
     DomainBounds local_bounds_{};
-    std::vector<SplitKey> split_keys_;
+    Partition partition_;
 };
 
 } // namespace blitzar_parallel

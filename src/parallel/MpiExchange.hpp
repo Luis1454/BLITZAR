@@ -61,6 +61,19 @@ public:
         std::span<const std::uint64_t> local_ids, PacketBuffer& gathered) const noexcept;
 
 private:
+    [[nodiscard]] static bool ToCount(std::size_t value, int& result) noexcept;
+    [[nodiscard]] static blitzar_status PackLocal(blitzar_core::ParticleStateView local_state,
+        std::span<const std::uint64_t> local_ids, PacketBuffer& packets) noexcept;
+    [[nodiscard]] blitzar_status GatherLocal(PacketBuffer& gathered) const noexcept;
+    [[nodiscard]] blitzar_status PrepareGatherCounts(int& local_count) const noexcept;
+    [[nodiscard]] blitzar_status PrepareGatherLayout(PacketBuffer& gathered) const noexcept;
+    [[nodiscard]] blitzar_status GatherPackets(PacketBuffer& gathered) const noexcept;
+    [[nodiscard]] blitzar_status PrepareMigrationSend() const noexcept;
+    [[nodiscard]] blitzar_status CountMigrationDestinations() const noexcept;
+    [[nodiscard]] blitzar_status OrderMigrationPackets() const noexcept;
+    [[nodiscard]] blitzar_status PrepareMigrationReceive(PacketBuffer& received) const noexcept;
+    [[nodiscard]] blitzar_status ExchangeMigrationPackets(PacketBuffer& received) const noexcept;
+
     const MpiContext& context_;
     const DomainDecomposition& decomposition_;
     mutable ExchangeState state_;

@@ -25,6 +25,11 @@ public:
         std::span<std::uint64_t> values, int root) const noexcept;
 
 private:
+    [[nodiscard]] blitzar_status BroadcastScalars(
+        std::span<blitzar_core::Scalar> values, int root, bool layout_valid) const noexcept;
+    [[nodiscard]] blitzar_status BroadcastIds(
+        std::span<std::uint64_t> values, int root, bool layout_valid) const noexcept;
+
     const MpiSession& session_;
 };
 

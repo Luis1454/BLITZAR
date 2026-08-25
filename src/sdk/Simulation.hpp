@@ -3,28 +3,26 @@
 
 #include "core/Execution.hpp"
 #include "core/Snapshot.hpp"
-#include "core/Solver.hpp"
 #include "gpu/HipContext.hpp"
 #include "integration/LeapfrogKdk.hpp"
 #include "parallel/DomainDecomposition.hpp"
 #include "parallel/MpiExchange.hpp"
 #include "parallel/MpiTrace.hpp"
-#include "parallel/MpiTypes.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "particles/SourceBuffer.hpp"
-#include "solvers/barnes_hut/BarnesHutSolver.hpp"
+#include "sdk/SolverVariant.hpp"
 #include "solvers/barnes_hut/ThreadStackPool.hpp"
-#include "solvers/direct/DirectSolver.hpp"
-#include "solvers/fmm/FmmSolver.hpp"
 
 #include <atomic>
 #include <blitzar/blitzar.h>
 #include <cstddef>
 #include <cstdint>
-#include <variant>
 #include <vector>
 
 namespace blitzar_sdk {
+
+struct ParticleInputStage;
+class StepTransaction;
 
 class Simulation final {
 public:
@@ -51,10 +49,6 @@ public:
     [[nodiscard]] const blitzar_parallel::MpiOverlapTrace& LastMpiOverlapTrace() const noexcept;
 
 private:
-    using SolverVariant =
-        std::variant<blitzar_direct::DirectSolver, blitzar_barnes_hut::BarnesHutSolver,
-            blitzar_fmm::FmmSolver>;
-
     struct SolverCreationRequest;
 
     [[nodiscard]] static std::size_t LocalCapacity(
@@ -70,6 +64,15 @@ private:
         SolverVariant& solver) noexcept;
     [[nodiscard]] blitzar_status EnsureLocalCapacity(std::size_t capacity) noexcept;
     [[nodiscard]] blitzar_status Remember(blitzar_status status) const noexcept;
+    [[nodiscard]] bool ValidateParticleInput(blitzar_core::ParticleStateView input) const noexcept;
+    [[nodiscard]] blitzar_status DistributeParticles(ParticleInputStage& stage,
+        blitzar_parallel::DomainDecomposition& domain,
+        blitzar_parallel::PacketBuffer& distributed) noexcept;
+    [[nodiscard]] bool ValidateOutput(blitzar_core::ParticleOutputView output) const noexcept;
+    [[nodiscard]] blitzar_status CopyLocalState(blitzar_core::ParticleOutputView output) const noexcept;
+    [[nodiscard]] blitzar_status GatherState(blitzar_core::ParticleOutputView output) const noexcept;
+    [[nodiscard]] blitzar_status PrepareDistributedStep(
+        std::size_t rollback_particle_count, StepTransaction& transaction) noexcept;
 
     template <typename Solver>
     [[nodiscard]] blitzar_status StepWithSolver(Solver& solver) noexcept;
