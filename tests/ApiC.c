@@ -66,6 +66,13 @@ int main(void)
     BLITZAR_CHECK(
         blitzar_simulation_set_particles_v2(simulation, NULL) == BLITZAR_STATUS_INVALID_ARGUMENT);
 
+    blitzar_particle_input_v2 null_input = input_v2;
+
+    null_input.position_x = NULL;
+
+    BLITZAR_CHECK(blitzar_simulation_set_particles_v2(simulation, &null_input) ==
+                  BLITZAR_STATUS_INVALID_ARGUMENT);
+
     blitzar_barnes_hut_config_v2 barnes_hut_v2 = {
         sizeof(blitzar_barnes_hut_config_v2), BLITZAR_ABI_VERSION_V2, 0.5, 2, 128, 1, 32};
 

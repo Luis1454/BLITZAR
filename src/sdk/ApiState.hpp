@@ -56,7 +56,11 @@ private:
 template <typename Scalar>
 [[nodiscard]] std::span<Scalar> MakeSpan(Scalar* data, std::size_t count) noexcept
 {
-    return count == 0 ? std::span<Scalar>{} : std::span<Scalar>(data, count);
+    if (count == 0 || data == nullptr) {
+        return {};
+    }
+
+    return std::span<Scalar>(data, count);
 }
 
 [[nodiscard]] bool HasV2Header(

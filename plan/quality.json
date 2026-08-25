@@ -375,6 +375,18 @@
       "name": "mpi-native-boundary-fixtures",
       "command": "python tools/mpi_boundary_gate_test.py",
       "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-016",
+      "name": "pointer-ownership-boundary",
+      "command": "python tools/pointer_ownership_gate.py --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-017",
+      "name": "pointer-ownership-boundary-fixtures",
+      "command": "python tools/pointer_ownership_gate_test.py",
+      "phase": "P0"
     }
   ]
 }

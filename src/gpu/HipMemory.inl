@@ -23,10 +23,14 @@ public:
         if (bytes == 0) {
             return true;
         }
-        if (hipHostMalloc(&data_, bytes, hipHostMallocDefault) != hipSuccess) {
+
+        void* allocation = nullptr;
+
+        if (hipHostMalloc(&allocation, bytes, hipHostMallocDefault) != hipSuccess) {
             return false;
         }
 
+        data_ = reinterpret_cast<std::uintptr_t>(allocation);
         bytes_ = bytes;
 
         return true;
@@ -34,10 +38,10 @@ public:
 
     void Release() noexcept
     {
-        if (data_ != nullptr) {
-            (void)hipHostFree(data_);
+        if (data_ != 0) {
+            (void)hipHostFree(reinterpret_cast<void*>(data_));
 
-            data_ = nullptr;
+            data_ = 0;
         }
 
         bytes_ = 0;
@@ -45,11 +49,11 @@ public:
 
     [[nodiscard]] std::uintptr_t Address() const noexcept
     {
-        return reinterpret_cast<std::uintptr_t>(data_);
+        return data_;
     }
 
 private:
-    void* data_{};
+    std::uintptr_t data_{};
     std::size_t bytes_{};
 };
 
@@ -74,10 +78,14 @@ public:
         if (bytes == 0) {
             return true;
         }
-        if (hipMalloc(&data_, bytes) != hipSuccess) {
+
+        void* allocation = nullptr;
+
+        if (hipMalloc(&allocation, bytes) != hipSuccess) {
             return false;
         }
 
+        data_ = reinterpret_cast<std::uintptr_t>(allocation);
         bytes_ = bytes;
 
         return true;
@@ -85,10 +93,10 @@ public:
 
     void Release() noexcept
     {
-        if (data_ != nullptr) {
-            (void)hipFree(data_);
+        if (data_ != 0) {
+            (void)hipFree(reinterpret_cast<void*>(data_));
 
-            data_ = nullptr;
+            data_ = 0;
         }
 
         bytes_ = 0;
@@ -96,11 +104,11 @@ public:
 
     [[nodiscard]] std::uintptr_t Address() const noexcept
     {
-        return reinterpret_cast<std::uintptr_t>(data_);
+        return data_;
     }
 
 private:
-    void* data_{};
+    std::uintptr_t data_{};
     std::size_t bytes_{};
 };
 

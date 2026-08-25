@@ -1,5 +1,7 @@
 #include "parallel/MpiCollectives.hpp"
 
+#include <algorithm>
+#include <climits>
 #include <cstdio>
 
 namespace blitzar_parallel {
@@ -86,8 +88,8 @@ namespace {
 
 struct StatusLogRequest final {
     int rank;
-    const char* operation;
-    const char* phase;
+    std::string_view operation;
+    std::string_view phase;
     blitzar_status local_status;
     blitzar_status global_status;
 };
@@ -98,11 +100,18 @@ void LogSynchronizedStatus(const StatusLogRequest& request) noexcept
         return;
     }
 
+    const std::string_view operation = request.operation.empty() ? "unknown" : request.operation;
+    const std::string_view phase = request.phase.empty() ? "unknown" : request.phase;
+    const int operation_size =
+        static_cast<int>(std::min(operation.size(), static_cast<std::size_t>(INT_MAX)));
+
+    const int phase_size =
+        static_cast<int>(std::min(phase.size(), static_cast<std::size_t>(INT_MAX)));
+
     std::fprintf(stderr,
-        "BLITZAR MPI rank=%d operation=%s phase=%s local_status=%d "
+        "BLITZAR MPI rank=%d operation=%.*s phase=%.*s local_status=%d "
         "global_status=%d\n",
-        request.rank, request.operation == nullptr ? "unknown" : request.operation,
-        request.phase == nullptr ? "unknown" : request.phase,
+        request.rank, operation_size, operation.data(), phase_size, phase.data(),
         static_cast<int>(NormalizeStatus(request.local_status)),
         static_cast<int>(request.global_status));
 }
@@ -111,8 +120,9 @@ void LogSynchronizedStatus(const StatusLogRequest& request) noexcept
 
 MpiCollectives::MpiCollectives(const MpiSession& session) noexcept : session_(session) {}
 
-blitzar_status MpiCollectives::SynchronizeStatus(blitzar_status local_status, const char* operation,
-    const char* phase, blitzar_status& global_status) const noexcept
+blitzar_status MpiCollectives::SynchronizeStatus(blitzar_status local_status,
+    std::string_view operation, std::string_view phase,
+    blitzar_status& global_status) const noexcept
 {
     const blitzar_status normalized_status = NormalizeStatus(local_status);
 

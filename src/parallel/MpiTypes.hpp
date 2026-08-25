@@ -109,16 +109,6 @@ public:
         return packets_.capacity();
     }
 
-    [[nodiscard]] ParticlePacket* Data() noexcept
-    {
-        return packets_.data();
-    }
-
-    [[nodiscard]] const ParticlePacket* Data() const noexcept
-    {
-        return packets_.data();
-    }
-
     [[nodiscard]] std::span<ParticlePacket> View() noexcept
     {
         return packets_;

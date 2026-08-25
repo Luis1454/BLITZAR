@@ -119,7 +119,7 @@ void MpiExchange::AbortGhosts(
 }
 
 blitzar_status MpiExchange::SynchronizeStatus(
-    blitzar_status local_status, const char* phase) const noexcept
+    blitzar_status local_status, std::string_view phase) const noexcept
 {
     blitzar_status global_status = BLITZAR_STATUS_INTERNAL_ERROR;
     const blitzar_status synchronization_status =

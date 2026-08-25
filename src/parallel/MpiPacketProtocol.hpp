@@ -11,6 +11,7 @@
 #include <new>
 #include <span>
 #include <stdexcept>
+#include <string_view>
 #include <vector>
 
 namespace blitzar_parallel {
@@ -36,8 +37,8 @@ public:
         return true;
     }
 
-    [[nodiscard]] static blitzar_status SynchronizePreparation(
-        const MpiCollectives& collectives, blitzar_status local_status, const char* phase) noexcept
+    [[nodiscard]] static blitzar_status SynchronizePreparation(const MpiCollectives& collectives,
+        blitzar_status local_status, std::string_view phase) noexcept
     {
         blitzar_status global_status = BLITZAR_STATUS_INTERNAL_ERROR;
         const blitzar_status synchronization_status =

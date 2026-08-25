@@ -3,7 +3,7 @@
 namespace blitzar_parallel {
 
 blitzar_status SynchronizeStatus(
-    const MpiContext& context, blitzar_status local_status, const char* phase) noexcept
+    const MpiContext& context, blitzar_status local_status, std::string_view phase) noexcept
 {
     if (!context.IsDistributed()) {
         return local_status;

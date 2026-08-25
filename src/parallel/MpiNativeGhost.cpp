@@ -169,9 +169,9 @@ blitzar_status MpiNative::PostGhostReceive(
 
     MPI_Request& native_request = ghost.impl_->receive_requests[ghost.impl_->receive_posted];
     native_request = MPI_REQUEST_NULL;
-    std::byte* data = request.bytes == 0 ? nullptr : request.wire.data() + request.offset_bytes;
 
-    if (MPI_Irecv(data, request.bytes, MPI_BYTE, request.peer, request.tag, impl_->communicator,
+    if (MPI_Irecv(request.bytes == 0 ? nullptr : request.wire.data() + request.offset_bytes,
+            request.bytes, MPI_BYTE, request.peer, request.tag, impl_->communicator,
             &native_request) != MPI_SUCCESS) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
@@ -201,10 +201,8 @@ blitzar_status MpiNative::PostGhostSend(
     MPI_Request& native_request = ghost.impl_->send_requests[ghost.impl_->send_posted];
     native_request = MPI_REQUEST_NULL;
 
-    const std::byte* data =
-        request.bytes == 0 ? nullptr : request.wire.data() + request.offset_bytes;
-
-    if (MPI_Isend(data, request.bytes, MPI_BYTE, request.peer, request.tag, impl_->communicator,
+    if (MPI_Isend(request.bytes == 0 ? nullptr : request.wire.data() + request.offset_bytes,
+            request.bytes, MPI_BYTE, request.peer, request.tag, impl_->communicator,
             &native_request) != MPI_SUCCESS) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
