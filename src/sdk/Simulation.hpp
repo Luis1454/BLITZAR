@@ -3,25 +3,20 @@
 
 #include "core/Execution.hpp"
 #include "core/Snapshot.hpp"
-#include "core/Solver.hpp"
 #include "gpu/HipContext.hpp"
 #include "integration/LeapfrogKdk.hpp"
 #include "parallel/DomainDecomposition.hpp"
 #include "parallel/MpiExchange.hpp"
 #include "parallel/MpiTrace.hpp"
-#include "parallel/MpiTypes.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "particles/SourceBuffer.hpp"
-#include "solvers/barnes_hut/BarnesHutSolver.hpp"
+#include "sdk/SolverVariant.hpp"
 #include "solvers/barnes_hut/ThreadStackPool.hpp"
-#include "solvers/direct/DirectSolver.hpp"
-#include "solvers/fmm/FmmSolver.hpp"
 
 #include <atomic>
 #include <blitzar/blitzar.h>
 #include <cstddef>
 #include <cstdint>
-#include <variant>
 #include <vector>
 
 namespace blitzar_sdk {
@@ -54,10 +49,6 @@ public:
     [[nodiscard]] const blitzar_parallel::MpiOverlapTrace& LastMpiOverlapTrace() const noexcept;
 
 private:
-    using SolverVariant =
-        std::variant<blitzar_direct::DirectSolver, blitzar_barnes_hut::BarnesHutSolver,
-            blitzar_fmm::FmmSolver>;
-
     struct SolverCreationRequest;
 
     [[nodiscard]] static std::size_t LocalCapacity(
