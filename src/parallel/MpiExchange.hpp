@@ -61,6 +61,10 @@ public:
         std::span<const std::uint64_t> local_ids, PacketBuffer& gathered) const noexcept;
 
 private:
+    [[nodiscard]] static bool ToCount(std::size_t value, int& result) noexcept;
+    [[nodiscard]] static blitzar_status PackLocal(blitzar_core::ParticleStateView local_state,
+        std::span<const std::uint64_t> local_ids, PacketBuffer& packets) noexcept;
+
     const MpiContext& context_;
     const DomainDecomposition& decomposition_;
     mutable ExchangeState state_;
