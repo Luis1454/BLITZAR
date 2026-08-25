@@ -105,6 +105,13 @@
       "issue": 602,
       "status": "accepted",
       "decision": "The public boundary gate keeps include, pointer, fixed-width ABI, internal-facade, and parameter-exception checks in one diagnostic boundary so a public contract violation reports its owning rule and source line."
+    },
+    {
+      "path": "tools/capability_gate.py",
+      "signals": ["branching", "function_length"],
+      "issue": 611,
+      "status": "accepted",
+      "decision": "The capability gate keeps matrix validation, deferred-root checks, and public unsupported-status checks in one policy boundary so compile claims cannot drift from the frozen plan; its tool-local signals are covered by the fixture and do not waive production thresholds."
     }
   ]
 }
