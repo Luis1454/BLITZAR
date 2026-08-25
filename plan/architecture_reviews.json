@@ -2,11 +2,18 @@
   "schema_version": 1,
   "reviews": [
     {
-      "path": "src/parallel/MpiGhostStorage.cpp",
-      "signals": ["allocation"],
-      "issue": 596,
+      "path": "src/parallel/MpiNative.cpp",
+      "signals": ["function_count"],
+      "issue": 603,
       "status": "accepted",
-      "decision": "Allocations are restricted to PrepareStorage, before Begin/Complete execution; request, wire, and status capacities are then bounded and reused."
+      "decision": "The lifecycle adapter keeps runtime initialization, external ownership, and process-exit finalization together; collectives, packet operations, and ghost requests are split into separate native units."
+    },
+    {
+      "path": "src/parallel/MpiNativeGhost.cpp",
+      "signals": ["branching"],
+      "issue": 603,
+      "status": "accepted",
+      "decision": "The ghost adapter combines platform guards with request validation and cancellation so MPI request lifetime is closed in one native boundary; transport orchestration remains outside the file."
     },
     {
       "path": "CMakeLists.txt",

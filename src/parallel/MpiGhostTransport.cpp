@@ -25,7 +25,6 @@ blitzar_status MpiGhostTransport::Prepare(MpiGhostExchange& exchange, std::size_
 
         return BLITZAR_STATUS_OK;
     }
-#if defined(BLITZAR_HAS_MPI)
     if (exchange.impl_ != nullptr && exchange.impl_->active) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
@@ -46,26 +45,11 @@ blitzar_status MpiGhostTransport::Prepare(MpiGhostExchange& exchange, std::size_
     catch (const std::bad_alloc&) {
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
-#else
-
-    (void)exchange;
-    (void)send_capacity;
-    (void)receive_capacity;
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
 }
 
 bool MpiGhostTransport::IsActive(const MpiGhostExchange& exchange) const noexcept
 {
-#if defined(BLITZAR_HAS_MPI)
     return exchange.impl_ != nullptr && exchange.impl_->active;
-#else
-
-    (void)exchange;
-
-    return false;
-#endif
 }
 
 void MpiGhostTransport::Abort(MpiGhostExchange& exchange) const noexcept
@@ -73,12 +57,8 @@ void MpiGhostTransport::Abort(MpiGhostExchange& exchange) const noexcept
     if (exchange.impl_ == nullptr) {
         return;
     }
-#if defined(BLITZAR_HAS_MPI)
 
     AbortExchange(*exchange.impl_);
-#else
-    exchange.impl_.reset();
-#endif
 }
 
 } // namespace blitzar_parallel

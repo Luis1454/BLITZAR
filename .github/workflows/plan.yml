@@ -71,6 +71,12 @@ jobs:
       - name: Self-test public API boundary
         run: python tools/public_api_gate_test.py
 
+      - name: Validate MPI native boundary
+        run: python tools/mpi_boundary_gate.py --root . --check
+
+      - name: Self-test MPI native boundary
+        run: python tools/mpi_boundary_gate_test.py
+
       - name: Self-test cross-platform debug runner command
         run: python tools/debug_runner_test.py
 

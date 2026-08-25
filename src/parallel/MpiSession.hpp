@@ -1,6 +1,8 @@
 #ifndef BLITZAR_PARALLEL_MPI_SESSION_HPP
 #define BLITZAR_PARALLEL_MPI_SESSION_HPP
 
+#include "parallel/MpiNative.hpp"
+
 #include <blitzar/blitzar.h>
 #include <memory>
 
@@ -33,10 +35,7 @@ private:
 
     struct Impl;
 
-    [[nodiscard]] blitzar_status InitializeMpi() noexcept;
-    void ReleaseMpi() noexcept;
-    [[nodiscard]] blitzar_status ReadCommunicator() noexcept;
-    [[nodiscard]] const Impl& Native() const noexcept;
+    [[nodiscard]] const MpiNative& Native() const noexcept;
 
     std::unique_ptr<Impl> impl_;
     int rank_{0};

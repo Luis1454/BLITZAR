@@ -248,8 +248,8 @@
           "reason": "MpiContext state fragment"
         },
         {
-          "path": "src/parallel/MpiSessionNative.hpp",
-          "reason": "MpiSession native handle fragment"
+          "path": "src/parallel/MpiNativeState.hpp",
+          "reason": "MpiNative opaque state fragment"
         }
       ],
       "standalone_implementation_exceptions": [
@@ -272,6 +272,18 @@
     "line_endings": "LF",
     "final_newline": true,
     "custom_grouping_command": "python tools/format_blocks.py --check"
+  },
+  "mpi_boundary": {
+    "native_units": [
+      "src/parallel/MpiNative.cpp",
+      "src/parallel/MpiNativeCollectives.cpp",
+      "src/parallel/MpiNativeGhost.cpp",
+      "src/parallel/MpiNativePackets.cpp",
+      "src/parallel/MpiNativeState.hpp"
+    ],
+    "test_native_units": ["tests/Mpi.cpp"],
+    "scan_roots": ["src", "tests"],
+    "suffixes": [".c", ".cc", ".cpp", ".cu", ".h", ".hip", ".hpp", ".inl"]
   },
   "checks": [
     {
@@ -350,6 +362,18 @@
       "id": "CHK-P0-013",
       "name": "public-header-compile",
       "command": "cmake --build build --target blitzar_public_header_compile",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-014",
+      "name": "mpi-native-boundary",
+      "command": "python tools/mpi_boundary_gate.py --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-015",
+      "name": "mpi-native-boundary-fixtures",
+      "command": "python tools/mpi_boundary_gate_test.py",
       "phase": "P0"
     }
   ]

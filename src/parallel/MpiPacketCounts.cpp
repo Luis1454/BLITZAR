@@ -1,12 +1,7 @@
 #include "parallel/MpiPacketProtocol.hpp"
 #include "parallel/MpiPacketTransport.hpp"
-#include "parallel/MpiSessionNative.hpp"
 
 #include <cstddef>
-
-#if defined(BLITZAR_HAS_MPI)
-#include <mpi.h>
-#endif
 
 namespace blitzar_parallel {
 
@@ -61,7 +56,6 @@ blitzar_status MpiPacketTransport::AllToAllCounts(
 blitzar_status MpiPacketTransport::ExecuteAllToAllCounts(bool layout_valid,
     std::span<const int> send_counts, std::span<int> receive_counts) const noexcept
 {
-#if defined(BLITZAR_HAS_MPI)
     const blitzar_status status = MpiPacketProtocol::SynchronizePreparation(collectives_,
         layout_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
         "alltoall-count-layout");
@@ -70,18 +64,7 @@ blitzar_status MpiPacketTransport::ExecuteAllToAllCounts(bool layout_valid,
         return status;
     }
 
-    return MPI_Alltoall(send_counts.data(), 1, MPI_INT, receive_counts.data(), 1, MPI_INT,
-               session_.Native().communicator) == MPI_SUCCESS
-               ? BLITZAR_STATUS_OK
-               : BLITZAR_STATUS_INTERNAL_ERROR;
-#else
-
-    (void)layout_valid;
-    (void)send_counts;
-    (void)receive_counts;
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
+    return session_.Native().AllToAllCounts(send_counts, receive_counts);
 }
 
 blitzar_status MpiPacketTransport::AllGatherCounts(
@@ -109,7 +92,6 @@ blitzar_status MpiPacketTransport::AllGatherCounts(
 blitzar_status MpiPacketTransport::ExecuteAllGatherCounts(
     bool layout_valid, int local_count, std::span<int> counts) const noexcept
 {
-#if defined(BLITZAR_HAS_MPI)
     const blitzar_status status = MpiPacketProtocol::SynchronizePreparation(collectives_,
         layout_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
         "allgather-count-layout");
@@ -118,18 +100,7 @@ blitzar_status MpiPacketTransport::ExecuteAllGatherCounts(
         return status;
     }
 
-    return MPI_Allgather(&local_count, 1, MPI_INT, counts.data(), 1, MPI_INT,
-               session_.Native().communicator) == MPI_SUCCESS
-               ? BLITZAR_STATUS_OK
-               : BLITZAR_STATUS_INTERNAL_ERROR;
-#else
-
-    (void)layout_valid;
-    (void)local_count;
-    (void)counts;
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
+    return session_.Native().AllGatherCounts(local_count, counts);
 }
 
 } // namespace blitzar_parallel

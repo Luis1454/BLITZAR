@@ -2,14 +2,12 @@
 #define BLITZAR_PARALLEL_MPI_GHOST_STATE_HPP
 
 #include "parallel/MpiGhostExchange.hpp"
+#include "parallel/MpiNative.hpp"
 #include "parallel/MpiTypes.hpp"
 
 #include <cstddef>
+#include <memory>
 #include <vector>
-
-#if defined(BLITZAR_HAS_MPI)
-#include <mpi.h>
-#endif
 
 namespace blitzar_parallel {
 
@@ -18,14 +16,6 @@ struct MpiGhostExchange::Impl final {
         std::size_t peer_index{};
         std::size_t packet_offset{};
     };
-
-#if defined(BLITZAR_HAS_MPI)
-    using Request = MPI_Request;
-    using Status = MPI_Status;
-#else
-    struct Request final {};
-    struct Status final {};
-#endif
 
     bool active{false};
     std::size_t send_capacity{0};
@@ -37,11 +27,10 @@ struct MpiGhostExchange::Impl final {
     std::vector<std::size_t> peer_capacities;
     std::vector<std::size_t> wire_offsets;
     std::vector<std::size_t> receive_counts;
+    std::vector<std::size_t> receive_byte_counts;
     std::vector<std::size_t> offsets;
-    std::vector<Request> receive_requests;
-    std::vector<Request> send_requests;
-    std::vector<Status> receive_statuses;
     std::vector<ReceiveChunk> receive_chunks;
+    std::unique_ptr<MpiNativeGhost> native;
 };
 
 } // namespace blitzar_parallel

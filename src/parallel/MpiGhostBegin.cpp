@@ -19,7 +19,6 @@ blitzar_status MpiGhostTransport::Begin(
 
         return BLITZAR_STATUS_OK;
     }
-#if defined(BLITZAR_HAS_MPI)
     if (exchange.impl_ == nullptr) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
@@ -55,13 +54,6 @@ blitzar_status MpiGhostTransport::Begin(
     }
 
     return PostRequests(local, state, layout);
-#else
-
-    (void)local;
-    (void)exchange;
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
 }
 
 blitzar_status MpiGhostTransport::PrepareLocal(std::span<const ParticlePacket> local,

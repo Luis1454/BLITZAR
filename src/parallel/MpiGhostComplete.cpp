@@ -17,7 +17,6 @@ blitzar_status MpiGhostTransport::Complete(
     if (!session_.IsDistributed()) {
         return BLITZAR_STATUS_OK;
     }
-#if defined(BLITZAR_HAS_MPI)
 
     const bool exchange_active = exchange.impl_ != nullptr && exchange.impl_->active;
     blitzar_status global_status = BLITZAR_STATUS_INTERNAL_ERROR;
@@ -35,12 +34,6 @@ blitzar_status MpiGhostTransport::Complete(
     }
 
     return CompleteActive(*exchange.impl_, ghosts);
-#else
-
-    (void)exchange;
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
 }
 
 blitzar_status MpiGhostTransport::CompleteActive(
@@ -91,18 +84,9 @@ blitzar_status MpiGhostTransport::CompleteActive(
 
 blitzar_status MpiGhostTransport::WaitGhostRequests(MpiGhostExchange::Impl& state) const noexcept
 {
-#if defined(BLITZAR_HAS_MPI)
-    blitzar_status status =
-        MpiGhostProtocol::WaitRequests(state.receive_requests, state.receive_statuses);
-
-    return status != BLITZAR_STATUS_OK ? status
-                                       : MpiGhostProtocol::WaitRequests(state.send_requests);
-#else
-
-    (void)state;
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
+    return state.native == nullptr
+               ? BLITZAR_STATUS_INVALID_ARGUMENT
+               : session_.Native().WaitGhost(*state.native, state.receive_byte_counts);
 }
 
 } // namespace blitzar_parallel

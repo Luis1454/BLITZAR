@@ -115,15 +115,14 @@ blitzar_status MpiGhostTransport::PrepareRoundStorage(
 {
     if (!MpiGhostProtocol::ResizeWithinCapacity(state.receive_wire, layout.receive_wire_size) ||
         !MpiGhostProtocol::ResizeWithinCapacity(
-            state.receive_requests, layout.receive_request_count) ||
-        !MpiGhostProtocol::ResizeWithinCapacity(state.send_requests, layout.send_request_count) ||
-        !MpiGhostProtocol::ResizeWithinCapacity(
-            state.receive_statuses, layout.receive_request_count) ||
-        !MpiGhostProtocol::ResizeWithinCapacity(
             state.receive_chunks, layout.receive_request_count) ||
+        !MpiGhostProtocol::ResizeWithinCapacity(
+            state.receive_byte_counts, layout.receive_request_count) ||
+        state.native == nullptr ||
+        session_.Native().ResizeGhost(*state.native, layout.receive_request_count,
+            layout.send_request_count) != BLITZAR_STATUS_OK ||
         layout.receive_wire_size > state.receive_capacity * ParticleWireBytes ||
-        layout.receive_request_count > state.receive_requests.capacity() ||
-        layout.send_request_count > state.send_requests.capacity()) {
+        layout.receive_request_count > state.receive_byte_counts.capacity()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 

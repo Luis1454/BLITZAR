@@ -1,9 +1,13 @@
-#include "parallel/MpiSessionNative.hpp"
+#include "parallel/MpiSession.hpp"
 
 #include <memory>
 #include <new>
 
 namespace blitzar_parallel {
+
+struct MpiSession::Impl final {
+    MpiNative native;
+};
 
 MpiSession::MpiSession() noexcept
 {
@@ -16,25 +20,12 @@ MpiSession::MpiSession() noexcept
         return;
     }
 
-    status_ = InitializeMpi();
+    status_ = impl_->native.Status();
+    rank_ = impl_->native.Rank();
+    size_ = impl_->native.Size();
 }
 
-MpiSession::~MpiSession() noexcept
-{
-#if defined(BLITZAR_HAS_MPI)
-    if (impl_ == nullptr) {
-        return;
-    }
-
-    const auto& runtime = *impl_;
-
-    if (!runtime.registered) {
-        return;
-    }
-
-    ReleaseMpi();
-#endif
-}
+MpiSession::~MpiSession() noexcept = default;
 
 bool MpiSession::IsUsable() const noexcept
 {
@@ -61,9 +52,9 @@ blitzar_status MpiSession::Status() const noexcept
     return status_;
 }
 
-const MpiSession::Impl& MpiSession::Native() const noexcept
+const MpiNative& MpiSession::Native() const noexcept
 {
-    return *impl_;
+    return impl_->native;
 }
 
 } // namespace blitzar_parallel

@@ -1,12 +1,6 @@
 #include "parallel/MpiCollectives.hpp"
 
-#include "parallel/MpiSessionNative.hpp"
-
 #include <cstdio>
-
-#if defined(BLITZAR_HAS_MPI)
-#include <mpi.h>
-#endif
 
 namespace blitzar_parallel {
 
@@ -29,8 +23,6 @@ namespace {
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
 }
-
-#if defined(BLITZAR_HAS_MPI)
 
 [[nodiscard]] int StatusSeverity(blitzar_status status) noexcept
 {
@@ -115,8 +107,6 @@ void LogSynchronizedStatus(const StatusLogRequest& request) noexcept
         static_cast<int>(request.global_status));
 }
 
-#endif
-
 } // namespace
 
 MpiCollectives::MpiCollectives(const MpiSession& session) noexcept : session_(session) {}
@@ -136,13 +126,11 @@ blitzar_status MpiCollectives::SynchronizeStatus(blitzar_status local_status, co
 
         return BLITZAR_STATUS_OK;
     }
-#if defined(BLITZAR_HAS_MPI)
 
     const int local_severity = StatusSeverity(normalized_status);
     int global_severity = 0;
 
-    if (MPI_Allreduce(&local_severity, &global_severity, 1, MPI_INT, MPI_MAX,
-            session_.Native().communicator) != MPI_SUCCESS) {
+    if (session_.Native().ReduceMaxInt(local_severity, global_severity) != BLITZAR_STATUS_OK) {
         global_status = BLITZAR_STATUS_INTERNAL_ERROR;
 
         LogSynchronizedStatus(
@@ -156,15 +144,6 @@ blitzar_status MpiCollectives::SynchronizeStatus(blitzar_status local_status, co
     LogSynchronizedStatus({session_.Rank(), operation, phase, normalized_status, global_status});
 
     return BLITZAR_STATUS_OK;
-#else
-
-    (void)operation;
-    (void)phase;
-
-    global_status = BLITZAR_STATUS_INTERNAL_ERROR;
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
 }
 
 blitzar_status MpiCollectives::ReduceBounds(
@@ -178,7 +157,6 @@ blitzar_status MpiCollectives::ReduceBounds(
     if (!session_.IsDistributed()) {
         return layout_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-#if defined(BLITZAR_HAS_MPI)
 
     blitzar_status global_layout_status = BLITZAR_STATUS_INTERNAL_ERROR;
     const blitzar_status synchronization_status =
@@ -189,17 +167,8 @@ blitzar_status MpiCollectives::ReduceBounds(
         return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status
                                                            : global_layout_status;
     }
-    if (MPI_Allreduce(MPI_IN_PLACE, minimum.data(), 3, MPI_DOUBLE, MPI_MIN,
-            session_.Native().communicator) != MPI_SUCCESS ||
-        MPI_Allreduce(MPI_IN_PLACE, maximum.data(), 3, MPI_DOUBLE, MPI_MAX,
-            session_.Native().communicator) != MPI_SUCCESS) {
-        return BLITZAR_STATUS_INTERNAL_ERROR;
-    }
 
-    return BLITZAR_STATUS_OK;
-#else
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
+    return session_.Native().ReduceBounds(minimum, maximum);
 }
 
 blitzar_status MpiCollectives::ReduceMax(int local_value, int& global_value) const noexcept
@@ -212,16 +181,8 @@ blitzar_status MpiCollectives::ReduceMax(int local_value, int& global_value) con
 
         return BLITZAR_STATUS_OK;
     }
-#if defined(BLITZAR_HAS_MPI)
 
-    return MPI_Allreduce(&local_value, &global_value, 1, MPI_INT, MPI_MAX,
-               session_.Native().communicator) == MPI_SUCCESS
-               ? BLITZAR_STATUS_OK
-               : BLITZAR_STATUS_INTERNAL_ERROR;
-#else
-
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
+    return session_.Native().ReduceMaxInt(local_value, global_value);
 }
 
 } // namespace blitzar_parallel
