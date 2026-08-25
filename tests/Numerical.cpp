@@ -1,6 +1,7 @@
 #include "Check.hpp"
 #include "core/Execution.hpp"
 #include "integration/LeapfrogKdk.hpp"
+#include "particles/AccelerationBuffer.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 

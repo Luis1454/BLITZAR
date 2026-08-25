@@ -3,6 +3,7 @@
 
 #include "integration/KdkCheckpoint.hpp"
 #include "parallel/MpiTypes.hpp"
+#include "particles/AccelerationBuffer.hpp"
 #include "particles/ParticleArena.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "particles/SourceBuffer.hpp"

@@ -1,6 +1,7 @@
 #include "AllocationMonitor.hpp"
 #include "Check.hpp"
 #include "core/Execution.hpp"
+#include "particles/AccelerationBuffer.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 #include "solvers/fmm/FmmSolver.hpp"

@@ -2,6 +2,7 @@
 #define BLITZAR_SDK_TRANSACTION_HPP
 
 #include "integration/KdkCheckpoint.hpp"
+#include "particles/AccelerationBuffer.hpp"
 #include "sdk/Rollback.hpp"
 
 #include <cstdint>

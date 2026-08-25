@@ -2,6 +2,7 @@
 #define BLITZAR_SDK_STEP_DISTRIBUTED_HPP
 
 #include "parallel/MpiStatus.hpp"
+#include "particles/AccelerationBuffer.hpp"
 #include "sdk/Dispatch.hpp"
 #include "sdk/Simulation.hpp"
 #include "sdk/Transaction.hpp"

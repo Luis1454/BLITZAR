@@ -4,6 +4,7 @@
 #include "gpu/HipContext.hpp"
 #include "integration/LeapfrogKdk.hpp"
 #include "parallel/MpiTypes.hpp"
+#include "particles/AccelerationBuffer.hpp"
 #include "sdk/Dispatch.hpp"
 #include "sdk/PacketStoreRequest.hpp"
 #include "sdk/ParticleInputStage.hpp"

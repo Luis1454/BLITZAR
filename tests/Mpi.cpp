@@ -6,6 +6,7 @@
 #include "parallel/MpiContext.hpp"
 #include "parallel/MpiExchange.hpp"
 #include "parallel/MpiTypes.hpp"
+#include "particles/AccelerationBuffer.hpp"
 #include "particles/ParticleBuffer.hpp"
 #include "sdk/Simulation.hpp"
 #include "solvers/direct/DirectSolver.hpp"
