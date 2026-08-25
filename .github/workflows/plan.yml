@@ -41,7 +41,7 @@ jobs:
 
       - name: Validate architecture responsibilities
         shell: bash
-        run: python tools/architecture_report.py --root . --check --output "$RUNNER_TEMP/architecture-report.json"
+        run: python tools/architecture_report.py --root . --all --check --output "$RUNNER_TEMP/architecture-report.json"
 
       - name: Check statement grouping format
         run: python tools/format_blocks.py --check

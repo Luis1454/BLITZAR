@@ -1,171 +1,29 @@
-"""Report bounded architecture signals without using file line count as a split rule."""
+"""Report bounded architecture signals for one or every repository profile."""
 
 from __future__ import annotations
 
 import argparse
-import dataclasses
 import json
 import pathlib
-import re
 import sys
 
-from argument_gate import (
-    NAME_PATTERN,
-    is_callable_candidate,
-    load_exceptions,
-    matching_parenthesis,
-    parameter_count,
-    strip_comments_and_literals,
+from argument_gate import load_exceptions
+from architecture_metrics import (
+    FileMetric,
+    FunctionMetric,
+    dependency_names,
+    scan_file_functions,
+    internal_dependency_count,
 )
-
-
-SOURCE_SUFFIXES = {".c", ".cc", ".cpp", ".cu", ".cuh", ".h", ".hip", ".hpp", ".inl"}
-SOURCE_ROOTS = ("include", "src", "apps")
-BRANCH_PATTERN = re.compile(r"\b(?:if|else|for|while|switch|case|catch)\b|&&|\|\||\?")
-ALLOCATION_PATTERN = re.compile(
-    r"\b(?:new|delete|malloc|calloc|realloc|free|make_unique|make_shared|"
-    r"reserve|resize|emplace_back|push_back)\s*(?:<|\(|;|$)"
+from architecture_scope import (
+    SOURCE_ROOTS,
+    classify_path,
+    discover_files,
+    discover_repository_paths,
+    load_profiles,
+    load_thresholds,
 )
-INCLUDE_PATTERN = re.compile(r"^\s*#\s*include\s*[<\"]([^>\"]+)[>\"]", re.MULTILINE)
-DEFAULT_THRESHOLDS = {
-    "max_parameters": 4,
-    "max_function_lines": 80,
-    "max_functions_per_file": 12,
-    "max_branch_points": 12,
-    "max_allocation_sites": 8,
-    "max_internal_includes": 12,
-}
-
-
-@dataclasses.dataclass(frozen=True)
-class FunctionMetric:
-    name: str
-    line: int
-    parameters: int
-    body_lines: int
-    branch_points: int
-    allocation_sites: int
-
-    def as_dict(self) -> dict[str, object]:
-        return dataclasses.asdict(self)
-
-
-@dataclasses.dataclass(frozen=True)
-class FileMetric:
-    path: str
-    line_count: int
-    include_count: int
-    internal_include_count: int
-    allocation_sites: int
-    functions: tuple[FunctionMetric, ...]
-    signals: tuple[str, ...]
-
-    def as_dict(self) -> dict[str, object]:
-        max_parameters = max((item.parameters for item in self.functions), default=0)
-        max_function_lines = max((item.body_lines for item in self.functions), default=0)
-        max_branch_points = max((item.branch_points for item in self.functions), default=0)
-        return {
-            "path": self.path,
-            "line_count": self.line_count,
-            "function_count": len(self.functions),
-            "max_parameters": max_parameters,
-            "max_function_lines": max_function_lines,
-            "max_branch_points": max_branch_points,
-            "include_count": self.include_count,
-            "internal_include_count": self.internal_include_count,
-            "allocation_sites": self.allocation_sites,
-            "review_required": bool(self.signals),
-            "signals": list(self.signals),
-            "functions": [item.as_dict() for item in self.functions],
-        }
-
-
-def matching_brace(source: str, opening: int) -> int | None:
-    depth = 0
-    for index in range(opening, len(source)):
-        if source[index] == "{":
-            depth += 1
-        elif source[index] == "}":
-            depth -= 1
-            if depth == 0:
-                return index
-    return None
-
-
-def line_number(source: str, offset: int) -> int:
-    return source.count("\n", 0, offset) + 1
-
-
-def body_opening(source: str, closing: int) -> int | None:
-    suffix = source[closing + 1 : closing + 512]
-    brace = suffix.find("{")
-    if brace < 0:
-        return None
-    prefix = suffix[:brace]
-    if ";" in prefix or "=" in prefix:
-        return None
-    return closing + 1 + brace
-
-
-def scan_functions(source: str, path: str) -> tuple[FunctionMetric, ...]:
-    clean = strip_comments_and_literals(source)
-    functions: list[FunctionMetric] = []
-    opening = clean.find("(")
-
-    while opening >= 0:
-        closing = matching_parenthesis(clean, opening)
-        if closing is None:
-            break
-        prefix_match = NAME_PATTERN.search(clean[:opening])
-        if prefix_match is not None:
-            name = prefix_match.group("name")
-            if is_callable_candidate(clean, opening, name):
-                opening_body = body_opening(clean, closing)
-                if opening_body is not None:
-                    closing_body = matching_brace(clean, opening_body)
-                    if closing_body is not None:
-                        body = clean[opening_body + 1 : closing_body]
-                        functions.append(
-                            FunctionMetric(
-                                name=name,
-                                line=line_number(clean, opening),
-                                parameters=parameter_count(clean[opening + 1 : closing]),
-                                body_lines=clean.count("\n", opening_body, closing_body) + 1,
-                                branch_points=len(BRANCH_PATTERN.findall(body)),
-                                allocation_sites=len(ALLOCATION_PATTERN.findall(body)),
-                            )
-                        )
-        opening = clean.find("(", closing + 1)
-
-    return tuple(functions)
-
-
-def discover_files(root: pathlib.Path) -> list[pathlib.Path]:
-    return sorted(
-        path
-        for source_root in SOURCE_ROOTS
-        for path in (root / source_root).rglob("*")
-        if path.is_file() and path.suffix.lower() in SOURCE_SUFFIXES
-    )
-
-
-def load_thresholds(root: pathlib.Path) -> dict[str, int]:
-    quality_path = root / "plan" / "quality.json"
-    if not quality_path.is_file():
-        return dict(DEFAULT_THRESHOLDS)
-    quality = json.loads(quality_path.read_text(encoding="utf-8"))
-    architecture = quality.get("architecture", {})
-    configured = architecture.get("thresholds", {}) if isinstance(architecture, dict) else {}
-    thresholds = dict(DEFAULT_THRESHOLDS)
-    for name, default in DEFAULT_THRESHOLDS.items():
-        value = configured.get(name, default)
-        if isinstance(value, int) and value > 0:
-            thresholds[name] = value
-    return thresholds
-
-
-def internal_include_count(includes: list[str]) -> int:
-    return sum(1 for include in includes if "/" in include or "\\" in include)
+from architecture_sources import source_completeness_report
 
 
 def analyze_file(
@@ -173,26 +31,24 @@ def analyze_file(
     path: pathlib.Path,
     thresholds: dict[str, int],
     exceptions: set[tuple[str, str]],
+    profile: str = "production",
 ) -> FileMetric:
     source = path.read_text(encoding="utf-8", errors="replace")
     relative = path.relative_to(root).as_posix()
-    functions = scan_functions(source, relative)
-    includes = INCLUDE_PATTERN.findall(source)
+    functions = scan_file_functions(source, relative)
+    includes = dependency_names(source, path)
+    internal_includes = internal_dependency_count(root, path, includes)
     signals: set[str] = set()
 
     if len(functions) > thresholds["max_functions_per_file"]:
         signals.add("function_count")
     if sum(item.allocation_sites for item in functions) > thresholds["max_allocation_sites"]:
         signals.add("allocation")
-    if internal_include_count(includes) > thresholds["max_internal_includes"]:
+    if internal_includes > thresholds["max_internal_includes"]:
         signals.add("include_dependencies")
-    if any(
-        item.body_lines > thresholds["max_function_lines"] for item in functions
-    ):
+    if any(item.body_lines > thresholds["max_function_lines"] for item in functions):
         signals.add("function_length")
-    if any(
-        item.branch_points > thresholds["max_branch_points"] for item in functions
-    ):
+    if any(item.branch_points > thresholds["max_branch_points"] for item in functions):
         signals.add("branching")
     if any(
         item.parameters > thresholds["max_parameters"]
@@ -205,10 +61,12 @@ def analyze_file(
         path=relative,
         line_count=len(source.splitlines()),
         include_count=len(includes),
-        internal_include_count=internal_include_count(includes),
+        internal_include_count=internal_includes,
         allocation_sites=sum(item.allocation_sites for item in functions),
         functions=functions,
         signals=tuple(sorted(signals)),
+        profile=profile,
+        language=path.suffix.lower().lstrip(".") or "metadata",
     )
 
 
@@ -256,10 +114,52 @@ def validate_reviews(root: pathlib.Path, files: list[FileMetric]) -> None:
             )
 
 
+def build_repository_report(root: pathlib.Path) -> dict[str, object]:
+    profiles = load_profiles(root)
+    profile_by_name = {profile.name: profile for profile in profiles}
+    exceptions = load_exceptions(root)
+    repository_paths = discover_repository_paths(root)
+    files: list[FileMetric] = []
+    unclassified: list[str] = []
+    for path in repository_paths:
+        relative = path.relative_to(root).as_posix()
+        profile_name = classify_path(relative, profiles)
+        if profile_name is None:
+            unclassified.append(relative)
+            continue
+        profile = profile_by_name[profile_name]
+        files.append(analyze_file(root, path, profile.thresholds, exceptions, profile_name))
+
+    profile_summary = {
+        profile.name: {
+            "roots": list(profile.roots),
+            "paths": list(profile.paths),
+            "suffixes": list(profile.suffixes),
+            "thresholds": profile.thresholds,
+            "file_count": sum(item.profile == profile.name for item in files),
+        }
+        for profile in profiles
+    }
+    return {
+        "schema_version": 2,
+        "scope": [profile.name for profile in profiles],
+        "line_count_policy": "informational",
+        "profiles": profile_summary,
+        "repository_file_count": len(repository_paths),
+        "unclassified_files": sorted(unclassified),
+        "source_completeness": source_completeness_report(root),
+        "review_required_paths": [file.path for file in files if file.signals],
+        "files": [file.as_dict() for file in files],
+    }
+
+
 def build_report(root: pathlib.Path) -> dict[str, object]:
     thresholds = load_thresholds(root)
     exceptions = load_exceptions(root)
-    files = [analyze_file(root, path, thresholds, exceptions) for path in discover_files(root)]
+    files = [
+        analyze_file(root, path, thresholds, exceptions, "production")
+        for path in discover_files(root)
+    ]
     return {
         "schema_version": 1,
         "scope": list(SOURCE_ROOTS),
@@ -281,13 +181,18 @@ def write_report(report: dict[str, object], output: pathlib.Path | None) -> None
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=pathlib.Path, default=pathlib.Path(__file__).resolve().parents[1])
+    parser.add_argument(
+        "--root",
+        type=pathlib.Path,
+        default=pathlib.Path(__file__).resolve().parents[1],
+    )
     parser.add_argument("--output", type=pathlib.Path)
     parser.add_argument("--check", action="store_true")
+    parser.add_argument("--all", action="store_true", help="qualify every repository profile")
     arguments = parser.parse_args(argv)
     root = arguments.root.resolve()
     try:
-        report = build_report(root)
+        report = build_repository_report(root) if arguments.all else build_report(root)
         if arguments.check:
             files = [
                 FileMetric(
@@ -300,10 +205,25 @@ def main(argv: list[str] | None = None) -> int:
                         FunctionMetric(**function) for function in item["functions"]
                     ),
                     signals=tuple(str(signal) for signal in item["signals"]),
+                    profile=str(item.get("profile", "production")),
+                    language=str(item.get("language", "cpp")),
                 )
                 for item in report["files"]
             ]
             validate_reviews(root, files)
+            if arguments.all:
+                unclassified = report["unclassified_files"]
+                completeness = report["source_completeness"]
+                if unclassified:
+                    raise ValueError(
+                        "repository files are not covered by an architecture profile: "
+                        + ", ".join(str(item) for item in unclassified)
+                    )
+                if completeness["status"] != "ok":
+                    raise ValueError(
+                        "CMake source completeness failed: "
+                        f"missing={completeness['missing']}, stale={completeness['stale']}"
+                    )
     except (OSError, ValueError, json.JSONDecodeError, KeyError, TypeError) as error:
         print(f"architecture-report: {error}", file=sys.stderr)
         return 1

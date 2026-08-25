@@ -3,7 +3,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from architecture_report import FileMetric, FunctionMetric, analyze_file, validate_reviews
+from architecture_report import (
+    FileMetric,
+    FunctionMetric,
+    analyze_file,
+    build_repository_report,
+    source_completeness_report,
+    validate_reviews,
+)
 
 
 class ArchitectureReportTests(unittest.TestCase):
@@ -108,6 +115,57 @@ class ArchitectureReportTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "missing"):
             validate_reviews(self.root, [metric])
+
+    def test_repository_report_covers_all_declared_profiles(self) -> None:
+        files = {
+            "src/Example.cpp": "int Example() { return 0; }\n",
+            "tests/Example.cpp": "int ExampleTest() { return 0; }\n",
+            "examples/Example.cpp": "int main() { return 0; }\n",
+            "tools/example.py": "def Example():\n    return 0\n",
+            "CMakeLists.txt": (
+                "add_library(example src/Example.cpp)\n"
+                "add_executable(test tests/Example.cpp)\n"
+                "add_executable(example_app examples/Example.cpp)\n"
+            ),
+            "cmake/Rules.cmake": "set(EXAMPLE_RULE ON)\n",
+            ".github/workflows/plan.yml": "name: plan\n",
+            ".clang-format": "Language: Cpp\n",
+            ".gitignore": "build/\n",
+            "PLAN.md": "# Plan\n",
+            "AGENTS.md": "# Rules\n",
+            "plan/decision.md": "# Decision\n",
+        }
+        for relative, content in files.items():
+            path = self.root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content, encoding="utf-8")
+
+        report = build_repository_report(self.root)
+
+        self.assertEqual(report["unclassified_files"], [])
+        self.assertEqual(report["source_completeness"]["status"], "ok")
+        self.assertEqual(
+            {name for name, item in report["profiles"].items() if item["file_count"]},
+            {
+                "production",
+                "tests",
+                "examples",
+                "tools",
+                "build-metadata",
+                "documentation",
+            },
+        )
+
+    def test_source_completeness_detects_missing_cmake_sources(self) -> None:
+        source = self.root / "src" / "Missing.cpp"
+        source.parent.mkdir(exist_ok=True)
+        source.write_text("int Missing() { return 0; }\n", encoding="utf-8")
+        (self.root / "CMakeLists.txt").write_text("project(example)\n", encoding="utf-8")
+
+        report = source_completeness_report(self.root)
+
+        self.assertEqual(report["status"], "incomplete")
+        self.assertEqual(report["missing"], ["src/Missing.cpp"])
 
 
 if __name__ == "__main__":
