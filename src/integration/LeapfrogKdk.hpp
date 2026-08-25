@@ -139,151 +139,16 @@ class LeapfrogKdk final {
 public:
     template <typename Solver, typename SolverScratch>
     [[nodiscard]] blitzar_status Advance(
-        blitzar_integration_kdk::AdvanceState<Solver, SolverScratch>& state) const noexcept
-    {
-        blitzar_integration_kdk::NoopDriftHook drift_hook;
-        blitzar_integration_kdk::NoopRollbackHook rollback_hook;
-        blitzar_integration_kdk::AdvanceHooks hooks{drift_hook, rollback_hook};
-        blitzar_integration_kdk::AdvanceRequest request{state, hooks};
-
-        return Advance(request);
-    }
+        blitzar_integration_kdk::AdvanceState<Solver, SolverScratch>& state) const noexcept;
 
     template <typename Solver, typename SolverScratch, typename DriftHook, typename RollbackHook>
     [[nodiscard]] blitzar_status Advance(
         blitzar_integration_kdk::AdvanceRequest<Solver, SolverScratch, DriftHook, RollbackHook>&
-            request) const noexcept
-    {
-        auto& state = request.state;
-
-        if (!state.particles.IsValid() || !state.accelerations.IsValid() ||
-            !state.checkpoint.IsValid() ||
-            state.particles.Count() != state.accelerations.Count() ||
-            state.particles.Count() != state.checkpoint.Count() || !std::isfinite(state.timestep) ||
-            state.timestep <= 0.0 || !state.settings.IsValid() ||
-            !blitzar_integration_kdk::IsFiniteState(state.particles.State()) ||
-            state.solver_particles.count != state.particles.Count() ||
-            !blitzar_integration_kdk::IsFiniteState(state.solver_particles)) {
-            return BLITZAR_STATUS_INVALID_ARGUMENT;
-        }
-
-        blitzar_core::MutableParticleView mutable_state = state.particles.MutableView();
-        blitzar_status status = state.checkpoint.Capture(mutable_state);
-
-        if (status != BLITZAR_STATUS_OK) {
-            return status;
-        }
-
-        blitzar_core::ForceView force = state.accelerations.View();
-
-        blitzar_integration_kdk::SolverComputeRequest compute_request{
-            state.solver, state.solver_particles, force, state.settings, state.solver_scratch};
-
-        status = blitzar_integration_kdk::ComputeSolver(compute_request);
-
-        if (status != BLITZAR_STATUS_OK) {
-            return blitzar_integration_kdk::RestoreWithRollback(
-                request.hooks.rollback, state.particles, state.checkpoint, status);
-        }
-        if (!blitzar_integration_kdk::IsFiniteForce(force)) {
-            return blitzar_integration_kdk::RestoreWithRollback(
-                request.hooks.rollback, state.particles, state.checkpoint,
-                BLITZAR_STATUS_INVALID_ARGUMENT);
-        }
-
-        const blitzar_core::Scalar half_step = 0.5 * state.timestep;
-
-#if defined(_OPENMP)
-#pragma omp parallel for simd schedule(static)
-#endif
-
-        for (std::int64_t raw_index = 0;
-             raw_index < static_cast<std::int64_t>(state.particles.Count()); ++raw_index) {
-            const std::size_t index = static_cast<std::size_t>(raw_index);
-
-            mutable_state.velocity_x[index] += half_step * force.x[index];
-            mutable_state.velocity_y[index] += half_step * force.y[index];
-            mutable_state.velocity_z[index] += half_step * force.z[index];
-            mutable_state.x[index] += state.timestep * mutable_state.velocity_x[index];
-            mutable_state.y[index] += state.timestep * mutable_state.velocity_y[index];
-            mutable_state.z[index] += state.timestep * mutable_state.velocity_z[index];
-        }
-
-        if (!blitzar_integration_kdk::IsFiniteState(state.particles.State())) {
-            return blitzar_integration_kdk::RestoreWithRollback(
-                request.hooks.rollback, state.particles, state.checkpoint,
-                BLITZAR_STATUS_INVALID_ARGUMENT);
-        }
-
-        const blitzar_integration_kdk::DriftTransition transition =
-            request.hooks.drift(state.particles, state.accelerations, state.checkpoint);
-
-        if (transition.status != BLITZAR_STATUS_OK) {
-            return blitzar_integration_kdk::RestoreWithRollback(
-                request.hooks.rollback, state.particles, state.checkpoint, transition.status);
-        }
-        if (transition.state_replaced) {
-            const std::size_t checkpoint_count = state.checkpoint.Count();
-
-            if (state.checkpoint.SetCount(state.particles.Count()) != BLITZAR_STATUS_OK) {
-                return blitzar_integration_kdk::RestoreWithRollback(
-                    request.hooks.rollback, state.particles, state.checkpoint,
-                    BLITZAR_STATUS_INTERNAL_ERROR);
-            }
-
-            mutable_state = state.particles.MutableView();
-
-            if (state.checkpoint.Capture(mutable_state) != BLITZAR_STATUS_OK) {
-                (void)state.checkpoint.SetCount(checkpoint_count);
-
-                return blitzar_integration_kdk::RestoreWithRollback(
-                    request.hooks.rollback, state.particles, state.checkpoint,
-                    BLITZAR_STATUS_INTERNAL_ERROR);
-            }
-
-            state.solver_particles = state.particles.State();
-        }
-
-        mutable_state = state.particles.MutableView();
-        force = state.accelerations.View();
-
-        const blitzar_integration_kdk::SolverComputeRequest second_compute_request{
-            state.solver, state.solver_particles, force, state.settings, state.solver_scratch};
-
-        status = blitzar_integration_kdk::ComputeSolver(second_compute_request);
-
-        if (status != BLITZAR_STATUS_OK) {
-            return blitzar_integration_kdk::RestoreWithRollback(
-                request.hooks.rollback, state.particles, state.checkpoint, status);
-        }
-        if (!blitzar_integration_kdk::IsFiniteForce(force)) {
-            return blitzar_integration_kdk::RestoreWithRollback(
-                request.hooks.rollback, state.particles, state.checkpoint,
-                BLITZAR_STATUS_INVALID_ARGUMENT);
-        }
-#if defined(_OPENMP)
-#pragma omp parallel for simd schedule(static)
-#endif
-
-        for (std::int64_t raw_index = 0;
-             raw_index < static_cast<std::int64_t>(state.particles.Count()); ++raw_index) {
-            const std::size_t index = static_cast<std::size_t>(raw_index);
-
-            mutable_state.velocity_x[index] += half_step * force.x[index];
-            mutable_state.velocity_y[index] += half_step * force.y[index];
-            mutable_state.velocity_z[index] += half_step * force.z[index];
-        }
-
-        if (!blitzar_integration_kdk::IsFiniteState(state.particles.State())) {
-            return blitzar_integration_kdk::RestoreWithRollback(
-                request.hooks.rollback, state.particles, state.checkpoint,
-                BLITZAR_STATUS_INVALID_ARGUMENT);
-        }
-
-        return BLITZAR_STATUS_OK;
-    }
+            request) const noexcept;
 };
 
 } // namespace blitzar_integration
+
+#include "integration/KdkAdvance.hpp"
 
 #endif
