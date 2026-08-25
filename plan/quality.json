@@ -175,7 +175,7 @@
         }
       },
       "build-metadata": {
-        "paths": ["CMakeLists.txt", ".clang-format", ".gitignore"],
+        "paths": ["CMakeLists.txt", ".clang-format", ".gitattributes", ".gitignore"],
         "roots": ["cmake", ".github"],
         "suffixes": [".cmake", ".in", ".yml", ".yaml"]
       },
@@ -258,6 +258,15 @@
       ]
     }
   },
+  "format": {
+    "command": "python tools/clang_format_gate.py --root . --check",
+    "clang_format_version": "22.1.8",
+    "encoding": "UTF-8",
+    "bom": false,
+    "line_endings": "LF",
+    "final_newline": true,
+    "custom_grouping_command": "python tools/format_blocks.py --check"
+  },
   "checks": [
     {
       "id": "CHK-P0-001",
@@ -305,6 +314,18 @@
       "id": "CHK-P0-008",
       "name": "naming-gate-fixtures",
       "command": "python tools/naming_gate_test.py",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-009",
+      "name": "clang-format-and-encoding-gate",
+      "command": "python tools/clang_format_gate.py --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-010",
+      "name": "clang-format-and-encoding-fixtures",
+      "command": "python tools/clang_format_gate_test.py",
       "phase": "P0"
     }
   ]

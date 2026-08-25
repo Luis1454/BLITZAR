@@ -30,7 +30,7 @@ blitzar_status DirectSolver::CalculateTarget(const ForceTargetRequest& request) 
     blitzar_core::Scalar acceleration_z = 0.0;
 
     for (std::size_t source = request.range.source_begin; source < request.range.source_end;
-         ++source) {
+        ++source) {
         if (source == request.target || request.particles.mass[source] == 0.0) {
             continue;
         }
@@ -74,8 +74,7 @@ blitzar_status DirectSolver::CalculateTarget(const ForceTargetRequest& request) 
                : BLITZAR_STATUS_INVALID_ARGUMENT;
 }
 
-blitzar_status DirectSolver::CalculateRemoteTarget(
-    const RemoteForceTargetRequest& request) noexcept
+blitzar_status DirectSolver::CalculateRemoteTarget(const RemoteForceTargetRequest& request) noexcept
 {
     blitzar_core::Scalar acceleration_x = 0.0;
     blitzar_core::Scalar acceleration_y = 0.0;

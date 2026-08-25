@@ -7,16 +7,16 @@
 #include <hip/hip_runtime.h>
 #endif
 
+#include "gpu/HipBufferCapacity.inl"
+#include "gpu/HipBufferLife.inl"
+#include "gpu/HipBufferParticleAddress.inl"
+#include "gpu/HipBufferState.inl"
+#include "gpu/HipBufferTreeAddress.inl"
+#include "gpu/HipMemory.inl"
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <memory>
 #include <new>
-
-#include "gpu/HipMemory.inl"
-#include "gpu/HipBufferState.inl"
-#include "gpu/HipBufferCapacity.inl"
-#include "gpu/HipBufferLife.inl"
-#include "gpu/HipBufferParticleAddress.inl"
-#include "gpu/HipBufferTreeAddress.inl"

@@ -1,7 +1,6 @@
-#include "parallel/MpiGhostTransport.hpp"
-
 #include "parallel/MpiGhostProtocol.hpp"
 #include "parallel/MpiGhostState.hpp"
+#include "parallel/MpiGhostTransport.hpp"
 
 #include <cstddef>
 
@@ -23,11 +22,10 @@ blitzar_status MpiGhostTransport::Complete(
     const bool exchange_active = exchange.impl_ != nullptr && exchange.impl_->active;
     blitzar_status global_status = BLITZAR_STATUS_INTERNAL_ERROR;
     const blitzar_status synchronization_status = collectives_.SynchronizeStatus(
-        exchange_active ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
-        "MpiGhostTransport", "ghost-complete-preflight", global_status);
+        exchange_active ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT, "MpiGhostTransport",
+        "ghost-complete-preflight", global_status);
 
-    if (synchronization_status != BLITZAR_STATUS_OK ||
-        global_status != BLITZAR_STATUS_OK) {
+    if (synchronization_status != BLITZAR_STATUS_OK || global_status != BLITZAR_STATUS_OK) {
         Abort(exchange);
 
         return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status : global_status;
@@ -64,8 +62,7 @@ blitzar_status MpiGhostTransport::CompleteActive(
     blitzar_status synchronization_status = collectives_.SynchronizeStatus(
         status, "MpiGhostTransport", "ghost-count-prepare", global_status);
 
-    if (synchronization_status != BLITZAR_STATUS_OK ||
-        global_status != BLITZAR_STATUS_OK) {
+    if (synchronization_status != BLITZAR_STATUS_OK || global_status != BLITZAR_STATUS_OK) {
         AbortExchange(state);
 
         return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status : global_status;
@@ -76,8 +73,7 @@ blitzar_status MpiGhostTransport::CompleteActive(
     synchronization_status = collectives_.SynchronizeStatus(
         status, "MpiGhostTransport", "ghost-data-prepare", global_status);
 
-    if (synchronization_status != BLITZAR_STATUS_OK ||
-        global_status != BLITZAR_STATUS_OK) {
+    if (synchronization_status != BLITZAR_STATUS_OK || global_status != BLITZAR_STATUS_OK) {
         AbortExchange(state);
 
         return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status : global_status;
@@ -93,8 +89,7 @@ blitzar_status MpiGhostTransport::CompleteActive(
     return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status : global_status;
 }
 
-blitzar_status MpiGhostTransport::WaitGhostRequests(
-    MpiGhostExchange::Impl& state) const noexcept
+blitzar_status MpiGhostTransport::WaitGhostRequests(MpiGhostExchange::Impl& state) const noexcept
 {
 #if defined(BLITZAR_HAS_MPI)
     blitzar_status status =

@@ -56,12 +56,10 @@ private:
     [[nodiscard]] static std::size_t RemoteCapacity(
         std::size_t particle_count, int rank_count) noexcept;
     [[nodiscard]] static std::size_t DefaultMaxCells(std::size_t particle_count) noexcept;
-    [[nodiscard]] static blitzar_status CreateSolver(const SolverCreationRequest& request,
-        SolverVariant& solver) noexcept;
-    [[nodiscard]] blitzar_status RebuildSolver(
-        const blitzar_physics::GravityParameters& gravity,
-        const blitzar_barnes_hut::BarnesHutSettings& barnes_hut,
-        SolverVariant& solver) noexcept;
+    [[nodiscard]] static blitzar_status CreateSolver(
+        const SolverCreationRequest& request, SolverVariant& solver) noexcept;
+    [[nodiscard]] blitzar_status RebuildSolver(const blitzar_physics::GravityParameters& gravity,
+        const blitzar_barnes_hut::BarnesHutSettings& barnes_hut, SolverVariant& solver) noexcept;
     [[nodiscard]] blitzar_status EnsureLocalCapacity(std::size_t capacity) noexcept;
     [[nodiscard]] blitzar_status Remember(blitzar_status status) const noexcept;
     [[nodiscard]] bool ValidateParticleInput(blitzar_core::ParticleStateView input) const noexcept;
@@ -69,23 +67,22 @@ private:
         blitzar_parallel::DomainDecomposition& domain,
         blitzar_parallel::PacketBuffer& distributed) noexcept;
     [[nodiscard]] bool ValidateOutput(blitzar_core::ParticleOutputView output) const noexcept;
-    [[nodiscard]] blitzar_status CopyLocalState(blitzar_core::ParticleOutputView output) const noexcept;
-    [[nodiscard]] blitzar_status GatherState(blitzar_core::ParticleOutputView output) const noexcept;
+    [[nodiscard]] blitzar_status CopyLocalState(
+        blitzar_core::ParticleOutputView output) const noexcept;
+    [[nodiscard]] blitzar_status GatherState(
+        blitzar_core::ParticleOutputView output) const noexcept;
     [[nodiscard]] blitzar_status PrepareDistributedStep(
         std::size_t rollback_particle_count, StepTransaction& transaction) noexcept;
 
-    template <typename Solver>
-    [[nodiscard]] blitzar_status StepWithSolver(Solver& solver) noexcept;
+    template <typename Solver> [[nodiscard]] blitzar_status StepWithSolver(Solver& solver) noexcept;
 
     template <typename Solver>
     [[nodiscard]] blitzar_status StepDistributed(Solver& solver) noexcept;
 
-    template <typename Solver>
-    [[nodiscard]] blitzar_status StepLocal(Solver& solver) noexcept;
+    template <typename Solver> [[nodiscard]] blitzar_status StepLocal(Solver& solver) noexcept;
 
     [[nodiscard]] blitzar_integration_kdk::DriftTransition MigrateAfterDrift(
-        std::size_t rollback_particle_count,
-        blitzar_particles::ParticleBuffer& particles,
+        std::size_t rollback_particle_count, blitzar_particles::ParticleBuffer& particles,
         blitzar_particles::AccelerationBuffer& accelerations,
         blitzar_integration::KdkCheckpoint& checkpoint) noexcept;
 
@@ -108,8 +105,7 @@ private:
     bool particles_ready_;
     blitzar_core::ExecutionSettings execution_settings_;
     blitzar_core::SnapshotHeader snapshot_header_;
-    blitzar_parallel::MpiOverlapMode overlap_mode_{
-        blitzar_parallel::MpiOverlapMode::Overlapped};
+    blitzar_parallel::MpiOverlapMode overlap_mode_{blitzar_parallel::MpiOverlapMode::Overlapped};
     blitzar_parallel::MpiOverlapTrace overlap_trace_{};
     mutable std::atomic<blitzar_status> last_status_;
     mutable std::atomic<blitzar_backend_kind> last_backend_;

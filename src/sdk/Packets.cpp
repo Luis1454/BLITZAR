@@ -42,8 +42,8 @@ struct CountSnapshot final {
     return BLITZAR_STATUS_OK;
 }
 
-void WriteGhosts(const blitzar_parallel::PacketBuffer& ghosts,
-    blitzar_particles::SourceBuffer& source) noexcept
+void WriteGhosts(
+    const blitzar_parallel::PacketBuffer& ghosts, blitzar_particles::SourceBuffer& source) noexcept
 {
     const auto position_x = source.PositionX();
     const auto position_y = source.PositionY();

@@ -11,14 +11,12 @@
 
 namespace blitzar_sdk {
 
-template <typename Solver>
-blitzar_status Simulation::StepDistributed(Solver& solver) noexcept
+template <typename Solver> blitzar_status Simulation::StepDistributed(Solver& solver) noexcept
 {
     const std::size_t rollback_particle_count = particles_.Count();
-    TransactionState transaction_state{
-        arena_, particles_, accelerations_, checkpoint_, particle_ids_, local_particle_count_,
-        exchange_buffer_, rollback_arena_buffer_, rollback_force_buffer_,
-        rollback_exchange_buffer_};
+    TransactionState transaction_state{arena_, particles_, accelerations_, checkpoint_,
+        particle_ids_, local_particle_count_, exchange_buffer_, rollback_arena_buffer_,
+        rollback_force_buffer_, rollback_exchange_buffer_};
 
     StepTransaction transaction(transaction_state);
 
@@ -45,11 +43,10 @@ blitzar_status Simulation::StepDistributed(Solver& solver) noexcept
         transaction.Abort();
     };
 
-    auto migrate_after_drift =
-        [this, &solver, rollback_particle_count](
-            blitzar_particles::ParticleBuffer& current_particles,
-            blitzar_particles::AccelerationBuffer& current_accelerations,
-            blitzar_integration::KdkCheckpoint& current_checkpoint)
+    auto migrate_after_drift = [this, &solver, rollback_particle_count](
+                                   blitzar_particles::ParticleBuffer& current_particles,
+                                   blitzar_particles::AccelerationBuffer& current_accelerations,
+                                   blitzar_integration::KdkCheckpoint& current_checkpoint)
         -> blitzar_integration_kdk::DriftTransition {
         const blitzar_integration_kdk::DriftTransition transition = MigrateAfterDrift(
             rollback_particle_count, current_particles, current_accelerations, current_checkpoint);
@@ -59,8 +56,8 @@ blitzar_status Simulation::StepDistributed(Solver& solver) noexcept
         }
 
         const blitzar_status solver_status = solver.Prepare(current_particles.Count());
-        const blitzar_status synchronized_solver_status = SynchronizeSimulationStatus(
-            mpi_context_, solver_status, "migrate-solver-capacity");
+        const blitzar_status synchronized_solver_status =
+            SynchronizeSimulationStatus(mpi_context_, solver_status, "migrate-solver-capacity");
 
         return synchronized_solver_status == BLITZAR_STATUS_OK
                    ? transition

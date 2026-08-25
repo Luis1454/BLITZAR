@@ -286,9 +286,8 @@ struct StateArrays final {
     std::span<std::size_t> solver_scratch{};
 
     for (int step = 0; step < step_count; ++step) {
-        blitzar_integration_kdk::AdvanceState state{
-            particles, accelerations, checkpoint, solver, timestep, execution, solver_scratch,
-            particles.State()};
+        blitzar_integration_kdk::AdvanceState state{particles, accelerations, checkpoint, solver,
+            timestep, execution, solver_scratch, particles.State()};
 
         if (integrator.Advance(state) != BLITZAR_STATUS_OK) {
             return false;
@@ -349,9 +348,8 @@ struct StateArrays final {
 
     rejected.x[0] += 100.0;
     rejected.mass[0] = -1.0;
-    local_ok = local_ok &&
-               simulation.SetParticles(blitzar_tests::MakeStateView(rejected)) ==
-                   BLITZAR_STATUS_INVALID_ARGUMENT;
+    local_ok = local_ok && simulation.SetParticles(blitzar_tests::MakeStateView(rejected)) ==
+                               BLITZAR_STATUS_INVALID_ARGUMENT;
 
     StateArrays after_rejected{};
     const blitzar_status rejected_state_status =
@@ -410,18 +408,14 @@ struct StateArrays final {
     StateArrays overlapped_state{};
     StateArrays serialized_state{};
 
-    if (overlapped.GetState(blitzar_tests::MakeOutputView(overlapped_state)) !=
-            BLITZAR_STATUS_OK ||
-        serialized.GetState(blitzar_tests::MakeOutputView(serialized_state)) !=
-            BLITZAR_STATUS_OK) {
+    if (overlapped.GetState(blitzar_tests::MakeOutputView(overlapped_state)) != BLITZAR_STATUS_OK ||
+        serialized.GetState(blitzar_tests::MakeOutputView(serialized_state)) != BLITZAR_STATUS_OK) {
         return false;
     }
 
-    const blitzar_parallel::MpiOverlapTrace& overlap_trace =
-        overlapped.LastMpiOverlapTrace();
+    const blitzar_parallel::MpiOverlapTrace& overlap_trace = overlapped.LastMpiOverlapTrace();
 
-    const blitzar_parallel::MpiOverlapTrace& serialized_trace =
-        serialized.LastMpiOverlapTrace();
+    const blitzar_parallel::MpiOverlapTrace& serialized_trace = serialized.LastMpiOverlapTrace();
 
     const bool parity = StatesMatch(overlapped_state, serialized_state);
     const bool volume_match = overlap_trace.local_packets == serialized_trace.local_packets &&
@@ -523,8 +517,7 @@ struct StateArrays final {
 
     StateArrays before_failure{};
 
-    if (simulation.GetState(blitzar_tests::MakeOutputView(before_failure)) !=
-            BLITZAR_STATUS_OK ||
+    if (simulation.GetState(blitzar_tests::MakeOutputView(before_failure)) != BLITZAR_STATUS_OK ||
         simulation.SetGravity(std::numeric_limits<double>::denorm_min(), 0.0) !=
             BLITZAR_STATUS_OK ||
         simulation.Step() != BLITZAR_STATUS_SINGULARITY) {
@@ -826,9 +819,9 @@ struct StateArrays final {
 
     const std::array<blitzar_parallel::ParticlePacket, 0> empty_packets{};
 
-    const blitzar_parallel::AllToAllPacketRequest invalid_request{
-        empty_packets, invalid_counts, invalid_counts,
-        std::span<blitzar_parallel::ParticlePacket>{}, invalid_counts, invalid_counts};
+    const blitzar_parallel::AllToAllPacketRequest invalid_request{empty_packets, invalid_counts,
+        invalid_counts, std::span<blitzar_parallel::ParticlePacket>{}, invalid_counts,
+        invalid_counts};
 
     if (context.AllToAllPackets(invalid_request) != expected_zero_layout) {
         return false;
@@ -930,8 +923,7 @@ struct StateArrays final {
 [[nodiscard]] std::uint64_t PeakResidentBytes() noexcept
 {
 #if defined(__linux__)
-    struct rusage usage {
-    };
+    struct rusage usage{};
 
     if (getrusage(RUSAGE_SELF, &usage) != 0 || usage.ru_maxrss < 0) {
         return 0;
@@ -949,9 +941,9 @@ void ReportPeakResidentMemory(
     const std::uint64_t bytes = PeakResidentBytes();
 
     if (bytes != 0) {
-        std::fprintf(stderr, "BLITZAR MPI memory rank=%d particles=%zu ranks=%d peak_rss_bytes=%llu\n",
-            context.Rank(), particle_count, context.Size(),
-            static_cast<unsigned long long>(bytes));
+        std::fprintf(stderr,
+            "BLITZAR MPI memory rank=%d particles=%zu ranks=%d peak_rss_bytes=%llu\n",
+            context.Rank(), particle_count, context.Size(), static_cast<unsigned long long>(bytes));
     }
 }
 

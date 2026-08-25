@@ -9,9 +9,8 @@
 
 namespace blitzar_sdk {
 
-using SolverVariant =
-    std::variant<blitzar_direct::DirectSolver, blitzar_barnes_hut::BarnesHutSolver,
-        blitzar_fmm::FmmSolver>;
+using SolverVariant = std::variant<blitzar_direct::DirectSolver,
+    blitzar_barnes_hut::BarnesHutSolver, blitzar_fmm::FmmSolver>;
 
 } // namespace blitzar_sdk
 

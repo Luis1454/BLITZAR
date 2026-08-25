@@ -46,8 +46,7 @@ private:
     };
 
     [[nodiscard]] static bool IsValidState(blitzar_core::ParticleStateView particles) noexcept;
-    [[nodiscard]] static blitzar_status CalculateTarget(
-        const ForceTargetRequest& request) noexcept;
+    [[nodiscard]] static blitzar_status CalculateTarget(const ForceTargetRequest& request) noexcept;
     [[nodiscard]] static blitzar_status CalculateRemoteTarget(
         const RemoteForceTargetRequest& request) noexcept;
     [[nodiscard]] bool ValidateRangeRequest(blitzar_core::ParticleStateView particles,
@@ -60,8 +59,8 @@ private:
         blitzar_core::ParticleStateView particles, blitzar_core::ForceRange range) noexcept;
     [[nodiscard]] blitzar_status CommitRange(
         blitzar_core::ForceView forces, blitzar_core::ForceRange range) noexcept;
-    [[nodiscard]] blitzar_status ComputeRemoteStaged(blitzar_core::ParticleStateView targets,
-        blitzar_core::ParticleStateView sources) noexcept;
+    [[nodiscard]] blitzar_status ComputeRemoteStaged(
+        blitzar_core::ParticleStateView targets, blitzar_core::ParticleStateView sources) noexcept;
     [[nodiscard]] blitzar_status CommitRemote(blitzar_core::ForceView forces) noexcept;
 
     blitzar_physics::GravityLaw gravity_;

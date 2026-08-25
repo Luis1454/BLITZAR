@@ -25,10 +25,8 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
         const std::size_t column = index % 16;
         const std::size_t row = (index / 16) % 16;
         const std::size_t layer = index / 256;
-        const blitzar_core::Vector3 position{
-            0.25 * static_cast<double>(column) - 2.0,
-            0.25 * static_cast<double>(row) - 2.0,
-            0.25 * static_cast<double>(layer) - 0.5};
+        const blitzar_core::Vector3 position{0.25 * static_cast<double>(column) - 2.0,
+            0.25 * static_cast<double>(row) - 2.0, 0.25 * static_cast<double>(layer) - 0.5};
 
         (void)particles.SetPosition(index, position);
         (void)particles.SetVelocity(index, {});
@@ -50,8 +48,7 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
     blitzar_fmm::FmmSolver fmm(gravity, MakeSettings(ParticleCount, 0.0), ParticleCount);
     const blitzar_core::ExecutionSettings execution{};
 
-    if (direct.Compute(particles.State(), direct_force.View(), execution) !=
-            BLITZAR_STATUS_OK ||
+    if (direct.Compute(particles.State(), direct_force.View(), execution) != BLITZAR_STATUS_OK ||
         fmm.Compute(particles.State(), fmm_force.View(), execution) != BLITZAR_STATUS_OK ||
         fmm.Kind() != blitzar_core::SolverKind::Fmm || fmm.BuildCount() != 1) {
         return false;
@@ -84,8 +81,7 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
     blitzar_fmm::FmmSolver fmm(gravity, MakeSettings(ParticleCount, 0.35), ParticleCount);
     const blitzar_core::ExecutionSettings execution{};
 
-    if (direct.Compute(particles.State(), direct_force.View(), execution) !=
-            BLITZAR_STATUS_OK ||
+    if (direct.Compute(particles.State(), direct_force.View(), execution) != BLITZAR_STATUS_OK ||
         fmm.Compute(particles.State(), fmm_force.View(), execution) != BLITZAR_STATUS_OK) {
         return false;
     }
@@ -96,15 +92,16 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
 
     for (std::size_t index = 0; index < ParticleCount; ++index) {
         const double expected_norm = std::sqrt(expected.x[index] * expected.x[index] +
-            expected.y[index] * expected.y[index] + expected.z[index] * expected.z[index]);
+                                               expected.y[index] * expected.y[index] +
+                                               expected.z[index] * expected.z[index]);
 
         const double error_norm = std::sqrt(
             (expected.x[index] - actual.x[index]) * (expected.x[index] - actual.x[index]) +
             (expected.y[index] - actual.y[index]) * (expected.y[index] - actual.y[index]) +
             (expected.z[index] - actual.z[index]) * (expected.z[index] - actual.z[index]));
 
-        maximum_relative_error = std::max(
-            maximum_relative_error, error_norm / std::max(1.0, expected_norm));
+        maximum_relative_error =
+            std::max(maximum_relative_error, error_norm / std::max(1.0, expected_norm));
     }
 
     return maximum_relative_error < 0.05;
@@ -128,11 +125,10 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
         view.z[index] = 6.0;
     }
 
-    blitzar_fmm::FmmSolver fmm(
-        {1.0, 0.0}, MakeSettings(3, 0.0), 3);
+    blitzar_fmm::FmmSolver fmm({1.0, 0.0}, MakeSettings(3, 0.0), 3);
 
-    const blitzar_status status = fmm.Compute(
-        particles.State(), view, blitzar_core::ExecutionSettings{});
+    const blitzar_status status =
+        fmm.Compute(particles.State(), view, blitzar_core::ExecutionSettings{});
 
     if (status != BLITZAR_STATUS_SINGULARITY) {
         return false;
@@ -177,11 +173,11 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
         return false;
     }
 
-    const auto first_time = std::chrono::duration_cast<std::chrono::microseconds>(
-        first_end - first_start);
+    const auto first_time =
+        std::chrono::duration_cast<std::chrono::microseconds>(first_end - first_start);
 
-    const auto second_time = std::chrono::duration_cast<std::chrono::microseconds>(
-        second_end - second_start);
+    const auto second_time =
+        std::chrono::duration_cast<std::chrono::microseconds>(second_end - second_start);
 
     std::printf("fmm-large-n=%zu build-us=%lld refit-us=%lld\n", ParticleCount,
         static_cast<long long>(first_time.count()), static_cast<long long>(second_time.count()));

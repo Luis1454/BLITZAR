@@ -42,8 +42,7 @@ void FinalizeAtExit() noexcept
 {
     int finalized = 0;
 
-    return initialized != 0 &&
-                   (MPI_Finalized(&finalized) != MPI_SUCCESS || finalized != 0)
+    return initialized != 0 && (MPI_Finalized(&finalized) != MPI_SUCCESS || finalized != 0)
                ? BLITZAR_STATUS_INTERNAL_ERROR
                : BLITZAR_STATUS_OK;
 }
@@ -71,10 +70,9 @@ void FinalizeAtExit() noexcept
 
 [[nodiscard]] blitzar_status AcquireRuntime(int initialized, int& provided) noexcept
 {
-    return initialized == 0
-               ? StartRuntime(provided)
-               : MPI_Query_thread(&provided) == MPI_SUCCESS ? BLITZAR_STATUS_OK
-                                                            : BLITZAR_STATUS_INTERNAL_ERROR;
+    return initialized == 0                             ? StartRuntime(provided)
+           : MPI_Query_thread(&provided) == MPI_SUCCESS ? BLITZAR_STATUS_OK
+                                                        : BLITZAR_STATUS_INTERNAL_ERROR;
 }
 
 } // namespace
@@ -115,8 +113,7 @@ blitzar_status MpiSession::InitializeMpi() noexcept
     ++SessionReferences;
 
     impl_->registered = true;
-    status_ = provided < MPI_THREAD_MULTIPLE ? BLITZAR_STATUS_UNSUPPORTED
-                                             : BLITZAR_STATUS_OK;
+    status_ = provided < MPI_THREAD_MULTIPLE ? BLITZAR_STATUS_UNSUPPORTED : BLITZAR_STATUS_OK;
 
     const blitzar_status communicator_status = ReadCommunicator();
 

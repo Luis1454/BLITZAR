@@ -37,15 +37,13 @@ public:
     }
 
     [[nodiscard]] static blitzar_status SynchronizePreparation(
-        const MpiCollectives& collectives, blitzar_status local_status,
-        const char* phase) noexcept
+        const MpiCollectives& collectives, blitzar_status local_status, const char* phase) noexcept
     {
         blitzar_status global_status = BLITZAR_STATUS_INTERNAL_ERROR;
         const blitzar_status synchronization_status =
             collectives.SynchronizeStatus(local_status, "MpiPacketTransport", phase, global_status);
 
-        return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status
-                                                            : global_status;
+        return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status : global_status;
     }
 
     [[nodiscard]] static bool ToWireBytes(std::size_t packets, int& bytes) noexcept

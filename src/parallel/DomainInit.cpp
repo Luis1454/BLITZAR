@@ -8,14 +8,14 @@ blitzar_status DomainDecomposition::ValidateInput(
     blitzar_core::ParticleStateView state, const MpiContext& context) const noexcept
 {
     const bool root = context.Rank() == 0;
-    const bool valid = context.Size() > 0 &&
-                       (root ? blitzar_core::IsValid(state)
-                             : state.SourceCount() == 0 || blitzar_core::IsValid(state));
+    const bool valid =
+        context.Size() > 0 && (root ? blitzar_core::IsValid(state)
+                                    : state.SourceCount() == 0 || blitzar_core::IsValid(state));
 
     blitzar_status global_status = BLITZAR_STATUS_INTERNAL_ERROR;
-    const blitzar_status synchronization_status = context.SynchronizeStatus(
-        valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT, "DomainDecomposition",
-        "initialize-preflight", global_status);
+    const blitzar_status synchronization_status =
+        context.SynchronizeStatus(valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
+            "DomainDecomposition", "initialize-preflight", global_status);
 
     if (synchronization_status != BLITZAR_STATUS_OK) {
         return synchronization_status;

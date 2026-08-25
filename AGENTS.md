@@ -46,4 +46,6 @@ prefixes and path components are forbidden.
 Every implementation phase requires deterministic tests, sanitizer or static
 analysis coverage appropriate to the target, and a numerical comparison against
 the reference where applicable. A feature is not complete because its files
-compile; its observable behavior must be demonstrated.
+compile; its observable behavior must be demonstrated. Source files use UTF-8
+without a BOM, LF line endings, a final newline, the pinned clang-format version
+from `plan/quality.json`, and the recursive grouping checker.

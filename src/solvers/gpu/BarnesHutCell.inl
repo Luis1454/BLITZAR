@@ -17,8 +17,7 @@ __device__ bool Contains(
            fabs(position_z - cell.center_z) <= cell.half_extent;
 }
 
-__device__ int ValidateCell(
-    const BarnesHutDeviceRequest& request, const GpuCell& cell) noexcept
+__device__ int ValidateCell(const BarnesHutDeviceRequest& request, const GpuCell& cell) noexcept
 {
     if (!isfinite(cell.mass) || cell.mass < 0.0 || cell.begin > request.source_count ||
         cell.count > request.source_count - cell.begin) {

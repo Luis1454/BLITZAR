@@ -33,7 +33,7 @@ blitzar_status DirectSolver::ComputeRangeStaged(
 #endif
 
     for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(particles.count);
-         ++target_index) {
+        ++target_index) {
         if (status.load(std::memory_order_relaxed) != BLITZAR_STATUS_OK) {
             continue;
         }
@@ -65,7 +65,7 @@ blitzar_status DirectSolver::CommitRange(
 #endif
 
     for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(forces.count);
-         ++target_index) {
+        ++target_index) {
         const std::size_t target = static_cast<std::size_t>(target_index);
 
         if (range.accumulate) {
@@ -83,8 +83,8 @@ blitzar_status DirectSolver::CommitRange(
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_status DirectSolver::ComputeRemoteStaged(blitzar_core::ParticleStateView targets,
-    blitzar_core::ParticleStateView sources) noexcept
+blitzar_status DirectSolver::ComputeRemoteStaged(
+    blitzar_core::ParticleStateView targets, blitzar_core::ParticleStateView sources) noexcept
 {
     std::atomic<blitzar_status> status{BLITZAR_STATUS_OK};
 
@@ -93,7 +93,7 @@ blitzar_status DirectSolver::ComputeRemoteStaged(blitzar_core::ParticleStateView
 #endif
 
     for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(targets.count);
-         ++target_index) {
+        ++target_index) {
         if (status.load(std::memory_order_relaxed) != BLITZAR_STATUS_OK) {
             continue;
         }
@@ -126,7 +126,7 @@ blitzar_status DirectSolver::CommitRemote(blitzar_core::ForceView forces) noexce
 #endif
 
     for (std::int64_t target_index = 0; target_index < static_cast<std::int64_t>(forces.count);
-         ++target_index) {
+        ++target_index) {
         const std::size_t target = static_cast<std::size_t>(target_index);
 
         forces.x[target] += staging_[target].x;

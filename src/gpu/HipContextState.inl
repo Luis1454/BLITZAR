@@ -24,19 +24,16 @@ struct HipContext::Impl final {
     [[nodiscard]] blitzar_status UploadDirectInputs(blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces, blitzar_core::ForceRange range,
         bool source_alias_target) noexcept;
-    [[nodiscard]] blitzar_status PrepareTree(
-        blitzar_core::ParticleStateView particles,
+    [[nodiscard]] blitzar_status PrepareTree(blitzar_core::ParticleStateView particles,
         blitzar_barnes_hut::BarnesHutSettings settings) noexcept;
     [[nodiscard]] blitzar_status EnsureTree(
         blitzar_barnes_hut::BarnesHutSettings settings) noexcept;
-    [[nodiscard]] blitzar_status UploadTree(
-        std::span<const blitzar_trees::Octree::Cell> cells,
+    [[nodiscard]] blitzar_status UploadTree(std::span<const blitzar_trees::Octree::Cell> cells,
         std::span<const std::size_t> indices) noexcept;
     [[nodiscard]] blitzar_status ComputeDirect(blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces, blitzar_physics::GravityParameters gravity,
         blitzar_core::ForceRange range) noexcept;
-    [[nodiscard]] blitzar_status ComputeBarnesHut(
-        const BarnesHutComputeRequest& request) noexcept;
+    [[nodiscard]] blitzar_status ComputeBarnesHut(const BarnesHutComputeRequest& request) noexcept;
 };
 
 } // namespace blitzar_gpu

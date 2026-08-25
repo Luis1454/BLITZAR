@@ -4,9 +4,9 @@ namespace {
 
 [[nodiscard]] bool HasParticleAddresses(const DeviceParticleAddresses& addresses) noexcept
 {
-    return addresses.position_x != 0 && addresses.position_y != 0 &&
-           addresses.position_z != 0 && addresses.mass != 0 && addresses.force_x != 0 &&
-           addresses.force_y != 0 && addresses.force_z != 0;
+    return addresses.position_x != 0 && addresses.position_y != 0 && addresses.position_z != 0 &&
+           addresses.mass != 0 && addresses.force_x != 0 && addresses.force_y != 0 &&
+           addresses.force_z != 0;
 }
 
 [[nodiscard]] blitzar_status ValidateLaunch(const BarnesHutLaunchRequest& request) noexcept
@@ -26,12 +26,10 @@ namespace {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    const std::size_t block_count =
-        (request.target_count + BlockSize - 1) / BlockSize;
+    const std::size_t block_count = (request.target_count + BlockSize - 1) / BlockSize;
 
-    return block_count > std::numeric_limits<unsigned int>::max()
-               ? BLITZAR_STATUS_INVALID_ARGUMENT
-               : BLITZAR_STATUS_OK;
+    return block_count > std::numeric_limits<unsigned int>::max() ? BLITZAR_STATUS_INVALID_ARGUMENT
+                                                                  : BLITZAR_STATUS_OK;
 }
 
 } // namespace
@@ -44,8 +42,7 @@ blitzar_status LaunchBarnesHut(const BarnesHutLaunchRequest& request) noexcept
         return validation_status;
     }
 
-    const std::size_t block_count =
-        (request.target_count + BlockSize - 1) / BlockSize;
+    const std::size_t block_count = (request.target_count + BlockSize - 1) / BlockSize;
 
     const DeviceParticleAddresses& addresses = request.addresses;
     const TreeAddresses& tree = request.tree;

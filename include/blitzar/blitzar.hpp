@@ -95,8 +95,7 @@ struct ParticleInput final {
     [[nodiscard]] bool IsSized() const noexcept
     {
         return position_x.size() == position_y.size() && position_x.size() == position_z.size() &&
-               position_x.size() == velocity_x.size() &&
-               position_x.size() == velocity_y.size() &&
+               position_x.size() == velocity_x.size() && position_x.size() == velocity_y.size() &&
                position_x.size() == velocity_z.size() && position_x.size() == mass.size();
     }
 };
@@ -113,8 +112,7 @@ struct ParticleOutput final {
     [[nodiscard]] bool IsSized() const noexcept
     {
         return position_x.size() == position_y.size() && position_x.size() == position_z.size() &&
-               position_x.size() == velocity_x.size() &&
-               position_x.size() == velocity_y.size() &&
+               position_x.size() == velocity_x.size() && position_x.size() == velocity_y.size() &&
                position_x.size() == velocity_z.size() && position_x.size() == mass.size();
     }
 };

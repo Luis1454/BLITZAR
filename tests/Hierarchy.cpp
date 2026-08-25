@@ -49,8 +49,7 @@ int main()
     BLITZAR_CHECK(tree_solver.Compute(tree_particles.State(), tree_acceleration.View(),
                       execution) == BLITZAR_STATUS_OK);
 
-    blitzar_barnes_hut::ThreadStackPool thread_stack_pool(
-        settings.max_cells, settings.max_depth);
+    blitzar_barnes_hut::ThreadStackPool thread_stack_pool(settings.max_cells, settings.max_depth);
 
     BLITZAR_CHECK(thread_stack_pool.ThreadCount() > 0);
     BLITZAR_CHECK(thread_stack_pool.StackCapacity() > 0);

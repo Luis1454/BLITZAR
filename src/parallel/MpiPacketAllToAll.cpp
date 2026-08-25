@@ -1,6 +1,5 @@
-#include "parallel/MpiPacketTransport.hpp"
-
 #include "parallel/MpiPacketProtocol.hpp"
+#include "parallel/MpiPacketTransport.hpp"
 #include "parallel/MpiSessionNative.hpp"
 
 #include <algorithm>
@@ -58,8 +57,7 @@ blitzar_status MpiPacketTransport::AllToAllPackets(
 }
 
 #if defined(BLITZAR_HAS_MPI)
-blitzar_status MpiPacketTransport::RunAllToAll(
-    const AllToAllPacketRequest& request) const noexcept
+blitzar_status MpiPacketTransport::RunAllToAll(const AllToAllPacketRequest& request) const noexcept
 {
     std::size_t packets_per_peer = 0;
     blitzar_status status = PrepareAllToAll(request, packets_per_peer);
@@ -69,12 +67,11 @@ blitzar_status MpiPacketTransport::RunAllToAll(
     }
 
     for (;;) {
-        const int local_more = MpiPacketProtocol::HasRemaining(
-                                   request.send_counts, send_progress_) ||
-                                       MpiPacketProtocol::HasRemaining(
-                                           request.receive_counts, receive_progress_)
-                                   ? 1
-                                   : 0;
+        const int local_more =
+            MpiPacketProtocol::HasRemaining(request.send_counts, send_progress_) ||
+                    MpiPacketProtocol::HasRemaining(request.receive_counts, receive_progress_)
+                ? 1
+                : 0;
 
         int global_more = 0;
 
@@ -198,8 +195,7 @@ blitzar_status MpiPacketTransport::EncodeAllToAll(
     const AllToAllPacketRequest& request) const noexcept
 {
     for (std::size_t index = 0; index < send_progress_.size(); ++index) {
-        const std::size_t chunk =
-            static_cast<std::size_t>(send_bytes_[index] / ParticleWireBytes);
+        const std::size_t chunk = static_cast<std::size_t>(send_bytes_[index] / ParticleWireBytes);
 
         const std::size_t source_offset =
             static_cast<std::size_t>(request.send_displacements[index]) + send_progress_[index];
@@ -222,9 +218,9 @@ blitzar_status MpiPacketTransport::DecodeAllToAll(
         const std::size_t chunk =
             static_cast<std::size_t>(receive_bytes_[index] / ParticleWireBytes);
 
-        const std::size_t target_offset = static_cast<std::size_t>(
-                                               request.receive_displacements[index]) +
-                                           receive_progress_[index];
+        const std::size_t target_offset =
+            static_cast<std::size_t>(request.receive_displacements[index]) +
+            receive_progress_[index];
 
         if (!ParticleWireCodec::Decode(
                 std::span<const std::byte>(receive_wire_.data(), receive_wire_.size())

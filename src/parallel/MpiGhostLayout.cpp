@@ -1,7 +1,6 @@
-#include "parallel/MpiGhostTransport.hpp"
-
 #include "parallel/MpiGhostProtocol.hpp"
 #include "parallel/MpiGhostState.hpp"
+#include "parallel/MpiGhostTransport.hpp"
 
 #include <algorithm>
 #include <climits>
@@ -18,8 +17,8 @@ blitzar_status MpiGhostTransport::PrepareLayout(std::size_t local_size, std::siz
     return layout_status == BLITZAR_STATUS_OK ? PrepareRoundStorage(state, layout) : layout_status;
 }
 
-blitzar_status MpiGhostTransport::PreparePeerLayout(std::size_t local_size,
-    std::size_t local_bytes, MpiGhostExchange::Impl& state, BeginLayout& layout) const noexcept
+blitzar_status MpiGhostTransport::PreparePeerLayout(std::size_t local_size, std::size_t local_bytes,
+    MpiGhostExchange::Impl& state, BeginLayout& layout) const noexcept
 {
     const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
     const std::size_t remote_peer_count = peer_count - 1;
@@ -39,8 +38,7 @@ blitzar_status MpiGhostTransport::PreparePeerLayout(std::size_t local_size,
         }
     }
 
-    const blitzar_status local_status =
-        PrepareLocalLayout(local_size, remote_peer_count, layout);
+    const blitzar_status local_status = PrepareLocalLayout(local_size, remote_peer_count, layout);
 
     return local_status == BLITZAR_STATUS_OK
                ? PrepareWireLayout(local_bytes, remote_peer_count, layout)
@@ -66,10 +64,9 @@ bool MpiGhostTransport::PreparePeerCapacity(
 
     const std::size_t peer_chunks = MpiGhostProtocol::ChunkCount(state.peer_capacities[peer]);
 
-    if (layout.receive_slots > std::numeric_limits<std::size_t>::max() -
-                                    state.peer_capacities[peer] ||
-        layout.receive_request_count >
-            std::numeric_limits<std::size_t>::max() - peer_chunks) {
+    if (layout.receive_slots >
+            std::numeric_limits<std::size_t>::max() - state.peer_capacities[peer] ||
+        layout.receive_request_count > std::numeric_limits<std::size_t>::max() - peer_chunks) {
         return false;
     }
 

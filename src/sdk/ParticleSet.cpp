@@ -1,5 +1,4 @@
 #include "sdk/Simulation.hpp"
-
 #include "sdk/State.hpp"
 
 #include <new>
@@ -53,9 +52,8 @@ blitzar_status Simulation::DistributeParticles(ParticleInputStage& stage,
             }
         }
 
-        const std::span<const std::uint64_t> ids = root
-                                                        ? std::span<const std::uint64_t>(root_ids)
-                                                        : std::span<const std::uint64_t>{};
+        const std::span<const std::uint64_t> ids =
+            root ? std::span<const std::uint64_t>(root_ids) : std::span<const std::uint64_t>{};
 
         return distribution_exchange.Migrate(stage.State(), ids, distributed);
     }

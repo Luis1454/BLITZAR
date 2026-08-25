@@ -72,8 +72,7 @@ blitzar_status FmmSolver::PushChildren(const AccumulationRequest& request,
 blitzar_status FmmSolver::ProcessCell(const AccumulationRequest& request, std::size_t cell_index,
     blitzar_core::Vector3 target_position, std::size_t& stack_size) const noexcept
 {
-    const std::span<const blitzar_trees::Octree::Cell> cell_view =
-        request.tree.CellAt(cell_index);
+    const std::span<const blitzar_trees::Octree::Cell> cell_view = request.tree.CellAt(cell_index);
 
     if (cell_view.empty() || cell_index >= request.multipoles.size()) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
@@ -98,8 +97,7 @@ blitzar_status FmmSolver::ProcessCell(const AccumulationRequest& request, std::s
 
     if (!Contains(cell, target_position) && distance > 0.0 &&
         2.0 * cell.half_extent / distance < settings_.opening_angle) {
-        return EvaluateMultipole(multipole, {dx, dy, dz}, squared_distance,
-            request.acceleration);
+        return EvaluateMultipole(multipole, {dx, dy, dz}, squared_distance, request.acceleration);
     }
 
     return PushChildren(request, cell, stack_size);
@@ -116,13 +114,12 @@ blitzar_status FmmSolver::Accumulate(const AccumulationRequest& request) const n
     request.stack[0] = 0;
     request.acceleration = {};
 
-    const blitzar_core::Vector3 target_position{
-        request.targets.x[request.target], request.targets.y[request.target],
-        request.targets.z[request.target]};
+    const blitzar_core::Vector3 target_position{request.targets.x[request.target],
+        request.targets.y[request.target], request.targets.z[request.target]};
 
     while (stack_size > 0) {
-        const blitzar_status status = ProcessCell(
-            request, request.stack[--stack_size], target_position, stack_size);
+        const blitzar_status status =
+            ProcessCell(request, request.stack[--stack_size], target_position, stack_size);
 
         if (status != BLITZAR_STATUS_OK) {
             return status;
@@ -160,7 +157,8 @@ bool FmmSolver::HasValidTreeResources(const TreeComputeRequest& request) const n
 bool FmmSolver::ValidateTreeRequest(const TreeComputeRequest& request) const noexcept
 {
     const bool local_tree = tree_ != nullptr && &request.tree == tree_.get();
-    const std::size_t source_capacity = local_tree ? local_particle_capacity_ : settings_.max_particles;
+    const std::size_t source_capacity =
+        local_tree ? local_particle_capacity_ : settings_.max_particles;
 
     return IsKnownTree(request) && HasValidTreeResources(request) &&
            HasValidTreeState(request, source_capacity);
@@ -198,15 +196,15 @@ blitzar_status FmmSolver::ComputeTargets(const TreeComputeRequest& request) noex
 #endif
 
     for (std::int64_t target_index = 0;
-         target_index < static_cast<std::int64_t>(request.targets.count); ++target_index) {
+        target_index < static_cast<std::int64_t>(request.targets.count); ++target_index) {
         if (computation_status.load(std::memory_order_relaxed) != BLITZAR_STATUS_OK) {
             continue;
         }
 
         const std::size_t target = static_cast<std::size_t>(target_index);
         blitzar_core::Vector3 acceleration{};
-        const AccumulationRequest accumulation{request.tree, request.multipoles,
-            request.targets, request.sources, target,
+        const AccumulationRequest accumulation{request.tree, request.multipoles, request.targets,
+            request.sources, target,
             request.stack_pool.Stack(blitzar_barnes_hut::ThreadStackPool::CurrentThread()),
             acceleration, request.skip_self};
 
@@ -242,8 +240,7 @@ blitzar_status FmmSolver::ComputeTree(const TreeComputeRequest& request) noexcep
 
     const blitzar_status preparation_status = PrepareTree(request);
 
-    return preparation_status == BLITZAR_STATUS_OK ? ComputeTargets(request)
-                                                   : preparation_status;
+    return preparation_status == BLITZAR_STATUS_OK ? ComputeTargets(request) : preparation_status;
 }
 
 blitzar_status FmmSolver::CommitStagedForces(blitzar_core::ForceView forces) noexcept

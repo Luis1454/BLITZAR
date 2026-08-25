@@ -58,13 +58,13 @@ int main(void)
     const double velocity_z[] = {0.0, 0.0};
     const double mass[] = {1.0, 1.0};
 
-    const blitzar_particle_input_v2 input_v2 = {
-        sizeof(blitzar_particle_input_v2), BLITZAR_ABI_VERSION_V2, 2, position_x, position_y,
-        position_z, velocity_x, velocity_y, velocity_z, mass};
+    const blitzar_particle_input_v2 input_v2 = {sizeof(blitzar_particle_input_v2),
+        BLITZAR_ABI_VERSION_V2, 2, position_x, position_y, position_z, velocity_x, velocity_y,
+        velocity_z, mass};
 
     BLITZAR_CHECK(blitzar_simulation_set_particles_v2(simulation, &input_v2) == BLITZAR_STATUS_OK);
-    BLITZAR_CHECK(blitzar_simulation_set_particles_v2(simulation, NULL) ==
-                  BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(
+        blitzar_simulation_set_particles_v2(simulation, NULL) == BLITZAR_STATUS_INVALID_ARGUMENT);
 
     blitzar_barnes_hut_config_v2 barnes_hut_v2 = {
         sizeof(blitzar_barnes_hut_config_v2), BLITZAR_ABI_VERSION_V2, 0.5, 2, 128, 1, 32};
@@ -91,16 +91,16 @@ int main(void)
     double output_velocity_z[2] = {0.0, 0.0};
     double output_mass[2] = {0.0, 0.0};
 
-    blitzar_particle_output_v2 output_v2 = {
-        sizeof(blitzar_particle_output_v2), BLITZAR_ABI_VERSION_V2, 2, output_x, output_y,
-        output_z, output_velocity_x, output_velocity_y, output_velocity_z, output_mass};
+    blitzar_particle_output_v2 output_v2 = {sizeof(blitzar_particle_output_v2),
+        BLITZAR_ABI_VERSION_V2, 2, output_x, output_y, output_z, output_velocity_x,
+        output_velocity_y, output_velocity_z, output_mass};
 
     BLITZAR_CHECK(blitzar_simulation_get_state_v2(simulation, &output_v2) == BLITZAR_STATUS_OK);
 
     output_v2.struct_size = (uint32_t)(sizeof(blitzar_particle_output_v2) - 1U);
 
-    BLITZAR_CHECK(blitzar_simulation_get_state_v2(simulation, &output_v2) ==
-                  BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(
+        blitzar_simulation_get_state_v2(simulation, &output_v2) == BLITZAR_STATUS_INVALID_ARGUMENT);
 
     BLITZAR_CHECK(
         blitzar_simulation_get_state(simulation, 2, output_x, output_y, output_z, output_velocity_x,

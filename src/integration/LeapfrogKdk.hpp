@@ -19,8 +19,7 @@ struct DriftTransition final {
 
 struct NoopDriftHook final {
     [[nodiscard]] DriftTransition operator()(blitzar_particles::ParticleBuffer&,
-        blitzar_particles::AccelerationBuffer&,
-        blitzar_integration::KdkCheckpoint&) const noexcept
+        blitzar_particles::AccelerationBuffer&, blitzar_integration::KdkCheckpoint&) const noexcept
     {
         return {};
     }

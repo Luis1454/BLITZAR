@@ -26,8 +26,7 @@ blitzar_status MpiExchange::PackLocal(blitzar_core::ParticleStateView local_stat
     if (!blitzar_core::IsValid(local_state) || local_ids.size() != local_state.count) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    if (!packets.EnsureCapacity(local_state.count) ||
-        !packets.ResizeBounded(local_state.count)) {
+    if (!packets.EnsureCapacity(local_state.count) || !packets.ResizeBounded(local_state.count)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 

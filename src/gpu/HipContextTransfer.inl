@@ -9,13 +9,12 @@ template <std::size_t Count>
     const std::array<std::uintptr_t, Count>& device) noexcept
 {
     for (std::size_t index = 0; index < Count; ++index) {
-        std::copy(source[index].begin(), source[index].end(),
-            reinterpret_cast<double*>(host[index]));
+        std::copy(
+            source[index].begin(), source[index].end(), reinterpret_cast<double*>(host[index]));
 
-        const hipError_t error = BlitzarHipMemcpyAsync(
-            {reinterpret_cast<void*>(device[index]), reinterpret_cast<const void*>(host[index]),
-                source[index].size_bytes(), hipMemcpyHostToDevice,
-                reinterpret_cast<hipStream_t>(buffers.Stream())});
+        const hipError_t error = BlitzarHipMemcpyAsync({reinterpret_cast<void*>(device[index]),
+            reinterpret_cast<const void*>(host[index]), source[index].size_bytes(),
+            hipMemcpyHostToDevice, reinterpret_cast<hipStream_t>(buffers.Stream())});
 
         if (error != hipSuccess) {
             buffers.Disable();
@@ -37,8 +36,7 @@ blitzar_status HipContext::Impl::EnsureBuffers(
                : BLITZAR_STATUS_ALLOCATION_FAILURE;
 }
 
-blitzar_status HipContext::Impl::UploadFullState(
-    blitzar_core::ParticleStateView particles) noexcept
+blitzar_status HipContext::Impl::UploadFullState(blitzar_core::ParticleStateView particles) noexcept
 {
     const std::array<std::span<const double>, 4> source{
         particles.x, particles.y, particles.z, particles.mass};
@@ -46,8 +44,8 @@ blitzar_status HipContext::Impl::UploadFullState(
     const std::array<std::uintptr_t, 4> host{buffers.HostParticle(0), buffers.HostParticle(1),
         buffers.HostParticle(2), buffers.HostParticle(3)};
 
-    const std::array<std::uintptr_t, 4> device{buffers.DeviceParticle(0),
-        buffers.DeviceParticle(1), buffers.DeviceParticle(2), buffers.DeviceParticle(3)};
+    const std::array<std::uintptr_t, 4> device{buffers.DeviceParticle(0), buffers.DeviceParticle(1),
+        buffers.DeviceParticle(2), buffers.DeviceParticle(3)};
 
     return UploadScalars(buffers, source, host, device);
 }
@@ -55,15 +53,15 @@ blitzar_status HipContext::Impl::UploadFullState(
 blitzar_status HipContext::Impl::UploadTargetState(
     blitzar_core::ParticleStateView particles) noexcept
 {
-    const std::array<std::span<const double>, 4> source{
-        particles.x.first(particles.count), particles.y.first(particles.count),
-        particles.z.first(particles.count), particles.mass.first(particles.count)};
+    const std::array<std::span<const double>, 4> source{particles.x.first(particles.count),
+        particles.y.first(particles.count), particles.z.first(particles.count),
+        particles.mass.first(particles.count)};
 
     const std::array<std::uintptr_t, 4> host{buffers.HostParticle(0), buffers.HostParticle(1),
         buffers.HostParticle(2), buffers.HostParticle(3)};
 
-    const std::array<std::uintptr_t, 4> device{buffers.DeviceParticle(0),
-        buffers.DeviceParticle(1), buffers.DeviceParticle(2), buffers.DeviceParticle(3)};
+    const std::array<std::uintptr_t, 4> device{buffers.DeviceParticle(0), buffers.DeviceParticle(1),
+        buffers.DeviceParticle(2), buffers.DeviceParticle(3)};
 
     return UploadScalars(buffers, source, host, device);
 }
@@ -78,11 +76,11 @@ blitzar_status HipContext::Impl::UploadSourceState(
         particles.z.subspan(range.source_begin, source_count),
         particles.mass.subspan(range.source_begin, source_count)};
 
-    const std::array<std::uintptr_t, 4> host{buffers.HostSource(0), buffers.HostSource(1),
-        buffers.HostSource(2), buffers.HostSource(3)};
+    const std::array<std::uintptr_t, 4> host{
+        buffers.HostSource(0), buffers.HostSource(1), buffers.HostSource(2), buffers.HostSource(3)};
 
-    const std::array<std::uintptr_t, 4> device{buffers.DeviceSource(0),
-        buffers.DeviceSource(1), buffers.DeviceSource(2), buffers.DeviceSource(3)};
+    const std::array<std::uintptr_t, 4> device{buffers.DeviceSource(0), buffers.DeviceSource(1),
+        buffers.DeviceSource(2), buffers.DeviceSource(3)};
 
     return UploadScalars(buffers, source, host, device);
 }
@@ -104,8 +102,8 @@ blitzar_status HipContext::Impl::QueueForceDownloads(std::size_t particle_count)
     const std::size_t bytes = particle_count * sizeof(double);
 
     for (std::size_t index = 0; index < 3; ++index) {
-        const hipError_t error = BlitzarHipMemcpyAsync(
-            {reinterpret_cast<void*>(buffers.HostForce(index)),
+        const hipError_t error =
+            BlitzarHipMemcpyAsync({reinterpret_cast<void*>(buffers.HostForce(index)),
                 reinterpret_cast<const void*>(buffers.DeviceForce(index)), bytes,
                 hipMemcpyDeviceToHost, reinterpret_cast<hipStream_t>(buffers.Stream())});
 

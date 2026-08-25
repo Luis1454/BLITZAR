@@ -8,8 +8,8 @@ namespace blitzar_sdk {
 
 namespace {
 
-[[nodiscard]] bool IsFiniteParticle(blitzar_core::ParticleStateView input,
-    std::size_t index) noexcept
+[[nodiscard]] bool IsFiniteParticle(
+    blitzar_core::ParticleStateView input, std::size_t index) noexcept
 {
     return std::isfinite(input.x[index]) && std::isfinite(input.y[index]) &&
            std::isfinite(input.z[index]) && std::isfinite(input.velocity_x[index]) &&
@@ -17,8 +17,7 @@ namespace {
            std::isfinite(input.mass[index]) && input.mass[index] >= 0.0;
 }
 
-[[nodiscard]] blitzar_status ResizeStage(
-    std::size_t count, ParticleInputStage& stage) noexcept
+[[nodiscard]] blitzar_status ResizeStage(std::size_t count, ParticleInputStage& stage) noexcept
 {
     try {
         stage.position_x.resize(count);
@@ -39,8 +38,8 @@ namespace {
     return BLITZAR_STATUS_OK;
 }
 
-void CopyParticle(blitzar_core::ParticleStateView input, std::size_t index,
-    ParticleInputStage& stage) noexcept
+void CopyParticle(
+    blitzar_core::ParticleStateView input, std::size_t index, ParticleInputStage& stage) noexcept
 {
     stage.position_x[index] = input.x[index];
     stage.position_y[index] = input.y[index];
@@ -88,9 +87,8 @@ blitzar_status StageParticleInput(
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_status SynchronizeSimulationStatus(
-    const blitzar_parallel::MpiContext& context, blitzar_status local_status,
-    const char* phase) noexcept
+blitzar_status SynchronizeSimulationStatus(const blitzar_parallel::MpiContext& context,
+    blitzar_status local_status, const char* phase) noexcept
 {
     if (!context.IsDistributed()) {
         return local_status;

@@ -51,8 +51,7 @@ public:
         blitzar_core::ForceView forces, blitzar_physics::GravityParameters gravity,
         blitzar_core::ForceRange range) noexcept;
 
-    [[nodiscard]] blitzar_status ComputeBarnesHut(
-        const BarnesHutComputeRequest& request) noexcept;
+    [[nodiscard]] blitzar_status ComputeBarnesHut(const BarnesHutComputeRequest& request) noexcept;
 
 private:
     struct Impl;

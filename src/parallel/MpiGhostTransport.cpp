@@ -8,14 +8,14 @@
 
 namespace blitzar_parallel {
 
-MpiGhostTransport::MpiGhostTransport(const MpiSession& session,
-    const MpiCollectives& collectives, const MpiPacketTransport& packets) noexcept
+MpiGhostTransport::MpiGhostTransport(const MpiSession& session, const MpiCollectives& collectives,
+    const MpiPacketTransport& packets) noexcept
     : session_(session), collectives_(collectives), packets_(packets)
 {
 }
 
-blitzar_status MpiGhostTransport::Prepare(MpiGhostExchange& exchange,
-    std::size_t send_capacity, std::size_t receive_capacity) const noexcept
+blitzar_status MpiGhostTransport::Prepare(MpiGhostExchange& exchange, std::size_t send_capacity,
+    std::size_t receive_capacity) const noexcept
 {
     if (!session_.IsUsable()) {
         return session_.Status();

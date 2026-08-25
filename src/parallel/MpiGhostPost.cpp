@@ -1,7 +1,6 @@
-#include "parallel/MpiGhostTransport.hpp"
-
 #include "parallel/MpiGhostProtocol.hpp"
 #include "parallel/MpiGhostState.hpp"
+#include "parallel/MpiGhostTransport.hpp"
 #include "parallel/MpiSessionNative.hpp"
 
 #include <algorithm>
@@ -51,8 +50,8 @@ blitzar_status MpiGhostTransport::PostReceiveRequests(
         std::size_t packet_offset = 0;
 
         while (packet_offset < state.peer_capacities[peer_index]) {
-            const std::size_t chunk = std::min(
-                state.peer_capacities[peer_index] - packet_offset, layout.chunk_packets);
+            const std::size_t chunk =
+                std::min(state.peer_capacities[peer_index] - packet_offset, layout.chunk_packets);
 
             int bytes = 0;
 
@@ -80,7 +79,7 @@ blitzar_status MpiGhostTransport::PostReceiveRequests(
     }
 
     return request_index == layout.receive_request_count ? BLITZAR_STATUS_OK
-                                                          : BLITZAR_STATUS_INTERNAL_ERROR;
+                                                         : BLITZAR_STATUS_INTERNAL_ERROR;
 #else
 
     (void)state;
@@ -114,12 +113,12 @@ blitzar_status MpiGhostTransport::PostSendRequests(std::span<const ParticlePacke
 
             state.send_requests[request_index] = MPI_REQUEST_NULL;
 
-            const std::byte* local_data = state.local_wire.data() +
-                                          packet_offset * ParticleWireBytes;
+            const std::byte* local_data =
+                state.local_wire.data() + packet_offset * ParticleWireBytes;
 
             if (MPI_Isend(local_data, bytes, MPI_BYTE, peer, MpiGhostProtocol::DataTag,
-                    session_.Native().communicator, &state.send_requests[request_index]) !=
-                MPI_SUCCESS) {
+                    session_.Native().communicator,
+                    &state.send_requests[request_index]) != MPI_SUCCESS) {
                 return BLITZAR_STATUS_INTERNAL_ERROR;
             }
 
@@ -130,7 +129,7 @@ blitzar_status MpiGhostTransport::PostSendRequests(std::span<const ParticlePacke
     }
 
     return request_index == layout.send_request_count ? BLITZAR_STATUS_OK
-                                                       : BLITZAR_STATUS_INTERNAL_ERROR;
+                                                      : BLITZAR_STATUS_INTERNAL_ERROR;
 #else
 
     (void)local;

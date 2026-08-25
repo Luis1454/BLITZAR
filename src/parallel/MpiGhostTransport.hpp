@@ -18,8 +18,8 @@ public:
     MpiGhostTransport(const MpiSession& session, const MpiCollectives& collectives,
         const MpiPacketTransport& packets) noexcept;
 
-    [[nodiscard]] blitzar_status Prepare(MpiGhostExchange& exchange,
-        std::size_t send_capacity, std::size_t receive_capacity) const noexcept;
+    [[nodiscard]] blitzar_status Prepare(MpiGhostExchange& exchange, std::size_t send_capacity,
+        std::size_t receive_capacity) const noexcept;
 
     [[nodiscard]] blitzar_status Begin(
         std::span<const ParticlePacket> local, MpiGhostExchange& exchange) const noexcept;
@@ -38,9 +38,8 @@ private:
         std::size_t send_wire_size{};
     };
 
-    [[nodiscard]] blitzar_status PrepareLocal(
-        std::span<const ParticlePacket> local, MpiGhostExchange::Impl& state,
-        std::size_t& local_bytes) const noexcept;
+    [[nodiscard]] blitzar_status PrepareLocal(std::span<const ParticlePacket> local,
+        MpiGhostExchange::Impl& state, std::size_t& local_bytes) const noexcept;
     [[nodiscard]] blitzar_status GatherPeerCounts(
         std::size_t local_size, MpiGhostExchange::Impl& state) const noexcept;
     [[nodiscard]] blitzar_status PrepareLayout(std::size_t local_size, std::size_t local_bytes,
@@ -55,16 +54,13 @@ private:
         std::size_t local_bytes, std::size_t remote_peer_count, BeginLayout& layout) const noexcept;
     [[nodiscard]] blitzar_status PrepareRoundStorage(
         MpiGhostExchange::Impl& state, const BeginLayout& layout) const noexcept;
-    [[nodiscard]] blitzar_status PostRequests(
-        std::span<const ParticlePacket> local, MpiGhostExchange::Impl& state,
-        const BeginLayout& layout) const noexcept;
+    [[nodiscard]] blitzar_status PostRequests(std::span<const ParticlePacket> local,
+        MpiGhostExchange::Impl& state, const BeginLayout& layout) const noexcept;
     [[nodiscard]] blitzar_status PostReceiveRequests(
         MpiGhostExchange::Impl& state, const BeginLayout& layout) const noexcept;
-    [[nodiscard]] blitzar_status PostSendRequests(
-        std::span<const ParticlePacket> local, MpiGhostExchange::Impl& state,
-        const BeginLayout& layout) const noexcept;
-    [[nodiscard]] blitzar_status WaitGhostRequests(
-        MpiGhostExchange::Impl& state) const noexcept;
+    [[nodiscard]] blitzar_status PostSendRequests(std::span<const ParticlePacket> local,
+        MpiGhostExchange::Impl& state, const BeginLayout& layout) const noexcept;
+    [[nodiscard]] blitzar_status WaitGhostRequests(MpiGhostExchange::Impl& state) const noexcept;
     [[nodiscard]] blitzar_status CompleteActive(
         MpiGhostExchange::Impl& state, PacketBuffer& ghosts) const noexcept;
     [[nodiscard]] blitzar_status CountReceived(

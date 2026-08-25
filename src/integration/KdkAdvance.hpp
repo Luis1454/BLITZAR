@@ -6,8 +6,7 @@
 namespace blitzar_integration_kdk {
 
 template <typename Solver, typename SolverScratch>
-[[nodiscard]] bool ValidateAdvanceState(
-    const AdvanceState<Solver, SolverScratch>& state) noexcept
+[[nodiscard]] bool ValidateAdvanceState(const AdvanceState<Solver, SolverScratch>& state) noexcept
 {
     return state.particles.IsValid() && state.accelerations.IsValid() &&
            state.checkpoint.IsValid() && state.particles.Count() == state.accelerations.Count() &&
@@ -23,13 +22,12 @@ template <typename Solver, typename SolverScratch, typename DriftHook, typename 
     AdvanceRequest<Solver, SolverScratch, DriftHook, RollbackHook>& request,
     blitzar_status status) noexcept
 {
-    return RestoreWithRollback(request.hooks.rollback, request.state.particles,
-        request.state.checkpoint, status);
+    return RestoreWithRollback(
+        request.hooks.rollback, request.state.particles, request.state.checkpoint, status);
 }
 
 template <typename Solver, typename SolverScratch>
-[[nodiscard]] blitzar_status CaptureInitial(
-    AdvanceState<Solver, SolverScratch>& state) noexcept
+[[nodiscard]] blitzar_status CaptureInitial(AdvanceState<Solver, SolverScratch>& state) noexcept
 {
     return state.checkpoint.Capture(state.particles.MutableView());
 }
@@ -57,8 +55,8 @@ template <typename Solver, typename SolverScratch, typename DriftHook, typename 
 }
 
 template <typename Solver, typename SolverScratch>
-void KickAndDrift(AdvanceState<Solver, SolverScratch>& state,
-    blitzar_core::ForceView force, blitzar_core::Scalar half_step) noexcept
+void KickAndDrift(AdvanceState<Solver, SolverScratch>& state, blitzar_core::ForceView force,
+    blitzar_core::Scalar half_step) noexcept
 {
     blitzar_core::MutableParticleView mutable_state = state.particles.MutableView();
 
@@ -66,8 +64,8 @@ void KickAndDrift(AdvanceState<Solver, SolverScratch>& state,
 #pragma omp parallel for simd schedule(static)
 #endif
 
-    for (std::int64_t raw_index = 0;
-         raw_index < static_cast<std::int64_t>(state.particles.Count()); ++raw_index) {
+    for (std::int64_t raw_index = 0; raw_index < static_cast<std::int64_t>(state.particles.Count());
+        ++raw_index) {
         const std::size_t index = static_cast<std::size_t>(raw_index);
 
         mutable_state.velocity_x[index] += half_step * force.x[index];
@@ -122,8 +120,8 @@ void Kick(AdvanceState<Solver, SolverScratch>& state, blitzar_core::ForceView fo
 #pragma omp parallel for simd schedule(static)
 #endif
 
-    for (std::int64_t raw_index = 0;
-         raw_index < static_cast<std::int64_t>(state.particles.Count()); ++raw_index) {
+    for (std::int64_t raw_index = 0; raw_index < static_cast<std::int64_t>(state.particles.Count());
+        ++raw_index) {
         const std::size_t index = static_cast<std::size_t>(raw_index);
 
         mutable_state.velocity_x[index] += half_step * force.x[index];
@@ -176,8 +174,7 @@ blitzar_status LeapfrogKdk::Advance(
     blitzar_integration_kdk::KickAndDrift(state, state.accelerations.View(), half_step);
 
     if (!blitzar_integration_kdk::IsFiniteState(state.particles.State())) {
-        return blitzar_integration_kdk::RollbackAdvance(
-            request, BLITZAR_STATUS_INVALID_ARGUMENT);
+        return blitzar_integration_kdk::RollbackAdvance(request, BLITZAR_STATUS_INVALID_ARGUMENT);
     }
 
     status = blitzar_integration_kdk::ApplyDrift(request);
@@ -196,8 +193,7 @@ blitzar_status LeapfrogKdk::Advance(
 
     return blitzar_integration_kdk::IsFiniteState(state.particles.State())
                ? BLITZAR_STATUS_OK
-               : blitzar_integration_kdk::RollbackAdvance(
-                     request, BLITZAR_STATUS_INVALID_ARGUMENT);
+               : blitzar_integration_kdk::RollbackAdvance(request, BLITZAR_STATUS_INVALID_ARGUMENT);
 }
 
 } // namespace blitzar_integration

@@ -1,6 +1,5 @@
-#include "parallel/MpiPacketTransport.hpp"
-
 #include "parallel/MpiPacketProtocol.hpp"
+#include "parallel/MpiPacketTransport.hpp"
 #include "parallel/MpiSessionNative.hpp"
 
 #include <algorithm>
@@ -18,18 +17,17 @@ bool MpiPacketTransport::ValidateAllGatherRequest(
 {
     const bool layout_valid = request.counts.size() == peer_count &&
                               request.displacements.size() == peer_count &&
-                              MpiPacketProtocol::ValidateLayout(
-                                  request.counts, request.displacements,
-                                  request.gathered_packets.size());
+                              MpiPacketProtocol::ValidateLayout(request.counts,
+                                  request.displacements, request.gathered_packets.size());
 
     return layout_valid && rank >= 0 && static_cast<std::size_t>(rank) < peer_count &&
            request.local_packets.size() ==
                static_cast<std::size_t>(request.counts[static_cast<std::size_t>(rank)]);
 }
 
-blitzar_status MpiPacketTransport::AllGatherPackets(
-    std::span<const ParticlePacket> local_packets, std::span<ParticlePacket> gathered_packets,
-    std::span<const int> counts, std::span<const int> displacements) const noexcept
+blitzar_status MpiPacketTransport::AllGatherPackets(std::span<const ParticlePacket> local_packets,
+    std::span<ParticlePacket> gathered_packets, std::span<const int> counts,
+    std::span<const int> displacements) const noexcept
 {
     const AllGatherRequest request{local_packets, gathered_packets, counts, displacements};
     const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
@@ -59,8 +57,7 @@ blitzar_status MpiPacketTransport::AllGatherPackets(
 }
 
 #if defined(BLITZAR_HAS_MPI)
-blitzar_status MpiPacketTransport::RunAllGather(
-    const AllGatherRequest& request) const noexcept
+blitzar_status MpiPacketTransport::RunAllGather(const AllGatherRequest& request) const noexcept
 {
     std::size_t packets_per_peer = 0;
     blitzar_status status = PrepareAllGather(request, packets_per_peer);
@@ -70,8 +67,8 @@ blitzar_status MpiPacketTransport::RunAllGather(
     }
 
     for (;;) {
-        const int local_more = MpiPacketProtocol::HasRemaining(
-            request.counts, send_progress_) ? 1 : 0;
+        const int local_more =
+            MpiPacketProtocol::HasRemaining(request.counts, send_progress_) ? 1 : 0;
 
         int global_more = 0;
 
@@ -186,8 +183,8 @@ blitzar_status MpiPacketTransport::PrepareAllGatherRound(const AllGatherRequest&
 blitzar_status MpiPacketTransport::EncodeAllGather(
     const AllGatherRequest& request, const PacketRoundLayout& layout) const noexcept
 {
-    return ParticleWireCodec::Encode(
-               request.local_packets.subspan(send_progress_[layout.local_index], layout.local_chunk),
+    return ParticleWireCodec::Encode(request.local_packets.subspan(
+                                         send_progress_[layout.local_index], layout.local_chunk),
                std::span<std::byte>(send_wire_.data(), send_wire_.size()))
                ? BLITZAR_STATUS_OK
                : BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -205,8 +202,7 @@ blitzar_status MpiPacketTransport::DecodeAllGather(
                     .subspan(static_cast<std::size_t>(receive_offsets_[index]),
                         static_cast<std::size_t>(receive_bytes_[index])),
                 request.gathered_packets.subspan(
-                    static_cast<std::size_t>(request.displacements[index]) +
-                        send_progress_[index],
+                    static_cast<std::size_t>(request.displacements[index]) + send_progress_[index],
                     chunk))) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }

@@ -6,8 +6,7 @@ StepTransaction::StepTransaction(TransactionState state) noexcept
     : arena_(state.arena), particles_(state.particles), accelerations_(state.accelerations),
       checkpoint_(state.checkpoint), ids_(state.ids), local_count_(state.local_count),
       exchange_(state.exchange), arena_snapshot_(state.arena_snapshot),
-      force_snapshot_(state.force_snapshot),
-      exchange_snapshot_(state.exchange_snapshot)
+      force_snapshot_(state.force_snapshot), exchange_snapshot_(state.exchange_snapshot)
 {
 }
 
@@ -26,8 +25,8 @@ blitzar_status StepTransaction::Prepare() noexcept
     if (!arena_.IsValid() || !particles_.IsValid() || !accelerations_.IsValid() ||
         !checkpoint_.IsValid() || local_count_before_ != local_count_ ||
         local_count_before_ != acceleration_count_before_ ||
-        local_count_before_ != checkpoint_count_before_ ||
-        local_count_before_ > arena_.Count() || local_count_before_ > ids_.size()) {
+        local_count_before_ != checkpoint_count_before_ || local_count_before_ > arena_.Count() ||
+        local_count_before_ > ids_.size()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
