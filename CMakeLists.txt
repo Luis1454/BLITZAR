@@ -121,7 +121,15 @@ target_sources(blitzar PRIVATE
     src/parallel/MpiSessionInit.cpp
     src/parallel/MpiTypes.cpp
     src/sdk/Api.cpp
-    src/sdk/CppApi.cpp
+    src/sdk/ApiSupport.cpp
+    src/sdk/ApiInfo.cpp
+    src/sdk/ApiConfig.cpp
+    src/sdk/ApiParticles.cpp
+    src/sdk/ApiStep.cpp
+    src/sdk/CppContext.cpp
+    src/sdk/CppSimulation.cpp
+    src/sdk/CppSimulationConfig.cpp
+    src/sdk/CppSimulationData.cpp
     src/sdk/Simulation.cpp
     src/sdk/Config.cpp
     src/sdk/ParticleSet.cpp
