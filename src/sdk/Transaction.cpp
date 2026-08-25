@@ -1,5 +1,7 @@
 #include "sdk/Transaction.hpp"
 
+#include "sdk/PacketStoreRequest.hpp"
+
 namespace blitzar_sdk {
 
 StepTransaction::StepTransaction(TransactionState state) noexcept

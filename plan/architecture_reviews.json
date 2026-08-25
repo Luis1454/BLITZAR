@@ -31,10 +31,10 @@
     },
     {
       "path": "tests/Bounded.cpp",
-      "signals": ["function_length"],
+      "signals": ["function_length", "include_dependencies"],
       "issue": 599,
       "status": "accepted",
-      "decision": "The bounded-view fixture validates related invalid-input cases in one contract scenario; its length is tracked and remains outside production code."
+      "decision": "The bounded-view fixture validates related invalid-input cases and the split SDK contracts in one contract scenario; its length and include dependencies are tracked and remain outside production code."
     },
     {
       "path": "tests/Contracts.cpp",

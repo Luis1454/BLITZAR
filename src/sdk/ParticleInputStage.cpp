@@ -1,4 +1,4 @@
-#include "sdk/State.hpp"
+#include "sdk/ParticleInputStage.hpp"
 
 #include <cmath>
 #include <new>
@@ -85,20 +85,6 @@ blitzar_status StageParticleInput(
     }
 
     return BLITZAR_STATUS_OK;
-}
-
-blitzar_status SynchronizeSimulationStatus(const blitzar_parallel::MpiContext& context,
-    blitzar_status local_status, const char* phase) noexcept
-{
-    if (!context.IsDistributed()) {
-        return local_status;
-    }
-
-    blitzar_status global_status = BLITZAR_STATUS_INTERNAL_ERROR;
-    const blitzar_status synchronization_status =
-        context.SynchronizeStatus(local_status, "Simulation", phase, global_status);
-
-    return synchronization_status == BLITZAR_STATUS_OK ? global_status : synchronization_status;
 }
 
 } // namespace blitzar_sdk

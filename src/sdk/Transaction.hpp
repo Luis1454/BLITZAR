@@ -1,7 +1,8 @@
 #ifndef BLITZAR_SDK_TRANSACTION_HPP
 #define BLITZAR_SDK_TRANSACTION_HPP
 
-#include "sdk/State.hpp"
+#include "integration/KdkCheckpoint.hpp"
+#include "sdk/Rollback.hpp"
 
 #include <cstdint>
 #include <vector>

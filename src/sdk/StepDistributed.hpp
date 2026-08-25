@@ -1,9 +1,9 @@
 #ifndef BLITZAR_SDK_STEP_DISTRIBUTED_HPP
 #define BLITZAR_SDK_STEP_DISTRIBUTED_HPP
 
+#include "parallel/MpiStatus.hpp"
 #include "sdk/Dispatch.hpp"
 #include "sdk/Simulation.hpp"
-#include "sdk/State.hpp"
 #include "sdk/Transaction.hpp"
 
 #include <span>
@@ -56,8 +56,8 @@ template <typename Solver> blitzar_status Simulation::StepDistributed(Solver& so
         }
 
         const blitzar_status solver_status = solver.Prepare(current_particles.Count());
-        const blitzar_status synchronized_solver_status =
-            SynchronizeSimulationStatus(mpi_context_, solver_status, "migrate-solver-capacity");
+        const blitzar_status synchronized_solver_status = blitzar_parallel::SynchronizeStatus(
+            mpi_context_, solver_status, "migrate-solver-capacity");
 
         return synchronized_solver_status == BLITZAR_STATUS_OK
                    ? transition

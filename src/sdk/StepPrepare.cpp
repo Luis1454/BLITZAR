@@ -1,3 +1,4 @@
+#include "parallel/MpiStatus.hpp"
 #include "sdk/Simulation.hpp"
 #include "sdk/Transaction.hpp"
 
@@ -12,7 +13,7 @@ blitzar_status Simulation::PrepareDistributedStep(
                              rollback_particle_count == checkpoint_.Count() &&
                              rollback_particle_count <= arena_.Count();
 
-    const blitzar_status state_status = SynchronizeSimulationStatus(mpi_context_,
+    const blitzar_status state_status = blitzar_parallel::SynchronizeStatus(mpi_context_,
         state_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INTERNAL_ERROR, "step-state");
 
     if (state_status != BLITZAR_STATUS_OK) {
@@ -21,7 +22,7 @@ blitzar_status Simulation::PrepareDistributedStep(
 
     const blitzar_status prepare_status = transaction.Prepare();
 
-    return SynchronizeSimulationStatus(mpi_context_, prepare_status, "step-prepare");
+    return blitzar_parallel::SynchronizeStatus(mpi_context_, prepare_status, "step-prepare");
 }
 
 } // namespace blitzar_sdk

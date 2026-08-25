@@ -1,5 +1,7 @@
+#include "parallel/MpiStatus.hpp"
+#include "sdk/PacketStoreRequest.hpp"
+#include "sdk/ParticleInputStage.hpp"
 #include "sdk/Simulation.hpp"
-#include "sdk/State.hpp"
 
 #include <new>
 #include <span>
@@ -71,7 +73,7 @@ blitzar_status Simulation::SetParticles(blitzar_core::ParticleStateView input) n
         return Remember(mpi_context_.Status());
     }
 
-    blitzar_status status = SynchronizeSimulationStatus(mpi_context_,
+    blitzar_status status = blitzar_parallel::SynchronizeStatus(mpi_context_,
         ValidateParticleInput(input) ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
         "set-particles-input");
 
@@ -83,7 +85,7 @@ blitzar_status Simulation::SetParticles(blitzar_core::ParticleStateView input) n
     const bool root = mpi_context_.Rank() == 0;
 
     status = root ? StageParticleInput(input, stage) : BLITZAR_STATUS_OK;
-    status = SynchronizeSimulationStatus(mpi_context_, status, "set-particles-stage");
+    status = blitzar_parallel::SynchronizeStatus(mpi_context_, status, "set-particles-stage");
 
     if (status != BLITZAR_STATUS_OK) {
         return Remember(status);
@@ -92,7 +94,7 @@ blitzar_status Simulation::SetParticles(blitzar_core::ParticleStateView input) n
     blitzar_parallel::DomainDecomposition candidate_domain;
 
     status = candidate_domain.Initialize(stage.State(), mpi_context_);
-    status = SynchronizeSimulationStatus(mpi_context_, status, "set-particles-domain");
+    status = blitzar_parallel::SynchronizeStatus(mpi_context_, status, "set-particles-domain");
 
     if (status != BLITZAR_STATUS_OK) {
         return Remember(status);
@@ -101,7 +103,8 @@ blitzar_status Simulation::SetParticles(blitzar_core::ParticleStateView input) n
     blitzar_parallel::PacketBuffer distributed_packets;
 
     status = DistributeParticles(stage, candidate_domain, distributed_packets);
-    status = SynchronizeSimulationStatus(mpi_context_, status, "set-particles-distribution");
+    status =
+        blitzar_parallel::SynchronizeStatus(mpi_context_, status, "set-particles-distribution");
 
     if (status != BLITZAR_STATUS_OK) {
         return Remember(status);
@@ -116,7 +119,7 @@ blitzar_status Simulation::SetParticles(blitzar_core::ParticleStateView input) n
         local_particle_count_};
 
     status = StoreLocalPackets(store_request);
-    status = SynchronizeSimulationStatus(mpi_context_, status, "set-particles-store");
+    status = blitzar_parallel::SynchronizeStatus(mpi_context_, status, "set-particles-store");
 
     if (status != BLITZAR_STATUS_OK) {
         return Remember(status);
