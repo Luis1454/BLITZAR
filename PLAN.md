@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.13**
+Plan version: **1.0.14**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -26,6 +26,25 @@ The simulation core owns particle state, integration, spatial data structures,
 solvers, optional grids, and snapshot I/O. Networking, GUI code, and plugin
 loading remain adapters; optional distributed execution is isolated under
 `src/parallel` and must preserve the single-rank contract.
+
+## Capability Contract
+
+The public capability report is a compile-time contract, not a hardware
+qualification result. `blitzar_get_capabilities_v2` reports which solver
+contracts are implemented, explicitly unsupported, or deferred, together with
+the optional backend code compiled into the library. It does not claim that a
+GPU is visible or that MPI is running on more than one host.
+
+Direct, Barnes-Hut, and CPU FMM are implemented solver contracts. PM and
+TreePM remain explicit `BLITZAR_STATUS_UNSUPPORTED` selections and their
+production roots remain deferred. `SnapshotHeader` is a versioned state
+contract hook only; binary or HDF5 persistence is not implemented.
+
+HIP is capability-gated: compiler support and device execution are separate
+conditions, and a CPU fallback is retained when no device is visible. MPI is
+optional and locally qualified by rank-parity tests; real multi-node and RDMA
+qualification remain unverified. CI records compile-only, skipped-device, and
+executed-device outcomes separately.
 
 ## Repository Shape
 
