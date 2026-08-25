@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.12**
+Plan version: **1.0.13**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -61,6 +61,12 @@ with deterministic order-2 multipole qualification; GPU FMM remains outside
 the current backend scope. The
 GPU runtime and native CUDA compatibility are intentionally owned by
 `src/gpu`; no parallel CUDA runtime root exists.
+
+Build trees are not repository content. Local builds use `../.blitzar-build`
+by default, and CI builds use `${RUNNER_TEMP}/blitzar-build`; the versioned
+workspace policy in `plan/workspace.json` rejects generated files if they ever
+become tracked. Existing ignored `build*` directories are inventory data and
+can be removed independently without changing source ownership.
 
 Each production module owns its headers, implementations, and responsibility
 subdirectories. There are no generic `utils`, `common`, `misc`, `private`, or

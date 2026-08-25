@@ -2,6 +2,13 @@
   "schema_version": 1,
   "reviews": [
     {
+      "path": "cmake/TestTargets.cmake",
+      "signals": ["include_dependencies"],
+      "issue": 610,
+      "status": "accepted",
+      "decision": "The test-target composition module owns explicit links for the complete unit, MPI, and public-header matrix; its dependency count is the test topology and is isolated from production and package target ownership."
+    },
+    {
       "path": "src/parallel/MpiNative.cpp",
       "signals": ["function_count"],
       "issue": 603,
@@ -14,13 +21,6 @@
       "issue": 603,
       "status": "accepted",
       "decision": "The ghost adapter combines platform guards with request validation and cancellation so MPI request lifetime is closed in one native boundary; transport orchestration remains outside the file."
-    },
-    {
-      "path": "CMakeLists.txt",
-      "signals": ["include_dependencies"],
-      "issue": 599,
-      "status": "accepted",
-      "decision": "The top-level build file is the intentional composition root for the library, optional backends, examples, and tests; its dependency count is tracked without splitting target ownership into opaque fragments."
     },
     {
       "path": "tests/ApiC.c",

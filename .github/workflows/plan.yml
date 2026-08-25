@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  BLITZAR_CI_BUILD_ROOT: ${{ runner.temp }}/blitzar-build
+
 jobs:
   validate:
     name: Validate frozen plan
@@ -27,64 +30,12 @@ jobs:
       - name: Install pinned clang-format
         run: python -m pip install clang-format==22.1.8
 
-      - name: Validate plan manifest
-        run: python tools/plan_check.py
+      - name: Run manifest-defined structural gates
+        run: python tools/quality_gate.py --root . --group static
 
-      - name: Self-test plan gate failures
-        run: python tools/plan_check_test.py
-
-      - name: Validate bounded callable contracts
-        run: python tools/argument_gate.py --root .
-
-      - name: Self-test bounded callable gate
-        run: python tools/argument_gate_test.py
-
-      - name: Self-test architecture report
-        run: python tools/architecture_report_test.py
-
-      - name: Validate architecture responsibilities
+      - name: Record workspace inventory
         shell: bash
-        run: python tools/architecture_report.py --root . --all --check --output "$RUNNER_TEMP/architecture-report.json"
-
-      - name: Validate repository naming contract
-        shell: bash
-        run: python tools/naming_gate.py --root . --check --output "$RUNNER_TEMP/naming-report.json"
-
-      - name: Self-test repository naming contract
-        run: python tools/naming_gate_test.py
-
-      - name: Check clang-format and encoding policy
-        run: python tools/clang_format_gate.py --root . --check
-
-      - name: Self-test clang-format and encoding policy
-        run: python tools/clang_format_gate_test.py
-
-      - name: Check statement grouping format
-        run: python tools/format_blocks.py --check
-
-      - name: Self-test statement grouping format
-        run: python tools/format_blocks_test.py
-
-      - name: Validate public API boundary
-        run: python tools/public_api_gate.py --root . --check
-
-      - name: Self-test public API boundary
-        run: python tools/public_api_gate_test.py
-
-      - name: Validate MPI native boundary
-        run: python tools/mpi_boundary_gate.py --root . --check
-
-      - name: Self-test MPI native boundary
-        run: python tools/mpi_boundary_gate_test.py
-
-      - name: Validate pointer ownership boundary
-        run: python tools/pointer_ownership_gate.py --root . --check
-
-      - name: Self-test pointer ownership boundary
-        run: python tools/pointer_ownership_gate_test.py
-
-      - name: Self-test cross-platform debug runner command
-        run: python tools/debug_runner_test.py
+        run: python tools/workspace_gate.py --root . --check --output "$RUNNER_TEMP/workspace-report.json"
 
       - name: Reject unapproved plan edits
         if: github.event_name == 'pull_request'
@@ -112,13 +63,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configure static build
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_BUILD_TESTS=ON -DBLITZAR_BUILD_CLI=ON -DBLITZAR_BUILD_EXAMPLES=ON
+        run: cmake -S . -B "$env:BLITZAR_CI_BUILD_ROOT/static" -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_BUILD_TESTS=ON -DBLITZAR_BUILD_CLI=ON -DBLITZAR_BUILD_EXAMPLES=ON
 
       - name: Build
-        run: cmake --build build --config Release
+        run: cmake --build "$env:BLITZAR_CI_BUILD_ROOT/static" --config Release
 
       - name: Test
-        run: ctest --test-dir build --output-on-failure -C Release
+        run: ctest --test-dir "$env:BLITZAR_CI_BUILD_ROOT/static" --output-on-failure -C Release
 
   shared-public:
     name: Build shared public consumers
@@ -129,13 +80,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configure shared build
-        run: cmake -S . -B build-shared -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_BUILD_SHARED=ON -DBLITZAR_BUILD_TESTS=OFF -DBLITZAR_BUILD_CLI=ON -DBLITZAR_BUILD_EXAMPLES=ON
+        run: cmake -S . -B "$env:BLITZAR_CI_BUILD_ROOT/shared" -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_BUILD_SHARED=ON -DBLITZAR_BUILD_TESTS=OFF -DBLITZAR_BUILD_CLI=ON -DBLITZAR_BUILD_EXAMPLES=ON
 
       - name: Build shared library and consumers
-        run: cmake --build build-shared --config Release
+        run: cmake --build "$env:BLITZAR_CI_BUILD_ROOT/shared" --config Release
 
       - name: Qualify installed shared package consumer
-        run: cmake "-DBLITZAR_BUILD_DIR=$env:GITHUB_WORKSPACE/build-shared" -P tests/PackageConsumer.cmake
+        run: cmake "-DBLITZAR_BUILD_DIR=$env:BLITZAR_CI_BUILD_ROOT/shared" -P tests/PackageConsumer.cmake
 
   sanitizers:
     name: Linux Clang sanitizers
@@ -158,7 +109,7 @@ jobs:
       - name: Configure sanitizer build
         shell: bash
         run: |
-          CC=clang CXX=clang++ cmake -S . -B build-sanitizers -G Ninja \
+          CC=clang CXX=clang++ cmake -S . -B "$BLITZAR_CI_BUILD_ROOT/sanitizers" -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
             -DBLITZAR_ENABLE_SANITIZERS=ON \
             -DBLITZAR_HIP_MODE=OFF \
@@ -168,10 +119,10 @@ jobs:
             -DBLITZAR_BUILD_EXAMPLES=ON
 
       - name: Build sanitizer target
-        run: cmake --build build-sanitizers --parallel
+        run: cmake --build "$BLITZAR_CI_BUILD_ROOT/sanitizers" --parallel
 
       - name: Run sanitizer tests
-        run: ctest --test-dir build-sanitizers --output-on-failure
+        run: ctest --test-dir "$BLITZAR_CI_BUILD_ROOT/sanitizers" --output-on-failure
 
   linux-debug:
     name: Linux debugger qualification
@@ -201,7 +152,7 @@ jobs:
       - name: Configure debugger build
         shell: bash
         run: |
-          cmake -S . -B build-debug -G Ninja \
+          cmake -S . -B "$BLITZAR_CI_BUILD_ROOT/linux-debug" -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
             -DBLITZAR_HIP_MODE=OFF \
             -DBLITZAR_MPI_MODE=OFF \
@@ -212,19 +163,19 @@ jobs:
             -DBLITZAR_BUILD_EXAMPLES=OFF
 
       - name: Build debugger probes
-        run: cmake --build build-debug --target blitzar_numerical_test blitzar_allocation_test blitzar_debug_status_probe --parallel
+        run: cmake --build "$BLITZAR_CI_BUILD_ROOT/linux-debug" --target blitzar_numerical_test blitzar_allocation_test blitzar_debug_status_probe --parallel
 
       - name: Run numerical test under debugger
         shell: bash
-        run: python tools/debug_runner.py --backend gdb --timeout 120 build-debug/blitzar_numerical_test
+        run: python tools/debug_runner.py --backend gdb --timeout 120 "$BLITZAR_CI_BUILD_ROOT/linux-debug/blitzar_numerical_test"
 
       - name: Run allocation test under debugger
         shell: bash
-        run: python tools/debug_runner.py --backend gdb --timeout 120 build-debug/blitzar_allocation_test
+        run: python tools/debug_runner.py --backend gdb --timeout 120 "$BLITZAR_CI_BUILD_ROOT/linux-debug/blitzar_allocation_test"
 
       - name: Verify non-zero child status under debugger
         shell: bash
-        run: python tools/debug_runner.py --backend gdb --expected-exit-code 7 --timeout 120 build-debug/blitzar_debug_status_probe
+        run: python tools/debug_runner.py --backend gdb --expected-exit-code 7 --timeout 120 "$BLITZAR_CI_BUILD_ROOT/linux-debug/blitzar_debug_status_probe"
 
   windows-debug:
     name: Windows CDB debug qualification
@@ -266,7 +217,7 @@ jobs:
       - name: Configure debugger build
         shell: pwsh
         run: |
-          cmake -S . -B build-debug -G Ninja `
+          cmake -S . -B "$env:BLITZAR_CI_BUILD_ROOT/windows-debug" -G Ninja `
             -DCMAKE_BUILD_TYPE=Debug `
             -DBLITZAR_HIP_MODE=OFF `
             -DBLITZAR_MPI_MODE=OFF `
@@ -277,16 +228,16 @@ jobs:
             -DBLITZAR_BUILD_EXAMPLES=OFF
 
       - name: Build debugger probes
-        run: cmake --build build-debug --target blitzar_numerical_test blitzar_allocation_test blitzar_debug_status_probe --parallel
+        run: cmake --build "$env:BLITZAR_CI_BUILD_ROOT/windows-debug" --target blitzar_numerical_test blitzar_allocation_test blitzar_debug_status_probe --parallel
 
       - name: Run numerical test under debugger
-        run: python tools/debug_runner.py --backend cdb --timeout 120 build-debug/blitzar_numerical_test.exe
+        run: python tools/debug_runner.py --backend cdb --timeout 120 "$env:BLITZAR_CI_BUILD_ROOT/windows-debug/blitzar_numerical_test.exe"
 
       - name: Run allocation test under debugger
-        run: python tools/debug_runner.py --backend cdb --timeout 120 build-debug/blitzar_allocation_test.exe
+        run: python tools/debug_runner.py --backend cdb --timeout 120 "$env:BLITZAR_CI_BUILD_ROOT/windows-debug/blitzar_allocation_test.exe"
 
       - name: Verify non-zero child status under debugger
-        run: python tools/debug_runner.py --backend cdb --expected-exit-code 7 --timeout 120 build-debug/blitzar_debug_status_probe.exe
+        run: python tools/debug_runner.py --backend cdb --expected-exit-code 7 --timeout 120 "$env:BLITZAR_CI_BUILD_ROOT/windows-debug/blitzar_debug_status_probe.exe"
 
   macos-debug:
     name: macOS LLDB debug qualification
@@ -311,7 +262,7 @@ jobs:
       - name: Configure debugger build
         shell: bash
         run: |
-          cmake -S . -B build-debug \
+          cmake -S . -B "$BLITZAR_CI_BUILD_ROOT/macos-debug" \
             -DCMAKE_BUILD_TYPE=Debug \
             -DBLITZAR_HIP_MODE=OFF \
             -DBLITZAR_MPI_MODE=OFF \
@@ -322,19 +273,19 @@ jobs:
             -DBLITZAR_BUILD_EXAMPLES=OFF
 
       - name: Build debugger probes
-        run: cmake --build build-debug --target blitzar_numerical_test blitzar_allocation_test blitzar_debug_status_probe --parallel
+        run: cmake --build "$BLITZAR_CI_BUILD_ROOT/macos-debug" --target blitzar_numerical_test blitzar_allocation_test blitzar_debug_status_probe --parallel
 
       - name: Run numerical test under debugger
         shell: bash
-        run: python3 tools/debug_runner.py --backend lldb --timeout 120 build-debug/blitzar_numerical_test
+        run: python3 tools/debug_runner.py --backend lldb --timeout 120 "$BLITZAR_CI_BUILD_ROOT/macos-debug/blitzar_numerical_test"
 
       - name: Run allocation test under debugger
         shell: bash
-        run: python3 tools/debug_runner.py --backend lldb --timeout 120 build-debug/blitzar_allocation_test
+        run: python3 tools/debug_runner.py --backend lldb --timeout 120 "$BLITZAR_CI_BUILD_ROOT/macos-debug/blitzar_allocation_test"
 
       - name: Verify non-zero child status under debugger
         shell: bash
-        run: python3 tools/debug_runner.py --backend lldb --expected-exit-code 7 --timeout 120 build-debug/blitzar_debug_status_probe
+        run: python3 tools/debug_runner.py --backend lldb --expected-exit-code 7 --timeout 120 "$BLITZAR_CI_BUILD_ROOT/macos-debug/blitzar_debug_status_probe"
 
   static-analysis:
     name: Clang static analysis
@@ -352,7 +303,7 @@ jobs:
       - name: Configure compilation database
         shell: bash
         run: |
-          CC=clang CXX=clang++ cmake -S . -B build-analysis -G Ninja \
+          CC=clang CXX=clang++ cmake -S . -B "$BLITZAR_CI_BUILD_ROOT/analysis" -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
             -DBLITZAR_HIP_MODE=OFF \
@@ -365,7 +316,7 @@ jobs:
         shell: bash
         run: |
           mapfile -t sources < <(find src -type f -name '*.cpp' -print)
-          clang-tidy -p build-analysis \
+          clang-tidy -p "$BLITZAR_CI_BUILD_ROOT/analysis" \
             --checks='-*,clang-analyzer-*' \
             --warnings-as-errors='*' \
             "${sources[@]}"
@@ -393,7 +344,7 @@ jobs:
       - name: Configure CPU-only build
         shell: bash
         run: |
-          cmake -S . -B build-cpu -G Ninja \
+          cmake -S . -B "$BLITZAR_CI_BUILD_ROOT/cpu" -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DBLITZAR_HIP_MODE=OFF \
             -DBLITZAR_MPI_MODE=OFF \
@@ -403,10 +354,10 @@ jobs:
             -DBLITZAR_BUILD_EXAMPLES=ON
 
       - name: Build CPU-only target
-        run: cmake --build build-cpu --parallel
+        run: cmake --build "$BLITZAR_CI_BUILD_ROOT/cpu" --parallel
 
       - name: Run CPU-only tests
-        run: ctest --test-dir build-cpu --exclude-regex '^TST-P2-004$' --output-on-failure
+        run: ctest --test-dir "$BLITZAR_CI_BUILD_ROOT/cpu" --exclude-regex '^TST-P2-004$' --output-on-failure
 
   package-consumer:
     name: Install-prefix package consumer
@@ -431,7 +382,7 @@ jobs:
       - name: Configure package build
         shell: bash
         run: |
-          cmake -S . -B build-package -G Ninja \
+          cmake -S . -B "$BLITZAR_CI_BUILD_ROOT/package" -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DBLITZAR_HIP_MODE=OFF \
             -DBLITZAR_MPI_MODE=OFF \
@@ -441,11 +392,11 @@ jobs:
             -DBLITZAR_BUILD_EXAMPLES=OFF
 
       - name: Build package target
-        run: cmake --build build-package --parallel
+        run: cmake --build "$BLITZAR_CI_BUILD_ROOT/package" --parallel
 
       - name: Configure and build external consumer
         shell: bash
-        run: cmake -DBLITZAR_BUILD_DIR="$PWD/build-package" -P tests/PackageConsumer.cmake
+        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/package" -P tests/PackageConsumer.cmake
 
   mpi-ranks:
     name: MPI two and four rank qualification
@@ -476,7 +427,7 @@ jobs:
       - name: Configure MPI build
         shell: bash
         run: |
-          cmake -S . -B build-mpi -G Ninja \
+          cmake -S . -B "$BLITZAR_CI_BUILD_ROOT/mpi" -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DBLITZAR_HIP_MODE=OFF \
             -DBLITZAR_MPI_MODE=ON \
@@ -485,7 +436,7 @@ jobs:
             -DBLITZAR_BUILD_EXAMPLES=OFF
 
       - name: Build MPI target
-        run: cmake --build build-mpi --parallel
+        run: cmake --build "$BLITZAR_CI_BUILD_ROOT/mpi" --parallel
 
       - name: Qualify installed MPI package consumer
         shell: bash
@@ -493,7 +444,7 @@ jobs:
           OMPI_ALLOW_RUN_AS_ROOT: "1"
           OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
           OMPI_MCA_rmaps_base_oversubscribe: "1"
-        run: cmake -DBLITZAR_BUILD_DIR="$PWD/build-mpi" -P tests/PackageConsumer.cmake
+        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/mpi" -P tests/PackageConsumer.cmake
 
       - name: Run two and four rank tests with timeout
         shell: bash
@@ -502,7 +453,7 @@ jobs:
           OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
           OMPI_MCA_rmaps_base_oversubscribe: "1"
         run: |
-          timeout --foreground 240s ctest --test-dir build-mpi \
+          timeout --foreground 240s ctest --test-dir "$BLITZAR_CI_BUILD_ROOT/mpi" \
             --output-on-failure \
             -R '^(TST-P7-001|TST-P7-002|TST-P7-003|TST-P7-004|TST-P7-005|TST-P8-001|TST-P8-002)$'
 
@@ -551,7 +502,7 @@ jobs:
         if: steps.probe.outputs.compile == 'true'
         shell: bash
         run: |
-          cmake -S . -B build-cuda -G Ninja \
+          cmake -S . -B "$BLITZAR_CI_BUILD_ROOT/cuda" -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_HIP_PLATFORM=nvidia \
             -DBLITZAR_HIP_MODE=ON \
@@ -563,16 +514,16 @@ jobs:
 
       - name: Compile native CUDA target
         if: steps.probe.outputs.compile == 'true'
-        run: cmake --build build-cuda --parallel
+        run: cmake --build "$BLITZAR_CI_BUILD_ROOT/cuda" --parallel
 
       - name: Qualify installed native CUDA package consumer
         if: steps.probe.outputs.compile == 'true'
         shell: bash
-        run: cmake -DBLITZAR_BUILD_DIR="$PWD/build-cuda" -P tests/PackageConsumer.cmake
+        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/cuda" -P tests/PackageConsumer.cmake
 
       - name: Run CUDA device qualification
         if: steps.probe.outputs.device == 'true'
-        run: timeout --foreground 180s ctest --test-dir build-cuda -R '^TST-P4-001$' --output-on-failure
+        run: timeout --foreground 180s ctest --test-dir "$BLITZAR_CI_BUILD_ROOT/cuda" -R '^TST-P4-001$' --output-on-failure
 
   hip:
     name: HIP compile and optional device test
@@ -621,7 +572,7 @@ jobs:
         if: steps.probe.outputs.compile == 'true'
         shell: bash
         run: |
-          cmake -S . -B build-hip -G Ninja \
+          cmake -S . -B "$BLITZAR_CI_BUILD_ROOT/hip" -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_HIP_PLATFORM=amd \
             -DBLITZAR_HIP_MODE=ON \
@@ -633,13 +584,13 @@ jobs:
 
       - name: Compile HIP target
         if: steps.probe.outputs.compile == 'true'
-        run: cmake --build build-hip --parallel
+        run: cmake --build "$BLITZAR_CI_BUILD_ROOT/hip" --parallel
 
       - name: Qualify installed HIP package consumer
         if: steps.probe.outputs.compile == 'true'
         shell: bash
-        run: cmake -DBLITZAR_BUILD_DIR="$PWD/build-hip" -P tests/PackageConsumer.cmake
+        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/hip" -P tests/PackageConsumer.cmake
 
       - name: Run HIP device qualification
         if: steps.probe.outputs.device == 'true'
-        run: timeout --foreground 180s ctest --test-dir build-hip -R '^TST-P4-001$' --output-on-failure
+        run: timeout --foreground 180s ctest --test-dir "$BLITZAR_CI_BUILD_ROOT/hip" -R '^TST-P4-001$' --output-on-failure

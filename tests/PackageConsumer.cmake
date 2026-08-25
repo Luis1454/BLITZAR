@@ -1,6 +1,7 @@
 if(NOT DEFINED BLITZAR_BUILD_DIR OR NOT IS_DIRECTORY "${BLITZAR_BUILD_DIR}")
     message(FATAL_ERROR "BLITZAR_BUILD_DIR must name a configured build directory")
 endif()
+get_filename_component(BLITZAR_BUILD_DIR "${BLITZAR_BUILD_DIR}" ABSOLUTE)
 
 set(manifest_file "${CMAKE_CURRENT_LIST_DIR}/../plan/manifest.json")
 file(READ "${manifest_file}" manifest_json)
@@ -42,10 +43,19 @@ endif()
 set(consumer_compiler "")
 set(compiler_entry "")
 file(STRINGS "${cache_file}" compiler_entry
-    REGEX "^CMAKE_CXX_COMPILER:(FILEPATH|STRING)=" LIMIT_COUNT 1)
+    REGEX "^CMAKE_CXX_COMPILER:(FILEPATH|STRING|UNINITIALIZED)=" LIMIT_COUNT 1)
 if(compiler_entry)
-    string(REGEX REPLACE "^CMAKE_CXX_COMPILER:(FILEPATH|STRING)=" ""
+    string(REGEX REPLACE "^CMAKE_CXX_COMPILER:(FILEPATH|STRING|UNINITIALIZED)=" ""
         consumer_compiler "${compiler_entry}")
+endif()
+
+set(consumer_c_compiler "")
+set(c_compiler_entry "")
+file(STRINGS "${cache_file}" c_compiler_entry
+    REGEX "^CMAKE_C_COMPILER:(FILEPATH|STRING|UNINITIALIZED)=" LIMIT_COUNT 1)
+if(c_compiler_entry)
+    string(REGEX REPLACE "^CMAKE_C_COMPILER:(FILEPATH|STRING|UNINITIALIZED)=" ""
+        consumer_c_compiler "${c_compiler_entry}")
 endif()
 
 set(consumer_multi_config FALSE)
@@ -79,7 +89,17 @@ set(consumer_cmake [=[
 cmake_minimum_required(VERSION 3.25)
 project(BLITZARPackageConsumer LANGUAGES C CXX)
 
+set(CMAKE_FIND_USE_PACKAGE_REGISTRY OFF)
+set(CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY OFF)
 find_package(BLITZAR CONFIG REQUIRED)
+
+if(NOT TARGET BLITZAR::blitzar)
+    message(FATAL_ERROR "installed BLITZAR target is missing")
+endif()
+get_target_property(blitzar_features BLITZAR::blitzar INTERFACE_COMPILE_FEATURES)
+if(NOT blitzar_features OR NOT "cxx_std_20" IN_LIST blitzar_features)
+    message(FATAL_ERROR "installed BLITZAR target does not export C++20")
+endif()
 
 if(NOT DEFINED BLITZAR_VERSION OR
    NOT BLITZAR_VERSION STREQUAL "@EXPECTED_PRODUCT_VERSION@")
@@ -119,6 +139,10 @@ endif()
 if(NOT consumer_compiler STREQUAL "")
     list(APPEND consumer_configure_command
         "-DCMAKE_CXX_COMPILER=${consumer_compiler}")
+endif()
+if(NOT consumer_c_compiler STREQUAL "")
+    list(APPEND consumer_configure_command
+        "-DCMAKE_C_COMPILER=${consumer_c_compiler}")
 endif()
 
 execute_process(

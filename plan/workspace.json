@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "external_build_root": "../.blitzar-build",
+  "ci_build_root": "${RUNNER_TEMP}/blitzar-build",
+  "required_gitignore": [
+    "/build/",
+    "/build-*/",
+    "__pycache__/",
+    "*.py[cod]"
+  ],
+  "generated_path_components": ["build", "__pycache__"],
+  "generated_file_names": [
+    "CMakeCache.txt",
+    "cmake_install.cmake",
+    "compile_commands.json",
+    "install_manifest.txt"
+  ],
+  "generated_file_suffixes": [".ninja_deps", ".ninja_log"]
+}
