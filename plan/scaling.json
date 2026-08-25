@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.15",
+  "target": "blitzar_scaling_test",
+  "runner": "tools/release_evidence.py",
+  "precision": "float64",
+  "seed": 424242,
+  "warmup_steps": 1,
+  "timed_steps": 3,
+  "oracle_tolerance": 0.05,
+  "workloads": [
+    {
+      "id": "strong-scaling",
+      "kind": "strong",
+      "particle_counts": [32, 64],
+      "particles_per_rank": 0,
+      "ranks": [1, 2, 4],
+      "solvers": ["direct", "barnes-hut", "fmm"],
+      "overlap_modes": ["overlapped"],
+      "oracle": true,
+      "migration": false
+    },
+    {
+      "id": "weak-scaling",
+      "kind": "weak",
+      "particle_counts": [],
+      "particles_per_rank": 32,
+      "ranks": [1, 2, 4],
+      "solvers": ["direct", "barnes-hut", "fmm"],
+      "overlap_modes": ["overlapped"],
+      "oracle": true,
+      "migration": false
+    },
+    {
+      "id": "migration",
+      "kind": "migration",
+      "particle_counts": [64],
+      "particles_per_rank": 0,
+      "ranks": [2, 4],
+      "solvers": ["direct"],
+      "overlap_modes": ["overlapped"],
+      "oracle": false,
+      "migration": true
+    },
+    {
+      "id": "overlap",
+      "kind": "overlap",
+      "particle_counts": [64],
+      "particles_per_rank": 0,
+      "ranks": [2, 4],
+      "solvers": ["direct"],
+      "overlap_modes": ["overlapped", "serialized"],
+      "oracle": false,
+      "migration": false
+    }
+  ],
+  "artifacts": {
+    "generated_outside_source": true,
+    "files": [
+      "metadata.json",
+      "results.json",
+      "summary.md",
+      "logs/"
+    ],
+    "evidence_states": ["passed", "failed", "skipped", "unknown"],
+    "topology_rule": "single-host multi-rank is not multi-node evidence",
+    "gpu_rule": "compile, fallback, and device execution are separate records"
+  }
+}

@@ -150,6 +150,12 @@
       "name": "capability-and-unsupported-contract",
       "command": "blitzar_capability_test",
       "phase": "P0"
+    },
+    {
+      "id": "TST-P0-007",
+      "name": "scaling-harness-smoke",
+      "command": "blitzar_scaling_test --particles 16 --steps 1 --seed 424242 --solver direct",
+      "phase": "P0"
     }
   ],
   "architecture": {

@@ -201,6 +201,14 @@
       "mode": "overlap",
       "ranks": 2,
       "contract": "overlap timeline, volume, speedup, and parity"
+    },
+    {
+      "id": "TST-P0-007",
+      "entrypoint": "tests/Scaling.cpp",
+      "responsibility": "tests/Scaling.cpp",
+      "mode": "smoke",
+      "ranks": 1,
+      "contract": "deterministic scaling harness record and CPU oracle boundary"
     }
   ]
 }

@@ -40,6 +40,7 @@
     {"path": "plan/decisions/028-hierarchical-acceptance-criterion.md", "lifecycle": "active"},
     {"path": "plan/decisions/029-repository-realignment-contract.md", "lifecycle": "active"},
     {"path": "plan/decisions/030-build-workspace-contract.md", "lifecycle": "active"},
-    {"path": "plan/decisions/031-capability-contract.md", "lifecycle": "active"}
+    {"path": "plan/decisions/031-capability-contract.md", "lifecycle": "active"},
+    {"path": "plan/decisions/032-reproducible-evidence.md", "lifecycle": "active"}
   ]
 }
