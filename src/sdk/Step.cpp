@@ -11,7 +11,7 @@ namespace blitzar_sdk {
 
 template <typename Solver> blitzar_status Simulation::StepWithSolver(Solver& solver) noexcept
 {
-    if (mpi_context_.IsDistributed()) {
+    if (runtime_.Mpi().IsDistributed()) {
         return StepDistributed(solver);
     }
 
@@ -24,7 +24,7 @@ blitzar_status Simulation::Step() noexcept
                             integrator_kind_ == BLITZAR_INTEGRATOR_LEAPFROG_KDK &&
                             std::isfinite(timestep_) && timestep_ > 0.0;
 
-    const blitzar_status preflight_status = blitzar_parallel::SynchronizeStatus(mpi_context_,
+    const blitzar_status preflight_status = blitzar_parallel::SynchronizeStatus(runtime_.Mpi(),
         step_ready ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT, "step-preflight");
 
     if (preflight_status != BLITZAR_STATUS_OK) {

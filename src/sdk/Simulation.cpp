@@ -6,22 +6,20 @@
 namespace blitzar_sdk {
 
 Simulation::Simulation(std::size_t particle_count)
-    : particle_count_(particle_count), mpi_context_(), domain_(),
-      mpi_exchange_(mpi_context_, domain_, particle_count, particle_count), hip_context_(),
-      arena_(particle_count), particles_(arena_), accelerations_(arena_), checkpoint_(arena_),
+    : particle_count_(particle_count), runtime_(particle_count), particle_storage_(particle_count),
       source_(particle_count), gravity_{},
       barnes_hut_{
           0.5, particle_count == 0 ? 1 : particle_count, DefaultMaxCells(particle_count), 8, 32},
       traversal_stacks_(barnes_hut_.max_cells, barnes_hut_.max_depth),
       solver_kind_(BLITZAR_SOLVER_DIRECT), integrator_kind_(BLITZAR_INTEGRATOR_LEAPFROG_KDK),
       timestep_(1.0), particles_ready_(false), execution_settings_{}, snapshot_header_{},
-      last_status_(mpi_context_.Status()), last_backend_(BLITZAR_BACKEND_CPU),
+      last_status_(runtime_.Mpi().Status()), last_backend_(BLITZAR_BACKEND_CPU),
       solver_(std::in_place_type<blitzar_direct::DirectSolver>, gravity_, particle_count),
       integrator_{}, particle_ids_(particle_count), local_particle_count_(0), exchange_buffer_{},
       rollback_arena_buffer_{}, rollback_force_buffer_{}, rollback_exchange_buffer_{},
       migration_buffer_{}, gathered_buffer_{}
 {
-    const blitzar_status capacity_status = mpi_exchange_.CapacityStatus();
+    const blitzar_status capacity_status = runtime_.Exchange().CapacityStatus();
 
     if (capacity_status == BLITZAR_STATUS_ALLOCATION_FAILURE) {
         throw std::bad_alloc();
@@ -31,9 +29,9 @@ Simulation::Simulation(std::size_t particle_count)
         throw std::length_error("simulation capacity preparation failed");
     }
 
-    if (particles_.SetCount(0) != BLITZAR_STATUS_OK ||
-        accelerations_.SetCount(0) != BLITZAR_STATUS_OK ||
-        checkpoint_.SetCount(0) != BLITZAR_STATUS_OK) {
+    if (particle_storage_.Particles().SetCount(0) != BLITZAR_STATUS_OK ||
+        particle_storage_.Accelerations().SetCount(0) != BLITZAR_STATUS_OK ||
+        particle_storage_.Checkpoint().SetCount(0) != BLITZAR_STATUS_OK) {
         throw std::length_error("simulation local capacity initialization failed");
     }
 
@@ -74,7 +72,7 @@ blitzar_status Simulation::EnsureLocalCapacity(std::size_t capacity) noexcept
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    blitzar_status status = arena_.Reserve(capacity);
+    blitzar_status status = particle_storage_.Arena().Reserve(capacity);
 
     if (status != BLITZAR_STATUS_OK) {
         return status;
@@ -112,7 +110,7 @@ blitzar_backend_kind Simulation::LastBackend() const noexcept
 
 void Simulation::SetHipFaultForTesting(blitzar_gpu::HipFault fault) noexcept
 {
-    hip_context_.SetFaultForTesting(fault);
+    runtime_.Hip().SetFaultForTesting(fault);
 }
 
 void Simulation::SetMpiOverlapForTesting(blitzar_parallel::MpiOverlapMode mode) noexcept
