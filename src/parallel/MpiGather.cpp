@@ -13,8 +13,8 @@ blitzar_status MpiExchange::Gather(blitzar_core::ParticleStateView local_state,
         return status;
     }
 
-    status = SynchronizeStatus(
-        PackLocal(local_state, local_ids, state_.local_packets), "gather-pack");
+    status =
+        SynchronizeStatus(PackLocal(local_state, local_ids, state_.local_packets), "gather-pack");
 
     if (status != BLITZAR_STATUS_OK) {
         return status;

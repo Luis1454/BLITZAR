@@ -1,8 +1,8 @@
 #ifndef BLITZAR_CORE_SOLVER_HPP
 #define BLITZAR_CORE_SOLVER_HPP
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 
 namespace blitzar_core {
 

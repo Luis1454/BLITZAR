@@ -1,6 +1,5 @@
-#include "parallel/MpiPacketTransport.hpp"
-
 #include "parallel/MpiPacketProtocol.hpp"
+#include "parallel/MpiPacketTransport.hpp"
 #include "parallel/MpiSessionNative.hpp"
 
 #include <algorithm>

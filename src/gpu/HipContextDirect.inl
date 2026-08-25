@@ -15,9 +15,9 @@ namespace {
 
 } // namespace
 
-blitzar_status HipContext::Impl::UploadDirectInputs(
-    blitzar_core::ParticleStateView particles, blitzar_core::ForceView forces,
-    blitzar_core::ForceRange range, bool source_alias_target) noexcept
+blitzar_status HipContext::Impl::UploadDirectInputs(blitzar_core::ParticleStateView particles,
+    blitzar_core::ForceView forces, blitzar_core::ForceRange range,
+    bool source_alias_target) noexcept
 {
     const std::size_t source_count = range.source_end - range.source_begin;
     blitzar_status status = UploadTargetState(particles);
@@ -67,8 +67,9 @@ blitzar_status HipContext::Impl::ComputeDirect(blitzar_core::ParticleStateView p
         source_alias_target ? buffers.DeviceParticle(2) : buffers.DeviceSource(2),
         source_alias_target ? buffers.DeviceParticle(3) : buffers.DeviceSource(3)};
 
-    const blitzar_gpu_detail::DirectLaunchRequest launch_request{
-        addresses, particles.count, {0, source_count, range.accumulate},
+    const blitzar_gpu_detail::DirectLaunchRequest launch_request{addresses, particles.count,
+
+        {0, source_count, range.accumulate},
 
         {gravity.EffectiveConstant(), gravity.EffectiveSoftening()},
 

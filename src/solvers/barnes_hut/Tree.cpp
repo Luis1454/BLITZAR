@@ -128,9 +128,8 @@ blitzar_status BarnesHutSolver::AccumulateMultipole(const AccumulationRequest& r
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_status BarnesHutSolver::PushChildren(
-    const blitzar_trees::Octree::Cell& cell, std::span<std::size_t> stack,
-    std::size_t& stack_size) noexcept
+blitzar_status BarnesHutSolver::PushChildren(const blitzar_trees::Octree::Cell& cell,
+    std::span<std::size_t> stack, std::size_t& stack_size) noexcept
 {
     for (auto child = cell.children.rbegin(); child != cell.children.rend(); ++child) {
         if (*child == blitzar_trees::Octree::Cell::InvalidIndex) {
@@ -156,9 +155,8 @@ blitzar_status BarnesHutSolver::Accumulate(const AccumulationRequest& request) n
 
     request.stack[0] = 0;
 
-    const blitzar_core::Vector3 target_position{
-        request.targets.x[request.target], request.targets.y[request.target],
-        request.targets.z[request.target]};
+    const blitzar_core::Vector3 target_position{request.targets.x[request.target],
+        request.targets.y[request.target], request.targets.z[request.target]};
 
     request.acceleration = {};
 
@@ -212,8 +210,8 @@ blitzar_status BarnesHutSolver::Accumulate(const AccumulationRequest& request) n
 
 bool BarnesHutSolver::ValidateTreeRequest(const TreeComputeRequest& request) const noexcept
 {
-    const std::size_t source_capacity = &request.tree == tree_.get() ? local_particle_capacity_
-                                                                      : settings_.max_particles;
+    const std::size_t source_capacity =
+        &request.tree == tree_.get() ? local_particle_capacity_ : settings_.max_particles;
 
     return settings_.IsValid() && gravity_.IsValid() && request.settings.IsValid() &&
            request.targets.count == request.forces.count &&
@@ -252,7 +250,7 @@ blitzar_status BarnesHutSolver::ComputeTargets(const TreeComputeRequest& request
 #endif
 
     for (std::int64_t target_index = 0;
-         target_index < static_cast<std::int64_t>(request.targets.count); ++target_index) {
+        target_index < static_cast<std::int64_t>(request.targets.count); ++target_index) {
         if (computation_status.load(std::memory_order_relaxed) != BLITZAR_STATUS_OK) {
             continue;
         }
@@ -295,8 +293,7 @@ blitzar_status BarnesHutSolver::ComputeTree(const TreeComputeRequest& request) n
 
     const blitzar_status preparation_status = PrepareTree(request);
 
-    return preparation_status == BLITZAR_STATUS_OK ? ComputeTargets(request)
-                                                   : preparation_status;
+    return preparation_status == BLITZAR_STATUS_OK ? ComputeTargets(request) : preparation_status;
 }
 
 blitzar_status BarnesHutSolver::CommitStagedForces(blitzar_core::ForceView forces) noexcept

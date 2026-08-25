@@ -28,8 +28,8 @@ Status Simulation::get_state(ParticleOutput output) noexcept
         output.position_y.data(), output.position_z.data(), output.velocity_x.data(),
         output.velocity_y.data(), output.velocity_z.data(), output.mass.data()};
 
-    return Update(blitzar_simulation_get_state_v2(
-        impl_ == nullptr ? nullptr : impl_->handle.get(), &view));
+    return Update(
+        blitzar_simulation_get_state_v2(impl_ == nullptr ? nullptr : impl_->handle.get(), &view));
 }
 
 Status Simulation::step() noexcept

@@ -90,8 +90,7 @@ public:
     }
 
 #if defined(BLITZAR_HAS_MPI)
-    [[nodiscard]] static blitzar_status WaitRequests(
-        std::vector<MPI_Request>& requests) noexcept
+    [[nodiscard]] static blitzar_status WaitRequests(std::vector<MPI_Request>& requests) noexcept
     {
         if (requests.empty()) {
             return BLITZAR_STATUS_OK;
@@ -100,8 +99,8 @@ public:
             return BLITZAR_STATUS_INTERNAL_ERROR;
         }
 
-        return MPI_Waitall(static_cast<int>(requests.size()), requests.data(), MPI_STATUSES_IGNORE) ==
-                       MPI_SUCCESS
+        return MPI_Waitall(static_cast<int>(requests.size()), requests.data(),
+                   MPI_STATUSES_IGNORE) == MPI_SUCCESS
                    ? BLITZAR_STATUS_OK
                    : BLITZAR_STATUS_INTERNAL_ERROR;
     }

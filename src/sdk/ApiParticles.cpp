@@ -27,14 +27,14 @@ extern "C" blitzar_status blitzar_simulation_set_particles(blitzar_simulation* s
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    return blitzar_sdk_api::ApplyParticles(*simulation,
-        {converted_count, blitzar_sdk_api::MakeSpan(position_x, converted_count),
-            blitzar_sdk_api::MakeSpan(position_y, converted_count),
-            blitzar_sdk_api::MakeSpan(position_z, converted_count),
-            blitzar_sdk_api::MakeSpan(velocity_x, converted_count),
-            blitzar_sdk_api::MakeSpan(velocity_y, converted_count),
-            blitzar_sdk_api::MakeSpan(velocity_z, converted_count),
-            blitzar_sdk_api::MakeSpan(mass, converted_count), converted_count});
+    return blitzar_sdk_api::ApplyParticles(
+        *simulation, {converted_count, blitzar_sdk_api::MakeSpan(position_x, converted_count),
+                         blitzar_sdk_api::MakeSpan(position_y, converted_count),
+                         blitzar_sdk_api::MakeSpan(position_z, converted_count),
+                         blitzar_sdk_api::MakeSpan(velocity_x, converted_count),
+                         blitzar_sdk_api::MakeSpan(velocity_y, converted_count),
+                         blitzar_sdk_api::MakeSpan(velocity_z, converted_count),
+                         blitzar_sdk_api::MakeSpan(mass, converted_count), converted_count});
 }
 
 extern "C" blitzar_status blitzar_simulation_get_state(const blitzar_simulation* simulation,
@@ -63,14 +63,14 @@ extern "C" blitzar_status blitzar_simulation_get_state(const blitzar_simulation*
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    return blitzar_sdk_api::ApplyState(*simulation,
-        {converted_capacity, blitzar_sdk_api::MakeSpan(position_x, converted_capacity),
-            blitzar_sdk_api::MakeSpan(position_y, converted_capacity),
-            blitzar_sdk_api::MakeSpan(position_z, converted_capacity),
-            blitzar_sdk_api::MakeSpan(velocity_x, converted_capacity),
-            blitzar_sdk_api::MakeSpan(velocity_y, converted_capacity),
-            blitzar_sdk_api::MakeSpan(velocity_z, converted_capacity),
-            blitzar_sdk_api::MakeSpan(mass, converted_capacity)});
+    return blitzar_sdk_api::ApplyState(
+        *simulation, {converted_capacity, blitzar_sdk_api::MakeSpan(position_x, converted_capacity),
+                         blitzar_sdk_api::MakeSpan(position_y, converted_capacity),
+                         blitzar_sdk_api::MakeSpan(position_z, converted_capacity),
+                         blitzar_sdk_api::MakeSpan(velocity_x, converted_capacity),
+                         blitzar_sdk_api::MakeSpan(velocity_y, converted_capacity),
+                         blitzar_sdk_api::MakeSpan(velocity_z, converted_capacity),
+                         blitzar_sdk_api::MakeSpan(mass, converted_capacity)});
 }
 
 extern "C" blitzar_status blitzar_simulation_set_particles_v2(

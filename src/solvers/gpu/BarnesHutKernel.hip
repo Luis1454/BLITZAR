@@ -6,6 +6,6 @@
 #include <hip/hip_runtime.h>
 #endif
 
-#include "solvers/gpu/CudError.inl"
 #include "solvers/gpu/BarnesHutDevice.inl"
 #include "solvers/gpu/BarnesHutLaunch.inl"
+#include "solvers/gpu/CudError.inl"

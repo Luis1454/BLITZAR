@@ -1,7 +1,6 @@
-#include "parallel/MpiGhostTransport.hpp"
-
 #include "parallel/MpiGhostProtocol.hpp"
 #include "parallel/MpiGhostState.hpp"
+#include "parallel/MpiGhostTransport.hpp"
 #include "parallel/MpiSessionNative.hpp"
 
 #include <algorithm>

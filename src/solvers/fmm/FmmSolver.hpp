@@ -81,9 +81,8 @@ private:
         const blitzar_trees::Octree::Cell& cell, blitzar_core::ParticleStateView sources,
         Multipole& multipole) const noexcept;
     [[nodiscard]] blitzar_status MergeChildMultipoles(
-        std::span<const blitzar_trees::Octree::Cell> cells,
-        const blitzar_trees::Octree::Cell& cell, std::span<const Multipole> multipoles,
-        Multipole& result) const noexcept;
+        std::span<const blitzar_trees::Octree::Cell> cells, const blitzar_trees::Octree::Cell& cell,
+        std::span<const Multipole> multipoles, Multipole& result) const noexcept;
     [[nodiscard]] static std::size_t LocalCellCapacity(
         std::size_t configured_cells, std::size_t particle_capacity) noexcept;
     [[nodiscard]] blitzar_status BuildMultipoles(const blitzar_trees::Octree& tree,
@@ -92,7 +91,8 @@ private:
         blitzar_core::Vector3 displacement, blitzar_core::Scalar squared_distance,
         blitzar_core::Vector3& acceleration) const noexcept;
     [[nodiscard]] blitzar_status AccumulateLeaf(const AccumulationRequest& request,
-        const blitzar_trees::Octree::Cell& cell, blitzar_core::Vector3 target_position) const noexcept;
+        const blitzar_trees::Octree::Cell& cell,
+        blitzar_core::Vector3 target_position) const noexcept;
     [[nodiscard]] static blitzar_status PushChildren(const AccumulationRequest& request,
         const blitzar_trees::Octree::Cell& cell, std::size_t& stack_size) noexcept;
     [[nodiscard]] blitzar_status ProcessCell(const AccumulationRequest& request,

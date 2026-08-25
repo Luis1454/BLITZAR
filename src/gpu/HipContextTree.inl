@@ -2,16 +2,15 @@
 
 namespace blitzar_gpu {
 
-blitzar_status HipContext::Impl::EnsureTree(
-    blitzar_barnes_hut::BarnesHutSettings settings) noexcept
+blitzar_status HipContext::Impl::EnsureTree(blitzar_barnes_hut::BarnesHutSettings settings) noexcept
 {
     if (tree != nullptr && tree_ready && SameSettings(tree_settings, settings)) {
         return BLITZAR_STATUS_OK;
     }
 
     try {
-        tree = std::make_unique<blitzar_trees::Octree>(settings.max_particles, settings.max_cells,
-            settings.leaf_capacity, settings.max_depth);
+        tree = std::make_unique<blitzar_trees::Octree>(
+            settings.max_particles, settings.max_cells, settings.leaf_capacity, settings.max_depth);
     }
     catch (const std::bad_alloc&) {
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
@@ -26,8 +25,7 @@ blitzar_status HipContext::Impl::EnsureTree(
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_status HipContext::Impl::PrepareTree(
-    blitzar_core::ParticleStateView particles,
+blitzar_status HipContext::Impl::PrepareTree(blitzar_core::ParticleStateView particles,
     blitzar_barnes_hut::BarnesHutSettings settings) noexcept
 {
     blitzar_status status = EnsureTree(settings);
@@ -48,8 +46,7 @@ blitzar_status HipContext::Impl::PrepareTree(
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_status HipContext::Impl::UploadTree(
-    std::span<const blitzar_trees::Octree::Cell> cells,
+blitzar_status HipContext::Impl::UploadTree(std::span<const blitzar_trees::Octree::Cell> cells,
     std::span<const std::size_t> indices) noexcept
 {
     auto* host_cell_data = reinterpret_cast<blitzar_gpu_detail::GpuCell*>(buffers.HostCells());
@@ -85,13 +82,13 @@ blitzar_status HipContext::Impl::UploadTree(
     }
 
     const hipStream_t stream = reinterpret_cast<hipStream_t>(buffers.Stream());
-    const hipError_t cells_status = BlitzarHipMemcpyAsync(
-        {reinterpret_cast<void*>(buffers.DeviceCells()),
+    const hipError_t cells_status =
+        BlitzarHipMemcpyAsync({reinterpret_cast<void*>(buffers.DeviceCells()),
             reinterpret_cast<const void*>(buffers.HostCells()),
             cells.size() * sizeof(blitzar_gpu_detail::GpuCell), hipMemcpyHostToDevice, stream});
 
-    const hipError_t indices_status = BlitzarHipMemcpyAsync(
-        {reinterpret_cast<void*>(buffers.DeviceIndices()),
+    const hipError_t indices_status =
+        BlitzarHipMemcpyAsync({reinterpret_cast<void*>(buffers.DeviceIndices()),
             reinterpret_cast<const void*>(buffers.HostIndices()),
             indices.size() * sizeof(std::uint64_t), hipMemcpyHostToDevice, stream});
 

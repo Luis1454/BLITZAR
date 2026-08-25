@@ -7,15 +7,13 @@ namespace {
 {
     const std::size_t maximum = std::numeric_limits<std::size_t>::max();
 
-    return target_count <= maximum / sizeof(double) &&
-           source_count <= maximum / sizeof(double) &&
+    return target_count <= maximum / sizeof(double) && source_count <= maximum / sizeof(double) &&
            cell_count <= maximum / sizeof(blitzar_gpu_detail::GpuCell) &&
            target_count <= maximum / sizeof(std::uint64_t);
 }
 
 template <typename Allocation, std::size_t Count>
-[[nodiscard]] bool ResizeAll(
-    std::array<Allocation, Count>& buffers, std::size_t bytes) noexcept
+[[nodiscard]] bool ResizeAll(std::array<Allocation, Count>& buffers, std::size_t bytes) noexcept
 {
     for (Allocation& buffer : buffers) {
         if (!buffer.Resize(bytes)) {
@@ -45,10 +43,10 @@ bool HipBuffers::Impl::Ensure(
            ResizeAll(host_sources, source_scalar_bytes) &&
            ResizeAll(device_sources, source_scalar_bytes) &&
            ResizeAll(host_forces, target_scalar_bytes) &&
-           ResizeAll(device_forces, target_scalar_bytes) &&
-           host_error.Resize(sizeof(int)) && device_error.Resize(sizeof(int)) &&
-           host_cells.Resize(cell_bytes) && device_cells.Resize(cell_bytes) &&
-           host_indices.Resize(index_bytes) && device_indices.Resize(index_bytes);
+           ResizeAll(device_forces, target_scalar_bytes) && host_error.Resize(sizeof(int)) &&
+           device_error.Resize(sizeof(int)) && host_cells.Resize(cell_bytes) &&
+           device_cells.Resize(cell_bytes) && host_indices.Resize(index_bytes) &&
+           device_indices.Resize(index_bytes);
 }
 
 } // namespace blitzar_gpu

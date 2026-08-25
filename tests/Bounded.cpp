@@ -7,9 +7,9 @@
 #include "sdk/Dispatch.hpp"
 #include "sdk/State.hpp"
 #include "sdk/Transaction.hpp"
-#include "solvers/gpu/HipKernel.hpp"
 #include "solvers/barnes_hut/BarnesHutSolver.hpp"
 #include "solvers/direct/DirectSolver.hpp"
+#include "solvers/gpu/HipKernel.hpp"
 
 #include <array>
 #include <atomic>
@@ -34,11 +34,11 @@ using DirectSolver = blitzar_direct::DirectSolver;
 using SolverScratch = blitzar_barnes_hut::ThreadStackPool;
 
 static_assert(std::is_aggregate_v<
-              blitzar_integration_kdk::SolverComputeRequest<DirectSolver, SolverScratch>>);
-static_assert(std::is_aggregate_v<
-              blitzar_integration_kdk::AdvanceState<DirectSolver, SolverScratch>>);
+    blitzar_integration_kdk::SolverComputeRequest<DirectSolver, SolverScratch>>);
+static_assert(
+    std::is_aggregate_v<blitzar_integration_kdk::AdvanceState<DirectSolver, SolverScratch>>);
 static_assert(std::is_aggregate_v<blitzar_integration_kdk::AdvanceHooks<
-              blitzar_integration_kdk::NoopDriftHook, blitzar_integration_kdk::NoopRollbackHook>>);
+        blitzar_integration_kdk::NoopDriftHook, blitzar_integration_kdk::NoopRollbackHook>>);
 static_assert(std::is_aggregate_v<blitzar_sdk::PacketStoreRequest>);
 static_assert(std::is_aggregate_v<blitzar_sdk::ArenaCaptureRequest>);
 static_assert(std::is_aggregate_v<blitzar_sdk::ArenaRestoreRequest>);
@@ -58,14 +58,14 @@ int main()
     std::array<blitzar_core::Scalar, 2> force_z{};
 
     const blitzar_core::ParticleView particles{2, position_x, position_y, position_z};
-    const blitzar_core::ParticleStateView state{2, position_x, position_y, position_z,
-        velocity_x, velocity_y, velocity_z, mass};
+    const blitzar_core::ParticleStateView state{
+        2, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z, mass};
 
-    const blitzar_core::MutableParticleView mutable_state{2, position_x, position_y, position_z,
-        velocity_x, velocity_y, velocity_z};
+    const blitzar_core::MutableParticleView mutable_state{
+        2, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z};
 
-    const blitzar_core::ParticleOutputView output{2, position_x, position_y, position_z,
-        velocity_x, velocity_y, velocity_z, mass};
+    const blitzar_core::ParticleOutputView output{
+        2, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z, mass};
 
     const blitzar_core::ForceView force{2, force_x, force_y, force_z};
 
@@ -124,16 +124,18 @@ int main()
     std::size_t local_count = 0;
     blitzar_sdk::ParticleInputStage stage{};
 
-    const blitzar_sdk::PacketStoreRequest store_request{exchange, arena, particle_buffer,
-        acceleration_buffer, checkpoint, ids, 0, local_count};
+    const blitzar_sdk::PacketStoreRequest store_request{
+        exchange, arena, particle_buffer, acceleration_buffer, checkpoint, ids, 0, local_count};
 
     const blitzar_sdk::ArenaCaptureRequest capture_request{arena, 0, ids, exchange};
-    const blitzar_sdk::ArenaRestoreRequest restore_request{exchange, arena, particle_buffer, ids, 0};
+    const blitzar_sdk::ArenaRestoreRequest restore_request{
+        exchange, arena, particle_buffer, ids, 0};
+
     std::vector<std::uint64_t> transaction_ids;
 
     const blitzar_sdk::TransactionState transaction_state{arena, particle_buffer,
-        acceleration_buffer, checkpoint, transaction_ids,
-        local_count, exchange, exchange, exchange, exchange};
+        acceleration_buffer, checkpoint, transaction_ids, local_count, exchange, exchange, exchange,
+        exchange};
 
     BLITZAR_CHECK(store_request.particle_count == 0);
     BLITZAR_CHECK(capture_request.local_count == 0);

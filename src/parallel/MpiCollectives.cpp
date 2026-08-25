@@ -153,8 +153,7 @@ blitzar_status MpiCollectives::SynchronizeStatus(blitzar_status local_status, co
 
     global_status = StatusFromSeverity(global_severity);
 
-    LogSynchronizedStatus(
-        {session_.Rank(), operation, phase, normalized_status, global_status});
+    LogSynchronizedStatus({session_.Rank(), operation, phase, normalized_status, global_status});
 
     return BLITZAR_STATUS_OK;
 #else

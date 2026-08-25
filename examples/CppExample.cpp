@@ -44,8 +44,8 @@ int main()
     std::array<double, 2> output_velocity_z{};
     std::array<double, 2> output_mass{};
 
-    return simulation.get_state({output_x, output_y, output_z, output_velocity_x,
-               output_velocity_y, output_velocity_z, output_mass}) == blitzar::Status::Ok
+    return simulation.get_state({output_x, output_y, output_z, output_velocity_x, output_velocity_y,
+               output_velocity_z, output_mass}) == blitzar::Status::Ok
                ? 0
                : 1;
 }

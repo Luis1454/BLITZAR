@@ -7,6 +7,14 @@
 #endif
 
 #include "gpu/CudRuntime.hpp"
+#include "gpu/HipContextBarnes.inl"
+#include "gpu/HipContextDirect.inl"
+#include "gpu/HipContextError.inl"
+#include "gpu/HipContextLife.inl"
+#include "gpu/HipContextState.inl"
+#include "gpu/HipContextStatus.inl"
+#include "gpu/HipContextTransfer.inl"
+#include "gpu/HipContextTree.inl"
 
 #include <algorithm>
 #include <array>
@@ -17,12 +25,3 @@
 #include <span>
 #include <stdexcept>
 #include <utility>
-
-#include "gpu/HipContextStatus.inl"
-#include "gpu/HipContextState.inl"
-#include "gpu/HipContextTransfer.inl"
-#include "gpu/HipContextError.inl"
-#include "gpu/HipContextTree.inl"
-#include "gpu/HipContextDirect.inl"
-#include "gpu/HipContextBarnes.inl"
-#include "gpu/HipContextLife.inl"

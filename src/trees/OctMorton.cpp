@@ -20,10 +20,10 @@ std::size_t Octree::SortMortonChunks(blitzar_core::ParticleStateView particles,
 {
 #if defined(_OPENMP)
     const int available_threads = omp_get_max_threads();
-    const std::size_t thread_count = available_threads > 0
-                                         ? std::min(static_cast<std::size_t>(available_threads),
-                                             particles.SourceCount())
-                                         : std::size_t{1};
+    const std::size_t thread_count =
+        available_threads > 0
+            ? std::min(static_cast<std::size_t>(available_threads), particles.SourceCount())
+            : std::size_t{1};
 #else
 
     constexpr std::size_t thread_count = 1;
@@ -36,7 +36,7 @@ std::size_t Octree::SortMortonChunks(blitzar_core::ParticleStateView particles,
 #endif
 
     for (std::int64_t raw_chunk = 0; raw_chunk < static_cast<std::int64_t>(thread_count);
-         ++raw_chunk) {
+        ++raw_chunk) {
         const std::size_t chunk = static_cast<std::size_t>(raw_chunk);
         const std::size_t begin = chunk * chunk_size;
 
@@ -68,7 +68,7 @@ void Octree::CopyMortonScratch(std::size_t particle_count) noexcept
 #pragma omp parallel for schedule(static)
 #endif
     for (std::int64_t raw_index = 0; raw_index < static_cast<std::int64_t>(particle_count);
-         ++raw_index) {
+        ++raw_index) {
         const std::size_t index = static_cast<std::size_t>(raw_index);
 
         indices_[index] = scratch_[index];
@@ -77,8 +77,7 @@ void Octree::CopyMortonScratch(std::size_t particle_count) noexcept
 
 void Octree::MergeMortonWidth(std::size_t particle_count, std::size_t width) noexcept
 {
-    const std::size_t pair_width =
-        width > particle_count - width ? particle_count : width + width;
+    const std::size_t pair_width = width > particle_count - width ? particle_count : width + width;
 
     const std::size_t pair_count = 1 + (particle_count - 1) / pair_width;
 
@@ -86,8 +85,7 @@ void Octree::MergeMortonWidth(std::size_t particle_count, std::size_t width) noe
 #pragma omp parallel for schedule(static)
 #endif
 
-    for (std::int64_t raw_pair = 0; raw_pair < static_cast<std::int64_t>(pair_count);
-         ++raw_pair) {
+    for (std::int64_t raw_pair = 0; raw_pair < static_cast<std::int64_t>(pair_count); ++raw_pair) {
         const std::size_t pair = static_cast<std::size_t>(raw_pair);
         const std::size_t begin = pair * pair_width;
         const std::size_t middle = begin + std::min(width, particle_count - begin);

@@ -81,13 +81,10 @@ blitzar_status Simulation::CreateSolver(
     }
 }
 
-blitzar_status Simulation::RebuildSolver(
-    const blitzar_physics::GravityParameters& gravity,
-    const blitzar_barnes_hut::BarnesHutSettings& barnes_hut,
-    SolverVariant& solver) noexcept
+blitzar_status Simulation::RebuildSolver(const blitzar_physics::GravityParameters& gravity,
+    const blitzar_barnes_hut::BarnesHutSettings& barnes_hut, SolverVariant& solver) noexcept
 {
-    const SolverCreationRequest request{
-        solver_kind_, gravity, barnes_hut, particle_count_};
+    const SolverCreationRequest request{solver_kind_, gravity, barnes_hut, particle_count_};
 
     return CreateSolver(request, solver);
 }
@@ -95,8 +92,7 @@ blitzar_status Simulation::RebuildSolver(
 blitzar_status Simulation::SetSolver(blitzar_solver_kind solver) noexcept
 {
     SolverVariant candidate(std::in_place_type<blitzar_direct::DirectSolver>, gravity_);
-    const SolverCreationRequest request{
-        solver, gravity_, barnes_hut_, particle_count_};
+    const SolverCreationRequest request{solver, gravity_, barnes_hut_, particle_count_};
 
     const blitzar_status status = CreateSolver(request, candidate);
 
@@ -134,7 +130,8 @@ blitzar_status Simulation::SetGravity(
     SolverVariant candidate_solver(
         std::in_place_type<blitzar_direct::DirectSolver>, candidate_parameters);
 
-    const blitzar_status status = RebuildSolver(candidate_parameters, barnes_hut_, candidate_solver);
+    const blitzar_status status =
+        RebuildSolver(candidate_parameters, barnes_hut_, candidate_solver);
 
     if (status != BLITZAR_STATUS_OK) {
         return Remember(status);
@@ -162,7 +159,8 @@ blitzar_status Simulation::SetUnits(blitzar_core::UnitSystem units) noexcept
     SolverVariant candidate_solver(
         std::in_place_type<blitzar_direct::DirectSolver>, candidate_parameters);
 
-    const blitzar_status status = RebuildSolver(candidate_parameters, barnes_hut_, candidate_solver);
+    const blitzar_status status =
+        RebuildSolver(candidate_parameters, barnes_hut_, candidate_solver);
 
     if (status != BLITZAR_STATUS_OK) {
         return Remember(status);

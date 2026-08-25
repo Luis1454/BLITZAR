@@ -46,8 +46,8 @@ blitzar_status Octree::Partition(const Cell& cell, blitzar_core::ParticleStateVi
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_status Octree::AppendChildren(std::size_t parent_index, const Cell& cell,
-    const std::array<std::size_t, 8>& counts) noexcept
+blitzar_status Octree::AppendChildren(
+    std::size_t parent_index, const Cell& cell, const std::array<std::size_t, 8>& counts) noexcept
 {
     std::size_t child_count = 0;
 
@@ -95,9 +95,8 @@ blitzar_status Octree::ExpandCell(std::size_t parent_index, const Cell& cell,
 {
     const blitzar_status partition_status = Partition(cell, particles, counts);
 
-    return partition_status == BLITZAR_STATUS_OK
-               ? AppendChildren(parent_index, cell, counts)
-               : partition_status;
+    return partition_status == BLITZAR_STATUS_OK ? AppendChildren(parent_index, cell, counts)
+                                                 : partition_status;
 }
 
 blitzar_status Octree::PrepareBuild(blitzar_core::ParticleStateView particles,
@@ -139,8 +138,8 @@ blitzar_status Octree::BuildCells(blitzar_core::ParticleStateView particles,
     const blitzar_core::Scalar half_extent =
         std::max(0.5 * span, std::numeric_limits<blitzar_core::Scalar>::epsilon());
 
-    const blitzar_core::Vector3 center{0.5 * (minimum.x + maximum.x),
-        0.5 * (minimum.y + maximum.y), 0.5 * (minimum.z + maximum.z)};
+    const blitzar_core::Vector3 center{0.5 * (minimum.x + maximum.x), 0.5 * (minimum.y + maximum.y),
+        0.5 * (minimum.z + maximum.z)};
 
     cells_.push_back(MakeCell({center, half_extent, 0, particle_count_, 0}));
 
@@ -157,7 +156,6 @@ blitzar_status Octree::BuildCells(blitzar_core::ParticleStateView particles,
         if (status != BLITZAR_STATUS_OK) {
             return status;
         }
-
     }
 
     return CalculateProperties(particles);

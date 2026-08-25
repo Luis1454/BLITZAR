@@ -90,9 +90,9 @@ extern "C" blitzar_status blitzar_simulation_set_barnes_hut(blitzar_simulation* 
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    return blitzar_sdk_api::ApplyBarnesHut(*simulation,
-        {opening_angle, converted_max_particles, converted_max_cells, converted_leaf_capacity,
-            converted_max_depth});
+    return blitzar_sdk_api::ApplyBarnesHut(
+        *simulation, {opening_angle, converted_max_particles, converted_max_cells,
+                         converted_leaf_capacity, converted_max_depth});
 }
 
 extern "C" blitzar_status blitzar_simulation_set_timestep(

@@ -136,9 +136,8 @@ int main()
     settings.leaf_capacity = 1;
     settings.max_depth = 8;
 
-    BLITZAR_CHECK(context.ComputeBarnesHut(
-                      {particles.State(), gpu_forces.View(), execution, gravity, settings}) ==
-                  BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(context.ComputeBarnesHut({particles.State(), gpu_forces.View(), execution,
+                      gravity, settings}) == BLITZAR_STATUS_OK);
 
     const blitzar_core::ForceView tree_view = gpu_forces.View();
 

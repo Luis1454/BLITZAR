@@ -1,5 +1,4 @@
 #include "sdk/Simulation.hpp"
-
 #include "sdk/State.hpp"
 
 #include <algorithm>
@@ -51,9 +50,8 @@ blitzar_status Simulation::GatherState(blitzar_core::ParticleOutputView output) 
 
     const std::span<blitzar_parallel::ParticlePacket> packets = gathered_buffer_.View();
 
-    std::sort(packets.begin(), packets.end(), [](const auto& left, const auto& right) {
-        return left.id < right.id;
-    });
+    std::sort(packets.begin(), packets.end(),
+        [](const auto& left, const auto& right) { return left.id < right.id; });
 
     for (std::size_t index = 0; index < packets.size(); ++index) {
         const blitzar_parallel::ParticlePacket& packet = packets[index];

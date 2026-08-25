@@ -1,7 +1,6 @@
-#include "parallel/MpiGhostTransport.hpp"
-
 #include "parallel/MpiGhostProtocol.hpp"
 #include "parallel/MpiGhostState.hpp"
+#include "parallel/MpiGhostTransport.hpp"
 #include "parallel/MpiPacketTransport.hpp"
 
 #include <climits>
@@ -65,9 +64,8 @@ blitzar_status MpiGhostTransport::Begin(
 #endif
 }
 
-blitzar_status MpiGhostTransport::PrepareLocal(
-    std::span<const ParticlePacket> local, MpiGhostExchange::Impl& state,
-    std::size_t& local_bytes) const noexcept
+blitzar_status MpiGhostTransport::PrepareLocal(std::span<const ParticlePacket> local,
+    MpiGhostExchange::Impl& state, std::size_t& local_bytes) const noexcept
 {
     const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
 
@@ -84,8 +82,8 @@ blitzar_status MpiGhostTransport::PrepareLocal(
     if (!MpiGhostProtocol::ResizeWithinCapacity(state.local_wire, local_bytes)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-    if (!ParticleWireCodec::Encode(local,
-            std::span<std::byte>(state.local_wire.data(), state.local_wire.size()))) {
+    if (!ParticleWireCodec::Encode(
+            local, std::span<std::byte>(state.local_wire.data(), state.local_wire.size()))) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 

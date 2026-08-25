@@ -149,8 +149,7 @@ __device__ int AccumulateSource(
     return BLITZAR_STATUS_OK;
 }
 
-__device__ void AccumulateTile(
-    const DirectTileWork& work, DirectResult& result) noexcept
+__device__ void AccumulateTile(const DirectTileWork& work, DirectResult& result) noexcept
 {
 #pragma unroll 4
     for (unsigned int offset = 0; offset < BlockSize; ++offset) {
@@ -168,11 +167,10 @@ __device__ void AccumulateTile(
     }
 }
 
-__device__ void PublishResult(const DirectDeviceRequest& request,
-    const DirectTarget& target, DirectResult& result, int* block_error) noexcept
+__device__ void PublishResult(const DirectDeviceRequest& request, const DirectTarget& target,
+    DirectResult& result, int* block_error) noexcept
 {
-    if (target.valid && (!isfinite(result.acceleration_x) ||
-                            !isfinite(result.acceleration_y) ||
+    if (target.valid && (!isfinite(result.acceleration_x) || !isfinite(result.acceleration_y) ||
                             !isfinite(result.acceleration_z))) {
         result.error = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
@@ -203,8 +201,7 @@ __global__ void DirectKernel(DirectDeviceRequest request)
 {
     extern __shared__ double tile[];
 
-    DirectTile shared_tile{tile, tile + BlockSize, tile + 2 * BlockSize,
-        tile + 3 * BlockSize};
+    DirectTile shared_tile{tile, tile + BlockSize, tile + 2 * BlockSize, tile + 3 * BlockSize};
 
     __shared__ int block_error;
 
@@ -218,13 +215,12 @@ __global__ void DirectKernel(DirectDeviceRequest request)
     const DirectTarget target_state = LoadTarget(request, target);
     DirectResult result{0.0, 0.0, 0.0, target_state.error};
 
-    for (std::size_t tile_begin = request.source_begin;
-         tile_begin < request.source_end; tile_begin += BlockSize) {
+    for (std::size_t tile_begin = request.source_begin; tile_begin < request.source_end;
+        tile_begin += BlockSize) {
         LoadTile(request, shared_tile, tile_begin);
 
         if (target_state.valid) {
-            AccumulateTile(
-                {request, target_state, shared_tile, tile_begin}, result);
+            AccumulateTile({request, target_state, shared_tile, tile_begin}, result);
         }
 
         __syncthreads();

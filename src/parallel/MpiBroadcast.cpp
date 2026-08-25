@@ -1,5 +1,4 @@
 #include "parallel/MpiCollectives.hpp"
-
 #include "parallel/MpiSessionNative.hpp"
 
 #include <climits>
@@ -23,8 +22,7 @@ namespace {
 blitzar_status MpiCollectives::Broadcast(
     std::span<blitzar_core::Scalar> values, int root) const noexcept
 {
-    const bool layout_valid =
-        ValidBroadcastLayout(root, session_.Size(), values.size());
+    const bool layout_valid = ValidBroadcastLayout(root, session_.Size(), values.size());
 
     if (!session_.IsUsable()) {
         return session_.Status();
@@ -36,11 +34,9 @@ blitzar_status MpiCollectives::Broadcast(
     return BroadcastScalars(values, root, layout_valid);
 }
 
-blitzar_status MpiCollectives::Broadcast(
-    std::span<std::uint64_t> values, int root) const noexcept
+blitzar_status MpiCollectives::Broadcast(std::span<std::uint64_t> values, int root) const noexcept
 {
-    const bool layout_valid =
-        ValidBroadcastLayout(root, session_.Size(), values.size());
+    const bool layout_valid = ValidBroadcastLayout(root, session_.Size(), values.size());
 
     if (!session_.IsUsable()) {
         return session_.Status();
@@ -57,12 +53,11 @@ blitzar_status MpiCollectives::BroadcastScalars(
 {
 #if defined(BLITZAR_HAS_MPI)
     blitzar_status global_layout_status = BLITZAR_STATUS_INTERNAL_ERROR;
-    const blitzar_status synchronization_status = SynchronizeStatus(
-        layout_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
-        "MpiCollectives", "broadcast-scalar-layout", global_layout_status);
+    const blitzar_status synchronization_status =
+        SynchronizeStatus(layout_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
+            "MpiCollectives", "broadcast-scalar-layout", global_layout_status);
 
-    if (synchronization_status != BLITZAR_STATUS_OK ||
-        global_layout_status != BLITZAR_STATUS_OK) {
+    if (synchronization_status != BLITZAR_STATUS_OK || global_layout_status != BLITZAR_STATUS_OK) {
         return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status
                                                            : global_layout_status;
     }
@@ -86,12 +81,11 @@ blitzar_status MpiCollectives::BroadcastIds(
 {
 #if defined(BLITZAR_HAS_MPI)
     blitzar_status global_layout_status = BLITZAR_STATUS_INTERNAL_ERROR;
-    const blitzar_status synchronization_status = SynchronizeStatus(
-        layout_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
-        "MpiCollectives", "broadcast-u64-layout", global_layout_status);
+    const blitzar_status synchronization_status =
+        SynchronizeStatus(layout_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT,
+            "MpiCollectives", "broadcast-u64-layout", global_layout_status);
 
-    if (synchronization_status != BLITZAR_STATUS_OK ||
-        global_layout_status != BLITZAR_STATUS_OK) {
+    if (synchronization_status != BLITZAR_STATUS_OK || global_layout_status != BLITZAR_STATUS_OK) {
         return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status
                                                            : global_layout_status;
     }

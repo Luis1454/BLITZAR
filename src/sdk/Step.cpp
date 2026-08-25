@@ -1,8 +1,7 @@
 #include "sdk/Simulation.hpp"
-
+#include "sdk/State.hpp"
 #include "sdk/StepDistributed.hpp"
 #include "sdk/StepLocal.hpp"
-#include "sdk/State.hpp"
 
 #include <cmath>
 #include <type_traits>
@@ -10,8 +9,7 @@
 
 namespace blitzar_sdk {
 
-template <typename Solver>
-blitzar_status Simulation::StepWithSolver(Solver& solver) noexcept
+template <typename Solver> blitzar_status Simulation::StepWithSolver(Solver& solver) noexcept
 {
     if (mpi_context_.IsDistributed()) {
         return StepDistributed(solver);
@@ -33,8 +31,8 @@ blitzar_status Simulation::Step() noexcept
         return Remember(preflight_status);
     }
 
-    const blitzar_status status = std::visit(
-        [this](auto& solver) { return StepWithSolver(solver); }, solver_);
+    const blitzar_status status =
+        std::visit([this](auto& solver) { return StepWithSolver(solver); }, solver_);
 
     return Remember(status);
 }

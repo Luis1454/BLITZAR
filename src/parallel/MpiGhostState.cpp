@@ -1,7 +1,7 @@
-#include "parallel/MpiGhostTransport.hpp"
+#include "parallel/MpiGhostState.hpp"
 
 #include "parallel/MpiGhostProtocol.hpp"
-#include "parallel/MpiGhostState.hpp"
+#include "parallel/MpiGhostTransport.hpp"
 
 #include <utility>
 

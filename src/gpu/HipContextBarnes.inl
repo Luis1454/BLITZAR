@@ -2,8 +2,7 @@
 
 namespace blitzar_gpu {
 
-blitzar_status HipContext::Impl::ComputeBarnesHut(
-    const BarnesHutComputeRequest& request) noexcept
+blitzar_status HipContext::Impl::ComputeBarnesHut(const BarnesHutComputeRequest& request) noexcept
 {
     const blitzar_core::ParticleStateView particles = request.particles;
     const blitzar_core::ForceView forces = request.forces;
@@ -50,8 +49,8 @@ blitzar_status HipContext::Impl::ComputeBarnesHut(
         buffers.DeviceParticle(1), buffers.DeviceParticle(2), buffers.DeviceParticle(3),
         buffers.DeviceForce(0), buffers.DeviceForce(1), buffers.DeviceForce(2)};
 
-    const blitzar_gpu_detail::BarnesHutLaunchRequest launch_request{
-        addresses, particles.count, particles.SourceCount(), settings.opening_angle,
+    const blitzar_gpu_detail::BarnesHutLaunchRequest launch_request{addresses, particles.count,
+        particles.SourceCount(), settings.opening_angle,
         {buffers.DeviceCells(), cells.size(), buffers.DeviceIndices()},
 
         {gravity.EffectiveConstant(), gravity.EffectiveSoftening()}, settings.max_depth,

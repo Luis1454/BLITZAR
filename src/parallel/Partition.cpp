@@ -39,9 +39,8 @@ void Partition::BuildRootKeys(
     blitzar_core::ParticleStateView state, DomainBounds global_bounds) noexcept
 {
     for (std::size_t index = 0; index < state.SourceCount(); ++index) {
-        keys_[index] = blitzar_trees::MortonKey(
-            {state.x[index], state.y[index], state.z[index]}, global_bounds.minimum,
-            global_bounds.maximum);
+        keys_[index] = blitzar_trees::MortonKey({state.x[index], state.y[index], state.z[index]},
+            global_bounds.minimum, global_bounds.maximum);
 
         order_[index] = index;
     }
@@ -62,9 +61,9 @@ void Partition::BuildRootSplits() noexcept
             continue;
         }
 
-        const std::size_t boundary = std::min(order_.size() - 1,
-            static_cast<std::size_t>(destination) * order_.size() /
-                static_cast<std::size_t>(size_));
+        const std::size_t boundary =
+            std::min(order_.size() - 1, static_cast<std::size_t>(destination) * order_.size() /
+                                            static_cast<std::size_t>(size_));
 
         split_keys_[split_index] = {
             keys_[order_[boundary]], static_cast<std::uint64_t>(order_[boundary])};
@@ -106,13 +105,13 @@ blitzar_status Partition::Initialize(blitzar_core::ParticleStateView state,
 
     const blitzar_status allocation_status = AllocateBuffers(state.SourceCount(), context);
     blitzar_status global_allocation_status = BLITZAR_STATUS_INTERNAL_ERROR;
-    const blitzar_status synchronization_status = context.SynchronizeStatus(allocation_status,
-        "Partition", "initialize-allocation", global_allocation_status);
+    const blitzar_status synchronization_status = context.SynchronizeStatus(
+        allocation_status, "Partition", "initialize-allocation", global_allocation_status);
 
     if (synchronization_status != BLITZAR_STATUS_OK ||
         global_allocation_status != BLITZAR_STATUS_OK) {
         return synchronization_status != BLITZAR_STATUS_OK ? synchronization_status
-                                                            : global_allocation_status;
+                                                           : global_allocation_status;
     }
 
     if (context.Rank() == 0) {
@@ -130,8 +129,8 @@ int Partition::Owner(blitzar_core::Vector3 position, std::uint64_t particle_id,
         return 0;
     }
 
-    const SplitKey candidate{blitzar_trees::MortonKey(
-                                 position, global_bounds.minimum, global_bounds.maximum),
+    const SplitKey candidate{
+        blitzar_trees::MortonKey(position, global_bounds.minimum, global_bounds.maximum),
         particle_id};
 
     const auto boundary = std::upper_bound(split_keys_.begin(), split_keys_.end(), candidate,

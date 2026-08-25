@@ -35,8 +35,8 @@ bool BarnesHutSettings::IsValid() const noexcept
 BarnesHutSolver::BarnesHutSolver(blitzar_physics::GravityParameters gravity,
     BarnesHutSettings settings, std::size_t local_particle_capacity)
     : settings_(settings), gravity_(gravity),
-      local_particle_capacity_(local_particle_capacity == 0 ? settings.max_particles
-                                                             : local_particle_capacity),
+      local_particle_capacity_(
+          local_particle_capacity == 0 ? settings.max_particles : local_particle_capacity),
       local_cell_capacity_(LocalCellCapacity(settings.max_cells,
           local_particle_capacity == 0 ? settings.max_particles : local_particle_capacity)),
       tree_(std::make_unique<blitzar_trees::Octree>(local_particle_capacity_, local_cell_capacity_,
@@ -156,8 +156,8 @@ blitzar_status BarnesHutSolver::EnsureLocalCapacity(std::size_t particle_capacit
     std::vector<blitzar_core::Vector3> candidate_staging;
 
     try {
-        candidate_tree = std::make_unique<blitzar_trees::Octree>(particle_capacity, cell_capacity,
-            settings_.leaf_capacity, settings_.max_depth);
+        candidate_tree = std::make_unique<blitzar_trees::Octree>(
+            particle_capacity, cell_capacity, settings_.leaf_capacity, settings_.max_depth);
 
         candidate_staging.resize(particle_capacity);
     }

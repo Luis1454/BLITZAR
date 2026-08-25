@@ -84,8 +84,8 @@ __device__ bool IsFiniteSource(
            isfinite(source_mass) && source_mass >= 0.0;
 }
 
-__device__ int AccumulateSource(const BarnesHutDeviceRequest& request,
-    const BarnesTarget& target, std::uint64_t source, BarnesResult& result) noexcept
+__device__ int AccumulateSource(const BarnesHutDeviceRequest& request, const BarnesTarget& target,
+    std::uint64_t source, BarnesResult& result) noexcept
 {
     if (source >= request.source_count) {
         return BLITZAR_STATUS_INTERNAL_ERROR;
@@ -107,8 +107,7 @@ __device__ int AccumulateSource(const BarnesHutDeviceRequest& request,
     const double dy = source_y - target.position_y;
     const double dz = source_z - target.position_z;
     const double distance_squared = dx * dx + dy * dy + dz * dz;
-    const double softened_distance =
-        distance_squared + request.softening * request.softening;
+    const double softened_distance = distance_squared + request.softening * request.softening;
 
     if (!isfinite(distance_squared) || !isfinite(softened_distance)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -131,8 +130,8 @@ __device__ int AccumulateSource(const BarnesHutDeviceRequest& request,
     return BLITZAR_STATUS_OK;
 }
 
-__device__ void AccumulateLeaf(const BarnesHutDeviceRequest& request,
-    const BarnesTarget& target, const GpuCell& cell, BarnesResult& result) noexcept
+__device__ void AccumulateLeaf(const BarnesHutDeviceRequest& request, const BarnesTarget& target,
+    const GpuCell& cell, BarnesResult& result) noexcept
 {
     for (std::uint64_t offset = 0; offset < cell.count; ++offset) {
         const std::uint64_t source = request.indices[cell.begin + offset];
@@ -146,8 +145,7 @@ __device__ void AccumulateLeaf(const BarnesHutDeviceRequest& request,
     }
 }
 
-__device__ bool TryAccumulateCell(
-    const BarnesCellWork& work, BarnesResult& result) noexcept
+__device__ bool TryAccumulateCell(const BarnesCellWork& work, BarnesResult& result) noexcept
 {
     const BarnesHutDeviceRequest& request = *work.request;
     const BarnesTarget& target = *work.target;
@@ -165,8 +163,7 @@ __device__ bool TryAccumulateCell(
         return false;
     }
 
-    const double softened_distance =
-        distance_squared + request.softening * request.softening;
+    const double softened_distance = distance_squared + request.softening * request.softening;
 
     if (!isfinite(distance_squared) || !isfinite(softened_distance)) {
         result.error = BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -179,8 +176,8 @@ __device__ bool TryAccumulateCell(
         return true;
     }
 
-    const double factor = request.gravitational_constant * cell.mass /
-                          (softened_distance * sqrt(softened_distance));
+    const double factor =
+        request.gravitational_constant * cell.mass / (softened_distance * sqrt(softened_distance));
 
     if (!isfinite(factor)) {
         result.error = BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -240,11 +237,10 @@ __device__ void VisitCell(const BarnesCellWork& work, BarnesResult& result) noex
     result.error = PushChildren(cell, *work.traversal);
 }
 
-__device__ void PublishResult(const BarnesHutDeviceRequest& request,
-    const BarnesTarget& target, BarnesResult& result, int* block_error) noexcept
+__device__ void PublishResult(const BarnesHutDeviceRequest& request, const BarnesTarget& target,
+    BarnesResult& result, int* block_error) noexcept
 {
-    if (target.valid && (!isfinite(result.acceleration_x) ||
-                            !isfinite(result.acceleration_y) ||
+    if (target.valid && (!isfinite(result.acceleration_x) || !isfinite(result.acceleration_y) ||
                             !isfinite(result.acceleration_z))) {
         result.error = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
@@ -280,8 +276,7 @@ __global__ void BarnesHutKernel(BarnesHutDeviceRequest request)
 
     __syncthreads();
 
-    const std::size_t target_index =
-        static_cast<std::size_t>(blockIdx.x) * BlockSize + threadIdx.x;
+    const std::size_t target_index = static_cast<std::size_t>(blockIdx.x) * BlockSize + threadIdx.x;
 
     const BarnesTarget target = LoadTarget(request, target_index);
     BarnesResult result{0.0, 0.0, 0.0, target.error};

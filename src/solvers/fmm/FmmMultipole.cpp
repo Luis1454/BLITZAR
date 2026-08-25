@@ -81,12 +81,10 @@ blitzar_status FmmSolver::BuildLeafMultipole(const blitzar_trees::Octree& tree,
         multipole.zz += mass * dz * dz;
     }
 
-    return IsFiniteMultipole(multipole) ? BLITZAR_STATUS_OK
-                                       : BLITZAR_STATUS_INVALID_ARGUMENT;
+    return IsFiniteMultipole(multipole) ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT;
 }
 
-blitzar_status FmmSolver::MergeChildMultipoles(
-    std::span<const blitzar_trees::Octree::Cell> cells,
+blitzar_status FmmSolver::MergeChildMultipoles(std::span<const blitzar_trees::Octree::Cell> cells,
     const blitzar_trees::Octree::Cell& cell, std::span<const Multipole> multipoles,
     Multipole& result) const noexcept
 {
@@ -102,14 +100,11 @@ blitzar_status FmmSolver::MergeChildMultipoles(
 
         const Multipole& child_multipole = multipoles[child];
 
-        const blitzar_core::Scalar dx =
-            child_cell.center_of_mass.x - cell.center_of_mass.x;
+        const blitzar_core::Scalar dx = child_cell.center_of_mass.x - cell.center_of_mass.x;
 
-        const blitzar_core::Scalar dy =
-            child_cell.center_of_mass.y - cell.center_of_mass.y;
+        const blitzar_core::Scalar dy = child_cell.center_of_mass.y - cell.center_of_mass.y;
 
-        const blitzar_core::Scalar dz =
-            child_cell.center_of_mass.z - cell.center_of_mass.z;
+        const blitzar_core::Scalar dz = child_cell.center_of_mass.z - cell.center_of_mass.z;
 
         result.xx += child_multipole.xx + child_multipole.mass * dx * dx;
         result.xy += child_multipole.xy + child_multipole.mass * dx * dy;
@@ -119,8 +114,7 @@ blitzar_status FmmSolver::MergeChildMultipoles(
         result.zz += child_multipole.zz + child_multipole.mass * dz * dz;
     }
 
-    return IsFiniteMultipole(result) ? BLITZAR_STATUS_OK
-                                     : BLITZAR_STATUS_INVALID_ARGUMENT;
+    return IsFiniteMultipole(result) ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT;
 }
 
 blitzar_status FmmSolver::BuildMultipoles(const blitzar_trees::Octree& tree,
@@ -141,9 +135,9 @@ blitzar_status FmmSolver::BuildMultipoles(const blitzar_trees::Octree& tree,
         multipole = {};
         multipole.mass = cell.mass;
 
-        const blitzar_status status = cell.IsLeaf()
-                                          ? BuildLeafMultipole(tree, cell, sources, multipole)
-                                          : MergeChildMultipoles(cells, cell, multipoles, multipole);
+        const blitzar_status status =
+            cell.IsLeaf() ? BuildLeafMultipole(tree, cell, sources, multipole)
+                          : MergeChildMultipoles(cells, cell, multipoles, multipole);
 
         if (status != BLITZAR_STATUS_OK) {
             return status;
@@ -161,8 +155,8 @@ blitzar_status FmmSolver::EvaluateMultipole(const Multipole& multipole,
         return BLITZAR_STATUS_OK;
     }
 
-    const blitzar_status pair_status = PairStatusToStatus(
-        gravity_.ValidatePair(multipole.mass, squared_distance));
+    const blitzar_status pair_status =
+        PairStatusToStatus(gravity_.ValidatePair(multipole.mass, squared_distance));
 
     if (pair_status != BLITZAR_STATUS_OK) {
         return pair_status;
@@ -175,39 +169,35 @@ blitzar_status FmmSolver::EvaluateMultipole(const Multipole& multipole,
     const blitzar_core::Scalar inverse_cubed = inverse_squared * inverse_distance;
     const blitzar_core::Scalar inverse_fifth = inverse_cubed * inverse_squared;
     const blitzar_core::Scalar inverse_seventh = inverse_fifth * inverse_squared;
-    const blitzar_core::Vector3 moment_times_displacement{
-        multipole.xx * displacement.x + multipole.xy * displacement.y +
-            multipole.xz * displacement.z,
+    const blitzar_core::Vector3 moment_times_displacement{multipole.xx * displacement.x +
+                                                              multipole.xy * displacement.y +
+                                                              multipole.xz * displacement.z,
         multipole.xy * displacement.x + multipole.yy * displacement.y +
             multipole.yz * displacement.z,
         multipole.xz * displacement.x + multipole.yz * displacement.y +
             multipole.zz * displacement.z};
 
     const blitzar_core::Scalar trace = multipole.xx + multipole.yy + multipole.zz;
-    const blitzar_core::Scalar contraction =
-        displacement.x * moment_times_displacement.x +
-        displacement.y * moment_times_displacement.y +
-        displacement.z * moment_times_displacement.z;
+    const blitzar_core::Scalar contraction = displacement.x * moment_times_displacement.x +
+                                             displacement.y * moment_times_displacement.y +
+                                             displacement.z * moment_times_displacement.z;
 
     const blitzar_core::Scalar constant = parameters_.EffectiveConstant();
 
-    acceleration.x += constant *
-        (multipole.mass * displacement.x * inverse_cubed -
-            3.0 * moment_times_displacement.x * inverse_fifth -
-            1.5 * displacement.x * trace * inverse_fifth +
-            7.5 * displacement.x * contraction * inverse_seventh);
+    acceleration.x += constant * (multipole.mass * displacement.x * inverse_cubed -
+                                     3.0 * moment_times_displacement.x * inverse_fifth -
+                                     1.5 * displacement.x * trace * inverse_fifth +
+                                     7.5 * displacement.x * contraction * inverse_seventh);
 
-    acceleration.y += constant *
-        (multipole.mass * displacement.y * inverse_cubed -
-            3.0 * moment_times_displacement.y * inverse_fifth -
-            1.5 * displacement.y * trace * inverse_fifth +
-            7.5 * displacement.y * contraction * inverse_seventh);
+    acceleration.y += constant * (multipole.mass * displacement.y * inverse_cubed -
+                                     3.0 * moment_times_displacement.y * inverse_fifth -
+                                     1.5 * displacement.y * trace * inverse_fifth +
+                                     7.5 * displacement.y * contraction * inverse_seventh);
 
-    acceleration.z += constant *
-        (multipole.mass * displacement.z * inverse_cubed -
-            3.0 * moment_times_displacement.z * inverse_fifth -
-            1.5 * displacement.z * trace * inverse_fifth +
-            7.5 * displacement.z * contraction * inverse_seventh);
+    acceleration.z += constant * (multipole.mass * displacement.z * inverse_cubed -
+                                     3.0 * moment_times_displacement.z * inverse_fifth -
+                                     1.5 * displacement.z * trace * inverse_fifth +
+                                     7.5 * displacement.z * contraction * inverse_seventh);
 
     return std::isfinite(acceleration.x) && std::isfinite(acceleration.y) &&
                    std::isfinite(acceleration.z)

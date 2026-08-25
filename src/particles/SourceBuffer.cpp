@@ -127,8 +127,9 @@ std::size_t SourceBuffer::Capacity() const noexcept
 
 bool SourceBuffer::IsValid() const noexcept
 {
-    return count_ <= capacity_ && std::all_of(fields_.begin(), fields_.end(),
-                                      [this](const auto field) { return field.size() == capacity_; });
+    return count_ <= capacity_ &&
+           std::all_of(fields_.begin(), fields_.end(),
+               [this](const auto field) { return field.size() == capacity_; });
 }
 
 blitzar_core::ParticleStateView SourceBuffer::State() const noexcept

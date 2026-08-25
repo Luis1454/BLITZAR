@@ -8,8 +8,8 @@ blitzar_status MpiContext::PrepareCapacity(
     return PrepareCapacity(packet_capacity, exchange, GhostCapacity{0, 0});
 }
 
-blitzar_status MpiContext::PrepareCapacity(std::size_t packet_capacity,
-    GhostExchange& exchange, GhostCapacity ghost_capacity) const noexcept
+blitzar_status MpiContext::PrepareCapacity(std::size_t packet_capacity, GhostExchange& exchange,
+    GhostCapacity ghost_capacity) const noexcept
 {
     if (impl_ == nullptr) {
         return status_;

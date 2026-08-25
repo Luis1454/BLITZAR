@@ -87,8 +87,7 @@ private:
             ids_valid ? std::span<const std::uint64_t>(ids_).first(request.local_state.count)
                       : std::span<const std::uint64_t>{};
 
-        const blitzar_status status =
-            exchange_.BeginGhosts(request.local_state, local_ids, halo_);
+        const blitzar_status status = exchange_.BeginGhosts(request.local_state, local_ids, halo_);
 
         overlap_trace_.begin_end_ns =
             OverlapClock::Elapsed(request.operation_start, TraceClock::now());
@@ -99,16 +98,15 @@ private:
     [[nodiscard]] blitzar_status ComputeLocal(const OverlapRequest& request) noexcept
     {
         if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
-            return base_.ComputeRange(
-                request.local_state, request.forces, request.settings,
+            return base_.ComputeRange(request.local_state, request.forces, request.settings,
                 {0, request.local_state.count, false});
         }
         else if constexpr (std::is_same_v<Solver, blitzar_fmm::FmmSolver>) {
             return base_.Compute(request.local_state, request.forces, request.settings);
         }
         else if (!request.stack_pool.empty()) {
-            return base_.Compute(request.local_state, request.forces, request.settings,
-                request.stack_pool.front());
+            return base_.Compute(
+                request.local_state, request.forces, request.settings, request.stack_pool.front());
         }
         else {
             return base_.Compute(request.local_state, request.forces, request.settings);
@@ -170,9 +168,8 @@ private:
         return status;
     }
 
-    [[nodiscard]] blitzar_status FinishRemote(
-        const OverlapRequest& request, blitzar_status local_status,
-        blitzar_status complete_status) noexcept
+    [[nodiscard]] blitzar_status FinishRemote(const OverlapRequest& request,
+        blitzar_status local_status, blitzar_status complete_status) noexcept
     {
         if (complete_status != BLITZAR_STATUS_OK) {
             return FinishTrace(complete_status, request.operation_start);
@@ -210,8 +207,7 @@ private:
         blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
         std::span<blitzar_barnes_hut::ThreadStackPool> stack_pool) noexcept
     {
-        const OverlapRequest request{local_state, forces, settings, stack_pool,
-            TraceClock::now()};
+        const OverlapRequest request{local_state, forces, settings, stack_pool, TraceClock::now()};
 
         const blitzar_status begin_status = BeginOverlap(request);
 

@@ -10,14 +10,14 @@ namespace blitzar_fmm {
 FmmSolver::FmmSolver(blitzar_physics::GravityParameters gravity, FmmSettings settings,
     std::size_t local_particle_capacity)
     : settings_(settings), parameters_(gravity), gravity_(gravity),
-      local_particle_capacity_(local_particle_capacity == 0 ? settings.max_particles
-                                                             : local_particle_capacity),
+      local_particle_capacity_(
+          local_particle_capacity == 0 ? settings.max_particles : local_particle_capacity),
       local_cell_capacity_(LocalCellCapacity(settings.max_cells,
           local_particle_capacity == 0 ? settings.max_particles : local_particle_capacity)),
       tree_(std::make_unique<blitzar_trees::Octree>(local_particle_capacity_, local_cell_capacity_,
           settings.leaf_capacity, settings.max_depth)),
-      remote_tree_(std::make_unique<blitzar_trees::Octree>(settings.max_particles,
-          settings.max_cells, settings.leaf_capacity, settings.max_depth)),
+      remote_tree_(std::make_unique<blitzar_trees::Octree>(
+          settings.max_particles, settings.max_cells, settings.leaf_capacity, settings.max_depth)),
       stack_pool_(settings.max_cells, settings.max_depth), multipoles_{}, remote_multipoles_{},
       staging_(local_particle_capacity_)
 {
@@ -95,17 +95,16 @@ blitzar_status FmmSolver::ComputeSplit(
         return prepare_status;
     }
 
-    const blitzar_status local_status = ComputeTree(
-        {*tree_, multipoles_, request.local, request.local, request.forces, request.settings,
-            stack_pool, false, true});
+    const blitzar_status local_status = ComputeTree({*tree_, multipoles_, request.local,
+        request.local, request.forces, request.settings, stack_pool, false, true});
 
     if (local_status != BLITZAR_STATUS_OK || request.remote.SourceCount() == 0) {
-        return local_status == BLITZAR_STATUS_OK ? CommitStagedForces(request.forces) : local_status;
+        return local_status == BLITZAR_STATUS_OK ? CommitStagedForces(request.forces)
+                                                 : local_status;
     }
 
-    const blitzar_status remote_status = ComputeTree(
-        {*remote_tree_, remote_multipoles_, request.local, request.remote, request.forces,
-            request.settings, stack_pool, true, false});
+    const blitzar_status remote_status = ComputeTree({*remote_tree_, remote_multipoles_,
+        request.local, request.remote, request.forces, request.settings, stack_pool, true, false});
 
     return remote_status == BLITZAR_STATUS_OK ? CommitStagedForces(request.forces) : remote_status;
 }
@@ -125,8 +124,8 @@ blitzar_status FmmSolver::EnsureLocalCapacity(std::size_t particle_capacity) noe
     std::vector<blitzar_core::Vector3> candidate_staging;
 
     try {
-        candidate_tree = std::make_unique<blitzar_trees::Octree>(particle_capacity, cell_capacity,
-            settings_.leaf_capacity, settings_.max_depth);
+        candidate_tree = std::make_unique<blitzar_trees::Octree>(
+            particle_capacity, cell_capacity, settings_.leaf_capacity, settings_.max_depth);
 
         candidate_multipoles.reserve(cell_capacity);
         candidate_staging.resize(particle_capacity);

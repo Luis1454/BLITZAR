@@ -26,15 +26,14 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
         return status;
     }
 
-    status = SynchronizeStatus(
-        decomposition_.ValidateState(local_state), "migrate-domain-state");
+    status = SynchronizeStatus(decomposition_.ValidateState(local_state), "migrate-domain-state");
 
     if (status != BLITZAR_STATUS_OK) {
         return status;
     }
 
-    status = SynchronizeStatus(
-        PackLocal(local_state, local_ids, state_.local_packets), "migrate-pack");
+    status =
+        SynchronizeStatus(PackLocal(local_state, local_ids, state_.local_packets), "migrate-pack");
 
     if (status != BLITZAR_STATUS_OK) {
         return status;
@@ -193,9 +192,9 @@ blitzar_status MpiExchange::PrepareMigrationReceive(PacketBuffer& received) cons
 
 blitzar_status MpiExchange::ExchangeMigrationPackets(PacketBuffer& received) const noexcept
 {
-    const AllToAllPacketRequest request{
-        state_.ordered_packets.View(), state_.send_counts, state_.send_displacements,
-        received.View(), state_.receive_counts, state_.receive_displacements};
+    const AllToAllPacketRequest request{state_.ordered_packets.View(), state_.send_counts,
+        state_.send_displacements, received.View(), state_.receive_counts,
+        state_.receive_displacements};
 
     const blitzar_status status = context_.AllToAllPackets(request);
     const blitzar_status synchronized_status = SynchronizeStatus(status, "migrate-packets");

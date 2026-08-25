@@ -49,8 +49,8 @@ bool ConvertBarnesHutConfig(const blitzar_barnes_hut_config_v2& source,
     return true;
 }
 
-bool ConvertParticleInput(const blitzar_particle_input_v2& source,
-    blitzar_core::ParticleStateView& target) noexcept
+bool ConvertParticleInput(
+    const blitzar_particle_input_v2& source, blitzar_core::ParticleStateView& target) noexcept
 {
     std::size_t count = 0;
 
@@ -73,8 +73,8 @@ bool ConvertParticleInput(const blitzar_particle_input_v2& source,
     return blitzar_core::IsValid(target);
 }
 
-bool ConvertParticleOutput(const blitzar_particle_output_v2& source,
-    blitzar_core::ParticleOutputView& target) noexcept
+bool ConvertParticleOutput(
+    const blitzar_particle_output_v2& source, blitzar_core::ParticleOutputView& target) noexcept
 {
     std::size_t capacity = 0;
 
@@ -83,9 +83,9 @@ bool ConvertParticleOutput(const blitzar_particle_output_v2& source,
         return false;
     }
     if (capacity > 0 && (source.position_x == nullptr || source.position_y == nullptr ||
-                             source.position_z == nullptr || source.velocity_x == nullptr ||
-                             source.velocity_y == nullptr || source.velocity_z == nullptr ||
-                             source.mass == nullptr)) {
+                            source.position_z == nullptr || source.velocity_x == nullptr ||
+                            source.velocity_y == nullptr || source.velocity_z == nullptr ||
+                            source.mass == nullptr)) {
         return false;
     }
 

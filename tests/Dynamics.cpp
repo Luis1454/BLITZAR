@@ -146,19 +146,15 @@ int main()
     BLITZAR_CHECK(particles.SetMass(0, 1.0) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(particles.SetMass(1, 1.0) == BLITZAR_STATUS_OK);
 
-    BLITZAR_CHECK(
-        particles.SetPosition(2, {0.0, 0.0, 0.0}) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(particles.SetPosition(2, {0.0, 0.0, 0.0}) == BLITZAR_STATUS_INVALID_ARGUMENT);
 
-    BLITZAR_CHECK(
-        particles.SetVelocity(2, {0.0, 0.0, 0.0}) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(particles.SetVelocity(2, {0.0, 0.0, 0.0}) == BLITZAR_STATUS_INVALID_ARGUMENT);
 
     BLITZAR_CHECK(particles.SetMass(2, 1.0) == BLITZAR_STATUS_INVALID_ARGUMENT);
-    BLITZAR_CHECK(particles.SetVelocity(
-                      0, {std::numeric_limits<double>::infinity(), 0.0, 0.0}) ==
+    BLITZAR_CHECK(particles.SetVelocity(0, {std::numeric_limits<double>::infinity(), 0.0, 0.0}) ==
                   BLITZAR_STATUS_INVALID_ARGUMENT);
 
-    BLITZAR_CHECK(
-        particles.SetMass(0, -1.0) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(particles.SetMass(0, -1.0) == BLITZAR_STATUS_INVALID_ARGUMENT);
 
     const blitzar_core::ExecutionSettings settings{};
     const blitzar_physics::GravityParameters gravity{1.0, 0.0};
@@ -289,9 +285,8 @@ int main()
     const blitzar_integration::LeapfrogKdk integrator{};
     std::span<std::size_t> solver_scratch{};
 
-    blitzar_integration_kdk::AdvanceState free_state{
-        free_particle, free_acceleration, free_checkpoint, solver, 0.5, settings, solver_scratch,
-        free_particle.State()};
+    blitzar_integration_kdk::AdvanceState free_state{free_particle, free_acceleration,
+        free_checkpoint, solver, 0.5, settings, solver_scratch, free_particle.State()};
 
     BLITZAR_CHECK(integrator.Advance(free_state) == BLITZAR_STATUS_OK);
 
@@ -311,9 +306,9 @@ int main()
     BLITZAR_CHECK(rollback_particle.SetVelocity(0, {1.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
 
     FailOnSecondSolver failing_solver{};
-    blitzar_integration_kdk::AdvanceState rollback_state{
-        rollback_particle, rollback_acceleration, rollback_checkpoint, failing_solver, 0.5,
-        settings, solver_scratch, rollback_particle.State()};
+    blitzar_integration_kdk::AdvanceState rollback_state{rollback_particle, rollback_acceleration,
+        rollback_checkpoint, failing_solver, 0.5, settings, solver_scratch,
+        rollback_particle.State()};
 
     BLITZAR_CHECK(integrator.Advance(rollback_state) == BLITZAR_STATUS_INTERNAL_ERROR);
 
@@ -354,10 +349,9 @@ int main()
     FailOnSecondSolver external_failing_solver{};
     std::span<std::size_t> external_solver_scratch{};
 
-    blitzar_integration_kdk::AdvanceState external_state{
-        external_rollback_particle, external_rollback_acceleration, external_rollback_checkpoint,
-        external_failing_solver, 0.5, settings, external_solver_scratch,
-        external_rollback_particle.State()};
+    blitzar_integration_kdk::AdvanceState external_state{external_rollback_particle,
+        external_rollback_acceleration, external_rollback_checkpoint, external_failing_solver, 0.5,
+        settings, external_solver_scratch, external_rollback_particle.State()};
 
     blitzar_integration_kdk::AdvanceHooks external_hooks{mutating_drift, restore_external_state};
     blitzar_integration_kdk::AdvanceRequest external_request{external_state, external_hooks};
@@ -378,9 +372,9 @@ int main()
     blitzar_particles::AccelerationBuffer non_finite_acceleration(1);
     blitzar_integration::KdkCheckpoint non_finite_checkpoint(1);
     NonFiniteSolver non_finite_solver{};
-    blitzar_integration_kdk::AdvanceState non_finite_state{
-        non_finite_particle, non_finite_acceleration, non_finite_checkpoint, non_finite_solver,
-        0.5, settings, solver_scratch, non_finite_particle.State()};
+    blitzar_integration_kdk::AdvanceState non_finite_state{non_finite_particle,
+        non_finite_acceleration, non_finite_checkpoint, non_finite_solver, 0.5, settings,
+        solver_scratch, non_finite_particle.State()};
 
     BLITZAR_CHECK(non_finite_particle.SetVelocity(0, {1.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(integrator.Advance(non_finite_state) == BLITZAR_STATUS_INVALID_ARGUMENT);

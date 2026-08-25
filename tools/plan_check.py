@@ -477,6 +477,21 @@ def validate_quality_tests(phase_ids: set[str]) -> None:
             ):
                 fail(f"architecture naming {key} is invalid")
 
+        formatting = quality.get("format")
+        if not isinstance(formatting, dict):
+            fail("format contract is missing")
+        if (
+            formatting.get("command") != "python tools/clang_format_gate.py --root . --check"
+            or formatting.get("clang_format_version") != "22.1.8"
+            or formatting.get("encoding") != "UTF-8"
+            or formatting.get("bom") is not False
+            or formatting.get("line_endings") != "LF"
+            or formatting.get("final_newline") is not True
+            or formatting.get("custom_grouping_command")
+            != "python tools/format_blocks.py --check"
+        ):
+            fail("format contract is incomplete or inconsistent")
+
     registry = architecture.get("review_registry")
     registry_path = normalize_manifest_path(registry, "architecture.review_registry")
     if not ROOT.joinpath(*registry_path.parts).is_file():
