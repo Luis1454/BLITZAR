@@ -8,6 +8,8 @@ import pathlib
 import re
 import sys
 
+from naming_gate import validate as validate_naming_contract
+
 
 DEFAULT_ROOT = pathlib.Path(__file__).resolve().parents[1]
 ROOT = DEFAULT_ROOT
@@ -31,7 +33,6 @@ SOURCE_SUFFIXES = {
     ".hpp",
     ".inl",
 }
-PUBLIC_HEADER_NAMES = {"blitzar.h", "blitzar.hpp"}
 SEMVER_PATTERN = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
 INFORMATIONAL_ARCHITECTURE_RULES = (
     "function length and count",
@@ -429,6 +430,53 @@ def validate_quality_tests(phase_ids: set[str]) -> None:
             ):
                 fail(f"architecture source_completeness.{key} is invalid")
 
+        naming = architecture.get("naming")
+        if not isinstance(naming, dict):
+            fail("architecture naming contract is missing")
+        max_lengths = naming.get("max_filename_length")
+        if (
+            not isinstance(max_lengths, dict)
+            or set(max_lengths) != ARCHITECTURE_PROFILES
+            or any(not isinstance(value, int) or value <= 0 for value in max_lengths.values())
+        ):
+            fail("architecture naming filename limits are incomplete")
+        stem_pairs = naming.get("allowed_stem_pairs")
+        if not isinstance(stem_pairs, list) or not stem_pairs:
+            fail("architecture naming stem pairs are missing")
+        for pair in stem_pairs:
+            if (
+                not isinstance(pair, dict)
+                or not isinstance(pair.get("extensions"), list)
+                or len(pair["extensions"]) != 2
+                or not all(isinstance(item, str) and item.startswith(".") for item in pair["extensions"])
+                or not isinstance(pair.get("reason"), str)
+                or not pair["reason"]
+            ):
+                fail("architecture naming stem pair is invalid")
+        for key in (
+            "name_exceptions",
+            "type_mapping_exceptions",
+            "standalone_implementation_exceptions",
+        ):
+            value = naming.get(key)
+            if not isinstance(value, list):
+                fail(f"architecture naming {key} is invalid")
+            for exception in value:
+                if (
+                    not isinstance(exception, dict)
+                    or not isinstance(exception.get("path"), str)
+                    or not exception["path"]
+                    or not isinstance(exception.get("reason"), str)
+                    or not exception["reason"]
+                ):
+                    fail(f"architecture naming {key} entry is invalid")
+        for key in ("forbidden_path_components", "forbidden_name_prefixes"):
+            value = naming.get(key)
+            if not isinstance(value, list) or not value or not all(
+                isinstance(item, str) and item for item in value
+            ):
+                fail(f"architecture naming {key} is invalid")
+
     registry = architecture.get("review_registry")
     registry_path = normalize_manifest_path(registry, "architecture.review_registry")
     if not ROOT.joinpath(*registry_path.parts).is_file():
@@ -485,46 +533,8 @@ def validate_quality_tests(phase_ids: set[str]) -> None:
 
 
 def validate_naming() -> None:
-    code_roots = [
-        ROOT / "src",
-        ROOT / "include",
-        ROOT / "apps",
-        ROOT / "tests",
-        ROOT / "examples",
-    ]
-    files = [
-        path
-        for directory in code_roots
-        if directory.is_dir()
-        for path in directory.rglob("*")
-        if path.is_file() and path.suffix.lower() in SOURCE_SUFFIXES
-    ]
-    names: dict[str, pathlib.Path] = {}
-    for path in files:
-        key = path.name.casefold()
-        if key in names:
-            fail(
-                f"duplicate source filename: {path.relative_to(ROOT)} and "
-                f"{names[key].relative_to(ROOT)}"
-            )
-        names[key] = path
-        if path.name in PUBLIC_HEADER_NAMES:
-            continue
-        if path.suffix.lower() in {
-            ".cpp",
-            ".cu",
-            ".cuh",
-            ".hip",
-            ".hpp",
-            ".inl",
-        }:
-            if re.fullmatch(
-                r"[A-Z][A-Za-z0-9]*\.(cpp|cu|cuh|hip|hpp|inl)", path.name
-            ) is None:
-                fail(f"non-PascalCase C++/CUDA filename: {path.relative_to(ROOT)}")
-        elif path.suffix.lower() in {".c", ".h"}:
-            if re.fullmatch(r"[A-Z][A-Za-z0-9]*\.(c|h)", path.name) is None:
-                fail(f"non-PascalCase C filename: {path.relative_to(ROOT)}")
+    for violation in validate_naming_contract(ROOT):
+        fail(violation)
 
 
 def configure_root(root: pathlib.Path) -> None:

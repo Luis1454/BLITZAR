@@ -30,10 +30,16 @@ Do not inspect, copy, translate, or use the old BLITZAR repository as context.
 
 ## Naming
 
-C++, CUDA, and header files use short PascalCase names that are unique across
-the repository and match their primary type. Rust, Python, and configuration
-files use their language's established lowercase convention. Names must not
-repeat the containing component without adding meaning.
+C++, CUDA, and header files use PascalCase names that are unique by complete
+filename across the code tree and match their primary type when they declare
+one. A repeated stem is allowed only for an explicitly configured
+implementation/header pair. Public ABI spellings and build-template names are
+registered exceptions, not implicit overrides. Maximum filename lengths are
+defined per repository profile in `plan/quality.json`; `short` is not a
+subjective exception. Rust, Python, and configuration files use their
+language's established lowercase convention. Names must not repeat the
+containing component without adding meaning, and legacy/server or catch-all
+prefixes and path components are forbidden.
 
 ## Validation
 

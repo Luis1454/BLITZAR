@@ -189,6 +189,73 @@
       "cmake_files": ["CMakeLists.txt"],
       "source_roots": ["src", "apps", "examples", "tests"],
       "suffixes": [".c", ".cc", ".cpp", ".cu", ".hip"]
+    },
+    "naming": {
+      "max_filename_length": {
+        "production": 32,
+        "tests": 32,
+        "examples": 32,
+        "tools": 32,
+        "build-metadata": 48,
+        "documentation": 64
+      },
+      "allowed_stem_pairs": [
+        {"extensions": [".cpp", ".hpp"], "reason": "implementation/header pair"},
+        {"extensions": [".cc", ".h"], "reason": "implementation/header pair"},
+        {"extensions": [".cu", ".cuh"], "reason": "CUDA implementation/header pair"},
+        {"extensions": [".hip", ".hpp"], "reason": "HIP implementation/header pair"},
+        {"extensions": [".h", ".hpp"], "reason": "public ABI header pair"}
+      ],
+      "name_exceptions": [
+        {
+          "path": "include/blitzar/blitzar.h",
+          "reason": "stable public C ABI spelling"
+        },
+        {
+          "path": "include/blitzar/blitzar.hpp",
+          "reason": "stable public C++ wrapper spelling"
+        },
+        {
+          "path": "cmake/BLITZARConfig.cmake.in",
+          "reason": "canonical CMake package template name"
+        }
+      ],
+      "type_mapping_exceptions": [
+        {
+          "path": "src/core/Units.hpp",
+          "reason": "value-type contract header for UnitSystem"
+        },
+        {
+          "path": "src/gpu/CudRuntime.hpp",
+          "reason": "CUDA/HIP runtime bridge contract"
+        },
+        {
+          "path": "src/gpu/HipCompat.hpp",
+          "reason": "CUDA compatibility declaration header"
+        },
+        {
+          "path": "src/parallel/Bounds.hpp",
+          "reason": "DomainBounds value contract"
+        },
+        {
+          "path": "src/parallel/MpiContextState.hpp",
+          "reason": "MpiContext state fragment"
+        },
+        {
+          "path": "src/parallel/MpiSessionNative.hpp",
+          "reason": "MpiSession native handle fragment"
+        }
+      ],
+      "standalone_implementation_exceptions": [
+        {
+          "path": "tests/DebugStatus.cpp",
+          "reason": "standalone debugger exit-status probe"
+        }
+      ],
+      "forbidden_path_components": ["utils", "common", "misc", "private", "details"],
+      "forbidden_name_prefixes": [
+        "Srv", "Server", "Legacy", "Old", "Temp", "Utils", "Common", "Misc", "Private", "Details"
+      ]
     }
   },
   "checks": [
@@ -226,6 +293,18 @@
       "id": "CHK-P0-006",
       "name": "architecture-report",
       "command": "python tools/architecture_report.py --root . --all --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-007",
+      "name": "naming-gate",
+      "command": "python tools/naming_gate.py --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-008",
+      "name": "naming-gate-fixtures",
+      "command": "python tools/naming_gate_test.py",
       "phase": "P0"
     }
   ]
