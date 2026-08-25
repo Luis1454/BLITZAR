@@ -1,11 +1,13 @@
 {
   "product_version": "1.0.0",
-  "plan_version": "1.0.11",
+  "plan_version": "1.0.12",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
     "PLAN.md",
-    "plan/manifest.json"
+    "plan/manifest.json",
+    "plan/quality.json",
+    "plan/decision-index.json"
   ],
   "roots": [
     "include/blitzar",
@@ -30,6 +32,17 @@
     "src/solvers/pm",
     "src/solvers/treepm"
   ],
+  "phase_status": {
+    "P0": "implemented-qualified",
+    "P1": "implemented-qualified",
+    "P2": "implemented-qualified",
+    "P3": "implemented-qualified",
+    "P4": "capability-gated",
+    "P5": "deferred",
+    "P6": "deferred",
+    "P7": "implemented-local",
+    "P8": "implemented-local"
+  },
   "phases": [
     {"id": "P0", "name": "contracts-and-build", "depends_on": []},
     {"id": "P1", "name": "particle-core-and-direct-reference", "depends_on": ["P0"]},
@@ -38,7 +51,7 @@
     {"id": "P4", "name": "hip-runtime-and-gpu-solvers", "depends_on": ["P3"]},
     {"id": "P5", "name": "grid-pm-and-treepm", "depends_on": ["P3", "P4"]},
     {"id": "P6", "name": "persistence-and-qualification", "depends_on": ["P2", "P5"]},
-    {"id": "P7", "name": "mpi-domain-decomposition", "depends_on": ["P3", "P4", "P6"]},
+    {"id": "P7", "name": "mpi-domain-decomposition", "depends_on": ["P3", "P4"]},
     {"id": "P8", "name": "mpi-kdk-overlap-and-migration", "depends_on": ["P7"]}
   ],
   "forbidden_references": [
@@ -50,6 +63,7 @@
   ],
   "change_protocol": {
     "commit_prefix": "plan-change:",
-    "decision_directory": "plan/decisions"
+    "decision_directory": "plan/decisions",
+    "decision_index": "plan/decision-index.json"
   }
 }

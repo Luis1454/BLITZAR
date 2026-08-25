@@ -2,11 +2,16 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.11**
+Plan version: **1.0.12**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
 are re-derived here as contracts, numerical references, and acceptance tests.
+
+The authoritative planning state is the combination of this file,
+`plan/manifest.json`, `plan/quality.json`, and `plan/decision-index.json`.
+Decision records under `plan/decisions/` preserve the rationale and migration
+history for that state.
 
 ## Product Boundary
 
@@ -37,7 +42,7 @@ src/grid/                        3D grids and mass deposition
 src/solvers/direct/              O(N^2) CPU reference and HIP acceleration
 src/solvers/barnes_hut/          O(N log N) CPU and HIP
 src/solvers/gpu/                 HIP kernel launch contracts and implementations
-src/solvers/fmm/                 FMM CPU and CUDA
+src/solvers/fmm/                 FMM CPU
 src/solvers/pm/                  Particle-Mesh CPU and CUDA
 src/solvers/treepm/              TreePM composition and dispatch
 src/io/                          Binary snapshots and optional HDF5 adapter
@@ -60,11 +65,21 @@ GPU runtime and native CUDA compatibility are intentionally owned by
 Each production module owns its headers, implementations, and responsibility
 subdirectories. There are no generic `utils`, `common`, `misc`, `private`, or
 `details` catch-all directories. C++ and CUDA filenames are PascalCase, short,
-and unique across the repository; directory names describe the domain.
+and unique as complete names including their extensions. A matching `.cpp`/`.hpp`
+stem is allowed when the two files implement the same primary type. Directory
+names describe the domain.
 
 ## Delivery Order
 
 The phases are ordered dependencies, not a list of parallel experiments.
+
+### Phase status
+
+- P0, P1, P2, and P3 are implemented and locally qualified.
+- P4 is implemented with capability-gated GPU execution evidence.
+- P5 and P6 remain deferred because their production roots are not materialized.
+- P7 and P8 are implemented and locally qualified from the P3/P4 contracts;
+  they do not depend on the deferred P5/P6 roots.
 
 ### P0: Contracts and Build Skeleton
 
@@ -149,7 +164,7 @@ by stable global ID. The acceptance tests `TST-P7-001` and `TST-P7-002` run the
 same deterministic case with two and four ranks and compare it to the direct
 single-rank reference within `1e-5`.
 
-### Sprint 7.2: Distributed Input Ownership and Bounded State
+### P7 extension: Distributed Input Ownership and Bounded State
 
 Persistent MPI state is rank-local. `SetParticles` keeps the root-only input
 stage and temporary distribution exchange alive only for the initialization
@@ -165,7 +180,7 @@ The root-only input contract, two/four-rank parity, Barnes-Hut migration, and
 rollback behavior are covered by `TST-P7-001`, `TST-P7-002`, and
 `TST-P7-004`.
 
-### Sprint 7.1: MPI Boundary and KDK Overlap
+### P8: MPI Boundary and KDK Overlap
 
 `MpiContext` is the only module that knows MPI types and collectives. Its
 opaque asynchronous exchange handle lets `MpiExchange` retain only packet
@@ -215,7 +230,8 @@ This plan is frozen. A pull request changing `PLAN.md` or `plan/manifest.json`
 must:
 
 1. Use a commit message beginning with `plan-change:`.
-2. Add or update a decision record under `plan/decisions/`.
+2. Add or update a decision record under `plan/decisions/` and its lifecycle
+   entry in `plan/decision-index.json`.
 3. Update the plan version and affected phase identifiers.
 4. Explain migration impact and add acceptance tests.
 
