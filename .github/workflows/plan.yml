@@ -43,6 +43,13 @@ jobs:
         shell: bash
         run: python tools/architecture_report.py --root . --all --check --output "$RUNNER_TEMP/architecture-report.json"
 
+      - name: Validate repository naming contract
+        shell: bash
+        run: python tools/naming_gate.py --root . --check --output "$RUNNER_TEMP/naming-report.json"
+
+      - name: Self-test repository naming contract
+        run: python tools/naming_gate_test.py
+
       - name: Check statement grouping format
         run: python tools/format_blocks.py --check
 

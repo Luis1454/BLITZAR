@@ -91,6 +91,13 @@
       "issue": 599,
       "status": "accepted",
       "decision": "The frozen-plan gate validates mutually dependent manifest, roots, phase, CTest, naming, and forbidden-reference contracts; its signal is registered while the gate remains a single policy boundary."
+    },
+    {
+      "path": "tools/naming_gate.py",
+      "signals": ["allocation"],
+      "issue": 600,
+      "status": "accepted",
+      "decision": "The naming report materializes separate collision, exception, length, and type-mapping result lists so CI can distinguish each contract failure; the allocation signal is limited to report construction."
     }
   ]
 }
