@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <cstddef>
 #include <limits>
-#include <vector>
 
 #if defined(BLITZAR_HAS_MPI)
 #include <mpi.h>
@@ -14,86 +13,65 @@
 
 namespace blitzar_parallel {
 
+bool MpiPacketTransport::ValidateAllToAllRequest(
+    const AllToAllPacketRequest& request, std::size_t peer_count) noexcept
+{
+    return request.send_counts.size() == peer_count &&
+           request.send_displacements.size() == peer_count &&
+           request.receive_counts.size() == peer_count &&
+           request.receive_displacements.size() == peer_count &&
+           MpiPacketProtocol::ValidateLayout(
+               request.send_counts, request.send_displacements, request.send_packets.size()) &&
+           MpiPacketProtocol::ValidateLayout(request.receive_counts, request.receive_displacements,
+               request.receive_packets.size());
+}
+
 blitzar_status MpiPacketTransport::AllToAllPackets(
     const AllToAllPacketRequest& request) const noexcept
 {
-    const std::span<const ParticlePacket> send_packets = request.send_packets;
-    const std::span<const int> send_counts = request.send_counts;
-    const std::span<const int> send_displacements = request.send_displacements;
-    const std::span<ParticlePacket> receive_packets = request.receive_packets;
-    const std::span<const int> receive_counts = request.receive_counts;
-    const std::span<const int> receive_displacements = request.receive_displacements;
-
-    const bool layout_valid =
-        send_counts.size() == static_cast<std::size_t>(session_.Size()) &&
-        send_displacements.size() == static_cast<std::size_t>(session_.Size()) &&
-        receive_counts.size() == static_cast<std::size_t>(session_.Size()) &&
-        receive_displacements.size() == static_cast<std::size_t>(session_.Size()) &&
-        MpiPacketProtocol::ValidateLayout(send_counts, send_displacements, send_packets.size()) &&
-        MpiPacketProtocol::ValidateLayout(
-            receive_counts, receive_displacements, receive_packets.size());
+    const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
+    const bool layout_valid = ValidateAllToAllRequest(request, peer_count);
 
     if (!session_.IsUsable()) {
         return session_.Status();
     }
     if (!session_.IsDistributed()) {
-        if (!layout_valid || send_counts[0] != receive_counts[0]) {
+        if (!layout_valid || request.send_counts[0] != request.receive_counts[0]) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
-        std::copy_n(send_packets.begin() + send_displacements[0],
-            static_cast<std::size_t>(send_counts[0]),
-            receive_packets.begin() + receive_displacements[0]);
+        std::copy_n(request.send_packets.begin() + request.send_displacements[0],
+            static_cast<std::size_t>(request.send_counts[0]),
+            request.receive_packets.begin() + request.receive_displacements[0]);
 
         return BLITZAR_STATUS_OK;
     }
 #if defined(BLITZAR_HAS_MPI)
 
-    blitzar_status preparation_status =
-        layout_valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT;
+    return RunAllToAll(request);
+#else
 
+    (void)request;
+
+    return BLITZAR_STATUS_INTERNAL_ERROR;
+#endif
+}
+
+blitzar_status MpiPacketTransport::RunAllToAll(
+    const AllToAllPacketRequest& request) const noexcept
+{
     std::size_t packets_per_peer = 0;
-
-    if (preparation_status == BLITZAR_STATUS_OK &&
-        !MpiPacketProtocol::ComputeRoundPacketLimit(session_.Size(), packets_per_peer)) {
-        preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-    }
-
-    const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
-
-    if (send_progress_.size() != peer_count || receive_progress_.size() != peer_count ||
-        send_bytes_.size() != peer_count || receive_bytes_.size() != peer_count ||
-        send_offsets_.size() != peer_count || receive_offsets_.size() != peer_count) {
-        preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-    }
-
-    std::vector<std::size_t>& send_progress = send_progress_;
-    std::vector<std::size_t>& receive_progress = receive_progress_;
-    std::vector<int>& send_bytes = send_bytes_;
-    std::vector<int>& receive_bytes = receive_bytes_;
-    std::vector<int>& send_offsets = send_offsets_;
-    std::vector<int>& receive_offsets = receive_offsets_;
-    std::vector<std::byte>& send_wire = send_wire_;
-    std::vector<std::byte>& receive_wire = receive_wire_;
-
-    std::fill(send_progress.begin(), send_progress.end(), 0);
-    std::fill(receive_progress.begin(), receive_progress.end(), 0);
-    std::fill(send_bytes.begin(), send_bytes.end(), 0);
-    std::fill(receive_bytes.begin(), receive_bytes.end(), 0);
-    std::fill(send_offsets.begin(), send_offsets.end(), 0);
-    std::fill(receive_offsets.begin(), receive_offsets.end(), 0);
-
-    blitzar_status status = MpiPacketProtocol::SynchronizePreparation(
-        collectives_, preparation_status, "alltoall-packet-prepare");
+    blitzar_status status = PrepareAllToAll(request, packets_per_peer);
 
     if (status != BLITZAR_STATUS_OK) {
         return status;
     }
 
     for (;;) {
-        const int local_more = MpiPacketProtocol::HasRemaining(send_counts, send_progress) ||
+        const int local_more = MpiPacketProtocol::HasRemaining(
+                                   request.send_counts, send_progress_) ||
                                        MpiPacketProtocol::HasRemaining(
-                                           receive_counts, receive_progress)
+                                           request.receive_counts, receive_progress_)
                                    ? 1
                                    : 0;
         int global_more = 0;
@@ -105,129 +83,150 @@ blitzar_status MpiPacketTransport::AllToAllPackets(
             return BLITZAR_STATUS_OK;
         }
 
-        std::size_t send_total = 0;
-        std::size_t receive_total = 0;
+        PacketRoundLayout layout{};
+        status = PrepareAllToAllRound(request, packets_per_peer, layout);
 
-        preparation_status = BLITZAR_STATUS_OK;
-
-        for (std::size_t index = 0; index < peer_count; ++index) {
-            const std::size_t send_remaining =
-                static_cast<std::size_t>(send_counts[index]) - send_progress[index];
-            const std::size_t receive_remaining =
-                static_cast<std::size_t>(receive_counts[index]) - receive_progress[index];
-            const std::size_t send_chunk = std::min(send_remaining, packets_per_peer);
-            const std::size_t receive_chunk = std::min(receive_remaining, packets_per_peer);
-
-            if (!MpiPacketProtocol::ToWireBytes(send_total, send_offsets[index]) ||
-                !MpiPacketProtocol::ToWireBytes(send_chunk, send_bytes[index]) ||
-                !MpiPacketProtocol::ToWireBytes(receive_total, receive_offsets[index]) ||
-                !MpiPacketProtocol::ToWireBytes(receive_chunk, receive_bytes[index]) ||
-                send_total > std::numeric_limits<std::size_t>::max() - send_chunk ||
-                receive_total > std::numeric_limits<std::size_t>::max() - receive_chunk) {
-                preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-
-                break;
-            }
-
-            send_total += send_chunk;
-            receive_total += receive_chunk;
-        }
-
-        int send_total_bytes = 0;
-        int receive_total_bytes = 0;
-
-        if (preparation_status == BLITZAR_STATUS_OK &&
-            (!MpiPacketProtocol::ToWireBytes(send_total, send_total_bytes) ||
-                !MpiPacketProtocol::ToWireBytes(receive_total, receive_total_bytes))) {
-            preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-        }
-        if (preparation_status == BLITZAR_STATUS_OK) {
-            const blitzar_status send_capacity_status = MpiPacketProtocol::EnsureCapacity(
-                send_wire, static_cast<std::size_t>(send_total_bytes));
-            const blitzar_status receive_capacity_status = MpiPacketProtocol::EnsureCapacity(
-                receive_wire, static_cast<std::size_t>(receive_total_bytes));
-
-            if (send_capacity_status != BLITZAR_STATUS_OK ||
-                receive_capacity_status != BLITZAR_STATUS_OK ||
-                !MpiPacketProtocol::ResizeWithinCapacity(
-                    send_wire, static_cast<std::size_t>(send_total_bytes)) ||
-                !MpiPacketProtocol::ResizeWithinCapacity(
-                    receive_wire, static_cast<std::size_t>(receive_total_bytes))) {
-                preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-
-                if (send_capacity_status == BLITZAR_STATUS_ALLOCATION_FAILURE ||
-                    receive_capacity_status == BLITZAR_STATUS_ALLOCATION_FAILURE) {
-                    preparation_status = BLITZAR_STATUS_ALLOCATION_FAILURE;
-                }
-            }
-        }
-        if (preparation_status == BLITZAR_STATUS_OK) {
-            for (std::size_t index = 0; index < peer_count; ++index) {
-                const std::size_t chunk =
-                    static_cast<std::size_t>(send_bytes[index] / ParticleWireBytes);
-                const std::size_t source_offset =
-                    static_cast<std::size_t>(send_displacements[index]) + send_progress[index];
-
-                if (!ParticleWireCodec::Encode(send_packets.subspan(source_offset, chunk),
-                        std::span<std::byte>(send_wire.data(), send_wire.size())
-                            .subspan(static_cast<std::size_t>(send_offsets[index]),
-                                static_cast<std::size_t>(send_bytes[index])))) {
-                    preparation_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-
-                    break;
-                }
-            }
+        if (status == BLITZAR_STATUS_OK) {
+            status = EncodeAllToAll(request);
         }
 
         status = MpiPacketProtocol::SynchronizePreparation(
-            collectives_, preparation_status, "alltoall-packet-round-prepare");
+            collectives_, status, "alltoall-packet-round-prepare");
 
         if (status != BLITZAR_STATUS_OK) {
             return status;
         }
 
-        if (MPI_Alltoallv(send_wire.data(), send_bytes.data(), send_offsets.data(), MPI_BYTE,
-                receive_wire.data(), receive_bytes.data(), receive_offsets.data(), MPI_BYTE,
+        if (MPI_Alltoallv(send_wire_.data(), send_bytes_.data(), send_offsets_.data(), MPI_BYTE,
+                receive_wire_.data(), receive_bytes_.data(), receive_offsets_.data(), MPI_BYTE,
                 session_.Native().communicator) != MPI_SUCCESS) {
             return BLITZAR_STATUS_INTERNAL_ERROR;
         }
 
-        blitzar_status decode_status = BLITZAR_STATUS_OK;
-
-        for (std::size_t index = 0; index < peer_count; ++index) {
-            const std::size_t chunk =
-                static_cast<std::size_t>(receive_bytes[index] / ParticleWireBytes);
-            const std::size_t target_offset =
-                static_cast<std::size_t>(receive_displacements[index]) + receive_progress[index];
-
-            if (!ParticleWireCodec::Decode(
-                    std::span<const std::byte>(receive_wire.data(), receive_wire.size())
-                        .subspan(static_cast<std::size_t>(receive_offsets[index]),
-                            static_cast<std::size_t>(receive_bytes[index])),
-                    receive_packets.subspan(target_offset, chunk))) {
-                decode_status = BLITZAR_STATUS_INVALID_ARGUMENT;
-
-                break;
-            }
-        }
-
+        status = DecodeAllToAll(request);
         status = MpiPacketProtocol::SynchronizePreparation(
-            collectives_, decode_status, "alltoall-packet-round-decode");
+            collectives_, status, "alltoall-packet-round-decode");
 
         if (status != BLITZAR_STATUS_OK) {
             return status;
         }
 
-        for (std::size_t index = 0; index < peer_count; ++index) {
-            send_progress[index] += static_cast<std::size_t>(send_bytes[index] / ParticleWireBytes);
-            receive_progress[index] +=
-                static_cast<std::size_t>(receive_bytes[index] / ParticleWireBytes);
+        for (std::size_t index = 0; index < send_progress_.size(); ++index) {
+            send_progress_[index] +=
+                static_cast<std::size_t>(send_bytes_[index] / ParticleWireBytes);
+            receive_progress_[index] +=
+                static_cast<std::size_t>(receive_bytes_[index] / ParticleWireBytes);
         }
     }
-#else
+}
 
-    return BLITZAR_STATUS_INTERNAL_ERROR;
-#endif
+blitzar_status MpiPacketTransport::PrepareAllToAll(
+    const AllToAllPacketRequest& request, std::size_t& packets_per_peer) const noexcept
+{
+    const std::size_t peer_count = static_cast<std::size_t>(session_.Size());
+    blitzar_status status = ValidateAllToAllRequest(request, peer_count)
+                                ? BLITZAR_STATUS_OK
+                                : BLITZAR_STATUS_INVALID_ARGUMENT;
+
+    if (status == BLITZAR_STATUS_OK &&
+        !MpiPacketProtocol::ComputeRoundPacketLimit(session_.Size(), packets_per_peer)) {
+        status = BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    if (send_progress_.size() != peer_count || receive_progress_.size() != peer_count ||
+        send_bytes_.size() != peer_count || receive_bytes_.size() != peer_count ||
+        send_offsets_.size() != peer_count || receive_offsets_.size() != peer_count) {
+        status = BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    std::fill(send_progress_.begin(), send_progress_.end(), 0);
+    std::fill(receive_progress_.begin(), receive_progress_.end(), 0);
+    std::fill(send_bytes_.begin(), send_bytes_.end(), 0);
+    std::fill(receive_bytes_.begin(), receive_bytes_.end(), 0);
+    std::fill(send_offsets_.begin(), send_offsets_.end(), 0);
+    std::fill(receive_offsets_.begin(), receive_offsets_.end(), 0);
+
+    return MpiPacketProtocol::SynchronizePreparation(
+        collectives_, status, "alltoall-packet-prepare");
+}
+
+blitzar_status MpiPacketTransport::PrepareAllToAllRound(const AllToAllPacketRequest& request,
+    std::size_t packets_per_peer, PacketRoundLayout& layout) const noexcept
+{
+    layout = {};
+
+    for (std::size_t index = 0; index < send_progress_.size(); ++index) {
+        const std::size_t send_remaining =
+            static_cast<std::size_t>(request.send_counts[index]) - send_progress_[index];
+        const std::size_t receive_remaining =
+            static_cast<std::size_t>(request.receive_counts[index]) - receive_progress_[index];
+        const std::size_t send_chunk = std::min(send_remaining, packets_per_peer);
+        const std::size_t receive_chunk = std::min(receive_remaining, packets_per_peer);
+
+        if (!MpiPacketProtocol::ToWireBytes(layout.send_total, send_offsets_[index]) ||
+            !MpiPacketProtocol::ToWireBytes(send_chunk, send_bytes_[index]) ||
+            !MpiPacketProtocol::ToWireBytes(layout.receive_total, receive_offsets_[index]) ||
+            !MpiPacketProtocol::ToWireBytes(receive_chunk, receive_bytes_[index]) ||
+            layout.send_total > std::numeric_limits<std::size_t>::max() - send_chunk ||
+            layout.receive_total > std::numeric_limits<std::size_t>::max() - receive_chunk) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+
+        layout.send_total += send_chunk;
+        layout.receive_total += receive_chunk;
+    }
+
+    if (!MpiPacketProtocol::ToWireBytes(layout.send_total, layout.send_total_bytes) ||
+        !MpiPacketProtocol::ToWireBytes(layout.receive_total, layout.receive_total_bytes) ||
+        !MpiPacketProtocol::ResizeWithinCapacity(
+            send_wire_, static_cast<std::size_t>(layout.send_total_bytes)) ||
+        !MpiPacketProtocol::ResizeWithinCapacity(
+            receive_wire_, static_cast<std::size_t>(layout.receive_total_bytes))) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    return BLITZAR_STATUS_OK;
+}
+
+blitzar_status MpiPacketTransport::EncodeAllToAll(
+    const AllToAllPacketRequest& request) const noexcept
+{
+    for (std::size_t index = 0; index < send_progress_.size(); ++index) {
+        const std::size_t chunk =
+            static_cast<std::size_t>(send_bytes_[index] / ParticleWireBytes);
+        const std::size_t source_offset =
+            static_cast<std::size_t>(request.send_displacements[index]) + send_progress_[index];
+
+        if (!ParticleWireCodec::Encode(request.send_packets.subspan(source_offset, chunk),
+                std::span<std::byte>(send_wire_.data(), send_wire_.size())
+                    .subspan(static_cast<std::size_t>(send_offsets_[index]),
+                        static_cast<std::size_t>(send_bytes_[index])))) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+    }
+
+    return BLITZAR_STATUS_OK;
+}
+
+blitzar_status MpiPacketTransport::DecodeAllToAll(
+    const AllToAllPacketRequest& request) const noexcept
+{
+    for (std::size_t index = 0; index < receive_progress_.size(); ++index) {
+        const std::size_t chunk =
+            static_cast<std::size_t>(receive_bytes_[index] / ParticleWireBytes);
+        const std::size_t target_offset = static_cast<std::size_t>(
+                                               request.receive_displacements[index]) +
+                                           receive_progress_[index];
+
+        if (!ParticleWireCodec::Decode(
+                std::span<const std::byte>(receive_wire_.data(), receive_wire_.size())
+                    .subspan(static_cast<std::size_t>(receive_offsets_[index]),
+                        static_cast<std::size_t>(receive_bytes_[index])),
+                request.receive_packets.subspan(target_offset, chunk))) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+    }
+
+    return BLITZAR_STATUS_OK;
 }
 
 } // namespace blitzar_parallel
