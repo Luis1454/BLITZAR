@@ -1,0 +1,53 @@
+import unittest
+from pathlib import Path
+
+from debug_runner import build_command, select_backend
+
+
+class DebugRunnerTests(unittest.TestCase):
+    def test_builds_gdb_batch_command_with_child_arguments(self) -> None:
+        executable = Path("build") / "test_binary"
+        command = build_command(executable, ["migration", "2"], "gdb", "gdb")
+
+        self.assertIn("--batch", command)
+        self.assertIn("--return-child-result", command)
+        python_command = next(item for item in command if item.startswith("python "))
+        self.assertIn("gdb.selected_inferior()", python_command)
+        self.assertIn("inferior.pid > 0", python_command)
+        self.assertIn("gdb.execute('bt full')", python_command)
+        self.assertEqual(command[-3:], [str(executable), "migration", "2"])
+
+    def test_builds_cdb_batch_command_with_native_crash_trace(self) -> None:
+        executable = Path("build") / "test_binary.exe"
+        command = build_command(executable, ["migration", "2"], "cdb", "cdb.exe")
+
+        self.assertIn("-G", command)
+        self.assertIn("sxe av; g; k; q", command)
+        self.assertEqual(command[-3:], [str(executable), "migration", "2"])
+
+    def test_builds_lldb_batch_command_with_crash_trace(self) -> None:
+        executable = Path("build") / "test_binary"
+        command = build_command(executable, ["migration", "2"], "lldb", "lldb")
+
+        self.assertIn("--batch", command)
+        self.assertIn("--one-line-on-crash", command)
+        self.assertIn("bt all", command)
+        self.assertEqual(command[-4:], ["--", str(executable), "migration", "2"])
+
+    def test_prefers_native_backend_for_each_platform(self) -> None:
+        self.assertEqual(
+            select_backend("auto", "Linux", {"gdb": "/usr/bin/gdb"}),
+            ("gdb", "/usr/bin/gdb"),
+        )
+        self.assertEqual(
+            select_backend("auto", "Windows", {"cdb": "C:/cdb.exe", "gdb": "C:/gdb.exe"}),
+            ("cdb", "C:/cdb.exe"),
+        )
+        self.assertEqual(
+            select_backend("auto", "Darwin", {"lldb": "/usr/bin/lldb"}),
+            ("lldb", "/usr/bin/lldb"),
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

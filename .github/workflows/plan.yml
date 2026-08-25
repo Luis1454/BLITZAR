@@ -49,8 +49,8 @@ jobs:
       - name: Self-test statement grouping format
         run: python tools/format_blocks_test.py
 
-      - name: Self-test GDB runner command
-        run: python tools/gdb_runner_test.py
+      - name: Self-test cross-platform debug runner command
+        run: python tools/debug_runner_test.py
 
       - name: Reject unapproved plan edits
         if: github.event_name == 'pull_request'
@@ -139,8 +139,8 @@ jobs:
       - name: Run sanitizer tests
         run: ctest --test-dir build-sanitizers --output-on-failure
 
-  gdb-debug:
-    name: Linux GDB debug qualification
+  linux-debug:
+    name: Linux debugger qualification
     runs-on: ubuntu-latest
     needs: validate
     steps:
@@ -152,22 +152,22 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes gdb ninja-build
 
-      - name: Record capability
+      - name: Record debugger capability
         shell: bash
         run: |
+          capability="$(python tools/debug_runner.py --backend gdb --capability)"
           {
             echo "## Capability record"
-            echo "- toolchain: $(gdb --version | head -n 1)"
+            while IFS= read -r line; do echo "- $line"; done <<< "$capability"
             echo "- backend: CPU Debug"
-            echo "- debugger: GDB batch mode"
             echo "- device: none required"
             echo "- skip reason: none"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Configure GDB build
+      - name: Configure debugger build
         shell: bash
         run: |
-          cmake -S . -B build-gdb -G Ninja \
+          cmake -S . -B build-debug -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
             -DBLITZAR_HIP_MODE=OFF \
             -DBLITZAR_MPI_MODE=OFF \
@@ -177,16 +177,75 @@ jobs:
             -DBLITZAR_BUILD_CLI=OFF \
             -DBLITZAR_BUILD_EXAMPLES=OFF
 
-      - name: Build GDB probes
-        run: cmake --build build-gdb --target blitzar_numerical_test blitzar_allocation_test --parallel
+      - name: Build debugger probes
+        run: cmake --build build-debug --target blitzar_numerical_test blitzar_allocation_test --parallel
 
-      - name: Run numerical test under GDB
+      - name: Run numerical test under debugger
         shell: bash
-        run: timeout --foreground 120s python tools/gdb_runner.py build-gdb/blitzar_numerical_test
+        run: python tools/debug_runner.py --backend gdb --timeout 120 build-debug/blitzar_numerical_test
 
-      - name: Run allocation test under GDB
+      - name: Run allocation test under debugger
         shell: bash
-        run: timeout --foreground 120s python tools/gdb_runner.py build-gdb/blitzar_allocation_test
+        run: python tools/debug_runner.py --backend gdb --timeout 120 build-debug/blitzar_allocation_test
+
+  windows-debug:
+    name: Windows CDB debug qualification
+    runs-on: windows-latest
+    needs: validate
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Locate CDB
+        shell: pwsh
+        run: |
+          $roots = @(
+            "${env:ProgramFiles(x86)}\Windows Kits",
+            "$env:ProgramFiles\Windows Kits"
+          )
+          $debugger = Get-ChildItem -Path $roots -File -Recurse -ErrorAction SilentlyContinue |
+            Where-Object {
+              $_.Name -in @('cdb.exe', 'cdbX64.exe') -and
+                $_.FullName -match '\\Debuggers\\x64\\cdb(X64)?\.exe$'
+            } |
+            Select-Object -First 1
+          if ($null -eq $debugger) {
+            throw "CDB was not found in the installed Windows SDKs"
+          }
+          "BLITZAR_DEBUGGER=cdb" >> $env:GITHUB_ENV
+          "BLITZAR_DEBUGGER_PATH=$($debugger.FullName)" >> $env:GITHUB_ENV
+
+      - name: Record debugger capability
+        shell: pwsh
+        run: |
+          $capability = python tools/debug_runner.py --backend cdb --capability
+          Add-Content $env:GITHUB_STEP_SUMMARY "## Capability record"
+          $capability | ForEach-Object { Add-Content $env:GITHUB_STEP_SUMMARY "- $_" }
+          Add-Content $env:GITHUB_STEP_SUMMARY "- backend: CPU Debug"
+          Add-Content $env:GITHUB_STEP_SUMMARY "- device: none required"
+          Add-Content $env:GITHUB_STEP_SUMMARY "- skip reason: none"
+
+      - name: Configure debugger build
+        shell: pwsh
+        run: |
+          cmake -S . -B build-debug -G Ninja `
+            -DCMAKE_BUILD_TYPE=Debug `
+            -DBLITZAR_HIP_MODE=OFF `
+            -DBLITZAR_MPI_MODE=OFF `
+            -DBLITZAR_ENABLE_OPENMP=OFF `
+            -DBLITZAR_ENABLE_SANITIZERS=OFF `
+            -DBLITZAR_BUILD_TESTS=ON `
+            -DBLITZAR_BUILD_CLI=OFF `
+            -DBLITZAR_BUILD_EXAMPLES=OFF
+
+      - name: Build debugger probes
+        run: cmake --build build-debug --target blitzar_numerical_test blitzar_allocation_test --parallel
+
+      - name: Run numerical test under debugger
+        run: python tools/debug_runner.py --backend cdb --timeout 120 build-debug/blitzar_numerical_test.exe
+
+      - name: Run allocation test under debugger
+        run: python tools/debug_runner.py --backend cdb --timeout 120 build-debug/blitzar_allocation_test.exe
 
   static-analysis:
     name: Clang static analysis
