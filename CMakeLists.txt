@@ -81,12 +81,17 @@ target_sources(blitzar PRIVATE
     src/integration/KdkCheckpoint.cpp
     src/particles/ParticleArena.cpp
     src/particles/ParticleBuffer.cpp
+    src/particles/AccelerationBuffer.cpp
+    src/particles/ParticleAccess.cpp
     src/particles/SourceBuffer.cpp
     src/physics/GravityLaw.cpp
     src/parallel/MpiCollectives.cpp
     src/parallel/MpiBroadcast.cpp
     src/parallel/Bounds.cpp
     src/parallel/DomainDecomposition.cpp
+    src/parallel/DomainInit.cpp
+    src/parallel/DomainQuery.cpp
+    src/parallel/DomainValidate.cpp
     src/parallel/Partition.cpp
     src/parallel/MpiGhostTransport.cpp
     src/parallel/MpiGhostBegin.cpp
@@ -101,6 +106,10 @@ target_sources(blitzar PRIVATE
     src/parallel/MpiGatherPlan.cpp
     src/parallel/MpiGatherData.cpp
     src/parallel/MpiContext.cpp
+    src/parallel/MpiContextCapacity.cpp
+    src/parallel/MpiContextCollectives.cpp
+    src/parallel/MpiContextGhost.cpp
+    src/parallel/MpiContextPackets.cpp
     src/parallel/MpiExchange.cpp
     src/parallel/MpiMigration.cpp
     src/parallel/MpiPacketTransport.cpp
