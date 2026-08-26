@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 env:
-  BLITZAR_CI_BUILD_ROOT: ${{ runner.temp }}/blitzar-build
+  BLITZAR_CI_BUILD_ROOT: ${{ github.workspace }}/../blitzar-build
 
 jobs:
   validate:
