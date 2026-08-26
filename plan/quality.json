@@ -144,6 +144,12 @@
       "name": "c-abi-v2-consumer",
       "command": "blitzar_c_v2_example",
       "phase": "P2"
+    },
+    {
+      "id": "TST-P0-006",
+      "name": "capability-and-unsupported-contract",
+      "command": "blitzar_capability_test",
+      "phase": "P0"
     }
   ],
   "architecture": {
@@ -450,6 +456,18 @@
       "id": "CHK-P0-025",
       "name": "debug-runner-fixtures",
       "command": "python tools/debug_runner_test.py",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-026",
+      "name": "capability-contract",
+      "command": "python tools/capability_gate.py --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-027",
+      "name": "capability-contract-fixtures",
+      "command": "python tools/capability_gate_test.py",
       "phase": "P0"
     }
   ]

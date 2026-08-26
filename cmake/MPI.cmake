@@ -27,7 +27,10 @@ endif()
 
 function(blitzar_enable_mpi target)
     if(BLITZAR_MPI_ENABLED)
-        target_compile_definitions(${target} PRIVATE BLITZAR_HAS_MPI=1)
+        target_compile_definitions(${target} PRIVATE
+            BLITZAR_HAS_MPI=1
+            BLITZAR_COMPILED_MPI=1
+        )
         target_link_libraries(${target} PUBLIC MPI::MPI_CXX)
     endif()
 endfunction()

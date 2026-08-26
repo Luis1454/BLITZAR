@@ -45,6 +45,13 @@ target_link_libraries(blitzar_abi_test PRIVATE blitzar)
 set_property(TARGET blitzar_abi_test PROPERTY LINKER_LANGUAGE CXX)
 blitzar_enable_warnings(blitzar_abi_test)
 
+add_executable(blitzar_capability_test
+    tests/Capabilities.c
+)
+target_link_libraries(blitzar_capability_test PRIVATE blitzar)
+set_property(TARGET blitzar_capability_test PROPERTY LINKER_LANGUAGE CXX)
+blitzar_enable_warnings(blitzar_capability_test)
+
 add_executable(blitzar_dynamics_test
     tests/Dynamics.cpp
 )

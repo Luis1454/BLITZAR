@@ -53,6 +53,28 @@ typedef int32_t blitzar_backend_kind;
 #define BLITZAR_BACKEND_CPU ((blitzar_backend_kind)0)
 #define BLITZAR_BACKEND_HIP ((blitzar_backend_kind)1)
 
+typedef uint32_t blitzar_solver_mask;
+
+#define BLITZAR_SOLVER_MASK_DIRECT (UINT32_C(1) << 0)
+#define BLITZAR_SOLVER_MASK_BARNES_HUT (UINT32_C(1) << 1)
+#define BLITZAR_SOLVER_MASK_FMM (UINT32_C(1) << 2)
+#define BLITZAR_SOLVER_MASK_PM (UINT32_C(1) << 3)
+#define BLITZAR_SOLVER_MASK_TREEPM (UINT32_C(1) << 4)
+
+typedef uint32_t blitzar_feature_mask;
+
+#define BLITZAR_FEATURE_GRID (UINT32_C(1) << 0)
+#define BLITZAR_FEATURE_SNAPSHOT_PERSISTENCE (UINT32_C(1) << 1)
+#define BLITZAR_FEATURE_HDF5 (UINT32_C(1) << 2)
+#define BLITZAR_FEATURE_GPU_FMM (UINT32_C(1) << 3)
+#define BLITZAR_FEATURE_MULTI_NODE_QUALIFICATION (UINT32_C(1) << 4)
+
+typedef uint32_t blitzar_compiled_backend_mask;
+
+#define BLITZAR_BACKEND_MASK_CPU (UINT32_C(1) << 0)
+#define BLITZAR_BACKEND_MASK_HIP (UINT32_C(1) << 1)
+#define BLITZAR_BACKEND_MASK_MPI (UINT32_C(1) << 2)
+
 typedef int32_t blitzar_integrator_kind;
 
 #define BLITZAR_INTEGRATOR_LEAPFROG_KDK ((blitzar_integrator_kind)0)
@@ -96,10 +118,22 @@ typedef struct blitzar_barnes_hut_config_v2 {
     int64_t max_depth;
 } blitzar_barnes_hut_config_v2;
 
+/* Compile-contract capabilities; this report is not hardware qualification. */
+typedef struct blitzar_capabilities_v2 {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    blitzar_solver_mask implemented_solver_mask;
+    blitzar_solver_mask unsupported_solver_mask;
+    blitzar_feature_mask deferred_feature_mask;
+    blitzar_compiled_backend_mask compiled_backend_mask;
+} blitzar_capabilities_v2;
+
 /* Product/API semantic version and the frozen implementation plan revision. */
 BLITZAR_API const char* blitzar_version(void);
 
 BLITZAR_API const char* blitzar_plan_version(void);
+
+BLITZAR_API blitzar_status blitzar_get_capabilities_v2(blitzar_capabilities_v2* capabilities);
 
 BLITZAR_API blitzar_status blitzar_context_create(blitzar_context** context);
 

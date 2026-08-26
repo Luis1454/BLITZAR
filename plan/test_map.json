@@ -43,6 +43,14 @@
       "contract": "ABI v1 and v2 consumer compatibility"
     },
     {
+      "id": "TST-P0-006",
+      "entrypoint": "tests/Capabilities.c",
+      "responsibility": "tests/Capabilities.c",
+      "mode": "",
+      "ranks": 1,
+      "contract": "capability report and transactional unsupported solver selection"
+    },
+    {
       "id": "TST-P1-001",
       "entrypoint": "tests/Dynamics.cpp",
       "responsibility": "tests/Dynamics.cpp",

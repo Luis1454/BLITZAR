@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "state_vocabulary": [
+    "implemented-qualified",
+    "implemented-local",
+    "capability-gated",
+    "unsupported",
+    "deferred"
+  ],
+  "solvers": [
+    {
+      "id": "direct",
+      "public_value": 0,
+      "state": "implemented-qualified",
+      "compile_requirement": "C++20 CPU toolchain",
+      "runtime_requirement": "CPU",
+      "runtime_evidence": ["TST-P1-003"]
+    },
+    {
+      "id": "barnes-hut",
+      "public_value": 1,
+      "state": "implemented-qualified",
+      "compile_requirement": "C++20 CPU toolchain",
+      "runtime_requirement": "CPU",
+      "runtime_evidence": ["TST-P3-001"]
+    },
+    {
+      "id": "fmm",
+      "public_value": 2,
+      "state": "implemented-qualified",
+      "compile_requirement": "C++20 CPU toolchain",
+      "runtime_requirement": "CPU",
+      "runtime_evidence": ["TST-P3-002"]
+    },
+    {
+      "id": "pm",
+      "public_value": 3,
+      "state": "unsupported",
+      "compile_requirement": "No production implementation",
+      "runtime_requirement": "No runtime path",
+      "runtime_evidence": ["TST-P0-006"]
+    },
+    {
+      "id": "treepm",
+      "public_value": 4,
+      "state": "unsupported",
+      "compile_requirement": "No production implementation",
+      "runtime_requirement": "No runtime path",
+      "runtime_evidence": ["TST-P0-006"]
+    }
+  ],
+  "features": [
+    {
+      "id": "grid",
+      "state": "deferred",
+      "root": "src/grid",
+      "runtime_evidence": []
+    },
+    {
+      "id": "snapshot-persistence",
+      "state": "deferred",
+      "root": "src/io",
+      "runtime_evidence": []
+    },
+    {
+      "id": "hdf5",
+      "state": "deferred",
+      "root": "src/io",
+      "runtime_evidence": []
+    },
+    {
+      "id": "gpu-fmm",
+      "state": "deferred",
+      "root": null,
+      "runtime_evidence": []
+    },
+    {
+      "id": "multi-node-qualification",
+      "state": "deferred",
+      "root": null,
+      "runtime_evidence": []
+    }
+  ],
+  "backends": [
+    {
+      "id": "cpu",
+      "compile_support": "required",
+      "state": "implemented-qualified",
+      "requirements": ["C++20 CPU toolchain"],
+      "runtime_evidence": ["TST-P1-003"]
+    },
+    {
+      "id": "hip",
+      "compile_support": "optional",
+      "state": "capability-gated",
+      "requirements": [
+        "HIP/ROCm or native CUDA toolchain",
+        "compatible GPU for device execution"
+      ],
+      "runtime_evidence": ["TST-P4-001", "CI capability probe"]
+    },
+    {
+      "id": "mpi",
+      "compile_support": "optional",
+      "state": "implemented-local",
+      "requirements": ["MPI CXX", "MPI_THREAD_MULTIPLE"],
+      "runtime_evidence": ["TST-P7-001", "TST-P7-002"],
+      "qualification_scope": "single-host rank parity; multi-node and RDMA unverified"
+    }
+  ],
+  "public_report": {
+    "function": "blitzar_get_capabilities_v2",
+    "compile_only_fields": [
+      "implemented_solver_mask",
+      "unsupported_solver_mask",
+      "deferred_feature_mask",
+      "compiled_backend_mask"
+    ],
+    "runtime_proof": "blitzar_simulation_backend and capability-gated CI evidence"
+  }
+}
