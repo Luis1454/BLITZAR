@@ -26,7 +26,7 @@
   "forbidden_public_tokens": ["MPI_", "hip", "cuda", "src/"],
   "internal_cpp_facade_exceptions": [
     {
-      "path": "src/sdk/CppState.hpp",
+      "path": "src/sdk/cpp/CppState.hpp",
       "include": "blitzar/blitzar.hpp",
       "reason": "defines the private C++ facade PImpl"
     }

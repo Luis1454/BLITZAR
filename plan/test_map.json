@@ -4,88 +4,88 @@
   "cases": [
     {
       "id": "TST-P0-001",
-      "entrypoint": "tests/Lifecycle.cpp",
-      "responsibility": "tests/Lifecycle.cpp",
+      "entrypoint": "tests/simulation/Lifecycle.cpp",
+      "responsibility": "tests/simulation/Lifecycle.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "C++ lifecycle and cleanup"
     },
     {
       "id": "TST-P0-002",
-      "entrypoint": "tests/ApiC.c",
-      "responsibility": "tests/ApiC.c",
+      "entrypoint": "tests/contracts/ApiC.c",
+      "responsibility": "tests/contracts/ApiC.c",
       "mode": "",
       "ranks": 1,
       "contract": "C ABI lifecycle and invalid input"
     },
     {
       "id": "TST-P0-003",
-      "entrypoint": "tests/Contracts.cpp",
-      "responsibility": "tests/Contracts.cpp",
+      "entrypoint": "tests/contracts/Contracts.cpp",
+      "responsibility": "tests/contracts/Contracts.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "public and internal value contracts"
     },
     {
       "id": "TST-P0-004",
-      "entrypoint": "tests/Bounded.cpp",
-      "responsibility": "tests/Bounded.cpp",
+      "entrypoint": "tests/contracts/Bounded.cpp",
+      "responsibility": "tests/contracts/Bounded.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "bounded views and request validation"
     },
     {
       "id": "TST-P0-005",
-      "entrypoint": "tests/Abi.c",
-      "responsibility": "tests/Abi.c",
+      "entrypoint": "tests/contracts/Abi.c",
+      "responsibility": "tests/contracts/Abi.c",
       "mode": "",
       "ranks": 1,
       "contract": "ABI v1 and v2 consumer compatibility"
     },
     {
       "id": "TST-P0-006",
-      "entrypoint": "tests/Capabilities.c",
-      "responsibility": "tests/Capabilities.c",
+      "entrypoint": "tests/contracts/Capabilities.c",
+      "responsibility": "tests/contracts/Capabilities.c",
       "mode": "",
       "ranks": 1,
       "contract": "capability report and transactional unsupported solver selection"
     },
     {
       "id": "TST-P1-001",
-      "entrypoint": "tests/Dynamics.cpp",
-      "responsibility": "tests/Dynamics.cpp",
+      "entrypoint": "tests/integration/Dynamics.cpp",
+      "responsibility": "tests/integration/Dynamics.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "deterministic dynamics behavior"
     },
     {
       "id": "TST-P1-002",
-      "entrypoint": "tests/Numerical.cpp",
-      "responsibility": "tests/Numerical.cpp",
+      "entrypoint": "tests/integration/Numerical.cpp",
+      "responsibility": "tests/integration/Numerical.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "conservation and repeatability"
     },
     {
       "id": "TST-P1-003",
-      "entrypoint": "tests/Allocations.cpp",
-      "responsibility": "tests/Allocations.cpp",
+      "entrypoint": "tests/simulation/Allocations.cpp",
+      "responsibility": "tests/simulation/Allocations.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "steady-state allocation-free execution"
     },
     {
       "id": "TST-P2-001",
-      "entrypoint": "examples/CExample.c",
-      "responsibility": "examples/CExample.c",
+      "entrypoint": "examples/c/CExample.c",
+      "responsibility": "examples/c/CExample.c",
       "mode": "",
       "ranks": 1,
       "contract": "C SDK example"
     },
     {
       "id": "TST-P2-002",
-      "entrypoint": "examples/CppExample.cpp",
-      "responsibility": "examples/CppExample.cpp",
+      "entrypoint": "examples/cpp/CppExample.cpp",
+      "responsibility": "examples/cpp/CppExample.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "C++ SDK example"
@@ -100,112 +100,112 @@
     },
     {
       "id": "TST-P2-004",
-      "entrypoint": "tests/PackageConsumer.cmake",
-      "responsibility": "tests/PackageConsumer.cmake",
+      "entrypoint": "tests/package/PackageConsumer.cmake",
+      "responsibility": "tests/package/PackageConsumer.cmake",
       "mode": "",
       "ranks": 1,
       "contract": "installed CMake package consumer"
     },
     {
       "id": "TST-P2-005",
-      "entrypoint": "examples/CV2Example.c",
-      "responsibility": "examples/CV2Example.c",
+      "entrypoint": "examples/c/CV2Example.c",
+      "responsibility": "examples/c/CV2Example.c",
       "mode": "",
       "ranks": 1,
       "contract": "C ABI v2 example"
     },
     {
       "id": "TST-P3-001",
-      "entrypoint": "tests/Hierarchy.cpp",
-      "responsibility": "tests/Hierarchy.cpp",
+      "entrypoint": "tests/trees/octree/Hierarchy.cpp",
+      "responsibility": "tests/trees/octree/Hierarchy.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "hierarchy reference behavior"
     },
     {
       "id": "TST-P3-002",
-      "entrypoint": "tests/Fmm.cpp",
-      "responsibility": "tests/Fmm.cpp",
+      "entrypoint": "tests/solvers/fmm/Fmm.cpp",
+      "responsibility": "tests/solvers/fmm/Fmm.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "FMM reference and capacity"
     },
     {
       "id": "TST-P4-001",
-      "entrypoint": "tests/Hip.cpp",
-      "responsibility": "tests/Hip.cpp",
+      "entrypoint": "tests/accelerators/gpu/hip/Hip.cpp",
+      "responsibility": "tests/accelerators/gpu/hip/Hip.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "HIP acceleration and fallback"
     },
     {
       "id": "TST-P7-001",
-      "entrypoint": "tests/Mpi.cpp",
-      "responsibility": "tests/MpiFixture.cpp",
+      "entrypoint": "tests/parallel/mpi/Mpi.cpp",
+      "responsibility": "tests/parallel/mpi/MpiFixture.cpp",
       "mode": "",
       "ranks": 2,
       "contract": "MPI two-rank distribution parity"
     },
     {
       "id": "TST-P7-002",
-      "entrypoint": "tests/Mpi.cpp",
-      "responsibility": "tests/MpiFixture.cpp",
+      "entrypoint": "tests/parallel/mpi/Mpi.cpp",
+      "responsibility": "tests/parallel/mpi/MpiFixture.cpp",
       "mode": "",
       "ranks": 4,
       "contract": "MPI four-rank distribution parity"
     },
     {
       "id": "TST-P8-001",
-      "entrypoint": "tests/Mpi.cpp",
-      "responsibility": "tests/MpiFixture.cpp",
+      "entrypoint": "tests/parallel/mpi/Mpi.cpp",
+      "responsibility": "tests/parallel/mpi/MpiFixture.cpp",
       "mode": "migration",
       "ranks": 2,
       "contract": "in-step migration parity"
     },
     {
       "id": "TST-P7-003",
-      "entrypoint": "tests/Mpi.cpp",
-      "responsibility": "tests/MpiFixture.cpp",
+      "entrypoint": "tests/parallel/mpi/Mpi.cpp",
+      "responsibility": "tests/parallel/mpi/MpiFixture.cpp",
       "mode": "single",
       "ranks": 1,
       "contract": "one-rank failure completion"
     },
     {
       "id": "TST-P7-004",
-      "entrypoint": "tests/Mpi.cpp",
-      "responsibility": "tests/MpiFixture.cpp",
+      "entrypoint": "tests/parallel/mpi/Mpi.cpp",
+      "responsibility": "tests/parallel/mpi/MpiFixture.cpp",
       "mode": "barnes-hut-migration",
       "ranks": 2,
       "contract": "Barnes-Hut migration parity"
     },
     {
       "id": "TST-P7-005",
-      "entrypoint": "tests/Mpi.cpp",
-      "responsibility": "tests/MpiValidationTest.cpp",
+      "entrypoint": "tests/parallel/mpi/Mpi.cpp",
+      "responsibility": "tests/parallel/mpi/MpiValidationTest.cpp",
       "mode": "large-count",
       "ranks": 2,
       "contract": "large-count rejection"
     },
     {
       "id": "TST-P8-002",
-      "entrypoint": "tests/Mpi.cpp",
-      "responsibility": "tests/MpiDomain.cpp",
+      "entrypoint": "tests/parallel/mpi/Mpi.cpp",
+      "responsibility": "tests/parallel/mpi/MpiDomain.cpp",
       "mode": "out-of-domain",
       "ranks": 2,
       "contract": "out-of-domain rollback"
     },
     {
       "id": "TST-P8-003",
-      "entrypoint": "tests/Mpi.cpp",
-      "responsibility": "tests/MpiOverlapTest.cpp",
+      "entrypoint": "tests/parallel/mpi/Mpi.cpp",
+      "responsibility": "tests/parallel/mpi/MpiOverlapTest.cpp",
       "mode": "overlap",
       "ranks": 2,
       "contract": "overlap timeline, volume, speedup, and parity"
     },
     {
       "id": "TST-P0-007",
-      "entrypoint": "tests/Scaling.cpp",
-      "responsibility": "tests/Scaling.cpp",
+      "entrypoint": "tests/scaling/Scaling.cpp",
+      "responsibility": "tests/scaling/Scaling.cpp",
       "mode": "smoke",
       "ranks": 1,
       "contract": "deterministic scaling harness record and CPU oracle boundary"

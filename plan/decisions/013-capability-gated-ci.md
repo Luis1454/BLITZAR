@@ -21,7 +21,7 @@ compile-only and records that hardware qualification was skipped. Device
 tests run only when the matching device probe succeeds.
 
 The package lane builds a CPU-only installation and uses
-`tests/PackageConsumer.cmake` to configure and build an external consumer from
+`tests/package/PackageConsumer.cmake` to configure and build an external consumer from
 a fresh install prefix.
 
 ## Consequences

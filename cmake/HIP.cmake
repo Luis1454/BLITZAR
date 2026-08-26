@@ -4,13 +4,13 @@ set_property(CACHE BLITZAR_HIP_MODE PROPERTY STRINGS AUTO ON OFF)
 set(BLITZAR_ENABLE_HIP OFF CACHE BOOL
     "Force-enable the HIP backend; use BLITZAR_HIP_MODE for new projects")
 
-string(TOUPPER "${BLITZAR_HIP_MODE}" _blitzar_hip_mode)
+string(TOUPPER "${BLITZAR_HIP_MODE}" _blitzar_accelerator_mode)
 if(BLITZAR_ENABLE_HIP)
-    set(_blitzar_hip_mode ON)
+    set(_blitzar_accelerator_mode ON)
 endif()
-if(NOT _blitzar_hip_mode STREQUAL "AUTO" AND
-   NOT _blitzar_hip_mode STREQUAL "ON" AND
-   NOT _blitzar_hip_mode STREQUAL "OFF")
+if(NOT _blitzar_accelerator_mode STREQUAL "AUTO" AND
+   NOT _blitzar_accelerator_mode STREQUAL "ON" AND
+   NOT _blitzar_accelerator_mode STREQUAL "OFF")
     message(FATAL_ERROR
         "BLITZAR_HIP_MODE must be AUTO, ON, or OFF")
 endif()
@@ -26,51 +26,51 @@ set(BLITZAR_HIP_LINK_TARGETS "" CACHE INTERNAL
 set(BLITZAR_HIP_PACKAGE "" CACHE INTERNAL
     "HIP package name required by installed exports" FORCE)
 
-if(NOT _blitzar_hip_mode STREQUAL "OFF")
-    set(_blitzar_hip_hints)
+if(NOT _blitzar_accelerator_mode STREQUAL "OFF")
+    set(_blitzar_accelerator_hints)
     if(DEFINED ENV{ROCM_PATH})
-        list(APPEND _blitzar_hip_hints "$ENV{ROCM_PATH}")
+        list(APPEND _blitzar_accelerator_hints "$ENV{ROCM_PATH}")
     endif()
     if(DEFINED ENV{HIP_PATH})
-        list(APPEND _blitzar_hip_hints "$ENV{HIP_PATH}")
+        list(APPEND _blitzar_accelerator_hints "$ENV{HIP_PATH}")
     endif()
 
     find_program(BLITZAR_HIP_COMPILER
         NAMES hipcc
-        HINTS ${_blitzar_hip_hints}
+        HINTS ${_blitzar_accelerator_hints}
         PATH_SUFFIXES bin)
 
-    set(_blitzar_hip_platform "")
+    set(_blitzar_accelerator_platform "")
     if(DEFINED CMAKE_HIP_PLATFORM)
-        set(_blitzar_hip_platform "${CMAKE_HIP_PLATFORM}")
+        set(_blitzar_accelerator_platform "${CMAKE_HIP_PLATFORM}")
     elseif(DEFINED ENV{HIP_PLATFORM})
-        set(_blitzar_hip_platform "$ENV{HIP_PLATFORM}")
+        set(_blitzar_accelerator_platform "$ENV{HIP_PLATFORM}")
     elseif(BLITZAR_HIP_COMPILER)
         find_program(_blitzar_hipconfig
             NAMES hipconfig
-            HINTS ${_blitzar_hip_hints}
+            HINTS ${_blitzar_accelerator_hints}
             PATH_SUFFIXES bin)
         if(_blitzar_hipconfig)
             execute_process(
                 COMMAND "${_blitzar_hipconfig}" --platform
-                OUTPUT_VARIABLE _blitzar_hip_platform
+                OUTPUT_VARIABLE _blitzar_accelerator_platform
                 OUTPUT_STRIP_TRAILING_WHITESPACE
                 ERROR_QUIET)
         endif()
     endif()
-    string(TOLOWER "${_blitzar_hip_platform}" _blitzar_hip_platform)
-    if(NOT _blitzar_hip_platform STREQUAL "" AND
-       NOT _blitzar_hip_platform STREQUAL "amd" AND
-       NOT _blitzar_hip_platform STREQUAL "nvidia")
+    string(TOLOWER "${_blitzar_accelerator_platform}" _blitzar_accelerator_platform)
+    if(NOT _blitzar_accelerator_platform STREQUAL "" AND
+       NOT _blitzar_accelerator_platform STREQUAL "amd" AND
+       NOT _blitzar_accelerator_platform STREQUAL "nvidia")
         message(FATAL_ERROR
             "HIP_PLATFORM must be amd or nvidia when HIP is enabled")
     endif()
-    if(NOT _blitzar_hip_platform STREQUAL "")
-        set(CMAKE_HIP_PLATFORM "${_blitzar_hip_platform}" CACHE STRING
+    if(NOT _blitzar_accelerator_platform STREQUAL "")
+        set(CMAKE_HIP_PLATFORM "${_blitzar_accelerator_platform}" CACHE STRING
             "HIP platform selected by BLITZAR" FORCE)
     endif()
 
-    if(_blitzar_hip_platform STREQUAL "nvidia")
+    if(_blitzar_accelerator_platform STREQUAL "nvidia")
         include(CheckLanguage)
         find_program(_blitzar_cuda_compiler
             NAMES nvcc
@@ -93,28 +93,28 @@ if(NOT _blitzar_hip_mode STREQUAL "OFF")
                 enable_language(CUDA)
                 find_package(CUDAToolkit REQUIRED)
 
-                # NVIDIA sources are compiled as CUDA and use HipCompat.hpp.
+                # NVIDIA sources are compiled as CUDA and use Compatibility.hpp.
                 # Linking hip::host here imports the AMD platform definitions
                 # from some HIP packages and makes nvcc see both platforms.
-                set(_blitzar_hip_native_cuda ON)
+                set(_blitzar_accelerator_native_cuda ON)
 
                 set(BLITZAR_HIP_ENABLED ON CACHE INTERNAL
                     "Whether the optional HIP backend is enabled" FORCE)
                 set(BLITZAR_HIP_LANGUAGE "CUDA" CACHE INTERNAL
                     "CMake language used to compile the HIP backend" FORCE)
-                set(BLITZAR_HIP_NATIVE_CUDA "${_blitzar_hip_native_cuda}"
+                set(BLITZAR_HIP_NATIVE_CUDA "${_blitzar_accelerator_native_cuda}"
                     CACHE INTERNAL
                     "Whether NVIDIA uses CUDA without HIP headers" FORCE)
                 if(TARGET CUDA::cudart)
                     list(APPEND BLITZAR_HIP_LINK_TARGETS CUDA::cudart)
                 endif()
-                if(NOT _blitzar_hip_native_cuda AND TARGET hip::host)
+                if(NOT _blitzar_accelerator_native_cuda AND TARGET hip::host)
                     list(APPEND BLITZAR_HIP_LINK_TARGETS hip::host)
                 endif()
                 set(BLITZAR_HIP_LINK_TARGETS
                     "${BLITZAR_HIP_LINK_TARGETS}" CACHE INTERNAL
                     "HIP runtime targets linked by BLITZAR" FORCE)
-                if(_blitzar_hip_native_cuda)
+                if(_blitzar_accelerator_native_cuda)
                     message(STATUS
                         "BLITZAR native CUDA backend enabled with "
                         "${CMAKE_CUDA_COMPILER} (HIP headers not required)")
@@ -123,26 +123,26 @@ if(NOT _blitzar_hip_mode STREQUAL "OFF")
                         "BLITZAR HIP backend enabled with HIP headers and "
                         "${CMAKE_CUDA_COMPILER}")
                 endif()
-            elseif(_blitzar_hip_mode STREQUAL "ON")
+            elseif(_blitzar_accelerator_mode STREQUAL "ON")
                 message(FATAL_ERROR
                     "BLITZAR_HIP_MODE=ON could not configure nvcc")
             else()
                 message(STATUS "nvcc is unavailable; using the CPU backend")
             endif()
-        elseif(_blitzar_hip_mode STREQUAL "ON")
+        elseif(_blitzar_accelerator_mode STREQUAL "ON")
             message(FATAL_ERROR
                 "BLITZAR_HIP_MODE=ON requires nvcc for HIP_PLATFORM=nvidia")
         else()
             message(STATUS "nvcc is unavailable; using the CPU backend")
         endif()
-    elseif(_blitzar_hip_platform STREQUAL "amd")
+    elseif(_blitzar_accelerator_platform STREQUAL "amd")
         if(BLITZAR_HIP_COMPILER)
             if(NOT DEFINED CMAKE_HIP_COMPILER)
-                find_program(_blitzar_hip_clang
+                find_program(_blitzar_accelerator_clang
                     NAMES clang++ clang++-17
                     HINTS $ENV{HIP_PATH}/bin $ENV{ROCM_PATH}/llvm/bin)
-                if(_blitzar_hip_clang)
-                    set(CMAKE_HIP_COMPILER "${_blitzar_hip_clang}"
+                if(_blitzar_accelerator_clang)
+                    set(CMAKE_HIP_COMPILER "${_blitzar_accelerator_clang}"
                         CACHE FILEPATH "HIP compiler used by BLITZAR")
                 endif()
             endif()
@@ -157,12 +157,12 @@ if(NOT _blitzar_hip_mode STREQUAL "OFF")
             check_language(HIP)
             if(CMAKE_HIP_COMPILER)
                 enable_language(HIP)
-                find_package(hip CONFIG QUIET HINTS ${_blitzar_hip_hints})
+                find_package(hip CONFIG QUIET HINTS ${_blitzar_accelerator_hints})
                 if(hip_FOUND)
                     set(BLITZAR_HIP_PACKAGE "hip" CACHE INTERNAL
                         "HIP package name required by installed exports" FORCE)
                 else()
-                    find_package(HIP CONFIG QUIET HINTS ${_blitzar_hip_hints})
+                    find_package(HIP CONFIG QUIET HINTS ${_blitzar_accelerator_hints})
                     if(HIP_FOUND)
                         set(BLITZAR_HIP_PACKAGE "HIP" CACHE INTERNAL
                             "HIP package name required by installed exports"
@@ -186,20 +186,20 @@ if(NOT _blitzar_hip_mode STREQUAL "OFF")
                     "HIP runtime targets linked by BLITZAR" FORCE)
                 message(STATUS
                     "BLITZAR HIP backend enabled with ${CMAKE_HIP_COMPILER}")
-            elseif(_blitzar_hip_mode STREQUAL "ON")
+            elseif(_blitzar_accelerator_mode STREQUAL "ON")
                 message(FATAL_ERROR
                     "BLITZAR_HIP_MODE=ON could not configure a HIP compiler")
             else()
                 message(STATUS
                     "HIP compiler is unavailable; using the CPU backend")
             endif()
-        elseif(_blitzar_hip_mode STREQUAL "ON")
+        elseif(_blitzar_accelerator_mode STREQUAL "ON")
             message(FATAL_ERROR
                 "BLITZAR_HIP_MODE=ON requires hipcc for HIP_PLATFORM=amd")
         else()
             message(STATUS "hipcc is unavailable; using the CPU backend")
         endif()
-    elseif(_blitzar_hip_mode STREQUAL "ON")
+    elseif(_blitzar_accelerator_mode STREQUAL "ON")
         message(FATAL_ERROR
             "BLITZAR_HIP_MODE=ON requires HIP_PLATFORM=amd or nvidia")
     else()

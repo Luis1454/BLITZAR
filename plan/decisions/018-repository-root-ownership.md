@@ -1,13 +1,15 @@
 # Decision 018: Repository Root Ownership
 
-Status: accepted
+Status: superseded by Decision 035
 Plan version: 1.0.6
 
 ## Decision
 
-`src/gpu` is the single materialized ownership boundary for HIP runtime,
+The initial P4 layout used one materialized ownership boundary for HIP runtime,
 native CUDA compatibility, pinned staging, streams, and kernel launch policy.
-There is no parallel CUDA-runtime production root.
+Decision 035 replaces that boundary with the explicit
+`src/accelerators/gpu/hip/{bridge,runtime,memory,launch,direct,barnes_hut}` module layout. There is
+no parallel CUDA-runtime production root.
 
 The not-yet-materialized FMM, PM, TreePM, grid, and persistence modules are
 listed explicitly in `deferred_roots`. Their plan descriptions remain useful
@@ -16,8 +18,8 @@ for delivery order, but they cannot receive production code until promoted to
 
 ## Consequences
 
-- CMake GPU sources and the manifest both point to `src/gpu` and its solver
-  kernel responsibility.
+- CMake GPU sources and the manifest now point to the accelerator module and
+  its kernel responsibilities.
 - `plan_check` verifies that repository-shape paths are covered by either a
   materialized or deferred manifest root.
 - `plan_check` also rejects new top-level production directories that are not

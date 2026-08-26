@@ -10,21 +10,21 @@ endif()
 
 if(BLITZAR_BUILD_EXAMPLES)
     add_executable(blitzar_c_example
-        examples/CExample.c
+        examples/c/CExample.c
     )
     target_link_libraries(blitzar_c_example PRIVATE blitzar)
     set_property(TARGET blitzar_c_example PROPERTY LINKER_LANGUAGE CXX)
     blitzar_enable_warnings(blitzar_c_example)
 
     add_executable(blitzar_c_v2_example
-        examples/CV2Example.c
+        examples/c/CV2Example.c
     )
     target_link_libraries(blitzar_c_v2_example PRIVATE blitzar)
     set_property(TARGET blitzar_c_v2_example PROPERTY LINKER_LANGUAGE CXX)
     blitzar_enable_warnings(blitzar_c_v2_example)
 
     add_executable(blitzar_cpp_example
-        examples/CppExample.cpp
+        examples/cpp/CppExample.cpp
     )
     target_link_libraries(blitzar_cpp_example PRIVATE blitzar)
     target_compile_features(blitzar_cpp_example PRIVATE cxx_std_20)

@@ -31,9 +31,9 @@ blitzar_status DirectSolver::Prepare(std::size_t staging_capacity) noexcept
     return BLITZAR_STATUS_OK;
 }
 
-blitzar_core::SolverKind DirectSolver::Kind() const noexcept
+blitzar_solvers::SolverKind DirectSolver::Kind() const noexcept
 {
-    return blitzar_core::SolverKind::Direct;
+    return blitzar_solvers::SolverKind::Direct;
 }
 
 blitzar_status DirectSolver::Compute(blitzar_core::ParticleStateView particles,
@@ -44,7 +44,7 @@ blitzar_status DirectSolver::Compute(blitzar_core::ParticleStateView particles,
 
 blitzar_status DirectSolver::ComputeRange(blitzar_core::ParticleStateView particles,
     blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-    blitzar_core::ForceRange range) noexcept
+    blitzar_solvers::ForceRange range) noexcept
 {
     if (!ValidateRangeRequest(particles, forces, settings, range) ||
         staging_.size() < particles.count) {

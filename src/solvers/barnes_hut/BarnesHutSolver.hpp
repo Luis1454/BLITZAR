@@ -1,11 +1,11 @@
 #ifndef BLITZAR_SOLVERS_BARNES_HUT_BARNES_HUT_SOLVER_HPP
 #define BLITZAR_SOLVERS_BARNES_HUT_BARNES_HUT_SOLVER_HPP
 
-#include "core/Execution.hpp"
-#include "core/Solver.hpp"
-#include "physics/GravityLaw.hpp"
-#include "solvers/barnes_hut/ThreadStackPool.hpp"
-#include "trees/Octree.hpp"
+#include "core/contracts/Execution.hpp"
+#include "physics/gravity/GravityLaw.hpp"
+#include "solvers/contracts/SolverContract.hpp"
+#include "solvers/threading/ThreadStackPool.hpp"
+#include "trees/octree/Octree.hpp"
 
 #include <blitzar/blitzar.h>
 #include <cstddef>
@@ -37,16 +37,16 @@ public:
     BarnesHutSolver(blitzar_physics::GravityParameters gravity, BarnesHutSettings settings,
         std::size_t local_particle_capacity = 0);
 
-    [[nodiscard]] blitzar_core::SolverKind Kind() const noexcept;
+    [[nodiscard]] blitzar_solvers::SolverKind Kind() const noexcept;
     [[nodiscard]] blitzar_status Prepare(std::size_t particle_capacity) noexcept;
     [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings) noexcept;
     [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-        ThreadStackPool& stack_pool) noexcept;
+        blitzar_solver_threading::ThreadStackPool& stack_pool) noexcept;
     [[nodiscard]] blitzar_status ComputeSplit(const BarnesHutSplitRequest& request) noexcept;
-    [[nodiscard]] blitzar_status ComputeSplit(
-        const BarnesHutSplitRequest& request, ThreadStackPool& stack_pool) noexcept;
+    [[nodiscard]] blitzar_status ComputeSplit(const BarnesHutSplitRequest& request,
+        blitzar_solver_threading::ThreadStackPool& stack_pool) noexcept;
 
 private:
     struct AccumulationRequest final {
@@ -65,7 +65,7 @@ private:
         blitzar_core::ParticleStateView sources;
         blitzar_core::ForceView forces;
         blitzar_core::ExecutionSettings settings;
-        ThreadStackPool& stack_pool;
+        blitzar_solver_threading::ThreadStackPool& stack_pool;
         bool accumulate{false};
         bool skip_self{false};
     };
@@ -98,7 +98,7 @@ private:
     std::size_t local_cell_capacity_;
     std::unique_ptr<blitzar_trees::Octree> tree_;
     std::unique_ptr<blitzar_trees::Octree> remote_tree_;
-    ThreadStackPool stack_pool_;
+    blitzar_solver_threading::ThreadStackPool stack_pool_;
     std::vector<blitzar_core::Vector3> staging_;
 };
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.17",
-  "runner": "tools/final_audit.py",
+  "plan_version": "1.0.20",
+  "runner": "tools/audit/final_audit.py",
   "artifact_files": [
     "audit.json",
     "file_matrix.json",
@@ -103,7 +103,7 @@
       "review_gate": "TST-P0-003"
     },
     {
-      "prefix": "src/gpu/",
+      "prefix": "src/accelerators/gpu/hip/",
       "owner": "gpu-maintainers",
       "category": "gpu-runtime",
       "review_gate": "TST-P4-001"
@@ -139,6 +139,18 @@
       "review_gate": "TST-P0-001"
     },
     {
+      "prefix": "src/simulation/",
+      "owner": "simulation-maintainers",
+      "category": "simulation-engine",
+      "review_gate": "TST-P0-001"
+    },
+    {
+      "prefix": "src/solvers/",
+      "owner": "solver-maintainers",
+      "category": "solver-contract",
+      "review_gate": "TST-P0-003"
+    },
+    {
       "prefix": "src/solvers/barnes_hut/",
       "owner": "solver-maintainers",
       "category": "barnes-hut-solver",
@@ -157,9 +169,15 @@
       "review_gate": "TST-P3-002"
     },
     {
-      "prefix": "src/solvers/gpu/",
+      "prefix": "src/accelerators/gpu/hip/direct/",
       "owner": "gpu-maintainers",
-      "category": "gpu-solver-dispatch",
+      "category": "gpu-direct-solver",
+      "review_gate": "TST-P4-001"
+    },
+    {
+      "prefix": "src/accelerators/gpu/hip/barnes_hut/",
+      "owner": "gpu-maintainers",
+      "category": "gpu-barnes-hut-solver",
       "review_gate": "TST-P4-001"
     },
     {

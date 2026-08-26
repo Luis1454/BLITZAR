@@ -35,5 +35,5 @@ synchronized before data operations.
   corresponding collective or request batch.
 - Large transfers require temporary wire buffers and multiple MPI rounds, but
   the public packet-unit spans remain unchanged.
-- The wire fixture in `tests/Mpi.cpp` locks the scalar width and little-endian
+- The wire fixture in `tests/parallel/mpi/Mpi.cpp` locks the scalar width and little-endian
   byte order contract.

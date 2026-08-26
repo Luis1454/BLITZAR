@@ -11,7 +11,7 @@ add_test(NAME TST-P1-003 COMMAND blitzar_allocation_test)
 add_test(NAME TST-P3-001 COMMAND blitzar_hierarchy_test)
 add_test(NAME TST-P3-002 COMMAND blitzar_fmm_test)
 add_test(NAME TST-P1-002 COMMAND blitzar_numerical_test)
-add_test(NAME TST-P4-001 COMMAND blitzar_hip_test)
+add_test(NAME TST-P4-001 COMMAND blitzar_accelerator_test)
 add_test(
     NAME TST-P0-007
     COMMAND blitzar_scaling_test --particles 16 --steps 1 --seed 424242 --solver direct
@@ -90,5 +90,5 @@ add_test(
     NAME TST-P2-004
     COMMAND cmake
         -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR}
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/PackageConsumer.cmake
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/PackageConsumer.cmake
 )

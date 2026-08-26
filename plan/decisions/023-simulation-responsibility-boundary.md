@@ -6,13 +6,13 @@ Plan version: 1.0.10
 
 ## Context
 
-`src/sdk/Simulation.cpp` mixed construction, solver configuration, particle state
+`src/simulation/facade/Simulation.cpp` mixed construction, solver configuration, particle state
 transfer, and local/distributed KDK execution. The implementation is now
 distributed across behavior-owned files without recreating a server boundary.
 The earlier extraction used redundant server-oriented prefixes for SDK
 implementation files and helper types. Those names leaked an obsolete server
 boundary into the clean-room SDK and obscured the responsibility owned by the
-`src/sdk` module.
+`src/simulation` module.
 
 ## Decision
 

@@ -1,9 +1,9 @@
 #ifndef BLITZAR_SOLVERS_DIRECT_DIRECT_SOLVER_HPP
 #define BLITZAR_SOLVERS_DIRECT_DIRECT_SOLVER_HPP
 
-#include "core/Execution.hpp"
-#include "core/Solver.hpp"
-#include "physics/GravityLaw.hpp"
+#include "core/contracts/Execution.hpp"
+#include "physics/gravity/GravityLaw.hpp"
+#include "solvers/contracts/SolverContract.hpp"
 
 #include <blitzar/blitzar.h>
 #include <cstddef>
@@ -18,12 +18,12 @@ public:
 
     [[nodiscard]] blitzar_status Prepare(std::size_t staging_capacity) noexcept;
 
-    [[nodiscard]] blitzar_core::SolverKind Kind() const noexcept;
+    [[nodiscard]] blitzar_solvers::SolverKind Kind() const noexcept;
     [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings) noexcept;
     [[nodiscard]] blitzar_status ComputeRange(blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-        blitzar_core::ForceRange range) noexcept;
+        blitzar_solvers::ForceRange range) noexcept;
     [[nodiscard]] blitzar_status ComputeRemote(blitzar_core::ParticleStateView targets,
         blitzar_core::ParticleStateView sources, blitzar_core::ForceView forces,
         const blitzar_core::ExecutionSettings& settings) noexcept;
@@ -33,7 +33,7 @@ private:
         const blitzar_physics::GravityLaw& gravity;
         std::size_t target{};
         blitzar_core::ParticleStateView particles;
-        blitzar_core::ForceRange range;
+        blitzar_solvers::ForceRange range;
         blitzar_core::Vector3& acceleration;
     };
 
@@ -51,14 +51,14 @@ private:
         const RemoteForceTargetRequest& request) noexcept;
     [[nodiscard]] bool ValidateRangeRequest(blitzar_core::ParticleStateView particles,
         blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-        blitzar_core::ForceRange range) const noexcept;
+        blitzar_solvers::ForceRange range) const noexcept;
     [[nodiscard]] bool ValidateRemoteRequest(blitzar_core::ParticleStateView targets,
         blitzar_core::ParticleStateView sources, blitzar_core::ForceView forces,
         const blitzar_core::ExecutionSettings& settings) const noexcept;
     [[nodiscard]] blitzar_status ComputeRangeStaged(
-        blitzar_core::ParticleStateView particles, blitzar_core::ForceRange range) noexcept;
+        blitzar_core::ParticleStateView particles, blitzar_solvers::ForceRange range) noexcept;
     [[nodiscard]] blitzar_status CommitRange(
-        blitzar_core::ForceView forces, blitzar_core::ForceRange range) noexcept;
+        blitzar_core::ForceView forces, blitzar_solvers::ForceRange range) noexcept;
     [[nodiscard]] blitzar_status ComputeRemoteStaged(
         blitzar_core::ParticleStateView targets, blitzar_core::ParticleStateView sources) noexcept;
     [[nodiscard]] blitzar_status CommitRemote(blitzar_core::ForceView forces) noexcept;
