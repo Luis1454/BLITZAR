@@ -5,9 +5,9 @@ Plan version: 1.0.16
 
 ## Decision
 
-The scaling contract is executable through `tools/release_evidence.py`, and
+The scaling contract is executable through `tools/evidence/release_evidence.py`, and
 its pure expansion and parsing rules are covered by
-`tools/release_evidence_test.py`. The CI `release-evidence` job builds the
+`tools/evidence/release_evidence_test.py`. The CI `release-evidence` job builds the
 scaling and HIP qualification probes with MPI enabled, runs the versioned
 matrix in strict mode, and uploads the generated directory as an external
 artifact.

@@ -16,7 +16,7 @@ allows existing ignored legacy build directories for inventory purposes but
 rejects any generated build or Python-cache artifact that becomes tracked.
 
 The manifest-defined deterministic gates are run through
-`tools/quality_gate.py`, which is the same command used locally and by the
+`tools/gates/quality_gate.py`, which is the same command used locally and by the
 workflow validation job. Build, package, MPI, and accelerator jobs remain
 runtime qualification jobs and depend on that structural gate.
 

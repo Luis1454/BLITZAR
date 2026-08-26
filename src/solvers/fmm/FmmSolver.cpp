@@ -25,9 +25,9 @@ FmmSolver::FmmSolver(blitzar_physics::GravityParameters gravity, FmmSettings set
     remote_multipoles_.reserve(settings.max_cells);
 }
 
-blitzar_core::SolverKind FmmSolver::Kind() const noexcept
+blitzar_solvers::SolverKind FmmSolver::Kind() const noexcept
 {
-    return blitzar_core::SolverKind::Fmm;
+    return blitzar_solvers::SolverKind::Fmm;
 }
 
 blitzar_status FmmSolver::Prepare(std::size_t particle_capacity) noexcept
@@ -67,7 +67,7 @@ blitzar_status FmmSolver::Compute(blitzar_core::ParticleStateView particles,
 
 blitzar_status FmmSolver::Compute(blitzar_core::ParticleStateView particles,
     blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-    blitzar_barnes_hut::ThreadStackPool& stack_pool) noexcept
+    blitzar_solver_threading::ThreadStackPool& stack_pool) noexcept
 {
     const blitzar_status prepare_status = Prepare(particles.count);
 
@@ -87,7 +87,7 @@ blitzar_status FmmSolver::ComputeSplit(const FmmSplitRequest& request) noexcept
 }
 
 blitzar_status FmmSolver::ComputeSplit(
-    const FmmSplitRequest& request, blitzar_barnes_hut::ThreadStackPool& stack_pool) noexcept
+    const FmmSplitRequest& request, blitzar_solver_threading::ThreadStackPool& stack_pool) noexcept
 {
     const blitzar_status prepare_status = Prepare(request.local.count);
 

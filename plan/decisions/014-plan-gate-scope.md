@@ -5,7 +5,7 @@ Plan version: 1.0.6
 
 ## Decision
 
-`tools/plan_check.py` enforces only deterministic repository-contract rules:
+`tools/gates/plan_check.py` enforces only deterministic repository-contract rules:
 materialized and deferred roots, safe path syntax, phase identifiers, frozen
 manifest structure, forbidden references, source naming, and textual CTest
 registration.
@@ -21,7 +21,7 @@ architecture rules. They are not guessed by a regex gate. A future qualified
 analyzer may promote one of them to an enforced rule with its own fixture
 tests and acceptance contract.
 
-`tools/plan_check_test.py` runs deterministic valid and invalid temporary
+`tools/gates/plan_check_test.py` runs deterministic valid and invalid temporary
 fixtures for each enforced rule family and is executed by the workflow's plan
 validation job.
 

@@ -5,7 +5,7 @@ following command from the repository root after building
 `blitzar_scaling_test`:
 
 ```text
-python tools/release_evidence.py --root . --build-dir ../.blitzar-build/evidence --output ../.blitzar-evidence/run
+python -m tools.evidence.release_evidence --root . --build-dir ../.blitzar-build/evidence --output ../.blitzar-evidence/run
 ```
 
 The output directory contains the exact metadata, one raw log per command,

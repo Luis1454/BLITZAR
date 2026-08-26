@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.17**
+Plan version: **1.0.20**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -50,13 +50,13 @@ executed-device outcomes separately.
 ## Reproducible Evidence
 
 Performance and release claims require the workload contract in
-`plan/scaling.json`. `tests/Scaling.cpp` is a measurement harness, not a
+`plan/scaling.json`. `tests/scaling/Scaling.cpp` is a measurement harness, not a
 second simulation implementation: it exercises the existing `Simulation`
 execution path, records one result per MPI rank, and compares hierarchical
 solvers with the Direct CPU oracle when the selected mode is CPU-qualified.
 
-`tools/release_evidence.py` expands the strong-scaling, weak-scaling,
-migration, and overlap workloads; `tools/release_evidence_test.py` verifies the
+`tools/evidence/release_evidence.py` expands the strong-scaling, weak-scaling,
+migration, and overlap workloads; `tools/evidence/release_evidence_test.py` verifies the
 contract expansion and record parser. It records the exact command, Git revision,
 plan version, compiler/toolchain, operating system, CPU topology, rank count,
 backend, precision, seed, tolerances, memory result, communication volume,
@@ -70,7 +70,7 @@ strict mode; its output is uploaded as an external artifact.
 ## Final Qualification
 
 `plan/final_audit.json` assigns an owner, category, and review gate to every
-tracked repository path. `tools/final_audit.py` materializes the complete file
+tracked repository path. `tools/audit/final_audit.py` materializes the complete file
 matrix, hashes and scans each tracked file, checks CMake/source completeness,
 validates the accepted architecture reviews and deferred capability register,
 and verifies the implementation commits for RR-01 through RR-15. Its report,
@@ -85,27 +85,30 @@ state, and no local multi-rank result is promoted to multi-node evidence.
 
 ```text
 include/blitzar/                 Public ABI and C++ facade only
-src/core/                        Stable internal contracts and value types
-src/particles/                   Aligned SoA particle storage and invariants
-src/physics/                     Force laws, units, softening, validation
-src/integration/                 Time integration and timestep policy
-src/trees/                       Morton ordering, octree, multipoles
-src/gpu/                         HIP/CUDA runtime, pinned staging, streams, and launch policy
-src/parallel/                    MPI context, domain ownership, and exchange
+src/core/contracts/              Stable internal contracts and value types
+src/particles/{arena,buffers,source}/ Aligned SoA particle storage and invariants
+src/physics/gravity/             Force laws, units, softening, validation
+src/integration/kdk/              Time integration and timestep policy
+src/trees/ordering/              Shared Morton key generation and ordering
+src/trees/octree/{access,construction,ordering,properties}/ Octree responsibilities
+src/accelerators/gpu/hip/{bridge,runtime,memory,launch,direct,barnes_hut}/ HIP/CUDA runtime and launch policy
+src/parallel/mpi/{collectives,context,domain,exchange,gather,native}/ MPI adapter responsibilities
 src/grid/                        3D grids and mass deposition
-src/solvers/direct/              O(N^2) CPU reference and HIP acceleration
-src/solvers/barnes_hut/          O(N log N) CPU and HIP
-src/solvers/gpu/                 HIP kernel launch contracts and implementations
-src/solvers/fmm/                 FMM CPU
+src/solvers/{contracts,threading}/ Shared solver contracts and traversal resources
+src/solvers/direct/{compute,force}/ O(N^2) CPU reference responsibilities
+src/solvers/barnes_hut/tree/     Barnes-Hut tree orchestration
+src/solvers/fmm/{multipole,traversal}/ FMM CPU responsibilities
 src/solvers/pm/                  Particle-Mesh CPU and CUDA
 src/solvers/treepm/              TreePM composition and dispatch
 src/io/                          Binary snapshots and optional HDF5 adapter
-src/sdk/                         Internal implementation of the public SDK
+src/sdk/{c,cpp}/                 Internal C ABI and C++ facade adapters
+src/simulation/{composition,configuration,facade,input,storage,transaction}/ Simulation behavior
+src/simulation/step/{local,distributed,preparation,migration,overlap,packets}/ Step responsibilities
 apps/blitzar/                    CLI executable; never library production code
 tests/                           Unit, reference, contract, and integration tests
 examples/                        Minimal C and C++ SDK consumers
 plan/                            Frozen roadmap and machine-readable invariants
-tools/                           Repository policy checks only
+tools/{architecture,gates,format,debug,evidence,audit}/ Repository policy checks
 ```
 
 `src/grid`, `src/io`, `src/solvers/pm`, and `src/solvers/treepm` are planned
@@ -114,7 +117,9 @@ production ownership and tests exist. The CPU FMM root is materialized in P3
 with deterministic order-2 multipole qualification; GPU FMM remains outside
 the current backend scope. The
 GPU runtime and native CUDA compatibility are intentionally owned by
-`src/gpu`; no parallel CUDA runtime root exists.
+`src/accelerators/gpu/hip`; no parallel CUDA runtime root exists. HIP kernels are
+co-located below `accelerators/gpu/hip/{direct,barnes_hut}`, while CPU solver implementations
+remain under `src/solvers`.
 
 Build trees are not repository content. Local builds use `../.blitzar-build`
 by default, and CI builds use `${RUNNER_TEMP}/blitzar-build`; the versioned
@@ -199,7 +204,7 @@ unsupported/fallback path otherwise.
 ### Sprint 6.1: Native NVIDIA CUDA Compatibility
 
 When `HIP_PLATFORM=nvidia` is explicit, CMake may use the CUDA language and
-`nvcc` without requiring `hipcc` or HIP headers. `src/gpu/HipCompat.hpp`
+`nvcc` without requiring `hipcc` or HIP headers. `src/accelerators/gpu/hip/bridge/Compatibility.hpp`
 provides only the runtime calls used by the kernels; the kernels remain single
 `.hip` sources and the compatibility layer stays internal. AMD continues to
 use the ROCm HIP path, while an unselected or unavailable backend keeps the

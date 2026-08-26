@@ -9,147 +9,147 @@
       "decision": "The test-target composition module owns explicit links for the complete unit, MPI, and public-header matrix; its dependency count is the test topology and is isolated from production and package target ownership."
     },
     {
-      "path": "src/parallel/MpiNative.cpp",
+      "path": "src/parallel/mpi/native/MpiNative.cpp",
       "signals": ["function_count"],
       "issue": 603,
       "status": "accepted",
       "decision": "The lifecycle adapter keeps runtime initialization, external ownership, and process-exit finalization together; collectives, packet operations, and ghost requests are split into separate native units."
     },
     {
-      "path": "src/parallel/MpiNativeGhost.cpp",
+      "path": "src/parallel/mpi/native/MpiNativeGhost.cpp",
       "signals": ["branching"],
       "issue": 603,
       "status": "accepted",
       "decision": "The ghost adapter combines platform guards with request validation and cancellation so MPI request lifetime is closed in one native boundary; transport orchestration remains outside the file."
     },
     {
-      "path": "tests/ApiC.c",
+      "path": "tests/contracts/ApiC.c",
       "signals": ["function_length"],
       "issue": 599,
       "status": "accepted",
       "decision": "The C ABI fixture keeps one end-to-end lifecycle scenario so ABI ordering and cleanup remain visible; its length is registered for review rather than hidden from the repository report."
     },
     {
-      "path": "tests/Bounded.cpp",
+      "path": "tests/contracts/Bounded.cpp",
       "signals": ["function_length", "include_dependencies"],
       "issue": 599,
       "status": "accepted",
       "decision": "The bounded-view fixture validates related invalid-input cases and the split SDK contracts in one contract scenario; its length and include dependencies are tracked and remain outside production code."
     },
     {
-      "path": "tests/Contracts.cpp",
+      "path": "tests/contracts/Contracts.cpp",
       "signals": ["function_length"],
       "issue": 599,
       "status": "accepted",
       "decision": "The contract fixture groups the public and internal invariant checks needed to detect drift across the SDK boundary; the review signal remains explicit."
     },
     {
-      "path": "tests/Dynamics.cpp",
+      "path": "tests/integration/Dynamics.cpp",
       "signals": ["function_length"],
       "issue": 599,
       "status": "accepted",
       "decision": "The dynamics fixture keeps deterministic physical cases together so shared setup and comparison rules cannot diverge; the signal is registered for later focused decomposition."
     },
     {
-      "path": "tests/Hierarchy.cpp",
+      "path": "tests/trees/octree/Hierarchy.cpp",
       "signals": ["function_length"],
       "issue": 599,
       "status": "accepted",
       "decision": "The hierarchy fixture compares tree construction and solver behavior in one deterministic scenario; its test-only function length is visible and reviewed."
     },
     {
-      "path": "tests/Lifecycle.cpp",
+      "path": "tests/simulation/Lifecycle.cpp",
       "signals": ["function_length"],
       "issue": 599,
       "status": "accepted",
       "decision": "The lifecycle fixture intentionally exercises construction, mutation, failure, and cleanup in sequence; the signal is accepted as a test-harness responsibility review."
     },
     {
-      "path": "tools/architecture_report.py",
+      "path": "tools/architecture/architecture_report.py",
       "signals": ["parameter_count"],
       "issue": 599,
       "status": "accepted",
       "decision": "The architecture gate keeps one five-argument file-analysis boundary so profile thresholds and exception handling are applied consistently; the signal is registered and does not waive production thresholds."
     },
     {
-      "path": "tools/argument_gate.py",
+      "path": "tools/gates/argument_gate.py",
       "signals": ["branching"],
       "issue": 599,
       "status": "accepted",
       "decision": "The callable scanner handles C++ lexical edge cases and explicit exceptions in one validator; its branching is tool-local and remains covered by its fixture suite."
     },
     {
-      "path": "tools/format_blocks.py",
+      "path": "tools/format/format_blocks.py",
       "signals": ["branching", "function_count", "function_length", "parameter_count"],
       "issue": 599,
       "status": "accepted",
       "decision": "The formatter implements the repository's scope-sensitive grouping grammar and recursive statement handling; the current complexity is exposed for a later tool decomposition instead of ignored."
     },
     {
-      "path": "tools/plan_check.py",
+      "path": "tools/gates/plan_check.py",
       "signals": ["branching", "function_length"],
       "issue": 599,
       "status": "accepted",
       "decision": "The frozen-plan gate validates mutually dependent manifest, roots, phase, CTest, naming, and forbidden-reference contracts; its signal is registered while the gate remains a single policy boundary."
     },
     {
-      "path": "tools/naming_gate.py",
+      "path": "tools/gates/naming_gate.py",
       "signals": ["allocation"],
       "issue": 600,
       "status": "accepted",
       "decision": "The naming report materializes separate collision, exception, length, and type-mapping result lists so CI can distinguish each contract failure; the allocation signal is limited to report construction."
     },
     {
-      "path": "tools/public_api_gate.py",
+      "path": "tools/gates/public_api_gate.py",
       "signals": ["branching"],
       "issue": 602,
       "status": "accepted",
       "decision": "The public boundary gate keeps include, pointer, fixed-width ABI, internal-facade, and parameter-exception checks in one diagnostic boundary so a public contract violation reports its owning rule and source line."
     },
     {
-      "path": "tools/capability_gate.py",
+      "path": "tools/gates/capability_gate.py",
       "signals": ["branching", "function_length"],
       "issue": 611,
       "status": "accepted",
       "decision": "The capability gate keeps matrix validation, deferred-root checks, and public unsupported-status checks in one policy boundary so compile claims cannot drift from the frozen plan; its tool-local signals are covered by the fixture and do not waive production thresholds."
     },
     {
-      "path": "tests/Scaling.cpp",
+      "path": "tests/scaling/Scaling.cpp",
       "signals": ["branching"],
       "issue": 612,
       "status": "accepted",
       "decision": "The scaling CLI keeps option parsing and stable record emission together so every workload invocation has the same machine-readable fields; its branching is test-harness local and is covered by the evidence runner fixtures."
     },
     {
-      "path": "tests/ScalingRun.cpp",
+      "path": "tests/scaling/ScalingRun.cpp",
       "signals": ["branching"],
       "issue": 612,
       "status": "accepted",
       "decision": "The runner fixture owns timing, CPU-oracle comparison, process memory sampling, and migration aggregation for one simulation execution; the signal is explicit because these measurements must share one state boundary."
     },
     {
-      "path": "tools/evidence_contract.py",
+      "path": "tools/evidence/evidence_contract.py",
       "signals": ["allocation", "branching"],
       "issue": 612,
       "status": "accepted",
       "decision": "The pure contract module validates and expands one versioned workload schema and parses rank records; its report-list allocations and validation branches are policy-local, deterministic, and covered by release_evidence_test.py."
     },
     {
-      "path": "src/parallel/MpiMigration.cpp",
+      "path": "src/parallel/mpi/exchange/migration/MpiMigration.cpp",
       "signals": ["branching", "function_length"],
       "issue": 612,
       "status": "accepted",
       "decision": "Migration retains one collective transaction boundary so every early return records the same diagnostic status and clears received packets consistently; packet preparation and exchange remain split into dedicated methods."
     },
     {
-      "path": "src/sdk/Simulation.cpp",
+      "path": "src/simulation/facade/Simulation.cpp",
       "signals": ["function_count"],
       "issue": 612,
       "status": "accepted",
       "decision": "The added rank, local-count, overlap, and migration accessors form one observability boundary for the internal qualification harness; they do not widen the public SDK ABI or add simulation responsibilities."
     },
     {
-      "path": "tools/final_audit_contract.py",
+      "path": "tools/audit/final_audit_contract.py",
       "signals": ["branching"],
       "issue": 613,
       "status": "accepted",

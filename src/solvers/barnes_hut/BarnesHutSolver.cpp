@@ -46,9 +46,9 @@ BarnesHutSolver::BarnesHutSolver(blitzar_physics::GravityParameters gravity,
 {
 }
 
-blitzar_core::SolverKind BarnesHutSolver::Kind() const noexcept
+blitzar_solvers::SolverKind BarnesHutSolver::Kind() const noexcept
 {
-    return blitzar_core::SolverKind::BarnesHut;
+    return blitzar_solvers::SolverKind::BarnesHut;
 }
 
 blitzar_status BarnesHutSolver::Prepare(std::size_t particle_capacity) noexcept
@@ -68,7 +68,7 @@ blitzar_status BarnesHutSolver::Compute(blitzar_core::ParticleStateView particle
 
 blitzar_status BarnesHutSolver::Compute(blitzar_core::ParticleStateView particles,
     blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-    ThreadStackPool& stack_pool) noexcept
+    blitzar_solver_threading::ThreadStackPool& stack_pool) noexcept
 {
     const blitzar_status prepare_status = Prepare(particles.count);
 
@@ -87,8 +87,8 @@ blitzar_status BarnesHutSolver::ComputeSplit(const BarnesHutSplitRequest& reques
     return ComputeSplit(request, stack_pool_);
 }
 
-blitzar_status BarnesHutSolver::ComputeSplit(
-    const BarnesHutSplitRequest& request, ThreadStackPool& stack_pool) noexcept
+blitzar_status BarnesHutSolver::ComputeSplit(const BarnesHutSplitRequest& request,
+    blitzar_solver_threading::ThreadStackPool& stack_pool) noexcept
 {
     const blitzar_status prepare_status = Prepare(request.local.count);
 

@@ -31,11 +31,11 @@ jobs:
         run: python -m pip install clang-format==22.1.8
 
       - name: Run manifest-defined structural gates
-        run: python tools/quality_gate.py --root . --group static
+        run: python -m tools.gates.quality_gate --root . --group static
 
       - name: Record workspace inventory
         shell: bash
-        run: python tools/workspace_gate.py --root . --check --output "$RUNNER_TEMP/workspace-report.json"
+        run: python -m tools.gates.workspace_gate --root . --check --output "$RUNNER_TEMP/workspace-report.json"
 
       - name: Reject unapproved plan edits
         if: github.event_name == 'pull_request'
@@ -86,7 +86,7 @@ jobs:
         run: cmake --build "$env:BLITZAR_CI_BUILD_ROOT/shared" --config Release
 
       - name: Qualify installed shared package consumer
-        run: cmake "-DBLITZAR_BUILD_DIR=$env:BLITZAR_CI_BUILD_ROOT/shared" -P tests/PackageConsumer.cmake
+        run: cmake "-DBLITZAR_BUILD_DIR=$env:BLITZAR_CI_BUILD_ROOT/shared" -P tests/package/PackageConsumer.cmake
 
   sanitizers:
     name: Linux Clang sanitizers
@@ -140,7 +140,7 @@ jobs:
       - name: Record debugger capability
         shell: bash
         run: |
-          capability="$(python tools/debug_runner.py --backend gdb --capability)"
+          capability="$(python -m tools.debug.debug_runner --backend gdb --capability)"
           {
             echo "## Capability record"
             while IFS= read -r line; do echo "- $line"; done <<< "$capability"
@@ -167,15 +167,15 @@ jobs:
 
       - name: Run numerical test under debugger
         shell: bash
-        run: python tools/debug_runner.py --backend gdb --timeout 120 "$BLITZAR_CI_BUILD_ROOT/linux-debug/blitzar_numerical_test"
+        run: python -m tools.debug.debug_runner --backend gdb --timeout 120 "$BLITZAR_CI_BUILD_ROOT/linux-debug/blitzar_numerical_test"
 
       - name: Run allocation test under debugger
         shell: bash
-        run: python tools/debug_runner.py --backend gdb --timeout 120 "$BLITZAR_CI_BUILD_ROOT/linux-debug/blitzar_allocation_test"
+        run: python -m tools.debug.debug_runner --backend gdb --timeout 120 "$BLITZAR_CI_BUILD_ROOT/linux-debug/blitzar_allocation_test"
 
       - name: Verify non-zero child status under debugger
         shell: bash
-        run: python tools/debug_runner.py --backend gdb --expected-exit-code 7 --timeout 120 "$BLITZAR_CI_BUILD_ROOT/linux-debug/blitzar_debug_status_probe"
+        run: python -m tools.debug.debug_runner --backend gdb --expected-exit-code 7 --timeout 120 "$BLITZAR_CI_BUILD_ROOT/linux-debug/blitzar_debug_status_probe"
 
   windows-debug:
     name: Windows CDB debug qualification
@@ -207,7 +207,7 @@ jobs:
       - name: Record debugger capability
         shell: pwsh
         run: |
-          $capability = python tools/debug_runner.py --backend cdb --capability
+          $capability = python -m tools.debug.debug_runner --backend cdb --capability
           Add-Content $env:GITHUB_STEP_SUMMARY "## Capability record"
           $capability | ForEach-Object { Add-Content $env:GITHUB_STEP_SUMMARY "- $_" }
           Add-Content $env:GITHUB_STEP_SUMMARY "- backend: CPU Debug"
@@ -231,13 +231,13 @@ jobs:
         run: cmake --build "$env:BLITZAR_CI_BUILD_ROOT/windows-debug" --target blitzar_numerical_test blitzar_allocation_test blitzar_debug_status_probe --parallel
 
       - name: Run numerical test under debugger
-        run: python tools/debug_runner.py --backend cdb --timeout 120 "$env:BLITZAR_CI_BUILD_ROOT/windows-debug/blitzar_numerical_test.exe"
+        run: python -m tools.debug.debug_runner --backend cdb --timeout 120 "$env:BLITZAR_CI_BUILD_ROOT/windows-debug/blitzar_numerical_test.exe"
 
       - name: Run allocation test under debugger
-        run: python tools/debug_runner.py --backend cdb --timeout 120 "$env:BLITZAR_CI_BUILD_ROOT/windows-debug/blitzar_allocation_test.exe"
+        run: python -m tools.debug.debug_runner --backend cdb --timeout 120 "$env:BLITZAR_CI_BUILD_ROOT/windows-debug/blitzar_allocation_test.exe"
 
       - name: Verify non-zero child status under debugger
-        run: python tools/debug_runner.py --backend cdb --expected-exit-code 7 --timeout 120 "$env:BLITZAR_CI_BUILD_ROOT/windows-debug/blitzar_debug_status_probe.exe"
+        run: python -m tools.debug.debug_runner --backend cdb --expected-exit-code 7 --timeout 120 "$env:BLITZAR_CI_BUILD_ROOT/windows-debug/blitzar_debug_status_probe.exe"
 
   macos-debug:
     name: macOS LLDB debug qualification
@@ -250,7 +250,7 @@ jobs:
       - name: Record debugger capability
         shell: bash
         run: |
-          capability="$(python3 tools/debug_runner.py --backend lldb --capability)"
+          capability="$(python3 -m tools.debug.debug_runner --backend lldb --capability)"
           {
             echo "## Capability record"
             while IFS= read -r line; do echo "- $line"; done <<< "$capability"
@@ -277,15 +277,15 @@ jobs:
 
       - name: Run numerical test under debugger
         shell: bash
-        run: python3 tools/debug_runner.py --backend lldb --timeout 120 "$BLITZAR_CI_BUILD_ROOT/macos-debug/blitzar_numerical_test"
+        run: python3 -m tools.debug.debug_runner --backend lldb --timeout 120 "$BLITZAR_CI_BUILD_ROOT/macos-debug/blitzar_numerical_test"
 
       - name: Run allocation test under debugger
         shell: bash
-        run: python3 tools/debug_runner.py --backend lldb --timeout 120 "$BLITZAR_CI_BUILD_ROOT/macos-debug/blitzar_allocation_test"
+        run: python3 -m tools.debug.debug_runner --backend lldb --timeout 120 "$BLITZAR_CI_BUILD_ROOT/macos-debug/blitzar_allocation_test"
 
       - name: Verify non-zero child status under debugger
         shell: bash
-        run: python3 tools/debug_runner.py --backend lldb --expected-exit-code 7 --timeout 120 "$BLITZAR_CI_BUILD_ROOT/macos-debug/blitzar_debug_status_probe"
+        run: python3 -m tools.debug.debug_runner --backend lldb --expected-exit-code 7 --timeout 120 "$BLITZAR_CI_BUILD_ROOT/macos-debug/blitzar_debug_status_probe"
 
   static-analysis:
     name: Clang static analysis
@@ -396,7 +396,7 @@ jobs:
 
       - name: Configure and build external consumer
         shell: bash
-        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/package" -P tests/PackageConsumer.cmake
+        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/package" -P tests/package/PackageConsumer.cmake
 
   mpi-ranks:
     name: MPI two and four rank qualification
@@ -444,7 +444,7 @@ jobs:
           OMPI_ALLOW_RUN_AS_ROOT: "1"
           OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
           OMPI_MCA_rmaps_base_oversubscribe: "1"
-        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/mpi" -P tests/PackageConsumer.cmake
+        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/mpi" -P tests/package/PackageConsumer.cmake
 
       - name: Run two and four rank tests with timeout
         shell: bash
@@ -489,7 +489,7 @@ jobs:
       - name: Build evidence probes
         run: |
           cmake --build "$BLITZAR_CI_BUILD_ROOT/evidence" \
-            --target blitzar_scaling_test blitzar_hip_test --parallel
+            --target blitzar_scaling_test blitzar_accelerator_test --parallel
 
       - name: Run reproducible evidence matrix
         shell: bash
@@ -498,7 +498,7 @@ jobs:
           OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
           OMPI_MCA_rmaps_base_oversubscribe: "1"
         run: |
-          timeout --foreground 900s python tools/release_evidence.py \
+          timeout --foreground 900s python -m tools.evidence.release_evidence \
             --root . \
             --build-dir "$BLITZAR_CI_BUILD_ROOT/evidence" \
             --output "$RUNNER_TEMP/blitzar-evidence" \
@@ -574,7 +574,7 @@ jobs:
       - name: Qualify installed native CUDA package consumer
         if: steps.probe.outputs.compile == 'true'
         shell: bash
-        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/cuda" -P tests/PackageConsumer.cmake
+        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/cuda" -P tests/package/PackageConsumer.cmake
 
       - name: Run CUDA device qualification
         if: steps.probe.outputs.device == 'true'
@@ -644,7 +644,7 @@ jobs:
       - name: Qualify installed HIP package consumer
         if: steps.probe.outputs.compile == 'true'
         shell: bash
-        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/hip" -P tests/PackageConsumer.cmake
+        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/hip" -P tests/package/PackageConsumer.cmake
 
       - name: Run HIP device qualification
         if: steps.probe.outputs.device == 'true'
@@ -701,7 +701,7 @@ jobs:
           BLITZAR_LANE_NATIVE_CUDA: ${{ needs['native-cuda'].result }}
           BLITZAR_LANE_HIP: ${{ needs['hip'].result }}
         run: |
-          python tools/final_audit.py \
+          python -m tools.audit.final_audit \
             --root . \
             --output "$RUNNER_TEMP/blitzar-final-audit" \
             --strict \

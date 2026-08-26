@@ -10,7 +10,7 @@ registered ABI or execution boundary.
 | Boundary | Allowed representation | Ownership rule |
 | --- | --- | --- |
 | `include/blitzar/blitzar.h` and its adapters | C pointers plus explicit counts | Borrowed for the duration of the call; adapters immediately create bounded `std::span` views. |
-| CUDA/HIP runtime bridge | `void*`, `void**`, and address records | Runtime addresses are owned by `HipBuffers` and are never destroyed by request records. |
+| CUDA/HIP runtime bridge | `void*`, `void**`, and address records | Runtime addresses are owned by `Buffers` and are never destroyed by request records. |
 | GPU kernel records | device pointers | Borrowed views; counts and capacities live in the launch request and are validated before dispatch. |
 | MPI native calls | `.data()` from validated spans | MPI owns only its request handles; wire storage remains in the owning transport until completion. |
 | test allocator and process entry points | platform-mandated pointers | Instrumentation or process lifetime only; no production ownership is inferred. |
@@ -21,7 +21,7 @@ pointers. `std::span` is the required representation for an internal buffer
 and count pair whenever an external ABI does not impose a pointer-shaped
 signature.
 
-The gate in `tools/pointer_ownership_gate.py` scans every C/C++/CUDA source
+The gate in `tools/gates/pointer_ownership_gate.py` scans every C/C++/CUDA source
 root, reports each registered pointer declaration with its category, and
 rejects unregistered declarations, owner-like raw pointer fields, and direct
 `new`/`delete` outside the C ABI handle implementation. The allowlist is

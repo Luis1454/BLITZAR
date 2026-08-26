@@ -10,7 +10,7 @@ a generic state aggregate and it does not change the public ABI.
 
 | Component | Owner | Borrowed dependencies | Mutation phases | Failure authority |
 | --- | --- | --- | --- | --- |
-| `runtime_` | `Simulation` owns `SimulationRuntime` by value | `MpiExchange` borrows its `MpiContext` and `DomainDecomposition` | construction, particle distribution, ghost exchange, migration, gather, HIP dispatch | `MpiContext::Status`, exchange capacity, and synchronized MPI status |
+| `resources_` | `Simulation` owns `SimulationResources` by value | `MpiExchange` borrows its `MpiContext` and `DomainDecomposition` | construction, particle distribution, ghost exchange, migration, gather, HIP dispatch | `MpiContext::Status`, exchange capacity, and synchronized MPI status |
 | `particle_storage_` | `Simulation` owns `ParticleStorage` by value | `ParticleBuffer`, `AccelerationBuffer`, and `KdkCheckpoint` borrow its `ParticleArena` | input commit, KDK, migration, rollback | buffer status and transaction validation |
 | `source_` | `Simulation` owns the remote source buffer | none | ghost completion, remote force evaluation, abort | source capacity and dispatcher status |
 | `gravity_`, `barnes_hut_` | `Simulation` owns value configuration | candidate solver borrows configuration only during construction | configuration mutators and solver rebuild | candidate validation and `Remember` |
@@ -24,10 +24,10 @@ a generic state aggregate and it does not change the public ABI.
 
 ## Lifetime Order
 
-`SimulationRuntime` constructs and destroys its members in this order:
+`SimulationResources` constructs and destroys its members in this order:
 
 ```text
-MpiContext -> DomainDecomposition -> MpiExchange -> HipContext
+MpiContext -> DomainDecomposition -> MpiExchange -> Context
 ```
 
 `MpiExchange` stores references to the first two objects, so they must remain
@@ -46,11 +46,11 @@ reference member from being silently rebound or invalidated.
 
 ```text
 Simulation
-  +-- SimulationRuntime
+  +-- SimulationResources
   |     +-- MpiContext
   |     +-- DomainDecomposition
   |     +-- MpiExchange
-  |     +-- HipContext
+  |     +-- Context
   +-- ParticleStorage
   |     +-- ParticleArena
   |     +-- ParticleBuffer

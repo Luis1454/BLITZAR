@@ -82,7 +82,7 @@
     {
       "id": "TST-P4-001",
       "name": "hip-acceleration-and-fallback",
-      "command": "blitzar_hip_test",
+      "command": "blitzar_accelerator_test",
       "phase": "P4"
     },
     {
@@ -136,7 +136,7 @@
     {
       "id": "TST-P2-004",
       "name": "installed-cmake-package-consumer",
-      "command": "cmake -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/PackageConsumer.cmake",
+      "command": "cmake -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/PackageConsumer.cmake",
       "phase": "P2"
     },
     {
@@ -160,7 +160,7 @@
   ],
   "architecture": {
     "report_schema": 2,
-    "command": "python -B tools/architecture_report.py --root . --all --check",
+    "command": "python -B -m tools.architecture.architecture_report --root . --all --check",
     "review_registry": "plan/architecture_reviews.json",
     "line_count_policy": "informational",
     "thresholds": {
@@ -251,37 +251,37 @@
       ],
       "type_mapping_exceptions": [
         {
-          "path": "src/core/Units.hpp",
+          "path": "src/core/contracts/Units.hpp",
           "reason": "value-type contract header for UnitSystem"
         },
         {
-          "path": "src/gpu/CudRuntime.hpp",
+          "path": "src/accelerators/gpu/hip/bridge/Transfer.hpp",
           "reason": "CUDA/HIP runtime bridge contract"
         },
         {
-          "path": "src/gpu/HipCompat.hpp",
+          "path": "src/accelerators/gpu/hip/bridge/Compatibility.hpp",
           "reason": "CUDA compatibility declaration header"
         },
         {
-          "path": "src/parallel/Bounds.hpp",
+          "path": "src/parallel/mpi/domain/DomainBounds.hpp",
           "reason": "DomainBounds value contract"
         },
         {
-          "path": "src/parallel/MpiContextState.hpp",
+          "path": "src/parallel/mpi/context/MpiContextState.hpp",
           "reason": "MpiContext state fragment"
         },
         {
-          "path": "src/parallel/MpiNativeState.hpp",
+          "path": "src/parallel/mpi/native/MpiNativeState.hpp",
           "reason": "MpiNative opaque state fragment"
         },
         {
-          "path": "tests/MpiCases.hpp",
+          "path": "tests/parallel/mpi/MpiCases.hpp",
           "reason": "MPI test-case facade and StateArrays value contract"
         }
       ],
       "standalone_implementation_exceptions": [
         {
-          "path": "tests/DebugStatus.cpp",
+          "path": "tests/contracts/DebugStatus.cpp",
           "reason": "standalone debugger exit-status probe"
         }
       ],
@@ -292,23 +292,23 @@
     }
   },
   "format": {
-    "command": "python tools/clang_format_gate.py --root . --check",
+    "command": "python -m tools.format.clang_format_gate --root . --check",
     "clang_format_version": "22.1.8",
     "encoding": "UTF-8",
     "bom": false,
     "line_endings": "LF",
     "final_newline": true,
-    "custom_grouping_command": "python tools/format_blocks.py --check"
+    "custom_grouping_command": "python -m tools.format.format_blocks --check"
   },
   "mpi_boundary": {
     "native_units": [
-      "src/parallel/MpiNative.cpp",
-      "src/parallel/MpiNativeCollectives.cpp",
-      "src/parallel/MpiNativeGhost.cpp",
-      "src/parallel/MpiNativePackets.cpp",
-      "src/parallel/MpiNativeState.hpp"
+      "src/parallel/mpi/native/MpiNative.cpp",
+      "src/parallel/mpi/native/MpiNativeCollectives.cpp",
+      "src/parallel/mpi/native/MpiNativeGhost.cpp",
+      "src/parallel/mpi/native/MpiNativePackets.cpp",
+      "src/parallel/mpi/native/MpiNativeState.hpp"
     ],
-    "test_native_units": ["tests/Mpi.cpp", "tests/MpiFixture.cpp"],
+    "test_native_units": ["tests/parallel/mpi/Mpi.cpp", "tests/parallel/mpi/MpiFixture.cpp"],
     "scan_roots": ["src", "tests"],
     "suffixes": [".c", ".cc", ".cpp", ".cu", ".h", ".hip", ".hpp", ".inl"]
   },
@@ -316,73 +316,73 @@
     {
       "id": "CHK-P0-001",
       "name": "plan-check",
-      "command": "python tools/plan_check.py",
+      "command": "python -m tools.gates.plan_check",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-002",
       "name": "plan-check-fixtures",
-      "command": "python tools/plan_check_test.py",
+      "command": "python -m tools.gates.plan_check_test",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-003",
       "name": "bounded-callable-gate",
-      "command": "python tools/argument_gate.py --root .",
+      "command": "python -m tools.gates.argument_gate --root .",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-004",
       "name": "bounded-callable-fixtures",
-      "command": "python tools/argument_gate_test.py",
+      "command": "python -m tools.gates.argument_gate_test",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-005",
       "name": "architecture-report-fixtures",
-      "command": "python tools/architecture_report_test.py",
+      "command": "python -m tools.architecture.architecture_report_test",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-006",
       "name": "architecture-report",
-      "command": "python tools/architecture_report.py --root . --all --check --quiet",
+      "command": "python -m tools.architecture.architecture_report --root . --all --check --quiet",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-007",
       "name": "naming-gate",
-      "command": "python tools/naming_gate.py --root . --check",
+      "command": "python -m tools.gates.naming_gate --root . --check",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-008",
       "name": "naming-gate-fixtures",
-      "command": "python tools/naming_gate_test.py",
+      "command": "python -m tools.gates.naming_gate_test",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-009",
       "name": "clang-format-and-encoding-gate",
-      "command": "python tools/clang_format_gate.py --root . --check",
+      "command": "python -m tools.format.clang_format_gate --root . --check",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-010",
       "name": "clang-format-and-encoding-fixtures",
-      "command": "python tools/clang_format_gate_test.py",
+      "command": "python -m tools.format.clang_format_gate_test",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-011",
       "name": "public-api-boundary",
-      "command": "python tools/public_api_gate.py --root . --check",
+      "command": "python -m tools.gates.public_api_gate --root . --check",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-012",
       "name": "public-api-boundary-fixtures",
-      "command": "python tools/public_api_gate_test.py",
+      "command": "python -m tools.gates.public_api_gate_test",
       "phase": "P0"
     },
     {
@@ -395,109 +395,109 @@
     {
       "id": "CHK-P0-014",
       "name": "mpi-native-boundary",
-      "command": "python tools/mpi_boundary_gate.py --root . --check",
+      "command": "python -m tools.gates.mpi_boundary_gate --root . --check",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-015",
       "name": "mpi-native-boundary-fixtures",
-      "command": "python tools/mpi_boundary_gate_test.py",
+      "command": "python -m tools.gates.mpi_boundary_gate_test",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-016",
       "name": "pointer-ownership-boundary",
-      "command": "python tools/pointer_ownership_gate.py --root . --check",
+      "command": "python -m tools.gates.pointer_ownership_gate --root . --check",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-017",
       "name": "pointer-ownership-boundary-fixtures",
-      "command": "python tools/pointer_ownership_gate_test.py",
+      "command": "python -m tools.gates.pointer_ownership_gate_test",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-018",
       "name": "test-suite-responsibility-gate",
-      "command": "python tools/test_suite_gate.py --root . --check",
+      "command": "python -m tools.gates.test_suite_gate --root . --check",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-019",
       "name": "test-suite-responsibility-fixtures",
-      "command": "python tools/test_suite_gate_test.py",
+      "command": "python -m tools.gates.test_suite_gate_test",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-020",
       "name": "workspace-hygiene",
-      "command": "python tools/workspace_gate.py --root . --check",
+      "command": "python -m tools.gates.workspace_gate --root . --check",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-021",
       "name": "workspace-hygiene-fixtures",
-      "command": "python tools/workspace_gate_test.py",
+      "command": "python -m tools.gates.workspace_gate_test",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-022",
       "name": "manifest-quality-gate-fixtures",
-      "command": "python tools/quality_gate_test.py",
+      "command": "python -m tools.gates.quality_gate_test",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-023",
       "name": "statement-grouping-gate",
-      "command": "python tools/format_blocks.py --check",
+      "command": "python -m tools.format.format_blocks --check",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-024",
       "name": "statement-grouping-fixtures",
-      "command": "python tools/format_blocks_test.py",
+      "command": "python -m tools.format.format_blocks_test",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-025",
       "name": "debug-runner-fixtures",
-      "command": "python tools/debug_runner_test.py",
+      "command": "python -m tools.debug.debug_runner_test",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-026",
       "name": "capability-contract",
-      "command": "python tools/capability_gate.py --root . --check",
+      "command": "python -m tools.gates.capability_gate --root . --check",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-027",
       "name": "capability-contract-fixtures",
-      "command": "python tools/capability_gate_test.py",
+      "command": "python -m tools.gates.capability_gate_test",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-028",
       "name": "reproducible-evidence-contract",
-      "command": "python tools/release_evidence.py --root . --check",
+      "command": "python -m tools.evidence.release_evidence --root . --check",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-029",
       "name": "reproducible-evidence-fixtures",
-      "command": "python tools/release_evidence_test.py",
+      "command": "python -m tools.evidence.release_evidence_test",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-030",
       "name": "final-audit-contract",
-      "command": "python tools/final_audit.py --root . --check",
+      "command": "python -m tools.audit.final_audit --root . --check",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-031",
       "name": "final-audit-fixtures",
-      "command": "python tools/final_audit_test.py",
+      "command": "python -m tools.audit.final_audit_test",
       "phase": "P0"
     }
   ]

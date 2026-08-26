@@ -23,7 +23,11 @@
     {"path": "plan/decisions/015-validation-gaps-and-waivers.md", "lifecycle": "active"},
     {"path": "plan/decisions/016-kdk-namespace-boundary.md", "lifecycle": "active"},
     {"path": "plan/decisions/017-version-identity.md", "lifecycle": "active"},
-    {"path": "plan/decisions/018-repository-root-ownership.md", "lifecycle": "active"},
+    {
+      "path": "plan/decisions/018-repository-root-ownership.md",
+      "lifecycle": "superseded",
+      "notes": "Replaced by Decision 035 after the responsibility-owned accelerator layout was materialized."
+    },
     {"path": "plan/decisions/019-particle-arena-ownership.md", "lifecycle": "active"},
     {"path": "plan/decisions/020-direct-staging-transaction.md", "lifecycle": "active"},
     {"path": "plan/decisions/021-bounded-hot-path-capacity.md", "lifecycle": "active"},
@@ -43,6 +47,8 @@
     {"path": "plan/decisions/031-capability-contract.md", "lifecycle": "active"},
     {"path": "plan/decisions/032-reproducible-evidence.md", "lifecycle": "active"},
     {"path": "plan/decisions/033-reproducible-evidence-gates.md", "lifecycle": "active"},
-    {"path": "plan/decisions/034-final-repository-qualification.md", "lifecycle": "active"}
+    {"path": "plan/decisions/034-final-repository-qualification.md", "lifecycle": "active"},
+    {"path": "plan/decisions/035-source-tree-responsibility-realignment.md", "lifecycle": "superseded", "notes": "Replaced by Decision 036 after the module boundaries were refined by responsibility."},
+    {"path": "plan/decisions/036-module-boundaries-and-backend-ownership.md", "lifecycle": "active"}
   ]
 }

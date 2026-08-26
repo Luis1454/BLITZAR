@@ -22,7 +22,7 @@ facade preserves the existing span and packet contracts, so domain decomposition
 and solver orchestration do not depend on MPI types or lifecycle details.
 The production native boundary is registered as the `MpiNative*.cpp` units and
 the `MpiNativeState.hpp` fragment in `plan/quality.json`; the MPI test harness
-is the only registered native test unit. `tools/mpi_boundary_gate.py` rejects
+is the only registered native test unit. `tools/gates/mpi_boundary_gate.py` rejects
 MPI headers, handles, and build symbols outside those units.
 
 ## Consequences
@@ -35,5 +35,5 @@ MPI headers, handles, and build symbols outside those units.
   completion paths.
 - Error logs identify the transport component, rank, phase, local status, and
   synchronized status.
-- `tests/Mpi.cpp` validates external ownership, nested contexts, internal
+- `tests/parallel/mpi/Mpi.cpp` validates external ownership, nested contexts, internal
   ownership, invalid collective layouts, and ghost abort/recovery paths.
