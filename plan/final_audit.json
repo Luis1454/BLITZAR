@@ -1,0 +1,392 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.17",
+  "runner": "tools/final_audit.py",
+  "artifact_files": [
+    "audit.json",
+    "file_matrix.json",
+    "findings.json",
+    "gates/static-quality.log",
+    "summary.md"
+  ],
+  "root_files": [
+    {
+      "path": ".clang-format",
+      "owner": "repository-governance",
+      "category": "format-contract",
+      "review_gate": "CHK-P0-009"
+    },
+    {
+      "path": ".gitattributes",
+      "owner": "repository-governance",
+      "category": "text-contract",
+      "review_gate": "CHK-P0-009"
+    },
+    {
+      "path": ".gitignore",
+      "owner": "repository-governance",
+      "category": "workspace-contract",
+      "review_gate": "CHK-P0-020"
+    },
+    {
+      "path": "AGENTS.md",
+      "owner": "repository-governance",
+      "category": "contribution-contract",
+      "review_gate": "CHK-P0-001"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "owner": "build-maintainers",
+      "category": "build-entrypoint",
+      "review_gate": "CHK-P0-006"
+    },
+    {
+      "path": "PLAN.md",
+      "owner": "repository-governance",
+      "category": "frozen-plan",
+      "review_gate": "CHK-P0-001"
+    }
+  ],
+  "ownership_areas": [
+    {
+      "prefix": ".github/",
+      "owner": "ci-maintainers",
+      "category": "ci-workflow",
+      "review_gate": "CHK-P0-001"
+    },
+    {
+      "prefix": "apps/blitzar/",
+      "owner": "cli-maintainers",
+      "category": "cli-consumer",
+      "review_gate": "TST-P2-003"
+    },
+    {
+      "prefix": "cmake/",
+      "owner": "build-maintainers",
+      "category": "build-system",
+      "review_gate": "CHK-P0-006"
+    },
+    {
+      "prefix": "examples/",
+      "owner": "sdk-maintainers",
+      "category": "sdk-example",
+      "review_gate": "TST-P2-001"
+    },
+    {
+      "prefix": "include/blitzar/",
+      "owner": "sdk-maintainers",
+      "category": "public-sdk",
+      "review_gate": "CHK-P0-011"
+    },
+    {
+      "prefix": "plan/decisions/",
+      "owner": "repository-governance",
+      "category": "architecture-decision",
+      "review_gate": "CHK-P0-001"
+    },
+    {
+      "prefix": "plan/evidence/",
+      "owner": "repository-governance",
+      "category": "evidence-contract",
+      "review_gate": "CHK-P0-028"
+    },
+    {
+      "prefix": "plan/",
+      "owner": "repository-governance",
+      "category": "plan-contract",
+      "review_gate": "CHK-P0-001"
+    },
+    {
+      "prefix": "src/core/",
+      "owner": "core-maintainers",
+      "category": "core-contract",
+      "review_gate": "TST-P0-003"
+    },
+    {
+      "prefix": "src/gpu/",
+      "owner": "gpu-maintainers",
+      "category": "gpu-runtime",
+      "review_gate": "TST-P4-001"
+    },
+    {
+      "prefix": "src/integration/",
+      "owner": "integration-maintainers",
+      "category": "time-integration",
+      "review_gate": "TST-P1-002"
+    },
+    {
+      "prefix": "src/parallel/",
+      "owner": "parallel-maintainers",
+      "category": "mpi-adapter",
+      "review_gate": "TST-P7-001"
+    },
+    {
+      "prefix": "src/particles/",
+      "owner": "particle-maintainers",
+      "category": "particle-storage",
+      "review_gate": "TST-P1-003"
+    },
+    {
+      "prefix": "src/physics/",
+      "owner": "physics-maintainers",
+      "category": "physics-law",
+      "review_gate": "TST-P1-001"
+    },
+    {
+      "prefix": "src/sdk/",
+      "owner": "sdk-maintainers",
+      "category": "sdk-implementation",
+      "review_gate": "TST-P0-001"
+    },
+    {
+      "prefix": "src/solvers/barnes_hut/",
+      "owner": "solver-maintainers",
+      "category": "barnes-hut-solver",
+      "review_gate": "TST-P3-001"
+    },
+    {
+      "prefix": "src/solvers/direct/",
+      "owner": "solver-maintainers",
+      "category": "direct-solver",
+      "review_gate": "TST-P1-003"
+    },
+    {
+      "prefix": "src/solvers/fmm/",
+      "owner": "solver-maintainers",
+      "category": "fmm-solver",
+      "review_gate": "TST-P3-002"
+    },
+    {
+      "prefix": "src/solvers/gpu/",
+      "owner": "gpu-maintainers",
+      "category": "gpu-solver-dispatch",
+      "review_gate": "TST-P4-001"
+    },
+    {
+      "prefix": "src/trees/",
+      "owner": "tree-maintainers",
+      "category": "spatial-tree",
+      "review_gate": "TST-P3-001"
+    },
+    {
+      "prefix": "tests/",
+      "owner": "qualification-maintainers",
+      "category": "qualification-test",
+      "review_gate": "CHK-P0-018"
+    },
+    {
+      "prefix": "tools/",
+      "owner": "quality-maintainers",
+      "category": "quality-tooling",
+      "review_gate": "CHK-P0-001"
+    }
+  ],
+  "required_lanes": [
+    {
+      "id": "validate",
+      "workflow_job": "validate",
+      "scope": "frozen plan and static gates",
+      "claim": "required"
+    },
+    {
+      "id": "build",
+      "workflow_job": "build",
+      "scope": "Windows Release build and CTest",
+      "claim": "required"
+    },
+    {
+      "id": "shared-public",
+      "workflow_job": "shared-public",
+      "scope": "shared library public consumers",
+      "claim": "required"
+    },
+    {
+      "id": "sanitizers",
+      "workflow_job": "sanitizers",
+      "scope": "Linux Clang ASan and UBSan",
+      "claim": "required"
+    },
+    {
+      "id": "linux-debug",
+      "workflow_job": "linux-debug",
+      "scope": "Linux GDB probes",
+      "claim": "required"
+    },
+    {
+      "id": "windows-debug",
+      "workflow_job": "windows-debug",
+      "scope": "Windows CDB probes",
+      "claim": "required"
+    },
+    {
+      "id": "macos-debug",
+      "workflow_job": "macos-debug",
+      "scope": "macOS LLDB probes",
+      "claim": "required"
+    },
+    {
+      "id": "static-analysis",
+      "workflow_job": "static-analysis",
+      "scope": "Clang static analyzer",
+      "claim": "required"
+    },
+    {
+      "id": "cpu-only",
+      "workflow_job": "cpu-only",
+      "scope": "Linux CPU-only build and tests",
+      "claim": "required"
+    },
+    {
+      "id": "package-consumer",
+      "workflow_job": "package-consumer",
+      "scope": "installed package consumer",
+      "claim": "required"
+    },
+    {
+      "id": "mpi-ranks",
+      "workflow_job": "mpi-ranks",
+      "scope": "MPI two and four ranks on one host",
+      "claim": "required; not multi-node"
+    },
+    {
+      "id": "release-evidence",
+      "workflow_job": "release-evidence",
+      "scope": "versioned scaling, migration, overlap, and oracle matrix",
+      "claim": "required; external artifact"
+    },
+    {
+      "id": "native-cuda",
+      "workflow_job": "native-cuda",
+      "scope": "native CUDA compile and optional device run",
+      "claim": "capability-gated"
+    },
+    {
+      "id": "hip",
+      "workflow_job": "hip",
+      "scope": "HIP compile and optional device run",
+      "claim": "capability-gated"
+    }
+  ],
+  "milestone_issues": [
+    {
+      "issue": 598,
+      "title": "Freeze repository realignment contract",
+      "commit": "e16e28012d0c730e05b3fa0732135351dcfb1034",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/614",
+      "evidence": ["CHK-P0-001", "plan/manifest.json"]
+    },
+    {
+      "issue": 599,
+      "title": "Qualify architecture across the repository",
+      "commit": "e1163f0ca5cf82f5f6bf3a5fd2cbb7de2cb35286",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/615",
+      "evidence": ["CHK-P0-006", "plan/architecture_reviews.json"]
+    },
+    {
+      "issue": 600,
+      "title": "Enforce repository naming contract",
+      "commit": "032713f0dccc4f7d56fd01cc50694a048fcb05bf",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/616",
+      "evidence": ["CHK-P0-007", "plan/quality.json"]
+    },
+    {
+      "issue": 601,
+      "title": "Enforce clang-format and newline policy",
+      "commit": "00765cdb080782e6bc8419b54447f7c4ceabe546",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/617",
+      "evidence": ["CHK-P0-009", "CHK-P0-023"]
+    },
+    {
+      "issue": 602,
+      "title": "Enforce public ABI and internal include boundaries",
+      "commit": "1487d5a71e5f7cb9970a0818af9546303fe53675",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/618",
+      "evidence": ["CHK-P0-011", "CHK-P0-014"]
+    },
+    {
+      "issue": 603,
+      "title": "Complete MPI internal boundary encapsulation",
+      "commit": "0b27d08c5ef0246d6df08aeab2269ab2ce5dd050",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/619",
+      "evidence": ["CHK-P0-014", "TST-P7-001"]
+    },
+    {
+      "issue": 604,
+      "title": "Split SDK state contracts",
+      "commit": "16128c96e998cd8224f70eadcd548436b308c00c",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/620",
+      "evidence": ["CHK-P0-006", "TST-P0-001"]
+    },
+    {
+      "issue": 605,
+      "title": "Separate particle and acceleration buffer contracts",
+      "commit": "54994fb9e68dfcd0fc8ae2919b53d49bf7b43deb",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/621",
+      "evidence": ["TST-P1-001", "TST-P1-003"]
+    },
+    {
+      "issue": 606,
+      "title": "Requalify Simulation composition roots",
+      "commit": "08ea496c245165c385ff881b0512f8f641a8aab2",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/622",
+      "evidence": ["TST-P8-003", "plan/SimulationComposition.md"]
+    },
+    {
+      "issue": 607,
+      "title": "Prove allocation-free steady state",
+      "commit": "81355e26dee0c2a10ddf0c251f7b89964b7de357",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/623",
+      "evidence": ["TST-P1-003", "plan/AllocationLifecycle.md"]
+    },
+    {
+      "issue": 608,
+      "title": "Audit raw pointers, spans, and ownership",
+      "commit": "23e2ba6b510d323cbc065f27d6af2f47c20a7520",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/624",
+      "evidence": ["CHK-P0-016", "plan/PointerOwnership.md"]
+    },
+    {
+      "issue": 609,
+      "title": "Decompose and qualify test suite",
+      "commit": "bf26d0d3582cf8f7549db0b7488f42132786716a",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/625",
+      "evidence": ["CHK-P0-018", "plan/test_map.json"]
+    },
+    {
+      "issue": 610,
+      "title": "Realign build, package, CI, and workspace composition",
+      "commit": "2790d55ee1c80e0865e7daee84da6e071f0ea73f",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/626",
+      "evidence": ["TST-P2-004", "CHK-P0-020"]
+    },
+    {
+      "issue": 611,
+      "title": "Freeze capability and unsupported-feature contracts",
+      "commit": "4844ab611672cbb32ae2f45ad5b8cd3286e05dd6",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/627",
+      "evidence": ["CHK-P0-026", "plan/capabilities.json"]
+    },
+    {
+      "issue": 612,
+      "title": "Produce reproducible scaling and release evidence",
+      "commit": "84feeabf4825baa6b1520456308b55e50df1d32c",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/628",
+      "evidence": ["CHK-P0-028", "TST-P0-007", "blitzar-reproducible-evidence"]
+    }
+  ],
+  "non_claims": [
+    "real multi-node MPI and RDMA qualification",
+    "physical NVIDIA CUDA execution when no CUDA device is exposed",
+    "physical AMD HIP execution when no AMD device is exposed",
+    "PM and TreePM production implementations",
+    "binary or HDF5 snapshot persistence",
+    "GPU FMM"
+  ],
+  "findings_policy": {
+    "unresolved_allowed": [],
+    "accepted_architecture_registry": "plan/architecture_reviews.json",
+    "deferred_capability_registry": "plan/capabilities.json",
+    "unsupported_status_evidence": "TST-P0-006",
+    "output_is_external": true
+  }
+}

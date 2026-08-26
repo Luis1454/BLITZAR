@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.16**
+Plan version: **1.0.17**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -10,7 +10,7 @@ are re-derived here as contracts, numerical references, and acceptance tests.
 
 The authoritative planning state is the combination of this file,
 `plan/manifest.json`, `plan/quality.json`, `plan/decision-index.json`, and
-`plan/scaling.json`.
+`plan/scaling.json` and `plan/final_audit.json`.
 Decision records under `plan/decisions/` preserve the rationale and migration
 history for that state.
 
@@ -66,6 +66,20 @@ schema are versioned here. A skipped compiler, unavailable device, local
 multi-rank run, and real multi-node run are distinct evidence states.
 The `release-evidence` CI job builds the CPU/MPI probes and runs this matrix in
 strict mode; its output is uploaded as an external artifact.
+
+## Final Qualification
+
+`plan/final_audit.json` assigns an owner, category, and review gate to every
+tracked repository path. `tools/final_audit.py` materializes the complete file
+matrix, hashes and scans each tracked file, checks CMake/source completeness,
+validates the accepted architecture reviews and deferred capability register,
+and verifies the implementation commits for RR-01 through RR-15. Its report,
+finding register, and gate log are generated outside the source tree.
+
+The final CI job depends on every supported build, test, package, sanitizer,
+debugger, static-analysis, MPI, and capability-gated GPU lane. A lane failure
+blocks the final gate; an unavailable GPU remains a recorded skipped device
+state, and no local multi-rank result is promoted to multi-node evidence.
 
 ## Repository Shape
 

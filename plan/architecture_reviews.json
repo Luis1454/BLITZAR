@@ -147,6 +147,13 @@
       "issue": 612,
       "status": "accepted",
       "decision": "The added rank, local-count, overlap, and migration accessors form one observability boundary for the internal qualification harness; they do not widen the public SDK ABI or add simulation responsibilities."
+    },
+    {
+      "path": "tools/final_audit_contract.py",
+      "signals": ["branching"],
+      "issue": 613,
+      "status": "accepted",
+      "decision": "The contract validator keeps ownership, lane, and historical issue schema checks together so the final audit cannot run against a partial plan; its branching is policy validation and is covered by final_audit_test.py."
     }
   ]
 }
