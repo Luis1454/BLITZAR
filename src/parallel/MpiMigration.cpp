@@ -10,11 +10,16 @@ namespace blitzar_parallel {
 blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
     std::span<const std::uint64_t> local_ids, PacketBuffer& received) const noexcept
 {
+    migration_trace_ = {};
+    migration_trace_.local_before = local_state.count;
+
     received.Clear();
 
     blitzar_status status = SynchronizeStatus(capacity_status_, "capacity");
 
     if (status != BLITZAR_STATUS_OK) {
+        migration_trace_.status = status;
+
         return status;
     }
 
@@ -23,12 +28,16 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
         "migrate-domain");
 
     if (status != BLITZAR_STATUS_OK) {
+        migration_trace_.status = status;
+
         return status;
     }
 
     status = SynchronizeStatus(decomposition_.ValidateState(local_state), "migrate-domain-state");
 
     if (status != BLITZAR_STATUS_OK) {
+        migration_trace_.status = status;
+
         return status;
     }
 
@@ -36,15 +45,22 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
         SynchronizeStatus(PackLocal(local_state, local_ids, state_.local_packets), "migrate-pack");
 
     if (status != BLITZAR_STATUS_OK) {
+        migration_trace_.status = status;
+
         return status;
     }
     if (!context_.IsDistributed()) {
         if (!received.ResizeBounded(state_.local_packets.Size())) {
+            migration_trace_.status = BLITZAR_STATUS_INVALID_ARGUMENT;
+
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
         std::copy(state_.local_packets.View().begin(), state_.local_packets.View().end(),
             received.View().begin());
+
+        migration_trace_.local_after = received.Size();
+        migration_trace_.observed = migration_trace_.local_before != migration_trace_.local_after;
 
         return BLITZAR_STATUS_OK;
     }
@@ -52,6 +68,8 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
     status = SynchronizeStatus(PrepareMigrationSend(), "migrate-prepare");
 
     if (status != BLITZAR_STATUS_OK) {
+        migration_trace_.status = status;
+
         return status;
     }
 
@@ -61,6 +79,8 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
     if (status != BLITZAR_STATUS_OK) {
         received.Clear();
 
+        migration_trace_.status = status;
+
         return status;
     }
 
@@ -69,10 +89,28 @@ blitzar_status MpiExchange::Migrate(blitzar_core::ParticleStateView local_state,
     if (status != BLITZAR_STATUS_OK) {
         received.Clear();
 
+        migration_trace_.status = status;
+
         return status;
     }
 
-    return ExchangeMigrationPackets(received);
+    const std::size_t local_rank = static_cast<std::size_t>(context_.Rank());
+
+    for (std::size_t peer = 0; peer < state_.send_counts.size(); ++peer) {
+        if (peer != local_rank) {
+            migration_trace_.sent_remote += static_cast<std::size_t>(state_.send_counts[peer]);
+            migration_trace_.received_remote +=
+                static_cast<std::size_t>(state_.receive_counts[peer]);
+        }
+    }
+
+    status = ExchangeMigrationPackets(received);
+    migration_trace_.status = status;
+    migration_trace_.local_after = received.Size();
+    migration_trace_.observed =
+        migration_trace_.sent_remote != 0 || migration_trace_.received_remote != 0;
+
+    return status;
 }
 
 blitzar_status MpiExchange::PrepareMigrationSend() const noexcept

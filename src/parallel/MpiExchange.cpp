@@ -62,6 +62,11 @@ MpiContext::GhostExchange& MpiExchange::PersistentGhostExchange() const noexcept
     return ghost_exchange_;
 }
 
+const MpiMigrationTrace& MpiExchange::LastMigrationTrace() const noexcept
+{
+    return migration_trace_;
+}
+
 blitzar_status MpiExchange::BeginGhosts(blitzar_core::ParticleStateView local_state,
     std::span<const std::uint64_t> local_ids, MpiContext::GhostExchange& exchange) const noexcept
 {

@@ -457,6 +457,61 @@ jobs:
             --output-on-failure \
             -R '^(TST-P7-001|TST-P7-002|TST-P7-003|TST-P7-004|TST-P7-005|TST-P8-001|TST-P8-002)$'
 
+  release-evidence:
+    name: Reproducible scaling evidence
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install MPI toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes libopenmpi-dev openmpi-bin ninja-build
+
+      - name: Configure evidence build
+        shell: bash
+        run: |
+          cmake -S . -B "$BLITZAR_CI_BUILD_ROOT/evidence" -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBLITZAR_HIP_MODE=OFF \
+            -DBLITZAR_MPI_MODE=ON \
+            -DBLITZAR_BUILD_TESTS=ON \
+            -DBLITZAR_BUILD_CLI=OFF \
+            -DBLITZAR_BUILD_EXAMPLES=OFF
+
+      - name: Build evidence probes
+        run: |
+          cmake --build "$BLITZAR_CI_BUILD_ROOT/evidence" \
+            --target blitzar_scaling_test blitzar_hip_test --parallel
+
+      - name: Run reproducible evidence matrix
+        shell: bash
+        env:
+          OMPI_ALLOW_RUN_AS_ROOT: "1"
+          OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
+          OMPI_MCA_rmaps_base_oversubscribe: "1"
+        run: |
+          timeout --foreground 900s python tools/release_evidence.py \
+            --root . \
+            --build-dir "$BLITZAR_CI_BUILD_ROOT/evidence" \
+            --output "$RUNNER_TEMP/blitzar-evidence" \
+            --strict
+
+      - name: Publish evidence artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blitzar-reproducible-evidence
+          path: ${{ runner.temp }}/blitzar-evidence
+          if-no-files-found: warn
+
   native-cuda:
     name: Native CUDA compile and optional device test
     runs-on: ubuntu-latest

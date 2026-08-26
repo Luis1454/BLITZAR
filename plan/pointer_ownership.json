@@ -125,6 +125,12 @@
       "reason": "MPI integration test main receives the platform process argument array."
     },
     {
+      "path": "tests/Scaling.cpp",
+      "category": "process_entrypoint",
+      "ownership": "borrowed_process_arguments",
+      "reason": "Scaling harness main receives the platform process argument array."
+    },
+    {
       "path": "examples/CExample.c",
       "category": "c_abi_consumer",
       "ownership": "borrowed_abi",

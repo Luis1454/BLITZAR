@@ -150,6 +150,12 @@
       "name": "capability-and-unsupported-contract",
       "command": "blitzar_capability_test",
       "phase": "P0"
+    },
+    {
+      "id": "TST-P0-007",
+      "name": "scaling-harness-smoke",
+      "command": "blitzar_scaling_test --particles 16 --steps 1 --seed 424242 --solver direct",
+      "phase": "P0"
     }
   ],
   "architecture": {
@@ -468,6 +474,18 @@
       "id": "CHK-P0-027",
       "name": "capability-contract-fixtures",
       "command": "python tools/capability_gate_test.py",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-028",
+      "name": "reproducible-evidence-contract",
+      "command": "python tools/release_evidence.py --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-029",
+      "name": "reproducible-evidence-fixtures",
+      "command": "python tools/release_evidence_test.py",
       "phase": "P0"
     }
   ]

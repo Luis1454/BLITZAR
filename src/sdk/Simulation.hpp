@@ -30,6 +30,9 @@ public:
     [[nodiscard]] blitzar_status LastStatus() const noexcept;
     [[nodiscard]] blitzar_backend_kind LastBackend() const noexcept;
     [[nodiscard]] std::size_t ParticleCount() const noexcept;
+    [[nodiscard]] int MpiRank() const noexcept;
+    [[nodiscard]] int MpiSize() const noexcept;
+    [[nodiscard]] std::size_t LocalParticleCount() const noexcept;
 
     [[nodiscard]] blitzar_status SetSolver(blitzar_solver_kind solver) noexcept;
     [[nodiscard]] blitzar_status SetIntegrator(blitzar_integrator_kind integrator) noexcept;
@@ -46,6 +49,7 @@ public:
     void SetHipFaultForTesting(blitzar_gpu::HipFault fault) noexcept;
     void SetMpiOverlapForTesting(blitzar_parallel::MpiOverlapMode mode) noexcept;
     [[nodiscard]] const blitzar_parallel::MpiOverlapTrace& LastMpiOverlapTrace() const noexcept;
+    [[nodiscard]] const blitzar_parallel::MpiMigrationTrace& LastMpiMigrationTrace() const noexcept;
 
 private:
     struct SolverCreationRequest;
@@ -100,6 +104,7 @@ private:
     blitzar_core::SnapshotHeader snapshot_header_;
     blitzar_parallel::MpiOverlapMode overlap_mode_{blitzar_parallel::MpiOverlapMode::Overlapped};
     blitzar_parallel::MpiOverlapTrace overlap_trace_{};
+    blitzar_parallel::MpiMigrationTrace migration_trace_{};
     mutable std::atomic<blitzar_status> last_status_;
     mutable std::atomic<blitzar_backend_kind> last_backend_;
     SolverVariant solver_;
