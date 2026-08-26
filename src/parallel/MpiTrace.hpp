@@ -41,6 +41,15 @@ struct MpiOverlapTrace final {
     }
 };
 
+struct MpiMigrationTrace final {
+    blitzar_status status{BLITZAR_STATUS_OK};
+    std::size_t local_before{};
+    std::size_t local_after{};
+    std::size_t sent_remote{};
+    std::size_t received_remote{};
+    bool observed{};
+};
+
 } // namespace blitzar_parallel
 
 #endif

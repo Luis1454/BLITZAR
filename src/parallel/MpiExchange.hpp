@@ -4,6 +4,7 @@
 #include "core/Types.hpp"
 #include "parallel/DomainDecomposition.hpp"
 #include "parallel/MpiContext.hpp"
+#include "parallel/MpiTrace.hpp"
 #include "parallel/MpiTypes.hpp"
 
 #include <cstddef>
@@ -42,6 +43,7 @@ public:
     }
 
     [[nodiscard]] MpiContext::GhostExchange& PersistentGhostExchange() const noexcept;
+    [[nodiscard]] const MpiMigrationTrace& LastMigrationTrace() const noexcept;
 
     [[nodiscard]] blitzar_status ExchangeGhosts(blitzar_core::ParticleStateView local_state,
         std::span<const std::uint64_t> local_ids, PacketBuffer& ghosts) const noexcept;
@@ -79,6 +81,7 @@ private:
     const DomainDecomposition& decomposition_;
     mutable ExchangeState state_;
     mutable MpiContext::GhostExchange ghost_exchange_;
+    mutable MpiMigrationTrace migration_trace_{};
     blitzar_status capacity_status_{BLITZAR_STATUS_OK};
 };
 

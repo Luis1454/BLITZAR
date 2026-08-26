@@ -131,6 +131,26 @@ std::size_t Simulation::ParticleCount() const noexcept
     return particle_count_;
 }
 
+int Simulation::MpiRank() const noexcept
+{
+    return runtime_.Mpi().Rank();
+}
+
+int Simulation::MpiSize() const noexcept
+{
+    return runtime_.Mpi().Size();
+}
+
+std::size_t Simulation::LocalParticleCount() const noexcept
+{
+    return local_particle_count_;
+}
+
+const blitzar_parallel::MpiMigrationTrace& Simulation::LastMpiMigrationTrace() const noexcept
+{
+    return migration_trace_;
+}
+
 blitzar_status Simulation::Remember(blitzar_status status) const noexcept
 {
     last_status_.store(status, std::memory_order_relaxed);

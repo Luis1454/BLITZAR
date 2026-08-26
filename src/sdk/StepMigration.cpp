@@ -12,6 +12,8 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
     blitzar_particles::AccelerationBuffer& current_accelerations,
     blitzar_integration::KdkCheckpoint& current_checkpoint) noexcept
 {
+    migration_trace_ = {};
+
     const bool migration_state_valid = current_particles.Count() == rollback_particle_count &&
                                        current_accelerations.Count() == rollback_particle_count &&
                                        current_checkpoint.Count() == rollback_particle_count &&
@@ -23,6 +25,8 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
         "migrate-preflight");
 
     if (migration_status != BLITZAR_STATUS_OK) {
+        migration_trace_.status = migration_status;
+
         return {migration_status, false};
     }
 
@@ -31,14 +35,20 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
         migration_buffer_);
 
     if (migration_status != BLITZAR_STATUS_OK) {
+        migration_trace_.status = migration_status;
+
         return {migration_status, false};
     }
+
+    migration_trace_ = runtime_.Exchange().LastMigrationTrace();
 
     migration_status = EnsureLocalCapacity(migration_buffer_.Size());
     migration_status =
         blitzar_parallel::SynchronizeStatus(runtime_.Mpi(), migration_status, "migrate-capacity");
 
     if (migration_status != BLITZAR_STATUS_OK) {
+        migration_trace_.status = migration_status;
+
         return {migration_status, false};
     }
 
@@ -51,10 +61,14 @@ blitzar_integration_kdk::DriftTransition Simulation::MigrateAfterDrift(
         blitzar_parallel::SynchronizeStatus(runtime_.Mpi(), migration_status, "migrate-commit");
 
     if (migration_status != BLITZAR_STATUS_OK) {
+        migration_trace_.status = migration_status;
+
         return {migration_status, false};
     }
 
     (void)source_.SetCount(0);
+
+    migration_trace_.local_after = local_particle_count_;
 
     return {BLITZAR_STATUS_OK, true};
 }

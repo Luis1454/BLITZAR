@@ -110,6 +110,20 @@ target_compile_features(blitzar_hip_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_hip_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_hip_test)
 
+add_executable(blitzar_scaling_test
+    tests/Scaling.cpp
+    tests/ScalingRun.cpp
+    tests/ScalingWorkload.cpp
+)
+target_link_libraries(blitzar_scaling_test PRIVATE blitzar)
+target_compile_features(blitzar_scaling_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_scaling_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_scaling_test)
+
+if(WIN32)
+    target_link_libraries(blitzar_scaling_test PRIVATE Psapi)
+endif()
+
 if(BLITZAR_MPI_ENABLED)
     add_executable(blitzar_mpi_test
         tests/AllocationMonitor.cpp
