@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 env:
-  BLITZAR_CI_BUILD_ROOT: ${{ runner.temp }}/blitzar-build
+  BLITZAR_CI_BUILD_ROOT: ${{ github.workspace }}/../blitzar-build
 
 jobs:
   validate:
@@ -649,3 +649,68 @@ jobs:
       - name: Run HIP device qualification
         if: steps.probe.outputs.device == 'true'
         run: timeout --foreground 180s ctest --test-dir "$BLITZAR_CI_BUILD_ROOT/hip" -R '^TST-P4-001$' --output-on-failure
+
+  final-audit:
+    name: Final repository qualification
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    needs:
+      - validate
+      - build
+      - shared-public
+      - sanitizers
+      - linux-debug
+      - windows-debug
+      - macos-debug
+      - static-analysis
+      - cpu-only
+      - package-consumer
+      - mpi-ranks
+      - release-evidence
+      - native-cuda
+      - hip
+    steps:
+      - name: Check out repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned clang-format
+        run: python -m pip install clang-format==22.1.8
+
+      - name: Generate strict final audit
+        shell: bash
+        env:
+          BLITZAR_LANE_VALIDATE: ${{ needs['validate'].result }}
+          BLITZAR_LANE_BUILD: ${{ needs['build'].result }}
+          BLITZAR_LANE_SHARED_PUBLIC: ${{ needs['shared-public'].result }}
+          BLITZAR_LANE_SANITIZERS: ${{ needs['sanitizers'].result }}
+          BLITZAR_LANE_LINUX_DEBUG: ${{ needs['linux-debug'].result }}
+          BLITZAR_LANE_WINDOWS_DEBUG: ${{ needs['windows-debug'].result }}
+          BLITZAR_LANE_MACOS_DEBUG: ${{ needs['macos-debug'].result }}
+          BLITZAR_LANE_STATIC_ANALYSIS: ${{ needs['static-analysis'].result }}
+          BLITZAR_LANE_CPU_ONLY: ${{ needs['cpu-only'].result }}
+          BLITZAR_LANE_PACKAGE_CONSUMER: ${{ needs['package-consumer'].result }}
+          BLITZAR_LANE_MPI_RANKS: ${{ needs['mpi-ranks'].result }}
+          BLITZAR_LANE_RELEASE_EVIDENCE: ${{ needs['release-evidence'].result }}
+          BLITZAR_LANE_NATIVE_CUDA: ${{ needs['native-cuda'].result }}
+          BLITZAR_LANE_HIP: ${{ needs['hip'].result }}
+        run: |
+          python tools/final_audit.py \
+            --root . \
+            --output "$RUNNER_TEMP/blitzar-final-audit" \
+            --strict \
+            --run-gates
+
+      - name: Publish final audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blitzar-final-audit
+          path: ${{ runner.temp }}/blitzar-final-audit
+          if-no-files-found: warn

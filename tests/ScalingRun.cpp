@@ -12,8 +12,11 @@
 #include <span>
 
 #if defined(_WIN32)
-#include <psapi.h>
+// MinGW's PSAPI declarations require the Win32 base types first.
+// clang-format off
 #include <windows.h>
+#include <psapi.h>
+// clang-format on
 #elif defined(__linux__) || defined(__APPLE__)
 #include <sys/resource.h>
 #endif

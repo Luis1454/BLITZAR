@@ -121,7 +121,7 @@ target_include_directories(blitzar_scaling_test PRIVATE ${CMAKE_CURRENT_SOURCE_D
 blitzar_enable_warnings(blitzar_scaling_test)
 
 if(WIN32)
-    target_link_libraries(blitzar_scaling_test PRIVATE Psapi)
+    target_link_libraries(blitzar_scaling_test PRIVATE psapi)
 endif()
 
 if(BLITZAR_MPI_ENABLED)

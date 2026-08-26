@@ -487,6 +487,18 @@
       "name": "reproducible-evidence-fixtures",
       "command": "python tools/release_evidence_test.py",
       "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-030",
+      "name": "final-audit-contract",
+      "command": "python tools/final_audit.py --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-031",
+      "name": "final-audit-fixtures",
+      "command": "python tools/final_audit_test.py",
+      "phase": "P0"
     }
   ]
 }
