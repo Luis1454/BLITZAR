@@ -475,6 +475,18 @@
       "name": "capability-contract-fixtures",
       "command": "python tools/capability_gate_test.py",
       "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-028",
+      "name": "reproducible-evidence-contract",
+      "command": "python tools/release_evidence.py --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-029",
+      "name": "reproducible-evidence-fixtures",
+      "command": "python tools/release_evidence_test.py",
+      "phase": "P0"
     }
   ]
 }

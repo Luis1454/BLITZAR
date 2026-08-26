@@ -1,6 +1,6 @@
 # Decision 032: Reproducible Scaling and Release Evidence
 
-Status: accepted  
+Status: accepted
 Plan version: 1.0.15
 
 ## Decision

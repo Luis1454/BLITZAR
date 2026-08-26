@@ -112,6 +112,41 @@
       "issue": 611,
       "status": "accepted",
       "decision": "The capability gate keeps matrix validation, deferred-root checks, and public unsupported-status checks in one policy boundary so compile claims cannot drift from the frozen plan; its tool-local signals are covered by the fixture and do not waive production thresholds."
+    },
+    {
+      "path": "tests/Scaling.cpp",
+      "signals": ["branching"],
+      "issue": 612,
+      "status": "accepted",
+      "decision": "The scaling CLI keeps option parsing and stable record emission together so every workload invocation has the same machine-readable fields; its branching is test-harness local and is covered by the evidence runner fixtures."
+    },
+    {
+      "path": "tests/ScalingRun.cpp",
+      "signals": ["branching"],
+      "issue": 612,
+      "status": "accepted",
+      "decision": "The runner fixture owns timing, CPU-oracle comparison, process memory sampling, and migration aggregation for one simulation execution; the signal is explicit because these measurements must share one state boundary."
+    },
+    {
+      "path": "tools/evidence_contract.py",
+      "signals": ["allocation", "branching"],
+      "issue": 612,
+      "status": "accepted",
+      "decision": "The pure contract module validates and expands one versioned workload schema and parses rank records; its report-list allocations and validation branches are policy-local, deterministic, and covered by release_evidence_test.py."
+    },
+    {
+      "path": "src/parallel/MpiMigration.cpp",
+      "signals": ["branching", "function_length"],
+      "issue": 612,
+      "status": "accepted",
+      "decision": "Migration retains one collective transaction boundary so every early return records the same diagnostic status and clears received packets consistently; packet preparation and exchange remain split into dedicated methods."
+    },
+    {
+      "path": "src/sdk/Simulation.cpp",
+      "signals": ["function_count"],
+      "issue": 612,
+      "status": "accepted",
+      "decision": "The added rank, local-count, overlap, and migration accessors form one observability boundary for the internal qualification harness; they do not widen the public SDK ABI or add simulation responsibilities."
     }
   ]
 }

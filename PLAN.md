@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.15**
+Plan version: **1.0.16**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -56,13 +56,16 @@ execution path, records one result per MPI rank, and compares hierarchical
 solvers with the Direct CPU oracle when the selected mode is CPU-qualified.
 
 `tools/release_evidence.py` expands the strong-scaling, weak-scaling,
-migration, and overlap workloads. It records the exact command, Git revision,
+migration, and overlap workloads; `tools/release_evidence_test.py` verifies the
+contract expansion and record parser. It records the exact command, Git revision,
 plan version, compiler/toolchain, operating system, CPU topology, rank count,
 backend, precision, seed, tolerances, memory result, communication volume,
 overlap timeline, migration result, and raw rank output. Generated logs and
 tables are written outside the source tree; only the contract and reporting
 schema are versioned here. A skipped compiler, unavailable device, local
 multi-rank run, and real multi-node run are distinct evidence states.
+The `release-evidence` CI job builds the CPU/MPI probes and runs this matrix in
+strict mode; its output is uploaded as an external artifact.
 
 ## Repository Shape
 
