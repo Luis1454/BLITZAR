@@ -55,6 +55,8 @@
     {"path": "plan/decisions/039-config-execution-contract.md", "lifecycle": "active"},
     {"path": "plan/decisions/040-output-contract-and-persistence.md", "lifecycle": "active"},
     {"path": "plan/decisions/041-simulation-module-layout.md", "lifecycle": "superseded", "notes": "Refined by Decision 044 to isolate transient particle staging from configuration-generated initialization state."},
-    {"path": "plan/decisions/042-versioned-snapshot-frame.md", "lifecycle": "active"}
+    {"path": "plan/decisions/042-versioned-snapshot-frame.md", "lifecycle": "active"},
+    {"path": "plan/decisions/043-binary-snapshot-codec.md", "lifecycle": "active"},
+    {"path": "plan/decisions/044-simulation-staging-boundary.md", "lifecycle": "active"}
   ]
 }

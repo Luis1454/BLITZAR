@@ -50,7 +50,7 @@ int main()
     const blitzar_core::SnapshotFrameView frame{header, payload};
 
     BLITZAR_CHECK(frame.Validate() == BLITZAR_STATUS_OK);
-    BLITZAR_CHECK(blitzar_core::SnapshotHeaderFieldOrder.size() == 10);
+    BLITZAR_CHECK(blitzar_core::SnapshotHeaderFieldOrder.size() == 11);
     BLITZAR_CHECK(blitzar_core::SnapshotPayloadOrder.size() == 8);
     BLITZAR_CHECK(blitzar_core::SnapshotPayloadOrder[0] == blitzar_core::SnapshotField::Ids);
     BLITZAR_CHECK(blitzar_core::SnapshotPayloadOrder[7] == blitzar_core::SnapshotField::Mass);
@@ -65,6 +65,11 @@ int main()
     BLITZAR_CHECK(header.Validate() == BLITZAR_STATUS_UNSUPPORTED);
 
     header.scalar_bytes = blitzar_core::SnapshotScalarBytes;
+    header.endianness = blitzar_core::SnapshotEndianness::Big;
+
+    BLITZAR_CHECK(header.Validate() == BLITZAR_STATUS_UNSUPPORTED);
+
+    header.endianness = blitzar_core::SnapshotEndianness::Little;
     header.version = static_cast<blitzar_core::SnapshotVersion>(99);
 
     BLITZAR_CHECK(header.Validate() == BLITZAR_STATUS_UNSUPPORTED);

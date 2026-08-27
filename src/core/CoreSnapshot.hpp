@@ -12,15 +12,22 @@
 
 namespace blitzar_core {
 
-inline constexpr std::uint32_t SnapshotMagic = 0x425A5253U;
+inline constexpr std::uint32_t SnapshotMagic = 0x53525A42U;
 inline constexpr std::uint16_t SnapshotScalarBytes = sizeof(std::uint64_t);
 inline constexpr std::uint64_t SnapshotMaxParticleCount = 100000;
+inline constexpr std::uint64_t SnapshotWireHeaderBytes = 43;
+inline constexpr std::uint64_t SnapshotWireBytesPerParticle = 64;
+inline constexpr std::uint64_t SnapshotWireChecksumBytes = sizeof(std::uint64_t);
+inline constexpr std::uint64_t SnapshotWireMaxBytes =
+    SnapshotWireHeaderBytes + SnapshotMaxParticleCount * SnapshotWireBytesPerParticle +
+    SnapshotWireChecksumBytes;
 
 static_assert(sizeof(Scalar) == SnapshotScalarBytes);
 static_assert(std::numeric_limits<Scalar>::is_iec559);
 static_assert(std::numeric_limits<Scalar>::digits == 53);
 
 enum class SnapshotVersion : std::uint16_t { V1 = 1 };
+enum class SnapshotEndianness : std::uint8_t { Little = 0, Big = 1 };
 enum class SnapshotDistribution : std::uint8_t { SingleRank = 0, Sharded = 1 };
 enum class SnapshotIdPolicy : std::uint8_t { GlobalContiguous = 0, GlobalStable = 1 };
 
@@ -33,14 +40,15 @@ enum class SnapshotHeaderField : std::uint8_t {
     Time = 5,
     RankCount = 6,
     RankIndex = 7,
-    Distribution = 8,
-    IdPolicy = 9
+    Endianness = 8,
+    Distribution = 9,
+    IdPolicy = 10
 };
 
-inline constexpr std::array<SnapshotHeaderField, 10> SnapshotHeaderFieldOrder{
+inline constexpr std::array<SnapshotHeaderField, 11> SnapshotHeaderFieldOrder{
     SnapshotHeaderField::Magic, SnapshotHeaderField::Version, SnapshotHeaderField::ScalarBytes,
     SnapshotHeaderField::ParticleCount, SnapshotHeaderField::Step, SnapshotHeaderField::Time,
-    SnapshotHeaderField::RankCount, SnapshotHeaderField::RankIndex,
+    SnapshotHeaderField::RankCount, SnapshotHeaderField::RankIndex, SnapshotHeaderField::Endianness,
     SnapshotHeaderField::Distribution, SnapshotHeaderField::IdPolicy};
 
 enum class SnapshotField : std::uint8_t {
@@ -68,6 +76,7 @@ struct SnapshotHeader final {
     Scalar time{};
     std::uint32_t rank_count{1};
     std::uint32_t rank_index{};
+    SnapshotEndianness endianness{SnapshotEndianness::Little};
     SnapshotDistribution distribution{SnapshotDistribution::SingleRank};
     SnapshotIdPolicy id_policy{SnapshotIdPolicy::GlobalContiguous};
 
@@ -78,7 +87,8 @@ struct SnapshotHeader final {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
-        if (version != SnapshotVersion::V1 || scalar_bytes != SnapshotScalarBytes) {
+        if (version != SnapshotVersion::V1 || scalar_bytes != SnapshotScalarBytes ||
+            endianness != SnapshotEndianness::Little) {
             return BLITZAR_STATUS_UNSUPPORTED;
         }
 
@@ -163,6 +173,30 @@ struct SnapshotPayloadView final {
                IsFiniteSnapshotSpan(position_z) && IsFiniteSnapshotSpan(velocity_x) &&
                IsFiniteSnapshotSpan(velocity_y) && IsFiniteSnapshotSpan(velocity_z) &&
                IsFiniteSnapshotSpan(mass);
+    }
+};
+
+struct SnapshotMutablePayloadView final {
+    std::span<std::uint64_t> ids{};
+    std::span<Scalar> position_x{};
+    std::span<Scalar> position_y{};
+    std::span<Scalar> position_z{};
+    std::span<Scalar> velocity_x{};
+    std::span<Scalar> velocity_y{};
+    std::span<Scalar> velocity_z{};
+    std::span<Scalar> mass{};
+
+    [[nodiscard]] bool HasCapacity(std::uint64_t expected_count) const noexcept
+    {
+        if (expected_count > std::numeric_limits<std::size_t>::max()) {
+            return false;
+        }
+
+        const std::size_t count = static_cast<std::size_t>(expected_count);
+
+        return ids.size() >= count && position_x.size() >= count && position_y.size() >= count &&
+               position_z.size() >= count && velocity_x.size() >= count &&
+               velocity_y.size() >= count && velocity_z.size() >= count && mass.size() >= count;
     }
 };
 

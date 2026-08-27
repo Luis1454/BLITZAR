@@ -18,7 +18,7 @@ STATES = {
 }
 SOLVERS = {"direct": 0, "barnes-hut": 1, "fmm": 2, "pm": 3, "treepm": 4}
 BACKENDS = {"cpu", "hip", "mpi"}
-DEFERRED_ROOTS = {"src/grid", "src/io", "src/solvers/pm", "src/solvers/treepm"}
+DEFERRED_ROOTS = {"src/grid", "src/solvers/pm", "src/solvers/treepm"}
 
 
 def load_json(path: pathlib.Path) -> object:
@@ -35,7 +35,7 @@ def validate_snapshot_description(plan: str) -> list[str]:
     errors: list[str] = []
     if "SnapshotFrameView" not in plan or "contract-qualified" not in plan:
         errors.append("PLAN.md must describe the qualified SnapshotFrameView contract")
-    if not re.search(r"Binary or HDF5 persistence is not\s+implemented", plan):
+    if not re.search(r"HDF5 remains\s+deferred", plan):
         errors.append("PLAN.md must keep binary and HDF5 persistence deferred")
     return errors
 

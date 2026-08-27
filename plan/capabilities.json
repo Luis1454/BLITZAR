@@ -58,10 +58,10 @@
     },
     {
       "id": "snapshot-persistence",
-      "state": "deferred",
+      "state": "implemented-qualified",
       "root": "src/io",
       "contract": "frozen",
-      "runtime_evidence": []
+      "runtime_evidence": ["TST-P6-001", "TST-P6-002"]
     },
     {
       "id": "hdf5",

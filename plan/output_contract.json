@@ -48,6 +48,23 @@
       "velocity_z",
       "mass"
     ],
+    "header_order": [
+      "magic",
+      "version",
+      "scalar_bytes",
+      "particle_count",
+      "step",
+      "time",
+      "rank_count",
+      "rank_index",
+      "endianness",
+      "distribution",
+      "id_policy"
+    ],
+    "wire_header_bytes": 43,
+    "wire_payload_bytes_per_particle": 64,
+    "wire_checksum_bytes": 8,
+    "checksum_scope": "payload",
     "checksum": "FNV-1a-64",
     "atomic_publication": true,
     "max_particle_count": 100000

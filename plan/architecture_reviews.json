@@ -170,6 +170,13 @@
       "decision": "The added rank, local-count, overlap, and migration accessors form one observability boundary for the internal qualification harness; they do not widen the public SDK ABI or add simulation responsibilities."
     },
     {
+      "path": "src/io/snapshot/SnapshotReader.cpp",
+      "signals": ["branching", "function_length"],
+      "issue": 642,
+      "status": "accepted",
+      "decision": "The reader keeps bounded file loading, header and payload preflight, checksum and EOF verification, and transactional decode in one persistence boundary; fixed wire parsing is delegated to SnapshotWire and the read path is bounded by the frozen snapshot contract."
+    },
+    {
       "path": "tools/audit/audit_contract.py",
       "signals": ["branching"],
       "issue": 613,

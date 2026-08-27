@@ -36,6 +36,15 @@
       "contract": "versioned logical snapshot frame and validation"
     },
     {
+      "id": "TST-P6-002",
+      "entrypoint": "tests/io/IoSnapshotTest.cpp",
+      "responsibility": "tests/io/IoSnapshotTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "phase": "P6",
+      "contract": "deterministic binary snapshot round-trip and rejection"
+    },
+    {
       "id": "TST-P0-004",
       "entrypoint": "tests/contracts/ContractBoundedTest.cpp",
       "responsibility": "tests/contracts/ContractBoundedTest.cpp",

@@ -26,6 +26,12 @@
       "phase": "P6"
     },
     {
+      "id": "TST-P6-002",
+      "name": "binary-snapshot-round-trip-and-rejection",
+      "command": "blitzar_snapshot_io_test",
+      "phase": "P6"
+    },
+    {
       "id": "TST-P0-004",
       "name": "bounded-views-and-request-contracts",
       "command": "blitzar_bounded_contract_test",
@@ -307,6 +313,7 @@
         {"path": "src/simulation/state", "prefix": "Sim"},
         {"path": "src/simulation/step", "prefix": "Sim"},
         {"path": "src/simulation/transaction", "prefix": "Sim"},
+        {"path": "src/io/snapshot", "prefix": "Snapshot"},
         {"path": "src/sdk/c", "prefix": "CApi"},
         {"path": "src/sdk/cpp", "prefix": "Cpp"},
         {"path": "apps/blitzar", "prefix": "Blitzar"},
@@ -317,6 +324,7 @@
         {"path": "tests/integration", "prefix": "Kdk"},
         {"path": "tests/mpi", "prefix": "Mpi"},
         {"path": "tests/octree", "prefix": "Octree"},
+        {"path": "tests/io", "prefix": "Io"},
         {"path": "tests/scaling", "prefix": "Scale"},
         {"path": "tests/simulation", "prefix": "Sim"},
         {"path": "examples/c", "prefix": "C"},
