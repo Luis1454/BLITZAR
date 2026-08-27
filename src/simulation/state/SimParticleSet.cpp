@@ -1,6 +1,6 @@
 #include "mpi/native/MpiNativeStatus.hpp"
 #include "simulation/Sim.hpp"
-#include "simulation/input/SimInputStage.hpp"
+#include "simulation/initialization/SimInputStage.hpp"
 #include "simulation/step/SimPacketStoreRequest.hpp"
 
 #include <new>

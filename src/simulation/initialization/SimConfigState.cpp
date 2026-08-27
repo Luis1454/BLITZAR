@@ -1,4 +1,4 @@
-#include "simulation/input/SimConfigState.hpp"
+#include "simulation/initialization/SimConfigState.hpp"
 
 #include <cstddef>
 #include <cstdint>

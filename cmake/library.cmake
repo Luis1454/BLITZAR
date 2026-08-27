@@ -69,17 +69,17 @@ set(BLITZAR_LIBRARY_SOURCES
     src/simulation/runtime/SimRuntime.cpp
     src/simulation/state/SimParticleState.cpp
     src/simulation/SimConfig.cpp
-    src/simulation/input/SimConfigFile.cpp
-    src/simulation/input/SimConfigValue.cpp
-    src/simulation/input/SimConfigSimulation.cpp
-    src/simulation/input/SimConfigPhysics.cpp
-    src/simulation/input/SimConfigOutput.cpp
-    src/simulation/input/SimConfigDiagnostics.cpp
-    src/simulation/input/SimConfigRun.cpp
-    src/simulation/input/SimConfigState.cpp
-    src/simulation/input/SimParticleSet.cpp
-    src/simulation/input/SimParticleGet.cpp
-    src/simulation/input/SimInputStage.cpp
+    src/simulation/config/SimConfigFile.cpp
+    src/simulation/config/SimConfigValue.cpp
+    src/simulation/config/SimConfigSimulation.cpp
+    src/simulation/config/SimConfigPhysics.cpp
+    src/simulation/config/SimConfigOutput.cpp
+    src/simulation/config/SimConfigDiagnostics.cpp
+    src/simulation/config/SimConfigRun.cpp
+    src/simulation/initialization/SimConfigState.cpp
+    src/simulation/state/SimParticleSet.cpp
+    src/simulation/state/SimParticleGet.cpp
+    src/simulation/initialization/SimInputStage.cpp
     src/simulation/step/SimPackets.cpp
     src/simulation/transaction/SimSnapshots.cpp
     src/simulation/step/SimStep.cpp

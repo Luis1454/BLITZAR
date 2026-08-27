@@ -1,8 +1,8 @@
-#include "simulation/input/SimConfigRun.hpp"
+#include "simulation/config/SimConfigRun.hpp"
 
 #include "fixtures/FixtureCheck.hpp"
-#include "simulation/input/SimConfigFile.hpp"
-#include "simulation/input/SimConfigState.hpp"
+#include "simulation/config/SimConfigFile.hpp"
+#include "simulation/initialization/SimConfigState.hpp"
 
 #include <filesystem>
 #include <string>

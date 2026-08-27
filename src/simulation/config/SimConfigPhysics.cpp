@@ -1,5 +1,5 @@
-#include "simulation/input/SimConfigDirective.hpp"
-#include "simulation/input/SimConfigValue.hpp"
+#include "simulation/config/SimConfigDirective.hpp"
+#include "simulation/config/SimConfigValue.hpp"
 
 #include <array>
 #include <cmath>

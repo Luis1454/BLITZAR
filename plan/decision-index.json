@@ -53,6 +53,7 @@
     {"path": "plan/decisions/037-cross-platform-p4-qualification.md", "lifecycle": "active"},
     {"path": "plan/decisions/038-directive-config-format.md", "lifecycle": "active"},
     {"path": "plan/decisions/039-config-execution-contract.md", "lifecycle": "active"},
-    {"path": "plan/decisions/040-output-contract-and-persistence.md", "lifecycle": "active"}
+    {"path": "plan/decisions/040-output-contract-and-persistence.md", "lifecycle": "active"},
+    {"path": "plan/decisions/041-simulation-module-layout.md", "lifecycle": "active"}
   ]
 }

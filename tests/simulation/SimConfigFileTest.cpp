@@ -1,4 +1,4 @@
-#include "simulation/input/SimConfigFile.hpp"
+#include "simulation/config/SimConfigFile.hpp"
 
 #include "fixtures/FixtureCheck.hpp"
 

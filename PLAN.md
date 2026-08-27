@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.24**
+Plan version: **1.0.25**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -112,7 +112,7 @@ src/solvers/treepm/              TreePM composition and dispatch
 src/io/                          Binary snapshots and optional HDF5 adapter
 src/sdk/{c,cpp}/                 Internal C ABI and C++ facade adapters
 src/simulation/                   Simulation behavior aggregator and Sim facade
-src/simulation/{input,runtime,solver,state,step,transaction}/ Simulation responsibilities
+src/simulation/{config,initialization,runtime,solver,state,step,transaction}/ Simulation responsibilities
 apps/blitzar/                    CLI executable; never library production code
 tests/{contracts,fixtures,fmm,gpu,integration,mpi,octree,package,scaling,simulation}/ Tests by responsibility
 examples/                        Minimal C and C++ SDK consumers

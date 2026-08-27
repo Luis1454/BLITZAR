@@ -1,8 +1,8 @@
-#ifndef BLITZAR_SIMULATION_INPUT_SIM_CONFIG_STATE_HPP
-#define BLITZAR_SIMULATION_INPUT_SIM_CONFIG_STATE_HPP
+#ifndef BLITZAR_SIMULATION_INITIALIZATION_SIM_CONFIG_STATE_HPP
+#define BLITZAR_SIMULATION_INITIALIZATION_SIM_CONFIG_STATE_HPP
 
 #include "core/CoreTypes.hpp"
-#include "simulation/input/SimConfigRun.hpp"
+#include "simulation/config/SimConfigRun.hpp"
 
 #include <vector>
 

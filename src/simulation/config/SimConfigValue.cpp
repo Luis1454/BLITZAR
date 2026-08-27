@@ -1,4 +1,4 @@
-#include "simulation/input/SimConfigValue.hpp"
+#include "simulation/config/SimConfigValue.hpp"
 
 #include <charconv>
 #include <system_error>

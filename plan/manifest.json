@@ -1,6 +1,6 @@
 {
   "product_version": "1.0.0",
-  "plan_version": "1.0.24",
+  "plan_version": "1.0.25",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -50,7 +50,8 @@
     "src/sdk/c",
     "src/sdk/cpp",
     "src/simulation",
-    "src/simulation/input",
+    "src/simulation/config",
+    "src/simulation/initialization",
     "src/simulation/runtime",
     "src/simulation/solver",
     "src/simulation/state",

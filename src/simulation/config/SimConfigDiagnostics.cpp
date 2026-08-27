@@ -1,8 +1,8 @@
-#include "simulation/input/SimConfigDiagnostics.hpp"
+#include "simulation/config/SimConfigDiagnostics.hpp"
 
-#include "simulation/input/SimConfigDirective.hpp"
-#include "simulation/input/SimConfigRun.hpp"
-#include "simulation/input/SimConfigValue.hpp"
+#include "simulation/config/SimConfigDirective.hpp"
+#include "simulation/config/SimConfigRun.hpp"
+#include "simulation/config/SimConfigValue.hpp"
 
 #include <array>
 #include <string_view>

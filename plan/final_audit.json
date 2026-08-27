@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.24",
+  "plan_version": "1.0.25",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
