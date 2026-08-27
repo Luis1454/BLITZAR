@@ -8,8 +8,8 @@ Plan version: 1.0.17
 
 The final clean-room closure is driven by the versioned contract in
 `plan/final_audit.json`. It assigns an owner, category, and gate to every
-tracked path, records the merged implementation commit and evidence reference
-for RR-01 through RR-15, and names every supported CI lane.
+tracked path, records the source commit and resolved integration commit for
+each completed issue, and names every supported CI lane.
 
 `tools/audit/audit_final.py` produces an external audit directory containing the
 complete file matrix, content scan, accepted/deferred finding register, lane

@@ -8,7 +8,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
 from tools.audit.audit_contract import is_inside, load_json, owner_for, validate_contract
-from tools.audit.audit_report import lane_errors, lane_records
+from tools.audit.audit_report import find_integration_commit, lane_errors, lane_records
 from tools.audit.audit_scan import audit_files
 
 
@@ -51,6 +51,26 @@ class FinalAuditTests(unittest.TestCase):
         build = next(item for item in records if item["id"] == "build")
 
         self.assertEqual(build["state"], "success")
+
+    def test_squash_merge_integration_commit_is_resolved(self) -> None:
+        commit = "a" * 40
+        history = f"{commit}\tIssue #645: Integrate configured outputs (#660)"
+
+        with patch("tools.audit.audit_report.git_output", return_value=history):
+            resolved = find_integration_commit(self.root, 645)
+
+        self.assertEqual(resolved, commit)
+
+    def test_squash_merge_with_issue_style_title_is_resolved_by_pull_request(self) -> None:
+        commit = "b" * 40
+        history = f"{commit}\trefactor(issue-656): isolate particle staging boundary (#657)"
+
+        with patch("tools.audit.audit_report.git_output", return_value=history):
+            resolved = find_integration_commit(
+                self.root, 656, "https://github.com/Luis1454/BLITZAR/pull/657"
+            )
+
+        self.assertEqual(resolved, commit)
 
     def test_strict_mode_rejects_failed_lane(self) -> None:
         lanes = [{"id": "build", "state": "failure"}]

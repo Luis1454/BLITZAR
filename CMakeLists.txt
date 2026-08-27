@@ -29,6 +29,11 @@ option(BLITZAR_BUILD_SHARED "Build BLITZAR as a shared library" OFF)
 option(BLITZAR_ENABLE_SANITIZERS "Enable AddressSanitizer and UBSan" OFF)
 option(BLITZAR_ENABLE_OPENMP "Enable CPU OpenMP parallelism" ON)
 
+if(BLITZAR_BUILD_SHARED AND BLITZAR_BUILD_CLI)
+    message(FATAL_ERROR
+        "BLITZAR_BUILD_CLI requires the static library because the CLI owns internal composition")
+endif()
+
 if(BLITZAR_ENABLE_SANITIZERS AND MSVC)
     message(FATAL_ERROR "BLITZAR_ENABLE_SANITIZERS requires a Clang/GNU toolchain")
 endif()

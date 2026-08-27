@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import re
 import shlex
 import subprocess
 import sys
@@ -79,6 +80,35 @@ def lane_errors(lanes: list[dict[str, str]], strict: bool) -> list[str]:
     ]
 
 
+def _pull_request_number(pull_request: str | None) -> str | None:
+    if not pull_request:
+        return None
+    match = re.search(r"/pull/(\d+)(?:[/?#]|$)", pull_request)
+    return match.group(1) if match else None
+
+
+def find_integration_commit(
+    root: pathlib.Path, issue: int, pull_request: str | None = None
+) -> str | None:
+    history = git_output(root, ["log", "--all", "--format=%H%x09%s"])
+    if not history:
+        return None
+
+    records = [line.partition("\t") for line in history.splitlines()]
+    markers = [re.compile(rf"^Issue #{issue}:")]
+    pull_request_number = _pull_request_number(pull_request)
+    if pull_request_number:
+        markers.append(re.compile(rf"\(\s*#?{pull_request_number}\s*\)"))
+    markers.append(re.compile(rf"\bissue(?:\s*#\s*|\s+|-){issue}\b", re.IGNORECASE))
+
+    for marker in markers:
+        for commit, separator, subject in records:
+            if separator and commit and marker.search(subject):
+                return commit
+
+    return None
+
+
 def run_command(
     root: pathlib.Path, command: str, timeout: int, label: str
 ) -> dict[str, Any]:
@@ -126,12 +156,23 @@ def milestone_records(root: pathlib.Path, contract: dict[str, Any]) -> tuple[lis
     records: list[dict[str, Any]] = []
     errors: list[str] = []
     for issue in contract["milestone_issues"]:
-        present = commit_exists(root, issue["commit"])
-        records.append(
-            {**issue, "commit_present": present, "status": "merged" if present else "missing"}
+        source_present = commit_exists(root, issue["commit"])
+        integration_commit = find_integration_commit(
+            root, issue["issue"], issue.get("pull_request")
         )
-        if not present:
-            errors.append(f"implementation commit is missing for issue {issue['issue']}")
+        resolved_commit = integration_commit
+        if resolved_commit is None and source_present:
+            resolved_commit = issue["commit"]
+        records.append(
+            {
+                **issue,
+                "commit_present": source_present,
+                "integration_commit": resolved_commit,
+                "status": "merged" if resolved_commit is not None else "missing",
+            }
+        )
+        if resolved_commit is None:
+            errors.append(f"integration commit is missing for issue {issue['issue']}")
     return records, errors
 
 

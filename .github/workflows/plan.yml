@@ -80,7 +80,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configure shared build
-        run: cmake -S . -B "$env:BLITZAR_CI_BUILD_ROOT/shared" -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_BUILD_SHARED=ON -DBLITZAR_BUILD_TESTS=OFF -DBLITZAR_BUILD_CLI=ON -DBLITZAR_BUILD_EXAMPLES=ON
+        run: cmake -S . -B "$env:BLITZAR_CI_BUILD_ROOT/shared" -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZAR_BUILD_SHARED=ON -DBLITZAR_BUILD_TESTS=OFF -DBLITZAR_BUILD_CLI=OFF -DBLITZAR_BUILD_EXAMPLES=ON
 
       - name: Build shared library and consumers
         run: cmake --build "$env:BLITZAR_CI_BUILD_ROOT/shared" --config Release
