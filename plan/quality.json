@@ -146,6 +146,12 @@
       "phase": "P2"
     },
     {
+      "id": "TST-P2-006",
+      "name": "directive-config-syntax",
+      "command": "blitzar_config_test tests/fixtures/FixtureSimulation.ini",
+      "phase": "P2"
+    },
+    {
       "id": "TST-P0-006",
       "name": "capability-and-unsupported-contract",
       "command": "blitzar_capability_test",
@@ -177,8 +183,8 @@
         "suffixes": [".c", ".cc", ".cpp", ".cu", ".cuh", ".h", ".hip", ".hpp", ".inl"]
       },
       "tests": {
-        "roots": ["tests"],
-        "suffixes": [".c", ".cc", ".cpp", ".cu", ".cuh", ".cmake", ".h", ".hip", ".hpp", ".inl"]
+      "roots": ["tests"],
+      "suffixes": [".c", ".cc", ".cpp", ".cu", ".cuh", ".cmake", ".h", ".hip", ".hpp", ".ini", ".inl"]
       },
       "examples": {
         "roots": ["examples"],

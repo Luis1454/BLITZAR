@@ -115,6 +115,14 @@
       "contract": "C ABI v2 example"
     },
     {
+      "id": "TST-P2-006",
+      "entrypoint": "tests/simulation/SimConfigFileTest.cpp",
+      "responsibility": "tests/simulation/SimConfigFileTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "legacy directive-file syntax and transactional rejection"
+    },
+    {
       "id": "TST-P3-001",
       "entrypoint": "tests/octree/OctreeHierarchyTest.cpp",
       "responsibility": "tests/octree/OctreeHierarchyTest.cpp",
