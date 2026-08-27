@@ -14,6 +14,8 @@ public:
 
     [[nodiscard]] blitzar_status Write(
         const std::filesystem::path& path, blitzar_core::SnapshotFrameView frame) const;
+    [[nodiscard]] blitzar_status WriteAtomic(
+        const std::filesystem::path& path, blitzar_core::SnapshotFrameView frame) const;
 
 private:
     std::size_t max_particle_count_;

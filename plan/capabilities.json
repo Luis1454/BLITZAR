@@ -61,7 +61,7 @@
       "state": "implemented-qualified",
       "root": "src/io",
       "contract": "frozen",
-      "runtime_evidence": ["TST-P6-001", "TST-P6-002"]
+      "runtime_evidence": ["TST-P6-001", "TST-P6-002", "TST-P6-003"]
     },
     {
       "id": "hdf5",

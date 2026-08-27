@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.27**
+Plan version: **1.0.28**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -40,8 +40,9 @@ Direct, Barnes-Hut, and CPU FMM are implemented solver contracts. PM and
 TreePM remain explicit `BLITZAR_STATUS_UNSUPPORTED` selections and their
 production roots remain deferred. The output contract is frozen in
 `plan/output_contract.json`, and its logical versioned `SnapshotFrameView` plus
-the single-rank binary codec are implemented and contract-qualified. Manifest
-publication, MPI/HIP shards, and HDF5 remain deferred to their dedicated
+the single-rank binary codec are implemented and contract-qualified. The
+single-rank run manifest and atomic output lifecycle are implemented and
+locally qualified; MPI/HIP shards and HDF5 remain deferred to their dedicated
 issues.
 
 HIP is capability-gated: compiler support and device execution are separate
@@ -113,6 +114,7 @@ src/solvers/pm/                  Particle-Mesh CPU and CUDA
 src/solvers/treepm/              TreePM composition and dispatch
 src/io/                          Binary snapshots and optional HDF5 adapter
 src/io/snapshot/                 Single-rank binary snapshot codec
+src/io/metadata/                 Deterministic run manifest and output lifecycle
 src/sdk/{c,cpp}/                 Internal C ABI and C++ facade adapters
 src/simulation/                   Simulation behavior aggregator and Sim facade
 src/simulation/config/            Directive parsing and semantic configuration
@@ -128,8 +130,8 @@ tools/{architecture,gates,format,debug,evidence,audit}/ Repository policy checks
 
 `src/grid`, `src/solvers/pm`, and `src/solvers/treepm` are planned but not
 materialized roots. They remain in the deferred-root set until their production
-ownership and tests exist. Binary snapshot ownership is materialized under
-`src/io/snapshot`; the optional HDF5 adapter remains deferred. The CPU FMM root is materialized in P3
+ownership and tests exist. Binary snapshot and single-rank metadata ownership
+are materialized under `src/io`; the optional HDF5 adapter remains deferred. The CPU FMM root is materialized in P3
 with deterministic order-2 multipole qualification; GPU FMM remains outside
 the current backend scope. The GPU runtime and native CUDA compatibility are
 owned by `src/gpu`; HIP kernels are co-located below `gpu/{direct,barnes_hut}`,
@@ -157,9 +159,10 @@ The phases are ordered dependencies, not a list of parallel experiments.
 - P0, P1, P2, and P3 are implemented and locally qualified.
 - P4 is implemented with capability-gated GPU execution evidence.
 - P5 remains deferred because its production roots are not materialized. P6 is
-  in progress: its versioned frame contract and single-rank binary codec are
-  qualified, while manifest publication, diagnostics, restart, and optional
-  adapters remain open. P6 does not wait for the unrelated PM/TreePM
+  implemented locally in stages: its versioned frame contract, single-rank
+  binary codec, deterministic manifest, and atomic output lifecycle are
+  qualified, while diagnostics, restart, and optional adapters remain open.
+  P6 does not wait for the unrelated PM/TreePM
   implementation in P5.
 - P7 and P8 are implemented and locally qualified from the P3/P4 contracts;
   they do not depend on the deferred P5/P6 roots.
@@ -222,12 +225,12 @@ implementation. CPU behavior is qualified before CUDA dispatch is enabled.
 ### P6: Persistence and Qualification
 
 The output contract is frozen before the `src/io` root is materialized. The
-logical frame descriptor and its single-rank validation are implemented, and
-the binary reader/writer is now qualified. The remaining planned pipeline is
-deterministic run manifest, conservation diagnostics, CLI integration, restart,
-post-processing, optional MPI/HIP qualification, and the optional HDF5 adapter.
-The complete run pipeline remains unfinished; HDF5 remains deferred until its
-executable evidence exists.
+logical frame descriptor, single-rank binary reader/writer, deterministic run
+manifest, and atomic snapshot publication lifecycle are implemented and
+qualified by their P6 tests. The remaining planned pipeline is conservation
+diagnostics, CLI integration, restart, post-processing, optional MPI/HIP
+qualification, and the optional HDF5 adapter. The complete run pipeline
+remains unfinished; HDF5 remains deferred until its executable evidence exists.
 
 ### Sprint 6: Optional HIP Acceleration
 

@@ -177,6 +177,20 @@
       "decision": "The reader keeps bounded file loading, header and payload preflight, checksum and EOF verification, and transactional decode in one persistence boundary; fixed wire parsing is delegated to SnapshotWire and the read path is bounded by the frozen snapshot contract."
     },
     {
+      "path": "src/io/metadata/MetadataManifest.cpp",
+      "signals": ["branching"],
+      "issue": 643,
+      "status": "accepted",
+      "decision": "Manifest validation and atomic publication remain one metadata contract: validation covers the complete persisted configuration before any file is opened, while the fixed-order writer delegates JSON field emission to MetadataManifestJson.cpp."
+    },
+    {
+      "path": "src/io/metadata/MetadataRun.cpp",
+      "signals": ["function_count"],
+      "issue": 643,
+      "status": "accepted",
+      "decision": "The run boundary keeps preparation, ordered state publication, rollback, and path observability together; the accessors are a narrow filesystem boundary and the publication state machine is not duplicated across adapters."
+    },
+    {
       "path": "tools/audit/audit_contract.py",
       "signals": ["branching"],
       "issue": 613,

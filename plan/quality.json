@@ -32,6 +32,12 @@
       "phase": "P6"
     },
     {
+      "id": "TST-P6-003",
+      "name": "run-manifest-and-atomic-output-lifecycle",
+      "command": "blitzar_metadata_io_test",
+      "phase": "P6"
+    },
+    {
       "id": "TST-P0-004",
       "name": "bounded-views-and-request-contracts",
       "command": "blitzar_bounded_contract_test",
@@ -314,6 +320,7 @@
         {"path": "src/simulation/step", "prefix": "Sim"},
         {"path": "src/simulation/transaction", "prefix": "Sim"},
         {"path": "src/io/snapshot", "prefix": "Snapshot"},
+        {"path": "src/io/metadata", "prefix": "Metadata"},
         {"path": "src/sdk/c", "prefix": "CApi"},
         {"path": "src/sdk/cpp", "prefix": "Cpp"},
         {"path": "apps/blitzar", "prefix": "Blitzar"},

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.27",
+  "plan_version": "1.0.28",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -118,7 +118,7 @@
       "prefix": "src/io/",
       "owner": "io-maintainers",
       "category": "snapshot-persistence",
-      "review_gate": "TST-P6-002"
+      "review_gate": "TST-P6-003"
     },
     {
       "prefix": "src/mpi/",
@@ -529,6 +529,20 @@
         "CHK-P0-009",
         "plan/decisions/043-binary-snapshot-codec.md"
       ]
+    },
+    {
+      "issue": 643,
+      "title": "Implement run manifest and atomic output lifecycle",
+      "commit": "a3c4b1f5f1356ec8d56b0dea2c885b9c427e9c26",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/659",
+      "evidence": [
+        "TST-P6-003",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "plan/decisions/045-run-manifest-atomic-output.md"
+      ]
     }
   ],
   "non_claims": [
@@ -536,7 +550,7 @@
     "physical NVIDIA CUDA execution when no CUDA device is exposed",
     "physical AMD HIP execution when no AMD device is exposed",
     "PM and TreePM production implementations",
-    "manifest-driven atomic run persistence",
+    "CLI-integrated complete run persistence",
     "HDF5 snapshot persistence",
     "GPU FMM"
   ],

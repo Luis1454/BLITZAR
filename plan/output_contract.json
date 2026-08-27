@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.27",
+  "plan_version": "1.0.28",
   "configuration": {
     "path_base": "config_parent",
     "directives": {
@@ -31,6 +31,40 @@
     "diagnostics_directory": "diagnostics",
     "diagnostics_file": "conservation.csv",
     "postprocess_directory": "postProcessing"
+  },
+  "manifest": {
+    "schema_version": 1,
+    "field_order": [
+      "schema_version",
+      "product_version",
+      "plan_version",
+      "configuration",
+      "capabilities",
+      "distribution",
+      "completed_output_count",
+      "completed_outputs"
+    ],
+    "configuration_order": [
+      "simulation",
+      "gravity",
+      "units",
+      "barnes_hut",
+      "generation",
+      "output",
+      "diagnostics"
+    ],
+    "capabilities_order": [
+      "implemented_solver_mask",
+      "unsupported_solver_mask",
+      "deferred_feature_mask",
+      "compiled_backend_mask"
+    ],
+    "distribution_order": ["rank_count", "rank_index"],
+    "completed_output_order": ["step", "path"],
+    "state_path_pattern": "states/state-%08d.bin",
+    "temporary_suffix": ".tmp",
+    "atomic_publication": true,
+    "wall_clock_metadata": false
   },
   "snapshot": {
     "format": "binary",
