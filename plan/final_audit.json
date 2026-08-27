@@ -438,6 +438,20 @@
         "CHK-P0-006",
         "plan/decisions/039-config-execution-contract.md"
       ]
+    },
+    {
+      "issue": 639,
+      "title": "Freeze deterministic output contract",
+      "commit": "32444107e48f3e6f7f3f08df8feae4483d6ed9c6",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/651",
+      "evidence": [
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "plan/output_contract.json",
+        "plan/decisions/040-output-contract-and-persistence.md"
+      ]
     }
   ],
   "non_claims": [
