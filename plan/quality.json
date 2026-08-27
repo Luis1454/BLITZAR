@@ -159,7 +159,7 @@
     },
     {
       "id": "TST-P2-008",
-      "name": "directive-config-semantic-contract",
+      "name": "directive-config-output-diagnostics-contract",
       "command": "blitzar_config_run_test",
       "phase": "P2"
     },

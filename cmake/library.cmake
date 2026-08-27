@@ -73,6 +73,8 @@ set(BLITZAR_LIBRARY_SOURCES
     src/simulation/input/SimConfigValue.cpp
     src/simulation/input/SimConfigSimulation.cpp
     src/simulation/input/SimConfigPhysics.cpp
+    src/simulation/input/SimConfigOutput.cpp
+    src/simulation/input/SimConfigDiagnostics.cpp
     src/simulation/input/SimConfigRun.cpp
     src/simulation/input/SimConfigState.cpp
     src/simulation/input/SimParticleSet.cpp

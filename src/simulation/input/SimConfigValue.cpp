@@ -53,6 +53,22 @@ template <typename Integer>
     return matches == 1U;
 }
 
+[[nodiscard]] bool ReadQuotedNamedValue(const SimConfigFile::Directive& directive,
+    std::string_view name, std::string_view& value) noexcept
+{
+    std::size_t matches = 0;
+
+    for (const SimConfigFile::Argument& argument : directive.arguments) {
+        if (argument.name == name && argument.value.quoted) {
+            value = argument.value.text;
+
+            ++matches;
+        }
+    }
+
+    return matches == 1U;
+}
+
 } // namespace
 
 bool HasExactArguments(
@@ -83,6 +99,12 @@ bool ReadConfigText(const SimConfigFile::Directive& directive, std::string_view 
     std::string_view& value) noexcept
 {
     return ReadNamedValue(directive, name, value);
+}
+
+bool ReadConfigQuotedText(const SimConfigFile::Directive& directive, std::string_view name,
+    std::string_view& value) noexcept
+{
+    return ReadQuotedNamedValue(directive, name, value);
 }
 
 bool ReadConfigInteger(

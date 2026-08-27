@@ -137,7 +137,9 @@ int RunConfig(const std::filesystem::path& path)
 
     blitzar_sim::SimConfigRun config;
 
-    status = blitzar_sim::BuildRunConfig(source, config);
+    const std::filesystem::path config_directory = path.parent_path();
+
+    status = blitzar_sim::BuildRunConfig(source, config_directory, config);
 
     if (status != BLITZAR_STATUS_OK) {
         return PrintFailure("semantic", status);

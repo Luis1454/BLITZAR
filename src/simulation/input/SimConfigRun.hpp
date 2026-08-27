@@ -1,10 +1,13 @@
 #ifndef BLITZAR_SIMULATION_INPUT_SIM_CONFIG_RUN_HPP
 #define BLITZAR_SIMULATION_INPUT_SIM_CONFIG_RUN_HPP
 
+#include "simulation/input/SimConfigDiagnostics.hpp"
 #include "simulation/input/SimConfigFile.hpp"
+#include "simulation/input/SimConfigOutput.hpp"
 
 #include <blitzar/blitzar.h>
 #include <cstdint>
+#include <filesystem>
 
 namespace blitzar_sim {
 
@@ -30,6 +33,8 @@ struct SimConfigRun final {
     double mass_scale{};
     double time_scale{};
     SimConfigBarnesHut barnes_hut{};
+    SimConfigOutput output{};
+    SimConfigDiagnostics diagnostics{};
     std::uint64_t seed{};
     std::int64_t steps{1};
     bool deterministic{};
@@ -37,6 +42,9 @@ struct SimConfigRun final {
 
 [[nodiscard]] blitzar_status BuildRunConfig(
     const SimConfigFile& source, SimConfigRun& destination) noexcept;
+
+[[nodiscard]] blitzar_status BuildRunConfig(const SimConfigFile& source,
+    const std::filesystem::path& config_directory, SimConfigRun& destination) noexcept;
 
 } // namespace blitzar_sim
 

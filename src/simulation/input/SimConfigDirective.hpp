@@ -24,6 +24,12 @@ namespace blitzar_sim {
 [[nodiscard]] blitzar_status ApplyRunDirective(
     const SimConfigFile::Directive& directive, SimConfigRun& config) noexcept;
 
+[[nodiscard]] blitzar_status ApplyOutputDirective(
+    const SimConfigFile::Directive& directive, SimConfigRun& config) noexcept;
+
+[[nodiscard]] blitzar_status ApplyDiagnosticsDirective(
+    const SimConfigFile::Directive& directive, SimConfigRun& config) noexcept;
+
 } // namespace blitzar_sim
 
 #endif

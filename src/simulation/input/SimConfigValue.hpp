@@ -15,6 +15,9 @@ namespace blitzar_sim {
 [[nodiscard]] bool ReadConfigText(const SimConfigFile::Directive& directive, std::string_view name,
     std::string_view& value) noexcept;
 
+[[nodiscard]] bool ReadConfigQuotedText(const SimConfigFile::Directive& directive,
+    std::string_view name, std::string_view& value) noexcept;
+
 [[nodiscard]] bool ReadConfigInteger(
     const SimConfigFile::Directive& directive, std::string_view name, std::int64_t& value) noexcept;
 

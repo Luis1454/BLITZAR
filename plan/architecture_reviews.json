@@ -142,6 +142,20 @@
       "decision": "Migration retains one collective transaction boundary so every early return records the same diagnostic status and clears received packets consistently; packet preparation and exchange remain split into dedicated methods."
     },
     {
+      "path": "src/simulation/input/SimConfigOutput.cpp",
+      "signals": ["branching"],
+      "issue": 640,
+      "status": "accepted",
+      "decision": "The output directive owns exact-argument validation, path safety, and transactional policy construction; filesystem resolution remains a separate boundary and runtime output creation is deferred to later persistence issues."
+    },
+    {
+      "path": "src/simulation/input/SimConfigRun.cpp",
+      "signals": ["branching"],
+      "issue": 640,
+      "status": "accepted",
+      "decision": "Run configuration keeps directive dispatch, duplicate detection, required-field validation, and candidate commit together so parsing failures cannot mutate the caller's configuration; value policies are split into dedicated adapters."
+    },
+    {
       "path": "src/simulation/Sim.cpp",
       "signals": ["function_count"],
       "issue": 612,

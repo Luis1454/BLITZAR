@@ -136,7 +136,7 @@
       "responsibility": "tests/simulation/SimConfigRunTest.cpp",
       "mode": "",
       "ranks": 1,
-      "contract": "supported directives, defaults, unsupported values, and transactional rejection"
+      "contract": "supported directives, output and diagnostics policies, defaults, and transactional rejection"
     },
     {
       "id": "TST-P3-001",
