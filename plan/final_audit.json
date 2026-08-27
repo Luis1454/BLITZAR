@@ -466,6 +466,20 @@
         "CHK-P0-009",
         "plan/output_contract.json"
       ]
+    },
+    {
+      "issue": 653,
+      "title": "Split simulation configuration and initialization responsibilities",
+      "commit": "ca4146a9a6f6c79759b7fd7f0088c9e33bd1f331",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/654",
+      "evidence": [
+        "TST-P2-008",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "plan/decisions/041-simulation-module-layout.md"
+      ]
     }
   ],
   "non_claims": [
