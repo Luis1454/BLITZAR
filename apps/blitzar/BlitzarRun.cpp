@@ -88,6 +88,7 @@ struct RunResult final {
     blitzar_status status{BLITZAR_STATUS_OK};
     std::string_view phase{};
     BlitzarExitCode exit_code{BlitzarExitCode::Runtime};
+    std::uint64_t completed_steps{};
 };
 
 [[nodiscard]] blitzar_status CaptureState(
@@ -102,17 +103,19 @@ struct RunResult final {
     blitzar::Simulation& simulation, blitzar_sim::SimConfigState& state,
     BlitzarOutput& output) noexcept
 {
+    std::uint64_t completed_steps = 0;
+
     if (output.ShouldWriteInitial()) {
         blitzar_status status = CaptureState(simulation, state);
 
         if (status != BLITZAR_STATUS_OK) {
-            return {status, "output-state", BlitzarExitCode::Output};
+            return {status, "output-state", BlitzarExitCode::Output, completed_steps};
         }
 
         status = output.Publish(0, state.Output());
 
         if (status != BLITZAR_STATUS_OK) {
-            return {status, "output-publish", BlitzarExitCode::Output};
+            return {status, "output-publish", BlitzarExitCode::Output, completed_steps};
         }
     }
 
@@ -120,10 +123,13 @@ struct RunResult final {
         const blitzar::Status status = simulation.step();
 
         if (status != blitzar::Status::Ok) {
-            return {static_cast<blitzar_status>(status), "step", BlitzarExitCode::Runtime};
+            return {static_cast<blitzar_status>(status), "step", BlitzarExitCode::Runtime,
+                completed_steps};
         }
 
         const std::uint64_t completed_step = static_cast<std::uint64_t>(step);
+
+        completed_steps = completed_step;
 
         if (!output.ShouldWriteStep(completed_step)) {
             continue;
@@ -132,28 +138,28 @@ struct RunResult final {
         blitzar_status output_status = CaptureState(simulation, state);
 
         if (output_status != BLITZAR_STATUS_OK) {
-            return {output_status, "output-state", BlitzarExitCode::Output};
+            return {output_status, "output-state", BlitzarExitCode::Output, completed_steps};
         }
 
         output_status = output.Publish(completed_step, state.Output());
 
         if (output_status != BLITZAR_STATUS_OK) {
-            return {output_status, "output-publish", BlitzarExitCode::Output};
+            return {output_status, "output-publish", BlitzarExitCode::Output, completed_steps};
         }
     }
 
-    return {};
+    return {BLITZAR_STATUS_OK, {}, BlitzarExitCode::Runtime, completed_steps};
 }
 
-[[nodiscard]] int PrintSummary(
-    const blitzar_sim::SimConfigRun& config, const BlitzarOutput& output_writer)
+[[nodiscard]] int PrintSummary(const blitzar_sim::SimConfigRun& config,
+    const BlitzarOutput& output_writer, std::uint64_t completed_steps)
 {
     try {
-        const BlitzarSummary summary{BLITZAR_STATUS_OK,
-            static_cast<std::uint64_t>(config.steps), static_cast<std::uint64_t>(config.steps),
-            static_cast<std::uint64_t>(config.particle_count), config.solver,
+        const BlitzarSummary summary{BLITZAR_STATUS_OK, static_cast<std::uint64_t>(config.steps),
+            completed_steps, static_cast<std::uint64_t>(config.particle_count), config.solver,
             static_cast<std::uint64_t>(output_writer.SnapshotCount()),
-            static_cast<std::uint64_t>(output_writer.DiagnosticsCount()), output_writer.OutputPath()};
+            static_cast<std::uint64_t>(output_writer.DiagnosticsCount()),
+            output_writer.OutputPath()};
 
         if (WriteSummary(std::cout, summary)) {
             return static_cast<int>(BlitzarExitCode::Success);
@@ -228,8 +234,8 @@ int RunConfig(const std::filesystem::path& path)
     blitzar::Simulation simulation(context, config.particle_count);
 
     if (!simulation.valid()) {
-        return PrintFailure(
-            "simulation", static_cast<blitzar_status>(simulation.status()), BlitzarExitCode::Runtime);
+        return PrintFailure("simulation", static_cast<blitzar_status>(simulation.status()),
+            BlitzarExitCode::Runtime);
     }
 
     status = ConfigureSimulation(config, simulation);
@@ -258,15 +264,7 @@ int RunConfig(const std::filesystem::path& path)
         return PrintFailure(run_result.phase, run_result.status, run_result.exit_code);
     }
 
-    blitzar::ParticleOutput output = ToOutput(state.Output());
-
-    status = static_cast<blitzar_status>(simulation.get_state(output));
-
-    if (status != BLITZAR_STATUS_OK) {
-        return PrintFailure("state-output", status, BlitzarExitCode::Runtime);
-    }
-
-    return PrintSummary(config, output_writer);
+    return PrintSummary(config, output_writer, run_result.completed_steps);
 }
 
 } // namespace blitzar_cli

@@ -74,20 +74,10 @@ std::string ExpectedSummary(std::string_view output_path, std::size_t snapshot_c
 {
     std::ostringstream expected;
 
-    expected << "{\n"
-                "  \"schema_version\": 1,\n"
-                "  \"status\": 0,\n"
-                "  \"requested_steps\": 2,\n"
-                "  \"completed_steps\": 2,\n"
-                "  \"particle_count\": 4,\n"
-                "  \"solver\": 0,\n"
-                "  \"snapshot_count\": "
-             << snapshot_count
-             << ",\n"
-                "  \"diagnostics_count\": 0,\n"
-                "  \"output_path\": \""
-             << output_path
-             << "\"\n}\n";
+    expected << "{\"schema_version\":1,\"status\":0,\"requested_steps\":2,\"completed_steps\":2,"
+                "\"particle_count\":4,\"solver\":0,\"snapshot_count\":"
+             << snapshot_count << ",\"diagnostics_count\":0,\"output_path\":\"" << output_path
+             << "\"}\n";
 
     return expected.str();
 }
@@ -140,13 +130,8 @@ int CheckOutputSummary(const std::filesystem::path& base)
     BLITZAR_CHECK(rerun.exit_code == static_cast<int>(blitzar_cli::BlitzarExitCode::Output));
     BLITZAR_CHECK(rerun.standard_output.empty());
     BLITZAR_CHECK(rerun.standard_error ==
-                  "{\n"
-                  "  \"schema_version\": 1,\n"
-                  "  \"status\": 1,\n"
-                  "  \"phase\": \"output-prepare\",\n"
-                  "  \"exit_code\": 5,\n"
-                  "  \"message\": \"invalid argument\"\n"
-                  "}\n");
+                  "{\"schema_version\":1,\"status\":1,\"phase\":\"output-prepare\","
+                  "\"exit_code\":5,\"message\":\"invalid argument\"}\n");
 
     return 0;
 }
@@ -162,16 +147,13 @@ int CheckConfigurationFailure(const std::filesystem::path& base)
 
     const CapturedOutput result = RunCaptured(config);
 
-    BLITZAR_CHECK(result.exit_code == static_cast<int>(blitzar_cli::BlitzarExitCode::Configuration));
+    BLITZAR_CHECK(
+        result.exit_code == static_cast<int>(blitzar_cli::BlitzarExitCode::Configuration));
+
     BLITZAR_CHECK(result.standard_output.empty());
     BLITZAR_CHECK(result.standard_error ==
-                  "{\n"
-                  "  \"schema_version\": 1,\n"
-                  "  \"status\": 5,\n"
-                  "  \"phase\": \"semantic\",\n"
-                  "  \"exit_code\": 3,\n"
-                  "  \"message\": \"unsupported\"\n"
-                  "}\n");
+                  "{\"schema_version\":1,\"status\":5,\"phase\":\"semantic\","
+                  "\"exit_code\":3,\"message\":\"unsupported\"}\n");
 
     return 0;
 }

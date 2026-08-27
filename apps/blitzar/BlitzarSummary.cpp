@@ -90,38 +90,18 @@ bool WriteSummary(std::ostream& output, const BlitzarSummary& summary)
 {
     output.imbue(std::locale::classic());
 
-    output << "{\n"
-              "  \"schema_version\": "
-           << BlitzarSummary::SchemaVersion
-           << ",\n"
-              "  \"status\": "
-           << summary.status
-           << ",\n"
-              "  \"requested_steps\": "
-           << summary.requested_steps
-           << ",\n"
-              "  \"completed_steps\": "
-           << summary.completed_steps
-           << ",\n"
-              "  \"particle_count\": "
-           << summary.particle_count
-           << ",\n"
-              "  \"solver\": "
-           << summary.solver
-           << ",\n"
-              "  \"snapshot_count\": "
-           << summary.snapshot_count
-           << ",\n"
-              "  \"diagnostics_count\": "
-           << summary.diagnostics_count
-           << ",\n"
-              "  \"output_path\": ";
+    output << "{\"schema_version\":" << BlitzarSummary::SchemaVersion
+           << ",\"status\":" << summary.status << ",\"requested_steps\":" << summary.requested_steps
+           << ",\"completed_steps\":" << summary.completed_steps
+           << ",\"particle_count\":" << summary.particle_count << ",\"solver\":" << summary.solver
+           << ",\"snapshot_count\":" << summary.snapshot_count
+           << ",\"diagnostics_count\":" << summary.diagnostics_count << ",\"output_path\":";
 
     if (!WriteOutputPath(output, summary.output_path)) {
         return false;
     }
 
-    output << "\n}\n";
+    output << "}\n";
 
     return static_cast<bool>(output);
 }
@@ -136,30 +116,20 @@ bool WriteFailure(std::ostream& output, const BlitzarFailure& failure) noexcept
 
     output.imbue(std::locale::classic());
 
-    output << "{\n"
-              "  \"schema_version\": "
-           << BlitzarSummary::SchemaVersion
-           << ",\n"
-              "  \"status\": "
-           << failure.status
-           << ",\n"
-              "  \"phase\": ";
+    output << "{\"schema_version\":" << BlitzarSummary::SchemaVersion
+           << ",\"status\":" << failure.status << ",\"phase\":";
 
     if (!WriteJsonString(output, failure.phase)) {
         return false;
     }
 
-    output << ",\n"
-              "  \"exit_code\": "
-           << static_cast<int>(failure.exit_code)
-           << ",\n"
-              "  \"message\": ";
+    output << ",\"exit_code\":" << static_cast<int>(failure.exit_code) << ",\"message\":";
 
     if (!WriteJsonString(output, message)) {
         return false;
     }
 
-    output << "\n}\n";
+    output << "}\n";
 
     return static_cast<bool>(output);
 }
