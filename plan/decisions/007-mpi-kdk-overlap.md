@@ -7,7 +7,7 @@ Plan version: 1.0.6
 
 `MpiContext` is the sole public MPI boundary. Its internal composition owns the
 MPI session, checked collectives, packet transport, and opaque lifetime of a
-non-blocking ghost exchange. `DomainDecomposition` and `MpiExchange` operate
+non-blocking ghost exchange. `MpiDomainDecomposition` and `MpiExchange` operate
 only on spans, packet buffers, counts, and statuses; they do not include MPI
 headers or branch on `BLITZAR_HAS_MPI`.
 
@@ -27,7 +27,7 @@ failure cannot apply a partial kick to the new local state.
 ## Consequences
 
 - MPI-specific code is confined to the internal `parallel` transport boundary;
-  public SDK headers, `DomainDecomposition`, and `MpiExchange` remain MPI-free.
+  public SDK headers, `MpiDomainDecomposition`, and `MpiExchange` remain MPI-free.
 - CPU-only builds use the same `MpiContext` contract without MPI linkage.
 - Direct MPI execution overlaps network progress with useful local force work.
 - Barnes-Hut correctness is preserved at the cost of a second full tree

@@ -2,63 +2,63 @@
   "schema_version": 1,
   "reviews": [
     {
-      "path": "cmake/TestTargets.cmake",
+      "path": "cmake/test_targets.cmake",
       "signals": ["include_dependencies"],
       "issue": 610,
       "status": "accepted",
       "decision": "The test-target composition module owns explicit links for the complete unit, MPI, and public-header matrix; its dependency count is the test topology and is isolated from production and package target ownership."
     },
     {
-      "path": "src/parallel/mpi/native/MpiNative.cpp",
+      "path": "src/mpi/native/MpiNative.cpp",
       "signals": ["function_count"],
       "issue": 603,
       "status": "accepted",
       "decision": "The lifecycle adapter keeps runtime initialization, external ownership, and process-exit finalization together; collectives, packet operations, and ghost requests are split into separate native units."
     },
     {
-      "path": "src/parallel/mpi/native/MpiNativeGhost.cpp",
+      "path": "src/mpi/native/MpiNativeGhost.cpp",
       "signals": ["branching"],
       "issue": 603,
       "status": "accepted",
       "decision": "The ghost adapter combines platform guards with request validation and cancellation so MPI request lifetime is closed in one native boundary; transport orchestration remains outside the file."
     },
     {
-      "path": "tests/contracts/ApiC.c",
+      "path": "tests/contracts/ContractCApiTest.c",
       "signals": ["function_length"],
       "issue": 599,
       "status": "accepted",
       "decision": "The C ABI fixture keeps one end-to-end lifecycle scenario so ABI ordering and cleanup remain visible; its length is registered for review rather than hidden from the repository report."
     },
     {
-      "path": "tests/contracts/Bounded.cpp",
+      "path": "tests/contracts/ContractBoundedTest.cpp",
       "signals": ["function_length", "include_dependencies"],
       "issue": 599,
       "status": "accepted",
       "decision": "The bounded-view fixture validates related invalid-input cases and the split SDK contracts in one contract scenario; its length and include dependencies are tracked and remain outside production code."
     },
     {
-      "path": "tests/contracts/Contracts.cpp",
+      "path": "tests/contracts/ContractTest.cpp",
       "signals": ["function_length"],
       "issue": 599,
       "status": "accepted",
       "decision": "The contract fixture groups the public and internal invariant checks needed to detect drift across the SDK boundary; the review signal remains explicit."
     },
     {
-      "path": "tests/integration/Dynamics.cpp",
+      "path": "tests/integration/KdkDynamicsTest.cpp",
       "signals": ["function_length"],
       "issue": 599,
       "status": "accepted",
       "decision": "The dynamics fixture keeps deterministic physical cases together so shared setup and comparison rules cannot diverge; the signal is registered for later focused decomposition."
     },
     {
-      "path": "tests/trees/octree/Hierarchy.cpp",
+      "path": "tests/octree/OctreeHierarchyTest.cpp",
       "signals": ["function_length"],
       "issue": 599,
       "status": "accepted",
       "decision": "The hierarchy fixture compares tree construction and solver behavior in one deterministic scenario; its test-only function length is visible and reviewed."
     },
     {
-      "path": "tests/simulation/Lifecycle.cpp",
+      "path": "tests/simulation/SimLifecycleTest.cpp",
       "signals": ["function_length"],
       "issue": 599,
       "status": "accepted",
@@ -94,10 +94,10 @@
     },
     {
       "path": "tools/gates/naming_gate.py",
-      "signals": ["allocation"],
+      "signals": ["allocation", "branching"],
       "issue": 600,
       "status": "accepted",
-      "decision": "The naming report materializes separate collision, exception, length, and type-mapping result lists so CI can distinguish each contract failure; the allocation signal is limited to report construction."
+      "decision": "The naming report materializes separate collision, exception, length, type-mapping, and responsibility result lists so CI can distinguish each contract failure; allocation and branching are limited to deterministic policy-report construction."
     },
     {
       "path": "tools/gates/public_api_gate.py",
@@ -114,14 +114,14 @@
       "decision": "The capability gate keeps matrix validation, deferred-root checks, and public unsupported-status checks in one policy boundary so compile claims cannot drift from the frozen plan; its tool-local signals are covered by the fixture and do not waive production thresholds."
     },
     {
-      "path": "tests/scaling/Scaling.cpp",
+      "path": "tests/scaling/ScaleTest.cpp",
       "signals": ["branching"],
       "issue": 612,
       "status": "accepted",
       "decision": "The scaling CLI keeps option parsing and stable record emission together so every workload invocation has the same machine-readable fields; its branching is test-harness local and is covered by the evidence runner fixtures."
     },
     {
-      "path": "tests/scaling/ScalingRun.cpp",
+      "path": "tests/scaling/ScaleRunTest.cpp",
       "signals": ["branching"],
       "issue": 612,
       "status": "accepted",
@@ -135,25 +135,25 @@
       "decision": "The pure contract module validates and expands one versioned workload schema and parses rank records; its report-list allocations and validation branches are policy-local, deterministic, and covered by release_evidence_test.py."
     },
     {
-      "path": "src/parallel/mpi/exchange/migration/MpiMigration.cpp",
+      "path": "src/mpi/exchange/MpiMigration.cpp",
       "signals": ["branching", "function_length"],
       "issue": 612,
       "status": "accepted",
       "decision": "Migration retains one collective transaction boundary so every early return records the same diagnostic status and clears received packets consistently; packet preparation and exchange remain split into dedicated methods."
     },
     {
-      "path": "src/simulation/facade/Simulation.cpp",
+      "path": "src/simulation/Sim.cpp",
       "signals": ["function_count"],
       "issue": 612,
       "status": "accepted",
       "decision": "The added rank, local-count, overlap, and migration accessors form one observability boundary for the internal qualification harness; they do not widen the public SDK ABI or add simulation responsibilities."
     },
     {
-      "path": "tools/audit/final_audit_contract.py",
+      "path": "tools/audit/audit_contract.py",
       "signals": ["branching"],
       "issue": 613,
       "status": "accepted",
-      "decision": "The contract validator keeps ownership, lane, and historical issue schema checks together so the final audit cannot run against a partial plan; its branching is policy validation and is covered by final_audit_test.py."
+      "decision": "The contract validator keeps ownership, lane, and historical issue schema checks together so the final audit cannot run against a partial plan; its branching is policy validation and is covered by audit_test.py."
     }
   ]
 }

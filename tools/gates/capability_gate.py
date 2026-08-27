@@ -131,10 +131,10 @@ def validate_matrix(root: pathlib.Path) -> list[str]:
             errors.append("public capability report fields are incomplete")
 
     header = (root / "include" / "blitzar" / "blitzar.h").read_text(encoding="utf-8")
-    api_info = (root / "src" / "sdk" / "c" / "ApiInfo.cpp").read_text(encoding="utf-8")
-    config = (
-        root / "src" / "simulation" / "configuration" / "SimulationConfig.cpp"
-    ).read_text(encoding="utf-8")
+    api_info = (root / "src" / "sdk" / "c" / "CApiInfo.cpp").read_text(encoding="utf-8")
+    config = (root / "src" / "simulation" / "SimConfig.cpp").read_text(
+        encoding="utf-8"
+    )
     plan = (root / "PLAN.md").read_text(encoding="utf-8")
     required_public = ("blitzar_capabilities_v2", "blitzar_get_capabilities_v2")
     errors.extend(

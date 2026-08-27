@@ -43,7 +43,7 @@ class PlanCheckTests(unittest.TestCase):
             "add_test(NAME TST-P0-001 COMMAND fixture_test)\n",
             encoding="utf-8",
         )
-        (self.root / "cmake" / "BLITZARConfig.cmake.in").write_text(
+        (self.root / "cmake" / "blitzar_config.cmake.in").write_text(
             'set(BLITZAR_VERSION "@PROJECT_VERSION@")\n'
             'set(BLITZAR_PRODUCT_VERSION "@PROJECT_VERSION@")\n'
             'set(BLITZAR_PLAN_VERSION "@BLITZAR_PLAN_VERSION@")\n',

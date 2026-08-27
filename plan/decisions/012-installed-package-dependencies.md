@@ -14,7 +14,7 @@ The package records the selected HIP package name (`hip` or `HIP`) in the
 generated config so an installed export does not guess which provider to
 load. CPU-only builds do not request MPI, HIP, or CUDA dependencies.
 
-`tests/package/PackageConsumer.cmake` installs the configured build into a temporary
+`tests/package/package_consumer.cmake` installs the configured build into a temporary
 prefix and configures and builds an external CMake consumer against
 `BLITZAR::blitzar`.
 

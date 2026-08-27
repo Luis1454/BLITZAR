@@ -1,10 +1,10 @@
 #ifndef BLITZAR_SOLVERS_FMM_FMM_SOLVER_HPP
 #define BLITZAR_SOLVERS_FMM_FMM_SOLVER_HPP
 
-#include "core/contracts/Execution.hpp"
+#include "core/CoreExecution.hpp"
 #include "physics/gravity/GravityLaw.hpp"
-#include "solvers/barnes_hut/BarnesHutSolver.hpp"
-#include "solvers/contracts/SolverContract.hpp"
+#include "solvers/SolverContract.hpp"
+#include "solvers/barnes_hut/BhSolver.hpp"
 #include "solvers/threading/ThreadStackPool.hpp"
 #include "trees/octree/Octree.hpp"
 

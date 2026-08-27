@@ -5,7 +5,7 @@ Plan version: 1.0.6
 
 ## Decision
 
-`blitzar_sim::Simulation` owns one `ParticleArena` by value. The particle,
+`blitzar_sim::Sim` owns one `ParticleArena` by value. The particle,
 acceleration, and KDK checkpoint objects receive non-owning references to that
 arena and never extend its lifetime.
 

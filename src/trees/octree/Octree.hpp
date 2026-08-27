@@ -1,8 +1,8 @@
 #ifndef BLITZAR_TREES_OCTREE_OCTREE_HPP
 #define BLITZAR_TREES_OCTREE_OCTREE_HPP
 
-#include "core/contracts/Types.hpp"
-#include "trees/ordering/Morton.hpp"
+#include "core/CoreTypes.hpp"
+#include "trees/octree/OctreeMorton.hpp"
 
 #include <array>
 #include <blitzar/blitzar.h>

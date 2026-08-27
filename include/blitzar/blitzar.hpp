@@ -85,7 +85,7 @@ enum class SolverKind : std::int32_t {
 
 enum class BackendKind : std::int32_t { Cpu = BLITZAR_BACKEND_CPU, Hip = BLITZAR_BACKEND_HIP };
 
-enum class IntegratorKind : std::int32_t { LeapfrogKdk = BLITZAR_INTEGRATOR_LEAPFROG_KDK };
+enum class IntegratorKind : std::int32_t { KdkLeapfrog = BLITZAR_INTEGRATOR_LEAPFROG_KDK };
 
 struct BarnesHutSettings final {
     double opening_angle{0.5};

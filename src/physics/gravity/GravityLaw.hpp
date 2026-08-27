@@ -1,8 +1,8 @@
 #ifndef BLITZAR_PHYSICS_GRAVITY_GRAVITY_LAW_HPP
 #define BLITZAR_PHYSICS_GRAVITY_GRAVITY_LAW_HPP
 
-#include "core/contracts/Types.hpp"
-#include "core/contracts/Units.hpp"
+#include "core/CoreTypes.hpp"
+#include "core/CoreUnits.hpp"
 
 namespace blitzar_physics {
 

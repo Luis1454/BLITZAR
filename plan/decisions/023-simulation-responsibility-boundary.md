@@ -6,7 +6,7 @@ Plan version: 1.0.10
 
 ## Context
 
-`src/simulation/facade/Simulation.cpp` mixed construction, solver configuration, particle state
+`src/simulation/Sim.cpp` mixed construction, solver configuration, particle state
 transfer, and local/distributed KDK execution. The implementation is now
 distributed across behavior-owned files without recreating a server boundary.
 The earlier extraction used redundant server-oriented prefixes for SDK
@@ -16,14 +16,14 @@ boundary into the clean-room SDK and obscured the responsibility owned by the
 
 ## Decision
 
-Keep `Simulation` as the composition root and distribute its implementation by
+Keep `Sim` as the composition root and distribute its implementation by
 behavior:
 
-- `Config.cpp` owns solver and runtime configuration mutators.
-- `ParticleSet.cpp` and `ParticleGet.cpp` own particle input commit and state
+- `SimConfig.cpp` owns solver and runtime configuration mutators.
+- `SimParticleSet.cpp` and `SimParticleGet.cpp` own particle input commit and state
   output gathering.
-- `Step.cpp` owns KDK dispatch, distributed transaction, and migration.
-- `Simulation.cpp` owns construction, narrow state accessors, and status storage.
+- `SimStep.cpp` owns KDK dispatch, distributed transaction, and migration.
+- `Sim.cpp` owns construction, narrow state accessors, and status storage.
 
 The internal API accepts cohesive view/configuration records instead of
 multi-array convenience overloads. No new callable exceeds four parameters.

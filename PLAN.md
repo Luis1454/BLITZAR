@@ -26,7 +26,7 @@ backend. The public product has three layers:
 The simulation core owns particle state, integration, spatial data structures,
 solvers, optional grids, and snapshot I/O. Networking, GUI code, and plugin
 loading remain adapters; optional distributed execution is isolated under
-`src/parallel` and must preserve the single-rank contract.
+`src/mpi` and must preserve the single-rank contract.
 
 ## Capability Contract
 
@@ -50,8 +50,8 @@ executed-device outcomes separately.
 ## Reproducible Evidence
 
 Performance and release claims require the workload contract in
-`plan/scaling.json`. `tests/scaling/Scaling.cpp` is a measurement harness, not a
-second simulation implementation: it exercises the existing `Simulation`
+`plan/scaling.json`. `tests/scaling/ScaleTest.cpp` is a measurement harness, not a
+second simulation implementation: it exercises the existing `Sim`
 execution path, records one result per MPI rank, and compares hierarchical
 solvers with the Direct CPU oracle when the selected mode is CPU-qualified.
 
@@ -70,7 +70,7 @@ strict mode; its output is uploaded as an external artifact.
 ## Final Qualification
 
 `plan/final_audit.json` assigns an owner, category, and review gate to every
-tracked repository path. `tools/audit/final_audit.py` materializes the complete file
+tracked repository path. `tools/audit/audit_final.py` materializes the complete file
 matrix, hashes and scans each tracked file, checks CMake/source completeness,
 validates the accepted architecture reviews and deferred capability register,
 and verifies the implementation commits for RR-01 through RR-15. Its report,
@@ -85,27 +85,35 @@ state, and no local multi-rank result is promoted to multi-node evidence.
 
 ```text
 include/blitzar/                 Public ABI and C++ facade only
-src/core/contracts/              Stable internal contracts and value types
-src/particles/{arena,buffers,source}/ Aligned SoA particle storage and invariants
+src/core/                         Stable internal contracts and value types
+src/particles/                    Particle domain aggregator
+src/particles/arena/              Aligned SoA arena ownership
+src/particles/buffer/             Mutable particle and acceleration buffers
+src/particles/source/              Remote source particle buffer
 src/physics/gravity/             Force laws, units, softening, validation
 src/integration/kdk/              Time integration and timestep policy
-src/trees/ordering/              Shared Morton key generation and ordering
-src/trees/octree/{access,construction,ordering,properties}/ Octree responsibilities
-src/accelerators/gpu/hip/{bridge,runtime,memory,launch,direct,barnes_hut}/ HIP/CUDA runtime and launch policy
-src/parallel/mpi/{collectives,context,domain,exchange,gather,native}/ MPI adapter responsibilities
+src/trees/octree/                 Octree and Morton spatial responsibilities
+src/gpu/                          Optional GPU domain aggregator
+src/gpu/runtime/                  HIP/CUDA runtime and launch policy
+src/gpu/memory/                   Device and pinned-buffer ownership
+src/gpu/direct/                   GPU direct-solver kernels
+src/gpu/barnes_hut/               GPU Barnes-Hut kernels
+src/mpi/                          Distributed domain aggregator
+src/mpi/{collectives,domain,exchange,ghost,gather,packets,native,runtime}/ MPI responsibilities
 src/grid/                        3D grids and mass deposition
-src/solvers/{contracts,threading}/ Shared solver contracts and traversal resources
-src/solvers/direct/{compute,force}/ O(N^2) CPU reference responsibilities
-src/solvers/barnes_hut/tree/     Barnes-Hut tree orchestration
-src/solvers/fmm/{multipole,traversal}/ FMM CPU responsibilities
+src/solvers/                      Solver domain aggregator and shared contracts
+src/solvers/threading/            Bounded traversal resources
+src/solvers/direct/               O(N^2) CPU reference responsibilities
+src/solvers/barnes_hut/           Barnes-Hut tree orchestration
+src/solvers/fmm/                  FMM CPU responsibilities
 src/solvers/pm/                  Particle-Mesh CPU and CUDA
 src/solvers/treepm/              TreePM composition and dispatch
 src/io/                          Binary snapshots and optional HDF5 adapter
 src/sdk/{c,cpp}/                 Internal C ABI and C++ facade adapters
-src/simulation/{composition,configuration,facade,input,storage,transaction}/ Simulation behavior
-src/simulation/step/{local,distributed,preparation,migration,overlap,packets}/ Step responsibilities
+src/simulation/                   Simulation behavior aggregator and Sim facade
+src/simulation/{input,runtime,solver,state,step,transaction}/ Simulation responsibilities
 apps/blitzar/                    CLI executable; never library production code
-tests/                           Unit, reference, contract, and integration tests
+tests/{contracts,fixtures,fmm,gpu,integration,mpi,octree,package,scaling,simulation}/ Tests by responsibility
 examples/                        Minimal C and C++ SDK consumers
 plan/                            Frozen roadmap and machine-readable invariants
 tools/{architecture,gates,format,debug,evidence,audit}/ Repository policy checks
@@ -115,11 +123,9 @@ tools/{architecture,gates,format,debug,evidence,audit}/ Repository policy checks
 but not materialized roots. They remain in the deferred-root set until their
 production ownership and tests exist. The CPU FMM root is materialized in P3
 with deterministic order-2 multipole qualification; GPU FMM remains outside
-the current backend scope. The
-GPU runtime and native CUDA compatibility are intentionally owned by
-`src/accelerators/gpu/hip`; no parallel CUDA runtime root exists. HIP kernels are
-co-located below `accelerators/gpu/hip/{direct,barnes_hut}`, while CPU solver implementations
-remain under `src/solvers`.
+the current backend scope. The GPU runtime and native CUDA compatibility are
+owned by `src/gpu`; HIP kernels are co-located below `gpu/{direct,barnes_hut}`,
+while CPU solver implementations remain under `src/solvers`.
 
 Build trees are not repository content. Local builds use `../.blitzar-build`
 by default, and CI builds use `${RUNNER_TEMP}/blitzar-build`; the versioned
@@ -204,7 +210,7 @@ unsupported/fallback path otherwise.
 ### Sprint 6.1: Native NVIDIA CUDA Compatibility
 
 When `HIP_PLATFORM=nvidia` is explicit, CMake may use the CUDA language and
-`nvcc` without requiring `hipcc` or HIP headers. `src/accelerators/gpu/hip/bridge/Compatibility.hpp`
+`nvcc` without requiring `hipcc` or HIP headers. `src/gpu/runtime/GpuCompatibility.hpp`
 provides only the runtime calls used by the kernels; the kernels remain single
 `.hip` sources and the compatibility layer stays internal. AMD continues to
 use the ROCm HIP path, while an unselected or unavailable backend keeps the

@@ -6,7 +6,7 @@ Plan version: 1.0.6
 ## Decision
 
 `MpiContext` remains the stable internal facade used by the SDK, but it does
-not own MPI policy directly. `MpiSession` is the sole owner of process-level
+not own MPI policy directly. `MpiNativeSession` is the sole owner of process-level
 MPI initialization and finalization. It requests `MPI_THREAD_MULTIPLE`, tracks
 whether BLITZAR initialized MPI, and never finalizes a session initialized by
 the caller.
@@ -35,5 +35,5 @@ MPI headers, handles, and build symbols outside those units.
   completion paths.
 - Error logs identify the transport component, rank, phase, local status, and
   synchronized status.
-- `tests/parallel/mpi/Mpi.cpp` validates external ownership, nested contexts, internal
+- `tests/mpi/MpiTest.cpp` validates external ownership, nested contexts, internal
   ownership, invalid collective layouts, and ghost abort/recovery paths.
