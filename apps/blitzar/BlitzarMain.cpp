@@ -1,19 +1,20 @@
-#include <blitzar/blitzar.hpp>
+#include "BlitzarRun.hpp"
+
+#include <filesystem>
 #include <iostream>
+#include <string_view>
 
-int main()
+int main(int argc, char** argv)
 {
-    const blitzar::Context context{};
-
-    if (!context.valid()) {
-        const auto status = static_cast<blitzar_status>(context.status());
-
-        std::cerr << "BLITZAR context error: " << blitzar_status_message(status) << '\n';
-
-        return 1;
+    if (argc == 1) {
+        return blitzar_cli::RunSmoke();
     }
 
-    std::cout << "BLITZAR context ready\n";
+    if (argc != 3 || std::string_view(argv[1]) != "--config") {
+        std::cerr << "usage: blitzar_cli [--config <file>]\n";
 
-    return 0;
+        return 2;
+    }
+
+    return blitzar_cli::RunConfig(std::filesystem::path(argv[2]));
 }

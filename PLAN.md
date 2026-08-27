@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.22**
+Plan version: **1.0.23**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -179,6 +179,13 @@ comments, quoted or unquoted values, and repeated directives in source order.
 It preserves directive data without importing legacy scene generation, solver,
 rendering, or GUI behavior. Applying any parsed value to the rewrite remains a
 separate semantic contract.
+
+The executable configuration contract supports only `simulation`, `gravity`,
+`units`, and `generation` directives, with optional `barnes_hut` and `run`
+directives. It creates rewrite-native deterministic SoA input and executes the
+public C++ facade. Unknown directives, malformed arguments, non-deterministic
+generation, and deferred solver families are rejected rather than interpreted
+through legacy behavior.
 
 ### P3: Spatial Structures and Hierarchical Solvers
 
