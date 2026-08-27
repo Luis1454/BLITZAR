@@ -6,7 +6,9 @@
 #include "simulation/config/SimConfigRun.hpp"
 
 #include <blitzar/blitzar.h>
+#include <cstddef>
 #include <cstdint>
+#include <filesystem>
 #include <optional>
 #include <vector>
 
@@ -21,6 +23,9 @@ public:
     [[nodiscard]] bool ShouldWriteStep(std::uint64_t step) const noexcept;
     [[nodiscard]] blitzar_status Publish(
         std::uint64_t step, blitzar_core::ParticleOutputView state) noexcept;
+    [[nodiscard]] std::size_t SnapshotCount() const noexcept;
+    [[nodiscard]] std::size_t DiagnosticsCount() const noexcept;
+    [[nodiscard]] const std::filesystem::path& OutputPath() const noexcept;
 
 private:
     const blitzar_sim::SimConfigRun& config_;
