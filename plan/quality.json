@@ -136,7 +136,7 @@
     {
       "id": "TST-P2-004",
       "name": "installed-cmake-package-consumer",
-      "command": "cmake -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/PackageConsumer.cmake",
+      "command": "cmake -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/package_consumer.cmake",
       "phase": "P2"
     },
     {
@@ -206,15 +206,15 @@
     "source_completeness": {
       "cmake_files": [
         "CMakeLists.txt",
-        "cmake/BLITZARConfig.cmake.in",
-        "cmake/HIP.cmake",
-        "cmake/Library.cmake",
-        "cmake/MPI.cmake",
-        "cmake/Package.cmake",
-        "cmake/Targets.cmake",
-        "cmake/TestRegistration.cmake",
-        "cmake/TestTargets.cmake",
-        "cmake/Tests.cmake"
+        "cmake/blitzar_config.cmake.in",
+        "cmake/hip.cmake",
+        "cmake/library.cmake",
+        "cmake/mpi.cmake",
+        "cmake/package.cmake",
+        "cmake/targets.cmake",
+        "cmake/test_registration.cmake",
+        "cmake/test_targets.cmake",
+        "cmake/tests.cmake"
       ],
       "source_roots": ["src", "apps", "examples", "tests"],
       "suffixes": [".c", ".cc", ".cpp", ".cu", ".hip"]
@@ -245,43 +245,106 @@
           "reason": "stable public C++ wrapper spelling"
         },
         {
-          "path": "cmake/BLITZARConfig.cmake.in",
+          "path": "cmake/blitzar_config.cmake.in",
           "reason": "canonical CMake package template name"
         }
       ],
+      "responsibility_prefixes": [
+        {"path": "src/core", "prefix": "Core"},
+        {"path": "src/particles/arena", "prefix": "Particle"},
+        {"path": "src/particles/buffer", "prefix": "Particle"},
+        {"path": "src/particles/source", "prefix": "Particle"},
+        {"path": "src/physics/gravity", "prefix": "Gravity"},
+        {"path": "src/integration/kdk", "prefix": "Kdk"},
+        {"path": "src/trees/octree", "prefix": "Octree"},
+        {"path": "src/solvers", "prefix": "Solver"},
+        {"path": "src/solvers/threading", "prefix": "Thread"},
+        {"path": "src/solvers/direct", "prefix": "Direct"},
+        {"path": "src/solvers/barnes_hut", "prefix": "Bh"},
+        {"path": "src/solvers/fmm", "prefix": "Fmm"},
+        {"path": "src/gpu/runtime", "prefix": "Gpu"},
+        {"path": "src/gpu/memory", "prefix": "Gpu"},
+        {"path": "src/gpu/direct", "prefix": "GpuDirect"},
+        {"path": "src/gpu/barnes_hut", "prefix": "GpuBh"},
+        {"path": "src/mpi/runtime", "prefix": "Mpi"},
+        {"path": "src/mpi/collectives", "prefix": "Mpi"},
+        {"path": "src/mpi/domain", "prefix": "MpiDomain"},
+        {"path": "src/mpi/exchange", "prefix": "Mpi"},
+        {"path": "src/mpi/ghost", "prefix": "MpiGhost"},
+        {"path": "src/mpi/gather", "prefix": "MpiGather"},
+        {"path": "src/mpi/packets", "prefix": "MpiPacket"},
+        {"path": "src/mpi/native", "prefix": "MpiNative"},
+        {"path": "src/simulation", "prefix": "Sim"},
+        {"path": "src/simulation/input", "prefix": "Sim"},
+        {"path": "src/simulation/runtime", "prefix": "Sim"},
+        {"path": "src/simulation/solver", "prefix": "Sim"},
+        {"path": "src/simulation/state", "prefix": "Sim"},
+        {"path": "src/simulation/step", "prefix": "Sim"},
+        {"path": "src/simulation/transaction", "prefix": "Sim"},
+        {"path": "src/sdk/c", "prefix": "CApi"},
+        {"path": "src/sdk/cpp", "prefix": "Cpp"},
+        {"path": "apps/blitzar", "prefix": "Blitzar"},
+        {"path": "tests/contracts", "prefix": "Contract"},
+        {"path": "tests/fixtures", "prefix": "Fixture"},
+        {"path": "tests/fmm", "prefix": "Fmm"},
+        {"path": "tests/gpu", "prefix": "Gpu"},
+        {"path": "tests/integration", "prefix": "Kdk"},
+        {"path": "tests/mpi", "prefix": "Mpi"},
+        {"path": "tests/octree", "prefix": "Octree"},
+        {"path": "tests/scaling", "prefix": "Scale"},
+        {"path": "tests/simulation", "prefix": "Sim"},
+        {"path": "examples/c", "prefix": "C"},
+        {"path": "examples/cpp", "prefix": "Cpp"}
+      ],
       "type_mapping_exceptions": [
         {
-          "path": "src/core/contracts/Units.hpp",
+          "path": "src/core/CoreExecution.hpp",
+          "reason": "value-type contract header for ExecutionSettings"
+        },
+        {
+          "path": "src/core/CoreSnapshot.hpp",
+          "reason": "value-type contract header for SnapshotHeader"
+        },
+        {
+          "path": "src/core/CoreStatus.hpp",
+          "reason": "free-function status contract header"
+        },
+        {
+          "path": "src/core/CoreTypes.hpp",
+          "reason": "shared view and scalar contract header"
+        },
+        {
+          "path": "src/core/CoreUnits.hpp",
           "reason": "value-type contract header for UnitSystem"
         },
         {
-          "path": "src/accelerators/gpu/hip/bridge/Transfer.hpp",
+          "path": "src/gpu/runtime/GpuTransfer.hpp",
           "reason": "CUDA/HIP runtime bridge contract"
         },
         {
-          "path": "src/accelerators/gpu/hip/bridge/Compatibility.hpp",
+          "path": "src/gpu/runtime/GpuCompatibility.hpp",
           "reason": "CUDA compatibility declaration header"
         },
         {
-          "path": "src/parallel/mpi/domain/DomainBounds.hpp",
-          "reason": "DomainBounds value contract"
+      "path": "src/mpi/domain/MpiDomainBounds.hpp",
+      "reason": "MpiDomainBounds value contract"
         },
         {
-          "path": "src/parallel/mpi/context/MpiContextState.hpp",
+          "path": "src/mpi/runtime/MpiState.hpp",
           "reason": "MpiContext state fragment"
         },
         {
-          "path": "src/parallel/mpi/native/MpiNativeState.hpp",
+          "path": "src/mpi/native/MpiNativeState.hpp",
           "reason": "MpiNative opaque state fragment"
         },
         {
-          "path": "tests/parallel/mpi/MpiCases.hpp",
+          "path": "tests/mpi/MpiCases.hpp",
           "reason": "MPI test-case facade and StateArrays value contract"
         }
       ],
       "standalone_implementation_exceptions": [
         {
-          "path": "tests/contracts/DebugStatus.cpp",
+          "path": "tests/contracts/ContractDebugStatusTest.cpp",
           "reason": "standalone debugger exit-status probe"
         }
       ],
@@ -292,7 +355,7 @@
     }
   },
   "format": {
-    "command": "python -m tools.format.clang_format_gate --root . --check",
+    "command": "python -m tools.format.format_clang_gate --root . --check",
     "clang_format_version": "22.1.8",
     "encoding": "UTF-8",
     "bom": false,
@@ -302,13 +365,13 @@
   },
   "mpi_boundary": {
     "native_units": [
-      "src/parallel/mpi/native/MpiNative.cpp",
-      "src/parallel/mpi/native/MpiNativeCollectives.cpp",
-      "src/parallel/mpi/native/MpiNativeGhost.cpp",
-      "src/parallel/mpi/native/MpiNativePackets.cpp",
-      "src/parallel/mpi/native/MpiNativeState.hpp"
+      "src/mpi/native/MpiNative.cpp",
+      "src/mpi/native/MpiNativeCollectives.cpp",
+      "src/mpi/native/MpiNativeGhost.cpp",
+      "src/mpi/native/MpiNativePackets.cpp",
+      "src/mpi/native/MpiNativeState.hpp"
     ],
-    "test_native_units": ["tests/parallel/mpi/Mpi.cpp", "tests/parallel/mpi/MpiFixture.cpp"],
+    "test_native_units": ["tests/mpi/MpiTest.cpp", "tests/mpi/MpiFixture.cpp"],
     "scan_roots": ["src", "tests"],
     "suffixes": [".c", ".cc", ".cpp", ".cu", ".h", ".hip", ".hpp", ".inl"]
   },
@@ -364,13 +427,13 @@
     {
       "id": "CHK-P0-009",
       "name": "clang-format-and-encoding-gate",
-      "command": "python -m tools.format.clang_format_gate --root . --check",
+      "command": "python -m tools.format.format_clang_gate --root . --check",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-010",
       "name": "clang-format-and-encoding-fixtures",
-      "command": "python -m tools.format.clang_format_gate_test",
+      "command": "python -m tools.format.format_clang_gate_test",
       "phase": "P0"
     },
     {
@@ -491,13 +554,13 @@
     {
       "id": "CHK-P0-030",
       "name": "final-audit-contract",
-      "command": "python -m tools.audit.final_audit --root . --check",
+      "command": "python -m tools.audit.audit_final --root . --check",
       "phase": "P0"
     },
     {
       "id": "CHK-P0-031",
       "name": "final-audit-fixtures",
-      "command": "python -m tools.audit.final_audit_test",
+      "command": "python -m tools.audit.audit_test",
       "phase": "P0"
     }
   ]

@@ -16,14 +16,14 @@ repository tools remained flat enough to hide ownership boundaries.
 
 Use responsibility-owned submodules throughout the materialized tree:
 
-- `src/core/contracts` owns stable value and execution contracts.
+- `src/core` owns stable value and execution contracts.
 - `src/particles/{arena,source,state}` owns particle storage by lifecycle role.
 - `src/integration/kdk` and `src/physics/gravity` own their single algorithms.
 - `src/trees/{ordering,octree}` keeps Morton ordering separate because domain
   partitioning and octree construction both consume it.
-- `src/accelerators/gpu/hip/{bridge,runtime,memory,launch,direct,barnes_hut}` owns all optional GPU
+- `src/gpu/{bridge,runtime,memory,launch,direct,barnes_hut}` owns all optional GPU
   implementation details; CPU solver code remains under `src/solvers`.
-- `src/parallel` is divided into context, collectives, domain, exchange,
+- `src/mpi` is divided into context, collectives, domain, exchange,
   gather, and native adapter responsibilities.
 - `src/simulation` owns composition, configuration, facade, input, step, and
   transaction behavior; `src/sdk/{c,cpp}` contains only public SDK adapters.

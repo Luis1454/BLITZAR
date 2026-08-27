@@ -1,7 +1,7 @@
 #ifndef BLITZAR_PARTICLES_ARENA_PARTICLE_ARENA_HPP
 #define BLITZAR_PARTICLES_ARENA_PARTICLE_ARENA_HPP
 
-#include "core/contracts/Types.hpp"
+#include "core/CoreTypes.hpp"
 
 #include <array>
 #include <blitzar/blitzar.h>

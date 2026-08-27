@@ -1,9 +1,9 @@
 #ifndef BLITZAR_SOLVERS_DIRECT_DIRECT_SOLVER_HPP
 #define BLITZAR_SOLVERS_DIRECT_DIRECT_SOLVER_HPP
 
-#include "core/contracts/Execution.hpp"
+#include "core/CoreExecution.hpp"
 #include "physics/gravity/GravityLaw.hpp"
-#include "solvers/contracts/SolverContract.hpp"
+#include "solvers/SolverContract.hpp"
 
 #include <blitzar/blitzar.h>
 #include <cstddef>

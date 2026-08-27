@@ -1,7 +1,7 @@
 #ifndef BLITZAR_INTEGRATION_KDK_KDK_CHECKPOINT_HPP
 #define BLITZAR_INTEGRATION_KDK_KDK_CHECKPOINT_HPP
 
-#include "core/contracts/Types.hpp"
+#include "core/CoreTypes.hpp"
 #include "particles/arena/ParticleArena.hpp"
 
 #include <blitzar/blitzar.h>

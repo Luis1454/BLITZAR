@@ -17,43 +17,43 @@
       "reason": "Stable C ABI exposes SoA arrays and opaque handles with explicit counts."
     },
     {
-      "path": "src/sdk/c/Api.cpp",
+      "path": "src/sdk/c/CApi.cpp",
       "category": "c_abi_adapter",
       "ownership": "handle_boundary",
       "reason": "Only implementation unit that creates and destroys opaque C ABI handles."
     },
     {
-      "path": "src/sdk/c/ApiConfig.cpp",
+      "path": "src/sdk/c/CApiConfig.cpp",
       "category": "c_abi_adapter",
       "ownership": "borrowed_abi",
       "reason": "C ABI configuration handles and versioned input records."
     },
     {
-      "path": "src/sdk/c/ApiInfo.cpp",
+      "path": "src/sdk/c/CApiInfo.cpp",
       "category": "c_abi_adapter",
       "ownership": "borrowed_abi",
       "reason": "C ABI status, version, and opaque handle accessors."
     },
     {
-      "path": "src/sdk/c/ApiParticles.cpp",
+      "path": "src/sdk/c/CApiParticles.cpp",
       "category": "c_abi_adapter",
       "ownership": "borrowed_abi",
       "reason": "C ABI SoA input/output arrays are converted to bounded spans."
     },
     {
-      "path": "src/sdk/c/ApiStep.cpp",
+      "path": "src/sdk/c/CApiStep.cpp",
       "category": "c_abi_adapter",
       "ownership": "borrowed_abi",
       "reason": "C ABI opaque simulation handle entry point."
     },
     {
-      "path": "src/sdk/c/ApiState.hpp",
+      "path": "src/sdk/c/CApiState.hpp",
       "category": "c_abi_adapter",
       "ownership": "borrowed_abi",
       "reason": "The adapter converts C ABI pointer/count pairs to std::span."
     },
     {
-      "path": "src/sdk/c/ApiSupport.cpp",
+      "path": "src/sdk/c/CApiSupport.cpp",
       "category": "c_abi_adapter",
       "ownership": "borrowed_abi",
       "reason": "Opaque C ABI handle validation helper."
@@ -77,55 +77,55 @@
       "reason": "Custom unique_ptr deleters invoke the opaque C ABI destruction functions."
     },
     {
-      "path": "src/accelerators/gpu/hip/bridge/Transfer.hpp",
+      "path": "src/gpu/runtime/GpuTransfer.hpp",
       "category": "gpu_runtime_abi",
       "ownership": "borrowed_runtime_buffer",
       "reason": "CUDA/HIP memcpy request records carry addresses owned by Buffers."
     },
     {
-      "path": "src/accelerators/gpu/hip/bridge/Compatibility.hpp",
+      "path": "src/gpu/runtime/GpuCompatibility.hpp",
       "category": "gpu_runtime_abi",
       "ownership": "borrowed_runtime_buffer",
       "reason": "CUDA compatibility functions mirror the external runtime pointer ABI."
     },
     {
-      "path": "src/accelerators/gpu/hip/memory/Memory.inl",
+      "path": "src/gpu/memory/GpuMemory.inl",
       "category": "gpu_runtime_abi",
       "ownership": "temporary_runtime_buffer",
       "reason": "Temporary void pointers bridge hip allocation calls; ownership is stored as uintptr_t and released by the RAII wrapper."
     },
     {
-      "path": "src/accelerators/gpu/hip/direct/DirectDevice.inl",
+      "path": "src/gpu/direct/GpuDirectDevice.inl",
       "category": "device_view",
       "ownership": "borrowed_device_buffer",
       "reason": "Kernel request and tile records are non-owning device views."
     },
     {
-      "path": "src/accelerators/gpu/hip/barnes_hut/BarnesHutDevice.inl",
+      "path": "src/gpu/barnes_hut/GpuBhDevice.inl",
       "category": "device_view",
       "ownership": "borrowed_device_buffer",
       "reason": "Kernel request, cell, traversal, and error records are non-owning device views."
     },
     {
-      "path": "src/accelerators/gpu/hip/launch/CudError.inl",
+      "path": "src/gpu/runtime/GpuCudError.inl",
       "category": "device_view",
       "ownership": "borrowed_device_buffer",
       "reason": "Device error flag is externally allocated and bounded by the launch request."
     },
     {
-      "path": "tests/fixtures/AllocationMonitor.cpp",
+      "path": "tests/fixtures/FixtureAllocationMonitor.cpp",
       "category": "test_allocator",
       "ownership": "test_instrumentation",
       "reason": "Global allocation hooks are required to measure steady-state allocations."
     },
     {
-      "path": "tests/parallel/mpi/Mpi.cpp",
+      "path": "tests/mpi/MpiTest.cpp",
       "category": "process_entrypoint",
       "ownership": "borrowed_process_arguments",
       "reason": "MPI integration test main receives the platform process argument array."
     },
     {
-      "path": "tests/scaling/Scaling.cpp",
+      "path": "tests/scaling/ScaleTest.cpp",
       "category": "process_entrypoint",
       "ownership": "borrowed_process_arguments",
       "reason": "Scaling harness main receives the platform process argument array."
@@ -137,29 +137,29 @@
       "reason": "C example consumes opaque handles from the public ABI."
     },
     {
-      "path": "examples/c/CV2Example.c",
+      "path": "examples/c/Cv2Example.c",
       "category": "c_abi_consumer",
       "ownership": "borrowed_abi",
       "reason": "C ABI v2 example consumes opaque handles from the public ABI."
     },
     {
-      "path": "tests/contracts/Abi.c",
+      "path": "tests/contracts/ContractAbiTest.c",
       "category": "c_abi_consumer",
       "ownership": "borrowed_abi",
       "reason": "ABI compatibility test consumes opaque handles from the public ABI."
     },
     {
-      "path": "tests/contracts/ApiC.c",
+      "path": "tests/contracts/ContractCApiTest.c",
       "category": "c_abi_consumer",
       "ownership": "borrowed_abi",
       "reason": "C API lifecycle test consumes opaque handles from the public ABI."
     },
     {
-      "path": "tests/contracts/Capabilities.c",
+      "path": "tests/contracts/ContractCapabilitiesTest.c",
       "category": "c_abi_consumer",
       "ownership": "borrowed_abi",
       "reason": "Capability and unsupported-feature test consumes opaque handles from the public ABI."
     }
   ],
-  "allocation_allowlist": ["src/sdk/c/Api.cpp"]
+  "allocation_allowlist": ["src/sdk/c/CApi.cpp"]
 }

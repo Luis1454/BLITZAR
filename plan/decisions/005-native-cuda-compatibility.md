@@ -7,7 +7,7 @@ Plan version: 1.0.4
 
 When `HIP_PLATFORM=nvidia` is selected and `hipcc` is unavailable, CMake uses
 the CUDA language with `nvcc` and `CUDAToolkit`. The internal
-`src/accelerators/gpu/hip/bridge/Compatibility.hpp` maps the small runtime surface used by BLITZAR to CUDA
+`src/gpu/runtime/GpuCompatibility.hpp` maps the small runtime surface used by BLITZAR to CUDA
 equivalents. GPU kernels remain `.hip` files and no CUDA or compatibility type
 is exposed by the public SDK.
 

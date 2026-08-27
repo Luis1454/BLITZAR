@@ -30,6 +30,12 @@ class NamingGateTests(unittest.TestCase):
             json.dumps({"naming": {}}), encoding="utf-8"
         )
 
+    def enable_responsibility_mapping(self, entries: list[dict[str, str]]) -> None:
+        (self.root / "plan" / "quality.json").write_text(
+            json.dumps({"naming": {"responsibility_prefixes": entries}}),
+            encoding="utf-8",
+        )
+
     def test_accepts_cpp_header_pair_and_reports_allowed_stem(self) -> None:
         self.write_source("src/Pair.cpp")
         self.write_source("src/Pair.hpp", "struct Pair final {};\n")
@@ -88,6 +94,19 @@ class NamingGateTests(unittest.TestCase):
         self.assertTrue(any("category limit" in item for item in failures))
         self.assertTrue(any("forbidden repository path" in item for item in failures))
         self.assertTrue(any("redundant filename prefix" in item for item in failures))
+
+    def test_enforces_directory_responsibility_prefix(self) -> None:
+        self.enable_responsibility_mapping(
+            [{"path": "src/physics/gravity", "prefix": "Gravity"}]
+        )
+        self.write_source("src/physics/gravity/GravityLaw.hpp")
+        self.write_source("src/physics/gravity/Law.hpp")
+
+        failures = validate(self.root)
+
+        self.assertTrue(
+            any("directory responsibility" in item for item in failures)
+        )
 
 
 if __name__ == "__main__":

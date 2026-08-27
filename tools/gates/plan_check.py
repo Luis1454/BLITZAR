@@ -259,9 +259,9 @@ def validate_release_identity(data: dict) -> None:
     if any(not re.search(pattern, cmake_text) for pattern in required_cmake_patterns):
         fail("CMake must derive product and plan versions from plan/manifest.json")
 
-    config_path = ROOT / "cmake" / "BLITZARConfig.cmake.in"
+    config_path = ROOT / "cmake" / "blitzar_config.cmake.in"
     if not config_path.is_file():
-        fail("cmake/BLITZARConfig.cmake.in is missing")
+        fail("cmake/blitzar_config.cmake.in is missing")
     config_text = config_path.read_text(encoding="utf-8")
     required_config_values = (
         'set(BLITZAR_VERSION "@PROJECT_VERSION@")',
@@ -476,6 +476,22 @@ def validate_quality_tests(phase_ids: set[str]) -> None:
                     or not exception["reason"]
                 ):
                     fail(f"architecture naming {key} entry is invalid")
+        responsibility_prefixes = naming.get("responsibility_prefixes")
+        if not isinstance(responsibility_prefixes, list) or not responsibility_prefixes:
+            fail("architecture naming responsibility prefixes are missing")
+        seen_responsibility_paths: set[str] = set()
+        for entry in responsibility_prefixes:
+            path = entry.get("path") if isinstance(entry, dict) else None
+            prefix = entry.get("prefix") if isinstance(entry, dict) else None
+            if (
+                not isinstance(path, str)
+                or not re.fullmatch(r"[A-Za-z0-9_/-]+", path)
+                or path in seen_responsibility_paths
+                or not isinstance(prefix, str)
+                or re.fullmatch(r"[A-Z][A-Za-z0-9]*", prefix) is None
+            ):
+                fail("architecture naming responsibility prefix entry is invalid")
+            seen_responsibility_paths.add(path)
         for key in ("forbidden_path_components", "forbidden_name_prefixes"):
             value = naming.get(key)
             if not isinstance(value, list) or not value or not all(
@@ -487,7 +503,7 @@ def validate_quality_tests(phase_ids: set[str]) -> None:
         if not isinstance(formatting, dict):
             fail("format contract is missing")
         if (
-            formatting.get("command") != "python -m tools.format.clang_format_gate --root . --check"
+            formatting.get("command") != "python -m tools.format.format_clang_gate --root . --check"
             or formatting.get("clang_format_version") != "22.1.8"
             or formatting.get("encoding") != "UTF-8"
             or formatting.get("bom") is not False

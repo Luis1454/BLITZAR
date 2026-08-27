@@ -16,7 +16,7 @@ class PointerOwnershipGateTests(unittest.TestCase):
         (self.directory / "plan").mkdir()
         (self.directory / "include" / "blitzar").mkdir(parents=True)
         (self.directory / "src" / "sdk").mkdir(parents=True)
-        (self.directory / "src" / "accelerators" / "gpu" / "hip" / "direct").mkdir(
+        (self.directory / "src" / "gpu" / "direct").mkdir(
             parents=True
         )
         (self.directory / "src" / "sdk" / "c").mkdir(parents=True)
@@ -44,12 +44,12 @@ class PointerOwnershipGateTests(unittest.TestCase):
     def test_accepts_registered_abi_and_device_views(self) -> None:
         self.write_contract([
             self.boundary("include/blitzar/blitzar.h", "public_c_abi"),
-            self.boundary("src/accelerators/gpu/hip/direct/DirectDevice.inl"),
+            self.boundary("src/gpu/direct/GpuDirectDevice.inl"),
         ])
         (self.directory / "include" / "blitzar" / "blitzar.h").write_text(
             "const double* values;\n", encoding="utf-8"
         )
-        (self.directory / "src" / "accelerators" / "gpu" / "hip" / "direct" / "DirectDevice.inl").write_text(
+        (self.directory / "src" / "gpu" / "direct" / "GpuDirectDevice.inl").write_text(
             "const double* values;\n", encoding="utf-8"
         )
 
@@ -59,11 +59,11 @@ class PointerOwnershipGateTests(unittest.TestCase):
         self.assertEqual(len(report["findings"]), 2)
 
     def test_rejects_unregistered_pointer_and_owner_like_device_field(self) -> None:
-        self.write_contract([self.boundary("src/accelerators/gpu/hip/direct/DirectDevice.inl")])
+        self.write_contract([self.boundary("src/gpu/direct/GpuDirectDevice.inl")])
         (self.directory / "src" / "sdk" / "Internal.cpp").write_text(
             "int* owner;\n", encoding="utf-8"
         )
-        (self.directory / "src" / "accelerators" / "gpu" / "hip" / "direct" / "DirectDevice.inl").write_text(
+        (self.directory / "src" / "gpu" / "direct" / "GpuDirectDevice.inl").write_text(
             "int* owner;\n", encoding="utf-8"
         )
 
@@ -87,8 +87,8 @@ class PointerOwnershipGateTests(unittest.TestCase):
         self.assertTrue(all("outside the C ABI" in item["message"] for item in report["violations"]))
 
     def test_accepts_new_in_handle_boundary(self) -> None:
-        self.write_contract([], ["src/sdk/c/Api.cpp"])
-        (self.directory / "src" / "sdk" / "c" / "Api.cpp").write_text(
+        self.write_contract([], ["src/sdk/c/CApi.cpp"])
+        (self.directory / "src" / "sdk" / "c" / "CApi.cpp").write_text(
             "void Create() { auto value = new int; delete value; }\n", encoding="utf-8"
         )
 

@@ -38,6 +38,7 @@ DEFAULT_POLICY = {
         {"extensions": [".h", ".hpp"], "reason": "public ABI header pair"},
     ],
     "name_exceptions": [],
+    "responsibility_prefixes": [],
     "type_mapping_exceptions": [],
     "standalone_implementation_exceptions": [],
     "forbidden_path_components": ["utils", "common", "misc", "private", "details"],
@@ -102,6 +103,31 @@ def configured_exception_map(policy: dict[str, object], key: str) -> dict[str, s
     return result
 
 
+def configured_responsibility_prefixes(policy: dict[str, object]) -> list[tuple[str, str]]:
+    values = policy.get("responsibility_prefixes", [])
+    if not isinstance(values, list):
+        return []
+    result: list[tuple[str, str]] = []
+    for item in values:
+        if not isinstance(item, dict):
+            continue
+        path = item.get("path")
+        prefix = item.get("prefix")
+        if isinstance(path, str) and isinstance(prefix, str) and path and prefix:
+            result.append((path.strip("/"), prefix))
+    return sorted(result, key=lambda item: len(item[0]), reverse=True)
+
+
+def responsibility_prefix(
+    relative: str,
+    prefixes: list[tuple[str, str]],
+) -> str | None:
+    for path, prefix in prefixes:
+        if relative == path or relative.startswith(f"{path}/"):
+            return prefix
+    return None
+
+
 def max_lengths(policy: dict[str, object]) -> dict[str, int]:
     configured = policy.get("max_filename_length", {})
     values = dict(DEFAULT_POLICY["max_filename_length"])
@@ -164,11 +190,13 @@ def filename_report(
     long_names: list[dict[str, object]] = []
     forbidden_paths: list[str] = []
     forbidden_prefixes: list[str] = []
+    responsibility_violations: list[str] = []
     applied_exceptions: list[dict[str, str]] = []
     forbidden_components = {
         str(item).casefold() for item in policy.get("forbidden_path_components", [])
     }
     forbidden_names = [str(item) for item in policy.get("forbidden_name_prefixes", [])]
+    responsibility_prefixes = configured_responsibility_prefixes(policy)
 
     for path in files:
         relative = path_key(path, root)
@@ -181,6 +209,18 @@ def filename_report(
                 pascal_violations.append(relative)
         elif path.suffix.lower() in {".c", ".h"} and PASCAL_C_PATTERN.fullmatch(path.name) is None:
             pascal_violations.append(relative)
+
+        required_prefix = responsibility_prefix(relative, responsibility_prefixes)
+        if (
+            exception is None
+            and required_prefix is not None
+            and not re.fullmatch(
+                rf"{re.escape(required_prefix)}[A-Za-z0-9]*"
+                rf"\.(?:cpp|cc|cu|cuh|hip|hpp|inl|c|h)",
+                path.name,
+            )
+        ):
+            responsibility_violations.append(relative)
 
         limit = lengths.get(category)
         if limit is not None and len(path.name) > limit:
@@ -199,6 +239,7 @@ def filename_report(
         "long_names": sorted(long_names, key=lambda item: str(item["path"])),
         "forbidden_paths": sorted(forbidden_paths),
         "forbidden_prefixes": sorted(forbidden_prefixes),
+        "responsibility_violations": sorted(responsibility_violations),
         "declared_exceptions": [
             {"path": path, "rule": "name", "reason": reason}
             for path, reason in sorted(name_exceptions.items())
@@ -287,6 +328,10 @@ def violations(report: dict[str, object]) -> list[str]:
     failures.extend(f"source filename exceeds category limit: {item['path']}" for item in names["long_names"])
     failures.extend(f"forbidden repository path component: {path}" for path in names["forbidden_paths"])
     failures.extend(f"forbidden redundant filename prefix: {path}" for path in names["forbidden_prefixes"])
+    failures.extend(
+        f"filename does not identify its directory responsibility: {path}"
+        for path in names["responsibility_violations"]
+    )
     types = report["type_report"]
     failures.extend(f"primary type/file mismatch: {path}" for path in types["violations"])
     failures.extend(f"implementation has no owner header: {path}" for path in types["implementation_violations"])

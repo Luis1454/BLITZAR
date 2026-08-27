@@ -11,7 +11,7 @@ The final clean-room closure is driven by the versioned contract in
 tracked path, records the merged implementation commit and evidence reference
 for RR-01 through RR-15, and names every supported CI lane.
 
-`tools/audit/final_audit.py` produces an external audit directory containing the
+`tools/audit/audit_final.py` produces an external audit directory containing the
 complete file matrix, content scan, accepted/deferred finding register, lane
 states, historical commit checks, and static quality-gate log. The tool can
 run in local report mode with unreported remote lanes, or in strict CI mode

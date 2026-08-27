@@ -8,7 +8,7 @@ Plan version: 1.0.6
 The initial P4 layout used one materialized ownership boundary for HIP runtime,
 native CUDA compatibility, pinned staging, streams, and kernel launch policy.
 Decision 035 replaces that boundary with the explicit
-`src/accelerators/gpu/hip/{bridge,runtime,memory,launch,direct,barnes_hut}` module layout. There is
+`src/gpu/{bridge,runtime,memory,launch,direct,barnes_hut}` module layout. There is
 no parallel CUDA-runtime production root.
 
 The not-yet-materialized FMM, PM, TreePM, grid, and persistence modules are

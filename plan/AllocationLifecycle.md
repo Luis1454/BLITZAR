@@ -13,10 +13,10 @@ device is available.
 | --- | --- | --- | --- |
 | `Simulation` | runtime, particle storage, source, solver, IDs, packet buffers | construction | all capacities are fixed before the first step |
 | `Simulation` | `gathered_buffer_` | construction | `GetState` only resizes within its reserved capacity |
-| `ParticleArena` and `SourceBuffer` | aligned SoA replacement storage | construction or explicit capacity preparation | execution returns a bounded status instead of growing storage |
+| `ParticleArena` and `ParticleSourceBuffer` | aligned SoA replacement storage | construction or explicit capacity preparation | execution returns a bounded status instead of growing storage |
 | solver variant | solver staging, octree, multipoles, remote tree, thread stacks | solver construction or configuration rebuild | `Prepare` may validate capacity but must not grow after the configured bound |
 | `MpiContext` | packet wire buffers, ghost wire buffers, request vectors | MPI context preparation | ghost, migration, gather, and all-to-all paths reuse these buffers |
-| `StepTransaction` | arena, force, and exchange snapshots | simulation construction | `Prepare` and `Abort` only resize within reserved buffers |
+| `SimTransaction` | arena, force, and exchange snapshots | simulation construction | `Prepare` and `Abort` only resize within reserved buffers |
 | C ABI and C++ wrapper handles | opaque implementation objects | API construction/configuration | never allocated by `Step` or `GetState` |
 | HIP context and device buffers | runtime/device allocations | HIP initialization and solver preparation | kernels and fallback dispatch do not create host workspaces |
 | input staging and candidate solvers | temporary vectors and replacement variants | `SetParticles` or configuration mutators | outside the step transaction and committed only after validation |
@@ -25,7 +25,7 @@ device is available.
 
 Execution-facing stores reject a request larger than their prepared capacity
 before changing count or payload state. In particular, ghost storage no
-longer calls `SourceBuffer::Reserve` from `StoreGhosts`; the caller must
+longer calls `ParticleSourceBuffer::Reserve` from `StoreGhosts`; the caller must
 prepare the source capacity before the exchange begins.
 
 ## Evidence Matrix

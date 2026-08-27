@@ -86,7 +86,7 @@ jobs:
         run: cmake --build "$env:BLITZAR_CI_BUILD_ROOT/shared" --config Release
 
       - name: Qualify installed shared package consumer
-        run: cmake "-DBLITZAR_BUILD_DIR=$env:BLITZAR_CI_BUILD_ROOT/shared" -P tests/package/PackageConsumer.cmake
+        run: cmake "-DBLITZAR_BUILD_DIR=$env:BLITZAR_CI_BUILD_ROOT/shared" -P tests/package/package_consumer.cmake
 
   sanitizers:
     name: Linux Clang sanitizers
@@ -396,7 +396,7 @@ jobs:
 
       - name: Configure and build external consumer
         shell: bash
-        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/package" -P tests/package/PackageConsumer.cmake
+        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/package" -P tests/package/package_consumer.cmake
 
   mpi-ranks:
     name: MPI two and four rank qualification
@@ -444,7 +444,7 @@ jobs:
           OMPI_ALLOW_RUN_AS_ROOT: "1"
           OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: "1"
           OMPI_MCA_rmaps_base_oversubscribe: "1"
-        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/mpi" -P tests/package/PackageConsumer.cmake
+        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/mpi" -P tests/package/package_consumer.cmake
 
       - name: Run two and four rank tests with timeout
         shell: bash
@@ -574,7 +574,7 @@ jobs:
       - name: Qualify installed native CUDA package consumer
         if: steps.probe.outputs.compile == 'true'
         shell: bash
-        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/cuda" -P tests/package/PackageConsumer.cmake
+        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/cuda" -P tests/package/package_consumer.cmake
 
       - name: Run CUDA device qualification
         if: steps.probe.outputs.device == 'true'
@@ -644,7 +644,7 @@ jobs:
       - name: Qualify installed HIP package consumer
         if: steps.probe.outputs.compile == 'true'
         shell: bash
-        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/hip" -P tests/package/PackageConsumer.cmake
+        run: cmake -DBLITZAR_BUILD_DIR="$BLITZAR_CI_BUILD_ROOT/hip" -P tests/package/package_consumer.cmake
 
       - name: Run HIP device qualification
         if: steps.probe.outputs.device == 'true'
@@ -701,7 +701,7 @@ jobs:
           BLITZAR_LANE_NATIVE_CUDA: ${{ needs['native-cuda'].result }}
           BLITZAR_LANE_HIP: ${{ needs['hip'].result }}
         run: |
-          python -m tools.audit.final_audit \
+          python -m tools.audit.audit_final \
             --root . \
             --output "$RUNNER_TEMP/blitzar-final-audit" \
             --strict \

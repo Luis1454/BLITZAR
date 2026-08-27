@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "plan_version": "1.0.20",
-  "runner": "tools/audit/final_audit.py",
+  "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
     "file_matrix.json",
@@ -103,7 +103,7 @@
       "review_gate": "TST-P0-003"
     },
     {
-      "prefix": "src/accelerators/gpu/hip/",
+      "prefix": "src/gpu/",
       "owner": "gpu-maintainers",
       "category": "gpu-runtime",
       "review_gate": "TST-P4-001"
@@ -115,7 +115,7 @@
       "review_gate": "TST-P1-002"
     },
     {
-      "prefix": "src/parallel/",
+      "prefix": "src/mpi/",
       "owner": "parallel-maintainers",
       "category": "mpi-adapter",
       "review_gate": "TST-P7-001"
@@ -169,13 +169,13 @@
       "review_gate": "TST-P3-002"
     },
     {
-      "prefix": "src/accelerators/gpu/hip/direct/",
+      "prefix": "src/gpu/direct/",
       "owner": "gpu-maintainers",
       "category": "gpu-direct-solver",
       "review_gate": "TST-P4-001"
     },
     {
-      "prefix": "src/accelerators/gpu/hip/barnes_hut/",
+      "prefix": "src/gpu/barnes_hut/",
       "owner": "gpu-maintainers",
       "category": "gpu-barnes-hut-solver",
       "review_gate": "TST-P4-001"

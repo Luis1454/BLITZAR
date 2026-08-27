@@ -1,7 +1,7 @@
 #ifndef BLITZAR_INTEGRATION_KDK_KDK_ADVANCE_HPP
 #define BLITZAR_INTEGRATION_KDK_KDK_ADVANCE_HPP
 
-#include "integration/kdk/LeapfrogKdk.hpp"
+#include "integration/kdk/KdkLeapfrog.hpp"
 
 namespace blitzar_integration_kdk {
 
@@ -135,7 +135,7 @@ void Kick(AdvanceState<Solver, SolverScratch>& state, blitzar_core::ForceView fo
 namespace blitzar_integration {
 
 template <typename Solver, typename SolverScratch>
-blitzar_status LeapfrogKdk::Advance(
+blitzar_status KdkLeapfrog::Advance(
     blitzar_integration_kdk::AdvanceState<Solver, SolverScratch>& state) const noexcept
 {
     blitzar_integration_kdk::NoopDriftHook drift_hook;
@@ -147,7 +147,7 @@ blitzar_status LeapfrogKdk::Advance(
 }
 
 template <typename Solver, typename SolverScratch, typename DriftHook, typename RollbackHook>
-blitzar_status LeapfrogKdk::Advance(
+blitzar_status KdkLeapfrog::Advance(
     blitzar_integration_kdk::AdvanceRequest<Solver, SolverScratch, DriftHook, RollbackHook>&
         request) const noexcept
 {

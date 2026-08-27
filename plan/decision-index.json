@@ -35,7 +35,7 @@
     {
       "path": "plan/decisions/023-simulation-responsibility-boundary.md",
       "lifecycle": "active",
-      "notes": "Implementation mapping is Config.cpp, ParticleSet.cpp, ParticleGet.cpp, Step.cpp, and Simulation.cpp."
+      "notes": "Implementation mapping is SimConfig.cpp, SimParticleSet.cpp, SimParticleGet.cpp, SimStep.cpp, and Sim.cpp."
     },
     {"path": "plan/decisions/024-mpi-process-lifetime.md", "lifecycle": "active"},
     {"path": "plan/decisions/025-distributed-input-ownership.md", "lifecycle": "active"},

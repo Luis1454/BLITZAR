@@ -19,12 +19,12 @@ class MpiBoundaryGateTests(unittest.TestCase):
     def write_repository(self, source: str, native: str = "#include <mpi.h>\nMPI_Comm value;\n") -> pathlib.Path:
         directory = pathlib.Path(tempfile.mkdtemp())
         (directory / "plan").mkdir()
-        (directory / "src" / "parallel" / "mpi" / "native").mkdir(parents=True)
-        (directory / "tests" / "parallel" / "mpi").mkdir(parents=True)
+        (directory / "src" / "mpi" / "native").mkdir(parents=True)
+        (directory / "tests" / "mpi").mkdir(parents=True)
         quality = {
             "mpi_boundary": {
-                "native_units": ["src/parallel/mpi/native/MpiNative.cpp", "src/parallel/mpi/native/MpiNativeState.hpp"],
-                "test_native_units": ["tests/parallel/mpi/Mpi.cpp"],
+                "native_units": ["src/mpi/native/MpiNative.cpp", "src/mpi/native/MpiNativeState.hpp"],
+                "test_native_units": ["tests/mpi/MpiTest.cpp"],
                 "scan_roots": ["src", "tests"],
                 "suffixes": [".cpp", ".hpp"],
             }
@@ -32,16 +32,16 @@ class MpiBoundaryGateTests(unittest.TestCase):
         (directory / "plan" / "quality.json").write_text(
             json.dumps(quality), encoding="utf-8"
         )
-        (directory / "src" / "parallel" / "mpi" / "native" / "MpiNative.cpp").write_text(
+        (directory / "src" / "mpi" / "native" / "MpiNative.cpp").write_text(
             native, encoding="utf-8"
         )
-        (directory / "src" / "parallel" / "mpi" / "native" / "MpiNativeState.hpp").write_text(
+        (directory / "src" / "mpi" / "native" / "MpiNativeState.hpp").write_text(
             "#include <mpi.h>\n", encoding="utf-8"
         )
-        (directory / "tests" / "parallel" / "mpi" / "Mpi.cpp").write_text(
+        (directory / "tests" / "mpi" / "MpiTest.cpp").write_text(
             "#include <mpi.h>\nMPI_Init(nullptr, nullptr);\n", encoding="utf-8"
         )
-        (directory / "src" / "parallel" / "mpi" / "Contract.cpp").write_text(
+        (directory / "src" / "mpi" / "Contract.cpp").write_text(
             source, encoding="utf-8"
         )
         return directory
@@ -59,7 +59,7 @@ class MpiBoundaryGateTests(unittest.TestCase):
 
     def test_rejects_missing_native_unit(self) -> None:
         root = self.write_repository("int Contract() { return 0; }\n")
-        (root / "src" / "parallel" / "mpi" / "native" / "MpiNativeState.hpp").unlink()
+        (root / "src" / "mpi" / "native" / "MpiNativeState.hpp").unlink()
 
         report = build_report(root)
 

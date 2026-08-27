@@ -12,7 +12,7 @@ destroyed made sequential SDK simulations invalid in the same process.
 
 ## Decision
 
-`MpiSession` initializes MPI at the first internally owned context and
+`MpiNativeSession` initializes MPI at the first internally owned context and
 registers one process-exit finalizer. Destroying a session only releases its
 reference; it never finalizes MPI while the process can still construct another
 context. An externally initialized MPI process remains owned by its caller.

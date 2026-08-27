@@ -13,12 +13,12 @@ resident memory scale with `P*N` and hid the cost of distributed ownership.
 ## Decision
 
 Rank zero is the authority for the initial `ParticleStateView`. Non-root ranks
-may provide an empty view. `DomainDecomposition` derives the deterministic
+may provide an empty view. `MpiDomainDecomposition` derives the deterministic
 Morton split from the root state and broadcasts only split metadata. A
 temporary initialization exchange distributes `ParticlePacket` records, after
 which each rank stores only its local packets in its fixed-capacity `ParticleArena`.
 
-Halo packets are stored in a separate `SourceBuffer`; they are not appended to
+Halo packets are stored in a separate `ParticleSourceBuffer`; they are not appended to
 the owned arena. Packet wire storage, gather storage, and the source SoA are
 lazy and bounded by the observed exchange or configured staging capacity. The
 Barnes-Hut primary tree is constructed with local rank capacity, while its
