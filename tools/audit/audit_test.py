@@ -61,6 +61,17 @@ class FinalAuditTests(unittest.TestCase):
 
         self.assertEqual(resolved, commit)
 
+    def test_squash_merge_with_issue_style_title_is_resolved_by_pull_request(self) -> None:
+        commit = "b" * 40
+        history = f"{commit}\trefactor(issue-656): isolate particle staging boundary (#657)"
+
+        with patch("tools.audit.audit_report.git_output", return_value=history):
+            resolved = find_integration_commit(
+                self.root, 656, "https://github.com/Luis1454/BLITZAR/pull/657"
+            )
+
+        self.assertEqual(resolved, commit)
+
     def test_strict_mode_rejects_failed_lane(self) -> None:
         lanes = [{"id": "build", "state": "failure"}]
 

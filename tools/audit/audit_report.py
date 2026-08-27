@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import re
 import shlex
 import subprocess
 import sys
@@ -79,16 +80,31 @@ def lane_errors(lanes: list[dict[str, str]], strict: bool) -> list[str]:
     ]
 
 
-def find_integration_commit(root: pathlib.Path, issue: int) -> str | None:
+def _pull_request_number(pull_request: str | None) -> str | None:
+    if not pull_request:
+        return None
+    match = re.search(r"/pull/(\d+)(?:[/?#]|$)", pull_request)
+    return match.group(1) if match else None
+
+
+def find_integration_commit(
+    root: pathlib.Path, issue: int, pull_request: str | None = None
+) -> str | None:
     history = git_output(root, ["log", "--all", "--format=%H%x09%s"])
     if not history:
         return None
 
-    marker = f"Issue #{issue}:"
-    for line in history.splitlines():
-        commit, separator, subject = line.partition("\t")
-        if separator and subject.startswith(marker) and commit:
-            return commit
+    records = [line.partition("\t") for line in history.splitlines()]
+    markers = [re.compile(rf"^Issue #{issue}:")]
+    pull_request_number = _pull_request_number(pull_request)
+    if pull_request_number:
+        markers.append(re.compile(rf"\(\s*#?{pull_request_number}\s*\)"))
+    markers.append(re.compile(rf"\bissue(?:\s*#\s*|\s+|-){issue}\b", re.IGNORECASE))
+
+    for marker in markers:
+        for commit, separator, subject in records:
+            if separator and commit and marker.search(subject):
+                return commit
 
     return None
 
@@ -141,7 +157,9 @@ def milestone_records(root: pathlib.Path, contract: dict[str, Any]) -> tuple[lis
     errors: list[str] = []
     for issue in contract["milestone_issues"]:
         source_present = commit_exists(root, issue["commit"])
-        integration_commit = find_integration_commit(root, issue["issue"])
+        integration_commit = find_integration_commit(
+            root, issue["issue"], issue.get("pull_request")
+        )
         resolved_commit = integration_commit
         if resolved_commit is None and source_present:
             resolved_commit = issue["commit"]
