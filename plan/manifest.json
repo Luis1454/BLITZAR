@@ -1,6 +1,6 @@
 {
   "product_version": "1.0.0",
-  "plan_version": "1.0.27",
+  "plan_version": "1.0.28",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -29,6 +29,7 @@
     "src/trees/octree",
     "src/io",
     "src/io/snapshot",
+    "src/io/metadata",
     "src/gpu",
     "src/gpu/runtime",
     "src/gpu/memory",
@@ -89,7 +90,7 @@
     "P3": "implemented-qualified",
     "P4": "capability-gated",
     "P5": "deferred",
-    "P6": "deferred",
+    "P6": "implemented-local",
     "P7": "implemented-local",
     "P8": "implemented-local"
   },

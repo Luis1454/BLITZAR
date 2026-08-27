@@ -45,6 +45,15 @@
       "contract": "deterministic binary snapshot round-trip and rejection"
     },
     {
+      "id": "TST-P6-003",
+      "entrypoint": "tests/io/IoMetadataTest.cpp",
+      "responsibility": "tests/io/IoMetadataTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "phase": "P6",
+      "contract": "deterministic run manifest, bounded output preparation, atomic snapshot publication, and rerun rejection"
+    },
+    {
       "id": "TST-P0-004",
       "entrypoint": "tests/contracts/ContractBoundedTest.cpp",
       "responsibility": "tests/contracts/ContractBoundedTest.cpp",
