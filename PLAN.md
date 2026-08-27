@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.31**
+Plan version: **1.0.32**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -232,10 +232,11 @@ implementation. CPU behavior is qualified before CUDA dispatch is enabled.
 The output contract is frozen before the `src/io` root is materialized. The
 logical frame descriptor, single-rank binary reader/writer, deterministic run
 manifest, and atomic snapshot publication lifecycle are implemented and
-qualified by their P6 tests. The remaining planned pipeline is conservation
-diagnostics, restart, post-processing, optional MPI/HIP qualification, and the
-optional HDF5 adapter. The complete run pipeline remains unfinished; HDF5 remains deferred
-until its executable evidence exists.
+qualified by their P6 tests. The reusable conservation metrics module and its
+KDK requalification are now covered by `TST-P6-005`. The remaining planned
+pipeline is CLI conservation diagnostics, restart, post-processing, optional
+MPI/HIP qualification, and the optional HDF5 adapter. The complete run pipeline
+remains unfinished; HDF5 remains deferred until its executable evidence exists.
 
 ### Sprint 6: Optional HIP Acceleration
 
