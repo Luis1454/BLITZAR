@@ -152,6 +152,18 @@
       "phase": "P2"
     },
     {
+      "id": "TST-P2-007",
+      "name": "directive-config-cli-execution",
+      "command": "blitzar_cli --config tests/fixtures/FixtureRun.ini",
+      "phase": "P2"
+    },
+    {
+      "id": "TST-P2-008",
+      "name": "directive-config-semantic-contract",
+      "command": "blitzar_config_run_test",
+      "phase": "P2"
+    },
+    {
       "id": "TST-P0-006",
       "name": "capability-and-unsupported-contract",
       "command": "blitzar_capability_test",

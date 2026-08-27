@@ -1,9 +1,11 @@
 if(BLITZAR_BUILD_CLI)
     add_executable(blitzar_cli
         apps/blitzar/BlitzarMain.cpp
+        apps/blitzar/BlitzarRun.cpp
     )
     target_link_libraries(blitzar_cli PRIVATE blitzar)
     target_compile_features(blitzar_cli PRIVATE cxx_std_20)
+    target_include_directories(blitzar_cli PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
     blitzar_enable_warnings(blitzar_cli)
     install(TARGETS blitzar_cli RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()

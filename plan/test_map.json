@@ -123,6 +123,22 @@
       "contract": "legacy directive-file syntax and transactional rejection"
     },
     {
+      "id": "TST-P2-007",
+      "entrypoint": "apps/blitzar/BlitzarMain.cpp",
+      "responsibility": "apps/blitzar/BlitzarRun.cpp",
+      "mode": "config",
+      "ranks": 1,
+      "contract": "rewrite-native directive configuration executes a deterministic run"
+    },
+    {
+      "id": "TST-P2-008",
+      "entrypoint": "tests/simulation/SimConfigRunTest.cpp",
+      "responsibility": "tests/simulation/SimConfigRunTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "supported directives, defaults, unsupported values, and transactional rejection"
+    },
+    {
       "id": "TST-P3-001",
       "entrypoint": "tests/octree/OctreeHierarchyTest.cpp",
       "responsibility": "tests/octree/OctreeHierarchyTest.cpp",

@@ -10,6 +10,15 @@ set_tests_properties(
     TST-P2-006
     PROPERTIES WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
+add_test(
+    NAME TST-P2-007
+    COMMAND blitzar_cli --config tests/fixtures/FixtureRun.ini
+)
+set_tests_properties(
+    TST-P2-007
+    PROPERTIES WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+add_test(NAME TST-P2-008 COMMAND blitzar_config_run_test)
 add_test(NAME TST-P0-002 COMMAND blitzar_c_api_test)
 add_test(NAME TST-P0-003 COMMAND blitzar_contract_test)
 add_test(NAME TST-P0-004 COMMAND blitzar_bounded_contract_test)

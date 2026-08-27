@@ -137,6 +137,12 @@
       "reason": "Configuration syntax test main receives the file path from the test runner."
     },
     {
+      "path": "apps/blitzar/BlitzarMain.cpp",
+      "category": "process_entrypoint",
+      "ownership": "borrowed_process_arguments",
+      "reason": "CLI main receives the platform process argument array and forwards a bounded config path."
+    },
+    {
       "path": "examples/c/CExample.c",
       "category": "c_abi_consumer",
       "ownership": "borrowed_abi",
