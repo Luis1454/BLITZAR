@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.24",
+  "configuration": {
+    "path_base": "config_parent",
+    "directives": {
+      "output": {
+        "optional": true,
+        "arguments": [
+          {"name": "directory", "type": "quoted_path", "required": true},
+          {"name": "every_steps", "type": "positive_int64", "required": true},
+          {"name": "write_initial", "type": "boolean", "required": true},
+          {"name": "write_final", "type": "boolean", "required": true}
+        ]
+      },
+      "diagnostics": {
+        "optional": true,
+        "arguments": [
+          {"name": "every_steps", "type": "positive_int64", "required": true},
+          {"name": "energy", "type": "boolean", "required": true},
+          {"name": "momentum", "type": "boolean", "required": true},
+          {"name": "relative_error", "type": "boolean", "required": true}
+        ]
+      }
+    }
+  },
+  "layout": {
+    "manifest": "manifest.json",
+    "state_directory": "states",
+    "state_pattern": "state-%08d.bin",
+    "diagnostics_directory": "diagnostics",
+    "diagnostics_file": "conservation.csv",
+    "postprocess_directory": "postProcessing"
+  },
+  "snapshot": {
+    "format": "binary",
+    "version": 1,
+    "magic": "BZRS",
+    "endianness": "little",
+    "scalar": "IEEE-754 binary64",
+    "payload_order": [
+      "ids",
+      "position_x",
+      "position_y",
+      "position_z",
+      "velocity_x",
+      "velocity_y",
+      "velocity_z",
+      "mass"
+    ],
+    "checksum": "FNV-1a-64",
+    "atomic_publication": true,
+    "max_particle_count": 100000
+  },
+  "semantics": {
+    "single_rank": "implemented_first",
+    "multi_rank": "unsupported_until_shards",
+    "initial_step": 0,
+    "final_write_no_duplicate": true,
+    "overwrite": "reject_non_empty",
+    "metadata_deterministic": true,
+    "timestamp": "excluded"
+  },
+  "diagnostics": {
+    "format": "csv",
+    "columns": [
+      "step",
+      "time",
+      "particle_count",
+      "kinetic_energy",
+      "potential_energy",
+      "total_energy",
+      "momentum_x",
+      "momentum_y",
+      "momentum_z",
+      "relative_energy_error",
+      "relative_momentum_error"
+    ],
+    "precision": 17,
+    "accumulation": "fixed_index_order"
+  }
+}

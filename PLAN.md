@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.23**
+Plan version: **1.0.24**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -10,7 +10,7 @@ are re-derived here as contracts, numerical references, and acceptance tests.
 
 The authoritative planning state is the combination of this file,
 `plan/manifest.json`, `plan/quality.json`, `plan/decision-index.json`, and
-`plan/scaling.json` and `plan/final_audit.json`.
+`plan/scaling.json`, `plan/output_contract.json`, and `plan/final_audit.json`.
 Decision records under `plan/decisions/` preserve the rationale and migration
 history for that state.
 
@@ -38,8 +38,9 @@ GPU is visible or that MPI is running on more than one host.
 
 Direct, Barnes-Hut, and CPU FMM are implemented solver contracts. PM and
 TreePM remain explicit `BLITZAR_STATUS_UNSUPPORTED` selections and their
-production roots remain deferred. `SnapshotHeader` is a versioned state
-contract hook only; binary or HDF5 persistence is not implemented.
+production roots remain deferred. The output contract is now frozen in
+`plan/output_contract.json`, but `SnapshotHeader` remains a contract hook only;
+binary or HDF5 persistence is not implemented.
 
 HIP is capability-gated: compiler support and device execution are separate
 conditions, and a CPU fallback is retained when no device is visible. MPI is
@@ -149,6 +150,8 @@ The phases are ordered dependencies, not a list of parallel experiments.
 - P0, P1, P2, and P3 are implemented and locally qualified.
 - P4 is implemented with capability-gated GPU execution evidence.
 - P5 and P6 remain deferred because their production roots are not materialized.
+  P6 output contracts depend on the qualified P2/P3 interfaces; they do not
+  wait for the unrelated PM/TreePM implementation in P5.
 - P7 and P8 are implemented and locally qualified from the P3/P4 contracts;
   they do not depend on the deferred P5/P6 roots.
 
@@ -209,9 +212,12 @@ implementation. CPU behavior is qualified before CUDA dispatch is enabled.
 
 ### P6: Persistence and Qualification
 
-Add versioned binary snapshots and the optional HDF5 adapter. Validate corrupt,
-truncated, incompatible, and endian-swapped inputs. Add performance baselines,
-long-run determinism checks, and CPU/GPU parity reports.
+The output contract is frozen before the `src/io` root is materialized. The
+planned pipeline is: typed output policies, a versioned binary snapshot frame,
+corruption-safe reader/writer, deterministic run manifest, conservation
+diagnostics, CLI integration, restart, post-processing, optional MPI/HIP
+qualification, and finally the optional HDF5 adapter. Binary and HDF5
+persistence remain unimplemented until their executable evidence exists.
 
 ### Sprint 6: Optional HIP Acceleration
 

@@ -1,6 +1,6 @@
 {
   "product_version": "1.0.0",
-  "plan_version": "1.0.23",
+  "plan_version": "1.0.24",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -11,6 +11,7 @@
     "plan/capabilities.json",
     "plan/workspace.json",
     "plan/scaling.json",
+    "plan/output_contract.json",
     "plan/final_audit.json"
   ],
   "roots": [
@@ -95,7 +96,7 @@
     {"id": "P3", "name": "trees-and-hierarchical-solvers", "depends_on": ["P1"]},
     {"id": "P4", "name": "hip-runtime-and-gpu-solvers", "depends_on": ["P3"]},
     {"id": "P5", "name": "grid-pm-and-treepm", "depends_on": ["P3", "P4"]},
-    {"id": "P6", "name": "persistence-and-qualification", "depends_on": ["P2", "P5"]},
+    {"id": "P6", "name": "persistence-and-qualification", "depends_on": ["P2", "P3"]},
     {"id": "P7", "name": "mpi-domain-decomposition", "depends_on": ["P3", "P4"]},
     {"id": "P8", "name": "mpi-kdk-overlap-and-migration", "depends_on": ["P7"]}
   ],

@@ -60,6 +60,7 @@
       "id": "snapshot-persistence",
       "state": "deferred",
       "root": "src/io",
+      "contract": "frozen",
       "runtime_evidence": []
     },
     {

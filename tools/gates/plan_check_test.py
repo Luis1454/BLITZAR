@@ -50,6 +50,7 @@ class PlanCheckTests(unittest.TestCase):
             encoding="utf-8",
         )
         self.write_manifest()
+        self.write_output_contract()
         (self.root / "plan" / "architecture_reviews.json").write_text(
             json.dumps({"schema_version": 1, "reviews": []}), encoding="utf-8"
         )
@@ -70,6 +71,17 @@ class PlanCheckTests(unittest.TestCase):
         }
         (self.root / "plan" / "manifest.json").write_text(
             json.dumps(manifest), encoding="utf-8"
+        )
+
+    def write_output_contract(self) -> None:
+        contract = json.loads(
+            (REPOSITORY_ROOT / "plan" / "output_contract.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        contract["plan_version"] = "1.0.6"
+        (self.root / "plan" / "output_contract.json").write_text(
+            json.dumps(contract), encoding="utf-8"
         )
 
     def write_quality(self, evidence_policy: str = "registration-only") -> None:
@@ -177,6 +189,15 @@ class PlanCheckTests(unittest.TestCase):
         result = self.run_checker()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("evidence_policy", result.stderr)
+
+    def test_rejects_inconsistent_output_contract(self) -> None:
+        contract_path = self.root / "plan" / "output_contract.json"
+        contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        contract["snapshot"]["version"] = 2
+        contract_path.write_text(json.dumps(contract), encoding="utf-8")
+        result = self.run_checker()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("output contract snapshot", result.stderr)
 
     def test_rejects_duplicate_quality_id(self) -> None:
         quality_path = self.root / "plan" / "quality.json"

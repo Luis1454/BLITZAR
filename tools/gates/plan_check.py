@@ -16,6 +16,7 @@ DEFAULT_ROOT = pathlib.Path(__file__).resolve().parents[2]
 ROOT = DEFAULT_ROOT
 MANIFEST = ROOT / "plan" / "manifest.json"
 QUALITY = ROOT / "plan" / "quality.json"
+OUTPUT_CONTRACT = ROOT / "plan" / "output_contract.json"
 CMESSAGE = ROOT / "CMakeLists.txt"
 
 TEST_ID_PATTERN = re.compile(r"^TST-[A-Z0-9]+(?:-[A-Z0-9]+)+$")
@@ -270,6 +271,98 @@ def validate_release_identity(data: dict) -> None:
     )
     if any(value not in config_text for value in required_config_values):
         fail("installed package config must expose product and plan versions")
+
+
+EXPECTED_OUTPUT_CONTRACT = {
+    "configuration": {
+        "path_base": "config_parent",
+        "directives": {
+            "output": {
+                "optional": True,
+                "arguments": [
+                    {"name": "directory", "type": "quoted_path", "required": True},
+                    {"name": "every_steps", "type": "positive_int64", "required": True},
+                    {"name": "write_initial", "type": "boolean", "required": True},
+                    {"name": "write_final", "type": "boolean", "required": True},
+                ],
+            },
+            "diagnostics": {
+                "optional": True,
+                "arguments": [
+                    {"name": "every_steps", "type": "positive_int64", "required": True},
+                    {"name": "energy", "type": "boolean", "required": True},
+                    {"name": "momentum", "type": "boolean", "required": True},
+                    {"name": "relative_error", "type": "boolean", "required": True},
+                ],
+            },
+        },
+    },
+    "layout": {
+        "manifest": "manifest.json",
+        "state_directory": "states",
+        "state_pattern": "state-%08d.bin",
+        "diagnostics_directory": "diagnostics",
+        "diagnostics_file": "conservation.csv",
+        "postprocess_directory": "postProcessing",
+    },
+    "snapshot": {
+        "format": "binary",
+        "version": 1,
+        "magic": "BZRS",
+        "endianness": "little",
+        "scalar": "IEEE-754 binary64",
+        "payload_order": [
+            "ids",
+            "position_x",
+            "position_y",
+            "position_z",
+            "velocity_x",
+            "velocity_y",
+            "velocity_z",
+            "mass",
+        ],
+        "checksum": "FNV-1a-64",
+        "atomic_publication": True,
+        "max_particle_count": 100000,
+    },
+    "semantics": {
+        "single_rank": "implemented_first",
+        "multi_rank": "unsupported_until_shards",
+        "initial_step": 0,
+        "final_write_no_duplicate": True,
+        "overwrite": "reject_non_empty",
+        "metadata_deterministic": True,
+        "timestamp": "excluded",
+    },
+    "diagnostics": {
+        "format": "csv",
+        "columns": [
+            "step",
+            "time",
+            "particle_count",
+            "kinetic_energy",
+            "potential_energy",
+            "total_energy",
+            "momentum_x",
+            "momentum_y",
+            "momentum_z",
+            "relative_energy_error",
+            "relative_momentum_error",
+        ],
+        "precision": 17,
+        "accumulation": "fixed_index_order",
+    },
+}
+
+
+def validate_output_contract(data: dict, plan_version: str) -> None:
+    if data.get("schema_version") != 1:
+        fail("output contract schema_version must be 1")
+    if data.get("plan_version") != plan_version:
+        fail("output contract plan_version does not match the manifest")
+    for section, expected in EXPECTED_OUTPUT_CONTRACT.items():
+        if data.get(section) != expected:
+            fail(f"output contract {section} is incomplete or inconsistent")
 
 
 def validate_namespace_boundaries() -> None:
@@ -575,10 +668,11 @@ def validate_naming() -> None:
 
 
 def configure_root(root: pathlib.Path) -> None:
-    global ROOT, MANIFEST, QUALITY, CMESSAGE
+    global ROOT, MANIFEST, QUALITY, OUTPUT_CONTRACT, CMESSAGE
     ROOT = root.resolve()
     MANIFEST = ROOT / "plan" / "manifest.json"
     QUALITY = ROOT / "plan" / "quality.json"
+    OUTPUT_CONTRACT = ROOT / "plan" / "output_contract.json"
     CMESSAGE = ROOT / "CMakeLists.txt"
 
 
@@ -599,6 +693,8 @@ def main(argv: list[str] | None = None) -> None:
         fail("plan/manifest.json is missing")
     if not QUALITY.is_file():
         fail("plan/quality.json is missing")
+    if not OUTPUT_CONTRACT.is_file():
+        fail("plan/output_contract.json is missing")
     if not CMESSAGE.is_file():
         fail("CMakeLists.txt is missing")
 
@@ -608,6 +704,9 @@ def main(argv: list[str] | None = None) -> None:
     if not manifest.get("plan_version"):
         fail("plan_version is required")
     validate_release_identity(manifest)
+    validate_output_contract(
+        load_json(OUTPUT_CONTRACT, "output contract"), manifest["plan_version"]
+    )
     validate_roots(manifest)
     validate_repository_layout(manifest)
     phase_ids = validate_phases(manifest)
