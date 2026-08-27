@@ -5,7 +5,7 @@
 #include "integration/kdk/KdkLeapfrog.hpp"
 #include "mpi/packets/MpiPacketWire.hpp"
 #include "particles/buffer/ParticleAccelerationBuffer.hpp"
-#include "simulation/initialization/SimInputStage.hpp"
+#include "simulation/staging/SimParticleStage.hpp"
 #include "simulation/step/SimOverlapDispatch.hpp"
 #include "simulation/step/SimPacketStoreRequest.hpp"
 #include "simulation/transaction/SimRollback.hpp"
@@ -136,7 +136,7 @@ int main()
     blitzar_parallel::PacketBuffer exchange;
     std::array<std::uint64_t, 0> ids{};
     std::size_t local_count = 0;
-    blitzar_sim::SimInputStage stage{};
+    blitzar_sim::SimParticleStage stage{};
 
     const blitzar_sim::SimPacketStoreRequest store_request{
         exchange, arena, particle_buffer, acceleration_buffer, checkpoint, ids, 0, local_count};

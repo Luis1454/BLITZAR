@@ -79,7 +79,7 @@ set(BLITZAR_LIBRARY_SOURCES
     src/simulation/initialization/SimConfigState.cpp
     src/simulation/state/SimParticleSet.cpp
     src/simulation/state/SimParticleGet.cpp
-    src/simulation/initialization/SimInputStage.cpp
+    src/simulation/staging/SimParticleStage.cpp
     src/simulation/step/SimPackets.cpp
     src/simulation/transaction/SimSnapshots.cpp
     src/simulation/step/SimStep.cpp

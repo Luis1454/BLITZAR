@@ -301,6 +301,7 @@
         {"path": "src/simulation", "prefix": "Sim"},
         {"path": "src/simulation/config", "prefix": "Sim"},
         {"path": "src/simulation/initialization", "prefix": "Sim"},
+        {"path": "src/simulation/staging", "prefix": "Sim"},
         {"path": "src/simulation/runtime", "prefix": "Sim"},
         {"path": "src/simulation/solver", "prefix": "Sim"},
         {"path": "src/simulation/state", "prefix": "Sim"},
