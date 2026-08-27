@@ -2,7 +2,7 @@
 
 Status: accepted
 Issue: #661
-Plan version: 1.0.30
+Plan version: 1.0.31
 
 ## Context
 
@@ -25,11 +25,12 @@ from the integrated `main` history.
 - Real configuration values are parsed through a classic-locale stream with
   strict full-token and finite-value validation. Integer values retain the
   allocation-free `from_chars` path.
-- The final audit first resolves an integrated commit whose subject begins with
-  `Issue #N:` from the complete Git history. If no such merge subject exists,
-  it falls back to the source commit recorded in the contract. The audit report
-  exposes the resolved integration commit separately from source-commit
-  presence.
+- The final audit first resolves an integrated commit by the pull-request
+  number recorded in the contract, then by a subject beginning with
+  `Issue #N:`, then by an issue-style marker such as `issue-N`. If no such
+  integration marker exists, it falls back to the source commit recorded in
+  the contract. The audit report exposes the resolved integration commit
+  separately from source-commit presence.
 
 The boundary is covered by `TST-P0-008`, the portable real-value cases remain
 covered by `TST-P2-008`, and `CHK-P0-031` covers squash-commit resolution.

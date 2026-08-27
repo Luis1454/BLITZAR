@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.30**
+Plan version: **1.0.31**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -78,7 +78,9 @@ tracked repository path. `tools/audit/audit_final.py` materializes the complete 
 matrix, hashes and scans each tracked file, checks CMake/source completeness,
 validates the accepted architecture reviews and deferred capability register,
 and resolves the recorded source commits or their squash-merge integration
-commits for each completed issue. Its report, finding register, and gate log
+commits for each completed issue. Integration commits are matched by the
+recorded pull-request number before issue-style title markers. Its report,
+finding register, and gate log
 are generated outside the source tree.
 
 The final CI job depends on every supported build, test, package, sanitizer,
