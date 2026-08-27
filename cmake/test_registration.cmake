@@ -33,6 +33,7 @@ add_test(NAME TST-P1-003 COMMAND blitzar_allocation_test)
 add_test(NAME TST-P3-001 COMMAND blitzar_hierarchy_test)
 add_test(NAME TST-P3-002 COMMAND blitzar_fmm_test)
 add_test(NAME TST-P1-002 COMMAND blitzar_numerical_test)
+add_test(NAME TST-P6-005 COMMAND blitzar_conservation_test)
 add_test(NAME TST-P4-001 COMMAND blitzar_accelerator_test)
 add_test(
     NAME TST-P0-007

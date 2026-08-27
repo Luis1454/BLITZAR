@@ -147,6 +147,14 @@ target_compile_features(blitzar_numerical_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_numerical_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_numerical_test)
 
+add_executable(blitzar_conservation_test
+    tests/physics/ConservationMetricsTest.cpp
+)
+target_link_libraries(blitzar_conservation_test PRIVATE blitzar)
+target_compile_features(blitzar_conservation_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_conservation_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_conservation_test)
+
 add_executable(blitzar_debug_status_probe
     tests/contracts/ContractDebugStatusTest.cpp
 )
@@ -217,6 +225,7 @@ set(BLITZAR_TEST_TARGETS
     blitzar_hierarchy_test
     blitzar_fmm_test
     blitzar_numerical_test
+    blitzar_conservation_test
     blitzar_debug_status_probe
     blitzar_accelerator_test
     blitzar_scaling_test
