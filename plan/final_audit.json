@@ -500,6 +500,35 @@
         "CHK-P0-009",
         "plan/decisions/042-versioned-snapshot-frame.md"
       ]
+    },
+    {
+      "issue": 656,
+      "title": "Split simulation initialization and particle staging",
+      "commit": "854ee18f142b862791b3873f452c6c7ec8952aef",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/657",
+      "evidence": [
+        "TST-P0-004",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "plan/decisions/044-simulation-staging-boundary.md"
+      ]
+    },
+    {
+      "issue": 642,
+      "title": "Implement binary snapshot reader and writer",
+      "commit": "54af94576cb92cdca78dfa7608f77cac205e3bd1",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/658",
+      "evidence": [
+        "TST-P6-001",
+        "TST-P6-002",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "plan/decisions/043-binary-snapshot-codec.md"
+      ]
     }
   ],
   "non_claims": [
@@ -507,7 +536,8 @@
     "physical NVIDIA CUDA execution when no CUDA device is exposed",
     "physical AMD HIP execution when no AMD device is exposed",
     "PM and TreePM production implementations",
-    "binary or HDF5 snapshot persistence",
+    "manifest-driven atomic run persistence",
+    "HDF5 snapshot persistence",
     "GPU FMM"
   ],
   "findings_policy": {
