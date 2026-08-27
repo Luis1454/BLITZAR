@@ -31,11 +31,12 @@ namespace {
         output.mass};
 }
 
-int PrintFailure(std::string_view phase, blitzar_status status, BlitzarExitCode exit_code)
+int PrintFailure(BlitzarStreams streams, std::string_view phase, blitzar_status status,
+    BlitzarExitCode exit_code)
 {
     const BlitzarFailure failure{status, phase, exit_code};
 
-    (void)WriteFailure(std::cerr, failure);
+    (void)WriteFailure(streams.standard_error, failure);
 
     return static_cast<int>(exit_code);
 }
@@ -151,7 +152,7 @@ struct RunResult final {
     return {BLITZAR_STATUS_OK, {}, BlitzarExitCode::Runtime, completed_steps};
 }
 
-[[nodiscard]] int PrintSummary(const blitzar_sim::SimConfigRun& config,
+[[nodiscard]] int PrintSummary(BlitzarStreams streams, const blitzar_sim::SimConfigRun& config,
     const BlitzarOutput& output_writer, std::uint64_t completed_steps)
 {
     try {
@@ -161,21 +162,24 @@ struct RunResult final {
             static_cast<std::uint64_t>(output_writer.DiagnosticsCount()),
             output_writer.OutputPath()};
 
-        if (WriteSummary(std::cout, summary)) {
+        if (WriteSummary(streams.standard_output, summary)) {
             return static_cast<int>(BlitzarExitCode::Success);
         }
     }
     catch (const std::bad_alloc&) {
-        return PrintFailure("summary", BLITZAR_STATUS_ALLOCATION_FAILURE, BlitzarExitCode::Output);
+        return PrintFailure(
+            streams, "summary", BLITZAR_STATUS_ALLOCATION_FAILURE, BlitzarExitCode::Output);
     }
     catch (const std::length_error&) {
-        return PrintFailure("summary", BLITZAR_STATUS_INVALID_ARGUMENT, BlitzarExitCode::Output);
+        return PrintFailure(
+            streams, "summary", BLITZAR_STATUS_INVALID_ARGUMENT, BlitzarExitCode::Output);
     }
     catch (const std::filesystem::filesystem_error&) {
-        return PrintFailure("summary", BLITZAR_STATUS_INTERNAL_ERROR, BlitzarExitCode::Output);
+        return PrintFailure(
+            streams, "summary", BLITZAR_STATUS_INTERNAL_ERROR, BlitzarExitCode::Output);
     }
 
-    return PrintFailure("summary", BLITZAR_STATUS_INTERNAL_ERROR, BlitzarExitCode::Output);
+    return PrintFailure(streams, "summary", BLITZAR_STATUS_INTERNAL_ERROR, BlitzarExitCode::Output);
 }
 
 } // namespace
@@ -199,11 +203,16 @@ int RunSmoke()
 
 int RunConfig(const std::filesystem::path& path)
 {
+    return RunConfig(path, {std::cout, std::cerr});
+}
+
+int RunConfig(const std::filesystem::path& path, BlitzarStreams streams)
+{
     blitzar_sim::SimConfigFile source;
     blitzar_status status = blitzar_sim::LoadConfig(path, source);
 
     if (status != BLITZAR_STATUS_OK) {
-        return PrintFailure("load", status, BlitzarExitCode::Configuration);
+        return PrintFailure(streams, "load", status, BlitzarExitCode::Configuration);
     }
 
     blitzar_sim::SimConfigRun config;
@@ -213,7 +222,7 @@ int RunConfig(const std::filesystem::path& path)
     status = blitzar_sim::BuildRunConfig(source, config_directory, config);
 
     if (status != BLITZAR_STATUS_OK) {
-        return PrintFailure("semantic", status, BlitzarExitCode::Configuration);
+        return PrintFailure(streams, "semantic", status, BlitzarExitCode::Configuration);
     }
 
     blitzar_sim::SimConfigState state;
@@ -221,33 +230,33 @@ int RunConfig(const std::filesystem::path& path)
     status = blitzar_sim::BuildState(config, state);
 
     if (status != BLITZAR_STATUS_OK) {
-        return PrintFailure("state", status, BlitzarExitCode::Configuration);
+        return PrintFailure(streams, "state", status, BlitzarExitCode::Configuration);
     }
 
     blitzar::Context context{};
 
     if (!context.valid()) {
-        return PrintFailure(
-            "context", static_cast<blitzar_status>(context.status()), BlitzarExitCode::Runtime);
+        return PrintFailure(streams, "context", static_cast<blitzar_status>(context.status()),
+            BlitzarExitCode::Runtime);
     }
 
     blitzar::Simulation simulation(context, config.particle_count);
 
     if (!simulation.valid()) {
-        return PrintFailure("simulation", static_cast<blitzar_status>(simulation.status()),
+        return PrintFailure(streams, "simulation", static_cast<blitzar_status>(simulation.status()),
             BlitzarExitCode::Runtime);
     }
 
     status = ConfigureSimulation(config, simulation);
 
     if (status != BLITZAR_STATUS_OK) {
-        return PrintFailure("configure", status, BlitzarExitCode::Configuration);
+        return PrintFailure(streams, "configure", status, BlitzarExitCode::Configuration);
     }
 
     status = static_cast<blitzar_status>(simulation.set_particles(ToInput(state.Input())));
 
     if (status != BLITZAR_STATUS_OK) {
-        return PrintFailure("particles", status, BlitzarExitCode::Configuration);
+        return PrintFailure(streams, "particles", status, BlitzarExitCode::Configuration);
     }
 
     BlitzarOutput output_writer(config);
@@ -255,16 +264,16 @@ int RunConfig(const std::filesystem::path& path)
     status = output_writer.Prepare();
 
     if (status != BLITZAR_STATUS_OK) {
-        return PrintFailure("output-prepare", status, BlitzarExitCode::Output);
+        return PrintFailure(streams, "output-prepare", status, BlitzarExitCode::Output);
     }
 
     const RunResult run_result = RunSteps(config, simulation, state, output_writer);
 
     if (run_result.status != BLITZAR_STATUS_OK) {
-        return PrintFailure(run_result.phase, run_result.status, run_result.exit_code);
+        return PrintFailure(streams, run_result.phase, run_result.status, run_result.exit_code);
     }
 
-    return PrintSummary(config, output_writer, run_result.completed_steps);
+    return PrintSummary(streams, config, output_writer, run_result.completed_steps);
 }
 
 } // namespace blitzar_cli

@@ -4,7 +4,6 @@
 
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -59,13 +58,7 @@ CapturedOutput RunCaptured(const std::filesystem::path& path)
     std::ostringstream standard_output;
     std::ostringstream standard_error;
 
-    std::streambuf* const previous_output = std::cout.rdbuf(standard_output.rdbuf());
-    std::streambuf* const previous_error = std::cerr.rdbuf(standard_error.rdbuf());
-
-    const int exit_code = blitzar_cli::RunConfig(path);
-
-    std::cout.rdbuf(previous_output);
-    std::cerr.rdbuf(previous_error);
+    const int exit_code = blitzar_cli::RunConfig(path, {standard_output, standard_error});
 
     return {exit_code, standard_output.str(), standard_error.str()};
 }

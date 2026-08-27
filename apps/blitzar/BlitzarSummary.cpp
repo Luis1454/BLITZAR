@@ -108,11 +108,7 @@ bool WriteSummary(std::ostream& output, const BlitzarSummary& summary)
 
 bool WriteFailure(std::ostream& output, const BlitzarFailure& failure) noexcept
 {
-    const char* message = blitzar_status_message(failure.status);
-
-    if (message == nullptr) {
-        message = "unknown status";
-    }
+    const std::string_view message{blitzar_status_message(failure.status)};
 
     output.imbue(std::locale::classic());
 
