@@ -202,11 +202,6 @@ int CheckRejectedOutputConfiguration()
 
     BLITZAR_CHECK(
         CheckRejectedOutput(
-            R"(output(directory="results", every_steps=1, write_initial=false, write_final=false)
-)") == 0);
-
-    BLITZAR_CHECK(
-        CheckRejectedOutput(
             R"(diagnostics(every_steps=1, energy=false, momentum=false, relative_error=false)
 )") == 0);
 
@@ -224,6 +219,27 @@ output(directory="other", every_steps=1, write_initial=true, write_final=true)
     return 0;
 }
 
+int CheckPeriodicOnlyOutput()
+{
+    constexpr std::string_view directives =
+        R"(output(directory="results", every_steps=2, write_initial=false, write_final=false)
+)";
+
+    blitzar_sim::SimConfigFile source;
+    blitzar_sim::SimConfigRun config;
+
+    BLITZAR_CHECK(ParseWithExtra(directives, source) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_sim::BuildRunConfig(source, std::filesystem::path{"case"}, config) ==
+                  BLITZAR_STATUS_OK);
+
+    BLITZAR_CHECK(config.output.enabled);
+    BLITZAR_CHECK(config.output.every_steps == 2);
+    BLITZAR_CHECK(!config.output.write_initial);
+    BLITZAR_CHECK(!config.output.write_final);
+
+    return 0;
+}
+
 } // namespace
 
 int main()
@@ -232,6 +248,7 @@ int main()
     BLITZAR_CHECK(CheckRejectedConfiguration() == 0);
     BLITZAR_CHECK(CheckOutputConfiguration() == 0);
     BLITZAR_CHECK(CheckRejectedOutputConfiguration() == 0);
+    BLITZAR_CHECK(CheckPeriodicOnlyOutput() == 0);
 
     return 0;
 }

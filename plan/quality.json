@@ -38,6 +38,12 @@
       "phase": "P6"
     },
     {
+      "id": "TST-P6-004",
+      "name": "cli-configured-output-lifecycle",
+      "command": "blitzar_cli_output_test",
+      "phase": "P6"
+    },
+    {
       "id": "TST-P0-004",
       "name": "bounded-views-and-request-contracts",
       "command": "blitzar_bounded_contract_test",

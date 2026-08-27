@@ -380,6 +380,7 @@ EXPECTED_OUTPUT_CONTRACT = {
         "single_rank": "implemented_first",
         "multi_rank": "unsupported_until_shards",
         "initial_step": 0,
+        "periodic_only": True,
         "final_write_no_duplicate": True,
         "overwrite": "reject_non_empty",
         "metadata_deterministic": True,

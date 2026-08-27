@@ -102,8 +102,7 @@ blitzar_status MetadataRunInfo::Validate() const noexcept
         return BLITZAR_STATUS_UNSUPPORTED;
     }
 
-    if (output.enabled &&
-        (output.every_steps == 0 || (!output.write_initial && !output.write_final))) {
+    if (output.enabled && output.every_steps == 0) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
