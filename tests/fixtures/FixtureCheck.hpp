@@ -3,6 +3,12 @@
 
 #include <stdio.h>
 
+#if defined(_MSC_VER) && !defined(__clang__)
+#define BLITZAR_STATIC_CHECK(condition, name) typedef char name[(condition) ? 1 : -1]
+#else
+#define BLITZAR_STATIC_CHECK(condition, name) _Static_assert(condition, #name)
+#endif
+
 #define BLITZAR_CHECK(condition) \
     do { \
         if (!(condition)) { \

@@ -42,6 +42,7 @@ find_package(Threads REQUIRED)
 
 function(blitzar_enable_warnings target)
     if(MSVC)
+        target_compile_definitions(${target} PRIVATE NOMINMAX)
         target_compile_options(${target} PRIVATE
             "$<$<COMPILE_LANGUAGE:C>:/W4>"
             "$<$<COMPILE_LANGUAGE:C>:/WX>"
@@ -49,6 +50,7 @@ function(blitzar_enable_warnings target)
             "$<$<COMPILE_LANGUAGE:CXX>:/WX>"
             "$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/W4>"
             "$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/WX>"
+            "$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/wd4211>"
         )
     else()
         target_compile_options(${target} PRIVATE

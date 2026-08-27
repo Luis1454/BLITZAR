@@ -6,6 +6,7 @@
 #include "simulation/Sim.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdio>
@@ -30,6 +31,20 @@ struct TestState final {
     return simulation.SetGravity(1.0, 0.1) == BLITZAR_STATUS_OK &&
            simulation.SetTimestep(0.01) == BLITZAR_STATUS_OK &&
            simulation.SetParticles(blitzar_tests::MakeStateView(state)) == BLITZAR_STATUS_OK;
+}
+
+[[nodiscard]] double MaxForceError(
+    blitzar_core::ForceView reference, blitzar_core::ForceView candidate) noexcept
+{
+    double maximum = 0.0;
+
+    for (std::size_t index = 0; index < reference.count; ++index) {
+        maximum = std::max(maximum, std::abs(reference.x[index] - candidate.x[index]));
+        maximum = std::max(maximum, std::abs(reference.y[index] - candidate.y[index]));
+        maximum = std::max(maximum, std::abs(reference.z[index] - candidate.z[index]));
+    }
+
+    return maximum;
 }
 
 [[nodiscard]] bool RunDispatcherErrorCase() noexcept
@@ -106,6 +121,8 @@ int main()
 
     blitzar_hip::GpuContext context;
 
+    BLITZAR_CHECK(RunDispatcherErrorCase());
+
     if (!context.IsAvailable()) {
         std::fprintf(stdout, "BLITZAR GPU qualification skipped: no compatible device is "
                              "visible; CPU fallback is being tested\n");
@@ -122,12 +139,9 @@ int main()
 
     const blitzar_core::ForceView cpu_view = cpu_forces.View();
     const blitzar_core::ForceView gpu_view = gpu_forces.View();
+    const double direct_max_error = MaxForceError(cpu_view, gpu_view);
 
-    for (std::size_t index = 0; index < particles.Count(); ++index) {
-        BLITZAR_CHECK(std::abs(cpu_view.x[index] - gpu_view.x[index]) < 1.0e-5);
-        BLITZAR_CHECK(std::abs(cpu_view.y[index] - gpu_view.y[index]) < 1.0e-5);
-        BLITZAR_CHECK(std::abs(cpu_view.z[index] - gpu_view.z[index]) < 1.0e-5);
-    }
+    BLITZAR_CHECK(direct_max_error < 1.0e-5);
 
     blitzar_barnes_hut::BarnesHutSettings settings{};
 
@@ -141,14 +155,14 @@ int main()
                       gravity, settings}) == BLITZAR_STATUS_OK);
 
     const blitzar_core::ForceView tree_view = gpu_forces.View();
+    const double barnes_hut_max_error = MaxForceError(cpu_view, tree_view);
 
-    for (std::size_t index = 0; index < particles.Count(); ++index) {
-        BLITZAR_CHECK(std::abs(cpu_view.x[index] - tree_view.x[index]) < 1.0e-5);
-        BLITZAR_CHECK(std::abs(cpu_view.y[index] - tree_view.y[index]) < 1.0e-5);
-        BLITZAR_CHECK(std::abs(cpu_view.z[index] - tree_view.z[index]) < 1.0e-5);
-    }
+    BLITZAR_CHECK(barnes_hut_max_error < 1.0e-5);
 
-    BLITZAR_CHECK(RunDispatcherErrorCase());
+    std::fprintf(stdout,
+        "BLITZAR GPU qualification passed: compiled=%d device=1 direct_max_error=%.17g "
+        "barnes_hut_max_error=%.17g fallback=1\n",
+        context.IsCompiled() ? 1 : 0, direct_max_error, barnes_hut_max_error);
 
     return 0;
 }

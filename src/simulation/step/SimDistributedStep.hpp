@@ -73,7 +73,11 @@ template <typename Solver> blitzar_status Sim::StepDistributed(Solver& solver) n
             traversal_stacks_, particle_state_.Particles().State()};
 
     blitzar_integration_kdk::AdvanceHooks advance_hooks{migrate_after_drift, rollback};
-    blitzar_integration_kdk::AdvanceRequest advance_request{advance_state, advance_hooks};
+
+    blitzar_integration_kdk::AdvanceRequest<Dispatcher, blitzar_solver_threading::ThreadStackPool,
+        decltype(migrate_after_drift), decltype(rollback)>
+        advance_request{advance_state, advance_hooks};
+
     const blitzar_status advance_status = integrator_.Advance(advance_request);
 
     if (advance_status != BLITZAR_STATUS_OK) {

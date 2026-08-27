@@ -109,12 +109,14 @@ int main()
     const blitzar_core::ExecutionSettings settings{};
     const blitzar_integration::KdkLeapfrog integrator{};
     std::span<std::size_t> solver_scratch{};
-    blitzar_integration_kdk::AdvanceState first_state_request{first_particles, first_accelerations,
-        first_checkpoint, solver, timestep, settings, solver_scratch, first_particles.State()};
 
-    blitzar_integration_kdk::AdvanceState second_state_request{second_particles,
-        second_accelerations, second_checkpoint, solver, timestep, settings, solver_scratch,
-        second_particles.State()};
+    blitzar_integration_kdk::AdvanceState<blitzar_direct::DirectSolver, std::span<std::size_t>>
+        first_state_request{first_particles, first_accelerations, first_checkpoint, solver,
+            timestep, settings, solver_scratch, first_particles.State()};
+
+    blitzar_integration_kdk::AdvanceState<blitzar_direct::DirectSolver, std::span<std::size_t>>
+        second_state_request{second_particles, second_accelerations, second_checkpoint, solver,
+            timestep, settings, solver_scratch, second_particles.State()};
 
     const double initial_energy =
         Energy(first_particles.State(), gravitational_constant, softening);
@@ -139,9 +141,11 @@ int main()
     blitzar_particles::ParticleBuffer limit_particles(1);
     blitzar_particles::ParticleAccelerationBuffer limit_accelerations(1);
     blitzar_integration::KdkCheckpoint limit_checkpoint(1);
-    blitzar_integration_kdk::AdvanceState limit_state{limit_particles, limit_accelerations,
-        limit_checkpoint, solver, std::numeric_limits<double>::infinity(), settings, solver_scratch,
-        limit_particles.State()};
+
+    blitzar_integration_kdk::AdvanceState<blitzar_direct::DirectSolver, std::span<std::size_t>>
+        limit_state{limit_particles, limit_accelerations, limit_checkpoint, solver,
+            std::numeric_limits<double>::infinity(), settings, solver_scratch,
+            limit_particles.State()};
 
     BLITZAR_CHECK(
         limit_particles.SetMass(0, std::numeric_limits<double>::max()) == BLITZAR_STATUS_OK);

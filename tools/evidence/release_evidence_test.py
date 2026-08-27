@@ -1,12 +1,14 @@
 import copy
 import pathlib
 import sys
+from tempfile import TemporaryDirectory
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
 from tools.evidence.evidence_contract import aggregate_records, expand_workloads, load_contract, parse_scale_record, validate_contract
-from tools.evidence.release_evidence import is_inside
+from tools.evidence.release_evidence import is_inside, probe_gpu
 
 
 class ReleaseEvidenceTests(unittest.TestCase):
@@ -120,6 +122,34 @@ class ReleaseEvidenceTests(unittest.TestCase):
 
         self.assertTrue(is_inside(root / "plan" / "run", root))
         self.assertFalse(is_inside(root.parent / "evidence", root))
+
+    def test_gpu_probe_uses_accelerator_qualification_target(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            build = root / "build"
+            output = root / "evidence"
+            build.mkdir()
+            (build / "CMakeCache.txt").write_text(
+                "BLITZAR_HIP_ENABLED:INTERNAL=ON\n", encoding="utf-8"
+            )
+            (build / "blitzar_accelerator_test").touch()
+            process = {
+                "returncode": 0,
+                "stdout": "BLITZAR GPU qualification passed: compiled=1 device=1\n",
+                "stderr": "",
+                "cwd": str(root),
+                "timed_out": False,
+                "missing": False,
+            }
+
+            with patch("tools.evidence.release_evidence.shutil.which", return_value=None), patch(
+                "tools.evidence.release_evidence.run_process", return_value=process
+            ):
+                result = probe_gpu(root, build, output)
+
+        self.assertEqual(result["compile"]["state"], "passed")
+        self.assertEqual(result["device_execution"]["state"], "passed")
+        self.assertEqual(result["fallback"]["state"], "not-observed")
 
 
 if __name__ == "__main__":

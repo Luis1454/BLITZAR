@@ -141,7 +141,10 @@ blitzar_status KdkLeapfrog::Advance(
     blitzar_integration_kdk::NoopDriftHook drift_hook;
     blitzar_integration_kdk::NoopRollbackHook rollback_hook;
     blitzar_integration_kdk::AdvanceHooks hooks{drift_hook, rollback_hook};
-    blitzar_integration_kdk::AdvanceRequest request{state, hooks};
+
+    blitzar_integration_kdk::AdvanceRequest<Solver, SolverScratch, decltype(drift_hook),
+        decltype(rollback_hook)>
+        request{state, hooks};
 
     return Advance(request);
 }

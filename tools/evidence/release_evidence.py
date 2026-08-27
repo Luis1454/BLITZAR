@@ -278,10 +278,11 @@ def read_cache_flag(build_dir: pathlib.Path, name: str) -> bool | None:
 
 
 def probe_gpu(root: pathlib.Path, build_dir: pathlib.Path, output: pathlib.Path) -> dict[str, Any]:
+    (output / "logs").mkdir(parents=True, exist_ok=True)
     compilers = {
         name: shutil.which(name) for name in ("hipcc", "nvcc") if shutil.which(name) is not None
     }
-    executable = executable_path(build_dir, "blitzar_hip_test")
+    executable = executable_path(build_dir, "blitzar_accelerator_test")
     probe: dict[str, Any] = {
         "compile": {
             "configured": read_cache_flag(build_dir, "BLITZAR_HIP_ENABLED"),
