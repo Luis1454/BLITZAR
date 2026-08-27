@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.20",
+  "plan_version": "1.0.21",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -283,6 +283,18 @@
       "workflow_job": "hip",
       "scope": "HIP compile and optional device run",
       "claim": "capability-gated"
+    },
+    {
+      "id": "windows-native-cuda",
+      "workflow_job": "windows-accelerators",
+      "scope": "Windows MSVC native CUDA compile and optional device run",
+      "claim": "capability-gated"
+    },
+    {
+      "id": "windows-hip",
+      "workflow_job": "windows-accelerators",
+      "scope": "Windows AMD HIP SDK compile and optional device run",
+      "claim": "capability-gated"
     }
   ],
   "milestone_issues": [
@@ -390,6 +402,17 @@
       "commit": "84feeabf4825baa6b1520456308b55e50df1d32c",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/628",
       "evidence": ["CHK-P0-028", "TST-P0-007", "blitzar-reproducible-evidence"]
+    },
+    {
+      "issue": 541,
+      "title": "Qualify HIP and native CUDA execution",
+      "commit": "b6e6d9c385514e6c31fe2740f22b697b2d08dfe3",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/634",
+      "evidence": [
+        "TST-P4-001",
+        "CHK-P0-009",
+        "plan/decisions/037-cross-platform-p4-qualification.md"
+      ]
     }
   ],
   "non_claims": [

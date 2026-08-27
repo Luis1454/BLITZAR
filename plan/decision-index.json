@@ -49,6 +49,7 @@
     {"path": "plan/decisions/033-reproducible-evidence-gates.md", "lifecycle": "active"},
     {"path": "plan/decisions/034-final-repository-qualification.md", "lifecycle": "active"},
     {"path": "plan/decisions/035-source-tree-responsibility-realignment.md", "lifecycle": "superseded", "notes": "Replaced by Decision 036 after the module boundaries were refined by responsibility."},
-    {"path": "plan/decisions/036-module-boundaries-and-backend-ownership.md", "lifecycle": "active"}
+    {"path": "plan/decisions/036-module-boundaries-and-backend-ownership.md", "lifecycle": "active"},
+    {"path": "plan/decisions/037-cross-platform-p4-qualification.md", "lifecycle": "active"}
   ]
 }

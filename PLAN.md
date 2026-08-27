@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.20**
+Plan version: **1.0.21**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -215,6 +215,12 @@ provides only the runtime calls used by the kernels; the kernels remain single
 `.hip` sources and the compatibility layer stays internal. AMD continues to
 use the ROCm HIP path, while an unselected or unavailable backend keeps the
 CPU fallback.
+
+P4 qualification uses the same `blitzar_accelerator_test` contract on Linux and
+Windows. The Windows lane is one capability-gated matrix with native NVIDIA
+CUDA and AMD HIP entries; each entry records its compiler and device probe
+before configuring the backend. Missing toolchains or devices are explicit
+skips, not successful hardware claims.
 
 ### Sprint 7: Optional MPI Domain Decomposition
 
