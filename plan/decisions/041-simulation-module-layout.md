@@ -1,6 +1,6 @@
 # Decision 041: Simulation Module Layout
 
-Status: accepted
+Status: superseded by Decision 044
 Issue: #653
 Plan version: 1.0.25
 
@@ -20,9 +20,11 @@ Remove src/simulation/input and use three responsibility boundaries:
 - src/simulation/config owns SimConfigFile, SimConfigValue,
   SimConfigDirective, SimConfigSimulation, SimConfigPhysics, SimConfigOutput,
   SimConfigDiagnostics, and SimConfigRun.
-- src/simulation/initialization owns SimConfigState and SimInputStage. These
-  components turn validated configuration or caller-provided particle views
-  into bounded initial state ready for Sim.
+- src/simulation/initialization owns SimConfigState. It turns validated
+  configuration into bounded deterministic initial state ready for Sim.
+- src/simulation/staging owns the transient caller-particle staging boundary.
+  It turns a caller-provided particle view into bounded data ready for
+  distribution and commit.
 - src/simulation/state owns SimParticleState, SimParticleSet, and
   SimParticleGet. This is the state ownership and state-transfer boundary of
   Sim.

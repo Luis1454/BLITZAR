@@ -1,6 +1,6 @@
 #include "mpi/native/MpiNativeStatus.hpp"
 #include "simulation/Sim.hpp"
-#include "simulation/initialization/SimInputStage.hpp"
+#include "simulation/staging/SimParticleStage.hpp"
 #include "simulation/step/SimPacketStoreRequest.hpp"
 
 #include <new>
@@ -19,7 +19,7 @@ bool Sim::ValidateParticleInput(blitzar_core::ParticleStateView input) const noe
                       (input.count == particle_count_ && blitzar_core::IsValid(input));
 }
 
-blitzar_status Sim::DistributeParticles(SimInputStage& stage,
+blitzar_status Sim::DistributeParticles(SimParticleStage& stage,
     blitzar_parallel::MpiDomainDecomposition& domain,
     blitzar_parallel::PacketBuffer& distributed) noexcept
 {
@@ -81,10 +81,10 @@ blitzar_status Sim::SetParticles(blitzar_core::ParticleStateView input) noexcept
         return Remember(status);
     }
 
-    SimInputStage stage;
+    SimParticleStage stage;
     const bool root = runtime_.Mpi().Rank() == 0;
 
-    status = root ? StageParticleInput(input, stage) : BLITZAR_STATUS_OK;
+    status = root ? StageParticles(input, stage) : BLITZAR_STATUS_OK;
     status = blitzar_parallel::SynchronizeStatus(runtime_.Mpi(), status, "set-particles-stage");
 
     if (status != BLITZAR_STATUS_OK) {

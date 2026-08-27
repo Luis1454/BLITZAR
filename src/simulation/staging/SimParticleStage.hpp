@@ -1,5 +1,5 @@
-#ifndef BLITZAR_SIMULATION_INITIALIZATION_SIM_INPUT_STAGE_HPP
-#define BLITZAR_SIMULATION_INITIALIZATION_SIM_INPUT_STAGE_HPP
+#ifndef BLITZAR_SIMULATION_STAGING_SIM_PARTICLE_STAGE_HPP
+#define BLITZAR_SIMULATION_STAGING_SIM_PARTICLE_STAGE_HPP
 
 #include "core/CoreTypes.hpp"
 
@@ -8,7 +8,7 @@
 
 namespace blitzar_sim {
 
-struct SimInputStage final {
+struct SimParticleStage final {
     std::vector<blitzar_core::Scalar> position_x;
     std::vector<blitzar_core::Scalar> position_y;
     std::vector<blitzar_core::Scalar> position_z;
@@ -20,8 +20,8 @@ struct SimInputStage final {
     [[nodiscard]] blitzar_core::ParticleStateView State() const noexcept;
 };
 
-[[nodiscard]] blitzar_status StageParticleInput(
-    blitzar_core::ParticleStateView input, SimInputStage& stage) noexcept;
+[[nodiscard]] blitzar_status StageParticles(
+    blitzar_core::ParticleStateView source, SimParticleStage& stage) noexcept;
 
 } // namespace blitzar_sim
 

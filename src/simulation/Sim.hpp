@@ -20,7 +20,7 @@
 
 namespace blitzar_sim {
 
-struct SimInputStage;
+struct SimParticleStage;
 class SimTransaction;
 
 class Sim final {
@@ -66,7 +66,7 @@ private:
     [[nodiscard]] blitzar_status EnsureLocalCapacity(std::size_t capacity) noexcept;
     [[nodiscard]] blitzar_status Remember(blitzar_status status) const noexcept;
     [[nodiscard]] bool ValidateParticleInput(blitzar_core::ParticleStateView input) const noexcept;
-    [[nodiscard]] blitzar_status DistributeParticles(SimInputStage& stage,
+    [[nodiscard]] blitzar_status DistributeParticles(SimParticleStage& stage,
         blitzar_parallel::MpiDomainDecomposition& domain,
         blitzar_parallel::PacketBuffer& distributed) noexcept;
     [[nodiscard]] bool ValidateOutput(blitzar_core::ParticleOutputView output) const noexcept;
