@@ -31,6 +31,15 @@ def validate_state(state: object) -> list[str]:
     return []
 
 
+def validate_snapshot_description(plan: str) -> list[str]:
+    errors: list[str] = []
+    if "SnapshotFrameView" not in plan or "contract-qualified" not in plan:
+        errors.append("PLAN.md must describe the qualified SnapshotFrameView contract")
+    if not re.search(r"Binary or HDF5 persistence is not\s+implemented", plan):
+        errors.append("PLAN.md must keep binary and HDF5 persistence deferred")
+    return errors
+
+
 def validate_matrix(root: pathlib.Path) -> list[str]:
     matrix = load_json(root / "plan" / "capabilities.json")
     manifest = load_json(root / "plan" / "manifest.json")
@@ -151,8 +160,7 @@ def validate_matrix(root: pathlib.Path) -> list[str]:
         re.DOTALL,
     ):
         errors.append("PM and TreePM are not visibly rejected as unsupported")
-    if "SnapshotHeader" not in plan or "contract hook" not in plan:
-        errors.append("PLAN.md must describe SnapshotHeader as a contract hook")
+    errors.extend(validate_snapshot_description(plan))
 
     return errors
 

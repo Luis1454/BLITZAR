@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.25",
+  "plan_version": "1.0.26",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -479,6 +479,20 @@
         "CHK-P0-007",
         "CHK-P0-009",
         "plan/decisions/041-simulation-module-layout.md"
+      ]
+    },
+    {
+      "issue": 641,
+      "title": "Define versioned snapshot frame contract",
+      "commit": "98bb8267cc4d19ae94b29e8e0b102dee1887c8f0",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/655",
+      "evidence": [
+        "TST-P6-001",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "plan/decisions/042-versioned-snapshot-frame.md"
       ]
     }
   ],

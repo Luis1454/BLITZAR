@@ -27,6 +27,15 @@
       "contract": "public and internal value contracts"
     },
     {
+      "id": "TST-P6-001",
+      "entrypoint": "tests/contracts/ContractSnapshotTest.cpp",
+      "responsibility": "tests/contracts/ContractSnapshotTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "phase": "P6",
+      "contract": "versioned logical snapshot frame and validation"
+    },
+    {
       "id": "TST-P0-004",
       "entrypoint": "tests/contracts/ContractBoundedTest.cpp",
       "responsibility": "tests/contracts/ContractBoundedTest.cpp",

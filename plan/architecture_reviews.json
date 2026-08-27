@@ -9,6 +9,13 @@
       "decision": "The test-target composition module owns explicit links for the complete unit, MPI, and public-header matrix; its dependency count is the test topology and is isolated from production and package target ownership."
     },
     {
+      "path": "src/core/CoreSnapshot.hpp",
+      "signals": ["branching"],
+      "issue": 641,
+      "status": "accepted",
+      "decision": "The snapshot contract keeps header compatibility, single-rank identity validation, and immutable SoA frame validation together so an IO writer receives one preflighted value boundary; serialization, disk access, and distributed shards remain outside this header."
+    },
+    {
       "path": "src/mpi/native/MpiNative.cpp",
       "signals": ["function_count"],
       "issue": 603,
@@ -108,7 +115,7 @@
     },
     {
       "path": "tools/gates/capability_gate.py",
-      "signals": ["branching", "function_length"],
+      "signals": ["allocation", "branching", "function_length"],
       "issue": 611,
       "status": "accepted",
       "decision": "The capability gate keeps matrix validation, deferred-root checks, and public unsupported-status checks in one policy boundary so compile claims cannot drift from the frozen plan; its tool-local signals are covered by the fixture and do not waive production thresholds."
