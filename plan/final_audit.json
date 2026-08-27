@@ -115,6 +115,12 @@
       "review_gate": "TST-P1-002"
     },
     {
+      "prefix": "src/io/",
+      "owner": "io-maintainers",
+      "category": "snapshot-persistence",
+      "review_gate": "TST-P6-002"
+    },
+    {
       "prefix": "src/mpi/",
       "owner": "parallel-maintainers",
       "category": "mpi-adapter",

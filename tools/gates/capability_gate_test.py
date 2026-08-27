@@ -19,7 +19,7 @@ class CapabilityGateTests(unittest.TestCase):
 
     def test_qualified_snapshot_contract_is_accepted(self) -> None:
         plan = "SnapshotFrameView is implemented and contract-qualified. "
-        plan += "Binary or HDF5 persistence is not implemented."
+        plan += "HDF5 remains deferred until executable evidence exists."
 
         self.assertEqual(validate_snapshot_description(plan), [])
 

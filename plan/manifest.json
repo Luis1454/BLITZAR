@@ -27,6 +27,8 @@
     "src/integration/kdk",
     "src/trees",
     "src/trees/octree",
+    "src/io",
+    "src/io/snapshot",
     "src/gpu",
     "src/gpu/runtime",
     "src/gpu/memory",
@@ -67,6 +69,7 @@
     "tests/integration",
     "tests/mpi",
     "tests/octree",
+    "tests/io",
     "tests/package",
     "tests/scaling",
     "tests/simulation",
@@ -76,7 +79,6 @@
   ],
   "deferred_roots": [
     "src/grid",
-    "src/io",
     "src/solvers/pm",
     "src/solvers/treepm"
   ],
