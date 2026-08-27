@@ -61,6 +61,7 @@
     {"path": "plan/decisions/045-run-manifest-atomic-output.md", "lifecycle": "active"},
     {"path": "plan/decisions/046-cli-output-integration.md", "lifecycle": "active"},
     {"path": "plan/decisions/047-cross-platform-qualification.md", "lifecycle": "active"},
-    {"path": "plan/decisions/048-conservation-metrics-contract.md", "lifecycle": "active"}
+    {"path": "plan/decisions/048-conservation-metrics-contract.md", "lifecycle": "active"},
+    {"path": "plan/decisions/049-cli-production-summary.md", "lifecycle": "active"}
   ]
 }

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.32",
+  "plan_version": "1.0.33",
   "configuration": {
     "path_base": "config_parent",
     "directives": {
@@ -112,6 +112,40 @@
     "overwrite": "reject_non_empty",
     "metadata_deterministic": true,
     "timestamp": "excluded"
+  },
+  "summary": {
+    "format": "json",
+    "schema_version": 1,
+    "stream": "stdout",
+    "field_order": [
+      "schema_version",
+      "status",
+      "requested_steps",
+      "completed_steps",
+      "particle_count",
+      "solver",
+      "snapshot_count",
+      "diagnostics_count",
+      "output_path"
+    ],
+    "output_path": "portable_generic_path_or_empty",
+    "diagnostics_count": "published_records",
+    "samples": "not_emitted",
+    "locale": "classic",
+    "wall_clock": "excluded"
+  },
+  "failure": {
+    "format": "json",
+    "schema_version": 1,
+    "stream": "stderr",
+    "field_order": ["schema_version", "status", "phase", "exit_code", "message"],
+    "exit_codes": {
+      "success": 0,
+      "usage": 2,
+      "configuration": 3,
+      "runtime": 4,
+      "output": 5
+    }
   },
   "diagnostics": {
     "format": "csv",
