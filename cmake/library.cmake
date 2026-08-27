@@ -68,6 +68,9 @@ set(BLITZAR_LIBRARY_SOURCES
     src/io/snapshot/SnapshotWire.cpp
     src/io/snapshot/SnapshotWriter.cpp
     src/io/snapshot/SnapshotReader.cpp
+    src/io/metadata/MetadataManifest.cpp
+    src/io/metadata/MetadataManifestJson.cpp
+    src/io/metadata/MetadataRun.cpp
     src/simulation/Sim.cpp
     src/simulation/runtime/SimRuntime.cpp
     src/simulation/state/SimParticleState.cpp

@@ -62,6 +62,14 @@ target_compile_features(blitzar_snapshot_io_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_snapshot_io_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_snapshot_io_test)
 
+add_executable(blitzar_metadata_io_test
+    tests/io/IoMetadataTest.cpp
+)
+target_link_libraries(blitzar_metadata_io_test PRIVATE blitzar)
+target_compile_features(blitzar_metadata_io_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_metadata_io_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_metadata_io_test)
+
 add_executable(blitzar_bounded_contract_test
     tests/contracts/ContractBoundedTest.cpp
 )
@@ -187,6 +195,7 @@ set(BLITZAR_TEST_TARGETS
     blitzar_contract_test
     blitzar_snapshot_contract_test
     blitzar_snapshot_io_test
+    blitzar_metadata_io_test
     blitzar_bounded_contract_test
     blitzar_abi_test
     blitzar_capability_test
