@@ -240,6 +240,30 @@ int CheckPeriodicOnlyOutput()
     return 0;
 }
 
+int CheckPortableRealValues()
+{
+    constexpr std::string_view directives =
+        R"(simulation(particle_count=2, dt=1.25e-2, solver=direct, integrator=leapfrog_kdk)
+gravity(gravitational_constant=2.5e1, softening=2.0e-3)
+units(length_scale=3.0e1, mass_scale=4.0e-1, time_scale=5.0e-2)
+generation(seed=1, deterministic=true)
+)";
+
+    blitzar_sim::SimConfigFile source;
+    blitzar_sim::SimConfigRun config;
+
+    BLITZAR_CHECK(blitzar_sim::ParseConfig(directives, source) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_sim::BuildRunConfig(source, config) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(config.timestep == 1.25e-2);
+    BLITZAR_CHECK(config.gravitational_constant == 2.5e1);
+    BLITZAR_CHECK(config.softening == 2.0e-3);
+    BLITZAR_CHECK(config.length_scale == 3.0e1);
+    BLITZAR_CHECK(config.mass_scale == 4.0e-1);
+    BLITZAR_CHECK(config.time_scale == 5.0e-2);
+
+    return 0;
+}
+
 } // namespace
 
 int main()
@@ -249,6 +273,7 @@ int main()
     BLITZAR_CHECK(CheckOutputConfiguration() == 0);
     BLITZAR_CHECK(CheckRejectedOutputConfiguration() == 0);
     BLITZAR_CHECK(CheckPeriodicOnlyOutput() == 0);
+    BLITZAR_CHECK(CheckPortableRealValues() == 0);
 
     return 0;
 }

@@ -114,3 +114,10 @@ add_test(
         -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR}
         -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/package_consumer.cmake
 )
+add_test(
+    NAME TST-P0-008
+    COMMAND cmake
+        -DBLITZAR_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+        -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR}
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/shared_cli_contract.cmake
+)

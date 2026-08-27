@@ -1,6 +1,11 @@
 #include "simulation/config/SimConfigValue.hpp"
 
 #include <charconv>
+#include <cmath>
+#include <locale>
+#include <new>
+#include <sstream>
+#include <string>
 #include <system_error>
 
 namespace blitzar_sim {
@@ -24,17 +29,29 @@ template <typename Integer>
 
 [[nodiscard]] bool ParseReal(std::string_view text, double& value) noexcept
 {
-    double parsed{};
-    const auto result =
-        std::from_chars(text.data(), text.data() + text.size(), parsed, std::chars_format::general);
+    try {
+        std::istringstream input{std::string(text)};
 
-    if (result.ec != std::errc{} || result.ptr != text.data() + text.size()) {
+        input.imbue(std::locale::classic());
+
+        input >> std::noskipws;
+
+        double parsed{};
+
+        input >> parsed;
+
+        if (input.fail() || !std::isfinite(parsed) ||
+            input.peek() != std::char_traits<char>::eof()) {
+            return false;
+        }
+
+        value = parsed;
+
+        return true;
+    }
+    catch (const std::bad_alloc&) {
         return false;
     }
-
-    value = parsed;
-
-    return true;
 }
 
 [[nodiscard]] bool ReadNamedValue(const SimConfigFile::Directive& directive, std::string_view name,

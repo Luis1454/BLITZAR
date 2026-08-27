@@ -79,6 +79,20 @@ def lane_errors(lanes: list[dict[str, str]], strict: bool) -> list[str]:
     ]
 
 
+def find_integration_commit(root: pathlib.Path, issue: int) -> str | None:
+    history = git_output(root, ["log", "--all", "--format=%H%x09%s"])
+    if not history:
+        return None
+
+    marker = f"Issue #{issue}:"
+    for line in history.splitlines():
+        commit, separator, subject = line.partition("\t")
+        if separator and subject.startswith(marker) and commit:
+            return commit
+
+    return None
+
+
 def run_command(
     root: pathlib.Path, command: str, timeout: int, label: str
 ) -> dict[str, Any]:
@@ -126,12 +140,21 @@ def milestone_records(root: pathlib.Path, contract: dict[str, Any]) -> tuple[lis
     records: list[dict[str, Any]] = []
     errors: list[str] = []
     for issue in contract["milestone_issues"]:
-        present = commit_exists(root, issue["commit"])
+        source_present = commit_exists(root, issue["commit"])
+        integration_commit = find_integration_commit(root, issue["issue"])
+        resolved_commit = integration_commit
+        if resolved_commit is None and source_present:
+            resolved_commit = issue["commit"]
         records.append(
-            {**issue, "commit_present": present, "status": "merged" if present else "missing"}
+            {
+                **issue,
+                "commit_present": source_present,
+                "integration_commit": resolved_commit,
+                "status": "merged" if resolved_commit is not None else "missing",
+            }
         )
-        if not present:
-            errors.append(f"implementation commit is missing for issue {issue['issue']}")
+        if resolved_commit is None:
+            errors.append(f"integration commit is missing for issue {issue['issue']}")
     return records, errors
 
 
