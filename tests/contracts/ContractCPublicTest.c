@@ -1,6 +1,8 @@
+#include "fixtures/FixtureCheck.hpp"
+
 #include <blitzar/blitzar.h>
 
-_Static_assert(sizeof(blitzar_status) == sizeof(int32_t), "public C ABI status width");
+BLITZAR_STATIC_CHECK(sizeof(blitzar_status) == sizeof(int32_t), blitzar_public_status_width);
 
 int PublicCCompileProbe(void)
 {

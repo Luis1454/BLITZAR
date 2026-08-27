@@ -158,8 +158,9 @@ bool BuildReference(
     std::span<std::size_t> solver_scratch{};
 
     for (int step = 0; step < step_count; ++step) {
-        blitzar_integration_kdk::AdvanceState state{particles, accelerations, checkpoint, solver,
-            timestep, execution, solver_scratch, particles.State()};
+        blitzar_integration_kdk::AdvanceState<blitzar_direct::DirectSolver, std::span<std::size_t>>
+            state{particles, accelerations, checkpoint, solver, timestep, execution, solver_scratch,
+                particles.State()};
 
         if (integrator.Advance(state) != BLITZAR_STATUS_OK) {
             return false;

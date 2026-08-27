@@ -4,9 +4,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-_Static_assert(offsetof(blitzar_capabilities_v2, struct_size) == 0, "capability size is first");
-_Static_assert(offsetof(blitzar_capabilities_v2, abi_version) == sizeof(uint32_t),
-    "capability version follows size");
+BLITZAR_STATIC_CHECK(
+    offsetof(blitzar_capabilities_v2, struct_size) == 0, blitzar_capability_size_offset);
+BLITZAR_STATIC_CHECK(offsetof(blitzar_capabilities_v2, abi_version) == sizeof(uint32_t),
+    blitzar_capability_version_offset);
 
 int main(void)
 {

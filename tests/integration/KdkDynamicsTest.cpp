@@ -287,8 +287,9 @@ int main()
     const blitzar_integration::KdkLeapfrog integrator{};
     std::span<std::size_t> solver_scratch{};
 
-    blitzar_integration_kdk::AdvanceState free_state{free_particle, free_acceleration,
-        free_checkpoint, solver, 0.5, settings, solver_scratch, free_particle.State()};
+    blitzar_integration_kdk::AdvanceState<blitzar_direct::DirectSolver, std::span<std::size_t>>
+        free_state{free_particle, free_acceleration, free_checkpoint, solver, 0.5, settings,
+            solver_scratch, free_particle.State()};
 
     BLITZAR_CHECK(integrator.Advance(free_state) == BLITZAR_STATUS_OK);
 
@@ -308,9 +309,10 @@ int main()
     BLITZAR_CHECK(rollback_particle.SetVelocity(0, {1.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
 
     FailOnSecondSolver failing_solver{};
-    blitzar_integration_kdk::AdvanceState rollback_state{rollback_particle, rollback_acceleration,
-        rollback_checkpoint, failing_solver, 0.5, settings, solver_scratch,
-        rollback_particle.State()};
+
+    blitzar_integration_kdk::AdvanceState<FailOnSecondSolver, std::span<std::size_t>>
+        rollback_state{rollback_particle, rollback_acceleration, rollback_checkpoint,
+            failing_solver, 0.5, settings, solver_scratch, rollback_particle.State()};
 
     BLITZAR_CHECK(integrator.Advance(rollback_state) == BLITZAR_STATUS_INTERNAL_ERROR);
 
@@ -351,12 +353,16 @@ int main()
     FailOnSecondSolver external_failing_solver{};
     std::span<std::size_t> external_solver_scratch{};
 
-    blitzar_integration_kdk::AdvanceState external_state{external_rollback_particle,
-        external_rollback_acceleration, external_rollback_checkpoint, external_failing_solver, 0.5,
-        settings, external_solver_scratch, external_rollback_particle.State()};
+    blitzar_integration_kdk::AdvanceState<FailOnSecondSolver, std::span<std::size_t>>
+        external_state{external_rollback_particle, external_rollback_acceleration,
+            external_rollback_checkpoint, external_failing_solver, 0.5, settings,
+            external_solver_scratch, external_rollback_particle.State()};
 
     blitzar_integration_kdk::AdvanceHooks external_hooks{mutating_drift, restore_external_state};
-    blitzar_integration_kdk::AdvanceRequest external_request{external_state, external_hooks};
+
+    blitzar_integration_kdk::AdvanceRequest<FailOnSecondSolver, std::span<std::size_t>,
+        decltype(mutating_drift), decltype(restore_external_state)>
+        external_request{external_state, external_hooks};
 
     BLITZAR_CHECK(integrator.Advance(external_request) == BLITZAR_STATUS_INVALID_ARGUMENT);
     BLITZAR_CHECK(rollback_calls == 1);
@@ -374,9 +380,10 @@ int main()
     blitzar_particles::ParticleAccelerationBuffer non_finite_acceleration(1);
     blitzar_integration::KdkCheckpoint non_finite_checkpoint(1);
     NonFiniteSolver non_finite_solver{};
-    blitzar_integration_kdk::AdvanceState non_finite_state{non_finite_particle,
-        non_finite_acceleration, non_finite_checkpoint, non_finite_solver, 0.5, settings,
-        solver_scratch, non_finite_particle.State()};
+
+    blitzar_integration_kdk::AdvanceState<NonFiniteSolver, std::span<std::size_t>> non_finite_state{
+        non_finite_particle, non_finite_acceleration, non_finite_checkpoint, non_finite_solver, 0.5,
+        settings, solver_scratch, non_finite_particle.State()};
 
     BLITZAR_CHECK(non_finite_particle.SetVelocity(0, {1.0, 0.0, 0.0}) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(integrator.Advance(non_finite_state) == BLITZAR_STATUS_INVALID_ARGUMENT);

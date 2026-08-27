@@ -6,6 +6,8 @@
 #include <hip/hip_runtime.h>
 #endif
 
+// clang-format off
+#include "gpu/runtime/GpuCudError.inl"
 #include "gpu/barnes_hut/GpuBhDevice.inl"
 #include "gpu/barnes_hut/GpuBhLaunch.inl"
-#include "gpu/runtime/GpuCudError.inl"
+// clang-format on

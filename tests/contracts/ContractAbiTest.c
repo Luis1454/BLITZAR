@@ -4,15 +4,17 @@
 #include <stddef.h>
 #include <stdint.h>
 
-_Static_assert(sizeof(blitzar_status) == sizeof(int32_t), "status ABI must be 32-bit");
-_Static_assert(sizeof(blitzar_solver_kind) == sizeof(int32_t), "solver ABI must be 32-bit");
-_Static_assert(sizeof(blitzar_backend_kind) == sizeof(int32_t), "backend ABI must be 32-bit");
-_Static_assert(offsetof(blitzar_particle_input_v2, struct_size) == 0, "V2 size is first");
-_Static_assert(offsetof(blitzar_particle_input_v2, abi_version) == sizeof(uint32_t),
-    "V2 version follows size");
-_Static_assert(offsetof(blitzar_particle_output_v2, struct_size) == 0, "output size is first");
-_Static_assert(
-    offsetof(blitzar_barnes_hut_config_v2, struct_size) == 0, "configuration size is first");
+BLITZAR_STATIC_CHECK(sizeof(blitzar_status) == sizeof(int32_t), blitzar_status_abi_width);
+BLITZAR_STATIC_CHECK(sizeof(blitzar_solver_kind) == sizeof(int32_t), blitzar_solver_abi_width);
+BLITZAR_STATIC_CHECK(sizeof(blitzar_backend_kind) == sizeof(int32_t), blitzar_backend_abi_width);
+BLITZAR_STATIC_CHECK(
+    offsetof(blitzar_particle_input_v2, struct_size) == 0, blitzar_input_size_offset);
+BLITZAR_STATIC_CHECK(offsetof(blitzar_particle_input_v2, abi_version) == sizeof(uint32_t),
+    blitzar_input_version_offset);
+BLITZAR_STATIC_CHECK(
+    offsetof(blitzar_particle_output_v2, struct_size) == 0, blitzar_output_size_offset);
+BLITZAR_STATIC_CHECK(
+    offsetof(blitzar_barnes_hut_config_v2, struct_size) == 0, blitzar_configuration_size_offset);
 
 int main(void)
 {

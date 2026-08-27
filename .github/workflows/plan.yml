@@ -650,6 +650,172 @@ jobs:
         if: steps.probe.outputs.device == 'true'
         run: timeout --foreground 180s ctest --test-dir "$BLITZAR_CI_BUILD_ROOT/hip" -R '^TST-P4-001$' --output-on-failure
 
+  windows-accelerators:
+    name: Windows ${{ matrix.backend }} qualification
+    runs-on: windows-latest
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: nvidia
+            compiler: nvcc
+            backend: native CUDA
+          - platform: amd
+            compiler: hipcc
+            backend: AMD HIP
+    env:
+      BLITZAR_ACCELERATOR_PLATFORM: ${{ matrix.platform }}
+      BLITZAR_ACCELERATOR_COMPILER: ${{ matrix.compiler }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Probe Windows accelerator capability
+        id: probe
+        shell: pwsh
+        run: |
+          $compiler = Get-Command $env:BLITZAR_ACCELERATOR_COMPILER -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+          if ($null -eq $compiler) {
+            $names = if ($env:BLITZAR_ACCELERATOR_PLATFORM -eq "nvidia") {
+              @("nvcc.exe")
+            }
+            else {
+              @("hipcc.bat", "hipcc.exe")
+            }
+            $roots = if ($env:BLITZAR_ACCELERATOR_PLATFORM -eq "nvidia") {
+              @($env:CUDA_PATH, $env:CUDA_HOME,
+                "$env:ProgramFiles\NVIDIA GPU Computing Toolkit\CUDA")
+            }
+            else {
+              @($env:HIP_PATH, $env:ROCM_PATH, "$env:ProgramFiles\AMD")
+            }
+            foreach ($root in $roots) {
+              if ([string]::IsNullOrWhiteSpace($root) -or -not (Test-Path $root)) {
+                continue
+              }
+              foreach ($name in $names) {
+                $compiler = Get-ChildItem -Path $root -Filter $name -File -Recurse `
+                  -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($null -ne $compiler) {
+                  break
+                }
+              }
+              if ($null -ne $compiler) {
+                break
+              }
+            }
+          }
+          if ($null -eq $compiler) {
+            "compile=false" >> $env:GITHUB_OUTPUT
+            "device=false" >> $env:GITHUB_OUTPUT
+            Add-Content $env:GITHUB_STEP_SUMMARY "## Capability record"
+            Add-Content $env:GITHUB_STEP_SUMMARY "- backend: $env:BLITZAR_ACCELERATOR_PLATFORM"
+            Add-Content $env:GITHUB_STEP_SUMMARY "- compiler: unavailable"
+            Add-Content $env:GITHUB_STEP_SUMMARY "- device: unavailable"
+            Add-Content $env:GITHUB_STEP_SUMMARY "- skip reason: Windows accelerator toolchain is unavailable"
+            exit 0
+          }
+
+          $compilerPath = $compiler.Source
+          if ([string]::IsNullOrWhiteSpace($compilerPath)) {
+            $compilerPath = $compiler.FullName
+          }
+          if ([string]::IsNullOrWhiteSpace($compilerPath)) {
+            $compilerPath = $compiler.Path
+          }
+          $compilerDirectory = Split-Path -Parent $compilerPath
+          $acceleratorRoot = Split-Path -Parent $compilerDirectory
+          $env:Path = "$compilerDirectory;$env:Path"
+          "compile=true" >> $env:GITHUB_OUTPUT
+          "BLITZAR_ACCELERATOR_COMPILER_PATH=$compilerPath" >> $env:GITHUB_ENV
+          if ($env:BLITZAR_ACCELERATOR_PLATFORM -eq "nvidia") {
+            "CUDA_PATH=$acceleratorRoot" >> $env:GITHUB_ENV
+          }
+          else {
+            "HIP_PATH=$acceleratorRoot" >> $env:GITHUB_ENV
+            "ROCM_PATH=$acceleratorRoot" >> $env:GITHUB_ENV
+          }
+
+          $deviceName = ""
+          if ($env:BLITZAR_ACCELERATOR_PLATFORM -eq "nvidia") {
+            $deviceTool = Get-Command nvidia-smi -ErrorAction SilentlyContinue |
+              Select-Object -First 1
+            if ($null -ne $deviceTool) {
+              $deviceName = (& $deviceTool.Source --query-gpu=name --format=csv,noheader 2>$null |
+                Select-Object -First 1)
+              $deviceExit = $LASTEXITCODE
+              if ($deviceExit -ne 0) {
+                $deviceName = ""
+              }
+            }
+          }
+          else {
+            $deviceTool = Get-Command rocminfo -ErrorAction SilentlyContinue |
+              Select-Object -First 1
+            if ($null -ne $deviceTool) {
+              $deviceName = (& $deviceTool.Source 2>$null |
+                Select-String -Pattern "gfx[0-9]+" | Select-Object -First 1)
+              $deviceExit = $LASTEXITCODE
+              if ($deviceExit -ne 0) {
+                $deviceName = ""
+              }
+            }
+          }
+          if ([string]::IsNullOrWhiteSpace($deviceName)) {
+            "device=false" >> $env:GITHUB_OUTPUT
+            $deviceName = "unavailable"
+            $skipReason = "compiler available, but no compatible device is exposed"
+          }
+          else {
+            "device=true" >> $env:GITHUB_OUTPUT
+            $skipReason = "none"
+          }
+          {
+            Add-Content $env:GITHUB_STEP_SUMMARY "## Capability record"
+            Add-Content $env:GITHUB_STEP_SUMMARY "- backend: $env:BLITZAR_ACCELERATOR_PLATFORM"
+            Add-Content $env:GITHUB_STEP_SUMMARY "- compiler: $compilerPath"
+            Add-Content $env:GITHUB_STEP_SUMMARY "- device: $deviceName"
+            Add-Content $env:GITHUB_STEP_SUMMARY "- rank count: 1"
+            Add-Content $env:GITHUB_STEP_SUMMARY "- skip reason: $skipReason"
+          }
+
+      - name: Configure Windows accelerator build
+        if: steps.probe.outputs.compile == 'true'
+        shell: pwsh
+        run: |
+          $build = Join-Path $env:BLITZAR_CI_BUILD_ROOT "windows-accelerators\$env:BLITZAR_ACCELERATOR_PLATFORM"
+          $arguments = @(
+            "-S", ".",
+            "-B", $build,
+            "-G", "Visual Studio 17 2022",
+            "-A", "x64",
+            "-DBLITZAR_HIP_MODE=ON",
+            "-DCMAKE_HIP_PLATFORM=$env:BLITZAR_ACCELERATOR_PLATFORM",
+            "-DBLITZAR_MPI_MODE=OFF",
+            "-DBLITZAR_ENABLE_OPENMP=OFF",
+            "-DBLITZAR_BUILD_TESTS=ON",
+            "-DBLITZAR_BUILD_CLI=OFF",
+            "-DBLITZAR_BUILD_EXAMPLES=OFF"
+          )
+          if ($env:BLITZAR_ACCELERATOR_PLATFORM -eq "nvidia") {
+            $arguments += "-DCMAKE_CUDA_COMPILER=$env:BLITZAR_ACCELERATOR_COMPILER_PATH"
+            $arguments += "-DCMAKE_CUDA_ARCHITECTURES=75"
+          }
+          & cmake @arguments
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+      - name: Build Windows accelerator target
+        if: steps.probe.outputs.compile == 'true'
+        run: cmake --build "$env:BLITZAR_CI_BUILD_ROOT/windows-accelerators/$env:BLITZAR_ACCELERATOR_PLATFORM" --config Release --target blitzar_accelerator_test --parallel
+
+      - name: Run Windows accelerator qualification
+        if: steps.probe.outputs.compile == 'true'
+        run: ctest --test-dir "$env:BLITZAR_CI_BUILD_ROOT/windows-accelerators/$env:BLITZAR_ACCELERATOR_PLATFORM" -C Release -R '^TST-P4-001$' --output-on-failure
+
   final-audit:
     name: Final repository qualification
     if: ${{ always() }}
@@ -669,6 +835,7 @@ jobs:
       - release-evidence
       - native-cuda
       - hip
+      - windows-accelerators
     steps:
       - name: Check out repository history
         uses: actions/checkout@v4
@@ -700,6 +867,8 @@ jobs:
           BLITZAR_LANE_RELEASE_EVIDENCE: ${{ needs['release-evidence'].result }}
           BLITZAR_LANE_NATIVE_CUDA: ${{ needs['native-cuda'].result }}
           BLITZAR_LANE_HIP: ${{ needs['hip'].result }}
+          BLITZAR_LANE_WINDOWS_NATIVE_CUDA: ${{ needs['windows-accelerators'].result }}
+          BLITZAR_LANE_WINDOWS_HIP: ${{ needs['windows-accelerators'].result }}
         run: |
           python -m tools.audit.audit_final \
             --root . \

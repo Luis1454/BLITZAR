@@ -162,7 +162,7 @@ int main()
 
     DirectSolver direct(gravity, 0);
     SolverScratch solver_scratch(0, 0);
-    blitzar_integration_kdk::SolverComputeRequest compute_request{
+    blitzar_integration_kdk::SolverComputeRequest<DirectSolver, SolverScratch> compute_request{
         direct, state, force, execution, solver_scratch};
 
     blitzar_integration_kdk::AdvanceState<DirectSolver, SolverScratch> advance_state{
@@ -172,7 +172,10 @@ int main()
     blitzar_integration_kdk::NoopDriftHook drift_hook;
     blitzar_integration_kdk::NoopRollbackHook rollback_hook;
     blitzar_integration_kdk::AdvanceHooks hooks{drift_hook, rollback_hook};
-    blitzar_integration_kdk::AdvanceRequest advance_request{advance_state, hooks};
+
+    blitzar_integration_kdk::AdvanceRequest<DirectSolver, SolverScratch, decltype(drift_hook),
+        decltype(rollback_hook)>
+        advance_request{advance_state, hooks};
 
     BLITZAR_CHECK(&compute_request.solver == &direct);
     BLITZAR_CHECK(&advance_request.state == &advance_state);

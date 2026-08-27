@@ -1,3 +1,5 @@
+#include <limits>
+
 namespace blitzar_accelerator_launch {
 
 namespace {

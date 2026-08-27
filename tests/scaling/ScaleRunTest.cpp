@@ -142,8 +142,10 @@ bool RunCpuOracle(const Config& config, const State& input, State& expected)
         config.seed, blitzar_core::ExecutionMode::Deterministic};
 
     std::span<std::size_t> scratch;
-    blitzar_integration_kdk::AdvanceState state{
-        particles, accelerations, checkpoint, solver, 0.001, settings, scratch, particles.State()};
+
+    blitzar_integration_kdk::AdvanceState<blitzar_direct::DirectSolver, std::span<std::size_t>>
+        state{particles, accelerations, checkpoint, solver, 0.001, settings, scratch,
+            particles.State()};
 
     const int step_count = config.warmup_steps + config.timed_steps;
 
