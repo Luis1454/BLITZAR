@@ -15,6 +15,14 @@ target_link_libraries(blitzar_lifecycle_test PRIVATE Threads::Threads)
 target_compile_features(blitzar_lifecycle_test PRIVATE cxx_std_20)
 blitzar_enable_warnings(blitzar_lifecycle_test)
 
+add_executable(blitzar_config_test
+    tests/simulation/SimConfigFileTest.cpp
+)
+target_link_libraries(blitzar_config_test PRIVATE blitzar)
+target_compile_features(blitzar_config_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_config_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_config_test)
+
 add_executable(blitzar_c_api_test
     tests/contracts/ContractCApiTest.c
 )
@@ -149,6 +157,7 @@ endif()
 set(BLITZAR_TEST_TARGETS
     blitzar_public_header_compile
     blitzar_lifecycle_test
+    blitzar_config_test
     blitzar_c_api_test
     blitzar_contract_test
     blitzar_bounded_contract_test

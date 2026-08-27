@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.21",
+  "plan_version": "1.0.22",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -412,6 +412,18 @@
         "TST-P4-001",
         "CHK-P0-009",
         "plan/decisions/037-cross-platform-p4-qualification.md"
+      ]
+    },
+    {
+      "issue": 635,
+      "title": "Add legacy directive config syntax",
+      "commit": "1d24b8f6a7b67e8e379419fd19aa45f8b4a7bb0a",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/636",
+      "evidence": [
+        "TST-P2-006",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "plan/decisions/038-directive-config-format.md"
       ]
     }
   ],

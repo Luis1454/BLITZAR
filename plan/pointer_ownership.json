@@ -131,6 +131,12 @@
       "reason": "Scaling harness main receives the platform process argument array."
     },
     {
+      "path": "tests/simulation/SimConfigFileTest.cpp",
+      "category": "process_entrypoint",
+      "ownership": "borrowed_process_arguments",
+      "reason": "Configuration syntax test main receives the file path from the test runner."
+    },
+    {
       "path": "examples/c/CExample.c",
       "category": "c_abi_consumer",
       "ownership": "borrowed_abi",

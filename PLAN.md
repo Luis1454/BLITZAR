@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.21**
+Plan version: **1.0.22**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -172,6 +172,13 @@ momentum, and error tolerances.
 Expose only the stable C ABI and the C++ RAII facade. Implement the CLI as a
 consumer of that facade, not as a second execution path. Add C and C++ examples
 that build against installed public headers only.
+
+The internal configuration reader accepts the legacy directive-file syntax as a
+format contract only: one `directive(key=value, ...)` record per line, `#`
+comments, quoted or unquoted values, and repeated directives in source order.
+It preserves directive data without importing legacy scene generation, solver,
+rendering, or GUI behavior. Applying any parsed value to the rewrite remains a
+separate semantic contract.
 
 ### P3: Spatial Structures and Hierarchical Solvers
 
