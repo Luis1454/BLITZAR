@@ -5,7 +5,7 @@
 #include "integration/kdk/KdkLeapfrog.hpp"
 #include "mpi/packets/MpiPacketWire.hpp"
 #include "particles/buffer/ParticleAccelerationBuffer.hpp"
-#include "simulation/input/SimInputStage.hpp"
+#include "simulation/initialization/SimInputStage.hpp"
 #include "simulation/step/SimOverlapDispatch.hpp"
 #include "simulation/step/SimPacketStoreRequest.hpp"
 #include "simulation/transaction/SimRollback.hpp"

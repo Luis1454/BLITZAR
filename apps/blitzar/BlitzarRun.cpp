@@ -1,8 +1,8 @@
 #include "BlitzarRun.hpp"
 
-#include "simulation/input/SimConfigFile.hpp"
-#include "simulation/input/SimConfigRun.hpp"
-#include "simulation/input/SimConfigState.hpp"
+#include "simulation/config/SimConfigFile.hpp"
+#include "simulation/config/SimConfigRun.hpp"
+#include "simulation/initialization/SimConfigState.hpp"
 
 #include <blitzar/blitzar.hpp>
 #include <cstddef>

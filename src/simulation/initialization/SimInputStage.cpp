@@ -1,4 +1,4 @@
-#include "simulation/input/SimInputStage.hpp"
+#include "simulation/initialization/SimInputStage.hpp"
 
 #include <cmath>
 #include <new>

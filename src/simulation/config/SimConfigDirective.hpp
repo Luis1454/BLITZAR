@@ -1,8 +1,8 @@
-#ifndef BLITZAR_SIMULATION_INPUT_SIM_CONFIG_DIRECTIVE_HPP
-#define BLITZAR_SIMULATION_INPUT_SIM_CONFIG_DIRECTIVE_HPP
+#ifndef BLITZAR_SIMULATION_CONFIG_SIM_CONFIG_DIRECTIVE_HPP
+#define BLITZAR_SIMULATION_CONFIG_SIM_CONFIG_DIRECTIVE_HPP
 
-#include "simulation/input/SimConfigFile.hpp"
-#include "simulation/input/SimConfigRun.hpp"
+#include "simulation/config/SimConfigFile.hpp"
+#include "simulation/config/SimConfigRun.hpp"
 
 namespace blitzar_sim {
 

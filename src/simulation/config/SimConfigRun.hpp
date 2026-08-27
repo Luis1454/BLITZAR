@@ -1,9 +1,9 @@
-#ifndef BLITZAR_SIMULATION_INPUT_SIM_CONFIG_RUN_HPP
-#define BLITZAR_SIMULATION_INPUT_SIM_CONFIG_RUN_HPP
+#ifndef BLITZAR_SIMULATION_CONFIG_SIM_CONFIG_RUN_HPP
+#define BLITZAR_SIMULATION_CONFIG_SIM_CONFIG_RUN_HPP
 
-#include "simulation/input/SimConfigDiagnostics.hpp"
-#include "simulation/input/SimConfigFile.hpp"
-#include "simulation/input/SimConfigOutput.hpp"
+#include "simulation/config/SimConfigDiagnostics.hpp"
+#include "simulation/config/SimConfigFile.hpp"
+#include "simulation/config/SimConfigOutput.hpp"
 
 #include <blitzar/blitzar.h>
 #include <cstdint>

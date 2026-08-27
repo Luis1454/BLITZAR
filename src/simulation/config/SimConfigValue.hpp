@@ -1,7 +1,7 @@
-#ifndef BLITZAR_SIMULATION_INPUT_SIM_CONFIG_VALUE_HPP
-#define BLITZAR_SIMULATION_INPUT_SIM_CONFIG_VALUE_HPP
+#ifndef BLITZAR_SIMULATION_CONFIG_SIM_CONFIG_VALUE_HPP
+#define BLITZAR_SIMULATION_CONFIG_SIM_CONFIG_VALUE_HPP
 
-#include "simulation/input/SimConfigFile.hpp"
+#include "simulation/config/SimConfigFile.hpp"
 
 #include <cstdint>
 #include <span>
