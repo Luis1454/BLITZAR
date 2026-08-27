@@ -425,6 +425,19 @@
         "CHK-P0-006",
         "plan/decisions/038-directive-config-format.md"
       ]
+    },
+    {
+      "issue": 637,
+      "title": "Execute supported directive configuration through the CLI",
+      "commit": "3b93cbf287cf7d004d0e598f535c6aa7ca593dd5",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/638",
+      "evidence": [
+        "TST-P2-007",
+        "TST-P2-008",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "plan/decisions/039-config-execution-contract.md"
+      ]
     }
   ],
   "non_claims": [
