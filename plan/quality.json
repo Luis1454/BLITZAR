@@ -56,6 +56,12 @@
       "phase": "P6"
     },
     {
+      "id": "TST-P6-007",
+      "name": "cli-usage-error-stream-and-exit-contract",
+      "command": "cmake -DBLITZAR_CLI=blitzar_cli -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/IoCliUsageTest.cmake",
+      "phase": "P6"
+    },
+    {
       "id": "TST-P0-004",
       "name": "bounded-views-and-request-contracts",
       "command": "blitzar_bounded_contract_test",

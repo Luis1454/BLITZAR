@@ -14,8 +14,8 @@ the public SDK ABI.
 
 ## Decision
 
-The configured CLI emits exactly one JSON summary to stdout after a successful
-run. The field order is fixed and the summary contains:
+The configured CLI emits exactly one one-line JSON summary to stdout after a
+successful run. The field order is fixed and the summary contains:
 
 - `schema_version`, `status`, `requested_steps`, and `completed_steps`;
 - `particle_count`, `solver`, `snapshot_count`, and `diagnostics_count`;
@@ -27,7 +27,7 @@ diagnostics count is the number of records actually published, not the number
 requested by configuration; it is zero until the diagnostics writer is
 implemented.
 
-Failures emit one JSON object to stderr containing the schema version, status,
+Failures emit one one-line JSON object to stderr containing the schema version, status,
 phase, exit code, and stable status message. Exit codes are fixed as follows:
 
 - `0`: successful run;
@@ -44,4 +44,5 @@ changed by this decision.
 
 `TST-P6-006` asserts the exact stdout and stderr records, output counters,
 portable output path, exit-code mapping, and byte-for-byte equality of repeated
-deterministic no-output runs.
+deterministic no-output runs. `TST-P6-007` asserts the usage error emitted by
+the executable entry point.

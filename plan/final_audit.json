@@ -594,6 +594,7 @@
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/664",
       "evidence": [
         "TST-P6-006",
+        "TST-P6-007",
         "CHK-P0-001",
         "CHK-P0-003",
         "CHK-P0-006",

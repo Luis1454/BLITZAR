@@ -81,6 +81,15 @@
       "contract": "machine-readable production summary, exact failure streams, exit codes, counters, and deterministic repeated-run output"
     },
     {
+      "id": "TST-P6-007",
+      "entrypoint": "tests/io/IoCliUsageTest.cmake",
+      "responsibility": "tests/io/IoCliUsageTest.cmake",
+      "mode": "",
+      "ranks": 1,
+      "phase": "P6",
+      "contract": "CLI misuse emits the exact machine-readable stderr record, no stdout, and exit code 2"
+    },
+    {
       "id": "TST-P0-004",
       "entrypoint": "tests/contracts/ContractBoundedTest.cpp",
       "responsibility": "tests/contracts/ContractBoundedTest.cpp",
