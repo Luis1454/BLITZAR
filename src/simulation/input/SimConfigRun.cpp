@@ -5,7 +5,10 @@
 
 #include <array>
 #include <cstddef>
+#include <new>
+#include <stdexcept>
 #include <string_view>
+#include <utility>
 
 namespace blitzar_sim {
 
@@ -69,6 +72,12 @@ namespace {
     else if (name == "run") {
         index = 5;
     }
+    else if (name == "output") {
+        index = 6;
+    }
+    else if (name == "diagnostics") {
+        index = 7;
+    }
     else {
         return false;
     }
@@ -104,6 +113,14 @@ namespace {
 
         return ApplyRunDirective(directive, config);
 
+    case 6:
+
+        return ApplyOutputDirective(directive, config);
+
+    case 7:
+
+        return ApplyDiagnosticsDirective(directive, config);
+
     default:
 
         return BLITZAR_STATUS_INTERNAL_ERROR;
@@ -111,7 +128,7 @@ namespace {
 }
 
 [[nodiscard]] blitzar_status ApplyDirective(const SimConfigFile::Directive& directive,
-    std::array<bool, 6>& seen, SimConfigRun& config) noexcept
+    std::array<bool, 8>& seen, SimConfigRun& config) noexcept
 {
     std::size_t index = 0;
 
@@ -132,33 +149,64 @@ namespace {
 
 blitzar_status BuildRunConfig(const SimConfigFile& source, SimConfigRun& destination) noexcept
 {
-    SimConfigRun candidate;
-    std::array<bool, 6> seen{};
+    try {
+        const std::filesystem::path config_directory{"."};
 
-    for (const SimConfigFile::Directive& directive : source.directives) {
-        const blitzar_status status = ApplyDirective(directive, seen, candidate);
+        return BuildRunConfig(source, config_directory, destination);
+    }
+    catch (const std::length_error&) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    catch (const std::bad_alloc&) {
+        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+    }
+}
 
-        if (status != BLITZAR_STATUS_OK) {
-            return status;
+blitzar_status BuildRunConfig(const SimConfigFile& source,
+    const std::filesystem::path& config_directory, SimConfigRun& destination) noexcept
+{
+    try {
+        SimConfigRun candidate;
+        std::array<bool, 8> seen{};
+
+        for (const SimConfigFile::Directive& directive : source.directives) {
+            const blitzar_status status = ApplyDirective(directive, seen, candidate);
+
+            if (status != BLITZAR_STATUS_OK) {
+                return status;
+            }
         }
-    }
 
-    if (!seen[0] || !seen[1] || !seen[2] || !seen[3]) {
+        if (!seen[0] || !seen[1] || !seen[2] || !seen[3]) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+
+        if (!seen[4]) {
+            candidate.barnes_hut = {
+                0.5, candidate.particle_count, candidate.particle_count * 8 + 1, 8, 32};
+        }
+
+        if (candidate.barnes_hut.max_particles < candidate.particle_count) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+
+        const blitzar_status path_status =
+            ResolveOutputDirectory(candidate.output, config_directory);
+
+        if (path_status != BLITZAR_STATUS_OK) {
+            return path_status;
+        }
+
+        destination = std::move(candidate);
+
+        return BLITZAR_STATUS_OK;
+    }
+    catch (const std::length_error&) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
-
-    if (!seen[4]) {
-        candidate.barnes_hut = {
-            0.5, candidate.particle_count, candidate.particle_count * 8 + 1, 8, 32};
+    catch (const std::bad_alloc&) {
+        return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
-
-    if (candidate.barnes_hut.max_particles < candidate.particle_count) {
-        return BLITZAR_STATUS_INVALID_ARGUMENT;
-    }
-
-    destination = candidate;
-
-    return BLITZAR_STATUS_OK;
 }
 
 } // namespace blitzar_sim

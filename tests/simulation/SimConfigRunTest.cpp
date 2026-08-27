@@ -4,6 +4,8 @@
 #include "simulation/input/SimConfigFile.hpp"
 #include "simulation/input/SimConfigState.hpp"
 
+#include <filesystem>
+#include <string>
 #include <string_view>
 
 namespace {
@@ -30,6 +32,16 @@ gravity(gravitational_constant=1.0, softening=0.01)
 units(length_scale=1.0, mass_scale=1.0, time_scale=1.0)
 generation(seed=42, deterministic=true)
 )";
+
+[[nodiscard]] blitzar_status ParseWithExtra(
+    std::string_view extra, blitzar_sim::SimConfigFile& destination)
+{
+    std::string source{ValidSource};
+
+    source.append(extra);
+
+    return blitzar_sim::ParseConfig(source, destination);
+}
 
 int CheckValidConfiguration()
 {
@@ -60,6 +72,8 @@ int CheckValidConfiguration()
     BLITZAR_CHECK(blitzar_sim::ParseConfig(DefaultRunSource, source) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(blitzar_sim::BuildRunConfig(source, config) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(config.steps == 1);
+    BLITZAR_CHECK(!config.output.enabled);
+    BLITZAR_CHECK(!config.diagnostics.enabled);
 
     BLITZAR_CHECK(blitzar_sim::ParseConfig(BarnesHutFirstSource, source) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(blitzar_sim::BuildRunConfig(source, config) == BLITZAR_STATUS_OK);
@@ -122,12 +136,102 @@ generation(seed=1, deterministic=true)
     return 0;
 }
 
+int CheckOutputConfiguration()
+{
+    constexpr std::string_view directives =
+        R"(output(directory="results", every_steps=2, write_initial=true, write_final=true)
+diagnostics(every_steps=3, energy=true, momentum=true, relative_error=false)
+)";
+
+    blitzar_sim::SimConfigFile source;
+    blitzar_sim::SimConfigRun config;
+
+    BLITZAR_CHECK(ParseWithExtra(directives, source) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_sim::BuildRunConfig(source, std::filesystem::path{"case"}, config) ==
+                  BLITZAR_STATUS_OK);
+
+    BLITZAR_CHECK(config.output.enabled);
+    BLITZAR_CHECK(config.output.directory == std::filesystem::path{"case/results"});
+    BLITZAR_CHECK(config.output.every_steps == 2);
+    BLITZAR_CHECK(config.output.write_initial);
+    BLITZAR_CHECK(config.output.write_final);
+    BLITZAR_CHECK(config.diagnostics.enabled);
+    BLITZAR_CHECK(config.diagnostics.every_steps == 3);
+    BLITZAR_CHECK(config.diagnostics.energy);
+    BLITZAR_CHECK(config.diagnostics.momentum);
+    BLITZAR_CHECK(!config.diagnostics.relative_error);
+
+    return 0;
+}
+
+int CheckRejectedOutput(std::string_view directives)
+{
+    blitzar_sim::SimConfigFile source;
+    blitzar_sim::SimConfigRun config;
+
+    config.steps = 73;
+    config.output.enabled = true;
+    config.output.directory = std::filesystem::path{"sentinel"};
+
+    BLITZAR_CHECK(ParseWithExtra(directives, source) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_sim::BuildRunConfig(source, std::filesystem::path{"case"}, config) ==
+                  BLITZAR_STATUS_INVALID_ARGUMENT);
+
+    BLITZAR_CHECK(config.steps == 73);
+    BLITZAR_CHECK(config.output.enabled);
+    BLITZAR_CHECK(config.output.directory == std::filesystem::path{"sentinel"});
+
+    return 0;
+}
+
+int CheckRejectedOutputConfiguration()
+{
+    BLITZAR_CHECK(
+        CheckRejectedOutput(
+            R"(output(directory=results, every_steps=1, write_initial=true, write_final=true)
+)") == 0);
+
+    BLITZAR_CHECK(CheckRejectedOutput(
+                      R"(output(directory="", every_steps=1, write_initial=true, write_final=true)
+)") == 0);
+
+    BLITZAR_CHECK(
+        CheckRejectedOutput(
+            R"(output(directory="results", every_steps=0, write_initial=true, write_final=true)
+)") == 0);
+
+    BLITZAR_CHECK(
+        CheckRejectedOutput(
+            R"(output(directory="results", every_steps=1, write_initial=false, write_final=false)
+)") == 0);
+
+    BLITZAR_CHECK(
+        CheckRejectedOutput(
+            R"(diagnostics(every_steps=1, energy=false, momentum=false, relative_error=false)
+)") == 0);
+
+    BLITZAR_CHECK(
+        CheckRejectedOutput(
+            R"(output(directory="results", every_steps=1, write_initial=true, write_final=true, format=hdf5)
+)") == 0);
+
+    BLITZAR_CHECK(
+        CheckRejectedOutput(
+            R"(output(directory="results", every_steps=1, write_initial=true, write_final=true)
+output(directory="other", every_steps=1, write_initial=true, write_final=true)
+)") == 0);
+
+    return 0;
+}
+
 } // namespace
 
 int main()
 {
     BLITZAR_CHECK(CheckValidConfiguration() == 0);
     BLITZAR_CHECK(CheckRejectedConfiguration() == 0);
+    BLITZAR_CHECK(CheckOutputConfiguration() == 0);
+    BLITZAR_CHECK(CheckRejectedOutputConfiguration() == 0);
 
     return 0;
 }

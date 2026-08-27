@@ -452,6 +452,20 @@
         "plan/output_contract.json",
         "plan/decisions/040-output-contract-and-persistence.md"
       ]
+    },
+    {
+      "issue": 640,
+      "title": "Add typed output and diagnostics configuration",
+      "commit": "c961e43c701b7a7d0590acec3b0a1a6b7066785e",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/652",
+      "evidence": [
+        "TST-P2-008",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "plan/output_contract.json"
+      ]
     }
   ],
   "non_claims": [
