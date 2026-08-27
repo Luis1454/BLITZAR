@@ -63,6 +63,15 @@
       "contract": "configured CLI output preparation, initial/periodic/final scheduling, snapshot decoding, and output failure phase"
     },
     {
+      "id": "TST-P6-005",
+      "entrypoint": "tests/physics/ConservationMetricsTest.cpp",
+      "responsibility": "tests/physics/ConservationMetricsTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "phase": "P6",
+      "contract": "deterministic conservation metrics, finite-state validation, zero-mass handling, and solver qualification"
+    },
+    {
       "id": "TST-P0-004",
       "entrypoint": "tests/contracts/ContractBoundedTest.cpp",
       "responsibility": "tests/contracts/ContractBoundedTest.cpp",

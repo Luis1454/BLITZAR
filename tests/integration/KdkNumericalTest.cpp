@@ -3,6 +3,7 @@
 #include "integration/kdk/KdkLeapfrog.hpp"
 #include "particles/buffer/ParticleAccelerationBuffer.hpp"
 #include "particles/buffer/ParticleBuffer.hpp"
+#include "physics/conservation/ConservationMetrics.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 
 #include <cmath>
@@ -11,12 +12,6 @@
 #include <span>
 
 namespace {
-
-struct Vector final {
-    double x{};
-    double y{};
-    double z{};
-};
 
 bool Initialize(blitzar_particles::ParticleBuffer& particles) noexcept
 {
@@ -29,42 +24,6 @@ bool Initialize(blitzar_particles::ParticleBuffer& particles) noexcept
            particles.SetVelocity(1, {0.0, -circular_speed, 0.0}) == BLITZAR_STATUS_OK &&
            particles.SetMass(0, 1.0) == BLITZAR_STATUS_OK &&
            particles.SetMass(1, 1.0) == BLITZAR_STATUS_OK;
-}
-
-Vector Momentum(blitzar_core::ParticleStateView state) noexcept
-{
-    Vector momentum{};
-
-    for (std::size_t index = 0; index < state.count; ++index) {
-        momentum.x += state.mass[index] * state.velocity_x[index];
-        momentum.y += state.mass[index] * state.velocity_y[index];
-        momentum.z += state.mass[index] * state.velocity_z[index];
-    }
-
-    return momentum;
-}
-
-double Energy(
-    blitzar_core::ParticleStateView state, double gravitational_constant, double softening) noexcept
-{
-    double kinetic = 0.0;
-
-    for (std::size_t index = 0; index < state.count; ++index) {
-        const double speed_squared = state.velocity_x[index] * state.velocity_x[index] +
-                                     state.velocity_y[index] * state.velocity_y[index] +
-                                     state.velocity_z[index] * state.velocity_z[index];
-
-        kinetic += 0.5 * state.mass[index] * speed_squared;
-    }
-
-    const double dx = state.x[1] - state.x[0];
-    const double dy = state.y[1] - state.y[0];
-    const double dz = state.z[1] - state.z[0];
-    const double softened_distance = std::sqrt(dx * dx + dy * dy + dz * dz + softening * softening);
-    const double potential =
-        -gravitational_constant * state.mass[0] * state.mass[1] / softened_distance;
-
-    return kinetic + potential;
 }
 
 bool SameState(
@@ -102,7 +61,8 @@ int main()
     blitzar_particles::ParticleAccelerationBuffer second_accelerations(2);
     blitzar_integration::KdkCheckpoint first_checkpoint(2);
     blitzar_integration::KdkCheckpoint second_checkpoint(2);
-    blitzar_direct::DirectSolver solver({gravitational_constant, softening});
+    const blitzar_physics::GravityParameters gravity{gravitational_constant, softening};
+    blitzar_direct::DirectSolver solver(gravity);
 
     BLITZAR_CHECK(solver.Prepare(2) == BLITZAR_STATUS_OK);
 
@@ -118,8 +78,10 @@ int main()
         second_state_request{second_particles, second_accelerations, second_checkpoint, solver,
             timestep, settings, solver_scratch, second_particles.State()};
 
-    const double initial_energy =
-        Energy(first_particles.State(), gravitational_constant, softening);
+    blitzar_physics::ConservationMetrics initial_metrics{};
+
+    BLITZAR_CHECK(blitzar_physics::ComputeConservationMetrics(
+                      first_particles.State(), gravity, initial_metrics) == BLITZAR_STATUS_OK);
 
     for (std::size_t step = 0; step < steps; ++step) {
         BLITZAR_CHECK(integrator.Advance(first_state_request) == BLITZAR_STATUS_OK);
@@ -128,13 +90,15 @@ int main()
 
     const blitzar_core::ParticleStateView first_state = first_particles.State();
     const blitzar_core::ParticleStateView second_state = second_particles.State();
-    const Vector momentum = Momentum(first_state);
+    blitzar_physics::ConservationMetrics final_metrics{};
 
-    BLITZAR_CHECK(std::abs(momentum.x) < 1.0e-12);
-    BLITZAR_CHECK(std::abs(momentum.y) < 1.0e-12);
-    BLITZAR_CHECK(std::abs(momentum.z) < 1.0e-12);
-    BLITZAR_CHECK(
-        std::abs(Energy(first_state, gravitational_constant, softening) - initial_energy) < 1.0e-8);
+    BLITZAR_CHECK(blitzar_physics::ComputeConservationMetrics(
+                      first_state, gravity, final_metrics) == BLITZAR_STATUS_OK);
+
+    BLITZAR_CHECK(std::abs(final_metrics.momentum.x) < 1.0e-12);
+    BLITZAR_CHECK(std::abs(final_metrics.momentum.y) < 1.0e-12);
+    BLITZAR_CHECK(std::abs(final_metrics.momentum.z) < 1.0e-12);
+    BLITZAR_CHECK(std::abs(final_metrics.total_energy - initial_metrics.total_energy) < 1.0e-8);
 
     BLITZAR_CHECK(SameState(first_state, second_state));
 

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.31",
+  "plan_version": "1.0.32",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -569,6 +569,22 @@
         "CHK-P0-030",
         "CHK-P0-031",
         "plan/decisions/047-cross-platform-qualification.md"
+      ]
+    },
+    {
+      "issue": 644,
+      "title": "Extract conservation metrics from numerical tests",
+      "commit": "1be403563fa78fbc271e94ec7ef1b3b030e1df53",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/663",
+      "evidence": [
+        "TST-P6-005",
+        "TST-P1-002",
+        "CHK-P0-001",
+        "CHK-P0-003",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "plan/decisions/048-conservation-metrics-contract.md"
       ]
     }
   ],
