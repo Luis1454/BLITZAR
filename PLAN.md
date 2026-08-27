@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.25**
+Plan version: **1.0.26**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -38,9 +38,11 @@ GPU is visible or that MPI is running on more than one host.
 
 Direct, Barnes-Hut, and CPU FMM are implemented solver contracts. PM and
 TreePM remain explicit `BLITZAR_STATUS_UNSUPPORTED` selections and their
-production roots remain deferred. The output contract is now frozen in
-`plan/output_contract.json`, but `SnapshotHeader` remains a contract hook only;
-binary or HDF5 persistence is not implemented.
+production roots remain deferred. The output contract is frozen in
+`plan/output_contract.json`, and its logical versioned `SnapshotFrameView` is
+implemented and contract-qualified. Binary or HDF5 persistence is not
+implemented; the `src/io` root remains deferred until the frame contract is
+consumed by a dedicated codec.
 
 HIP is capability-gated: compiler support and device execution are separate
 conditions, and a CPU fallback is retained when no device is visible. MPI is
@@ -213,6 +215,7 @@ implementation. CPU behavior is qualified before CUDA dispatch is enabled.
 ### P6: Persistence and Qualification
 
 The output contract is frozen before the `src/io` root is materialized. The
+logical frame descriptor and its single-rank validation are implemented; the
 planned pipeline is: typed output policies, a versioned binary snapshot frame,
 corruption-safe reader/writer, deterministic run manifest, conservation
 diagnostics, CLI integration, restart, post-processing, optional MPI/HIP

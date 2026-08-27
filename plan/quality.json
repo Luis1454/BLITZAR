@@ -20,6 +20,12 @@
       "phase": "P0"
     },
     {
+      "id": "TST-P6-001",
+      "name": "versioned-snapshot-frame-contract",
+      "command": "blitzar_snapshot_contract_test",
+      "phase": "P6"
+    },
+    {
       "id": "TST-P0-004",
       "name": "bounded-views-and-request-contracts",
       "command": "blitzar_bounded_contract_test",
@@ -322,7 +328,7 @@
         },
         {
           "path": "src/core/CoreSnapshot.hpp",
-          "reason": "value-type contract header for SnapshotHeader"
+          "reason": "value-type contract header for SnapshotHeader and SnapshotFrameView"
         },
         {
           "path": "src/core/CoreStatus.hpp",

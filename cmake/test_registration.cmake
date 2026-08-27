@@ -21,6 +21,7 @@ set_tests_properties(
 add_test(NAME TST-P2-008 COMMAND blitzar_config_run_test)
 add_test(NAME TST-P0-002 COMMAND blitzar_c_api_test)
 add_test(NAME TST-P0-003 COMMAND blitzar_contract_test)
+add_test(NAME TST-P6-001 COMMAND blitzar_snapshot_contract_test)
 add_test(NAME TST-P0-004 COMMAND blitzar_bounded_contract_test)
 add_test(NAME TST-P0-005 COMMAND blitzar_abi_test)
 add_test(NAME TST-P0-006 COMMAND blitzar_capability_test)

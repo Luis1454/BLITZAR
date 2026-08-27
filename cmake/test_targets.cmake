@@ -46,6 +46,14 @@ target_compile_features(blitzar_contract_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_contract_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_contract_test)
 
+add_executable(blitzar_snapshot_contract_test
+    tests/contracts/ContractSnapshotTest.cpp
+)
+target_link_libraries(blitzar_snapshot_contract_test PRIVATE blitzar)
+target_compile_features(blitzar_snapshot_contract_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_snapshot_contract_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_snapshot_contract_test)
+
 add_executable(blitzar_bounded_contract_test
     tests/contracts/ContractBoundedTest.cpp
 )
@@ -169,6 +177,7 @@ set(BLITZAR_TEST_TARGETS
     blitzar_config_run_test
     blitzar_c_api_test
     blitzar_contract_test
+    blitzar_snapshot_contract_test
     blitzar_bounded_contract_test
     blitzar_abi_test
     blitzar_capability_test
