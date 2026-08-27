@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.28",
+  "plan_version": "1.0.29",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -58,7 +58,7 @@
       "prefix": "apps/blitzar/",
       "owner": "cli-maintainers",
       "category": "cli-consumer",
-      "review_gate": "TST-P2-003"
+      "review_gate": "TST-P6-004"
     },
     {
       "prefix": "cmake/",
@@ -543,6 +543,20 @@
         "CHK-P0-009",
         "plan/decisions/045-run-manifest-atomic-output.md"
       ]
+    },
+    {
+      "issue": 645,
+      "title": "Integrate configured outputs into the CLI run",
+      "commit": "f415ef694f41dc786a1f4f1f6876352766298d0d",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/660",
+      "evidence": [
+        "TST-P6-004",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "plan/decisions/046-cli-output-integration.md"
+      ]
     }
   ],
   "non_claims": [
@@ -550,7 +564,7 @@
     "physical NVIDIA CUDA execution when no CUDA device is exposed",
     "physical AMD HIP execution when no AMD device is exposed",
     "PM and TreePM production implementations",
-    "CLI-integrated complete run persistence",
+    "CLI diagnostics, restart, post-processing, and MPI/HIP shard persistence",
     "HDF5 snapshot persistence",
     "GPU FMM"
   ],

@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.28**
+Plan version: **1.0.29**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -41,9 +41,9 @@ TreePM remain explicit `BLITZAR_STATUS_UNSUPPORTED` selections and their
 production roots remain deferred. The output contract is frozen in
 `plan/output_contract.json`, and its logical versioned `SnapshotFrameView` plus
 the single-rank binary codec are implemented and contract-qualified. The
-single-rank run manifest and atomic output lifecycle are implemented and
-locally qualified; MPI/HIP shards and HDF5 remain deferred to their dedicated
-issues.
+single-rank run manifest, atomic output lifecycle, and configured CLI
+publication are implemented and locally qualified; diagnostics data, MPI/HIP
+shards, and HDF5 remain deferred to their dedicated issues.
 
 HIP is capability-gated: compiler support and device execution are separate
 conditions, and a CPU fallback is retained when no device is visible. MPI is
@@ -160,8 +160,9 @@ The phases are ordered dependencies, not a list of parallel experiments.
 - P4 is implemented with capability-gated GPU execution evidence.
 - P5 remains deferred because its production roots are not materialized. P6 is
   implemented locally in stages: its versioned frame contract, single-rank
-  binary codec, deterministic manifest, and atomic output lifecycle are
-  qualified, while diagnostics, restart, and optional adapters remain open.
+  binary codec, deterministic manifest, atomic output lifecycle, and configured
+  CLI publication are qualified, while diagnostics, restart, and optional
+  adapters remain open.
   P6 does not wait for the unrelated PM/TreePM
   implementation in P5.
 - P7 and P8 are implemented and locally qualified from the P3/P4 contracts;
@@ -228,9 +229,9 @@ The output contract is frozen before the `src/io` root is materialized. The
 logical frame descriptor, single-rank binary reader/writer, deterministic run
 manifest, and atomic snapshot publication lifecycle are implemented and
 qualified by their P6 tests. The remaining planned pipeline is conservation
-diagnostics, CLI integration, restart, post-processing, optional MPI/HIP
-qualification, and the optional HDF5 adapter. The complete run pipeline
-remains unfinished; HDF5 remains deferred until its executable evidence exists.
+diagnostics, restart, post-processing, optional MPI/HIP qualification, and the
+optional HDF5 adapter. The complete run pipeline remains unfinished; HDF5 remains deferred
+until its executable evidence exists.
 
 ### Sprint 6: Optional HIP Acceleration
 

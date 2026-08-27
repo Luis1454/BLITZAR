@@ -54,6 +54,15 @@
       "contract": "deterministic run manifest, bounded output preparation, atomic snapshot publication, and rerun rejection"
     },
     {
+      "id": "TST-P6-004",
+      "entrypoint": "tests/io/IoCliOutputTest.cpp",
+      "responsibility": "tests/io/IoCliOutputTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "phase": "P6",
+      "contract": "configured CLI output preparation, initial/periodic/final scheduling, snapshot decoding, and output failure phase"
+    },
+    {
       "id": "TST-P0-004",
       "entrypoint": "tests/contracts/ContractBoundedTest.cpp",
       "responsibility": "tests/contracts/ContractBoundedTest.cpp",

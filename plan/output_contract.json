@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.28",
+  "plan_version": "1.0.29",
   "configuration": {
     "path_base": "config_parent",
     "directives": {
@@ -107,6 +107,7 @@
     "single_rank": "implemented_first",
     "multi_rank": "unsupported_until_shards",
     "initial_step": 0,
+    "periodic_only": true,
     "final_write_no_duplicate": true,
     "overwrite": "reject_non_empty",
     "metadata_deterministic": true,
