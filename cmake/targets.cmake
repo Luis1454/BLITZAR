@@ -1,6 +1,7 @@
 if(BLITZAR_BUILD_CLI)
     add_executable(blitzar_cli
         apps/blitzar/BlitzarMain.cpp
+        apps/blitzar/BlitzarOutput.cpp
         apps/blitzar/BlitzarRun.cpp
     )
     target_link_libraries(blitzar_cli PRIVATE blitzar)

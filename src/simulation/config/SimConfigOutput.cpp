@@ -64,8 +64,7 @@ blitzar_status ApplyOutputDirective(
         !ReadConfigInteger(directive, "every_steps", every_steps) ||
         !ReadConfigBoolean(directive, "write_initial", write_initial) ||
         !ReadConfigBoolean(directive, "write_final", write_final) || directory_text.empty() ||
-        directory_text.find('\0') != std::string_view::npos || every_steps <= 0 ||
-        (!write_initial && !write_final)) {
+        directory_text.find('\0') != std::string_view::npos || every_steps <= 0) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
