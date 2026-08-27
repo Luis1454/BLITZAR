@@ -176,4 +176,19 @@ blitzar_status BlitzarOutput::Publish(
     return run_->PublishSnapshot(frame);
 }
 
+std::size_t BlitzarOutput::SnapshotCount() const noexcept
+{
+    return run_.has_value() ? run_->CompletedOutputCount() : 0U;
+}
+
+std::size_t BlitzarOutput::DiagnosticsCount() const noexcept
+{
+    return 0U;
+}
+
+const std::filesystem::path& BlitzarOutput::OutputPath() const noexcept
+{
+    return config_.output.directory;
+}
+
 } // namespace blitzar_cli

@@ -177,7 +177,7 @@ int RunCase(const std::filesystem::path& base, std::string_view source,
     BLITZAR_CHECK(CheckOutputTree(base / "output", expected) == 0);
 
     if (check_rerun) {
-        BLITZAR_CHECK(blitzar_cli::RunConfig(config) == 1);
+        BLITZAR_CHECK(blitzar_cli::RunConfig(config) == 5);
         BLITZAR_CHECK(CheckOutputTree(base / "output", expected) == 0);
     }
 

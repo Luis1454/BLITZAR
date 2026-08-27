@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.32**
+Plan version: **1.0.33**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -164,7 +164,7 @@ The phases are ordered dependencies, not a list of parallel experiments.
 - P5 remains deferred because its production roots are not materialized. P6 is
   implemented locally in stages: its versioned frame contract, single-rank
   binary codec, deterministic manifest, atomic output lifecycle, and configured
-  CLI publication are qualified, while diagnostics, restart, and optional
+  CLI publication and the production run summary are qualified, while diagnostics, restart, and optional
   adapters remain open.
   P6 does not wait for the unrelated PM/TreePM
   implementation in P5.
@@ -233,8 +233,9 @@ The output contract is frozen before the `src/io` root is materialized. The
 logical frame descriptor, single-rank binary reader/writer, deterministic run
 manifest, and atomic snapshot publication lifecycle are implemented and
 qualified by their P6 tests. The reusable conservation metrics module and its
-KDK requalification are now covered by `TST-P6-005`. The remaining planned
-pipeline is CLI conservation diagnostics, restart, post-processing, optional
+  KDK requalification are now covered by `TST-P6-005`. The production CLI
+  summary is covered by `TST-P6-006`. The remaining planned pipeline is CLI
+  conservation diagnostics, restart, post-processing, optional
 MPI/HIP qualification, and the optional HDF5 adapter. The complete run pipeline
 remains unfinished; HDF5 remains deferred until its executable evidence exists.
 

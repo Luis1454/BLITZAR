@@ -25,6 +25,15 @@ add_test(NAME TST-P6-001 COMMAND blitzar_snapshot_contract_test)
 add_test(NAME TST-P6-002 COMMAND blitzar_snapshot_io_test)
 add_test(NAME TST-P6-003 COMMAND blitzar_metadata_io_test)
 add_test(NAME TST-P6-004 COMMAND blitzar_cli_output_test)
+add_test(NAME TST-P6-006 COMMAND blitzar_cli_summary_test)
+if(BLITZAR_BUILD_CLI)
+    add_test(
+        NAME TST-P6-007
+        COMMAND cmake
+            -DBLITZAR_CLI=$<TARGET_FILE:blitzar_cli>
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/IoCliUsageTest.cmake
+    )
+endif()
 add_test(NAME TST-P0-004 COMMAND blitzar_bounded_contract_test)
 add_test(NAME TST-P0-005 COMMAND blitzar_abi_test)
 add_test(NAME TST-P0-006 COMMAND blitzar_capability_test)
