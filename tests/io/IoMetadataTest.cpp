@@ -29,7 +29,7 @@ struct SnapshotStorage final {
     blitzar_io::MetadataRunInfo info;
 
     info.product_version = "1.0.0";
-    info.plan_version = "1.0.29";
+    info.plan_version = "1.0.30";
     info.configuration.simulation = {
         2, 2, 0.01, BLITZAR_SOLVER_DIRECT, BLITZAR_INTEGRATOR_LEAPFROG_KDK};
 

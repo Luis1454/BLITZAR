@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.29**
+Plan version: **1.0.30**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -77,8 +77,9 @@ strict mode; its output is uploaded as an external artifact.
 tracked repository path. `tools/audit/audit_final.py` materializes the complete file
 matrix, hashes and scans each tracked file, checks CMake/source completeness,
 validates the accepted architecture reviews and deferred capability register,
-and verifies the implementation commits for RR-01 through RR-15. Its report,
-finding register, and gate log are generated outside the source tree.
+and resolves the recorded source commits or their squash-merge integration
+commits for each completed issue. Its report, finding register, and gate log
+are generated outside the source tree.
 
 The final CI job depends on every supported build, test, package, sanitizer,
 debugger, static-analysis, MPI, and capability-gated GPU lane. A lane failure
@@ -201,7 +202,8 @@ The executable configuration contract supports only `simulation`, `gravity`,
 directives. It creates rewrite-native deterministic SoA input and executes the
 public C++ facade. Unknown directives, malformed arguments, non-deterministic
 generation, and deferred solver families are rejected rather than interpreted
-through legacy behavior.
+through legacy behavior. The internal CLI composition target is kept on the
+static-library path; shared-library qualification covers only public consumers.
 
 ### P3: Spatial Structures and Hierarchical Solvers
 

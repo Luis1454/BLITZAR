@@ -59,6 +59,7 @@
     {"path": "plan/decisions/043-binary-snapshot-codec.md", "lifecycle": "active"},
     {"path": "plan/decisions/044-simulation-staging-boundary.md", "lifecycle": "active"},
     {"path": "plan/decisions/045-run-manifest-atomic-output.md", "lifecycle": "active"},
-    {"path": "plan/decisions/046-cli-output-integration.md", "lifecycle": "active"}
+    {"path": "plan/decisions/046-cli-output-integration.md", "lifecycle": "active"},
+    {"path": "plan/decisions/047-cross-platform-qualification.md", "lifecycle": "active"}
   ]
 }

@@ -269,6 +269,15 @@
       "mode": "smoke",
       "ranks": 1,
       "contract": "deterministic scaling harness record and CPU oracle boundary"
+    },
+    {
+      "id": "TST-P0-008",
+      "entrypoint": "tests/package/shared_cli_contract.cmake",
+      "responsibility": "tests/package/shared_cli_contract.cmake",
+      "mode": "",
+      "ranks": 1,
+      "phase": "P0",
+      "contract": "shared library public-consumer boundary rejects internal CLI composition"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.29",
+  "plan_version": "1.0.30",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -556,6 +556,19 @@
         "CHK-P0-007",
         "CHK-P0-009",
         "plan/decisions/046-cli-output-integration.md"
+      ]
+    },
+    {
+      "issue": 661,
+      "title": "Restore cross-platform post-merge qualification",
+      "commit": "89ac61a8de4d8b8bf45121a2da78a42d7960c448",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/662",
+      "evidence": [
+        "TST-P0-008",
+        "TST-P2-008",
+        "CHK-P0-030",
+        "CHK-P0-031",
+        "plan/decisions/047-cross-platform-qualification.md"
       ]
     }
   ],

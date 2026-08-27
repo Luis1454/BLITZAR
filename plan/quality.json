@@ -198,6 +198,12 @@
       "name": "scaling-harness-smoke",
       "command": "blitzar_scaling_test --particles 16 --steps 1 --seed 424242 --solver direct",
       "phase": "P0"
+    },
+    {
+      "id": "TST-P0-008",
+      "name": "shared-library-cli-configuration-boundary",
+      "command": "cmake -DBLITZAR_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/shared_cli_contract.cmake",
+      "phase": "P0"
     }
   ],
   "architecture": {
