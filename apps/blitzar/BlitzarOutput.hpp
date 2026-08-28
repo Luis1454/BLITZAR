@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <optional>
-#include <vector>
+#include <span>
 
 namespace blitzar_cli {
 
@@ -18,7 +18,7 @@ class BlitzarOutput final {
 public:
     explicit BlitzarOutput(const blitzar_sim::SimConfigRun& config) noexcept;
 
-    [[nodiscard]] blitzar_status Prepare() noexcept;
+    [[nodiscard]] blitzar_status Prepare(std::span<const std::uint64_t> ids) noexcept;
     [[nodiscard]] bool ShouldWriteInitial() const noexcept;
     [[nodiscard]] bool ShouldWriteStep(std::uint64_t step) const noexcept;
     [[nodiscard]] blitzar_status Publish(
@@ -30,7 +30,7 @@ public:
 private:
     const blitzar_sim::SimConfigRun& config_;
     std::optional<blitzar_io::MetadataRun> run_;
-    std::vector<std::uint64_t> ids_;
+    std::span<const std::uint64_t> ids_{};
     bool prepared_{};
 };
 

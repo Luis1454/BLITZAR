@@ -90,6 +90,15 @@
       "contract": "CLI misuse emits the exact machine-readable stderr record, no stdout, and exit code 2"
     },
     {
+      "id": "TST-P6-008",
+      "entrypoint": "tests/io/IoCliRestartTest.cpp",
+      "responsibility": "tests/io/IoCliRestartTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "phase": "P6",
+      "contract": "absolute-step deterministic snapshot restart, static compatibility rejection, transactional restore, checksum/truncation rejection, and uninterrupted versus split-run byte parity"
+    },
+    {
       "id": "TST-P0-004",
       "entrypoint": "tests/contracts/ContractBoundedTest.cpp",
       "responsibility": "tests/contracts/ContractBoundedTest.cpp",

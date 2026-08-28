@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.33**
+Plan version: **1.0.34**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -42,8 +42,9 @@ production roots remain deferred. The output contract is frozen in
 `plan/output_contract.json`, and its logical versioned `SnapshotFrameView` plus
 the single-rank binary codec are implemented and contract-qualified. The
 single-rank run manifest, atomic output lifecycle, and configured CLI
-publication are implemented and locally qualified; diagnostics data, MPI/HIP
-shards, and HDF5 remain deferred to their dedicated issues.
+publication, production run summary, and deterministic snapshot restart are
+implemented and locally qualified; diagnostics data, MPI/HIP shards, and HDF5
+remain deferred to their dedicated issues.
 
 HIP is capability-gated: compiler support and device execution are separate
 conditions, and a CPU fallback is retained when no device is visible. MPI is
@@ -164,8 +165,8 @@ The phases are ordered dependencies, not a list of parallel experiments.
 - P5 remains deferred because its production roots are not materialized. P6 is
   implemented locally in stages: its versioned frame contract, single-rank
   binary codec, deterministic manifest, atomic output lifecycle, and configured
-  CLI publication and the production run summary are qualified, while diagnostics, restart, and optional
-  adapters remain open.
+  CLI publication, the production run summary, and deterministic snapshot restart
+  are qualified, while diagnostics and optional adapters remain open.
   P6 does not wait for the unrelated PM/TreePM
   implementation in P5.
 - P7 and P8 are implemented and locally qualified from the P3/P4 contracts;
@@ -200,8 +201,9 @@ rendering, or GUI behavior. Applying any parsed value to the rewrite remains a
 separate semantic contract.
 
 The executable configuration contract supports only `simulation`, `gravity`,
-`units`, and `generation` directives, with optional `barnes_hut` and `run`
-directives. It creates rewrite-native deterministic SoA input and executes the
+`units`, and `generation` directives, with optional `barnes_hut`, `run`, `output`,
+`diagnostics`, and `restart` directives. It creates rewrite-native deterministic
+SoA input and executes the
 public C++ facade. Unknown directives, malformed arguments, non-deterministic
 generation, and deferred solver families are rejected rather than interpreted
 through legacy behavior. The internal CLI composition target is kept on the
@@ -233,11 +235,12 @@ The output contract is frozen before the `src/io` root is materialized. The
 logical frame descriptor, single-rank binary reader/writer, deterministic run
 manifest, and atomic snapshot publication lifecycle are implemented and
 qualified by their P6 tests. The reusable conservation metrics module and its
-  KDK requalification are now covered by `TST-P6-005`. The production CLI
-  summary is covered by `TST-P6-006`. The remaining planned pipeline is CLI
-  conservation diagnostics, restart, post-processing, optional
-MPI/HIP qualification, and the optional HDF5 adapter. The complete run pipeline
-remains unfinished; HDF5 remains deferred until its executable evidence exists.
+KDK requalification are now covered by `TST-P6-005`. The production CLI
+summary is covered by `TST-P6-006`. Deterministic snapshot restart is covered
+by `TST-P6-008`. The remaining planned pipeline is CLI conservation diagnostics,
+post-processing, optional MPI/HIP qualification, and the optional HDF5 adapter.
+The complete run pipeline remains unfinished; HDF5 remains deferred until its
+executable evidence exists.
 
 ### Sprint 6: Optional HIP Acceleration
 

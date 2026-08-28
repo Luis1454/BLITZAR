@@ -218,8 +218,7 @@ namespace {
               "    },\n";
 
     return WriteOutput(output, configuration.output) &&
-           WriteDiagnostics(output, configuration.diagnostics) && output.put('}') &&
-           output.put('\n');
+           WriteDiagnostics(output, configuration.diagnostics) && output << "  },\n";
 }
 
 [[nodiscard]] bool WriteCapabilities(std::ostream& output, const MetadataCapabilities& capabilities)

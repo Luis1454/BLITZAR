@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.33",
+  "plan_version": "1.0.34",
   "configuration": {
     "path_base": "config_parent",
     "directives": {
@@ -20,6 +20,13 @@
           {"name": "energy", "type": "boolean", "required": true},
           {"name": "momentum", "type": "boolean", "required": true},
           {"name": "relative_error", "type": "boolean", "required": true}
+        ]
+      },
+      "restart": {
+        "optional": true,
+        "arguments": [
+          {"name": "directory", "type": "quoted_path", "required": true},
+          {"name": "step", "type": "nonnegative_uint64", "required": true}
         ]
       }
     }
@@ -111,6 +118,31 @@
     "final_write_no_duplicate": true,
     "overwrite": "reject_non_empty",
     "metadata_deterministic": true,
+    "restart": {
+      "source_manifest": "manifest.json",
+      "state_path_pattern": "states/state-%08d.bin",
+      "step_semantics": "absolute_final_run_step",
+      "selection": "explicit_step",
+      "compatibility": [
+        "product_version",
+        "plan_version",
+        "solver",
+        "integrator",
+        "timestep",
+        "gravity",
+        "units",
+        "barnes_hut",
+        "generation",
+        "scalar_bytes",
+        "particle_count",
+        "checksum",
+        "ids",
+        "distribution"
+      ],
+      "transactional": true,
+      "distributed": "unsupported",
+      "hdf5": "unsupported"
+    },
     "timestamp": "excluded"
   },
   "summary": {

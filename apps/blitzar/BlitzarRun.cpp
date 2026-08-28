@@ -1,6 +1,7 @@
 #include "BlitzarRun.hpp"
 
 #include "BlitzarOutput.hpp"
+#include "BlitzarRestart.hpp"
 #include "BlitzarSummary.hpp"
 #include "simulation/config/SimConfigFile.hpp"
 #include "simulation/config/SimConfigRun.hpp"
@@ -104,7 +105,9 @@ struct RunResult final {
     blitzar::Simulation& simulation, blitzar_sim::SimConfigState& state,
     BlitzarOutput& output) noexcept
 {
-    std::uint64_t completed_steps = 0;
+    const std::uint64_t start_step = config.StartStep();
+    const std::uint64_t final_step = config.FinalStep();
+    std::uint64_t completed_steps = start_step;
 
     if (output.ShouldWriteInitial()) {
         blitzar_status status = CaptureState(simulation, state);
@@ -113,14 +116,14 @@ struct RunResult final {
             return {status, "output-state", BlitzarExitCode::Output, completed_steps};
         }
 
-        status = output.Publish(0, state.Output());
+        status = output.Publish(start_step, state.Output());
 
         if (status != BLITZAR_STATUS_OK) {
             return {status, "output-publish", BlitzarExitCode::Output, completed_steps};
         }
     }
 
-    for (std::int64_t step = 1; step <= config.steps; ++step) {
+    for (std::uint64_t step = start_step + 1U; step <= final_step; ++step) {
         const blitzar::Status status = simulation.step();
 
         if (status != blitzar::Status::Ok) {
@@ -128,11 +131,9 @@ struct RunResult final {
                 completed_steps};
         }
 
-        const std::uint64_t completed_step = static_cast<std::uint64_t>(step);
+        completed_steps = step;
 
-        completed_steps = completed_step;
-
-        if (!output.ShouldWriteStep(completed_step)) {
+        if (!output.ShouldWriteStep(step)) {
             continue;
         }
 
@@ -142,7 +143,7 @@ struct RunResult final {
             return {output_status, "output-state", BlitzarExitCode::Output, completed_steps};
         }
 
-        output_status = output.Publish(completed_step, state.Output());
+        output_status = output.Publish(step, state.Output());
 
         if (output_status != BLITZAR_STATUS_OK) {
             return {output_status, "output-publish", BlitzarExitCode::Output, completed_steps};
@@ -156,8 +157,8 @@ struct RunResult final {
     const BlitzarOutput& output_writer, std::uint64_t completed_steps)
 {
     try {
-        const BlitzarSummary summary{BLITZAR_STATUS_OK, static_cast<std::uint64_t>(config.steps),
-            completed_steps, static_cast<std::uint64_t>(config.particle_count), config.solver,
+        const BlitzarSummary summary{BLITZAR_STATUS_OK, config.FinalStep(), completed_steps,
+            static_cast<std::uint64_t>(config.particle_count), config.solver,
             static_cast<std::uint64_t>(output_writer.SnapshotCount()),
             static_cast<std::uint64_t>(output_writer.DiagnosticsCount()),
             output_writer.OutputPath()};
@@ -227,10 +228,12 @@ int RunConfig(const std::filesystem::path& path, BlitzarStreams streams)
 
     blitzar_sim::SimConfigState state;
 
-    status = blitzar_sim::BuildState(config, state);
+    status = config.restart.enabled ? LoadRestartState(config, state)
+                                    : blitzar_sim::BuildState(config, state);
 
     if (status != BLITZAR_STATUS_OK) {
-        return PrintFailure(streams, "state", status, BlitzarExitCode::Configuration);
+        return PrintFailure(streams, config.restart.enabled ? "restart" : "state", status,
+            BlitzarExitCode::Configuration);
     }
 
     blitzar::Context context{};
@@ -261,7 +264,7 @@ int RunConfig(const std::filesystem::path& path, BlitzarStreams streams)
 
     BlitzarOutput output_writer(config);
 
-    status = output_writer.Prepare();
+    status = output_writer.Prepare(state.Ids());
 
     if (status != BLITZAR_STATUS_OK) {
         return PrintFailure(streams, "output-prepare", status, BlitzarExitCode::Output);

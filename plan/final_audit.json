@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.33",
+  "plan_version": "1.0.34",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -602,6 +602,20 @@
         "CHK-P0-009",
         "plan/decisions/049-cli-production-summary.md"
       ]
+    },
+    {
+      "issue": 647,
+      "title": "Add deterministic snapshot restart",
+      "commit": "158e32dac0dd381168520e3583405713556105f8",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/665",
+      "evidence": [
+        "TST-P6-008",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "plan/decisions/050-deterministic-snapshot-restart.md"
+      ]
     }
   ],
   "non_claims": [
@@ -609,7 +623,7 @@
     "physical NVIDIA CUDA execution when no CUDA device is exposed",
     "physical AMD HIP execution when no AMD device is exposed",
     "PM and TreePM production implementations",
-    "CLI diagnostics, restart, post-processing, and MPI/HIP shard persistence",
+    "CLI diagnostics, post-processing, and MPI/HIP shard persistence",
     "HDF5 snapshot persistence",
     "GPU FMM"
   ],

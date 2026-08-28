@@ -78,6 +78,9 @@ namespace {
     else if (name == "diagnostics") {
         index = 7;
     }
+    else if (name == "restart") {
+        index = 8;
+    }
     else {
         return false;
     }
@@ -121,6 +124,10 @@ namespace {
 
         return ApplyDiagnosticsDirective(directive, config);
 
+    case 8:
+
+        return ApplyRestartDirective(directive, config);
+
     default:
 
         return BLITZAR_STATUS_INTERNAL_ERROR;
@@ -128,7 +135,7 @@ namespace {
 }
 
 [[nodiscard]] blitzar_status ApplyDirective(const SimConfigFile::Directive& directive,
-    std::array<bool, 8>& seen, SimConfigRun& config) noexcept
+    std::array<bool, 9>& seen, SimConfigRun& config) noexcept
 {
     std::size_t index = 0;
 
@@ -167,7 +174,7 @@ blitzar_status BuildRunConfig(const SimConfigFile& source,
 {
     try {
         SimConfigRun candidate;
-        std::array<bool, 8> seen{};
+        std::array<bool, 9> seen{};
 
         for (const SimConfigFile::Directive& directive : source.directives) {
             const blitzar_status status = ApplyDirective(directive, seen, candidate);
@@ -195,6 +202,17 @@ blitzar_status BuildRunConfig(const SimConfigFile& source,
 
         if (path_status != BLITZAR_STATUS_OK) {
             return path_status;
+        }
+
+        const blitzar_status restart_path_status =
+            ResolveRestartDirectory(candidate.restart, config_directory);
+
+        if (restart_path_status != BLITZAR_STATUS_OK) {
+            return restart_path_status;
+        }
+
+        if (candidate.restart.enabled && candidate.restart.step >= candidate.FinalStep()) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
         destination = std::move(candidate);

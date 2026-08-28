@@ -4,6 +4,7 @@
 #include "simulation/config/SimConfigDiagnostics.hpp"
 #include "simulation/config/SimConfigFile.hpp"
 #include "simulation/config/SimConfigOutput.hpp"
+#include "simulation/config/SimConfigRestart.hpp"
 
 #include <blitzar/blitzar.h>
 #include <cstdint>
@@ -22,6 +23,7 @@ struct SimConfigBarnesHut final {
 struct SimConfigRun final {
     static constexpr std::int64_t MaxParticleCount = 100000;
     static constexpr std::int64_t MaxSteps = 100000;
+    static constexpr std::uint64_t MaxStateStep = 99999999;
 
     std::int64_t particle_count{};
     double timestep{};
@@ -38,6 +40,22 @@ struct SimConfigRun final {
     std::uint64_t seed{};
     std::int64_t steps{1};
     bool deterministic{};
+    SimConfigRestart restart{};
+
+    [[nodiscard]] std::uint64_t StartStep() const noexcept
+    {
+        return restart.enabled ? restart.step : 0U;
+    }
+
+    [[nodiscard]] std::uint64_t FinalStep() const noexcept
+    {
+        return static_cast<std::uint64_t>(steps);
+    }
+
+    [[nodiscard]] double StartTime() const noexcept
+    {
+        return restart.enabled ? restart.time : 0.0;
+    }
 };
 
 [[nodiscard]] blitzar_status BuildRunConfig(
