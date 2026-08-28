@@ -71,6 +71,7 @@
     {"path": "plan/decisions/051-restart-boundary-hardening.md", "lifecycle": "active"},
     {"path": "plan/decisions/052-snapshot-postprocessing.md", "lifecycle": "active"},
     {"path": "plan/decisions/053-mpi-hip-output-qualification.md", "lifecycle": "active"},
-    {"path": "plan/decisions/054-cli-human-summary.md", "lifecycle": "active"}
+    {"path": "plan/decisions/054-cli-human-summary.md", "lifecycle": "active"},
+    {"path": "plan/decisions/055-solver-resource-contract.md", "lifecycle": "active"}
   ]
 }

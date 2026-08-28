@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.38**
+Plan version: **1.0.39**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -217,6 +217,10 @@ static-library path; shared-library qualification covers only public consumers.
 Implement Morton ordering, octree construction, multipoles, and Barnes-Hut.
 Then implement FMM behind the same solver contract. Compare both against the
 direct CPU oracle for force, energy, conservation, and deterministic ordering.
+The orthogonal `SolverResourceContract` freezes the resource shape for Direct,
+Barnes-Hut, FMM, KIFMM, PM, and TreePM before concrete resource bundles are
+introduced. `TST-P3-003` covers the mapping and preserves the public solver
+values; issue #681 owns the concrete bundle and view implementation.
 
 ### P4: HIP Runtime and GPU Solvers
 

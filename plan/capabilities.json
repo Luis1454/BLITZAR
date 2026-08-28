@@ -49,6 +49,50 @@
       "runtime_evidence": ["TST-P0-006"]
     }
   ],
+  "solver_resource_contract": {
+    "header": "src/solvers/SolverContract.hpp",
+    "algorithm_identity": "blitzar_solvers::SolverKind",
+    "public_abi_unchanged": true,
+    "matrix": [
+      {
+        "solver": "direct",
+        "spatial_resource": "none",
+        "private_workspace": "none",
+        "state": "implemented-qualified"
+      },
+      {
+        "solver": "barnes-hut",
+        "spatial_resource": "octree",
+        "private_workspace": "none",
+        "state": "implemented-qualified"
+      },
+      {
+        "solver": "fmm",
+        "spatial_resource": "octree",
+        "private_workspace": "none",
+        "state": "implemented-qualified"
+      },
+      {
+        "solver": "kifmm",
+        "spatial_resource": "octree",
+        "private_workspace": "kernel-independent-multipole",
+        "state": "deferred"
+      },
+      {
+        "solver": "pm",
+        "spatial_resource": "grid",
+        "private_workspace": "none",
+        "state": "unsupported"
+      },
+      {
+        "solver": "treepm",
+        "spatial_resource": "octree-and-grid",
+        "private_workspace": "none",
+        "state": "unsupported"
+      }
+    ],
+    "ownership_boundary": "concrete resource bundles are implemented by issue 681"
+  },
   "features": [
     {
       "id": "grid",

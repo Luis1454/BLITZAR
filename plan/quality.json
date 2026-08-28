@@ -146,6 +146,12 @@
       "phase": "P3"
     },
     {
+      "id": "TST-P3-003",
+      "name": "solver-resource-contract",
+      "command": "blitzar_solver_resource_contract_test",
+      "phase": "P3"
+    },
+    {
       "id": "TST-P4-001",
       "name": "hip-acceleration-and-fallback",
       "command": "blitzar_accelerator_test",
