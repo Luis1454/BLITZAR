@@ -4,13 +4,13 @@
 #include "core/CoreExecution.hpp"
 #include "physics/gravity/GravityLaw.hpp"
 #include "solvers/SolverContract.hpp"
+#include "solvers/SolverTreeResources.hpp"
 #include "solvers/barnes_hut/BhSolver.hpp"
 #include "solvers/threading/ThreadStackPool.hpp"
-#include "trees/octree/Octree.hpp"
 
 #include <blitzar/blitzar.h>
 #include <cstddef>
-#include <memory>
+#include <functional>
 #include <span>
 #include <vector>
 
@@ -22,7 +22,14 @@ using FmmSplitRequest = blitzar_barnes_hut::BarnesHutSplitRequest;
 class FmmSolver final {
 public:
     FmmSolver(blitzar_physics::GravityParameters gravity, FmmSettings settings,
-        std::size_t local_particle_capacity = 0);
+        std::size_t local_particle_capacity, blitzar_solvers::SolverTreeResources& resources);
+
+    FmmSolver(const FmmSolver&) = delete;
+    FmmSolver& operator=(const FmmSolver&) = delete;
+    FmmSolver(FmmSolver&&) noexcept = default;
+    FmmSolver& operator=(FmmSolver&&) noexcept = default;
+
+    void BindResources(blitzar_solvers::SolverTreeResources& resources) noexcept;
 
     [[nodiscard]] blitzar_solvers::SolverKind Kind() const noexcept;
     [[nodiscard]] blitzar_status Prepare(std::size_t particle_capacity) noexcept;
@@ -49,7 +56,7 @@ private:
     };
 
     struct AccumulationRequest final {
-        const blitzar_trees::Octree& tree;
+        blitzar_trees::OctreeView tree;
         const std::vector<Multipole>& multipoles;
         blitzar_core::ParticleStateView targets;
         blitzar_core::ParticleStateView sources;
@@ -60,7 +67,8 @@ private:
     };
 
     struct TreeComputeRequest final {
-        blitzar_trees::Octree& tree;
+        const blitzar_trees::OctreeResource& resource;
+        blitzar_trees::OctreeView tree;
         std::vector<Multipole>& multipoles;
         blitzar_core::ParticleStateView targets;
         blitzar_core::ParticleStateView sources;
@@ -77,7 +85,7 @@ private:
     [[nodiscard]] static blitzar_status PairStatusToStatus(
         blitzar_physics::PairStatus status) noexcept;
     [[nodiscard]] static bool IsFiniteMultipole(const Multipole& multipole) noexcept;
-    [[nodiscard]] blitzar_status BuildLeafMultipole(const blitzar_trees::Octree& tree,
+    [[nodiscard]] blitzar_status BuildLeafMultipole(const blitzar_trees::OctreeView& tree,
         const blitzar_trees::Octree::Cell& cell, blitzar_core::ParticleStateView sources,
         Multipole& multipole) const noexcept;
     [[nodiscard]] blitzar_status MergeChildMultipoles(
@@ -85,7 +93,7 @@ private:
         std::span<const Multipole> multipoles, Multipole& result) const noexcept;
     [[nodiscard]] static std::size_t LocalCellCapacity(
         std::size_t configured_cells, std::size_t particle_capacity) noexcept;
-    [[nodiscard]] blitzar_status BuildMultipoles(const blitzar_trees::Octree& tree,
+    [[nodiscard]] blitzar_status BuildMultipoles(const blitzar_trees::OctreeView& tree,
         blitzar_core::ParticleStateView sources, std::vector<Multipole>& multipoles) const noexcept;
     [[nodiscard]] blitzar_status EvaluateMultipole(const Multipole& multipole,
         blitzar_core::Vector3 displacement, blitzar_core::Scalar squared_distance,
@@ -99,12 +107,11 @@ private:
         std::size_t cell_index, blitzar_core::Vector3 target_position,
         std::size_t& stack_size) const noexcept;
     [[nodiscard]] blitzar_status Accumulate(const AccumulationRequest& request) const noexcept;
-    [[nodiscard]] bool IsKnownTree(const TreeComputeRequest& request) const noexcept;
     [[nodiscard]] bool HasValidTreeState(
         const TreeComputeRequest& request, std::size_t source_capacity) const noexcept;
     [[nodiscard]] bool HasValidTreeResources(const TreeComputeRequest& request) const noexcept;
     [[nodiscard]] bool ValidateTreeRequest(const TreeComputeRequest& request) const noexcept;
-    [[nodiscard]] blitzar_status PrepareTree(const TreeComputeRequest& request) noexcept;
+    [[nodiscard]] blitzar_status PrepareMultipoles(const TreeComputeRequest& request) noexcept;
     [[nodiscard]] blitzar_status ComputeTargets(const TreeComputeRequest& request) noexcept;
     [[nodiscard]] blitzar_status ComputeTree(const TreeComputeRequest& request) noexcept;
     [[nodiscard]] blitzar_status CommitStagedForces(blitzar_core::ForceView forces) noexcept;
@@ -115,8 +122,7 @@ private:
     blitzar_physics::GravityLaw gravity_;
     std::size_t local_particle_capacity_;
     std::size_t local_cell_capacity_;
-    std::unique_ptr<blitzar_trees::Octree> tree_;
-    std::unique_ptr<blitzar_trees::Octree> remote_tree_;
+    std::reference_wrapper<blitzar_solvers::SolverTreeResources> resources_;
     blitzar_solver_threading::ThreadStackPool stack_pool_;
     std::vector<Multipole> multipoles_;
     std::vector<Multipole> remote_multipoles_;

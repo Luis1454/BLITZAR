@@ -4,12 +4,12 @@
 #include "core/CoreExecution.hpp"
 #include "physics/gravity/GravityLaw.hpp"
 #include "solvers/SolverContract.hpp"
+#include "solvers/SolverTreeResources.hpp"
 #include "solvers/threading/ThreadStackPool.hpp"
-#include "trees/octree/Octree.hpp"
 
 #include <blitzar/blitzar.h>
 #include <cstddef>
-#include <memory>
+#include <functional>
 #include <span>
 #include <vector>
 
@@ -35,7 +35,14 @@ struct BarnesHutSplitRequest final {
 class BhSolver final {
 public:
     BhSolver(blitzar_physics::GravityParameters gravity, BarnesHutSettings settings,
-        std::size_t local_particle_capacity = 0);
+        std::size_t local_particle_capacity, blitzar_solvers::SolverTreeResources& resources);
+
+    BhSolver(const BhSolver&) = delete;
+    BhSolver& operator=(const BhSolver&) = delete;
+    BhSolver(BhSolver&&) noexcept = default;
+    BhSolver& operator=(BhSolver&&) noexcept = default;
+
+    void BindResources(blitzar_solvers::SolverTreeResources& resources) noexcept;
 
     [[nodiscard]] blitzar_solvers::SolverKind Kind() const noexcept;
     [[nodiscard]] blitzar_status Prepare(std::size_t particle_capacity) noexcept;
@@ -50,7 +57,7 @@ public:
 
 private:
     struct AccumulationRequest final {
-        const blitzar_trees::Octree& tree;
+        blitzar_trees::OctreeView tree;
         blitzar_core::ParticleStateView targets;
         blitzar_core::ParticleStateView sources;
         std::size_t target{};
@@ -60,7 +67,8 @@ private:
     };
 
     struct TreeComputeRequest final {
-        blitzar_trees::Octree& tree;
+        const blitzar_trees::OctreeResource& resource;
+        blitzar_trees::OctreeView tree;
         blitzar_core::ParticleStateView targets;
         blitzar_core::ParticleStateView sources;
         blitzar_core::ForceView forces;
@@ -85,19 +93,16 @@ private:
         std::span<std::size_t> stack, std::size_t& stack_size) noexcept;
     [[nodiscard]] blitzar_status Accumulate(const AccumulationRequest& request) noexcept;
     [[nodiscard]] bool ValidateTreeRequest(const TreeComputeRequest& request) const noexcept;
-    [[nodiscard]] blitzar_status PrepareTree(const TreeComputeRequest& request) noexcept;
     [[nodiscard]] blitzar_status ComputeTargets(const TreeComputeRequest& request) noexcept;
     [[nodiscard]] blitzar_status ComputeTree(const TreeComputeRequest& request) noexcept;
     [[nodiscard]] blitzar_status CommitStagedForces(blitzar_core::ForceView forces) noexcept;
-    [[nodiscard]] blitzar_status EnsureRemoteTree() noexcept;
     [[nodiscard]] blitzar_status EnsureLocalCapacity(std::size_t particle_capacity) noexcept;
 
     BarnesHutSettings settings_;
     blitzar_physics::GravityLaw gravity_;
     std::size_t local_particle_capacity_;
     std::size_t local_cell_capacity_;
-    std::unique_ptr<blitzar_trees::Octree> tree_;
-    std::unique_ptr<blitzar_trees::Octree> remote_tree_;
+    std::reference_wrapper<blitzar_solvers::SolverTreeResources> resources_;
     blitzar_solver_threading::ThreadStackPool stack_pool_;
     std::vector<blitzar_core::Vector3> staging_;
 };

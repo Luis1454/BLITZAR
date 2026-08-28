@@ -8,11 +8,15 @@
 #include <blitzar/blitzar.h>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <limits>
+#include <optional>
 #include <span>
 #include <vector>
 
 namespace blitzar_trees {
+
+struct OctreeView;
 
 class Octree final {
 public:
@@ -34,6 +38,11 @@ public:
     Octree(std::size_t max_particles, std::size_t max_cells, std::size_t leaf_capacity,
         std::size_t max_depth);
 
+    Octree(const Octree&) = delete;
+    Octree& operator=(const Octree&) = delete;
+    Octree(Octree&&) noexcept = default;
+    Octree& operator=(Octree&& other) noexcept;
+
     [[nodiscard]] blitzar_status Build(blitzar_core::ParticleStateView particles) noexcept;
     [[nodiscard]] bool Refit(blitzar_core::ParticleStateView particles) noexcept;
     [[nodiscard]] std::size_t CellCount() const noexcept;
@@ -44,6 +53,11 @@ public:
     [[nodiscard]] std::span<const std::size_t> Indices() const noexcept;
     [[nodiscard]] std::span<const Cell> CellAt(std::size_t index) const noexcept;
     [[nodiscard]] bool ParticleIndex(std::size_t index, std::size_t& particle) const noexcept;
+    [[nodiscard]] OctreeView View() const noexcept;
+    [[nodiscard]] bool IsCurrent(OctreeView view) const noexcept;
+    [[nodiscard]] std::size_t MaxParticles() const noexcept;
+    [[nodiscard]] std::size_t MaxCells() const noexcept;
+    [[nodiscard]] std::uint64_t Generation() const noexcept;
 
 private:
     struct CellPlacement final {
@@ -53,6 +67,8 @@ private:
         std::size_t count{};
         std::size_t depth{};
     };
+
+    void AdvanceGeneration() noexcept;
 
     [[nodiscard]] static bool IsValidInput(blitzar_core::ParticleStateView particles) noexcept;
     [[nodiscard]] Cell MakeCell(CellPlacement placement) const noexcept;
@@ -89,10 +105,34 @@ private:
     std::size_t particle_count_;
     std::size_t build_count_;
     std::size_t refit_count_;
+    std::uint64_t generation_;
     std::vector<std::size_t> indices_;
     std::vector<std::size_t> scratch_;
     std::vector<std::uint64_t> morton_keys_;
     std::vector<Cell> cells_;
+};
+
+struct OctreeView final {
+    [[nodiscard]] bool IsValid() const noexcept;
+    [[nodiscard]] std::size_t ParticleCount() const noexcept;
+    [[nodiscard]] std::size_t MaxParticles() const noexcept;
+    [[nodiscard]] std::size_t MaxCells() const noexcept;
+    [[nodiscard]] std::uint64_t Generation() const noexcept;
+    [[nodiscard]] std::span<const Octree::Cell> Cells() const noexcept;
+    [[nodiscard]] std::span<const std::size_t> Indices() const noexcept;
+    [[nodiscard]] std::span<const Octree::Cell> CellAt(std::size_t index) const noexcept;
+    [[nodiscard]] bool ParticleIndex(std::size_t index, std::size_t& particle) const noexcept;
+
+private:
+    std::span<const Octree::Cell> cells_{};
+    std::span<const std::size_t> indices_{};
+    std::size_t particle_count_{};
+    std::size_t max_particles_{};
+    std::size_t max_cells_{};
+    std::uint64_t generation_{};
+    std::optional<std::reference_wrapper<const Octree>> owner_{};
+
+    friend class Octree;
 };
 
 } // namespace blitzar_trees

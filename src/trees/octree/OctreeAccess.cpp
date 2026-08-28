@@ -22,6 +22,21 @@ std::size_t Octree::RefitCount() const noexcept
     return refit_count_;
 }
 
+std::size_t Octree::MaxParticles() const noexcept
+{
+    return max_particles_;
+}
+
+std::size_t Octree::MaxCells() const noexcept
+{
+    return max_cells_;
+}
+
+std::uint64_t Octree::Generation() const noexcept
+{
+    return generation_;
+}
+
 std::span<const Octree::Cell> Octree::Cells() const noexcept
 {
     return std::span<const Cell>(cells_);

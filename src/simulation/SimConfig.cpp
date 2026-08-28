@@ -37,7 +37,7 @@ blitzar_status Sim::CreateSolver(
         switch (request.solver_kind) {
         case BLITZAR_SOLVER_DIRECT:
 
-            solver.emplace<blitzar_direct::DirectSolver>(request.gravity, request.staging_capacity);
+            solver.emplace<DirectSolverBundle>(request.gravity, request.staging_capacity);
 
             return BLITZAR_STATUS_OK;
 
@@ -47,7 +47,7 @@ blitzar_status Sim::CreateSolver(
                 return BLITZAR_STATUS_INVALID_ARGUMENT;
             }
 
-            solver.emplace<blitzar_barnes_hut::BhSolver>(
+            solver.emplace<BarnesHutSolverBundle>(
                 request.gravity, request.barnes_hut, request.staging_capacity);
 
             return BLITZAR_STATUS_OK;
@@ -58,7 +58,7 @@ blitzar_status Sim::CreateSolver(
                 return BLITZAR_STATUS_INVALID_ARGUMENT;
             }
 
-            solver.emplace<blitzar_fmm::FmmSolver>(
+            solver.emplace<FmmSolverBundle>(
                 request.gravity, request.barnes_hut, request.staging_capacity);
 
             return BLITZAR_STATUS_OK;
@@ -91,7 +91,7 @@ blitzar_status Sim::RebuildSolver(const blitzar_physics::GravityParameters& grav
 
 blitzar_status Sim::SetSolver(blitzar_solver_kind solver) noexcept
 {
-    SolverVariant candidate(std::in_place_type<blitzar_direct::DirectSolver>, gravity_);
+    SolverVariant candidate(std::in_place_type<DirectSolverBundle>, gravity_, particle_count_);
     const SolverCreationRequest request{solver, gravity_, barnes_hut_, particle_count_};
 
     const blitzar_status status = CreateSolver(request, candidate);
@@ -128,7 +128,7 @@ blitzar_status Sim::SetGravity(
     }
 
     SolverVariant candidate_solver(
-        std::in_place_type<blitzar_direct::DirectSolver>, candidate_parameters);
+        std::in_place_type<DirectSolverBundle>, candidate_parameters, particle_count_);
 
     const blitzar_status status =
         RebuildSolver(candidate_parameters, barnes_hut_, candidate_solver);
@@ -157,7 +157,7 @@ blitzar_status Sim::SetUnits(blitzar_core::UnitSystem units) noexcept
     }
 
     SolverVariant candidate_solver(
-        std::in_place_type<blitzar_direct::DirectSolver>, candidate_parameters);
+        std::in_place_type<DirectSolverBundle>, candidate_parameters, particle_count_);
 
     const blitzar_status status =
         RebuildSolver(candidate_parameters, barnes_hut_, candidate_solver);
@@ -192,7 +192,9 @@ blitzar_status Sim::SetBarnesHut(blitzar_barnes_hut::BarnesHutSettings candidate
     }
 
     if (solver_kind_ == BLITZAR_SOLVER_BARNES_HUT || solver_kind_ == BLITZAR_SOLVER_FMM) {
-        SolverVariant candidate_solver(std::in_place_type<blitzar_direct::DirectSolver>, gravity_);
+        SolverVariant candidate_solver(
+            std::in_place_type<DirectSolverBundle>, gravity_, particle_count_);
+
         const blitzar_status status = RebuildSolver(gravity_, candidate_settings, candidate_solver);
 
         if (status != BLITZAR_STATUS_OK) {

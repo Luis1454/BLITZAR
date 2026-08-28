@@ -9,6 +9,17 @@
 
 #include <cmath>
 
+namespace {
+
+[[nodiscard]] blitzar_solvers::SolverTreeResources MakeResources(
+    blitzar_barnes_hut::BarnesHutSettings settings, std::size_t local_capacity)
+{
+    return {{local_capacity, settings.max_cells, settings.leaf_capacity, settings.max_depth},
+        {settings.max_particles, settings.max_cells, settings.leaf_capacity, settings.max_depth}};
+}
+
+} // namespace
+
 int main()
 {
     blitzar_particles::ParticleBuffer direct_particles(4);
@@ -40,7 +51,10 @@ int main()
     settings.leaf_capacity = 1;
     settings.max_depth = 8;
 
-    blitzar_barnes_hut::BhSolver tree_solver(gravity, settings);
+    auto tree_resources = MakeResources(settings, settings.max_particles);
+    blitzar_barnes_hut::BhSolver tree_solver(
+        gravity, settings, settings.max_particles, tree_resources);
+
     blitzar_particles::ParticleAccelerationBuffer direct_acceleration(4);
     blitzar_particles::ParticleAccelerationBuffer tree_acceleration(4);
 
@@ -82,7 +96,9 @@ int main()
 
     blitzar_particles::ParticleAccelerationBuffer zero_direct_force(2);
     blitzar_particles::ParticleAccelerationBuffer zero_tree_force(2);
-    blitzar_barnes_hut::BhSolver zero_solver(gravity, settings);
+    auto zero_resources = MakeResources(settings, settings.max_particles);
+    blitzar_barnes_hut::BhSolver zero_solver(
+        gravity, settings, settings.max_particles, zero_resources);
 
     BLITZAR_CHECK(direct_solver.Compute(zero_direct.State(), zero_direct_force.View(), execution) ==
                   BLITZAR_STATUS_OK);
@@ -151,7 +167,9 @@ int main()
         tree_singular_view.z[index] = 6.0;
     }
 
-    blitzar_barnes_hut::BhSolver singular_solver(gravity, settings);
+    auto singular_resources = MakeResources(settings, settings.max_particles);
+    blitzar_barnes_hut::BhSolver singular_solver(
+        gravity, settings, settings.max_particles, singular_resources);
 
     BLITZAR_CHECK(singular_solver.Compute(tree_singular.State(), tree_singular_view, execution) ==
                   BLITZAR_STATUS_SINGULARITY);
@@ -189,7 +207,10 @@ int main()
     clustered_settings.leaf_capacity = 1;
     clustered_settings.max_depth = 8;
 
-    blitzar_barnes_hut::BhSolver clustered_solver(gravity, clustered_settings);
+    auto clustered_resources = MakeResources(clustered_settings, clustered_settings.max_particles);
+    blitzar_barnes_hut::BhSolver clustered_solver(
+        gravity, clustered_settings, clustered_settings.max_particles, clustered_resources);
+
     blitzar_particles::ParticleAccelerationBuffer clustered_direct_force(8);
     blitzar_particles::ParticleAccelerationBuffer clustered_tree_force(8);
 

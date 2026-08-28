@@ -158,6 +158,15 @@ target_link_libraries(blitzar_solver_resource_contract_test PRIVATE blitzar)
 target_compile_features(blitzar_solver_resource_contract_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_solver_resource_contract_test PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+add_executable(blitzar_spatial_resource_test
+    tests/contracts/ContractSpatialResourceTest.cpp
+)
+target_link_libraries(blitzar_spatial_resource_test PRIVATE blitzar)
+target_compile_features(blitzar_spatial_resource_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_spatial_resource_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_spatial_resource_test)
 blitzar_enable_warnings(blitzar_solver_resource_contract_test)
 
 add_executable(blitzar_abi_test
@@ -293,6 +302,7 @@ set(BLITZAR_TEST_TARGETS
     blitzar_cli_postprocess_test
     blitzar_bounded_contract_test
     blitzar_solver_resource_contract_test
+    blitzar_spatial_resource_test
     blitzar_abi_test
     blitzar_capability_test
     blitzar_dynamics_test

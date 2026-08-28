@@ -32,7 +32,7 @@ blitzar_status Sim::Step() noexcept
     }
 
     const blitzar_status status =
-        std::visit([this](auto& solver) { return StepWithSolver(solver); }, solver_);
+        std::visit([this](auto& bundle) { return StepWithSolver(bundle.solver); }, solver_);
 
     return Remember(status);
 }

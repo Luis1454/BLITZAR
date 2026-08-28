@@ -91,7 +91,7 @@
         "state": "unsupported"
       }
     ],
-    "ownership_boundary": "concrete resource bundles are implemented by issue 681"
+    "ownership_boundary": "concrete Octree views and solver tree-resource bundles are implemented by issue 681"
   },
   "features": [
     {

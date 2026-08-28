@@ -133,6 +133,8 @@ bool Octree::Refit(blitzar_core::ParticleStateView particles) noexcept
         }
     }
 
+    AdvanceGeneration();
+
     if (CalculateProperties(particles) != BLITZAR_STATUS_OK) {
         return false;
     }
