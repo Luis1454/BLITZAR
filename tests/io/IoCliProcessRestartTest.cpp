@@ -72,8 +72,8 @@ std::vector<std::uint8_t> ReadBytes(const std::filesystem::path& path)
 
 #ifdef _WIN32
 
-std::wstring WindowsCommandLine(const std::filesystem::path& executable,
-    const std::filesystem::path& config)
+std::wstring WindowsCommandLine(
+    const std::filesystem::path& executable, const std::filesystem::path& config)
 {
     return L"\"" + executable.native() + L"\" --config \"" + config.native() + L"\"";
 }
