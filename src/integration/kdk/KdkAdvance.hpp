@@ -5,8 +5,8 @@
 
 namespace blitzar_integration_kdk {
 
-template <typename Solver, typename SolverScratch>
-[[nodiscard]] bool ValidateAdvanceState(const AdvanceState<Solver, SolverScratch>& state) noexcept
+template <typename ForceProvider>
+[[nodiscard]] bool ValidateAdvanceState(const AdvanceState<ForceProvider>& state) noexcept
 {
     return state.particles.IsValid() && state.accelerations.IsValid() &&
            state.checkpoint.IsValid() && state.particles.Count() == state.accelerations.Count() &&
@@ -17,32 +17,32 @@ template <typename Solver, typename SolverScratch>
            IsFiniteState(state.solver_particles);
 }
 
-template <typename Solver, typename SolverScratch, typename DriftHook, typename RollbackHook>
+template <typename ForceProvider, typename DriftHook, typename RollbackHook>
 [[nodiscard]] blitzar_status RollbackAdvance(
-    AdvanceRequest<Solver, SolverScratch, DriftHook, RollbackHook>& request,
-    blitzar_status status) noexcept
+    AdvanceRequest<ForceProvider, DriftHook, RollbackHook>& request, blitzar_status status) noexcept
 {
     return RestoreWithRollback(
         request.hooks.rollback, request.state.particles, request.state.checkpoint, status);
 }
 
-template <typename Solver, typename SolverScratch>
-[[nodiscard]] blitzar_status CaptureInitial(AdvanceState<Solver, SolverScratch>& state) noexcept
+template <typename ForceProvider>
+[[nodiscard]] blitzar_status CaptureInitial(AdvanceState<ForceProvider>& state) noexcept
 {
     return state.checkpoint.Capture(state.particles.MutableView());
 }
 
-template <typename Solver, typename SolverScratch, typename DriftHook, typename RollbackHook>
+template <typename ForceProvider, typename DriftHook, typename RollbackHook>
 [[nodiscard]] blitzar_status RunForcePhase(
-    AdvanceRequest<Solver, SolverScratch, DriftHook, RollbackHook>& request) noexcept
+    AdvanceRequest<ForceProvider, DriftHook, RollbackHook>& request) noexcept
 {
     auto& state = request.state;
 
     const blitzar_core::ForceView force = state.accelerations.View();
-    const SolverComputeRequest<Solver, SolverScratch> compute_request{
-        state.solver, state.solver_particles, force, state.settings, state.solver_scratch};
+    const blitzar_solvers::SolverForceEvaluation force_request{state.solver_particles,
+        state.solver_particles, force, state.settings,
+        blitzar_solvers::SolverForceSourceKind::Local};
 
-    const blitzar_status status = ComputeSolver(compute_request);
+    const blitzar_status status = state.force_provider.Evaluate(force_request);
 
     if (status != BLITZAR_STATUS_OK) {
         return RollbackAdvance(request, status);
@@ -54,8 +54,8 @@ template <typename Solver, typename SolverScratch, typename DriftHook, typename 
     return BLITZAR_STATUS_OK;
 }
 
-template <typename Solver, typename SolverScratch>
-void KickAndDrift(AdvanceState<Solver, SolverScratch>& state, blitzar_core::ForceView force,
+template <typename ForceProvider>
+void KickAndDrift(AdvanceState<ForceProvider>& state, blitzar_core::ForceView force,
     blitzar_core::Scalar half_step) noexcept
 {
     blitzar_core::MutableParticleView mutable_state = state.particles.MutableView();
@@ -77,9 +77,9 @@ void KickAndDrift(AdvanceState<Solver, SolverScratch>& state, blitzar_core::Forc
     }
 }
 
-template <typename Solver, typename SolverScratch, typename DriftHook, typename RollbackHook>
+template <typename ForceProvider, typename DriftHook, typename RollbackHook>
 [[nodiscard]] blitzar_status ApplyDrift(
-    AdvanceRequest<Solver, SolverScratch, DriftHook, RollbackHook>& request) noexcept
+    AdvanceRequest<ForceProvider, DriftHook, RollbackHook>& request) noexcept
 {
     auto& state = request.state;
 
@@ -110,8 +110,8 @@ template <typename Solver, typename SolverScratch, typename DriftHook, typename 
     return BLITZAR_STATUS_OK;
 }
 
-template <typename Solver, typename SolverScratch>
-void Kick(AdvanceState<Solver, SolverScratch>& state, blitzar_core::ForceView force,
+template <typename ForceProvider>
+void Kick(AdvanceState<ForceProvider>& state, blitzar_core::ForceView force,
     blitzar_core::Scalar half_step) noexcept
 {
     blitzar_core::MutableParticleView mutable_state = state.particles.MutableView();
@@ -134,25 +134,25 @@ void Kick(AdvanceState<Solver, SolverScratch>& state, blitzar_core::ForceView fo
 
 namespace blitzar_integration {
 
-template <typename Solver, typename SolverScratch>
+template <typename ForceProvider>
 blitzar_status KdkLeapfrog::Advance(
-    blitzar_integration_kdk::AdvanceState<Solver, SolverScratch>& state) const noexcept
+    blitzar_integration_kdk::AdvanceState<ForceProvider>& state) const noexcept
 {
     blitzar_integration_kdk::NoopDriftHook drift_hook;
     blitzar_integration_kdk::NoopRollbackHook rollback_hook;
     blitzar_integration_kdk::AdvanceHooks hooks{drift_hook, rollback_hook};
 
-    blitzar_integration_kdk::AdvanceRequest<Solver, SolverScratch, decltype(drift_hook),
+    blitzar_integration_kdk::AdvanceRequest<ForceProvider, decltype(drift_hook),
         decltype(rollback_hook)>
         request{state, hooks};
 
     return Advance(request);
 }
 
-template <typename Solver, typename SolverScratch, typename DriftHook, typename RollbackHook>
+template <typename ForceProvider, typename DriftHook, typename RollbackHook>
 blitzar_status KdkLeapfrog::Advance(
-    blitzar_integration_kdk::AdvanceRequest<Solver, SolverScratch, DriftHook, RollbackHook>&
-        request) const noexcept
+    blitzar_integration_kdk::AdvanceRequest<ForceProvider, DriftHook, RollbackHook>& request)
+    const noexcept
 {
     auto& state = request.state;
 

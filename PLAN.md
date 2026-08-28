@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.40**
+Plan version: **1.0.41**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -224,7 +224,14 @@ capacity validation. `OctreeResource` owns bounded preparation, and
 `SolverTreeResources` composes local and remote tree resources for hierarchical
 solver bundles. Direct contains no tree resource; PM and TreePM remain deferred
 until a Grid root is materialized. `TST-P3-003` covers the matrix and
-`TST-P3-004` covers resource lifetime and view invalidation.
+`TST-P3-004` covers resource lifetime and view invalidation. The
+`SolverForceEvaluation` is the only force request consumed by KDK. Typed
+`SolverForceRequest::Direct` and `SolverForceRequest::Tree` values are created
+by the CPU provider traits, while backend and distributed providers keep
+capability and communication policy outside the integrator. `std::variant` is
+visited only at the simulation composition boundary. `TST-P3-005` covers the
+typed provider contract, local and remote CPU evaluation, and the preserved
+direct force semantics.
 
 ### P4: HIP Runtime and GPU Solvers
 

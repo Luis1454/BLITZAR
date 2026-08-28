@@ -158,6 +158,12 @@
       "phase": "P3"
     },
     {
+      "id": "TST-P3-005",
+      "name": "typed-force-provider-contract",
+      "command": "blitzar_force_provider_test",
+      "phase": "P3"
+    },
+    {
       "id": "TST-P4-001",
       "name": "hip-acceleration-and-fallback",
       "command": "blitzar_accelerator_test",

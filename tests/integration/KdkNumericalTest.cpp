@@ -4,12 +4,12 @@
 #include "particles/buffer/ParticleAccelerationBuffer.hpp"
 #include "particles/buffer/ParticleBuffer.hpp"
 #include "physics/conservation/ConservationMetrics.hpp"
+#include "solvers/SolverCpuForceProvider.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 
 #include <cmath>
 #include <cstddef>
 #include <limits>
-#include <span>
 
 namespace {
 
@@ -63,20 +63,20 @@ int main()
     blitzar_integration::KdkCheckpoint second_checkpoint(2);
     const blitzar_physics::GravityParameters gravity{gravitational_constant, softening};
     blitzar_direct::DirectSolver solver(gravity);
+    blitzar_solvers::SolverCpuForceProvider<blitzar_direct::DirectSolver> force_provider(solver);
 
     BLITZAR_CHECK(solver.Prepare(2) == BLITZAR_STATUS_OK);
 
     const blitzar_core::ExecutionSettings settings{};
     const blitzar_integration::KdkLeapfrog integrator{};
-    std::span<std::size_t> solver_scratch{};
 
-    blitzar_integration_kdk::AdvanceState<blitzar_direct::DirectSolver, std::span<std::size_t>>
-        first_state_request{first_particles, first_accelerations, first_checkpoint, solver,
-            timestep, settings, solver_scratch, first_particles.State()};
+    blitzar_integration_kdk::AdvanceState<decltype(force_provider)> first_state_request{
+        first_particles, first_accelerations, first_checkpoint, force_provider, timestep, settings,
+        first_particles.State()};
 
-    blitzar_integration_kdk::AdvanceState<blitzar_direct::DirectSolver, std::span<std::size_t>>
-        second_state_request{second_particles, second_accelerations, second_checkpoint, solver,
-            timestep, settings, solver_scratch, second_particles.State()};
+    blitzar_integration_kdk::AdvanceState<decltype(force_provider)> second_state_request{
+        second_particles, second_accelerations, second_checkpoint, force_provider, timestep,
+        settings, second_particles.State()};
 
     blitzar_physics::ConservationMetrics initial_metrics{};
 
@@ -106,10 +106,9 @@ int main()
     blitzar_particles::ParticleAccelerationBuffer limit_accelerations(1);
     blitzar_integration::KdkCheckpoint limit_checkpoint(1);
 
-    blitzar_integration_kdk::AdvanceState<blitzar_direct::DirectSolver, std::span<std::size_t>>
-        limit_state{limit_particles, limit_accelerations, limit_checkpoint, solver,
-            std::numeric_limits<double>::infinity(), settings, solver_scratch,
-            limit_particles.State()};
+    blitzar_integration_kdk::AdvanceState<decltype(force_provider)> limit_state{limit_particles,
+        limit_accelerations, limit_checkpoint, force_provider,
+        std::numeric_limits<double>::infinity(), settings, limit_particles.State()};
 
     BLITZAR_CHECK(
         limit_particles.SetMass(0, std::numeric_limits<double>::max()) == BLITZAR_STATUS_OK);

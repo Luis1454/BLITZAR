@@ -4,6 +4,7 @@
 #include "core/CoreExecution.hpp"
 #include "physics/gravity/GravityLaw.hpp"
 #include "solvers/SolverContract.hpp"
+#include "solvers/SolverForceRequest.hpp"
 #include "solvers/SolverTreeResources.hpp"
 #include "solvers/threading/ThreadStackPool.hpp"
 
@@ -25,13 +26,6 @@ struct BarnesHutSettings final {
     [[nodiscard]] bool IsValid() const noexcept;
 };
 
-struct BarnesHutSplitRequest final {
-    blitzar_core::ParticleStateView local;
-    blitzar_core::ParticleStateView remote;
-    blitzar_core::ForceView forces;
-    blitzar_core::ExecutionSettings settings;
-};
-
 class BhSolver final {
 public:
     BhSolver(blitzar_physics::GravityParameters gravity, BarnesHutSettings settings,
@@ -46,14 +40,10 @@ public:
 
     [[nodiscard]] blitzar_solvers::SolverKind Kind() const noexcept;
     [[nodiscard]] blitzar_status Prepare(std::size_t particle_capacity) noexcept;
-    [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView particles,
-        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings) noexcept;
-    [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView particles,
-        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-        blitzar_solver_threading::ThreadStackPool& stack_pool) noexcept;
-    [[nodiscard]] blitzar_status ComputeSplit(const BarnesHutSplitRequest& request) noexcept;
-    [[nodiscard]] blitzar_status ComputeSplit(const BarnesHutSplitRequest& request,
-        blitzar_solver_threading::ThreadStackPool& stack_pool) noexcept;
+    [[nodiscard]] blitzar_status Evaluate(
+        const blitzar_solvers::SolverForceRequest::Tree& request) noexcept;
+    [[nodiscard]] blitzar_solvers::SolverTreeResources& Resources() noexcept;
+    [[nodiscard]] const blitzar_solvers::SolverTreeResources& Resources() const noexcept;
 
 private:
     struct AccumulationRequest final {

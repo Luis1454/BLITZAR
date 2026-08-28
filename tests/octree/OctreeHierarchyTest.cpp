@@ -1,10 +1,10 @@
 #include "core/CoreExecution.hpp"
 #include "fixtures/FixtureCheck.hpp"
+#include "fixtures/FixtureForce.hpp"
 #include "particles/buffer/ParticleAccelerationBuffer.hpp"
 #include "particles/buffer/ParticleBuffer.hpp"
 #include "solvers/barnes_hut/BhSolver.hpp"
 #include "solvers/direct/DirectSolver.hpp"
-#include "solvers/threading/ThreadStackPool.hpp"
 #include "trees/octree/Octree.hpp"
 
 #include <cmath>
@@ -58,20 +58,11 @@ int main()
     blitzar_particles::ParticleAccelerationBuffer direct_acceleration(4);
     blitzar_particles::ParticleAccelerationBuffer tree_acceleration(4);
 
-    BLITZAR_CHECK(direct_solver.Compute(direct_particles.State(), direct_acceleration.View(),
-                      execution) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_tests::EvaluateLocal(direct_solver, direct_particles.State(),
+                      direct_acceleration.View(), execution) == BLITZAR_STATUS_OK);
 
-    BLITZAR_CHECK(tree_solver.Compute(tree_particles.State(), tree_acceleration.View(),
-                      execution) == BLITZAR_STATUS_OK);
-
-    blitzar_solver_threading::ThreadStackPool thread_stack_pool(
-        settings.max_cells, settings.max_depth);
-
-    BLITZAR_CHECK(thread_stack_pool.ThreadCount() > 0);
-    BLITZAR_CHECK(thread_stack_pool.StackCapacity() > 0);
-    BLITZAR_CHECK(thread_stack_pool.StackCapacity() <= settings.max_cells);
-    BLITZAR_CHECK(tree_solver.Compute(tree_particles.State(), tree_acceleration.View(), execution,
-                      thread_stack_pool) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_tests::EvaluateLocal(tree_solver, tree_particles.State(),
+                      tree_acceleration.View(), execution) == BLITZAR_STATUS_OK);
 
     BLITZAR_CHECK(tree_solver.Kind() == blitzar_solvers::SolverKind::BarnesHut);
 
@@ -100,11 +91,11 @@ int main()
     blitzar_barnes_hut::BhSolver zero_solver(
         gravity, settings, settings.max_particles, zero_resources);
 
-    BLITZAR_CHECK(direct_solver.Compute(zero_direct.State(), zero_direct_force.View(), execution) ==
-                  BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_tests::EvaluateLocal(direct_solver, zero_direct.State(),
+                      zero_direct_force.View(), execution) == BLITZAR_STATUS_OK);
 
-    BLITZAR_CHECK(zero_solver.Compute(zero_tree.State(), zero_tree_force.View(), execution) ==
-                  BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_tests::EvaluateLocal(zero_solver, zero_tree.State(),
+                      zero_tree_force.View(), execution) == BLITZAR_STATUS_OK);
 
     for (std::size_t index = 0; index < 2; ++index) {
         BLITZAR_CHECK(zero_direct_force.View().x[index] == 0.0);
@@ -171,8 +162,8 @@ int main()
     blitzar_barnes_hut::BhSolver singular_solver(
         gravity, settings, settings.max_particles, singular_resources);
 
-    BLITZAR_CHECK(singular_solver.Compute(tree_singular.State(), tree_singular_view, execution) ==
-                  BLITZAR_STATUS_SINGULARITY);
+    BLITZAR_CHECK(blitzar_tests::EvaluateLocal(singular_solver, tree_singular.State(),
+                      tree_singular_view, execution) == BLITZAR_STATUS_SINGULARITY);
 
     for (std::size_t index = 0; index < 3; ++index) {
         BLITZAR_CHECK(tree_singular_view.x[index] == 4.0);
@@ -214,11 +205,11 @@ int main()
     blitzar_particles::ParticleAccelerationBuffer clustered_direct_force(8);
     blitzar_particles::ParticleAccelerationBuffer clustered_tree_force(8);
 
-    BLITZAR_CHECK(direct_solver.Compute(clustered_direct.State(), clustered_direct_force.View(),
-                      execution) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_tests::EvaluateLocal(direct_solver, clustered_direct.State(),
+                      clustered_direct_force.View(), execution) == BLITZAR_STATUS_OK);
 
-    BLITZAR_CHECK(clustered_solver.Compute(clustered_tree.State(), clustered_tree_force.View(),
-                      execution) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_tests::EvaluateLocal(clustered_solver, clustered_tree.State(),
+                      clustered_tree_force.View(), execution) == BLITZAR_STATUS_OK);
 
     const blitzar_core::ForceView exact_cluster_force = clustered_direct_force.View();
     const blitzar_core::ForceView approximate_cluster_force = clustered_tree_force.View();

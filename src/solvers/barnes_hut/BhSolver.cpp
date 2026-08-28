@@ -61,86 +61,25 @@ blitzar_status BhSolver::Prepare(std::size_t particle_capacity) noexcept
     return EnsureLocalCapacity(particle_capacity);
 }
 
-blitzar_status BhSolver::Compute(blitzar_core::ParticleStateView particles,
-    blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings) noexcept
+blitzar_status BhSolver::Evaluate(const blitzar_solvers::SolverForceRequest::Tree& request) noexcept
 {
-    if (!settings_.IsValid()) {
-        return BLITZAR_STATUS_INVALID_ARGUMENT;
-    }
+    const TreeComputeRequest evaluation{request.resource, request.tree, request.targets,
+        request.sources, request.forces, request.settings, stack_pool_, request.accumulate,
+        request.skip_self};
 
-    return Compute(particles, forces, settings, stack_pool_);
+    const blitzar_status status = ComputeTree(evaluation);
+
+    return status == BLITZAR_STATUS_OK ? CommitStagedForces(request.forces) : status;
 }
 
-blitzar_status BhSolver::Compute(blitzar_core::ParticleStateView particles,
-    blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-    blitzar_solver_threading::ThreadStackPool& stack_pool) noexcept
+blitzar_solvers::SolverTreeResources& BhSolver::Resources() noexcept
 {
-    const blitzar_status prepare_status = Prepare(particles.count);
-
-    if (prepare_status != BLITZAR_STATUS_OK) {
-        return prepare_status;
-    }
-
-    const blitzar_status resource_status = resources_.get().Local().Prepare(particles);
-
-    if (resource_status != BLITZAR_STATUS_OK) {
-        return resource_status;
-    }
-
-    const blitzar_status status =
-        ComputeTree({resources_.get().Local(), resources_.get().Local().View(), particles,
-            particles, forces, settings, stack_pool, false, true});
-
-    return status == BLITZAR_STATUS_OK ? CommitStagedForces(forces) : status;
+    return resources_.get();
 }
 
-blitzar_status BhSolver::ComputeSplit(const BarnesHutSplitRequest& request) noexcept
+const blitzar_solvers::SolverTreeResources& BhSolver::Resources() const noexcept
 {
-    return ComputeSplit(request, stack_pool_);
-}
-
-blitzar_status BhSolver::ComputeSplit(const BarnesHutSplitRequest& request,
-    blitzar_solver_threading::ThreadStackPool& stack_pool) noexcept
-{
-    const blitzar_status prepare_status = Prepare(request.local.count);
-
-    if (prepare_status != BLITZAR_STATUS_OK) {
-        return prepare_status;
-    }
-
-    const blitzar_status local_resource_status = resources_.get().Local().Prepare(request.local);
-
-    if (local_resource_status != BLITZAR_STATUS_OK) {
-        return local_resource_status;
-    }
-
-    if (!settings_.IsValid() || request.remote.SourceCount() == 0) {
-        const blitzar_status status =
-            ComputeTree({resources_.get().Local(), resources_.get().Local().View(), request.local,
-                request.local, request.forces, request.settings, stack_pool, false, true});
-
-        return status == BLITZAR_STATUS_OK ? CommitStagedForces(request.forces) : status;
-    }
-
-    const blitzar_status remote_resource_status = resources_.get().Remote().Prepare(request.remote);
-
-    if (remote_resource_status != BLITZAR_STATUS_OK) {
-        return remote_resource_status;
-    }
-
-    const blitzar_status local_status =
-        ComputeTree({resources_.get().Local(), resources_.get().Local().View(), request.local,
-            request.local, request.forces, request.settings, stack_pool, false, true});
-
-    if (local_status != BLITZAR_STATUS_OK) {
-        return local_status;
-    }
-
-    const blitzar_status remote_status =
-        ComputeTree({resources_.get().Remote(), resources_.get().Remote().View(), request.local,
-            request.remote, request.forces, request.settings, stack_pool, true, false});
-
-    return remote_status == BLITZAR_STATUS_OK ? CommitStagedForces(request.forces) : remote_status;
+    return resources_.get();
 }
 
 blitzar_status BhSolver::EnsureLocalCapacity(std::size_t particle_capacity) noexcept

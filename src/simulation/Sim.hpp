@@ -10,7 +10,6 @@
 #include "simulation/runtime/SimRuntime.hpp"
 #include "simulation/solver/SimSolverVariant.hpp"
 #include "simulation/state/SimParticleState.hpp"
-#include "solvers/threading/ThreadStackPool.hpp"
 
 #include <atomic>
 #include <blitzar/blitzar.h>
@@ -95,7 +94,6 @@ private:
     blitzar_particles::ParticleSourceBuffer particle_source_;
     blitzar_physics::GravityParameters gravity_;
     blitzar_barnes_hut::BarnesHutSettings barnes_hut_;
-    blitzar_solver_threading::ThreadStackPool traversal_stacks_;
     blitzar_solver_kind solver_kind_;
     blitzar_integrator_kind integrator_kind_;
     blitzar_core::Scalar timestep_;

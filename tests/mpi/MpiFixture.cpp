@@ -3,11 +3,11 @@
 #include "integration/kdk/KdkLeapfrog.hpp"
 #include "particles/buffer/ParticleAccelerationBuffer.hpp"
 #include "particles/buffer/ParticleBuffer.hpp"
+#include "solvers/SolverCpuForceProvider.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 
 #include <cmath>
 #include <cstddef>
-#include <span>
 
 #if defined(BLITZAR_HAS_MPI)
 #include <mpi.h>
@@ -155,12 +155,11 @@ bool BuildReference(
 
     const blitzar_core::ExecutionSettings execution{};
     const blitzar_integration::KdkLeapfrog integrator{};
-    std::span<std::size_t> solver_scratch{};
+    blitzar_solvers::SolverCpuForceProvider<blitzar_direct::DirectSolver> force_provider(solver);
 
     for (int step = 0; step < step_count; ++step) {
-        blitzar_integration_kdk::AdvanceState<blitzar_direct::DirectSolver, std::span<std::size_t>>
-            state{particles, accelerations, checkpoint, solver, timestep, execution, solver_scratch,
-                particles.State()};
+        blitzar_integration_kdk::AdvanceState<decltype(force_provider)> state{particles,
+            accelerations, checkpoint, force_provider, timestep, execution, particles.State()};
 
         if (integrator.Advance(state) != BLITZAR_STATUS_OK) {
             return false;

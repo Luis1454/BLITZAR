@@ -5,11 +5,10 @@
 #include "integration/kdk/KdkCheckpoint.hpp"
 #include "particles/buffer/ParticleAccelerationBuffer.hpp"
 #include "particles/buffer/ParticleBuffer.hpp"
+#include "solvers/SolverForceEvaluation.hpp"
 
 #include <cmath>
-#include <concepts>
 #include <cstdint>
-#include <span>
 
 namespace blitzar_integration_kdk {
 
@@ -83,41 +82,13 @@ template <typename RollbackHook>
     return RestoreOr(checkpoint, particles.MutableView(), status);
 }
 
-template <typename Solver, typename Scratch> struct SolverComputeRequest final {
-    Solver& solver;
-    blitzar_core::ParticleStateView particles;
-    blitzar_core::ForceView force;
-    const blitzar_core::ExecutionSettings& settings;
-    Scratch& scratch;
-};
-
-template <typename Solver, typename Scratch>
-[[nodiscard]] inline blitzar_status ComputeSolver(
-    const SolverComputeRequest<Solver, Scratch>& request) noexcept
-{
-    if constexpr (requires(Solver& candidate, blitzar_core::ParticleStateView candidate_particles,
-                      blitzar_core::ForceView candidate_force,
-                      const blitzar_core::ExecutionSettings& candidate_settings,
-                      Scratch& candidate_scratch) {
-                      candidate.Compute(candidate_particles, candidate_force, candidate_settings,
-                          candidate_scratch);
-                  }) {
-        return request.solver.Compute(
-            request.particles, request.force, request.settings, request.scratch);
-    }
-    else {
-        return request.solver.Compute(request.particles, request.force, request.settings);
-    }
-}
-
-template <typename Solver, typename SolverScratch> struct AdvanceState final {
+template <typename ForceProvider> struct AdvanceState final {
     blitzar_particles::ParticleBuffer& particles;
     blitzar_particles::ParticleAccelerationBuffer& accelerations;
     blitzar_integration::KdkCheckpoint& checkpoint;
-    Solver& solver;
+    ForceProvider& force_provider;
     blitzar_core::Scalar timestep{};
     const blitzar_core::ExecutionSettings& settings;
-    SolverScratch& solver_scratch;
     blitzar_core::ParticleStateView solver_particles;
 };
 
@@ -126,9 +97,9 @@ template <typename DriftHook, typename RollbackHook> struct AdvanceHooks final {
     RollbackHook& rollback;
 };
 
-template <typename Solver, typename SolverScratch, typename DriftHook, typename RollbackHook>
+template <typename ForceProvider, typename DriftHook, typename RollbackHook>
 struct AdvanceRequest final {
-    AdvanceState<Solver, SolverScratch>& state;
+    AdvanceState<ForceProvider>& state;
     AdvanceHooks<DriftHook, RollbackHook>& hooks;
 };
 
@@ -138,14 +109,14 @@ namespace blitzar_integration {
 
 class KdkLeapfrog final {
 public:
-    template <typename Solver, typename SolverScratch>
+    template <typename ForceProvider>
     [[nodiscard]] blitzar_status Advance(
-        blitzar_integration_kdk::AdvanceState<Solver, SolverScratch>& state) const noexcept;
+        blitzar_integration_kdk::AdvanceState<ForceProvider>& state) const noexcept;
 
-    template <typename Solver, typename SolverScratch, typename DriftHook, typename RollbackHook>
+    template <typename ForceProvider, typename DriftHook, typename RollbackHook>
     [[nodiscard]] blitzar_status Advance(
-        blitzar_integration_kdk::AdvanceRequest<Solver, SolverScratch, DriftHook, RollbackHook>&
-            request) const noexcept;
+        blitzar_integration_kdk::AdvanceRequest<ForceProvider, DriftHook, RollbackHook>& request)
+        const noexcept;
 };
 
 } // namespace blitzar_integration

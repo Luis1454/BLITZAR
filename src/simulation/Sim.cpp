@@ -10,7 +10,6 @@ Sim::Sim(std::size_t particle_count)
       particle_source_(particle_count), gravity_{},
       barnes_hut_{
           0.5, particle_count == 0 ? 1 : particle_count, DefaultMaxCells(particle_count), 8, 32},
-      traversal_stacks_(barnes_hut_.max_cells, barnes_hut_.max_depth),
       solver_kind_(BLITZAR_SOLVER_DIRECT), integrator_kind_(BLITZAR_INTEGRATOR_LEAPFROG_KDK),
       timestep_(1.0), particles_ready_(false), execution_settings_{}, snapshot_header_{},
       last_status_(runtime_.Mpi().Status()), last_backend_(BLITZAR_BACKEND_CPU),

@@ -1,4 +1,5 @@
 #include "fixtures/FixtureCheck.hpp"
+#include "fixtures/FixtureForce.hpp"
 #include "fixtures/FixtureViews.hpp"
 #include "gpu/runtime/GpuContext.hpp"
 #include "particles/buffer/ParticleAccelerationBuffer.hpp"
@@ -116,8 +117,8 @@ int main()
     blitzar_direct::DirectSolver cpu_solver(gravity);
 
     BLITZAR_CHECK(cpu_solver.Prepare(4) == BLITZAR_STATUS_OK);
-    BLITZAR_CHECK(
-        cpu_solver.Compute(particles.State(), cpu_forces.View(), execution) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_tests::EvaluateLocal(cpu_solver, particles.State(), cpu_forces.View(),
+                      execution) == BLITZAR_STATUS_OK);
 
     blitzar_hip::GpuContext context;
 

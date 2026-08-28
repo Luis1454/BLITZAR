@@ -270,6 +270,14 @@
       "contract": "read-only Octree views, generation validation, and typed resource lifetime"
     },
     {
+      "id": "TST-P3-005",
+      "entrypoint": "tests/contracts/ContractForceProviderTest.cpp",
+      "responsibility": "tests/contracts/ContractForceProviderTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "typed force evaluation and local/remote CPU provider dispatch"
+    },
+    {
       "id": "TST-P4-001",
       "entrypoint": "tests/gpu/GpuHipTest.cpp",
       "responsibility": "tests/gpu/GpuHipTest.cpp",

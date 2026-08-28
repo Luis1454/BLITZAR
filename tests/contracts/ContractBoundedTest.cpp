@@ -6,11 +6,13 @@
 #include "mpi/packets/MpiPacketWire.hpp"
 #include "particles/buffer/ParticleAccelerationBuffer.hpp"
 #include "simulation/staging/SimParticleStage.hpp"
-#include "simulation/step/SimOverlapDispatch.hpp"
 #include "simulation/step/SimPacketStoreRequest.hpp"
 #include "simulation/transaction/SimRollback.hpp"
 #include "simulation/transaction/SimTransaction.hpp"
 #include "solvers/SolverContract.hpp"
+#include "solvers/SolverCpuForceProvider.hpp"
+#include "solvers/SolverForceEvaluation.hpp"
+#include "solvers/SolverForceRequest.hpp"
 #include "solvers/barnes_hut/BhSolver.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 
@@ -34,12 +36,13 @@ static_assert(std::is_aggregate_v<blitzar_accelerator_launch::DirectLaunchReques
 static_assert(std::is_aggregate_v<blitzar_accelerator_launch::BarnesHutLaunchRequest>);
 
 using DirectSolver = blitzar_direct::DirectSolver;
-using SolverScratch = blitzar_solver_threading::ThreadStackPool;
+using DirectForceProvider = blitzar_solvers::SolverCpuForceProvider<DirectSolver>;
 
-static_assert(std::is_aggregate_v<
-    blitzar_integration_kdk::SolverComputeRequest<DirectSolver, SolverScratch>>);
-static_assert(
-    std::is_aggregate_v<blitzar_integration_kdk::AdvanceState<DirectSolver, SolverScratch>>);
+static_assert(std::is_aggregate_v<blitzar_solvers::SolverForceEvaluation>);
+static_assert(std::is_aggregate_v<blitzar_solvers::SolverForceRequest::Direct>);
+static_assert(std::is_aggregate_v<blitzar_solvers::SolverForceRequest::Tree>);
+static_assert(blitzar_solvers::SolverForceProvider<DirectForceProvider>);
+static_assert(std::is_aggregate_v<blitzar_integration_kdk::AdvanceState<DirectForceProvider>>);
 static_assert(std::is_aggregate_v<blitzar_integration_kdk::AdvanceHooks<
         blitzar_integration_kdk::NoopDriftHook, blitzar_integration_kdk::NoopRollbackHook>>);
 static_assert(std::is_aggregate_v<blitzar_sim::SimPacketStoreRequest>);
@@ -161,23 +164,24 @@ int main()
     BLITZAR_CHECK(blitzar_core::IsValid(empty_stage));
 
     DirectSolver direct(gravity, 0);
-    SolverScratch solver_scratch(0, 0);
-    blitzar_integration_kdk::SolverComputeRequest<DirectSolver, SolverScratch> compute_request{
-        direct, state, force, execution, solver_scratch};
+    DirectForceProvider force_provider(direct);
+    const blitzar_solvers::SolverForceEvaluation force_request{
+        state, state, force, execution, blitzar_solvers::SolverForceSourceKind::Local};
 
-    blitzar_integration_kdk::AdvanceState<DirectSolver, SolverScratch> advance_state{
-        particle_buffer, acceleration_buffer, checkpoint, direct, 1.0, execution, solver_scratch,
-        particle_buffer.State()};
+    blitzar_integration_kdk::AdvanceState<DirectForceProvider> advance_state{particle_buffer,
+        acceleration_buffer, checkpoint, force_provider, 1.0, execution, particle_buffer.State()};
 
     blitzar_integration_kdk::NoopDriftHook drift_hook;
     blitzar_integration_kdk::NoopRollbackHook rollback_hook;
     blitzar_integration_kdk::AdvanceHooks hooks{drift_hook, rollback_hook};
 
-    blitzar_integration_kdk::AdvanceRequest<DirectSolver, SolverScratch, decltype(drift_hook),
+    blitzar_integration_kdk::AdvanceRequest<DirectForceProvider, decltype(drift_hook),
         decltype(rollback_hook)>
         advance_request{advance_state, hooks};
 
-    BLITZAR_CHECK(&compute_request.solver == &direct);
+    BLITZAR_CHECK(&force_request.settings == &execution);
+    BLITZAR_CHECK(force_request.source_kind == blitzar_solvers::SolverForceSourceKind::Local);
+    BLITZAR_CHECK(&advance_state.force_provider == &force_provider);
     BLITZAR_CHECK(&advance_request.state == &advance_state);
     BLITZAR_CHECK(&advance_request.hooks == &hooks);
 

@@ -4,6 +4,7 @@
 #include "core/CoreExecution.hpp"
 #include "physics/gravity/GravityLaw.hpp"
 #include "solvers/SolverContract.hpp"
+#include "solvers/SolverForceRequest.hpp"
 #include "solvers/SolverTreeResources.hpp"
 #include "solvers/barnes_hut/BhSolver.hpp"
 #include "solvers/threading/ThreadStackPool.hpp"
@@ -17,8 +18,6 @@
 namespace blitzar_fmm {
 
 using FmmSettings = blitzar_barnes_hut::BarnesHutSettings;
-using FmmSplitRequest = blitzar_barnes_hut::BarnesHutSplitRequest;
-
 class FmmSolver final {
 public:
     FmmSolver(blitzar_physics::GravityParameters gravity, FmmSettings settings,
@@ -33,14 +32,10 @@ public:
 
     [[nodiscard]] blitzar_solvers::SolverKind Kind() const noexcept;
     [[nodiscard]] blitzar_status Prepare(std::size_t particle_capacity) noexcept;
-    [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView particles,
-        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings) noexcept;
-    [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView particles,
-        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-        blitzar_solver_threading::ThreadStackPool& stack_pool) noexcept;
-    [[nodiscard]] blitzar_status ComputeSplit(const FmmSplitRequest& request) noexcept;
-    [[nodiscard]] blitzar_status ComputeSplit(const FmmSplitRequest& request,
-        blitzar_solver_threading::ThreadStackPool& stack_pool) noexcept;
+    [[nodiscard]] blitzar_status Evaluate(
+        const blitzar_solvers::SolverForceRequest::Tree& request) noexcept;
+    [[nodiscard]] blitzar_solvers::SolverTreeResources& Resources() noexcept;
+    [[nodiscard]] const blitzar_solvers::SolverTreeResources& Resources() const noexcept;
     [[nodiscard]] std::size_t BuildCount() const noexcept;
     [[nodiscard]] std::size_t RefitCount() const noexcept;
 

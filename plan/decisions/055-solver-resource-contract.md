@@ -12,13 +12,14 @@ solver-specific request shapes. This makes it possible to add an algorithm
 without making its resource ownership explicit. KIFMM, PM, and TreePM need a
 stable resource contract before their implementations are introduced.
 
-The current implementation observations are deliberately recorded rather
-than silently changed here:
+The implementation observations below were recorded at the time of this
+decision and are retained as migration context rather than silently changed:
 
 - `SimSolverVariant` contains Direct, Barnes-Hut, and FMM only.
 - Barnes-Hut and FMM currently own their lazy Octree instances internally.
 - `FmmSolver` reuses Barnes-Hut settings and split-request aliases.
-- `SimSolverDispatch` exposes solver-specific overloads and backend branches.
+- The previous solver dispatch layer exposed solver-specific overloads and
+  backend branches.
 - PM and TreePM are rejected as unsupported before solver construction.
 
 ## Decision
@@ -97,7 +98,7 @@ is never added to `Octree::Cell` as algorithm-specific state.
 - PM and TreePM resource shapes are frozen without creating deferred roots.
 - #681 owns concrete resource bundles; #682 owns the single force-provider
   boundary and dispatch replacement.
-- The existing FMM aliases and dispatch overload family remain explicit debt
-  and are not copied into the new contract.
+- The former FMM aliases and dispatch overload family are historical context;
+  issue #682 replaces them with typed force requests and provider traits.
 - `TST-P3-003` proves every current and planned resource shape, including the
   invalid identity/shape combination and public enum-value preservation.
