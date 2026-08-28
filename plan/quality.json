@@ -62,6 +62,12 @@
       "phase": "P6"
     },
     {
+      "id": "TST-P6-008",
+      "name": "cli-deterministic-snapshot-restart",
+      "command": "blitzar_cli_restart_test",
+      "phase": "P6"
+    },
+    {
       "id": "TST-P0-004",
       "name": "bounded-views-and-request-contracts",
       "command": "blitzar_bounded_contract_test",
