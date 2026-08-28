@@ -152,6 +152,12 @@
       "phase": "P3"
     },
     {
+      "id": "TST-P3-004",
+      "name": "spatial-resource-lifetime",
+      "command": "blitzar_spatial_resource_test",
+      "phase": "P3"
+    },
+    {
       "id": "TST-P4-001",
       "name": "hip-acceleration-and-fallback",
       "command": "blitzar_accelerator_test",

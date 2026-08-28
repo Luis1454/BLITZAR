@@ -4,7 +4,9 @@
 #include <cmath>
 #include <limits>
 #include <new>
+#include <optional>
 #include <stdexcept>
+#include <utility>
 
 namespace blitzar_barnes_hut {
 
@@ -33,17 +35,20 @@ bool BarnesHutSettings::IsValid() const noexcept
 }
 
 BhSolver::BhSolver(blitzar_physics::GravityParameters gravity, BarnesHutSettings settings,
-    std::size_t local_particle_capacity)
+    std::size_t local_particle_capacity, blitzar_solvers::SolverTreeResources& resources)
     : settings_(settings), gravity_(gravity),
       local_particle_capacity_(
           local_particle_capacity == 0 ? settings.max_particles : local_particle_capacity),
       local_cell_capacity_(LocalCellCapacity(settings.max_cells,
           local_particle_capacity == 0 ? settings.max_particles : local_particle_capacity)),
-      tree_(std::make_unique<blitzar_trees::Octree>(local_particle_capacity_, local_cell_capacity_,
-          settings.leaf_capacity, settings.max_depth)),
-      remote_tree_{}, stack_pool_(settings.max_cells, settings.max_depth),
+      resources_(resources), stack_pool_(settings.max_cells, settings.max_depth),
       staging_(local_particle_capacity_)
 {
+}
+
+void BhSolver::BindResources(blitzar_solvers::SolverTreeResources& resources) noexcept
+{
+    resources_ = resources;
 }
 
 blitzar_solvers::SolverKind BhSolver::Kind() const noexcept
@@ -76,8 +81,15 @@ blitzar_status BhSolver::Compute(blitzar_core::ParticleStateView particles,
         return prepare_status;
     }
 
+    const blitzar_status resource_status = resources_.get().Local().Prepare(particles);
+
+    if (resource_status != BLITZAR_STATUS_OK) {
+        return resource_status;
+    }
+
     const blitzar_status status =
-        ComputeTree({*tree_, particles, particles, forces, settings, stack_pool, false, true});
+        ComputeTree({resources_.get().Local(), resources_.get().Local().View(), particles,
+            particles, forces, settings, stack_pool, false, true});
 
     return status == BLITZAR_STATUS_OK ? CommitStagedForces(forces) : status;
 }
@@ -96,50 +108,39 @@ blitzar_status BhSolver::ComputeSplit(const BarnesHutSplitRequest& request,
         return prepare_status;
     }
 
+    const blitzar_status local_resource_status = resources_.get().Local().Prepare(request.local);
+
+    if (local_resource_status != BLITZAR_STATUS_OK) {
+        return local_resource_status;
+    }
+
     if (!settings_.IsValid() || request.remote.SourceCount() == 0) {
-        const blitzar_status status = ComputeTree({*tree_, request.local, request.local,
-            request.forces, request.settings, stack_pool, false, true});
+        const blitzar_status status =
+            ComputeTree({resources_.get().Local(), resources_.get().Local().View(), request.local,
+                request.local, request.forces, request.settings, stack_pool, false, true});
 
         return status == BLITZAR_STATUS_OK ? CommitStagedForces(request.forces) : status;
     }
 
-    const blitzar_status remote_tree_status = EnsureRemoteTree();
+    const blitzar_status remote_resource_status = resources_.get().Remote().Prepare(request.remote);
 
-    if (remote_tree_status != BLITZAR_STATUS_OK) {
-        return remote_tree_status;
+    if (remote_resource_status != BLITZAR_STATUS_OK) {
+        return remote_resource_status;
     }
 
-    const blitzar_status local_status = ComputeTree({*tree_, request.local, request.local,
-        request.forces, request.settings, stack_pool, false, true});
+    const blitzar_status local_status =
+        ComputeTree({resources_.get().Local(), resources_.get().Local().View(), request.local,
+            request.local, request.forces, request.settings, stack_pool, false, true});
 
     if (local_status != BLITZAR_STATUS_OK) {
         return local_status;
     }
 
-    const blitzar_status remote_status = ComputeTree({*remote_tree_, request.local, request.remote,
-        request.forces, request.settings, stack_pool, true, false});
+    const blitzar_status remote_status =
+        ComputeTree({resources_.get().Remote(), resources_.get().Remote().View(), request.local,
+            request.remote, request.forces, request.settings, stack_pool, true, false});
 
     return remote_status == BLITZAR_STATUS_OK ? CommitStagedForces(request.forces) : remote_status;
-}
-
-blitzar_status BhSolver::EnsureRemoteTree() noexcept
-{
-    if (remote_tree_ != nullptr) {
-        return BLITZAR_STATUS_OK;
-    }
-
-    try {
-        remote_tree_ = std::make_unique<blitzar_trees::Octree>(settings_.max_particles,
-            settings_.max_cells, settings_.leaf_capacity, settings_.max_depth);
-    }
-    catch (const std::length_error&) {
-        return BLITZAR_STATUS_INVALID_ARGUMENT;
-    }
-    catch (const std::bad_alloc&) {
-        return BLITZAR_STATUS_ALLOCATION_FAILURE;
-    }
-
-    return BLITZAR_STATUS_OK;
 }
 
 blitzar_status BhSolver::EnsureLocalCapacity(std::size_t particle_capacity) noexcept
@@ -152,12 +153,12 @@ blitzar_status BhSolver::EnsureLocalCapacity(std::size_t particle_capacity) noex
     }
 
     const std::size_t cell_capacity = LocalCellCapacity(settings_.max_cells, particle_capacity);
-    std::unique_ptr<blitzar_trees::Octree> candidate_tree;
+    std::optional<blitzar_trees::OctreeResource> candidate_tree;
     std::vector<blitzar_core::Vector3> candidate_staging;
 
     try {
-        candidate_tree = std::make_unique<blitzar_trees::Octree>(
-            particle_capacity, cell_capacity, settings_.leaf_capacity, settings_.max_depth);
+        candidate_tree.emplace(blitzar_trees::OctreeResourceConfig{
+            particle_capacity, cell_capacity, settings_.leaf_capacity, settings_.max_depth});
 
         candidate_staging.resize(particle_capacity);
     }
@@ -168,7 +169,8 @@ blitzar_status BhSolver::EnsureLocalCapacity(std::size_t particle_capacity) noex
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
 
-    tree_ = std::move(candidate_tree);
+    resources_.get().ReplaceLocal(std::move(*candidate_tree));
+
     staging_ = std::move(candidate_staging);
     local_particle_capacity_ = particle_capacity;
     local_cell_capacity_ = cell_capacity;

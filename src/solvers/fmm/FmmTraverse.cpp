@@ -132,12 +132,6 @@ blitzar_status FmmSolver::Accumulate(const AccumulationRequest& request) const n
                : BLITZAR_STATUS_INVALID_ARGUMENT;
 }
 
-bool FmmSolver::IsKnownTree(const TreeComputeRequest& request) const noexcept
-{
-    return (tree_ != nullptr && &request.tree == tree_.get()) ||
-           (remote_tree_ != nullptr && &request.tree == remote_tree_.get());
-}
-
 bool FmmSolver::HasValidTreeState(
     const TreeComputeRequest& request, std::size_t source_capacity) const noexcept
 {
@@ -149,6 +143,7 @@ bool FmmSolver::HasValidTreeState(
 bool FmmSolver::HasValidTreeResources(const TreeComputeRequest& request) const noexcept
 {
     return settings_.IsValid() && gravity_.IsValid() && request.settings.IsValid() &&
+           request.resource.IsCurrent(request.tree) &&
            request.stack_pool.MaxCells() >= settings_.max_cells &&
            request.stack_pool.MaxDepth() >= settings_.max_depth &&
            staging_.size() >= request.targets.count;
@@ -156,15 +151,12 @@ bool FmmSolver::HasValidTreeResources(const TreeComputeRequest& request) const n
 
 bool FmmSolver::ValidateTreeRequest(const TreeComputeRequest& request) const noexcept
 {
-    const bool local_tree = tree_ != nullptr && &request.tree == tree_.get();
-    const std::size_t source_capacity =
-        local_tree ? local_particle_capacity_ : settings_.max_particles;
+    const std::size_t source_capacity = request.resource.MaxParticles();
 
-    return IsKnownTree(request) && HasValidTreeResources(request) &&
-           HasValidTreeState(request, source_capacity);
+    return HasValidTreeResources(request) && HasValidTreeState(request, source_capacity);
 }
 
-blitzar_status FmmSolver::PrepareTree(const TreeComputeRequest& request) noexcept
+blitzar_status FmmSolver::PrepareMultipoles(const TreeComputeRequest& request) noexcept
 {
     if (request.sources.SourceCount() == 0) {
         if (!request.accumulate) {
@@ -174,14 +166,6 @@ blitzar_status FmmSolver::PrepareTree(const TreeComputeRequest& request) noexcep
         }
 
         return BLITZAR_STATUS_OK;
-    }
-
-    if (!request.tree.Refit(request.sources)) {
-        const blitzar_status build_status = request.tree.Build(request.sources);
-
-        if (build_status != BLITZAR_STATUS_OK) {
-            return build_status;
-        }
     }
 
     return BuildMultipoles(request.tree, request.sources, request.multipoles);
@@ -238,7 +222,7 @@ blitzar_status FmmSolver::ComputeTree(const TreeComputeRequest& request) noexcep
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    const blitzar_status preparation_status = PrepareTree(request);
+    const blitzar_status preparation_status = PrepareMultipoles(request);
 
     return preparation_status == BLITZAR_STATUS_OK ? ComputeTargets(request) : preparation_status;
 }

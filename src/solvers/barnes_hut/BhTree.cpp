@@ -210,35 +210,14 @@ blitzar_status BhSolver::Accumulate(const AccumulationRequest& request) noexcept
 
 bool BhSolver::ValidateTreeRequest(const TreeComputeRequest& request) const noexcept
 {
-    const std::size_t source_capacity =
-        &request.tree == tree_.get() ? local_particle_capacity_ : settings_.max_particles;
-
     return settings_.IsValid() && gravity_.IsValid() && request.settings.IsValid() &&
            request.targets.count == request.forces.count &&
-           request.sources.SourceCount() <= source_capacity && IsValidState(request.targets) &&
+           request.sources.SourceCount() <= request.resource.MaxParticles() &&
+           request.resource.IsCurrent(request.tree) && IsValidState(request.targets) &&
            IsValidState(request.sources) && blitzar_core::IsValid(request.forces) &&
            request.stack_pool.MaxCells() >= settings_.max_cells &&
            request.stack_pool.MaxDepth() >= settings_.max_depth &&
            staging_.size() >= request.targets.count;
-}
-
-blitzar_status BhSolver::PrepareTree(const TreeComputeRequest& request) noexcept
-{
-    if (request.sources.SourceCount() == 0) {
-        if (!request.accumulate) {
-            for (std::size_t index = 0; index < request.targets.count; ++index) {
-                staging_[index] = {};
-            }
-        }
-
-        return BLITZAR_STATUS_OK;
-    }
-
-    if (request.tree.Refit(request.sources)) {
-        return BLITZAR_STATUS_OK;
-    }
-
-    return request.tree.Build(request.sources);
 }
 
 blitzar_status BhSolver::ComputeTargets(const TreeComputeRequest& request) noexcept
@@ -292,9 +271,7 @@ blitzar_status BhSolver::ComputeTree(const TreeComputeRequest& request) noexcept
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    const blitzar_status preparation_status = PrepareTree(request);
-
-    return preparation_status == BLITZAR_STATUS_OK ? ComputeTargets(request) : preparation_status;
+    return ComputeTargets(request);
 }
 
 blitzar_status BhSolver::CommitStagedForces(blitzar_core::ForceView forces) noexcept

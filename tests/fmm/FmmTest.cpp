@@ -20,6 +20,13 @@ namespace {
     return {opening_angle, particle_count, particle_count * 8 + 1, 4, 16};
 }
 
+[[nodiscard]] blitzar_solvers::SolverTreeResources MakeResources(
+    blitzar_fmm::FmmSettings settings, std::size_t local_capacity)
+{
+    return {{local_capacity, settings.max_cells, settings.leaf_capacity, settings.max_depth},
+        {settings.max_particles, settings.max_cells, settings.leaf_capacity, settings.max_depth}};
+}
+
 void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
 {
     for (std::size_t index = 0; index < particles.Count(); ++index) {
@@ -46,7 +53,9 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
     FillParticles(particles);
 
     blitzar_direct::DirectSolver direct(gravity, ParticleCount);
-    blitzar_fmm::FmmSolver fmm(gravity, MakeSettings(ParticleCount, 0.0), ParticleCount);
+    const auto settings = MakeSettings(ParticleCount, 0.0);
+    auto resources = MakeResources(settings, ParticleCount);
+    blitzar_fmm::FmmSolver fmm(gravity, settings, ParticleCount, resources);
     const blitzar_core::ExecutionSettings execution{};
 
     if (direct.Compute(particles.State(), direct_force.View(), execution) != BLITZAR_STATUS_OK ||
@@ -79,7 +88,9 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
     FillParticles(particles);
 
     blitzar_direct::DirectSolver direct(gravity, ParticleCount);
-    blitzar_fmm::FmmSolver fmm(gravity, MakeSettings(ParticleCount, 0.35), ParticleCount);
+    const auto settings = MakeSettings(ParticleCount, 0.35);
+    auto resources = MakeResources(settings, ParticleCount);
+    blitzar_fmm::FmmSolver fmm(gravity, settings, ParticleCount, resources);
     const blitzar_core::ExecutionSettings execution{};
 
     if (direct.Compute(particles.State(), direct_force.View(), execution) != BLITZAR_STATUS_OK ||
@@ -126,7 +137,9 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
         view.z[index] = 6.0;
     }
 
-    blitzar_fmm::FmmSolver fmm({1.0, 0.0}, MakeSettings(3, 0.0), 3);
+    const auto settings = MakeSettings(3, 0.0);
+    auto resources = MakeResources(settings, 3);
+    blitzar_fmm::FmmSolver fmm({1.0, 0.0}, settings, 3, resources);
 
     const blitzar_status status =
         fmm.Compute(particles.State(), view, blitzar_core::ExecutionSettings{});
@@ -153,7 +166,9 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
 
     FillParticles(particles);
 
-    blitzar_fmm::FmmSolver fmm(gravity, MakeSettings(ParticleCount, 0.35), ParticleCount);
+    const auto settings = MakeSettings(ParticleCount, 0.35);
+    auto resources = MakeResources(settings, ParticleCount);
+    blitzar_fmm::FmmSolver fmm(gravity, settings, ParticleCount, resources);
     const blitzar_core::ExecutionSettings execution{};
     const auto first_start = std::chrono::steady_clock::now();
     const blitzar_status first_status = fmm.Compute(particles.State(), forces.View(), execution);

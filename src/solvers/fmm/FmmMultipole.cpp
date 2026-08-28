@@ -52,7 +52,7 @@ bool FmmSolver::IsFiniteMultipole(const Multipole& multipole) noexcept
            std::isfinite(multipole.zz);
 }
 
-blitzar_status FmmSolver::BuildLeafMultipole(const blitzar_trees::Octree& tree,
+blitzar_status FmmSolver::BuildLeafMultipole(const blitzar_trees::OctreeView& tree,
     const blitzar_trees::Octree::Cell& cell, blitzar_core::ParticleStateView sources,
     Multipole& multipole) const noexcept
 {
@@ -117,7 +117,7 @@ blitzar_status FmmSolver::MergeChildMultipoles(std::span<const blitzar_trees::Oc
     return IsFiniteMultipole(result) ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT;
 }
 
-blitzar_status FmmSolver::BuildMultipoles(const blitzar_trees::Octree& tree,
+blitzar_status FmmSolver::BuildMultipoles(const blitzar_trees::OctreeView& tree,
     blitzar_core::ParticleStateView sources, std::vector<Multipole>& multipoles) const noexcept
 {
     const std::span<const blitzar_trees::Octree::Cell> cells = tree.Cells();

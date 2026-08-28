@@ -118,6 +118,9 @@ set(BLITZAR_LIBRARY_SOURCES
     src/trees/octree/OctreeConstruction.cpp
     src/trees/octree/OctreeMorton.cpp
     src/trees/octree/OctreeProperties.cpp
+    src/trees/octree/OctreeResource.cpp
+    src/trees/octree/OctreeView.cpp
+    src/solvers/SolverTreeResources.cpp
 )
 target_sources(blitzar PRIVATE ${BLITZAR_LIBRARY_SOURCES})
 

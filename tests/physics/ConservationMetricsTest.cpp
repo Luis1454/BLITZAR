@@ -230,8 +230,16 @@ bool RunSolverCases() noexcept
     blitzar_particles::ParticleAccelerationBuffer bh_accelerations(3);
     blitzar_particles::ParticleAccelerationBuffer fmm_accelerations(3);
     blitzar_direct::DirectSolver direct(gravity, 3);
-    blitzar_barnes_hut::BhSolver barnes_hut(gravity, settings, 3);
-    blitzar_fmm::FmmSolver fmm(gravity, settings, 3);
+    blitzar_solvers::SolverTreeResources bh_resources(
+        {3, settings.max_cells, settings.leaf_capacity, settings.max_depth},
+        {settings.max_particles, settings.max_cells, settings.leaf_capacity, settings.max_depth});
+
+    blitzar_solvers::SolverTreeResources fmm_resources(
+        {3, settings.max_cells, settings.leaf_capacity, settings.max_depth},
+        {settings.max_particles, settings.max_cells, settings.leaf_capacity, settings.max_depth});
+
+    blitzar_barnes_hut::BhSolver barnes_hut(gravity, settings, 3, bh_resources);
+    blitzar_fmm::FmmSolver fmm(gravity, settings, 3, fmm_resources);
 
     return InitializeParticles(particles) &&
            RunSolverCase(direct, particles, direct_accelerations, gravity) &&

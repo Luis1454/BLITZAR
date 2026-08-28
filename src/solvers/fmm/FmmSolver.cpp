@@ -3,26 +3,29 @@
 #include <algorithm>
 #include <limits>
 #include <new>
+#include <optional>
 #include <stdexcept>
+#include <utility>
 
 namespace blitzar_fmm {
 
 FmmSolver::FmmSolver(blitzar_physics::GravityParameters gravity, FmmSettings settings,
-    std::size_t local_particle_capacity)
+    std::size_t local_particle_capacity, blitzar_solvers::SolverTreeResources& resources)
     : settings_(settings), parameters_(gravity), gravity_(gravity),
       local_particle_capacity_(
           local_particle_capacity == 0 ? settings.max_particles : local_particle_capacity),
       local_cell_capacity_(LocalCellCapacity(settings.max_cells,
           local_particle_capacity == 0 ? settings.max_particles : local_particle_capacity)),
-      tree_(std::make_unique<blitzar_trees::Octree>(local_particle_capacity_, local_cell_capacity_,
-          settings.leaf_capacity, settings.max_depth)),
-      remote_tree_(std::make_unique<blitzar_trees::Octree>(
-          settings.max_particles, settings.max_cells, settings.leaf_capacity, settings.max_depth)),
-      stack_pool_(settings.max_cells, settings.max_depth), multipoles_{}, remote_multipoles_{},
-      staging_(local_particle_capacity_)
+      resources_(resources), stack_pool_(settings.max_cells, settings.max_depth), multipoles_{},
+      remote_multipoles_{}, staging_(local_particle_capacity_)
 {
     multipoles_.reserve(local_cell_capacity_);
     remote_multipoles_.reserve(settings.max_cells);
+}
+
+void FmmSolver::BindResources(blitzar_solvers::SolverTreeResources& resources) noexcept
+{
+    resources_ = resources;
 }
 
 blitzar_solvers::SolverKind FmmSolver::Kind() const noexcept
@@ -37,12 +40,12 @@ blitzar_status FmmSolver::Prepare(std::size_t particle_capacity) noexcept
 
 std::size_t FmmSolver::BuildCount() const noexcept
 {
-    return tree_ == nullptr ? 0 : tree_->BuildCount();
+    return resources_.get().Local().BuildCount();
 }
 
 std::size_t FmmSolver::RefitCount() const noexcept
 {
-    return tree_ == nullptr ? 0 : tree_->RefitCount();
+    return resources_.get().Local().RefitCount();
 }
 
 std::size_t FmmSolver::LocalCellCapacity(
@@ -75,8 +78,15 @@ blitzar_status FmmSolver::Compute(blitzar_core::ParticleStateView particles,
         return prepare_status;
     }
 
-    const blitzar_status status = ComputeTree(
-        {*tree_, multipoles_, particles, particles, forces, settings, stack_pool, false, true});
+    const blitzar_status resource_status = resources_.get().Local().Prepare(particles);
+
+    if (resource_status != BLITZAR_STATUS_OK) {
+        return resource_status;
+    }
+
+    const blitzar_status status =
+        ComputeTree({resources_.get().Local(), resources_.get().Local().View(), multipoles_,
+            particles, particles, forces, settings, stack_pool, false, true});
 
     return status == BLITZAR_STATUS_OK ? CommitStagedForces(forces) : status;
 }
@@ -95,16 +105,30 @@ blitzar_status FmmSolver::ComputeSplit(
         return prepare_status;
     }
 
-    const blitzar_status local_status = ComputeTree({*tree_, multipoles_, request.local,
-        request.local, request.forces, request.settings, stack_pool, false, true});
+    const blitzar_status local_resource_status = resources_.get().Local().Prepare(request.local);
+
+    if (local_resource_status != BLITZAR_STATUS_OK) {
+        return local_resource_status;
+    }
+
+    const blitzar_status local_status = ComputeTree(
+        {resources_.get().Local(), resources_.get().Local().View(), multipoles_, request.local,
+            request.local, request.forces, request.settings, stack_pool, false, true});
 
     if (local_status != BLITZAR_STATUS_OK || request.remote.SourceCount() == 0) {
         return local_status == BLITZAR_STATUS_OK ? CommitStagedForces(request.forces)
                                                  : local_status;
     }
 
-    const blitzar_status remote_status = ComputeTree({*remote_tree_, remote_multipoles_,
-        request.local, request.remote, request.forces, request.settings, stack_pool, true, false});
+    const blitzar_status remote_resource_status = resources_.get().Remote().Prepare(request.remote);
+
+    if (remote_resource_status != BLITZAR_STATUS_OK) {
+        return remote_resource_status;
+    }
+
+    const blitzar_status remote_status = ComputeTree({resources_.get().Remote(),
+        resources_.get().Remote().View(), remote_multipoles_, request.local, request.remote,
+        request.forces, request.settings, stack_pool, true, false});
 
     return remote_status == BLITZAR_STATUS_OK ? CommitStagedForces(request.forces) : remote_status;
 }
@@ -119,13 +143,13 @@ blitzar_status FmmSolver::EnsureLocalCapacity(std::size_t particle_capacity) noe
     }
 
     const std::size_t cell_capacity = LocalCellCapacity(settings_.max_cells, particle_capacity);
-    std::unique_ptr<blitzar_trees::Octree> candidate_tree;
+    std::optional<blitzar_trees::OctreeResource> candidate_tree;
     std::vector<Multipole> candidate_multipoles;
     std::vector<blitzar_core::Vector3> candidate_staging;
 
     try {
-        candidate_tree = std::make_unique<blitzar_trees::Octree>(
-            particle_capacity, cell_capacity, settings_.leaf_capacity, settings_.max_depth);
+        candidate_tree.emplace(blitzar_trees::OctreeResourceConfig{
+            particle_capacity, cell_capacity, settings_.leaf_capacity, settings_.max_depth});
 
         candidate_multipoles.reserve(cell_capacity);
         candidate_staging.resize(particle_capacity);
@@ -137,7 +161,8 @@ blitzar_status FmmSolver::EnsureLocalCapacity(std::size_t particle_capacity) noe
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
 
-    tree_ = std::move(candidate_tree);
+    resources_.get().ReplaceLocal(std::move(*candidate_tree));
+
     multipoles_ = std::move(candidate_multipoles);
     staging_ = std::move(candidate_staging);
     local_particle_capacity_ = particle_capacity;

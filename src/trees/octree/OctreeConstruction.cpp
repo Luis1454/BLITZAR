@@ -163,6 +163,8 @@ blitzar_status Octree::BuildCells(blitzar_core::ParticleStateView particles,
 
 blitzar_status Octree::Build(blitzar_core::ParticleStateView particles) noexcept
 {
+    AdvanceGeneration();
+
     cells_.clear();
 
     particle_count_ = 0;

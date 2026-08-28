@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.39**
+Plan version: **1.0.40**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -102,7 +102,7 @@ src/particles/buffer/             Mutable particle and acceleration buffers
 src/particles/source/              Remote source particle buffer
 src/physics/gravity/             Force laws, units, softening, validation
 src/integration/kdk/              Time integration and timestep policy
-src/trees/octree/                 Octree and Morton spatial responsibilities
+src/trees/octree/                 Bounded Octree storage, views, and resources
 src/gpu/                          Optional GPU domain aggregator
 src/gpu/runtime/                  HIP/CUDA runtime and launch policy
 src/gpu/memory/                   Device and pinned-buffer ownership
@@ -218,9 +218,13 @@ Implement Morton ordering, octree construction, multipoles, and Barnes-Hut.
 Then implement FMM behind the same solver contract. Compare both against the
 direct CPU oracle for force, energy, conservation, and deterministic ordering.
 The orthogonal `SolverResourceContract` freezes the resource shape for Direct,
-Barnes-Hut, FMM, KIFMM, PM, and TreePM before concrete resource bundles are
-introduced. `TST-P3-003` covers the mapping and preserves the public solver
-values; issue #681 owns the concrete bundle and view implementation.
+Barnes-Hut, FMM, KIFMM, PM, and TreePM. `OctreeView` exposes read-only
+topology, geometry, stable ordering, and cell ranges with generation and
+capacity validation. `OctreeResource` owns bounded preparation, and
+`SolverTreeResources` composes local and remote tree resources for hierarchical
+solver bundles. Direct contains no tree resource; PM and TreePM remain deferred
+until a Grid root is materialized. `TST-P3-003` covers the matrix and
+`TST-P3-004` covers resource lifetime and view invalidation.
 
 ### P4: HIP Runtime and GPU Solvers
 

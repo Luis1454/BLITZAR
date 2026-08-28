@@ -262,6 +262,14 @@
       "contract": "orthogonal solver and resource requirements"
     },
     {
+      "id": "TST-P3-004",
+      "entrypoint": "tests/contracts/ContractSpatialResourceTest.cpp",
+      "responsibility": "tests/contracts/ContractSpatialResourceTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "read-only Octree views, generation validation, and typed resource lifetime"
+    },
+    {
       "id": "TST-P4-001",
       "entrypoint": "tests/gpu/GpuHipTest.cpp",
       "responsibility": "tests/gpu/GpuHipTest.cpp",
