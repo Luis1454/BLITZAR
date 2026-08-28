@@ -14,3 +14,13 @@ CPU, MPI local-rank, multi-node, HIP compile, HIP fallback, and HIP device
 execution. Each result also contains the v2 wall/per-step timing, allocation,
 memory, throughput, distribution, and oracle fields. Missing hardware or
 launchers produce `skipped` or `unknown`, not a passing performance claim.
+
+The separate layout qualification uses the same external-artifact rule:
+
+```text
+python -m tools.evidence.layout_evidence --root . --build-dir ../.blitzar-build/evidence --output ../.blitzar-evidence/layout --strict
+```
+
+It validates the complete Morton ordering and bounded SoA/AoSoA matrix from
+`plan/layout.json`. Its cache-line and scan metrics are deterministic proxies;
+they do not claim hardware performance-counter measurements.

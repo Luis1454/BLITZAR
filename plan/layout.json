@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.43",
+  "record_schema_version": 1,
+  "target": "blitzar_layout_test",
+  "runner": "tools/evidence/layout_evidence.py",
+  "precision": "float64",
+  "seed": 424242,
+  "particle_counts": [65, 513, 4097],
+  "bounded_tile_widths": [4, 8, 16, 32],
+  "orderings": [
+    {
+      "id": "stable-comparison-v1",
+      "algorithm": "Morton key ascending, original particle index ascending on ties"
+    },
+    {
+      "id": "stable-radix-v1",
+      "algorithm": "Eight-pass LSD radix sort on the 64-bit Morton key"
+    }
+  ],
+  "representations": [
+    {
+      "id": "soa-v1",
+      "kind": "soa",
+      "tile_width": 0,
+      "selected": true
+    },
+    {
+      "id": "aosoa-4-v1",
+      "kind": "aosoa",
+      "tile_width": 4,
+      "selected": false
+    },
+    {
+      "id": "aosoa-8-v1",
+      "kind": "aosoa",
+      "tile_width": 8,
+      "selected": false
+    },
+    {
+      "id": "aosoa-16-v1",
+      "kind": "aosoa",
+      "tile_width": 16,
+      "selected": false
+    },
+    {
+      "id": "aosoa-32-v1",
+      "kind": "aosoa",
+      "tile_width": 32,
+      "selected": false
+    }
+  ],
+  "selected_boundaries": {
+    "octree": "soa-v1",
+    "grid": "soa-v1",
+    "adapter": "AoSoA candidates must materialize to the selected SoA boundary"
+  },
+  "metrics": {
+    "morton_sort_time_ns": "sort_ns",
+    "materialization_time_ns": "materialize_ns",
+    "octree_build_time_ns": "tree_build_ns",
+    "contiguous_scan_time_ns": "scan_ns",
+    "scan_particles_per_second": "scan_particles_per_second",
+    "locality_mean_squared_distance": "locality_mean_squared_distance",
+    "cache_line_visits": "cache_line_visits_proxy",
+    "candidate_memory_bytes": "candidate_bytes",
+    "materialized_memory_bytes": "materialized_bytes",
+    "ordering_hash": "order_hash",
+    "logical_state_hash": "state_hash",
+    "candidate_byte_hash": "byte_hash",
+    "octree_hash": "tree_hash",
+    "byte_repeatability": "repeatable"
+  },
+  "proxy_policy": {
+    "cache": "cache_line_visits_proxy counts modeled 64-byte lines, not hardware cache misses",
+    "simd": "scan_particles_per_second is a contiguous scan throughput metric; hardware SIMD counters are separate work",
+    "memory": "candidate_bytes excludes the SoA adapter required at the Octree boundary"
+  },
+  "required_record_fields": [
+    "schema",
+    "seed",
+    "particles",
+    "ordering",
+    "layout",
+    "tile_width",
+    "sort_ns",
+    "materialize_ns",
+    "tree_build_ns",
+    "scan_ns",
+    "scan_particles_per_second",
+    "locality_mean_squared_distance",
+    "cache_line_visits_proxy",
+    "candidate_bytes",
+    "materialized_bytes",
+    "order_hash",
+    "state_hash",
+    "byte_hash",
+    "tree_hash",
+    "scan_checksum",
+    "stable",
+    "repeatable",
+    "ordering_equivalent",
+    "representation_equivalent",
+    "tree_valid"
+  ],
+  "invariants": [
+    "ordering is sorted by Morton key and original particle index",
+    "comparison and radix ordering hashes are identical for every particle count",
+    "all candidate layouts materialize identical logical state and Octree bytes",
+    "every record is byte-repeatable when loaded twice",
+    "production Octree and future grid boundaries select SoA",
+    "Hilbert ordering and GPU-only layouts are outside this contract"
+  ],
+  "artifacts": {
+    "generated_outside_source": true,
+    "files": [
+      "metadata.json",
+      "results.json",
+      "summary.md",
+      "run.log"
+    ],
+    "hardware_counters": "not_claimed",
+    "repeatability": "hashes are exact IEEE-754 bit-pattern hashes"
+  }
+}

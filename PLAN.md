@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.42**
+Plan version: **1.0.43**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -10,7 +10,8 @@ are re-derived here as contracts, numerical references, and acceptance tests.
 
 The authoritative planning state is the combination of this file,
 `plan/manifest.json`, `plan/quality.json`, `plan/decision-index.json`, and
-`plan/scaling.json`, `plan/output_contract.json`, and `plan/final_audit.json`.
+`plan/scaling.json`, `plan/layout.json`, `plan/output_contract.json`, and
+`plan/final_audit.json`.
 Decision records under `plan/decisions/` preserve the rationale and migration
 history for that state.
 
@@ -79,6 +80,14 @@ multi-rank run, and real multi-node run are distinct evidence states.
 The `release-evidence` CI job builds the CPU/MPI probes and runs this matrix in
 strict mode; its output is uploaded as an external artifact.
 
+The layout qualification contract in `plan/layout.json` measures the shared
+Morton ordering and bounded SoA/AoSoA candidates. `tests/layout` keeps the
+current SoA representation selected at the Octree and future grid boundaries,
+while `tools/evidence/layout_evidence.py` validates exact ordering, logical
+state, Octree, and byte-repeatability hashes. Cache-line visits and contiguous
+scan throughput are deterministic proxies, not hardware-counter claims; the
+generated layout report is written outside the source tree.
+
 ## Final Qualification
 
 `plan/final_audit.json` assigns an owner, category, and review gate to every
@@ -134,6 +143,7 @@ src/simulation/staging/           Temporary caller-particle staging before commi
 src/simulation/{runtime,solver,state,step,transaction}/ Simulation responsibilities
 apps/blitzar/                    CLI executable; never library production code
 tests/{contracts,fixtures,fmm,gpu,integration,mpi,octree,package,scaling,simulation}/ Tests by responsibility
+tests/layout/                     Morton ordering and bounded layout qualification
 examples/                        Minimal C and C++ SDK consumers
 plan/                            Frozen roadmap and machine-readable invariants
 tools/{architecture,gates,format,debug,evidence,audit}/ Repository policy checks

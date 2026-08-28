@@ -217,6 +217,20 @@
       "issue": 613,
       "status": "accepted",
       "decision": "The contract validator keeps ownership, lane, and historical issue schema checks together so the final audit cannot run against a partial plan; its branching is policy validation and is covered by audit_test.py."
+    },
+    {
+      "path": "tools/evidence/layout_contract.py",
+      "signals": ["allocation", "branching"],
+      "issue": 672,
+      "status": "accepted",
+      "decision": "The layout contract validator keeps the frozen candidate matrix, typed record parsing, and cross-representation hash invariants together; its allocations and branches construct validation diagnostics only and are covered by layout_evidence_test.py."
+    },
+    {
+      "path": "tools/evidence/layout_evidence.py",
+      "signals": ["branching"],
+      "issue": 672,
+      "status": "accepted",
+      "decision": "The layout evidence runner keeps executable discovery, external artifact publication, and strict matrix qualification in one evidence boundary; its branches distinguish contract, process, and record failures and are covered by layout_evidence_test.py."
     }
   ]
 }

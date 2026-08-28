@@ -60,6 +60,7 @@ add_test(
         --tolerance 0.05
         --oracle
 )
+add_test(NAME TST-P1-005 COMMAND blitzar_layout_test)
 add_test(NAME TST-P3-001 COMMAND blitzar_hierarchy_test)
 add_test(NAME TST-P3-002 COMMAND blitzar_fmm_test)
 add_test(NAME TST-P3-003 COMMAND blitzar_solver_resource_contract_test)
