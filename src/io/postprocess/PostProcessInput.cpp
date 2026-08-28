@@ -2,7 +2,7 @@
 
 #include "io/metadata/MetadataReader.hpp"
 
-#include <blitzar/blitzar.hpp>
+#include <blitzar/blitzar.h>
 #include <filesystem>
 #include <limits>
 #include <new>
@@ -16,8 +16,8 @@ namespace {
 
 [[nodiscard]] bool IsCurrentVersion(const MetadataRunInfo& info) noexcept
 {
-    return info.product_version == blitzar::version() &&
-           info.plan_version == blitzar::plan_version();
+    return info.product_version == blitzar_version() &&
+           info.plan_version == blitzar_plan_version();
 }
 
 [[nodiscard]] bool HasValidSteps(
