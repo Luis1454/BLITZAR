@@ -10,6 +10,12 @@
 #include <string_view>
 #include <vector>
 
+#ifdef _WIN32
+
+#include <windows.h>
+
+#endif
+
 namespace {
 
 constexpr std::string_view FullConfig =
@@ -64,14 +70,49 @@ std::vector<std::uint8_t> ReadBytes(const std::filesystem::path& path)
     return {std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>()};
 }
 
+#ifdef _WIN32
+
+std::wstring WindowsCommandLine(const std::filesystem::path& executable,
+    const std::filesystem::path& config)
+{
+    return L"\"" + executable.native() + L"\" --config \"" + config.native() + L"\"";
+}
+
+bool RunCli(const std::filesystem::path& executable, const std::filesystem::path& config)
+{
+    std::wstring command = WindowsCommandLine(executable, config);
+    std::vector<wchar_t> command_line(command.begin(), command.end());
+
+    command_line.push_back(L'\0');
+
+    STARTUPINFOW startup{};
+
+    startup.cb = sizeof(startup);
+
+    PROCESS_INFORMATION process{};
+
+    if (CreateProcessW(nullptr, command_line.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr,
+            &startup, &process) == FALSE) {
+        return false;
+    }
+
+    const DWORD wait_result = WaitForSingleObject(process.hProcess, INFINITE);
+    DWORD exit_code = 1U;
+    const bool succeeded = wait_result == WAIT_OBJECT_0 &&
+                           GetExitCodeProcess(process.hProcess, &exit_code) != FALSE &&
+                           exit_code == 0U;
+
+    (void)CloseHandle(process.hThread);
+    (void)CloseHandle(process.hProcess);
+
+    return succeeded;
+}
+
+#else
+
 std::string QuoteArgument(const std::filesystem::path& path)
 {
     const std::string value = path.string();
-
-#ifdef _WIN32
-
-    return '"' + value + '"';
-#else
 
     std::string quoted{"'"};
 
@@ -86,7 +127,6 @@ std::string QuoteArgument(const std::filesystem::path& path)
     quoted += '\'';
 
     return quoted;
-#endif
 }
 
 bool RunCli(const std::filesystem::path& executable, const std::filesystem::path& config)
@@ -95,6 +135,8 @@ bool RunCli(const std::filesystem::path& executable, const std::filesystem::path
 
     return std::system(command.c_str()) == 0;
 }
+
+#endif
 
 bool CheckOutputs(const std::filesystem::path& root)
 {
