@@ -9,6 +9,8 @@
 
 namespace blitzar_cli {
 
+enum class BlitzarOutputFormat : std::uint8_t { Human, Json };
+
 enum class BlitzarExitCode : int {
     Success = 0,
     Usage = 2,
@@ -36,8 +38,10 @@ struct BlitzarFailure final {
     BlitzarExitCode exit_code{BlitzarExitCode::Runtime};
 };
 
-[[nodiscard]] bool WriteSummary(std::ostream& output, const BlitzarSummary& summary);
-[[nodiscard]] bool WriteFailure(std::ostream& output, const BlitzarFailure& failure) noexcept;
+[[nodiscard]] bool WriteSummary(
+    std::ostream& output, const BlitzarSummary& summary, BlitzarOutputFormat format);
+[[nodiscard]] bool WriteFailure(
+    std::ostream& output, const BlitzarFailure& failure, BlitzarOutputFormat format) noexcept;
 
 } // namespace blitzar_cli
 

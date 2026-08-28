@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.37**
+Plan version: **1.0.38**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -42,7 +42,8 @@ production roots remain deferred. The output contract is frozen in
 `plan/output_contract.json`, and its logical versioned `SnapshotFrameView` plus
 the single-rank binary codec are implemented and contract-qualified. The
 single-rank run manifest, atomic output lifecycle, configured CLI
-publication, production run summary, deterministic snapshot restart, online
+publication, human-readable and machine-readable production run summaries,
+deterministic snapshot restart, online
 conservation diagnostics, and snapshot post-processing are implemented and
 locally qualified. MPI/HIP shard persistence and HDF5 remain deferred to their
 dedicated issues.
@@ -238,8 +239,10 @@ logical frame descriptor, single-rank binary reader/writer, deterministic run
 manifest, and atomic snapshot publication lifecycle are implemented and
 qualified by their P6 tests. The reusable conservation metrics module and its
 KDK requalification are now covered by `TST-P6-005`. The production CLI
-summary is covered by `TST-P6-006`. Deterministic snapshot restart is covered
-by `TST-P6-008`. Restart payload validation and production executable entrypoint
+summary formats are covered by `TST-P6-006`. The CLI defaults to a stable
+labeled human presentation; automation selects the byte-stable JSON format
+with `--format json`. Deterministic snapshot restart is covered by `TST-P6-008`.
+Restart payload validation and production executable entrypoint
 coverage are covered by `TST-P6-009`. Online conservation diagnostics and
 snapshot post-processing, including byte parity with the online CSV, are
 covered by `TST-P6-010`. Output boundary qualification is covered by

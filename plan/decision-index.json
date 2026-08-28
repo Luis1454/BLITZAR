@@ -62,10 +62,15 @@
     {"path": "plan/decisions/046-cli-output-integration.md", "lifecycle": "active"},
     {"path": "plan/decisions/047-cross-platform-qualification.md", "lifecycle": "active"},
     {"path": "plan/decisions/048-conservation-metrics-contract.md", "lifecycle": "active"},
-    {"path": "plan/decisions/049-cli-production-summary.md", "lifecycle": "active"},
+    {
+      "path": "plan/decisions/049-cli-production-summary.md",
+      "lifecycle": "superseded",
+      "notes": "JSON schema retained; default presentation superseded by Decision 054."
+    },
     {"path": "plan/decisions/050-deterministic-snapshot-restart.md", "lifecycle": "active"},
     {"path": "plan/decisions/051-restart-boundary-hardening.md", "lifecycle": "active"},
     {"path": "plan/decisions/052-snapshot-postprocessing.md", "lifecycle": "active"},
-    {"path": "plan/decisions/053-mpi-hip-output-qualification.md", "lifecycle": "active"}
+    {"path": "plan/decisions/053-mpi-hip-output-qualification.md", "lifecycle": "active"},
+    {"path": "plan/decisions/054-cli-human-summary.md", "lifecycle": "active"}
   ]
 }
