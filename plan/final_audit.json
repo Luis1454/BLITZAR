@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.35",
+  "plan_version": "1.0.36",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -632,6 +632,20 @@
         "CHK-P0-016",
         "plan/decisions/051-restart-boundary-hardening.md"
       ]
+    },
+    {
+      "issue": 648,
+      "title": "Add snapshot post-processing mode",
+      "commit": "9ec81c82037078d8b6770e179d4f872374bbf2f1",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/668",
+      "evidence": [
+        "TST-P6-010",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "plan/decisions/052-snapshot-postprocessing.md"
+      ]
     }
   ],
   "non_claims": [
@@ -639,7 +653,7 @@
     "physical NVIDIA CUDA execution when no CUDA device is exposed",
     "physical AMD HIP execution when no AMD device is exposed",
     "PM and TreePM production implementations",
-    "CLI diagnostics, post-processing, and MPI/HIP shard persistence",
+    "MPI/HIP shard persistence",
     "HDF5 snapshot persistence",
     "GPU FMM"
   ],

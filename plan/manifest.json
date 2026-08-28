@@ -1,6 +1,6 @@
 {
   "product_version": "1.0.0",
-  "plan_version": "1.0.35",
+  "plan_version": "1.0.36",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -31,6 +31,8 @@
     "src/io",
     "src/io/snapshot",
     "src/io/metadata",
+    "src/io/diagnostics",
+    "src/io/postprocess",
     "src/gpu",
     "src/gpu/runtime",
     "src/gpu/memory",

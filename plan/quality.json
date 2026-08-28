@@ -74,6 +74,12 @@
       "phase": "P6"
     },
     {
+      "id": "TST-P6-010",
+      "name": "cli-snapshot-post-processing-and-online-parity",
+      "command": "blitzar_cli_postprocess_test blitzar_cli",
+      "phase": "P6"
+    },
+    {
       "id": "TST-P0-004",
       "name": "bounded-views-and-request-contracts",
       "command": "blitzar_bounded_contract_test",

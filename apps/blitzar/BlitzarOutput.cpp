@@ -75,6 +75,14 @@ namespace {
     return {header, payload};
 }
 
+[[nodiscard]] blitzar_physics::GravityParameters MakeGravity(
+    const blitzar_sim::SimConfigRun& config) noexcept
+{
+    const blitzar_core::UnitSystem units{config.length_scale, config.mass_scale, config.time_scale};
+
+    return {config.gravitational_constant, config.softening, units};
+}
+
 } // namespace
 
 BlitzarOutput::BlitzarOutput(const blitzar_sim::SimConfigRun& config) noexcept : config_(config) {}
@@ -86,6 +94,10 @@ blitzar_status BlitzarOutput::Prepare(std::span<const std::uint64_t> ids) noexce
     }
 
     if (!config_.output.enabled) {
+        if (config_.diagnostics.enabled) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+
         prepared_ = true;
 
         return BLITZAR_STATUS_OK;
@@ -111,11 +123,27 @@ blitzar_status BlitzarOutput::Prepare(std::span<const std::uint64_t> ids) noexce
             return status;
         }
 
+        if (config_.diagnostics.enabled) {
+            diagnostics_.emplace(run_->DiagnosticsPath() / blitzar_io::ConservationFileName);
+
+            const blitzar_status diagnostics_status = diagnostics_->Prepare();
+
+            if (diagnostics_status != BLITZAR_STATUS_OK) {
+                diagnostics_.reset();
+                run_.reset();
+
+                ids_ = {};
+
+                return diagnostics_status;
+            }
+        }
+
         prepared_ = true;
 
         return BLITZAR_STATUS_OK;
     }
     catch (const std::bad_alloc&) {
+        diagnostics_.reset();
         run_.reset();
 
         ids_ = {};
@@ -123,6 +151,7 @@ blitzar_status BlitzarOutput::Prepare(std::span<const std::uint64_t> ids) noexce
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
     catch (const std::length_error&) {
+        diagnostics_.reset();
         run_.reset();
 
         ids_ = {};
@@ -130,6 +159,7 @@ blitzar_status BlitzarOutput::Prepare(std::span<const std::uint64_t> ids) noexce
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     catch (const std::filesystem::filesystem_error&) {
+        diagnostics_.reset();
         run_.reset();
 
         ids_ = {};
@@ -159,6 +189,25 @@ bool BlitzarOutput::ShouldWriteStep(std::uint64_t step) const noexcept
     return step % interval == 0 || (config_.output.write_final && step == final_step);
 }
 
+bool BlitzarOutput::ShouldWriteDiagnostics(std::uint64_t step) const noexcept
+{
+    if (!config_.diagnostics.enabled || config_.diagnostics.every_steps <= 0 ||
+        !config_.output.enabled) {
+        return false;
+    }
+
+    const bool output_checkpoint =
+        step == config_.StartStep() ? ShouldWriteInitial() : ShouldWriteStep(step);
+
+    if (!output_checkpoint) {
+        return false;
+    }
+
+    const std::uint64_t interval = static_cast<std::uint64_t>(config_.diagnostics.every_steps);
+
+    return step % interval == 0U;
+}
+
 blitzar_status BlitzarOutput::Publish(
     std::uint64_t step, blitzar_core::ParticleOutputView state) noexcept
 {
@@ -179,6 +228,45 @@ blitzar_status BlitzarOutput::Publish(
     return run_->PublishSnapshot(frame);
 }
 
+blitzar_status BlitzarOutput::PublishDiagnostics(
+    std::uint64_t step, blitzar_core::ParticleOutputView state) noexcept
+{
+    if (!prepared_ || !diagnostics_.has_value() || !HasValidParticleCount(config_) ||
+        state.count != static_cast<std::size_t>(config_.particle_count) ||
+        !blitzar_core::IsValid(state) || !ShouldWriteDiagnostics(step)) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    const blitzar_core::ParticleStateView input{state.count,
+        std::span<const blitzar_core::Scalar>(state.x),
+        std::span<const blitzar_core::Scalar>(state.y),
+        std::span<const blitzar_core::Scalar>(state.z),
+        std::span<const blitzar_core::Scalar>(state.velocity_x),
+        std::span<const blitzar_core::Scalar>(state.velocity_y),
+        std::span<const blitzar_core::Scalar>(state.velocity_z),
+        std::span<const blitzar_core::Scalar>(state.mass), state.count};
+
+    const blitzar_physics::GravityParameters gravity = MakeGravity(config_);
+
+    blitzar_physics::ConservationMetrics metrics{};
+    const blitzar_status metrics_status =
+        blitzar_physics::ComputeConservationMetrics(input, gravity, metrics);
+
+    if (metrics_status != BLITZAR_STATUS_OK) {
+        return metrics_status;
+    }
+
+    const std::uint64_t start_step = config_.StartStep();
+    const blitzar_core::Scalar time =
+        step == start_step ? config_.StartTime()
+                           : static_cast<blitzar_core::Scalar>(step) * config_.timestep;
+
+    const blitzar_sim::SimConfigDiagnostics& diagnostics = config_.diagnostics;
+
+    return diagnostics_->Append({step, time, state.count, metrics, diagnostics.energy,
+        diagnostics.momentum, diagnostics.relative_error});
+}
+
 std::size_t BlitzarOutput::SnapshotCount() const noexcept
 {
     return run_.has_value() ? run_->CompletedOutputCount() : 0U;
@@ -186,7 +274,7 @@ std::size_t BlitzarOutput::SnapshotCount() const noexcept
 
 std::size_t BlitzarOutput::DiagnosticsCount() const noexcept
 {
-    return 0U;
+    return diagnostics_.has_value() ? diagnostics_->RecordCount() : 0U;
 }
 
 const std::filesystem::path& BlitzarOutput::OutputPath() const noexcept

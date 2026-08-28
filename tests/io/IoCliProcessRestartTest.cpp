@@ -1,20 +1,14 @@
 #include "fixtures/FixtureCheck.hpp"
+#include "fixtures/FixtureProcess.hpp"
 #include "fixtures/FixtureRestart.hpp"
 
 #include <cstdint>
-#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <string>
 #include <string_view>
 #include <vector>
-
-#ifdef _WIN32
-
-#include <windows.h>
-
-#endif
 
 namespace {
 
@@ -70,74 +64,6 @@ std::vector<std::uint8_t> ReadBytes(const std::filesystem::path& path)
     return {std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>()};
 }
 
-#ifdef _WIN32
-
-std::wstring WindowsCommandLine(
-    const std::filesystem::path& executable, const std::filesystem::path& config)
-{
-    return L"\"" + executable.native() + L"\" --config \"" + config.native() + L"\"";
-}
-
-bool RunCli(const std::filesystem::path& executable, const std::filesystem::path& config)
-{
-    std::wstring command = WindowsCommandLine(executable, config);
-    std::vector<wchar_t> command_line(command.begin(), command.end());
-
-    command_line.push_back(L'\0');
-
-    STARTUPINFOW startup{};
-
-    startup.cb = sizeof(startup);
-
-    PROCESS_INFORMATION process{};
-
-    if (CreateProcessW(nullptr, command_line.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr,
-            &startup, &process) == FALSE) {
-        return false;
-    }
-
-    const DWORD wait_result = WaitForSingleObject(process.hProcess, INFINITE);
-    DWORD exit_code = 1U;
-    const bool succeeded = wait_result == WAIT_OBJECT_0 &&
-                           GetExitCodeProcess(process.hProcess, &exit_code) != FALSE &&
-                           exit_code == 0U;
-
-    (void)CloseHandle(process.hThread);
-    (void)CloseHandle(process.hProcess);
-
-    return succeeded;
-}
-
-#else
-
-std::string QuoteArgument(const std::filesystem::path& path)
-{
-    const std::string value = path.string();
-
-    std::string quoted{"'"};
-
-    for (const char value_character : value) {
-        if (value_character == '\'') {
-            quoted += "'\\''";
-        }
-
-        quoted += value_character;
-    }
-
-    quoted += '\'';
-
-    return quoted;
-}
-
-bool RunCli(const std::filesystem::path& executable, const std::filesystem::path& config)
-{
-    const std::string command = QuoteArgument(executable) + " --config " + QuoteArgument(config);
-
-    return std::system(command.c_str()) == 0;
-}
-
-#endif
-
 bool CheckOutputs(const std::filesystem::path& root)
 {
     const std::filesystem::path full_state =
@@ -163,9 +89,10 @@ int RunChecks(const std::filesystem::path& executable, const std::filesystem::pa
     BLITZAR_CHECK(WriteConfig(full_directory / "run.ini", FullConfig));
     BLITZAR_CHECK(WriteConfig(split_directory / "run.ini", SplitConfig));
     BLITZAR_CHECK(WriteConfig(restart_directory / "run.ini", RestartConfig));
-    BLITZAR_CHECK(RunCli(executable, full_directory / "run.ini"));
-    BLITZAR_CHECK(RunCli(executable, split_directory / "run.ini"));
-    BLITZAR_CHECK(RunCli(executable, restart_directory / "run.ini"));
+    BLITZAR_CHECK(blitzar_test::RunProcess(executable, "--config", full_directory / "run.ini"));
+    BLITZAR_CHECK(blitzar_test::RunProcess(executable, "--config", split_directory / "run.ini"));
+    BLITZAR_CHECK(blitzar_test::RunProcess(executable, "--config", restart_directory / "run.ini"));
+
     BLITZAR_CHECK(CheckOutputs(root));
 
     return 0;

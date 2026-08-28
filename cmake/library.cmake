@@ -77,6 +77,11 @@ set(BLITZAR_LIBRARY_SOURCES
     src/io/metadata/MetadataReaderJson.cpp
     src/io/metadata/MetadataRun.cpp
     src/io/metadata/MetadataText.cpp
+    src/io/diagnostics/ConservationCsv.cpp
+    src/io/postprocess/PostProcess.cpp
+    src/io/postprocess/PostProcessOutput.cpp
+    src/io/postprocess/PostProcessState.cpp
+    src/io/postprocess/PostProcessInput.cpp
     src/simulation/Sim.cpp
     src/simulation/runtime/SimRuntime.cpp
     src/simulation/state/SimParticleState.cpp

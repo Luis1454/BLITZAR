@@ -437,6 +437,19 @@ EXPECTED_OUTPUT_CONTRACT = {
         "precision": 17,
         "accumulation": "fixed_index_order",
     },
+    "postprocess": {
+        "cli_mode": "--post-process <run-directory>",
+        "input_manifest": "manifest.json",
+        "input_state_directory": "states",
+        "output_directory": "postProcessing",
+        "output_file": "conservation.csv",
+        "state_order": "manifest_completed_outputs_strictly_increasing",
+        "version_policy": "current_product_and_plan_and_snapshot_v1",
+        "extra_files": "reject",
+        "relative_error_reference": "first_emitted_record",
+        "disabled_metrics": "nan",
+        "atomic_publication": True,
+    },
 }
 
 
