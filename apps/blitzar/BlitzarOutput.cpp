@@ -170,9 +170,9 @@ blitzar_status BlitzarOutput::Publish(
     }
 
     const std::uint64_t start_step = config_.StartStep();
-    const blitzar_core::Scalar time = step == start_step
-        ? config_.StartTime()
-        : static_cast<blitzar_core::Scalar>(step) * config_.timestep;
+    const blitzar_core::Scalar time =
+        step == start_step ? config_.StartTime()
+                           : static_cast<blitzar_core::Scalar>(step) * config_.timestep;
 
     const blitzar_core::SnapshotFrameView frame = MakeFrame(step, time, state, ids_);
 
