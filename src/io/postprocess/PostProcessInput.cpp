@@ -16,8 +16,7 @@ namespace {
 
 [[nodiscard]] bool IsCurrentVersion(const MetadataRunInfo& info) noexcept
 {
-    return info.product_version == blitzar_version() &&
-           info.plan_version == blitzar_plan_version();
+    return info.product_version == blitzar_version() && info.plan_version == blitzar_plan_version();
 }
 
 [[nodiscard]] bool HasValidSteps(

@@ -243,8 +243,8 @@ by `TST-P6-008`. Restart payload validation and production executable entrypoint
 coverage are covered by `TST-P6-009`. Online conservation diagnostics and
 snapshot post-processing, including byte parity with the online CSV, are
 covered by `TST-P6-010`. Optional MPI/HIP qualification and the optional HDF5
-adapter remain open. The complete run pipeline remains unfinished; HDF5
-remains deferred until its executable evidence exists.
+adapter remain open. The complete run pipeline remains unfinished; HDF5 remains
+deferred until its executable evidence exists.
 
 ### Sprint 6: Optional HIP Acceleration
 
