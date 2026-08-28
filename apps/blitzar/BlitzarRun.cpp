@@ -109,17 +109,30 @@ struct RunResult final {
     const std::uint64_t final_step = config.FinalStep();
     std::uint64_t completed_steps = start_step;
 
-    if (output.ShouldWriteInitial()) {
+    const bool write_initial = output.ShouldWriteInitial();
+    const bool write_initial_diagnostics = output.ShouldWriteDiagnostics(start_step);
+
+    if (write_initial || write_initial_diagnostics) {
         blitzar_status status = CaptureState(simulation, state);
 
         if (status != BLITZAR_STATUS_OK) {
             return {status, "output-state", BlitzarExitCode::Output, completed_steps};
         }
 
-        status = output.Publish(start_step, state.Output());
+        if (write_initial) {
+            status = output.Publish(start_step, state.Output());
 
-        if (status != BLITZAR_STATUS_OK) {
-            return {status, "output-publish", BlitzarExitCode::Output, completed_steps};
+            if (status != BLITZAR_STATUS_OK) {
+                return {status, "output-publish", BlitzarExitCode::Output, completed_steps};
+            }
+        }
+
+        if (write_initial_diagnostics) {
+            status = output.PublishDiagnostics(start_step, state.Output());
+
+            if (status != BLITZAR_STATUS_OK) {
+                return {status, "diagnostics-publish", BlitzarExitCode::Output, completed_steps};
+            }
         }
     }
 
@@ -133,7 +146,10 @@ struct RunResult final {
 
         completed_steps = step;
 
-        if (!output.ShouldWriteStep(step)) {
+        const bool write_step = output.ShouldWriteStep(step);
+        const bool write_diagnostics = output.ShouldWriteDiagnostics(step);
+
+        if (!write_step && !write_diagnostics) {
             continue;
         }
 
@@ -143,10 +159,21 @@ struct RunResult final {
             return {output_status, "output-state", BlitzarExitCode::Output, completed_steps};
         }
 
-        output_status = output.Publish(step, state.Output());
+        if (write_step) {
+            output_status = output.Publish(step, state.Output());
 
-        if (output_status != BLITZAR_STATUS_OK) {
-            return {output_status, "output-publish", BlitzarExitCode::Output, completed_steps};
+            if (output_status != BLITZAR_STATUS_OK) {
+                return {output_status, "output-publish", BlitzarExitCode::Output, completed_steps};
+            }
+        }
+
+        if (write_diagnostics) {
+            output_status = output.PublishDiagnostics(step, state.Output());
+
+            if (output_status != BLITZAR_STATUS_OK) {
+                return {
+                    output_status, "diagnostics-publish", BlitzarExitCode::Output, completed_steps};
+            }
         }
     }
 

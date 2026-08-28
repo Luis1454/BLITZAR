@@ -115,6 +115,7 @@ blitzar_enable_warnings(blitzar_cli_restart_test)
 
 if(BLITZAR_BUILD_CLI)
     add_executable(blitzar_cli_process_restart_test
+        tests/fixtures/FixtureProcess.cpp
         tests/fixtures/FixtureRestart.cpp
         tests/io/IoCliProcessRestartTest.cpp
     )
@@ -123,6 +124,23 @@ if(BLITZAR_BUILD_CLI)
     target_include_directories(blitzar_cli_process_restart_test PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src)
     blitzar_enable_warnings(blitzar_cli_process_restart_test)
+
+    add_executable(blitzar_cli_postprocess_test
+        apps/blitzar/BlitzarOutput.cpp
+        apps/blitzar/BlitzarPostProcess.cpp
+        apps/blitzar/BlitzarRestart.cpp
+        apps/blitzar/BlitzarRun.cpp
+        apps/blitzar/BlitzarSummary.cpp
+        tests/fixtures/FixtureProcess.cpp
+        tests/fixtures/FixtureRestart.cpp
+        tests/io/IoCliPostProcessTest.cpp
+    )
+    target_link_libraries(blitzar_cli_postprocess_test PRIVATE blitzar)
+    target_compile_features(blitzar_cli_postprocess_test PRIVATE cxx_std_20)
+    target_include_directories(blitzar_cli_postprocess_test PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/apps/blitzar
+        ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    blitzar_enable_warnings(blitzar_cli_postprocess_test)
 endif()
 
 add_executable(blitzar_bounded_contract_test
@@ -263,6 +281,7 @@ set(BLITZAR_TEST_TARGETS
     blitzar_cli_summary_test
     blitzar_cli_restart_test
     blitzar_cli_process_restart_test
+    blitzar_cli_postprocess_test
     blitzar_bounded_contract_test
     blitzar_abi_test
     blitzar_capability_test
