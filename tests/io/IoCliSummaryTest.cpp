@@ -53,12 +53,13 @@ bool WriteConfig(const std::filesystem::path& path, std::string_view source)
     return static_cast<bool>(output);
 }
 
-CapturedOutput RunCaptured(const std::filesystem::path& path)
+CapturedOutput RunCaptured(
+    const std::filesystem::path& path, blitzar_cli::BlitzarOutputFormat format)
 {
     std::ostringstream standard_output;
     std::ostringstream standard_error;
 
-    const int exit_code = blitzar_cli::RunConfig(path, {standard_output, standard_error});
+    const int exit_code = blitzar_cli::RunConfig(path, {standard_output, standard_error, format});
 
     return {exit_code, standard_output.str(), standard_error.str()};
 }
@@ -75,6 +76,18 @@ std::string ExpectedSummary(std::string_view output_path, std::size_t snapshot_c
     return expected.str();
 }
 
+std::string ExpectedHumanSummary()
+{
+    return "BLITZAR result\n"
+           "  status:       ok\n"
+           "  solver:       direct\n"
+           "  steps:        2/2\n"
+           "  particles:    4\n"
+           "  snapshots:    0\n"
+           "  diagnostics:  0\n"
+           "  output:       disabled\n";
+}
+
 int CheckNoOutputSummary(const std::filesystem::path& base)
 {
     RemoveTree(base);
@@ -84,8 +97,8 @@ int CheckNoOutputSummary(const std::filesystem::path& base)
 
     BLITZAR_CHECK(WriteConfig(config, NoOutputConfig));
 
-    const CapturedOutput first = RunCaptured(config);
-    const CapturedOutput second = RunCaptured(config);
+    const CapturedOutput first = RunCaptured(config, blitzar_cli::BlitzarOutputFormat::Json);
+    const CapturedOutput second = RunCaptured(config, blitzar_cli::BlitzarOutputFormat::Json);
     const std::string expected = ExpectedSummary("", 0U);
 
     BLITZAR_CHECK(first.exit_code == 0);
@@ -109,7 +122,7 @@ int CheckOutputSummary(const std::filesystem::path& base)
 
     BLITZAR_CHECK(WriteConfig(config, OutputConfig));
 
-    const CapturedOutput first = RunCaptured(config);
+    const CapturedOutput first = RunCaptured(config, blitzar_cli::BlitzarOutputFormat::Json);
     const std::string expected = ExpectedSummary(output.generic_string(), 3U);
 
     BLITZAR_CHECK(first.exit_code == 0);
@@ -118,7 +131,7 @@ int CheckOutputSummary(const std::filesystem::path& base)
     BLITZAR_CHECK(std::filesystem::is_regular_file(output / "manifest.json"));
     BLITZAR_CHECK(std::filesystem::is_directory(output / "states"));
 
-    const CapturedOutput rerun = RunCaptured(config);
+    const CapturedOutput rerun = RunCaptured(config, blitzar_cli::BlitzarOutputFormat::Json);
 
     BLITZAR_CHECK(rerun.exit_code == static_cast<int>(blitzar_cli::BlitzarExitCode::Output));
     BLITZAR_CHECK(rerun.standard_output.empty());
@@ -138,7 +151,7 @@ int CheckConfigurationFailure(const std::filesystem::path& base)
 
     BLITZAR_CHECK(WriteConfig(config, "unsupported_directive()\n"));
 
-    const CapturedOutput result = RunCaptured(config);
+    const CapturedOutput result = RunCaptured(config, blitzar_cli::BlitzarOutputFormat::Json);
 
     BLITZAR_CHECK(
         result.exit_code == static_cast<int>(blitzar_cli::BlitzarExitCode::Configuration));
@@ -147,6 +160,24 @@ int CheckConfigurationFailure(const std::filesystem::path& base)
     BLITZAR_CHECK(result.standard_error ==
                   "{\"schema_version\":1,\"status\":5,\"phase\":\"semantic\","
                   "\"exit_code\":3,\"message\":\"unsupported\"}\n");
+
+    return 0;
+}
+
+int CheckHumanSummary(const std::filesystem::path& base)
+{
+    RemoveTree(base);
+    std::filesystem::create_directories(base);
+
+    const std::filesystem::path config = base / "run.ini";
+
+    BLITZAR_CHECK(WriteConfig(config, NoOutputConfig));
+
+    const CapturedOutput result = RunCaptured(config, blitzar_cli::BlitzarOutputFormat::Human);
+
+    BLITZAR_CHECK(result.exit_code == 0);
+    BLITZAR_CHECK(result.standard_error.empty());
+    BLITZAR_CHECK(result.standard_output == ExpectedHumanSummary());
 
     return 0;
 }
@@ -161,6 +192,7 @@ int main()
     BLITZAR_CHECK(CheckNoOutputSummary(base / "no-output") == 0);
     BLITZAR_CHECK(CheckOutputSummary(base / "output") == 0);
     BLITZAR_CHECK(CheckConfigurationFailure(base / "failure") == 0);
+    BLITZAR_CHECK(CheckHumanSummary(base / "human") == 0);
 
     RemoveTree(base);
 

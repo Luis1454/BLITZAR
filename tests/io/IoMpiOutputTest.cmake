@@ -72,7 +72,7 @@ file(WRITE "${SINGLE_CONFIG}" "${RUN_CONFIG}")
 file(WRITE "${DISTRIBUTED_CONFIG}" "${RUN_CONFIG}")
 
 RunCommand(direct_result direct_output direct_error
-    "${BLITZAR_CLI}" --config "${DIRECT_CONFIG}"
+    "${BLITZAR_CLI}" --format json --config "${DIRECT_CONFIG}"
 )
 
 if(NOT direct_result EQUAL 0)
@@ -90,7 +90,7 @@ set(MPI_COMMAND
     "OMPI_MCA_rmaps_base_oversubscribe=1"
     "${MPIEXEC_EXECUTABLE}" "${MPIEXEC_NUMPROC_FLAG}" "1"
 )
-list(APPEND MPI_COMMAND ${MPIEXEC_PREFLAGS} "${BLITZAR_CLI}" --config "${SINGLE_CONFIG}")
+list(APPEND MPI_COMMAND ${MPIEXEC_PREFLAGS} "${BLITZAR_CLI}" --format json --config "${SINGLE_CONFIG}")
 list(APPEND MPI_COMMAND ${MPIEXEC_POSTFLAGS})
 
 RunCommand(single_result single_output single_error ${MPI_COMMAND})
@@ -120,7 +120,7 @@ set(MPI_COMMAND
     "OMPI_MCA_rmaps_base_oversubscribe=1"
     "${MPIEXEC_EXECUTABLE}" "${MPIEXEC_NUMPROC_FLAG}" "2"
 )
-list(APPEND MPI_COMMAND ${MPIEXEC_PREFLAGS} "${BLITZAR_CLI}" --config "${DISTRIBUTED_CONFIG}")
+list(APPEND MPI_COMMAND ${MPIEXEC_PREFLAGS} "${BLITZAR_CLI}" --format json --config "${DISTRIBUTED_CONFIG}")
 list(APPEND MPI_COMMAND ${MPIEXEC_POSTFLAGS})
 
 RunCommand(distributed_result distributed_output distributed_error ${MPI_COMMAND})

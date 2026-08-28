@@ -39,7 +39,7 @@ int PrintFailure(BlitzarStreams streams, std::string_view phase, blitzar_status 
 {
     const BlitzarFailure failure{status, phase, exit_code};
 
-    (void)WriteFailure(streams.standard_error, failure);
+    (void)WriteFailure(streams.standard_error, failure, streams.format);
 
     return static_cast<int>(exit_code);
 }
@@ -266,7 +266,7 @@ struct CheckpointResult final {
             static_cast<std::uint64_t>(output_writer.DiagnosticsCount()),
             output_writer.OutputPath()};
 
-        if (WriteSummary(streams.standard_output, summary)) {
+        if (WriteSummary(streams.standard_output, summary, streams.format)) {
             return static_cast<int>(BlitzarExitCode::Success);
         }
     }

@@ -96,20 +96,23 @@ bool WriteBytes(const std::filesystem::path& path, std::span<const std::uint8_t>
     return static_cast<bool>(output);
 }
 
-CapturedOutput RunConfigCaptured(const std::filesystem::path& path)
+CapturedOutput RunConfigCaptured(
+    const std::filesystem::path& path, blitzar_cli::BlitzarOutputFormat format)
 {
     std::ostringstream standard_output;
     std::ostringstream standard_error;
-    const int exit_code = blitzar_cli::RunConfig(path, {standard_output, standard_error});
+    const int exit_code = blitzar_cli::RunConfig(path, {standard_output, standard_error, format});
 
     return {exit_code, standard_output.str(), standard_error.str()};
 }
 
-CapturedOutput RunPostProcessCaptured(const std::filesystem::path& path)
+CapturedOutput RunPostProcessCaptured(
+    const std::filesystem::path& path, blitzar_cli::BlitzarOutputFormat format)
 {
     std::ostringstream standard_output;
     std::ostringstream standard_error;
-    const int exit_code = blitzar_cli::RunPostProcess(path, {standard_output, standard_error});
+    const int exit_code =
+        blitzar_cli::RunPostProcess(path, {standard_output, standard_error, format});
 
     return {exit_code, standard_output.str(), standard_error.str()};
 }
@@ -119,7 +122,8 @@ int PrepareRun(const std::filesystem::path& directory)
     BLITZAR_CHECK(blitzar_test::EnsureDirectory(directory));
     BLITZAR_CHECK(WriteConfig(directory / "run.ini"));
 
-    const CapturedOutput result = RunConfigCaptured(directory / "run.ini");
+    const CapturedOutput result =
+        RunConfigCaptured(directory / "run.ini", blitzar_cli::BlitzarOutputFormat::Json);
 
     BLITZAR_CHECK(result.exit_code == 0);
     BLITZAR_CHECK(result.standard_error.empty());
@@ -141,7 +145,27 @@ int CheckParity(const std::filesystem::path& directory, const std::filesystem::p
 
     BLITZAR_CHECK(!online.empty());
 
-    const CapturedOutput direct = RunPostProcessCaptured(output);
+    const CapturedOutput human =
+        RunPostProcessCaptured(output, blitzar_cli::BlitzarOutputFormat::Human);
+
+    const std::string expected_human = "BLITZAR result\n"
+                                       "  status:       ok\n"
+                                       "  solver:       direct\n"
+                                       "  steps:        4/4\n"
+                                       "  particles:    4\n"
+                                       "  snapshots:    5\n"
+                                       "  diagnostics:  5\n"
+                                       "  output:       " +
+                                       post_path.lexically_normal().generic_string() + "\n";
+
+    BLITZAR_CHECK(human.exit_code == 0);
+    BLITZAR_CHECK(human.standard_error.empty());
+    BLITZAR_CHECK(human.standard_output == expected_human);
+
+    BLITZAR_CHECK(blitzar_test::RemoveTree(output / "postProcessing"));
+
+    const CapturedOutput direct =
+        RunPostProcessCaptured(output, blitzar_cli::BlitzarOutputFormat::Json);
 
     BLITZAR_CHECK(direct.exit_code == 0);
     BLITZAR_CHECK(direct.standard_error.empty());
@@ -151,7 +175,8 @@ int CheckParity(const std::filesystem::path& directory, const std::filesystem::p
     BLITZAR_CHECK(blitzar_test::RunProcess(executable, "--post-process", output));
     BLITZAR_CHECK(ReadText(post_path) == online);
 
-    const CapturedOutput rerun = RunPostProcessCaptured(output);
+    const CapturedOutput rerun =
+        RunPostProcessCaptured(output, blitzar_cli::BlitzarOutputFormat::Json);
 
     BLITZAR_CHECK(rerun.exit_code == static_cast<int>(blitzar_cli::BlitzarExitCode::Output));
     BLITZAR_CHECK(rerun.standard_output.empty());
@@ -161,7 +186,8 @@ int CheckParity(const std::filesystem::path& directory, const std::filesystem::p
 
 int CheckFailure(const std::filesystem::path& directory, bool expect_absent = true)
 {
-    const CapturedOutput result = RunPostProcessCaptured(directory);
+    const CapturedOutput result =
+        RunPostProcessCaptured(directory, blitzar_cli::BlitzarOutputFormat::Json);
 
     BLITZAR_CHECK(result.exit_code == static_cast<int>(blitzar_cli::BlitzarExitCode::Output));
     BLITZAR_CHECK(result.standard_output.empty());

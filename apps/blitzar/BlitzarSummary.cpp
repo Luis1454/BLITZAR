@@ -84,9 +84,69 @@ namespace {
     return WriteJsonString(output, portable_path);
 }
 
-} // namespace
+[[nodiscard]] std::string_view StatusName(blitzar_status status) noexcept
+{
+    switch (status) {
+    case BLITZAR_STATUS_OK:
 
-bool WriteSummary(std::ostream& output, const BlitzarSummary& summary)
+        return "ok";
+
+    case BLITZAR_STATUS_INVALID_ARGUMENT:
+
+        return "invalid argument";
+
+    case BLITZAR_STATUS_ALLOCATION_FAILURE:
+
+        return "allocation failure";
+
+    case BLITZAR_STATUS_INTERNAL_ERROR:
+
+        return "internal error";
+
+    case BLITZAR_STATUS_SINGULARITY:
+
+        return "singularity";
+
+    case BLITZAR_STATUS_UNSUPPORTED:
+
+        return "unsupported";
+
+    default:
+
+        return "unknown";
+    }
+}
+
+[[nodiscard]] std::string_view SolverName(blitzar_solver_kind solver) noexcept
+{
+    switch (solver) {
+    case BLITZAR_SOLVER_DIRECT:
+
+        return "direct";
+
+    case BLITZAR_SOLVER_BARNES_HUT:
+
+        return "barnes-hut";
+
+    case BLITZAR_SOLVER_FMM:
+
+        return "fmm";
+
+    case BLITZAR_SOLVER_PM:
+
+        return "pm";
+
+    case BLITZAR_SOLVER_TREEPM:
+
+        return "treepm";
+
+    default:
+
+        return "unknown";
+    }
+}
+
+[[nodiscard]] bool WriteJsonSummary(std::ostream& output, const BlitzarSummary& summary)
 {
     output.imbue(std::locale::classic());
 
@@ -106,7 +166,33 @@ bool WriteSummary(std::ostream& output, const BlitzarSummary& summary)
     return static_cast<bool>(output);
 }
 
-bool WriteFailure(std::ostream& output, const BlitzarFailure& failure) noexcept
+[[nodiscard]] bool WriteHumanSummary(std::ostream& output, const BlitzarSummary& summary)
+{
+    output.imbue(std::locale::classic());
+
+    output << "BLITZAR result\n"
+           << "  status:       " << StatusName(summary.status) << '\n'
+           << "  solver:       " << SolverName(summary.solver) << '\n'
+           << "  steps:        " << summary.completed_steps << '/' << summary.requested_steps
+           << '\n'
+           << "  particles:    " << summary.particle_count << '\n'
+           << "  snapshots:    " << summary.snapshot_count << '\n'
+           << "  diagnostics:  " << summary.diagnostics_count << '\n'
+           << "  output:       ";
+
+    if (summary.output_path.empty()) {
+        output << "disabled";
+    }
+    else {
+        output << summary.output_path.generic_string();
+    }
+
+    output << '\n';
+
+    return static_cast<bool>(output);
+}
+
+[[nodiscard]] bool WriteJsonFailure(std::ostream& output, const BlitzarFailure& failure) noexcept
 {
     const std::string_view message{blitzar_status_message(failure.status)};
 
@@ -128,6 +214,58 @@ bool WriteFailure(std::ostream& output, const BlitzarFailure& failure) noexcept
     output << "}\n";
 
     return static_cast<bool>(output);
+}
+
+[[nodiscard]] bool WriteHumanFailure(std::ostream& output, const BlitzarFailure& failure) noexcept
+{
+    const std::string_view message{blitzar_status_message(failure.status)};
+
+    output.imbue(std::locale::classic());
+
+    output << "BLITZAR error\n"
+           << "  phase:        " << failure.phase << '\n'
+           << "  status:       " << StatusName(failure.status) << '\n'
+           << "  message:      " << message << '\n'
+           << "  exit code:    " << static_cast<int>(failure.exit_code) << '\n';
+
+    return static_cast<bool>(output);
+}
+
+} // namespace
+
+bool WriteSummary(std::ostream& output, const BlitzarSummary& summary, BlitzarOutputFormat format)
+{
+    switch (format) {
+    case BlitzarOutputFormat::Human:
+
+        return WriteHumanSummary(output, summary);
+
+    case BlitzarOutputFormat::Json:
+
+        return WriteJsonSummary(output, summary);
+
+    default:
+
+        return false;
+    }
+}
+
+bool WriteFailure(
+    std::ostream& output, const BlitzarFailure& failure, BlitzarOutputFormat format) noexcept
+{
+    switch (format) {
+    case BlitzarOutputFormat::Human:
+
+        return WriteHumanFailure(output, failure);
+
+    case BlitzarOutputFormat::Json:
+
+        return WriteJsonFailure(output, failure);
+
+    default:
+
+        return false;
+    }
 }
 
 } // namespace blitzar_cli

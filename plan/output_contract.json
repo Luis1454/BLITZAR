@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.37",
+  "plan_version": "1.0.38",
   "configuration": {
     "path_base": "config_parent",
     "directives": {
@@ -147,33 +147,60 @@
     "timestamp": "excluded"
   },
   "summary": {
-    "format": "json",
-    "schema_version": 1,
+    "formats": ["human", "json"],
+    "default_format": "human",
     "stream": "stdout",
-    "record": "one_line",
-    "field_order": [
-      "schema_version",
-      "status",
-      "requested_steps",
-      "completed_steps",
-      "particle_count",
-      "solver",
-      "snapshot_count",
-      "diagnostics_count",
-      "output_path"
-    ],
-    "output_path": "portable_generic_path_or_empty",
-    "diagnostics_count": "published_records",
-    "samples": "not_emitted",
-    "locale": "classic",
-    "wall_clock": "excluded"
+    "human": {
+      "record": "fixed_labeled_lines",
+      "fields": [
+        "status",
+        "solver",
+        "steps",
+        "particles",
+        "snapshots",
+        "diagnostics",
+        "output"
+      ],
+      "locale": "classic",
+      "ansi": "forbidden",
+      "wall_clock": "excluded"
+    },
+    "json": {
+      "schema_version": 1,
+      "record": "one_line",
+      "field_order": [
+        "schema_version",
+        "status",
+        "requested_steps",
+        "completed_steps",
+        "particle_count",
+        "solver",
+        "snapshot_count",
+        "diagnostics_count",
+        "output_path"
+      ],
+      "output_path": "portable_generic_path_or_empty",
+      "diagnostics_count": "published_records",
+      "samples": "not_emitted",
+      "locale": "classic",
+      "wall_clock": "excluded"
+    }
   },
   "failure": {
-    "format": "json",
-    "schema_version": 1,
+    "formats": ["human", "json"],
+    "default_format": "human",
     "stream": "stderr",
-    "record": "one_line",
-    "field_order": ["schema_version", "status", "phase", "exit_code", "message"],
+    "human": {
+      "record": "fixed_labeled_lines",
+      "fields": ["phase", "status", "message", "exit_code"],
+      "locale": "classic",
+      "ansi": "forbidden"
+    },
+    "json": {
+      "schema_version": 1,
+      "record": "one_line",
+      "field_order": ["schema_version", "status", "phase", "exit_code", "message"]
+    },
     "exit_codes": {
       "success": 0,
       "usage": 2,

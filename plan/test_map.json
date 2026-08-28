@@ -78,7 +78,7 @@
       "mode": "",
       "ranks": 1,
       "phase": "P6",
-      "contract": "machine-readable production summary, exact failure streams, exit codes, counters, and deterministic repeated-run output"
+      "contract": "human-readable default and explicit machine-readable JSON production summaries, exact failure streams, exit codes, counters, and deterministic repeated-run output"
     },
     {
       "id": "TST-P6-007",
@@ -87,7 +87,7 @@
       "mode": "",
       "ranks": 1,
       "phase": "P6",
-      "contract": "CLI misuse emits the exact machine-readable stderr record, no stdout, and exit code 2"
+      "contract": "CLI misuse emits the selected stable stderr record, no stdout, and exit code 2; invalid formats are rejected"
     },
     {
       "id": "TST-P6-008",
@@ -114,7 +114,7 @@
       "mode": "production-entrypoint",
       "ranks": 1,
       "phase": "P6",
-      "contract": "strict manifest/state enumeration, conservation recomputation, atomic post-processing CSV, rejection of invalid artifacts, and byte parity with online diagnostics"
+      "contract": "strict manifest/state enumeration, human and JSON post-processing summaries, conservation recomputation, atomic post-processing CSV, rejection of invalid artifacts, and byte parity with online diagnostics"
     },
     {
       "id": "TST-P6-011",

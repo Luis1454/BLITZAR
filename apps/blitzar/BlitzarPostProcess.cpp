@@ -20,7 +20,7 @@ int PrintFailure(BlitzarStreams streams, std::string_view phase, blitzar_status 
 {
     const BlitzarFailure failure{status, phase, exit_code};
 
-    (void)WriteFailure(streams.standard_error, failure);
+    (void)WriteFailure(streams.standard_error, failure, streams.format);
 
     return static_cast<int>(exit_code);
 }
@@ -32,7 +32,7 @@ int PrintFailure(BlitzarStreams streams, std::string_view phase, blitzar_status 
         report.particle_count, report.solver, report.snapshot_count, report.diagnostics_count,
         report.output_path};
 
-    return WriteSummary(streams.standard_output, summary)
+    return WriteSummary(streams.standard_output, summary, streams.format)
                ? static_cast<int>(BlitzarExitCode::Success)
                : PrintFailure(
                      streams, "summary", BLITZAR_STATUS_INTERNAL_ERROR, BlitzarExitCode::Output);
