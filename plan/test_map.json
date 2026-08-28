@@ -182,6 +182,14 @@
       "contract": "performance metrics, allocation behavior, and Direct CPU oracle"
     },
     {
+      "id": "TST-P1-005",
+      "entrypoint": "tests/layout/LayoutRunner.cpp",
+      "responsibility": "tests/layout/LayoutBenchmark.cpp",
+      "mode": "benchmark",
+      "ranks": 1,
+      "contract": "Morton comparison/radix ordering, bounded SoA/AoSoA metrics, Octree parity, and byte repeatability"
+    },
+    {
       "id": "TST-P2-001",
       "entrypoint": "examples/c/CExample.c",
       "responsibility": "examples/c/CExample.c",

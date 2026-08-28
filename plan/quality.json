@@ -122,6 +122,12 @@
       "phase": "P1"
     },
     {
+      "id": "TST-P1-005",
+      "name": "morton-order-and-bounded-layout-qualification",
+      "command": "blitzar_layout_test",
+      "phase": "P1"
+    },
+    {
       "id": "TST-P2-001",
       "name": "c-example",
       "command": "blitzar_c_example",
@@ -411,6 +417,7 @@
         {"path": "tests/octree", "prefix": "Octree"},
         {"path": "tests/io", "prefix": "Io"},
         {"path": "tests/scaling", "prefix": "Scale"},
+        {"path": "tests/layout", "prefix": "Layout"},
         {"path": "tests/simulation", "prefix": "Sim"},
         {"path": "examples/c", "prefix": "C"},
         {"path": "examples/cpp", "prefix": "Cpp"}
@@ -465,6 +472,10 @@
         {
           "path": "tests/contracts/ContractDebugStatusTest.cpp",
           "reason": "standalone debugger exit-status probe"
+        },
+        {
+          "path": "tests/layout/LayoutRunner.cpp",
+          "reason": "standalone deterministic layout evidence runner"
         }
       ],
       "forbidden_path_components": ["utils", "common", "misc", "private", "details"],
@@ -680,6 +691,18 @@
       "id": "CHK-P0-031",
       "name": "final-audit-fixtures",
       "command": "python -m tools.audit.audit_test",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-032",
+      "name": "layout-evidence-contract",
+      "command": "python -m tools.evidence.layout_evidence --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-033",
+      "name": "layout-evidence-fixtures",
+      "command": "python -m tools.evidence.layout_evidence_test",
       "phase": "P0"
     }
   ]

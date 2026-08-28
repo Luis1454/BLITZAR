@@ -489,7 +489,7 @@ jobs:
       - name: Build evidence probes
         run: |
           cmake --build "$BLITZAR_CI_BUILD_ROOT/evidence" \
-            --target blitzar_scaling_test blitzar_accelerator_test --parallel
+            --target blitzar_scaling_test blitzar_accelerator_test blitzar_layout_test --parallel
 
       - name: Run reproducible evidence matrix
         shell: bash
@@ -502,6 +502,15 @@ jobs:
             --root . \
             --build-dir "$BLITZAR_CI_BUILD_ROOT/evidence" \
             --output "$RUNNER_TEMP/blitzar-evidence" \
+            --strict
+
+      - name: Run layout qualification evidence
+        shell: bash
+        run: |
+          timeout --foreground 120s python -m tools.evidence.layout_evidence \
+            --root . \
+            --build-dir "$BLITZAR_CI_BUILD_ROOT/evidence" \
+            --output "$RUNNER_TEMP/blitzar-evidence/layout" \
             --strict
 
       - name: Publish evidence artifacts
