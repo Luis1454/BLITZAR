@@ -68,6 +68,12 @@
       "phase": "P6"
     },
     {
+      "id": "TST-P6-009",
+      "name": "cli-production-entrypoint-deterministic-restart",
+      "command": "blitzar_cli_process_restart_test blitzar_cli",
+      "phase": "P6"
+    },
+    {
       "id": "TST-P0-004",
       "name": "bounded-views-and-request-contracts",
       "command": "blitzar_bounded_contract_test",

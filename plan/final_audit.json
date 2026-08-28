@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.34",
+  "plan_version": "1.0.35",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -615,6 +615,21 @@
         "CHK-P0-007",
         "CHK-P0-009",
         "plan/decisions/050-deterministic-snapshot-restart.md"
+      ]
+    },
+    {
+      "issue": 666,
+      "title": "Harden snapshot restart validation and CLI coverage",
+      "commit": "1ad2f28757bfc1f5570f5e1669e67e44a5585655",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/667",
+      "evidence": [
+        "TST-P6-008",
+        "TST-P6-009",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "plan/decisions/051-restart-boundary-hardening.md"
       ]
     }
   ],

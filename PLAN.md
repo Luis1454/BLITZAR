@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.34**
+Plan version: **1.0.35**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -237,7 +237,8 @@ manifest, and atomic snapshot publication lifecycle are implemented and
 qualified by their P6 tests. The reusable conservation metrics module and its
 KDK requalification are now covered by `TST-P6-005`. The production CLI
 summary is covered by `TST-P6-006`. Deterministic snapshot restart is covered
-by `TST-P6-008`. The remaining planned pipeline is CLI conservation diagnostics,
+by `TST-P6-008`. Restart payload validation and production executable entrypoint
+coverage are covered by `TST-P6-009`. The remaining planned pipeline is CLI conservation diagnostics,
 post-processing, optional MPI/HIP qualification, and the optional HDF5 adapter.
 The complete run pipeline remains unfinished; HDF5 remains deferred until its
 executable evidence exists.

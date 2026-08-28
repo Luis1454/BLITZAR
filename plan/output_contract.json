@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.34",
+  "plan_version": "1.0.35",
   "configuration": {
     "path_base": "config_parent",
     "directives": {
@@ -108,7 +108,8 @@
     "checksum_scope": "payload",
     "checksum": "FNV-1a-64",
     "atomic_publication": true,
-    "max_particle_count": 100000
+    "max_particle_count": 100000,
+    "mass_validation": "finite_nonnegative"
   },
   "semantics": {
     "single_rank": "implemented_first",
