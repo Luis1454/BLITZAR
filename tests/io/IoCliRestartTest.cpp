@@ -1,6 +1,7 @@
 #include "BlitzarRestart.hpp"
 #include "BlitzarRun.hpp"
 #include "fixtures/FixtureCheck.hpp"
+#include "fixtures/FixtureRestart.hpp"
 #include "io/snapshot/SnapshotReader.hpp"
 #include "simulation/config/SimConfigFile.hpp"
 #include "simulation/config/SimConfigRun.hpp"
@@ -53,13 +54,6 @@ struct CapturedOutput final {
     std::string standard_output;
     std::string standard_error;
 };
-
-void RemoveTree(const std::filesystem::path& path)
-{
-    std::error_code error;
-
-    std::filesystem::remove_all(path, error);
-}
 
 bool WriteConfig(const std::filesystem::path& path, std::string_view source)
 {
@@ -115,10 +109,9 @@ int CheckSuccessfulRestart(const std::filesystem::path& base, std::filesystem::p
     const std::filesystem::path split_directory = base / "split";
     const std::filesystem::path restart_directory = base / "restart";
 
-    RemoveTree(base);
-    std::filesystem::create_directories(full_directory);
-    std::filesystem::create_directories(split_directory);
-    std::filesystem::create_directories(restart_directory);
+    BLITZAR_CHECK(blitzar_test::EnsureDirectory(full_directory));
+    BLITZAR_CHECK(blitzar_test::EnsureDirectory(split_directory));
+    BLITZAR_CHECK(blitzar_test::EnsureDirectory(restart_directory));
 
     BLITZAR_CHECK(WriteConfig(full_directory / "run.ini", FullConfig));
     BLITZAR_CHECK(WriteConfig(split_directory / "run.ini", SplitConfig));
@@ -152,7 +145,7 @@ int CheckCorruptionAndTruncation(const std::filesystem::path& base,
 
     const std::filesystem::path corrupted_directory = base / "corrupted";
 
-    std::filesystem::create_directories(corrupted_directory);
+    BLITZAR_CHECK(blitzar_test::EnsureDirectory(corrupted_directory));
 
     BLITZAR_CHECK(WriteConfig(corrupted_directory / "run.ini", RestartConfig));
     BLITZAR_CHECK(WriteBytes(source_state, corrupted));
@@ -170,7 +163,7 @@ int CheckCorruptionAndTruncation(const std::filesystem::path& base,
 
     const std::filesystem::path truncated_directory = base / "truncated";
 
-    std::filesystem::create_directories(truncated_directory);
+    BLITZAR_CHECK(blitzar_test::EnsureDirectory(truncated_directory));
 
     BLITZAR_CHECK(WriteConfig(truncated_directory / "run.ini", RestartConfig));
     BLITZAR_CHECK(WriteBytes(source_state, truncated));
@@ -211,7 +204,7 @@ int CheckCompatibility(const std::filesystem::path& base, const std::filesystem:
 
         const std::filesystem::path directory = base / std::string(name);
 
-        std::filesystem::create_directories(directory);
+        BLITZAR_CHECK(blitzar_test::EnsureDirectory(directory));
 
         BLITZAR_CHECK(WriteConfig(directory / "run.ini", config));
 
@@ -228,7 +221,7 @@ int CheckCompatibility(const std::filesystem::path& base, const std::filesystem:
 
     const std::filesystem::path scalar_directory = base / "scalar";
 
-    std::filesystem::create_directories(scalar_directory);
+    BLITZAR_CHECK(blitzar_test::EnsureDirectory(scalar_directory));
 
     BLITZAR_CHECK(WriteConfig(scalar_directory / "run.ini", RestartConfig));
     BLITZAR_CHECK(WriteBytes(source_state, incompatible));
@@ -248,7 +241,7 @@ int CheckTransactionalFailure(const std::filesystem::path& base,
 {
     const std::filesystem::path config_path = base / "transaction" / "run.ini";
 
-    std::filesystem::create_directories(config_path.parent_path());
+    BLITZAR_CHECK(blitzar_test::EnsureDirectory(config_path.parent_path()));
 
     BLITZAR_CHECK(WriteConfig(config_path, RestartConfig));
 
@@ -279,6 +272,47 @@ int CheckTransactionalFailure(const std::filesystem::path& base,
     BLITZAR_CHECK(config.restart.time == 0.0);
     BLITZAR_CHECK(WriteBytes(source_state, valid_bytes));
 
+    std::vector<std::uint8_t> invalid_mass(valid_bytes.begin(), valid_bytes.end());
+
+    BLITZAR_CHECK(blitzar_test::SetMassAndRefreshChecksum(invalid_mass, 0, -1.0));
+    BLITZAR_CHECK(WriteBytes(source_state, invalid_mass));
+    BLITZAR_CHECK(blitzar_cli::LoadRestartState(config, state) == BLITZAR_STATUS_INVALID_ARGUMENT);
+    BLITZAR_CHECK(state.position_x[0] == sentinel);
+    BLITZAR_CHECK(config.restart.time == 0.0);
+    BLITZAR_CHECK(WriteBytes(source_state, valid_bytes));
+
+    return 0;
+}
+
+int RunChecks(const std::filesystem::path& base)
+{
+    std::filesystem::path source_state;
+    std::vector<std::uint8_t> valid_bytes;
+
+    int result = CheckSuccessfulRestart(base, source_state, valid_bytes);
+
+    if (result != 0) {
+        return result;
+    }
+
+    result = CheckCorruptionAndTruncation(base, source_state, valid_bytes);
+
+    if (result != 0) {
+        return result;
+    }
+
+    result = CheckCompatibility(base, source_state, valid_bytes);
+
+    if (result != 0) {
+        return result;
+    }
+
+    result = CheckTransactionalFailure(base, source_state, valid_bytes);
+
+    if (result != 0) {
+        return result;
+    }
+
     return 0;
 }
 
@@ -286,18 +320,14 @@ int CheckTransactionalFailure(const std::filesystem::path& base,
 
 int main()
 {
-    const std::filesystem::path base =
-        std::filesystem::temp_directory_path() / "blitzar-cli-restart-647";
+    std::filesystem::path base;
 
-    std::filesystem::path source_state;
-    std::vector<std::uint8_t> valid_bytes;
+    if (!blitzar_test::AcquireTestDirectory(base, "blitzar-cli-restart-666-")) {
+        return 1;
+    }
 
-    BLITZAR_CHECK(CheckSuccessfulRestart(base, source_state, valid_bytes) == 0);
-    BLITZAR_CHECK(CheckCorruptionAndTruncation(base, source_state, valid_bytes) == 0);
-    BLITZAR_CHECK(CheckCompatibility(base, source_state, valid_bytes) == 0);
-    BLITZAR_CHECK(CheckTransactionalFailure(base, source_state, valid_bytes) == 0);
+    const int result = RunChecks(base);
+    const bool cleanup_succeeded = blitzar_test::RemoveTree(base);
 
-    RemoveTree(base);
-
-    return 0;
+    return result == 0 && cleanup_succeeded ? 0 : 1;
 }

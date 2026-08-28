@@ -133,6 +133,17 @@ struct SnapshotHeader final {
     return true;
 }
 
+[[nodiscard]] inline bool IsValidSnapshotMassSpan(std::span<const Scalar> values) noexcept
+{
+    for (const Scalar value : values) {
+        if (!std::isfinite(value) || value < 0.0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 struct SnapshotPayloadView final {
     std::span<const std::uint64_t> ids{};
     std::span<const Scalar> position_x{};
@@ -172,7 +183,7 @@ struct SnapshotPayloadView final {
         return IsFiniteSnapshotSpan(position_x) && IsFiniteSnapshotSpan(position_y) &&
                IsFiniteSnapshotSpan(position_z) && IsFiniteSnapshotSpan(velocity_x) &&
                IsFiniteSnapshotSpan(velocity_y) && IsFiniteSnapshotSpan(velocity_z) &&
-               IsFiniteSnapshotSpan(mass);
+               IsValidSnapshotMassSpan(mass);
     }
 };
 
