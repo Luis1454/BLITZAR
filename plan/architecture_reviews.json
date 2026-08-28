@@ -184,6 +184,27 @@
       "decision": "The run boundary keeps preparation, ordered state publication, rollback, and path observability together; the accessors are a narrow filesystem boundary and the publication state machine is not duplicated across adapters."
     },
     {
+      "path": "apps/blitzar/BlitzarOutput.cpp",
+      "signals": ["function_count"],
+      "issue": 648,
+      "status": "accepted",
+      "decision": "The CLI output boundary keeps snapshot scheduling and online conservation publication together so both paths use the same persisted checkpoints and CSV serializer; post-processing consumes that contract without duplicating the simulation loop."
+    },
+    {
+      "path": "src/io/postprocess/PostProcessInput.cpp",
+      "signals": ["branching"],
+      "issue": 648,
+      "status": "accepted",
+      "decision": "Input validation keeps manifest compatibility, deterministic step checks, exact state-directory inventory, and snapshot-frame preflight in one persistence boundary; it rejects invalid runs before post-processing output is created."
+    },
+    {
+      "path": "tests/io/IoCliPostProcessTest.cpp",
+      "signals": ["function_length"],
+      "issue": 648,
+      "status": "accepted",
+      "decision": "The end-to-end test keeps artifact preparation and rejection cases in one fixture boundary so the production CLI, direct API path, atomic output behavior, and online byte-parity contract are verified together."
+    },
+    {
       "path": "tools/audit/audit_contract.py",
       "signals": ["branching"],
       "issue": 613,

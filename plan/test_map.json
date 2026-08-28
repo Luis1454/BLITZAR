@@ -108,6 +108,15 @@
       "contract": "production blitzar_cli --config entrypoint, isolated concurrent test artifacts, and deterministic restart byte parity"
     },
     {
+      "id": "TST-P6-010",
+      "entrypoint": "tests/io/IoCliPostProcessTest.cpp",
+      "responsibility": "tests/io/IoCliPostProcessTest.cpp",
+      "mode": "production-entrypoint",
+      "ranks": 1,
+      "phase": "P6",
+      "contract": "strict manifest/state enumeration, conservation recomputation, atomic post-processing CSV, rejection of invalid artifacts, and byte parity with online diagnostics"
+    },
+    {
       "id": "TST-P0-004",
       "entrypoint": "tests/contracts/ContractBoundedTest.cpp",
       "responsibility": "tests/contracts/ContractBoundedTest.cpp",
